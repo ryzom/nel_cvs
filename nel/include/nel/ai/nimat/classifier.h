@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.9 2003/02/27 11:10:15 robert Exp $
+ * $Id: classifier.h,v 1.10 2003/03/10 14:17:13 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,143 +41,16 @@ namespace NLAINIMAT
 ///////////////////////////
 
 /// This type give all the actions and virtual actions (high level action) of an Agent.
-enum TAction
-{
-	Action_CloseCombat = 0,
-	Action_DistanceCombat,
-	Action_Eat,
-	Action_V_Fight,
-
-	Action_Wander,
-	Action_Graze,
-	Action_Rest,
-	Action_Migrate,
-	Action_Fight,
-	Action_Flee,
-	Action_MoveToTarget,
-	Action_MoveToRestPlace,
-	Action_DoNothing,
-	Action_Unknown
-};
-
-static const NLMISC::CStringConversion<TAction>::CPair stringTableAction [] =
-{ 
-	{ "CloseCombat",	Action_CloseCombat },
-	{ "DistanceCombat",	Action_DistanceCombat },
-	{ "Eat",			Action_Eat },
-	{ "V_Fight",		Action_V_Fight },
-
-	{ "Wander",			Action_Wander },
-	{ "Graze",			Action_Graze },
-	{ "Rest",			Action_Rest },
-	{ "Migrate",		Action_Migrate },
-	{ "Fight",			Action_Fight },
-	{ "Flee",			Action_Flee },
-	{ "MoveToTarget",	Action_MoveToTarget },
-	{ "MoveToRestPlace",Action_MoveToRestPlace },
-	{ "DoNothing",		Action_DoNothing }
-};
-static NLMISC::CStringConversion<TAction> conversionAction
-(
-	stringTableAction,
-	sizeof(stringTableAction) / sizeof(stringTableAction[0]),
-	Action_Unknown
-);
+extern enum TAction;
 
 /// This type give all the motivations of an Agent.
-enum TMotivation
-{
-	Motivation_Wander = 0,
-	Motivation_Hunger,
-	Motivation_Fatigue,
-	Motivation_Flock,
-	Motivation_Aggro,
-	Motivation_Fear,
-	
-	Motivation_Unknown
-};
-
-static const NLMISC::CStringConversion<TMotivation>::CPair stringTableMotivation [] =
-{ 
-	{ "Wander",		Motivation_Wander },
-	{ "Hunger",		Motivation_Hunger },
-	{ "Fatigue",	Motivation_Fatigue },
-	{ "Flock",		Motivation_Flock },
-	{ "Aggro",		Motivation_Aggro },
-	{ "Fear",		Motivation_Fear }
-};
-static NLMISC::CStringConversion<TMotivation> conversionMotivation
-(
-	stringTableMotivation,
-	sizeof(stringTableMotivation) / sizeof(stringTableMotivation[0]),
-	Motivation_Unknown
-);
+extern enum TMotivation;
 
 /// This type give all the sensors of an Agent.
-enum TSensor
-{
-	Sensor_MunitionsAmount = 0,
-	Sensor_FoodType,
-	Sensor_IsAlive,
-	Sensor_IAmAttacked,
+extern enum TSensor;
 
-	// Self inner state
-	Sensor_IAmAlive,		// 'T'rue,		'F'alse
 
-	// Self description
-	Sensor_IAmOnNest,		// 'T'rue,		'F'alse
-
-	// Self action
-	Sensor_IAmEngaged,		// 'T'arget,	'O'ther target,	'N'ot engaged
-	Sensor_IAmFleeing,		// 'T'arget,	'O'ther target,	'N'ot fleeing
-	
-	// Target inner state
-	Sensor_ItIsAlive,		// 'T'rue,		'F'alse
-
-	// Target description
-	Sensor_ItIsA,			// 'B'idoche,	'P'redator,		'H'erbivore,	'S'cavenger,	'O'min
-	Sensor_NotItIsA,		// 'B'idoche,	'P'redator,		'H'erbivore,	'S'cavenger
-
-	// Target Action
-	Sensor_ItIsEngagedOn,	// 'F'riend,	'E'nnemy,		'U'ndefined,	'M'e,		'N'ot engaged
-
-	// Self <-> target relation information
-	Sensor_DistanceContact,	// 'T'rue,		'F'alse
-	Sensor_DistanceEngage,	// 'T'rue,		'F'alse
-	Sensor_IAmStronger,		// 'T'rue,		'F'alse
-	Sensor_Relationship,	// 'F'riend,	'E'nnemy,		'U'ndefined
-
-	Sensor_Unknown
-};
-
-// The conversion table
-static const NLMISC::CStringConversion<TSensor>::CPair stringTableSensor [] =
-{ 
-	{ "MunitionsAmount",	Sensor_MunitionsAmount },
-	{ "FoodType",			Sensor_FoodType },
-	{ "IsAlive",			Sensor_IsAlive },
-	{ "IAmAttacked",		Sensor_IAmAttacked },
-
-	{ "IAmAlive",			Sensor_IAmAlive },
-	{ "ItIsAlive",			Sensor_ItIsAlive },
-	{ "ItIsA",				Sensor_ItIsA },
-	{ "NotItIsA",			Sensor_NotItIsA },
-	{ "DistanceContact",	Sensor_DistanceContact },
-	{ "DistanceEngage",		Sensor_DistanceEngage },
-	{ "IAmStronger",		Sensor_IAmStronger },
-	{ "IAmOnNest",			Sensor_IAmOnNest },
-	{ "IAmEngaged",			Sensor_IAmEngaged },
-	{ "ItIsEngagedOn",		Sensor_ItIsEngagedOn },
-	{ "Relationship",		Sensor_Relationship },
-	{ "IAmFleeing",			Sensor_IAmFleeing }
-};
-static NLMISC::CStringConversion<TSensor> conversionSensor
-(
-	stringTableSensor,
-	sizeof(stringTableSensor) / sizeof(stringTableSensor[0]),
-	Sensor_Unknown
-);
-
+/// Used to know how a behaviour terminate
 enum TBehaviorTerminate
 {
 	BehaviorTerminate_Success,
@@ -224,6 +97,13 @@ public:
 class CConditionMap
 {
 public:
+	struct CSensor
+	{
+		TSensorValue	SensorValue;
+		bool			TruthValue;
+		bool			NeedTarget;
+	};
+	
 	/// Used to add an if sensor == condition rule
 	void addIfSensorCondition(TSensor sensorName, TSensorValue sensorValue);
 
@@ -232,12 +112,12 @@ public:
 
 	void addSensorCondition(TSensor sensorName, TSensorValue sensorValue, bool sensorIsTrue);
 
-	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator begin() const {return _ConditionMap.begin();}
-	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator end() const {return _ConditionMap.end();}
+	std::map<TSensor, CSensor >::const_iterator begin() const {return _ConditionMap.begin();}
+	std::map<TSensor, CSensor >::const_iterator end() const {return _ConditionMap.end();}
 	void clear(){_ConditionMap.clear();}
 
 private:
-	std::map<TSensor, std::pair<TSensorValue, bool> > _ConditionMap;// The boolean is used to know if the condition is sensor==value or sensor!=value.
+	std::map<TSensor, CSensor > _ConditionMap;// The boolean is used to know if the condition is sensor==value or sensor!=value.
 };
 
 
@@ -262,8 +142,8 @@ private :
 
 	private :
 		std::map<TSensor, TSensorValue>::const_iterator	_itSensor;			// A reference to the sensor associate with this condition.
-		TSensorValue									_value;				// The condition value.
-		bool											_sensorIsTrue;		// Used to know if the condition is sensor==value or sensor!=value.
+		TSensorValue									_Value;				// The condition value.
+		bool											_SensorIsTrue;		// Used to know if the condition is sensor==value or sensor!=value.
 	};
 
 	 // A classifier is a three parts components (condition, priority, behavior).
@@ -274,7 +154,8 @@ private :
 		virtual ~CClassifier();
 
 	public :
-		std::list<CClassifierConditionCell*>	Condition;
+		std::list<CClassifierConditionCell*>	ConditionWithTarget;
+		std::list<CClassifierConditionCell*>	ConditionWithoutTarget;
 		double									Priority;
 		TAction 								Behavior;
 	};
@@ -485,7 +366,7 @@ public :
 	/// Update the values in the NetCS
 	void run();
 
-	/// Update the sensors value
+	/// Set the snesor source
 	void setSensors(CCSPerception *psensorMap);
 
 	/// Chaine de debug

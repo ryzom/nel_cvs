@@ -113,7 +113,8 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "../obj/debugfast/ainimat"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -165,6 +166,10 @@ LIB32=link.exe -lib
 
 SOURCE=.\ai\nimat\classifier.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\ai\nimat\sensors_motivations_actions_def.cpp
+# End Source File
 # End Group
 # Begin Group "nimat_h"
 
@@ -172,6 +177,10 @@ SOURCE=.\ai\nimat\classifier.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\ai\nimat\classifier.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\nimat\sensors_motivations_actions_def.h
 # End Source File
 # End Group
 # End Group

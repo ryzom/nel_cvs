@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.12 2003/02/27 11:10:27 robert Exp $
+ * $Id: classifier.cpp,v 1.13 2003/03/10 14:17:39 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/ai/nimat/classifier.h"
+#include "nel/ai/nimat/sensors_motivations_actions_def.h"
 
 namespace NLAINIMAT
 {
@@ -58,15 +59,24 @@ void CClassifierSystem::addClassifier(const CConditionMap &conditionsMap, double
 	classifier->Priority = priority;
 
 	CClassifierConditionCell* condCell;
-	std::map<TSensor, std::pair<TSensorValue, bool> >::const_iterator itCondition;
+	std::map<TSensor, CConditionMap::CSensor >::const_iterator itCondition;
 	for (itCondition = conditionsMap.begin(); itCondition != conditionsMap.end(); itCondition++)
 	{
 		// We add the new sensor in the sensor map and init it with a joker value '#'
 		_sensors[(*itCondition).first] = '#';
 
 		// A new condition cell is added to the classifier condition.
-		condCell = new CClassifierConditionCell(_sensors.find((*itCondition).first), (*itCondition).second.first, (*itCondition).second.second);
-		classifier->Condition.push_back(condCell);
+		condCell = new CClassifierConditionCell(_sensors.find((*itCondition).first),
+												(*itCondition).second.SensorValue,
+												(*itCondition).second.TruthValue);
+		if ((*itCondition).second.NeedTarget)
+		{
+			classifier->ConditionWithTarget.push_back(condCell);
+		}
+		else
+		{
+			classifier->ConditionWithoutTarget.push_back(condCell);
+		}
 	}
 
 	// The new classifier is added to the classifier list.
@@ -77,16 +87,34 @@ void CClassifierSystem::addClassifier(const CConditionMap &conditionsMap, double
 void CClassifierSystem::addClassifierSystem(const CClassifierSystem &cs)
 {
 	std::map<sint16, CClassifier*>::const_iterator itCSClassifiers;
+
+	// Pour chacun des classeurs de cs
 	for (itCSClassifiers = cs._classifiers.begin(); itCSClassifiers != cs._classifiers.end(); itCSClassifiers++)
 	{
 		CConditionMap conditionsMap;
-
 		std::list<CClassifierConditionCell*>::const_iterator itCondCell;
-		for (itCondCell = (*itCSClassifiers).second->Condition.begin(); itCondCell !=(*itCSClassifiers).second->Condition.end(); itCondCell++)
+
+		// Pour chacune des condition sans cible d'un de ces classeur
+		for (itCondCell = (*itCSClassifiers).second->ConditionWithoutTarget.begin();
+			itCondCell !=(*itCSClassifiers).second->ConditionWithoutTarget.end();
+			itCondCell++)
 		{
 			CClassifierConditionCell* pCondCell = (*itCondCell);
+			// Je construit une liste de condition
 			conditionsMap.addSensorCondition(pCondCell->getSensorName(), pCondCell->getValue(),pCondCell->getSensorIsTrue());
 		}
+
+		// Pour chacune des condition avec cible d'un de ces classeur
+		for (itCondCell = (*itCSClassifiers).second->ConditionWithTarget.begin();
+			itCondCell !=(*itCSClassifiers).second->ConditionWithTarget.end();
+			itCondCell++)
+		{
+			CClassifierConditionCell* pCondCell = (*itCondCell);
+			// Je construit une liste de condition
+			conditionsMap.addSensorCondition(pCondCell->getSensorName(), pCondCell->getValue(),pCondCell->getSensorIsTrue());
+		}
+		
+		// je rajoute dans mon cs un nouveau classeur avec ces conditions, la priorité et le comportement du classeur
 		addClassifier(conditionsMap, (*itCSClassifiers).second->Priority, (*itCSClassifiers).second->Behavior);
 	}
 }
@@ -112,30 +140,36 @@ std::pair<sint16, TTargetId> CClassifierSystem::selectBehavior( const CCSPercept
 	// We select the activables classifiers
 	typedef	std::map<sint16, CClassifier*>::iterator  TitClassifiers;
 	std::map<double, std::pair<TitClassifiers, TTargetId> > mapCSweel;
-	TitClassifiers itClassifiers = _classifiers.begin();
+	TitClassifiers itClassifiers;
 	std::list<CClassifierConditionCell*>::iterator itConditions;
 	bool activable;
 	double totalPriority = 0;
 
-	while (itClassifiers != _classifiers.end())
+	for (itClassifiers = _classifiers.begin();
+		itClassifiers != _classifiers.end();
+		itClassifiers++)
 	{
 		activable = true;
-		itConditions = (*itClassifiers).second->Condition.begin();
-		while (itConditions != (*itClassifiers).second->Condition.end())
+		// S'il y a des conditions dépendantes d'une cible, ce n'est pas activable.
+		if ((*itClassifiers).second->ConditionWithTarget.begin() == (*itClassifiers).second->ConditionWithTarget.end())
 		{
-			if (! (*itConditions)->isActivable() )
+			// On parcour la liste de sensor indépendant d'une cible
+			for (itConditions = (*itClassifiers).second->ConditionWithoutTarget.begin();
+				itConditions != (*itClassifiers).second->ConditionWithoutTarget.end();
+				itConditions++)
 			{
-				activable = false;
-				break;
+				if (! (*itConditions)->isActivable() )
+				{
+					activable = false;
+					break;
+				}
 			}
-			itConditions++;
+			if (activable)
+			{
+				totalPriority += (*itClassifiers).second->Priority;
+				mapCSweel[totalPriority] = std::make_pair(itClassifiers,myTarget);
+			}
 		}
-		if (activable)
-		{
-			totalPriority += (*itClassifiers).second->Priority;
-			mapCSweel[totalPriority] = std::make_pair(itClassifiers,myTarget);
-		}
-		itClassifiers++;
 	}
 
 	// We now do the same, but with target sensors.
@@ -157,26 +191,39 @@ std::pair<sint16, TTargetId> CClassifierSystem::selectBehavior( const CCSPercept
 		}
 		
 		// We select the activables classifiers
-		itClassifiers = _classifiers.begin();
-		while (itClassifiers != _classifiers.end())
+		for (itClassifiers = _classifiers.begin();
+			itClassifiers != _classifiers.end();
+			itClassifiers++)
 		{
 			activable = true;
-			itConditions = (*itClassifiers).second->Condition.begin();
-			while (itConditions != (*itClassifiers).second->Condition.end())
+			
+			// On parcour la liste de sensor indépendant d'une cible
+			for (itConditions = (*itClassifiers).second->ConditionWithoutTarget.begin();
+				itConditions != (*itClassifiers).second->ConditionWithoutTarget.end();
+				itConditions++)
 			{
 				if (! (*itConditions)->isActivable() )
 				{
 					activable = false;
 					break;
 				}
-				itConditions++;
+			}
+			// On parcour la liste de sensor dépendant d'une cible
+			for (itConditions = (*itClassifiers).second->ConditionWithTarget.begin();
+				itConditions != (*itClassifiers).second->ConditionWithTarget.end();
+				itConditions++)
+			{
+				if (! (*itConditions)->isActivable() )
+				{
+					activable = false;
+					break;
+				}
 			}
 			if (activable)
 			{
 				totalPriority += (*itClassifiers).second->Priority;
 				mapCSweel[totalPriority] = std::make_pair(itClassifiers,myTarget);
 			}
-			itClassifiers++;
 		}		
 	}
 	
@@ -220,7 +267,10 @@ void CClassifierSystem::getDebugString(std::string &t) const
 	{
 		dbg += "<" + NLMISC::toString((*itClassifiers).first) + "> ";
 		std::list<CClassifierConditionCell*>::const_iterator itConditions;
-		for (itConditions = (*itClassifiers).second->Condition.begin(); itConditions != (*itClassifiers).second->Condition.end(); itConditions++)
+		// On parcour la liste de sensor indépendant d'une cible
+		for (itConditions = (*itClassifiers).second->ConditionWithoutTarget.begin();
+			itConditions != (*itClassifiers).second->ConditionWithoutTarget.end();
+			itConditions++)
 		{
 			CClassifierConditionCell* condCell = (*itConditions);
 			if (condCell->getSensorIsTrue())
@@ -230,6 +280,21 @@ void CClassifierSystem::getDebugString(std::string &t) const
 			else
 			{
 				dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "=!" + condCell->getValue() + ") +";
+			}
+		}
+		// On parcour la liste de sensor dépendant d'une cible
+		for (itConditions = (*itClassifiers).second->ConditionWithTarget.begin();
+			itConditions != (*itClassifiers).second->ConditionWithTarget.end();
+			itConditions++)
+		{
+			CClassifierConditionCell* condCell = (*itConditions);
+			if (condCell->getSensorIsTrue())
+			{
+				dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "(x)= " + condCell->getValue() + ") +";
+			}
+			else
+			{
+				dbg += " (" + conversionSensor.toString(condCell->getSensorName()) + "(x)=!" + condCell->getValue() + ") +";
 			}
 		}
 		std::string actionName = conversionAction.toString((*itClassifiers).second->Behavior);
@@ -249,8 +314,14 @@ CClassifierSystem::CClassifier::CClassifier()
 
 CClassifierSystem::CClassifier::~CClassifier()
 {
-	std::list<CClassifierConditionCell*>::iterator itConditions = Condition.begin();
-	while (itConditions != Condition.end())
+	std::list<CClassifierConditionCell*>::iterator itConditions = ConditionWithTarget.begin();
+	while (itConditions != ConditionWithTarget.end())
+	{
+		delete (*itConditions );
+		itConditions++;
+	}
+	itConditions = ConditionWithoutTarget.begin();
+	while (itConditions != ConditionWithoutTarget.end())
 	{
 		delete (*itConditions );
 		itConditions++;
@@ -261,25 +332,26 @@ CClassifierSystem::CClassifier::~CClassifier()
 // CClassifierConditionCell
 ///////////////////////////
 
-CClassifierSystem::CClassifierConditionCell::CClassifierConditionCell(TSensorMap::const_iterator itSensor, TSensorValue value, bool sensorIsTrue)
+CClassifierSystem::CClassifierConditionCell::CClassifierConditionCell(TSensorMap::const_iterator itSensor,
+																	  TSensorValue value, bool sensorIsTrue)
 {
 	_itSensor = itSensor;
-	_value = value;
-	_sensorIsTrue = sensorIsTrue;
+	_Value = value;
+	_SensorIsTrue = sensorIsTrue;
 }
 
 bool CClassifierSystem::CClassifierConditionCell::isActivable() const
 {
-	if (_sensorIsTrue)
+	if (_SensorIsTrue)
 	{
-		if ((*_itSensor).second == _value)
+		if ((*_itSensor).second == _Value)
 			return true;
 		else
 			return false;
 	}
 	else
 	{
-		if ((*_itSensor).second == _value)
+		if ((*_itSensor).second == _Value)
 			return false;
 		else
 			return true;
@@ -293,12 +365,12 @@ TSensor CClassifierSystem::CClassifierConditionCell::getSensorName() const
 
 TSensorValue CClassifierSystem::CClassifierConditionCell::getValue() const
 {
-	return _value;
+	return _Value;
 }
 
 bool CClassifierSystem::CClassifierConditionCell::getSensorIsTrue() const
 {
-	return _sensorIsTrue;
+	return _SensorIsTrue;
 }
 
 ///////////////////////////
@@ -307,17 +379,32 @@ bool CClassifierSystem::CClassifierConditionCell::getSensorIsTrue() const
 
 void CConditionMap::addIfSensorCondition(TSensor sensorName, TSensorValue sensorValue)
 {
-	_ConditionMap[sensorName] = std::make_pair(sensorValue, true);
+	CSensor albator;
+	albator.SensorValue = sensorValue;
+	albator.TruthValue = true;
+	albator.NeedTarget = (sensorName > Sensors_WITHTARGET);
+
+	_ConditionMap[sensorName] = albator;
 }
 
 void CConditionMap::addIfNotSensorCondition(TSensor sensorName, TSensorValue sensorValue)
 {
-	_ConditionMap[sensorName] = std::make_pair(sensorValue, false);
+	CSensor albator;
+	albator.SensorValue = sensorValue;
+	albator.TruthValue = false;
+	albator.NeedTarget = (sensorName > Sensors_WITHTARGET);
+	
+	_ConditionMap[sensorName] = albator;
 }
 
 void CConditionMap::addSensorCondition(TSensor sensorName, TSensorValue sensorValue, bool sensorIsTrue)
 {
-	_ConditionMap[sensorName] = std::make_pair(sensorValue, sensorIsTrue);
+	CSensor albator;
+	albator.SensorValue = sensorValue;
+	albator.TruthValue = sensorIsTrue;
+	albator.NeedTarget = (sensorName > Sensors_WITHTARGET);
+	
+	_ConditionMap[sensorName] = albator;
 }
 
 ///////////////////////////
@@ -550,6 +637,7 @@ CMHiCSagent::CMHiCSagent(CMHiCSbase* pMHiCSbase)
 	nlassert (pMHiCSbase != NULL);
 	_pMHiCSbase = pMHiCSbase;
 	_IdByActions[Action_DoNothing] = NullTargetId;
+	_ItCurrentAction = _IdByActions.end();
 }
 
 CMHiCSagent::~CMHiCSagent()
@@ -583,7 +671,17 @@ void CMHiCSagent::getDebugString(std::string &t) const
 		(*itClassifiersAndVirtualActionIntensity).second.MotivationIntensity.getDebugString(ret);
 		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itClassifiersAndVirtualActionIntensity).first);
 		nlassert (itIdByActions != _IdByActions.end())
-		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
+//		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
+// ***G*** ATTENTION, ici j'utilise un gros furoncle pour afficher en debug le N° comme dans Ryzom.
+		uint32 aiBoteId = (*itIdByActions).second;
+		uint32 managerID = (aiBoteId>>(8+12))&( (1<<10)-1 );
+		uint32 groupeID = (aiBoteId>>8)&( (1<<12)-1 );
+		uint32 boteID = aiBoteId&( (1<<8)-1 );
+		char result[30];
+		sprintf(result,"AI:%04x:BOT:%04x:%04x:%04x",aiBoteId,managerID,groupeID,boteID);
+		ret += " on target n#";
+		ret += result;
+// ***G*** Fin du furoncle
 		ret += "\n  -> Classifier number " + NLMISC::toString((*itClassifiersAndVirtualActionIntensity).second.ClassifierNumber); 
 		ret += "\n";
 	}
@@ -595,7 +693,31 @@ void CMHiCSagent::getDebugString(std::string &t) const
 		(*itActionsExecutionIntensity).second.getDebugString(ret);
 		std::map<TAction, TTargetId>::const_iterator itIdByActions = _IdByActions.find((*itActionsExecutionIntensity).first);
 		nlassert (itIdByActions != _IdByActions.end())
-		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
+//		ret += " on target n#" + NLMISC::toString((*itIdByActions).second);
+// ***G*** ATTENTION, ici j'utilise un gros furoncle pour afficher en debug le N° comme dans Ryzom.
+		uint32 aiBoteId = (*itIdByActions).second;
+		uint32 managerID = (aiBoteId>>(8+12))&( (1<<10)-1 );
+		uint32 groupeID = (aiBoteId>>8)&( (1<<12)-1 );
+		uint32 boteID = aiBoteId&( (1<<8)-1 );
+		char result[30];
+		sprintf(result,"AI:%04x:BOT:%04x:%04x:%04x",aiBoteId,managerID,groupeID,boteID);
+		ret += " on target n#";
+		ret += result;
+// ***G*** Fin du furoncle
+	}
+	if (_ItCurrentAction != _IdByActions.end())
+	{
+//		ret += "\nACTION ACTIVE : " + NLAINIMAT::conversionAction.toString((*_ItCurrentAction).first) + " on " + NLMISC::toString((*_ItCurrentAction).second);
+// ***G*** ATTENTION, ici j'utilise un gros furoncle pour afficher en debug le N° comme dans Ryzom.
+		uint32 aiBoteId = (*_ItCurrentAction).second;
+		uint32 managerID = (aiBoteId>>(8+12))&( (1<<10)-1 );
+		uint32 groupeID = (aiBoteId>>8)&( (1<<12)-1 );
+		uint32 boteID = aiBoteId&( (1<<8)-1 );
+		char result[30];
+		sprintf(result,"AI:%04x:BOT:%04x:%04x:%04x",aiBoteId,managerID,groupeID,boteID);
+// ***G*** Fin du furoncle
+		ret += "\nACTION ACTIVE : " + NLAINIMAT::conversionAction.toString((*_ItCurrentAction).first) + " on ";
+		ret += result;
 	}
 	t+=ret;
 }
@@ -1063,3 +1185,6 @@ CCSPerception::~CCSPerception()
 
 
 } // NLAINIMAT
+
+
+

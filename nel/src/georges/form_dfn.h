@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.6 2002/05/28 14:06:57 corvazier Exp $
+ * $Id: form_dfn.h,v 1.7 2002/05/31 10:07:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,8 +191,8 @@ public:
 	CEntry							&getEntry (uint entry);
 
 	// From UFormElm
-	bool							getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where) const;
-	bool							getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where);
+	bool							getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true) const;
+	bool							getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true);
 	bool							getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	bool							getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	bool							getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
@@ -203,6 +203,7 @@ public:
 	bool							getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	bool							getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	bool							getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	bool							getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	bool							isArray () const;
 	bool							getArraySize (uint &size) const;
 	bool							getArrayNode (const UFormElm **result, uint arrayIndex) const;
@@ -217,6 +218,7 @@ public:
 	bool							getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool							getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool							getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool							getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool							isStruct () const;
 	bool							isVirtualStruct () const;
 	bool							getStructSize (uint &size) const;
@@ -234,6 +236,7 @@ public:
 	bool							getValue (float &result, bool evaluate) const;
 	bool							getValue (double &result, bool evaluate) const;
 	bool							getValue (bool &result, bool evaluate) const;
+	bool							getValue (NLMISC::CRGBA &result, bool evaluate) const;
 
 	// Form UFormDfn
 	bool							getEntryType (uint entry, TEntryType &type, bool &array) const;

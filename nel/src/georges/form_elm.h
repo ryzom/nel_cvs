@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.6 2002/05/28 14:06:57 corvazier Exp $
+ * $Id: form_elm.h,v 1.7 2002/05/31 10:07:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/georges/u_form_elm.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/rgba.h"
 
 #include "georges/form_dfn.h"
 
@@ -60,12 +61,12 @@ public:
 	// Is the element are used by this form ?
 	virtual bool	isUsed (const CForm *form) const;
 
-	// Call by CForm::setParent
-	virtual bool	setParent (CFormElm *parent) = 0;
+	// Get the form name of the element
+	virtual void	getFormName (std::string &result, const CFormElm *child=NULL) const = 0;
 
 	// From UFormElm
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where) const;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where);
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true) const;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true);
 	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where) const;
@@ -76,6 +77,7 @@ public:
 	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual UFormElm	*getParent () const;
 	virtual bool	isArray () const;
 	virtual bool	getArraySize (uint &size) const;
@@ -91,6 +93,7 @@ public:
 	virtual bool	getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	isStruct () const;
 	virtual bool	isVirtualStruct () const;
 	virtual bool	getStructSize (uint &size) const;
@@ -108,6 +111,7 @@ public:
 	virtual bool	getValue (float &result, bool evaluate) const;
 	virtual bool	getValue (double &result, bool evaluate) const;
 	virtual bool	getValue (bool &result, bool evaluate) const;
+	virtual bool	getValue (NLMISC::CRGBA &result, bool evaluate) const;
 
 	// ** Convert functions
 
@@ -120,6 +124,7 @@ public:
 	static inline bool convertValue (float &result, const char *value);
 	static inline bool convertValue (double &result, const char *value);
 	static inline bool convertValue (bool &result, const char *value);
+	static inline bool convertValue (NLMISC::CRGBA &result, const char *value);
 
 	// ** Internal node access
 
@@ -142,7 +147,25 @@ public:
 	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array) const;
+										bool &array, bool verbose) const;
+
+	/** 
+	  * Insert an array node by name
+	  * The index asked must be < the size of the array.
+	  */
+	bool	arrayInsertNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
+										const CFormDfn **nodeDfn, const CType **nodeType, 
+										CFormElm **node, UFormDfn::TEntryType &type, 
+										bool &array, bool verbose, uint arrayIndex) const;
+
+	/** 
+	  * Delete an array node by name
+	  * The index asked must be < the size of the array.
+	  */
+	bool	arrayDeleteNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
+										const CFormDfn **nodeDfn, const CType **nodeType, 
+										CFormElm **node, UFormDfn::TEntryType &type, 
+										bool &array, bool verbose, uint arrayIndex) const;
 protected:
 	
 	// Action to perform
@@ -154,14 +177,17 @@ protected:
 	};
 
 	/**
-	  * Is createNode == Create, you must provide a valid *node pointer.
 	  * Is createNode == Create, (*node)->Form must be == to the form argument.
 	  * Is createNode == Return, form argument is not used, can be undefined.
+	  *
+	  * Only form, name, and action, must be defined. 
+	  * Then, else (*parentDfn / indexDfn ) or *node must be defined.
+	  * Others value are for result only.
 	  */
 	static bool	getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array, TNodeAction action, bool &created);
+										bool &array, TNodeAction action, bool &created, bool verbose);
 
 	/**
 	  * Unlink a child
@@ -221,7 +247,7 @@ public:
 	NLMISC::CSmartPtr<CFormDfn>	FormDfn;
 
 	// Pointer on the parent element
-	CFormElmStruct					*Parent;
+	//CFormElmStruct					*Parent;
 
 	// A struct element
 	class CFormElmStructElm
@@ -250,8 +276,9 @@ public:
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
-	bool				setParent (CFormElm *parent);
 	void				unlink (CFormElm *child);
+	void				getFormName (std::string &result, const CFormElm *child) const;
+
 
 	// Call by CFormLoader
 	void				read (xmlNodePtr node, CFormLoader &loader, const CFormDfn *dfn, CForm *form);
@@ -277,7 +304,6 @@ public:
 
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;
-	bool				setParent (CFormElm *parent);
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 
 	// Call by CFormLoader
@@ -316,12 +342,14 @@ public:
 	bool				getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
+	bool				getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 
 	// From CFormElm
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool				setParent (CFormElm *parent);
 	void				unlink (CFormElm *child);
 	bool				isUsed (const CForm *form) const;
+	void				getFormName (std::string &result, const CFormElm *child) const;
 
 	// Call by CFormLoader
 
@@ -345,7 +373,7 @@ public:
 	CFormElmAtom (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// Pointer on the parent element
-	CFormElmAtom				*Parent;
+	//CFormElmAtom				*Parent;
 
 	// Pointer on the type (the smart pointer in hold by CFormDfn)
 	const CType					*Type;
@@ -353,6 +381,7 @@ public:
 	// From CFormElm
 	xmlNodePtr					write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool						setParent (CFormElm *parent);
+	void						getFormName (std::string &result, const CFormElm *child) const;
 
 	// Call by CFormLoader
 	void						read (xmlNodePtr node, CFormLoader &loader, const CType *type, CForm *form);
@@ -369,6 +398,7 @@ public:
 	bool						getValue (float &result, bool evaluate) const;
 	bool						getValue (double &result, bool evaluate) const;
 	bool						getValue (bool &result, bool evaluate) const;
+	bool						getValue (NLMISC::CRGBA &result, bool evaluate) const;
 
 	// Set the value, the elt been used
 	void						setValue (const char *value);
@@ -556,6 +586,28 @@ inline bool CFormElm::convertValue (bool &result, const char *value)
 
 	// Error message
 	nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in boolean.", value);
+	
+	return false;
+}
+
+// ***************************************************************************
+
+inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value)
+{
+	float r, g, b;
+	if (sscanf (value, "%f,%f,%f", &r, &g, &b) == 1)
+	{
+		NLMISC::clamp (r, 0.f, 255.f);
+		NLMISC::clamp (g, 0.f, 255.f);
+		NLMISC::clamp (b, 0.f, 255.f);
+		result.R = (uint8)r;
+		result.G = (uint8)g;
+		result.B = (uint8)b;
+		return true;
+	}
+
+	// Error message
+	nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in RGB color.", value);
 	
 	return false;
 }

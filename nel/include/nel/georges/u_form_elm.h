@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.3 2002/05/22 16:02:58 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.4 2002/05/31 10:07:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,11 @@
 #define _NLGEORGES_U_FORM_ELM_H
 
 #include "nel/misc/types_nl.h"
+
+namespace NLMISC
+{
+	class CRGBA;
+}
 
 namespace NLGEORGES
 {
@@ -74,8 +79,8 @@ public:
 	  * "position.x"			:	get the element named x in the struct named position
 	  * "entities[2].color"		:	get the node named color in the second element of the entities array
 	  */
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL) const = 0;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL) = 0;
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true) const = 0;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true) = 0;
 
 	
 	/// Where a value has been found
@@ -111,9 +116,8 @@ public:
 	virtual bool	getValueByName (double &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 	virtual bool	getValueByName (bool &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 
-	/// Get the parent form element. Return NULL if the element is the root form element.
-	// DEPRECATED
-	// virtual UFormElm	*getParent () const = 0;
+	/// Warning, only R, G and B members are filled, not A.
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 
 	
 	// ** Array element methods
@@ -161,6 +165,9 @@ public:
 	virtual bool	getArrayValue (double &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 	virtual bool	getArrayValue (bool &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 
+	/// Warning, only R, G and B members are filled, not A.
+	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
+
 
 	// ** Struct element methods
 
@@ -207,6 +214,9 @@ public:
 	virtual bool	getValue (float &result, bool evaluate = true) const = 0;
 	virtual bool	getValue (double &result, bool evaluate = true) const = 0;
 	virtual bool	getValue (bool &result, bool evaluate = true) const = 0;
+
+	/// Warning, only R, G and B members are filled, not A.
+	virtual bool	getValue (NLMISC::CRGBA &result, bool evaluate = true) const = 0;
 };
 
 } // NLGEORGES

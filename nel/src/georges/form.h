@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form.h,v 1.6 2002/05/31 10:07:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,9 @@ public:
 #pragma warning (disable : 4355)
 	CForm () : Elements (this, NULL, NULL, 0xffffffff) {};
 
+	// Clean the form. Erase parents.
+	void				clean ();
+
 	// ** Types
 
 	// ** Header
@@ -71,22 +74,40 @@ public:
 
 	// ** Parent access
 
-	// Set parent
-	bool				setParent (const char *filename, CForm *parent);
+	// Insert parent before parent indexed "before".
+	bool				insertParent (uint before, const char *filename, CForm *parent);
 
-	// Get parent
-	CForm *			getParent () const;
-	const std::string	&getParentFilename () const;
+	// Remove a parent from parent list
+	void				removeParent (uint parent);
+
+	// Get a parent
+	CForm *				getParent (uint parent) const;
+	const std::string	&getParentFilename (uint parent) const;
+
+	// Get parent count
+	uint				getParentCount () const;
+
+	// Clear parents
+	void				clearParents ();
 
 private:
 
+	// A parent structure
+	class CParent
+	{
+	public:
+		std::string					ParentFilename;
+		NLMISC::CSmartPtr<CForm>	Parent;
+	};
+
 	/// Pointer on the parent
-	std::string					ParentFilename;
-	NLMISC::CSmartPtr<CForm>	Parent;
+	std::vector<CParent>			ParentList;
 
 	// CFormLoader call it
 	void				read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn);
 
+	// Called by read
+	void				readParent (const char *parent, CFormLoader &loader);
 };
 
 } // NLGEORGES

@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.6 2002/05/28 14:06:57 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.7 2002/05/31 10:07:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -549,7 +549,7 @@ const CFormDfn *CFormDfn::CEntry::getDfnPtr () const
 
 // ***************************************************************************
 
-bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormElm::TWhereIsNode *where) const
+bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormElm::TWhereIsNode *where, bool verbose) const
 {
 	const CFormDfn *parentDfn = NULL;
 	uint lastElement = 0xffffffff;
@@ -560,7 +560,7 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 	bool array = false;
 	bool created;
 
-	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, verbose))
 	{
 		if (type == UFormDfn::EntryDfn)
 		{
@@ -586,10 +586,10 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 
 // ***************************************************************************
 
-bool CFormDfn::getNodeByName (UFormElm **result, const char *name, UFormElm::TWhereIsNode *where)
+bool CFormDfn::getNodeByName (UFormElm **result, const char *name, UFormElm::TWhereIsNode *where, bool verbose)
 {
 	const UFormElm *resultConst = NULL;
-	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where))
+	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where, verbose))
 	{
 		*result = const_cast<UFormElm*> (resultConst);
 		return true;
@@ -610,7 +610,7 @@ bool CFormDfn::getValueByName (std::string &result, const char *name, bool evalu
 	bool array = false;
 	bool created;
 
-	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, true))
 	{
 		if (type == UFormDfn::EntryType)
 		{
@@ -736,6 +736,18 @@ bool CFormDfn::getValueByName (bool &result, const char *name, bool evaluate, TW
 
 // ***************************************************************************
 
+bool CFormDfn::getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const
+{
+	string tmp;
+	if (getValueByName (tmp, name, evaluate, where))
+	{
+		CFormElm::convertValue (result, tmp.c_str ());
+	}
+	return false;
+}
+
+// ***************************************************************************
+
 bool CFormDfn::isArray () const
 {
 	nlwarning ("Georges (CFormDfn::isArray) : this node is not an array"); 
@@ -841,6 +853,14 @@ bool CFormDfn::getArrayValue (double &result, uint arrayIndex, bool evaluate, TW
 // ***************************************************************************
 
 bool CFormDfn::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
+{
+	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
 	nlwarning ("Georges (CFormDfn::getArrayValue) : this node is not an array"); 
 	return false;
@@ -1030,6 +1050,14 @@ bool CFormDfn::getValue (double &result, bool evaluate) const
 // ***************************************************************************
 
 bool CFormDfn::getValue (bool &result, bool evaluate) const
+{
+	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getValue (NLMISC::CRGBA &result, bool evaluate) const
 {
 	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
 	return false;

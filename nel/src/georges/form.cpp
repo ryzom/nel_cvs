@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.6 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form.cpp,v 1.7 2002/05/31 10:07:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,9 +64,17 @@ void CForm::write (xmlDocPtr doc) const
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"FORM", NULL);
 	xmlDocSetRootElement (doc, node);
 
-	// Parent filename
-	if (!ParentFilename.empty())
-		xmlSetProp (node, (const xmlChar*)"Parent", (const xmlChar*)ParentFilename.c_str());
+	// List of parent
+	for (uint parent=0; parent<ParentList.size (); parent++)
+	{
+		// Parent name not empty ?
+		if (!(ParentList[parent].ParentFilename.empty()))
+		{
+			// Add a parent node
+			xmlNodePtr parentNode = xmlNewChild ( node, NULL, (const xmlChar*)"PARENT", NULL );
+			xmlSetProp (parentNode, (const xmlChar*)"Filename", (const xmlChar*)ParentList[parent].ParentFilename.c_str());
+		}
+	}
 
 	// Write elements
 	Elements.write (node, this, NULL, true);
@@ -77,8 +85,45 @@ void CForm::write (xmlDocPtr doc) const
 
 // ***************************************************************************
 
+void CForm::readParent (const char *parent, CFormLoader &loader)
+{
+	// Load the parent
+	CForm *theParent = (CForm*)loader.loadForm (parent);
+	if (theParent != NULL)
+	{
+		// Set the parent
+		if (!insertParent (getParentCount (), parent, theParent))
+		{
+			// Make an error message
+			char tmp[512];
+			smprintf (tmp, 512, "Can't set the parent FORM named %s. Check if it is the same form or if it use a differnt formDfn.", parent);
+
+			// Delete the value
+			xmlFree ((void*)parent);
+
+			throw EXmlParsingError (tmp);
+		}
+	}
+	else
+	{
+		// Make an error message
+		char tmp[512];
+		smprintf (tmp, 512, "Can't load the parent FORM named %s.", parent);
+
+		// Delete the value
+		xmlFree ((void*)parent);
+
+		throw EXmlParsingError (tmp);
+	}
+}
+
+// ***************************************************************************
+
 void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 {
+	// Reset form
+	clean ();
+
 	// Check node name
 	if ( ((const char*)node->name == NULL) || (strcmp ((const char*)node->name, "FORM") != 0) )
 	{
@@ -103,91 +148,35 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 	// Read the struct
 	Elements.read (child, loader, dfn, this);
 
-	// Get the parent
+	// Get the old parent parameter
 	const char *parent = (const char*)xmlGetProp (node, (xmlChar*)"Parent");
 	if (parent)
 	{
-		// Set the parent
-		ParentFilename = parent;
+		// Add a parent, xmlFree is done by readParent
+		readParent (parent, loader);
+	}
 
-		// Load the parent
-		CForm *theParent = (CForm*)loader.loadForm (parent);
-		if (theParent != NULL)
-		{
-			// Set the parent
-			if (!setParent (parent, theParent))
-			{
-				// Make an error message
-				char tmp[512];
-				smprintf (tmp, 512, "Can't set the parent FORM named %s. Check if it is the same form or if it use a differnt formDfn.", parent);
+	// Read the new parent nodes
+	uint parentCount = CIXml::countChildren (node, "PARENT");
 
-				// Delete the value
-				xmlFree ((void*)parent);
+	// Reserve some parents
+	ParentList.reserve (ParentList.size () + parentCount);
 
-				throw EXmlParsingError (tmp);
-			}
-		}
-		else
-		{
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Can't load the parent FORM named %s.", parent);
+	// Enum children node
+	child = CIXml::getFirstChildNode (node, "PARENT");
+	while (child)
+	{
+		parent = (const char*)xmlGetProp (child, (xmlChar*)"Filename");
 
-			// Delete the value
-			xmlFree ((void*)parent);
+		// Add a parent, xmlFree is done by readParent
+		readParent (parent, loader);
 
-			throw EXmlParsingError (tmp);
-		}
-
+		// Next node <PARENT>
+		child = CIXml::getNextChildNode (child, "PARENT");
 	}
 
 	// Read the header
 	Header.read (node);
-}
-
-// ***************************************************************************
-
-bool CForm::setParent (const char *filename, CForm *parent)
-{
-	if (parent)
-	{
-		if (parent->Elements.FormDfn == Elements.FormDfn)
-		{
-			// Set members
-			Parent = parent;
-			ParentFilename = filename;
-
-			// Set the elements
-			if (!Elements.setParent (&parent->Elements))
-			{
-				nlverify (setParent ("", NULL));
-				return false;
-			}
-			return true;
-		}
-	}
-	else
-	{
-		ParentFilename = "";
-		nlverify (Elements.setParent (NULL));
-		return true;
-	}
-
-	return false;
-}
-
-// ***************************************************************************
-
-CForm *CForm::getParent () const
-{
-	return Parent;
-}
-
-// ***************************************************************************
-
-const std::string &CForm::getParentFilename () const
-{
-	return ParentFilename;
 }
 
 // ***************************************************************************
@@ -199,4 +188,73 @@ const std::string &CForm::getComment () const
 
 // ***************************************************************************
 
+bool CForm::insertParent (uint before, const char *filename, CForm *parent)
+{
+	// Set or reset ?
+	nlassert (parent)
+
+	// Must have the same DFN
+	if (parent->Elements.FormDfn == Elements.FormDfn)
+	{
+		// Set members
+		std::vector<CParent>::iterator ite = ParentList.insert (ParentList.begin() + before);
+		ite->Parent = parent;
+		ite->ParentFilename = filename;
+
+		return true;
+	}
+	else
+	{
+		nlwarning ("Georges (CForm::insertParent) Can't insert parent form (%s) that has not the same DFN.", filename);
+	}
+
+	return false;
+}
+
+// ***************************************************************************
+
+void CForm::removeParent (uint parent)
+{
+	ParentList.erase (ParentList.begin() + parent);
+}
+
+// ***************************************************************************
+
+CForm *CForm::getParent (uint parent) const
+{
+	return ParentList[parent].Parent;
+}
+
+// ***************************************************************************
+
+const std::string &CForm::getParentFilename (uint parent) const
+{
+	return ParentList[parent].ParentFilename;
+}
+
+// ***************************************************************************
+
+uint CForm::getParentCount () const
+{
+	return ParentList.size ();
+}
+
+// ***************************************************************************
+
+void CForm::clean ()
+{
+	clearParents ();
+}
+
+// ***************************************************************************
+
+void CForm::clearParents ()
+{
+	ParentList.clear ();
+}
+
+// ***************************************************************************
+
+
 } // NLGEORGES
+

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.8 2002/11/13 15:45:53 lecroart Exp $
+ * $Id: system_info.cpp,v 1.9 2002/11/13 16:02:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,7 +369,7 @@ bool CSystemInfo::isNT()
 }
 
 
-#ifdef NL_OS_LINUX
+#ifdef NL_OS_UNIX
 
 static inline char *skipWS(const char *p)
 {
@@ -415,7 +415,7 @@ uint32 getSystemMemory (uint col)
 	}
 }
 
-#endif // NL_OS_LINUX
+#endif // NL_OS_UNIX
 
 
 

@@ -94,3 +94,28 @@ done
 
 
 
+# ******************
+# List all the zones
+# ******************
+
+# Get the landscape name
+landscape_name=`cat ../../cfg/config.cfg | grep "landscape_name" | sed -e 's/landscape_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+if ( test -f "$landscape_name"_ig.txt )
+then
+	rm "$landscape_name"_ig.txt
+fi
+
+cd ig_land
+for i in *.ig ; do
+	if ( test -f $i )
+	then
+		echo $i >> ../"$landscape_name"_ig.txt
+	else
+		echo >> ../"$landscape_name"_ig.txt
+	fi
+done
+cd ..
+
+
+

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.29 2004/03/04 14:26:30 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.30 2004/04/09 14:28:48 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,8 +35,8 @@ namespace NL3D {
 
 
 //===================================================================
-CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, CTransform *model) 
-								: CTransformUser(scene, model, true), _Invalidated(false)
+CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, CTransform *model, bool deleteIt = true) 
+								: CInstanceUser(scene, model, deleteIt), _Invalidated(false)
 {
 	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
@@ -55,8 +55,11 @@ void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
 {	
 	NL3D_MEM_PS_INSTANCE			
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
-	psm->removePSModelObserver(this);		
+	if (_DeleteIt)
+	{	
+		CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+		psm->removePSModelObserver(this);
+	}
 }
 
 //===================================================================

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.18 2000/11/23 11:37:17 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.19 2000/11/23 14:09:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,14 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 }
 #endif
 
+
+// --------------------------------------------------
+CDriverGL::CDriverGL()
+{
+	_FullScreen= false;
+}
+
+
 // --------------------------------------------------
 
 bool CDriverGL::init(void)
@@ -153,7 +161,28 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 		ULONG	WndFlags;
 		RECT	WndRect;
 
-		WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
+		_FullScreen= false;
+		if(mode.Windowed)
+			WndFlags=WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS;
+		else
+		{
+			WndFlags=WS_POPUP;
+
+			_FullScreen= true;
+			DEVMODE		devMode;
+			_OldScreenMode.dmSize= sizeof(DEVMODE);
+			_OldScreenMode.dmDriverExtra= 0;
+			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
+			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+
+			devMode.dmSize= sizeof(DEVMODE);
+			devMode.dmDriverExtra= 0;
+			devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+			devMode.dmPelsWidth= mode.Width;
+			devMode.dmPelsHeight= mode.Height;
+			devMode.dmBitsPerPel= mode.Depth;
+			ChangeDisplaySettings(&devMode, 0);
+		}
 		WndRect.left=0;
 		WndRect.top=0;
 		WndRect.right=mode.Width;
@@ -338,6 +367,13 @@ bool CDriverGL::release(void)
 	wglMakeCurrent(NULL,NULL);
 	wglDeleteContext(_hRC);
 	ReleaseDC(_hWnd,_hDC);
+
+	if(_FullScreen)
+	{
+		ChangeDisplaySettings(&_OldScreenMode, 0);
+		_FullScreen= false;
+	}
+
 	return(true);
 }
 

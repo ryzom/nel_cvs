@@ -62,6 +62,8 @@ private:
     HGLRC					_hRC;
 	NLMISC::CEventEmitterWin32	_EventEmitter;
 	static uint				_Registered;
+	DEVMODE					_OldScreenMode;
+	bool					_FullScreen;
 	
 
 #endif
@@ -77,7 +79,7 @@ private:
 
 
 public:
-							CDriverGL() {};
+							CDriverGL();
 	virtual					~CDriverGL() { release(); };
 
 	virtual bool			init(void);

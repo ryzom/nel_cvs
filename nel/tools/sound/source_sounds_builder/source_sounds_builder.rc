@@ -48,7 +48,7 @@ BEGIN
     LTEXT           "You can also add sounds (button), rename them (long click or 'F2' key), and remove them (button or 'Del' key). Importing an existing name or wav file does not change the existing sound.",
                     IDC_Home3,245,155,205,35
     PUSHBUTTON      "Import wav Files...",IDC_ImpDir,70,5,60,14
-    LTEXT           "Welcome to NeL Sounds Builder v1.4.0.",IDC_STATIC,245,
+    LTEXT           "Welcome to NeL Sounds Builder v1.4.1.",IDC_STATIC,245,
                     30,205,10
 END
 

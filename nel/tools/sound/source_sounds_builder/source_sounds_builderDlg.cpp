@@ -154,7 +154,9 @@ void CSource_sounds_builderDlg::OnAddSound()
  */
 HTREEITEM CSource_sounds_builderDlg::AddSound( const char *name )
 {
-	_Sounds.push_back( new CSound() );
+	CSound *sound = new CSound();
+	sound->setProperties( name, "" );
+	_Sounds.push_back( sound );
 	HTREEITEM item = m_Tree.InsertItem( name, m_Tree.GetRootItem(), TVI_LAST );
 	m_Tree.SetItemData( item, _Sounds.size()-1 );
 	m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
@@ -395,8 +397,9 @@ void CSource_sounds_builderDlg::OnSave()
 
 		try
 		{
-			// Check for blank waves
-			string blanksounds;
+			// Check for blank waves and duplicates
+			set<string> nameset;
+			string blanksounds, duplicates;
 			vector<CSound*>::iterator ips;
 			for ( ips=_Sounds.begin(); ips!=_Sounds.end(); ++ips )
 			{
@@ -404,11 +407,22 @@ void CSource_sounds_builderDlg::OnSave()
 				{
 					blanksounds += (*ips)->getName() + " ";
 				}
+				if ( nameset.find( (*ips)->getName() ) != nameset.end() )
+				{
+					duplicates += (*ips)->getName() + " ";
+				}
+				nameset.insert( (*ips)->getName() );
+			}
+			if ( duplicates != "" )
+			{
+				CString s;
+				s.Format( "Warning: the following names are duplicates. The first occurence of each one was not written in the output file. Correct the names and save again:\n\n%s", duplicates.c_str() );
+				AfxMessageBox( s, MB_ICONWARNING );
 			}
 			if ( blanksounds != "" )
 			{
 				CString s;
-				s.Format( "Warning: the following sounds have no wave file specified:\n%s", blanksounds.c_str() );
+				s.Format( "Warning: the following sounds have no wave file specified:\n\n%s", blanksounds.c_str() );
 				AfxMessageBox( s, MB_ICONWARNING );
 			}
 
@@ -531,7 +545,11 @@ void CSource_sounds_builderDlg::OnImport()
 			HTREEITEM hitem = FindInTree( name );
 			if ( hitem == NULL )
 			{
-				AddSound( (string(name)+string("*")).c_str() );
+				string sname = string(name);
+				if ( sname != "" ) // prevent from taking blank names
+				{
+					AddSound( sname.c_str() );
+				}
 			}
 
 			// Note1: does not check if some names have been removed
@@ -658,7 +676,7 @@ uint CSource_sounds_builderDlg::addSoundAndFile( const string& name )
 		hitem = AddSound( string(name + " (" + name + ".wav)").c_str() );
 		uint32 index = m_Tree.GetItemData( hitem );
 		nlassert( index < _Sounds.size() );
-		_Sounds[index]->setProperties( name, name + ".wav", 1.0f, 1.0f, MidPri, false, false );
+		_Sounds[index]->setProperties( name, name + ".wav" );
 		_SoundPage->setCurrentSound( _Sounds[index], hitem );
 		_SoundPage->getPropertiesFromSound();
 		try

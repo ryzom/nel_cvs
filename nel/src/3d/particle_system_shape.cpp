@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.21 2001/08/09 15:21:10 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.22 2001/08/15 12:03:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "3d/particle_system_model.h"
 #include "3d/scene.h"
 #include "nel/misc/file.h"
+#include "nel/misc/mem_stream.h"
+
 
 
 namespace NL3D {
@@ -136,8 +138,8 @@ CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 
 	_ParticleSystemProto.resetPtrTable();
 	_ParticleSystemProto.seek(0, IStream::begin);
-	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system
 	
+	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system	
 
 	myInstance->setScene(&scene);		
 
@@ -155,6 +157,7 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 
 	
 	// by default, we don't instanciate the system. It will be instanciated only if visible and triggered
+	// psm->_ParticleSystem = instanciatePS(scene);	
 
 	// Setup position with the default value
 	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );

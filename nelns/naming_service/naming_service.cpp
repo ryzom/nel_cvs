@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.2 2001/05/02 12:36:39 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.3 2001/05/03 16:30:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -500,9 +500,15 @@ static void cbLookupAll (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
  */
 static void cbLookupSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-/*	TServiceId sid;
-	message.serial( sid );
-	nlinfo( "Lookup for service %hu", (uint16)sid );
+	// Receive id
+	TServiceId sid;
+	message.serial (sid);
+
+	// Find and return a service
+	doLookup ("", sid, from, netbase, false, true);
+
+/*
+	 nlinfo( "Lookup for service %hu", (uint16)sid );
 
 	// Return server
 	CInetAddressRef *addr = doLookupServiceBySId( sid );

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.13 2002/01/29 13:34:18 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.14 2002/01/29 15:37:04 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -331,13 +331,13 @@ void CPSMesh::updatePos()
 
 
 	float *ptCurrSize;
-	const uint  ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
+	const uint  ptCurrSizeIncrement = _SizeScheme ? 1 : 0;
 
 	float *ptCurrAngle;
-	const uint  ptCurrAngleIncrement = _UseAngle2DScheme ? 1 : 0;
+	const uint  ptCurrAngleIncrement = _Angle2DScheme ? 1 : 0;
 
 	CPlaneBasis *ptBasis;
-	const uint  ptCurrPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
+	const uint  ptCurrPlaneBasisIncrement = _PlaneBasisScheme ? 1 : 0;
 
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
 
@@ -348,7 +348,7 @@ void CPSMesh::updatePos()
 	{
 		toProcess = leftToDo < MeshBufSize ? leftToDo : MeshBufSize;
 
-		if (_UseSizeScheme)
+		if (_SizeScheme)
 		{
 			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true));			
 		}
@@ -357,7 +357,7 @@ void CPSMesh::updatePos()
 			ptCurrSize =& _ParticleSize;
 		}
 
-		if (_UseAngle2DScheme)
+		if (_Angle2DScheme)
 		{
 			ptCurrAngle  = (float *) (_Angle2DScheme->make(_Owner, size - leftToDo, &angles[0], sizeof(float), toProcess, true));			
 		}
@@ -367,7 +367,7 @@ void CPSMesh::updatePos()
 		}
 
 
-		if (_UsePlaneBasisScheme)
+		if (_PlaneBasisScheme)
 		{
 			ptBasis  = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true));			
 		}
@@ -1151,7 +1151,7 @@ void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bo
 		if ((opaque && Mat.getZWrite()) || (!opaque && ! Mat.getZWrite()))
 		{				
 			// has to setup material constant color ?
-			if (!_UseColorScheme) 
+			if (!_ColorScheme) 
 			{				
 				NLMISC::CRGBA col;
 				col.modulateFromColor(SourceMat.getColor(), _Color);
@@ -1216,7 +1216,7 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 //====================================================================================
 void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess)
 {	
-	nlassert(_UseColorScheme);
+	nlassert(_ColorScheme);
 	// there are 2 case : 1 - the source mesh has colors, which are modulated with the current color
 	//					  2 - the source mesh has no colors : colors are directly copied into the dest vb
 
@@ -1271,7 +1271,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsed
 	
 	// point the size for the current mesh
 	float *ptCurrSize;
-	uint ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
+	uint ptCurrSizeIncrement = _SizeScheme ? 1 : 0;
 
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
 	uint leftToDo = size, toProcess;
@@ -1284,7 +1284,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsed
 
 	/// get a mesh display struct on this shape, with eventually a primary color added.
 	CMeshDisplay  &md    = _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
-															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+															| (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 
 	setupRenderPasses((float) _Owner->getOwner()->getSystemDate() - _GlobalAnimDate, md.RdrPasses, opaque);
@@ -1314,7 +1314,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsed
 	{			
 		toProcess = std::min(leftToDo, ConstraintMeshBufSize);
 
-		if (_UseSizeScheme)
+		if (_SizeScheme)
 		{
 			// compute size
 			ptCurrSize = (float *) (_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true));				
@@ -1373,7 +1373,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsed
 		while (posIt != endPosIt);
 
 		// compute colors if needed
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			computeColors(outVb, modelVb, size - leftToDo, toProcess);
 		}
@@ -1410,14 +1410,14 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 	float			sizes[ConstraintMeshBufSize];
 	
 	float *ptCurrSize;
-	uint ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
+	uint ptCurrSizeIncrement = _SizeScheme ? 1 : 0;
 
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
 	uint leftToDo = size, toProcess;			
 	
 	/// get a vb in which to write. It has the same format than the input mesh, but can also have a color flag added
 	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
-															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+															| (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 	setupRenderPasses((float) _Owner->getOwner()->getSystemDate() - _GlobalAnimDate, md.RdrPasses, opaque);
 
@@ -1429,7 +1429,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 	// we don't have precomputed mesh there ... so each mesh must be transformed, which is the worst case	
 	CPlaneBasis planeBasis[ConstraintMeshBufSize];
 	CPlaneBasis *ptBasis;
-	uint ptBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
+	uint ptBasisIncrement = _PlaneBasisScheme ? 1 : 0;
 
 	const uint nbVerticesInSource	= modelVb.getNumVertices();
 
@@ -1449,7 +1449,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 
 		toProcess = std::min(leftToDo, ConstraintMeshBufSize);
 
-		if (_UseSizeScheme)
+		if (_SizeScheme)
 		{
 			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true));				
 		}
@@ -1458,7 +1458,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 			ptCurrSize = &_ParticleSize;
 		}
 
-		if (_UsePlaneBasisScheme)
+		if (_PlaneBasisScheme)
 		{
 			ptBasis = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true));
 		}
@@ -1466,11 +1466,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 		{
 			ptBasis = &_PlaneBasis;
 		}
-
-		/*if (_UseColorScheme)
-		{
-			ptCurrColor = (NLMISC::CRGBA *) (_ColorScheme->make(_Owner, size -leftToDo, &colors[0], sizeof(NLMISC::CRGBA), toProcess, true));
-		}*/
+		
 
 		endPosIt = posIt + toProcess;
 		// transfo matrix & scaled transfo matrix;
@@ -1657,7 +1653,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 		}		
 
 		// compute colors if needed
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			computeColors(outVb, modelVb, size - leftToDo, toProcess);
 		}
@@ -2067,7 +2063,7 @@ void CPSConstraintMesh::restoreMaterials()
 	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]);
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Shapes[0], modelVb.getVertexFormat() 
-															| (_UseColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+															| (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 
 	TRdrPassSet rdrPasses = md.RdrPasses;
 		// render meshs : we process each rendering pass

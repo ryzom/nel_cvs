@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * <File description>
  *
- * $Id: ps_particle_basic.h,v 1.3 2001/12/06 16:51:19 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.4 2002/01/29 15:37:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,15 +187,9 @@ class CPSColoredParticle
 	protected:		
 
 		/// deriver must return their owner there
-		virtual CPSLocated *getColorOwner(void) = 0;
-
-		/// if this is false, constant color will be used instead of a scheme
-		bool _UseColorScheme;
-
+		virtual CPSLocated *getColorOwner(void) = 0;		
 		CRGBA _Color;
-
-		// used only if _UseColorScheme is set to true
-
+		
 		CPSAttribMaker<CRGBA> *_ColorScheme; 						
 
 		/// Update the material and the vb and the like so that they match the color scheme
@@ -253,12 +247,9 @@ class CPSSizedParticle
 	protected:	
 		
 		/// deriver must return their owner there
-		virtual CPSLocated *getSizeOwner(void) = 0;
-
-		/// if this is false, constant size will be used instead of a scheme
-		bool _UseSizeScheme;
+		virtual CPSLocated *getSizeOwner(void) = 0;		
 		float _ParticleSize;
-		CPSAttribMaker<float> *_SizeScheme; // used only if _UseSizeScheme is set to true				
+		CPSAttribMaker<float> *_SizeScheme;
 		void newSizeElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		{
 			if (_SizeScheme && _SizeScheme->hasMemory()) _SizeScheme->newElement(emitterLocated, emitterIndex);
@@ -333,11 +324,9 @@ class CPSRotated2DParticle
 	protected:	
 		/// deriver must return their owner there
 		virtual CPSLocated *getAngle2DOwner(void) = 0;
-
-		/// if this is false, constant size will be used instead of a scheme
-		bool _UseAngle2DScheme;
+				
 		float _Angle2D;
-		CPSAttribMaker<float> *_Angle2DScheme; // used only if _UseSizeScheme is set to true				
+		CPSAttribMaker<float> *_Angle2DScheme;
 		static float _RotTable[4 * 256];
 
 		//#ifdef NL_DEBUG
@@ -433,17 +422,14 @@ class CPSTexturedParticle
 		
 		/// deriver must return their owner there
 		virtual CPSLocated *getTextureIndexOwner(void) = 0;
-
-		/// if this is false, constant size will be used instead of a scheme
-		bool _UseTextureIndexScheme;
-
+		
 		// a single texture
 		CSmartPtr<ITexture> _Tex;
 
 		// a grouped texture
 		CSmartPtr<CTextureGrouped> _TexGroup;		
 		
-		CPSAttribMaker<sint32> *_TextureIndexScheme; // used only if _UseSizeScheme is set to true							
+		CPSAttribMaker<sint32> *_TextureIndexScheme;
 
 		// a texture index. Most of the time, a scheme of index will be used instead of that
 		sint32 _TextureIndex;
@@ -653,11 +639,9 @@ class CPSRotated3DPlaneParticle
 		/// if this is false, constant size will be used instead of a scheme
 
 		/// deriver must return their owner there
-		virtual CPSLocated *getPlaneBasisOwner(void) = 0;
-
-		bool _UsePlaneBasisScheme;
+		virtual CPSLocated *getPlaneBasisOwner(void) = 0;		
 		
-		CPSAttribMaker<CPlaneBasis> *_PlaneBasisScheme; // used only if _UseSizeScheme is set to true							
+		CPSAttribMaker<CPlaneBasis> *_PlaneBasisScheme;
 		
 		CPlaneBasis _PlaneBasis; // constant basis..
 

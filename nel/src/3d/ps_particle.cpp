@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.57 2002/01/29 13:34:05 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.58 2002/01/29 15:37:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,16 +188,9 @@ CPSParticle::CPSParticle()
 
 
 void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
-{
-	if (_UseColorScheme)
-	{
-		delete _ColorScheme;	
-		_ColorScheme = NULL;
-	}
-	else
-	{
-		_UseColorScheme = true;
-	}
+{	
+	nlassert(col);
+	delete _ColorScheme;		
 
 	_ColorScheme = col;
 	if (getColorOwner() && col->hasMemory()) col->resize(getColorOwner()->getMaxSize(), getColorOwner()->getSize());
@@ -208,20 +201,15 @@ void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 
 		
 void CPSColoredParticle::setColor(NLMISC::CRGBA col)
-{
-	if (_UseColorScheme)
-	{
-		delete _ColorScheme;
-		_ColorScheme = NULL;
-		_UseColorScheme = false;
-	}
+{	
+	delete _ColorScheme;
+	_ColorScheme = NULL;
 	_Color = col;
-
 	updateMatAndVbForColor();
 }
 
 		
-CPSColoredParticle::CPSColoredParticle() : _UseColorScheme(false), _ColorScheme(NULL), _Color(CRGBA(255, 255, 255))
+CPSColoredParticle::CPSColoredParticle() :  _ColorScheme(NULL), _Color(CRGBA(255, 255, 255))
 {	
 }
 
@@ -230,11 +218,8 @@ CPSColoredParticle::CPSColoredParticle() : _UseColorScheme(false), _ColorScheme(
 /// dtor
 
 CPSColoredParticle::~CPSColoredParticle()
-{
-	if (_UseColorScheme)
-	{
-		delete _ColorScheme;
-	}
+{	
+	delete _ColorScheme;	
 }
 
 
@@ -245,16 +230,17 @@ void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::ESt
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			delete _ColorScheme;
 			_ColorScheme = NULL;
 		}
 	}
 
-	f.serial(_UseColorScheme);
+	bool useColorScheme = _ColorScheme != NULL;
+	f.serial(useColorScheme);
 
-	if (_UseColorScheme)
+	if (useColorScheme)
 	{
 		f.serialPolyPtr(_ColorScheme);
 	}
@@ -270,17 +256,9 @@ void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::ESt
 ///////////////////////////////////
 
 void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
-{
-	if (_UseSizeScheme)
-	{
-		delete _SizeScheme;
-		_SizeScheme = NULL;
-	}
-	else
-	{
-		_UseSizeScheme = true;
-	}
-
+{	
+	nlassert(size != NULL);
+	delete _SizeScheme;	
 	_SizeScheme = size;
 	if (getSizeOwner() && size->hasMemory()) size->resize(getSizeOwner()->getMaxSize(), getSizeOwner()->getSize());
 }
@@ -288,29 +266,22 @@ void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
 
 		
 void CPSSizedParticle::setSize(float size)
-{
-	if (_UseSizeScheme)
-	{
-		delete _SizeScheme;
-		_SizeScheme = NULL;
-		_UseSizeScheme = false;
-	}
+{	
+	delete _SizeScheme;
+	_SizeScheme = NULL;	
 	_ParticleSize = size;
 }
 
 
 
 /// ctor : default are 0.3 sized particles
-CPSSizedParticle::CPSSizedParticle() : _UseSizeScheme(false), _SizeScheme(NULL), _ParticleSize(0.3f)
+CPSSizedParticle::CPSSizedParticle() : _SizeScheme(NULL), _ParticleSize(0.3f)
 {
 }
 	
 CPSSizedParticle::~CPSSizedParticle()
-{
-	if (_UseSizeScheme)
-	{
-		delete _SizeScheme;
-	}
+{	
+	delete _SizeScheme;	
 }
 
 
@@ -320,17 +291,17 @@ void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStrea
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
-		if (_UseSizeScheme)
+		if (_SizeScheme)
 		{
 			delete _SizeScheme;
 			_SizeScheme = NULL;
 		}
 	}
 
+	bool useSizeScheme = _SizeScheme != NULL;
+	f.serial(useSizeScheme);
 
-	f.serial(_UseSizeScheme);
-
-	if (_UseSizeScheme)
+	if (useSizeScheme)
 	{		
 		f.serialPolyPtr(_SizeScheme);
 	}
@@ -354,45 +325,29 @@ float CPSRotated2DParticle::_RotTable[256 * 4];
 
 void CPSRotated2DParticle::setAngle2DScheme(CPSAttribMaker<float> *angle2DScheme)
 {
-	if (_UseAngle2DScheme)
-	{
-		delete _Angle2DScheme;
-		_Angle2DScheme = NULL;
-	}
-	else
-	{
-		_UseAngle2DScheme = true;
-	}
-
+	nlassert(angle2DScheme);
+	delete _Angle2DScheme;	
 	_Angle2DScheme = angle2DScheme;
 	if (getAngle2DOwner() && angle2DScheme->hasMemory()) angle2DScheme->resize(getAngle2DOwner()->getMaxSize(), getAngle2DOwner()->getSize());
 }
 
 
 void CPSRotated2DParticle::setAngle2D(float angle2DScheme)
-{
-	if (_UseAngle2DScheme)
-	{
-		delete _Angle2DScheme;
-		_Angle2DScheme = NULL;
-		_UseAngle2DScheme = false;
-	}
+{	
+	delete _Angle2DScheme;
+	_Angle2DScheme = NULL;	
 	_Angle2D = angle2DScheme;
 }
 
 		
-CPSRotated2DParticle::CPSRotated2DParticle() : _Angle2D(0), _UseAngle2DScheme(false), _Angle2DScheme(NULL)
+CPSRotated2DParticle::CPSRotated2DParticle() : _Angle2D(0), _Angle2DScheme(NULL)
 {
 }
 
 		
 CPSRotated2DParticle::~CPSRotated2DParticle()
-{
-	if (_UseAngle2DScheme)
-	{
-		delete _Angle2DScheme;
-		_UseAngle2DScheme = false;
-	}
+{	
+	delete _Angle2DScheme;	
 }
 
 		
@@ -401,15 +356,16 @@ void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC:
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
-		if (_UseAngle2DScheme)
+		if (_Angle2DScheme)
 		{
 			delete _Angle2DScheme;
 			_Angle2DScheme = NULL;
 		}
 	}
 
-	f.serial(_UseAngle2DScheme);
-	if (_UseAngle2DScheme)
+	bool useAngle2DScheme = _Angle2DScheme != NULL;
+	f.serial(useAngle2DScheme);
+	if (useAngle2DScheme)
 	{
 		f.serialPolyPtr(_Angle2DScheme);
 	}
@@ -459,17 +415,8 @@ void CPSRotated2DParticle::initRotTable(void)
 void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder)
 {
 	nlassert(animOrder);
-	nlassert(_TexGroup); // setTextureGroup must have been called before this
-	if (_UseTextureIndexScheme)
-	{
-		delete _TextureIndexScheme;
-		_TextureIndexScheme = NULL;
-	}
-	else
-	{
-		_UseTextureIndexScheme = true;
-	}
-
+	nlassert(_TexGroup); // setTextureGroup must have been called before this	
+	delete _TextureIndexScheme;		
 	_TextureIndexScheme = animOrder;
 	if (getTextureIndexOwner() && animOrder->hasMemory()) animOrder->resize(getTextureIndexOwner()->getMaxSize(), getTextureIndexOwner()->getSize());
 
@@ -480,15 +427,9 @@ void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrde
 
 /// set a constant index for the current texture. not very useful, but available...
 void CPSTexturedParticle::setTextureIndex(sint32 index)
-{
-	if (_UseTextureIndexScheme)
-	{
-		delete _TextureIndexScheme;
-		_TextureIndexScheme = NULL;
-	}
-	_TextureIndexScheme = NULL;
-	_UseTextureIndexScheme = false;
-
+{	
+	delete _TextureIndexScheme;	
+	_TextureIndexScheme = NULL;	
 	_TextureIndex = index;
 }
 
@@ -504,31 +445,23 @@ void CPSTexturedParticle::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> tex
 
 
 void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
-{
-	if (_UseTextureIndexScheme)
-	{
-		delete _TextureIndexScheme;
-		_TextureIndexScheme = NULL;
-		_UseTextureIndexScheme = false;
-	}
+{	
+	delete _TextureIndexScheme;
+	_TextureIndexScheme = NULL;	
 	_Tex = tex;
 	_TexGroup = NULL; // release any grouped texture if one was set before
-
 	updateMatAndVbForTexture();
 }
 
 		
-CPSTexturedParticle::CPSTexturedParticle() : _UseTextureIndexScheme(false), _TextureIndex(0)
+CPSTexturedParticle::CPSTexturedParticle() : _TextureIndex(0)
 											 ,_TexGroup(NULL), _TextureIndexScheme(NULL)
 {
 }
 
 CPSTexturedParticle::~CPSTexturedParticle()
-{
-	if (_UseTextureIndexScheme)
-	{
-		delete _TextureIndexScheme;
-	}
+{	
+	delete _TextureIndexScheme;	
 }
 
 		/// serialization. We choose a different name because of multiple-inheritance
@@ -538,11 +471,10 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
-		if (_UseTextureIndexScheme)
+		if (_TextureIndexScheme)
 		{
 			delete _TextureIndexScheme;
-			_TextureIndexScheme = NULL;
-			_UseTextureIndexScheme = false;
+			_TextureIndexScheme = NULL;			
 			_Tex = NULL;
 			_TexGroup = NULL;
 		}
@@ -556,10 +488,6 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 	}
 
 	f.serial(useAnimatedTexture);
-
-	
-
-
 
 	if (useAnimatedTexture)
 	{
@@ -575,23 +503,15 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 			f.serialPolyPtr(ptTex);
 		}
 		
-		bool useTextureIndexScheme;
-
-		if (!f.isReading())
-		{
-			useTextureIndexScheme = _UseTextureIndexScheme;
-		}
-
+		bool useTextureIndexScheme = _TextureIndexScheme != NULL;		
 		f.serial(useTextureIndexScheme);
 		if (useTextureIndexScheme)
 		{
 			f.serialPolyPtr(_TextureIndexScheme);
-			_TextureIndex = 0;
-			_UseTextureIndexScheme = true;
+			_TextureIndex = 0;			
 		}
 		else
-		{
-			_UseTextureIndexScheme = false;
+		{			
 			f.serial(_TextureIndex);
 		}
 	}
@@ -623,32 +543,20 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 void CPSRotated3DPlaneParticle::setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker)
 {
 	nlassert(basisMaker);
-	if (_UsePlaneBasisScheme)
-	{
-		delete _PlaneBasisScheme;
-		_PlaneBasisScheme = NULL;
-	}
-	else
-	{
-		_UsePlaneBasisScheme = true;
-	}
+	delete _PlaneBasisScheme;	
 	_PlaneBasisScheme = basisMaker;
 	if (getPlaneBasisOwner() && basisMaker->hasMemory()) basisMaker->resize(getPlaneBasisOwner()->getMaxSize(), getPlaneBasisOwner()->getSize());
 }
 
 void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
-{
-	if (_UsePlaneBasisScheme)
-	{
-		delete _PlaneBasisScheme;		
-		_PlaneBasisScheme = NULL;
-		_UsePlaneBasisScheme = false;
-	}
+{	
+	delete _PlaneBasisScheme;		
+	_PlaneBasisScheme = NULL;	
 	_PlaneBasis = basis;
 }
 
 
-CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _UsePlaneBasisScheme(false), _PlaneBasisScheme(NULL)														
+CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _PlaneBasisScheme(NULL)														
 {
 	_PlaneBasis.X = CVector::I;
 	_PlaneBasis.Y = CVector::J;
@@ -656,24 +564,16 @@ CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _UsePlaneBasisScheme(fa
 
 
 CPSRotated3DPlaneParticle::~CPSRotated3DPlaneParticle()
-{
-	if (_UsePlaneBasisScheme)
-	{
-		delete _PlaneBasisScheme;
-	}
+{	
+	delete _PlaneBasisScheme;	
 }
 
 void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1);	
-
-	f.serialPolyPtr(_PlaneBasisScheme);
-	
-	_UsePlaneBasisScheme = (_PlaneBasisScheme != NULL);
-
-	// TODO : remove the use of bool _Use... =, it is useless...
-
-	if (!_UsePlaneBasisScheme)
+	f.serialPolyPtr(_PlaneBasisScheme);	
+	bool usePlaneBasisScheme = _PlaneBasisScheme != NULL;	
+	if (!usePlaneBasisScheme)
 	{
 		f.serial(_PlaneBasis);
 	}
@@ -812,7 +712,7 @@ void CPSDot::deleteElement(uint32 index)
 
 void CPSDot::updateMatAndVbForColor(void)
 {
-	if (!_UseColorScheme)
+	if (!_ColorScheme)
 	{
 		_Mat.setColor(_Color);
 	}
@@ -848,7 +748,7 @@ void CPSDot::draw(bool opaque)
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
 	setupDriverModelMatrix();	
 	IDriver *driver = getDriver();
-	CVertexBuffer &vb = _UseColorScheme ? _DotVbColor : _DotVb;
+	CVertexBuffer &vb = _ColorScheme ? _DotVbColor : _DotVb;
 	driver->activeVertexBuffer(vb);
 	uint32 leftToDo = size, toProcess;
 	TPSAttribVector::iterator it = _Owner->getPos().begin();
@@ -858,7 +758,7 @@ void CPSDot::draw(bool opaque)
 		
 		toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;
 
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			// compute the colors
 			_ColorScheme->make(_Owner, 0, vb.getColorPointer(), vb.getVertexSize(), toProcess);
@@ -967,7 +867,7 @@ void CPSQuad::initVertexBuffers()
 CVertexBuffer &CPSQuad::getNeededVB()
 {
 	uint flags = 0;
-	if (_UseColorScheme) flags |= (uint) VBCol;
+	if (_ColorScheme) flags |= (uint) VBCol;
 	if (_TexGroup)
 	{
 		flags |= VBTex | VBTexAnimated;
@@ -1070,7 +970,7 @@ void CPSQuad::updateMatAndVbForTexture(void)
 
 bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const  
 { 
-	if (!_UseSizeScheme)
+	if (!_SizeScheme)
 	{
 		CPSUtil::addRadiusToAABBox(box, _ParticleSize);
 	}
@@ -1095,7 +995,7 @@ void CPSQuad::resize(uint32 aSize)
 void CPSQuad::updateMatAndVbForColor(void)
 {
 	// no vb to setup, now..
-	if (!_UseColorScheme)
+	if (!_ColorScheme)
 	{		
 		_Mat.setColor(_Color);
 	}
@@ -1176,7 +1076,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 
 	if (!size) return;
 
-	if (_UseColorScheme)
+	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated 4 times
 		_ColorScheme->make4(_Owner, startIndex, vb.getColorPointer(), vb.getVertexSize(), size);
@@ -1193,7 +1093,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 		const sint32 *currIndex;		
 		uint32 currIndexIncr; 
 
-		if (_UseTextureIndexScheme)
+		if (_TextureIndexScheme)
 		{
 			currIndex = (sint32 *) _TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true);			
 			currIndexIncr = 1;
@@ -1382,7 +1282,7 @@ void CPSFaceLookAt::draw(bool opaque)
 	float pSecondSizes[quadBufSize]; // the second sizes to use
 
 	float *currentSize; 
-	uint32 currentSizeStep = _UseSizeScheme ? 1 : 0;
+	uint32 currentSizeStep = _SizeScheme ? 1 : 0;
 	
 	
 
@@ -1394,7 +1294,7 @@ void CPSFaceLookAt::draw(bool opaque)
 
 	
 	
-	if (!_UseAngle2DScheme)
+	if (!_Angle2DScheme)
 	{
 		// constant rotation case
 		
@@ -1405,7 +1305,7 @@ void CPSFaceLookAt::draw(bool opaque)
 				ptPos = (uint8 *) vb.getVertexCoordPointer();
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
-				if (_UseSizeScheme)
+				if (_SizeScheme)
 				{
 					currentSize = (float *) _SizeScheme->make(_Owner, size- leftToDo, pSizes, sizeof(float), toProcess, true);									
 				}
@@ -1756,7 +1656,7 @@ void CPSFaceLookAt::draw(bool opaque)
 				ptPos = (uint8 *) vb.getVertexCoordPointer();
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
-				if (_UseSizeScheme)
+				if (_SizeScheme)
 				{
 					currentSize = (float *) _SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), toProcess, true);														
 				}
@@ -2046,7 +1946,7 @@ void CPSFanLight::draw(bool opaque)
 
 
 	// compute individual colors if needed
-	if (_UseColorScheme)
+	if (_ColorScheme)
 	{
 		// we change the color at each fan light center
 		_ColorScheme->make(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize() * (_NbFans + 2), size);	
@@ -2065,7 +1965,7 @@ void CPSFanLight::draw(bool opaque)
 	sint32 k; // helps to count the fans
 
 
-	uint32 leftToGo = (_UseSizeScheme || _UseAngle2DScheme) ? size : 0; // useful if a size scheme is used
+	uint32 leftToGo = (_SizeScheme || _Angle2DScheme) ? size : 0; // useful if a size scheme is used
 												 // if so, we need to deal process separatly group of particles	
 	uint8 *ptVect = (uint8 *) _Vb.getVertexCoordPointer();
 	const uint32 stride = _Vb.getVertexSize();
@@ -2079,13 +1979,13 @@ void CPSFanLight::draw(bool opaque)
 	float *currentAnglePt; // it points either the particle constant angle, or an angle in a table
 
 	
-	const uint32 currentSizePtIncrement = _UseSizeScheme ? 1 : 0; // increment to get the next size for the size pointer. It is 0 if the size is constant
-	const uint32 currentAnglePtIncrement = _UseAngle2DScheme ? 1 : 0; // increment to get the next angle for the angle pointer. It is 0 if the size is constant
+	const uint32 currentSizePtIncrement = _SizeScheme ? 1 : 0; // increment to get the next size for the size pointer. It is 0 if the size is constant
+	const uint32 currentAnglePtIncrement = _Angle2DScheme ? 1 : 0; // increment to get the next angle for the angle pointer. It is 0 if the size is constant
 
 
 
 	
-	if (_UseSizeScheme || _UseAngle2DScheme)
+	if (_SizeScheme || _Angle2DScheme)
 	{
 		endPosIt = posIt;
 	}
@@ -2093,14 +1993,14 @@ void CPSFanLight::draw(bool opaque)
 	for (;;)
 	{				
 
-		if (_UseSizeScheme || _UseAngle2DScheme)
+		if (_SizeScheme || _Angle2DScheme)
 		{
 			// there are over particleBunchSize particles left to draw, so we fill the whole size and / or angle tab
 			if (leftToGo > particleBunchSize)
 			{
 				endPosIt = endPosIt + particleBunchSize;
 
-				if (_UseSizeScheme)
+				if (_SizeScheme)
 				{
 					currentSizePt  = (float *) _SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), particleBunchSize, true);					
 				}
@@ -2109,7 +2009,7 @@ void CPSFanLight::draw(bool opaque)
 					currentSizePt = &_ParticleSize;
 				}
 
-				if (_UseAngle2DScheme)
+				if (_Angle2DScheme)
 				{
 					currentAnglePt  = (float *) _Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), particleBunchSize, true);					
 				}
@@ -2124,7 +2024,7 @@ void CPSFanLight::draw(bool opaque)
 			{
 				endPosIt = endPosIt + leftToGo;
 
-				if (_UseSizeScheme)
+				if (_SizeScheme)
 				{
 					currentSizePt  = (float *) (_SizeScheme->make(_Owner, size - leftToGo, pSizes, sizeof(float), leftToGo, true));
 					currentSizePt = pSizes;
@@ -2134,7 +2034,7 @@ void CPSFanLight::draw(bool opaque)
 					currentSizePt = &_ParticleSize;
 				}
 
-				if (_UseAngle2DScheme)
+				if (_Angle2DScheme)
 				{
 					currentAnglePt = (float *) (_Angle2DScheme->make(_Owner, size - leftToGo, pAngles, sizeof(float), leftToGo, true));					
 				}
@@ -2332,7 +2232,7 @@ void CPSFanLight::resize(uint32 size)
 		{
 			_Vb.setTexCoord(k * (_NbFans + 2), 0, NLMISC::CUV(0, 0));
 		}
-		if (!_UseColorScheme)
+		if (!_ColorScheme)
 		{
 			_Vb.setColor(k * (_NbFans + 2), _Color);			
 		}		
@@ -2476,7 +2376,7 @@ void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 		
 		// TODO : cache optimization
 
-		if (_UseColorScheme && _ColorFading)
+		if (_ColorScheme && _ColorFading)
 		{
 
 			// the first color is set to black
@@ -2520,7 +2420,7 @@ void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 				
 			}			
 		}
-		else if ( !_UseColorScheme || _ColorFading)
+		else if ( !_ColorScheme || _ColorFading)
 		{		
 			// we just decal the pos
 			// we copy some extra pos, but we avoid 2 nested loops
@@ -2546,7 +2446,7 @@ void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 
 		// we fill the head of particles with the right color
 		// With constant color, the setup was done in setupColor
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			_ColorScheme->make(_Owner, 0,  firstVertex + headOffset + colorOff
 								, tailVSize, _Owner->getSize());		
@@ -2706,10 +2606,10 @@ void CPSTailDot::setupColor(void)
 		uint k, l;
 
 
-		if (_UseColorScheme || !_ColorFading)
+		if (_ColorScheme || !_ColorFading)
 		{
 			// we can't precompute the colors, so at first, we fill all with black
-			const CRGBA &color = _UseColorScheme ? CRGBA::Black : _Color;
+			const CRGBA &color = _ColorScheme ? CRGBA::Black : _Color;
 			for (k = 0; k < size * (_TailNbSeg + 1); ++k)
 			{
 					CHECK_VERTEX_BUFFER(_Vb, currVertex);
@@ -2756,7 +2656,7 @@ void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		uint8 *currVert = (uint8 *) _Vb.getVertexCoordPointer() + (index * (_TailNbSeg + 1)) * vSize; // 
 
 		const CVector &pos = _Owner->getPos()[index];	
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			// check wether the located is in the same basis than the tail
 			// Otherwise, a conversion is required for the pos
@@ -3125,7 +3025,7 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 	std::vector<CRGBA>::iterator colIt;
 
 
-	if (!_UseColorScheme)
+	if (!_ColorScheme)
 	{
 		// we use colors in the vertex buffer as it
 		currVertex = firstVertex;
@@ -3314,7 +3214,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 
 	
 
-	if (_ColorFading && _UseColorScheme)
+	if (_ColorFading && _ColorScheme)
 	{
 		 colIt = rb._ColTab.begin() + _TailNbSeg ;
 	}
@@ -3355,11 +3255,11 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 
 		// compute the angles and 2x2 rot matrix, depending on the attributes
 
-		const float scale = _UseSizeScheme ? _SizeScheme->get(_Owner, k) : _ParticleSize;
+		const float scale = _SizeScheme ? _SizeScheme->get(_Owner, k) : _ParticleSize;
 		const float ca = CPSUtil::getCos(	
 											(sint32)
 											(
-												_UseAngle2DScheme ?
+												_Angle2DScheme ?
 												_Angle2DScheme->get(_Owner, k) : _Angle2D
 											)
 										);
@@ -3367,7 +3267,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 		const float sa = CPSUtil::getSin(
 											(sint32)
 											(
-												_UseAngle2DScheme ?
+												_Angle2DScheme ?
 												_Angle2DScheme->get(_Owner, k) : _Angle2D
 											)
 										);
@@ -3384,7 +3284,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 			currVertex += vSize;
 		}
 
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{			
 			const CRGBA col = _ColorScheme->get(_Owner, k);
 			currVertex -= sSize; // go back to the start of the slice
@@ -3410,7 +3310,7 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 		posIt += _TailNbSeg + 1;
 		++srcPosIt;
 
-		if (_UseColorScheme && _ColorFading)
+		if (_ColorScheme && _ColorFading)
 		{		
 			colIt += _TailNbSeg + 1;
 		}
@@ -3692,7 +3592,7 @@ void CPSRibbon::setupColor(CRibbonsDesc &rb)
 	uint k, l, m;
 
 	
-	if (_UseColorScheme && _ColorFading)
+	if (_ColorScheme && _ColorFading)
 	{
 		// we must keep colors in a table in order to blend them correctly
 		// If there's no color fading, color are just decaled
@@ -3792,7 +3692,7 @@ void CPSRibbon::deleteElement(uint32 index)
 		// color must be set to black if there's a color scheme, and no color fading
 		// otherwise, the color remains unchanged
 		CHECK_VERTEX_BUFFER(_DyingRibbons->_Vb, currVertex + colorOff);
-		const CRGBA col = _UseColorScheme && !_ColorFading ? CRGBA::Black : *(CRGBA *) (currVertex + colorOff);
+		const CRGBA col = _ColorScheme && !_ColorFading ? CRGBA::Black : *(CRGBA *) (currVertex + colorOff);
 
 		for (uint32 k = 0; k < _ShapeNbSeg; ++k)
 		{
@@ -3806,7 +3706,7 @@ void CPSRibbon::deleteElement(uint32 index)
 
 		// if there's color fading and a color scheme, color is stored in _ColTab...
 
-		if (_UseColorScheme && _ColorFading)
+		if (_ColorScheme && _ColorFading)
 		{
 			_DyingRibbons->_ColTab[_NbDyingRibbons * (_TailNbSeg + 1) + _TailNbSeg] = CRGBA::Black;
 		}
@@ -3860,7 +3760,7 @@ void CPSRibbon::copyElement(CRibbonsDesc &rbSrc, uint32 srcIndex, CRibbonsDesc &
 	std::copy(srcStart + ts * srcIndex, srcStart + ts * (srcIndex + 1), destStart + ts * destIndex);
 
 	// copy the color tab when present
-	if (_UseColorScheme && _ColorFading)
+	if (_ColorScheme && _ColorFading)
 	{
 		const std::vector<CRGBA>::iterator  destColStart = rbDest._ColTab.begin();	
 		const std::vector<CRGBA>::const_iterator  srcColStart = rbSrc._ColTab.begin();	
@@ -4088,7 +3988,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
 
 	// if constant size is used, the pointer points always the same float 
-	uint32 ptSizeIncrement = _UseSizeScheme ? 1 : 0;
+	uint32 ptSizeIncrement = _SizeScheme ? 1 : 0;
 
 
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
@@ -4115,7 +4015,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 
 			currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
 
-			if (_UseSizeScheme)
+			if (_SizeScheme)
 			{				
 				ptSize = (float *) (_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true));								
 			}
@@ -4209,7 +4109,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 		static CPlaneBasis planeBasis[quadBufSize]; // buffer to compute each particle basis
 
 		CPlaneBasis *currBasis;
-		uint32    ptPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
+		uint32    ptPlaneBasisIncrement = _PlaneBasisScheme ? 1 : 0;
 		const uint32 vSize = vb.getVertexSize();
 
 
@@ -4222,7 +4122,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 
 			currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
 
-			if (_UseSizeScheme)
+			if (_SizeScheme)
 			{				
 				ptSize  = (float *) (_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess, true));								
 			}
@@ -4231,7 +4131,7 @@ void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 				ptSize = &_ParticleSize;			
 			}
 
-			if (_UsePlaneBasisScheme)
+			if (_PlaneBasisScheme)
 			{
 				currBasis = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess, true));				
 			}
@@ -4558,13 +4458,13 @@ void CPSShockWave::draw(bool opaque)
 
 
 	CPlaneBasis *ptCurrBasis;
-	uint32	ptCurrBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
+	uint32	ptCurrBasisIncrement = _PlaneBasisScheme ? 1 : 0;
 
 	float *ptCurrSize;
-	uint32 ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
+	uint32 ptCurrSizeIncrement = _SizeScheme ? 1 : 0;
 
 	float *ptCurrAngle;
-	uint32 ptCurrAngleIncrement = _UseAngle2DScheme ? 1 : 0;
+	uint32 ptCurrAngleIncrement = _Angle2DScheme ? 1 : 0;
 
 	CVector radVect, innerVect;
 
@@ -4578,7 +4478,7 @@ void CPSShockWave::draw(bool opaque)
 
 		endIt = posIt + toProcess;
 
-		if (_UseSizeScheme)
+		if (_SizeScheme)
 		{
 			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess, true));			
 		}
@@ -4587,7 +4487,7 @@ void CPSShockWave::draw(bool opaque)
 			ptCurrSize = &_ParticleSize;
 		}
 
-		if (_UsePlaneBasisScheme)
+		if (_PlaneBasisScheme)
 		{
 			ptCurrBasis  = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess, true));			
 		}
@@ -4596,7 +4496,7 @@ void CPSShockWave::draw(bool opaque)
 			ptCurrBasis = &_PlaneBasis;
 		}
 
-		if (_UseAngle2DScheme)
+		if (_Angle2DScheme)
 		{
 			ptCurrAngle  = (float *) (_Angle2DScheme->make(_Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess, true));			
 		}
@@ -4606,7 +4506,7 @@ void CPSShockWave::draw(bool opaque)
 		}
 
 		
-		if (_UseColorScheme)
+		if (_ColorScheme)
 		{
 			_ColorScheme->makeN(_Owner, size - leftToDo, (uint8 *) _Vb.getVertexCoordPointer() + _Vb.getColorOff(), vSize, toProcess, (_NbSeg + 1) << 1 );
 		}
@@ -4689,7 +4589,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 
 	if (!size) return;
 
-	if (_UseColorScheme)
+	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated n times...
 		_ColorScheme->makeN(_Owner, startIndex, _Vb.getColorPointer(), _Vb.getVertexSize(), size, (_NbSeg + 1) << 1);
@@ -4707,7 +4607,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 		uint32 currIndexIncr;
 		const sint32 *currIndex;		
 
-		if (_UseTextureIndexScheme)
+		if (_TextureIndexScheme)
 		{
 			currIndex  = (sint32 *) (_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true));			
 			currIndexIncr = 1;
@@ -4744,7 +4644,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 
 void CPSShockWave::updateMatAndVbForColor(void)
 {
-	if (!_UseColorScheme)
+	if (!_ColorScheme)
 	{
 		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);		
 		_Mat.setColor(_Color);

@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.18 2004/07/08 16:42:55 boucher Exp $
+ * $Id: sheet_id.h,v 1.19 2004/07/30 15:37:05 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -138,11 +138,7 @@ public :
 	/**
 	 *	Serial
 	 */
-	void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
-	{
-		f.serial( _Id.Id );
-	}
-
+	void serial(NLMISC::IStream	&f) throw(NLMISC::EStream);
 
 	/**
 	 *  Display the list of valid sheet ids with their associated file names

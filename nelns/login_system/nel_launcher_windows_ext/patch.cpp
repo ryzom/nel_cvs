@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.1.2.1 2003/05/23 08:58:21 lecroart Exp $
+ * $Id: patch.cpp,v 1.1.2.2 2003/05/23 09:47:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,10 +263,11 @@ private:
 
 					fprintf(fp, "@echo off\n");
 					fprintf(fp, ":loop\n");
-					fprintf(fp, "del /F /Q nel_launcher.exe\n");
+					fprintf(fp, "attrib -r -a -s -h nel_launcher.exe\n");
+					fprintf(fp, "del nel_launcher.exe\n");
 					fprintf(fp, "if exist nel_launcher.exe goto loop\n");
-					fprintf(fp, "move /Y patch\\nel_launcher.exe .\n");
-					fprintf(fp, "nel_launcher.exe\n");
+					fprintf(fp, "move patch\\nel_launcher.exe .\n");
+					fprintf(fp, "start nel_launcher.exe\n");
 
 					fclose (fp);
 

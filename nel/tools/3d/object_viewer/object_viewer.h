@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.35 2002/03/15 10:57:51 vizerie Exp $
+ * $Id: object_viewer.h,v 1.36 2002/05/28 13:53:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -512,6 +512,8 @@ private:
 
 	static bool									_InstanceRunning;
 
+	// Scale the pos of the skeleton
+	float										_CharacterScalePos;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

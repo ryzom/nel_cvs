@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.64 2002/04/29 15:09:12 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.65 2002/05/28 13:53:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,6 +230,8 @@ CObjectViewer::CObjectViewer ()
 	_GlobalRetriever= NULL;
 	_ObjectLightTest= NULL;
 
+	_CharacterScalePos= 1;
+
 	// Charge l'object_viewer.ini
 	try
 	{
@@ -372,6 +374,15 @@ CObjectViewer::CObjectViewer ()
 			nlwarning("No automatic animation path specified");
 		}
 
+		// load CharacterScalePos
+		try
+		{
+			CConfigFile::CVar &var = cf.getVar("character_scale_pos");
+			_CharacterScalePos= var.asFloat();
+		}
+		catch (EUnknownVar &)
+		{
+		}
 	}
 	catch (Exception& e)
 	{
@@ -822,7 +833,17 @@ void CObjectViewer::setupPlaylist (float time)
 				// Setup the pos and rot for this shape
 				if (there)
 				{
-					_ListInstance[i]->TransformShape->setPos (current.getPos());
+					CVector		pos= current.getPos();
+					// Get a skeleton model
+					CSkeletonModel *skelModel=dynamic_cast<CSkeletonModel*>(_ListInstance[i]->TransformShape);
+					// If a  skeleton model
+					if(skelModel)
+					{
+						// scale animated pos value with the CFG scale
+						pos*= _CharacterScalePos;
+					}
+
+					_ListInstance[i]->TransformShape->setPos (pos);
 					_ListInstance[i]->TransformShape->setRotQuat (current.getRot());
 				}
 			}

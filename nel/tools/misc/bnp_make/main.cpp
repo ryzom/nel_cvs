@@ -4,11 +4,15 @@
 #include <io.h>
 #include <direct.h>
 #include "nel/misc/debug.h"
+#include "nel/misc/common.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 #include <vector>
 #include <string>
 
 using namespace std;
+using namespace NLMISC;
 
 struct BNPFile
 {
@@ -105,54 +109,47 @@ void append(const string &filename1, const string &filename2, uint32 sizeToRead)
 }
 #define MAX_PATH 260
 // ---------------------------------------------------------------------------
+bool i_comp(const string &s0, const string &s1)
+{
+	return nlstricmp (CFile::getFilename(s0).c_str(), CFile::getFilename(s1).c_str()) < 0;
+}
+
 void packSubRecurse ()
 {
-	_finddata_t findData;
-	long hFind;
+	vector<string>	pathContent;
+
 	char sCurDir[MAX_PATH];
 
 	getcwd (sCurDir, MAX_PATH);
 	printf ("Treating directory : %s\n", sCurDir);
-	hFind = _findfirst ("*.*", &findData);	
-	while (hFind != -1)
+	CPath::getPathContent(sCurDir, true, false, true, pathContent);
+
+	// Sort filename
+	sort (pathContent.begin(), pathContent.end(), i_comp);
+
+	uint i;
+	for (i=0; i<pathContent.size(); i++)
 	{
-		if (!(findData.attrib&_A_SUBDIR))
-		{
-			BNPFile ftmp;
+		BNPFile ftmp;
 
-			// Check if we can read the source file
-			FILE *f = fopen (findData.name, "rb");
-			if (f != NULL)
-			{
-				fclose (f);
-				ftmp.Name = findData.name;
-				ftmp.Size = findData.size;
-				ftmp.Pos = gBNPHeader.OffsetFromBeginning;
-				gBNPHeader.Files.push_back(ftmp);
-				gBNPHeader.OffsetFromBeginning += ftmp.Size;
-				append(gDestBNPFile, ftmp.Name, ftmp.Size);
-				printf("adding %s\n", findData.name);
-			}
-			else
-			{
-				printf("error cannot open %s\n", findData.name);
-			}
-		}
-		else if ((strcmp(findData.name, ".") != 0) && (strcmp(findData.name, "..") != 0))
+		// Check if we can read the source file
+		FILE *f = fopen (pathContent[i].c_str(), "rb");
+		if (f != NULL)
 		{
-			// Should not failed
-			sint tmp = chdir (findData.name);
-			nlassert (tmp != -1);
-			packSubRecurse ();
-
-			// Should not failed
-			tmp = chdir (sCurDir);
-			nlassert (tmp != -1);
+			fclose (f);
+			ftmp.Name = CFile::getFilename(pathContent[i]);
+			ftmp.Size = CFile::getFileSize(pathContent[i]);
+			ftmp.Pos = gBNPHeader.OffsetFromBeginning;
+			gBNPHeader.Files.push_back(ftmp);
+			gBNPHeader.OffsetFromBeginning += ftmp.Size;
+			append(gDestBNPFile, pathContent[i].c_str(), ftmp.Size);
+			printf("adding %s\n", pathContent[i].c_str());
 		}
-		if (_findnext (hFind, &findData) == -1)
-			break;
+		else
+		{
+			printf("error cannot open %s\n", pathContent[i].c_str());
+		}
 	}
-	_findclose (hFind);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.26 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.27 2004/08/13 15:33:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,6 +266,25 @@ void			CDriverUser::profileVBHardAllocation(std::vector<std::string> &result)
 {
 	_Driver->profileVBHardAllocation(result);
 }
+
+// ***************************************************************************
+void CDriverUser::startProfileIBLock()
+{
+	_Driver->startProfileIBLock();
+}
+
+// ***************************************************************************
+void CDriverUser::endProfileIBLock(std::vector<std::string> &result)
+{
+	_Driver->endProfileIBLock(result);
+}
+
+// ***************************************************************************
+void CDriverUser::profileIBAllocation(std::vector<std::string> &result)
+{
+	_Driver->profileIBAllocation(result);
+}
+
 
 // ***************************************************************************
 void			CDriverUser::profileTextureUsage(std::vector<std::string> &result)

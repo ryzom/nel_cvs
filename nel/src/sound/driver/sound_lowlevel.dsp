@@ -19,6 +19,7 @@ CFG=sound_lowlevel - Win32 Debug
 !MESSAGE 
 !MESSAGE "sound_lowlevel - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "sound_lowlevel - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "sound_lowlevel - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +75,36 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
+!ELSEIF  "$(CFG)" == "sound_lowlevel - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "sound_lowlevel___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "sound_lowlevel___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+
 !ENDIF 
 
 # Begin Target
 
 # Name "sound_lowlevel - Win32 Release"
 # Name "sound_lowlevel - Win32 Debug"
+# Name "sound_lowlevel - Win32 ReleaseDebug"
 # Begin Source File
 
 SOURCE=.\buffer.cpp

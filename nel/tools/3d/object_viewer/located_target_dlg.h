@@ -1,7 +1,7 @@
 /** \file located_target_dlg.h
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.h,v 1.5 2001/07/04 12:17:57 vizerie Exp $
+ * $Id: located_target_dlg.h,v 1.6 2002/01/28 14:54:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 
 
 	// init the dialog with the given parent
-	void init(CWnd* pParent) ;
+	void init(CWnd* pParent);
 
 // Dialog Data
 	//{{AFX_DATA(CLocatedTargetDlg)
@@ -72,7 +72,7 @@ public:
 // Implementation
 protected:
 	// the target we're focusing on
-	NL3D::CPSTargetLocatedBindable *_LBTarget ;
+	NL3D::CPSTargetLocatedBindable *_LBTarget;
 
 	
 
@@ -89,12 +89,12 @@ protected:
 	//////////////////////////////////////////////
 	struct CForceIntensityWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 	{
-		NL3D::CPSForceIntensity *F ;
-		float get(void) const { return F->getIntensity() ; }
-		void set(const float &value) {F->setIntensity(value) ; }
-		scheme_type *getScheme(void) const { return F->getIntensityScheme() ; }
-		void setScheme(scheme_type *s) {F->setIntensityScheme(s) ; }
-	} _ForceIntensityWrapper ;
+		NL3D::CPSForceIntensity *F;
+		float get(void) const { return F->getIntensity(); }
+		void set(const float &value) {F->setIntensity(value); }
+		scheme_type *getScheme(void) const { return F->getIntensityScheme(); }
+		void setScheme(scheme_type *s) {F->setIntensityScheme(s); }
+	} _ForceIntensityWrapper;
 
 	///////////////////////////////////////////////////////
 	// wrapper to tune the radial viscosity for vortices //
@@ -103,10 +103,10 @@ protected:
 
 	struct CRadialViscosityWrapper : public IPSWrapperFloat
 	{
-		NL3D::CPSCylindricVortex *V ;
-		float get(void) const { return V->getRadialViscosity() ; }
-		void set(const float &value) { V->setRadialViscosity(value) ; }		
-	} _RadialViscosityWrapper ;
+		NL3D::CPSCylindricVortex *V;
+		float get(void) const { return V->getRadialViscosity(); }
+		void set(const float &value) { V->setRadialViscosity(value); }		
+	} _RadialViscosityWrapper;
 
 	///////////////////////////////////////////////////////
 	// wrapper to tune the tangential viscosity for vortices //
@@ -115,10 +115,10 @@ protected:
 
 	struct CTangentialViscosityWrapper : public IPSWrapperFloat
 	{
-		NL3D::CPSCylindricVortex *V ;
-		float get(void) const { return V->getTangentialViscosity() ; }
-		void set(const float &value) { V->setTangentialViscosity(value) ; }		
-	} _TangentialViscosityWrapper ;
+		NL3D::CPSCylindricVortex *V;
+		float get(void) const { return V->getTangentialViscosity(); }
+		void set(const float &value) { V->setTangentialViscosity(value); }		
+	} _TangentialViscosityWrapper;
 
 	////////////////////////////////////
 	// wrappers to tune the direction //
@@ -126,10 +126,21 @@ protected:
 
 	struct CDirectionWrapper : public IPSWrapper<NLMISC::CVector>
 	{
-	   NL3D::CPSDirection *E ;
-	   NLMISC::CVector get(void) const { return E->getDir() ; }
-	   void set(const NLMISC::CVector &d){ E->setDir(d) ; }	
-	} _DirectionWrapper ;
+	   NL3D::CPSDirection *E;
+	   NLMISC::CVector get(void) const { return E->getDir(); }
+	   void set(const NLMISC::CVector &d){ E->setDir(d); }	
+	} _DirectionWrapper;
+
+	//////////////////////////////////////////////////////////////
+	// wrappers to tune the parametric factor of brownian force //
+	//////////////////////////////////////////////////////////////
+
+	struct CParamFactorWrapper : public IPSWrapperFloat
+	{
+	   NL3D::CPSBrownianForce *F;
+	   float get(void) const { return F->getParametricFactor(); }
+	   void set(const float &f){ F->setParametricFactor(f); }	
+	} _ParamFactorWrapper;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.5 2001/07/12 16:06:56 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.6 2002/01/28 14:54:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,7 +241,7 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		posY += r.bottom + 3 ;
 	}
 
-		// deals with emitters that have a direction
+	// deals with emitters that have a direction
 	if (dynamic_cast<NL3D::CPSDirection *>(_LBTarget))
 	{
 		CDirectionAttr *da = new CDirectionAttr(std::string("DIRECTION")) ;
@@ -252,6 +252,25 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		da->GetClientRect(&r) ;
 		posY += r.bottom ;
 	}
+
+	// Brownian (to tune parametric factor)
+	if (dynamic_cast<NL3D::CPSBrownianForce *>(_LBTarget))
+	{
+		CEditableRangeFloat *rv = new CEditableRangeFloat(std::string("PARAMETRIC_FACTOR"), 0, 64) ;
+		pushWnd(rv) ;
+		_ParamFactorWrapper.F = static_cast<NL3D::CPSBrownianForce *>(_LBTarget) ;
+		rv->setWrapper(&_ParamFactorWrapper) ;
+		rv->init(posX + 140, posY, this) ;
+		CStatic *s = new CStatic ;			
+		pushWnd(s) ;
+		s->Create("Parametric factor : ", SS_LEFT, CRect(posX, posY, posX + 139, posY + 40), this) ;
+		s->ShowWindow(SW_SHOW) ;
+
+		rv->GetClientRect(&r) ;
+		posY += r.bottom + 3 ;
+	
+	}
+
 
 
 	

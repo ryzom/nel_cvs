@@ -350,7 +350,7 @@ string getValue (const string &str, const string &token)
 }
 
 
-void CNel_launcherDlg::login (const string &str)
+void CNel_launcherDlg::launch (const string &str)
 {
 	string exe = ConfigFile.getVar ("Application").asString(1);
 	string path = ConfigFile.getVar ("Application").asString(2);
@@ -570,8 +570,8 @@ void CNel_launcherDlg::OnDocumentCompleteExplorer1(LPDISPATCH pDisp, VARIANT FAR
 		uint spos2 = str.find ("-->", spos+token.size ()+1);
 		string comment = str.substr (spos+token.size (), spos2-spos-token.size ());
 
-		if (action=="login")
-			login (comment);
+		if (action=="launch")
+			launch (comment);
 		else if (action=="patch")
 			patch (comment);
 		return;

@@ -33,7 +33,7 @@ public:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	//}}AFX_VIRTUAL
 
-	void login (const std::string &str);
+	void launch (const std::string &str);
 	void patch (const std::string &str);
 	void openUrl (const std::string &url);
 

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.5 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.6 2001/06/19 08:16:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,7 +147,7 @@ bool CInstanceGroup::addToScene (CScene& scene)
 		// --------	
 		sint	j;
 		CMeshInstance	*mi= (CMeshInstance	*)_Instances[i];
-		for(j=0;j<mi->Materials.size();j++)
+		for(j=0;j<(sint)mi->Materials.size();j++)
 		{
 			//mi->Materials[j].setTexture(0, NULL);
 			//mi->Materials[j].getTexture(1)->setFilterMode(ITexture::Nearest, ITexture::NearestMipMapOff);

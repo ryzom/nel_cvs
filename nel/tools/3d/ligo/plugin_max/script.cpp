@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.21 2003/06/19 15:23:38 corvazier Exp $
+ * $Id: script.cpp,v 1.22 2003/07/03 09:30:01 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,12 @@
 
 // Visual
 #include <direct.h>
+
+
+#ifdef NL_NEW
+	#undef new
+#endif
+
 
 using namespace std;
 using namespace NLMISC;

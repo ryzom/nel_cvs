@@ -2533,5 +2533,13 @@ SOURCE=.\3d\std3d.cpp
 
 SOURCE=.\3d\std3d.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_buffer_heap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_buffer_heap.h
+# End Source File
 # End Target
 # End Project

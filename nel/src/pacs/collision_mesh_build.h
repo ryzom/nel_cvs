@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.5 2001/08/29 12:21:41 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.6 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,7 +115,7 @@ private:
 		CEdgeKey() {}
 		CEdgeKey(uint32 v0, uint32 v1) : V0(v0), V1(v1) {}
 
-		bool	operator() (const CEdgeKey &a, const CEdgeKey &b)
+		bool	operator() (const CEdgeKey &a, const CEdgeKey &b) const
 		{
 			return a.V0 < b.V0 || (a.V0 == b.V0 && a.V1 < b.V1);
 		}

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.53 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: global_retriever.cpp,v 1.54 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,8 @@ NLMISC::TTicks			ThisSurfTicks;
 
 using namespace std;
 using namespace NLMISC;
+
+const float		InsureSurfaceThreshold = 0.5f;	// the threshold distance between 2 surfaces below which we insure the retrieved position to be inside the surface
 
 // CGlobalRetriever methods implementation
 
@@ -373,6 +375,7 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 
 //
 
+/*
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
 {
 	// the retrieved position
@@ -418,7 +421,13 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 
 	return result;
 }
+*/
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
+{
+	return retrievePosition(CVectorD(estimated), (double)threshold);
+}
 
+/*
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
 {
 	// the retrieved position
@@ -461,15 +470,90 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 			result.LocalPosition = ret;
 			result.InstanceId = id;
 		}
-/*
-		double	d = fabs(lestim.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5 : 1.0);
-		if (ret.Surface != -1 && d < bestDist)
-		{
-			bestDist = d;
-			result.LocalPosition = ret;
-			result.InstanceId = _Instances[id].getInstanceId();
-		}
+
+//		double	d = fabs(lestim.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5 : 1.0);
+//		if (ret.Surface != -1 && d < bestDist)
+//		{
+//			bestDist = d;
+//			result.LocalPosition = ret;
+//			result.InstanceId = _Instances[id].getInstanceId();
+//		}
+	}
+
+	return result;
+}
 */
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
+{
+	// the retrieved position
+	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
+
+	if (!_BBox.include(CVector((float)estimated.x, (float)estimated.y, (float)estimated.z)))
+		return result;
+	
+	
+	// get the best matching instances
+	CAABBox	bbpos;
+	bbpos.setCenter(estimated);
+	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
+	selectInstances(bbpos, _InternalCST);
+
+	uint	i;
+
+	_InternalCST.SortedSurfaces.clear();
+
+	// for each instance, try to retrieve the position
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
+	{
+		uint32							id = _InternalCST.CollisionInstances[i];
+		const CRetrieverInstance		&instance = _Instances[id];
+		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+		instance.retrievePosition(estimated, retriever, _InternalCST);
+	}
+
+	if (!_InternalCST.SortedSurfaces.empty())
+	{
+		// if there are some selected surfaces, sort them
+		std::sort(_InternalCST.SortedSurfaces.begin(), _InternalCST.SortedSurfaces.end(), CCollisionSurfaceTemp::CDistanceSurface());
+
+		uint32							id = _InternalCST.SortedSurfaces[0].Instance;
+		const CRetrieverInstance		&instance = _Instances[id];
+		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
+
+		// get the UGlobalPosition of the estimation for this surface
+		result.InstanceId = id;
+		result.LocalPosition.Surface = _InternalCST.SortedSurfaces[0].Surface;
+		result.LocalPosition.Estimation = instance.getLocalPosition(estimated);
+
+		// if there are more than 1 one possible (and best matching) surface, insure the position within the surface (by moving the point)
+//		if (_InternalCST.SortedSurfaces.size() >= 2 && 
+//			_InternalCST.SortedSurfaces[1].Distance-_InternalCST.SortedSurfaces[0].Distance < InsureSurfaceThreshold)
+		if (_InternalCST.SortedSurfaces[0].FoundCloseEdge)
+		{
+			bool	moved;
+			uint	numMove = 0;
+			do
+			{
+				moved = retriever.insurePosition(result.LocalPosition);
+				++numMove;
+			}
+			while (moved && numMove < 100);
+			// the algo won't loop infinitely
+
+			if (moved)
+			{
+				nlwarning ("PACS: couldn't insure position (%.f,%.f) within the surface (surf=%d,inst=%d) after 100 retries", result.LocalPosition.Estimation.x, result.LocalPosition.Estimation.y, result.LocalPosition.Surface, result.InstanceId);
+			}
+		}
+
+		// and after selecting the best surface (and some replacement) snap the point to the surface
+		instance.snap(result.LocalPosition, retriever);
+	}
+	else
+	{
+		nlwarning("PACS: unable to retrieve correct position (%f,%f,%f)", estimated.x, estimated.y, estimated.z);
+		nlSleep(1);
 	}
 
 	return result;

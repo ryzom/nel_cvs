@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.5 2001/08/31 08:26:10 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.6 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,12 +243,45 @@ class CCollisionSurfaceTemp
 {
 public:
 	typedef std::pair<uint16, uint16>	TExteriorEdgeIndex;
+//	typedef std::pair<bool, uint8>		TSurfaceLUTEntry;
+
+	class CDistanceSurface
+	{
+	public:
+		uint16							Surface;
+		uint16							Instance;
+		float							Distance;
+		bool							FoundCloseEdge;
+		CDistanceSurface() {}
+		CDistanceSurface(float distance, uint16 surface, uint16 instance, bool foundCloseEdge) : Surface(surface), Instance(instance), Distance(distance), FoundCloseEdge(foundCloseEdge) {}
+
+		bool		operator () (const CDistanceSurface &a, const CDistanceSurface &b) const
+		{
+			return a.Distance < b.Distance;
+		}
+	};
+
+	class CSurfaceLUTEntry
+	{
+	public:
+		bool						IsPossible;
+		bool						FoundCloseEdge;
+		uint8						Counter;
+
+		void						reset() { IsPossible = false; FoundCloseEdge = false; Counter = 0; }
+	};
 
 public:
 	/// For CChainQuad::selectEdges().
 	uint16							OChainLUT[65536];
 	std::vector<CEdgeChainEntry>	EdgeChainEntries;
 	std::vector<uint16>				ExteriorEdgeIndexes;
+
+	/// Array of possible near surfaces
+//	TSurfaceLUTEntry				SurfaceLUT[65536];
+	CSurfaceLUTEntry				SurfaceLUT[65536];
+	std::vector<uint16>				PossibleSurfaces;
+	std::vector<CDistanceSurface>	SortedSurfaces;
 
 
 	/// Array of near Collision Chains.
@@ -290,6 +323,29 @@ public:
 	CEdgeCollideNode	&getEdgeCollideNode(uint32 id);
 	// @}
 
+	//
+	void				incSurface(sint32 surf)
+	{
+		if (surf >= 0)
+		{
+			if (!SurfaceLUT[surf].IsPossible)
+				PossibleSurfaces.push_back((uint16)surf);
+			SurfaceLUT[surf].IsPossible = true;
+			++SurfaceLUT[surf].Counter;
+		}
+	}
+
+	//
+	void				decSurface(sint32 surf)
+	{
+		if (surf >= 0)
+		{
+			if (!SurfaceLUT[surf].IsPossible)
+				PossibleSurfaces.push_back((uint16)surf);
+			SurfaceLUT[surf].IsPossible = true;
+			--SurfaceLUT[surf].Counter;
+		}
+	}
 
 private:
 	/// Allocator of EdgeCollideNode.

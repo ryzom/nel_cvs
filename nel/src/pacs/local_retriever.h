@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.17 2001/11/07 17:42:00 legros Exp $
+ * $Id: local_retriever.h,v 1.18 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -404,8 +404,11 @@ public:
 protected:
 */
 
-	/// Retrieves a position inside the retriever (from the local position.)
-	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const;
+	/// Assures a position is really inside a surface (and independent from any accuracy issue) and returns true if the position was moved.
+	bool								insurePosition(ULocalPosition &local) const;
+
+	/// Retrieves a position inside the retriever (from the local position), returns true if the position is close to a border
+	void								retrievePosition(NLMISC::CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const;
 
 	/// Snaps on the ground
 	void								snapToInteriorGround(ULocalPosition &position, bool &snapped) const;

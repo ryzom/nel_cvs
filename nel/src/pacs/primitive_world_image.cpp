@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.11 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: primitive_world_image.cpp,v 1.12 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1422,10 +1422,10 @@ void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMove
 	if (retriever)
 	{
 		// Get a cvector
-		CVector vect=pos;
+//		CVector vect=pos;		// better with CVectorD
 
 		// Get global position
-		UGlobalPosition globalPosition=retriever->retrievePosition (vect);
+		UGlobalPosition globalPosition=retriever->retrievePosition (pos);
 
 		// Set global position
 		_Position.setGlobalPos (globalPosition, *retriever);

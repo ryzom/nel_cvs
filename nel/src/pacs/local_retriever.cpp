@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.37 2002/01/07 11:03:13 legros Exp $
+ * $Id: local_retriever.cpp,v 1.38 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,9 @@ using namespace NLMISC;
 /// The max distance allowed to merge tips.
 const float	NLPACS::CLocalRetriever::_TipThreshold = 0.1f;
 const float	NLPACS::CLocalRetriever::_EdgeTipThreshold = 0.1f;
+
+/// The threshold distance to insure a position belongs to a surface
+const float	InsurePositionThreshold = 2.0e-2f;
 
 static float	hybrid2dNorm(const CVector &v)
 {
@@ -785,9 +788,70 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 
 
 
+bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) const
+{
+	if (local.Surface < 0 || local.Surface >= (sint)_Surfaces.size())
+	{
+		nlwarning("PACS: can't insure position to inexistant surface %d", local.Surface);
+		return false;
+	}
+
+	// the surface
+	const NLPACS::CRetrievableSurface	&surface = _Surfaces[local.Surface];
+
+	uint		i, j, k;
+	CVector2f	M = CVector2f(local.Estimation);
+	bool		moved = false;
+
+	// for each chain and each subchain of the surface,
+	// check if point is located on the good side of the border (and far enough to avoid accuracy issues)
+	for (i=0; i<surface.getChains().size(); ++i)
+	{
+		uint					ichain = surface.getChain(i).Chain;
+		const NLPACS::CChain	&chain = _Chains[ichain];
+
+		for (j=0; j<chain.getSubChains().size(); ++j)
+		{
+			uint						iochain = chain.getSubChain(j);
+			const NLPACS::COrderedChain	&ochain = _OrderedChains[iochain];
+
+			uint						isAtLeft = ((chain.getLeft() == local.Surface) ? 1 : 0);
+			uint						isForward = (ochain.isForward() ? 1 : 0);
+			bool						shouldBeUpper = !((isAtLeft ^ isForward) != 0);	// shouldBeAtLeft for vertical segment
+
+			for (k=0; (sint)k<(sint)(ochain.getVertices().size()-1); ++k)
+			{
+				CVector2f	A = ochain[k].unpack();
+				CVector2f	B = ochain[k+1].unpack();
+				CVector2f	AB = B-A;
+
+				float		lambda = ((M-A)*AB)/AB.sqrnorm();
+
+				if (lambda<0.0f || lambda>1.0f)
+					continue;
+
+				CVector2f	n = (shouldBeUpper ? CVector2f(-AB.y, AB.x) : CVector2f(AB.y, -AB.x)).normed();
+				float		d = (M-A)*n;
+
+				// if point is too close of the border or on the wrong side
+				// move it far enough
+				if (d < InsurePositionThreshold && d > -InsurePositionThreshold)
+				{
+					M += (InsurePositionThreshold*1.1f-d)*n;
+					moved = true;
+				}
+			}
+		}
+	}
+
+	local.Estimation.x = M.x;
+	local.Estimation.y = M.y;
+
+	return moved;
+}
 
 
-void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const
+void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const
 {
 	CAABBox			box;
 	box.setMinMax(CVector(estimated.x, _BBox.getMin().y, 0.0f), CVector(estimated.x, _BBox.getMax().y, 0.0f));
@@ -797,14 +861,10 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 	CVector2s		estim = CVector2s(estimated);
 	const double	BorderThreshold = 2.0e-2f;
 
-	// WARNING!!
-	// retrieveTable is assumed to be 0 filled !!
+	cst.PossibleSurfaces.clear();
 
-/*
-	// for each ordered chain, checks if the estimated position is between the min and max.
-	for (ochain=0; ochain<_OrderedChains.size(); ++ochain)
-	{
-*/
+	// WARNING!!
+	// cst.SurfaceLUT is assumed to be 0 filled !!
 
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (i=0; i<numEdges; ++i)
@@ -816,7 +876,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 						&max = sub.getMax();
 
 		// checks the position against the min and max of the chain
-		if (estim.x < min.x || estim.x > max.x)
+		if (estim.x <= min.x || estim.x > max.x)
 			continue;
 
 		bool	isUpper;
@@ -870,14 +930,13 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 				{
 					// the very rare case the edge is vertical, and the
 					// retrieved position is exactly on the edge...
-					isUpper = true;
 					isOnBorder = true;
 				}
 				else
 				{
 					sint16	intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
 					isUpper = estim.y > intersect;
-					isOnBorder = (fabs(estim.y - intersect)<BorderThreshold);
+					isOnBorder = (fabs(estim.y - intersect)<BorderThreshold*Vector2sAccuracy);
 				}
 			}
 		}
@@ -887,8 +946,10 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 
 		if (isOnBorder)
 		{
-			if (left >= 0)	++retrieveTable[left];
-			if (right >= 0)	++retrieveTable[right];
+			cst.incSurface(left);
+			cst.incSurface(right);
+			if (left >= 0)	cst.SurfaceLUT[left].FoundCloseEdge = true;
+			if (right >= 0)	cst.SurfaceLUT[right].FoundCloseEdge = true;
 			continue;
 		}
 
@@ -897,26 +958,26 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		{
 			if (isUpper)
 			{
-				if (left >= 0)	++retrieveTable[left];
-				if (right >= 0)	--retrieveTable[right];
+				cst.incSurface(left);
+				cst.decSurface(right);
 			}
 			else
 			{
-				if (left >= 0)	--retrieveTable[left];
-				if (right >= 0)	++retrieveTable[right];
+				cst.decSurface(left);
+				cst.incSurface(right);
 			}
 		}
 		else
 		{
 			if (isUpper)
 			{
-				if (left >= 0)	--retrieveTable[left];
-				if (right >= 0)	++retrieveTable[right];
+				cst.decSurface(left);
+				cst.incSurface(right);
 			}
 			else
 			{
-				if (left >= 0)	++retrieveTable[left];
-				if (right >= 0)	--retrieveTable[right];
+				cst.incSurface(left);
+				cst.decSurface(right);
 			}
 		}
 	}
@@ -951,10 +1012,11 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 
 	// from the preselect faces, look for the only face that belongs to the surface
 	// and that contains the position
-	CVector	pos = position.Estimation;
-	CVector	posh = pos+CVector(0.0f, 0.0f, 1.0f);
-	float	bestDist = 1.0e10f;
-	CVector	best;
+	CVector						pos = position.Estimation;
+	CVector						posh = pos+CVector(0.0f, 0.0f, 1.0f);
+	CVector2f					pos2d = position.Estimation;
+	float						bestDist = 1.0e10f;
+	CVector						best;
 	vector<uint32>::iterator	it;
 	snapped = false;
 	for (it=selection.begin(); it!=selection.end(); ++it)
@@ -967,22 +1029,20 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 			v[1] = _InteriorVertices[f.Verts[1]];
 			v[2] = _InteriorVertices[f.Verts[2]];
 
-			float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+			CVector2f	n;
+			float		c;			// 2D cartesian coefficients of line in plane X/Y.
 			// Line p0-p1.
-			a = -(v[1].y-v[0].y);
-			b =  (v[1].x-v[0].x);
-			c = -(v[0].x*a + v[0].y*b);
-			if (a*pos.x + b*pos.y + c < 0)	continue;
+			n = CVector2f(-(v[1].y-v[0].y), (v[1].x-v[0].x)).normed();
+			c = -(v[0].x*n.x + v[0].y*n.y);
+			if (n*pos2d + c < -1.0f/Vector2sAccuracy)	continue;
 			// Line p1-p2.
-			a = -(v[2].y-v[1].y);
-			b =  (v[2].x-v[1].x);
-			c = -(v[1].x*a + v[1].y*b);
-			if (a*pos.x + b*pos.y + c < 0)	continue;
+			n = CVector2f(-(v[2].y-v[1].y), (v[2].x-v[1].x)).normed();
+			c = -(v[1].x*n.x + v[1].y*n.y);
+			if (n*pos2d + c < -1.0f/Vector2sAccuracy)	continue;
 			//  Line p2-p0.
-			a = -(v[0].y-v[2].y);
-			b =  (v[0].x-v[2].x);
-			c = -(v[2].x*a + v[2].y*b);
-			if (a*pos.x + b*pos.y + c < 0)	continue;
+			n = CVector2f(-(v[0].y-v[2].y), (v[0].x-v[2].x)).normed();
+			c = -(v[2].x*n.x + v[2].y*n.y);
+			if (n*pos2d + c < -1.0f/Vector2sAccuracy)	continue;
 
 			CPlane	p;
 			p.make(v[0], v[1], v[2]);

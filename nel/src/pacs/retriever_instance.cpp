@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.31 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: retriever_instance.cpp,v 1.32 2002/01/11 10:01:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,6 @@ void	NLPACS::CRetrieverInstance::reset()
 	// WARNING !!
 	// this is a HARD reset !
 	// only the instance i reset, no care about neighbors !!
-	_RetrieveTable.clear();
 	_NodesInformation.clear();
 	_InstanceId = -1;
 	_RetrieverId = -1;
@@ -87,12 +86,8 @@ void	NLPACS::CRetrieverInstance::reset()
 
 void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
 {
-	_RetrieveTable.resize(retriever.getSurfaces().size());
 	_NodesInformation.resize(retriever.getSurfaces().size());
 	uint	i;
-	// Resets _RetrieveTable for later internal use (retrievePosition)
-	for (i=0; i<_RetrieveTable.size(); ++i)
-		_RetrieveTable[i] = 0;
 
 	// Resets _NodesInformation for later pathfinding graph annotation.
 	for (i=0; i<_NodesInformation.size(); ++i)
@@ -265,8 +260,10 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 
 
 
-NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
+void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
+//NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
+/*
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
 
@@ -276,9 +273,9 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	CRetrieverInstance::snapVector(localEstimated);
 
 	// fills _RetrieveTable by retrievingPosition.
-	retriever.retrievePosition(localEstimated, _RetrieveTable, cst);
+	retriever.retrievePosition(localEstimated, cst);
 
-	uint	surf;
+	uint	i, surf;
 	sint	bestSurf = -1;
 	sint	lastSurf = -1;
 	float	bestDistance = 1.0e10f;
@@ -286,14 +283,15 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	bool	lfound;
 
 	// for each surface in the retriever
-	for (surf=0; surf<_RetrieveTable.size(); ++surf)
+	for (i=0; i<cst.PossibleSurfaces.size(); ++i)
 	{
+		surf = cst.PossibleSurfaces[i];
+		cst.SurfaceLUT[surf].first = false;
 		// if the surface contains the estimated position.
-		if (_RetrieveTable[surf] != 0)
+		if (cst.SurfaceLUT[surf].second != 0)
 		{
 			// at least remembers the last seen surface...
-//			lastSurf = surf;
-			_RetrieveTable[surf] = 0;
+			cst.SurfaceLUT[surf].second = 0;
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
 			ULocalPosition	lp;
@@ -351,9 +349,11 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	}
 
 	return retrieved;
+*/
+	retrievePosition(CVectorD(estimated), retriever, cst);
 }
 
-NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
+void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
@@ -364,24 +364,24 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	CRetrieverInstance::snapVector(localEstimated);
 
 	// fills _RetrieveTable by retrievingPosition.
-	retriever.retrievePosition(localEstimated, _RetrieveTable, cst);
+	retriever.retrievePosition(localEstimated, cst);
 
-	uint	surf;
-	sint	bestSurf = -1;
+	uint	i, surf;
+/*	sint	bestSurf = -1;
 	sint	lastSurf = -1;
 	float	bestDistance = 1.0e10f;
-	float	bestHeight;
+	float	bestHeight;*/
 	bool	lfound;
-
+/*
 	// for each surface in the retriever
-	for (surf=0; surf<_RetrieveTable.size(); ++surf)
+	for (i=0; i<cst.PossibleSurfaces.size(); ++i)
 	{
+		surf = cst.PossibleSurfaces[i];
+		cst.SurfaceLUT[surf].first = false;
 		// if the surface contains the estimated position.
-		if (_RetrieveTable[surf] != 0)
+		if (cst.SurfaceLUT[surf].second == 2)
 		{
-			// at least remembers the last seen surface...
-//			lastSurf = surf;
-			_RetrieveTable[surf] = 0;
+			cst.SurfaceLUT[surf].second = 0;
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
 			ULocalPosition	lp;
@@ -423,6 +423,8 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 				bestSurf = surf;
 			}
 		}
+
+		cst.SurfaceLUT[surf].second = 0;
 	}
 
 	if (bestSurf != -1)
@@ -437,9 +439,72 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 		retrieved.Surface = lastSurf;
 		retrieved.Estimation = localEstimated;
 	}
+*/
 
-	return retrieved;
+	switch (_Type)
+	{
+	case CLocalRetriever::Landscape:
+		// for landscape
+		for (i=0; i<cst.PossibleSurfaces.size(); ++i)
+		{
+			surf = cst.PossibleSurfaces[i];
+			// if the surface contains the estimated position.
+			if (cst.SurfaceLUT[surf].Counter == 2)
+			{
+				float			meanHeight;
+				const CQuadLeaf	*leaf;
+
+				// search in the surface's quad tree for the actual height
+				leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
+				// if there is no acceptable leaf, just give up
+				if (leaf != NULL)
+				{
+					meanHeight = leaf->getMaxHeight();
+
+					// if it is closer to the estimation than the previous remembered...
+					float	distance = (float)fabs(localEstimated.z-meanHeight);
+					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
+				}
+			}
+
+			cst.SurfaceLUT[surf].reset();
+		}
+		break;
+
+	case CLocalRetriever::Interior:
+		// for interior
+		for (i=0; i<cst.PossibleSurfaces.size(); ++i)
+		{
+			surf = cst.PossibleSurfaces[i];
+			// if the surface contains the estimated position.
+			if (cst.SurfaceLUT[surf].Counter == 2)
+			{
+				ULocalPosition	lp;
+
+				// get the exact position
+				lp.Surface = surf;
+				lp.Estimation = localEstimated;
+				lfound = false;
+				retriever.snapToInteriorGround(lp, lfound);
+				if (lfound)
+				{
+					// if it is closer to the estimation than the previous remembered...
+					float	distance = (float)fabs(localEstimated.z-lp.Estimation.z);
+					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
+				}
+			}
+
+			cst.SurfaceLUT[surf].reset();
+		}
+		break;
+
+	default:
+		nlerror("Unknown instance type %d !!", _Type);
+		break;
+	}
 }
+
+
 
 void	NLPACS::CRetrieverInstance::snapToInteriorGround(NLPACS::ULocalPosition &position, 
 														 const NLPACS::CLocalRetriever &retriever) const
@@ -447,6 +512,36 @@ void	NLPACS::CRetrieverInstance::snapToInteriorGround(NLPACS::ULocalPosition &po
 	bool	lfound;
 	retriever.snapToInteriorGround(position, lfound);
 }
+
+void	NLPACS::CRetrieverInstance::snap(NLPACS::ULocalPosition &position, const NLPACS::CLocalRetriever &retriever) const
+{
+	if (_Type == CLocalRetriever::Landscape)
+	{
+		// search in the surface's quad tree for the actual height
+		const CQuadLeaf	*leaf = retriever.getSurfaces()[position.Surface].getQuadTree().getLeaf(position.Estimation);
+		// if there is no acceptable leaf, just give up
+		if (leaf != NULL)
+		{
+			position.Estimation.z = leaf->getMaxHeight();
+		}
+		else
+		{
+			nlwarning("PACS: couldn't snap position (%f,%f,%f) on surface %d instance %d", position.Estimation.x, position.Estimation.y, position.Estimation.z, position.Surface, _InstanceId);
+		}
+	}
+	else if (_Type == CLocalRetriever::Interior)
+	{
+		bool	lfound;
+		retriever.snapToInteriorGround(position, lfound);
+	}
+	else
+	{
+		nlwarning("PACS: unknown instance (%d) type %d", _InstanceId, _Type);
+	}
+}
+
+
+
 
 
 CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
@@ -644,22 +739,18 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 	*/
 	sint	ver= f.serialVersion(1);
 
-	uint	i;
 	f.serial(_InstanceId, _RetrieverId, _Orientation, _Origin);
 	f.serialCont(_Neighbors);
 	f.serialCont(_BorderChainLinks);
 	f.serial(_BBox);
 
 	// serialises the number of nodes
-	uint16	totalNodes = _RetrieveTable.size();
+	uint16	totalNodes = _NodesInformation.size();
 	f.serial(totalNodes);
 	if (f.isReading())
 	{
-		// if the stream is reading, reinits the temps tables...
-		_RetrieveTable.resize(totalNodes);
+		// if the stream is reading, reinits the temps table...
 		_NodesInformation.resize(totalNodes);
-		for (i=0; i<_RetrieveTable.size(); ++i)
-			_RetrieveTable[i] = 0;
 	}
 
 	if (ver >= 1)

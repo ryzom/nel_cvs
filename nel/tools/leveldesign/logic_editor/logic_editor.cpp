@@ -245,14 +245,12 @@ void CLogicEditor::initUILight (int x, int y, int cx, int cy)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	
-	if (theApp.m_pMainWnd != NULL)
-		return;
+	theApp.initInstance();
 
 	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createX = x;
 	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createY = y;
 	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCX = cx;
 	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCY = cy;
-	//theApp.initInstance();
 		
 	// The main window has been initialized, so show and update it.
 	theApp.m_pMainWnd->ShowWindow(SW_SHOW);

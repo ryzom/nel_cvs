@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2002/03/04 12:53:47 cado Exp $
+# $Id: Makefile.am,v 1.2 2002/03/19 17:49:50 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -33,6 +33,7 @@ libnelgeorges_la_SOURCES =     form.cpp                  \
 			       type_unit.cpp                  \
 			       type_unit_double.cpp                  \
 			       type_unit_file_name.cpp                  \
+			       type_unit_int_signed.cpp                 \
 			       type_unit_int_unsigned.cpp                  \
 			       type_unit_string.cpp
 

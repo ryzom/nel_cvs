@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.18 2001/10/18 11:51:28 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.19 2001/10/18 13:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -484,7 +484,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(ext.NVVertexArrayRange)
 	{
 		GLint	nverts;
-		glGetIntegerv(GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV, &nverts);
+		glGetIntegerv((GLenum)GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV, &nverts);
 		ext.NVVertexArrayRangeMaxVertex= nverts;
 	}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.3 2001/08/02 12:19:40 besson Exp $
+ * $Id: driver_opengl_light.cpp,v 1.4 2001/10/18 13:20:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 	if (num<_MaxDriverLight)
 	{
 		// GL light number
-		GLenum lightNum=GL_LIGHT0+num;
+		GLenum lightNum=(GLenum)(GL_LIGHT0+num);
 
 		// Get light mode
 		CLight::TLightMode mode=light.getMode ();
@@ -132,9 +132,9 @@ void	CDriverGL::enableLight (uint8 num, bool enable)
 
 		// Enable GL
 		if (enable)
-			glEnable (GL_LIGHT0+num);
+			glEnable ((GLenum)(GL_LIGHT0+num));
 		else
-			glDisable (GL_LIGHT0+num);
+			glDisable ((GLenum)(GL_LIGHT0+num));
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.15 2001/07/12 13:51:37 legros Exp $
+ * $Id: client.cpp,v 1.16 2001/07/12 13:53:18 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,8 @@ int main(int argc, char **argv)
 		// Render
 		Scene->render ();
 
+
+		
 		// Update the commands panel
 		if (ShowCommands) updateCommands ();
 

@@ -114,6 +114,14 @@ LINK32=link.exe
 # Name "client - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\src\camera.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\camera.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\client.cfg
 # End Source File
 # Begin Source File
@@ -147,6 +155,14 @@ SOURCE=.\src\landscape.cpp
 # Begin Source File
 
 SOURCE=.\src\landscape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\pacs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\pacs.h
 # End Source File
 # End Target
 # End Project

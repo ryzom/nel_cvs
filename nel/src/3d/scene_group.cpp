@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.41 2002/08/09 09:31:13 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.42 2002/09/02 17:18:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -750,6 +750,8 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 
 	vector<CInstance>::iterator it = _InstancesInfos.begin();
 	set<string> allShapesToLoad;
+	_AddToSceneSignal = false;
+	bool loadAsyncStarted = false;
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)
 	{
 		CInstance &rInstanceInfo = *it;
@@ -787,11 +789,15 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver)
 				{
 					// Load it from file asynchronously
 					scene.getShapeBank()->loadAsync (shapeName, scene.getDriver(), &_AddToSceneSignal);
+					loadAsyncStarted = true;
 				}
 			}
 		}
 	}
-	_AddToSceneSignal = false;
+	if (!loadAsyncStarted)
+		_AddToSceneSignal = true;
+	else
+		_AddToSceneSignal = false;
 	//CAsyncFileManager::getInstance().signal (&_AddToSceneSignal);
 	return true;
 }

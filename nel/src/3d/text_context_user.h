@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.9 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: text_context_user.h,v 1.10 2002/12/13 11:13:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ public:
 	// @{
 	uint32 textPush(const char *format, ...)  ;
 	uint32 textPush(const ucstring &str)  ;
+	void setStringColor(uint32 i, CRGBA newCol);
 	void erase(uint32 i)  ;
 	virtual	CStringInfo		getStringInfo (uint32 i);
 	virtual	CStringInfo		getStringInfo (const ucstring &ucstr);

@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.10 2002/11/21 15:56:26 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.11 2002/12/13 11:13:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,6 +215,14 @@ uint32 CTextContextUser::textPush(const ucstring &str)
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
 	return _TextContext.textPush(str) ;
+}
+void CTextContextUser::setStringColor(uint32 i, CRGBA newCol)
+{
+	CComputedString	*str= _TextContext.getComputedString(i);
+	if(str)
+	{
+		str->Color= newCol;
+	}
 }
 void CTextContextUser::erase(uint32 i)  
 {

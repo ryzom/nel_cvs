@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.8 2002/12/05 15:22:26 berenguier Exp $
+ * $Id: text_context.h,v 1.9 2002/12/13 11:13:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,13 +162,21 @@ public:
 	/// Directly print a string
 	void printAt (float x, float z, const ucstring &ucstr)
 	{
+		nlassert(_FontGen);
+
+		// compute the string just one time
+		_FontManager->computeString (ucstr, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
+
+		// draw shaded
 		if(_Shaded)
 		{
-			_FontManager->computeString (ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
-			_TempShadowString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			CRGBA	bkup= _TempString.Color;
+			_TempString.Color= CRGBA::Black;
+			_TempString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_TempString.Color= bkup;
 		}
 
-		_FontManager->computeString (ucstr, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
+		// draw
 		_TempString.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 	
@@ -177,16 +185,21 @@ public:
 	{
 		nlassert(_FontGen);
 
+		// compute the string just one time
 		char *str;
 		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+		_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
 
+		// draw shaded
 		if(_Shaded)
 		{
-			_FontManager->computeString (str, _FontGen, NLMISC::CRGBA(0,0,0), _FontSize, _Driver, _TempShadowString, _Keep800x600Ratio);
-			_TempShadowString.render2D (*_Driver, x+_ShadeExtent, z-_ShadeExtent, _HotSpot, _ScaleX, _ScaleZ);
+			CRGBA	bkup= _TempString.Color;
+			_TempString.Color= CRGBA::Black;
+			_TempString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_TempString.Color= bkup;
 		}
 
-		_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
+		// draw
 		_TempString.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 	
@@ -291,7 +304,6 @@ private:
 	/// Cache for for printAt() and printfAt().
 	/// This prevents from creating VBdrvinfos each time they are called (N*each frame!!).
 	CComputedString		_TempString;
-	CComputedString		_TempShadowString;
 
 };
 

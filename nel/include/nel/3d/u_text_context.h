@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.7 2002/11/21 15:53:16 berenguier Exp $
+ * $Id: u_text_context.h,v 1.8 2002/12/13 11:13:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,6 +191,10 @@ public:
 	 * \return the index where computed string has been inserted
 	 */
 	virtual	uint32			textPush (const ucstring &str) = 0;
+	/**
+	 * set the color of a string.
+	 */
+	virtual	void			setStringColor(uint32 i, CRGBA newCol)= 0;
 	/**
 	 * remove a string from the list
 	 */

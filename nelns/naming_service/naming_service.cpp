@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.14 2001/09/20 08:53:48 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.15 2001/10/16 09:26:54 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -844,6 +844,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 		// now, for specific services, we do special things
 		//
 		
+/*
 		// for the Time Service, we sync the time
 		if (name == "TS" && !CUniTime::Sync)
 		{
@@ -851,6 +852,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 			nlinfo ("I found a Time Service, get the Unified time!");
 			CUniTime::syncUniTimeFromService( IService::recordingState(), &addr );
 		}
+*/
 /*		else if (name == "LOGS" && nd == NULL)
 		{
 			// we have a log service, so we can log our message!

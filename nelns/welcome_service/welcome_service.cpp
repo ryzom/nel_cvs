@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.4 2001/09/05 17:19:29 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.5 2001/10/16 09:27:14 legros Exp $
  *
  */
 
@@ -38,8 +38,8 @@
 #include "nel/misc/command.h"
 #include "nel/misc/log.h"
 
-#include "nel/net/service.h"
-#include "nel/net/net_manager.h"
+#include "nel/net/service_5.h"
+#include "nel/net/unified_network.h"
 #include "nel/net/login_cookie.h"
 
 using namespace std;
@@ -52,19 +52,19 @@ static const uint32 ServerVersion = 1;
 
 
 /// Contains the correspondance between userid and the FES connection where the userid is connected.
-map<uint32, TSockId> UserIdSockAssociations;
+map<uint32, TServiceId> UserIdSockAssociations;
 
 /// \todo ace: code a better heuristic to distribute user on FES (using NbUser and not only NbEstimatedUser)
 
 struct CFES
 {
-	CFES (TSockId sockid) : SockId(sockid), NbUser(0), NbEstimatedUser(0) { }
+	CFES (TServiceId sid) : SId(sid), NbUser(0), NbEstimatedUser(0) { }
 
-	TSockId	SockId;					// Connection to the front end
-	uint32	NbEstimatedUser;		// Number of user that already routed to this FES. This number could be different with the NbUser if
+	TServiceId	SId;				// Connection to the front end
+	uint32		NbEstimatedUser;	// Number of user that already routed to this FES. This number could be different with the NbUser if
 									// some users are not yet connected on the FES (used to equilibrate connection to all front end).
 									// This number *never* decrease, it's just to fairly distribute user.
-	uint32	NbUser;					// Number of user currently connected on this front end
+	uint32		NbUser;				// Number of user currently connected on this front end
 };
 
 list<CFES> FESList;
@@ -89,7 +89,7 @@ void displayFES ()
 	nlinfo ("There's %d FES in the list:", FESList.size());
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		nlinfo(" > %s NbUser:%d NbEstUser:%d", (*it).SockId->asString().c_str(), (*it).NbUser, (*it).NbEstimatedUser);
+		nlinfo(" > %u NbUser:%d NbEstUser:%d", (*it).SId, (*it).NbUser, (*it).NbEstimatedUser);
 	}
 	nlinfo ("End of the list");
 }
@@ -100,7 +100,7 @@ void displayFES ()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cbFESShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS answer a user authorize
 	string reason;
@@ -111,7 +111,7 @@ void cbFESShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	// S09: receive "SCS" message from FES and send the "SCS" message to the LS
 	//
 	
-	CMessage msgout (CNetManager::getSIDA ("LS"), "SCS");
+	CMessage msgout ("SCS");
 
 	msgin.serial (reason);
 	msgout.serial (reason);
@@ -125,17 +125,17 @@ void cbFESShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &net
 		msgout.serial (addr);
 	}
 	
-	CNetManager::send ("LS", msgout);
+	CUnifiedNetwork::getInstance()->send ("LS", msgout);
 }
 
 // This function is call when a FES accepted a new client or lost a connection to a client
-void cbFESClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	//
-	// S15: receive "CC" message from FES and send "CC" message to the "WS"
+	// S15: receive "CC" message from FES and send "CC" message to the "LS"
 	//
 
-	CMessage msgout (CNetManager::getSIDA ("LS"), "CC");
+	CMessage msgout ("CC");
 	
 	uint32 userid;
 	msgin.serial (userid);
@@ -145,12 +145,12 @@ void cbFESClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netb
 	msgin.serial (con);
 	msgout.serial (con);
 
-	CNetManager::send ("LS", msgout);
+	CUnifiedNetwork::getInstance()->send ("LS", msgout);
 
 	// add or remove the user number really connected on this shard
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		if ((*it).SockId == from)
+		if ((*it).SId == sid)
 		{
 			if (con) (*it).NbUser++;
 			else (*it).NbUser--;
@@ -161,7 +161,7 @@ void cbFESClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netb
 	if (con)
 	{
 		// we know that this user is on this FES
-		UserIdSockAssociations.insert (make_pair (userid, from));
+		UserIdSockAssociations.insert (make_pair (userid, sid));
 
 	}
 	else
@@ -172,44 +172,35 @@ void cbFESClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase &netb
 }
 
 // a new front end connecting to me, add it
-void cbFESConnection (const string &serviceName, TSockId from, void *arg)
+void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
-	CCallbackNetBase *cnb = CNetManager::getNetBase("WS");
-	const CInetAddress &ia = cnb->hostAddress (from);
-
-	FESList.push_back (CFES (from));
-
-	nldebug("new FES connection: %s", ia.asString ().c_str ());
-
+	FESList.push_back (CFES ((TServiceId)sid));
+	nldebug("new FES connection: sid %u", sid);
 	displayFES ();
 }
 
 // a front end closes the connection, deconnect him
-void cbFESDisconnection (const string &serviceName, TSockId from, void *arg)
+void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
-	CCallbackNetBase *cnb = CNetManager::getNetBase("WS");
-	const CInetAddress &ia = cnb->hostAddress (from);
-
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
 	{
-		if ((*it).SockId == from)
+		if ((*it).SId == sid)
 		{
-			map<uint32, TSockId>::iterator nitc;
+			map<uint32, TServiceId>::iterator nitc;
 			// send a message to the LS to say that all players from this FES are offline
-			for (map<uint32, TSockId>::iterator itc = UserIdSockAssociations.begin(); itc != UserIdSockAssociations.end();)
+			for (map<uint32, TServiceId>::iterator itc = UserIdSockAssociations.begin(); itc != UserIdSockAssociations.end(); itc++)
 			{
 				nitc = itc;
 				nitc++;
-				if ((*itc).second == from)
+				if ((*itc).second == sid)
 				{
 					// bye bye little player
-					CMessage msgout (CNetManager::getSIDA ("LS"), "CC");
+					CMessage msgout ("CC");
 					uint32 userid = (*itc).first;
 					msgout.serial (userid);
 					uint8 con = 0;
 					msgout.serial (con);
-					CNetManager::send ("LS", msgout);
-
+					CUnifiedNetwork::getInstance()->send ("LS", msgout);
 					UserIdSockAssociations.erase (itc);
 				}
 				itc = nitc;
@@ -222,13 +213,13 @@ void cbFESDisconnection (const string &serviceName, TSockId from, void *arg)
 		}
 	}
 
-	nldebug("new FES disconnection: %s", ia.asString ().c_str ());
+	nldebug("new FES disconnection: sid %u", sid);
 
 	displayFES ();
 }
 
 // Callback Array for message from FES
-TCallbackItem FESCallbackArray[] =
+TUnifiedCallbackItem FESCallbackArray[] =
 {
 	{ "SCS", cbFESShardChooseShard },
 	{ "CC", cbFESClientConnected },
@@ -241,7 +232,7 @@ TCallbackItem FESCallbackArray[] =
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cbLSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS warns me that a new client want to come in my shard
 
@@ -256,38 +247,38 @@ void cbLSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	if (best == NULL)
 	{
 		// answer to the LS that we can't accept the user
-		CMessage msgout (netbase.getSIDA (), "SCS");
+		CMessage msgout ("SCS");
 		string reason = "No front end service available";
 		msgout.serial (reason);
 		msgout.serial (cookie);
-		netbase.send (msgout);
+		CUnifiedNetwork::getInstance()->send(sid, msgout);
 		return;
 	}
 
-	CMessage msgout (CNetManager::getNetBase ("WS")->getSIDA (), "CS");
+	CMessage msgout ("CS");
 	msgout.serial (cookie);
-	CNetManager::send ("WS", msgout, best->SockId);
+	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;
 }
 
 
-void cbLSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS tells me that i have to disconnect a client
 
 	uint32 userid;
 	msgin.serial (userid);
 
-	map<uint32, TSockId>::iterator it = UserIdSockAssociations.find (userid);
+	map<uint32, TServiceId>::iterator it = UserIdSockAssociations.find (userid);
 	if (it == UserIdSockAssociations.end ())
 	{
 		nlwarning ("Can't disconnect the user %d, he is not found", userid);
 	}
 	else
 	{
-		CMessage msgout (CNetManager::getNetBase ("WS")->getSIDA (), "DC");
+		CMessage msgout ("DC");
 		msgout.serial (userid);
-		CNetManager::send ("WS", msgout, (*it).second);
+		CUnifiedNetwork::getInstance()->send ((*it).second, msgout);
 	}
 }
 
@@ -295,14 +286,13 @@ void cbLSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netb
 
 
 // Callback Array for message from LS
-TCallbackItem LSCallbackArray[] =
+TUnifiedCallbackItem LSCallbackArray[] =
 {
 	{ "CS", cbLSChooseShard },
-	
 	{ "DC", cbLSDisconnectClient },
 };
 
-class CWelcomeService : public NLNET::IService
+class CWelcomeService : public NLNET::IService5
 {
 
 public:
@@ -310,13 +300,13 @@ public:
 	/// Init the service, load the universal time.
 	void init ()
 	{
-		CNetManager::setConnectionCallback ("WS", cbFESConnection, NULL);
-		CNetManager::setDisconnectionCallback ("WS", cbFESDisconnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceUpCallback("FS", cbFESConnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback("FS", cbFESDisconnection, NULL);
 
 		// add a connection to the LS
 		string LSAddr = ConfigFile.getVar("LSHost").asString() + ":49998";
-		CNetManager::addClient ("LS", LSAddr);
-		CNetManager::addCallbackArray ("LS", LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
+		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
+		CUnifiedNetwork::getInstance()->addService("LS", LSAddr, false);
 	}
 };
 
@@ -336,7 +326,7 @@ NLMISC_COMMAND (frontends, "displays the list of all registered front ends", "")
 	log.displayNL ("Display the %d registered front end :", FESList.size());
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end (); it++)
 	{
-		log.displayNL ("> %s '%s' nb estimated users: %u nb users: %u", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("WS")->hostAddress((*it).SockId).asString().c_str(), (*it).NbEstimatedUser, (*it).NbUser );
+		log.displayNL ("> FE %u: nb estimated users: %u nb users: %u", (*it).SId, (*it).NbEstimatedUser, (*it).NbUser );
 	}
 	log.displayNL ("End ot the list");
 
@@ -348,9 +338,9 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 	if(args.size() != 0) return false;
 
 	log.displayNL ("Display the %d registered users :", UserIdSockAssociations.size());
-	for (map<uint32, TSockId>::iterator it = UserIdSockAssociations.begin(); it != UserIdSockAssociations.end (); it++)
+	for (map<uint32, TServiceId>::iterator it = UserIdSockAssociations.begin(); it != UserIdSockAssociations.end (); it++)
 	{
-		log.displayNL ("> %u %s '%s'", (*it).first, (*it).second->asString().c_str(), CNetManager::getNetBase ("WS")->hostAddress((*it).second).asString().c_str());
+		log.displayNL ("> %u SId=%u", (*it).first, (*it).second);
 	}
 	log.displayNL ("End ot the list");
 

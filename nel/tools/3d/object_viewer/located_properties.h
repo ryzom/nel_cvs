@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.5 2001/06/27 16:48:56 vizerie Exp $
+ * $Id: located_properties.h,v 1.6 2001/07/04 12:18:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,12 +41,15 @@
 
 #include "editable_range.h"
 #include "particle_tree_ctrl.h"
+#include "dialog_stack.h"
 
 namespace  NL3D
 {
 	class CPSLocated ;
 } ; 
 
+
+class CAttribDlgFloat  ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties dialog
@@ -64,10 +67,6 @@ public:
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
 	CStatic	m_MaxNbParticles;
-	CStatic	m_MassMaxPos;
-	CStatic	m_MassMinPos;
-	CStatic	m_LifeMaxPos;
-	CStatic	m_LifeMinPos;
 	BOOL	m_LimitedLifeTime;
 	BOOL	m_SystemBasis;
 	//}}AFX_DATA
@@ -82,12 +81,12 @@ public:
 
 // Implementation
 protected:
-
-	CEditableRangeFloat *_MinMass, *_MaxMass ;
-	CEditableRangeFloat *_MinLife, *_MaxLife ;
+	
 	CEditableRangeUInt *_MaxNbParticles ;
 	CEditableRangeUInt *_SkipFramesDlg ;
 	
+	CAttribDlgFloat *_MassDialog ;
+	CAttribDlgFloat *_LifeDialog ;
 	 
 
 	CParticleDlg *_ParticleDlg ;
@@ -95,19 +94,9 @@ protected:
 	/// some wrappers used to read / write value from / to the particle system
 
 		
-		struct CMinMassWrapper : public IPSWrapperFloat
-		{
-		   NL3D::CPSLocated *Located ;
-		   float get(void) const { return Located->getMinMass() ; }
-		   void set(const float &v) { Located->setMinMass(v) ; }
-		} _MinMassWrapper ;
-
-		struct CMaxMassWrapper: public IPSWrapperFloat
-		{
-			NL3D::CPSLocated *Located ;
-			float get(void) const { return Located->getMaxMass() ; }
-			void set(const float &v) { Located->setMaxMass(v) ; }
-		} _MaxMassWrapper ;
+		/////////////////////////////////////////////////
+		// wrapper to tune the max number of particles //
+		/////////////////////////////////////////////////
 
 
 		struct CMaxNbParticlesWrapper : public IPSWrapperUInt
@@ -130,21 +119,29 @@ protected:
 		} _MaxNbParticlesWrapper ;
 
 
-		struct CMinLifeWrapper : public IPSWrapperFloat
-		{
-			NL3D::CPSLocated *Located ;
-			float get(void) const { return Located->getMinLife() ; }
-			void set(const float &v) { Located->setLifeTime(v, Located->getMaxLife()) ; }
-		} _MinLifeWrapper ;
+		/////////////////////////////////////////////////
+		// wrapper to tune the mass of particles	   //
+		/////////////////////////////////////////////////
 
-		
-		struct CMaxLifeWrapper : public IPSWrapperFloat
+		struct CMassWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 		{
-			NL3D::CPSLocated *Located ;
-			float get(void) const { return Located->getMaxLife() ; }
-			void set(const float &v) { Located->setLifeTime(Located->getMinLife(), v) ; }
-		} _MaxLifeWrapper ;
-					
+		   NL3D::CPSLocated *Located ;
+		   float get(void) const { return Located->getInitialMass() ; }
+		   void set(const float &v) { Located->setInitialMass(v) ; }
+		   virtual scheme_type *getScheme(void) const { return Located->getMassScheme() ; }
+		   virtual void setScheme(scheme_type *s) { Located->setMassScheme(s) ; }
+		} _MassWrapper ;
+
+		struct CLifeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
+		{
+		   NL3D::CPSLocated *Located ;
+		   float get(void) const { return Located->getInitialLife() ; }
+		   void set(const float &v) { Located->setInitialLife(v) ; }
+		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme() ; }
+		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s) ; }
+		} _LifeWrapper ;
+
+						
 				
 		////////////////////////////////
 		// wrapper for frame skipping //

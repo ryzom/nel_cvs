@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.51 2004/01/08 15:13:03 lecroart Exp $
+ * $Id: common.cpp,v 1.52 2004/02/12 16:24:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -674,6 +674,30 @@ const char	*Exception::what() const throw()
 	return _Reason.c_str();
 }
 
+bool killProgram(uint32 pid)
+{
+#ifdef NL_OS_UNIX
+	int res = kill(pid, SIGKILL);
+	if(res == -1)
+	{
+		char *err = strerror (errno);
+		nlwarning("Failed to kill '%d' err %d: '%s'", pid, errno, err);
+	}
+	return res == 0;
+/*#elif defined(NL_OS_WINDOWS)
+	// it doesn't work because pid != handle and i don't know how to kill a pid or know the real handle of another service (not -1)
+	int res = TerminateProcess((HANDLE)pid, 888);
+	LPVOID lpMsgBuf;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
+	nlwarning("Failed to kill '%d' err %d: '%s'", pid, GetLastError (), lpMsgBuf);
+	LocalFree(lpMsgBuf);
+	return res != 0;
+*/
+#else
+	nlwarning("kill not implemented on this OS");
+#endif
+}
+
 bool launchProgram (const std::string &programName, const std::string &arguments)
 {
 
@@ -875,6 +899,70 @@ void displayDwordBits( uint32 b, uint nbits, sint beginpos, bool displayBegin, N
 }
 
 
+int	nlfseek64( FILE *stream, sint64 offset, int origin )
+{
+#ifdef NL_OS_WINDOWS
+	
+	//
+	fpos_t pos64 = 0;
+	switch (origin)
+	{
+	case SEEK_CUR:
+		if (fgetpos(stream, &pos64) != 0)
+			return -1;
+	case SEEK_END:
+		pos64 = _filelengthi64(_fileno(stream));
+		if (pos64 == -1L)
+			return -1;
+	};
+	
+	// Seek
+	pos64 += offset;
+	
+	// Set the final position
+	return fsetpos (stream, &pos64);
+	
+#else // NL_OS_WINDOWS
+	
+	// This code doesn't work under windows : fseek() implementation uses a signed 32 bits offset. What ever we do, it can't seek more than 2 Go.
+	// For the moment, i don't know if it works under linux for seek of more than 2 Go.
+	
+	nlassert ((offset < SINT64_CONSTANT(2147483647)) && (offset > SINT64_CONSTANT(-2147483648)));
+	
+	bool first = true;
+	do
+	{
+		// Get the size of the next fseek
+		sint nextSeek;
+		if (offset > 0)
+			nextSeek = (sint)std::min (SINT64_CONSTANT(2147483647), offset);
+		else
+			nextSeek = (sint)std::max (-SINT64_CONSTANT(2147483648), offset);
+		
+		// Make a seek
+		int result = fseek ( stream, nextSeek, first?origin:SEEK_CUR );
+		if (result != 0)
+			return result;
+		
+		// Remaining
+		offset -= nextSeek;
+		first = false;
+	}
+	while (offset);
+	
+	return 0;
+	
+#endif // NL_OS_WINDOWS
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+/// Commands
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
 NLMISC_COMMAND(sleep, "Freeze the service for N seconds (for debug purpose)", "<N>")
 {
 	if(args.size() != 1) return false;
@@ -910,60 +998,12 @@ NLMISC_COMMAND(launchProgram, "Execute the command line using launcProgram() fun
 	return true;
 }
 
-int	nlfseek64( FILE *stream, sint64 offset, int origin )
+NLMISC_COMMAND(killProgram, "kill a program given the pid", "<pid>")
 {
-#ifdef NL_OS_WINDOWS
-
-	//
-	fpos_t pos64 = 0;
-	switch (origin)
-	{
-	case SEEK_CUR:
-		if (fgetpos(stream, &pos64) != 0)
-			return -1;
-	case SEEK_END:
-		pos64 = _filelengthi64(_fileno(stream));
-		if (pos64 == -1L)
-			return -1;
-	};
-
-	// Seek
-	pos64 += offset;
-
-	// Set the final position
-	return fsetpos (stream, &pos64);
-	
-#else // NL_OS_WINDOWS
-
-// This code doesn't work under windows : fseek() implementation uses a signed 32 bits offset. What ever we do, it can't seek more than 2 Go.
-// For the moment, i don't know if it works under linux for seek of more than 2 Go.
-
-	nlassert ((offset < SINT64_CONSTANT(2147483647)) && (offset > SINT64_CONSTANT(-2147483648)));
-
-	bool first = true;
-	do
-	{
-		// Get the size of the next fseek
-		sint nextSeek;
-		if (offset > 0)
-			nextSeek = (sint)std::min (SINT64_CONSTANT(2147483647), offset);
-		else
-			nextSeek = (sint)std::max (-SINT64_CONSTANT(2147483648), offset);
-
-		// Make a seek
-		int result = fseek ( stream, nextSeek, first?origin:SEEK_CUR );
-		if (result != 0)
-			return result;
-
-		// Remaining
-		offset -= nextSeek;
-		first = false;
-	}
-	while (offset);
-
-	return 0;
-
-#endif // NL_OS_WINDOWS
+	if(args.size() != 1) return false;
+	killProgram(atoi(args[0].c_str()));
+	return true;
 }
+
 
 } // NLMISC

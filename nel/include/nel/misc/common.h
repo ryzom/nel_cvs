@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.66 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: common.h,v 1.67 2004/02/12 16:24:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,6 +296,8 @@ uint32 fromHumanReadable (const std::string &str);
 /// The program will be launch in the current directory
 bool launchProgram (const std::string &programName, const std::string &arguments);
 
+/// This function kill a program using his pid (on unix, it uses the kill() POSIX function)
+bool killProgram(uint32 pid);
 
 /** Returns a string corresponding to the class T in string format.
  * Example:
@@ -536,7 +538,6 @@ void displayByteBits( uint8 b, uint nbits, sint beginpos, bool displayBegin, NLM
 
 /// Display the bits (with 0 and 1) composing a number (uint32) (from right to left)
 void displayDwordBits( uint32 b, uint nbits, sint beginpos, bool displayBegin, NLMISC::CLog *log );
-
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.16 2001/01/19 09:17:43 lecroart Exp $
+ * $Id: config_file.cpp,v 1.17 2001/01/29 10:54:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,12 @@ extern int cfparse (void *);
 extern FILE *cfin;
 extern int cf_CurrentLine;
 
+
+// put true if you want that the config file class check type when you call asFunctions
+// (for example, check when you call asInt() that the variable is an int).
+// when it's false, the function will convert to the wanted type (if he can)
+const bool CheckType = false;
+
 namespace NLMISC
 {
 
@@ -50,16 +56,36 @@ char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float" };
 
 int CConfigFile::CVar::asInt (int index) const
 {
-	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
-	else if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
-	else return IntValues[index];
+	if (CheckType && Type != T_INT) throw EBadType (Name, Type, T_INT);
+	switch (Type)
+	{
+	case T_STRING:
+		if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+		return atoi(StrValues[index].c_str());
+	case T_REAL:
+		if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+		return (int)RealValues[index];
+	default:
+		if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+		return IntValues[index];
+	}
 }
 
 double CConfigFile::CVar::asDouble (int index) const
 {
-	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
-	else if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
-	else return RealValues[index];
+	if (CheckType && Type != T_REAL) throw EBadType (Name, Type, T_REAL);
+	switch (Type)
+	{
+	case T_INT:
+		if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+		return (double)IntValues[index];
+	case T_STRING:
+		if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+		return atof(StrValues[index].c_str());
+	default:
+		if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+		return RealValues[index];
+	}
 }
 
 float CConfigFile::CVar::asFloat (int index) const
@@ -70,8 +96,8 @@ float CConfigFile::CVar::asFloat (int index) const
 const std::string &CConfigFile::CVar::asString (int index) const
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
-	else if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
-	else return StrValues[index];
+	if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	return StrValues[index];
 }
 
 

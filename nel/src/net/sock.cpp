@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.34 2003/08/27 16:16:25 distrib Exp $
+ * $Id: sock.cpp,v 1.35 2003/09/03 14:06:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -459,7 +459,11 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 		}
 		if ( throw_exception )
 		{
+#ifdef NL_OS_WINDOWS
+			throw ESocket( NLMISC::toString( "Unable to send data: error %u", GetLastError() ).c_str() );
+#else
 			throw ESocket( "Unable to send data" );
+#endif
 		}
 		return Error;
 	}

@@ -86,7 +86,7 @@ uint32 CComplexSound::getDuration()
 			vector<uint32>::iterator first(_SoundSeq.begin()), last(_SoundSeq.end()), prev;
 			for (; first != last; ++first)
 			{
-				if (first != _SoundSeq.begin())
+				if (first != _SoundSeq.begin() && !durations.empty())
 				{
 					// remove a xfade value
 					_Duration -= minof<uint32>(uint32(_XFadeLenght / _TicksPerSeconds), durations[*first % durations.size()] / 2, durations[*prev % durations.size()] /2);

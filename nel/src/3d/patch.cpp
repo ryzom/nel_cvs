@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.63 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: patch.cpp,v 1.64 2001/09/14 17:57:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1732,8 +1732,11 @@ void		CPatch::unpackLumelBlock (uint8 *dest, const uint8 *src)
 			firstBlock=secondBlock;
 
 			// New second
-			secondBlock=*src;
-			src++;
+			if (lumel<13)
+			{
+				secondBlock=*src;
+				src++;
+			}
 		}
 	}
 

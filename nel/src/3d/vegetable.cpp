@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.12 2002/02/28 12:59:52 besson Exp $
+ * $Id: vegetable.cpp,v 1.13 2002/03/15 12:11:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,7 +304,7 @@ void	CVegetable::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgRe
 // ***************************************************************************
 void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMatrix &posInWorld, 
 		const NLMISC::CRGBAF &modulateAmbientColor, const NLMISC::CRGBAF &modulateDiffuseColor, float blendDistMax,
-		TVegetableWater vegetWaterState) const
+		TVegetableWater vegetWaterState, CVegetableLightEx &vlex) const
 {
 	nlassert(_Manager);
 
@@ -354,7 +354,8 @@ void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMa
 	// Append to the vegetableManager
 	// ===============
 	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, 
-		bendFactor, bendPhase, BendFrequencyFactor, blendDistMax, (CVegetableManager::TVegetableWater)vegetWaterState);
+		bendFactor, bendPhase, BendFrequencyFactor, blendDistMax, (CVegetableManager::TVegetableWater)vegetWaterState
+		, vlex);
 }
 
 

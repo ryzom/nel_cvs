@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.12 2002/02/18 18:11:55 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.13 2002/03/15 12:11:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ namespace NL3D
 class	IDriver;
 class	CVegetableBlendLayerModel;
 class	CScene;
+class	CVegetableLightEx;
 
 
 // ***************************************************************************
@@ -184,7 +185,7 @@ public:
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
-		TVegetableWater vegetWaterState);
+		TVegetableWater vegetWaterState, CVegetableLightEx &vlex);
 
 	// @}
 

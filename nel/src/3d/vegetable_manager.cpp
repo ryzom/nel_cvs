@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.16 2002/02/28 12:59:52 besson Exp $
+ * $Id: vegetable_manager.cpp,v 1.17 2002/03/15 12:11:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/radix_sort.h"
 #include "3d/scene.h"
 #include "3d/vegetable_blend_layer_model.h"
+#include "3d/vegetable_light_ex.h"
 
 
 using namespace std;
@@ -946,7 +947,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
-		TVegetableWater vegetWaterState)
+		TVegetableWater vegetWaterState, CVegetableLightEx &vegetLex)
 {
 	sint	i;
 
@@ -999,6 +1000,16 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		secondaryRGBA= primaryRGBA;
 	}
 
+	// Color of pointLights modulated by diffuse.
+	CRGBA	diffusePL[2];
+	if(vegetLex.NumLights>=1)
+	{
+		diffusePL[0].modulateFromColorRGBOnly(diffuseRGBA, vegetLex.Color[0]);
+		if(vegetLex.NumLights>=2)
+		{
+			diffusePL[1].modulateFromColorRGBOnly(diffuseRGBA, vegetLex.Color[1]);
+		}
+	}
 
 	// normalize bendFreqFactor
 	bendFreqFactor*= NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC;
@@ -1186,31 +1197,77 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		}
 		else
 		{
+			float	dpSun;
+			float	dpPL[2];
+			CRGBA	col;
+			CRGBA	resColor;
+
 			nlassert(!destLighted);
 
 			// compute dot product.
 			CVector		rotNormal= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
 			// must normalize() because scale is possible.
 			rotNormal.normalize();
-			// compute dot product with current light
-			float	dp= rotNormal*_DirectionalLight;
+
 
 			// compute front-facing coloring.
-			float	f= max(0.f, -dp);
-			CRGBA	resColor;
-			resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-			resColor.addRGBOnly(resColor, secondaryRGBA);
-			// copy to dest
-			*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
+			{
+				// Compute Sun Light.
+				dpSun= rotNormal*_DirectionalLight;
+				float	f= max(0.f, -dpSun);
+				col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+				// Add it with ambient
+				resColor.addRGBOnly(col, secondaryRGBA);
+
+				// Add influence of 2 lights only. (unrolled for better BTB use)
+				// Compute Light 0 ?
+				if(vegetLex.NumLights>=1)
+				{
+					dpPL[0]= rotNormal*vegetLex.Direction[0];
+					f= max(0.f, -dpPL[0]);
+					col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+					resColor.addRGBOnly(col, resColor);
+					// Compute Light 1 ?
+					if(vegetLex.NumLights>=2)
+					{
+						dpPL[1]= rotNormal*vegetLex.Direction[1];
+						f= max(0.f, -dpPL[1]);
+						col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+						resColor.addRGBOnly(col, resColor);
+					}
+				}
+
+				// copy to dest
+				*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
+			}
 
 			// If 2Sided
 			if(instanceDoubleSided)
 			{
-				// compute back-facing coloring.
-				float	f= max(0.f, dp);
-				CRGBA	resColor;
-				resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
-				resColor.addRGBOnly(resColor, secondaryRGBA);
+				// reuse dotproduct of front-facing computing.
+
+				// Compute Sun Light.
+				float	f= max(0.f, dpSun);
+				col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+				// Add it with ambient
+				resColor.addRGBOnly(col, secondaryRGBA);
+
+				// Add influence of 2 lights only. (unrolled for better BTB use)
+				// Compute Light 0 ?
+				if(vegetLex.NumLights>=1)
+				{
+					f= max(0.f, dpPL[0]);
+					col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
+					resColor.addRGBOnly(col, resColor);
+					// Compute Light 1 ?
+					if(vegetLex.NumLights>=2)
+					{
+						f= max(0.f, dpPL[1]);
+						col.modulateFromuiRGBOnly(diffusePL[1], OptFastFloor(f*256));
+						resColor.addRGBOnly(col, resColor);
+					}
+				}
+
 				// copy to dest
 				*(CRGBA*)(dstPtr + dstColor1Off)= resColor;
 			}

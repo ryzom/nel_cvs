@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.13 2002/02/28 12:59:50 besson Exp $
+ * $Id: patch_vegetable.cpp,v 1.14 2002/03/15 12:11:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "nel/misc/common.h"
 #include "3d/fast_floor.h"
 #include "3d/tile_vegetable_desc.h"
+#include "3d/vegetable_light_ex.h"
 
 
 using namespace std;
@@ -106,7 +107,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 		matInstance.normalize(CMatrix::ZYX);
 
 
-	// prepare color.
+	// prepare color / lighting
+	// =========================
 
 	// say that ambient never change. VegetableManager handle the ambient and diffuse itself (for precomputeLighting)
 	CRGBAF	ambientF= CRGBAF(1,1,1,1);
@@ -129,6 +131,39 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 		diffuseColorF[i].B= tlf;
 		diffuseColorF[i].A= 1;
 	}
+
+	// Compute The CVegetableLightEx, adding pointLight effect to vegetation
+	// First get pointLight at this tiles.
+	static	vector<CPointLightInfluence>	lightList;
+	lightList.clear();
+	appendTileLightInfluences( CUV(tileU, tileV), lightList);
+	// for each light, modulate the factor of influence
+	for(i=0; i<(sint)lightList.size();i++)
+	{
+		CPointLight	*pl= lightList[i].PointLight;
+		// compute the attenuation to the pos of the tile
+		float	att= pl->computeLinearAttenuation(tilePos);
+		// modulate the influence with this factor
+		lightList[i].BkupInfluence= lightList[i].Influence;
+		lightList[i].Influence*= att;
+	}
+	// sort the light by influence
+	sort(lightList.begin(), lightList.end());
+	// Setup the vegetLex, take only 2 first, computing direction to tilePos and computing attenuation.
+	CVegetableLightEx	vegetLex;
+	vegetLex.NumLights= min((uint)CVegetableLightEx::MaxNumLight, lightList.size());
+	for(i=0;i<vegetLex.NumLights;i++)
+	{
+		CPointLight	*pl= lightList[i].PointLight;
+		// get the attenuation
+		uint	att= (uint)(256* lightList[i].Influence);
+		// modulate the color with it.
+		vegetLex.Color[i].modulateFromui(pl->getDiffuse(), att);
+		// Setup the direction from pointLight.
+		vegetLex.Direction[i]= tilePos - pl->getPosition();
+		vegetLex.Direction[i].normalize();
+	}
+
 
 
 	// for all vegetable of this list, generate instances.
@@ -199,7 +234,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			// generate the instance of the vegetable
 			veget.generateInstance(vegetIg, matInstance, ambientF, 
 				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ],
-				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState);
+				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState,
+				vegetLex);
 		}
 	}
 }

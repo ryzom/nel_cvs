@@ -831,6 +831,14 @@ SOURCE=..\include\nel\3d\scene_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\shape_bank_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\shape_bank_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\skeleton_user.cpp
 # End Source File
 # Begin Source File
@@ -932,6 +940,10 @@ SOURCE=..\include\nel\3d\tmp\u_play_list_manager.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_shape_bank.h
 # End Source File
 # Begin Source File
 

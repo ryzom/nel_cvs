@@ -214,6 +214,14 @@ SOURCE=.\src\pacs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\physics.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\physics.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\radar.cpp
 # End Source File
 # Begin Source File

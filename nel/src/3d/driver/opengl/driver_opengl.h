@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.128 2002/09/04 12:41:36 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.129 2002/09/04 13:00:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,6 +427,7 @@ public:
 	virtual	bool			supportBlendConstantColor() const;
 	virtual	void			setBlendConstantColor(NLMISC::CRGBA col);
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
+	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	// @}
 
 private:
@@ -852,6 +853,12 @@ private:
 
 
 	NLMISC::CRGBA					_CurrentBlendConstantColor;
+
+	// Monitor color parameters backup
+#ifdef WIN32
+	bool							_NeedToRestaureGammaRamp;
+	uint16							_GammaRampBackuped[3*256];
+#endif
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.22 2002/08/23 12:26:32 besson Exp $
+ * $Id: driver_user.cpp,v 1.23 2002/09/04 13:00:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -937,6 +937,12 @@ void			CDriverUser::forceTextureResize(uint divisor)
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->forceTextureResize(divisor);
+}
+bool			CDriverUser::setMonitorColorProperties (const CMonitorColorProperties &properties)
+{
+	NL3D_HAUTO_UI_DRIVER;
+
+	return _Driver->setMonitorColorProperties (properties);
 }
 
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.38 2002/08/30 11:58:41 berenguier Exp $
+ * $Id: driver.h,v 1.39 2002/09/04 13:00:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,7 +72,7 @@ class CPrimitiveBlock;
 class CLight;
 class CScissor;
 class CViewport;
-
+struct CMonitorColorProperties;
 
 
 
@@ -108,8 +108,6 @@ struct EBadDisplay : public NLMISC::Exception
 	EBadDisplay(const std::string &reason) : Exception(reason) { }
 };
 
-
-
 //****************************************************************************
 typedef void (*emptyProc)(void);
 
@@ -117,6 +115,10 @@ typedef void (*emptyProc)(void);
 // *** IMPORTANT ********************
 // *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
 // **********************************
+// 
+// * Driver implementation notes:
+// *
+// * Driver implementation must save monitor color parameters at initialization and restaure it at release.
 class IDriver : public NLMISC::CRefCount
 {
 public:
@@ -186,6 +188,13 @@ public:
 	// Return is the associated window information. (Implementation dependant)
 	// Must be a HWND for Windows (WIN32).
 	virtual void			*getDisplay() =0;
+
+	/** 
+	  * Setup monitor color properties. 
+	  * 
+	  * Return false if setup failed.
+	  */
+	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties) = 0;
 
 	// Return is the associated default window proc for the driver. (Implementation dependant)
 	// Must be a void GlWndProc(IDriver *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) for Windows (WIN32).

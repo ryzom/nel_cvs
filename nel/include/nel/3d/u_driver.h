@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.16 2002/08/23 12:26:32 besson Exp $
+ * $Id: u_driver.h,v 1.17 2002/09/04 13:00:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,14 @@ class UShapeBank;
 class U3dMouseListener;
 class ULight;
 
+//****************************************************************************
+/// Monitor color properties
+struct CMonitorColorProperties
+{
+	float		Contrast[3];		// Contrast parameters, RGB,		[-1.f ~ 1.f]
+	float		Luminosity[3];		// Luminosity parameters, RGB,		[-1.f ~ 1.f]
+	float		Gamma[3];			// Gamma parameters, RGB,			[-1.f ~ 1.f]
+};
 
 // ***************************************************************************
 /**
@@ -516,6 +524,12 @@ public:
 	 *	NB: this is done only on TextureFile
 	 */
 	virtual void			forceTextureResize(uint divisor)=0;
+
+	/** Setup monitor color properties. 
+	  * 
+	  * Return false if setup failed.
+	  */
+	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties) = 0;
 
 	// @}
 

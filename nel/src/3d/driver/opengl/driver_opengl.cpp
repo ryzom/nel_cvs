@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.157 2002/09/04 12:41:36 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.158 2002/09/04 13:00:53 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -46,6 +46,7 @@
 
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
+#include "nel/3d/u_driver.h"
 #include "3d/vertex_buffer.h"
 #include "3d/light.h"
 #include "3d/primitive_block.h"
@@ -164,7 +165,7 @@ CDriverGL::CDriverGL()
 	_hWnd = NULL;
 	_hRC = NULL;
 	_hDC = NULL;
-
+	_NeedToRestaureGammaRamp = false;
 #elif defined (NL_OS_UNIX) // NL_OS_WINDOWS
 
 	cursor = None;
@@ -276,6 +277,21 @@ bool CDriverGL::init()
 		}
 		_Registered=1;
 	}
+
+	// Backup monitor color parameters
+	HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+	if (dc)
+	{
+		_NeedToRestaureGammaRamp = GetDeviceGammaRamp (dc, _GammaRampBackuped) != FALSE;
+
+		// Release the DC
+		ReleaseDC (NULL, dc);
+	}
+	else
+	{
+		nlwarning ("(CDriverGL::init): can't create DC");
+	}
+
 #endif
 	return true;
 }
@@ -1326,6 +1342,24 @@ bool CDriverGL::release()
 	_hWnd=NULL;
 	_PBuffer = NULL;
 
+	// Restaure monitor color parameters
+	if (_NeedToRestaureGammaRamp)
+	{
+		HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+		if (dc)
+		{
+			if (!SetDeviceGammaRamp (dc, _GammaRampBackuped))
+				nlwarning ("(CDriverGL::release): SetDeviceGammaRamp failed");
+
+			// Release the DC
+			ReleaseDC (NULL, dc);
+		}
+		else
+		{
+			nlwarning ("(CDriverGL::release): can't create DC");
+		}
+	}
+
 #elif defined (NL_OS_UNIX)// NL_OS_WINDOWS
  
 #ifdef XF86VIDMODE
@@ -2068,6 +2102,63 @@ NLMISC::CRGBA	CDriverGL::getBlendConstantColor() const
 sint			CDriverGL::getNbTextureStages() const
 {
 	return inlGetNumTextStages();
+}
+
+// ***************************************************************************
+bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &properties)
+{
+#ifdef NL_OS_WINDOWS
+	
+	// Get a DC
+	HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+	if (dc)
+	{
+		// The ramp
+		WORD ramp[256*3];
+
+		// For each composant
+		uint c;
+		for( c=0; c<3; c++ )
+		{
+			uint i;
+			for( i=0; i<256; i++ )
+			{
+				// Floating value
+				float value = (float)i / 256;
+
+				// Contrast
+				value = (float) max (0.0f, (value-0.5f) * (float) pow (3.f, properties.Contrast[c]) + 0.5f );
+
+				// Gamma
+				value = (float) pow (value, (properties.Gamma[c]>0) ? 1 - 3 * properties.Gamma[c] / 4 : 1 - properties.Gamma[c] );
+
+				// Luminosity
+				value = value + properties.Luminosity[c] / 2.f;
+				ramp[i+(c<<8)] = min (65535, max (0, (int)(value * 65535)));
+			}
+		}
+
+		// Set the ramp
+		bool result = SetDeviceGammaRamp (dc, ramp) != FALSE;
+		
+		// Release the DC
+		ReleaseDC (NULL, dc);
+
+		// Returns result
+		return result;
+	}
+	else
+	{
+		nlwarning ("(CDriverGL::setMonitorColorProperties): can't create DC");
+		return false;
+	}
+
+#else
+
+	nlwarning ("CDriverGL::setMonitorColorProperties not implemented");
+	return false;
+
+#endif
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.15 2002/08/23 12:26:32 besson Exp $
+ * $Id: driver_user.h,v 1.16 2002/09/04 13:00:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -378,6 +378,7 @@ public:
 	virtual TPolygonMode 	getPolygonMode () ;
 	virtual void			forceDXTCCompression(bool dxtcComp);
 	virtual void			forceTextureResize(uint divisor);
+	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	// @}
 
 	/// \name Shape Bank

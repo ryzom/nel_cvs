@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.76 2002/04/10 15:57:01 berenguier Exp $
+# $Id: Makefile.am,v 1.77 2002/04/12 16:18:56 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -432,6 +432,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        transform_user.cpp                              \
                        transform_user.h                                \
                        trav_scene.h                                    \
+                       trav_scene.cpp                                  \
                        vegetable.cpp                                   \
                        vegetable.h                                     \
                        vegetablevb_allocator.cpp                       \

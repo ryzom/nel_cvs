@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.9 2001/07/13 08:14:39 legros Exp $
+ * $Id: entities.cpp,v 1.10 2001/07/13 09:58:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <nel/misc/displayer.h>
 #include <nel/misc/vector.h>
 #include <nel/misc/vectord.h>
+#include <nel/misc/time_nl.h>
 
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_driver.h>
@@ -72,11 +73,15 @@ enum
 	SnowballCollisionBit = 4
 };
 
+float WorldWidth = 20*160;
+float WorldHeight = 6*160;
+
 // these variables are set with the config file
 
 float RadarPosX, RadarPosY, RadarWidth, RadarHeight, RadarBorder;
-CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor;
+CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor, RadarSelfColor;
 float RadarEntitySize;
+float RadarZoom;
 
 CEntity		*Self = NULL;
 
@@ -117,6 +122,7 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 	entity.Type = type;
 	entity.Name = "Entity"+toString(rand());
 	entity.Position = startPosition;
+//	entity.ServerPosition = startPosition;
 	entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
 	entity.VisualCollisionEntity = VisualCollisionManager->createEntity();
 
@@ -133,6 +139,13 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
 		entity.Instance = Scene->createInstance("barman.shape");
+		entity.Instance->hide ();
+
+		entity.Particule = Scene->createInstance("appear.ps");
+		entity.Particule->setPos (startPosition);
+		entity.State = CEntity::Appear;
+		entity.StateStartTime = CTime::getLocalTime ();
+
 		break;
 	case CEntity::Other:
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
@@ -144,6 +157,13 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setRadius(0.5f);
 		entity.MovePrimitive->setHeight(1.8f);
 		entity.Instance = Scene->createInstance("barman.shape");
+		entity.Instance->hide ();
+
+		entity.Particule = Scene->createInstance("appear.ps");
+		entity.Particule->setPos (startPosition);
+		entity.State = CEntity::Appear;
+		entity.StateStartTime = CTime::getLocalTime ();
+
 		break;
 	case CEntity::Snowball:
 		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
@@ -155,6 +175,9 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.MovePrimitive->setRadius(0.2f);
 		entity.MovePrimitive->setHeight(0.4f);
 		entity.Instance = Scene->createInstance("barman.shape");
+
+		entity.State = CEntity::Normal;
+		entity.StateStartTime = CTime::getLocalTime ();
 		break;
 	}
 	entity.MovePrimitive->insertInWorldImage(0);
@@ -170,62 +193,156 @@ void removeEntity (uint32 eid)
 
 	EIT eit = findEntity (eid);
 
-	if ((*eit).second.Type == CEntity::Self)
-	{
-		if (Self == NULL)
-			nlerror("Self entity doesn't exist");
-		Self = NULL;
-	}
+	CEntity	&entity = (*eit).second;
 
-	MoveContainer->removePrimitive((*eit).second.MovePrimitive);
+	entity.Particule = Scene->createInstance("disappear.ps");
+	entity.Particule->setPos (entity.Position);
 
-	Entities.erase (eit);
+	entity.State = CEntity::Disappear;
+	entity.StateStartTime = CTime::getLocalTime ();
 }
 
-float EntityMaxSpeed = 1.0f;
+void stateAppear (CEntity &entity)
+{
+	if (CTime::getLocalTime () > entity.StateStartTime + 1000)
+	{
+		if (entity.Instance->getVisibility () != UTransform::Show)
+			entity.Instance->show ();
+	}
+
+	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
+	{
+		Scene->deleteInstance (entity.Particule);
+		entity.Particule = NULL;
+
+		entity.State = CEntity::Normal;
+		entity.StateStartTime = CTime::getLocalTime ();
+	}
+
+	entity.MovePrimitive->move(CVector(0,0,0), 0);
+}
+
+void stateDisappear (CEntity &entity)
+{
+	// after 1 second, remove the mesh and all collision stuff
+	if (CTime::getLocalTime () > entity.StateStartTime + 1000)
+	{
+		if (entity.Instance->getVisibility () != UTransform::Hide)
+		{
+			if (entity.Type == CEntity::Self)
+			{
+				if (Self == NULL)
+					nlerror("Self entity doesn't exist");
+				Self = NULL;
+			}
+
+			entity.Instance->hide ();
+		}
+	}
+
+	// after 5 seconds, remove the particule system and the entity entry
+	if (CTime::getLocalTime () > entity.StateStartTime + 5000)
+	{
+		Scene->deleteInstance (entity.Particule);
+		entity.Particule = NULL;
+
+		Scene->deleteInstance (entity.Instance);
+		entity.Instance = NULL;
+
+		VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
+		entity.VisualCollisionEntity = NULL;
+
+		MoveContainer->removePrimitive(entity.MovePrimitive);
+		entity.MovePrimitive = NULL;
+
+		nlinfo ("Remove the entity %u from the Entities list", entity.Id);
+		EIT eit = findEntity (entity.Id);
+		Entities.erase (eit);
+	}
+	else
+	{
+		entity.MovePrimitive->move(CVector(0,0,0), 0);
+	}
+}
+
+void stateNormal (CEntity &entity)
+{
+	double	dt = (double)(NewTime-LastTime) / 1000.0;
+	CVector	oldPos;
+	CVector	newPos;
+
+	oldPos = entity.Position;
+
+/// \todo remove when server entities will work
+	// find a new random server position
+	if (entity.AutoMove /*&& entity.ServerPosition == entity.Position*/)
+	{
+		float EntityMaxSpeed = 1.0f;
+		entity.Position = entity.Position + CVector(frand (2.0f*EntityMaxSpeed) - EntityMaxSpeed,
+										   frand (2.0f*EntityMaxSpeed) - EntityMaxSpeed,
+										   0.0f);
+	}
+/// \todo end of the remove block when server entities will work
+
+
+	if (entity.Type == CEntity::Self)
+	{
+		// the self entity
+		// get new position
+		newPos = MouseListener->getViewMatrix().getPos();
+		// get new orientation
+		CVector	j = MouseListener->getViewMatrix().getJ();
+		ViewHeight -= j.z;
+		j.z = 0.0f;
+		j.normalize();
+		entity.Angle = (float)atan2(j.y, j.x);
+	}
+	else if (entity.ServerPosition != entity.Position)
+	{
+		// go to the server position with linear interpolation
+		/// \todo compute the linear interpolation
+		newPos = oldPos;
+	}
+	else
+	{
+		// automatic speed
+		/// \todo compute new entity position
+		newPos = oldPos;
+	}
+
+	entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
+}
 
 void updateEntities ()
 {
 	// compute the delta t that has elapsed since the last update (in seconds)
 	double	dt = (double)(NewTime-LastTime) / 1000.0;
-	EIT		eit;
+	EIT		eit, nexteit;
 
 	// move entities
-	for (eit = Entities.begin (); eit != Entities.end (); eit++)
+	for (eit = Entities.begin (); eit != Entities.end ();)
 	{
+		nexteit = eit; nexteit++;
+
 		CEntity	&entity = (*eit).second;
-		CVector	oldPos;
-		CVector	newPos;
 
-		oldPos = entity.Position;
-
-		if (entity.AutoMove)
+		switch (entity.State)
 		{
-			// auto moving entities
-			newPos = entity.Position + CVector(frand (2*EntityMaxSpeed) - EntityMaxSpeed,
-											   frand (2*EntityMaxSpeed) - EntityMaxSpeed,
-											   0.0f);
-		}
-		else if (entity.Type == CEntity::Self)
-		{
-			// the self entity
-			// get new position
-			newPos = MouseListener->getViewMatrix().getPos();
-			// get new orientation
-			CVector	j = MouseListener->getViewMatrix().getJ();
-			ViewHeight -= j.z;
-			j.z = 0.0f;
-			j.normalize();
-			entity.Angle = (float)atan2(j.y, j.x);
-		}
-		else
-		{
-			// automatic speed
-			/// \todo compute new entity position
-			newPos = oldPos;
+		case CEntity::Appear:
+			stateAppear (entity);
+			break;
+		case CEntity::Normal:
+			stateNormal (entity);
+			break;
+		case CEntity::Disappear:
+			stateDisappear (entity);
+			break;
+		default:
+			nlstop;
+			break;
 		}
 
-		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
+		eit = nexteit;
 	}
 
 	// evaluate collisions
@@ -237,30 +354,36 @@ void updateEntities ()
 		CEntity	&entity = (*eit).second;
 		UGlobalPosition	gPos;
 
-		// get the global position in pacs coordinates system
-		entity.MovePrimitive->getGlobalPosition(gPos, 0);
-		// convert it in a vector 3d
-		entity.Position = GlobalRetriever->getGlobalPosition(gPos);
-		// get the good z position
-		gPos.LocalPosition.Estimation.z = 0.0f;
-		entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
-		// snap to the ground
-		entity.VisualCollisionEntity->snapToGround(entity.Position);
-
-		// check position retrieving
-		UGlobalPosition gPosCheck;
-		gPosCheck = GlobalRetriever->retrievePosition(entity.Position);
-		if (gPos.InstanceId != gPosCheck.InstanceId ||
-			gPos.LocalPosition.Surface != gPosCheck.LocalPosition.Surface)
+		if (entity.Instance != NULL)
 		{
-			nlwarning("Checked UGlobalPosition differs from store");
-			gPos.InstanceId = gPosCheck.InstanceId;
-			gPos.LocalPosition.Surface = gPosCheck.LocalPosition.Surface;
+			// get the global position in pacs coordinates system
+			entity.MovePrimitive->getGlobalPosition(gPos, 0);
+			// convert it in a vector 3d
+			entity.Position = GlobalRetriever->getGlobalPosition(gPos);
+			// get the good z position
+			gPos.LocalPosition.Estimation.z = 0.0f;
+			entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
+			// snap to the ground
+			entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+			// check position retrieving
+			UGlobalPosition gPosCheck;
+			gPosCheck = GlobalRetriever->retrievePosition(entity.Position);
+			if (gPos.InstanceId != gPosCheck.InstanceId ||
+				gPos.LocalPosition.Surface != gPosCheck.LocalPosition.Surface)
+			{
+	//			nlwarning("Checked UGlobalPosition differs from store");
+	//			gPos.InstanceId = gPosCheck.InstanceId;
+	//			gPos.LocalPosition.Surface = gPosCheck.LocalPosition.Surface;
+			}
+
+			entity.Instance->setPos(entity.Position);
+			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
+			entity.Instance->setRotQuat(jdir);
 		}
 
-		entity.Instance->setPos(entity.Position);
-		CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
-		entity.Instance->setRotQuat(jdir);
+		if (entity.Particule != NULL)
+			entity.Particule->setPos(entity.Position);
 	}
 }
 
@@ -273,8 +396,10 @@ void cbUpdateRadar (CConfigFile::CVar &var)
 	else if (var.Name == "RadarBackColor") RadarBackColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
 	else if (var.Name == "RadarFrontColor") RadarFrontColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
 	else if (var.Name == "RadarBorderColor") RadarBorderColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
+	else if (var.Name == "RadarSelfColor") RadarSelfColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
 	else if (var.Name == "RadarEntitySize") RadarEntitySize = var.asFloat ();
 	else if (var.Name == "RadarBorder") RadarBorder = var.asFloat ();
+	else if (var.Name == "RadarZoom") RadarZoom = var.asFloat ();
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
 
@@ -287,8 +412,10 @@ void initRadar ()
 	ConfigFile.setCallback ("RadarBackColor", cbUpdateRadar);
 	ConfigFile.setCallback ("RadarFrontColor", cbUpdateRadar);
 	ConfigFile.setCallback ("RadarBorderColor", cbUpdateRadar);
+	ConfigFile.setCallback ("RadarSelfColor", cbUpdateRadar);
 	ConfigFile.setCallback ("RadarEntitySize", cbUpdateRadar);
 	ConfigFile.setCallback ("RadarBorder", cbUpdateRadar);
+	ConfigFile.setCallback ("RadarZoom", cbUpdateRadar);
 
 	cbUpdateRadar (ConfigFile.getVar ("RadarPosX"));
 	cbUpdateRadar (ConfigFile.getVar ("RadarPosY"));
@@ -297,8 +424,10 @@ void initRadar ()
 	cbUpdateRadar (ConfigFile.getVar ("RadarFrontColor"));
 	cbUpdateRadar (ConfigFile.getVar ("RadarBackColor"));
 	cbUpdateRadar (ConfigFile.getVar ("RadarBorderColor"));
+	cbUpdateRadar (ConfigFile.getVar ("RadarSelfColor"));
 	cbUpdateRadar (ConfigFile.getVar ("RadarEntitySize"));
 	cbUpdateRadar (ConfigFile.getVar ("RadarBorder"));
+	cbUpdateRadar (ConfigFile.getVar ("RadarZoom"));
 }
 
 void updateRadar ()
@@ -308,15 +437,41 @@ void updateRadar ()
 	Driver->drawQuad (RadarPosX-RadarBorder, RadarPosY-RadarBorder, RadarPosX+RadarWidth+RadarBorder, RadarPosY+RadarHeight+RadarBorder, RadarBackColor);
 	Driver->drawWiredQuad (RadarPosX, RadarPosY, RadarPosX+RadarWidth, RadarPosY+RadarHeight, RadarBorderColor);
 
+	float CenterX = WorldWidth/2.0f;
+	float CenterY = -WorldHeight/2.0f;
+/* /// \todo remettre kan on aura des entities
+	if (Self != NULL)
+	{
+		CenterX = Self->Position.x;
+		CenterY = Self->Position.y;
+	}
+*/	
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
 		float userPosX, userPosY;
 
 		// convert from world coords to radar coords (0.0 -> 1.0)
-		userPosX = (*eit).second.Position.x / 1000.0f;
-		userPosY = -(*eit).second.Position.y / 1000.0f;
 
-		// userPosX and userPosY must be between 0.0 -> 1.0
+		userPosX = ((*eit).second.Position.x - CenterX) / (2.0f*WorldWidth);
+		userPosY = ((*eit).second.Position.y - CenterY) / (2.0f*WorldHeight);
+
+		// userpos is between -0.5 -> +0.5
+
+		userPosX *= RadarZoom;
+		userPosY *= RadarZoom;
+
+		/// \todo virer kan ca marchera
+		string str = toString(userPosX) + " / " + toString(userPosY) + " ** ";
+		str += toString(CenterX) + " / " + toString(CenterY);
+		TextContext->printfAt (0.5f, 0.5f, str.c_str());
+
+		if (userPosX > 0.5f || userPosX < -0.5f || userPosY > 0.5f || userPosY < -0.5f)
+			continue;
+
+		userPosX += 0.5f;
+		userPosY += 0.5f;
+
+		// userpos is between 0.0 -> 1.0
 
 		userPosX *= RadarWidth;
 		userPosY *= RadarHeight;
@@ -324,7 +479,10 @@ void updateRadar ()
 		userPosX += RadarPosX;
 		userPosY += RadarPosY;
 
-		Driver->drawQuad (userPosX, userPosY, RadarEntitySize, RadarFrontColor);
+		float entitySize = RadarEntitySize * ((RadarZoom <= 1.0f) ? 1.0f : RadarZoom);
+		CRGBA entityColor = ((*eit).second.Type == CEntity::Self) ? RadarSelfColor : RadarFrontColor;
+
+		Driver->drawQuad (userPosX, userPosY, entitySize, entityColor);
 	}
 }
 

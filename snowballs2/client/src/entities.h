@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.6 2001/07/12 17:06:58 legros Exp $
+ * $Id: entities.h,v 1.7 2001/07/13 09:58:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <string>
 
 #include <nel/misc/vector.h>
+#include <nel/misc/time_nl.h>
 
 namespace NLPACS
 {
@@ -45,12 +46,16 @@ class CEntity
 {
 public:
 	
-	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false) { }
+	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Particule(NULL) { }
 
 	uint32							Id;
 
 	std::string						Name;
 
+	// Contain the target position for this entity
+	NLMISC::CVector					ServerPosition;
+
+	// Contain the current position of the entity
 	NLMISC::CVector					Position;
 	float							Speed, 
 									Angle;
@@ -59,11 +64,18 @@ public:
 	
 	TType							Type;
 
+	enum TState { Appear, Normal, Disappear };
+	
+	TState							State;
+
+	NLMISC::TTime					StateStartTime;
+
 	bool							AutoMove;
 
 	NLPACS::UMovePrimitive			*MovePrimitive;
 	NL3D::UVisualCollisionEntity	*VisualCollisionEntity;
 	NL3D::UInstance					*Instance;
+	NL3D::UInstance					*Particule;
 };
 
 extern CEntity	*Self;

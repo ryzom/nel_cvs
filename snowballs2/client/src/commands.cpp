@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: commands.cpp,v 1.8 2001/07/12 17:39:12 lecroart Exp $
+ * $Id: commands.cpp,v 1.9 2001/07/13 09:58:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,8 +51,6 @@ list <string> StoredLines;
 uint32 NbStoredLines = 100;
 
 CLog CommandsLog;
-
-
 
 // these variables are set with the config file
 
@@ -126,6 +124,8 @@ bool commandLine (const string &str)
 
 }
 
+extern float RadarZoom;
+
 
 class CCommandsListener : public IEventListener
 {
@@ -148,6 +148,7 @@ class CCommandsListener : public IEventListener
 				else
 					addLine (string ("you said> ") + _Line);
 			}
+			_LastCommand = _Line;
 			_Line = "";
 			_MaxWidthReached = false;
 			break;
@@ -161,7 +162,11 @@ class CCommandsListener : public IEventListener
 			break;
 		case 9 : // TAB
 			{
-				if (!_Line.empty() && _Line[0] == '/')
+				if (_Line.empty())
+				{
+					_Line = _LastCommand;
+				}
+				else if (!_Line.empty() && _Line[0] == '/')
 				{
 					string command = _Line.substr(1);
 					ICommand::expand(command);
@@ -172,6 +177,8 @@ class CCommandsListener : public IEventListener
 		case 27 : // ESCAPE
 			break;
 
+		case '+': RadarZoom *= 2.0; break;
+		case '-': RadarZoom /= 2.0; break;
 		default: 
 			if ( ! _MaxWidthReached )
 			{
@@ -197,6 +204,7 @@ public:
 private:
 	string			_Line;
 	bool			_MaxWidthReached;
+	string			_LastCommand;
 };
 
 CCommandsListener CommandsListener;

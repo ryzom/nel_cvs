@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.23 2001/07/12 17:39:12 lecroart Exp $
+ * $Id: client.cpp,v 1.24 2001/07/13 09:58:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,9 +155,9 @@ int main(int argc, char **argv)
 	initPACS();
 
 	// Creates a self entity
-	addEntity(1, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
-										ConfigFile.getVar("StartPoint").asFloat(1),
-										ConfigFile.getVar("StartPoint").asFloat(2)));
+	addEntity(0xFFFFFFFF, CEntity::Self, CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+												 ConfigFile.getVar("StartPoint").asFloat(1),
+												 ConfigFile.getVar("StartPoint").asFloat(2)));
 
 	// Init the network structure
 	initNetwork();

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.27 2004/09/17 15:11:40 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.28 2004/10/05 17:17:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,6 @@
 #endif
 
 
-
 inline operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 {
 	return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
@@ -109,12 +108,16 @@ inline operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 	return !(lhs == rhs);
 }
 
+
+
+
+
 // ***************************************************************************
 
 namespace NL3D 
 {
 
-	
+const uint MAX_NUM_QUADS = 32767; // max number of quads in a single draw call	
 
 using NLMISC::CMatrix;
 using NLMISC::CVector;
@@ -222,8 +225,15 @@ public:
 	IDirect3DPixelShader9	*PixelShaderUnlightedNoVertexColor;
 	bool			ActivateSpecularWorldTexMT[IDRV_MAT_MAXTEXTURES];
 	bool			ActivateInvViewModelTexMT[IDRV_MAT_MAXTEXTURES];
-	bool			NeedsConstantForDiffuse;	// Must use TFactor if not vertex color in the vertex buffer
-	uint8			ConstantIndex;				// Index of the constant color to use (when only one constant color is needed and NeedsConstantForDiffuse == false);
+	bool			VertexColorLighted;
+	bool			NeedsConstantForDiffuse;	    // Must use TFactor if not vertex color in the vertex buffer	
+	bool			MultipleConstantNoPixelShader;  // Multiple constant are possibly needed to setup the material. This flag is set only if the device has no pixel shaders
+	                                                // In this case diffuse color will be emulated by using an unlighted material with ambient
+	bool			MultiplePerStageConstant;       // Are there more than one per-stage constant in the material ?
+	uint8			ConstantIndex;				    // Index of the constant color to use (when only one constant color is needed and NeedsConstantForDiffuse == false);
+	uint8			ConstantIndex2;                 // stage at which the 2nd constant is used (for emulation without pixel shaders)
+
+	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)
 
 	CMaterialDrvInfosD3D(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it)
 	{
@@ -247,12 +257,30 @@ public:
 	~CVertexProgamDrvInfosD3D();
 };
 
+
 // ***************************************************************************
 
+class CVertexDeclaration
+{
+public:
+	// The human readable values
+	D3DVERTEXELEMENT9				VertexElements[CVertexBuffer::NumValue+1];
+
+	// The driver pointer
+	IDirect3DVertexDeclaration9		*VertexDecl;	
+};
+
+
+// ***************************************************************************
 class CVBDrvInfosD3D : public IVBDrvInfos
 {
 public:
 	IDirect3DVertexDeclaration9		*VertexDecl;
+	IDirect3DVertexDeclaration9		*VertexDeclAliasDiffuseToSpecular;
+	IDirect3DVertexDeclaration9		*VertexDeclNoDiffuse;
+	uint							ColorOffset;        // Fix for Radeon 7xxx series -> see remarks in CDriverD3D::createVertexDeclaration	
+		
+
 	IDirect3DVertexBuffer9			*VertexBuffer;
 	uint							Offset;				// Vertex buffer offset
 	bool							UseVertexColor:1;
@@ -263,18 +291,19 @@ public:
 	uint							VolatileLockTime;	// Volatile vertex buffer
 	DWORD							Usage;
 	CVolatileVertexBuffer			*VolatileVertexBuffer;
-	CDriverD3D						*Driver;
-	
+	CDriverD3D						*Driver;		
 	#ifdef NL_DEBUG
 	bool Locked;
 	#endif
-
 
 	CVBDrvInfosD3D(CDriverD3D *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
 	virtual ~CVBDrvInfosD3D();
 	virtual uint8	*lock (uint first, uint last, bool readOnly);
 	virtual void	unlock (uint first, uint last);
 };
+
+
+
 
 // ***************************************************************************
 
@@ -288,7 +317,7 @@ public:
 	uint							VolatileLockTime;	// Volatile index buffer	
 	CVolatileIndexBuffer			*VolatileIndexBuffer;
 	CDriverD3D						*Driver;
-
+	std::vector<uint32>				RamVersion; // If device doesn't support 32 bit indexes, works in ram
 	CIBDrvInfosD3D(CDriverD3D *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
 	virtual ~CIBDrvInfosD3D();
 	virtual uint32	*lock (uint first, uint last, bool readOnly);
@@ -325,17 +354,6 @@ public:
 	virtual ~CShaderDrvInfosD3D();
 };
 
-// ***************************************************************************
-
-class CVertexDeclaration
-{
-public:
-	// The human readable values
-	D3DVERTEXELEMENT9				VertexElements[CVertexBuffer::NumValue+1];
-
-	// The driver pointer
-	IDirect3DVertexDeclaration9		*VertexDecl;
-};
 
 // ***************************************************************************
 
@@ -489,11 +507,14 @@ public:
 	void	reset ();
 };
 
+
+
 // ***************************************************************************
 
 class CDriverD3D : public IDriver, ID3DXEffectStateManager 
 {
 public:
+
 	enum
 	{
 		CacheTest_CullMode = 0,
@@ -584,6 +605,7 @@ public:
 	virtual uint32			getAvailableVertexAGPMemory ();
 	virtual uint32			getAvailableVertexVRAMMemory ();
 	virtual	sint			getNbTextureStages() const;
+	virtual void			getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMaterial) const;
 	virtual	bool			supportVertexBufferHard() const;
 	virtual bool			supportVolatileVertexBuffer() const;
 	virtual	bool			supportIndexBufferHard() const;
@@ -604,7 +626,8 @@ public:
 	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace) {return false;};
 
 	// Material
-	virtual bool			setupMaterial(CMaterial& mat);
+	virtual bool			setupMaterial(CMaterial& mat);	
+
 	virtual bool			supportCloudRenderSinglePass () const;
 
 	// Buffer
@@ -787,6 +810,13 @@ public:
 	virtual void			setCullMode(TCullMode cullMode);
 	virtual	TCullMode       getCullMode() const;
 
+	uint32					getMaxVertexIndex() const { return _MaxVertexIndex; }
+
+	bool					supportPixelShaders() const { return _PixelShader; }
+
+		// *** Inline info
+	sint			inlGetNumTextStages() const {return _NbNeLTextureStages;}
+
 private:
 
 	// Hardware render variables, like matrices, render states
@@ -968,12 +998,14 @@ private:
 		{
 			Type = VBState;
 			VertexBuffer = NULL;
+			ColorOffset = 0;			
 		}
 		IDirect3DVertexBuffer9			*VertexBuffer;
 		UINT							Offset;
 		UINT							Stride;
 		CVertexBuffer::TPreferredMemory	PrefferedMemory;
 		DWORD							Usage; // d3d vb usage
+		uint							ColorOffset; // Fix for Radeon 7xxx series (see remark in CDriverD3D::createVertexDeclaration)				
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -996,9 +1028,17 @@ private:
 		{
 			Type = VertexDecl;
 			Decl = NULL;
-		}
+			DeclAliasDiffuseToSpecular = NULL;
+			DeclNoDiffuse = NULL;
+			AliasDiffuseToSpecular = false;
+			EnableVertexColor = false;
+		}				
 		IDirect3DVertexDeclaration9		*Decl;
-		uint							 Stride;
+		IDirect3DVertexDeclaration9		*DeclAliasDiffuseToSpecular;
+		IDirect3DVertexDeclaration9		*DeclNoDiffuse;
+		uint							Stride;
+		bool							AliasDiffuseToSpecular;
+		bool							EnableVertexColor;
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -1057,7 +1097,12 @@ private:
 	{
 		CMaterialState()
 		{
-			Current.Power = -1.f;
+			//Current.Power = -1.f;
+			Current.Diffuse.r = Current.Diffuse.g = Current.Diffuse.b = Current.Diffuse.a = 0.f;
+			Current.Ambient.r = Current.Ambient.g = Current.Ambient.b = Current.Ambient.a = 0.f;
+			Current.Specular.r = Current.Specular.g = Current.Specular.b = Current.Specular.a = 0.f;
+			Current.Emissive.r = Current.Emissive.g = Current.Emissive.b = Current.Emissive.a = 0.f;
+			Current.Power = 0.f;
 		}
 		D3DMATERIAL9 Current;		
 		virtual void apply(CDriverD3D *driver);
@@ -1078,6 +1123,18 @@ private:
 	// Reset render states
 	void resetRenderVariables();
 	
+	// Replace all arguments of color / alpha operators in the pixel pipe with the given value
+	void replaceAllArgument(DWORD from, DWORD to, DWORD blendOpFrom);
+
+	// Replace all arguments of color / alpha operators in the pixel pipe at the given stage with the given value
+	void replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom);
+
+	// Replace a the given color / alpha op
+	void replaceArgumentAtStage(D3DTEXTURESTAGESTATETYPE state, DWORD stage, DWORD from, DWORD to);
+
+	// Setup lighting & material so that it produces the given constant color (useful to simulate a per stage constant using diffuse)
+	void setupConstantDiffuseColorFromLightedMaterial(D3DCOLOR color);
+
 	// Update all modified render states, reset current material
 	void updateRenderVariables();
 	
@@ -1123,6 +1180,7 @@ private:
 			touchRenderVariable (&_renderState);
 		}		
 	}	
+
 	
 public:
 	// Access texture states
@@ -1388,15 +1446,17 @@ private:
 		}
 	}
 
-	// Set the vertex buffer
-	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage)
+	// Set the vertex buffer	
+	inline void CDriverD3D::setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage, uint colorOffset)	
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexBuffer);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride))
+		//NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride) || (colorOffset != _VertexBufferCache.ColorOffset))
+		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride) || (colorOffset != _VertexBufferCache.ColorOffset))
+		
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexBufferCache.VertexBuffer = vertexBuffer;
@@ -1404,6 +1464,7 @@ private:
 			_VertexBufferCache.Stride = stride;
 			_VertexBufferCache.PrefferedMemory = pm;
 			_VertexBufferCache.Usage = usage;
+			_VertexBufferCache.ColorOffset = colorOffset;			
 			touchRenderVariable (&_VertexBufferCache);
 
 			/* Work around for a NVIDIA bug in driver 53.03 - 56.72
@@ -1418,6 +1479,37 @@ private:
 		_UseVertexColor = useVertexColor;
 		_VertexBufferSize = size;
 		_VertexBufferOffset = offset;
+	}
+
+
+
+	// Force to alias diffuse color to specular color in the current vertex buffer
+	inline void setAliasDiffuseToSpecular(bool enable)
+	{
+		H_AUTO_D3D(CDriverD3D_setAliasDiffuseToSpecular);		
+		// Ref on the state
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, enable != _VertexDeclCache.AliasDiffuseToSpecular)
+#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{
+			_VertexDeclCache.AliasDiffuseToSpecular = enable;			
+			touchRenderVariable (&_VertexDeclCache);			
+		}		
+	}
+
+	// Enable / disable vertex color from the vertex declaration
+	inline void setEnableVertexColor(bool enable)
+	{
+		H_AUTO_D3D(CDriverD3D_setEnableVertexColor);		
+		// Ref on the state
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, enable != _VertexDeclCache.EnableVertexColor)
+#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{
+			_VertexDeclCache.EnableVertexColor = enable;			
+			touchRenderVariable (&_VertexDeclCache);
+			touchRenderVariable (&_VertexBufferCache);
+		}		
 	}
 
 	// Set the index buffer
@@ -1438,21 +1530,23 @@ private:
 	}
 
 	// Set the vertex declaration
-	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl, uint stride)
+	inline void setVertexDecl (IDirect3DVertexDeclaration9  *vertexDecl, IDirect3DVertexDeclaration9  *vertexDeclAliasDiffuseToSpecular, IDirect3DVertexDeclaration9  *vertexDeclNoDiffuse, uint stride)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexDecl);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		NL_D3D_CACHE_TEST(CacheTest_VertexDecl, _VertexDeclCache.Decl != vertexDecl || stride != _VertexDeclCache.Stride)
+		NL_D3D_CACHE_TEST(CacheTest_VertexDecl, stride != _VertexDeclCache.Stride || _VertexDeclCache.Decl != vertexDecl || _VertexDeclCache.DeclAliasDiffuseToSpecular != vertexDeclAliasDiffuseToSpecular || vertexDeclNoDiffuse != _VertexDeclCache.DeclNoDiffuse)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
-			_VertexDeclCache.Decl = vertexDecl;
-			_VertexDeclCache.Stride = stride;
+			_VertexDeclCache.Decl = vertexDecl;			
+			_VertexDeclCache.DeclAliasDiffuseToSpecular = vertexDeclAliasDiffuseToSpecular;
+			_VertexDeclCache.Stride = stride;			
+			_VertexDeclCache.DeclNoDiffuse = vertexDeclNoDiffuse;
 			touchRenderVariable (&_VertexDeclCache);
 		}		
-	}
+	}	
 
 	// Access matrices
 	inline uint remapMatrixIndex (D3DTRANSFORMSTATETYPE type)
@@ -1527,6 +1621,7 @@ private:
 		bool update = material.Power != _MaterialState.Current.Power ||
 			material.Ambient != _MaterialState.Current.Ambient ||
 			material.Emissive != _MaterialState.Current.Emissive ||
+			material.Diffuse != _MaterialState.Current.Diffuse ||
 			material.Specular != _MaterialState.Current.Specular;
 		NL_D3D_CACHE_TEST(CacheTest_MaterialState, update)
 #endif
@@ -1537,8 +1632,7 @@ private:
 	}
 
 	
-	// *** Inline info
-	sint			inlGetNumTextStages() const {return _NbNeLTextureStages;}
+	
 
 	// Get the d3dtext mirror of an existing setuped texture.
 	static	inline CTextureDrvInfosD3D*	getTextureD3D(ITexture& tex)
@@ -1585,8 +1679,12 @@ private:
 
 	// Create a vertex declaration
 	bool createVertexDeclaration (uint16 vertexFormat, const uint8 *typeArray,
-										IDirect3DVertexDeclaration9 **vertexDecl, 
-										uint *stride = NULL);
+								  IDirect3DVertexDeclaration9 **vertexDecl,								  
+								  uint &colorOffset,								  
+								  bool aliasDiffuseToSpecular,
+								  bool bypassDiffuse,
+								  uint *stride = NULL
+								 );
 
 	// *** Index buffer helper
 
@@ -1648,16 +1746,18 @@ private:
 		}
 	}
 
-	
-	// Returns true if this material needs to compute the alpha component
-	static bool needsAlpha (CMaterial &mat);
+	// render helpers
+	bool renderPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, CMaterial& mat, uint firstVertex, uint32 nPrims);
+	bool renderIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, CMaterial& mat, uint32 firstIndex, uint32 nPrims);
+	bool renderSimpleIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, uint32 firstIndex, uint32 nPrims);
+	void convertToIndices16(uint firstIndex, uint numIndices);	
 
 	// Returns true if this material needs a constant color for the diffuse component
-	static bool needsConstantForDiffuse (CMaterial &mat, bool needAlpha);
+	static bool needsConstantForDiffuse (CMaterial &mat);
 
 	/* Returns true if this normal needs constant. If true, numConstant is the number of needed constants, firstConstant is the first
 	constants needed. */ 
-	static bool needsConstants (uint &numConstant, uint &firstConstant, CMaterial &mat, bool needAlpha);
+	static bool needsConstants (uint &numConstant, uint &firstConstant, uint &secondConstant, CMaterial &mat);
 
 	// Build a pixel shader for normal shader
 	IDirect3DPixelShader9	*buildPixelShader (const CNormalShaderDesc &normalShaderDesc, bool unlightedNoVertexColor);
@@ -1772,6 +1872,10 @@ private:
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;
 	uint32					_PixelShaderVersion;
+	uint32					_MaxPrimitiveCount;
+	uint32					_MaxVertexIndex;
+	uint					_MaxNumPerStageConstantLighted;
+	uint					_MaxNumPerStageConstantUnlighted;
 	
 	// Profiling
 	CPrimitiveProfile									_PrimitiveProfileIn;
@@ -1849,11 +1953,16 @@ public:
 	CMaterialState			_MaterialState;
 private:
 
+	// last activation of vertex buffer / index buffer
+	NLMISC::CRefPtr<CIBDrvInfosD3D>  _LastIndexBufferInfo;
+
 	// Vertex buffer cache
 	CVBState				_VertexBufferCache;
 	uint					_VertexBufferSize;
 	uint					_VertexBufferOffset;
+public:
 	bool					_UseVertexColor;
+private:
 
 	// Index buffer cache
 	CIBState				_IndexBufferCache;
@@ -1873,6 +1982,9 @@ private:
 	CVolatileVertexBuffer	*_VolatileVertexBufferAGP[2];
 	CVolatileIndexBuffer	*_VolatileIndexBufferRAM[2];
 	CVolatileIndexBuffer	*_VolatileIndexBufferAGP[2];
+
+	// Special 16 bit index buffer for quads
+	IDirect3DIndexBuffer9	*_QuadIB;	
 
 	// Vertex declaration list
 	std::list<CVertexDeclaration>	_VertexDeclarationList;
@@ -1896,7 +2008,9 @@ private:
 
 	// The last material setuped
 	CMaterial				*_CurrentMaterial;	
+public:
 	CMaterialDrvInfosD3D	*_CurrentMaterialInfo;	
+private:
 
 	// Optim: To not test change in Materials states if just texture has changed. Very usefull for landscape.
 	uint32					_MaterialAllTextureTouchedFlag;
@@ -1952,11 +2066,10 @@ private:
 	bool						_ScissorTouched;
 	uint8						_CurrentUVRouting[MaxTexture];
 	bool						_MustRestoreLight;	
+	D3DXMATRIX					_D3DMatrixIdentity;
+	DWORD						_FogColor;
 
-	public:
-	// tmp for debug
-	uint						_VertexStreamStride;
-	uint						_VertexDeclStride;	
+public:	
 
 	// private, for access by COcclusionQueryD3D
 	COcclusionQueryD3D			*_CurrentOcclusionQuery;
@@ -1984,11 +2097,13 @@ private:
 	// for debug only
 	static bool		_CacheTest[CacheTest_Count];
 
+	
+	static std::vector<uint16>  _QuadIndices; // tmp : quads indices -> to allow support of quads on devices that don't have 32 bit indices
+
 	// reset an index buffer and force it to be reallocated	
-	void deleteIndexBuffer(CIBDrvInfosD3D *ib);
-	//		
-	// apply a render variable to the device
-	//void applyRenderVariable(CRenderVariable *currentRenderState);
+	void deleteIndexBuffer(CIBDrvInfosD3D *ib);	
+	// Build 16 bit index buffer for quad
+	bool buildQuadIndexBuffer();	
 public:
 	#ifdef 	NL_DEBUG
 		std::set<CVBDrvInfosD3D *> _LockedBuffers;
@@ -2010,8 +2125,9 @@ public:
 		return true;
 	}
 
-	bool hasSceneBegun() const { return _SceneBegun; }
-	void checkPS();
+	bool hasSceneBegun() const { return _SceneBegun; }	
+	// tmp
+	void fixVB(uint32 nPrims, uint numVertexPerPrim);
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))
@@ -2049,12 +2165,16 @@ public:
 		d3d_mt._24 = 0.f; \
 		d3d_mt._31 = nl_mt_ptr[12]; \
 		d3d_mt._32 = nl_mt_ptr[13]; \
-		d3d_mt._33 = nl_mt_ptr[14]; \
+		d3d_mt._33 = nl_mt_ptr[15]; \
 		d3d_mt._34 = 0.f; \
 		d3d_mt._41 = 0.f; \
 		d3d_mt._42 = 0.f; \
 		d3d_mt._43 = 0.f; \
 		d3d_mt._44 = 1.f; }
+
+
+
+
 
 
 #define NL_D3DVECTOR_VECTOR(dest,vect) dest.x=(vect).x;dest.y=(vect).y;dest.z=(vect).z;
@@ -2065,7 +2185,6 @@ public:
 	floats[2] = (float)rgba.B * (1.f/255.f);floats[3] = (float)rgba.A * (1.f/255.f);}
 
 // ***************************************************************************
-
 // nbPixels is pixel count, not a byte count !
 inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
 {
@@ -2080,9 +2199,39 @@ inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
 	}
 }
 
+
 // ***************************************************************************
+// set a D3DCOLORVALUE 
+inline void setColor(D3DCOLORVALUE &dest, float r, float g, float b, float a) 
+{
+	dest.r = r;
+	dest.g = g;
+	dest.b = b;
+	dest.a = a;
+}
 
+// ***************************************************************************
+// set a D3DCOLORVALUE from & D3DCOLOR
+inline void setColor(D3DCOLORVALUE &dest, const D3DCOLOR &src) 
+{
+	dest.r = (1.f / 255.f) * ((src >> 16) & 0xff);
+	dest.g = (1.f / 255.f) * ((src >> 8) & 0xff);
+	dest.b = (1.f / 255.f) * (src & 0xff);
+	dest.a = (1.f / 255.f) * (src >> 24);
+}
 
+// ***************************************************************************
+// set a D3DCOLORVALUE from a CRGBA
+inline void setColor(D3DCOLORVALUE &dest, const NLMISC::CRGBA &src) 
+{
+	dest.r = (1.f / 255.f) * src.R;
+	dest.g = (1.f / 255.f) * src.G;
+	dest.b = (1.f / 255.f) * src.B;
+	dest.a = (1.f / 255.f) * src.A;
+}
+
+// ***************************************************************************
+void fillQuadIndexes (uint16 *indexes, uint first, uint last);
 
 } // NL3D
 

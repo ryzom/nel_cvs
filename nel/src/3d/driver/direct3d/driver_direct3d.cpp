@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.22 2004/09/17 15:10:35 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.23 2004/10/05 17:17:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -42,7 +42,6 @@
 using namespace std;
 using namespace NLMISC;
 
-
 #define RASTERIZER D3DDEVTYPE_HAL
 //#define RASTERIZER D3DDEVTYPE_REF
 
@@ -69,26 +68,6 @@ HINSTANCE HInstDLL = NULL;
 
 
 
-// tmp
-/*
-class CDumpAuto
-{
-public:
-	CDumpAuto(const char *name) : _Name(name) 
-	{ 
-		nldebug(name);
-	}
-	~CDumpAuto()
-	{
-		nldebug(("Leaving" +  _Name).c_str());
-	}
-private:
-	std::string _Name;
-};
-
-#define DUMP_AUTO(label) CDumpAuto __dump__auto##label(#label);
-  */
-
 // ***************************************************************************
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
@@ -96,6 +75,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 	HInstDLL = hinstDLL;
 	return true;
 }
+
 
 // ***************************************************************************
 
@@ -106,6 +86,8 @@ namespace NL3D
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 const uint32		CDriverD3D::ReleaseVersion = 0xb; // nico
+
+
 
 // ***************************************************************************
 
@@ -144,6 +126,8 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 	false, // CacheTest_MaterialState = 16,
 	false  // CacheTest_DepthRange = 17,	
 };
+
+
 
 
 // ***************************************************************************
@@ -242,13 +226,15 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
 	_MustRestoreLight = false;	
-	_VertexStreamStride = 0;
-	_VertexDeclStride = 0;
 	_Lost = false;
 	_SceneBegun = false;	
+	_MaxVertexIndex = 0;
+	_QuadIB = NULL;
+	_MaxNumPerStageConstantLighted = 0;
+	_MaxNumPerStageConstantUnlighted = 0;
+	D3DXMatrixIdentity(&_D3DMatrixIdentity);
+	_FogColor = 0xffffffff;
 }
-
-
 
 // ***************************************************************************
 
@@ -282,7 +268,8 @@ void CDriverD3D::resetRenderVariables()
 	{
 		if (_RenderStateCache[i].Value != 0xcccccccc)
 			touchRenderVariable (&(_RenderStateCache[i]));
-	}
+	}	
+
 	for (i=0; i<MaxTexture; i++)
 	{
 		uint j;
@@ -326,6 +313,7 @@ void CDriverD3D::resetRenderVariables()
 	touchRenderVariable (&(_MatrixCache[remapMatrixIndex (D3DTS_TEXTURE5)]));
 	touchRenderVariable (&(_MatrixCache[remapMatrixIndex (D3DTS_TEXTURE6)]));
 	touchRenderVariable (&(_MatrixCache[remapMatrixIndex (D3DTS_TEXTURE7)]));
+	
 
 	// Vertices and indexes are not valid anymore
 	_VertexBufferCache.VertexBuffer = NULL;
@@ -365,8 +353,7 @@ void CDriverD3D::resetRenderVariables()
 
 	CVertexBuffer::TLocation vertexAgpLocation = _DisableHardwareVertexArrayAGP ? CVertexBuffer::RAMResident : CVertexBuffer::AGPResident;
 	CIndexBuffer::TLocation indexAgpLocation = _DisableHardwareIndexArrayAGP ? CIndexBuffer::RAMResident : CIndexBuffer::AGPResident;
-	
-
+		
 	// Init volatile vertex buffers
 	_VolatileVertexBufferRAM[0]->init (CVertexBuffer::RAMResident, _VolatileVertexBufferRAM[0]->Size, _VolatileVertexBufferRAM[0]->MaxSize, this);
 	_VolatileVertexBufferRAM[0]->reset ();
@@ -375,7 +362,7 @@ void CDriverD3D::resetRenderVariables()
 	_VolatileVertexBufferAGP[0]->init (vertexAgpLocation, _VolatileVertexBufferAGP[0]->Size, _VolatileVertexBufferAGP[0]->MaxSize, this);
 	_VolatileVertexBufferAGP[0]->reset ();
 	_VolatileVertexBufferAGP[1]->init (vertexAgpLocation, _VolatileVertexBufferAGP[1]->Size, _VolatileVertexBufferAGP[1]->MaxSize, this);
-	_VolatileVertexBufferAGP[1]->reset ();
+	_VolatileVertexBufferAGP[1]->reset ();	
 	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[0]->Size, _VolatileIndexBufferRAM[0]->MaxSize, this);
 	_VolatileIndexBufferRAM[0]->reset ();
 	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[1]->Size, _VolatileIndexBufferRAM[1]->MaxSize, this);
@@ -383,8 +370,7 @@ void CDriverD3D::resetRenderVariables()
 	_VolatileIndexBufferAGP[0]->init (indexAgpLocation, _VolatileIndexBufferAGP[0]->Size, _VolatileIndexBufferAGP[0]->MaxSize, this);
 	_VolatileIndexBufferAGP[0]->reset ();
 	_VolatileIndexBufferAGP[1]->init (indexAgpLocation, _VolatileIndexBufferAGP[1]->Size, _VolatileIndexBufferAGP[1]->MaxSize, this);
-	_VolatileIndexBufferAGP[1]->reset ();
-
+	_VolatileIndexBufferAGP[1]->reset ();	
 	_ScissorTouched = true;
 }
 
@@ -469,6 +455,7 @@ void CDriverD3D::initRenderVariables()
 		_PixelShaderConstantCache[i].ValueType = CPixelShaderConstantState::Undef;
 	}
 	_RenderTarget.Modified = false;
+	
 
 	// Set the render states cache to its default values
 	setRenderState (D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_ALPHA|D3DCOLORWRITEENABLE_RED|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_BLUE);
@@ -690,13 +677,89 @@ inline void CDriverD3D::applyRenderVariable(CRenderVariable *currentRenderState)
 
 
 
-
-static inline void fixTexStage(CDriverD3D &drv, D3DTEXTURESTAGESTATETYPE state, DWORD stage,  DWORD value)
-{	
-	if ((value & D3DTA_SELECTMASK) == D3DTA_DIFFUSE)
+// ***************************************************************************
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::replaceArgumentAtStage(D3DTEXTURESTAGESTATETYPE state, DWORD stage, DWORD from, DWORD to)
+{		
+	if ((_TextureStateCache[stage][state].Value & D3DTA_SELECTMASK) == from)
 	{
-		drv.setTextureState (stage, state, (value&~D3DTA_SELECTMASK)|D3DTA_TFACTOR);
+		setTextureState (stage, state, (_TextureStateCache[stage][state].Value&~D3DTA_SELECTMASK)|to);
 	}
+}
+
+// ***************************************************************************
+// Replace a constant with diffuse color at the given stage
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom)
+{
+	replaceArgumentAtStage(D3DTSS_COLORARG1, stage, from, to);
+	if (_CurrentMaterialInfo->NumColorArg[stage] > 1)
+	{						
+		replaceArgumentAtStage(D3DTSS_COLORARG2, stage, from, to);
+		if (_CurrentMaterialInfo->NumColorArg[stage] > 2)
+		{
+			replaceArgumentAtStage(D3DTSS_COLORARG0, stage, from, to);
+		}
+	}
+	//
+	replaceArgumentAtStage(D3DTSS_ALPHAARG1, stage, from, to);
+	if (_CurrentMaterialInfo->NumAlphaArg[stage] > 1)
+	{
+		replaceArgumentAtStage(D3DTSS_ALPHAARG2, stage, from, to);
+		if (_CurrentMaterialInfo->NumAlphaArg[stage] > 2)
+		{
+			replaceArgumentAtStage(D3DTSS_ALPHAARG0, stage, from, to);
+		}
+	}
+	// Operator is D3DTOP_BLENDDIFFUSEALPHA ?
+	if (_TextureStateCache[stage][D3DTSS_COLOROP].Value == blendOpFrom)
+	{
+		setTextureState (stage, D3DTSS_COLOROP, D3DTOP_LERP);
+		setTextureState (stage, D3DTSS_COLORARG0, to|D3DTA_ALPHAREPLICATE);
+	}
+	if (_TextureStateCache[stage][D3DTSS_ALPHAOP].Value == blendOpFrom)
+	{
+		setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_LERP);
+		setTextureState (stage, D3DTSS_ALPHAARG0, to);
+	}
+}
+
+// ***************************************************************************
+// Replace all argument at relevant stages with the given value
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::replaceAllArgument(DWORD from, DWORD to, DWORD blendOpFrom)
+{
+	const uint maxTexture = inlGetNumTextStages();
+	// Look for texture state
+	for (uint i=0; i<maxTexture; i++)
+	{											
+		if (_CurrentMaterialInfo->ColorOp[i] == D3DTOP_DISABLE) break;
+		replaceAllArgumentAtStage(i, from, to, blendOpFrom);
+	}
+}
+
+// ***************************************************************************
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::setupConstantDiffuseColorFromLightedMaterial(D3DCOLOR color)
+{
+	for(uint i=1;i<_MaxLight;i++)
+		enableLightInternal(i, false);
+	_LightMapDynamicLightDirty= true;
+	D3DMATERIAL9 d3dMat;
+	setColor(d3dMat.Diffuse, 0.f, 0.f, 0.f, (1.f / 255.f) * (color >> 24));
+	setColor(d3dMat.Ambient, 0.f, 0.f, 0.f, 0.f);
+	setColor(d3dMat.Specular, 0.f, 0.f, 0.f, 0.f);
+	setColor(d3dMat.Emissive, color);
+	setMaterialState(d3dMat);
+	setRenderState(D3DRS_LIGHTING, TRUE);	
 }
 
 // ***************************************************************************
@@ -704,9 +767,9 @@ void CDriverD3D::updateRenderVariablesInternal()
 {
 	H_AUTO_D3D(CDriver3D_updateRenderVariablesInternal);
 	nlassert (_DeviceInterface);
-	
-	/* The "unlighted without vertex color" trick */
-	if (_CurrentMaterialInfo && _CurrentMaterialInfo->NeedsConstantForDiffuse)
+	bool aliasDiffuseToSpecular =  false;
+	bool enableVertexColorFlag = true;
+	if (_CurrentMaterialInfo && (_CurrentMaterialInfo->NeedsConstantForDiffuse || _CurrentMaterialInfo->MultipleConstantNoPixelShader)) /* The "unlighted without vertex color" trick */
 	{
 		// The material IS unlighted
 		// No pixel shader ?
@@ -714,10 +777,8 @@ void CDriverD3D::updateRenderVariablesInternal()
 		{
 			/*
 			 * We have to set the pixel shader now, because we have to choose between normal pixel shader and pixel shader without vertex color */
-
 			// Must have two pixel shader
 			nlassert (_CurrentMaterialInfo->PixelShaderUnlightedNoVertexColor);
-
 			if (!_UseVertexColor && (_VertexProgramCache.VertexProgram == NULL))
 			{
 				setPixelShader (_CurrentMaterialInfo->PixelShaderUnlightedNoVertexColor);
@@ -730,55 +791,105 @@ void CDriverD3D::updateRenderVariablesInternal()
 		else
 		{
 			setPixelShader (NULL);
-
-			/*
-			 * We have to change all texture state setuped to D3DTA_DIFFUSE into D3DTA_TFACTOR
-			 * if we use a vertex buffer with diffuse color vertex with an unlighted material and a vertex program */
-			if (!_UseVertexColor && (_VertexProgramCache.VertexProgram == NULL))
-			{
-				// Max texture
-				const uint maxTexture = inlGetNumTextStages();
-
-				// Look for texture state				
-				uint i;
-				for (i=0; i<maxTexture; i++)
-				{											
-					if (_CurrentMaterialInfo->ColorOp[i] == D3DTOP_DISABLE) break;
-					fixTexStage(*this, D3DTSS_COLORARG1, i, _TextureStateCache[i][D3DTSS_COLORARG1].Value);
-					if (_CurrentMaterialInfo->NumColorArg[i] > 1)
+			if (_CurrentMaterialInfo->NeedsConstantForDiffuse)
+			{				
+				/*
+				 * We have to change all texture state setuped to D3DTA_DIFFUSE into D3DTA_TFACTOR
+				 * if we use a vertex buffer with diffuse color vertex with an unlighted material and no vertex program */
+				if (_VertexProgramCache.VertexProgram)
+				{
+					// Diffuse should be output from vertex program
+					// So we can only emulate 1 per stage constant (it has already been setup in CDriverD3D::setupMaterial)
+					#ifdef NL_DEBUG
+						nlassert(!_CurrentMaterialInfo->MultipleConstantNoPixelShader);
+					#endif
+				}
+				else
+				{
+					if (!_UseVertexColor)
+					{							
+						if (!_CurrentMaterialInfo->MultipleConstantNoPixelShader)
+						{							
+							// Diffuse is used, but no other constant is used in the shader							
+							// Max texture
+							replaceAllArgument(D3DTA_DIFFUSE, D3DTA_TFACTOR, D3DTOP_BLENDDIFFUSEALPHA);							
+							setRenderState (D3DRS_TEXTUREFACTOR, _CurrentMaterialInfo->UnlightedColor);
+						}
+						else
+						{
+							#ifdef NL_DEBUG
+								nlassert(!_CurrentMaterialInfo->MultiplePerStageConstant); // Can't render this material on current hardware
+							#endif
+							//replaceAllArgumentAtStage(_CurrentMaterialInfo->ConstantIndex, D3DTA_TFACTOR, D3DTA_DIFFUSE, D3DTOP_BLENDFACTORALPHA);							
+							setupConstantDiffuseColorFromLightedMaterial(_CurrentMaterialInfo->UnlightedColor);
+						}
+					}
+					else
 					{						
-						fixTexStage(*this, D3DTSS_COLORARG2, i, _TextureStateCache[i][D3DTSS_COLORARG2].Value);
-						if (_CurrentMaterialInfo->NumColorArg[i] > 2)
+						if (_CurrentMaterialInfo->MultiplePerStageConstant)
 						{
-							fixTexStage(*this, D3DTSS_COLORARG0, i, _TextureStateCache[i][D3DTSS_COLORARG0].Value);
+							// vertex color, 1st constant from CMaterial::getColor (already setuped in CDriverD3D::setupMaterial)
+							//               2nd constant from a stage constant
+							// Vertex color is aliased to the specular stream -> all references to D3DTA_DIFFUSE must be replaced with references to D3DTA_SPECULAR
+							replaceAllArgument(D3DTA_DIFFUSE, D3DTA_SPECULAR, 0xffffffff);
+							aliasDiffuseToSpecular = true;
+							replaceAllArgumentAtStage(_CurrentMaterialInfo->ConstantIndex2, D3DTA_TFACTOR, D3DTA_DIFFUSE, D3DTOP_BLENDFACTORALPHA);
+							setupConstantDiffuseColorFromLightedMaterial(NL_D3DCOLOR_RGBA(_CurrentMaterialInfo->Constant2)); // set 2nd per stage constant
+							#ifdef NL_DEBUG
+								nlassert(_VertexDeclCache.DeclAliasDiffuseToSpecular); // VB must not have specular used ... else this material can't render
+							#endif
+							// NB : currently this don't work with the GeForce2 (seems to be a driver bug).  Fortunately, this case isn't encountered with Ryzom materials :)
+							// So it's provided for convenience.
 						}
-					}
-					//
-					fixTexStage(*this, D3DTSS_ALPHAARG1, i, _TextureStateCache[i][D3DTSS_ALPHAARG1].Value);
-					if (_CurrentMaterialInfo->NumAlphaArg[i] > 1)
-					{
-						fixTexStage(*this, D3DTSS_ALPHAARG2, i, _TextureStateCache[i][D3DTSS_ALPHAARG2].Value);
-						if (_CurrentMaterialInfo->NumAlphaArg[i] > 2)
-						{
-							fixTexStage(*this, D3DTSS_ALPHAARG0, i, _TextureStateCache[i][D3DTSS_ALPHAARG0].Value);
-						}
-					}
-					// Operator is D3DTOP_BLENDDIFFUSEALPHA ?
-					if (_TextureStateCache[i][D3DTSS_COLOROP].Value == D3DTOP_BLENDDIFFUSEALPHA)
-					{
-						setTextureState (i, D3DTSS_COLOROP, D3DTOP_LERP);
-						setTextureState (i, D3DTSS_COLORARG0, D3DTA_TFACTOR|D3DTA_ALPHAREPLICATE);
-					}
-					if (_TextureStateCache[i][D3DTSS_ALPHAOP].Value == D3DTOP_BLENDDIFFUSEALPHA)
-					{
-						setTextureState (i, D3DTSS_ALPHAOP, D3DTOP_LERP);
-						setTextureState (i, D3DTSS_ALPHAARG0, D3DTA_TFACTOR);
 					}
 				}				
 			}
+			else
+			{
+				nlassert(_CurrentMaterialInfo->MultipleConstantNoPixelShader);
+				// If vertex color is used, alias it to specular
+				/*
+				if (_UseVertexColor)
+				{
+					replaceAllArgument(D3DTA_DIFFUSE, D3DTA_SPECULAR, 0xffffffff);
+					aliasDiffuseToSpecular = true; // VB must not have specular used ... else this material can't render
+				}
+				*/
+				// up to 2 constants with no pixel shaders
+				// look for constant at other stages and replaces then with diffuse color
+				// first constant color has already been set yet (in CD3DDriver::setupMaterial)
+				replaceAllArgumentAtStage(_CurrentMaterialInfo->ConstantIndex2, D3DTA_TFACTOR, D3DTA_DIFFUSE, D3DTOP_BLENDFACTORALPHA);
+				setupConstantDiffuseColorFromLightedMaterial(NL_D3DCOLOR_RGBA(_CurrentMaterialInfo->Constant2)); // set 2nd per stage constant				
+			}
 		}
 	}
+	else
+	{		
+		if (_CurrentMaterialInfo) enableVertexColorFlag = _CurrentMaterialInfo->VertexColorLighted;
+	}
 
+			
+	// Fix (one more...) for Radeon 7xxx
+	// Don't know why, but the lighting is broken when MULTIPLYADD is used as in the lightmap shader..
+	// Correct behaviour with GeForce & Ref. rasterizer...
+	// The fix is to disable the light contribution from dynamic lights
+	if (_NbNeLTextureStages == 3)
+	{		
+		if (_TextureStateCache[0][D3DTSS_COLOROP].Value == D3DTOP_MULTIPLYADD &&
+			_TextureStateCache[0][D3DTSS_COLORARG0].Value == D3DTA_DIFFUSE
+		)
+		{			
+			_TextureStateCache[0][D3DTSS_COLOROP].Value = D3DTOP_MODULATE;
+			touchRenderVariable(&_TextureStateCache[0][D3DTSS_COLOROP]);
+		}
+	}	
+
+	if (_NbNeLTextureStages == 3)
+	{
+		// fix for radeon 7xxx -> should enable vertex color only if really used
+		setEnableVertexColor(enableVertexColorFlag);
+	}	
+	setAliasDiffuseToSpecular(aliasDiffuseToSpecular);		
 	// Flush all the modified render states	
 	while (_ModifiedRenderState)
 	{
@@ -791,8 +902,10 @@ void CDriverD3D::updateRenderVariablesInternal()
 		// Unlinked
 		_ModifiedRenderState = currentRenderState->NextModified;
 		currentRenderState->apply(this);
-	}		
+	}					
 }
+
+
 
 // ***************************************************************************
 
@@ -1127,9 +1240,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	}
 
 	// Create the D3D device	
-
-	
-	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);
+	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);		
 	if (result != D3D_OK)
 	{
 		nlwarning ("CDriverD3D::setDisplay: Can't create device.");
@@ -1146,6 +1257,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
 		_PixelShaderVersion = caps.PixelShaderVersion;
 		_CubbedMipMapSupported = (caps.TextureCaps & D3DPTEXTURECAPS_MIPCUBEMAP) != 0;
+		_MaxPrimitiveCount = caps.MaxPrimitiveCount;
+		_MaxVertexIndex = caps.MaxVertexIndex;
 	}
 	else
 	{
@@ -1155,7 +1268,15 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_EMBMSupported = false;
 		_CubbedMipMapSupported = false;
 		_PixelShaderVersion = 0;
+		_MaxPrimitiveCount = 0xffff;
+		_MaxVertexIndex = 0xffff;
 	}
+	// If 16 bits vertices only, build a vb for quads rendering
+	if (_MaxVertexIndex <= 0xffff)
+	{
+		if (!buildQuadIndexBuffer()) return false;
+	}	
+
 	// test for occlusion query support
 	IDirect3DQuery9 *dummyQuery = NULL;
 	if (_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &dummyQuery) == D3DERR_NOTAVAILABLE)
@@ -1177,6 +1298,26 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	_PixelShader = !_DisableHardwarePixelShader && (caps.PixelShaderVersion&0xffff) >= 0x0101;
 	_MaxVerticesByVertexBufferHard = caps.MaxVertexIndex;
 	_MaxLight = caps.MaxActiveLights;
+
+	if (_PixelShader)
+	{
+		_MaxNumPerStageConstantLighted = _NbNeLTextureStages;
+		_MaxNumPerStageConstantUnlighted = _NbNeLTextureStages;
+	}
+	else
+	{
+		// emulation of per stage constant through diffuse
+		_MaxNumPerStageConstantLighted = 1;
+		_MaxNumPerStageConstantUnlighted = 2;
+	}
+
+	if (_DisableHardwarePixelShader && _NbNeLTextureStages > 3) // yes, 3 is not a bug
+	{
+		// If pixel shader are disabled, then can't emulate the texEnvColor feature with more than 2 stages. (only 2 constant available by using material emissive in addition to the the texture factor)
+		// Radeon with 3 stages cases : let the third stage to ensure availability of the EMBM feature
+		// There is a special fix in CMaterial::isSupportedByDriver to force the number of stages to 2 for the radeons
+		_NbNeLTextureStages = 2;
+	}
 
 	// *** Check textures caps
 	uint j;
@@ -1251,26 +1392,30 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	// try to allocate 16Mo by default of AGP Ram.
 	initVertexBufferHard(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
 
-	// Init volatile vertex buffers
+	// If AGP is less than 16 mo, try to keep the max in proportion
+	float maxAGPbufferSizeRatio = (float) _AGPMemoryAllocated / (float) NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE;
+
+	// Init volatile vertex buffers	
 	_CurrentRenderPass = 0;
 	_VolatileVertexBufferRAM[0]->init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, NL_VOLATILE_RAM_VB_MAXSIZE, this);
 	_VolatileVertexBufferRAM[0]->reset ();
 	_VolatileVertexBufferRAM[1]->init (CVertexBuffer::RAMResident, NL_VOLATILE_RAM_VB_SIZE, NL_VOLATILE_RAM_VB_MAXSIZE, this);
 	_VolatileVertexBufferRAM[1]->reset ();
-	_VolatileVertexBufferAGP[0]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, NL_VOLATILE_AGP_VB_MAXSIZE, this);
+	_VolatileVertexBufferAGP[0]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, (uint) (NL_VOLATILE_AGP_VB_MAXSIZE * maxAGPbufferSizeRatio), this);
 	_VolatileVertexBufferAGP[0]->reset ();
-	_VolatileVertexBufferAGP[1]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, NL_VOLATILE_AGP_VB_MAXSIZE, this);
-	_VolatileVertexBufferAGP[1]->reset ();
+	_VolatileVertexBufferAGP[1]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, (uint) (NL_VOLATILE_AGP_VB_MAXSIZE * maxAGPbufferSizeRatio), this);
+	_VolatileVertexBufferAGP[1]->reset ();	
 	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
 	_VolatileIndexBufferRAM[0]->reset ();
 	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
 	_VolatileIndexBufferRAM[1]->reset ();
-	_VolatileIndexBufferAGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, NL_VOLATILE_AGP_IB_MAXSIZE, this);
+	_VolatileIndexBufferAGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this);
 	_VolatileIndexBufferAGP[0]->reset ();
-	_VolatileIndexBufferAGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, NL_VOLATILE_AGP_IB_MAXSIZE, this);
-	_VolatileIndexBufferAGP[1]->reset ();
+	_VolatileIndexBufferAGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this);
+	_VolatileIndexBufferAGP[1]->reset ();	
+	setupViewport (CViewport());	
 
-	setupViewport (CViewport());
+	
 
 	// Begin now
 	//nldebug("BeginScene");
@@ -1291,6 +1436,12 @@ bool CDriverD3D::release()
 	IDriver::release();
 
 	_SwapBufferCounter = 0;
+
+	if (_QuadIB)
+	{
+		_QuadIB->Release();
+		_QuadIB = NULL;
+	}
 
 	// delete querries
 	while (!_OcclusionQueryList.empty())
@@ -1507,19 +1658,18 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 
 // ***************************************************************************
 bool CDriverD3D::swapBuffers() 
-{		
+{				
 	//DUMP_AUTO(swapBuffers);
 	H_AUTO_D3D(CDriverD3D_swapBuffers);
 	nlassert (_DeviceInterface);
 
 	++ _SwapBufferCounter;
 	// Swap & reset volatile buffers
-	_CurrentRenderPass++;	
+	_CurrentRenderPass++;		
 	_VolatileVertexBufferRAM[_CurrentRenderPass&1]->reset ();
-	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();	
+	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();		
 	_VolatileIndexBufferRAM[_CurrentRenderPass&1]->reset ();
-	_VolatileIndexBufferAGP[_CurrentRenderPass&1]->reset ();
-	
+	_VolatileIndexBufferAGP[_CurrentRenderPass&1]->reset ();		
 
 	// todo hulud volatile
 	//_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
@@ -1653,9 +1803,10 @@ void CDriverD3D::setupFog(float start, float end, CRGBA color)
 	// Remember fog start and end
 	_FogStart = start;
 	_FogEnd = end;
+	_FogColor = NL_D3DCOLOR_RGBA(color);
 
 	// Set the fog
-	setRenderState (D3DRS_FOGCOLOR, NL_D3DCOLOR_RGBA(color));
+	setRenderState (D3DRS_FOGCOLOR, _FogColor);
 	setRenderState (D3DRS_FOGSTART, *((DWORD*) (&_FogStart)));
 	setRenderState (D3DRS_FOGEND, *((DWORD*) (&_FogEnd)));
 }
@@ -1967,7 +2118,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		ite = iteNext;
 	}
 
-	// Free volatile buffers
+	// Free volatile buffers	
 	_VolatileVertexBufferRAM[0]->release ();
 	_VolatileVertexBufferRAM[1]->release ();
 	_VolatileVertexBufferAGP[0]->release ();
@@ -1975,7 +2126,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	_VolatileIndexBufferRAM[0]->release ();
 	_VolatileIndexBufferRAM[1]->release ();
 	_VolatileIndexBufferAGP[0]->release ();
-	_VolatileIndexBufferAGP[1]->release ();
+	_VolatileIndexBufferAGP[1]->release ();	
 
 	// Back buffer ref
 	if (_BackBuffer)
@@ -2572,7 +2723,7 @@ IDriver::TCullMode CDriverD3D::getCullMode() const
 // volatile bool preciseStateProfile = false;
 // ***************************************************************************
 void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
-{	
+{			
 	H_AUTO_D3D(CDriverD3D_CRenderState);
 	/*if (!preciseStateProfile)
 	{*/		
@@ -2695,7 +2846,7 @@ void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
 
 // ***************************************************************************
 void CDriverD3D::CTextureState::apply(CDriverD3D *driver)
-{	
+{		
 	H_AUTO_D3D(CDriverD3D_CTextureState);	
 	driver->_DeviceInterface->SetTextureStageState (StageID, StateID, Value);
 }
@@ -2726,12 +2877,9 @@ void CDriverD3D::CVertexProgramPtrState::apply(CDriverD3D *driver)
 
 // ***************************************************************************
 void CDriverD3D::CPixelShaderPtrState::apply(CDriverD3D *driver)
-{
-	// H_AUTO enlevé TMP TMP TMP TMP
-	// TMP TMP TMP TMP TMP
-	// TMP TMP TMP TMP TMP
-	// TMP TMP TMP TMP TMP
-	//H_AUTO_D3D(CDriverD3D_CPixelShaderPtrState);
+{	
+	H_AUTO_D3D(CDriverD3D_CPixelShaderPtrState);
+	if (!driver->supportPixelShaders()) return;
 	driver->_DeviceInterface->SetPixelShader(PixelShader);
 }
 
@@ -2786,7 +2934,18 @@ void CDriverD3D::CVBState::apply(CDriverD3D *driver)
 	if (VertexBuffer)
 	{
 		driver->_DeviceInterface->SetStreamSource (0, VertexBuffer, Offset, Stride);
-		driver->_VertexStreamStride = Stride;
+		// Fix for radeon 7xxx & bad vertex layout
+		if (driver->inlGetNumTextStages() == 3) // If there are 3 stages this is a Radeon 7xxx
+		{							
+			if (ColorOffset != 0 && driver->_VertexDeclCache.EnableVertexColor)
+			{
+				driver->_DeviceInterface->SetStreamSource (1, VertexBuffer, Offset + ColorOffset, Stride);
+			}
+			else
+			{
+				driver->_DeviceInterface->SetStreamSource (1, NULL, 0, 0);
+			}			
+		}		
 	}
 }
 // ***************************************************************************
@@ -2802,12 +2961,27 @@ void CDriverD3D::CIBState::apply(CDriverD3D *driver)
 // ***************************************************************************
 void CDriverD3D::CVertexDeclState::apply(CDriverD3D *driver)
 {
-	H_AUTO_D3D(CDriverD3D_CVertexDeclState);
+	H_AUTO_D3D(CDriverD3D_CVertexDeclState);	
 	if (Decl)
 	{
-		driver->_DeviceInterface->SetVertexDeclaration (Decl);
-		driver->_VertexDeclStride = Stride;
-	}
+		if (!EnableVertexColor && DeclAliasDiffuseToSpecular && driver->inlGetNumTextStages() == 3)
+		{
+			// Fix for radeon 7xxx -> if vertex color is not used it should not be present in the vertex declaration (example : lighted material + vertex color but, no vertexColorLighted)
+			nlassert(DeclNoDiffuse);
+			driver->_DeviceInterface->SetVertexDeclaration (DeclNoDiffuse);
+		}
+		else
+		if (AliasDiffuseToSpecular)
+		{
+			nlassert(DeclAliasDiffuseToSpecular);
+			driver->_DeviceInterface->SetVertexDeclaration (DeclAliasDiffuseToSpecular);
+		}
+		else
+		{
+			nlassert(Decl);
+			driver->_DeviceInterface->SetVertexDeclaration (Decl);
+		}		
+	}	
 }
 
 // ***************************************************************************
@@ -2843,20 +3017,18 @@ void CDriverD3D::CLightState::apply(CDriverD3D *driver)
 // ***************************************************************************
 void CDriverD3D::CRenderTargetState::apply(CDriverD3D *driver)
 {
-	H_AUTO_D3D(CDriverD3D_CRenderTargetState);
+	H_AUTO_D3D(CDriverD3D_CRenderTargetState);	
 	driver->_DeviceInterface->SetRenderTarget (0, Target);
 	driver->setupViewport(driver->_Viewport);				
-	driver->setupScissor(driver->_Scissor);
+	driver->setupScissor(driver->_Scissor);	
 }
 
 // ***************************************************************************
 void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
-{
+{	
 	H_AUTO_D3D(CDriverD3D_CMaterialState);
 	driver->_DeviceInterface->SetMaterial(&Current);
 }
-
-
 
 
 } // NL3D

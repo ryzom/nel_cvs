@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.14 2004/10/04 08:54:00 berenguier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.15 2004/10/05 17:17:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1003,7 +1003,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 // ***************************************************************************
 
 bool CDriverD3D::isTextureExist(const ITexture&tex)
-{
+{	
 	H_AUTO_D3D(CDriverD3D_isTextureExist)
 	bool result;
 

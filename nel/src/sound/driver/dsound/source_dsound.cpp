@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.21.2.2 2003/04/24 16:55:23 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.21.2.3 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -516,13 +516,18 @@ void CSourceDSound::fillData(sint16 *dst, uint nbSample)
 
 void CSourceDSound::fillData(const TLockedBufferInfo &lbi, int nbSample)
 {
-	uint size = std::min(uint32(nbSample), lbi.Size1>>1);
+	nlassert((nbSample & 0x1) == 0);
+/*	nlassert(lbi.Size1 != 0);
+	nlassert(lbi.Ptr1 != NULL);
+*/	uint size = std::min(uint32(nbSample), lbi.Size1>>1);
 	fillData(lbi.Ptr1, size);
 	nbSample -= size;
 
 	if (nbSample)
 	{
-		size = min(uint32(nbSample), lbi.Size2>>1);
+/*		nlassert(lbi.Size2 != 0);
+		nlassert(lbi.Ptr2 != NULL);
+*/		size = min(uint32(nbSample), lbi.Size2>>1);
 		fillData(lbi.Ptr2, size);
 		nbSample -= size;
 	}

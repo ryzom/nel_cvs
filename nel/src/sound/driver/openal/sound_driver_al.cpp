@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.14 2003/03/03 13:01:28 boucher Exp $
+ * $Id: sound_driver_al.cpp,v 1.14.2.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,7 @@ void TestALError()
 	
 __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 	CSoundDriverAL *driver = new CSoundDriverAL();
 	driver->init();
 	return driver;
@@ -103,6 +104,7 @@ extern "C"
 {
 ISoundDriver* NLSOUND_createISoundDriverInstance (bool useEax)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 	CSoundDriverAL *driver = new CSoundDriverAL();
 	driver->init(useEax);
 	return driver;
@@ -261,6 +263,7 @@ void		CSoundDriverAL::generateItems( TGenFunctionAL algenfunc, TTestFunctionAL a
  */
 IBuffer			*CSoundDriverAL::createBuffer()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverAL);
 	return new CBufferAL( createItem( alGenBuffers, alIsBuffer, _Buffers, _NbExpBuffers, BUFFER_ALLOC_RATE ) );
 }
 
@@ -270,6 +273,7 @@ IBuffer			*CSoundDriverAL::createBuffer()
  */
 ISource			*CSoundDriverAL::createSource()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverAL);
 	CSourceAL *sourceal = new CSourceAL( createItem( alGenSources, alIsSource, _Sources, _NbExpSources, SOURCE_ALLOC_RATE ) );
 	if ( _RolloffFactor != ROLLOFF_FACTOR_DEFAULT )
 	{
@@ -285,6 +289,7 @@ ISource			*CSoundDriverAL::createSource()
 ALuint			CSoundDriverAL::createItem( TGenFunctionAL algenfunc, TTestFunctionAL altestfunc,
 											vector<ALuint>& names, uint& index, uint allocrate )
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverAL);
 	nlassert( index <= names.size() );
 	if ( index == names.size() )
 	{
@@ -383,6 +388,7 @@ bool			CSoundDriverAL::deleteItem( ALuint name, TGenFunctionAL aldeletefunc, vec
  */
 IListener		*CSoundDriverAL::createListener()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverAL);
 	nlassert( CListenerAL::instance() == NULL );
 	return new CListenerAL();
 }

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.4 2003/03/06 18:32:22 coutelas Exp $
+ * $Id: string_mapper.cpp,v 1.4.2.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 
 #include "stdmisc.h"
 #include "nel/misc/string_mapper.h"
+
+
 
 namespace NLMISC
 {
@@ -65,6 +67,7 @@ TStringId	CStringMapper::emptyId()
 
 NLMISC::TStringId CStringMapper::localMap(const std::string &str)
 {
+	NL_ALLOC_CONTEXT(NLMISC_CStringManager);
 	CStringRef	ref(&str);
 	TStringRefMap::iterator it(_StringMap.find(ref));
 

@@ -1,6 +1,6 @@
 /** \file context_sound.cpp
  *
- * $Id: context_sound.cpp,v 1.2.2.1 2003/04/24 14:05:44 boucher Exp $
+ * $Id: context_sound.cpp,v 1.2.2.2 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,6 +164,7 @@ CSound	*CContextSound::getContextSound(CSoundContext &context)
 
 void CContextSound::init()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CContextSound);
 	uint	nbJoker = 0;
 	uint	contextArgIndex[SoundContextNbArgs];
 	bool	useRandom = false;

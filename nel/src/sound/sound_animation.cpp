@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.6 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_animation.cpp,v 1.6.2.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,6 +158,7 @@ void CSoundAnimation::play(UAudioMixer* mixer, float lastTime, float curTime, NL
 
 void CSoundAnimation::load()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundAnimation);
 	CIFile file;
 
 	// Open the file

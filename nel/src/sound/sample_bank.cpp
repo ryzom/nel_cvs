@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.14.2.1 2003/04/24 14:05:44 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.14.2.2 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ CSampleBank::TVirtualBankCont		CSampleBank::_VirtualBanks;
 
 void				CSampleBank::init(NLGEORGES::UFormElm *mixerConfig)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSampleBank);
 	if (mixerConfig == 0)
 		return;
 
@@ -214,6 +215,8 @@ CSampleBank::~CSampleBank()
 		delete _Samples.begin()->second;
 		_Samples.erase(_Samples.begin());
 	}
+
+	_Samples.clear();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.7 2003/01/07 17:46:20 miller Exp $
+ * $Id: big_file.cpp,v 1.7.4.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -52,6 +52,7 @@ CBigFile::CHandleFile		&CBigFile::CThreadFileArray::get(uint32 index)
 	vector<CHandleFile>		*ptr= (vector<CHandleFile>*)_TDS.getPointer();
 	if(ptr==NULL)
 	{
+		NL_ALLOC_CONTEXT(NLMISC_CBigFile);
 		ptr= new vector<CHandleFile>;
 		_TDS.setPointer(ptr);
 	}
@@ -76,6 +77,7 @@ CBigFile &CBigFile::getInstance ()
 {
 	if (_Singleton == NULL)
 	{
+		NL_ALLOC_CONTEXT(NLMISC_CBigFile);
 		_Singleton = new CBigFile();
 	}
 	return *_Singleton;

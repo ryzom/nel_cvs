@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.11 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_anim_manager.cpp,v 1.11.4.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,7 @@ TSoundAnimId CSoundAnimManager::loadAnimation(std::string& name)
 
 TSoundAnimId CSoundAnimManager::createAnimation(std::string& name)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundAnimManager);
 	nlassert(!name.empty());
 
 	// create and insert animations

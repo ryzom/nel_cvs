@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.9 2002/03/15 13:45:22 legros Exp $
+ * $Id: class_registry.cpp,v 1.9.8.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@ set<CClassRegistry::CClassNode>		*CClassRegistry::RegistredClasses = NULL;
 // ======================================================================================================
 void		CClassRegistry::init()
 {
+	NL_ALLOC_CONTEXT(NLMISC_CClassRegistry);
 	if (RegistredClasses == NULL)
 		RegistredClasses = new set<CClassRegistry::CClassNode>();
 }

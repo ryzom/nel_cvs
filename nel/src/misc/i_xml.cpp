@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.13.2.2 2003/05/16 17:46:10 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.13.2.3 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 // Include from libxml2
 #include <libxml/xmlerror.h>
+
 
 using namespace std;
 

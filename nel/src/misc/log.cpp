@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.53 2003/04/16 13:52:55 lecroart Exp $
+ * $Id: log.cpp,v 1.53.2.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ void CLog::setDefaultProcessName ()
 {
 	if (_ProcessName == NULL)
 	{
+		NL_ALLOC_CONTEXT(NLMISC_CLog);
 		_ProcessName = new string;
 	}
 

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a generic sound and its static properties
  *
- * $Id: sound.cpp,v 1.28 2003/03/03 12:58:08 boucher Exp $
+ * $Id: sound.cpp,v 1.28.2.1 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@ namespace NLSOUND {
 
 CSound *CSound::createSound(const std::string &filename, NLGEORGES::UFormElm& formRoot)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSound);
 	CSound *ret = NULL;
 	string	soundType;
 

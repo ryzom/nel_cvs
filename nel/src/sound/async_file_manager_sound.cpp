@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.cpp,v 1.4.2.1 2003/04/24 14:05:44 boucher Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.4.2.2 2003/05/28 13:49:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ CAsyncFileManagerSound	*CAsyncFileManagerSound::_Singleton;
 
 CAsyncFileManagerSound &CAsyncFileManagerSound::getInstance()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CAsyncFileManagerSound);
 	if (_Singleton == NULL)
 	{
 		_Singleton = new CAsyncFileManagerSound();
@@ -60,6 +61,7 @@ void	CAsyncFileManagerSound::terminate()
 
 void	CAsyncFileManagerSound::loadWavFile(IBuffer *pdestBuffer, const std::string &filename)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CAsyncFileManagerSound);
 	CAsyncFileManager::getInstance().addLoadTask(new CLoadWavFile(pdestBuffer, filename));
 }
 
@@ -147,6 +149,7 @@ CAsyncFileManagerSound::CLoadWavFile::CLoadWavFile (IBuffer *pdestBuffer, const 
 
 void CAsyncFileManagerSound::CLoadWavFile::run (void)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CAsyncFileManagerSound);
 	nldebug("Loading sample %s...", _Filename.c_str());
 //	nlSleep(500);
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();

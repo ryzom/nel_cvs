@@ -1,7 +1,7 @@
 /** \file animation.h
  * Animation interface between the game and NeL
  *
- * $Id: animation.h,v 1.4 2001/07/20 17:08:11 lecroart Exp $
+ * $Id: animation.h,v 1.5 2001/07/27 14:35:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ class CEntity;
 //
 
 // Animation id used by playAnimation()
-enum EAnim { NoAnim = -1, WalkAnim, IdleAnim, LogInAnim, LogOffAnim, ThrowSnowball, PrepareSnowBall, PrepareSnowBallCycle, HitAnim };
+enum EAnim { NoAnim = -1, PrepareWalkAnim, WalkAnim, IdleAnim, LogInAnim, LogOffAnim, ThrowSnowball, PrepareSnowBall, PrepareSnowBallCycle, HitAnim };
 
 //
 // External functions

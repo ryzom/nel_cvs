@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.39 2001/07/27 09:06:30 lecroart Exp $
+ * $Id: entities.cpp,v 1.40 2001/07/27 14:35:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,8 +231,7 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 		// allows collision snapping to the ceiling
 		entity.VisualCollisionEntity->setCeilMode(true);
 
-//		entity.Instance = Scene->createInstance ("snowball.ps");
-		entity.Instance = Scene->createInstance ("boule.shape");
+		entity.Instance = Scene->createInstance ("snowball.shape");
 		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
 
@@ -244,8 +243,8 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 
 	if (entity.Skeleton != NULL)
 		entity.Skeleton->setPos (startPosition);
-	else
-		entity.Instance->setPos (startPosition);
+
+	entity.Instance->setPos (startPosition);
 
 // todo sound
 //	if (entity.Source != NULL)
@@ -549,7 +548,8 @@ void stateNormal (CEntity &entity)
 		}
 		else if (!entity.WasWalking && entity.IsWalking)
 		{
-			playAnimation (entity, WalkAnim, true);
+			playAnimation (entity, PrepareWalkAnim, true);
+			playAnimation (entity, WalkAnim);
 		}
 		else if (entity.WasWalking && !entity.IsWalking)
 		{
@@ -754,11 +754,9 @@ void updateEntities ()
 				entity.Skeleton->setPos(entity.Position);
 				entity.Skeleton->setRotQuat(jdir);
 			}
-			else
-			{
-				entity.Instance->setPos(entity.Position);
-				entity.Instance->setRotQuat(jdir);
-			}
+
+			entity.Instance->setPos(entity.Position);
+			entity.Instance->setRotQuat(jdir);
 		}
 
 // todo sound
@@ -870,7 +868,10 @@ void	shotSnowball(uint32 sid, uint32 eid, const CVector &start, const CVector &t
 	playAnimation (entity, ThrowSnowball, true);
 
 	if (entity.IsWalking)
+	{
+		playAnimation (entity, PrepareWalkAnim, true);
 		playAnimation (entity, WalkAnim);
+	}
 	else
 		playAnimation (entity, IdleAnim);
 

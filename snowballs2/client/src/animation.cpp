@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.12 2001/07/27 09:05:02 lecroart Exp $
+ * $Id: animation.cpp,v 1.13 2001/07/27 14:35:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,7 @@ struct Anim
 
 Anim AnimIdArray[][2] =
 {
+	{ { "patterfeet.anim", false }, { "" } },
 	{ { "marche.anim", true }, { "" } },
 	{ { "idle.anim", true }, { "" } },
 	{ { "log_on.anim", false }, { "" } },

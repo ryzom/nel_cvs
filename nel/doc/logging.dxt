@@ -6,15 +6,22 @@
  You need to include the following header files : "nel/misc/debug.h" "nel/misc/log.h".
 
  \subsection init_log Initialization
- In the initialization of your service, attach some displayers to the global NLMISC::CLog objects
+
+ In the initialization of your service (see NLNET::IService), attach some displayers to the global NLMISC::CLog objects
  \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog and \e AssertLog.
  NLMISC::CStdDisplayer is for the screen (and VC++ debug window). It is attached by default to all of the five logger objects mentionned above.
  NLMISC::CFileDisplayer is for a file.
  NLMISC::CMsgBoxDisplayer is for a message box.
  NLNET::CNetDisplayer is for a logging server (see CLogService in the server documentation)
 
+ If your program is not a service (i.e. it is not inherited from NLNET::IService),
+ don't forget to call \b NLMISC::InitDebug() at the beginning of your program, otherwise
+ the logging functions won't work.
+
  Example :
  \code
+
+ NLMISC::InitDebug(); // if your program does not inherit from NLNET::IService
  NLNET::CNetDisplayer *nd = new CNetDisplayer(); // the address of the Logging Server is automatically retrieved using the Naming Service
  if ( nd->connected() ) // this line is optional: here we don't want the displayer to attempt other connections if the first one failed
  {

@@ -26,3 +26,23 @@ _$*
 *.ln
 core
 # CVS default ignores end
+*.ncb
+*.opt
+*.log
+*.obj
+*.o
+*.dll
+*.exe
+*.lib
+*.ilk
+*.exp
+*.idb
+*.dep
+*.mak
+*.plg
+*.aps
+thumbs.db
+Release
+ReleaseDebug
+Debug
+DebugFast

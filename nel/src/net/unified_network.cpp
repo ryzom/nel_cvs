@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.66 2003/04/25 16:04:56 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.67 2003/06/25 10:19:50 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -455,7 +455,7 @@ TCallbackItem	unServerCbArray[] =
 //
 //
 
-void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
+bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
 							  const string &shortName, uint16 port, TServiceId &sid)
 {
 	//DebugLog->addNegativeFilter ("HNETL5");
@@ -463,7 +463,7 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	if (_Initialised)
 	{
 		AUTOCHECK_DISPLAY ("HNETL5: Unified network layer already initialized");
-		return;
+		return true;
 	}
 
 	ThreadCreator = NLMISC::getThreadId();
@@ -517,7 +517,11 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 
 		if (_SId == 0)
 		{
-			CNamingClient::registerService(_Name, laddr, _SId);
+			if ( ! CNamingClient::registerService(_Name, laddr, _SId) )
+			{
+				nlinfo ("HNETL5: Registration denied");
+				return false;
+			}
 		}
 		else
 		{
@@ -535,6 +539,7 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	test.displayNL ("**************INIT***************");
 
 	_Initialised = true;
+	return true;
 }
 
 void	CUnifiedNetwork::connect()

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.177 2003/06/11 17:38:51 lecroart Exp $
+ * $Id: service.cpp,v 1.178 2003/06/25 10:19:50 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1108,9 +1108,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CInetAddress loc(LSAddr);
 				try
 				{
-					CUnifiedNetwork::getInstance()->init (&loc, _RecordingState, _ShortName, _Port, _SId);
-
-					ok = true;
+					if ( CUnifiedNetwork::getInstance()->init (&loc, _RecordingState, _ShortName, _Port, _SId) )
+					{
+						ok = true;
+					}
+					else
+					{
+						nlinfo( "Exiting..." );
+						/*beep( 880, 400 );
+						beep( 440, 400 );
+						beep( 220, 400 );*/
+						nlSleep (1200);
+						return 10;
+					}
 				}
 				catch (ESocketConnectionFailed &)
 				{

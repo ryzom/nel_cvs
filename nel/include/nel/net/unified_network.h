@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.39 2003/04/23 16:28:36 lecroart Exp $
+ * $Id: unified_network.h,v 1.40 2003/06/25 10:19:23 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -85,9 +85,10 @@ public:
 	 * This function is called automatically called by the service class at the beginning.
 	 *
 	 * \param addr address of the naming service (0 is you don't want to use the naming service)
-	 * \param rec recorging state to know if we have to record or replay messages
+	 * \param rec recording state to know if we have to record or replay messages
+	 * \return false if the instance startup was denied by the naming service
 	 */
-	void	init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
+	bool	init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
 
 	/** Registers to the Naming Service, and connects to the present services
 	 */

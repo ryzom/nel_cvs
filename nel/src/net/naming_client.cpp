@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.56 2003/01/16 09:16:12 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.57 2003/06/25 10:19:50 cado Exp $
  *
  */
 
@@ -78,8 +78,9 @@ void CNamingClient::setUnregistrationBroadcastCallback (TBroadcastCallback cb)
 //
 
 static bool Registered;
-static TServiceId RegisteredSuccess;
+static bool RegisteredSuccess;
 static TServiceId *RegisteredSID = NULL;
+static string Reason;
 
 static void cbRegister (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
@@ -92,6 +93,10 @@ static void cbRegister (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 
 		// decode the registered services at the register process
 		cbRegisterBroadcast (msgin, from, netbase);
+	}
+	else
+	{
+		msgin.serial( Reason );
 	}
 	Registered = true;
 }
@@ -219,6 +224,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	//CNamingClient::displayRegisteredServices ();
 }
 
+
 //
 
 static TCallbackItem NamingClientCallbackArray[] =
@@ -227,7 +233,7 @@ static TCallbackItem NamingClientCallbackArray[] =
 	{ "QP", cbQueryPort },
 
 	{ "RGB", cbRegisterBroadcast },
-	{ "UNB", cbUnregisterBroadcast },
+	{ "UNB", cbUnregisterBroadcast }
 };
 
 void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecordingState rec, const vector<CInetAddress> &addresses )
@@ -321,12 +327,14 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 	}
 	else
 	{
-		nlerror ("NC: Naming service refused to register service %s at %s", name.c_str(), addr[0].asString().c_str());
+		nldebug ("NC: Naming service refused to register service %s at %s", name.c_str(), addr[0].asString().c_str());
+		nlwarning ("Startup denied: %s", Reason.c_str());
+		Reason.clear();
 	}
 
 	RegisteredSID = NULL;
 
-	return RegisteredSuccess == 1;
+	return RegisteredSuccess;
 }
 
 bool CNamingClient::registerServiceWithSId (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId sid)

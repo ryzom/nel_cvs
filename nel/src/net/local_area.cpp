@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.32 2001/01/11 10:36:40 cado Exp $
+ * $Id: local_area.cpp,v 1.33 2001/01/11 14:22:30 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,9 +284,11 @@ void CLocalArea::update()
 
 	// Update remote entities
 	CRemoteEntities::iterator ipe;
-	for ( ipe=_Neighbors.begin(); ipe!=_Neighbors.end(); )
+	for ( ipe=_Neighbors.begin(); ipe!=_Neighbors.end(); ++ipe )
 	{
-		bool erased = false;
+		//bool erased = false;
+
+		CVector previoushdg = (*ipe).second->bodyHeading();
 
 		// Update neighbor
 		(*ipe).second->update( deltatime );
@@ -294,37 +296,14 @@ void CLocalArea::update()
 		/*nldebug( "Previous: %f\t%f\t%f", (*ipe).second->previousPos().x, (*ipe).second->previousPos().y, (*ipe).second->previousPos().z );
 		nldebug( "Current:  %f\t%f\t%f", (*ipe).second->pos().x, (*ipe).second->pos().y, (*ipe).second->pos().z );*/
 
-		//if ( (*ipe).second->pos() != (*ipe).second->previousPos() ) // if this line is not commented out, we don't see when the entity turns without changing its position
-		//{
 		if ( _EntityMovedCallback != NULL )
 		{
-			_EntityMovedCallback( (*ipe).second );
-		}
-		//}
-
-		/* //DISABLED : outside the local area, the entities are only hidden (in the client program)
-		// Remove neighbor if it exits from the local area
-		if ( ! inRadius( (*ipe).second->pos() ) )
-		{
-			TEntityId id = (*ipe).second->id();
-			delete (*ipe).second;
-			CRemoteEntities::iterator ipebis = ipe;
-			ipe++;
-			_Neighbors.erase( ipebis );
-			if ( _EntityRemovedCallback != NULL )
+			if ( ((*ipe).second->pos() != (*ipe).second->previousPos())
+			  || ((*ipe).second->bodyHeading() != previoushdg) )
 			{
-				_EntityRemovedCallback( id );
+				_EntityMovedCallback( (*ipe).second );
 			}
-			nldebug( "Removed entity %u", id );
-
-			erased = true;
 		}
-
-		if ( !erased )
-		{
-			ipe++;
-		}
-		*/
 	}
 }
 

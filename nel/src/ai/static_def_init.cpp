@@ -47,6 +47,9 @@
 	CIndexedVarName::tMapName *CIndexedVarName::_Map = new CIndexedVarName::tMapName;
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 
+	CMessageGroup CMessageGroup::systemGroup(1);
+	CMessageGroup CMessageGroup::msgScriptingGroup(2);
+
 
 	const NLAIC::CIdentType *CObjectIdent::IdObjectIdent = NULL;/*("ObjectIdent",NLAIC::CSelfClassFactory(CObjectIdent("0:0:0")),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),

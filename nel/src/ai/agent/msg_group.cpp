@@ -1,6 +1,6 @@
 /** \file msg_group.cpp
  *
- * $Id: msg_group.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: msg_group.cpp,v 1.5 2001/03/29 16:32:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,7 @@
 #include "nel/ai/agent/msg_group.h"
 
 namespace NLAIAGENT
-{
-
-	CMessageGroup CMessageGroup::systemGroup(1);
-	CMessageGroup CMessageGroup::msgScriptingGroup(2);
+{	
 	
 	const NLAIC::CIdentType &CMessageGroup::getType() const		
 	{		

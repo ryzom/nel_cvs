@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.41 2001/03/29 16:02:29 portier Exp $
+ * $Id: agent_script.cpp,v 1.42 2001/03/29 16:32:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,7 +172,8 @@ namespace NLAIAGENT
 																			0,
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
-																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+																			//check if correct
+																			new NLAIC::CIdentType(*IAgent::IdAgent))));
 
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)

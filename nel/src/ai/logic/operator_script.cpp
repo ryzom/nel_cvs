@@ -68,7 +68,10 @@ namespace NLAIAGENT
 
 	const NLAIC::CIdentType &COperatorScript::getType() const
 	{		
-		return IdOperatorScript;
+		if ( getFactoryClass() != NULL ) 
+			return getFactoryClass()->getType();
+		else
+			return IdOperatorScript;
 	}
 
 	void COperatorScript::save(NLMISC::IStream &os)
@@ -147,20 +150,6 @@ namespace NLAIAGENT
 		}*/
 		return result;
 	}
-
-/*	void COperatorScript::setParent(const IWordNumRef *parent)
-	{
-		// Gets the father's factbase
-		const IRefrence *father = (const IRefrence *) *parent;
-		NLAILOGIC::CFactBase &fact_base = ( (CGDAgentScript *)father )->getFactBase();
-		
-		// Adds the needed asserts to the factbase
-		((NLAISCRIPT::COperatorClass *) _AgentClass)->initialiseFactBase( &fact_base );
-				
-		// Sets the parent
-		IRefrence::setParent(parent);		
-	}
-	*/
 
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{

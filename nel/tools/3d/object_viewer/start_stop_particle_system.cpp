@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.8 2001/07/24 08:57:22 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.9 2001/08/09 15:19:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,11 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+/*static char trace_buf[200];
+#define NL_TRACE sprintf(trace_buf, "%d", __LINE__); \
+				::MessageBox(NULL, trace_buf, NULL, MB_OK);
+*/
 
 /////////////////////////////////////////////////////////////////////////////
 // CStartStopParticleSystem dialog
@@ -109,17 +114,22 @@ BOOL CStartStopParticleSystem::OnInitDialog()
 
 void CStartStopParticleSystem::OnStartSystem() 
 {
+
+
 	_Running = true ;
-	_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() ) ;
-	// enable the system to take the right date from the scene
-	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true) ;	
-	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false) ; 
+	_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() ) ;	
+	// enable the system to take the right date from the scene	
+	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true) ;		
+	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false) ; 	
+
 
 	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0) ;
 
+
 	m_StartPicture.EnableWindow(FALSE) ;
-	m_StopPicture.EnableWindow(TRUE) ;
+	m_StopPicture.EnableWindow(TRUE) ;	
 	UpdateData(FALSE) ;	
+
 }
 
 void CStartStopParticleSystem::OnStopSystem() 
@@ -155,20 +165,24 @@ void CStartStopParticleSystem::stop(void)
 void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 {
 	
+
 	_InitInfoVect.clear() ;
 	_RotScaleInfoVect.clear() ;
 	_InitialSizeVect.clear() ;
 	uint32 nbLocated = ps->getNbProcess() ;
+
 	_PS = ps ; 
 	for(uint32 k = 0 ; k < nbLocated ; ++k)
 	{
-		
+
 		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k)) ;
 		if (loc)
 		{
+
 			_InitialSizeVect.push_back(std::make_pair(loc, loc->getSize()) ) ;
 			for (uint32 l = 0 ; l < loc->getSize() ; ++l)
 			{
+
 				CInitPSInstanceInfo ii ;
 				ii.Index = l ;
 				ii.Loc = loc ;
@@ -178,7 +192,7 @@ void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 				
 				for (uint32 m = 0 ; m < loc->getNbBoundObjects() ; ++m)
 				{
-					
+
 					if (dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)))
 					{
 						CRotScaleInfo rsi ;

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.13 2001/08/07 14:23:47 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.14 2001/08/09 15:18:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+/*static char trace_buf[200];
+#define NL_TRACE sprintf(trace_buf, "%d", __LINE__); \
+				::MessageBox(NULL, trace_buf, NULL, MB_OK);
+*/
 
 /////////////////////////////////////////////////////////////////////
 // WRAPPERS to set / retrieve the NbCycles parameter of a scheme   //
@@ -284,6 +289,7 @@ CAttribDlg::~CAttribDlg()
 
 void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 {
+
 	Create(IDD_ATTRIB_DLG, pParent) ;
 	RECT r, ro ;
 	GetClientRect(&r) ;
@@ -298,23 +304,32 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 
 	// fill the combo box with the list of available scheme
 
+
+
 	m_Scheme.InitStorage(getNumScheme(), 32) ; // 32 char per string pre-allocated
 
 	for (uint k = 0 ; k < getNumScheme() ; ++k)
 	{	
+
 		m_Scheme.InsertString(k, getSchemeName(k).c_str()) ;
+
 	}
 
 
+	
+
 	if (useScheme())
 	{
+
 		schemeValueUpdate() ;
 	}
 	else
 	{
+
 		nlassert(_EnableConstantValue) ;
 		cstValueUpdate() ;
 	}
+
 
 
 	if (!_EnableConstantValue)
@@ -323,6 +338,8 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 	}
 
 	inputValueUpdate() ;
+
+
 
 	ShowWindow(SW_SHOW) ;
 }
@@ -388,7 +405,10 @@ void CAttribDlg::cstValueUpdate()
 
 void CAttribDlg::schemeValueUpdate()
 {
+
 	if (!_FirstDrawing && useScheme()) return ;		
+
+
 
 	if (_CstValueDlg)
 	{
@@ -398,7 +418,10 @@ void CAttribDlg::schemeValueUpdate()
 	}
 
 
+
+
 	_NbCyclesDlg->EnableWindow(TRUE) ;
+
 
 
 	m_EditScheme.EnableWindow(TRUE) ;
@@ -408,16 +431,34 @@ void CAttribDlg::schemeValueUpdate()
 	m_SchemeInput.EnableWindow(TRUE) ;
 	m_SchemeInput.ShowWindow(SW_SHOW) ;
 
+
+
 	m_UseScheme.SetCurSel(1) ;
 
-	sint k = getCurrentScheme() ;
+
+
+	sint k = getCurrentScheme() 
+		;
+
+
+
+
 	if (k == -1) // unknow scheme ...
 	{
 		setCurrentScheme(0) ;
 		k = 0 ;
 	}
 
+
+
+
+
+
+
 	m_Scheme.SetCurSel(k) ;
+
+
+
 
 	if (hasSchemeCustomInput())
 	{
@@ -432,6 +473,8 @@ void CAttribDlg::schemeValueUpdate()
 	}
 
 
+
+
 	
 	_NbCyclesDlg->setWrapper(&_NbCyclesWrapper) ;
 	_NbCyclesWrapper.Dlg = this ;
@@ -440,11 +483,13 @@ void CAttribDlg::schemeValueUpdate()
 	_NbCyclesDlg->updateValueFromReader() ;
 
 
+
 	m_ClampCtrl.EnableWindow(isClampingSupported()) ;
 	if (isClampingSupported())
 	{
 		m_Clamp = isSchemeClamped() ;
 	}
+
 
 
 	UpdateData(FALSE) ;
@@ -576,11 +621,12 @@ END_MESSAGE_MAP()
 	}
 
 	uint CAttribDlgFloat::getNumScheme(void) const
-	{
-		return _DisableMemoryScheme ? 2 : 4 ;
+	{	
+		return _DisableMemoryScheme ? 2 : 4 ;		
 	}
 	std::string CAttribDlgFloat::getSchemeName(uint index) const
 	{
+
 		nlassert(index < 4) ;
 		switch (index)
 		{
@@ -640,24 +686,32 @@ END_MESSAGE_MAP()
 
 	sint CAttribDlgFloat::getCurrentScheme(void) const
 	{
-		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme() ;	
+
+		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme() ;
+		void *vt  = *(void **) scheme;
+
 
 		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
 		{
+
 			return 0 ;
 		}
 		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
 		{
+
 			return 1 ;
 		}
 		if (dynamic_cast<const NL3D::CPSFloatMemory *>(scheme)) 
 		{
+
 			return 2 ;
 		}
 		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) 
 		{
+
 			return 3 ;
 		}
+
 		return -1 ;
 	}
 
@@ -742,6 +796,7 @@ END_MESSAGE_MAP()
 	}
 	std::string CAttribDlgUInt::getSchemeName(uint index) const
 	{
+
 		nlassert(index < 4) ;
 		switch (index)
 		{
@@ -902,6 +957,7 @@ END_MESSAGE_MAP()
 	}
 	std::string CAttribDlgInt::getSchemeName(uint index) const
 	{
+
 		nlassert(index < 4) ;
 		switch (index)
 		{
@@ -1080,6 +1136,7 @@ END_MESSAGE_MAP()
 
 	std::string CAttribDlgRGBA::getSchemeName(uint index) const
 	{
+
 		nlassert(index < 5) ;
 		switch (index)
 		{
@@ -1273,6 +1330,7 @@ END_MESSAGE_MAP()
 
 	std::string CAttribDlgPlaneBasis::getSchemeName(uint index) const
 	{
+
 		nlassert(index < 4) ;
 		switch (index)
 		{			

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.6 2001/05/15 15:21:44 cado Exp $
+ * $Id: naming_service.cpp,v 1.7 2001/05/16 08:28:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,9 @@
 
 #include "nel/net/unitime.h"
 #include "nel/net/net_manager.h"
+
+// DEBUG
+#include "nel/misc/displayer.h"
 
 using namespace std;
 using namespace NLNET;
@@ -725,7 +728,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 	bool needRegister = true;
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
-		if ((*it).Addr.ipAddress() == addr.ipAddress() )
+		if ((*it).Addr.asIPString() == addr.asIPString() )
 		{
 			// we already have a service on this address, remplace it if it's the same name
 			if ((*it).Name == name)
@@ -1197,6 +1200,9 @@ void CNamingService::init()
 	
 	// add the callback in case of disconnection
 	CNetManager::setDisconnectionCallback ("NS", cbDisconnect, NULL);
+
+	// DEBUG
+	// DebugLog->addDisplayer( new CStdDisplayer() );
 }
 
 

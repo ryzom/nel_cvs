@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.2 2001/05/04 13:30:13 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.3 2001/06/13 08:54:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "nel/3d/instance_group_user.h"
+#include "nel/3d/scene_user.h"
+#include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
 using namespace NLMISC;
@@ -94,7 +96,7 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 {
 	// Create a file
 	CIFile file;
-	if (file.open (instanceGroup))
+	if (file.open (CPath::lookup (instanceGroup) ))
 	{
 		// Serialize this class
 		try
@@ -123,11 +125,16 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 
 // ***************************************************************************
 
-void CInstanceGroupUser::release (CScene& scene)
+void CInstanceGroupUser::addToScene (class UScene& scene)
 {
-	// Remove from the scene
-	_InstanceGroup.removeFromScene (scene);
+	_InstanceGroup.addToScene (((CSceneUser*)&scene)->getScene());
 }
+
+void CInstanceGroupUser::removeFromScene (class UScene& scene)
+{
+	_InstanceGroup.removeFromScene (((CSceneUser*)&scene)->getScene());
+}
+
 
 // ***************************************************************************
 

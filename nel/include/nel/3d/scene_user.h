@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.8 2001/06/12 11:49:39 berenguier Exp $
+ * $Id: scene_user.h,v 1.9 2001/06/13 08:54:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -269,7 +269,7 @@ public:
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		_Landscapes.erase((CLandscapeUser*) land);
 	}
-
+/*
 
 	virtual	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup)
 	{
@@ -298,7 +298,7 @@ public:
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		_InstanceGroups.erase (dynamic_cast<CInstanceGroupUser*>(group));
 	}
-
+*/
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.3 2001/06/11 09:24:22 besson Exp $
+ * $Id: u_instance_group.h,v 1.4 2001/06/13 08:54:09 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,14 @@ class UInstanceGroup
 {
 public:
 
+	/**
+	 *	add this instance group to the given scene
+	 */
 	virtual void addToScene(class UScene& scene)=0;
+
+	/**
+	 *	remove this instance group from the given scene
+	 */
 	virtual void removeFromScene(class UScene& scene)=0;
 	
 	/**

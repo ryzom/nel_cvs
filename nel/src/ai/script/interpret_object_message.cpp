@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.11 2001/02/28 17:01:30 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.12 2001/03/06 14:11:01 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
+#include "nel/ai/agent/msg_on_change.h"
 
 namespace NLAISCRIPT
 {
@@ -178,4 +179,43 @@ namespace NLAISCRIPT
 		return x;
 	}	
 
+//#########################################
+//		COnChangeMsgClass
+//#########################################
+
+	COnChangeMsgClass::COnChangeMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
+	COnChangeMsgClass::COnChangeMsgClass() : CMessageClass()
+	{		
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+	
+	const NLAIC::IBasicType *COnChangeMsgClass::clone() const
+	{
+		return new COnChangeMsgClass();
+	}
+
+	const NLAIC::IBasicType *COnChangeMsgClass::newInstance() const
+	{
+		return new COnChangeMsgClass();
+	}
+
+	NLAIAGENT::IObjectIA *COnChangeMsgClass::buildNewInstance() const
+	{
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
+		return x;
+	}	
 }

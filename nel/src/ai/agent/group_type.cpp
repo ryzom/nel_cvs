@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.11 2001/03/01 13:44:00 chafik Exp $
+ * $Id: group_type.cpp,v 1.12 2001/03/06 14:10:47 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1008,5 +1008,4 @@ namespace NLAIAGENT
 	{			
 		clear();
 	}
-
 }

@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.3 2001/03/02 15:18:26 portier Exp $
+ * $Id: list_manager.h,v 1.4 2001/03/06 14:09:35 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #ifndef NL_LIST_MANAGER_H
 #define NL_LIST_MANAGER_H
 
+#include "nel/ai/agent/agent_object.h"
 
 namespace NLAIAGENT
 {
@@ -135,6 +136,25 @@ namespace NLAIAGENT
 		virtual const IObjectIA *getObject(const CObjectIdent &) const;
 
 		virtual ~CVectorGroupManager();
+	};
+
+	class CListGroupManager: public IListManager
+	{
+	public:
+		static const NLAIC::CIdentType IdListGroupManager;
+
+	public:
+		CListGroupManager();
+		CListGroupManager(const CListGroupManager &);
+		
+		virtual const NLAIC::CIdentType &getType() const;		
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		
+		virtual void trie();
+		virtual const IObjectIA *getObject(const CObjectIdent &) const;
+
+		virtual ~CListGroupManager();
 	};
 }
 #endif

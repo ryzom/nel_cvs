@@ -36,7 +36,7 @@ public:
 	void SetLoader( CLoader* const _pl );
 	void New( const CStringEx& _sxdfnfilename );
 	void Load( const CStringEx& _sxfilename );
-	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate ); 
+	void Load( const CStringEx& _sxfilename, const CStringEx _sxdate );
 	void Save( const CStringEx& _sxfilename );
 	bool Update();
 

@@ -174,6 +174,9 @@ void CItem::VirtualSaveLoad()
 void CItem::New( const CStringEx& _sxdfnfilename )
 {
 	Clear();
+
+	moldfilename = _sxdfnfilename;
+
 	CMoldElt* pme = pl->LoadMold( _sxdfnfilename );
 	CMoldEltDefine* pmed = dynamic_cast< CMoldEltDefine* >( pme );
 	nlassert( pmed );

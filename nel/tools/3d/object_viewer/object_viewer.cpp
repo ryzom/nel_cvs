@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.82 2002/11/04 15:40:44 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.83 2002/11/25 14:12:59 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,7 @@
 #include "select_string.h"
 #include "global_wind_dlg.h"
 #include "sound_anim_dlg.h"
+
 
 
 
@@ -263,6 +264,11 @@ CObjectViewer::CObjectViewer ()
 		for (uint i=0; i<(uint)search_pathes.size(); i++)
 			CPath::addSearchPath (search_pathes.asString(i));
 
+		// Add recusrive search pathes
+		CConfigFile::CVar &recursive_search_pathes = cf.getVar ("recursive_search_pathes");
+		for (i=0; i<(uint)recursive_search_pathes.size(); i++)
+			CPath::addSearchPath (recursive_search_pathes.asString(i), true, false);
+
 		// Add search pathes
 		try
 		{
@@ -287,7 +293,7 @@ CObjectViewer::CObjectViewer ()
 		// set the sound banks and sample banks
 		try
 		{
-			CConfigFile::CVar &var = cf.getVar("sound_path");
+/*			CConfigFile::CVar &var = cf.getVar("sound_path");
 			string soundPath = var.asString();
 
 			var = cf.getVar("soundbanks");
@@ -297,8 +303,8 @@ CObjectViewer::CObjectViewer ()
 				dir.append("/").append(var.asString(i).c_str());
 				CSoundSystem::addSoundBank(dir);
 			}
-
-			var = cf.getVar("sample_path");
+*/
+			CConfigFile::CVar &var = cf.getVar("sample_path");
 			string samplePath(var.asString());
 			CSoundSystem::setSamplePath(samplePath);
 

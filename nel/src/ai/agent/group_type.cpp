@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.17 2001/04/03 12:32:04 chafik Exp $
+ * $Id: group_type.cpp,v 1.18 2001/04/12 08:33:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -534,9 +534,7 @@ namespace NLAIAGENT
 	{
 		NLAIC::IBasicInterface *m = new CGroupType();
 		return m;
-	}
-
-	const NLAIC::CIdentType &CGroupType::getType() const;		
+	}	
 
 	void CGroupType::save(NLMISC::IStream &os)
 	{	
@@ -899,9 +897,7 @@ namespace NLAIAGENT
 	{
 		NLAIC::IBasicInterface *m = new CVectorGroupType();
 		return m;
-	}
-
-	const NLAIC::CIdentType &CVectorGroupType::getType() const;		
+	}	
 
 	void CVectorGroupType::save(NLMISC::IStream &os)
 	{	

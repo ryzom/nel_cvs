@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.2 2004/03/19 17:50:47 berenguier Exp $
+ * $Id: driver_direct3d.cpp,v 1.3 2004/03/23 10:26:20 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -773,12 +773,14 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	{
 		_TextureCubeSupported = (caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0;
 		_NbNeLTextureStages = (caps.MaxSimultaneousTextures<IDRV_MAT_MAXTEXTURES)?caps.MaxSimultaneousTextures:IDRV_MAT_MAXTEXTURES;
+		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
 		// _NbTextureStages = caps.MaxSimultaneousTextures;
 	}
 	else
 	{
 		_TextureCubeSupported = false;
 		_NbNeLTextureStages = 1;
+		_MADOperatorSupported = false;
 		// _NbTextureStages = 1;
 	}
 #ifdef NL_FORCE_TEXTURE_STAGE_COUNT
@@ -1385,5 +1387,14 @@ uint32 CDriverD3D::getAvailableVertexVRAMMemory ()
 }
 
 // ***************************************************************************
+bool CDriverD3D::supportMADOperator() const
+{
+	if (_DeviceInterface)
+	{
+		return _MADOperatorSupported;
+	}
+	return false; // don't know..
+}
+
 
 } // NL3D

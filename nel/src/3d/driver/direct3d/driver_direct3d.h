@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.2 2004/03/19 17:50:47 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.3 2004/03/23 10:26:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -469,6 +469,7 @@ public:
 
 	// Texture addressing modes
 	virtual bool			supportTextureShaders() const {return false;};
+	virtual	bool			supportMADOperator() const;
 	virtual bool			isWaterShaderSupported() const {return false;};
 	virtual bool			isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const {return false;};
 	virtual void			setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) {};
@@ -1277,6 +1278,7 @@ private:
 	bool					_DisableHardwareVertexProgram;
 	bool					_DisableHardwareVertexArrayAGP;
 	bool					_DisableHardwareIndexArrayAGP;
+	bool					_MADOperatorSupported;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	// sint					_NbTextureStages;				// Number of texture stage available
 	uint					_MaxVerticesByVertexBufferHard;

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.66 2004/03/19 17:49:35 berenguier Exp $
+ * $Id: driver.h,v 1.67 2004/03/23 10:26:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1026,6 +1026,9 @@ public:
 	 *	NB: unlike isTextureExist(), this method is not thread safe.
 	 */
 	virtual	uint			getTextureHandle(const ITexture&tex)=0;
+
+	// see if the Multiply-Add Tex Env operator is supported (see CMaterial::Mad)
+	virtual	bool			supportMADOperator() const = 0;
 
 	// Adpater class
 	class CAdapter

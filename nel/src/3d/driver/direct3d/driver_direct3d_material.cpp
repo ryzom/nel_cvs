@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.1 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.2 2004/03/23 10:26:09 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -104,6 +104,7 @@ const D3DTEXTUREOP RemapTexOpTypeNeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTOP_BLENDDIFFUSEALPHA,	// InterpolateDiffuse
 	D3DTOP_LERP,				// InterpolateConstant
 	D3DTOP_BUMPENVMAP,			// EMBM
+	D3DTOP_MULTIPLYADD
 };
 
 // ***************************************************************************
@@ -150,6 +151,7 @@ const DWORD RemapTexArg0TypeNeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTA_TFACTOR, // todo hulud constant color D3DTA_CONSTANT,							// InterpolateDiffuse not used
 	D3DTA_TFACTOR|D3DTA_ALPHAREPLICATE, // todo hulud constant color D3DTA_CONSTANT|D3DTA_ALPHAREPLICATE,	// InterpolateConstant
 	D3DTA_TFACTOR, // todo hulud constant color D3DTA_CONSTANT,							// EMBM not used
+	D3DTOP_MULTIPLYADD
 };
 
 // ***************************************************************************
@@ -182,6 +184,10 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 		ColorOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpRGB];
 		// Only used for InterpolateConstant
 		ColorArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpRGB];
+		if (env.Env.OpRGB == CMaterial::Mad)
+		{
+			ColorArg0[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg2RGB];
+		}
 		ColorArg1[stage] = srcOp[env.Env.SrcArg0RGB];
 		ColorArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0RGB];
 		ColorArg2[stage] = srcOp[env.Env.SrcArg1RGB];
@@ -189,11 +195,15 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 		AlphaOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpAlpha];
 		// Only used for InterpolateConstant
 		AlphaArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpAlpha];
+		if (env.Env.OpAlpha == CMaterial::Mad)
+		{
+			AlphaArg0[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg2Alpha];	
+		}
 		AlphaArg1[stage] = srcOp[env.Env.SrcArg0Alpha];
 		AlphaArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0Alpha];
 		AlphaArg2[stage] = srcOp[env.Env.SrcArg1Alpha];
 		AlphaArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1Alpha];
-		ConstantColor[stage] = NL_D3DCOLOR_RGBA(env.ConstantColor);
+		ConstantColor[stage] = NL_D3DCOLOR_RGBA(env.ConstantColor);				
 	}
 	else
 	{

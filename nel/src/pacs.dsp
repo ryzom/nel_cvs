@@ -355,6 +355,18 @@ SOURCE=..\include\nel\pacs\u_retriever_bank.h
 
 # PROP Default_Filter ""
 # End Group
+# Begin Group "Build"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\pacs\build_indoor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\build_indoor.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\pacs\quad_grid.h

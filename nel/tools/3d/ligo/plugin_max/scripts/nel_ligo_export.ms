@@ -344,7 +344,7 @@ for curFileName in MaxFilesList do
 
 							-- Export the zone
 
-							nlerror ("EXPORT "+ (getFilenameFile filename))
+							-- nlerror ("EXPORT "+ (getFilenameFile filename))
 							if (NeLLigoExportZone c filename props false false) then
 							(
 								nlerror ("OK "+ (getFilenameFile filename))

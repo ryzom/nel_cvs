@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.9 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.10 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,9 @@ namespace NL3D
 
 
 class CMeshMRM;
+class CMeshMRMGeom;
+class CRawSkinNormalCache;
+class CShiftedTriangleCache;
 
 
 // ***************************************************************************
@@ -62,6 +65,8 @@ protected:
 	/// Constructor
 	CMeshMRMInstance()
 	{
+		_RawSkinCache= NULL;
+		_ShiftedTriangleCache= NULL;
 	}
 	/// Destructor
 	virtual ~CMeshMRMInstance();
@@ -101,9 +106,21 @@ protected:
 	// @}
 
 
+// *************************
 private:
 	static IModel	*creator() {return new CMeshMRMInstance;}
 	friend	class CMeshMRM;
+	friend	class CMeshMRMGeom;
+
+	/// Used by CMeshMRMGeom. This a cache for skinning objects, for skinning optimisation
+	CRawSkinNormalCache		*_RawSkinCache;
+	/// Reset the RawSkin Info.
+	void					clearRawSkinCache();
+
+	/// Used by CMeshMRMGeom. This a cache for skinning objects, for skinning optimisation
+	CShiftedTriangleCache	*_ShiftedTriangleCache;
+	/// Reset the _ShiftedTriangleCache Info.
+	void					clearShiftedTriangleCache();
 
 };
 

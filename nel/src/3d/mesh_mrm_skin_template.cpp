@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.3 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.4 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -510,12 +510,14 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *sk
 // ***************************************************************************
 
 
+#define	NL3D_RAWSKIN_NORMAL_OFF 12
+
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
 #else
-void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
 #endif
 {
@@ -540,7 +542,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint no
 		{
 			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
 			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
 
 			// Vertex.
 			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *dstVertex);
@@ -554,10 +556,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint no
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
 	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
 #else
-void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
 #endif
 {
@@ -582,7 +584,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint no
 		{
 			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
 			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
 
 			// Vertex.
 			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], *dstVertex);
@@ -597,10 +599,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint no
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
 #else
-void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
 #endif
 {
@@ -625,7 +627,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint no
 		{
 			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
 			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
 
 			// Vertex.
 			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
@@ -641,10 +643,10 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint no
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
 #else
-void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
+void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
 #endif
 {
@@ -669,7 +671,7 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint no
 		{
 			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
 			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
 
 			// Vertex.
 			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
@@ -688,9 +690,9 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint no
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalLod &rawSkinLod, const CSkeletonModel *skeleton)
+void	CMeshMRMGeom::applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton)
 #else
-void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalLod &rawSkinLod, const CSkeletonModel *skeleton)
+void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton)
 #endif
 {
 	nlassert(_Skinned);
@@ -711,6 +713,8 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalLod &rawSkinL
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
 	normalOff= _VBufferFinal.getNormalOff();
+	// HardCoded for normalOff==12 (see applyArrayRawSkinNormal*)
+	nlassert(normalOff==NL3D_RAWSKIN_NORMAL_OFF);
 
 
 	// Compute usefull Matrix for this lod.
@@ -730,285 +734,20 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalLod &rawSkinL
 	// 1 Matrix
 	nInf= rawSkinLod.Vertices1.size();
 	if(nInf>0)
-		applyArrayRawSkinNormal1(&rawSkinLod.Vertices1[0], normalOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
+		applyArrayRawSkinNormal1(&rawSkinLod.Vertices1[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
 	// 2 Matrix
 	nInf= rawSkinLod.Vertices2.size();
 	if(nInf>0)
-		applyArrayRawSkinNormal2(&rawSkinLod.Vertices2[0], normalOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
+		applyArrayRawSkinNormal2(&rawSkinLod.Vertices2[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
 	// 3 Matrix
 	nInf= rawSkinLod.Vertices3.size();
 	if(nInf>0)
-		applyArrayRawSkinNormal3(&rawSkinLod.Vertices3[0], normalOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
+		applyArrayRawSkinNormal3(&rawSkinLod.Vertices3[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
 	// 4 Matrix
 	nInf= rawSkinLod.Vertices4.size();
 	if(nInf>0)
-		applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[0], normalOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
+		applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
 }
 
 
 
-// ***************************************************************************
-// ***************************************************************************
-// Raw "Vertex/Normal/TgSpace" ApplySkin methods.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace1(CRawVertexTgSpaceSkin1 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
-#else
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace1(CRawVertexTgSpaceSkin1 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
-#endif
-{
-	for(;nInf>0;)
-	{
-		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexTgSpace1, nInf);
-		// next block.
-		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
-		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin1));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin1));
-	#endif
-
-		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
-		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-			CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *dstVertex);
-			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *dstNormal);
-			// TgSpace.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->TgSpace, *dstTgSpace);
-		}
-	}
-
-
-}
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace2(CRawVertexTgSpaceSkin2 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
-#else
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace2(CRawVertexTgSpaceSkin2 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
-#endif
-{
-	for(;nInf>0;)
-	{
-		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexTgSpace2, nInf);
-		// next block.
-		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
-		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin2));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin2));
-	#endif
-
-		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
-		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-			CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], *dstVertex);
-			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], *dstVertex);
-			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], *dstNormal);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], *dstNormal);
-			// TgSpace.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->TgSpace, src->Weights[0], *dstTgSpace);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->TgSpace, src->Weights[1], *dstTgSpace);
-		}
-	}
-
-}
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace3(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
-#else
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace3(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
-#endif
-{
-	for(;nInf>0;)
-	{
-		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexTgSpace4, nInf);
-		// next block.
-		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
-		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
-	#endif
-
-		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
-		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-			CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-			// Vertex.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[1], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[2], *dstVertex);
-			// Normal.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->Normal, src->SkinWeight.Weights[0], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->Normal, src->SkinWeight.Weights[1], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->Normal, src->SkinWeight.Weights[2], *dstNormal);
-			// TgSpace.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->TgSpace, src->SkinWeight.Weights[0], *dstTgSpace);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->TgSpace, src->SkinWeight.Weights[1], *dstTgSpace);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->TgSpace, src->SkinWeight.Weights[2], *dstTgSpace);
-		}
-	}
-}
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace4(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
-#else
-void		CMeshMRMGeom::applyArrayRawSkinTgSpace4(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, 
-	uint8 *destVertexPtr, CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
-#endif
-{
-	for(;nInf>0;)
-	{
-		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexTgSpace4, nInf);
-		// next block.
-		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
-		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexTgSpaceSkin4));
-	#endif
-
-		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
-		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-			CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-			// Vertex.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[1], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[2], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[3] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[3], *dstVertex);
-			// Normal.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->Normal, src->SkinWeight.Weights[0], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->Normal, src->SkinWeight.Weights[1], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->Normal, src->SkinWeight.Weights[2], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[3] ].mulAddVector( src->Normal, src->SkinWeight.Weights[3], *dstNormal);
-			// TgSpace.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->TgSpace, src->SkinWeight.Weights[0], *dstTgSpace);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->TgSpace, src->SkinWeight.Weights[1], *dstTgSpace);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->TgSpace, src->SkinWeight.Weights[2], *dstTgSpace);
-			boneMat3x4[ src->SkinWeight.MatrixId[3] ].mulAddVector( src->TgSpace, src->SkinWeight.Weights[3], *dstTgSpace);
-		}
-	}
-}
-
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applyRawSkinWithTangentSpaceSSE(CLod &lod, CRawSkinTgSpaceLod &rawSkinLod, 
-	const CSkeletonModel *skeleton, uint tangentSpaceTexCoord)
-#else
-void	CMeshMRMGeom::applyRawSkinWithTangentSpace(CLod &lod, CRawSkinTgSpaceLod &rawSkinLod, 
-	const CSkeletonModel *skeleton, uint tangentSpaceTexCoord)
-#endif
-{
-	nlassert(_Skinned);
-	if(_SkinWeights.size()==0)
-		return;
-
-	// get vertexPtr / normalOff.
-	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
-	uint		flags= _VBufferFinal.getVertexFormat();
-	sint32		vertexSize= _VBufferFinal.getVertexSize();
-	// must have XYZ and Normal.
-	// if there's tangent space, there also must be a normal there.
-	nlassert((flags & CVertexBuffer::PositionFlag) 
-			 && (flags & CVertexBuffer::NormalFlag) 
-			);
-
-
-	// Compute offset of each component of the VB.
-	sint32		normalOff;
-	normalOff= _VBufferFinal.getNormalOff();
-
-	// tg space offset
-	sint32		tgSpaceOff = _VBufferFinal.getTexCoordOff((uint8) tangentSpaceTexCoord);
-
-
-	// Compute usefull Matrix for this lod.
-	//===========================
-	// Those arrays map the array of bones in skeleton.
-	static	NL_SKIN_MATRIX_ARRAY			boneMat3x4;
-	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
-
-
-	// apply skinning.
-	//===========================
-	// assert, code below is written especially for 4 per vertex.
-	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-	uint	nInf;
-	// apply the skin to the vertices
-
-	// 1 Matrix
-	nInf= rawSkinLod.Vertices1.size();
-	if(nInf>0)
-		applyArrayRawSkinTgSpace1(&rawSkinLod.Vertices1[0], normalOff, tgSpaceOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 2 Matrix
-	nInf= rawSkinLod.Vertices2.size();
-	if(nInf>0)
-		applyArrayRawSkinTgSpace2(&rawSkinLod.Vertices2[0], normalOff, tgSpaceOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 3 Matrix
-	nInf= rawSkinLod.Vertices3.size();
-	if(nInf>0)
-		applyArrayRawSkinTgSpace3(&rawSkinLod.Vertices3[0], normalOff, tgSpaceOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 4 Matrix
-	nInf= rawSkinLod.Vertices4.size();
-	if(nInf>0)
-		applyArrayRawSkinTgSpace4(&rawSkinLod.Vertices4[0], normalOff, tgSpaceOff, destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-}

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.33 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.34 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -597,11 +597,41 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 	}
 
 
+	// Must force real light setup at least the first time, in changeVPLightSetupMaterial()
+	_VPMaterialCacheDirty= true;
 }
 
 // ***************************************************************************
 void		CRenderTrav::changeVPLightSetupMaterial(const CMaterial &mat, bool excludeStrongest)
 {
+	// Must test if at least done one time.
+	if(!_VPMaterialCacheDirty)
+	{
+		// Must test if same as in cache
+		if( _VPMaterialCacheEmissive == mat.getEmissive().getPacked() &&
+			_VPMaterialCacheAmbient == mat.getAmbient().getPacked() &&
+			_VPMaterialCacheDiffuse == mat.getDiffuse().getPacked() )
+		{
+			// Same Diffuse part, test if same specular if necessary
+			if( !_VPSupportSpecular ||
+				( _VPMaterialCacheSpecular == mat.getSpecular().getPacked() &&
+				  _VPMaterialCacheShininess == mat.getShininess() )  )
+			{
+				// Then ok, skip.
+				return;
+			}
+		}
+	}
+
+	// If not skiped, cache now. cache all for simplification
+	_VPMaterialCacheDirty= false;
+	_VPMaterialCacheEmissive= mat.getEmissive().getPacked();
+	_VPMaterialCacheAmbient= mat.getDiffuse().getPacked();
+	_VPMaterialCacheDiffuse= mat.getDiffuse().getPacked();
+	_VPMaterialCacheSpecular= mat.getSpecular().getPacked();
+	_VPMaterialCacheShininess= mat.getShininess();
+
+	// Setup constants
 	CRGBAF	color;
 	uint	i;
 	CRGBAF	matDiff= mat.getDiffuse();

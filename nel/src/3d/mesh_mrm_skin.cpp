@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.8 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.9 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,17 +25,18 @@
 
 #include "std3d.h"
 
+#include "nel/misc/bsphere.h"
+#include "nel/misc/fast_mem.h"
+#include "nel/misc/system_info.h"
 #include "3d/mesh_mrm.h"
 #include "3d/mrm_builder.h"
 #include "3d/mrm_parameters.h"
 #include "3d/mesh_mrm_instance.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
-#include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
-#include "nel/misc/fast_mem.h"
-#include "nel/misc/system_info.h"
 #include "3d/matrix_3x4.h"
+#include "3d/raw_skin.h"
 
 
 using namespace NLMISC;
@@ -331,16 +332,11 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const CSkeletonModel *skeleton)
 const	uint	NL_BlockByteL1= 4096;
 
 // Number of vertices per block to process with 1 matrix.
-uint	CMeshMRMGeom::NumCacheVertexNormal1= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexNormalSkin1);
+uint	CMeshMRMGeom::NumCacheVertexNormal1= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin1);
 // Number of vertices per block to process with 2 matrix.
-uint	CMeshMRMGeom::NumCacheVertexNormal2= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexNormalSkin2);
+uint	CMeshMRMGeom::NumCacheVertexNormal2= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin2);
 // Number of vertices per block to process with 3/4 matrix.
-uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexNormalSkin4);
-
-// Same for TgSpace Raw vertices
-uint	CMeshMRMGeom::NumCacheVertexTgSpace1= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexTgSpaceSkin1);
-uint	CMeshMRMGeom::NumCacheVertexTgSpace2= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexTgSpaceSkin2);
-uint	CMeshMRMGeom::NumCacheVertexTgSpace4= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CRawVertexTgSpaceSkin4);
+uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin4);
 
 
 // Old School template: include the same file with define switching

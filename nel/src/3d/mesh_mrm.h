@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.34 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.35 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,11 @@ class	CMRMBuilder;
 // Fast matrix in mesh_mrm_skin.cpp
 class	CMatrix3x4;
 class	CMatrix3x4SSE;
-
+class	CRawVertexNormalSkin1;
+class	CRawVertexNormalSkin2;
+class	CRawVertexNormalSkin4;
+class	CRawSkinNormalCache;
+class	CMeshMRMInstance;
 
 // ***************************************************************************
 /**
@@ -243,8 +247,8 @@ public:
 	/// \name Special SkinGrouping Rendering
 	// @{
 	bool			supportSkinGrouping() const;
-	sint			renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest);
-	void			renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVertex);
+	sint			renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest);
+	void			renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex);
 	// @}
 
 
@@ -475,9 +479,6 @@ private:
 	NLMISC::CSmartPtr<IMeshVertexProgram>	_MeshVertexProgram;
 
 private:
-	class	CRawSkinNormalLod;
-	class	CRawSkinTgSpaceLod;
-
 	/// serial a subset of the vertices.
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
 
@@ -507,8 +508,8 @@ private:
 	  */
 	void	applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton);
 	void	applySkinWithNormalSSE(CLod &lod, const CSkeletonModel *skeleton);
-	void	applyRawSkinWithNormal(CLod &lod, CRawSkinNormalLod &rawSkinLod, const CSkeletonModel *skeleton);
-	void	applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalLod &rawSkinLod, const CSkeletonModel *skeleton);
+	void	applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton);
+	void	applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton);
 
 	/** The same as apply skin with normal, but with a tangent space added (encoded in a texture coordinate).
 	  * The tangent space is modified, but not normalized (must be done in a vertex program).
@@ -516,10 +517,6 @@ private:
 	  */
 	void	applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
 	void	applySkinWithTangentSpaceSSE(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
-	void	applyRawSkinWithTangentSpace(CLod &lod, CRawSkinTgSpaceLod &rawSkinLod, 
-		const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
-	void	applyRawSkinWithTangentSpaceSSE(CLod &lod, CRawSkinTgSpaceLod &rawSkinLod, 
-		const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
 
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
 	void	restoreOriginalSkinPart(CLod &lod, IVertexBufferHard *currentVBHard);
@@ -538,188 +535,46 @@ private:
 	// Some runtime not serialized compilation
 	void		compileRunTime();
 
+	// SkinGroup
+	void		updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodId, uint baseVertex);
+
 private:
 
 	/// \name RawSkin optimisation.
 	// @{
 
+	/// Each time the mesh is loaded/built, this increment
+	uint		_MeshDataId;
 
-	// Skin with Normal version.
-	//==============
-
-	/// Vertices influenced by 1 matrix only.
-	class	CRawVertexNormalSkin1
-	{
-	public:
-		// The id of the matrix to use.
-		uint32		MatrixId[1];
-		CVector		Vertex;
-		CVector		Normal;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// Vertices influenced by 2 matrix only.
-	class	CRawVertexNormalSkin2
-	{
-	public:
-		// The id of the matrix to use.
-		uint32		MatrixId[2];
-		float		Weights[2];
-		CVector		Vertex;
-		CVector		Normal;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// Vertices influenced by 3 or 4 matrix only. (simpler and rare)
-	class	CRawVertexNormalSkin4
-	{
-	public:
-		CMesh::CSkinWeight	SkinWeight;
-		CVector		Vertex;
-		CVector		Normal;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// The array per lod.
-	class	CRawSkinNormalLod
-	{
-	public:
-		// The vertices influenced by 1 matrix.
-		std::vector<CRawVertexNormalSkin1>	Vertices1;
-		// The vertices influenced by 2 matrix.
-		std::vector<CRawVertexNormalSkin2>	Vertices2;
-		// The vertices influenced by 3 matrix.
-		std::vector<CRawVertexNormalSkin4>	Vertices3;
-		// The vertices influenced by 4 matrix.
-		std::vector<CRawVertexNormalSkin4>	Vertices4;
-	};
-
-	/// List of RawLods
-	std::vector<CRawSkinNormalLod>		_RawSkinNormalLods;
-
-
-	// Skin with TgSpace version.
-	//==============
-
-	/// Vertices influenced by 1 matrix only.
-	class	CRawVertexTgSpaceSkin1
-	{
-	public:
-		// The id of the matrix to use.
-		uint32		MatrixId[1];
-		CVector		Vertex;
-		CVector		Normal;
-		CVector		TgSpace;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// Vertices influenced by 2 matrix only.
-	class	CRawVertexTgSpaceSkin2
-	{
-	public:
-		// The id of the matrix to use.
-		uint32		MatrixId[2];
-		float		Weights[2];
-		CVector		Vertex;
-		CVector		Normal;
-		CVector		TgSpace;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// Vertices influenced by 3 or 4 matrix only. (simpler and rare)
-	class	CRawVertexTgSpaceSkin4
-	{
-	public:
-		CMesh::CSkinWeight	SkinWeight;
-		CVector		Vertex;
-		CVector		Normal;
-		CVector		TgSpace;
-		// The Dest VertexId
-		uint32		VertexId;
-	};
-
-	/// The array per lod.
-	class	CRawSkinTgSpaceLod
-	{
-	public:
-		// The vertices influenced by 1 matrix.
-		std::vector<CRawVertexTgSpaceSkin1>	Vertices1;
-		// The vertices influenced by 2 matrix.
-		std::vector<CRawVertexTgSpaceSkin2>	Vertices2;
-		// The vertices influenced by 3 matrix.
-		std::vector<CRawVertexTgSpaceSkin4>	Vertices3;
-		// The vertices influenced by 4 matrix.
-		std::vector<CRawVertexTgSpaceSkin4>	Vertices4;
-	};
-
-	/// List of RawLods
-	std::vector<CRawSkinTgSpaceLod>		_RawSkinTgSpaceLods;
-
-
-	// Misc RawSkin
-	//===========
-
-	/// 0 if RawSkin disabled. Else the number of Lods which have been already computed for RawSkin.
-	uint		_NumLodRawSkin;
-
-	/// compute RawSkin info according to current skin setup. Compute new lod loaded if needed.
-	void		updateRawSkinNormal();
-	/// same as updateRawSkinNormal(), but TgSpace version
-	void		updateRawSkinTgSpace();
-	/// clear all RawSkin if not already done
-	void		clearRawSkin();
+	/// compute RawSkin info in the MRMInstance according to current skin setup.
+	void		updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint curLodId);
+	/// Increment the refCount, so instances RawSkins are no longer valid
+	void		dirtMeshDataId();
 
 	// ApplySkin method
-	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint normalOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint normalOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
 		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	// Same for SSE
-	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint normalOff, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint normalOff, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint normalOff, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-
-
-	// ApplySkin method
-	void		applyArrayRawSkinTgSpace1(CRawVertexTgSpaceSkin1 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace2(CRawVertexTgSpaceSkin2 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace3(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace4(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
 	// Same for SSE
-	void		applyArrayRawSkinTgSpace1(CRawVertexTgSpaceSkin1 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace2(CRawVertexTgSpaceSkin2 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
 		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace3(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinTgSpace4(CRawVertexTgSpaceSkin4 *src, uint normalOff, uint tgSpaceOff, uint8 *destVertexPtr, 
+	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
+
 
 public:
 	static  uint	NumCacheVertexNormal1;
 	static  uint	NumCacheVertexNormal2;
 	static  uint	NumCacheVertexNormal4;
-	static  uint	NumCacheVertexTgSpace1;
-	static  uint	NumCacheVertexTgSpace2;
-	static  uint	NumCacheVertexTgSpace4;
 
 	// @}
 };

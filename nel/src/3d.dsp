@@ -961,6 +961,14 @@ SOURCE=.\3d\particle_system_shape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\raw_skin.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\raw_skin.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\seg_remanence_shape.cpp
 # End Source File
 # Begin Source File
@@ -982,6 +990,14 @@ SOURCE=.\3d\shape_bank.cpp
 # Begin Source File
 
 SOURCE=.\3d\shape_bank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shifted_triangle_cache.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shifted_triangle_cache.h
 # End Source File
 # Begin Source File
 

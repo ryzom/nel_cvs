@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.13 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: render_trav.h,v 1.14 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,6 +330,14 @@ private:
 
 	NLMISC::CRGBA				_StrongestLightDiffuse;
 	NLMISC::CRGBA				_StrongestLightSpecular;	
+
+	// Cache for changeVPLightSetupMaterial()
+	bool						_VPMaterialCacheDirty;
+	uint32						_VPMaterialCacheEmissive;
+	uint32						_VPMaterialCacheAmbient;
+	uint32						_VPMaterialCacheDiffuse;
+	uint32						_VPMaterialCacheSpecular;
+	float						_VPMaterialCacheShininess;
 
 	// @}
 

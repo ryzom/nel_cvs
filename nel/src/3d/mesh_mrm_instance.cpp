@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.9 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.10 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "3d/mesh_mrm_instance.h"
 #include "3d/mesh_mrm.h"
 #include "3d/skeleton_model.h"
+#include "3d/raw_skin.h"
+#include "3d/shifted_triangle_cache.h"
 
 
 using namespace NLMISC;
@@ -46,6 +48,9 @@ CMeshMRMInstance::~CMeshMRMInstance()
 		// Observers hierarchy is modified.
 		_FatherSkeletonModel->detachSkeletonSon(this);
 		nlassert(_FatherSkeletonModel==NULL);
+		// If skinned, setApplySkin(false) should have been called through detachSkeletonSon()
+		nlassert(_RawSkinCache== NULL);
+		nlassert(_ShiftedTriangleCache== NULL);
 	}
 }
 
@@ -54,6 +59,21 @@ CMeshMRMInstance::~CMeshMRMInstance()
 void		CMeshMRMInstance::registerBasic()
 {
 	CMOT::registerModel(MeshMRMInstanceId, MeshBaseInstanceId, CMeshMRMInstance::creator);
+}
+
+
+// ***************************************************************************
+void		CMeshMRMInstance::clearRawSkinCache()
+{
+	delete	_RawSkinCache;
+	_RawSkinCache= NULL;
+}
+
+// ***************************************************************************
+void		CMeshMRMInstance::clearShiftedTriangleCache()
+{
+	delete	_ShiftedTriangleCache;
+	_ShiftedTriangleCache= NULL;
 }
 
 // ***************************************************************************
@@ -73,6 +93,13 @@ void		CMeshMRMInstance::setApplySkin(bool state)
 
 	// update the skeleton usage according to the mesh.
 	pMesh->updateSkeletonUsage(_FatherSkeletonModel, state);
+
+	// If unbinded, clean all the cache.
+	if(state==false)
+	{
+		clearRawSkinCache();
+		clearShiftedTriangleCache();
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.48 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.49 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,20 +25,22 @@
 
 #include "std3d.h"
 
+#include "nel/misc/bsphere.h"
+#include "nel/misc/system_info.h"
+#include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/fast_mem.h"
 #include "3d/mesh_mrm.h"
 #include "3d/mrm_builder.h"
 #include "3d/mrm_parameters.h"
 #include "3d/mesh_mrm_instance.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
-#include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
-#include "nel/misc/system_info.h"
-#include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_blender.h"
 #include "3d/render_trav.h"
 #include "3d/fast_floor.h"
-#include "nel/misc/fast_mem.h"
+#include "3d/raw_skin.h"
+#include "3d/shifted_triangle_cache.h"
 
 
 using namespace NLMISC;
@@ -48,6 +50,8 @@ using namespace std;
 namespace NL3D 
 {
 
+
+H_AUTO_DECL( NL3D_MeshMRMGeom_RenderSkinned )
 
 
 // ***************************************************************************
@@ -203,9 +207,9 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_NbLodLoaded= 0;
 	_BoneIdComputed = false;
 	_BoneIdExtended = false;
-	_NumLodRawSkin= 0;
 	_PreciseClipping= false;
 	_SupportSkinGrouping= false;
+	_MeshDataId= 0;
 }
 
 
@@ -343,8 +347,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	{
 		bkupOriginalSkinVertices();
 	}
-	// reset any RawSkin applied.
-	clearRawSkin();
+	// Inform that the mesh data has changed
+	dirtMeshDataId();
 
 
 	// For AGP SKinning optim, and for Render optim
@@ -1124,8 +1128,8 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 		return;
 
 
-	// get the meshMRM instance.
-	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+	// get the meshMRM instance. only CMeshMRMInstance is possible when skinned (not MultiLod)
+	CMeshMRMInstance	*mi= safe_cast<CMeshMRMInstance*>(trans);
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getScene();
 	// get a ptr on renderTrav
@@ -1166,7 +1170,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 
 	// Profiling
 	//===========
-	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
 
 
 	// Morphing
@@ -1189,14 +1193,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	//===========
 
 	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
-	if ( !bMorphApplied && !useTangentSpace && useNormal )
-		updateRawSkinNormal();
-	// Use RawSkin TgSpace if possible: only if no morph, and Vertex/Normal/TgSpace
-	else if ( !bMorphApplied && useTangentSpace && useNormal )
-		updateRawSkinTgSpace();
-	// Use none
-	else
-		clearRawSkin();
+	updateRawSkinNormal(!bMorphApplied && !useTangentSpace && useNormal, mi, numLod);
 
 	// applySkin.
 	//--------
@@ -1216,21 +1213,16 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 			if (!useTangentSpace)
 			{
 				// skinning with normal, but no tangent space
-				if(_NumLodRawSkin>0)
+				if(mi->_RawSkinCache)
 					// Use faster RawSkin if possible.
-					applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
+					applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton);
 				else
 					applySkinWithNormalSSE (lod, skeleton);
 			}
 			else
 			{
 				// Tangent space stored in the last texture coordinate
-				if(_NumLodRawSkin>0)
-					// Use faster RawSkin if possible.
-					applyRawSkinWithTangentSpaceSSE(lod, _RawSkinTgSpaceLods[numLod], 
-						skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-				else
-					applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
 			}
 		}
 		// Standard FPU skinning
@@ -1240,21 +1232,16 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 			if (!useTangentSpace)
 			{
 				// skinning with normal, but no tangent space
-				if(_NumLodRawSkin>0)
+				if(mi->_RawSkinCache)
 					// Use faster RawSkin if possible.
-					applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
+					applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton);
 				else
 					applySkinWithNormal (lod, skeleton);
 			}
 			else
 			{
 				// Tangent space stored in the last texture coordinate
-				if(_NumLodRawSkin>0)
-					// Use faster RawSkin if possible.
-					applyRawSkinWithTangentSpace(lod, _RawSkinTgSpaceLods[numLod], 
-						skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-				else
-					applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
 			}
 		}
 	}
@@ -1332,7 +1319,7 @@ bool	CMeshMRMGeom::supportSkinGrouping() const
 }
 
 // ***************************************************************************
-sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest)
+sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest)
 {
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getScene();
@@ -1372,7 +1359,7 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, ui
 
 	// Profiling
 	//===========
-	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
 
 
 	// Morphing
@@ -1397,11 +1384,7 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, ui
 	//===========
 
 	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
-	if ( !bMorphApplied )
-		updateRawSkinNormal();
-	// Use none
-	else
-		clearRawSkin();
+	updateRawSkinNormal(!bMorphApplied, mi, numLod);
 
 	// applySkin.
 	//--------
@@ -1410,9 +1393,9 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, ui
 	if( CSystemInfo::hasSSE() )
 	{
 		// skinning with normal, but no tangent space
-		if(_NumLodRawSkin>0)
+		if(mi->_RawSkinCache)
 			// Use faster RawSkin if possible.
-			applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
+			applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton);
 		else
 			applySkinWithNormalSSE (lod, skeleton);
 	}
@@ -1420,9 +1403,9 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, ui
 	else
 	{
 		// skinning with normal, but no tangent space
-		if(_NumLodRawSkin>0)
+		if(mi->_RawSkinCache)
 			// Use faster RawSkin if possible.
-			applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
+			applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton);
 		else
 			applySkinWithNormal (lod, skeleton);
 	}
@@ -1452,7 +1435,7 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshBaseInstance	*mi, float alphaMRM, ui
 }
 
 // ***************************************************************************
-void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVertex)
+void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex)
 {
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getScene();
@@ -1468,10 +1451,62 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVer
 
 	// Profiling
 	//===========
-	H_AUTO( NL3D_MeshMRMGeom_RenderSkinned );
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
+
+	// must update primitive cache
+	updateShiftedTriangleCache(mi, _LastLodComputed, baseVertex);
+	nlassert(mi->_ShiftedTriangleCache);
+
+	// Render Quad or line, if needed (Yoyo: maybe never :/)
+	//===========
+	if(mi->_ShiftedTriangleCache->HasQuadOrLine)
+	{
+		for(uint i=0;i<lod.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= lod.RdrPass[i];
+
+			// CMaterial Ref
+			CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
 
-	// Render all pass.
+			// Compute a PBlock (static to avoid reallocation) shifted to baseVertex
+			static	CPrimitiveBlock		dstPBlock;
+			dstPBlock.setNumLine(0);
+			dstPBlock.setNumQuad(0);
+			// Lines.
+			uint	numLines= rdrPass.PBlock.getNumLine();
+			if(numLines)
+			{
+				uint	nIds= numLines*2;
+				// allocate, in the tmp buffer
+				dstPBlock.setNumLine(numLines);
+				// index, and fill
+				uint32	*pSrcLine= rdrPass.PBlock.getLinePointer();
+				uint32	*pDstLine= dstPBlock.getLinePointer();
+				for(;nIds>0;nIds--,pSrcLine++,pDstLine++)
+					*pDstLine= *pSrcLine + baseVertex;
+			}
+			// Quads
+			uint	numQuads= rdrPass.PBlock.getNumQuad();
+			if(numQuads)
+			{
+				uint	nIds= numQuads*4;
+				// allocate, in the tmp buffer
+				dstPBlock.setNumQuad(numQuads);
+				// index, and fill
+				uint32	*pSrcQuad= rdrPass.PBlock.getQuadPointer();
+				uint32	*pDstQuad= dstPBlock.getQuadPointer();
+				for(;nIds>0;nIds--,pSrcQuad++,pDstQuad++)
+					*pDstQuad= *pSrcQuad + baseVertex;
+			}
+
+
+			// Render with the Materials of the MeshInstance.
+			drv->render(dstPBlock, material);
+		}
+	}
+
+	// Render Triangles with cache
 	//===========
 	for(uint i=0;i<lod.RdrPass.size();i++)
 	{
@@ -1480,55 +1515,89 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshBaseInstance	*mi, uint baseVer
 		// CMaterial Ref
 		CMaterial &material=mi->Materials[rdrPass.MaterialId];
 
+		// Get the shifted triangles.
+		CShiftedTriangleCache::CRdrPass		&shiftedRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
 
-		// Compute a PBlock (static to avoid reallocation) shifted to baseVertex
-		static	CPrimitiveBlock		dstPBlock;
-		dstPBlock.setNumLine(0);
-		dstPBlock.setNumTri(0);
-		dstPBlock.setNumQuad(0);
-		// Lines.
-		uint	numLines= rdrPass.PBlock.getNumLine();
-		if(numLines)
-		{
-			uint	nIds= numLines*2;
-			// allocate, in the tmp buffer
-			dstPBlock.setNumLine(numLines);
-			// index, and fill
-			uint32	*pSrcLine= rdrPass.PBlock.getLinePointer();
-			uint32	*pDstLine= dstPBlock.getLinePointer();
-			for(;nIds>0;nIds--,pSrcLine++,pDstLine++)
-				*pDstLine= *pSrcLine + baseVertex;
-		}
-		// Tris
-		uint	numTris= rdrPass.PBlock.getNumTri();
-		if(numTris)
-		{
-			uint	nIds= numTris*3;
-			// allocate, in the tmp buffer
-			dstPBlock.setNumTri(numTris);
-			// index, and fill
-			uint32	*pSrcTri= rdrPass.PBlock.getTriPointer();
-			uint32	*pDstTri= dstPBlock.getTriPointer();
-			for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
-				*pDstTri= *pSrcTri + baseVertex;
-		}
-		// Quads
-		uint	numQuads= rdrPass.PBlock.getNumQuad();
-		if(numQuads)
-		{
-			uint	nIds= numQuads*4;
-			// allocate, in the tmp buffer
-			dstPBlock.setNumQuad(numQuads);
-			// index, and fill
-			uint32	*pSrcQuad= rdrPass.PBlock.getQuadPointer();
-			uint32	*pDstQuad= dstPBlock.getQuadPointer();
-			for(;nIds>0;nIds--,pSrcQuad++,pDstQuad++)
-				*pDstQuad= *pSrcQuad + baseVertex;
-		}
-
+		// This speed up 4 ms for 80K polys.
+		uint	memToCache= shiftedRdrPass.NumTriangles*12;
+		memToCache= min(memToCache, 4096U);
+		CFastMem::precache(shiftedRdrPass.Triangles, memToCache);
 
 		// Render with the Materials of the MeshInstance.
-		drv->render(dstPBlock, material);
+		drv->renderTriangles(material, shiftedRdrPass.Triangles, shiftedRdrPass.NumTriangles);
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodId, uint baseVertex)
+{
+	// if the instance has a cache, but not sync to us, delete it.
+	if( mi->_ShiftedTriangleCache && (
+		mi->_ShiftedTriangleCache->MeshDataId != _MeshDataId ||
+		mi->_ShiftedTriangleCache->LodId != curLodId ||
+		mi->_ShiftedTriangleCache->BaseVertex != baseVertex) )
+	{
+		mi->clearShiftedTriangleCache();
+	}
+
+	// If the instance has not a valid cache, must create it.
+	if( !mi->_ShiftedTriangleCache )
+	{
+		mi->_ShiftedTriangleCache= new CShiftedTriangleCache;
+		// Fill the cache Key.
+		mi->_ShiftedTriangleCache->MeshDataId= _MeshDataId;
+		mi->_ShiftedTriangleCache->LodId= curLodId;
+		mi->_ShiftedTriangleCache->BaseVertex= baseVertex;
+
+		// Default.
+		mi->_ShiftedTriangleCache->HasQuadOrLine= false;
+
+		// Build RdrPass
+		CLod	&lod= _Lods[curLodId];
+		mi->_ShiftedTriangleCache->RdrPass.resize(lod.RdrPass.size());
+
+		// First pass, count number of triangles, and fill header info
+		uint	totalTri= 0;
+		uint	i;
+		for(i=0;i<lod.RdrPass.size();i++)
+		{
+			CRdrPass	&srcRdrPass= lod.RdrPass[i];
+			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= srcRdrPass.PBlock.getNumTri();
+			totalTri+= srcRdrPass.PBlock.getNumTri();
+			// Has quad or line??
+			if( srcRdrPass.PBlock.getNumQuad() || srcRdrPass.PBlock.getNumLine() )
+				// Yes => must inform the cache
+				mi->_ShiftedTriangleCache->HasQuadOrLine= true;
+		}
+
+		// Allocate triangles indices.
+		mi->_ShiftedTriangleCache->RawIndices.resize(totalTri*3);
+		uint32		*rawPtr= mi->_ShiftedTriangleCache->RawIndices.getPtr();
+
+		// Second pass, fill ptrs, and fill Arrays
+		uint	indexTri= 0;
+		for(i=0;i<lod.RdrPass.size();i++)
+		{
+			CRdrPass						&srcRdrPass= lod.RdrPass[i];
+			CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
+			dstRdrPass.Triangles= rawPtr + indexTri*3;
+
+			// Fill the array
+			uint	numTris= srcRdrPass.PBlock.getNumTri();
+			if(numTris)
+			{
+				uint	nIds= numTris*3;
+				// index, and fill
+				uint32	*pSrcTri= srcRdrPass.PBlock.getTriPointer();
+				uint32	*pDstTri= dstRdrPass.Triangles;
+				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
+					*pDstTri= *pSrcTri + baseVertex;
+			}
+
+			// Next
+			indexTri+= dstRdrPass.NumTriangles;
+		}
 	}
 }
 
@@ -1654,8 +1723,8 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// Flag the fact that no lod is loaded for now.
 	_NbLodLoaded= 0;
 
-	// reset any RawSkin applied.
-	clearRawSkin();
+	// Inform that the mesh data has changed
+	dirtMeshDataId();
 
 
 	// Some runtime not serialized compilation
@@ -2579,34 +2648,53 @@ void	CMeshMRM::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle
 
 
 // ***************************************************************************
-void		CMeshMRMGeom::clearRawSkin()
+void		CMeshMRMGeom::dirtMeshDataId()
 {
-	if(_NumLodRawSkin>0)
-	{
-		contReset(_RawSkinNormalLods);
-		contReset(_RawSkinTgSpaceLods);
-		_NumLodRawSkin= 0;
-	}
+	// see updateRawSkinNormal()
+	_MeshDataId++;
 }
 
 
 // ***************************************************************************
-void		CMeshMRMGeom::updateRawSkinNormal()
+void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint curLodId)
 {
-	// If need to load new lods.
-	if(_NumLodRawSkin<_NbLodLoaded)
+	if(!enabled)
 	{
-		uint	i;
-
-		// TODO_OPTIM
-		// Alloc space, big memcpy here...
-		_RawSkinNormalLods.resize(_NbLodLoaded);
-
-		// Build new lods.
-		for(;_NumLodRawSkin<_NbLodLoaded;_NumLodRawSkin++)
+		// if the instance cache is not cleared, must clear.
+		if(mi->_RawSkinCache)
+			mi->clearRawSkinCache();
+	}
+	else
+	{
+		// If the instance has no RawSkin, or has a too old RawSkin cache, must delete it, and recreate
+		if( !mi->_RawSkinCache || mi->_RawSkinCache->MeshDataId!=_MeshDataId)
 		{
-			CRawSkinNormalLod	&skinLod= _RawSkinNormalLods[_NumLodRawSkin];
-			CLod				&lod= _Lods[_NumLodRawSkin];
+			// first delete if too old.
+			if(mi->_RawSkinCache)
+				mi->clearRawSkinCache();
+			// Then recreate, and use _MeshDataId to verify that the instance works with same data.
+			mi->_RawSkinCache= new CRawSkinNormalCache;
+			mi->_RawSkinCache->MeshDataId= _MeshDataId;
+			mi->_RawSkinCache->LodId= -1;
+		}
+
+
+		/* If the instance rawSkin has a different Lod (or if -1), then must recreate it.
+			NB: The lod may change each frame per instance, but suppose not so many change, so we can cache those data.
+		*/
+		if( mi->_RawSkinCache->LodId != curLodId )
+		{
+			H_AUTO( NL3D_CMeshMRMGeom_updateRawSkinNormal );
+
+			CRawSkinNormalCache	&skinLod= *mi->_RawSkinCache;
+			CLod				&lod= _Lods[curLodId];
+			uint				i;
+
+			// Clear the raw skin mesh.
+			skinLod.clearArrays();
+
+			// Cache this lod
+			mi->_RawSkinCache->LodId= curLodId;
 
 			// For each matrix influence.
 			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
@@ -2675,98 +2763,6 @@ void		CMeshMRMGeom::updateRawSkinNormal()
 		}
 	}
 }
-
-
-// ***************************************************************************
-void		CMeshMRMGeom::updateRawSkinTgSpace()
-{
-	// If need to load new lods.
-	if(_NumLodRawSkin<_NbLodLoaded)
-	{
-		uint	i;
-
-		// TODO_OPTIM
-		// Alloc space, big memcpy here...
-		_RawSkinTgSpaceLods.resize(_NbLodLoaded);
-
-		// Build new lods.
-		for(;_NumLodRawSkin<_NbLodLoaded;_NumLodRawSkin++)
-		{
-			CRawSkinTgSpaceLod	&skinLod= _RawSkinTgSpaceLods[_NumLodRawSkin];
-			CLod				&lod= _Lods[_NumLodRawSkin];
-
-			// For each matrix influence.
-			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-
-			// Resize the dest array.
-			skinLod.Vertices1.resize(lod.InfluencedVertices[0].size());
-			skinLod.Vertices2.resize(lod.InfluencedVertices[1].size());
-			skinLod.Vertices3.resize(lod.InfluencedVertices[2].size());
-			skinLod.Vertices4.resize(lod.InfluencedVertices[3].size());
-
-			// 1 Matrix skinning.
-			//========
-			for(i=0;i<skinLod.Vertices1.size();i++)
-			{
-				// get the dest vertex.
-				uint	vid= lod.InfluencedVertices[0][i];
-				// fill raw struct
-				skinLod.Vertices1[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
-				skinLod.Vertices1[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices1[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices1[i].TgSpace= _OriginalTGSpace[vid];
-				skinLod.Vertices1[i].VertexId= vid;
-			}
-
-			// 2 Matrix skinning.
-			//========
-			for(i=0;i<skinLod.Vertices2.size();i++)
-			{
-				// get the dest vertex.
-				uint	vid= lod.InfluencedVertices[1][i];
-				// fill raw struct
-				skinLod.Vertices2[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
-				skinLod.Vertices2[i].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
-				skinLod.Vertices2[i].Weights[0]= _SkinWeights[vid].Weights[0];
-				skinLod.Vertices2[i].Weights[1]= _SkinWeights[vid].Weights[1];
-				skinLod.Vertices2[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices2[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices2[i].TgSpace= _OriginalTGSpace[vid];
-				skinLod.Vertices2[i].VertexId= vid;
-			}
-
-			// 3 Matrix skinning.
-			//========
-			for(i=0;i<skinLod.Vertices3.size();i++)
-			{
-				// get the dest vertex.
-				uint	vid= lod.InfluencedVertices[2][i];
-				// fill raw struct
-				skinLod.Vertices3[i].SkinWeight= _SkinWeights[vid];
-				skinLod.Vertices3[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices3[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices3[i].TgSpace= _OriginalTGSpace[vid];
-				skinLod.Vertices3[i].VertexId= vid;
-			}
-
-			// 4 Matrix skinning.
-			//========
-			for(i=0;i<skinLod.Vertices4.size();i++)
-			{
-				// get the dest vertex.
-				uint	vid= lod.InfluencedVertices[3][i];
-				// fill raw struct
-				skinLod.Vertices4[i].SkinWeight= _SkinWeights[vid];
-				skinLod.Vertices4[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices4[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices4[i].TgSpace= _OriginalTGSpace[vid];
-				skinLod.Vertices4[i].VertexId= vid;
-			}
-
-		}
-	}
-}
-
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.28 2002/07/15 08:31:34 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.29 2002/08/05 12:17:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1122,9 +1122,11 @@ void			CSkeletonModelRenderObs::renderSkins()
 void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*, false> &skinList, float alphaMRM)
 {
 	CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+	// get the meshSkinManager
+	CMeshSkinManager	&meshSkinManager= rdrTrav->MeshSkinManager;
 
 	// if the SkinManager is not possible at all, just rendered the std way
-	if( !rdrTrav->MeshSkinManager.enabled() )
+	if( !meshSkinManager.enabled() )
 	{
 		for(uint i=0;i<skinList.size();i++)
 		{
@@ -1138,9 +1140,10 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 		static	std::vector<uint>			baseVertices;
 		skinsToGroup.clear();
 		baseVertices.clear();
+
 		// get the maxVertices the manager support
-		uint	maxVertices= rdrTrav->MeshSkinManager.getMaxVertices();
-		uint	vertexSize= rdrTrav->MeshSkinManager.getVertexSize();
+		uint	maxVertices= meshSkinManager.getMaxVertices();
+		uint	vertexSize= meshSkinManager.getVertexSize();
 
 		// render any skins which do not support SkinGrouping, and fill array of skins to group
 		for(uint i=0;i<skinList.size();i++)
@@ -1166,7 +1169,7 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 			// First pass, fill The VB.
 			//------------
 			// lock buffer
-			uint8	*vbDest= rdrTrav->MeshSkinManager.lock();
+			uint8	*vbDest= meshSkinManager.lock();
 
 			// For all skins until the buffer is full
 			uint	startSkinId= skinId;
@@ -1189,11 +1192,11 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 			}
 
 			// release buffer
-			rdrTrav->MeshSkinManager.unlock();
+			meshSkinManager.unlock();
 
 			// Second pass, render the primitives.
 			//------------
-			rdrTrav->MeshSkinManager.activate();
+			meshSkinManager.activate();
 			for(uint i=startSkinId;i<skinId;i++)
 			{
 				// render the skin in the current buffer
@@ -1202,7 +1205,7 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 
 
 			// End of this block, swap to the next buffer
-			rdrTrav->MeshSkinManager.swapVBHard();
+			meshSkinManager.swapVBHard();
 		}
 	}
 }

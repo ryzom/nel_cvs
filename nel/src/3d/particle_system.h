@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.9 2001/07/17 15:57:02 vizerie Exp $
+ * $Id: particle_system.h,v 1.10 2001/07/24 08:44:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -310,10 +310,15 @@ public:
 
 
 	/// set the max view distance for the system (in meters) . The default is 50 meter
-	void setMaxViewDist(float maxDist) { nlassert(maxDist > 0.f) ; _InvMaxViewDist = 1.f / maxDist ; }
+	void setMaxViewDist(float maxDist) 
+	{ 
+		nlassert(maxDist > 0.f) ; 
+		_MaxViewDist = maxDist ;
+		_InvCurrentViewDist = _InvMaxViewDist = 1.f / maxDist ; 
+	}
 
 	/// get the max view distance
-	float getMaxViewDist(void) const { return 1.f / _InvMaxViewDist ; }
+	float getMaxViewDist(void) const { return _MaxViewDist ; }
 
 	/// set a percentage that indicate where the 2nd LOD is located. Default is 0.5
 	void setLODRatio(float ratio) { nlassert(ratio > 0 && ratio <= 1.f) ; _LODRatio =  ratio ; }
@@ -406,8 +411,17 @@ public:
 	bool hasParticles(void) const ;
 
 	/// get 1.f - the current lod ratio (it is updated at each motion pass)
-	float getOneMinusCurrentLODRatio(void) const { return _CurrentLODRatio ; }
+	float getOneMinusCurrentLODRatio(void) const { return _OneMinusCurrentLODRatio ; }
 
+	// get an evaluation of how many tris are needed with the system for the given distance
+	float getWantedNumTris(float dist) ;
+
+	/// set the number of tree the system may use. If not clled this will be the max
+	void setNumTris(uint numFaces) ;
+
+
+	/// for the particle system to reevaluate the max number of faces it may need
+	void notifyMaxNumFacesChanged(void) ;
 
 protected:
 
@@ -464,15 +478,19 @@ protected:
 	uint32 _MaxNbIntegrations ;
 	bool _CanSlowDown ;
 
-	float _LODRatio, _CurrentLODRatio ;
-	float _InvMaxViewDist ;
-
+	float _LODRatio, _OneMinusCurrentLODRatio ;
+	float _MaxViewDist, _InvMaxViewDist ;
+	float _InvCurrentViewDist ; // inverse of the current view dist. It can be the same than _InvMaxViewDist
+								// but when there's LOD, the view distance may be reduced
 	bool _Touch ;
 
 	TDieCondition  _DieCondition ;
 	CAnimationTime _DelayBeforeDieTest ;
 	bool		   _DestroyModelWhenOutOfRange ;
 	bool		   _DestroyWhenOutOfFrustrum ;
+	
+	uint _MaxNumFacesWanted ;	
+	
 	
 };
 

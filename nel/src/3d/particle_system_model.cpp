@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.6 2001/07/18 09:07:36 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.7 2001/07/24 08:44:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,13 @@ void CParticleSystemModel::registerToChannelMixer(CChannelMixer *chanMixer, cons
 	addValue(chanMixer, PSParam3, OwnerBit, prefix, true);	
 }
 
+
+float CParticleSystemModel::getNumTriangles (float distance)
+{
+	if (!_ParticleSystem) return 0 ;
+	return (float) _ParticleSystem->getWantedNumTris(distance) ;
+}
+
 //////////////////////////////////////////////
 // CParticleSystemDetailObs implementation  //
 //////////////////////////////////////////////
@@ -142,7 +149,7 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 
 	if (ClipObs->Visible)
 	{
-		// test if bones must be updated.
+		
 		nlassert(dynamic_cast<CParticleSystemModel *>(Model)) ;
 		CParticleSystemModel *psm= (CParticleSystemModel *)Model;
 
@@ -171,11 +178,17 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 		ps->setSysMat(psm->getWorldMatrix()) ;
 		nlassert(ps->getScene()) ;	
 
+
+		// setup the number of faces we allow
+		ps->setNumTris((uint) psm->getNumTrianglesAfterLoadBalancing()) ;
+
 		// animate particles
 		ps->step(PSCollision, delay) ;
 		ps->step(PSMotion, delay) ;	 		
 	}
 }
+
+
 
 
 ////////////////////////////////////////////
@@ -243,9 +256,11 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		return ;
 	}
 	
+	
 
 	/// set the view matrix of the system
 	ps->setViewMat(trav->ViewMatrix) ;
+	
 
 	if (!m->_EditionMode)
 	{
@@ -260,19 +275,16 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 						if (!ps->hasParticles())
 						{
 							nlassert(m->_Scene) ;
-							m->_Scene->deleteInstance(m);
-
-							Visible = false ;
+														
+							m->_Scene->deleteInstance(m);						
 							return ;
 						}
 					break ;
 					case CParticleSystem::noMoreParticlesAndEmitters:
 						if (!ps->hasParticles() && !ps->hasEmitters())
 						{
-							nlassert(m->_Scene) ;
-							m->_Scene->deleteInstance(m);
-
-							Visible = false ;
+							nlassert(m->_Scene) ;													
+							m->_Scene->deleteInstance(m);						
 							return ;
 						}
 					break ;
@@ -302,8 +314,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					{
 						delete ps ;
 						m->_ParticleSystem = NULL ;
-						nlassert(m->_Scene) ;
+						nlassert(m->_Scene) ;						
 						m->_Scene->deleteInstance(m);
+						return ;
 					}
 					else
 					{
@@ -331,6 +344,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			{
 				nlassert(m->_Scene) ;
 				m->_Scene->deleteInstance(m);
+				return ;
 			}
 			
 			delete ps ;

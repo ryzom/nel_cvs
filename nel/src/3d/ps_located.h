@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.6 2001/07/17 15:53:01 vizerie Exp $
+ * $Id: ps_located.h,v 1.7 2001/07/24 08:39:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,8 @@ struct CPSCollisionInfo
 
 /// a container of collision infos
 typedef CPSAttrib<CPSCollisionInfo> TPSAttribCollisionInfo ;
+
+
 
 
 
@@ -441,7 +443,7 @@ public:
 	  * every time since particle dissapear on screen, which may be noticeable.	
 	  */
 
-	void forceLODDegradation(bool enable = true) { _LODDegradation = true; }
+	void forceLODDegradation(bool enable = true) { _LODDegradation = enable; }
 
 	/** Test whether LOD degradation was activated
 	  * \see forceLODDegradation()
@@ -449,7 +451,16 @@ public:
 	bool hasLODDegradation(void) const { return _LODDegradation ; }
 
 
+	/// for the CPSLocated to reevaluate the max number of faces it may need
+	void notifyMaxNumFacesChanged(void) ;
+
+	/// ask for the max number of faces the located wants (for LOD balancing)
+	virtual uint querryMaxWantedNumFaces(void) ;
+	
 protected:	
+
+	/// cache the max number of faces this located may want
+	uint32 _MaxNumFaces ;
 
 	std::string _Name ;
 	

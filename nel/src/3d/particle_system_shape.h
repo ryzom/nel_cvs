@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.6 2001/07/17 15:55:58 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.7 2001/07/24 08:42:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,14 +87,6 @@ public:
 	 */
 	virtual void				render(NL3D::IDriver *drv, CTransformShape *trans, bool passOpaque);
 
-	/** get an approximation of the number of triangles this instance will render for a fixed distance.
-	  *
-	  * \param distance is the distance of the shape from the eye.
-	  * \return the approximate number of triangles this instance will render at this distance. This
-	  * number can be a float. The function MUST be decreasing or constant with the distance but don't 
-	  * have to be continus.
-	  */
-	virtual float				getNumTriangles (float distance);
 	
 	// @}
 
@@ -113,6 +105,12 @@ public:
 
 	/// always return a unit bounding box. Only a model of particle system can compute his bounding box
 	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const ;
+
+
+	/** this method is meaningless here : the load balancing observer for particle system
+	  * compute the number of triangles from the Model, not the shape
+	  */
+	virtual float				getNumTriangles (float distance) { return 0 ; }
 
 protected:
 

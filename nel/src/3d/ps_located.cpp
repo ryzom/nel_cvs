@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.22 2001/07/18 09:07:08 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.23 2001/07/24 08:40:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,8 +35,10 @@
 #include "3d/material.h"
 #include "3d/dru.h"
 #include "3d/ps_located.h"
+#include "3d/ps_particle.h"
 
 #include "nel/misc/line.h"
+#include "nel/misc/cpu_info.h"
 
 namespace NL3D {
 
@@ -55,7 +57,36 @@ namespace NL3D {
 						 , _NbFramesToSkip(0)
 						 , _Name(std::string("located"))
 						 , _LODDegradation(false)
+						 , _MaxNumFaces(0)
 {		
+}
+
+
+
+void CPSLocated::notifyMaxNumFacesChanged(void)
+{
+
+	// we examine wether we have particle attached to us, and ask for the max number of faces they may want
+	_MaxNumFaces  = 0 ;
+	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		if ((*it)->getType() == PSParticle)
+		{
+			_MaxNumFaces += ((CPSParticle *) (*it))->getMaxNumFaces() ;
+		}
+	}	
+
+
+	if (_Owner)
+	{
+		_Owner->notifyMaxNumFacesChanged() ;
+	}
+}
+
+
+uint CPSLocated::querryMaxWantedNumFaces(void)
+{
+	return _MaxNumFaces ;
 }
 
 
@@ -256,6 +287,7 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 	{
 		++it ;
 	}
+
 	_LocatedBoundCont.insert(it, lb) ;
 	lb->setOwner(this) ;
 	lb->resize(_MaxSize) ;
@@ -270,6 +302,9 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 		lb->newElement(NULL, 0) ;
 	}
 	_Size = initialSize ;
+
+	/// the max number of shapes may have changed
+	notifyMaxNumFacesChanged() ;
 }
 
 
@@ -444,6 +479,10 @@ void CPSLocated::resize(uint32 newSize)
 	{
 		(*it)->resize(newSize) ;
 	}
+
+
+	/// compute the new max number of faces
+	notifyMaxNumFacesChanged() ;
 }
 
 
@@ -572,13 +611,107 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_LODDegradation) ;
 	}
+
+
+
+	if (f.isReading())
+	{
+		// evaluate our max number of faces
+		notifyMaxNumFacesChanged() ;
+	}
 }
 
+
+// integrate speed of particles. Makes eventually use of SSE instructions when present
+static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ellapsedTime)
+{
+	#if 0
+		#ifdef NL_OS_WINDOWS
+
+
+
+		if (NLMISC::CCpuInfo::hasSSE()
+			&& ((uint) src1 & 15) == ((uint) src2 & 15)
+			&& ! ((uint) src1 & 3)
+			&& ! ((uint) src2 & 3)				
+		   )   // must must be sure that memory alignment is identical	   
+		{
+
+			// compute first datas in order to align to 16 byte boudary
+
+			uint alignCount =  ((uint) src1 >> 2) & 3 ; // number of float to processed
+
+			while (alignCount --)
+			{
+				*src1++ += ellapsedTime * *src2 ++ ;
+			}
+
+
+
+			count -= alignCount ;
+			if (count > 3)
+			{
+				float et[4] = { ellapsedTime, ellapsedTime, ellapsedTime, ellapsedTime} ;
+				// sse part of computation
+				__asm
+				{
+						mov  ecx, count
+						shr  ecx, 2
+						
+
+						xor   edx, edx
+
+						mov    eax, src1			
+						mov    ebx, src2			
+						movups  xmm0, et[0]
+					myLoop:
+						movaps xmm2, [ebx+8*edx]
+						movaps xmm1, [eax+8*edx]
+						mulps  xmm2, xmm0			
+						addps  xmm1, xmm2
+						movaps [eax+8*edx], xmm1			
+						add edx, 2					
+						dec ecx
+						jne myLoop				
+				}
+			}
+			// proceed with left float
+			count &= 3 ;
+
+			if (count)
+			{
+				src1 += alignCount ;	
+				src2 += alignCount ;
+				do
+				{
+					*src1 += ellapsedTime * *src2 ;
+
+					++src1 ;
+					++src2 ;
+				}
+				while (--count) ;
+			}
+
+		}
+		else
+		#endif
+	#endif
+	{
+		// standard version	
+		
+		for (float *src1End = src1 + count; src1 != src1End ; ++src1, ++src2)
+		{				
+			*src1 += ellapsedTime * *src2 ;			
+		} 
+
+
+	}
+}
 
 
 void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
-	
+	if (!_Size) return ;	
 
 	if (pass == PSMotion)
 	{		
@@ -593,9 +726,18 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 				const uint maxToHave = (uint) (_MaxSize * _Owner->getOneMinusCurrentLODRatio()) ;
 				if (_Size > maxToHave) // too much instances ?
 				{
+					// choose a random element to start at, and a random step
+					// this will avoid a pulse effect when the system is far away
+
+					
+					uint pos = maxToHave ? rand() % maxToHave : 0 ;
+					uint step  = maxToHave ? rand() % maxToHave : 0 ;
+
 					do
 					{
-						deleteElement(0) ;
+						deleteElement(pos) ;
+						pos += step ;
+						if (pos >= maxToHave) pos -= maxToHave ;
 					}
 					while (_Size !=maxToHave) ;				
 				}
@@ -609,25 +751,13 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			// update the located creation requests that may have been posted
 			updateNewElementRequestStack() ;
 
-			TPSAttribVector::iterator itPos = _Pos.begin() ;			
+		
 
 			// there are 2 integration steps : with and without collisions
 
 			if (!_CollisionInfo) // no collisionner are used
-			{
-				TPSAttribVector::const_iterator itSpeed = _Speed.begin() ;		
-
-
-				// unoptimized version for speed integration
-				for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
-				{				
-					// let's avoid a constructor call				
-					itPos->x += ellapsedTime * itSpeed->x ;
-					itPos->y += ellapsedTime * itSpeed->y ;
-					itPos->z += ellapsedTime * itSpeed->z ;
-				} 
-
-			
+			{		
+				IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime) ;
 			}
 			else
 			{
@@ -636,6 +766,8 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 				nlassert(_CollisionInfo) ;
 				TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
 				TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
+				TPSAttribVector::iterator itPos = _Pos.begin() ;		
+
 				for (uint k = 0 ; k < _Size ;)
 				{
 					if (itc->dist != -1)

@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.2 2001/07/17 15:57:32 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.3 2001/07/24 08:43:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,8 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool hasEmitters(void) const { return false ; }
 
 
+		/// max number of faces wanted by this process (for load balancing)
+		virtual uint querryMaxWantedNumFaces(void) = 0 ;
 	
 		
 	protected:

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.8 2001/07/18 08:00:36 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.9 2001/07/24 08:44:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,22 +74,22 @@ class CParticleSystemModel : public CTransformShape
 		  *  \see removeDtorObserver()
 		  *  \see isDtorObserver
 		  */
-		void registerDtorObserver(IPSModelObserver *obs) ;
+		void						registerDtorObserver(IPSModelObserver *obs) ;
 
 		/** remove  dtor observer
 		  * \see registerDtorObserver()
 		  * \see isDtorObserver() ;
 		  */
-		void removeDtorObserver(IPSModelObserver *obs) ;
+		void						removeDtorObserver(IPSModelObserver *obs) ;
 
 		/// check wether obs is an observer of this model
-		bool isDtorObserver(IPSModelObserver *obs) ;
+		bool						isDtorObserver(IPSModelObserver *obs) ;
 
 		/** Get the particle system contained in this transform shape
 		  * \return pointer to the system, or NULL if no system is currently hold by this model.
 		  *			this may happen when the system is not visible and that it has been deleted
 		  */
-		CParticleSystem *getPS(void)
+		CParticleSystem				*getPS(void)
 		{
 			return _ParticleSystem ;
 		}
@@ -97,7 +97,7 @@ class CParticleSystemModel : public CTransformShape
 		/** Get the particle system contained in this transform shape. this may be null if the model
 		  * Is not visible
 		  */
-		const CParticleSystem *getPS(void) const
+		const CParticleSystem		*getPS(void) const
 		{		
 			return _ParticleSystem ;
 		}
@@ -105,30 +105,50 @@ class CParticleSystemModel : public CTransformShape
 		/** when called with true, this force the model to querry himself the ellapsed time to the scene.
 		  * This is the default. Otherwise, setEllapsedTime must be called
 		  */
-		void enableAutoGetEllapsedTime(bool enable = true) { _AutoGetEllapsedTime = enable ; }
+		void						enableAutoGetEllapsedTime(bool enable = true) 
+		{ 
+			_AutoGetEllapsedTime = enable ; 
+		}
 
 		/// tells wether the model will querry himself for the ellapsed time
-		  bool isAutoGetEllapsedTimeEnabled(void) const { return _AutoGetEllapsedTime ; }
+		bool						isAutoGetEllapsedTimeEnabled(void) const 
+		{ 
+			return _AutoGetEllapsedTime ; 
+		}
 
 		/// set the ellapsed time (in second) used for animation. 		  
-		void setEllapsedTime(CAnimationTime ellapsedTime) { _EllapsedTime = ellapsedTime ; }
+		void						setEllapsedTime(CAnimationTime ellapsedTime) 
+		{ 
+			_EllapsedTime = ellapsedTime ; 
+		}
 		
 		/// get the ellapsed time used for animation
-		CAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
+		CAnimationTime				getEllapsedTime(void) const 
+		{ 
+			return _EllapsedTime ; 
+		}
 		
 
 		/// activate the display of tool (for edition purpose)
-		void enableDisplayTools(bool enable = true) { _ToolDisplayEnabled = enable ; touchTransparencyState() ; }
+		void						enableDisplayTools(bool enable = true) 
+		{ 
+			_ToolDisplayEnabled = enable ; touchTransparencyState() ; 
+		}
 
 		// check wether the display of tools is enabled
-		bool isToolDisplayEnabled(void) const { return _ToolDisplayEnabled ; }
+		bool						isToolDisplayEnabled(void) const 
+		{ 
+			return _ToolDisplayEnabled ; 
+		}
 			
 		/// to instanciate that model from a scene
-		static IModel	*creator() {return new CParticleSystemModel ;}
+		static IModel				*creator() 
+		{
+			return new CParticleSystemModel ;
+		}
 
 		/// get the world matrix
-
-		const CMatrix &getWorldMatrix(void)
+		const CMatrix				&getWorldMatrix(void)
 		{
 			IBaseHrcObs *bobs= (IBaseHrcObs *) getObs(HrcTravId);
 			return bobs->WorldMatrix;
@@ -137,16 +157,14 @@ class CParticleSystemModel : public CTransformShape
 		/** This update the infos about opacity (e.g are there solid faces and / or transparent faces in the system).
 		  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
 		  */
-
-		void updateOpacityInfos(void) ;
+		void						updateOpacityInfos(void) ;
 
 
 	
 		/** set the particle system for this transform shape after it has been instanciated (from a memory stream)
 		 *  see CParticleSystemShape
 		 */
-
-		void setParticleSystem(CParticleSystem *ps)
+		void						setParticleSystem(CParticleSystem *ps)
 		{
 			nlassert(!_ParticleSystem) ;
 			_ParticleSystem = ps ;	
@@ -166,31 +184,45 @@ class CParticleSystemModel : public CTransformShape
 		};
 
 	
-		virtual IAnimatedValue* getValue (uint valueId) ;
+		virtual IAnimatedValue		*getValue (uint valueId) ;
 
-		virtual const char *getValueName (uint valueId) const ; 
+		virtual const char			*getValueName (uint valueId) const ; 
 
-		static const char *getPSParamName (uint valueId) ;
+		static const char			*getPSParamName (uint valueId) ;
+	
+	
+		virtual ITrack				*getDefaultTrack (uint valueId) ;
 
 	
-		virtual ITrack* getDefaultTrack (uint valueId) ;
-
-	
-		virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix=std::string()) ;
+		virtual	void				registerToChannelMixer(CChannelMixer *chanMixer
+														   , const std::string &prefix=std::string()) ;
 
 
 		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
-		void touchTransparencyState(void) { _TransparencyStateTouched = true ; }
+		void						touchTransparencyState(void) 
+		{ 
+			_TransparencyStateTouched = true ; 
+		}
 
 
 		/** force the edition mode : this will prevent the system from being removed when it is out of range
 		 * when there are no more particles in it etc. (this also mean that you can safely keep a pointer on it)
 		 * This flag is not saved.
 	     */
-		void setEditionMode(bool enable = true) { _EditionMode = true ; }
+		void						setEditionMode(bool enable = true) 
+		{ 
+			_EditionMode = true ; 
+		}
 
 		/// test if edition mode is activated
-		bool getEditionMode(void) const { return _EditionMode ; }
+		bool						getEditionMode(void) const 
+		{ 
+			return _EditionMode ; 
+		}
+
+
+		/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
+		virtual float				getNumTriangles (float distance);
 
 	protected:
 
@@ -235,9 +267,9 @@ public:
 class CParticleSystemClipObs : public CTransformClipObs
 {
 public:
-	virtual	bool	isRenderable() const {return true;}
-	void	traverse(IObs *caller) ;
-	static IObs	*creator() {return new CParticleSystemClipObs ;}
+	virtual	bool		isRenderable() const {return true;}
+	void				traverse(IObs *caller) ;
+	static IObs			*creator() {return new CParticleSystemClipObs ;}
 	
 };
 

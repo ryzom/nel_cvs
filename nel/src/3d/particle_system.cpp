@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.24 2001/07/18 09:08:17 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.25 2001/07/24 08:44:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,9 @@ uint32 CParticleSystem::_NbParticlesDrawn = 0 ;
 ///////////////////////////////////
 
 
+/// the default max distance of view for particle systems
+const float PSDefaultMaxViewDist = 300.f ;
+
 /*
  * Constructor
  */
@@ -66,7 +69,9 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _MaxNbIntegrations(4)
 									, _CanSlowDown(true)
 									, _AccurateIntegration(false)
-									, _InvMaxViewDist(1.f / 50.f)									
+									, _InvMaxViewDist(1.f / PSDefaultMaxViewDist)									
+									, _InvCurrentViewDist(1.f / PSDefaultMaxViewDist)									
+									, _MaxViewDist(PSDefaultMaxViewDist)
 									, _LODRatio(0.5f)
 									, _ComputeBBox(true)
 									, _DieCondition(none)
@@ -74,9 +79,53 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _DestroyModelWhenOutOfRange(false)
 									, _DestroyWhenOutOfFrustrum(false)
 									, _SystemDate(0.f)
-									, _CurrentLODRatio(0)
+									, _OneMinusCurrentLODRatio(0)									
+									, _MaxNumFacesWanted(0)
+								
+									
 {
 	for (uint k = 0 ; k < MaxPSUserParam ; ++k) _UserParam[k].Value = 0 ;
+}
+
+
+
+void CParticleSystem::notifyMaxNumFacesChanged(void)
+{
+	
+	_MaxNumFacesWanted = 0 ;	
+	for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	{		
+		_MaxNumFacesWanted += (*it)->querryMaxWantedNumFaces() ;
+	}
+}
+
+
+float CParticleSystem::getWantedNumTris(float dist)
+{
+			 	 
+	if (dist > _MaxViewDist) return 0 ;
+	else return ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted) ;	
+}
+
+
+void CParticleSystem::setNumTris(uint numFaces)
+{
+	float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm() ;
+	/*uint numFaceWanted = (uint) getWantedNumTris(modelDist) ;*/
+
+	const float epsilon = 10E-5f ;
+
+
+	uint wantedNumTri = (uint) getWantedNumTris(modelDist) ;
+	if (numFaces >= wantedNumTri || wantedNumTri == 0 || modelDist < epsilon)
+	{ 
+		_InvCurrentViewDist = _InvMaxViewDist ;
+	}
+	else
+	{
+		
+		_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist) ;
+	}
 }
 
 
@@ -151,13 +200,12 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 		// update current lod ratio
 
 		const CVector d = _SysMat.getPos() - _ViewMat.getPos() ;		
-		_CurrentLODRatio = 1.f - (d.norm() * _InvMaxViewDist) ; 
-		if (_CurrentLODRatio < 0) _CurrentLODRatio = 0.f ;
+		_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist) ;
+		if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f ;		
 		
 	
 		// update system date
 		_SystemDate += ellapsedTime ;
-
 	
 	}
 	
@@ -208,6 +256,8 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_AccurateIntegration) ;
 		if (_AccurateIntegration) f.serial(_CanSlowDown, _TimeThreshold, _MaxNbIntegrations) ;
 		f.serial(_InvMaxViewDist, _LODRatio) ;	
+		_MaxViewDist = 1.f / _InvMaxViewDist ;
+		_InvCurrentViewDist = _InvMaxViewDist ;
 	}
 
 	if (version > 3) // tell wether the system must compute his bbox, hold a precomputed bbox
@@ -235,6 +285,10 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 
 
+	if (f.isReading())
+	{
+		notifyMaxNumFacesChanged() ;
+	}
 }
 
 
@@ -244,6 +298,7 @@ void CParticleSystem::attach(CParticleSystemProcess *ptr)
 	nlassert(ptr->getOwner() == NULL) ; // deja attache a un autre systeme
 	_ProcessVect.push_back(ptr) ;
 	ptr->setOwner(this) ;
+	notifyMaxNumFacesChanged() ;
 }
 
 
@@ -362,14 +417,14 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool system
 {
 	if (!systemBasis)
 	{
-		v = _InvMaxViewDist * _InvertedViewMat.getJ() ;
+		v = _InvCurrentViewDist * _InvertedViewMat.getJ() ;
 		offset = - _InvertedViewMat.getPos() * v ;
 	}
 	else
 	{
-		const CVector tv = _InvSysMat * _InvertedViewMat.getJ() ;
-		const CVector org = _InvSysMat * _InvertedViewMat.getPos() ;
-		v = _InvMaxViewDist * tv ;
+		const CVector tv = _InvSysMat.mulVector(_InvertedViewMat.getJ()) ;
+		const CVector org = _InvSysMat.mulVector(_InvertedViewMat.getPos()) ;
+		v = _InvCurrentViewDist * tv ;
 		offset = - org * v ;
 	}
 }
@@ -377,7 +432,7 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool system
 
 TPSLod CParticleSystem::getLOD(void) const
 {
-	const float dist = fabsf(_InvMaxViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ()) ;
+	const float dist = fabsf(_InvCurrentViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ()) ;
 	return dist > _LODRatio ? PSLod2 : PSLod1 ;
 }
 

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.24 2004/06/21 15:33:06 legros Exp $
+ * $Id: build_surf.cpp,v 1.25 2004/06/22 09:17:53 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,11 +380,13 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 			WaterShape = ws;
 			IsUnderWater = true;
 		}
+/*
 		else
 		{
 			ForceInvalid = true;
 			IsValid = false;
 		}
+*/
 	}
 
 	if (ForceInvalid)

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.98 2003/07/02 17:26:31 distrib Exp $
+ * $Id: object_viewer.cpp,v 1.99 2003/07/03 08:54:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,7 @@
 #include "global_wind_dlg.h"
 #include "sound_anim_dlg.h"
 #include "light_group_factor.h"
+#include "choose_bg_color_dlg.h"
 
 
 
@@ -170,7 +171,7 @@ class CObjView : public CView
 public:
 	CObjView() 
 	{
-		MainFrame=NULL;
+		MainFrame=NULL;	
 	};
 	virtual ~CObjView() {};
 	virtual void OnDraw (CDC *) {};
@@ -231,6 +232,8 @@ CObjectViewer::CObjectViewer ()
 	_CameraFocal = 75.f; // default value for the focal
 	_SelectedObject = 0xffffffff;
 	_LightGroupDlg = NULL;
+	_ChooseFrameDelayDlg = NULL;
+	_ChooseBGColorDlg = NULL;
 
 	// no frame delay is the default
 	_FrameDelay = 0;
@@ -494,6 +497,10 @@ CObjectViewer::~CObjectViewer ()
 		delete _SoundAnimDlg;
 	if (_LightGroupDlg)
 		delete _LightGroupDlg;
+	if (_ChooseFrameDelayDlg)
+		delete _ChooseFrameDelayDlg;
+	if (_ChooseBGColorDlg)
+		delete _ChooseBGColorDlg;
 	if (_VegetableDlg)
 		delete _VegetableDlg;
 	if (_GlobalWindDlg)
@@ -673,9 +680,23 @@ void CObjectViewer::initUI (HWND parent)
 	_LightGroupDlg->Create (IDD_LIGHT_GROUP_FACTOR, _MainFrame);
 	getRegisterWindowState (_LightGroupDlg, REGKEY_OBJ_LIGHT_GROUP_DLG, false);
 
+	// Create frame delay window
+	_ChooseFrameDelayDlg = new CChooseFrameDelay(this, _MainFrame);
+	_ChooseFrameDelayDlg->Create(IDD_CHOOSE_FRAME_DELAY, _MainFrame);
+	getRegisterWindowState (_ChooseFrameDelayDlg, REGKEY_CHOOSE_FRAME_DELAY_DLG, false);
+
+
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);
+
+	// Create bg color window (must create after the background color has been set)
+	_ChooseBGColorDlg = new CChooseBGColorDlg(this, _MainFrame);
+	_ChooseBGColorDlg->Create(IDD_CHOOSE_BG_COLOR, _MainFrame);
+	getRegisterWindowState (_ChooseBGColorDlg, REGKEY_CHOOSE_BG_COLOR_DLG, false);
+
+
 	_MainFrame->update ();
+	
 
 	// Set current frame
 	setAnimTime (0.f, 100.f);
@@ -1331,7 +1352,17 @@ void CObjectViewer::releaseUI ()
 	}
 
 	// Write register
-	_MainFrame->registerValue (false);
+	if (_MainFrame)
+	{	
+		_MainFrame->registerValue (false);
+		// Remove the main frame
+		if (::IsWindow(*_MainFrame))
+		{
+			_MainFrame->DestroyWindow();
+		}
+		delete _MainFrame;
+		_MainFrame = NULL;
+	}
 
 	// Release the emitter from the server
 	_MouseListener.removeFromServer (CNELU::EventServer);

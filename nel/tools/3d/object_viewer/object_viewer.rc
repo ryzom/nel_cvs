@@ -144,6 +144,8 @@ BEGIN
     ID_BUTTON32848          "Z"
     ID_BUTTON32849          "Object mode"
     ID_BUTTON32852          "First person"
+    IDS_BAD_FD_VALUE        "Bad frame delay value, value must be numeric, and in the [0, 10000] scope."
+    IDS_CAPTION_ERROR       "Error"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -900,15 +902,13 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,142,3,58,42
 END
 
-IDD_CHOOSE_FRAME_DELAY DIALOG DISCARDABLE  0, 0, 153, 36
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CHOOSE_FRAME_DELAY DIALOG DISCARDABLE  0, 0, 300, 29
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Choose frame delay"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,101,2,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,101,18,50,14
-    EDITTEXT        IDC_FRAME_DELAY,4,7,67,15,ES_AUTOHSCROLL
-    LTEXT           "ms",IDC_STATIC,77,10,11,9
+    LTEXT           "Frame Delay (ms) :",IDC_STATIC,7,9,62,11
+    GROUPBOX        "",IDC_FRAME_DELAY,71,0,226,24,NOT WS_VISIBLE
 END
 
 IDD_EDITSPINNER DIALOG DISCARDABLE  0, 0, 281, 63
@@ -1497,6 +1497,14 @@ BEGIN
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
+IDD_CHOOSE_BG_COLOR DIALOG DISCARDABLE  0, 0, 233, 45
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Background color"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "",IDC_BG_COLOR,5,6,226,32,NOT WS_VISIBLE
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1797,9 +1805,9 @@ BEGIN
     IDD_CHOOSE_FRAME_DELAY, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 146
+        RIGHTMARGIN, 293
         TOPMARGIN, 7
-        BOTTOMMARGIN, 29
+        BOTTOMMARGIN, 22
     END
 
     IDD_EDITSPINNER, DIALOG
@@ -2040,6 +2048,14 @@ BEGIN
         RIGHTMARGIN, 171
         TOPMARGIN, 7
         BOTTOMMARGIN, 13
+    END
+
+    IDD_CHOOSE_BG_COLOR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 226
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 38
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2313,8 +2329,6 @@ BEGIN
         MENUITEM "Reset Scene &Matrix",         ID_VIEW_RESET_SCENE_ROOT
         MENUITEM "Set Scene Rotation",          ID_VIEW_SET_SCENE_ROTATION
         MENUITEM SEPARATOR
-        MENUITEM "Set frame delay",             IDM_SET_FRAME_DELAY
-        MENUITEM SEPARATOR
         MENUITEM "Activate texture set &1",     IDM_ACTIVATE_TEXTURE_SET_1
         MENUITEM "Activate texture set &2",     IDM_ACTIVATE_TEXTURE_SET_2
         MENUITEM "Activate texture set &3",     IDM_ACTIVATE_TEXTURE_SET_3
@@ -2353,6 +2367,8 @@ BEGIN
         MENUITEM "Global Wind            (&8)", ID_WINDOW_GLOBALWIND
         MENUITEM "Sound                     (&9)", ID_WINDOW_ANIMSOUND
         MENUITEM "&Light Group Factor",         ID_SCENE_SETLIGHTGROUPFACTOR
+        MENUITEM "Choose frame delay",          ID_WINDOW_CHOOSE_FRAME_DELAY
+        MENUITEM "Background color",            ID_WINDOW_CHOOSE_BG_COLOR
     END
     POPUP "&Help"
     BEGIN

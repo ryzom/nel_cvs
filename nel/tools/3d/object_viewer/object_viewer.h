@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.45 2003/04/18 15:13:37 corvazier Exp $
+ * $Id: object_viewer.h,v 1.46 2003/07/03 08:54:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,8 @@
 #define REGKEY_OBJ_GLOBAL_WIND_DLG "Software\\Nevrax\\nel\\object_viewer\\global_wind_dlg"
 #define REGKEY_OBJ_SOUND_ANIM_DLG "Software\\Nevrax\\nel\\object_viewer\\sound_anim_dlg"
 #define REGKEY_OBJ_LIGHT_GROUP_DLG "Software\\Nevrax\\nel\\object_viewer\\light_group_dlg"
+#define REGKEY_CHOOSE_FRAME_DELAY_DLG "Software\\Nevrax\\nel\\object_viewer\\choose_frame_delay_dlg"
+#define REGKEY_CHOOSE_BG_COLOR_DLG "Software\\Nevrax\\nel\\object_viewer\\choose_bg_color_dlg"
 
 
 
@@ -52,6 +54,7 @@
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
+#include "choose_frame_delay.h"
 
 #include <3d/animation_set.h>
 #include <3d/channel_mixer.h>
@@ -84,6 +87,8 @@ class CVegetableDlg;
 class CGlobalWindDlg;
 class CSoundAnimDlg;
 class CLightGroupFactor;
+class CChooseFrameDelay;
+class CChooseBGColorDlg;
 
 
 
@@ -470,6 +475,8 @@ private:
 	CVegetableDlg								*_VegetableDlg;
 	CSoundAnimDlg								*_SoundAnimDlg;
 	CLightGroupFactor							*_LightGroupDlg;
+	CChooseFrameDelay							*_ChooseFrameDelayDlg;
+	CChooseBGColorDlg							*_ChooseBGColorDlg;
 	uint32										_SelectedObject;
 	sint										_CurrentCamera;
 

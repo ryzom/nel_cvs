@@ -287,6 +287,7 @@
 #define IDC_SHAPE_NAME                  1127
 #define IDC_UPDATE_NB_MODELS            1128
 #define IDC_VECT_I                      1128
+#define IDD_CHOOSE_BG_COLOR             1128
 #define IDC_VECT_MINUS_I                1129
 #define IDC_VECT_J                      1130
 #define IDC_VECT_MINUS_J                1131
@@ -678,6 +679,8 @@
 #define ID_BUTTON32848                  32848
 #define ID_BUTTON32849                  32849
 #define ID_BUTTON32852                  32852
+#define IDS_BAD_FD_VALUE                32853
+#define IDS_CAPTION_ERROR               32854
 #define IDM_SOUND                       32857
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
 #define IDM_LB_EXTERN_ID                32859
@@ -739,13 +742,15 @@
 #define ID_SCENE_CAMERA_6               32920
 #define ID_SCENE_CAMERA_LAST            32921
 #define ID_SCENE_CAMERA_7               32921
+#define ID_WINDOW_CHOOSE_FRAME_DELAY    32955
+#define ID_WINDOW_CHOOSE_BG_COLOR       32956
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1128
-#define _APS_NEXT_COMMAND_VALUE         32955
+#define _APS_NEXT_RESOURCE_VALUE        1129
+#define _APS_NEXT_COMMAND_VALUE         32957
 #define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

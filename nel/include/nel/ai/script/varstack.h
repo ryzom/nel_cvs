@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.4 2001/01/12 09:52:55 chafik Exp $
+ * $Id: varstack.h,v 1.5 2001/01/12 13:01:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,7 @@ namespace NLAISCRIPT
 		{		
 			char valVar[200];
 			CVarPStack::_LocalTableRef[_Val + _Shift]->getDebugString(valVar);
-#if NL_DEBUG			
+#ifdef NL_DEBUG			
 			sprintf(text,"Stack<%d,%s>: pointe la variable %s",_Val,_NameVar->getString(),valVar);
 #else			
 			sprintf(text,"Stack<%d>: pointe la variable %s",_Val,valVar);

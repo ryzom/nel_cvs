@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.7 2001/01/12 13:01:47 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -24,6 +24,7 @@
 #ifndef NL_INTERPRET_OBJECT_AGENT_H
 #define NL_INTERPRET_OBJECT_AGENT_H
 #include "nel/ai/script/interpret_object.h"
+#include "nel/ai/agent/messagerie.h"
 
 namespace NLAIAGENT {
 	class CAgentScript;
@@ -103,12 +104,15 @@ namespace NLAISCRIPT
 		typedef std::vector<CMethodeName *>	tVectorMethode;
 		tVectorMethode						_Methode;
 		std::vector<const CAgentClass  *>	_VTable;
+		sint32								**_MsgIndirectTable;
 		sint32 _lastRef;		
 		sint32 _RunIndex;
+		sint32 _NbScriptedComponents;		// Number of static components which are interpreted object (which means derived from CAgentScript)
 	private:			
 		NLAIAGENT::IVarName *_Inheritance;		
 
-		
+		bool isMessageFunc(const CParam &) const;
+		void clearIndirectMsgTable();
 	public:
 
 		CAgentClass(const NLAIAGENT::IVarName &);
@@ -162,6 +166,7 @@ namespace NLAISCRIPT
 		virtual CMethodeName &getBrancheCode() const; ///throw NLAIE::CExceptionUnReference;
 		virtual CMethodeName &getBrancheCode(sint32) const;
 		virtual CMethodeName &getBrancheCode(sint32, sint32) const;
+		virtual sint32 getBrancheCodeSize() const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;
 		virtual sint32 getMethodIndexSize() const;		
 		virtual sint32 getRunMethod() const;
@@ -173,6 +178,8 @@ namespace NLAISCRIPT
 		virtual void buildVTable();
 		virtual void buildVMethode();		
 		virtual sint32 sizeVTable() const;
+		void buildChildsMessageMap();
+
 		//@}
 		
 		/// \name Classes.
@@ -183,12 +190,15 @@ namespace NLAISCRIPT
 		virtual const IClassInterpret *getBaseClass() const;					/// Returns the base class of this class
 		const CAgentClass *getSuperClass() const;								/// Returns the highest class from which this class derives
 		const void getClassPath(std::vector<const CAgentClass *> &path) const;	/// Fills a vector with pointers to all base classes from superclass to this class
-		sint32 getNbBaseClass() const;												/// Returns the number of base classes
+		sint32 getNbBaseClass() const;											/// Returns the number of base classes
 		//@}
 
 		/// Return a pointer represent the inheritance range n, the inheritance graph are represented by a vector.
 		virtual const IClassInterpret *getInheritance(sint32 n) const;
+
 		sint32 findMethod(const NLAIAGENT::IVarName &name,const CParam &CParam) const;
+
+		virtual sint32 getChildMessageIndex(const NLAIAGENT::IMessageBase *, sint32);
 	};
 }
 #endif

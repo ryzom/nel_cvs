@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.8 2001/01/12 11:52:20 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.9 2001/01/12 13:06:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,7 +263,6 @@ namespace NLAISCRIPT
 		c->RegisterName = (NLAIAGENT::IVarName *)type_name.clone();
 		c->ObjectName = NULL;
 		_Components.push_back(c);
-//		buildChildsMessageMap();
 		return _Components.size() - 1;
 	}
 	
@@ -274,7 +273,6 @@ namespace NLAISCRIPT
 		c->RegisterName = (NLAIAGENT::IVarName *)type_name.clone();
 		c->ObjectName = (NLAIAGENT::IVarName *)field_name.clone();
 		_Components.push_back(c);
-//		buildChildsMessageMap();
 		return _Components.size() - 1;
 	}
 	

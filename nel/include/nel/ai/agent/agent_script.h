@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: agent_script.h,v 1.5 2001/01/12 13:01:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,7 @@ namespace NLAIAGENT
 		{
 			return _ScriptMail;
 		}		
+		virtual sint32 getChildMessageIndex(const IMessageBase *, sint32 );
 
 		///Set the manager for this instance.
 		void setAgentManager(IAgentManager *manager);		

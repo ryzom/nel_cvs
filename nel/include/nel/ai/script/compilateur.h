@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.8 2001/01/11 16:38:30 chafik Exp $
+ * $Id: compilateur.h,v 1.9 2001/01/12 13:01:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,9 +307,7 @@ namespace NLAISCRIPT
 				return 0;
 			}		
 			return 1;
-			
 		}
-
 		
 		///Clean internal list.
 		void cleanTypeList();

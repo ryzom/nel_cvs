@@ -50,16 +50,13 @@
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
+	const NLAIC::CIdentType CScriptMailBox::IdScriptMailBox(	"ScriptMailBox",NLAIC::CSelfClassCFactory(CScriptMailBox(NULL)),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));	
+
 	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",
 														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
-	const NLAIC::CIdentType CScriptMailBox::IdScriptMailBox("ScriptMailBox",
-														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CScriptMailBox(NULL)),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-
 
 	const NLAIC::CIdentType CLocalMailBox::IdLocalMailBox("LocalMailBox",
 														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),
@@ -353,7 +350,7 @@ namespace NLAISCRIPT
 
 
 	NLAIAGENT::IObjectIA **CVarPStack::_LocalTableRef = NULL;
-	#ifdef NL_DEBUG
+	#ifdef _DEBUG
 	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
@@ -383,7 +380,7 @@ namespace NLAISCRIPT
 														NLAIC::CTypeOfOperator::opDiff));
 	#endif													
 
-	#ifdef NL_DEBUG
+	#ifdef _DEBUG
 	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 

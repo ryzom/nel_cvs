@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.5 2001/01/09 15:19:15 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.6 2001/01/12 13:02:29 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,11 +188,14 @@ namespace NLAIPYSERVER
 
 		Py_Initialize();		
 
-		char PathPython[1024*16];
+		char *PathPython;
+		PathPython = new char[ strlen(Py_GetPath() ) + strlen(pathWay) + 3];
+
 		/*strcpy(S,PathPython);
 		strcat(S,"/PyLib");*/
 				
-		sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);			
+		sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);		
+//		printf("%s\n",PathPython);
 				
 		CPyExport *m_pPyLib = new CPyExport;
 

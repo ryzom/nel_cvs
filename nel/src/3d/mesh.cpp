@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.84 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: mesh.cpp,v 1.85 2004/08/13 15:38:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
 	{
 		_VBuffer.setNumVertices(0);
+		_VBuffer.setName("CMeshGeom");
 		_VBuffer.reserve(0);
 		_MatrixBlocks.clear();
 		_BBox.setCenter(CVector::Null);

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.42 2004/07/21 12:17:17 berenguier Exp $
+ * $Id: mesh.h,v 1.43 2004/08/13 15:38:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,6 +515,11 @@ private:
 
 			f.serial(MaterialId);
 			f.serial(PBlock);
+		}
+		CRdrPass()
+		{
+			NL_SET_IB_NAME(PBlock, "CMesh::CRdrPass::PBlock");
+			NL_SET_IB_NAME(VBHeapPBlock, "CMesh::CRdrPass::VBHeapPBlock");
 		}
 	};
 

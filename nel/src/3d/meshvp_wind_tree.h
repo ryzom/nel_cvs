@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * <File description>
  *
- * $Id: meshvp_wind_tree.h,v 1.4 2003/03/17 17:36:28 berenguier Exp $
+ * $Id: meshvp_wind_tree.h,v 1.5 2003/12/22 10:28:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -109,6 +109,8 @@ public:
 	virtual	void	endMBRMesh(IDriver *drv);
 	// @}
 
+	// Max VP Distance movement
+	virtual float	getMaxVertexMove();
 
 	// Serial.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -133,7 +135,8 @@ private:
 
 	// maximum amplitude vector for each level. Stored in mesh because same for all instances.
 	CVector		_MaxDeltaPos[HrcDepth];
-
+	float		_MaxVertexMove;
+	
 	// MBR Cache
 	uint		_LastMBRIdVP;
 

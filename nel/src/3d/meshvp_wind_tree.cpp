@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.9 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.10 2003/12/22 10:28:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -112,6 +112,7 @@ CMeshVPWindTree::CMeshVPWindTree()
 	SpecularLighting= false;
 
 	_LastSceneTime= 0;
+	_MaxVertexMove= 0;
 }
 
 
@@ -199,6 +200,15 @@ inline void			CMeshVPWindTree::setupPerMesh(IDriver *driver, CScene *scene)
 		{
 			_MaxDeltaPos[i]= scene->getGlobalWindDirection() * PowerXY[i] * windPower;
 			_MaxDeltaPos[i].z= PowerZ[i] * windPower;
+		}
+
+		/* Update the Max amplitude distance 
+			in world space, since maxdeltaPos are applied in world space, see setupPerInstanceConstants()
+		*/
+		_MaxVertexMove= 0;
+		for(i=0; i<HrcDepth; i++)
+		{
+			_MaxVertexMove+= _MaxDeltaPos[i].norm();
 		}
 	}
 
@@ -423,6 +433,12 @@ void	CMeshVPWindTree::endMBRMesh(IDriver *driver)
 {
 	// Disable the VertexProgram
 	driver->activeVertexProgram(NULL);
+}
+
+// ***************************************************************************
+float	CMeshVPWindTree::getMaxVertexMove()
+{
+	return _MaxVertexMove;
 }
 
 

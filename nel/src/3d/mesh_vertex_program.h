@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.h
  * <File description>
  *
- * $Id: mesh_vertex_program.h,v 1.3 2003/03/17 17:36:28 berenguier Exp $
+ * $Id: mesh_vertex_program.h,v 1.4 2003/12/22 10:28:35 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -124,6 +124,12 @@ public:
 	virtual	void	endMBRMesh(IDriver *drv) {}
 	// @}
 
+
+	/** This return the (over-evaluated) max delta the VertexProgram apply to vertex (in world basis)
+	 *	NB: This method call is relevant only after begin() or beginMBRInstance()
+	 */
+	virtual float	getMaxVertexMove() {return 0;}
+	
 
 };
 

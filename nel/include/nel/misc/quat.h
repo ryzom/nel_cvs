@@ -1,7 +1,7 @@
 /** \file quaternion.h
  * CQuat class
  *
- * $Id: quat.h,v 1.4 2001/03/07 13:00:56 berenguier Exp $
+ * $Id: quat.h,v 1.5 2001/03/13 17:11:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,13 @@ struct	CAngleAxis
 
 	CAngleAxis() {}
 	CAngleAxis(CVector axis, float ang) : Axis(axis), Angle(ang) {}
+
+	/// serial.
+	void	serial(IStream &f)
+	{
+		f.serial(Axis);
+		f.serial(Angle);
+	}
 };
 
 

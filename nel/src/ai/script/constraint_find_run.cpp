@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.7 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,40 +52,47 @@ namespace NLAISCRIPT
 			if(_BaseClass->satisfied())
 			{
 				const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
-				if(!(( (const NLAIC::CTypeOfObject &)cl->getType() ) & NLAIC::CTypeOfObject::tAgentInterpret))
-				{
-					_Satisfied = true;
-					_MethodName->incRef();
-					_Param->incRef();
-					_BaseClass->incRef();
-					const CFunctionTag &m = getfunctionTag();
-					ILoadObject *o;
-					switch(_TypeOfCallType)
+				CFunctionTag method;
+				NLAIAGENT::IBaseGroupType *m = (NLAIAGENT::IBaseGroupType *)_MethodName->clone();
+				const NLAIAGENT::IObjectIA *b = c.validateHierarchyMethode(method.Member,method.Inheritance,cl,*m);
+				m->release();
+				if(b)
+				{					
+					if(!(( (const NLAIC::CTypeOfObject &)b->getType() ) & NLAIC::CTypeOfObject::tAgentInterpret))
 					{
-					case normalCall:
-						o = new CLoadStackObject(m.Member);
-						break;
+						_Satisfied = true;
+						_MethodName->incRef();
+						_Param->incRef();
+						_BaseClass->incRef();
+						const CFunctionTag &m = getfunctionTag();
+						ILoadObject *o;
+						switch(_TypeOfCallType)
+						{
+						case normalCall:
+							o = new CLoadSelfObject(method.Member);
+							break;
 
-					case stackCall:
-						o = new CLoadStackObject(m.Member);
-						break;
+						case stackCall:
+							o = new CLoadStackObject(m.Member);
+							break;
 
-					case heapCall:
-						o = new CLoadHeapObject(m.Member,_PosHeap);
-						break;
+						case heapCall:
+							o = new CLoadHeapObject(m.Member,_PosHeap);
+							break;
 
-					case newCall:
-						o = NULL;
-						break;
+						case newCall:
+							o = NULL;
+							break;
 
-					case searchCall:
-						o = NULL;
-						break;
-						
+						case searchCall:
+							o = NULL;
+							break;
+							
+						}
+						IOpCode *x = new CFindRunMsg(_MethodName,_Param,(IOpType *)_BaseClass,o);
+						setOpCode(x);
+						return;
 					}
-					IOpCode *x = new CFindRunMsg(_MethodName,_Param,(IOpType *)_BaseClass,o);
-					setOpCode(x);
-					return;
 				}
 			}
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.17 2001/01/22 16:43:40 portier Exp $
+ * $Id: agent_script.cpp,v 1.18 2001/01/23 09:15:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -432,14 +432,52 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CAgentScript::sendMessage(IObjectIA *m)
 	{
 		IMessageBase *msg = (IMessageBase *)m;
-		msg->setSender(this);
+		msg->setReceiver(this);
 		if(msg->getMethodIndex() >= 0)
 		{
 			_ScriptMail->addMessage(msg);			
 		}		
 		else 
 		{
-			return IAgent::sendMessage(msg);
+			if( ((const NLAIC::CTypeOfObject &)m->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			{
+				char runMsg[1024];
+				strcpy(runMsg,_RUN_);
+				switch(msg->getPerformatif())
+				{
+				case IMessageBase::PExec:
+					strcat(runMsg,"Exec");
+					break;
+				case IMessageBase::PAchieve:
+					strcat(runMsg,"Achieve");
+					break;
+				case IMessageBase::PAsk:
+					strcat(runMsg,"Ask");
+					break;
+				case IMessageBase::PTell:
+					strcat(runMsg,"Tell");
+					break;
+				case IMessageBase::PBreak:
+					strcat(runMsg,"Break");
+					break;
+				case IMessageBase::PKill:
+					strcat(runMsg,"Kill");
+					break;
+				}
+
+				NLAISCRIPT::COperandSimple *t = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(m->getType()));
+				NLAISCRIPT::CParam p(1,t);
+
+				tQueue r = isMember(NULL,&CStringVarName(runMsg),p);
+				if(r.size())
+				{
+					NLAIAGENT::CIdMethod m = r.top();
+					msg->setMethodIndex(0,m.Index);
+					_ScriptMail->addMessage(msg);
+				}
+				else return IAgent::sendMessage(msg);
+			}
+			else return IAgent::sendMessage(msg);
 		}
 		return IObjectIA::CProcessResult();
 	}
@@ -487,7 +525,87 @@ namespace NLAIAGENT
 				context.Self = this;
 				NLAISCRIPT::CCallMethod opCall(methodContex,msg.getHeritanceIndex(),msg.getMethodIndex());
 				opCall.runOpCode(context);
-				context.Self = self;				
+				context.Self = self;
+				IMessageBase *returnMsg = (IMessageBase *)context.Stack[(int)context.Stack];
+				returnMsg->incRef();
+				context.Stack--;
+				switch(msg.getPerformatif())
+				{
+				case IMessageBase::PExec:
+					if(msg.getContinuation() != NULL)
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setReceiver((IObjectIA *)msg.getContinuation());
+						((IObjectIA *)msg.getContinuation())->sendMessage(o);
+					}
+					break;
+				case IMessageBase::PAchieve:
+					if(msg.getContinuation() != NULL)
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setReceiver((IObjectIA *)msg.getContinuation());
+						((IObjectIA *)msg.getContinuation())->sendMessage(o);
+					}
+					break;
+				case IMessageBase::PAsk:
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setPerformatif(IMessageBase::PTell);
+						o->setReceiver((IObjectIA *)returnMsg->getSender());
+						((IObjectIA *)msg.getSender())->sendMessage(o);
+
+
+						if(msg.getContinuation() != NULL)
+						{
+							IMessageBase *o = (IMessageBase *)returnMsg->clone();
+							o->setMethodIndex(-1,-1);
+							o->setSender(this);
+							o->setReceiver((IObjectIA *)msg.getContinuation());
+							o->setPerformatif(IMessageBase::PTell);
+							((IObjectIA *)msg.getContinuation())->sendMessage(o);
+						}
+					}
+
+					break;
+				case IMessageBase::PTell:
+					if(msg.getContinuation() != NULL)
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setReceiver((IObjectIA *)msg.getContinuation());
+						((IObjectIA *)msg.getContinuation())->sendMessage(o);
+					}
+					break;
+				case IMessageBase::PBreak:
+					if(msg.getContinuation() != NULL)
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setReceiver((IObjectIA *)msg.getContinuation());
+						((IObjectIA *)msg.getContinuation())->sendMessage(o);
+					}
+					break;
+				case IMessageBase::PKill:
+					if(msg.getContinuation() != NULL)
+					{
+						IMessageBase *o = (IMessageBase *)returnMsg->clone();
+						o->setMethodIndex(-1,-1);
+						o->setSender(this);
+						o->setReceiver((IObjectIA *)msg.getContinuation());
+						((IObjectIA *)msg.getContinuation())->sendMessage(o);
+					}
+					break;
+	
+				}
+				returnMsg->release();
 			}
 			_ScriptMail->popMessage();
 		}

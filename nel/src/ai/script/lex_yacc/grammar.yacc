@@ -216,7 +216,8 @@ using  namespace NLAIFUZZY;
 								else
 								{
 									_IsVoid = true;
-								}
+								}								
+								if(!caseRunMsg()) return false;
 							}
 							END							
 						|	Methode 							
@@ -274,6 +275,7 @@ using  namespace NLAIFUZZY;
 								{
 									_IsVoid = true;
 								}
+								if(!caseRunMsg()) return false;
 
 							}
 						;

@@ -1,6 +1,6 @@
 /** \file opcode_register.cpp
  *
- * $Id: opcode_register.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: opcode_register.cpp,v 1.6 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -237,6 +237,9 @@ const NLAIC::CIdentType CMarkMsg::IdMarkMsg = NLAIC::CIdentType("MarkMsg",
 
 const NLAIC::CIdentType CFindRunMsg::IdFindRunMsg = NLAIC::CIdentType("FindRunMsg",
 																NLAIC::CSelfClassCFactory(CFindRunMsg(NLAIAGENT::CGroupType(),CParam(),COperandVoid(),CLoadSelfObject()) ),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+const NLAIC::CIdentType CMsgSetSender::IdMsgSetSender = NLAIC::CIdentType("MsgSetSender",
+																NLAIC::CSelfClassCFactory(CMsgSetSender()),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 const NLAIC::CIdentType CAddParamNameDebug::IdAddParamNameDebug = NLAIC::CIdentType("AddParamNameDebug",

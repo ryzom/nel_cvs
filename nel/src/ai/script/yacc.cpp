@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.11 2001/01/19 11:11:45 chafik Exp $
+ * $Id: yacc.cpp,v 1.12 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,37 @@ namespace NLAISCRIPT
 					{
 						_LastBloc->addCode(new CAffOpCode( ((CVarPStackParam *)_LastAffectation)->getIndex()));
 					}
-				}
+					sint index = ((CVarPStackParam *)_LastAffectation)->getIndex();
+
+					_LastBloc->eraseVar(_LasAffectationVarStr.front().data());					
+
+					#ifdef NL_DEBUG
+					_LastAffectation = new CVarPStackParam(index,_LasAffectationVarStr.front().data());
+					#else
+					_LastAffectation = new CVarPStackParam(index);
+					#endif
+
+					_LastBloc->allocLocVar(_LasAffectationVarStr.front().data(), _LastAffectation);
+
+					NLAIAGENT::IObjectIA *i;
+					if(_ExpressionType->satisfied())
+					{
+						IOpType * c= new COperandSimple(new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf()));							
+						i = new CObjectUnknown(c);
+						_ExpressionType->release();
+						_ExpressionType = NULL;
+					}
+					else
+					{											
+						_ExpressionType->incRef();
+						i = new CObjectUnknown(_ExpressionType);							
+						_ConstraintType.push_back(_ExpressionType);
+						_ExpressionType = NULL;
+					}
+					_Heap[index]->release();
+					_Heap[index] = i;
+
+				}	
 			}
 			else
 			{
@@ -393,6 +423,14 @@ namespace NLAISCRIPT
 
 	void CCompilateur::allocExpression(IOpCode *op,bool gd)
 	{
+#ifdef NL_DEBUG
+	std::list<sint32>::iterator i_dbg = _LastFact.Member.begin();
+	while(i_dbg != _LastFact.Member.end())
+	{
+		int k = *i_dbg++; 
+	}
+
+#endif
 		switch(_LastFact.VarType)
 		{
 			case varTypeImediate:
@@ -533,7 +571,17 @@ namespace NLAISCRIPT
 		cleanMethodConstraint();
 		cleanTypeConstraint();			
 		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
-		((CAgentClass *)c)->buildChildsMessageMap();
+		try
+		{
+			((CAgentClass *)c)->buildChildsMessageMap();
+		}
+		catch(NLAIE::IException &e)
+		{
+			char text[1024*8];			
+			sprintf(text,"can't find '%s'",e.what());
+			yyerror(text);	
+			return false;					
+		}
 		return true;
 	}
 
@@ -551,7 +599,45 @@ namespace NLAISCRIPT
 
 	bool CCompilateur::registerMethod()
 	{
-		bool isRun =  !strcmp(_MethodName.back().getString(),_RUN_);
+		bool isRun = false;
+		sint i;
+		const char *r = (const char *)_RUN_;
+
+		if(r[0] == _MethodName.back().getString()[0] && r[1] == _MethodName.back().getString()[1])
+		{
+			std::list<const char *> listRun;
+		
+			listRun.push_back((const char *)NLAIAGENT::CPExec::IdPExec);
+			listRun.push_back((const char *)NLAIAGENT::CPAchieve::IdPAchieve);
+			listRun.push_back((const char *)NLAIAGENT::CPAsk::IdPAsk);
+			listRun.push_back((const char *)NLAIAGENT::CPBreak::IdPBreak);
+			listRun.push_back((const char *)NLAIAGENT::CPTell::IdPTell);
+			listRun.push_back((const char *)NLAIAGENT::CPKill::IdPKill);
+			listRun.push_back((const char *)NLAIAGENT::CPExec::IdPExec);
+			
+			char nameRun[1024];			
+			for(i = 0; i < (sint)listRun.size(); i ++)
+			{
+				strcpy(nameRun,_RUN_);
+				strcat(nameRun,listRun.back());
+				listRun.pop_back();
+				if(!strcmp(_MethodName.back().getString(),nameRun))
+				{
+					isRun = true;
+					isRunMsg = true;
+					break;
+				}
+			}	
+			if(!isRun)
+			{
+				strcpy(nameRun,_RUN_);								
+				if(!strcmp(_MethodName.back().getString(),nameRun))
+				{
+					isRun = true;					
+				}
+			}
+		}
+				
 		bool isSend =  !strcmp(_MethodName.back().getString(),_SEND_);
 		bool runProcces = false;
 		if( isRun || isSend )
@@ -597,7 +683,7 @@ namespace NLAISCRIPT
 			}
 			((IClassInterpret *)_SelfClass.get())->setRunMethod(indexMethod);
 		}
-		sint32 i = 0;
+		i = 0;
 		_DecalageHeap = _Attrib.size();
 		_Heap.setShift(_DecalageHeap);
 		CVarPStackParam::_Shift = _DecalageHeap;
@@ -664,6 +750,7 @@ namespace NLAISCRIPT
 				_ConstraintType.push_back(_ExpressionType);
 				_ExpressionType->incRef();
 			}
+			haveReturn = true;
 		}
 		else
 		{			 
@@ -683,6 +770,7 @@ namespace NLAISCRIPT
 					c->incRef();
 					_ConstraintType.push_back(c);					
 				}
+				haveReturn = true;
 			}			
 		}
 		_ExpressionType = NULL;
@@ -709,6 +797,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
 		if(	!strcmp(s->getStr().getString(),_SEND_)/* && _Param.back()->size() == 1*/)
 		{			
+			_LastBloc->addCode(new CMsgSetSender());
 			_LastBloc->addCode(new CNopOpCode());
 			sendOp = _LastBloc->getBagOfCode();
 		}
@@ -768,9 +857,7 @@ namespace NLAISCRIPT
 		{
 			NLAIAGENT::IBaseGroupType *nameRun = (NLAIAGENT::IBaseGroupType *)_LastStringParam.back()->clone();
 			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();			
-#ifdef NL_DEBUG	
-	nameRun->getDebugString(mName);
-#endif
+
 			//_Param.back()->incRef();
 			CParam *paramRun = new CParam;			
 			IOpType *p = (IOpType *)(*_Param.back())[1];
@@ -792,6 +879,10 @@ namespace NLAISCRIPT
 				nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(runName))));
 				nameRun->incRef();
 			}
+
+#ifdef NL_DEBUG	
+	nameRun->getDebugString(mName);
+#endif
 
 			/*nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
 			nameRun->incRef();*/

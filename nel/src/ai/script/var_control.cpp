@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.11 2001/01/19 11:11:45 chafik Exp $
+ * $Id: var_control.cpp,v 1.12 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,21 @@
 
 namespace NLAISCRIPT
 {
+	bool CCompilateur::caseRunMsg()
+	{
+		if(isRunMsg && !haveReturn)
+		{
+			isRunMsg = false;
+			char text[4096];
+			sprintf(text,"run message methode must return an message value");
+			yyerror(text);			
+			return false;
+		}
+		isRunMsg = false;
+		haveReturn = false;
+		return true;
+	}
+
 	sint32 CCompilateur::castVariable(const NLAIAGENT::CStringVarName &v,NLAIAGENT::CStringVarName &t)
 	{
 		NLAIAGENT::IObjectIA *var = getVar(v.getString());
@@ -183,8 +198,7 @@ namespace NLAISCRIPT
 			{
 
 				CConstraintStackComp::OpCodeType opCodeType = CConstraintStackComp::stackCall;
-				sint32 posStack = 0;
-				var = getVar(_LasVarStr.front().data());
+				sint32 posStack = 0;				
 				NLAIAGENT::CStringVarName varName(_LasVarStr.back().data());
 				if(var != NULL)
 				{
@@ -200,7 +214,8 @@ namespace NLAISCRIPT
 							cl = (IClassInterpret *)_SelfClass.get();
 						}
 						else cl = (IClassInterpret *)((CClassInterpretFactory *)id.getFactory())->getClass();
-						IOpType *c;												
+						IOpType *c;				
+						_LastFact.Member.clear();
 						if(!isValidateVarName(cl,_LastFact.Member,_LasVarStr,c))
 						{
 							if(c) c->release();
@@ -216,6 +231,14 @@ namespace NLAISCRIPT
 						_LastFact.ValueVar = var;	
 						_LastFact.VarType = varTypeHeapMember;
 						_LastFact.IsUsed = false;
+#ifdef NL_DEBUG
+	std::list<sint32>::iterator i_dbg = _LastFact.Member.begin();
+	while(i_dbg != _LastFact.Member.end())
+	{
+		int k = *i_dbg++; 
+	}
+
+#endif
 						return true;						
 					}
 					else
@@ -231,7 +254,7 @@ namespace NLAISCRIPT
 				if(!_TypeList.size())
 				{				
 					_LastFact.Member.clear();
-					IOpType *c;
+					IOpType *c;					
 					if(!isValidateVarName(_LastFact.Member,_LasVarStr,c))
 					{
 						if(c) c->release();
@@ -485,9 +508,10 @@ namespace NLAISCRIPT
 		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
 		if(_LastStringParam.back()->size() == 1)
 		{		
-			NLAIC::CIdentType id(s->getStr().getString());
+			
 			try
 			{
+				NLAIC::CIdentType id(s->getStr().getString());
 				if(_FlotingExpressionType) _FlotingExpressionType->release();
 				_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType (id));				
 
@@ -523,8 +547,10 @@ namespace NLAISCRIPT
 			}
 			catch(NLAIE::IException &)
 			{
-
-				return false;	
+				char text[1024*8];
+				sprintf(text,"can't find '%s'",s->getStr().getString());
+				yyerror(text);	
+				return false;					
 			}
 			return true;
 		}

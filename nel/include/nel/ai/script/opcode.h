@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
+ * $Id: opcode.h,v 1.7 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1897,6 +1897,53 @@ namespace NLAISCRIPT
 	};
 
 	class ILoadObject;
+
+	class CMsgSetSender : public IOpRunCode
+	{
+	public:
+		static const NLAIC::CIdentType IdMsgSetSender;
+					
+
+	public:
+		
+		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		void getDebugResult(char *str,CCodeContext &context) const;		
+
+		const NLAIC::IBasicType *clone() const
+		{
+			return new CMsgSetSender();
+		}
+
+		const NLAIC::IBasicType *newInstance() const 
+		{
+			return clone();
+		}
+
+		const NLAIC::CIdentType &getType() const
+		{
+			return IdMsgSetSender;
+		}
+
+		void getDebugString(char *txt) const
+		{			
+		}
+
+		void save(NLMISC::IStream &os);
+
+		void load(NLMISC::IStream &is);		
+
+		const NLAIAGENT::IObjectIA::CProcessResult &run()
+		{
+			return NLAIAGENT::IObjectIA::ProcessRun;
+		}
+
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const
+		{ 
+			return true;
+		}	
+		
+	};
 	
 	class CFindRunMsg : public IOpRunCode
 	{

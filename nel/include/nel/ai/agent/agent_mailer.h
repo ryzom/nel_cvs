@@ -1,7 +1,7 @@
 /** \file agent_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_mailer.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
+ * $Id: agent_mailer.h,v 1.6 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ namespace NLAIAGENT
 		//@{
 		virtual const CProcessResult &run()
 		{
-			return _HostAgent->run();
+			return IObjectIA::ProcessRun;
 		}
 
 		virtual sint32 getStaticMemberSize() const

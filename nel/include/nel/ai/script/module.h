@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
+ * $Id: module.h,v 1.7 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,18 @@ namespace NLAISCRIPT
 			if(Itr != _DicoLocVar->end())
 			{
 				return (*Itr).second;
+			}
+			
+			return NULL;
+		}
+
+		NLAIAGENT::IObjectIA *eraseVar(const char *Name)
+		{
+			tDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
+
+			if(Itr != _DicoLocVar->end())
+			{
+				_DicoLocVar->erase(Itr);
 			}
 			
 			return NULL;

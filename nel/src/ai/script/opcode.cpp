@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: opcode.cpp,v 1.7 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,7 +327,7 @@ namespace NLAISCRIPT
 
 		const NLAIAGENT::CStringType *name = (const NLAIAGENT::CStringType *)_MethodName->get();
 
-		NLAIAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
+			NLAIAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
 
 		if(a.size())
 		{
@@ -387,6 +387,35 @@ namespace NLAISCRIPT
 		_MethodName = (NLAIAGENT::IBaseGroupType *)id.allocClass();
 		_MethodName->load(is);
 	}		
+
+	//*************************************
+	// CMsgSetSender
+	//*************************************
+
+	NLAIAGENT::TProcessStatement CMsgSetSender::runOpCode(CCodeContext &context)
+	{		
+		NLAIAGENT::IBaseGroupType *a = (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
+		NLAIAGENT::CIteratorContener i = a->getIterator();
+		i++;
+		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)i ++;
+		msg->setSender((NLAIAGENT::IObjectIA *)context.Self);
+
+		
+		return NLAIAGENT::processIdle;
+	}
+
+	void CMsgSetSender::save(NLMISC::IStream &os)
+	{
+	}
+
+	void CMsgSetSender::load(NLMISC::IStream &is)
+	{
+	}
+
+	void CMsgSetSender::getDebugResult(char *str,CCodeContext &context) const
+	{		
+		sprintf(str,"MsgSetSender");
+	}
 
 	//*************************************
 	// CAddParamNameDebug

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.12 2001/01/19 11:11:56 chafik Exp $
+ * $Id: compilateur.h,v 1.13 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,6 +183,8 @@ namespace NLAISCRIPT
 		sint32 _NbLogicParams;
 		bool   _InLineParse;
 		tDicoStr *_Dictionary;
+		bool isRunMsg;
+		bool haveReturn;
 
 	public:	
 
@@ -215,6 +217,8 @@ namespace NLAISCRIPT
 			_IsVoid = true;
 			_ResultCompile = NULL;
 			_InLineParse = false;
+			isRunMsg = false;
+			haveReturn = false;
 		}
 
 		/**
@@ -243,6 +247,8 @@ namespace NLAISCRIPT
 			_IsVoid = true;	
 			_ResultCompile = NULL;
 			_InLineParse = false;
+			isRunMsg = false;
+			haveReturn = false;
 		}
 
 		///Initialize source code from file.
@@ -382,6 +388,9 @@ namespace NLAISCRIPT
 		///Get the debug state.
 		bool getDebugMode() const {return _Debug;}
 
+
+		const NLAIAGENT::IObjectIA *validateHierarchyMethode(std::list<sint32> &,sint32 &,const NLAIAGENT::IObjectIA *,NLAIAGENT::IBaseGroupType &listName);
+
 	protected:
 		NLAIC::CIdentType getTypeOfClass(const NLAIAGENT::IVarName &className);/// throw (NLAIE::IException)		
 
@@ -400,8 +409,7 @@ namespace NLAISCRIPT
 		//sint32 getInheritanceRange(const IClassInterpret *,NLAIAGENT::IBaseGroupType &) const;
 		const IClassInterpret *getInheritanceRange(sint32 &,const IClassInterpret *,NLAIAGENT::IBaseGroupType &) const;
 		const IClassInterpret *getInheritanceRange(sint32 &,const IClassInterpret *,const NLAIAGENT::IVarName &) const;
-		sint32 findMethodei(NLAIAGENT::IBaseGroupType &listName,const CParam &param);
-		const NLAIAGENT::IObjectIA *validateHierarchyMethode(std::list<sint32> &,sint32 &,const NLAIAGENT::IObjectIA *,NLAIAGENT::IBaseGroupType &listName);
+		sint32 findMethodei(NLAIAGENT::IBaseGroupType &listName,const CParam &param);		
 
 		/// Tell the _lastBlock about a newLine (for Debug)
 		virtual void setNewLine();
@@ -452,6 +460,7 @@ namespace NLAISCRIPT
 		void callSend();
 		void initMessageManager();
 		bool endMessageManager();
+		bool caseRunMsg();
 	};
 }
 #endif

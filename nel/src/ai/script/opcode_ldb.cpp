@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.7 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,12 @@ namespace NLAISCRIPT
 	NLAIAGENT::TProcessStatement CLdbHeapMemberiOpCode::runOpCode(CCodeContext &context)
 	{
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
-		std::list<sint32>::iterator i = _I.begin();
+
+#ifdef NL_DEBUG
+		char txt[1024*8];	
+		sprintf(txt,"ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
+#endif
+		std::list<sint32>::iterator i = _I.begin();		
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
@@ -101,9 +106,13 @@ namespace NLAISCRIPT
 	void CLdbHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{						
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
+#ifdef NL_DEBUG
+		char dbg_txt[1024*8];	
+		sprintf(dbg_txt,"ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
+#endif
+		
 		std::list<sint32>::const_iterator i = _I.begin();
-		sint32 n = _I.size() - 1;
-		while(n --)
+		while(i != _I.end())
 		{
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}

@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.8 2001/01/19 11:11:56 chafik Exp $
+ * $Id: agent_digital.h,v 1.9 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,7 +212,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(char *text) const
 		{
-			sprintf(text,"%e",getValue());
+			sprintf(text,"%.5e",getValue());
 		}		
 
 		virtual const CProcessResult &run();

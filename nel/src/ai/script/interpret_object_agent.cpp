@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.20 2001/01/22 16:53:05 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.21 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -272,7 +272,7 @@ namespace NLAISCRIPT
 		for(sint32 i = _Components.size() - 1; i >= 0; i --)
 		{
 
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			char buffer[1024 * 8];
 			name.getDebugString( buffer );
 			char buffer2[1024 * 8];
@@ -324,7 +324,7 @@ namespace NLAISCRIPT
 	sint32 CAgentClass::getInheritedStaticMemberIndex(const NLAIAGENT::IVarName &name) const
 	{
 
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		const char *dbg_this_type = (const char *) getType();
 		char buffer[1024 * 8];
 		name.getDebugString(buffer);

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.5 2001/01/18 15:04:57 portier Exp $
+ * $Id: baseai.cpp,v 1.6 2001/01/23 09:15:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/messagerie.h"
 #include "nel/ai/agent/agent_mailer.h"
+#include "nel/ai/agent/performative.h"
 
 namespace NLAIAGENT
 {
@@ -233,8 +234,26 @@ namespace NLAIAGENT
 		case 0:
 			{
 				IMessageBase *msg;
-				msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
-				msg->setSender(this);
+				if(((IBaseGroupType *)a)->size() == 3)
+				{
+					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
+					msg->setReceiver(this);
+					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
+					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+					p->release();
+
+					IObjectIA *o = (INombreDefine *)((IBaseGroupType *)a)->pop();
+					msg->setContinuation(o);
+					p->release();					
+				}
+				else
+				{
+					msg = (IMessageBase *)((IBaseGroupType *)a)->pop();
+					msg->setReceiver(this);
+					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
+					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
+					p->release();					
+				}				
 				return sendMessage(msg);
 			}			
 			break;	

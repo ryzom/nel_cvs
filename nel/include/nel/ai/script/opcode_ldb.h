@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.5 2001/01/23 09:15:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,7 @@ namespace NLAISCRIPT
 		std::list<sint32> _I;
 		sint32 _N;
 	public:
-		CLdbHeapMemberiOpCode(std::list<sint32> b,sint32 n):
+		CLdbHeapMemberiOpCode(const std::list<sint32> &b,sint32 n):
 		_I(b),_N(n)
 		{
 		}

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.13 2004/06/08 17:14:33 distrib Exp $
+ * $Id: sstring.h,v 1.14 2004/06/08 17:47:03 boucher Exp $
  */
 
 
@@ -294,30 +294,42 @@ public:
 	CSString& operator=(char c);
 
 	/// Case insensitive string compare
+	bool operator==(const CSString &other) const;
+	/// Case insensitive string compare
 	bool operator==(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator==(const char* other) const;
 
+	/// Case insensitive string compare
+	bool operator!=(const CSString &other) const;
 	/// Case insensitive string compare
 	bool operator!=(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator!=(const char* other) const;
 
 	/// Case insensitive string compare
+	bool operator<=(const CSString &other) const;
+	/// Case insensitive string compare
 	bool operator<=(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator<=(const char* other) const;
 
+	/// Case insensitive string compare
+	bool operator>=(const CSString &other) const;
 	/// Case insensitive string compare
 	bool operator>=(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator>=(const char* other) const;
 
 	/// Case insensitive string compare
+	bool operator>(const CSString &other) const;
+	/// Case insensitive string compare
 	bool operator>(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator>(const char* other) const;
 
+	/// Case insensitive string compare
+	bool operator<(const CSString &other) const;
 	/// Case insensitive string compare
 	bool operator<(const std::string &other) const;
 	/// Case insensitive string compare
@@ -1436,6 +1448,11 @@ inline CSString& CSString::operator=(char c)
 	return *this;
 }
 
+inline bool CSString::operator==(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())==0;
+}
+
 inline bool CSString::operator==(const std::string &other) const
 {
 	return stricmp(c_str(),other.c_str())==0;
@@ -1444,6 +1461,11 @@ inline bool CSString::operator==(const std::string &other) const
 inline bool CSString::operator==(const char* other) const
 {
 	return stricmp(c_str(),other)==0;
+}
+
+inline bool CSString::operator!=(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())!=0;
 }
 
 inline bool CSString::operator!=(const std::string &other) const
@@ -1456,6 +1478,11 @@ inline bool CSString::operator!=(const char* other) const
 	return stricmp(c_str(),other)!=0;
 }
 
+inline bool CSString::operator<=(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())<=0;
+}
+
 inline bool CSString::operator<=(const std::string &other) const
 {
 	return stricmp(c_str(),other.c_str())<=0;
@@ -1464,6 +1491,11 @@ inline bool CSString::operator<=(const std::string &other) const
 inline bool CSString::operator<=(const char* other) const
 {
 	return stricmp(c_str(),other)<=0;
+}
+
+inline bool CSString::operator>=(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())>=0;
 }
 
 inline bool CSString::operator>=(const std::string &other) const
@@ -1476,6 +1508,11 @@ inline bool CSString::operator>=(const char* other) const
 	return stricmp(c_str(),other)>=0;
 }
 
+inline bool CSString::operator>(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())>0;
+}
+
 inline bool CSString::operator>(const std::string &other) const
 {
 	return stricmp(c_str(),other.c_str())>0;
@@ -1484,6 +1521,11 @@ inline bool CSString::operator>(const std::string &other) const
 inline bool CSString::operator>(const char* other) const
 {
 	return stricmp(c_str(),other)>0;
+}
+
+inline bool CSString::operator<(const CSString &other) const
+{
+	return stricmp(c_str(),other.c_str())>0;
 }
 
 inline bool CSString::operator<(const std::string &other) const
@@ -1561,20 +1603,32 @@ inline CSString operator+(const std::string& s0,const CSString& s1)
 
 // *** The following was commented out by Sadge because there were strange compilation/ link issues ***
 // *** The '<' operator was implemented instead ***
-_STLP_BEGIN_NAMESPACE
+//_STLP_BEGIN_NAMESPACE
+//namespace std
+//{
+//	/*
+//	 * less<CSString> is case insensitive
+//	 */
+//	template <>
+//	struct less<NLMISC::CSString> : public std::binary_function<NLMISC::CSString, NLMISC::CSString, bool>
+//	{
+//		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
+//	};
+//} // std
+//_STLP_END_NAMESPACE
 //namespace std
 //{
 
-	/*
-	 * less<CSString> is case insensitive
-	 */
-	template <>
-	struct less<NLMISC::CSString> : public std::binary_function<NLMISC::CSString, NLMISC::CSString, bool>
-	{
-		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
-	};
+//	/*
+//	 * less<CSString> is case insensitive
+//	 */
+//	template <>
+//	struct less<NLMISC::CSString> : public std::binary_function<NLMISC::CSString, NLMISC::CSString, bool>
+//	{
+//		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
+//	};
 //} // std
-_STLP_END_NAMESPACE
+//_STLP_END_NAMESPACE
 
 /** 
   * Instead of overriding std::less, please use the following predicate. 
@@ -1588,7 +1642,7 @@ _STLP_END_NAMESPACE
   */ 
 struct CUnsensitiveSStringLessPred : public std::less<NLMISC::CSString> 
 { 
-	bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); } 
+	bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x < y; /*.icompare(y);*/ } 
 }; 
  
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.52 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: scene.h,v 1.53 2004/05/03 16:42:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -755,6 +755,9 @@ private:
 	uint			_ShadowMapMaxCasterInScreen;
 	uint			_ShadowMapMaxCasterAround;
 
+	// Delaied model delete
+	bool			_DeleteModelLater;
+	std::vector<CTransform*>	_ToDelete;
 };
 
 

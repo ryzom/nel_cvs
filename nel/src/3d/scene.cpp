@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.119 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: scene.cpp,v 1.120 2004/05/03 16:42:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,7 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_ShadowMapMaxCasterAround= NL3D_SCENE_DEFAULT_SHADOW_MAP_MAX_CASTER_AROUND;
 
 	_WaterCallback = NULL;
+	_DeleteModelLater = false;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -299,6 +300,9 @@ void	CScene::initQuadGridClipManager ()
 // ***************************************************************************
 void	CScene::render(bool	doHrcPass)
 {
+	// Do not delete model during the rendering
+	_DeleteModelLater = true;
+
 	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
 	_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
 	_GlobalSystemTime = fNewGlobalSystemTime;
@@ -364,8 +368,16 @@ void	CScene::render(bool	doHrcPass)
 	clamp (deltaT, 0.01, 0.1);
 	updateWaitingInstances(deltaT);
 
+	// Delete model deleted during the rendering
+	_DeleteModelLater = false;
+	uint i;
+	for (i=0; i<_ToDelete.size(); i++)
+		deleteModel (_ToDelete[i]);
+	_ToDelete.clear ();
+
 	// Reset profiling
 	_NextRenderProfile= false;
+
 
 	/*
 	uint64 total = PSStatsRegisterPSModelObserver +
@@ -1054,11 +1066,18 @@ void	CScene::deleteModel(CTransform *model)
 {
 	if(model==NULL)
 		return;
-	set<CTransform*>::iterator	it= _Models.find(model);
-	if(it!=_Models.end())
+
+	// No model delete during the render
+	if (_DeleteModelLater)
+		_ToDelete.push_back (model);
+	else
 	{
-		delete *it;
-		_Models.erase(it);
+		set<CTransform*>::iterator	it= _Models.find(model);
+		if(it!=_Models.end())
+		{
+			delete *it;
+			_Models.erase(it);
+		}
 	}
 }
 

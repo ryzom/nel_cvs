@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.72 2004/04/09 14:23:00 vizerie Exp $
+ * $Id: transform.cpp,v 1.73 2004/05/03 16:42:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,6 @@
 
 using namespace NLMISC;
 using namespace std;
-
 
 namespace	NL3D
 {

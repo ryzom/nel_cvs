@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.24 2001/04/23 13:16:04 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.25 2001/04/23 14:18:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,11 +153,11 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	float FontRatio = 1.0;
 	uint32 width, height;
 
+	driver->getWindowSize (width, height);
+
 	// resize fontSize if window not of 800x600.
 	if(keep800x600Ratio)
 	{
-		driver->getWindowSize (width, height);
-
 		// keep the 800*600 ratio
 		fontSize = (uint32)floor(fontSize*height/600.f);
 		fontSize = max(fontSize, (uint32)2);

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.22.2.1 2003/06/11 15:21:59 lecroart Exp $
+ * $Id: command.h,v 1.22.2.2 2003/06/11 15:45:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 
 	// quiet means that we don't display anything else than the value
 	// human means that we want the value in a human readable if possible
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human) = 0;
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human = true) = 0;
 
 	std::string HelpString;
 	std::string CommandArgs;

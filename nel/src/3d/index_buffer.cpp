@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: index_buffer.cpp,v 1.4 2004/08/13 15:35:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/index_buffer.h"
 #include "3d/driver.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/fast_mem.h"
 
 using namespace NLMISC;
 
@@ -72,6 +73,21 @@ CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 	_ResidentSize = 0;
 	_KeepLocalMemory = false;
 	operator=(vb);
+}
+
+// ***************************************************************************
+CIndexBuffer::CIndexBuffer(const char *name)
+{
+	_Capacity = 0;
+	_NbIndexes = 0;
+	_InternalFlags = 0;
+	_LockCounter = 0;
+	_LockedBuffer = NULL;
+	_PreferredMemory = RAMPreferred;
+	_Location = NotResident;
+	_ResidentSize = 0;
+	_KeepLocalMemory = false;
+	_Name = name;
 }
 
 // ***************************************************************************
@@ -316,7 +332,7 @@ void CIndexBuffer::fillBuffer ()
 		// Copy the local memory in local memory
 		nlassert (_NbIndexes<=_NonResidentIndexes.size());
 		uint32 *dest = DrvInfos->lock (0, _NbIndexes, false);
-		memcpy (dest, &(_NonResidentIndexes[0]), _NbIndexes*sizeof(uint32));
+		NLMISC::CFastMem::memcpy (dest, &(_NonResidentIndexes[0]), _NbIndexes*sizeof(uint32));
 		DrvInfos->unlock(0, _NbIndexes);
 	}
 }

@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.5 2004/06/28 10:08:31 berenguier Exp $
+ * $Id: index_buffer.h,v 1.6 2004/08/13 15:35:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,14 @@ class	CIndexBuffer;
 class	IDriver;
 typedef	std::list<IIBDrvInfos*>			TIBDrvInfoPtrList;
 typedef	TIBDrvInfoPtrList::iterator		ItIBDrvInfoPtrList;
+
+
+#define NL_NAMED_INDEX_BUFFER
+#ifdef NL_NAMED_INDEX_BUFFER
+	#define NL_SET_IB_NAME(ib, n) if ((ib).getName().empty()) (ib).setName(n);
+#else
+	#define NL_SET_IB_NAME(ib, n)
+#endif
 
 /**
  * An index buffer to work with the driver
@@ -135,13 +143,18 @@ public:
 	/** Called by the driver implementation during the buffer activation */
 	void					fillBuffer ();
 	// @}
-
+	
 public:
 
 	/**
 	  * Default constructor. Make an empty index buffer. No value, no index. Index color format is set to TRGBA.
 	  */
 	CIndexBuffer(void);
+
+	/** Make an empty index buffer. No value, no index. Index color format is set to TRGBA.
+	  * Set its name to the given value
+	  */
+	CIndexBuffer(const char *name);
 
 	/**
 	  * Copy constructor.
@@ -295,6 +308,10 @@ public:
 	// Return true if the vetx buffer is locked
 	bool		isLocked () const {return _LockCounter!=0;}
 
+	// debug name
+	void		setName (const std::string &name) { _Name = name; };
+	const std::string &getName () const { return _Name; };
+
 private:
 
 	// Check locked buffers
@@ -320,8 +337,7 @@ private:
 	// Force non resident memory
 	void		restaureNonResidentMemory();
 	
-private:
-
+private:	
 	// Internal flags
 	uint16					_InternalFlags;		// Offset 18 : aligned
 
@@ -351,6 +367,9 @@ private:
 
 	// Keep in local memory
 	bool					_KeepLocalMemory;
+
+	// debug name
+	std::string				_Name;
 };
 
 /**

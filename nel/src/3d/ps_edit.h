@@ -1,7 +1,7 @@
 /** \file ps_edit.h
  * <File description>
  *
- * $Id: ps_edit.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_edit.h,v 1.3 2001/06/25 13:50:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,9 +78,23 @@ struct IPSMover
 	virtual void setScale(uint32 index, const CVector &s) {}
 	
 	// get the scale of the object
-	CVector getScale(uint32 index) const { return CVector(1.f, 1.f, 1.f) ; }
+	virtual CVector getScale(uint32 index) const { return CVector(1.f, 1.f, 1.f) ; }
 
+	/** some object may not store a whole matrix (e.g planes)
+	 *  this return true if only a normal is needed to set the orientation of the object
+	 */
+	virtual bool onlyStoreNormal(void) const { return false ; }
+
+	///  if the object only needs a normal, this return the normal. If not, is return (0, 0, 0)
+	virtual CVector getNormal(uint32 index) { return CVector::Null ; }
+
+	/// if the object only stores a normal, this set the normal of the object. Otherwise it has no effect
+	virtual void setNormal(uint32 index, CVector n) { }
 	
+	 
+
+
+
 	// set a new orthogonal matrix for the object
 	virtual void setMatrix(uint32 index, const CMatrix &m) = 0 ;
 	// return an orthogonal matrix of the system. No valid index -> assert

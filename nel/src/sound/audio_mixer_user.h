@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.54 2004/11/03 17:24:08 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.55 2004/11/30 17:31:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -336,6 +336,7 @@ public:
 	virtual float	getMusicLength();
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
 	virtual void	enableBackgroundMusic(bool enable);
+	virtual void	enableBackgroundMusicTimeConstraint(bool enable);
 	CMusicSoundManager *getBackgroundMusicManager() const {return _BackgroundMusicManager;}
 
 public:

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.42 2004/11/15 10:24:30 lecroart Exp $
+ * $Id: u_audio_mixer.h,v 1.43 2004/11/30 17:32:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,6 +380,9 @@ public:
 	/** enable or disable the background music system. disable it when you want to play your own mp3 for instance
 	 */
 	virtual void	enableBackgroundMusic(bool enable) =0;
+	/** set to false to avoid TimeBeforeCanReplay and MinimumPlaytime behaviour
+	 */
+	virtual void	enableBackgroundMusicTimeConstraint(bool enable) =0;
 	//@}
 
 

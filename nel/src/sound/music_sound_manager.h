@@ -1,7 +1,7 @@
 /** \file music_sound_manager.h
  * TODO: File description
  *
- * $Id: music_sound_manager.h,v 1.2 2004/11/15 10:25:06 lecroart Exp $
+ * $Id: music_sound_manager.h,v 1.3 2004/11/30 17:31:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -61,8 +61,12 @@ public:
 	/// enable or disable the music sound manager (disable it if you want to play user MP3 for instance)
 	void		enable(bool enable);
 
+	/// set false to avoid getMinimumPlayTime() and getTimeBeforeCanReplay() behavior. default to true
+	void		enableTimeConstraint(bool enable) {_TimeConstraintEnabled= enable;}
+
 private:
 	bool						_Enabled;
+	bool						_TimeConstraintEnabled;
 	// The current music sound actually playing
 	CMusicSound					*_CurrentMusicPlaying;
 	NLMISC::TTime				_PlayStartTime;

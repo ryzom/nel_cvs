@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.81 2004/11/03 17:24:08 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.82 2004/11/30 17:31:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2391,6 +2391,12 @@ bool	CAudioMixerUser::getSongTitle(const std::string &filename, std::string &res
 void	CAudioMixerUser::enableBackgroundMusic(bool enable)
 {
 	getBackgroundMusicManager()->enable(enable);
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::enableBackgroundMusicTimeConstraint(bool enable)
+{
+	getBackgroundMusicManager()->enableTimeConstraint(enable);
 }
 
 } // NLSOUND

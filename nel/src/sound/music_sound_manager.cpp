@@ -1,7 +1,7 @@
 /** \file music_sound_manager.cpp
  * TODO: File description
  *
- * $Id: music_sound_manager.cpp,v 1.2 2004/11/15 10:25:06 lecroart Exp $
+ * $Id: music_sound_manager.cpp,v 1.3 2004/11/30 17:31:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -44,6 +44,7 @@ CMusicSoundManager::CMusicSoundManager()
 	_Enabled= true;
 	_CurrentMusicPlaying= NULL;
 	_PlayStartTime= INT_MIN;
+	_TimeConstraintEnabled= true;
 }
 
 // ***************************************************************************
@@ -76,7 +77,7 @@ void		CMusicSoundManager::update()
 	// **** First, see if the current music played is cut-able
 	bool	canPlayNewMusic= true;
 	// if the current played music has not ended his "minimum play time"
-	if(_CurrentMusicPlaying && currentTime<=_PlayStartTime+_CurrentMusicPlaying->getMinimumPlayTime())
+	if(_TimeConstraintEnabled && _CurrentMusicPlaying && currentTime<=_PlayStartTime+_CurrentMusicPlaying->getMinimumPlayTime())
 		canPlayNewMusic= false;
 
 	// if cannot play new music, continue the current one
@@ -100,7 +101,7 @@ void		CMusicSoundManager::update()
 		if(_AlreadyPlayedSources.find(src)!=_AlreadyPlayedSources.end())
 			continue;
 		// verify that this sound can be played again from the last time it has been played
-		if(snd->LastStopTime>INT_MIN && currentTime<=snd->LastStopTime+snd->getTimeBeforeCanReplay())
+		if(_TimeConstraintEnabled && snd->LastStopTime>INT_MIN && currentTime<=snd->LastStopTime+snd->getTimeBeforeCanReplay())
 			continue;
 		// if no sound yet, take it
 		if(!bestSound)

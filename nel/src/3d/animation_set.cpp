@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.5 2001/03/08 13:40:06 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.6 2001/03/13 17:05:27 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,10 +39,11 @@ uint CAnimationSet::getNumChannelId () const
 
 // ***************************************************************************
 
-uint CAnimationSet::addAnimation (const std::string& name)
+uint CAnimationSet::addAnimation (const char* name)
 {
 	// Add an animation
 	_Animation.resize (_Animation.size()+1);
+	_Animation[_Animation.size()-1].setName (name);
 
 	// Add an entry name / animation
 	_AnimationIdByName.insert (std::map <std::string, uint32>::value_type (name, _Animation.size()-1));

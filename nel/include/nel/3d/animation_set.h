@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.7 2001/03/08 13:40:06 corvazier Exp $
+ * $Id: animation_set.h,v 1.8 2001/03/13 17:05:27 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,7 @@ public:
 	  *
 	  * \return the id of the new animation.
 	  */
-	uint addAnimation (const std::string& name);
+	uint addAnimation (const char* name);
 
 	/**
 	  * Final build of the animation set.

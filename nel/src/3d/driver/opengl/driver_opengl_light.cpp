@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.10 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.11 2004/04/06 13:41:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,12 +75,24 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 		colorGL[3]=1.f;
 		glLightfv (lightNum, GL_DIFFUSE, colorGL);
 
-		// Set the specular color
+		// Set the specular color		
 		colorNeL=light.getSpecular ();
-		colorGL[0]=(float)colorNeL.R/255.f;
-		colorGL[1]=(float)colorNeL.G/255.f;
-		colorGL[2]=(float)colorNeL.B/255.f;
-		colorGL[3]=1.f;
+		// don't know why, but with ATI cards, specular of 0 causes incorrect rendering (random specular is added)
+		if (_Extensions.ATITextureEnvCombine3)
+		{
+			// special case for ATI (there will be some specular, but there's a bug otherwise)
+			colorGL[0]=std::max(1.f / 1024.f, (float)colorNeL.R/255.f);
+			colorGL[1]=std::max(1.f / 1024.f, (float)colorNeL.G/255.f);
+			colorGL[2]=std::max(1.f / 1024.f, (float)colorNeL.B/255.f);
+			colorGL[3]=1.f;
+		}
+		else
+		{		
+			colorGL[0]=(float)colorNeL.R/255.f;
+			colorGL[1]=(float)colorNeL.G/255.f;
+			colorGL[2]=(float)colorNeL.B/255.f;
+			colorGL[3]=1.f;
+		}
 		glLightfv (lightNum, GL_SPECULAR, colorGL);
 
 		// Set light attenuation

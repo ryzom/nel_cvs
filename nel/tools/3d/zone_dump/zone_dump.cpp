@@ -1,7 +1,7 @@
 /** \file zone_dump.cpp
  * zone_dump.cpp : Very simple zone dumper
  *
- * $Id: zone_dump.cpp,v 1.2 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: zone_dump.cpp,v 1.3 2005/02/08 15:31:34 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/time_nl.h"
 #include "3d/zone.h"
 #include "3d/landscape.h"
-#include "3d/triangle.h"
-#include "../zone_welder/zone_utility.h"	// load a header file from zone_welder project
+#include "nel/misc/triangle.h"
+#include "../zone_lib/zone_utility.h"	// load a header file from zone_welder project
 
 #include <stdio.h>
 #include <float.h>

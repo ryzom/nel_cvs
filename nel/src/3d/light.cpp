@@ -1,7 +1,7 @@
 /** \file 3d/light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: light.cpp,v 1.7 2004/05/27 13:01:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,33 +108,45 @@ void CLight::setupSpotLight (const CRGBA& ambiant, const CRGBA& diffuse, const C
 
 void CLight::setupAttenuation (float farAttenuationBegin, float farAttenuationEnd)
 {
-	_ConstantAttenuation=1.f;
-	_QuadraticAttenuation=(float)(0.1/(0.9*farAttenuationBegin*farAttenuationBegin));
-	_LinearAttenuation=(float)(0.1/(0.9*farAttenuationBegin));
-
-	// blend factor
-	float factor = (0.1f*_LinearAttenuation*farAttenuationEnd-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd);
-
-	if (factor == 0.0f)
-		factor = 0.0001f;
-	factor = (0.9f-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd)/factor;
-
-	if ((factor<0.f)||(factor>1.f))
+	// suppose farAttenuationBegin==0 if too small, relative to farAttenuationEnd
+	if(farAttenuationBegin/farAttenuationEnd<0.1)
 	{
-		// Better factor
-		float d0_1Lin=1.f / ( _ConstantAttenuation + _LinearAttenuation*farAttenuationEnd );
-		float d0_1Quad=1.f / ( _ConstantAttenuation + _QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd );
-
-		// Better
-		if (fabs (d0_1Lin-0.1f)<fabs (d0_1Quad-0.1f))
-			_QuadraticAttenuation=0.f;
-		else
-			_LinearAttenuation=0.f;
+		// when dist==farAttenuationEnd, we want att==0.1 =>
+		// _ConstantAttenuation + _LinearAttenuation*dist == 10.
+		_ConstantAttenuation=1.f;
+		_QuadraticAttenuation= 0.f;
+		_LinearAttenuation= 9.f/farAttenuationEnd;
 	}
 	else
 	{
-		_LinearAttenuation*=factor;
-		_QuadraticAttenuation*=(1.f-factor);
+		_ConstantAttenuation=1.f;
+		_QuadraticAttenuation=(float)(0.1/(0.9*farAttenuationBegin*farAttenuationBegin));
+		_LinearAttenuation=(float)(0.1/(0.9*farAttenuationBegin));
+
+		// blend factor
+		float factor = (0.1f*_LinearAttenuation*farAttenuationEnd-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd);
+
+		if (factor == 0.0f)
+			factor = 0.0001f;
+		factor = (0.9f-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd)/factor;
+
+		if ((factor<0.f)||(factor>1.f))
+		{
+			// Better factor
+			float d0_1Lin=1.f / ( _ConstantAttenuation + _LinearAttenuation*farAttenuationEnd );
+			float d0_1Quad=1.f / ( _ConstantAttenuation + _QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd );
+
+			// Better
+			if (fabs (d0_1Lin-0.1f)<fabs (d0_1Quad-0.1f))
+				_QuadraticAttenuation=0.f;
+			else
+				_LinearAttenuation=0.f;
+		}
+		else
+		{
+			_LinearAttenuation*=factor;
+			_QuadraticAttenuation*=(1.f-factor);
+		}
 	}
 
 #ifdef NL_DEBUG

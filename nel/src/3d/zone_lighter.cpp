@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.10 2001/11/23 10:06:31 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.11 2002/01/28 14:45:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,19 @@
 #include "3d/mesh_multi_lod.h"
 #include "3d/mesh_mrm.h"
 #include "3d/transform_shape.h"
+#include "3d/water_shape.h"
+#include "3d/texture_file.h"
+
+
+
+
 
 #include "nel/misc/common.h"
 #include "nel/misc/thread.h"
+#include "nel/misc/path.h"
+#include "nel/misc/file.h"
+#include "nel/misc/aabbox.h"
+
 
 // Define this to use hardware soft shadows
 //#define HARDWARE_SOFT_SHADOWS
@@ -131,7 +141,7 @@ static const sint deltaDirection[8][2]=
 
 // ***************************************************************************
 
-float CZoneLighter::calcSkyContribution (sint s, sint t, float height, float skyIntensity, const CVector& normal)
+float CZoneLighter::calcSkyContribution (sint s, sint t, float height, float skyIntensity, const CVector& normal) const
 {
 	// Sky contribution
 	float skyContribution;
@@ -197,6 +207,41 @@ public:
 		_ZoneLighter->processCalc (_Process, _FirstPatch, _LastPatch, *_Description);
 		_ZoneLighter->_ProcessExited++;
 	}
+};
+
+
+// ***************************************************************************
+class NL3D::CCalcLightableShapeRunnable : public IRunnable
+{
+public:
+	CCalcLightableShapeRunnable(uint process,
+								CZoneLighter *zoneLighter,
+								const CZoneLighter::CLightDesc *description,
+								CZoneLighter::TShapeVect *shapeToLit,
+								uint firstShape,
+								uint lastShape
+								)
+		: 
+		  _Process(process),
+		  _ZoneLighter(zoneLighter), 
+		  _Description(description),
+		  _ShapesToLit(shapeToLit),
+		  _FirstShape(firstShape),
+		  _LastShape(lastShape)
+	{
+	}
+	void run()
+	{
+		_ZoneLighter->processLightableShapeCalc(_Process, _ShapesToLit, _FirstShape, _LastShape, *_Description);
+		_ZoneLighter->_ProcessExited++;
+	}
+private:
+	CZoneLighter						*_ZoneLighter;
+	const CZoneLighter::CLightDesc		*_Description;
+	CZoneLighter::TShapeVect	*_ShapesToLit;
+	uint								_FirstShape, _LastShape;
+	uint								_Process;
+
 };
 
 // ***************************************************************************
@@ -405,7 +450,10 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		lumels.resize (patchCount);
 
 		// Build zone informations
-		buildZoneInformation (landscape, listZone, description.Oversampling!=CLightDesc::NoOverSampling);
+		buildZoneInformation (landscape,
+							  listZone,
+							  description.Oversampling!=CLightDesc::NoOverSampling,
+							  description);
 
 	}
 
@@ -421,7 +469,7 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 
 	_ProcessExited=0;
 
-	// Lunch threads
+	// Launch threads
 	for (uint process=1; process<_ProcessCount; process++)
 	{
 		// Last patch
@@ -435,7 +483,7 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		// New first patch
 		firstPatch=lastPatch;
 
-		// Lunch
+		// Launch
 		pThread->start();
 	}
 
@@ -458,10 +506,48 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	progress ("Compress the lightmap", 0.5);
 
 	output.build (_ZoneToLight, _PatchInfo, _BorderVertices);
+
+	/// copy the tiles flags from the zone to light to the output zone
+	copyTileFlags(output, *(landscape.getZone(zoneToLight)));
+
+	/// Perform lightning of some ig's of the current zone (if any)
+	lightShapes(zoneToLight, description);
+}
+
+
+// *************************************************************************************
+void CZoneLighter::copyTileFlags(CZone &destZone, const CZone &srcZone)
+{
+	nlassert(destZone.getZoneId() == srcZone.getZoneId());
+	for (sint k = 0; k < srcZone.getNumPatchs(); ++k)
+	{
+		destZone.copyTilesFlags(k, srcZone.getPatch(k));
+	}
 }
 
 // ***************************************************************************
+float CZoneLighter::getSkyContribution(const CVector &pos, const CVector &normal, float skyIntensity) const
+{	
+	float s=(pos.x-_OrigineHeightField.x)/_HeightfieldCellSize;
+	float t=(pos.y-_OrigineHeightField.y)/_HeightfieldCellSize;
+	sint sInt=(sint)(floor (s+0.5f));
+	sint tInt=(sint)(floor (t+0.5f));
 
+	// Bilinear
+	float skyContributionTab[2][2];
+	skyContributionTab[0][0] = calcSkyContribution (sInt-1, tInt-1, pos.z, skyIntensity, normal);
+	skyContributionTab[1][0] = calcSkyContribution (sInt, tInt-1, pos.z, skyIntensity, normal);
+	skyContributionTab[1][1] = calcSkyContribution (sInt, tInt, pos.z, skyIntensity, normal);
+	skyContributionTab[0][1] = calcSkyContribution (sInt-1, tInt, pos.z, skyIntensity, normal);
+	
+	float sFact=s+0.5f-sInt;
+	float tFact=t+0.5f-tInt;
+	return (skyContributionTab[0][0]*(1.f-sFact) + skyContributionTab[1][0]*sFact)*(1.f-tFact) +
+		(skyContributionTab[0][1]*(1.f-sFact) + skyContributionTab[1][1]*sFact)*tFact;	
+}
+
+
+// ***************************************************************************
 void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, const CLightDesc& description)
 {
 	// *** Raytrace each patches
@@ -687,31 +773,15 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 		{
 			// Sky contribution
 			float skyContribution;
-
-			// Calc sky contribution
-			if (description.SkyContribution)
-			{
-				// Calc position 
-				CVector &position=lumels[lumel].Position;
-				float s=(position.x-_OrigineHeightField.x)/_HeightfieldCellSize;
-				float t=(position.y-_OrigineHeightField.y)/_HeightfieldCellSize;
-				sint sInt=(sint)(floor (s+0.5f));
-				sint tInt=(sint)(floor (t+0.5f));
-
-				// Bilinear
-				float skyContributionTab[2][2];
-				skyContributionTab[0][0] = calcSkyContribution (sInt-1, tInt-1, position.z, description.SkyIntensity, lumels[lumel].Normal);
-				skyContributionTab[1][0] = calcSkyContribution (sInt, tInt-1, position.z, description.SkyIntensity, lumels[lumel].Normal);
-				skyContributionTab[1][1] = calcSkyContribution (sInt, tInt, position.z, description.SkyIntensity, lumels[lumel].Normal);
-				skyContributionTab[0][1] = calcSkyContribution (sInt-1, tInt, position.z, description.SkyIntensity, lumels[lumel].Normal);
 				
-				float sFact=s+0.5f-sInt;
-				float tFact=t+0.5f-tInt;
-				skyContribution = (skyContributionTab[0][0]*(1.f-sFact) + skyContributionTab[1][0]*sFact)*(1.f-tFact) +
-					(skyContributionTab[0][1]*(1.f-sFact) + skyContributionTab[1][1]*sFact)*tFact;
+			if (description.SkyContribution)
+			{								
+				skyContribution = getSkyContribution(lumels[lumel].Position, lumels[lumel].Normal, description.SkyIntensity);
 			}
 			else
-				skyContribution=0.f;
+			{
+				skyContribution = 0.f;
+			}
 
 			// Sun contribution
 			float sunContribution;
@@ -733,7 +803,7 @@ void CZoneLighter::processCalc (uint process, uint firstPatch, uint lastPatch, c
 
 // ***************************************************************************
 
-uint8 CZoneLighter::getMaxPhi (sint s, sint t, sint deltaS, sint deltaT, float heightPos)
+uint8 CZoneLighter::getMaxPhi (sint s, sint t, sint deltaS, sint deltaT, float heightPos) const
 {
 	// Start position
 	s+=deltaS;
@@ -1581,7 +1651,7 @@ void CZoneLighter::excludeAllPatchFromRefineAll (CLandscape &landscape, vector<u
 
 // ***************************************************************************
 
-void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uint> &listZone, bool oversampling)
+void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uint> &listZone, bool oversampling, const CLightDesc &lightDesc)
 {
 	// Bool visit
 	vector<vector<uint> > visited;
@@ -1728,6 +1798,23 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 	// Get tesselated faces
 	std::vector<const CTessFace*> leaves;
 	landscape.getTessellationLeaves(leaves);
+	
+
+	
+	
+	if (_WaterShapes.size() != 0) // any water shape in this zone ?
+	{
+		/// make a quad grid of each water shape
+		makeQuadGridFromWaterShapes();
+
+		/// check for each tile if it is above / below water
+		computeTileFlagsForPositionTowardWater(lightDesc, leaves);
+	}
+	else
+	{
+		setTileFlagsToDefault(leaves);
+	}
+	
 
 	// Id of this zone in the array
 	uint zoneNumber=_ZoneId[_ZoneToLight];
@@ -2278,4 +2365,549 @@ CZoneLighter::CLightDesc::CLightDesc ()
 }
 
 // ***************************************************************************
+void CZoneLighter::addLightableShape(IShape *shape, const NLMISC::CMatrix& MT)
+{
+	CShapeInfo lsi;
+	lsi.MT = MT;
+	lsi.Shape = shape;
+	_LightableShapes.push_back(lsi);
+}
 
+
+// ***************************************************************************
+bool CZoneLighter::isLightableShape(IShape &shape)
+{
+	/// for now, the only shape that we lit are water shapes
+	if (dynamic_cast<CWaterShape *>(&shape) != NULL)
+	{
+		// check that this water surface has a diffuse map that is a CTextureFile (we must be able to save it !)
+		CWaterShape *ws = static_cast<CWaterShape *>(&shape);
+		const ITexture *tex = ws->getColorMap();
+		if (dynamic_cast<const CTextureFile *>(tex) != NULL)
+		{
+			return ws->isLightMappingEnabled();
+		}
+	}
+	return false;
+}
+
+// ***************************************************************************
+void CZoneLighter::lightShapes(uint zoneID, const CLightDesc& description)
+{
+	/// compute light for the lightable shapes in the given zone
+	if (_LightableShapes.size() == 0) return;	
+
+	uint numShapePerThread = 1 + (_LightableShapes.size() / _ProcessCount);
+	uint currShapeIndex = 0;
+	uint process = 0;
+	_ProcessExited = 0;
+
+	_NumLightableShapesProcessed = 0;
+
+
+	progress("Processing lightable shapes", 0);
+	
+	for (uint k = 0; k < _LightableShapes.size(); ++k, ++process)
+	{
+		uint lastShapeIndex = currShapeIndex + numShapePerThread;
+		lastShapeIndex = std::min(_LightableShapes.size(), lastShapeIndex);		
+		IThread *pThread = IThread::create (new CCalcLightableShapeRunnable(process, this, &description, &_LightableShapes, currShapeIndex, lastShapeIndex));
+		pThread->start();
+		currShapeIndex = lastShapeIndex;
+	}
+
+	/// wait for other process
+	while (_ProcessExited != _ProcessCount)
+	{
+		nlSleep (10);
+	}
+
+}
+
+
+
+// ***************************************************************************
+
+void CZoneLighter::processLightableShapeCalc (uint process,
+											  TShapeVect *shapesToLit,
+											  uint firstShape,
+											  uint lastShape,
+											  const CLightDesc& description)
+{
+	CMultiShape *shapeArray=new CMultiShape;
+	CMultiShape *shapeArrayTmp=new CMultiShape;
+	shapeArray->Shapes.reserve (SHAPE_MAX);
+	shapeArrayTmp->Shapes.reserve (SHAPE_MAX);
+
+	// for each lightable shape
+	for (uint k = firstShape; k < lastShape; ++k)
+	{		
+		nlassert(isLightableShape(* (*shapesToLit)[k].Shape)); // make sure it is a lightable shape		
+		lightSingleShape((*shapesToLit)[k], *shapeArray, *shapeArrayTmp, description, process);	
+	}
+
+	delete shapeArray;
+	delete shapeArrayTmp;	
+}
+
+
+// ***************************************************************************
+void CZoneLighter::lightSingleShape(CShapeInfo &si, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu)
+{
+	/// we compute the lighting for one single shape
+	if (dynamic_cast<CWaterShape *>(si.Shape))
+	{
+		lightWater(* static_cast<CWaterShape *>(si.Shape), si.MT, shape, shapeTmp, description, cpu);
+		
+	}
+	++_NumLightableShapesProcessed;
+	progress("Processing lightable shapes", (float) _NumLightableShapesProcessed / _LightableShapes.size());
+	return;	
+}
+
+
+
+// ***************************************************************************
+// utility function to get the directory of a fileName
+static std::string getDir (const std::string& path)
+{
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+	char* slash=strrchr (tmpPath, '/');
+	if (!slash)
+	{
+		slash=strrchr (tmpPath, '\\');
+	}
+
+	if (!slash)
+		return "";
+
+	slash++;
+	*slash=0;
+	return tmpPath;
+}
+
+
+// ***************************************************************************
+// utility function to get a file name fdrom a path
+static std::string getName (const std::string& path)
+{
+	std::string dir=getDir (path);
+
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+
+	char *name=tmpPath;
+	nlassert (dir.length()<=strlen(tmpPath));
+	name+=dir.length();
+
+	char* point=strrchr (name, '.');
+	if (point)
+		*point=0;
+
+	return name;
+}
+
+
+// ***************************************************************************
+// utility function to get the extension of a fileName
+static std::string getExt (const std::string& path)
+{
+	std::string dir = getDir (path);
+	std::string name = getName (path);
+
+	char tmpPath[512];
+	strcpy (tmpPath, path.c_str());
+
+	char *ext=tmpPath;
+	nlassert (dir.length()+name.length()<=strlen(tmpPath));
+	ext+=dir.length()+name.length();
+
+	return ext;
+}
+
+
+// ***************************************************************************
+void CZoneLighter::lightWater(CWaterShape &ws, const CMatrix &MT, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu)
+{	
+	try
+	{	
+		/// get the diffuse map
+		CTextureFile *diffuseTex = NLMISC::safe_cast<CTextureFile *>(ws.getColorMap());
+		std::string texFileName = CPath::lookup(diffuseTex->getFileName());
+		diffuseTex->generate();
+		const uint width = diffuseTex->getWidth();
+		const uint height = diffuseTex->getHeight();	
+		
+		/// build a matrix to convert from water space to uv space
+		NLMISC::CMatrix worldSpaceToUVs;
+		NLMISC::CVector2f col0, col1, pos;
+		ws.getColorMapMat(col0, col1, pos);
+		worldSpaceToUVs.setRot(NLMISC::CVector(col0.x * width, col0.y * height, 0),
+							   NLMISC::CVector(col1.x * width, col1.y * height, 0),
+							   NLMISC::CVector::K);
+		worldSpaceToUVs.setPos(NLMISC::CVector(pos.x * width, pos.y * height, 0));		
+
+		/// get min and max uvs
+		NLMISC::CPolygon p;
+		ws.getShapeInWorldSpace(p);
+
+		float minU, maxU;
+		float minV, maxV;
+
+		NLMISC::CVector uvs = worldSpaceToUVs * p.Vertices[0];
+		minU = maxU = uvs.x;
+		minV = maxV = uvs.y;
+
+
+		for (uint k = 1; k < (uint) p.getNumVertices(); ++k)
+		{
+			uvs = worldSpaceToUVs * p.Vertices[k];
+			minU = std::min(uvs.x, minU);
+			minV = std::min(uvs.y, minV);
+			maxU = std::max(uvs.x, maxU);
+			maxV = std::max(uvs.y, maxV);	
+		}
+		
+		
+	
+
+		sint iMinU = (sint) minU;
+		sint iMaxU = (sint) maxU;
+		sint iMinV = (sint) minV;
+		sint iMaxV = (sint) maxV;
+
+		NLMISC::clamp(iMinU, 0, (sint) width);
+		NLMISC::clamp(iMaxU, 0, (sint) width);
+		NLMISC::clamp(iMinV, 0, (sint) height);
+		NLMISC::clamp(iMaxV, 0, (sint) height);
+
+		// matrix to go from uv space to worldspace
+		NLMISC::CMatrix UVSpaceToWorldSpace = worldSpaceToUVs.inverted();
+
+		std::vector<uint8> &pixs8 = diffuseTex->getPixels();
+		NLMISC::CRGBA *rgbPixs = (NLMISC::CRGBA *) &pixs8[0];
+
+	
+		/// raytrace each texel
+		for (sint x = iMinU; x < iMaxU; ++x)
+		{
+			for (sint y = iMinV; y < iMaxV; ++y)
+			{
+				float factor;
+				NLMISC::CVector pos = UVSpaceToWorldSpace * NLMISC::CVector( x + 0.5f, y + 0.5f, 0 ) 
+					+ description.WaterShadowBias * NLMISC::CVector::K;
+				if (description.Shadow)
+				{
+					rayTrace(pos, NLMISC::CVector::K, 0, 0, -1, factor, shape, shapeTmp, cpu);
+				}
+				else
+				{
+					factor = - NLMISC::CVector::K * description.LightDirection;
+				}
+				clamp(factor, 0.f, 1.f);
+				factor = factor * description.WaterDiffuse + description.WaterAmbient;
+				if (description.SkyContributionForWater)
+				{
+					factor += getSkyContribution(pos, NLMISC::CVector::K, description.SkyIntensity);
+				}
+				clamp(factor, 0.f, 1.f);
+				uint intensity = (uint8) (255 * factor);
+				NLMISC::CRGBA srcCol(intensity,
+									 intensity,
+									 intensity,
+									  255);
+
+				if (!description.ModulateWaterColor)
+				{
+					rgbPixs[x + y * width] = srcCol;
+				}
+				else
+				{
+					NLMISC::CRGBA &col = rgbPixs[x + y * width];
+					col.modulateFromColor(col, srcCol);
+				}
+			}
+		}
+	
+		/// now, save the result
+		if (getExt(texFileName) != ".tga")
+		{
+			nlwarning("Zone lighter : error when lighting a water surface : input bitmap is not a tga file");
+		}
+		else
+		{
+			try
+			{
+				COFile of;
+				of.open(texFileName);
+				diffuseTex->writeTGA(of, 24);
+				of.close();
+			}
+			catch (NLMISC::Exception &)
+			{
+				nlwarning("Zone lighter : while lighting a water shape, writing %s failed! ", texFileName.c_str());
+			}
+		}
+	}
+	catch(NLMISC::Exception &e)
+	{
+		nlwarning("Water shape lighting failed !");
+		nlwarning(e.what());
+	}
+}
+
+///***********************************************************
+void CZoneLighter::addWaterShape(CWaterShape *shape, const NLMISC::CMatrix &MT)
+{
+	/// make sure it hasn't been inserted twice
+	CShapeInfo ci;
+	ci.Shape = shape;
+	ci.MT = MT;
+	_WaterShapes.push_back(ci);
+}
+
+///***********************************************************
+void CZoneLighter::makeQuadGridFromWaterShapes()
+{
+	if (!_WaterShapes.size()) return;
+	/// Compute the bbox of all shapes. We need this to dimension the quad grid
+	NLMISC::CAABBox tmpBox;
+
+	/// get the bbox of the first shape in the world
+	_WaterShapes[0].Shape->getAABBox(tmpBox);
+	NLMISC::CAABBox wbb = NLMISC::CAABBox::transformAABBox(_WaterShapes[0].MT, tmpBox);
+
+	TShapeVect::iterator it;	
+	
+	// make the union with all others bboxes.
+	for (it = _WaterShapes.begin() + 1; it != _WaterShapes.end(); ++it)
+	{
+		// get bbox in world
+		it->Shape->getAABBox(tmpBox);
+		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);												         
+		/// make the union oh bboxes
+		wbb  = NLMISC::CAABBox::computeAABBoxUnion(currBB, wbb);
+	}
+
+	/// the number of cells we want in the quad grid
+	const uint numCells = 16;
+
+	/// get the dimension
+	float width  = wbb.getMax().x - wbb.getMin().x;
+	float height = wbb.getMax().y - wbb.getMin().y;
+
+	float dim = std::max(width, height);
+
+	/// center the quad grid at the center of the shapes bboxes
+/*	NLMISC::CMatrix posMat;
+	posMat.setPos(wbb.getCenter());
+	_WaterShapeQuadGrid.changeBase(posMat.inverted());*/
+
+	/// init the quad grid
+	_WaterShapeQuadGrid.create(numCells, dim / numCells);
+	
+
+	uint count = 0, totalCount = _WaterShapes.size();
+
+	/// now, insert all water shapes
+	for (it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it, ++count)
+	{
+		CWaterShape *ws = NLMISC::safe_cast<CWaterShape *>(it->Shape);
+		/// get the current shape bbox in the world
+		it->Shape->getAABBox(tmpBox);
+		NLMISC::CAABBox currBB = NLMISC::CAABBox::transformAABBox(it->MT, tmpBox);												         
+		_WaterShapeQuadGrid.insert(currBB.getMin(), currBB.getMax(), NLMISC::safe_cast<CWaterShape *>(it->Shape));
+		progress("Building quadtree from water surfaces", (float) count / totalCount);
+	}
+
+	/// free the vector of water shapes
+	_WaterShapes.swap(TShapeVect());
+}
+
+
+//==================================================================
+
+/// a struct that helps us to know which tile we've processed
+struct CTileOfPatch
+{
+	uint8		TileId;
+	CPatch		*Patch;
+	CTileOfPatch();
+	CTileOfPatch(uint8 tileId, CPatch *patch) : TileId(tileId), Patch(patch)
+	{		
+	}	
+};
+
+//==================================================================
+/// for map insertion of CTileOfPatch structs
+static inline bool operator < (const CTileOfPatch &lhs, const CTileOfPatch &rhs)
+{
+	return lhs.Patch == rhs.Patch  ?
+		   lhs.TileId < rhs.TileId :
+		   lhs.Patch  < rhs.Patch;	
+};
+
+/// A set of tiles from patch and their bbox
+typedef std::map<CTileOfPatch, NLMISC::CAABBox> TTileOfPatchMap;
+
+///***********************************************************
+void CZoneLighter::computeTileFlagsForPositionTowardWater(const CLightDesc &lightDesc,
+														  std::vector<const CTessFace*> &tessFaces														  
+														  )
+{	
+	uint numTileAbove     = 0;
+	uint numTileBelow     = 0;
+	uint numTileIntersect = 0;
+	
+	/// the tiles that we have setupped so far...
+	TTileOfPatchMap tiles;
+
+	///////////////////////////////////////////
+	//  First, build the bbox for all tiles  //
+	///////////////////////////////////////////
+
+	uint triCount = 0, totalTriCount = tessFaces.size();	
+
+	nlinfo("Dealing with %d tessFaces", tessFaces.size());
+	for (std::vector<const CTessFace*>::iterator it = tessFaces.begin(); it != tessFaces.end(); ++it, ++triCount)
+	{
+		/// does the face belong to the zone to light ?
+		if ((*it)->Patch->getZone()->getZoneId() != _ZoneToLight) continue;
+		/// if the tile flags say that micro vegetation is disabled, just skip that
+		if ((*it)->Patch->Tiles[(*it)->TileId].getVegetableState() == CTileElement::VegetableDisabled)
+			continue;
+
+		CTileOfPatch top((*it)->TileId, (*it)->Patch);
+		TTileOfPatchMap::iterator tileIt = tiles.find(top);
+
+		/// test wether we've seen face(s) from this tile before
+		if (tileIt == tiles.end()) // first time ?
+		{
+			/// build a bbox for this face
+			NLMISC::CAABBox b;
+			b.setMinMax((*it)->VBase->EndPos, (*it)->VLeft->EndPos);
+			b.extend((*it)->VRight->EndPos);
+			b.extend(b.getMax() + lightDesc.VegetableHeight * NLMISC::CVector::K); // adds vegetable height			
+			tiles[top] = b;
+		}
+		else // extends the bbox with the given face
+		{
+			NLMISC::CAABBox &b = tileIt->second;			
+			b.extend((*it)->VBase->EndPos);
+			b.extend((*it)->VRight->EndPos);
+			b.extend((*it)->VLeft->EndPos);
+		}
+
+		if ((triCount % 100) == 0)
+		{
+			progress("Building bbox from tiles", (float) triCount / totalTriCount);
+		}
+	}
+
+	progress("Building bbox from tiles", 1.f);
+
+
+
+	////////////////////////////////////////////////////
+	// Now, check each tile bbox against water shapes //
+	////////////////////////////////////////////////////	
+	NLMISC::CPolygon   waterPoly;
+	NLMISC::CPolygon2D tilePoly;
+	tilePoly.Vertices.resize(4);
+
+	uint tileCount = 0, totalTileCount = tiles.size();	
+
+	for (TTileOfPatchMap::iterator tileIt = tiles.begin(); tileIt != tiles.end(); ++tileIt, ++tileCount)
+	{
+		const NLMISC::CVector v0 = tileIt->second.getMin();
+		const NLMISC::CVector v1 = tileIt->second.getMax();
+
+		/// build a top view from the bbox
+		tilePoly.Vertices[0].set(v0.x, v0.y); 
+		tilePoly.Vertices[1].set(v1.x, v0.y); 
+		tilePoly.Vertices[2].set(v1.x, v1.y); 
+		tilePoly.Vertices[3].set(v0.x, v1.y); 
+
+		/// Select the candidate water shape from the quad grid
+		_WaterShapeQuadGrid.clearSelection();
+		_WaterShapeQuadGrid.select(tileIt->second.getMin(), tileIt->second.getMax());
+
+		CTileElement &te = tileIt->first.Patch->Tiles[tileIt->first.TileId]; // alias to the current tile element
+
+		/// test more accurate intersection for each water shape
+		TWaterShapeQuadGrid::CIterator qgIt;
+		for (qgIt = _WaterShapeQuadGrid.begin(); qgIt != _WaterShapeQuadGrid.end(); ++qgIt)
+		{
+			
+			(*qgIt)->getShapeInWorldSpace(waterPoly);
+			NLMISC::CPolygon2D poly(waterPoly);
+			if (poly.intersect(tilePoly)) // above or below a water surface ?
+			{
+				/// height of water 
+				float waterHeight = waterPoly.Vertices[0].z;
+
+				if (v1.z < waterHeight)
+				{
+					// below
+					te.setVegetableState(CTileElement::UnderWater);
+					//nlassert(te.getVegetableState() == CTileElement::UnderWater);
+					++ numTileBelow;
+				}
+				else if (v0. z > waterHeight)
+				{
+					// above
+					te.setVegetableState(CTileElement::AboveWater);
+					//nlassert(te.getVegetableState() == CTileElement::AboveWater);
+					++ numTileAbove;
+				}
+				else
+				{
+					// intersect water
+					te.setVegetableState(CTileElement::IntersectWater);
+					//nlassert(te.getVegetableState() == CTileElement::IntersectWater);
+					++ numTileIntersect;
+				}
+				break;
+			}
+		}
+
+		if (qgIt == _WaterShapeQuadGrid.end()) // no intersection found ? if yes it's above water
+		{
+			te.setVegetableState(CTileElement::AboveWater);	
+			//nlassert(te.getVegetableState() == CTileElement::AboveWater);
+			++ numTileAbove;
+		}
+
+		if ((tileCount % 50) == 0)
+		{
+			progress("Computing tile position towards water", (float) tileCount / totalTileCount);
+		}
+	}
+
+	progress("Computing tile position towards water", 1.f);
+
+	nlinfo(" %d tiles are above water.", numTileAbove);
+	nlinfo(" %d tiles are below water.", numTileBelow);
+	nlinfo(" %d tiles intersect water.", numTileIntersect);
+
+
+
+	/// delete the quadgrid now
+	NLMISC::contReset(_WaterShapeQuadGrid);
+}
+
+///***********************************************************
+void CZoneLighter::setTileFlagsToDefault(std::vector<const CTessFace*> &tessFaces)
+{
+	/// We may setup a tile several time, but this doesn't matter here...
+	for (std::vector<const CTessFace*>::iterator it = tessFaces.begin(); it != tessFaces.end(); ++it)
+	{
+		if ((*it)->Patch->getZone()->getZoneId() != _ZoneToLight) continue;
+		CTileElement &te = (*it)->Patch->Tiles[(*it)->TileId];
+		if (te.getVegetableState() != CTileElement::VegetableDisabled)
+		{
+			te.setVegetableState(CTileElement::AboveWater);
+		}
+	}
+}

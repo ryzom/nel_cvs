@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.4 2001/10/30 10:20:10 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.5 2002/01/28 14:45:34 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -45,8 +45,11 @@ class CZone;
 class CPatchUVLocator;
 class IShape;
 class CCalcRunnable;
+class CCalcLightableShapeRunnable;
 class CMeshGeom;
 class CMeshMRMGeom;
+class CWaterShape;
+
 
 // The zone lighter
 class CZoneLighter
@@ -115,6 +118,25 @@ public:
 
 		// Sky intensity [0, 1]
 		float					SkyIntensity;
+
+		// z-bias for water rendering
+		float					WaterShadowBias;
+
+		// Water ambient intensity
+		float					WaterAmbient;
+
+		// This is used to modulate the direct contribution of light to water
+		float					WaterDiffuse;
+
+		// Sky contribution for water
+		bool					SkyContributionForWater;
+
+		// True to enable modulation with water previous texture
+		bool                    ModulateWaterColor;
+
+		/// Evaluation of the max height, in meters, of the vegetables. Needed when we compute wether a tile is below or above water.
+		float					VegetableHeight; 
+//		#error pas oublier de remplir ça
 
 		// Nombrer of CPU used
 		uint					NumCPU;
@@ -245,7 +267,7 @@ public:
 
 	private:
 		std::vector<std::vector<float> >	HeightFields;
-	};
+	};	
 
 	// Init the system
 	void init ();
@@ -260,10 +282,23 @@ public:
 	// Add triangles from a transform shape. Work only for CMesh, CMultiMesh and CMeshMRM all without skinning.
 	void addTriangles (const IShape &shape, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
+	/** Some shape (water shapes for now) can be lit.
+	  * This add such a shape to the process of lighting.	  
+	  * \see isLightableShape()
+	  */
+	void addLightableShape(IShape *shape, const NLMISC::CMatrix& modelMT);
+
+	/// Add a water shape. This is needed to decide wether tiles are above / below water
+	void addWaterShape(CWaterShape *shape, const NLMISC::CMatrix &MT);	 
+
+	/// check wether a shape is lightable.
+	static bool isLightableShape(IShape &shape);
+
 	// Progress callback
 	virtual void progress (const char *message, float progress) {};
 
 private:
+	friend class CCalcLightableShapeRunnable;
 	// Add triangles from a non skinned CMeshGeom.
 	void addTriangles (const CMeshGeom &meshGeom, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
@@ -274,7 +309,7 @@ private:
 	void processCalc (uint process, uint firstPatch, uint lastPatch, const CLightDesc& description);
 
 	// Build internal zone information
-	void buildZoneInformation (CLandscape &landscape, const std::vector<uint> &listZone, bool oversampling);
+	void buildZoneInformation (CLandscape &landscape, const std::vector<uint> &listZone, bool oversampling, const CLightDesc &lightDesc);
 
 	// Exclude all the patch of a landscape from refine all
 	void excludeAllPatchFromRefineAll (CLandscape &landscape, std::vector<uint> &listZone, bool exclude);
@@ -283,12 +318,15 @@ private:
 	void getPatchNormalAndPositions (std::vector<CLumelDescriptor>& lumels, CLandscape &landscape, uint zoneToLight, uint patch, 
 									CPatchUVLocator *locator, bool *binded);
 
-	// Calc sky contribution
-	float calcSkyContribution (sint s, sint t, float height, float skyIntensity, const CVector& normal);
+	// Calc sky contribution. Used by getSkyContribution
+	float calcSkyContribution (sint s, sint t, float height, float skyIntensity, const CVector& normal) const;
+
+	/// compute the sky contribution at the given position
+	float getSkyContribution(const CVector &pos, const CVector &normal, float SkyIntensity) const;
 
 
 	// Get max height
-	uint8 getMaxPhi (sint s, sint t, sint deltaS, sint deltaT, float heightPos);
+	uint8 getMaxPhi (sint s, sint t, sint deltaS, sint deltaT, float heightPos) const;
 
 	// Ray trace a position
 	void rayTrace (const CVector& position, const CVector& normal, float s, float t, uint patchId, float &factor, CMultiShape &shape, CMultiShape &shapeTmp, uint cpu);
@@ -309,6 +347,59 @@ private:
 										const std::vector<bool> &oversampleEdges, std::vector<CPatchUVLocator> &locator, 
 										uint8 shadowed, std::vector<std::vector<uint8> >& shadowBuffer);
 
+	/// Struct describing the position of a lightable shape
+	struct  CShapeInfo
+	{
+		IShape			*Shape;
+		NLMISC::CMatrix MT;
+	};
+	/// A vector of lightable shapes
+	typedef std::vector<CShapeInfo>	TShapeVect;	
+	
+
+	/// Launch a set of threads to perform lighting of lightable shapes
+	void lightShapes(uint zoneID, const CLightDesc& description);
+
+	/// Process lighting for a set of lightable shapes. This is called by the threads created by lightShapes().
+	void processLightableShapeCalc (uint process,
+									TShapeVect *shapeToLit,
+									uint firstShape,
+									uint lastShape,
+									const CLightDesc& description);
+
+	/// Compute the lighting for a single lightable shape
+	void lightSingleShape(CShapeInfo &lsi, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu);
+
+	/// Compute the lighting for a water shape
+	void lightWater(CWaterShape &ws, const CMatrix &MT, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu);
+	
+	/** Make a quad grid of all the water shapes that where registered by calling addWaterShape()
+	  * The vector of water shapes is released then
+	  */
+	void makeQuadGridFromWaterShapes();
+
+
+	/** For each tile of the current zone, check wether it below or above water. 
+	  * The result is stored in the flags of the tile. 
+	  * The quadtree is removed then.
+	  */
+	void computeTileFlagsForPositionTowardWater(const CLightDesc &lightDesc,
+												std::vector<const CTessFace*> &tessFaces
+												);
+
+
+	/** If no water surface overlap the zone, so we set all the flags to 'AboveWater", or don't change them if they
+	  * were set to 'DisableVegetable'
+	  */
+	void setTileFlagsToDefault(std::vector<const CTessFace*> &tessFaces);
+
+	/** This copy the flags of the tiles from the source zone to a dest zone (result of the lighting).
+	  * This is needed beacuse these flags are updated to say wether a given tile is above  / below water
+	  * IMPORTANT : the source and destination zones must match of course...
+	  */
+	static void copyTileFlags(CZone &destZone, const CZone &srcZone);
+
+
 	// The quad grid
 	CQuadGrid<const CTriangle*>					_QuadGrid[MAX_CPU_PROCESS];
 	NLMISC::CMatrix								_RayBasis;
@@ -322,7 +413,7 @@ private:
 
 	// Processes
 	uint										_ProcessCount;
-	uint										_ProcessExited;
+	volatile uint								_ProcessExited;
 
 	// The shape
 	CShape										_Shape;
@@ -360,6 +451,19 @@ private:
 
 	// Precalc
 	NLMISC::CVector								_K[256][8];
+
+	/// lightable shapes
+	TShapeVect									_LightableShapes;
+	uint										_NumLightableShapesProcessed;
+	
+	/** List of all the water shapes in the zone. We need them to check wether the tiles are above / below water, or if theyr intersect water
+	  */
+	TShapeVect									_WaterShapes;
+
+	typedef CQuadGrid<CWaterShape *>			TWaterShapeQuadGrid;
+
+	TWaterShapeQuadGrid							_WaterShapeQuadGrid;
+
 };
 
 } // NL3D

@@ -2311,14 +2311,11 @@ SOURCE=.\3d\mot.cpp
 
 !IF  "$(CFG)" == "3d - Win32 Release"
 
-# ADD CPP /YX
-
 !ELSEIF  "$(CFG)" == "3d - Win32 Debug"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
 
 # ADD BASE CPP /YX
-# ADD CPP /YX
 
 !ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
 

@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.17 2002/08/23 08:04:32 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.18 2002/10/02 16:40:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,14 +112,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	if (fontEx == "")
 	{
 		// try to see if the ex filename exists based on the fontExFileName
-		string ex = CFile::getFilenameWithoutExtension (fontFileName);
-		try
-		{
-			fontEx = CPath::lookup(ex+".afm");
-		}
-		catch(Exception &)
-		{
-		}
+		fontEx = CPath::lookup(CFile::getFilenameWithoutExtension (fontFileName)+".afm", false, false);
 	}
 
 	if (fontEx != "")

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.9 2004/04/27 12:05:39 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.10 2004/05/14 15:05:44 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -64,7 +64,14 @@ public:
 	virtual	IVertexBufferHardGL		*createVBHardGL(uint size, CVertexBuffer *vb) =0;
 	/// return the size allocated. 0 if not allocated or failure
 	virtual	uint					sizeAllocated() const =0;
-	
+	// Check & invalidate lost buffers. Default assume they can't be lost
+	virtual void updateLostBuffers() {}	
+	// Get driver
+	CDriverGL	*getDriver() const { return _Driver; }
+	// tmp, for debug
+	#ifdef NL_DEBUG
+		virtual void		 dumpMappedBuffers() {}
+	#endif
 protected:
 	CDriverGL	*_Driver;
 };
@@ -380,10 +387,26 @@ public:
 	 */
 	void			disable();	
 	
+	CVertexBuffer::TPreferredMemory getVBType() const { return _VBType; }
+
+	// check & invalidate lost buffers
+	void updateLostBuffers();	
+
+	// tmp for debug
+	#ifdef NL_DEBUG
+		void dumpMappedBuffers();
+	#endif
+
 // *************************
 private:
 	CVertexBuffer::TPreferredMemory _VBType;
 	uint32				 _SizeAllocated;	
+public:
+	// for use by CVertexBufferHardGLMapObjectATI	
+	std::list<CVertexBufferHardGLMapObjectATI *> _LostVBList;
+	#ifdef NL_DEBUG
+		std::list<CVertexBufferHardGLMapObjectATI *> _MappedVBList;
+	#endif
 };
 
 
@@ -412,8 +435,8 @@ public:
    /**	setup ptrs allocated by createVBHard()
 	 */
 	void					initGL(CVertexArrayRangeMapObjectATI *var, uint vertexObjectID);
-
 	
+
 public:
 
 	/// get Handle of the ATI buffer.
@@ -422,12 +445,21 @@ public:
 
 // *************************
 private:
-	uint						   _VertexObjectId;	
 	void						   *_VertexPtr; // pointer on current datas. Null if not locked
 	CVertexArrayRangeMapObjectATI  *_VertexArrayRange;
 	// if buffer has been invalidated, returns a dummy memory block and silently fails rendering
-	std::vector<uint8>				_DummyVB;
-	uint							_SwapBufferCounterWhenInvalidated; // value of the swap buffer counter when the buffer was invalidated
+	std::vector<uint8>				_DummyVB;	
+	// Invalidate the buffer (when it is lost, or when a lock fails)
+	void							invalidate();	
+public:
+	// for use by CVertexArrayRangeMapObjectATI	
+	std::list<CVertexBufferHardGLMapObjectATI *>::iterator _IteratorInLostVBList;
+	uint						   _VertexObjectId;	
+	// tmp for debug
+	#ifdef NL_DEBUG
+		bool							_Unmapping;
+		std::list<CVertexBufferHardGLMapObjectATI *>::iterator _IteratorInMappedVBList;
+	#endif
 };
 
 // ***************************************************************************
@@ -465,11 +497,22 @@ public:
 	 *	NB: no-op for ARB, but ensure correct _Driver->_CurrentVertexArrayRange value.
 	 */
 	void			disable();	
-	
+	// check & invalidate lost buffers
+	void updateLostBuffers();
+	//
+	#ifdef NL_DEBUG
+		virtual void		 dumpMappedBuffers();	
+	#endif
 // *************************
 private:
 	CVertexBuffer::TPreferredMemory _VBType;
 	uint32							_SizeAllocated;	
+	// for use by CVertexBufferHardARB	
+public:
+	std::list<CVertexBufferHardARB *> _LostVBList;
+	#ifdef NL_DEBUG
+		std::list<CVertexBufferHardARB *> _MappedVBList;
+	#endif	
 };
 
 
@@ -497,7 +540,7 @@ public:
 
    /**	setup ptrs allocated by createVBHard()
 	 */
-	void					initGL(uint vertexObjectID, CVertexBuffer::TPreferredMemory memType);
+	void					initGL(uint vertexObjectID, CVertexArrayRangeARB *var, CVertexBuffer::TPreferredMemory memType);
 
 	
 public:
@@ -505,12 +548,28 @@ public:
 	/// get Handle of the ARB buffer.
 	uint					getARBVertexObjectId() const { return _VertexObjectId;}
 
+	// Invalidate the buffer (when it is lost, or when a lock fails)
+	void							invalidate();	
+
+	// tmp
+	void checkMappedVBList();
 
 // *************************
 private:
-	uint							_VertexObjectId;	
+	CVertexArrayRangeARB			*_VertexArrayRange;
 	CVertexBuffer::TPreferredMemory _MemType;
 	void							*_VertexPtr; // pointer on current datas. Null if not locked
+	// if buffer has been invalidated, returns a dummy memory block and silently fails rendering
+	std::vector<uint8>				_DummyVB;
+	// for use by CVertexArrayRangeARB	
+	std::list<CVertexBufferHardARB *>::iterator _IteratorInLostVBList;
+public:
+	uint							_VertexObjectId;
+	// tmp for debug
+	#ifdef NL_DEBUG
+		bool _Unmapping;
+		std::list<CVertexBufferHardARB *>::iterator _IteratorInMappedVBList;
+	#endif
 };
 
 
@@ -520,3 +579,24 @@ private:
 #endif // NL_DRIVER_OPENGL_VERTEX_BUFFER_HARD_H
 
 /* End of driver_opengl_vertex_buffer_hard.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

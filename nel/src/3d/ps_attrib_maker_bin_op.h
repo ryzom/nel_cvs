@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.1 2001/07/12 15:53:42 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.2 2001/08/06 10:09:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,13 +49,14 @@ struct CPSBinOp
 	} ;
 } ;
 
-/// the size of the buffer use for intermediate operations
+/// The size of the buffer use for intermediate operations with a binary operator.
 const uint PSBinOpBufSize = 1024 ;
 
 
 
-/** some template functions and some specialization for binary operations
+/** Some template functions and some specialization for binary operations
   * We don't override the usual operators, because we may want behaviour such as saturation, and this may be misleading
+  * with usual operators
   */
 
 template <class T>
@@ -127,79 +128,84 @@ inline NLMISC::CRGBA PSBinOpSubtract(NLMISC::CRGBA t1, NLMISC::CRGBA t2)
 template <class T> class CPSAttribMakerBinOp : public CPSAttribMaker<T>
 {
 public:
-	/**  default ctor
-	  *  It construct an selectArg1 operator. The 2 argument are set to NULL,
-	  *  Which mean that an assertion will happen if get, make ... are called before setArg is called
-	  */
-	CPSAttribMakerBinOp() ;
-	/// inherited from CPSAttribMaker
-	virtual T		get			  (CPSLocated *loc, uint32 index) ; 
-	virtual void   *make		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const ;	
-	virtual void    make4		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const ;	
-	virtual void	makeN		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const ;	
-	virtual void    serial		  (NLMISC::IStream &f) throw(NLMISC::EStream) ;			
-	virtual void    deleteElement (uint32 index) ;	
-	virtual void    newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex) ;	
-	virtual void	resize		  (uint32 capacity, uint32 nbPresentElements) ;
+	/// \name Object
+	//@{
+		/**  default ctor
+		  *  It construct an selectArg1 operator. The 2 argument are set to NULL,
+		  *  Which mean that an assertion will happen if get, make ... are called before setArg is called
+		  */
+		CPSAttribMakerBinOp() ;
 
-	/** set an argument for the operator
-	  * \param argNb must be 0 or 1 for the first and second argument
-	  * \param arg the argument. Must have been allocated by new, and is then owned by this object
-	  */
-	void setArg(uint argNb, CPSAttribMaker<T> *arg)
-	{
-		nlassert(argNb < 2) ;
-		delete _Arg[argNb] ;
-		_Arg[argNb] = arg ;
-		if (arg->hasMemory())
+		/// dtor
+		virtual ~CPSAttribMakerBinOp() ;
+	//@}
+
+	/// \name inherited from CPSAttribMaker
+	//@{
+		virtual T		get			  (CPSLocated *loc, uint32 index) ; 
+		virtual void   *make		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const ;	
+		virtual void    make4		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const ;	
+		virtual void	makeN		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const ;	
+		virtual void    serial		  (NLMISC::IStream &f) throw(NLMISC::EStream) ;			
+		virtual void    deleteElement (uint32 index) ;	
+		virtual void    newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex) ;	
+		virtual void	resize		  (uint32 capacity, uint32 nbPresentElements) ;
+	//@}
+
+	/// \name Input argument of the operator
+	//@{
+		/** set an argument for the operator
+		  * \param argNb must be 0 or 1 for the first and second argument
+		  * \param arg The argument. Must have been allocated by new, and is then owned by this object
+		  */
+		void setArg(uint argNb, CPSAttribMaker<T> *arg)
 		{
-			arg->resize(_MaxSize, _Size) ;
-		}		
-	}
+			nlassert(argNb < 2) ;
+			delete _Arg[argNb] ;
+			_Arg[argNb] = arg ;
+			if (arg->hasMemory())
+			{
+				arg->resize(_MaxSize, _Size) ;
+			}		
+		}
 
-	/** get an argument
-	  * \see setArg
-	  */
-	CPSAttribMaker<T> *getArg(uint argNb)
-	{
-		nlassert(argNb < 2) ;
-		return _Arg[argNb] ;
-	}
+		/** get an argument
+		  * \see setArg
+		  */
+		CPSAttribMaker<T> *getArg(uint argNb)
+		{
+			nlassert(argNb < 2) ;
+			return _Arg[argNb] ;
+		}
 
-	/** get an argument, const version
-	  * \see setArg
-	  */
-	const CPSAttribMaker<T> *getArg(uint argNb) const
-	{
-		nlassert(argNb < 2) ;
-		return _Arg[argNb] ;
-	}
+		/** get an argument, const version
+		  * \see setArg
+		  */
+		const CPSAttribMaker<T> *getArg(uint argNb) const
+		{
+			nlassert(argNb < 2) ;
+			return _Arg[argNb] ;
+		}
+	//@}
 
-	/** Set the operator to use
-	  * An assertion is thrown when no available
-	  */
-	void setOp(CPSBinOp::BinOp op)
-	{
-		nlassert(supportOp(op)) ;
-		_Op = op ;
-	}
+	/// \name Operator that is performed
+	//@{
+		/** Set the operator to use
+		  * An assertion is thrown when no available
+		  */
+		void setOp(CPSBinOp::BinOp op)
+		{
+			nlassert(supportOp(op)) ;
+			_Op = op ;
+		}
 
-	/// return true if an operation is supporte. The default support all ops
-	bool supportOp(CPSBinOp::BinOp op) { return true ; }
-	
+		/// return true if an operation is supporte. The default support all ops
+		bool supportOp(CPSBinOp::BinOp op) { return true ; }
+		
+		/// get the current operator
+		CPSBinOp::BinOp getOp(void) const { return _Op ; }
+	//@}
 
-
-	/// get the current operator
-	CPSBinOp::BinOp getOp(void) const { return _Op ; }
-
-
-	/** Some attributes maker may have father (binary operator => its 2 argument). If hasMemory value is true
-	  * you must call the setFather method. Otherwise you must not.
-	  */
-	
-
-	/// dtor
-	virtual ~CPSAttribMakerBinOp() ;
 protected:
 	CPSBinOp::BinOp   _Op ; // the operator being used
 	CPSAttribMaker<T> *_Arg[2] ; // the arguments for the binary operator	

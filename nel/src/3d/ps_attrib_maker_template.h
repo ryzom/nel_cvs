@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.10 2001/07/24 08:40:30 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.11 2001/08/06 10:07:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,8 +72,7 @@ inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, fl
 }
 
 
-/// base struct for blending function (exact or sampled)
-  
+/// Base struct for blending function (exact or sampled)
 template <typename T> struct CPSValueBlendFuncBase
 {
 	virtual void getValues(T &startValue, T &endValue) const = 0 ;
@@ -94,7 +93,20 @@ template <typename T> struct CPSValueBlendFuncBase
 template <typename T> class CPSValueBlendFunc : public CPSValueBlendFuncBase<T>
 {
 public:
-	/// this produce Values
+	/// \name Object
+	//@{
+		/// ctor
+		CPSValueBlendFunc() {}
+
+		/// serialization
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+		{
+			f.serialVersion(1) ;
+			f.serial(_StartValue, _EndValue) ;
+		}
+	//@}
+
+	/// This produce Values
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
@@ -105,36 +117,28 @@ public:
 														// the specialization couls be done with integer
 	}
 
-	/// restrieve the start and end Value
+	/// \Name Values that are blended
+	//@{
+		/// Retrieve the start and end Value
+		virtual void getValues(T &startValue, T &endValue) const
+		{
+			startValue = (*this)(0) ;
+			endValue = (*this)(1) ;
+		}	
 
-	virtual void getValues(T &startValue, T &endValue) const
-	{
-		startValue = (*this)(0) ;
-		endValue = (*this)(1) ;
-	}	
+		/// Set the Values between which to blend.
+		virtual void setValues(T startValue, T endValue)
+		{
+			_StartValue = startValue ;
+			_EndValue = endValue ;
+		}
 
-	/// set the Values
-
-	virtual void setValues(T startValue, T endValue)
-	{
-		_StartValue = startValue ;
-		_EndValue = endValue ;
-	}
-
-	/// ctor
-	CPSValueBlendFunc() {}
-
-	/// serialization
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{
-		f.serialVersion(1) ;
-		f.serial(_StartValue, _EndValue) ;
-	}
-
-	T getMaxValue(void) const
-	{
-		return std::max((*this)(0), (*this)(1)) ;
-	}
+		/// 
+		T getMaxValue(void) const
+		{
+			return std::max((*this)(0), (*this)(1)) ;
+		}
+	//@}
 
 protected:
 	T _StartValue, _EndValue ;	

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.48 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.49 2001/12/12 10:31:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,43 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 		_CurrentMaterial=&mat;
 	}
+
+
+
+	// Textures user matrix
+	//=====================================
+	if (
+		(_UserTexMatEnabled != 0 && (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) == 0)		
+		|| mat.getFlags() != 0
+	   )
+	{
+		glMatrixMode(GL_TEXTURE);
+		// for each stage, setup the texture matrix if needed
+		uint newMask = (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) >> IDRV_MAT_USER_TEX_FIRST_BIT;
+		uint shiftMask = 1;
+		for (uint k = 0; k < (uint) getNbTextureStages(); ++k)
+		{
+			if (newMask & shiftMask) // user matrix for this stage
+			{		
+				_DriverGLStates.activeTextureARB(k);
+				glLoadMatrixf(mat.getUserTexMat(k).get());
+			}
+			else
+			{
+				/// check if matrix disabled
+				if (
+					(newMask & shiftMask) != (_UserTexMatEnabled & shiftMask)
+				   )
+				{
+					_DriverGLStates.activeTextureARB(k);
+					glLoadIdentity();
+				}				
+			}
+			shiftMask <<= 1;
+		}
+		glMatrixMode(GL_MODELVIEW);
+	}
+
 
 
 	return true;

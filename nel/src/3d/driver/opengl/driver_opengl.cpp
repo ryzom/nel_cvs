@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.131 2001/12/05 10:05:21 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.132 2001/12/12 10:31:29 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -215,6 +215,7 @@ CDriverGL::CDriverGL()
 
 	// reserve enough space to never reallocate, nor test for reallocation.
 	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
+	_UserTexMatEnabled = 0;
 }
 
 

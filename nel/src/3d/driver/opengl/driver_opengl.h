@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.105 2001/12/05 10:05:21 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.106 2001/12/12 10:31:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -856,6 +856,12 @@ private:
 
 
 	bool							_ForceDXTCCompression;
+
+
+	// user texture matrix
+	NLMISC::CMatrix		_UserTexMat[IDRV_MAT_MAXTEXTURES];
+	uint				_UserTexMatEnabled; // bitm ask for user texture coords
+	//NLMISC::CMatrix		_UserTexMat[IDRV_MAT_MAXTEXTURES];
 
 	// Static const
 	static const uint NumCoordinatesType[CVertexBuffer::NumType];

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.59 2001/05/31 16:43:44 lecroart Exp $
+ * $Id: service.cpp,v 1.60 2001/06/01 13:05:29 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -647,13 +647,13 @@ sint IService::main (int argc, char **argv)
 	{
 		// Catch NeL exception to release the system cleanly
 		setStatus (EXIT_FAILURE);
-		nlerrornoex ("NeL Exception: Error running the service \"%s\": %s", _ShortName.c_str(), e.what());
+		nlinfo ("ERROR: NeL Exception: Error running the service \"%s\": %s", _ShortName.c_str(), e.what());
 	}
 	catch (...)
 	{
 		// Catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
-		nlerrornoex ("Unknown external exception");
+		nlinfo ("ERROR: Unknown external exception");
 	}
 #endif
 
@@ -688,13 +688,13 @@ sint IService::main (int argc, char **argv)
 	catch (Exception &e)
 	{
 		setStatus (EXIT_FAILURE);
-		nlerrornoex ("NeL Exception: Error releasing the service \"%s\": %s", _ShortName.c_str(), e.what());
+		nlinfo ("ERROR: NeL Exception: Error releasing the service \"%s\": %s", _ShortName.c_str(), e.what());
 	}
 	catch (...)
 	{
 		// Catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
-		nlerrornoex ("Unknown external exception");
+		nlinfo ("ERROR: Unknown external exception");
 	}
 #endif
 

@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.4 2003/09/03 14:44:00 fleury Exp $
+ * $Id: string_conversion.h,v 1.5 2004/12/06 17:09:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -73,6 +73,8 @@ struct CUnsensitiveStrLessPred
   *
   * NB: by default this class behaves in a case unsensitive way. To change this, just change the 'Pred' template parameter 
   *     to std::less<std::string>
+  *
+  * \TODO Use CTwinMap for implementation
   *
   * \author Nicolas Vizerie
   * \author Nevrax France

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.58 2003/08/21 09:26:27 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.59 2003/09/26 19:23:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -349,7 +349,7 @@ void				CAudioMixerUser::reset()
 
 void	CAudioMixerUser::setPackedSheetOption(const std::string &path, bool update)
 {
-	_PackedSheetPath = CPath::standardizePath(path, false);
+	_PackedSheetPath = CPath::standardizePath(path, true);
 	_UpdatePackedSheet = update;
 }
 
@@ -979,7 +979,7 @@ void CAudioMixerUser::setUserVar(NLMISC::TStringId varName, float value)
 		// ok we found the var !
 		// do some work only if the value is different (we don't trust client for
 		// being smart ;) )
-		if (it->second.Value != value)
+//		if (it->second.Value != value)
 		{
 			it->second.Value = value;
 			// update all sources
@@ -1349,7 +1349,7 @@ void				CAudioMixerUser::update()
 		TTime now = NLMISC::CTime::getLocalTime();
 		while (!_EventList.empty() && _EventList.begin()->first <= now)
 		{
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			CurrentEvent = _EventList.begin()->second;
 #endif
 //			nldebug("Sending Event %p", _EventList.begin()->second);
@@ -1365,7 +1365,7 @@ void				CAudioMixerUser::update()
 				it++;
 			}
 			_EventList.erase(_EventList.begin());
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 			CurrentEvent = 0;
 #endif
 		}

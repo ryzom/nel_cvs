@@ -177,23 +177,11 @@ SOURCE=.\misc\config_file\config_file.lex
 
 !IF  "$(CFG)" == "misc - Win32 Release"
 
-# Begin Custom Build
-InputPath=.\misc\config_file\config_file.lex
-
-"misc/config_file/config_file.lex.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	flex -f -8 -Pcf -Smisc/config_file/aceflex.skl -omisc/config_file/config_file.lex.cpp misc/config_file/config_file.lex
-
-# End Custom Build
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "misc - Win32 Debug"
 
-# Begin Custom Build
-InputPath=.\misc\config_file\config_file.lex
-
-"misc/config_file/config_file.lex.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	flex -f -8 -Pcf -Smisc/config_file/aceflex.skl -omisc/config_file/config_file.lex.cpp misc/config_file/config_file.lex
-
-# End Custom Build
+# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -208,37 +196,11 @@ SOURCE=.\misc\config_file\config_file.yacc
 
 !IF  "$(CFG)" == "misc - Win32 Release"
 
-# Begin Custom Build
-InputPath=.\misc\config_file\config_file.yacc
-
-BuildCmds= \
-	set BISON_SIMPLE=misc/config_file/acebison.simple \
-	bison -d -p cf -o misc/config_file/config_file.yacc.cpp misc/config_file/config_file.yacc \
-	
-
-"misc/config_file/config_file.yacc.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"misc/config_file/config_file.yacc.cpp.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
+# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "misc - Win32 Debug"
 
-# Begin Custom Build
-InputPath=.\misc\config_file\config_file.yacc
-
-BuildCmds= \
-	set BISON_SIMPLE=misc/config_file/acebison.simple \
-	bison -d -p cf -o misc/config_file/config_file.yacc.cpp misc/config_file/config_file.yacc \
-	
-
-"misc/config_file/config_file.yacc.cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-
-"misc/config_file/config_file.yacc.cpp.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-   $(BuildCmds)
-# End Custom Build
+# PROP Exclude_From_Build 1
 
 !ENDIF 
 
@@ -271,6 +233,14 @@ SOURCE=.\misc\class_id.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\class_id.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\debug.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\debug.h
 # End Source File
 # Begin Source File
 

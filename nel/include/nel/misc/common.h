@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.33 2001/10/25 14:58:23 lecroart Exp $
+ * $Id: common.h,v 1.34 2002/02/12 13:56:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,7 @@ inline float	radToDeg( float rad )
  * \param a string to transform to lower case
  */
 std::string		&strlwr ( std::string &str );
+std::string		strlwr ( const std::string &str );
 
 /** Convert a string in lower case.
  * \param a pointer to char to transform to lower case

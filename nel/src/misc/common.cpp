@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.15 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: common.cpp,v 1.16 2002/02/12 13:55:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -325,6 +325,17 @@ bool isPowerOf2(sint32 v)
 	}
 
 	return true;
+}
+
+std::string strlwr ( const std::string &str )
+{
+	string res;
+	for (uint i=0; i<str.size(); i++)
+	{
+		res += tolower(str[i]);
+	}
+
+	return res;
 }
 
 std::string &strlwr ( std::string &str )

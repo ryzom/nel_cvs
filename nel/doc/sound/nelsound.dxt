@@ -102,7 +102,9 @@ likely that it will be a 3DSMax plug-in.
 
 The sounds used for sources have parameters as well, for example their
 cone angles. An editor is provided, at the convenience of a sound
-designer. It can be found in /code/nel/tools/sounds.
+designer. It can be found in /code/nel/tools/sounds. This editor takes
+a names file (a text file with one name per line) in input. It allows
+the game developers to identify the sounds by the names they have chosen.
 
 \section sndcompile Compiling the NeL OpenAL Sound Driver
 

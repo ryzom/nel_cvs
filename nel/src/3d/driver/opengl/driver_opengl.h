@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.37 2001/01/09 15:45:45 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.38 2001/01/09 17:02:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,7 +119,7 @@ public:
 
 	virtual ModeList		enumModes();
 
-	virtual bool			setDisplay(void* wnd, const GfxMode& mode);
+	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay);
 
 	virtual bool			activate();
 

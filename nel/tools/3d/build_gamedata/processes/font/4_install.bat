@@ -1,5 +1,5 @@
 @echo off
 
-../../set_title %1
+call ..\..\set_title.bat.bat %1
 
 bash sh\install.sh

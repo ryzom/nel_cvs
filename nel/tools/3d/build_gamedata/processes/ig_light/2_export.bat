@@ -1,6 +1,6 @@
 @echo off
 
-../../set_title %1
+call ..\..\set_title.bat %1
 
 echo ***** > log.log
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.39 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: ps_particle.cpp,v 1.40 2001/09/07 12:00:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1600,7 +1600,7 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //////////////////////////////
 
 
-uint8 CPSFanLight::_RandomPhaseTab[128];
+uint8 CPSFanLight::_RandomPhaseTab[32][128];
 
 #ifdef NL_DEBUG
 	bool CPSFanLight::_RandomPhaseTabInitialized = false;
@@ -1609,10 +1609,27 @@ uint8 CPSFanLight::_RandomPhaseTab[128];
 	
 void CPSFanLight::initFanLightPrecalc(void)
 {
-	for (uint32 k = 0; k < 128; ++k)
+	// build several random tab, and linearly interpolate between l values
+	float currPhase, nextPhase, phaseStep;
+	for (uint l = 0; l < 32 ; l++)
 	{
-		_RandomPhaseTab[k] = (uint8) rand();
-	}
+		nextPhase = (float) (uint8) rand();
+		uint32 k = 0;
+		while (k < 128)
+		{
+			currPhase = nextPhase;
+			nextPhase = (float) (uint8) rand();			
+			phaseStep = (nextPhase - currPhase) / (l + 1);
+
+			for (uint32 m = 0; m <= l; ++m)
+			{
+				_RandomPhaseTab[l][k] = (uint8) currPhase;
+				currPhase += phaseStep;
+				++k;
+				if (k >= 128) break;
+			}
+		}
+	}	
 	#ifdef NL_DEBUG
 		_RandomPhaseTabInitialized = true;
 	#endif
@@ -1664,12 +1681,11 @@ void CPSFanLight::draw(bool opaque)
 
 	setupDriverModelMatrix();
 	const CVector I = computeI();
-	const CVector K = computeK();
-
+	const CVector K = computeK();	
 	const uint32 size = _Owner->getSize();
 
 	if (!size) return; // nothing to draw
-
+	uint8 *randomPhaseTab = &_RandomPhaseTab[_PhaseSmoothness][0];
 
 
 	// compute individual colors if needed
@@ -1803,13 +1819,14 @@ void CPSFanLight::draw(bool opaque)
 			ptVect += stride;
 
 			const float fanSize = *currentSizePt * 0.5f;
+			const float moveIntensity = _MoveIntensity * fanSize;
 
 			currentSizePt += currentSizePtIncrement;
 			currentAnglePt += currentAnglePtIncrement;
 
 			for (k = 0; k < _NbFans; ++k)
 			{
-				const float fSize  = fanSize * (CPSUtil::getCos(_RandomPhaseTab[k] + phaseAdd) + 1.5f);
+				const float fSize  = fanSize + (moveIntensity * CPSUtil::getCos(randomPhaseTab[k] + phaseAdd));
 				*(CVector *) ptVect = (*posIt) + I * fSize * (CPSUtil::getCos((sint32) currentAngle))
 									  + K * fSize * (CPSUtil::getSin((sint32) currentAngle));
 				currentAngle += angleStep;
@@ -1834,13 +1851,20 @@ void CPSFanLight::draw(bool opaque)
 
 void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
+	sint ver = f.serialVersion(1);
 	CPSParticle::serial(f);
 	CPSColoredParticle::serialColorScheme(f);	
 	CPSSizedParticle::serialSizeScheme(f);	
 	CPSRotated2DParticle::serialAngle2DScheme(f);
 	f.serial(_NbFans);
 	serialMaterial(f);
+	if (ver > 1)
+	{
+		f.serial(_PhaseSmoothness, _MoveIntensity);
+		ITexture *tex = _Tex;
+		f.serialPolyPtr(tex);
+		if (f.isReading()) _Tex = tex ;
+	}
 	if (f.isReading())
 	{
 		init();		
@@ -1858,7 +1882,10 @@ bool CPSFanLight::completeBBox(NLMISC::CAABBox &box) const
 
 
 
-CPSFanLight::CPSFanLight(uint32 nbFans) : _IndexBuffer(NULL), _NbFans(nbFans), _PhaseSpeed(256)
+CPSFanLight::CPSFanLight(uint32 nbFans) : _IndexBuffer(NULL)
+										, _NbFans(nbFans), _PhaseSpeed(256)
+										, _MoveIntensity(1.5f), _PhaseSmoothness(0)
+										, _Tex(NULL)
 {
 	nlassert(nbFans >= 3);
 
@@ -1929,13 +1956,31 @@ void CPSFanLight::resize(uint32 size)
 		if (!_UseColorScheme)
 		{
 			_Vb.setColor(k * (_NbFans + 1), _Color);
+			_Vb.setTexCoord(k * (_NbFans + 1), 0, NLMISC::CUV(0, 0));
 		}
-
-		for(l = 1; l <= _NbFans; ++l)
+		if (_Tex)
 		{
-			_Vb.setColor(l + k * (_NbFans + 1), CRGBA(0, 0, 0));
+			
+		}
+		if (!_Tex)
+		{
+			for(l = 1; l <= _NbFans; ++l)
+			{
+				_Vb.setColor(l + k * (_NbFans + 1), CRGBA(0, 0, 0));
+			}
+		}
+		else
+		{
+			for(l = 1; l <= _NbFans; ++l)
+			{
+				_Vb.setColor(l + k * (_NbFans + 1), CRGBA(0, 0, 0));
+				_Vb.setTexCoord(l + k * (_NbFans + 1), 0, NLMISC::CUV((l - 1) / (float) _NbFans, 1));
+			}
 		}
 	}
+
+	
+
 }
 
 void CPSFanLight::init(void)
@@ -1950,9 +1995,8 @@ void CPSFanLight::init(void)
 	
 void CPSFanLight::updateMatAndVbForColor(void)
 {
-	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
-
-	
+	_Mat.setTexture(0, _Tex);
+	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | (_Tex ? CVertexBuffer::TexCoord0 : 0) );		
 	if (_Owner)
 	{
 		resize(_Owner->getMaxSize());
@@ -4869,7 +4913,15 @@ void CPSConstraintMesh::update(void)
 
 	CShapeBank *sb = scene->getShapeBank();
 
-	sb->load(NLMISC::CPath::lookup(_MeshShapeFileName));
+	
+	try
+	{
+		sb->load(NLMISC::CPath::lookup(_MeshShapeFileName));
+	}	
+	catch (NLMISC::EPathNotFound &)
+	{
+		// shape not found, create a dummy shape
+	}
 
 	IShape *is;
 
@@ -5238,12 +5290,13 @@ void CPSConstraintMesh::draw(bool opaque)
 			// check wether we need to rotate normals as well...
 			if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
 			{
+			
 				do
 				{
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex);
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + pNormalOff);
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff);
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex);
+					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + normalOff);
+					CHECK_VERTEX_BUFFER(*_ModelVb, currVertex);
+					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + pNormalOff);
 
 					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex);
 					* (CVector *) (currVertex + pNormalOff) =  mat.mulVector(* (CVector *) (currSrcVertex + normalOff) );

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.11 2001/08/15 12:08:14 vizerie Exp $
+ * $Id: ps_particle.h,v 1.12 2001/09/07 12:00:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -884,22 +884,46 @@ class CPSFanLight : public CPSParticle, public CPSColoredParticle
 				  , public CPSMaterial
 {
 public:
-	virtual void draw(bool opaque);
-
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual void		draw(bool opaque);
 
 	NLMISC_DECLARE_CLASS(CPSFanLight);
 
-	virtual bool completeBBox(NLMISC::CAABBox &box) const  ;
+	virtual bool		completeBBox(NLMISC::CAABBox &box) const  ;
 
+	///\name Object
+	//@{
 	/// Ctor, with the numbers of fans to draw (minimum is 3, maximum is 128)
 	CPSFanLight(uint32 nbFans = 7);
+	/// Dtor
+	~CPSFanLight();
+	void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//@}
+
 
 	// Set the number of fans used for drawing (minimum is 3, maximum is 128)
-	void setNbFans(uint32 nbFans);
+	void				setNbFans(uint32 nbFans);
+
+	/** Set the smoothness of phases. The default is 0 which means no smoothness.
+	  * n mean that the phase will be linearly interpolated between each n + 1 fans
+	  * It ranges from 0 to 31
+	  */
+	void				setPhaseSmoothness(uint32 smoothNess) 
+	{ 
+		nlassert(smoothNess < 32);
+		_PhaseSmoothness = smoothNess; 
+	}
+
+	/// retrieve the phase smoothness
+	uint32				getPhaseSmoothness(void) const { return _PhaseSmoothness;}
+
+	/// set the intensity of fan movement. Default is 1.5
+	void				setMoveIntensity(float intensity) { _MoveIntensity = intensity; }
+
+	/// get the intensity of fans movement
+	float				getMoveIntensity(void) const      { return _MoveIntensity; }
 
 	// Get the number of fans used for drawing
-	uint32 getNbFans(void) const
+	uint32				getNbFans(void) const
 	{
 		return _NbFans;
 	}
@@ -908,51 +932,62 @@ public:
 	 *	If the located holding this particle as a limited lifetime, it gives how many 0-2Pi cycle it'll do during its life
 	 *  Otherwise it gives how many cycle there are in a second
 	 */
-	void setPhaseSpeed(float multiplier);
+	void				setPhaseSpeed(float multiplier);
 
 	/// get the speed for phase
-	float getPhaseSpeed(void) const { return _PhaseSpeed / 256.0f; }
+	float				getPhaseSpeed(void) const { return _PhaseSpeed / 256.0f; }
 
 	// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void updateMatAndVbForColor(void);
+	virtual void		updateMatAndVbForColor(void);
 
 
 	/// must call this at least if you intend to use fanlight
-	static void initFanLightPrecalc(void);
-
-	/// dtor
-	~CPSFanLight();
+	static void			initFanLightPrecalc(void);
+	
 
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void);
+	virtual bool		hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void);
+	virtual bool		hasOpaqueFaces(void);
 
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const;
+	virtual uint32		getMaxNumFaces(void) const;
+
+
+	/// Set a texture. NULL remove it
+	void setTexture(CSmartPtr<ITexture> tex)
+	{
+		_Tex = tex;		
+		updateMatAndVbForColor();
+	}
+	
+	/// get the texture used
+	ITexture *getTexture(void)
+	{
+		return _Tex; 
+	}
 
 protected:
 	/// initialisations
 	virtual void init(void);
 
-	uint32 _NbFans;
-	CVertexBuffer _Vb;
-	
-	uint32   *_IndexBuffer;
-
-	static uint8 _RandomPhaseTab[128];
-
-	float _PhaseSpeed;
+	uint32						_NbFans;
+	uint32						_PhaseSmoothness;
+	CVertexBuffer				_Vb;
+	float						_MoveIntensity;	
+	uint32						*_IndexBuffer;
+	NLMISC::CSmartPtr<ITexture> _Tex;
+	static uint8				_RandomPhaseTab[32][128];		
+	float						_PhaseSpeed;
 
 	#ifdef NL_DEBUG		
 		static bool _RandomPhaseTabInitialized;
 	#endif
 		
 	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
-	
 	void deleteElement(uint32);
 
 	/// Set the max number of fanlights		

@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.16 2002/09/16 14:58:42 lecroart Exp $
+ * $Id: login_client.cpp,v 1.17 2002/11/04 13:11:34 lecroart Exp $
  *
  */
 
@@ -99,6 +99,25 @@ string CLoginClient::connectToShard (CLoginCookie &lc, const std::string &addr, 
 }
 
 string CLoginClient::connectToShard (const std::string &addr, CUdpSock &cnx)
+{
+	nlassert (!cnx.connected());
+	
+	try
+	{
+		//
+		// S12: connect to the FES. Note: In UDP mode, it's the user that have to send the cookie to the front end
+		//
+		cnx.connect (CInetAddress(addr));
+	}
+	catch (ESocket &e)
+	{
+		return string("FES refused the connection (") + e.what () + ")";
+	}
+
+	return ShardValidateReason;
+}
+
+string CLoginClient::connectToShard (const std::string &addr, CUdpSimSock &cnx)
 {
 	nlassert (!cnx.connected());
 	

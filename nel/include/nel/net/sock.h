@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.12 2002/10/02 13:36:41 cado Exp $
+ * $Id: sock.h,v 1.13 2002/11/04 13:11:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,11 +251,11 @@ public:
 	/// Returns the number of bytes sent since the latest connection
 	uint64				bytesSent() const { return _BytesSent; }
 
-  /// Sets the send buffer size
-  void setSendBufferSize( sint32 size );
+	/// Sets the send buffer size
+	void				setSendBufferSize( sint32 size );
 
-  /// Gets the send buffer size
-  sint32 getSendBufferSize();
+	/// Gets the send buffer size
+	sint32				getSendBufferSize();
 	
 	/// Returns true if the network engine is initialized
 	static bool			initialized() { return CSock::_Initialized; }

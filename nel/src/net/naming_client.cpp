@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.51 2002/08/22 14:19:01 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.52 2002/08/22 15:06:55 lecroart Exp $
  *
  */
 
@@ -314,8 +314,6 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 		_Connection->update (-1);
 		nlSleep (1);
 	}
-	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
-
 	if (RegisteredSuccess)
 	{
 		_MySId = sid;
@@ -351,8 +349,6 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 		_Connection->update (-1);
 		nlSleep (1);
 	}
-	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
-
 	if (RegisteredSuccess)
 	{
 		_MySId = sid;
@@ -410,11 +406,9 @@ uint16 CNamingClient::queryServicePort ()
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	nlwarning ("********** querying port");
 	TTime before1 = CTime::getLocalTime ();
 	CMessage msgout (_Connection->getSIDA(), "QP");
 	_Connection->send (msgout);
-	nlwarning ("********** %f to send the message", (float)(CTime::getLocalTime ()-before1)/1000.0f);
 
 	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "QP"
@@ -422,10 +416,8 @@ uint16 CNamingClient::queryServicePort ()
 	while (!QueryPort)
 	{
 		_Connection->update (-1);
-		nlwarning ("********** %f to got one message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 		nlSleep (1);
 	}
-	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 
 	nlinfo ("NC: Received the answer of the query port (%hu)", QueryPortPort);
 

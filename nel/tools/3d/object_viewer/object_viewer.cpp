@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.63 2002/04/12 16:28:44 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.64 2002/04/29 15:09:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1620,8 +1620,6 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 	if (CNELU::ShapeBank->isPresent(meshName))
 	{
 		delete pMeshShape;
-		pMeshShape = CNELU::ShapeBank->addRef(meshName);
-		CNELU::ShapeBank->release (pMeshShape);
 	}
 	else
 		CNELU::ShapeBank->add (meshName, CSmartPtr<IShape> (pMeshShape));
@@ -1632,6 +1630,8 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 		// Create a model and add it to the scene
 		CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
 		nlassert (pTrShape);
+		// Get the real shape used by the instance.
+		pMeshShape= pTrShape->Shape;
 
 		// Set the rot model
 		if (_MainFrame->Euler)
@@ -1748,8 +1748,6 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	if (CNELU::ShapeBank->isPresent(skelName))
 	{
 		delete pSkelShape;
-		pSkelShape = CNELU::ShapeBank->addRef(skelName);
-		CNELU::ShapeBank->release (pSkelShape);
 	}
 	else
 		CNELU::ShapeBank->add (skelName, CSmartPtr<IShape> (pSkelShape));
@@ -1757,6 +1755,8 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	// Create a model and add it to the scene
 	CTransformShape	*pTrShape=CNELU::Scene.createInstance (skelName);
 	nlassert (pTrShape);
+	// Get the real shape used by the instance.
+	pSkelShape= pTrShape->Shape;
 
 	// Get a skeleton model
 	CSkeletonModel *skelModel=dynamic_cast<CSkeletonModel*>(pTrShape);

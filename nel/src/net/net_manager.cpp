@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.8 2001/06/12 15:41:19 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.9 2001/06/13 12:10:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,7 +409,8 @@ void CNetManager::update (sint32 timeout)
 		}
 	}
 
-	CNamingClient::update ();
+	if (CNamingClient::connected ())
+		CNamingClient::update ();
 }
 
 

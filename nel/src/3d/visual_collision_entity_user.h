@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.2 2001/07/13 16:08:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,10 +59,15 @@ public:
 	}
 
 
-	virtual void	snapToGround(CVector &pos)
+	virtual bool	snapToGround(CVector &pos)
 	{
-		_Entity->snapToGround(pos);
+		return _Entity->snapToGround(pos);
 	}
+	virtual bool	snapToGround(CVector &pos, CVector &normal)
+	{
+		return _Entity->snapToGround(pos, normal);
+	}
+
 
 
 private:

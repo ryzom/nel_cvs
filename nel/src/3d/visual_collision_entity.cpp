@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.5 2001/07/13 16:08:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,11 +68,20 @@ CVisualCollisionEntity::~CVisualCollisionEntity()
 
 
 // ***************************************************************************
-void		CVisualCollisionEntity::snapToGround(CVector &pos)
+bool		CVisualCollisionEntity::snapToGround(CVector &pos)
+{
+	CVector		normal;
+	// Not optimized, but doesn't matter (one cross product is negligible).
+	return snapToGround(pos, normal);
+}
+
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 {
 	// verify if landscape (refptr) is here.
 	if(_Owner->_Landscape==NULL)
-		return;
+		return false;
 
 
 	// update the cahe of tile info near this position.
@@ -141,11 +150,21 @@ void		CVisualCollisionEntity::snapToGround(CVector &pos)
 	// result. NB: if not found, dot not modify.
 	if(sqrBestDist<sqr(1000))
 	{
-		// snap the position to the highest tesselation.
+		// snap the position to the nearest tesselation.
 		pos= res;
+
 		// snap the position to the current rendered tesselation.
-		snapToLandscapeCurrentTesselation(pos, testTriangles[bestTriangle]);
+		CTrianglePatch	&tri= testTriangles[bestTriangle];
+		snapToLandscapeCurrentTesselation(pos, tri);
+
+		// compute the normal.
+		normal= (tri.V1-tri.V0)-(tri.V2-tri.V0);
+		normal.normalize();
+
+		return true;
 	}
+	else
+		return false;
 }
 
 

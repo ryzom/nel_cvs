@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.44 2004/11/15 10:24:53 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.44.4.1 2004/12/09 09:49:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1469,6 +1469,9 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			// get the index of the vertex in the shape
 			uint	vid= shape->TriangleIndices[i];
 			// re-direction, using InstanceVertices;
+			#ifdef NL_DEBUG
+				nlassert(shape->InstanceVertices[vid] <= 0xffff);
+			#endif
 			ptr[offTriIdx + i]= (uint16) shape->InstanceVertices[vid];
 			// local re-direction: adding vertexOffset.
 			vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
@@ -1592,7 +1595,7 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 			// get the index in Vertices.
 			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
 			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+			ptr[i]= (uint16) vegetRdrPass.Vertices[localVid];
 		}
 	}
 	else
@@ -1603,7 +1606,7 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 			// get the index in Vertices.
 			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
 			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+			ptr[i]= (uint32) vegetRdrPass.Vertices[localVid];			
 		}
 	}
 
@@ -2000,6 +2003,16 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 								if(vegetRdrPass.NTriangles)
 								{
 									driver->activeIndexBuffer(vegetRdrPass.TriangleIndices);
+									#ifdef NL_DEBUG
+										if (vegetRdrPass.HardMode)
+										{
+											nlassert(vegetRdrPass.TriangleIndices.getFormat() == CIndexBuffer::Indices16);
+										}
+										else
+										{
+											nlassert(vegetRdrPass.TriangleIndices.getFormat() == CIndexBuffer::Indices32);
+										}
+									#endif
 									driver->renderSimpleTriangles(0,
 										vegetRdrPass.NTriangles);
 								}

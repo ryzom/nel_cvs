@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.37 2002/10/24 08:47:17 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.38 2002/12/16 18:02:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ void CBufServer::init( uint16 port )
 	nlnettrace( "CBufServer::init" );
 	if ( ! _ReplayMode )
 	{
-		_ListenTask->init( port );
+		_ListenTask->init( port, maxExpectedBlockSize() );
 		_ListenThread->start();
 	}
 	else
@@ -107,10 +107,11 @@ void CBufServer::init( uint16 port )
 /*
  * Begins to listen on the specified port (call before running thread)
  */
-void CListenTask::init( uint16 port )
+void CListenTask::init( uint16 port, sint32 maxExpectedBlockSize )
 {
 	nlnettrace( "CListenTask::init" );
 	_ListenSock.init( port );
+	_MaxExpectedBlockSize = maxExpectedBlockSize;
 }
 
 
@@ -788,7 +789,8 @@ void CListenTask::run()
 			nldebug( "LNETL1: Waiting incoming connection..." );
 			CServerBufSock *bufsock = new CServerBufSock( _ListenSock.accept() );
 			nldebug( "New connection : %s", bufsock->asString().c_str() );
-			bufsock->Sock->setNonBlockingMode( true );
+			bufsock->setNonBlocking();
+			bufsock->setMaxExpectedBlockSize( _MaxExpectedBlockSize );
 			if ( _Server->noDelay() )
 			{
 				bufsock->Sock->setNoDelay( true );
@@ -1059,15 +1061,9 @@ void CServerReceiveTask::run()
 				try
 				{
 					// 4. Receive data
-					if ( serverbufsock->receivePart() )
+					if ( serverbufsock->receivePart( sizeof(TSockId) + 1 ) ) // +1 for the event type
 					{
-						// Copy sockid
-						vector<uint8> hidvec;
-						hidvec.resize( sizeof(TSockId)+1 );
-						memcpy( &*hidvec.begin(), &(*ic), sizeof(TSockId) );
-
-						// Add event type to hidvec
-						hidvec[sizeof(TSockId)] = (uint8)CBufNetBase::User;
+						serverbufsock->fillSockIdAndEventType( *ic );
 
 						// Push message into receive queue
 						//uint32 bufsize;
@@ -1076,8 +1072,10 @@ void CServerReceiveTask::run()
 							//nldebug( "RCV: Acquiring the receive queue... ");
 							CFifoAccessor recvfifo( &_Server->receiveQueue() );
 							//nldebug( "RCV: Acquired, pushing the received buffer... ");
-							recvfifo.value().push( serverbufsock->receivedBuffer(), hidvec );
+							recvfifo.value().push( serverbufsock->receivedBuffer() );
+
 							_Server->setDataAvailableFlag( true );
+
 							//nldebug( "RCV: Pushed, releasing the receive queue..." );
 							//recvfifo.value().display();
 							//bufsize = serverbufsock->receivedBuffer().size();

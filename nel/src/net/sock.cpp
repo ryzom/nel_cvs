@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.28 2002/10/24 08:39:57 lecroart Exp $
+ * $Id: sock.cpp,v 1.29 2002/12/16 18:02:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,10 +65,6 @@ namespace NLNET {
 
 
 bool CSock::_Initialized = false;
-
-long CSock::_TimeoutS = 0;
-
-long CSock::_TimeoutMs = 0;
 
 
 /*
@@ -205,7 +201,9 @@ CSock::CSock( bool logging ) :
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
 	_MaxReceiveTime( 0 ),
-	_MaxSendTime( 0 )
+	_MaxSendTime( 0 ),
+	_TimeoutS( 0 ),
+	_TimeoutMs( 0 )
 {
 	nlassert( CSock::_Initialized );
 	/*{
@@ -377,8 +375,8 @@ bool CSock::dataAvailable()
 	FD_ZERO( &fdset );
 	FD_SET( _Sock, &fdset );
 	timeval tv;
-	tv.tv_sec = CSock::_TimeoutS;
-	tv.tv_usec = CSock::_TimeoutMs;
+	tv.tv_sec = _TimeoutS;
+	tv.tv_usec = _TimeoutMs;
 
 	// Test for message received.
 	int res = select( _Sock+1, &fdset, NULL, NULL, &tv );

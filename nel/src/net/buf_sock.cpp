@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.32 2002/08/22 15:04:21 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.33 2002/12/16 18:02:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,8 +131,7 @@ string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 
 /*
  * Force to send all data pending in the send queue
- * Note: this method is used by clients (blocking sockets) and servers (non-blocking sockets)
- * so it works in both cases.
+ * Note: this method works with both blocking and non-blocking sockets
  * Precond: the send queue should not contain an empty block
  */
 bool CBufSock::flush()
@@ -188,7 +187,7 @@ bool CBufSock::flush()
 			// TODO OPTIM remove the nldebug for speed
 			//commented for optimisation nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
 
-			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
+			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode
 			{
 				// If sending is ok, clear the global buffer
 				_ReadyToSendBuffer.clear();
@@ -215,7 +214,7 @@ bool CBufSock::flush()
 		else
 		{
 #ifdef NL_DEBUG
-			// can happen in a normal behavior if, for example, the other side is not connect anymore
+			// can happen in a normal behavior if, for example, the other side is not connected anymore
 			nldebug( "LNETL1: %s failed to send effectively a buffer of %d bytes", asString().c_str(), _ReadyToSendBuffer.size() );
 #endif
 			return false;
@@ -346,14 +345,25 @@ string CBufSock::asString() const
 
 
 /*
- * Constructor with an existing socket (created by an accept())
+ * Constructor
  */
-CServerBufSock::CServerBufSock( CTcpSock *sock ) :
+CNonBlockingBufSock::CNonBlockingBufSock( CTcpSock *sock ) :
 	CBufSock( sock ),
-	_Advertised( false ),
 	_NowReadingBuffer( false ),
 	_BytesRead( 0 ),
 	_Length( 0 ),
+	_MaxExpectedBlockSize( 0x7FFFFFF )
+{
+	nlnettrace( "CNonBlockingBufSock::CNonBlockingBufSock" );
+}
+
+
+/*
+ * Constructor with an existing socket (created by an accept())
+ */
+CServerBufSock::CServerBufSock( CTcpSock *sock ) :
+	CNonBlockingBufSock( sock ),
+	_Advertised( false ),
 	_OwnerTask( NULL )
 {
 	nlassert (this != InvalidSockId);	// invalid bufsock
@@ -367,10 +377,10 @@ CServerBufSock::CServerBufSock( CTcpSock *sock ) :
 /*
  * Receives a part of a message (nonblocking socket only)
  */
-bool CServerBufSock::receivePart()
+bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 {
 	nlassert (this != InvalidSockId);	// invalid bufsock
-	nlnettrace( "CServerBufSock::receivePart" );
+	nlnettrace( "CNonBlockingBufSock::receivePart" );
 
 	TBlockSize actuallen;
 	if ( ! _NowReadingBuffer )
@@ -386,14 +396,14 @@ bool CServerBufSock::receivePart()
 				_Length = ntohl( _Length );
 
 				// Test size limit
-				if ( _Length > _OwnerTask->server()->maxExpectedBlockSize() )
+				if ( _Length > _MaxExpectedBlockSize )
 				{
 					nlwarning( "LNETL1: Socket %s received length exceeding max expected, in block header... Disconnecting", asString().c_str() );
 					throw ESocket( "Received length exceeding max expected", false );
 				}
 
 				_NowReadingBuffer = true;
-				_ReceiveBuffer.resize( _Length );
+				_ReceiveBuffer.resize( _Length + nbExtraBytes );
 			}
 			else
 			{
@@ -423,5 +433,6 @@ bool CServerBufSock::receivePart()
 
 	return false;
 }
+
 
 } // NLNET

@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.13 2002/11/04 13:11:26 lecroart Exp $
+ * $Id: sock.h,v 1.14 2002/12/16 18:03:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	static std::string	errorString( uint errorcode );
 
 	/// Change the time out value used in getDataAvailable(), which is 0 by default
-	static void			setTimeOutValue( long sec, long ms )
+	void				setTimeOutValue( long sec, long ms )
 	{
 		_TimeoutS = sec;
 		_TimeoutMs = ms;
@@ -303,10 +303,10 @@ protected:
 	uint64			_BytesSent;
 
 	/// Main time out value (sec) for select in dataAvailable()
-	static long		_TimeoutS;
+	long			_TimeoutS;
 
 	/// Secondary time out value (ms) for select in dataAvailable()
-	static long		_TimeoutMs;
+	long			_TimeoutMs;
 
 private:
 

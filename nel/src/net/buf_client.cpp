@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.22 2002/09/26 15:23:00 cado Exp $
+ * $Id: buf_client.cpp,v 1.23 2002/12/16 18:02:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,11 +65,11 @@ CBufClient::CBufClient( bool nodelay, bool replaymode ) :
 
 	if ( replaymode )
 	{
-		_BufSock = new CBufSock( new CDummyTcpSock() );
+		_BufSock = new CNonBlockingBufSock( new CDummyTcpSock() ); // CHANGED: non-blocking client connection
 	}
 	else
 	{
-		_BufSock = new CBufSock();
+		_BufSock = new CNonBlockingBufSock(); // CHANGED: non-blocking client connection
 		_RecvTask = new CClientReceiveTask( this, _BufSock );
 	}
 }
@@ -83,7 +83,9 @@ void CBufClient::connect( const CInetAddress& addr )
 {
 	nlnettrace( "CBufClient::connect" );
 	nlassert( ! _BufSock->Sock->connected() );
+	_BufSock->setMaxExpectedBlockSize( maxExpectedBlockSize() );
 	_BufSock->connect( addr, _NoDelay, true );
+	_BufSock->setNonBlocking(); // ADDED: non-blocking client connection
 	_PrevBytesDownloaded = 0;
 	_PrevBytesUploaded = 0;
 	/*_PrevBytesReceived = 0;
@@ -428,11 +430,30 @@ void CClientReceiveTask::run()
 {
 	nlnettrace( "CClientReceiveTask::run" );
 
+	_NBBufSock->Sock->setTimeOutValue( 60, 0 );
+
 	bool connected = true;
 	while ( connected ) // does not call _Sock->connected() to avoid mutex (not needed for client)
 	{
 		try
 		{
+			// ADDED: non-blocking client connection
+
+			// Wait until some data are received (sleepin' select inside)
+			while ( ! _NBBufSock->Sock->dataAvailable() );
+
+			// Process the data received
+			if ( _NBBufSock->receivePart( 1 ) ) // 1 for the event type
+			{
+				//commented out for optimisation: nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
+				// Add event type
+				_NBBufSock->fillEventTypeOnly();
+
+				// Push message into receive queue
+				_Client->pushMessageIntoReceiveQueue( _NBBufSock->receivedBuffer() );
+			}
+
+			/* // OLD: blocking client connection
 			// Receive message length (in blocking mode)
 			TBlockSize blocklen;
 			uint32 lenoflen = sizeof(blocklen);
@@ -454,7 +475,7 @@ void CClientReceiveTask::run()
 
 				sock()->receive( buffer.getPtr(), len );
 				
-				//commented out for optimisation: nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
+				//commented out for optimisation: nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size() );
 				// Add event type
 				buffer[len] = CBufNetBase::User;
 
@@ -465,17 +486,18 @@ void CClientReceiveTask::run()
 			{
 				nlwarning( "LNETL1: Socket %s received null length in block header", _SockId->asString().c_str() );
 			}
+			*/
 		}
 		catch ( ESocketConnectionClosed& )
 		{
-			nldebug( "LNETL1: Client connection %s closed", _SockId->asString().c_str() );
+			nldebug( "LNETL1: Client connection %s closed", sockId()->asString().c_str() );
 			// The socket went to _Connected=false when throwing the exception
 			connected = false;
 		}
 		catch ( ESocket& )
 		{
-			nldebug( "LNETL1: Client connection %s broken", _SockId->asString().c_str() );
-			sock()->disconnect();
+			nldebug( "LNETL1: Client connection %s broken", sockId()->asString().c_str() );
+			sockId()->Sock->disconnect();
 			connected = false;
 		}
 	}

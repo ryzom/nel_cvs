@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.16 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: buf_sock.h,v 1.17 2002/12/16 18:03:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,14 +266,75 @@ private:
 };
 
 
+/**
+ * CNonBlockingBufSock
+ * A socket, its send buffer plus a nonblocking receiving system
+ */
+class CNonBlockingBufSock : public CBufSock
+{
+protected:
+
+	friend class CBufClient;
+	friend class CClientReceiveTask;
+
+	/// Constructor
+	CNonBlockingBufSock( CTcpSock *sock=NULL );
+
+	/** Call this method after connecting (for a client connection) to set the non-blocking mode.
+	 * For a server connection, call it as soon as the object is constructed
+	 */
+	void						setNonBlocking() { Sock->setNonBlockingMode( true ); }
+
+	/// Set the size limit for received blocks
+	void						setMaxExpectedBlockSize( sint32 limit ) { _MaxExpectedBlockSize = limit; }
+
+	/** Receives a part of a message (nonblocking socket only)
+	 * \param nbExtraBytes Number of bytes to reserve for extra information such as the event type
+	 * \return True if the message has been completely received
+	 */
+	bool						receivePart( uint32 nbExtraBytes );
+
+	/// Fill the event type byte at pos length()(for a client connection)
+	void						fillEventTypeOnly() { _ReceiveBuffer[_Length] = (uint8)CBufNetBase::User; }
+
+	/** Return the length of the received block (call after receivePart() returns true).
+	 * The total size of received buffer is length() + nbExtraBytes (passed to receivePart()).
+	 */
+	uint32						length() const { return _Length; }
+
+	/** Returns the filled buffer (call after receivePart() returns true).
+	 * Its size is length()+1.
+	 */
+	const std::vector<uint8>	receivedBuffer() const { nlnettrace( "CServerBufSock::receivedBuffer" ); return _ReceiveBuffer; }
+
+	// Buffer for nonblocking receives
+	std::vector<uint8>			_ReceiveBuffer;
+
+	// Max payload size than can be received in a block
+	uint32						_MaxExpectedBlockSize;
+
+private:
+
+	// True if the length prefix has already been read
+	bool						_NowReadingBuffer;
+
+	// Counts the number of bytes read for the current element (length prefix or buffer)
+	TBlockSize					_BytesRead;
+
+	// Length of buffer to read
+	TBlockSize					_Length;
+
+};
+
+
 class CBufServer;
 
 
 /**
  * CServerBufSock
- * A socket, its send buffer plus a nonblocking receiving system
+ * A socket, its send buffer plus a nonblocking receiving system for a server connection
  */
-class CServerBufSock : public CBufSock
+class CServerBufSock : public CNonBlockingBufSock
 {
 protected:
 
@@ -292,14 +353,6 @@ protected:
 	/// Returns the task that "owns" the CServerBufSock object
 	CServerReceiveTask			*ownerTask() { return _OwnerTask; }
 
-	/** Receives a part of a message (nonblocking socket only)
-	 * \return True if the message has been completely received
-	 */
-	bool						receivePart();
-
-	/// Returns the filled buffer (call after receivePart() returns true)
-	const std::vector<uint8>	receivedBuffer() const { nlnettrace( "CServerBufSock::receivedBuffer" ); return _ReceiveBuffer; }
-
 	/** Pushes a connection message into bnb's receive queue, if it has not already been done
 	 * (returns true in this case).
 	 */
@@ -311,22 +364,17 @@ protected:
 	/// Returns "SRV " (server)
 	virtual std::string			typeStr() const { return "SRV "; }
 
+	/// Fill the sockid and the event type byte at the end of the buffer
+	void						fillSockIdAndEventType( TSockId sockId )
+	{
+		memcpy( (&*_ReceiveBuffer.begin()) + length(), &sockId, sizeof(TSockId) );
+		_ReceiveBuffer[length() + sizeof(TSockId)] = (uint8)CBufNetBase::User;
+	}
+
 private:
 
 	/// True after a connection callback has been sent to the user, for this connection
 	bool				_Advertised;
-
-	// True if the length prefix has already been read
-	bool				_NowReadingBuffer;
-
-	// Counts the number of bytes read for the current element (length prefix or buffer)
-	TBlockSize			_BytesRead;
-
-	// Length of buffer to read
-	TBlockSize			_Length;
-
-	// Buffer for nonblocking receives
-	std::vector<uint8>	_ReceiveBuffer;
 
 	// The task that "owns" the CServerBufSock object
 	CServerReceiveTask	*_OwnerTask;

@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.7 2002/05/21 16:38:21 lecroart Exp $
+ * $Id: buf_client.h,v 1.8 2002/12/16 18:03:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,22 +47,22 @@ class CClientReceiveTask : public NLMISC::IRunnable
 public:
 
 	/// Constructor (increments the reference to the object pointed to by the smart pointer sockid)
-	CClientReceiveTask( CBufClient *client, TSockId sockid ) : _Client(client), _SockId(sockid) {}	
+	CClientReceiveTask( CBufClient *client, CNonBlockingBufSock *bufsock ) : _Client(client), _NBBufSock(bufsock) {} // CHANGED: non-blocking client connection
 
 	/// Run
 	virtual void run();
 
-	/// Returns the socket
-	CTcpSock		*sock() { return _SockId->Sock; }
+	/// Returns a pointer to the bufsock object
+	CNonBlockingBufSock		*bufSock() { return _NBBufSock; } // CHANGED: non-blocking client connection (previously, returned _SockId->Sock)
 
 	/// Returns the socket identifier
-	TSockId			sockId() { return _SockId; }
+	TSockId					sockId() { return (TSockId)_NBBufSock; }
 
 private:
 
-	CBufClient		*_Client;
+	CBufClient					*_Client;
 
-	TSockId			_SockId;
+	CNonBlockingBufSock			*_NBBufSock; // CHANGED: non-blocking client connection
 };
 
 
@@ -194,7 +194,7 @@ protected:
 	friend class CClientReceiveTask;
 
 	/// Send buffer and connection
-	CBufSock			*_BufSock;
+	CNonBlockingBufSock *_BufSock; // ADDED: non-blocking client connection
 
 	/// True when the Nagle algorithm must be disabled (TCP_NODELAY)
 	bool				_NoDelay;

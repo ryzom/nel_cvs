@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.13 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: buf_server.h,v 1.14 2002/12/16 18:03:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	CListenTask( CBufServer *server ) : CServerTask(), _Server(server) {}
 
 	/// Begins to listen on the specified port (call before running thread)
-	void			init( uint16 port );
+	void			init( uint16 port, sint32 maxExpectedBlockSize );
 
 	/// Run (exits when the listening socket disconnects)
 	virtual void	run();
@@ -105,6 +105,7 @@ private:
 
 	CBufServer			*_Server;	
 	CListenSock			_ListenSock;
+	uint32				_MaxExpectedBlockSize;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.178 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.178.2.1 2004/09/14 17:19:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,13 @@
 
 #include "nel/misc/types_nl.h"
 
+//#define NL_PROFILE_DRIVER_OGL
+#ifdef NL_PROFILE_DRIVER_OGL
+#define H_AUTO_OGL(label) H_AUTO(label)
+#else
+#define H_AUTO_OGL(label)
+#endif
+
 #ifdef NL_OS_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
@@ -39,13 +46,6 @@
 #  ifdef max
 #    undef max
 #  endif
-
-//#define NL_PROFILE_DRIVER_OGL
-#ifdef NL_PROFILE_DRIVER_OGL
-#define H_AUTO_OGL(label) H_AUTO(label)
-#else
-#define H_AUTO_OGL(label)
-#endif
 
 
 #else // NL_OS_UNIX
@@ -289,6 +289,8 @@ public:
 							CDriverGL();
 	virtual					~CDriverGL();
 
+	virtual	bool			isLost() const { return false; } // there's no notion of 'lost device" in OpenGL
+
 	virtual bool			init (uint windowIcon = 0);
 
 	virtual void			disableHardwareVertexProgram();
@@ -386,6 +388,8 @@ public:
 
 
 	virtual	bool			supportVertexBufferHard() const;
+
+	virtual bool			supportVolatileVertexBuffer() const;
 
 	virtual	bool			supportCloudRenderSinglePass() const;
 	

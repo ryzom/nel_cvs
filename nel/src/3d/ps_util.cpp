@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.18 2001/07/04 12:27:55 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.19 2001/07/12 15:40:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,16 +121,20 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSZoneCylinder) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlender) ;
 		NLMISC_REGISTER_CLASS(CPSColorMemory) ;
+		NLMISC_REGISTER_CLASS(CPSColorBinOp) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlenderExact) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
 		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSFloatGradient) ;
 		NLMISC_REGISTER_CLASS(CPSFloatMemory) ;
+		NLMISC_REGISTER_CLASS(CPSFloatBinOp) ;
 		NLMISC_REGISTER_CLASS(CPSIntBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSIntMemory) ;		
+		NLMISC_REGISTER_CLASS(CPSIntBinOp) ;		
 		NLMISC_REGISTER_CLASS(CPSIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSUIntBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSUIntMemory) ;		
+		NLMISC_REGISTER_CLASS(CPSUIntBinOp) ;		
 		NLMISC_REGISTER_CLASS(CPSUIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
@@ -144,6 +148,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisBlender) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisGradient) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisMemory) ;
+		NLMISC_REGISTER_CLASS(CPSPlaneBasisBinOp) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed) ;
 
 		// while we are here, we perform some important inits

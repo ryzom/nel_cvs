@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.40 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: u_audio_mixer.h,v 1.41 2004/11/03 17:29:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,6 +366,9 @@ public:
 	/** Return true if a song is finished.
 	 */
 	virtual bool	isMusicEnded() =0;
+	/** Return the length of the music currently played (0 if none)
+	 */
+	virtual float	getMusicLength() =0;
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()
 	 */
@@ -374,6 +377,9 @@ public:
 	 * If the song as no name, result is filled with the filename.
 	 */
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0) =0;
+	/** enable or disable the background music system. disable it when you want to play your own mp3 for instance
+	 */
+	virtual void	enableBackgroundMusic(bool enable) =0;
 	//@}
 
 

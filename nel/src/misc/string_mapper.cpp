@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.10 2004/10/22 09:14:20 berenguier Exp $
+ * $Id: string_mapper.cpp,v 1.11 2004/11/03 17:30:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,22 @@ TStringId CStringMapper::localMap(const std::string &str)
 		pStr = (*it);
 	}	
 	return (TStringId)pStr;
+}
+
+// ***************************************************************************
+void CStringMapper::localSerialString(NLMISC::IStream &f, TStringId &id)
+{
+	std::string	str;
+	if(f.isReading())
+	{
+		f.serial(str);
+		id= localMap(str);
+	}
+	else
+	{
+		str= localUnmap(id);
+		f.serial(str);
+	}
 }
 
 // ****************************************************************************

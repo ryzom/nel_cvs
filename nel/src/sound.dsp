@@ -188,6 +188,14 @@ SOURCE=.\sound\context_sound.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\music_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\music_sound.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\simple_sound.cpp
 # End Source File
 # Begin Source File
@@ -249,6 +257,14 @@ SOURCE=.\sound\complex_source.cpp
 # Begin Source File
 
 SOURCE=.\sound\complex_source.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\music_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\music_source.h
 # End Source File
 # Begin Source File
 
@@ -318,6 +334,14 @@ SOURCE=.\sound\mixing_track.cpp
 # Begin Source File
 
 SOURCE=.\sound\mixing_track.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\music_sound_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\music_sound_manager.h
 # End Source File
 # Begin Source File
 

@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.13 2004/10/22 12:51:36 berenguier Exp $
+ * $Id: string_mapper.h,v 1.14 2004/11/03 17:29:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,8 @@ public:
 	static TStringId			map(const std::string &str) { return _GlobalMapper.localMap(str); }
 	/// Globaly unmap a string. ** This method IS Thread-Safe **
 	static const std::string	&unmap(const TStringId &stringId) { return _GlobalMapper.localUnmap(stringId); }
+	/// Globaly helper to serial a string id. ** This method IS Thread-Safe **
+	static void					serialString(NLMISC::IStream &f, TStringId &id) {_GlobalMapper.localSerialString(f, id);}
 	/// Return the global id for the empty string (helper function)
 	static TStringId			emptyId() { return 0; }
 
@@ -120,6 +122,8 @@ public:
 	TStringId				localMap(const std::string &str);
 	/// Localy unmap a string
 	const std::string		&localUnmap(const TStringId &stringId) { return (stringId==0)?*_EmptyId:*((std::string*)stringId); }
+	/// Localy helper to serial a string id
+	void					localSerialString(NLMISC::IStream &f, TStringId &id);
 	/// Return the local id for the empty string (helper function)
 	TStringId				localEmptyId()	{ return 0; }
 

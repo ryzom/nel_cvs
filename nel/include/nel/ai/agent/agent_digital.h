@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.11 2001/06/15 12:17:30 portier Exp $
+ * $Id: agent_digital.h,v 1.12 2001/06/15 14:33:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -493,6 +493,12 @@ namespace NLAIAGENT
 		}		
 
 		virtual const CProcessResult &run();
+
+		virtual IObjetOp &neg()
+		{
+			chekBorn();
+			return *this;
+		}
 	};
 
 	class UInt16Type: public INombre<uint16>
@@ -538,6 +544,13 @@ namespace NLAIAGENT
 		}		
 
 		virtual const CProcessResult &run();
+
+		virtual IObjetOp &neg()
+		{
+			chekBorn();
+			return *this;
+		}
+
 	};
 
 	class UInt32Type: public INombre<uint32>
@@ -583,6 +596,13 @@ namespace NLAIAGENT
 		}		
 
 		virtual const CProcessResult &run();
+
+		virtual IObjetOp &neg()
+		{
+			chekBorn();
+			return *this;
+		}
+
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.9 2001/06/15 12:17:30 portier Exp $
+ * $Id: agent_nombre.h,v 1.10 2001/06/15 14:33:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,6 +180,7 @@ namespace NLAIAGENT
 		{
 			return _Value;
 		}
+
 		void setValue(tNombre value) 
 		{
 			_Value = value;
@@ -209,7 +210,7 @@ namespace NLAIAGENT
 
 		virtual IObjetOp &neg()
 		{
-			//_Value = -_Value;
+			_Value = -_Value;
 			chekBorn();
 			return *this;
 		}

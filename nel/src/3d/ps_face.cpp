@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.13 2004/08/13 16:27:18 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.14 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ public:
 	template <class T, class U>	
 	static void drawFaces(T posIt, U indexIt, CPSFace &f, uint size, uint32 srcStep)
 	{
+		NL_PS_FUNC(CPSFaceHelper_drawFaces)
 		PARTICLES_CHECK_MEM;
 		nlassert(f._Owner);		
 		IDriver *driver = f.getDriver();
@@ -84,7 +85,7 @@ public:
 			do
 			{		
 				{					
-					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
+					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;					
 					vb.setNumVertices(4 * toProcess);
 					CVertexBufferReadWrite vba;
 					vb.lock (vba);
@@ -148,7 +149,7 @@ public:
 			do
 			{			
 				{				
-					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;
+					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;					
 					vb.setNumVertices(4 * toProcess);
 					CVertexBufferReadWrite vba;
 					vb.lock (vba);					
@@ -217,12 +218,15 @@ public:
 ///======================================================================================
 CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 {   
+	NL_PS_FUNC(CPSFace_CPSFace)
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Face");	
 }
 
 ///======================================================================================
 void CPSFace::step(TPSProcessPass pass)
 {
+//	if (!FilterPS[1]) return;
+	NL_PS_FUNC(CPSFace_step)
 	if (pass == PSToolRender) // edition mode only
 	{			
 		showTool();
@@ -296,6 +300,7 @@ void CPSFace::step(TPSProcessPass pass)
 ///======================================================================================
 void CPSFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSFace_IStream )
 	f.serialVersion(1);
 	CPSQuad::serial(f);
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f);
@@ -328,6 +333,7 @@ void CPSFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 /// this produce a random unit vector
 static CVector MakeRandomUnitVect(void)	
 {
+	NL_PS_FUNC(MakeRandomUnitVect)
 	CVector v((float) ((rand() % 20000) - 10000)
 			  ,(float) ((rand() % 20000) - 10000)
 			  ,(float) ((rand() % 20000) - 10000)
@@ -342,6 +348,7 @@ void CPSFace::hintRotateTheSame(uint32 nbConfiguration
 						, float maxAngularVelocity
 					  )
 {
+	NL_PS_FUNC(CPSFace_hintRotateTheSame)
 	_MinAngularVelocity = minAngularVelocity;
 	_MaxAngularVelocity = maxAngularVelocity;
 	_PrecompBasis.resize(nbConfiguration);
@@ -365,6 +372,7 @@ void CPSFace::hintRotateTheSame(uint32 nbConfiguration
 ///======================================================================================
 void CPSFace::fillIndexesInPrecompBasis(void)
 {
+	NL_PS_FUNC(CPSFace_fillIndexesInPrecompBasis)
 	const uint32 nbConf = _PrecompBasis.size();
 	if (_Owner)
 	{
@@ -379,6 +387,7 @@ void CPSFace::fillIndexesInPrecompBasis(void)
 ///======================================================================================
 void CPSFace::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSFace_newElement)
 	CPSQuad::newElement(info);
 	newPlaneBasisElement(info);
 	const uint32 nbConf = _PrecompBasis.size();
@@ -389,8 +398,9 @@ void CPSFace::newElement(const CPSEmitterInfo &info)
 }
 	
 ///======================================================================================
-	void CPSFace::deleteElement(uint32 index)
+void CPSFace::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSFace_deleteElement)
 	CPSQuad::deleteElement(index);
 	deletePlaneBasisElement(index);
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
@@ -403,6 +413,7 @@ void CPSFace::newElement(const CPSEmitterInfo &info)
 ///======================================================================================
 void CPSFace::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSFace_resize)
 	nlassert(size < (1 << 16));
 	resizePlaneBasis(size);
 	if (_PrecompBasis.size()) // do we use precomputed basis ?

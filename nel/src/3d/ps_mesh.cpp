@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.40 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.41 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@ CVertexBuffer								CPSConstraintMesh::_PreRotatedMeshVBWithNormal;  // mesh ha
 // this produce a random unit vector
 static CVector MakeRandomUnitVect(void)	
 {
+	NL_PS_FUNC(MakeRandomUnitVect)
 	CVector v((float) ((rand() % 20000) - 10000)
 			  ,(float) ((rand() % 20000) - 10000)
 			  ,(float) ((rand() % 20000) - 10000)
@@ -92,6 +93,7 @@ const std::string DummyShapeName("dummy mesh shape");
 
 static CMesh *CreateDummyMesh(void)
 {
+	NL_PS_FUNC(CreateDummyMesh)
 	CMesh::CMeshBuild mb;
 	CMeshBase::CMeshBaseBuild mbb;
 
@@ -166,6 +168,7 @@ static CMesh *CreateDummyMesh(void)
 //====================================================================================
 void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
+	NL_PS_FUNC(CPSMesh_IStream )
 	(void)f.serialVersion(3);	
 	CPSParticle::serial(f);
 	CPSSizedParticle::serialSizeScheme(f);
@@ -185,6 +188,7 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //====================================================================================
 void CPSMesh::setShape(const std::string &shape)
 {
+	NL_PS_FUNC(CPSMesh_setShape)
 	if (shape == _Shape) return;
 	_Shape = shape;
 	removeAllInstancesFromScene();
@@ -193,6 +197,7 @@ void CPSMesh::setShape(const std::string &shape)
 //====================================================================================
 uint32 CPSMesh::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSMesh_getNumWantedTris)
 	/// we don't draw any face ! (the meshs are drawn by the scene)
 	return 0;
 }
@@ -200,6 +205,7 @@ uint32 CPSMesh::getNumWantedTris() const
 //====================================================================================
 bool CPSMesh::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSMesh_hasTransparentFaces)
 	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
 }
@@ -207,6 +213,7 @@ bool CPSMesh::hasTransparentFaces(void)
 //====================================================================================
 bool CPSMesh::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSMesh_hasOpaqueFaces)
 	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
 }
@@ -214,6 +221,7 @@ bool CPSMesh::hasOpaqueFaces(void)
 //====================================================================================
 bool CPSMesh::hasLightableFaces()
 {
+	NL_PS_FUNC(CPSMesh_hasLightableFaces)
 	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
 }
@@ -221,6 +229,7 @@ bool CPSMesh::hasLightableFaces()
 //====================================================================================
 void CPSMesh::releaseAllRef()
 {
+	NL_PS_FUNC(CPSMesh_releaseAllRef)
 	CPSParticle::releaseAllRef();
 	nlassert(_Owner && _Owner->getScene());
 	removeAllInstancesFromScene();	
@@ -229,6 +238,7 @@ void CPSMesh::releaseAllRef()
 //====================================================================================
 void CPSMesh::removeAllInstancesFromScene()
 {	
+	NL_PS_FUNC(CPSMesh_removeAllInstancesFromScene)
 	for(uint k = 0; k < _Instances.getSize(); ++k)
 	{
 		if (_Instances[k])
@@ -242,6 +252,7 @@ void CPSMesh::removeAllInstancesFromScene()
 //====================================================================================
 CTransformShape *CPSMesh::createInstance()
 {
+	NL_PS_FUNC(CPSMesh_createInstance)
 	CScene *scene = _Owner->getScene();
 	nlassert(scene); // the setScene method of the particle system should have been called	
 	CTransformShape *instance = scene->createInstance(_Shape);
@@ -261,6 +272,7 @@ CTransformShape *CPSMesh::createInstance()
 //====================================================================================
 void CPSMesh::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSMesh_newElement)
 	newPlaneBasisElement(info);
 	newAngle2DElement(info);
 	newSizeElement(info);
@@ -274,6 +286,7 @@ void CPSMesh::newElement(const CPSEmitterInfo &info)
 //====================================================================================	
 void CPSMesh::deleteElement(uint32 index)
 {	
+	NL_PS_FUNC(CPSMesh_deleteElement)
 	deleteSizeElement(index);
 	deleteAngle2DElement(index);
 	deletePlaneBasisElement(index);
@@ -293,21 +306,22 @@ void CPSMesh::deleteElement(uint32 index)
 //====================================================================================
 void CPSMesh::step(TPSProcessPass pass)
 {
-		if (pass == PSSolidRender)			
-		{
-			updatePos();
-		}
-		else 
-		if (pass == PSToolRender) // edition mode only
-		{			
-			showTool();
-		}
-
+	NL_PS_FUNC(CPSMesh_step)
+	if (pass == PSSolidRender)			
+	{
+		updatePos();
+	}
+	else 
+	if (pass == PSToolRender) // edition mode only
+	{			
+		showTool();
+	}
 }
 
 //====================================================================================
 void CPSMesh::updatePos()
 {
+	NL_PS_FUNC(CPSMesh_updatePos)
 	const uint MeshBufSize = 512;
 	PARTICLES_CHECK_MEM;
 	nlassert(_Owner);
@@ -426,6 +440,7 @@ void CPSMesh::updatePos()
 //====================================================================================
 void CPSMesh::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSMesh_resize)
 	nlassert(size < (1 << 16));
 	resizeSize(size);
 	resizeAngle2D(size);
@@ -444,6 +459,7 @@ void CPSMesh::resize(uint32 size)
 //====================================================================================
 CPSMesh::~CPSMesh()
 {	
+	NL_PS_FUNC(CPSMesh_CPSMeshDtor)
 	if (_Owner && _Owner->getOwner())
 	{	
 		removeAllInstancesFromScene();		
@@ -465,7 +481,8 @@ CPSMesh::~CPSMesh()
 
 /// private : eval the number of triangles in a mesh
 static uint getMeshNumTri(const CMesh &m)
-{	
+{
+	NL_PS_FUNC(getMeshNumTri)
 	uint numFaces = 0;
 	for (uint k = 0; k < m.getNbMatrixBlock(); ++k)
 	{
@@ -484,6 +501,7 @@ static uint getMeshNumTri(const CMesh &m)
 /// private use : check if there are transparent and / or opaque faces in a mesh
 static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTransparentFaces, bool &hasOpaqueFaces)
 {
+	NL_PS_FUNC(CheckForOpaqueAndTransparentFacesInMesh)
 	hasTransparentFaces = false;
 	hasOpaqueFaces = false;
 	
@@ -505,6 +523,7 @@ static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTra
 /// private use : check if there are lightable faces in a mesh
 static bool CheckForLightableFacesInMesh(const CMesh &m)
 {
+	NL_PS_FUNC(CheckForLightableFacesInMesh)
 	for (uint k = 0; k < m.getNbRdrPass(0); ++k)
 	{
 		const CMaterial &currMat = m.getMaterial(m.getRdrPassMaterial(0, k));		
@@ -525,6 +544,7 @@ public:
 	template <class T>	
 	static void drawMeshs(T posIt, CPSConstraintMesh &m, uint size, uint32 srcStep, bool opaque)
 	{
+		NL_PS_FUNC(CPSConstraintMeshHelper_drawMeshs)
 		CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) m._Meshes[0]);	
 		const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 		
@@ -986,12 +1006,14 @@ CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
 										 _MorphValue(0),
 										 _MorphScheme(NULL)
 {		
+	NL_PS_FUNC(CPSConstraintMesh_CPSConstraintMesh)
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("ConstraintMesh");
 }
 
 //====================================================================================
 uint32 CPSConstraintMesh::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getNumWantedTris)
 //	nlassert(_ModelVb);
 	//return _NumFaces * _Owner->getMaxSize();
 	return _NumFaces * _Owner->getSize();	
@@ -1001,6 +1023,7 @@ uint32 CPSConstraintMesh::getNumWantedTris() const
 //====================================================================================
 bool CPSConstraintMesh::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSConstraintMesh_hasTransparentFaces)
 	if (!_Touched) return _HasTransparentFaces != 0;
 	/// we must update the mesh to know wether it has transparent faces
 	update();
@@ -1010,6 +1033,7 @@ bool CPSConstraintMesh::hasTransparentFaces(void)
 //====================================================================================
 bool CPSConstraintMesh::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSConstraintMesh_hasOpaqueFaces)
 	if (!_Touched) return _HasOpaqueFaces != 0;	
 	update();
 	return _HasOpaqueFaces != 0;
@@ -1018,6 +1042,7 @@ bool CPSConstraintMesh::hasOpaqueFaces(void)
 //====================================================================================
 bool CPSConstraintMesh::hasLightableFaces()
 {
+	NL_PS_FUNC(CPSConstraintMesh_hasLightableFaces)
 	if (!_Touched) return _HasLightableFaces != 0;	
 	update();
 	return _HasLightableFaces != 0;
@@ -1027,6 +1052,7 @@ bool CPSConstraintMesh::hasLightableFaces()
 //====================================================================================
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
 {		
+	NL_PS_FUNC(CPSConstraintMesh_setShape)
 	_MeshShapeFileName.resize(1);	
 	_MeshShapeFileName[0] = meshFileName;
 	_Touched = 1;
@@ -1037,6 +1063,7 @@ void CPSConstraintMesh::setShape(const std::string &meshFileName)
 //===========================================================================
 std::string			CPSConstraintMesh::getShape(void) const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getShape)
 	if (_Touched) 
 	{	
 		const_cast<CPSConstraintMesh *>(this)->update();
@@ -1048,6 +1075,7 @@ std::string			CPSConstraintMesh::getShape(void) const
 //====================================================================================
 bool CPSConstraintMesh::isValidBuild() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_isValidBuild)
 	if (_Touched) 
 	{	
 		const_cast<CPSConstraintMesh *>(this)->update();
@@ -1058,6 +1086,7 @@ bool CPSConstraintMesh::isValidBuild() const
 //====================================================================================
 void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShapes)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setShapes)
 	_MeshShapeFileName.resize(numShapes);
 	std::copy(shapesNames, shapesNames + numShapes, _MeshShapeFileName.begin());
 	_Touched = 1;
@@ -1067,6 +1096,7 @@ void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShape
 //====================================================================================
 uint	    CPSConstraintMesh::getNumShapes() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getNumShapes)
 	if (_Touched)
 	{	
 		const_cast<CPSConstraintMesh *>(this)->update();
@@ -1077,6 +1107,7 @@ uint	    CPSConstraintMesh::getNumShapes() const
 //====================================================================================
 void	CPSConstraintMesh::getShapesNames(std::string *shapesNames) const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getShapesNames)
 	if (_Touched) 
 	{	
 		const_cast<CPSConstraintMesh *>(this)->update();
@@ -1089,6 +1120,7 @@ void	CPSConstraintMesh::getShapesNames(std::string *shapesNames) const
 //====================================================================================
 void		CPSConstraintMesh::setShape(uint index, const std::string &shapeName)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setShape)
 	nlassert(index < _MeshShapeFileName.size());
 	_MeshShapeFileName[index] = shapeName;
 	_Touched = 1;
@@ -1099,6 +1131,7 @@ void		CPSConstraintMesh::setShape(uint index, const std::string &shapeName)
 //====================================================================================
 const std::string          &CPSConstraintMesh::getShape(uint index) const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getShape)
 	if (_Touched) 
 	{	
 		const_cast<CPSConstraintMesh *>(this)->update();
@@ -1112,6 +1145,7 @@ const std::string          &CPSConstraintMesh::getShape(uint index) const
 //====================================================================================
 void	CPSConstraintMesh::setMorphValue(float value)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setMorphValue)
 	delete _MorphScheme;
 	_MorphScheme = NULL;
 	_MorphValue = value;
@@ -1121,12 +1155,14 @@ void	CPSConstraintMesh::setMorphValue(float value)
 //====================================================================================
 float	CPSConstraintMesh::getMorphValue() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getMorphValue)
 	return _MorphValue;
 }
 
 //====================================================================================
 void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setMorphScheme)
 	delete _MorphScheme;
 	_MorphScheme = scheme;
 	if (_MorphScheme->hasMemory()) _MorphScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
@@ -1135,19 +1171,22 @@ void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
 //====================================================================================
 CPSAttribMaker<float>		*CPSConstraintMesh::getMorphScheme()
 {
+	NL_PS_FUNC(CPSConstraintMesh_getMorphScheme)
 	return _MorphScheme;
 }
 
 //====================================================================================
 const CPSAttribMaker<float>	*CPSConstraintMesh::getMorphScheme() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getMorphScheme)
 	return _MorphScheme;
 }
 
 
 //====================================================================================
 static CMesh *GetDummyMeshFromBank(CShapeBank &sb)
-{	
+{
+	NL_PS_FUNC(GetDummyMeshFromBank)
 	static const std::string dummyMeshName("dummy constraint mesh shape");
 	if (sb.isPresent(dummyMeshName) == CShapeBank::Present)
 	{				
@@ -1165,6 +1204,7 @@ static CMesh *GetDummyMeshFromBank(CShapeBank &sb)
 //====================================================================================
 void CPSConstraintMesh::getShapeNumVerts(std::vector<sint> &numVerts)
 {
+	NL_PS_FUNC(CPSConstraintMesh_getShapeNumVerts)
 	_Touched = 1; // force reload
 	update(&numVerts);
 }
@@ -1172,6 +1212,7 @@ void CPSConstraintMesh::getShapeNumVerts(std::vector<sint> &numVerts)
 //====================================================================================
 bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 {		
+	NL_PS_FUNC(CPSConstraintMesh_update)
 	bool ok = true;
 	if (!_Touched) return ok;	
 	
@@ -1350,6 +1391,7 @@ void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration,
 										  float maxAngularVelocity
 										)
 {
+	NL_PS_FUNC(CPSConstraintMesh_hintRotateTheSame)
 	nlassert(nbConfiguration <= ConstraintMeshMaxNumPrerotatedModels);
 
 	// TODO : avoid code duplication with CPSFace ...
@@ -1382,6 +1424,7 @@ void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration,
 //====================================================================================
 void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 {
+	NL_PS_FUNC(CPSConstraintMesh_fillIndexesInPrecompBasis)
 	// TODO : avoid code duplication with CPSFace ...
 	const uint32 nbConf = _PrecompBasis.size();
 	if (_Owner)
@@ -1398,6 +1441,7 @@ void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
 /// serialisation. Derivers must override this, and call their parent version
 void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSConstraintMesh_IStream )
 
 	sint ver = f.serialVersion(4);
 	if (f.isReading())
@@ -1542,6 +1586,7 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //====================================================================================
 CPSConstraintMesh::~CPSConstraintMesh() 
 {
+	NL_PS_FUNC(CPSConstraintMesh_CPSConstraintMeshDtor)
 	clean();
 	delete _MorphScheme;
 }
@@ -1551,6 +1596,7 @@ CPSConstraintMesh::~CPSConstraintMesh()
 //====================================================================================
 void CPSConstraintMesh::releaseShapes()
 {
+	NL_PS_FUNC(CPSConstraintMesh_releaseShapes)
 	for (TMeshVect::iterator it = _Meshes.begin(); it != _Meshes.end(); ++it)
 	{
 		if (*it)
@@ -1564,6 +1610,7 @@ void CPSConstraintMesh::releaseShapes()
 //====================================================================================
 void CPSConstraintMesh::clean(void)
 {	
+	NL_PS_FUNC(CPSConstraintMesh_clean)
 	if (_ModelBank)
 	{	
 		releaseShapes();		
@@ -1574,6 +1621,7 @@ void CPSConstraintMesh::clean(void)
 //====================================================================================
 CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
 {
+	NL_PS_FUNC(CPSConstraintMesh_makePrerotatedVb)
 	// get a VB that has positions and eventually normals
 	CVertexBuffer &prerotatedVb = inVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVBWithNormal : _PreRotatedMeshVB;
 	CVertexBufferReadWrite vba;
@@ -1661,6 +1709,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
 //====================================================================================
 void CPSConstraintMesh::step(TPSProcessPass pass)
 {
+	NL_PS_FUNC(CPSConstraintMesh_step)
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())
 			|| (pass == PSSolidRender && hasOpaqueFaces())
@@ -1678,6 +1727,8 @@ void CPSConstraintMesh::step(TPSProcessPass pass)
 //====================================================================================
 void CPSConstraintMesh::draw(bool opaque)
 {
+//	if (!FilterPS[4]) return;
+	NL_PS_FUNC(CPSConstraintMesh_draw)
 	PARTICLES_CHECK_MEM;
 	nlassert(_Owner);	
 	
@@ -1741,6 +1792,7 @@ void CPSConstraintMesh::draw(bool opaque)
 //====================================================================================
 void CPSConstraintMesh::setupMaterialColor(CMaterial &destMat, CMaterial &srcMat)
 {		
+	NL_PS_FUNC(CPSConstraintMesh_setupMaterialColor)
 	if (destMat.getShader() != CMaterial::Normal) return;
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{		
@@ -1774,6 +1826,7 @@ void CPSConstraintMesh::setupMaterialColor(CMaterial &destMat, CMaterial &srcMat
 //====================================================================================
 void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setupRenderPasses)
 	// render meshs : we process each rendering pass
 	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin();
 	     rdrPassIt != rdrPasses.end(); ++rdrPassIt)
@@ -1847,6 +1900,7 @@ void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bo
 //====================================================================================
 void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque)
 {		
+	NL_PS_FUNC(CPSConstraintMesh_doRenderPasses)
 	// render meshs : we process each rendering pass
 	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin(); rdrPassIt != rdrPasses.end(); ++rdrPassIt)
 	{	
@@ -1877,6 +1931,7 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 										 CVertexBufferRead &vbaIn									 
 										)
 {	
+	NL_PS_FUNC(CPSConstraintMesh_computeColors)
 	nlassert(_ColorScheme);
 	// there are 2 case : 1 - the source mesh has colors, which are modulated with the current color
 	//					  2 - the source mesh has no colors : colors are directly copied into the dest vb
@@ -1908,6 +1963,7 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 //====================================================================================
 void CPSConstraintMesh::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSConstraintMesh_newElement)
 	newSizeElement(info);
 	newPlaneBasisElement(info);
 	// TODO : avoid code cuplication with CPSFace ...
@@ -1927,6 +1983,7 @@ void CPSConstraintMesh::newElement(const CPSEmitterInfo &info)
 //====================================================================================	
 void CPSConstraintMesh::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSConstraintMesh_deleteElement)
 	deleteSizeElement(index);
 	deletePlaneBasisElement(index);
 	// TODO : avoid code cuplication with CPSFace ...
@@ -1942,6 +1999,7 @@ void CPSConstraintMesh::deleteElement(uint32 index)
 //====================================================================================
 void CPSConstraintMesh::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSConstraintMesh_resize)
 	nlassert(size < (1 << 16));
 	resizeSize(size);
 	resizePlaneBasis(size);
@@ -1957,12 +2015,14 @@ void CPSConstraintMesh::resize(uint32 size)
 //====================================================================================
 void CPSConstraintMesh::updateMatAndVbForColor(void)
 {
+	NL_PS_FUNC(CPSConstraintMesh_updateMatAndVbForColor)
 	// nothing to do for us...
 }
 
 //====================================================================================
 void	CPSConstraintMesh::forceStageModulationByColor(uint stage, bool force)
 {
+	NL_PS_FUNC(CPSConstraintMesh_forceStageModulationByColor)
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	if (force)
 	{
@@ -1977,6 +2037,7 @@ void	CPSConstraintMesh::forceStageModulationByColor(uint stage, bool force)
 //====================================================================================
 bool	CPSConstraintMesh::isStageModulationForced(uint stage) const
 {
+	NL_PS_FUNC(CPSConstraintMesh_isStageModulationForced)
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	return (_ModulatedStages & (1 << stage)) != 0;
 }
@@ -1990,6 +2051,7 @@ bool	CPSConstraintMesh::isStageModulationForced(uint stage) const
 
 static void DuplicatePrimitiveBlock(const CIndexBuffer &srcBlock, CIndexBuffer &destBlock, uint nbReplicate, uint vertOffset)
 {
+	NL_PS_FUNC(DuplicatePrimitiveBlock)
 	PARTICLES_CHECK_MEM;
 
 	// this must be update each time a new primitive is added
@@ -2036,13 +2098,14 @@ static void DuplicatePrimitiveBlock(const CIndexBuffer &srcBlock, CIndexBuffer &
 //====================================================================================
 void CPSConstraintMesh::initPrerotVB()
 {
+	NL_PS_FUNC(CPSConstraintMesh_initPrerotVB)
 	// position, no normals
-	_PreRotatedMeshVB.setVertexFormat(CVertexBuffer::PositionFlag);
+	_PreRotatedMeshVB.setVertexFormat(CVertexBuffer::PositionFlag);	
 	_PreRotatedMeshVB.setNumVertices(ConstraintMeshMaxNumPrerotatedModels * ConstraintMeshMaxNumVerts);
 	_PreRotatedMeshVB.setName("CPSConstraintMesh::_PreRotatedMeshVB");
 
 	// position & normals
-	_PreRotatedMeshVBWithNormal.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag);
+	_PreRotatedMeshVBWithNormal.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag);	
 	_PreRotatedMeshVBWithNormal.setNumVertices(ConstraintMeshMaxNumPrerotatedModels * ConstraintMeshMaxNumVerts);
 	_PreRotatedMeshVB.setName("CPSConstraintMesh::_PreRotatedMeshVBWithNormal");
 }
@@ -2050,6 +2113,7 @@ void CPSConstraintMesh::initPrerotVB()
 //====================================================================================
 CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDisplay(CMesh *mesh, uint32 format)
 {
+	NL_PS_FUNC(CMeshDisplayShare_getMeshDisplay)
 	nlassert(mesh);	
 	// linear search is ok because of small size
 	for(std::list<CMDEntry>::iterator it = _Cache.begin(); it != _Cache.end(); ++it)
@@ -2082,6 +2146,7 @@ CPSConstraintMesh::CMeshDisplay &CPSConstraintMesh::CMeshDisplayShare::getMeshDi
 //====================================================================================
 void CPSConstraintMesh::CMeshDisplayShare::buildRdrPassSet(TRdrPassSet &dest,  const CMesh &m)
 {		
+	NL_PS_FUNC(CMeshDisplayShare_buildRdrPassSet)
 	// we don't support skinning for mesh particles, so there must be only one matrix block	
 	nlassert(m.getNbMatrixBlock() == 1);  // SKINNING UNSUPPORTED
 	
@@ -2096,9 +2161,12 @@ void CPSConstraintMesh::CMeshDisplayShare::buildRdrPassSet(TRdrPassSet &dest,  c
 	}	
 }
 
+
+
 //====================================================================================
 void CPSConstraintMesh::CMeshDisplayShare::buildVB(CVertexBuffer &dest, const CMesh &mesh, uint32 destFormat)
 {
+	NL_PS_FUNC(CMeshDisplayShare_buildVB)
 	/// we duplicate the original mesh data's 'ConstraintMeshBufSize' times, eventually adding a color	
 	const CVertexBuffer &meshVb = mesh.getVertexBuffer();	
 	nlassert(destFormat == meshVb.getVertexFormat() || destFormat == (meshVb.getVertexFormat() | (uint32) CVertexBuffer::PrimaryColorFlag) );
@@ -2155,11 +2223,13 @@ CPSConstraintMesh::CGlobalTexAnim::CGlobalTexAnim() : TransOffset(NLMISC::CVecto
 													  WRotSpeed(0),
 													  WRotAccel(0)
 {
+	NL_PS_FUNC(CGlobalTexAnim_CGlobalTexAnim)
 }
 
 //=====================================================================================
 void	CPSConstraintMesh::CGlobalTexAnim::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CGlobalTexAnim_IStream )
 	// version 1 : added offset
 	sint ver = f.serialVersion(1);
 	if (ver >= 1)
@@ -2173,6 +2243,7 @@ void	CPSConstraintMesh::CGlobalTexAnim::serial(NLMISC::IStream &f) throw(NLMISC:
 //=====================================================================================
 void CPSConstraintMesh::CGlobalTexAnim::buildMatrix(float date, NLMISC::CMatrix &dest)
 {
+	NL_PS_FUNC(CGlobalTexAnim_buildMatrix)
 	float fDate = (float) date;
 	float halfDateSquared   = 0.5f * fDate * fDate;
 	NLMISC::CVector2f pos   = fDate * TransSpeed + halfDateSquared * fDate * TransAccel + TransOffset;
@@ -2203,6 +2274,7 @@ void CPSConstraintMesh::CGlobalTexAnim::buildMatrix(float date, NLMISC::CMatrix 
 //=====================================================================================
 void	CPSConstraintMesh::setGlobalTexAnim(uint stage, const CGlobalTexAnim &properties)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setGlobalTexAnim)
 	nlassert(_GlobalAnimationEnabled != 0);
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	nlassert(_GlobalTexAnims.get());
@@ -2212,6 +2284,7 @@ void	CPSConstraintMesh::setGlobalTexAnim(uint stage, const CGlobalTexAnim &prope
 //=====================================================================================
 const CPSConstraintMesh::CGlobalTexAnim &CPSConstraintMesh::getGlobalTexAnim(uint stage) const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getGlobalTexAnim)
 	nlassert(_GlobalAnimationEnabled != 0);
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	nlassert(_GlobalTexAnims.get());
@@ -2222,12 +2295,14 @@ const CPSConstraintMesh::CGlobalTexAnim &CPSConstraintMesh::getGlobalTexAnim(uin
 //=====================================================================================
 CPSConstraintMesh::TTexAnimType CPSConstraintMesh::getTexAnimType() const
 {
+	NL_PS_FUNC(CPSConstraintMesh_getTexAnimType)
 	return (TTexAnimType) (_GlobalAnimationEnabled != 0 ? GlobalAnim : NoAnim);	
 }
 
 //=====================================================================================
 void  CPSConstraintMesh::setTexAnimType(TTexAnimType type)
 {
+	NL_PS_FUNC(CPSConstraintMesh_setTexAnimType)
 	nlassert(type < Last);
 	if (type == getTexAnimType()) return; // does the type of animation change ?
 	switch (type)
@@ -2251,6 +2326,7 @@ void  CPSConstraintMesh::setTexAnimType(TTexAnimType type)
 //=====================================================================================
 void	CPSConstraintMesh::CGlobalTexAnims::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CGlobalTexAnims_IStream )
 	f.serialVersion(0);
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{
@@ -2261,6 +2337,7 @@ void	CPSConstraintMesh::CGlobalTexAnims::serial(NLMISC::IStream &f) throw(NLMISC
 //=====================================================================================
 void CPSConstraintMesh::restoreMaterials()
 {
+	NL_PS_FUNC(CPSConstraintMesh_restoreMaterials)
 	update();		
 	CMeshDisplay  &md= _MeshDisplayShare.getMeshDisplay(_Meshes[0], _Meshes[0]->getVertexBuffer().getVertexFormat() | (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
 	TRdrPassSet rdrPasses = md.RdrPasses;

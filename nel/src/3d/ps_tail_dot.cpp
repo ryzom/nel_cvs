@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.16 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.17 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ static NLMISC::CRGBA GradientB2W[] = {NLMISC::CRGBA(0, 0, 0, 0), NLMISC::CRGBA(2
 /// private use : this create a gradient texture that goew from black to white
 static ITexture *CreateGradientTexture()
 {
+	NL_PS_FUNC(CreateGradientTexture)
 	std::auto_ptr<CTextureMem> tex(new CTextureMem((uint8 *) &GradientB2W,
 												   sizeof(GradientB2W),
 												   false, /* dont delete */
@@ -69,6 +70,7 @@ CPSTailDot::CPSTailDot() : _ColorFading(false),
 						   _ForceLighted(false),
 						   _Touch(true)
 {
+	NL_PS_FUNC(CPSTailDot_CPSTailDot)
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("TailDot");
@@ -77,12 +79,14 @@ CPSTailDot::CPSTailDot() : _ColorFading(false),
 //=======================================================	
 CPSTailDot::~CPSTailDot()
 {
+	NL_PS_FUNC(CPSTailDot_CPSTailDotDtor)
 //	delete _DyingRibbons;
 }
 
 //=======================================================	
 void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSTailDot_serial)
 
 	sint ver = f.serialVersion(3);
 	if (ver == 1)
@@ -164,6 +168,7 @@ void CPSTailDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //=======================================================	
 void CPSTailDot::step(TPSProcessPass pass)
 {	
+	NL_PS_FUNC(CPSTailDot_step)
 	if (pass == PSMotion)
 	{	
 		if (!_Parametric)
@@ -211,6 +216,7 @@ void CPSTailDot::step(TPSProcessPass pass)
 //=======================================================	
 void CPSTailDot::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSTailDot_newElement)
 	CPSRibbonBase::newElement(info);
 	newColorElement(info);	
 }
@@ -219,6 +225,7 @@ void CPSTailDot::newElement(const CPSEmitterInfo &info)
 //=======================================================	
 void CPSTailDot::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSTailDot_deleteElement)
 	CPSRibbonBase::deleteElement(index);
 	deleteColorElement(index);	
 }
@@ -227,6 +234,7 @@ void CPSTailDot::deleteElement(uint32 index)
 //=======================================================	
 void CPSTailDot::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSTailDot_resize)
 	nlassert(size < (1 << 16));
 	CPSRibbonBase::resize(size);	
 	resizeColor(size);	
@@ -235,12 +243,15 @@ void CPSTailDot::resize(uint32 size)
 //=======================================================	
 void CPSTailDot::updateMatAndVbForColor(void)
 {
+	NL_PS_FUNC(CPSTailDot_updateMatAndVbForColor)
 	touch();
 }
 
 //==========================================================================	
 void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 {	
+//	if (!FilterPS[8]) return;
+	NL_PS_FUNC(CPSTailDot_displayRibbons)
 	if (!nbRibbons) return;
 	nlassert(_Owner);	
 	CPSRibbonBase::updateLOD();
@@ -365,6 +376,7 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 //==========================================================================	
 bool CPSTailDot::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSTailDot_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
@@ -372,12 +384,14 @@ bool CPSTailDot::hasTransparentFaces(void)
 //==========================================================================	
 bool CPSTailDot::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSTailDot_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 //==========================================================================	
 uint32 CPSTailDot::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSTailDot_getNumWantedTris)
 	nlassert(_Owner);
 	//return _Owner->getMaxSize() * _NbSegs;	
 	return _Owner->getSize() * _NbSegs;
@@ -388,6 +402,7 @@ uint32 CPSTailDot::getNumWantedTris() const
 //==========================================================================	
 CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 {
+	NL_PS_FUNC(CPSTailDot_getVBnPB)
 	/// choose the right vb
 	TVBMap &map = _ColorScheme ? (_ColorFading ? _FadedColoredVBMap : _ColoredVBMap)		// per ribbon coloçr
 							   : (_ColorFading ? _FadedVBMap : _VBMap);     // global color
@@ -456,6 +471,7 @@ CPSTailDot::CVBnPB &CPSTailDot::getVBnPB()
 //==========================================================================	
 uint	CPSTailDot::getNumRibbonsInVB() const
 {
+	NL_PS_FUNC(CPSTailDot_getNumRibbonsInVB)
 	/// approximation of the max number of vertices we want in a vb
 	const uint vertexInVB = 256;	
 	return std::max(1u, (uint) (vertexInVB / (_UsedNbSegs + 1)));
@@ -465,6 +481,7 @@ uint	CPSTailDot::getNumRibbonsInVB() const
 //==========================================================================	
 void	CPSTailDot::updateMaterial()
 {
+	NL_PS_FUNC(CPSTailDot_updateMaterial)
 	if (!_Touch) return;
 
 	static NLMISC::CRefPtr<ITexture> ptGradTexture;
@@ -530,6 +547,7 @@ void	CPSTailDot::updateMaterial()
 //==========================================================================	
 void	CPSTailDot::setupGlobalColor()
 {	
+	NL_PS_FUNC(CPSTailDot_setupGlobalColor)
 	/// setup the global color if it is used
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)

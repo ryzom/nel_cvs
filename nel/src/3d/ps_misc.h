@@ -1,7 +1,7 @@
 /** \file ps_misc.h
  * Some functions used by the particle system
  *
- * $Id: ps_misc.h,v 1.2 2002/02/18 12:56:09 lecroart Exp $
+ * $Id: ps_misc.h,v 1.3 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "3d/particle_system_process.h"
 
 namespace NL3D   {
 
@@ -39,7 +40,8 @@ namespace NL3D   {
   * \return The number of steps.
   */
 inline uint ScaleFloatGE(float f, float deltaT, float clampValue, uint numStep)
-{	
+{
+	NL_PS_FUNC(ScaleFloatGE)
 	if (f >= clampValue) return 0;
 	float endValue = f + numStep * deltaT;
 	if (endValue < clampValue) return numStep;
@@ -67,6 +69,7 @@ inline NLMISC::CVector *FillBufUsingSubdiv(const	NLMISC::CVector &value,
 									  uint32				stride									  
 									  )
 {
+	NL_PS_FUNC(FillBufUsingSubdiv)
 	uint numToFill = ScaleFloatGE(startValue, deltaT, clampValue, maxNumStep);
 	nlassert(numToFill <= maxNumStep);
 	startValue += numToFill * deltaT;

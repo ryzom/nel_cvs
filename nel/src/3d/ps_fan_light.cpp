@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.14 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_fan_light.cpp,v 1.15 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,9 @@ static const uint FanLightBufSize  = 128; // the size of a buffer of particle to
 static const uint NumVertsInBuffer = 4 * FanLightBufSize;
 
 
+
+
+
 ///====================================================================================
 
 /** Well, we could have put a method template in CPSFanLight, but some compilers
@@ -71,6 +74,7 @@ public:
 	template <class T, class U>	
 	static void drawFanLight(T posIt, U timeIt, CPSFanLight &f, uint size, uint32 srcStep)
 	{
+		NL_PS_FUNC(CPSFanLightHelper_drawFanLight)
 		PARTICLES_CHECK_MEM;
 		nlassert(f._RandomPhaseTabInitialized);
 		//
@@ -82,6 +86,8 @@ public:
 		CIndexBuffer  *ib;
 		// get (and build if necessary) the vb and the ib
 		f.getVBnIB(vb, ib);
+		// tmp
+		vb->setPreferredMemory(CVertexBuffer::AGPVolatile, true);
 		IDriver *driver = f.getDriver();		
 		const uint maxNumFanLightToDealWith = std::min(FanLightBufSize, f.getNumFanlightsInVB());	
 		uint8 *randomPhaseTab = &f._RandomPhaseTab[f._PhaseSmoothness][0];
@@ -116,7 +122,7 @@ public:
 		}
 		do
 		{				
-			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);
+			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);			
 			vb->setNumVertices(toProcess * f._NbFans * 3);			
 			{
 				CVertexBufferReadWrite vba;
@@ -215,6 +221,7 @@ public:
 // this blur a tab of bytes once
 static void BlurBytesTab(const uint8 *src, uint8 *dest, uint size)
 {
+	NL_PS_FUNC(BlurBytesTab)
 	std::vector<uint8> b(src, src + size);
 	for (sint k = 1 ; k < (sint) (size - 1); ++k)
 	{
@@ -225,6 +232,7 @@ static void BlurBytesTab(const uint8 *src, uint8 *dest, uint size)
 ///====================================================================================
 void CPSFanLight::initFanLightPrecalc(void)
 {
+	NL_PS_FUNC(CPSFanLight_initFanLightPrecalc)
 	// build several random tab, and linearly interpolate between l values
 	float currPhase, nextPhase, phaseStep;
 	for (uint l = 0; l < 32 ; l++)
@@ -256,6 +264,7 @@ void CPSFanLight::initFanLightPrecalc(void)
 ///====================================================================================
 uint32 CPSFanLight::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSFanLight_getNumWantedTris)
 	nlassert(_Owner);
 	//return _Owner->getMaxSize() * _NbFans;
 	return _Owner->getSize() * _NbFans;
@@ -264,18 +273,21 @@ uint32 CPSFanLight::getNumWantedTris() const
 ///====================================================================================
 bool CPSFanLight::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSFanLight_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
 ///====================================================================================
 bool CPSFanLight::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSFanLight_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 ///====================================================================================
 void CPSFanLight::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSFanLight_newElement)
 	newColorElement(info);
 	newSizeElement(info);
 	newAngle2DElement(info);
@@ -284,6 +296,7 @@ void CPSFanLight::newElement(const CPSEmitterInfo &info)
 ///====================================================================================
 void CPSFanLight::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSFanLight_deleteElement)
 	deleteColorElement(index);
 	deleteSizeElement(index);
 	deleteAngle2DElement(index);
@@ -292,12 +305,14 @@ void CPSFanLight::deleteElement(uint32 index)
 ///====================================================================================
 void CPSFanLight::setPhaseSpeed(float multiplier)
 {
+	NL_PS_FUNC(CPSFanLight_setPhaseSpeed)
 	_PhaseSpeed = 256.0f * multiplier;
 }
 
 ///====================================================================================
 inline void CPSFanLight::setupMaterial()
 {
+	NL_PS_FUNC(CPSFanLight_setupMaterial)
 	CParticleSystem &ps = *(_Owner->getOwner());
 	/// update material color		
 	if (_Tex == NULL)
@@ -344,9 +359,12 @@ inline void CPSFanLight::setupMaterial()
 	}	
 }
 
+
 ///====================================================================================
 void CPSFanLight::draw(bool opaque)
 {
+//	if (!FilterPS[3]) return;
+	NL_PS_FUNC(CPSFanLight_draw)
 	PARTICLES_CHECK_MEM;	
 	if (!_Owner->getSize()) return;	
 
@@ -382,6 +400,7 @@ void CPSFanLight::draw(bool opaque)
 ///====================================================================================
 void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSFanLight_serial)
 	sint ver = f.serialVersion(2);
 	CPSParticle::serial(f);
 	CPSColoredParticle::serialColorScheme(f);	
@@ -405,6 +424,7 @@ void CPSFanLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ///====================================================================================
 bool CPSFanLight::completeBBox(NLMISC::CAABBox &box) const
 {
+	NL_PS_FUNC(CPSFanLight_completeBBox)
 	// TODO
 
 	return false;
@@ -417,6 +437,7 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _NbFans(nbFans),
 										  _Tex(NULL),
 										  _PhaseSpeed(256)
 {
+	NL_PS_FUNC(CPSFanLight_CPSFanLight)
 	nlassert(nbFans >= 3);
 
 
@@ -428,22 +449,23 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _NbFans(nbFans),
 ///====================================================================================
 CPSFanLight::~CPSFanLight()
 {
+	NL_PS_FUNC(CPSFanLight_CPSFanLight)
 }
 
 
 ///====================================================================================
 void CPSFanLight::setNbFans(uint32 nbFans)
 {
+	NL_PS_FUNC(CPSFanLight_setNbFans)
 	_NbFans = nbFans;
-
 	resize(_Owner->getMaxSize());
-
 	//notifyOwnerMaxNumFacesChanged();
 }
 
 ///====================================================================================
 void CPSFanLight::resize(uint32 size)
 {	
+	NL_PS_FUNC(CPSFanLight_resize)
 	nlassert(size < (1 << 16));
 	resizeColor(size);
 	resizeAngle2D(size);
@@ -454,6 +476,7 @@ void CPSFanLight::resize(uint32 size)
 ///====================================================================================
 void CPSFanLight::init(void)
 {
+	NL_PS_FUNC(CPSFanLight_init)
 	_Mat.setLighting(false);	
 	_Mat.setZFunc(CMaterial::less);
 	_Mat.setDoubleSided(true);
@@ -465,12 +488,14 @@ void CPSFanLight::init(void)
 ///====================================================================================
 void CPSFanLight::updateMatAndVbForColor(void)
 {	
+	NL_PS_FUNC(CPSFanLight_updateMatAndVbForColor)
 	//touch();
 }
 
 ///====================================================================================
 void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 {
+	NL_PS_FUNC(CPSFanLight_getVBnIB)
 	TVBMap &vbMap = _ColorScheme ? (_Tex == NULL  ? _ColoredVBMap : _ColoredTexVBMap)
 								 : (_Tex == NULL  ? _VBMap : _TexVBMap);
 	#ifdef NL_NAMED_INDEX_BUFFER
@@ -497,7 +522,7 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 		vb.setVertexFormat(CVertexBuffer::PositionFlag |
 						   CVertexBuffer::PrimaryColorFlag |
 						   (_Tex != NULL ?  CVertexBuffer::TexCoord0Flag : 0) 
-						  );
+						  );		
 		vb.setNumVertices(size * (2 + _NbFans));
 		vb.setPreferredMemory(CVertexBuffer::AGPVolatile, true); // keep local memory because of interleaved format
 		vb.setName("CPSFanLight");
@@ -562,6 +587,7 @@ void CPSFanLight::getVBnIB(CVertexBuffer *&retVb, CIndexBuffer *&retIb)
 ///====================================================================================
 uint CPSFanLight::getNumFanlightsInVB() const
 {
+	NL_PS_FUNC(CPSFanLight_getNumFanlightsInVB)
 	const uint numRib = NumVertsInBuffer / (2 + _NbFans);
 	return std::max(1u, numRib);
 }
@@ -569,6 +595,7 @@ uint CPSFanLight::getNumFanlightsInVB() const
 ///====================================================================================
 void CPSFanLight::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {
+	NL_PS_FUNC(CPSFanLight_enumTexs)
 	if (_Tex) 
 	{	
 		dest.push_back(_Tex);

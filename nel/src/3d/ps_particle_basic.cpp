@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.15 2004/08/03 16:24:21 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.16 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,12 +48,14 @@ namespace NL3D
 CPSParticle::CPSParticle() : _DisableAutoLOD(false),
 							 _UsesGlobalColorLighting(false)
 {
+	NL_PS_FUNC(CPSParticle_CPSParticle)
 
 }
 
 //=======================================
 void CPSParticle::showTool()
 {
+	NL_PS_FUNC(CPSParticle_showTool)
 	PARTICLES_CHECK_MEM;
 
 	CVector I = CVector::I;
@@ -81,6 +83,7 @@ void CPSParticle::showTool()
 //=======================================
 void CPSParticle::computeSrcStep(uint32 &step, uint &numToProcess)
 {		
+	NL_PS_FUNC(CPSParticle_computeSrcStep)
 	nlassert(_Owner && _Owner->getOwner());
 	const CParticleSystem &ps = *(_Owner->getOwner());
 	if (_DisableAutoLOD || !ps.isAutoLODEnabled() || !ps.isSharingEnabled() || _Owner->getSize() == 0) // Should Auto-LOD be used ?
@@ -124,6 +127,7 @@ void CPSParticle::computeSrcStep(uint32 &step, uint &numToProcess)
 //=======================================
 void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 {	
+	NL_PS_FUNC(CPSColoredParticle_setColorScheme)
 	nlassert(col);
 	delete _ColorScheme;		
 	_ColorScheme = col;
@@ -134,6 +138,7 @@ void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 //=======================================
 void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 {	
+	NL_PS_FUNC(CPSColoredParticle_setColor)
 	delete _ColorScheme;
 	_ColorScheme = NULL;
 	_Color = col;
@@ -143,17 +148,20 @@ void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 //=======================================
 CPSColoredParticle::CPSColoredParticle() : _Color(CRGBA(255, 255, 255)), _ColorScheme(NULL)
 {	
+	NL_PS_FUNC(CPSColoredParticle_CPSColoredParticle)
 }
 
 //=======================================
 CPSColoredParticle::~CPSColoredParticle()
 {	
+	NL_PS_FUNC(CPSColoredParticle_CPSColoredParticleDtor)
 	delete _ColorScheme;	
 }
 
 //=======================================
 void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
+	NL_PS_FUNC(CPSColoredParticle_IStream )
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
@@ -182,6 +190,7 @@ void CPSColoredParticle::serialColorScheme(NLMISC::IStream &f) throw(NLMISC::ESt
 //=======================================
 void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
 {	
+	NL_PS_FUNC(CPSSizedParticle_setSizeScheme)
 	nlassert(size != NULL);
 	delete _SizeScheme;	
 	_SizeScheme = size;
@@ -191,6 +200,7 @@ void CPSSizedParticle::setSizeScheme(CPSAttribMaker<float> *size)
 //=======================================
 void CPSSizedParticle::setSize(float size)
 {	
+	NL_PS_FUNC(CPSSizedParticle_setSize)
 	delete _SizeScheme;
 	_SizeScheme = NULL;	
 	_ParticleSize = size;
@@ -199,17 +209,20 @@ void CPSSizedParticle::setSize(float size)
 //=======================================
 CPSSizedParticle::CPSSizedParticle() : _ParticleSize(0.3f), _SizeScheme(NULL)
 {
+	NL_PS_FUNC(CPSSizedParticle_CPSSizedParticle)
 }
 
 //=======================================
 CPSSizedParticle::~CPSSizedParticle()
 {	
+	NL_PS_FUNC(CPSSizedParticle_CPSSizedParticleDtor)
 	delete _SizeScheme;	
 }
 
 //=======================================
 void CPSSizedParticle::serialSizeScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSSizedParticle_serialSizeScheme)
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
@@ -241,6 +254,7 @@ bool CPSRotated2DParticle::_InitializedRotTab = false;
 ///===================================================================================
 void CPSRotated2DParticle::setAngle2DScheme(CPSAttribMaker<float> *angle2DScheme)
 {
+	NL_PS_FUNC(CPSRotated2DParticle_setAngle2DScheme)
 	nlassert(angle2DScheme);
 	delete _Angle2DScheme;	
 	_Angle2DScheme = angle2DScheme;
@@ -250,6 +264,7 @@ void CPSRotated2DParticle::setAngle2DScheme(CPSAttribMaker<float> *angle2DScheme
 ///===================================================================================
 void CPSRotated2DParticle::setAngle2D(float angle2DScheme)
 {	
+	NL_PS_FUNC(CPSRotated2DParticle_setAngle2D)
 	delete _Angle2DScheme;
 	_Angle2DScheme = NULL;	
 	_Angle2D = angle2DScheme;
@@ -258,17 +273,20 @@ void CPSRotated2DParticle::setAngle2D(float angle2DScheme)
 ///===================================================================================
 CPSRotated2DParticle::CPSRotated2DParticle() : _Angle2D(0), _Angle2DScheme(NULL)
 {
+	NL_PS_FUNC(CPSRotated2DParticle_CPSRotated2DParticle)
 }
 
 ///===================================================================================
 CPSRotated2DParticle::~CPSRotated2DParticle()
 {	
+	NL_PS_FUNC(CPSRotated2DParticle_CPSRotated2DParticleDtor)
 	delete _Angle2DScheme;	
 }
 
 ///===================================================================================
 void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSRotated2DParticle_serialAngle2DScheme)
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
@@ -293,6 +311,7 @@ void CPSRotated2DParticle::serialAngle2DScheme(NLMISC::IStream &f) throw(NLMISC:
 ///===================================================================================
 void CPSRotated2DParticle::initRotTable(void)
 {
+	NL_PS_FUNC(CPSRotated2DParticle_initRotTable)
 	float *ptFloat = _RotTable;
 	for (uint32 k = 0; k < 256; ++k)
 	{
@@ -315,6 +334,7 @@ void CPSRotated2DParticle::initRotTable(void)
 ///===================================================================================
 void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder)
 {
+	NL_PS_FUNC(CPSTexturedParticle_setTextureIndexScheme)
 	nlassert(animOrder);
 	nlassert(_TexGroup); // setTextureGroup must have been called before this	
 	delete _TextureIndexScheme;		
@@ -328,6 +348,7 @@ void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrde
 ///===================================================================================
 void CPSTexturedParticle::setTextureIndex(sint32 index)
 {	
+	NL_PS_FUNC(CPSTexturedParticle_setTextureIndex)
 	delete _TextureIndexScheme;	
 	_TextureIndexScheme = NULL;	
 	_TextureIndex = index;
@@ -336,6 +357,7 @@ void CPSTexturedParticle::setTextureIndex(sint32 index)
 ///===================================================================================
 void CPSTexturedParticle::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup)
 {
+	NL_PS_FUNC(CPSTexturedParticle_setTextureGroup)
 	nlassert(texGroup);
 	if (_Tex)
 	{
@@ -348,6 +370,7 @@ void CPSTexturedParticle::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> tex
 ///===================================================================================
 void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
 {	
+	NL_PS_FUNC(CPSTexturedParticle_setTexture)
 	delete _TextureIndexScheme;
 	_TextureIndexScheme = NULL;	
 	_Tex = tex;
@@ -360,17 +383,20 @@ CPSTexturedParticle::CPSTexturedParticle() : _TexGroup(NULL),
 											 _TextureIndexScheme(NULL),
 											 _TextureIndex(0)
 {
+	NL_PS_FUNC(CPSTexturedParticle_CPSTexturedParticle)
 }
 
 ///===================================================================================
 CPSTexturedParticle::~CPSTexturedParticle()
 {	
+	NL_PS_FUNC(CPSTexturedParticle_CPSTexturedParticleDtor)
 	delete _TextureIndexScheme;	
 }
 
 ///===================================================================================
 void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSTexturedParticle_serialTextureScheme)
 	f.serialVersion(1);	
 	if (f.isReading())
 	{
@@ -438,6 +464,7 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 ///===================================================================================
 void CPSRotated3DPlaneParticle::setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> *basisMaker)
 {
+	NL_PS_FUNC(CPSRotated3DPlaneParticle_setPlaneBasisScheme)
 	nlassert(basisMaker);
 	delete _PlaneBasisScheme;	
 	_PlaneBasisScheme = basisMaker;
@@ -447,6 +474,7 @@ void CPSRotated3DPlaneParticle::setPlaneBasisScheme(CPSAttribMaker<CPlaneBasis> 
 ///===================================================================================
 void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
 {	
+	NL_PS_FUNC(CPSRotated3DPlaneParticle_setPlaneBasis)
 	delete _PlaneBasisScheme;		
 	_PlaneBasisScheme = NULL;	
 	_PlaneBasis = basis;
@@ -455,6 +483,7 @@ void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
 ///===================================================================================
 CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _PlaneBasisScheme(NULL)														
 {
+	NL_PS_FUNC(CPSRotated3DPlaneParticle_CPSRotated3DPlaneParticle)
 	_PlaneBasis.X = CVector::I;
 	_PlaneBasis.Y = CVector::J;
 }
@@ -462,12 +491,14 @@ CPSRotated3DPlaneParticle::CPSRotated3DPlaneParticle() : _PlaneBasisScheme(NULL)
 ///===================================================================================
 CPSRotated3DPlaneParticle::~CPSRotated3DPlaneParticle()
 {	
+	NL_PS_FUNC(CPSRotated3DPlaneParticle_CPSRotated3DPlaneParticleDtor)
 	delete _PlaneBasisScheme;	
 }
 
 ///===================================================================================
 void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSRotated3DPlaneParticle_serialPlaneBasisScheme)
 	f.serialVersion(1);	
 	f.serialPolyPtr(_PlaneBasisScheme);	
 	bool usePlaneBasisScheme = _PlaneBasisScheme != NULL;	
@@ -484,6 +515,7 @@ void CPSRotated3DPlaneParticle::serialPlaneBasisScheme(NLMISC::IStream &f) throw
 ///===================================================================================
 CPSMaterial::CPSMaterial()
 {
+	NL_PS_FUNC(CPSMaterial_CPSMaterial)
 	_Mat.setBlend(true);
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one);
 	_Mat.setZWrite(false);	
@@ -492,6 +524,7 @@ CPSMaterial::CPSMaterial()
 ///===================================================================================
 void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
+	NL_PS_FUNC(CPSMaterial_IStream )
 	// version 3 : added zbias
 	sint ver = f.serialVersion(3);	
 	TBlendingMode m = getBlendingMode();
@@ -524,18 +557,21 @@ void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ///===================================================================================
 void CPSMaterial::enableZTest(bool enabled)
 {
+	NL_PS_FUNC(CPSMaterial_enableZTest)
 	_Mat.setZFunc(enabled ? CMaterial::less : CMaterial::always);
 }
 
 ///===================================================================================
 bool CPSMaterial::isZTestEnabled() const
 {
+	NL_PS_FUNC(CPSMaterial_isZTestEnabled)
 	return _Mat.getZFunc() != CMaterial::always;
 }
 
 ///===================================================================================
 void CPSMaterial::setBlendingMode(CPSMaterial::TBlendingMode mode)
 {
+	NL_PS_FUNC(CPSMaterial_setBlendingMode)
 	switch (mode)
 	{		
 		case add:
@@ -567,6 +603,7 @@ void CPSMaterial::setBlendingMode(CPSMaterial::TBlendingMode mode)
 ///===================================================================================
 CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
 {
+	NL_PS_FUNC(CPSMaterial_getBlendingMode)
 	if (_Mat.getBlend())
 	{
 		CMaterial::TBlend srcBlend = _Mat.getSrcBlend();	
@@ -589,6 +626,7 @@ CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
 ///===================================================================================
 void CPSMaterial::forceModulateConstantColor(bool force, const NLMISC::CRGBA &col)
 {
+	NL_PS_FUNC(CPSMaterial_forceModulateConstantColor)
 	if (force)
 	{
 		/// TODO : caching..
@@ -614,6 +652,7 @@ void CPSMaterial::forceModulateConstantColor(bool force, const NLMISC::CRGBA &co
 ///===================================================================================
 void CPSMaterial::forceTexturedMaterialStages(uint numStages)
 {
+	NL_PS_FUNC(CPSMaterial_forceTexturedMaterialStages)
 	ITexture *blankTex = NULL;
 	uint k;
 	for (k = 0; k < numStages; ++k)
@@ -647,11 +686,13 @@ bool CPSMultiTexturedParticle::_ForceBasicCaps  = false;
 //=======================================
 CPSMultiTexturedParticle::CPSMultiTexturedParticle() : _MultiTexState(TouchFlag), _BumpFactor(1.f)
 {	
+	NL_PS_FUNC(CPSMultiTexturedParticle_CPSMultiTexturedParticle)
 }
 
 //=======================================
 void	CPSMultiTexturedParticle::enableMultiTexture(bool enabled /*= true*/)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_enableMultiTexture)
 	if (isMultiTextureEnabled() == enabled) return;
 	if (!enabled)
 	{
@@ -672,6 +713,7 @@ void	CPSMultiTexturedParticle::enableMultiTexture(bool enabled /*= true*/)
 //=======================================
 void	CPSMultiTexturedParticle::enableAlternateTex(bool enabled /*= true*/)
 {	
+	NL_PS_FUNC(CPSMultiTexturedParticle_enableAlternateTex)
 	nlassert(isMultiTextureEnabled()); // multitexturing must have been enabled first
 	if (enabled == isAlternateTexEnabled()) return;
 
@@ -693,6 +735,7 @@ void	CPSMultiTexturedParticle::enableAlternateTex(bool enabled /*= true*/)
 //=======================================
 void	CPSMultiTexturedParticle::serialMultiTex(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_serialMultiTex)
 	/// version 1 : bump factor
 	sint ver = f.serialVersion(1);
 	f.serial(_MultiTexState);
@@ -749,6 +792,7 @@ void	CPSMultiTexturedParticle::serialMultiTex(NLMISC::IStream &f) throw(NLMISC::
 //=======================================
 void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver, CMaterial &mat, CVertexBuffer &vb)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_setupMaterial)
 	/// if bump is used, the matrix must be setupped each time (not a material field)
 	if (!_ForceBasicCaps && isMultiTextureEnabled() && _MainOp  == EnvBumpMap)
 	{
@@ -865,6 +909,7 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 //=======================================
 void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat, IDriver &drv)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_setupMultiTexEnv)
 	switch (op)
 	{
 		case Add:			
@@ -948,6 +993,7 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 //=====static func to convert a texture to a bumpmap
 static void ConvertToBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 {
+	NL_PS_FUNC(ConvertToBumpMap)
 	if (!dynamic_cast<CTextureBump *>( (ITexture *) ptr))
 	{
 		// convert to a bumpmap
@@ -962,6 +1008,7 @@ static void ConvertToBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 //=====static func to convert a bumpmap to a texture (its heightmap)
 static void ConvertFromBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 {
+	NL_PS_FUNC(ConvertFromBumpMap)
 	CTextureBump *bm = dynamic_cast<CTextureBump *>( (ITexture *) ptr);
 	if (bm)
 	{
@@ -974,6 +1021,7 @@ static void ConvertFromBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 //=========================================
 void	CPSMultiTexturedParticle::setTexture2Alternate(ITexture *tex)
 { 
+	NL_PS_FUNC(CPSMultiTexturedParticle_setTexture2Alternate)
 	_AlternateTexture2 = tex;
 	if (_AlternateOp != EnvBumpMap)
 	{		
@@ -989,6 +1037,7 @@ void	CPSMultiTexturedParticle::setTexture2Alternate(ITexture *tex)
 //==========================================
 void	CPSMultiTexturedParticle::setTexture2(ITexture *tex) 
 { 
+	NL_PS_FUNC(CPSMultiTexturedParticle_setTexture2)
 	_Texture2 = tex;
 	if (_MainOp != EnvBumpMap)
 	{		
@@ -1007,6 +1056,7 @@ void	CPSMultiTexturedParticle::setTexture2(ITexture *tex)
 //==========================================
 void	CPSMultiTexturedParticle::setMainTexOp(TOperator op)
 { 
+	NL_PS_FUNC(CPSMultiTexturedParticle_setMainTexOp)
 	_MainOp = op;
 	if (_MainOp == EnvBumpMap)
 	{
@@ -1022,6 +1072,7 @@ void	CPSMultiTexturedParticle::setMainTexOp(TOperator op)
 //==========================================
 void	CPSMultiTexturedParticle::setAlternateTexOp(TOperator op)
 { 
+	NL_PS_FUNC(CPSMultiTexturedParticle_setAlternateTexOp)
 	_AlternateOp = op;
 	if (_AlternateOp == EnvBumpMap)
 	{
@@ -1039,6 +1090,7 @@ void	CPSMultiTexturedParticle::setAlternateTexOp(TOperator op)
 //==========================================
 void	CPSMultiTexturedParticle::setUseLocalDate(bool use)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_setUseLocalDate)
 	if (use) _MultiTexState |= ScrollUseLocalDate;
 	else _MultiTexState &= ~ ScrollUseLocalDate;
 }
@@ -1047,6 +1099,7 @@ void	CPSMultiTexturedParticle::setUseLocalDate(bool use)
 //==========================================
 void	CPSMultiTexturedParticle::setUseLocalDateAlt(bool use)
 {
+	NL_PS_FUNC(CPSMultiTexturedParticle_setUseLocalDateAlt)
 	if (use) _MultiTexState |= ScrollUseLocalDateAlternate;
 	else _MultiTexState &= ~ ScrollUseLocalDateAlternate;
 }
@@ -1054,6 +1107,7 @@ void	CPSMultiTexturedParticle::setUseLocalDateAlt(bool use)
 //==========================================
 void CPSTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest)
 {
+	NL_PS_FUNC(CPSTexturedParticle_enumTexs)
 	if (_Tex) 
 	{
 		dest.push_back(_Tex);
@@ -1067,6 +1121,7 @@ void CPSTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &de
 //==========================================
 void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {	
+	NL_PS_FUNC(CPSMultiTexturedParticle_enumTexs)
 	if (_MainOp  == EnvBumpMap && !_ForceBasicCaps)
 	{
 		if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture) || drv.supportEMBM())
@@ -1085,6 +1140,7 @@ void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> 
 //*****************************************************************************************************
 bool CPSMultiTexturedParticle::isAlternateTextureUsed(IDriver &driver) const
 { 
+	NL_PS_FUNC(CPSMultiTexturedParticle_isAlternateTextureUsed)
 	if (!isTouched() && areBasicCapsForcedLocal() == areBasicCapsForced()) return (_MultiTexState & AlternateTextureUsed) != 0; 		
 	if (_MainOp  != EnvBumpMap) return false;
 	return _ForceBasicCaps || (!driver.isTextureAddrModeSupported(CMaterial::OffsetTexture) && !driver.supportEMBM());

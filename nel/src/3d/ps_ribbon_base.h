@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.11 2004/08/03 16:23:30 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.12 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,7 @@ private:
 //=======================================================
 inline const NLMISC::CMatrix &CPSRibbonBase::getLocalToWorldTrailMatrix() const
 {
+	NL_PS_FUNC(CPSRibbonBase_getLocalToWorldTrailMatrix)
 	#ifdef NL_DEBUG
 		nlassert(_Owner);
 		nlassert(_Owner->getOwner());
@@ -221,6 +222,7 @@ inline const NLMISC::CMatrix &CPSRibbonBase::getLocalToWorldTrailMatrix() const
 // Convert matrix mode to the TPSMatrixMode enum.
 inline TPSMatrixMode CPSRibbonBase::convertMatrixMode() const
 {
+	NL_PS_FUNC(CPSRibbonBase_convertMatrixMode)
 	if (_MatrixMode == FatherMatrix)
 	{
 		#ifdef NL_DEBUG

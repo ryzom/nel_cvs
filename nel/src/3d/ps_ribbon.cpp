@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.21 2004/08/17 07:46:23 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.22 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ CPSRibbon::TVBMap CPSRibbon::_VBMaps[16];
 /// private use : this create a gradient texture that goew from black to white
 static ITexture *CreateGradientTexture()
 {
+	NL_PS_FUNC(CreateGradientTexture)
 	std::auto_ptr<CTextureMem> tex(new CTextureMem((uint8 *) &GradientB2W,
 												   sizeof(GradientB2W),
 												   false, /* dont delete */
@@ -142,6 +143,7 @@ struct CDummy2DAngle : CPSRotated2DParticle
 ///==================================================================================================================
 void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSRibbon_serial)
 	// Version 3 : - added brace mode
 	//             - added orientation enum
 	sint ver = f.serialVersion(3);
@@ -273,6 +275,7 @@ CPSRibbon::CPSRibbon() : _UFactor(1.f),
 						 _Lighted(false),
 						 _ForceLighted(false)
 {
+	NL_PS_FUNC(CPSRibbon_CPSRibbon)
 	setInterpolationMode(Linear);
 	setSegDuration(0.06f);
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Ribbon");
@@ -284,12 +287,14 @@ CPSRibbon::CPSRibbon() : _UFactor(1.f),
 //=======================================================	
 CPSRibbon::~CPSRibbon()
 {
+	NL_PS_FUNC(CPSRibbon_CPSRibbonDtor)
 }
 
 
 //==========================================================================	
 inline uint CPSRibbon::getNumVerticesInSlice() const
 {
+	NL_PS_FUNC(CPSRibbon_getNumVerticesInSlice)
 	if (_BraceMode)
 	{
 		return _Shape.size();
@@ -307,6 +312,7 @@ inline uint CPSRibbon::getNumVerticesInSlice() const
 //=======================================================	
 void CPSRibbon::step(TPSProcessPass pass)
 {	
+	NL_PS_FUNC(CPSRibbon_step)
 	if (pass == PSMotion)
 	{	
 		if (!_Parametric)
@@ -354,6 +360,7 @@ void CPSRibbon::step(TPSProcessPass pass)
 //=======================================================	
 void CPSRibbon::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSRibbon_newElement)
 	CPSRibbonBase::newElement(info);
 	newColorElement(info);
 	newSizeElement(info);
@@ -363,6 +370,7 @@ void CPSRibbon::newElement(const CPSEmitterInfo &info)
 //=======================================================	
 void CPSRibbon::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSRibbon_deleteElement)
 	CPSRibbonBase::deleteElement(index);
 	deleteColorElement(index);	
 	deleteSizeElement(index);	
@@ -372,6 +380,7 @@ void CPSRibbon::deleteElement(uint32 index)
 //=======================================================	
 void CPSRibbon::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSRibbon_resize)
 	nlassert(size < (1 << 16));
 	CPSRibbonBase::resize(size);	
 	resizeColor(size);
@@ -381,6 +390,7 @@ void CPSRibbon::resize(uint32 size)
 //=======================================================	
 void CPSRibbon::updateMatAndVbForColor(void)
 {
+	NL_PS_FUNC(CPSRibbon_updateMatAndVbForColor)
 	touch();
 }
 
@@ -392,7 +402,8 @@ static inline uint8 *BuildRibbonFirstSlice(const NLMISC::CVector &pos,
 										   uint8 *dest,
 										   uint  vertexSize
 									      )
-{	
+{
+	NL_PS_FUNC(BuildRibbonFirstSlice)
 	do
 	{
 		* (NLMISC::CVector *) dest = pos;
@@ -414,7 +425,8 @@ static inline uint8 *ComputeRibbonSliceFollowPath(const NLMISC::CVector &prev,
 										float size,
 										NLMISC::CMatrix &basis
 									   )
-{	
+{
+	NL_PS_FUNC(ComputeRibbonSliceFollowPath)
 	// compute a basis from the next and previous position.
 	// (not optimized for now, but not widely used, either...)		
 	const float epsilon = 10E-5f;	
@@ -448,7 +460,8 @@ static inline uint8 *ComputeRibbonSliceIdentity(const NLMISC::CVector &prev,
 											   uint  vertexSize,
 											   float size
 											  )
-{		
+{
+	NL_PS_FUNC(ComputeRibbonSliceIdentity)
 	const NLMISC::CVector *shapeEnd = shape + numVerts;
 	do
 	{		
@@ -472,7 +485,8 @@ static inline uint8 *ComputeRibbonSliceFollowPathXY(const NLMISC::CVector &prev,
 												  float size,
 												  NLMISC::CMatrix &basis
 												  )
-{	
+{
+	NL_PS_FUNC(ComputeRibbonSliceFollowPathXY)
 	float deltaX = next.x - prev.x;
 	float deltaY = next.y - prev.y;
 	const float epsilon = 10E-5f;
@@ -514,7 +528,8 @@ static inline uint8 *ComputeUntexturedRibbonMesh(uint8 *destVb,
 												 float size,
 												 CPSRibbon::TOrientation orientation
 												)
-{			
+{
+	NL_PS_FUNC(ComputeUntexturedRibbonMesh)
 	CMatrix basis;
 	basis.scale(0);
 	switch(orientation)
@@ -587,7 +602,8 @@ static inline uint8 *ComputeTexturedRibbonMesh(uint8 *destVb,
 											   float size,
 											   CPSRibbon::TOrientation orientation
 											  )
-{	
+{
+	NL_PS_FUNC(ComputeTexturedRibbonMesh)
 	CMatrix basis;
 	basis.scale(0);	
 	switch(orientation)
@@ -664,6 +680,8 @@ static inline uint8 *ComputeTexturedRibbonMesh(uint8 *destVb,
 //==========================================================================	
 void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 {	
+//	if (!FilterPS[5]) return;
+	NL_PS_FUNC(CPSRibbon_displayRibbons)
 	if (!nbRibbons) return;
 	nlassert(_Owner);	
 	CPSRibbonBase::updateLOD();
@@ -885,6 +903,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 //==========================================================================	
 bool CPSRibbon::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSRibbon_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
@@ -892,12 +911,14 @@ bool CPSRibbon::hasTransparentFaces(void)
 //==========================================================================	
 bool CPSRibbon::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSRibbon_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 //==========================================================================	
 uint32 CPSRibbon::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSRibbon_getNumWantedTris)
 	nlassert(_Owner);
 	//return _Owner->getMaxSize() * _NbSegs;
 	return _Owner->getSize() * _NbSegs;
@@ -906,6 +927,7 @@ uint32 CPSRibbon::getNumWantedTris() const
 //==========================================================================	
 CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 {
+	NL_PS_FUNC(CPSRibbon_getVBnPB)
 	// TODO : vb pointer caching ?
 	// TODO : better vb reuse ?
 	/// choose the right vb by building an index for lookup into 'vbMaps' defined above
@@ -1084,6 +1106,7 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 //==========================================================================	
 uint	CPSRibbon::getNumRibbonsInVB() const
 {
+	NL_PS_FUNC(CPSRibbon_getNumRibbonsInVB)
 	const uint numVerticesInSlice = getNumVerticesInSlice(); /// 1 vertex added for textured ribbon (to avoid texture stretching)
 	const uint vertexInVB = 512;	
 	return std::max(1u, (uint) (vertexInVB / (numVerticesInSlice * (_UsedNbSegs + 1))));
@@ -1093,6 +1116,7 @@ uint	CPSRibbon::getNumRibbonsInVB() const
 //==========================================================================	
 inline void	CPSRibbon::updateUntexturedMaterial()
 {
+	NL_PS_FUNC(CPSRibbon_updateUntexturedMaterial)
 	///////////////////////
 	// UNTEXTURED RIBBON //
 	///////////////////////
@@ -1161,6 +1185,7 @@ inline void	CPSRibbon::updateUntexturedMaterial()
 //==========================================================================	
 inline void	CPSRibbon::updateTexturedMaterial()
 {
+	NL_PS_FUNC(CPSRibbon_updateTexturedMaterial)
 	/////////////////////
 	// TEXTURED RIBBON //
 	/////////////////////
@@ -1247,6 +1272,7 @@ inline void	CPSRibbon::updateTexturedMaterial()
 //==========================================================================	
 void	CPSRibbon::updateMaterial()
 {
+	NL_PS_FUNC(CPSRibbon_updateMaterial)
 	if (!_Touch) return;
 	if (_Tex != NULL) 
 	{
@@ -1264,6 +1290,7 @@ void	CPSRibbon::updateMaterial()
 //==========================================================================	
 inline void	CPSRibbon::setupUntexturedGlobalColor()
 {	
+	NL_PS_FUNC(CPSRibbon_setupUntexturedGlobalColor)
 	/// setup the global color if it is used
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)
@@ -1306,6 +1333,7 @@ inline void	CPSRibbon::setupUntexturedGlobalColor()
 //==========================================================================	
 inline void	CPSRibbon::setupTexturedGlobalColor()
 {	
+	NL_PS_FUNC(CPSRibbon_setupTexturedGlobalColor)
 	/// setup the global color if it is used
 	CParticleSystem &ps = *(_Owner->getOwner());	
 	if (_ColorScheme)
@@ -1380,6 +1408,7 @@ inline void	CPSRibbon::setupTexturedGlobalColor()
 //==========================================================================	
 void	CPSRibbon::setupGlobalColor()
 {
+	NL_PS_FUNC(CPSRibbon_setupGlobalColor)
 	if (_Tex != NULL) setupTexturedGlobalColor();
 		else setupUntexturedGlobalColor();
 }
@@ -1387,6 +1416,7 @@ void	CPSRibbon::setupGlobalColor()
 //==========================================================================	
 void CPSRibbon::setupTextureMatrix()
 {
+	NL_PS_FUNC(CPSRibbon_setupTextureMatrix)
 	uint stage = (_ColorScheme != NULL && _ColorFading == true) ? 1 : 0;	
 	if (_UFactor != 1.f || _VFactor != 1.f)
 	{
@@ -1409,6 +1439,7 @@ void CPSRibbon::setupTextureMatrix()
 ///==================================================================================================================
 void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape, bool braceMode)
 {
+	NL_PS_FUNC(CPSRibbon_setShape)
 	if (!braceMode)
 	{	
 		nlassert(nbPointsInShape >= 3);
@@ -1426,12 +1457,14 @@ void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape, bool brac
 ///==================================================================================================================
 void CPSRibbon::getShape(CVector *shape) const
 {
+	NL_PS_FUNC(CPSRibbon_getShape)
 	std::copy(_Shape.begin(), _Shape.end(), shape);
 }
 
 ///==================================================================================================================
 void CPSRibbon::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {
+	NL_PS_FUNC(CPSRibbon_enumTexs)
 	if (_Tex) 
 	{
 		dest.push_back(_Tex);

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.36 2004/07/20 12:24:44 vizerie Exp $
+ * $Id: ps_located.h,v 1.37 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	virtual ~CPSLocated();
 
 	// from CParticleSystemProcess
-	virtual bool isLocated() const { return true; }
+	virtual bool isLocated() const { NL_PS_FUNC(isLocated); return true; }
 
 	/** attach a bindable object to this located, such as a force or a particle
 	  * a bindable must be attached only once (-> nlassert)
@@ -166,7 +166,7 @@ public:
 	/**
 	* count the number of bound objects
 	*/
-	uint32 getNbBoundObjects(void) const { return _LocatedBoundCont.size(); }
+	uint32 getNbBoundObjects(void) const { NL_PS_FUNC(getNbBoundObjects); return _LocatedBoundCont.size(); }
 
 	/**
 	* get a pointer to a bound object (const version)
@@ -359,7 +359,8 @@ public:
 	 *	\see resize()
 	 */
 	uint32 getMaxSize(void) const 
-	{ 
+	{
+		NL_PS_FUNC(getMaxSize)
 		return _MaxSize; 
 	}
 	

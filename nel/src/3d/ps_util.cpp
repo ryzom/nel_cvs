@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.41 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_util.cpp,v 1.42 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,7 @@ float CPSUtil::_PerlinNoiseTab[1024];
 //==========================================================================
 void CPSUtil::initPerlinNoiseTable(void)
 {
+	NL_PS_FUNC(CPSUtil_initPerlinNoiseTable)
 	for (uint32 k = 0; k < 1024; ++k)
 	{
 		_PerlinNoiseTab[k] = (rand() % 30000) / 30000.f; 
@@ -82,6 +83,7 @@ void CPSUtil::initPerlinNoiseTable(void)
 //==========================================================================
 void CPSUtil::initFastCosNSinTable(void)
 {
+	NL_PS_FUNC(CPSUtil_initFastCosNSinTable)
 	for (uint32 k = 0; k < 256; k++)
 	{
 		const float angle =  k / 256.0f * 2.0f * float(NLMISC::Pi); 
@@ -96,6 +98,7 @@ void CPSUtil::initFastCosNSinTable(void)
 //==========================================================================
 void CPSUtil::registerSerialParticleSystem(void)
 {				
+	NL_PS_FUNC(CPSUtil_registerSerialParticleSystem)
 		NLMISC_REGISTER_CLASS(CPSLocated); 										
 		NLMISC_REGISTER_CLASS(CParticleSystemShape);		
 		NLMISC_REGISTER_CLASS(CPSSound);
@@ -117,6 +120,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 //==========================================================================
 void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col /* = NLMISC::CRGBA::White */)
 {	
+	NL_PS_FUNC(CPSUtil_displayBBox)
 	CVector max = box.getMax()
 			,min = box.getMin();
 	CVertexBuffer vb;
@@ -177,6 +181,7 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 //==========================================================================
 void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2)
 {
+	NL_PS_FUNC(CPSUtil_displayArrow)
 
 	const float coneSize = size * 0.1f;
 
@@ -233,6 +238,7 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 //==========================================================================
 void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
 {
+	NL_PS_FUNC(CPSUtil_displayBasis)
 	CMaterial material;
 
 	driver->setupModelMatrix(modelMat);
@@ -256,6 +262,7 @@ void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMIS
 //==========================================================================
 void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size, NLMISC::CRGBA col /*= NLMISC::CRGBA::White*/)
 {
+	NL_PS_FUNC(CPSUtil_print)
 	nlassert((&fg) && (&fm));	
 	CComputedString cptedString;	
 	fm.computeString ( text,
@@ -278,9 +285,8 @@ void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg
 //==========================================================================
 void CPSUtil::buildSchmidtBasis(const CVector &k_, NLMISC::CMatrix &result)
 {
+	NL_PS_FUNC(CPSUtil_buildSchmidtBasis)
 	const float epsilon = 10E-4f;
-
-
 	CVector k = k_;
 	k.normalize();
 	CVector i;
@@ -307,6 +313,7 @@ void CPSUtil::buildSchmidtBasis(const CVector &k_, NLMISC::CMatrix &result)
 //==========================================================================
 void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv, CRGBA color)
 {
+	NL_PS_FUNC(CPSUtil_displaySphere)
 	uint x, y, k;
 	CVector p, p1, p2;
 	
@@ -353,6 +360,7 @@ void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center
 //==========================================================================
 void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv, CRGBA color)
 {
+	NL_PS_FUNC(CPSUtil_displayDisc)
 	// not optimized, but for edition only
 	float thetaDelta = (float) NLMISC::Pi * 2.f / nbSubdiv;
 	float theta = 0.f;
@@ -372,6 +380,7 @@ void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, 
 //==========================================================================
 void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv, CRGBA color)
 {
+	NL_PS_FUNC(CPSUtil_displayCylinder)
 	// not optimized, but for edition only
 	float thetaDelta = (float) NLMISC::Pi * 2.f / nbSubdiv;
 	float theta = 0.f;
@@ -405,6 +414,7 @@ void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMat
 void CPSUtil::display3DQuad(IDriver &driver, const CVector &c1, const CVector &c2
 								,const CVector &c3,  const CVector &c4, CRGBA color)
 {
+	NL_PS_FUNC(CPSUtil_display3DQuad)
 	CDRU::drawLine(c1, c2, color, driver);
 	CDRU::drawLine(c2, c3, color, driver);
 	CDRU::drawLine(c3, c4, color, driver);

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.21 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.22 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,17 +54,20 @@ CPSRibbonLookAt::TVBMap		CPSRibbonLookAt::_ColoredVBMap;  // index buffer + colo
 //=======================================================	
 CPSRibbonLookAt::CPSRibbonLookAt()
 {
+	NL_PS_FUNC(CPSRibbonLookAt_CPSRibbonLookAt)
 }
 
 //=======================================================	
 CPSRibbonLookAt::~CPSRibbonLookAt()
 {
+	NL_PS_FUNC(CPSRibbonLookAt_CPSRibbonLookAtDtor)
 //	delete _DyingRibbons;
 }
 
 //=======================================================	
 void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_serial)
 	/** Version 4 : added CPSRibbonBase has a base class instead of CPSParticle
 	  * 
 	  */
@@ -116,6 +119,7 @@ void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //=======================================================	
 void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_setTexture)
 	_Tex = tex;
 	if (_Tex)
 	{	
@@ -129,6 +133,7 @@ void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 //=======================================================	
 void CPSRibbonLookAt::step(TPSProcessPass pass)
 {	
+	NL_PS_FUNC(CPSRibbonLookAt_step)
 	if (pass == PSMotion)
 	{		
 		if (!_Parametric)
@@ -173,6 +178,7 @@ void CPSRibbonLookAt::step(TPSProcessPass pass)
 //=======================================================	
 void CPSRibbonLookAt::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_newElement)
 	CPSRibbonBase::newElement(info);
 	newColorElement(info);
 	newSizeElement(info);
@@ -182,6 +188,7 @@ void CPSRibbonLookAt::newElement(const CPSEmitterInfo &info)
 //=======================================================	
 void CPSRibbonLookAt::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_deleteElement)
 	CPSRibbonBase::deleteElement(index);
 	deleteColorElement(index);
 	deleteSizeElement(index);	
@@ -191,6 +198,7 @@ void CPSRibbonLookAt::deleteElement(uint32 index)
 //=======================================================	
 void CPSRibbonLookAt::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_resize)
 	nlassert(size < (1 << 16));
 	CPSRibbonBase::resize(size);	
 	resizeColor(size);
@@ -200,12 +208,14 @@ void CPSRibbonLookAt::resize(uint32 size)
 //=======================================================	
 void CPSRibbonLookAt::updateMatAndVbForColor(void)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_updateMatAndVbForColor)
 	_Mat.setTexture(0, _Tex);
 }
 
 //=======================================================	
 static inline void MakeProj(NLMISC::CVector &dest, const NLMISC::CVector &src)
-{		
+{
+	NL_PS_FUNC(MakeProj)
 	if (fabsf(src.y) > NormEpsilon * NormEpsilon)
 	{
 		dest.x = src.x / src.y;
@@ -223,6 +233,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 							  float ribSize)
 /// TODO: some optimisation to get a better speed
 {
+	NL_PS_FUNC(BuildSlice)
 	CHECK_VERTEX_BUFFER(vb, currVert);
 	CHECK_VERTEX_BUFFER(vb, currVert);
 	NLMISC::CVector tangent;
@@ -329,6 +340,8 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 //==========================================================================	
 void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 {	
+//	if (!FilterPS[6]) return;
+	NL_PS_FUNC(CPSRibbonLookAt_displayRibbons)
 	if (!nbRibbons) return;
 	nlassert(_Owner);	
 	CPSRibbonBase::updateLOD();
@@ -525,6 +538,7 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 //==========================================================================	
 bool CPSRibbonLookAt::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
@@ -532,12 +546,14 @@ bool CPSRibbonLookAt::hasTransparentFaces(void)
 //==========================================================================	
 bool CPSRibbonLookAt::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 //==========================================================================	
 uint32 CPSRibbonLookAt::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSRibbonLookAt_getNumWantedTris)
 	nlassert(_Owner);
 	//return _Owner->getMaxSize() * _NbSegs * 2;	
 	return _Owner->getSize() * _NbSegs * 2;
@@ -548,6 +564,7 @@ uint32 CPSRibbonLookAt::getNumWantedTris() const
 //==========================================================================	
 CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 {
+	NL_PS_FUNC(CPSRibbonLookAt_getVBnPB)
 	TVBMap &map = _ColorScheme ? _VBMap : _ColoredVBMap;	
 	TVBMap::iterator it = map.find(_UsedNbSegs + 1);
 	if (it != map.end())
@@ -600,6 +617,7 @@ CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
 //==========================================================================	
 uint	CPSRibbonLookAt::getNumRibbonsInVB() const
 {
+	NL_PS_FUNC(CPSRibbonLookAt_getNumRibbonsInVB)
 	/// approximation of the max number of vertices we want in a vb
 	const uint vertexInVB = 256;	
 	return std::max(1u, (uint) (vertexInVB / (_UsedNbSegs + 1)));
@@ -608,6 +626,7 @@ uint	CPSRibbonLookAt::getNumRibbonsInVB() const
 //==========================================================================	
 void CPSRibbonLookAt::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {
+	NL_PS_FUNC(CPSRibbonLookAt_enumTexs)
 	if (_Tex) 
 	{
 		dest.push_back(_Tex);

@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.32 2004/06/01 16:23:39 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.33 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ CPSSound::CPSSound() : _Gain(1.f),
 					   _SoundReactivated(false),
 					   _UseOriginalPitch(false)
 {
+	NL_PS_FUNC(CPSSound_CPSSound)
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("sound");
 	_SoundName = NLMISC::CStringMapper::emptyId();
 }
@@ -57,6 +58,7 @@ CPSSound::CPSSound() : _Gain(1.f),
 //***************************************************************************************************
 void	CPSSound::stopSound()
 {
+	NL_PS_FUNC(CPSSound_stopSound)
 	_SoundReactivated = false;
 	if (_SoundStopped) return;
 	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
@@ -77,6 +79,7 @@ void	CPSSound::stopSound()
 //***************************************************************************************************
 void	CPSSound::reactivateSound()
 {
+	NL_PS_FUNC(CPSSound_reactivateSound)
 	//if (!_SoundStopped) return;	
 	_SoundReactivated  = true;
 }
@@ -84,6 +87,7 @@ void	CPSSound::reactivateSound()
 //***************************************************************************************************
 void CPSSound::removeAllSources(void)
 {
+	NL_PS_FUNC(CPSSound_removeAllSources)
 	const sint32 size = _Sounds.getSize();
 	// delete all sounds, and rebuild them all						
 	for (sint32 k = size - 1; k >= 0; --k)
@@ -95,6 +99,7 @@ void CPSSound::removeAllSources(void)
 //***************************************************************************************************
 CPSSound::~CPSSound()
 {
+	NL_PS_FUNC(CPSSound_CPSSound)
 	removeAllSources();
 	delete _GainScheme;	
 	delete _PitchScheme;	
@@ -103,6 +108,7 @@ CPSSound::~CPSSound()
 //***************************************************************************************************
 uint32			CPSSound::getType(void) const
 { 
+	NL_PS_FUNC(CPSSound_getType)
 	return PSSound; 
 }
 
@@ -111,6 +117,7 @@ uint32			CPSSound::getType(void) const
 //***************************************************************************************************
 void			CPSSound::step(TPSProcessPass pass)
 {
+	NL_PS_FUNC(CPSSound_step)
 	if (pass != PSMotion) return;
 	const uint32 size = _Owner->getSize();	
 	if (!size) return;	
@@ -217,6 +224,7 @@ void			CPSSound::step(TPSProcessPass pass)
 //***************************************************************************************************
 void	CPSSound::setGain(float Gain)
 {
+	NL_PS_FUNC(CPSSound_setGain)
 	delete _GainScheme;
 	_GainScheme = NULL;
 	_Gain = Gain;	
@@ -225,6 +233,7 @@ void	CPSSound::setGain(float Gain)
 //***************************************************************************************************
 void	CPSSound::setGainScheme(CPSAttribMaker<float> *Gain)
 {
+	NL_PS_FUNC(CPSSound_setGainScheme)
 	delete _GainScheme;
 	_GainScheme = Gain;	
 	if (_Owner)
@@ -236,6 +245,7 @@ void	CPSSound::setGainScheme(CPSAttribMaker<float> *Gain)
 //***************************************************************************************************
 void	CPSSound::setPitch(float pitch)
 {
+	NL_PS_FUNC(CPSSound_setPitch)
 	delete _PitchScheme;
 	_PitchScheme = NULL;
 	_Pitch = pitch;
@@ -244,6 +254,7 @@ void	CPSSound::setPitch(float pitch)
 //***************************************************************************************************
 void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 {
+	NL_PS_FUNC(CPSSound_setPitchScheme)
 	delete _PitchScheme;	
 	_PitchScheme = pitch;
 	if (_Owner)
@@ -255,6 +266,7 @@ void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 //***************************************************************************************************
 void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSSound_serial)
 	CPSLocatedBindable::serial(f);
 	// version 3 : added option to keep original pitch from the .sound
 	sint ver = f.serialVersion(3);
@@ -366,6 +378,7 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //***************************************************************************************************
 void			CPSSound::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSSound_newElement)
 	nlassert(_Owner);
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->newElement(info);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(info);
@@ -413,6 +426,7 @@ void			CPSSound::newElement(const CPSEmitterInfo &info)
 //***************************************************************************************************
 void	CPSSound::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSSound_deleteElement)
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->deleteElement(index);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->deleteElement(index);
 	if (_Sounds[index])
@@ -426,6 +440,7 @@ void	CPSSound::deleteElement(uint32 index)
 //***************************************************************************************************
 void	CPSSound::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSSound_resize)
 	nlassert(size < (1 << 16));
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->resize(size, getOwner()->getSize());
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(size, getOwner()->getSize());
@@ -447,6 +462,7 @@ void	CPSSound::resize(uint32 size)
 //***************************************************************************************************
 void	CPSSound::setUseOriginalPitchFlag(bool useOriginalPitch)
 {
+	NL_PS_FUNC(CPSSound_setUseOriginalPitchFlag)
 	if (_PitchScheme)
 	{
 		delete _PitchScheme;

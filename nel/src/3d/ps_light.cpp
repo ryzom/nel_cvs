@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.8 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.9 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -44,11 +44,13 @@ CPSLight::CPSLight() : _Color(CRGBA::White),
 					   _AttenEnd(1.f),
 					   _AttenEndScheme(NULL)
 {	
+	NL_PS_FUNC(CPSLight_CPSLight)
 }
 
 //***************************************************************************************************************
 CPSLight::~CPSLight()
 {
+	NL_PS_FUNC(CPSLight_CPSLight)
 	if (_Owner && _Owner->getOwner())
 	{
 		// check that all lights have been deleted
@@ -75,6 +77,7 @@ CPSLight::~CPSLight()
 //***************************************************************************************************************
 void CPSLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSLight_serial)
 	CPSLocatedBindable::serial(f);
 	// version 1 : in version 0, scheme where not resized correctly; Fixed in this version
 	// version 0 : color, start attenuation radius, end attenuation radius.
@@ -141,12 +144,14 @@ void CPSLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //***************************************************************************************************************
 uint32 CPSLight::getType(void) const
 {
+	NL_PS_FUNC(CPSLight_getType)
 	return PSLight; 
 }
 
 //***************************************************************************************************************
 void CPSLight::step(TPSProcessPass pass)
 {	
+	NL_PS_FUNC(CPSLight_step)
 	if (pass != PSMotion) 
 	{
 		if (pass == PSToolRender)
@@ -257,6 +262,7 @@ void CPSLight::step(TPSProcessPass pass)
 //***************************************************************************************************************
 void CPSLight::setColor(NLMISC::CRGBA color)
 {
+	NL_PS_FUNC(CPSLight_setColor)
 	delete _ColorScheme;
 	_ColorScheme = NULL;
 	_Color = color;
@@ -265,6 +271,7 @@ void CPSLight::setColor(NLMISC::CRGBA color)
 //***************************************************************************************************************
 void CPSLight::setColorScheme(CPSAttribMaker<NLMISC::CRGBA> *scheme)
 {
+	NL_PS_FUNC(CPSLight_setColorScheme)
 	delete _ColorScheme;
 	_ColorScheme = scheme;
 	if (_Owner)
@@ -276,6 +283,7 @@ void CPSLight::setColorScheme(CPSAttribMaker<NLMISC::CRGBA> *scheme)
 //***************************************************************************************************************
 void CPSLight::setAttenStart(float radius)
 {
+	NL_PS_FUNC(CPSLight_setAttenStart)
 	nlassert(radius > 0.f);
 	delete _AttenStartScheme;
 	_AttenStartScheme =	NULL;
@@ -285,6 +293,7 @@ void CPSLight::setAttenStart(float radius)
 //***************************************************************************************************************
 void CPSLight::setAttenStartScheme(CPSAttribMaker<float> *scheme)
 {
+	NL_PS_FUNC(CPSLight_setAttenStartScheme)
 	delete _AttenStartScheme;
 	_AttenStartScheme = scheme;
 	if (_Owner)
@@ -296,6 +305,7 @@ void CPSLight::setAttenStartScheme(CPSAttribMaker<float> *scheme)
 //***************************************************************************************************************
 void CPSLight::setAttenEnd(float radius)
 {
+	NL_PS_FUNC(CPSLight_setAttenEnd)
 	delete _AttenEndScheme;
 	_AttenEndScheme = NULL;
 	_AttenEnd = radius;
@@ -304,6 +314,7 @@ void CPSLight::setAttenEnd(float radius)
 //***************************************************************************************************************
 void CPSLight::setAttenEndScheme(CPSAttribMaker<float> *scheme)
 {
+	NL_PS_FUNC(CPSLight_setAttenEndScheme)
 	delete _AttenEndScheme;
 	_AttenEndScheme = scheme;
 	if (_Owner)
@@ -315,6 +326,7 @@ void CPSLight::setAttenEndScheme(CPSAttribMaker<float> *scheme)
 //***************************************************************************************************************
 void CPSLight::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSLight_newElement)
 	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->newElement(info);
 	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->newElement(info);
 	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->newElement(info);
@@ -324,6 +336,7 @@ void CPSLight::newElement(const CPSEmitterInfo &info)
 //***************************************************************************************************************
 void CPSLight::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSLight_deleteElement)
 	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->deleteElement(index);
 	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->deleteElement(index);
 	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->deleteElement(index);	
@@ -338,6 +351,7 @@ void CPSLight::deleteElement(uint32 index)
 //***************************************************************************************************************
 void CPSLight::resize(uint32 size)
 {
+	NL_PS_FUNC(CPSLight_resize)
 	nlassert(size < (1 << 16));		
 	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getOwner() ? getOwner()->getSize() : 0);
 	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->resize(size, getOwner() ? getOwner()->getSize() : 0);
@@ -348,6 +362,7 @@ void CPSLight::resize(uint32 size)
 //***************************************************************************************************************
 void CPSLight::releaseAllRef()
 {
+	NL_PS_FUNC(CPSLight_releaseAllRef)
 	CPSLocatedBindable::releaseAllRef();	
 	// delete all lights, because pointer to the scene is lost after detaching from a system.
 	for(uint k = 0; k < _Lights.getSize(); ++k)
@@ -364,6 +379,7 @@ void CPSLight::releaseAllRef()
 //***************************************************************************************************************
 void CPSLight::show()
 {	
+	NL_PS_FUNC(CPSLight_show)
 	uint32 index;
 	CPSLocated *loc;
 	CPSLocatedBindable *lb;

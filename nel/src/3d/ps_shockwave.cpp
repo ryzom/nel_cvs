@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.13 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_shockwave.cpp,v 1.14 2004/09/02 17:05:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,7 @@ public:
 	template <class T>	
 	static void drawShockWave(T posIt, CPSShockWave &s, uint size, uint32 srcStep)
 	{
+		NL_PS_FUNC(drawShockWave_drawShockWave)
 		PARTICLES_CHECK_MEM;
 		nlassert(s._Owner);
 
@@ -202,6 +203,7 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 		   , _UFactor(1.f)
 
 {
+	NL_PS_FUNC(CPSShockWave_CPSShockWave)
 	nlassert(nbSeg > 2 && nbSeg <= 64);
 	setTexture(tex);
 	init();
@@ -211,6 +213,7 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 ///=================================================================================
 uint32 CPSShockWave::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSShockWave_getNumWantedTris)
 	nlassert(_Owner);
 	//return (_Owner->getMaxSize() * _NbSeg) << 1 ;
 	return (_Owner->getSize() * _NbSeg) << 1 ;
@@ -219,18 +222,21 @@ uint32 CPSShockWave::getNumWantedTris() const
 ///=================================================================================
 bool CPSShockWave::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSShockWave_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
 ///=================================================================================
 bool CPSShockWave::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSShockWave_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 ///=================================================================================
 void CPSShockWave::setNbSegs(uint nbSeg)
 {
+	NL_PS_FUNC(CPSShockWave_setNbSegs)
 	nlassert(nbSeg > 2 && nbSeg <= 64);
 	_NbSeg = nbSeg;
 	if (_Owner)
@@ -243,6 +249,7 @@ void CPSShockWave::setNbSegs(uint nbSeg)
 ///=================================================================================
 void CPSShockWave::setRadiusCut(float radiusCut)
 {
+	NL_PS_FUNC(CPSShockWave_setRadiusCut)
 	_RadiusCut = radiusCut;	
 	if (_Owner)
 	{
@@ -253,6 +260,7 @@ void CPSShockWave::setRadiusCut(float radiusCut)
 ///=================================================================================
 void	CPSShockWave::setUFactor(float value)
 {
+	NL_PS_FUNC(CPSShockWave_setUFactor)
 	nlassert(_Owner); // must be attached to an owner before to call this method
 	_UFactor = value;
 	resize(_Owner->getSize()); // resize also recomputes the UVs..
@@ -261,6 +269,7 @@ void	CPSShockWave::setUFactor(float value)
 ///=================================================================================
 void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
+	NL_PS_FUNC(CPSShockWave_serial)
 	sint ver  = f.serialVersion(2);
 	CPSParticle::serial(f);
 	CPSColoredParticle::serialColorScheme(f);
@@ -280,6 +289,7 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ///=================================================================================
 inline void CPSShockWave::setupUFactor()
 {	
+	NL_PS_FUNC(CPSShockWave_setupUFactor)
 	if (_UFactor != 1.f)
 	{
 		_Mat.enableUserTexMat(0);
@@ -299,6 +309,8 @@ inline void CPSShockWave::setupUFactor()
 ///=================================================================================
 void CPSShockWave::draw(bool opaque)
 {
+//	if (!FilterPS[7]) return;
+	NL_PS_FUNC(CPSShockWave_draw)
 	PARTICLES_CHECK_MEM;	
 	if (!_Owner->getSize()) return;	
 
@@ -377,6 +389,7 @@ void CPSShockWave::draw(bool opaque)
 ///=================================================================================
 bool CPSShockWave::completeBBox(NLMISC::CAABBox &box) const
 {
+	NL_PS_FUNC(CPSShockWave_completeBBox)
 	// TODO : implement this
 	return false;
 }
@@ -384,6 +397,7 @@ bool CPSShockWave::completeBBox(NLMISC::CAABBox &box) const
 ///=================================================================================
 void CPSShockWave::init(void)
 {
+	NL_PS_FUNC(CPSShockWave_init)
 	_Mat.setLighting(false);	
 	_Mat.setZFunc(CMaterial::less);
 	_Mat.setDoubleSided(true);
@@ -394,6 +408,7 @@ void CPSShockWave::init(void)
 ///=================================================================================
 void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb, IDriver &drv)
 {
+	NL_PS_FUNC(CPSShockWave_updateVbColNUVForRender)
 	nlassert(_Owner);
 	CVertexBufferReadWrite vba;
 	vb.lock (vba);
@@ -450,7 +465,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint3
 ///=================================================================================
 void CPSShockWave::updateMatAndVbForColor(void)
 {	
-
+	NL_PS_FUNC(CPSShockWave_updateMatAndVbForColor)
 	if (_Owner)
 	{
 		resize(_Owner->getMaxSize());
@@ -460,12 +475,14 @@ void CPSShockWave::updateMatAndVbForColor(void)
 ///=================================================================================
 void CPSShockWave::updateMatAndVbForTexture(void)
 {
+	NL_PS_FUNC(CPSShockWave_updateMatAndVbForTexture)
 	_Mat.setTexture(0, _TexGroup ? (ITexture *) _TexGroup : (ITexture *) _Tex);	
 }
 
 ///=================================================================================
 void CPSShockWave::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSShockWave_newElement)
 	newColorElement(info);
 	newTextureIndexElement(info);
 	newSizeElement(info);
@@ -475,6 +492,7 @@ void CPSShockWave::newElement(const CPSEmitterInfo &info)
 ///=================================================================================
 void CPSShockWave::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSShockWave_deleteElement)
 	deleteColorElement(index);
 	deleteTextureIndexElement(index);
 	deleteSizeElement(index);
@@ -484,6 +502,7 @@ void CPSShockWave::deleteElement(uint32 index)
 ///=================================================================================
 void CPSShockWave::resize(uint32 aSize)
 {
+	NL_PS_FUNC(CPSShockWave_resize)
 	nlassert(aSize < (1 << 16));
 	resizeColor(aSize);
 	resizeTextureIndex(aSize);
@@ -494,6 +513,7 @@ void CPSShockWave::resize(uint32 aSize)
 ///=================================================================================
 void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 {
+	NL_PS_FUNC(CPSShockWave_getVBnPB)
 	TVBMap &vbMap = _ColorScheme == NULL  ? (_TexGroup == NULL ?  _VBMap : _AnimTexVBMap)
 										  : (_TexGroup == NULL ?  _ColoredVBMap : _ColoredAnimTexVBMap);
 
@@ -550,6 +570,7 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 ///=================================================================================
 uint CPSShockWave::getNumShockWavesInVB() const
 {
+	NL_PS_FUNC(CPSShockWave_getNumShockWavesInVB)
 	const uint numRib = NumVertsInBuffer / ((_NbSeg + 1) << 1);
 	return std::max(1u, numRib);
 }
@@ -557,6 +578,7 @@ uint CPSShockWave::getNumShockWavesInVB() const
 ///=================================================================================
 void CPSShockWave::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv)
 {
+	NL_PS_FUNC(CPSShockWave_enumTexs)
 	CPSTexturedParticle::enumTexs(dest);
 }
 

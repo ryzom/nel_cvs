@@ -1,7 +1,7 @@
 /** \file ps_register_particles.cpp
  * 
  *
- * $Id: ps_register_particles.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_register_particles.cpp,v 1.3 2004/09/02 17:05:24 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -35,6 +35,7 @@ namespace NL3D
 {
 	void CPSUtil::registerParticles()
 	{
+		NL_PS_FUNC(	CPSUtil_registerParticles)
 		NLMISC_REGISTER_CLASS(CPSFanLight);
 		NLMISC_REGISTER_CLASS(CPSTailDot);
 		NLMISC_REGISTER_CLASS(CPSRibbon);

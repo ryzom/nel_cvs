@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.16 2003/12/08 14:59:15 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.17 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -50,6 +50,7 @@ CParticleSystemManager::TManagerList     &CParticleSystemManager::getManagerList
 ///=========================================================	
 CParticleSystemManager::CParticleSystemManager() : _NumModels(0)
 {
+	NL_PS_FUNC(CParticleSystemManager_CParticleSystemManager)
 	_CurrListIterator = _ModelList.end();
 	getManagerList().push_front(this);
 	_GlobalListHandle = getManagerList().begin();	
@@ -58,6 +59,7 @@ CParticleSystemManager::CParticleSystemManager() : _NumModels(0)
 ///=========================================================	
 CParticleSystemManager::~CParticleSystemManager()
 {
+	NL_PS_FUNC(CParticleSystemManager_CParticleSystemManagerDtor)
 	// remove from global list
 	getManagerList().erase(_GlobalListHandle);	
 }
@@ -65,6 +67,7 @@ CParticleSystemManager::~CParticleSystemManager()
 ///=========================================================	
 void	CParticleSystemManager::refreshModels(const std::vector<NLMISC::CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos)
 {	
+	NL_PS_FUNC(CParticleSystemManager_refreshModels)
 	#ifdef NL_DEBUG
 		nlassert(_NumModels == _ModelList.size());
 	#endif
@@ -93,6 +96,7 @@ void	CParticleSystemManager::refreshModels(const std::vector<NLMISC::CPlane>	&wo
 ///=========================================================	
 CParticleSystemManager::TModelHandle CParticleSystemManager::addSystemModel(CParticleSystemModel *model)
 {
+	NL_PS_FUNC(CParticleSystemManager_addSystemModel)
 	#ifdef NL_DEBUG
 		nlassert(std::find(_ModelList.begin(), _ModelList.end(), model) == _ModelList.end()); 
 	#endif
@@ -113,6 +117,7 @@ CParticleSystemManager::TModelHandle CParticleSystemManager::addSystemModel(CPar
 ///=========================================================	
 void		CParticleSystemManager::removeSystemModel(TModelHandle &handle)
 {	
+	NL_PS_FUNC(CParticleSystem_removeSystemModel)
 	nlassert(handle.Valid);
 	#ifdef NL_DEBUG
 		nlassert(_NumModels == _ModelList.size());
@@ -135,6 +140,7 @@ void		CParticleSystemManager::removeSystemModel(TModelHandle &handle)
 ///=========================================================	
 CParticleSystemManager::TAlwaysAnimatedModelHandle	CParticleSystemManager::addPermanentlyAnimatedSystem(CParticleSystemModel *ps)
 {
+	NL_PS_FUNC(CParticleSystemManager_addPermanentlyAnimatedSystem)
 	#ifdef NL_DEBUG
 		for(TAlwaysAnimatedModelList::iterator it = _PermanentlyAnimatedModelList.begin(); it != _PermanentlyAnimatedModelList.end(); ++it)
 		{  
@@ -156,6 +162,7 @@ CParticleSystemManager::TAlwaysAnimatedModelHandle	CParticleSystemManager::addPe
 ///=========================================================	
 void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemManager::TAlwaysAnimatedModelHandle &handle)
 {
+	NL_PS_FUNC(CParticleSystemManager_removePermanentlyAnimatedSystem)
 	nlassert(handle.Valid);
 	_PermanentlyAnimatedModelList.erase(handle.Iter);	
 	handle.Valid = false;
@@ -164,6 +171,7 @@ void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemMa
 ///=========================================================	
 void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 {
+	NL_PS_FUNC(CParticleSystemManager_processAnimate)
 	for (TAlwaysAnimatedModelList::iterator it = _PermanentlyAnimatedModelList.begin(); it != _PermanentlyAnimatedModelList.end();)
 	{
 		CParticleSystemModel &psm = *(it->Model);
@@ -232,6 +240,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 ///=========================================================	
 void CParticleSystemManager::stopSound()
 {
+	NL_PS_FUNC(CParticleSystemManager_stopSound)
 	for(TModelList::iterator it = _ModelList.begin(); it != _ModelList.end(); ++it)
 	{
 		CParticleSystemModel &psm = *(*it);
@@ -246,6 +255,7 @@ void CParticleSystemManager::stopSound()
 ///=========================================================	
 void CParticleSystemManager::reactivateSound()
 {
+	NL_PS_FUNC(CParticleSystemManager_reactivateSound)
 	for(TModelList::iterator it = _ModelList.begin(); it != _ModelList.end(); ++it)
 	{
 		CParticleSystemModel &psm = *(*it);
@@ -260,6 +270,7 @@ void CParticleSystemManager::reactivateSound()
 ///=========================================================	
 void CParticleSystemManager::stopSoundForAllManagers()
 {
+	NL_PS_FUNC(CParticleSystemManager_stopSoundForAllManagers)
 	for(TManagerList::iterator it = getManagerList().begin(); it != getManagerList().end(); ++it)
 	{
 		nlassert(*it);
@@ -270,6 +281,7 @@ void CParticleSystemManager::stopSoundForAllManagers()
 ///=========================================================	
 void CParticleSystemManager::reactivateSoundForAllManagers()
 {
+	NL_PS_FUNC(CParticleSystemManager_reactivateSoundForAllManagers)
 	for(TManagerList::iterator it = getManagerList().begin(); it != getManagerList().end(); ++it)
 	{
 		nlassert(*it);

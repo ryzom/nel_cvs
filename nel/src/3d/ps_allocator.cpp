@@ -1,6 +1,6 @@
 /** \file ps_allocator.cpp
  *
- * $Id: ps_allocator.cpp,v 1.2 2004/04/09 14:26:58 vizerie Exp $
+ * $Id: ps_allocator.cpp,v 1.3 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -23,7 +23,8 @@
  */
 
 #include "std3d.h"
-#include "ps_allocator.h"
+#include "3d/particle_system_process.h"
+#include "3d/ps_allocator.h"
 
 namespace NL3D
 {
@@ -43,6 +44,7 @@ namespace NL3D
 		//
 		void *PSFastMemAlloc(uint numBytes)
 		{
+			NL_PS_FUNC(PSFastMemAlloc)
 			CPSAllocInfo *result;
 			// if a block allocator is available, use it
 			if (PSBlockAllocator)
@@ -61,6 +63,7 @@ namespace NL3D
 
 		void PSFastMemFree(void *block)
 		{
+			NL_PS_FUNC(PSFastMemFree)
 			uint8 *realAddress = (uint8 *) ((uint8 *) block - sizeof(CPSAllocInfo));
 			CPSAllocInfo *ai = (CPSAllocInfo *) realAddress;
 			if (ai->BlocAllocator)

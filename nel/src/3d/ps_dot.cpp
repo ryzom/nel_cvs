@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.10 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_dot.cpp,v 1.11 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@ inline void DrawDot(T it,
 					IDriver *driver,
 					uint32 srcStep
 				   )
-{		
+{
+	NL_PS_FUNC(DrawDot)
 	nlassert(leftToDo != 0);
 	const uint total = leftToDo;
 	T itEnd;
@@ -69,7 +70,7 @@ inline void DrawDot(T it,
 	}
 	do
 	{		
-		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;		
+		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;				
 		vb.setNumVertices(toProcess); // because of volatile vb copy, indicate the numebr of vertices to copy
 		{
 			CVertexBufferReadWrite vba;
@@ -130,6 +131,8 @@ inline void DrawDot(T it,
 ///===================================================================
 void CPSDot::draw(bool opaque)
 {	
+//	if (!FilterPS[0]) return;
+	NL_PS_FUNC(CPSDot_draw)
 	PARTICLES_CHECK_MEM;	
 	if (!_Owner->getSize()) return;	
 
@@ -216,6 +219,7 @@ void CPSDot::draw(bool opaque)
 /// init the vertex buffers
 void CPSDot::initVertexBuffers()
 {
+	NL_PS_FUNC(CPSDot_initVertexBuffers)
 	_DotVb.setName("CPSDot::_DotVb");
 	_DotVb.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
 	_DotVb.setVertexFormat(CVertexBuffer::PositionFlag);
@@ -230,6 +234,7 @@ void CPSDot::initVertexBuffers()
 ///===================================================================
 void CPSDot::init(void)
 {		
+	NL_PS_FUNC(CPSDot_init)
 	_Mat.setLighting(false);	
 	_Mat.setZFunc(CMaterial::less);
 	
@@ -239,6 +244,7 @@ void CPSDot::init(void)
 ///===================================================================
 uint32 CPSDot::getNumWantedTris() const
 {
+	NL_PS_FUNC(CPSDot_getNumWantedTris)
 	nlassert(_Owner);
 	//return _Owner->getMaxSize();
 	return _Owner->getSize();
@@ -247,35 +253,41 @@ uint32 CPSDot::getNumWantedTris() const
 ///===================================================================
 void CPSDot::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSDot_newElement)
 	newColorElement(info);
 }
 
 ///===================================================================
 void CPSDot::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSDot_deleteElement)
 	deleteColorElement(index);
 }
 
 ///===================================================================
 void CPSDot::updateMatAndVbForColor(void)
 {	
+	NL_PS_FUNC(CPSDot_updateMatAndVbForColor)
 }
 
 ///===================================================================
 bool CPSDot::hasTransparentFaces(void)
 {
+	NL_PS_FUNC(CPSDot_hasTransparentFaces)
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
 
 ///===================================================================
 bool CPSDot::hasOpaqueFaces(void)
 {
+	NL_PS_FUNC(CPSDot_hasOpaqueFaces)
 	return !hasTransparentFaces();
 }
 
 ///===================================================================
 void CPSDot::resize(uint32 size)
 {	
+	NL_PS_FUNC(CPSDot_resize)
 	nlassert(size < (1 << 16));
 	resizeColor(size);
 }
@@ -283,6 +295,7 @@ void CPSDot::resize(uint32 size)
 ///===================================================================
 void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSDot_IStream )
 	
 	f.serialVersion(1);	
 

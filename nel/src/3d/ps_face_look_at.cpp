@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.14 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.15 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,7 @@ public:
 	template <class T>
 	static void computeOrientationVectors(T speedIt, const CVector &I, const CVector &K, CLookAtAlign *dest, uint size)
 	{
+		NL_PS_FUNC(CPSFaceLookAtHelper_computeOrientationVectors)
 		nlassert(size > 0);
 		const CLookAtAlign *endDest = dest + size;
 		do 
@@ -124,7 +125,7 @@ public:
 			// constant rotation case
 			do
 			{	
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -250,7 +251,7 @@ public:
 			float *currentAngle;		
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -441,7 +442,7 @@ public:
 			// constant rotation case
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -743,7 +744,7 @@ public:
 			float *currentAngle;		
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;
+				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -905,6 +906,8 @@ public:
 ///===========================================================================================
 void CPSFaceLookAt::draw(bool opaque)
 {			
+//	if (!FilterPS[2]) return;
+	NL_PS_FUNC(CPSFaceLookAt_draw)
 	PARTICLES_CHECK_MEM;	
 	if (!_Owner->getSize()) return;	
 	uint32 step;
@@ -965,6 +968,7 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
 														_AlignOnMotion(false),
 														_AlignOnZAxis(false)
 {	
+	NL_PS_FUNC(CPSFaceLookAt_CPSFaceLookAt)
 	_SecondSize.Owner = this;
 	if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("LookAt");
 }
@@ -972,6 +976,7 @@ CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex),
 ///===========================================================================================
 void CPSFaceLookAt::newElement(const CPSEmitterInfo &info)
 {
+	NL_PS_FUNC(CPSFaceLookAt_newElement)
 	CPSQuad::newElement(info);
 	newAngle2DElement(info);
 }
@@ -979,6 +984,7 @@ void CPSFaceLookAt::newElement(const CPSEmitterInfo &info)
 ///===========================================================================================
 void CPSFaceLookAt::deleteElement(uint32 index)
 {
+	NL_PS_FUNC(CPSFaceLookAt_deleteElement)
 	CPSQuad::deleteElement(index);
 	deleteAngle2DElement(index);
 }
@@ -986,6 +992,7 @@ void CPSFaceLookAt::deleteElement(uint32 index)
 ///===========================================================================================
 void CPSFaceLookAt::resize(uint32 capacity)
 {
+	NL_PS_FUNC(CPSFaceLookAt_resize)
 	nlassert(capacity < (1 << 16));
 	CPSQuad::resize(capacity);
 	resizeAngle2D(capacity);
@@ -995,6 +1002,7 @@ void CPSFaceLookAt::resize(uint32 capacity)
 ///===========================================================================================
 void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	NL_PS_FUNC(CPSFaceLookAt_serial)
 	// version 4 : added 'align on z-axis' flag
 	// version 3 : added 'align on motion' flag
 	sint ver = f.serialVersion(4);

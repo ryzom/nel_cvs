@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.7 2003/11/25 14:39:27 vizerie Exp $
+ * $Id: particle_system_manager.h,v 1.8 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/plane.h"
 #include "nel/3d/animation_time.h"
+#include "3d/particle_system_process.h"
 
 
 #include <list>
@@ -99,6 +100,7 @@ private:
 		// ctor
 		CAlwaysAnimatedPS()
 		{
+			NL_PS_FUNC(CAlwaysAnimatedPS_CAlwaysAnimatedPS)
 			Model = NULL;
 			IsRelMatrix = false;
 			HasAncestorSkeleton = false;

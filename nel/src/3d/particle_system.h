@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.51 2004/06/01 16:27:11 vizerie Exp $
+ * $Id: particle_system.h,v 1.52 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,7 @@ class CScene;
 class CPSLocated;
 class IDriver;
 struct UPSSoundServer;
+
 
 
 
@@ -190,7 +191,8 @@ public:
 			  * If no reference is made, then the fx matrix is returned instead
 			  */
 			const NLMISC::CMatrix &getUserMatrix() const 
-			{ 
+			{ 				
+				NL_PS_FUNC_MAIN(getUserMatrix)
 				return (_UserCoordSystemInfo && _UserCoordSystemInfo->CoordSystemInfo.Matrix) ? *(_UserCoordSystemInfo->CoordSystemInfo.Matrix) : getSysMat(); 
 			}		
 
@@ -314,6 +316,7 @@ public:
 
 		uint64 getDate(void) const
 		{
+			NL_PS_FUNC_MAIN(getDate)
 			return _Date;
 		}
 		//@}
@@ -330,6 +333,7 @@ public:
 		  */
 		void setUserParam(uint userParamIndex, float value) 
 		{
+			NL_PS_FUNC_MAIN(setUserParam)
 			nlassert(userParamIndex < MaxPSUserParam);
 			NLMISC::clamp(value, 0, MaxInputValue);			
 			_UserParam[userParamIndex] = value;
@@ -339,7 +343,8 @@ public:
 		  * The max number of user param is in MaxPSUserParam.
 		  */
 		float getUserParam(uint userParamIndex) const
-		{
+		{			
+			NL_PS_FUNC_MAIN(getUserParam)
 			nlassert(userParamIndex < MaxPSUserParam);
 			return _UserParam[userParamIndex];
 		}
@@ -395,6 +400,7 @@ public:
 		 */
 		 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0, class CPSLocatedBindable *bd = NULL )
 		 {
+			NL_PS_FUNC_MAIN(setCurrentEditedElement)
 			_CurrEditedElementLocated = loc;
 			_CurrEditedElementLocatedBindable = bd; 
 			_CurrEditedElementIndex = index;
@@ -405,6 +411,7 @@ public:
 		 */
 		 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index, CPSLocatedBindable *&lb)
 		 {
+			NL_PS_FUNC_MAIN(getCurrentEditedElement)
 			loc = _CurrEditedElementLocated;
 			index = _CurrEditedElementIndex;
 			lb = _CurrEditedElementLocatedBindable;
@@ -469,12 +476,13 @@ public:
 		  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
 		  *  It is useful for critical situations where the framerate is very low. The default is true.
 		  */
-		void setAccurateIntegrationParams(TAnimationTime threshold,
+		void setAccurateIntegrationParams(TAnimationTime threshold,										 
 										  uint32 maxNbIntegrations,
 										  bool canSlowDown,
 										  bool keepEllapsedTimeForLifeUpdate
 										 )
 		{
+			NL_PS_FUNC_MAIN(setAccurateIntegrationParams)			
 			_TimeThreshold = threshold;
 			_MaxNbIntegrations = maxNbIntegrations;
 			_CanSlowDown = canSlowDown;
@@ -494,6 +502,7 @@ public:
 										  bool &keepEllapsedTimeForLifeUpdate
 										 )
 		{
+			NL_PS_FUNC_MAIN(getAccurateIntegrationParams)
 			threshold = _TimeThreshold;
 			maxNbIntegrations = _MaxNbIntegrations;
 			canSlowDown = _CanSlowDown;
@@ -514,7 +523,8 @@ public:
 		  * when framerate is too choppy
 		  */
 		void	setBypassMaxNumIntegrationSteps(bool bypass = true)
-		{			
+		{
+			NL_PS_FUNC_MAIN(setBypassMaxNumIntegrationSteps)
 			if (_BypassIntegrationStepLimit != bypass)
 			{			
 				if (bypass)
@@ -562,7 +572,8 @@ public:
 
 		/// set the max view distance for the system (in meters) . The default is 50 meters.
 		void setMaxViewDist(float maxDist) 
-		{ 
+		{
+			NL_PS_FUNC_MAIN(setMaxViewDist)
 			nlassert(maxDist > 0.f); 
 			_MaxViewDist = maxDist;
 			_InvCurrentViewDist = _InvMaxViewDist = 1.f / maxDist; 
@@ -606,6 +617,7 @@ public:
 		  */
 		void    setupAutoLOD(float startDistPercent, uint8 degradationExponent)
 		{
+			NL_PS_FUNC_MAIN(setupAutoLOD)
 			nlassert(startDistPercent < 1.f);
 			nlassert(degradationExponent > 0);
 			_AutoLODStartDistPercent    = 	startDistPercent;
@@ -640,6 +652,7 @@ public:
 		  */
 		  void	setColorAttenuationScheme(CPSAttribMaker<NLMISC::CRGBA> *colScheme)
 		  {
+			NL_PS_FUNC_MAIN(setColorAttenuationScheme)
 			delete _ColorAttenuationScheme;
 			_ColorAttenuationScheme = colScheme;
 			if (!colScheme)
@@ -730,7 +743,8 @@ public:
 		  */
 
 		void setPrecomputedBBox(const NLMISC::CAABBox &precompBBox) 
-		{ 
+		{
+			NL_PS_FUNC_MAIN(setPrecomputedBBox)
 			nlassert(!_ComputeBBox);
 			_PreComputedBBox = precompBBox;
 		}
@@ -747,7 +761,8 @@ public:
 		  * This is only a indication flag and must be checked by third party (a model holding the system for example)
 		  */
 		void				setDestroyModelWhenOutOfRange(bool enable = true) 
-		{ 
+		{
+			NL_PS_FUNC_MAIN(setDestroyModelWhenOutOfRange)
 			_DestroyModelWhenOutOfRange  = enable;
 			_PresetBehaviour = UserBehaviour;
 		}
@@ -767,7 +782,8 @@ public:
 		  * \see hasParticles
 		  */
 		void				setDestroyCondition(TDieCondition dieCondition) 
-		{ 
+		{
+			NL_PS_FUNC_MAIN(setDestroyCondition)
 			_DieCondition = dieCondition;
 			_PresetBehaviour = UserBehaviour;
 		}
@@ -791,6 +807,7 @@ public:
 		  */		
 		void setDelayBeforeDeathConditionTest(TAnimationTime delay) 
 		{
+			NL_PS_FUNC_MAIN(setDelayBeforeDeathConditionTest)
 
 			_DelayBeforeDieTest  = delay; 
 		}
@@ -856,7 +873,8 @@ public:
           * \see setAnimType(TAnimType animType)
 		  */
 		void				performMotionWhenOutOfFrustum(bool enable = true)
-		{ 
+		{
+			NL_PS_FUNC_MAIN(performMotionWhenOutOfFrustum)
 			_AnimType = enable ? AnimInCluster : AnimVisible;
 			_PresetBehaviour = UserBehaviour;
 		}
@@ -869,6 +887,7 @@ public:
 		/// Tells when animation must be done
 		void				setAnimType(TAnimType animType)
 		{
+			NL_PS_FUNC_MAIN(setAnimType)
 			nlassert(animType < LastValue);
 			_AnimType = animType;
 			_PresetBehaviour = UserBehaviour;
@@ -912,7 +931,8 @@ public:
 		void activatePresetBehaviour(TPresetBehaviour behaviour);
 
 		TPresetBehaviour getBehaviourType() const 
-		{ 
+		{
+			NL_PS_FUNC_MAIN(getBehaviourType)
 			return _PresetBehaviour; 
 		}
 
@@ -930,6 +950,7 @@ public:
 		/// get the current sound server used by this system. NULL if none
 		static UPSSoundServer *		getSoundServer(void)
 		{
+			NL_PS_FUNC(getSoundServer)
 			return _SoundServer;
 		}
 
@@ -1309,6 +1330,7 @@ class CPSCopyHelper
 */
 
 
+	
 } // NL3D
 
 

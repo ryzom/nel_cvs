@@ -1,7 +1,7 @@
 /** \file ps_register_emitters.cpp
  * 
  *
- * $Id: ps_register_emitters.cpp,v 1.2 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_register_emitters.cpp,v 1.3 2004/09/02 17:05:24 vizerie Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -34,6 +34,7 @@ namespace NL3D
 {
 	void CPSUtil::registerEmitters()
 	{
+		NL_PS_FUNC(	CPSUtil_registerEmitters)
 		NLMISC_REGISTER_CLASS(CPSEmitterOmni);
 		NLMISC_REGISTER_CLASS(CPSEmitterDirectionnal);
 		NLMISC_REGISTER_CLASS(CPSEmitterRectangle);

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.49 2004/06/01 16:26:13 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.50 2004/09/02 17:05:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 
 // tmp
 #include "3d/ps_face_look_at.h"
+#include "3d/ps_force.h"
 
 namespace NL3D {
 
@@ -400,6 +401,22 @@ void CParticleSystemShape::flushTextures(IDriver &driver, uint selectedTexture)
 			_NumBytesWanted = blockAllocator.getNumAllocatedBytes(); // next allocation will be fast because we know how much memory to allocate
 		#endif
 		myInstance->enumTexs(_CachedTex, driver);
+		// tmp
+		/*
+		#ifdef NL_DEBUG
+			for(uint k = 0; k < myInstance->getNbProcess(); ++k)
+			{
+				CPSLocated *loc = (CPSLocated *) myInstance->getProcess(k);
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (dynamic_cast<CPSCentralGravity *>(loc->getBoundObject(l)))
+					{
+						nlwarning("PS %s uses central gravity", myInstance->getName().c_str());
+						break;
+					}
+				}
+			}
+		#endif */
 		// sort the process inside the fx
 		myInstance->getSortingByEmitterPrecedence(_ProcessOrder);
 		delete myInstance;		

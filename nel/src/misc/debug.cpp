@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.101 2004/09/23 13:06:23 lecroart Exp $
+ * $Id: debug.cpp,v 1.102 2004/10/19 10:16:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,6 @@ namespace NLMISC
 
 bool DebugNeedAssert = false;
 bool NoAssert = false;
-bool GlobalAssertCall = false;
 
 CLog *ErrorLog = NULL;
 CLog *WarningLog = NULL;
@@ -209,13 +208,40 @@ void initDebug2 (bool logInFile)
 }
 
 
+// ***************************************************************************
+// Method called when an assert arise
+
+void _assertex_stop_0(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp)
+{
+	NLMISC::DebugNeedAssert = false;
+	NLMISC::createDebug ();
+	if (NLMISC::DefaultMsgBoxDisplayer)
+		NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime;
+	else if(!NLMISC::NoAssert)
+		NLMISC::DebugNeedAssert = true;
+	NLMISC::AssertLog->setPosition (line, file, funcName);
+	if(exp)		NLMISC::AssertLog->displayNL ("\"%s\" ", exp);
+	else		NLMISC::AssertLog->displayNL ("STOP");
+}
+
+bool _assertex_stop_1(bool &ignoreNextTime)
+{
+	if (NLMISC::DefaultMsgBoxDisplayer)
+		ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime;
+	return NLMISC::DebugNeedAssert;
+}
+
+bool _assert_stop(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp)
+{
+	_assertex_stop_0(ignoreNextTime, line, file, funcName, exp);
+	return _assertex_stop_1(ignoreNextTime);
+}
+
+
 #ifdef NL_OS_WINDOWS
 
-//
-//
 
-//
-
+// ***************************************************************************
 static DWORD __stdcall GetModuleBase(HANDLE hProcess, DWORD dwReturnAddress)
 {
 	IMAGEHLP_MODULE moduleInfo;

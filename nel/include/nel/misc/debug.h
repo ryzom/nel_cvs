@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.73 2004/09/22 18:22:40 distrib Exp $
+ * $Id: debug.h,v 1.74 2004/10/19 10:19:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,11 @@ void setCrashCallback(TCrashCallback crashCallback);
 #define NLMISC_BREAKPOINT abort()
 #endif
 
+// Internal, don't use it (make smaller assert code)
+extern bool _assert_stop(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp);
+extern void _assertex_stop_0(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp);
+extern bool _assertex_stop_1(bool &ignoreNextTime);
+
 // removed because we always check assert (even in release mode) #if defined(NL_DEBUG)
 
 #ifdef NL_RELEASE
@@ -340,79 +345,37 @@ if(false)
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime && !(exp)) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (!(exp) && NLMISC::NoAssert)*/
+}
 
 #define nlassertonce(exp) \
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime && !(exp)) { \
 		ignoreNextTime = true; \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (!(exp) && NLMISC::NoAssert)*/
+}
 
 #define nlassertex(exp, str) \
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime && !(exp)) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
+		NLMISC::_assertex_stop_0(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (!(exp) && NLMISC::NoAssert)*/
+}
 
 #define nlverify(exp) \
 { \
 	static bool ignoreNextTime = false; \
 	if (!(exp) && !ignoreNextTime) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
 }
@@ -422,17 +385,7 @@ if(false)
 	static bool ignoreNextTime = false; \
 	if (!(exp) && !ignoreNextTime) { \
 		ignoreNextTime = true; \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
 }
@@ -441,18 +394,9 @@ if(false)
 { \
 	static bool ignoreNextTime = false; \
 	if (!(exp) && !ignoreNextTime) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
+		NLMISC::_assertex_stop_0(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
 	} \
 }
@@ -465,64 +409,32 @@ if(false)
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("STOP"); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, NULL)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)*/
+}
 
 #define nlstoponce \
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime) { \
 		ignoreNextTime = true; \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("STOP"); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, NULL)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)*/
+}
 
 
 #define nlstopex(str) \
 { \
 	static bool ignoreNextTime = false; \
 	if (!ignoreNextTime) { \
-		NLMISC::DebugNeedAssert = false; \
-		NLMISC::createDebug (); \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
-		else if(!NLMISC::NoAssert) \
-			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->display ("STOP "); \
+		NLMISC::_assertex_stop_0(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, NULL); \
 		NLMISC::AssertLog->displayRawNL str; \
-		if (NLMISC::DefaultMsgBoxDisplayer) \
-			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
-		if (NLMISC::DebugNeedAssert) \
+		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
-		NLMISC::GlobalAssertCall = true; \
 	} \
-}/*for(;NLMISC::GlobalAssertCall;NLMISC::GlobalAssertCall=false) if (NLMISC::NoAssert)*/
+}
 
 
 struct EFatalError : public Exception
@@ -617,9 +529,6 @@ extern bool DebugNeedAssert;
 
 // Internal process, don't use it
 extern bool NoAssert;
-
-// Internal process, don't use it
-extern bool GlobalAssertCall;
 
 
 template<class T>

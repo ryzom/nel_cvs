@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.15 2002/02/15 17:00:55 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.16 2002/10/10 13:30:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ public:
 	}
 
 
-	/// always return a unit bounding box. Only a model of particle system can compute his bounding box
+	/// Always return a unit bounding box, unless the system has a precomputed bbox.
 	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const;
 
 
@@ -125,6 +125,8 @@ public:
 		CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
 	// @}
 
+	// Test if the system is shared
+	bool			isShared() const { return _Sharing; }		
 protected:
 
 	friend class CParticleSystemModel; 

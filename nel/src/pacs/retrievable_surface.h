@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.6 2002/12/18 14:57:14 legros Exp $
+ * $Id: retrievable_surface.h,v 1.7 2003/01/15 10:42:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,8 @@ namespace NLPACS
  */
 enum
 {
-	NumCreatureModels = 4,
+	NumMaxCreatureModels = 4,
+	NumCreatureModels = 2,
 	ModelRadius = 0,
 	ModelHeight = 1,
 	ModelInclineThreshold = 2,
@@ -53,7 +54,7 @@ enum
 /**
  * The features of the models, as floats
  */
-extern	float	Models[NumCreatureModels][NumModelCharacteristics];
+extern	float	Models[NumMaxCreatureModels][NumModelCharacteristics];
 
 
 
@@ -122,6 +123,7 @@ protected:
 	uint8								_Material;
 	uint8								_Character;
 	uint8								_Level;
+	sint8								_QuantHeight;
 	bool								_IsFloor;
 	bool								_IsCeiling;
 	//@}
@@ -140,7 +142,7 @@ protected:
 	CSurfaceQuadTree					_Quad;
 
 	/// The topologies associated with the surface, for each type of model.
-	sint32								_Topologies[NumCreatureModels];
+	sint32								_Topologies[NumMaxCreatureModels];
 
 	/// The center of the surface.
 	NLMISC::CVector						_Center;
@@ -149,10 +151,11 @@ public:
 	CRetrievableSurface()
 	{
 		uint	i;
-		for (i=0; i<NumCreatureModels; ++i)
+		for (i=0; i<NumMaxCreatureModels; ++i)
 			_Topologies[i] = -1;
 
 		_WaterHeight = 0.0f;
+		_QuantHeight = 0;
 	}
 
 	uint8								getNormalQuanta() const { return _NormalQuanta; }
@@ -166,6 +169,7 @@ public:
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 	uint32								getFlags() const { return _Flags; }
 	float								getWaterHeight() const { return _WaterHeight; }
+	sint8								getQuantHeight() const { return _QuantHeight; }
 
 	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }

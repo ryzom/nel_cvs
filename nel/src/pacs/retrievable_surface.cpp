@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.10 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: retrievable_surface.cpp,v 1.11 2003/01/15 10:42:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,13 +30,22 @@
 using namespace std;
 using namespace NLMISC;
 
-
+/*
 float			NLPACS::Models[NumCreatureModels][NumModelCharacteristics] =
 {
 	{ 0.5f, 1.0f, -1.0f },
 	{ 0.8f, 2.0f, -0.5f },
 	{ 2.0f, 4.0f, +0.5f },
 	{ 4.0f, 8.0f, +0.707f }
+};
+*/
+
+float			NLPACS::Models[NumMaxCreatureModels][NumModelCharacteristics] =
+{
+	{ 0.5f, 1.0f, -1.0f },
+	{ 4.0f, 8.0f, +0.707f },
+	{ 0.0f, 0.0f, -1.0f },
+	{ 0.0f, 0.0f, -1.0f },
 };
 
 void	NLPACS::CRetrievableSurface::serial(IStream &f)
@@ -46,8 +55,15 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 		- base version.
 	Version 1:
 		- absolute water height and flag
+	Version 2:
+		- no more topologies in stream (obsolete)
+		- no more height quad
+		- quantized height (_QuantHeight)
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
+
+	if (ver < 2)
+		throw EOlderStream();
 
 	uint	i;
 	f.serial(_NormalQuanta);
@@ -57,9 +73,12 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 	f.serial(_Level);
 	f.serialCont(_Chains);
 	f.serialCont(_Loops);
-	f.serial(_Quad);
-	for (i=0; i<NumCreatureModels; ++i)
-		f.serial(_Topologies[i]);
+	if (ver <= 1)
+	{
+		f.serial(_Quad);
+		for (i=0; i<NumMaxCreatureModels; ++i)
+			f.serial(_Topologies[i]);
+	}
 	f.serial(_Center);
 	f.serial(_IsFloor, _IsCeiling);
 	f.serial(_Flags);
@@ -67,6 +86,11 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 	if (ver >= 1)
 	{
 		f.serial(_WaterHeight);
+	}
+
+	if (ver >= 2)
+	{
+		f.serial(_QuantHeight);
 	}
 }
 

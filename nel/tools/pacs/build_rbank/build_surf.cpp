@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.12 2003/01/07 11:24:49 legros Exp $
+ * $Id: build_surf.cpp,v 1.13 2003/01/15 10:43:26 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -477,10 +477,10 @@ void	NLPACS::CSurfElement::computeQuantas()
 //	hasOutside = !zbbox.include(v0) || !zbbox.include(v1) || !zbbox.include(v2);
 //	IsMergable = hasInside && !hasOutside;
 
-	QuantHeight = ((uint8)(floor(fmod((v0.z+v1.z+v2.z)/3.0f, 2.0))))%255;
+	QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
 	
 	Area = 0.5f*n.norm();
-
+/*
 	uint	i;
 	for (i=0; i<NumCreatureModels-1; ++i)
 		if (Normal.z>=Models[i][ModelInclineThreshold] &&
@@ -488,7 +488,11 @@ void	NLPACS::CSurfElement::computeQuantas()
 			break;
 
 	NormalQuanta = NumCreatureModels-1-i;
+*/
 
+	NormalQuanta = (Normal.z > 0.707f ? 0 : 1);
+
+/*
 	if (NormalQuanta == 0 || NormalQuanta == NumNormalQuantas-1)
 	{
 		OrientationQuanta = 0;
@@ -505,9 +509,10 @@ void	NLPACS::CSurfElement::computeQuantas()
 	if (NormalQuanta>=NumNormalQuantas)			NormalQuanta = NumNormalQuantas-1;
 	if (OrientationQuanta<0)					OrientationQuanta = 0;
 	if (OrientationQuanta>=NumNormalQuantas)	OrientationQuanta = NumOrientationQuantas-1;
+*/
 
 	OrientationQuanta = 0;
-	IsHorizontal = (NormalQuanta <= 1);
+	IsHorizontal = (NormalQuanta == 0);
 	IsValid = IsHorizontal;
 
 	Material = 0;
@@ -1889,7 +1894,7 @@ void	NLPACS::CZoneTessellation::compile()
 
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
-		Elements[el]->IsHorizontal = Elements[el]->NormalQuanta <= 1;
+		Elements[el]->IsHorizontal = Elements[el]->NormalQuanta == 0;
 		Elements[el]->IsValid = Elements[el]->IsHorizontal;
 	}
 

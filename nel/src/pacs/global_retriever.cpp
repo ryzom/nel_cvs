@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.69 2003/01/06 10:46:17 legros Exp $
+ * $Id: global_retriever.cpp,v 1.70 2003/01/15 10:42:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,7 +277,7 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 				const COrderedChain3f	&ochain = retriever.getFullOrderedChain(entry.OChainId);
 
 				uint	edge;
-				for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+				for (edge=entry.EdgeStart; edge<entry.EdgeEnd; ++edge)
 				{
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge] + origin;
@@ -289,7 +289,7 @@ void	NLPACS::CGlobalRetriever::getBorders(const UGlobalPosition &pos, std::vecto
 				const COrderedChain	&ochain = retriever.getOrderedChain(entry.OChainId);
 
 				uint	edge;
-				for (edge=entry.EdgeStart; edge+1<entry.EdgeEnd; ++edge)
+				for (edge=entry.EdgeStart; edge<entry.EdgeEnd; ++edge)
 				{
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge].unpack3f() + origin;

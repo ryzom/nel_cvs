@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.22 2002/12/18 14:57:14 legros Exp $
+ * $Id: local_retriever.h,v 1.23 2003/01/15 10:42:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,7 +203,7 @@ protected:
 	std::vector<uint16>					_BorderChains;
 
 	/// The topologies within the zone.
-	std::vector<CTopology>				_Topologies[NumCreatureModels];
+	std::vector<CTopology>				_Topologies[NumMaxCreatureModels];
 
 	/// The tip recognition threshold
 	static const float					_TipThreshold;
@@ -361,7 +361,8 @@ public:
 												   uint8 mat, uint8 charact, uint8 level,
 												   bool isUnderWater, float waterHeight,
 												   const NLMISC::CVector &center,
-												   const CSurfaceQuadTree &quad);
+												   const CSurfaceQuadTree &quad,
+												   sint8 quantHeight = 0);
 
 	/**
 	 * Adds a chain to the local retriever, using the vertices of the chain, 

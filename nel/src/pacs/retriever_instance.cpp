@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.40 2002/12/18 14:57:14 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.41 2003/01/15 10:42:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -410,6 +410,7 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 			if (cst.SurfaceLUT[surf].Counter == 2)
 			{
 				float			meanHeight;
+/*
 				const CQuadLeaf	*leaf;
 
 				// search in the surface's quad tree for the actual height
@@ -425,6 +426,15 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estima
 					float	distance = (float)fabs(localEstimated.z-meanHeight);
 					cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
 				}
+*/
+
+				meanHeight = retriever.getSurface(surf).getQuantHeight()*2.0f + 1.0f;
+
+				// if it is closer to the estimation than the previous remembered...
+				found = true;
+				float	distance = (float)fabs(localEstimated.z-meanHeight);
+				cst.SortedSurfaces.push_back(CCollisionSurfaceTemp::CDistanceSurface(distance, (uint16)surf, (uint16)_InstanceId, cst.SurfaceLUT[surf].FoundCloseEdge));
+
 			}
 			else if (cst.SurfaceLUT[surf].Counter != 0)
 			{
@@ -492,6 +502,9 @@ void	NLPACS::CRetrieverInstance::snap(NLPACS::ULocalPosition &position, const NL
 		// search in the surface's quad tree for the actual height
 //		position.Estimation.z = retriever.getSurfaces()[position.Surface].getQuadTree().getInterpZ(position.Estimation);
 
+		position.Estimation.z = retriever.getHeight(position);
+
+/*
 		const CQuadLeaf	*leaf = retriever.getSurfaces()[position.Surface].getQuadTree().getLeaf(position.Estimation);
 		// if there is no acceptable leaf, just give up
 		if (leaf != NULL)
@@ -502,7 +515,7 @@ void	NLPACS::CRetrieverInstance::snap(NLPACS::ULocalPosition &position, const NL
 		{
 			nlwarning("PACS: couldn't snap position (%f,%f,%f) on surface %d instance %d", position.Estimation.x, position.Estimation.y, position.Estimation.z, position.Surface, _InstanceId);
 		}
-
+*/
 	}
 	else if (_Type == CLocalRetriever::Interior)
 	{

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.52 2002/12/18 14:57:14 legros Exp $
+ * $Id: local_retriever.cpp,v 1.53 2003/01/15 10:42:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ void	NLPACS::CLocalRetriever::clear()
 	contReset(_Tips);
 	contReset(_BorderChains);
 	uint	i;
-	for (i=0; i<NumCreatureModels; ++i)
+	for (i=0; i<NumMaxCreatureModels; ++i)
 		contReset(_Topologies[i]);
 	_ChainQuad.clear();
 	_ExteriorMesh.clear();
@@ -315,7 +315,8 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 											uint8 mat, uint8 charact, uint8 level,
 											bool isUnderWater, float waterHeight,
 											const CVector &center,
-											const NLPACS::CSurfaceQuadTree &quad)
+											const NLPACS::CSurfaceQuadTree &quad,
+											sint8 quantHeight)
 {
 	// creates a new surface...
 	sint32	newId = _Surfaces.size();
@@ -330,6 +331,7 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 	surf._Level = level;
 	surf._Quad = quad;
 	surf._Center = center;
+	surf._QuantHeight = quantHeight;
 
 	// WARNING!! MODIFY THESE IF QUANTAS VALUES CHANGE !!
 	surf._IsFloor = (surf._NormalQuanta <= 1);
@@ -881,8 +883,13 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 		- face grid added.
 	Version 3:
 		- identifier added.
+	Version 4:
+		- topologies no more in stream (obsolete)
 	*/
-	sint	ver= f.serialVersion(3);
+	sint	ver= f.serialVersion(4);
+
+	if (ver < 4)
+		throw EOlderStream();
 
 	uint	i;
 	f.serialCont(_Chains);
@@ -891,8 +898,11 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	f.serialCont(_Surfaces);
 	f.serialCont(_Tips);
 	f.serialCont(_BorderChains);
-	for (i=0; i<NumCreatureModels; ++i)
-		f.serialCont(_Topologies[i]);
+	if (ver < 4)
+	{
+		for (i=0; i<NumMaxCreatureModels; ++i)
+			f.serialCont(_Topologies[i]);
+	}
 	f.serial(_ChainQuad);
 	f.serial(_BBox);
 	f.serialEnum(_Type);
@@ -1324,24 +1334,29 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 	}
 	else
 	{
-
-		// find quad leaf.
-		const CQuadLeaf	*leaf = _Surfaces[position.Surface].getQuadTree().getLeaf(position.Estimation);
-
-		// if there is no acceptable leaf, just give up
-		if (leaf == NULL)
+		if (_Surfaces[position.Surface].getQuadTree().getRoot() != NULL)
 		{
-			//nlinfo("COL: quadtree: don't find the quadLeaf!");
-			return position.Estimation.z;
+			// find quad leaf.
+			const CQuadLeaf	*leaf = _Surfaces[position.Surface].getQuadTree().getLeaf(position.Estimation);
+
+			// if there is no acceptable leaf, just give up
+			if (leaf == NULL)
+			{
+				//nlinfo("COL: quadtree: don't find the quadLeaf!");
+				return position.Estimation.z;
+			}
+			else
+			{
+				// else return mean height.
+				float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
+				return meanHeight;
+			}
 		}
 		else
 		{
-			// else return mean height.
-			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
-			return meanHeight;
+			sint8	qh = _Surfaces[position.Surface].getQuantHeight();
+			return qh*2.0f + 1.0f;
 		}
-
-//		return _Surfaces[position.Surface].getQuadTree().getInterpZ(position.Estimation);
 	}
 }
 

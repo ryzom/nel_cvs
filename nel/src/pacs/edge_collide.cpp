@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.8 2001/05/30 10:02:39 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.9 2001/06/01 08:15:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -268,7 +268,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 
 		// compute the collision position of the Circle on the edge.
 		// this gives the center of the sphere at the collision point.
-		CVector2f	proj= start + delta*t;
+		CVector2d	proj= CVector2d(start) + CVector2d(delta)*t;
 		// must add radius vector.
 		proj+= Norm * (sensSpeed?radius:-radius);
 		// compute projection on edge.
@@ -284,7 +284,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 				normal= -Norm;
 
 			// return time of collision.
-			return t;
+			return (float)t;
 		}
 	}
 	// else, must test if circle collide segment at t=0. if yes, return 0.
@@ -301,7 +301,8 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 		{
 			// if signs are equals, same side of the line, so we allow the circle to leave the edge.
 			/* Special case: do not allow to leave the edge if we are too much in the edge.
-			 It is important for CGlobalRetriever::testCollisionWithCollisionChains().
+			 It is important for CGlobalRetriever::testCollisionWithCollisionChains() because of the
+ 			 "SURFACEMOVE NOT DETECTED" Problem.
 			 Suppose we can walk on this chain SA/SB (separate Surface A/SurfaceB). Suppose we are near this edge, 
 			 and on Surface SA, and suppose there is an other chain SB/SC the circle collide with. If we 
 			 return 1 (no collision), SB/SC won't be detected (because only SA/?? chains will be tested) and 
@@ -357,7 +358,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 
 
 // ***************************************************************************
-float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta)
+bool		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta, float &tMin, float &tMax, bool &normalOnBox)
 {
 	double	a,b,cv,cc,  d,e,f;
 	CVector2d	tmp;
@@ -402,7 +403,7 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	double	det= a*e - b*d;
 	// if to near of 0. (take delta for reference of test).
 	if(det==0 || fabs(det)<delta.norm()*EdgeCollideEpsilon)
-		return 1;
+		return false;
 
 	// intersection I(t)= pInt + vInt*t.
 	CVector2d		pInt, vInt;
@@ -434,19 +435,20 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	// ===========================
 	/*
 		Now, for each edge, compute time interval where parameter is in [0,1]. If intervals overlap, there is a collision.
-		Then clamp this collision time with [0,1].
 	*/
 	double	tu0, tu1, tv0, tv1;
+	// infinite interval.
+	bool	allU=false, allV=false;
 
 	// compute time interval for u(t).
 	if(uv==0 || fabs(uv)<EdgeCollideEpsilon)
 	{
 		// The intersection does not move along D1. Always projected on u(t)=uc. so if in [0,1], OK, else never collide.
 		if(uc<0 || uc>1)
-			return 1;
+			return false;
 		// else suppose "always valid".
-		tu0= 0;
-		tu1= 1;
+		tu0 =tu1= 0;
+		allU= true;
 	}
 	else
 	{
@@ -459,10 +461,10 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	{
 		// The intersection does not move along D2. Always projected on v(t)=vc. so if in [0,1], OK, else never collide.
 		if(vc<0 || vc>1)
-			return 1;
+			return false;
 		// else suppose "always valid".
-		tv0= 0;
-		tv1= 1;
+		tv0 =tv1= 0;
+		allV= true;
 	}
 	else
 	{
@@ -479,23 +481,44 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	if(tv0>tv1)
 		swap(tv0, tv1);		// now, [tv0, tv1] represent the time interval where line D1 hit the edge D2.
 
-	// if intervals do not overlap, no collision.
-	if(tu0>tv1 || tv0>tu1)
-		return 1;
+	normalOnBox= false;
+	if(!allU && !allV)
+	{
+		// if intervals do not overlap, no collision.
+		if(tu0>tv1 || tv0>tu1)
+			return false;
+		else
+		{
+			// compute intersection of intervals.
+			tMin= (float)max(tu0, tv0);
+			tMax= (float)min(tu1, tv1);
+			// if collision of edgeCollide against the bbox.
+			if(tv0>tu0)
+				normalOnBox= true;
+		}
+	}
+	else if(allU)
+	{
+		// intersection of Infinite and V interval.
+		tMin= (float)tv0;
+		tMax= (float)tv1;
+		// if collision of edgeCollide against the bbox.
+		normalOnBox= true;
+	}
+	else if(allV)
+	{
+		// intersection of Infinite and U interval.
+		tMin= (float)tu0;
+		tMax= (float)tu1;
+	}
 	else
 	{
-		// compute intersection of intervals.
-		double	tInt0= max(tu0, tv0);
-		double	tInt1= min(tu1, tv1);
-
-		// if this interval do not overlap with [0,1], no collision.
-		if(tInt0>1 || 0>tInt1)
-			return 1;
-		else
-			// return time of collision of the 2 edges.
-			return (float)max(0.0, tInt0);
+		// if allU && allV, this means delta is near 0, and so there is always collision.
+		tMin= -1000;
+		tMax= 1000;
 	}
 	
+	return true;
 }
 
 
@@ -511,28 +534,88 @@ float		CEdgeCollide::testBBoxMove(const CVector2f &start, const CVector2f &delta
 	bool	sensPos= dist>0;
 	bool	sensSpeed= speed>0;
 	// if signs are equals, same side of the line, so we allow the circle to leave the line.
-	if(sensPos==sensSpeed)
-		return 1;
+	/*if(sensPos==sensSpeed)
+		return 1;*/
+
 
 	// Else, do 4 test edge/edge, and return Tmin.
-	float	tMin=1;
+	float	tMin, tMax;
+	bool	edgeCollided= false;
+	bool	normalOnBox= false;
+	CVector2f	boxNormal;
 	for(sint i=0;i<4;i++)
 	{
-		float	t;
-		t= testEdgeMove(bbox[i], bbox[(i+1)&3], delta);
-		tMin= min(t, tMin);
+		float	t0, t1;
+		bool	nob;
+		CVector2f	a= bbox[i];
+		CVector2f	b= bbox[(i+1)&3];
+
+		// test move against this edge.
+		if(testEdgeMove(a, b, delta, t0, t1, nob))
+		{
+			if(edgeCollided)
+			{
+				tMin= min(t0, tMin);
+				tMax= max(t1, tMax);
+			}
+			else
+			{
+				edgeCollided= true;
+				tMin= t0;
+				tMax= t1;
+			}
+
+			// get normal of box against we collide.
+			if(tMin==t0)
+			{
+				normalOnBox= nob;
+				if(nob)
+				{
+					CVector2f	dab;
+					// bbox must be CCW.
+					dab= b-a;
+					// the normal is computed so that the vector goes In the bbox.
+					boxNormal.x= -dab.y;
+					boxNormal.y= dab.x;
+				}
+			}
+		}
 	}
 
-	if(tMin<1)
+	// if collision occurs,and int the [0,1] interval...
+	if(edgeCollided && tMin<1 && tMax>0)
 	{
-		// always assume collision occurs on interior of the edge. the normal to return is +- Norm.
-		if(sensPos)	// if algebric distance of start position was >0.
-			normal= Norm;
+		// compute normal of collision.
+		if(normalOnBox)
+		{
+			// assume collsion is an endpoint of the edge against the bbox.
+			normal= boxNormal;
+		}
 		else
-			normal= -Norm;
+		{
+			// assume collision occurs on interior of the edge. the normal to return is +- Norm.
+			if(sensPos)	// if algebric distance of start position was >0.
+				normal= Norm;
+			else
+				normal= -Norm;
+		}
 
-		// return time of collision.
-		return tMin;
+		// compute time of collison.
+		if(tMin>0)
+			// return time of collision.
+			return tMin;
+		else
+		{
+			// The bbox is inside the edge, at t==0. test if it goes out or not.
+			// accept only if we are much near the exit than the enter.
+			/* NB: 0.2 is an empirical value "which works well". Normally, 1 is the good value, but because of the
+				"SURFACEMOVE NOT DETECTED" Problem (see testCircleMove()), we must be more restrictive.
+			*/
+			if( tMax<0.2*(-tMin) )
+				return 1;
+			else
+				return 0;
+		}
 	}
 	else
 		return 1;

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.46 2002/11/04 15:40:42 boucher Exp $
+ * $Id: debug.h,v 1.47 2002/11/14 17:39:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,6 +488,10 @@ template<class T, class U>	inline T	safe_cast(U o)
 #endif
 	return static_cast<T>(o);
 }
+
+/** Compile time assertion
+  */
+#define nlctassert(cond) sizeof(uint[(cond) ? 1 : 0]);
 
 } // NLMISC
 

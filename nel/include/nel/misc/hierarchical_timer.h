@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.25 2003/11/14 14:06:58 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.26 2003/11/17 14:56:51 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -395,9 +395,11 @@ private:
 	};
 
 	// Real Job.
-	void		doBefore();
-	void		doAfter(bool displayAfter = false);	
-	
+	void			doBefore();
+	void			doAfter(bool displayAfter = false);	
+
+	static void		estimateAfterStopTime();
+		
 private:
 	// walk the tree to current execution node, creating it if necessary
 	void	walkTreeToCurrent();
@@ -431,7 +433,9 @@ private:
 	static bool						_WantStandardDeviation;
 	//
 	static CHTimer				   *_CurrTimer;	
-
+	// 
+	static sint64					_AfterStopEstimateTime;
+	static bool						_AfterStopEstimateTimeDone;
 };
 
 

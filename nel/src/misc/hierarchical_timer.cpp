@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.31 2003/11/14 14:07:17 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.32 2003/11/17 14:56:33 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,6 +54,8 @@ bool			CHTimer::_BenchStartedOnce = false;
 double			CHTimer::_MsPerTick;
 bool			CHTimer::_WantStandardDeviation = false;
 CHTimer		   *CHTimer::_CurrTimer = &_RootTimer;
+sint64			CHTimer::_AfterStopEstimateTime= 0;
+bool			CHTimer::_AfterStopEstimateTimeDone= false;
 
 
 
@@ -189,16 +191,62 @@ void CHTimer::walkTreeToCurrent()
 
 
 //=================================================================
+void	CHTimer::estimateAfterStopTime()
+{
+	if(_AfterStopEstimateTimeDone)
+		return;
+	const uint numSamples = 1000;
+
+	// Do as in startBench, reset and init
+	clear();
+	
+	{
+#ifdef NL_CPU_INTEL
+		double freq = (double) CSystemInfo::getProcessorFrequency(false);
+		_MsPerTick = 1000 / (double) freq;
+#else
+		_MsPerTick = CTime::ticksToSecond(1000);
+#endif
+		CSimpleClock::init();
+	}
+	
+	// start
+	_Benching = true;
+	_BenchStartedOnce = true;
+	_RootNode.Owner = &_RootTimer;
+	_WantStandardDeviation = false;
+	_RootTimer.before();
+	
+	for(uint i=0;i<numSamples;i++)
+	{
+		static NLMISC::CHTimer		estimateSampleTimer("sampleTimer");
+		estimateSampleTimer.before();
+		estimateSampleTimer.after();
+	}
+
+	_RootTimer.after();
+	_Benching = false;
+
+	// Then the After Stop time is the rootTimer time / numSamples
+	_AfterStopEstimateTime= (_RootNode.TotalTime-_RootNode.SonsTotalTime) / numSamples;
+
+	_AfterStopEstimateTimeDone= true;
+
+	// must re-clear.
+	clear();
+}
+
+
+//=================================================================
 void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick, bool reset)
 {
 	nlassert(!_Benching);
 
+	// if not done, estimate the AfterStopTime
+	estimateAfterStopTime();
+	
 	if(reset)
 		clear();
-
-	_Benching = true;
-	_BenchStartedOnce = true;
-	_RootNode.Owner = &_RootTimer;
 
 	if(reset)
 	{
@@ -211,6 +259,9 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/, bool quick, boo
 		CSimpleClock::init();
 	}
 
+	// Launch
+	_Benching = true;
+	_BenchStartedOnce = true;
 	_RootNode.Owner = &_RootTimer;
 	_WantStandardDeviation = wantStandardDeviation;
 	_RootTimer.before();
@@ -516,7 +567,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 
 	// display header.
 	CLog::TDisplayInfo	dummyDspInfo;
-	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
 	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");
 
@@ -786,12 +837,17 @@ void	CHTimer::doAfter(bool displayAfter)
 {
 	_CurrNode->Clock.stop();		
 	_PreambuleClock.start();
-	//		
-	//nlinfo((std::string("clock ") + _Name + std::string(" time = ") + NLMISC::toString(_CurrNode->Clock.getNumTicks())).c_str());
-	sint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+	/* Remove my Son preambule, and remove only ONE StartStop
+		It is because between the start and the end, only ONE rdtsc time is counted:
+	*/
+	sint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks());
+	// Case where the SonPreambule is overestimated, 
 	numTicks= std::max((sint64)0, numTicks);
-
-	_CurrNode->TotalTime += numTicks;		
+	// In case where the SonPreambule is overestimated, the TotalTime must not be < of the SonTime
+	if(_CurrNode->TotalTime + numTicks < _CurrNode->SonsTotalTime)
+		numTicks= _CurrNode->SonsTotalTime - _CurrNode->TotalTime;
+	
+	_CurrNode->TotalTime += numTicks;
 	_CurrNode->MinTime = std::min(_CurrNode->MinTime, (uint64)numTicks);
 	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, (uint64)numTicks);
 	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
@@ -813,10 +869,21 @@ void	CHTimer::doAfter(bool displayAfter)
 	//
 	if (_CurrNode->Parent)
 	{
+		CNode	*curNode= _CurrNode;
+		CNode	*parent= _CurrNode->Parent;
+		parent->SonsTotalTime += numTicks;
 		_PreambuleClock.stop();
-		_CurrNode = _CurrNode->Parent;
-		_CurrNode->SonsTotalTime += numTicks;
-		_CurrNode->SonsPreambule += _PreambuleClock.getNumTicks();
+		/*
+			The SonPreambule of my parent is 
+				+ my BeforePreambule (counted in doBefore)
+				+ my Afterpreambule (see below)
+				+ my Sons Preambule 
+				+ some constant time due to the Start/Stop of the _CurrNode->Clock, the 2* Start/Stop
+					of the PreabmuleClock, the function call time of doBefore and doAfter
+		*/
+		parent->SonsPreambule += _PreambuleClock.getNumTicks() + curNode->SonsPreambule + _AfterStopEstimateTime;
+		// walk to parent
+		_CurrNode= parent;
 	}
 	else
 	{

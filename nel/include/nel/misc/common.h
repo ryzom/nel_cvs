@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.38 2002/03/20 14:51:34 lecroart Exp $
+ * $Id: common.h,v 1.39 2002/04/12 11:46:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,6 +307,8 @@ inline std::string toString (const char *format, ...)
 
 #ifdef NL_OS_WINDOWS
 
+#if _MSC_VER < 1300	// visual or older (on visual .NET, we don't need to do that)
+
 #define NLMISC_ADD_BASIC_ISTREAM_OPERATOR(__type,__casttype) \
 template <class _CharT, class _Traits> \
 std::basic_istream<_CharT, _Traits>& __cdecl \
@@ -333,6 +335,8 @@ NLMISC_ADD_BASIC_ISTREAM_OPERATOR(uint16, unsigned int);
 NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint16, signed int);
 NLMISC_ADD_BASIC_ISTREAM_OPERATOR(uint32, unsigned int);
 NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint32, signed int);
+
+#endif // _MSC_VER < 1300
 
 
 template <class _CharT, class _Traits>

@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.1 2001/03/28 14:01:42 portier Exp $
+ * $Id: automata_desc.cpp,v 1.2 2001/03/28 14:03:56 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "../include/automata_desc.h"
+#include "nel/ai/tools/automata_desc.h"
 #include <fstream.h>
 
 const sint32 CAutomataDesc::IDSUCCESS	= -1;

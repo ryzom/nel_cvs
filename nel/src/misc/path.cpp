@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.36 2002/06/12 11:14:30 corvazier Exp $
+ * $Id: path.cpp,v 1.37 2002/06/12 13:07:45 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -166,16 +166,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 					string file = (*it).first.substr (0, pos + 1);
 					file += ext2lwr;
 
-					map<string, CFileEntry>::iterator nit = inst->_Files.find (file);
-					if (nit != inst->_Files.end())
-					{
-						nlwarning ("CPath::remapExtension(%s, %s): The file '%s' is in conflict with the remapping file '%s', skip it", ext1lwr.c_str(), ext2lwr.c_str(), file.c_str(), (*it).first.c_str());
-					}
-					else
-					{
 // TODO perhaps a problem because I insert in the current map that i parcours
-						insertFileInMap (file, (*it).second.Path, true, ext2lwr);
-					}
+					insertFileInMap (file, (*it).second.Path, true, ext2lwr);
 				}
 			}
 			it++;
@@ -655,19 +647,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 		ext = virtual_ext;
 	}
 
-	map<string, CFileEntry>::iterator it = inst->_Files.find (filename);
-	if (it == inst->_Files.end ())
-	{
-		// ok, the room is empty, let s add it
-		insertFileInMap (filename, newFile, remap, ext);
-	}
-	else
-	{
-		if (remap)
-			nlwarning ("CPath::addSearchFile(%s, %d, %s): remapped file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
-		else
-			nlwarning ("CPath::addSearchFile(%s, %d, %s): file '%s' already inserted in the map directory (location: %s)", file.c_str(), remap, virtual_ext.c_str(), filename.c_str(), (*it).second.Path.c_str());
-	}
+	insertFileInMap (filename, newFile, remap, ext);
 
 	if (!remap && !ext.empty())
 	{
@@ -771,12 +751,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 		string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
 		string ext = strlwr(CFile::getExtension(sTmp));
 
-		map<string, CFileEntry>::iterator it = inst->_Files.find (sTmp);
-		if (it == inst->_Files.end ())
-		{
-			// ok, the room is empty, let s add it
-			insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
-		}
+		insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
 
 		for (uint j = 0; j < inst->_Extensions.size (); j++)
 		{
@@ -802,7 +777,19 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
 	if (it != inst->_Files.end ())
 	{
-		nlwarning ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+		if ((*it).second.Path.find("@") != string::npos && filepath.find("@") == string::npos)
+		{
+			// if there's a file in a big file and a file in a path, the file in path wins
+			// remplace with the new one
+			nlinfo ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+			(*it).second.Path = filepath;
+			(*it).second.Remapped = remap;
+			(*it).second.Extension = extension;
+		}
+		else
+		{
+			nlwarning ("CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+		}
 	}
 	else
 	{

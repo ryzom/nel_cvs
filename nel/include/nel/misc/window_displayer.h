@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.13 2003/02/07 17:42:30 cado Exp $
+ * $Id: window_displayer.h,v 1.14 2003/02/21 15:53:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,13 +50,13 @@ public:
 	CWindowDisplayer (const char *displayerName = "") :
 	  IDisplayer(displayerName), 
 		_Buffer("CWindowDisplayer::_Buffer"), _Labels("CWindowDisplayer::_Labels"), _CommandsToExecute("CWindowDisplayer::_CommandsToExecute"),
-		_Continue(true), _PosInHistory(0), _Init(false), _HistorySize(0), _ToolBarHeight(22), _InputEditHeight(25), _Thread(NULL)
+		_Continue(true), _PosInHistory(0), _Init(false), _HistorySize(0), _ToolBarHeight(22), _InputEditHeight(25), _Thread(0), Log(0)
 	  { }
 
 	virtual ~CWindowDisplayer ();
 
 	// open the window and run the display thread (MT)
-	void	create (std::string titleBar = "", bool iconified = false, sint x = -1, sint y = -1, sint w = -1, sint h = -1, sint hs = -1, sint fs = 0, const std::string &fn = "", bool ww = false);
+	void	create (std::string titleBar = "", bool iconified = false, sint x = -1, sint y = -1, sint w = -1, sint h = -1, sint hs = -1, sint fs = 0, const std::string &fn = "", bool ww = false, CLog *log = InfoLog);
 
 	// create a new label. empty string mean separator. start with @ means that is a command (MT)
 	uint	createLabel (const char *value = "?");
@@ -95,7 +95,7 @@ protected:
 	CSynchronized<std::vector<std::string> >						_CommandsToExecute;
 
 	// called by DT only
-	virtual void	open (std::string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww) = 0;
+	virtual void	open (std::string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log) = 0;
 	// called by DT only
 	virtual void	display_main () = 0;
 
@@ -109,6 +109,8 @@ protected:
 	sint _HistorySize;
 	sint _ToolBarHeight;
 	sint _InputEditHeight;
+
+	CLog *Log;
 
 	// the thread used to update the display
 	NLMISC::IThread *_Thread;

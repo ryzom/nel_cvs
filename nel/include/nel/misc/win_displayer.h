@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.13 2002/11/12 17:24:46 lecroart Exp $
+ * $Id: win_displayer.h,v 1.14 2003/02/21 15:53:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ private:
 	void	updateLabels ();
 
 	// called by DT only
-	void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww);
+	void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww, CLog *log);
 	// called by DT only
 	void	clear ();
 	// called by DT only
@@ -85,6 +85,8 @@ private:
 	HWND _HEdit, _HWnd, _HInputEdit;
 	HFONT _HFont;
 	HMODULE _HLibModule;
+
+	CLog *Log;
 
 	// the MT must set the value to true to exit the thread
 	bool Exit;

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.16 2000/11/15 10:26:22 cado Exp $
+ * $Id: inet_address.cpp,v 1.17 2000/11/21 17:30:55 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,13 +37,17 @@
 
 #elif defined NL_OS_UNIX
 
+#include <unistd.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netdb.h>
+
 #define WSAGetLastError() 0
 
 #endif
 
 
-#include <sstream>
 using namespace std;
 
 
@@ -141,9 +145,15 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 {
 	// Try to convert directly for addresses such as a.b.c.d
 	in_addr iaddr;
+#ifdef NL_OS_WINDOWS
 	iaddr.S_un.S_addr = inet_addr( hostName.c_str() );
 	if ( iaddr.S_un.S_addr == INADDR_NONE )
 	{
+#elif defined NL_OS_UNIX
+	iaddr.s_addr = inet_addr( hostName.c_str() );
+	if ( iaddr.s_addr == INADDR_NONE )
+	{
+#endif
 		// Otherwise use the traditional DNS look-up
 		hostent *phostent = gethostbyname( hostName.c_str() );
 		if ( phostent == NULL )
@@ -222,7 +232,7 @@ const sockaddr_in *CInetAddress::sockAddr() const
 string CInetAddress::ipAddress() const
 {
 	stringstream ss; // or use inet_ntoa
-	ss << _SockAddr->sin_addr.S_un.S_un_b.s_b1 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b2 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b3 << "." << _SockAddr->sin_addr.S_un.S_un_b.s_b4;
+	ss << inet_ntoa ( _SockAddr->sin_addr );
 	return ss.str();
 }
 

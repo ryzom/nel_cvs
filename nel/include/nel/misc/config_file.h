@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.12 2000/11/23 13:09:50 cado Exp $
+ * $Id: config_file.h,v 1.13 2000/12/05 16:12:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,18 @@ public:
 		const std::string	&asString	(int index=0) const;
 		//@}
 
+		/// \name Set the variable content.
+		//@{
+		/// Set the content of the variable as an integer
+		void				setAsInt	(int val, int index=0);
+		/// Set	the content of the variable as a double
+		void				setAsDouble	(double val, int index=0);
+		/// Set the content of the variable as a float
+		void				setAsFloat	(float val, int index=0);
+		/// Set the content of the variable as a STL string
+		void				setAsString	(std::string val, int index=0);
+		//@}
+
 		bool		operator==	(const CVar& var) const;
 		bool		operator!=	(const CVar& var) const;
 		
@@ -163,10 +175,13 @@ public:
 	virtual ~CConfigFile ();
 
 	/// Get a variable with the variable name
-	const CVar &getVar (const std::string &varName) const;
+	CVar &getVar (const std::string &varName);
 
 	/// load and parse the file
 	void load (const std::string &fileName);
+
+	/// save the config file
+	void save () const;
 
 	/// Returns true if the file has been loaded
 	bool loaded();

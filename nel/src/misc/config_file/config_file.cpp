@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.12 2000/11/23 13:09:50 cado Exp $
+ * $Id: config_file.cpp,v 1.13 2000/12/05 16:12:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,35 @@ const std::string &CConfigFile::CVar::asString (int index) const
 	else return StrValues[index];
 }
 
+
+
+void CConfigFile::CVar::setAsInt (int val, int index)
+{
+	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
+	else if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+	else IntValues[index] = val;
+}
+
+void CConfigFile::CVar::setAsDouble (double val, int index)
+{
+	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
+	else if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+	else RealValues[index] = val;
+}
+
+void CConfigFile::CVar::setAsFloat (float val, int index)
+{
+	setAsDouble (val, index);
+}
+
+void CConfigFile::CVar::setAsString (std::string val, int index)
+{
+	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
+	else if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	else StrValues[index] = val;
+}
+
+
 bool CConfigFile::CVar::operator==	(const CVar& var) const
 {
 	if (Type == var.Type)
@@ -143,7 +172,7 @@ void CConfigFile::reparse ()
 }
 
 
-const CConfigFile::CVar &CConfigFile::getVar (const std::string &varName) const
+CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 {
 	for (int i = 0; i < (int)_Vars.size(); i++)
 	{
@@ -155,6 +184,72 @@ const CConfigFile::CVar &CConfigFile::getVar (const std::string &varName) const
 	}
 	throw EUnknownVar (varName);
 }
+
+
+void CConfigFile::save () const
+{
+	FILE *fp = fopen (_FileName.c_str (), "w");
+	if (fp == NULL)
+	{
+		nlwarning ("Couldn't create %s file", _FileName.c_str ());
+		return;
+	}
+
+	for(int i = 0; i < (int)_Vars.size(); i++)
+	{
+		if (_Vars[i].Comp)
+		{
+			fprintf(fp, "%-20s = { ", _Vars[i].Name.c_str());
+			switch (_Vars[i].Type)
+			{
+			case CConfigFile::CVar::T_INT:
+			{
+				for (int it=0; it < (int)_Vars[i].IntValues.size(); it++)
+				{
+					fprintf(fp, "%d%s", _Vars[i].IntValues[it], it<(int)_Vars[i].IntValues.size()-1?", ":" ");
+				}
+				fprintf(fp, "};\n");
+				break;
+			}
+			case CConfigFile::CVar::T_STRING:
+			{
+				for (int st=0; st < (int)_Vars[i].StrValues.size(); st++)
+				{
+					fprintf(fp, "\"%s\"%s", _Vars[i].StrValues[st].c_str(), st<(int)_Vars[i].StrValues.size()-1?", ":" ");
+				}
+				fprintf(fp, "};\n");
+				break;
+			}
+			case CConfigFile::CVar::T_REAL:
+			{
+				for (int rt=0; rt < (int)_Vars[i].RealValues.size(); rt++)
+				{
+					fprintf(fp, "%.10f%s", _Vars[i].RealValues[rt], rt<(int)_Vars[i].RealValues.size()-1?", ":" ");
+				}
+				fprintf(fp, "};\n");
+				break;
+			}
+			}
+		}
+		else
+		{
+			switch (_Vars[i].Type)
+			{
+			case CConfigFile::CVar::T_INT:
+				fprintf(fp, "%-20s = %d;\n", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
+				break;
+			case CConfigFile::CVar::T_STRING:
+				fprintf(fp, "%-20s = \"%s\";\n", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
+				break;
+			case CConfigFile::CVar::T_REAL:
+				fprintf(fp, "%-20s = %.10f;\n", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
+				break;
+			}
+		}
+	}
+	fclose (fp);
+}
+
 
 void CConfigFile::print () const
 {

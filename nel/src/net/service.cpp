@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.10 2000/10/11 08:31:07 lecroart Exp $
+ * $Id: service.cpp,v 1.11 2000/10/11 09:28:18 cado Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -38,6 +38,7 @@ static IService *Service = NULL;
 
 void ExitFunc ()
 {
+	cout << "** ExitFunc **" << endl;
 	try
 	{
 		if (Service != NULL)
@@ -46,6 +47,7 @@ void ExitFunc ()
 			IService *is = Service;
 			Service = NULL;
 
+			cout << "** ExitFunc Release **" << endl;
 			is->release ();
 		}
 	}
@@ -103,15 +105,15 @@ sint IService::main (int argc, char **argv)
 	}
 	catch (Exception &e)
 	{
-		nlerror ("Error running the service \"%s\": %s", _Name, e.what());
-		setStatus (EXIT_FAILURE);
 		ExitFunc ();
+		setStatus (EXIT_FAILURE);
+		nlerror ("Error running the service \"%s\": %s", _Name, e.what());
 	}
 	catch (...)
 	{
-		nlerror ("Unknown external exception");
-		setStatus (EXIT_FAILURE);
 		ExitFunc ();
+		setStatus (EXIT_FAILURE);
+		nlerror ("Unknown external exception");
 	}
 	return getStatus ();
 }

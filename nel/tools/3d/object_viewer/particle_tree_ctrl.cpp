@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.29 2001/11/23 18:49:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.30 2001/12/06 16:58:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@
 #include "3d/particle_system_shape.h"
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_mesh.h"
 #include "3d/ps_force.h"
 #include "3d/ps_zone.h"
 #include "3d/ps_sound.h"

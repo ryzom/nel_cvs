@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.15 2002/09/09 09:52:32 coutelas Exp $
+ * $Id: ps_attrib.h,v 1.16 2002/10/10 13:31:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,13 +282,19 @@ public:
 		/// get a const reference on an attribute instance
 		const T &				operator[](uint32 index) const 
 		{ 
-			nlassert(index < _Tab.size()); return _Tab[index]; 
+			#ifdef NL_DEBUG
+				nlassert(index < _Tab.size());
+			#endif
+			return _Tab[index]; 
 		}
 
 		/// get a reference on an attribute instance
 		T &						operator[](uint32 index) 
 		{ 
-			nlassert(index < _Tab.size()); return _Tab[index]; 
+			#ifdef NL_DEBUG
+				nlassert(index < _Tab.size());
+			#endif
+			return _Tab[index]; 
 		}
 	//@}
 

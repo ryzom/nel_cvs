@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.196 2003/11/04 18:17:05 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.197 2003/11/12 11:40:56 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1094,6 +1094,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_NORMALIZE);
+	glDisable(GL_COLOR_SUM_EXT);
 	_CurrViewport.init(0.f, 0.f, 1.f, 1.f);
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;

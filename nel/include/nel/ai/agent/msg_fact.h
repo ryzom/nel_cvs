@@ -2,7 +2,7 @@
 
 /** \file msg_fact.h
  *
- * $Id: msg_fact.h,v 1.4 2003/01/21 11:24:25 chafik Exp $
+ * $Id: msg_fact.h,v 1.5 2003/01/27 09:04:48 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,9 @@
 
 namespace NLAIAGENT
 {
+	/**
+	This message store a CFact it is used when agent want to add a fact to his fact base.
+	*/
 	class CFactMsg : public CMessageScript 
 	{
 	public:

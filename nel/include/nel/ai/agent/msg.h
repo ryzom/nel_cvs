@@ -1,7 +1,7 @@
 /** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.22 2003/01/23 15:40:56 chafik Exp $
+ * $Id: msg.h,v 1.23 2003/01/27 09:04:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,22 +173,28 @@ namespace NLAIAGENT
 		{
 			return _ReservedHeritanceIndexVar;
 		}
+		//@}
 
-		void setProtcetSender()
+		///Sender can be change on a multible send/run messages.
+		//{@
+
+		///The sendMessage set automatically the sender on the message header, if user want keep sender have to use this method
+		void protectSender()
 		{
 			_ProtectSender = true;
 		}
-		void UnsetProtcetSender()
+		void unprotectSender()
 		{
 			_ProtectSender = false;
 		}
 
-		bool getProtcetSender() const
+		bool senderIsProtected() const
 		{
 			return _ProtectSender;
 		}
 
-		//@}		
+
+		//@}
 
 	public:
 		virtual IObjectIA &operator = (const IObjectIA &a);		

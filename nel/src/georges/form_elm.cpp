@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.17 2002/06/13 09:32:35 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.18 2002/06/13 12:15:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -851,7 +851,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 			case TokenString:
 				{
 					// Are we a struct ?
-					if ( ((type == UFormDfn::EntryDfn) || (type == UFormDfn::EntryVirtualDfn)) && (!array) )
+					if ( ((type == UFormDfn::EntryDfn) || (type == UFormDfn::EntryVirtualDfn)) /*&& (!array)*/ )
 					{
 						// Check the virtual DFN is not empty..
 						if ( (type == UFormDfn::EntryVirtualDfn) && (*nodeDfn == NULL) )

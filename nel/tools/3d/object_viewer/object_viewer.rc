@@ -242,7 +242,6 @@ IDB_MORPH_SCHEME        BITMAP  DISCARDABLE     "bmp00024.bmp"
 IDB_PAUSE_SYSTEM        BITMAP  DISCARDABLE     "bmp00025.bmp"
 IDB_LIGHT_ATTEN_START   BITMAP  DISCARDABLE     "bmp00026.bmp"
 IDB_LIGHT_ATTEN_END     BITMAP  DISCARDABLE     "light_at.bmp"
-IDB_BITMAP1             BITMAP  DISCARDABLE     "bmp00027.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.50 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: transform.cpp,v 1.51 2002/11/08 18:40:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ CTransform::CTransform()
 	_ForceCLodSticked= false;
 
 	// default MeanColor value
-	_MeanColor.set(80,80,80);
+	_MeanColor.set(255,255,255,255);
 
 
 	// Setup some state.
@@ -605,7 +605,7 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 	if(LocalDate>WorldDate || (caller && caller->WorldDate>WorldDate) )
 	{
 		// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON in the hierarchy!
-		if( _AncestorSkeletonModel==NULL)
+		if( _AncestorSkeletonModel==NULL )
 		{
 			WorldMatrix=  *pFatherWM * LocalMatrix;
 			WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
@@ -613,17 +613,24 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 			// Add the model to the moving object list
 			if (!Frozen)
 				static_cast<CHrcTrav*>(Trav)->_MovingObjects.push_back (Model);
-
-			// if lightable, resetLighting()
-			if( transModel->isLightable() )
-			{
-				// Must resetLighting() because the objects has move. So it must computes new contribution with
-				// staticLights or dynamicLights.
-				// NB: not done if _AncestorSkeletonModel!=NULL. no need because  in this case, 
-				// result is driven by the _LightContribution of the _AncestorSkeletonModel.
-				transModel->resetLighting();
-			}
 		}
+	}
+
+	// Update dynamic lighting.
+	/*
+		If the model is not frozen in StaticLight, then must update lighting each frame.
+		Even if the object doesn't move, a new dynamic light may enter in its aera. Hence we must test
+		it in the light quadrid. StaticLight-ed Objects don't need it because they are inserted in a special quadgrid, 
+		where dynamics lights touch all StaticLight-ed object to force their computing
+
+		NB: not done if _AncestorSkeletonModel!=NULL. no need because  in this case, 
+		result is driven by the _LightContribution of the _AncestorSkeletonModel.
+	*/
+	if( !transModel->_LightContribution.FrozenStaticLightSetup && _AncestorSkeletonModel==NULL )
+	{
+		// if the model is lightable reset lighting
+		if( transModel->isLightable() )
+			transModel->resetLighting();
 	}
 
 	// Combine visibility.

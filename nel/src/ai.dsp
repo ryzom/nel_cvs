@@ -112,6 +112,10 @@ SOURCE=.\ai\agent\agent_operator.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\agent_proxy_mailer.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\agent_script.cpp
 # End Source File
 # Begin Source File
@@ -152,11 +156,11 @@ SOURCE=.\ai\agent\main_agent_script.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\message.cpp
+SOURCE=.\ai\agent\message_script.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\agent\message_script.cpp
+SOURCE=.\ai\agent\msg.cpp
 # End Source File
 # Begin Source File
 
@@ -264,6 +268,10 @@ SOURCE=..\include\nel\ai\agent\messagerie.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\msg.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\msg_container.h
 # End Source File
 # Begin Source File
@@ -283,10 +291,6 @@ SOURCE=..\include\nel\ai\agent\object_type.h
 SOURCE=..\include\nel\ai\agent\performative.h
 # End Source File
 # End Group
-# Begin Source File
-
-SOURCE=.\ai\agent\agent_proxy_mailer.cpp
-# End Source File
 # End Group
 # Begin Group "common"
 

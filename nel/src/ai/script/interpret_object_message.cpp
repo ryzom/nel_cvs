@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.6 2001/01/31 14:01:09 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.7 2001/01/31 17:29:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,11 @@ namespace NLAISCRIPT
 //#########################################
 //		CMsgNotifyParentClass
 //#########################################
+
+	CMsgNotifyParentClass::CMsgNotifyParentClass()
+	{
+
+	}
 	
 	const NLAIC::IBasicType *CMsgNotifyParentClass::clone() const
 	{

@@ -68,11 +68,18 @@ version: 1
 	)
 	rollout main "Parameters"
 	(
-		spinner cAmount1 "amount 1" type:#float range:[0, 1000, 0.1]
-		spinner cAmount2 "amount 2" type:#float range:[0, 1000, 0.1]
-		spinner cAmount3 "amount 3" type:#float range:[0, 1000, 0.1]
-		spinner cAmount4 "amount 4" type:#float range:[0, 1000, 0.1]
-
+		spinner cAmount1 "amount 1" type:#float range:[-1000, 1000, 0.1]
+		spinner cAmount2 "amount 2" type:#float range:[-1000, 1000, 0.1]
+		spinner cAmount3 "amount 3" type:#float range:[-1000, 1000, 0.1]
+		spinner cAmount4 "amount 4" type:#float range:[-1000, 1000, 0.1]
+		
+		on main open do
+		(
+			print "rollout opened"
+			if (numSlice < 2) then cAmount2.enabled = false
+			if (numSlice < 3) then cAmount3.enabled = false
+			if (numSlice < 4) then cAmount4.enabled = false		
+		)
 	)
 	on map i p do
 	(				
@@ -88,7 +95,7 @@ version: 1
 				if (numSlice == 1) then amount = amount1
 				if (numSlice == 2) then amount = amount1 + amount2
 				if (numSlice == 3) then amount = amount1 + amount2 + amount3
-				if (numSlice == 4) then amount = amount1 + amount2 + amount3
+				if (numSlice == 4) then amount = amount1 + amount2 + amount3 + amount4
 
 				return (v0 + (amount * v0n))
 			)
@@ -98,23 +105,22 @@ version: 1
 			)
 		)
 	)
-
-	on main open do
-	(
-		if (numSlice < 2) then cAmount2.enabled = false
-		if (numSlice < 3) then cAmount3.enabled = false
-		if (numSlice < 4) then cAmount4.enabled = false		
-	)	
+		
 )
 
 fn buildSlice sel startIndex numVerts slice nbSlice perimeter =
 (
 	-- setup vertices
+	dist = 0
 	for i = 1 to  numVerts do
 	(				
 		setVert sel (i  +  startIndex + numVerts) (getVert sel i)
-		setTVert sel (i  + startIndex) [(i - 1) / perimeter, (slice - 1) / nbSlice, 0]
-		setTVert sel (i  + startIndex + numVerts) [(i - 1) / perimeter, slice / nbSlice, 0]
+		setTVert sel (i  + startIndex) [dist / perimeter, (slice - 1) / (nbSlice as float), 0]
+		setTVert sel (i  + startIndex + numVerts) [dist / perimeter, slice / (nbSlice as float), 0]
+		if (i != numVerts) then
+		(
+			dist = dist + (distance (getVert sel i) (getVert sel (i + 1)))
+		)				
 	)
 		
 	-- setup faces index
@@ -133,7 +139,7 @@ fn buildSlice sel startIndex numVerts slice nbSlice perimeter =
 	i = numVerts - 1
 	setWEFace sel (2 * startIndex + 2 * i + 1) (startIndex + i + 1) 				 (startIndex + numVerts + 1) (startIndex + 1 + i + numVerts)
 	setWEFace sel (2 * startIndex + 2 * i + 2) (startIndex +  i + 1) 				 (startIndex + 1) 			 (startIndex + numVerts+ 1)
-	setTVFace sel (2 * startIndex + 2 * i + 1) (startIndex + numVerts + 1)    (startIndex + i + 1) 				 (startIndex + 1 + i + numVerts)
+	setTVFace sel (2 * startIndex + 2 * i + 1) (startIndex + numVerts + 1)    		 (startIndex + i + 1) 		 (startIndex + 1 + i + numVerts)
 	setTVFace sel (2 * startIndex + 2 * i + 2) (startIndex + 1) 					 (startIndex + i + 1) 		 (startIndex + numVerts + 1)
 	setVCFace sel (2 * startIndex + 2 * i + 1) [slice + 1, slice, slice + 1]
 	setVCFace sel (2 * startIndex + 2 * i + 2) [slice, slice, slice + 1]
@@ -143,6 +149,8 @@ utility ExtrudeWater "Extrude water"
 (
 	button extrude "extrude water"
 	spinner cNumSlice "numSlices" type:#integer range:[1, 4, 1]
+	
+	
 	on extrude pressed do
 	(
 		numSlices = cNumSlice.value
@@ -154,12 +162,12 @@ utility ExtrudeWater "Extrude water"
 			myCopy.name = myCopy.name + "_backup"
 			ConvertToMesh sel
 			--collapseStack sel
-			perimeter = computeWaterBorderPerimeter sel
-			print perimeter
-	
-			initialNumVerts = sel.numverts
+			perimeter = computeWaterBorderPerimeter sel		
+			initialNumVerts = sel.numverts + 1
 			-- create additionnal vertices		
 			setNumVerts sel (initialNumVerts * (1 + numSlices)) true
+			-- duplicate last vert (to avoid bad mapping)
+			setVert sel initialNumVerts (getVert sel 1)
 			setNumFaces sel (2 * initialNumVerts * numSlices) true
 				
 			-- vertex colors
@@ -193,16 +201,61 @@ utility ExtrudeWater "Extrude water"
 		
 			modif.vertsNb 	= initialNumVerts
 			modif.numSlices = numSlices
-			addModifier sel (vertexPaint())
-						
-
-			addModifier sel modif
-						
-
-			update sel
-						
-
-		
+			addModifier sel (vertexPaint())						
+			addModifier sel modif						
+			update sel							
 		)
 	)
-)	
+)
+
+-- select vertices from a water extruded object
+fn selectVertices obj slice =
+(
+	local vertsNb = obj.numVerts 
+	tab = #()
+	for i = 1 to vertsNb do
+	(
+		tab[i] = slice * vertsNb + i
+	)	
+	setVertSelection obj tab
+)
+
+-- a macro to select one slice from a water extruded shape
+macroScript wsChooseSlice1 category:"NEVRAX Tools" tooltip:"Water / choose slice 1"
+(
+	if ($ != undefined) then
+	(
+		selectVertices $ 1
+		update $
+	)	
+)
+
+macroScript wsChooseSlice2 category:"NEVRAX Tools" tooltip:"Water / choose slice 2"
+(
+	if ($ != undefined) then
+	(
+		selectVertices $ 2
+		update $
+	)	
+)
+
+macroScript wsChooseSlice3 category:"NEVRAX Tools" tooltip:"Water / choose slice 3"
+(
+	if ($ != undefined) then
+	(
+		selectVertices $ 3
+		update $
+	)	
+)
+
+macroScript wsChooseSlice4 category:"NEVRAX Tools" tooltip:"Water / choose slice 4"
+(
+	if ($ != undefined) then
+	(
+		selectVertices $ 4
+		update $
+	)	
+)
+
+
+

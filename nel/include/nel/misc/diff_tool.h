@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.8 2004/11/17 09:27:50 vuarand Exp $
+ * $Id: diff_tool.h,v 1.9 2005/01/14 10:11:38 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -168,6 +168,17 @@ namespace STRING_MANAGER
 			ColCount++;
 		}
 
+		void copyColumn(uint srcColIndex, uint dstColIndex)
+		{
+			nlassert(srcColIndex < ColCount);
+			nlassert(dstColIndex < ColCount);
+
+			for (uint i=0; i<Data.size(); ++i)
+			{
+				Data[i][dstColIndex] = Data[i][srcColIndex];
+			}
+		}
+
 		void eraseColumn(uint colIndex)
 		{
 			nlassertex(colIndex < ColCount, ("TWorksheet::eraseColumn : bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
@@ -178,6 +189,30 @@ namespace STRING_MANAGER
 				Data[i].erase(Data[i].begin()+colIndex);
 			}
 			ColCount--;
+		}
+
+		void moveColumn(uint oldColIndex, uint newColIndex)
+		{
+			nlassert(oldColIndex < ColCount);
+			nlassert(newColIndex < ColCount);
+
+			if (oldColIndex == newColIndex)
+				return;
+
+			if (newColIndex > oldColIndex)
+			{
+				// the dst is after the src, no problem with index
+				insertColumn(newColIndex);
+				copyColumn(oldColIndex, newColIndex);
+				eraseColumn(oldColIndex);
+			}
+			else
+			{
+				// the dst is before the src, need to take the column insertion into account
+				insertColumn(newColIndex);
+				copyColumn(oldColIndex+1, newColIndex);
+				eraseColumn(oldColIndex+1);
+			}
 		}
 
 		void setColCount(uint count)

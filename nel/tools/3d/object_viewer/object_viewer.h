@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.18 2001/09/05 10:04:36 vizerie Exp $
+ * $Id: object_viewer.h,v 1.19 2001/09/05 15:43:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,9 @@ public:
 	// Load a mesh
 	bool loadMesh (const char* meshFilename, const char* skeleton="");
 
+	// Load an instance group
+	bool loadInstanceGroup(const char *igFilename);
+
 	// Set ambient color
 	void setAmbientColor (const NLMISC::CRGBA& color);
 
@@ -239,6 +242,7 @@ private:
 	std::string									_FontPath;
 	std::vector<IMainLoopCallBack *>			_CallBackList;
 	uint32										_Lag; 
+	float										_CameraFocal;	
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

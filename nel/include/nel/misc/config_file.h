@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.21 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: config_file.h,v 1.22 2001/06/27 08:28:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,6 +150,16 @@ public:
 		void				setAsFloat	(float val, int index=0);
 		/// Set the content of the variable as a STL string
 		void				setAsString	(std::string val, int index=0);
+
+		/// Set the content of the aray variable as an integer
+		void				setAsInt	(std::vector<int> vals);
+		/// Set the content of the aray variable as a double
+		void				setAsDouble	(std::vector<double> vals);
+		/// Set the content of the aray variable as a float
+		void				setAsFloat	(std::vector<float> vals);
+		/// Set the content of the aray variable as a string
+		void				setAsString	(std::vector<std::string> vals);
+		
 		//@}
 
 		bool		operator==	(const CVar& var) const;

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.22 2001/05/10 08:42:52 lecroart Exp $
+ * $Id: config_file.cpp,v 1.23 2001/06/27 08:28:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,35 @@ void CConfigFile::CVar::setAsString (std::string val, int index)
 	else StrValues[index] = val;
 }
 
+void CConfigFile::CVar::setAsInt (std::vector<int> vals)
+{
+	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
+	else IntValues = vals;
+}
+
+void CConfigFile::CVar::setAsDouble (std::vector<double> vals)
+{
+	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
+	else RealValues = vals;
+}
+
+void CConfigFile::CVar::setAsFloat (std::vector<float> vals)
+{
+	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
+	else
+	{
+		RealValues.clear ();
+		RealValues.resize (vals.size ());
+		for (uint i = 0; i < vals.size (); i++)
+			RealValues[i] = (double)vals[i];
+	}
+}
+
+void CConfigFile::CVar::setAsString (std::vector<std::string> vals)
+{
+	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
+	else StrValues = vals;
+}
 
 bool CConfigFile::CVar::operator==	(const CVar& var) const
 {

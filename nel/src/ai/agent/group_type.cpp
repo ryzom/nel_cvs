@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.15 2001/03/26 14:50:01 chafik Exp $
+ * $Id: group_type.cpp,v 1.16 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -793,7 +793,7 @@ namespace NLAIAGENT
 	CVectorGroupType::tVectorType::const_iterator CVectorGroupType::getEnd() const
 	{
 		return _Vector.end();
-	}		
+	}
 
 	CVectorGroupType::tVectorType::iterator CVectorGroupType::getBegin()
 	{

@@ -85,9 +85,10 @@
 #define	FIS	339
 #define	OR	340
 #define	COMMENT	341
-#define	NEW	342
-#define	AND	343
-#define	LOCAL	344
+#define	STEPS	342
+#define	NEW	343
+#define	AND	344
+#define	LOCAL	345
 
 
 extern YYSTYPE yylval;

@@ -1,6 +1,6 @@
 /** \file msg_action.h
  *
- * $Id: msg_action.h,v 1.1 2001/03/08 13:51:38 portier Exp $
+ * $Id: msg_action.h,v 1.2 2001/03/28 12:15:27 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,9 +51,9 @@ namespace NLAIAGENT
 		void getDebugString(char *t) const;
 
 
-		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
-		IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
-		IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+		virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 
 		virtual sint32 getBaseMethodCount() const;
 
@@ -84,9 +84,9 @@ namespace NLAIAGENT
 		void getDebugString(char *t) const;
 
 
-		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
-		IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
-		IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+		virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 
 		virtual sint32 getBaseMethodCount() const;
 

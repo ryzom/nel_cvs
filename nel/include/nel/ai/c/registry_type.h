@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.9 2001/01/19 11:11:56 chafik Exp $
+ * $Id: registry_type.h,v 1.10 2001/03/28 12:15:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,7 +256,7 @@ namespace NLAIC
 			///The object is an performative.
 			tPerformative = 512,
 			///Last definition.
-			tLast = tAgentInterpret,
+			tLast = tPerformative,
 			///That is an undef object.
 			tUndef = 0xFFFFFFFF - tLast*2
 			

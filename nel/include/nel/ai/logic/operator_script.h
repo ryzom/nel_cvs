@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.6 2001/02/28 09:43:29 portier Exp $
+ * $Id: operator_script.h,v 1.7 2001/03/28 12:15:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ namespace NLAIAGENT
 
 			void getFatherComponent(IVarName &);
 
-			virtual void setParent(const IWordNumRef *parent);
+//			virtual void setParent(const IWordNumRef *parent);
 	};
 }
 #endif

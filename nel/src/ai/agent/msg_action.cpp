@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.1 2001/03/08 13:52:04 portier Exp $
+ * $Id: msg_action.cpp,v 1.2 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLAIAGENT
 {
 	CSuccessMsg::CSuccessMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
 	}
 
 	CSuccessMsg::CSuccessMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
@@ -43,7 +43,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
 	}
 
 	CSuccessMsg::CSuccessMsg(IBasicAgent *agent):
@@ -52,7 +52,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
  	}
 
 	CSuccessMsg::CSuccessMsg(const CSuccessMsg &m): CMessageScript(m)
@@ -145,7 +145,7 @@ namespace NLAIAGENT
 
 	CFailureMsg::CFailureMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
 	}
 
 	CFailureMsg::CFailureMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
@@ -153,7 +153,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
 	}
 
 	CFailureMsg::CFailureMsg(IBasicAgent *agent):
@@ -162,7 +162,7 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
-//		set(0, new NLAILOGIC::CGoal());
+		set(0, new DigitalType(0) );
  	}
 
 	CFailureMsg::CFailureMsg(const CFailureMsg &m): CMessageScript(m)

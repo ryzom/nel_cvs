@@ -1,7 +1,7 @@
 /** \file gd_agent_script.h
  * goal driven scripted agents with a FactBase and a goal stack
  *
- * $Id: gd_agent_script.h,v 1.2 2001/02/28 17:01:14 portier Exp $
+ * $Id: gd_agent_script.h,v 1.3 2001/03/28 12:15:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,6 @@ namespace NLAIAGENT
 			virtual void addGoal(NLAILOGIC::CGoal *);
 
 			virtual NLAILOGIC::CFactBase &getFactBase();
-
 	};
 
 }	// NLAIAGENT

@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.17 2001/03/14 13:19:34 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.18 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,20 +153,20 @@ namespace NLAISCRIPT
 	CGoalMsgClass::CGoalMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CGoal"),NLAIAGENT::CStringVarName("Goal"));
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	CGoalMsgClass::CGoalMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CGoal"),NLAIAGENT::CStringVarName("Goal"));
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
-	CGoalMsgClass::CGoalMsgClass() : CMessageClass()
+	CGoalMsgClass::CGoalMsgClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("CGoal"),NLAIAGENT::CStringVarName("Goal"));
+		registerComponent(NLAIAGENT::CStringVarName("GoalObject"),NLAIAGENT::CStringVarName("Goal"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	

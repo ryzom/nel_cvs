@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.2 2001/03/26 10:05:50 chafik Exp $
+ * $Id: init.cpp,v 1.3 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/script/interpret_message_action.h"
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/logic/interpret_object_operator.h"
@@ -31,6 +32,7 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/script/gd_agent_class.h"	
+#include "nel/ai/script/interpret_fsm.h"
 
 
 
@@ -52,10 +54,15 @@ namespace NLAISCRIPT
 		reinitClass(CAgentClass(CAgentClass::IdAgentClass), CAgentClass::IdAgentClass);
 		reinitClass(CGDAgentClass(CGDAgentClass::IdGDAgentClass),CGDAgentClass::IdGDAgentClass);
 		reinitClass(COperatorClass(COperatorClass::IdOperatorClass),COperatorClass::IdOperatorClass);
+		reinitClass(CFsmClass(CFsmClass::IdFsmClass),CFsmClass::IdFsmClass);
+		reinitClass(CSeqFsmClass(CSeqFsmClass::IdSeqFsmClass),CSeqFsmClass::IdSeqFsmClass);
+		reinitClass(COperatorClass(COperatorClass::IdOperatorClass),COperatorClass::IdOperatorClass);
 		reinitClass(CActorClass(CActorClass::IdActorClass),CActorClass::IdActorClass);
 		reinitClass(CMessageClass(CMessageClass::IdMessageClass),CMessageClass::IdMessageClass);
 		reinitClass(CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass),CMsgNotifyParentClass::IdMsgNotifyParentClass);
 		reinitClass(CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass),CGoalMsgClass::IdGoalMsgClass);
+		reinitClass(CSuccessMsgClass(CSuccessMsgClass::IdSuccessMsgClass),CSuccessMsgClass::IdSuccessMsgClass);
+		reinitClass(CFailureMsgClass(CFailureMsgClass::IdFailureMsgClass),CFailureMsgClass::IdFailureMsgClass);
 		reinitClass(CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass),CDebugMsgClass::IdDebugMsgClass);
 		reinitClass(CManagerClass(CManagerClass::IdManagerClass),CManagerClass::IdManagerClass);
 		reinitClass(COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass),COnChangeMsgClass::IdOnChangeMsgClass);

@@ -100,7 +100,7 @@ namespace NLAIAGENT
 			r.Result = NULL;
 		}
 */
-		return CAgentScript::runMethodeMember(heritance,index,params);
+		return CAgentScript::runMethodBase(index, heritance, params);
 	}
 
 
@@ -148,11 +148,11 @@ namespace NLAIAGENT
 		return result;
 	}
 
-	void COperatorScript::setParent(const IWordNumRef *parent)
+/*	void COperatorScript::setParent(const IWordNumRef *parent)
 	{
 		// Gets the father's factbase
 		const IRefrence *father = (const IRefrence *) *parent;
-		NLAILOGIC::CFactBase &fact_base = ( (CAgentScript *)father )->getFactBase();
+		NLAILOGIC::CFactBase &fact_base = ( (CGDAgentScript *)father )->getFactBase();
 		
 		// Adds the needed asserts to the factbase
 		((NLAISCRIPT::COperatorClass *) _AgentClass)->initialiseFactBase( &fact_base );
@@ -160,6 +160,7 @@ namespace NLAIAGENT
 		// Sets the parent
 		IRefrence::setParent(parent);		
 	}
+	*/
 
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
@@ -176,7 +177,6 @@ namespace NLAIAGENT
 		
 		processMessages();
 
-	
 		bool is_activated = false;
 
 		// Looks for the goal

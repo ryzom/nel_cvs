@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.7 2001/02/01 17:16:44 chafik Exp $
+ * $Id: type_def.cpp,v 1.8 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLAISCRIPT
 			const NLAIC::CIdentType &idD = *e->getConstraintTypeOf();
 			if(!(idG == idD))
 			{
-				if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
+				if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret )
 				{
 					IClassInterpret *o = (IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
 					bool type = false;						

@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_action.cpp,v 1.4 2001/03/14 13:19:34 chafik Exp $
+ * $Id: interpret_message_action.cpp,v 1.5 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,21 +37,21 @@ namespace NLAISCRIPT
 	CSuccessMsgClass::CSuccessMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CSuccessMsgClass::CSuccessMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CSuccessMsgClass::CSuccessMsgClass() : CMessageClass()
 	{		
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	
@@ -70,13 +70,8 @@ namespace NLAISCRIPT
 		std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
-		// Création du message
-		//NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
-		//return x;
-
-		//have to change.
-		throw;
-		return NULL;
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CSuccessMsg( components,  (CMessageClass *) this );		
+		return x;
 	}	
 
 //#########################################
@@ -86,21 +81,21 @@ namespace NLAISCRIPT
 	CFailureMsgClass::CFailureMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CFailureMsgClass::CFailureMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 
 	CFailureMsgClass::CFailureMsgClass() : CMessageClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	
@@ -119,11 +114,7 @@ namespace NLAISCRIPT
 		std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
-		// Création du message
-		//NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
-		//return x;
-		//have to change.
-		throw;
-		return NULL;
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CFailureMsg( components,  (CMessageClass *) this );		
+		return x;
 	}	
 }

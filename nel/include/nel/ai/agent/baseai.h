@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.11 2001/03/27 10:41:13 chafik Exp $
+ * $Id: baseai.h,v 1.12 2001/03/28 12:15:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 
 /**
-this is the objects agents name scpace.
+this is the agents objects name space.
 */
 namespace NLAIAGENT
 {
@@ -48,16 +48,16 @@ namespace NLAIAGENT
 	* \date 2000
 	*/
 	enum TProcessStatement {
-		processIdle, /// The agent is in idle state.
-		processLocked, /// The agent are locked, then we can't run it.
-		processBuzzy, /// The agent is in the buzzy state. it arrive when we sleep it.
-		processEnd, /// The agent have finish run.
-		processError /// The agent have encounter probleme during excecution.
+		processIdle,	/// The agent is in idle state.
+		processLocked,	/// The agent is locked, so that we can't run it.
+		processBuzzy,	/// The agent is in the buzzy state (curently executing itself)
+		processEnd,		/// The agent has completed its execution
+		processError	/// The agent has encountered problems during its excecution.
 	};
 
 	/**
-	Alow user to delete an object from a stl list.
-	The comparison was made by checking the value of the pointer.
+	Removes an object from an stl list.
+	The comparison is done using the value of the pointer.
 	* \author Chafik sameh	 	
 	* \author Nevrax France
 	* \date 2000
@@ -77,8 +77,8 @@ namespace NLAIAGENT
 	}
 	
 	/**
-	IBasicObjectIA is the basic definition of an objects for the IA. This class force programmer to define somme basic implèmentation for the integrity
-	of code.
+	IBasicObjectIA is the base class for all AI classes.
+	It defines some basic functionalities as pure virtual functions.
 	* \author Chafik sameh	 	
 	* \author Nevrax France
 	* \date 2000

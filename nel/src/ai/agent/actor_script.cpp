@@ -2,6 +2,9 @@
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/script/codage.h"
+#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_fsm.h"
+#include "nel/ai/logic/fsm_seq_script.h"
 
 namespace NLAIAGENT
 {
@@ -39,9 +42,35 @@ namespace NLAIAGENT
 
 	/// Activates the actor
 	void CActorScript::activate()
-	{
+	{                                                    
 		if ( !_IsActivated )
 		{
+			CAgentScript *father = (CAgentScript *) getParent();
+
+			if (  father && ( ( CAgentScript *)father)->getClass()->isClassInheritedFrom( CStringVarName("Fsm") ) != -1 )
+			{
+				tQueue r;
+
+				// Looks for the function to call at the activation of the state
+				r = _AgentClass->isMember( NULL, &CStringVarName("OnEnterState"), NLAISCRIPT::CParam() );
+				if ( !r.empty() )
+				{	
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember(r.top().Index,context);
+				}
+/*
+				r = _AgentClass->isMember( NULL, &CStringVarName("OnExitState"), NLAISCRIPT::CParam() )
+				if ( r = _AgentClass->isMember( CStringVarName("OnExitState", NULL ) )
+				{	
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodMember(r.top().Index,context);
+				}*/
+
+				( (CFsmScript *)father)->activate( this );
+			}
+
 			onActivate();
 			_IsActivated = true;
 		}
@@ -52,6 +81,12 @@ namespace NLAIAGENT
 	{
 		if ( _IsActivated )
 		{
+			CAgentScript *father = (CAgentScript *) getParent();
+			if (  father && ( ( CAgentScript *)father)->getClass()->isClassInheritedFrom( CStringVarName("Fsm") ) != -1 )
+			{
+				( (CFsmScript *)father)->unactivate( this );
+			}
+
 			onUnActivate();
 			_IsActivated = false;
 		}
@@ -259,28 +294,25 @@ namespace NLAIAGENT
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
-		return CAgentScript::runMethodeMember(heritance,index,params);
+		return r;
 	}
 
 
 
 	IObjectIA::CProcessResult CActorScript::runMethodBase(int index,IObjectIA *params)
 	{	
+		int i = index - CAgentScript::getMethodIndexSize();
 
-		index = index - IAgent::getMethodIndexSize();
-/*
 
-		if ( index < getBaseMethodCount() )
-			return CAgentScript::runMethodeMember(index, params);
-*/
 		IObjectIA::CProcessResult r;
 
+#ifndef NL_DEBUG
 		char buf[1024];
 		getDebugString(buf);
+#endif
 
-//		index = index - getBaseMethodCount();
 		
-		if ( index == fid_activate )
+		if ( i == fid_activate )
 		{
 			activate();
 			IObjectIA::CProcessResult r;
@@ -288,7 +320,7 @@ namespace NLAIAGENT
 			r.Result = NULL;
 		}
 
-		if ( index == fid_onActivate )
+		if ( i == fid_onActivate )
 		{
 			onActivate();
 			IObjectIA::CProcessResult r;
@@ -296,7 +328,7 @@ namespace NLAIAGENT
 			r.Result = NULL;
 		}
 
-		if ( index == fid_unActivate )
+		if ( i == fid_unActivate )
 		{
 			unActivate();
 			IObjectIA::CProcessResult r;
@@ -304,15 +336,16 @@ namespace NLAIAGENT
 			r.Result = NULL;
 		}
 
-		if ( index == fid_onUnActivate )
+		if ( i == fid_onUnActivate )
 		{
 			onUnActivate();
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
+			return r;
 		}
 
-		if ( index == fid_switch )
+		if ( i == fid_switch )
 		{
 			std::vector<CStringType *> handles;
 			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
@@ -343,7 +376,8 @@ namespace NLAIAGENT
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
-		return r;
+
+		return CAgentScript::runMethodBase(index, params);
 	}
 
 	int CActorScript::getBaseMethodCount() const
@@ -355,49 +389,55 @@ namespace NLAIAGENT
 	tQueue CActorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 
-		const char *txt = name->getString();
+#ifdef NL_DEBUG
+		const char *dbg_func_name = name->getString();
+#endif
 
-		tQueue result = CAgentScript::isMember( className, name, param);
+		tQueue result; /* = CAgentScript::isMember( className, name, param);
 
 		if ( result.size() )
 			return result;
-
+*/
 		if ( *name == CStringVarName("activate") )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
+			result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("onActivate") )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_onActivate , 0.0,NULL, r_type ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onActivate , 0.0,NULL, r_type ) );
 		}
-
 
 		if ( *name == CStringVarName("unActivate") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_onUnActivate, 0.0,NULL, r_type ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onUnActivate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("onUnActivate") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_unActivate, 0.0,NULL, r_type ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_unActivate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("switch") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
 		}
 
-		if(_AgentClass != NULL)
+		if(_AgentClass != NULL && result.empty() )
 		{
-			tQueue r = _AgentClass->isMember(className, name, param);
-			if(r.size() != 0) return r;
+			result = _AgentClass->isMember(className, name, param);
+			if( !result.empty() ) 
+				return result;
 		}
+
+		if ( result.empty() )
+			return CAgentScript::isMember(className, name, param);
+
 		return result;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.21 2001/03/08 13:42:56 portier Exp $
+ * $Id: agent_script.h,v 1.22 2001/03/28 12:15:26 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,17 +291,18 @@ namespace NLAIAGENT
 		std::vector<NLAILOGIC::CGoal *>	_GoalStack;
 
 	public:
-		virtual NLAILOGIC::CFactBase &getFactBase()
-		{
-			return _FactBase;
-		}
-
+		virtual NLAILOGIC::CFactBase &getFactBase();
 		IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *);
 		IObjectIA::CProcessResult runFactMsg(IBaseGroupType *);
 
 		std::vector<NLAILOGIC::CGoal *>	&getGoalStack()
 		{
 			return _GoalStack;
+		}
+
+		const NLAISCRIPT::CAgentClass *getClass()
+		{
+			return _AgentClass;
 		}
 	////////////////////////////////////////////////////////////////////////
 	};

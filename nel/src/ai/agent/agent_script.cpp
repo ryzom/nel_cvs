@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.39 2001/03/21 15:00:03 chafik Exp $
+ * $Id: agent_script.cpp,v 1.40 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,11 +31,13 @@
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/message_script.h"
 #include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/script/interpret_message_action.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_nombre.h"
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
+#include "nel/ai/agent/msg_fact.h"
 #include "nel/ai/logic/factbase.h"
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/agent/key_agent.h"
@@ -60,10 +62,10 @@ namespace NLAIAGENT
 /////////////////////////////////////////////////////////////////
 /// Temp. 
 //	static NLAISCRIPT::COperandSimple *IdGoalMsgClass;
-	static NLAISCRIPT::COperandSimple/*ListOr*/ *ParamIdGoalMsg;
+	static NLAISCRIPT::COperandSimpleListOr *ParamIdGoalMsg;
 	static NLAISCRIPT::CParam *ParamGoalMsg;
 
-	static NLAISCRIPT::COperandSimple/*ListOr*/ *ParamIdFactMsg;
+	static NLAISCRIPT::COperandSimpleListOr *ParamIdFactMsg;
 	static NLAISCRIPT::CParam *ParamFactMsg;
 
 /////////////////////////////////////////////////////////////////
@@ -105,13 +107,17 @@ namespace NLAIAGENT
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
 
-		ParamIdGoalMsg = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAIAGENT::CGoalMsg::IdGoalMsg));
+		ParamIdGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+															  new NLAIC::CIdentType(NLAIAGENT::CGoalMsg::IdGoalMsg),
+															  new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass)	);
 
 		ParamGoalMsg = new NLAISCRIPT::CParam(1,ParamIdGoalMsg);
 
-/*		ParamIdFactMsg = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAIAGENT::CFactMsg::IdFactMsg));
+		ParamIdFactMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+														new NLAIC::CIdentType(NLAIAGENT::CFactMsg::IdFactMsg),
+														new NLAIC::CIdentType(NLAISCRIPT::CFactMsgClass::IdFactMsgClass));
 
-		ParamFactMsg = new NLAISCRIPT::CParam(1,ParamIdFactMsg);*/
+		ParamFactMsg = new NLAISCRIPT::CParam(1,ParamIdFactMsg);
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -251,8 +257,6 @@ namespace NLAIAGENT
 			{
 				///incRef();
 				((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
-				//( (CScriptMailBox *) ((CAgentScript *)_Components[i])->getLocalMailBox() )->setIndex(nb_scripted);
-				//nb_scripted++;
 			}
 		}
 
@@ -272,13 +276,11 @@ namespace NLAIAGENT
 		_Components = NULL;
 		_NbComponents = 0;		
 		_AgentManager = manager;
-		//MangerIsReferenced = false;
-		//_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
 	}
 
-	CAgentScript::CAgentScript(IAgentManager *manager, IBasicAgent *father,//The agent's father 
-							  std::list<IObjectIA *> &components,	//Static components							  
-							  NLAISCRIPT::CAgentClass *agent_class )	//Class
+	CAgentScript::CAgentScript(IAgentManager *manager, IBasicAgent *father,		//The agent's father 
+							  std::list<IObjectIA *> &components,				//Static components							  
+							  NLAISCRIPT::CAgentClass *agent_class )			//Class
 	
 	: IAgentManager(father), _AgentClass( agent_class )
 	{	
@@ -300,8 +302,6 @@ namespace NLAIAGENT
 			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
-				//( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
-				//nb_scripted++;
 			}
 
 			it_c++;
@@ -358,7 +358,6 @@ namespace NLAIAGENT
 		if(((const NLAIC::CTypeOfObject &) op->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 		{
 			((CAgentScript *)op)->setParent( (const IWordNumRef *) *this);
-			//( (CScriptMailBox *) ((CAgentScript *)op)->getLocalMailBox() )->setIndex( index );
 		}
 	}
 
@@ -450,7 +449,14 @@ namespace NLAIAGENT
 
 	sint32 CAgentScript::getMethodIndexSize() const
 	{
-		return _AgentClass->getMethodIndexSize();
+		/*if(_AgentClass)
+		{
+			return _AgentClass->getMethodIndexSize();
+		}
+		else*/
+		{
+			return IAgent::getMethodIndexSize() + TLastM;
+		}
 	}
 
 	const NLAIC::IBasicType *CAgentScript::clone() const
@@ -1359,9 +1365,11 @@ namespace NLAIAGENT
 		{
 
 			tQueue r;
-			if(_AgentClass != NULL) r = _AgentClass->getPrivateMember(className,methodName,param);			
+			if(_AgentClass != NULL) 
+				r = _AgentClass->getPrivateMember(className,methodName,param);			
 
-			if(r.size()) return r;
+			if(r.size()) 
+				return r;
 			else
 			{
 				r = getPrivateMember(className,methodName,param);
@@ -1378,12 +1386,14 @@ namespace NLAIAGENT
 		{					
 			tQueue r;
 			r = getPrivateMember(className,methodName,param);
-			if(r.size()) return r;
+			if(r.size()) 
+				return r;
 			else
 			{
 				r = _AgentClass->getPrivateMember(className,methodName,param);			
 
-				if(r.size()) return r;
+				if ( r.size() ) 
+					return r;
 				else
 				{			
 					return IAgent::isMember(className,methodName,param);
@@ -1441,6 +1451,11 @@ namespace NLAIAGENT
 		context.Stack++;
 		context.Stack[(int)context.Stack] = new CFactMsg();
 		return IObjectIA::CProcessResult();
+	}
+
+	NLAILOGIC::CFactBase &CAgentScript::getFactBase()
+	{
+		return _FactBase;
 	}
 	////////////////////////////////////////////////////////////////////////
 }

@@ -9,6 +9,7 @@
 #include "nel/ai/logic/logic.h"
 #include "nel/ai/fuzzy/fuzzy.h"
 #include "nel/ai/logic/interpret_object_operator.h"
+#include "nel/ai/script/interpret_fsm.h"
 
 using  namespace NLAISCRIPT;
 using  namespace NLAILOGIC;
@@ -37,7 +38,7 @@ using  namespace NLAIFUZZY;
 %token	END IF THEN BEGINING
 %token	END_GRAMMAR
 %token	LOGICVAR RULE IA_ASSERT
-%token	FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT
+%token	FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT STEPS
 %token	NEW AND	LOCAL 
 
 %left	NON_BIN		OR_BIN		AND_BIN		XOR_BIN
@@ -165,6 +166,7 @@ using  namespace NLAIFUZZY;
 									op_class->buildLogicTables();
 								}
 							}
+						|	RegisterSteps
 						;
 
 	Register			:	RegistDesAttributs
@@ -178,6 +180,31 @@ using  namespace NLAIFUZZY;
 						|	OpBloc RegisterOperator
 						;
 
+	RegisterSteps		:	STEPS 
+							POINT_DEUX 
+							Steps;
+
+	Steps				:	IDENT 
+							{
+#ifdef NL_DEBUG
+								const char *dbg_y0 = LastyyText[0];
+								const char *dbg_y1 = LastyyText[1];
+#endif
+								CSeqFsmClass *fsm_class = (CSeqFsmClass *) _SelfClass.get();
+								fsm_class->addStep( NLAIAGENT::CStringVarName( LastyyText[1] ) );
+							}
+							POINT_VI
+						|	IDENT
+							{
+#ifdef NL_DEBUG
+								const char *dbg_y0 = LastyyText[0];
+								const char *dbg_y1 = LastyyText[1];
+#endif
+								CSeqFsmClass *fsm_class = (CSeqFsmClass *) _SelfClass.get();
+								fsm_class->addStep( NLAIAGENT::CStringVarName( LastyyText[0] ) );
+							}
+							Steps
+						;
 
 	OpBloc				:	OpComment
 						|	PreCondition
@@ -721,8 +748,6 @@ using  namespace NLAIFUZZY;
 							}
 						;
 	
-		
-
 	Prametre			:	Expression
 							{
 								pushParamExpression();								
@@ -733,8 +758,7 @@ using  namespace NLAIFUZZY;
 								pushParamExpression();
 							}
 						;
-						
-
+	
 	RetourDeFonction	:	RETURN								
 							Expression
 							{

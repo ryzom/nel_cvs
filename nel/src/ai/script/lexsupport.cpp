@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.12 2001/02/28 17:01:30 portier Exp $
+ * $Id: lexsupport.cpp,v 1.13 2001/03/28 12:15:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("PreCondition",PRECONDITION) );
 		DicoDeNom.insert(Arbre::value_type("PostCondition",POSTCONDITION) );
 		DicoDeNom.insert(Arbre::value_type("Goal",GOAL) );
+		DicoDeNom.insert(Arbre::value_type("Steps",STEPS) );
 		DicoDeNom.insert(Arbre::value_type("Comment",COMMENT) );
 
 		DicoDeNom.insert(Arbre::value_type("Return",RETURN) );

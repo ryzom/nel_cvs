@@ -644,8 +644,8 @@ namespace NLAISCRIPT
 		int i;
 		for ( i = 0; i < (int) _CondAsserts.size() ; i++ )
 		{
-			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassCondVars[i]->size() );
+/*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
+			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassCondVars[i]->size() ); */
 /*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassCondVars[i]->begin();
 			while ( it_var != _ClassCondVars[i]->end() )
@@ -661,8 +661,8 @@ namespace NLAISCRIPT
 
 		for ( i = 0; i < (int) _ConcAsserts.size() ; i++ )
 		{
-			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassConcVars[i]->size() );
+/*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
+			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassConcVars[i]->size() ); */
 /*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassConcVars[i]->begin();
 			while ( it_var != _ClassConcVars[i]->end() )

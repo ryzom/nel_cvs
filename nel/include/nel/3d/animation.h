@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: animation.h,v 1.2 2001/02/09 16:52:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,11 @@ class ITrack;
 class CAnimation
 {
 public:
+	// Typedef to avoid stupid VC++ warning
+
+	class iS : public std::string {};
+	class mI : public std::map<iS, uint> {};
+
 	/// \name Public interface.
 
 	enum { NotFound=0xffffffff };
@@ -83,7 +88,7 @@ private:
 	/// \name Members
 
 	// Map to get a channel id with a name.
-	std::map<std::string, uint>	_IdByName;
+	mI									_IdByName;
 
 	// Vector of channel pointer.
 	std::vector<std::auto_ptr<ITrack> >	_TrackVector;

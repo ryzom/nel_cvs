@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.3 2002/01/14 17:48:06 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.4 2002/01/23 10:55:13 lecroart Exp $
  *
  */
 
@@ -100,7 +100,6 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 				Shards[i].SockId = from;
 				nlinfo("Shard with ip '%s' is online!", Shards[i].WSAddr.c_str ());
 			}
-			displayShards ();
 			return;
 		}
 	}
@@ -119,8 +118,6 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 		nlwarning("It's not a authorized shard, disconnect it");
 		CNetManager::getNetBase("WSLS")->disconnect(from);
 	}
-
-	displayShards ();
 }
 
 static void cbWSDisconnection (const string &serviceName, TSockId from, void *arg)
@@ -154,12 +151,10 @@ static void cbWSDisconnection (const string &serviceName, TSockId from, void *ar
 			{
 				nlwarning("Shard with ip '%s' goes offline but wasn't online!", Shards[i].WSAddr.c_str ());
 			}
-			displayShards ();
 			return;
 		}
 	}
 	nlwarning("Unknown Shard goes offline but wasn't online!");
-	displayShards ();
 }
 
 static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -205,8 +200,6 @@ static void cbWSShardChooseShard (CMessage &msgin, TSockId from, CCallbackNetBas
 				// the WS haven't accepted the client
 				(*it).State = CUser::Offline;
 			}
-
-			displayUsers ();
 
 			return;
 		}
@@ -311,7 +304,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 
 	string shardName;
 	msgin.serial(shardName);
-	nldebug("new potential identification: %s", shardName);
+	nldebug("new potential identification: %s", shardName.c_str());
 
 	// first, check if it an authorized shard
 	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
@@ -320,7 +313,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 		{
 			if (Shards[i].Online)
 			{
-				nlinfo("Shard with ip '%s' is identified to '%s'!", Shards[i].WSAddr.c_str (), shardName);
+				nlinfo("Shard with ip '%s' is identified to '%s'!", Shards[i].WSAddr.c_str (), shardName.c_str());
 				Shards[i].ShardName = shardName;
 			}
 			else
@@ -328,7 +321,6 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 				nlwarning("Shard with ip '%s' is not online! Disconnect this intruder", ia.asString().c_str ());
 				netbase.disconnect(from);
 			}
-			displayShards ();
 			return;
 		}
 	}
@@ -368,6 +360,9 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 		return;
 	}
 
+	static uint recordNbPlayer = 0;
+	static uint nbPlayer = 0;
+
 	if (con == 1)
 	{
 		Users[pos].State = CUser::Online;
@@ -381,6 +376,14 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 		
 		nldebug ("Id %d is connected on the shard", Id);
 		Output.displayNL ("###: %3d User connected to the shard", Id);
+
+		nbPlayer++;
+		if (nbPlayer > recordNbPlayer)
+		{
+			recordNbPlayer = nbPlayer;
+			beep (2000, 1, 100, 0);
+			nlwarning("New player number record!!! %d players online on all shards", recordNbPlayer);
+		}
 	}
 	else
 	{
@@ -394,8 +397,9 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 		
 		nldebug ("Id %d is discconnected from the shard", Id);
 		Output.displayNL ("###: %3d User disconnected from the shard", Id);
+
+		nbPlayer--;
 	}
-	displayUsers ();
 }
 
 

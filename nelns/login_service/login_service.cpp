@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.9 2002/01/17 10:49:27 lecroart Exp $
+ * $Id: login_service.cpp,v 1.10 2002/01/23 10:55:13 lecroart Exp $
  *
  */
 
@@ -38,6 +38,7 @@
 #include "nel/misc/displayer.h"
 #include "nel/misc/command.h"
 #include "nel/misc/log.h"
+#include "nel/misc/window_displayer.h"
 
 #include "nel/net/service.h"
 #include "nel/net/net_manager.h"
@@ -63,6 +64,7 @@ bool CryptPassword = true;
 
 // store specific user information
 NLMISC::CFileDisplayer Fd ("ls.log");
+NLMISC::CStdDisplayer Sd;
 NLMISC::CLog Output;
 
 uint32 CUser::NextUserId = 1;	// 0 is reserved
@@ -116,9 +118,7 @@ void checkClients ()
 
 void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard)
 {
-	nlinfo ("disconnectClient (): %s %d %d %d", user.Login.c_str(), user.State, disconnectClient, disconnectShard);
-
-	displayUsers ();
+	nlinfo ("User %d '%s' was disconnected from me (%d %d %d)", user.Id, user.Login.c_str(), user.State, disconnectClient, disconnectShard);
 
 	switch (user.State)
 	{
@@ -155,8 +155,6 @@ void disconnectClient (CUser &user, bool disconnectClient, bool disconnectShard)
 	}
 
 	user.State = CUser::Offline;
-
-	displayUsers ();
 }
 
 sint findUser (uint32 Id)
@@ -175,8 +173,6 @@ sint findUser (uint32 Id)
 string CUser::Authorize (TSockId sender, CCallbackNetBase &netbase)
 {
 	string reason;
-
-	displayUsers ();
 
 	switch (State)
 	{
@@ -212,32 +208,17 @@ string CUser::Authorize (TSockId sender, CCallbackNetBase &netbase)
 		nlstop;
 		break;
 	}
-	displayUsers ();
 	return reason;
 }
 
 void displayShards ()
 {
-	nlinfo ("There's %d shards in the list:", Shards.size());
-	for (uint i = 0; i < Shards.size(); i++)
-	{
-		nlinfo(" > %s %d %d %s %s '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName);
-	}
-	nlinfo ("End of the list");
-
-	checkClients ();
+	ICommand::execute ("shards", *InfoLog);
 }
 
 void displayUsers ()
 {
-	nlinfo ("There's %d users in the list:", Users.size());
-	for (uint i = 0; i < Users.size(); i++)
-	{
-		nlinfo(" > %d %d %s %s '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str());
-	}
-	nlinfo ("End of the list");
-
-	checkClients ();
+	ICommand::execute ("users", *InfoLog);
 }
 
 void readPlayerDatabase ()
@@ -380,8 +361,6 @@ void writePlayerDatabase ()
 		if (PlayerDatabase != NULL)
 			PlayerDatabase->setLastModifiedNow ();
 	}
-
-	displayShards ();
 }
 
 
@@ -391,7 +370,7 @@ void writePlayerDatabase ()
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void bell ()
+void beep (uint freq, uint nb, uint beepDuration, uint pauseDuration)
 {
 #ifdef NL_OS_WINDOWS
 	if (ServiceInstance == NULL)
@@ -401,9 +380,11 @@ void bell ()
 	{
 		if (ServiceInstance->ConfigFile.getVar ("Beep").asInt() == 1)
 		{
-			Beep (400, 100);
-			nlSleep (100);
-			Beep (400, 100);
+			for (uint i = 0; i < nb; i++)
+			{
+				Beep (freq, beepDuration);
+				nlSleep (pauseDuration);
+			}
 		}
 	}
 	catch (Exception &)
@@ -425,7 +406,7 @@ public:
 	{
 		ServiceInstance = this;
 
-		bell ();
+		beep ();
 
 		FILE *fp = fopen (PlayerDatabaseName, "rt");
 		if (fp == NULL)
@@ -443,6 +424,8 @@ public:
 		readPlayerDatabase ();
 
 		Output.addDisplayer (&Fd);
+		if (_WindowDisplayer != NULL)
+			Output.addDisplayer (_WindowDisplayer);
 
 		connectionClientInit ();
 		
@@ -467,6 +450,8 @@ public:
 		try { CryptPassword = ConfigFile.getVar("CryptPassword").asInt() == 1; } catch (Exception &) { }
 
 		Init = true;
+		
+		Output.displayNL ("Login Service initialised");
 	}
 
 	/// release the service, save the universal time

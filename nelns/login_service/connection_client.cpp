@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.7 2002/01/17 10:49:27 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.8 2002/01/23 10:55:13 lecroart Exp $
  *
  */
 
@@ -52,6 +52,7 @@ extern "C" char *crypt (const char *__key, const char *__salt);
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+
 
 // These functions enable crypting password, work only on unix
 
@@ -224,10 +225,10 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 	msgin.serial (Mem);
 	msgin.serial (Gfx);
 
-	Output.displayNL ("OS : %3d %s", userToLog(userPos), OS.c_str());
-	Output.displayNL ("PRC: %3d %s", userToLog(userPos), Proc.c_str());
-	Output.displayNL ("MEM: %3d %s", userToLog(userPos), Mem.c_str());
-	Output.displayNL ("GFX: %3d %s", userToLog(userPos), Gfx.c_str());
+	if (!OS.empty()) Output.displayNL ("OS : %3d %s", userToLog(userPos), OS.c_str());
+	if (!Proc.empty()) Output.displayNL ("PRC: %3d %s", userToLog(userPos), Proc.c_str());
+	if (!Mem.empty()) Output.displayNL ("MEM: %3d %s", userToLog(userPos), Mem.c_str());
+	if (!Gfx.empty()) Output.displayNL ("GFX: %3d %s", userToLog(userPos), Gfx.c_str());
 
 	// check the login & pass
 
@@ -384,6 +385,7 @@ static void cbClientChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase
 					const CInetAddress &ia = netbase.hostAddress ((*it).SockId);
 					msgout.serial ((*it).Cookie);
 					CNetManager::send("WSLS", msgout, Shards[i].SockId);
+					beep (1000, 1, 100, 100);
 					return;
 				}
 			}
@@ -416,7 +418,18 @@ static void cbClientConnection (const string &serviceName, TSockId from, void *a
 
 	nldebug("new client connection: %s", ia.asString ().c_str ());
 
-	bell ();
+	Output.displayNL ("CCC: Connection from %s", ia.asString ().c_str ());
+
+	if (ia.asString().find ("nevrax") != string::npos)
+	{
+		// internal connection
+		beep ();
+	}
+	else
+	{
+		// external connection
+		beep (1000, 2, 100, 100);
+	}
 
 	cnb->authorizeOnly ("VLP", from);
 }

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.2 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.3 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 namespace NL3D 
 {
 
+class CMeshMultiLodInstance;
 
 /**
  * Mesh with several LOD meshes.
@@ -68,15 +69,21 @@ public:
 			  * 
 			  * BlendIn:	if this flag is specified, this mesh will blend before be displayed.
 			  * BlendOut:	if this flag is specified, this mesh will blend before disapear.
+			  * CoarseMesh: if this flag is specified, this mesh is a coarse mesh.
+			  * StaticCoarseMesh: if this flag and CoarseMesh are specified, this mesh is a static 
+			  *		coarse mesh else if only CoarseMesh is specified, this mesh is a dynamic coarse mesh.
 			  */
 			enum
 			{
-				BlendIn		=	0x01,
-				BlendOut	=	0x02,
-				CoarseMesh	=	0x04,
+				BlendIn				=	0x01,
+				BlendOut			=	0x02,
+				CoarseMesh			=	0x04,
 			};
 
-			/// A mesh base build to describe the mesh. Can't be NULL.
+			/**
+			  * A mesh base build to describe the mesh. Can't be NULL. The pointer is owned by the CMeshMultiLod
+			  * after the call.
+			  */
 			IMeshGeom			*MeshGeom;
 
 			/// Distance before which this lod is displayed
@@ -88,6 +95,9 @@ public:
 			/// Flags for the build. See flags description.
 			uint8				Flags;
 		};
+
+		/// True if this mesh is a static lod (static means it doesn't move at each frame), else false for dynamic.
+		bool						StaticLod;
 
 		/// The mesh base build structure
 		CMeshBase::CMeshBaseBuild	BaseMesh;
@@ -166,9 +176,15 @@ private:
 		/// Blend On/Off, misc flags
 		uint8		Flags;
 
+		/// Coarse mesh id
+		uint64		CoarseMeshId;
+
 		/// Serial
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
+
+	/// Static or dynamic load ?
+	bool						_StaticLod;
 
 	/// Vector of meshes
 	std::vector<CMeshSlot>		_MeshVector;
@@ -177,7 +193,7 @@ private:
 	void	clear ();
 
 	/// Render a slot
-	void	render (uint slot, IDriver *drv, CTransformShape *trans, float numPoylgons, float alpha);
+	void	render (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, float numPoylgons, float alpha, bool staticLod);
 };
 
 

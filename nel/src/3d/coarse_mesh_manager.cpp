@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.1 2001/07/03 08:35:55 corvazier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.2 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,14 @@
 
 namespace NL3D 
 {
+
+// ***************************************************************************
+
+void	CCoarseMeshManager::registerBasic()
+{
+	CMOT::registerModel (CoarseMeshManagerId, TransformId, CCoarseMeshManager::creator);
+	CMOT::registerObs (RenderTravId, CoarseMeshManagerId, CCoarseMeshManagerRenderObs::creator);
+}
 
 // ***************************************************************************
 
@@ -124,7 +132,7 @@ void CCoarseMeshManager::setMeshColor (uint64 id, const CMeshGeom& geom, NLMISC:
 
 // ***************************************************************************
 
-void CCoarseMeshManager::render (IDriver *drv, CTransformShape *trans)
+void CCoarseMeshManager::render (IDriver *drv)
 {
 	// Set Ident matrix
 	drv->setupModelMatrix (CMatrix::Identity);
@@ -134,7 +142,7 @@ void CCoarseMeshManager::render (IDriver *drv, CTransformShape *trans)
 	while (ite!=_RenderPass.end())
 	{
 		// Render the rendering pass
-		ite->second.render (drv, trans, _Material);
+		ite->second.render (drv, _Material);
 	}
 }
 
@@ -359,7 +367,7 @@ void CCoarseMeshManager::CRenderPass::setMeshColor (uint32 id, const CMeshGeom& 
 
 // ***************************************************************************
 
-void CCoarseMeshManager::CRenderPass::render (IDriver *drv, CTransformShape *trans, CMaterial& mat)
+void CCoarseMeshManager::CRenderPass::render (IDriver *drv, CMaterial& mat)
 {
 	// Active the vertex buffer
 	drv->activeVertexBuffer (VBuffer);
@@ -485,6 +493,18 @@ void CCoarseMeshManager::CRenderPass::CPrimitiveBlockInfo::init (uint size)
 {
 	// Reserve triangles
 	PrimitiveBlock.reserveTri (size);
+}
+
+// ***************************************************************************
+
+void	CCoarseMeshManagerRenderObs::traverse(IObs *caller)
+{
+	CRenderTrav			*trav= (CRenderTrav*)Trav;
+	CCoarseMeshManager	*model= (CCoarseMeshManager*)Model;
+	IDriver				*drv= trav->getDriver();
+
+	// render the container.
+	model->render (drv);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.1 2001/07/03 08:35:55 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.2 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,12 @@ class CMeshMultiLodInstance : public CMeshBaseInstance
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
+
+	/// Pointer on the scene.
+	CScene			*Scene;
+
+	/// Last Matrix date
+	uint64			_LastLodMatrixDate;
 
 private:
 	static IModel	*creator() {return new CMeshMultiLodInstance;}

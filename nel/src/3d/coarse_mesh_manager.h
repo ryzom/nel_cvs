@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.1 2001/07/03 08:35:55 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.2 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@
 namespace NL3D 
 {
 
+// ***************************************************************************
+
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT	3
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
@@ -44,8 +46,16 @@ namespace NL3D
 #define NL3D_COARSEMESH_VERTEX_FORMAT					(IDRV_VF_XYZ|IDRV_VF_NORMAL|IDRV_VF_COLOR|IDRV_VF_UV[0])
 #define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
+// ***************************************************************************
+
 class CMeshGeom;
 class CTransformShape;
+
+// ***************************************************************************
+
+const NLMISC::CClassId		CoarseMeshManagerId=NLMISC::CClassId(0x77554f87, 0x5bb373d8);
+
+// ***************************************************************************
 
 /**
  * Management of coarse meshes.
@@ -88,7 +98,7 @@ public:
 	};
 	
 	/// Constructor
-	CCoarseMeshManager();
+	CCoarseMeshManager ();
 
 	/**
 	  * Add a coarse mesh in the manager. If an error occured, it returns CantAddCoarseMesh.
@@ -114,9 +124,12 @@ public:
 	/**
 	  * Render the container
 	  */
-	void render (IDriver *drv, CTransformShape *trans);
+	void render (IDriver *drv);
 
-
+	/**
+	  * Register class id.
+	  */
+	static void		registerBasic();
 private:
 
 	/**
@@ -179,7 +192,7 @@ private:
 		/**
 		  * Render the container
 		  */
-		void render (IDriver *drv, CTransformShape *trans, CMaterial& mat);
+		void render (IDriver *drv, CMaterial& mat);
 	private:
 
 		/**
@@ -272,8 +285,26 @@ private:
 
 	// The unique material used by all the coarse object inserted in the container.
 	CMaterial	_Material;
+
+	static IModel	*creator() {return new CCoarseMeshManager;}
 };
 
+// ***************************************************************************
+
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - implement the traverse() method.
+ */
+class	CCoarseMeshManagerRenderObs : public IBaseRenderObs
+{
+public:
+
+	/// render the instance and Don't traverseSons().
+	virtual	void	traverse(IObs *caller);
+	
+	static IObs	*creator() {return new CCoarseMeshManagerRenderObs;}
+};
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.20 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: nelu.cpp,v 1.21 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,9 @@ void			CNELU::initScene(CViewport viewport)
 
 	// Set viewport
 	CNELU::Scene.setViewport (viewport);
+
+	// Create coarse mesh manager.
+	CNELU::Scene.initCoarseMeshManager ();
 
 	// Create/link a camera.
 	CNELU::Camera= (CCamera*)Scene.createModel(NL3D::CameraId);

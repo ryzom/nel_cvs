@@ -1,7 +1,7 @@
 /** \file scene.h
- * <File description>
+ * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.5 2001/07/04 12:26:00 vizerie Exp $
+ * $Id: scene.h,v 1.6 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,12 +30,15 @@
 #include "3d/mot.h"
 #include "3d/camera.h"
 #include "3d/trav_scene.h"
-#include "nel/3d/viewport.h"
 #include "3d/shape.h"
 #include "3d/animated_lightmap.h"
 #include "3d/play_list_manager.h"
+
+#include "nel/3d/viewport.h"
+
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"
+
 #include <map>
 #include <list>
 
@@ -62,6 +65,7 @@ class	CTransform;
 class	CTransformShape;
 class	IDriver;
 class	CShapeBank;
+class	CCoarseMeshManager;
 
 // ***************************************************************************
 /**
@@ -132,6 +136,8 @@ public:
 	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void			initDefaultRoots();
+	/// Create coarse meshes manager.
+	void			initCoarseMeshManager ();
 	/// Set the driver to render Traversal.
 	void			setDriver(IDriver *drv);
 	/// Get the driver of render Traversal.
@@ -246,7 +252,17 @@ public:
 
 	//@}
 
-
+	/// \name Coarse meshes managers.
+	//@{
+	CCoarseMeshManager		*getStaticCoarseMeshManager ()
+	{
+		return _StaticCoarseMeshManager;
+	}
+	CCoarseMeshManager		*getDynamicCoarseMeshManager ()
+	{
+		return _DynamicCoarseMeshManager;
+	}
+	//@}
 
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
@@ -294,6 +310,12 @@ private:
 
 	typedef std::multimap<std::string,CTransformShape**> TWaitingInstancesMMap;
 	TWaitingInstancesMMap _WaitingInstances;
+	//@}
+
+	/// \name Coarse meshes managers.
+	//@{
+	CCoarseMeshManager	*_StaticCoarseMeshManager;
+	CCoarseMeshManager	*_DynamicCoarseMeshManager;
 	//@}
 
 };

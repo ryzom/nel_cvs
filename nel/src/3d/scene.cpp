@@ -1,7 +1,7 @@
 /** \file scene.cpp
- * <File description>
+ * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.39 2001/07/04 12:26:00 vizerie Exp $
+ * $Id: scene.cpp,v 1.40 2001/07/04 16:24:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@
 #include "3d/shape_bank.h"
 #include "3d/skeleton_model.h"
 #include "3d/particle_system_model.h"
+#include "3d/coarse_mesh_manager.h"
+
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;
@@ -69,6 +71,7 @@ void	CScene::registerBasics()
 	CSkeletonModel::registerBasic();
 	CParticleSystemModel::registerBasic() ;
 	CMeshMultiLodInstance::registerBasic();
+	CCoarseMeshManager::registerBasic();
 }
 
 	
@@ -87,6 +90,9 @@ CScene::CScene()
 	RenderTrav= NULL;
 
 	_ShapeBank = NULL;
+
+	_StaticCoarseMeshManager = NULL;
+	_DynamicCoarseMeshManager = NULL;
 
 	Root= NULL;
 
@@ -145,6 +151,7 @@ void	CScene::release()
 		delete	RenderTrav;
 		RenderTrav= NULL;
 	}
+
 	_ShapeBank = NULL;
 	Root= NULL;
 	CurrentCamera= NULL;
@@ -186,6 +193,12 @@ void	CScene::initDefaultRoots()
 	// \todo yoyo: create / setRoot the lightgroup.
 }
 
+// ***************************************************************************
+void	CScene::initCoarseMeshManager ()
+{
+	_StaticCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
+	_DynamicCoarseMeshManager=(CCoarseMeshManager*)createModel (CoarseMeshManagerId);
+}
 // ***************************************************************************
 void	CScene::addTrav(ITrav *v)
 {

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.57 2002/02/15 17:43:41 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.58 2002/03/04 10:29:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode
 
 
 // --------------------------------------------------
-inline void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
+void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
 {
 	ITexture	*text= mat.getTexture(stage);
 	if(text)
@@ -138,7 +138,7 @@ inline void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
 
 
 //--------------------------------
-inline void CDriverGL::setupUserTextureMatrix(uint numStages, CMaterial& mat)
+void CDriverGL::setupUserTextureMatrix(uint numStages, CMaterial& mat)
 { 
 	if (
 		(_UserTexMatEnabled != 0 && (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) == 0)		

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.46 2001/02/23 13:29:58 cado Exp $
+ * $Id: base_socket.cpp,v 1.47 2001/03/15 16:35:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,6 +89,7 @@ ESocket::ESocket( const char *reason, bool systemerror )
 #ifdef NL_OS_WINDOWS
 		switch( ERROR_NUM )
 		{
+		case WSAEINVAL		 /*10022*/: _Reason += ": Invalid socket (maybe not bound)"; break;
 		case WSAEMFILE		 /*10024*/: _Reason += ": Too many open sockets"; break;
 		case WSAEMSGSIZE	 /*10040*/: _Reason += ": Message too long"; break;
 		case WSAEADDRINUSE   /*10048*/: _Reason += ": Address already in use"; break;
@@ -269,6 +270,8 @@ void CBaseSocket::setNoDelay( bool value ) throw (ESocket)
  */
 void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFailed,ESocket)
 {
+	nldebug( "P1: Connecting to %s...", addr.asString().c_str() );
+
 	// Check address
 	if ( ! addr.isValid() )
 	{

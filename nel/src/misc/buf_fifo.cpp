@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.17 2001/05/31 15:27:48 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.18 2001/09/10 13:42:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,14 +296,18 @@ void CBufFIFO::resize (uint32 size)
 	uint32 UsedSize = CBufFIFO::size();
 
 	// creer un nouveau tableau et copie l ancien dans le nouveau.
-	if (size < _BufferSize && UsedSize < size)
+	if (size < _BufferSize && UsedSize > size)
 	{
 		// probleme, on a pas assez de place pour caser les datas => on fait pas
-		nlwarning("Can't resize the FIFO because there's not enough room in the new wanted buffer (%d byte needed at least)", UsedSize);
+		nlwarning("Can't resize the FIFO because there's not enough room in the new wanted buffer (%d bytes needed at least)", UsedSize);
 		return;
 	}
 
 	uint8 *NewBuffer = new uint8[size];
+	if (NewBuffer == NULL)
+	{
+		nlerror("Not enough memory to resize the FIFO");
+	}
 	memset (NewBuffer, '-', size);
 
 #if DEBUG_FIFO

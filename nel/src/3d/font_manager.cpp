@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.36 2002/11/21 15:55:55 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.37 2002/11/21 16:36:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,11 +195,11 @@ void CFontManager::computeString (const ucstring &s,
 	output.Vertices.setNumVertices (j);
 
 	// compile string info
-	output.StringWidth = penx;
+	output.StringWidth = (float)penx;
 	if(nMaxZ>nMinZ)
 	{
-		output.StringHeight = (nMaxZ - nMinZ);
-		output.StringLine = -nMinZ;
+		output.StringHeight = (float)(nMaxZ - nMinZ);
+		output.StringLine = -(float)nMinZ;
 	}
 	else
 	{
@@ -264,11 +264,11 @@ void CFontManager::computeStringInfo (	const ucstring &s,
 	}
 
 	// compile string info
-	output.StringWidth = penx;
+	output.StringWidth = (float)penx;
 	if(nMaxZ>nMinZ)
 	{
-		output.StringHeight = (nMaxZ - nMinZ);
-		output.StringLine = -nMinZ;
+		output.StringHeight = (float)(nMaxZ - nMinZ);
+		output.StringLine = -(float)nMinZ;
 	}
 	else
 	{

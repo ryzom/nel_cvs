@@ -1,5 +1,7 @@
 <?php 
 
+	include_once('config.inc');
+
 	function compressFile($filename)
 	{
 		$fp = fopen ($filename, "rb");
@@ -25,7 +27,20 @@
 
 	$ok = true;
 
-	$path = "patch";
+	if (!isset($shard_version))
+	{
+		die("Bad shard version, you must provide a shard version to know where data are. For example: http://myurl/make_distrib?shard_version=12");
+	}
+
+	if (strlen($shard_version) == 0)
+	{
+		$path = $RootPatchInternalAccess."/default";
+	}
+	else
+	{
+		$path = $RootPatchInternalAccess."/".$shard_version;
+	}
+	
 	$dir = "dir.gz";
 
 	$d = dir($path);
@@ -34,7 +49,6 @@
 	$zp = gzopen("$path/$dir", "wb9");
 
 	$nbfiles = 0;
-
 
 	echo "<table border=1><tr><th>Res</th><th>Filename</th><th>Size</th><th>Date</th></tr>";
 

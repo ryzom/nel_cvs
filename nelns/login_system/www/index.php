@@ -138,12 +138,12 @@
 
 	function patchForm($shardid, $clientApplication, $clientVersion, $serverVersion)
 	{
-		global $PHP_SELF, $PatchURL;
+		global $PHP_SELF, $RootPatchURL;
 
 		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
 		echo "<html><head><title>patch form</title></head><body>\n";
 		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>\n";
-		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="'.$PatchURL.'" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"'."\n";
+		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="'.$RootPatchURL.'"/".$serverVersion." nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"'."\n";
 		echo "<h1>Current state</h1>\n";
 		echo "<!--nel_start_state--><!--nel_end_state--><br>\n";
 		echo "<h1>Log</h1>\n";
@@ -215,7 +215,7 @@
 		
 		if (mysql_num_rows ($result) == 0)
 		{
-			echo "<h1>Sorry but now shards are available</h1>\n";
+			echo "<h1>Sorry but no shards are available</h1>\n";
 		}
 		else
 		{

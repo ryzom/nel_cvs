@@ -175,6 +175,8 @@ IDB_WEIGHT              BITMAP  DISCARDABLE     "bmp00018.bmp"
 IDB_SOUND               BITMAP  DISCARDABLE     "bmp00019.bmp"
 IDB_SOUND_VOLUME        BITMAP  DISCARDABLE     "bmp00020.bmp"
 IDB_SOUND_FREQ          BITMAP  DISCARDABLE     "bmp00021.bmp"
+IDB_PARTICLE_WIDTH      BITMAP  DISCARDABLE     "bmp00022.bmp"
+IDB_PARTICLE_HEIGHT     BITMAP  DISCARDABLE     "bmp00023.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -413,7 +415,7 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,4,0,340,68
     COMBOBOX        IDC_SCHEME,116,10,77,57,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    PUSHBUTTON      "Edit...",IDC_EDIT_SCHEME,195,10,35,13
+    PUSHBUTTON      "edit",IDC_EDIT_SCHEME,195,10,18,13
     CONTROL         "",IDC_CONSTANT_VALUE_POS,"Static",SS_ETCHEDFRAME,113,7,
                     226,24
     CONTROL         "Clamp",IDC_CLAMP_ATTRIB,"Button",BS_AUTOCHECKBOX | 
@@ -421,11 +423,13 @@ BEGIN
     CONTROL         "",IDC_ATTRIB_NB_CYCLES,"Static",SS_ETCHEDFRAME,113,39,
                     226,24
     LTEXT           "Input mutliplier :",IDC_STATIC,58,47,61,11
-    LTEXT           "Source :",IDC_STATIC,234,12,27,11
-    COMBOBOX        IDC_SCHEME_INPUT,264,10,51,77,CBS_DROPDOWNLIST | 
+    LTEXT           "Src:",IDC_STATIC,257,12,14,11
+    COMBOBOX        IDC_SCHEME_INPUT,274,10,46,77,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Button2",IDC_ATTR_BITMAP,7,7,34,26,BS_BITMAP | BS_FLAT
-    PUSHBUTTON      "Edit",IDC_EDIT_INPUT,316,10,20,12
+    PUSHBUTTON      "Edit",IDC_EDIT_INPUT,321,10,15,12
+    PUSHBUTTON      "get",IDC_GET_SCHEME,216,10,18,13
+    PUSHBUTTON      "put",IDC_PUT_SCHEME,236,10,18,13
 END
 
 IDD_LOCATED_BINDABLE DIALOG DISCARDABLE  0, 0, 273, 354
@@ -435,6 +439,13 @@ BEGIN
     COMBOBOX        IDC_BLENDING_MODE,59,4,52,46,CBS_DROPDOWNLIST | 
                     WS_VSCROLL | WS_TABSTOP
     LTEXT           "Blending Mode :",IDC_BLENDING_MODE_STATIC,7,6,47,9
+    CONTROL         "Independant sizes",IDC_INDE_SIZES,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,116,4,61,12
+    CONTROL         "Width",IDC_SIZE_WIDTH,"Button",BS_AUTORADIOBUTTON,181,5,
+                    29,11
+    CONTROL         "Height",IDC_SIZE_HEIGHT,"Button",BS_AUTORADIOBUTTON,213,
+                    5,29,11
+    GROUPBOX        "",IDC_WIDTH_HEIGHT_BOX,177,0,71,18
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32
@@ -797,6 +808,31 @@ BEGIN
     LTEXT           "Nb samples :",IDC_STATIC,3,43,50,11
 END
 
+IDD_SCHEME_BANK_DLG DIALOG DISCARDABLE  0, 0, 206, 218
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Scheme bank"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,147,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,147,24,50,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,148,53,48,13
+    LISTBOX         IDC_SCHEME_LIST,7,7,136,205,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Save...",IDC_SAVE_BANK,149,71,47,13
+    PUSHBUTTON      "Load...",IDC_LOAD_BANK,149,88,47,12
+    LTEXT           "NB : default.scb is loaded at startup.",IDC_STATIC,149,
+                    107,50,33
+END
+
+IDD_CHOOSE_NAME DIALOG DISCARDABLE  0, 0, 222, 28
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter name"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,165,7,50,14
+    EDITTEXT        IDC_NAME_CHOSEN,7,7,148,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1109,6 +1145,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 56
     END
+
+    IDD_SCHEME_BANK_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 199
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 211
+    END
+
+    IDD_CHOOSE_NAME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 215
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 21
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1158,9 +1210,9 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 42
- PRODUCTVERSION 1,0,0,1
- FILEFLAGSMASK 0x3fL
+FILEVERSION 1,0,0,50
+PRODUCTVERSION 1,0,0,1
+FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
 #else
@@ -1177,7 +1229,11 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
+<<<<<<< object_viewer.rc
+            VALUE "FileVersion", "1, 0, 0, 50\0"
+=======
             VALUE "FileVersion", "1, 0, 0, 42\0"
+>>>>>>> 1.37
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"

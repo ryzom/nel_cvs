@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.1 2002/06/04 10:02:52 hanappe Exp $
+ * $Id: sample_bank.cpp,v 1.2 2002/06/11 09:40:54 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,14 +37,58 @@ using namespace NLMISC;
 namespace NLSOUND {
 
 
-CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _Loaded(false), _SoundDriver(sd), _Path(path) 
+set<CSampleBank*> CSampleBank::_Banks;
+
+
+/** Return the name corresponding to a name. The sample is searched
+ * in all the loaded sample banks.
+ */
+IBuffer*		CSampleBank::get(const char* name)
 {
-	_Name = CFile::getFilenameWithoutExtension(_Path);
+	IBuffer* buffer;
+	set<CSampleBank*>::iterator iter;
+
+	for (iter = _Banks.begin(); iter != _Banks.end(); ++iter)
+	{
+		buffer = (*iter)->getSample(name);
+		if (buffer != 0)
+		{
+			return buffer;
+		}
+	}
+	
+	return 0;
 }
 
 
+/**
+ *  Constructor
+ *
+ * The path should be absolute
+ */
+CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _Loaded(false), _SoundDriver(sd), _Path(path) 
+{
+	_Name = CFile::getFilenameWithoutExtension(_Path);
+	_Banks.insert(this);
+}
+
+
+/**
+ *  Destructor
+ */
 CSampleBank::~CSampleBank()
 {
+	// remove the bank from the list of known banks
+	set<CSampleBank*>::const_iterator iter = _Banks.find(static_cast<CSampleBank*>(this));
+	if (iter == _Banks.end())
+	{
+		nlwarning( "AM: Cannot remove sample bank: not found" );
+	}
+	else
+	{
+		_Banks.erase(iter);
+	}
+
 	unload();
 }
 
@@ -62,18 +106,22 @@ void				CSampleBank::load()
 
 	for (iter = filenames.begin(); iter != filenames.end(); iter++)
 	{
+		IBuffer* buffer = 0;
 		try
 		{
-			IBuffer* buffer = _SoundDriver->createBuffer();
+			buffer = _SoundDriver->createBuffer();
+			nlassert(buffer);
 			_SoundDriver->loadWavFile(buffer, (*iter).c_str());
-			string buffername = CFile::getFilenameWithoutExtension(*iter);
-			_Buffers.insert(make_pair(buffername.c_str(), buffer));
+			_Samples.insert(make_pair(buffer->getName().c_str(), buffer));
 
-			//nldebug("AM: SampleBank %s: loading sample %s", _Name.c_str(), buffername.c_str());
+			//nldebug("AM: SampleBank %s: loading sample %s", _Name.c_str(), buffer->getName().c_str());
 
 		}
 		catch (ESoundDriver& e2)
 		{
+			if (buffer) {
+				delete buffer;
+			}
 			string what2 = e2.what();
 			nlwarning(what2.c_str());
 			throw;
@@ -88,15 +136,15 @@ void				CSampleBank::load()
 void				CSampleBank::unload()
 {
 	vector<IBuffer*> vec;
-	TSoundTable::iterator map_iter;
+	TSampleTable::iterator map_iter;
 
-	for (map_iter = _Buffers.begin(); map_iter != _Buffers.end(); ++map_iter)
+	for (map_iter = _Samples.begin(); map_iter != _Samples.end(); ++map_iter)
 	{
 		// We can't delete directly second because the map is based on second->getName()
 		vec.push_back( (*map_iter).second );
 	}
 	
-	_Buffers.clear();
+	_Samples.clear();
 
 	vector<IBuffer*>::iterator vec_iter;
 
@@ -117,11 +165,11 @@ bool				CSampleBank::isLoaded()
 /*
  * Return a sound sample corresponding to a name.
  */
-IBuffer*			CSampleBank::getBuffer(const char* name)
+IBuffer*			CSampleBank::getSample(const char* name)
 {
 	// Find sound
-	TSoundTable::iterator iter = _Buffers.find(name);
-	if ( iter == _Buffers.end() )
+	TSampleTable::iterator iter = _Samples.find(name);
+	if ( iter == _Samples.end() )
 	{
 		return 0;
 	}
@@ -131,12 +179,13 @@ IBuffer*			CSampleBank::getBuffer(const char* name)
 	}
 }
 
+
 /*
  * Return the number of buffers in this bank.
  */
-uint				CSampleBank::countBuffers()
+uint				CSampleBank::countSamples()
 {
-	return _Buffers.size();
+	return _Samples.size();
 }
 
 /*
@@ -146,8 +195,8 @@ uint				CSampleBank::getSize()
 {
 	uint size = 0;
 
-	TSoundTable::const_iterator iter;
-	for (iter = _Buffers.begin(); iter != _Buffers.end(); iter++)
+	TSampleTable::const_iterator iter;
+	for (iter = _Samples.begin(); iter != _Samples.end(); iter++)
 	{
 		size +=	(*iter).second->getSize();
 	}

@@ -1,7 +1,7 @@
 /** \file sample_bank.h
- * CSampleBank: a set of sound samples
+ * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.1 2002/06/04 10:02:52 hanappe Exp $
+ * $Id: sample_bank.h,v 1.2 2002/06/11 09:40:54 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_SOUND_BANK_H
-#define NL_SOUND_BANK_H
+#ifndef NL_SAMPLE_BANK_H
+#define NL_SAMPLE_BANK_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
@@ -37,6 +37,7 @@ namespace NLSOUND {
 
 class ISoundDriver;
 class IBuffer;
+class CSampleBank;
 
 
 // Comparision for const char*
@@ -50,11 +51,11 @@ struct eqname
 
 
 /// Sound names hash map
-typedef std::hash_map<const char*, IBuffer*, std::hash<const char*>, eqname> TSoundTable;
+typedef std::hash_map<const char*, IBuffer*, std::hash<const char*>, eqname> TSampleTable;
 
 
 /**
- * A set of sound samples.
+ * A set of samples.
  * \author Peter Hanappe
  * \author Nevrax France
  * \date 2001
@@ -63,29 +64,33 @@ class CSampleBank
 {
 public:
 
+	/// Return the name corresponding to a name. The sample is searched
+	// in all the loaded sample banks.
+	static IBuffer*		get(const char* name);
+
 	/// Constructor
 	CSampleBank(const std::string& path, ISoundDriver *sd);
 
 	/// Destructor
 	virtual ~CSampleBank();
 
-	/** Load all the sound buffers.
+	/** Load all the samples.
 	 *
 	 * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
 	 */
 	void				load();
 
-	/// Unload all the sound buffers in this bank.
+	/// Unload all the samples in this bank.
 	void				unload();
 
-	/// Returns true if the sounds in this bank have been loaded.
+	/// Returns true if the samples in this bank have been loaded.
 	bool				isLoaded();
 
-	/// Return a sound buffer corresponding to a name.
-	IBuffer				*getBuffer(const char* name);
+	/// Return a samples corresponding to a name.
+	IBuffer				*getSample(const char* name);
 
-	/// Return the number of buffers in this bank.
-	uint				countBuffers();
+	/// Return the number of samples in this bank.
+	uint				countSamples();
 
 	/// Return the size of this bank in bytes.
 	uint				getSize();
@@ -100,13 +105,16 @@ public:
 
 private:
 
+	// The map off all loaded sample banks
+	static std::set<CSampleBank*>		_Banks;
+
 	// Sound driver
 	ISoundDriver		*_SoundDriver;
 
-	// Buffer
-	TSoundTable			_Buffers;
+	// Hashtable with samples
+	TSampleTable		_Samples;
 
-	// Sound bank name and path 
+	// Sample bank name and path 
 	std::string			_Path;
 	std::string			_Name;
 
@@ -120,17 +128,17 @@ private:
  * ESoundFileNotFound
  */
 
-class ESoundBankNotFound : public NLMISC::Exception
+class ESampleBankNotFound : public NLMISC::Exception
 {
 public:
-	ESoundBankNotFound( const std::string filename ) :
-	  NLMISC::Exception( (std::string("Sound bank not found: ")+filename).c_str() ) {}
+	ESampleBankNotFound( const std::string filename ) :
+	  NLMISC::Exception( (std::string("Sample bank not found: ")+filename).c_str() ) {}
 };
 
 } // NLSOUND
 
 
-#endif // NL_SOUND_BANK_H
+#endif // NL_SAMPLE_BANK_H
 
 /* End of sound.h */
 

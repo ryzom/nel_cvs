@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.57 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.58 2004/06/01 16:25:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -357,15 +357,21 @@ bool CPSEmitter::setEmittedType(CPSLocated *et)
 		CParticleSystem *ps = _Owner->getOwner();
 		if (_EmittedType)
 		{		
+			bool ok = true;
 			if (ps->getBypassMaxNumIntegrationSteps())
 			{
-				if (!ps->canFinish())
-				{
-					setEmittedType(oldType);
-					nlwarning("<CPSLocated::setEmittedType> Can't set new emitted type : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. New emitted type is not set");
-					return false;
-				}
+				ok =  ps->canFinish();
 			}
+			else
+			{
+				ok = !ps->hasLoop();
+			}
+			if (!ok)
+			{
+				setEmittedType(oldType);
+				nlwarning("<CPSLocated::setEmittedType> Can't set new emitted type : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. New emitted type is not set");
+				return false;
+			}			
 		}
 		ps->systemDurationChanged();
 	}

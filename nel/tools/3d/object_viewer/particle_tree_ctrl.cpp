@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.53 2004/05/19 10:20:39 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.54 2004/06/01 16:25:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -864,8 +864,15 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					buildTreeFromPS(ps, psm);
 
 					// flush textures
-					newModel->Shape->flushTextures(*CNELU::Driver, 0);
-					
+					newModel->Shape->flushTextures(*CNELU::Driver, 0);					
+					if (_ParticleDlg->getCurrPS()->hasLoop())
+					{
+						CString mess;
+						CString caption;
+						mess.LoadString(IDS_FX_HAS_LOOP);
+						caption.LoadString(IDS_WARNING);
+						MessageBox(mess, caption, MB_ICONEXCLAMATION);
+					}
 				}
 				else
 				{

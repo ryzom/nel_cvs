@@ -8,16 +8,18 @@
  */
 
 /*
- * $Id: service.cpp,v 1.13 2000/10/11 10:06:00 lecroart Exp $
+ * $Id: service.cpp,v 1.14 2000/10/11 12:27:42 lecroart Exp $
  *
- * <Replace this by a description of the file>
+ * implementation of all debug functions
+ *
  */
+
+/// \todo ACE test the signal redirection on unix
 
 #include "nel/misc/types_nl.h"
 
 #include <stdlib.h>
 #include <signal.h>
-#include <iostream>
 #include <signal.h>
 
 #include "nel/misc/debug.h"
@@ -35,84 +37,71 @@ using namespace NLMISC;
 namespace NLNET
 {
 
-static IService *Service = NULL;
-
-
-///////////////////////////////
-
 /* "Constants" */
 
 static const int Signal[] = {
   SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
 };
 
+static const char *SignalName[]=
+{
+  "SIGABRT", "SIGFPE", "SIGILL", "SIGINT", "SIGSEGV", "SIGTERM"
+};
+
 /* Variables */
 
-static const char **SignalName;
+static IService *Service = NULL;
 
 /* Prototypes */
 
 static void SigHandler (int Sig);
+static void ExitFunc ();
 
-void InitSignal(void) {
-  
-  int I, SignalNb;
-  
-  SignalNb = 0;
-  for (I = 0; I < (int)(sizeof(Signal)/sizeof(Signal[0])); I++) {
-    if (Signal[I] >= SignalNb) SignalNb = Signal[I] + 1;
-  }
-  
-  SignalName = (const char **) malloc((size_t)(SignalNb*sizeof(char *)));
-  if (SignalName == NULL) exit(0);
-  for (I = 0; I < SignalNb; I++) SignalName[I] = NULL;
-  
-  for (I = 0; I < (int)(sizeof(Signal)/sizeof(Signal[0])); I++) {
-    switch (Signal[I]) {
-    case SIGABRT : SignalName[SIGABRT] = "SIGABRT"; break;
-    case SIGFPE  : SignalName[SIGFPE]  = "SIGFPE";  break;
-    case SIGILL  : SignalName[SIGILL]  = "SIGILL";  break;
-    case SIGINT  : SignalName[SIGINT]  = "SIGINT";  break;
-    case SIGSEGV : SignalName[SIGSEGV] = "SIGSEGV"; break;
-    case SIGTERM : SignalName[SIGTERM] = "SIGTERM"; break;
-    }
-    signal(Signal[I],SigHandler);
-  }
+/* Functions */
+
+void InitSignal()
+{
+	// redirect all signals
+	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+		signal(Signal[i], SigHandler);
 }
 
-/* SigHandler() */
+// This function is called when a signal comes
+static void SigHandler(int Sig)
+{
+	// redirect the signal for the next time
+	signal(Sig, SigHandler);
 
-static void SigHandler(int Sig) {
-  
-  signal(Sig,SigHandler);
-
-  if (SignalName[Sig] != NULL) {
-    printf("%s received\n", SignalName[Sig]);
-  } else {
-    printf("Signal #%d received\n",Sig);
-  }
-  
-  switch (Sig) {
-  case SIGABRT :
-  case SIGILL  :
-  case SIGINT  :
-  case SIGSEGV :
-  case SIGTERM :
-    printf("exitcalled()\n");
-    break;
-  }
+	// find the signal
+	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+	{
+		if (Sig == Signal[i])
+		{
+			nlinfo ("%s received", SignalName[i]);
+			switch (Sig)
+			{
+			case SIGABRT :
+			case SIGILL  :
+			case SIGINT  :
+			case SIGSEGV :
+			case SIGTERM :
+			// you should not call a function and system function like printf in a SigHandle because
+			// signal-handler routines are usually called asynchronously when an interrupt occurs.
+			ExitFunc ();
+			exit (100+Sig);
+			break;
+			}
+		}
+	}
+	nlwarning ("Signal #%d received", Sig);
 }
 
 
 ///////////////////////////////
 
-
-
-
-
-void ExitFunc ()
+static void ExitFunc ()
 {
-	cout << "** ExitFunc **" << endl;
+	nldebug("** ExitFunc **");
 	try
 	{
 		if (Service != NULL)
@@ -121,7 +110,7 @@ void ExitFunc ()
 			IService *is = Service;
 			Service = NULL;
 
-			cout << "** ExitFunc Release **" << endl;
+			nldebug("** ExitFunc Release **");
 			is->release ();
 		}
 	}

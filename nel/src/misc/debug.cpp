@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.12 2000/10/11 08:31:07 lecroart Exp $
+ * $Id: debug.cpp,v 1.13 2000/10/11 12:27:41 lecroart Exp $
  *
  * Debug
  */
@@ -79,6 +79,8 @@
  * \endcode
  */
 
+#include <stdarg.h>
+#include <stdio.h>
  
 #include "nel/misc/debug.h"
 

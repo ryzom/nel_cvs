@@ -40,12 +40,13 @@ CIFile cf_ifile;
 #define YY_INPUT(buf,result,max_size) { \
 	if (cf_ifile.eof()) \
 	{ \
+		DEBUG_PRINTF("YY_INPUT: eof");\
 		result = YY_NULL; \
 	} else { \
-		uint32 nbc = std::min((uint32)max_size, (uint32)cf_ifile.getFileSize()); \
+		uint32 nbc = std::min((uint32)max_size, (uint32)cf_ifile.getFileSize() - cf_ifile.getPos()); \
+		DEBUG_PRINTF("YY_INPUT: wanted %d bytes, will read %d\n", max_size, nbc);\
 		cf_ifile.serialBuffer ((uint8 *)buf, nbc); \
 		result = nbc; \
-		nlinfo ("get char %d char", nbc); \
 	} \
 }
 

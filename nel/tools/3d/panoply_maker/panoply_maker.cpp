@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.7 2002/05/31 08:53:01 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.8 2002/06/07 14:50:20 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -55,6 +55,7 @@ struct CBuildInfo
 	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
 	std::string					 DefaultSeparator;
 	TColorMaskVect				 ColorMasks;
+	uint32						 ConfigFileDate;
 };
 
 
@@ -70,6 +71,8 @@ static void BuildColoredVersions(const CBuildInfo &bi);
 
 ///
 static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension);
+static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension);
+
 											
 
 
@@ -79,7 +82,7 @@ int main(int argc, char* argv[])
 
 	if (argc != 2)
 	{
-		nlinfo("usage : %s [config_file name]", argv[0]);
+		nlwarning("usage : %s [config_file name]", argv[0]);
 		exit(-1);
 	}
 
@@ -97,6 +100,8 @@ int main(int argc, char* argv[])
 
 			/// colors masks
 			BuildMasksFromConfigFile(cf, bi.ColorMasks);
+
+			bi.ConfigFileDate = NLMISC::CFile::getFileModificationDate(argv[1]);
 
 			/// look paths
 			try
@@ -138,7 +143,6 @@ int main(int argc, char* argv[])
 			{
 				bi.DefaultSeparator = '_';
 			}
-
 			/// extension for bitmaps
 			try
 			{
@@ -158,8 +162,9 @@ int main(int argc, char* argv[])
 		}
 		catch (std::exception &e)
 		{
-			nlerror("Panoply building failed.");
-			nlerror(e.what());
+			nlwarning("Panoply building failed.");
+			nlwarning(e.what());
+			return -1;
 		}
 
 	////////////////////////////////
@@ -171,7 +176,7 @@ int main(int argc, char* argv[])
 	}
 	catch (std::exception &e)
 	{
-		nlinfo("Something went wrong while building bitmap : %s", e.what());
+		nlwarning("Something went wrong while building bitmap : %s", e.what());
 		return -1;
 	}
 	return 0;
@@ -242,16 +247,23 @@ static void BuildColoredVersions(const CBuildInfo &bi)
 			std::string fileExt = "." + NLMISC::strupr(NLMISC::CFile::getExtension(tgaFiles[k]));						
 			if (fileExt == bi.BitmapExtensions[l])
 			{
-				nlinfo("Processing : %s ", tgaFiles[k].c_str());				
+				nlwarning("Processing : %s ", tgaFiles[k].c_str());				
 				try
 				{
-					BuildColoredVersionForOneBitmap(bi,											
-													NLMISC::CFile::getFilename(tgaFiles[k])
-												   );
+					if (CheckIfNeedRebuildColoredVersionForOneBitmap(bi, NLMISC::CFile::getFilename(tgaFiles[k])))
+					{					
+						BuildColoredVersionForOneBitmap(bi,											
+														NLMISC::CFile::getFilename(tgaFiles[k])
+													   );
+					}
+					else
+					{
+						nlwarning(("No need to rebuild " + NLMISC::CFile::getFilename(tgaFiles[k])).c_str());
+					}
 				}
 				catch (std::exception &e)
 				{
-					nlinfo("Processing of %s failed : %s \n", tgaFiles[k].c_str(), e.what());					
+					nlwarning("Processing of %s failed : %s \n", tgaFiles[k].c_str(), e.what());					
 				}
 			}
 		}
@@ -269,8 +281,83 @@ struct CLoopInfo
 
 
 ///======================================================
-static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension)
+static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension)
 {	
+	uint32 srcDate = bi.ConfigFileDate;	
+	srcDate = std::max(srcDate, (uint32) NLMISC::CFile::getFileModificationDate(bi.InputPath + fileNameWithExtension));		
+	static std::vector<CLoopInfo> masks;
+	/// check the needed masks
+	masks.clear();
+
+	std::string fileName = NLMISC::CFile::getFilenameWithoutExtension(fileNameWithExtension);
+	std::string fileExt  = NLMISC::strupr(NLMISC::CFile::getExtension(fileNameWithExtension));
+
+	for (uint k = 0; k < bi.ColorMasks.size(); ++k)
+	{
+		std::string maskName = fileName + "_" + bi.ColorMasks[k].MaskExt + "." + fileExt;
+		std::string maskFileName = NLMISC::CPath::lookup(maskName,
+														 false, false);
+		if (!maskFileName.empty()) // found the mask ?
+		{			
+			CLoopInfo li;
+			li.Counter = 0;
+			li.MaskID = k;
+
+			if (NLMISC::CFile::fileExists(maskFileName))
+			{
+				srcDate = std::max(srcDate, NLMISC::CFile::getFileModificationDate(maskFileName));			
+				masks.push_back(li);	
+			}			
+		}
+	}
+
+	if (masks.size() == 0) 
+	{
+		nlwarning("no masks found, processing next");
+		return false;
+	}
+	/// check is each genarated texture has the same date or is more recent
+	for(;;)
+	{			
+		uint l;
+		std::string outputFileName = fileName;
+		
+		/// build current tex
+		for (l  = 0; l < masks.size(); ++l)
+		{
+			uint maskID = masks[l].MaskID;
+			uint colorID = masks[l].Counter;			
+			/// complete the file name
+			outputFileName += bi.DefaultSeparator + bi.ColorMasks[maskID].CMs[colorID].ColID;
+		}
+		
+		if (NLMISC::CFile::getFileModificationDate(bi.OutputPath + outputFileName + ".tga") < srcDate) return true; // not found or more old => need rebuild			
+
+		/// increment counters		
+		for (l  = 0; l < (uint) masks.size(); ++l)
+		{
+			++ (masks[l].Counter);
+
+			/// check if we have done all colors for this mask
+			if (masks[l].Counter == bi.ColorMasks[masks[l].MaskID].CMs.size())
+			{
+				masks[l].Counter = 0;
+			}
+			else
+			{
+				break;
+			}
+		}
+		if (l == masks.size()) break; // all cases dones
+	}
+	return false; // nothing to rebuild
+}
+
+
+
+///======================================================
+static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension)
+{		
 	uint32 depth;
 	NLMISC::CBitmap srcBitmap;
 	NLMISC::CBitmap resultBitmap;
@@ -292,12 +379,11 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		}
 		catch (NLMISC::Exception &)
 		{
-			nlinfo("File or format error with : %s. Processing next...", fileNameWithExtension.c_str());
+			nlwarning("File or format error with : %s. Processing next...", fileNameWithExtension.c_str());
 			return;
 		}
 	}
-
-
+	
 
 	static std::vector<CLoopInfo> masks;
 	/// check the needed masks
@@ -312,7 +398,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		std::string maskFileName = NLMISC::CPath::lookup(maskName,
 														 false, false);
 		if (!maskFileName.empty()) // found the mask ?
-		{
+		{			
 			CLoopInfo li;
 			li.Counter = 0;
 			li.MaskID = k;
@@ -344,7 +430,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			}
 			catch (std::exception &e)
 			{
-				nlinfo("Error with : %s : %s. Aborting this bitmap processing", maskFileName.c_str(), e.what());				
+				nlwarning("Error with : %s : %s. Aborting this bitmap processing", maskFileName.c_str(), e.what());				
 				return;
 			}
 		}
@@ -352,7 +438,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 
 	if (masks.size() == 0) 
 	{
-		nlinfo("no masks found, processing next");
+		nlwarning("no masks found, processing next");
 		return; // perhaps it was a mask ?
 	}
 
@@ -362,6 +448,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		resultBitmap = srcBitmap;
 		uint l;
 		std::string outputFileName = fileName;
+		
 		/// build current tex
 		for (l  = 0; l < masks.size(); ++l)
 		{
@@ -376,18 +463,9 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 
 			/// complete the file name
 			outputFileName += bi.DefaultSeparator + bi.ColorMasks[maskID].CMs[colorID].ColID;
-
-			/// fill the gap with default character (for unused masks)
-			uint nextMaskID = (l == (masks.size() - 1))	? 
-							  bi.ColorMasks.size()  :
-							  masks[l + 1].MaskID;
-			/* for (uint m = masks[l].MaskID + 1; m < nextMaskID; ++m)
-			{
-				outputFileName += bi.DefaultChar;
-			}*/								   
 		}
 		
-		nlinfo("--- writing %s", outputFileName.c_str());
+		nlwarning("--- writing %s", outputFileName.c_str());
 		/// Save the result. We let propagate exceptions (if there's no more space disk it useless to continue...)
 		{
 			try
@@ -401,6 +479,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 				nlwarning(("Couldn't write " + bi.OutputPath + outputFileName + ".tga" + " : " + e.what()).c_str());
 			}
 		}
+		
 
 		/// increment counters		
 		for (l  = 0; l < (uint) masks.size(); ++l)

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.20 2002/05/27 17:36:38 lecroart Exp $
+ * $Id: mem_stream.h,v 1.21 2002/05/28 13:12:39 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,8 +195,15 @@ public:
 		if (len == 0) return;
 
 		_Buffer.resize( len );
-		_BufPos = _Buffer.getPtr();
-		CFastMem::memcpy( _BufPos, srcbuf, len );
+		CFastMem::memcpy( _Buffer.getPtr(), srcbuf, len );
+		if (isReading())
+		{
+			_BufPos = _Buffer.getPtr();
+		}
+		else
+		{
+			_BufPos = _Buffer.getPtr() + _Buffer.size();
+		}
 	}
 
 	void resize (uint32 size);

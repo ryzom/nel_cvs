@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.2 2001/07/13 09:46:36 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,9 +60,22 @@ CEnvSoundUser::CEnvSoundUser() : _InnerRadius(0.0f), _OuterRadius(0.0f), _Play(f
  */
 CEnvSoundUser::~CEnvSoundUser()
 {
-	// TODO
+	CAudioMixerUser::instance()->removeSource( &_CenterSource );
+	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH1] );
+	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH2] );
+	CAudioMixerUser::instance()->removeSource( &_StereoChannels[SPARSE_CH] );
 
-	// Delete 3d sound
+	// Delete sounds
+	vector<CSound*>::iterator ipsnds;
+	for ( ipsnds=_AmbiantSounds.begin(); ipsnds!=_AmbiantSounds.end(); ++ipsnds )
+	{
+		nlinfo( "Deleting ambiant sound" );
+		delete (*ipsnds);
+	}
+	for ( ipsnds=_SparseSounds.begin(); ipsnds!=_SparseSounds.end(); ++ipsnds )
+	{
+		delete (*ipsnds);
+	}
 }
 
 
@@ -101,22 +114,51 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 	// Stereo sound banks
 	s.serialContPtr( _AmbiantSounds );
 	s.serialContPtr( _SparseSounds );
+}
 
-	// TEMP while update() is not coded (TO REMOVE)
-	if ( s.isReading() )
+
+/*
+ * Init
+ */
+void CEnvSoundUser::init( CListenerUser *listener )
+{
+	// Set listener
+	_Listener = listener;
+
+	// Initialize center source
+	CAudioMixerUser::instance()->addSource( &_CenterSource );
+	CAudioMixerUser::instance()->giveTrack( &_CenterSource );
+
+	// Initialize ambiant sound channels
+	if ( _AmbiantSounds.size() >= 2 )
 	{
-		if ( _AmbiantSounds.size() >= 2 )
-		{
-			_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
-			_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
-			_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
-			_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
-		}
-		/*if ( ! _SparseSounds.empty() )
-		{
-			_StereoChannels[SPARSE_CH].setGain( 1.0f );
-		}*/
+		_StereoChannels[AMBIANT_CH1].setParentSource( &_CenterSource );
+		_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
+		_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
+		_StereoChannels[AMBIANT_CH1].setPriority( LowPri, false );
+
+		_StereoChannels[AMBIANT_CH2].setParentSource( &_CenterSource );
+		_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
+		_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
+		_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
+
+		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH1] );
+		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH1] );
+		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH2] );
+		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH2] );
 	}
+
+	// Initialize sparse sounds channel
+	if ( ! _SparseSounds.empty() )
+	{
+		_StereoChannels[SPARSE_CH].setParentSource( &_CenterSource );
+		_StereoChannels[SPARSE_CH].setPriority( LowPri );
+		_StereoChannels[SPARSE_CH].setSound( getRandomSound( _SparseSounds ) );
+		CAudioMixerUser::instance()->addSource( &_StereoChannels[SPARSE_CH] );
+		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[SPARSE_CH] );
+	}
+
+	recompute();
 }
 
 
@@ -144,7 +186,7 @@ uint32 CEnvSoundUser::load( std::vector<CEnvSoundUser*>& container, NLMISC::IStr
 		{
 			CEnvSoundUser *envsound = new CEnvSoundUser();
 			s.serial( *envsound );
-			envsound->setListener( listener );
+			envsound->init( listener );
 			container.push_back( envsound );
 		}
 		return nb;
@@ -300,6 +342,7 @@ void CEnvSoundUser::update()
 		if ( _Sustain )
 		{
 			nldebug( "AM: EnvSound: Beginning crossfade: channel #%u rising", leadchannel );
+			_StereoChannels[leadchannel].setPriority( HighPri ) ;
 			_StereoChannels[leadchannel].play();
 			_Sustain = false;
 		}
@@ -323,7 +366,7 @@ void CEnvSoundUser::update()
 #endif
 			nldebug( "AM: EnvSound: Sustain: channel #1" );
 			_StereoChannels[backchannel].setRelativeGain( 0.0f );
-			_StereoChannels[backchannel].stop();
+			_StereoChannels[backchannel].stop(); // we don't set the priority to LowPri
 			_StereoChannels[backchannel].setSound( nextsound );
 		}
 	}
@@ -337,12 +380,12 @@ void CEnvSoundUser::update()
 			TSoundId nextsound = getRandomSound( _SparseSounds );
 			_StereoChannels[SPARSE_CH].stop();
 			_StereoChannels[SPARSE_CH].setSound( nextsound );
+			_StereoChannels[SPARSE_CH].setPriority( MidPri );
 			_StereoChannels[SPARSE_CH].play();
 			nldebug( "AM: EnvSound: Playing sparse sound" );
 			if ( _StereoChannels[SPARSE_CH].getTrack() == NULL )
 			{
 				nldebug( "AM: Ensound: Switch on sparse channel" );
-				nlverify( CAudioMixerUser::instance()->giveTrack( &_StereoChannels[SPARSE_CH] ) );
 				nlassert( _StereoChannels[SPARSE_CH].getSound() != NULL );
 			}
 			// Does not leave the track at present time
@@ -384,19 +427,19 @@ void		CEnvSoundUser::manageCenterSource( bool toplay )
 		if ( toplay )
 		{
 			// Enter track and play
-			if ( _CenterSource.getTrack() == NULL )
+			if ( _CenterSource.getPriority() == LowPri )
 			{
-				nlverify( CAudioMixerUser::instance()->giveTrack( &_CenterSource ) );
+				_CenterSource.setPriority( HighPri );
 				_CenterSource.play();
 			}
 		}
 		else
 		{
 			// Stop and remove useless source from track
-			if ( _CenterSource.getTrack() != NULL )
+			if ( _CenterSource.getPriority() != LowPri )
 			{
 				_CenterSource.stop();
-				CAudioMixerUser::instance()->releaseTrack( &_CenterSource );
+				_CenterSource.setPriority( LowPri );
 			}
 		}
 	}
@@ -410,41 +453,41 @@ void		CEnvSoundUser::manageStereoChannels( bool toplay, bool crossfade, uint32 l
 {
 	if ( toplay )
 	{
-		if ( _StereoChannels[leadchannel].getTrack() == NULL )
+		if ( _StereoChannels[leadchannel].getPriority() == LowPri )
 		{
 			nldebug( "AM: Envsound: Switch on channel %u", leadchannel );
-			nlverify( CAudioMixerUser::instance()->giveTrack( &_StereoChannels[leadchannel] ) );
 			nlassert( _StereoChannels[leadchannel].getSound() != NULL );
+			_StereoChannels[leadchannel].setPriority( HighPri ) ;
 			_StereoChannels[leadchannel].play();
 		}
-		if ( (_StereoChannels[1-leadchannel].getTrack() == NULL) && crossfade )
+		if ( (_StereoChannels[1-leadchannel].getPriority() == LowPri) && crossfade )
 		{
 			nldebug( "AM: Envsound: Switch on channel %u", 1-leadchannel );
-			nlverify( CAudioMixerUser::instance()->giveTrack( &_StereoChannels[1-leadchannel] ) );
 			nlassert( _StereoChannels[1-leadchannel].getSound() != NULL );
+			_StereoChannels[1-leadchannel].setPriority( HighPri ) ;
 			_StereoChannels[1-leadchannel].play();
 		}
 		// The SPARSE_CH is added only when needed
 	}
 	else
 	{
-		if ( _StereoChannels[leadchannel].getTrack() != NULL )
+		if ( _StereoChannels[leadchannel].getPriority() != LowPri )
 		{
 			nldebug( "AM: Envsound: Switch off channel %u", leadchannel );
 			_StereoChannels[leadchannel].stop();
-			CAudioMixerUser::instance()->releaseTrack( &_StereoChannels[leadchannel] );
+			_StereoChannels[leadchannel].setPriority( LowPri );
 		}
-		if ( (_StereoChannels[1-leadchannel].getTrack() != NULL) && crossfade )
+		if ( (_StereoChannels[1-leadchannel].getPriority() != LowPri) && crossfade )
 		{
 			nldebug( "AM: Envsound: Switch off channel %u", 1-leadchannel );
 			_StereoChannels[1-leadchannel].stop();
-			CAudioMixerUser::instance()->releaseTrack( &_StereoChannels[1-leadchannel] );
+			_StereoChannels[1-leadchannel].setPriority( LowPri );
 		}
-		if ( _StereoChannels[SPARSE_CH].getTrack() != NULL )
+		if ( _StereoChannels[SPARSE_CH].getPriority() != LowPri )
 		{
 			nldebug( "AM: Envsound: Switch off sparse channel" );
 			_StereoChannels[SPARSE_CH].stop();
-			CAudioMixerUser::instance()->releaseTrack( &_StereoChannels[SPARSE_CH] );
+			_StereoChannels[SPARSE_CH].setPriority( LowPri );
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: env_sound_user.h,v 1.2 2001/07/13 09:46:36 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,15 +73,15 @@ public:
 	/// Return the corresponding localized 3D sound source
 	virtual USource			*get3DSource()			{ return &_CenterSource; }
 	/// Return the non-localized stereo sound source (TEMP)
-	USource					*getStereoSources()		{ return _StereoChannels; }
+	CSourceUser				*getStereoSources()		{ return _StereoChannels; }
 	/// Return the inner radius
 	float					getInnerRadius()		{ return _InnerRadius; }
 	/// Return the outer radius
 	float					getOuterRadius()		{ return _OuterRadius; }
 
 
-	/// Set the listener
-	void					setListener( CListenerUser *listener )	{ _Listener = listener; }
+	/// Init
+	void					init( CListenerUser *listener );
 	/// Recompute the EnvSound. Call this method after having moved the 3D source.
 	virtual void			recompute();
 	/// Get the sources to play corresponding to the listener's position, set with the right volume

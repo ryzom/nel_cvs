@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.5 2002/04/17 12:32:43 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.6 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/point_light.h"
 #include "3d/texture_dlm.h"
 #include "3d/fast_floor.h"
+#include "3d/tile_far_bank.h"
+#include "3d/landscape.h"
 
 
 using namespace std;
@@ -550,6 +552,13 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 	}
 #endif
 
+
+	// compute the TextureFar used for Far dynamic lightmaping.
+	//============
+	// NB: simpler to compute it at generate() time, even if not necessarly needed for near
+	computeTextureFar();
+
+
 	// fill texture with Black
 	//============
 	clearLighting();
@@ -734,7 +743,7 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 
 
 // ***************************************************************************
-void			CPatchDLMContext::compileLighting()
+void			CPatchDLMContext::compileLighting(TCompileType compType)
 {
 	// If srcTexture is full black, and if dst texture is already full black too, don't need to update dst texture
 	if(! (_IsSrcTextureFullBlack && _IsDstTextureFullBlack) )
@@ -751,16 +760,32 @@ void			CPatchDLMContext::compileLighting()
 			// else the srcTexture is not full black (ie some pointLight influence touch it), 
 			else
 			{
-				nlassert(_Patch->TileColors.size()>=0);
-			#ifdef NL_DLM_TILE_RES
-				// retrieve userColor pointer.
-				uint16	*tileColor= (uint16*)(&_Patch->TileColors[0]);
-			#else
-				uint16	*tileColor= (uint16*)(&_LowResTileColors[0]);
-			#endif
+				// if must modulate with tileColor
+				if(compType == ModulateTileColor)
+				{
+					nlassert(_Patch->TileColors.size()>=0);
+					#ifdef NL_DLM_TILE_RES
+					// retrieve userColor pointer.
+					uint16	*tileColor= (uint16*)(&_Patch->TileColors[0]);
+					#else
+					uint16	*tileColor= (uint16*)(&_LowResTileColors[0]);
+					#endif
 
-				// modulate and fill dest.
-				_DLMTexture->modulateAndfillRect(TextPosX, TextPosY, Width, Height, &_LightMap[0], tileColor);
+					// modulate and fill dest.
+					_DLMTexture->modulateAndfillRect565(TextPosX, TextPosY, Width, Height, &_LightMap[0], tileColor);
+				}
+				// else if must modulate with textureFar
+				else if(compType == ModulateTextureFar)
+				{
+					// modulate and fill dest.
+					_DLMTexture->modulateAndfillRect8888(TextPosX, TextPosY, Width, Height, &_LightMap[0], &_TextureFar[0]);
+				}
+				// else, no Modulate.
+				else
+				{
+					// just copy lightmap to texture
+					_DLMTexture->copyRect(TextPosX, TextPosY, Width, Height, &_LightMap[0]);
+				}
 			}
 		}
 
@@ -780,6 +805,302 @@ uint			CPatchDLMContext::getMemorySize() const
 		_Clusters.size() * sizeof(CCluster);
 }
 
+
+// ***************************************************************************
+void			CPatchDLMContext::computeTextureFar()
+{
+	// First compute Far at order1 Level (ie 2x2 pixels per tiles).
+	//==================
+	static	vector<CRGBA>	tileFars;
+	// Get the FarBank from landscape.
+	CTileFarBank	&farBank= _Patch->getLandscape()->TileFarBank;
+	// size of the texture.
+	uint	os= _Patch->getOrderS();
+	uint	ot= _Patch->getOrderT();
+	uint	nTiles= os*ot;
+	// resize tmp texture. keep a border of 1 pixel around this texture (for average with border)
+	uint	tfWidth= os*2+2;
+	uint	tfHeight= ot*2+2;
+	uint	tfSize= tfWidth * tfHeight;
+	tileFars.resize(tfSize);
+	CRGBA	*dst= &tileFars[0];
+
+	// default: fill dst with black (for possible non-existing tiles).
+	memset(dst, 0, tfSize*sizeof(CRGBA));
+
+	// For all tiles.
+	uint	x, y;
+	for(y=0; y<ot; y++)
+	{
+		for(x=0;x<os;x++)
+		{
+			// get the tile from patch.
+			CTileElement	&tileElm= _Patch->Tiles[y*os + x];
+
+			// For all layers
+			for(uint l=0; l<3;l++)
+			{
+				uint16		tileId= tileElm.Tile[0];
+				if (tileId!=NL_TILE_ELM_LAYER_EMPTY)
+				{
+					// Get the read only pointer on the far tile
+					const CTileFarBank::CTileFar*	pTile= farBank.getTile (tileId);
+					// if exist.
+					if(pTile && pTile->isFill (CTileFarBank::diffuse))
+					{
+						// get tile element information.
+						sint	nRot= tileElm.getTileOrient(l);
+						bool	is256x256;
+						uint8	uvOff;
+						tileElm.getTile256Info(is256x256, uvOff);
+
+						// compute src pixel
+						const CRGBA	*srcPixel= pTile->getPixels(CTileFarBank::diffuse, CTileFarBank::order1);
+						// compute src info, for this tile rot and 256x256 context.
+						sint srcDeltaX;
+						sint srcDeltaY;
+						srcPixel= computeTileFarSrcDeltas(nRot, is256x256, uvOff, srcPixel, srcDeltaX, srcDeltaY);
+
+						// compute dst coordinate. start writing at pixel (1,1)
+						CRGBA	*dstPixel= dst + (y*2+1)*tfWidth + x*2+1;
+
+						if(l==0)
+						{
+							// copy the tile content to the texture.
+							copyTileToTexture(srcPixel, srcDeltaX, srcDeltaY, dstPixel, tfWidth);
+						}
+						else
+						{
+							// blend the tile content to the texture.
+							blendTileToTexture(srcPixel, srcDeltaX, srcDeltaY, dstPixel, tfWidth);
+						}
+					}
+					else
+						// go to next tile.
+						break;
+				}
+				else
+					// go to next tile.
+					break;
+			}
+		}
+	}
+
+	/* copy borders pixels from border of current patch
+		NB: this is not correct, but visually sufficient.
+		To look on neighbor would be more complex.
+	*/
+
+	// copy lines up and down.
+	y= tfHeight-1;
+	for(x=1;x<tfWidth-1;x++)
+	{
+		// copy line 0 from line 1.
+		dst[0*tfWidth + x]= dst[1*tfWidth + x];
+		// copy last line from last line-1.
+		dst[y*tfWidth + x]= dst[(y-1)*tfWidth + x];
+	}
+
+	// copy column left and right
+	x= tfWidth-1;
+	for(y=1;y<tfHeight-1;y++)
+	{
+		// copy column 0 from column 1.
+		dst[y*tfWidth + 0]= dst[y*tfWidth + 1];
+		// copy last column from last column-1.
+		dst[y*tfWidth + x]= dst[y*tfWidth + x-1];
+	}
+
+	// copy 4 corners
+	x= tfWidth-1;
+	y= tfHeight-1;
+	// top-left corner
+	dst[0]= dst[1];
+	// top-right corner
+	dst[x]= dst[x-1];
+	// bottom-left corner
+	dst[y*tfWidth + 0]= dst[y*tfWidth + 1];
+	// bottom-right corner
+	dst[y*tfWidth + x]= dst[y*tfWidth + x-1];
+
+
+	// Average to DLM resolution (ie OrderS+1, OrderT+1)
+	//==================
+	// resize _TextureFar.
+	_TextureFar.resize(Width*Height);
+	CRGBA	*src= &tileFars[0];
+	dst= &_TextureFar[0];
+
+	// for all pixels of dst texture.
+	for(y=0;y<Height;y++)
+	{
+		for(x=0;x<Width;x++, dst++)
+		{
+			// compute coordinate in tileFars.
+			uint	x2, y2;
+#ifdef	NL_DLM_TILE_RES
+			x2= x * 2;
+			y2= y * 2;
+#else
+			// easiest method: sample every 2 tiles.
+			x2= x * 4;
+			y2= y * 4;
+#endif
+
+			// Average the 4 pixels around this tile corner
+			dst->avg4RGBOnly(src[y2*tfWidth + x2], 
+				src[y2*tfWidth + x2+1], 
+				src[(y2+1)*tfWidth + x2], 
+				src[(y2+1)*tfWidth + x2+1]);
+		}
+	}
+
+
+	// Modulate result with TileColors.
+	//==================
+	nlassert(_Patch->TileColors.size()>=0);
+	#ifdef NL_DLM_TILE_RES
+	// retrieve userColor pointer.
+	uint16	*tileColor= (uint16*)(&_Patch->TileColors[0]);
+	#else
+	uint16	*tileColor= (uint16*)(&_LowResTileColors[0]);
+	#endif
+
+	// For all pixels
+	dst= &_TextureFar[0];
+	for(sint n= Width*Height; n>0; n--, dst++, tileColor++)
+	{
+		uint16	tc= *tileColor;
+		// modulate R.
+		dst->R= ( (tc>>11) * dst->R)>>5;
+		// modulate G.
+		dst->G= (((tc>>5)&63) * dst->G)>>6;
+		// modulate B.
+		dst->B= ( (tc&31) * dst->B)>>5;
+	}
+
+}
+
+
+
+// ***************************************************************************
+const CRGBA	*CPatchDLMContext::computeTileFarSrcDeltas(sint nRot, bool is256x256, uint8 uvOff, const CRGBA *srcPixel, sint &srcDeltaX, sint &srcDeltaY)
+{
+	// NB: code copied from CTextureFar::rebuildRectangle()
+
+	// The tileSize at order1 is 2.
+	uint	tileSize= 2;
+
+	// Source size
+	sint sourceSize;
+
+	// Source offset (for 256)
+	uint sourceOffset=0;
+
+	// 256 ?
+	if (is256x256)
+	{
+		// On the left ?
+		if (uvOff&0x02)
+			sourceOffset+=tileSize;
+
+		// On the bottom ?
+		if ((uvOff==1)||(uvOff==2))
+			sourceOffset+=2*tileSize*tileSize;
+
+		// Yes, 256
+		sourceSize=tileSize<<1;
+	}
+	else
+	{
+		// No, 128
+		sourceSize=tileSize;
+	}
+
+	// Compute offset and deltas
+	switch (nRot)
+	{
+	case 0:
+		// Source pointers
+		srcPixel= srcPixel+sourceOffset;
+
+		// Source delta
+		srcDeltaX=1;
+		srcDeltaY=sourceSize;
+		break;
+	case 1:
+		{
+			// Source pointers
+			uint newOffset=sourceOffset+(tileSize-1);
+			srcPixel=srcPixel+newOffset;
+
+			// Source delta
+			srcDeltaX=sourceSize;
+			srcDeltaY=-1;
+		}
+		break;
+	case 2:
+		{
+			// Destination pointer
+			uint newOffset=sourceOffset+(tileSize-1)*sourceSize+tileSize-1;
+			srcPixel=srcPixel+newOffset;
+
+			// Source delta
+			srcDeltaX=-1;
+			srcDeltaY=-sourceSize;
+		}
+		break;
+	case 3:
+		{
+			// Destination pointer
+			uint newOffset=sourceOffset+(tileSize-1)*sourceSize;
+			srcPixel=srcPixel+newOffset;
+
+			// Source delta
+			srcDeltaX=-sourceSize;
+			srcDeltaY=1;
+		}
+		break;
+	}
+
+	return srcPixel;
+}
+
+
+// ***************************************************************************
+void		CPatchDLMContext::copyTileToTexture(const CRGBA *srcPixel, sint srcDeltaX, sint srcDeltaY, CRGBA *dstPixel, uint dstStride)
+{
+	// copy the 2x2 tile to the texture.
+
+	// first line.
+	dstPixel[0]= srcPixel[0];
+	dstPixel[1]= srcPixel[srcDeltaX];
+	// second line.
+	dstPixel[0+dstStride]= srcPixel[srcDeltaY];
+	dstPixel[1+dstStride]= srcPixel[srcDeltaY+srcDeltaX];
+}
+
+// ***************************************************************************
+void		CPatchDLMContext::blendTileToTexture(const CRGBA *srcPixel, sint srcDeltaX, sint srcDeltaY, CRGBA *dstPixel, uint dstStride)
+{
+	// blend the 2x2 tile with the texture.
+	CRGBA	*dst;
+	CRGBA	src;
+
+	// first line.
+	dst= &dstPixel[0]; src= srcPixel[0];
+	dst->blendFromuiRGBOnly(*dst, src, src.A);
+
+	dst= &dstPixel[1]; src= srcPixel[srcDeltaX];
+	dst->blendFromuiRGBOnly(*dst, src, src.A);
+
+	// second line.
+	dst= &dstPixel[0+dstStride]; src= srcPixel[srcDeltaY];
+	dst->blendFromuiRGBOnly(*dst, src, src.A);
+
+	dst= &dstPixel[1+dstStride]; src= srcPixel[srcDeltaY+srcDeltaX];
+	dst->blendFromuiRGBOnly(*dst, src, src.A);
+}
 
 
 } // NL3D

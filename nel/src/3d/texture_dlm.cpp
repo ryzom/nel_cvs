@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.4 2002/04/17 12:32:43 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.5 2002/04/18 13:06:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -269,7 +269,7 @@ void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, uint8 value)
 
 
 // ***************************************************************************
-void			CTextureDLM::modulateAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap, uint16 *modColor)
+void			CTextureDLM::modulateAndfillRect565(uint x, uint y, uint w, uint h, CRGBA  *textMap, uint16 *modColor)
 {
 	// compute start dst to copy.
 	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
@@ -288,6 +288,32 @@ void			CTextureDLM::modulateAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *
 			dst->G= (((tc>>5)&63) * textMap->G)>>6;
 			// modulate B.
 			dst->B= ( (tc&31) * textMap->B)>>5;
+		}
+	}
+
+	// Invalidate the rectangle.
+	ITexture::touchRect(CRect(x, y, w, h));
+}
+
+
+// ***************************************************************************
+void			CTextureDLM::modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGBA  *textMap, CRGBA *modColor)
+{
+	// compute start dst to copy.
+	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	dst+= y*getWidth()+x;
+
+	// For all lines
+	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )
+	{
+		// For all the line.
+		for(sint nc= w;nc>0;nc--, textMap++, modColor++, dst++)
+		{
+			CRGBA		mc= *modColor;
+			// modulate RGB only
+			dst->R= ( mc.R * textMap->R)>>8;
+			dst->G= ( mc.G * textMap->G)>>8;
+			dst->B= ( mc.B * textMap->B)>>8;
 		}
 	}
 

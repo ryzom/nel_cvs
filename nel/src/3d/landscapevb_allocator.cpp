@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.8 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.9 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -359,7 +359,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	Standard:
 	v[0] == StartPos.	Hence, It is the SplitPoint of the father face.
 	v[8] == Tex0 (xy) 
-	v[9] == Tex1 (xy) (just for Tile mode).
+	v[9] == Tex1 (xy) (different meanings for Far and Tile).
 	v[13] == Tex2 (xy) (just for Tile mode).
 
 	Geomorph:
@@ -490,7 +490,8 @@ const string NL3D_LandscapeTestSpeedProgram=
 // ***********************
 /*
 	Far0:
-		just project, copy uv, and set RGBA to white.
+		just project, copy uv0 and uv1
+		NB: leave o[COL0] undefined because the material don't care diffuse RGBA here
 */
 // ***********************
 const char* NL3D_LandscapeFar0EndProgram=
@@ -500,7 +501,7 @@ const char* NL3D_LandscapeFar0EndProgram=
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	MOV o[TEX1].xy, v[9];																\n\
 	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
@@ -510,7 +511,8 @@ const char* NL3D_LandscapeFar0EndProgram=
 /*
 	Far1:
 		Compute Alpha transition.
-		Project, copy uv, and set RGB to white.
+		Project, copy uv0 and uv1, 
+		NB: leave o[COL0] RGB undefined because the material don't care diffuse RGB
 */
 // ***********************
 const char* NL3D_LandscapeFar1EndProgram=
@@ -526,7 +528,7 @@ const char* NL3D_LandscapeFar1EndProgram=
 	DP4 o[HPOS].z, c[2], R1;															\n\
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
-	MOV o[COL0].xyz, c[4].yyyy;		# col.RGB= (1,1,1)									\n\
+	MOV o[TEX1].xy, v[9];																\n\
 	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
@@ -535,7 +537,8 @@ const char* NL3D_LandscapeFar1EndProgram=
 // ***********************
 /*
 	Tile:
-		just project, copy uv0, uv1, and set RGBA to white.
+		just project, copy uv0, uv1.
+		NB: leave o[COL0] undefined because the material don't care diffuse RGBA here
 */
 // ***********************
 const char* NL3D_LandscapeTileEndProgram=
@@ -546,7 +549,6 @@ const char* NL3D_LandscapeTileEndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
 	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
@@ -560,7 +562,6 @@ const char* NL3D_LandscapeTileLightMapEndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[13];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
-	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
 	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
@@ -588,11 +589,11 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 	{
 		// setup normal VB format.
 		if(_Type==Far0)
-			// v3f/t2f
-			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+			// v3f/t2f0/t2f1
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
 		else if(_Type==Far1)
-			// v3f/t2f/c4ub
-			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag );
+			// v3f/t2f/t2f1/c4ub
+			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag | CVertexBuffer::PrimaryColorFlag );
 		else
 			// v3f/t2f0/t2f1/t2f2
 			_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag | CVertexBuffer::TexCoord2Flag);
@@ -607,6 +608,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			_VB.clearValueEx();
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX1,		CVertexBuffer::Float2);	// v[9]= Tex1.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
 			_VB.initEx();
@@ -622,6 +624,7 @@ void			CLandscapeVBAllocator::setupVBFormatAndVertexProgram(bool withVertexProgr
 			_VB.clearValueEx();
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_STARTPOS,	CVertexBuffer::Float3);	// v[0]= StartPos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX0,		CVertexBuffer::Float2);	// v[8]= Tex0.
+			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_TEX1,		CVertexBuffer::Float2);	// v[9]= Tex1.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO,	CVertexBuffer::Float2);	// v[10]= GeomInfos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS,	CVertexBuffer::Float3);	// v[11]= EndPos-StartPos.
 			_VB.addValueEx(NL3D_LANDSCAPE_VPPOS_ALPHAINFO,	CVertexBuffer::Float2);	// v[12]= AlphaInfos.

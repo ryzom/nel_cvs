@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.11 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.12 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/zone.h"
 #include "3d/landscape.h"
 #include "3d/landscape_profile.h"
+#include "3d/patchdlm_context.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 using	namespace	std;
@@ -961,7 +962,7 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 
 	// compute Uvs.
 	static CUV	uv;
-	CParamCoord	&pc= pVert->PCoord;
+	CParamCoord	pc= pVert->PCoord;
 	if (Flags&NL_PATCH_FAR0_ROTATED)
 	{
 		uv.U= pc.getT()* Far0UScale + Far0UBias;
@@ -973,6 +974,21 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		uv.V= pc.getT()* Far0VScale + Far0VBias;
 	}
 
+	// compute Dynamic lightmap Uv.
+	static CUV	uvDLM;
+	if(_DLMContext)		//  (NB: Suppose BTB kill this test).
+	{
+		// compute UV with DLM context info.
+		uvDLM.U= pc.getS()* _DLMContext->DLMUScale + _DLMContext->DLMUBias;
+		uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
+	}
+	else
+	{
+		// just set UV so the vertex point to a black pixel (see CTextureDLM).
+		uvDLM.U= 1;
+		uvDLM.V= 1;
+	}
+
 	// If not VertexProgram (NB: Suppose BTB kill this test).
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
@@ -980,6 +996,7 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 	}
 	else
 	{
@@ -988,6 +1005,8 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
+		// v[9]== Tex1
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
@@ -1018,8 +1037,8 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 	// NB: the filling order of data is important, for AGP write combiners.
 
 	// compute Uvs.
-	static CUV		uv;
-	CParamCoord	&pc= pVert->PCoord;
+	static CUV	uv;
+	CParamCoord	pc= pVert->PCoord;
 	if (Flags&NL_PATCH_FAR1_ROTATED)
 	{
 		uv.U= pc.getT()* Far1UScale + Far1UBias;
@@ -1031,6 +1050,21 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		uv.V= pc.getT()* Far1VScale + Far1VBias;
 	}
 
+	// compute Dynamic lightmap Uv.
+	static CUV	uvDLM;
+	if(_DLMContext)		//  (NB: Suppose BTB kill this test).
+	{
+		// compute UV with DLM context info.
+		uvDLM.U= pc.getS()* _DLMContext->DLMUScale + _DLMContext->DLMUBias;
+		uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
+	}
+	else
+	{
+		// just set UV so the vertex point to a black pixel (see CTextureDLM).
+		uvDLM.U= 1;
+		uvDLM.V= 1;
+	}
+
 	// If not VertexProgram (NB: Suppose BTB kill this test).
 	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
@@ -1038,6 +1072,7 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		*(CVector*)CurVBPtr= pVert->Src->Pos - CLandscapeGlobals::PZBModelPosition;
 		// Set Uvs.
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 		// Set default color.
 		static CRGBA	col(255,255,255,255);
 		*(CRGBA*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff)= col;
@@ -1049,6 +1084,8 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		// v[9]== Tex1
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
@@ -1566,6 +1603,157 @@ void		CPatch::checkDeleteVertexVBNear(CTessNearVertex	*pVert)
 	if(!RenderClipped && Far0==0 && pVert->OwnerBlock->visibleTile() )
 	{
 		CLandscapeGlobals::CurrentTileVBAllocator->deleteVertex(pVert->Index);
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// VB DLM Filling
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CPatch::fillFar0DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// The Buffers must have been locked
+	nlassert(CLandscapeGlobals::CurrentFar0VBAllocator);
+	nlassert(CLandscapeGlobals::CurrentFar0VBAllocator->bufferLocked());
+	// VBInfo must be OK.
+	nlassert(!CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs());
+
+	static	uint8	*CurVBPtr;
+	static CUV		uvDLM;
+
+	// If the DLMContext exist
+	if(_DLMContext)
+	{
+		// Traverse the vertList, to compute new uvDLM
+		CTessFarVertex	*pVert;
+		for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+		{
+			// Compute/build the new vertex.
+			CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar0VBInfo.VertexCoordPointer;
+			CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
+
+			// compute Uvs.
+			CParamCoord	pc= pVert->PCoord;
+
+			// compute Dynamic lightmap Uv with DLM context info.
+			uvDLM.U= pc.getS()* _DLMContext->DLMUScale + _DLMContext->DLMUBias;
+			uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
+
+			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
+		}
+	}
+	// else, reset all Uvs
+	else
+	{
+		// just set UV so the vertex point to a black pixel (see CTextureDLM).
+		uvDLM.U= 1;
+		uvDLM.V= 1;
+
+		// Traverse the vertList, to reset uv
+		CTessFarVertex	*pVert;
+		for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+		{
+			// Compute/build the new vertex.
+			CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar0VBInfo.VertexCoordPointer;
+			CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
+
+			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff1)= uvDLM;
+		}
+	}
+}
+
+// ***************************************************************************
+void		CPatch::fillFar1DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList)
+{
+	// The Buffers must have been locked
+	nlassert(CLandscapeGlobals::CurrentFar1VBAllocator);
+	nlassert(CLandscapeGlobals::CurrentFar1VBAllocator->bufferLocked());
+	// VBInfo must be OK.
+	nlassert(!CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs());
+
+	static	uint8	*CurVBPtr;
+	static CUV		uvDLM;
+
+	// If the DLMContext exist
+	if(_DLMContext)
+	{
+		// Traverse the vertList, to compute new uvDLM
+		CTessFarVertex	*pVert;
+		for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+		{
+			// Compute/build the new vertex.
+			CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar1VBInfo.VertexCoordPointer;
+			CurVBPtr+= pVert->Index1 * CLandscapeGlobals::CurrentFar1VBInfo.VertexSize;
+
+			// compute Uvs.
+			CParamCoord	pc= pVert->PCoord;
+
+			// compute Dynamic lightmap Uv with DLM context info.
+			uvDLM.U= pc.getS()* _DLMContext->DLMUScale + _DLMContext->DLMUBias;
+			uvDLM.V= pc.getT()* _DLMContext->DLMVScale + _DLMContext->DLMVBias;
+
+			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
+		}
+	}
+	// else, reset all Uvs
+	else
+	{
+		// just set UV so the vertex point to a black pixel (see CTextureDLM).
+		uvDLM.U= 1;
+		uvDLM.V= 1;
+
+		// Traverse the vertList, to reset uv
+		CTessFarVertex	*pVert;
+		for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+		{
+			// Compute/build the new vertex.
+			CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar1VBInfo.VertexCoordPointer;
+			CurVBPtr+= pVert->Index1 * CLandscapeGlobals::CurrentFar1VBInfo.VertexSize;
+
+			// Set Uv DLM only (NB: same code for VertexProgram or not, only TexCoordOff1 may change).
+			*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff1)= uvDLM;
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::fillVBFarsDLMUvOnly()
+{
+	// Do it for Far0.
+	if(Far0>0 && !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
+	{
+		// Fill Far0 VB.
+		fillFar0DLMUvOnlyVertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// fill only if tblock visible.
+			if( tblock.visibleFar0() )
+				fillFar0DLMUvOnlyVertexListVB(tblock.FarVertexList);
+		}
+	}
+
+	// Do it for Far1.
+	if(Far1>0 && !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
+	{
+		// Fill VB.
+		fillFar1DLMUvOnlyVertexListVB(MasterBlock.FarVertexList);
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// fill only if tblock visible.
+			if( tblock.visibleFar1() )
+				fillFar1DLMUvOnlyVertexListVB(tblock.FarVertexList);
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file landscapevb_info.h
  * <File description>
  *
- * $Id: landscapevb_info.h,v 1.2 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: landscapevb_info.h,v 1.3 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,8 +47,10 @@ public:
 	uint32		NumVertices;
 	void		*VertexCoordPointer;
 	void		*TexCoordPointer0;
+	void		*TexCoordPointer1;
 	void		*ColorPointer;
 	uint32		TexCoordOff0;
+	uint32		TexCoordOff1;
 	uint32		ColorOff;
 
 	// VertexProgram Only.

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.25 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: patch.h,v 1.26 2002/04/18 13:06:52 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -691,6 +691,13 @@ public:
 	void		fillVBFar1Only();
 
 
+	// fill DLM Uv (ie UV1) for Far0 and Far1 VB only. NB: do not fill Far0 if !Far0 (idem fro Far1). 
+	// Do not Test RenderClipped state. Do not fill a VB if reallocationOccurs().
+	void		fillVBFarsDLMUvOnly();
+	void		fillFar0DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList);
+	void		fillFar1DLMUvOnlyVertexListVB(CTessList<CTessFarVertex>  &vertList);
+
+
 	// Test Old anc Current RenderClipped test, and fill VBuffer/face/renderPass according to.
 	void		updateClipPatchVB();
 
@@ -767,7 +774,7 @@ public:
 	 */
 	void		processDLMLight(CPatchDLMPointLight &pl);
 	/** end Dynamic light Process, deleting the DLMContext if necessary.
-	 *	compileLighting (if needed)
+	 *	NB: _DLMContext->compileLighting() is not called, since done during render phase.
 	 *	Called by CLandscape. _DLMContext must exist
 	 */
 	void		endDLMLighting();

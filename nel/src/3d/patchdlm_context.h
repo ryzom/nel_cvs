@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.5 2002/04/17 12:32:43 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.6 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -106,6 +106,9 @@ public:
 		CVector		Normal;
 	};
 
+	/// see compileLighting()
+	enum	TCompileType	{ModulateTileColor=0, ModulateTextureFar, NoModulate};
+
 public:
 
 	/// DLM info
@@ -119,13 +122,6 @@ public:
 	 */
 	uint			OldPointLightCount;
 	uint			CurPointLightCount;
-
-
-	// TextureFar only info
-	// The render Pass of Far0 and Far1.
-/*	CRdrPatchId		Pass0, Pass1;
-	float			Far0UScale, Far0VScale, Far0UBias, Far0VBias;
-	float			Far1UScale, Far1VScale, Far1UBias, Far1VBias;*/
 
 
 public:
@@ -154,8 +150,10 @@ public:
 
 	/**	update VRAM texture with RAM texture. Uploaded in 16 bits format.
 	 *	NB: full dst blackness is cached.
+	 *	\param compType say if, before writing to the texture, the lightmap is modulated with _Patch TileColor,
+	 *	_Patch textureFar (precomputed in the context), or not modulated at all (for vegetables rendering).
 	 */
-	void			compileLighting();
+	void			compileLighting(TCompileType compType);
 
 	CPatch			*getPatch() const {return _Patch;}
 
@@ -203,6 +201,23 @@ private:
 	// The tileColors at resolution of tessBlock
 	NLMISC::CObjectVector<uint16, false>	_LowResTileColors;
 #endif
+
+
+	/** The TextureFar (at tile level or less), which is always computed at generate().
+	 *	NB: Real compute is TextureFar*UserColor, so it need only to be modulated by lightmap each frame.
+	 */
+	NLMISC::CObjectVector<CRGBA>	_TextureFar;
+
+
+private:
+
+	// called at generate.
+	void			computeTextureFar();
+
+	// Tile at 2x2 resolution method
+	static const CRGBA	*computeTileFarSrcDeltas(sint nRot, bool is256x256, uint8 uvOff, const CRGBA *srcPixel, sint &srcDeltaX, sint &srcDeltaY);
+	static void		copyTileToTexture(const CRGBA *srcPixel, sint srcDeltaX, sint srcDeltaY, CRGBA *dstPixel, uint dstStride);
+	static void		blendTileToTexture(const CRGBA *srcPixel, sint srcDeltaX, sint srcDeltaY, CRGBA *dstPixel, uint dstStride);
 
 };
 

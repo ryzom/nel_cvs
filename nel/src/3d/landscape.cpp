@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.109 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: landscape.cpp,v 1.110 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,6 +274,19 @@ void			CLandscape::init()
 	FarMaterial.initUnlit();
 	FarMaterial.setSrcBlend(CMaterial::srcalpha);
 	FarMaterial.setDstBlend(CMaterial::invsrcalpha);
+
+	// FarMaterial: pass trhough Alpha from diffuse.
+	FarMaterial.texEnvOpAlpha(0, CMaterial::Replace);
+	FarMaterial.texEnvArg0Alpha(0, CMaterial::Diffuse, CMaterial::SrcAlpha);
+	FarMaterial.texEnvOpAlpha(1, CMaterial::Replace);
+	FarMaterial.texEnvArg0Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+	// FarMaterial: Add RGB from static lightmap and dynamic lightmap
+	FarMaterial.texEnvOpRGB(0, CMaterial::Replace);
+	FarMaterial.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+	FarMaterial.texEnvOpRGB(1, CMaterial::Add);
+	FarMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
+	FarMaterial.texEnvArg1RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+
 
 	// Init material for tile.
 	TileMaterial.initUnlit();
@@ -1021,6 +1034,24 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	//====================
 
 
+	// First, update Dynamic Lighting for Near, ie multiply Dynamic Lightmap with UserColor, and upload to texture.
+	// ==================
+	CPatchDLMContext	*dlmCtxPtr= _PatchDLMContextList->begin();
+	while(dlmCtxPtr!=NULL)
+	{
+		// do it only if the patch has some Near stuff to render.
+		if(dlmCtxPtr->getPatch()->getFar0() == 0)
+		{
+			// upload lightmap into textureDLM, modulating before with patch TileColor.
+			// NB: no-op if both src and dst are already full black.
+			dlmCtxPtr->compileLighting(CPatchDLMContext::ModulateTileColor);
+		}
+
+		// next
+		dlmCtxPtr= (CPatchDLMContext*)dlmCtxPtr->Next;
+	}
+
+
 	// Active VB.
 	// ==================
 
@@ -1068,13 +1099,13 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 		// Setup common material for this pass.
 		//=============================
-		// Default: Modulate envmode.
-		TileMaterial.texEnvOpRGB(0, CMaterial::Modulate);
+		// Default: Replace envmode.
+		TileMaterial.texEnvOpRGB(0, CMaterial::Replace);
 		TileMaterial.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
-		TileMaterial.texEnvArg1RGB(0, CMaterial::Previous, CMaterial::SrcColor);
-		TileMaterial.texEnvOpAlpha(0, CMaterial::Modulate);
+		TileMaterial.texEnvOpAlpha(0, CMaterial::Replace);
 		TileMaterial.texEnvArg0Alpha(0, CMaterial::Texture, CMaterial::SrcAlpha);
-		TileMaterial.texEnvArg1Alpha(0, CMaterial::Previous, CMaterial::SrcAlpha);
+		// NB: important to set Replace and not modulate, because in case of VerexProgram enabled, 
+		// Diffuse o[COL0] is undefined.
 
 		// Copy from stage 0 to stage 1.
 		TileMaterial.setTexEnvMode(1, TileMaterial.getTexEnvMode(0));
@@ -1104,23 +1135,34 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 					TileMaterial.texEnvArg0Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
 					break;
 				case NL3D_TILE_PASS_LIGHTMAP: 
-					// modulate.
+					// modulate alpha blending.
 					TileMaterial.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
+
+					// Setup the material envCombine so DynamicLightmap (stage 0) is added to static lightmap.
+					TileMaterial.texEnvOpRGB(1, CMaterial::Add);
+					TileMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
+					TileMaterial.texEnvArg1RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+
 					break;
 				case NL3D_TILE_PASS_ADD: 
-					// Use srcalpha for src (and not ONE), since additive are blended with alpha gouraud/AlphaTexture
-					// (and for MAYBE LATER smooth night transition).
+					// Use srcalpha for src (and not ONE), since additive are blended with alpha Cte/AlphaTexture
 					TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::one);
+
+					// for MAYBE LATER smooth night transition, setup Alpha cte of stage0, and setup alpha stage.
+					TileMaterial.texEnvOpAlpha(0, CMaterial::Replace);
+					TileMaterial.texEnvArg0Alpha(0, CMaterial::Constant, CMaterial::SrcAlpha);
+					// Temp, just setup alpha to 1.
+					TileMaterial.texConstantColor(0, CRGBA(255, 255, 255, 255));
 
 					// Must use a special envmode for stage1: "separateAlpha"!!.
 					// NB: it still works if The RdrPass has no texture.
 					// keep the color from previous stage.
 					TileMaterial.texEnvOpRGB(1, CMaterial::Replace);
 					TileMaterial.texEnvArg0RGB(1, CMaterial::Previous, CMaterial::SrcColor);
-					// modulate the alpha of current stage with diffuse (for MAYBE LATER smooth night transition).
+					// modulate the alpha of current stage with previous
 					TileMaterial.texEnvOpAlpha(1, CMaterial::Modulate);
 					TileMaterial.texEnvArg0Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
-					TileMaterial.texEnvArg1Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+					TileMaterial.texEnvArg1Alpha(1, CMaterial::Previous, CMaterial::SrcAlpha);
 
 					break;
 				default: 
@@ -1170,10 +1212,6 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 			// Setup the Dynamic Lightmap into stage 0.
 			TileMaterial.setTexture(0, _TextureDLM);
-			// Setup the material envCombine so DynamicLightmap (stage 0) is added to static lightmap.
-			TileMaterial.texEnvOpRGB(1, CMaterial::Add);
-			TileMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
-			TileMaterial.texEnvArg1RGB(1, CMaterial::Previous, CMaterial::SrcColor);
 
 			// if vertex shader not used.
 			if(!_VertexShaderOk)
@@ -1181,6 +1219,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				// special setup  such that stage0 takes Uv2.
 				driver->mapTextureStageToUV(0, 2);
 			}
+			// else VertexProgram map itself the good vertex Attribute to UV0.
 
 
 			// Render All the lightmaps.
@@ -1188,8 +1227,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			{
 				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
 
-				// Setup Lightmap into stage1. Because we share UV with RGB0. So we use UV1.
-				// Cloud will be placed into stage0, and texture coordinate will be generated by T&L.
+				// Setup Lightmap into stage1. Because we share UV with pass RGB0. So we use UV1.
+				// Also, now stage0 is used for DynamicLightmap
 				TileMaterial.setTexture(1, pass.TextureDiffuse);
 
 				// Add triangles to array
@@ -1255,6 +1294,25 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// 2. Far0Render pass.
 	//====================
 
+
+	// First, update Dynamic Lighting for Far, ie multiply Dynamic Lightmap with TextureFar, and upload to texture.
+	// ==================
+	dlmCtxPtr= _PatchDLMContextList->begin();
+	while(dlmCtxPtr!=NULL)
+	{
+		// do it only if the patch has some Far stuff to render.
+		if(dlmCtxPtr->getPatch()->getFar0()>0 || dlmCtxPtr->getPatch()->getFar1()>0)
+		{
+			// upload lightmap into textureDLM, modulating before with patch TextureFar.
+			// NB: no-op if both src and dst are already full black.
+			dlmCtxPtr->compileLighting(CPatchDLMContext::ModulateTextureFar);
+		}
+
+		// next
+		dlmCtxPtr= (CPatchDLMContext*)dlmCtxPtr->Next;
+	}
+
+
 	// Active VB.
 	// ==================
 
@@ -1267,6 +1325,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	// Setup common material.
 	FarMaterial.setBlend(false);
+	// set the DLM texture.
+	FarMaterial.setTexture(1, _TextureDLM);
 
 	// Render All material RdrPass0.
 	itFar=_FarRdrPassSet.begin();
@@ -1312,6 +1372,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	// Setup common material.
 	FarMaterial.setBlend(true);
+	// set the DLM texture.
+	FarMaterial.setTexture(1, _TextureDLM);
 
 
 	// Render All material RdrPass1.
@@ -3171,6 +3233,12 @@ void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
 {
 	uint	i;
 
+	// Update globals, and lock buffers
+	//====================
+	updateGlobalsAndLockBuffers (CVector::Null);
+	// NB: averageTesselationVertices may change vertices in VB in visible patchs => buffers are locked.
+
+
 	// Run all DLM Context create, to init Lighting process.
 	//===============
 	CPatchDLMContext	*ctxPtr= _PatchDLMContextList->begin();
@@ -3264,12 +3332,17 @@ void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
 		// get enxt now, because the DLM itself may be deleted in endDLMLighting()
 		CPatchDLMContext	*next= (CPatchDLMContext*)ctxPtr->Next;
 
-		// init lighting process, do differential from last computeDynamicLighting()
+		// delete the DLM if no more needed (near don't use nor pointLights)
 		ctxPtr->getPatch()->endDLMLighting();
 
 		// next
 		ctxPtr= next;
 	}
+
+
+	// Must realase VB Buffers
+	//====================
+	unlockBuffers();
 
 }
 

@@ -1,7 +1,7 @@
 /** \file landscapevb_info.cpp
  * <File description>
  *
- * $Id: landscapevb_info.cpp,v 1.3 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: landscapevb_info.cpp,v 1.4 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,7 @@ void		CFarVertexBufferInfo::setupNullPointers()
 {
 	VertexCoordPointer= NULL;
 	TexCoordPointer0= NULL;
+	TexCoordPointer1= NULL;
 	ColorPointer= NULL;
 	GeomInfoPointer= NULL;
 	DeltaPosPointer= NULL;
@@ -61,6 +62,7 @@ void		CFarVertexBufferInfo::setupPointersForVertexProgram()
 	uint8	*vcoord= (uint8*)VertexCoordPointer;
 
 	TexCoordPointer0= vcoord + TexCoordOff0;
+	TexCoordPointer1= vcoord + TexCoordOff1;
 	GeomInfoPointer= vcoord + GeomInfoOff;			
 	DeltaPosPointer= vcoord + DeltaPosOff;
 	AlphaInfoPointer= vcoord + AlphaInfoOff;
@@ -86,6 +88,7 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexP
 	{
 		// With VertexCoordPointer setuped, init for VP.
 		TexCoordOff0= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		TexCoordOff1= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
 		GeomInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO);			// v[10]= GeomInfos.
 		DeltaPosOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS);			// v[11]= EndPos-StartPos
 		// Init Alpha Infos only if enabled (enabled if Value 5 are).
@@ -99,7 +102,9 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexP
 	else
 	{
 		TexCoordOff0= vb.getTexCoordOff(0);
+		TexCoordOff1= vb.getTexCoordOff(1);
 		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
+		TexCoordPointer1= vb.getTexCoordPointer(0, 1);
 
 		// In Far0, we don't have Color component.
 		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
@@ -134,6 +139,7 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 	{
 		// With VertexCoordPointer setuped, init for VP.
 		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
+		TexCoordOff1= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
 		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
 		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
 		// Init Alpha Infos only if enabled (enabled if Value 5 are).
@@ -147,7 +153,9 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 	else
 	{
 		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
+		TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
 		TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
+		TexCoordPointer1= (uint8*)vcoord + TexCoordOff1;
 
 		// In Far0, we don't have Color component.
 		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)

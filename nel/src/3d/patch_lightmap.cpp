@@ -1,7 +1,7 @@
 /** \file patch_lightmap.cpp
  * Patch implementation related to lightmaping (texture Near/Far)
  *
- * $Id: patch_lightmap.cpp,v 1.4 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: patch_lightmap.cpp,v 1.5 2002/04/18 13:06:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2035,6 +2035,14 @@ void				CPatch::addRefDLMContext()
 		_DLMContext= new CPatchDLMContext;
 		// init now the context.
 		_DLMContext->generate(this, getLandscape()->getTextureDLM(), getLandscape()->getPatchDLMContextList());
+
+		// If the patch is visible, it may have Far Vertices created, 
+		// hence, we must refill them with good DLM Uvs.
+		if(!RenderClipped)
+		{
+			// setup DLM Uv with new _DLMContext
+			fillVBFarsDLMUvOnly();
+		}
 	}
 
 	// incRef.
@@ -2057,6 +2065,14 @@ void				CPatch::decRefDLMContext(uint count)
 	{
 		delete _DLMContext;
 		_DLMContext= NULL;
+
+		// If the patch is visible, it may have Far Vertices created, 
+		// hence, we must reset their DLM Uvs (to point to black pixel)
+		if(!RenderClipped)
+		{
+			// setup DLM Uv with new _DLMContext
+			fillVBFarsDLMUvOnly();
+		}
 	}
 }
 
@@ -2095,11 +2111,6 @@ void		CPatch::processDLMLight(CPatchDLMPointLight &pl)
 void		CPatch::endDLMLighting()
 {
 	nlassert(_DLMContext);
-
-	// compile the lighting, only if patch is visible
-	if(!RenderClipped)
-		// NB: no-op if both src and dst are already full black.
-		_DLMContext->compileLighting();
 
 	// delete reference from old pointLight influences, at prec render() pass. _DLMContext may be deleted here,
 	// if no more lights use it, and if the patch is not in Near.

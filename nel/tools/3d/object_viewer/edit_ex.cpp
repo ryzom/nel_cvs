@@ -29,7 +29,8 @@ END_MESSAGE_MAP()
 void CEditEx::OnSetFocus(CWnd* pOldWnd) 
 {
 	CEdit::OnSetFocus(pOldWnd);
-	this->SetSel(0xffff0000);		
+	PostMessage(EM_SETSEL, 0, -1);	
+	Invalidate();	
 }
 
 sint		CEditEx::getSInt() const

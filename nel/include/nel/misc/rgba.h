@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.20 2002/03/14 17:00:50 berenguier Exp $
+ * $Id: rgba.h,v 1.21 2002/03/20 10:47:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,16 +66,16 @@ public:
 	/** 
 	 * Comparison operator.
 	 */
-	bool	operator<(const CRGBA &c) const {return getPacked()<c.getPacked();}
+	bool	operator<(CRGBA c) const {return getPacked()<c.getPacked();}
 	/** 
 	 * Comparison operator.
 	 */
-	bool	operator!=(const CRGBA &c) const {return !(*this==c);}
+	bool	operator!=(CRGBA c) const {return !(*this==c);}
 
 	/** 
 	 * Equality operator.
 	 */
-	bool	operator==(const CRGBA &c) const  
+	bool	operator==(CRGBA c) const  
 		{return R==c.R && G==c.G && B==c.B && A==c.A;}
 
 	/** 
@@ -90,7 +90,7 @@ public:
 	 * \param c1 Color 1.
 	 * \param coef Blend factor. 0~256. 0 return c0 and 256 return c1.
 	 */	
-	void blendFromui(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
+	void blendFromui(CRGBA c0, CRGBA c1, uint coef) // coef must be in [0,256]
 	{
 		uint	a1 = coef;
 		uint	a2 = 256-a1;
@@ -105,7 +105,7 @@ public:
 	 * \param c0 Color 0.
 	 * \param a E [0,256]. c0*a returned into this.
 	 */
-	void	modulateFromui (CRGBA &c0, uint a)
+	void	modulateFromui (CRGBA c0, uint a)
 	{
 		R = (c0.R*a) >>8;
 		G = (c0.G*a) >>8;
@@ -119,7 +119,7 @@ public:
 	 * \param c0 Color 0.
 	 * \param c1 Color 1. c0*c1 returned into this.
 	 */
-	void	modulateFromColor (const CRGBA &c0, const CRGBA &c1)
+	void	modulateFromColor (CRGBA c0, CRGBA c1)
 	{
 		R = (c0.R*c1.R) >>8;
 		G = (c0.G*c1.G) >>8;
@@ -164,7 +164,7 @@ public:
 	/**
 	 * Compute in this the average of 2 RGBA.
 	 */
-	void	avg2(const CRGBA &a, const CRGBA &b)
+	void	avg2(CRGBA a, CRGBA b)
 	{
 		R= ((uint)a.R+(uint)b.R)>>1;
 		G= ((uint)a.G+(uint)b.G)>>1;
@@ -176,7 +176,7 @@ public:
 	 * Compute in this the average of 4 RGBA.
 	 * The average is "correct": +1 is added to the four color, to make a "round" like average.
 	 */
-	void	avg4(const CRGBA &a, const CRGBA &b, const CRGBA &c, const CRGBA &d)
+	void	avg4(CRGBA a, CRGBA b, CRGBA c, CRGBA d)
 	{
 		R= ((uint)a.R+(uint)b.R+(uint)c.R+(uint)d.R+ 1)>>2;
 		G= ((uint)a.G+(uint)b.G+(uint)c.G+(uint)d.G+ 1)>>2;
@@ -187,7 +187,7 @@ public:
 	/**
 	 *	Do the sum of 2 rgba, clamp, and store in this
 	 */
-	void	add(const CRGBA &c0, const CRGBA &c1)
+	void	add(CRGBA c0, CRGBA c1)
 	{
 		uint	r,g,b,a;
 		r= c0.R + c1.R;	r= std::min(r, 255U);	R= (uint8)r;
@@ -199,7 +199,7 @@ public:
 	/**
 	 *	Compute c0 - c1, and store in this
 	 */
-	void	sub(const CRGBA &c0, const CRGBA &c1)
+	void	sub(CRGBA c0, CRGBA c1)
 	{
 		sint	r,g,b,a;
 		r= c0.R - c1.R;	r= std::max(r, 0);	R= (uint8)r;
@@ -213,7 +213,7 @@ public:
 	// @{
 
 	/// see blendFromui()
-	void	blendFromuiRGBOnly(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
+	void	blendFromuiRGBOnly(CRGBA c0, CRGBA c1, uint coef) // coef must be in [0,256]
 	{
 		uint	a1 = coef;
 		uint	a2 = 256-a1;
@@ -222,35 +222,35 @@ public:
 		B = (c0.B*a2 + c1.B*a1) >>8;
 	}
 	/// see modulateFromui()
-	void	modulateFromuiRGBOnly(CRGBA &c0, uint a)
+	void	modulateFromuiRGBOnly(CRGBA c0, uint a)
 	{
 		R = (c0.R*a) >>8;
 		G = (c0.G*a) >>8;
 		B = (c0.B*a) >>8;
 	}
 	/// see modulateFromColor()
-	void	modulateFromColorRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	void	modulateFromColorRGBOnly(CRGBA c0, CRGBA c1)
 	{
 		R = (c0.R*c1.R) >>8;
 		G = (c0.G*c1.G) >>8;
 		B = (c0.B*c1.B) >>8;
 	}
 	/// see avg2()
-	void	avg2RGBOnly(const CRGBA &a, const CRGBA &b)
+	void	avg2RGBOnly(CRGBA a, CRGBA b)
 	{
 		R= ((uint)a.R+(uint)b.R)>>1;
 		G= ((uint)a.G+(uint)b.G)>>1;
 		B= ((uint)a.B+(uint)b.B)>>1;
 	}
 	/// see avg4()
-	void	avg4RGBOnly(const CRGBA &a, const CRGBA &b, const CRGBA &c, const CRGBA &d)
+	void	avg4RGBOnly(CRGBA a, CRGBA b, CRGBA c, CRGBA d)
 	{
 		R= ((uint)a.R+(uint)b.R+(uint)c.R+(uint)d.R+ 1)>>2;
 		G= ((uint)a.G+(uint)b.G+(uint)c.G+(uint)d.G+ 1)>>2;
 		B= ((uint)a.B+(uint)b.B+(uint)c.B+(uint)d.B+ 1)>>2;
 	}
 	/// see add()
-	void	addRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	void	addRGBOnly(CRGBA c0, CRGBA c1)
 	{
 		uint	r,g,b;
 		r= c0.R + c1.R;	r= std::min(r, 255U);	R= (uint8)r;
@@ -258,7 +258,7 @@ public:
 		b= c0.B + c1.B;	b= std::min(b, 255U);	B= (uint8)b;
 	}
 	/// see sub()
-	void	subRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	void	subRGBOnly(CRGBA c0, CRGBA c1)
 	{
 		sint	r,g,b;
 		r= c0.R - c1.R;	r= std::max(r, 0);	R= (uint8)r;
@@ -358,7 +358,7 @@ public:
 	 * Constructor from a CRGBA
 	 * \param c CRGBA color.
 	 */
-	CBGRA(const CRGBA& c) 
+	CBGRA(CRGBA c) 
 	{
 		R=c.R;
 		G=c.G;
@@ -474,7 +474,7 @@ public:
 	 * Constructor with a CRGBA.
 	 * \param c CRGBA color.
 	 */
-	CRGBAF (const CRGBA& c)
+	CRGBAF (CRGBA c)
 	{
 		R=(float)c.R/255.f;
 		G=(float)c.G/255.f;

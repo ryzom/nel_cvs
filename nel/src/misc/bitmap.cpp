@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.51 2004/06/08 08:56:03 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.52 2004/06/21 07:43:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2539,7 +2539,7 @@ float CBitmap::getColorInterp (float x, float y, float colorInXY00, float colorI
 // Public:
 CRGBAF CBitmap::getColor (float x, float y) const
 {
-	if (x < 0.0f) x = 0.0f;
+		if (x < 0.0f) x = 0.0f;
 	if (x > 1.0f) x = 1.0f;
 	if (y < 0.0f) y = 0.0f;
 	if (y > 1.0f) y = 1.0f;
@@ -2645,8 +2645,140 @@ CRGBAF CBitmap::getColor (float x, float y) const
 		default: break;
 	}
 
+	return CRGBAF (0.0f, 0.0f, 0.0f, 0.0f);	
+}
+
+// wrap a value inside the given range (for positive value it is like a modulo)
+static inline uint32 wrap(sint32 value, uint32 range)
+{
+	return value >= 0 ? (value % range) : range - 1 - (- value - 1) % range;
+}
+
+
+CRGBAF CBitmap::getColor(float x, float y, bool tileU, bool tileV) const
+{	
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	if (nWidth == 0 || nHeight == 0) return CRGBAF(0, 0, 0, 0);
+
+	sint32 nX[4], nY[4];
+
+	if (!tileU)
+	{	
+		if (x < 0.0f) x = 0.0f;
+		if (x > 1.0f) x = 1.0f;		
+		x *= nWidth-1;		
+		nX[0] = ((sint32)floor(x));		
+		nX[1] = (nX[0] < (nWidth-1) ? nX[0]+1 : nX[0]);		
+		nX[2] = nX[0];		
+		nX[3] = nX[1];		
+		uint32 i;
+		for (i = 0; i < 4; ++i)
+		{
+			nlassert (nX[i] >= 0);			
+			nlassert (nX[i] < nWidth);			
+		}		
+	}
+	else
+	{
+		x *= nWidth;		
+		nX[0] = wrap((sint32)floorf(x), nWidth);		
+		nX[1] = wrap(nX[0] + 1, nWidth);		
+		nX[2] = nX[0];		
+		nX[3] = nX[1];		
+	}
+	//
+	if (!tileV)
+	{			
+		if (y < 0.0f) y = 0.0f;
+		if (y > 1.0f) y = 1.0f;		
+		y *= nHeight-1;		
+		nY[0] = ((sint32)floor(y));		
+		nY[1] = nY[0];
+		nY[2] = (nY[0] < (nHeight-1) ? nY[0]+1 : nY[0]);
+		nY[3] = nY[2];
+		uint32 i;
+		for (i = 0; i < 4; ++i)
+		{
+			nlassert (nY[i] >= 0 );
+			nlassert (nY[i] < nHeight);
+		}		
+	}
+	else
+	{
+		y *= nHeight;		
+		nY[0] = wrap((sint32)floorf(y), nHeight);		
+		nY[1] = nY[0];		
+		nY[2] = wrap(nY[0] + 1, nHeight);		
+		nY[3] = nY[2];
+	}
+	// Decimal part of (x,y)
+	x = x - (float)nX[0]; 
+	y = y - (float)nY[0];
+	const CObjectVector<uint8> &rBitmap = getPixels(0);	
+	switch (this->PixelFormat)
+	{
+		case RGBA:
+		case DXTC1:
+		case DXTC1Alpha:
+		case DXTC3:
+		case DXTC5:
+		{									
+			CRGBAF finalVal;
+			CRGBA val[4];
+
+			if (this->PixelFormat == RGBA)
+			{
+				for (uint32 i = 0; i < 4; ++i)
+				{
+					val[i] = CRGBA (rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+				}
+			}
+			else
+			{
+				// slower version : get from DXT
+				for (uint32 i = 0; i < 4; ++i)
+				{
+					val[i] = getPixelColor(nX[i], nY[i]);
+				}
+			}
+
+			finalVal.R = getColorInterp (x, y, val[0].R, val[1].R, val[2].R, val[3].R);
+			finalVal.G = getColorInterp (x, y, val[0].G, val[1].G, val[2].G, val[3].G);
+			finalVal.B = getColorInterp (x, y, val[0].B, val[1].B, val[2].B, val[3].B);
+			finalVal.A = getColorInterp (x, y, val[0].A, val[1].A, val[2].A, val[3].A);
+			finalVal /= 255.f;
+
+			return finalVal;			
+		}
+		break;
+		case Alpha:
+		case Luminance:
+		{
+			
+			float finalVal;
+			float val[4];
+
+			for (uint32 i = 0; i < 4; ++i)
+				val[i] = rBitmap[(nX[i]+nY[i]*nWidth)];
+
+			finalVal = getColorInterp (x, y, val[0], val[1], val[2], val[3]);
+			finalVal /= 255.f;
+
+			if (this->PixelFormat == Alpha)
+				return CRGBAF (1.f, 1.f, 1.f, finalVal);
+			else // Luminance
+				return CRGBAF (finalVal, finalVal, finalVal, 1.f);
+		}
+		break;
+		default: break;
+	}
 	return CRGBAF (0.0f, 0.0f, 0.0f, 0.0f);
 }
+
 
 
 void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.23 2004/03/23 10:27:12 vizerie Exp $
+ * $Id: bitmap.h,v 1.24 2004/06/21 07:43:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -518,11 +518,17 @@ public:
 
 
 	/**
-	 * Get the color in the bitmap given a pixel size
+	 * Get the color in the bitmap for the first mipmap
 	 * The mipmaps must be built. If not just return the bilinear at the given point.
-	 * The input x and y must be clamped between 0 and 1
+	 * NB: coordinates are clamped.
+	 * \param tiled If false coordinate are clamped, else the bitmap is considered to tile
 	 */
-	CRGBAF getColor (float x,float y) const;
+	CRGBAF getColor (float x, float y) const;
+	// Get Color with optionnal tiling on axis
+	CRGBAF getColor (float x, float y, bool tileU, bool tileV) const;
+
+	
+	
 
 
 	/** Get the pixel at the given coorrdinate.

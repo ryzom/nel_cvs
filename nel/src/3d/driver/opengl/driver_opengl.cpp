@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.27 2000/12/05 16:51:11 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.28 2000/12/08 09:38:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 	glDisable(GL_AUTO_NORMAL);
 	glDisable(GL_BLEND);
 	glDisable(GL_COLOR_MATERIAL);
-	glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DITHER);
 	glDisable(GL_FOG);
 	glDisable(GL_LIGHTING);

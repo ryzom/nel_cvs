@@ -109,7 +109,7 @@ SOURCE=..\include\nel\misc\stream.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\stream_inline.h
+SOURCE=.\misc\stream_inline.h
 # End Source File
 # End Group
 # Begin Group "math"
@@ -117,23 +117,23 @@ SOURCE=..\include\nel\misc\stream_inline.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\matrix.cpp
+SOURCE=.\misc\matrix.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\matrix.h
+SOURCE=..\include\nel\misc\matrix.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\plane.cpp
+SOURCE=.\misc\plane.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\plane.h
+SOURCE=..\include\nel\misc\plane.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\plane_inline.h
+SOURCE=..\include\nel\misc\plane_inline.h
 # End Source File
 # Begin Source File
 
@@ -157,15 +157,15 @@ SOURCE=..\include\nel\misc\vector_inline.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\vectord.cpp
+SOURCE=.\misc\vectord.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\vectord.h
+SOURCE=..\include\nel\misc\vectord.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\vectord_inline.h
+SOURCE=..\include\nel\misc\vectord_inline.h
 # End Source File
 # End Group
 # Begin Group "config_file"
@@ -291,11 +291,11 @@ SOURCE=..\include\nel\misc\rgba.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\misc\smart_ptr.cpp
+SOURCE=.\misc\smart_ptr.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\misc\smart_ptr.h
+SOURCE=..\include\nel\misc\smart_ptr.h
 # End Source File
 # Begin Source File
 

@@ -254,6 +254,18 @@ SOURCE=.\3d\bitmap.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\bitmap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\font_generator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\font_generator.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\font_manager.cpp
 # End Source File
 # Begin Source File

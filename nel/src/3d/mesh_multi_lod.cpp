@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.33 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.34 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/skeleton_model.h"
 #include "nel/misc/fast_floor.h"
 #include "3d/mesh_blender.h"
+#include "3d/visual_collision_mesh.h"
 
 #include "nel/misc/debug.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -41,9 +42,12 @@
 using namespace NLMISC;
 using namespace std;
 
+
+#define NL3D_MEM_CAMERA_COLLISION						NL_ALLOC_CONTEXT( 3dCmCol )
+
+
 namespace NL3D 
 {
-
 
 
 
@@ -173,8 +177,7 @@ void CMeshMultiLod::build(CMeshMultiLodBuild &mbuild)
 	}
 
 	// End: compile some stuff
-	compileDistMax();
-	compileCoarseMeshes();
+	compileRunTime();
 }
 
 // ***************************************************************************
@@ -309,10 +312,7 @@ void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// if reading, compile some stuff
 	if (f.isReading())
-	{
-		compileDistMax();
-		compileCoarseMeshes();
-	}
+		compileRunTime();
 }
 
 // ***************************************************************************
@@ -810,6 +810,49 @@ void	CMeshMultiLod::compileCoarseMeshes()
 }
 
 
+// ***************************************************************************
+void	CMeshMultiLod::compileRunTime()
+{
+	// **** MultiLod basics
+	compileDistMax();
+	compileCoarseMeshes();
 
+	// **** try to build a Visual Collision Mesh
+	// clear first
+	if(_VisualCollisionMesh)
+	{
+		delete _VisualCollisionMesh;
+		_VisualCollisionMesh= NULL;
+	}
+	// build only if some lightmap!! (suppose lightmap == big mesh interesting for collision)
+	if(!_LightInfos.empty())
+	{
+		NL3D_MEM_CAMERA_COLLISION
+
+		// try to retrieve the info from a CMeshGeom only
+		if(getNumSlotMesh())
+		{
+			const CMeshGeom		*meshGeom= dynamic_cast<const CMeshGeom*>(&getMeshGeom(0));
+			if(meshGeom)
+			{
+				vector<CVector>		vertices;
+				vector<uint32>		indices;
+				if(meshGeom->retrieveVertices(vertices) && meshGeom->retrieveTriangles(indices))
+				{
+					// ok, can build!
+					_VisualCollisionMesh= new CVisualCollisionMesh;
+					// if fails to build cause of too many vertices/indices for instance
+					if(!_VisualCollisionMesh->build(vertices, indices))
+					{
+						// delete
+						delete _VisualCollisionMesh;
+						_VisualCollisionMesh= NULL;
+					}
+				}
+			}
+		}
+	}
+}
+	
 
 } // NL3D

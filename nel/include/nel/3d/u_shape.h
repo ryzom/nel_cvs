@@ -1,7 +1,7 @@
 /** \file u_shape.h
  * Game interface for managing shape.
  *
- * $Id: u_shape.h,v 1.1 2004/03/12 16:24:49 berenguier Exp $
+ * $Id: u_shape.h,v 1.2 2004/03/23 15:39:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 namespace NL3D 
 {
 
+class	UVisualCollisionMesh;
+
 // ***************************************************************************
 /**
  * Game interface for managing shape.
@@ -54,20 +56,23 @@ public:
 	void			attach(class IShape *shape);
 	/// return true if the proxy is empty() (not attached)
 	bool			empty() const {return _Shape==NULL;}
+	/// For Advanced usage, get the Shape ptr
+	class IShape	*getShapePtr() const {return _Shape;}
 
 
 	/** Get the mesh under Triangle Form. 
 	 *	For now only CMesh and CMeshMultiLod (CMeshGeom only) are supported.
+	 *	Warning! return false if the Mesh has already been rendered!! (VertexBuffer resident)
 	 *	\param vertices array of vertices
 	 *	\param indices triplets of indices to vertices
-	 *	\return false if cannot be converted
+	 *	\return false if cannot be converted.
 	 */
 	bool			getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vector<uint32> &indices) const;
 
-	/** Return true if this mesh is candidate for Camera Collision
-	 *	For now return true if have some lightmap!
+	/** Return a Visual Collision Mesh if the shape has one (else return empty one)
+	 *	For now return someting if Mesh / MeshMultiLod with some lightmap only (supposed big meshs)!
 	 */
-	bool			cameraCollisionable() const;
+	void			getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const;
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.40 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh.h,v 1.41 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,9 @@ private:
 
 	// The geometry.
 	CMeshGeom		*_MeshGeom;
+
+	// Called at load or build time, all that is not serialized
+	void	compileRunTime();
 };
 
 
@@ -416,6 +419,16 @@ public:
 
 	/// get the number of BlendShapes
 	uint getNbBlendShapes() const { if(_MeshMorpher) return _MeshMorpher->BlendShapes.size(); }
+	
+	/** Tool function to retrieve vector geometry only of the mesh. 
+	 *	return false if the vbuffer cannot be read (resident)
+	 */
+	bool	retrieveVertices(std::vector<NLMISC::CVector> &vertices) const;
+
+	/** Tool function to retrieve triangles geometry only of the mesh (of all rdrpass). 
+	 *	return false if the index buffer cannot be read (resident)
+	 */
+	bool	retrieveTriangles(std::vector<uint32> &indices) const;
 	
 	// @}
 

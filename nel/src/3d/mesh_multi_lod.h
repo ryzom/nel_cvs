@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.22 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.23 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -264,10 +264,13 @@ private:
 	/// Profile the MeshGeom of a slot, even if coarseMesh
 	void	profileMeshGeom (uint slot, CRenderTrav *rdrTrav, CMeshMultiLodInstance *trans, float numPoylgons, uint32 rdrFlags);
 
-	/// copileDistMax when builded/loaded.
+	/// compile misc things, like distMax, Coarse meshes, collision mesh at load time...
+	void	compileRunTime();
+	
+	/// copileDistMax called by compileRunTime
 	void	compileDistMax();
 
-	/// compile Coarse Meshs when builded/loaded.
+	/// compile Coarse Meshs called by compileRunTime
 	void	compileCoarseMeshes();
 
 	/// called at createInstance() time

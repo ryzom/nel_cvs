@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.5 2004/03/12 16:27:52 berenguier Exp $
+ * $Id: visual_collision_manager.h,v 1.6 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/patch.h"
 #include "3d/landscape.h"
 #include "3d/quad_grid.h"
+#include "3d/visual_collision_mesh.h"
 
 
 namespace NL3D 
@@ -115,11 +116,13 @@ public:
 	float						getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
 
-	/** Add a Mesh to the collision manager. For now it is used only for Camera Collision
-	 *	number of vertices and number of triangles must not exceed 65535
+	/** Add a Mesh Instance to the collision manager. For now it is used only for Camera Collision
+	 *	\param mesh the collision mesh (keep a refptr on it)
+	 *	\param instanceMatrix the matrix instance to apply to this mesh
 	 *	\return the id used for remove, 0 if not succeed
 	 */
-	uint						addMeshCollision(const std::vector<CVector> &vertices, const std::vector<uint16> &triangles);
+	uint						addMeshInstanceCollision(CVisualCollisionMesh *mesh, const CMatrix &instanceMatrix);
+
 	/** Remove a Mesh from the collision manager.
 	 */
 	void						removeMeshCollision(uint id);
@@ -133,77 +136,31 @@ private:
 	CBlockMemory<CVisualTileDescNode>	_TileDescNodeAllocator;
 	CBlockMemory<CPatchQuadBlock>		_PatchQuadBlockAllocator;
 
-	// A Static Grid Container. Only 65535 elements max can be inserted
-	class	CStaticGrid
+	// An instance of a Mesh collision
+	class CMeshInstanceCol
 	{
 	public:
-		// create
-		void	create(uint nbQuads, uint nbElts, const NLMISC::CAABBox &gridBBox);
-
-		// add an element (bbox shoudl be included in gridBBox from create() )
-		void	add(uint16 id, const NLMISC::CAABBox &bbox);
-
-		// compile
-		void	compile();
-
-		// return the list of elements intersected. NB: the vector is enlarged to max, but real selection size is in the  return value
-		uint	select(const NLMISC::CAABBox &bbox, std::vector<uint16> &res);
-
-	private:
-		struct CEltBuild
-		{
-			uint32	X0,Y0;
-			uint32	X1,Y1;
-		};
-		// point to GridData
-		struct CCase 
-		{
-			uint32	Start, NumElts;
-		};
-		uint32										_GridSizePower;
-		uint32										_GridSize;
-		CVector										_GridPos;
-		CVector										_GridScale;
-		// The Grid
-		NLMISC::CObjectVector<CCase, false>			_Grid;
-		// The raw elt data
-		NLMISC::CObjectVector<uint16, false>		_GridData;
-		// Used at build only
-		NLMISC::CObjectVector<CEltBuild, false>		_EltBuild;
-		uint32										_GridDataSize;
-
-		// For Fast selection
-		uint32										_ItSession;
-		// For each element the session id. if same than _ItSession, then already inserted
-		NLMISC::CObjectVector<uint32, false>		_Sessions;
-	};
-	
-	// The Mesh Collision container
-	class	CMeshCol
-	{
-	public:
-		std::vector<CVector>	Vertices;
-		std::vector<uint16>		Triangles;
+		// A ref to the visual col mesh
+		CRefPtr<CVisualCollisionMesh>		Mesh;
+		// The Matrix to apply to the mesh to get instance
+		CMatrix								WorldMatrix;
 		// The World BBox
-		NLMISC::CAABBox			BBox;
-		// The pos in Mesh quadgrid
-		CQuadGrid<CMeshCol*>::CIterator	QuadGridIt;
-		// The Local Triangle Quadgrid
-		CStaticGrid				QuadGrid;
+		NLMISC::CAABBox						WorldBBox;
+		// The pos in Mesh Instance quadgrid
+		CQuadGrid<CMeshInstanceCol*>::CIterator	QuadGridIt;
 
-		// build 
-		void		build(const std::vector<CVector> &vertices, const std::vector<uint16> &triangles);
-		// get collision with camera. [0,1] value
+	public:
+		/// get collision with camera. [0,1] value
 		float		getCameraCollision(class CCameraCol &camCol);
 	};
 
-	// The map of Meshes
-	typedef	std::map<uint32, CMeshCol>	TMeshColMap;
-	TMeshColMap					_Meshs;
+	// The map of Meshes Instance
+	typedef	std::map<uint32, CMeshInstanceCol>	TMeshColMap;
+	TMeshColMap						_Meshs;
 	// The QuadGrid of Collision meshs
-	CQuadGrid<CMeshCol*>		_MeshQuadGrid;
+	CQuadGrid<CMeshInstanceCol*>	_MeshQuadGrid;
 	// The pool of id.
-	uint32						_MeshIdPool;
+	uint32							_MeshIdPool;
 
 
 private:

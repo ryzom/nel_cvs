@@ -1598,6 +1598,10 @@ SOURCE=.\3d\u_shape.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\u_visual_collision_mesh.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\viewport.cpp
 # End Source File
 # Begin Source File
@@ -1791,6 +1795,10 @@ SOURCE=..\include\nel\3d\u_visual_collision_entity.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_visual_collision_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_visual_collision_mesh.h
 # End Source File
 # Begin Source File
 
@@ -2251,6 +2259,14 @@ SOURCE=.\3d\visual_collision_manager.cpp
 # Begin Source File
 
 SOURCE=.\3d\visual_collision_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\visual_collision_mesh.h
 # End Source File
 # End Group
 # Begin Group "ClipAccelerator"

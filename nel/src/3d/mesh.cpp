@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.80 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh.cpp,v 1.81 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,14 @@
 #include "3d/mesh_blender.h"
 #include "3d/matrix_3x4.h"
 #include "3d/render_trav.h"
+#include "3d/visual_collision_mesh.h"
 
 
 using namespace std;
 using namespace NLMISC;
+
+
+#define NL3D_MEM_CAMERA_COLLISION						NL_ALLOC_CONTEXT( 3dCmCol )
 
 
 namespace NL3D 
@@ -989,6 +993,74 @@ void	CMeshGeom::compileRunTime()
 		_SupportMBRFlags|= MBROk;
 	if(supportMBRPerMaterial)
 		_SupportMBRFlags|= MBRSortPerMaterial;
+}
+
+// ***************************************************************************
+bool	CMeshGeom::retrieveVertices(std::vector<NLMISC::CVector> &vertices) const
+{
+	uint	i;
+	
+	// if resident, fails!!! cannot read!
+	const CVertexBuffer	&vb= getVertexBuffer();
+	if(vb.isResident())
+		return false;
+
+	vertices.clear();
+	vertices.resize(vb.getNumVertices());
+	{
+		CVertexBufferRead vba;
+		vb.lock (vba);
+		const uint8	*pVert= (const uint8*)vba.getVertexCoordPointer(0);
+		uint		vSize= vb.getVertexSize();
+		for(i=0;i<vertices.size();i++)
+		{
+			vertices[i]= *(const CVector*)pVert;
+			pVert+= vSize;
+		}
+	}
+
+	return true;
+}
+
+// ***************************************************************************
+bool	CMeshGeom::retrieveTriangles(std::vector<uint32> &indices) const
+{
+	uint	i;
+
+	indices.clear();
+	
+	// count numTris
+	uint	numTris= 0;
+	for(i=0;i<getNbMatrixBlock();i++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(i);rp++)
+		{
+			// if resident, fails!!! cannot read!
+			const CIndexBuffer	&pb= getRdrPassPrimitiveBlock(i, rp);
+			if(pb.isResident())
+				return false;
+			numTris+= getRdrPassPrimitiveBlock(i, rp).getNumIndexes()/3;
+		}
+	}
+	indices.resize(numTris*3);
+	
+	// build indices
+	uint	triIdx= 0;
+	for(i=0;i<getNbMatrixBlock();i++)
+	{
+		for(uint rp=0;rp<getNbRdrPass(i);rp++)
+		{
+			const CIndexBuffer	&pb= getRdrPassPrimitiveBlock(i, rp);
+			CIndexBufferRead iba;
+			pb.lock (iba);
+			// copy
+			memcpy(&indices[triIdx*3], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
+			// next
+			triIdx+= pb.getNumIndexes()/3;
+		}
+	}
+
+	return true;
 }
 
 
@@ -2191,6 +2263,9 @@ void	CMesh::build (CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &m)
 
 	// build the geometry.
 	_MeshGeom->build (m, mbase.Materials.size());
+
+	// compile some stuff
+	compileRunTime();
 }
 
 
@@ -2232,6 +2307,9 @@ void	CMesh::build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom)
 
 	// build the geometry.
 	*_MeshGeom= meshGeom;
+
+	// compile some stuff
+	compileRunTime();
 }
 
 
@@ -2302,6 +2380,9 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// serial geometry.
 	_MeshGeom->serial(f);
 
+	// if reading, compile some stuff
+	if(f.isReading())
+		compileRunTime();
 }
 
 
@@ -2386,6 +2467,38 @@ void	CMesh::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, boo
 	rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
 	// render the mesh
 	_MeshGeom->profileSceneRender(rdrTrav, trans, 0, rdrFlags);
+}
+
+// ***************************************************************************
+void	CMesh::compileRunTime()
+{
+	// **** try to build a Visual Collision Mesh
+	// clear first
+	if(_VisualCollisionMesh)
+	{
+		delete _VisualCollisionMesh;
+		_VisualCollisionMesh= NULL;
+	}
+	// build only if some lightmap!! (suppose lightmap == big mesh interesting for collision)
+	if(!_LightInfos.empty())
+	{
+		NL3D_MEM_CAMERA_COLLISION
+
+		vector<CVector>		vertices;
+		vector<uint32>		indices;
+		if(_MeshGeom->retrieveVertices(vertices) && _MeshGeom->retrieveTriangles(indices))
+		{
+			// ok, can build!
+			_VisualCollisionMesh= new CVisualCollisionMesh;
+			// if fails to build cause of too many vertices/indices for instance
+			if(!_VisualCollisionMesh->build(vertices, indices))
+			{
+				// delete
+				delete _VisualCollisionMesh;
+				_VisualCollisionMesh= NULL;
+			}
+		}
+	}
 }
 
 

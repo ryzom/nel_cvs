@@ -1,7 +1,7 @@
 /** \file camera_col.cpp
  * <File description>
  *
- * $Id: camera_col.cpp,v 1.1 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: camera_col.cpp,v 1.2 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -124,6 +124,34 @@ void		CCameraCol::build(const CVector &start, const CVector &end, float radius, 
 	// enlarge a bit for radius
 	BBox.setHalfSize(BBox.getHalfSize()+CVector(_MaxRadius, _MaxRadius, _MaxRadius));
 	
+}
+
+
+// ***************************************************************************
+void		CCameraCol::setApplyMatrix(const CCameraCol &other, const NLMISC::CMatrix &matrix)
+{
+	// get parameters modified by matrix
+	CVector		start= matrix * other.Start;
+	CVector		end= matrix * other.End;
+	float		radius= other.Radius;
+
+	// scale the radius
+	if(matrix.hasScalePart())
+	{
+		// get the uniform scale
+		if(matrix.hasScaleUniform())
+			radius*= matrix.getScaleUniform();
+		// Tricky code, deduce a uniform scale. Should not arise
+		else
+		{
+			float	meanScale= matrix.getI().norm() + matrix.getJ().norm() + matrix.getK().norm();
+			meanScale/= 3;
+			radius*= meanScale;
+		}
+	}
+
+	// rebuild
+	build(start, end, radius, other.Cone);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.28 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.29 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/mesh_base.h"
 #include "3d/mesh_base_instance.h"
 #include "3d/lod_character_texture.h"
+#include "3d/visual_collision_mesh.h"
 
 
 using namespace std;
@@ -55,6 +56,8 @@ CMeshBase::CMeshBase()
 	_AutoAnim = false;
 
 	_LodCharacterTexture= NULL;
+
+	_VisualCollisionMesh= NULL;
 }
 
 
@@ -63,6 +66,12 @@ CMeshBase::~CMeshBase()
 {
 	// free if exist
 	resetLodCharacterTexture();
+	// delete the Col mesh if created
+	if(_VisualCollisionMesh)
+	{
+		delete _VisualCollisionMesh;
+		_VisualCollisionMesh= NULL;
+	}
 }
 
 
@@ -450,6 +459,12 @@ void	CMeshBase::setupLodCharacterTexture(CLodCharacterTexture &lodText)
 	// seutp new
 	_LodCharacterTexture= new CLodCharacterTexture;
 	*_LodCharacterTexture= lodText;
+}
+
+// ***************************************************************************
+CVisualCollisionMesh		*CMeshBase::getVisualCollisionMesh() const
+{
+	return _VisualCollisionMesh;
 }
 
 

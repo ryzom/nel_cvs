@@ -1,7 +1,7 @@
 /** \file camera_col.h
  * <File description>
  *
- * $Id: camera_col.h,v 1.1 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: camera_col.h,v 1.2 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -66,6 +66,11 @@ public:
 	 */
 	void			minimizeDistanceAgainstTri(const CVector &p0, const CVector &p1, const CVector &p2, float &sqrMinDist);
 
+	/** Compute into this the camera collision 'other' mul by 'matrix'
+	 *	NB: for cone Radius, suppose uniform scale, else will have strange result (a uniform scale is deduced)
+	 */
+	void			setApplyMatrix(const CCameraCol &other, const NLMISC::CMatrix &matrix);
+	
 private:
 	enum	{MaxNPlanes=6};
 	

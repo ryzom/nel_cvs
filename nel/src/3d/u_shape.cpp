@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * <File description>
  *
- * $Id: u_shape.cpp,v 1.2 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: u_shape.cpp,v 1.3 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/3d/u_shape.h"
 #include "3d/mesh.h"
 #include "3d/mesh_multi_lod.h"
+#include "nel/3d/u_visual_collision_mesh.h"
 
 
 using namespace std;
@@ -75,71 +76,30 @@ bool		UShape::getMeshTriangles(std::vector<NLMISC::CVector> &vertices, std::vect
 	if(!meshGeom)
 		return false;
 
-	// **** Build the vertices and indices
-	uint	i;
-	vertices.clear();
-	indices.clear();
-
-	// build vertices
-	const CVertexBuffer	&vb= meshGeom->getVertexBuffer();
-	vertices.resize(vb.getNumVertices());
+	// **** try to retrieve data
+	if(! (meshGeom->retrieveVertices(vertices) && meshGeom->retrieveTriangles(indices)) )
 	{
-		CVertexBufferRead vba;
-		vb.lock (vba);
-		const uint8	*pVert= (const uint8*)vba.getVertexCoordPointer(0);
-		uint		vSize= vb.getVertexSize();
-		for(i=0;i<vertices.size();i++)
-		{
-			vertices[i]= *(const CVector*)pVert;
-			pVert+= vSize;
-		}
+		vertices.clear();
+		indices.clear();
+		return false;
 	}
 
-	// count numTris
-	uint	numTris= 0;
-	for(i=0;i<meshGeom->getNbMatrixBlock();i++)
-	{
-		for(uint rp=0;rp<meshGeom->getNbRdrPass(i);rp++)
-		{
-			numTris+= meshGeom->getRdrPassPrimitiveBlock(i, rp).getNumIndexes()/3;
-		}
-	}
-	indices.resize(numTris*3);
-
-	// build indices
-	uint	triIdx= 0;
-	for(i=0;i<meshGeom->getNbMatrixBlock();i++)
-	{
-		for(uint rp=0;rp<meshGeom->getNbRdrPass(i);rp++)
-		{
-			const CIndexBuffer	&pb= meshGeom->getRdrPassPrimitiveBlock(i, rp);
-			CIndexBufferRead iba;
-			pb.lock (iba);
-			// copy
-			memcpy(&indices[triIdx*3], iba.getPtr(), pb.getNumIndexes()*sizeof(uint32));
-			// next
-			triIdx+= pb.getNumIndexes()/3;
-		}
-	}
-	
 	// ok!
 	return true;
 }
 
 
 // ***************************************************************************
-bool			UShape::cameraCollisionable() const
+void		UShape::getVisualCollisionMesh(UVisualCollisionMesh	&colMesh) const
 {
-	/* For now do it easy, take only lightmapped (ie big) objects. An object that is lightmapped
-		should have some lightInfos
-	*/
+	colMesh.attach(NULL);
+
 	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Shape);
 	if(mesh)
 	{
-		return !mesh->_LightInfos.empty();
+		// attach the possible col mesh
+		colMesh.attach(mesh->getVisualCollisionMesh());
 	}
-	else
-		return false;
 }
 
 

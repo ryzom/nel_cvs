@@ -1,10 +1,10 @@
-/** \file visual_collision_manager_user.cpp
+/** \file u_visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: visual_collision_manager_user.cpp,v 1.4 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: u_visual_collision_mesh.cpp,v 1.1 2004/03/23 15:38:43 berenguier Exp $
  */
 
-/* Copyright, 2001 Nevrax Ltd.
+/* Copyright, 2000-2003 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -25,22 +25,24 @@
 
 #include "std3d.h"
 
-#include "3d/visual_collision_manager_user.h"
 #include "nel/3d/u_visual_collision_mesh.h"
+#include "3d/visual_collision_mesh.h"
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 // ***************************************************************************
-uint		CVisualCollisionManagerUser::addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix)
+UVisualCollisionMesh::UVisualCollisionMesh() : _Mesh(NULL)
 {
-	NL3D_MEM_CAMERA_COLLISION
-	// if empty proxy abort
-	if(mesh.empty())
-		return 0;
-	return _Manager.addMeshInstanceCollision(mesh.getMeshPtr(), instanceMatrix);
 }
 
-	
+// ***************************************************************************
+void			UVisualCollisionMesh::attach(class CVisualCollisionMesh	*mesh)
+{
+	_Mesh= mesh;
+}
+
+
 } // NL3D

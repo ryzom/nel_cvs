@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.5 2004/03/19 10:02:44 lecroart Exp $
+ * $Id: u_visual_collision_manager.h,v 1.6 2004/03/23 15:39:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 
 class	ULandscape;
 class	UVisualCollisionEntity;
+class	UVisualCollisionMesh;
 
 
 // ***************************************************************************
@@ -94,10 +95,11 @@ public:
 
 
 	/** Add a Mesh to the collision manager. For now it is used only for Camera Collision
-	 *	number of vertices and number of triangles must not exceed 65535
+	 *	\param mesh the collision mesh (keep a refptr on it)
+	 *	\param instanceMatrix the matrix instance to apply to this mesh
 	 *	\return the id used for remove, 0 if not succeed
 	 */
-	virtual uint					addMeshCollision(const std::vector<CVector> &vertices, const std::vector<uint16> &triangles) =0;
+	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix) =0;
 	/** Remove a Mesh from the collision manager.
 	 */
 	virtual void					removeMeshCollision(uint id) =0;

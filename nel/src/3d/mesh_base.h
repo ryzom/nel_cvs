@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.17 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: mesh_base.h,v 1.18 2004/03/23 15:38:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@ namespace NL3D {
 
 class	CMeshBaseInstance;
 class	CLodCharacterTexture;
+class	CVisualCollisionMesh;
+
 
 // ***************************************************************************
 /**
@@ -224,6 +226,13 @@ public:
 	// @}
 
 
+	/// \name Visual Collision
+	// @{
+	/// return the visual collision mesh. NULL if not supported
+	CVisualCollisionMesh		*getVisualCollisionMesh() const;
+	// @}
+
+
 // ************************
 protected:
 	/// The Materials.
@@ -257,6 +266,8 @@ protected:
 
 	bool						_AutoAnim;
 
+	// Built only by CMesh and CMeshMultiLod
+	CVisualCollisionMesh		*_VisualCollisionMesh;
 
 protected:
 	/// Just copy informations from a CMeshBaseBuild.

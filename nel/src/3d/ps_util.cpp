@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.37 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_util.cpp,v 1.38 2002/08/06 14:59:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,11 +157,6 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 
 
 
-
-	CMatrix mat;
-	mat.identity();
-
-	driver->setupModelMatrix(mat);
 	driver->activeVertexBuffer(vb);
 	driver->render(pb, material);
 }

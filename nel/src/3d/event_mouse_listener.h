@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.3 2002/03/13 15:03:38 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.4 2002/08/06 14:59:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,14 @@ public:
 	  */
 	bool isModelTranslationEnabled(TAxis axis) ;
 
+	/** Each move /rot of the modelMatrix is first transformed by this matrix before applying.
+	 *	\transModelMove Trans part is removed
+	 */
+	void setModelMatrixTransformMove(const NLMISC::CMatrix& transModelMove);
+
+	/// see setModelMatrixTransformMove
+	void getModelMatrixTransformMove(NLMISC::CMatrix& transModelMove) const;
+
 
 	/** if true, XY translation is made in XY World plane (instead of XY view plane).
 	 *	false by default.
@@ -266,6 +274,7 @@ private:
 	bool				_TranslateXYInWorld;
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
+	CMatrix				_ModelMatrixTransformMove;
 
 	/** remove composant of translations that are not permitted
 	  * \see enableModelTranslationAxis()

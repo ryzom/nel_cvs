@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.13 2002/03/13 15:03:38 berenguier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.14 2002/08/06 14:59:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,6 +183,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			
 				CMatrix rm ;
 				rm.rotate(r) ;
+
+				// transform the rotation as needed.
+				rm= _ModelMatrixTransformMove * rm;
 				
 				_ModelMatrix = rm * _ModelMatrix ;
 				_ModelMatrix.setPos(pos) ;
@@ -241,6 +244,8 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				else
 				{
 					CVector dir =  - localPoint1 + localPoint2 ;
+					// transform the translation as needed.
+					dir= _ModelMatrixTransformMove * dir;
 					truncateVect(dir) ;
 					_ModelMatrix.setPos(_ModelMatrix.getPos()+dir);
 				}
@@ -255,6 +260,8 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				else
 				{
 					CVector dir = _Matrix.getK()*(vect.x+vect.y+vect.z) ;
+					// transform the translation as needed.
+					dir= _ModelMatrixTransformMove * dir;
 					truncateVect(dir) ;
 					_ModelMatrix.setPos(_ModelMatrix.getPos()+dir);
 				}
@@ -270,6 +277,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				}
 				else
 				{
+					// transform the translation as needed.
+					direc= _ModelMatrixTransformMove * direc;
+					direc.normalize();
 					_ModelMatrix.setPos(_ModelMatrix.getPos()+direc*(vect.x+vect.y+vect.z));
 				}
 			}
@@ -305,6 +315,8 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		else
 		{
 			CVector dir = direc*(mouseEvent->Direction?0.1f:-0.1f) ;
+			// transform the translation as needed.
+			dir= _ModelMatrixTransformMove * dir;
 			truncateVect(dir) ;
 			_ModelMatrix.setPos(_ModelMatrix.getPos() + dir);
 		}
@@ -405,6 +417,15 @@ void CEvent3dMouseListener::enableTranslateXYInWorld(bool enabled)
 	_TranslateXYInWorld= enabled;
 }
 
+void CEvent3dMouseListener::setModelMatrixTransformMove(const NLMISC::CMatrix& transModelMove)
+{
+	_ModelMatrixTransformMove= transModelMove;
+}
+
+void CEvent3dMouseListener::getModelMatrixTransformMove(NLMISC::CMatrix& transModelMove) const
+{
+	transModelMove= _ModelMatrixTransformMove;
+}
 
 
 }; // NL3D

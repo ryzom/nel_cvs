@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.5 2001/08/02 12:52:06 besson Exp $
+ * $Id: u_instance_group.h,v 1.6 2001/08/09 14:59:28 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLMISC
 
 namespace NL3D 
 {
-
+	class UInstance;
 /**
  * Game interface for managing group instance.
  *
@@ -72,49 +72,54 @@ public:
 	static	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);
 
 	/**
-	  * Return the count of shape instance in this group.
-	  */
+	 * Return the count of shape instance in this group.
+	 */
 	virtual uint getNumInstance () const=0;
 
 	/**
-	  * Return the name of the shape refered by an instance of the group.
-	  *
-	  * \param instanceNb is the number of the instance.
-	  * \return the name of the shape.
-	  */
+	 * Return the name of the shape refered by an instance of the group.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 * \return the name of the shape.
+	 */
 	virtual const std::string& getShapeName (uint instanceNb) const=0;
 
 	/**
-	  * Return the name of an instance of the group.
-	  *
-	  * \param instanceNb is the number of the instance.
-	  * \return the name of the instance.
-	  */
+	 * Return the name of an instance of the group.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 * \return the name of the instance.
+	 */
 	virtual const std::string& getInstanceName (uint instanceNb) const=0;
 
 	/**
-	  * Return the position of an instance of the group.
-	  *
-	  * \param instanceNb is the number of the instance.
-	  * \return the position of the instance.
-	  */
+	 * Return the position of an instance of the group.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 * \return the position of the instance.
+	 */
 	virtual const NLMISC::CVector& getInstancePos (uint instanceNb) const=0;
 
 	/**
-	  * Return the rotation of an instance of the group.
-	  *
-	  * \param instanceNb is the number of the instance.
-	  * \return the rotation of the instance.
-	  */
+	 * Return the rotation of an instance of the group.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 * \return the rotation of the instance.
+	 */
 	virtual const NLMISC::CQuat& getInstanceRot (uint instanceNb) const=0;
 
 	/**
-	  * Return the scale of an instance of the group.
-	  *
-	  * \param instanceNb is the number of the instance.
-	  * \return the scale of the instance.
-	  */
+	 * Return the scale of an instance of the group.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 * \return the scale of the instance.
+	 */
 	virtual const NLMISC::CVector& getInstanceScale (uint instanceNb) const=0;
+
+	/**
+	 * Return the instance at a given position
+	 */
+	virtual const UInstance *getByName (std::string& name) const=0;
 
 
 	/**

@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.3 2001/08/02 12:19:40 besson Exp $
+ * $Id: instance_group_user.h,v 1.4 2001/08/09 14:59:28 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/u_instance_group.h"
 #include "3d/scene_group.h"
 
+
 namespace NLMISC
 {
 	class CVector;
@@ -41,6 +42,7 @@ namespace NL3D
 
 class UScene;
 class UInstanceGroup;
+class CInstanceUser;
 
 /**
  * Implementation of the user interface managing instance groups.
@@ -62,6 +64,7 @@ public:
 private:
 	// From UInstanceGroup
 	void addToScene (class UScene& scene);
+	void addToScene (class CScene& scene);
 	void removeFromScene (class UScene& scene);
 	uint getNumInstance () const;
 	const std::string& getShapeName (uint instanceNb) const;
@@ -69,6 +72,7 @@ private:
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
+	const UInstance *getByName (std::string& name) const;
 
 	void createRoot (UScene &scene);
 	void setClusterSystem (UInstanceGroup *pClusterSystem);
@@ -85,6 +89,7 @@ private:
 
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
+	std::map<std::string,CInstanceUser*> _Instances;
 
 	friend class CTransformUser;
 };

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.6 2001/08/02 12:19:40 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.7 2001/08/09 14:59:28 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,12 +23,14 @@
  * MA 02111-1307, USA.
  */
 
+#include "3d/instance_user.h"
 #include "3d/instance_group_user.h"
 #include "3d/scene_user.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
 using namespace NLMISC;
+using namespace std;
 
 namespace NL3D 
 {
@@ -69,7 +71,7 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 			_InstanceGroup.serial (file);
 
 			// Add to the scene
-			_InstanceGroup.addToScene (scene);
+			addToScene (scene);
 		}
 		catch (EStream& e)
 		{
@@ -91,7 +93,6 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 }
 
 // ***************************************************************************
-
 bool CInstanceGroupUser::init (const std::string &instanceGroup)
 {
 	// Create a file
@@ -124,20 +125,39 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 }
 
 // ***************************************************************************
-
 void CInstanceGroupUser::addToScene (class UScene& scene)
 {
-	_InstanceGroup.addToScene (((CSceneUser*)&scene)->getScene());
+	addToScene (((CSceneUser*)&scene)->getScene());
 }
 
+// ***************************************************************************
+void CInstanceGroupUser::addToScene (class CScene& scene)
+{
+	_InstanceGroup.addToScene (scene);
+	// Fill in the map accelerating search of instance by names
+	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
+	{
+		CInstanceUser *pIU = new CInstanceUser (&scene,_InstanceGroup._Instances[i]);
+		string stmp = _InstanceGroup.getInstanceName (i);
+		_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+	}		
+}
+
+// ***************************************************************************
 void CInstanceGroupUser::removeFromScene (class UScene& scene)
 {
 	_InstanceGroup.removeFromScene (((CSceneUser*)&scene)->getScene());
+	// Remove all instance in the map
+	map<string,CInstanceUser*>::iterator it = _Instances.begin();
+	while (it != _Instances.end())
+	{
+		map<string,CInstanceUser*>::iterator itDel = it;
+		++it;
+		_Instances.erase (itDel);
+	}
 }
 
-
 // ***************************************************************************
-
 uint CInstanceGroupUser::getNumInstance () const
 {
 	return _InstanceGroup.getNumInstance ();
@@ -155,7 +175,6 @@ const std::string& CInstanceGroupUser::getShapeName (uint instanceNb) const
 }
 
 // ***************************************************************************
-
 const std::string& CInstanceGroupUser::getInstanceName (uint instanceNb) const
 {
 	// Check args
@@ -166,7 +185,6 @@ const std::string& CInstanceGroupUser::getInstanceName (uint instanceNb) const
 }
 
 // ***************************************************************************
-
 const NLMISC::CVector& CInstanceGroupUser::getInstancePos (uint instanceNb) const
 {
 	// Check args
@@ -177,7 +195,6 @@ const NLMISC::CVector& CInstanceGroupUser::getInstancePos (uint instanceNb) cons
 }
 
 // ***************************************************************************
-
 const NLMISC::CQuat& CInstanceGroupUser::getInstanceRot (uint instanceNb) const
 {
 	// Check args
@@ -188,7 +205,6 @@ const NLMISC::CQuat& CInstanceGroupUser::getInstanceRot (uint instanceNb) const
 }
 
 // ***************************************************************************
-
 const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) const
 {
 	// Check args
@@ -196,6 +212,16 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 		nlerror("getInstanceScale*(): bad instance Id");
 	
 	return _InstanceGroup.getInstanceScale (instanceNb);
+}
+
+// ***************************************************************************
+const UInstance *CInstanceGroupUser::getByName (std::string &name) const
+{
+	map<string,CInstanceUser*>::const_iterator it = _Instances.find (name);
+	if (it != _Instances.end())
+		return it->second;
+	else
+		return NULL;
 }
 
 // ***************************************************************************

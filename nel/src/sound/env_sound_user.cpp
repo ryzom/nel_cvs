@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.5 2001/07/17 15:31:57 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.6 2001/07/17 16:57:42 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CEnvSoundUser::CEnvSoundUser() : _Play(false), _Parent(NULL), _Mark(false), _Gain(1.0f)
+CEnvSoundUser::CEnvSoundUser() : _Play(false), _Source(NULL), _BoundingShape(NULL), _Parent(NULL), _Mark(false), _Gain(1.0f)
 {
 }
 
@@ -75,10 +75,30 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 
 	s.serial( _Transition );
 	s.serialPolyPtr( _BoundingShape );
-	s.serialPolyPtr( _Source );
+	s.serialContPolyPtr( _SrcBank ); // serializes sound and looping state only
+
+	uint16 srcindex;
 
 	if ( s.isReading() )
 	{
+		// Select the source in the bank
+		s.serial( srcindex );
+		if ( ! _SrcBank.empty() )
+		{
+			_Source = _SrcBank[srcindex];
+		}
+		else
+		{
+			_Source = NULL;
+		}
+
+		// Set the position which was not serialized
+		if ( (_Source!=NULL) && (_BoundingShape != NULL) )
+		{
+			_Source->moveTo( _BoundingShape->getCenter() );
+		}
+
+		// Init the source (not transition)
 		if ( ! _Transition )
 		{
 			if ( (_Source != NULL) )
@@ -94,10 +114,57 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 			}
 		}
 	}
+	else
+	{
+		uint i;
+		// Find the index of the current source in the bank and serialize it out
+		if ( _SrcBank.size() != 0 )
+		{
+			for ( i=0; i!=_SrcBank.size(); i++ )
+			{
+				if ( _SrcBank[i] == _Source )
+				{
+					break;
+				}
+			}
+			nlassert( i != _SrcBank.size() );
+			nlassert( i < 0x10000 ); // 16-bit value
+			srcindex = i;
+		}
+		else
+		{
+			srcindex = 0;
+		}
+		s.serial( srcindex );
+	}
+
+	// Tags
+	s.serialCont( _Tags );
 
 	// Children envsounds
 	s.serialPtr( _Parent );
 	s.serialContPtr( _Children );
+}
+
+
+/*
+ * Select current env
+ */
+void			CEnvSoundUser::selectEnv( const std::string& tag )
+{
+	uint i;
+	for ( i=0; i!= _Tags.size(); i++ )
+	{
+		if ( _Tags[i] == tag )
+		{
+			_Source = _SrcBank[i];
+			nldebug( "AM: EnvSound: Environment changed to %s", tag.c_str() );
+			return;
+		}
+	}
+	nldebug( "AM: EnvSound: Environment %s not found", tag.c_str() );
+	// Don't change _Source if not found
+
 }
 
 
@@ -340,13 +407,25 @@ void CEnvSoundUser::applySourcesMarks()
 /*
  * Set properties (EDIT)
  */
-void		CEnvSoundUser::setProperties( bool transition,
-										   IBoundingShape *bshape,
-										   IPlayable *source )
+void		CEnvSoundUser::setProperties( bool transition, IBoundingShape *bshape )
 {
 	_Transition = transition;
 	_BoundingShape = bshape;
-	_Source = source;
+}
+
+
+/*
+ * Add an environment source/tag (EDIT) (set a NULL source for no source at all)
+ * The current source always becomes the first one.
+ */
+void		CEnvSoundUser::addEnvTag( IPlayable *source, const std::string& tag )
+{
+	_SrcBank.push_back( source );
+	_Tags.push_back( tag );
+	if ( _Source == NULL )
+	{
+		_Source = source;
+	}
 }
 
 

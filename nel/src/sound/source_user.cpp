@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
+ * $Id: source_user.cpp,v 1.5 2001/07/17 16:57:42 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,14 +401,13 @@ void					CSourceUser::enable( bool toplay, float gain )
 
 
 /*
- * Serial position, sound and looping state (warning: partial serial, for CEnvSoundUser)
+ * Serial sound and looping state (warning: partial serial, for CEnvSoundUser)
  */
 void					CSourceUser::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in CEnvSoundUser::load() !
 
 	// 3D position and sound
-	s.serial( _Position );
 	s.serialPtr( _Sound );
 	s.serial( _Looping );
 

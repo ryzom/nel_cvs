@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.4 2001/07/17 15:31:57 cado Exp $
+ * $Id: env_sound_user.h,v 1.5 2001/07/17 16:57:42 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,13 +50,13 @@ class IBoundingShape;
 /**
  * Implementation of UEnvSound
  *
- * An envsound object is a node of an envsound tree, which root is
- * returned by CAudioMixerUser::loadEnvSounds() and getEnvSounds()
+ * An envsound object is a node of an envsound tree, the root of which
+ * is returned by CAudioMixerUser::loadEnvSounds() and getEnvSounds().
  * The root is the world envsound: it has no bounds. The areas of
- * children envsounds have  * bounds and they must be totally
+ * children envsounds have bounds and they must be totally
  * included in the area of their parent envsound.
  *
- * Here is an example of envsound tree:
+ * Here is an example of an envsound tree:
  *
  * \verbatim
  *                       Root (world envsound)
@@ -102,6 +102,8 @@ public:
 	virtual void			getPos( NLMISC::CVector& pos ) const;
 	/// Moves the envsound (and its transition envsound if it has one)
 	virtual void			setPos( const NLMISC::CVector& pos );
+	/// Select the current env
+	virtual void			selectEnv( const std::string& tag );
 	/// Return the children envsounds
 	virtual std::vector<UEnvSound*>& getChildren();
 
@@ -120,12 +122,14 @@ public:
 	bool					mustPlay() const		{ return _Play; }
 
 
-	/// Set properties (EDIT)
-	void					setProperties( bool transition,
-										   IBoundingShape *bshape,	// set NULL for all world
-										   IPlayable *source );		// set NULL for no source
+	/// Set properties (EDIT) (set a NULL shape for all world)
+	void					setProperties( bool transition, IBoundingShape *bshape );
 	/// Add a child (EDIT)
 	void					addChild( CEnvSoundUser *child );
+	/** Add an environment source/tag (EDIT) (set a NULL source for no source at all).
+	 * The current source always becomes the first one.
+	 */
+	void					addEnvTag( IPlayable *source, const std::string& tag="" );
 	/// Save (output stream only) (EDIT)
 	static void				save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s );
 	/// Return the bounding shape (EDIT)
@@ -162,8 +166,10 @@ private:
 	// Must play or not
 	bool						_Play;
 
-	// Sound source (3D source or ambiant source)
+	// Current sound source (3D source or ambiant source) and all possible sources
 	IPlayable					*_Source;
+	std::vector<IPlayable*>		_SrcBank;
+	std::vector<std::string>	_Tags;
 
 	// Area
 	IBoundingShape				*_BoundingShape;

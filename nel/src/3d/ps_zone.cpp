@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.12 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.13 2001/07/04 12:26:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,7 +182,7 @@ void CPSZonePlane::resize(uint32 size)
 }
 
 
-void CPSZonePlane::newElement(void)
+void CPSZonePlane::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	nlassert(_Normal.getSize() != _Normal.getMaxSize()) ;
 	_Normal.insert(CVector(0, 0, 1)) ;
@@ -426,7 +426,7 @@ void CPSZoneSphere::performMotion(CAnimationTime ellapsedTime)
 
 
 
-void CPSZoneSphere ::show(CAnimationTime ellapsedTime)
+void CPSZoneSphere::show(CAnimationTime ellapsedTime)
 {
 	
 	CPSLocated *loc ;
@@ -492,7 +492,7 @@ void CPSZoneSphere::resize(uint32 size)
 	_Radius.resize(size) ;
 }
 
-void CPSZoneSphere::newElement(void)
+void CPSZoneSphere::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	CRadiusPair rp ;
 	rp.R = rp.R2 = 1.f ;
@@ -678,7 +678,7 @@ void CPSZoneDisc::resize(uint32 size)
 	_Normal.resize(size) ;
 }
 
-void CPSZoneDisc::newElement(void)
+void CPSZoneDisc::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	CRadiusPair rp ;
 	rp.R = rp.R2 = 1.f ;
@@ -1216,7 +1216,7 @@ void CPSZoneCylinder::resize(uint32 size)
 	_Dim.resize(size) ;
 }
 
-void CPSZoneCylinder::newElement(void)
+void CPSZoneCylinder::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	_Basis.insert(CPlaneBasis(CVector::K)) ;
 	_Dim.insert(CVector(1, 1, 1)) ;
@@ -1410,7 +1410,7 @@ void CPSZoneRectangle::resize(uint32 size)
 	_Height.resize(size) ;
 }
 
-void CPSZoneRectangle::newElement(void)
+void CPSZoneRectangle::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	_Basis.insert(CPlaneBasis(CVector::K)) ;
 	_Width.insert(1.f) ;

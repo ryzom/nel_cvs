@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.4 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_zone.h,v 1.5 2001/07/04 12:26:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,7 +182,7 @@ class CPSZonePlane : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size) ;
 
-		virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 
 		virtual void deleteElement(uint32 index) ;
 } ;
@@ -245,7 +245,7 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size) ;
 
-		virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 
 		virtual void deleteElement(uint32 index) ;
 } ;
@@ -288,7 +288,7 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size) ;
 
-		virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 
 		virtual void deleteElement(uint32 index) ;
 
@@ -340,7 +340,7 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size) ;
 
-		virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 
 		virtual void deleteElement(uint32 index) ;
 } ;
@@ -396,7 +396,7 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 
 		virtual void resize(uint32 size) ;
 
-		virtual void newElement(void) ;
+		virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 
 		virtual void deleteElement(uint32 index) ;
 

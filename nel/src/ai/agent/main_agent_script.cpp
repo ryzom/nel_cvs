@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.6 2001/01/15 17:58:29 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.7 2001/01/16 11:55:37 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,10 +94,12 @@ namespace NLAIAGENT
 		//Super crados.		
 		if(m.getGroup().getId() == 1)
 		{
-			NLAIC::IIO *io = _CodeContext->InputOutput;
+			/*NLAIC::IIO *io = _CodeContext->InputOutput;
 			_CodeContext->release();
 			_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
-			_CodeContext->incRef();
+			_CodeContext->incRef();*/
+
+			_CodeContext->Self = this;
 
 			CIteratorContener i = m.getIterator();
 			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;			

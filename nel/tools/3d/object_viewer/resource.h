@@ -504,6 +504,8 @@
 #define IDC_WROT_ACCEL                  1323
 #define IDC_ANIM_TYPE_CTRL              1323
 #define IDC_LIFE_MGT_PRESETS            1324
+#define IDC_SHARABLE                    1325
+#define IDC_CHECK3                      1326
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -622,14 +624,18 @@
 #define IDM_ACTIVATE_TEXTURE_SET_4      32876
 #define IDM_ACTIVATE_TEXTURE_SET_2      32877
 #define IDM_ACTIVATE_TEXTURE_SET_3      32878
+#define IDM_ACTIVATE_TEXTURE_SET_5      32879
+#define IDM_ACTIVATE_TEXTURE_SET_6      32880
+#define IDM_ACTIVATE_TEXTURE_SET_7      32881
+#define IDM_ACTIVATE_TEXTURE_SET_8      32882
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1113
-#define _APS_NEXT_COMMAND_VALUE         32879
-#define _APS_NEXT_CONTROL_VALUE         1325
+#define _APS_NEXT_COMMAND_VALUE         32883
+#define _APS_NEXT_CONTROL_VALUE         1326
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

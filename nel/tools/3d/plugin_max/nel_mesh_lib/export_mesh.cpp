@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.69 2004/09/27 13:33:46 berenguier Exp $
+ * $Id: export_mesh.cpp,v 1.70 2004/10/05 10:12:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1659,7 +1659,6 @@ NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time)
 }
 
 
-
 // ***************************************************************************
 NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 {
@@ -1946,21 +1945,55 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 			ws->setColorMap((ITexture *) colorMap);
 			uint i0, i1, i2;
 			projDest.getBestTriplet(i0, i1, i2);
-			nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);			
+			//nlinfo("i0 = %d, i1 =  %d, i2 = %d", i0, i1, i2);			
 
 			NLMISC::CVector v0, v1, v2;
-			CExportNel::convertVector(v0, pMesh->getVert(i0));
-			CExportNel::convertVector(v1, pMesh->getVert(i1));
-			CExportNel::convertVector(v2, pMesh->getVert(i2));
+			CExportNel::convertVector(v0, objectToLocal * pMesh->getVert(i0));
+			CExportNel::convertVector(v1, objectToLocal * pMesh->getVert(i1));
+			CExportNel::convertVector(v2, objectToLocal * pMesh->getVert(i2));
+
+			// get texture matrix
+			Matrix3 texMat;
+			texMat.IdentityMatrix();			
+			maxDiffuseMap->GetUVTransform(texMat);
 			
 			NLMISC::CMatrix A, B, C;
-			A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));
-			C.setRot(NLMISC::CVector(pMesh->getTVert(i0).x, 1.f - pMesh->getTVert(i0).y, 0),
-					 NLMISC::CVector(pMesh->getTVert(i1).x, 1.f - pMesh->getTVert(i1).y, 0),
-					 NLMISC::CVector(pMesh->getTVert(i2).x, 1.f - pMesh->getTVert(i2).y, 1)
-					);
+			A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));			
+			Point3 uv[3] = { pMesh->getTVert(i0) * texMat, pMesh->getTVert(i1) * texMat, pMesh->getTVert(i2) * texMat };
 
-			B = C * A.inverted();		
+			float cropU = 0.f, cropV = 0.f, cropW = 1.f, cropH = 1.f;
+			// crop result	
+			#define BMTEX_CROP_APPLY "apply"
+			#define BMTEX_CROP_U_NAME "clipu"
+			#define BMTEX_CROP_V_NAME "clipv"
+			#define BMTEX_CROP_W_NAME "clipw"
+			#define BMTEX_CROP_H_NAME "cliph"
+			int bApply;
+			bool bRes=getValueByNameUsingParamBlock2 (*maxDiffuseMap, BMTEX_CROP_APPLY, (ParamType2)TYPE_BOOL, &bApply, time);
+			nlassert (bRes);
+			if (bApply)
+			{
+				bool bRes;
+				bRes=getValueByNameUsingParamBlock2 (*maxDiffuseMap, BMTEX_CROP_U_NAME, (ParamType2)TYPE_FLOAT, &cropU, time);
+				nlassert (bRes);			
+				bRes=getValueByNameUsingParamBlock2 (*maxDiffuseMap, BMTEX_CROP_V_NAME, (ParamType2)TYPE_FLOAT, &cropV, time);
+				nlassert (bRes);			
+				bRes=getValueByNameUsingParamBlock2 (*maxDiffuseMap, BMTEX_CROP_W_NAME, (ParamType2)TYPE_FLOAT, &cropW, time);
+				nlassert (bRes);			
+				bRes=getValueByNameUsingParamBlock2 (*maxDiffuseMap, BMTEX_CROP_H_NAME, (ParamType2)TYPE_FLOAT, &cropH, time);
+				nlassert (bRes);
+			}
+
+			C.setRot(NLMISC::CVector(uv[0].x * cropW + cropU, (1.f - uv[0].y) * cropH + cropV, 1),
+					 NLMISC::CVector(uv[1].x * cropW + cropU, (1.f - uv[1].y) * cropH + cropV, 1),
+					 NLMISC::CVector(uv[2].x * cropW + cropU, (1.f - uv[2].y) * cropH + cropV, 1)
+					);			
+			B = C * A.inverted();			
+			// TMP TMP TMP TMP
+			CVector r0 = B * CVector(v0.x, v0.y, 1.f);
+			CVector r1 = B * CVector(v1.x, v1.y, 1.f);
+			CVector r2 = B * CVector(v2.x, v2.y, 1.f);			
+
 			ws->setColorMapMat(NLMISC::CVector2f(B.getI().x, B.getI().y),
 							   NLMISC::CVector2f(B.getJ().x, B.getJ().y),
 							   NLMISC::CVector2f(B.getK().x, B.getK().y));

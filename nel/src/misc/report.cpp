@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.13 2004/12/16 10:21:29 corvazier Exp $
+ * $Id: report.cpp,v 1.14 2005/01/20 17:56:10 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLMISC
 {
 
 #ifdef NL_OS_WINDOWS
-static HWND sendReport;
+static HWND sendReport=NULL;
 #endif
 
 //old doesn't work on visual c++ 7.1 due to default parameter typedef bool (*TEmailFunction) (const std::string &smtpServer, const std::string &from, const std::string &to, const std::string &subject, const std::string &body, const std::string &attachedFile = "", bool onlyCheck = false);
@@ -91,21 +91,22 @@ static string Body;
 static string Subject;
 static string AttachedFile;
 
-static HWND checkIgnore;
-static HWND debug;
-static HWND ignore;
-static HWND quit;
-static HWND dialog;
+static HWND checkIgnore=NULL;
+static HWND debug=NULL;
+static HWND ignore=NULL;
+static HWND quit=NULL;
+static HWND dialog=NULL;
 
 static bool NeedExit;
 static TReportResult Result;
 static bool IgnoreNextTime;
+static bool CanSendMailReport= false;
 
 static bool DebugDefaultBehavior, QuitDefaultBehavior;
 
 static void sendEmail()
 {
-	if (SendMessage(sendReport, BM_GETCHECK, 0, 0) != BST_CHECKED)
+	if (CanSendMailReport && SendMessage(sendReport, BM_GETCHECK, 0, 0) != BST_CHECKED)
 	{
 		bool res = EmailFunction ("", "", "", Subject, Body, AttachedFile, false);
 		if (res)
@@ -293,10 +294,10 @@ TReportResult report (const std::string &title, const std::string &header, const
 	}
 
 	// ace don't do that because it s slow to try to send a mail
-	//bool canSendReport  = sendReportButton && EmailFunction != NULL && EmailFunction("", "", "", "", "", true);
-	bool canSendReport  = sendReportButton && EmailFunction != NULL;
+	//CanSendMailReport  = sendReportButton && EmailFunction != NULL && EmailFunction("", "", "", "", "", true);
+	CanSendMailReport  = sendReportButton && EmailFunction != NULL;
 
-	if (canSendReport)
+	if (CanSendMailReport)
 		formatedHeader += " Send report will only email the contents of the box below. Please, send it to help us (it could take few minutes to send the email, be patient).";
 	else
 		EnableWindow(sendReport, FALSE);

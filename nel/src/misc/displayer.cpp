@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.65 2004/10/19 10:17:12 berenguier Exp $
+ * $Id: displayer.cpp,v 1.66 2005/01/20 17:56:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -678,10 +678,15 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)
 		{
-			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, true, IgnoreNextTime, NL_CRASH_DUMP_FILE))
+			// yoyo: allow only to send the crash report once. Because users usually click ignore, 
+			// which create noise into list of bugs (once a player crash, it will surely continues to do it).
+			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, !isCrashAlreadyReported(), IgnoreNextTime, NL_CRASH_DUMP_FILE))
 			{
 				DebugNeedAssert = true;
 			}
+
+			// no more sent mail for crash
+			setCrashAlreadyReported(true);
 		}
 
 /*		// Check the envvar NEL_IGNORE_ASSERT

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.13 2000/11/15 17:23:35 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.14 2000/11/20 13:40:00 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -202,13 +202,10 @@ float		CTessFace::FatherStartComputeLimit= 1.1f;
 float		CTessFace::ChildrenStartComputeLimit= 1.9f;
 float		CTessFace::SelfEndCompute= 2.1f;
 
-float		CTessFace::TileDistNear= 20;
-float		CTessFace::TileDistEndGeom= CTessFace::TileDistNear-10;
+float		CTessFace::TileDistNear= 100;
 float		CTessFace::TileDistFar= CTessFace::TileDistNear+40;
-float		CTessFace::TileDistEndGeomSqr= sqr(CTessFace::TileDistEndGeom);
 float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
-float		CTessFace::OOTileDistDeltaGeomSqr= 1.0f / (CTessFace::TileDistNearSqr - CTessFace::TileDistEndGeomSqr);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
 sint		CTessFace::TileMaxSubdivision=4;
 
@@ -239,7 +236,10 @@ ITileUv		*CTessFace::allocTileUv(uint8 fmt)
 		case TileUvFmtBump4: return new CTileUvBump4; break;
 		case TileUvFmtBump5: return new CTileUvBump5; break;
 		case TileUvFmtBump6: return new CTileUvBump6; break;
-		default: nlstop;
+		default: 
+			nlstop;
+			return NULL;
+			break;
 	}
 }
 
@@ -340,7 +340,7 @@ float		CTessFace::updateErrorMetric()
 			float	s2= (VRight->EndPos-RefineCenter).sqrnorm();
 			sqrdist= minof(s0, s1, s2);
 			// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
-			// to blend (si Patch::renderFar1() render).
+			// to blend (see Patch::renderFar1() render).
 
 			if(sqrdist< TileDistFarSqr)
 			{
@@ -348,36 +348,28 @@ float		CTessFace::updateErrorMetric()
 				// Level= log2(BaseSize / sqrdist / threshold);
 				// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
 				// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
-				float	endgeomLimit;
+				float	nearLimit;
 				// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) * RefineThreshold / (1<<Level);
-				endgeomLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
+				nearLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
 				nlassert(Level<14);
 				// If we are not so subdivided.
-				if(ProjectedSize<endgeomLimit)
+				if(ProjectedSize<nearLimit)
 				{
-					// To have a better smooth transition, it is only necessary to have the tile splitted, 
-					// not the tile fully geomorphed. => *=0.51 to ensure the split (not 0.5 for precision problem).
-					float	nearLimit= endgeomLimit*0.51f;
-					// But, AFTER the tile transition is made, since we are splitted, it is interressant to geomorph.
-					if(sqrdist< TileDistEndGeomSqr)
+					if(sqrdist< TileDistNearSqr)
 					{
-						ProjectedSize=endgeomLimit;
-					}
-					else if( sqrdist< TileDistNearSqr)
-					{
-						// Do the geomorpgh beetween TileDistNearSqr and TileDistEndGeomSqr.
-						float	f= (sqrdist- TileDistEndGeomSqr) * OOTileDistDeltaGeomSqr;
-						float	ps= endgeomLimit*(1-f) + nearLimit*f;
-						ProjectedSize= max(ps, ProjectedSize);
+						ProjectedSize=nearLimit;
 					}
 					else
 					{
 						// Smooth transition to the nearLimit of tesselation.
 						float	f= (sqrdist- TileDistNearSqr) * OOTileDistDeltaSqr;
-						// This gives better result, by smoothing more the start of transition.
+						// sqr gives better result, by smoothing more the start of transition.
 						f= sqr((1-f));
 						f= sqr(f);
 						ProjectedSize= nearLimit*f + ProjectedSize*(1-f);
+
+						// If threshold is big like 0.5, transition is still hard, and pops occurs. But The goal is 
+						// 0.005 and less, so don't bother. 
 					}
 				}
 			}
@@ -682,6 +674,10 @@ void		CTessFace::split(bool propagateSplit)
 		// and so "this").
 		while(FBase->isLeaf())
 			FBase->split();
+
+		// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
+		// And problems may arise because this face hasn't yet good connectivity.
+		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
 	}
 
 
@@ -790,6 +786,8 @@ void		CTessFace::refine()
 	*/
 
 	// In Tile/Far Transition zone, force the needCompute.
+	// This is important, since the rule "the error metric of the son is appoximately the half of 
+	// the father" is no more true, and then a son should be tested as soon as possible.
 	if(Patch->Zone->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
 	{
 		NeedCompute= true;
@@ -873,6 +871,7 @@ void		CTessFace::refine()
 		if(!isLeaf() && (!SonLeft->isLeaf() || !SonRight->isLeaf()))
 		{
 			// The sons must test if they have to merge.
+			// Else, we may have split which are blocked, and so never merged...
 			SonLeft->NeedCompute= true;
 			SonRight->NeedCompute= true;
 		}
@@ -890,24 +889,57 @@ void		CTessFace::refine()
 
 
 // ***************************************************************************
-void		CTessFace::unbind()
+void		CTessFace::unbindFrom(CPatch *other)
+{
+	// Change Left/Right neighbors.
+	if(isLeaf())
+	{
+		// FLeft and FRight pointers are only valid in Leaves nodes.
+		if(FLeft && FLeft->Patch==other)
+		{
+			FLeft= NULL;
+		}
+		if(FRight && FRight->Patch==other)
+		{
+			FRight= NULL;
+		}
+	}
+	// Change Base neighbors.
+	if(FBase && FBase->Patch==other)
+	{
+		FBase= NULL;
+		// Don't duplicate the base vertex. Leave it to the one which does the unbindAll.
+	}
+
+	if(!isLeaf())
+	{
+		// unbind the sons.
+		SonLeft->unbindFrom(other);
+		SonRight->unbindFrom(other);
+	}
+
+}
+// ***************************************************************************
+void		CTessFace::unbindFromAll()
 {
 	// NB: since CantMergeFace has a NULL patch ptr, it is unbound too.
 
 	// Change Left/Right neighbors.
-	if(FLeft && FLeft->Patch!=Patch)
+	if(isLeaf())
 	{
-		FLeft->changeNeighbor(this, NULL);
-		FLeft= NULL;
+		// FLeft and FRight pointers are only valid in Leaves nodes.
+		if(FLeft && FLeft->Patch!=Patch)
+		{
+			FLeft= NULL;
+		}
+		if(FRight && FRight->Patch!=Patch)
+		{
+			FRight= NULL;
+		}
 	}
-	if(FRight && FRight->Patch!=Patch)
-	{
-		FRight->changeNeighbor(this, NULL);
-		FRight= NULL;
-	}
+	// Change Base neighbors.
 	if(FBase && FBase->Patch!=Patch)
 	{
-		FBase->changeNeighbor(this, NULL);
 		FBase= NULL;
 		if(!isLeaf())
 		{
@@ -927,8 +959,8 @@ void		CTessFace::unbind()
 		SonRight->VRight= VBase;
 
 		// unbind the sons.
-		SonLeft->unbind();
-		SonRight->unbind();
+		SonLeft->unbindFromAll();
+		SonRight->unbindFromAll();
 	}
 
 }
@@ -970,28 +1002,40 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 	}
 	else
 	{
+		/*
+			Look at the callers, and you'll see that "this" is always a leaf.
+			Therefore, edgeFace is a valid pointer
+		*/
 		// Just update pointers...
 		if(edgeFace->FLeft==this)
 		{
+			// TODO: this is only valid on non rectangle patch.
 			CTessFace	*sonLeft= edgeFace->SonLeft;
 			sonLeft->FBase= this;
 			edgeFace= sonLeft;
 		}
 		else if(edgeFace->FRight==this)
 		{
+			// TODO: this is only valid on non rectangle patch.
 			CTessFace	*sonRight= edgeFace->SonRight;
 			sonRight->FBase= this;
 			edgeFace= sonRight;
 		}
 		else
 		{
-			// We should aready be splitted.
+			/*
+				Look at the callers, and you'll see that "this" is always a leaf.
+				Therefore, we should never be here.
+			*/
+			nlstop;
+			/*// We should aready be splitted.
 			nlassert(!isLeaf());
-			// The neigbor should link already to one of our son.
+			// The neighbor should link already to one of our son.
 			nlassert(SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft ||
 				SonLeft == edgeFace->FRight || SonRight == edgeFace->FRight ||
 				SonLeft == edgeFace->FBase || SonRight == edgeFace->FBase);
 			return true;
+			*/
 		}
 	}
 
@@ -1004,7 +1048,13 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 void		CTessFace::updateBindAndSplit()
 {
 	bool	splitWanted= false;
+	/*
+		Look at the callers, and you'll see that "this" is always a leaf.
+		Therefore, FBase, FLeft and FRight are good pointers, and *FLeft and *FRight should be Ok too.
+	*/
+	nlassert(isLeaf());
 	while(!updateBindEdge(FBase, splitWanted));
+	// FLeft and FRight pointers are only valid in Leaves nodes.
 	while(!updateBindEdge(FLeft, splitWanted));
 	while(!updateBindEdge(FRight, splitWanted));
 
@@ -1013,6 +1063,10 @@ void		CTessFace::updateBindAndSplit()
 	{
 		while(FBase->isLeaf())
 			FBase->updateBindAndSplit();
+
+		// There is a possible bug here (maybe easily patched). Sons may have be propagated splitted.
+		// And problems may arise because this face hasn't yet good connectivity.
+		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
 	}
 }
 
@@ -1020,15 +1074,25 @@ void		CTessFace::updateBindAndSplit()
 // ***************************************************************************
 void		CTessFace::updateBind()
 {
-	bool	splitWanted= false;
-	while(!updateBindEdge(FBase, splitWanted));
-	while(!updateBindEdge(FLeft, splitWanted));
-	while(!updateBindEdge(FRight, splitWanted));
-
-	if(splitWanted && isLeaf())
+	/*
+		Remind that updateBind() is called ONLY on the patch which is binded (not the neighbors).
+		Since updateBind() is called on the bintree, and that precedent propagated split may have occur, we may not
+		be a leaf here. So we are not sure that FLeft and FRight are good, and we doesn't need to update them (since we have
+		sons).
+		Also, since we are splitted, and correctly linked (this may not be the case in updateBindAndSplit()), FBase IS
+		correct. His FBase neighbor and him form a diamond. So we don't need to update him.
+	*/
+	if(isLeaf())
 	{
-		updateBindAndSplit();
+		bool	splitWanted= false;
+		while(!updateBindEdge(FBase, splitWanted));
+		// FLeft and FRight pointers are only valid in Leaves nodes.
+		while(!updateBindEdge(FLeft, splitWanted));
+		while(!updateBindEdge(FRight, splitWanted));
+		if(splitWanted)
+			updateBindAndSplit();
 	}
+
 
 	// Recurse to sons.
 	if(!isLeaf())

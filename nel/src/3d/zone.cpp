@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.9 2000/11/15 17:23:35 berenguier Exp $
+ * $Id: zone.cpp,v 1.10 2000/11/20 13:40:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,6 @@
 #include "nel/3d/zone.h"
 #include "nel/misc/common.h"
 
-// Temp YOYO.
-#include "nel/misc/events.h"
-extern	bool	getKey(NLMISC::TKey key);
 
 using namespace NLMISC;
 using namespace std;
@@ -173,8 +170,7 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 	int		i;
 	uint	ver= f.serialVersion(0);
 	f.serial(NPatchs);
-	for(i=0;i<4;i++)
-		f.serial(ZoneId[i]);
+	f.serial(ZoneId);
 	for(i=0;i<4;i++)
 		f.serial(Next[i]);
 	for(i=0;i<4;i++)
@@ -299,7 +295,8 @@ void			CZone::release(TZoneMap &loadedZones)
 	for(j=0;j<(sint)Patchs.size();j++)
 	{
 		CPatch				&pa= Patchs[j];
-		pa.unbind();
+		CPatchConnect		&pc= PatchConnects[j];
+		unbindPatch(loadedZones, pa, pc);
 	}
 
 	// release() the patchs.
@@ -387,10 +384,8 @@ CPatch		*CZone::getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch)
 
 
 // ***************************************************************************
-void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
+void		CZone::unbindAndMakeBindInfo(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, CPatch::CBindInfo	edges[4])
 {
-	CPatch::CBindInfo	edges[4];
-
 	// Fill all edges.
 	for(sint i=0;i<4;i++)
 	{
@@ -402,33 +397,71 @@ void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
 		if(paBind.NPatchs>=1)
 		{
 			paBind.Edge[0]= pcBind.Edge[0];
-			paBind.Next[0]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[0], pcBind.Next[0]);
+			paBind.Next[0]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[0]);
 			// If not loaded, don't bind to this edge.
 			if(!paBind.Next[0])
 				paBind.NPatchs=0;
+			else
+			{
+				// Else unbind this patch from me.
+				paBind.Next[0]->unbindFrom(&pa);
+			}
 		}
 		if(paBind.NPatchs>=2)
 		{
 			paBind.Edge[1]= pcBind.Edge[1];
-			paBind.Next[1]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[1], pcBind.Next[1]);
+			paBind.Next[1]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[1]);
 			// If not loaded, don't bind to this edge.
 			if(!paBind.Next[1])
 				paBind.NPatchs=0;
+			else
+			{
+				// Else unbind this patch from me.
+				paBind.Next[1]->unbindFrom(&pa);
+			}
 		}
 		if(paBind.NPatchs>=4)
 		{
 			paBind.Edge[2]= pcBind.Edge[2];
 			paBind.Edge[3]= pcBind.Edge[3];
-			paBind.Next[2]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[2], pcBind.Next[2]);
-			paBind.Next[3]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[3], pcBind.Next[3]);
+			paBind.Next[2]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[2]);
+			paBind.Next[3]= CZone::getZonePatch(loadedZones, pcBind.ZoneId, pcBind.Next[3]);
 			// If not loaded, don't bind to this edge.
 			if(!paBind.Next[2] || !paBind.Next[3])
 				paBind.NPatchs=0;
+			else
+			{
+				// Else unbind this patch from me.
+				paBind.Next[2]->unbindFrom(&pa);
+				paBind.Next[3]->unbindFrom(&pa);
+			}
 		}
 	}
 
+	pa.unbindFromAll();
+}
+
+// ***************************************************************************
+void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
+{
+	CPatch::CBindInfo	edges[4];
+
+	unbindAndMakeBindInfo(loadedZones, pa, pc, edges);
+
 	pa.bind(edges);
 }
+
+
+// ***************************************************************************
+void		CZone::unbindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
+{
+	CPatch::CBindInfo	edges[4];
+
+	unbindAndMakeBindInfo(loadedZones,  pa, pc, edges);
+
+	// Don't rebind.
+}
+
 
 // ***************************************************************************
 bool			CZone::patchOnBorder(const CPatchConnect &pc) const
@@ -443,19 +476,7 @@ bool			CZone::patchOnBorder(const CPatchConnect &pc) const
 		nlassert(pcBind.NPatchs==0 || pcBind.NPatchs==1 || pcBind.NPatchs==2 || pcBind.NPatchs==4);
 		if(pcBind.NPatchs>=1)
 		{
-			if(pcBind.ZoneId[0] != ZoneId)
-				return true;
-		}
-		if(pcBind.NPatchs>=2)
-		{
-			if(pcBind.ZoneId[1] != ZoneId)
-				return true;
-		}
-		if(pcBind.NPatchs>=4)
-		{
-			if(pcBind.ZoneId[2] != ZoneId)
-				return true;
-			if(pcBind.ZoneId[3] != ZoneId)
+			if(pcBind.ZoneId != ZoneId)
 				return true;
 		}
 	}
@@ -515,23 +536,67 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
+// Code for Debug test Only..
+/*
+static	void	cleanTess(CTessFace *face)
+{
+	if(!face->isLeaf())
+	{
+		cleanTess(face->SonLeft);
+		cleanTess(face->SonRight);
+	}
+	// If has father, clean it.
+	if(face->Father)
+	{
+		CTessFace	*face1=face->Father;
+		CTessFace	*face2=face->Father->FBase;
+		face1->FLeft= face1->SonLeft->FBase;
+		face1->FRight= face1->SonRight->FBase;
+		if(face2!=NULL)
+		{
+			face2->FLeft= face2->SonLeft->FBase;
+			face2->FRight= face2->SonRight->FBase;
+		}
+	}
+}
+static	void	testTess(CTessFace *face)
+{
+	if(!face->isLeaf())
+	{
+		testTess(face->SonLeft);
+		testTess(face->SonRight);
+	}
+	// Test validity.
+	nlassert(!face->FBase || face->FBase->Patch!=(CPatch*)0xdddddddd);
+	nlassert(!face->FLeft || face->FLeft->Patch!=(CPatch*)0xdddddddd);
+	nlassert(!face->FRight || face->FRight->Patch!=(CPatch*)0xdddddddd);
+}
+static	void	checkTess()
+{
+	// This test should be inserted at begin of CZone::refine().
+	// And it needs hacking public/private.
+	CPatch		*pPatch;
+	sint		n;
+	pPatch= &(*Patchs.begin());
+	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		cleanTess(pPatch->Son0);
+		cleanTess(pPatch->Son1);
+	}
+	pPatch= &(*Patchs.begin());
+	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		testTess(pPatch->Son0);
+		testTess(pPatch->Son1);
+	}
+}
+*/
+
+
+// ***************************************************************************
 void			CZone::refine()
 {
 	nlassert(Compiled);
-
-
-	// Temp YOYO.
-	if(getKey(NLMISC::KeyU))
-	{
-		Patchs[0].unbind();
-	}
-	if(getKey(NLMISC::KeyB))
-	{
-		TZoneMap	pipoMap;
-		pipoMap[ZoneId]= this;
-		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
-	}
-
 
 	// Force refine of invisible zones only every 8 times.
 	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))

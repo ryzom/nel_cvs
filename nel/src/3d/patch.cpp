@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.11 2000/11/15 17:23:35 berenguier Exp $
+ * $Id: patch.cpp,v 1.12 2000/11/20 13:40:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,12 @@ void			CPatch::release()
 {
 	if(Zone)
 	{
-		unbind();
+		// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
+		nlassert(Son0 && Son1);
+		nlassert(Son0->isLeaf() && Son1->isLeaf());
+		nlassert(Son0->FRight==NULL && Son0->FLeft==NULL);
+		nlassert(Son1->FRight==NULL && Son1->FLeft==NULL);
+
 		delete Son0;
 		delete Son1;
 		// Vertices are smartptr/deleted in zone.
@@ -557,12 +562,12 @@ void			CPatch::renderTile(sint pass)
 
 
 // ***************************************************************************
-void			CPatch::unbind()
+void			CPatch::unbindFromAll()
 {
 	nlassert(Son0 && Son1);
 
-	Son0->unbind();
-	Son1->unbind();
+	Son0->unbindFromAll();
+	Son1->unbindFromAll();
 	Son0->forceMerge();
 	Son1->forceMerge();
 	nlassert(Son0->isLeaf() && Son1->isLeaf());
@@ -573,6 +578,16 @@ void			CPatch::unbind()
 
 	// re-build Sons.
 	makeRoots();
+}
+
+
+// ***************************************************************************
+void			CPatch::unbindFrom(CPatch *other)
+{
+	nlassert(Son0 && Son1);
+
+	Son0->unbindFrom(other);
+	Son1->unbindFrom(other);
 }
 
 
@@ -607,8 +622,11 @@ void			CPatch::changeEdgeNeighbor(sint edge, CTessFace *to)
 // ***************************************************************************
 void			CPatch::bind(CBindInfo	Edges[4])
 {
-	// Clear first...
-	unbind();
+	// THIS PATCH MSUT BE UNBOUND FIRST!!!!!
+	nlassert(Son0 && Son1);
+	nlassert(Son0->isLeaf() && Son1->isLeaf());
+	nlassert(Son0->FRight==NULL && Son0->FLeft==NULL);
+	nlassert(Son1->FRight==NULL && Son1->FLeft==NULL);
 
 	// Just recompute base vertices.
 	// TODO_NOISE. bind the noise info before.

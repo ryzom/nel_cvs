@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.4 2003/01/08 18:06:28 lecroart Exp $
+ * $Id: varpath.cpp,v 1.4.4.1 2003/05/14 10:03:34 lecroart Exp $
  *
  */
 
@@ -85,15 +85,14 @@ string CVarPath::getToken ()
 
 	switch (RawVarPath[TokenPos++])
 	{
-	case '.': case '*': case '[': case ']': case ',': case '=': break;
+	case '.': case '*': case '[': case ']': case ',': case '=': case ' ':
+		break;
 	default :
+		while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',' && RawVarPath[TokenPos] != '=' && RawVarPath[TokenPos] != ' ')
 		{
-			while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',' && RawVarPath[TokenPos] != '=')
-			{
-				res += RawVarPath[TokenPos++];
-			}
-			break;
+			res += RawVarPath[TokenPos++];
 		}
+		break;
 	}
 	return res;
 }
@@ -157,7 +156,13 @@ void CVarPath::decode ()
 
 	// must the a . or end of string
 	val = getToken ();
-	if (val != "." && val != "" && val != "=")
+	if (val == " ")
+	{
+		// special case, there s a space that means that everything after is not really part of the varpath.
+		Destination.push_back (make_pair(RawVarPath, string("")));
+		return;
+	}
+	else if (val != "." && val != "" && val != "=")
 	{
 		nlwarning ("Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
 		return;

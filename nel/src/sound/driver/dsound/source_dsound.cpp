@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.23 2003/04/24 16:54:25 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.24 2003/07/03 15:17:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,7 +209,7 @@ uint32	CSourceDSound::getTime()
 
 	_Sample->getFormat(format, freq);
 
-	return uint32(1000.0f * (_PlayOffset+1) / (float)freq);
+	return 1000.0f * (_PlayOffset+1) / (float)freq;
 }
 
 // ******************************************************************
@@ -516,13 +516,18 @@ void CSourceDSound::fillData(sint16 *dst, uint nbSample)
 
 void CSourceDSound::fillData(const TLockedBufferInfo &lbi, int nbSample)
 {
-	uint size = std::min(uint32(nbSample), lbi.Size1>>1);
+	nlassert((nbSample & 0x1) == 0);
+/*	nlassert(lbi.Size1 != 0);
+	nlassert(lbi.Ptr1 != NULL);
+*/	uint size = std::min(uint32(nbSample), lbi.Size1>>1);
 	fillData(lbi.Ptr1, size);
 	nbSample -= size;
 
 	if (nbSample)
 	{
-		size = min(uint32(nbSample), lbi.Size2>>1);
+/*		nlassert(lbi.Size2 != 0);
+		nlassert(lbi.Ptr2 != NULL);
+*/		size = min(uint32(nbSample), lbi.Size2>>1);
 		fillData(lbi.Ptr2, size);
 		nbSample -= size;
 	}
@@ -808,6 +813,11 @@ bool CSourceDSound::play()
 	{
 		nlwarning("Couldn't lock the sound buffer for %u bytes", cursors.WriteSize);
 	}
+
+	// set the volume NOW
+	CListenerDSound* listener = CListenerDSound::instance();
+
+	updateVolume(listener->getPos());
 
 	LeaveCriticalSection(&_CriticalSection); 
 
@@ -1548,11 +1558,11 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist, bool defer
 {
 	if (_3DBuffer != 0)
 	{
-		if (_3DBuffer->SetMinDistance(mindist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetMinDistance(std::max(DS3D_DEFAULTMINDISTANCE, mindist), deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMinDistance (%f) failed", mindist);
 		}
-		if (_3DBuffer->SetMaxDistance(maxdist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetMaxDistance(std::min(DS3D_DEFAULTMAXDISTANCE, maxdist), deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMaxDistance (%f) failed", maxdist);
 		}

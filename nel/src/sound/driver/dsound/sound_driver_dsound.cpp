@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.20 2003/04/24 13:45:37 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.21 2003/07/03 15:17:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,7 @@ long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM
 
 __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_ISoundDriver);
 	static bool Registered = false;
 
 	if (!Registered)
@@ -175,51 +176,6 @@ CSoundDriverDSound::CSoundDriverDSound()
 	}
 }
 
-// ******************************************************************
-
-CSoundDriverDSound::~CSoundDriverDSound()
-{
-	nldebug("Destroying DirectSound driver");
-
-    if (_TimerID != NULL)
-    {
-        timeKillEvent(_TimerID);
-        timeEndPeriod(_TimerResolution); 
-    }
-
-
-	// Assure that the remaining sources have released all their DSBuffers 
-	// before closing down DirectSound
-	set<CSourceDSound*>::iterator iter;
-
-	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
-	{
-		(*iter)->release();
-	}
-
-
-	// Assure that the listener has released all resources before closing 
-	// down DirectSound
-	if (CListenerDSound::instance() != 0)
-	{
-		CListenerDSound::instance()->release();
-	}
-
-
-    if (_PrimaryBuffer != NULL) 
-    {
-        _PrimaryBuffer->Release(); 
-        _PrimaryBuffer = NULL;
-    }
-
-    if (_DirectSound != NULL) 
-    {
-        _DirectSound->Release(); 
-        _DirectSound = NULL;
-    }
-
-	_Instance = 0;
-}
 
 #if EAX_AVAILABLE == 1
 
@@ -351,6 +307,7 @@ CDeviceDescription* CDeviceDescription::_List = 0;
 
 BOOL CALLBACK CSoundDriverDSoundEnumCallback(LPGUID guid, LPCSTR description, PCSTR module, LPVOID context)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriver);
     new CDeviceDescription(guid, description);
     return TRUE;
 }
@@ -573,6 +530,55 @@ bool CSoundDriverDSound::init(HWND wnd, bool useEax, IStringMapperProvider *stri
 
 // ******************************************************************
 
+CSoundDriverDSound::~CSoundDriverDSound()
+{
+	nldebug("Destroying DirectSound driver");
+
+    if (_TimerID != NULL)
+    {
+        timeKillEvent(_TimerID);
+        timeEndPeriod(_TimerResolution); 
+    }
+
+
+	// Assure that the remaining sources have released all their DSBuffers 
+	// before closing down DirectSound
+	set<CSourceDSound*>::iterator iter;
+
+	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
+	{
+		(*iter)->release();
+	}
+
+
+	// Assure that the listener has released all resources before closing 
+	// down DirectSound
+	if (CListenerDSound::instance() != 0)
+	{
+		CListenerDSound::instance()->release();
+	}
+
+
+    if (_PrimaryBuffer != NULL) 
+    {
+        _PrimaryBuffer->Release(); 
+        _PrimaryBuffer = NULL;
+    }
+
+    if (_DirectSound != NULL) 
+    {
+        _DirectSound->Release(); 
+        _DirectSound = NULL;
+    }
+
+	_Instance = 0;
+
+	// free the enumerated list
+	if (CDeviceDescription::_List)
+		delete CDeviceDescription::_List;
+}
+// ******************************************************************
+
 uint CSoundDriverDSound::countMaxSources()
 {
 	// Try the hardware 3d buffers first
@@ -755,6 +761,7 @@ uint CSoundDriverDSound::countHw2DBuffers()
 
 IListener *CSoundDriverDSound::createListener()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverDSound);
     LPDIRECTSOUND3DLISTENER8 dsoundListener;
 
     if (CListenerDSound::instance() != NULL) 
@@ -780,6 +787,7 @@ IListener *CSoundDriverDSound::createListener()
 
 IBuffer *CSoundDriverDSound::createBuffer()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverDSound);
     if (_PrimaryBuffer == 0) 
     {
         throw ESoundDriver("Corrupt driver");
@@ -819,6 +827,7 @@ bool CSoundDriverDSound::readRawBuffer( IBuffer *destbuffer, const std::string &
 
 ISource *CSoundDriverDSound::createSource()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundDriverDSound);
     if (_PrimaryBuffer == 0) 
     {
         throw ESoundDriver("Corrupt driver");

@@ -39,7 +39,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../../../../obj/Release/driver_dsound"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "NLSOUND_PROFILE" /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_DSOUND_EXPORTS" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c

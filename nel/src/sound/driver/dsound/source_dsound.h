@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.12 2003/04/24 13:45:37 boucher Exp $
+ * $Id: source_dsound.h,v 1.13 2003/07/03 15:17:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

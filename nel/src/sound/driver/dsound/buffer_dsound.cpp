@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.9 2003/04/24 13:45:37 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.10 2003/07/03 15:17:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,6 +195,7 @@ float CBufferDSound::getDuration() const
 //bool CBufferDSound::loadWavFile(const char* file) 
 bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CBufferDSound);
     sint error; 
     sint32 num;
     HMMIO hmmio;
@@ -414,6 +415,7 @@ bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint 
 
 bool CBufferDSound::readRawBuffer(const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CBufferDSound);
 	// free any existing data
     if (_Data != NULL)
     {

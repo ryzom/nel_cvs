@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.3 2002/01/28 14:39:56 vizerie Exp $
+ * $Id: texture_mem.h,v 1.4 2002/02/04 10:38:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,9 @@ class CTextureMem : public ITexture
 	uint32		_Length;
 	bool		_Delete;
 	bool        _IsFile;
+
+	/// keep size for textures that aren't from a file
+	uint		_TexWidth, _TexHeight;
 public:
 
 	/** 
@@ -73,13 +76,17 @@ public:
 	 * \param isFile is true if the data must be interpreted as a texture file. Otherwise, it is interpreted
 	 *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
 	 *        the raw datas 
+	 * \param width used only if isFile is set to false
+	 * \param height used only if isFile is set to false
 	 */	
-	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true) 
+	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0) 
 	{ 
 		_Data=NULL;
 		_Delete=false;
 		_IsFile = isFile;
-		setPointer(data, length, _delete); 
+		setPointer(data, length, _delete);
+		_TexWidth = width;
+		_TexHeight = height;
 	}
 
 
@@ -88,7 +95,7 @@ public:
 	 * \param data Pointer of the file.
 	 * \param _delete Is true if the class must delete the pointer.
 	 */	
-	void setPointer(uint8 *data, uint32 length, bool _delete, bool isFile = true) 
+	void setPointer(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0) 
 	{ 
 		if (_Data&&_Delete)
 			delete [] _Data;
@@ -97,7 +104,10 @@ public:
 		_Length=length;
 		_Delete=_delete;
 		_IsFile = isFile;
+		_TexWidth = width;
+		_TexHeight = height;
 	}
+
 
 
 	/** 

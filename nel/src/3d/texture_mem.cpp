@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.4 2001/10/26 08:21:33 vizerie Exp $
+ * $Id: texture_mem.cpp,v 1.5 2002/02/04 10:38:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,10 +50,9 @@ void CTextureMem::doGenerate()
 		}
 		else
 		{
-			releaseMipMaps();
-			getPixels(0).resize(_Length);
+			resize(_TexWidth, _TexHeight, NLMISC::CBitmap::RGBA);			
 			std::copy(_Data, _Data + _Length, &	getPixels(0)[0]);
-			buildMipMaps();		
+			buildMipMaps();
 		}
 	}
 	else

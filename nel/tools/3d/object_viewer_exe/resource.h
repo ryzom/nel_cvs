@@ -4,8 +4,6 @@
 //
 #define IDI_ICON1                       101
 #define IDI_MAIN_ICON                   103
-#define IDC_CURSOR1                     105
-#define IDC_CURSOR2                     106
 
 // Next default values for new objects
 // 

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.5 2001/07/04 16:00:55 vizerie Exp $
+ * $Id: particle_system.h,v 1.6 2001/07/12 15:58:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,22 +27,17 @@
 #define NL_PARTICLE_SYSTEM_H
 
 #include "nel/misc/types_nl.h"
-#include "3d/mot.h"
-#include "nel/misc/stream.h"
-#include "nel/3d/animation_time.h" 
-#include "3d/particle_system.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/mem_stream.h"
+#include "nel/misc/aabbox.h"
+#include "nel/3d/animation_time.h"
+#include "3d/mot.h"
+#include "3d/animated_value.h"
+#include "3d/particle_system_process.h"
+#include "3d/ps_lod.h"
 
-
-
-namespace NLMISC
-{
-	class CAABBox ;
-}
 
 namespace NL3D {
-using NLMISC::CMatrix ;
+
 class CParticleSystem ;
 class CFontGenerator ;
 class CFontManager ;
@@ -51,103 +46,20 @@ class CScene ;
 class CPSLocated ;
 class IDriver ;
 
+
+
+
+
+/// number user params for a particle system
+const uint MaxPSUserParam = 4 ;
+
+
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
  *  a scene (M.O.T model), see particle_system_shape.h and particle_system_instance.h
  *  TODO : give example of use here...
  */
 
 
-
-
-
-/** rendering and process passes for a particle system.
- *  PSCollision : collisions with collision zones (see CPSZone)
- *  PSMotion    : motion computation
- *  PSSolidRender : render particle that can modify z-buffer
- *  PSBlendRender : render transparency (no z-buffer write)
- *  PSToolRender  : for edition purpose, show representations for forces, emitters...
- */
-enum TPSProcessPass { PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
-
-
-/**
- *	A system particle process; A process is anything that can be called at each update of the system
- */
-
-class CParticleSystemProcess : public NLMISC::IStreamable
-{
-	public:
-		/**
-		* execute this process, telling how much time ellapsed 
-		*/
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
-
-		/// ctor
-		CParticleSystemProcess() : _Owner(NULL), _SystemBasisEnabled(false) {}
-		
-		/// dtor
-		virtual ~CParticleSystemProcess()  {}
-
-
-
-
-		/** Compute the aabbox of this located, (expressed in world basis
-		*  \return true if there is any aabbox
-		*  \param aabbox a ref to the result box
-		*/
-
-		virtual bool computeBBox(NLMISC::CAABBox &aabbox) const = 0 ;
-
-		/// set the process owner. Called by the particle system during attachment
-		void setOwner(CParticleSystem *ps) { _Owner = ps ; }
-
-		/// retrieve the particle system that owns this process
-		CParticleSystem *getOwner(void) { return _Owner ; }
-
-		/// retrieve the particle system that owns this process (const version)
-		const CParticleSystem *getOwner(void) const { return _Owner ; }
-
-		/// Shortcut to get a font generator if one was set (edition mode)
-		CFontGenerator *getFontGenerator(void) ;
-
-		/// Shortcut to get a font generator if one was set, const version  (edition mode)
-		const CFontGenerator *getFontGenerator(void) const ;
-
-		/// Shortcut to get a font Manager if one was set (edition mode)
-		CFontManager *getFontManager(void) ;
-
-		/// Shortcut to get a font Manager if one was set, const version  (edition mode)
-		const CFontManager *getFontManager(void) const ;
-
-		/**	
-		* return true if the process is in the particle system basis, false if it's in the world basis
-		*/
-		bool isInSystemBasis(void) const 
-		{ 
-			return _SystemBasisEnabled ; 
-		}
-
-		/** Choose the basis for this process. Warning : This won't change any existing coordinate
-		 *  By default, all process are expressed in the world basis
-		 *  \param sysBasis truer if particles are in the system basis
-		 */
-
-		void setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
-
-		/** serialize the whole system
-		* Everything is saved, except for the fontManager and the fontGenerator
-		* They must be set again if the edition pass, that show forces and zone, is used
-		*/
-		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
-			
-		
-	protected:
-		CParticleSystem *_Owner ;
-
-		// true if the system basis is used for display and motion
-		bool _SystemBasisEnabled ;
-	
-} ;
 
 
 /**
@@ -167,6 +79,36 @@ public:
 	* \see setDriver
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+
+
+	/** Set the value of a user parameter. It must range from 0 to 1. The user value are not saved, and their default value is 0.f
+	  * The max number of user param is in MaxPSUserParam
+	  */
+	void setUserParam(uint numParam, float value) 
+	{
+		nlassert(numParam < MaxPSUserParam) ;
+		nlassert(value >= 0.f && value <= 1.f) ;
+		_UserParam[numParam].Value = value ;
+	}
+
+	/** get a user param
+	  * * The max number of user param is in MaxPSUserParam
+	  */
+	float getUserParam(uint numParam) const
+	{
+		nlassert(numParam < MaxPSUserParam) ;
+		return _UserParam[numParam].Value ;
+	}
+
+	/// get a pointer to a param, as an animated value
+	CAnimatedValueFloat *getUserParamAnimatedValue(uint numParam)
+	{
+		nlassert(numParam < MaxPSUserParam) ;
+		return &_UserParam[numParam] ;
+	}
+
+	
+	  
 
 
 	/// set the driver use to render the system
@@ -227,12 +169,11 @@ public:
 	}
 
 	/** Compute the aabbox of this located, (expressed in world basis
-	*  TODO : express it in system basis ...
-	*  \return true if there is any aabbox
+	*  TODO : express it in system basis ...	
 	*  \param aabbox a ref to the result box
 	*/
 
-	bool computeBBox(NLMISC::CAABBox &aabbox) const ;
+	void computeBBox(NLMISC::CAABBox &aabbox) const ;
 
 
 	/** Set the matrix for the system. This only affect elements that are in the same basis
@@ -240,22 +181,22 @@ public:
 	 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix
 	 */
 	 
-	void setSysMat(const CMatrix &m) ;
+	void setSysMat(const NLMISC::CMatrix &m) ;
 	
 	/// return the matrix of the system
-	const CMatrix &getSysMat(void) const { return _SysMat ; }
+	const NLMISC::CMatrix &getSysMat(void) const { return _SysMat ; }
 
 	/// return the inverted matrix of the system
 
-	const CMatrix &getInvertedSysMat(void) const { return _InvSysMat ; } 
+	const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat ; } 
 
 
 
 	/// get the view matrix . It is stored each time a new frame is processed	 
-	const CMatrix &getViewMat(void) const { return _ViewMat ; }
+	const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat ; }
 
 	/// get the inverted view matrix . It is stored each time a new frame is processed	 
-	const CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat ; }
+	const NLMISC::CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat ; }
 
 	/// Set a font generator. Useful only for edition. don't need that in runtime
 	void setFontGenerator(CFontGenerator *fg) { _FontGenerator = fg ; }
@@ -327,27 +268,110 @@ public:
 	std::string getName(void) const { return _Name ; }
 		
 
+	/// return true if the system has opaque object in it
+	bool hasOpaqueObjects(void) const ;
+
+	/// return true if the system has transparent objects in it
+	bool hasTransparentObjects(void) const ;
+
+	/** This enable for more accurate integrations of movement. When this is activated,
+	  *  integration is performed in a more accurate way when the ellapsed time goes over a threshold, but it is more slow to perform	  
+	  */
+	void enableAccurateIntegration(bool enable = true) { _AccurateIntegration = enable ; }
+	bool isAccurateIntegrationEnabled(void) const { return _AccurateIntegration ; }
+
+	/** the the time threshold and the max number of integration to perform, when accurate integration is activated
+	  * The default is 0.10 for time threshold and 4 for max NbIntegrations
+	  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
+	  *  It is useful for critical situations where the framerate is very low. The default is true.
+	  */
+	void setAccurateIntegrationParams(CAnimationTime threshold, uint32 maxNbIntegrations, bool canSlowDown)
+	{
+		_TimeThreshold = threshold ;
+		_MaxNbIntegrations = maxNbIntegrations ;
+		_CanSlowDown = canSlowDown ;
+	}
+
+	/// get the parameters used for integration
+	void getAccurateIntegrationParams(CAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
+	{
+		threshold = _TimeThreshold  ;
+		maxNbIntegrations = _MaxNbIntegrations ;
+		canSlowDown = _CanSlowDown ;
+	}
+
+
+	/// set the max view distance for the system (in meters) . The default is 50 meter
+	void setMaxViewDist(float maxDist) { nlassert(maxDist > 0.f) ; _InvMaxViewDist = 1.f / maxDist ; }
+
+	/// get the max view distance
+	float getMaxViewDist(void) const { return 1.f / _InvMaxViewDist ; }
+
+	/// set a percentage that indicate where the 2nd LOD is located. Default is 0.5
+	void setLODRatio(float ratio) { nlassert(ratio > 0 && ratio <= 1.f) ; _LODRatio =  ratio ; }
+
+	/// get the lod ratio
+	float getLODRatio(void) const  { return _LODRatio ; }
+
+
+	/** compute a vector and a distance that are used for LOD computations. 
+	  * You'll have for a given pos : pos * v + offset  = 0 atthe nearest point, and 1 when
+	  * pos is at maxDist from the viewer
+	  */
+	void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis) ;
+
+
+	/// get the current LOD of the system. It is based on the distance of the center of the system to the viewer
+	TPSLod getLOD(void) const ;
+
+
+	/** When this is set to false, the system will recompute his bbox each time it is querried
+	  * This may be needed for systems that move fast. 
+	  */
+
+	bool setAutoComputeBBox(bool enable = true) { _ComputeBBox = enable ; }
+
+	/** set a precomputed bbox (expressed in the system basis). This is allowed only when setAutoComputeBBox 
+	  * is called with false (nlassert otherwise).
+	  */
+
+	void setPrecomputedBBox(const NLMISC::CAABBox &precompBBox) 
+	{ 
+		nlassert(!_computeBBox) ;
+		_PreComputedBBox = precompBBox ;
+	}
+		
+
+
 protected:
+
+	/// when set to true, the system will compute his BBox every time computeBBox is called
+	bool _ComputeBBox ;
+	NLMISC::CAABBox _PreComputedBBox ;
+
 	// the driver used for rendering
 	IDriver *_Driver ;
+
+	/// user params of the system
+	CAnimatedValueFloat _UserParam[MaxPSUserParam] ;
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
 	TProcessVect _ProcessVect ;
 	CFontGenerator *_FontGenerator ;
 	CFontManager *_FontManager ;
 	// the view matrix
-	CMatrix _ViewMat ;
+	NLMISC::CMatrix _ViewMat ;
 
 	// the inverted view matrix
-	CMatrix _InvertedViewMat ;
+	NLMISC::CMatrix _InvertedViewMat ;
 
 	// the matrix of the system
-	CMatrix _SysMat ; 
+	NLMISC::CMatrix _SysMat ; 
 	// the inverted matrix of the system
-	CMatrix _InvSysMat ;
+	NLMISC::CMatrix _InvSysMat ;
 
 	// number of rendered pass on the system, incremented each time the system is redrawn
-	uint64 _Date ;
+	uint64 _Date ;	
 
 	// current edited element located (edition purpose only)
 	CPSLocated *_CurrEditedElementLocated ;
@@ -367,6 +391,16 @@ protected:
 	// contains the name of the system. (VERSION >= 2 only)
 	std::string _Name ;
 
+
+	bool _AccurateIntegration ;	
+	CAnimationTime _TimeThreshold ;
+	uint32 _MaxNbIntegrations ;
+	bool _CanSlowDown ;
+
+	float _LODRatio ;
+	float _InvMaxViewDist ;
+
+	bool _Touch ;
 
 };
 

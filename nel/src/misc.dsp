@@ -263,6 +263,14 @@ SOURCE=R:\code\nel\include\nel\misc\smart_ptr.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\time_nl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\time_nl.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\types_nl.h
 # End Source File
 # End Target

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.5 2000/11/07 16:44:44 cado Exp $
+ * $Id: local_entity.cpp,v 1.6 2000/11/08 15:12:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,7 +115,7 @@ bool CLocalEntity::drDivergeTest()
  */
 void CLocalEntity::setThresholdForHeading( TAngle a )
 {
-	_DRThresholdHeading = a * 3.0 / PI; // see drDivergenceTest()
+	_DRThresholdHeading = a * 3.0 / DOUBLE_PI; // see drDivergenceTest()
 }
 
 
@@ -124,7 +124,7 @@ void CLocalEntity::setThresholdForHeading( TAngle a )
  */
 void CLocalEntity::computeVector()
 {
-#define SQUARE_ANGLE PI/2.0
+#define SQUARE_ANGLE DOUBLE_PI/2.0
 	CVector strafevect, vertvect;
 	CMatrix m;
 

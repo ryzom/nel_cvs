@@ -184,5 +184,13 @@ SOURCE=.\net\socket.cpp
 
 SOURCE=..\include\nel\net\socket.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\net\unitime.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\unitime.h
+# End Source File
 # End Target
 # End Project

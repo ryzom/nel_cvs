@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.13 2000/10/24 10:16:50 cado Exp $
+ * $Id: service.h,v 1.14 2000/11/08 15:09:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,8 +113,6 @@ public:
 
 	/// User must just have to call this function in his main C function
 	sint				main (int argc, char **argv);
-
-	friend void ExitFunc();
 
 protected:
 

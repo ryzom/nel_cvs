@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.18 2002/11/12 17:21:42 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.19 2002/12/11 08:35:26 lecroart Exp $
  *
  */
 
@@ -192,11 +192,6 @@ TAdminExecutorServices AdminExecutorServices;
 
 MYSQL *DatabaseConnection = NULL;
 
-string DatabaseHost = "net2";
-string DatabaseLogin = "root";
-string DatabasePassword = "";
-string DatabaseName = "nel_tool";
-
 vector<CRequest> Requests;
 
 //
@@ -304,6 +299,7 @@ void cleanRequest ()
 				}
 			}
 
+			Requests[i].display ();
 			sendString (Requests[i].From, str);
 
 			// set to 0 to erase it
@@ -333,10 +329,20 @@ void sqlInit ()
 		nlerror ("mysql_init() failed");
 	}
 
-	DatabaseConnection = mysql_real_connect(db, DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabasePassword.c_str(), DatabaseName.c_str(),0,NULL,0);
+	DatabaseConnection = mysql_real_connect(db,
+		IService::getInstance()->ConfigFile.getVar("DatabaseHost").asString().c_str(),
+		IService::getInstance()->ConfigFile.getVar("DatabaseLogin").asString().c_str(),
+		IService::getInstance()->ConfigFile.getVar("DatabasePassword").asString().c_str(),
+		IService::getInstance()->ConfigFile.getVar("DatabaseName").asString().c_str(),
+		0,NULL,0);
 	if (DatabaseConnection == NULL || DatabaseConnection != db)
 	{
-		nlerror ("mysql_real_connect() failed to '%s' with login '%s' and database name '%s'", DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabaseName.c_str());
+		nlerror ("mysql_real_connect() failed to '%s' with login '%s' and database name '%s' with %s",
+			IService::getInstance()->ConfigFile.getVar("DatabaseHost").asString().c_str(),
+			IService::getInstance()->ConfigFile.getVar("DatabaseLogin").asString().c_str(),
+			IService::getInstance()->ConfigFile.getVar("DatabaseName").asString().c_str(),
+			(IService::getInstance()->ConfigFile.getVar("DatabasePassword").asString().empty()?"empty password":"password")
+			);
 	}
 }
 
@@ -1342,7 +1348,51 @@ void addRequest (const string &rawvarpath, TSockId from)
 					nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 				}
 			}
-			else if (server == "*")
+			else if (shard == "*" && server == "#")
+			{
+				// Select all shard all server including offline one
+				
+				MYSQL_ROW row = sqlQuery ("select distinct server, shard from service");
+				
+				while (row != NULL)
+				{
+					AESIT aesit = findAES (row[0], false);
+					
+					if (aesit != AdminExecutorServices.end())
+					{
+						addRequestWaitingNb (rid);
+						(*aesit).WaitingRequestId.push_back (rid);
+						
+						CMessage msgout("GET_VIEW");
+						msgout.serial (rid);
+						msgout.serial (subvarpath.Destination[j].second);
+						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
+						nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+						
+					}
+					else if (server == "#")
+					{
+						vector<string> vara, vala;
+						
+						// adding default row
+						vara.push_back ("shard");
+						vala.push_back (row[1]);
+
+						vara.push_back ("server");
+						vala.push_back (row[0]);
+
+						vara.push_back ("service");
+						vala.push_back ("AES");
+						
+						vara.push_back ("State");
+						vala.push_back ("Offline");
+						
+						addRequestAnswer (rid, vara, vala);
+					}
+					row = sqlNextRow ();
+				}
+			}
+			else if (server == "*" || server == "#")
 			{
 				// Send the request to all online server of a specific shard
 
@@ -1363,6 +1413,25 @@ void addRequest (const string &rawvarpath, TSockId from)
 						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
 						nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
 
+					}
+					else if (server == "#")
+					{
+						vector<string> vara, vala;
+						
+						// adding default row
+						vara.push_back ("shard");
+						vala.push_back (shard);
+
+						vara.push_back ("server");
+						vala.push_back (row[0]);
+						
+						vara.push_back ("service");
+						vala.push_back ("AES");
+						
+						vara.push_back ("State");
+						vala.push_back ("Offline");
+
+						addRequestAnswer (rid, vara, vala);
 					}
 					row = sqlNextRow ();
 				}
@@ -1389,16 +1458,6 @@ void addRequest (const string &rawvarpath, TSockId from)
 			}
 		}
 	}
-
-/*	the send will be done automatically by cleanRequest()
-
-  
-	if (emptyRequest(rid))
-	{
-		// send an empty string to say to php that there's nothing
-		string str;
-		sendString (from, str);
-	}*/
 }
 
 
@@ -1419,6 +1478,8 @@ public:
 
 		connectionWebInit ();
 
+		//CVarPath toto ("[toto");
+		
 		//CVarPath toto ("*.*.*.*");
 		//CVarPath toto ("[srv1,srv2].*.*.*");
 		//CVarPath toto ("[svr1.svc1,srv2.svc2].*.*");
@@ -1493,7 +1554,7 @@ public:
 NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49996, CallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
-NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+NLMISC_COMMAND (getViewAS, "send a view and receive an array as result", "<varpath>")
 {
 	if(args.size() != 1) return false;
 
@@ -1531,5 +1592,3 @@ NLMISC_COMMAND (displayRequests, "display all pending requests", "")
 
 	return true;
 }
-
-

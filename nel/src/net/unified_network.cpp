@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.34 2002/03/21 13:30:51 legros Exp $
+ * $Id: unified_network.cpp,v 1.35 2002/03/25 09:22:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,14 +73,14 @@ void	uNetUnregistrationBroadcast(const string &name, TServiceId sid, const CInet
 
 // Service up/down callbacks
 
-void	cbConnection(TSockId from, void *arg)
+void	uncbConnection(TSockId from, void *arg)
 {
 	// set the service id to an unknown value, besause we don't know yet
 	// which service is connecting at this moment.
 	from->setAppId (0xFFFFFF);
 }
 
-void	cbDisconnection(TSockId from, void *arg)
+void	uncbDisconnection(TSockId from, void *arg)
 {
 	if (from->appId() == 0xFFFFFF)
 	{
@@ -166,7 +166,7 @@ void	cbDisconnection(TSockId from, void *arg)
 //
 //
 
-void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string		inSName;
 	uint16		inSid;
@@ -229,7 +229,7 @@ void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &ne
 }
 
 // the callbacks wrapper
-void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	if (from->appId() != 0xFFFFFF)
 	{
@@ -288,9 +288,9 @@ void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 }
 
 
-TCallbackItem	ServerCbArray[] =
+TCallbackItem	unServerCbArray[] =
 {
-	{ "UN_SIDENT", cbServiceIdentification }
+	{ "UN_SIDENT", uncbServiceIdentification }
 };
 
 
@@ -328,10 +328,10 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	nlassert (_CbServer == NULL);
 	_CbServer = new CCallbackServer;
 	_CbServer->init(port);
-	_CbServer->addCallbackArray(ServerCbArray, 1);				// the service ident callback
-	_CbServer->setDefaultCallback(cbMsgProcessing);				// the default callback wrapper
-	_CbServer->setConnectionCallback(cbConnection, NULL);
-	_CbServer->setDisconnectionCallback(cbDisconnection, NULL);
+	_CbServer->addCallbackArray(unServerCbArray, 1);				// the service ident callback
+	_CbServer->setDefaultCallback(uncbMsgProcessing);				// the default callback wrapper
+	_CbServer->setConnectionCallback(uncbConnection, NULL);
+	_CbServer->setDisconnectionCallback(uncbDisconnection, NULL);
 
 	if (CNamingClient::connected())
 	{
@@ -433,8 +433,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 	// create a new connection with the service, setup callback and connect
 	CCallbackClient	*cbc = new CCallbackClient();
-	cbc->setDisconnectionCallback(cbDisconnection, NULL);
-	cbc->setDefaultCallback(cbMsgProcessing);
+	cbc->setDisconnectionCallback(uncbDisconnection, NULL);
+	cbc->setDefaultCallback(uncbMsgProcessing);
 
 	bool	connectSuccess = false;
 	if (_TempDisconnectionTable.size() <= sid)

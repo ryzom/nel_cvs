@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.18 2002/11/25 14:03:15 boucher Exp $
+ * $Id: load_form.h,v 1.19 2002/11/29 16:43:53 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -368,7 +368,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	{
 		std::vector<std::string>::const_iterator first(sheetFilters.begin()), last(sheetFilters.end());
 		for (; first != last; ++first)
-			CPath::getFileList(*first, sheetNames);
+			NLMISC::CPath::getFileList(*first, sheetNames);
 
 	}
 
@@ -409,18 +409,18 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	nlinfo ("%d sheets checked, %d need to be recomputed", sheetNames.size(), NeededToRecompute.size());
 
-	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
+	NLMISC::TTime lastTime = NLMISC::CTime::getLocalTime ();
 	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
 
 	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
 
 	for (uint j = 0; j < NeededToRecompute.size(); j++)
 	{
-		if(NLMISC::CTime::getLocalTime () > last + 5000)
+		if(NLMISC::CTime::getLocalTime () > lastTime + 5000)
 		{
-			last = NLMISC::CTime::getLocalTime ();
+			lastTime = NLMISC::CTime::getLocalTime ();
 			if(j>0)
-				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(last-start)/j/1000);
+				nlinfo ("%.0f%% completed (%d/%d), %d seconds remaining", (float)j*100.0/NeededToRecompute.size(),j,NeededToRecompute.size(), (NeededToRecompute.size()-j)*(lastTime-start)/j/1000);
 		}
 
 		// create the georges loader if necessary

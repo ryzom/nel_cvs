@@ -15,6 +15,20 @@ plugin material NelMaterial
 		bAlphaTest type:#boolean default:true ui:cbAlphaTest
 		bForceZWrite type:#boolean default:false ui:cbForceZWrite
 		bForceNoZWrite type:#boolean default:false ui:cbForceNoZWrite
+		bWater         type:#boolean default:false ui:cbWater
+		
+		fBumpUScale     type:#float default: 0.01 ui:cfBumpUScale
+		fBumpVScale     type:#float default: 0.01 ui:cfBumpVScale	
+		fBumpUSpeed     type:#float default: 0.01 ui:cfBumpUSpeed
+		fBumpVSpeed     type:#float default: 0.01 ui:cfBumpVSpeed
+		
+		fDisplaceMapUScale     type:#float default: 0.005 ui:cfDisplaceMapUScale
+		fDisplaceMapVScale     type:#float default: 0.005 ui:cfDisplaceMapVScale	
+		fDisplaceMapUSpeed     type:#float default: 0.005 ui:cfDisplaceMapUSpeed
+		fDisplaceMapVSpeed     type:#float default: 0.005 ui:cfDisplaceMapVSpeed
+
+
+
 	)
 
     rollout NelParams "Nel Material"
@@ -24,14 +38,62 @@ plugin material NelMaterial
 			CheckBox cbLightMap "LightMap"
 			CheckBox cbUnlighted "Unlighted"
 			CheckBox cbStainedGlassWindow "Stained glass window"
+			CheckBox cbWater "Water"
 			CheckBox cbAlphaTest "Alpha Test"
 			CheckBox cbForceZWrite "Force ZWrite"
 			CheckBox cbForceNoZWrite "Force No ZWrite"
+			
+			Spinner   cfBumpUScale      "BumpMap U Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+			Spinner   cfBumpVScale      "BumpMap V Scale :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+			Spinner   cfBumpUSpeed     "BumpMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+			Spinner   cfBumpVSpeed      "BumpMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+
+
+		
+			Spinner   cfDisplaceMapUScale      "DisplaceMap U Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left
+			Spinner   cfDisplaceMapVScale      "DisplaceMap V Scale :"  range:[-10,10,0.005] type:#float scale:0.001 align:#left
+			Spinner   cfDisplaceMapUSpeed      "DisplaceMap U Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+			Spinner   cfDisplaceMapVSpeed      "DisplaceMap V Speed :"  range:[-10,10,0.01] type:#float scale:0.001 align:#left
+
+
+
+
+		)
+		
+		Fn updateUI bNewState =
+		(
+			cbLightMap.enabled = not bNewState
+			cbUnlighted.enabled = not bNewState 
+			cbStainedGlassWindow.enabled = not bNewState 
+			cbAlphaTest.enabled = not bNewState
+			cbForceZWrite.enabled = not bNewState 
+			cbForceNoZWrite.enabled = not bNewState 
+
+			
+			cfBumpUScale.enabled = bNewState 
+			cfBumpVScale.enabled = bNewState 
+			cfBumpUSpeed.enabled = bNewState 
+			cfBumpVSpeed.enabled = bNewState 
+			
+			cfDisplaceMapUScale.enabled = bNewState 
+			cfDisplaceMapVScale.enabled = bNewState 
+			cfDisplaceMapUSpeed.enabled = bNewState 
+			cfDisplaceMapVSpeed.enabled = bNewState 
+
+			if (bNewState == true) then
+			(
+				cbLightMap.checked = false 
+				cbUnlighted.checked = false 
+				cbStainedGlassWindow.checked = false
+				cbAlphaTest.checked = false
+				cbForceZWrite.checked = false
+				cbForceNoZWrite.checked = false
+			)			
 		)
 
 		on cbLightMap changed bNewState do
 			if bNewState then cbUnlighted.enabled = false
-			else cbUnlighted.enabled = true
+			else cbUnlighted.enabled = true			
 
 		on NelParams reload do (print "reload")
 
@@ -39,8 +101,13 @@ plugin material NelMaterial
 		(
 			print "open"
 			if cbLightMap.checked then cbUnlighted.enabled = false
-			else cbUnlighted.enabled = true
+			else cbUnlighted.enabled = true			
+			updateUI bWater;
 		)
+		on cbWater changed bNewState do
+        (
+			updateUI bNewState					
+        )
 	)
     on create do (print "create")
 	on update do (print "update")

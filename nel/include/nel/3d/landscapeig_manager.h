@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.5 2002/05/23 09:30:48 vizerie Exp $
+ * $Id: landscapeig_manager.h,v 1.6 2002/06/06 12:05:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,10 @@ public:
 
 	/// get a list of the ig
 	void			getAllIG(std::vector<UInstanceGroup	*> &dest) const;
+
+	/// get a list of the ig, with their names
+	void			getAllIGWithNames(std::vector<std::pair<UInstanceGroup *, std::string> > &dest) const;
+
 
 private:
 	UScene			*_Scene;

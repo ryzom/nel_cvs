@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.7 2002/05/24 16:28:49 besson Exp $
+ * $Id: landscapeig_manager.cpp,v 1.8 2002/06/06 12:05:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -313,6 +313,17 @@ void CLandscapeIGManager::getAllIG(std::vector<UInstanceGroup *> &dest) const
 	}
 }
 
+// ***************************************************************************
+void CLandscapeIGManager::getAllIGWithNames(std::vector<std::pair<UInstanceGroup *, std::string> > &dest) const
+{
+		dest.clear();
+	dest.reserve(_ZoneInstanceGroupMap.size());
+	// add the instances
+	for(TZoneInstanceGroupMap::const_iterator it = _ZoneInstanceGroupMap.begin(); it != _ZoneInstanceGroupMap.end(); ++it)
+	{			
+		dest.push_back(std::make_pair(it->second.Ig, it->second.FileName));			
+	}
+}
 
 
 } // NL3D

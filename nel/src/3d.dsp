@@ -850,6 +850,15 @@ SOURCE=.\3d\mesh_mrm.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_mrm_skin.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_skin_template.cpp
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_multi_lod.cpp
 # End Source File
 # Begin Source File
@@ -2207,6 +2216,14 @@ SOURCE=.\3d\fast_floor.cpp
 # Begin Source File
 
 SOURCE=.\3d\fast_floor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\fast_mem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\fast_mem.h
 # End Source File
 # Begin Source File
 

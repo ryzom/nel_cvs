@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.29 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.30 2002/03/28 13:18:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/skeleton_model.h"
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
+#include "nel/misc/cpu_info.h"
 
 
 using namespace NLMISC;
@@ -197,6 +198,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_NbLodLoaded= 0;
 	_BoneIdComputed = false;
 	_BoneIdExtended = false;
+	_NumLodRawSkin= 0;
 }
 
 
@@ -322,6 +324,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	{
 		bkupOriginalSkinVertices();
 	}
+	// reset any RawSkin applied.
+	clearRawSkin();
 
 
 	// For AGP SKinning optim, and for Render optim
@@ -862,6 +866,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
 	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
+	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 	if (bMorphApplied)
@@ -899,16 +904,83 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// if ready to skin.
 	if (bSkinApplied)
 	{
-		// apply skin for this Lod only.
-		if (!useTangentSpace)
+		// Use RawSkin if possible: only if no morph, and only Vertex/Normal
+		if ( !bMorphApplied && !useTangentSpace && useNormal )
+			updateRawSkinNormal();
+		// Use RawSkin TgSpace if possible: only if no morph, and Vertex/Normal/TgSpace
+		else if ( !bMorphApplied && useTangentSpace && useNormal )
+			updateRawSkinTgSpace();
+		// Use none
+		else
+			clearRawSkin();
+
+		// applySkin.
+		//--------
+
+		// If skin without normal (rare/usefull?) always simple (slow) case.
+		if(!useNormal)
 		{
-			applySkin (lod, skeleton); // skinning with no tangent space
+			// skinning with just position
+			applySkin (lod, skeleton);
 		}
 		else
 		{
-			// Tangent space stored in the last texture coordinate
-			applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+			// Use SSE when possible
+			if( CCpuInfo::hasSSE() )
+			{
+				// apply skin for this Lod only.
+				if (!useTangentSpace)
+				{
+					// skinning with normal, but no tangent space
+					if(_NumLodRawSkin>0)
+						// Use faster RawSkin if possible.
+						applyRawSkinWithNormalSSE(lod, _RawSkinNormalLods[numLod], skeleton);
+					else
+						applySkinWithNormalSSE (lod, skeleton);
+				}
+				else
+				{
+					// Tangent space stored in the last texture coordinate
+					if(_NumLodRawSkin>0)
+						// Use faster RawSkin if possible.
+						applyRawSkinWithTangentSpaceSSE(lod, _RawSkinTgSpaceLods[numLod], 
+							skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+					else
+						applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				}
+			}
+			// Standard FPU skinning
+			else
+			{
+				// apply skin for this Lod only.
+				if (!useTangentSpace)
+				{
+					// skinning with normal, but no tangent space
+					if(_NumLodRawSkin>0)
+						// Use faster RawSkin if possible.
+						applyRawSkinWithNormal (lod, _RawSkinNormalLods[numLod], skeleton);
+					else
+						applySkinWithNormal (lod, skeleton);
+				}
+				else
+				{
+					// Tangent space stored in the last texture coordinate
+					if(_NumLodRawSkin>0)
+						// Use faster RawSkin if possible.
+						applyRawSkinWithTangentSpace(lod, _RawSkinTgSpaceLods[numLod], 
+							skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+					else
+						applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
+				}
+			}
 		}
+
+		// endSkin.
+		//--------
+		// Fill the usefull AGP memory (if any one loaded).
+		fillAGPSkinPart(lod);
+		// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+		lod.OriginalSkinRestored= false;
 	}
 	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
 	else if (!bSkinApplied && _Skinned)
@@ -943,9 +1015,9 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	//===========
 	CMatrix		invertedObjectMatrix;
 	if (bSkinApplied)
-				invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
-			else
-				invertedObjectMatrix = trans->getWorldMatrix().inverted();
+		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
+	else
+		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 
 
 	// force normalisation of normals..
@@ -953,7 +1025,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	drv->forceNormalize(true);			
 
 	// use MeshVertexProgram effect?
-			bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos) : false;
+	bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, mi->getScene(), mi, invertedObjectMatrix, renderTrav->CamPos) : false;
 	
 	// Render the lod.
 	//===========
@@ -1186,6 +1258,9 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Flag the fact that no lod is loaded for now.
 	_NbLodLoaded= 0;
+
+	// reset any RawSkin applied.
+	clearRawSkin();
 
 	// return version of the header
 	return ver;
@@ -1645,535 +1720,6 @@ float CMeshMRMGeom::getNumTriangles (float distance)
 
 
 // ***************************************************************************
-// For fast vector/point multiplication.
-struct	CMatrix3x4
-{
-	// Order them in memory line first, for faster memory access.
-	float	a11, a12, a13, a14;
-	float	a21, a22, a23, a24;
-	float	a31, a32, a33, a34;
-
-	// Copy from a matrix.
-	void	set(const CMatrix &mat)
-	{
-		const float	*m =mat.get();
-		a11= m[0]; a12= m[4]; a13= m[8] ; a14= m[12]; 
-		a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
-		a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
-	}
-
-
-	// mulSetvector. NB: in should be different as v!! (else don't work).
-	void	mulSetVector(const CVector &in, CVector &out)
-	{
-		out.x= (a11*in.x + a12*in.y + a13*in.z);
-		out.y= (a21*in.x + a22*in.y + a23*in.z);
-		out.z= (a31*in.x + a32*in.y + a33*in.z);
-	}
-	// mulSetpoint. NB: in should be different as v!! (else don't work).
-	void	mulSetPoint(const CVector &in, CVector &out)
-	{
-		out.x= (a11*in.x + a12*in.y + a13*in.z + a14);
-		out.y= (a21*in.x + a22*in.y + a23*in.z + a24);
-		out.z= (a31*in.x + a32*in.y + a33*in.z + a34);
-	}
-
-
-	// mulSetvector. NB: in should be different as v!! (else don't work).
-	void	mulSetVector(const CVector &in, float scale, CVector &out)
-	{
-		out.x= (a11*in.x + a12*in.y + a13*in.z) * scale;
-		out.y= (a21*in.x + a22*in.y + a23*in.z) * scale;
-		out.z= (a31*in.x + a32*in.y + a33*in.z) * scale;
-	}
-	// mulSetpoint. NB: in should be different as v!! (else don't work).
-	void	mulSetPoint(const CVector &in, float scale, CVector &out)
-	{
-		out.x= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
-		out.y= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
-		out.z= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
-	}
-
-
-	// mulAddvector. NB: in should be different as v!! (else don't work).
-	void	mulAddVector(const CVector &in, float scale, CVector &out)
-	{
-		out.x+= (a11*in.x + a12*in.y + a13*in.z) * scale;
-		out.y+= (a21*in.x + a22*in.y + a23*in.z) * scale;
-		out.z+= (a31*in.x + a32*in.y + a33*in.z) * scale;
-	}
-	// mulAddpoint. NB: in should be different as v!! (else don't work).
-	void	mulAddPoint(const CVector &in, float scale, CVector &out)
-	{
-		out.x+= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
-		out.y+= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
-		out.z+= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
-	}
-
-
-
-};
-
-
-// ***************************************************************************
-void	CMeshMRMGeom::applySkin(CLod &lod, const CSkeletonModel *skeleton)
-{
-	nlassert(_Skinned);
-	if(_SkinWeights.size()==0)
-		return;
-
-	// get vertexPtr / normalOff.
-	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
-	uint		flags= _VBufferFinal.getVertexFormat();
-	sint32		vertexSize= _VBufferFinal.getVertexSize();
-	// must have XYZ.
-	nlassert(flags & CVertexBuffer::PositionFlag);
-
-
-	// Compute offset of each component of the VB.
-	sint32		normalOff;
-	if(flags & CVertexBuffer::NormalFlag)
-		normalOff= _VBufferFinal.getNormalOff();
-	else
-		normalOff= 0;
-
-
-	// compute src array.
-	CMesh::CSkinWeight	*srcSkinPtr;
-	CVector				*srcVertexPtr;
-	CVector				*srcNormalPtr= NULL;
-	srcSkinPtr= &_SkinWeights[0];
-	srcVertexPtr= &_OriginalSkinVertices[0];
-	if(normalOff)
-		srcNormalPtr= &(_OriginalSkinNormals[0]);
-
-
-
-	// Compute usefull Matrix for this lod.
-	//===========================
-	uint	i;
-	// Those arrays map the array of bones in skeleton.
-	static	vector<CMatrix3x4>			boneMat3x4;
-	static	vector<CMatrix3x4>			boneMatNormal3x4;
-	// For all matrix this lod use.
-	for(i= 0; i<lod.MatrixInfluences.size(); i++)
-	{
-		// Get Matrix info.
-		uint	matId= lod.MatrixInfluences[i];
-		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
-		CMatrix				boneMatNormal;
-
-		// build the good boneMatNormal (with good scale inf).
-		// copy only the rot matrix.
-		boneMatNormal.setRot(boneMat);
-		// If matrix has scale...
-		if(boneMatNormal.hasScalePart())
-		{
-			// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
-			boneMatNormal.invert();
-			boneMatNormal.transpose3x3();
-		}
-
-		// compute "fast" matrix 3x4.
-		// resize Matrix3x4.
-		if(matId>=boneMat3x4.size())
-		{
-			boneMat3x4.resize(matId+1);
-			boneMatNormal3x4.resize(matId+1);
-		}
-		boneMat3x4[matId].set(boneMat);
-		boneMatNormal3x4[matId].set(boneMatNormal);
-	}
-
-
-	// apply skinning.
-	//===========================
-	// assert, code below is written especially for 4 per vertex.
-	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-	for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
-	{
-		uint		nInf= lod.InfluencedVertices[i].size();
-		if( nInf==0 )
-			continue;
-		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
-
-		switch(i)
-		{
-		//=========
-		case 0:
-			// Special case for Vertices influenced by one matrix. Just copy result of mul.
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, *dstVertex);
-				// Normal.
-				if(normalOff)
-					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, *dstNormal);
-			}
-			break;
-
-		//=========
-		case 1:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				// Normal.
-				if(normalOff)
-				{
-					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-				}
-			}
-			break;
-
-		//=========
-		case 2:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
-				// Normal.
-				if(normalOff)
-				{
-					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
-				}
-			}
-			break;
-
-		//=========
-		case 3:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[3] ].mulAddPoint( *srcVertex, srcSkin->Weights[3], *dstVertex);
-				// Normal.
-				if(normalOff)
-				{
-					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
-					boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcNormal, srcSkin->Weights[3], *dstNormal);
-				}
-			}
-			break;
-
-		}
-
-	}
-	// Fill the usefull AGP memory (if any one loaded).
-	fillAGPSkinPart(lod);
-	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
-	lod.OriginalSkinRestored= false;
-}
-
-
-// ***************************************************************************
-void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord)
-{
-	nlassert(_Skinned);
-	if(_SkinWeights.size()==0)
-		return;
-
-	// get vertexPtr / normalOff / tangent space offset.
-	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
-	uint		flags= _VBufferFinal.getVertexFormat();
-	sint32		vertexSize= _VBufferFinal.getVertexSize();
-	// must have XYZ.
-	// if there's tangent space, there also must be a normal there.
-	nlassert((flags & CVertexBuffer::PositionFlag) 
-			 && (flags & CVertexBuffer::NormalFlag) 
-			);
-
-
-	// Compute offset of each component of the VB.
-	sint32		normalOff;	
-	normalOff= _VBufferFinal.getNormalOff();
-	
-	// tg space offset
-	sint32		tgSpaceOff = _VBufferFinal.getTexCoordOff((uint8) tangentSpaceTexCoord);
-
-	// compute src array.
-	CMesh::CSkinWeight	*srcSkinPtr;
-	CVector				*srcVertexPtr;
-	CVector				*srcNormalPtr;
-	CVector				*tgSpacePtr;
-	//
-	srcSkinPtr= &_SkinWeights[0];
-	srcVertexPtr= &_OriginalSkinVertices[0];	
-	srcNormalPtr= &(_OriginalSkinNormals[0]);
-	tgSpacePtr = &(_OriginalTGSpace[0]);
-
-
-
-	// Compute usefull Matrix for this lod.
-	//===========================
-	uint	i;
-	// Those arrays map the array of bones in skeleton.
-	static	vector<CMatrix3x4>			boneMat3x4;
-	static	vector<CMatrix3x4>			boneMatNormal3x4;
-	// For all matrix this lod use.
-	for(i= 0; i < lod.MatrixInfluences.size(); i++)
-	{
-		// Get Matrix info.
-		uint	matId= lod.MatrixInfluences[i];
-		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
-		CMatrix				boneMatNormal;
-
-		// build the good boneMatNormal (with good scale inf).
-		// copy only the rot matrix.
-		boneMatNormal.setRot(boneMat);
-		// If matrix has scale...
-		if(boneMatNormal.hasScalePart())
-		{
-			// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
-			boneMatNormal.invert();
-			boneMatNormal.transpose3x3();
-		}
-
-		// compute "fast" matrix 3x4.
-		// resize Matrix3x4.
-		if(matId>=boneMat3x4.size())
-		{
-			boneMat3x4.resize(matId+1);
-			boneMatNormal3x4.resize(matId+1);
-		}
-		boneMat3x4[matId].set(boneMat);
-		boneMatNormal3x4[matId].set(boneMatNormal);
-	}
-
-
-	// apply skinning (with tangent space added)
-	//===========================
-	// assert, code below is written especially for 4 per vertex.
-	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-	for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
-	{
-		uint		nInf= lod.InfluencedVertices[i].size();
-		if( nInf==0 )
-			continue;
-		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
-
-		switch(i)
-		{
-		//=========
-		case 0:
-			// Special case for Vertices influenced by one matrix. Just copy result of mul.
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				CVector				*srcTgSpace= tgSpacePtr + index;
-				//
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, *dstVertex);
-				// Normal.				
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, *dstNormal);
-				// Tg space
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, *dstTgSpace);
-
-			}
-			break;
-
-		//=========
-		case 1:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				CVector				*srcTgSpace= tgSpacePtr + index;
-				//
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				// Normal.				
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-				// Tg space
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);
-			}
-			break;
-
-		//=========
-		case 2:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				CVector				*srcTgSpace= tgSpacePtr + index;
-				//
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
-				// Normal.				
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
-				// Tg space
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);				
-				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcTgSpace, srcSkin->Weights[2], *dstTgSpace);				
-			}
-			break;
-
-		//=========
-		case 3:
-			//  for all InfluencedVertices only.
-			for(;nInf>0;nInf--, infPtr++)
-			{
-				uint	index= *infPtr;
-				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
-				CVector				*srcVertex= srcVertexPtr + index;
-				CVector				*srcNormal= srcNormalPtr + index;
-				CVector				*srcTgSpace= tgSpacePtr + index;
-				//
-				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
-				CVector				*dstVertex= (CVector*)(dstVertexVB);
-				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
-				CVector				*dstTgSpace= (CVector*)(dstVertexVB + tgSpaceOff);
-
-				// Vertex.
-				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
-				boneMat3x4[ srcSkin->MatrixId[3] ].mulAddPoint( *srcVertex, srcSkin->Weights[3], *dstVertex);
-				// Normal.				
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
-				boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcNormal, srcSkin->Weights[3], *dstNormal);
-				// Tg space
-				boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcTgSpace, srcSkin->Weights[0], *dstTgSpace);
-				boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcTgSpace, srcSkin->Weights[1], *dstTgSpace);				
-				boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcTgSpace, srcSkin->Weights[2], *dstTgSpace);								
-				boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcTgSpace, srcSkin->Weights[3], *dstTgSpace);								
-			}
-			break;
-
-		}
-
-	}
-	// Fill the usefull AGP memory (if any one loaded).
-	fillAGPSkinPart(lod);
-	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
-	lod.OriginalSkinRestored= false;
-}
-
-
-
-// ***************************************************************************
-void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod)
-{
-	// Fill AGP vertices used by this lod from RAM. (not geomorphed ones).
-	if(_VBHard && lod.SkinVertexBlocks.size()>0 )
-	{
-		// Get VB info, and lock buffers.
-		uint8		*vertexSrc= (uint8*)_VBufferFinal.getVertexCoordPointer();
-		uint8		*vertexDst= (uint8*)_VBHard->lock();
-		uint32		vertexSize= _VBufferFinal.getVertexSize();
-		nlassert(vertexSize == _VBHard->getVertexSize());
-
-
-		// For all block of vertices.
-		CVertexBlock	*vBlock= &lod.SkinVertexBlocks[0];
-		uint	n= lod.SkinVertexBlocks.size();
-		for(;n>0; n--, vBlock++)
-		{
-			// For all vertices of this block, copy it from RAM to VRAM.
-			uint8		*src= vertexSrc + vertexSize * vBlock->VertexStart;
-			uint8		*dst= vertexDst + vertexSize * vBlock->VertexStart;
-
-			// big copy of all vertices and their data.
-			// NB: this not help RAM bandwidth, but this help AGP write combiners.
-			// For the majority of mesh (vertex/normal/uv), this is better (6/10).
-			memcpy(dst, src, vBlock->NVertices * vertexSize);
-		}
-
-
-		_VBHard->unlock();
-	}
-}
-
-
-// ***************************************************************************
 void				CMeshMRMGeom::deleteVertexBufferHard()
 {
 	// test (refptr) if the object still exist in memory.
@@ -2537,6 +2083,204 @@ void	CMeshMRM::updateSkeletonUsage (CSkeletonModel *skeleton, bool increment)
 {
 	_MeshMRMGeom.updateSkeletonUsage(skeleton, increment);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshMRMGeom RawSkin optimisation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CMeshMRMGeom::clearRawSkin()
+{
+	if(_NumLodRawSkin>0)
+	{
+		contReset(_RawSkinNormalLods);
+		contReset(_RawSkinTgSpaceLods);
+		_NumLodRawSkin= 0;
+	}
+}
+
+
+// ***************************************************************************
+void		CMeshMRMGeom::updateRawSkinNormal()
+{
+	// If need to load new lods.
+	if(_NumLodRawSkin<_NbLodLoaded)
+	{
+		uint	i;
+
+		// TODO_OPTIM
+		// Alloc space, big memcpy here...
+		_RawSkinNormalLods.resize(_NbLodLoaded);
+
+		// Build new lods.
+		for(;_NumLodRawSkin<_NbLodLoaded;_NumLodRawSkin++)
+		{
+			CRawSkinNormalLod	&skinLod= _RawSkinNormalLods[_NumLodRawSkin];
+			CLod				&lod= _Lods[_NumLodRawSkin];
+
+			// For each matrix influence.
+			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+
+			// Resize the dest array.
+			skinLod.Vertices1.resize(lod.InfluencedVertices[0].size());
+			skinLod.Vertices2.resize(lod.InfluencedVertices[1].size());
+			skinLod.Vertices3.resize(lod.InfluencedVertices[2].size());
+			skinLod.Vertices4.resize(lod.InfluencedVertices[3].size());
+
+			// 1 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices1.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[0][i];
+				// fill raw struct
+				skinLod.Vertices1[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices1[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices1[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices1[i].VertexId= vid;
+			}
+
+			// 2 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices2.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[1][i];
+				// fill raw struct
+				skinLod.Vertices2[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices2[i].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
+				skinLod.Vertices2[i].Weights[0]= _SkinWeights[vid].Weights[0];
+				skinLod.Vertices2[i].Weights[1]= _SkinWeights[vid].Weights[1];
+				skinLod.Vertices2[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices2[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices2[i].VertexId= vid;
+			}
+
+			// 3 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices3.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[2][i];
+				// fill raw struct
+				skinLod.Vertices3[i].SkinWeight= _SkinWeights[vid];
+				skinLod.Vertices3[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices3[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices3[i].VertexId= vid;
+			}
+
+			// 4 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices4.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[3][i];
+				// fill raw struct
+				skinLod.Vertices4[i].SkinWeight= _SkinWeights[vid];
+				skinLod.Vertices4[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices4[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices4[i].VertexId= vid;
+			}
+
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CMeshMRMGeom::updateRawSkinTgSpace()
+{
+	// If need to load new lods.
+	if(_NumLodRawSkin<_NbLodLoaded)
+	{
+		uint	i;
+
+		// TODO_OPTIM
+		// Alloc space, big memcpy here...
+		_RawSkinTgSpaceLods.resize(_NbLodLoaded);
+
+		// Build new lods.
+		for(;_NumLodRawSkin<_NbLodLoaded;_NumLodRawSkin++)
+		{
+			CRawSkinTgSpaceLod	&skinLod= _RawSkinTgSpaceLods[_NumLodRawSkin];
+			CLod				&lod= _Lods[_NumLodRawSkin];
+
+			// For each matrix influence.
+			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+
+			// Resize the dest array.
+			skinLod.Vertices1.resize(lod.InfluencedVertices[0].size());
+			skinLod.Vertices2.resize(lod.InfluencedVertices[1].size());
+			skinLod.Vertices3.resize(lod.InfluencedVertices[2].size());
+			skinLod.Vertices4.resize(lod.InfluencedVertices[3].size());
+
+			// 1 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices1.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[0][i];
+				// fill raw struct
+				skinLod.Vertices1[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices1[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices1[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices1[i].TgSpace= _OriginalTGSpace[vid];
+				skinLod.Vertices1[i].VertexId= vid;
+			}
+
+			// 2 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices2.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[1][i];
+				// fill raw struct
+				skinLod.Vertices2[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices2[i].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
+				skinLod.Vertices2[i].Weights[0]= _SkinWeights[vid].Weights[0];
+				skinLod.Vertices2[i].Weights[1]= _SkinWeights[vid].Weights[1];
+				skinLod.Vertices2[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices2[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices2[i].TgSpace= _OriginalTGSpace[vid];
+				skinLod.Vertices2[i].VertexId= vid;
+			}
+
+			// 3 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices3.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[2][i];
+				// fill raw struct
+				skinLod.Vertices3[i].SkinWeight= _SkinWeights[vid];
+				skinLod.Vertices3[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices3[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices3[i].TgSpace= _OriginalTGSpace[vid];
+				skinLod.Vertices3[i].VertexId= vid;
+			}
+
+			// 4 Matrix skinning.
+			//========
+			for(i=0;i<skinLod.Vertices4.size();i++)
+			{
+				// get the dest vertex.
+				uint	vid= lod.InfluencedVertices[3][i];
+				// fill raw struct
+				skinLod.Vertices4[i].SkinWeight= _SkinWeights[vid];
+				skinLod.Vertices4[i].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices4[i].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices4[i].TgSpace= _OriginalTGSpace[vid];
+				skinLod.Vertices4[i].VertexId= vid;
+			}
+
+		}
+	}
+}
+
 
 
 } // NL3D

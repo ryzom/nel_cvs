@@ -165,6 +165,10 @@ SOURCE=.\ai\agent\digital.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\gd_agent_script.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\group_type.cpp
 # End Source File
 # Begin Source File
@@ -198,6 +202,14 @@ SOURCE=.\ai\agent\msg.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\msg_container.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\msg_debug.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\msg_goal.cpp
 # End Source File
 # Begin Source File
 
@@ -281,6 +293,10 @@ SOURCE=..\include\nel\ai\agent\baseai.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\gd_agent_script.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\ident.h
 # End Source File
 # Begin Source File
@@ -310,6 +326,14 @@ SOURCE=..\include\nel\ai\agent\msg.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\msg_container.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_goal.h
 # End Source File
 # Begin Source File
 
@@ -729,6 +753,10 @@ SOURCE=.\ai\script\factor_type.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\gd_agent_class.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\hierarchy.cpp
 # End Source File
 # Begin Source File
@@ -862,6 +890,10 @@ SOURCE=..\include\nel\ai\script\constraint_type.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\context_debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\script\gd_agent_class.h
 # End Source File
 # Begin Source File
 

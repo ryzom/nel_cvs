@@ -27,10 +27,11 @@ CExportDlg::CExportDlg(CWnd* pParent /*=NULL*/)
 	OutLandscapeDir = _T("");
 	OutVegetableDir = _T("");
 	RegionName = _T("");
-	_Options = NULL;
 	LandBankFile = _T("");
 	LandFarBankFile = _T("");
+	_Options = NULL;
 	_Finished = false;
+	LandTileNoiseDir = _T("");
 	//}}AFX_DATA_INIT
 }
 
@@ -54,6 +55,7 @@ void CExportDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBString(pDX, IDC_REGIONLIST, RegionName);
 	DDX_Text(pDX, IDC_LAND_BANK_FILE, LandBankFile);
 	DDX_Text(pDX, IDC_LAND_FAR_BANK_FILE, LandFarBankFile);
+	DDX_Text(pDX, IDC_LAND_TILE_NOISE_DIR, LandTileNoiseDir);
 	//}}AFX_DATA_MAP
 }
 
@@ -63,8 +65,9 @@ BEGIN_MESSAGE_MAP(CExportDlg, CDialog)
 	//{{AFX_MSG_MAP(CExportDlg)
 	ON_BN_CLICKED(IDC_EXPLORE_LANDSCAPE, OnExploreOutLandscapeDir)
 	ON_BN_CLICKED(IDC_EXPLORE_VEGETABLE, OnExploreOutVegetableDir)
-	ON_BN_CLICKED(IDC_EXPLORE_LAND_BANK_FILE, OnExploreLandBankFile)
+	ON_BN_CLICKED(IDC_EXPLORE_LAND_BANK_FILE, OnExploreLandSmallBankFile)
 	ON_BN_CLICKED(IDC_EXPLORE_LAND_FAR_BANK_FILE, OnExploreLandFarBankFile)
+	ON_BN_CLICKED(IDC_EXPLORE_LAND_TILE_NOISE_DIR, OnExploreLandTileNoiseDir)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -83,6 +86,7 @@ BOOL CExportDlg::OnInitDialog ()
 	OutVegetableDir = _Options->OutVegetableDir.c_str ();
 	LandBankFile = _Options->LandBankFile.c_str ();
 	LandFarBankFile = _Options->LandFarBankFile.c_str ();
+	LandTileNoiseDir = _Options->LandTileNoiseDir.c_str ();
 	for (uint32 i=0; i < _Regions->size(); ++i)
 	{
 		RegionList.InsertString (-1, (_Regions->operator[](i)).c_str());
@@ -109,6 +113,7 @@ void CExportDlg::OnOK ()
 	_Options->LandBankFile = (LPCSTR)LandBankFile;
 	_Options->LandFarBankFile = (LPCSTR)LandFarBankFile;
 	_Options->SourceDir = (LPCSTR)RegionName;
+	_Options->LandTileNoiseDir = (LPCSTR)LandTileNoiseDir;
 
 	CDialog::OnOK();
 }
@@ -180,9 +185,9 @@ void CExportDlg::OnExploreOutVegetableDir()
 }
 
 // ---------------------------------------------------------------------------
-void CExportDlg::OnExploreLandBankFile() 
+void CExportDlg::OnExploreLandSmallBankFile() 
 {
-	CFileDialog dialog (true, "bank", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "Bank (*.bank)|*.bank", this);
+	CFileDialog dialog (true, "smallbank", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, "SmallBank (*.smallbank)|*.smallbank", this);
 	if (dialog.DoModal() == IDOK)
 	{
 		LandBankFile = dialog.GetPathName ();
@@ -198,5 +203,31 @@ void CExportDlg::OnExploreLandFarBankFile()
 	{
 		LandFarBankFile = dialog.GetPathName();
 	}
+	UpdateData (FALSE); // Upload
+}
+
+// ---------------------------------------------------------------------------
+void CExportDlg::OnExploreLandTileNoiseDir() 
+{
+	BROWSEINFO	bi;
+	char		str[MAX_PATH];
+	ITEMIDLIST*	pidl;
+	char sTemp[1024];
+
+	bi.hwndOwner = this->m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = sTemp;;
+	bi.lpszTitle = "Choose the path";
+	bi.ulFlags = 0;
+	bi.lpfn = expBrowseCallbackProc;
+	bi.lParam = (LPARAM)(LPCSTR)LandTileNoiseDir;
+	bi.iImage = 0;
+	pidl = SHBrowseForFolder (&bi);
+	if (!SHGetPathFromIDList(pidl, str)) 
+	{
+		return;
+	}
+	LandTileNoiseDir = str;
 	UpdateData (FALSE); // Upload
 }

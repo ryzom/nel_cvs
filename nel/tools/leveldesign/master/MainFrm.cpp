@@ -184,11 +184,13 @@ CMainFrame::CMainFrame()
 	_Georges = NULL;
 	_LogicEditor = NULL;
 	_Tree = NULL;
+	_Export = NULL;
 }
 
 // ---------------------------------------------------------------------------
 CMainFrame::~CMainFrame()
 {
+	delete _Export;
 }
 
 // ---------------------------------------------------------------------------
@@ -229,6 +231,10 @@ void CMainFrame::getAllInterfaces()
 			if (IWEGetInterface != NULL)
 				_WorldEditor = IWEGetInterface (WORLDEDITOR_VERSION);
 		}
+		else
+		{
+			MessageBox("WorldEditor dll not Loaded", "Warning");
+		}
 	}
 
 	// Get Georges Interface
@@ -248,6 +254,10 @@ void CMainFrame::getAllInterfaces()
 			if (IGGetInterface != NULL)
 				_Georges = IGGetInterface (GEORGES_VERSION);
 		}
+		else
+		{
+			MessageBox("Georges dll not Loaded", "Warning");
+		}
 	}
 
 	// Get LogicEditor Interface
@@ -266,6 +276,10 @@ void CMainFrame::getAllInterfaces()
 			ILEGetInterface = (ILOGICEDITOR_GETINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_GETINTERFACE_NAME);
 			if (ILEGetInterface != NULL)
 				_LogicEditor = ILEGetInterface (LOGIC_EDITOR_VERSION);
+		}
+		else
+		{
+			MessageBox("LogicEditor dll not Loaded", "Warning");
 		}
 	}
 }
@@ -413,28 +427,37 @@ void CMainFrame::georgesCreatePlantName ()
 	plantname += "plant_name.typ";
 
 	// If plantname file do not already exists
-	if (FindFirstFile(plantname.c_str(), &fdTmp) == INVALID_HANDLE_VALUE)
+	HANDLE hFind = FindFirstFile(plantname.c_str(), &fdTmp);
+	if (hFind != INVALID_HANDLE_VALUE)
 	{
-		vector< pair< string, string > > lpsx;
-		vector< pair< string, string > > lpsx2;
-		lpsx.push_back (std::make_pair(string("xxx.plant"),	string("xxx.plant")));
-		lpsx.push_back (std::make_pair(string("yyy.plant"), string("yyy.plant")));
- 		_Georges->MakeTyp (plantname, "string", "PLANT", "true", "", "", "xxx.plant", &lpsx, &lpsx2);
+		FindClose (hFind);
+		if (!DeleteFile (plantname.c_str()))
+		{
+			MessageBox (plantname.c_str(), "Cannot overwrite");
+			return;
+		}
 	}
+	
+	vector< pair< string, string > > lpsx;
+	vector< pair< string, string > > lpsx2;
+	lpsx.push_back (std::make_pair(string("xxx.plant"),	string("xxx.plant")));
+	lpsx.push_back (std::make_pair(string("yyy.plant"), string("yyy.plant")));
+ 	_Georges->MakeTyp (plantname, "string", "PLANT", "true", "", "", "xxx.plant", &lpsx, &lpsx2);
 
 	// Parse the plant directory and add all these predef
-	string plantdir = _Environnement.RootDir + "common\\plant";
+	string plantdir = _Environnement.RootDir + "common";
 	SetCurrentDirectory (plantdir.c_str());
 
 	vector<string> allPlants;
-	HANDLE hFind = FindFirstFile ("*.plant", &fdTmp);
-	while (hFind != INVALID_HANDLE_VALUE)
+	CExport::getAllFiles (".plant", allPlants);
+
+	for (uint32 i = 0; i < allPlants.size(); ++i)
 	{
-		allPlants.push_back (string(fdTmp.cFileName));
-		if (FindNextFile (hFind, &fdTmp) == 0)
-			break;
+		char fName[_MAX_FNAME];
+		char ext[_MAX_FNAME];
+		::_splitpath((const char*)allPlants[i].c_str(), NULL, NULL, fName, ext) ;						
+		allPlants[i] = string(fName) + string(ext);
 	}
-	FindClose (hFind);
 	_Georges->SetTypPredef ("plant_name.typ", allPlants);
 
 	SetCurrentDirectory (curdir);
@@ -940,7 +963,7 @@ void CMainFrame::regionNewGeorges (const char *str)
 
 		CFileDialog fd (true, "*.dfn", NULL, OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
 						"Definition (*.dfn)|*.dfn", this);
-
+		fd.m_ofn.lpstrInitialDir = newDir.c_str();
 		if (fd.DoModal() == IDOK)
 		{
 			string sTmp = _Environnement.RootDir + "Regions\\" + str + "\\" + (LPCSTR)dial.str;
@@ -1026,7 +1049,8 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 	// GEORGES
 	if (_Georges != NULL)
 	{
-		_Georges->SetRootDirectory (_Environnement.RootDir+"common");
+		_Georges->SetRootDirectory (_Environnement.RootDir + "common");
+		_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
 		georgesCreatePlantName ();		
 	}
 	if (_Environnement.GeorgesOpened)
@@ -1051,6 +1075,9 @@ int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 BOOL CMainFrame::PreCreateWindow (CREATESTRUCT& cs)
 {
 	// Load the config file
+	char sCurDir[MAX_PATH];
+	GetCurrentDirectory (MAX_PATH, sCurDir);
+	_MasterExeDir = sCurDir;
 	try
 	{
 		CIFile fIn;
@@ -1209,9 +1236,10 @@ void CMainFrame::onRegionExport ()
 	dlg.setOptions (_Environnement.ExportOptions, vRegNames);
 	if (dlg.DoModal() == IDOK)
 	{
-		CExport export;
 		CExportCBDlg *pDlg = new CExportCBDlg();
 		//Check if new succeeded and we got a valid pointer to a dialog object
+		if (_Export == NULL)
+			_Export = new CExport;
 		if (pDlg != NULL)
 		{
 			BOOL ret = pDlg->Create (IDD_EXPORTCB, this);
@@ -1225,7 +1253,7 @@ void CMainFrame::onRegionExport ()
    
 		_Environnement.ExportOptions.SourceDir = _Environnement.RootDir + "Regions\\" + _Environnement.ExportOptions.SourceDir;
 		_Environnement.ExportOptions.RootDir = _Environnement.RootDir + "Common\\";
-		export.export (_Environnement.ExportOptions, pDlg->getExportCB());
+		_Export->export (_Environnement.ExportOptions, pDlg->getExportCB());
 
 		pDlg->setFinishedButton ();
 		while (pDlg->getFinished () == false)
@@ -1449,6 +1477,7 @@ void CMainFrame::OnClose ()
 	}
 
 	// Save the environnement
+	SetCurrentDirectory (_MasterExeDir.c_str());
 	try
 	{
 		COFile fOut;

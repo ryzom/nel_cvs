@@ -37,6 +37,7 @@ public:
 	CString	RegionName;
 	CString	LandBankFile;
 	CString	LandFarBankFile;
+	CString	LandTileNoiseDir;
 	//}}AFX_DATA
 
 
@@ -56,8 +57,9 @@ protected:
 	virtual void OnOK();
 	afx_msg void OnExploreOutLandscapeDir();
 	afx_msg void OnExploreOutVegetableDir();
-	afx_msg void OnExploreLandBankFile();
+	afx_msg void OnExploreLandSmallBankFile();
 	afx_msg void OnExploreLandFarBankFile();
+	afx_msg void OnExploreLandTileNoiseDir();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

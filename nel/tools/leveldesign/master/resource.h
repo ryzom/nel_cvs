@@ -36,6 +36,8 @@
 #define IDC_PROGRESS1                   1012
 #define IDC_LAND_FAR_BANK_FILE          1013
 #define IDC_EXPLORE_LAND_FAR_BANK_FILE  1014
+#define IDC_LAND_TILE_NOISE_DIR         1015
+#define IDC_EXPLORE_LAND_TILE_NOISE_DIR 1016
 #define ID_REGION_NEW                   32771
 #define ID_REGION_SAVE                  32773
 #define ID_OPTIONS_TREELOCK             32774

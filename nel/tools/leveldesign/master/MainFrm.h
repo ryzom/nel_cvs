@@ -101,6 +101,10 @@ class CMainFrame : public CFrameWnd
 	std::string		_ActiveRegionPath;
 	CMasterCB		_MasterCB;
 
+	std::string		_MasterExeDir;
+
+	CExport			*_Export;
+
 public:
 
 	CMainFrame ();

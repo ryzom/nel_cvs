@@ -1,7 +1,7 @@
 /** \file export.h
  * Export from leveldesign data to client data
  *
- * $Id: export.h,v 1.1 2001/12/28 14:47:59 besson Exp $
+ * $Id: export.h,v 1.2 2002/01/09 10:40:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
+#include "nel/misc/vector.h"
 #include <string>
 #include <vector>
 
@@ -38,7 +39,12 @@
 namespace NL3D
 {
 	class CLandscape;
+	class CVisualCollisionManager;
+	class CVisualCollisionEntity;
 }
+
+struct SPlantInstance;
+struct SFormPlant;
 
 // ---------------------------------------------------------------------------
 
@@ -48,12 +54,14 @@ namespace NL3D
 struct SExportOptions
 {
 	// Options saved
-	bool GenerateLandscape;
-	bool GenerateVegetable;
+	bool		GenerateLandscape;
+	bool		GenerateVegetable;
 	std::string OutLandscapeDir;
 	std::string OutVegetableDir;
 	std::string LandBankFile;
 	std::string LandFarBankFile;
+	float		CellSize;
+	std::string	LandTileNoiseDir;
 
 	// Options not saved
 	std::string SourceDir; // Directory to parse (typically this is a region dir)
@@ -81,6 +89,16 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// Vegetable export
+// ---------------------------------------------------------------------------
+struct SVegInst
+{
+	NLMISC::CVector Pos;
+	float			Radius;
+	std::string		Name;
+};
+
+// ---------------------------------------------------------------------------
 // Export class
 // ---------------------------------------------------------------------------
 class CExport
@@ -89,11 +107,18 @@ class CExport
 public:
 
 	CExport ();
+	~CExport ();
 	
-	// Export one region :
+	// EXPORT one region :
 	// Parse the SourceDir find the .land and .prim
 	bool export (SExportOptions &options, IExportCB *expCB = NULL);
 
+	// HELPERS
+	// Get All files with the extension ext in the current directory and subdirectory
+	static void getAllFiles (const std::string &ext, std::vector<std::string> &files);
+	// Search a file through all subdirectories of the current one (and in the current too)
+	static bool searchFile (const std::string &plantName, std::string &dir);
+	
 private:
 	
 	static bool			_GeorgesLibInitialized;
@@ -101,14 +126,32 @@ private:
 	SExportOptions		*_Options;
 	IExportCB			*_ExportCB;
 
-	NL3D::CLandscape	*_Landscape;
+	// Temp data to generate vegetable
+	NL3D::CLandscape				*_Landscape;
+	NL3D::CVisualCollisionManager	*_VCM;
+	NL3D::CVisualCollisionEntity	*_VCE;
+
+	std::vector<SVegInst>	_VegInsts;
 
 private:
 
+	// All the functions to generate the vegetables
+	// ********************************************
+
+	// Entry point
 	bool generateVegetable (const std::string &SrcFile);
 
-	// Get All files with the extension ext in the current directory and subdirectory
-	void getAllFiles (const std::string &ext, std::vector<std::string> &files);
+	// Get the altitude from the position in 2D
+	float getZFromXY (float x, float y);
+
+	// Does the plant is well placed
+	bool isWellPlaced (NLMISC::CVector &pos, SPlantInstance &rPI, SFormPlant &rFP);
+
+	// Write zone by zone the instance group corresponding to the vegetables generated in the specific land
+	void writeVegetable (const std::string &LandFile);
+	
+	// Helpers
+	// *******
 
 	// Load all zones of a .land
 	void loadLandscape (const std::string &name);

@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.16 2002/11/04 15:40:44 boucher Exp $
+ * $Id: located_properties.cpp,v 1.17 2003/04/14 15:31:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,8 +227,16 @@ void CLocatedProperties::OnLimitedLifeTime()
 
 	if (!m_LimitedLifeTime)
 	{
-		_Located->setLastForever();
-		_LifeDialog->EnableWindow(FALSE);
+		if (_Located->setLastForever())
+		{		
+			_LifeDialog->EnableWindow(FALSE);
+		}
+		else
+		{
+			MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+			m_LimitedLifeTime = TRUE;
+			UpdateData(FALSE);
+		}
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.10 2002/11/18 18:00:40 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.11 2003/04/14 15:32:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CParticleSystemEdit)
 	enum { IDD = IDD_EDIT_PARTICLE_SYSTEM };
+	CButton	m_BypassMaxNumStepsCtrl;
+	CButton	m_ForceLifeTimeUpdate;
 	CButton	m_DieWhenOutOfFrustumCtrl;
 	CButton	m_DieWhenOutOfRangeCtrl;
 	CComboBox	m_AnimTypeCtrl;
@@ -116,6 +118,7 @@ public:
 	BOOL	m_DieWhenOutOfRange;
 	BOOL	m_DieWhenOutOfFrustum;
 	BOOL	m_EnableLoadBalancing;
+	BOOL	m_BypassMaxNumSteps;
 	//}}AFX_DATA
 
 
@@ -163,6 +166,7 @@ protected:
 	afx_msg void OnGlobalUserParam2();
 	afx_msg void OnGlobalUserParam3();
 	afx_msg void OnGlobalUserParam4();
+	afx_msg void OnBypassMaxNumSteps();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

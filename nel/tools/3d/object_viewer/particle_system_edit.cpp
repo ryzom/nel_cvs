@@ -1,7 +1,7 @@
-/** \file particle_system_edit.cpp
+ /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.14 2003/04/07 12:44:01 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.15 2003/04/14 15:32:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper;
 
 CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4];
 
+//=====================================================
 CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
 		, _MaxViewDistDlg(NULL), _LODRatioDlg(NULL), _AutoLODDlg(NULL),
@@ -59,10 +60,12 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	m_DieWhenOutOfRange = FALSE;
 	m_DieWhenOutOfFrustum = FALSE;
 	m_EnableLoadBalancing = FALSE;
+	m_BypassMaxNumSteps = FALSE;
 	//}}AFX_DATA_INIT
 }
 
 
+//=====================================================
 CParticleSystemEdit::~CParticleSystemEdit()
 {
 	#define  REMOVE_WND(wnd) if (wnd) { wnd->DestroyWindow(); delete wnd; wnd = NULL; }
@@ -74,6 +77,7 @@ CParticleSystemEdit::~CParticleSystemEdit()
 	REMOVE_WND(_GlobalColorDlg);
 }
 
+//=====================================================
 void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 {
 	Create(CParticleSystemEdit::IDD, pParent);
@@ -130,13 +134,12 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	bool csd;
 	bool klt;
 	_PS->getAccurateIntegrationParams(t, max, csd, klt);
-
-	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled();
+	
 	m_PrecomputeBBoxCtrl.SetCheck(!_PS->getAutoComputeBBox());
 	m_EnableSlowDown = csd;	
-	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_PS->isSharingEnabled());
-	((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->SetCheck(klt);
+	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_PS->isSharingEnabled());	
 
+	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled();
 
 	BOOL bAutoLOD = _PS->isAutoLODEnabled();
 	((CButton *)	GetDlgItem(IDC_ENABLE_AUTO_LOD))->SetCheck(bAutoLOD);
@@ -155,11 +158,13 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	updateLifeMgtPresets();
 
 	m_EnableLoadBalancing = _PS->isLoadBalancingEnabled();
+	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
 
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
 }
 
+//=====================================================
 void CParticleSystemEdit::updateIntegrationParams(void)
 {
 	BOOL ew = _PS->isAccurateIntegrationEnabled();
@@ -169,6 +174,7 @@ void CParticleSystemEdit::updateIntegrationParams(void)
 }
 
 
+//=====================================================
 void CParticleSystemEdit::updateDieOnEventParams(void)
 {
 	BOOL ew = _PS->getDestroyCondition() == NL3D::CParticleSystem::none ? FALSE : TRUE;
@@ -178,6 +184,7 @@ void CParticleSystemEdit::updateDieOnEventParams(void)
 	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->SetWindowText(out);
 }
 
+//=====================================================
 void CParticleSystemEdit::OnPrecomputeBbox() 
 {
 	UpdateData();
@@ -185,6 +192,7 @@ void CParticleSystemEdit::OnPrecomputeBbox()
 	updatePrecomputedBBoxParams();	
 }
 
+//=====================================================
 void CParticleSystemEdit::updatePrecomputedBBoxParams(void)
 {
 	BOOL ew = !_PS->getAutoComputeBBox();
@@ -211,8 +219,7 @@ void CParticleSystemEdit::updatePrecomputedBBoxParams(void)
 	UpdateData(FALSE);
 }
 
-
-
+//=====================================================
 void CParticleSystemEdit::OnSelchangePsDieOnEvent() 
 {
 	UpdateData();
@@ -220,12 +227,13 @@ void CParticleSystemEdit::OnSelchangePsDieOnEvent()
 	updateDieOnEventParams();
 }
 
-
-
+//=====================================================
 void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CParticleSystemEdit)
+	DDX_Control(pDX, IDC_BYPASS_MAX_NUM_STEPS, m_BypassMaxNumStepsCtrl);
+	DDX_Control(pDX, IDC_FORCE_LIFE_TIME_UPDATE, m_ForceLifeTimeUpdate);
 	DDX_Control(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustumCtrl);
 	DDX_Control(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRangeCtrl);
 	DDX_Control(pDX, IDC_ANIM_TYPE_CTRL, m_AnimTypeCtrl);
@@ -241,6 +249,7 @@ void CParticleSystemEdit::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_RANGE, m_DieWhenOutOfRange);
 	DDX_Check(pDX, IDC_DIE_WHEN_OUT_OF_FRUSTRUM, m_DieWhenOutOfFrustum);
 	DDX_Check(pDX, IDC_ENABLE_LOAD_BALANCING, m_EnableLoadBalancing);
+	DDX_Check(pDX, IDC_BYPASS_MAX_NUM_STEPS, m_BypassMaxNumSteps);
 	//}}AFX_DATA_MAP
 }
 
@@ -270,12 +279,14 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_2, OnGlobalUserParam2)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_3, OnGlobalUserParam3)
 	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_4, OnGlobalUserParam4)
+	ON_BN_CLICKED(IDC_BYPASS_MAX_NUM_STEPS, OnBypassMaxNumSteps)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit message handlers
 
+//=====================================================
 void CParticleSystemEdit::OnAccurateIntegration() 
 {
 	UpdateData();
@@ -283,6 +294,7 @@ void CParticleSystemEdit::OnAccurateIntegration()
 	updateIntegrationParams();
 }
 
+//=====================================================
 void CParticleSystemEdit::OnEnableSlowDown() 
 {
 	UpdateData();
@@ -294,6 +306,7 @@ void CParticleSystemEdit::OnEnableSlowDown()
 	_PS->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false, klt);
 }
 
+//=====================================================
 void CParticleSystemEdit::OnUpdateBbox() 
 {
 	UpdateData();
@@ -317,7 +330,7 @@ void CParticleSystemEdit::OnUpdateBbox()
 	}
 }
 
-
+//=====================================================
 void CParticleSystemEdit::OnIncBbox() 
 {
 	NLMISC::CAABBox b;
@@ -327,6 +340,7 @@ void CParticleSystemEdit::OnIncBbox()
 	updatePrecomputedBBoxParams();
 }
 
+//=====================================================
 void CParticleSystemEdit::OnDecBbox() 
 {
 	NLMISC::CAABBox b;
@@ -336,15 +350,14 @@ void CParticleSystemEdit::OnDecBbox()
 	updatePrecomputedBBoxParams();	
 }
 
-
+//=====================================================
 void CParticleSystemEdit::OnDieWhenOutOfRange() 
 {
 	UpdateData();
 	_PS->setDestroyModelWhenOutOfRange(m_DieWhenOutOfRange ? true : false);
 }
 
-
-
+//=====================================================
 void CParticleSystemEdit::OnDieWhenOutOfFrustum() 
 {
 	UpdateData();
@@ -352,6 +365,7 @@ void CParticleSystemEdit::OnDieWhenOutOfFrustum()
 	m_AnimTypeCtrl.EnableWindow(!m_DieWhenOutOfFrustum);
 }
 
+//=====================================================
 void CParticleSystemEdit::OnChangeApplyAfterDelay() 
 {
 	char in[128];	
@@ -363,27 +377,47 @@ void CParticleSystemEdit::OnChangeApplyAfterDelay()
 	}
 }
 
+//=====================================================
 void CParticleSystemEdit::OnSelchangeLifeMgtPresets() 
 {
 	UpdateData(TRUE);
+	if (m_PresetCtrl.GetCurSel() == NL3D::CParticleSystem::SpellFX)
+	{
+		if (!_PS->canFinish())
+		{
+			m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
+			MessageBox("The system must have a finite duration for this setting! Please check that.", "Error", MB_ICONEXCLAMATION);
+			return;
+		}
+	}
 	_PS->activatePresetBehaviour((NL3D::CParticleSystem::TPresetBehaviour) m_PresetCtrl.GetCurSel());	
 	updateLifeMgtPresets();
 }
 
+//=====================================================
 void CParticleSystemEdit::OnSelchangeAnimTypeCtrl() 
 {
 	UpdateData(TRUE);
 	_PS->setAnimType((NL3D::CParticleSystem::TAnimType) m_AnimTypeCtrl.GetCurSel());
 }
 
+//=====================================================
 void CParticleSystemEdit::updateLifeMgtPresets()
 {
 	m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
 	m_DieWhenOutOfRange = _PS->getDestroyModelWhenOutOfRange();
-	m_DieWhenOutOfFrustum = _PS->doesDestroyWhenOutOfFrustum();		
+	m_DieWhenOutOfFrustum = _PS->doesDestroyWhenOutOfFrustum();
+	m_BypassMaxNumSteps = _PS->getBypassMaxNumIntegrationSteps();
 	m_DieOnEvent.SetCurSel((int) _PS->getDestroyCondition());
 	m_AnimTypeCtrl.SetCurSel((int) _PS->getAnimType());
 	updateDieOnEventParams();
+
+	NL3D::TAnimationTime t;
+	uint32 max;
+	bool csd;
+	bool klt;
+	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->SetCheck(klt);
 
 	BOOL bEnable =  _PS->getBehaviourType() == NL3D::CParticleSystem::UserBehaviour ? TRUE :  FALSE;
 	
@@ -391,18 +425,23 @@ void CParticleSystemEdit::updateLifeMgtPresets()
 	m_DieWhenOutOfFrustumCtrl.EnableWindow(bEnable);
 	m_DieOnEvent.EnableWindow(bEnable);
 	m_AnimTypeCtrl.EnableWindow(bEnable);
+	m_ForceLifeTimeUpdate.EnableWindow(bEnable);
+	m_BypassMaxNumStepsCtrl.EnableWindow(bEnable);
+	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
 
 	UpdateData(FALSE);
 }
 
 
 
+//=====================================================
 void CParticleSystemEdit::OnSharable() 
 {
 	bool shared = ((CButton *)	GetDlgItem(IDC_SHARABLE))->GetCheck() != 0;
 	_PS->enableSharing(shared);	
 }
 
+//=====================================================
 void CParticleSystemEdit::OnEditAutoLod() 
 {
 	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(FALSE);
@@ -414,7 +453,7 @@ void CParticleSystemEdit::OnEditAutoLod()
 	_AutoLODDlg = autoLODDlg;
 }
 
-
+//=====================================================
 void CParticleSystemEdit::childPopupClosed(CWnd *child)
 {
 	if (child == _AutoLODDlg)
@@ -434,16 +473,13 @@ void CParticleSystemEdit::childPopupClosed(CWnd *child)
 			
 }
 
-
-
+//=====================================================
 void CParticleSystemEdit::OnEnableAutoLod() 
 {
 	BOOL bEnable = ((CButton *) GetDlgItem(IDC_ENABLE_AUTO_LOD))->GetCheck() != 0;
 	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(bEnable);
 	_PS->enableAutoLOD(bEnable ? true : false /* performance warning */);
 }
-
-
 
 ///=====================================================================
 void CParticleSystemEdit::OnEditGlobalColor() 
@@ -477,6 +513,7 @@ void CParticleSystemEdit::OnGlobalColor()
 // WRAPPERS IMPLEMENTATION //
 /////////////////////////////
 
+//=====================================================
 float CTimeThresholdWrapper::get(void) const
 {
 	NL3D::TAnimationTime t;
@@ -486,6 +523,8 @@ float CTimeThresholdWrapper::get(void) const
 	PS->getAccurateIntegrationParams(t, max, csd, klt);
 	return t;
 }
+
+//=====================================================
 void CTimeThresholdWrapper::set(const float &tt)
 {
 	NL3D::TAnimationTime t;
@@ -496,6 +535,8 @@ void CTimeThresholdWrapper::set(const float &tt)
 	PS->setAccurateIntegrationParams(tt, max, csd, klt);	
 }
 
+
+//=====================================================
 uint32 CMaxNbIntegrationWrapper::get(void) const
 {
 	NL3D::TAnimationTime t;
@@ -505,6 +546,8 @@ uint32 CMaxNbIntegrationWrapper::get(void) const
 	PS->getAccurateIntegrationParams(t, max, csd, klt);
 	return max;
 }
+
+//=====================================================
 void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 {
 	NL3D::TAnimationTime t;
@@ -515,37 +558,43 @@ void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 	PS->setAccurateIntegrationParams(t, nmax, csd, klt);	
 }
 	
+//=====================================================
 float CUserParamWrapper::get(void) const 
 { 
 	return PS->getUserParam(Index); 
 }
+
+//=====================================================
 void CUserParamWrapper::set(const float &v)
 {
 	PS->setUserParam(Index, v); 
 }
-	
 
-
+//=====================================================
 float CMaxViewDistWrapper::get(void) const
 {
 	return PS->getMaxViewDist();
 }
 
+//=====================================================
 void CMaxViewDistWrapper::set(const float &d)
 {
 	PS->setMaxViewDist(d);
 }
 
+//=====================================================
 float CLODRatioWrapper::get(void) const
 {
 	return PS->getLODRatio();
 }
 
+//=====================================================
 void CLODRatioWrapper::set(const float &v)
 {
 	PS->setLODRatio(v);
 }
 
+//=====================================================
 void CParticleSystemEdit::OnForceLifeTimeUpdate() 
 {
 	NL3D::TAnimationTime t;
@@ -557,6 +606,7 @@ void CParticleSystemEdit::OnForceLifeTimeUpdate()
 	_PS->setAccurateIntegrationParams(t, max, csd, klt);
 }
 
+//=====================================================
 void CParticleSystemEdit::OnEnableLoadBalancing() 
 {
 	UpdateData(TRUE);
@@ -613,4 +663,17 @@ void CParticleSystemEdit::OnGlobalUserParam3()
 void CParticleSystemEdit::OnGlobalUserParam4() 
 {
 	chooseGlobalUserParam(3, _PS, this);
+}
+
+//=====================================================
+void CParticleSystemEdit::OnBypassMaxNumSteps() 
+{
+	UpdateData(TRUE);
+	if (m_BypassMaxNumSteps && !_PS->canFinish())
+	{		
+		MessageBox("The system must have a finite duration for this setting! Please check that.", "error", MB_ICONEXCLAMATION);
+		return;
+	}
+	_PS->setBypassMaxNumIntegrationSteps(m_BypassMaxNumSteps != FALSE);	
+	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
 }

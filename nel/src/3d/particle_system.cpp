@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.56 2003/04/07 12:34:45 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.57 2003/04/14 15:29:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/nelu.h"
 #include "3d/ps_util.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_emitter.h"
 #include "3d/ps_sound.h"
 #include "3d/particle_system_shape.h"
 #include "nel/misc/aabbox.h"
@@ -102,6 +103,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _AutoLODSkipParticles(false),
 									 _EnableLoadBalancing(true),
 									 _EmitThreshold(true),
+									 _BypassIntegrationStepLimit(false),
 									 _InverseEllapsedTime(0.f),
 									 _CurrentDeltaPos(NLMISC::CVector::Null),
 									 _DeltaPos(NLMISC::CVector::Null)
@@ -353,7 +355,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				if (et > _TimeThreshold)
 				{
 					nbPass = (uint32) ceilf(et / _TimeThreshold);
-					if (nbPass > _MaxNbIntegrations)
+					if (!_BypassIntegrationStepLimit && nbPass > _MaxNbIntegrations)
 					{ 
 						nbPass = _MaxNbIntegrations;
 						if (_CanSlowDown)
@@ -424,7 +426,16 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					(*it)->step(PSMotion, et, realEt);					
 				}
 				_SystemDate += realEt;
-				stepLocated(PSEmit, et,  realEt);				
+				stepLocated(PSEmit, et,  realEt);
+
+				if (_BypassIntegrationStepLimit)
+				{
+					// check that system is finished to avoid unuseful processing
+					if (isDestroyConditionVerified())
+					{
+						return;
+					}
+				}
 			}
 			while (--nbPass);
 			
@@ -443,7 +454,9 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(14);
+	sint version =  f.serialVersion(16);
+
+	// version 16: _BypassIntegrationStepLimit flag
 	// version 14: emit threshold
 	// version 13: max dist lod bias for auto-LOD
 	// version 12: global userParams
@@ -620,6 +633,11 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_EmitThreshold);
 	}
 
+	if (version >= 15)
+	{
+		f.serial(_BypassIntegrationStepLimit);
+	}
+
 	if (f.isReading())
 	{
 		notifyMaxNumFacesChanged();
@@ -628,13 +646,24 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 ///=======================================================================================
-void CParticleSystem::attach(CParticleSystemProcess *ptr)
+bool CParticleSystem::attach(CParticleSystemProcess *ptr)
 {
+	nlassert(ptr);
 	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() );
 	//nlassert(ptr->getOwner() == NULL); // deja attache a un autre systeme
 	_ProcessVect.push_back(ptr);
 	ptr->setOwner(this);
 	notifyMaxNumFacesChanged();
+	if (getBypassMaxNumIntegrationSteps())
+	{
+		if (!canFinish())
+		{
+			remove(ptr);
+			nlwarning("<void CParticleSystem::attach> Can't attach object : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Object is not attached");
+			return false;
+		}
+	}
+	return true;
 }
 
 ///=======================================================================================
@@ -834,17 +863,41 @@ const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 i
 }
 
 ///=======================================================================================
-void CParticleSystem::merge(CParticleSystemShape *pss)
+bool CParticleSystem::merge(CParticleSystemShape *pss)
 {
 	nlassert(pss);	
+	nlassert(_Scene);
 	CParticleSystem *duplicate = pss->instanciatePS(*this->_Scene); // duplicate the p.s. to merge
-	// now we transfer the located of the duplicated ps to this object...
+	// now we transfer the located of the duplicated ps to this object...	
 	for (TProcessVect::iterator it = duplicate->_ProcessVect.begin(); it != duplicate->_ProcessVect.end(); ++it)
 	{		
-		attach(*it);		
+		if (!attach(*it))
+		{
+			for (TProcessVect::iterator clearIt = duplicate->_ProcessVect.begin(); clearIt != it; ++it)
+			{
+				detach(getIndexOf(*it));
+			}
+			nlwarning("<CParticleSystem::merge> Can't do the merge : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Merge is not done.");
+			return false;
+		}
 	}
+	//
+	if (getBypassMaxNumIntegrationSteps())
+	{
+		if (!canFinish())
+		{
+			for (TProcessVect::iterator it = duplicate->_ProcessVect.begin(); it != duplicate->_ProcessVect.end(); ++it)
+			{		
+				detach(getIndexOf(*it));
+			}
+			nlwarning("<CParticleSystem::merge> Can't do the merge : this causes the system to last forever, and it has been flagged with 'BypassMaxNumIntegrationSteps'. Merge is not done.");
+			return false;
+		}
+	}
+	//
 	duplicate->_ProcessVect.clear();
 	delete duplicate;
+	return true;
 }
 
 ///=======================================================================================
@@ -858,31 +911,49 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			setDestroyCondition(none);
 			destroyWhenOutOfFrustum(false);
 			setAnimType(AnimVisible);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
 		case RunningEnvironmentFX:
 			setDestroyModelWhenOutOfRange(false);
 			setDestroyCondition(none);
 			destroyWhenOutOfFrustum(false);
 			setAnimType(AnimInCluster);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
 		case SpellFX:
 			setDestroyModelWhenOutOfRange(true);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(false);
 			setAnimType(AnimAlways);
+			setBypassMaxNumIntegrationSteps(true);
+			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
 		case LoopingSpellFX:
 			setDestroyModelWhenOutOfRange(true);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(false);
 			setAnimType(AnimInCluster);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
 		case MinorFX:
 			setDestroyModelWhenOutOfRange(true);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(true);
 			setAnimType(AnimVisible);
-		break;		
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = false;
+		break;
+		case MovingLoopingFX:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(none);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimVisible);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = true;
+		break;
 		default: break;
 	}
 	_PresetBehaviour = behaviour;
@@ -1066,6 +1137,89 @@ void CParticleSystem::setMaxDistLODBias(float lodBias)
 	NLMISC::clamp(lodBias, 0.f, 1.f);
 	_MaxDistLODBias = lodBias;
 }
+
+///=======================================================================================
+bool CParticleSystem::canFinish() const
+{
+	if (hasLoop()) return false;
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		CPSLocated *loc = dynamic_cast<CPSLocated *>(_ProcessVect[k]);
+		if (loc)
+		{
+			if (loc->getLastForever())
+			{			
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					CPSEmitter *em = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));
+					if (em && em->testEmitForever())
+					{
+						return false;
+					}
+					CPSParticle *p = dynamic_cast<CPSParticle *>(loc->getBoundObject(l));
+					if (p)
+					{
+						return false; // particles shouldn't live forever, too
+					}
+				}
+			}
+		}
+	}
+	return true;
+}
+
+///=======================================================================================
+bool CParticleSystem::hasLoop() const
+{	
+	// we want to check for loop like A emit B emit A
+	// NB : there's room for a smarter algo here, but should not be useful for now 
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		CPSLocated *loc = dynamic_cast<CPSLocated *>(_ProcessVect[k]);
+		if (loc)
+		{
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				CPSEmitter *em = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));
+				if (em)
+				{
+					if (em->checkLoop()) return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+///=======================================================================================
+bool CParticleSystem::isDestroyConditionVerified() const
+{
+	if (getDestroyCondition() != CParticleSystem::none)
+	{
+		if (getSystemDate() > getDelayBeforeDeathConditionTest())
+		{
+			switch (getDestroyCondition())
+			{
+				case CParticleSystem::noMoreParticles: return !hasParticles();				
+				case CParticleSystem::noMoreParticlesAndEmitters: return !hasParticles() && !hasEmitters();									
+				default: nlassert(0); return false;
+			}
+		}
+	}
+	return false;
+}
+
+///=======================================================================================
+void CParticleSystem::setSystemDate(float date)
+{
+	if (date == _SystemDate) return;
+	_SystemDate = date;
+	for(uint k = 0; k < _ProcessVect.size(); ++k)
+	{
+		_ProcessVect[k]->systemDateChanged();
+	}	
+}
+
 
 
 

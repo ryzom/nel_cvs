@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.13 2003/04/07 12:43:20 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.14 2003/04/14 15:30:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "object_viewer.h"
 #include "emitter_dlg.h"
 #include "direction_attr.h"
+#include "particle_tree_ctrl.h"
 
 #include "3d/particle_system.h"
 
@@ -70,18 +71,20 @@ CEmitterDlg::~CEmitterDlg()
 
 void CEmitterDlg::init(CWnd* pParent)
 {
-	Create(IDD_EMITTER_DIALOG, pParent);
-	;
+	Create(IDD_EMITTER_DIALOG, pParent);	
+	// fill the emitted type combo box with all the types of located	
+	initEmittedType();	
+	m_EmissionTypeCtrl.SetCurSel((int) _Emitter->getEmissionType() );
+	ShowWindow(SW_SHOW); 
+	UpdateData(FALSE);
+}
 
-	// fill the emitted type combo box with all the types of located
-
+void CEmitterDlg::initEmittedType()
+{	
+	m_EmittedTypeCtrl.ResetContent();
 	NL3D::CParticleSystem *ps = _Emitter->getOwner()->getOwner();
-	
 	uint nbLocated = ps->getNbProcess(); 
-
-	m_EmittedTypeCtrl.InitStorage(nbLocated, 16);
-	
-
+	m_EmittedTypeCtrl.InitStorage(nbLocated, 16);	
 	for (uint k = 0; k < nbLocated; ++k)
 	{
 		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(ps->getProcess(k));
@@ -95,11 +98,6 @@ void CEmitterDlg::init(CWnd* pParent)
 			}
 		}
 	}
-
-	m_EmissionTypeCtrl.SetCurSel((int) _Emitter->getEmissionType() );
-
-	ShowWindow(SW_SHOW); 
-	UpdateData(FALSE);
 }
 
 void CEmitterDlg::DoDataExchange(CDataExchange* pDX)
@@ -134,14 +132,21 @@ void CEmitterDlg::OnSelchangeEmittedType()
 {
 	UpdateData();
 	uint k = m_EmittedTypeCtrl.GetCurSel();
-	_Emitter->setEmittedType(_LocatedList[k]);
-	
+	if (!_Emitter->setEmittedType(_LocatedList[k]))
+	{
+		MessageBox("Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. This operation create a loop in the system, and so is forbidden.", "Error", MB_ICONEXCLAMATION);
+		initEmittedType();
+	}	
 }
 
 void CEmitterDlg::OnSelchangeTypeOfEmission() 
 {
 	UpdateData();
-	_Emitter->setEmissionType((NL3D::CPSEmitter::TEmissionType) m_EmissionTypeCtrl.GetCurSel());	
+	if (!_Emitter->setEmissionType((NL3D::CPSEmitter::TEmissionType) m_EmissionTypeCtrl.GetCurSel()))
+	{
+		MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+		m_EmissionTypeCtrl.SetCurSel((int) _Emitter->getEmissionType());		
+	}
 
 	updatePeriodDlg();
 }
@@ -181,8 +186,11 @@ BOOL CEmitterDlg::OnInitDialog()
 	_MaxEmissionCountDlg = new CEditableRangeUInt("MAX_EMISSION_COUNT", 0, 100);	
 	_MaxEmissionCountDlg->enableUpperBound(256, false);
 	_MaxEmissionCountWrapper.E = _Emitter;
+	_MaxEmissionCountWrapper.HWnd = (HWND) (*this);
 	_MaxEmissionCountDlg->setWrapper(&_MaxEmissionCountWrapper);
 	_MaxEmissionCountDlg->init(r.left, r.top, this);
+	_MaxEmissionCountWrapper.MaxEmissionCountDlg = _MaxEmissionCountDlg;
+
 
 
 	uint posX = 13;
@@ -301,4 +309,13 @@ void CEmitterDlg::OnBypassAutoLOD()
 	UpdateData();
 	_Emitter->setBypassAutoLOD(m_BypassAutoLOD ? true : false);
 	UpdateData(TRUE);	
+}
+
+void CEmitterDlg::CMaxEmissionCountWrapper::set(const uint32 &count)
+{
+   if (!E->setMaxEmissionCount((uint8) count))
+   {
+	   ::MessageBox(HWnd, PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+	   MaxEmissionCountDlg->updateValueFromReader();
+   }
 }

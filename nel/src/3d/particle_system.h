@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.31 2003/04/07 12:34:45 vizerie Exp $
+ * $Id: particle_system.h,v 1.32 2003/04/14 15:29:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,9 +96,11 @@ public:
 			/// serialize this particle system
 			void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
 			/** Merge this system with a system instanciated from the given shape
-			  * NB : for edition purpose, this is slow
+			  * NB : This is for edition purpose, this is slow
+			  * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+			  *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem.
 			  */
-			void merge(CParticleSystemShape *toMerge);
+			bool merge(CParticleSystemShape *toMerge);
 
 			/*** duplication method NOT SUPPORTED for now (duplication is using streams, but it may not last)
 			 * \param ch for private use, set to null by default
@@ -214,8 +216,10 @@ public:
 		/** Attach a process (such as a located : see particle_system_process.h, and ps_located.h) to the system. 
 		 *  It is then owned by the process and will be deleted by it. 
 		 *  if already present -> nl assert	 
+		 * \return true if the operation could be performed. It can fail when this cause the system the system to last forever,
+		 *              which is incompatible with the 'BypassMaxNumIntegrationSteps' in CParticleSystem
 		 */
-		void						attach(CParticleSystemProcess *process);
+		bool						attach(CParticleSystemProcess *process);
 
 		/** Detach a process from the system (but do not delete it)		  
 		  */ 
@@ -268,6 +272,9 @@ public:
 
 		/// get the time ellapsed since the system was created.
 		TAnimationTime getSystemDate(void) const { return _SystemDate; }
+
+		/// St the time of the system.
+		void setSystemDate(float date);
 
 		/** Get the date of the system (the number of time it has been drawn in fact)
 		 *  This may be used to skip frames in an animation for example.
@@ -431,7 +438,11 @@ public:
 			_TimeThreshold = threshold;
 			_MaxNbIntegrations = maxNbIntegrations;
 			_CanSlowDown = canSlowDown;
-			_KeepEllapsedTimeForLifeUpdate = keepEllapsedTimeForLifeUpdate;
+			if (_KeepEllapsedTimeForLifeUpdate != keepEllapsedTimeForLifeUpdate)
+			{			
+				_KeepEllapsedTimeForLifeUpdate = keepEllapsedTimeForLifeUpdate;
+				_PresetBehaviour = UserBehaviour;
+			}
 		}
 
 		/** get the parameters used for integration.
@@ -449,6 +460,41 @@ public:
 			keepEllapsedTimeForLifeUpdate = _KeepEllapsedTimeForLifeUpdate;
 		}
 
+		/** When activated, this bypass the limit on the max number of integration steps
+		  * This should NOT be used on FXs that are looping, because it would slow endlessly
+		  * Anyway if you try to do that an assertion will ocurrs
+		  * Typically, this is useful for spell fx because they are short, and it is important that they don't slow down
+		  * when framerate is too choppy
+		  */
+		void	setBypassMaxNumIntegrationSteps(bool bypass = true)
+		{			
+			if (_BypassIntegrationStepLimit != bypass)
+			{			
+				if (bypass)
+				{
+					if (!canFinish())
+					{
+						nlwarning("<CParticleSystem::setBypassMaxNumIntegrationSteps> Can't set flag to true. The system must have a finite duration");
+						nlassert(0); // the system can't stop!
+						return;
+					}
+				}
+				_BypassIntegrationStepLimit = bypass;
+				_PresetBehaviour = UserBehaviour;
+			}
+		}
+		bool	getBypassMaxNumIntegrationSteps() const { return _BypassIntegrationStepLimit; }
+		
+		/** Test if the system can finish (e.g it doesn't loop, doesn't have emitter with illimited lifetime)
+		  * NB : we assume that all emitters in the system are accessible, e.g that the located graph is connex
+		  */
+
+		bool canFinish() const;
+
+		/** Test if there are loops in the system. E.g A emit B emit A
+		  * NB : we assume that all emitters in the system are accessible, e.g that the located graph is connex
+		  */
+		bool hasLoop() const;
 
 		
 	// @}
@@ -653,19 +699,23 @@ public:
 			_PresetBehaviour = UserBehaviour;
 		}
 
+		// test if the destroy condition is currently verified
+		bool                isDestroyConditionVerified() const;
+
 		/// get the destroy condition
 		TDieCondition		getDestroyCondition(void) const { return _DieCondition; }
 
 		/** Set a delay before to apply the death condition test
-		  * This may be necessary : the system could be destroyed because there are no particles
-		  * , but no particles were emitted yet
-		  * This is an indication, and has no direct effect, and must be check by a third party (a model holding it for example)
+		  * This may be necessary : the system could be destroyed because there are no particles, but no particles were emitted yet
+		  * 
+		  * This is an indication, and has no direct effect, and must be check by calling isDestroyConditionVerified()
 		  * \see hasEmitters()
 		  * \see hasParticles()
 		  * \see getDelayBeforeDeathConditionTest()
-		  */
+		  */		
 		void setDelayBeforeDeathConditionTest(TAnimationTime delay) 
 		{
+
 			_DelayBeforeDieTest  = delay; 
 		}
 
@@ -747,10 +797,11 @@ public:
 								   * so that it doesn't start when the player first see
 								   * it
 								   */
-			SpellFX,
+			SpellFX,       
 			LoopingSpellFX,
 			MinorFX,
 			UserBehaviour,
+			MovingLoopingFX,	
 			PresetLast
 		};
 
@@ -951,7 +1002,8 @@ private:
 	bool										_KeepEllapsedTimeForLifeUpdate;
 	bool										_AutoLODSkipParticles;
 	bool										_EnableLoadBalancing;
-	bool										_EmitThreshold;
+	bool										_EmitThreshold;	
+	bool										_BypassIntegrationStepLimit;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	

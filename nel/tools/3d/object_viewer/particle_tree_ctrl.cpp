@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.40 2003/04/10 09:27:55 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.41 2003/04/14 15:32:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,6 +89,8 @@ static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT,
 static const uint NumIconIDs = sizeof(IconIDs) / sizeof(uint);
 
 
+const char *PS_NO_FINITE_DURATION_ARROR_MSG = "Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. Please remove that flag first.";
+
 // this map is used to create increasing names
 static std::map<std::string, uint> _PSElementIdentifiers;
 
@@ -165,9 +167,9 @@ void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
 			{
 				if (nt->LocatedInstanceIndex >= newSize)
 				{
-					_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
-					DeleteItem(currLocElement);					
 					delete nt;
+					_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
+					DeleteItem(currLocElement);										
 				}
 			}
 			currLocElement = nextCurrLocElement;		
@@ -596,10 +598,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			CPSLocated *loc = nt->Loc;			
 			CParticleSystem *ps = _ParticleDlg->getCurrPS();
 			ps->remove(loc);	
-			DeleteItem(GetSelectedItem());
-			delete nt;
-
+			DeleteItem(GetSelectedItem());			
 			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
+			delete nt;
 
 
 			// if the system is running, we must destroy initial infos about the located
@@ -733,9 +734,15 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			nlassert(nt->PS);
 			CPSLocated *copy = dynamic_cast<CPSLocated *>(::DupPSLocated(_LocatedCopy.get()));
 			if (!copy) break;
-			nt->PS->attach(copy);
-			createNodeFromLocated(copy, GetRootItem());
-			Invalidate();
+			if (nt->PS->attach(copy))
+			{			
+				createNodeFromLocated(copy, GetRootItem());
+				Invalidate();
+			}
+			else
+			{
+				MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+			}
 		}
 		break;
 		case IDM_PASTE_BINDABLE:
@@ -744,9 +751,16 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			nlassert(nt->Loc);
 			CPSLocatedBindable *copy = ::DupPSLocatedBindable(_LocatedBindableCopy.get());
 			if (!copy) break;
-			nt->Loc->bind(copy);
-			createNodeFromLocatedBindable(copy, GetSelectedItem());
-			Invalidate();
+			if (nt->Loc->bind(copy))
+			{			
+				createNodeFromLocatedBindable(copy, GetSelectedItem());
+				Invalidate();
+			}
+			else
+			{
+				delete copy;
+				MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+			}
 		}
 		break;
 
@@ -875,7 +889,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 						// link to the root for manipulation
 						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
 
-						nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape) );				
+						if (!nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape)))
+						{
+							MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+						}
 					}
 					NL3D::CNELU::Scene.deleteInstance(newModel);
 					NL3D::CNELU::Scene.getShapeBank()->reset();
@@ -970,12 +987,35 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			son = 0;
 			father = p.second;
 			lastSon = p.second;
-
+			if (_ParticleDlg->getCurrPS()->getBypassMaxNumIntegrationSteps())
+			{		
+				if (toCreate->getType() == NL3D::PSParticle || toCreate->getType() == NL3D::PSEmitter)
+				{				
+					nt->Loc->setInitialLife(1.f);
+				}
+				// object must have finite duration with that flag				
+			}
 		}
 		else
 		{
 			son = GetChildItem(GetSelectedItem());
 			father = GetSelectedItem();
+		}
+		
+		
+		if (!nt->Loc->bind(toCreate))
+		{
+			MessageBox("The system is flagged with 'No max Nb steps', or uses the preset 'Spell FX'. System must have finite duration. Can't add object. To solve this, set a limited life time for the father.", "Error", MB_ICONEXCLAMATION);
+			delete toCreate;
+			if (createLocAndBindable)
+			{			
+				nlassert(0);
+				/* ps->remove(nt->Loc);	
+				DeleteItem(father);				
+				_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
+				delete nt;*/
+			}
+			return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 		}
 			
 
@@ -995,7 +1035,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 		
 		
-		nt->Loc->bind(toCreate);
+
+		
 		CNodeType *newNt = new CNodeType(toCreate);
 		_NodeTypes.push_back(newNt);
 
@@ -1064,7 +1105,7 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 	
 	CPSLocated *loc = new CPSLocated;
 	loc->setName(name);
-	loc->setSystemBasis(true);	
+	loc->setSystemBasis(true);		
 	ps->attach(loc);
 
 	CNodeType *newNt = new CNodeType(loc);

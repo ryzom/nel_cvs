@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.38 2002/05/31 08:00:09 chafik Exp $
+ * $Id: unified_network.cpp,v 1.39 2002/06/11 14:46:19 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1180,6 +1180,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	}
 	else
 	{
+		host = InvalidSockId;
 		return cnx.Connection.CbClient;
 	}
 }
@@ -1213,6 +1214,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 	}
 	else
 	{
+		host = InvalidSockId;
 		return cnx.Connection.CbClient;
 	}
 }

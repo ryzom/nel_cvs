@@ -1,7 +1,7 @@
 /** \file build_clod_bank.cpp
  * build a .clodbank with a config file.
  *
- * $Id: build_clod_bank.cpp,v 1.3 2002/05/17 09:20:04 berenguier Exp $
+ * $Id: build_clod_bank.cpp,v 1.4 2002/05/28 13:25:38 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,10 +108,9 @@ int	main(int argc, char *argv[])
 		uint	lodId;
 		for (lodId = 0; lodId < (uint)clod_list.size(); lodId++)
 		{
-			string	lodFileName= clod_list.asString(lodId);
-			string	lodName= CFile::getFilenameWithoutExtension(lodFileName);
+			string	lodName= clod_list.asString(lodId);
 
-			printf("Process LOD: %s\n", lodFileName.c_str());
+			printf("Process LOD: %s\n", lodName.c_str());
 
 			// Search the variable with this name.
 			try
@@ -122,9 +121,9 @@ int	main(int argc, char *argv[])
 				CConfigFile::CVar &clod_anim_list = config.getVar (lodName);
 
 				// Correct format?
-				if(clod_anim_list.size()<2)
+				if(clod_anim_list.size()<3)
 				{
-					nlwarning("%s skipped. Must have at least the skeleton name, and one animation", lodFileName.c_str());
+					nlwarning("%s skipped. Must have at least the skeleton file name, the lod file name, and one animation", lodName.c_str());
 					// go to next.
 					continue;
 				}
@@ -147,6 +146,9 @@ int	main(int argc, char *argv[])
 					throw Exception("%s is not a Skeleton", skeletonName.c_str());
 				skeletonShape= (CSkeletonShape*)strShape.getShapePointer();
 
+				// The second var is the filename of the lod.
+				string	lodFileName= clod_anim_list.asString(1);
+
 				// Load the shape.
 				CLodCharacterShapeBuild		lodShapeBuild;
 				iFile.open( CPath::lookup(lodFileName) );
@@ -161,12 +163,12 @@ int	main(int argc, char *argv[])
 				// Traverse all anim in the list.
 				//===========================
 				uint	animId;
-				for (animId = 1; animId < (uint)clod_anim_list.size(); animId++)
+				for (animId = 2; animId < (uint)clod_anim_list.size(); animId++)
 				{
 					string	animFileName= clod_anim_list.asString(animId);
 
 					// display.
-					printf("Process Anim: %d/%d\r", animId, clod_anim_list.size()-1);
+					printf("Process Anim: %d/%d\r", animId-1, clod_anim_list.size()-2);
 
 					// Try to load the animation
 					CAnimation			*anim= new CAnimation;

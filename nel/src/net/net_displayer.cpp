@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.11 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.12 2000/11/27 13:25:40 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/message.h"
 #include "nel/net/naming_client.h"
+#include "nel/misc/debug.h"
 
 #include <string>
 
@@ -54,11 +55,10 @@ CNetDisplayer::CNetDisplayer() :
  */
 void CNetDisplayer::findAndConnect()
 {
-	CInetAddress servaddr;
-	uint16 validitytime; // unused for LOGS at the moment
-	if ( CNamingClient::lookup( "LOGS", servaddr, validitytime ) )
+	uint16 validitytime; // unused for LOGS
+	if ( CNamingClient::lookupAndConnect( "LOGS", _Server, validitytime ) )
 	{
-		setLogServer( servaddr );
+		nldebug( "Connected to logging service" );
 	}
 }
 

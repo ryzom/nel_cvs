@@ -45,6 +45,7 @@ fn copy_node my_source_node my_dest_node =
 		(
 			copy_node my_source_node.children[i] child
 		)
+		else
 	)
 )
 

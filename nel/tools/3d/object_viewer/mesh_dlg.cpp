@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.8 2003/06/30 15:32:00 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.9 2004/06/01 16:28:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ void CMeshDlg::OnBrowseShape()
 			MessageBox(e.what(), "shape loading error");
 		}		
 	}
-	UpdateData(false);
+	UpdateData(FALSE);
 }
 
 
@@ -130,7 +130,8 @@ BOOL CMeshDlg::OnInitDialog()
 		GetDlgItem(IDC_ENABLE_MORPHING)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_EDIT_MORPH)->ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_MORPH_FRAME)->ShowWindow(SW_HIDE);
-		m_ShapeName = _ShapeParticle->getShape().c_str();		
+		m_ShapeName = _ShapeParticle->getShape().c_str();
+		UpdateData(FALSE);
 	}
 	else
 	{		

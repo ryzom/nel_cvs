@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.13 2003/07/03 15:16:43 boucher Exp $
+ * $Id: source.h,v 1.14 2004/08/30 12:34:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,7 +150,20 @@ public:
 	virtual void					getCone( float& innerAngle, float& outerAngle, float& outerGain ) const = 0;
 	/// Set any EAX source property if EAX available
 	virtual void					setEAXProperty( uint prop, void *value, uint valuesize ) = 0;
-	/// Testing
+	/** Set the alpha value for the volume-distance curve
+	 *
+	 *	Usefull only if MANUAL_ROLLOFF==1. value from -1 to 1 (default 0)
+	 * 
+	 *  alpha = 0.0: the volume will decrease linearly between 0dB and -100 dB
+	 *  alpha = 1.0: the volume will decrease linearly between 1.0 and 0.0 (linear scale)
+	 *  alpha = -1.0: the volume will decrease inversely with the distance (1/dist). This
+	 *                is the default used by DirectSound/OpenAL
+	 * 
+	 *  For any other value of alpha, an interpolation is be done between the two
+	 *  adjacent curves. For example, if alpha equals 0.5, the volume will be halfway between
+	 *  the linear dB curve and the linear amplitude curve.
+	 */
+	/// 
 	virtual void					setAlpha(double a) {  }
 	//@}
 
@@ -169,6 +182,9 @@ protected:
 	// Sound loader (streaming mode, if _Buffer==NULL)
 	ILoader							*_Loader;
 
+	// common method used only if MANUAL_ROLLOFF==1. return the volume in 1/100th DB modified
+	sint32		computeManualRollOff(sint32 volumeDB, sint32 dbMin, sint32 dbMax, double alpha, float sqrdist) const;
+	
 };
 
 

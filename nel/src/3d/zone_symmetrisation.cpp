@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.4 2003/03/20 17:55:16 lecroart Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.5 2003/04/23 10:06:09 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -872,7 +872,7 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 									else if (neighborState != neighborNode.State)
 									{
 										// Error, same tile but not same state
-										nlwarning ("CZoneSymmetrisation::propagateTileState: error, find same iso surfaces with different state.");
+										// nlwarning ("CZoneSymmetrisation::propagateTileState: error, find same iso surfaces with different state.");
 
 										// No propagation, continue
 										currentNode.Edge++;

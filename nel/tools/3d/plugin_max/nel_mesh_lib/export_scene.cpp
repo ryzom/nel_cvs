@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.30 2003/04/22 16:27:18 distrib Exp $
+ * $Id: export_scene.cpp,v 1.31 2003/04/23 10:06:09 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,7 +234,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 				{
 					// ERROR : The volume is not convex !!!
 					char tam[256];
-					sprintf(tam,"The cluster %s is not convex.",vectNode[i]->GetName());
+					sprintf(tam,"ERROR: The cluster %s is not convex.",vectNode[i]->GetName());
 					//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
 					nlwarning(tam);
 				}
@@ -332,7 +332,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 			{
 				// ERROR : Poly not convex, or set of vertices not plane
 				char tam[256];
-				sprintf(tam,"The portal %s is not convex.",vectNode[i]->GetName());
+				sprintf(tam,"ERROR: The portal %s is not convex.",vectNode[i]->GetName());
 				//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
 				nlwarning(tam);
 			}
@@ -358,7 +358,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 			{
 				// ERROR
 				char tam[256];
-				sprintf(tam,"The portal %s has not 2 clusters.",vectNode[i]->GetName());
+				sprintf(tam,"ERROR: The portal %s has not 2 clusters.",vectNode[i]->GetName());
 				//MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
 				nlwarning(tam);
 			}
@@ -418,7 +418,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 									NL3D::CParticleSystemShape *pss = dynamic_cast<NL3D::CParticleSystemShape *>(ss.getShapePointer());
 									if (!pss)
 									{
-										nlwarning("Node %s shape is not a FX", CExportNel::getName(*pNode));
+										nlwarning("ERROR: Node %s shape is not a FX", CExportNel::getName(*pNode));
 									}
 									else
 									{									
@@ -450,7 +450,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 							}							
 							if (buildMeshBBox)
 							{
-								nlwarning("Can't get bbox of a particle system from its shape, using helper bbox instead");
+								nlwarning("ERROR: Can't get bbox of a particle system from its shape, using helper bbox instead");
 							}
 						}
 					}

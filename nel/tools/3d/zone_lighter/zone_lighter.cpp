@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.24 2002/07/03 08:45:51 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.25 2002/07/08 18:04:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,6 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 		nlinfo(e.what());
 	}
 }
-
 
 //=======================================================================================
 int main(int argc, char* argv[])

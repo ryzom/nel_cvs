@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.34 2002/07/02 15:56:27 lecroart Exp $
+ * $Id: displayer.cpp,v 1.35 2002/07/08 18:04:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -464,21 +464,25 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 	}
 	else
 	{
-		// Ask the user to continue, debug or ignore
-		int result = MessageBox (NULL, ss2.str().c_str (), logTypeToString(args.LogType, true), MB_ABORTRETRYIGNORE | MB_ICONSTOP);
-		if (result == IDABORT)
+		// Check the envvar NEL_IGNORE_ASSERT
+		if (getenv ("NEL_IGNORE_ASSERT") == NULL)
 		{
-			// Exit the program now
-			exit (EXIT_FAILURE);
-		}
-		else if (result == IDRETRY)
-		{
-			// Give the debugger a try
-			DebugNeedAssert = true;
- 		}
-		else if (result == IDIGNORE)
-		{
-			// Continue, do nothing
+			// Ask the user to continue, debug or ignore
+			int result = MessageBox (NULL, ss2.str().c_str (), logTypeToString(args.LogType, true), MB_ABORTRETRYIGNORE | MB_ICONSTOP);
+			if (result == IDABORT)
+			{
+				// Exit the program now
+				exit (EXIT_FAILURE);
+			}
+			else if (result == IDRETRY)
+			{
+				// Give the debugger a try
+				DebugNeedAssert = true;
+ 			}
+			else if (result == IDIGNORE)
+			{
+				// Continue, do nothing
+			}
 		}
 	}
 

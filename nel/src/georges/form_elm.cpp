@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.12 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.13 2002/05/31 18:00:58 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1754,7 +1754,8 @@ void CFormElmStruct::build (const CFormDfn *dfn)
 
 void CFormElmStruct::unlink (CFormElm *child)
 {
-	for (uint i=0; i<Elements.size (); i++)
+  uint i;
+	for (i=0; i<Elements.size (); i++)
 	{
 		if (Elements[i].Element == child)
 		{

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.97 2003/05/28 12:57:11 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.98 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,7 @@ public:
 // ***************************************************************************
 
 IMPLEMENT_DYNCREATE(CObjView, CView)
+
 
 // ***************************************************************************
 

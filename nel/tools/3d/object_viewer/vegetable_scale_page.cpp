@@ -17,6 +17,7 @@
 
 IMPLEMENT_DYNCREATE(CVegetableScalePage, CPropertyPage)
 
+
 CVegetableScalePage::CVegetableScalePage() : CPropertyPage(CVegetableScalePage::IDD),
 	_SxyDlg(NULL), _SzDlg(NULL), _BendFreqFactorDlg(NULL)
 {

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.42 2003/06/30 15:31:51 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.43 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,7 +347,6 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		break;
 	}
 	
-
 	
 }
 

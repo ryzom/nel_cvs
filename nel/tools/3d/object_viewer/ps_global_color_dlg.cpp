@@ -1,6 +1,6 @@
 /** \file ps_global_color_dlg.cpp
  * This dialog helps to tune the global color of the system depending on its distance.
- * $Id: ps_global_color_dlg.cpp,v 1.3 2002/11/04 15:40:45 boucher Exp $
+ * $Id: ps_global_color_dlg.cpp,v 1.4 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,7 @@ BOOL CPSGlobalColorDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	_GlobalColorWrapper.PS = _PS;
 	
+
 	RECT r;	
 	CAttribDlgRGBA *adr = new CAttribDlgRGBA("GLOBAL_PS_COLOR");	
 	adr->setSchemeWrapper(&_GlobalColorWrapper);
@@ -110,7 +111,7 @@ BOOL CPSGlobalColorDlg::OnInitDialog()
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PARTICLE_COLOR));
 	adr->init(bmh, r.left, r.top, this);
 	pushWnd(adr);
-	
+
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

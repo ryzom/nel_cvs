@@ -1,7 +1,7 @@
 /** \file texture_anim_dlg.cpp
  * Dialog used to tune animation of texture on particles
  *
- * $Id: texture_anim_dlg.cpp,v 1.6 2002/11/04 15:40:45 boucher Exp $
+ * $Id: texture_anim_dlg.cpp,v 1.7 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,7 @@ void CTextureAnimDlg::setupCtrl(void)
 	{
 		if (!_TextureIndexDialog)
 		{
+			
 			_TextureIndexDialog = new CAttribDlgInt("TEXTURE_INDEX", 0, _EditedParticle->getTextureGroup()->getNbTextures() - 1);
 			
 			_TextureIndexWrapper.P = _EditedParticle;
@@ -157,9 +158,6 @@ void CTextureAnimDlg::setupCtrl(void)
 			GetDlgItem(IDC_MULTITEX)->EnableWindow(0);
 		}	
 	}
-
-	
-
 
 	UpdateData(FALSE);
 }

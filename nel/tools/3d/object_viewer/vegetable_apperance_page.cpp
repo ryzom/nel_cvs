@@ -17,6 +17,8 @@
 
 IMPLEMENT_DYNCREATE(CVegetableApperancePage, CPropertyPage)
 
+
+
 CVegetableApperancePage::CVegetableApperancePage() : CPropertyPage(CVegetableApperancePage::IDD),
 	_BendPhaseDlg(NULL), _BendFactorDlg(NULL), _ColorDlg(NULL)
 {

@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.15 2003/04/14 15:32:43 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.16 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	const sint xPos = 80;
 	sint yPos = 162;
 
+
 	_MaxViewDistDlg = new CEditableRangeFloat (std::string("MAX VIEW DIST"), 0, 100.f);
 	_MaxViewDistWrapper.PS = _PS;
 	_MaxViewDistDlg->enableLowerBound(0, true);
@@ -162,6 +163,8 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);	
+
+		
 }
 
 //=====================================================
@@ -486,7 +489,7 @@ void CParticleSystemEdit::OnEditGlobalColor()
 {
 	nlassert(!_GlobalColorDlg);
 	GetDlgItem(IDC_GLOBAL_COLOR)->EnableWindow(FALSE);
-	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);		
+	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);
 	CPSGlobalColorDlg *gcd = new CPSGlobalColorDlg(_PS, this, this);
 	gcd->init(this);
 	_GlobalColorDlg = gcd;

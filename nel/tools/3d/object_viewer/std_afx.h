@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.13 2003/02/06 09:55:52 berenguier Exp $
+ * $Id: std_afx.h,v 1.14 2003/07/02 17:26:31 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,8 @@
 #include <nel/3d/logic_info.h>
 
 #include <nel/pacs/u_global_position.h>
+
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

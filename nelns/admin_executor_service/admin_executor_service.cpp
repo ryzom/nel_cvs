@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.67 2004/10/21 11:50:02 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.67.6.1 2004/12/24 14:14:05 vuarand Exp $
  *
  */
 
@@ -428,7 +428,7 @@ static void checkPingPong ()
 					nlwarning("Service %s-%hu seems dead, no answer for the last %d second, I kill it right now and relaunch it in few time", Services[i].LongName.c_str(), Services[i].ServiceId, (uint32)PingTimeout);
 					Services[i].AutoReconnect = false;
 					Services[i].Relaunch = true;
-					killProgram(Services[i].PId);
+					abortProgram(Services[i].PId);
 					Services[i].LastPing = 0;
 				}
 			}
@@ -830,6 +830,12 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								killProgram(Services[j].PId);
 								send = false;
 							}
+							else if (subvarpath.Destination[k].first == "State=-2")
+							{
+								Services[j].AutoReconnect = false;
+								abortProgram(Services[j].PId);
+								send = false;
+							}
 							else if (subvarpath.Destination[k].first == "State=2")
 							{
 								Services[j].AutoReconnect = false;
@@ -1073,6 +1079,12 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								{
 									sits[p]->AutoReconnect = false;
 									killProgram(sits[p]->PId);
+									send = false;
+								}
+								else if (subvarpath.Destination[k].first == "State=-2")
+								{
+									sits[p]->AutoReconnect = false;
+									abortProgram(sits[p]->PId);
 									send = false;
 								}
 								else if (subvarpath.Destination[k].first == "State=2")

@@ -402,6 +402,94 @@ SOURCE=.\misc\config_file\config_file.yacc.cpp.h
 # Begin Group "Events"
 
 # PROP Default_Filter ""
+# Begin Group "direct input"
+
+# PROP Default_Filter ""
+# Begin Group "direct input devices"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\di_game_device.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\di_game_device.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\di_keyboard_device.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\di_keyboard_device.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\di_mouse_device.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\di_mouse_device.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\misc\di_event_emitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\di_event_emitter.h
+# End Source File
+# End Group
+# Begin Group "win32"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\win_event_emitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win_event_emitter.h
+# End Source File
+# End Group
+# Begin Group "devices"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\misc\game_device.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\input_device.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\input_device.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\input_device_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\input_device_server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\input_device_server.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\keyboard_device.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\mouse_device.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\misc\event_emitter.cpp
@@ -409,6 +497,14 @@ SOURCE=.\misc\event_emitter.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\event_emitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\event_emitter_multi.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\event_emitter_multi.h
 # End Source File
 # Begin Source File
 
@@ -436,11 +532,11 @@ SOURCE=..\include\nel\misc\events.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\win_event_emitter.cpp
+SOURCE=.\misc\game_device_events.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\win_event_emitter.h
+SOURCE=..\include\nel\misc\game_device_events.h
 # End Source File
 # End Group
 # Begin Group "Memory"

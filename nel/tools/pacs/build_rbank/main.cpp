@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.16 2004/02/03 15:25:34 legros Exp $
+ * $Id: main.cpp,v 1.17 2004/02/03 17:27:35 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,7 +182,7 @@ void	initMoulinette()
 		OutputRootPath = getString(cf, "OutputRootPath");
 		UseZoneSquare = getBool(cf, "UseZoneSquare", false);
 
-		WaterThreshold = getFloat(cf, "WaterThreshold", 0.0);
+		WaterThreshold = getFloat(cf, "WaterThreshold", 1.0);
 
 		//if (TessellateZones || MoulineZones)
 		{

@@ -393,6 +393,18 @@ void createDirectory (const string &dir)
 	NLMISC::CFile::createDirectory (dir);
 }
 
+bool setFileTime (const char *filename, const FILETIME &result)
+{
+	HANDLE handle = CreateFile (filename, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (handle)
+	{
+		SetFileTime (handle, NULL, NULL, &result);
+		CloseHandle (handle);
+		return true;
+	}
+	return false;
+}
+
 void CData_mirrorDlg::OnOK() 
 {
 	// Update first
@@ -408,6 +420,12 @@ void CData_mirrorDlg::OnOK()
 
 	const uint totalCount = FilesToUpdate[Modified].size () + FilesToUpdate[Added].size () + FilesToUpdate[Removed].size ();
 	uint currentFile = 0;
+
+	// System time
+	SYSTEMTIME systemTime;
+	GetSystemTime(&systemTime);
+	FILETIME fileTime;
+	nlverify (SystemTimeToFileTime (&systemTime, &fileTime));
 
 	// Update files
 	std::vector<string> &modifiedList = FilesToUpdate[Modified];
@@ -431,6 +449,9 @@ void CData_mirrorDlg::OnOK()
 				MB_OK|MB_ICONEXCLAMATION);
 			success = false;
 		}
+
+		// Touch 
+		setFileTime (dest.c_str(), fileTime);
 	}
 
 	std::vector<string> &addedList = FilesToUpdate[Added];
@@ -453,6 +474,9 @@ void CData_mirrorDlg::OnOK()
 				MB_OK|MB_ICONEXCLAMATION);
 			success = false;
 		}
+
+		// Touch 
+		setFileTime (dest.c_str(), fileTime);
 	}
 
 	std::vector<string> &removedList = FilesToUpdate[Removed];

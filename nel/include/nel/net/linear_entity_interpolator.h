@@ -1,7 +1,7 @@
 /** \file linear_entity_interpolator.h
  * Linear interpolation of entity
  *
- * $Id: linear_entity_interpolator.h,v 1.1 2000/11/20 15:51:49 cado Exp $
+ * $Id: linear_entity_interpolator.h,v 1.2 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,8 @@ namespace NLNET {
 
 
 /**
- * Linear interpolation of entity
+ * Linear interpolation of entity.
+ * See IEntityInterpolator for an explanation.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

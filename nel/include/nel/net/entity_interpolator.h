@@ -1,7 +1,7 @@
 /** \file entity_interpolator.h
  * Base class for entity interpolation
  *
- * $Id: entity_interpolator.h,v 1.1 2000/11/20 15:51:49 cado Exp $
+ * $Id: entity_interpolator.h,v 1.2 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,11 @@ namespace NLNET {
 
 
 /**
- * Base class for entity interpolation
+ * Base class for entity interpolation.
+ * Call begin() to start interpolation from a source entity state to a destination entity state.
+ * active() becomes true. Then call getNextState() with the duration since the last call. When the sum of duration amounts passed
+ * to getNextState() reach the interpolation duration passed to begin(), the interpolator will become
+ * inactive again (i.e. active() will return false).
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.h
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.h,v 1.2 2000/11/22 15:56:47 cado Exp $
+ * $Id: cubic_entity_interpolator.h,v 1.3 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,8 @@ namespace NLNET {
 
 /**
  * Cubic interpolation of entity.
- * Uses Bezier splines for curve-fitting.
+ * See IEntityInterpolator for an explanation.
+ * This class uses Bezier splines for curve-fitting.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

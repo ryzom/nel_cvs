@@ -1,7 +1,7 @@
 /** \file matrix.h
  * <description>
  *
- * $Id: matrix.h,v 1.8 2000/11/22 13:13:29 berenguier Exp $
+ * $Id: matrix.h,v 1.9 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,7 +253,7 @@ public:
 		return mulPoint(v);
 	}
 
-	/// Multiply
+	/// Multiply with an homogenous vector
 	CVectorH	operator*(const CVectorH& v) const;
 	//@}
 

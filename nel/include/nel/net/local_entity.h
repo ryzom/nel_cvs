@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.7 2000/11/20 15:51:49 cado Exp $
+ * $Id: local_entity.h,v 1.8 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,8 +36,8 @@ namespace NLNET {
 
 
 /**
- * A moving entity that is locally controlled
- * 
+ * A moving entity that is locally controlled.
+ * This class represents a user.
  * Motion (e.g. vertical motion) does not work properly yet
  * \warning This class is test code and is highly subject to change.
  * \author Olivier Cado

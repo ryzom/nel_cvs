@@ -1,7 +1,7 @@
 /** \file remote_entity.h
  * Remote-controlled entities
  *
- * $Id: remote_entity.h,v 1.5 2000/11/20 15:51:49 cado Exp $
+ * $Id: remote_entity.h,v 1.6 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,8 +37,9 @@ namespace NLNET {
 
 
 /**
- * A remote-controlled replica, with convergency
- * \warning This class is test code and is highly subject to change.
+ * A remote-controlled replica, with convergency.
+ * All you can do is create a remote entity, update its state and change it (using a convergency
+ * algorithm) from another entity state
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file vector_h.h
  * Homogeneous vector
  *
- * $Id: vector_h.h,v 1.1 2000/11/17 11:10:38 cado Exp $
+ * $Id: vector_h.h,v 1.2 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,8 @@ namespace NLMISC {
 
 
 /**
- * Homogeneous vector
+ * Homogeneus vector.
+ * A CVectorH has a fourth value, w.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

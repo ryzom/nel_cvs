@@ -1,7 +1,7 @@
 /** \file replica.h
  * A moving entity that is controlled from elsewhere
  *
- * $Id: replica.h,v 1.1 2000/11/20 15:51:49 cado Exp $
+ * $Id: replica.h,v 1.2 2000/11/23 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,8 @@ namespace NLNET {
 
 
 /**
- * A moving entity that is controlled from elsewhere
+ * A moving entity that is controlled from elsewhere.
+ * All you can do is create a replica, update its state, and change it by copying an entity state.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

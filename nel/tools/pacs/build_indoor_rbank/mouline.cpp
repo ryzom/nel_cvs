@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.6 2004/01/29 17:35:21 legros Exp $
+ * $Id: mouline.cpp,v 1.7 2004/02/13 16:15:42 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,8 +411,10 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 		if (normal.z < 0.0f)
 		{
 			nlwarning("Face %d in cmb (%s) has negative normal! -- face is flipped", i, cmb.Faces[i].Surface == CCollisionFace::InteriorSurfaceFirst ? "interior" : "exterior");
+/*
 			std::swap(cmb.Faces[i].V[1], cmb.Faces[i].V[2]);
 			std::swap(cmb.Faces[i].Visibility[1], cmb.Faces[i].Visibility[2]);
+*/
 		}
 	}
 

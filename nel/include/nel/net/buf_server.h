@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: buf_server.h,v 1.2 2001/05/10 08:49:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,8 +257,10 @@ protected:
 	/// Pushes a buffer to the specified host's send queue and update (unless not connected)
 	void pushBufferToHost( const std::vector<uint8>& buffer, TSockId hostid )
 	{
-		hostid->pushBuffer( buffer );
-		_BytesPushedOut += buffer.size() + sizeof(TBlockSize); // statistics
+		if ( hostid->pushBuffer( buffer ) )
+		{
+			_BytesPushedOut += buffer.size() + sizeof(TBlockSize); // statistics
+		}
 	}
 
 	// Creates a new task and run a new thread for it

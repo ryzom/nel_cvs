@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.2 2001/05/10 08:17:41 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.3 2001/05/10 08:49:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,13 +71,8 @@ CBufClient::CBufClient( bool nodelay ) :
 void CBufClient::connect( const CInetAddress& addr )
 {
 	nlnettrace( "CBufClient::connect" );
-	_BufSock->Sock->connect( addr );
+	_BufSock->connect( addr, _NoDelay, true );
 	_Connected = true;
-	_BufSock->_KnowConnected = true; // because there is no connection advertising for the client version
-	if ( _NoDelay )
-	{
-		_BufSock->Sock->setNoDelay( true );
-	}
 	_PrevBytesDownloaded = 0;
 	_PrevBytesUploaded = 0;
 	/*_PrevBytesReceived = 0;
@@ -226,12 +221,11 @@ void CBufClient::disconnect( bool quick )
 		_BufSock->flush();
 	}
 
-	// Disconnect
-	_BufSock->Sock->disconnect();
+	// Disconnect and prevent from advertising the disconnection
+	_BufSock->disconnect( false );
 
-	// Reset _Connected and prevent from advertising the disconnection
+	// Reset _Connected
 	_Connected = false;
-	_BufSock->_KnowConnected = false;
 
 	// Empty the receive queue
 	{

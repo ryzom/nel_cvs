@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.2 2001/05/04 09:52:56 coutelas Exp $
+ * $Id: buf_sock.cpp,v 1.3 2001/05/10 08:49:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -239,6 +239,30 @@ bool CBufSock::update()
 	}
 //	nlnettrace( "CBufSock::update-END nosend" );
 	return true;
+}
+
+
+/*
+ * Connects to the specified addr; set connectedstate to true if no connection advertising is needed
+ */
+void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedstate )
+{
+	Sock->connect( addr );
+	_KnowConnected = connectedstate;
+	if ( nodelay )
+	{
+		Sock->setNoDelay( true );
+	}
+}
+
+
+/*
+ * Disconnects; set connectedstate to false if no disconnection advertising is needed
+ */
+void CBufSock::disconnect( bool connectedstate )
+{
+	Sock->disconnect();
+	_KnowConnected = connectedstate;
 }
 
 

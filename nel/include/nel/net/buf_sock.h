@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: buf_sock.h,v 1.2 2001/05/10 08:49:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,7 +154,7 @@ protected:
 	}
 
 	/** Pushes a buffer to the send queue and update,
-	 * or returns false if the socket is not physically connected or an error occured during sending
+	 * or returns false if the socket is not physically connected the or an error occured during sending
 	 */
 	bool pushBuffer( const std::vector<uint8>& buffer )
 	{
@@ -170,11 +170,22 @@ protected:
 		return false;
 	}
 
+	/// Connects to the specified addr; set connectedstate to true if no connection advertising is needed
+	void connect( const CInetAddress& addr, bool nodelay, bool connectedstate );
+
+	/// Disconnects; set connectedstate to false if no disconnection advertising is needed
+	void disconnect( bool connectedstate );
+
+	/// Returns the "logically connected" state (changed automatically when processing a connection/disconnection callback)
+	bool connectedState() const { return _KnowConnected; }
+
 	// Send queue
 	NLMISC::CBufFIFO	SendFifo;
 
 	// Socket (pointer because it can be allocated by an accept())
 	CTcpSock			*Sock;
+
+protected:
 
 	// Connected state
 	bool				_KnowConnected;

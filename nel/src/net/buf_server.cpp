@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.2 2001/05/10 08:49:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,7 +270,11 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
 					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
 					{
-						pushBufferToHost( buffer, *ipb );
+						// Send only if the socket is logically connected
+						if ( (*ipb)->connectedState() ) 
+						{
+							pushBufferToHost( buffer, *ipb );
+						}
 					}
 				}
 			}

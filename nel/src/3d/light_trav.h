@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: light_trav.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ const NLMISC::CClassId		LightTravId= NLMISC::CClassId(0x328f500a, 0x57600db9);
  * The light traversal.
  * The purpose of this traversal is to compute lighting on lightable objects.
  *
- * TODO.
+ * \todo yoyo: implement this.
  *
  * NB: see CScene for 3d conventions (orthonormal basis...)
  * \sa CScene IBaseLightObs

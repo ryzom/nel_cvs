@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.11 2001/06/12 14:15:19 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.12 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -313,7 +313,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 			 so the cylinder will penetrate SB/SC...
 			 This case arise at best if chains SA/SB and chain SB/SC do an angle of 45°
 
-			 TODO: this is a Hack.
+			 \todo yoyo: this is a Hack.
 			*/
 			if(sensPos==sensSpeed && (-dist)<0.5*radius)
 			{

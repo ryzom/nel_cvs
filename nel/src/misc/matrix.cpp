@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.25 2001/04/04 12:59:17 berenguier Exp $
+ * $Id: matrix.cpp,v 1.26 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,7 +461,7 @@ CVector		CMatrix::getK() const
 // ======================================================================================================
 void		CMatrix::get(float m44[16]) const
 {
-	// TODO_OPTIMIZE_it.
+	// \todo yoyo: TODO_OPTIMIZE_it.
 	testExpandRot();
 	testExpandTrans();
 	testExpandProj();
@@ -733,7 +733,7 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 	ret.StateBit= StateBit | m.StateBit;
 	ret.StateBit&= ~MAT_VALIDALL;
 
-	// TODO_OPTIMIZE it...
+	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
 	testExpandTrans();
 	testExpandProj();
@@ -1080,7 +1080,7 @@ CMatrix		CMatrix::inverted() const
 
 	CMatrix	ret;
 
-	// TODO_OPTIMIZE it...
+	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
 	testExpandTrans();
 	testExpandProj();
@@ -1164,7 +1164,7 @@ bool		CMatrix::normalize(TRotOrder ro)
 	tj= getJ();
 	tk= getK();
 
-	// TODO_OPTIMIZE it...
+	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
 
 	// Normalize with help of ro
@@ -1281,7 +1281,7 @@ CVectorH	CMatrix::operator*(const CVectorH& v) const
 
 	CVectorH ret;
 
-	// TODO_OPTIMIZE it...
+	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
 	testExpandTrans();
 	testExpandProj();
@@ -1297,7 +1297,7 @@ CVectorH	CMatrix::operator*(const CVectorH& v) const
 // ======================================================================================================
 CPlane		operator*(const CPlane &p, const CMatrix &m)
 {
-	// TODO_OPTIMIZE it...
+	// \todo yoyo: TODO_OPTIMIZE it...
 	m.testExpandRot();
 	m.testExpandTrans();
 	m.testExpandProj();

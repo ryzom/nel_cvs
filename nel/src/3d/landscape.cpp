@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.60 2001/06/21 13:13:21 berenguier Exp $
+ * $Id: landscape.cpp,v 1.61 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,7 +395,7 @@ void			CLandscape::updateGlobals (const CVector &refineCenter) const
 	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
 
 	// Tile Pixel size part.
-	// TODO: choose according to wanted tile pixel size.
+	// \todo yoyo: choose according to wanted tile pixel size.
 	CTessFace::TilePixelSize= 128.0f;
 
 	// RefineThreshold.
@@ -619,7 +619,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 		}
 		else
 		{
-			// TODO_CLOUD: setup stage0, and setup texcoord generation.
+			// \todo yoyo: TODO_CLOUD: setup stage0, and setup texcoord generation.
 
 			// Render the lightmap.
 			for(sint lightRdrPass=0; lightRdrPass<(sint)_TextureNears.size(); lightRdrPass++)

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.40 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.41 2001/06/29 13:04:13 berenguier Exp $
  *
  */
 
@@ -48,7 +48,7 @@ const	uint8	TileUvFmtNormal5= 4;
 
 
 // ***************************************************************************
-// TODO: may change this.
+// \todo yoyo: may change this.
 const	float TileSize= 128;
 
 

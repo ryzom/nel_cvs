@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.26 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh.cpp,v 1.27 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,7 +215,7 @@ void	CMeshGeom::build(CMesh::CMeshBuild &m)
 	{
 		// Build RdrPass ids.
 		_MatrixBlocks[mb].RdrPass.resize(m.Materials.size());
-		// TODO_OPTIMIZE: it should be interesting to sort the materials, depending on their attributes. But must change next loop too...
+		// \todo yoyo: TODO_OPTIMIZE: it should be interesting to sort the materials, depending on their attributes. But must change next loop too...
 		for(i=0;i<(sint)_MatrixBlocks[mb].RdrPass.size(); i++)
 		{
 			_MatrixBlocks[mb].RdrPass[i].MaterialId= i;

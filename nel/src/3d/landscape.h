@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,7 +185,7 @@ public:
 	/// Get Maximum Tile subdivision.
 	uint 			getTileMaxSubdivision ();
 
-	// TODO: other landscape param setup (Transition etc...).
+	// \todo yoyo: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.51 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: patch.cpp,v 1.52 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ void			CPatch::computeDefaultErrorSize()
 	CVector			&v1= p.Vertices[1];
 	CVector			&v2= p.Vertices[2];
 
-	// TODO_NOISE: modulate this value with tangents (roundiness of patch), and with the displacement map.
+	// \todo yoyo: TODO_NOISE: modulate this value with tangents (roundiness of patch), and with the displacement map.
 	ErrorSize= ((v1 - v0)^(v2 - v0)).norm();
 
 }
@@ -628,7 +628,7 @@ void			CPatch::appendFaceToRenderList(CTessFace *face)
 		TessBlocks[numtb].extendSphere(face->VLeft->EndPos);
 		TessBlocks[numtb].extendSphere(face->VRight->EndPos);
 		// I think this should be done too on StartPos, for geomorph (rare??...) problems.
-		// TODO: is this necessary???
+		// \todo yoyo: is this necessary???
 		TessBlocks[numtb].extendSphere(face->VBase->StartPos);
 		TessBlocks[numtb].extendSphere(face->VLeft->StartPos);
 		TessBlocks[numtb].extendSphere(face->VRight->StartPos);
@@ -752,7 +752,7 @@ void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// TODO_OPTIMIZE: mgt TessEdgeBlock. For now, insert them in MasterBlock...
+	// \todo yoyo: TODO_OPTIMIZE: mgt TessEdgeBlock. For now, insert them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.append(fv);
@@ -773,7 +773,7 @@ void			CPatch::removeFarVertexFromRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// TODO_OPTIMIZE: mgt TessEdgeBlock. For now, remove them in MasterBlock...
+	// \todo yoyo: TODO_OPTIMIZE: mgt TessEdgeBlock. For now, remove them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.remove(fv);
@@ -1017,7 +1017,7 @@ CVector			CPatch::computeVertex(float s, float t) const
 	// First, unpack...
 	CBezierPatch	*patch= unpackIntoCache();
 
-	// TODO_NOISE/TODO_UVCORRECT: use UV correction, and use displacement map, to disturb result.
+	// \todo yoyo: TODO_NOISE/TODO_UVCORRECT: use UV correction, and use displacement map, to disturb result.
 	return patch->eval(s,t);
 }
 // ***************************************************************************
@@ -1267,7 +1267,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 		if(doClipFar)
 			TessBlocks[i].clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
 	}
-	// TODO_OPTIMIZE: CTessBlockEdge gestion.
+	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion.
 
 
 
@@ -1291,7 +1291,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 		}
 	}
-	// TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
+	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
 
 	// FAR1.
 	//=======
@@ -1310,7 +1310,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 		}
 	}
-	// TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
+	// \todo yoyo: TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
 
 
 	// TILE.
@@ -1782,7 +1782,7 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	// Can't test if OK, since bind 2/1 or 4/1 are not unbound.
 
 	// Just recompute base vertices.
-	// TODO_NOISE. bind the noise info before.
+	// \todo yoyo: TODO_NOISE. bind the noise info before.
 	CTessVertex *a= BaseVertices[0];
 	CTessVertex *b= BaseVertices[1];
 	CTessVertex *c= BaseVertices[2];

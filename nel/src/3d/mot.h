@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mot.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,95 +45,6 @@ namespace	NLMISC
 
 namespace	NL3D
 {
-
-/*
-	// THIS IS NOT TRADUCED BECAUSE NOT FIXED YET.
-
-	IDEES / TODO:
-
-	- Pour la recherche de texture/mesh sur le disque, il faudrait implémenter un objet CPath, qui représente
-	  un simili PATH, avec des méthodes add() / del() / get(i), et une méthode open(TFile) ou TFile est un objet fichier
-	  avec une fonction "bool open(string )".
-	- Imaginons que l'on veuille implémenter un système de cache avancé: un fichier peut se trouver en mémoire, sur disque,
-	  ou sur le réseau. On pourrait faire cela en utilisant simplement CPath, et en utilisant un CMetaFile, classe qui
-	  ouvrir un type de stream suivant le nom de la string ouverte (CMemoryStream, CFile, CMessage ...).
-
-	- On pourrait implémenter un Observer de clip qui clip par matériau aussi, en faisant une sorte de 
-	  batch culling: On stocke par matériau un "plan directeur" et un delta d'erreur accepté (à préciser...)
-
-*/
-
-
-
-/*
-	// THIS IS NOT TRADUCED BECAUSE NOT FIXED YET.
-
-  Le moteur est basé sur un modèle Model / Observer / Traversal. (MOT).
-
-  Graph de classe Model / Observer / Traversal  (Model, Obs, Trav)
-
-  CMOT contient N traversals de type différents. Typiquement, les 4 traversals de base sont:
-
-CHandleTrav:	la hierarchie d'objet. Le graph est un arbre. Le Traverser donne toutes les WorldMatrix des objets,
-	necessaire aux autres traversals.
-CCullTrav:	le graph de visibilité. Ce traversal affecte directement CRenderTrav, en ajoutant les objets visibles.
-CLightTrav:	le graph de dépendance Light/Objet. Ce graph est aussi un arbre. Il indique quels objets sont illuminés par 
-	quelle source lumineuse. Le traversal déduit par noeud une liste des lights qui l'ilumine.
-CRenderTrav: la liste triée en Z des objets à rendre.
-
-
-  On a un SceneGraph en organisant les observers. ie, on a des graph d' observer (on a un graph par Traversal). Les models
-  n'ont pas forcément un observer dans chaque graph. Typiquement, ni un cluster ni une light ne se render.
-
-  
-  Exemple de models
-
-CLight:		light. Pass: NODE & CULL & LIGHT.
-CInstance:	instance d'un mesh quelconque. Pass: NODE & CULL & LIGHT & RENDER
-CCluster:	Un cluster représente un partitionnement du monde. NODE & CULL
-CPortal:	un portal est un lien entre 2 clusters.  NODE & CULL
-
-
-
-Le client n'utilise QUE ITrav et IModel.
-Il ne peut accéder à ses Observeurs. Un observeur ici est juste un objet "algorithm" qui travaille sur des modeles, pour un 
-traversal. AUCUN setup ne doit donc lui être appliqué. A la question "oui mais j'ai envie de donner des hints pour le calcul 
-de la radiosité", la réponse est: Il faut dériver du Model à étendre, pour lui rajouter ces fameux hints, puis implémenter
-l'observeur qui va prendre en compte ces hints. Un nouveau model est crée, et c'est donc celui là que le client devra utiliser 
-pour setter ses hints pour le traversal de radiosité. De cette facon, on garde l'encapsulation Model/Traversal.
-
-
-Le deriver peut créer des Traversals, de nouveaux models (soit totalement nouveaux, soit par héritage)
-et implémente les IObs, et doit les registerer dans CMOT.
-
-
-Fonctionnement du Système d'instance (Shapes). Ce modèle ne s'occupe pas des instances, mais il faut donner une ligne de
-conduite pour une utilisation correcte. En fait, les règles Model/Observer ne doivent pas être transgressées: le model est
-la structure, l'observeur est l'algorithm pour le traversal donné. Cela veut dire que la fonction render() doit être
-implémentée dans l'observeur, et non dans le shape. En procédant de cette façon, on est sur que l'observeur pourra accéder 
-à toutes les infos dont il a besoin (comme la WorldMatrix de l'observeur Handle par exemple). Cela veut dire aussi qu'il 
-faudra que l'interface du shape soit bien définie vis à vis de l'observeur. Faire un nouveau shape demandera donc parfois
-de créer un nouveau model (un CInstance particulier, qui n'a pas forcément de nouvelles méthodes), ainsi qu'un nouvel 
-observeur qui suportera ce shape.
-
-
-NOTE: le fait de bien séparer Models/Observers n'interdit pas le stockage de données particulières à l'observeur dans Model.
-Ceci est particulièrement vrai pour Shape, qui gardera les liste de vertices pré-computées pour render() etc...
-
-
-PROBLEME: interaction entre les traversals (clip / cull). ClipObs et RenderObs doit demander le résultat de HandleObs. 
-ClipObs doit linker les RenderObs dans le RenderTrav. => pitet obligé, en partie, de fournir une interface de base IObs, 
-par Traversal (CBaseRenderObs, CBaseCullObs, ...) pour ainsi fournir une même interface pour les autrres observeurs (eg: 
-l'observeur de Cull récupère la WorlMatrix de l'observeur de base Handle). Ceci est à spécifier par Traversal.
-
-
-
-Le core du moteur (ie nous :) ) a le droit de changer modèles, Traversals et observeurs, à la condition de garder
-une compatibilité ascendante, pour que les modèles/observeurs/traversals écrit par les Deriver marchent encore, bien qu'il 
-soit alors nécessaire de recompiler.
-
-*/
-
 
 
 class	IModel;

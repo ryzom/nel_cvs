@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.6 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,15 +119,15 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 		// a. verify if coplanar is possible.
 		//===================================
 
-		// TODO later: do it too on non border vertices if wanted (with a normal threshold...).
+		// \todo yoyo: later: do it too on non border vertices if wanted (with a normal threshold...).
 		if(!vert.OnBorder)
 			continue;
-		// TODO later: formula with 3, 5 ... patchs around the vertex.
+		// \todo yoyo: later: formula with 3, 5 ... patchs around the vertex.
 		if(vert.Patchs.size()!=4)
 			continue;
 
 		// Test if there is no bind 1/x on this patch, around this vertex.
-		// TODO later: binds should works...
+		// \todo yoyo: later: binds should works...
 		std::list<CPatchId>::iterator	itPatch;
 		bool	bindFound= false;
 		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)

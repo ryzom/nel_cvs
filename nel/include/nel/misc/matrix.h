@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.16 2001/04/04 12:59:17 berenguier Exp $
+ * $Id: matrix.h,v 1.17 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,7 +206,7 @@ public:
 	/** Get Euler angles (in radians).
 	 * \param ro the RotOrder which show how to get the euler.
 	 * \return one solution of Euler angle. A rotate() with this value and the RotOrder ro will give the same matrix.
-	 * \todo TODO.
+	 * \todo yoyo: implement it.
 	 */
 	//CVector		toEuler(TRotOrder ro) const;
 	//@}

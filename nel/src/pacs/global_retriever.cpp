@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.32 2001/06/22 15:03:05 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.33 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -589,7 +589,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		}
 	}
 
-	// TODO_INTERIOR: add interiors meshes (static/dynamic houses etc...) to this list.
+	// \todo yoyo: TODO_INTERIOR: add interiors meshes (static/dynamic houses etc...) to this list.
 
 
 	// 2. Fill CollisionChains.
@@ -643,7 +643,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 			else
 			{
 				// we must find the surfaceIdent of the neighbor.
-				// TODO_INTERIOR: this work only for zone. Must work too for houses.
+				// \todo yoyo: TODO_INTERIOR: this work only for zone. Must work too for houses.
 
 				// On which edge of the zone is this chain.
 				sint	edgeChain= originalChain.getEdge();
@@ -685,7 +685,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 
 		// For all collision chains added, look if they are a copy of preceding collsion chain (same Left/Right). Then delete them.
 		//================
-		// TODO_OPTIMIZE: this is a N² complexity.
+		// \todo yoyo: TODO_OPTIMIZE: this is a N² complexity.
 		for(j=firstCollisionChain; j<nCollisionChain; j++)
 		{
 			// test for all collisionChain inserted before.

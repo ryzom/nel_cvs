@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * <File description>
  *
- * $Id: u_texture.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_texture.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -181,7 +181,7 @@ public:
 
 // ***************************************************************************
 /**
- * Game interface for manipulating texture RAW.  TODO_TEXTURERAW!!
+ * Game interface for manipulating texture RAW.  \todo yoyo: TODO_TEXTURERAW!!
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -190,7 +190,7 @@ class	UTextureRaw : virtual public UTexture
 {
 public:
 
-	/// TODO_TEXTURERAW!!
+	/// \todo yoyo: TODO_TEXTURERAW!!
 };
 
 

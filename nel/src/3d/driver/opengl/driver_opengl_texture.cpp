@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.26 2001/06/27 17:41:12 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.27 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -402,7 +402,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			}
 			// b. Load part of the texture case.
 			//==================================
-			// TODO_DXTC
+			// \todo yoyo: TODO_DXTC
 			// Replace parts of a compressed image. Maybe don't work with the actual system of invalidateRect()...
 			else if (mustLoadPart && !gltext->Compressed)
 			{

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.104 2001/06/27 17:41:12 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.105 2001/06/29 13:04:13 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -568,7 +568,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	}
 
 	// skinning in hard??
-	// TODO_HARDWARE_SKINNIG:
+	// \todo yoyo: TODO_HARDWARE_SKINNIG:
 	_PaletteSkinHard= false;
 
 
@@ -801,7 +801,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	{
 		if(_PaletteSkinHard)
 		{
-			// TODO_HARDWARE_SKINNIG: setup vertex program.
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: setup vertex program.
 			// NB: must test _ModelViewMatrixDirtyPaletteSkin...
 		}
 		else
@@ -872,8 +872,8 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	//==============
 	else
 	{
-		// TODO_SOFTWARE_SKINNIG: We must make the skinning by software. (maybe one day :) ).
-		// TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
+		// \todo yoyo: TODO_SOFTWARE_SKINNIG: We must make the skinning by software. (maybe one day :) ).
+		// \todo yoyo: TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
 
 		// For now, even if weight number is better than 2, do the skinning in EXTVertexWeighting 2 matrix (if possible)
 
@@ -966,14 +966,14 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 		// 4 weights ?
 		if (flags & IDRV_VF_W[3])
 		{
-			// TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-			// TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+			// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
 		}
 		// 3 weights ?
 		else if (flags & IDRV_VF_W[2])
 		{
-			// TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
-			// TODO_SOFTWARE_SKINNIG: we must implement the 3 matrices mode by software.
+			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
+			// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 3 matrices mode by software.
 		}
 		// 2 weights ?
 		else
@@ -993,8 +993,8 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 			}
 			else
 			{
-				// TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
-				// TODO_SOFTWARE_SKINNIG: we must implement the 2 matrices mode by software.
+				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
+				// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 2 matrices mode by software.
 			}
 		}
 	}
@@ -1225,8 +1225,8 @@ bool CDriverGL::swapBuffers()
 
 uint CDriverGL::getNumMatrix()
 {
-	// TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-	// TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
+	// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+	// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
 
 	// If GL_Wertex_weighting_EXT is available..
 	if (_Extensions.EXTVertexWeighting)
@@ -1675,7 +1675,7 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix3x4		*pMat;
 
-	// TODO_OPTIMIZE: SSE verion...
+	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
 
 	CVector			*srcVec= (CVector*)pSrc;
 	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);
@@ -1712,7 +1712,7 @@ void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix3x4		*pMat;
 
-	// TODO_OPTIMIZE: SSE verion...
+	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
 
 	CVector			*srcNormal= (CVector*)(pSrc + _CurrentSoftSkinNormalOff);
 	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);

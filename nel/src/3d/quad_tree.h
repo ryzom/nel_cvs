@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: quad_tree.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -422,7 +422,7 @@ private:// Classes.
 				// If ALL box vertices are OUT of this plane, then the box is OUT of the entire volume.
 				return false;
 			}
-			// TODO. This is a simple box detection. The box is not really clipped and sometimes, the box will said
+			// \todo yoyo: This is a simple box detection. The box is not really clipped and sometimes, the box will said
 			// it intersect but it is not the case... Here, We should test the real box volume, against BVolume.
 			// But this is more expensive...
 			return true;
@@ -535,8 +535,8 @@ private:// Classes.
 		// ============================================================================================
 		void	select(CBaseNode &selroot, const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax)
 		{
-			// TODO:
-			// ya un bug avec le level0: en effet la bbox n'a pas été agrandie pour contenir les elements.
+			// \todo yoyo: 
+			// bug with level0: bbox has not been enlarged to contains the elements.
 			if(!intersectBox(bboxmin, bboxmax))
 				return;
 			selectLocalNodes(selroot);
@@ -551,8 +551,8 @@ private:// Classes.
 		// ============================================================================================
 		void		select(CBaseNode &selroot, std::vector<NLMISC::CPlane> &BVolume)
 		{
-			// TODO:
-			// ya un bug avec le level0: en effet la bbox n'a pas été agrandie pour contenir les elements.
+			// \todo yoyo: 
+			// bug with level0: bbox has not been enlarged to contains the elements.
 			if(!intersectBox(BVolume))
 				return;
 			selectLocalNodes(selroot);

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.36 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: scene.cpp,v 1.37 2001/06/29 13:04:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ CScene::CScene()
 	_ShapeBank = NULL;
 
 	Root= NULL;
-	// TODO: init NULL ligthgroup root.
+	// \todo yoyo: init NULL ligthgroup root.
 }
 // ***************************************************************************
 void	CScene::release()
@@ -172,7 +172,7 @@ void	CScene::initDefaultRoots()
 	AnimDetailTrav->setRoot(Root);
 	LoadBalancingTrav->setRoot(Root);
 
-	// TODO: create / setRoot the lightgroup.
+	// \todo yoyo: create / setRoot the lightgroup.
 }
 
 // ***************************************************************************

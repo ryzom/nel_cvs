@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: patch.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -287,8 +287,8 @@ public:
 	CVector3s		Tangents[8];
 	CVector3s		Interiors[4];
 	/*
-		TODO_NOISE: - displacement map (ptr/index).
-		TODO_UVCORRECT: - "UV correction" infos.
+		\todo yoyo: TODO_NOISE: - displacement map (ptr/index).
+		\todo yoyo: TODO_UVCORRECT: - "UV correction" infos.
 		
 	*/
 

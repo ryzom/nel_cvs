@@ -8,7 +8,7 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.4 2000/09/18 13:49:42 cado Exp $
+' $Id: nevrax_macros.dsm,v 1.5 2000/10/03 13:41:14 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -53,7 +53,7 @@ Sub NevraxInsertFileHeader( filename )
 	ActiveDocument.Selection = _
 		" */" + vbLf + vbLf + _
 		"/*" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.4 2000/09/18 13:49:42 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros.dsm,v 1.5 2000/10/03 13:41:14 cado Exp $" + vbLf + _
 		" *" + vbLf + _
 		" * <Replace this by a description of the file>" + vbLf + _
 		" */" + vbLf
@@ -361,3 +361,25 @@ Sub NevraxToggleHCPP()
 	Documents.Open( NewFilename )
 End Sub
 
+
+' ** NevraxToggleHCPP
+
+
+' NevraxFormatMethodHeader
+' DESCRIPTION: Edit a Doxygen .h style method header for a .cpp file.
+' The caret must be a the beginning of the first line of the header.
+' Author : Olivier Cado
+Sub NevraxFormatMethodHeader()
+	ActiveDocument.Selection.Delete
+	ActiveDocument.Selection.CharRight
+	ActiveDocument.Selection.Delete 2
+	ActiveDocument.Selection = "*" + vbLf + " *"
+	ActiveDocument.Selection.EndOfLine
+	ActiveDocument.Selection = vbLf + " */"
+	ActiveDocument.Selection.LineDown
+	ActiveDocument.Selection.Delete
+	ActiveDocument.Selection.EndOfLine
+	ActiveDocument.Selection.Backspace
+	ActiveDocument.Selection = vbLf + "{" + vbLf + vbLf + "}" + vbLf
+	ActiveDocument.Selection.LineDown dsMove,2
+End Sub

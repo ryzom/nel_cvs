@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.5 2001/09/21 16:01:11 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.6 2001/10/29 08:37:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,7 +251,8 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pCl
 		{
 			nlassert(distModelMax>=0);
 			// search in which cluster against we must test.
-			for(uint i=0; i<clusterCase.QuadGridClipClusters.size()-1;i++)
+			uint i;
+			for(i=0; i<clusterCase.QuadGridClipClusters.size()-1;i++)
 			{
 				if(distModelMax<=_MaxDists[i])
 					break;

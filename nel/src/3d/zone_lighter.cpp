@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.5 2001/09/26 16:03:02 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.6 2001/10/29 08:37:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,7 +290,8 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		CMatrix tmp=_RayBasis;
 		tmp.invert ();
 
-		for (uint cpu=0; cpu<_ProcessCount; cpu++)
+		uint cpu;
+		for (cpu=0; cpu<_ProcessCount; cpu++)
 		{
 			_QuadGrid[cpu].changeBase (tmp);
 
@@ -1310,7 +1311,8 @@ void CZoneLighter::getNormal (const CPatch *pPatch, sint16 lumelS, sint16 lumelT
 
 							// Get edge
 							uint newEdge;
-							for (uint i=0; i<=(uint)bindInfo[edge].NPatchs; i++)
+							uint i;
+							for (i=0; i<=(uint)bindInfo[edge].NPatchs; i++)
 							{
 								// Good patch ?
 								if (bindInfo[edge].Next[i]==patchOut)

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.83 2004/06/01 16:27:36 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.84 2004/06/21 07:51:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,11 @@ uint	CParticleSystem::_NumInstances = 0;
 
 
 static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
-bool CParticleSystem::_SerialIdentifiers = false;
+#ifdef NL_DEBUG
+	bool CParticleSystem::_SerialIdentifiers = true;
+#else
+	bool CParticleSystem::_SerialIdentifiers = false;
+#endif
 bool CParticleSystem::_ForceDisplayBBox = false;
 CParticleSystemModel *CParticleSystem::OwnerModel = NULL;
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.70 2003/01/15 10:42:39 legros Exp $
+ * $Id: global_retriever.cpp,v 1.71 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -525,7 +525,10 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
 
 	if (!_BBox.include(CVector((float)estimated.x, (float)estimated.y, (float)estimated.z)))
+	{
+		_ForbiddenInstances.clear();
 		return result;
+	}
 	
 	
 	// get the best matching instances
@@ -545,11 +548,18 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		const CRetrieverInstance		&instance = _Instances[id];
 		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
 
-		if (!retriever.isLoaded())
+		uint	j;
+		for (j=0; j<_ForbiddenInstances.size(); ++j)
+			if (_ForbiddenInstances[j] == (sint32)id)
+				break;
+
+		if (j<_ForbiddenInstances.size() || !retriever.isLoaded())
 			continue;
 
 		instance.retrievePosition(estimated, retriever, _InternalCST);
 	}
+
+	_ForbiddenInstances.clear();
 
 	if (!_InternalCST.SortedSurfaces.empty())
 	{
@@ -578,14 +588,14 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 			{
 				moved = retriever.insurePosition(result.LocalPosition);
 				++numMove;
-
-				if (moved)
-				{
-					nlinfo("PACS: insured position inside surface (%d,%d)", result.InstanceId, result.LocalPosition.Surface);
-				}
 			}
 			while (moved && numMove < 100);
 			// the algo won't loop infinitely
+
+			if (numMove > 1)
+			{
+				nldebug("PACS: insured position inside surface (%d,%d)-(%f,%f,%f), %d moves needed", result.InstanceId, result.LocalPosition.Surface, estimated.x, estimated.y, estimated.z, numMove-1);
+			}
 
 			if (moved)
 			{
@@ -1284,6 +1294,8 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 		colChain.Tested= false;
 	}
 
+	vector<pair<sint32, bool> >	checkedExtEdges;
+
 
 	/*
 		To manage recovery, we must use such an algorithm, so we are sure to trace the way across all surfaces really 
@@ -1307,9 +1319,29 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 				// we are testing this chain.
 				colChain.Tested= true;
 
+				// avoid checking twice a door
+				if (colChain.ExteriorEdge && colChain.LeftSurface.RetrieverInstanceId != -1)
+				{
+					bool	enterInterior = (currentSurface.RetrieverInstanceId == colChain.RightSurface.RetrieverInstanceId);
+
+					uint	j;
+					sint32	cmp = (colChain.LeftSurface.RetrieverInstanceId<<16) + colChain.ChainId;
+					for (j=0; j<checkedExtEdges.size() && (checkedExtEdges[j].first != cmp); ++j)
+						;
+					// if already crossed this edge, abort
+					// this a door that is crossing a surface frontier
+					if (j < checkedExtEdges.size())
+					{
+						if (checkedExtEdges[j].second != enterInterior)
+							continue;
+					}
+					else
+						checkedExtEdges.push_back(make_pair(cmp, enterInterior));
+				}
 
 				// test all edges of this chain, and get tmin
 				//========================
+
 				float		t=0.0, tMin=1;
 				CVector2f	normal, normalMin;
 				// run list of edge.
@@ -1342,6 +1374,21 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 				if(tMin<1)
 				{
 					CSurfaceIdent	collidedSurface= colChain.getOtherSurface(currentSurface);
+
+					// if flag as an interior/landscape interface and leave interior surf, retrieve correct surface
+					if (colChain.ExteriorEdge && currentSurface == colChain.LeftSurface)
+					{
+						CVector2f		p = startCol + deltaCol*tMin;
+						CVector			or = getInstance(startSurface.RetrieverInstanceId).getOrigin();
+						or.z = 0.0f;
+						CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(or);
+						_ForbiddenInstances.clear();
+						_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
+						UGlobalPosition	gp = retrievePosition(zp);
+
+						collidedSurface.RetrieverInstanceId = gp.InstanceId;
+						collidedSurface.SurfaceId = gp.LocalPosition.Surface;
+					}
 
 					/// TODO Tests Ben
 					nlassert(collidedSurface.RetrieverInstanceId < (sint)_Instances.size());
@@ -1473,7 +1520,7 @@ bool			NLPACS::CGlobalRetriever::verticalChain(const CCollisionChain &colChain) 
 
 // ***************************************************************************
 NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &endCol,
-		CSurfaceIdent startSurface) const
+		CSurfaceIdent startSurface, UGlobalPosition &restart) const
 {
 //	H_AUTO(PACS_GR_testMovementWithCollisionChains);
 
@@ -1484,6 +1531,8 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 	// reset result.
 	cst.MoveDescs.clear();
 
+
+	static vector<pair<sint32, bool> >	checkedExtEdges;
 
 	/*
 		To manage recovery, we must use such an algorithm, so we are sure to trace the way across all surfaces really 
@@ -1501,7 +1550,6 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 	for(i=0; i<(sint)cst.CollisionChains.size(); i++)
 	{
 		CCollisionChain		&colChain= cst.CollisionChains[i];
-
 
 		// test all edges of this chain, and insert if necessary.
 		//========================
@@ -1526,6 +1574,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 				if(pmpb==CEdgeCollide::StartOnEdge)
 				{
 					nlinfo("COL: Precision Problem: %s", errs[pmpb].c_str());
+					checkedExtEdges.clear();
 					return CSurfaceIdent(-1, -1);	// so in this case, block....
 				}
 				else if(pmpb==CEdgeCollide::EdgeNull)
@@ -1557,6 +1606,8 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			{
 				// insert in list.
 				cst.MoveDescs.push_back(CMoveSurfaceDesc(t, colChain.LeftSurface, colChain.RightSurface));
+				cst.MoveDescs.back().ExteriorEdge = colChain.ExteriorEdge;
+				cst.MoveDescs.back().ChainId = (uint16)colChain.ChainId;
 			}
 
 			// next edge.
@@ -1575,10 +1626,54 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 	//========================
 	for(i=0;i<(sint)cst.MoveDescs.size();i++)
 	{
+		CMoveSurfaceDesc	&msd = cst.MoveDescs[i];
+
 		// Do we collide with this chain??
-		if(cst.MoveDescs[i].hasSurface(currentSurface))
+		if(msd.hasSurface(currentSurface))
 		{
-			currentSurface= cst.MoveDescs[i].getOtherSurface(currentSurface);
+			// if flag as an interior/landscape interface and leave interior surf, retrieve correct surface
+			if (msd.ExteriorEdge && msd.LeftSurface.RetrieverInstanceId != -1)
+			{
+				bool	enterInterior = (currentSurface.RetrieverInstanceId == msd.RightSurface.RetrieverInstanceId);
+
+				uint	j;
+				sint32	cmp = (msd.LeftSurface.RetrieverInstanceId<<16) + msd.ChainId;
+				for (j=0; j<checkedExtEdges.size() && (checkedExtEdges[j].first != cmp); ++j)
+					;
+				// if already crossed this edge, abort
+				// this a door that is crossing a surface frontier
+				if (j < checkedExtEdges.size())
+				{
+					if (checkedExtEdges[j].second != enterInterior)
+						continue;
+				}
+				else
+					checkedExtEdges.push_back(make_pair(cmp, enterInterior));
+
+				// if leave interior, retrieve good position
+				if (!enterInterior)
+				{
+					float			ctime = (float)((double)(msd.ContactTime.Numerator)/(double)(msd.ContactTime.Denominator));
+					CVector2f		p = startCol*(1.0f-ctime) + endCol*ctime;
+					CVector			or = getInstance(startSurface.RetrieverInstanceId).getOrigin();
+					or.z = 0.0f;
+					CVectorD		zp = CVectorD(p.x, p.y, getRetriever(getInstance(currentSurface.RetrieverInstanceId).getRetrieverId()).getSurface(currentSurface.SurfaceId).getMeanHeight()) + CVectorD(or);
+					_ForbiddenInstances.clear();
+					_ForbiddenInstances.push_back(currentSurface.RetrieverInstanceId);
+
+					restart = retrievePosition(zp);
+
+					return CSurfaceIdent(-3, -3);
+				}
+				else
+				{
+					currentSurface= msd.getOtherSurface(currentSurface);
+				}
+			}
+			else
+			{
+				currentSurface= msd.getOtherSurface(currentSurface);
+			}
 
 			// Do we touch a wall?? should not happens, but important for security.
 			bool	isWall;
@@ -1600,12 +1695,13 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 			if(isWall)
 			{
 				// return a Wall ident. movement is invalid.
+				checkedExtEdges.clear();
 				return	CSurfaceIdent(-1, -1);
 			}
 		}
 	}
 
-
+	checkedExtEdges.clear();
 	return currentSurface;
 }
 
@@ -1896,18 +1992,32 @@ NLPACS::UGlobalPosition
 		}
 
 		// search destination problem.
-		endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface);
+		UGlobalPosition	restart;
+		endSurface= testMovementWithCollisionChains(cst, startCol, endCol, startSurface, restart);
 
 		// if no precision problem, Ok, we have found our destination surface (or anormal collide against a wall).
-		if(endSurface.SurfaceId!=-2)
+		if (endSurface.SurfaceId >= -1)
+		{
 			break;
+		}
+		// left an interior, retrieved position and ask to restart collision from retrieved position
+		else if (endSurface.SurfaceId == -3)
+		{
+			start = getDoubleGlobalPosition(restart) - origin;
+			startSurface.RetrieverInstanceId = restart.InstanceId;
+			startSurface.SurfaceId = restart.LocalPosition.Surface;
+			// should be snapped here
+			CVector		startTest= start;
+			CRetrieverInstance::snapVector(startTest);
+			nlassert( start == startTest );
+		}
 		/* else we are in deep chit, for one on those reason:
 			- traverse on point.
 			- stop on a edge (dist==0).
 			- start on a edge (dist==0).
 			- run // on a edge (NB: dist==0 too).
 		*/
-		else
+		else if (endSurface.SurfaceId == -2)
 		{
 			// For simplicty, just try to move a little the end position
 			if(pbPrecNum<maxPbPrec)

@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.7 2002/01/21 13:48:36 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.8 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,9 +168,15 @@ public:
 	/// To which chain we have collided.
 	CSurfaceIdent		LeftSurface, RightSurface;
 
+	/// Is it an interface between exterior and interior
+	bool				ExteriorEdge;
+
+	/// Chain Id of the exterior edge
+	uint16				ChainId;
+
 public:
-	CMoveSurfaceDesc() {}
-	CMoveSurfaceDesc(CRational64 t, CSurfaceIdent left, CSurfaceIdent right) : ContactTime(t), LeftSurface(left), RightSurface(right) {}
+	CMoveSurfaceDesc() : ExteriorEdge(false) {}
+	CMoveSurfaceDesc(CRational64 t, CSurfaceIdent left, CSurfaceIdent right) : ContactTime(t), LeftSurface(left), RightSurface(right), ExteriorEdge(false) {}
 	bool	operator<(const CMoveSurfaceDesc &o) const
 	{
 		return ContactTime<o.ContactTime;
@@ -266,6 +272,7 @@ public:
 	public:
 		bool						IsPossible;
 		bool						FoundCloseEdge;
+		bool						OnVerticalEdge;
 		uint8						Counter;
 
 		void						reset() { IsPossible = false; FoundCloseEdge = false; Counter = 0; }

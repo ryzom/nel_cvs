@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.7 2003/01/15 10:42:38 legros Exp $
+ * $Id: retrievable_surface.h,v 1.8 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,7 @@ public:
 	uint32								getFlags() const { return _Flags; }
 	float								getWaterHeight() const { return _WaterHeight; }
 	sint8								getQuantHeight() const { return _QuantHeight; }
+	float								getMeanHeight() const { return _QuantHeight*2.0f + 1.0f; }
 
 	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }

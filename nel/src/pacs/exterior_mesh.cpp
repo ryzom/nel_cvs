@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.6 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: exterior_mesh.cpp,v 1.7 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ namespace NLPACS
 				{
 					++i;
 				}
-				while (i+1<_Edges.size() && isStrictlyLess(_Edges[i].Start, _Edges[i+1].Start));
+				while (i+1<_Edges.size() && _Edges[i].Link != -2 && isStrictlyLess(_Edges[i].Start, _Edges[i+1].Start));
 			}
 			else
 			{
@@ -86,9 +86,12 @@ namespace NLPACS
 				{
 					++i;
 				}
-				while (i+1<_Edges.size() && isStrictlyGreater(_Edges[i].Start, _Edges[i+1].Start));
+				while (i+1<_Edges.size() && _Edges[i].Link != -2 && isStrictlyGreater(_Edges[i].Start, _Edges[i+1].Start));
 			}
 			edges.End = i;
+
+			if (_Edges[i].Link == -2)
+				++i;
 		}
 	}
 

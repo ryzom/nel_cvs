@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.23 2002/12/18 14:57:14 legros Exp $
+ * $Id: global_retriever.h,v 1.24 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,9 @@ protected:
 	/// The axis aligned bounding box of the global retriever.
 	NLMISC::CAABBox							_BBox;
 
+	/// Forbidden instance for retrieve position
+	mutable std::vector<sint32>				_ForbiddenInstances;
+
 public:
 	/// @name Initialisation
 	// @{
@@ -268,6 +271,16 @@ public:
 
 		const CLocalRetriever		&retriever = getRetriever(_Instances[pos.InstanceId].getRetrieverId());
 		return retriever.insurePosition(pos.LocalPosition);
+	}
+
+	///
+	bool							testPosition(UGlobalPosition &pos) const
+	{
+		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
+			return false;
+
+		const CLocalRetriever		&retriever = getRetriever(_Instances[pos.InstanceId].getRetrieverId());
+		return retriever.testPosition(pos.LocalPosition, _InternalCST);
 	}
 
 	/// Return the retriever id from the string id
@@ -455,9 +468,10 @@ private:
 	 * result: the surfaceIdent where we stop. -1 if we traverse a Wall, which should not happen because of collision test.
 	 * NB: for precision pb, startCol and deltaCol should be snapped on a grid of 1/1024 meters, using snapVector().
 	 * NB: for precision pb (stop on edge etc....), return a "Precision problem ident", ie (-2,-2).
+	 * NB: when leaving an interior, return a surface (-3, -3) and restart is set to the real restart position
 	 */
 	CSurfaceIdent	testMovementWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
-		CSurfaceIdent startSurface) const;
+		CSurfaceIdent startSurface, UGlobalPosition &restart) const;
 	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
 	 * result: new collisionDescs in cst.
 	 */

@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.16 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: edge_quad.cpp,v 1.17 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,6 +175,9 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	// run all chains.
 	for (i=0; i<(sint)edges.size()-1; i++)
 	{
+		if (edges[i].Link == -2)
+			continue;
+
 		float		dnorm = (edges[i+1].Start-edges[i].Start).norm();
 		uint		numStep = (uint)(dnorm/0.1f)+1;
 		uint		step;

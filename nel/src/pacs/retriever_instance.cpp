@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.41 2003/01/15 10:42:38 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.42 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -648,9 +648,12 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 		uint16						eei = cst.ExteriorEdgeIndexes[i];
 		const CExteriorEdgeEntry	&eee = _ExteriorEdgeQuad.getEdgeEntry(eei);
 
+		// WELL ACTUALLY DO BOTHER ABOUT DOORS !!
+/*
 		// don't bother about doors
 		if (eee.Interior.RetrieverInstanceId != -1)
 			continue;
+*/
 
 		// add/retrieve the id in cst.CollisionChains.
 		//=================================
@@ -677,6 +680,9 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 		{
 			// get the id of this collision chain.
 			ccId= edgeLUT[eei];
+
+			// ACTUALLY, THIS SHOULD NEVER HAPPEN
+			// since ext edge are only 1 segment
 		}
 
 		// add edge collide to the list.
@@ -710,6 +716,7 @@ void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurface
 	{
 		uint	ccId= cst.CollisionChains[i].ChainId;
 		edgeLUT[ccId]= 0xFFFF;
+		cst.CollisionChains[i].ChainId = _ExteriorEdgeQuad.getEdgeEntry(ccId).EdgeId;
 	}
 
 }

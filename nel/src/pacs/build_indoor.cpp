@@ -1,7 +1,7 @@
 /** \file build_indoor.cpp
  * 
  *
- * $Id: build_indoor.cpp,v 1.3 2002/04/03 13:23:34 lecroart Exp $
+ * $Id: build_indoor.cpp,v 1.4 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -430,80 +430,90 @@ void	buildSnapping(CCollisionMeshBuild &cmb, CLocalRetriever &lr)
 void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 {
 	// find the first non interior face
-	uint	i, edge;
-	bool	found = false;
-	for (i=0; i<cmb.Faces.size() && !found; ++i)
-	{
-		if (cmb.Faces[i].Surface != CCollisionFace::ExteriorSurface)
-			continue;
+	uint							i,
+									edge;
 
-		for (edge=0; edge<3 && !found; ++edge)
-			if (cmb.Faces[i].Edge[edge] == -1)
-			{
-				found = true;
-				break;
-			}
+	vector<CExteriorMesh::CEdge>	edges;
+	uint							numLink = 0;
 
-		if (found)
-			break;
-	}
-
-	//
-	if (!found)
-		return;
-
-	sint32				current = i;
-	sint32				next = cmb.Faces[current].Edge[edge];
 	for (i=0; i<cmb.Faces.size(); ++i)
 	{
 		cmb.Faces[i].EdgeFlags[0] = false;
 		cmb.Faces[i].EdgeFlags[1] = false;
 		cmb.Faces[i].EdgeFlags[2] = false;
 	}
-	
-	sint			oedge;
-	sint			pivot = (edge+1)%3;
-	sint			nextEdge = edge;
 
-	bool			allowThis = true;
-
-	vector<CExteriorMesh::CEdge>	edges;
-	uint							numLink = 0;
+	i = 0;
 
 	while (true)
 	{
-		if (cmb.Faces[current].EdgeFlags[nextEdge])
+		bool	found = false;
+		for (; i<cmb.Faces.size() && !found; ++i)
 		{
-			// if reaches the end of the border, then quits.
-			break;
-		}
-		else if (next == -1)
-		{
-			// if the next edge belongs to the border, then go on the same element
-			cmb.Faces[current].EdgeFlags[nextEdge] = true;
-			/// \todo get the real edge link
-			sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : (numLink++);
-			edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
-			nldebug("border: vertex=%d (%.2f,%.2f,%.2f) link=%d", cmb.Faces[current].V[pivot], cmb.Vertices[cmb.Faces[current].V[pivot]].x, cmb.Vertices[cmb.Faces[current].V[pivot]].y, cmb.Vertices[cmb.Faces[current].V[pivot]].z, link);
-			pivot = (pivot+1)%3;
-			nextEdge = (nextEdge+1)%3;
-			next = cmb.Faces[current].Edge[nextEdge];
-		}
-		else
-		{
-			// if the next element is inside the surface, then go to the next element
-			for (oedge=0; oedge<3 && cmb.Faces[next].Edge[oedge]!=current; ++oedge)
-				;
-			nlassert(oedge != 3);
-			current = next;
-			pivot = (oedge+2)%3;
-			nextEdge = (oedge+1)%3;
-			next = cmb.Faces[current].Edge[nextEdge];
-		}
-	}
+			if (cmb.Faces[i].Surface != CCollisionFace::ExteriorSurface)
+				continue;
 
-	edges.push_back(edges.front());
-	edges.back().Link = -1;
+			for (edge=0; edge<3 && !found; ++edge)
+				if (cmb.Faces[i].Edge[edge] == -1 && !cmb.Faces[i].EdgeFlags[edge])
+				{
+					found = true;
+					break;
+				}
+
+			if (found)
+				break;
+		}
+
+		//
+		if (!found)
+			break;
+
+		sint32			current = i;
+		sint32			next = cmb.Faces[current].Edge[edge];
+		
+		sint			oedge;
+		sint			pivot = (edge+1)%3;
+		sint			nextEdge = edge;
+
+		bool			allowThis = true;
+
+		uint			firstExtEdge = edges.size();
+
+		while (true)
+		{
+			if (cmb.Faces[current].EdgeFlags[nextEdge])
+			{
+				// if reaches the end of the border, then quits.
+				break;
+			}
+			else if (next == -1)
+			{
+				// if the next edge belongs to the border, then go on the same element
+				cmb.Faces[current].EdgeFlags[nextEdge] = true;
+				/// \todo get the real edge link
+				sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : (numLink++);
+				edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
+				nldebug("border: vertex=%d (%.2f,%.2f,%.2f) link=%d", cmb.Faces[current].V[pivot], cmb.Vertices[cmb.Faces[current].V[pivot]].x, cmb.Vertices[cmb.Faces[current].V[pivot]].y, cmb.Vertices[cmb.Faces[current].V[pivot]].z, link);
+				pivot = (pivot+1)%3;
+				nextEdge = (nextEdge+1)%3;
+				next = cmb.Faces[current].Edge[nextEdge];
+			}
+			else
+			{
+				// if the next element is inside the surface, then go to the next element
+				for (oedge=0; oedge<3 && cmb.Faces[next].Edge[oedge]!=current; ++oedge)
+					;
+				nlassert(oedge != 3);
+				current = next;
+				pivot = (oedge+2)%3;
+				nextEdge = (oedge+1)%3;
+				next = cmb.Faces[current].Edge[nextEdge];
+			}
+		}
+
+		edges.push_back(edges[firstExtEdge]);
+		edges.back().Link = -2;
+	}
 
 	em.setEdges(edges);
 }

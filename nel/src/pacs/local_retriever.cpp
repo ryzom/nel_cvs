@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.53 2003/01/15 10:42:38 legros Exp $
+ * $Id: local_retriever.cpp,v 1.54 2003/01/30 17:56:43 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1015,6 +1015,29 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 }
 
 
+bool	NLPACS::CLocalRetriever::testPosition(NLPACS::ULocalPosition &local, CCollisionSurfaceTemp &cst) const
+{
+	if (!_Loaded)
+		return false;
+
+	if (local.Surface < 0 || local.Surface >= (sint)_Surfaces.size())
+	{
+		nlwarning("PACS: can't test inexistant surface %d", local.Surface);
+		return false;
+	}
+
+	retrievePosition(local.Estimation, cst);
+
+	bool	result = (cst.SurfaceLUT[local.Surface].Counter == 2 || cst.SurfaceLUT[local.Surface].OnVerticalEdge);
+
+	uint	i;
+	for (i=0; i<cst.PossibleSurfaces.size(); ++i)
+				cst.SurfaceLUT[cst.PossibleSurfaces[i]].reset();
+
+	return result;
+}
+
+
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const
 {
 	if (!_Loaded)
@@ -1033,7 +1056,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 	// WARNING!!
 	// cst.SurfaceLUT is assumed to be 0 filled !!
 
-//	nldebug("estim=(%d,%d)", estim.x, estim.y);
+	//nldebug("estim=(%d,%d)", estim.x, estim.y);
 
 	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (i=0; i<numEdges; ++i)
@@ -1102,12 +1125,20 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 					continue;
 
 				isOnBorder = true;
-				cst.incSurface(left);
-				cst.incSurface(right);
-				if (left >= 0)	cst.SurfaceLUT[left].FoundCloseEdge = true;
-				if (right >= 0)	cst.SurfaceLUT[right].FoundCloseEdge = true;
-				continue;
+				//cst.incSurface(left);
+				//cst.incSurface(right);
+				if (left >= 0)
+				{
+					cst.SurfaceLUT[left].FoundCloseEdge = true;
+					cst.SurfaceLUT[left].OnVerticalEdge = true;
+				}
+				if (right >= 0)	
+				{
+					cst.SurfaceLUT[right].FoundCloseEdge = true;
+					cst.SurfaceLUT[right].OnVerticalEdge = true;
+				}
 //				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d border=true", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right);
+				continue;
 			}
 			else if (vertices[stop].x == estim.x)
 			{
@@ -1630,6 +1661,20 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 		const	COrderedChain	&oChain= this->getOrderedChains()[ece.OChainId];
 		// this is the id of the chain is the local retriever.
 		uint16				chainId= oChain.getParentId();
+
+		// test if edge is interior and points to another instance
+		// \todo Ben: flag interior chains that points to doors to speed up the test
+		if (_Type == Interior && CChain::isBorderChainId(this->getChains()[chainId].getRight()))
+		{
+			// then look for a door that match this edge
+			uint	l;
+			for (l=0; l<_ExteriorMesh.getLinks().size() && _ExteriorMesh.getLink(l).ChainId != chainId; ++l)
+				;
+
+			// if found a door, then leave the edge as is
+			if (l < _ExteriorMesh.getLinks().size())
+				continue;
+		}
 
 
 		// add/retrieve the id in cst.CollisionChains.

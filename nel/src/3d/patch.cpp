@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.85 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: patch.cpp,v 1.86 2002/05/23 14:40:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -483,7 +483,9 @@ void		CPatch::fillPatchQuadBlock(CPatchQuadBlock &quadBlock)  const
 		{
 			// compute s patch coordinates.
 			fs= startS0 + (float)sl * ds ;
-			quadBlock.Vertices[sl + tl*NL_PATCH_BLOCK_MAX_VERTEX]= computeVertex(fs, ft);
+
+			// Must use computeContinousVertex, to ensure continous coordinate on patch edges
+			quadBlock.Vertices[sl + tl*NL_PATCH_BLOCK_MAX_VERTEX]= computeContinousVertex(fs, ft);
 		}
 	}
 
@@ -1306,6 +1308,132 @@ CVector			CPatch::computeVertex(float s, float t) const
 		// unpack and return patch(s,t).
 		CBezierPatch	*patch= unpackIntoCache();
 		return patch->eval(s,t);
+	}
+}
+
+
+// ***************************************************************************
+CVector			CPatch::computeContinousVertex(float s, float t) const
+{
+	// must be compiled
+	nlassert(Zone);
+
+	// Test is on a edge/corner of the patch
+	sint	edgeIdS= -1;
+	sint	edgeIdT= -1;
+	if(s==0)		edgeIdS= 0;
+	else if(s==1)	edgeIdS= 2;
+	if(t==0)		edgeIdT= 3;
+	else if(t==1)	edgeIdT= 1;
+
+	// test if on a corner
+	if(edgeIdS>=0 && edgeIdT>=0)
+	{
+		// return the baseVertex according to edge falgs
+		if(edgeIdS==0 && edgeIdT==3)	return BaseVertices[0]->EndPos;
+		if(edgeIdS==0 && edgeIdT==1)	return BaseVertices[1]->EndPos;
+		if(edgeIdS==2 && edgeIdT==1)	return BaseVertices[2]->EndPos;
+		if(edgeIdS==2 && edgeIdT==3)	return BaseVertices[3]->EndPos;
+		nlstop;
+	}
+	// test if on an edge
+	else if(edgeIdS>=0 || edgeIdT>=0)
+	{
+		// Yes, must compute myslef
+		CVector		vertexOnMe= computeVertex(s,t);
+
+		// Then, must compute my neighbor.
+		sint	edgeId;
+		if(edgeIdS>=0)
+			edgeId= edgeIdS;
+		else
+			edgeId= edgeIdT;
+
+		// Get my neighbor, if any.
+		CBindInfo	bindInfo;
+		getBindNeighbor(edgeId, bindInfo);
+		// Fast reject: if no neighbor on the edge, just return my pos.
+		if(!bindInfo.Zone)
+		{
+			return vertexOnMe;
+		}
+		// else must get vertex pos of my neighbor, and average.
+		else
+		{
+			// use a CPatchUVLocator to get UV in neighbor patch
+			CPatchUVLocator		uvLocator;
+			uvLocator.build(this, edgeId, bindInfo);
+
+			// UVlocator use OrderS/OrderT coordinate system.
+			CVector2f	stTileIn, stTileOut;
+			stTileIn.x= s * getOrderS();
+			stTileIn.y= t * getOrderT();
+
+			// transform coordinate to get into the neigbhor patch
+			uint	pid= uvLocator.selectPatch(stTileIn);
+			CPatch	*nebPatch;
+			uvLocator.locateUV(stTileIn, pid, nebPatch, stTileOut);
+
+			// transform neigbhor coord in 0..1 coordinate space.
+			stTileOut.x/= nebPatch->getOrderS();
+			stTileOut.y/= nebPatch->getOrderT();
+
+			// and compute vertex. NB: if binded on 2 or 4 patch, it is then possible that stTileOut is on a
+			// a corner ( (0,0), (0,1) ...).
+			// In this case, we must use the precomputed Vertex pos, for completeness.
+			bool		onCorner;
+			CVector		vertexOnNeb= nebPatch->computeVertexButCorner(stTileOut.x, stTileOut.y, onCorner);
+
+			// If the neighbor is on a corner, then use its corner value.
+			if(onCorner)
+				return vertexOnNeb;
+			else
+			{
+				// Average the 2 and return this result.
+				vertexOnMe+= vertexOnNeb;
+				vertexOnMe/= 2;
+				return vertexOnMe;
+			}
+		}
+
+	}
+	// else, std case
+	else
+		return computeVertex(s, t);
+}
+
+
+// ***************************************************************************
+CVector			CPatch::computeVertexButCorner(float s, float t, bool &onCorner) const
+{
+	// must be compiled
+	nlassert(Zone);
+
+	// Test is on a edge/corner of the patch
+	sint	edgeIdS= -1;
+	sint	edgeIdT= -1;
+	if(s==0)		edgeIdS= 0;
+	else if(s==1)	edgeIdS= 2;
+	if(t==0)		edgeIdT= 3;
+	else if(t==1)	edgeIdT= 1;
+
+	// test if on a corner
+	if(edgeIdS>=0 && edgeIdT>=0)
+	{
+		// indicate that yes, we are on a corner
+		onCorner= true;
+		// return the baseVertex according to edge falgs
+		if(edgeIdS==0 && edgeIdT==3)	return BaseVertices[0]->EndPos;
+		if(edgeIdS==0 && edgeIdT==1)	return BaseVertices[1]->EndPos;
+		if(edgeIdS==2 && edgeIdT==1)	return BaseVertices[2]->EndPos;
+		if(edgeIdS==2 && edgeIdT==3)	return BaseVertices[3]->EndPos;
+		nlstop;
+	}
+	// else, std case
+	else
+	{
+		onCorner= false;
+		return computeVertex(s, t);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.8 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.9 2002/05/23 14:40:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 
 
 class	CVisualCollisionManager;
+class	IDriver;
 
 
 // ***************************************************************************
@@ -121,6 +122,15 @@ public:
 	 *	See CVisualCollisionManager::setSunContributionPower(). Default is 0.5
 	 */
 	bool		getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
+	// @}
+
+
+	/// \name Debug display
+	// @{
+
+	/// Draw lines for the landscape quadgrid collision faces under us
+	void		displayDebugGrid(IDriver &drv) const;
+
 	// @}
 
 

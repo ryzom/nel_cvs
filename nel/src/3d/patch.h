@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.28 2002/04/23 15:15:22 berenguier Exp $
+ * $Id: patch.h,v 1.29 2002/05/23 14:40:18 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -413,6 +413,16 @@ public:
 	 *	- Patch noise (and noise of Patch neighbor).
 	 */
 	CVector			computeVertex(float s, float t) const;
+
+
+	/**	Same as computeVertex, but special accurate version for CVisualCollisionEntity.
+	 *	If on a corner of the patch (0,0), (0,1) ...., take directly the BaseVertices[] result
+	 *	if on a border of a patch (ie s==0, s==1, t==0 or t==1), also
+	 *	compute the vertex of the neighbor patch (if any), and then average the result.
+	 *	This ensure that tesselation generated is perfectly continous, even across patchs of same or different zones.
+	 *	This feature is very important for CVisualCollisionEntity::snapToGround()
+	 */
+	CVector			computeContinousVertex(float s, float t) const;
 
 
 	/** unbind the patch from All neighbors. neighbors patchs links are modified too. The tesselation is forcemerged.
@@ -1074,6 +1084,10 @@ private:
 	 */
 	void		addPatchBlocksInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds, 
 		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const;
+
+	/// Used by computeContinousVertex()
+	CVector		computeVertexButCorner(float s, float t, bool &onCorner) const;
+
 	// @}
 
 

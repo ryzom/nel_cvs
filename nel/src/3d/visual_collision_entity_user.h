@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.6 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.7 2002/05/23 14:40:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,9 @@ public:
 	{
 		return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution, localAmbient);
 	}
+
+
+	virtual void	displayDebugGrid(UDriver &drv) const;
 
 
 private:

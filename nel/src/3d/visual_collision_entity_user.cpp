@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.cpp
  * <File description>
  *
- * $Id: visual_collision_entity_user.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: visual_collision_entity_user.cpp,v 1.4 2002/05/23 14:40:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,18 @@
 #include "std3d.h"
 
 #include "3d/visual_collision_entity_user.h"
+#include "3d/driver_user.h"
 
 
 namespace NL3D 
 {
+
+
+void	CVisualCollisionEntityUser::displayDebugGrid(UDriver &drv) const
+{
+	CDriverUser		&drvUser= static_cast<CDriverUser&>(drv);
+	_Entity->displayDebugGrid(*drvUser.getDriver());
+}
 
 
 

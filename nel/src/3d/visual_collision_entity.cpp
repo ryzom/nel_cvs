@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.14 2002/02/28 12:59:52 besson Exp $
+ * $Id: visual_collision_entity.cpp,v 1.15 2002/05/23 14:40:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "3d/visual_collision_entity.h"
 #include "3d/landscape.h"
+#include "3d/dru.h"
+#include "3d/driver.h"
 
 
 using namespace std;
@@ -260,6 +262,27 @@ void		CVisualCollisionEntity::snapToLandscapeCurrentTesselation(CVector &pos, co
 }
 
 
+// ***************************************************************************
+// TestYoyo. For Precision problem.
+/*static bool	testLine(CVector &p1, CVector &p0, const CVector &pos0)
+{
+	float	epsilon=	0.1f;
+
+	float		a,b,c;		// 2D cartesian coefficients of line in plane X/Y.
+	float		norm;
+	// Line p0-p1.
+	a= -(p1.y-p0.y);
+	b= (p1.x-p0.x);
+	norm= sqrtf(sqr(a) + sqr(b));
+	a/= norm;
+	b/= norm;
+	c= -(p0.x*a + p0.y*b);
+	if( (a*pos0.x + b*pos0.y + c) < -epsilon)
+		return false;
+	else
+		return true;
+}*/
+
 
 // ***************************************************************************
 bool		CVisualCollisionEntity::triangleIntersect2DGround(CTriangle &tri, const CVector &pos0)
@@ -267,6 +290,13 @@ bool		CVisualCollisionEntity::triangleIntersect2DGround(CTriangle &tri, const CV
 	CVector		&p0= tri.V0;
 	CVector		&p1= tri.V1;
 	CVector		&p2= tri.V2;
+
+	// TestYoyo. Test for precision problems.
+	/*if( testLine(p1, p0, pos0) && testLine(p2, p1, pos0) && testLine(p0, p2, pos0) )
+	{
+		nlinfo("Found Tri For Pos: %.07f, %.07f\n   P0: %.07f, %.07f\n   P1: %.07f, %.07f\n   P2: %.07f, %.07f",
+			pos0.x, pos0.y, p0.x, p0.y, p1.x, p1.y, p2.x, p2.y);
+	}*/
 
 	// Test if the face enclose the pos in X/Y plane.
 	// NB: compute and using a BBox to do a rapid test is not a very good idea, since it will 
@@ -514,6 +544,56 @@ bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos,
 
 		return false;
 	}
+}
+
+
+// ***************************************************************************
+void		CVisualCollisionEntity::displayDebugGrid(IDriver &drv) const
+{
+	// static to not reallocate each frame
+	static	CMaterial	mat;
+	static	bool		inited= false;
+	if(!inited)
+	{
+		inited= true;
+		mat.initUnlit();
+	}
+	static	vector<CLine>	lineList;
+	lineList.clear();
+
+	// Build lines for all patch quad blocks.
+	for(uint i=0;i<_PatchQuadBlocks.size();i++)
+	{
+		CPatchQuadBlock		&pqb= *_PatchQuadBlocks[i];
+		// Parse all quads of this patch block.
+		CPatchBlockIdent	&pbid= pqb.PatchBlockId;
+		for(uint t= pbid.T0; t<pbid.T1; t++)
+		{
+			for(uint s= pbid.S0; s<pbid.S1; s++)
+			{
+				// compute quad coordinate in pqb.
+				uint	sd0= (s-pbid.S0);
+				uint	td0= (t-pbid.T0);
+				uint	sd1= sd0+1;
+				uint	td1= td0+1;
+				// get 4 vertex coord of quad
+				const CVector	&p0= pqb.Vertices[sd0 + td0*NL_PATCH_BLOCK_MAX_VERTEX];
+				const CVector	&p1= pqb.Vertices[sd0 + td1*NL_PATCH_BLOCK_MAX_VERTEX];
+				const CVector	&p2= pqb.Vertices[sd1 + td1*NL_PATCH_BLOCK_MAX_VERTEX];
+				const CVector	&p3= pqb.Vertices[sd1 + td0*NL_PATCH_BLOCK_MAX_VERTEX];
+
+				// build the 5 lines
+				lineList.push_back(CLine(p0, p1));
+				lineList.push_back(CLine(p1, p2));
+				lineList.push_back(CLine(p2, p3));
+				lineList.push_back(CLine(p3, p0));
+				lineList.push_back(CLine(p0, p2));
+			}
+		}
+	}
+
+	// Display the lines.
+	CDRU::drawLinesUnlit(lineList, mat, drv);
 }
 
 

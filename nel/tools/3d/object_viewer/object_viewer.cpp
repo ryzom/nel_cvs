@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.56 2002/02/26 17:30:22 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.57 2002/02/28 13:41:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,7 @@
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
 #include "dialog_progress.h"
+#include "global_wind_dlg.h"
 
 
 
@@ -357,6 +358,8 @@ CObjectViewer::~CObjectViewer ()
 		delete _WaterPoolDlg;
 	if (_VegetableDlg)
 		delete _VegetableDlg;
+	if (_GlobalWindDlg)
+		delete _GlobalWindDlg;
 	if (_FontGenerator)
 		delete _FontGenerator;
 }
@@ -505,6 +508,12 @@ void CObjectViewer::initUI (HWND parent)
 	_VegetableDlg=new CVegetableDlg (this, _MainFrame);
 	_VegetableDlg->Create (IDD_VEGETABLE_DLG);
 	getRegisterWindowState (_VegetableDlg, REGKEY_OBJ_VIEW_VEGETABLE_DLG, false);
+
+
+	// Create global wind dialog
+	_GlobalWindDlg= new CGlobalWindDlg (this, _MainFrame);
+	_GlobalWindDlg->Create(IDD_GLOBAL_WIND);
+	getRegisterWindowState (_GlobalWindDlg, REGKEY_OBJ_GLOBAL_WIND_DLG, false);
 
 
 	// Set backgroupnd color
@@ -2349,3 +2358,34 @@ void		CObjectViewer::snapToGroundVegetableLandscape(bool enable)
 	// update
 	_VegetableSnapToGround= enable;
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Global wind part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CObjectViewer::setGlobalWindPower(float w)
+{
+	if(_MainFrame)
+	{
+		clamp(w, 0.f, 1.f);
+		_MainFrame->GlobalWindPower= w;
+		CNELU::Scene.setGlobalWindPower(w);
+	}
+}
+
+
+// ***************************************************************************
+float		CObjectViewer::getGlobalWindPower() const
+{
+	if(_MainFrame)
+		return _MainFrame->GlobalWindPower;
+	else
+		return 1.f;
+}
+
+

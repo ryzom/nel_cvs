@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.31 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: object_viewer.h,v 1.32 2002/02/28 13:41:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #define REGKEY_OBJ_DAYNIGHT_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
 #define REGKEY_OBJ_WATERPOOL_DLG "Software\\Nevrax\\nel\\object_viewer\\daynight_dlg"
 #define REGKEY_OBJ_VIEW_VEGETABLE_DLG "Software\\Nevrax\\nel\\object_viewer\\vegetable_dlg"
+#define REGKEY_OBJ_GLOBAL_WIND_DLG "Software\\Nevrax\\nel\\object_viewer\\global_wind_dlg"
 
 
 
@@ -79,6 +80,7 @@ class CParticleDlg ;
 class CDayNightDlg ;
 class CWaterPoolEditor;
 class CVegetableDlg ;
+class CGlobalWindDlg ;
 
 
 
@@ -321,6 +323,12 @@ public:
 
 	// @}
 
+
+	/// Get/Set global Scene wind setup
+	float		getGlobalWindPower() const;
+	void		setGlobalWindPower(float w);
+
+
 private:
 
 	struct	CInstanceInfo
@@ -338,6 +346,7 @@ private:
 	CDayNightDlg								*_DayNightDlg ;
 	CWaterPoolEditor							*_WaterPoolDlg ;
 	CVegetableDlg								*_VegetableDlg ;
+	CGlobalWindDlg								*_GlobalWindDlg;
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<CInstanceInfo>					_ListInstance;
 	NL3D::CAnimationSet							_AnimationSet;

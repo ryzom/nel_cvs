@@ -132,7 +132,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /FR /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -199,6 +199,10 @@ SOURCE=.\dialog_progress.cpp
 # Begin Source File
 
 SOURCE=.\edit_ex.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\global_wind_dlg.cpp
 # End Source File
 # Begin Source File
 
@@ -288,6 +292,10 @@ SOURCE=.\dialog_progress.h
 # Begin Source File
 
 SOURCE=.\edit_ex.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\global_wind_dlg.h
 # End Source File
 # Begin Source File
 

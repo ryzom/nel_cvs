@@ -52,6 +52,7 @@ public:
 	bool		    DayNightWindow;
 	bool		    WaterPoolWindow;
 	bool		    VegetableWindow;
+	bool		    GlobalWindWindow;
 	bool			MoveElement;
 	bool			X;
 	bool			Y;
@@ -60,6 +61,7 @@ public:
 	float			MoveSpeed;
 	NLMISC::CRGBA	BgColor;
 	bool			Euler;
+	float			GlobalWindPower;
 	
 	void update ();
 	void registerValue (bool update=true);
@@ -122,6 +124,8 @@ public:
 	afx_msg void OnActivateTextureSet(UINT nID);
 	afx_msg void OnWindowVegetable();
 	afx_msg void OnUpdateWindowVegetable(CCmdUI* pCmdUI);
+	afx_msg void OnWindowGlobalwind();
+	afx_msg void OnUpdateWindowGlobalwind(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

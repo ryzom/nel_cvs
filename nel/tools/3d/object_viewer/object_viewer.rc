@@ -1381,6 +1381,18 @@ BEGIN
     GROUPBOX        "",IDC_COLOR_ATTRIB,6,2,344,71,NOT WS_VISIBLE
 END
 
+IDD_GLOBAL_WIND DIALOG DISCARDABLE  0, 0, 212, 50
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Global Wind Power"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close",IDC_BUTTON_CLOSE,80,30,50,14
+    CONTROL         "Slider1",IDC_SLIDER_GLOBAL_WIND_POWER,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,45,10,135,12
+    LTEXT           "Power:",IDC_STATIC,5,10,35,10
+    LTEXT           "Static",IDC_STATIC_GLOBAL_WIND_POWER,185,10,25,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1885,6 +1897,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 74
     END
+
+    IDD_GLOBAL_WIND, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 205
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 43
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2174,6 +2194,7 @@ BEGIN
         MENUITEM "Day/Night",                   ID_WINDOW_DAYNIGHT
         MENUITEM "Water pool editor",           ID_WINDOW_WATER_POOL
         MENUITEM "Vegetable",                   ID_WINDOW_VEGETABLE
+        MENUITEM "Global Wind",                 ID_WINDOW_GLOBALWIND
     END
     POPUP "&Help"
     BEGIN
@@ -2394,6 +2415,7 @@ BEGIN
 0x0034, 
     0
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

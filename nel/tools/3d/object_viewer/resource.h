@@ -257,6 +257,7 @@
 #define IDC_UPDATE_XPOS                 1116
 #define IDD_GLOBAL_COLOR                1116
 #define IDC_UPDATE_YPOS                 1117
+#define IDD_GLOBAL_WIND                 1117
 #define IDC_UPDATE_ZPOS                 1118
 #define IDC_SUB_COMPONENT               1119
 #define IDC_PSI_VALUE                   1121
@@ -523,6 +524,8 @@
 #define IDC_BUMP_FACTOR_TXT             1337
 #define IDC_BUMP_FACTOR                 1338
 #define IDC_CONSISTENT_EMISSION         1340
+#define IDC_SLIDER_GLOBAL_WIND_POWER    1341
+#define IDC_STATIC_GLOBAL_WIND_POWER    1342
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -645,14 +648,15 @@
 #define IDM_ACTIVATE_TEXTURE_SET_6      32880
 #define IDM_ACTIVATE_TEXTURE_SET_7      32881
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882
+#define ID_WINDOW_GLOBALWIND            32883
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1117
-#define _APS_NEXT_COMMAND_VALUE         32883
-#define _APS_NEXT_CONTROL_VALUE         1341
+#define _APS_NEXT_RESOURCE_VALUE        1118
+#define _APS_NEXT_COMMAND_VALUE         32884
+#define _APS_NEXT_CONTROL_VALUE         1343
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

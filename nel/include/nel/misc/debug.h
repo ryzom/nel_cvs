@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.32 2001/05/18 14:40:59 chafik Exp $
+ * $Id: debug.h,v 1.33 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -358,7 +358,7 @@ NULL
 
 struct EFatalError : public Exception
 {
-	virtual const char	*what () const throw () { return "nlerror() called"; }
+	EFatalError() : Exception( "nlerror() called" ) {}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file path.h
  * CPath
  *
- * $Id: path.h,v 1.5 2001/02/28 14:30:39 berenguier Exp $
+ * $Id: path.h,v 1.6 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ typedef std::vector<std::string> CStringVector;
 // EPathNotFound
 struct EPathNotFound : public Exception
 {
-	EPathNotFound( const std::string& filename ) { _Reason = "Path not found for " + filename; }
+	EPathNotFound( const std::string& filename ) : Exception( "Path not found for " + filename ) {}
 };
 
 

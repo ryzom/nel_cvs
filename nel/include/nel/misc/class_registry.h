@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.7 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: class_registry.h,v 1.8 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,15 +46,19 @@ namespace	NLMISC
  */
 struct ERegistry : public Exception
 {
-	virtual const char	*what() const throw() { return "Registry error"; }
+	ERegistry() : Exception( "Registry error" ) {};
+
+	ERegistry( const std::string& str ) : Exception( str ) {};
 };
+
 struct ERegisteredClass : public ERegistry
 {
-	virtual const char	*what() const throw() { return "Class already registered"; }
+	ERegisteredClass() : ERegistry( "Class already registered" ) {};
 };
+
 struct EUnregisteredClass : public ERegistry
 {
-	virtual const char	*what() const throw() { return "Class not registered"; }
+	EUnregisteredClass() : ERegistry( "Class not registered" ) {}
 };
 
 

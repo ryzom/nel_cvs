@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.h,v 1.11 2001/03/05 09:15:41 corvazier Exp $
+ * $Id: file.h,v 1.12 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,32 +43,23 @@ namespace NLMISC
 struct EFile : public EStream
 {
 public:
-	EFile () { _Reason = "Unknown file error"; }
-	EFile (const std::string& filename) { _Reason = "Unknown file error in '"+filename+"'"; }
+	EFile () : EStream( "Unknown file error" ) {}
+	EFile (const std::string& filename) : EStream( "Unknown file error in '"+filename+"'" ) {}
 };
 
 struct EFileNotOpened : public EFile
 {
-	EFileNotOpened( const std::string& filename )
-	{
-		_Reason = "File '"+filename+"' not opened";
-	}
+	EFileNotOpened( const std::string& filename ) : EFile( "File '"+filename+"' not opened" ) {}
 };
 
 struct EReadError : public EFile
 {
-	EReadError( const std::string& filename )
-	{
-		_Reason = "Read error in file '" +filename+"' (End of file??)";
-	}
+	EReadError( const std::string& filename ) : EFile( "Read error in file '" +filename+"' (End of file??)" ) {}
 };
 
 struct EWriteError : public EFile
 {
-	EWriteError( const std::string& filename )
-	{
-		_Reason = "Write Error in file '" +filename+"'";
-	}
+	EWriteError( const std::string& filename ) : EFile( "Write Error in file '" +filename+"'" ) {}
 };
 
 

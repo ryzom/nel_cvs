@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.41 2001/05/18 14:40:59 chafik Exp $
+ * $Id: stream.h,v 1.42 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,23 +66,29 @@ namespace	NLMISC
  */
 struct EStream : public Exception
 {
-	EStream() { _Reason = "Stream Error"; }
+	EStream() : Exception( "Stream Error" ) {}
+
+	EStream( const std::string& str ) : Exception( str ) {}
 };
+
 struct EOlderStream : public EStream
 {
-	EOlderStream() { _Reason = "The version in stream is older than the class"; }
+	EOlderStream() : EStream( "The version in stream is older than the class" ) {}
 };
+
 struct ENewerStream : public EStream
 {
-	ENewerStream() { _Reason = "The version in stream is newer than the class"; }
+	ENewerStream() : EStream( "The version in stream is newer than the class" ) {}
 };
+
 struct EInvalidDataStream : public EStream
 {
-	EInvalidDataStream() { _Reason = "Invalid data format"; }
+	EInvalidDataStream() : EStream( "Invalid data format" ) {}
 };
+
 struct ESeekNotSupported : public EStream
 {
-	ESeekNotSupported() { _Reason = "Seek fonctionnality is not supported"; }
+	ESeekNotSupported() : EStream( "Seek fonctionnality is not supported" ) {}
 };
 
 
@@ -306,11 +312,11 @@ public:
 
 
 	/// Specialisation of serialCont() for vector<uint8>
-	void			serialCont(std::vector<uint8> &cont) ;
+	virtual void			serialCont(std::vector<uint8> &cont) ;
 	/// Specialisation of serialCont() for vector<sint8>
-	void			serialCont(std::vector<sint8> &cont) ;
+	virtual void			serialCont(std::vector<sint8> &cont) ;
 	/// Specialisation of serialCont() for vector<bool>
-	void			serialCont(std::vector<bool> &cont) ;
+	virtual void			serialCont(std::vector<bool> &cont) ;
 
 
 	/** \name standard STL containers serialisation. Elements must be pointers on a base type (uint...) or on a 
@@ -611,6 +617,8 @@ private:
 		serialSTLContLen(cont, len);
 	}
 
+	
+protected:
 
 	/**
 	 * special version for serializing a vector.

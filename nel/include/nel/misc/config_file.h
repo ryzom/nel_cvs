@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.19 2001/05/18 16:53:07 lecroart Exp $
+ * $Id: config_file.h,v 1.20 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
 
 #include <vector>
 #include <string>
@@ -234,7 +235,7 @@ private:
 
 struct EConfigFile : public Exception
 {
-	EConfigFile() { _Reason = "Unknown Config File Exception"; }
+	EConfigFile() { _Reason = "Unknown Config File Exception";}
 };
 
 struct EBadType : public EConfigFile
@@ -244,6 +245,7 @@ struct EBadType : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Bad variable type, variable \"%s\" is a %s and not a %s", varName.c_str (), CConfigFile::CVar::TypeName[varType], CConfigFile::CVar::TypeName[wantedType]);
 		_Reason = str;
+		nlwarning("Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -254,6 +256,7 @@ struct EBadSize : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Trying to access to the index %d but the variable \"%s\" size is %d", varIndex, varName.c_str (), varSize);
 		_Reason = str;
+		nlwarning("Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -264,6 +267,7 @@ struct EUnknownVar : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "variable \"%s\" not found in file \"%s\"", varName.c_str (), filename.c_str());
 		_Reason = str;
+		nlwarning("Exception will be launched: %s", _Reason.c_str());
 	}
 };
 
@@ -274,6 +278,7 @@ struct EParseError : public EConfigFile
 		static char str[NLMISC::MaxCStringSize];
 		smprintf (str, NLMISC::MaxCStringSize, "Parse error on the \"%s\" file, line %d", fileName.c_str (), currentLine);
 		_Reason = str;
+		nlwarning("Exception will be launched: %s", _Reason.c_str());
 	}
 };
 

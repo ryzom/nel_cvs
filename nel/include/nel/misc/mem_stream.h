@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.8 2001/03/13 15:57:43 lecroart Exp $
+ * $Id: mem_stream.h,v 1.9 2001/05/21 16:58:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,25 +34,24 @@ namespace NLMISC
 
 /// Exception class for CMemStream
 struct EMemStream : public NLMISC::EStream
-{};
+{
+	EMemStream( const std::string& str ) : EStream( str ) {}
+};
 
 /*class EMemStreamTypeNbr : public EMemStream
 {
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Bad message type code";}
+	EMemStreamTypeNbr() : EMemStream( "Bad message type code" ) {}
 };
 
 class EMemStreamTypeStr : public EMemStream
 {
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Bad message type name";}
+	EMemStreamTypeStr() : EMemStream( "Bad message type name" ) {}
 };*/
 
 /// This exception is raised when someone tries to serialize in more than there is.
 struct EStreamOverflow : public EMemStream
 {
-	/// Returns the exception name
-	virtual const char	*what() const throw() {return "Stream Overflow Error";}
+	EStreamOverflow() : EMemStream( "Stream Overflow Error" ) {}
 };
 
 
@@ -64,8 +63,7 @@ typedef CVector8::iterator It8;
 
 
 /**
- * MemStream memory stream. Can be serialized to/from (see SerialBuffer()). Can be sent or received
- * over a network, using a CSocket or preferably a CMsgSocket object.
+ * MemStream memory stream (see also NLNET::CMessage).
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -182,8 +180,6 @@ protected:
 	{
 		return _Buffer.size();
 	}
-
-private:
 
 	CVector8		_Buffer;
 	It8				_BufPos;

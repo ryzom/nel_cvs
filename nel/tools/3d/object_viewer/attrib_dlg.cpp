@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.8 2001/06/26 12:00:21 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.9 2001/06/27 16:51:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -686,7 +686,7 @@ END_MESSAGE_MAP()
 		if (dynamic_cast<const NL3D::CPSUIntBlender *>(scheme)) 
 		{				
 			CValueBlenderDlgClientT<uint32, CEditableRangeUInt> myInterface ;
-			myInterface.Id = std::string("FLOAT_BLENDER") ;
+			myInterface.Id = std::string("UINT_BLENDER") ;
 			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<uint32, 64> *) scheme)->_F ;
 			
 			CValueBlenderDlg bd(&myInterface, this) ;
@@ -700,7 +700,7 @@ END_MESSAGE_MAP()
 			CValueGradientDlg gd(&wrapper, this) ;		
 			wrapper.GradDlg = &gd ;
 			wrapper.DefaultValue = 0 ;
-			wrapper.Id = std::string("FLOAT GRADIENT") ;
+			wrapper.Id = std::string("UINT GRADIENT") ;
 
 			gd.DoModal() ;
 			
@@ -712,11 +712,11 @@ END_MESSAGE_MAP()
 	{
 		const NL3D::CPSAttribMaker<uint32> *scheme = _SchemeWrapper->getScheme() ;	
 
-		if (dynamic_cast<const NL3D::CPSIntBlender *>(scheme)) 
+		if (dynamic_cast<const NL3D::CPSUIntBlender *>(scheme)) 
 		{
 			return 0 ;
 		}
-		if (dynamic_cast<const NL3D::CPSIntGradient *>(scheme)) 
+		if (dynamic_cast<const NL3D::CPSUIntGradient *>(scheme)) 
 		{
 			return 1 ;
 		}
@@ -748,6 +748,135 @@ END_MESSAGE_MAP()
 			_SchemeWrapper->setScheme(scheme) ;
 		}
 	}
+
+
+////////////////////////////////////
+// CAttribDlgInt implementation //
+////////////////////////////////////
+
+	//////////////////////////////////////////////////////////
+	// INT GRADIENT EDITION INTERFACE						//
+	//////////////////////////////////////////////////////////
+
+
+	class CIntGradientDlgWrapper : public CValueGradientDlgClientT<sint32, CEditableRangeInt>
+	{
+	public:	
+		/// a function that can display a value in a gradient, with the given offset. Deriver must define this
+		void displayValue(CDC *dc, uint index, sint x, sint y)
+		{		
+			
+			CString out ;
+			out.Format("%d",  Scheme->getValue(index) ) ;
+			dc->TextOut(x + 10, y + 4, out) ;
+		}
+	} ;
+
+
+
+	CAttribDlgInt::CAttribDlgInt(const std::string &valueID, sint32 minRange, sint32 maxRange)
+				:  CAttribDlgT<sint32>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
+	{
+			
+	}
+
+	CEditAttribDlg *CAttribDlgInt::createConstantValueDlg()
+	{
+		CEditableRangeInt *erf = new CEditableRangeInt(_CstValueId, _MinRange, _MaxRange) ;
+		erf->setWrapper(_Wrapper) ;		
+		return erf ;
+	}
+
+	uint CAttribDlgInt::getNumScheme(void) const
+	{
+		return 2 ;
+	}
+	std::string CAttribDlgInt::getSchemeName(uint index) const
+	{
+		nlassert(index < 2) ;
+		switch (index)
+		{
+			case 0 :
+				return std::string("value blender") ;
+			break ;
+			case 1 :
+				return std::string("values gradient") ;
+			break ;
+			default:
+				return std::string("") ;
+			break ;
+		}
+	}
+	void CAttribDlgInt::editScheme(void)
+	{
+		const NL3D::CPSAttribMaker<sint32> *scheme = _SchemeWrapper->getScheme() ;	
+
+		if (dynamic_cast<const NL3D::CPSIntBlender *>(scheme)) 
+		{				
+			CValueBlenderDlgClientT<sint32, CEditableRangeInt> myInterface ;
+			myInterface.Id = std::string("INT_BLENDER") ;
+			myInterface.SchemeFunc = & ((NL3D::CPSValueBlenderSample<sint32, 64> *) scheme)->_F ;
+			
+			CValueBlenderDlg bd(&myInterface, this) ;
+			bd.DoModal() ;
+		
+		}
+		if (dynamic_cast<const NL3D::CPSIntGradient *>(scheme)) 
+		{
+			CIntGradientDlgWrapper wrapper ;
+			wrapper.Scheme = &(((NL3D::CPSIntGradient *) (_SchemeWrapper->getScheme()) )->_F) ;
+			CValueGradientDlg gd(&wrapper, this) ;		
+			wrapper.GradDlg = &gd ;
+			wrapper.DefaultValue = 0 ;
+			wrapper.Id = std::string("INT GRADIENT") ;
+
+			gd.DoModal() ;
+			
+		}
+		
+	}
+
+	sint CAttribDlgInt::getCurrentScheme(void) const
+	{
+		const NL3D::CPSAttribMaker<sint32> *scheme = _SchemeWrapper->getScheme() ;	
+
+		if (dynamic_cast<const NL3D::CPSIntBlender *>(scheme)) 
+		{
+			return 0 ;
+		}
+		if (dynamic_cast<const NL3D::CPSIntGradient *>(scheme)) 
+		{
+			return 1 ;
+		}
+		return -1 ;
+	}
+
+
+	void CAttribDlgInt::setCurrentScheme(uint index)
+	{
+		nlassert(index < 2) ;
+
+
+		NL3D::CPSAttribMaker<sint32> *scheme = NULL ;
+
+		switch (index)
+		{
+			case 0 :
+				scheme = new NL3D::CPSIntBlender ;
+			break ;
+			case 1 :
+				scheme = new NL3D::CPSIntGradient ;
+			break ;
+			default:	
+			break ;
+		}
+
+		if (scheme)
+		{
+			_SchemeWrapper->setScheme(scheme) ;
+		}
+	}
+
 
 
 

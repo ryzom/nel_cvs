@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.5 2001/06/25 13:15:32 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.6 2001/06/27 16:51:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,7 @@ protected:
 	CEditableRangeFloat *_NbCyclesDlg ;	
 
 	// wrapper to tune the number of cycles
-	struct tagNbCyclesWrapper : public IPSWrapperFloat
+	struct CNbCyclesWrapper : public IPSWrapperFloat
 	{
 			CAttribDlg *Dlg ;
 			float get(void) const { return Dlg->getSchemeNbCycles() ; }
@@ -308,6 +308,40 @@ protected:
 	std::string _CstValueId ;
 	uint32 _MinRange, _MaxRange ;
 } ;
+
+
+
+/** an attribute editor specialized for signed int values
+ */
+
+class CAttribDlgInt : public CAttribDlgT<sint32>
+{	
+public:
+	/** ctor
+	 *  \param valueID an unique id for the constant value editable range dialog
+	 *  \param minValue : the min value for the editable range dlg(for constant value)
+	 *  \param maxValue : the min value for the editable range dlg (for constant value)
+	 */
+	CAttribDlgInt(const std::string &valueID, sint32 minValue, sint32 maxValue)  ;
+
+	
+	// inherited from CAttribDlg
+	virtual uint getNumScheme(void) const ;	
+	virtual std::string getSchemeName(uint index) const ;	
+	virtual void editScheme(void) ;	
+	virtual void setCurrentScheme(uint index) ;
+	virtual sint getCurrentScheme(void) const  ;
+
+
+
+protected:
+
+	virtual CEditAttribDlg *createConstantValueDlg() ;
+	// ID for the cst float value  edition dialog
+	std::string _CstValueId ;
+	sint32 _MinRange, _MaxRange ;
+} ;
+
 
 
 

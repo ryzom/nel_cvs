@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.10 2003/01/15 10:43:26 legros Exp $
+ * $Id: build_rbank.cpp,v 1.11 2003/05/06 09:47:58 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,9 +50,11 @@
 #include "pacs/local_retriever.h"
 #include "pacs/retriever_instance.h"
 #include "pacs/chain.h"
+#include "pacs/collision_mesh_build.h"
 
 #include <string>
 #include <deque>
+#include <map>
 
 using namespace std;
 using namespace NLMISC;
@@ -366,6 +368,435 @@ void processRetriever(string &zoneName)
 }
 
 
+
+
+
+//
+class CFaultyChain
+{
+public:
+	uint		Chain;
+	CVectorD	Start, End;
+	sint		PreviousChain, NextChain;
+};
+
+class CReconstructed
+{
+public:
+	CReconstructed() : FrontInstance(-1), FrontChain(-1) {}
+	vector<uint>			Chains;
+	CVectorD				Start, End;
+	sint					FrontInstance, FrontChain;
+};
+
+class CFaultyInstance
+{
+public:
+	uint					Instance;
+	vector<CFaultyChain>	Chains;
+	vector<CReconstructed>	Reconstructed;
+};
+
+class CChainRef
+{
+public:
+	uint					Chain, Previous;
+	uint					FrontChain;
+	uint					BorderId;
+	uint					From, To;
+};
+
+class CFullChain
+{
+public:
+	uint					Instance;
+	vector<CVector>			Vertices;
+	vector<CChainRef>		Chains;
+};
+
+
+void	fixFaultyLinks(map<uint, CFaultyInstance> &faultyInstances, 
+					   const vector<NLPACS::CRetrieverInstance> &instances,
+					   const vector<NLPACS::CLocalRetriever> &retrievers)
+{
+	map<uint, CFaultyInstance>::iterator	ifi;
+	uint									i, j, k, l;
+
+	// first
+	// rebuild full chains
+	// -- join all chains that are missing a link
+	for (ifi=faultyInstances.begin(); ifi!=faultyInstances.end(); ++ifi)
+	{
+		CFaultyInstance	&inst = (*ifi).second;
+
+		// for each chain, find best matching ending chain
+		for (k=0; k<inst.Chains.size(); ++k)
+		{
+			sint	best = -1;
+			double	bestDist = 1.0e10;
+			for (l=0; l<inst.Chains.size(); ++l)
+			{
+				if (l == k || (best != -1 && inst.Chains[best].PreviousChain != -1))
+					continue;
+
+				CVectorD	diff = inst.Chains[k].End - inst.Chains[l].Start;
+				double		dist = diff.norm();
+
+				if (dist < 0.1 && dist < bestDist)
+				{
+					best = l;
+					bestDist = dist;
+				}
+			}
+
+			if (best != -1)
+			{
+				inst.Chains[best].PreviousChain = k;
+				inst.Chains[k].NextChain = best;
+			}
+		}
+
+		//
+		for (k=0; k<inst.Chains.size(); ++k)
+		{
+			if (inst.Chains[k].PreviousChain == -1)
+			{
+				l = k;
+				inst.Reconstructed.push_back(CReconstructed());
+				do
+				{
+					inst.Reconstructed.back().Chains.push_back(l);
+				}
+				while ((l=inst.Chains[l].NextChain) != -1);
+				inst.Reconstructed.back().Start = inst.Chains[inst.Reconstructed.back().Chains.front()].Start;
+				inst.Reconstructed.back().End   = inst.Chains[inst.Reconstructed.back().Chains.back()].End;
+			}
+		}
+	}
+
+	// second
+	// match reconstructed chains
+	// -- for each reconstructed chain in an instance, find best matching reconstructed chain in neighbour instances
+	for (ifi=faultyInstances.begin(); ifi!=faultyInstances.end(); ++ifi)
+	{
+		CFaultyInstance	&inst = (*ifi).second;
+
+		const NLPACS::CRetrieverInstance	&instance = instances[inst.Instance];
+		const NLPACS::CLocalRetriever		&retriever = retrievers[instance.getRetrieverId()];
+		vector<sint32>						neighbs = instance.getNeighbors();
+
+		for (i=0; i<neighbs.size(); ++i)
+		{
+			map<uint, CFaultyInstance>::iterator	ifn = faultyInstances.find(neighbs[i]);
+			if (ifn == faultyInstances.end())
+				continue;
+
+			CFaultyInstance	&neighb = (*ifn).second;
+
+			for (j=0; j<inst.Reconstructed.size(); ++j)
+			{
+				if (inst.Reconstructed[j].FrontInstance != -1)
+					continue;
+
+				CVectorD		&astart = inst.Reconstructed[j].Start,
+								&aend = inst.Reconstructed[j].End;
+
+				const NLPACS::CRetrieverInstance	&ninstance = instances[neighb.Instance];
+				const NLPACS::CLocalRetriever		&nretriever = retrievers[ninstance.getRetrieverId()];
+
+				for (k=0; k<neighb.Reconstructed.size(); ++k)
+				{
+					if (neighb.Reconstructed[k].FrontInstance != -1)
+						continue;
+
+					CVectorD	&bstart = neighb.Reconstructed[j].Start,
+								&bend = neighb.Reconstructed[j].End;
+
+					if ((astart-bend).norm() < 0.1 && (aend-bstart).norm() < 0.1)
+					{
+						// ok, found missing match !
+						inst.Reconstructed[j].FrontInstance = neighb.Instance;
+						inst.Reconstructed[j].FrontChain = k;
+						neighb.Reconstructed[k].FrontInstance = inst.Instance;
+						neighb.Reconstructed[k].FrontChain = j;
+
+						CFullChain		fci, fcn;
+						uint			m;
+
+						CVector			ori = instance.getOrigin(),
+										orn = ninstance.getOrigin();
+
+						fci.Instance = inst.Instance;
+						fcn.Instance = neighb.Instance;
+
+						// build full chains
+						for (l=0; l<inst.Reconstructed[j].Chains.size(); ++l)
+						{
+							uint								chain = inst.Chains[inst.Reconstructed[j].Chains[l]].Chain;
+							NLPACS::CLocalRetriever::CIterator	it(&retriever, chain);
+
+							CChainRef	cr;
+							cr.Chain = chain;
+							cr.Previous = chain;
+							cr.From = fci.Vertices.size();
+							cr.BorderId = NLPACS::CChain::convertBorderChainId(retriever.getChain(chain).getRight());
+
+							while (!it.end())
+							{
+								fci.Vertices.push_back(it.get3d()+ori);
+								++it;
+							}
+
+							cr.To = fci.Vertices.size()-1;
+
+							if (l < inst.Reconstructed[j].Chains.size()-1)
+								fci.Vertices.pop_back();
+
+							fci.Chains.push_back(cr);
+						}
+
+						for (l=0; l<neighb.Reconstructed[k].Chains.size(); ++l)
+						{
+							uint								chain = neighb.Chains[neighb.Reconstructed[k].Chains[l]].Chain;
+							NLPACS::CLocalRetriever::CIterator	it(&nretriever, chain);
+
+							CChainRef	cr;
+							cr.Chain = chain;
+							cr.Previous = chain;
+							cr.From = fcn.Vertices.size();
+							cr.BorderId = NLPACS::CChain::convertBorderChainId(nretriever.getChain(chain).getRight());
+
+							while (!it.end())
+							{
+								fcn.Vertices.push_back(it.get3d()+orn);
+								++it;
+							}
+
+							cr.To = fcn.Vertices.size()-1;
+
+							if (l < neighb.Reconstructed[k].Chains.size()-1)
+								fcn.Vertices.pop_back();
+
+							fcn.Chains.push_back(cr);
+						}
+
+						if (fcn.Vertices.size() != fci.Vertices.size())
+						{
+							nlwarning("Couldn't reconstruct link between %d and %d, mismatching number of vertices", inst.Instance, neighb.Instance);
+							break;
+						}
+
+						for (l=0; l<fci.Vertices.size(); ++l)
+						{
+							if ((fci.Vertices[l] - fcn.Vertices[fci.Vertices.size()-1-l]).norm() > 0.2f)
+							{
+								nlwarning("Couldn't reconstruct link between %d and %d, some vertices don't match", inst.Instance, neighb.Instance);
+								break;
+							}
+
+							fci.Vertices[l] -= ori;
+							fcn.Vertices[fci.Vertices.size()-1-l] -= orn;
+						}
+
+						if (l<fci.Vertices.size())
+							break;
+
+						uint	newChaini = retriever.getChains().size(),
+								newChainn = nretriever.getChains().size();
+
+						// save free border ids in order to renumerate them after splits
+						vector<uint>	ifreeBorderIds, nfreeBorderIds;
+						uint			inextBorderId, nnextBorderId;
+
+						for (l=0; l<fci.Chains.size(); ++l)
+							ifreeBorderIds.push_back(fci.Chains[l].BorderId);
+						inextBorderId = retriever.getBorderChains().size();
+
+						for (l=0; l<fcn.Chains.size(); ++l)
+							nfreeBorderIds.push_back(fcn.Chains[l].BorderId);
+						nnextBorderId = nretriever.getBorderChains().size();
+
+						// generate splits from first chain on second chain
+						for (l=0; l<fci.Chains.size()-1; ++l)
+						{
+							uint	splitAt = fci.Vertices.size()-1 - fci.Chains[l].To;
+
+							for (m=fcn.Chains.size()-1; (sint)m>=0 && fcn.Chains[m].From>splitAt; --m)
+								;
+
+							// no split ?
+							if ((sint)m < 0 || fcn.Chains[m].From == splitAt)
+								continue;
+
+							// insert split in second chain
+							fcn.Chains.insert(fcn.Chains.begin()+m+1, fcn.Chains[m]);
+							fcn.Chains[m].To = splitAt;
+							fcn.Chains[m+1].From = splitAt;
+							fcn.Chains[m+1].Chain = newChainn++;
+						}
+
+						// generate splits from second chain on first chain
+						for (l=0; l<fcn.Chains.size()-1; ++l)
+						{
+							uint	splitAt = fcn.Vertices.size()-1 - fcn.Chains[l].To;
+
+							for (m=fci.Chains.size()-1; (sint)m>=0 && fci.Chains[m].From>splitAt; --m)
+								;
+
+							// no split ?
+							if ((sint)m < 0 || fci.Chains[m].From == splitAt)
+								continue;
+
+							// insert split in first chain
+							fci.Chains.insert(fci.Chains.begin()+m+1, fci.Chains[m]);
+							fci.Chains[m].To = splitAt;
+							fci.Chains[m+1].From = splitAt;
+							fci.Chains[m+1].Chain = newChaini++;
+						}
+
+						if (fci.Chains.size() != fcn.Chains.size())
+						{
+							nlwarning("Couldn't reconstruct link between %d and %d, chain splitting failed", inst.Instance, neighb.Instance);
+							break;
+						}
+
+						// renumerate border ids after splits
+						for (l=0; l<fci.Chains.size(); ++l)
+						{
+							if (!ifreeBorderIds.empty())
+							{
+								fci.Chains[l].BorderId = ifreeBorderIds.back();
+								ifreeBorderIds.pop_back();
+							}
+							else
+							{
+								fci.Chains[l].BorderId = inextBorderId++;
+							}
+
+							(const_cast<NLPACS::CLocalRetriever&>(retriever)).forceBorderChainId(fci.Chains[l].Chain, fci.Chains[l].BorderId);
+						}
+
+						for (l=0; l<fcn.Chains.size(); ++l)
+						{
+							if (!nfreeBorderIds.empty())
+							{
+								fcn.Chains[l].BorderId = nfreeBorderIds.back();
+								nfreeBorderIds.pop_back();
+							}
+							else
+							{
+								fcn.Chains[l].BorderId = nnextBorderId++;
+							}
+
+							(const_cast<NLPACS::CLocalRetriever&>(nretriever)).forceBorderChainId(fcn.Chains[l].Chain, fcn.Chains[l].BorderId);
+						}
+
+						// insert/replace new chains in instances
+
+						vector<NLPACS::CLocalRetriever::CChainReplacement>	replacement;
+						vector<uint>										newIds;
+
+						l=0;
+						while (l<fci.Chains.size())
+						{
+							sint	previous=-1;
+
+							newIds.clear();
+							replacement.clear();
+
+							for (; l<fci.Chains.size(); ++l)
+							{
+								if (previous != -1 && previous != (sint)fci.Chains[l].Previous)
+									break;
+
+								previous = fci.Chains[l].Previous;
+
+								NLPACS::CLocalRetriever::CChainReplacement	cr;
+
+								cr.Chain = fci.Chains[l].Chain;
+								cr.Left = retriever.getChain(previous).getLeft();
+								cr.Right = NLPACS::CChain::convertBorderChainId(fci.Chains[l].BorderId);
+								cr.Vertices.clear();
+								cr.Vertices.insert(cr.Vertices.begin(),
+												   fci.Vertices.begin()+fci.Chains[l].From, 
+												   fci.Vertices.begin()+fci.Chains[l].To+1);
+
+								replacement.push_back(cr);
+								newIds.push_back(fci.Chains[l].BorderId);
+							}
+
+							if (replacement.size() >= 2)
+							{
+								(const_cast<NLPACS::CLocalRetriever&>(retriever)).replaceChain(previous, replacement);
+								(const_cast<NLPACS::CRetrieverInstance&>(instance)).resetBorderChainLinks(newIds);
+							}
+						}
+
+						l=0;
+						while (l<fcn.Chains.size())
+						{
+							sint	previous=-1;
+
+							newIds.clear();
+							replacement.clear();
+
+							for (; l<fcn.Chains.size(); ++l)
+							{
+								if (previous != -1 && previous != (sint)fcn.Chains[l].Previous)
+									break;
+
+								previous = fcn.Chains[l].Previous;
+
+								NLPACS::CLocalRetriever::CChainReplacement	cr;
+
+								cr.Chain = fcn.Chains[l].Chain;
+								cr.Left = nretriever.getChain(previous).getLeft();
+								cr.Right = NLPACS::CChain::convertBorderChainId(fcn.Chains[l].BorderId);
+								cr.Vertices.clear();
+								cr.Vertices.insert(cr.Vertices.begin(),
+												   fcn.Vertices.begin()+fcn.Chains[l].From, 
+												   fcn.Vertices.begin()+fcn.Chains[l].To+1);
+
+								replacement.push_back(cr);
+								newIds.push_back(fcn.Chains[l].BorderId);
+							}
+
+							if (replacement.size() >= 2)
+							{
+								(const_cast<NLPACS::CLocalRetriever&>(nretriever)).replaceChain(previous, replacement);
+								(const_cast<NLPACS::CRetrieverInstance&>(ninstance)).resetBorderChainLinks(newIds);
+							}
+						}
+
+						// force links between instances (border chain links)
+						for (l=0; l<fci.Chains.size(); ++l)
+						{
+							m = fci.Chains.size()-1-l;
+							(const_cast<NLPACS::CRetrieverInstance&>(instance)).forceBorderChainLink(fci.Chains[l].BorderId, 
+																									 neighb.Instance,
+																									 fcn.Chains[m].BorderId,
+																									 fcn.Chains[m].Chain,
+																									 nretriever.getChain(fcn.Chains[m].Chain).getLeft());
+							(const_cast<NLPACS::CRetrieverInstance&>(ninstance)).forceBorderChainLink(fcn.Chains[m].BorderId, 
+																									 inst.Instance,
+																									 fci.Chains[l].BorderId,
+																									 fci.Chains[l].Chain,
+																									 retriever.getChain(fci.Chains[l].Chain).getLeft());
+
+							nlinfo("Fixed: link between %d/%d and %d/%d => %d/%d - %d/%d", fci.Instance, fci.Chains[l].Previous, fcn.Instance, fcn.Chains[m].Previous, fci.Instance, fci.Chains[l].Chain, fcn.Instance, fcn.Chains[m].Chain);
+						}
+
+						break;
+					}
+				}
+			}
+		}
+
+		(const_cast<NLPACS::CLocalRetriever&>(retriever)).computeCollisionChainQuad();
+	}
+}
+
+
 void	processGlobalRetriever()
 {
 	NLPACS::CRetrieverBank		retrieverBank;
@@ -416,16 +847,16 @@ void	processGlobalRetriever()
 		}
 	}
 
-	nlinfo("init the quad grid");
-	globalRetriever.initQuadGrid();
-
 	nlinfo("make all links");
 	globalRetriever.makeAllLinks();
 
 	nlinfo("clean retriever bank up");
 //	retrieverBank.clean();
 
+	map<uint, CFaultyInstance>				faultyInstances;
+
 	const vector<NLPACS::CRetrieverInstance>	&instances = globalRetriever.getInstances();
+	const vector<NLPACS::CLocalRetriever>		&retrievers = retrieverBank.getRetrievers();
 	uint	i, j;
 	uint	totalUnlinked = 0, totalLink = 0;
 	for (i=0; i<instances.size(); ++i)
@@ -434,6 +865,12 @@ void	processGlobalRetriever()
 		CVector	pos = instances[i].getBBox().getCenter();
 		string	unlinkstr = "instance "+toString(i)+":"+getZoneNameById(getZoneIdByPos(pos))+":";
 		bool	unlinkerr = false;
+
+		const NLPACS::CLocalRetriever			&retriever = retrievers[instances[i].getRetrieverId()];
+
+		CFaultyInstance		fi;
+		fi.Instance = i;
+
 		for (j=0; j<links.size(); ++j)
 		{
 			++totalLink;
@@ -442,13 +879,81 @@ void	processGlobalRetriever()
 				unlinkstr += (string(" ")+toString(j));
 				++totalUnlinked;
 				unlinkerr = true;
+
+				CFaultyChain	fc;
+
+				fc.Chain = retriever.getBorderChain(j);
+				fc.Start = retriever.getStartVector(fc.Chain) + instances[i].getOrigin();
+				fc.End   = retriever.getStopVector(fc.Chain) + instances[i].getOrigin();
+				fc.PreviousChain = -1;
+				fc.NextChain = -1;
+
+				fi.Chains.push_back(fc);
 			}
 		}
 		if (unlinkerr)
+		{
 			nlinfo("unlink: %s", unlinkstr.c_str());
+			faultyInstances.insert(make_pair<uint, CFaultyInstance>(i, fi));
+		}
 	}
 
 	nlinfo("%d are still unlinked (%d links total)", totalUnlinked, totalLink);
+
+	// rebuild full chains
+	if (totalUnlinked > 0)
+	{
+		nlinfo("Fixing faulty links...");
+		fixFaultyLinks(faultyInstances, instances, retrievers);
+
+		// recheck
+
+		const vector<NLPACS::CRetrieverInstance>	&instances = globalRetriever.getInstances();
+		const vector<NLPACS::CLocalRetriever>		&retrievers = retrieverBank.getRetrievers();
+		uint	i, j;
+		uint	totalUnlinked = 0, totalLink = 0;
+		for (i=0; i<instances.size(); ++i)
+		{
+			const vector<NLPACS::CRetrieverInstance::CLink>	&links = instances[i].getBorderChainLinks();
+			CVector	pos = instances[i].getBBox().getCenter();
+			string	unlinkstr = "instance "+toString(i)+":"+getZoneNameById(getZoneIdByPos(pos))+":";
+			bool	unlinkerr = false;
+
+			const NLPACS::CLocalRetriever			&retriever = retrievers[instances[i].getRetrieverId()];
+
+			CFaultyInstance		fi;
+			fi.Instance = i;
+
+			for (j=0; j<links.size(); ++j)
+			{
+				++totalLink;
+				if (links[j].Instance == 0xffff)
+				{
+					unlinkstr += (string(" ")+toString(j));
+					++totalUnlinked;
+					unlinkerr = true;
+
+					CFaultyChain	fc;
+
+					fc.Chain = retriever.getBorderChain(j);
+					fc.Start = retriever.getStartVector(fc.Chain) + instances[i].getOrigin();
+					fc.End   = retriever.getStopVector(fc.Chain) + instances[i].getOrigin();
+					fc.PreviousChain = -1;
+					fc.NextChain = -1;
+
+					fi.Chains.push_back(fc);
+				}
+			}
+			if (unlinkerr)
+			{
+				nlinfo("after fix: unlink: %s", unlinkstr.c_str());
+				faultyInstances.insert(make_pair<uint, CFaultyInstance>(i, fi));
+			}
+		}
+	}
+
+	nlinfo("init the quad grid");
+	globalRetriever.initQuadGrid();
 
 	string	filename;
 
@@ -464,7 +969,7 @@ void	processGlobalRetriever()
 	outputBank.open(filename);
 	retrieverBank.serial(outputBank);
 
-	//retrieverBank.saveRetrievers(OutputPath, CFile::getFilenameWithoutExtension(RetrieverBank));
+	retrieverBank.saveRetrievers(OutputPath, CFile::getFilenameWithoutExtension(RetrieverBank));
 }
 
 ///

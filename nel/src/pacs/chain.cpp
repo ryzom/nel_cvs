@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.20 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: chain.cpp,v 1.21 2003/05/06 09:47:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "stdpacs.h"
 
 #include "pacs/chain.h"
+
+#include <crtdbg.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -197,7 +199,7 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 // thisId is the current id of the CChain, and edge is the number of the edge the CChain belongs to (-1
 // if none.)
 void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId,
-							 vector<COrderedChain3f> &fullChains)
+							 vector<COrderedChain3f> &fullChains, vector<uint> &useOChainId)
 {
 	sint		first = 0, last = 0, i;
 
@@ -221,14 +223,27 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		--last;
 
 		// inserts the new subchain id within the CChain.
-		uint32	subChainId = chains.size();
-		if (subChainId > 65535)
-			nlerror("in NLPACS::CChain::make(): reached the maximum number of ordered chains");
+		uint32	subChainId;
+
+		if (useOChainId.empty())
+		{
+			subChainId = chains.size();
+			if (subChainId > 65535)
+				nlerror("in NLPACS::CChain::make(): reached the maximum number of ordered chains");
+
+			chains.resize(chains.size()+1);
+			fullChains.resize(fullChains.size()+1);
+		}
+		else
+		{
+			subChainId = useOChainId.back();
+			useOChainId.pop_back();
+		}
+
 		_SubChains.push_back((uint16)subChainId);
 
 		// and creates a new COrderedChain
-		fullChains.resize(fullChains.size()+1);
-		COrderedChain3f	&subchain3f = fullChains.back();
+		COrderedChain3f	&subchain3f = fullChains[subChainId];
 		subchain3f._Vertices.reserve(last-first+1);
 		subchain3f._Forward = forward;
 		subchain3f._ParentId = thisId;
@@ -244,8 +259,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 
 		first = last;
 
-		chains.resize(chains.size()+1);
-		COrderedChain	&subchain = chains.back();
+		COrderedChain	&subchain = chains[subChainId];
 		subchain.pack(subchain3f);
 		subchain.computeMinMax();
 

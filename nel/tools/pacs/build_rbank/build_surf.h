@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.7 2003/01/06 18:18:04 legros Exp $
+ * $Id: build_surf.h,v 1.8 2003/05/06 09:47:58 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,7 @@ extern std::vector<std::string>	ZoneNames;
 extern std::string				ZoneExt;
 extern std::string				ZoneLookUpPath;
 //extern std::string				BBoxLookUpPath;
+extern std::string				InteriorGrPath;
 
 extern bool						TessellateZones;
 extern bool						MoulineZones;
@@ -232,6 +233,8 @@ public:
 	uint8							Level;
 	uint8							WaterShape;
 	uint8							QuantHeight;
+
+	uint32							ForceMerge;
 	
 	bool							IsBorder;
 	bool							IsHorizontal;
@@ -306,6 +309,7 @@ public:
 		CutFlag = 0;
 		WaterShape = 255;
 		QuantHeight = 0;
+		ForceMerge = 0;
 	}
 
 	/// Computes the bbox of the surface element.
@@ -623,7 +627,15 @@ protected:
 				return &(_Zones[i]);
 		return NULL;
 	}
-	
+public:
+	class CMergeForceBox
+	{
+	public:
+		NLMISC::CAABBox						MergeBox;
+		uint32								MergeId;
+		void	serial(NLMISC::IStream &f)		{ f.serial(MergeBox, MergeId); }
+	};
+
 public:
 	/// The zone valid tessellation elements.
 	std::vector<CSurfElement *>				Elements;
@@ -664,6 +676,11 @@ public:
 	 */
 	NL3D::CQuadTree<CSurfElement *>			Container;
 	NLMISC::CAABBox							ContBBox;
+
+	/**
+	 * The box that force merge into surface
+	 */
+	std::vector<CMergeForceBox>				ForceMerge;
 
 public:
 	/**

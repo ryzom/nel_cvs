@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.9 2002/07/03 08:45:51 corvazier Exp $
+ * $Id: main.cpp,v 1.10 2003/05/06 09:47:58 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ bool												CutEdges;
 vector<string>										ZoneNames;
 string												ZoneExt;
 string												ZoneLookUpPath;
+string												InteriorGrPath;
 bool												TessellateZones;
 bool												MoulineZones;
 bool												ProcessRetrievers;
@@ -172,6 +173,8 @@ void	initMoulinette()
 		Bank = getString(cf, "Bank");
 		CPath::addSearchPath(BanksPath);
 
+		InteriorGrPath = getString(cf, "InteriorGrPath");
+
 		nldebug("OutputRootPath=%s", OutputRootPath.c_str());
 		nldebug("Outputdirectory=%s", OutputDirectory.c_str());
 		nldebug("TessellationPath=%s", TessellationPath.c_str());
@@ -209,6 +212,98 @@ void	initMoulinette()
 	OutputPath = OutputRootPath+OutputDirectory;
 }
 
+bool	interiorForceMergeFileUpToDate()
+{
+	string	idbname = CPath::standardizePath(InteriorGrPath)+"interior_door_boxes.bin";
+	if (!CFile::fileExists(idbname))
+		return false;
+
+	string	igrname = CPath::standardizePath(InteriorGrPath)+"interiors.gr";
+	string	irbname = CPath::standardizePath(InteriorGrPath)+"interiors.rbank";
+
+	return (CFile::getFileModificationDate(idbname) > CFile::getFileModificationDate(igrname) &&
+			CFile::getFileModificationDate(idbname) > CFile::getFileModificationDate(irbname));
+}
+
+void	buildInteriorForceMergeFile()
+{
+	string	idbname = CPath::standardizePath(InteriorGrPath)+"interior_door_boxes.bin";
+	string	igrname = CPath::standardizePath(InteriorGrPath)+"interiors.gr";
+	string	irbname = CPath::standardizePath(InteriorGrPath)+"interiors.rbank";
+
+	NLPACS::CRetrieverBank		rbank;
+	NLPACS::CGlobalRetriever	gr;
+
+	try
+	{
+		CIFile	rf(irbname);
+		rbank.serial(rf);
+
+		CIFile	gf(igrname);
+		gr.serial(gf);
+
+		gr.setRetrieverBank(&rbank);
+
+		vector<NLPACS::CZoneTessellation::CMergeForceBox>	idBoxes;
+
+		//
+		uint	i;
+		for (i=0; i<gr.getInstances().size(); ++i)
+		{
+			const NLPACS::CRetrieverInstance	&inst = gr.getInstance(i);
+			const NLPACS::CLocalRetriever		&retr = gr.getRetriever(inst.getRetrieverId());
+			const NLPACS::CExteriorMesh			&em = retr.getExteriorMesh();
+
+			uint	j;
+			sint	lastLink = -1;
+			CAABBox	box;
+
+			for (j=0; j<em.getEdges().size(); ++j)
+			{
+				if (em.getEdge(j).Link >= 0)
+				{
+					if (lastLink != em.getEdge(j).Link)
+					{
+						if (lastLink >= 0)
+						{
+							NLPACS::CZoneTessellation::CMergeForceBox	mfb;
+							mfb.MergeBox = box;
+							mfb.MergeId = i*65536+lastLink;
+							idBoxes.push_back(mfb);
+						}
+
+						box.setCenter(em.getEdge(j).Start+inst.getOrigin());
+						box.setHalfSize(CVector::Null);
+					}
+
+					box.extend(em.getEdge(j).Start+inst.getOrigin());
+					lastLink = em.getEdge(j).Link;
+				}
+				else
+				{
+					if (lastLink >= 0)
+					{
+						NLPACS::CZoneTessellation::CMergeForceBox	mfb;
+						mfb.MergeBox = box;
+						mfb.MergeId = i*65536+lastLink;
+						idBoxes.push_back(mfb);
+					}
+
+					lastLink = -1;
+				}
+			}
+		}
+
+		COFile	idbofile(idbname);
+
+		idbofile.serialCont(idBoxes);
+	}
+	catch (Exception &)
+	{
+	}
+}
+
+
 /****************************************************************\
 					moulineZones
 \****************************************************************/
@@ -217,6 +312,9 @@ void	moulineZones(vector<string> &zoneNames)
 	uint	i;
 
 	NLPACS::StatsSurfaces.init();
+
+	if (!interiorForceMergeFileUpToDate())
+		buildInteriorForceMergeFile();
 
 	if (TessellateZones)
 	{

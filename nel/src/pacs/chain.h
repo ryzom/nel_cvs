@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.8 2001/09/12 10:07:05 legros Exp $
+ * $Id: chain.h,v 1.9 2003/05/06 09:47:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -235,7 +235,7 @@ protected:
 protected:
 	/// Build the whole surface from a vector of CVector and the left and right surfaces.
 	void								make(const std::vector<NLMISC::CVector> &vertices, sint32 left, sint32 right, std::vector<COrderedChain> &chains, uint16 thisId,
-											 std::vector<COrderedChain3f> &fullChains);
+											 std::vector<COrderedChain3f> &fullChains, std::vector<uint> &useOChainId = std::vector<uint>());
 
 	void								setLoopIndexes(sint32 surface, uint loop, uint loopIndex)
 	{

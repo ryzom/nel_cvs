@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.25 2003/04/22 12:02:09 berenguier Exp $
+ * $Id: local_retriever.h,v 1.26 2003/05/06 09:47:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,107 @@ public:
 		void	serial(NLMISC::IStream &f) { f.serial(Verts[0], Verts[1], Verts[2], Surface); }
 	};
 
+
+
+	/**
+	 * An iterator to go through chains without bothering about ordered chains and those kind of f*cking stuffs
+	 * \author Benjamin Legros
+	 * \author Nevrax France
+	 * \date 2003
+	 */
+	class CIterator
+	{
+		friend class CLocalRetriever;
+
+	protected:
+		/// The referent retriever
+		const CLocalRetriever	*_Retriever;
+
+		/// Chain Id
+		uint16					_Chain;
+
+		/// The current ochain in chain
+		uint16					_OChainIndex;
+
+		/// The current vertex in ochain
+		sint16					_IndexInOChain;
+
+		/// Max index in ochain
+		sint16					_MaxIndexInOChain;
+
+		/// Is ochain forward?
+		bool					_OChainForward;
+
+	public:
+		/// Constructor
+		CIterator(const CLocalRetriever *retriever, uint chain)
+		{
+			_Retriever = retriever;
+			_Chain = chain;
+			_OChainIndex = 0;
+			setupIndex();
+		}
+
+		CIterator	&operator ++ ()
+		{
+			const CChain	&chain = _Retriever->getChain(_Chain);
+			if (_OChainIndex >= chain.getSubChains().size())
+				return *this;
+
+			if (_OChainForward)
+			{
+				++_IndexInOChain;
+				if (((sint)_OChainIndex < (sint)chain.getSubChains().size()-1 && _IndexInOChain == _MaxIndexInOChain) || _IndexInOChain > _MaxIndexInOChain)
+				{
+					++_OChainIndex;
+					setupIndex();
+				}
+			}
+			else
+			{
+				--_IndexInOChain;
+				if (((sint)_OChainIndex < (sint)chain.getSubChains().size()-1 && _IndexInOChain == 0) || _IndexInOChain < 0)
+				{
+					++_OChainIndex;
+					setupIndex();
+				}
+			}
+			return *this;
+		}
+
+		CVector2s	operator * () const
+		{
+			if (end())
+				return CVector2s();
+			return _Retriever->getOrderedChain(_Retriever->getChain(_Chain).getSubChain(_OChainIndex))[_IndexInOChain];
+		}
+
+		CVector		get3d() const
+		{
+			if (end())
+				return CVector::Null;
+			return _Retriever->getFullOrderedChain(_Retriever->getChain(_Chain).getSubChain(_OChainIndex))[_IndexInOChain];
+		}
+
+		/// Test end
+		bool		end() const
+		{
+			return (_OChainIndex >= _Retriever->getChain(_Chain).getSubChains().size());
+		}
+
+	private:
+		/// Setup index in ochain
+		void	setupIndex()
+		{
+			const CChain			&chain = _Retriever->getChain(_Chain);
+			if (_OChainIndex >= chain.getSubChains().size())
+				return;
+			const COrderedChain		&ochain = _Retriever->getOrderedChain(chain.getSubChain(_OChainIndex));
+			_OChainForward = ochain.isForward();
+			_MaxIndexInOChain = ochain.getVertices().size()-1;
+			_IndexInOChain = (_OChainForward ? 0 : _MaxIndexInOChain);
+		}
+	};
 
 protected:
 	friend class	CRetrieverInstance;
@@ -476,6 +577,34 @@ protected:
 
 	///
 	void								unify();
+
+public:
+
+	// Last minute fix... Some issues appeared when linking (trying to link 2 chains with only 1 in the neighbourhood)
+
+	class CChainReplacement
+	{
+	public:
+		uint							Chain;
+		sint							Left, Right;
+		std::vector<NLMISC::CVector>	Vertices;
+	};
+
+	// temp object to store replaced ochain ids
+	std::vector<uint>					FreeOChains;
+
+	void	replaceChain(uint32 chainId, const std::vector<CChainReplacement> &replacement);
+
+	void	forceBorderChainId(uint32 chainId, uint32 borderId)
+	{
+		if (chainId >= _Chains.size())
+		{
+			nlwarning("forceBorderChainId(): couldn't force border id %d for chain %d, doesn't exist", borderId, chainId);
+			return;
+		}
+
+		_Chains[chainId].setBorderChainIndex(borderId);
+	}
 
 public:
 	const NLMISC::CVector				&getStartVector(uint32 chain) const;

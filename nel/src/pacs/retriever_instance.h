@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.12 2003/04/14 18:36:37 legros Exp $
+ * $Id: retriever_instance.h,v 1.13 2003/05/06 09:47:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -186,6 +186,30 @@ public:
 	const std::vector<CLink>			&getBorderChainLinks() const { return _BorderChainLinks; }
 	/// Gets the id of the nth neighbor chain on the given edge.
 	CLink								getBorderChainLink(uint n) const { return _BorderChainLinks[n]; }
+	/// Resets border chains links
+	void								resetBorderChainLinks(const std::vector<uint> &links);
+	/// Forces border chain link
+	void								forceBorderChainLink(uint border, uint frontInstance, uint frontBorder, uint frontChain, uint frontSurface)
+	{
+		if (border >= _BorderChainLinks.size())
+		{
+			nlwarning("forceBorderChainLink(): couldn't force border %d on instance %d, doesn't exist!", border, _InstanceId);
+			return;
+		}
+
+		if (_BorderChainLinks[border].Instance != 0xffff ||
+			_BorderChainLinks[border].BorderChainId != 0xffff ||
+			_BorderChainLinks[border].ChainId != 0xffff ||
+			_BorderChainLinks[border].SurfaceId != 0xffff)
+		{
+			nlwarning("forceBorderChainLink(): forces border %d on instance %d whereas link is initialised yet, incoherences may appear!", border, _InstanceId);
+		}
+
+		_BorderChainLinks[border].Instance = frontInstance;
+		_BorderChainLinks[border].BorderChainId = frontBorder;
+		_BorderChainLinks[border].ChainId = frontChain;
+		_BorderChainLinks[border].SurfaceId = frontSurface;
+	}
 
 	/// Returns the number of the edge on the instance corresponding to the edge on the retriever.
 	uint8								getInstanceEdge(uint8 retrieverEdge) const { return (retrieverEdge+_Orientation)%4; }

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.43 2003/04/14 18:36:37 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.44 2003/05/06 09:47:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -755,5 +755,19 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 
 		// a fix for old versions (with wrong _Type value)
 		if (_Type != CLocalRetriever::Interior)	_Type = CLocalRetriever::Landscape;
+	}
+}
+
+
+
+void	NLPACS::CRetrieverInstance::resetBorderChainLinks(const vector<uint> &links)
+{
+	uint	i;
+	for (i=0; i<links.size(); ++i)
+	{
+		if (links[i] >= _BorderChainLinks.size())
+			_BorderChainLinks.resize(links[i]+1);
+
+		_BorderChainLinks[links[i]].reset();
 	}
 }

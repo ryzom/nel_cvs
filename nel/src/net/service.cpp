@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.115 2002/04/16 15:41:53 lecroart Exp $
+ * $Id: service.cpp,v 1.116 2002/04/23 07:50:02 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -977,6 +977,22 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		_Initialized = true;
 		
 		nlinfo ("Service ready");
+
+		//
+		// Call the user command from the config file if any
+		//
+
+		try
+		{
+			CConfigFile::CVar &var = ConfigFile.getVar("StartCommands");
+			for (uint i = 0; i < var.size(); i++)
+			{
+				ICommand::execute (var.asString(i), *InfoLog);
+			}
+		}
+		catch (EConfigFile &)
+		{
+		}
 
 		//
 		// Call the user service update each loop and check files and network activity

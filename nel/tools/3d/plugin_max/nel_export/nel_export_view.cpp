@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.15 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.16 2001/09/18 14:41:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							iteSkeleton=skeletonMap.find (skeletonRoot);
 
 							// Add tracks
-							CExportNel::addBoneTracks (*anim, *skeletonRoot, (CExportNel::getName (*skeletonRoot)+".").c_str(), &ip, true);
+							CExportNel::addBoneTracks (*anim, *skeletonRoot, (CExportNel::getName (*skeletonRoot)+".").c_str(), &ip, true, true);
 						}
 						
 						// Add the bind pos for the skin
@@ -213,7 +213,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			// Is it a automatic light ? if yes add tracks from nel_light (color controller)
 			Modifier *modifier = CExportNel::getModifier( pNode, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
 			if( modifier != NULL )
-				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip, true);
+				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip, true, true);
 		}
 		view->setAutoAnimation (autoAnim);
 
@@ -300,7 +300,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				}
 
 				// Add tracks
-				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true);
+				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip, true, true);
 				
 			}
 			ProgBar.updateProgressBar (nNbMesh);

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.5 2001/08/29 12:36:57 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.6 2001/09/18 14:41:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,7 +279,6 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					icv=getCommonVertex(pPM,idstpatch,isrcpatch,&orderdstvtx);			
 					if (icv==-1)
 					{
-						nlassert (0);		// no!
 						return false;
 					}
 					if (idstedge==orderdstvtx) 
@@ -302,7 +301,6 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 						icv=getCommonVertex(pPM,idstpatch,isrcpatch);			
 						if (icv==-1)
 						{
-							nlassert (0);		// no!
 							return false;
 						}
 					}
@@ -318,7 +316,6 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 						icv=getCommonVertex(pPM,idstpatch,isrcpatch);			
 						if (icv==-1)
 						{
-							nlassert (0);		// no!
 							return false;
 						}
 					}
@@ -329,7 +326,6 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					isrcedge=getEdge(pPM,srcpatch,srcpatch->v[nv],icv);
 					if (isrcedge==-1)
 					{
-							nlassert (0);		// no!
 							return false;
 					}
 					// let's fill the dst patch (n is important here... it's the order)

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.8 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.9 2001/09/18 14:41:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,10 +143,11 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, I
 			nodeName+=".";
 		}	
 
-
+		// Is a root ?
+		bool root = vectNode[n]->GetParentNode () == ip.GetRootNode();
 
 		// Add animation
-		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip, false);
+		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip, root, false);
 	}
 
 	if (vectNode.size())

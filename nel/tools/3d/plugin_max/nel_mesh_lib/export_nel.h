@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.24 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: export_nel.h,v 1.25 2001/09/18 14:41:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,7 +219,7 @@ public:
 	// *********************
 
 	// Add animation track of this node into the animation object pass in parameter.
-	static void						addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool view);
+	static void						addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool root, bool view);
 
 	// Build a NeL track with a 3dsmax node and a controller.
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
@@ -233,13 +233,13 @@ public:
 	static void						addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip) ;
 
 	// Add tracks for the bone and its children (recursive)
-	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view);
+	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view);
 
 	// Add biped tracks
-	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view);
+	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view);
 	static void						addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
 										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root, bool view);
-	static void						addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+//	static void						addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
 
 
 	// Add a note track. It tackes the first note track of the object
@@ -522,7 +522,7 @@ private:
 
 	// Add tracks for the node
 	static void						addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
+													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view);
 
 	// Add tracks for the node's bones 
 	static void						addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
@@ -531,7 +531,7 @@ private:
 	static void						addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
 
 	// Add tracks for the object
-	static void						addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName);
+	static void						addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName, Interface *ip);
 
 	// Add tracks for the material
 	static void						addMtlTracks (NL3D::CAnimation& animation, Mtl& mtl, const char* parentName, Interface *ip);

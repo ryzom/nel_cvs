@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.16 2001/09/14 07:40:33 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.17 2001/09/18 14:41:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,9 +40,8 @@
 using namespace NLMISC;
 using namespace NL3D;
 
-#define BIPED_PATH_POS_NAME "PathPos"
-#define BIPED_PATH_ROT_NAME "PathRotQuat"
-
+#define PATH_POS_NAME "PathPos"
+#define PATH_ROT_NAME "PathRotQuat"
 
 static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
 
@@ -75,7 +74,7 @@ public:
 // --------------------------------------------------
 
 // Add track in this animation
-void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool view)
+void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool root, bool view)
 {
 	// Get the TM controler
 	Control *transform=node.GetTMController();
@@ -84,19 +83,19 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, sBaseName, ip, view);
+		addBipedNodeTracks (animation, node, sBaseName, ip, root, view);
 	}	
 	else
 	{
 		// Add node tracks
-		addNodeTracks (animation, node, sBaseName, ip, NULL, NULL);
+		addNodeTracks (animation, node, sBaseName, ip, NULL, NULL, root, view);
 
 		// Get the object pointer
 		Object* obj=node.GetObjectRef();
 
 		// Export the object if it exists
 		if (obj)
-			addObjTracks (animation, *obj, sBaseName);
+			addObjTracks (animation, *obj, sBaseName, ip);
 
 		// Export material tracks of this object
 		Mtl* mtl=node.GetMtl();
@@ -223,7 +222,7 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 // --------------------------------------------------
 
 void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-								std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled)
+								std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view)
 {
 	// Tmp track*
 	ITrack *pTrack;
@@ -273,7 +272,11 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			pTrack=buildATrack (animation, *c, typeRotation, node, desc, ip, previousKeys, previousKeysSampled);
 			if (pTrack)
 			{
-				name=parentName+std::string (ITransformable::getRotQuatValueName());
+				// Choose the good name for this track
+				if ((!root)||view)
+					name=parentName+std::string (ITransformable::getRotQuatValueName());
+				else
+					name=parentName+std::string (PATH_ROT_NAME);
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;
@@ -295,7 +298,11 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			pTrack=buildATrack (animation, *c, typePos, node, desc, ip, previousKeys, previousKeysSampled);
 			if (pTrack)
 			{
-				name=parentName+std::string (ITransformable::getPosValueName());
+				// Choose the good name for this track
+				if ((!root)||view)
+					name=parentName+std::string (ITransformable::getPosValueName());
+				else
+					name=parentName+std::string (PATH_POS_NAME);
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;
@@ -312,7 +319,11 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			pTrack=buildATrack (animation, *transform, typePos, node, desc, ip, previousKeys, previousKeysSampled);
 			if (pTrack)
 			{
-				name=parentName+std::string (ITransformable::getPosValueName());
+				// Choose the good name for this track
+				if ((!root)||view)
+					name=parentName+std::string (ITransformable::getPosValueName());
+				else
+					name=parentName+std::string (PATH_POS_NAME);
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;
@@ -350,7 +361,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 
 // --------------------------------------------------
 
-void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view)
+void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view)
 {
 	// Get the matrix controler
 	Control *transform=node.GetTMController();
@@ -358,7 +369,7 @@ void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const c
 	nlassert (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID);
 
 	// Backup inplace y mode
-	/*bool inPlaceMode;
+	bool inPlaceMode;
 	bool inPlaceYMode;
 	bool inPlaceXMode;
 	bool res = getBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
@@ -368,35 +379,33 @@ void CExportNel::addBipedNodeTracks (CAnimation& animation, INode& node, const c
 	res = getBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", inPlaceMode);
 	nlassert (res);
 
-	// Pass in inplace y mode
-	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", true);
-	nlassert (res);*/
+	// No inplace mode
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", false);
+	nlassert (res);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", false);
+	nlassert (res);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", false);
+	nlassert (res);
 
 	// Export animations for the biped except the root
 	std::set<TimeValue> keysSampled;
 	std::set<TimeValue> keys;
-	addBipedNodeTrack (animation, node, parentName, ip, keys, keysSampled, true, view);
-
-	// Exit from inplace y mode
-	/*res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", false);
-	nlassert (res);
-	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", true);
-	nlassert (res);*/
+	addBipedNodeTrack (animation, node, parentName, ip, keys, keysSampled, root, view);
 
 	// Export root animation in special tracks for interactive interpolation
-	addBipedPathTrack (animation, node, parentName, ip);
+	//addBipedPathTrack (animation, node, parentName, ip);
 
 	// Set default mode
-	/*res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
+	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceYMode", inPlaceYMode);
 	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceXMode", inPlaceXMode);
 	nlassert (res);
 	res = setBipedInplaceMode (ip, getName (node).c_str(), "inPlaceMode", inPlaceMode);
-	nlassert (res);*/
+	nlassert (res);
 }
 
 // --------------------------------------------------
-
+/*
 void CExportNel::addBipedPathTrack (CAnimation& animation, INode& node, const char* parentName, Interface *ip)
 {
 	// Get the matrix controler
@@ -464,7 +473,7 @@ void CExportNel::addBipedPathTrack (CAnimation& animation, INode& node, const ch
 	// Restaure the non uniform scale
 	BipIface->RemoveNonUniformScale(0);
 }
-
+*/
 // --------------------------------------------------
 
 void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const char* parentName, Interface *ip,
@@ -503,8 +512,7 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		std::string name=parentName + getName (node) + ".";
 
 		// Export keyframes
-		if ((!root)||view)
-			addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled);
+		addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled, root, view);
 
 		// Restaure the non uniform scale
 		BipIface->RemoveNonUniformScale(0);
@@ -520,13 +528,13 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 	else
 	{
 		// Add normal tracks
-		addBoneTracks (animation, node, parentName, ip, view);
+		addBoneTracks (animation, node, parentName, ip, root, view);
 	}
 }
 
 // --------------------------------------------------
 
-void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool view)
+void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view)
 {
 	// Create a track name
 	std::string name=parentName + getName (node) + ".";
@@ -538,12 +546,12 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	if (transform && (transform->ClassID() == BIPBODY_CONTROL_CLASS_ID))
 	{
 		// Export biped skeleton animation
-		addBipedNodeTracks (animation, node, parentName, ip, view);
+		addBipedNodeTracks (animation, node, parentName, ip, root, view);
 	}
 	else
 	{
 		// Go for normal export!
-		addNodeTracks (animation, node, name.c_str(), ip, NULL, NULL);
+		addNodeTracks (animation, node, name.c_str(), ip, NULL, NULL, root, view);
 	}
 
 	// Recursive call
@@ -551,7 +559,7 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	for (uint children=0; children<childrenCont; children++)
 	{
 		INode *child=node.GetChildNode(children);
-		addBoneTracks (animation, *child, parentName, ip, view);
+		addBoneTracks (animation, *child, parentName, ip, false, view);
 	}
 }
 
@@ -621,8 +629,30 @@ void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const
 
 // --------------------------------------------------
 
-void CExportNel::addObjTracks (CAnimation& animation, Object& obj, const char* parentName)
+void CExportNel::addObjTracks (CAnimation& animation, Object& obj, const char* parentName, Interface *ip)
 {
+	// Export fov for camera
+	CExportDesc desc;
+	desc.reset();
+
+	// Get the FOV controler
+	Control *c=getControlerByName (obj, "fov");
+	if (c)
+	{
+		ITrack *pTrack=buildATrack (animation, *c, typeFloat, obj, desc, ip, NULL, NULL);
+		if (pTrack)
+		{
+			std::string name=parentName+std::string (CCamera::getFovValueName());
+			if (animation.getTrackByName (name.c_str()))
+			{
+				delete pTrack;
+			}
+			else
+			{
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}
+	}
 }
 
 // --------------------------------------------------

@@ -21,5 +21,5 @@ date
 # For each ps directory
 for i in $ps_source_directories ; do
 	# Copy
-	cp -u $database_directory/$i/*.ps ps 2>> log.log
+	cp -u -p $database_directory/$i/*.ps ps 2>> log.log
 done

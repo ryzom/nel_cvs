@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u maps_final/*.dds $client_directory/$tile_install_directory  2>> log.log
+cp -u -p maps_final/*.dds $client_directory/$tile_install_directory  2>> log.log

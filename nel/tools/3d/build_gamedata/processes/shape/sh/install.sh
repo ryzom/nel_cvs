@@ -24,7 +24,7 @@ echo -------
 date >> log.log
 date
 
-cp -u shape/*.shape $client_directory/$shape_install_directory  2>> log.log
-cp -u shape_with_coarse_mesh_builded/*.shape $client_directory/$shape_install_directory  2>> log.log
-cp -u shape_with_coarse_mesh_builded/*.dds $client_directory/$bitmap_install_directory  2>> log.log
-cp -u lightmap_16_bits/*.tga $client_directory/$lightmap_install_directory  2>> log.log
+cp -u -p shape/*.shape $client_directory/$shape_install_directory  2>> log.log
+cp -u -p shape_with_coarse_mesh_builded/*.shape $client_directory/$shape_install_directory  2>> log.log
+cp -u -p shape_with_coarse_mesh_builded/*.dds $client_directory/$bitmap_install_directory  2>> log.log
+cp -u -p lightmap_16_bits/*.tga $client_directory/$lightmap_install_directory  2>> log.log

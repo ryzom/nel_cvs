@@ -32,10 +32,10 @@ for i in $map_source_directories; do
 			dds=`echo $j | sed -e 's&.tga&.dds&g'`
 
 			# Copy the dds and the tga
-			cp -u $j tga 2>> log.log
+			cp -u -p $j tga 2>> log.log
 			if ( test -f $dds )
 			then
-				cp -u $dds tga 2>> log.log
+				cp -u -p $dds tga 2>> log.log
 			fi
 		fi
 	done
@@ -50,10 +50,10 @@ for i in $map_panoply_source_directories; do
 			dds=`echo $j | sed -e 's&.tga&.dds&g'`
 
 			# Copy the dds and the tga
-			cp -u $j panoply 2>> log.log
+			cp -u -p $j panoply 2>> log.log
 			if ( test -f $dds )
 			then
-				cp -u $dds panoply 2>> log.log
+				cp -u -p $dds panoply 2>> log.log
 			fi
 		fi
 	done

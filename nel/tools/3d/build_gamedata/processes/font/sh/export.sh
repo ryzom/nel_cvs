@@ -21,8 +21,8 @@ date
 # For each font directory
 for i in $font_source_directories ; do
 	# Copy
-	cp -u $database_directory/$i/*.ttf fonts 2>> log.log
-	cp -u $database_directory/$i/*.afm fonts 2>> log.log
-	cp -u $database_directory/$i/*.pfb fonts 2>> log.log
-	cp -u $database_directory/$i/*.pfm fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.ttf fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.afm fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.pfb fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.pfm fonts 2>> log.log
 done

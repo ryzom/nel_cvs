@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u dds/*.dds $client_directory/$bitmap_install_directory  2>> log.log
+cp -u -p dds/*.dds $client_directory/$bitmap_install_directory  2>> log.log

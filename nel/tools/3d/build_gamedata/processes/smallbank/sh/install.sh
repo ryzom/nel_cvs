@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u smallbank/*.smallbank $client_directory/$bank_install_directory  2>> log.log
+cp -u -p smallbank/*.smallbank $client_directory/$bank_install_directory  2>> log.log

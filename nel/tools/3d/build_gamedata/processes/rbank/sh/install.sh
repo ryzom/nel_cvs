@@ -18,5 +18,5 @@ echo -------
 date >> log.log
 date
 
-cp -u output/*.gr $client_directory/$pacs_install_directory  2>> log.log
-cp -u output/*.rbank $client_directory/$pacs_install_directory  2>> log.log
+cp -u -p output/*.gr $client_directory/$pacs_install_directory  2>> log.log
+cp -u -p output/*.rbank $client_directory/$pacs_install_directory  2>> log.log

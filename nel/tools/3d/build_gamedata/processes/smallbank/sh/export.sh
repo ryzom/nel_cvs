@@ -19,4 +19,4 @@ date >> log.log
 date
 
 # Copy the bank
-cp -u $database_directory/$bank_source_directory/*.bank bank 2>> log.log
+cp -u -p $database_directory/$bank_source_directory/*.bank bank 2>> log.log

@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u pacs_prim/*.pacs_prim $client_directory/$pacs_primitive_install_directory  2>> log.log
+cp -u -p pacs_prim/*.pacs_prim $client_directory/$pacs_primitive_install_directory  2>> log.log

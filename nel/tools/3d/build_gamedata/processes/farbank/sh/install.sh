@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u farbank/*.farbank $client_directory/$bank_install_directory  2>> log.log
+cp -u -p farbank/*.farbank $client_directory/$bank_install_directory  2>> log.log

@@ -73,7 +73,7 @@ for filename in $list_zone ; do
 	
 	if test -n "$must_update" ; then
 		echo "   Updating"
-		cp -u $filename ../../zone/zone_exported/$filename ;
+		cp -u -p $filename ../../zone/zone_exported/$filename ;
 	fi
 done
 cd $dir_current

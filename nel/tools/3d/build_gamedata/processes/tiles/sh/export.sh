@@ -24,6 +24,6 @@ for i in $tile_source_directories ; do
 
 	# For each textures
 	for j in $list_textures ; do
-		cp -u $j maps_tga/ 2>> log.log
+		cp -u -p $j maps_tga/ 2>> log.log
 	done
 done

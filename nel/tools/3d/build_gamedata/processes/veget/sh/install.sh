@@ -21,4 +21,4 @@ echo -------
 date >> log.log
 date
 
-cp -u veget/*.veget $client_directory/$veget_install_directory  2>> log.log
+cp -u -p veget/*.veget $client_directory/$veget_install_directory  2>> log.log

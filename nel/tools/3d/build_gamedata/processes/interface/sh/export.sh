@@ -21,5 +21,5 @@ date
 # For each interface directory
 for i in $interface_source_directories ; do
 	# Copy
-	cp -u $database_directory/$i/*.tga tga 2>> log.log
+	cp -u -p $database_directory/$i/*.tga tga 2>> log.log
 done

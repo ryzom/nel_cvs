@@ -18,10 +18,10 @@ echo -------
 date >> log.log
 date
 
-cp -u zone_lighted/*.* $client_directory/$zone_install_directory  2>> log.log
+cp -u -p zone_lighted/*.* $client_directory/$zone_install_directory  2>> log.log
 
 # copy the water maps once they have been lighted
-cp -u water_shapes_lighted/*.* $client_directory/$water_maps_directories
+cp -u -p water_shapes_lighted/*.* $client_directory/$water_maps_directories
 
 
 
@@ -40,4 +40,4 @@ echo -------
 date >> log.log
 date
 
-cp -u ig_land_lighted/*.ig $client_directory/$ig_install_directory  2>> log.log
+cp -u -p ig_land_lighted/*.ig $client_directory/$ig_install_directory  2>> log.log

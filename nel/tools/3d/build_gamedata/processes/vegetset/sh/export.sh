@@ -21,5 +21,5 @@ date
 # For each vegetset directory
 for i in $vegetset_source_directories ; do
 	# Copy
-	cp -u $database_directory/$i/*.vegetset vegetset 2>> log.log
+	cp -u -p $database_directory/$i/*.vegetset vegetset 2>> log.log
 done

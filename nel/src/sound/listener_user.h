@@ -1,7 +1,7 @@
 /** \file listener_user.h
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.h,v 1.4 2001/07/23 15:45:58 cado Exp $
+ * $Id: listener_user.h,v 1.5 2001/07/31 12:50:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ public:
 	/// Constructor
 	CListenerUser()	: _DrvListener (NULL) {}
 	/// Init
-	virtual void	init( ISoundDriver *sd )					{  nlassert( sd ); _DrvListener = sd->createListener(); }
+	void			init( ISoundDriver *sd )					{  nlassert( sd ); _DrvListener = sd->createListener(); }
 	/// Destructor
 	virtual			~CListenerUser()							{ if ( _DrvListener!=NULL ) delete _DrvListener; }
 

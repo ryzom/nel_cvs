@@ -1,7 +1,7 @@
 /** \file u_listener.h
  * UListener: game interface for listener control
  *
- * $Id: u_listener.h,v 1.3 2001/07/23 15:45:30 cado Exp $
+ * $Id: u_listener.h,v 1.4 2001/07/31 12:52:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,8 +36,6 @@ class CVector;
 
 namespace NLSOUND {
 
-class ISoundDriver;
-
 
 /**
  * Game interface for listener control
@@ -48,9 +46,6 @@ class ISoundDriver;
 class UListener
 {
 public:
-
-	/// Init
-	virtual void			init( ISoundDriver *sd ) = 0;
 
 	/// \name Listener properties
 	//@{

@@ -855,5 +855,49 @@ SOURCE=.\processes\rbank\export_build_data.bat
 SOURCE=.\processes\rbank\sh\install.sh
 # End Source File
 # End Group
+# Begin Group "Veget Files"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\veget\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\sh\install.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\veget\maxscript\veget_export.ms
+# End Source File
+# End Group
 # End Target
 # End Project

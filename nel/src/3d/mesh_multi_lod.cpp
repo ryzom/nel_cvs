@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.2 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.3 2001/07/04 12:37:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,8 +30,12 @@
 #include "3d/scene.h"
 
 
+
 namespace NL3D 
 {
+
+
+
 
 // ***************************************************************************
 

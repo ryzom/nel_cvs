@@ -1,7 +1,7 @@
 /** \file scheme_manager.cpp
  * a collection of scheme (to set particle atributes)
  *
- * $Id: scheme_manager.cpp,v 1.2 2001/09/12 13:39:27 vizerie Exp $
+ * $Id: scheme_manager.cpp,v 1.3 2001/09/13 14:29:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,9 +43,7 @@ void CSchemeManager::insertScheme(const std::string &name, NL3D::CPSAttribMakerB
 {
 	nlassert(scheme);
 	TSchemeInfo si(std::string(name), scheme);
-	_SchemeMap.insert(TSchemeMap::value_type(std::string(scheme->getType()), si));
-	_TypeSet.insert(std::string(scheme->getType()));
-	sint32 s = _TypeSet.size();
+	_SchemeMap.insert(TSchemeMap::value_type(std::string(scheme->getType()), si));	
 }
 
 void CSchemeManager::getSchemes(const std::string &type, std::vector<TSchemeInfo> &dest)
@@ -60,28 +58,18 @@ void CSchemeManager::getSchemes(const std::string &type, std::vector<TSchemeInfo
 
 void CSchemeManager::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	
 	f.serialCheck((uint32) '_GNM');
 	f.serialCheck((uint32) 'MHCS');
 	f.serialVersion(1);
 	if (!f.isReading())
-	{
-	_SchemeMap.clear();				
-		sint32 size = 0;
-		TTypeSet::iterator tsIt;
-		for(tsIt = _TypeSet.begin(); tsIt != _TypeSet.end(); ++tsIt)
+	{		
+		sint32 size = _SchemeMap.size();		
+		f.serial(size);					
+		for (TSchemeMap::iterator smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
 		{
-			size += _SchemeMap.count(*tsIt);
-		}
-		f.serial(size);
-		
-		for(tsIt = _TypeSet.begin(); tsIt != _TypeSet.end(); ++tsIt)
-		{
-			TSchemeMap::iterator lbd = _SchemeMap.lower_bound(*tsIt), ubd = _SchemeMap.upper_bound(*tsIt);
-			for (TSchemeMap::iterator smIt = lbd; smIt != ubd; ++smIt)
-			{
-				f.serial(smIt->second.first); // name
-				f.serialPolyPtr(smIt->second.second); // scheme
-			}
+			f.serial(smIt->second.first);		  // name
+			f.serialPolyPtr(smIt->second.second); // scheme
 		}		
 	}
 	else
@@ -108,5 +96,31 @@ void	CSchemeManager::swap(CSchemeManager &other)
 	this->_SchemeMap.swap(other._SchemeMap);
 }
 
+void    CSchemeManager::remove(NL3D::CPSAttribMakerBase *am)
+{
+	for (TSchemeMap::iterator smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
+	{
+		if (smIt->second.second == am) break;
+	}
+	if (smIt != _SchemeMap.end())
+	{
+		delete smIt->second.second; // delete the scheme
+		// delet from the collection
+		_SchemeMap.erase(smIt);
+	}
+}
 
 
+
+// rename a scheme, given a pointer on it
+void  CSchemeManager::rename(NL3D::CPSAttribMakerBase *am, const std::string &newName)
+{
+	for (TSchemeMap::iterator smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
+	{
+		if (smIt->second.second == am) break;
+	}
+	if (smIt != _SchemeMap.end())
+	{
+		smIt->second.first = newName;		
+	}
+}

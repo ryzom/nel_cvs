@@ -1,7 +1,7 @@
 /** \file scheme_manager.h
  * a collection of scheme (to set particle atributes)
  *
- * $Id: scheme_manager.h,v 1.1 2001/09/12 13:35:34 vizerie Exp $
+ * $Id: scheme_manager.h,v 1.2 2001/09/13 14:29:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,12 +52,14 @@ public:
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	// swap this collection with another one
 	void	swap(CSchemeManager &other);
-protected:
-	typedef std::set<std::string> TTypeSet;
+	// remove a scheme from the bank, given a pointer on it
+	void    remove(NL3D::CPSAttribMakerBase *am);
+	// rename a scheme, given a pointer on it
+	void    rename(NL3D::CPSAttribMakerBase *am, const std::string &newName);
+protected:	
 	typedef std::pair<std::string, NL3D::CPSAttribMakerBase *> TSchemeInfo;
 	typedef std::multimap<std::string, TSchemeInfo> TSchemeMap;
-	TSchemeMap		_SchemeMap;
-	TTypeSet		_TypeSet;
+	TSchemeMap		_SchemeMap;	
 };
 
 extern CSchemeManager SchemeManager;

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.38 2003/03/19 15:44:46 cado Exp $
+ * $Id: unified_network.h,v 1.38.2.1 2003/04/23 16:28:55 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -227,6 +227,11 @@ public:
 
 	void				displayInternalTables (NLMISC::CLog *log = NLMISC::InfoLog);
 
+	void				displayUnifiedConnection (uint16 sid, NLMISC::CLog *log = NLMISC::InfoLog)
+	{
+		getUnifiedConnection(sid)->display(false, log);
+	}
+
 private:
 
 	/// A map of service ids, referred by a service name
@@ -342,6 +347,8 @@ private:
 			State = Ready;
 			Connection.push_back(TConnection (cbc));
 		}
+
+		void display (bool full, NLMISC::CLog *log = NLMISC::InfoLog);
 
 		void reset()
 		{

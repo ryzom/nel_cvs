@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.10 2001/07/12 16:04:15 lecroart Exp $
+ * $Id: scene_user.h,v 1.11 2001/07/25 10:18:11 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/driver_user.h"
 #include "3d/camera_user.h"
 #include "3d/instance_user.h"
+#include "3d/particle_system_instance_user.h"
 #include "3d/landscape_user.h"
 #include "3d/instance_group_user.h"
 #include "3d/skeleton_user.h"
@@ -208,7 +209,16 @@ public:
 			return NULL;
 
 		// The component is auto added/deleted to _Scene in ctor/dtor.
-		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
+		if (dynamic_cast<CParticleSystemModel *>(model))
+		{
+			/// particle system
+			return dynamic_cast<UInstance*>( _Transforms.insert(new CParticleSystemInstanceUser(&_Scene, model)) );
+		}
+		else
+		{
+			/// mesh
+			return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
+		}
 	}
 
 	virtual	void createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)

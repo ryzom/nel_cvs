@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.66 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: debug.cpp,v 1.67 2003/03/21 16:16:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,12 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdmisc.h"
+
 #ifdef HAVE_NELCONFIG_H
 #  include "nelconfig.h"
 #endif // HAVE_NELCONFIG_H
 
-#include "stdmisc.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/mem_displayer.h"

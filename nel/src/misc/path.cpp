@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.48 2002/07/16 14:15:28 vizerie Exp $
+ * $Id: path.cpp,v 1.49 2002/07/16 14:47:25 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -872,6 +872,10 @@ int CFile::getLastSeparator (const string &filename)
 	if (pos == string::npos)
 	{
 		pos = filename.find_last_of ('\\');
+		if (pos == string::npos)
+		{
+			pos = filename.find_last_of ('@');
+		}
 	}
 	return pos;
 }

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_base_instance.cpp,v 1.27 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.28 2005/03/24 18:34:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -409,6 +409,7 @@ void			CMeshBaseInstance::enableAsyncTextureMode(bool enable)
 					// Must setup the AsyncTextures
 					AsyncTextures[i].IsTextureFile[stage]= true;
 					AsyncTextures[i].TextureNames[stage]= text->getFileName();
+					AsyncTextures[i].TextIds[stage]= -1;
 					// Now, must copy the textureFile, to Avoid writing in CMeshBase TextureFile descriptor !!!
 					CTextureFile *tf = new CTextureFile(*text);
 					// setup a dummy texture => Instance won't block rendering because texture not yet ready

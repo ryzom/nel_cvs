@@ -1,7 +1,7 @@
 /** \file async_texture_block.h
  * TODO: File description
  *
- * $Id: async_texture_block.h,v 1.3 2005/02/22 10:19:09 besson Exp $
+ * $Id: async_texture_block.h,v 1.4 2005/03/24 18:32:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -50,6 +50,14 @@ public:
 	// List of texture file name for a material
 	std::string			TextureNames[IDRV_MAT_MAXTEXTURES];
 
+	CAsyncTextureBlock()
+	{
+		for(uint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+		{
+			TextIds[i]= -1;
+			IsTextureFile[i]= false;
+		}
+	}
 	bool				isTextureFile(uint stage) const {return IsTextureFile[stage];}
 
 private:

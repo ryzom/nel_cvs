@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.5 2002/11/18 17:56:26 vizerie Exp $
+ * $Id: direction_attr.cpp,v 1.6 2003/07/01 14:08:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,15 +182,15 @@ void CDirectionAttr::OnDestroy()
 //=======================================================================================
 void CDirectionAttr::OnGlobalDirection() 
 {
-	nlassert(_DirectionWrapper)
+	nlassert(_DirectionWrapper);
+	CChooseName chooseName(_DirectionWrapper->getGlobalVectorValueName().c_str());
 
-	CChooseName cn(_DirectionWrapper->getGlobalVectorValueName().c_str());
-	if (cn.DoModal() == IDOK)
+	if (chooseName.DoModal() == IDOK)
 	{
-		_DirectionWrapper->enableGlobalVectorValue(cn.getName());
-		if (!cn.getName().empty())
+		_DirectionWrapper->enableGlobalVectorValue(chooseName.getName());
+		if (!chooseName.getName().empty())
 		{
-			NL3D::CParticleSystem::setGlobalVectorValue(cn.getName(), NLMISC::CVector::I); // take a non NULL value for the direction
+			NL3D::CParticleSystem::setGlobalVectorValue(chooseName.getName(), NLMISC::CVector::I); // take a non NULL value for the direction
 		}
 	}
 	EnableWindow(TRUE);

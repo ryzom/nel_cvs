@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.2 2001/10/29 18:56:28 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2001/11/06 15:08:15 lecroart Exp $
  */
 
 /*
@@ -24,6 +24,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <string>
 
 // This include is mandatory to use NeL. It include NeL types.
 #include <nel/misc/types_nl.h>

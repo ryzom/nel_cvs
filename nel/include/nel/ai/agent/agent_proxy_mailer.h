@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.2 2001/01/31 16:54:52 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.3 2001/01/31 17:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,11 @@ namespace NLAIAGENT
 {
 	class CProxyAgentMail: public IBasicAgent
 	{
+	private:
+		IWordNumRef *_AgentRef;
 	public:
+		CProxyAgentMail(IWordNumRef *agent);
+		~CProxyAgentMail();
 
 	};
 }

@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.3 2001/01/31 17:49:02 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.4 2001/01/31 17:53:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,11 @@
 
 namespace NLAIAGENT
 {
-	CProxyAgentMail::CProxyAgentMail(IWordNumRef *agent)
+	CProxyAgentMail::CProxyAgentMail(IWordNumRef *agent):IBasicAgent((IWordNumRef *)NULL)
 	{
 	}
 
-	~CProxyAgentMail::CProxyAgentMail()
+	CProxyAgentMail::~CProxyAgentMail()
 	{
 	}
 }

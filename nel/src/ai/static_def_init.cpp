@@ -224,7 +224,9 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", NLAIC::CSelfClassCFactory( (NLAIC::IBasicInterface &) COperatorScript(NULL) ),
+	static COperatorScript staticOperatorScript(NULL);
+	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", 
+		NLAIC::CSelfClassCFactory( (NLAIC::IBasicInterface &) staticOperatorScript ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

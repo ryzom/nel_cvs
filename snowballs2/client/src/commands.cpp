@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: commands.cpp,v 1.15 2003/02/24 13:05:06 lecroart Exp $
+ * $Id: commands.cpp,v 1.16 2004/01/09 17:37:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,19 +97,17 @@ class CCommandsDisplayer : public IDisplayer
 	virtual void doDisplay (const CLog::TDisplayInfo &args, const char *message)
 	{
 		bool needSpace = false;
-		stringstream ss;
+		string str;
 
 		if (args.LogType != CLog::LOG_NO)
 		{
-			ss << logTypeToString(args.LogType);
+			str += logTypeToString(args.LogType);
 			needSpace = true;
 		}
 
-		if (needSpace) { ss << ": "; needSpace = false; }
-
-		ss << message;
-
-		addLine (ss.str());
+		if (needSpace) { str += ": "; needSpace = false; }
+		str += message;
+		addLine (str);
 	}
 };
 

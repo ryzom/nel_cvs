@@ -1,7 +1,7 @@
 /** \file memory_mutex.h
  * Mutex used by the memory manager
  *
- * $Id: memory_mutex.h,v 1.2 2003/03/13 15:06:54 corvazier Exp $
+ * $Id: memory_mutex.h,v 1.3 2004/06/07 16:50:35 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,27 +57,35 @@ public:
 	/// Constructor
 	CMemoryMutex();
 
-	__forceinline static bool atomic_swap (volatile uint32 *l)
+	__forceinline static bool atomic_swap (volatile uint32 *lockPtr)
 	{
 		uint32 result;
-		__asm 
-		{ 
-/*			mov eax,1
-			mov ebx,l
-
-			// Lock is implicit with xchg
-			xchg [ebx],eax
-
-			mov [result],eax*/
-			mov edx,1
-			mov ecx,l
-			mov eax,[ecx]
-test_again:
-			nop
-			cmpxchg     dword ptr [ecx],edx
-			jne         test_again
+#ifdef NL_OS_WINDOWS
+#ifdef NL_DEBUG_FAST
+		// Workaround for dumb inlining bug (returning of function goes into the choux): push/pop registers
+		__asm
+		{
+				push eax
+				push ecx
+			mov ecx,lockPtr
+			mov eax,1
+			xchg [ecx],eax
+			mov [result],eax
+				pop ecx
+				pop eax
+		}
+#else
+		__asm
+		{
+			mov ecx,lockPtr
+			mov eax,1
+			xchg [ecx],eax
 			mov [result],eax
 		}
+#endif
+#else
+		ASM_ASWAP_FOR_GCC_XCHG
+#endif // NL_OS_WINDOWS
 		return result != 0;
 	}
 

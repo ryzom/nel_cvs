@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.18 2002/07/16 14:16:14 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.19 2002/07/17 08:35:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -345,12 +345,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 			}			
 		}
 	}
-
-	if (masks.size() == 0) 
-	{
-		nlwarning("(%s) no masks found, processing next", fileNameWithExtension.c_str ());
-		return false;
-	}
+	
 	/// check is each generated texture has the same date or is more recent
 	for(;;)
 	{			
@@ -375,10 +370,10 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 
 
 		// get version that is in the cache
-		std::string cacheCopy = bi.OutputPath + outputFileName + ".tga";
-		if (!NLMISC::CFile::moveFile(cacheCopy.c_str(), searchName.c_str()))
+		std::string cacheDest = bi.OutputPath + outputFileName + ".tga";
+		if (!NLMISC::CFile::moveFile(cacheDest.c_str(), searchName.c_str()))
 		{
-			nlwarning(("Couldn't copy " + searchName + " to " + cacheCopy).c_str());
+			nlwarning(("Couldn't move " + searchName + " to " + cacheDest).c_str());
 			return true;
 		}		
 		
@@ -502,11 +497,7 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 		}
 	}
 
-	if (masks.size() == 0) 
-	{
-		nlwarning("no masks found, processing next");
-		return; // perhaps it was a mask ?
-	}
+	// NB : if there are no masks the texture just will be copied
 
 	/// generate each texture 
 	for(;;)

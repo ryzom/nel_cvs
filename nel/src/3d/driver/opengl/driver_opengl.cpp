@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.54 2001/01/11 17:32:55 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.55 2001/01/12 09:50:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -767,7 +767,7 @@ void CDriverGL::getBuffer (CBitmap &bitmap)
 	bitmap.reset();
 	uint32 width, height;
 	getWindowSize(width, height);
-	bitmap.resize(width, height, CBitmap::TType::RGBA);
+	bitmap.resize(width, height, CBitmap::RGBA);
 	vector<uint8> &d = bitmap.getPixels ();
 	glReadPixels (0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, &(d[0]));
 }

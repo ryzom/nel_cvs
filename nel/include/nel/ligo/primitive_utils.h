@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.6.4.2 2004/09/13 18:39:46 boucher Exp $
+ * $Id: primitive_utils.h,v 1.6.4.3 2004/10/18 17:18:37 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -166,7 +166,7 @@ struct TPrimitivePropertyPredicate
  *	match a given predicate.
  *	The primitive are tested recursively starting at an arbitrary node in the
  *	primitive tree.
- *	Application code just need to call getNetMatch until it return NULL indicating
+ *	Application code just need to call getNextMatch until it return NULL indicating
  *	there is no more node that match the predicate.
  */
 template <class Pred = TPrimitiveClassPredicate>

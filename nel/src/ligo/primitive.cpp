@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.35.4.1 2004/09/13 15:56:41 boucher Exp $
+ * $Id: primitive.cpp,v 1.35.4.2 2004/10/18 17:18:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2027,6 +2027,15 @@ uint32	CPrimAlias::getFullAlias() const
 	return _Container->buildFullAlias(_Alias);
 }
 
+void CPrimAlias::regenAlias()
+{
+	// container must exist
+	nlassert(_Container);
+	// generate a new alias, eventually keeping the current one if any and if still available
+	_Alias = _Container->genAlias(this, _Alias);
+}
+
+
 // Read the primitive
 bool CPrimAlias::read (xmlNodePtr xmlNode, const char *filename, uint version, CLigoConfig &config)
 {
@@ -2262,6 +2271,39 @@ void CPrimitives::releaseAlias(const IPrimitive *prim, uint32 alias)
 	// remove this alias
 //	nldebug("Alias: remove alias %u, %u alias left", it->first, _AliasInUse.size()-1);
 	_AliasInUse.erase(it);
+}
+
+// ***************************************************************************
+
+void CPrimitives::forceAlias(CPrimAlias *prim, uint32 alias)
+{
+	// need ligo config
+	nlassert(_LigoConfig);
+	// only dynamic part allowed here
+	nlassert(alias == (alias & _LigoConfig->getDynamicAliasMask()));
+
+	// store the alias in the primitive
+	prim->_Alias = alias;
+
+	std::map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(alias));
+	if (it != _AliasInUse.end() && it->second != prim)
+	{
+		// we need to alloc and set a new alias for the current alias holder
+		CPrimAlias *pa = static_cast<CPrimAlias*>(const_cast<IPrimitive*>(it->second));
+
+		// reserve the alias for the new primitive
+		it->second = prim;
+		
+
+		// and regen an alias for the old
+		pa->regenAlias();
+	}
+	else
+	{
+		// just store the association
+		_AliasInUse.insert(make_pair(alias, prim));
+	}
+
 }
 
 

@@ -23,6 +23,7 @@
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
+#include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/agent/gd_agent_script.h"
 /*namespace NLAIC
@@ -569,6 +570,11 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
+	static CDebugMsgClass msgDebugMsgClass;
+	const NLAIC::CIdentType CDebugMsgClass::IdDebugMsgClass("MsgDebug", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgDebugMsgClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 	static COnChangeMsgClass onChangeMsgClass;
 	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)onChangeMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
@@ -606,6 +612,14 @@ namespace NLAISCRIPT
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
+<<<<<<< static_def_init.cpp
+	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassCFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfOperator::opEq );
+
+
+=======
 	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassCFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
+>>>>>>> 1.44

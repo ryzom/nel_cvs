@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.36 2001/03/05 13:50:19 portier Exp $
+ * $Id: agent_script.cpp,v 1.37 2001/03/07 11:24:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,14 +548,60 @@ namespace NLAIAGENT
 		IAgent::onKill(a);
 	}
 
-	IObjectIA::CProcessResult CAgentScript::getDynamicAgent(IBaseGroupType *g)
-	{		
-		CStringType *s = (CStringType *)g->get();
-		//tsetDefNameAgent::iterator i = _DynamicAgentName.find(*s);
+	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(IBaseGroupType *g)
+	{
+		CIteratorContener i = g->getIterator();
+		CStringType &s = (CStringType &)*i++;
+		IBasicAgent *o = (IBasicAgent *)i++;
+
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
+		
+		o->setParent( (const IWordNumRef *) *this );
+		CNotifyParentScript *m = new CNotifyParentScript(this);
+		this->incRef();
+		m->setSender(this);
+		m->setPerformatif(IMessageBase::PTell);
+		((IObjectIA *)o)->sendMessage(m);
 
+		_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
+		
+		r.Result = NULL;
+
+		return r;
+	}
+
+	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
+	{
+		CStringType *s = (CStringType *)g->get();		
+		IObjectIA::CProcessResult r;
+		r.ResultState = IObjectIA::ProcessIdle;
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
+
+		if(p.first != p.second)
+		{				
+			while(p.first != p.second)
+			{
+				removeChild(*p.first->Itr);
+				_DynamicAgentName.erase(p.first);
+				p.first++;
+			}						
+			r.Result = new DigitalType(1.0);
+			return r;
+			throw;
+		}		
+		r.Result = &DigitalType::NullOperator;
+		r.Result->incRef();
+		return r;
+	}
+
+	IObjectIA::CProcessResult CAgentScript::getDynamicAgent(IBaseGroupType *g)
+	{		
+		CStringType *s = (CStringType *)g->get();		
+		IObjectIA::CProcessResult r;
+		r.ResultState = IObjectIA::ProcessIdle;
+		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
+		
 		if(p.first != p.second)
 		{			
 			sint size = _DynamicAgentName.count(CKeyAgent(*s));
@@ -573,8 +619,7 @@ namespace NLAIAGENT
 			return r;
 			
 		}
-		r.Result = &DigitalType::NullOperator;
-		r.Result->incRef();
+		r.Result = new CVectorGroupManager();		
 		return r;
 	}
 
@@ -616,30 +661,7 @@ namespace NLAIAGENT
 		IObjectIA::CProcessResult r;
 		r.Result = m;
 		return r;
-	}
-
-	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(IBaseGroupType *g)
-	{
-		CIteratorContener i = g->getIterator();
-		CStringType &s = (CStringType &)*i++;
-		IBasicAgent *o = (IBasicAgent *)i++;
-
-		IObjectIA::CProcessResult r;
-		r.ResultState = IObjectIA::ProcessIdle;
-		
-		o->setParent( (const IWordNumRef *) *this );
-		CNotifyParentScript *m = new CNotifyParentScript(this);
-		this->incRef();
-		m->setSender(this);
-		m->setPerformatif(IMessageBase::PTell);
-		((IObjectIA *)o)->sendMessage(m);
-
-		_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
-		
-		r.Result = NULL;
-
-		return r;
-	}
+	}	
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
 	{	
@@ -665,25 +687,7 @@ namespace NLAIAGENT
 		}
 		r.Result = new CStringType(CStringVarName("Unknown"));
 		return r;
-	}
-	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
-	{
-		CStringType *s = (CStringType *)g->get();
-		tsetDefNameAgent::iterator i = _DynamicAgentName.find(CKeyAgent(*s));
-		IObjectIA::CProcessResult r;
-		r.ResultState = IObjectIA::ProcessIdle;
-
-		if(i != _DynamicAgentName.end())
-		{			
-			//removeChild((*i).second);
-			//r.Result = new DigitalType(1.0);
-			//return r;
-			throw;
-		}		
-		r.Result = &DigitalType::NullOperator;
-		r.Result->incRef();
-		return r;
-	}
+	}	
 
 	IObjectIA::CProcessResult CAgentScript::sendMethod(IObjectIA *param)
 	{
@@ -1109,6 +1113,7 @@ namespace NLAIAGENT
 			{
 				IObjectIA::CProcessResult a;
 				a.Result = (IObjectIA *)getParent();
+				//if(a.Result != NULL) 
 				a.Result->incRef();
 				return a;
 			}

@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.12 2001/03/06 14:11:01 robert Exp $
+ * $Id: interpret_object_message.cpp,v 1.13 2001/03/07 11:23:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
+#include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_on_change.h"
 
 namespace NLAISCRIPT
@@ -178,6 +179,47 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CGoalMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
+<<<<<<< interpret_object_message.cpp
+//#########################################
+//		CDebugMsgClass
+//#########################################
+	CDebugMsgClass::CDebugMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
+	CDebugMsgClass::CDebugMsgClass() : CMessageClass()
+	{		
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+	
+	const NLAIC::IBasicType *CDebugMsgClass::clone() const
+	{
+		return new CDebugMsgClass();
+	}
+
+	const NLAIC::IBasicType *CDebugMsgClass::newInstance() const
+	{
+		return new CDebugMsgClass();
+	}
+
+	NLAIAGENT::IObjectIA *CDebugMsgClass::buildNewInstance() const
+	{
+//		return new NLAIAGENT::CGoalMsg( (CMessageClass *) this );
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CMsgDebug( components,  (CMessageClass *) this );		
+		return x;
+	}
+=======
 
 //#########################################
 //		COnChangeMsgClass
@@ -218,4 +260,5 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
 		return x;
 	}	
+>>>>>>> 1.12
 }

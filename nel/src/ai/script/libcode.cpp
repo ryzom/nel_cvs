@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.10 2001/02/28 17:01:30 portier Exp $
+ * $Id: libcode.cpp,v 1.11 2001/03/07 11:23:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/script/gd_agent_class.h"
+
 
 namespace NLAISCRIPT
 {
@@ -205,6 +206,10 @@ namespace NLAISCRIPT
 		NLAIC::CSelfClassCFactory &fg = (NLAIC::CSelfClassCFactory&)*((CGoalMsgClass::IdGoalMsgClass).getFactory());
 		fg = CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass);
 		((CGoalMsgClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGoalMsgClass::IdGoalMsgClass));
+
+		NLAIC::CSelfClassCFactory &fj = (NLAIC::CSelfClassCFactory&)*((CDebugMsgClass::IdDebugMsgClass).getFactory());
+		fj = CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass);
+		((CDebugMsgClass *)fj.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CDebugMsgClass::IdDebugMsgClass));
 
 		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
 		fa = CManagerClass(CManagerClass::IdManagerClass);

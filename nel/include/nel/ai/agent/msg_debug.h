@@ -1,6 +1,6 @@
-/** \file msg_notify.h
+/** \file msg_debug.h
  *
- * $Id: msg_notify.h,v 1.5 2001/03/07 11:26:12 chafik Exp $
+ * $Id: msg_debug.h,v 1.1 2001/03/07 11:26:12 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -21,9 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-#ifndef NL_MSG_NOTIFY_H
-#define NL_MSG_NOTIFY_H
-#include "nel/ai/agent/agent_local_mailer.h"
+#ifndef NL_MSG_DEBUG_H
+#define NL_MSG_DEBUG_H
 #include "nel/ai/agent/message_script.h"
 
 namespace NLAIAGENT
@@ -31,22 +30,22 @@ namespace NLAIAGENT
 	/**
 	This is the class build from the CMsgNotifyParentClass. This MSG store the parent of the object.
 	*/
-	class CNotifyParentScript : public CMessageScript 
+	class CMsgDebug : public CMessageScript 
 	{
 	public:
-		static const NLAIC::CIdentType IdNotifyParentScript;
+		static const NLAIC::CIdentType IdMsgDebug;
 	public:
-		CNotifyParentScript(const CNotifyParentScript &);
-		CNotifyParentScript( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
-		CNotifyParentScript(NLAISCRIPT::CMessageClass *b = NULL);
-		CNotifyParentScript(IBasicAgent *);
+		CMsgDebug(const CMsgDebug &);
+		CMsgDebug( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
+		CMsgDebug(NLAISCRIPT::CMessageClass *b = NULL);
+		CMsgDebug(IBasicAgent *);
 
 		/// \name NLAIC::IBasicInterface member class. 
 		//@{		
 		virtual const NLAIC::IBasicType *clone() const;		
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			return new CNotifyParentScript();
+			return new CMsgDebug();
 		}
 		const NLAIC::CIdentType &getType() const;
 		void getDebugString(char *t) const;

@@ -1,7 +1,7 @@
 /** \file ps_dot.h
  * Dot particles
  *
- * $Id: ps_dot.h,v 1.2 2002/02/20 11:09:20 vizerie Exp $
+ * $Id: ps_dot.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,9 @@ public:
 
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void);
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.41 2003/04/14 15:32:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.42 2003/06/30 15:31:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -608,6 +608,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			_ParticleDlg->StartStopDlg->removeLocated(loc);
 
 			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+			_ParticleDlg->getCurrPSModel()->touchLightableState();
 			
 
 			return TRUE;
@@ -641,6 +642,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			DeleteItem(GetSelectedItem());			
 			
 			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+			_ParticleDlg->getCurrPSModel()->touchLightableState();
 			
 			
 			return TRUE;			
@@ -1070,6 +1072,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) newNt, father, lastSon);
 
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();		
+		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		Invalidate();
 	}
 
@@ -1113,6 +1116,7 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 	// insert item in tree
 	HTREEITEM insertedItem = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 7, 7, 0, 0, (LPARAM) newNt, headItem, TVI_LAST);
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+	_ParticleDlg->getCurrPSModel()->touchLightableState();
 	return std::make_pair(newNt, insertedItem);
 }
 

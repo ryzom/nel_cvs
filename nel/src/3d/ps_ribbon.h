@@ -1,7 +1,7 @@
 /** \file ps_ribbon.h
  * Ribbons particles.
  *
- * $Id: ps_ribbon.h,v 1.3 2002/02/27 13:59:27 vizerie Exp $
+ * $Id: ps_ribbon.h,v 1.4 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,6 +168,10 @@ public:
 		static const NLMISC::CVector Triangle[];
 		static const uint NbVerticesInTriangle;	
 	///@}
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
+
 protected:		
 /// interface to derived classes
 	

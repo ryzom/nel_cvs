@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.23 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: ps_mesh.cpp,v 1.24 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -194,6 +194,13 @@ bool CPSMesh::hasTransparentFaces(void)
 
 //====================================================================================
 bool CPSMesh::hasOpaqueFaces(void)
+{
+	/// we don't draw any tri ! (the meshs are drawn by the scene)
+	return false;
+}
+
+//====================================================================================
+bool CPSMesh::hasLightableFaces()
 {
 	/// we don't draw any tri ! (the meshs are drawn by the scene)
 	return false;
@@ -465,6 +472,17 @@ static void CheckForOpaqueAndTransparentFacesInMesh(const CMesh &m, bool &hasTra
 	}	 
 }
 
+//====================================================================================
+/// private use : check if there are lightable faces in a mesh
+static bool CheckForLightableFacesInMesh(const CMesh &m)
+{
+	for (uint k = 0; k < m.getNbRdrPass(0); ++k)
+	{
+		const CMaterial &currMat = m.getMaterial(m.getRdrPassMaterial(0, k));		
+		if (currMat.isLighted()) return true;		
+	}
+	return false;
+}
 
 
 /** Well, we could have put a method template in CPSConstraintMesh, but some compilers
@@ -896,11 +914,13 @@ CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
 										 _ModelBank(NULL),
 										 _ModulatedStages(0),
 										 _Touched(1),
+										 _HasOpaqueFaces(0),
 										 _VertexColorLightingForced(false),
 										 _GlobalAnimationEnabled(0),
 										 _ReinitGlobalAnimTimeOnNewElement(0),
+										 _HasLightableFaces(0),
 										 _MorphValue(0),
-										 _MorphScheme(NULL)
+										 _MorphScheme(NULL)									 
 {		
 	_Name = std::string("ConstraintMesh");
 }
@@ -930,6 +950,15 @@ bool CPSConstraintMesh::hasOpaqueFaces(void)
 	update();
 	return _HasOpaqueFaces != 0;
 }
+
+//====================================================================================
+bool CPSConstraintMesh::hasLightableFaces()
+{
+	if (!_Touched) return _HasLightableFaces != 0;	
+	update();
+	return _HasLightableFaces != 0;
+}
+
 
 //====================================================================================
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
@@ -1183,6 +1212,7 @@ bool CPSConstraintMesh::update(void)
 	CheckForOpaqueAndTransparentFacesInMesh(m, hasTransparentFaces, hasOpaqueFaces);
 	_HasTransparentFaces = hasTransparentFaces;	
 	_HasOpaqueFaces = hasOpaqueFaces;
+	_HasLightableFaces = CheckForLightableFacesInMesh(m);
 	_ModelBank = sb;	
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	_Touched = 0;
@@ -1583,17 +1613,16 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 }
 
 //====================================================================================
-// Private func used to force modulation on a material and to store the preious state
-static inline void ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat, uint8 modulatedStages)
-{
+void CPSConstraintMesh::setupMaterialColor(CMaterial &destMat, CMaterial &srcMat)
+{	
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{		
-		if (modulatedStages & (1 << k))
-		{
-			destMat.texEnvArg0RGB(k, CMaterial::Previous, CMaterial::SrcColor);
-			destMat.texEnvArg0Alpha(k, CMaterial::Previous, CMaterial::SrcAlpha);
-			destMat.texEnvArg1RGB(k, CMaterial::Constant, CMaterial::SrcColor);
-			destMat.texEnvArg1Alpha(k, CMaterial::Constant, CMaterial::SrcAlpha);
+		if (_ModulatedStages & (1 << k))
+		{				
+			destMat.texEnvArg0RGB(k, CMaterial::Texture, CMaterial::SrcColor);
+			destMat.texEnvArg0Alpha(k, CMaterial::Texture, CMaterial::SrcAlpha);
+			destMat.texEnvArg1RGB(k, CMaterial::Diffuse, CMaterial::SrcColor);
+			destMat.texEnvArg1Alpha(k, CMaterial::Diffuse, CMaterial::SrcAlpha);
 			destMat.texEnvOpRGB(k, CMaterial::Modulate);
 			destMat.texEnvOpAlpha(k, CMaterial::Modulate);			
 		}
@@ -1601,16 +1630,26 @@ static inline void ForceMaterialModulation(CMaterial &destMat, CMaterial &srcMat
 		{
 			destMat.setTexEnvMode(k, srcMat.getTexEnvMode(k));
 		}
-	}	
+	}
+	if (_ColorScheme == NULL) // per mesh color ?
+	{
+		destMat.setColor(_Color);
+		if (destMat.isLighted())
+		{
+			destMat.setDiffuse(_Color);
+		}		
+	}
 }
+
+
 
 
 //====================================================================================
 void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bool opaque)
 {
 	// render meshs : we process each rendering pass
-	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin() 
-		; rdrPassIt != rdrPasses.end(); ++rdrPassIt)
+	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin();
+	     rdrPassIt != rdrPasses.end(); ++rdrPassIt)
 	{
 
 		CMaterial &Mat = rdrPassIt->Mat;
@@ -1640,11 +1679,20 @@ void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bo
 				Mat.setColor(ps.getGlobalColor());
 			}*/
 
-			/// force modulation for some stages
-			ForceMaterialModulation(Mat, SourceMat, _ModulatedStages);
+			/** Force modulation for some stages & setup global color			 
+			  */
+			setupMaterialColor(Mat, SourceMat);						
 
 			/// force vertex lighting
-			bool forceVertexcolorLighting = _VertexColorLightingForced != 0 ? true : SourceMat.getLightedVertexColor();
+			bool forceVertexcolorLighting;
+			if (_ColorScheme != NULL)
+			{			
+				forceVertexcolorLighting = _VertexColorLightingForced != 0 ? true : SourceMat.getLightedVertexColor();
+			}
+			else
+			{
+				forceVertexcolorLighting = false;
+			}
 			if (forceVertexcolorLighting != Mat.getLightedVertexColor()) // avoid to touch mat if not needed
 			{
 				Mat.setLightedVertexColor(forceVertexcolorLighting);

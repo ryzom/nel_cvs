@@ -1,7 +1,7 @@
 /** \file ps_shockwave.h
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.h,v 1.2 2002/02/28 09:53:20 vizerie Exp $
+ * $Id: ps_shockwave.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,9 @@ public:
 
 	/// get the U factor for textures
 	float			getUFactor(void) const { return _UFactor; }
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
 
 protected:
 

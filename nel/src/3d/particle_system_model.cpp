@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.53 2003/05/07 09:48:25 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.54 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _EllapsedTimeRatio(1.f),
 											   _ToolDisplayEnabled(false),
 											   _TransparencyStateTouched(true),
+											   _LightableStateTouched(true),
 											   _EditionMode(false),
 											   _Invalidated(false),
 											   _InsertedInVisibleList(false),
@@ -131,6 +132,14 @@ void CParticleSystemModel::updateOpacityInfos(void)
 	_TransparencyStateTouched = false;
 }
 
+///=====================================================================================
+void CParticleSystemModel::updateLightingInfos(void)
+{
+	nlassert(_ParticleSystem);
+	if (!_LightableStateTouched) return;
+	CTransform::setIsLightable(_ParticleSystem->hasLightableObjects());	
+	_LightableStateTouched = false;
+}
 
 ///=====================================================================================
 void CParticleSystemModel::getAABBox(NLMISC::CAABBox &bbox) const
@@ -479,6 +488,7 @@ void	CParticleSystemModel::traverseAnimDetail()
 			ps->setSysMat(mat);
 			ps->setViewMat(clipTrav.ViewMatrix);
 			updateOpacityInfos();
+			updateLightingInfos();
 
 			//ps->setSysMat(getWorldMatrix());
 			nlassert(ps->getScene());	
@@ -828,7 +838,9 @@ bool CParticleSystemModel::isGlobalUserParamValueBypassed(uint userParamIndex) c
 //===================================================================
 void CParticleSystemModel::enableDisplayTools(bool enable /*=true*/)
 {	 
-	_ToolDisplayEnabled = enable; touchTransparencyState(); 	
+	_ToolDisplayEnabled = enable; 
+	touchTransparencyState();
+	touchLightableState();
 }
 
 //===================================================================

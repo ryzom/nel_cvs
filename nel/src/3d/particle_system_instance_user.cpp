@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.22 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.23 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -324,13 +324,16 @@ bool CParticleSystemInstanceUser::activateEmitters(bool active)
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	for(uint k = 0; k < ps->getNbProcess(); ++k)
 	{
-		CPSLocated *loc = dynamic_cast<CPSLocated *>(ps->getProcess(k));
-		if (loc)
+		if (ps->getProcess(k)->isLocated())
 		{
-			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			CPSLocated *loc = static_cast<CPSLocated *>(ps->getProcess(k));
+			if (loc)
 			{
-				if (loc->getBoundObject(l)->getType() == PSEmitter)	
-					loc->getBoundObject(l)->setActive(active);
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSEmitter)	
+						loc->getBoundObject(l)->setActive(active);
+				}
 			}
 		}
 	}

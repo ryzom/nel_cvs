@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.10 2003/04/14 15:27:33 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.11 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -161,18 +161,21 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		
 		/// test wether parametric motion is enabled
-		virtual bool		 isParametricMotionEnabled(void) const { return false;}
+		virtual bool			isParametricMotionEnabled(void) const { return false;}
 
 		/// perform parametric motion if enabled
-		virtual void performParametricMotion(TAnimationTime date,
+		virtual void			performParametricMotion(TAnimationTime date,
 											 TAnimationTime ellapsedTime,
 											 TAnimationTime realEllapsedTime) { nlassert(0);}
 
 		/// Update the life of objects..
-		virtual void updateLife(TAnimationTime ellapsedTime) = 0;
+		virtual void			updateLife(TAnimationTime ellapsedTime) = 0;
 
 		// Called by the system when its date has been manually changed
-		virtual void systemDateChanged() {}
+		virtual void			systemDateChanged() {}
+
+		// Helper to know if this class can be downcasted to a CPSLocated class
+		virtual bool            isLocated() const { return false; }
 			
 	protected:
 		CParticleSystem *_Owner ;

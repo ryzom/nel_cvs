@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.32 2003/04/14 15:29:16 vizerie Exp $
+ * $Id: particle_system.h,v 1.33 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -407,11 +407,19 @@ public:
 
 	///\name Transparency / opacity
 	// @{
-		/// Return true if the system has opaque object in it.
+		/// returns 'true' if the system has opaque object in it.
 		bool hasOpaqueObjects(void) const;
 
-		/// Return true if the system has transparent objects in it.
+		/// returns 'true' if the system has transparent objects in it.
 		bool hasTransparentObjects(void) const;
+	// @}
+
+	//*****************************************************************************************************
+
+	///\name Lighting
+	// @{
+		/// returns 'true' if the system has lightable objects in it
+		bool hasLightableObjects() const;
 	// @}
 
 	//*****************************************************************************************************
@@ -1007,6 +1015,10 @@ private:
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	
+
+	#ifdef NL_DEBUG
+		static uint									_NumInstances;
+	#endif
 public:
 	// For use by emitters only : This compute a delta of position to ensure that spaning position are correct when the system moves
 	void		interpolatePosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.24 2003/04/10 09:26:24 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.25 2003/06/30 15:32:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -538,6 +538,7 @@ void CLocatedBindableDialog::OnSelchangeBlendingMode()
 	nlassert(m);
 	m->setBlendingMode( (NL3D::CPSMaterial::TBlendingMode) m_BlendingMode.GetCurSel());	
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+	_ParticleDlg->getCurrPSModel()->touchLightableState();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.32 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: particle_system_model.h,v 1.33 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,10 +188,15 @@ public:
 		{ 
 			return _EditionMode; 
 		}
-		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removes opaque/tansparent faces )
+		/// edition purpose : touch the system to tell that the transparency state of the system has changed (added/removed opaque/tansparent faces )
 		void						touchTransparencyState(void) 
 		{ 
 			_TransparencyStateTouched = true; 
+		}
+		/// edition purpose : touch the system to tell that the lightable state of the system has changed (added/removed lightable faces )
+		void						touchLightableState(void) 
+		{ 
+			_LightableStateTouched = true; 
 		}
 	//@}
 
@@ -223,6 +228,9 @@ public:
 	  * This must be called when the system is instanciated, or when attributes have changed, such as the blending mode
 	  */
 	void						updateOpacityInfos(void);
+	// Update the lighted/not lighted flag of the system
+	void						updateLightingInfos(void);
+
 	virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
 	/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
 	virtual float				getNumTriangles (float distance);
@@ -313,6 +321,7 @@ private:
 	///\todo nico : may optimize this with a bitfield...
 	bool									_ToolDisplayEnabled;		
 	bool									_TransparencyStateTouched;
+	bool									_LightableStateTouched;
 	bool									_EditionMode;
 	bool									_Invalidated; /// if false, system should be recreated
 	bool									_InsertedInVisibleList;

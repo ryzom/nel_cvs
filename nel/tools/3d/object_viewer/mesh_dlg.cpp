@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.7 2003/04/07 12:44:59 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.8 2003/06/30 15:32:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,8 @@ void CMeshDlg::OnBrowseShape()
 		{		
 			_ShapeParticle->setShape(std::string(fname) + ext);		
 			m_ShapeName = (std::string(fname) + ext).c_str();
-			_ParticleDlg->getCurrPSModel()->touchTransparencyState();			
+			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+			_ParticleDlg->getCurrPSModel()->touchLightableState();
 		}
 		catch (NLMISC::Exception &e)
 		{

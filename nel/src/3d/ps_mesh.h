@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.10 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_mesh.h,v 1.11 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -112,6 +112,9 @@ public:
 
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void);
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool		hasLightableFaces();
 
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;
@@ -277,6 +280,9 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool		hasOpaqueFaces(void);
 
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool		hasLightableFaces();
+
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32		getMaxNumFaces(void) const;
 
@@ -312,35 +318,35 @@ public:
 		TTexAnimType getTexAnimType() const;
 	//@}
 
-		//\name Global texture animation. Calls to these method are only valid if texture animation is global.
-		//@{
-			/// Properties of global texture animation
-			struct CGlobalTexAnim
-			{
-				NLMISC::CVector2f TransSpeed; /* = (0, 0) */
-				NLMISC::CVector2f TransAccel; /* = (0, 0) */
-				NLMISC::CVector2f ScaleStart; /* = (1, 1) */
-				NLMISC::CVector2f ScaleSpeed; /* = (0, 0) */
-				NLMISC::CVector2f ScaleAccel; /* = (0, 0) */
-				float			  WRotSpeed;  /* = 0 */
-				float			  WRotAccel;  /* = 0 */
-				CGlobalTexAnim();
-				void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-				/// Build a texture matrix from a date and this obj.
-				void    buildMatrix(TAnimationTime &date, NLMISC::CMatrix &dest);
-			};
+	//\name Global texture animation. Calls to these method are only valid if texture animation is global.
+	//@{
+		/// Properties of global texture animation
+		struct CGlobalTexAnim
+		{
+			NLMISC::CVector2f TransSpeed; /* = (0, 0) */
+			NLMISC::CVector2f TransAccel; /* = (0, 0) */
+			NLMISC::CVector2f ScaleStart; /* = (1, 1) */
+			NLMISC::CVector2f ScaleSpeed; /* = (0, 0) */
+			NLMISC::CVector2f ScaleAccel; /* = (0, 0) */
+			float			  WRotSpeed;  /* = 0 */
+			float			  WRotAccel;  /* = 0 */
+			CGlobalTexAnim();
+			void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+			/// Build a texture matrix from a date and this obj.
+			void    buildMatrix(TAnimationTime &date, NLMISC::CMatrix &dest);
+		};
 
-			/// Set the properties of texture animation for a texture stage. Global animation should have been activated.
-			void			setGlobalTexAnim(uint stage, const CGlobalTexAnim &properties);
+		/// Set the properties of texture animation for a texture stage. Global animation should have been activated.
+		void			setGlobalTexAnim(uint stage, const CGlobalTexAnim &properties);
 
-			/// Get the properties of texture animation.Global animation should have been activated.
-			const CGlobalTexAnim &getGlobalTexAnim(uint stage) const;
+		/// Get the properties of texture animation.Global animation should have been activated.
+		const CGlobalTexAnim &getGlobalTexAnim(uint stage) const;
 
-			/// Force the time counter for global anim to be reseted when a new mesh is created.
-			void  forceGlobalAnimTimeResetOnNewElement(bool force = true) { _ReinitGlobalAnimTimeOnNewElement = force; }
-			bool  isGlobalAnimTimeResetOnNewElementForced()  const { return _ReinitGlobalAnimTimeOnNewElement != 0; }
+		/// Force the time counter for global anim to be reseted when a new mesh is created.
+		void  forceGlobalAnimTimeResetOnNewElement(bool force = true) { _ReinitGlobalAnimTimeOnNewElement = force; }
+		bool  isGlobalAnimTimeResetOnNewElementForced()  const { return _ReinitGlobalAnimTimeOnNewElement != 0; }
 
-		//@}
+	//@}
 
 	
 
@@ -517,6 +523,10 @@ protected:
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }	
 	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
 
+	/** Setup material so that global or per mesh color is taken in account. Useful if material hasn't been setup correctly in the export
+	  */
+	void setupMaterialColor(CMaterial &destMat, CMaterial &srcMat);
+
 	/// A 'bitfield' to force some stage to be modulated with the primary color
 	uint8   _ModulatedStages;
 
@@ -525,10 +535,11 @@ protected:
 	// flags that indicate wether the object has transparent faces. When the 'touch' flag is set, it is undefined, until the next update() call.
 	uint8	_HasTransparentFaces : 1;
 	// flags that indicate wether the object has opaques faces. When the 'touch' flag is set, it is undefined, until the next update() call.
-	uint8	_HasOpaqueFaces : 1;
-	uint8   _VertexColorLightingForced : 1;
-	uint8   _GlobalAnimationEnabled : 1;
+	uint8	_HasOpaqueFaces                   : 1;
+	uint8   _VertexColorLightingForced        : 1;
+	uint8   _GlobalAnimationEnabled           : 1;
 	uint8   _ReinitGlobalAnimTimeOnNewElement : 1;
+	uint8   _HasLightableFaces                : 1;
 
 	
 	/// Infos for global texture animation

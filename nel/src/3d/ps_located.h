@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.23 2003/04/14 15:26:22 vizerie Exp $
+ * $Id: ps_located.h,v 1.24 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,9 @@ public:
 	/// dtor
 
 	virtual ~CPSLocated();
+
+	// from CParticleSystemProcess
+	virtual bool isLocated() const { return true; }
 
 	/** attach a bindable object to this located, such as a force or a particle
 	  * a bindable must be attached only once (-> nlassert)

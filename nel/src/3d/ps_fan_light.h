@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * FanLight particles
  *
- * $Id: ps_fan_light.h,v 1.3 2002/02/28 09:52:51 vizerie Exp $
+ * $Id: ps_fan_light.h,v 1.4 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,6 +129,10 @@ public:
 	{
 		return _Tex; 
 	}
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
+	
 protected:
 	void				newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	void				deleteElement(uint32);

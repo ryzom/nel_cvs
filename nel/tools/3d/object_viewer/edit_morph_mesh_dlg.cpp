@@ -99,6 +99,7 @@ void CEditMorphMeshDlg::OnAdd()
 		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
 	}
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+	_ParticleDlg->getCurrPSModel()->touchLightableState();
 }
 
 //====================================================================
@@ -116,6 +117,7 @@ void CEditMorphMeshDlg::OnRemove()
 		GetDlgItem(IDC_REMOVE)->EnableWindow(FALSE);
 	}
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+	_ParticleDlg->getCurrPSModel()->touchLightableState();
 	updateMeshList();
 }
 
@@ -133,6 +135,7 @@ void CEditMorphMeshDlg::OnInsert()
 		_CM->setShapes(&shapeNames[0], shapeNames.size());		
 		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+		_ParticleDlg->getCurrPSModel()->touchLightableState();
 		updateMeshList();
 		m_MeshList.SetCurSel(selItem);
 	}	
@@ -179,6 +182,7 @@ void CEditMorphMeshDlg::OnChange()
 		_CM->setShape(selItem, shapeName);	
 		updateMeshList();
 		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+		_ParticleDlg->getCurrPSModel()->touchLightableState();
 	}
 }
 

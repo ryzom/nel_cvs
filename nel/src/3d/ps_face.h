@@ -1,7 +1,7 @@
 /** \file ps_face.h
  * Face particles.
  *
- * $Id: ps_face.h,v 1.2 2002/02/20 11:10:37 vizerie Exp $
+ * $Id: ps_face.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,9 @@ public:
 		max = _MaxAngularVelocity;
 		return _PrecompBasis.size(); 
 	}
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
 
 
 protected:

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.57 2003/04/14 15:29:16 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.58 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,10 @@ UPSSoundServer *							CParticleSystem::_SoundServer = NULL;
 CParticleSystem::TGlobalValuesMap			CParticleSystem::_GlobalValuesMap;
 CParticleSystem::TGlobalVectorValuesMap		CParticleSystem::_GlobalVectorValuesMap;
 
+
+#ifdef NL_DEBUG
+uint	CParticleSystem::_NumInstances = 0;
+#endif
 
 ///////////////////////////////////
 // CPaticleSystem implementation //
@@ -110,6 +114,10 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 
 {
 	std::fill(_UserParam, _UserParam + MaxPSUserParam, 0);	
+	#ifdef NL_DEBUG
+		++_NumInstances;
+	#endif
+
 }
 
 
@@ -227,6 +235,9 @@ CParticleSystem::~CParticleSystem()
 	}
 	delete _ColorAttenuationScheme;
 	delete _UserParamGlobalValue;
+	#ifdef NL_DEBUG
+		--_NumInstances;
+	#endif
 }
 
 ///=======================================================================================
@@ -740,11 +751,12 @@ bool CParticleSystem::hasOpaqueObjects(void) const
 	/// for each process
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		if (dynamic_cast<CPSLocated *>(*it))
+		if ((*it)->isLocated())
 		{
-			for (uint k = 0; k < ((CPSLocated *) *it)->getNbBoundObjects(); ++k)
+			CPSLocated *loc = static_cast<CPSLocated *>(*it);		
+			for (uint k = 0; k < loc->getNbBoundObjects(); ++k)
 			{
-				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k);
+				CPSLocatedBindable *lb = loc->getBoundObject(k);
 				if (lb->getType() == PSParticle)
 				{
 					if (((CPSParticle *) lb)->hasOpaqueFaces()) return true;
@@ -761,14 +773,37 @@ bool CParticleSystem::hasTransparentObjects(void) const
 	/// for each process
 	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		if (dynamic_cast<CPSLocated *>(*it))
+		if ((*it)->isLocated())
 		{
-			for (uint k = 0; k < ((CPSLocated *) *it)->getNbBoundObjects(); ++k)
+			CPSLocated *loc = static_cast<CPSLocated *>(*it);
+			for (uint k = 0; k < loc->getNbBoundObjects(); ++k)
 			{
-				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k);
+				CPSLocatedBindable *lb = loc->getBoundObject(k);
 				if (lb->getType() == PSParticle)
 				{
 					if (((CPSParticle *) lb)->hasTransparentFaces()) return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
+///=======================================================================================
+bool CParticleSystem::hasLightableObjects() const
+{
+	/// for each process
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{
+		if ((*it)->isLocated())
+		{
+			CPSLocated *loc = static_cast<CPSLocated *>(*it);
+			for (uint k = 0; k < loc->getNbBoundObjects(); ++k)
+			{
+				CPSLocatedBindable *lb = loc->getBoundObject(k);
+				if (lb->getType() == PSParticle)
+				{
+					if (((CPSParticle *) lb)->hasLightableFaces()) return true;
 				}
 			}
 		}
@@ -1144,9 +1179,9 @@ bool CParticleSystem::canFinish() const
 	if (hasLoop()) return false;
 	for(uint k = 0; k < _ProcessVect.size(); ++k)
 	{
-		CPSLocated *loc = dynamic_cast<CPSLocated *>(_ProcessVect[k]);
-		if (loc)
+		if (_ProcessVect[k]->isLocated())
 		{
+			CPSLocated *loc = static_cast<CPSLocated *>(_ProcessVect[k]);
 			if (loc->getLastForever())
 			{			
 				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
@@ -1175,9 +1210,9 @@ bool CParticleSystem::hasLoop() const
 	// NB : there's room for a smarter algo here, but should not be useful for now 
 	for(uint k = 0; k < _ProcessVect.size(); ++k)
 	{
-		CPSLocated *loc = dynamic_cast<CPSLocated *>(_ProcessVect[k]);
-		if (loc)
+		if (_ProcessVect[k]->isLocated())
 		{
+			CPSLocated *loc = static_cast<CPSLocated *>(_ProcessVect[k]);
 			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
 			{
 				CPSEmitter *em = dynamic_cast<CPSEmitter *>(loc->getBoundObject(l));

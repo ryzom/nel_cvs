@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.9 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_particle_basic.h,v 1.10 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,9 @@ public:
 
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void)  = 0;
+
+	/// return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() = 0;
 
 	/// derivers draw the particles here
 	virtual void draw(bool opaque) {}

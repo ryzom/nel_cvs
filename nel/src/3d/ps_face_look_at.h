@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.h
  * Face look at particles.
  *
- * $Id: ps_face_look_at.h,v 1.2 2002/02/20 11:10:54 vizerie Exp $
+ * $Id: ps_face_look_at.h,v 1.3 2003/06/30 15:30:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,6 +107,9 @@ public:
 		nlassert(_IndependantSizes);
 		return _SecondSize;
 	}
+
+	/// from CPSParticle : return true if there are lightable faces in the object
+	virtual bool hasLightableFaces() { 	return false; }
 	
 protected:
 	friend class			CPSFaceLookAtHelper;	/// used for implementation only

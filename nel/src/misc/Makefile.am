@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.32 2001/11/05 16:08:20 lecroart Exp $
+# $Id: Makefile.am,v 1.33 2001/11/21 13:59:01 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -9,7 +9,7 @@ SUBDIRS               = config_file .
 lib_LTLIBRARIES       = libnelmisc.la
 
 libnelmisc_la_SOURCES = aabbox.cpp                         \
-			bit_mem_stream.cpp		   \
+                        bit_mem_stream.cpp                 \
                         bit_set.cpp                        \
                         bitmap.cpp                         \
                         block_memory.cpp                   \
@@ -28,7 +28,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         events.cpp                         \
                         file.cpp                           \
                         geom_ext.cpp                       \
-			heap_memory.cpp                    \
+                        heap_memory.cpp                    \
                         i_xml.cpp                          \
                         i18n.cpp                           \
                         line.cpp                           \
@@ -52,6 +52,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         time_nl.cpp                        \
                         triangle.cpp                       \
                         uv.cpp                             \
+                        value_smoother.cpp                 \
                         vector.cpp                         \
                         vector_2d.cpp                      \
                         vector_2f.cpp                      \

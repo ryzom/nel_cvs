@@ -1,3 +1,32 @@
+/** \file main.cpp
+ *
+ * $Id: main.cpp,v 1.2 2002/06/04 13:53:44 vizerie Exp $
+ */
+
+/* Copyright, 2000, 2001, 2002 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+
+
+
+
+
 // ---------------------------------------------------------------------------
 
 #include <vector>
@@ -6,6 +35,7 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/file.h"
 #include "nel/misc/bitmap.h"
+#include "nel/misc/block_memory.h"
 
 #include "ligo/zone_region.h"
 
@@ -90,6 +120,15 @@ struct SExportOptions
 		}
 		return true;
 	}
+};
+
+
+struct CZoneLimits
+{
+	sint32 _ZoneMinX;
+	sint32 _ZoneMaxX;
+	sint32 _ZoneMinY;
+	sint32 _ZoneMaxY;
 };
 
 // ---------------------------------------------------------------------------
@@ -188,9 +227,43 @@ bool SaveInstanceGroup (const char* sFilename, CInstanceGroup *pIG)
 	return true;
 }
 
+/** Get the Z of the height map at the given position
+  */
+static float  getHeightMapZ(float x, float y, const CZoneLimits &zl, const SExportOptions &options, CBitmap *heightMap1, CBitmap *heightMap2)
+{
+	float deltaZ = 0.0f, deltaZ2 = 0.0f;
+	CRGBAF color;
+	sint32 SizeX = zl._ZoneMaxX - zl._ZoneMinX + 1;
+	sint32 SizeY = zl._ZoneMaxY - zl._ZoneMinY + 1;
+
+	clamp (x, options.CellSize * zl._ZoneMinX, options.CellSize * (zl._ZoneMaxX + 1));
+	clamp (y, options.CellSize * zl._ZoneMinY, options.CellSize * (zl._ZoneMaxY + 1));
+
+	if (heightMap1 != NULL)
+	{
+		color = heightMap1->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
+										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
+		deltaZ = color.A;
+		deltaZ = deltaZ - 127.0f; // Median intensity is 127
+		deltaZ *= options.ZFactor1;
+	}
+
+	if (heightMap2 != NULL)
+	{
+		color = heightMap2->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
+										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
+		deltaZ2 = color.A;
+		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
+		deltaZ2 *= options.ZFactor2;
+	}
+
+	return deltaZ + deltaZ2;	
+}
+
 // ---------------------------------------------------------------------------
 int main(int nNbArg, char**ppArgs)
 {
+	NL3D_BlockMemoryAssertOnPurge = false;
 	char sCurDir[MAX_PATH];
 	GetCurrentDirectory (MAX_PATH, sCurDir);
 	
@@ -220,10 +293,12 @@ int main(int nNbArg, char**ppArgs)
 
 	// Load the land
 	CZoneRegion *ZoneRegion = loadLand(options.LandFile);
-	sint32 nZoneMinX = ZoneRegion->getMinX() < 0	? 0		: ZoneRegion->getMinX();
-	sint32 nZoneMaxX = ZoneRegion->getMaxX() > 255	? 255	: ZoneRegion->getMaxX();
-	sint32 nZoneMinY = ZoneRegion->getMinY() > 0	? 0		: ZoneRegion->getMinY();
-	sint32 nZoneMaxY = ZoneRegion->getMaxY() < -255 ? -255	: ZoneRegion->getMaxY();
+
+	CZoneLimits zl;	
+	zl._ZoneMinX = ZoneRegion->getMinX() < 0	? 0		: ZoneRegion->getMinX();
+	zl._ZoneMaxX = ZoneRegion->getMaxX() > 255	? 255	: ZoneRegion->getMaxX();
+	zl._ZoneMinY = ZoneRegion->getMinY() > 0	? 0		: ZoneRegion->getMinY();
+	zl._ZoneMaxY = ZoneRegion->getMaxY() < -255 ? -255	: ZoneRegion->getMaxY();
 
 	// Load the 2 height maps
 	CBitmap *HeightMap1 = NULL;
@@ -274,61 +349,69 @@ int main(int nNbArg, char**ppArgs)
 		if (pIG != NULL)
 		{
 			// For all instances !!!
-			uint32 j;
 			CVector vGlobalPos;
 			CInstanceGroup::TInstanceArray IA;
 			vector<CCluster> Clusters;
 			vector<CPortal> Portals;
 			vector<CPointLightNamed> PLN;
 			pIG->retrieve (vGlobalPos, IA, Clusters, Portals, PLN);
+			
+			if (IA.empty() && PLN.empty() && Portals.empty() && Clusters.empty()) continue;
 
-			if (Clusters.size() != 0) continue;
-			if (IA.size() == 0) continue;
 
-			// Get average position of the center of the system
-			CVector vCenter = CVector(0,0,0);
-			for (j = 0; j < IA.size(); ++j)
-				vCenter += IA[j].Pos;
-			vCenter = vCenter / (float)IA.size();
+			uint k;
 
-			// Get Elevation at this point
-			float x = vCenter.x;
-			float y = vCenter.y;
-			float deltaZ = 0.0f, deltaZ2 = 0.0f;
-			CRGBAF color;
-			sint32 SizeX = nZoneMaxX - nZoneMinX + 1;
-			sint32 SizeY = nZoneMaxY - nZoneMinY + 1;
-	
-			clamp (x, options.CellSize*nZoneMinX, options.CellSize*(nZoneMaxX+1));
-			clamp (y, options.CellSize*nZoneMinY, options.CellSize*(nZoneMaxY+1));
+			
 
-			if (HeightMap1 != NULL)
+			// elevate instance
+			for(k = 0; k < IA.size(); ++k)
 			{
-				color = HeightMap1->getColor (	(x-options.CellSize*nZoneMinX)/(options.CellSize*SizeX), 
-												1.0f - ((y-options.CellSize*nZoneMinY)/(options.CellSize*SizeY)));
-				deltaZ = color.A;
-				deltaZ = deltaZ - 127.0f; // Median intensity is 127
-				deltaZ *= options.ZFactor1;
+				CVector instancePos = vGlobalPos + IA[k].Pos;
+				IA[k].Pos.z += getHeightMapZ(instancePos.x, instancePos.y, zl, options, HeightMap1, HeightMap2);
+			}
+
+			// lights
+			for(k = 0; k < PLN.size(); ++k)
+			{
+				CVector lightPos = vGlobalPos + PLN[k].getPosition();
+				PLN[k].setPosition( PLN[k].getPosition() + getHeightMapZ(lightPos.x, lightPos.y, zl, options, HeightMap1, HeightMap2) * CVector::K);
 			}
 		
-			if (HeightMap2 != NULL)
+
+			// portals
+			std::vector<CVector> portal;
+			for(k = 0; k < Portals.size(); ++k)
 			{
-				color = HeightMap2->getColor (	(x-options.CellSize*nZoneMinX)/(options.CellSize*SizeX), 
-												1.0f - ((y-options.CellSize*nZoneMinY)/(options.CellSize*SizeY)));
-				deltaZ2 = color.A;
-				deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
-				deltaZ2 *= options.ZFactor2;
+				Portals[k].getPoly(portal);
+				if (portal.empty())
+				{
+					nlwarning("Empty portal found");
+					continue;
+				}
+				// compute mean position of the poly
+				CVector meanPos(0, 0, 0);
+				uint l;
+				for(l = 0; l < portal.size(); ++l)
+					meanPos += portal[l];
+				meanPos /= (float) portal.size();
+				meanPos += vGlobalPos;
+				float z = getHeightMapZ(meanPos.x, meanPos.y, zl, options, HeightMap1, HeightMap2);
+				for(l = 0; l < portal.size(); ++k)
+				{
+					portal[l].z += z;
+				}
 			}
-		
-			deltaZ = (deltaZ + deltaZ2);
 
-
-			// Modify all stuff of the instance group
-			for (j = 0; j < IA.size(); ++j)
+			// clusters
+			std::vector<CPlane> volume;
+			CMatrix transMatrix;
+			for(k = 0; k < Clusters.size(); ++k)
 			{
-				IA[j].Pos.z += deltaZ;
+				CVector clusterPos = vGlobalPos + Clusters[k].getBBox().getCenter();
+				float z = getHeightMapZ(clusterPos.x, clusterPos.y, zl, options, HeightMap1, HeightMap2);
+				transMatrix.setPos(z * CVector::K);
+				Clusters[k].applyMatrix(transMatrix);
 			}
-
 
 			CInstanceGroup *pIGout = new CInstanceGroup;
 			pIGout->build (vGlobalPos, IA, Clusters, Portals, PLN);

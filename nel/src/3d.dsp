@@ -2338,14 +2338,9 @@ SOURCE=.\3d\surface_light_grid.cpp
 SOURCE=.\3d\surface_light_grid.h
 # End Source File
 # End Group
-# Begin Source File
+# Begin Group "LodSystems"
 
-SOURCE=.\3d\async_file_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\async_file_manager.h
-# End Source File
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\3d\coarse_mesh_build.cpp
@@ -2353,6 +2348,47 @@ SOURCE=.\3d\coarse_mesh_build.cpp
 # Begin Source File
 
 SOURCE=.\3d\coarse_mesh_build.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_builder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_builder.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_shape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_shape_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_shape_bank.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 

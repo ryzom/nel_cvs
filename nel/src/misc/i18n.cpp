@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.3 2000/11/08 14:59:33 lecroart Exp $
+ * $Id: i18n.cpp,v 1.4 2000/11/21 14:00:30 valignat Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -162,7 +162,7 @@ void CI18N::load (uint32 lid)
 		char c;
 		// get the language name
 		c = skipWS (cf, line);
-		if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName, line);
+		if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
 		do
 		{
 			cf.serial (c);
@@ -184,7 +184,7 @@ void CI18N::load (uint32 lid)
 
 			// get the coder string
 			c = skipWS (cf, line);
-			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName, line);
+			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
 			startstr = true;
 			do
 			{
@@ -203,13 +203,13 @@ void CI18N::load (uint32 lid)
 			equal = true;
 			// get the '='
 			c = skipWS (cf, line);
-			if (c != '=') nlerror ("'=' missing in \"%s\" line %d", _FileName, line);
+			if (c != '=') nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
 			equal = false;
 			
 			second = true;
 			// get the translated string
 			c = skipWS (cf, line);
-			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName, line);
+			if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
 			startstr = true;
 			do
 			{
@@ -238,9 +238,9 @@ void CI18N::load (uint32 lid)
 	catch (EReadError)
 	{
 		// always comes here when it's the end of file
-		if (startstr) nlerror ("a string didn't have the close '\"' in \"%s\" line %d", _FileName, line);
-		if (equal) nlerror ("'=' missing in \"%s\" line %d", _FileName, line);
-		if (second) nlerror ("open '\"' missing in \"%s\" line %d", _FileName, line);
+		if (startstr) nlerror ("a string didn't have the close '\"' in \"%s\" line %d", _FileName.c_str(), line);
+		if (equal) nlerror ("'=' missing in \"%s\" line %d", _FileName.c_str(), line);
+		if (second) nlerror ("open '\"' missing in \"%s\" line %d", _FileName.c_str(), line);
 		cf.close ();
 	}
 }
@@ -266,7 +266,7 @@ const string &CI18N::get (const char *str)
 		createLanguageEntry (str, ss.str());
 
 		// warn the user
-		nlwarning ("\"%s\" is not in the \"%s\" language file, I add in all languages files.", str, _FileName);
+		nlwarning ("\"%s\" is not in the \"%s\" language file, I add in all languages files.", str, _FileName.c_str());
 	}
 
 	return it->second;
@@ -287,7 +287,7 @@ const vector<string> &CI18N::getLanguageNames()
 
 			if (!cf.open (fn, true))
 			{
-				nlwarning ("Could not open file \"%s\" (lid:%d)", fn, i);
+				nlwarning ("Could not open file \"%s\" (lid:%d)", fn.c_str(), i);
 				createLanguageFile (i);
 				lg = _LanguageFiles[i];
 			}
@@ -299,7 +299,7 @@ const vector<string> &CI18N::getLanguageNames()
 					char c;
 					// get the language name
 					c = skipWS (cf, line);
-					if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", fn, line);
+					if (c != '"') nlerror ("open '\"' missing in \"%s\" line %d", fn.c_str(), line);
 					do
 					{
 						cf.serial (c);
@@ -315,7 +315,7 @@ const vector<string> &CI18N::getLanguageNames()
 				}
 				catch (EReadError)
 				{
-					nlerror ("Missing the language name in the beginning of the file %s", fn);
+					nlerror ("Missing the language name in the beginning of the file %s", fn.c_str());
 				}
 				cf.close ();
 			}

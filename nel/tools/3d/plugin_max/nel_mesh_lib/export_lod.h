@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.26 2002/06/06 14:41:51 vizerie Exp $
+ * $Id: export_lod.h,v 1.27 2002/07/03 09:16:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,14 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 /// skeleton scale
 #define NEL3D_APPDATA_EXPORT_BONE_SCALE				(1423062619)
 #define NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT	(1423062620)
+
+// remanence
+#define NEL3D_APPDATA_USE_REMANENCE					(1423062631)
+#define NEL3D_APPDATA_REMANENCE_SLICE_NUMBER		(1423062632)
+#define NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD     (1423062633)
+#define NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE    (1423062634)
+
+
 
 // ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.4 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.5 2001/10/02 15:58:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,12 +66,19 @@ void			CTessBlock::extendSphere(const CVector &vec)
 		Empty= false;
 		BBox.setCenter(vec);
 		BBox.setHalfSize(CVector::Null);
+		BSphere.Center= vec;
+		BSphere.Radius= 0;
 	}
 	else
-		BBox.extend(vec);
+	{
+		if( !BBox.include(vec) )
+		{
+			BBox.extend(vec);
+			BSphere.Center= BBox.getCenter();
+			BSphere.Radius= BBox.getRadius();
+		}
+	}
 
-	BSphere.Center= BBox.getCenter();
-	BSphere.Radius= BBox.getRadius();
 }
 // ***************************************************************************
 void			CTessBlock::resetClip()

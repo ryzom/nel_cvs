@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.6 2002/04/30 13:48:46 besson Exp $
+ * $Id: async_file_manager.h,v 1.7 2002/10/10 12:55:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ class IShape;
 class IDriver;
 class CInstanceGroup;
 class UInstanceGroup;
+class CTextureFile;
 
 /**
  * CAsyncFileManager is a class that manage file loading in a seperate thread
@@ -57,6 +58,9 @@ public:
 
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
 	void loadIGUser (const std::string &igName, UInstanceGroup **ppIG);
+
+	void loadTexture (CTextureFile *textureFile, bool *pSgn);
+	bool cancelLoadTexture (CTextureFile *textFile);
 
 	// Do not use these methods with the bigfile manager
 	void loadFile (const std::string &fileName, uint8 **pPtr);
@@ -135,6 +139,16 @@ private:
 	public:
 		CSignal (bool *pSgn);
 		void run (void);
+	};
+
+	// Load a texture
+	class CTextureLoad : public NLMISC::IRunnable
+	{
+	public:
+		CTextureFile	*TextureFile;
+		bool			*Signal;
+	public:
+		virtual	void	run();
 	};
 
 };

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.16 2002/07/08 12:58:48 vizerie Exp $
+ * $Id: async_file_manager.cpp,v 1.17 2002/10/10 12:55:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,10 @@ bool CAsyncFileManager::cancelLoadMesh(const std::string& sMeshName)
 		}
 		++it;
 	}
+
+	// If not found, the current running task may be the one we want to cancel. Must wait it.
+	waitCurrentTaskToComplete ();
+
 	return false;
 }
 
@@ -166,7 +170,53 @@ void CAsyncFileManager::cancelSignal (bool *pSgn)
 		}
 		++it;
 	}
+
+	// If not found, the current running task may be the one we want to cancel. Must wait it.
+	waitCurrentTaskToComplete ();
+
 }
+
+// ***************************************************************************
+void CAsyncFileManager::loadTexture (CTextureFile *textureFile, bool *pSgn)
+{
+	nlassert(textureFile && pSgn);
+	CTextureLoad	*textLoad= new CTextureLoad;
+	textLoad->TextureFile= textureFile;
+	textLoad->Signal= pSgn;
+
+	addTask(textLoad);
+}
+
+// ***************************************************************************
+bool CAsyncFileManager::cancelLoadTexture (CTextureFile *textFile)
+{
+	CSynchronized<list<IRunnable *> >::CAccessor acces(&_TaskQueue);
+	list<IRunnable*> &rTaskQueue = acces.value ();
+	list<IRunnable*>::iterator it = rTaskQueue.begin();
+
+	while (it != rTaskQueue.end())
+	{
+		IRunnable *pR = *it;
+		CTextureLoad *pT = dynamic_cast<CTextureLoad*>(pR);
+		if (pT != NULL)
+		{
+			if (pT->TextureFile == textFile)
+			{
+				// Delete textureload  task
+				delete pT;
+				rTaskQueue.erase (it);
+				return true;
+			}
+		}
+		++it;
+	}
+
+	// If not found, the current running task may be the one we want to cancel. Must wait it.
+	waitCurrentTaskToComplete ();
+
+	return false;
+}
+
 
 // ***************************************************************************
 // TASKS
@@ -473,6 +523,23 @@ CAsyncFileManager::CSignal::CSignal (bool *pSgn)
 void CAsyncFileManager::CSignal::run (void)
 {
 	*Sgn = true;
+}
+
+// ***************************************************************************
+// CTextureLoad
+// ***************************************************************************
+
+// ***************************************************************************
+void	CAsyncFileManager::CTextureLoad::run()
+{
+	// Load the texture.
+	TextureFile->setAsyncLoading (true);
+	TextureFile->generate();
+	TextureFile->setAsyncLoading (false);
+	// Ok
+	*Signal= true;
+
+	delete this;
 }
 
 

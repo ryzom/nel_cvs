@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.23 2001/01/12 09:58:20 chafik Exp $
+ * $Id: types_nl.h,v 1.24 2001/01/30 10:23:18 valignat Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -68,9 +68,12 @@
 
 // Check the STLPort presence
 
+#ifdef NL_OS_WINDOWS
 #ifndef __SGI_STL_PORT
 #  error "You need STLPort to compile this project (www.sltport.org)"
 #endif // __SGI_STL_PORT
+#endif // NL_OS_WINDOWS
+
 
 // Setup extern asm functions.
 

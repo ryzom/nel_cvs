@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.76 2002/08/08 15:34:49 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.77 2002/08/09 09:32:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1010,24 +1010,29 @@ void CObjectViewer::go ()
 		}
 		
 		// Test Window Keys
+		bool	keyWndOk= false;
 		if (CNELU::AsyncListener.isKeyPushed(Key1))
-			_MainFrame->OnWindowAnimation();
+			_MainFrame->OnWindowAnimation(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key2))
-			_MainFrame->OnWindowAnimationset();
+			_MainFrame->OnWindowAnimationset(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key3))
-			_MainFrame->OnWindowMixersslots();
+			_MainFrame->OnWindowMixersslots(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key4))
-			_MainFrame->OnWindowParticles();
+			_MainFrame->OnWindowParticles(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key5))
-			_MainFrame->OnWindowDayNight();
+			_MainFrame->OnWindowDayNight(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key6))
-			_MainFrame->OnWindowWaterPool();
+			_MainFrame->OnWindowWaterPool(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key7))
-			_MainFrame->OnWindowVegetable();
+			_MainFrame->OnWindowVegetable(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key8))
-			_MainFrame->OnWindowGlobalwind();
+			_MainFrame->OnWindowGlobalwind(), keyWndOk= true;
 		if (CNELU::AsyncListener.isKeyPushed(Key9))
-			_MainFrame->OnWindowSoundAnim();
+			_MainFrame->OnWindowSoundAnim(), keyWndOk= true;
+
+		// If some window activated, reset the focus to the main wnd.
+		if(keyWndOk)
+			_MainFrame->SetActiveWindow();
 
 		// Calc FPS
 		static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
@@ -2333,6 +2338,9 @@ uint CObjectViewer::addInstanceGroup(NL3D::CInstanceGroup *ig)
 	ig->addToScene(CNELU::Scene, CNELU::Driver);
 	// Unfreeze all objects from HRC.
 	ig->unfreezeHRC();
+
+	// link the root of the IG to our root, for scene rotation
+	ig->linkRoot(CNELU::Scene, _SceneRoot);
 
 	// Keep a reference on them, but they'll be destroyed by IG.
 	for (uint k = 0; k < ig->getNumInstance(); ++k)

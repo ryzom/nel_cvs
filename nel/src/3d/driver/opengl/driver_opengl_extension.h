@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.22 2002/02/07 18:33:44 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.23 2002/02/07 19:00:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,8 +151,10 @@ void	registerGlExtensions(CGlExtensions &ext);
 // The exported function names
 
 
-// ARB_multitexture
+// ARB_multitexture (only version < 1.2.1)
 //=================
+#ifndef GL_VERSION_1_2
+
 extern PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
 extern PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
 
@@ -190,6 +192,8 @@ extern PFNGLMULTITEXCOORD4SVARBPROC glMultiTexCoord4svARB;
 extern PFNGLMULTITEXCOORD4IVARBPROC glMultiTexCoord4ivARB;
 extern PFNGLMULTITEXCOORD4FVARBPROC glMultiTexCoord4fvARB;
 extern PFNGLMULTITEXCOORD4DVARBPROC glMultiTexCoord4dvARB;
+
+#endif // GL_VERSION_1_2
 
 
 // ARB_TextureCompression.

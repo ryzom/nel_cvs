@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.26 2002/02/07 18:08:50 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.27 2002/02/07 19:00:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@
 
 // ARB_multitexture
 //=================
+#ifndef GL_VERSION_1_2
+
 PFNGLACTIVETEXTUREARBPROC glActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC glClientActiveTextureARB;
 
@@ -79,6 +81,8 @@ PFNGLMULTITEXCOORD4SVARBPROC glMultiTexCoord4svARB;
 PFNGLMULTITEXCOORD4IVARBPROC glMultiTexCoord4ivARB;
 PFNGLMULTITEXCOORD4FVARBPROC glMultiTexCoord4fvARB;
 PFNGLMULTITEXCOORD4DVARBPROC glMultiTexCoord4dvARB;
+
+#endif // GL_VERSION_1_2
 
 
 // ARB_TextureCompression.
@@ -257,6 +261,7 @@ static bool setupARBMultiTexture(const char	*glext)
 	if(strstr(glext, "GL_ARB_multitexture")==NULL)
 		return false;
 
+#ifndef GL_VERSION_1_2
 	if(!(glActiveTextureARB=(PFNGLACTIVETEXTUREARBPROC)nelglGetProcAddress("glActiveTextureARB")))return false;
 	if(!(glClientActiveTextureARB=(PFNGLCLIENTACTIVETEXTUREARBPROC)nelglGetProcAddress("glClientActiveTextureARB")))return false;
 
@@ -293,6 +298,7 @@ static bool setupARBMultiTexture(const char	*glext)
 	if(!(glMultiTexCoord4ivARB=(PFNGLMULTITEXCOORD4IVARBPROC)nelglGetProcAddress("glMultiTexCoord4ivARB")))return false;
 	if(!(glMultiTexCoord4fvARB=(PFNGLMULTITEXCOORD4FVARBPROC)nelglGetProcAddress("glMultiTexCoord4fvARB")))return false;
 	if(!(glMultiTexCoord4dvARB=(PFNGLMULTITEXCOORD4DVARBPROC)nelglGetProcAddress("glMultiTexCoord4dvARB")))return false;
+#endif // GL_VERSION_1_2
 
 	return true;
 }

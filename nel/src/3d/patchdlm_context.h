@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.4 2002/04/16 13:58:53 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.5 2002/04/17 12:32:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -198,9 +198,11 @@ private:
 	bool							_IsDstTextureFullBlack;
 
 
-private:
-	// as it sounds...
-	void							modulateSrcWithTileColor();
+// If resolution of the lightmap is every 2x2 tiles, must bkup tileColors.
+#ifndef NL_DLM_TILE_RES
+	// The tileColors at resolution of tessBlock
+	NLMISC::CObjectVector<uint16, false>	_LowResTileColors;
+#endif
 
 };
 

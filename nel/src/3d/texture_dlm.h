@@ -1,7 +1,7 @@
 /** \file texture_dlm.h
  * <File description>
  *
- * $Id: texture_dlm.h,v 1.2 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: texture_dlm.h,v 1.3 2002/04/17 12:32:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -67,6 +67,9 @@ using NLMISC::CRGBA;
  *	If NL_DLM_TILE_RES is defined, then, same reasoning, with blocks of 18x18. In worst case, 
  *	space lost is 70%: (1 - 15*15 / 18*18). But others cases are pretty good (90% to 100%)
  *
+ * 	NB: TextureDLM ensure that point (MaxX,MaxY) of this texture is black. UseFull for patch who
+ *	want default black color
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -108,7 +111,15 @@ public:
 	 *	The texture is invalidate (on this part only...)
 	 *	\param map is the raw array of RGBA colors to fills. must be of w*h size
 	 */
-	void			fillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap);
+	void			copyRect(uint x, uint y, uint w, uint h, CRGBA  *textMap);
+
+	/** same as copyRect(), but fill a RGBA(value, value, value, value)
+	 */
+	void			fillRect(uint x, uint y, uint w, uint h, uint8 value);
+
+	/** same as copyRect(), but modulate textMap with an array of 565 color, before copying.
+	 */
+	void			modulateAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap, uint16 *modColor);
 
 	/// Set a lightmap as free for use. It is an error to free a not allocated lightmap. (nlassert!!)
 	void			releaseLightMap(uint x, uint y);

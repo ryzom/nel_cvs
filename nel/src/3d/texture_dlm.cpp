@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.3 2002/04/16 13:58:53 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.4 2002/04/17 12:32:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -80,6 +80,16 @@ CTextureDLM::CTextureDLM(uint width, uint height)
 	{
 		_FreeBlocks[i]= NULL;
 	}
+
+	// Since NL_DLM_BLOCK_SIZE is 10 or 18 (a factor of prime number 5 or 3 respectively), we are sure there is 
+	// at least one pixel which is not used by blcks. The last pixel is filled with black (see CTextureDLm doc)
+	nlassert(NL_DLM_BLOCK_SIZE==10 || NL_DLM_BLOCK_SIZE==18);
+	CRGBA	*ptr= (CRGBA*)(&CBitmap::getPixels(0)[0]);
+	// fill last pixel with black.
+	ptr[width*height-1]= CRGBA::Black;
+	// Also, to ensure the texture do not wrap around, disable Tiling.
+	ITexture::setWrapS(ITexture::Clamp);
+	ITexture::setWrapT(ITexture::Clamp);
 }
 
 
@@ -227,7 +237,7 @@ bool			CTextureDLM::createLightMap(uint w, uint h, uint &x, uint &y)
 }
 
 // ***************************************************************************
-void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap)
+void			CTextureDLM::copyRect(uint x, uint y, uint w, uint h, CRGBA  *textMap)
 {
 	// copy image.
 	CRGBA	*src= textMap;
@@ -241,6 +251,50 @@ void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap)
 	// Invalidate the rectangle.
 	ITexture::touchRect(CRect(x, y, w, h));
 }
+
+// ***************************************************************************
+void			CTextureDLM::fillRect(uint x, uint y, uint w, uint h, uint8 value)
+{
+	// copy image.
+	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	dst+= y*getWidth()+x;
+	for(sint n= h;n>0;n--, dst+= getWidth())
+	{
+		memset(dst, value, w*sizeof(CRGBA));
+	}
+
+	// Invalidate the rectangle.
+	ITexture::touchRect(CRect(x, y, w, h));
+}
+
+
+// ***************************************************************************
+void			CTextureDLM::modulateAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap, uint16 *modColor)
+{
+	// compute start dst to copy.
+	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
+	dst+= y*getWidth()+x;
+
+	// For all lines
+	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )
+	{
+		// For all the line.
+		for(sint nc= w;nc>0;nc--, textMap++, modColor++, dst++)
+		{
+			uint16	tc= *modColor;
+			// modulate R.
+			dst->R= ( (tc>>11) * textMap->R)>>5;
+			// modulate G.
+			dst->G= (((tc>>5)&63) * textMap->G)>>6;
+			// modulate B.
+			dst->B= ( (tc&31) * textMap->B)>>5;
+		}
+	}
+
+	// Invalidate the rectangle.
+	ITexture::touchRect(CRect(x, y, w, h));
+}
+
 
 // ***************************************************************************
 void			CTextureDLM::releaseLightMap(uint x, uint y)

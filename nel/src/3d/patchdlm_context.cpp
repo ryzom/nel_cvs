@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.4 2002/04/16 13:58:53 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.5 2002/04/17 12:32:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -251,7 +251,7 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 	else
 	{
 		// Build UVBias such that the UVs point to Black
-		// TODODO: must do some hints to ensure this... must do it correclty 
+		// NB: TextureDLM ensure that point (MaxX,MaxY) of texture is black.
 		DLMUScale= 0;
 		DLMVScale= 0;
 		DLMUBias= 1;
@@ -518,6 +518,38 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 	nlassert(iDstCluster == _Clusters.size());
 
 
+	// PreProcess Patch TileColors.
+	//============
+	// Verify that a CTileColor is nothing more than a 565 color.
+	nlassert(sizeof(CTileColor)==sizeof(uint16));
+#ifndef NL_DLM_TILE_RES
+
+	// retrieve patch tileColor pointer.
+	nlassert(_Patch->TileColors.size()>0);
+	CTileColor	*tileColor= &_Patch->TileColors[0];
+
+	// skip 1 tiles colors per column and per row
+	uint		wTileColor= _Patch->getOrderS()+1;
+	CTileColor	*tcOrigin= tileColor;
+	// alloc _LowResTileColors at same resolution than lightmap
+	_LowResTileColors.resize(Width*Height);
+	uint16	*dstLRtc= &_LowResTileColors[0];
+
+	// For all lines of dst.
+	for(y=0;y<Height;y++)
+	{
+		// tileColor start of line.
+		tileColor= tcOrigin + y*2* wTileColor;
+		sint	npix= Width;
+		// for all pixels at corner of tessBlock.
+		for(;npix>0; npix--, tileColor+=2, dstLRtc++)
+		{
+			*dstLRtc= tileColor->Color565;
+		}
+
+	}
+#endif
+
 	// fill texture with Black
 	//============
 	clearLighting();
@@ -707,14 +739,31 @@ void			CPatchDLMContext::compileLighting()
 	// If srcTexture is full black, and if dst texture is already full black too, don't need to update dst texture
 	if(! (_IsSrcTextureFullBlack && _IsDstTextureFullBlack) )
 	{
-		// If the srcTexture is not full black (ie some pointLight influence touch it), 
-		if(!_IsSrcTextureFullBlack)
-			// then must modulate with patch userColor
-			modulateSrcWithTileColor();
-
-		// Just Copy into the texture (if lightMap allocated!!)
+		// if lightMap allocated
 		if(_LightMap.size()>0 && _DLMTexture)
-			_DLMTexture->fillRect(TextPosX, TextPosY, Width, Height, &_LightMap[0]);
+		{
+			// If the srcTexture is full black (ie no pointLight influence touch it), 
+			if(_IsSrcTextureFullBlack)
+			{
+				// reset the texture to full black.
+				_DLMTexture->fillRect(TextPosX, TextPosY, Width, Height, 0);
+			}
+			// else the srcTexture is not full black (ie some pointLight influence touch it), 
+			else
+			{
+				nlassert(_Patch->TileColors.size()>=0);
+			#ifdef NL_DLM_TILE_RES
+				// retrieve userColor pointer.
+				uint16	*tileColor= (uint16*)(&_Patch->TileColors[0]);
+			#else
+				uint16	*tileColor= (uint16*)(&_LowResTileColors[0]);
+			#endif
+
+				// modulate and fill dest.
+				_DLMTexture->modulateAndfillRect(TextPosX, TextPosY, Width, Height, &_LightMap[0], tileColor);
+			}
+		}
+
 
 		// copy full black state
 		_IsDstTextureFullBlack= _IsSrcTextureFullBlack;
@@ -729,63 +778,6 @@ uint			CPatchDLMContext::getMemorySize() const
 		_Vertices.size() * sizeof(CVertex) +
 		_LightMap.size() * sizeof(CRGBA) +
 		_Clusters.size() * sizeof(CCluster);
-}
-
-
-// ***************************************************************************
-void			CPatchDLMContext::modulateSrcWithTileColor()
-{
-	if(_Patch->TileColors.size()==0)
-		return;
-	if(_LightMap.size()==0)
-		return;
-
-	// retrieve userColor pointer.
-	CTileColor	*tileColor= &_Patch->TileColors[0];
-	CRGBA		*dst= &_LightMap[0];
-
-#ifdef NL_DLM_TILE_RES
-	// there should be same size for DLM lightmap and tileColors.
-	nlassert(Width*Height == _Patch->TileColors.size());
-	sint	npix= Width*Height;
-	// for all pixels at corner of tiles.
-	for(;npix>0; npix--, tileColor++, dst++)
-	{
-		uint16	tc= tileColor->Color565;
-		// modulate R.
-		dst->R= ( (tc>>11) * dst->R)>>5;
-		// modulate G.
-		dst->G= (((tc>>5)&63) * dst->G)>>6;
-		// modulate B.
-		dst->B= ( (tc&31) * dst->B)>>5;
-	}
-
-#else
-	// skip 1 tiles colors per column and per row
-	uint		y;
-	uint		wTileColor= _Patch->getOrderS()+1;
-	CTileColor	*tcOrigin= tileColor;
-
-	// For all lines of dst.
-	for(y=0;y<Height;y++)
-	{
-		// tileColor start of line.
-		tileColor= tcOrigin + y*2* wTileColor;
-		sint	npix= Width;
-		// for all pixels at corner of tessBlock.
-		for(;npix>0; npix--, tileColor+=2, dst++)
-		{
-			uint16	tc= tileColor->Color565;
-			// modulate R.
-			dst->R= ( (tc>>11) * dst->R)>>5;
-			// modulate G.
-			dst->G= (((tc>>5)&63) * dst->G)>>6;
-			// modulate B.
-			dst->B= ( (tc&31) * dst->B)>>5;
-		}
-
-	}
-#endif
 }
 
 

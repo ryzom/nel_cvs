@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="memory"
+	ProjectGUID="{B169656A-F0EE-4153-9D49-778228E26CF9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="georges"
+	ProjectGUID="{A60D18CE-6F89-44B4-8670-B03857A940C9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

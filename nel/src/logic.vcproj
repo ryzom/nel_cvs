@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="logic"
+	ProjectGUID="{354C8DBA-F8A2-4AE5-97BD-1666A81EE9F6}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="ligo"
+	ProjectGUID="{B9AC1D57-B03F-4F6F-85CD-0362803BEDE9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>

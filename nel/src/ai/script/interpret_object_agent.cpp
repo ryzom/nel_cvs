@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.21 2001/01/23 09:15:49 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.22 2001/01/24 09:27:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,6 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 
-		_MsgIndirectTable = NULL;
 		_NbScriptedComponents = 0;
 	}
 
@@ -58,7 +57,6 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 
-		_MsgIndirectTable = NULL;
 		_NbScriptedComponents = 0;
 	}
 	
@@ -71,7 +69,6 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 
-		_MsgIndirectTable = NULL;
 		_NbScriptedComponents = 0;
 	}
 	
@@ -84,7 +81,6 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 
-		_MsgIndirectTable = NULL;
 		_NbScriptedComponents = 0;
 	}
 
@@ -97,7 +93,6 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 
-		_MsgIndirectTable = NULL;
 		_NbScriptedComponents = 0;
 	}
 
@@ -140,16 +135,10 @@ namespace NLAISCRIPT
 
 	void CAgentClass::clearIndirectMsgTable()
 	{
-		if ( _MsgIndirectTable != NULL )
-		{
-			for ( int i = 0; i < (int) _Methode.size(); i++ )
-				if ( _MsgIndirectTable[ i ] != NULL )
-					delete[] _MsgIndirectTable[ i ];
-
-			delete[] _MsgIndirectTable;
-
-			_MsgIndirectTable = NULL;
-		}
+		for (int i = 0; i < (int) _MsgIndirectTable.size(); i++ )
+			if ( _MsgIndirectTable[i] != NULL )
+				delete[] _MsgIndirectTable[i];
+		_MsgIndirectTable.clear();
 	}
 	
 	bool CAgentClass::isMessageFunc(const CParam &param) const 
@@ -179,7 +168,7 @@ namespace NLAISCRIPT
 #endif
 		clearIndirectMsgTable();
 
-		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
+//		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
 
 		/// Counts the number of scripted components
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
@@ -197,15 +186,15 @@ namespace NLAISCRIPT
 			CMethodeName &method = getBrancheCode( (int) i );
 			if ( isMessageFunc( method.getParam() ) )
 			{
-				_MsgIndirectTable[i] = new sint32[ _NbScriptedComponents ];
+				_MsgIndirectTable.push_back( new sint32[ _NbScriptedComponents ] );
 				for ( child_index = 0; child_index < _NbScriptedComponents; child_index++ )
 					_MsgIndirectTable[i][child_index] = -1;
 			}
 			else
-				_MsgIndirectTable[i] = NULL;
+				_MsgIndirectTable.push_back( NULL );
 		}
 		
-		_NbScriptedComponents = 0;
+		sint32 index_component = 0;
 			
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
@@ -231,12 +220,30 @@ namespace NLAISCRIPT
 						sint32 father_index = findMethod( method.getName(), method.getParam() );
 						if ( father_index != -1 )
 						{
-							// The father processes this message.
-							_MsgIndirectTable[ father_index ][ _NbScriptedComponents ] = child_index;
+							// The father processes this message. Puts the index for the child in the table.
+							_MsgIndirectTable[ father_index ][ index_component ] = child_index;
+						}
+						else
+						{
+							// Ajoute la méthode chez le père
+							father_index = addBrancheCode( method.getName(), method.getParam() );
+							_Methode[ father_index ]->setCode((IOpCode *)NULL);
+							_Methode[ father_index ]->setTypeOfMethode( new NLAISCRIPT::COperandVoid() );
+
+						
+							// Créée le tableau
+							if ( father_index >= (int) _MsgIndirectTable.size() )
+							{
+								_MsgIndirectTable.push_back( new sint32[ _NbScriptedComponents ] );
+								sint32 x;
+								for ( x =0; x < _NbScriptedComponents; x++) 
+									_MsgIndirectTable[ father_index ][x] = -1;
+							}
+							_MsgIndirectTable[ father_index ] [ index_component ] = child_index;
 						}
 					}
 				}
-				_NbScriptedComponents++;
+				index_component++;
 			}
 		}
 	}
@@ -452,7 +459,8 @@ namespace NLAISCRIPT
 
 	CMethodeName &CAgentClass::getBrancheCode(sint32 i) const
 	{
-		return 	*_Methode[i];
+		CMethodeName *a = _Methode[i];
+		return 	*a;
 	}
 
 	sint32 CAgentClass::getBrancheCodeSize() const
@@ -489,17 +497,16 @@ namespace NLAISCRIPT
 		CMethodeName *m = new CMethodeName(name);
 		if(i >= 0) 
 		{			
-			CMethodeName *oldM = _Methode[i];
+			CMethodeName *oldM = _Methode[ i ];
 			oldM->release();
 			_Methode[i] = m;
-			_Methode[i]->setParam(param) ;
+			_Methode[i]->setParam( param ) ;
 			_lastRef = i;
 		}
 		else
 		{
-
-			_Methode.push_back(m);
-			_Methode.back()->setParam(param);
+			_Methode.push_back( m );
+			_Methode.back()->setParam( param );
 			_lastRef = _Methode.size() - 1;
 		}
 		return _lastRef;
@@ -507,6 +514,13 @@ namespace NLAISCRIPT
 
 	NLAIAGENT::tQueue CAgentClass::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
+
+#ifdef NL_DEBUG
+		if ( className != NULL )
+			const char *dbg_class_name = className->getString();
+		const char *dbg_method_name = methodName->getString();
+#endif
+
 		NLAIAGENT::tQueue q;
 		const IClassInterpret *classType = this;
 		NLAIAGENT::CIdMethod k;
@@ -525,6 +539,7 @@ namespace NLAISCRIPT
 
 		if( classType != NULL )
 		{		
+
 			for(sint32 i = 0; i < getMethodIndexSize() - getBaseMethodCount(); i ++)
 			{
 				CMethodeName &m = classType->getBrancheCode(i);
@@ -535,10 +550,12 @@ namespace NLAISCRIPT
 					k.Method = &m;					
 					IOpType *t = (IOpType *)m.getTypeOfMethode();
 					t->incRef();
+
 					if(k.ReturnType != NULL)
 					{
 						k.ReturnType->release();
 					}
+
 					k.ReturnType = new CObjectUnknown(t);
 					if(k.Weight >= 0.0)
 					{

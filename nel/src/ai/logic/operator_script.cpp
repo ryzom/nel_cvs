@@ -346,6 +346,7 @@ namespace NLAIAGENT
 	// Called by the goal when canceled: removes all childs and unactivates the operator.
 	void COperatorScript::cancel()
 	{
+		_CurrentGoal = NULL;
 		CActorScript::cancel();
 	}
 
@@ -360,11 +361,15 @@ namespace NLAIAGENT
 		double pri = 1.0;
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
 		{
-			CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
-			CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
+			static CComponentHandle var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i],(IAgent *)getParent(), true );
+			static CComponentHandle set_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i],(IAgent *)getParent(), true );
+			static CComponentHandle this_var_handle( *(const IVarName *)( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i], this, true );
 
 			NLAIFUZZY::IFuzzySet *set = (NLAIFUZZY::IFuzzySet *) set_handle.getValue();
 			DigitalType *var = (DigitalType *) var_handle.getValue();
+
+			if ( var = NULL )
+				var = (DigitalType *) this_var_handle.getValue();
 
 			// Min
 			if ( set != NULL && var != NULL )
@@ -590,6 +595,14 @@ namespace NLAIAGENT
 				r.Result = new NLAIAGENT::DigitalType( priority() );
 				return r;
 
+			case fid_setPriority:
+				{
+					_Priority  = ((NLAIAGENT::DigitalType *)((NLAIAGENT::IBaseGroupType *) params)->get())->getValue();
+					r.ResultState =  NLAIAGENT::processIdle;
+					r.Result = NULL;
+					return r;
+				}
+
 			case fid_background:
 				_Exclusive = false;
 				r.ResultState =  NLAIAGENT::processIdle;
@@ -650,6 +663,12 @@ namespace NLAIAGENT
 				r.Result = new NLAIAGENT::DigitalType( priority() );
 				return r;
 
+			case fid_setPriority:
+				_Priority  = ((NLAIAGENT::DigitalType *)((NLAIAGENT::IBaseGroupType *) params)->get())->getValue();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+
 			case fid_background:
 				_Exclusive = false;
 				r.ResultState =  NLAIAGENT::processIdle;
@@ -685,6 +704,7 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName ispaused_name("IsPaused");
 		static NLAIAGENT::CStringVarName isactivable_name("IsActivable");
 		static NLAIAGENT::CStringVarName priority_name("GetPriority");
+		static NLAIAGENT::CStringVarName set_priority_name("SetPriority");
 		static NLAIAGENT::CStringVarName exclusive_name("SetExclusive");
 		static NLAIAGENT::CStringVarName background_name("SetBackground");
 
@@ -718,6 +738,12 @@ namespace NLAIAGENT
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_getPriority , 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == set_priority_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIAGENT::DigitalType::IdDigitalType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_setPriority , 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == exclusive_name )

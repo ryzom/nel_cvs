@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.27 2002/02/20 18:05:11 lecroart Exp $
+ * $Id: operator_script.h,v 1.28 2002/06/06 08:45:53 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ namespace NLAIAGENT
 				fid_modemaintain,
 				fid_isPaused,
 				fid_getPriority,
+				fid_setPriority,
 				fid_isActivable,
 				fid_background,
 				fid_exclusive,

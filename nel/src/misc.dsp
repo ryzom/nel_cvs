@@ -544,6 +544,14 @@ SOURCE=.\misc\stl_block_list.cpp
 
 SOURCE=..\include\nel\misc\stl_block_list.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\tds.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\tds.h
+# End Source File
 # End Group
 # Begin Group "Makefile"
 

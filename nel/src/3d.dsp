@@ -1069,6 +1069,38 @@ SOURCE=.\3d\cube_map_builder.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\fasthls_modifier.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\fasthls_modifier.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_color_texture.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_color_texture.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_texture_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_texture_bank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_texture_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hls_texture_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_blank.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.19 2002/05/23 14:50:11 lecroart Exp $
+ * $Id: mem_stream.h,v 1.20 2002/05/27 17:36:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,7 +223,7 @@ public:
 			// In->Out: We want to write (serialize out) what we have read (serialized in)
 			resetPtrTable();
 			setInOut( false );
-	//		_BufPos = _Buffer.end();
+			_BufPos = _Buffer.getPtr()+_Buffer.size();
 		}
 		else
 		{

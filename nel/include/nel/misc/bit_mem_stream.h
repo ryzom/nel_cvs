@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.12 2002/05/23 10:02:42 lecroart Exp $
+ * $Id: bit_mem_stream.h,v 1.13 2002/05/27 17:36:38 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,9 +78,18 @@ public:
 	/// Transforms the message from input to output or from output to input
 	virtual void	invert()
 	{
-		_BufPos++;
-		CMemStream::invert();
-		_FreeBits = 8;
+		if (isReading())
+		{
+			CMemStream::invert();
+			_BufPos--;
+			_FreeBits = 8;
+		}
+		else
+		{
+			_BufPos++;
+			CMemStream::invert();
+			_FreeBits = 8;
+		}
 	}
 
 	/// Clears the message

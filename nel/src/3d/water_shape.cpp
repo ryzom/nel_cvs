@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.5 2001/11/14 15:40:17 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.6 2001/11/16 16:48:08 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,36 +73,6 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  END\
 					  ";
 
-/*
-const char *WaterVpCode = "!!VP1.0\n\
-					  ADD R1, c[7], -v[0];\n\
-					  DP3 R2, R1, R1;\n\
-					  RSQ R2, R2.x;\n\
-					  MUL R3, R2, c[6].x;\n\
-					  MIN R3, c[4].x, R3;\n\
-					  MUL R0,   R3, v[8];\n\
-					  MOV R0.z,  c[4].x;\n\
-					  DP3 R3.x, R0, R0;\n\
-					  RSQ R3.x,  R3.x;\n\
-					  MUL R0,  R0, R3.x;\n\
-					  DP4 R4, c[5], R1;				#compute alpha attenuation along z			\n\					  
-					  DP4 o[HPOS].x, c[0], v[0];\n\
-					  DP4 o[HPOS].y, c[1], v[0];\n\
-					  DP4 o[HPOS].z, c[2], v[0];\n\
-					  DP4 o[HPOS].w, c[3], v[0];\n\
-					  MUL R3, v[0], c[12];\n\
-					  ADD o[TEX0].xy, R3, c[11];\n\
-					  MUL R3, v[0], c[14];\n\
-					  ADD o[TEX1].xy, R3, c[13];\n\
-					  MUL R1, R1, R2.x;\n\
-					  DP3 R2.x, R1, R0;\n\
-					  MUL R0, R0, R2.x;\n\
-					  ADD R2, R0, R0;\n\
-					  ADD R0, R2, -R1;\n\
-					  MAD o[TEX2].xy, R0, c[8], c[8];\n\
-					  END\
-					  ";
-*/
 
 const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  ADD R1, c[7], -v[0];			#r1 = eye - vertex							\n\
@@ -230,7 +200,7 @@ std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
 /*
  * Constructor
  */
-CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(1)
+CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3)
 {
 	_DefaultPos.setValue(NLMISC::CVector::Null);
 	_DefaultScale.setValue(NLMISC::CVector(1, 1, 1));

@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.3 2002/01/04 18:27:30 corvazier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.4 2002/03/14 18:23:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,14 +304,14 @@ void CRTWorld::testCell (CRGBAF &retValue, SGridCell &cell, CVector &vLightPos, 
 			else
 			{
 				CVector gradU, gradV;
-				t.computeGradient(	cell.pF->Corner[0].Uvs[0].U,
-									cell.pF->Corner[1].Uvs[0].U,
-									cell.pF->Corner[2].Uvs[0].U, gradU );
-				t.computeGradient(	cell.pF->Corner[0].Uvs[0].V,
-									cell.pF->Corner[1].Uvs[0].V,
-									cell.pF->Corner[2].Uvs[0].V, gradV );
-				float u = cell.pF->Corner[0].Uvs[0].U+gradU*(hit-t.V0);
-				float v = cell.pF->Corner[0].Uvs[0].V+gradV*(hit-t.V0);
+				t.computeGradient(	cell.pF->Corner[0].Uvws[0].U,
+									cell.pF->Corner[1].Uvws[0].U,
+									cell.pF->Corner[2].Uvws[0].U, gradU );
+				t.computeGradient(	cell.pF->Corner[0].Uvws[0].V,
+									cell.pF->Corner[1].Uvws[0].V,
+									cell.pF->Corner[2].Uvws[0].V, gradV );
+				float u = cell.pF->Corner[0].Uvws[0].U+gradU*(hit-t.V0);
+				float v = cell.pF->Corner[0].Uvws[0].V+gradV*(hit-t.V0);
 				u = fmodf( u, 1.0f ); if( u < 0.0f ) u += 1.0f;
 				v = fmodf( v, 1.0f ); if( v < 0.0f ) v += 1.0f;
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.35 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.36 2002/03/14 18:22:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,12 +329,12 @@ struct SGradient
 	// -----------------------------------------------------------------------------------------------
 	void init( CMesh::CFace *pF, vector<CVector>& vVertices, CVector &n1, CVector &n2, CVector &n3 )
 	{
-		double	u1 = pF->Corner[0].Uvs[1].U,
-				v1 = pF->Corner[0].Uvs[1].V,
-				u2 = pF->Corner[1].Uvs[1].U,
-				v2 = pF->Corner[1].Uvs[1].V,
-				u3 = pF->Corner[2].Uvs[1].U,
-				v3 = pF->Corner[2].Uvs[1].V;
+		double	u1 = pF->Corner[0].Uvws[1].U,
+				v1 = pF->Corner[0].Uvws[1].V,
+				u2 = pF->Corner[1].Uvws[1].U,
+				v2 = pF->Corner[1].Uvws[1].V,
+				u3 = pF->Corner[2].Uvws[1].U,
+				v3 = pF->Corner[2].Uvws[1].V;
 		CVector p1 = vVertices[pF->Corner[0].Vertex],
 				p2 = vVertices[pF->Corner[1].Vertex],
 				p3 = vVertices[pF->Corner[2].Vertex];
@@ -450,9 +450,9 @@ struct SGradient
 	{
 		double Uout, Vout;
 		double Utmp, Vtmp;
-		double u1 = pF->Corner[0].Uvs[1].U, v1 = pF->Corner[0].Uvs[1].V;
-		double u2 = pF->Corner[1].Uvs[1].U, v2 = pF->Corner[1].Uvs[1].V;
-		double u3 = pF->Corner[2].Uvs[1].U, v3 = pF->Corner[2].Uvs[1].V;
+		double u1 = pF->Corner[0].Uvws[1].U, v1 = pF->Corner[0].Uvws[1].V;
+		double u2 = pF->Corner[1].Uvws[1].U, v2 = pF->Corner[1].Uvws[1].V;
+		double u3 = pF->Corner[2].Uvws[1].U, v3 = pF->Corner[2].Uvws[1].V;
 		double rDist = 10000000.0f, rDistTmp, factor;
 		// Get the nearest point from (Uin,Vin) to the face pF
 		rDistTmp = sqrt( (Uin-u1)*(Uin-u1) + (Vin-v1)*(Vin-v1) );
@@ -690,8 +690,8 @@ bool FaceContinuous( CMesh::CFace *pF1, CMesh::CFace *pF2, bool bTestUV = true, 
 	if( bTestUV )
 	for( i = 0; i < 2; ++i )
 	{
-		if((fabs( pF1->Corner[F1c[i]].Uvs[1].U - pF2->Corner[F2c[i]].Uvs[1].U) > 0.001) ||
-		   (fabs( pF1->Corner[F1c[i]].Uvs[1].V - pF2->Corner[F2c[i]].Uvs[1].V) > 0.001) )
+		if((fabs( pF1->Corner[F1c[i]].Uvws[1].U - pF2->Corner[F2c[i]].Uvws[1].U) > 0.001) ||
+		   (fabs( pF1->Corner[F1c[i]].Uvws[1].V - pF2->Corner[F2c[i]].Uvws[1].V) > 0.001) )
 		   return false;
 	}
 	return true;
@@ -805,15 +805,15 @@ void SortFaceByTextureSurface( int offset, int nNbFace, vector<CMesh::CFace*> &A
 		// Texture surface of the i face = .5*|(u1-u0)*(v2-v0)-(v1-v0)*(u2-u0)|
 		// in fact this is lightmap mapping surface
 		double surfacei = 0.5*fabs(
-		(AllFaces[i]->Corner[1].Uvs[1].U - AllFaces[i]->Corner[0].Uvs[1].U)*
-		(AllFaces[i]->Corner[2].Uvs[1].V - AllFaces[i]->Corner[0].Uvs[1].V)-
-		(AllFaces[i]->Corner[1].Uvs[1].V - AllFaces[i]->Corner[0].Uvs[1].V)*
-		(AllFaces[i]->Corner[2].Uvs[1].U - AllFaces[i]->Corner[0].Uvs[1].U) );
+		(AllFaces[i]->Corner[1].Uvws[1].U - AllFaces[i]->Corner[0].Uvws[1].U)*
+		(AllFaces[i]->Corner[2].Uvws[1].V - AllFaces[i]->Corner[0].Uvws[1].V)-
+		(AllFaces[i]->Corner[1].Uvws[1].V - AllFaces[i]->Corner[0].Uvws[1].V)*
+		(AllFaces[i]->Corner[2].Uvws[1].U - AllFaces[i]->Corner[0].Uvws[1].U) );
 		double surfacej = 0.5*fabs(
-		(AllFaces[j]->Corner[1].Uvs[1].U - AllFaces[j]->Corner[0].Uvs[1].U)*
-		(AllFaces[j]->Corner[2].Uvs[1].V - AllFaces[j]->Corner[0].Uvs[1].V)-
-		(AllFaces[j]->Corner[1].Uvs[1].V - AllFaces[j]->Corner[0].Uvs[1].V)*
-		(AllFaces[j]->Corner[2].Uvs[1].U - AllFaces[j]->Corner[0].Uvs[1].U) );
+		(AllFaces[j]->Corner[1].Uvws[1].U - AllFaces[j]->Corner[0].Uvws[1].U)*
+		(AllFaces[j]->Corner[2].Uvws[1].V - AllFaces[j]->Corner[0].Uvws[1].V)-
+		(AllFaces[j]->Corner[1].Uvws[1].V - AllFaces[j]->Corner[0].Uvws[1].V)*
+		(AllFaces[j]->Corner[2].Uvws[1].U - AllFaces[j]->Corner[0].Uvws[1].U) );
 		if( surfacei < surfacej )
 		{
 			CMesh::CFace *pFaceTemp = AllFaces[i];
@@ -914,14 +914,14 @@ void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, float rRatio )
 	// This is equivalent to a base changement with annulation of the I vector
 	CMatrix invMat = QuantizationTbl[pos].inverted();
 	CVector newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[0].Vertex]);
-	pFace->Corner[0].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[0].Uvs[1].V = newPtinUVBasis.z / rRatio;
+	pFace->Corner[0].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[0].Uvws[1].V = newPtinUVBasis.z / rRatio;
 	newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[1].Vertex]);
-	pFace->Corner[1].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[1].Uvs[1].V = newPtinUVBasis.z / rRatio;
+	pFace->Corner[1].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[1].Uvws[1].V = newPtinUVBasis.z / rRatio;
 	newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[2].Vertex]);
-	pFace->Corner[2].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[2].Uvs[1].V = newPtinUVBasis.z / rRatio;	
+	pFace->Corner[2].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[2].Uvws[1].V = newPtinUVBasis.z / rRatio;	
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1009,8 +1009,8 @@ void MoveFaceUV1( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFace, double
 		CMesh::CFace *pF = (*ItFace);
 		for( j = 0; j < 3; ++j )
 		{
-			pF->Corner[j].Uvs[1].U += (float)rOffsU;
-			pF->Corner[j].Uvs[1].V += (float)rOffsV;
+			pF->Corner[j].Uvws[1].U += (float)rOffsU;
+			pF->Corner[j].Uvws[1].V += (float)rOffsV;
 		}
 		++ItFace;
 	}
@@ -1025,8 +1025,8 @@ void MultiplyFaceUV1( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFace, do
 		CMesh::CFace *pF = (*ItFace);
 		for( j = 0; j < 3; ++j )
 		{
-			pF->Corner[j].Uvs[1].U *= (float)rFactor;
-			pF->Corner[j].Uvs[1].V *= (float)rFactor;
+			pF->Corner[j].Uvws[1].U *= (float)rFactor;
+			pF->Corner[j].Uvws[1].V *= (float)rFactor;
 		}
 		++ItFace;
 	}
@@ -1047,9 +1047,9 @@ bool PutFaceUV1InLumelCoord( double rRatioLightMap, vector<CVector> &Vertices,
 		p2 = Vertices[pF->Corner[1].Vertex];
 		p3 = Vertices[pF->Corner[2].Vertex];
 		SpaceSurf += calculateTriangleSurface( p1, p2, p3 );
-		p1.x = pF->Corner[0].Uvs[1].U; p1.y = pF->Corner[0].Uvs[1].V; p1.z = 0.0f;
-		p2.x = pF->Corner[1].Uvs[1].U; p2.y = pF->Corner[1].Uvs[1].V; p2.z = 0.0f;
-		p3.x = pF->Corner[2].Uvs[1].U; p3.y = pF->Corner[2].Uvs[1].V; p3.z = 0.0f;
+		p1.x = pF->Corner[0].Uvws[1].U; p1.y = pF->Corner[0].Uvws[1].V; p1.z = 0.0f;
+		p2.x = pF->Corner[1].Uvws[1].U; p2.y = pF->Corner[1].Uvws[1].V; p2.z = 0.0f;
+		p3.x = pF->Corner[2].Uvws[1].U; p3.y = pF->Corner[2].Uvws[1].V; p3.z = 0.0f;
 		TextureSurf += calculateTriangleSurface( p1, p2, p3 );
 		// Next face
 		++ItParseI;
@@ -1064,8 +1064,8 @@ bool PutFaceUV1InLumelCoord( double rRatioLightMap, vector<CVector> &Vertices,
 		CMesh::CFace* pF = (*ItParseI);
 		for( j = 0; j < 3; ++j ) // Express the UVs in lumel for each corner
 		{
-			pF->Corner[j].Uvs[1].U *= (float)LMTextRatio;
-			pF->Corner[j].Uvs[1].V *= (float)LMTextRatio;
+			pF->Corner[j].Uvws[1].U *= (float)LMTextRatio;
+			pF->Corner[j].Uvws[1].V *= (float)LMTextRatio;
 		}
 		++ItParseI;
 	}
@@ -1082,8 +1082,8 @@ void PutFaceUV1InTextureCoord( sint32 TextureSizeX, sint32 TextureSizeY,
 		for( j = 0; j < 3; ++j )
 		{
 			CMesh::CFace *pF = *ItFace;
-			pF->Corner[j].Uvs[1].U /= (float)TextureSizeX;
-			pF->Corner[j].Uvs[1].V /= (float)TextureSizeY;
+			pF->Corner[j].Uvws[1].U /= (float)TextureSizeX;
+			pF->Corner[j].Uvws[1].V /= (float)TextureSizeY;
 		}
 		// Next face
 		++ItFace;
@@ -1097,24 +1097,24 @@ bool IsFaceCoverFace( CMesh::CFace *pF1, CMesh::CFace *pF2 )
 
 	for( j = 0; j < 3; ++j )
 	for( i = 0; i < 3; ++i )
-		if( segmentIntersection(pF1->Corner[i].Uvs[1].U, pF1->Corner[i].Uvs[1].V, 
-								pF1->Corner[(i+1)%3].Uvs[1].U, pF1->Corner[(i+1)%3].Uvs[1].V, 
-								pF2->Corner[j].Uvs[1].U, pF2->Corner[j].Uvs[1].V, 
-								pF2->Corner[(j+1)%3].Uvs[1].U, pF2->Corner[(j+1)%3].Uvs[1].V ) )
+		if( segmentIntersection(pF1->Corner[i].Uvws[1].U, pF1->Corner[i].Uvws[1].V, 
+								pF1->Corner[(i+1)%3].Uvws[1].U, pF1->Corner[(i+1)%3].Uvws[1].V, 
+								pF2->Corner[j].Uvws[1].U, pF2->Corner[j].Uvws[1].V, 
+								pF2->Corner[(j+1)%3].Uvws[1].U, pF2->Corner[(j+1)%3].Uvws[1].V ) )
 			return true;
 
 	for( i = 0; i < 3; ++i )
-		if( isInTriangle(	pF1->Corner[i].Uvs[1].U, pF1->Corner[i].Uvs[1].V, 
-							pF2->Corner[0].Uvs[1].U, pF2->Corner[0].Uvs[1].V, 
-							pF2->Corner[1].Uvs[1].U, pF2->Corner[1].Uvs[1].V, 
-							pF2->Corner[2].Uvs[1].U, pF2->Corner[2].Uvs[1].V ) )
+		if( isInTriangle(	pF1->Corner[i].Uvws[1].U, pF1->Corner[i].Uvws[1].V, 
+							pF2->Corner[0].Uvws[1].U, pF2->Corner[0].Uvws[1].V, 
+							pF2->Corner[1].Uvws[1].U, pF2->Corner[1].Uvws[1].V, 
+							pF2->Corner[2].Uvws[1].U, pF2->Corner[2].Uvws[1].V ) )
 			return true;
 
 	for( i = 0; i < 3; ++i )
-		if( isInTriangle(	pF2->Corner[i].Uvs[1].U, pF2->Corner[i].Uvs[1].V, 
-							pF1->Corner[0].Uvs[1].U, pF1->Corner[0].Uvs[1].V, 
-							pF1->Corner[1].Uvs[1].U, pF1->Corner[1].Uvs[1].V, 
-							pF1->Corner[2].Uvs[1].U, pF1->Corner[2].Uvs[1].V ) )
+		if( isInTriangle(	pF2->Corner[i].Uvws[1].U, pF2->Corner[i].Uvws[1].V, 
+							pF1->Corner[0].Uvws[1].U, pF1->Corner[0].Uvws[1].V, 
+							pF1->Corner[1].Uvws[1].U, pF1->Corner[1].Uvws[1].V, 
+							pF1->Corner[2].Uvws[1].U, pF1->Corner[2].Uvws[1].V ) )
 			return true;
 
 	return false;
@@ -1476,10 +1476,10 @@ void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPla
 		// Select bounding square of the triangle
 		for( j = 0; j < 3; ++j )
 		{
-			if( rMinU > pF->Corner[j].Uvs[1].U ) rMinU = pF->Corner[j].Uvs[1].U;
-			if( rMaxU < pF->Corner[j].Uvs[1].U ) rMaxU = pF->Corner[j].Uvs[1].U;
-			if( rMinV > pF->Corner[j].Uvs[1].V ) rMinV = pF->Corner[j].Uvs[1].V;
-			if( rMaxV < pF->Corner[j].Uvs[1].V ) rMaxV = pF->Corner[j].Uvs[1].V;
+			if( rMinU > pF->Corner[j].Uvws[1].U ) rMinU = pF->Corner[j].Uvws[1].U;
+			if( rMaxU < pF->Corner[j].Uvws[1].U ) rMaxU = pF->Corner[j].Uvws[1].U;
+			if( rMinV > pF->Corner[j].Uvws[1].V ) rMinV = pF->Corner[j].Uvws[1].V;
+			if( rMaxV < pF->Corner[j].Uvws[1].V ) rMaxV = pF->Corner[j].Uvws[1].V;
 		}
 		nPosMaxU = ((sint32)floor( rMaxU + 0.5 ));
 		nPosMaxV = ((sint32)floor( rMaxV + 0.5 ));
@@ -1498,9 +1498,9 @@ void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPla
 		if( Plane.msk[j-Plane.x + (k-Plane.y)*Plane.w] == 1 )
 		{
 			if( isInTriangleOrEdge( j+0.5, k+0.5,
-									pF->Corner[0].Uvs[1].U, pF->Corner[0].Uvs[1].V,
-									pF->Corner[1].Uvs[1].U, pF->Corner[1].Uvs[1].V,
-									pF->Corner[2].Uvs[1].U, pF->Corner[2].Uvs[1].V ) )
+									pF->Corner[0].Uvws[1].U, pF->Corner[0].Uvws[1].V,
+									pF->Corner[1].Uvws[1].U, pF->Corner[1].Uvws[1].V,
+									pF->Corner[2].Uvws[1].U, pF->Corner[2].Uvws[1].V ) )
 			{
 				CVector p = g.getInterpolatedVertex( j+0.5, k+0.5);
 				CVector n = g.getInterpolatedNormal( j+0.5, k+0.5);
@@ -1552,10 +1552,10 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 			// Select bounding square of the triangle
 			for( j = 0; j < 3; ++j )
 			{
-				if( rMinU > pF1->Corner[j].Uvs[1].U ) rMinU = pF1->Corner[j].Uvs[1].U;
-				if( rMaxU < pF1->Corner[j].Uvs[1].U ) rMaxU = pF1->Corner[j].Uvs[1].U;
-				if( rMinV > pF1->Corner[j].Uvs[1].V ) rMinV = pF1->Corner[j].Uvs[1].V;
-				if( rMaxV < pF1->Corner[j].Uvs[1].V ) rMaxV = pF1->Corner[j].Uvs[1].V;
+				if( rMinU > pF1->Corner[j].Uvws[1].U ) rMinU = pF1->Corner[j].Uvws[1].U;
+				if( rMaxU < pF1->Corner[j].Uvws[1].U ) rMaxU = pF1->Corner[j].Uvws[1].U;
+				if( rMinV > pF1->Corner[j].Uvws[1].V ) rMinV = pF1->Corner[j].Uvws[1].V;
+				if( rMaxV < pF1->Corner[j].Uvws[1].V ) rMaxV = pF1->Corner[j].Uvws[1].V;
 			}
 			nPosMaxU = ((sint32)floor( rMaxU + 0.5 ));
 			nPosMaxV = ((sint32)floor( rMaxV + 0.5 ));
@@ -1568,9 +1568,9 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 	
 			g.init( pF1, vVertices, n1, n2, n3 );
 
-			double	lumx1 = pF1->Corner[0].Uvs[1].U, lumy1 = pF1->Corner[0].Uvs[1].V, 
-					lumx2 = pF1->Corner[1].Uvs[1].U, lumy2 = pF1->Corner[1].Uvs[1].V, 
-					lumx3 = pF1->Corner[2].Uvs[1].U, lumy3 = pF1->Corner[2].Uvs[1].V;
+			double	lumx1 = pF1->Corner[0].Uvws[1].U, lumy1 = pF1->Corner[0].Uvws[1].V, 
+					lumx2 = pF1->Corner[1].Uvws[1].U, lumy2 = pF1->Corner[1].Uvws[1].V, 
+					lumx3 = pF1->Corner[2].Uvws[1].U, lumy3 = pF1->Corner[2].Uvws[1].V;
 
 			// Process all the exterior and try to link with other planes
 			for( k = nPosMinV; k < nPosMaxV; ++k )
@@ -1725,8 +1725,8 @@ bool isAllFaceMapped( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFaces )
 		CMesh::CFace *pF = *ItParseI;
 		for( j = 0; j < 3; ++j )
 		{
-			if( (fabsf(pF->Corner[j].Uvs[1].U) > 64.0) || 
-				(fabsf(pF->Corner[j].Uvs[1].V) > 64.0) )
+			if( (fabsf(pF->Corner[j].Uvws[1].U) > 64.0) || 
+				(fabsf(pF->Corner[j].Uvws[1].V) > 64.0) )
 				return false;
 		}
 		++ItParseI;
@@ -1737,9 +1737,9 @@ bool isAllFaceMapped( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFaces )
 	{
 		CMesh::CFace *pF = *ItParseI;
 		CVector p1, p2, p3;
-		p1.x = pF->Corner[0].Uvs[1].U; p1.y = pF->Corner[0].Uvs[1].V; p1.z = 0.0f;
-		p2.x = pF->Corner[1].Uvs[1].U; p2.y = pF->Corner[1].Uvs[1].V; p2.z = 0.0f;
-		p3.x = pF->Corner[2].Uvs[1].U; p3.y = pF->Corner[2].Uvs[1].V; p3.z = 0.0f;
+		p1.x = pF->Corner[0].Uvws[1].U; p1.y = pF->Corner[0].Uvws[1].V; p1.z = 0.0f;
+		p2.x = pF->Corner[1].Uvws[1].U; p2.y = pF->Corner[1].Uvws[1].V; p2.z = 0.0f;
+		p3.x = pF->Corner[2].Uvws[1].U; p3.y = pF->Corner[2].Uvws[1].V; p3.z = 0.0f;
 		TextureSurf += calculateTriangleSurface( p1, p2, p3 );
 		++ItParseI;
 	}

@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.2 2001/08/29 15:34:31 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.3 2002/03/14 18:23:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -444,9 +444,9 @@ bool SLMPlane::segmentIntersection(	double x1, double y1,
 // -----------------------------------------------------------------------------------------------
 void SLMPlane::createFromFace (CMesh::CFace *pF)
 {
-	double	lumx1 = pF->Corner[0].Uvs[1].U, lumy1 = pF->Corner[0].Uvs[1].V, 
-			lumx2 = pF->Corner[1].Uvs[1].U, lumy2 = pF->Corner[1].Uvs[1].V, 
-			lumx3 = pF->Corner[2].Uvs[1].U, lumy3 = pF->Corner[2].Uvs[1].V;
+	double	lumx1 = pF->Corner[0].Uvws[1].U, lumy1 = pF->Corner[0].Uvws[1].V, 
+			lumx2 = pF->Corner[1].Uvws[1].U, lumy2 = pF->Corner[1].Uvws[1].V, 
+			lumx3 = pF->Corner[2].Uvws[1].U, lumy3 = pF->Corner[2].Uvws[1].V;
 	double minx, miny;
 	double maxx, maxy;
 	sint32 j, k;
@@ -551,10 +551,10 @@ void SLMPlane::createFromFaceGroup (vector<CMesh::CFace*>::iterator ItFace, uint
 		pF = *ItParseI;
 		for( j = 0; j < 3; ++j )
 		{
-			if( rMinU > pF->Corner[j].Uvs[1].U ) rMinU = pF->Corner[j].Uvs[1].U;
-			if( rMaxU < pF->Corner[j].Uvs[1].U ) rMaxU = pF->Corner[j].Uvs[1].U;
-			if( rMinV > pF->Corner[j].Uvs[1].V ) rMinV = pF->Corner[j].Uvs[1].V;
-			if( rMaxV < pF->Corner[j].Uvs[1].V ) rMaxV = pF->Corner[j].Uvs[1].V;
+			if( rMinU > pF->Corner[j].Uvws[1].U ) rMinU = pF->Corner[j].Uvws[1].U;
+			if( rMaxU < pF->Corner[j].Uvws[1].U ) rMaxU = pF->Corner[j].Uvws[1].U;
+			if( rMinV > pF->Corner[j].Uvws[1].V ) rMinV = pF->Corner[j].Uvws[1].V;
+			if( rMaxV < pF->Corner[j].Uvws[1].V ) rMaxV = pF->Corner[j].Uvws[1].V;
 		}
 		faces[i] = pF;
 		++ItParseI;

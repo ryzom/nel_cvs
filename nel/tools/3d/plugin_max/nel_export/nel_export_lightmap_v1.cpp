@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_lightmap_v1.cpp,v 1.3 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: nel_export_lightmap_v1.cpp,v 1.4 2002/03/14 18:22:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,15 +233,15 @@ void SortFaceByTextureSurface( int offset, int nNbFace, vector<CMesh::CFace*> &A
 		// Texture surface of the i face = .5*|(u1-u0)*(v2-v0)-(v1-v0)*(u2-u0)|
 		// in fact this is lightmap mapping surface
 		double surfacei = 0.5*fabs(
-		(AllFaces[i]->Corner[1].Uvs[1].U - AllFaces[i]->Corner[0].Uvs[1].U)*
-		(AllFaces[i]->Corner[2].Uvs[1].V - AllFaces[i]->Corner[0].Uvs[1].V)-
-		(AllFaces[i]->Corner[1].Uvs[1].V - AllFaces[i]->Corner[0].Uvs[1].V)*
-		(AllFaces[i]->Corner[2].Uvs[1].U - AllFaces[i]->Corner[0].Uvs[1].U) );
+		(AllFaces[i]->Corner[1].Uvws[1].U - AllFaces[i]->Corner[0].Uvws[1].U)*
+		(AllFaces[i]->Corner[2].Uvws[1].V - AllFaces[i]->Corner[0].Uvws[1].V)-
+		(AllFaces[i]->Corner[1].Uvws[1].V - AllFaces[i]->Corner[0].Uvws[1].V)*
+		(AllFaces[i]->Corner[2].Uvws[1].U - AllFaces[i]->Corner[0].Uvws[1].U) );
 		double surfacej = 0.5*fabs(
-		(AllFaces[j]->Corner[1].Uvs[1].U - AllFaces[j]->Corner[0].Uvs[1].U)*
-		(AllFaces[j]->Corner[2].Uvs[1].V - AllFaces[j]->Corner[0].Uvs[1].V)-
-		(AllFaces[j]->Corner[1].Uvs[1].V - AllFaces[j]->Corner[0].Uvs[1].V)*
-		(AllFaces[j]->Corner[2].Uvs[1].U - AllFaces[j]->Corner[0].Uvs[1].U) );
+		(AllFaces[j]->Corner[1].Uvws[1].U - AllFaces[j]->Corner[0].Uvws[1].U)*
+		(AllFaces[j]->Corner[2].Uvws[1].V - AllFaces[j]->Corner[0].Uvws[1].V)-
+		(AllFaces[j]->Corner[1].Uvws[1].V - AllFaces[j]->Corner[0].Uvws[1].V)*
+		(AllFaces[j]->Corner[2].Uvws[1].U - AllFaces[j]->Corner[0].Uvws[1].U) );
 		if( surfacei < surfacej )
 		{
 			CMesh::CFace *pFaceTemp = AllFaces[i];
@@ -482,14 +482,14 @@ void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, double rRatio )
 	// This is equivalent to a base changement with annulation of the I vector
 	CMatrix invMat = QuantizationTbl[pos].inverted();
 	CVector newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[0].Vertex]);
-	pFace->Corner[0].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[0].Uvs[1].V = newPtinUVBasis.z / rRatio;
+	pFace->Corner[0].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[0].Uvws[1].V = newPtinUVBasis.z / rRatio;
 	newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[1].Vertex]);
-	pFace->Corner[1].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[1].Uvs[1].V = newPtinUVBasis.z / rRatio;
+	pFace->Corner[1].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[1].Uvws[1].V = newPtinUVBasis.z / rRatio;
 	newPtinUVBasis = invMat.mulPoint(Vertices[pFace->Corner[2].Vertex]);
-	pFace->Corner[2].Uvs[1].U = newPtinUVBasis.y / rRatio;
-	pFace->Corner[2].Uvs[1].V = newPtinUVBasis.z / rRatio;	
+	pFace->Corner[2].Uvws[1].U = newPtinUVBasis.y / rRatio;
+	pFace->Corner[2].Uvws[1].V = newPtinUVBasis.z / rRatio;	
 }
 
 CMatrix getObjectToWorldMatrix( CMesh::CMeshBuild *pMB )
@@ -859,9 +859,9 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 				SpaceDist += v.norm();
 				v = AllVertices[AllFaces[i]->Corner[0].Vertex] - AllVertices[AllFaces[i]->Corner[2].Vertex];
 				SpaceDist += v.norm();
-				TextureDist += getUVDist( AllFaces[i]->Corner[1].Uvs[1], AllFaces[i]->Corner[0].Uvs[1] );
-				TextureDist += getUVDist( AllFaces[i]->Corner[2].Uvs[1], AllFaces[i]->Corner[1].Uvs[1] );
-				TextureDist += getUVDist( AllFaces[i]->Corner[0].Uvs[1], AllFaces[i]->Corner[2].Uvs[1] );
+				TextureDist += getUVDist( AllFaces[i]->Corner[1].Uvws[1], AllFaces[i]->Corner[0].Uvws[1] );
+				TextureDist += getUVDist( AllFaces[i]->Corner[2].Uvws[1], AllFaces[i]->Corner[1].Uvws[1] );
+				TextureDist += getUVDist( AllFaces[i]->Corner[0].Uvws[1], AllFaces[i]->Corner[2].Uvws[1] );
 			}
 			double LMTextRatio = SpaceDist / TextureDist;
 			LMTextRatio = LMTextRatio / theExportSceneStruct.rLumelSize;
@@ -875,23 +875,23 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 				// MapFace( AllFaces[i], AllVertices, RATIOLIGHTMAP );
 				for( j = 0; j < 3; ++j ) // Express the UVs in lumel with a ratio
 				{	// For each corner
-					AllFaces[i]->Corner[j].Uvs[1].U *= LMTextRatio;
-					AllFaces[i]->Corner[j].Uvs[1].V *= LMTextRatio;
+					AllFaces[i]->Corner[j].Uvws[1].U *= LMTextRatio;
+					AllFaces[i]->Corner[j].Uvws[1].V *= LMTextRatio;
 				}
 				// Create the related piece
 				CreatePiece( Piece, nPieceSizeX, nPieceSizeY, nNewPosX, nNewPosY,
-							 AllFaces[i]->Corner[0].Uvs[1].U,	// lumx1
-							 AllFaces[i]->Corner[0].Uvs[1].V,	// lumy1
-							 AllFaces[i]->Corner[1].Uvs[1].U,	// lumx2
-							 AllFaces[i]->Corner[1].Uvs[1].V,	// lumy2
-							 AllFaces[i]->Corner[2].Uvs[1].U,	// lumx3
-							 AllFaces[i]->Corner[2].Uvs[1].V,	// lumy3
+							 AllFaces[i]->Corner[0].Uvws[1].U,	// lumx1
+							 AllFaces[i]->Corner[0].Uvws[1].V,	// lumy1
+							 AllFaces[i]->Corner[1].Uvws[1].U,	// lumx2
+							 AllFaces[i]->Corner[1].Uvws[1].V,	// lumy2
+							 AllFaces[i]->Corner[2].Uvws[1].U,	// lumx3
+							 AllFaces[i]->Corner[2].Uvws[1].V,	// lumy3
 							 (i%254)+1 ); // color
 				// Set the UV of the face in same basis as the piece (0->nPieceSize)
 				for( j = 0; j < 3; ++j )
 				{	// For each corner
-					AllFaces[i]->Corner[j].Uvs[1].U -= nNewPosX;
-					AllFaces[i]->Corner[j].Uvs[1].V -= nNewPosY;
+					AllFaces[i]->Corner[j].Uvws[1].U -= nNewPosX;
+					AllFaces[i]->Corner[j].Uvws[1].V -= nNewPosY;
 				}
 
 				while( true )
@@ -918,8 +918,8 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 						// We found a position for this piece, update texture coord in lumel format
 						for( j = 0; j < 3; ++j )
 						{
-							AllFaces[i]->Corner[j].Uvs[1].U += nNewPosX;
-							AllFaces[i]->Corner[j].Uvs[1].V += nNewPosY;
+							AllFaces[i]->Corner[j].Uvws[1].U += nNewPosX;
+							AllFaces[i]->Corner[j].Uvws[1].V += nNewPosY;
 						}
 						break;
 					}
@@ -930,8 +930,8 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 			for( i = 0; i < nNbFace; ++i )
 			for( j = 0; j < 3; ++j )
 			{
-				AllFaces[i]->Corner[j].Uvs[1].U /= nLightMapSizeX;
-				AllFaces[i]->Corner[j].Uvs[1].V /= nLightMapSizeY;
+				AllFaces[i]->Corner[j].Uvws[1].U /= nLightMapSizeX;
+				AllFaces[i]->Corner[j].Uvws[1].V /= nLightMapSizeY;
 			}
 			// Write the new lightmap and update the buildmesh materials
 			{
@@ -1010,12 +1010,12 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 				CTextureFile *pLightMap = dynamic_cast<CTextureFile*>(pText);
 				if( pLightMap == NULL )
 					continue;
-				double	u1 = pMB->Faces[i].Corner[0].Uvs[1].U * pLightMap->getWidth(),
-						v1 = pMB->Faces[i].Corner[0].Uvs[1].V * pLightMap->getHeight(),
-						u2 = pMB->Faces[i].Corner[1].Uvs[1].U * pLightMap->getWidth(), 
-						v2 = pMB->Faces[i].Corner[1].Uvs[1].V * pLightMap->getHeight(),
-						u3 = pMB->Faces[i].Corner[2].Uvs[1].U * pLightMap->getWidth(), 
-						v3 = pMB->Faces[i].Corner[2].Uvs[1].V * pLightMap->getHeight();
+				double	u1 = pMB->Faces[i].Corner[0].Uvws[1].U * pLightMap->getWidth(),
+						v1 = pMB->Faces[i].Corner[0].Uvws[1].V * pLightMap->getHeight(),
+						u2 = pMB->Faces[i].Corner[1].Uvws[1].U * pLightMap->getWidth(), 
+						v2 = pMB->Faces[i].Corner[1].Uvws[1].V * pLightMap->getHeight(),
+						u3 = pMB->Faces[i].Corner[2].Uvws[1].U * pLightMap->getWidth(), 
+						v3 = pMB->Faces[i].Corner[2].Uvws[1].V * pLightMap->getHeight();
 				CVector p1 = AllVertices[pMB->Faces[i].Corner[0].Vertex],
 						p2 = AllVertices[pMB->Faces[i].Corner[1].Vertex],
 						p3 = AllVertices[pMB->Faces[i].Corner[2].Vertex];

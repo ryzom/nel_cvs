@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.32 2003/02/26 16:53:36 lecroart Exp $
+ * $Id: sock.cpp,v 1.32.2.1 2003/05/13 16:26:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,7 +245,20 @@ CSock::CSock( SOCKET sock, const CInetAddress& remoteaddr ) :
 
 	// Get local socket name
 	setLocalAddress();
-}
+
+#ifdef NL_OS_UNIX
+	// We set the close-on-exec flag on the socket to be sure that when
+	// we call the exec() to spawn an application in the AES for example,
+	// that the AES listen socket will be close and not given to the child.
+	// From google:
+	// Manipulate the close-on-exec flag to determine if a file descriptor
+	// should be closed as part of the normal processing of the exec subroutine.
+	// If the flag is set, the file descriptor is closed.
+	// If the flag is clear, the file descriptor is left open
+	ioctl(_Sock, FIOCLEX, NULL);
+	// fcntl should be more portable but not tested fcntl(_Sock, F_SETFD, FD_CLOEXEC);
+#endif
+	}
 
 
 /*
@@ -269,12 +282,12 @@ void CSock::createSocket( int type, int protocol )
 #ifdef NL_OS_UNIX
 	// We set the close-on-exec flag on the socket to be sure that when
 	// we call the exec() to spawn an application in the AES for example,
-        // that the AES listen socket will be close and not give the the child.
-        // For google:
-        // Manipulate the close-on-exec flag to determine if a file descriptor
-        // should be closed as part of the normal processing of the exec subroutine.
-        // If the flag is set, the file descriptor is closed.
-        // If the flag is clear, the file descriptor is left open
+	// that the AES listen socket will be close and not given the to child.
+	// From google:
+	// Manipulate the close-on-exec flag to determine if a file descriptor
+	// should be closed as part of the normal processing of the exec subroutine.
+	// If the flag is set, the file descriptor is closed.
+	// If the flag is clear, the file descriptor is left open
 	ioctl(_Sock, FIOCLEX, NULL);
 	// fcntl should be more portable but not tested fcntl(_Sock, F_SETFD, FD_CLOEXEC);
 #endif

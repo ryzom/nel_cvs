@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.9 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: form_elm.h,v 1.10 2002/06/18 08:23:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ public:
 	virtual bool	getArraySize (uint &size) const;
 	virtual bool	getArrayNode (const UFormElm **result, uint arrayIndex) const;
 	virtual bool	getArrayNode (UFormElm **result, uint arrayIndex);
+	virtual bool	getArrayNodeName (std::string &result, uint arrayIndex) const;
 	virtual bool	getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
@@ -345,6 +346,7 @@ public:
 	bool				getArraySize (uint &size) const;
 	bool				getArrayNode (const UFormElm **result, uint arrayIndex) const;
 	bool				getArrayNode (UFormElm **result, uint arrayIndex);
+	bool				getArrayNodeName (std::string &result, uint arrayIndex) const;
 	bool				getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	bool				getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;

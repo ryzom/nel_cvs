@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.18 2002/06/13 12:15:22 cado Exp $
+ * $Id: form_elm.cpp,v 1.19 2002/06/18 08:23:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,14 @@ bool CFormElm::getArrayNode (UFormElm **result, uint arrayIndex)
 
 // ***************************************************************************
 
+bool CFormElm::getArrayNodeName (std::string &result, uint arrayIndex) const
+{
+	nlwarning ("Georges (CFormElm::getArrayNodeName) : this node is not an array"); 
+	return false;
+}
+
+// ***************************************************************************
+
 bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
 	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
@@ -86,7 +94,7 @@ bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluat
 
 bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -94,7 +102,7 @@ bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -102,7 +110,7 @@ bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -110,7 +118,7 @@ bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -118,7 +126,7 @@ bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -126,7 +134,7 @@ bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -134,7 +142,7 @@ bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -142,7 +150,7 @@ bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -150,7 +158,7 @@ bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -158,7 +166,7 @@ bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhe
 
 bool CFormElm::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
 	return false;
 }
 
@@ -2111,6 +2119,25 @@ bool CFormElmArray::getArrayNode (const UFormElm **result, uint arrayIndex) cons
 		return false;
 	}
 };
+
+// ***************************************************************************
+
+bool CFormElmArray::getArrayNodeName (std::string &result, uint arrayIndex) const
+{
+	if (arrayIndex<Elements.size())
+	{
+		if (Elements[arrayIndex].Name.empty ())
+			result = "#" + toString (arrayIndex);
+		else
+			result = Elements[arrayIndex].Name;
+		return true;
+	}
+	else
+	{
+		nlwarning ("Georges (CFormElmArray::getArrayNodeName) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		return false;
+	}
+}
 
 // ***************************************************************************
 

@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.5 2002/06/06 13:33:32 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.6 2002/06/18 08:23:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,9 @@ public:
 
 	/// Warning, only R, G and B members are filled, not A.
 	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
+
+	/// Return the name of a table element.
+	virtual bool	getArrayNodeName (std::string &result, uint arrayIndex) const = 0;
 
 
 	// ** Struct element methods

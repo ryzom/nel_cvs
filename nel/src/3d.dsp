@@ -2219,6 +2219,14 @@ SOURCE=.\3d\vegetable_sort_block.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\vegetable_uv8.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_uv8.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vegetablevb_allocator.cpp
 # End Source File
 # Begin Source File

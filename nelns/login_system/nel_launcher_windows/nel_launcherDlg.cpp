@@ -486,8 +486,6 @@ void CNel_launcherDlg::OnTimer(UINT nIDEvent)
 	string state, log;
 	if (patchState(state, log))
 	{
-		nlinfo ("%s", state.c_str ());
-
 		LPDISPATCH lpDispatch;
 		lpDispatch = m_explore.GetDocument();
 		if (lpDispatch == NULL) return;
@@ -549,9 +547,9 @@ void CNel_launcherDlg::OnTimer(UINT nIDEvent)
 		nlinfo ("finnish");
 		KillTimer (0);
 		if (res)
-			MessageBox ("Patch completed succesfuly", "patch");
+			MessageBox ("Patch completed succesfuly.", "patch");
 		else
-			MessageBox ("Patch completed with error", "patch");
+			MessageBox ("Patch could not be completed due to an error.", "patch");
 		openUrl (url.c_str());
 	}
 }

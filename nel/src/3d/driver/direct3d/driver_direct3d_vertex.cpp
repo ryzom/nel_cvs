@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.7 2004/08/10 08:22:55 besson Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.8 2004/08/13 15:31:16 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -56,6 +56,11 @@ CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffe
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 	VertexDecl = NULL;
 	VertexBuffer = NULL;
+	Usage = 0;
+	VolatileVertexBuffer = NULL;
+	#ifdef NL_DEBUG
+		Locked = false;
+	#endif
 }
 
 // ***************************************************************************
@@ -83,6 +88,15 @@ CVBDrvInfosD3D::~CVBDrvInfosD3D()
 	// Stats
 	if (Hardware)
 		driver->_VertexBufferHardSet.erase(this);
+
+	#ifdef NL_DEBUG
+		if (Locked)
+		{
+			nlinfo("VBuffer %s is still locked at destruction", VertexBufferPtr->getName().c_str())	;
+			CDriverD3D *drv = NLMISC::safe_cast<CDriverD3D *>(_Driver);
+			drv->_LockedBuffers.erase(this);
+		}
+	#endif
 }
 
 // ***************************************************************************
@@ -92,13 +106,47 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 	H_AUTO_D3D(CVBDrvInfosD3D_lock)
 	nlassert (begin != end);
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
+	//nlinfo("lock from %s", VertexBufferPtr->getName().c_str());
+	#ifdef NL_DEBUG
+		nlassert(!Locked);		
+		driver->_LockedBuffers.insert(this);
+		Locked = true;
+		static volatile bool dumpLockedBuffers = false;
+		if (dumpLockedBuffers)
+		{
+			nlinfo("Num locked buffers = %d", (int) driver->_LockedBuffers.size());
+			for(std::set<CVBDrvInfosD3D *>::iterator it = driver->_LockedBuffers.begin(); it != driver->_LockedBuffers.end(); ++it)
+			{
+				if (!(*it)->VertexBufferPtr)
+				{
+					nlinfo("Empty buffer");
+				}
+				else
+				{				
+					nlinfo("Buffer %s at %x is Locked", (*it)->VertexBufferPtr->getName().c_str(), (int) *it);
+				}
+			}
+		}
+	#endif
 
 	if (Volatile)
 	{
 		// Lock the good buffer
-		CVolatileVertexBuffer *buffer = VolatileRAM ? &(driver->_VolatileVertexBufferRAM[driver->_CurrentRenderPass&1]):
-			&(driver->_VolatileVertexBufferAGP[driver->_CurrentRenderPass&1]);
+		CVolatileVertexBuffer *&buffer = VolatileRAM ? (driver->_VolatileVertexBufferRAM[driver->_CurrentRenderPass&1]):
+			(driver->_VolatileVertexBufferAGP[driver->_CurrentRenderPass&1]);
 		uint8 *ptr = (uint8*)buffer->lock (end-begin, Stride, Offset);
+		if (!ptr)
+		{
+			// buffer full, swap them			
+			CVolatileVertexBuffer *&bufferOther = VolatileRAM ? (driver->_VolatileVertexBufferRAM[(driver->_CurrentRenderPass + 1) &1]):
+			(driver->_VolatileVertexBufferAGP[(driver->_CurrentRenderPass + 1) &1]);			
+			std::swap(buffer, bufferOther);
+			buffer->reset();
+			ptr = (uint8*)buffer->lock (end-begin, Stride, Offset);
+			nlassert(ptr);
+		}
+		nlassert(!VolatileVertexBuffer);
+		VolatileVertexBuffer = buffer;
 		VertexBuffer = buffer->VertexBuffer;
 		ptr -= begin;
 
@@ -140,13 +188,18 @@ uint8	*CVBDrvInfosD3D::lock (uint begin, uint end, bool readOnly)
 void	CVBDrvInfosD3D::unlock (uint begin, uint end)
 {
 	H_AUTO_D3D(CVBDrvInfosD3D_unlock )
+	#ifdef NL_DEBUG
+		nlassert(Locked);		
+		CDriverD3D *drv = NLMISC::safe_cast<CDriverD3D *>(_Driver);
+		drv->_LockedBuffers.erase(this);
+		Locked = false;
+	#endif
+	//nlinfo("unlock from %s", VertexBufferPtr->getName().c_str());
 	if (Volatile)
-	{
-		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
-		// Unlock the good buffer
-		CVolatileVertexBuffer *buffer = VolatileRAM ? &(driver->_VolatileVertexBufferRAM[driver->_CurrentRenderPass&1]):
-			&(driver->_VolatileVertexBufferAGP[driver->_CurrentRenderPass&1]);
-		buffer->unlock ();
+	{	
+		nlassert(VolatileVertexBuffer);
+		VolatileVertexBuffer->unlock ();
+		VolatileVertexBuffer = NULL;
 	}
 	else
 		VertexBuffer->Unlock ();
@@ -368,13 +421,18 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 
 	// Set the vertex buffer
 	setVertexDecl (info->VertexDecl);
-	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices());
+	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices(), VB.getPreferredMemory(), info->Usage);
 
 	// Set UVRouting
 	const uint8 *uvRouting = VB.getUVRouting();
 	uint i;
 	for (i=0; i<MaxTexture; i++)
 		setTextureIndexUV (i, uvRouting[i]);
+
+
+	// backup uv-routing, because some shader may change the routing
+	// For example, if the same vb is used for lightmap, then for standard shader, then uv routing will be wrong
+	std::copy(uvRouting, uvRouting + MaxTexture, _CurrentUVRouting);
 
 	/* Hulud test : read in a "write only" vertex buffer. Seams to work well. */
 /*
@@ -648,11 +706,11 @@ void CVolatileVertexBuffer::release ()
 
 // ***************************************************************************
 
-void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, CDriverD3D *driver)
+void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver)
 {
 	H_AUTO_D3D(CVolatileVertexBuffer_init )
-	release();
-
+	release();	
+	MaxSize = maxSize;
 	// Init the buffer
 	Location = location;
 	Size = size;
@@ -668,6 +726,8 @@ void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, 
 		// Allocate in RAM
 		nlverify (Driver->_DeviceInterface->CreateVertexBuffer(size, RemapVertexBufferUsage[CVertexBuffer::RAMResident],
 				0, RemapVertexBufferPool[CVertexBuffer::RAMResident], &VertexBuffer, NULL) != D3D_OK);
+
+		Location = CVertexBuffer::RAMResident;
 	}
 }
 
@@ -690,15 +750,28 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 	uint mod = CurrentIndex / stride;
 	if (CurrentIndex != (mod*stride))
 		CurrentIndex = (mod+1)*stride;
-
+	
+	
 	// Enough room for this vertex ?
 	if (CurrentIndex+size+stride > Size)
-	{
+	{		
+
+		if (CurrentIndex+size+stride > MaxSize && CurrentIndex != 0) 
+		{
+			return NULL; // max size exceeded -> can reallocate only if we are at start of block
+		}
 		// No, reallocate
-		init (Location, std::max (Size+Size/2,  CurrentIndex+size+stride), Driver);
+		init (Location, std::max (std::min(Size+Size/2, MaxSize),  CurrentIndex+size+stride), MaxSize, Driver);
 	}
 
+	// Lock Profile?
+	TTicks	beforeLock;
+	if(Driver->_VBHardProfiling)
+	{
+		beforeLock= CTime::getPerformanceTime();
+	}
 	// Lock the buffer, noblocking lock here if not the first allocation since a reset
+	
 	VOID *pbData;
 	if (CurrentIndex==0)
 	{
@@ -707,6 +780,12 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 	else
 	{
 		nlverify (VertexBuffer->Lock (CurrentIndex, size, &pbData, D3DLOCK_NOOVERWRITE) == D3D_OK);
+	}
+	if(Driver->_VBHardProfiling)
+	{
+		TTicks	afterLock;
+		afterLock= CTime::getPerformanceTime();
+		Driver->_VolatileVBLockTime += afterLock - beforeLock;
 	}
 
 	// Old buffer position
@@ -737,3 +816,24 @@ void CVolatileVertexBuffer::reset ()
 // ***************************************************************************
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 /** \file ps_plane_basis.h
  * <File description>
  *
- * $Id: ps_plane_basis.h,v 1.3 2001/09/07 12:00:46 vizerie Exp $
+ * $Id: ps_plane_basis.h,v 1.4 2002/02/27 13:58:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,8 @@ struct CPlaneBasis
 	// construct this basis by giving a normal to the plane that contains it
 	CPlaneBasis(const NLMISC::CVector &normal)
 	{
-		NLMISC::CMatrix mat = CPSUtil::buildSchmidtBasis(normal) ;
+		NLMISC::CMatrix mat;
+		CPSUtil::buildSchmidtBasis(normal, mat) ;
 		X = mat.getI() ;
 		Y = mat.getJ() ;
 	}

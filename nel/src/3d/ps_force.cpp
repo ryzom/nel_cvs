@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.27 2002/02/20 11:11:53 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.28 2002/02/27 13:54:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -860,7 +860,8 @@ void CPSCylindricVortex::show(TAnimationTime ellapsedTime)
 	for (uint k = 0; k < _Owner->getSize(); ++k)
 	{
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
-		CMatrix m = CPSUtil::buildSchmidtBasis(_Normal[k]);
+		CMatrix m;
+		CPSUtil::buildSchmidtBasis(_Normal[k], m);
 		CPSUtil::displayDisc(*getDriver(), _Radius[k], _Owner->getPos()[k], m, 32, col);
 		CPSUtil::displayArrow(getDriver(), _Owner->getPos()[k], _Normal[k], 1.f, col, CRGBA(200, 0, 200));
 		// display a V letter at the center
@@ -878,7 +879,8 @@ void CPSCylindricVortex::setMatrix(uint32 index, const CMatrix &m)
 
 CMatrix CPSCylindricVortex::getMatrix(uint32 index) const
 {
-	CMatrix m  = CPSUtil::buildSchmidtBasis(_Normal[index]);
+	CMatrix m;
+	CPSUtil::buildSchmidtBasis(_Normal[index], m);
 	m.setPos(_Owner->getPos()[index] ); 
 	return m;
 }

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.140 2002/08/23 12:17:47 lecroart Exp $
+ * $Id: service.cpp,v 1.141 2002/08/27 10:13:13 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1209,8 +1209,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 /*	catch (ETrapDebug &)
 	{
-		// Somebody call nlerror, so we have to quit now, the message already display
-		// so we don't have to to anything
+		// we have to do that if we want to trap unhandled exception with the report message box
 		setStatus (EXIT_FAILURE);
 	}
 */	catch (EFatalError &)
@@ -1283,8 +1282,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 /*	catch (ETrapDebug &)
 	{
-		// Somebody call nlerror, so we have to quit now, the message already display
-		// so we don't have to to anything
+		// we have to do that if we want to trap unhandled exception with the report message box
 		setStatus (EXIT_FAILURE);
 	}
 */	catch (EFatalError &)

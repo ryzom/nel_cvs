@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.1 2001/07/30 14:40:14 besson Exp $
+ * $Id: cluster.cpp,v 1.2 2001/08/02 15:31:03 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,8 @@ void CCluster::link (CPortal* portal)
 // ***************************************************************************
 void CCluster::unlink (CPortal* portal)
 {
-	for (uint32 pos = 0; pos < _Portals.size(); ++pos)
+	uint32 pos;
+	for (pos = 0; pos < _Portals.size(); ++pos)
 	{
 		if (_Portals[pos] == portal)
 			break;

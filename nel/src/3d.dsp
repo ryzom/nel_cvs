@@ -1045,6 +1045,22 @@ SOURCE=.\3d\water_shape.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\async_texture_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_texture_block.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_texture_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\async_texture_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\cube_map_builder.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.30 2005/02/22 10:14:12 besson Exp $
+ * $Id: smart_ptr.h,v 1.31 2005/03/02 18:28:07 vuarand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -357,10 +357,19 @@ public:
 	 *	 
 	 * Futur work (only if you need it):
 	 *  enhanced features (like __FILE__ __LINE__ information).
+	 * 
+	 * Extension by Jerome Vuarand
+	 *  I've added additional information to trace back invalid pointers. A linked list in the ref counter can be used to access to
+	 *  invalid pointers on referenced object deletion, and an additionnal data field in each pointer let pointer owner to specify
+	 *  additionnal information. The linked list insertion occurs on head. The linked is doubly-linked to avoid parsing it on deletion.
+	 *  When a reference is still present on referenced object deletion, an assert is issued and access to pointers is given. Each
+	 *  CDbgPtr owner can attach a data pointer to the CDbgPtr. A good way to use the feature is to derive the owner from IDbgPtrData,
+	 *  pass this as the data to the CDbgPtr, and to let RTTI find the owner during assert manual handling.
 	 *
 	 * \author Stephane Le Dorze
+	 * \author Jerome Vuarand
 	 * \author Nevrax France
-	 * \date 2003
+	 * \date 2003-2005
 	 */
 
 
@@ -371,228 +380,289 @@ public:
 template <class T>	class CDbgPtr;
 template <class T>	class CstCDbgPtr;
 
+class IDbgPtrData
+{
+public:
+	virtual ~IDbgPtrData() { }
+};
+
 template <class T>
 class CDbgRefCount
 {
 #ifdef NL_DEBUG_PTR
 public:
-    CDbgRefCount( const CDbgRefCount &other)
+    CDbgRefCount(const CDbgRefCount& other)
+	: _DbgCRefs(0)
+	, _DbgCCstRefs(0)
+	, _MaxRef(other._MaxRef)
+	, _CheckOn(other._CheckOn)
+	, _FirstReference(NULL)
+	, _FirstCstReference(NULL)
 	{
-//#ifdef NL_DEBUG
-//		//	check memory state ..
-//		nlassert(_DbgCRefs==0x0cdcdcdcd || _DbgCRefs==0x0cccccccc || _DbgCRefs==0);
-//#endif
-		_DbgCRefs=0;
-		_MaxRef=other._MaxRef;
-		_CheckOn=other._CheckOn;
 	}
-    CDbgRefCount(sint32 maxRef=(1<<30))
+    CDbgRefCount(sint32 maxRef = (1<<30))
+	: _DbgCRefs(0)
+	, _DbgCCstRefs(0)
+	, _MaxRef(maxRef)
+	, _FirstReference(NULL)
+	, _FirstCstReference(NULL)
 	{
-//#ifdef NL_DEBUG
-//		//	check memory state ..
-//		nlassert(_DbgCRefs==0x0cdcdcdcd || _DbgCRefs==0x0cccccccc || _DbgCRefs==0);
-//#endif
-		_DbgCRefs = 0;
-		_MaxRef	= maxRef;
 	}
 	virtual	~CDbgRefCount()	
-	{	
-		nlassert(_DbgCRefs==0);	
-	}
-	const	sint	&getDbgRef(const CDbgPtr<T>	&ptr)	const
 	{
-		return	_DbgCRefs;
+		if (_DbgCRefs!=0 || _DbgCCstRefs!=0)
+		{
+			const CDbgPtr<T>* ref0, *ref1, *ref2, *ref3, *ref4; ref0=ref1=ref2=ref3=ref4=(CDbgPtr<T>*)NULL;
+			IDbgPtrData* dat0, *dat1, *dat2, *dat3, *dat4; dat0=dat1=dat2=dat3=dat4=(IDbgPtrData*)NULL;
+			if (_DbgCRefs>0) { ref0 = _FirstReference; dat0 = ref0->getData(); }
+			if (_DbgCRefs>1) { ref1 = ref0->getNextReference(); dat1 = ref1->getData(); }
+			if (_DbgCRefs>2) { ref2 = ref1->getNextReference(); dat2 = ref2->getData(); }
+			if (_DbgCRefs>3) { ref3 = ref2->getNextReference(); dat3 = ref3->getData(); }
+			if (_DbgCRefs>4) { ref4 = ref3->getNextReference(); dat4 = ref4->getData(); }
+			const CstCDbgPtr<T>* cref0, *cref1, *cref2, *cref3, *cref4; cref0=cref1=cref2=cref3=cref4=(CstCDbgPtr<T>*)NULL;
+			IDbgPtrData* cdat0, *cdat1, *cdat2, *cdat3, *cdat4; cdat0=dat1=cdat2=cdat3=cdat4=(IDbgPtrData*)NULL;
+			if (_DbgCCstRefs>0) { cref0 = _FirstCstReference; cdat0 = cref0->getData(); }
+			if (_DbgCCstRefs>1) { cref1 = cref0->getNextReference(); cdat1 = cref1->getData(); }
+			if (_DbgCCstRefs>2) { cref2 = cref1->getNextReference(); cdat2 = cref2->getData(); }
+			if (_DbgCCstRefs>3) { cref3 = cref2->getNextReference(); cdat3 = cref3->getData(); }
+			if (_DbgCCstRefs>4) { cref4 = cref3->getNextReference(); cdat4 = cref4->getData(); }
+			nlassert(_DbgCRefs==0);
+			nlassert(_DbgCCstRefs==0);
+		}
 	}
-	const	sint	&getDbgRef(const CstCDbgPtr<T>	&ptr)	const
+	sint getDbgRef(const CDbgPtr<T>& ptr) const
 	{
-		return	_DbgCRefs;
+		return _DbgCRefs + _DbgCCstRefs;
 	}
-	inline	void	incRef	(const CDbgPtr<T>	&ptr)	const
+	sint getDbgRef(const CstCDbgPtr<T>& ptr) const
+	{
+		return _DbgCRefs + _DbgCCstRefs;
+	}
+	void incRef(const CDbgPtr<T>& ptr) const
 	{
 		if (_CheckOn)
 			nlassert(_DbgCRefs<_MaxRef);
-		_DbgCRefs++;
+		++_DbgCRefs;
+		// Linked list management
+		nlassert(_FirstReference!=&ptr);
+		ptr.setNextReference(_FirstReference);
+		ptr.setPrevReference((CDbgPtr<T>*)NULL);
+		if (_FirstReference)
+			_FirstReference->setPrevReference(&ptr);
+		_FirstReference = &ptr;
 	}
-	inline	void	decRef	(const CDbgPtr<T>	&ptr)	const
+	void decRef(const CDbgPtr<T>& ptr) const
 	{
 		nlassert(_DbgCRefs>0);
-		_DbgCRefs--;
+		--_DbgCRefs;
+		// Linked list management
+		if (ptr.getNextReference())
+			ptr.getNextReference()->setPrevReference(ptr.getPrevReference());
+		if (ptr.getPrevReference())
+			ptr.getPrevReference()->setNextReference(ptr.getNextReference());
+		if (_FirstReference==&ptr)
+			_FirstReference = ptr.getNextReference();
 	}
-	inline	void	incRef	(const CstCDbgPtr<T>	&ptr)	const
+	void incRef(const CstCDbgPtr<T>& ptr) const
 	{
 		if (_CheckOn)
-			nlassert(_DbgCRefs<_MaxRef);
-		_DbgCRefs++;
+			nlassert(_DbgCCstRefs<_MaxRef);
+		++_DbgCCstRefs;
 	}
-	inline	void	decRef	(const CstCDbgPtr<T>	&ptr)	const
+	void decRef(const CstCDbgPtr<T>& ptr) const
 	{
-		nlassert(_DbgCRefs>0);
-		_DbgCRefs--;
+		nlassert(_DbgCCstRefs>0);
+		--_DbgCCstRefs;
 	}
-	void	setCheckMax(const	bool	checkOnOff)	const
+	void setCheckMax(const bool checkOnOff) const
 	{
-		_CheckOn=checkOnOff;
+		_CheckOn = checkOnOff;
 	}
 private:
     mutable	sint	_DbgCRefs;
+    mutable	sint	_DbgCCstRefs;
 	sint32			_MaxRef;
 	mutable	bool	_CheckOn;
+	mutable	const CDbgPtr<T>*		_FirstReference;
+	mutable	const CstCDbgPtr<T>*	_FirstCstReference;
 #endif
 };
-
 
 template <class T>
 class CDbgPtr
 {
     T* Ptr;
-public:
 	
-    CDbgPtr()
-	{	Ptr=NULL;	}
-
-private:	
-
-public:
-	template	<class W>
-    inline	CDbgPtr(const W* p)
-	{
-		Ptr=const_cast<T*>(NLMISC::type_cast<const T*>(p));
 #ifdef NL_DEBUG_PTR
-		if	(Ptr)
+	/// \name Linked list management
+	//@{
+private: // Data
+	IDbgPtrData*				Data;
+	mutable const CDbgPtr<T>*	NextReference;
+	mutable const CDbgPtr<T>*	PrevReference;
+public: // Methods
+	void setData(IDbgPtrData* data) { Data = data; }
+	IDbgPtrData* getData() const { return Data; }
+	void setNextReference(const CDbgPtr<T>* reference) const { NextReference = reference; }
+	const CDbgPtr<T>* getNextReference() const { return NextReference; }
+	void setPrevReference(const CDbgPtr<T>* reference) const { PrevReference = reference; }
+	const CDbgPtr<T>* getPrevReference() const { return PrevReference; }
+	//@}
+#endif
+	
+public:
+    CDbgPtr()
+	: Ptr(NULL)
+#ifdef NL_DEBUG_PTR
+	, Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
+#endif
+	{
+	}
+	
+	template <class W>
+    CDbgPtr(const W* p)
+#ifdef NL_DEBUG_PTR
+	: Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
+#endif
+	{
+		Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
+	#ifdef NL_DEBUG_PTR
+		if (Ptr)
 		{
-			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+			CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(Ptr);
 			ref->incRef(*this);
 		}
-#endif
+	#endif
 	}
 	
-    CDbgPtr(const CDbgPtr &copy)
-	{
-		Ptr=copy.Ptr;
+    CDbgPtr(const CDbgPtr& copy)
 #ifdef NL_DEBUG_PTR
-	if(Ptr)
-	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-		ref->incRef(*this);
-	}
+	: Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
 #endif
+	{
+		Ptr = copy.Ptr;
+	#ifdef NL_DEBUG_PTR
+		if (Ptr)
+		{
+			CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(Ptr);
+			ref->incRef(*this);
+		}
+	#endif
 	}
     ~CDbgPtr();
-
-	inline	bool	isNULL	()	const
+	
+	bool isNULL() const
 	{
-		return	Ptr==NULL;
+		return Ptr==NULL;
 	}
-
-	inline	T	*ptr	()	const
+	
+	T* ptr() const
 	{
-		return	Ptr;
+		return Ptr;
 	}
-
+	
 	operator T*(void) const
 	{
 		return Ptr;
 	}
 	
-	template	<class W>
+	template <class W>
     operator W*(void) const
 	{
 		return NLMISC::type_cast<W*>(Ptr);
 	}
-
-    T& operator*(void) const {	return *Ptr; }
-    T* operator->(void) const {	return Ptr; }
 	
-
-	template	<class W>
-	inline	CDbgPtr& operator=(const W* p)
+    T& operator*(void) const { return *Ptr; }
+	T* operator->(void) const { return Ptr; }
+	
+	template <class W>
+	CDbgPtr<T>& operator=(const W* p)
 	{
-#ifdef NL_DEBUG_PTR	
-		if	(p)
+	#ifdef NL_DEBUG_PTR
+		CDbgRefCount<T>* oldRef = (CDbgRefCount<T>*)NULL, *newRef = (CDbgRefCount<T>*)NULL;
+		if (Ptr)
+			oldRef = static_cast<CDbgRefCount<T>*>(Ptr);
+		if (p)
+			newRef = static_cast<CDbgRefCount<T>*>(const_cast<T*>(NLMISC::type_cast<const T*>(p)));
+		if (oldRef!=newRef)
 		{
-			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(NLMISC::type_cast<const T*>(p)));
-			ref->incRef(*this);
+			if (oldRef) oldRef->decRef(*this);
+			Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
+			if (newRef) newRef->incRef(*this);
 		}
-		if	(Ptr)
-		{
-			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-			ref->decRef(*this);
-		}
+	#else
 		Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
-		
-#else
-		Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
-#endif
+	#endif
 		return *this;
 	}
-
-	inline	CDbgPtr& operator=(const int value)
+	/*
+	CDbgPtr<T>& operator=(const int value)
 	{
-#ifdef NL_DEBUG
+	#ifdef NL_DEBUG
 		nlassert(value==NULL);
-#endif
-
-#ifdef NL_DEBUG_PTR	
-		if	(Ptr)
+	#endif
+		
+	#ifdef NL_DEBUG_PTR	
+		if (Ptr)
 		{
-			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+			CDbgRefCount<T>* ref=static_cast<CDbgRefCount<T>*>(Ptr);
 			ref->decRef(*this);
 		}
+	#endif
 		Ptr = NULL;
-		
-#else
-		Ptr = NULL;
-#endif
 		return *this;
 	}
-	
-
-    CDbgPtr& operator=(const CDbgPtr &p);
-    bool operator<(const CDbgPtr &p) const;
+	*/
+    CDbgPtr<T>& operator =(const CDbgPtr& p);
+    bool operator <(const CDbgPtr& p) const;
     
 	template <class W>
-	bool operator==(const W* p) const
+	bool operator ==(const W* p) const
 	{
-		return	Ptr==NLMISC::type_cast<const T*>(p);
+		return Ptr==NLMISC::type_cast<const T*>(p);
 	}
 	template <class W>
-	bool operator!=(const W* p) const
+	bool operator !=(const W* p) const
 	{
-		return	Ptr!=NLMISC::type_cast<const T*>(p);
+		return Ptr!=NLMISC::type_cast<const T*>(p);
 	}
 	
-    bool operator==(const CDbgPtr &p) const
+    bool operator ==(const CDbgPtr &p) const
 	{
-		return	Ptr==p.Ptr;
+		return Ptr==p.Ptr;
 	}
-    bool operator!=(const CDbgPtr &p) const
+    bool operator !=(const CDbgPtr &p) const
 	{
-		return	Ptr!=p.Ptr;
+		return Ptr!=p.Ptr;
 	}
-
-    bool operator==(int p) const
+	
+    bool operator ==(int p) const
 	{
 		nlassert(p == 0);
-		return	Ptr==0;
+		return Ptr==0;
 	}
-    bool operator!=(int p) const
+    bool operator !=(int p) const
 	{
 		nlassert(p == 0);
-		return	Ptr!=0;
+		return Ptr!=0;
 	}
 };
-
 
 template<class T>
 inline CDbgPtr<T>::~CDbgPtr(void) 
 { 
 #ifdef NL_DEBUG_PTR
-    if(Ptr)
+    if (Ptr)
 	{
-//		CDbgRefCount<T>	*ref=const_cast<CDbgRefCount<T>*>(static_cast<const	CDbgRefCount<T>*>(Ptr));
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+		CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(Ptr);
 		ref->decRef(*this);
-		Ptr=NULL;
+		Ptr = NULL;
 	}
 #else
 	Ptr=NULL;
@@ -601,116 +671,146 @@ inline CDbgPtr<T>::~CDbgPtr(void)
 
 
 template<class T>    
-inline CDbgPtr<T>& CDbgPtr<T>::operator=(const CDbgPtr &p)
+CDbgPtr<T>& CDbgPtr<T>::operator =(const CDbgPtr& p)
 {
-	return CDbgPtr<T>::operator=(p.Ptr);
+	return CDbgPtr<T>::operator =(p.Ptr);
 }
 
 template<class T>    
-inline bool CDbgPtr<T>::operator<(const CDbgPtr &p) const
+bool CDbgPtr<T>::operator <(const CDbgPtr& p) const
 {
 	return Ptr<p.Ptr;
 }
-
 
 template <class T>
 class CstCDbgPtr
 {
-    const T*	Ptr;
-public:
+    const T* Ptr;
 	
-    CstCDbgPtr()	{ Ptr=NULL;	}
-    CstCDbgPtr(const T* p)
-	{
-		Ptr=p;
 #ifdef NL_DEBUG_PTR
-		if(Ptr)
+	/// \name Linked list management
+	//@{
+private: // Data
+	IDbgPtrData*					Data;
+	mutable const CstCDbgPtr<T>*	NextReference;
+	mutable const CstCDbgPtr<T>*	PrevReference;
+public: // Methods
+	void setData(IDbgPtrData* data) { Data = data; }
+	IDbgPtrData* getData() const { return Data; }
+	void setNextReference(const CstCDbgPtr<T>* reference) const { NextReference = reference; }
+	const CstCDbgPtr<T>* getNextReference() const { return NextReference; }
+	void setPrevReference(const CstCDbgPtr<T>* reference) const { PrevReference = reference; }
+	const CstCDbgPtr<T>* getPrevReference() const { return PrevReference; }
+	//@}
+#endif
+	
+public:
+    CstCDbgPtr()
+	: Ptr(NULL)
+#ifdef NL_DEBUG_PTR
+	, Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
+#endif
+	{
+	}
+    CstCDbgPtr(const T* p)
+#ifdef NL_DEBUG_PTR
+	: Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
+#endif
+	{
+		Ptr = p;
+	#ifdef NL_DEBUG_PTR
+		if (Ptr)
 		{
-			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
+			CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
 			ref->incRef(*this);
 		}
-#endif
+	#endif
 	}
-    CstCDbgPtr(const CstCDbgPtr &copy)
-	{
-		Ptr=copy.Ptr;
+    CstCDbgPtr(const CstCDbgPtr& copy)
 #ifdef NL_DEBUG_PTR
-	if(Ptr)
-	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
-		ref->incRef(*this);
-	}
+	: Data(NULL)
+	, NextReference(NULL)
+	, PrevReference(NULL)
 #endif
+	{
+		Ptr = copy.Ptr;
+	#ifdef NL_DEBUG_PTR
+		if (Ptr)
+		{
+			CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
+			ref->incRef(*this);
+		}
+	#endif
 	}
     ~CstCDbgPtr();
 	
-	inline	const	T	*ptr	()	const
+	const T* ptr() const
 	{
-		return	Ptr;
+		return Ptr;
 	}
-
-	inline	bool	isNULL	()	const
-	{
-		return	Ptr==NULL;
-	}
-
-    operator const T*(void) const {	return Ptr; }
-    const T& operator*(void) const {	return *Ptr; }
-    const T* operator->(void) const {	return Ptr; }
 	
-    CstCDbgPtr& operator=(const T* p);
-    CstCDbgPtr& operator=(const CstCDbgPtr &p);
-    bool operator<(const CstCDbgPtr &p) const;	
+	bool isNULL() const
+	{
+		return Ptr==NULL;
+	}
+	
+    operator const T*(void) const { return Ptr; }
+    const T& operator*(void) const { return *Ptr; }
+    const T* operator->(void) const { return Ptr; }
+	
+    CstCDbgPtr& operator =(const T* p);
+    CstCDbgPtr& operator =(const CstCDbgPtr& p);
+    bool operator <(const CstCDbgPtr& p) const;	
 };
 
 
 template<class T>
-inline CstCDbgPtr<T>::~CstCDbgPtr(void) 
+CstCDbgPtr<T>::~CstCDbgPtr(void) 
 { 
 #ifdef NL_DEBUG_PTR
-    if(Ptr)
+    if (Ptr)
 	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
+		CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
 		ref->decRef(*this);
-		Ptr=NULL;
 	}
-#else
-	Ptr=NULL;
 #endif
+	Ptr = NULL;
 }
 
 template<class T>    
-inline CstCDbgPtr<T>& CstCDbgPtr<T>::operator=(const T* p)
+CstCDbgPtr<T>& CstCDbgPtr<T>::operator =(const T* p)
 {
 #ifdef NL_DEBUG_PTR
-    if(p)
+    if (p)
 	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
+		CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
 		ref->incRef(*this);
 	}
-    if(Ptr)
+    if (Ptr)
 	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
+		CDbgRefCount<T>* ref = static_cast<CDbgRefCount<T>*>(const_cast<T*>(Ptr));
 		ref->decRef(*this);
 	}
-	Ptr = p;
-	
-#else
-	Ptr = p;
 #endif
+	Ptr = p;
 	return *this;
 }
+
 template<class T>    
-inline CstCDbgPtr<T>& CstCDbgPtr<T>::operator=(const CstCDbgPtr &p)
+CstCDbgPtr<T>& CstCDbgPtr<T>::operator =(const CstCDbgPtr& p)
 {
-	return CstCDbgPtr<T>::operator=(p.Ptr);
+	return CstCDbgPtr<T>::operator =(p.Ptr);
 }
+
 template<class T>    
-inline bool CstCDbgPtr<T>::operator<(const CstCDbgPtr &p) const
+bool CstCDbgPtr<T>::operator <(const CstCDbgPtr& p) const
 {
 	return Ptr<p.Ptr;
 }
-
 
 }
 

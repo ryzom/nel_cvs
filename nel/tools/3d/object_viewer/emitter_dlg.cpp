@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.17 2003/11/25 14:40:48 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.18 2004/02/13 09:40:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,7 +303,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	if (ps.isAutoLODEnabled() && !ps.isSharingEnabled())
 	{		
 		button->EnableWindow(TRUE);
-		button->SetCheck(_Emitter->getBypassAutoLOD() ? 1 : 0);
+		m_BypassAutoLOD = _Emitter->getBypassAutoLOD();
 	}
 	else
 	{

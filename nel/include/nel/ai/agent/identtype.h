@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.25 2002/06/27 16:57:39 chafik Exp $
+ * $Id: identtype.h,v 1.26 2002/07/26 08:46:05 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ namespace NLAIAGENT
 
 		CAgentNumber()
 		{
-			Type = CAgentNumber::AgentTypeBit;
+			setType( CAgentNumber::AgentTypeBit );
 		}
 		CAgentNumber(uint64 id,uint8 creator,uint8 dyn):NLMISC::CEntityId(AgentTypeBit,id,creator,dyn)
 		{			
@@ -88,21 +88,21 @@ namespace NLAIAGENT
 			
 			if(isAgentId())
 			{
-				if (Id < a.Id)
+				if (getShortId() < a.getShortId())
 				{
 					return true;
 				}
 				else 
-				if (Id == a.Id)
+				if (getShortId() == a.getShortId())
 				{
-					if(CreatorId < a.CreatorId)
+					if(getCreatorId() < a.getCreatorId())
 					{
 						return true;
 					}
 					else
-						if(CreatorId == a.CreatorId)
+						if(getCreatorId() == a.getCreatorId())
 						{
-							return DynamicId < a.DynamicId;
+							return getDynamicId() < a.getDynamicId();
 						}
 				}
 				return false;
@@ -116,7 +116,9 @@ namespace NLAIAGENT
 		///That function allow user to change the 7 bit of the type field in the sid agent number; We don't touche at the 8e bits.
 		void setTypeAt(uint64 t)
 		{
-			CEntityId::Type |= (t & 0x7f);
+			uint8 type = getType();
+			type |= (t & 0x7f);
+			setType( type );
 		}
 
 	};

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.76 2004/08/13 15:24:56 vizerie Exp $
+ * $Id: driver.h,v 1.77 2004/09/02 16:49:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -361,6 +361,10 @@ public:
 	 */
 	virtual	bool			supportVertexBufferHard() const =0;
 
+	/** return true if volatile vertex buffer are supported. (e.g a vertex buffer which can be created with the flag CVertexBuffer::AGPVolatile or CVertexBuffer::RAMVolatile)
+	 *  If these are not supported, a RAM vb is created instead (transparent to user)          
+     */
+	virtual bool			supportVolatileVertexBuffer() const = 0;
 
 	/** return true if driver support VertexBufferHard, but vbHard->unlock() are slow (ATI-openGL).
 	 */

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.4 2004/06/11 12:19:40 boucher Exp $
+ * $Id: primitive_utils.h,v 1.5 2004/06/29 09:58:16 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -58,6 +58,7 @@
 
 #include "nel/ligo/primitive.h"
 #include "nel/misc/i_xml.h"
+#include "nel/misc/o_xml.h"
 #include "nel/misc/file.h"
 #include <vector>
 #include <string>
@@ -311,14 +312,22 @@ inline bool saveXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileNa
 	try
 	{
 		NLMISC::COFile	fileOut(fileName);
-		xmlDocPtr	xmlDoc = xmlNewDoc((xmlChar*)("1.0"));;
+//		xmlDocPtr	xmlDoc = xmlNewDoc((xmlChar*)("1.0"));;
+		NLMISC::COXml xmlOut;
+		xmlOut.init (&fileOut);
 //		NLMISC::CIXml xmlOut;
 //		xmlOut.init (fileOut);
 
 		// Read it
-		primDoc.write(xmlDoc, fileName.c_str());
+		primDoc.write(xmlOut.getDocument(), fileName.c_str());
 
-		return xmlSaveFile(fileName.c_str(), xmlDoc) != -1;
+		xmlOut.flush ();
+
+		fileOut.close();
+
+		return true;
+
+//		return xmlSaveFile(fileName.c_str(), xmlDoc) != -1;
 	}
 	catch(NLMISC::Exception e)
 	{

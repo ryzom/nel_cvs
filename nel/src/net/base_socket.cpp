@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.19 2000/11/21 17:17:20 cado Exp $
+ * $Id: base_socket.cpp,v 1.20 2000/11/21 17:27:07 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #ifdef NL_OS_WINDOWS
 
 #include <winsock2.h>
+
 #define ERROR_NUM WSAGetLastError()
 #define socklen_t int
 
@@ -45,9 +46,11 @@
 #include <netdb.h>
 #include <errno.h>
 //#include <fcntl.h>
+
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno
+
 typedef int SOCKET;
 
 #endif
@@ -267,11 +270,7 @@ bool CBaseSocket::dataAvailable() throw (ESocket)
 void CBaseSocket::setLocalAddress()
 {
 	sockaddr saddr;
-#ifdef NL_OS_WINDOWS
-	int saddrlen = sizeof(saddr);
-#elif defined NL_OS_UNIX
 	socklen_t saddrlen = sizeof(saddr);
-#endif
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
 		ESocket( "Unable to find local address", ERROR_NUM );
@@ -354,11 +353,8 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 
 	// Receive incoming message
 	sockaddr_in saddr;
-#ifdef NL_OS_WINDOWS
-	int saddrlen = sizeof(saddr);
-#elif defined NL_OS_UNIX
 	socklen_t saddrlen = sizeof(saddr);
-#endif
+
 	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
 	if ( brecvd == SOCKET_ERROR )
 	{

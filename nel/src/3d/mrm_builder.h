@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.3 2001/06/21 12:58:53 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.4 2001/06/22 16:26:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,10 @@ private:
 	 *	\param nbMats the number of materials of original MeshBuild.
 	 */
 	void			buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats);
+
+
+	void			normalizeBaseMeshSkin(CMRMMesh &baseMesh) const;
+	CMesh::CSkinWeight	normalizeSkinWeight(const CMesh::CSkinWeight &sw) const;
 
 	// @}
 

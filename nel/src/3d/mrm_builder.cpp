@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.12 2001/06/22 12:50:24 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.13 2001/06/22 16:26:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1312,6 +1312,22 @@ void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFin
 		}
 	}
 
+
+	// process all wedges, and compute NSkinMatUsed, skipping geomorphs.
+	// ===============
+	// NB: this works because weights are sorted from biggest to lowest.
+	for(i=finalMRM.NGeomSpace; i<(sint)finalMRM.Wedges.size();i++)
+	{
+		CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[i];
+		for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+		{
+			if(wedge.VertexSkin.Weights[j]==0)
+				break;
+		}
+		nlassert(j>0);
+		wedge.NSkinMatUsed= j;
+	}
+
 }
 
 
@@ -1531,6 +1547,66 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 
 
 // ***************************************************************************
+CMesh::CSkinWeight	CMRMBuilder::normalizeSkinWeight(const CMesh::CSkinWeight &sw) const
+{
+	uint	nbMats= 0;
+	static vector<CTmpVertexWeight>		sws;
+	sws.reserve(NL3D_MESH_SKINNING_MAX_MATRIX);
+	sws.clear();
+
+	// For all weights of sw1.
+	uint i;
+	for(i=0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+	{
+		CTmpVertexWeight	vw;
+		vw.MatrixId= sw.MatrixId[i];
+		vw.Weight= sw.Weights[i];
+		// if this weight is not null.
+		if(vw.Weight>0)
+		{
+			// add it to the list.
+			sws.push_back(vw);
+			nbMats++;
+		}
+	}
+
+	// sort by Weight decreasing order.
+	sort(sws.begin(), sws.end());
+
+
+	// Then output the result to the skinWeight, normalizing.
+	float	sumWeight=0;
+	for(i= 0; i<nbMats; i++)
+	{
+		sumWeight+= sws[i].Weight;
+	}
+
+	CMesh::CSkinWeight	ret;
+	// Fill only needed matrix (other are rested in CMesh::CSkinWeight ctor).
+	for(i= 0; i<nbMats; i++)
+	{
+		ret.MatrixId[i]= sws[i].MatrixId;
+		ret.Weights[i]= sws[i].Weight / sumWeight;
+	}
+
+	return ret;
+}
+
+
+// ***************************************************************************
+void			CMRMBuilder::normalizeBaseMeshSkin(CMRMMesh &baseMesh) const
+{
+	nlassert(_Skinned);
+
+	for(uint i=0; i<baseMesh.SkinWeights.size(); i++)
+	{
+		baseMesh.SkinWeights[i]= normalizeSkinWeight(baseMesh.SkinWeights[i]);
+	}
+}
+
+
+
+// ***************************************************************************
 void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::CMeshBuildMRM &mbuild, uint32 vbFlags, uint32 nbMats)
 {
 	sint	i,j,k;
@@ -1546,6 +1622,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 	// ========================
 	// resize the VB.
 	mbuild.VBuffer.setNumVertices(finalMRM.Wedges.size());
+	// Setup SkinWeights.
+	if(_Skinned)
+		mbuild.SkinWeights.resize(finalMRM.Wedges.size());
+
 	// fill the VB.
 	for(i=0; i<(sint)finalMRM.Wedges.size(); i++)
 	{
@@ -1580,6 +1660,12 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 				mbuild.VBuffer.setTexCoord(i, k, attToUv(wedge.Attributes[attId]) );
 				attId++;
 			}
+		}
+
+		// Setup SkinWeights.
+		if(_Skinned)
+		{
+			mbuild.SkinWeights[i]= wedge.VertexSkin;
 		}
 	}
 
@@ -1657,7 +1743,10 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 
 		// Build skin info for this Lod.
 		//---------
-		destLod.InfluencedVertices.clear();
+		for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+		{
+			destLod.InfluencedVertices[j].clear();
+		}
 		destLod.MatrixInfluences.clear();
 		if(_Skinned)
 		{
@@ -1677,63 +1766,77 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRM::C
 						// of the dest wedge, and the id of the geomorph.
 						sint	wedgeStartId= destLod.Geomorphs[wedgeId].Start;
 						sint	wedgeEndId= destLod.Geomorphs[wedgeId].End;
-						// if insertion in the set work, add to the array.
+						uint	nMatUsedStart= finalMRM.Wedges[wedgeStartId].NSkinMatUsed;
+						uint	nMatUsedEnd= finalMRM.Wedges[wedgeEndId].NSkinMatUsed;
+
+						// if insertion in the set work, add to the good array.
 						if( wedgeInfSet.insert(wedgeStartId).second )
-							destLod.InfluencedVertices.push_back(wedgeStartId);
+							destLod.InfluencedVertices[nMatUsedStart-1].push_back(wedgeStartId);
 						if( wedgeInfSet.insert(wedgeEndId).second )
-							destLod.InfluencedVertices.push_back(wedgeEndId);
+							destLod.InfluencedVertices[nMatUsedEnd-1].push_back(wedgeEndId);
 					}
 					else
 					{
+						uint	nMatUsed= finalMRM.Wedges[wedgeId].NSkinMatUsed;
+
 						// just add this wedge to the list (if not here).
 						// if insertion in the set work, add to the array.
 						if( wedgeInfSet.insert(wedgeId).second )
-							destLod.InfluencedVertices.push_back(wedgeId);
+							destLod.InfluencedVertices[nMatUsed-1].push_back(wedgeId);
 					}
 				}
 			}
 
 			// Optimisation: for better cache, sort the destLod.InfluencedVertices in increasing order.
-			sort(destLod.InfluencedVertices.begin(), destLod.InfluencedVertices.end());
+			for(j=0; j<NL3D_MESH_SKINNING_MAX_MATRIX; j++)
+			{
+				sort(destLod.InfluencedVertices[j].begin(), destLod.InfluencedVertices[j].end());
+			}
 
 
 			// Then Build the MatrixInfluences array, for all thoses Influenced Vertices only.
 			// This is the map MatrixId -> MatrixInfId.
 			map<uint, uint>		matrixInfMap;
 
-			for(j= 0; j<(sint)destLod.InfluencedVertices.size(); j++)
+			// For all influenced vertices, flags matrix they use.
+			uint	iSkinMat;
+			for(iSkinMat= 0; iSkinMat<NL3D_MESH_SKINNING_MAX_MATRIX; iSkinMat++)
 			{
-				uint	wedgeId= destLod.InfluencedVertices[j];
-
-				// take the original wedge.
-				const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[wedgeId];
-				// For all matrix with not null influence...
-				for(k= 0; k<NL3D_MESH_SKINNING_MAX_MATRIX; k++)
+				for(j= 0; j<(sint)destLod.InfluencedVertices[iSkinMat].size(); j++)
 				{
-					if(wedge.VertexSkin.Weights[k]>0)
+					uint	wedgeId= destLod.InfluencedVertices[iSkinMat][j];
+
+					// take the original wedge.
+					const CMRMMeshFinal::CWedge	&wedge= finalMRM.Wedges[wedgeId];
+					// For all matrix with not null influence...
+					for(k= 0; k<NL3D_MESH_SKINNING_MAX_MATRIX; k++)
 					{
-						uint	matId= wedge.VertexSkin.MatrixId[k];
 						float	matWeight= wedge.VertexSkin.Weights[k];
 
-						// search/insert the matrixInfId.
-						uint	matInfId;
-						map<uint, uint>::iterator	it= matrixInfMap.find(matId);
-						if( it==matrixInfMap.end() )
+						// This check the validity of skin weights sort. If false, problem before in the algo.
+						if((uint)k<iSkinMat+1)
 						{
-							matInfId= destLod.MatrixInfluences.size();
-							matrixInfMap.insert( make_pair(matId, matInfId) );
-							// create the new MatrixInfluence.
-							destLod.MatrixInfluences.push_back();
-							destLod.MatrixInfluences[matInfId].MatrixId= matId;
+							nlassert( matWeight>0 );
 						}
 						else
-							matInfId= it->second;
+						{
+							nlassert( matWeight==0 );
+						}
+						// if not null influence.
+						if(matWeight>0)
+						{
+							uint	matId= wedge.VertexSkin.MatrixId[k];
 
-						// Add the vertex influenced to the matrixInf.
-						CMeshMRM::CVertexWeight	vw;
-						vw.Vertex= wedgeId;
-						vw.Weight= matWeight;
-						destLod.MatrixInfluences[matInfId].VertexWeights.push_back(vw);
+							// search/insert the matrixInfId.
+							map<uint, uint>::iterator	it= matrixInfMap.find(matId);
+							if( it==matrixInfMap.end() )
+							{
+								uint matInfId= destLod.MatrixInfluences.size();
+								matrixInfMap.insert( make_pair(matId, matInfId) );
+								// create the new MatrixInfluence.
+								destLod.MatrixInfluences.push_back(matId);
+							}
+						}
 					}
 				}
 			}
@@ -1773,6 +1876,12 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	// vbFlags returned is the VBuffer format supported by CMRMBuilder.
 	// NB: skinning is removed because skinning is made in software in CMeshMRM.
 	vbFlags= buildMrmBaseMesh(mbuild, baseMesh);
+
+	// If skinned, must ensure that skin weights have weights in ascending order.
+	if(_Skinned)
+	{
+		normalizeBaseMeshSkin(baseMesh);
+	}
 
 	// from this baseMesh, builds all LODs of the MRM, with geomorph info. NB: vertices/wedges are duplicated.
 	buildAllLods(baseMesh, lodMeshs, params.NLods, params.Divisor);

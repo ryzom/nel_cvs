@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.4 2001/06/21 14:33:13 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.5 2001/06/22 16:26:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,39 +175,6 @@ private:
 	};
 
 
-	/// Skinning: a single influence of a matrix on a vertex. NB: Vertex is the index in the _VBuffer.
-	struct	CVertexWeight
-	{
-		uint32		Vertex;
-		float		Weight;
-
-		void	serial(NLMISC::IStream &f)
-		{
-			f.serial(Vertex);
-			f.serial(Weight);
-		}
-	};
-
-
-	/// Skinning: The influence of a matrix on the vertices.
-	class	CMatrixInfluence
-	{
-	public:
-		/// The id of the bone in the skeleton.
-		uint32							MatrixId;
-		/// The list of influenced vertices.
-		std::vector<CVertexWeight>		VertexWeights;
-
-		void	serial(NLMISC::IStream &f)
-		{
-			sint	ver= f.serialVersion(0);
-
-			f.serial(MatrixId);
-			f.serialCont(VertexWeights);
-		}
-	};
-
-
 	/// A LOD of the MRM.
 	class	CLod
 	{
@@ -219,10 +186,12 @@ private:
 		/// List of rdr pass, for this LOD.
 		std::vector<CRdrPass>		RdrPass;
 
-		/// Skinning: list of influenced vertices (for reset), for this lod only.
-		std::vector<uint32>				InfluencedVertices;
-		/// Skinning: list of MatrixInfluence, for this lod only.
-		std::vector<CMatrixInfluence>	MatrixInfluences;
+		/** Skinning: list of influenced vertices to compute, for this lod only. There is 4 array, 0th 
+		 *	is for vertices which have only one matrix. 1st if for vertices which have only 2 matrix ....
+		 */
+		std::vector<uint32>				InfluencedVertices[NL3D_MESH_SKINNING_MAX_MATRIX];
+		/// Skinning: list of Matrix which influence this Lod. So we know what matrix to compute.
+		std::vector<uint32>				MatrixInfluences;
 		/// Skinning: does the VBuffer part of this Lod contains original skin vertices.
 		bool						OriginalSkinRestored;
 
@@ -236,12 +205,17 @@ private:
 		void	serial(NLMISC::IStream &f)
 		{
 			sint	ver= f.serialVersion(0);
+			uint	i;
 
 			f.serial(NWedges);
 			f.serialCont(RdrPass);
 			f.serialCont(Geomorphs);
-			f.serialCont(InfluencedVertices);
 			f.serialCont(MatrixInfluences);
+
+			// Serial array of InfluencedVertices. NB: code written so far for NL3D_MESH_SKINNING_MAX_MATRIX==4 only.
+			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+			for(i= 0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+				f.serialCont(InfluencedVertices[i]);
 		}
 	};
 
@@ -252,7 +226,10 @@ private:
 	struct	CMeshBuildMRM
 	{
 		// This tells if the mesh is correctly skinned.
-		bool					Skinned;
+		bool								Skinned;
+
+		// This is the array of SkinWeights, same size as the VB.
+		std::vector<CMesh::CSkinWeight>		SkinWeights;
 
 		// This VB is computed with CMRMBuilder and is ready to used
 		CVertexBuffer			VBuffer;
@@ -273,6 +250,8 @@ private:
 	std::vector<CVector>		_OriginalSkinNormals;
 	/// The only one VBuffer of the mesh.
 	CVertexBuffer				_VBuffer;
+	/// This is the array of SkinWeights, same size as the VB.
+	std::vector<CMesh::CSkinWeight>		_SkinWeights;
 	/// List of Lods.
 	std::vector<CLod>			_Lods;
 	/// For clipping. this is the BB of all vertices of all Lods.

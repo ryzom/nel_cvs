@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.8 2001/06/21 14:33:13 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.9 2001/06/22 16:26:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 
 
 using namespace NLMISC;
+using namespace std;
+
 
 namespace NL3D 
 {
@@ -99,6 +101,7 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 	_VBuffer= meshBuildMRM.VBuffer;
 	_Lods= meshBuildMRM.Lods;
 	_Skinned= meshBuildMRM.Skinned;
+	_SkinWeights= meshBuildMRM.SkinWeights;
 
 	
 	// For skinning.
@@ -328,6 +331,7 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	static	float	testTime= 0;
 	testTime+= 0.003f;
 	float	testAlpha= (1+(float)sin(testTime))/2;
+	testAlpha= 1;
 
 
 	// Choose what Lod to draw.
@@ -434,6 +438,7 @@ void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// serial geometry.
 	f.serial(_Skinned);
 	f.serial(_VBuffer);
+	f.serialCont(_SkinWeights);
 	f.serialCont(_Lods);
 	f.serial(_BBox);
 
@@ -503,13 +508,10 @@ void	CMeshMRM::restoreOriginalSkinVertices()
 void	CMeshMRM::restoreOriginalSkinPart(CLod &lod)
 {
 	nlassert(_Skinned);
-	if( lod.InfluencedVertices.size()==0 )
-		return;
-
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
+	uint8		*destVertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
 	uint		flags= _VBuffer.getVertexFormat();
 	sint32		vertexSize= _VBuffer.getVertexSize();
 	// must have XYZ.
@@ -523,22 +525,39 @@ void	CMeshMRM::restoreOriginalSkinPart(CLod &lod)
 		normalOff= 0;
 
 
+	// compute src array.
+	CVector				*srcVertexPtr;
+	CVector				*srcNormalPtr= NULL;
+	srcVertexPtr= &_OriginalSkinVertices[0];
+	if(normalOff)
+		srcNormalPtr= &(_OriginalSkinNormals[0]);
+
+
 	// copy skinning.
 	//===========================
-	uint		nInf= lod.InfluencedVertices.size();
-	uint32		*infPtr= &(lod.InfluencedVertices[0]);
-	//  for all InfluencedVertices only.
-	for(;nInf>0;nInf--, infPtr++)
+	for(uint i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
 	{
-		uint	index= *infPtr;
-		uint8	*dstVertex= vertexPtr + index * vertexSize;
-		// Vertex.
-		*(CVector*)dstVertex= _OriginalSkinVertices[index];
-		// Normal.
-		if(normalOff)
-			*(CVector*)(dstVertex+normalOff)= _OriginalSkinNormals[index];
-	}
+		uint		nInf= lod.InfluencedVertices[i].size();
+		if( nInf==0 )
+			continue;
+		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
 
+		//  for all InfluencedVertices only.
+		for(;nInf>0;nInf--, infPtr++)
+		{
+			uint	index= *infPtr;
+			CVector				*srcVertex= srcVertexPtr + index;
+			CVector				*srcNormal= srcNormalPtr + index;
+			CVector				*dstVertex= (CVector*)(destVertexPtr + index * vertexSize);
+			CVector				*dstNormal= (CVector*)(dstVertex + normalOff);
+
+			// Vertex.
+			*dstVertex= *srcVertex;
+			// Normal.
+			if(normalOff)
+				*dstNormal= *srcNormal;
+		}
+	}
 
 	// clean this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= true;
@@ -563,6 +582,40 @@ struct	CMatrix3x4
 		a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
 		a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
 	}
+
+
+	// mulSetvector. NB: in should be different as v!! (else don't work).
+	void	mulSetVector(const CVector &in, CVector &out)
+	{
+		out.x= (a11*in.x + a12*in.y + a13*in.z);
+		out.y= (a21*in.x + a22*in.y + a23*in.z);
+		out.z= (a31*in.x + a32*in.y + a33*in.z);
+	}
+	// mulSetpoint. NB: in should be different as v!! (else don't work).
+	void	mulSetPoint(const CVector &in, CVector &out)
+	{
+		out.x= (a11*in.x + a12*in.y + a13*in.z + a14);
+		out.y= (a21*in.x + a22*in.y + a23*in.z + a24);
+		out.z= (a31*in.x + a32*in.y + a33*in.z + a34);
+	}
+
+
+	// mulSetvector. NB: in should be different as v!! (else don't work).
+	void	mulSetVector(const CVector &in, float scale, CVector &out)
+	{
+		out.x= (a11*in.x + a12*in.y + a13*in.z) * scale;
+		out.y= (a21*in.x + a22*in.y + a23*in.z) * scale;
+		out.z= (a31*in.x + a32*in.y + a33*in.z) * scale;
+	}
+	// mulSetpoint. NB: in should be different as v!! (else don't work).
+	void	mulSetPoint(const CVector &in, float scale, CVector &out)
+	{
+		out.x= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
+		out.y= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
+		out.z= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
+	}
+
+
 	// mulAddvector. NB: in should be different as v!! (else don't work).
 	void	mulAddVector(const CVector &in, float scale, CVector &out)
 	{
@@ -577,6 +630,9 @@ struct	CMatrix3x4
 		out.y+= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
 		out.z+= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
 	}
+
+
+
 };
 
 
@@ -584,16 +640,17 @@ struct	CMatrix3x4
 void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
 {
 	nlassert(_Skinned);
-	if( lod.InfluencedVertices.size()==0 )
+	if(_SkinWeights.size()==0)
 		return;
 
 	// get vertexPtr / normalOff.
 	//===========================
-	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
+	uint8		*destVertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
 	uint		flags= _VBuffer.getVertexFormat();
 	sint32		vertexSize= _VBuffer.getVertexSize();
 	// must have XYZ.
 	nlassert(flags & IDRV_VF_XYZ);
+
 
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
@@ -603,30 +660,29 @@ void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
 		normalOff= 0;
 
 
-	// reset skinning.
-	//===========================
-	uint		nInf= lod.InfluencedVertices.size();
-	uint32		*infPtr= &(lod.InfluencedVertices[0]);
-	//  for all InfluencedVertices only.
-	for(;nInf>0;nInf--, infPtr++)
-	{
-		uint	index= *infPtr;
-		uint8	*dstVertex= vertexPtr + index * vertexSize;
-		// Vertex.
-		*(CVector*)dstVertex= CVector::Null;
-		// Normal.
-		if(normalOff)
-			*(CVector*)(dstVertex+normalOff)= CVector::Null;
-	}
+	// compute src array.
+	CMesh::CSkinWeight	*srcSkinPtr;
+	CVector				*srcVertexPtr;
+	CVector				*srcNormalPtr= NULL;
+	srcSkinPtr= &_SkinWeights[0];
+	srcVertexPtr= &_OriginalSkinVertices[0];
+	if(normalOff)
+		srcNormalPtr= &(_OriginalSkinNormals[0]);
 
 
-	// add skinning influence for all Matrix.
+
+	// Compute usefull Matrix for this lod.
 	//===========================
-	for(uint i= 0; i<lod.MatrixInfluences.size(); i++)
+	uint	i;
+	// Those arrays map the array of bones in skeleton.
+	static	vector<CMatrix3x4>			boneMat3x4;
+	static	vector<CMatrix3x4>			boneMatNormal3x4;
+	// For all matrix this lod use.
+	for(i= 0; i<lod.MatrixInfluences.size(); i++)
 	{
 		// Get Matrix info.
-		CMatrixInfluence	&matInf= lod.MatrixInfluences[i];
-		const CMatrix		&boneMat= bones[matInf.MatrixId].getBoneSkinMatrix();
+		uint	matId= lod.MatrixInfluences[i];
+		const CMatrix		&boneMat= bones[matId].getBoneSkinMatrix();
 		CMatrix				boneMatNormal;
 
 		// build the good boneMatNormal (with good scale inf).
@@ -641,28 +697,139 @@ void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
 		}
 
 		// compute "fast" matrix 3x4.
-		CMatrix3x4			boneMat3x4;
-		CMatrix3x4			boneMatNormal3x4;
-		boneMat3x4.set(boneMat);
-		boneMatNormal3x4.set(boneMatNormal);
-
-		// for all vertices influenced by this matrix, apply the modification.
-		uint			nInf= matInf.VertexWeights.size();
-		CVertexWeight	*infPtr= &(matInf.VertexWeights[0]);
-		for(;nInf>0; nInf--, infPtr++)
+		// resize Matrix3x4.
+		if(matId>=boneMat3x4.size())
 		{
-			// What vertex we must inf.
-			uint	index= infPtr->Vertex;
-			// with what weight.
-			float	w= infPtr->Weight;
-			// the dest vertex Data.
-			uint8	*dstVertex= vertexPtr + index * vertexSize;
-			// Vertex.
-			boneMat3x4.mulAddPoint(_OriginalSkinVertices[index], w, *(CVector*)dstVertex);
-			// Normal.
-			if(normalOff)
-				boneMat3x4.mulAddVector(_OriginalSkinNormals[index], w, *(CVector*)(dstVertex + normalOff));
+			boneMat3x4.resize(matId+1);
+			boneMatNormal3x4.resize(matId+1);
 		}
+		boneMat3x4[matId].set(boneMat);
+		boneMatNormal3x4[matId].set(boneMatNormal);
+	}
+
+
+	// apply skinning.
+	//===========================
+	// assert, code below is written especially for 4 per vertex.
+	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+	for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+	{
+		uint		nInf= lod.InfluencedVertices[i].size();
+		if( nInf==0 )
+			continue;
+		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
+
+		switch(i)
+		{
+		//=========
+		case 0:
+			// Special case for Vertices influenced by one matrix. Just copy result of mul.
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, *dstVertex);
+				// Normal.
+				if(normalOff)
+					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, *dstNormal);
+			}
+			break;
+
+		//=========
+		case 1:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				// Normal.
+				if(normalOff)
+				{
+					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+				}
+			}
+			break;
+
+		//=========
+		case 2:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
+				// Normal.
+				if(normalOff)
+				{
+					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
+				}
+			}
+			break;
+
+		//=========
+		case 3:
+			//  for all InfluencedVertices only.
+			for(;nInf>0;nInf--, infPtr++)
+			{
+				uint	index= *infPtr;
+				CMesh::CSkinWeight	*srcSkin= srcSkinPtr + index;
+				CVector				*srcVertex= srcVertexPtr + index;
+				CVector				*srcNormal= srcNormalPtr + index;
+				uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+				CVector				*dstVertex= (CVector*)(dstVertexVB);
+				CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+
+
+				// Vertex.
+				boneMat3x4[ srcSkin->MatrixId[0] ].mulSetPoint( *srcVertex, srcSkin->Weights[0], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[1] ].mulAddPoint( *srcVertex, srcSkin->Weights[1], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[2] ].mulAddPoint( *srcVertex, srcSkin->Weights[2], *dstVertex);
+				boneMat3x4[ srcSkin->MatrixId[3] ].mulAddPoint( *srcVertex, srcSkin->Weights[3], *dstVertex);
+				// Normal.
+				if(normalOff)
+				{
+					boneMatNormal3x4[ srcSkin->MatrixId[0] ].mulSetVector( *srcNormal, srcSkin->Weights[0], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[1] ].mulAddVector( *srcNormal, srcSkin->Weights[1], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[2] ].mulAddVector( *srcNormal, srcSkin->Weights[2], *dstNormal);
+					boneMatNormal3x4[ srcSkin->MatrixId[3] ].mulAddVector( *srcNormal, srcSkin->Weights[3], *dstNormal);
+				}
+			}
+			break;
+
+		}
+
 	}
 
 
@@ -672,3 +839,4 @@ void	CMeshMRM::applySkin(CLod &lod, const std::vector<CBone> &bones)
 
 
 } // NL3D
+

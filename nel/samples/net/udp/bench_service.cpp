@@ -1,7 +1,7 @@
 /** \file udp/frontend_service.cpp
  * <todo> a mettre
  *
- * $Id: bench_service.cpp,v 1.2 2002/10/28 10:03:32 lecroart Exp $
+ * $Id: bench_service.cpp,v 1.3 2002/11/29 10:15:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,11 +294,11 @@ void CClient::updateFullStat ()
 {
 	uint32 NbLost = 0, NbDup = 0, NbPong = 0;
 
-	if (Address.hostName().empty())
+/*	if (Address.hostName().empty())
 	{
 		// don't log because we receive no pong at all
 		return;
-	}
+	}*/
 
 	for (uint i = 0; i < LastPongReceived; i++)
 	{
@@ -421,7 +421,7 @@ void CClient::updateStat ()
 	{
 		if (FirstWrite)
 		{
-			nlassert (!Address.hostName().empty())
+			//nlassert (!Address.hostName().empty())
 			fprintf (fp, "HostAddress: %s\n", Address.asString().c_str());
 			FirstWrite = false;
 		}

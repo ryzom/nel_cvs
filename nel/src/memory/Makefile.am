@@ -1,10 +1,8 @@
 #
-# $Id: Makefile.am,v 1.1 2002/11/15 17:36:05 lecroart Exp $
+# $Id: Makefile.am,v 1.2 2002/11/15 17:41:23 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
-
-SUBDIRS               = config_file
 
 lib_LTLIBRARIES       = libnelmemory.la
 
@@ -22,9 +20,11 @@ noinst_HEADERS        = heap_allocator.h            \
                         memory_mutex.h              \
                         memory_tds.h
 
-libnelmisc_la_LIBADD  = -lc -lpthread
+AM_CXXFLAGS           = -I$(top_srcdir)/src
 
-libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
+libnelmemory_la_LIBADD  = -lc -lpthread
+
+libnelmemory_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 
 
 # End of Makefile.am

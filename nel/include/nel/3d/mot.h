@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.6 2001/03/16 16:48:35 berenguier Exp $
+ * $Id: mot.h,v 1.7 2001/04/12 13:54:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -358,13 +358,13 @@ public:
 	/**
 	 * Link 2 models via their IObs for this traversal.
 	 * m2 becomes a child of m1.
-	 * If m1==NULL, m2 will be linked to the Root of this traversal (or assert() if this one is NULL).
+	 * If m1==NULL, m2 will be linked to the Root of this traversal (or do nothing if this one is NULL).
 	 * if m2 was already a son of m1, no-op.
 	 */
 	void	link(IModel *m1, IModel *m2) const;
 	/**
 	 * Unlink 2 models via their IObs for this traversal.
-	 * If m1==NULL, m2 will be unlinked from the Root of this traversal (or assert() if this one is NULL).
+	 * If m1==NULL, m2 will be unlinked from the Root of this traversal (or do nothing if this one is NULL).
 	 * if m2 was not a son of m1, no-op.
 	 */
 	void	unlink(IModel *m1, IModel *m2) const;
@@ -393,7 +393,7 @@ public:
 
 protected:
 	// The root observer.
-	IObs	*Root;
+	NLMISC::CRefPtr<IObs>	Root;
 
 };
 

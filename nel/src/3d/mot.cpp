@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.10 2001/04/03 07:55:50 corvazier Exp $
+ * $Id: mot.cpp,v 1.11 2001/04/12 13:54:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,7 +303,11 @@ void	ITrav::link(IModel *m1, IModel *m2) const
 	else
 	{
 		o1= Root;
-		nlassert(o1);
+		// If his one is NULL, return.
+		// NB: this may not be an error. eg: in CScene::release(), when all models are deleted, 
+		// a ~CSkeletonModel() call link() to Root, but Root model may have been deleted first!!!
+		if(!o1)
+			return;
 	}
 	o2= m2->getObs(travId);
 	nlassert(o1);
@@ -327,7 +331,11 @@ void	ITrav::unlink(IModel *m1, IModel *m2) const
 	else
 	{
 		o1= Root;
-		nlassert(o1);
+		// If his one is NULL, return.
+		// NB: this may not be an error. eg: in CScene::release(), when all models are deleted, 
+		// a ~CSkeletonModel() call link() to Root, but Root model may have been deleted first!!!
+		if(!o1)
+			return;
 	}
 	o2= m2->getObs(travId);
 	nlassert(o1);

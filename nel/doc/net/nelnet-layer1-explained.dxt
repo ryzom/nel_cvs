@@ -56,7 +56,7 @@ Under Windows, the wake-up mechanism is not implemented. Instead, the select tim
 
 \subsection l1servsync Thread synchronization
 
-Because of the sharing of data among different threads, some mutexes are used to synchronize data access/modification, on the receive queue, the thread pool, the connections, the set of connections to remove and the connected property of sockets (note: to ensure a fair access to the variables, the Linux implementation uses a semaphore instead of a pthread_mutex)
+Because of the sharing of data among different threads, some mutexes are used to synchronize data access/modification, on the receive queue, the thread pool, the connections, the set of connections to remove and the connected property of sockets (note: to ensure a fair access to the variables, the GNU/Linux implementation uses a semaphore instead of a pthread_mutex)
 
 \subsection l1servstats Gathering statistics
 

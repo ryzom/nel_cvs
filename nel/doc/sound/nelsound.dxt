@@ -43,7 +43,7 @@ CSoundDriver, IListener, ISource, IBuffer.
 
 As in NeL 3D, the low level uses a dynamic library to provide
 a device-independant layer. At present time, a library for OpenAL has
-been made. OpenAL is a cross-platform, open-source API for 3D audio.
+been made. OpenAL is a cross-platform, free softwaree API for 3D audio.
 
 \subsection sndhilevel High level library
 

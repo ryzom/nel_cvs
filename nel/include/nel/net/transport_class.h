@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * TODO: File description
  *
- * $Id: transport_class.h,v 1.23 2005/02/22 10:14:13 besson Exp $
+ * $Id: transport_class.h,v 1.24 2005/03/22 14:39:28 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -476,6 +476,11 @@ inline NLNET::CMessage &CTransportClass::write ()
 {
 	nlassert (Init);
 	nlassert (Mode == 0);
+
+#ifndef FINAL_VERSION
+	// Did the programmer forget to register the transport class? Forbid sending then.
+	nlassert( LocalRegisteredClass.find( className() ) != LocalRegisteredClass.end() );
+#endif
 
 	// set the mode to register
 	Mode = 2;

@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.17 2001/10/29 15:54:46 chafik Exp $
+ * $Id: ai_exception.h,v 1.18 2001/10/29 16:54:35 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -161,7 +161,7 @@ namespace NLAIE
 
 		CExceptionUnReference(const CExceptionUnReference &e);
 		CExceptionUnReference(const std::string &text);
-		//CExceptionUnReference(char *text);		
+		CExceptionUnReference(char *text);		
 
 		virtual const IException *clone() const;
 

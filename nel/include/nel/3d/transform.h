@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.16 2001/04/09 14:23:33 berenguier Exp $
+ * $Id: transform.h,v 1.17 2001/04/24 14:58:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,8 @@ public:
 	void		heritVisibility();
 	/// Get the local visibility state.
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
+	/// Get the skeleton model. Returnr NULL in normal mode.
+	CSkeletonModel*			getSkeletonModel () const {return _FatherSkeletonModel;}
 
 
 	/// \name Derived from ITransformable.

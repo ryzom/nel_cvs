@@ -32,9 +32,11 @@ bankfar_filename=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's
 cp $bank_filename smallbank/ligo.smallbank 2> log.log
 cp $bankfar_filename smallbank/ligo.farbank 2> log.log
 
+# Maxdir
+max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+
 # delete ini file
 
-max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rm $max_directory/plugcfg/nelligo.ini
 # echo "$max_directory/plugcfg/nelligo.ini" >> log.log
 

@@ -8,9 +8,6 @@ exec_timeout='../../bin/exec_timeout.exe'
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "ig_export_timeout" | sed -e 's/ig_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the max directory
-max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -22,6 +19,9 @@ ig_land_source_directories=`cat ../../cfg/directories.cfg | grep "ig_land_source
 
 # Get the ig directories
 ig_other_source_directories=`cat ../../cfg/directories.cfg | grep "ig_other_source_directory" | sed -e 's/ig_other_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Maxdir
+max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
 
 # Log error
 echo ------- > log.log

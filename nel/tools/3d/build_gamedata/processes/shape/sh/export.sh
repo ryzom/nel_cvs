@@ -8,9 +8,6 @@ exec_timeout='../../bin/exec_timeout.exe'
 # Get the timeout
 timeout=`cat ../../cfg/config.cfg | grep "shape_export_timeout" | sed -e 's/shape_export_timeout//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-# Get the max directory
-max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -22,6 +19,9 @@ shape_source_directories=`cat ../../cfg/directories.cfg | grep "shape_source_dir
 
 # Get the quality option to choose the goor properties.cfg file
 quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
+
+# Maxdir
+max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
 
 # Get the options
 if ( test "$quality_flag" )

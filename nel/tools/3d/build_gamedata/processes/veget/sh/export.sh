@@ -3,9 +3,6 @@ rm log.log 2> /dev/null
 
 # *** Export veget files (.veget) from Max
 
-# Get the max directory
-max_directory=`cat ../../cfg/site.cfg | grep "max_directory" | sed -e 's/max_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
@@ -14,6 +11,9 @@ build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_director
 
 # Get the veget directories
 veget_source_directories=`cat ../../cfg/directories.cfg | grep "veget_source_directory" | sed -e 's/veget_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Maxdir
+max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
 
 # Log error
 echo ------- > log.log

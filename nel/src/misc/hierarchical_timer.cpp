@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.25 2003/02/17 10:53:06 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.26 2003/02/21 15:53:11 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -522,9 +522,12 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 				std::copy(currTimer->_Name, currTimer->_Name + (endIndex - startIndex), resultName.begin() + startIndex);
 			}
 			TNodeVect &execNodes = nodeMap[currTimer];
-			currNodeStats.buildFromNodes(&execNodes[0], execNodes.size(), _MsPerTick);			
-			currNodeStats.getStats(resultStats, displayEx, rootStats.TotalTime, _WantStandardDeviation);
-			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+			if (execNodes.size() > 0)
+			{
+				currNodeStats.buildFromNodes(&execNodes[0], execNodes.size(), _MsPerTick);			
+				currNodeStats.getStats(resultStats, displayEx, rootStats.TotalTime, _WantStandardDeviation);
+				log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+			}
 		}
 		if (sonsIndex.back() == currTimer->_Sons.size())
 		{
@@ -714,7 +717,10 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 	}
 	MinTime  = minTime * msPerTick;
 	MaxTime  = maxTime * msPerTick;
-	MeanTime = TotalTime / NumVisits;
+	if (NumVisits > 0)
+		MeanTime = TotalTime / NumVisits;
+	else
+		MeanTime = 0.0;
 
 	// compute standard deviation
 	double varianceSum = 0;

@@ -436,45 +436,40 @@ BOOL CGeorgesDoc::OnOpenDocument (LPCTSTR lpszPathName)
 }
 
 // ---------------------------------------------------------------------------
-void CGeorgesDoc::FileSave ()
+BOOL CGeorgesDoc::DoSave (LPCTSTR lpszPathName, BOOL bReplace)
 {
-	if (DocumentIsNew)
-		FileSaveAs ();
-	OnSaveDocument (DocumentName.c_str());
-}
-
-// ---------------------------------------------------------------------------
-void CGeorgesDoc::FileSaveAs ()
-{
-	CFileDialog Dlg (false);
-	Dlg.m_ofn.lpstrTitle  = "Saving a GEORGES file";
-	Dlg.m_ofn.lpstrFilter = "Georges files (*.*)|*.*";
-	CGeorgesApp *pApp = (CGeorgesApp*)AfxGetApp();
-	Dlg.m_ofn.lpstrInitialDir =  pApp->GetDirPrototype().c_str();
-
-	if (Dlg.DoModal() != IDOK )
-		return;
-
-	try
+	CString newName = lpszPathName;
+	if (newName.IsEmpty())
 	{
-		OnSaveDocument (Dlg.GetPathName());
+		CFileDialog Dlg (false);
+		Dlg.m_ofn.lpstrTitle  = "Saving a GEORGES file";		
+		CStringEx title((LPCSTR)GetTitle());
+		char Filter[512];
+		strcpy (Filter, "Georges files (*");
+		strcat (Filter, title.get_mid(title.reverse_find('.')).c_str());
+		strcat (Filter, ")|*");
+		strcat (Filter, title.get_mid(title.reverse_find('.')).c_str());
+		strcat (Filter, "||");
+		uint32 len = strlen(Filter);
+		for (uint32 i = 0; i < len; ++i)
+			if (Filter[i] == '|')
+				Filter[i] = 0;
+		Dlg.m_ofn.lpstrFilter = Filter;
+		char iniDir[512];
+		strcpy (iniDir, GetDirPrototype().c_str());
+		Dlg.m_ofn.lpstrInitialDir = iniDir;
+		char ext[128];
+		strcpy (ext, title.get_mid(title.reverse_find('.')).c_str());
+		Dlg.m_ofn.lpstrDefExt = ext;
+		Dlg.m_ofn.Flags |= OFN_OVERWRITEPROMPT;
+		if (Dlg.DoModal() != IDOK)
+			return FALSE;
+		newName = Dlg.GetPathName ();
 	}
-	catch (NLMISC::Exception &)
-	{
-		// Not succeeded
-	}
-}
 
-// ---------------------------------------------------------------------------
-BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName) 
-{
-	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	CWaitCursor wait;
 
-	pApp->SetDirLevel (GetDirLevel());
-	pApp->SetDirPrototype (GetDirPrototype());
-	pApp->SetDirDfnTyp (GetDirDfnTyp());
-
-	CStringEx sxName = CStringEx(lpszPathName);
+	CStringEx sxName = CStringEx((LPCSTR)newName);
 	if ((sxName.reverse_find('.') == -1) || 
 		(sxName.reverse_find('\\') > sxName.reverse_find('.')) || 
 		(sxName.reverse_find('/') > sxName.reverse_find('.')))
@@ -482,6 +477,29 @@ BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName)
 		CStringEx title((LPCSTR)GetTitle());
 		sxName += title.get_mid(title.reverse_find('.'));
 	}
+	newName = sxName.c_str();
+
+	if (!OnSaveDocument(newName))
+	{
+		return FALSE;
+	}
+
+	// reset the title and change the document name
+	if (bReplace)
+		SetPathName(newName);
+
+	return TRUE;        // success
+}
+
+// ---------------------------------------------------------------------------
+BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName) 
+{
+	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());
+	CStringEx sxName = CStringEx(lpszPathName);
+
+	pApp->SetDirLevel (GetDirLevel());
+	pApp->SetDirPrototype (GetDirPrototype());
+	pApp->SetDirDfnTyp (GetDirDfnTyp());
 
 	// Unlock
 	if (FileLock != NULL)
@@ -510,8 +528,8 @@ BOOL CGeorgesDoc::OnSaveDocument (LPCTSTR lpszPathName)
 
 	// Relock file
 	FileLock = _fsopen (sxName.c_str(), "r", _SH_DENYRW);
-
 	DocumentIsNew = false;
+
 	return TRUE;
 }
 

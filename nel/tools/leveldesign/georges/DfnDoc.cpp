@@ -207,36 +207,6 @@ BOOL CDfnDoc::OnOpenDocument (LPCTSTR lpszPathName)
 }
 
 // ---------------------------------------------------------------------------
-void CDfnDoc::FileSave ()
-{
-	if (DocumentIsNew)
-		FileSaveAs ();
-	OnSaveDocument (DocumentName.c_str());
-}
-
-// ---------------------------------------------------------------------------
-void CDfnDoc::FileSaveAs ()
-{
-	CFileDialog Dlg (false);
-	Dlg.m_ofn.lpstrTitle  = "Saving a DFN file";
-	Dlg.m_ofn.lpstrFilter = "Define files (*.dfn)|*.dfn";
-	CGeorgesApp *pApp = (CGeorgesApp*)AfxGetApp();
-	Dlg.m_ofn.lpstrInitialDir =  pApp->GetDirDfnTyp().c_str();
-
-	if (Dlg.DoModal() != IDOK )
-		return;
-
-	try
-	{
-		OnSaveDocument (Dlg.GetPathName());
-	}
-	catch (NLMISC::Exception &)
-	{
-		// Not succeeded
-	}
-}
-
-// ---------------------------------------------------------------------------
 BOOL CDfnDoc::OnSaveDocument (LPCTSTR lpszPathName) 
 {
 	CGeorgesApp* pApp = dynamic_cast<CGeorgesApp*>(AfxGetApp());

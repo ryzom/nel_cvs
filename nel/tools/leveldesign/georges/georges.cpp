@@ -209,18 +209,21 @@ void CGeorgesApp::OnAppAbout()
 // ---------------------------------------------------------------------------
 CStringEx CGeorgesApp::GetDirDfnTyp () const
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return Env.DirDfnTyp;
 }
 
 // ---------------------------------------------------------------------------
 CStringEx CGeorgesApp::GetDirPrototype () const
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return Env.DirPrototype;
 }
 
 // ---------------------------------------------------------------------------
 CStringEx CGeorgesApp::GetDirLevel () const
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	return Env.DirLevel;
 }
 

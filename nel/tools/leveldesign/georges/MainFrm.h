@@ -55,9 +55,6 @@ protected:
 	afx_msg void OnClose();
 	afx_msg void OnEditUndo();
 	afx_msg void OnEditRedo();
-
-	afx_msg void OnFileSave ();
-	afx_msg void OnFileSaveAs ();
 	afx_msg void OnFileDirDfnTyp();
 	afx_msg void OnFileDirPrototype();
 	

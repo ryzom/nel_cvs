@@ -135,15 +135,13 @@ public:
 	virtual BOOL OnNewDocument ();
 	void NewDocument (const CStringEx _sxfilename);
 	virtual BOOL OnOpenDocument (LPCTSTR lpszPathName);
-	void FileSave ();
-	void FileSaveAs ();
+	virtual BOOL DoSave (LPCTSTR lpszPathName, BOOL bReplace);
 	virtual BOOL OnSaveDocument (LPCTSTR lpszPathName);
 	virtual void OnCloseDocument();
 	virtual void DeleteContents();
 	void UpdateDocument ();
 
-
-
+	
 	// -----
 	// Debug
 	// -----

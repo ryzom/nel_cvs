@@ -175,50 +175,6 @@ void CMainFrame::OnEditRedo()
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::OnFileSave ()
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CMDIChildWnd *pChild = MDIGetActive();
-	if (pChild == NULL)
-		return;
-	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
-	if (pGeorgesDoc != NULL)
-	{
-		pGeorgesDoc->FileSave ();
-		return;
-	}
-
-	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
-	if (pDfnDoc != NULL)
-	{
-		pDfnDoc->FileSave ();
-		return;
-	}
-}
-
-// ---------------------------------------------------------------------------
-void CMainFrame::OnFileSaveAs ()
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	CMDIChildWnd *pChild = MDIGetActive();
-	if (pChild == NULL)
-		return;
-	CGeorgesDoc *pGeorgesDoc = dynamic_cast<CGeorgesDoc*>(pChild->GetActiveDocument());
-	if (pGeorgesDoc != NULL)
-	{
-		pGeorgesDoc->FileSaveAs ();
-		return;
-	}
-
-	CDfnDoc *pDfnDoc = dynamic_cast<CDfnDoc*>(pChild->GetActiveDocument());
-	if (pDfnDoc != NULL)
-	{
-		pDfnDoc->FileSaveAs ();
-		return;
-	}
-}
-
-// ---------------------------------------------------------------------------
 // This is just a function to process the initialisation event of the directoryBrowser
 int CALLBACK dataDirBrowseCallbackProc (HWND hwnd,UINT uMsg,LPARAM lp, LPARAM pData) 
 {

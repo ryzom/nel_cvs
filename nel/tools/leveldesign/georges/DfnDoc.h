@@ -80,8 +80,6 @@ public:
 	virtual void DeleteContents ();
 
 	virtual BOOL OnOpenDocument (LPCTSTR lpszPathName);
-	void FileSave ();
-	void FileSaveAs ();
 	virtual BOOL OnSaveDocument (LPCTSTR lpszPathName);
 	virtual void OnCloseDocument ();
 

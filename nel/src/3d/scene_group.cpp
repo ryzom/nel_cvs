@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.66 2003/09/29 13:22:37 besson Exp $
+ * $Id: scene_group.cpp,v 1.67 2003/11/12 16:54:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -526,10 +526,13 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver, uint selectedTe
 		getShapeName (i, shapeName);
 		if (!shapeName.empty ())
 		{
-			_Instances[i] = scene.createInstance (shapeName);
-			if( _Instances[i] == NULL )
+			if (!_InstancesInfos[i].DontAddToScene)
 			{
-				nlwarning("Not found '%s' file\n", shapeName.c_str());
+				_Instances[i] = scene.createInstance (shapeName);
+				if( _Instances[i] == NULL )
+				{
+					nlwarning("Not found '%s' file\n", shapeName.c_str());
+				}
 			}
 		}
 	}
@@ -543,20 +546,17 @@ void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) c
 {
 	const CInstance &rInstanceInfo = _InstancesInfos[instanceIndex];
 	shapeName = rInstanceInfo.Name;
-	if (!rInstanceInfo.DontAddToScene)
-	{
-		// If there is a callback added to this instance group then transform
-		// the name of the shape to load.
-		if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
-		{												
-			shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName, rInstanceInfo.Name);
-		}
-		
-		shapeName = strlwr (shapeName);
 
-		if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
-			shapeName += ".shape";
+	// If there is a callback added to this instance group then transform
+	// the name of the shape to load.
+	if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
+	{												
+		shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 	}
+	
+	shapeName = strlwr (shapeName);
+	if (!shapeName.empty() && shapeName.find('.') == std::string::npos)
+		shapeName += ".shape";
 }
 
 // ***************************************************************************

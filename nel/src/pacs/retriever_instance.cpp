@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.27 2001/09/12 10:07:05 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.28 2001/09/13 10:25:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,6 +301,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
 			ULocalPosition	lp;
+			lfound = false;
 
 			switch (_Type)
 			{
@@ -312,12 +313,14 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 				if (leaf == NULL)
 					continue;
 				meanHeight = leaf->getMaxHeight();
+				lfound = true;
 				break;
 			case CLocalRetriever::Interior:
 				// for interior
 				// get the exact position
 				lp.Surface = surf;
 				lp.Estimation = localEstimated;
+				meanHeight = localEstimated.z;
 				retriever.snapToInteriorGround(lp, lfound);
 				if (lfound)
 					meanHeight = lp.Estimation.z;
@@ -386,6 +389,7 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 			float			meanHeight;
 			const CQuadLeaf	*leaf;
 			ULocalPosition	lp;
+			lfound = false;
 
 			switch (_Type)
 			{
@@ -397,12 +401,14 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 				if (leaf == NULL)
 					continue;
 				meanHeight = leaf->getMaxHeight();
+				lfound = true;
 				break;
 			case CLocalRetriever::Interior:
 				// for interior
 				// get the exact position
 				lp.Surface = surf;
 				lp.Estimation = localEstimated;
+				meanHeight = localEstimated.z;
 				retriever.snapToInteriorGround(lp, lfound);
 				if (lfound)
 					meanHeight = lp.Estimation.z;

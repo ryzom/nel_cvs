@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.9 2001/06/28 15:47:54 chafik Exp $
+ * $Id: msg.cpp,v 1.10 2001/07/25 07:37:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,6 +252,16 @@ namespace NLAIAGENT
 				return IBaseGroupType::isMember( className, methodName, p);
 		}
 		return IListBasicManager::isMember(className,methodName,p);
+	}
+
+	IObjectIA::CProcessResult IMessageBase::sendMessage(IObjectIA *m)
+	{
+		return _Receiver->sendMessage(m);
+	}
+	
+	IObjectIA::CProcessResult IMessageBase::sendMessage(const IVarName &name,IObjectIA *m)
+	{
+		return _Receiver->sendMessage(name,m);
 	}
 
 	IObjectIA::CProcessResult IMessageBase::runMethodeMember(sint32 h, sint32 index,IObjectIA *p)

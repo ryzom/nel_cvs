@@ -1,10 +1,10 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: code_branche_run_debug.h,v 1.7 2001/07/25 07:36:36 chafik Exp $
  */
 
-/** Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2000 Nevrax Ltd.
  */
 
 #ifndef RL_CODE_BRANCHE_RUN_DEBUG_H

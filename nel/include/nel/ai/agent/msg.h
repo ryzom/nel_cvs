@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.13 2001/06/14 10:23:31 chafik Exp $
+ * $Id: msg.h,v 1.14 2001/07/25 07:36:36 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -314,7 +314,10 @@ namespace NLAIAGENT
 		
 		virtual void save(NLMISC::IStream &os);
 		virtual void load(NLMISC::IStream &is);
-		virtual void getDebugString(std::string &t) const;		
+		virtual void getDebugString(std::string &t) const;	
+		
+		virtual	CProcessResult sendMessage(IObjectIA *);
+		virtual	CProcessResult sendMessage(const IVarName &,IObjectIA *);
 		//@}
 	};
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: displayer.h,v 1.3 2000/10/04 15:21:48 cado Exp $
+ * $Id: displayer.h,v 1.4 2000/10/04 15:27:53 cado Exp $
  *
  * Some easy displayers
  */
@@ -23,7 +23,7 @@ namespace NLMISC
 
 /**
  * Displayer interface. Used to specialize a displayer to display a string.
- * \sa log_howto
+ * \ref log_howto
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -46,6 +46,7 @@ public:
 
 /**
  * Std displayer. Put string to stdout.
+ * \ref log_howto
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -64,6 +65,7 @@ public:
 
 /**
  * File displayer. Put string into a file.
+ * \ref log_howto
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -84,6 +86,7 @@ private:
 
 /**
  * Message Box displayer. Put string into a message box.
+ * \ref log_howto
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

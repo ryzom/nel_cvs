@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.4 2000/10/04 15:21:48 cado Exp $
+ * $Id: log.h,v 1.5 2000/10/04 15:27:53 cado Exp $
  *
  * Interface for CLog
  */
@@ -36,7 +36,7 @@ typedef std::vector<IDisplayer *> CDisplayers;
 
 /**
  * When display() is called, the logger builds a string a sends it to its attached displayers.
- * \sa log_howto
+ * \ref log_howto
  * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
  * \date 2000

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.h,v 1.5 2000/10/04 15:21:48 cado Exp $
+ * $Id: net_displayer.h,v 1.6 2000/10/04 15:27:53 cado Exp $
  *
  * Interface for CNetDisplayer
  */
@@ -35,7 +35,7 @@ namespace NLNET {
 
 /**
  * Net Displayer. Sends the strings to a logger server.
- * \sa log_howto
+ * \ref log_howto
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.46 2002/08/22 14:13:06 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.47 2002/08/23 07:58:05 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -848,7 +848,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint32 sid, uint8 nid)
 	}
 
 retry:
-	if (!_IdCnx[sid].Connection[connectionId].valid() || !_IdCnx[sid].Connection[connectionId].CbNetBase->connected())
+	if (connectionId >= _IdCnx[sid].Connection.size() || !_IdCnx[sid].Connection[connectionId].valid() || !_IdCnx[sid].Connection[connectionId].CbNetBase->connected())
 	{
 		if(connectionId != 0)
 		{
@@ -858,7 +858,7 @@ retry:
 		}
 		else
 		{
-			nlwarning ("HNETL5: Can't send message to %s because default connection is not valid or connected", _IdCnx[sid].ServiceName.c_str ());
+			nlwarning ("HNETL5: Can't send message to %s because default connection is not exist, valid or connected", _IdCnx[sid].ServiceName.c_str ());
 			return 0xFF;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file rpo.h
  * <File description>
  *
- * $Id: rpo.h,v 1.2 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: rpo.h,v 1.3 2002/08/08 11:02:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,6 +280,12 @@ class RPO : public PatchObject
 		  * skeletonShape must be NULL if no bones.
 		  */
 		static bool						isZone (INode& node, TimeValue time);
+
+#if MAX_VERSION_MAJOR > 3
+		// NS: New SubObjType API
+		int NumSubObjTypes() { return 0; }
+		ISubObjType *GetSubObjType(int i) { return NULL; }
+#endif
 };
 
 #endif // __RYKOL_PATCH_OBJ_H

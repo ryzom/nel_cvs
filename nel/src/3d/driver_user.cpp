@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.14 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.15 2001/09/18 14:42:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ CDriverUser::CDriverUser()
 		_StaticInit= true;
 		// Register basic serial.
 		NL3D::registerSerial3d();
-		NL3D::init3d();
+
 		// Register basic csene.
 		CScene::registerBasics();
 	}

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.25 2001/08/31 14:39:15 besson Exp $
+ * $Id: nelu.cpp,v 1.26 2001/09/18 14:42:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,7 +152,6 @@ void			CNELU::releaseDriver()
 void			CNELU::init(uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow) throw(EDru)
 {
 	NL3D::registerSerial3d();
-	NL3D::init3d();
 	initDriver(w,h,bpp,windowed,systemWindow);
 	initScene(viewport);
 	initEventServer();

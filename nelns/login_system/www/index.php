@@ -157,11 +157,11 @@ basename:"<?php echo basename($PHP_SELF); ?>"
 				echo "<li>";
 				if ($row["Online"])
 				{
-					echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'&programname='.$row["ProgramName"].'"> '.$row["ShardName"].' ('.$row["NbPlayers"].' players)</a>';
+					echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'&programname='.$row["ProgramName"].'"> '.$row["Name"].' ('.$row["NbPlayers"].' players)</a>';
 				}
 				else
 				{
-					echo $row["ShardName"].' (offline)';
+					echo $row["Name"].' (offline)';
 				}
 				echo "</li>";
 			}

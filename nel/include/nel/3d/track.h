@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.2 2001/02/12 14:20:25 corvazier Exp $
+ * $Id: track.h,v 1.3 2001/03/07 16:49:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TRACK_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animated_value.h"
 #include "nel/3d/key.h"
@@ -37,8 +38,8 @@
 namespace NL3D 
 {
 
-template<class T> class CKey;
 
+// ***************************************************************************
 /**
  * The track store an animation of an animated value. This animation can be interpolated
  * by several ways.
@@ -68,6 +69,16 @@ public:
 	virtual const IAnimatedValue& getValue () const=0;
 };
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Templates for KeyFramer tracks.
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
 /**
  * ITrack interface for keyframer.
  *
@@ -77,7 +88,7 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
+template<class CKeyT>
 class ITrackKeyFramer : public ITrack
 {
 public:
@@ -85,17 +96,17 @@ public:
 	/// From ITrack. 
 	virtual void eval (const CAnimationTime& date)
 	{
-		const CKey<T> *pPrevious=NULL;
-		const CKey<T> *previous=NULL;
-		const CKey<T> *next=NULL;
-		const CKey<T> *nNext=NULL;
+		const CKeyT *pPrevious=NULL;
+		const CKeyT *previous=NULL;
+		const CKeyT *next=NULL;
+		const CKeyT *nNext=NULL;
 		CAnimationTime datePPrevious;
 		CAnimationTime datePrevious;
 		CAnimationTime dateNext;
 		CAnimationTime dateNNext;
 
 		// Return upper key
-		std::map <CAnimationTime, std::auto_ptr<CKey<T> > >::iterator ite=_MapKey.upper_bound (date);
+		std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite=_MapKey.upper_bound (date);
 
 		// First next ?
 		if (ite!=_MapKey.end())
@@ -105,7 +116,7 @@ public:
 			dateNext=ite->first;
 
 			// Next next
-			std::map <CAnimationTime, std::auto_ptr<CKey<T> > >::iterator ite2=ite;
+			std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite2=ite;
 			ite2++;
 			if (ite2!=_MapKey.end())
 			{
@@ -126,7 +137,7 @@ public:
 			datePrevious=ite->first;
 
 			// Previous previous
-			std::map <CAnimationTime, std::auto_ptr<CKey<T> > >::iterator ite2=ite;
+			std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite2=ite;
 			ite2--;
 			if (ite2!=_MapKey.end())
 			{
@@ -150,15 +161,16 @@ public:
 	  * \param next is the i+1 key in the keyframe. NULL if no key.
 	  * \param nNext is the i+2 key in the keyframe. NULL if no key.
 	  */
-	virtual void evalKey (	const CKey<T>* pPrevious, const CKey<T>* previous, const CKey<T>* next, const CKey<T>* nNext, 
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
 							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
 							CAnimationTime dateNext, CAnimationTime dateNNext, 
-							const CAnimationTime& date ) =0;
+							CAnimationTime date ) =0;
 private:
-	std::map <CAnimationTime, std::auto_ptr<CKey<T> > >		_MapKey;
+	std::map <CAnimationTime, std::auto_ptr<CKeyT > >		_MapKey;
 };
 
 
+// ***************************************************************************
 /**
  * ITrack interface for default tracks.
  *
@@ -177,6 +189,7 @@ public:
 };
 
 
+// ***************************************************************************
 /**
  * ITrack implementation for Constant keyframer.
  *
@@ -184,8 +197,8 @@ public:
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
-class CTrackKeyFramerConst : public ITrackKeyFramer<T>
+template<class CKeyT, class T>
+class CTrackKeyFramerConstNotBlendable : public ITrackKeyFramer<CKeyT>
 {
 public:
 
@@ -196,10 +209,10 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKey<T>* pPrevious, const CKey<T>* previous, const CKey<T>* next, const CKey<T>* nNext, 
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
 							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
 							CAnimationTime dateNext, CAnimationTime dateNNext, 
-							const CAnimationTime& date )
+							CAnimationTime date )
 	{
 		// Const key.
 		if (previous)
@@ -214,6 +227,45 @@ private:
 };
 
 
+// ***************************************************************************
+/**
+ * ITrack implementation for Constant keyframer.
+ *
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2001
+ */
+template<class CKeyT, class T>
+class CTrackKeyFramerConstBlendable : public ITrackKeyFramer<CKeyT>
+{
+public:
+
+	/// From ITrack
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+	
+	/// From ITrackKeyFramer
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
+							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
+							CAnimationTime dateNext, CAnimationTime dateNNext, 
+							CAnimationTime date )
+	{
+		// Const key.
+		if (previous)
+			_Value.Value=previous->Value;
+		else
+			if (next)
+				_Value.Value=next->Value;
+	}
+
+private:
+	CAnimatedValueBlendable<T>		_Value;
+};
+
+
+// ***************************************************************************
 /**
  * ITrack implementation for linear keyframer.
  *
@@ -221,8 +273,8 @@ private:
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
-class CTrackKeyFramerLinear : public ITrackKeyFramer<T>
+template<class CKeyT, class T>
+class CTrackKeyFramerLinear : public ITrackKeyFramer<CKeyT>
 {
 public:
 
@@ -233,16 +285,36 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKey<T>* pPrevious, const CKey<T>* previous, const CKey<T>* next, const CKey<T>* nNext, 
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
 							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
 							CAnimationTime dateNext, CAnimationTime dateNNext, 
-							const CAnimationTime& date );
+							CAnimationTime date )
+	{
+		if(previous && next)
+		{
+			// lerp from previous to cur.
+			date-= datePrevious;
+			date/= (dateNext-datePrevious);
+			NLMISC::clamp(date, 0,1);
+			_Value.Value= (T) (previous->Value*(1.f-date) + next->Value*date);
+		}
+		else
+		{
+			if (previous)
+				_Value.Value=previous->Value;
+			else
+				if (next)
+					_Value.Value=next->Value;
+		}
+
+	}
 
 private:
 	CAnimatedValueBlendable<T>	_Value;
 };
 
 
+// ***************************************************************************
 /**
  * ITrack implementation for TCB keyframer.
  *
@@ -250,8 +322,8 @@ private:
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
-class CTrackKeyFramerTCB : public ITrackKeyFramer<T>
+template<class CKeyT, class T>
+class CTrackKeyFramerTCB : public ITrackKeyFramer<CKeyT>
 {
 public:
 
@@ -262,16 +334,17 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKey<T>* pPrevious, const CKey<T>* previous, const CKey<T>* next, const CKey<T>* nNext, 
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
 							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
 							CAnimationTime dateNext, CAnimationTime dateNNext, 
-							const CAnimationTime& date );
+							CAnimationTime date );
 
 private:
 	CAnimatedValueBlendable<T>	_Value;
 };
 
 
+// ***************************************************************************
 /**
  * ITrack implementation for Bezier keyframer.
  *
@@ -279,8 +352,8 @@ private:
  * \author Nevrax France
  * \date 2001
  */
-template<class T>
-class CTrackKeyFramerBezier : public ITrackKeyFramer<T>
+template<class CKeyT, class T>
+class CTrackKeyFramerBezier : public ITrackKeyFramer<CKeyT>
 {
 public:
 
@@ -291,28 +364,99 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKey<T>* pPrevious, const CKey<T>* previous, const CKey<T>* next, const CKey<T>* nNext, 
+	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
 							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
 							CAnimationTime dateNext, CAnimationTime dateNNext, 
-							const CAnimationTime& date );
+							CAnimationTime date );
 
 private:
 	CAnimatedValueBlendable<T>	_Value;
 };
 
-// Predefined types
-typedef CTrackKeyFramerTCB<float>				CTrackKeyFramerTCBFloat;
-typedef CTrackKeyFramerTCB<NLMISC::CVector>		CTrackKeyFramerTCBVector;
-typedef CTrackKeyFramerTCB<NLMISC::CQuat>		CTrackKeyFramerTCBQuat;
-typedef CTrackKeyFramerTCB<int>					CTrackKeyFramerTCBInt;
 
-typedef CTrackKeyFramerBezier<float>			CTrackKeyFramerBezierFloat;
-typedef CTrackKeyFramerBezier<NLMISC::CVector>	CTrackKeyFramerBezierVector;
-typedef CTrackKeyFramerBezier<NLMISC::CQuat>	CTrackKeyFramerBezierQuat;
-typedef CTrackKeyFramerBezier<int>				CTrackKeyFramerBezierInt;
 
-typedef CTrackKeyFramerConst<std::string>		CTrackKeyFramerConstString;
-typedef CTrackKeyFramerConst<bool>				CTrackKeyFramerConstBool;
+// ***************************************************************************
+// ***************************************************************************
+// Quaternions special implementation..
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+/**
+ * ITrack implementation for CQuat linear keyframer.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat> : public ITrackKeyFramer<CKeyQuat>
+{
+public:
+
+	/// From ITrack
+	virtual const IAnimatedValue& getValue () const
+	{
+		return _Value;
+	}
+	
+	/// From ITrackKeyFramer
+	virtual void evalKey (	const CKeyQuat* pPrevious, const CKeyQuat* previous, const CKeyQuat* next, const CKeyQuat* nNext, 
+							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
+							CAnimationTime dateNext, CAnimationTime dateNNext, 
+							CAnimationTime date );
+
+private:
+	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
+};
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Predefined types for KeyFramer tracks.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// Const tracks.
+typedef CTrackKeyFramerConstBlendable<CKeyFloat,float>				CTrackKeyFramerConstFloat;
+typedef CTrackKeyFramerConstBlendable<CKeyVector, NLMISC::CVector>	CTrackKeyFramerConstVector;
+typedef CTrackKeyFramerConstBlendable<CKeyQuat, NLMISC::CQuat>		CTrackKeyFramerConstQuat;
+typedef CTrackKeyFramerConstBlendable<CKeyInt, int>					CTrackKeyFramerConstInt;
+typedef CTrackKeyFramerConstNotBlendable<CKeyString, std::string>	CTrackKeyFramerConstString;
+typedef CTrackKeyFramerConstNotBlendable<CKeyBool, bool>			CTrackKeyFramerConstBool;
+
+
+// Linear tracks.
+typedef CTrackKeyFramerLinear<CKeyFloat, float>						CTrackKeyFramerLinearFloat;
+typedef CTrackKeyFramerLinear<CKeyVector, NLMISC::CVector>			CTrackKeyFramerLinearVector;
+typedef CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>				CTrackKeyFramerLinearQuat;
+typedef CTrackKeyFramerLinear<CKeyInt, int>							CTrackKeyFramerLinearInt;
+
+
+// TCB tracks.
+typedef CTrackKeyFramerTCB<CKeyTCBFloat, float>						CTrackKeyFramerTCBFloat;
+typedef CTrackKeyFramerTCB<CKeyTCBVector, NLMISC::CVector>			CTrackKeyFramerTCBVector;
+typedef CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CQuat>				CTrackKeyFramerTCBQuat;
+typedef CTrackKeyFramerTCB<CKeyTCBInt, int>							CTrackKeyFramerTCBInt;
+
+
+// Bezier tracks.
+typedef CTrackKeyFramerBezier<CKeyBezierFloat, float>				CTrackKeyFramerBezierFloat;
+typedef CTrackKeyFramerBezier<CKeyBezierVector, NLMISC::CVector>	CTrackKeyFramerBezierVector;
+typedef CTrackKeyFramerBezier<CKeyBezierQuat, NLMISC::CQuat>		CTrackKeyFramerBezierQuat;
+typedef CTrackKeyFramerBezier<CKeyBezierInt, int>					CTrackKeyFramerBezierInt;
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// TrackDefault implemenations.
+// ***************************************************************************
+// ***************************************************************************
+
 
 
 /**

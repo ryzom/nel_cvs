@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.3 2001/02/12 14:18:29 corvazier Exp $
+ * $Id: track.cpp,v 1.4 2001/03/07 16:49:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,13 +35,26 @@ CTrackKeyFramerTCBVector ttoto1;
 CTrackKeyFramerTCBQuat ttoto2;
 CTrackKeyFramerTCBInt ttoto3;
 
+
 CTrackKeyFramerBezierFloat ttoto4;
 CTrackKeyFramerBezierVector ttoto5;
 CTrackKeyFramerBezierQuat ttoto6;
 CTrackKeyFramerBezierInt ttoto7;
 
-CTrackKeyFramerConstString ttoto8;
-CTrackKeyFramerConstBool ttoto9;
+
+CTrackKeyFramerLinearFloat	lattoto10;
+CTrackKeyFramerLinearVector	lattoto11;
+CTrackKeyFramerLinearQuat	lattoto12;
+CTrackKeyFramerLinearInt	lattoto13;
+
+
+CTrackKeyFramerConstFloat	attoto10;
+CTrackKeyFramerConstVector	attoto11;
+CTrackKeyFramerConstQuat	attoto12;
+CTrackKeyFramerConstInt		attoto13;
+CTrackKeyFramerConstString	attoto14;
+CTrackKeyFramerConstBool	attoto15;
+
 
 CTrackDefaultFloat ttoto10;
 CTrackDefaultVector ttoto11;
@@ -49,5 +62,45 @@ CTrackDefaultQuat ttoto12;
 CTrackDefaultInt ttoto13;
 CTrackDefaultString ttoto14;
 CTrackDefaultBool ttoto15;
+
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Quaternions special implementation..
+// ***************************************************************************
+// ***************************************************************************
+
+
+
+// ***************************************************************************
+void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
+			const CKeyQuat* pPrevious, const CKeyQuat* previous, const CKeyQuat* next, const CKeyQuat* nNext, 
+			CAnimationTime datePPrevious, CAnimationTime datePrevious, 
+			CAnimationTime dateNext, CAnimationTime dateNNext, 
+			CAnimationTime date )
+{
+	if(previous && next)
+	{
+		// slerp from previous to cur.
+		date-= datePrevious;
+		date/= (dateNext-datePrevious);
+		NLMISC::clamp(date, 0,1);
+		_Value.Value= NLMISC::CQuat::slerp(previous->Value, next->Value, date);
+	}
+	else
+	{
+		if (previous)
+			_Value.Value=previous->Value;
+		else
+			if (next)
+				_Value.Value=next->Value;
+	}
+
+}
+
+
+
 
 } // NL3D

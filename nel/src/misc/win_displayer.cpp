@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.28 2002/12/16 16:39:31 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.29 2003/01/17 14:13:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,9 @@
 using namespace std;
 
 namespace NLMISC {
+
+static CHARFORMAT2 CharFormat;
+
 
 CWinDisplayer::~CWinDisplayer ()
 {
@@ -358,7 +361,7 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 		w = 700;
 	if (h == -1)
 		h = 300;
-	if (hs = -1)
+	if (hs == -1)
 		hs = 1000;
 
 	_HistorySize = hs;
@@ -425,6 +428,11 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 	// set the edit text limit to lot of :)
 	SendMessage (_HEdit, EM_LIMITTEXT, -1, 0);
 
+	CharFormat.cbSize = sizeof(CharFormat);
+	CharFormat.dwMask = CFM_COLOR;
+	SendMessage(_HEdit,EM_GETCHARFORMAT,(WPARAM)0,(LPARAM)&CharFormat);
+	CharFormat.dwEffects &= ~CFE_AUTOCOLOR;
+
 	// create the input edit control
 	_HInputEdit = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, RICHEDIT_CLASS, "", WS_CHILD | WS_VISIBLE
 		/*| ES_MULTILINE*/ | ES_WANTRETURN | ES_NOHIDESEL | ES_AUTOHSCROLL, 0, h-_InputEditHeight, w, _InputEditHeight,
@@ -479,7 +487,7 @@ void CWinDisplayer::clear ()
 	SendMessage (_HEdit, EM_SETSEL, 0, nIndex);
 
 	// clear all the text
-	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
+	SendMessage (_HEdit, EM_REPLACESEL, FALSE, (LONG) "");
 
 	SendMessage(_HEdit,EM_SETMODIFY,(WPARAM)TRUE,(LPARAM)0);
 	
@@ -500,92 +508,120 @@ void CWinDisplayer::display_main ()
 		// Display the bufferized string
 		//
 
-		std::vector<std::pair<uint32, std::string> > vec;
 		{
-			CSynchronized<std::vector<std::pair<uint32, std::string> > >::CAccessor access (&_Buffer);
-			vec = access.value ();
+			CSynchronized<std::list<std::pair<uint32, std::string> > >::CAccessor access (&_Buffer);
+			std::list<std::pair<uint32, std::string> >::iterator it;
+
+			sint vecSize = (sint)access.value().size();
+			//nlassert (vecSize <= _HistorySize);
+
+			if (vecSize > 0)
+			{
+				// look if we are at the bottom of the edit
+				SCROLLINFO	info;
+				info.cbSize = sizeof(info);
+				info.fMask = SIF_ALL;
+				
+				bool bottom = true;
+				if (GetScrollInfo(_HEdit,SB_VERT,&info) != 0)
+					bottom = (info.nPage == 0) || (info.nMax<=(info.nPos+(int)info.nPage));
+				
+				// look if we have the focus
+				bool focus = (GetFocus() == _HEdit);
+				if (focus)
+				{
+					SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOVSCROLL);
+					SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOHSCROLL);
+				}
+
+				// store old selection
+				DWORD startSel, endSel;
+				SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
+
+				// find how many lines we have to remove in the current output to add new lines
+				
+				// get number of line
+				sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+
+				if (_HistorySize > 0 && nLine+vecSize > _HistorySize)
+				{
+					int nblineremove = vecSize;
+					//nlassert (nblineremove>0 && nblineremove <= _HistorySize);
+
+					if (nblineremove == _HistorySize)
+					{
+						SendMessage (_HEdit, WM_SETTEXT, 0, (LONG) "");
+						startSel = endSel = -1;
+					}
+					else
+					{
+						sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
+						//nlassert (oldIndex1 != -1);
+						sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nblineremove, 0);
+						//nlassert (oldIndex2 != -1);
+						SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
+						SendMessage (_HEdit, EM_REPLACESEL, FALSE, (LONG) "");
+
+						// update the selection due to the erasing
+						sint dt = oldIndex2 - oldIndex1;
+						if (startSel < 65000)
+						{
+							if ((sint)startSel-dt < 0) startSel = -1;
+							else startSel -= dt;
+						}
+						else startSel = -1;
+						if(endSel < 65000)
+						{
+							if ((sint)endSel-dt < 0) startSel = endSel = -1;
+							else endSel -= dt;
+						}
+						else startSel = endSel = -1;
+					}
+				}
+
+				for (it = access.value().begin(); it != access.value().end(); )
+				{
+					string str = (*it).second;
+					uint32 col = (*it).first;
+
+					// get all string that have the same color
+					for (it++; it != access.value().end() && (*it).first == col; it++)
+					{
+						str += (*it).second;
+					}
+
+					SendMessage (_HEdit, EM_SETSEL, -1, -1);
+
+					if ((col>>24) == 0)
+					{
+						// there s a specific color
+						CharFormat.crTextColor = RGB ((col>>16)&0xFF, (col>>8)&0xFF, col&0xFF);
+						SendMessage((HWND) _HEdit, EM_SETCHARFORMAT, (WPARAM) SCF_SELECTION, (LPARAM) &CharFormat);
+					}
+
+					// add the string to the edit control
+					SendMessage (_HEdit, EM_REPLACESEL, FALSE, (LONG) str.c_str());
+				}
+
+				// restore old selection
+				SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
+
+				SendMessage(_HEdit,EM_SETMODIFY,(WPARAM)TRUE,(LPARAM)0);
+
+				if (bottom)
+					SendMessage(_HEdit,WM_VSCROLL,(WPARAM)SB_BOTTOM,(LPARAM)0L);
+				
+				if (focus)
+				{
+					SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOVSCROLL);
+					SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOHSCROLL);
+				}
+			}
+
+			// clear the log
 			access.value().clear ();
 		}
-
-		// look if we are at the bottom of the edit
-		SCROLLINFO	info;
-		info.cbSize = sizeof(info);
-		info.fMask = SIF_ALL;
 		
-		bool bottom = true;
-		if (GetScrollInfo(_HEdit,SB_VERT,&info) != 0)
-			bottom = (info.nPage == 0) || (info.nMax<=(info.nPos+(int)info.nPage));
-		
-		// look if we have the focus
-		bool focus = (GetFocus() == _HEdit);
-		if (focus)
-		{
-			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOVSCROLL);
-			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_AND,(LPARAM)~ECO_AUTOHSCROLL);
-		}
-
-		for (uint i = 0; i < vec.size(); i++)
-		{
-			string str = vec[i].second;
-			uint32 col = vec[i].first;
-
-			// store old selection
-			DWORD startSel, endSel;
-			SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
-
-			// get number of line
-			sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
-
-			// clear half of the history line if history size is too big
-			if (_HistorySize > 0 && nLine > _HistorySize)
-			{
-				sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
-				int nbline = _HistorySize-50;
-				if (nbline < 0) nbline = _HistorySize;
-				sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbline, 0);
-				SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
-				SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
-			}
-
-			if ((col>>24) == 0)
-			{
-				SendMessage(_HEdit,EM_SETSEL,-1,-1);
-				CHARFORMAT2 cf;
-				cf.cbSize = sizeof(cf);
-				cf.dwMask = CFM_COLOR;
-				SendMessage(_HEdit,EM_GETCHARFORMAT,(WPARAM)0,(LPARAM)&cf);
-				cf.crTextColor = RGB ((col>>16)&0xFF, (col>>8)&0xFF, col&0xFF);
-				cf.dwEffects &= ~CFE_AUTOCOLOR;
-				SendMessage((HWND) _HEdit, EM_SETCHARFORMAT, (WPARAM) SCF_SELECTION, (LPARAM) &cf);
-			}
-
-			// get number of line
-			nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
-			
-			// get size of the last line
-			sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
-
-			// select the end of the last line
-			SendMessage (_HEdit, EM_SETSEL, nIndex, nIndex);
-
-			// add the string to the edit control
-			SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) str.c_str());
-
-			// restore old selection
-			SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
-		}
-
-		SendMessage(_HEdit,EM_SETMODIFY,(WPARAM)TRUE,(LPARAM)0);
-
-		if (bottom)
-			SendMessage(_HEdit,WM_VSCROLL,(WPARAM)SB_BOTTOM,(LPARAM)0L);
-		
-		if (focus)
-		{
-			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOVSCROLL);
-			SendMessage(_HEdit,EM_SETOPTIONS,ECOOP_OR,(LPARAM)ECO_AUTOHSCROLL);
-		}			
-
 		//
 		// Update labels
 		//

@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.4 2002/11/15 17:01:59 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.5 2003/01/17 14:13:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -338,24 +338,21 @@ gint updateInterf (gpointer data)
 	// Display the bufferized string
 	//
 
-	std::vector<std::pair<uint32, std::string> > vec;
-	{
-		CSynchronized<std::vector<std::pair<uint32, std::string> > >::CAccessor access (&disp->_Buffer);
-		vec = access.value ();
-		access.value().clear ();
-	}
-	
 	GtkAdjustment *Adj = (GTK_TEXT(OutputText))->vadj;
 	bool Bottom = (Adj->value >= Adj->upper - Adj->page_size);
 
-	for (uint i = 0; i < vec.size(); i++)
+	std::list<std::pair<uint32, std::string> >::iterator it;
 	{
-		string str = vec[i].second;
-		uint32 col = vec[i].first;
+		CSynchronized<std::list<std::pair<uint32, std::string> > >::CAccessor access (&disp->_Buffer);
 
-		gtk_text_freeze (GTK_TEXT (OutputText));
-		gtk_text_insert (GTK_TEXT (OutputText), NULL, NULL, NULL, str.c_str(), -1);
-		gtk_text_thaw (GTK_TEXT (OutputText));
+		for (it = access.value().begin(); it != access.value().end(); it++)
+		{
+			gtk_text_freeze (GTK_TEXT (OutputText));
+			gtk_text_insert (GTK_TEXT (OutputText), NULL, NULL, NULL, (*it).second.c_str(), -1);
+			gtk_text_thaw (GTK_TEXT (OutputText));
+		}
+
+		access.value().clear ();
 	}
 
 	if (Bottom)

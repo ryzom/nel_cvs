@@ -8,7 +8,7 @@
 NeL is a complete gaming platform aimed at running massively multiuser
 entertainment in a 3D environment over the Internet.
 
-\section oss Open Source
+\section oss Free Software
 
 NeL is also a Free Software project under the GNU General Public License,
 which means all its code is available for everyone to download, examine,
@@ -74,11 +74,11 @@ other enhancement directly visible by the users of the system.
 These 3 pieces of software are completed by game data, which describes a
 working world and game system.
 
-Please note that the game data is not software, and thus not offered under the
+Please note that the game data is not software, and therefore not available under the
 GPL.
 
 As the platform would be useless without a game world, a sample game world
-data is provided, which is enough to run the gaming plaform and enjoy a minimum
+data is provided, which is enough to run the gaming plaform, enjoy a minimum
 game experience and let the amateur see exactly what he his doing while
 working with NeL.
 
@@ -87,5 +87,28 @@ The game data is produced using a set of tools, notably 3D Studio's Max for all
 datas, and so on. When possible, conversion tools for these software are
 provided to allow people to produce painlessly their own environment and game
 experience.
+
+\section contribs Community
+
+Beside the working core of the NeL developpers, everyone may improve the NeL
+platform. There is a supported community for the development of NeL hosted by
+Nevrax in the nevrax.org domain. Various tools are available there to participate:
+
+- A CVS server (cvs.nevrax.org) which allows anonymous CVS checkout to stay in
+  sync with the reference platform.
+- A WWW site (www.nevrax.org) which allows you to browse documentation, check the
+  CVS tree in a visual manner, and register for participation in the evolution of
+  NeL.
+- A mailing list (nel@nevrax.org), dedicated to the communication between all
+  people interested in the NeL platform, regardless of their involvment or
+  amount of contributions. This is an unmoderated, open mailing list. You may
+  subscribe thru the WWW side, or by mailing directly to nel-request@nevrax.org
+  with "subscribe" in the subject.
+- A WWW bug tracker that allows you to submit bugs, get notified of their state,
+  and their eventual resolution. All you need is a valid email address to
+  register in the bug database.
+- A submission address (code@nevrax.org) for user-contributed code and patches,
+  where your code is evaluated, and usually integrated directly in the reference
+  platform.
 
  */

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.8 2001/07/18 13:42:59 corvazier Exp $
+ * $Id: driver.h,v 1.9 2001/07/24 08:46:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,6 +335,13 @@ public:
 	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 */
 	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints)=0;
+
+	/** render quads with previously setuped VertexBuffer / Matrixes.
+	 *  Quads are stored as a sequence in the vertex buffer.
+	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
+	 */
+	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
+
 
 
 	/// Swap the back and front buffers.

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.11 2002/02/15 17:42:01 vizerie Exp $
+ * $Id: bitmap.h,v 1.12 2002/03/06 08:34:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -398,8 +398,9 @@ public:
 	/** 
 	 * Write a TGA (24 or 32 bits) from the object pixels buffer.
 	 * If the current pixel format is not rgba then the method does nothing
+	 * If the pixel format is Alpha then we save in 8 bpp
 	 * \param f IStream (must be a reading stream)
-	 * \param d depth : 16 or 24 or 32
+	 * \param d depth : 8 or 16 or 24 or 32
 	 * \param upsideDown if true, the bitmap will be saved with the upside down
 	 * \return true if succeed, false else
 	 */	

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: plane.cpp,v 1.1 2000/09/15 11:39:18 berenguier Exp $
+ * $Id: plane.cpp,v 1.2 2000/09/19 16:38:39 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -95,13 +95,13 @@ sint	CPlane::clipPolygonBack(CVector in[], CVector out[], sint nIn) const
 		if ( (*this)*in[p] < 0 )
 		{
 			if ( (*this)*in[s] > 0 ) 
-				out[nOut++]= project(in[s],in[p]);
+				out[nOut++]= intersect(in[s],in[p]);
 			out[nOut++]=in[p];
 		}
 		else
 		{
 			if ( (*this)*in[s] < 0 ) 
-				out[nOut++]= project(in[s],in[p]);
+				out[nOut++]= intersect(in[s],in[p]);
 		}
 		s=p;
 	}
@@ -121,13 +121,13 @@ sint	CPlane::clipPolygonFront(CVector in[], CVector out[], sint nIn) const
 		if ( (*this)*in[p] > 0 )
 		{
 			if ( (*this)*in[s] < 0 ) 
-				out[nOut++]= project(in[s],in[p]);
+				out[nOut++]= intersect(in[s],in[p]);
 			out[nOut++]=in[p];
 		}
 		else
 		{
 			if ( (*this)*in[s] > 0 ) 
-				out[nOut++]= project(in[s],in[p]);
+				out[nOut++]= intersect(in[s],in[p]);
 		}
 		s=p;
 	}

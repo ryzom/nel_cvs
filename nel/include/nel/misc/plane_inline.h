@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: plane_inline.h,v 1.1 2000/09/15 11:39:09 berenguier Exp $
+ * $Id: plane_inline.h,v 1.2 2000/09/19 16:38:19 berenguier Exp $
  *
  * class CPlane
  */
@@ -38,7 +38,7 @@ inline	float	CPlane::operator*(const CVector &p) const
 	return a*p.x + b*p.y + c*p.z + d;
 }
 //============================================================
-inline	CVector CPlane::project(const CVector &a,const CVector &b) const
+inline	CVector CPlane::intersect(const CVector &a,const CVector &b) const
 {
 	float decal;
 	float	da= (*this)*a;
@@ -47,6 +47,11 @@ inline	CVector CPlane::project(const CVector &a,const CVector &b) const
 		return a;
 	decal= ( 0-da ) / ( db - da );
 	return a + (b-a)*decal;
+}
+//============================================================
+inline	CVector CPlane::project(const CVector &p0) const
+{
+	return intersect(p0, p0+getNormal());
 }
 
 

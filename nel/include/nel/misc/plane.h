@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: plane.h,v 1.1 2000/09/15 11:39:09 berenguier Exp $
+ * $Id: plane.h,v 1.2 2000/09/19 16:38:19 berenguier Exp $
  *
  * class CPlane
  */
@@ -85,8 +85,10 @@ public:
 	float	distance(const CVector &p) const;
 	/// Return plane*vector. 
 	float	operator*(const CVector &p) const;
-	/// Project a line onto a plane. p1 is returned if line // to plane.
-	CVector project(const CVector &p0,const CVector &p1) const;
+	/// Intersect a line onto a plane. p1 is returned if line // to plane.
+	CVector intersect(const CVector &p0,const CVector &p1) const;
+	/// Project a point onto a plane.
+	CVector project(const CVector &p0) const;
 
 	/**
 	 * Clip a segment onto a plane.

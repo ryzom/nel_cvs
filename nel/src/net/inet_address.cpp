@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.cpp,v 1.4 2000/09/19 09:14:03 cado Exp $
+ * $Id: inet_address.cpp,v 1.5 2000/09/21 09:45:09 cado Exp $
  *
  * Implementation for CInetAddress.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -60,13 +60,13 @@ CInetAddress::CInetAddress()
 
 
 /*
- * Alternate constructor (calls getByName())
+ * Alternate constructor (calls setByName())
  */
 CInetAddress::CInetAddress( const std::string& hostName, uint16 port )
 {
 	init();
 	setPort( port );
-	getByName( hostName );
+	setByName( hostName );
 }
 
 
@@ -121,7 +121,7 @@ CInetAddress::~CInetAddress()
 /*
  * Resolves a name
  */
-CInetAddress& CInetAddress::getByName( const std::string& hostName ) throw (ESocket)
+CInetAddress& CInetAddress::setByName( const std::string& hostName ) throw (ESocket)
 {
 	// Try to convert directly for addresses such as a.b.c.d
 	in_addr iaddr;

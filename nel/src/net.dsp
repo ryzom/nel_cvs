@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,6 +80,22 @@ LIB32=link.exe -lib
 
 # Name "net - Win32 Release"
 # Name "net - Win32 Debug"
+# Begin Source File
+
+SOURCE=.\net\base_socket.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\base_socket.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\datagram_socket.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\datagram_socket.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\net\inet_address.cpp

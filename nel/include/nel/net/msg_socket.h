@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.2 2000/09/19 09:14:03 cado Exp $
+ * $Id: msg_socket.h,v 1.3 2000/09/21 09:45:09 cado Exp $
  *
  * Interface for CServerSocket
  */
@@ -59,7 +59,10 @@ public:
 	/// Prepares to receive connections on a specified address/port (useful when the host has several addresses)
 	void		listen( const CInetAddress& addr ) throw (ESocket);
 
-	/// Wait for a client to connect, and returns a socket connected to the client
+	/** Wait for a client to connect, and returns a reference on a socket connected to the client.
+	 * The CSocket object is maintained by the CServerObject.
+	 * Usage : \code CSocket& sock = servsock.accept(); \endcode
+	 */
 	CSocket&	accept() throw (ESocket);
 
 private:

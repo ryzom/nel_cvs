@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.13 2000/09/20 09:07:02 lecroart Exp $
+ * $Id: stream.h,v 1.14 2000/09/21 09:45:09 cado Exp $
  *
  * This File handles IStream 
  */
@@ -37,7 +37,7 @@ namespace	NLMISC
 
 // For Big/little Endian.
 #  define NLMISC_BSWAP16(src)	(src) = (((src)>>8)&0xFF) | (((src)&0xFF)<<8)
-#  ifdef OS_WINDOWS
+#  ifdef NL_OS_WINDOWS
 #    define NLMISC_BSWAP32(src) _asm mov eax,(src) _asm bswap eax _asm mov (src),eax
 #  else
 #    define NLMISC_BSWAP32(src) (src) = (((src)>>24)&0xFF) | ((((src)>>16)&0xFF)<<8) | ((((src)>>8)&0xFF)<<16) | (((src)&0xFF)<<24)

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.2 2000/09/19 09:14:03 cado Exp $
+ * $Id: msg_socket.cpp,v 1.3 2000/09/21 09:45:09 cado Exp $
  *
  * Implementation of CServerSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -139,8 +139,9 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 }
 
 
-/*
- * Wait for a client to connect, and returns a socket connected to the client
+/* Wait for a client to connect, and returns a reference on a socket connected to the client.
+ * The CSocket object is maintained by the CServerObject.
+ * Usage : \code CSocket& sock = servsock.accept(); \endcode
  */
 CSocket& CServerSocket::accept() throw (ESocket)
 {

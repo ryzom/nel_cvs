@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.3 2000/09/19 09:14:03 cado Exp $
+ * $Id: inet_address.h,v 1.4 2000/09/21 09:45:09 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -53,7 +53,7 @@ public:
 	/// Default Constructor
 	CInetAddress();
 
-	/// Alternate constructor (calls getByName())
+	/// Alternate constructor (calls setByName())
 	CInetAddress( const std::string& hostName, uint16 port=0 );
 
 	/// Copy constructor
@@ -66,7 +66,7 @@ public:
 	~CInetAddress();
 
 	/// Resolves a name
-	CInetAddress&		getByName( const std::string& hostname ) throw(ESocket);
+	CInetAddress&		setByName( const std::string& hostname ) throw(ESocket);
 
 	/// Sets port
 	void				setPort( uint16 port );
@@ -80,7 +80,7 @@ public:
 	bool				isValid() const;
 
 	/// Returns internal socket address (read only)
-	const sockaddr_in	 	*sockAddr() const;
+	const sockaddr_in	 *sockAddr() const;
 
 	/// Returns readable IP address
 	std::string			ipAddress() const;

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.3 2000/09/19 09:14:03 cado Exp $
+ * $Id: message.h,v 1.4 2000/09/21 09:45:09 cado Exp $
  *
  * Interface of CMessage
  */
@@ -57,7 +57,13 @@ class CMessage : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMessage( bool inputStream=false, uint32 defaultcapacity=32 );
+	CMessage( bool inputStream=false, uint32 defaultcapacity=0 );
+
+	/// Copy constructor
+	CMessage( const CMessage& other );
+
+	/// Assignment operator
+	CMessage&		operator=( const CMessage& other );
 
 	/// Method inherited from IStream
 	virtual void	serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow);
@@ -68,7 +74,7 @@ public:
 	/// Clears the message
 	void			clear();
 
-	/** Returns the length of the message, in bytes.
+	/** Returns the length (size) of the message, in bytes.
 	 * If isReading(), it is the number of bytes that can be read,
 	 * otherwise it is the number of bytes that have been written.
 	 */
@@ -87,7 +93,7 @@ public:
 	/// Returns a pointer to the message buffer (read only)
 	const uint8		*buffer() const
 	{
-		return _Buffer.begin();
+		return &(*_Buffer.begin());
 	}
 
 	/// Returns message type code
@@ -95,6 +101,20 @@ public:
 	{
 		return _MsgType;
 	}
+
+	/// Returns message type code or length of message name
+	uint16			encodedMsgType() const;
+
+	/// Returns an output message with header encoded in the payload buffer
+	CMessage		encode() const;
+
+	/** Sets the message using an encoded input message.
+	 * @param alldata An input message in which the header is in the payload buffer
+	 */
+	void			decode( CMessage& alldata );
+
+	/// Returns true if msgtype contains the length of a message name, and, if so, puts it into msgnamelen
+	static bool		decodeLenInMsgType( uint16 msgtype, uint16 *msgnamelen );
 
 	/// Returns message name
 	std::string		msgName() const
@@ -117,6 +137,30 @@ public:
 	 */
 	uint8			*bufferToFill( uint32 msgsize );
 
+	/// Returns the maximum message total size (header + payload)
+	static uint32	maxLength()
+	{
+		return CMessage::_MaxLength;
+	}
+
+	/// Returns the maximum message header size
+	static uint32	maxHeaderLength()
+	{
+		return CMessage::_MaxHeaderLength;
+	}
+
+	/// Returns the maximum message payload size
+	static uint32	maxPayloadLength()
+	{
+		return maxLength() - maxHeaderLength();
+	}
+
+	/// Returns the maximum message name length
+	static uint32	maxNameLength()
+	{
+		return maxHeaderLength() - sizeof(sint16) - sizeof(uint32);
+	}
+
 protected:
 
 	/// Returns the serialized length (number of bytes written or read)
@@ -133,6 +177,9 @@ protected:
 	}
 
 private:
+
+	static uint32		_MaxLength;
+	static uint32		_MaxHeaderLength;
 
 	std::vector<uint8>	_Buffer;
 	it8					_BufPos;

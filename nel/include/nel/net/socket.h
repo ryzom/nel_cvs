@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.4 2000/09/19 09:14:03 cado Exp $
+ * $Id: socket.h,v 1.5 2000/09/21 09:45:09 cado Exp $
  *
  * Interface for CSocket
  */
@@ -27,57 +27,13 @@
 #define NL_SOCKET_H
 
 
-#include "nel/net/inet_address.h"
-
+#include "nel/net/base_socket.h"
 
 namespace NLNET
 {
 
 
 class CMessage;
-
-
-/**
- * Network exceptions
- * \author Olivier Cado
- * \author Nevrax France
- * \date 2000
-
- */
-class ESocket : public Exception
-{
-public:
-
-	/// Constructor
-	ESocket( const char *reason="", uint errnum=0 )
-	{
-		_Reason = std::string("Socket error: ") + std::string(reason);
-		_ErrNum = errnum;
-	}
-
-	/// Returns the reason of the exception	
-	virtual const char	*what() const throw() { return _Reason.c_str(); }
-
-	/// Returns the error code
-	uint				errNum()
-	{
-		return _ErrNum;
-	}
-
-private:
-
-	std::string	_Reason;
-	uint		_ErrNum;
-};
-
-
-
-//typedef SOCKET;
-#ifdef NL_OS_WINDOWS
-	typedef uint SOCKET;
-#elif NL_OS_LINUX
-	typedef int SOCKET;
-#endif
 
 
 /**
@@ -88,14 +44,9 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-class CSocket
+class CSocket : public CBaseSocket
 {
 public:
-
-	/** Initializes the network engine if it is not already done (under Windows, calls WSAStartup()).
-	 * Called by CSocket constructors.
-	 */
-	static void init() throw (ESocket);
 
 	/// Constructor
 	CSocket();
@@ -103,25 +54,22 @@ public:
 	/// Construct a CSocket object using an already connected socket and its associated address
 	CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket);
 
-	// Destructor
-	~CSocket();
-	
+	/// Closure
+	void	close();
+
 	/// Sets/unsets TCP_NODELAY
 	void	setNoDelay( bool value ) throw (ESocket);
 
 	/// Connection
 	void	connect( const CInetAddress& addr ) throw (ESocket);
 
-	/// Closure
-	void	close();
-
 	/// Sends a message
-	void	send( const CMessage& message );
+	void	send( const CMessage& message ) throw(ESocket);
 
 	/// Checks if there are some data to receive
 	bool	dataAvailable() throw (ESocket);
 
-	/// Receives data (returns false if !dataAvailable()).
+	/// Receives data (returns false if !dataAvailable() and does not block).
 	bool	receive( CMessage& message ) throw (ESocket);
 
 	/// Returns the address of the remote host
@@ -132,10 +80,6 @@ public:
 
 private:
 
-	static bool		_Initialized;
-
-	SOCKET			_Sock;
-	CInetAddress	_LocalAddr;
 	CInetAddress	_RemoteAddr;
 	bool			_Connected;
 

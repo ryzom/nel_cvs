@@ -18,28 +18,53 @@
  */
 
 /*
- * $Id: message.cpp,v 1.4 2000/09/19 09:14:03 cado Exp $
+ * $Id: message.cpp,v 1.5 2000/09/21 09:45:09 cado Exp $
  *
  * Implementation of CMessage
  */
 
 #include "nel/net/message.h"
-#include <algorithm>
-
 
 namespace NLNET
 {
 
-	
+
+uint32	CMessage::_MaxLength = 65536;
+uint32	CMessage::_MaxHeaderLength = 64;
+
+
 /*
  * Initialization constructor
  */
-CMessage::CMessage( bool inputStream, uint32 defaultcapacity )
-: NLMISC::IStream( inputStream, true ),
-  _MsgType( 0 )
+CMessage::CMessage( bool inputStream, uint32 defaultcapacity ) :
+	NLMISC::IStream( inputStream, true ),
+	_MsgType( 0 )
 {
-	_Buffer.reserve( std::max(defaultcapacity,(uint32)32) );
+	_Buffer.reserve( defaultcapacity );
 	_BufPos = _Buffer.begin();
+}
+
+
+/*
+ * Copy constructor
+ */
+CMessage::CMessage( const CMessage& other ) :
+	NLMISC::IStream( other.isReading(), true )
+{
+	operator=( other );
+}
+
+
+/*
+ * Assignment operator
+ */
+CMessage& CMessage::operator=( const CMessage& other )
+{
+	_Buffer = other._Buffer;
+	_BufPos = _Buffer.begin() + other.lengthS();
+	_MsgType = other._MsgType;
+	_MsgName = other._MsgName;
+	return *this;
 }
 
 
@@ -53,18 +78,20 @@ void CMessage::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
 		// Check that we don't read more than there is to read
 		if ( lengthS()+len > lengthR() )
 		{
-			throw EStreamOverflow();
+			_asm int 3
+			//throw EStreamOverflow();
 		}
 		// Serialize in
-		memcpy( buf, _BufPos, len );
+		memcpy( buf, &(*_BufPos), len );
 		_BufPos += len;
 	}
 	else
 	{
 		// Serialize out
 		_Buffer.resize( _Buffer.size() + len );
-		memcpy( _BufPos, buf, len );
-		_BufPos += len;
+		_BufPos = _Buffer.end() - len;
+		memcpy( &(*_BufPos), buf, len );
+		_BufPos = _Buffer.end();
 	}
 }
 
@@ -86,7 +113,7 @@ void CMessage::serialBit(bool &bit) throw(EStreamOverflow)
 			throw EStreamOverflow();
 		}
 		// Serialize in
-		memcpy( &thebuf, _BufPos, len );
+		memcpy( &thebuf, &(*_BufPos), len );
 		_BufPos += len;
 		bit = (thebuf!=0);
 	}
@@ -95,10 +122,10 @@ void CMessage::serialBit(bool &bit) throw(EStreamOverflow)
 		thebuf = (uint8)bit;
 		// Serialize out
 		_Buffer.resize( _Buffer.size() + len );
-		memcpy( _BufPos, &thebuf, len );
-		_BufPos += len;
+		_BufPos = _Buffer.end() - len;
+		memcpy( &(*_BufPos), &thebuf, len );
+		_BufPos = _Buffer.end();
 	}
-
 }
 
 
@@ -113,13 +140,101 @@ void CMessage::clear()
 
 
 /*
+ * Returns message type code or length of message name
+ */
+uint16 CMessage::encodedMsgType() const
+{
+	if ( msgName() != "" )
+	{
+		return msgName().length() | 0x8000; // bit15 is 1 when msgtype is msgnamelen
+	}
+	else
+	{
+		return msgType();
+	}
+}
+
+
+/*
+ * Returns an output message with header encoded in the payload buffer
+ */
+CMessage CMessage::encode() const
+{
+	CMessage alldata( false, length()+CMessage::maxHeaderLength() );
+
+	// 1. Write message type
+	sint16 msgtype = encodedMsgType();
+	alldata.serial( msgtype );
+
+	// 2. Write message name (optional)
+	if ( msgName().length() != 0 )
+	{
+		alldata.serial( msgName() );
+	}
+
+	// 3. Write message size
+	uint32 msgsize = length();
+	alldata.serial( msgsize );
+
+	// 4. Write message payload
+	alldata.serialBuffer( const_cast<uint8*>(buffer()), length() );
+
+	return alldata;
+}
+
+
+/* Sets the message using an encoded input message.
+ * @param alldata An input message in which the header is in the payload buffer
+ */
+void CMessage::decode( CMessage& alldata )
+{
+	// 1. Read message type
+	sint16 msgtype;
+	alldata.serial( msgtype );
+
+	// 2. Read message name (optional)
+	uint16 msgnamelen = 0;
+	char *msgname = NULL;
+	if ( CMessage::decodeLenInMsgType( msgtype, &msgnamelen ) )
+	{
+		msgname = new char[msgnamelen+1];
+		alldata.serialBuffer( (uint8*)msgname, msgnamelen );
+		msgname[msgnamelen] = '\0';
+	}
+	setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );
+	delete [] msgname;
+
+	// 3. Read message payload size
+	uint32 msgsize;
+	alldata.serial( msgsize );
+
+	// 4. Read payload buffer
+	alldata.serialBuffer( bufferToFill( msgsize ), msgsize );
+}
+
+
+/*
+ * Returns true if msgtype contains the length of a message name, and, if so, puts it into msgnamelen
+ */
+bool CMessage::decodeLenInMsgType( uint16 msgtype, uint16 *msgnamelen )
+{
+	if ( msgtype < 0 )
+	{
+		*msgnamelen = msgtype & 0x7FFF; // msgtype when bit 15 is 1 is length of msgname
+		return true;
+	}
+	return false;
+}
+
+
+/*
  * Fills the message buffer
  */
 void CMessage::fill( const uint8 *srcbuf, uint32 len )
 {
 	_Buffer.resize( len );
 	_BufPos = _Buffer.begin();
-	memcpy( _BufPos, srcbuf, len );
+	memcpy( &(*_BufPos), srcbuf, len );
 }
 
 
@@ -142,7 +257,7 @@ uint8 *CMessage::bufferToFill( uint32 msgsize )
 	// Same as fill() but the memcpy is done by an external function
 	_Buffer.resize( msgsize );
 	_BufPos = _Buffer.begin();
-	return _BufPos;
+	return &(*_BufPos);
 }
 
 

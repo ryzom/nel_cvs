@@ -665,6 +665,10 @@ SOURCE=.\ai\logic\var.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\logic\var_mem.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\logic\varset.cpp
 # End Source File
 # End Group
@@ -758,6 +762,10 @@ SOURCE=..\include\nel\ai\logic\valueset.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\logic\var.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\logic\var_mem.h
 # End Source File
 # Begin Source File
 

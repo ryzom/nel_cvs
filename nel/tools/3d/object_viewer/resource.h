@@ -407,13 +407,15 @@
 #define IDM_RIBBON_LOOK_AT_LOC          32866
 #define IDM_MAGNETIC_FORCE              32867
 #define IDM_MAGNETIC_FORCE_LOC          32868
+#define IDM_RADIAL_EMITTER              32869
+#define IDM_RADIAL_EMITTER_LOC          32870
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1089
-#define _APS_NEXT_COMMAND_VALUE         32869
+#define _APS_NEXT_COMMAND_VALUE         32871
 #define _APS_NEXT_CONTROL_VALUE         1193
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

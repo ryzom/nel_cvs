@@ -212,6 +212,10 @@ SOURCE=.\object_viewer_exe.rc
 # End Group
 # Begin Source File
 
+SOURCE=..\..\..\lib\object_viewer.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\ReadMe.txt
 # End Source File
 # End Target

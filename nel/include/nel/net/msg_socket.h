@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.31 2001/01/02 14:39:21 cado Exp $
+ * $Id: msg_socket.h,v 1.32 2001/01/10 18:39:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ public:
 	 */
 	CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
 
-	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
+	/// Destructor. For a client socket it deletes the corresponding connection, for a server it deletes all connections.
 	~CMsgSocket();
 
 	/** Adds another client callback array
@@ -260,8 +260,8 @@ protected:
 	 */
 	static CSocket&	accept( SOCKET listen_descr ) throw (ESocket);
 
-	/// Add a new connection socket
-	static void		addNewConnection( CSocket *connection );
+	/// Add a new connection socket. The callback array passed is the one which contains the callbacks expected from this connection
+	static void		addNewConnection( CSocket *connection, const TCallbackItem *cbarray, TTypeNum cbasize );
 
 	/// Handle a connection closure (graceful or not)
 	static void		handleConnectionClosure( const CConnections::iterator& ilps );

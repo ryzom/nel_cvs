@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.39 2001/01/10 13:54:47 cado Exp $
+ * $Id: socket.cpp,v 1.40 2001/01/10 18:39:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,9 @@
 typedef int SOCKET;
 
 #endif
+
+
+using namespace std;
 
 
 namespace NLNET
@@ -160,10 +163,10 @@ void CSocket::processBindMessage( CMessage& message )
 	TTypeNum num = 0;
 	message.serial( key );
 	message.serial( num );
-	_MsgMap.insert( TMsgMapItem(key,num) );
+	_BindMapForSends.insert( make_pair(key,num) );
 	if ( _Logging )
 	{
-		nldebug( "P1: Socket %d : %s is now known as %hu for received messages", _Sock, key.c_str(), num );
+		nldebug( "P1: Socket %d : %s is now known as %hu when sending messages", _Sock, key.c_str(), num );
 	}
 }
 
@@ -175,8 +178,8 @@ void CSocket::packMessage( CMessage& message )
 {
 	if ( ! message.typeIsNumber() )
 	{
-		CMsgMap::iterator im = _MsgMap.find( message.typeAsString() );
-		if ( im != _MsgMap.end() )
+		CMsgMap::iterator im = _BindMapForSends.find( message.typeAsString() );
+		if ( im != _BindMapForSends.end() )
 		{
 			message.setType( (*im).second );
 		}
@@ -451,6 +454,39 @@ bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr )
 		return true;
 	}
 	return false;
+}
+
+
+/// Inits the set of message names that need a binding message to be sent
+void CSocket::initMsgsToBind( const TCallbackItem *cbarray, TTypeNum cbsize )
+{
+	TTypeNum i;
+	for ( i=0; i!=cbsize; ++i )
+	{
+		_MsgsToBind.insert( string(cbarray[i].Key) );
+	}
+}
+
+
+/// Tells that a binding has been sent for name
+void CSocket::setBindSentFlag( const string& name )
+{
+	CMsgBindSet::iterator ibs;
+	if ( (ibs=_MsgsToBind.find( name )) != _MsgsToBind.end() )
+	{
+		_MsgsToBind.erase( ibs );
+	}
+	else
+	{
+		nlwarning( "Msg binding sent for a non-existing msgname" ); // should never occur
+	}
+}
+
+
+/// Returns true is a binding must be sent for name
+bool CSocket::msgToBind( const string& name ) const
+{
+	return ( _MsgsToBind.find( name ) != _MsgsToBind.end() );
 }
 
 

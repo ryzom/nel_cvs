@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.45 2001/01/04 17:05:21 cado Exp $
+ * $Id: msg_socket.cpp,v 1.46 2001/01/10 18:39:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	init( callbackarray, arraysize, false );
 	CSocket *listensock = new CSocket();
 	listensock->setListening( true );
-	addNewConnection( listensock );
+	addNewConnection( listensock, NULL, 0 ); // no callbackarray corresponding to the listening socket
 	listen( listensock, port );
 }
 
@@ -112,7 +112,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	nldebug("Trying to connect to the service \"%s\"", service.c_str());
 	init( callbackarray, arraysize, true );
 	connectToService();
-	addNewConnection( _ClientSock );
+	addNewConnection( _ClientSock, callbackarray, arraysize );
 }
 
 
@@ -126,7 +126,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	_ClientSock->setOwnerClient( this );
 	_ClientSock->setListening( false );
 	_ClientSock->connect( servaddr );
-	addNewConnection( _ClientSock );
+	addNewConnection( _ClientSock, callbackarray, arraysize );
 }
 
 
@@ -262,19 +262,32 @@ void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTy
 			throw EDuplicateMsgName( pt->Key );
 		}
 	}
+
+	_ClientSock->initMsgsToBind( _ClientCallbackArray, _ClientCbaSize ); // note: no need to clear the set because adding existing items is not harmfull
 }
 
 
 /*
- * Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
+ * Destructor. For a client socket it deletes the corresponding connection, for a server it deletes all connections.
  */
 CMsgSocket::~CMsgSocket()
 {
 	CConnections::iterator its;
-	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
+	if ( _ClientSock != NULL )
 	{
-		CSocket *t = (*its).second;
-		delete (*its).second; // BUG: crashes sometimes
+		// Delete client msgsocket
+		its = _Connections.find( id() );
+		delete (*its).second;
+		_Connections.erase( its );
+	}
+	else
+	{
+		// Delete server msgsocket : delete all connections (even if they are client sockets)
+		for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
+		{
+			delete (*its).second; // BUG: crashes sometimes
+		}
+		_Connections.clear();
 	}
 }
 
@@ -605,7 +618,7 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 	CInetAddress addr;
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
-	addNewConnection( connection );
+	addNewConnection( connection, _CallbackArray, _CbaSize );
 	nldebug( "Socket %d accepted an incoming connection from %s and opened socket %d", listen_descr, addr.asString().c_str(), newsock );
 	return *connection;
 }
@@ -614,10 +627,14 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 /*
  * Add a new connection socket
  */
-void CMsgSocket::addNewConnection( CSocket *connection )
+void CMsgSocket::addNewConnection( CSocket *connection, const TCallbackItem *cbarray, TTypeNum cbasize )
 {
 	TSenderId id = CMsgSocket::newSenderId();
 	connection->setSenderId( id );
+	if ( cbarray != NULL )
+	{
+		connection->initMsgsToBind( cbarray, cbasize );
+	}
 	_Connections.insert( make_pair(id,connection) );
 	//nldebug( "Id: %d - Size: %d", id, _Connections.size() );
 }
@@ -823,7 +840,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		if ( ! ((s=="C") || (s=="D") ) )
 		{
 			// Send a binding message if it has not been sent before
-			if ( ! (*its).bindSent() )
+			if ( sock.msgToBind( s ) )
 			{
 				CMessage bindmsg;
 				TTypeNum num = (*its).pt() - the_callback_array;
@@ -831,7 +848,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 				bindmsg.serial( s );
 				bindmsg.serial( num );
 				sock.send( bindmsg );
-				const_cast<CPtCallbackItem&>((*its)).setBindSentFlag();
+				sock.setBindSentFlag( s );
 			}
 		}
 

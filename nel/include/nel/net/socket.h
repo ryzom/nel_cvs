@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.22 2000/12/13 14:36:19 cado Exp $
+ * $Id: socket.h,v 1.23 2001/01/10 18:39:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,18 +33,18 @@
 #include "nel/net/message.h"
 #include "nel/net/pt_callback_item.h"
 #include <map>
+#include <set>
 #include <string>
 
 namespace NLNET
 {
 
 
-/// Map for msg name and msg type number association
+/// Maps for msg name and msg type number association
 typedef std::map<std::string,TTypeNum> CMsgMap;
 
-
-/// Elements of CMsgMap
-typedef std::pair<std::string,TTypeNum> TMsgMapItem;
+/// Sets for binding messages to send back
+typedef std::set<std::string> CMsgBindSet;
 
 
 /**
@@ -158,11 +158,18 @@ protected:
 	CMsgSocket		*ownerClient() const					{ return _OwnerClient; }
 	TMsgCallback	authorizedCallback() const				{ return _AuthCallback; }
 
+	/// Inits the set of message names that need a binding message to be sent
+	void			initMsgsToBind( const TCallbackItem *cbarray, TTypeNum cbsize );
+	/// Tells that a binding has been sent for name
+	void			setBindSentFlag( const std::string& name );
+	/// Returns true is a binding must be sent for name
+	bool			msgToBind( const std::string& name ) const;
+
 	//@}
 
 private:
 
-	CMsgMap			_MsgMap;
+	CMsgMap			_BindMapForSends;
 	uint8			_CurrentMsgNumberSend;
 
 	bool			_DataAvailable; // can be modified only by CMsgSocket
@@ -170,6 +177,7 @@ private:
 	bool			_IsListening;	// the same
 	CMsgSocket		*_OwnerClient;	// the same
 	TMsgCallback	_AuthCallback;	// the same
+	CMsgBindSet		_MsgsToBind;	// the same
 
 };
 

@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.15 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.16 2003/10/10 07:12:31 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,12 @@ void			CTransformUser::freezeHRC()
 void			CTransformUser::unfreezeHRC()
 {
 	nlassert(_Transform) ; // object invalid now ...
-	_Transform->unfreezeHRC();
+	CTransform *node = _Transform;
+	while (node)
+	{
+		node->unfreezeHRC();
+		node = node->hrcGetParent();
+	}
 }
 
 

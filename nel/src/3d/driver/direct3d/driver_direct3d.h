@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.20 2004/08/09 17:51:03 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.21 2004/08/13 15:25:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@
 //#define NL_DEBUG_D3D
 
 // Define this to enable the render state caching (default is defined)
-#define NL_D3D_USE_RENDER_STATE_CACHE
+//#define NL_D3D_USE_RENDER_STATE_CACHE
 
 // Define this to disable hardware vertex program (default is undefined)
 // #define NL_DISABLE_HARDWARE_VERTEX_PROGAM
@@ -92,8 +92,9 @@ using NLMISC::CVector;
 
 class	CDriverD3D;
 class	CTextureDrvInfosD3D;
-
 class   COcclusionQueryD3D;
+class   CVolatileVertexBuffer;
+class   CVolatileIndexBuffer;
 
 typedef std::list<COcclusionQueryD3D *> TOcclusionQueryList;
 
@@ -224,8 +225,15 @@ public:
 	bool							Hardware:1;
 	bool							Volatile:1; 		// Volatile vertex buffer
 	bool							VolatileRAM:1;
-	uint							VolatileLockTime;	// Volatile vertex buffer
 	uint8							Stride:8;
+	uint							VolatileLockTime;	// Volatile vertex buffer
+	DWORD							Usage;
+	CVolatileVertexBuffer			*VolatileVertexBuffer;
+	
+	#ifdef NL_DEBUG
+	bool Locked;
+	#endif
+
 
 	CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb);
 	virtual ~CVBDrvInfosD3D();
@@ -243,6 +251,7 @@ public:
 	bool							Volatile:1; 		// Volatile index buffer
 	bool							VolatileRAM:1;
 	uint							VolatileLockTime;	// Volatile index buffer	
+	CVolatileIndexBuffer			*VolatileIndexBuffer;
 
 	CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
 	virtual ~CIBDrvInfosD3D();
@@ -274,7 +283,7 @@ public:
 	D3DXHANDLE				FactorHandle[MaxShaderTexture];
 
 	// Scalar handles
-	D3DXHANDLE				ScalarHandle[MaxShaderTexture];
+	D3DXHANDLE				ScalarFloatHandle[MaxShaderTexture];	
 
 	CShaderDrvInfosD3D(IDriver *drv, ItShaderDrvInfoPtrList it);
 	virtual ~CShaderDrvInfosD3D();
@@ -346,9 +355,10 @@ public:
 	uint						Size;
 	CVertexBuffer::TLocation	Location;
 	uint						CurrentIndex;
+	uint						MaxSize;
 
 	/* size is in bytes */
-	void	init (CVertexBuffer::TLocation	location, uint size, CDriverD3D *driver);
+	void	init (CVertexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver);
 	void	release ();
 
 	// Runtime buffer access, no-blocking lock.
@@ -373,12 +383,13 @@ public:
 	CIndexBuffer::TLocation		Location;
 	// current position in bytes!
 	uint						CurrentIndex;
+	uint						MaxSize;
 
 	/* size is in bytes */
-	void	init (CIndexBuffer::TLocation	location, uint size, CDriverD3D *driver);
+	void	init (CIndexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver);
 	void	release ();
 
-	// Runtime buffer access, no-blocking lock.
+	// Runtime buffer access, no-blocking lock. Re
 	void	*lock (uint size, uint &offset);
 	void	unlock ();
 
@@ -832,6 +843,8 @@ private:
 		IDirect3DVertexBuffer9			*VertexBuffer;
 		UINT							Offset;
 		UINT							Stride;
+		CVertexBuffer::TPreferredMemory	PrefferedMemory;
+		DWORD							Usage; // d3d vb usage
 	};
 
 	// Render index buffer
@@ -987,11 +1000,16 @@ private:
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
 
-		// Ref on the state
-		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];
-		_textureState.TexGen = texGenEnabled;
-		_textureState.TexGenMode = value;
-		touchRenderVariable (&_textureState);
+		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];		
+		#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if (_textureState.TexGen = texGenEnabled || _textureState.TexGenMode != value)
+		#endif // NL_D3D_USE_RENDER_STATE_CACHE
+		{		
+			// Ref on the state
+			_textureState.TexGen = texGenEnabled;
+			_textureState.TexGenMode = value;
+			touchRenderVariable (&_textureState);
+		}
 	}
 
 	// Access texture index states
@@ -1000,12 +1018,17 @@ private:
 		H_AUTO_D3D(CDriverD3D_setTextureIndexUV);
 		nlassert (_DeviceInterface);
 		nlassert (stage<MaxTexture);
-
+		
 		// Ref on the state
 		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];
-		_textureState.TexGen = false;
-		_textureState.UVChannel = value;
-		touchRenderVariable (&_textureState);
+		#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if (_textureState.TexGen || _textureState.UVChannel != value)
+		#endif
+		{		
+			_textureState.TexGen = false;
+			_textureState.UVChannel = value;
+			touchRenderVariable (&_textureState);
+		}
 	}
 
 	// Access texture states
@@ -1206,7 +1229,7 @@ private:
 	}
 
 	// Set the vertex buffer
-	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size)
+	inline void setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexBuffer);
 		nlassert (_DeviceInterface);
@@ -1219,6 +1242,8 @@ private:
 			_VertexBufferCache.VertexBuffer = vertexBuffer;
 			_VertexBufferCache.Offset = 0;
 			_VertexBufferCache.Stride = stride;
+			_VertexBufferCache.PrefferedMemory = pm;
+			_VertexBufferCache.Usage = usage;
 			touchRenderVariable (&_VertexBufferCache);
 
 			/* Work around for a NVIDIA bug in driver 53.03 - 56.72
@@ -1601,6 +1626,10 @@ private:
 	std::vector<CIBProfile>								_IBProfiles;
 	uint												_CurIBLockCount;
 	uint												_NumIBProfileFrame;
+public:
+	NLMISC::TTicks										_VolatileIBLockTime;
+	NLMISC::TTicks										_VolatileVBLockTime;
+private:
 	void												appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib);
 
 	// VBHard profile
@@ -1641,10 +1670,10 @@ private:
 
 
 	// Volatile double buffers
-	CVolatileVertexBuffer	_VolatileVertexBufferRAM[2];
-	CVolatileVertexBuffer	_VolatileVertexBufferAGP[2];
-	CVolatileIndexBuffer	_VolatileIndexBufferRAM[2];
-	CVolatileIndexBuffer	_VolatileIndexBufferAGP[2];
+	CVolatileVertexBuffer	*_VolatileVertexBufferRAM[2];
+	CVolatileVertexBuffer	*_VolatileVertexBufferAGP[2];
+	CVolatileIndexBuffer	*_VolatileIndexBufferRAM[2];
+	CVolatileIndexBuffer	*_VolatileIndexBufferAGP[2];
 
 	// Vertex declaration list
 	std::list<CVertexDeclaration>	_VertexDeclarationList;
@@ -1654,6 +1683,7 @@ private:
 
 	// Quad indexes
 	CIndexBuffer			_QuadIndexes;
+	CIndexBuffer			_QuadIndexesAGP;
 
 	// The last setuped shader
 	CShader					*_CurrentShader;
@@ -1718,8 +1748,9 @@ private:
 	// depth range
 	float						_DepthRangeNear;
 	float						_DepthRangeFar;
-
+	//
 	bool						_ScissorTouched;
+	uint8						_CurrentUVRouting[MaxTexture];
 public:
 	// private, for access by COcclusionQueryD3D
 	COcclusionQueryD3D			*_CurrentOcclusionQuery;
@@ -1740,6 +1771,13 @@ public:
 	void			setupLightMapDynamicLighting(bool enable);
 
 	TCullMode		_CullMode;
+
+	// reset an index buffer and force it to be reallocated	
+	void deleteIndexBuffer(CIBDrvInfosD3D *ib);
+public:
+	#ifdef 	NL_DEBUG
+		std::set<CVBDrvInfosD3D *> _LockedBuffers;
+	#endif
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))

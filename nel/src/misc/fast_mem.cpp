@@ -1,7 +1,7 @@
 /** \file fast_mem.cpp
  * Fast memory copy and precache
  *
- * $Id: fast_mem.cpp,v 1.1 2002/05/14 10:11:14 berenguier Exp $
+ * $Id: fast_mem.cpp,v 1.2 2002/05/21 16:35:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/fast_mem.h"
-#include "nel/misc/cpu_info.h"
+#include "nel/misc/system_info.h"
 
 
 namespace NLMISC
@@ -36,7 +36,7 @@ namespace NLMISC
 
 
 // ***************************************************************************
-void		CFastMem::memcpySSE(void *dest, const void *src, uint nbytes)
+void		*CFastMem::memcpySSE(void *dest, const void *src, size_t nbytes)
 {
 	_asm 
 	{
@@ -119,6 +119,7 @@ void		CFastMem::memcpySSE(void *dest, const void *src, uint nbytes)
 			mov	ecx, edx
 			rep movsb
 	}
+	return dest;
 }
 
 // ***************************************************************************
@@ -188,11 +189,11 @@ void		CFastMem::precacheMMX(const void *src, uint nbytes)
 
 
 // ***************************************************************************
-void		CFastMem::precacheBest(const void *src, uint nbytes)
+void		CFastMem::precache(const void *src, uint nbytes)
 {
-	if(NLMISC::CCpuInfo::hasSSE())
+	if(NLMISC::CSystemInfo::hasSSE())
 		precacheSSE(src, nbytes);
-	else if(NLMISC::CCpuInfo::hasMMX())
+	else if(NLMISC::CSystemInfo::hasMMX())
 		precacheMMX(src, nbytes);
 }
 
@@ -201,7 +202,7 @@ void		CFastMem::precacheBest(const void *src, uint nbytes)
 
 
 // ***************************************************************************
-void		CFastMem::memcpySSE(void *dst, const void *src, uint nbytes)
+void		CFastMem::memcpySSE(void *dst, const void *src, size_t nbytes)
 {
 	// Use std memcpy.
 	memcpy(dst, src, nbytes);
@@ -219,7 +220,22 @@ void		CFastMem::precacheBest(const void *src, uint nbytes)
 	// no-op.
 }
 
-
 #endif
+
+typedef void  *(*memcpyPtr)(void *dts, const void *src, size_t nbytes);
+
+static memcpyPtr findBestmemcpy ()
+{
+#ifdef NL_OS_WINDOWS
+	if (CSystemInfo::hasSSE ())
+		return CFastMem::memcpySSE;
+	else
+		return ::memcpy;
+#else // NL_OS_WINDOWS
+	return ::memcpy;
+#endif // NL_OS_WINDOWS
+}
+
+void  *(*CFastMem::memcpy)(void *dts, const void *src, size_t nbytes) = findBestmemcpy ();
 
 } // NLMISC

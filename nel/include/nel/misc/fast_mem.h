@@ -1,7 +1,7 @@
 /** \file fast_mem.h
  * Fast memory copy and precache
  *
- * $Id: fast_mem.h,v 1.1 2002/05/14 10:11:04 berenguier Exp $
+ * $Id: fast_mem.h,v 1.2 2002/05/21 16:35:11 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,9 +32,11 @@
 namespace NLMISC
 {
 
+//typedef void  *memcpyptr(void *dts, const void *src, size_t nbytes);
 
 /**
- * Functions for Fast Memory manipulation with Pentium-class processors
+ * Functions for Fast Memory manipulation with Pentium-class processors.
+ * From http://www.sgi.com/developers/technology/irix/resources/asc_cpu.html
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -44,11 +46,27 @@ class CFastMem
 public:
 
 	/**
+	 *	This is a function pointer that points on the best memcpy function available depending of the OS and proc.
+	 *  In the best case, it will use memcpySSE(), and in worst case, it'll use the libc memcpy()
+	 *  Simply use it this way: CFastMem::memcpy(dst, src, size);
+	 */
+	static void  *(*CFastMem::memcpy)(void *dts, const void *src, size_t nbytes);
+
+	/**
+	 *	Fast precaching of memory in L1 cache using SSE or MMX where available 
+	 *	(NB: others methods don't do the test)
+	 *	nbytes should not override 4K
+	 */
+	static void		precache(const void *src, uint nbytes);
+
+	/////////////////////////////////////////////
+
+	/**
 	 *	Fast memcpy using SSE instructions: prefetchnta and movntq. Can be called only if SSE and MMX is supported
 	 *	NB: Copy per block of 4K through L1 cache
 	 *	Result is typically 420 Mo/s instead of 150 Mo/s.
 	 */
-	static void		memcpySSE(void *dst, const void *src, uint nbytes);
+	static void		*memcpySSE(void *dst, const void *src, size_t nbytes);
 
 	/**
 	 *	Fast precaching of memory in L1 cache using MMX/SSE instructions: movq and prefetchnta
@@ -64,14 +82,6 @@ public:
 	 *	nbytes should not override 4K
 	 */
 	static void		precacheMMX(const void *src, uint nbytes);
-
-	/**
-	 *	Fast precaching of memory in L1 cache using SSE or MMX where available 
-	 *	(NB: others methods don't do the test)
-	 *	nbytes should not override 4K
-	 */
-	static void		precacheBest(const void *src, uint nbytes);
-
 };
 
 

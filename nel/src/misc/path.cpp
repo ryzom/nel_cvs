@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.31 2002/04/30 13:00:38 besson Exp $
+ * $Id: path.cpp,v 1.32 2002/04/30 13:26:46 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -467,9 +467,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		}
 		if (wantFile && isfile(de))
 		{
-			string sExt = fn.substr (fn.size()-4);
-			
-			if (sExt == ".log")
+			if (fn.size() >= 4 && fn.substr (fn.size()-4) == ".log")
 			{
 				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): skip *.log files (%s)", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
 				continue;

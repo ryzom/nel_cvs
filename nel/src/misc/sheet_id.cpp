@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.13 2002/08/21 09:41:13 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.14 2002/08/21 11:43:53 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -60,9 +60,9 @@ CSheetId::CSheetId( const string& sheetName )
 {
 	if (!build(sheetName))
 	{
-		nlerror("<CSheetId::CSheetId> The sheet %s is not in sheet_id.bin",sheetName.c_str());
+		nlwarning("<CSheetId::CSheetId> The sheet %s is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
+		*this = Unknown;
 	}
-
 
 } // CSheetId //
 
@@ -195,7 +195,8 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 	}
 	else
 	{
-		nlerror("<CSheetId::operator=> The sheet %s is not in sheet_id.bin",sheetName.c_str());
+		nlwarning("<CSheetId::operator=> The sheet %s is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
+		*this = Unknown;
 	}
 	
 	return *this;

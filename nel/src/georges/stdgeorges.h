@@ -1,7 +1,7 @@
 /** \file stdgeorges.h
  * Georges system files
  *
- * $Id: stdgeorges.h,v 1.1 2002/02/14 10:40:40 corvazier Exp $
+ * $Id: stdgeorges.h,v 1.2 2002/05/17 06:28:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,3 +28,10 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <time.h>
+#include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
+#include "nel/misc/common.h"
+
+// Include from libxml2
+#include <libxml/parser.h>

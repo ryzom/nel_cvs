@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.7 2002/01/22 14:11:49 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.8 2002/05/17 06:28:05 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,6 +86,16 @@ CIXml::~CIXml ()
 
 void CIXml::release ()
 {
+	// Release the parser
+	if (_Parser)
+	{
+		// Free it
+		xmlFreeDoc (_Parser->myDoc);
+		xmlFreeParserCtxt (_Parser);
+		// xmlCleanupParser (); Crash..
+		_Parser = NULL;
+	}
+
 	// Not initialized
 	_Parser = NULL;
 	_CurrentElement = NULL;
@@ -93,14 +103,6 @@ void CIXml::release ()
 	_PushBegin = false;
 	_AttribPresent = false;
 	_ErrorString = "";
-
-	// Release the parser
-	if (_Parser)
-	{
-		// Free it
-		xmlFreeParserCtxt (_Parser);
-		_Parser = NULL;
-	}
 }
 
 // ***************************************************************************
@@ -228,6 +230,9 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 					{
 						// Copy the value
 						value = (const char*)attributeValue;
+
+						// Delete the value
+						xmlFree ((void*)attributeValue);
 					}
 					else
 					{
@@ -291,7 +296,12 @@ void CIXml::serialSeparatedBufferIn ( string &value, bool checkSeparator )
 						// Read the content
 						const char *content = (const char*)xmlNodeGetContent (_CurrentNode);
 						if (content)
+						{
 							_ContentString = content;
+
+							// Delete the value
+							xmlFree ((void*)content);
+						}
 						else
 							_ContentString.erase ();
 
@@ -763,6 +773,100 @@ bool CIXml::xmlCommentInternal (const char *comment)
 {
 	// Ok
 	return true;
+}
+
+// ***************************************************************************
+
+xmlNodePtr CIXml::getFirstChildNode (xmlNodePtr parent, const char *childName)
+{
+	xmlNodePtr child = parent->children;
+	while (child)
+	{
+		if (strcmp ((const char*)child->name, childName) == 0)
+			return child;
+		child = child->next;
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+xmlNodePtr CIXml::getNextChildNode (xmlNodePtr last, const char *childName)
+{
+	last = last->next;
+	while (last)
+	{
+		if (strcmp ((const char*)last->name, childName) == 0)
+			return last;
+		last = last->next;
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+xmlNodePtr CIXml::getFirstChildNode (xmlNodePtr parent, xmlElementType type)
+{
+	xmlNodePtr child = parent->children;
+	while (child)
+	{
+		if (child->type == type)
+			return child;
+		child = child->next;
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+xmlNodePtr CIXml::getNextChildNode (xmlNodePtr last, xmlElementType type)
+{
+	last = last->next;
+	while (last)
+	{
+		if (last->type == type)
+			return last;
+		last = last->next;
+	}
+	return NULL;
+}
+
+// ***************************************************************************
+
+uint CIXml::countChildren (xmlNodePtr node, const char *childName)
+{
+	uint count=0;
+	xmlNodePtr child = getFirstChildNode (node, childName);
+	while (child)
+	{
+		count++;
+		child = getNextChildNode (child, childName);
+	}
+	return count;
+}
+
+// ***************************************************************************
+
+uint CIXml::countChildren (xmlNodePtr node, xmlElementType type)
+{
+	uint count=0;
+	xmlNodePtr child = getFirstChildNode (node, type);
+	while (child)
+	{
+		count++;
+		child = getNextChildNode (child, type);
+	}
+	return count;
+}
+
+// ***************************************************************************
+
+xmlNodePtr CIXml::getRootNode () const
+{
+	if (_Parser)
+		if (_Parser->myDoc)
+			return xmlDocGetRootElement (_Parser->myDoc);
+	return NULL;
 }
 
 // ***************************************************************************

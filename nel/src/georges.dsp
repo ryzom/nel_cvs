@@ -132,195 +132,43 @@ LIB32=link.exe -lib
 # Name "georges - Win32 ReleaseDebug"
 # Begin Source File
 
-SOURCE=..\include\nel\georges\common.h
+SOURCE=.\georges\form.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\Form.cpp
-# ADD CPP /Yu"stdgeorges.h"
+SOURCE=.\georges\form.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\Form.h
+SOURCE=.\georges\form_dfn.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\form_body_elt.cpp
-# ADD CPP /Yu"stdgeorges.h"
+SOURCE=.\georges\form_dfn.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\form_body_elt.h
+SOURCE=.\georges\form_elm.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\form_body_elt_atom.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\form_body_elt_atom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\form_body_elt_list.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\form_body_elt_list.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\form_body_elt_struct.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\form_body_elt_struct.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\form_file.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\form_file.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\form_head.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\form_head.h
+SOURCE=.\georges\form_elm.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\georges\form_loader.cpp
-# ADD CPP /Yu"stdgeorges.h"
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\form_loader.h
+SOURCE=.\georges\form_loader.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\georges_loader.cpp
+SOURCE=.\georges\header.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\georges_loader.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\Item.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\Item.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\item_elt.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\item_elt.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\item_elt_atom.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\item_elt_atom.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\item_elt_list.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\item_elt_list.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\item_elt_struct.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\item_elt_struct.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\item_loader.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\item_loader.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_elt.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_elt.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_elt_define.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_elt_define.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_elt_define_list.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_elt_define_list.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_elt_type.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_elt_type.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_elt_type_list.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_elt_type_list.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\mold_loader.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\mold_loader.h
+SOURCE=.\georges\header.h
 # End Source File
 # Begin Source File
 
@@ -333,66 +181,23 @@ SOURCE=.\georges\stdgeorges.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\string_ex.cpp
-# ADD CPP /Yu"stdgeorges.h"
+SOURCE=.\georges\type.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\string_ex.h
+SOURCE=.\georges\type.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\type_unit.cpp
-# ADD CPP /Yu"stdgeorges.h"
+SOURCE=..\include\nel\georges\u_form.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\georges\type_unit.h
+SOURCE=..\include\nel\georges\u_form_elm.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\georges\type_unit_double.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\type_unit_double.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\type_unit_file_name.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\type_unit_file_name.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\type_unit_int_signed.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\type_unit_int_signed.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\type_unit_int_unsigned.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\type_unit_int_unsigned.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\georges\type_unit_string.cpp
-# ADD CPP /Yu"stdgeorges.h"
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\georges\type_unit_string.h
+SOURCE=..\include\nel\georges\u_form_loader.h
 # End Source File
 # End Target
 # End Project

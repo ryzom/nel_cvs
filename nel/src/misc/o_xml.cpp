@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.5 2002/04/11 14:54:54 cado Exp $
+ * $Id: o_xml.cpp,v 1.6 2002/05/17 06:28:05 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -647,6 +647,19 @@ int xmlOutputCloseCallbackForNeL ( void *context )
 
 	// Does nothing
 	return 1;
+}
+
+// ***************************************************************************
+
+xmlDocPtr COXml::getDocument ()
+{
+	if (_Document)
+		return _Document;
+
+	// Initialise the document
+	_Document = xmlNewDoc ((const xmlChar *)_Version.c_str());
+
+	return _Document;
 }
 
 // ***************************************************************************

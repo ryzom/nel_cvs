@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.8 2002/04/24 13:47:52 besson Exp $
+ * $Id: zone_manager.cpp,v 1.9 2002/10/14 15:52:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,258 +38,174 @@ using namespace NLMISC;
 namespace NL3D
 {
 
+// ------------------------------------------------------------------------------------------------
+// CZoneManager
+// ------------------------------------------------------------------------------------------------
 
-/*
- * Constructor
- */
+// ------------------------------------------------------------------------------------------------
 CZoneManager::CZoneManager()
 {
-	ZoneRemoved = true;
-	ZoneAdded = true;
-	Zone = NULL;
-	//_pLoadTask = new CTaskManager;
-	step = 0;
+	_Zone = NULL;
+	_AddingZone= false;
+	_RemovingZone= false;
+	_WorkInProgress = false;
 }
 
-/// Destructeur
+// ------------------------------------------------------------------------------------------------
 CZoneManager::~CZoneManager()
 {
-	// kill thread.
-	//delete _pLoadTask;
-	// After thread exit, delete any zone remainining.
-	if(!ZoneAdded)
-	{
-		delete	Zone;
-	}
-	_listZone.clear();
 }
 
-/**
-* LoadAllZonesAround  Load all zones around a position
-* \param x is axis x coordinate (in meters)
-* \param y is axis y coordinate (in meters)
-* \area is area of zone loading (in meters)
-*/
-void CZoneManager::loadAllZonesAround(uint x, uint y, uint area, bool scanAll)
+// ------------------------------------------------------------------------------------------------
+void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 {
-	multimap<uint32, CLoadZone>::iterator it;
-	
-	if(scanAll)
+	_WorkInProgress = true;
+	if ((_AddingZone) || (_RemovingZone)) return;
+
+	// Obtain the new set of zones around
+	if ((x != _LastX) || (y != _LastY))
+		getListZoneId (x, y, area, _ZoneList);
+	_LastX = x;
+	_LastY = y;
+
+	// Look if we have zone loaded that is not needed anymore
+	uint32 i, j;
+	for (i = 0; i < _LoadedZones.size(); ++i)
 	{
-		step = 0;
-	}
-
-	switch(step)
-	{
-		case 0:
-			//Clear LoadAsked flag
-			for(it = _LoadZone.begin(); it != _LoadZone.end(); it++)
-			{
-				(*it).second.LoadAsked = false;
-			}
-			
-			_listZone.clear();
-			getListZoneName(x, y, area, _listZone);
-			
-			_it2 = _listZone.begin();
-			if(scanAll)
-			{
-				_itEnd = _listZone.end();
-			}
-			else
-			{
-				_itEnd = _it2;
-				if( _itEnd != _listZone.end() )
-				{
-					++_itEnd;
-				}
-			}
-			step = 1;
-
-		case 1:
-			//Set LoadAsked flag for each zone when load is requested
-			for(; _it2 != _itEnd; ++_it2)
-			{
-				///Find on multimap not work, because the key can't be finded, only used for shorted insert strategy
-				it = _LoadZone.begin();
-				while( it != _LoadZone.end() )
-				{
-					if((*it).second.NameZone == (*_it2).first)
-					{
-						break;
-					}
-					it++;
-				}
-
-				if( (it != _LoadZone.end()) && ((*it).second.NameZone == (*_it2).first) )
-				{
-					(*it).second.LoadAsked = true;
-				}
-				else
-				{
-					/// New zone found, add it to multimap of managed zones
-					_LoadZone.insert(multimap<uint32, CLoadZone>::value_type((*_it2).second, CLoadZone((*_it2).first, 0, true)));
-				}
-			}
-
-			if( _itEnd != _listZone.end() )
-			{
-				++_itEnd;
-				return;
-			}
-			else
-			{
-				//Add loading / unloading zone in TaskManager for all zones when needed
-				for(it = _LoadZone.begin(); it != _LoadZone.end(); )
-				{
-					if((*it).second.LoadAsked)
-					{
-						if( !( (*it).second.Loaded || (*it).second.LoadInProgress || (*it).second.FileNotFound ) )
-						{
-							//Add loading to TaskManager
-							CZoneLoadingTask *tsk = new CZoneLoadingTask(&((*it).second), this);
-							//trap _pLoadTask->addTask(tsk);
-							CAsyncFileManager::getInstance().addTask (tsk);
-							(*it).second.Runnable = tsk;
-							(*it).second.LoadInProgress = true;
-						}
-						it++;
-					}
-					// Remove task on task manager
-			/*		else if( (*it).second.LoadInProgress )
-					{
-						if(_pLoadTask->deleteTask((*it).second.Runnable))
-						{
-							//STLPort not return an iterator for erase...
-							multimap<uint32, CLoadZone>::iterator itPrev = it;
-							it++;
-							_LoadZone.erase(itPrev);
-						}
-						else
-						{
-							it++;
-						}
-					}
-			*/		else if( (*it).second.Loaded )
-					{
-						if(!ZoneAdded && (Zone->getZoneId() == (*it).second.IdZone) )
-						{
-							it++;
-						}
-						else
-						{
-							CLoadZone *pLoadZone = new CLoadZone;
-							*pLoadZone = (*it).second;
-							CZoneUnloadingTask *tsk = new CZoneUnloadingTask(pLoadZone, this);
-							//trap _pLoadTask->addTask(tsk);
-							CAsyncFileManager::getInstance().addTask (tsk);
-							//STLPort not return an iterator for erase...
-							multimap<uint32, CLoadZone>::iterator itPrev = it;
-							it++;
-							_LoadZone.erase(itPrev);
-						}
-					}
-					else
-					{
-						it++;
-					}
-				}
-				step = 0;
-			}
-	}
-
-}
-
-/// Constructor
-CZoneLoadingTask::CZoneLoadingTask(CLoadZone *lz, CZoneManager *zm)
-{
-	_Lz = lz;
-	_Zm = zm;
-}
-
-/// Zone loading task
-void CZoneLoadingTask::run(void)
-{
-	while(!_Zm->ZoneAdded)
-	{
-		//trap _Zm->getTask()->sleepTask();
-		CAsyncFileManager::getInstance().sleepTask();
-		// must test if thread wants to exit.
-		//trap if(!_Zm->getTask()->isThreadRunning())
-		if(!CAsyncFileManager::getInstance().isThreadRunning())
+		// If the loadedzone i do not appear in the zone list so we have to remove it
+		bool bFound = false;
+		uint16 nLoadedZone = _LoadedZones[i];
+		for (j = 0; j < _ZoneList.size(); ++j)
 		{
-			delete this;
+			if (_ZoneList[j] == nLoadedZone)
+			{
+				bFound = true;
+				break;
+			}
+		}
+
+		if (!bFound)
+		{
+			// Remove the zone nLoadedZone
+			_IdZoneToRemove = nLoadedZone;
+			_RemovingZone = true;
 			return;
 		}
 	}
 
-	_Zm->Zone = new CZone;
-	string zonePath = _Zm->getZonePath() + _Lz->NameZone;
+	// Look if we have zone not already loaded
+	for (i = 0; i < _ZoneList.size(); ++i)
+	{
+		// If the zone requested do not appear in the zone loaded list so we have to load it
+		bool bFound = false;
+		uint16 nZone = _ZoneList[i];
+		for (j = 0; j < _LoadedZones.size(); ++j)
+		{
+			if (_LoadedZones[j] == nZone)
+			{
+				bFound = true;
+				break;
+			}
+		}
 
+		if (!bFound)
+		{
+			// We have to load this zone ! and return because only one load at a time
+			_AddingZone = true;
+			CAsyncFileManager &rAFM = CAsyncFileManager::getInstance();
+			_ZoneToAddName = getZoneNameFromId(nZone);
+			_ZoneToAddId = nZone;
+			rAFM.addTask (new CZoneLoadingTask(_ZoneToAddName, &_Zone) );
+			return;
+		}
+	}
+	_WorkInProgress = false;
+}
+
+// ------------------------------------------------------------------------------------------------
+bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
+{
+	// Check if the work is a loading
+	if (_AddingZone)
+	{
+		if (_Zone != NULL)
+		{
+			_AddingZone= false;
+			rWork.ZoneAdded = true;
+			rWork.NameZoneAdded = _ZoneToAddName;
+			rWork.ZoneRemoved = false;
+			rWork.IdZoneToRemove = 0;
+			rWork.NameZoneRemoved = "";
+			rWork.Zone = const_cast<CZone*>(_Zone);
+			_LoadedZones.push_back (_ZoneToAddId);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+	}
+	if (_RemovingZone)
+	{
+		_RemovingZone = false;
+		rWork.ZoneAdded = false;
+		rWork.NameZoneAdded = "";
+		rWork.ZoneRemoved = true;
+		rWork.IdZoneToRemove = _IdZoneToRemove;
+		rWork.NameZoneRemoved = getZoneNameFromId(_IdZoneToRemove);
+		uint32 i, j;
+		for (i = 0 ; i < _LoadedZones.size(); ++i)
+			if (_LoadedZones[i] == _IdZoneToRemove)
+				break;
+		if (i < _LoadedZones.size())
+		{
+			for (j = i; j < _LoadedZones.size()-1; ++j)
+				_LoadedZones[j] = _LoadedZones[j+1];
+			_LoadedZones.resize(_LoadedZones.size()-1);
+		}
+		rWork.Zone = NULL;
+		return true;
+	}
+	return false;
+}
+
+// ------------------------------------------------------------------------------------------------
+// CZoneLoadingTask
+// ------------------------------------------------------------------------------------------------
+
+// ------------------------------------------------------------------------------------------------
+CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePtr *ppZone)
+{
+	*ppZone = NULL;
+	_Zone = ppZone;
+	_ZoneName = sZoneName;
+}
+
+// ------------------------------------------------------------------------------------------------
+void CZoneLoadingTask::run(void)
+{
 	// Lookup the zone
-	string zonePathLookup = CPath::lookup (zonePath, false, false, true);
+	string zonePathLookup = CPath::lookup (_ZoneName, false, false, true);
 	if (zonePathLookup == "")
-		zonePathLookup = zonePath;
+		zonePathLookup = _ZoneName;
 
+	CZone *ZoneTmp = new CZone;
 	CIFile file;
 	if(file.open(zonePathLookup))
 	{
-		_Zm->Zone->serial(file);
+		ZoneTmp->serial(file);
 		file.close();
-
-		_Lz->IdZone = _Zm->Zone->getZoneId();
-		_Zm->NameZoneAdded= _Lz->getNameWithoutExtension();
-		_Zm->ZoneAdded = false;
-		_Lz->LoadInProgress = false;
-		_Lz->Loaded = true;
+		*_Zone = ZoneTmp;
 	}
 	else
 	{
 		nldebug("CZoneLoadingTask::run(): File not found: %s", zonePathLookup.c_str ());
-		_Lz->FileNotFound = true;
-		delete _Zm->Zone;
+		delete ZoneTmp;
+		*_Zone = (CZone*)-1; // Return error
 	}
 	delete this;
 }
-
-/// Constructor
-CZoneUnloadingTask::CZoneUnloadingTask(CLoadZone *lz, CZoneManager *zm)
-{
-	_Lz = lz;
-	_Zm = zm;
-}
-
-/// Zone loading task
-void CZoneUnloadingTask::run(void)
-{
-	while(!_Zm->ZoneRemoved)
-	{
-		//trap _Zm->getTask()->sleepTask();
-		CAsyncFileManager::getInstance().sleepTask();
-		// must test if thread wants to exit.
-		//trap if(!_Zm->getTask()->isThreadRunning())
-		if (!CAsyncFileManager::getInstance().isThreadRunning())
-		{
-			delete this;
-			return;
-		}
-	}
-	_Zm->IdZoneToRemove = _Lz->IdZone;
-	_Zm->NameZoneRemoved= _Lz->getNameWithoutExtension();
-	_Zm->ZoneRemoved = false;
-
-	delete _Lz;
-	delete this;
-}
-
-
-std::string	CLoadZone::getNameWithoutExtension() const
-{
-	return NameZone.substr(0, NameZone.find('.'));
-}
-
-
-
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file zone_search.h
  * CZoneSearch class
  *
- * $Id: zone_search.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: zone_search.h,v 1.2 2002/10/14 15:52:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,10 @@ public:
 	* \return a liste contained names of all zones around indicated position, square distance between zones and indicated position
 	*/
 	void getListZoneName(uint x, uint y, uint sizeArea, std::list< std::pair<std::string, uint32> >& l);
+
+	uint16 getZoneId (uint x, uint y);
+	void getListZoneId (uint x, uint y, uint sizeArea, std::vector<uint16> &l);
+	std::string getZoneNameFromId (uint16 zoneid);
 
 private:
 	// Number zones on X axis of landscape

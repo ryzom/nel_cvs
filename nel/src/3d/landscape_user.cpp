@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.26 2002/08/07 15:23:31 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.27 2002/10/14 15:52:06 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,26 +104,27 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 
 	zonesAdded.clear();
 
-	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
-	while(_ZoneManager.getTaskListSize() != 0 || !_ZoneManager.ZoneAdded)
+	_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
+	while (_ZoneManager.isWorking())
 	{
-		// Must do it at init only.
-		nlassert(_ZoneManager.ZoneRemoved);
-
-		if(!_ZoneManager.ZoneAdded)
+		CZoneManager::SZoneManagerWork Work;
+		if (_ZoneManager.isWorkComplete(Work))
 		{
-			_Landscape->Landscape.addZone(*_ZoneManager.Zone);
+			nlassert(!Work.ZoneRemoved);
+			if (Work.ZoneAdded)
+			{
+				_Landscape->Landscape.addZone (*Work.Zone);
 
-			delete _ZoneManager.Zone;
-			zonesAdded.push_back(_ZoneManager.NameZoneAdded);
-			_ZoneManager.ZoneAdded = true;
+				delete Work.Zone;
+				zonesAdded.push_back(Work.NameZoneAdded);
+			}
 		}
 		else
 		{
-			nlSleep(1);
+			nlSleep (1);
 		}
+		_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
 	}
-
 	// Yoyo: must check the binds of the zones.
 	_Landscape->Landscape.checkBinds();
 }
@@ -137,22 +138,19 @@ void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std
 	zonesRemoved.clear();
 	std::string		za, zr;
 
-	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
-
-	// refresh until finished
-	do
+	_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
+	while (_ZoneManager.isWorking())
 	{
-		// refresh zone around me.
-		refreshZonesAround(pos, radius, za, zr);
+		refreshZonesAround (pos, radius, za, zr);
 
 		// some zone added or removed??
 		if(za != "")
 			zonesAdded.push_back(za);
 		if(zr != "")
 			zonesRemoved.push_back(zr);
+		
+		_ZoneManager.checkZonesAround ((uint)pos.x, (uint)(-pos.y), (uint)radius);
 	}
-	while(_ZoneManager.getTaskListSize() != 0 || !_ZoneManager.ZoneAdded || !_ZoneManager.ZoneRemoved );
-
 }
 
 // ***************************************************************************
@@ -194,37 +192,45 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 
 	zoneRemoved= "";
 	zoneAdded= "";
-
+	CZoneManager::SZoneManagerWork Work;
 	// Check if new zone must be added to landscape
-	if(!_ZoneManager.ZoneAdded)
+	if (_ZoneManager.isWorkComplete(Work))
 	{
-		_Landscape->Landscape.addZone(*_ZoneManager.Zone);
-
-		// Yoyo: must check the binds of the new inserted zone.
-		try
+		if (Work.ZoneAdded)
 		{
-			_Landscape->Landscape.checkBinds(_ZoneManager.Zone->getZoneId());
-		}
-		catch (EBadBind &e)
-		{
-			nlwarning ("Bind error : %s", e.what());
+			if (Work.Zone == (CZone*)-1)
+			{
+				std::string warn = std::string("Cant load zone ") + Work.NameZoneAdded;
+				nlwarning (warn.c_str());
+			}
+			else
+			{
+				_Landscape->Landscape.addZone(*Work.Zone);
+
+				// Yoyo: must check the binds of the new inserted zone.
+				try
+				{
+					_Landscape->Landscape.checkBinds(Work.Zone->getZoneId());
+				}
+				catch (EBadBind &e)
+				{
+					nlwarning ("Bind error : %s", e.what());
+				}
+
+				delete Work.Zone;
+				zoneAdded= Work.NameZoneAdded;
+			}
 		}
 
-		delete _ZoneManager.Zone;
-		zoneAdded= _ZoneManager.NameZoneAdded;
-		_ZoneManager.ZoneAdded = true;
+		// Check if a zone must be removed from landscape
+		if (Work.ZoneRemoved)
+		{
+			_Landscape->Landscape.removeZone(Work.IdZoneToRemove);
+			zoneRemoved = Work.NameZoneRemoved;
+		}
 	}
 
-	// Check if a zone must be removed from landscape
-	if(!_ZoneManager.ZoneRemoved)
-	{
-		_Landscape->Landscape.removeZone(_ZoneManager.IdZoneToRemove);
-
-		zoneRemoved= _ZoneManager.NameZoneRemoved;
-		_ZoneManager.ZoneRemoved = true;
-	}
-
-	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, false);
+	_ZoneManager.checkZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_search.cpp,v 1.8 2002/10/14 15:52:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,74 @@ void CZoneSearch::getListZoneName(uint x, uint y, uint sizeArea, list<pair<strin
 			l.push_back(getZoneName(j, i, x, y));
 		}
 	}
+}
+
+uint16 CZoneSearch::getZoneId (uint x, uint y)
+{
+	char name[13];
+
+	uint zoneY = y / _SizeZoneY;
+	uint zoneX = x / _SizeZoneX;
+
+	return (zoneX&255)+(zoneY<<8);
+}
+
+void CZoneSearch::getListZoneId (uint x, uint y, uint sizeArea, vector<uint16> &l)
+{
+	sint startPosX, startPosY;
+	uint lastPosX, lastPosY, sizeAreaX, sizeAreaY;
+
+	startPosX = x - sizeArea;
+	startPosY = y - sizeArea;
+
+	sizeArea += sizeArea;
+	sizeAreaX = sizeAreaY = sizeArea;
+
+	if(startPosX < 0)
+	{
+		sizeAreaX += startPosX;
+		startPosX = 0;
+	}
+
+	lastPosX = startPosX + sizeAreaX;
+	if(lastPosX >= (_NbZoneX * _SizeZoneX))
+	{
+		sizeAreaX -= _NbZoneX * _SizeZoneX - lastPosX;
+		lastPosX = _NbZoneX * _SizeZoneX - 1;
+	}
+
+	if(startPosY < 0)
+	{
+		sizeAreaY += startPosY;
+		startPosY = 0;
+	}
+
+	lastPosY = startPosY + sizeAreaY;
+	if(lastPosY >= (_NbZoneY * _SizeZoneY))
+	{
+		sizeAreaY -= _NbZoneY * _SizeZoneY - lastPosY;
+		lastPosY = _NbZoneY * _SizeZoneY - 1;
+	}
+
+	l.clear();
+
+	for(uint i = startPosY; i <= lastPosY; i += _SizeZoneY)
+	{
+		for(uint j = startPosX; j <= lastPosX; j += _SizeZoneX)
+		{
+			l.push_back(getZoneId(j, i));
+		}
+	}
+}
+
+std::string CZoneSearch::getZoneNameFromId (uint16 zoneid)
+{
+	char name[16];
+
+	sint	x = zoneid & 255;
+	sint	y = zoneid >> 8;
+	sprintf (name, "%d_%c%c.zonel", y+1, (char)('A'+(x/26)), (char)('A'+(x%26)));
+	return string(name);
 }
 
 

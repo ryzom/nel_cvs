@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.31 2002/12/18 19:14:09 lecroart Exp $
+ * $Id: common.cpp,v 1.32 2002/12/30 15:19:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,12 @@
 #include "stdmisc.h"
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
+#  include <windows.h>
 #elif defined NL_OS_UNIX
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
+#  include <unistd.h>
+#  include <string.h>
+#  include <errno.h>
+#  include <signal.h>
 #endif
 
 #include "nel/misc/command.h"
@@ -571,6 +572,25 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	}
 
 #elif defined(NL_OS_UNIX)
+
+	static bool firstLaunchProgram = true;
+	if (firstLaunchProgram)
+	{
+		// The aim of this is to avoid defunct process.
+		//
+		// From "man signal":
+		//------
+		// According to POSIX (3.3.1.3) it is unspecified what happens when SIGCHLD is set to SIG_IGN.   Here
+		// the  BSD  and  SYSV  behaviours  differ,  causing BSD software that sets the action for SIGCHLD to
+		// SIG_IGN to fail on Linux.
+		//------
+		//
+		// But it works fine on my GNU/Linux so I do this because it's easier :) and I don't know exactly
+		// what to do to be portable.
+		signal(SIGCHLD,SIG_IGN);
+		
+		firstLaunchProgram = false;
+	}
 
 	int status = vfork ();
 	if (status == -1)

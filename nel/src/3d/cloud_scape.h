@@ -1,7 +1,7 @@
 /** \file cloud.h
  * Cloud definition to work with the cloudscape
  *
- * $Id: cloud_scape.h,v 1.5 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: cloud_scape.h,v 1.6 2004/04/27 12:15:08 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -193,6 +193,9 @@ private:
 	uint					_ResetCounter;
 
 	friend class CCloud;
+
+	double					_LastAnimRenderTime;	
+	double					_MaxDeltaTime;
 };
 
 // ------------------------------------------------------------------------------------------------

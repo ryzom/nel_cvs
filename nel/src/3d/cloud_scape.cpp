@@ -1,7 +1,7 @@
 /** \file cloud_scape.cpp
  * cloud_scape implementation
  *
- * $Id: cloud_scape.cpp,v 1.9 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: cloud_scape.cpp,v 1.10 2004/04/27 12:15:08 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -42,6 +42,11 @@ namespace NL3D
 #define MAX_CLOUDS	256
 // QUEUE_SIZE must be at least 2*MAX_CLOUDS
 #define QUEUE_SIZE	512 
+static const double MAX_CLOUDS_ANIM_DELTA_TIME = 0.075;				  // maximum delta time handled by cloud animation, delta t above that are clamped
+static const double MIN_CLOUDS_ANIM_DELTA_TIME = 0.005;				  // minimum delta time handled by clouds animation
+static const double MAX_TIME_FOR_CLOUD_ANIM = 0.02;					  // max number of second spent for cloud render before we check if too slow
+static const double MAX_FRAME_PERCENT_FOR_CLOUD_RENDERING = 20 / 100; // at most 20 % of the frame for cloud render
+
 
 // ------------------------------------------------------------------------------------------------
 // SCloudTexture3D
@@ -289,7 +294,7 @@ CCloudScape::CCloudScape (NL3D::IDriver *pDriver) : _Noise3D (pDriver)
 	_MatBill.setZFunc (CMaterial::always);
 	_MatBill.setZWrite (false);
 	_MatBill.setDoubleSided (true);
-	//_MatBill.setAlphaTest(true);
+	_MatBill.setAlphaTest(true);
 	_MatBill.setAlphaTestThreshold(2.0f/256.0f);
 
 	_LODQualityThreshold = 160.0f;
@@ -297,6 +302,9 @@ CCloudScape::CCloudScape (NL3D::IDriver *pDriver) : _Noise3D (pDriver)
 	_DebugQuad = false;
 	_NbHalfCloudToUpdate = 1;
 	_CurrentCloudInProcess = NULL;
+
+	_LastAnimRenderTime = 0;
+	_MaxDeltaTime = 0.1; // 100 ms	
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -463,6 +471,7 @@ void CCloudScape::set (SCloudScapeSetup &css)
 // ------------------------------------------------------------------------------------------------
 void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 {
+	double startDate = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
 	sint32 i;
 
 	// Disable fog
@@ -471,9 +480,31 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 
 	_ViewerCam = pCamera;
 
+	// update the max delta time
+	// If rendering was too slow and took too much time of the previous frame, we decrease the max delta time to give clouds less processing time
+	// Otherwise a cycle occurs, and slow rendering propagate from frame to frame
+
+	if (dt != 0) nlinfo("render time = %.1f, ratio = %.1f, max delta time = %f", (float) (1000 * _LastAnimRenderTime),  (float) (100 * _LastAnimRenderTime / dt), (float) _MaxDeltaTime);
+
+	if (dt != 0 && _LastAnimRenderTime > MAX_TIME_FOR_CLOUD_ANIM && (_LastAnimRenderTime / dt) > MAX_FRAME_PERCENT_FOR_CLOUD_RENDERING)
+	{
+		// if cloud rendering take too much time of previous frame, allocate less time for clouds
+		// NB : check is only done if clouds rendering is above a given thrheshold, because if only clouds are rendered, then they may take 100% of frame without
+		// having slow rendering
+		_MaxDeltaTime = std::max(MIN_CLOUDS_ANIM_DELTA_TIME, _MaxDeltaTime / 2);		
+	}
+	else
+	{
+		// clouds didn't take too much time  -> allocate more time for them
+		_MaxDeltaTime = std::min(MAX_CLOUDS_ANIM_DELTA_TIME , _MaxDeltaTime + 0.002);
+	}
+
+	
+
 	// 10 fps -> 200 fps
-	if (dt > 0.1) dt = 0.1;
-	if (dt < 0.005) dt = 0.005;
+	if (dt > _MaxDeltaTime) dt = _MaxDeltaTime;
+	if (dt < MIN_CLOUDS_ANIM_DELTA_TIME) dt = MIN_CLOUDS_ANIM_DELTA_TIME;
+	
 
 	_DeltaTime = dt;
 	_GlobalTime += _DeltaTime;
@@ -594,6 +625,8 @@ void CCloudScape::anim (double dt, NL3D::CCamera *pCamera)
 			i++;
 		}
 	}
+	double endDate = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
+	_LastAnimRenderTime = endDate - startDate;	
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -840,7 +873,7 @@ void CCloudScape::makeHalfCloud ()
 
 // ------------------------------------------------------------------------------------------------
 void CCloudScape::render ()
-{
+{	
 	uint32 i, j;
 	
 	CVector Viewer = CVector (0,0,0);

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.5 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d.cpp,v 1.6 2004/04/15 17:17:16 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1855,8 +1855,10 @@ const char *CDriverD3D::getVideocardInformation ()
 	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
 	if (_D3D->GetAdapterIdentifier(adapter, 0, &identifier) == D3D_OK)
 	{
-		smprintf (name, 1024, "Direct3d / %s / %s / %s / driver %d.%d", identifier.Driver, identifier.Description, identifier.DeviceName, 
-			identifier.DriverVersion.HighPart, identifier.DriverVersion.LowPart);
+		uint64 version = ((uint64)identifier.DriverVersion.HighPart) << 32;
+		version |= identifier.DriverVersion.LowPart;
+		smprintf (name, 1024, "Direct3d / %s / %s / %s / driver version : %d.%d.%d.%d", identifier.Driver, identifier.Description, identifier.DeviceName, 
+			(uint16)(version>>48),(uint16)(version>>32),(uint16)(version>>16),(uint16)(version&0xffff));
 		return name;
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.70 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: common.h,v 1.71 2004/04/15 17:17:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -559,9 +559,11 @@ struct CHashFunctionUInt64
 	size_t operator()(const uint64 &x) const { return (size_t)x; }
 };
 
+// Open an url in a browser
+bool openURL (const char *url);
 
-
-
+// Open a document
+bool openDoc (const char *document);
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.10 2003/11/21 16:20:45 berenguier Exp $
+ * $Id: system_info.h,v 1.11 2004/04/15 17:17:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,14 @@ public:
 	/** returns all the physical memory on this computer
 	  */
 	static uint32 totalPhysicalMemory ();
+
+	/** returns all the virtual memory used by this process
+	  */
+	static uint32 virtualMemory ();
+
+	/** Return the main video card name and the video driver version
+	  */
+	static bool getVideoInfo (std::string &deviceName, uint64 &driverVersion);
 
 private:
 	static bool _HaveMMX;

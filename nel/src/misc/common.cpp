@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.53 2004/02/12 17:10:36 lecroart Exp $
+ * $Id: common.cpp,v 1.54 2004/04/15 17:17:16 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #endif
 
 #include "nel/misc/command.h"
+#include "nel/misc/path.h"
 
 using namespace std;
 
@@ -1006,5 +1007,98 @@ NLMISC_COMMAND(killProgram, "kill a program given the pid", "<pid>")
 	return true;
 }
 
+#ifdef NL_OS_WINDOWS
+LONG GetRegKey(HKEY key, LPCTSTR subkey, LPTSTR retdata)
+{
+    HKEY hkey;
+    LONG retval = RegOpenKeyEx(key, subkey, 0, KEY_QUERY_VALUE, &hkey);
+
+    if (retval == ERROR_SUCCESS) 
+	{
+        long datasize = MAX_PATH;
+        TCHAR data[MAX_PATH];
+        RegQueryValue(hkey, NULL, data, &datasize);
+        lstrcpy(retdata,data);
+        RegCloseKey(hkey);
+    }
+
+    return retval;
+}
+#endif // NL_OS_WINDOWS
+
+bool openURL (const char *url)
+{
+#ifdef NL_OS_WINDOWS
+    TCHAR key[MAX_PATH + MAX_PATH];
+    if (GetRegKey(HKEY_CLASSES_ROOT, ".html", key) == ERROR_SUCCESS) 
+	{
+        lstrcat(key, "\\shell\\open\\command");
+
+        if (GetRegKey(HKEY_CLASSES_ROOT,key,key) == ERROR_SUCCESS) 
+		{
+            TCHAR *pos;
+            pos = strstr(key, "\"%1\"");
+            if (pos == NULL) {                     // No quotes found
+                pos = strstr(key, "%1");       // Check for %1, without quotes 
+                if (pos == NULL)                   // No parameter at all...
+                    pos = key+lstrlen(key)-1;
+                else
+                    *pos = '\0';                   // Remove the parameter
+            }
+            else
+                *pos = '\0';                       // Remove the parameter
+
+            lstrcat(pos, " ");
+            lstrcat(pos, url);
+            int res = WinExec(key,SW_SHOWDEFAULT);
+			return (res>31);
+        }
+    }
+#endif // NL_OS_WINDOWS
+	return false;
+}
+
+bool openDoc (const char *document)
+{
+#ifdef NL_OS_WINDOWS
+	string ext = CFile::getExtension (document);
+    TCHAR key[MAX_PATH + MAX_PATH];
+
+    // First try ShellExecute()
+    HINSTANCE result = ShellExecute(NULL, "open", document, NULL,NULL, SW_SHOWDEFAULT);
+
+    // If it failed, get the .htm regkey and lookup the program
+    if ((UINT)result <= HINSTANCE_ERROR) 
+	{
+        if (GetRegKey(HKEY_CLASSES_ROOT, ext.c_str(), key) == ERROR_SUCCESS) 
+		{
+            lstrcat(key, "\\shell\\open\\command");
+
+            if (GetRegKey(HKEY_CLASSES_ROOT,key,key) == ERROR_SUCCESS) 
+			{
+                TCHAR *pos;
+                pos = strstr(key, "\"%1\"");
+                if (pos == NULL) {                     // No quotes found
+                    pos = strstr(key, "%1");       // Check for %1, without quotes 
+                    if (pos == NULL)                   // No parameter at all...
+                        pos = key+lstrlen(key)-1;
+                    else
+                        *pos = '\0';                   // Remove the parameter
+                }
+                else
+                    *pos = '\0';                       // Remove the parameter
+
+                lstrcat(pos, " ");
+                lstrcat(pos, document);
+                int res = WinExec(key,SW_SHOWDEFAULT);
+				return (res>31);
+            }
+        }
+    }
+	else
+		return true;
+#endif // NL_OS_WINDOWS
+	return false;
+}
 
 } // NLMISC

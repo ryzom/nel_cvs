@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.7 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.8 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -190,6 +190,10 @@ void CParticleSystemInstanceUser::removeByID(uint32 anId)
 
 }
 
+void		CParticleSystemInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	// no-op.
+}
 
 
 } // NL3D

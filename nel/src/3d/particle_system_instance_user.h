@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.7 2002/02/04 10:34:42 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.8 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,6 +81,9 @@ public:
 	// @{
 		virtual void invalidPS(CParticleSystemModel *psm); 
 	// @}
+
+	// No-op for ParticleSystem
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 private:
 	/// list of observers

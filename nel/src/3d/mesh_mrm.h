@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.25 2002/03/28 13:18:57 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.26 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,15 @@ public:
 
 	/// update Skeleton Usage. increment or decrement.
 	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
+
+	/** Change MRM Distance setup.
+	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
+	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
+	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
+	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
+	 */
+	void			changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 
 	/// \name From IMeshGeom
@@ -474,6 +483,9 @@ private:
 	// Build bone Usage information for serialized mesh <= version 2.
 	void		buildBoneUsageVer2 ();
 
+	/// compile precalc for distanceSetup
+	void			compileDistanceSetup();
+
 
 private:
 
@@ -707,6 +719,13 @@ public:
 	/// update Skeleton Usage. increment or decrement.
 	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
 
+	/** Change MRM Distance setup.
+	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
+	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
+	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
+	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
+	 */
+	void			changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 	/// \name From IShape
 	// @{

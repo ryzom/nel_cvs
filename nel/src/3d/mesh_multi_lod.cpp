@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.16 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.17 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -536,5 +536,27 @@ const IMeshGeom& CMeshMultiLod::getMeshGeom (uint slot) const
 
 	return *_MeshVector[slot].MeshGeom;
 }
+
+
+// ***************************************************************************
+void			CMeshMultiLod::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	// no-op if empty.
+	if(getNumSlotMesh ()==0)
+		return;
+
+	// If not NULL
+	if(_MeshVector[0].MeshGeom==NULL)
+		return;
+
+	// verify it is a CMeshMRMGeom. else no-op.
+	CMeshMRMGeom	*mgeom= dynamic_cast<CMeshMRMGeom*>(_MeshVector[0].MeshGeom);
+	if(mgeom==NULL)
+		return;
+	
+	// ok, setup.
+	mgeom->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+}
+
 
 } // NL3D

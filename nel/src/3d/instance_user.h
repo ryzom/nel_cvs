@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.6 2002/02/04 10:31:15 vizerie Exp $
+ * $Id: instance_user.h,v 1.7 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,9 @@ public:
 		mbi->selectTextureSet(id);
 	}
 	// @}
+
+
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 
 };
 

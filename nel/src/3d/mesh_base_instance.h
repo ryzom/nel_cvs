@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.10 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.11 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,16 @@ public:
 
 	/// Get the scene which owns this instance.
 	CScene				*getScene() const {return _OwnerScene;}
+
+
+	/** Change MRM Distance setup. Only for mesh which support MRM. NB MeshMultiLod apply it only on Lod0.
+	 *	NB: This apply to the shape direclty!! ie All instances using same shape will be affected
+	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
+	 *	\param distanceFinest The MRM has its max faces when dist<=distanceFinest.
+	 *	\param distanceMiddle The MRM has 50% of its faces at dist==distanceMiddle.
+	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
+	 */
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest) {}
 
 
 protected:

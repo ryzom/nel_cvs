@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.8 2002/02/28 12:59:49 besson Exp $
+ * $Id: instance_user.cpp,v 1.9 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,5 +74,18 @@ void CInstanceUser::setBlendShapeFactor (const std::string &blendShapeName, floa
 		// \todo trap takes care of the dynamic flag
 	}
 }
+
+// ***************************************************************************
+void		CInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
+
+	// Just for CMeshBaseInstance.
+	if (mi)
+	{
+		mi->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+	}
+}
+
 
 } // NL3D

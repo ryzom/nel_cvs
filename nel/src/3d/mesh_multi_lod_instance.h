@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.8 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.9 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,11 @@ public:
 
 	/// Dstructor
 	~CMeshMultiLodInstance ();
+
+	/** Change MRM Distance setup. See CMeshBaseInstance::changeMRMDistanceSetup()
+	 */
+	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+
 
 	enum
 	{

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.31 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.32 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,6 +210,37 @@ CMeshMRMGeom::~CMeshMRMGeom()
 
 
 // ***************************************************************************
+void			CMeshMRMGeom::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	// check input.
+	if(distanceFinest<0)	return;
+	if(distanceMiddle<=distanceFinest)	return;
+	if(distanceCoarsest<=distanceMiddle)	return;
+
+	// Change.
+	_DistanceFinest= distanceFinest;
+	_DistanceMiddle= distanceMiddle;
+	_DistanceCoarsest= distanceCoarsest;
+
+	// compile 
+	compileDistanceSetup();
+}
+
+
+// ***************************************************************************
+void			CMeshMRMGeom::compileDistanceSetup()
+{
+	// Compute _OODistDelta.
+	_OODistanceDelta= 1.0f / (_DistanceCoarsest - _DistanceFinest);
+	/* Compute exponent pow, such that 0.5= dMiddle^pow;
+		ie 0.5= e(ln dMiddle * pow)
+	*/
+	float	dMiddle= (_DistanceCoarsest - _DistanceMiddle) * _OODistanceDelta;
+	_DistancePow= (float)(log(0.5) / log(dMiddle));
+}
+
+
+// ***************************************************************************
 void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList,
 									uint numMaxMaterial, const CMRMParameters &params)
 {
@@ -264,14 +295,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	nlassert(_DistanceFinest>=0);
 	nlassert(_DistanceMiddle > _DistanceFinest);
 	nlassert(_DistanceCoarsest > _DistanceMiddle);
-	// Compute _OODistDelta.
-	_OODistanceDelta= 1.0f / (_DistanceCoarsest - _DistanceFinest);
-	/* Compute exponent pow, such that 0.5= dMiddle^pow;
-		ie 0.5= e(ln dMiddle * pow)
-	*/
-	float	dMiddle= (_DistanceCoarsest - _DistanceMiddle) * _OODistanceDelta;
-	_DistancePow= (float)(log(0.5) / log(dMiddle));
-
+	// Compute _OODistDelta and _DistancePow
+	compileDistanceSetup();
 
 
 	// Build the _LodInfos.
@@ -2091,6 +2116,11 @@ void	CMeshMRM::updateSkeletonUsage (CSkeletonModel *skeleton, bool increment)
 	_MeshMRMGeom.updateSkeletonUsage(skeleton, increment);
 }
 
+// ***************************************************************************
+void	CMeshMRM::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	_MeshMRMGeom.changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+}
 
 // ***************************************************************************
 // ***************************************************************************

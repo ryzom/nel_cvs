@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.4 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.5 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,19 @@ void		CMeshMRMInstance::setApplySkin(bool state)
 
 	// update the skeleton usage according to the mesh.
 	pMesh->updateSkeletonUsage(_FatherSkeletonModel, state);
+}
+
+
+// ***************************************************************************
+void		CMeshMRMInstance::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	if(Shape)
+	{
+		// Get a pointer on the shape.
+		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+		// Affect the mesh directly.
+		pMesh->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+	}
 }
 
 

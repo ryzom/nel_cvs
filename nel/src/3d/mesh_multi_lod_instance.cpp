@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.6 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.7 2002/03/29 14:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,5 +201,15 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 }
 
 // ***************************************************************************
+void		CMeshMultiLodInstance::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
+{
+	if(Shape)
+	{
+		// Get a pointer on the shape.
+		CMeshMultiLod *pMesh =safe_cast<CMeshMultiLod*> ((IShape*)Shape);
+		// Affect the mesh directly.
+		pMesh->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+	}
+}
 
 } // NL3D

@@ -331,7 +331,7 @@ try
 						-- export matching igs
 						try
 						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
 						)
 						catch
 						(
@@ -512,7 +512,7 @@ try
 								-- export igs
 								try
 								(
-									exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+									exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
 								)
 								catch
 								(
@@ -594,7 +594,7 @@ try
 						-- export matching igs
 						try
 						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "zoneLigos\\")
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
 						)
 						catch
 						(

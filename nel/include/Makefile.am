@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.6 2001/03/05 17:31:08 valignat Exp $
+# $Id: Makefile.am,v 1.7 2001/03/05 18:02:13 valignat Exp $
 #
 
 install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/3d
-	$(INSTALL_PROGRAM) -d $(includedir)/nel/tmp
+	$(INSTALL_PROGRAM) -d $(includedir)/nel/3d/tmp
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/misc
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/net
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai

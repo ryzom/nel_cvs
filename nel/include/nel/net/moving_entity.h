@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.11 2000/12/18 13:44:46 cado Exp $
+ * $Id: moving_entity.h,v 1.12 2000/12/19 16:06:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,7 @@ public:
 		_Vector = other._Vector;
 		_AngVel = other._AngVel;
 		_GroundMode = other._GroundMode;
+		_PrevPos = other._PrevPos;
 		Tag = other.Tag;
 		return *this;
 	}
@@ -220,6 +221,12 @@ public:
 	/// Sets angular velocity
 	void					setAngularVelocity ( TAngVelocity av )			{ _AngVel = av; }
 
+	/// Returns the previous pos (that was valid before the latest update)
+	const NLMISC::CVector&	previousPos() const								{ return _PrevPos; }
+
+	/// Sets the previous pos
+	void					setPreviousPos( const NLMISC::CVector& prevpos ) { _PrevPos = prevpos; }
+
 	// Custom data
 	uint32					Tag;
 	//void*					Data;
@@ -269,6 +276,8 @@ private:
 	// Highest Id
 	static TEntityId		_MaxId;
 
+	/// Previous position (that was valid before the latest update)
+	NLMISC::CVector			_PrevPos;
 };
 
 

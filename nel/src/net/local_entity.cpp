@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.17 2000/12/18 13:44:46 cado Exp $
+ * $Id: local_entity.cpp,v 1.18 2000/12/19 16:06:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,11 +45,12 @@ CLocalEntity::CLocalEntity() :
 	_FrontVel( 0.0 ),
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),
-	_PrevPos( 0,0,0 ),
 	_DeltaTime( 0 ),
 	_DRThresholdPos( 0.5 ),
 	_DRTestBodyHeading( true ),
-	_DRThresholdHeading( 0.5 )
+	_DRThresholdHeading( 0.5 ),
+	ViewPitch( 0.0 ),
+	ViewRoll( 0.0 )
 {
 	_DRReplica = *this;
 }
@@ -63,11 +64,12 @@ CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
 	_FrontVel( 0.0 ),
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),
-	_PrevPos( 0,0,0 ),
 	_DeltaTime( 0 ),
 	_DRThresholdPos( 0.5 ),
 	_DRTestBodyHeading( true ),
-	_DRThresholdHeading( 0.5 )
+	_DRThresholdHeading( 0.5 ),
+	ViewPitch( 0.0 ),
+	ViewRoll( 0.0 )
 {
 	_DRReplica = *this;
 }
@@ -79,7 +81,7 @@ CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
 void CLocalEntity::update( TDuration deltatime )
 {
 	// Local entity
-	_PrevPos = pos();
+	setPreviousPos( pos() );
 	_DeltaTime = deltatime;
 	IMovingEntity::update( deltatime );
 

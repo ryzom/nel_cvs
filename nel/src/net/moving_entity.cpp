@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.9 2000/12/15 16:59:28 cado Exp $
+ * $Id: moving_entity.cpp,v 1.10 2000/12/19 16:06:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ using namespace NLMISC;
 namespace NLNET {
 
 
-TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
+TEntityId IMovingEntity::_MaxId = 1000001; //	avoid 0 and ids allocated by the LS
 
 
 /*
@@ -42,12 +42,13 @@ TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
 IMovingEntity::IMovingEntity() :
 	_Id( 0 ),
 	_EntityType( 0 ),
-	_Pos( CVector(0,0,0) ),
-	_BodyHdg( CVector(0,1,0) ),
+	_Pos( 0,0,0 ),
+	_BodyHdg( 0,1,0 ),
 	_RollAngle( 0.0f ),
-	_Vector( CVector(0,0,0) ),
+	_Vector( 0,0,0 ),
 	_AngVel( 0.0f ),
 	_GroundMode( true ),
+	_PrevPos( 0,0,0 ),
 	Tag( 0 )
 {
 }
@@ -71,6 +72,7 @@ IMovingEntity::IMovingEntity( TEntityType t,
 	_Vector( vec ),
 	_AngVel( av ),
 	_GroundMode( groundmode ),
+	_PrevPos( 0,0,0) ,
 	Tag( 0 )
 {
 }
@@ -139,6 +141,8 @@ void IMovingEntity::setAltitude( TPosUnit z )
  */
 void IMovingEntity::computePosAfterDuration( TDuration d )
 {
+	setPreviousPos( _Pos );
+
 	// Compute position
 	_Pos += _Vector * d;
 

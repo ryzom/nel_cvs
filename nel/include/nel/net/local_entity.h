@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.10 2000/11/30 17:03:10 cado Exp $
+ * $Id: local_entity.h,v 1.11 2000/12/19 16:06:09 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,11 +138,16 @@ public:
 	TVelocity		frontVelocity() const	{ return _FrontVel; }
 	TVelocity		strafeVelocity() const	{ return _StrafeVel; }
 	TVelocity		vertVelocity() const	{ return _VertVel; }
-	NLMISC::CVector	previousPos() const		{ return _PrevPos; }
 
 	const CReplica&	drReplica() const		{ return _DRReplica; }
 
 	//@}
+
+	/// Pitch of the camera (or of the head)
+	TAngle			ViewPitch;
+
+	/// Roll of the camera (or of the head)
+	TAngle			ViewRoll;
 
 protected:
 
@@ -162,9 +167,6 @@ private:
 
 	/// Vertical velocity;
 	TVelocity		_VertVel;
-
-	/// Previous position (that was valid before the latest update)
-	NLMISC::CVector	_PrevPos;
 
 	/// Delta time that was passed to update()
 	TDuration		_DeltaTime;

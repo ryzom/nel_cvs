@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
- * <File description>
+ * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.2 2001/07/04 13:08:17 cado Exp $
+ * $Id: sound_driver.cpp,v 1.3 2001/07/25 08:19:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

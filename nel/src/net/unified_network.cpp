@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.87 2005/01/04 18:26:37 cado Exp $
+ * $Id: unified_network.cpp,v 1.88 2005/01/05 18:23:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -932,8 +932,6 @@ void	CUnifiedNetwork::update(TTime timeout)
 
 	// Compute the real timeout based on the next update timeout
 	TTime t0 = CTime::getLocalTime ();
-	TTime maxTimeout = timeout;
-
 	if (timeout > 0)
 	{
 		if (_NextUpdateTime == 0)
@@ -956,6 +954,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 			if (timeout < 0) timeout = 0;
 		}
 	}
+	TTime remainingTime = timeout;
 
 	// check if we need to retry to connect to the client
 	if ((enableRetry = (t0-_LastRetry > 5000)))
@@ -1036,14 +1035,27 @@ void	CUnifiedNetwork::update(TTime timeout)
 			L5TotalBytesInLowLevelSendQueues = tryFlushAllQueues();
 		}
 
-		// If it's the end (or if the Unix system time was changed forwards), don't sleep
-		TTime remainingTime = t0 + timeout - CTime::getLocalTime();
+		//      t0 --------- previousTime -------------------------- t0 + timeout
+		//                                    prevRemainingTime
+		//
+		//      t0 -------------- currentTime ---------------------- t0 + timeout
+		//                                        remainingTime
+		TTime prevRemainingTime = remainingTime;
+		TTime currentTime = CTime::getLocalTime();
+		remainingTime = t0 + timeout - currentTime;
+
+		// If it's the end (or if the Unix system time was changed forwards), don't sleep (currentTime > t0 + timeout)
 		if ( remainingTime <= 0 )
 			break;
 
-		// If the Unix system time was changed backwards, don't wait more than requested and don't provide an erroneous time to the sleep function that would fail
-		if ( remainingTime > maxTimeout )
-			remainingTime = maxTimeout;
+		// If the Unix system time was changed backwards, don't wait more than requested and don't provide an erroneous time to the sleep function that would fail (currentTime < previousTime)
+		if ( remainingTime > prevRemainingTime )
+		{
+			// Restart at previousTime
+			nldebug( "Backward time sync detected (at least -%"NL_I64"d ms)", remainingTime - prevRemainingTime );
+			remainingTime = prevRemainingTime;
+			t0 = currentTime - (timeout - remainingTime);
+		}
 
 #ifdef NL_OS_UNIX
 		// Sleep until the time expires or we receive a message

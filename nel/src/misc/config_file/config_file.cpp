@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.19 2001/02/16 15:09:43 lecroart Exp $
+ * $Id: config_file.cpp,v 1.20 2001/03/15 16:58:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,7 @@ int CConfigFile::CVar::size () const
 
 CConfigFile::~CConfigFile ()
 {
-	if (_ConfigFiles == NULL || (*_ConfigFiles).empty () == 0) return;
+	if (_ConfigFiles == NULL || (*_ConfigFiles).empty ()) return;
 
 	vector<CConfigFile *>::iterator it = find ((*_ConfigFiles).begin (), (*_ConfigFiles).end (), this);
 	if (it != (*_ConfigFiles).end ())

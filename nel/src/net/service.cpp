@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.47 2001/02/15 14:17:45 cado Exp $
+ * $Id: service.cpp,v 1.48 2001/03/15 16:56:11 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -448,6 +448,7 @@ sint IService::main (int argc, char **argv)
 			// Ignore the fatalerror
 		}
 	}
+#ifdef NL_RELEASE
 	catch (...)
 	{
 		// Catch anything we can to release the system cleanly
@@ -462,7 +463,8 @@ sint IService::main (int argc, char **argv)
 			// Ignore the fatalerror
 		}
 	}
-
+#endif
+	
 	try
 	{
 		//

@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * TODO: File description
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.12 2005/01/19 08:54:36 vizerie Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.13 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,6 +155,7 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 // ***************************************************************************
 void	CVegetableBlendLayerModel::traverseRender()
 {
+	NL_ALLOC_CONTEXT( RdrVege )
 	CRenderTrav		&rTrav= getOwnerScene()->getRenderTrav();
 	render(rTrav.getDriver());
 }

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.25 2004/11/03 17:24:08 berenguier Exp $
+ * $Id: background_sound_manager.cpp,v 1.26 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -631,6 +631,7 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 
 		if(!path.empty() && file.open (path))
 		{
+			NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager4);
 			// first, try to load the binary version (if up to date)
 			{
 				uint32 version;
@@ -665,11 +666,13 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 
 			CIXml xml;
 			{
+				NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager0);
 				H_AUTO(BackgroundSoundMangerLoad_xml_init);
 				xml.init (file);
 			}
 
 			{
+				NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager1);
 				H_AUTO(BackgroundSoundMangerLoad_primitive_read);
 				primitives.read(xml.getRootNode(), fn.c_str(), config);
 			}
@@ -677,6 +680,7 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 			file.close ();
 
 			{
+				NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager2);
 				H_AUTO(BackgroundSoundMangerLoad_loadAudioFromPrimitive);
 				loadAudioFromPrimitives(*primitives.RootNode);
 			}
@@ -685,6 +689,7 @@ void CBackgroundSoundManager::load (const string &continent, NLLIGO::CLigoConfig
 			CAudioMixerUser *mixer = CAudioMixerUser::instance();
 			if (mixer->getPackedSheetUpdate())
 			{
+				NL_ALLOC_CONTEXT(NLSOUND_CBackgroundSoundManager3);
 				// need to update packed sheet, so write the binary primitive version
 				string filename = mixer->getPackedSheetPath()+"/"+continent+".background_primitive";
 				COFile file(filename);

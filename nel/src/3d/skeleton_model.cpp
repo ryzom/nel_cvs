@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.61 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: skeleton_model.cpp,v 1.62 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1080,6 +1080,7 @@ void		CSkeletonModel::setDisplayLodCharacterFlag(bool displayCLod)
 // ***************************************************************************
 void		CSkeletonModel::traverseRender()
 {
+	NL_ALLOC_CONTEXT( RdrSkel )
 	H_AUTO( NL3D_Skeleton_Render );
 
 	// render as CLod, or render Skins.

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * TODO: File description
  *
- * $Id: transform_shape.cpp,v 1.42 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: transform_shape.cpp,v 1.43 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,7 +177,7 @@ bool	CTransformShape::clip()
 // ***************************************************************************
 void	CTransformShape::traverseRender()
 {
-	NL3D_MEM_INSTANCE
+	NL_ALLOC_CONTEXT( RdrShap )
 	H_AUTO( NL3D_TrShape_Render );
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * TODO: File description
  *
- * $Id: landscape_model.cpp,v 1.39 2004/11/15 10:24:36 lecroart Exp $
+ * $Id: landscape_model.cpp,v 1.40 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,7 @@ void	CLandscapeModel::clipAndRenderLandscape()
 // ***************************************************************************
 void	CLandscapeModel::traverseRender()
 {
+	NL_ALLOC_CONTEXT( RdrLand )
 	CRenderTrav		&renderTRav= getOwnerScene()->getRenderTrav();
 
 	// No-Op. But delay the clip and render to the end of Opaque Rendering. For VBLock optim

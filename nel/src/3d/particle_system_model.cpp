@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * TODO: File description
  *
- * $Id: particle_system_model.cpp,v 1.72 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: particle_system_model.cpp,v 1.73 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -691,6 +691,7 @@ void	CParticleSystemModel::doAnimate()
 //////////////////////////////////////////////
 void	CParticleSystemModel::traverseRender()
 {
+	NL_ALLOC_CONTEXT( RdrPS )
 	MINI_TIMER(PSStatsTraverseRender)
 /*
 	if (!_OutOfFrustum)

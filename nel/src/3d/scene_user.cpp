@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * TODO: File description
  *
- * $Id: scene_user.cpp,v 1.68 2005/01/20 11:13:37 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.69 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,6 @@ H_AUTO_DECL( NL3D_Render_Scene_End )
 #define NL3D_MEM_LIGHT						NL_ALLOC_CONTEXT( 3dLight )
 #define NL3D_MEM_IG							NL_ALLOC_CONTEXT( 3dIg )
 #define NL3D_MEM_LOD						NL_ALLOC_CONTEXT( 3dLod )
-#define NL3D_MEM_SCENE_RENDER				NL_ALLOC_CONTEXT( 3dScRdr )
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dIns )
 #define NL3D_MEM_LANDSCAPE					NL_ALLOC_CONTEXT( 3dLand )
 #define NL3D_MEM_CLOUDS						NL_ALLOC_CONTEXT( 3dCloud )
@@ -545,7 +544,7 @@ sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &nam
 // ***************************************************************************
 void			CSceneUser::render(bool updateWaitingInstancesFlag /*= true*/, bool restoreMatrixContextAfterRender /*= true*/)
 {	
-	NL3D_MEM_SCENE_RENDER
+	NL_ALLOC_CONTEXT( 3dScRdr0 )
 
 	// render the scene.
 	{
@@ -565,7 +564,7 @@ void			CSceneUser::render(bool updateWaitingInstancesFlag /*= true*/, bool resto
 // ***************************************************************************
 void			CSceneUser::beginPartRender()
 {
-	NL3D_MEM_SCENE_RENDER
+	NL_ALLOC_CONTEXT( 3dScRdr1 )
 		
 	// render the scene.
 	{
@@ -577,7 +576,7 @@ void			CSceneUser::beginPartRender()
 // ***************************************************************************
 void			CSceneUser::renderPart(TRenderPart rp)
 {
-	NL3D_MEM_SCENE_RENDER
+	NL_ALLOC_CONTEXT( 3dScRdr2 )
 		
 	// render the scene.
 	{
@@ -592,7 +591,7 @@ void			CSceneUser::renderPart(TRenderPart rp)
 // ***************************************************************************
 void			CSceneUser::endPartRender(bool updateWaitingInstancesFlag, bool restoreMatrixContextAfterRender)
 {
-	NL3D_MEM_SCENE_RENDER
+	NL_ALLOC_CONTEXT( 3dScRdr3 )
 		
 	// render the scene.
 	{
@@ -1085,7 +1084,7 @@ uint CSceneUser::getNumFlareContexts() const
 // ***************************************************************************
 void CSceneUser::setFlareContext(uint context)
 {
-	if (context > CScene::MaxNumFlareContexts)
+	if (context >= CScene::MaxNumFlareContexts)
 	{
 		nlwarning("Invalid flare context");
 		return;

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * TODO: File description
  *
- * $Id: flare_model.cpp,v 1.31 2005/01/31 15:58:00 berenguier Exp $
+ * $Id: flare_model.cpp,v 1.32 2005/02/21 17:09:48 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -129,6 +129,7 @@ static inline void vbWrite(uint8 *&dest, float uCoord, float vCoord)
 //********************************************************************************************************************
 void	CFlareModel::traverseRender()
 {				
+	NL_ALLOC_CONTEXT( RdrFlar )
 	CRenderTrav			&renderTrav = getOwnerScene()->getRenderTrav();
 	if (renderTrav.isCurrentPassOpaque()) return;	
 	IDriver				*drv  = renderTrav.getDriver();

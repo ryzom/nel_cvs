@@ -777,6 +777,7 @@
 #define IDM_ACTIVATE_TEXTURE_SET_7      32881
 #define IDS_FORCE_ZBIAS                 32881
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882
+#define IDS_FX_HAS_LOOP                 32882
 #define ID_WINDOW_GLOBALWIND            32883
 #define ID_EDIT_MOVE_OBJECT_LIGHT_TEST  32884
 #define IDM_COPY_LOCATED                32885

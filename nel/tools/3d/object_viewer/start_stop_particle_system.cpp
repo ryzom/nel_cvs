@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.22 2004/05/26 18:27:03 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.23 2004/06/01 16:22:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,16 @@ void CStartStopParticleSystem::OnStartSystem()
 	UpdateData();
 	if (!_Running)
 	{	
+		// check that there are no loops in the system
+		if (_ParticleDlg->getCurrPS()->hasLoop())
+		{
+			CString mess;
+			CString caption;
+			mess.LoadString(IDS_FX_HAS_LOOP);
+			caption.LoadString(IDS_WARNING);
+			MessageBox(mess, caption, MB_ICONEXCLAMATION);
+			return;
+		}
 		_Running = true;
 		_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() );	
 		// enable the system to take the right date from the scene	

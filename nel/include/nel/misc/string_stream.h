@@ -1,8 +1,7 @@
-
 /** \file string_stream.h
- * Class CStringStream (plain text memory streams)
+ * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: string_stream.h,v 1.4 2001/06/21 08:44:47 cado Exp $
+ * $Id: string_stream.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

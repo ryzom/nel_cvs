@@ -1,7 +1,7 @@
 /** \file displayer.h
- * Little easy displayers implementation
+ * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.8 2001/05/02 10:32:46 cado Exp $
+ * $Id: displayer.h,v 1.9 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

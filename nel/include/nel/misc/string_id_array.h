@@ -1,7 +1,7 @@
 /** \file string_id_array.h
- * CStringIdArray
+ * Container that provides associations between string and integer
  *
- * $Id: string_id_array.h,v 1.12 2001/05/10 08:15:34 lecroart Exp $
+ * $Id: string_id_array.h,v 1.13 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

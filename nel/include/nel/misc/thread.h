@@ -1,7 +1,7 @@
 /** \file thread.h
- * thread interface
+ * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.13 2001/02/16 14:26:34 cado Exp $
+ * $Id: thread.h,v 1.14 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

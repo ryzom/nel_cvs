@@ -1,7 +1,7 @@
 /** \file net_log.h
- * Class CNetLog (logger for network transfers)
+ * Implementation of the CLog (look at log.h) that display on a network connection (deprecated)
  *
- * $Id: net_log.h,v 1.5 2001/06/21 08:44:56 cado Exp $
+ * $Id: net_log.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
- * Interface for CBufFIFO
+ * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.8 2001/05/31 15:27:48 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.9 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

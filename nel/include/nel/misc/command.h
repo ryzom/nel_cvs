@@ -1,7 +1,7 @@
 /** \file command.h
- * <File description>
+ * Management of runtime command line processing
  *
- * $Id: command.h,v 1.7 2001/06/18 16:08:26 lecroart Exp $
+ * $Id: command.h,v 1.8 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

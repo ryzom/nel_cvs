@@ -1,7 +1,7 @@
 /** \file path.h
- * CPath
+ * Abstract system directory architecture and file management
  *
- * $Id: path.h,v 1.6 2001/05/21 16:58:50 cado Exp $
+ * $Id: path.h,v 1.7 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,12 @@ private:
 };
 
 
+/**
+ * Utility class for file manipulation
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ */
 struct CFile
 {
 	/**

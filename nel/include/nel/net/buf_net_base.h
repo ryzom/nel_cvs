@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.4 2001/06/07 16:16:14 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@ class CReceiveTask;
 /// Socket identifier
 typedef CBufSock *TSockId;
 
+static const TSockId InvalidSockId = (TSockId) 0xFFFFFFFF;
+
 /// Callback function for message processing
 typedef void (*TNetCallback) ( TSockId from, void *arg );
 
@@ -74,7 +76,7 @@ class CBufNetBase
 public:
 
 	/// Type of incoming events (max 256)
-	enum TEventType { User = 'U', Connection = 'C', Disconnection ='D' };
+	enum TEventType { User = 'U', Connection = 'C', Disconnection = 'D' };
 
 	/// Destructor
 	virtual ~CBufNetBase() {};

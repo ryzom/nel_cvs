@@ -1,7 +1,7 @@
 /** \file message.h
- * CMessage class
+ * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.25 2001/06/12 15:39:11 lecroart Exp $
+ * $Id: message.h,v 1.26 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

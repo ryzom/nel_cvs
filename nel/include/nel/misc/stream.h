@@ -1,7 +1,7 @@
 /** \file stream.h
- * This File handles IStream 
+ * serialization interface class
  *
- * $Id: stream.h,v 1.42 2001/05/21 16:58:50 cado Exp $
+ * $Id: stream.h,v 1.43 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

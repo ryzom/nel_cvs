@@ -1,7 +1,7 @@
 /** \file naming_client.h
- * CNamingClient
+ * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.25 2001/06/18 09:07:59 cado Exp $
+ * $Id: naming_client.h,v 1.26 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file config_file.h
- * CConfigFile class
+ * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.20 2001/05/21 16:58:50 cado Exp $
+ * $Id: config_file.h,v 1.21 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

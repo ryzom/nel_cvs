@@ -1,7 +1,7 @@
 /** \file unitime.h
- * CUniTime class
+ * Manage universal time (synchronized with a centralized time manager)
  *
- * $Id: unitime.h,v 1.10 2001/06/18 09:07:59 cado Exp $
+ * $Id: unitime.h,v 1.11 2001/06/21 12:35:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file log.h
- * CLog class
+ * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.21 2001/05/09 17:09:37 berenguier Exp $
+ * $Id: log.h,v 1.22 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,7 @@ protected:
 
 	CMutex							  _Mutex;
 
-	bool							  _PosSet;
+	uint32							  _PosSet;
 
 	/// "Discard" filter
 	std::list<std::string>			  _NegativeFilter;

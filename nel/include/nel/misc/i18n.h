@@ -1,7 +1,7 @@
 /** \file i18n.h
- * Internationalisation
+ * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.4 2000/12/05 16:12:23 lecroart Exp $
+ * $Id: i18n.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file system_info.h
- * <File description>
+ * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.1 2001/01/08 16:28:13 lecroart Exp $
+ * $Id: system_info.h,v 1.2 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

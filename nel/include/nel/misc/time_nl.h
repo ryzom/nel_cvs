@@ -1,7 +1,7 @@
 /** \file time_nl.h
- * CTime class
+ * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.5 2001/05/25 08:52:03 lecroart Exp $
+ * $Id: time_nl.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

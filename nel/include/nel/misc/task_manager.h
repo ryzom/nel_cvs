@@ -1,7 +1,7 @@
 /** \file task_manager.h
- * CTaskManager class
+ * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.5 2001/02/20 15:35:14 berenguier Exp $
+ * $Id: task_manager.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

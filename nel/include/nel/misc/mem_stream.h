@@ -1,7 +1,7 @@
 /** \file mem_stream.h
- * CMemStream class
+ * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.11 2001/06/18 08:59:28 cado Exp $
+ * $Id: mem_stream.h,v 1.12 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

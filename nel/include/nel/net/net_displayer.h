@@ -1,7 +1,7 @@
 /** \file net_displayer.h
- * CNetDisplayer class
+ * Implementation of the CDisplayer (look at displayer.h) that display on a network connection
  *
- * $Id: net_displayer.h,v 1.16 2001/06/13 10:20:48 lecroart Exp $
+ * $Id: net_displayer.h,v 1.17 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

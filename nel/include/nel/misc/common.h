@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.29 2001/05/29 09:30:42 lecroart Exp $
+ * $Id: common.h,v 1.30 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #include <vector>
 #include <sstream>
 
-
+/// This namespace contains all miscellaneous class used by other module
 namespace	NLMISC
 {
 

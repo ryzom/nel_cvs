@@ -1,6 +1,7 @@
 /** \file p_thread.h
- * class CPThread (Posix threads)
- * $Id: p_thread.h,v 1.5 2001/06/21 07:47:19 cado Exp $
+ * Posix implementation of CThread class (look at thread.h)
+ *
+ * $Id: p_thread.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

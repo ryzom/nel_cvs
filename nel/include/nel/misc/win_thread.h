@@ -1,7 +1,7 @@
 /** \file win_thread.h
- * class CWinThread
+ * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.5 2001/02/16 14:26:34 cado Exp $
+ * $Id: win_thread.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * Windows implementation of CThread class (look thread.h)
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

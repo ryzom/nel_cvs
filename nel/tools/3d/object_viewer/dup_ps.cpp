@@ -1,6 +1,6 @@
 /** \file dup_ps.cpp
  *
- * $Id: dup_ps.cpp,v 1.4 2003/10/23 09:22:44 vizerie Exp $
+ * $Id: dup_ps.cpp,v 1.5 2004/05/14 16:17:56 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -115,7 +115,7 @@ NL3D::CParticleSystemProcess	*DupPSLocated(const CParticleSystemProcess *in)
 		}
 		else
 		{
-			uint index = in->getOwner()->getIndexOf(in);
+			uint index = in->getOwner()->getIndexOf(*in);
 			/** Duplicate the system, and detach.
 			  * We can't duplicate the object direclty (it may be referencing other objects in the system, so these objects will be copied too...)
 			  */

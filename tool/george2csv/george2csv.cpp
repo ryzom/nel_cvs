@@ -395,6 +395,9 @@ void	loadSheetPath()
 	if (inputSheetPathLoaded)
 		return;
 
+	NLMISC::createDebug();
+	NLMISC::WarningLog->addNegativeFilter( "CPath::insertFileInMap" );
+
 	CPath::addSearchPath(inputSheetPath, true, false);
 
 	vector<string>	files;
@@ -403,8 +406,8 @@ void	loadSheetPath()
 	uint	i;
 	for (i=0; i<files.size(); ++i)
 	{
-		string	filename = files[i];
-		string	filebase = CFile::getFilenameWithoutExtension(filename);
+		string& filename = files[i];
+		string& filebase = CFile::getFilenameWithoutExtension(filename);
 		inputSheetPathContent[filebase] = filename;
 	}
 
@@ -461,6 +464,18 @@ void fillFromDFN( UFormLoader *formLoader, set<string>& dfnFields, UFormDfn *for
 
 
 /*
+ *
+ */
+void eraseCarriageReturns( string& s )
+{
+	const char CR = '\n';
+	string::size_type p = s.find( CR );
+	while ( (p=s.find( CR )) != string::npos )
+		s.erase( p, 1 );
+}
+
+
+/*
  * CSV -> Georges
  */
 void	convertCsvFile( const string &file, bool generate, const string& sheetType )
@@ -500,6 +515,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	uint i;
 	for ( i=1; i!=fields.size(); ++i )
 	{
+		eraseCarriageReturns( fields[i] );
 		if ( fields[i].empty() )
 		{
 			nlinfo( "Skipping field #%u (empty)", i );
@@ -527,7 +543,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 	uint dirmapLetterIndex = ~0;
 	vector<string> dirmapDirs;
-	string dirmapSheetCode;
+	string dirmapSheetCode, addExtension, outputPath;
 
 	if ( generate )
 	{
@@ -536,11 +552,10 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		{
 			CConfigFile dirmapcfg;
 			dirmapcfg.load( sheetType + "_dirmap.cfg" );
-			CConfigFile::CVar letterIndex1 = dirmapcfg.getVar( "LetterIndex" );
-			if ( letterIndex1.asInt() > 0 )
+			CConfigFile::CVar *letterIndex1 = dirmapcfg.getVarPtr( "LetterIndex" );
+			if ( letterIndex1 && letterIndex1->asInt() > 0 )
 			{
-				dirmapLetterIndex = letterIndex1.asInt() - 1;
-
+				dirmapLetterIndex = letterIndex1->asInt() - 1;
 				CConfigFile::CVar dirs = dirmapcfg.getVar( "Directories" );
 				for ( sint idm=0; idm!=dirs.size(); ++idm )
 				{
@@ -562,9 +577,24 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				nlinfo( "Mapping letter #%u of sheet name to directory", dirmapLetterIndex + 1 );
 			}
 			
-			CConfigFile::CVar sheetCode = dirmapcfg.getVar( "SheetCode" );
-			dirmapSheetCode = sheetCode.asString();
+			CConfigFile::CVar *sheetCode = dirmapcfg.getVarPtr( "SheetCode" );
+			if ( sheetCode )
+				dirmapSheetCode = sheetCode->asString();
 			nlinfo( "Sheet code: %s", dirmapSheetCode.c_str() );
+
+			dirmapLetterIndex += dirmapSheetCode.size();
+
+			CConfigFile::CVar *addExt = dirmapcfg.getVarPtr( "AddExtension" );
+			if ( addExt )
+				addExtension = addExt->asString();
+			if ( ! addExtension.empty() )
+				nlinfo( "Adding extension: %s", addExtension.c_str() );
+
+			CConfigFile::CVar *path = dirmapcfg.getVarPtr( "OutputPath" );
+			if ( path )
+				outputPath = path->asString();
+			if ( ! outputPath.empty() )
+				nlinfo( "Using output path: %s", outputPath.c_str() );
 		}
 		catch ( EConfigFile& e )
 		{
@@ -574,107 +604,134 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 		nlinfo( "Press a key to generate *.%s", sheetType.c_str() );
 		getch();
+		nlinfo( "Generating...." );
 
 	}
 	else
 		nlinfo("Updating modifications (only modified fields are updated)");
 
+	set<string> newSheets;
+	uint nbNewSheets = 0, nbModifiedSheets = 0, nbUnchangedSheets = 0, nbWritten = 0;
 	while (!feof(s))
 	{
+		lineBuffer[0] = '\0';
 		fgets(lineBuffer, 2048, s);
 		explode(lineBuffer, SEPARATOR, args);
 
 		if (args.size() < 1)
 			continue;
 
-		string& filebase = args[0];
+		eraseCarriageReturns( args[0] );
 
 		// Skip empty lines
-		if ( filebase.empty() || (filebase == string(".")+sheetType) )
+		if ( args[0].empty() || (args[0] == string(".")+sheetType) )
 			continue;
 
+		string& filebase = dirmapSheetCode + args[0];
+		strlwr( filebase );
 		string filename, dirbase;
+		bool isNewSheet;
 
-		if ( generate )
+		// Locate existing sheet
+		map<string, string>::iterator it = inputSheetPathContent.find( CFile::getFilenameWithoutExtension( filebase ) );
+		if ( it == inputSheetPathContent.end() )
 		{
-			// Load template sheet
-			filename = strlwr( static_cast<const string&>(dirmapSheetCode + filebase) );
-			form = (CForm*)formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
-			if (form == NULL)
-			{
-				nlerror( "Can't load sheet _empty.sheet" );
-			}
-
-			// Deduce directory from sheet name
-			if ( dirmapLetterIndex != ~0 )
-			{
-				if ( dirmapLetterIndex < filebase.size() )
-				{
-					char c = tolower(filebase[dirmapLetterIndex]);
-					vector<string>::const_iterator idm;
-					for ( idm=dirmapDirs.begin(); idm!=dirmapDirs.end(); ++idm )
-					{
-						if ( (! (*idm).empty()) && (tolower((*idm)[0]) == c) )
-						{
-							dirbase = (*idm) + "/";
-							break;
-						}
-					}
-					if ( idm==dirmapDirs.end() )
-					{
-						nlinfo( "Directory mapping not found for %s", filebase.c_str() );
-						dirbase = ""; // put into root
-					}
-				}
-				else
-				{
-					nlerror( "Can't map directory with letter #%u, greater than size of %s", dirmapLetterIndex, filebase.c_str() );
-				}
-			}
-		}
-		else
-		{
-			// Locate sheet (skip if not found)
-			map<string, string>::iterator	it = inputSheetPathContent.find(filebase);
-			if (it == inputSheetPathContent.end())
+			// Not found
+			if ( ! generate )
 			{
 				if ( ! filebase.empty() )
+				{
 					nlwarning( "Sheet %s not found", filebase.c_str( )); 
-				continue;
+					continue;
+				}
+			}			
+			else
+			{
+				// Load template sheet
+				filename = strlwr( static_cast<const string&>(filebase) );
+				form = (CForm*)formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
+				if (form == NULL)
+				{
+					nlerror( "Can't load sheet _empty.%s", sheetType.c_str() );
+				}
+
+				// Deduce directory from sheet name
+				if ( dirmapLetterIndex != ~0 )
+				{
+					if ( dirmapLetterIndex < filebase.size() )
+					{
+						char c = tolower(filebase[dirmapLetterIndex]);
+						vector<string>::const_iterator idm;
+						for ( idm=dirmapDirs.begin(); idm!=dirmapDirs.end(); ++idm )
+						{
+							if ( (! (*idm).empty()) && (tolower((*idm)[0]) == c) )
+							{
+								dirbase = (*idm) + "/";
+								break;
+							}
+						}
+						if ( idm==dirmapDirs.end() )
+						{
+							nlinfo( "Directory mapping not found for %s", filebase.c_str() );
+							dirbase = ""; // put into root
+						}
+					}
+					else
+					{
+						nlerror( "Can't map directory with letter #%u, greater than size of %s + code", dirmapLetterIndex, filebase.c_str() );
+					}
+				}
+
+				nlinfo( "New sheet: %s", filebase.c_str() );
+				++nbNewSheets;
+				if ( ! newSheets.insert( filebase ).second )
+					nlwarning( "Found duplicate sheet: %s", filebase.c_str() );
+				isNewSheet = true;
 			}
+		}
+		else // an existing sheet was found
+		{
 
 			// Load sheet (skip if failed)
-			filename = (*it).second;
+			dirbase = "";
+			filename = (*it).second; // whole path
 			form = (CForm*)formLoader->loadForm( filename.c_str() );
 			if (form == NULL)
 			{
 				nlwarning( "Can't load sheet %s", filename.c_str() );
 				continue;
 			}
+
+			isNewSheet = false;
 		}
 
-		bool	displayed = false;
-		uint	i;
-		for (i=1; i<args.size() && i<fields.size(); ++i)
+		bool displayed = false;
+		bool isModified = false;
+		uint i;
+		for ( i=1; i<args.size() && i<fields.size(); ++i )
 		{
 			const string	&var = fields[i];
 			string			&val = args[i];
 
+			eraseCarriageReturns( val );
+
 			// Skip column with inactive field (empty or not in DFN)
-			if ( ! activeFields[i] )
+			if ( (! activeFields[i]) || (val.empty()) )
 				continue;
 
 			// Special case for parent sheet
-			if ( generate && (var == "parent") ) // already case-lowered
+			if ( var == "parent" ) // already case-lowered
 			{
-				if ( ! val.empty() )
+				if ( isNewSheet && (! val.empty()) )
 				{
+					// This is slow. Opti: insertParent() should have an option to do it without loading the form
 					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm( val.c_str() );
 					if ( ! parentForm )
 						nlwarning( "Can't load parent form %s", val.c_str() );
 					else
 						form->insertParent( 0, val.c_str(), parentForm );
 				}
+				// NOTE: Changing the parent is not currently implemented!
 				continue;
 			}
 
@@ -690,18 +747,20 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				val == "ERR")
 				continue;
 
-			if ( ! generate )
+			if ( ! isNewSheet )
 			{
 				string	test;
-				if (form->getRootNode().getValueByName(test, var.c_str()) &&
-					test == val)
+				if ( form->getRootNode().getValueByName(test, var.c_str()) && (test == val) )
+				{
 					continue;
+				}
 			}
 
 			form->getRootNode().setValueByName(val.c_str(), var.c_str());
 
-			if ( ! generate )
+			if ( ! isNewSheet )
 			{
+				isModified = true;
 				if (!displayed)
 					nldebug("in %s:", filename.c_str());
 				displayed = true;
@@ -709,15 +768,26 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			}
 		}
 
-		// Write sheet
-		if ( generate || displayed )
+		if ( ! isNewSheet )
 		{
-			COFile	output( dirbase + filename );
+			if ( isModified )
+				++nbModifiedSheets;
+			else
+				++nbUnchangedSheets;
+		}
+
+		// Write sheet
+		if ( isNewSheet || displayed )
+		{
+			++nbWritten;
+			string path = isNewSheet ? outputPath : "";
+			COFile	output( path + dirbase + filename + addExtension );
 			form->write(output, true);
 			form->clearParents();
 		}
 	}
 
+	nlinfo( "%u sheets processed (%u new, %u modified, %u unchanged - %u written)", nbNewSheets+nbModifiedSheets+nbUnchangedSheets, nbNewSheets, nbModifiedSheets, nbUnchangedSheets, nbWritten );
 	UFormLoader::releaseLoader (formLoader);
 }
 
@@ -741,9 +811,6 @@ void	usage(char *argv0, FILE *out)
 
 int main(int argc, char* argv[])
 {
-	NLMISC::createDebug();
-	NLMISC::WarningLog->addNegativeFilter( "CPath::insertFileInMap" );
-
 	bool generate = false;
 	string sheetType;
 

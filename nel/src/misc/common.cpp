@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.68 2005/01/31 13:52:39 lecroart Exp $
+ * $Id: common.cpp,v 1.69 2005/03/01 09:11:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -867,6 +867,21 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 	
 #endif // NL_OS_WINDOWS
 }
+
+sint64 nlftell64(FILE *stream)
+{
+	#ifdef NL_OS_WINDOWS		
+		fpos_t pos64 = 0;
+		if (fgetpos(stream, &pos64) == 0)
+		{
+			return (sint64) pos64;
+		}
+		else return -1;
+	#else
+		nlerror("Not implemented");
+	#endif
+}
+
 
 
 

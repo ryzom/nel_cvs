@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.26 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.27 2003/07/30 15:56:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,10 +84,11 @@ public:
 	 * like in a shape-template. The function is called with the name of the shape and the
 	 * user must return the new name of the shape.
 	 * NB: This is called after the 'startAddingIG' calls in the IIGAddBegin callback
-	 * \param Name is the name of the shape contained in the instance group
+	 * \param instanceName is the name of the instance contained in the instance group (user string)
+	 * \param shapeName is the name of the instance contained in the instance group (user string)
 	 * \return the new name of the shape which must be loaded in place of the param
 	 */
-	virtual std::string transformName (uint index, const std::string &Name) = 0;
+	virtual std::string transformName (uint index, const std::string &instanceName, const std::string &shapeName) = 0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.12 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: buf_sock.h,v 1.13 2002/01/23 14:11:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,6 +172,14 @@ protected:
 	{
 		nlassert (this != InvalidSockId);	// invalid bufsock
 		nldebug( "LNETL1: Pushing buffer to %s", asString().c_str() );
+
+		static uint32 biggerBufferSize = 64000;
+		if (buffer.size() > biggerBufferSize)
+		{
+			biggerBufferSize = buffer.size();
+			nlwarning ("LNETL1: new record! bigger network message pushed (sent) is %u bytes", biggerBufferSize);
+		}
+
 		if ( Sock->connected() )
 		{
 			// Push into host's send queue

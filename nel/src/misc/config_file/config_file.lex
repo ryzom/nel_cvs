@@ -6,6 +6,7 @@
 #include <string>
 
 #include "nel/misc/debug.h"
+#include "nel/misc/file.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -32,6 +33,21 @@ struct cf_value
 	double	Real;
 	char	String[1024];
 };
+
+// use to parse the file, opened by CConfigFile::reparse()
+CIFile cf_ifile;
+
+#define YY_INPUT(buf,result,max_size) { \
+	if (cf_ifile.eof()) \
+	{ \
+		result = YY_NULL; \
+	} else { \
+		uint32 nbc = std::min((uint32)max_size, (uint32)cf_ifile.getFileSize()); \
+		cf_ifile.serialBuffer ((uint8 *)buf, nbc); \
+		result = nbc; \
+		nlinfo ("get char %d char", nbc); \
+	} \
+}
 
 /* special include, need to know cf_value */
 
@@ -137,7 +153,7 @@ string		\"[^\"]*\"
 
 %%
 
-int yywrap()
+int cfwrap()
 {
 	return 1;
 }

@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.18 2002/06/12 10:10:46 lecroart Exp $
+ * $Id: file.h,v 1.19 2002/06/13 15:08:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,11 +104,15 @@ public:		// Advanced Usage.
 	// return a string separated by \n or eof, used to parsing text file
 	void getline (char *buffer, uint32 bufferSize);
 
+	// return the size of the file
+	uint32 getFileSize () { return _FileSize; }
+
 	// return true if there s nothing more to read (same as ifstream)
 	bool eof ();
 
-protected:
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
+	
+protected:
 	virtual void		serialBit(bool &bit) throw(EReadError);
 
 private:

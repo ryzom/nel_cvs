@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.130 2002/06/13 14:40:53 legros Exp $
+ * $Id: service.cpp,v 1.131 2002/06/13 15:08:38 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -483,6 +483,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		CHTimer::startBench(false, true);
+
 
 		//
 		// Load the config file
@@ -1404,6 +1405,16 @@ NLMISC_COMMAND(getWinDisplayerInfo, "display the info about the pos and size of 
 NLMISC_COMMAND(printConfigFile, "display the variables of the default configfile", "")
 {
 	IService::getInstance()->ConfigFile.print(&log);
+	return true;
+}
+
+NLMISC_COMMAND(getUnknownConfigFileVariables, "display the variables from config file that are called but not present", "")
+{
+	log.displayNL ("%d Variables not found in the configfile '%s'", IService::getInstance()->ConfigFile.UnknownVariables.size(), IService::getInstance()->ConfigFile.getFilename().c_str() );
+	for (uint i = 0; i < IService::getInstance()->ConfigFile.UnknownVariables.size(); i++)
+	{
+		log.displayNL ("  %s", IService::getInstance()->ConfigFile.UnknownVariables[i].c_str());
+	}
 	return true;
 }
 

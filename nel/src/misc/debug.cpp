@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.51 2002/06/13 09:42:12 lecroart Exp $
+ * $Id: debug.cpp,v 1.52 2002/06/13 15:08:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,7 @@ using namespace std;
 // Alternatively, you can use --without-logging when using configure to set
 // it to 0.
 #ifndef NEL_DEFAULT_DISPLAYER
-#define NEL_DEFAULT_DISPLAYER 0
+#define NEL_DEFAULT_DISPLAYER 1
 #endif // NEL_DEFAULT_DISPLAYER
 
 // Put 0 if you don't want to display in file "log.log"
@@ -114,7 +114,7 @@ void nlError (const char *format, ...)
 
 // the default behavior is to display all in standard output and to a file named "log.log";
 
-void initDebug2 ()
+void initDebug2 (bool logInFile)
 {
 	static bool alreadyInit = false;
 
@@ -144,13 +144,16 @@ void initDebug2 ()
 		// put the file displayer only if wanted
 
 #if LOG_IN_FILE
+		if (logInFile)
+		{
 #ifdef NL_DEBUG
-		DebugLog->addDisplayer (fd);
+			DebugLog->addDisplayer (fd);
 #endif // NL_DEBUG
-		InfoLog->addDisplayer (fd);
-		WarningLog->addDisplayer (fd);
-		AssertLog->addDisplayer (fd);
-		ErrorLog->addDisplayer (fd);
+			InfoLog->addDisplayer (fd);
+			WarningLog->addDisplayer (fd);
+			AssertLog->addDisplayer (fd);
+			ErrorLog->addDisplayer (fd);
+		}
 #endif // LOG_IN_FILE
 
 		// put the message box only in release for error
@@ -207,7 +210,7 @@ void createDebug (const char *logPath, bool logInFile)
 #endif // LOG_IN_FILE
 		DefaultMemDisplayer = new CMemDisplayer ("DEFAULT_MD");
 		
-		initDebug2();
+		initDebug2(logInFile);
 
 		alreadyCreate = true;
 	}

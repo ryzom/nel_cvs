@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.37 2002/06/12 13:07:45 lecroart Exp $
+ * $Id: path.cpp,v 1.38 2002/06/13 15:08:56 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -628,7 +628,6 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	if (CFile::getExtension(newFile) == "bnp")
 	{
 		NL_DISPLAY_PATH ("CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
-		CBigFile::getInstance().add (file, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN);
 		addSearchBigFile(file, false, false);
 		return;
 	}
@@ -722,6 +721,11 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 		nlwarning ("CPath::addSearchBigFile(%s, %d, %d): can't open file, skip it", sBigFilename.c_str(), recurse, alternative);
 		return;
 	}
+
+	// add the link with the CBigFile singleton
+	CBigFile::getInstance().add (sBigFilename, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN);
+
+	// parse the big file to add file in the map
 	fseek (Handle, 0, SEEK_END);
 	uint32 nFileSize = ftell (Handle);
 	fseek (Handle, nFileSize-4, SEEK_SET);

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.35 2002/06/12 11:46:31 corvazier Exp $
+ * $Id: config_file.cpp,v 1.36 2002/06/13 15:09:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,17 +29,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "nel/misc/file.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
 
 using namespace std;
+using namespace NLMISC;
 
 extern void cfrestart (FILE *);	// used to reinit the file
 extern int cfparse (void *);	// used to parse the file
-extern FILE *cfin;
+//extern FILE *cfin;
 extern int cf_CurrentLine;
 extern bool cf_OverwriteExistingVariable;
+extern CIFile cf_ifile;
 
 // put true if you want that the config file class check type when you call asFunctions
 // (for example, check when you call asInt() that the variable is an int).
@@ -262,6 +265,24 @@ void CConfigFile::reparse (const char *filename)
 	if (filename == NULL)
 	{
 		_LastModified = getLastModified ();
+
+		if (cf_ifile.open (_FileName))
+		{
+			// if we clear all the array, we'll lost the callback on variable and all information
+			//		_Vars.clear();
+			cfrestart (NULL);
+			cf_OverwriteExistingVariable = true;
+			bool parsingOK = (cfparse (&(_Vars)) == 0);
+			cf_ifile.close();
+			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
+		}
+		else
+		{
+			nlwarning ("ConfigFile '%s' not found in the path '%s'", _FileName.c_str(), CPath::getCurrentPath().c_str());
+			throw EFileNotFound (_FileName);
+		}
+
+		/*
 		cfin = fopen (_FileName.c_str (), "r");
 		if (cfin != NULL)
 		{
@@ -278,11 +299,25 @@ void CConfigFile::reparse (const char *filename)
 			nlwarning ("ConfigFile '%s' not found in the path '%s'", _FileName.c_str(), CPath::getCurrentPath().c_str());
 			throw EFileNotFound (_FileName);
 		}
+		*/
 	}
 	else
 	{
 		// load external config filename, don't overwrite existant variable
-		cfin = fopen (filename, "r");
+		if (cf_ifile.open (filename))
+		{
+			cfrestart (NULL);
+			cf_OverwriteExistingVariable = false;
+			bool parsingOK = (cfparse (&(_Vars)) == 0);
+			cf_ifile.close ();
+			if (!parsingOK) throw EParseError (filename, cf_CurrentLine);
+		}
+		else
+		{
+			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
+		}
+
+/*		cfin = fopen (filename, "r");
 		if (cfin != NULL)
 		{
 			cfrestart (cfin);
@@ -295,14 +330,15 @@ void CConfigFile::reparse (const char *filename)
 		{
 			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
 		}
-	}
+*/	}
 }
 
 
 
 CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 {
-	for (int i = 0; i < (int)_Vars.size(); i++)
+	uint i;
+	for (i = 0; i < (int)_Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
 		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
@@ -311,13 +347,22 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 			break;
 		}
 	}
+
+	// if not found, add it in the array if necessary
+	for (i = 0; i < UnknownVariables.size(); i++)
+		if(UnknownVariables[i] == varName)
+			break;
+	if (i == UnknownVariables.size())
+		UnknownVariables.push_back(varName);
+
 	throw EUnknownVar (_FileName, varName);
 }
 
 
 CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 {
-	for (int i = 0; i < (int)_Vars.size(); i++)
+	uint i;
+	for (i = 0; i < (int)_Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
 		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
@@ -325,6 +370,14 @@ CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 			return &(_Vars[i]);
 		}
 	}
+
+	// if not found, add it in the array if necessary
+	for (i = 0; i < UnknownVariables.size(); i++)
+		if(UnknownVariables[i] == varName)
+			break;
+	if (i == UnknownVariables.size())
+		UnknownVariables.push_back(varName);
+
 	return NULL;
 }
 
@@ -516,12 +569,22 @@ uint32	CConfigFile::_Timeout = 1000;
 
 uint32 CConfigFile::getLastModified ()
 {
+	uint pos;
+	string fn;
+	if ((pos=_FileName.find('@')) != string::npos)
+	{
+		fn = _FileName.substr (0, pos);
+	}
+	else
+	{
+		fn = _FileName;
+	}
 #if defined (NL_OS_WINDOWS)
 	struct _stat buf;
-	int result = _stat (_FileName.c_str (), &buf);
+	int result = _stat (fn.c_str (), &buf);
 #elif defined (NL_OS_UNIX)
 	struct stat buf;
-	int result = stat (_FileName.c_str (), &buf);
+	int result = stat (fn.c_str (), &buf);
 #endif
 
 	if (result != 0) return 0;

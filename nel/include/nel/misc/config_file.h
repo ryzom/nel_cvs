@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.29 2002/06/12 10:04:48 corvazier Exp $
+ * $Id: config_file.h,v 1.30 2002/06/13 15:08:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,9 @@ public:
 	void setCallback (const std::string &VarName, void (*cb)(CConfigFile::CVar &var));
 
 	void setLastModifiedNow ();
+
+	/// contains the variable names that getVar() and getVarPtr() tried to access but not present in the cfg
+	std::vector<std::string> UnknownVariables;
 
 	/// returns the configfile name
 	std::string getFilename () const { return _FileName; }

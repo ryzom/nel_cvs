@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.5 2002/01/28 14:40:26 valignat Exp $
+dnl $Id: acinclude.m4,v 1.6 2002/01/28 14:59:45 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -409,6 +409,11 @@ else
     then
         stlport_includes="$with_stlport/stlport"
         stlport_libraries="$with_stlport/lib"
+
+        if test ! -d "$stlport_includes"
+        then
+            stlport_includes="$with_stlport/include/stlport"
+        fi
     fi
 fi
 

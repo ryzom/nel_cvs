@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.18 2001/07/09 14:12:35 berenguier Exp $
+ * $Id: retriever_instance.cpp,v 1.19 2001/07/12 14:27:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,6 +253,69 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 			// if it is closer to the estimation than the previous remembered...
 			float	meanHeight = leaf->getMaxHeight();
 			float	distance = (float)fabs(localEstimated.z-meanHeight);
+			if (distance < bestDistance)
+			{
+				bestDistance = distance;
+				bestHeight = meanHeight;
+				bestSurf = surf;
+			}
+		}
+	}
+
+	if (bestSurf != -1)
+	{
+		// if there is a best surface, returns it
+		retrieved.Surface = bestSurf;
+		retrieved.Estimation = CVector(localEstimated.x, localEstimated.y, bestHeight);
+	}
+	else
+	{
+		// else return the last remembered...
+		retrieved.Surface = lastSurf;
+		retrieved.Estimation = localEstimated;
+	}
+
+	return retrieved;
+}
+
+NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever) const
+{
+	CVector							localEstimated;
+	CLocalRetriever::CLocalPosition	retrieved;
+
+	// get local coordinates
+	localEstimated = getLocalPosition(estimated);
+	// Yoyo: must snap vector.
+	CRetrieverInstance::snapVector(localEstimated);
+
+	// fills _RetrieveTable by retrievingPosition.
+	retriever.retrievePosition(localEstimated, _RetrieveTable);
+
+	uint	surf;
+	sint	bestSurf = -1;
+	sint	lastSurf = -1;
+	float	bestDistance = 1.0e10f;
+	float	bestHeight;
+
+	// for each surface in the retriever
+	for (surf=0; surf<_RetrieveTable.size(); ++surf)
+	{
+		// if the surface contains the estimated position.
+		if (_RetrieveTable[surf] != 0)
+		{
+			// at least remembers the last seen surface...
+			lastSurf = surf;
+			_RetrieveTable[surf] = 0;
+			// search in the surface's quad tree for the actual height
+			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
+			// if there is no acceptable leaf, just give up
+			if (leaf == NULL)
+				continue;
+
+			// computes the mean height of the leaf, and remembers the surface
+			// if it is closer to the estimation than the previous remembered...
+			float	meanHeight = leaf->getMaxHeight();
+			float	distance = (float)fabs(localEstimated.z-meanHeight);
 			if (distance < bestDistance && localEstimated.z > leaf->getMinHeight()-2.0f && localEstimated.z < leaf->getMaxHeight()+2.0f)
 			{
 				bestDistance = distance;
@@ -278,7 +341,6 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	return retrieved;
 }
 
-
 CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
 {
 	switch (_Orientation)
@@ -297,6 +359,28 @@ CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPositi
 		break;
 	case 3:
 		return CVector(-globalPosition.y+_Origin.y, +globalPosition.x-_Origin.x, globalPosition.z-_Origin.z);
+		break;
+	}
+}
+
+CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVectorD &globalPosition) const
+{
+	switch (_Orientation)
+	{
+	default:
+		nlwarning("in NLPACS::CRetrieverInstance::getLocalPosition()");
+		nlerror("unexpected orientation value (%d)", _Orientation);
+	case 0:
+		return CVector((float)(+globalPosition.x-_Origin.x), (float)(+globalPosition.y-_Origin.y), (float)(globalPosition.z-_Origin.z));
+		break;
+	case 1:
+		return CVector((float)(+globalPosition.y-_Origin.y), (float)(-globalPosition.x+_Origin.x), (float)(globalPosition.z-_Origin.z));
+		break;
+	case 2:
+		return CVector((float)(-globalPosition.x+_Origin.x), (float)(-globalPosition.y+_Origin.y), (float)(globalPosition.z-_Origin.z));
+		break;
+	case 3:
+		return CVector((float)(-globalPosition.y+_Origin.y), (float)(+globalPosition.x-_Origin.x), (float)(globalPosition.z-_Origin.z));
 		break;
 	}
 }

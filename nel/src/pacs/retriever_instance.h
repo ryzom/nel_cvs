@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.5 2001/07/09 10:54:58 legros Exp $
+ * $Id: retriever_instance.h,v 1.6 2001/07/12 14:27:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,12 +200,20 @@ public:
 	 * is a LOCAL position (to the retriever).
 	 */
 	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever) const;
+	/**
+	 * Retrieves the position in the instance from an estimated position (double instead.)
+	 * WARNING: the estimated position is a GLOBAL position, and the returned position
+	 * is a LOCAL position (to the retriever).
+	 */
+	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever) const;
 
 	/// Serialises this CRetrieverInstance.
 	void								serial(NLMISC::IStream &f);
 
 	/// Computes the position in the local axis of the retriever from a global position.
 	NLMISC::CVector						getLocalPosition(const NLMISC::CVector &globalPosition) const;
+	/// Computes the position in the local axis of the retriever from a global position.
+	NLMISC::CVector						getLocalPosition(const NLMISC::CVectorD &globalPosition) const;
 	/// Computes the position in the global axis from a local position (in the retriever axis).
 	NLMISC::CVector						getGlobalPosition(const NLMISC::CVector &localPosition) const;
 	/// Computes the position (as double) in the global axis from a local position (in the retriever axis).

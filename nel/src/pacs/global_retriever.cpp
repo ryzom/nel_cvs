@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.37 2001/07/09 14:14:39 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.38 2001/07/12 14:27:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -346,6 +346,38 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		return CGlobalPosition(instance.getInstanceId(), CLocalRetriever::CLocalPosition(-1, estimated));
 	}
 */
+}
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
+{
+	// the retrieved position
+	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
+	// get the 4 best matching instances
+	const CRetrieverInstance	*instances[4];
+	getInstances(estimated, instances);
+
+	uint	i;
+	double	bestDist = 1.0e10f;
+
+	// for each instance, try to retrieve the position
+	for (i=0; i<4; ++i)
+	{
+		if (instances[i] != NULL)
+		{
+			// if the retrieved position is on a surface and it best match the estimated position
+			// remember it
+			CLocalRetriever::CLocalPosition	ret = instances[i]->retrievePosition(estimated, _RetrieverBank->getRetriever(instances[i]->getRetrieverId()));
+			double	d = fabs(estimated.z-ret.Estimation.z);
+			if (d < bestDist && ret.Surface != -1)
+			{
+				bestDist = d;
+				result.LocalPosition = ret;
+				result.InstanceId = instances[i]->getInstanceId();
+			}
+		}
+	}
+
+	return result;
 }
 
 CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const UGlobalPosition &global) const

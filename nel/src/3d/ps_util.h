@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.6 2001/09/10 15:25:32 lecroart Exp $
+ * $Id: ps_util.h,v 1.7 2002/01/07 14:35:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,17 +35,17 @@
 
 namespace NLMISC
 {
-	class CMatrix ;
-	class NLMISC::CVector ;
-} ;
+	class CMatrix;
+	class NLMISC::CVector;
+};
 
 namespace NL3D 
 {
 
 
-	class CFontGenerator ;
-	class CFontManager ;
-	class IDriver ;
+	class CFontGenerator;
+	class CFontManager;
+	class IDriver;
 
 
 /**
@@ -58,37 +58,37 @@ struct CPSUtil
 {
 	/// register the classes of the system mus be called when serializing
 
-	static void registerSerialParticleSystem(void) ;
+	static void registerSerialParticleSystem(void);
 
 	/// this draw a bounding box		
 
-	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col = NLMISC::CRGBA::White) ;
+	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col = NLMISC::CRGBA::White);
 
 	/// draw a sphere
-	static void displaySphere(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, uint nbSubdiv = 4, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
+	static void displaySphere(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, uint nbSubdiv = 4, NLMISC::CRGBA color = NLMISC::CRGBA::White);
 
 
 	/** draw a disc (not filled)
 	 *  \param mat : a matrix, whose K vector is normal to the plane containing the disc
 	 */
-	static void displayDisc(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
+	static void displayDisc(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White);
 
 
 	/** draw a cylinder (not filled)	 
 	 *  \param dim dimension of the cylinder along each axis, packed in a vector
 	 */
-	static void displayCylinder(NL3D::IDriver &driver, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, const NLMISC::CVector &dim, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
+	static void displayCylinder(NL3D::IDriver &driver, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, const NLMISC::CVector &dim, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White);
 
 	/// display a 3d quad in wireline, by using the 4 gicen corners
 	static void display3DQuad(NL3D::IDriver &driver, const NLMISC::CVector &c1, const NLMISC::CVector &c2
-								,const NLMISC::CVector &c3,  const NLMISC::CVector &c4, NLMISC::CRGBA color = NLMISC::CRGBA::White) ;
+								,const NLMISC::CVector &c3,  const NLMISC::CVector &c4, NLMISC::CRGBA color = NLMISC::CRGBA::White);
 							
 
 	/// enlarge a bounding box by the specified radius	 
-	inline static void addRadiusToAABBox(NLMISC::CAABBox &box, float radius) ;
+	inline static void addRadiusToAABBox(NLMISC::CAABBox &box, float radius);
 	 
 	/// display a basis using the given matrix. The model matrix must be restored after this call
-	static void displayBasis(NL3D::IDriver *driver, const NLMISC::CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
+	static void displayBasis(NL3D::IDriver *driver, const NLMISC::CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm);
 
 
 	/** display an arrow (the same that is used with displayBasis)
@@ -101,32 +101,16 @@ struct CPSUtil
 	  * \param col2 color of the arrow end
 	  */
 
-	static void displayArrow(NL3D::IDriver *driver, const NLMISC::CVector &start, const NLMISC::CVector &v, float size, NLMISC::CRGBA col1, NLMISC::CRGBA col2) ;
+	static void displayArrow(NL3D::IDriver *driver, const NLMISC::CVector &start, const NLMISC::CVector &v, float size, NLMISC::CRGBA col1, NLMISC::CRGBA col2);
 
 	/// display a string at the given position. The model matrix must be restored after this call
-	static void print(NL3D::IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
+	static void print(NL3D::IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size);
 
-
-	
-	/**
-	* Compute the union of 2 aabboxes, that is the  aabbox that contains the 2.
-	* Should end up in NLMISC
-	*/
-
-
-	static NLMISC::CAABBox computeAABBoxUnion(const NLMISC::CAABBox &b1, const NLMISC::CAABBox &b2) ;
-
-
-	/** Apply a matrix on an aabbox
-	 *  \return an aabbox, bigger or equal to parameter, after the matrix multiplication
-	 */
-
-	static NLMISC::CAABBox transformAABBox(const NLMISC::CMatrix &mat, const NLMISC::CAABBox &box) ;
 
 	/** build a basis from a vector using Schmidt orthogonalization method
 	 *  \param v : K axis in the resulting basis
 	 */
-	static NLMISC::CMatrix buildSchmidtBasis(const NLMISC::CVector &v) ;	 
+	static NLMISC::CMatrix buildSchmidtBasis(const NLMISC::CVector &v);	 
 
 
 	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).
@@ -134,8 +118,8 @@ struct CPSUtil
 	 */
 	static inline float getCos(sint32 angle) 
 	{ 
-		nlassert(_CosTableInitialized == true) ;
-		return _CosTable[angle & 0xff] ;
+		nlassert(_CosTableInitialized == true);
+		return _CosTable[angle & 0xff];
 	}
 
 	/** get a cosine from the fast cosine table (which must be have initialised with initFastCosNSinTable).
@@ -143,51 +127,51 @@ struct CPSUtil
 	 */
 	static inline float getSin(sint32 angle) 
 	{ 
-		nlassert(_CosTableInitialized == true) ;
-		return _SinTable[angle & 0xff] ;
+		nlassert(_CosTableInitialized == true);
+		return _SinTable[angle & 0xff];
 	}
 
 	/** Init the table for cosine and sinus lookup
      *	\see getCos(), getSin()
 	 */
-	static void initFastCosNSinTable(void) ;
+	static void initFastCosNSinTable(void);
 
 
 	/** compute a perlin noise value, that will range from [0 to 1]
 	 *  The first octave has the unit size
 	 *  \see initPerlinNoiseTable()
 	 */
-	static inline float buildPerlinNoise(NLMISC::CVector &pos, uint nbOctaves) ;
+	static inline float buildPerlinNoise(NLMISC::CVector &pos, uint nbOctaves);
 
 	/** init the table used by perlin noise.
 	 *  This must be used before any call to  buildPerlinNoise
 	 */
-	static void initPerlinNoiseTable(void) ;
+	static void initPerlinNoiseTable(void);
 		
 
 	protected:
 
 		//#ifdef NL_DEBUG
-			static bool _CosTableInitialized ;
+			static bool _CosTableInitialized;
 		//#endif
 
 		//#ifdef NL_DEBUG
-			static bool _PerlinNoiseTableInitialized ;
+			static bool _PerlinNoiseTableInitialized;
 		//#endif
 
 		// a table for fast cosine lookup
-		static float _CosTable[256] ;
+		static float _CosTable[256];
 		// a table for fast sinus lookup
-		static float _SinTable[256] ;
+		static float _SinTable[256];
 
-		static float _PerlinNoiseTab[1024] ;
+		static float _PerlinNoiseTab[1024];
 
 
 		// used by perlin noise to compute each octave		
-		static float getInterpolatedNoise(const NLMISC::CVector &pos) ;
+		static float getInterpolatedNoise(const NLMISC::CVector &pos);
 
 		// get non interpolated noise 
-		static float getPerlinNoise(uint x, uint y, uint z) ;
+		static float getPerlinNoise(uint x, uint y, uint z);
 
 
 
@@ -199,14 +183,14 @@ struct CPSUtil
 
 inline void CPSUtil::addRadiusToAABBox(NLMISC::CAABBox &box, float radius)
 {
-	box.setHalfSize(box.getHalfSize() + NLMISC::CVector(radius, radius, radius) ) ;
+	box.setHalfSize(box.getHalfSize() + NLMISC::CVector(radius, radius, radius) );
 }
 
 
 // get non interpolated noise 
 inline float CPSUtil::getPerlinNoise(uint x, uint y, uint z)
 {
-	return _PerlinNoiseTab[(x ^ y ^ z) & 1023] ;
+	return _PerlinNoiseTab[(x ^ y ^ z) & 1023];
 }
 
 
@@ -214,12 +198,12 @@ inline float CPSUtil::getInterpolatedNoise(const NLMISC::CVector &pos)
 {
 	uint x = (uint) pos.x
 		, y = (uint) pos.y
-		, z = (uint) pos.z ;
+		, z = (uint) pos.z;
 
 	// we want to avoid costly ctor call there...
 	float fx = pos.x - x
 		  , fy = pos.y - y
-		  , fz = pos.z - z ;
+		  , fz = pos.z - z;
 
 	// we use the following topology to get the value :
 	//
@@ -241,36 +225,36 @@ inline float CPSUtil::getInterpolatedNoise(const NLMISC::CVector &pos)
 		 ,v4 = getPerlinNoise(x, y, z + 1)
 		 ,v5 = getPerlinNoise(x + 1, y, z + 1)
 		 ,v6 = getPerlinNoise(x + 1, y + 1, z + 1)
- 		 ,v7 = getPerlinNoise(x, y + 1, z + 1) ;
+ 		 ,v7 = getPerlinNoise(x, y + 1, z + 1);
 
 	
 	const float h1  = fx * v1 + (1.f - fx) * v0
 				,h2 = fx * v3 + (1.f - fx) * v2 
 				,h3  = fx * v5 + (1.f - fx) * v4
-				,h4 = fx * v7 + (1.f - fx )* v6 ; 
+				,h4 = fx * v7 + (1.f - fx )* v6; 
 
     const float c1  = fy * h2 + (1.f - fy) * h1
-		       ,c2  = fy * h4 + (1.f - fy) * h3 ;
+		       ,c2  = fy * h4 + (1.f - fy) * h3;
 
-	return fz * c2 + (1.f - fz) * c1 ;
+	return fz * c2 + (1.f - fz) * c1;
 }
 
 
 inline float CPSUtil::buildPerlinNoise(NLMISC::CVector &pos, uint numOctaves)
 {
-	nlassert(_PerlinNoiseTableInitialized) ;
+	nlassert(_PerlinNoiseTableInitialized);
 
-	float result = 0 ;
-	float fact = .5f ;
-	float scale = 1.f ;
+	float result = 0;
+	float fact = .5f;
+	float scale = 1.f;
 
-	for (uint k = 0 ; k < numOctaves ; k++)
+	for (uint k = 0; k < numOctaves; k++)
 	{
-		result += fact * getInterpolatedNoise(scale * pos) ;
-		fact *= .5f ;
-		scale *= 1.2537f ;
+		result += fact * getInterpolatedNoise(scale * pos);
+		fact *= .5f;
+		scale *= 1.2537f;
 	}	
-	return result ;
+	return result;
 }
 
 

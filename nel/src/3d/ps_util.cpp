@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.32 2001/12/12 10:28:51 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.33 2002/01/07 14:35:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -311,56 +311,6 @@ void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg
 	mat.transpose();
 	mat.setPos(pos);	 
 	cptedString.render3D(*driver, mat);
-}
-
-
-
-
-//==========================================================================
-/**
-* Compute the union of 2 aabboxes, that is the  aabbox that contains the 2.
-* Should end up in NLMISC
-*/
-
-NLMISC::CAABBox CPSUtil::computeAABBoxUnion(const NLMISC::CAABBox &b1, const NLMISC::CAABBox &b2)
-{	
-	NLMISC::CAABBox result;
-	CVector min, max;
-	CVector min1 = b1.getMin() 
-		    ,max1 = b1.getMax() 
-			,min2 = b2.getMin() 
-		    ,max2 = b2.getMax();
-	max.maxof(max1, max2);
-	min.minof(min1, min2);
-	result.setMinMax(min, max);
-	return result;
-}
-
-
-//==========================================================================
-NLMISC::CAABBox CPSUtil::transformAABBox(const NLMISC::CMatrix &mat, const NLMISC::CAABBox &box)
-{
-	// TODO : optimize this a bit if possible
-	NLMISC::CAABBox result;	
-
-	const CVector &m = mat * box.getCenter();
-	const CVector &h = mat.mulVector(box.getHalfSize());
-
-	CVector tmp, min, max;
-
-
-	min = max = m;
-	tmp = m + CVector(h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
-	tmp = m + CVector(-h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
-
-	result.setMinMax(min, max);
-	
-	return result;	
 }
 
 

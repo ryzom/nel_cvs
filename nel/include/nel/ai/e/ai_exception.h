@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.2 2001/01/24 15:35:53 chafik Exp $
+ * $Id: ai_exception.h,v 1.3 2001/01/30 17:58:28 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -37,12 +37,13 @@
 #define NL_IA_EXCEPTION_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 
 //#include "nel/ai/e/nel_exception_def.h"
 
 namespace NLAIE
 {		
-	class IException: public Exception
+	class IException: public NLMISC::Exception
 	{	
 
 	private:

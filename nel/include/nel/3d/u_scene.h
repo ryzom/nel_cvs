@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.31 2003/03/11 09:32:16 berenguier Exp $
+ * $Id: u_scene.h,v 1.32 2003/03/12 13:42:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -451,6 +451,10 @@ public:
 		uint32												NumMeshMRMTriRdrNormal;
 		uint32												NumMeshMRMTriRdrBlock;
 		uint32												NumMeshMRMTriRdrBlockWithVBHeap;
+		uint32												NumMeshVBufferStd;
+		uint32												NumMeshVBufferHard;
+		uint32												NumMeshMRMVBufferStd;
+		uint32												NumMeshMRMVBufferHard;
 
 		void	reset()
 		{
@@ -468,6 +472,10 @@ public:
 			NumMeshMRMTriRdrNormal= 0;
 			NumMeshMRMTriRdrBlock= 0;
 			NumMeshMRMTriRdrBlockWithVBHeap= 0;
+			NumMeshVBufferStd= 0;
+			NumMeshVBufferHard= 0;
+			NumMeshMRMVBufferStd= 0;
+			NumMeshMRMVBufferHard= 0;
 		}
 	};
 

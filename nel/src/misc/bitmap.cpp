@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.36 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.37 2003/02/17 16:25:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
 
+// Define this to force all bitmap white (debug)
+// #define NEL_ALL_BITMAP_WHITE
 
 using namespace std;
 
@@ -88,6 +90,19 @@ const uint32 JPGBufferSize = 1000;
 char JPGBuffer[JPGBufferSize];
 
 
+#ifdef NEL_ALL_BITMAP_WHITE
+// Make all the textures white
+void MakeWhite(CBitmap &bitmaps)
+{
+	for (uint i=0; i<bitmaps.getMipMapCount (); i++)
+	{
+		uint size = bitmaps.getPixels (i).size ();
+		bitmaps.getPixels (i).resize (0);
+		bitmaps.getPixels (i).resize (size, 0xff);
+	}
+}
+#endif // NEL_ALL_BITMAP_WHITE
+
 /*-------------------------------------------------------------------*\
 								load		
 \*-------------------------------------------------------------------*/
@@ -100,7 +115,13 @@ uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip)
 	f.serial(fileType);
 	if(fileType == DDS)
 	{
+#ifdef NEL_ALL_BITMAP_WHITE
+		uint8 result = readDDS(f, mipMapSkip);
+		MakeWhite (*this);
+		return result;
+#else // NEL_ALL_BITMAP_WHITE
 		return readDDS(f, mipMapSkip);
+#endif // NEL_ALL_BITMAP_WHITE
 	}
 	// assuming it's TGA
 	else 
@@ -145,7 +166,14 @@ uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip)
 		{
 			throw ESeekFailed();
 		}
+#ifdef NEL_ALL_BITMAP_WHITE
+		uint8 result = readTGA(f);
+		MakeWhite (*this);
+		return result;
+#else // NEL_ALL_BITMAP_WHITE
 		return readTGA(f);
+#endif // NEL_ALL_BITMAP_WHITE
+		
 	}	
 }
 

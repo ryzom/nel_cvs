@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.90 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: patch.cpp,v 1.91 2003/02/17 16:25:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,8 @@
 using	namespace	std;
 using	namespace	NLMISC;
 
+// Define this to remove user color (debug)
+// #define NEL_FORCE_NO_USER_COLOR
 
 namespace NL3D 
 {
@@ -1625,6 +1627,13 @@ void			CPatch::serial(NLMISC::IStream &f)
 			// version >=7, just serial array of TileColors (16 bits TileColor only)
 			f.xmlPush ("TILE_COLORS");
 			f.serialCont(TileColors);
+#ifdef NEL_FORCE_NO_USER_COLOR
+			CTileColor color;
+			color.Color565 = 0xffff;
+			uint size = TileColors.size ();
+			TileColors.resize (0);
+			TileColors.resize (size, color);
+#endif // NEL_FORCE_NO_USER_COLOR
 			f.xmlPop ();
 		}
 	}

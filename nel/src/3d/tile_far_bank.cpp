@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.8 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tile_far_bank.cpp,v 1.9 2003/02/17 16:25:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,9 @@
 
 using namespace NLMISC;
 
+// Define this to force white far texture (debug)
+// #define NEL_FORCE_WHITE_FAR_TEXTURE
+
 namespace NL3D {
 
 
@@ -53,6 +56,18 @@ void CTileFarBank::CTileFar::serial(IStream &f) throw(NLMISC::EStream)
 	f.serialCont (_Pixels[additive][order0]);
 	f.serialCont (_Pixels[additive][order1]);
 	f.serialCont (_Pixels[additive][order2]);
+
+#ifdef NEL_FORCE_WHITE_FAR_TEXTURE
+	int size = _Pixels[diffuse][order0].size ();
+	_Pixels[diffuse][order0].resize (0);
+	_Pixels[diffuse][order0].resize (size, CRGBA::White);
+	size = _Pixels[diffuse][order1].size ();
+	_Pixels[diffuse][order1].resize (0);
+	_Pixels[diffuse][order1].resize (size, CRGBA::White);
+	size = _Pixels[diffuse][order2].size ();
+	_Pixels[diffuse][order2].resize (0);
+	_Pixels[diffuse][order2].resize (size, CRGBA::White);
+#endif // NEL_FORCE_WHITE_FAR_TEXTURE
 }
 // ***************************************************************************
 void CTileFarBank::CTileFar::setPixels (TFarType type, TFarOrder order, NLMISC::CRGBA* pixels, uint size)

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.60 2002/10/31 09:14:50 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.61 2003/02/17 16:25:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/rect.h"
 #include "nel/misc/file.h" // temp
 
+// Define this to force nearest filter (debug)
+// #define NEL_FORCE_NEAREST
 
 using	namespace NLMISC;
 using	namespace std;
@@ -245,6 +247,9 @@ static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtens
 // ***************************************************************************
 static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
 {	
+#ifdef NEL_FORCE_NEAREST
+	return GL_NEAREST;
+#else NEL_FORCE_NEAREST
 	switch(mode)
 	{
 		case ITexture::Linear: return GL_LINEAR;
@@ -254,12 +259,16 @@ static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
 
 	nlstop;
 	return GL_LINEAR;
+#endif NEL_FORCE_NEAREST
 }
 
 
 // ***************************************************************************
 static inline GLenum	translateMinFilterToGl(ITexture::TMinFilter mode)
 {
+#ifdef NEL_FORCE_NEAREST
+	return GL_NEAREST;
+#else NEL_FORCE_NEAREST
 	switch(mode)
 	{
 		case ITexture::NearestMipMapOff: return GL_NEAREST;
@@ -273,6 +282,7 @@ static inline GLenum	translateMinFilterToGl(ITexture::TMinFilter mode)
 
 	nlstop;
 	return GL_LINEAR;
+#endif NEL_FORCE_NEAREST
 }
 
 

@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "pacs___Win32_Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -63,8 +63,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "pacs___Win32_Debug"
 # PROP Intermediate_Dir "pacs___Win32_Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ  /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ  /c
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,13 +80,29 @@ LIB32=link.exe -lib
 
 # Name "pacs - Win32 Release"
 # Name "pacs - Win32 Debug"
-# Begin Group "Source Files"
+# Begin Source File
 
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# End Group
-# Begin Group "Header Files"
+SOURCE=.\pacs\collision_desc.cpp
+# End Source File
+# Begin Source File
 
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# End Group
+SOURCE=..\include\nel\pacs\collision_desc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_container.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\move_container.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\pacs\move_primitive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\move_primitive.h
+# End Source File
 # End Target
 # End Project

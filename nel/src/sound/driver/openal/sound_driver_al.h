@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.6 2001/07/25 08:23:57 cado Exp $
+ * $Id: sound_driver_al.h,v 1.7 2002/06/28 19:35:44 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,9 @@ public:
 	/// Create the listener instance
 	virtual	IListener		*createListener();
 
+	/// Return the maximum number of sources that can created
+	virtual uint			countMaxSources()	{ return 32; }
+
 	/// Create a source
 	virtual	ISource			*createSource();
 
@@ -111,6 +114,12 @@ public:
 
 	/// Temp
 	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename );
+
+	/// Commit all the changes made to 3D settings of listener and sources
+	virtual void			commit3DChanges() {}
+
+	/// Write information about the driver to the output stream.
+	virtual void			writeProfile(std::ostream& out) {}
 
 	// Does not create a sound loader
 

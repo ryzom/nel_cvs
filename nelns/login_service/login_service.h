@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.2 2001/05/18 16:51:01 lecroart Exp $
+ * $Id: login_service.h,v 1.3 2001/09/20 08:54:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,9 @@ struct CUser
 			CUser::NextUserId = id + 1;
 	}
 
-	bool Authorize (TSockId sender, CCallbackNetBase &netbase);
+	/** return an empty string if authorize success or the reason why it failed
+	 */
+	string Authorize (TSockId sender, CCallbackNetBase &netbase);
 
 	// used when reloading config file
 	bool Loaded;

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.6 2001/09/05 17:19:09 lecroart Exp $
+ * $Id: login_service.cpp,v 1.7 2001/09/20 08:54:47 lecroart Exp $
  *
  */
 
@@ -162,9 +162,9 @@ sint findUser (uint32 Id)
 	return -1;
 }
 
-bool CUser::Authorize (TSockId sender, CCallbackNetBase &netbase)
+string CUser::Authorize (TSockId sender, CCallbackNetBase &netbase)
 {
-	bool ok = false;
+	string reason;
 
 	displayUsers ();
 
@@ -174,33 +174,36 @@ bool CUser::Authorize (TSockId sender, CCallbackNetBase &netbase)
 		State = Authorized;
 		SockId = sender;
 		Cookie = CLoginCookie(netbase.hostAddress(sender).internalIPAddress(), Id);
-		ok = true;
 		break;
 
 	case Authorized:
-		nlwarning ("user %d already authorized! disconnect him and the other one");
+		nlwarning ("user %d already authorized! disconnect him and the other one", Id);
+		reason = "You are already authorized (another user uses your account?)";
 		disconnectClient (*this, true, true);
 		disconnectClient (Users[findUser(Id)], true, true);
 		break;
 
 	case Awaiting:
 		nlwarning ("user %d already awaiting! disconnect the new user and the other one", Id);
+		reason = "You are already awaiting (another user uses your account?)";
 		disconnectClient (*this, true, true);
 		disconnectClient (Users[findUser(Id)], true, true);
 		break;
 
 	case Online:
 		nlwarning ("user %d already online! disconnect the new user and the other one", Id);
+		reason = "You are already online (another user uses your account?)";
 		disconnectClient (*this, true, true);
 		disconnectClient (Users[findUser(Id)], true, true);
 		break;
 
 	default:
+		reason = "default case should never occurs, there's a bug in the login_service.cpp";
 		nlstop;
 		break;
 	}
 	displayUsers ();
-	return ok;
+	return reason;
 }
 
 void displayShards ()

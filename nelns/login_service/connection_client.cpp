@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.4 2001/07/02 14:27:43 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.5 2001/09/20 08:54:47 lecroart Exp $
  *
  */
 
@@ -252,10 +252,7 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 
 	if (reason.empty())
 	{
-		if (!Users[userPos].Authorize (from, netbase))
-		{
-			reason = "Authorize failed";
-		}
+		reason = Users[userPos].Authorize (from, netbase);
 	}
 
 	uint32 nbshard = 0;

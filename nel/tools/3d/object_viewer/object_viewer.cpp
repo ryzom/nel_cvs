@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.23 2001/07/26 17:17:42 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.24 2001/08/09 11:43:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,7 +335,7 @@ void CObjectViewer::initUI (HWND parent)
 	// Create particle dialog
 	_ParticleDlg=new CParticleDlg (this, _MainFrame, _MainFrame);
 	_ParticleDlg->Create (IDD_PARTICLE);
-	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);	
+	getRegisterWindowState (_ParticleDlg, REGKEY_OBJ_PARTICLE_DLG, false);
 
 	// Set backgroupnd color
 	setBackGroundColor(_MainFrame->BgColor);

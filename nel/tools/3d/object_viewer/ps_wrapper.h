@@ -3,7 +3,7 @@
  *	 a dialog.
  *
  *
- * $Id: ps_wrapper.h,v 1.4 2001/06/25 12:58:26 vizerie Exp $
+ * $Id: ps_wrapper.h,v 1.5 2001/08/09 11:43:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,16 +42,18 @@
 
 
 // wrapper to read write a value of type T
-template <class T> struct IPSWrapper
+template <class T> class IPSWrapper
 {
+public:
 	virtual T get(void) const = 0 ;
 	virtual void set(const T &) = 0 ;
 } ;
 
 
 // wrapper to read write a scheme of type T
-template <class T> struct IPSSchemeWrapper
+template <class T> class IPSSchemeWrapper
 {
+public:
 	typedef NL3D::CPSAttribMaker<T> scheme_type  ;
 	virtual scheme_type *getScheme(void) const = 0 ;
 	virtual void setScheme(scheme_type *s) = 0 ;

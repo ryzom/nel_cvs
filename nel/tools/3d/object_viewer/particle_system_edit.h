@@ -20,6 +20,48 @@ typedef CEditableRangeT<float> CEditableRangeFloat ;
 typedef CEditableRangeT<uint32> CEditableRangeUInt ;
 
 
+class CUserParamWrapper : public IPSWrapperFloat
+{
+public:
+	NL3D::CParticleSystem *PS ;
+	uint32 Index ;
+	float get(void) const ;
+	void set(const float &v) ;
+};
+
+
+class CTimeThresholdWrapper : public IPSWrapperFloat
+{
+public:
+	NL3D::CParticleSystem *PS ;
+	float get(void) const ;		
+	void set(const float &) ;
+};
+
+class CMaxNbIntegrationWrapper : public IPSWrapperUInt
+{
+public:
+	NL3D::CParticleSystem *PS ;
+	uint32 get(void) const ;		
+	void set(const uint32 &) ;
+};
+
+class CMaxViewDistWrapper : public IPSWrapperFloat
+{
+public:
+	NL3D::CParticleSystem *PS ;
+	float get(void) const ;		
+	void set(const float &) ;
+};
+
+class CLODRatioWrapper : public IPSWrapperFloat
+{
+public:
+	NL3D::CParticleSystem *PS ;
+	float get(void) const ;		
+	void set(const float &) ;
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit dialog
 
@@ -87,45 +129,16 @@ protected:
 	void updateIntegrationParams(void) ;
 	void updateDieOnEventParams(void) ;
 
+	static CTimeThresholdWrapper _TimeThresholdWrapper ;
+
+	static CMaxViewDistWrapper _MaxViewDistWrapper ;
+
+	static CMaxNbIntegrationWrapper _MaxNbIntegrationWrapper  ;
+
+	static CLODRatioWrapper _LODRatioWrapper ;
+
     /// wrapper to tune user parameters
-	struct CUserParamWrapper : public IPSWrapperFloat
-	{
-		NL3D::CParticleSystem *PS ;
-		uint32 Index ;
-		float get(void) const ;
-		void set(const float &v) ;
-	} _UserParamWrapper[4] ;
-
-
-	struct CTimeThresholdWrapper : public IPSWrapperFloat
-	{
-		NL3D::CParticleSystem *PS ;
-		float get(void) const ;		
-		void set(const float &) ;
-	} _TimeThresholdWrapper ;
-
-	struct CMaxNbIntegrationWrapper : public IPSWrapperUInt
-	{
-		NL3D::CParticleSystem *PS ;
-		uint32 get(void) const ;		
-		void set(const uint32 &) ;
-	} _MaxNbIntegrationWrapper  ;
-
-	struct CMaxViewDistWrapper : public IPSWrapperFloat
-	{
-		NL3D::CParticleSystem *PS ;
-		float get(void) const ;		
-		void set(const float &) ;
-	} _MaxViewDistWrapper ;
-
-	struct CLODRatioWrapper : public IPSWrapperFloat
-	{
-		NL3D::CParticleSystem *PS ;
-		float get(void) const ;		
-		void set(const float &) ;
-	} _LODRatioWrapper ;
-
-	
+	static CUserParamWrapper _UserParamWrapper[4] ;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -16,6 +16,15 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit dialog
 
+CTimeThresholdWrapper CParticleSystemEdit::_TimeThresholdWrapper ;
+
+CMaxViewDistWrapper CParticleSystemEdit::_MaxViewDistWrapper ;
+
+CMaxNbIntegrationWrapper CParticleSystemEdit::_MaxNbIntegrationWrapper  ;
+
+CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper ;
+
+CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4] ;
 
 CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
@@ -316,7 +325,7 @@ void CParticleSystemEdit::OnChangeApplyAfterDelay()
 // WRAPPERS IMPLEMENTATION //
 /////////////////////////////
 
-float CParticleSystemEdit::CTimeThresholdWrapper::get(void) const
+float CTimeThresholdWrapper::get(void) const
 {
 	NL3D::CAnimationTime t;
 	uint32 max;
@@ -324,7 +333,7 @@ float CParticleSystemEdit::CTimeThresholdWrapper::get(void) const
 	PS->getAccurateIntegrationParams(t, max, csd);
 	return t;
 }
-void CParticleSystemEdit::CTimeThresholdWrapper::set(const float &tt)
+void CTimeThresholdWrapper::set(const float &tt)
 {
 	NL3D::CAnimationTime t;
 	uint32 max;
@@ -333,7 +342,7 @@ void CParticleSystemEdit::CTimeThresholdWrapper::set(const float &tt)
 	PS->setAccurateIntegrationParams(tt, max, csd);	
 }
 
-uint32 CParticleSystemEdit::CMaxNbIntegrationWrapper::get(void) const
+uint32 CMaxNbIntegrationWrapper::get(void) const
 {
 	NL3D::CAnimationTime t;
 	uint32 max;
@@ -341,7 +350,7 @@ uint32 CParticleSystemEdit::CMaxNbIntegrationWrapper::get(void) const
 	PS->getAccurateIntegrationParams(t, max, csd);
 	return max;
 }
-void CParticleSystemEdit::CMaxNbIntegrationWrapper::set(const uint32 &nmax)
+void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 {
 	NL3D::CAnimationTime t;
 	uint32 max;
@@ -350,32 +359,32 @@ void CParticleSystemEdit::CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 	PS->setAccurateIntegrationParams(t, nmax, csd);	
 }
 	
-float CParticleSystemEdit::CUserParamWrapper::get(void) const 
+float CUserParamWrapper::get(void) const 
 { 
 	return PS->getUserParam(Index); 
 }
-void CParticleSystemEdit::CUserParamWrapper::set(const float &v)
+void CUserParamWrapper::set(const float &v)
 {
 	PS->setUserParam(Index, v); 
 }
 	
 
 
-float CParticleSystemEdit::CMaxViewDistWrapper::get(void) const
+float CMaxViewDistWrapper::get(void) const
 {
 	return PS->getMaxViewDist();
 }
 
-void CParticleSystemEdit::CMaxViewDistWrapper::set(const float &d)
+void CMaxViewDistWrapper::set(const float &d)
 {
 	PS->setMaxViewDist(d);
 }
 
-float CParticleSystemEdit::CLODRatioWrapper::get(void) const
+float CLODRatioWrapper::get(void) const
 {
 	return PS->getLODRatio();
 }
-void CParticleSystemEdit::CLODRatioWrapper::set(const float &v)
+void CLODRatioWrapper::set(const float &v)
 {
 	PS->setLODRatio(v);
 }

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.20 2001/05/03 16:29:21 lecroart Exp $
+ * $Id: service.h,v 1.21 2001/05/10 08:15:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ typedef uint8 TServiceId;
 /**
  * The goal of this macro is to simplify the service creation, it creates the main body function.
  *
- * If you don't want to give a callback array, just put EmptyCallbacArray in the last argument
+ * If you don't want to give a callback array, just put EmptyCallbackArray in the last argument
  *
  * Example:
  *\code
@@ -71,8 +71,7 @@ int main(int argc, char **argv) \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
-	if (__ServiceCallbackArray != NULL) \
-		scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
+	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
 	sint retval = scn->main (argc, argv); \
 	delete scn; \
 	return retval; \
@@ -185,6 +184,8 @@ private:
 	TServiceId					_SId;
 
 	sint						_Status;
+
+	bool						_Initialized;	// true if the init part of the service is passed
 
 	TCallbackItem				*_CallbackArray;
 	uint16						_CallbackArraySize;

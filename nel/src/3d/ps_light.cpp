@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.1 2003/08/08 16:54:31 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.2 2003/09/30 09:37:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -73,8 +73,9 @@ CPSLight::~CPSLight()
 void CPSLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSLocatedBindable::serial(f);
+	// version 1 : in version 0, scheme where not resized correctly; Fixed in this version
 	// version 0 : color, start attenuation radius, end attenuation radius.
-	sint ver = f.serialVersion(0);	
+	sint ver = f.serialVersion(1);	
 	// color
 	bool hasColorScheme = _ColorScheme != NULL;
 	f.serial(hasColorScheme);
@@ -108,15 +109,26 @@ void CPSLight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_AttenEnd);
 	}
+	
 	// save # of lights
-	uint32 numLights = _Lights.getSize();
-	f.serial(numLights);
+	if (ver == 0)
+	{	
+		uint32 dummyNumLights; // from old buggy version
+		f.serial(dummyNumLights);
+	}
 	if (f.isReading())
-	{				
-		_Lights.resize(numLights);		
-		for(uint k = 0; k < numLights; ++k)
+	{		
+		if (_Owner)
+		{		
+			resize(_Owner->getMaxSize());		
+			for(uint k = 0; k < _Owner->getSize(); ++k)
+			{
+				newElement(NULL, 0);
+			}
+		}
+		else
 		{
-			newElement(NULL, 0);
+			resize(0);
 		}
 	}	
 }
@@ -249,7 +261,11 @@ void CPSLight::setColor(NLMISC::CRGBA color)
 void CPSLight::setColorScheme(CPSAttribMaker<NLMISC::CRGBA> *scheme)
 {
 	delete _ColorScheme;
-	_ColorScheme =scheme;
+	_ColorScheme = scheme;
+	if (_Owner)
+	{	
+		if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	}
 }
 
 //***************************************************************************************************************
@@ -266,6 +282,10 @@ void CPSLight::setAttenStartScheme(CPSAttribMaker<float> *scheme)
 {
 	delete _AttenStartScheme;
 	_AttenStartScheme = scheme;
+	if (_Owner)
+	{	
+		if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	}
 }
 
 //***************************************************************************************************************
@@ -281,6 +301,10 @@ void CPSLight::setAttenEndScheme(CPSAttribMaker<float> *scheme)
 {
 	delete _AttenEndScheme;
 	_AttenEndScheme = scheme;
+	if (_Owner)
+	{	
+		if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	}
 }
 
 //***************************************************************************************************************

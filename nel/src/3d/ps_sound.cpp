@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.22 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.23 2003/09/30 09:37:31 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -213,6 +213,10 @@ void	CPSSound::setGainScheme(CPSAttribMaker<float> *Gain)
 {
 	delete _GainScheme;
 	_GainScheme = Gain;	
+	if (_Owner)
+	{	
+		if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	}
 }
 
 //***************************************************************************************************
@@ -228,6 +232,10 @@ void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 {
 	delete _PitchScheme;	
 	_PitchScheme = pitch;
+	if (_Owner)
+	{	
+		if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
+	}
 }
 
 //***************************************************************************************************

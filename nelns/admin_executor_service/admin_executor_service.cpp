@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.70 2005/02/16 14:05:36 lancon Exp $
+ * $Id: admin_executor_service.cpp,v 1.71 2005/02/16 15:26:01 lancon Exp $
  *
  */
 
@@ -1689,7 +1689,7 @@ NLMISC_COMMAND (aesSystem, "Execute a system() call", "<command>")
 CMakeLogTask MakingLogTask;
 
 
-NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop]" )
+NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop | <logpath>]" )
 {
 
 

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.3 2001/03/30 12:40:26 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.4 2001/08/23 09:36:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,9 +67,9 @@ namespace NLAIAGENT
 				if(!param.size())
 				{
 					tQueue a;
-					//Type du retour de la method x(), c'est un Float dont de type DigitalType c'est à dire DigitalType::IdDigitalType;
+					//Type du retour de la method x(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
 					t->incRef();
 					//CIdMethod est dans basicai.h elle va être documenter.
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 1,0.0,NULL,t));
@@ -78,7 +78,7 @@ namespace NLAIAGENT
 				else
 				{
 					NLAISCRIPT::CParam xParam;
-					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
 						tQueue a;
@@ -98,9 +98,9 @@ namespace NLAIAGENT
 				if(!param.size())
 				{
 					tQueue a;
-					//Type du retour de la method y(), c'est un Float dont de type DigitalType c'est à dire DigitalType::IdDigitalType;
+					//Type du retour de la method y(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IdDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
 					t->incRef();
 					//CIdMethod est dans basicai.h elle va être documenter.
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 3,0.0,NULL,t));
@@ -109,7 +109,7 @@ namespace NLAIAGENT
 				else
 				{
 					NLAISCRIPT::CParam xParam;
-					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
 						tQueue a;
@@ -129,9 +129,9 @@ namespace NLAIAGENT
 				if(!param.size())
 				{
 					tQueue a;
-					//Type du retour de la method x(), c'est un Float dont de type DigitalType c'est à dire DigitalType::IdDigitalType;
+					//Type du retour de la method x(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IdDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
 					t->incRef();
 					//CIdMethod est dans basicai.h elle va être documenter.
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 5,0.0,NULL,t));
@@ -140,7 +140,7 @@ namespace NLAIAGENT
 				else
 				{
 					NLAISCRIPT::CParam xParam;
-					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
 						tQueue a;
@@ -161,7 +161,7 @@ namespace NLAIAGENT
 				{
 					tQueue a;
 					//Return a void type (no value return)
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
 					t->incRef();
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 7,0.0,NULL,t));
 					return a;
@@ -173,7 +173,7 @@ namespace NLAIAGENT
 				{
 					tQueue a;
 					//Return a digital type
-					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
 					t->incRef();
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 8,0.0,NULL,t));
 					return a;
@@ -194,9 +194,9 @@ namespace NLAIAGENT
 			else if((*methodName) == constructor)
 			{
 				NLAISCRIPT::CParam constructParam;
-				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
-				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
-				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DigitalType::IdDigitalType)));
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
+				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 				if(constructParam.eval(param) >= 0.0 )
 				{		
 					tQueue a;
@@ -269,11 +269,11 @@ namespace NLAIAGENT
 			{
 				CIteratorContener i = param.getIterator();
 				const INombreDefine *o = (const INombreDefine *)i++;
-				x((float)o->getNumber());
+				x(o->getNumber());
 				o = (const INombreDefine *)i++;				
-				y((float)o->getNumber());
+				y(o->getNumber());
 				o = (const INombreDefine *)i++;				
-				z((float)o->getNumber());
+				z(o->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -282,7 +282,7 @@ namespace NLAIAGENT
 
 		case 1:
 			{				
-				DigitalType *r = new DigitalType(x());
+				DDigitalType *r = new DDigitalType(x());
 				r->incRef();
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
@@ -293,7 +293,7 @@ namespace NLAIAGENT
 		case 2:
 			{
 				
-				x((float)((const INombreDefine *)param.get())->getNumber());
+				x(((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -302,7 +302,7 @@ namespace NLAIAGENT
 
 		case 3:
 			{				
-				DigitalType *r = new DigitalType(y());
+				DDigitalType *r = new DDigitalType(y());
 				r->incRef();
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
@@ -312,7 +312,7 @@ namespace NLAIAGENT
 
 		case 4:
 			{
-				y((float)((const INombreDefine *)param.get())->getNumber());
+				y(((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -321,7 +321,7 @@ namespace NLAIAGENT
 
 		case 5:
 			{				
-				DigitalType *r = new DigitalType(z());
+				DDigitalType *r = new DDigitalType(z());
 				r->incRef();
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
@@ -331,7 +331,7 @@ namespace NLAIAGENT
 
 		case 6:
 			{
-				z((float)((const INombreDefine *)param.get())->getNumber());
+				z(((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -340,7 +340,7 @@ namespace NLAIAGENT
 		
 		case 7:
 			{
-				DigitalType *r = new DigitalType(squareLength());
+				DDigitalType *r = new DDigitalType(squareLength());
 				r->incRef();
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
@@ -350,7 +350,7 @@ namespace NLAIAGENT
 
 		case 8:
 			{
-				DigitalType *r = new DigitalType(length());
+				DDigitalType *r = new DDigitalType(length());
 				r->incRef();
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;

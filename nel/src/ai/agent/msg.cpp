@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.13 2001/08/01 13:15:57 portier Exp $
+ * $Id: msg.cpp,v 1.14 2001/08/23 09:36:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,8 +123,6 @@ namespace NLAIAGENT
 			bool t = false;
 			os.serial(t);
 		}
-
-
 		os.serial( (NLAIC::CIdentType &) _MsgGroup->getType() );
 		os.serial( *_MsgGroup );		
 

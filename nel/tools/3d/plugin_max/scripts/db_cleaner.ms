@@ -1,5 +1,5 @@
 global  systempreferencefilename = "\\\Amiga\\3D\\Database\\system\\zs_sys_prefs.ini",
--- global  systempreferencefilename = "c:\\zs_sys_prefs.ini",
+--global  systempreferencefilename = "c:\\zs_sys_prefs.ini",
 		ProjectPath = (getINISetting systempreferencefilename "Filepath" "ProjectPath")
 		error_list_file = "\\\Amiga\\3D\\Database\\system\\zonefiles_error_list.ini"  -- pour faire fichier de report
 		error_array ; if error_array == undefined do error_array = #()
@@ -281,15 +281,7 @@ on CheckTheDatabase pressed do
 		-- Append error ?
 		if bError == true then
 		(
-			setinisetting error_list_file ("errors" + counter as string) ("----------------------------- file ") fileName
-			ticounter = 0
-			for i in  (getMAXFileObjectNames f) do
-			(
-				ticounter += 1
-				setinisetting error_list_file ("errors" + counter as string) ("objet" + ticounter as string + "          ") (" " + i)
-			)
-
-			--
+			setinisetting error_list_file "Zone error" fileName errorMessage
 			
 			append error_array errorMessage
 
@@ -311,20 +303,32 @@ on CheckTheDatabase pressed do
 	)
 )
 
-on Files_listbox selected error_list_index do 
+on Files_listbox doubleClicked error_list_index do
+(
+	-- Load the project
+	fileName = filterString Files_listbox.items[error_list_index] ","
+	if (fileName != undefined) and (fileName.count != 0) then
 	(
-	load_proj.enabled = true
-	Objects_listbox.enabled = false		-- juste pour montrer que ça bosse
-	Files_listbox.enabled = false		-- juste pour montrer que ça bosse
-	Count_Files.enabled  = false		-- juste pour montrer que ça bosse
-
-	Current_proj = (ProjectPath + Files_listbox.selected )
-	Objects_listbox.items = (getMAXFileObjectNames current_proj)
-
-	Count_Files.enabled  = true			-- juste pour montrer que ça bosse
-	Files_listbox.enabled = true		-- juste pour montrer que ça bosse
-	Objects_listbox.enabled = true		-- juste pour montrer que ça bosse
+		-- Make a file name
+		fileName = ProjectPath+"\\"+fileName[1]+".max"
+		loadMaxFile fileName
 	)
+)
+
+on Files_listbox selected error_list_index do 
+(
+	--load_proj.enabled = true
+	--Objects_listbox.enabled = false		-- juste pour montrer que ça bosse
+	--Files_listbox.enabled = false		-- juste pour montrer que ça bosse
+	--Count_Files.enabled  = false		-- juste pour montrer que ça bosse
+
+	--Current_proj = (ProjectPath + Files_listbox.selected )
+	--Objects_listbox.items = (getMAXFileObjectNames current_proj)
+
+	--Count_Files.enabled  = true			-- juste pour montrer que ça bosse
+	--Files_listbox.enabled = true		-- juste pour montrer que ça bosse
+	--Objects_listbox.enabled = true		-- juste pour montrer que ça bosse
+)
 
 
 

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.15 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.16 2001/07/24 09:00:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #include "emitter_dlg.h"
 #include "main_frame.h"
 #include "particle_system_edit.h"
-
+#include "particle_dlg.h"
 #include "start_stop_particle_system.h"
 
 #ifdef _DEBUG
@@ -685,50 +685,78 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case ID_MENU_LOAD_PS:
 		{
 
-				
-				_ParticleDlg->StartStopDlg->stop() ;
-				CFileDialog fd(TRUE, ".ps", "*.ps", 0, NULL, this) ;
-				if (fd.DoModal() == IDOK)
+
+				try
 				{
-					// Add to the path
-					char drive[256];
-					char dir[256];
-					char path[256];
-
-					// Add search path for the texture
-					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-					_makepath (path, drive, dir, NULL, NULL);
-					NLMISC::CPath::addSearchPath (path);
-					
-					NL3D::CNELU::Scene.deleteInstance(nt->PSModel) ;					
 				
-
-					try
+					_ParticleDlg->StartStopDlg->stop() ;
+					CFileDialog fd(TRUE, ".ps", "*.ps", 0, NULL, this) ;
+					if (fd.DoModal() == IDOK)
 					{
-						nt->PSModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName()))) ;
-						nt->PS = nt->PSModel->getPS() ;									
-						nt->PSModel->enableAutoGetEllapsedTime(false) ;
-						nt->PSModel->setEllapsedTime(0.f) ; // system is paused
-						nt->PSModel->enableDisplayTools(true) ;
+						// Add to the path
+						char drive[256];
+						char dir[256];
+						char path[256];
+
+						// Add search path for the texture
+						_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
+						_makepath (path, drive, dir, NULL, NULL);
+						NLMISC::CPath::addSearchPath (path);
+															
 					
-						_ParticleDlg->setRightPane(NULL) ;
-						_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel) ;
+					
+						NL3D::IShape *sh = nt->PSModel->Shape ;																			
+						NL3D::CNELU::Scene.deleteInstance(nt->PSModel) ;
+						NL3D::CNELU::Scene.getShapeBank()->reset() ;						
+					
+						DeleteItem(TVI_ROOT) ;				
+					
+						NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName()))) ;
 
-						nt->PS->setFontManager(_ParticleDlg->FontManager) ;
-						nt->PS->setFontGenerator(_ParticleDlg->FontGenerator) ;
+						if (newModel)
+						{																											
+						
+							nt->PSModel = newModel ;
+							nt->PS = nt->PSModel->getPS() ;									
+							nt->PSModel->enableAutoGetEllapsedTime(false) ;
+							nt->PSModel->setEllapsedTime(0.f) ; // system is paused
+							nt->PSModel->enableDisplayTools(true) ;
+							nt->PSModel->setEditionMode(true) ;
+					
+							_ParticleDlg->setRightPane(NULL) ;
+							_ParticleDlg->setNewCurrPS(nt->PS, nt->PSModel) ;
 
-						DeleteItem(TVI_ROOT) ;
-						buildTreeFromPS(nt->PS, nt->PSModel) ;
-						rebuildLocatedInstance() ;
-					}
-					catch (NLMISC::Exception &e)
-					{
-						MessageBox(e.what(), "error loading particle system") ;
-					}
+							nt->PS->setFontManager(_ParticleDlg->FontManager) ;
+							nt->PS->setFontGenerator(_ParticleDlg->FontGenerator) ;
 
-					_LastClickedPS = NULL ;
-
+							
+							buildTreeFromPS(nt->PS, nt->PSModel) ;
+							rebuildLocatedInstance() ;
+																
+						}
+						else
+						{
+							throw NLMISC::Exception("Unable to load or intanciate the system") ;
+							
+						}
+					}					
 				}
+
+				catch (NLMISC::Exception &e)
+				{
+					MessageBox(e.what(), "error loading particle system") ;				
+					// create a blank system
+					_ParticleDlg->resetSystem() ;
+					_ParticleDlg->setRightPane(NULL) ;
+					buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel()) ;
+				}		
+				
+											
+				rebuildLocatedInstance() ;
+				_LastClickedPS = NULL ;
+
+				// reset the camera
+				_ParticleDlg->MainFrame->OnResetCamera() ;
 
 		}
 		break ;

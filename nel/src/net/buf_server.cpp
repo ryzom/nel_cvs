@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.31 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.32 2002/07/02 15:56:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -508,7 +508,7 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 	buffer.resize( buffer.length()-sizeof(TSockId)-1 );
 
 	// TODO OPTIM remove the nldebug for speed
-	nldebug( "LNETL1: Read buffer (%d+%d B) from %s", buffer.length(), sizeof(TSockId)+1, /*stringFromVector(buffer).c_str(), */(*phostid)->asString().c_str() );
+	//commented for optimisation nldebug( "LNETL1: Read buffer (%d+%d B) from %s", buffer.length(), sizeof(TSockId)+1, /*stringFromVector(buffer).c_str(), */(*phostid)->asString().c_str() );
 
 	// Statistics
 	_BytesPoppedIn += buffer.length() + sizeof(TBlockSize);

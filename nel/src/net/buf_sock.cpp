@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.26 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.27 2002/07/02 15:56:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,7 +187,7 @@ bool CBufSock::flush()
 */			
 			
 			// TODO OPTIM remove the nldebug for speed
-			nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
+			//commented for optimisation nldebug( "LNETL1: %s sent effectively %u/%u bytes (pos %u wantedsend %u)", asString().c_str(), len, _ReadyToSendBuffer.size(), _RTSBIndex, realLen/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
 
 			if ( _RTSBIndex+len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
 			{

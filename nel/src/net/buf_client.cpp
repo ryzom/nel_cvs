@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.15 2002/06/10 10:11:32 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.16 2002/07/02 15:56:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,7 @@ void CBufClient::receive( NLMISC::CMemStream& buffer )
 
 	// Extract event type
 	nlassert( buffer.buffer()[buffer.length()-1] == CBufNetBase::User );
-	nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.length(), sizeof(TSockId)+1 );
+	//commented for optimisation nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.length(), sizeof(TSockId)+1 );
 	buffer.resize( buffer.length()-1 );
 }
 
@@ -373,7 +373,7 @@ void CClientReceiveTask::run()
 				sock()->receive( buffer.getPtr(), len );
 				
 				// TODO OPTIM remove the nldebug for speed
-				nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
+				//commented for optimisation nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
 				// Add event type
 				buffer[len] = CBufNetBase::User;
 

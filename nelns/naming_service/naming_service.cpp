@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.23 2002/06/13 09:41:32 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.24 2002/07/18 15:02:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,8 +548,16 @@ static void cbConnect (const string &serviceName, TSockId from, void *arg)
 {
 	CMessage msgout ("RGB");
 
-	uint8 s = RegisteredServices.size ();
-	msgout.serial (s);
+	uint8 nb = 0;
+
+	for (list<CServiceEntry>::iterator it2 = RegisteredServices.begin(); it2 != RegisteredServices.end (); it2++)
+	{
+		// send only services that are available
+		if (!(*it2).WaitingUnregistration)
+			nb++;
+	}
+
+	msgout.serial (nb);
 
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
@@ -659,5 +667,36 @@ NLMISC_COMMAND (nsServices, "displays the list of all registered services", "")
 	}
 	log.displayNL ("End of the list");
 
+	return true;
+}
+
+NLMISC_COMMAND (kill, "kill a service and send an unregister broadcast to other service", "<ServiceShortName>|<ServiceId>")
+{
+	if(args.size() != 1) return false;
+
+	// try with number
+
+	TServiceId sid = atoi(args[0].c_str());
+
+	if(sid == 0)
+	{
+		// not a number, try a name
+		list<CServiceEntry>::iterator it;
+		for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+		{
+			if ((*it).Name == args[0])
+			{
+				sid = (*it).SId;
+				break;
+			}
+		}
+		if (it == RegisteredServices.end())
+		{
+			log.displayNL ("Bad service name or id '%s'", args[0].c_str());
+			return false;
+		}
+	}
+
+	doUnregisterService (sid);
 	return true;
 }

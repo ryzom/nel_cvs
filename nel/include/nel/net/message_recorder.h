@@ -1,7 +1,7 @@
 /** \file message_recorder.h
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.h,v 1.2 2001/06/21 08:44:56 cado Exp $
+ * $Id: message_recorder.h,v 1.3 2001/10/25 12:16:07 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 //#include "nel/net/callback_net_base.h"
 #include "nel/net/message.h"
 #include "nel/misc/time_nl.h"
-#include "nel/misc/string_stream.h"
+#include "nel/misc/mem_stream.h"
 
 #include <fstream>
 #include <queue>
@@ -69,8 +69,10 @@ struct TMessageRecord
 		Event(event), SockId(sockid), Message(msg), UpdateCounter(updatecounter) {}
 
 	/// Serial to string stream
-	void serial( NLMISC::CStringStream& stream )
+	void serial( NLMISC::CMemStream& stream )
 	{
+		nlassert( stream.stringMode() );
+		
 		uint32 len;
 		string s_event;
 		stream.serial( UpdateCounter );

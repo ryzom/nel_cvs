@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.23 2001/09/28 12:39:15 cado Exp $
+ * $Id: inet_address.h,v 1.24 2001/10/25 12:16:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,6 @@ struct in_addr;
 namespace NLMISC
 {
 	class IStream;
-	class CStringStream;
 }
 
 
@@ -127,9 +126,6 @@ public:
 
 	/// Returns IP address and port as a string
 	std::string			asIPString() const;
-
-	/// Serialize from/to string stream
-	void serial( NLMISC::CStringStream& s );
 
 	/// Serialize
 	void serial( NLMISC::IStream& s );

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.14 2001/10/09 16:35:57 cado Exp $
+ * $Id: mem_stream.h,v 1.15 2001/10/25 12:18:18 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,7 @@ typedef std::vector<uint8> CVector8;
 typedef CVector8::iterator It8;
 
 
+
 /**
  * MemStream memory stream (see also NLNET::CMessage).
  * \author Olivier Cado
@@ -73,13 +74,19 @@ class CMemStream : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMemStream( bool inputStream=false, uint32 defaultcapacity=0 );
+	CMemStream( bool inputStream=false, bool stringmode=false, uint32 defaultcapacity=0 );
 
 	/// Copy constructor
 	CMemStream( const CMemStream& other );
 
 	/// Assignment operator
 	CMemStream&		operator=( const CMemStream& other );
+
+	/// Set string mode
+	void			setStringMode( bool stringmode ) { _StringMode = stringmode; }
+
+	/// Return string mode
+	bool			stringMode() const { return _StringMode; }
 
 	/// Method inherited from IStream
 	virtual void	serialBuffer(uint8 *buf, uint len);
@@ -178,6 +185,78 @@ public:
 	/// Force to reset the ptr table
 	void			resetPtrTable() { IStream::resetPtrTable() ; }
 
+	/// Template serialisation (should take the one from IStream)
+    template<class T>
+	void			serial(T &obj)							{ obj.serial(*this); }
+
+	template<class T>
+	void			serialCont(std::vector<T> &cont) 		{IStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::list<T> &cont) 			{IStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::deque<T> &cont) 		{IStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::set<T> &cont) 			{IStream::serialCont(cont);}
+	template<class T>
+	void			serialCont(std::multiset<T> &cont) 		{IStream::serialCont(cont);}
+	template<class K, class T>
+	void			serialCont(std::map<K, T> &cont) 		{IStream::serialCont(cont);}
+	template<class K, class T>
+	void			serialCont(std::multimap<K, T> &cont) 	{IStream::serialCont(cont);}
+
+	template<class T0,class T1>
+	void			serial(T0 &a, T1 &b) 
+	{ serial(a); serial(b);}
+	template<class T0,class T1,class T2>
+	void			serial(T0 &a, T1 &b, T2 &c) 
+	{ serial(a); serial(b); serial(c);}
+	template<class T0,class T1,class T2,class T3>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) 
+	{ serial(a); serial(b); serial(c); serial(d);}
+	template<class T0,class T1,class T2,class T3,class T4>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) 
+	{ serial(a); serial(b); serial(c); serial(d); serial(e);}
+	template<class T0,class T1,class T2,class T3,class T4,class T5>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) 
+	{ serial(a); serial(b); serial(c); serial(d); serial(e); serial(f);}
+
+	/** \name Base types serialisation, redefined for string mode
+	 * Those method are a specialisation of template method "void serial(T&)".
+	 */
+	//@{
+	virtual void	serial(uint8 &b) ;
+	virtual void	serial(sint8 &b) ;
+	virtual void	serial(uint16 &b) ;
+	virtual void	serial(sint16 &b) ;
+	virtual void	serial(uint32 &b) ;
+	virtual void	serial(sint32 &b) ;
+	virtual void	serial(uint64 &b) ;
+	virtual void	serial(sint64 &b) ;
+	virtual void	serial(float &b) ;
+	virtual void	serial(double &b) ;
+	virtual void	serial(bool &b) ;
+#ifndef NL_OS_CYGWIN
+	virtual void	serial(char &b) ;
+#endif
+	virtual void	serial(std::string &b) ;
+	virtual void	serial(ucstring &b) ;
+	//@}
+
+
+	///\name String-specific methods
+	//@{
+
+	/// Input: read len bytes at most from the stream until the next separator, and return the number of bytes read. The separator is then skipped.
+	uint			serialSeparatedBufferIn( uint8 *buf, uint len );
+
+	/// Output: writes len bytes from buf into the stream
+	void			serialSeparatedBufferOut( uint8 *buf, uint len );
+
+	/// Serialisation in hexadecimal
+	virtual void	serialHex(uint32 &b);
+
+	//@}
+
 protected:
 
 	/// Returns the serialized length (number of bytes written or read)
@@ -194,7 +273,8 @@ protected:
 
 	CVector8		_Buffer;
 	It8				_BufPos;
-	
+	bool			_StringMode;
+
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.30 2001/10/12 14:05:21 lecroart Exp $
+ * $Id: message.h,v 1.31 2001/10/25 12:16:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,21 +27,9 @@
 #define NL_MESSAGE_H
 
 
-/* Choose between plain text messages and binary messages
- * using the macro MESSAGES_PLAIN_TEXT
- * Warning: if you choose plain_text, all the interdependant programs
- * of your system must have the same encoding.
- */
-#define MESSAGES_PLAIN_TEXT
-
-
 #include <sstream>
 
-#ifdef MESSAGES_PLAIN_TEXT
-#include "nel/misc/string_stream.h"
-#else
 #include "nel/misc/mem_stream.h"
-#endif
 
 #include "nel/misc/string_id_array.h"
 
@@ -50,11 +38,6 @@
 namespace NLNET
 {
 
-#ifdef MESSAGES_PLAIN_TEXT
-#define USED_STREAM_FOR_MESSAGE NLMISC::CStringStream
-#else
-#define USED_STREAM_FOR_MESSAGE NLMISC::CMemStream
-#endif
 
 /**
  * Message memory stream for network. Can be serialized to/from (see SerialBuffer()). Can be sent or received
@@ -69,15 +52,17 @@ namespace NLNET
  * \author Nevrax France
  * \date 2001
  */
-class CMessage : public USED_STREAM_FOR_MESSAGE
+class CMessage : public NLMISC::CMemStream
 {
 public:
 
-	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0);
+	enum TStreamFormat { UseDefault, Binary, String };
 
-	CMessage (const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0);
+	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 0);
 
-	CMessage (USED_STREAM_FOR_MESSAGE &memstr);
+	CMessage (const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 0);
+
+	CMessage (NLMISC::CMemStream &memstr);
 
 	/// Copy constructor
 	CMessage (const CMessage &other);
@@ -114,18 +99,29 @@ public:
 	 */
 	std::string toString () const;
 
+	/// Set default stream mode
+	static void	setDefaultStringMode( bool stringmode ) { _DefaultStringMode = stringmode; }
+
 	bool TypeHasAnId;
 	bool TypeHasAName;
 
+protected:
+
+	/// Utility method
+	void		init( const std::string &name, TStreamFormat streamformat );
+
 private:
-	bool _TypeSet;
-	NLMISC::CStringIdArray *_SIDA;
+	bool								_TypeSet;
+	NLMISC::CStringIdArray				*_SIDA;
 	
-	std::string	_Name;
-	NLMISC::CStringIdArray::TStringId _Id;
+	std::string							_Name;
+	NLMISC::CStringIdArray::TStringId	_Id;
 	
 	// Size of the header (that contains the name type or number type)
-	uint32 _HeaderSize;
+	uint32								_HeaderSize;
+
+	// Default stream format
+	static bool							_DefaultStringMode;
 };
 
 }

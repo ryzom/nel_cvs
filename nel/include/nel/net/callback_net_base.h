@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.19 2001/10/16 09:20:26 legros Exp $
+ * $Id: callback_net_base.h,v 1.20 2001/10/25 12:16:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_CALLBACK_NET_BASE_H
 #define NL_CALLBACK_NET_BASE_H
 
-#define USE_MESSAGE_RECORDER
+#undef USE_MESSAGE_RECORDER
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"

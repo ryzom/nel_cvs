@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.3 2001/10/09 16:37:00 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.4 2001/10/25 12:13:52 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLMISC {
  * Constructor
  */
 CBitMemStream::CBitMemStream( bool inputStream, uint32 defaultcapacity ) :
-	CMemStream( inputStream, defaultcapacity ),
+	CMemStream( inputStream, false, defaultcapacity ),
 	_FreeBits( 8 )
 {
 }
@@ -84,6 +84,16 @@ void CBitMemStream::serialBuffer( uint8 *buf, uint len )
 void CBitMemStream::invert()
 {
 	CMemStream::invert();
+	_FreeBits = 8;
+}
+
+
+/*
+ * Clears the message
+ */
+void CBitMemStream::clear()
+{
+	CMemStream::clear();
 	_FreeBits = 8;
 }
 
@@ -155,7 +165,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read
-		if ( lengthS()+(nbits+8-_FreeBits)/8 > lengthR())
+		if ( lengthS()+(nbits+8-_FreeBits)/8 > lengthR()) // _Freebits ranges from 8 downto 1
 		{
 			throw EStreamOverflow();
 		}
@@ -196,7 +206,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 	else
 	{
 		// Resize if necessary
-		if ( _FreeBits == 8 )
+		if ( _FreeBits == 8 ) // _FreeBits is from 7 downto 1, then 8
 		{
 			_Buffer.push_back();
 			_BufPos = _Buffer.end() - 1;

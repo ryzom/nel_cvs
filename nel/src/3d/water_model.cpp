@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.36 2003/05/14 17:07:04 vizerie Exp $
+ * $Id: water_model.cpp,v 1.37 2003/05/28 10:06:07 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -864,8 +864,11 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 
 
 		// setup 2x3 matrix for lookup in diffuse map
-		cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * obsPos.x + shape->_ColorMapMatColumn1.x * obsPos.y + shape->_ColorMapMatPos.x); 
-		cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * obsPos.x + shape->_ColorMapMatColumn1.y * obsPos.y + shape->_ColorMapMatPos.y);						
+		float px = obsPos.x - getWorldMatrix().getPos().x;
+		float py = obsPos.y - getWorldMatrix().getPos().y;
+
+		cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * px + shape->_ColorMapMatColumn1.x * py + shape->_ColorMapMatPos.x); 
+		cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * px + shape->_ColorMapMatColumn1.y * py + shape->_ColorMapMatPos.y);						
 	}
 	else
 	{

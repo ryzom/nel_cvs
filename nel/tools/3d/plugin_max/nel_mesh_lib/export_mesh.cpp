@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.58 2003/04/01 17:07:00 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.59 2003/05/28 10:06:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1893,9 +1893,9 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 			Matrix3  m = node.GetNodeTM(0);
 
 			NLMISC::CVector v0, v1, v2;
-			CExportNel::convertVector(v0, m * pMesh->getVert(i0));
-			CExportNel::convertVector(v1, m * pMesh->getVert(i1));
-			CExportNel::convertVector(v2, m * pMesh->getVert(i2));
+			CExportNel::convertVector(v0, VectorTransform(pMesh->getVert(i0), m));
+			CExportNel::convertVector(v1, VectorTransform(pMesh->getVert(i1), m));
+			CExportNel::convertVector(v2, VectorTransform(pMesh->getVert(i2), m));
 			
 			NLMISC::CMatrix A, B, C;
 			A.setRot(NLMISC::CVector(v0.x, v0.y, 1), NLMISC::CVector(v1.x, v1.y, 1), NLMISC::CVector(v2.x, v2.y, 1));

@@ -619,10 +619,6 @@ SOURCE=.\3d\animation_time.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\3d\animation_time.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\channel_mixer.cpp
 # End Source File
 # Begin Source File
@@ -779,7 +775,15 @@ SOURCE=.\3d\viewport.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\include\nel\3d\tmp\animation_time.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\tmp\frustum.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_animation_set.h
 # End Source File
 # Begin Source File
 
@@ -800,6 +804,14 @@ SOURCE=..\include\nel\3d\tmp\u_landscape.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\tmp\u_material.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_play_list.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tmp\u_play_list_manager.h
 # End Source File
 # Begin Source File
 

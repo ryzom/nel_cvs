@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.8 2003/11/17 10:26:23 lecroart Exp $
+ * $Id: object_vector.h,v 1.9 2004/01/15 17:28:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,33 +139,33 @@ public:
 	 *	When reallocation occurs, memory is coped, but operator= are not called.
 	 *	\throw EReallocationFailed() if realloc fails.
 	 */
-	void		resize(uint32 size)
+	void		resize(uint32 s)
 	{
 		// if same size, no-op.
-		if(size==_Size)
+		if(s==_Size)
 			return;
 
 		// if empty, just clear.
-		if(size==0)
+		if(s==0)
 			clear();
 		// crop the array?
-		else if(size<_Size)
+		else if(s<_Size)
 		{
 			// destruct the objects to be freed
-			destruct(size, _Size);
+			destruct(s, _Size);
 			// realloc
-			myRealloc(size);
-			_Size= size;
+			myRealloc(s);
+			_Size = s;
 		}
 		// else, enlarge the array
 		else
 		{
 			// realloc first
-			myRealloc(size);
+			myRealloc(s);
 			// For all new elements, construct them.
-			construct(_Size, size);
+			construct(_Size, s);
 			// change size.
-			_Size= size;
+			_Size= s;
 		}
 	}
 
@@ -325,13 +325,13 @@ private:
 
 private:
 	// realloc, and manage allocation failure. Don't modify _Size.
-	void	myRealloc(uint32 size)
+	void	myRealloc(uint32 s)
 	{
 #ifndef NL_OV_USE_NEW_ALLOCATOR
 		// try to realloc the array.
-		T	*newPtr= (T*)realloc(_Ptr, size*sizeof(T));
+		T	*newPtr= (T*)realloc(_Ptr, s*sizeof(T));
 #else // NL_OV_USE_NEW_ALLOCATOR
-		uint allocSize= size*sizeof(T);
+		uint allocSize= s*sizeof(T);
 		T	*newPtr= NULL;
 		if (!_Ptr || (allocSize > _Size*sizeof(T)))
 		{

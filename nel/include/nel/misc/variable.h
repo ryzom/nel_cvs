@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.7 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: variable.h,v 1.8 2004/01/15 17:29:44 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -108,23 +108,23 @@ public: \
 		__type p; \
 		/*ss >> p;*/ \
 		NLMISC::fromString(val, p) ; \
-		pointer (&p, false, human); \
+		ptr (&p, false, human); \
 	} \
 	 \
 	virtual std::string toString(bool human) const \
 	{ \
 		__type p; \
-		pointer (&p, true, human); \
+		ptr (&p, true, human); \
 		/*std::stringstream ss;*/ \
 		/*ss << p;*/ \
 		/*return ss.str();*/ \
 		return NLMISC::toString(p); \
 	} \
 	\
-	void pointer(__type *pointer, bool get, bool human) const; \
+	void ptr(__type *pointer, bool get, bool human) const; \
 }; \
 __name##Class __name##Instance; \
-void __name##Class::pointer(__type *pointer, bool get, bool human) const
+void __name##Class::ptr(__type *pointer, bool get, bool human) const
 
 //
 //

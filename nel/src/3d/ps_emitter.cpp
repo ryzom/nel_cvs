@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.12 2001/06/25 16:10:50 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.13 2001/06/26 09:23:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -455,7 +455,7 @@ void CPSEmitterRectangle::emit(uint32 index, CVector &pos, CVector &speed)
 
 void CPSEmitterRectangle::setMatrix(uint32 index, const CMatrix &m)
 {
-	_Owner->getPos()[index] = m * _Owner->getPos()[index] ;
+	_Owner->getPos()[index] = m.getPos() ;
 
 	
 	 _Basis[index].X = m.getI() ;

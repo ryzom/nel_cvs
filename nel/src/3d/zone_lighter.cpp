@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.4 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.5 2001/09/26 16:03:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,16 @@
 #include "nel/misc/common.h"
 #include "nel/misc/thread.h"
 
+// Define this to use hardware soft shadows
+//#define HARDWARE_SOFT_SHADOWS
+
+#ifdef HARDWARE_SOFT_SHADOWS
+
+#include "nel/3d/u_driver.h"
+
+#endif // HARDWARE_SOFT_SHADOWS
+
+
 #ifdef NL_OS_WINDOWS
  #define WIN32_LEAN_AND_MEAN
  #include "windows.h"
@@ -44,6 +54,14 @@
 using namespace NLMISC;
 using namespace NL3D;
 using namespace std;
+
+#ifdef HARDWARE_SOFT_SHADOWS
+
+UDriver *drv=NULL;
+
+#define LIGHT_BUFFER_SIZE 16
+
+#endif // HARDWARE_SOFT_SHADOWS
 	
 // ***************************************************************************
 
@@ -77,6 +95,17 @@ void CZoneLighter::init ()
 			_K[phi][i].set (tmp0*sinP, tmp0*cosP, (float)((Pi/4)*tmp1*tmp1));
 		}
 	}
+
+#ifdef HARDWARE_SOFT_SHADOWS
+	if (!drv)
+	{
+		// Mode
+		UDriver::CMode mode (LIGHT_BUFFER_SIZE, LIGHT_BUFFER_SIZE, 32, true);
+		drv=UDriver::createDriver ();
+		drv->setDisplay (mode);
+		drv->setMatrixMode2D11 ();
+	}
+#endif // HARDWARE_SOFT_SHADOWS
 }
 
 // ***************************************************************************
@@ -774,6 +803,27 @@ void CZoneLighter::testRaytrace (const CVector& position, const CVector& normal,
 	CShape front;
 	CShape copy;
 
+#ifdef HARDWARE_SOFT_SHADOWS
+
+	// Vector unit
+	float unit=2*_ShapeRadius;
+
+	// Make a scale matrix
+	CMatrix lumelScale;
+	lumelScale.identity ();
+	lumelScale.scale (unit);
+
+	// Get the ray basis
+	CMatrix lumelBasis=_RayBasis*lumelScale;
+
+	// Change origine in the top left corner
+	lumelBasis.setPos (position-lumelBasis.getI()/2-lumelBasis.getJ()/2);
+
+	// Inverse this matrix
+	lumelBasis.invert ();
+
+#endif // HARDWARE_SOFT_SHADOWS
+
 	// For each triangle selected
 	CQuadGrid<const CTriangle*>::CIterator it=_QuadGrid[cpu].begin();
 	while (it!=_QuadGrid[cpu].end())
@@ -866,6 +916,15 @@ void CZoneLighter::testRaytrace (const CVector& position, const CVector& normal,
 			// Not front clipped
 			if (i==3)
 			{
+#ifdef HARDWARE_SOFT_SHADOWS
+				// Transform this triangle in lumel basis
+				CVector v[3] = { lumelBasis*triangle.V0, lumelBasis*triangle.V1, lumelBasis*triangle.V2 };
+
+				// Draw the triangle
+				drv->drawTriangle (v[0].x, v[0].y, v[1].x, v[1].y, v[2].x, v[2].y, CRGBA(0, 0, 0, 2));
+				drv->drawTriangle (v[0].x, v[0].y, v[2].x, v[2].y, v[1].x, v[1].y, CRGBA(0, 0, 0, 2));
+
+#else // HARDWARE_SOFT_SHADOWS
 				// All back ?
 				if (oneNotBack)
 				{
@@ -1001,6 +1060,7 @@ void CZoneLighter::testRaytrace (const CVector& position, const CVector& normal,
 					// Clear all the ray
 					shape.Shapes.resize (0);
 				}
+#endif // HARDWARE_SOFT_SHADOWS
 			}
 		}
 
@@ -1033,9 +1093,39 @@ void CZoneLighter::rayTrace (const CVector& position, const CVector& normal, flo
 	CPlane plane;
 	plane.make (-_LightDirection, position);
 
+#ifdef HARDWARE_SOFT_SHADOWS
+
+	// Clear all pixels in green
+	drv->clearRGBABuffer (CRGBA (0, 255, 0, 0));
+
+#endif // HARDWARE_SOFT_SHADOWS
+
 	// Go!
 	testRaytrace (position, normal, plane, s, t, patchId, shape, shapeTmp, cpu);
 
+#ifdef HARDWARE_SOFT_SHADOWS
+	
+	// Download frame buffer
+	static CBitmap bitmap;
+	drv->getBufferPart (bitmap, CRect (0, 0, LIGHT_BUFFER_SIZE, LIGHT_BUFFER_SIZE));
+	nlassert (bitmap.getWidth()==LIGHT_BUFFER_SIZE);
+	nlassert (bitmap.getHeight()==LIGHT_BUFFER_SIZE);
+
+	// Pixels
+	bitmap.convertToType (CBitmap::RGBA);
+
+	// RGBA pointer
+	CRGBA *pixels=(CRGBA*)&bitmap.getPixels ()[0];
+
+	// Average pixel
+	factor=0;
+	for (uint p=0; p<LIGHT_BUFFER_SIZE*LIGHT_BUFFER_SIZE; p++)
+	{
+		factor+=pixels[p].G;
+	}
+	factor/=(float)(255*LIGHT_BUFFER_SIZE*LIGHT_BUFFER_SIZE);
+
+#else // HARDWARE_SOFT_SHADOWS
 	// Calc the surface ratio
 	uint size=shape.Shapes.size();
 	for (uint i=0; i<size; i++)
@@ -1051,6 +1141,7 @@ void CZoneLighter::rayTrace (const CVector& position, const CVector& normal, flo
 	}
 
 	factor/=_ShapeArea;
+#endif // HARDWARE_SOFT_SHADOWS
 }
 
 // ***************************************************************************
@@ -1759,10 +1850,10 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			{
 				uint s=(uint)((float)orderS*4*interpolatedS[i]);
 				uint t=(uint)((float)orderT*4*interpolatedT[i]);
-				nlassert (s>=0);
+				/*nlassert (s>=0);
 				nlassert (s<orderS*4);
 				nlassert (t>=0);
-				nlassert (t<orderT*4);
+				nlassert (t<orderT*4);*/
 				if ((s>=0)&&(s<orderS*4)&&(t>=0)&&(t<orderT*4))
 				{
 					// Triangle index
@@ -1857,7 +1948,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			uint visitedCount=visited[patch][lumelIndex];
 			
 			// Some lumel have not been found in tesselation
-			nlassert ((visitedCount==1)||(visitedCount==2));
+			//nlassert ((visitedCount==1)||(visitedCount==2));
 
 			// If visited, renormalise other values
 			if (visitedCount)
@@ -2144,7 +2235,7 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 			uint visitedCount=visited[patch][lumelIndex];
 			
 			// Some lumel have not been found in tesselation
-			nlassert (visitedCount==2);
+			//nlassert (visitedCount==2);
 
 			// If visited, renormalise other values
 			if (visitedCount)

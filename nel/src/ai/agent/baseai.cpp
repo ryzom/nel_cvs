@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.23 2001/04/24 09:06:56 chafik Exp $
+ * $Id: baseai.cpp,v 1.24 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -426,7 +426,7 @@ namespace NLAIAGENT
 
 	const CIdent IRefrence::getIdentType() const
 	{
-		return CIdent(std::string((const char *)getType()),_NumRef->getNumIdent().getId());
+		return CIdent(0,_NumRef->getNumIdent().getId());
 	}
 
 

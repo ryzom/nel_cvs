@@ -40,7 +40,12 @@ namespace NLAILINK
 	}
 
 	void releaseIALib()
-	{		
+	{	
+		NLAIAGENT::CAgentManagerTimer::releaseClass();
+		CLibTimerManager::releaseClass();
+		CAgentClockTimer::releaseClass();
+		CAgentWatchTimer::releaseClass();
+
 		NLAIAGENT::CIndexedVarName::releaseClass();
 		NLAIC::releaseRegistry();
 		NLAIAGENT::CLocWordNumRef::clear();
@@ -55,11 +60,7 @@ namespace NLAILINK
 		NLAICHARACTER::CCharacterNoeud::releaseClass();
 		NLAICHARACTER::CCharacterChild::releaseClass();
 
-		NLAIAGENT::CAgentManagerTimer::releaseClass();
-		CLibTimerManager::releaseClass();
-		CAgentClockTimer::releaseClass();
-		CAgentWatchTimer::releaseClass();		
-
+		
 		staticReleaseLibClass();
 	}
 

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.6 2001/05/02 13:25:01 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.7 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,7 @@ namespace NLAIAGENT
 		delete CAgentManagerTimer::IdAgentTimer;
 		CAgentManagerTimer::IdAgentTimer = NULL;				
 		delete CAgentManagerTimer::TimerManager;
+		CAgentManagerTimer::TimerManager = NULL;
 		delete CAgentManagerTimer::RunTimer;
 		delete CAgentManagerTimer::TimerManagerRun;
 	}
@@ -295,6 +296,7 @@ namespace NLAIAGENT
 			_MSG = m;
 		}
 	}
+
 	void CAgentWatchTimer::onKill(IConnectIA *a)
 	{
 		if(_Call == a)
@@ -322,6 +324,7 @@ namespace NLAIAGENT
 		((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
 		g.set(0,new CStringType(CStringVarName(t)));
 		IObjectIA::CProcessResult r;
+		if(CAgentManagerTimer::TimerManager != NULL)
 		{
 			NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 			r = accessor.value()->removeDynamic(&g);
@@ -406,6 +409,7 @@ namespace NLAIAGENT
 			return CAgentScript::runMethodBase(index,o);
 		}
 	}
+
 	IMessageBase *CAgentWatchTimer::runTell(const IMessageBase &m)
 	{
 		static NLAIC::CIdentType idMsgKillTimer ("MsgStopTimer");
@@ -439,6 +443,7 @@ namespace NLAIAGENT
 		msgStr += std::string("End\n}\n");		
 		NLAILINK::buildScript(msgStr,scriptName);
 	}
+
 	void CAgentWatchTimer::initClass()
 	{
 		CAgentTimerHandle::initClass();
@@ -521,10 +526,12 @@ namespace NLAIAGENT
 	{
 		return new CAgentClockTimer(*this);
 	}
+
 	const NLAIC::IBasicType *CAgentClockTimer::newInstance() const
 	{
 		return new CAgentClockTimer();
 	}
+
 	const NLAIC::CIdentType &CAgentClockTimer::getType() const
 	{
 		return *IdAgentClockTimer;
@@ -562,11 +569,13 @@ namespace NLAIAGENT
 	CAgentTimerHandle::CAgentTimerHandle():_Timer (NULL)
 	{
 	}
+
 	CAgentTimerHandle::CAgentTimerHandle(CAgentWatchTimer *t)
 	{
 		_Timer = t;
 		if(_Timer) _Timer->incRef();
 	}
+
 	CAgentTimerHandle::CAgentTimerHandle(const CAgentTimerHandle &t)
 	{
 		_Timer = t._Timer;
@@ -584,6 +593,7 @@ namespace NLAIAGENT
 				char t[256*4];
 				((const IWordNumRef &)*_Timer).getNumIdent().getDebugString(t);		
 				g.set(0,new CStringType(CStringVarName(t)));
+				if(CAgentManagerTimer::TimerManager != NULL)
 				{
 					NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 					accessor.value()->removeDynamic(&g);
@@ -602,10 +612,12 @@ namespace NLAIAGENT
 	{
 		return new CAgentTimerHandle(*this);
 	}
+
 	const NLAIC::IBasicType *CAgentTimerHandle::newInstance() const
 	{
 		return new CAgentTimerHandle();
 	}
+
 	bool CAgentTimerHandle::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		const CAgentTimerHandle &h = (const CAgentTimerHandle &)a;
@@ -641,5 +653,4 @@ namespace NLAIAGENT
 	{
 		delete CAgentTimerHandle::IdAgentTimerHandle;
 	}	
-
 }

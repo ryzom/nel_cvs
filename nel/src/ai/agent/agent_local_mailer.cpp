@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.5 2001/04/24 09:06:56 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.6 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,5 @@ namespace NLAIAGENT
 		{
 			return ((IObjectIA  *)_HostAgent)->sendMessage(msg);
 		}
-	}
-	
+	}	
 }

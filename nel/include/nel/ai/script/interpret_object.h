@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.10 2001/04/17 09:26:09 portier Exp $
+ * $Id: interpret_object.h,v 1.11 2001/05/10 15:16:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,11 +55,13 @@ namespace NLAISCRIPT
 		If it false the component can be just distributed in the server. And we can't manipulate directly but by message. 
 		*/
 		bool Local;
+		bool Static;
 		CComponent()
 		{
 			RegisterName = NULL;
 			ObjectName = NULL;
 			Local = false;
+			Static = false;
 		}
 		/**
 		Save component characteristic.

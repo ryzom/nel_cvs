@@ -77,6 +77,9 @@ namespace NLAISCRIPT
 
 		if ( _FactBase != NULL )
 			_FactBase->release();
+
+		if ( _Goal != NULL )
+			_Goal->release();
 /*
 		int i;
 		for ( i = 0; i < (int) _CondCode.size(); i++ )
@@ -411,20 +414,6 @@ namespace NLAISCRIPT
 	{
 	}
 
-/*	void COperatorClass::setGoal(NLAILOGIC::CGoal *g)
-	{
-		if ( _Goal != NULL )
-		{
-			_Goal->release();
-		}
-
-		_Goal = g;
-
-		if ( _Goal )
-			_Goal->incRef();
-	}
-	*/
-
 	const NLAILOGIC::CGoal *COperatorClass::getGoal()
 	{
 		return _Goal;
@@ -457,6 +446,9 @@ namespace NLAISCRIPT
 		}
 	}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
 	void COperatorClass::compileFactPattern(NLAILOGIC::CFactPattern *fp, std::vector<NLAILOGIC::IBaseAssert *>&patterns, std::vector<sint32> &pos_Vars)
 	{
 		// Recherche si variables à ajouter
@@ -486,6 +478,45 @@ namespace NLAISCRIPT
 		}
 		delete vars_pattern;
 	}
+	*/
+
+	void COperatorClass::compileFactPattern(NLAILOGIC::CFactPattern *fp, std::vector<NLAILOGIC::IBaseAssert *>&patterns, std::vector<sint32> &pos_Vars)
+	{
+		// Recherche si variables à ajouter
+		std::vector<NLAILOGIC::IBaseVar *> *vars_pattern = fp->getVars();
+		if ( vars_pattern )
+		{
+			std::vector<NLAILOGIC::IBaseVar *>::iterator it_cond = vars_pattern->begin();
+			while ( it_cond != vars_pattern->end() )
+			{
+				// Looks in the class components if the var already exists
+				sint32 id_var = getComponentIndex( (*it_cond)->getName() );
+
+				if ( id_var != -1 )
+				{
+					// If it exists, stores its index
+					pos_Vars.push_back( id_var );
+				}
+				else
+				{
+					// If it doesn't exist, registers the var as a component of the class
+					NLAIAGENT::CStringVarName var_name("Var");
+					registerComponent( var_name , (const NLAIAGENT::CStringVarName &) (*it_cond)->getName() );
+
+					_Vars.push_back( (NLAILOGIC::IBaseVar *)(*it_cond)->clone() );
+					pos_Vars.push_back( _Vars.size() - 1);
+				}
+				it_cond++;
+			}
+		}
+
+		for ( sint32 i = 0; i < (sint32) vars_pattern->size(); i++ )
+		{
+			(*vars_pattern)[i]->release();
+		}
+		delete vars_pattern;
+	}
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/// Looks for a variable in the operator's variables vector and returns its position
 	sint32 COperatorClass::getVarPos(NLAILOGIC::IBaseVar *var)
@@ -592,7 +623,7 @@ namespace NLAISCRIPT
 		}		
 	}
 
-	void COperatorClass::setGoal(NLAIAGENT::CStringVarName &g)
+	void COperatorClass::setGoal(const NLAIAGENT::CStringVarName &g)
 	{
 		if ( _Goal != NULL )
 		{
@@ -600,6 +631,14 @@ namespace NLAISCRIPT
 		}
 
 		_Goal = new NLAILOGIC::CGoal( *(NLAIAGENT::CStringVarName *) g.clone());
+	}
+
+	void COperatorClass::setGoal(const NLAIAGENT::IVarName *assert, std::list<const NLAIAGENT::IVarName *> &args)
+	{
+		_GoalAssert = (const NLAIAGENT::IVarName *) assert->clone();
+		_GoalVars = args;
+
+		setGoal( *(const NLAIAGENT::CStringVarName *)_GoalAssert );
 	}
 
 	bool COperatorClass::isValidFonc(NLAIAGENT::IObjectIA *c)
@@ -674,9 +713,9 @@ namespace NLAISCRIPT
 		int i;
 		for ( i = 0; i < (int) _CondAsserts.size() ; i++ )
 		{
-/*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassCondVars[i]->size() ); */
-/*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
+			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
+			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassCondVars[i]->size() ); 
+			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassCondVars[i]->begin();
 			while ( it_var != _ClassCondVars[i]->end() )
 			{
@@ -686,14 +725,13 @@ namespace NLAISCRIPT
 				it_var++;
 			}
 			addPrecondition( pattern );
-			*/
 		}
 
 		for ( i = 0; i < (int) _ConcAsserts.size() ; i++ )
 		{
-/*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassConcVars[i]->size() ); */
-/*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
+			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
+			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassConcVars[i]->size() ); 
+			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassConcVars[i]->begin();
 			while ( it_var != _ClassConcVars[i]->end() )
 			{
@@ -703,21 +741,19 @@ namespace NLAISCRIPT
 				it_var++;
 			}
 			addPostcondition( pattern );
-			*/
 		}
-		
 	}
 
-		/// Sets the comment for the operator
-		void COperatorClass::setComment(char *c)
+	/// Sets the comment for the operator
+	void COperatorClass::setComment(char *c)
+	{
+		if ( _Comment != NULL )
 		{
-			if ( _Comment != NULL )
-			{
-				delete[] _Comment;
-			}
-			_Comment = new char[ strlen(c) + 1];
-			strcpy(_Comment, c);
+			delete[] _Comment;
 		}
+		_Comment = new char[ strlen(c) + 1];
+		strcpy(_Comment, c);
+	}
 
 	void COperatorClass::addFuzzyCond(NLAIAGENT::IVarName *var_name, NLAIAGENT::IVarName *fset)
 	{

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.10 2001/04/03 13:57:53 chafik Exp $
+ * $Id: agent_object.h,v 1.11 2001/05/10 15:16:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -456,9 +456,9 @@ namespace NLAIAGENT
 		virtual void push(const IObjectIA *o) = 0;
 		///Push an IObjectIA front.
 		virtual void pushFront(const IObjectIA *o) = 0;
-		///Push an IObjectIA back but in using the clone method.
+		///Push an IObjectIA back using the clone method.
 		virtual void cpy(const IObjectIA &o) = 0;
-		///Get an iterator to cover the list.
+		///Get an iterator to parse the list.
 		virtual CIteratorContener getIterator() const = 0;
 
 		///Pop the back IObjectIA and return it.

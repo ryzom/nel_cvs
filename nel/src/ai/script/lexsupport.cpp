@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.14 2001/04/17 09:26:03 portier Exp $
+ * $Id: lexsupport.cpp,v 1.15 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("MessageManager",MESSAGE_MANAGER) );		
 
 		DicoDeNom.insert(Arbre::value_type("Local", LOCAL) );
+		DicoDeNom.insert(Arbre::value_type("Static", STATIC) );
 		
 		DicoDeNom.insert(Arbre::value_type("Begin",BEGINING) );
 		

@@ -244,10 +244,10 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
+/*	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
-
+*/
 	const NLAIC::CIdentType CFsmScript::IdFsmScript("FsmScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CFsmScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
@@ -557,12 +557,12 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-	static CGDAgentClass GDagentClass(NLAIAGENT::CStringVarName("XXX_GDAgent"));
+/*	static CGDAgentClass GDagentClass(NLAIAGENT::CStringVarName("XXX_GDAgent"));
 	const NLAIC::CIdentType CGDAgentClass::IdGDAgentClass("GDAgent",CClassInterpretFactory((const IClassInterpret &)GDagentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-
+*/
 
 	static CActorClass actorClass(NLAIAGENT::CStringVarName("XXX_Actor"));
 	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", CClassInterpretFactory((const IClassInterpret &)actorClass),

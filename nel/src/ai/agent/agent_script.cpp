@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.61 2001/05/02 13:25:01 chafik Exp $
+ * $Id: agent_script.cpp,v 1.62 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,19 +59,6 @@ namespace NLAIAGENT
 	NLAISCRIPT::CParam *CAgentScript::ParamRunParentNotify = NULL;
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 
-/////////////////////////////////////////////////////////////////
-/// Temp. 
-//	static NLAISCRIPT::COperandSimple *IdGoalMsgClass;
-	static NLAISCRIPT::COperandSimpleListOr *ParamIdGoalMsg;
-	static NLAISCRIPT::CParam *ParamGoalMsg;
-
-	static NLAISCRIPT::COperandSimpleListOr *ParamIdCancelGoalMsg;
-	static NLAISCRIPT::CParam *ParamCancelGoalMsg;
-
-	static NLAISCRIPT::COperandSimpleListOr *ParamIdFactMsg;
-	static NLAISCRIPT::CParam *ParamFactMsg;
-
-/////////////////////////////////////////////////////////////////
 
 	void CAgentScript::initAgentScript()
 	{
@@ -106,30 +93,6 @@ namespace NLAIAGENT
 																new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
-
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
-		ParamIdGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
-															  new NLAIC::CIdentType(NLAIAGENT::CGoalMsg::IdGoalMsg),
-															  new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass)	);
-
-
-		ParamGoalMsg = new NLAISCRIPT::CParam(1,ParamIdGoalMsg);
-
-		ParamIdCancelGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
-															  new NLAIC::CIdentType(NLAIAGENT::CCancelGoalMsg::IdCancelGoalMsg),
-															  new NLAIC::CIdentType(NLAISCRIPT::CCancelGoalMsgClass::IdCancelGoalMsgClass)	);
-
-		ParamCancelGoalMsg = new NLAISCRIPT::CParam(1,ParamIdCancelGoalMsg);
-
-
-		ParamIdFactMsg = new NLAISCRIPT::COperandSimpleListOr(2,
-														new NLAIC::CIdentType(NLAIAGENT::CFactMsg::IdFactMsg),
-														new NLAIC::CIdentType(NLAISCRIPT::CFactMsgClass::IdFactMsgClass));
-
-		ParamFactMsg = new NLAISCRIPT::CParam(1,ParamIdFactMsg);
-	////////////////////////////////////////////////////////////////////////
 
 
 
@@ -189,7 +152,7 @@ namespace NLAIAGENT
 
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
+/*
 		StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
 																			CAgentScript::TGoal, ParamGoalMsg,
 																			CAgentScript::CheckAll,
@@ -208,7 +171,7 @@ namespace NLAIAGENT
 																			CAgentScript::CheckAll,
 																			1,
 																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
-
+*/
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -354,15 +317,6 @@ namespace NLAIAGENT
 				_Components[i]->release();
 			delete[] _Components;
 		}
-		
-		for ( int i = 0; i < (int) _GoalStack.size(); i++ )
-		{
-			_GoalStack[i]->release();	
-		}
-
-		//if(_AgentManager != NULL) _AgentManager->release();
-		
-		//if ( _ScriptMail != NULL )	_ScriptMail->release();
 	}
 
 	void CAgentScript::setAgentManager(IAgentManager *manager)
@@ -1137,27 +1091,6 @@ namespace NLAIAGENT
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
-		case TGoal:
-			{				
-				return runGoalMsg((IBaseGroupType *)o);
-			}
-
-		case TCancelGoal:
-			{				
-				return runCancelGoalMsg((IBaseGroupType *)o);
-			}
-
-
-		case TFact:
-			{				
-				return runFactMsg((IBaseGroupType *)o);
-			}
-
-	////////////////////////////////////////////////////////////////////////
-
 
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -1218,21 +1151,6 @@ namespace NLAIAGENT
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
-
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
-		case TGoal:
-			{				
-				return runGoalMsg((IBaseGroupType *)o);
-			}
-
-		case TCancelGoal:
-			{				
-				return runCancelGoalMsg((IBaseGroupType *)o);
-			}
-
-	////////////////////////////////////////////////////////////////////////
 
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -1501,7 +1419,7 @@ namespace NLAIAGENT
 
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-
+/*
 	IObjectIA::CProcessResult CAgentScript::runGoalMsg(IBaseGroupType *g)
 	{
 		CGoalMsg *goal_msg = (CGoalMsg *) g->get();
@@ -1551,11 +1469,11 @@ namespace NLAIAGENT
 				return r;
 			}
 			it_g++;
-		}
+		} */
 /*		goal->setReceiver( (IBasicAgent *) this );
 		_GoalStack.push_back( goal );
 */
-		return r;
+/*		return r;
 	}
 
 
@@ -1581,6 +1499,8 @@ namespace NLAIAGENT
 	{
 		return _FactBase;
 	}
+
+	*/
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -1650,4 +1570,5 @@ namespace NLAIAGENT
 		}		
 		return NLAIAGENT::tQueue();
 	}
+
 }

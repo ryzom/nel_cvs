@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.4 2001/04/03 10:05:04 portier Exp $
+ * $Id: init.cpp,v 1.5 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
-#include "nel/ai/script/gd_agent_class.h"	
+//#include "nel/ai/script/gd_agent_class.h"	
 #include "nel/ai/script/interpret_fsm.h"
 
 
@@ -52,7 +52,7 @@ namespace NLAISCRIPT
 		CLibTest c;
 
 		reinitClass(CAgentClass(CAgentClass::IdAgentClass), CAgentClass::IdAgentClass);
-		reinitClass(CGDAgentClass(CGDAgentClass::IdGDAgentClass),CGDAgentClass::IdGDAgentClass);
+//		reinitClass(CGDAgentClass(CGDAgentClass::IdGDAgentClass),CGDAgentClass::IdGDAgentClass);
 		reinitClass(COperatorClass(COperatorClass::IdOperatorClass),COperatorClass::IdOperatorClass);
 		reinitClass(CFsmClass(CFsmClass::IdFsmClass),CFsmClass::IdFsmClass);
 		reinitClass(CSeqFsmClass(CSeqFsmClass::IdSeqFsmClass),CSeqFsmClass::IdSeqFsmClass);

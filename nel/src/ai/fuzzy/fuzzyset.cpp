@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.6 2001/04/24 15:48:04 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.7 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -302,26 +302,6 @@ namespace NLAIFUZZY
 		{
 		case 0:
 			{					
-
-/*				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront()->clone();
-				param->popFront();*/
-#ifdef NL_DEBUG
-//				const char *dbg_name = name->getStr().getString();
-#endif
-				// If the constructor() function is explicitely called and the object has already been initialised
-/*				if ( _Name )
-					_Name->release();
-				_Args.clear();
-*/
-/*				_Name = (NLAIAGENT::IVarName *) name->getStr().clone();
-				std::list<const NLAIAGENT::IObjectIA *> args;
-				while ( param->size() )
-				{
-					_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
-					param->popFront();
-				}
-				return NLAIAGENT::IObjectIA::CProcessResult();		
-				*/
 				init(p);
 			}
 			break;

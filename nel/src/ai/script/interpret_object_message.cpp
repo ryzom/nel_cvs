@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.19 2001/04/03 10:05:04 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.20 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,8 +236,6 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *x = new NLAIAGENT::CCancelGoalMsg( components,  (CMessageClass *) this );
 		return x;
 	}	
-
-
 
 //#########################################
 //		CFactMsgClass

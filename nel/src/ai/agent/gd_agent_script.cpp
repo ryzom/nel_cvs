@@ -1,6 +1,6 @@
 /** \file gd_agent_script.cpp
  *
- * $Id: gd_agent_script.cpp,v 1.2 2001/02/28 17:01:30 portier Exp $
+ * $Id: gd_agent_script.cpp,v 1.3 2001/05/10 15:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,11 +204,5 @@ namespace NLAIAGENT
 //		_GoalStack.push_back( goal );
 
 		// Checks the operators
-	}
-
-
-	NLAILOGIC::CFactBase &CGDAgentScript::getFactBase()
-	{
-		return _FactBase;
 	}
 } // NLAIAGENT

@@ -27,23 +27,39 @@ using  namespace NLAIFUZZY;
 %token	EXEC ACHIEVE ASK BREAK TELL KILL PERROR EVEN
 
 %token  BEGIN_GRAMMAR
+
+
+// Agent class defintion tokens
 %token	FROM 
 %token	DEFINE	GROUP
 %token	COMPONENT CONSTRUCTION DESTRUCTION MESSAGE_MANAGER MAESSAGELOOP
-%token	TRIGGER	PRECONDITION	POSTCONDITION GOAL RETURN
-%token	COS SIN TAN POW LN LOG FACT 
+%token	LOCAL STATIC
+
 %token	AS
 %token	DIGITAL	COLLECTOR	
 %token	WITH DO 
 %token	END IF THEN BEGINING
 %token	END_GRAMMAR
-%token	LOGICVAR RULE IA_ASSERT
-%token	FUZZY FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT STEPS
-%token	NEW AND	LOCAL 
 
+// New token used for object instanciation
+%token	NEW 
+
+// Operator tokens
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS
+
+// Logic tokens
+%token	LOGICVAR RULE IA_ASSERT OR AND
+
+// Fuzzy sets and rules tokens
+%token	FUZZY FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS 
+
+// Binary operations tokens
 %left	NON_BIN		OR_BIN		AND_BIN		XOR_BIN
+
+// Arithmetic functions tokens
 %left	PLUS		MOINS		
 %left	FOIS		DIV		POWER
+%token	COS SIN TAN POW LN LOG FACT 
 
 
 %%
@@ -264,8 +280,27 @@ using  namespace NLAIFUZZY;
 								 	return 0;
 							} 
 							POINT_DEUX
-//							FactPattern
-							IDENT
+							FirstOrderPattern
+							{
+								if ( _Goal ) 
+								{
+									_Goal->release();
+									_Goal = NULL;
+								}
+								
+								if ( classIsAnOperator() )
+								{
+									// Builds a FactPattern
+
+//							_LastAsserts.push_back( new NLAIAGENT::CStringVarName( LastyyText[1] ) );
+//							_LastLogicParams.push_back( std::list<const NLAIAGENT::IVarName *>() );
+
+									// Adds it as goal to the operator class
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									op_class->setGoal( _LastAsserts.back(), _LastLogicParams.back() );
+								}
+							}
+/*							IDENT
 							{
 								if ( _Goal ) 
 								{
@@ -282,6 +317,8 @@ using  namespace NLAIFUZZY;
 							}
 //							POINT_VI
 //							END
+*/
+						POINT_VI
 						;
 
 
@@ -350,9 +387,6 @@ using  namespace NLAIFUZZY;
 								}
 							}
 						|	FirstOrderPattern
-							{
-								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
-							}
 							POINT_VI
 						|	DuCode
 							{
@@ -441,18 +475,16 @@ using  namespace NLAIFUZZY;
 							PAR_D POINT_VI
 							;
 
-
-	FirstOrderPattern	: INTERROGATION PAR_G 
+	FirstOrderPattern	: INTERROGATION 
+						PAR_G 
 						IDENT 
 						{
 							const char *assert_name = LastyyText[1];
 							_LastAsserts.push_back( new NLAIAGENT::CStringVarName( LastyyText[1] ) );
 							_LastLogicParams.push_back( std::list<const NLAIAGENT::IVarName *>() );
 						}
-						OpLogicVarSet PAR_D
-						{
-								for (int i = 0; i < 20; i++); // To put breakpoints for debugging...
-						} 
+						OpLogicVarSet 
+						PAR_D
 						;
 
 
@@ -859,6 +891,12 @@ using  namespace NLAIFUZZY;
 							{
 								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
 								if(c != NULL) c->Local = true;								
+							}
+							SUP
+						|	TypeDeComp VIRGULE STATIC 
+							{
+								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
+								if(c != NULL) c->Static = true;								
 							}
 							SUP
 						;
@@ -1551,5 +1589,5 @@ using  namespace NLAIFUZZY;
 						{
 							for (sint32 i = 0; i < 20; i++);
 						}
-						;
+						;						
 %%

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.10 2001/04/24 08:28:21 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.11 2001/05/10 15:16:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,9 @@ namespace NLAISCRIPT
 	private:
 		NLAILOGIC::CGoal							*_Goal;				/// Goal the operator tris to validate
 
+		const NLAIAGENT::IVarName					*_GoalAssert;		/// Name of the goal's assert
+		std::list<const NLAIAGENT::IVarName *>			_GoalVars;			/// Name of the goal's vars
+
 		std::vector<NLAILOGIC::IBaseVar *>			_Vars;				/// Variables of the operator
 
 		std::vector< NLAILOGIC::IBaseAssert *>		_Conds;				/// Preconditions asserts
@@ -63,7 +66,8 @@ namespace NLAISCRIPT
 
 		/// Sets the goal the operator tries to achieve
 //		virtual void setGoal(NLAILOGIC::CGoal *);
-		virtual void setGoal(NLAIAGENT::CStringVarName &);
+		virtual void setGoal(const NLAIAGENT::CStringVarName &);
+		virtual void setGoal(const NLAIAGENT::IVarName *, std::list<const NLAIAGENT::IVarName *> &);
 		virtual const NLAILOGIC::CGoal *getGoal();
 
 		/// Asks wether the operator's preconditions are validated,
@@ -96,8 +100,8 @@ namespace NLAISCRIPT
 		virtual float priority() const;
 
 		/// Own success and failure functions
-		/// These function telle other operators and goals that might be waiting for
-		/// the execution of this one.
+		/// These functions tell other operators and goals that might be waiting for
+		/// the completion of this one
 		virtual void success();
 		virtual void failure();
 
@@ -191,8 +195,6 @@ public:
 		{
 			return _FuzzySets;
 		}
-
-		
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.9 2001/03/16 16:04:07 corvazier Exp $
+ * $Id: animation_set.h,v 1.10 2001/03/19 13:19:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,22 @@ public:
 	}
 
 	/**
+	  * Get animations count.
+	  */
+	uint getNumAnimation () const
+	{
+		return _Animation.size();
+	}
+
+	/**
+	  * Get animation name.
+	  */
+	const std::string& getAnimationName (uint animationId) const
+	{
+		return _AnimationName[animationId];
+	}
+
+	/**
 	  * Get a read only animation pointer.
 	  */
 	const CAnimation* getAnimation (uint animationId) const
@@ -103,6 +119,22 @@ public:
 	CAnimation* getAnimation (uint animationId)
 	{
 		return _Animation[animationId];
+	}
+
+	/**
+	  * Get skeleton weight count.
+	  */
+	uint getNumSkeletonWeight () const
+	{
+		return _SkeletonWeight.size();
+	}
+
+	/**
+	  * Get skeleton template name.
+	  */
+	const std::string& getSkeletonWeightName (uint skeletonId) const
+	{
+		return _SkeletonWeightName[skeletonId];
 	}
 
 	/**
@@ -156,11 +188,13 @@ public:
 	void build ();
 
 	/// Serial the template
-	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
+	void serial (NLMISC::IStream& f);
 
 private:
 	std::vector <CAnimation*>		_Animation;
 	std::vector <CSkeletonWeight>	_SkeletonWeight;
+	std::vector <std::string>		_AnimationName;
+	std::vector <std::string>		_SkeletonWeightName;
 	std::map <std::string, uint32>	_ChannelIdByName;
 	std::map <std::string, uint32>	_AnimationIdByName;
 	std::map <std::string, uint32>	_SkeletonWeightIdByName;

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.7 2001/03/16 16:04:07 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.8 2001/03/19 13:19:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 {
 	// Add an animation
 	_Animation.push_back (animation);
+	_AnimationName.push_back (name);
 
 	// Add an entry name / animation
 	_AnimationIdByName.insert (std::map <std::string, uint32>::value_type (name, _Animation.size()-1));
@@ -66,6 +67,7 @@ uint CAnimationSet::addSkeletonWeight (const char* name)
 {
 	// Add an animation
 	_SkeletonWeight.resize (_SkeletonWeight.size()+1);
+	_SkeletonWeightName.push_back (name);
 
 	// Add an entry name / animation
 	_SkeletonWeightIdByName.insert (std::map <std::string, uint32>::value_type (name, _SkeletonWeight.size()-1));
@@ -117,7 +119,7 @@ void CAnimationSet::build ()
 
 // ***************************************************************************
 
-void CAnimationSet::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
+void CAnimationSet::serial (NLMISC::IStream& f)
 {
 	// Serial an header
 	f.serialCheck ((uint32)'_LEN');
@@ -130,6 +132,8 @@ void CAnimationSet::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 	// Serial the class
 	f.serialContPtr (_Animation);
 	f.serialCont (_SkeletonWeight);
+	f.serialCont (_AnimationName);
+	f.serialCont (_SkeletonWeightName);
 	f.serialMap (_ChannelIdByName);
 	f.serialMap (_AnimationIdByName);
 }

@@ -1,7 +1,7 @@
 /** \file track_sampled_quat.h
  * <File description>
  *
- * $Id: track_sampled_quat.h,v 1.1 2002/05/30 14:24:50 berenguier Exp $
+ * $Id: track_sampled_quat.h,v 1.2 2002/05/30 14:37:22 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -109,6 +109,12 @@ protected:
 			// NB: no version here.
 			f.serial(x,y,z,w);
 		}
+
+		bool	operator==(const CQuatPack &oq) const
+		{
+			return x==oq.x && y==oq.y && z==oq.z && w==oq.w;
+		}
+
 	};
 #else
 	// A dummy packed quaternion.
@@ -120,6 +126,7 @@ protected:
 		void		pack(const CQuat &quat)	{q= quat;}
 		void		unpack(CQuat &quat)		{quat= q;}
 		void		serial(NLMISC::IStream &f)	{f.serial(q);}
+		bool	operator==(const CQuatPack &oq) const {return q==oq.q;}
 	};
 #endif
 

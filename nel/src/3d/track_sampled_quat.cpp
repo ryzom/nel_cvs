@@ -1,7 +1,7 @@
 /** \file track_sampled_quat.cpp
  * <File description>
  *
- * $Id: track_sampled_quat.cpp,v 1.1 2002/05/30 14:24:50 berenguier Exp $
+ * $Id: track_sampled_quat.cpp,v 1.2 2002/05/30 14:37:22 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -383,22 +383,31 @@ void	CTrackSampledQuat::eval (const TAnimationTime& date)
 			frameKey1= timeBlock.TimeOffset + timeBlock.Times[keyIdRel+1];
 		}
 
-		// unpack key value and time.
-		float	time0= frameKey0*_DeltaTime;
-		float	time1= frameKey1*_DeltaTime;
-		CQuat	quat0, quat1;
-		valueKey0.unpack(quat0);
-		valueKey1.unpack(quat1);
-
-		// interpolate.
-		float	t= (localTime-time0);
-		// If difference is one frame, optimize.
-		if(frameKey1-frameKey0==1)
-			t*= _OODeltaTime;
+		// If the 2 keys have same value, just unpack.
+		if(valueKey0 == valueKey1)
+		{
+			valueKey0.unpack(_Value.Value);
+		}
+		// else interpolate
 		else
-			t/= (time1-time0);
-		clamp(t, 0.f, 1.f);
-		_Value.Value= CQuat::slerp(quat0, quat1, t);
+		{
+			// unpack key value and time.
+			float	time0= frameKey0*_DeltaTime;
+			float	time1= frameKey1*_DeltaTime;
+			CQuat	quat0, quat1;
+			valueKey0.unpack(quat0);
+			valueKey1.unpack(quat1);
+
+			// interpolate.
+			float	t= (localTime-time0);
+			// If difference is one frame, optimize.
+			if(frameKey1-frameKey0==1)
+				t*= _OODeltaTime;
+			else
+				t/= (time1-time0);
+			clamp(t, 0.f, 1.f);
+			_Value.Value= CQuat::slerp(quat0, quat1, t);
+		}
 	}
 	// else (last key of anim), just eval this key.
 	else

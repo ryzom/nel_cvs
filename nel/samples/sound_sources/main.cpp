@@ -1,7 +1,7 @@
 /** \file sound_sources/main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.10 2004/10/15 14:40:40 boucher Exp $
+ * $Id: main.cpp,v 1.11 2005/04/04 09:49:45 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -147,7 +147,7 @@ void OnMove( const CVector& listenerpos )
  *       -----x (right)
  * \endverbatim
  */
-void main()
+int main()
 {
 	// Initialization
 	Init();

@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.19 2005/02/22 10:19:20 besson Exp $
+ * $Id: sound_driver.cpp,v 1.20 2005/04/04 09:49:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,9 +123,9 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 //	HINSTANCE			hInst;
 
 	// Chooose the DLL
-#if defined (NL_OS_WINDOWS)
 	if(driverType==DriverFMod)
 	{
+#if defined (NL_OS_WINDOWS)
 		dllName= "nel_drv_fmod_win";
 //		#ifdef NL_DEBUG_FAST
 //		dllName= "nel_drv_fmod_win_df.dll";
@@ -138,9 +138,13 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 //		#else
 //		#error "Unknown dll name"
 //		#endif
+#elif defined (NL_OS_UNIX)
+		dllName= "nel_drv_fmod";
+#else
+# error "Driver name not define for this platform"
+#endif // NL_OS_UNIX / NL_OS_WINDOWS
 	}
 	else
-#endif // NL_OS_WINDOWS
 	{
 #ifdef NL_OS_WINDOWS
 		dllName = "nel_drv_dsound_win";
@@ -161,15 +165,24 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 		throw ESoundDriverNotFound(dllName);
 	}
 
+	/**
+	 *  MTR: Is there a way with NLMISC to replace SearchFile() ? Until then, no info for Linux.
+	 */
+#ifdef NL_OS_WINDOWS
 	char buffer[1024], *ptr;
 	SearchPath (NULL, dllName.c_str(), NULL, 1023, buffer, &ptr);
 	nlinfo ("Using the library '%s' that is in the directory: '%s'", dllName.c_str(), buffer);
+#endif
 
 	createSoundDriver = (ISDRV_CREATE_PROC) driverLib.getSymbolAddress(IDRV_CREATE_PROC_NAME);
 //	createSoundDriver = (ISDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
 	if (createSoundDriver == NULL)
 	{
+#ifdef NL_OS_WINDOWS
 		nlinfo( "Error: %u", GetLastError() );
+#else
+		nlinfo( "Error: Unable to load Sound Driver." );
+#endif
 		throw ESoundDriverCorrupted(dllName);
 	}
 

@@ -1,7 +1,7 @@
 /** \file buffer_fmod.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_fmod.cpp,v 1.2 2004/09/16 16:42:48 berenguier Exp $
+ * $Id: buffer_fmod.cpp,v 1.3 2005/04/04 09:49:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,11 +30,12 @@
 #include "nel/misc/file.h"
 #include "sound_driver_fmod.h"
 
-
+#ifdef NL_OS_WINDOWS
 #include <windows.h>
 #include <mmsystem.h>
 #undef min
 #undef max
+#endif
 
 using namespace NLMISC;
 using namespace std;
@@ -117,6 +118,14 @@ float CBufferFMod::getDuration() const
 bool CBufferFMod::readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize)
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CBufferFMod);
+
+	if (_FModSample)
+    {
+		// delete FMod sample
+		loadDataToFMod(NULL);
+    }
+
+#ifdef NL_OS_WINDOWS
     sint error; 
     sint32 num;
     HMMIO hmmio;
@@ -124,13 +133,6 @@ bool CBufferFMod::readWavBuffer(const std::string &name, uint8 *wavData, uint da
     MMCKINFO riff_chunk;
     MMCKINFO data_chunk;
     MMCKINFO chunk;
-
-  
-    if (_FModSample)
-    {
-		// delete FMod sample
-		loadDataToFMod(NULL);
-    }
 
 	uint size = dataSize;
 
@@ -298,6 +300,111 @@ bool CBufferFMod::readWavBuffer(const std::string &name, uint8 *wavData, uint da
 
 
     mmioClose(hmmio, 0);
+ #else // NL_OS_WINDOWS
+	char hdrstr[4];
+	unsigned long Offset = 0L;
+
+	const uint HDR_MAG_SIZE=4;
+	const uint FMT_TAG_SIZE=2;
+
+	// get the RIFF identifier
+	memcpy(&hdrstr, wavData, HDR_MAG_SIZE);
+	hdrstr[4]='\0';
+	if(strcmp(hdrstr, "RIFF") == 0)
+		Offset += HDR_MAG_SIZE;
+	else
+		throw ESoundDriver("Failed to read the RIFF identifier");
+
+	// seek chunk size.
+	Offset += HDR_MAG_SIZE;
+
+	// check for wave format
+	memcpy(&hdrstr, wavData+Offset, HDR_MAG_SIZE);
+	hdrstr[4]='\0';
+	if(strcmp(hdrstr, "WAVE") == 0)
+		Offset += HDR_MAG_SIZE;
+	else
+		throw ESoundDriver("Not a WAVE format.");
+
+	// check format id
+	memcpy(&hdrstr, wavData+Offset, HDR_MAG_SIZE);
+	hdrstr[4]='\0';
+	if(strcmp(hdrstr, "fmt ") == 0)
+		Offset+=HDR_MAG_SIZE;
+	else
+		throw ESoundDriver("Failed to read the fmt chunk ID.");
+
+	// seek the format chunk size
+	Offset += HDR_MAG_SIZE;
+
+	// check the format tag, must be PCM
+	short fmtTag;
+	memcpy(&fmtTag, wavData+Offset, FMT_TAG_SIZE);
+	if(fmtTag == 1)         // PCM
+		Offset += FMT_TAG_SIZE;
+	else // nothing else supported.
+		throw ESoundDriver("Unsupported format.");
+
+	// get the number of channels
+	short channels;
+	memcpy(&channels, wavData+Offset, FMT_TAG_SIZE);
+	Offset += FMT_TAG_SIZE;
+
+	// get the sample rate.
+	long sampleRate;
+	memcpy(&sampleRate, wavData+Offset, HDR_MAG_SIZE);
+	Offset += HDR_MAG_SIZE;
+	_Freq=sampleRate;
+
+	// seek avg data rate size
+	Offset += HDR_MAG_SIZE;
+
+	// get bytes per sample
+	short bytesPerSample;
+	memcpy(&bytesPerSample, wavData+Offset, FMT_TAG_SIZE);
+	if(bytesPerSample == 1)
+		_Format = Mono8;
+	else if(bytesPerSample == 2 && channels == 1)
+		_Format = Mono16;
+	else if(bytesPerSample == 2 && channels == 2)
+		_Format = Stereo8;
+	else if(bytesPerSample == 4)
+		_Format = Stereo16;
+	Offset += FMT_TAG_SIZE;
+
+	// seek bits per sample
+	Offset += FMT_TAG_SIZE;
+
+	// go through and find the data.
+	bool currentChunkData;
+	uint8 *data=NULL;
+	while(Offset < dataSize)
+	{
+		long chunkLength;
+		currentChunkData=false;
+
+		// get the chunk type
+		memcpy(&hdrstr, wavData+Offset, HDR_MAG_SIZE);
+		hdrstr[4]='\0';
+		if(strcmp(hdrstr, "data") == 0)
+			currentChunkData=true;
+		Offset += HDR_MAG_SIZE;
+
+		// get how big the up-coming chunk is.
+		memcpy(&chunkLength, wavData+Offset, HDR_MAG_SIZE);
+		Offset += HDR_MAG_SIZE;
+
+		// if the chunk type was 'data' then copy the chunk for fmod
+		if(currentChunkData)
+		{
+			_Size=chunkLength;
+			data = new uint8[_Size];
+			memcpy(data, wavData+Offset, _Size);
+		}
+
+		Offset += chunkLength;
+	}
+#endif
 
 	static NLMISC::TStringId	empty(CSoundDriverFMod::instance()->getStringMapper()->map(""));
 	NLMISC::TStringId nameId = CSoundDriverFMod::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(name));

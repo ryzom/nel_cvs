@@ -26,9 +26,6 @@
 
 #include "stdmisc.h"
 
-// Currently this class supports Windows only
-#ifdef NL_OS_WINDOWS
-
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/path.h"
 
@@ -53,8 +50,7 @@ bool nlFreeLibrary(NL_LIB_HANDLE libHandle)
 #if defined NL_OS_WINDOWS
 	return FreeLibrary(libHandle) > 0;
 #elif defined (NL_OS_UNIX)
-#error "this code is not terminated as I don't have the man right now !"
-	dlclose(libHandle);
+	return dlclose(libHandle) == 0;
 #else
 #error "You must define nlFreeLibrary for your platform"
 #endif
@@ -193,6 +189,14 @@ bool CLibrary::loadLibrary(const std::string &libName, bool addNelSuffixe, bool 
 	// load the lib now
 	_LibHandle = nlLoadLibrary(libPath);
 	_LibFileName = libPath;
+	// MTR: some new error handling. Just logs if it couldn't load the handle.
+	if(_LibHandle == NULL) {
+		char *errormsg="Verify DLL existance.";
+#ifdef NL_OS_UNIX
+		errormsg=dlerror();
+#endif
+		nlwarning("Loading library %s failed: %s", libPath.c_str(), errormsg);
+	}
 
 	return _LibHandle != NULL;
 }
@@ -219,5 +223,3 @@ void *CLibrary::getSymbolAddress(const std::string &procName)
 
 
 }	// namespace NLMISC
-
-#endif //NL_OS_WINDOWS

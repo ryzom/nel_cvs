@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.3 2001/05/16 15:57:40 legros Exp $
+ * $Id: retriever_bank.h,v 1.4 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,13 +51,20 @@ protected:
 	std::vector<CLocalRetriever>	_Retrievers;
 
 public:
+	/// Returns the vector of retrievers.
 	const std::vector<CLocalRetriever>	&getRetrievers() const { return _Retrievers; }
+
+	/// Returns the number of retrievers in the bank.
 	uint								size() const { return _Retrievers.size(); }
 
+	/// Gets nth retriever.
 	const CLocalRetriever				&getRetriever(uint n) const { return _Retrievers[n]; }
 
-	void								addRetriever(const CLocalRetriever &retriever) { _Retrievers.push_back(retriever); }
-	void								addRetriever(const std::string &filename)
+	/// Adds the given retriever to the bank.
+	uint								addRetriever(const CLocalRetriever &retriever) { _Retrievers.push_back(retriever); return _Retrievers.size()-1; }
+
+	/// Loads the retriever named 'filename' (using defined search paths) and adds it to the bank.
+	uint								addRetriever(const std::string &filename)
 	{
 		NLMISC::CIFile	input;
 		_Retrievers.resize(_Retrievers.size()+1);
@@ -66,8 +73,10 @@ public:
 		input.open(filename);
 		localRetriever.serial(input);
 		input.close();
+		return _Retrievers.size()-1;
 	}
 
+	/// Serialises this CRetrieverBank.
 	void								serial(NLMISC::IStream &f)
 	{
 		f.serialCont(_Retrievers);

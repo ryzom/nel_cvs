@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.6 2001/05/16 15:58:14 legros Exp $
+ * $Id: chain.cpp,v 1.7 2001/05/18 08:24:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,8 @@ using namespace std;
 using namespace NLMISC;
 
 
+// Functions for vertices comparison.
+// total order relation
 static inline bool	isStrictlyLess(const CVector &a, const CVector &b)
 {
 	if (a.x < b.x)	return true;
@@ -61,6 +63,10 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 	return (a == b);
 }
 
+
+// COrderedChain methods implementation
+
+// translates the ordered chain by the vector translation
 void	NLPACS::COrderedChain::translate(const CVector &translation)
 {
 	uint	i;
@@ -68,6 +74,7 @@ void	NLPACS::COrderedChain::translate(const CVector &translation)
 		_Vertices[i] += translation;
 }
 
+// serialises the ordered chain
 void	NLPACS::COrderedChain::serial(IStream &f)
 {
 	f.serialCont(_Vertices);
@@ -75,9 +82,10 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 	f.serial(_ParentId);
 }
 
-
+// sets value to the right surface id for later edge link
 void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 {
+	// the _Right id should have been previously set to -2.
 	if (_Right != -2)
 	{
 		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
@@ -85,6 +93,7 @@ void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 		return;
 	}
 
+	// The index must be positive or zero
 	if (index < 0)
 	{
 		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
@@ -92,24 +101,35 @@ void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 		return;
 	}
 
+	// sets _Edge and _Right values.
 	_Edge = edge;
 	_Right = -index-256;
 }
 
+// end of COrderedChain methods implementation
 
-void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edges)
+
+// CChain methods implementation
+
+// builds the CChain from a list of vertices and a left and right surfaces id.
+// the chains vector is the vector where to store generated ordered chains.
+// thisId is the current id of the CChain, and edge is the number of the edge the CChain belongs to (-1
+// if none.)
+void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 right, vector<COrderedChain> &chains, uint16 thisId, sint edge)
 {
 	sint		first = 0, last = 0, i;
 
 	_Left = left;
 	_Right = right;
-	_Edge = edges;
+	_Edge = edge;
 
+	// splits the vertices list in ordered sub chains.
 	while (first < (sint)vertices.size()-1)
 	{
 		last = first+1;
 		bool	forward = isStrictlyLess(vertices[first], vertices[last]);
 
+		// first checks if the subchain goes forward or backward.
 		if (forward)
 			for (; last < (sint)vertices.size() && isStrictlyLess(vertices[last-1], vertices[last]); ++last)
 				;
@@ -118,17 +138,20 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 				;
 		--last;
 
+		// inserts the new subchain id within the CChain.
 		uint32	subChainId = chains.size();
 		if (subChainId > 65535)
 			nlerror("in NLPACS::CChain::make(): reached the maximum number of ordered chains");
 		_SubChains.push_back((uint16)subChainId);
 
+		// and creates a new COrderedChain
 		chains.resize(chains.size()+1);
 		COrderedChain	&subchain = chains.back();
 		subchain._Vertices.reserve(last-first+1);
 		subchain._Forward = forward;
 		subchain._ParentId = thisId;
 
+		// and then copies the vertices (sorted, btw!)
 		if (forward)
 			for (i=first; i<=last; ++i)
 				subchain._Vertices.push_back(vertices[i]);
@@ -140,6 +163,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 	}
 }
 
+// serialises the CChain
 void	NLPACS::CChain::serial(IStream &f)
 {
 	f.serialCont(_SubChains);
@@ -148,4 +172,5 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serial(_Edge);
 }
 
+// end of CChain methods implementation
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.5 2001/05/16 15:57:40 legros Exp $
+ * $Id: retriever_instance.h,v 1.6 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,39 +128,75 @@ protected:
 	NLMISC::CAABBox						_BBox;
 
 public:
+	/// Default constructor.
 	CRetrieverInstance();
 
+	/// Resets the instance. This doesn't affect any neighboring instances...
 	void								reset();
+	/// Resets links of the instance. This doesn't affect any neighboring instances...
 	void								resetLinks();
+	/// Resets links of the instance on the given edge. This doesn't affect any neighboring instances...
 	void								resetLinks(uint edge);
 
+	/// Returns the id of this instance.
 	sint32								getInstanceId() const { return _InstanceId; }
+	/// Returns the id of the retriever associated to this instance.
 	sint32								getRetrieverId() const { return _RetrieverId; }
+	/// Returns the orientation of the instance in relation to the retriever.
 	uint8								getOrientation() const { return _Orientation; }
+	/// Returns the origin translation of this instance.
 	NLMISC::CVector						getOrigin() const { return _Origin; }
 
+
+	/// Gets the id of the neighbor on the edge.
 	sint32								getNeighbor(uint edge) const { return _Neighbors[edge]; }
+
+	/// Gets the ids of the neighbor tips on the given edge.
 	const std::vector<uint16>			&getEdgeTipLinks(uint edge) const { return _EdgeTipLinks[edge]; }
+	/// Gets the id of the nth neighbor tip on the given edge.
 	uint16								getEdgeTipLink(uint edge, uint n) const { return _EdgeTipLinks[edge][n]; }
+
+	/// Gets the ids of the neighbor chains on the given edge.
 	const std::vector<uint16>			&getEdgeChainLinks(uint edge) const { return _EdgeChainLinks[edge]; }
+	/// Gets the id of the nth neighbor chain on the given edge.
 	uint16								getEdgeChainLink(uint edge, uint n) const { return _EdgeChainLinks[edge][n]; }
 
+	/// Returns the number of the edge on the instance corresponding to the edge on the retriever.
+	uint8								getInstanceEdge(uint8 retrieverEdge) const { return (retrieverEdge+_Orientation)%4; }
+	/// Returns the number of the edge on the retriever corresponding to the edge on the instance.
+	uint8								getRetrieverEdge(uint8 instanceEdge) const { return (instanceEdge+4-_Orientation)%4; }
+
+
+	/// Initializes the instance.
 	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
 											 uint8 orientation, const NLMISC::CVector &origin);
 
+	/// Links the instance to a given neighbor on the given edge.
 	void								link(const CRetrieverInstance &neighbor, uint8 edge,
 											 const std::vector<CLocalRetriever> &retrievers);
 
+	/// Unlinks the given edge. The neighbor instance is AFFECTED.
 	void								unlink(std::vector<CRetrieverInstance> &instances);
 
+
+	/**
+	 * Retrieves the position in the instance from an estimated position.
+	 * WARNING: the estimated position is a GLOBAL position, and the returned position
+	 * is a LOCAL position (to the retriever).
+	 */
 	CLocalRetriever::CLocalPosition		retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever);
-	
+
+	/// Serialises this CRetrieverInstance.
 	void								serial(NLMISC::IStream &f);
 
+	/// Computes the position in the local axis of the retriever from a global position.
 	NLMISC::CVector						getLocalPosition(const NLMISC::CVector &globalPosition) const;
+	/// Computes the position in the global axis from a local position (in the retriever axis).
 	NLMISC::CVector						getGlobalPosition(const NLMISC::CVector &localPosition) const;
+	/// Computes the position (as double) in the global axis from a local position (in the retriever axis).
 	NLMISC::CVectorD					getDoubleGlobalPosition(const NLMISC::CVector &localPosition) const;
 
+	/// Returns the bbox of the instance.
 	NLMISC::CAABBox						getBBox() { return _BBox; }
 };
 

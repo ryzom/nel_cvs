@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.8 2001/05/16 15:58:14 legros Exp $
+ * $Id: local_retriever.cpp,v 1.9 2001/05/18 08:24:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 using namespace std;
 using namespace NLMISC;
 
+/// The max distance allowed to merge tips.
 const float	NLPACS::CLocalRetriever::_TipThreshold = 0.1f;
 
 
@@ -46,10 +47,12 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 											const CVector &center,
 											const NLPACS::CSurfaceQuadTree &quad)
 {
+	// creates a new surface...
 	sint32	newId = _Surfaces.size();
 	_Surfaces.resize(newId+1);
 	CRetrievableSurface	&surf = _Surfaces.back();
 
+	// ... and fills it
 	surf._NormalQuanta = normalq;
 	surf._OrientationQuanta = orientationq;
 	surf._Material = mat;
@@ -57,6 +60,10 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 	surf._Level = level;
 	surf._Quad = quad;
 	surf._Center = center;
+
+	// WARNING!! MODIFY THESE IF QUANTAS VALUES CHANGE !!
+	surf._IsFloor = (surf._NormalQuanta <= 1);
+	surf._IsCeiling = (surf._NormalQuanta >= 3);
 
 	return newId;
 }
@@ -78,14 +85,17 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 	if (right>(sint)_Surfaces.size())
 		nlerror ("right surface id MUST be id<%d (id=%d)", _Surfaces.size(), right);
 
+	// checks if we can build the chain.
 	if (newId > 65535)
 		nlerror("in NLPACS::CLocalRetriever::addChain(): reached the maximum number of chains");
 
+	// make the chain and its subchains.
 	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, edge);
 
 	CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
 	CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
 
+	// adds the chain and the link to the surface links vector.
 	if (leftSurface != NULL)
 		leftSurface->_Chains.push_back(CRetrievableSurface::CSurfaceLink(newId, right));
 	if (rightSurface != NULL)
@@ -94,6 +104,7 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 	// For each chain find closest start and stop tips
 	uint	j;
 
+	// match closest start
 	float	closestStartDistance = 1e10f;
 	sint	closestStart = -1;
 	for (j=0; j<_Tips.size(); ++j)
@@ -117,7 +128,7 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 	_Tips[closestStart].Chains.push_back(CTip::CChainTip(newId, true));
 	chain._StartTip = closestStart;
 
-	//
+	// match closest stop
 	float	closestStopDistance = 1e10f;
 	sint	closestStop = -1;
 	for (j=0; j<_Tips.size(); ++j)
@@ -143,9 +154,11 @@ sint32	NLPACS::CLocalRetriever::addChain(const std::vector<NLMISC::CVector> &ver
 	return newId;
 }
 
+// not implemented...
 void	NLPACS::CLocalRetriever::sortTips()
 {
 }
+
 
 void	NLPACS::CLocalRetriever::findEdgeTips()
 {
@@ -153,19 +166,26 @@ void	NLPACS::CLocalRetriever::findEdgeTips()
 	CVector	bmin = _BBox.getMin(),
 			bmax = _BBox.getMax();
 
+	// prepares some flags...
 	for (i=0; i<_Tips.size(); ++i)
 		_Tips[i].Edges &= 0xF;
 
+	// for each chain, checks on which edge it is located
+	// then mark the tips of the chain, and adds them to
+	// the _EdgeTips tables...
 	for (i=0; i<_Chains.size(); ++i)
 	{
 		CChain	&chain = _Chains[i];
 
+		// it the chain belongs to an edge
 		if (chain._Edge >= 0)
 		{
 			uint	edge = 1<<chain._Edge;
+			// extracts start and stop tips.
 			uint	start = chain._StartTip,
 					stop = chain._StopTip;
 
+			// and marks them (if they were not yet)
 			if (!(_Tips[start].Edges & (edge<<4)))
 			{
 				_EdgeTips[chain._Edge].push_back(start);
@@ -180,9 +200,11 @@ void	NLPACS::CLocalRetriever::findEdgeTips()
 		}
 	}
 
+	// clears uses flags
 	for (i=0; i<_Tips.size(); ++i)
 		_Tips[i].Edges &= 0xF;
 
+	// sorts the tips on each edge so we can directly match them at instance linking.
 	sort(_EdgeTips[0].begin(), _EdgeTips[0].end(), CYPred(&_Tips, false));
 	sort(_EdgeTips[1].begin(), _EdgeTips[1].end(), CXPred(&_Tips, false));
 	sort(_EdgeTips[2].begin(), _EdgeTips[2].end(), CYPred(&_Tips, true));
@@ -193,6 +215,8 @@ void	NLPACS::CLocalRetriever::findEdgeChains()
 {
 	uint	chain;
 
+	// for each chain, if it belongs to an edge of the
+	// local retriever, then adds it to the _EdgeChains tables.
 	for (chain=0; chain<_Chains.size(); ++chain)
 	{
 		sint	edge = _Chains[chain]._Edge;
@@ -201,6 +225,7 @@ void	NLPACS::CLocalRetriever::findEdgeChains()
 		{
 			sint32	numOnEdge = _EdgeChains[edge].size();
 			_EdgeChains[edge].push_back(chain);
+			// sets index so we can easily retrieve the neighbor after linking.
 			_Chains[chain].setIndexOnEdge(edge, numOnEdge);
 		}
 	}
@@ -328,20 +353,30 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 }
 
 
+
+
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable) const
 {
 	uint	ochain;
 
+	// WARNING!!
+	// retrieveTable is assumed to be 0 filled !!
+
+	// for each ordered chain, checks if the estimated position is between the min and max.
 	for (ochain=0; ochain<_OrderedChains.size(); ++ochain)
 	{
 		const COrderedChain	&sub = _OrderedChains[ochain];
 
+		// checks the position against the min and max of the chain
 		if (estimated.x < sub.getVertices().front().x || estimated.x > sub.getVertices().back().x)
 			continue;
 
 		const vector<CVector>	&vertices = sub.getVertices();
 		uint					start = 0, stop = vertices.size()-1;
 
+		// TODO: trivial up/down check using bbox.
+
+		// then finds the smallest segment of the chain that includes the estimated position.
 		while (stop-start > 1)
 		{
 			uint	mid = (start+stop)/2;
@@ -352,16 +387,20 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 				start = mid;
 		}
 
+		// and then checks if the estimated position is up or down the chain.
 		bool	isUpper;
 		
+		// first trivial case (up both tips)
 		if (estimated.y > vertices[start].y && estimated.y > vertices[stop].y)
 		{
 			isUpper = true;
 		}
+		// second trivial case (down both tips)
 		else if (estimated.y < vertices[start].y && estimated.y < vertices[stop].y)
 		{
 			isUpper = false;
 		}
+		// full test...
 		else
 		{
 			const CVector	&vstart = vertices[start],
@@ -374,6 +413,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		sint32	left = _Chains[sub.getParentId()].getLeft(),
 				right = _Chains[sub.getParentId()].getRight();
 
+		// Depending on the chain is forward, up the position, increase/decrease the surface table...
 		if (sub.isForward())
 		{
 			if (isUpper)

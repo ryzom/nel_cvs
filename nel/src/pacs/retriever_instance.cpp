@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.6 2001/05/17 09:05:10 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.7 2001/05/18 08:24:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,9 +42,13 @@ NLPACS::CRetrieverInstance::CRetrieverInstance()
 	reset();
 }
 
+
 void	NLPACS::CRetrieverInstance::resetLinks()
 {
 	uint	i;
+	// WARNING !!
+	// this is a HARD reset !
+	// only the instance i reset, no care about neighbors !!
 	for (i=0; i<4; ++i)
 	{
 		_Neighbors[i] = -1;
@@ -55,6 +59,9 @@ void	NLPACS::CRetrieverInstance::resetLinks()
 
 void	NLPACS::CRetrieverInstance::resetLinks(uint edge)
 {
+	// WARNING !!
+	// this is a HARD reset !
+	// only the instance i reset, no care about neighbors !!
 	_Neighbors[edge] = -1;
 	_EdgeTipLinks[edge].clear();
 	_EdgeChainLinks[edge].clear();
@@ -62,6 +69,9 @@ void	NLPACS::CRetrieverInstance::resetLinks(uint edge)
 
 void	NLPACS::CRetrieverInstance::reset()
 {
+	// WARNING !!
+	// this is a HARD reset !
+	// only the instance i reset, no care about neighbors !!
 	_RetrieveTable.clear();
 	_InstanceId = -1;
 	_RetrieverId = -1;
@@ -90,9 +100,11 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 	_RetrieveTable.resize(retriever.getSurfaces().size());
 	_NodesInformation.resize(retriever.getSurfaces().size());
 	uint	i;
+	// Resets _RetrieveTable for later internal use (retrievePosition)
 	for (i=0; i<_RetrieveTable.size(); ++i)
 		_RetrieveTable[i] = 0;
 
+	// Resets _NodesInformation for later pathfinding graph annotation.
 	for (i=0; i<_NodesInformation.size(); ++i)
 	{
 		CVector	pos = getGlobalPosition(retriever.getSurfaces()[i].getCenter());
@@ -149,10 +161,6 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 	}
 
 	uint	i, j;
-
-	/* WARNING !!!!   --- TO DO ---
-	 * TRANSFORM THE VERTICES FROM THE LOCAL AXIS TO THE GLOBAL AXIS !!!
-	 */
 
 	for (i=0; i<edgeTips.size(); ++i)
 	{
@@ -224,12 +232,14 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 	}
 }
 
+
 void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 {
 	uint	edge;
 
 	for (edge=0; edge<4; ++edge)
 	{
+		// on each edge, reset links and neighbor reverse links...
 		if (_Neighbors[edge] != -1)
 		{
 			CRetrieverInstance	&neighbor = instances[_Neighbors[edge]];
@@ -240,14 +250,17 @@ void	NLPACS::CRetrieverInstance::unlink(vector<CRetrieverInstance> &instances)
 }
 
 
+
+
 NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimated, const CLocalRetriever &retriever)
 {
 	CVector							localEstimated;
 	CLocalRetriever::CLocalPosition	retrieved;
 
-	// !!!!!! MODIFY THIS !!!!!!
+	// get local coordinates
 	localEstimated = getLocalPosition(estimated);
 
+	// fills _RetrieveTable by retrievingPosition.
 	retriever.retrievePosition(localEstimated, _RetrieveTable);
 
 	uint	surf;
@@ -256,16 +269,23 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	float	bestDistance = 1.0e10f;
 	float	bestMeanHeight;
 
+	// for each surface in the retriever
 	for (surf=0; surf<_RetrieveTable.size(); ++surf)
 	{
+		// if the surface contains the estimated position.
 		if (_RetrieveTable[surf] != 0)
 		{
+			// at least remembers the last seen surface...
 			lastSurf = surf;
 			_RetrieveTable[surf] = 0;
+			// search in the surface's quad tree for the actual height
 			const CQuadLeaf	*leaf = retriever.getSurfaces()[surf].getQuadTree().getLeaf(localEstimated);
+			// if there is no acceptable leaf, just give up
 			if (leaf == NULL)
 				continue;
 
+			// computes the mean height of the leaf, and remembers the surface
+			// if it is closer to the estimation than the previous remembered...
 			float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
 			float	distance = (float)fabs(localEstimated.z-meanHeight);
 			if (distance < bestDistance)
@@ -277,11 +297,13 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 		}
 	}
 
+	// if there is a best surface, returns it
 	if (bestSurf != -1)
 	{
 		retrieved.Surface = bestSurf;
 		retrieved.Estimation = CVector(localEstimated.x, localEstimated.y, bestMeanHeight);
 	}
+	// else return the last remembered...
 	else
 	{
 		retrieved.Surface = lastSurf;
@@ -291,11 +313,14 @@ NLPACS::CLocalRetriever::CLocalPosition	NLPACS::CRetrieverInstance::retrievePosi
 	return retrieved;
 }
 
+
 CVector	NLPACS::CRetrieverInstance::getLocalPosition(const CVector &globalPosition) const
 {
 	switch (_Orientation)
 	{
 	default:
+		nlwarning("in NLPACS::CRetrieverInstance::getLocalPosition()");
+		nlerror("unexpected orientation value (%d)", _Orientation);
 	case 0:
 		return CVector(+globalPosition.x-_Origin.x, +globalPosition.y-_Origin.y, globalPosition.z-_Origin.z);
 		break;
@@ -327,6 +352,8 @@ CVector	NLPACS::CRetrieverInstance::getGlobalPosition(const CVector &localPositi
 	switch (_Orientation)
 	{
 	default:
+		nlwarning("in NLPACS::CRetrieverInstance::getLocalPosition()");
+		nlerror("unexpected orientation value (%d)", _Orientation);
 	case 0:
 		return CVector(+localPosition.x+_Origin.x, +localPosition.y+_Origin.y, localPosition.z+_Origin.z );
 		break;
@@ -358,6 +385,8 @@ CVectorD	NLPACS::CRetrieverInstance::getDoubleGlobalPosition(const CVector &loca
 	switch (_Orientation)
 	{
 	default:
+		nlwarning("in NLPACS::CRetrieverInstance::getLocalPosition()");
+		nlerror("unexpected orientation value (%d)", _Orientation);
 	case 0:
 		return CVectorD(+(double)localPosition.x+(double)_Origin.x, +(double)localPosition.y+(double)_Origin.y, (double)localPosition.z+(double)_Origin.z );
 		break;
@@ -399,10 +428,12 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 		f.serialCont(_EdgeChainLinks[i]);
 	}
 
+	// serialises the number of nodes
 	uint16	totalNodes = _RetrieveTable.size();
 	f.serial(totalNodes);
 	if (f.isReading())
 	{
+		// if the stream is reading, reinits the temps tables...
 		_RetrieveTable.resize(totalNodes);
 		_NodesInformation.resize(totalNodes);
 		for (i=0; i<_RetrieveTable.size(); ++i)

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.9 2001/05/16 15:57:40 legros Exp $
+ * $Id: local_retriever.h,v 1.10 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,15 +61,28 @@ public:
 	class CTip
 	{
 	public:
+		/**
+		 * A chain tip. Contains the id of the chain and wether this tip is the start of the chain.
+		 * \author Benjamin Legros
+		 * \author Nevrax France
+		 * \date 2001
+		 */
 		struct CChainTip
 		{
+			/// The id of the chain.
 			sint32	Chain;
+
+			/// True if this tip is the beginning of the chain.
 			bool	Start;
+
+			/// Constructor.
 			CChainTip(sint32 chainId = 0, bool start = 0) : Chain(chainId), Start(start) {}
+
+			/// Serielaises the CChainTip
 			void	serial(NLMISC::IStream &f) { f.serial(Chain, Start); }
 		};
 
-		/// The position of the tip.
+		/// The position of the tip.x
 		NLMISC::CVector					Point;
 
 		// The chains linked to that tip.
@@ -79,12 +92,14 @@ public:
 		uint8							Edges;
 
 	public:
+		/// Serialises the CTip.
 		void	serial(NLMISC::IStream &f)
 		{
 			f.serial(Point);
 			f.serialCont(Chains);
 		}
 
+		/// Translates the CTip by the translation vector.
 		void	translate(const NLMISC::CVector &translation)
 		{
 			Point += translation;
@@ -115,10 +130,16 @@ public:
 	class CLocalPosition
 	{
 	public:
+		/// The id of the surface corresponding to the local position.
 		sint32							Surface;
+
+		/// The best position estimation of the point snapped on the surface. This is a CLocalRetriever local axis position.
 		NLMISC::CVector					Estimation;
 	public:
+		/// Constructor.
 		CLocalPosition(sint32 surface=-1, const NLMISC::CVector &estimation=NLMISC::CVector::Null) : Surface(surface), Estimation(estimation) { }
+
+		/// Serialises the CLocalPosition.
 		void							serial(NLMISC::IStream &f) { f.serial(Surface, Estimation); }
 	};
 
@@ -138,10 +159,10 @@ protected:
 	/// The tips making links between different chains.
 	std::vector<CTip>					_Tips;
 
-	/// The axis aligned bounding box of the zone.
+	/// The axis aligned bounding box of the zone. Obsolete.
 	NLMISC::CAABBox						_BBox;
 
-	/// The id of the zone.
+	/// The id of the zone. Obsolete.
 	sint32								_ZoneId;
 
 	/// The tips on the edges of the zone.
@@ -160,7 +181,8 @@ protected:
 	CChainQuad							_ChainQuad;
 
 
-public:
+private:
+	/// A class that allows to sort tips among x axis (increasingly or decreasingly.)
 	struct CXPred
 	{
 		const std::vector<CTip>			*Tips;
@@ -174,6 +196,7 @@ public:
 		}
 	};
 
+	/// A class that allows to sort tips among y axis (increasingly or decreasingly.)
 	struct CYPred
 	{
 		const std::vector<CTip>			*Tips;
@@ -188,42 +211,93 @@ public:
 	};
 
 public:
+	/// Sets the bbox of the local retriever. Obsolete since local retrievers are now CVector::Null centered...
 	void								setBBox(const NLMISC::CAABBox &box) { _BBox = box; }
+	/// Sets the ZoneId of the local retriever. Obsolete since only instances have ids...
 	void								setZoneId (sint32 id) { _ZoneId = id; }
 
+	/// @name Selectors
+	// @{
+
+	/// Gets the bbox of the retriever. Obsolete.
 	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
+	/// Gets the ZoneId of the retriever. Obsolete.
 	sint32								getZoneId() const { return _ZoneId; }
 
+	/// Returns the chain tips inside the local retrievers.
 	const std::vector<CTip>				&getTips() const { return _Tips; }
+	/// Returns the nth tip in the retriever.
 	const CTip							&getTip(uint n) const { return _Tips[n]; }
+
+	/**
+	 * Returns the ids of the tips on the edge-th edge of the retriever.
+	 * edge corresponds to the number of the edge in the CLocalRetriever (and not its instance.)
+	 */
 	const std::vector<uint16>			&getEdgeTips(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge]; }
+	/**
+	 * Returns the id of the nth tip on the edge-th edge of the retriever.
+	 * edge corresponds to the number of the edge in the CLocalRetriever (and not its instance.)
+	 */
 	uint16								getEdgeTip(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeTips[edge][n]; }
 
+	/// Returns the ordered chains.
 	const std::vector<COrderedChain>	&getOrderedChains() const { return _OrderedChains; }
+	/// Returns the nth ordered chain.
 	const COrderedChain					&getOrderedChain(uint n) const { return _OrderedChains[n]; }
+
+	/// Returns the chains.
 	const std::vector<CChain>			&getChains() const { return _Chains; }
+	/// retruns the nth chain.
 	const CChain						&getChain(uint n) const { return _Chains[n]; }
+
+	/// Returns the ids of the chains on the edge-th edge of the retriever.
 	const std::vector<uint16>			&getEdgeChains(sint edge) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge]; }
+	/// Returns the id of the nth chain on the edge-th edge of the retriever.
 	uint16								getEdgeChain(sint edge, uint n) const { nlassert(0<=edge && edge<4); return _EdgeChains[edge][n]; }
+
+	/// Returns the surfaces.
 	const std::vector<CRetrievableSurface>	&getSurfaces() const { return _Surfaces; }
+	/// Returns the nth surface.
 	const CRetrievableSurface			&getSurface(uint n) const { return _Surfaces[n]; }
 
+	// @}
+
+
+	/// @name Mutators
+	//@{
+
+	/// Adds a surface to the local retriever, using its features. Returns the id of the newly created surface.
 	sint32								addSurface(uint8 normalq, uint8 orientationq,
 												   uint8 mat, uint8 charact, uint8 level,
 												   const NLMISC::CVector &center,
 												   const CSurfaceQuadTree &quad);
 
+	/**
+	 * Adds a chain to the local retriever, using the vertices of the chain, 
+	 * the left and right surfaces id and the edge on which the chain is stuck
+	 */
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
 												 sint32 left, sint32 right, sint edge);
+
+	/// Builds topologies tables.
 	void								computeTopologies();
 
+	/// Found tips on the edges of the retriever and fills _EdgeTips tables.
+	void								findEdgeTips();
+	/// Found chains on the edges of the retriever and fills _EdgeChains tables.
+	void								findEdgeChains();
+
+	/// Updates surfaces links from the links contained in the chains...
+	void								updateChainIds();
+
+	/// Sorts chains references inside the tips. NOT IMPLEMENTED YET.
 	void								sortTips();
 
-	void								findEdgeTips();
-	void								findEdgeChains();
-	void								updateChainIds();
+	/// Translates the local retriever by the translation vector.
 	void								translate(const NLMISC::CVector &translation);
 
+
+	/// Serialises the CLocalRetriever.
 	void								serial(NLMISC::IStream &f);
 
 
@@ -244,6 +318,7 @@ public:
 protected:
 	friend class	CRetrieverInstance;
 
+	/// Retrieves a position inside the retriever (from the local position.)
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
 	
 };

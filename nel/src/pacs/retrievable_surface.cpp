@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.2 2001/05/10 12:19:02 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.3 2001/05/18 08:24:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,4 +57,5 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 	for (i=0; i<NumCreatureModels; ++i)
 		f.serial(_Topologies[i]);
 	f.serial(_Center);
+	f.serial(_IsFloor, _IsCeiling);
 }

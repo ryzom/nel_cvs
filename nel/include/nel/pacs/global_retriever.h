@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.4 2001/05/16 15:57:40 legros Exp $
+ * $Id: global_retriever.h,v 1.5 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,62 +66,117 @@ public:
 	class CGlobalPosition
 	{
 	public:
+		/// The id of the instance referred by this global position.
 		sint32							InstanceId;
+
+		/// The local position within the CLocalRetriever referred by the instance (cf. InstanceId)
 		CLocalRetriever::CLocalPosition	LocalPosition;
 	public:
+		/**
+		 * Constuctor.
+		 * Creates a CGlobalPosition from an instanceId and a local position.
+		 */
 		CGlobalPosition(sint32 instanceId=-1, 
 					   const CLocalRetriever::CLocalPosition &localPosition=CLocalRetriever::CLocalPosition::CLocalPosition())
 			: InstanceId(instanceId), LocalPosition(localPosition) { }
+
+		/// Serialises the global position.
 		void							serial(NLMISC::IStream &f) { f.serial(InstanceId, LocalPosition); }
 	};
 
 protected:
 
+	/// The CRetrieverBank where the commmon retrievers are stored.
 	const CRetrieverBank			*_RetrieverBank;
 
+	/** 
+	 * The instance grid that composes the global retriever.
+	 * Please note that the grid is rows/lines ordered the way of an excel sheet, e.g.
+	 * one row right means increasing x coordinate, and one line down means decreasing y coordinate.
+	 */
 	std::vector<CRetrieverInstance>	_Instances;
 
+	/// The width of the grid of instances.
 	uint16							_Width;
+
+	/// The height of the grid of instances.
 	uint16							_Height;
 
+	/// The axis aligned bounding box of the global retriever.
 	NLMISC::CAABBox					_BBox;
 
 public:
-	// Constructors
-
+	/**
+	 * Constructor.
+	 * Creates a global retriever with given width, height and retriever bank.
+	 */
 	CGlobalRetriever(uint width=0, uint height=0, const CRetrieverBank *bank=NULL) 
 		: _Width(width), _Height(height), _RetrieverBank(bank), _Instances(width*height)
 	{ }
 
 
-	// Selectors
+	/// @name Selectors
+	//@{
 
+	/// Gets the width (in number of rows) of the global retriever.
 	uint16							getWidth() const { return _Width; }
+
+	/// Get the height (in number of lines) of the global retriever.
 	uint16							getHeight() const { return _Height; }
 
+
+	/// Gets the BBox of the global retriever.
 	const NLMISC::CAABBox			&getBBox() const { return _BBox; }
 
+
+	/// Gets the vector of retriever instances that compose the global retriever.
 	const std::vector<CRetrieverInstance>	getInstances() const { return _Instances; }
 
+	/// Gets the retriever instance referred by its id.
 	const CRetrieverInstance		&getInstance(uint id) const { return _Instances[id]; }
-	const CRetrieverInstance		&getInstance(uint x, uint y) const { return getInstance(x, y); }
-	const CRetrieverInstance		&getInstance(const NLMISC::CVector &p) const { return getInstance(p); }
+	/// Gets the retriever instance referred by its row and line position.
+	const CRetrieverInstance		&getInstance(uint x, uint y) const { return _Instances[convertId(x, y)]; }
+	/// Gets the retriever instance referred by its global position.
+	const CRetrieverInstance		&getInstance(const NLMISC::CVector &p) const;
 
+
+	/// Get the retriever bank associated to this global retriever.
 	const CRetrieverBank			*getRetrieverBank() const { return _RetrieverBank; }
 
+	//@}
+
+	/// @name Position retrieving methods.
+	//@{
+
+	/// Retrieves the position of an estimated point in the global retriever.
 	CGlobalPosition					retrievePosition(const NLMISC::CVector &estimated);
+
+	/// Converts a global position object into a 'human-readable' CVector.
 	NLMISC::CVector					getGlobalPosition(const CGlobalPosition &global) const;
+
+	/// Converts a global position object into a 'human-readable' CVector (double instead.)
 	NLMISC::CVectorD				getDoubleGlobalPosition(const CGlobalPosition &global) const;
 
+	//@}
+
+	/// @name Misc. safe methods.
+	//@{
+
+	/// Converts an id into a couple of (row,line) coordinates.
 	void							convertId(uint id, uint &x, uint &y) const
 	{
 		x = id % _Width;
 		y = id / _Width;
 		nlassert(y < _Height);
 	}
+
+	/// Converts a couple of (row,line) coordinates into an id.
 	uint							convertId(uint x, uint y) const	{ return y*_Width+x; }
 
+	/// Returns the center of an instance of the retriever specified by its (row,line) coordinates.
 	NLMISC::CVector					getInstanceCenter(uint x, uint y) const;
+
+	/// Returns the center of an instance of the retriever specified by its id.
 	NLMISC::CVector					getInstanceCenter(uint id) const
 	{
 		uint	x, y;
@@ -129,42 +184,81 @@ public:
 		return getInstanceCenter(x, y);
 	}
 
-
 	/// get instances which intersect the bbox. result: any instance(x,y), with  x0<=x<x1  &&  y0<=y<y1.
 	void							getInstanceBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1, const NLMISC::CAABBox &bbox) const;
 
+	//@}
 
-	// Mutators
 
+
+	/// @name Mutators
+	//@{
+
+	/** 
+	 * Sets the width of the global retriever.
+	 * The previous instances are NOT reset! Set width/height/center before any instance addition.
+	 */
 	void							setWidth(uint16 width) { _Width = width; _Instances.resize(_Width*_Height); }
+	/** 
+	 * Sets the height of the global retriever.
+	 * The previous instances are NOT reset! Set width/height/center before any instance addition.
+	 */
 	void							setHeight(uint16 height) { _Height = height; _Instances.resize(_Width*_Height); }
-
-	void							setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
+	/** 
+	 * Sets the center of the global retriever.
+	 * The previous instances are NOT translated! Set width/height/center before any instance addition.
+	 */
 	void							setCenter(const NLMISC::CVector &center) { _BBox.setCenter(center); }
+
+	/**
+	 * Updates the bbox of the global retriever.
+	 * The previous instances are NOT updated! Set width/height/center before any instance addition.
+	 */
 	void							updateBBox() { _BBox.setSize(NLMISC::CVector(_Width*160.0f, _Height*160.0f, 20000.0f)); }
 
-	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const NLMISC::CVector &origin);
-	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation);
+	/** 
+	 * Sets directly the bbox of the global retriever.
+	 * Better use setWidth(), setHeight(), setCenter() and updateBBox().
+	 */
+	void							setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
 
+	/// Creates an instance of local retriever at position (x,y), with the given retriever and orientation.
+	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation);
+	/**
+	 * Creates an instance of local retriever at position (x,y), with the given retriever and orientation.
+	 * The instance is eventually placed at the given origin.
+	 */
+	CRetrieverInstance				&makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const NLMISC::CVector &origin);
+
+	/// Gets the instance by its id, with full read/write access.
 	CRetrieverInstance				&getInstanceFullAccess(uint id) { return _Instances[id]; }
+
+	/// Gets the instance by its (row,line) coordinates, with full read/write access.
 	CRetrieverInstance				&getInstanceFullAccess(uint x, uint y)
 	{
 		nlassert(x < _Width);
 		nlassert(y < _Height);
 		return _Instances[convertId(x, y)];
 	}
+	/// Gets the instance by a position inside the instance, with full read/write access.
 	CRetrieverInstance				&getInstanceFullAccess(const NLMISC::CVector &position);
 
+	/// Sets the retriever bank.
 	void							setRetrieverBank(const CRetrieverBank *bank) { _RetrieverBank = bank; }
 
-	void							makeLinks(uint n);
+
+	/// Resets all links within the global retriever.
 	void							resetAllLinks();
+
+	/// Links the instance referred by its id to its 4 neighbors.
+	void							makeLinks(uint n);
+	/// Links all the instances inside the global retriever.
 	void							makeAllLinks();
 
-
-	// Others
-
+	/// Serialises the global retriever.
 	void							serial(NLMISC::IStream &f);
+
+	//@}
 
 
 	/// \name  Collisions part.
@@ -193,17 +287,26 @@ public:
 	// @}
 
 
+	/// \name  A* part.
+	// @{
 
-	// A* methods
-public:
 	/// Finds an A* path from a given global position to another.
-	void								findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::list<CRetrieverInstance::CAStarNodeAccess> &path);
+	// TO DO: secure search to avoid crashes...
+	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::list<CRetrieverInstance::CAStarNodeAccess> &path);
+
+	// @}
 
 private:
+	/// \name  A* part.
+	// @{
+
+	/// Gets the CAStarNodeInfo referred by its access.
 	CRetrieverInstance::CAStarNodeInfo	&getNode(CRetrieverInstance::CAStarNodeAccess &access)
 	{
 		return _Instances[access.InstanceId]._NodesInformation[access.NodeId];
 	}
+
+	// @}
 
 
 	/// \name  Collisions part.

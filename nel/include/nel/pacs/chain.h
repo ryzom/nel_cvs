@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.6 2001/05/16 15:57:40 legros Exp $
+ * $Id: chain.h,v 1.7 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,8 +111,10 @@ protected:
 	void								setIndexOnEdge(uint edge, sint32 index);
 
 public:
-	/// Returns a vector of ordered chains that compose the entire chain
+	/// Returns a vector of ordered chain ids that compose the entire chain.
 	const std::vector<uint16>			&getSubChains() const { return _SubChains; }
+
+	/// Returns the id of the nth ordered chain that composes the chain.
 	uint16								getSubChain(uint n) const { return _SubChains[n]; }
 
 	/// Returns the left surface id.
@@ -127,15 +129,22 @@ public:
 		return (_Edge == edge && isEdgeId(_Right)) ? convertEdgeId(_Right) : -1;
 	}
 
+	/// Returns true iff  the given id corresponds to a link on an edge.
 	static bool							isEdgeId(sint32 id) { return id <= -256; }
+
+	/// Converts the edge id into the real index to the link (in the EdgeChainLinks of the CRetrieverInstance.)
 	static sint32						convertEdgeId(sint32 id) { return -(id+256); }
-	
+
+	/// Returns the id of the start tip of the chain.
 	uint16								getStartTip() const { return _StartTip; }
 
+	/// Returns the id of the end tip of the chain.
 	uint16								getStopTip() const { return _StopTip; }
 
+	/// Returns the number of the retriever's edge on which the chain is stuck (-1 if none.)
 	sint8								getEdge() const { return _Edge; }
 
+	/// Serialises the CChain object.
 	void								serial(NLMISC::IStream &f);
 };
 

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.4 2001/05/16 15:57:40 legros Exp $
+ * $Id: retrievable_surface.h,v 1.5 2001/05/18 08:23:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,10 +76,16 @@ public:
 	class CSurfaceLink
 	{
 	public:
+		/// The id of the chain between the 2 neighbors.
 		sint32							Chain;
+
+		/// The id of the neighbor.
 		sint32							Surface;
 	public:
+		/// Constructor.
 		CSurfaceLink(sint32 chain=0, sint32 surface=0) : Chain(chain), Surface(surface) {}
+
+		/// Serialises this CSurfaceLink.
 		void							serial(NLMISC::IStream &f) { f.serial(Chain, Surface); }
 	};
 
@@ -94,6 +100,8 @@ protected:
 	uint8								_Material;
 	uint8								_Character;
 	uint8								_Level;
+	bool								_IsFloor;
+	bool								_IsCeiling;
 	//@}
 
 	/// The links to the neighbor surfaces.
@@ -121,20 +129,26 @@ public:
 	uint8								getMaterial() const { return _Material; }
 	uint8								getCharacter() const { return _Character; }
 	uint8								getLevel() const { return _Level; }
+	bool								isFloor() const { return _IsFloor; }
+	bool								isCeiling() const { return _IsCeiling; }
 	const CSurfaceQuadTree				&getQuadTree() const { return _Quad; }
 	sint32								getTopology(uint model) const { return _Topologies[model]; }
 
+	/// Gets links from this surface to its neighbors through chains...
 	const std::vector<CSurfaceLink>		&getChains() const { return _Chains; }
+	/// Gets nth link form this surface to its neighbor.
 	CSurfaceLink						getChain(uint n) const { return _Chains[n]; }
 
 	const NLMISC::CVector				&getCenter() const { return _Center; }
 
+	/// Translates the surface by the translation vector.
 	void								translate(const NLMISC::CVector &translation)
 	{
 		_Center += translation;
 		_Quad.translate(translation);
 	}
 	
+	/// Serialises the CRetrievableSurface.
 	void								serial(NLMISC::IStream &f);
 };
 

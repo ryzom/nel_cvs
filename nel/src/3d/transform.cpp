@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.7 2001/02/12 14:18:40 corvazier Exp $
+ * $Id: transform.cpp,v 1.8 2001/02/12 15:41:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,9 @@ CTransform::CTransform()
 
 	LocalMatrix.identity();
 	Visibility= CHrcTrav::Herit;
+
+	// Set number of animated values
+	IAnimatble::resize (NL3D_CTRANSFORM_VALUE_COUNT);
 
 	// Set default animation tracks to NULL
 	_PosDefault=NULL;

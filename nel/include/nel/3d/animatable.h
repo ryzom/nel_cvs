@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.2 2001/02/12 14:20:24 corvazier Exp $
+ * $Id: animatable.h,v 1.3 2001/02/12 15:42:10 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,16 +65,12 @@ class IAnimatable
 public:
 
 	/**
-	  * Default Constructor.
-	  *
-	  * \param valueCount is the number of animated value in this object.
+	  * Default Constructor. Set number of value to 0.
 	  * 
 	  */
 	IAnimatable ()
 	{
-		// The first bit is the "something is touched" flag
-		// Bit are reseted after resize (doc)
-		bitSet.resize (getValueCount ()+1);
+		bitSet.resize (1);
 	}
 
 	/// \name Interface
@@ -152,6 +148,18 @@ public:
 	{
 		// Clear all flags
 		bitSet.clearAll ();
+	}
+
+	/**
+	  * Change value count
+	  *
+	  * \param count is the new value count.
+	  */
+	void resize (uint count)
+	{
+		// The first bit is the "something is touched" flag
+		// Bit are reseted after resize (doc), nothing invalidate
+		bitSet.resize (count+1);
 	}
 
 private:

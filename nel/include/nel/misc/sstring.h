@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.23 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: sstring.h,v 1.24 2005/02/08 14:59:28 miller Exp $
  */
 
 
@@ -1484,9 +1484,9 @@ inline CSString CSString::quote(bool useSlashStringEscape,bool useRepeatQuoteStr
 		case '\v':	if (useSlashStringEscape)	{	result+="\\v";	continue;	}	break;
 			break;
 		default: 
-			if ((unsigned char)(*this)[i]<32 && useSlashStringEscape)
+			if ((signed char)(*this)[i]<32 && useSlashStringEscape)
 			{
-				result+=NLMISC::toString("\\x%02x",(*this)[i]);
+				result+=NLMISC::toString("\\x%02x",(unsigned char)(*this)[i]);
 				continue;
 			}
 			break;
@@ -1601,7 +1601,7 @@ inline CSString CSString::unquote(bool useSlashStringEscape,bool useRepeatQuoteS
 						i+=2;
 						if (i<result.size() && isHexDigit(result[i]))
 						{
-							hold=8*hold+convertHexDigit(result[i]);
+							hold=16*hold+convertHexDigit(result[i]);
 							++i;
 						}
 						result[j]=hold;

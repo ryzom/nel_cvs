@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.14 2000/12/20 10:08:17 cado Exp $
+ * $Id: local_area.h,v 1.15 2000/12/22 13:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,13 @@ public:
 	/// Initialization
 	void					init();
 
-	/// Update the entity states (does not call CMsgSocket::update(), you must call it before)
+	/** Update the entity states. Usage:
+	 * # Call CMsgSocket::update() as it is not called by CLocalArea::update()
+	 * # Call CLocalArea::update() to update the states of the user (local entity) and of
+	 * its neighbors (remote entities)
+	 * # (Optional) Check the updated position of the user (e.g. for collision detection),
+	 * then call CLocalArea.User.commitPos() with the validated (or modified) position
+	 */
 	void					update();
 
 	/// Adds a replica of a remote entity to the area. It will be automatically removed when it exists.

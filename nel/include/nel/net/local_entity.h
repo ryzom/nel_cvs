@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.11 2000/12/19 16:06:09 cado Exp $
+ * $Id: local_entity.h,v 1.12 2000/12/22 13:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,9 +55,19 @@ public:
 	CLocalEntity( const IMovingEntity& es );
 
 	/** Update the entity state.
-	 * The heading vector multiplied by the velocity is added to the current position.
+	 * The heading vector multiplied by the velocity is added to the current position. Don't forget
+	 * to call commitPos() after update to propagate the entity state.
 	 */
 	void			update( TDuration deltatime );
+
+	/** Corrects the entity position (and updates trajectory vector) using external information
+	 * such as collision detection. The dead reckoning diverge test and state propagation are then done.
+	 * Usage :
+	 * -# Update the entity
+	 * -# Submit the new pos to the landscape (for example)
+	 * -# Commit the position.
+	 */
+	void			commitPos( const NLMISC::CVector& p );
 
 	/* Sends an update to all replicas, including local replica.
 	 * Call it yourself only if you explicitly want to send an update
@@ -77,15 +87,6 @@ public:
 	{
 		setBodyHeading( hdg );
 	}
-
-	/** Corrects the entity position (and updates trajectory vector) using external information
-	 * such as collision detection.
-	 * Usage :
-	 * -# Update the entity
-	 * -# Submit the new pos to the landscape (for example)
-	 * -# Correct the position.
-	 */
-	void			correctPos( const NLMISC::CVector& p );
 
 	/// Sets dead reckoning threshold for position divergence test
 	void			setThresholdForPos( TPosUnit th )

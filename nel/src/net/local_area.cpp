@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.25 2000/12/22 10:31:05 cado Exp $
+ * $Id: local_area.cpp,v 1.26 2000/12/22 13:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -270,8 +270,10 @@ void CLocalArea::update()
 	_PreviousTime = actualtime;
 	//deltatime = 0.020;
 
-	// Update all entities
-	User.update( deltatime );
+	// Update local entity
+	User.update( deltatime ); // note: you have to call CLocalArea.User.commitPos() after CLocalArea::update()
+
+	// Update remote entities
 	CRemoteEntities::iterator ipe;
 	for ( ipe=_Neighbors.begin(); ipe!=_Neighbors.end(); )
 	{

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.18 2000/12/19 16:06:09 cado Exp $
+ * $Id: local_entity.cpp,v 1.19 2000/12/22 13:46:16 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,8 @@ CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
 
 
 /* Update the entity state.
- * The heading vector multiplied by the velocity is added to the current position.
+ * The heading vector multiplied by the velocity is added to the current position. Don't forget
+ * to call commitPos() after update to propagate the entity state.
  */
 void CLocalEntity::update( TDuration deltatime )
 {
@@ -88,12 +89,13 @@ void CLocalEntity::update( TDuration deltatime )
 	// Local replica
 	_DRReplica.update( deltatime );
 
+	/* Now this is done in commitPos()
 	// Compare the entity and its replica
 	if ( drDivergeTest() )
 	{
 		//nlinfo( "Pos: %f", (pos()-_DRReplica.pos()).norm() );
 		propagateState();
-	}
+	}*/
 }
 
 
@@ -224,18 +226,27 @@ void CLocalEntity::propagateState()
 
 
 /* Corrects the entity position (and updates trajectory vector) using external information
- * such as collision detection.
+ * such as collision detection. The dead reckoning diverge test and state propagation are then done.
  * Usage :
  * -# Update the entity
  * -# Submit the new pos to the landscape (for example)
- * -# Correct the position.
+ * -# Commit the position.
  */
-void  CLocalEntity::correctPos( const NLMISC::CVector& p )
+void CLocalEntity::commitPos( const NLMISC::CVector& p )
 {
-	// Compute trajectory vector
-	//setTrajVector( (p-_PrevPos)/_DeltaTime );
+	if ( p != pos() )
+	{
+		// Compute trajectory vector
+		setTrajVector( (p-previousPos())/_DeltaTime );
+		setPos( p );
+	}
 
-	setPos( p );
+	// Compare the entity and its replica
+	if ( drDivergeTest() )
+	{
+		//nlinfo( "Pos: %f", (pos()-_DRReplica.pos()).norm() );
+		propagateState();
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.12 2002/06/10 13:14:45 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.13 2002/06/10 16:51:17 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -127,11 +127,11 @@ void CHTimer::CNode::releaseSons()
 }
 
 //=================================================================
-void CHTimer::CNode::displayPath() const
+void CHTimer::CNode::displayPath(CLog *log) const
 {
 	std::string path;
 	getPath(path);
-	InfoLog->displayRawNL(("HTIMER: " + path).c_str());
+	log->displayRawNL(("HTIMER: " + path).c_str());
 }
 
 //=================================================================
@@ -262,7 +262,7 @@ void	CHTimer::endBench()
 }
 
 //=================================================================
-void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
+void	CHTimer::display(CLog *log, TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
 {	
 	CSimpleClock	benchClock;
 	benchClock.start();
@@ -272,8 +272,8 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 		_CurrNode->SonsPreambule += benchClock.getNumTicks();
 		return;
 	}
-	nlinfo("HTIMER: =========================================================================");
-	InfoLog->displayRawNL("HTIMER: Bench cumuled results");
+	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: Bench cumuled results");
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -322,22 +322,22 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 	}
 	std::string statsInline;
 
-	InfoLog->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
 
 	for(TTimerStatPtrVect::iterator statIt = statsPtr.begin(); statIt != statsPtr.end(); ++statIt)
 	{
 		if (!displayInline)
 		{		
-			InfoLog->displayRawNL("HTIMER: =================================");
-			InfoLog->displayRawNL("HTIMER: Node %s", (*statIt)->Timer->_Name);		
-			(*statIt)->display(displayEx, _WantStandardDeviation);
+			log->displayRawNL("HTIMER: =================================");
+			log->displayRawNL("HTIMER: Node %s", (*statIt)->Timer->_Name);		
+			(*statIt)->display(log, displayEx, _WantStandardDeviation);
 		}
 		else
 		{
 			(*statIt)->getStats(statsInline, displayEx, _WantStandardDeviation);
 			char out[4096];
 			NLMISC::smprintf(out, 2048, format.c_str(), (*statIt)->Timer->_Name, statsInline.c_str());
-			InfoLog->displayRawNL(out);					
+			log->displayRawNL(out);					
 		}
 	}	
 	benchClock.stop();
@@ -345,12 +345,12 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 }
 
 //================================================================================================
-void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
+void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
 {	
 	CSimpleClock	benchClock;
 	benchClock.start();
-	nlinfo("HTIMER: =========================================================================");
-	InfoLog->displayRawNL("HTIMER: Bench by execution path");
+	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: Bench by execution path");
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	bool wasBenching = _Benching;	
 	//
@@ -414,15 +414,15 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 		}
 	}
 
-	InfoLog->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
+	log->displayRawNL(format.c_str(), "", " |      total |      local |       visits |       min |       max |      mean");
 
 	for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
 	{
 		if (!displayInline)
 		{		
-			InfoLog->displayRawNL("HTIMER: =================================");
-			(*it)->Node->displayPath();
-			(*it)->display(displayEx, _WantStandardDeviation);
+			log->displayRawNL("HTIMER: =================================");
+			(*it)->Node->displayPath(log);
+			(*it)->display(log, displayEx, _WantStandardDeviation);
 		}
 		else
 		{
@@ -431,7 +431,7 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 
 			char out[2048];
 			NLMISC::smprintf(out, 2048, format.c_str(), nodePath.c_str(), statsInline.c_str());
-			InfoLog->displayRawNL(out);
+			log->displayRawNL(out);
 		}
 	}
 	benchClock.stop();
@@ -439,12 +439,12 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 }
 
 //=================================================================
-/*static*/ void CHTimer::displayHierarchical(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
+/*static*/ void CHTimer::displayHierarchical(CLog *log, bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
 {
 	CSimpleClock	benchClock;
 	benchClock.start();
-	nlinfo("HTIMER: =========================================================================");
-	InfoLog->displayRawNL("HTIMER: Hierarchical display of bench");
+	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: Hierarchical display of bench");
 	nlassert(_BenchStartedOnce); // should have done at least one bench
 	bool wasBenching = _Benching;	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
@@ -460,7 +460,7 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 		nodeLeft.insert(nodeLeft.end(), currNode->Sons.begin(), currNode->Sons.end());
 
 	}
-	InfoLog->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
 	/// 2 ) walk the timers tree and display infos (cumulate infos of nodes of each execution path)
 	CStats	currNodeStats;
 	std::vector<uint> sonsIndex;
@@ -485,7 +485,7 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			TNodeVect &execNodes = nodeMap[currTimer];
 			currNodeStats.buildFromNodes(&execNodes[0], execNodes.size(), _MsPerTick);			
 			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
-			InfoLog->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
+			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
 		}
 		if (sonsIndex.back() == currTimer->_Sons.size())
 		{
@@ -509,14 +509,14 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 
 
 //=================================================================
-/*static*/ void		CHTimer::displayHierarchicalByExecutionPath(bool displayEx, uint labelNumChar, uint indentationStep)
+/*static*/ void		CHTimer::displayHierarchicalByExecutionPath(CLog *log, bool displayEx, uint labelNumChar, uint indentationStep)
 {
-	displayHierarchicalByExecutionPathSorted(NULL, NoSort, displayEx, labelNumChar, indentationStep);
+	displayHierarchicalByExecutionPathSorted(log, NoSort, displayEx, labelNumChar, indentationStep);
 }
 
 
 //=================================================================
-/*static*/ void		CHTimer::displayHierarchicalByExecutionPathSorted(IDisplayer *displayer, TSortCriterion criterion, bool displayEx, uint labelNumChar, uint indentationStep)
+/*static*/ void		CHTimer::displayHierarchicalByExecutionPathSorted(CLog *log, TSortCriterion criterion, bool displayEx, uint labelNumChar, uint indentationStep)
 {
 
 	CSimpleClock	benchClock;
@@ -526,19 +526,9 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 
 	// display header.
 	TDisplayInfo	dummyDspInfo;
-	if(displayer)
-	{
-		displayer->display(dummyDspInfo, "Hierarchical display of bench by execution path -----");
-		char	msg[512];
-		NLMISC::smprintf(msg, 512, "%*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
-		displayer->display(dummyDspInfo, msg);
-	}
-	else
-	{
-		nlinfo("HTIMER: =========================================================================");
-		InfoLog->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
-		InfoLog->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
-	}
+	log->displayNL("HTIMER: =========================================================================");
+	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
+	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |       min |       max |      mean", labelNumChar, "");
 
 
 	// use list because vector of vector is bad.
@@ -618,16 +608,7 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			currNodeStats.getStats(resultStats, displayEx, _WantStandardDeviation);
 
 			// display
-			if(displayer)
-			{
-				char	msg[512];
-				NLMISC::smprintf(msg, 512, "%s", (resultName + resultStats).c_str());
-				displayer->display(dummyDspInfo, msg);
-			}
-			else
-			{
-				InfoLog->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
-			}
+			log->displayRawNL("HTIMER: %s", (resultName + resultStats).c_str());
 		}
 
 		// End of sons?? stop.
@@ -702,21 +683,21 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 }
 
 //=================================================================
-void CHTimer::CStats::display(bool displayEx, bool wantStandardDeviation /* = false*/)
+void CHTimer::CStats::display(CLog *log, bool displayEx, bool wantStandardDeviation /* = false*/)
 {
-	InfoLog->displayRawNL("HTIMER: Total time                = %.3f ms", (float) TotalTime);
-	InfoLog->displayRawNL("HTIMER: Total time without sons   = %.3f ms", (float) TotalTimeWithoutSons);
-	InfoLog->displayRawNL(("HTIMER: Num visits                = " + NLMISC::toString(NumVisits)).c_str());	
+	log->displayRawNL("HTIMER: Total time                = %.3f ms", (float) TotalTime);
+	log->displayRawNL("HTIMER: Total time without sons   = %.3f ms", (float) TotalTimeWithoutSons);
+	log->displayRawNL(("HTIMER: Num visits                = " + NLMISC::toString(NumVisits)).c_str());	
 	if (displayEx)
 	{
-			InfoLog->displayRawNL("HTIMER: Min time                  = %.3f ms", (float) MinTime);
-			InfoLog->displayRawNL("HTIMER: Max time                  = %.3f ms", (float) MaxTime);
-			InfoLog->displayRawNL("HTIMER: Mean time                 = %.3f ms", (float) MeanTime);
+			log->displayRawNL("HTIMER: Min time                  = %.3f ms", (float) MinTime);
+			log->displayRawNL("HTIMER: Max time                  = %.3f ms", (float) MaxTime);
+			log->displayRawNL("HTIMER: Mean time                 = %.3f ms", (float) MeanTime);
 			if (wantStandardDeviation)
 			{
-			InfoLog->displayRawNL("HTIMER: Standard deviation        = %.3f ms", (float) TimeStandardDeviation);
+			log->displayRawNL("HTIMER: Standard deviation        = %.3f ms", (float) TimeStandardDeviation);
 			}
-			//InfoLog->displayRawNL("Time standard deviation	= %.3f ms", (float) TimeStandardDeviation);
+			//log->displayRawNL("Time standard deviation	= %.3f ms", (float) TimeStandardDeviation);
 	}
 }
 

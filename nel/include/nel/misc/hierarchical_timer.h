@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.15 2002/06/10 13:14:59 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.16 2002/06/10 16:51:09 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -239,32 +239,31 @@ public:
 	/** Display results
 	  * \param displayEx true to display more detailed infos
 	  */
-	static void		display(TSortCriterion criterion = TotalTime, bool displayInline = true, bool displayEx = true);
+	static void		display(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayInline = true, bool displayEx = true);
 	/** Display results by execution paths	
 	  * \param displayInline true to display each result on a single line.
 	  * \param alignPaths    true to display all execution paths aligned.
 	  * \param displayEx	 true to display more detailed infos.
 	  */
-	static void		displayByExecutionPath(TSortCriterion criterion = TotalTime, bool displayInline = true, bool alignPaths = true, bool displayEx = true);
+	static void		displayByExecutionPath(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayInline = true, bool alignPaths = true, bool displayEx = true);
 
 	/** Hierarchical display, no sorting is done
 	  * \param displayEx	 true to display more detailed infos.
 	  * \param labelNumChar  
 	  */
-	static void		displayHierarchical(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+	static void		displayHierarchical(CLog *log= InfoLog, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
 	/** Hierarchical display, no sorting is done
 	  * \param displayEx	 true to display more detailed infos.
 	  * \param labelNumChar  
 	  */
-	static void		displayHierarchicalByExecutionPath(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+	static void		displayHierarchicalByExecutionPath(CLog *log= InfoLog, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
 	/** Hierarchical display, sorting is done in branchs
-	  * \param IDisplayer	 if NULL, display to nlinfoLog, else display to the displayer.
 	  * \param displayEx	 true to display more detailed infos.
 	  * \param labelNumChar  
 	  */
-	static void		displayHierarchicalByExecutionPathSorted(IDisplayer *displayer= NULL, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
+	static void		displayHierarchicalByExecutionPathSorted(CLog *log= InfoLog, TSortCriterion criterion = TotalTime, bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
@@ -324,7 +323,7 @@ private:
 			NLMISC::contReset(Measures);
 		}
 		// Display this node path
-		void	displayPath() const;
+		void	displayPath(CLog *log) const;
 		// Get this node path
 		void    getPath(std::string &dest) const;		
 	};
@@ -346,7 +345,7 @@ private:
 		void buildFromNodes(CNode **firstNode, uint numNodes, double msPerTick);
 
 		// display stats
-		void display(bool displayEx = false, bool wantStandardDeviation = false);
+		void display(CLog *log, bool displayEx = false, bool wantStandardDeviation = false);
 
 		/** Get a string for stats (all stats on the same line)
 		  * \param statEx display extended stats

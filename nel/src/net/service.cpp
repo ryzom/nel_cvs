@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.125 2002/06/10 10:11:33 lecroart Exp $
+ * $Id: service.cpp,v 1.126 2002/06/10 16:53:31 berenguier Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1251,8 +1251,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	CHTimer::endBench();
 	CHTimer::display();
 	CHTimer::displayByExecutionPath ();
-	CHTimer::displayHierarchical(true, 64);
-	CHTimer::displayHierarchicalByExecutionPath (true, 64);
+	CHTimer::displayHierarchical(InfoLog, true, 64);
+	CHTimer::displayHierarchicalByExecutionPath (InfoLog, true, 64);
 
 	nlinfo ("Service ends");
 

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.17 2000/12/06 10:16:51 berenguier Exp $
+ * $Id: tessellation.h,v 1.18 2000/12/08 10:35:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,7 +318,8 @@ public:
 	// See ErrorMetric part. NeedCompute says if this face need to compute his errorMetric.
 	bool			NeedCompute;
 	// Mark of recursion (see canMerge() ...).
-	bool			RecursMark;
+	bool			RecursMarkCanMerge;
+	bool			RecursMarkForceMerge;
 	//@}
 
 	/// \name Tile Material Infos (uvs...).

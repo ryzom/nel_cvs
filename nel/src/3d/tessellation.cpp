@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.22 2000/12/06 10:17:31 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.23 2000/12/08 10:36:19 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -154,7 +154,8 @@ CTessFace::CTessFace()
 	TileUvBase= TileUvLeft= TileUvRight= NULL;
 	// TileId and TileType undefined.
 
-	RecursMark=false;
+	RecursMarkCanMerge=false;
+	RecursMarkForceMerge=false;
 }
 
 
@@ -956,11 +957,11 @@ bool		CTessFace::canMerge(bool testEm)
 	}
 
 	// Then test neighbors.
-	RecursMark= true;
+	RecursMarkCanMerge= true;
 	bool	ok= true;
 	if(!isRectangular())
 	{
-		if(FBase && !FBase->RecursMark)
+		if(FBase && !FBase->RecursMarkCanMerge)
 		{
 			if(!FBase->canMerge(testEm))
 				ok= false;
@@ -969,19 +970,19 @@ bool		CTessFace::canMerge(bool testEm)
 	else
 	{
 		// Rectangular case. May have a longer propagation...
-		if(FBase && !FBase->RecursMark)
+		if(FBase && !FBase->RecursMarkCanMerge)
 		{
 			if(!FBase->canMerge(testEm))
 				ok= false;
 		}
-		if(ok && FLeft && !FLeft->RecursMark)
+		if(ok && FLeft && !FLeft->RecursMarkCanMerge)
 		{
 			if(!FLeft->canMerge(testEm))
 				ok= false;
 		}
 	}
-	// Must not return false in preceding tests, because must set RecursMark to false.
-	RecursMark= false;
+	// Must not return false in preceding tests, because must set RecursMarkCanMerge to false.
+	RecursMarkCanMerge= false;
 
 	return ok;
 }
@@ -1354,21 +1355,21 @@ void		CTessFace::forceMerge()
 		SonRight->forceMerge();
 
 		// forceMerge of necessary neighbors.
-		RecursMark=true;
+		RecursMarkForceMerge=true;
 		if(!isRectangular())
 		{
-			if(FBase && !FBase->RecursMark)
+			if(FBase && !FBase->RecursMarkForceMerge)
 				FBase->forceMerge();
 		}
 		else
 		{
 			// Rectangular case. May have a longer propagation...
-			if(FBase && !FBase->RecursMark)
+			if(FBase && !FBase->RecursMarkForceMerge)
 				FBase->forceMerge();
-			if(FLeft && !FLeft->RecursMark)
+			if(FLeft && !FLeft->RecursMarkForceMerge)
 				FLeft->forceMerge();
 		}
-		RecursMark=false;
+		RecursMarkForceMerge=false;
 
 		// If still a parent, merge.
 		if(!isLeaf())

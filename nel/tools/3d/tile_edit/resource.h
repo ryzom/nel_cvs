@@ -37,6 +37,7 @@
 #define IDB_BITMAP4                     130
 #define IDB_BITMAP5                     131
 #define IDD_CHOOSE_VEGET                132
+#define IDI_ICON1                       134
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define IDC_BUTTON_GO                   1005
@@ -120,7 +121,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        133
+#define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         40007
 #define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101

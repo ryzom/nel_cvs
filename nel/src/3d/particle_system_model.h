@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.43 2004/06/01 16:26:41 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.44 2004/07/21 15:25:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -323,11 +323,23 @@ private:
 		{
 			_Visible = true;
 			_InsertedInVisibleList = true;
-			// add to clip/anim/load Trav.
+			// add to clip/load Trav.
 			getOwnerScene()->getClipTrav().addVisibleModel(this);
-			// NB: no need to test isAnimDetailable()... for PS, always add them
-			getOwnerScene()->getAnimDetailTrav().addVisibleModel(this);
 			getOwnerScene()->getLoadBalancingTrav().addVisibleModel(this);
+			
+			// Add only if no ancestor skeleton model
+			if( _AncestorSkeletonModel==NULL )
+			{
+				// need to test isLightable(), because most of PS are not lightable
+				// NB: don't insert if has an _AncestorSkeletonModel, because in this case, 
+				// result is driven by the _LightContribution of the _AncestorSkeletonModel.
+				if( isLightable() )
+					getOwnerScene()->getLightTrav().addLightedModel(this);
+				// no need to test isAnimDetailable()... for PS, always add them
+				// NB: don't insert if has an _AncestorSkeletonModel, because in this case, this ancestor will 
+				// animDetail through the hierarchy...
+				getOwnerScene()->getAnimDetailTrav().addVisibleModel(this);
+			}
 		}
 	}
 	bool checkDestroyCondition(CParticleSystem *ps);

@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.cpp
  * <File description>
  *
- * $Id: tile_vegetable_desc.cpp,v 1.4 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tile_vegetable_desc.cpp,v 1.5 2004/07/21 15:25:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@ namespace NL3D
 // ***************************************************************************
 CTileVegetableDesc::CTileVegetableDesc()
 {
+	_Empty= true;
 }
 
 // ***************************************************************************
@@ -51,6 +52,7 @@ void		CTileVegetableDesc::clear()
 	{
 		_VegetableList[i].clear();
 	}
+	_Empty= true;
 }
 
 // ***************************************************************************
@@ -78,6 +80,8 @@ void		CTileVegetableDesc::build(const std::vector<CVegetable> &vegetables)
 		sumVeget+= _VegetableList[i].size();
 	}
 
+	// compile some data
+	compileRunTime();
 }
 
 // ***************************************************************************
@@ -106,6 +110,10 @@ void		CTileVegetableDesc::serial(NLMISC::IStream &f)
 		f.serialCont(_VegetableList[i]);
 		f.serial(_VegetableSeed[i]);
 	}
+
+	// compile some data
+	if(f.isReading())
+		compileRunTime();
 }
 
 // ***************************************************************************
@@ -124,6 +132,20 @@ uint		CTileVegetableDesc::getVegetableSeed(uint distType) const
 	return _VegetableSeed[distType];
 }
 
+// ***************************************************************************
+void		CTileVegetableDesc::compileRunTime()
+{
+	// Compute _Empty flag
+	_Empty= true;
+	for(uint i=0; i<NL3D_VEGETABLE_BLOCK_NUMDIST; i++)
+	{
+		if(!_VegetableList[i].empty())
+		{
+			_Empty= false;
+			break;
+		}
+	}
+}
 
 
 

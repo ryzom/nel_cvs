@@ -1,7 +1,7 @@
 /** \file tile_vegetable_desc.h
  * <File description>
  *
- * $Id: tile_vegetable_desc.h,v 1.2 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: tile_vegetable_desc.h,v 1.3 2004/07/21 15:25:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,8 @@ public:
 	/// get the vegetable seed for a specific distanceType
 	uint		getVegetableSeed(uint distType) const;
 
+	/// return true if no vegetable at all for any DistType
+	bool		empty() const {return _Empty;}
 
 private:
 
@@ -82,7 +84,10 @@ private:
 
 	uint32						_VegetableSeed[NL3D_VEGETABLE_BLOCK_NUMDIST];
 
+	// to know if no vegetable at all
+	bool						_Empty;
 
+	void	compileRunTime();
 };
 
 

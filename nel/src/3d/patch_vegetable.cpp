@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.20 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: patch_vegetable.cpp,v 1.21 2004/07/21 15:25:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,20 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	// If no vegetables at all, skip.
 	if(numVegetable==0)
 		return;
+
+	// If any layer (2nd or 3rd) is set, but has no vegetable, then skip too
+	// This is to ensure "no vegetable under buildings".
+	if( Tiles[tt * OrderS + ts].Tile[1]!=NL_TILE_ELM_LAYER_EMPTY )
+	{
+		uint	tileId1= Tiles[tt * OrderS + ts].Tile[1];
+		uint	tileId2= Tiles[tt * OrderS + ts].Tile[2];
+		// NB: test distType
+		if(getLandscape()->getTileVegetableDesc(tileId1).empty())
+			return;
+		if(tileId2!=NL_TILE_ELM_LAYER_EMPTY && getLandscape()->getTileVegetableDesc(tileId2).empty())
+			return;
+	}
+
 
 	// compute approximate tile position and normal: get the middle
 	float	tileU= (ts + 0.5f) / (float)OrderS;

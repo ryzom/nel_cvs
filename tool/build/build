@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ###########################################################################
-# $Id: build,v 1.4 2002/05/07 10:05:49 valignat Exp $
+# $Id: build,v 1.5 2002/05/21 15:44:16 valignat Exp $
 ###########################################################################
 ###########################################################################
 ###########################################################################
@@ -34,7 +34,7 @@
 #     Check the following variables to get an idea of the place of the
 #     source code, object, and installed files.
 #
-#     In silent mode it use a perl script named 'silentbuild' which
+#     In quiet mode it use a perl script named 'buildquiet' which
 #     "cleanup" the 'make' command output to only print the compiled
 #     file name instead of the compilation command line.
 #
@@ -231,7 +231,7 @@ then
                setMode DYNAMIC_MODE $DYNAMIC_FILE
                ;;
 
-           silent)
+           quiet|silent)
                setMode SILENT_MODE $SILENT_FILE
                ;;
 

@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.2 2003/10/22 16:38:38 berenguier Exp $
+ * $Id: diff_tool.h,v 1.3 2003/11/12 17:52:58 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -188,6 +188,22 @@ namespace STRING_MANAGER
 					Data[i].resize(count);
 			}
 			ColCount = count;
+		}
+
+		bool findId(uint& colIndex)
+		{
+			if (Data.empty())
+				return false;
+
+			for (TWorksheet::TRow::iterator it=Data[0].begin(); it!=Data[0].end(); ++it)
+			{
+				if ((*it).toString().find( "ID" ) != std::string::npos)
+				{
+					colIndex = it - Data[0].begin();
+					return true;
+				}
+			}
+			return false;
 		}
 
 		bool findCol(ucstring colName, uint &colIndex)

@@ -1010,5 +1010,13 @@ SOURCE=.\misc\stdmisc.h
 
 SOURCE=..\include\nel\misc\types_nl.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\words_dictionary.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\words_dictionary.h
+# End Source File
 # End Target
 # End Project

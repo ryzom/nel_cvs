@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.17 2000/10/05 09:45:44 berenguier Exp $
+ * $Id: stream.h,v 1.18 2000/10/05 10:00:20 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -111,7 +111,7 @@ class	IStreamable;
  public:
 	void	serial(IStream &f)
 	{
-		sint	streamver= serialVersion(3);
+		sint	streamver= f.serialVersion(3);
 		f.serial(x,y,a);
 		f.serialPtr(c);
 		f.serialCont(tab);

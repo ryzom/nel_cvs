@@ -64,7 +64,7 @@
 			{
 				// check if the user can use this application
 
-				$query = "SELECT * FROM permission WHERE UId='$row[0]' and ClientApplication='$clientApplication'";
+				$query = "SELECT * FROM permission WHERE UId='$row[0]' AND ClientApplication='$clientApplication'";
 				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 				if (mysql_num_rows ($result) == 0)
 				{
@@ -211,7 +211,7 @@
 		<?php 
 	}
 
-	function displayAvailableShards($clientApplication, $clientVersion)
+	function displayAvailableShards($id, $clientApplication, $clientVersion)
 	{
 		global $PHP_SELF;
 		global $DBHost, $DBUserName, $DBPassword, $DBName;
@@ -230,7 +230,11 @@
 			echo "<h1>Please, select a shard:</h1>\n";
 			while($row = mysql_fetch_array($result))
 			{
-				if ($row["ProgramName"] == $programName)
+				$query2 = "SELECT * FROM permission WHERE UId='".$id."' AND ClientApplication='".$clientApplication."' AND ShardId='".$row["ShardId"]."'";
+				$result2 = mysql_query ($query2) or die ("Can't execute the query: ".$query2);
+				
+				// only display the shard if the user have the good application name AND access to this shard with the permission table
+				if (mysql_num_rows ($result2) > 0 && $row["ProgramName"] == $programName)
 				{
 					$versionok = true;
 					
@@ -347,7 +351,7 @@ echo "basename: '".basename($PHP_SELF)."'<br><br>\n -->";
 
 			echo "Hello $login, nice to meet you.<br>\n";
 
-			displayAvailableShards ($clientApplication, $clientVersion);
+			displayAvailableShards ($id, $clientApplication, $clientVersion);
 
 			echo "<a href=\"".basename($PHP_SELF)."?cmd=logout\">logout</a><br>\n";
 		}

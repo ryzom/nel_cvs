@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.40 2002/06/06 14:41:01 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.41 2002/07/03 09:14:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,6 +176,10 @@ public:
 	std::string				SWTWeight;
 	int						LigoSymmetry;
 	std::string				LigoRotate;
+	int						UseRemanence;
+	int						RemanenceShiftingTexture;
+	int						RemanenceSliceNumber;
+	float					RemanenceSamplingPeriod;
 
 
 	// Vegetable
@@ -1603,6 +1607,12 @@ int CALLBACK MiscDialogCallback (
 			// Skeleton Scale
 			SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_SETCHECK, currentParam->ExportBoneScale, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), currentParam->ExportBoneScaleNameExt.c_str());
+
+			// Remanence
+			SendMessage (GetDlgItem (hwndDlg, IDC_USE_REMANENCE), BM_SETCHECK, currentParam->UseRemanence, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_REMANENCE_SHIFTING_TEXTURE), BM_SETCHECK, currentParam->RemanenceShiftingTexture, 0);
+			SetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SLICE_NUMBER), currentParam->RemanenceSliceNumber != - 1 ? toStringMax(currentParam->RemanenceSliceNumber).c_str() : "");
+			SetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SAMPLING_PERIOD), currentParam->RemanenceSamplingPeriod != -1 ? toStringMax(currentParam->RemanenceSamplingPeriod).c_str() : "");
 		}
 		break;
 
@@ -1647,14 +1657,25 @@ int CALLBACK MiscDialogCallback (
 							if (strlen(tmp) != 0)
 								currentParam->InterfaceThreshold = toFloatMax(tmp);							
 							currentParam->GetInterfaceNormalsFromSceneObjects = SendMessage (GetDlgItem (hwndDlg, IDC_GET_INTERFACE_NORMAL_FROM_SCENE_OBJECTS), BM_GETCHECK, 0, 0);
-
-							
-							
+														
 							
 							// Skeleton Scale
 							currentParam->ExportBoneScale= SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), tmp, 512);
 							currentParam->ExportBoneScaleNameExt= tmp;
+
+							// remanence
+							currentParam->UseRemanence = SendMessage (GetDlgItem (hwndDlg, IDC_USE_REMANENCE), BM_GETCHECK, 0, 0);
+							currentParam->RemanenceShiftingTexture = SendMessage (GetDlgItem (hwndDlg, IDC_REMANENCE_SHIFTING_TEXTURE), BM_GETCHECK, 0, 0);
+
+							GetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SLICE_NUMBER), tmp, 512);
+							uint rsn;
+							if (sscanf(tmp, "%d", &rsn) == 1)
+							{
+								currentParam->RemanenceSliceNumber = rsn;
+							}
+							GetWindowText (GetDlgItem (hwndDlg, IDC_REMANENCE_SAMPLING_PERIOD), tmp, 512);
+							toFloatMax(tmp, currentParam->RemanenceSamplingPeriod);
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
@@ -2280,6 +2301,12 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toStringMax(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
 		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toStringMax(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
+		param.UseRemanence=CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_REMANENCE, BST_UNCHECKED);
+		param.RemanenceShiftingTexture=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE, BST_CHECKED);
+		param.RemanenceSliceNumber=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 16);
+		param.RemanenceSamplingPeriod=CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.02f);
+
+
 
 		// Radial normals
 		for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
@@ -2415,6 +2442,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportAnimatedMaterials = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_REMANENCE, BST_UNCHECKED)!=param.UseRemanence)
+				param.UseRemanence = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE, BST_UNCHECKED)!=param.RemanenceShiftingTexture)
+				param.RemanenceShiftingTexture = BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, 0.01f)!=param.RemanenceSamplingPeriod)
+				param.RemanenceSamplingPeriod = -1.f;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, 64)!=param.RemanenceSliceNumber)
+				param.RemanenceSliceNumber = -1;
+			
 
 			// Radial normals
 			for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
@@ -2725,6 +2761,16 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE, param.ExportBoneScale);
 				if ( (param.ExportBoneScaleNameExt != "") || (listNode.size()==1) )
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, param.ExportBoneScaleNameExt);
+
+				// Remanence
+				if (param.UseRemanence != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_USE_REMANENCE, param.UseRemanence);
+				if (param.RemanenceShiftingTexture != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE, param.RemanenceShiftingTexture);
+				if (param.RemanenceSliceNumber != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_SLICE_NUMBER, param.RemanenceSliceNumber);
+				if (param.RemanenceSamplingPeriod != -1.f)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD, param.RemanenceSamplingPeriod);
 
 
 				// Next node

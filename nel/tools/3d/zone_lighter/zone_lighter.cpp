@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.19 2002/06/18 15:29:21 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.20 2002/06/18 16:22:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -581,7 +581,7 @@ int main(int argc, char* argv[])
 					{
 						// Get zone name
 						string zoneName=dependant_zones.asString(i);
-
+						zoneNameArray.push_back(zoneName);
 						// Load the zone
 						CZone zoneBis;
 

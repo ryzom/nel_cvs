@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.11 2001/08/07 16:36:36 corvazier Exp $
+ * $Id: move_container.cpp,v 1.12 2001/08/13 07:15:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1239,7 +1239,12 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		const CCollisionOTStaticInfo *staticInfo=static_cast<const CCollisionOTStaticInfo*> (&first);
 
 		// Get the primitive world image
-		CPrimitiveWorldImage *wI=staticInfo->getPrimitive ()->getWorldImage (staticInfo->getWorldImage());
+		CMovePrimitive *movePrimitive=staticInfo->getPrimitive ();
+		CPrimitiveWorldImage *wI;
+		if (movePrimitive->isNonCollisionable ())
+			wI=movePrimitive->getWorldImage (0);
+		else
+			wI=movePrimitive->getWorldImage (staticInfo->getWorldImage());
 
 		// Dynamic collision
 		wI->reaction ( staticInfo->getCollisionDesc (), staticInfo->getGlobalPosition (),

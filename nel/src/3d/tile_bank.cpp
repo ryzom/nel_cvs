@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.11 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.12 2000/12/18 09:46:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -246,6 +246,18 @@ void CTileBank::getTileXRef (int tile, int &tileSet, int &number, TTileType& typ
 	tileSet=_tileXRef[tile]._xRefTileSet;
 	number=_tileXRef[tile]._xRefTileNumber;
 	type=_tileXRef[tile]._xRefTileType;
+}
+// ***************************************************************************
+void CTileBank::xchgTileset (sint firstTileSet, sint secondTileSet)
+{
+	// Some check
+	nlassert ((firstTileSet>=0)&&(firstTileSet<(sint)_tileSetVector.size()));
+	nlassert ((secondTileSet>=0)&&(secondTileSet<(sint)_tileSetVector.size()));
+
+	// Xchange the sets
+	CTileSet tmp=_tileSetVector[firstTileSet];
+	_tileSetVector[firstTileSet]=_tileSetVector[secondTileSet];
+	_tileSetVector[secondTileSet]=tmp;
 }
 
 

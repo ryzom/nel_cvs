@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.6 2000/12/13 14:59:54 corvazier Exp $
+ * $Id: tile_bank.h,v 1.7 2000/12/18 09:46:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,6 +364,7 @@ public:
 	void removeLand (sint landIndex);
 	sint addTileSet (const std::string& name);
 	void removeTileSet (sint landIndex);
+	void xchgTileset (sint first, sint second);
 	void clear ();
 	sint getNumBitmap (CTile::TBitmap bitmap) const;
 	void computeXRef ();

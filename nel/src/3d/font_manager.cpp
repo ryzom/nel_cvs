@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.13 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: font_manager.cpp,v 1.14 2000/12/21 16:58:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,10 +40,11 @@ namespace NL3D {
 
 
 /*------------------------------------------------------------------*\
-							getFontTexture()
+							getFontMaterial()
 \*------------------------------------------------------------------*/
-NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor desc)
+NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 {
+	NLMISC::CSmartPtr<CMaterial>	pMatFont;
 	NLMISC::CSmartPtr<CTextureFont> pTexFont;
 
 	mapFontDec::iterator ifont = _Letters.find(desc);
@@ -52,21 +53,21 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
 	{
 		// if the letter is already in the list
 
-		// moving the CTextureFont to the begining of the list
-		pTexFont = *(ifont->second.first);
-		_TextureFontList.erase(ifont->second.first);
+		// moving the CMaterial to the begining of the list
+		pMatFont = *(ifont->second.first);
+		_MaterialFontList.erase(ifont->second.first);
 
 		// put at the begining of the priority list
-		_TextureFontList.push_front(pTexFont);
+		_MaterialFontList.push_front(pMatFont);
 
 		// and updating iterator in the map
-		ifont->second.first = _TextureFontList.begin();
+		ifont->second.first = _MaterialFontList.begin();
 	}
 	else
 	{
 		// the letter isn't yet in the list
 
-		// creating new CTextureFont and adding it at the begining of the list
+		// creating new CMaterial and adding it at the begining of the list
 		pTexFont = new CTextureFont(desc);
 
 		// generating texture
@@ -76,22 +77,30 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
 		int nMemSize = pTexFont->getWidth()*pTexFont->getHeight()*4; 
 			
 		// adding TexTure to list
-		_TextureFontList.push_front(pTexFont);
+		pMatFont= new CMaterial;
+		pMatFont->initUnlit();
+		pMatFont->setSrcBlend(CMaterial::srcalpha);
+		pMatFont->setDstBlend(CMaterial::invsrcalpha);
+		pMatFont->setBlend(true);
+		pMatFont->setTexture(pTexFont);
+
+		_MaterialFontList.push_front(pMatFont);
 
 		// Add to global mem size
 		_MemSize += nMemSize;
 
 		// updating iterator in the map
-		_Letters.insert ( mapFontDec::value_type (desc, pairRefPtrInt(_TextureFontList.begin(), nMemSize)));
+		_Letters.insert ( mapFontDec::value_type (desc, pairRefPtrInt(_MaterialFontList.begin(), nMemSize)));
 
 	}
 
 
 	// while memory used is too high, we pop the back of the list
-	while(_MemSize>_MaxMemory && _TextureFontList.size()!=0)
+	while(_MemSize>_MaxMemory && _MaterialFontList.size()!=0)
 	{
-		NLMISC::CSmartPtr<CTextureFont> pTexFontBack = _TextureFontList.back();
-		CFontDescriptor descBack = pTexFontBack->getDescriptor();
+		NLMISC::CSmartPtr<CMaterial> pMatFontBack = _MaterialFontList.back();
+		pTexFont= (CTextureFont*)(pMatFontBack->getTexture(0));
+		CFontDescriptor descBack = 	pTexFont->getDescriptor();
 		
 		// Find the desc to kill in the map
 		mapFontDec::iterator ite=_Letters.find (descBack);
@@ -106,10 +115,10 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
 		_Letters.erase (ite);
 
 		// Unstack
-		_TextureFontList.pop_back();
+		_MaterialFontList.pop_back();
 	}
 
-	return pTexFont;
+	return pMatFont;
 }
 
 
@@ -143,7 +152,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	for(uint i=0; i<s.size(); i++)
 	{
 		// Creating font
-		CSmartPtr<CTextureFont> pTexFont = fm->getFontTexture(CFontDescriptor(fontGen,s[i],fontSize));
+		CSmartPtr<CMaterial> pMatFont = fm->getFontMaterial(CFontDescriptor(fontGen,s[i],fontSize));
+		CTextureFont		*pTexFont = (CTextureFont*)(pMatFont->getTexture(0));
 		
 		// Creating vertices
 		sint32 dx = pTexFont->Left;
@@ -194,11 +204,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 		output.Primitives[i].setQuad(0, 4*i, 4*i+1, 4*i+2, 4*i+3);
 
 		// Building Material
-		output.Materials[i].initUnlit();
-		output.Materials[i].setSrcBlend(CMaterial::srcalpha);
-		output.Materials[i].setDstBlend(CMaterial::invsrcalpha);
-		output.Materials[i].setBlend(true);
-		output.Materials[i].setTexture(pTexFont);
+		output.Materials[i]= pMatFont;
 		
 	}
 

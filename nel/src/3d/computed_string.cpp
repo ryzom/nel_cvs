@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.7 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: computed_string.cpp,v 1.8 2000/12/21 16:58:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ void CComputedString::render2D (IDriver& driver,
 	// rendering each primitives 
 	for(uint32 i=0; i<Primitives.size(); i++)
 	{
-		driver.render(Primitives[i], Materials[i]);
+		driver.render(Primitives[i], *Materials[i]);
 	}
 }
 
@@ -120,7 +120,7 @@ void CComputedString::render3D (CVector pos)
 	// rendering each primitives 
 	for(uint32 i=0; i<Primitives.size(); i++)
 	{
-		CNELU::Driver->render(Primitives[i], Materials[i]);
+		CNELU::Driver->render(Primitives[i], *Materials[i]);
 	}
 }
 

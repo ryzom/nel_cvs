@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.8 2000/12/18 14:39:32 lecroart Exp $
+ * $Id: font_manager.h,v 1.9 2000/12/21 16:58:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/material.h"
 #include "nel/3d/texture_font.h"
 
 #include <map>
@@ -46,9 +47,9 @@ struct CComputedString;
 struct CFontDescriptor;
 
 // we don't create a typedef because it generates too long decorated name, intead we, create a structure.
-struct pairRefPtrInt : public std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32>
+struct pairRefPtrInt : public std::pair< std::list<NLMISC::CSmartPtr<CMaterial> >::iterator,  uint32>
 {
-	pairRefPtrInt (std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator ite,  uint32 intt)
+	pairRefPtrInt (std::list<NLMISC::CSmartPtr<CMaterial> >::iterator ite,  uint32 intt)
 	{
 		first=ite;
 		second=intt;
@@ -60,7 +61,7 @@ typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
 
 /**
  * Font manager
- * The font manager manages CTextureFont pointers through a list
+ * The font manager manages CMaterial pointers through a list
  * of CSmartPtr. When the user asks for the texture font representing
  * a character(font/size), it generates and stores this pointer in the list. 
  * If this character has already been generated, and lies in the list, 
@@ -78,7 +79,7 @@ class CFontManager
 	uint32 _MemSize;
 	uint32 _MaxMemory;
 	mapFontDec _Letters;
-	std::list<NLMISC::CSmartPtr<CTextureFont> > _TextureFontList;
+	std::list<NLMISC::CSmartPtr<CMaterial> > _MaterialFontList;
 
 public:
 
@@ -111,7 +112,7 @@ public:
 	 * \param character descriptor
 	 * \return CSmartPtr to a font texture
 	 */	
-	NLMISC::CSmartPtr<CTextureFont> getFontTexture(CFontDescriptor desc);
+	NLMISC::CSmartPtr<CMaterial> getFontMaterial(CFontDescriptor desc);
 
 
 	/** 

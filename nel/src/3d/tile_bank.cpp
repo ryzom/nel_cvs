@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.29 2001/08/29 13:11:17 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.30 2001/08/29 13:48:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -531,7 +531,8 @@ void CTileBank::removeDisplacementMap (uint mapId)
 		for (tileSet=0; tileSet<_TileSetVector.size(); tileSet++)
 		{
 			// It uses it ?
-			for (uint tile=0; tile<CTileSet::CountDisplace; tile++)
+			uint tile;
+			for (tile=0; tile<CTileSet::CountDisplace; tile++)
 			{
 				// The same ?
 				if (_TileSetVector[tileSet]._DisplacementBitmap[tile]==mapId)

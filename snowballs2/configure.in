@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for Snowballs 2
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.12 2002/03/21 10:54:37 valignat Exp $
+dnl $Id: configure.in,v 1.13 2002/04/10 07:32:46 lecroart Exp $
 dnl 
 
 
@@ -150,18 +150,34 @@ dnl ====================================================================
 dnl Snowballs data, configuration and logs file location
 dnl ====================================================================
 
-eval SNOWBALLS_DATABASE=\"$datadir/games/snowballs/\"
-AC_SUBST(SNOWBALLS_DATABASE)
-
-pkgsysconfdir='${sysconfdir}/snowballs'
-AC_SUBST(pkgsysconfdir)
-
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
 
-eval SNOWBALLS_CONFIG=\"$sysconfdir/snowballs/\"
+AC_ARG_WITH(database,
+    [  --with-database[=DIR]
+                          use DIR instead of the default datadir/games/snowballs],
+    [database=$withval],
+    [database='${datadir}/games/snowballs'])
+eval eval SNOWBALLS_DATABASE=\"$database/\"
+AC_SUBST(SNOWBALLS_DATABASE)
+
+AC_ARG_WITH(sysconfdir,
+    [  --with-sysconfdir[=DIR]
+                          use DIR instead of the default sysconfdir/snowballs],
+    [pkgsysconfdir=$withval],
+    [pkgsysconfdir='${sysconfdir}/snowballs'])
+AC_SUBST(pkgsysconfdir)
+
+eval eval SNOWBALLS_CONFIG=\"$pkgsysconfdir/\"
 AC_DEFINE_UNQUOTED(SNOWBALLS_CONFIG, "$SNOWBALLS_CONFIG")
 
-eval SNOWBALLS_LOGS=\"$localstatedir/log/snowballs/\"
+AC_ARG_WITH(logdir,
+    [  --with-logdir[=DIR]
+                          use DIR instead of the default localstatedir/log/snowballs],
+    [logdir=$withval],
+    [logdir='${localstatedir}/log/snowballs'])
+AC_SUBST(logdir)
+
+eval eval SNOWBALLS_LOGS=\"$logdir/\"
 AC_DEFINE_UNQUOTED(SNOWBALLS_LOGS, "$SNOWBALLS_LOGS")
 
 dnl ====================================================================

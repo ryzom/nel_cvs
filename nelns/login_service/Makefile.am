@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2002/03/19 17:42:49 valignat Exp $
+# $Id: Makefile.am,v 1.6 2002/04/10 07:33:07 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -15,8 +15,6 @@ login_service_SOURCES = connection_client.cpp              \
                         connection_ws.h                    \
                         login_service.cpp                  \
                         login_service.h
-
-pkgsysconf_DATA	      = login_service.cfg
 
 # End of Makefile.am
 

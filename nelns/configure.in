@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for NeLNS
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.12 2002/03/21 10:54:37 valignat Exp $
+dnl $Id: configure.in,v 1.13 2002/04/10 07:33:07 lecroart Exp $
 dnl 
 
 
@@ -102,16 +102,36 @@ dnl ====================================================================
 dnl nelns configuration and logs file location
 dnl ====================================================================
 
-pkgsysconfdir='${sysconfdir}/nelns'
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+
+AC_ARG_WITH(sysconfdir,
+    [  --with-sysconfdir[=DIR]
+                          use DIR instead of the default sysconfdir/nelns],
+    [pkgsysconfdir=$withval],
+    [pkgsysconfdir='${sysconfdir}/nelns'])
 AC_SUBST(pkgsysconfdir)
 
-eval NELNS_STATE=\"$localstatedir/games/nelns/\"
-AC_DEFINE_UNQUOTED(NELNS_STATE, "$NELNS_STATE")
-
-eval NELNS_CONFIG=\"$sysconfdir/nelns/\"
+eval eval NELNS_CONFIG=\"$pkgsysconfdir/\"
 AC_DEFINE_UNQUOTED(NELNS_CONFIG, "$NELNS_CONFIG")
 
-eval NELNS_LOGS=\"$localstatedir/log/nelns/\"
+AC_ARG_WITH(localstatedir,
+    [  --with-localstatedir[=DIR]
+                          use DIR instead of the default localstatedir/game/nelns],
+    [pkglocalstatedir=$withval],
+    [pkglocalstatedir=${localstatedir}/game/nelns])
+AC_SUBST(pkglocalstatedir)
+
+eval eval NELNS_STATE=\"$pkglocalstatedir/\"
+AC_DEFINE_UNQUOTED(NELNS_STATE, "$NELNS_STATE")
+
+AC_ARG_WITH(logdir,
+    [  --with-logdir[=DIR]
+                          use DIR instead of the default localstatedir/log/nelns],
+    [logdir=$withval],
+    [logdir='${localstatedir}/log/nelns'])
+AC_SUBST(logdir)
+
+eval eval NELNS_LOGS=\"$logdir/\"
 AC_DEFINE_UNQUOTED(NELNS_LOGS, "$NELNS_LOGS")
 
 dnl ====================================================================

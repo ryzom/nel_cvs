@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.78 2001/03/06 18:16:59 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.79 2001/03/06 18:24:22 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -671,6 +671,21 @@ bool CDriverGL::swapBuffers()
 
 
 	return true;
+}
+
+// --------------------------------------------------
+
+uint CDriverGL::getNumMatrix()
+{
+	// TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+	// TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
+
+	// If GL_Wertex_weighting_EXT is available..
+	if (_Extensions.EXTVertexWeighting)
+		return 2;
+	// Else, software..
+	else
+		return 1;
 }
 
 // --------------------------------------------------

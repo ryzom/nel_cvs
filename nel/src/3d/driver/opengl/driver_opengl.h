@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.50 2001/02/23 09:24:51 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.51 2001/03/06 18:24:22 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,6 +164,8 @@ public:
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris);
 
 	virtual bool			swapBuffers();
+
+	virtual uint			getNumMatrix();
 
 	virtual bool			release();
 

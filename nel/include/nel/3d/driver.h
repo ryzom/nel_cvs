@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.56 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: driver.h,v 1.57 2001/03/06 18:24:22 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,16 @@ public:
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
 
 	virtual bool			swapBuffers(void)=0;
+
+	/**
+	  * Returns the number of model matrices supported in hardware by the driver.
+	  * NeL will support from 2 to 4 matrices by vertices.
+	  * If the user uses a model with a greater count of matrices than the hardware can support,
+	  * the skinning will be made in software.
+	  *
+	  * For the time, driver opengl supports 2 matrices in hardware on Geforce.
+	  */
+	virtual uint			getNumMatrix()=0;
 
 	/// \name Fog support.
 	// @{

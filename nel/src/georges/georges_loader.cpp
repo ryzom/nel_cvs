@@ -1,7 +1,7 @@
 /** \file loader.cpp
  * Georges system files
  *
- * $Id: georges_loader.cpp,v 1.2 2002/03/11 09:29:30 chafik Exp $
+ * $Id: georges_loader.cpp,v 1.3 2002/03/28 16:45:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,17 +107,17 @@ void CLoader::SaveForm( CForm& _f, const CStringEx& _sxfullname )
 	fl.SaveForm( _f, _sxfullname );
 }
 
-CMoldElt* CLoader::LoadMold( const CStringEx _sxfilename )
+CMoldElt* CLoader::LoadMold( const CStringEx &_sxfilename )
 {
 	return( ml.LoadMold( _sxfilename ) );
 }
 
-CMoldElt* CLoader::LoadMold( const CStringEx _sxfilename, const CStringEx _sxdate ) 
+CMoldElt* CLoader::LoadMold( const CStringEx &_sxfilename, const CStringEx &_sxdate ) 
 {
 	return( ml.LoadMold( _sxfilename, _sxdate ) );
 }
 
-void CLoader::SetWorkDirectory( const CStringEx _sxworkdirectory )
+void CLoader::SetWorkDirectory( const CStringEx &_sxworkdirectory )
 {
 	if( sxworkdirectory != _sxworkdirectory )
 	{
@@ -128,7 +128,7 @@ void CLoader::SetWorkDirectory( const CStringEx _sxworkdirectory )
 	}
 }
 
-void CLoader::SetRootDirectory( const CStringEx _sxrootdirectory )
+void CLoader::SetRootDirectory( const CStringEx &_sxrootdirectory )
 {
 	if( sxrootdirectory != _sxrootdirectory )
 	{
@@ -149,17 +149,17 @@ CStringEx CLoader::GetRootDirectory() const
 	return( sxrootdirectory );
 }
 
-CStringEx CLoader::WhereIsDfnTyp( const CStringEx _sxfilename )
+CStringEx CLoader::WhereIsDfnTyp( const CStringEx &_sxfilename )
 {
 	return( NLMISC::CPath::lookup( _sxfilename, false ) );
 }
 
-CStringEx CLoader::WhereIsForm( const CStringEx _sxfilename )
+CStringEx CLoader::WhereIsForm( const CStringEx &_sxfilename )
 {
 	return( NLMISC::CPath::lookup( _sxfilename, false ) );
 }
 
-void CLoader::MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine )
+void CLoader::MakeDfn( const CStringEx &_sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine )
 {
 	CFormFile pff;
 	CForm f;
@@ -180,7 +180,7 @@ void CLoader::MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair
 	pff.Save( _sxfullname );
 }
 
-void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef , const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent )
+void CLoader::MakeTyp( const CStringEx &_sxfullname, const CStringEx &_sxtype, const CStringEx &_sxformula, const CStringEx &_sxenum, const CStringEx &_sxlow, const CStringEx &_sxhigh, const CStringEx &_sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef , const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent )
 {
 	CFormFile pff;
 	CForm f;
@@ -276,7 +276,7 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pff.Save( _sxfullname );
 }
 
-void CLoader::SetTypPredef( const CStringEx _sxfilename, const std::vector< CStringEx >& _pvsx )
+void CLoader::SetTypPredef( const CStringEx &_sxfilename, const std::vector< CStringEx >& _pvsx )
 {
 	CMoldElt*pme = LoadMold( _sxfilename );
 	CMoldEltType* pmet = dynamic_cast< CMoldEltType* >( pme );

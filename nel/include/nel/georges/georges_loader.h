@@ -1,7 +1,7 @@
 /** \file loader.h
  * Georges system files
  *
- * $Id: georges_loader.h,v 1.2 2002/03/11 09:29:41 chafik Exp $
+ * $Id: georges_loader.h,v 1.3 2002/03/28 16:45:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ protected:
 	CMoldLoader ml;
 	CStringEx sxworkdirectory;
 	CStringEx sxrootdirectory;
-	CStringEx WhereIs( const CStringEx _sxdirectory, const CStringEx _sxfilename );
+	CStringEx WhereIs( const CStringEx &_sxdirectory, const CStringEx &_sxfilename );
 
 public:
 	CLoader();
@@ -51,23 +51,23 @@ public:
 	void LoadSearchForm( CForm& _f, const CStringEx& _sxfilename );
 	void LoadSearchForm( CForm& _f, const CStringEx& _sxfilename, const CStringEx& _sxdate );
 	void SaveForm( CForm& _f, const CStringEx& _sxfullename );
-	CMoldElt* LoadMold( const CStringEx _sxfilename );
-	CMoldElt* LoadMold( const CStringEx _sxfilename, const CStringEx _sxdate ); 
+	CMoldElt* LoadMold( const CStringEx &_sxfilename );
+	CMoldElt* LoadMold( const CStringEx &_sxfilename, const CStringEx &_sxdate ); 
 
-	CStringEx WhereIsDfnTyp( const CStringEx _sxfilename );
-	CStringEx WhereIsForm( const CStringEx _sxfilename );
+	CStringEx WhereIsDfnTyp( const CStringEx &_sxfilename );
+	CStringEx WhereIsForm( const CStringEx &_sxfilename );
 
 	CStringEx GetWorkDirectory() const;
 	CStringEx GetRootDirectory() const;
 
 // interface:
-	void SetWorkDirectory( const CStringEx _sxworkdirectory );
-	void SetRootDirectory( const CStringEx _sxrootdirectory );
-	void SetTypPredef( const CStringEx _sxfilename, const std::vector< CStringEx >& _pvsx );
+	void SetWorkDirectory( const CStringEx &_sxworkdirectory );
+	void SetRootDirectory( const CStringEx &_sxrootdirectory );
+	void SetTypPredef( const CStringEx& _sxfilename, const std::vector< CStringEx >& _pvsx );
 
 // temporaire:
-	void MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine = 0 );
-	void MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef = 0, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent = 0 );
+	void MakeDfn( const CStringEx &_sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine = 0 );
+	void MakeTyp( const CStringEx &_sxfullname, const CStringEx &_sxtype, const CStringEx &_sxformula, const CStringEx &_sxenum, const CStringEx &_sxlow, const CStringEx &_sxhigh, const CStringEx &_sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef = 0, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent = 0 );
 };
 
 } // NLGEORGES

@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.2 2002/06/20 08:18:09 hanappe Exp $
+ * $Id: sound_anim_manager.h,v 1.3 2002/06/28 19:41:13 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 namespace NLSOUND {
 
 
-class CSoundAnimPlayer;
+//class CSoundAnimPlayer;
 class CSoundAnimation;
 class UAudioMixer;
 
@@ -53,17 +53,19 @@ struct eqsndanim
 /// 
 typedef sint32 TSoundAnimId;
 
+const CSoundAnimationNoId = -1;
+
 ///
-typedef sint32 TSoundAnimPlayId;
+//typedef sint32 TSoundAnimPlayId;
 
 /// Animation name-to-id hash map
 typedef std::hash_map<const char*, TSoundAnimId, std::hash<const char*>, eqsndanim> TSoundAnimMap;
 
-/// Animation names vector
+/// Animation vector
 typedef std::vector<CSoundAnimation*> TSoundAnimVector;
 
 /// The set of players
-typedef std::set<CSoundAnimPlayer*> TPlayerSet;
+//typedef std::set<CSoundAnimPlayer*> TPlayerSet;
 
 
 
@@ -77,7 +79,8 @@ public:
 	virtual ~CSoundAnimManager();
 
 	/** Load the sound animation with the specified name. 
-	 *  Throws ESoundAnimationNotFound if the file could not be found.
+	 *  Returns the id of the new animation, or CSoundAnimationNoId is the
+	 *  file could not be found.
 	 *  \param name The name of the animation to load.
 	 */
 	virtual TSoundAnimId			loadAnimation(std::string& name);
@@ -108,28 +111,33 @@ public:
 	 *  or -1 if the animation was not found.
  	 *  \param name The id of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
+	//virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
 
 	/** Start playing a sound animation. Returns an id number of this playback instance
 	 *  or -1 if the animation was not found.
  	 *  \param name The name of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
+	//virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
 
 	/** Stop the playing of a sound animation. 
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	virtual void					stopAnimation(TSoundAnimPlayId playbackId);
+	//virtual void					stopAnimation(TSoundAnimPlayId playbackId);
 
 	/** Returns true is the animation with the specified playback ID is playing
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	virtual bool					isPlaying(TSoundAnimPlayId playbackId);
+	//virtual bool					isPlaying(TSoundAnimPlayId playbackId);
 
 	/** Update all the sound animations during playback. 
 	 */
-	virtual void					update(float lastTime, float curTime);
+	//virtual void					update(float lastTime, float curTime);
 
+	/** Play all the events of an animation in the interval between lastTime and curTime.
+	 *  Both lastTime and curTime are measured relatively from the beginning of the
+	 *  animation.
+	 */
+	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, NLMISC::CVector& position);
 
 protected:
 
@@ -146,26 +154,27 @@ protected:
 	TSoundAnimVector				_Animations;
 
 	/** The set of all active players */
-	TPlayerSet						_Players;
+	//TPlayerSet						_Players;
 
 	/** The id of the next player */
-	TSoundAnimPlayId				_PlayerId;
+	//TSoundAnimPlayId				_PlayerId;
 
 	/** An auxilary vector to help remove players from the active set */
-	std::vector<CSoundAnimPlayer*>	_Garbage;
+	//std::vector<CSoundAnimPlayer*>	_Garbage;
 
 };
 
 /**
  * ESoundFileNotFound
  */
-
+/*
 class ESoundAnimationNotFound : public NLMISC::Exception
 {
 public:
 	ESoundAnimationNotFound( const std::string filename ) :
 	  NLMISC::Exception( (std::string("Sound animation not found: ")+filename).c_str() ) {}
 };
+*/
 
 } // namespace NLSOUND
 

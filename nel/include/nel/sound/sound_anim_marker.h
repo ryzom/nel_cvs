@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_marker.h,v 1.1 2002/06/18 16:02:32 hanappe Exp $
+ * $Id: sound_anim_marker.h,v 1.2 2002/06/28 19:41:13 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLSOUND {
 
 typedef std::set<std::string> TMarkerSoundSet;
 
+class UAudioMixer;
 
 
 class CSoundAnimMarker
@@ -61,11 +62,9 @@ public:
 	/** Return the set of sounds of this marker */
 	virtual void			getSounds(std::vector<const char*>& sounds);
 
-	/// Save 
-	//virtual void			save(xmlNodePtr parent);
+	/** Play all the sounds of this marker */
+	virtual void			play(UAudioMixer* mixer, NLMISC::CVector& position);
 
-	/// Load
-	//virtual void			load(NLMISC::CIXml& input, xmlNodePtr parent);
 
 protected:
 

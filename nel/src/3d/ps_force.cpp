@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.21 2001/10/03 10:16:15 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.22 2001/10/03 15:48:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -915,6 +915,53 @@ void CPSCylindricVortex::resize(uint32 size)
 	CPSForceIntensityHelper::resize(size); 
 	_Normal.resize(size);
 	_Radius.resize(size);
+}
+
+
+/**
+ *  a magnetic field that has the given direction
+ */
+
+void CPSMagneticForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1);
+	CPSDirectionnalForce::serial(f);
+}
+
+void CPSMagneticForce::performDynamic(CAnimationTime ellapsedTime)
+{	
+	// perform the operation on each target
+	for (uint32 k = 0; k < _Owner->getSize(); ++k)
+	{	
+		float intensity = ellapsedTime * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K);
+		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+		{
+
+			NLMISC::CVector toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(_Dir); // express this in the target basis			
+
+			uint32 size = (*it)->getSize();	
+			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end();
+
+			// 1st case : non-constant mass
+			if ((*it)->getMassScheme())
+			{
+				TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin();			
+				for (; it2 != it2end; ++it2, ++invMassIt)
+				{
+					(*it2) += intensity * *invMassIt * (*it2 ^ toAdd);
+					
+				}
+			}
+			else
+			{
+				float i = intensity * (*it)->getInitialMass();
+				for (; it2 != it2end; ++it2)
+				{
+					(*it2) += i * (*it2 ^ toAdd);
+				}
+			}
+		}
+	}
 }
 
 

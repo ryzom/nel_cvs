@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.26 2001/09/26 17:51:33 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.27 2001/10/03 15:51:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -590,6 +590,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_BROWNIAN_MOVE:
 			toCreate = new NL3D::CPSBrownianForce;
 		break;
+		case IDM_MAGNETIC_FORCE_LOC:  createLocAndBindable = true;
+		case IDM_MAGNETIC_FORCE:
+			toCreate = new NL3D::CPSMagneticForce;
+		break;
 
 		///////////////
 		//    sound  //
@@ -717,7 +721,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		{
 			nlassert(nt->Type = CNodeType::locatedBindable);
 			nlassert(nt->Bind);
-			CLBExternIDDlg 	dlg(nt->Bind);
+			CLBExternIDDlg 	dlg(nt->Bind->getExternID());
 			int res = dlg.DoModal();
 			if ( res == IDOK )
 			{

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.28 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.29 2001/10/03 15:50:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSFluidFriction);
 		NLMISC_REGISTER_CLASS(CPSTurbul);
 		NLMISC_REGISTER_CLASS(CPSCylindricVortex);
+		NLMISC_REGISTER_CLASS(CPSMagneticForce);
 		NLMISC_REGISTER_CLASS(CPSLocated); 
 		NLMISC_REGISTER_CLASS(CPSDot);
 		NLMISC_REGISTER_CLASS(CPSFaceLookAt);

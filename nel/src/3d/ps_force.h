@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.9 2001/10/03 10:16:15 vizerie Exp $
+ * $Id: ps_force.h,v 1.10 2001/10/03 15:48:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -801,6 +801,25 @@ protected:
 	virtual void deleteElement(uint32 index);
 	virtual void resize(uint32 size);
 
+};
+
+
+
+
+/**
+ *  a magnetic field that has the given direction
+ */
+class CPSMagneticForce : public CPSDirectionnalForce
+{
+	public:	
+	CPSMagneticForce(float i = 1.f)  : CPSDirectionnalForce(i)
+	{ 
+		_Name = std::string("MagneticForce");	
+	}
+	virtual void performDynamic(CAnimationTime ellapsedTime);
+	/// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	NLMISC_DECLARE_CLASS(CPSMagneticForce); 
 };
 
 

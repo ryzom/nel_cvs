@@ -1,7 +1,7 @@
 /** \file logic_event.h
  * 
  *
- * $Id: logic_event.h,v 1.1 2002/02/14 12:58:09 corvazier Exp $
+ * $Id: logic_event.h,v 1.2 2002/06/20 12:17:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/entity_id.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/i_xml.h"
 
 //#include "game_share/sid.h"
 
@@ -86,7 +88,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	void write (xmlNodePtr node, const char *subName = "") const;
+	void read (xmlNodePtr node, const char *subName = "");
 };
 
 
@@ -126,8 +131,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 
@@ -183,8 +190,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 } // NLLOGIC

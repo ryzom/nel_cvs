@@ -1,7 +1,7 @@
 /** \file logic_event.cpp
  * 
  *
- * $Id: logic_event.cpp,v 1.2 2002/03/25 16:20:13 lecroart Exp $
+ * $Id: logic_event.cpp,v 1.3 2002/06/20 12:17:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NLLOGIC
 // serial
 //
 //-------------------------------------------------
-void CLogicEventMessage::serial( IStream &f )
+/*void CLogicEventMessage::serial( IStream &f )
 {
 	f.xmlPush("EVENT_MESSAGE");
 
@@ -54,9 +54,26 @@ void CLogicEventMessage::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
+void CLogicEventMessage::write (xmlNodePtr node, const char *subName) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)string(string(subName)+string("EVENT_MESSAGE")).c_str(), NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Destination", (const xmlChar*)Destination.c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"DestinationId", (const xmlChar*)toString(DestinationId).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"MessageId", (const xmlChar*)toString(MessageId).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Arguments", (const xmlChar*)toString(Arguments).c_str());
+}
 
+void CLogicEventMessage::read (xmlNodePtr node, const char *subName)
+{
+	xmlCheckNodeName (node, string(string(subName)+string("EVENT_MESSAGE")).c_str());
+
+	Destination = getXMLProp (node, "Destination");
+	DestinationId = atoiInt64(getXMLProp (node, "DestinationId").c_str());
+	MessageId = getXMLProp (node, "MessageId");
+	Arguments = getXMLProp (node, "Arguments");
+}
 
 
 
@@ -80,7 +97,7 @@ void CLogicEventAction::enableSendMessage()
 // serial
 //
 //-------------------------------------------------
-void CLogicEventAction::serial( IStream &f )
+/*void CLogicEventAction::serial( IStream &f )
 {
 	f.xmlPush("EVENT_ACTION");
 
@@ -96,8 +113,36 @@ void CLogicEventAction::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
+void CLogicEventAction::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"EVENT_ACTION", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"IsStateChange", (const xmlChar*)toString(IsStateChange).c_str());
+	if (IsStateChange)
+	{
+		xmlSetProp (elmPtr, (const xmlChar*)"StateChange", (const xmlChar*)StateChange.c_str());
+	}
+	else
+	{
+		EventMessage.write(elmPtr);
+	}
+}
+
+void CLogicEventAction::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "EVENT_ACTION");
+
+	IsStateChange = atoi(getXMLProp (node, "IsStateChange").c_str()) == 1;
+	if (IsStateChange)
+	{
+		StateChange = getXMLProp (node, "StateChange");
+	}
+	else
+	{
+		EventMessage.read(node);
+	}
+}
 
 
 
@@ -184,7 +229,7 @@ bool CLogicEvent::testCondition()
 // serial
 //
 //-------------------------------------------------
-void CLogicEvent::serial( IStream &f )
+/*void CLogicEvent::serial( IStream &f )
 {
 	f.xmlPush("EVENT");
 	
@@ -193,7 +238,22 @@ void CLogicEvent::serial( IStream &f )
 	
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
+
+void CLogicEvent::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"EVENT", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"ConditionName", (const xmlChar*)ConditionName.c_str());
+	EventAction.write(elmPtr);
+}
+
+void CLogicEvent::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "EVENT");
+
+	ConditionName = getXMLProp (node, "ConditionName");
+	EventAction.read(node);
+}
 
 } // NLLOGIC
 

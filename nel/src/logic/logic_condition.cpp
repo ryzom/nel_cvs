@@ -1,7 +1,7 @@
 /** \file logic_condition.cpp
  * 
  *
- * $Id: logic_condition.cpp,v 1.1 2002/02/14 12:58:03 corvazier Exp $
+ * $Id: logic_condition.cpp,v 1.2 2002/06/20 12:17:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ bool CLogicComparisonBlock::testLogic()
 // serial :
 //
 //-------------------------------------------------
-void CLogicComparisonBlock::serial( IStream &f )
+/*void CLogicComparisonBlock::serial( IStream &f )
 {
 	f.xmlPush("COMPARISON_BLOCK");
 	
@@ -94,9 +94,24 @@ void CLogicComparisonBlock::serial( IStream &f )
 	
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
+void CLogicComparisonBlock::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"COMPARISON_BLOCK", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"VariableName", (const xmlChar*)VariableName.c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Operator", (const xmlChar*)Operator.c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Comparand", (const xmlChar*)toString(Comparand).c_str());
+}
 
+void CLogicComparisonBlock::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "COMPARISON_BLOCK");
+
+	VariableName = getXMLProp (node, "VariableName");
+	Operator = getXMLProp (node, "Operator");
+	Comparand = atoiInt64(getXMLProp (node, "Comparand").c_str());
+}
 
 
 
@@ -200,7 +215,7 @@ void CLogicConditionLogicBlock::fillVarSet( set<string>& condVars )
 // serial :
 //
 //-------------------------------------------------
-void CLogicConditionLogicBlock::serial( IStream &f )
+/*void CLogicConditionLogicBlock::serial( IStream &f )
 {
 	f.xmlPush("CONDITION_LOGIC_BLOCK");
 
@@ -223,10 +238,52 @@ void CLogicConditionLogicBlock::serial( IStream &f )
 	};
 	
 	f.xmlPop();
-};
+};*/
 
+void CLogicConditionLogicBlock::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"CONDITION_LOGIC_NODE", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString(Type).c_str());
+	switch( Type )
+	{
+		case NOT : break;
+			
+		case COMPARISON :
+		{
+			ComparisonBlock.write(elmPtr);
+		}
+		break;
 
+		case SUB_CONDITION :
+		{
+			xmlSetProp (elmPtr, (const xmlChar*)"SubCondition", (const xmlChar*)SubCondition.c_str());
+		}
+		break;
+	};
+}
 
+void CLogicConditionLogicBlock::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "CONDITION_LOGIC_NODE");
+
+	Type = (TLogicConditionLogicBlockType)atoi(getXMLProp (node, "Type").c_str());
+	switch( Type )
+	{
+		case NOT : break;
+			
+		case COMPARISON :
+		{
+			ComparisonBlock.read (node);
+		}
+		break;
+
+		case SUB_CONDITION :
+		{
+			SubCondition = getXMLProp (node, "SubCondition");
+		}
+		break;
+	};
+}
 
 //-----------------------------------------
 
@@ -348,7 +405,7 @@ void CLogicConditionNode::fillVarSet( set<string>& condVars )
 // serial :
 //
 //-------------------------------------------------
-void CLogicConditionNode::serial( IStream &f )
+/*void CLogicConditionNode::serial( IStream &f )
 {
 	f.xmlPush("CONDITION_NODE");
 	
@@ -387,8 +444,61 @@ void CLogicConditionNode::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
+void CLogicConditionNode::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"CONDITION_NODE", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString(Type).c_str());
+
+	switch( Type )
+	{
+		case TERMINATOR : break;
+		case LOGIC_NODE :
+		{
+			LogicBlock.write(elmPtr);
+			vector<CLogicConditionNode *>::const_iterator itNode = _Nodes.begin();
+			for( ; itNode != _Nodes.end(); ++itNode )
+			{
+				(*itNode)->write(elmPtr);
+			}
+		}
+		break;
+	};
+}
+
+void CLogicConditionNode::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "CONDITION_NODE");
+
+	Type = (TConditionNodeType )atoi(getXMLProp (node, "Type").c_str());
+	switch( Type )
+	{
+		case TERMINATOR : break;
+		case LOGIC_NODE :
+		{
+			LogicBlock.read (node);
+
+			{
+				// Count the parent
+				uint nb = CIXml::countChildren (node, "CONDITION_NODE");
+				uint i = 0;
+				xmlNodePtr parent = CIXml::getFirstChildNode (node, "CONDITION_NODE");
+				while (i<nb)
+				{
+					CLogicConditionNode *v = new CLogicConditionNode();
+					v->read(parent);
+					_Nodes.push_back (v);
+
+					// Next parent
+					parent = CIXml::getNextChildNode (parent, "CONDITION_NODE");
+					i++;
+				}
+			}
+		}
+		break;
+	};
+}
 
 //-------------------------------------------------
 // ~CLogicConditionNode :
@@ -474,7 +584,7 @@ void CLogicCondition::fillVarSet( set<string>& condVars )
 // serial :
 //
 //-------------------------------------------------
-void CLogicCondition::serial( IStream &f )
+/*void CLogicCondition::serial( IStream &f )
 {
 	f.xmlPush("CONDITION");
 	
@@ -483,6 +593,43 @@ void CLogicCondition::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
+
+void CLogicCondition::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"CONDITION", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Name", (const xmlChar*)_ConditionName.c_str());
+
+	uint i;
+	for (i = 0; i < Nodes.size(); i++)
+	{
+		Nodes[i].write(elmPtr);
+	}
+}
+
+void CLogicCondition::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "CONDITION");
+
+	_ConditionName = getXMLProp (node, "Name");
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "CONDITION_NODE");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "CONDITION_NODE");
+		while (i<nb)
+		{
+			CLogicConditionNode v;
+			v.read(parent);
+			Nodes.push_back (v);
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "CONDITION_NODE");
+			i++;
+		}
+	}
+}
+
 
 } // NLLOGIC

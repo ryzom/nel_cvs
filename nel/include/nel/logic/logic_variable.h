@@ -1,7 +1,7 @@
 /** \file logic_variable.h
  * 
  *
- * $Id: logic_variable.h,v 1.1 2002/02/14 12:58:09 corvazier Exp $
+ * $Id: logic_variable.h,v 1.2 2002/06/20 12:17:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/i_xml.h"
 
 namespace NLLOGIC
 {
@@ -71,7 +73,7 @@ public:
 	 *
 	 * \return the name of the variable
 	 */
-	std::string getName() { return _Name; }
+	std::string getName() const { return _Name; }
 
 	/**
 	 * Set the variable value
@@ -111,8 +113,10 @@ public:
 	/**
 	 * serial
 	 */
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	virtual void write (xmlNodePtr node) const;
+	virtual void read (xmlNodePtr node);
 };
 
 
@@ -191,7 +195,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	virtual void write (xmlNodePtr node) const;
+	virtual void read (xmlNodePtr node);
 };
 
 } // NLLOGIC

@@ -1,7 +1,7 @@
 /** \file logic_state.cpp
  * 
  *
- * $Id: logic_state.cpp,v 1.1 2002/02/14 12:58:03 corvazier Exp $
+ * $Id: logic_state.cpp,v 1.2 2002/06/20 12:17:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,7 +343,7 @@ void CLogicState::fillVarMap( multimap<CEntityId,string >& stateMachineVariables
 // serial :
 // 
 //---------------------------------------------------
-void CLogicState::serial( IStream &f )
+/*void CLogicState::serial( IStream &f )
 {
 	f.xmlPush( "STATE");
 
@@ -354,7 +354,86 @@ void CLogicState::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
+
+void CLogicState::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"STATE", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Name", (const xmlChar*)_StateName.c_str());
+
+	uint i;
+	for (i = 0; i < _EntryMessages.size(); i++)
+	{
+		_EntryMessages[i].write(elmPtr, "ENTRY_");
+	}
+	for (i = 0; i < _ExitMessages.size(); i++)
+	{
+		_ExitMessages[i].write(elmPtr, "EXIT_");
+	}
+	for (i = 0; i < _Events.size(); i++)
+	{
+		_Events[i].write(elmPtr);
+	}
+}
+
+void CLogicState::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "STATE");
+
+	_StateName = getXMLProp (node, "Name");
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "ENTRY_EVENT_MESSAGE");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "ENTRY_EVENT_MESSAGE");
+		while (i<nb)
+		{
+			CLogicEventMessage v;
+			v.read(parent);
+			_EntryMessages.push_back(v);
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "ENTRY_EVENT_MESSAGE");
+			i++;
+		}
+	}
+	
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "EXIT_EVENT_MESSAGE");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "EXIT_EVENT_MESSAGE");
+		while (i<nb)
+		{
+			CLogicEventMessage v;
+			v.read(parent);
+			_ExitMessages.push_back(v);
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "EXIT_EVENT_MESSAGE");
+			i++;
+		}
+	}
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "EVENT");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "EVENT");
+		while (i<nb)
+		{
+			CLogicEvent v;
+			v.read(parent);
+			_Events.push_back(v);
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "EVENT");
+			i++;
+		}
+	}
+
+}
 
 
 } // NLLOGIC

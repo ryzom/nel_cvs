@@ -1,7 +1,7 @@
 /** \file logic_condition.h
  * 
  *
- * $Id: logic_condition.h,v 1.1 2002/02/14 12:58:09 corvazier Exp $
+ * $Id: logic_condition.h,v 1.2 2002/06/20 12:17:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/i_xml.h"
 
 namespace NLLOGIC
 {
@@ -86,7 +88,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 
@@ -164,7 +169,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 
@@ -240,12 +248,15 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	/**
 	 * Destructor
 	 */
 	~CLogicConditionNode();
+
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 
@@ -295,7 +306,7 @@ public:
 	 *
 	 * \return the condition's name
 	 */
-	std::string getName() {	return _ConditionName; }
+	std::string getName() const {	return _ConditionName; }
 
 	/**
 	 *	Add a condition node
@@ -321,7 +332,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
+
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 } // NLLOGIC

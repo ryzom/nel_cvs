@@ -1,7 +1,7 @@
 /** \file logic_state_machine.cpp
  * 
  *
- * $Id: logic_state_machine.cpp,v 1.2 2002/03/25 16:20:13 lecroart Exp $
+ * $Id: logic_state_machine.cpp,v 1.3 2002/06/20 12:17:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,56 @@ namespace NLLOGIC
 // test if a string is valid considering a filter and a motif
 bool testNameWithFilter( sint8 filter, string motif, string varName );
 
+void xmlCheckNodeName (xmlNodePtr &node, const char *nodeName)
+{
+	// Check node name
+	if ( node == NULL || ((const char*)node->name == NULL) || (strcmp ((const char*)node->name, nodeName) != 0) )
+	{
+
+		// try to find a child
+		if (node != NULL)
+		{
+			node = CIXml::getFirstChildNode (node, nodeName);
+			if ( node != NULL && ((const char*)node->name != NULL) && (strcmp ((const char*)node->name, nodeName) == 0) )
+			{
+				nlinfo ("check node %s ok in the child", nodeName);
+				return;
+			}
+		}
+
+		// Make an error message
+		char tmp[512];
+		smprintf (tmp, 512, "LogicStateMachine STATE_MACHINE XML Syntax error in block line %d, node %s should be %s", 
+			(int)node->content, node->name, nodeName);
+		
+		nlinfo (tmp);
+		nlstop;
+		throw EXmlParsingError (tmp);
+	}
+
+	nlinfo ("check node %s ok", nodeName);
+}
+
+std::string getXMLProp (xmlNodePtr node, const char *propName)
+{
+	const char *name = (const char*)xmlGetProp (node, (xmlChar*)propName);
+	if (name)
+	{
+		nlinfo ("get prop %s = %s", propName, name);
+		string n = name;
+		xmlFree ((void*)name);
+		return n;
+	}
+	else
+	{
+		// Make an error message
+		char tmp[512];
+		smprintf (tmp, 512, "LogicStateMachine XML Syntax error in block %s line %d, aguments Name not found", 
+			node->name, (int)node->content);
+		throw EXmlParsingError (tmp);
+		return "";
+	}
+}
 
 
 //---------------------------------------------------
@@ -224,7 +274,7 @@ void CLogicStateMachine::modifyVariable( string varName, string modifOperator, s
 // serial :
 // 
 //---------------------------------------------------
-void CLogicStateMachine::serial( IStream &f )
+/*void CLogicStateMachine::serial( IStream &f )
 {
 	f.xmlPush("STATE_MACHINE");
 
@@ -255,7 +305,7 @@ void CLogicStateMachine::serial( IStream &f )
 	
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
 
 //---------------------------------------------------
@@ -487,5 +537,111 @@ bool testNameWithFilter( sint8 filter, string motif, string varName )
 	return false;
 
 } // testNameWithFilter //
+
+void CLogicStateMachine::write (xmlDocPtr doc) const
+{
+	// Create the first node
+	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"STATE_MACHINE", NULL);
+	xmlDocSetRootElement (doc, node);
+	xmlSetProp (node, (const xmlChar*)"Name", (const xmlChar*)_Name.c_str());
+	xmlSetProp (node, (const xmlChar*)"CurrentState", (const xmlChar*)_CurrentState.c_str());
+
+	for (std::map<std::string, CLogicVariable>::const_iterator vit = _Variables.begin(); vit != _Variables.end(); vit++)
+	{
+		(*vit).second.write(node);
+	}
+
+	for (std::map<std::string, CLogicCounter>::const_iterator cit = _Counters.begin(); cit != _Counters.end(); cit++)
+	{
+		(*cit).second.write(node);
+	}
+
+	for (std::map<std::string, CLogicCondition>::const_iterator c2it = _Conditions.begin(); c2it != _Conditions.end(); c2it++)
+	{
+		(*c2it).second.write(node);
+	}
+	
+	for (std::map<std::string, CLogicState>::const_iterator sit = _States.begin(); sit != _States.end(); sit++)
+	{
+		(*sit).second.write(node);
+	}
+}
+
+void CLogicStateMachine::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "STATE_MACHINE");
+
+	setName (getXMLProp (node, "Name"));
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "VARIABLE");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "VARIABLE");
+		while (i<nb)
+		{
+			CLogicVariable v;
+			v.read(parent);
+			_Variables.insert (make_pair(v.getName(), v));
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "VARIABLE");
+			i++;
+		}
+	}
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "COUNTER");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "COUNTER");
+		while (i<nb)
+		{
+			CLogicCounter v;
+			v.read(parent);
+			_Counters.insert (make_pair(v.getName(), v));
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "COUNTER");
+			i++;
+		}
+	}
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "CONDITION");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "CONDITION");
+		while (i<nb)
+		{
+			CLogicCondition v;
+			v.read(parent);
+			_Conditions.insert (make_pair(v.getName(), v));
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "CONDITION");
+			i++;
+		}
+	}
+
+	{
+		// Count the parent
+		uint nb = CIXml::countChildren (node, "STATE");
+		uint i = 0;
+		xmlNodePtr parent = CIXml::getFirstChildNode (node, "STATE");
+		while (i<nb)
+		{
+			CLogicState v;
+			v.read(parent);
+			_States.insert (make_pair(v.getName(), v));
+
+			// Next parent
+			parent = CIXml::getNextChildNode (parent, "STATE");
+			i++;
+		}
+	}
+
+	setCurrentState (getXMLProp (node, "CurrentState"));
+}
 
 } // NLLOGIC

@@ -1,7 +1,7 @@
 /** \file logic_variable.h
  * 
  *
- * $Id: logic_state.h,v 1.2 2002/03/25 16:19:53 lecroart Exp $
+ * $Id: logic_state.h,v 1.3 2002/06/20 12:17:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/entity_id.h"
+#include "nel/misc/o_xml.h"
+#include "nel/misc/i_xml.h"
 
 #include "nel/net/service.h"
 
@@ -156,8 +158,10 @@ public:
 	/**
 	 * serial
 	 */
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	void write (xmlNodePtr node) const;
+	void read (xmlNodePtr node);
 };
 
 

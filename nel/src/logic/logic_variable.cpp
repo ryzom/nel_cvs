@@ -1,7 +1,7 @@
 /** \file logic_variable.cpp
  * 
  *
- * $Id: logic_variable.cpp,v 1.1 2002/02/14 12:58:03 corvazier Exp $
+ * $Id: logic_variable.cpp,v 1.2 2002/06/20 12:17:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 
+#include "nel/logic/logic_state_machine.h"
 #include "nel/logic/logic_variable.h"
 
 using namespace std;
@@ -124,7 +125,7 @@ void CLogicVariable::processLogic()
 // serial :
 // 
 //---------------------------------------------------
-void CLogicVariable::serial( IStream &f )
+/*void CLogicVariable::serial( IStream &f )
 {
 	f.xmlPush( "VARIABLE");
 
@@ -133,16 +134,24 @@ void CLogicVariable::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
 
+void CLogicVariable::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"VARIABLE", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Name", (const xmlChar*)_Name.c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Value", (const xmlChar*)toString(_Value).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Verbose", (const xmlChar*)toString(_Verbose).c_str());
+}
 
+void CLogicVariable::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "VARIABLE");
 
-
-
-
-
-
-
+	_Name = getXMLProp (node, "Name");
+	_Value = atoiInt64 (getXMLProp (node, "Value").c_str());
+	_Verbose = atoi(getXMLProp (node, "Verbose").c_str()) == 1;
+}
 
 //---------------------------------------------------
 // CLogicCounter :
@@ -343,7 +352,7 @@ void CLogicCounter::manageRunningMode()
 // serial :
 // 
 //---------------------------------------------------
-void CLogicCounter::serial( IStream &f )
+/*void CLogicCounter::serial( IStream &f )
 {
 	f.xmlPush( "COUNTER");
 
@@ -358,7 +367,38 @@ void CLogicCounter::serial( IStream &f )
 
 	f.xmlPop();
 
-} // serial //
+} // serial //*/
+
+void CLogicCounter::write (xmlNodePtr node) const
+{
+	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"COUNTER", NULL);
+	xmlSetProp (elmPtr, (const xmlChar*)"Name", (const xmlChar*)_Name.c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Value", (const xmlChar*)toString(_Value).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Verbose", (const xmlChar*)toString(_Verbose).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Period", (const xmlChar*)toString(Period.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Phase", (const xmlChar*)toString(Phase.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Step", (const xmlChar*)toString(Step.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"LowLimit", (const xmlChar*)toString(LowLimit.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"HighLimit", (const xmlChar*)toString(HighLimit.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Mode", (const xmlChar*)toString(Mode.getValue()).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Control", (const xmlChar*)toString(Control.getValue()).c_str());
+}
+
+void CLogicCounter::read (xmlNodePtr node)
+{
+	xmlCheckNodeName (node, "COUNTER");
+
+	_Name = getXMLProp (node, "Name");
+	_Value = atoiInt64 (getXMLProp (node, "Value").c_str());
+	_Verbose = atoi(getXMLProp (node, "Verbose").c_str()) == 1;
+	Period.setValue(atoiInt64(getXMLProp (node, "Period").c_str()));
+	Phase.setValue(atoiInt64(getXMLProp (node, "Phase").c_str()));
+	Step.setValue(atoiInt64(getXMLProp (node, "Step").c_str()));
+	LowLimit.setValue(atoiInt64(getXMLProp (node, "LowLimit").c_str()));
+	HighLimit.setValue(atoiInt64(getXMLProp (node, "HighLimit").c_str()));
+	Mode.setValue(atoiInt64(getXMLProp (node, "Mode").c_str()));
+	Control.setValue(atoiInt64(getXMLProp (node, "Control").c_str()));
+}
 
 
 }

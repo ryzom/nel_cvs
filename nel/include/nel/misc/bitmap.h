@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.24 2004/06/21 07:43:32 vizerie Exp $
+ * $Id: bitmap.h,v 1.25 2004/07/13 14:41:00 cardouat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,7 +22,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
 #ifndef NL_BITMAP_H
 #define NL_BITMAP_H
 
@@ -35,12 +34,17 @@ extern "C"
 }
 #endif // USE_JPEG
 
+
+//---------------- END OF PNG STUFFS ------------------
+
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/debug.h"
 #include <vector>
 #include "nel/misc/object_vector.h"
 
+struct png_struct;
 
 namespace NLMISC 
 {
@@ -68,7 +72,6 @@ const uint32	DXT_ = NL_MAKEFOURCC('D','X', 'T', '\0');
 
 
 const uint8	MAX_MIPMAP = 16;
-
 
 
 
@@ -127,6 +130,8 @@ private :
 	uint8 readTGA(	NLMISC::IStream &f);
 
 
+	uint8 readPNG( NLMISC::IStream &f );
+	
 
 	/** 
 	 * Change bitmap format 
@@ -458,11 +463,11 @@ public:
 	 * If the current pixel format is not rgba then the method does nothing
 	 * If the pixel format is Alpha then we save in 8 bpp
 	 * \param f IStream (must be a reading stream)
-	 * \param d depth : 8 or 16 or 24 or 32
+	 * \param d depth : 8 or 16 or 24 or 32 (0 for automatic)
 	 * \param upsideDown if true, the bitmap will be saved with the upside down
 	 * \return true if succeed, false else
 	 */	
-	bool writeTGA(NLMISC::IStream &f, uint32 d, bool upsideDown = false);
+	bool writeTGA(NLMISC::IStream &f, uint32 d=0, bool upsideDown = false);
 
 	/** 
 	 * Write a JPG from the object pixels buffer.
@@ -567,13 +572,22 @@ public:
 	  */
 	void blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapIsMutable = false);
 
+	void getData(uint8*& extractData);
+
+	void getDibData(uint8*& extractData);
 };
 
 
 
+static void readPNGData(png_struct *png_ptr,char *data, uint lenght );
+
+
+/*-------------------------------------------------------------------*\
+							JPG
+\*-------------------------------------------------------------------*/
+
 
 #ifdef USE_JPEG
-
 extern NLMISC::IStream *JPGStream;
 static const uint32 JPGBufferSize = 1000;
 extern char JPGBuffer[JPGBufferSize];

@@ -754,6 +754,10 @@ SOURCE=..\include\nel\misc\bitmap.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\bitmap_png.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\bsphere.cpp
 # End Source File
 # Begin Source File
@@ -1047,6 +1051,14 @@ SOURCE=.\misc\debug.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\dynloadlib.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\dynloadlib.h
 # End Source File
 # Begin Source File
 

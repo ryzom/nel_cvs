@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.52 2004/06/21 07:43:33 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.53 2004/07/13 14:41:51 cardouat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,13 +29,6 @@
 
 #include <memory>
 #include <algorithm>
-
-/*extern "C"
-{
-#include <jpeglib.h>
-}
-*/
-
 #include "nel/misc/bitmap.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
@@ -43,11 +36,12 @@
 // Define this to force all bitmap white (debug)
 // #define NEL_ALL_BITMAP_WHITE
 
+
 using namespace std;
+
 
 namespace NLMISC
 {
-
 
 struct EDDSBadHeader : public NLMISC::EStream
 {
@@ -83,6 +77,8 @@ const uint32 CBitmap::bitPerPixels[ModeCount]=
 const uint32 CBitmap::DXTC1HEADER = NL_MAKEFOURCC('D','X', 'T', '1');
 const uint32 CBitmap::DXTC3HEADER = NL_MAKEFOURCC('D','X', 'T', '3');
 const uint32 CBitmap::DXTC5HEADER = NL_MAKEFOURCC('D','X', 'T', '5');
+
+const uint32	PNG = NL_MAKEFOURCC(137, 80, 78, 71);
 
 // data for jpeg compression (used by writeJPG())
 NLMISC::IStream *JPGStream = NULL;
@@ -124,6 +120,11 @@ uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip)
 		return readDDS(f, mipMapSkip);
 #endif // NEL_ALL_BITMAP_WHITE
 	}
+	else if (fileType == PNG) 
+	{
+		return readPNG(f);
+	}
+
 	// assuming it's TGA
 	else 
 	{
@@ -176,6 +177,7 @@ uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip)
 #endif // NEL_ALL_BITMAP_WHITE
 		
 	}	
+	return 0;
 }
 
 
@@ -1795,6 +1797,8 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 
 
 
+
+
 /*-------------------------------------------------------------------*\
 							readTGA
 \*-------------------------------------------------------------------*/
@@ -2140,6 +2144,21 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 {
 	if(f.isReading()) return false;
+	if (d==0)
+	{
+		switch (PixelFormat)
+		{
+		case RGBA:
+			d = 32;
+			break;
+		case Luminance:
+			d = 8;
+			break;
+		case Alpha:
+			d = 8;
+			break;
+		}
+	}
 	if(d!=24 && d!=32 && d!=16 && d!=8) return false;
 	if ((PixelFormat != RGBA)&&(PixelFormat != Alpha)&&(PixelFormat != Luminance)) return false;
 	if ((PixelFormat == Alpha) && (d != 8)) return false;
@@ -2279,6 +2298,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	delete []scanline;
 	return true;
 }
+
 
 template<class T>
 void rotateCCW (const T* src, T* dst, uint srcWidth, uint srcHeight)
@@ -3402,4 +3422,53 @@ void CBitmap::unattachPixels(CObjectVector<uint8> *mipmapDestArray, uint maxMipM
 }
 
 
+
+void CBitmap::getData(uint8*& extractData)
+{
+
+	uint32 size;
+	if(PixelFormat==RGBA)
+		size=_Width*_Height*4;
+	else if(PixelFormat==Alpha|Luminance)
+		size=_Width*_Height;
+
+	for(uint32 pix=0;pix<size;pix++)
+		extractData[pix]=_Data[0][pix];
+
+}
+
+void CBitmap::getDibData(uint8*& extractData)
+{
+
+	uint32 lineSize,size;
+	uint8** buf;
+	buf=new uint8*[_Height];
+	if(PixelFormat==RGBA)
+	{
+		lineSize=_Width*4;
+		
+
+	}
+	else if(PixelFormat==Alpha|Luminance)
+	{
+		lineSize=_Width;
+	}
+
+	for(sint32 i=_Height-1;i>=0;i--)
+	{
+		buf[_Height-1-i]=&_Data[0][i*lineSize];
+	}
+
+	size=lineSize*_Height;
+	
+	for(uint32 line=0;line<_Height;line++)
+	{
+		for(uint32 pix=0;pix<lineSize;pix++)
+			extractData[line*lineSize+pix]=_Data[0][size-(line+1)*lineSize+pix];
+	}
+	delete []buf;
+
+}
+
 } // NLMISC
+

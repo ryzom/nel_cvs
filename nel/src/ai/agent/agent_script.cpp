@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.107 2002/03/12 13:45:28 chafik Exp $
+ * $Id: agent_script.cpp,v 1.108 2002/03/13 10:36:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,6 @@ namespace NLAIAGENT
 
 		std::string msgStr;
 		std::string scriptName("MsgAgentScript");
-
 		msgStr = std::string("From Message : Define MsgTellCompoment\n{");
 		msgStr += std::string("Component:\n");		
 		msgStr += std::string("\tString<'CompomentName'>;\n");
@@ -91,6 +90,12 @@ namespace NLAIAGENT
 		msgStr += std::string("\tMsgType = msg;\n");
 		msgStr += std::string("End\n");
 		msgStr += std::string("}\n");
+		//NLAILINK::buildScript(msgStr,scriptName);
+		
+		msgStr = std::string("From Message : Define MsgInitCompoment\n{");
+		msgStr += std::string("Component:\n");				
+		msgStr += std::string("End\n");
+		
 		NLAILINK::buildScript(msgStr,scriptName);
 
 		NLAIC::CIdentType idMsgTellCompomentType ("MsgTellCompoment");

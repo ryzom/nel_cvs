@@ -166,9 +166,11 @@ Doing this enable the class to be serialized on every type of streams, which cou
 file streams, network streams and so on. It is a full extensible system that allow NeL to
 add new complex streams like compressed file stream or distributed file stream.
 
-The database is managed by a third party library. It could be either a commercial object oriented
-database (OODBMS) that support quick object storage and access, security and backup
-system, or a free software database such as MySQL or PostGres. The NeL database interface merely provides access to that specific database,
+The database is managed by a third party library. It could be either an object oriented
+database (OODBMS) that support transparent object storage and access, security and backup
+system, or a classical relational database. The decision to orient the architecture toward
+one or the other isn't yet set in stone.
+The NeL database interface merely provides access to that specific database,
 but NeL does not require any specific kind of database to be useable.
 
 \subsection componentnet Network

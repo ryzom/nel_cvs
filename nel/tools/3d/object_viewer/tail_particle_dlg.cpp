@@ -1,6 +1,6 @@
 /** \file tail_particle_dlg.cpp
  * A dailog that helps to tune propertie of particle that owns a tail 
- * $Id: tail_particle_dlg.cpp,v 1.5 2004/07/16 07:31:12 vizerie Exp $
+ * $Id: tail_particle_dlg.cpp,v 1.6 2004/07/16 08:39:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,8 +67,14 @@ void CTailParticleDlg::init(CWnd *pParent, sint x, sint y)
 ///		m_TailPersistAfterDeath = (dynamic_cast<NL3D::CPSRibbon *>(_TailParticle))->getPersistAfterDeath();		
 	}
 	NL3D::CPSRibbon *ribbon = dynamic_cast<NL3D::CPSRibbon *>(_TailParticle);
-	nlassert(ribbon);
-	((CComboBox *) GetDlgItem(IDC_RIBBON_ORIENTATION))->SetCurSel(ribbon->getOrientation());
+	if (ribbon)
+	{	
+		((CComboBox *) GetDlgItem(IDC_RIBBON_ORIENTATION))->SetCurSel(ribbon->getOrientation());
+	}
+	else
+	{
+		GetDlgItem(IDC_RIBBON_ORIENTATION)->ShowWindow(SW_HIDE);
+	}
 	UpdateData();
 	ShowWindow(SW_SHOW);
 }

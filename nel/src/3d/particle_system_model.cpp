@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.43 2002/11/14 17:33:03 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.44 2003/02/05 10:36:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,6 +276,7 @@ void CParticleSystemModel::releaseRsc()
 	}	
 	nlassert(_Scene);
 	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
+	releasePSPointer();
 }
 
 ///=====================================================================================

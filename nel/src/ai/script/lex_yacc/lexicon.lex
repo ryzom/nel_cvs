@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <math.h>
+#include "nel/ai/script/ytable.h"
 #include "nel/ai/script/lexsupport.h"
 #include "nel/ai/script/lex.h"
 using  namespace NLAISCRIPT;

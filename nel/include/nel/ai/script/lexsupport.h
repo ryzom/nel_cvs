@@ -1,7 +1,7 @@
 /** \file lexsupport.h
  * Method and class for lex&yacc support.
  *
- * $Id: lexsupport.h,v 1.6 2001/01/17 16:53:18 chafik Exp $
+ * $Id: lexsupport.h,v 1.7 2001/10/22 16:13:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/types_nl.h"
 
 #ifndef PARSER_NO_REDEF_YYTABLE_H_
-	#include "nel/ai/script/ytable.h"
+//#include "nel/ai/script/ytable.h"
 #endif
 
 #ifdef NL_OS_WINDOWS
@@ -88,6 +88,8 @@ namespace NLAISCRIPT
 			}
 	};
 
+	//add a word to the dictionary.
+	void AddWordDico(const char *T, int tag);
 	///For a given CString the method returns the token defined in the yacc.
 	int GetIdentType(char *CStringType);
 	///Initialize the dictionary.

@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.18 2001/07/12 08:41:06 portier Exp $
+ * $Id: lexsupport.cpp,v 1.19 2001/10/22 16:13:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "nel/ai/script/ytable.h"
 #include "nel/ai/script/lexsupport.h"
 #include <math.h>
 #include <list>
@@ -82,6 +84,11 @@ namespace NLAISCRIPT
 
 	typedef std::map<CStringType , long,std::less<CStringType> > Arbre;
 	static Arbre DicoDeNom;
+
+	void AddWordDico(const char *T, int tag)
+	{
+		DicoDeNom.insert(Arbre::value_type(T,tag) );
+	};
 
 	void InitDico()
 	{		

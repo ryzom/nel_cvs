@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.39 2004/03/19 17:49:05 berenguier Exp $
+ * $Id: u_driver.h,v 1.40 2004/03/23 10:12:21 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,8 +93,7 @@ struct CMonitorColorProperties
  */
 class UDriver
 {
-public:
-
+public:	
 	/// A Graphic Mode descriptor.
 	class CMode 
 	{
@@ -663,6 +662,8 @@ public:
 
 	// @}
 
+	// see if the tex env operator CMaterial::Mad is supported
+	virtual	bool				supportMADOperator() const = 0;
 
 public:
 

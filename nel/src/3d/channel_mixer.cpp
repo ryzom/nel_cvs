@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.4 2001/03/08 13:35:36 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.5 2001/03/16 16:05:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,13 @@ void CChannelMixer::setAnimationSet (const CAnimationSet* animationSet)
 	_Channels.resize (_AnimationSet->getNumChannelId ());
 }
 
+// ***************************************************************************
+
+const CAnimationSet* CChannelMixer::getAnimationSet () const
+{
+	// Return the animationSet Pointer
+	return _AnimationSet;
+}
 
 // ***************************************************************************
 
@@ -247,7 +254,7 @@ void CChannelMixer::resetSlots ()
 
 // ***************************************************************************
 
-void CChannelMixer::applySkeletonWeight (uint slot, const CSkeletonWeight& skelWeight, bool invert)
+void CChannelMixer::applySkeletonWeight (uint slot, uint skeleton, bool invert)
 {
 	// Check alot arg
 	nlassert (slot<NumAnimationSlot);
@@ -255,26 +262,37 @@ void CChannelMixer::applySkeletonWeight (uint slot, const CSkeletonWeight& skelW
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
 
-	// Get number of node in the skeleton weight
-	uint sizeSkel=skelWeight.getNumNode ();
+	// Get the skeleton weight
+	const CSkeletonWeight *pSkeleton=_AnimationSet->getSkeletonWeight (skeleton);
 
-	// For each entry of the skeleton weight
-	for (uint n=0; n<sizeSkel; n++)
+	// Something to change ?
+	if ((pSkeleton!=_SlotArray[slot]._SkeletonWeight)||(invert!=_SlotArray[slot]._InvertedSkeletonWeight))
 	{
-		// Get the name of the channel for this node
-		const string& channelName=skelWeight.getNodeName (n);
+		// Set the current skeleton
+		_SlotArray[slot]._SkeletonWeight=pSkeleton;
+		_SlotArray[slot]._InvertedSkeletonWeight=invert;
 
-		// Get the channel Id having the same name than the tracks in this animation set.
-		uint channelId=_AnimationSet->getChannelIdByName (channelName);
+		// Get number of node in the skeleton weight
+		uint sizeSkel=pSkeleton->getNumNode ();
 
-		// Tracks exist in this animation set?
-		if (channelId!=CAnimationSet::NotFound)
+		// For each entry of the skeleton weight
+		for (uint n=0; n<sizeSkel; n++)
 		{
-			// Get the weight of the channel for this node
-			float weight=skelWeight.getNodeWeight (n);
+			// Get the name of the channel for this node
+			const string& channelName=pSkeleton->getNodeName (n);
 
-			// Set the weight of this channel for this slot
-			_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
+			// Get the channel Id having the same name than the tracks in this animation set.
+			uint channelId=_AnimationSet->getChannelIdByName (channelName);
+
+			// Tracks exist in this animation set?
+			if (channelId!=CAnimationSet::NotFound)
+			{
+				// Get the weight of the channel for this node
+				float weight=pSkeleton->getNodeWeight (n);
+
+				// Set the weight of this channel for this slot
+				_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
+			}
 		}
 	}
 }
@@ -286,13 +304,21 @@ void CChannelMixer::resetSkeletonWeight (uint slot)
 	// Check alot arg
 	nlassert (slot<NumAnimationSlot);
 
-	// Check alot arg
-	uint channelCount=_Channels.size();
+	// Something to change ?
+	if (_SlotArray[slot]._SkeletonWeight!=NULL)
+	{
+		// Set skeleton
+		_SlotArray[slot]._SkeletonWeight=NULL;
+		_SlotArray[slot]._InvertedSkeletonWeight=false;
 
-	// For each channels
-	for (uint c=0; c<channelCount; c++)
-		// Reset
-		_Channels[c]._Weights[slot]=1.f;
+		// Check alot arg
+		uint channelCount=_Channels.size();
+
+		// For each channels
+		for (uint c=0; c<channelCount; c++)
+			// Reset
+			_Channels[c]._Weights[slot]=1.f;
+	}
 }
 
 // ***************************************************************************

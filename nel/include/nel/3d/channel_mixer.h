@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.4 2001/03/08 13:35:36 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.5 2001/03/16 16:05:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,6 @@ class CAnimation;
 class IAnimatable;
 class IAnimatedValue;
 class ITrack;
-class CSkeletonWeight;
 class CAnimationSet;
 
 /**
@@ -96,6 +95,8 @@ private:
 		void empty ()
 		{
 			_Animation=NULL;
+			_SkeletonWeight=NULL;
+			_InvertedSkeletonWeight=false;
 		}
 
 		/// Is the slot empty ?
@@ -107,6 +108,12 @@ private:
 	private:
 		/// Animation pointer to use by this slot. If NULL, slot is empty.
 		const CAnimation*	_Animation;
+
+		/// Skeleton weight pointer
+		const CSkeletonWeight*	_SkeletonWeight;
+
+		/// Skeleton weight pointer inverted or not
+		bool				_InvertedSkeletonWeight;
 
 		/// Time to use to eval the animation.
 		CAnimationTime		_Time;
@@ -211,6 +218,12 @@ public:
 	  * The pointer is hold by the channel mixer until it changes.
 	  */
 	void setAnimationSet (const CAnimationSet* animationSet);
+
+	/**
+	  * Get the animation set used by this channel mixer.
+	  * The pointer is hold by the channel mixer until it changes. Return NULL if no animationSet defined.
+	  */
+	const CAnimationSet* getAnimationSet () const;
 
 	/** 
 	  * Launch evaluation of channels.
@@ -328,11 +341,11 @@ public:
 	  * This method apply the weight of each node contains in skelWeight to the channel's slot weight.
 	  *
 	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
-	  * \param skelWeight is a skeleton template weight.
+	  * \param skeleton is the index of a skeleton in the animationSet.
 	  * \param invert is true if the weights to attach to the channels are the weights of the skeleton template. 
 	  * false if the weights to attach to the channels are the 1.f-weights of the skeleton template.
 	  */
-	void applySkeletonWeight (uint slot, const CSkeletonWeight& skelWeight, bool invert=false);
+	void applySkeletonWeight (uint slot, uint skeleton, bool invert=false);
 
 	/**
 	  * Reset the skeleton weight for a specific slot.

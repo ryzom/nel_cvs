@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.3 2000/09/21 09:13:06 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.4 2000/09/21 09:35:21 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -91,6 +91,11 @@ public:
 		a1=NULL;
 		b0= new B;
 		a0=b0;
+
+		printf("%d\n", (A*)NULL==a0);
+		printf("%d\n", b0!=a0);
+		printf("%d\n", (A*)NULL==a1);
+		printf("%d\n", a2!=a0);
 	}
  *\endcode
  *
@@ -109,25 +114,24 @@ public:
 	/// Attach a ptr to a SmartPtr.
     CSmartPtr(T* p) { Ptr=p; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(T*)"); }
 	/// Copy constructor.
-    CSmartPtr(const CSmartPtr &copy) { Ptr=copy.Ptr; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(Copy)"); }
+    CSmartPtr(CSmartPtr &copy) { Ptr=copy.Ptr; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(Copy)"); }
 	/// Release the SmartPtr.
     ~CSmartPtr();
 
 
 	/// Cast operator.
-    operator T*(void) { SMART_TRACE("castT*()"); return Ptr; }
+    operator T*(void) const { SMART_TRACE("castT*()"); return Ptr; }
 	/// Cast operator. Doesn't check NULL.
-    T* operator->(void) { SMART_TRACE("ope->()"); return Ptr; }
+    T* operator->(void) const { SMART_TRACE("ope->()"); return Ptr; }
 	/// Cast operator. Doesn't check NULL.
-    T& operator*(void) { SMART_TRACE("ope*()"); return *Ptr; }
+    T& operator*(void) const { SMART_TRACE("ope*()"); return *Ptr; }
 
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(T* p);
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(CSmartPtr<T> &p);
 
-	/// Compare two pointers.
-    bool operator==(CSmartPtr<T> &p) {SMART_TRACE("ope==()"); return Ptr==p.Ptr;}
+	// No need to do any operator==. Leave the work to cast  operator T*(void).
 };
 
 

@@ -1919,6 +1919,10 @@ SOURCE=.\3d\ps_attrib_maker_bin_op_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_attrib_maker_helper.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_attrib_maker_helper.h
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.51 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.52 2003/04/14 15:28:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -796,31 +796,11 @@ bool	CParticleSystemModel::checkDestroyCondition(CParticleSystem *ps)
 		 */
 		if (ps->getAnimType() != CParticleSystem::AnimAlways)
 		{
-			// test deletion condition (no more particle, no more particle and emitters)
-			if (ps->getDestroyCondition() != CParticleSystem::none)
+			if (ps->isDestroyConditionVerified())
 			{
-				if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
-				{
-					switch (ps->getDestroyCondition())
-					{
-						case CParticleSystem::noMoreParticles:
-							if (!ps->hasParticles())
-							{							
-								releaseRscAndInvalidate();
-								return true;
-							}
-							break;
-						case CParticleSystem::noMoreParticlesAndEmitters:
-							if (!ps->hasParticles() && !ps->hasEmitters())
-							{
-								releaseRscAndInvalidate();
-								return true;
-							}
-							break;
-						default: break;
-					}
-				}
-			}
+				releaseRscAndInvalidate();
+				return true;
+			}			
 		}
 	}
 	return false;

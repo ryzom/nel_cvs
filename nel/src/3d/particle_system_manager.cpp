@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.7 2003/03/04 18:16:30 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.8 2003/04/14 15:28:56 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -162,30 +162,10 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 			if (!psm.getEditionMode())
 			{			
 				// test deletion condition (no more particle, no more particle and emitters)
-				if (ps->getDestroyCondition() != CParticleSystem::none)
-				{
-					if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
-					{
-						switch (ps->getDestroyCondition())
-						{
-							case CParticleSystem::noMoreParticles:
-								if (!ps->hasParticles())
-								{							
-									psm.releaseRscAndInvalidate();
-									return;
-								}
-							break;
-							case CParticleSystem::noMoreParticlesAndEmitters:
-								if (!ps->hasParticles() && !ps->hasEmitters())
-								{
-									psm.releaseRscAndInvalidate();
-									return;
-								}
-							break;
-							default: break;
-						}
-					}
-				}
+				if (ps->isDestroyConditionVerified())
+				{				
+					psm.releaseRscAndInvalidate();
+				}				
 			}
 		}
 	}

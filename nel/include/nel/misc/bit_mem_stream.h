@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.6 2001/11/28 09:35:49 legros Exp $
+ * $Id: bit_mem_stream.h,v 1.7 2002/01/30 10:09:01 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -196,8 +196,11 @@ public:
 #ifndef NL_OS_CYGWIN
 	virtual void	serial(char &b) { serialAdapt( b, char ); }
 #endif
-	virtual void	serial(std::string &b) ;
-	//virtual void	serial(ucstring &b) ;
+	virtual void	serial(std::string &b);
+	//virtual void	serial(ucstring &b);
+
+	virtual void	serial(CBitMemStream &b);
+	
 	//@}
 
 	/// Specialisation of serialCont() for vector<uint8>

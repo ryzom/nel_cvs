@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.15 2001/10/25 12:18:18 cado Exp $
+ * $Id: mem_stream.h,v 1.16 2002/01/30 10:09:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_MEM_STREAM_H
 #define NL_MEM_STREAM_H
 
+#include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include <vector>
 
@@ -203,6 +204,15 @@ public:
 	void			serialCont(std::map<K, T> &cont) 		{IStream::serialCont(cont);}
 	template<class K, class T>
 	void			serialCont(std::multimap<K, T> &cont) 	{IStream::serialCont(cont);}
+
+	/// Specialisation of serialCont() for vector<uint8>
+	virtual void			serialCont(std::vector<uint8> &cont) {IStream::serialCont(cont);} 
+	/// Specialisation of serialCont() for vector<sint8>
+	virtual void			serialCont(std::vector<sint8> &cont) {IStream::serialCont(cont);} 
+	/// Specialisation of serialCont() for vector<bool>
+	virtual void			serialCont(std::vector<bool> &cont) {IStream::serialCont(cont);} 
+
+
 
 	template<class T0,class T1>
 	void			serial(T0 &a, T1 &b) 

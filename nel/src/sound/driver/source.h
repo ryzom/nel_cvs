@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: source.h,v 1.2 2001/07/04 13:07:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,13 +57,15 @@ public:
 	/// \name Initialization
 	//@{
 	/** Set the buffer that will be played (no streaming)
-	 * If the buffer is stereo, the source mode becomes stereo, otherwise 3D.
+	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
+	 * otherwise the source is considered as a 3D source.
 	 */
 	virtual void					setStaticBuffer( IBuffer *buffer )	{ _Buffer = buffer; }
 	/// Return the buffer, or NULL if streaming is used.
 	virtual IBuffer					*getStaticBuffer()					{ return _Buffer; }
 	/** Set the sound loader that will be used to stream in the data to play
-	 * If the buffer is stereo, the source mode becomes stereo, otherwise 3D.
+	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
+	 * otherwise the source is considered as a 3D source.
 	 */
 	virtual void					setStreamLoader( ILoader *loader )	{ _Loader = loader; }
 
@@ -111,11 +113,11 @@ public:
 	virtual void					setGain( float gain ) = 0;
 	/// Get the gain
 	virtual float					getGain() const = 0;
-	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
+	/// Set the source relative mode. If true, positions are interpreted relative to the listener position
 	virtual void					setSourceRelativeMode( bool mode ) = 0;
 	/// Get the source relative mode
 	virtual bool					getSourceRelativeMode() const = 0;
-	/// Set the min and max distances (default: 1, MAX_FLOAT)
+	/// Set the min and max distances (default: 1, MAX_FLOAT) (3D mode only)
 	virtual void					setMinMaxDistances( float mindist, float maxdist ) = 0;
 	/// Get the min and max distances
 	virtual void					getMinMaxDistances( float& mindist, float& maxdist ) const = 0;

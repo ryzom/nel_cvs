@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.8 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.9 2001/09/14 07:40:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,17 +142,20 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 		DWORD flags=c->GetInheritanceFlags();
 
 		// Unherit scale if all scale inherit flags are cleared
-		bone.UnheritScale=(flags&(INHERIT_SCL_X|INHERIT_SCL_Y|INHERIT_SCL_Z))==0;
+		bone.UnheritScale=(flags&(INHERIT_SCL_X|INHERIT_SCL_Y|INHERIT_SCL_Z))!=0;
 	}
 
 	// ** Set default tracks
 
 	// Get the local matrix for the default pos
 	Matrix3 localTM (TRUE);
+	localTM.SetRotateZ ((float)Pi/2);
 
 	// Biped root must be exported with Identity because path are setuped interactively in the root of the skeleton
-	if ((c&&(c->ClassID() != BIPSLAVE_CONTROL_CLASS_ID))||view)
+	if ((c&&(c->ClassID() != BIPBODY_CONTROL_CLASS_ID))||view)
 		getLocalMatrix (localTM, node, time);
+	else
+		int thisIsABodyControl=0;
 
 	// Decomp the matrix to get default animations tracks
 	NLMISC::CVector		nelScale;
@@ -895,6 +898,8 @@ void CExportNel::addSkeletonBindPos (INode& skinedNode, mapBoneBindPos& boneBind
 					// For each vertex
 					for (uint vert=0; vert<vertCount; vert++)
 					{
+						if (vert==111)
+							int toto=0;
 						// Get a vertex interface
 						IPhyVertexExport *vertexInterface=localData->GetVertexInterface (vert);
 
@@ -914,7 +919,42 @@ void CExportNel::addSkeletonBindPos (INode& skinedNode, mapBoneBindPos& boneBind
 							nlassert (res==MATRIX_RETURNED);
 
 							// Add an entry inthe map
-							boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos));
+							if (boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos)).second)
+							{
+#ifdef NL_DEBUG
+								// *** Debug info
+
+								// Bone name
+								std::string boneName=getName (*bone);
+
+								// Local matrix
+								Matrix3 nodeTM;
+								nodeTM=bone->GetNodeTM (0);
+
+								// Offset matrix
+								Matrix3 offsetScaleTM (TRUE);
+								Matrix3 offsetRotTM (TRUE);
+								Matrix3 offsetPosTM (TRUE);
+								ApplyScaling (offsetScaleTM, bone->GetObjOffsetScale ());
+								offsetRotTM.SetRotate (bone->GetObjOffsetRot ());
+								offsetPosTM.SetTrans (bone->GetObjOffsetPos ());
+								Matrix3 offsetTM = offsetScaleTM * offsetRotTM * offsetPosTM;
+
+								// Local + offset matrix
+								Matrix3 nodeOffsetTM = offsetTM * nodeTM;
+
+								// Init TM
+								Matrix3 initTM;
+								int res=physiqueInterface->GetInitNodeTM (bone, initTM);
+								nlassert (res==MATRIX_RETURNED);
+
+								// invert
+								initTM.Invert();
+								Matrix3 compNode=nodeTM*initTM;
+								Matrix3 compOffsetNode=nodeOffsetTM*initTM;
+								Matrix3 compOffsetNode2=nodeOffsetTM*initTM;
+#endif // NL_DEBUG
+							}
 						}
 						else
 						{
@@ -936,7 +976,42 @@ void CExportNel::addSkeletonBindPos (INode& skinedNode, mapBoneBindPos& boneBind
 								nlassert (res==MATRIX_RETURNED);
 
 								// Add an entry inthe map
-								boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos));
+								if (boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos)).second)
+								{
+#ifdef NL_DEBUG
+									// *** Debug info
+
+									// Bone name
+									std::string boneName=getName (*bone);
+
+									// Local matrix
+									Matrix3 nodeTM;
+									nodeTM=bone->GetNodeTM (0);
+
+									// Offset matrix
+									Matrix3 offsetScaleTM (TRUE);
+									Matrix3 offsetRotTM (TRUE);
+									Matrix3 offsetPosTM (TRUE);
+									ApplyScaling (offsetScaleTM, bone->GetObjOffsetScale ());
+									offsetRotTM.SetRotate (bone->GetObjOffsetRot ());
+									offsetPosTM.SetTrans (bone->GetObjOffsetPos ());
+									Matrix3 offsetTM = offsetScaleTM * offsetRotTM * offsetPosTM;
+
+									// Local + offset matrix
+									Matrix3 nodeOffsetTM = offsetTM * nodeTM;
+
+									// Init TM
+									Matrix3 initTM;
+									int res=physiqueInterface->GetInitNodeTM (bone, initTM);
+									nlassert (res==MATRIX_RETURNED);
+
+									// invert
+									initTM.Invert();
+									Matrix3 compNode=nodeTM*initTM;
+									Matrix3 compOffsetNode=nodeOffsetTM*initTM;
+									Matrix3 compOffsetNode2=nodeOffsetTM*initTM;
+#endif // NL_DEBUG
+								}
 							}
 						}
 					

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.15 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.16 2001/09/14 07:40:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -853,17 +853,20 @@ void CExportNel::buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float 
 
 void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
-	// Build a matrix with the quat
-	Matrix3 mt;
-	maxKey.val.q.MakeMatrix (mt);
+	// Make a scale matrix
+	Matrix3 srtm, stm, mat;
+	maxKey.val.q.MakeMatrix(srtm);
+	stm = ScaleMatrix(maxKey.val.s);
+	mat = Inverse(srtm) * stm * srtm;
 
-	// Transform the scale in the scale basis
-	Point3 scale=mt*maxKey.val.s;
-
+	// Get a NeL matrix
+	CMatrix scaleMatrix;
+	convertMatrix (scaleMatrix, mat);
+	
 	// Export it
-	nelKey.Value.x=scale.x;
-	nelKey.Value.y=scale.y;
-	nelKey.Value.z=scale.z;
+	nelKey.Value.x=scaleMatrix.getI().x;
+	nelKey.Value.y=scaleMatrix.getJ().y;
+	nelKey.Value.z=scaleMatrix.getK().z;
 }
 
 // --------------------------------------------------
@@ -932,17 +935,20 @@ void CExportNel::buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey,
 
 void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
-	// Build a matrix with the quat
-	Matrix3 mt;
-	maxKey.val.q.MakeMatrix (mt);
+	// Make a scale matrix
+	Matrix3 srtm, stm, mat;
+	maxKey.val.q.MakeMatrix(srtm);
+	stm = ScaleMatrix(maxKey.val.s);
+	mat = Inverse(srtm) * stm * srtm;
 
-	// Transform the scale in the scale basis
-	Point3 scale=mt*maxKey.val.s;
+	// Get a NeL matrix
+	CMatrix scaleMatrix;
+	convertMatrix (scaleMatrix, mat);
 
 	// Export it
-	nelKey.Value.x=scale.x;
-	nelKey.Value.y=scale.y;
-	nelKey.Value.z=scale.z;
+	nelKey.Value.x=scaleMatrix.getI().x;
+	nelKey.Value.y=scaleMatrix.getJ().y;
+	nelKey.Value.z=scaleMatrix.getK().z;
 	nelKey.InTan.x=maxKey.intan.x;
 	nelKey.InTan.y=maxKey.intan.y;
 	nelKey.InTan.z=maxKey.intan.z;
@@ -1018,17 +1024,20 @@ void CExportNel::buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, flo
 
 void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
-	// Build a matrix with the quat
-	Matrix3 mt;
-	maxKey.val.q.MakeMatrix (mt);
+	// Make a scale matrix
+	Matrix3 srtm, stm, mat;
+	maxKey.val.q.MakeMatrix(srtm);
+	stm = ScaleMatrix(maxKey.val.s);
+	mat = Inverse(srtm) * stm * srtm;
 
-	// Transform the scale in the scale basis
-	Point3 scale=mt*maxKey.val.s;
-
+	// Get a NeL matrix
+	CMatrix scaleMatrix;
+	convertMatrix (scaleMatrix, mat);
+	
 	// Export it
-	nelKey.Value.x=scale.x;
-	nelKey.Value.y=scale.y;
-	nelKey.Value.z=scale.z;
+	nelKey.Value.x=scaleMatrix.getI().x;
+	nelKey.Value.y=scaleMatrix.getJ().y;
+	nelKey.Value.z=scaleMatrix.getK().z;
 	nelKey.Tension=maxKey.tens;
 	nelKey.Continuity=maxKey.cont;
 	nelKey.Bias=maxKey.bias;

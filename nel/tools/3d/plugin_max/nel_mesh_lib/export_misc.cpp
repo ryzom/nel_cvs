@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.6 2001/08/02 12:17:57 besson Exp $
+ * $Id: export_misc.cpp,v 1.7 2001/09/14 07:40:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -410,6 +410,16 @@ void CExportNel::decompMatrix (NLMISC::CVector& nelScale, NLMISC::CQuat& nelRot,
 	AffineParts parts;
 	decomp_affine(maxMatrix, &parts);
 
+	// Check
+	Matrix3 srtm, rtm, ptm, stm, ftm;
+	ptm.IdentityMatrix();
+	ptm.SetTrans(parts.t);
+	parts.q.MakeMatrix(rtm);
+	parts.u.MakeMatrix(srtm);
+	stm = ScaleMatrix(parts.k);
+	ftm = ScaleMatrix(Point3(parts.f,parts.f,parts.f)); 
+	Matrix3 mat = Inverse(srtm) * stm * srtm * rtm * ftm * ptm;
+
 	// Set the translation
 	nelPos.x=parts.t.x;
 	nelPos.y=parts.t.y;
@@ -422,7 +432,6 @@ void CExportNel::decompMatrix (NLMISC::CVector& nelScale, NLMISC::CQuat& nelRot,
 	nelRot.w=-parts.q.w;
 
 	// Make a scale matrix
-	Matrix3 srtm, stm, mat;
 	parts.u.MakeMatrix(srtm);
 	stm = ScaleMatrix(parts.k);
 	mat = Inverse(srtm) * stm * srtm;
@@ -432,9 +441,9 @@ void CExportNel::decompMatrix (NLMISC::CVector& nelScale, NLMISC::CQuat& nelRot,
 	convertMatrix (scaleMatrix, mat);
 
 	// Take the scale of this matrix, not very smart but..
-	nelScale.x=scaleMatrix.getI().x;
-	nelScale.y=scaleMatrix.getJ().y;
-	nelScale.z=scaleMatrix.getK().z;
+	nelScale.x=parts.f*scaleMatrix.getI().x;
+	nelScale.y=parts.f*scaleMatrix.getJ().y;
+	nelScale.z=parts.f*scaleMatrix.getK().z;
 }
 
 // --------------------------------------------------

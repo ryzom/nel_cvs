@@ -121,15 +121,6 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\nel_export\checkversion.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=..\nel_export\checkversion.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\nel_3dsmax_shared.cpp
 # End Source File
 # Begin Source File

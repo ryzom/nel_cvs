@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.4 2001/09/03 14:19:37 cado Exp $
+ * $Id: ambiant_source.cpp,v 1.5 2001/09/14 14:40:14 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,8 +62,8 @@ CAmbiantSource::~CAmbiantSource()
 	CAudioMixerUser::instance()->removeMySource( &_StereoChannels[AMBIANT_CH2] );
 	CAudioMixerUser::instance()->removeMySource( &_StereoChannels[SPARSE_CH] );
 
-	// Delete sounds
-	vector<CSound*>::iterator ipsnds;
+	// Delete sounds: now done in CAudioMixerUser::~CAudioMixerUser()
+	/*vector<CSound*>::iterator ipsnds;
 	for ( ipsnds=_AmbiantSounds.begin(); ipsnds!=_AmbiantSounds.end(); ++ipsnds )
 	{
 		nldebug( "Deleting ambiant sound" );
@@ -74,7 +74,7 @@ CAmbiantSource::~CAmbiantSource()
 		nldebug( "Deleting sparse sound" );
 		delete (*ipsnds);
 	}
-
+	*/
 }
 
 
@@ -373,9 +373,20 @@ void					CAmbiantSource::serial( NLMISC::IStream& s )
 	s.serial( _SustainTime );
 	s.serial( _SparseAvgPeriod );
 
-	// Stereo sound banks
+	// Stereo sound banks (sounds allocated here once per pointer, deleted by CAudioMixerUser::~CAudioMixerUser())
 	s.serialContPtr( _AmbiantSounds );
 	s.serialContPtr( _SparseSounds );
+
+	// Register within the audio mixer for deletion at the end
+	vector<CSound*>::iterator ips;
+	for ( ips=_AmbiantSounds.begin(); ips!=_AmbiantSounds.end(); ++ips )
+	{
+		CAudioMixerUser::instance()->addAmbiantSound( (*ips) );
+	}
+	for ( ips=_SparseSounds.begin(); ips!=_SparseSounds.end(); ++ips )
+	{
+		CAudioMixerUser::instance()->addAmbiantSound( (*ips) );
+	}
 }
 
 

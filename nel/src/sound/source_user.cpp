@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.16 2001/09/10 17:14:58 cado Exp $
+ * $Id: source_user.cpp,v 1.17 2001/09/14 14:40:15 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,7 @@ void					CSourceUser::play()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
-		nldebug( "AM: Playing source %s", getSound() ? getSound()->getName().c_str() : "" );
+		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 	_Playing = true;
 	_PlayStart = CTime::getLocalTime();
@@ -177,7 +177,7 @@ void					CSourceUser::stop()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->stop();
-		nldebug( "AM: Source %s stopped", getSound() ? getSound()->getName().c_str() : "" );
+		nldebug( "AM: Source %s stopped", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 	_Playing = false;
 }
@@ -388,11 +388,11 @@ void					CSourceUser::enterTrack( CTrack *track )
 			// Play physically
 			_Track->DrvSource->play();
 		}
-		nldebug( "AM: Source %s selected for playing", getSound() ? getSound()->getName().c_str() : "" );
+		nldebug( "AM: Source %s selected for playing", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 	else
 	{
-		nldebug( "AM: Source %s unselected", getSound() ? getSound()->getName().c_str() : "" );
+		nldebug( "AM: Source %s unselected", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 }
 
@@ -455,15 +455,19 @@ void					CSourceUser::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in CEnvSoundUser::load() !
 
-	// 3D position and sound
+	// 3D position and sound (allocated here if once per pointer,
+	// deleted in CAudioMixerUser::~CAudioMixerUser() (registered by addSource() below))
 	s.serialPtr( _Sound );
 	s.serial( _Looping );
 
 	if ( s.isReading() )
 	{
-		// Put into tracks
-		CAudioMixerUser::instance()->addSource( this );
-		CAudioMixerUser::instance()->giveTrack( this );
+		if ( _Sound != NULL )
+		{
+			// Put into tracks
+			CAudioMixerUser::instance()->addSource( this );
+			CAudioMixerUser::instance()->giveTrack( this );
+		}
 	}
 }
 

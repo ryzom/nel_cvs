@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.18 2001/09/10 17:14:57 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.19 2001/09/14 14:40:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,9 +170,10 @@ public:
 	 * as the CAmbiantSource channels)
 	 */
 	void						removeMySource( USource *source );
+	/// Add ambiant sound pointer for later deletion
+	void						addAmbiantSound( CSound *sound )		{ _AmbSounds.insert( sound ); }
 	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
-	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }
-	
+	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }	
 
 protected:
 
@@ -197,6 +198,9 @@ private:
 
 	/// Sound buffers and static properties
 	TSoundMap					_Sounds;
+
+	/// Sound buffers used (and allocated but not deleted because shared) by ambiant sources
+	TSoundSet					_AmbSounds;
 
 	/// The listener instance
 	CListenerUser				_Listener;

@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.10 2001/09/10 17:14:57 cado Exp $
+ * $Id: sound.h,v 1.11 2001/09/14 14:40:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,9 @@ struct eqstr
 
 /// Sound names hash map
 typedef std::hash_map<const char*, CSound*, std::hash<const char*>, eqstr> TSoundMap;
+
+/// Sound names set (for ambiant sounds)
+typedef std::set<CSound*> TSoundSet;
 
 
 /**
@@ -124,8 +127,15 @@ public:
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
+	/// Set looping
+	void				setLooping( bool looping ) { _Looping = looping; }
 	/// Save (output stream only) (EDIT)
 	static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
+
+	friend bool			operator<( const CSound& s1, const CSound& s2 )
+	{
+		return s1._Name < s2._Name;
+	}
 
 public:
 

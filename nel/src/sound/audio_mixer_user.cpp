@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.18 2001/09/10 17:14:57 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.19 2001/09/14 14:40:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,6 +116,13 @@ CAudioMixerUser::~CAudioMixerUser()
 	for ( ips=sndvec.begin(); ips!=sndvec.end(); ++ips )
 	{
 		delete (*ips);
+	}
+
+	// Sounds allocated by ambiant sources
+	set<CSound*>::iterator ipss;
+	for ( ipss=_AmbSounds.begin(); ipss!=_AmbSounds.end(); ++ipss )
+	{
+		delete (*ipss);
 	}
 
 	// Tracks
@@ -556,7 +563,7 @@ void				CAudioMixerUser::removeSource( std::set<CSourceUser*>::iterator ips, boo
 	CSourceUser *src = *ips;
 	_Sources.erase( ips );
 	releaseTrack( src );
-	nldebug( "AM: Source %s removed", src->getSound() ? src->getSound()->getName().c_str() : "" );
+	nldebug( "AM: Source %s removed", src->getSound() && (src->getSound()->getName()!="") ? src->getSound()->getName().c_str() : "" );
 
 	if ( deleteit )
 	{

@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.17 2001/09/10 17:14:57 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.18 2001/09/14 14:40:14 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,7 +66,10 @@ CEnvSoundUser::~CEnvSoundUser()
 		}
 		else
 		{
-			delete (*ipp);
+			if ( (*ipp) != NULL )
+			{
+				delete (*ipp);
+			}
 		}
 	}
 
@@ -189,7 +192,10 @@ void			CEnvSoundUser::selectEnv( const char *tag, bool children_too )
 	{
 		if ( _Tags[i] == string(tag) )
 		{
-			_Source->enable( false, 1.0f );
+			if ( _Source != NULL )
+			{
+				_Source->enable( false, 1.0f );
+			}
 			_Source = _SrcBank[i];
 			nldebug( "AM: EnvSound: Environment changed to %s", tag );
 			CAudioMixerUser::instance()->getEnvSounds()->recompute();
@@ -348,7 +354,10 @@ void CEnvSoundUser::setPos( const NLMISC::CVector& pos )
 		if ( (_Parent != NULL) && ( _Parent->_Transition ) )
 		{
 			_Parent->_BoundingShape->setCenter( newpos );
-			_Parent->_Source->moveTo( newpos );
+			if ( _Parent->_Source != NULL )
+			{
+				_Parent->_Source->moveTo( newpos );
+			}
 		}
 
 		// Recompute the entire tree
@@ -475,7 +484,8 @@ void		CEnvSoundUser::addEnvTag( IPlayable *source, const std::string& tag )
 {
 	_SrcBank.push_back( source );
 	_Tags.push_back( tag );
-	if ( _Source == NULL )
+
+	if ( _Source == NULL ) // becomes the first one and stays there
 	{
 		_Source = source;
 	}

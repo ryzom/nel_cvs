@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.73 2004/07/20 12:24:44 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.74 2004/07/21 11:13:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1174,7 +1174,7 @@ sint32 CPSLocated::newElement(const CPSSpawnInfo &si, bool doEmitOnce /* = false
 			pEmit->_Phase[creationIndex] -= std::max(0.f, (ellapsedTime - si.LifeTime));
 		}
 	}
-	if (doEmitOnce)
+	if (doEmitOnce && !CPSEmitter::getBypassEmitOnDeath())
 	{		
 		// can be called only outside the sim loop (when the user triggers an emitters for example)
 		for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)

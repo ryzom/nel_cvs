@@ -1,7 +1,7 @@
 
 /** \file ps_initial_pos.cpp
  *
- * $Id: ps_initial_pos.cpp,v 1.2 2004/06/18 09:51:50 vizerie Exp $
+ * $Id: ps_initial_pos.cpp,v 1.3 2004/07/21 11:14:20 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -173,8 +173,7 @@ void CPSInitialPos::restoreSystem()
 
 			nlassert(loc->getSize() == 0);
 		}
-	}
-	NL3D::CPSEmitter::setBypassEmitOnDeath(false);
+	}	
 	// recreate the initial number of instances
 	for (TInitialLocatedSizeVect ::iterator itSize = _InitialSizeVect.begin(); itSize != _InitialSizeVect.end(); ++itSize)
 	{
@@ -188,6 +187,7 @@ void CPSInitialPos::restoreSystem()
 		uint size = itSize->second;
 		
 	}
+	NL3D::CPSEmitter::setBypassEmitOnDeath(false);
 	for (TInitInfoVect::iterator it = _InitInfoVect.begin(); it != _InitInfoVect.end(); ++it)
 	{
 		if (it->Index < it->Loc->getSize())

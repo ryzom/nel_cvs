@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.3 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: instance_user.h,v 1.4 2001/07/12 14:31:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ class CInstanceUser : virtual public UInstance, public CTransformUser
 {
 public:
 	/// This is the SAME pointer than _Transform, but correctly casted.
-	CMeshBaseInstance			*_Instance;
+	CTransformShape			*_Instance;
 
 	/// This is a mirror of _Instance->Materials
 	std::vector<CInstanceMaterialUser>	_Materials;
@@ -61,20 +61,7 @@ public:
 	/// \name Object
 	// @{
 	/// This model should have been created with Scene::createInstance().
-	CInstanceUser(CScene *scene, IModel *trans) : 
-	  CTransformUser(scene, trans)
-	{
-		nlassert(dynamic_cast<CMeshBaseInstance*>(_Transform));
-		_Instance= (CMeshBaseInstance*)_Transform;
-
-		// create user mats.
-		uint	numMat= _Instance->Materials.size();
-		_Materials.reserve(numMat);
-		for(uint i=0;i<numMat;i++)
-		{
-			_Materials.push_back(&_Instance->Materials[i]);
-		}
-	}
+	CInstanceUser(CScene *scene, IModel *trans);
 	virtual	~CInstanceUser()
 	{
 		// deleted in CTransformUser.

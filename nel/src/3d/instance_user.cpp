@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.3 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.4 2001/07/12 14:31:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,10 +24,35 @@
  */
 
 #include "3d/instance_user.h"
+#include "nel/misc/debug.h"
 
+
+using	namespace NLMISC;
 
 namespace NL3D 
 {
+
+
+
+// ***************************************************************************
+CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) : 
+  CTransformUser(scene, trans)
+{
+	_Instance= safe_cast<CTransformShape*>(_Transform);
+	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
+
+	// If It it is a CMeshBaseInstance (with materials).
+	if(mi)
+	{
+		// create user mats.
+		uint	numMat= mi->Materials.size();
+		_Materials.reserve(numMat);
+		for(uint i=0;i<numMat;i++)
+		{
+			_Materials.push_back(&mi->Materials[i]);
+		}
+	}
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.7 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: scene_user.h,v 1.8 2001/07/12 14:31:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,9 +128,6 @@ public:
 		{
 			if( it->second != NULL )
 			{
-				if( dynamic_cast<CMeshBaseInstance*>(it->second)==NULL )
-					nlerror("UScene::createInstance(): shape is not a mesh");
-
 				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second)) );
 				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
 				++it;
@@ -201,9 +198,6 @@ public:
 		// If not found, return NULL.
 		if(model==NULL)
 			return NULL;
-
-		if( dynamic_cast<CMeshBaseInstance*>(model)==NULL )
-			nlerror("UScene::createInstance(): shape is not a mesh");
 
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.23 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.24 2002/05/22 14:00:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,18 +282,26 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	Speed Note:
 	-----------
 	Max program length (lighted/2Sided) is:
-		28 (bend-quaternion) + 
+		29 (bend-quaternion) + 
 		16 (rotNormal + bend + lit 2Sided) + 
 		5  (proj + tex)
 		2  (Dynamic lightmap copy)
 		51
 
-	Normal program length (unlit/2Sided) is:
-		11 (bend-delta) + 
+	Normal program length (unlit/2Sided/No Alpha Blend) is:
+		12 (bend-delta) + 
 		2  (unlit 2Sided) + 
 		5  (proj + tex)
 		2  (Dynamic lightmap copy)
-		20
+		21
+
+	AlphaBlend program length (unlit/2Sided/Alpha Blend) is:
+		12 (bend-delta) + 
+		2  (unlit 2Sided) + 
+		5  (Alpha Blend)
+		5  (proj + tex)
+		2  (Dynamic lightmap copy)
+		26
 
 */
 
@@ -327,6 +335,8 @@ const char* NL3D_FastBendProgram=
 	# mul by this factor, and add to center												\n\
 	MAD	R5, R0.x, R5, v[10];															\n\
 																						\n\
+	# make local to camera pos. Important for ZBuffer precision							\n\
+	ADD R5, R5, -c[10];																	\n\
 ";
 
 
@@ -441,6 +451,8 @@ const char* NL3D_BendProgramP1=
 	# add pos to center pos.															\n\
 	ADD	R5, R5, v[10];				# R5= world pos. R5.w= R5.w+v[10].w= 0+1= 1			\n\
 																						\n\
+	# make local to camera pos. Important for ZBuffer precision							\n\
+	ADD R5, R5, -c[10];																	\n\
 ";
 
 
@@ -531,9 +543,8 @@ const char* NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram=
 "	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
 	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
 																						\n\
-	#Blend transition																	\n\
-	ADD	R1, R5, -c[10];																	\n\
-	DP3	R0.x, R1, R1;				# R0.x= sqr(dist to viewer).						\n\
+	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
+	DP3	R0.x, R5, R5;				# R0.x= sqr(dist to viewer).						\n\
 	RSQ R0.y, R0.x;																		\n\
 	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
 	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
@@ -574,6 +585,8 @@ const char* NL3D_SimpleStartVegetableProgram=
 	# compute in Projection space														\n\
 	MOV	R5, v[0];	\n\
 	ADD	R5.xyz, R5, v[10];	\n\
+	# make local to camera pos															\n\
+	ADD R5, R5, -c[10];																	\n\
 	MOV o[COL0], c[8].yyyy;	\n\
 	MOV o[BFC0], c[8].xxyy;	\n\
 ";
@@ -1812,8 +1825,20 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	driver->enableFog(false);
 
 
-	// set model matrix to identity.
-	driver->setupModelMatrix(CMatrix::Identity);
+	// Used by setupVertexProgramConstants(). The center of camera.
+	// Used for AlphaBlending, and for ZBuffer precision problems.
+	_ViewCenter= viewCenter;
+
+
+	// The manager is identity in essence. But for ZBuffer improvements, must set it as close
+	// to the camera. In the VertexProgram, _ViewCenter is substracted from bent vertex pos. So take it as position.
+	_ManagerMatrix.identity();
+	_ManagerMatrix.setPos(_ViewCenter);
+
+
+	// set model matrix to the manager matrix.
+	driver->setupModelMatrix(_ManagerMatrix);
+
 
 	// set the driver for all allocators
 	updateDriver(driver);
@@ -1833,9 +1858,6 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// compute the angleAxis corresponding to direction
 	// perform a 90° rotation to get correct angleAxis
 	_AngleAxis.set(-_WindDirection.y,_WindDirection.x,0);
-
-	// Some setup for setupRenderStateForBlendLayerModel()
-	_ViewCenter= viewCenter;
 
 
 	// Fill LUT WindTable.
@@ -2182,8 +2204,8 @@ void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
 	_BkupFog= driver->fogEnabled();
 	driver->enableFog(false);
 
-	// set model matrix to identity.
-	driver->setupModelMatrix(CMatrix::Identity);
+	// set model matrix to the manager matrix.
+	driver->setupModelMatrix(_ManagerMatrix);
 
 	// setup VP constants.
 	setupVertexProgramConstants(driver);

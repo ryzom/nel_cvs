@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.16 2002/04/24 16:32:07 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.17 2002/05/22 14:00:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -372,6 +372,8 @@ private:
 	CVector					_AngleAxis;
 	CVector					_ViewCenter;
 	bool					_BkupFog;
+	// NB: the manager matrix may not be Identity, for ZBuffer precision reason.
+	NLMISC::CMatrix			_ManagerMatrix;
 
 	// @}
 

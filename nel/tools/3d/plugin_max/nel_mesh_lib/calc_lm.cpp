@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.1 2001/06/12 12:30:58 besson Exp $
+ * $Id: calc_lm.cpp,v 1.2 2001/06/12 13:27:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,14 +279,14 @@ struct SLMPixel
 struct SLMPlane
 {
 	sint32 x, y; // Pos in lightmap
-	sint32 w, h; // Size
+	uint32 w, h; // Size
 	vector<uint8> msk;	// 0 - No pixel
 						// 1 - Pixel must be calculated
 						// 2 - Pixel is interior and is calculated
 						// 3 - Pixel is exterior in this plane but interior in another of the same smooth group
 						// 4 - Pixel is exterior and is extrapolated
 	vector<SLMPixel> col; // 32 bits value for each pixel of each layer
-	sint32 nNbLayerUsed;
+	uint32 nNbLayerUsed;
 	vector<CMesh::CFace*> faces;	
 
 	// -----------------------------------------------------------------------------------------------
@@ -302,7 +302,7 @@ struct SLMPlane
 	// -----------------------------------------------------------------------------------------------
 	bool isAllBlack (uint8 nLayerNb)
 	{
-		for( sint32 i = 0; i < w*h; ++i )
+		for( uint32 i = 0; i < w*h; ++i )
 			if( (col[i].p[nLayerNb].R > 0.06f) || // around 15/255
 				(col[i].p[nLayerNb].G > 0.06f) ||
 				(col[i].p[nLayerNb].B > 0.06f) )
@@ -318,15 +318,15 @@ struct SLMPlane
 		{
 			// ResizeBitmap32
 			vector<uint8> vImgTemp;
-			int i, j;
+			uint32 i, j;
 
 			vImgTemp.resize( 4*w*h );
 			for( i = 0; i < 4*w*h; ++i )
 				vImgTemp[i] = 0;
 
 			vector<uint8> &vBitmap = pImage->getPixels();
-			sint32 nCurSizeX = pImage->getWidth();
-			sint32 nCurSizeY = pImage->getHeight();
+			uint32 nCurSizeX = pImage->getWidth();
+			uint32 nCurSizeY = pImage->getHeight();
 			for( j = 0; j < min(nCurSizeY,h); ++j )
 			for( i = 0; i < min(nCurSizeX,w); ++i )
 			{
@@ -344,7 +344,7 @@ struct SLMPlane
 
 		vector<uint8> &vBitmap = pImage->getPixels();
 
-		for( sint32 i = 0; i < w*h; ++i )
+		for( uint32 i = 0; i < w*h; ++i )
 		{
 			if( (127.0*col[i].p[nLayerNb].R) > 255.0 )
 				vBitmap[4*i+0] = 255;
@@ -366,7 +366,7 @@ struct SLMPlane
 	// Put me in the plane Dst (copy the col and mask or mask only)
 	void putIn( SLMPlane &Dst, bool bMaskOnly = false )
 	{
-		sint32 a, b;
+		uint32 a, b;
 		if( ( (this->w + this->x) > Dst.w ) || ( (this->h + this->y) > Dst.h ) )
 		{
 			a = 0; b = 0;
@@ -385,7 +385,7 @@ struct SLMPlane
 	// Test the mask between me and the plane dst (with my decalage)
 	bool testIn( SLMPlane &Dst )
 	{
-		sint32 a, b;
+		uint32 a, b;
 		for( b = 0; b < this->h; ++b )
 		for( a = 0; a < this->w; ++a )
 			if( this->msk[a+b*this->w] != 0 )
@@ -398,7 +398,7 @@ struct SLMPlane
 	// Try all position to put me in the plane dst
 	bool tryAllPosToPutIn( SLMPlane &Dst )
 	{
-		sint32 i, j;
+		uint32 i, j;
 
 		if( this->w > Dst.w ) return false;
 		if( this->h > Dst.h ) return false;
@@ -416,11 +416,11 @@ struct SLMPlane
 
 	// -----------------------------------------------------------------------------------------------
 	// Do not stretch the image inside the plane just enlarge and fill with black
-	void resize( sint32 nNewSizeX, sint32 nNewSizeY )
+	void resize( uint32 nNewSizeX, uint32 nNewSizeY )
 	{
 		vector<uint8> vImgTemp;
 		vector<SLMPixel> vImgTemp2;
-		int i, j;
+		uint32 i, j;
 
 		vImgTemp.resize(nNewSizeX*nNewSizeY);
 		for( i = 0; i < nNewSizeX*nNewSizeY; ++i )
@@ -459,11 +459,13 @@ struct SLMPlane
 	// Take care the decalage is affected by the scaling factor (like homothetie)
 	void stretch( double osFactor )
 	{
-		sint32 nNewSizeX = (sint32)(this->w * osFactor);
-		sint32 nNewSizeY = (sint32)(this->h * osFactor);
+		if( osFactor < 0.0 )
+			osFactor = 0.0;
+		uint32 nNewSizeX = (uint32)(this->w * osFactor);
+		uint32 nNewSizeY = (uint32)(this->h * osFactor);
 		vector<uint8> vImgTemp;
 		vector<SLMPixel> vImgTemp2;
-		int i, j, k;
+		uint32 i, j, k;
 
 		// Reduce the color
 		vImgTemp2.resize( nNewSizeX * nNewSizeY );
@@ -1878,7 +1880,7 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 			lumx3 = pF->Corner[2].Uvs[1].U, lumy3 = pF->Corner[2].Uvs[1].V;
 	double minx, miny;
 	double maxx, maxy;
-	int j,k;
+	uint32 j, k;
 
 	minx = lumx1;
 	if( minx > lumx2 ) minx = lumx2;
@@ -1975,9 +1977,9 @@ void CreateLMPlaneFromFace( SLMPlane &Out, CMesh::CFace *pF )
 }
 
 // -----------------------------------------------------------------------------------------------
-void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFace )
+void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterator ItFace, uint32 nNbFace )
 {
-	sint32 i, j;
+	uint32 i, j;
 	double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
 	vector<CMesh::CFace*>::iterator ItParseI = ItFace;
 	CMesh::CFace *pF;
@@ -1998,8 +2000,8 @@ void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterato
 		++ItParseI;
 	}
 
-	sint32 w = ( 1 + ((sint32)floor( rMaxU + 0.5 )) - ((sint32)floor( rMinU - 0.5 )) );
-	sint32 h = ( 1 + ((sint32)floor( rMaxV + 0.5 )) - ((sint32)floor( rMinV - 0.5 )) );
+	uint32 w = ( 1 + ((sint32)floor( rMaxU + 0.5 )) - ((sint32)floor( rMinU - 0.5 )) );
+	uint32 h = ( 1 + ((sint32)floor( rMaxV + 0.5 )) - ((sint32)floor( rMinV - 0.5 )) );
 	Plane.resize( w, h );
 	Plane.x = ( ((sint32)floor( rMinU - 0.5 )) );
 	Plane.y = ( ((sint32)floor( rMinV - 0.5 )) );
@@ -2026,9 +2028,9 @@ void CreateLMPlaneFromFaceGroup( SLMPlane &Plane, vector<CMesh::CFace*>::iterato
 // -----------------------------------------------------------------------------------------------
 void ModifyLMPlaneWithOverSampling( SLMPlane *pPlane, double rOverSampling )
 {	
-	sint32 i, j;
+	uint32 i, j;
 	vector<CMesh::CFace*>::iterator ItFace = pPlane->faces.begin();
-	sint32 nNbFace = pPlane->faces.size();
+	uint32 nNbFace = pPlane->faces.size();
 
 	pPlane->stretch( rOverSampling );
 	for( j = 0; j < pPlane->w*pPlane->h; ++j ) // Reset the mask
@@ -2368,21 +2370,21 @@ CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n,
 					float x = (inter-ori)*rLight.mProj.getI();
 					float y = (inter-ori)*rLight.mProj.getJ();
 					// Normalization x [-tan(fallof),tan(fallof)] -> [0,1]
-					x = ((x / tan( rLight.rFallof ))+1.0)/2.0;
-					y = ((y / tan( rLight.rFallof ))+1.0)/2.0;
+					x = ((x / tanf( rLight.rFallof ))+1.0f)/2.0f;
+					y = ((y / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					
 					x *= rLight.pProjMap->Width();
 					y *= rLight.pProjMap->Height();
 					if( x < 0.0f ) x = 0.0f;
 					if( y < 0.0f ) y = 0.0f;
-					if( x >= rLight.pProjMap->Width()  ) x = rLight.pProjMap->Width() -1;
-					if( y >= rLight.pProjMap->Height() ) y = rLight.pProjMap->Height()-1;
+					if( x >= rLight.pProjMap->Width()  ) x = (float)rLight.pProjMap->Width() -1.0f;
+					if( y >= rLight.pProjMap->Height() ) y = (float)rLight.pProjMap->Height()-1.0f;
 					BMM_Color_64 OnePixel;
-					rLight.pProjMap->GetPixels( x, y, 1, &OnePixel );
-					lightDiffCol.R *= OnePixel.r/65535.0;
-					lightDiffCol.G *= OnePixel.g/65535.0;
-					lightDiffCol.B *= OnePixel.b/65535.0;
-					lightDiffCol.A *= OnePixel.a/65535.0;
+					rLight.pProjMap->GetPixels( (sint32)x, (sint32)y, 1, &OnePixel );
+					lightDiffCol.R *= OnePixel.r/65535.0f;
+					lightDiffCol.G *= OnePixel.g/65535.0f;
+					lightDiffCol.B *= OnePixel.b/65535.0f;
+					lightDiffCol.A *= OnePixel.a/65535.0f;
 				}
 			}
 			break;
@@ -2437,12 +2439,13 @@ bool segmentIntersectBSphere( CVector &p1, CVector &p2, CBSphere &bs )
 // -----------------------------------------------------------------------------------------------
 void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVertices, 
 				CMatrix& ToWorldMat, vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-				sint32 nLayerNb, SWorldRT &wrt )
+				uint32 nLayerNb, SWorldRT &wrt )
 {
 	// Fill interiors
 	vector<CMesh::CFace*>::iterator ItFace = Plane.faces.begin();
-	sint32 nNbFace = Plane.faces.size();
-	sint32 i, j, k;
+	uint32 nNbFace = Plane.faces.size();
+	uint32 i;
+	sint32 j, k;
 	double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
 	sint32 nPosMinU, nPosMaxU, nPosMinV, nPosMaxV;
 	CMesh::CFace *pF;
@@ -2503,22 +2506,25 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 }
 
 // -----------------------------------------------------------------------------------------------
-void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, sint32 nNbPlanes,
+void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
 					vector<CVector> &vVertices, CMatrix& ToWorldMat, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-					sint32 nLayerNb, SWorldRT &wrt)
+					uint32 nLayerNb, SWorldRT &wrt)
 {
 	// Fill interiors
-	sint32 i, j, k;
-	sint32 nPosMinU, nPosMaxU, nPosMinV, nPosMaxV;
-	SGradient g;
+	uint32 nPlanes1;
 
 	vector<SLMPlane*>::iterator ItPlanes1 = ItPlanes;
-	for( sint32 nPlanes1 = 0; nPlanes1 < nNbPlanes; ++nPlanes1 )
+	for( nPlanes1 = 0; nPlanes1 < nNbPlanes; ++nPlanes1 )
 	{
+		uint32 i;
+		sint32 j, k;
+		sint32 nPosMinU, nPosMaxU, nPosMinV, nPosMaxV;
+		SGradient g;
+		
 		SLMPlane *pPlane1 = *ItPlanes1;
 		vector<CMesh::CFace*>::iterator ItParseI = pPlane1->faces.begin();
-		sint32 nNbFace1 = pPlane1->faces.size();
+		uint32 nNbFace1 = pPlane1->faces.size();
 		for( i = 0; i < nNbFace1; ++i )
 		{
 			CMesh::CFace *pF1 = *ItParseI;
@@ -2572,7 +2578,7 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, s
 			{
 				// If all segment of the current face are linked with a face in this plane, no need to continue
 				vector<CMesh::CFace*>::iterator ItParseM = pPlane1->faces.begin();
-				sint32 nNbSeg = 0;
+				uint32 nNbSeg = 0;
 				uint32 m, n;
 				for( m = 0; m < nNbFace1; ++m )
 				{
@@ -2595,13 +2601,13 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, s
 						CMesh::CFace *pF2 = pPlane2->faces[n];
 						if( FaceContinuous( pF1, pF2 ) )
 						{
-							for( sint32 o = 0; o < 4; ++o )
+							for( uint32 o = 0; o < 4; ++o )
 							{
 								sint32 nAbsX = j + (o/2), nAbsY = k + (o%2);
 								// Is it a pixel to treat and pixel in the 2nd plane
 								if( ( pPlane1->msk[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w] == 1 ) &&
-									(nAbsX >= pPlane2->x) && (nAbsX < (pPlane2->x+pPlane2->w) ) &&
-									(nAbsY >= pPlane2->y) && (nAbsY < (pPlane2->y+pPlane2->h) ) )
+									(nAbsX >= pPlane2->x) && (nAbsX < (pPlane2->x+(sint32)pPlane2->w) ) &&
+									(nAbsY >= pPlane2->y) && (nAbsY < (pPlane2->y+(sint32)pPlane2->h) ) )
 								{
 									// Is it an interior calculated pixel ?
 									if( pPlane2->msk[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w] == 2 )
@@ -2656,6 +2662,7 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, s
 	ItPlanes1 = ItPlanes;
 	for( nPlanes1 = 0; nPlanes1 < nNbPlanes; ++nPlanes1 )
 	{
+		uint32 j, k;
 		SLMPlane *pPlane1 = *ItPlanes1;
 		
 		for( k = 0; k < pPlane1->h; ++k )
@@ -2663,7 +2670,7 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, s
 		{
 			if( pPlane1->msk[j+k*pPlane1->w] == 1 )
 			{
-				sint32 nNbNormals = pPlane1->col[j + k*pPlane1->w].p[nLayerNb].A;
+				sint32 nNbNormals = (sint32)pPlane1->col[j + k*pPlane1->w].p[nLayerNb].A;
 				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].R /= nNbNormals;
 				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].G /= nNbNormals;
 				pPlane1->col[j + k*pPlane1->w].p[nLayerNb].B /= nNbNormals;
@@ -2704,7 +2711,7 @@ bool isAllFaceMapped( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFaces )
 		TextureSurf += calculateTriangleSurface( p1, p2, p3 );
 		++ItParseI;
 	}
-	if( fabsf(TextureSurf) < 0.000001 )
+	if( fabs(TextureSurf) < 0.000001 )
 		return false;
 	return true;
 }
@@ -3048,8 +3055,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 							Interface& ip, TimeValue tvTime, bool absolutePath,
 							CExportNelOptions &structExport )
 {
-	int nNbMesh = 0;
-	int i, j;
+	uint32 i, j;
 
 	gOptions = structExport;
 
@@ -3073,7 +3079,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 		CMatrix MBMatrix = getObjectToWorldMatrix( pMB );
 		vector<CVector> AllVertices; // All vertices in world space
 		vector<sint32> FaceGroupByMat; // Number of faces with the same properties
-		sint32 nNbFace = pMB->Faces.size(), nNbVertex = pMB->Vertices.size();
+		uint32 nNbFace = pMB->Faces.size(), nNbVertex = pMB->Vertices.size();
 		sint32 offsetMat, offsetSmooth, offsetPlane;
 		vector<SLMPlane*> AllPlanes;
 		sint32 AllPlanesPrevSize;
@@ -3214,9 +3220,9 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 
 		// Update UV coords to Texture space
 		PutFaceUV1InTextureCoord( LightMap.w, LightMap.h, AllFaces.begin(), nNbFace );
-		sint32 nLightMapNb = 0;
+		uint32 nLightMapNb = 0;
 		for( j = 0; j < LightMap.nNbLayerUsed; ++j )
-		if( (j == 0) || (!LightMap.isAllBlack( j )) )
+		if( (j == 0) || (!LightMap.isAllBlack( (uint8)j )) )
 		{
 			CTextureFile *pLightMap = new CTextureFile();
 			//string sSaveName = AllMeshBuilds[nNode].second->GetName();
@@ -3239,8 +3245,8 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 			{
 				pMB->Materials[i].setLightMap( nLightMapNb, pLightMap );
 				//AllMeshBuilds[nNode].first->Materials[i].setLighting( false );
-				AddLightInfo( pMB, AllLights[vvLights[j].operator[](0)].GroupName, i, nLightMapNb );
-				int a = pMB->LightInfoMap.size();
+				AddLightInfo( pMB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );
+				//////int a = pMB->LightInfoMap.size();
 			}
 			++nLightMapNb;
 		}		

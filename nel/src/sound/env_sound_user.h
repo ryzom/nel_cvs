@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.7 2001/07/20 16:08:33 cado Exp $
+ * $Id: env_sound_user.h,v 1.8 2001/08/28 16:58:40 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,8 +102,8 @@ public:
 	virtual void			getPos( NLMISC::CVector& pos ) const;
 	/// Moves the envsound (and its transition envsound if it has one)
 	virtual void			setPos( const NLMISC::CVector& pos );
-	/// Select the current env
-	virtual void			selectEnv( const char *tag );
+	/// Select the current env for this node, and for all descendants if children_too is true
+	virtual void			selectEnv( const char *tag, bool children_too=false ) ;
 	/// Return the children envsounds
 	virtual std::vector<UEnvSound*>& getChildren();
 
@@ -114,10 +114,10 @@ public:
 	void					update();
 
 
-	/// Play
-	virtual void			play();
-	/// Stop playing
-	virtual void			stop();
+	/// Play this node, and all descendants if children_too is true
+	virtual void			play( bool children_too=false );
+	/// Stop playing this node, and all descendants if children_too is true
+	virtual void			stop( bool children_too=false );
 	/// Return the play flag
 	bool					mustPlay() const		{ return _Play; }
 
@@ -160,6 +160,13 @@ protected:
 
 	/// Count the envs in the tree (call on the root)
 	uint32					getCount() const;
+
+	/// Play this node, and all descendants if children_too is true, but do not recompute
+	void					playSub( bool children_too=false );
+
+	/// Stop playing this node, and all descendants if children_too is true, but do not recompute
+	void					stopSub( bool children_too=false );
+
 
 private:
 

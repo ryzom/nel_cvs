@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.10 2001/08/24 12:40:35 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.11 2001/08/28 16:58:40 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,7 +164,7 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 /*
  * Select current env
  */
-void			CEnvSoundUser::selectEnv( const char *tag )
+void			CEnvSoundUser::selectEnv( const char *tag, bool children_too )
 {
 	uint i;
 	for ( i=0; i!= _Tags.size(); i++ )
@@ -180,6 +180,16 @@ void			CEnvSoundUser::selectEnv( const char *tag )
 	}
 	nldebug( "AM: EnvSound: Environment %s not found", tag );
 	// Don't change _Source if not found
+
+	// Apply to descendants
+	if ( children_too )
+	{
+		vector<CEnvSoundUser*>::iterator ipc;
+		for ( ipc=_Children.begin(); ipc!=_Children.end(); ++ipc )
+		{
+			(*ipc)->selectEnv( tag, children_too );
+		}
+	}
 }
 
 
@@ -457,7 +467,29 @@ void CEnvSoundUser::save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s )
 /*
  * Play
  */
-void CEnvSoundUser::play()
+void CEnvSoundUser::play( bool children_too )
+{
+	playSub( children_too );
+
+	CAudioMixerUser::instance()->getEnvSounds()->recompute();
+}
+
+
+/*
+ * Stop playing
+ */
+void CEnvSoundUser::stop( bool children_too )
+{
+	stopSub( children_too );
+	
+	CAudioMixerUser::instance()->getEnvSounds()->recompute();
+}
+
+
+/*
+ * Play this node, and all descendants if children_too is true, but do not recompute
+ */
+void	CEnvSoundUser::playSub( bool children_too )
 {
 	_Play = true;
 
@@ -467,14 +499,22 @@ void CEnvSoundUser::play()
 		_Parent->_Play = true;
 	}
 
-	CAudioMixerUser::instance()->getEnvSounds()->recompute();
+	// Apply to descendants
+	if ( children_too )
+	{
+		vector<CEnvSoundUser*>::iterator ipc;
+		for ( ipc=_Children.begin(); ipc!=_Children.end(); ++ipc )
+		{
+			(*ipc)->playSub( children_too );
+		}
+	}
 }
 
 
 /*
- * Stop playing
+ * Stop playing this node, and all descendants if children_too is true, but do not recompute
  */
-void CEnvSoundUser::stop()
+void	CEnvSoundUser::stopSub( bool children_too )
 {
 	_Play = false;
 
@@ -484,7 +524,15 @@ void CEnvSoundUser::stop()
 		_Parent->_Play = false;
 	}
 
-	CAudioMixerUser::instance()->getEnvSounds()->recompute();
+	// Apply to descendants
+	if ( children_too )
+	{
+		vector<CEnvSoundUser*>::iterator ipc;
+		for ( ipc=_Children.begin(); ipc!=_Children.end(); ++ipc )
+		{
+			(*ipc)->stopSub( children_too );
+		}
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.46 2002/03/25 10:58:17 lecroart Exp $
+ * $Id: service.h,v 1.47 2002/03/26 09:43:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -383,7 +383,7 @@ private:
 
 	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
 	friend void AESConnection5 (const std::string &serviceName, uint16 sid, void *arg);
-	friend struct service_infoclass;
+	friend struct serviceInfoClass;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.15 2002/03/25 09:23:07 lecroart Exp $
+ * $Id: login_server.cpp,v 1.16 2002/03/26 09:44:47 lecroart Exp $
  *
  */
 
@@ -27,8 +27,6 @@
 #include "stdnet.h"
 
 #include "nel/net/callback_client.h"
-#include "nel/net/unified_network.h"
-#include "nel/net/net_manager.h"
 #include "nel/net/service.h"
 
 #include "nel/net/login_cookie.h"
@@ -253,7 +251,7 @@ void cfcbListenAddress (CConfigFile::CVar &var)
 		ListenAddr = Server->listenAddress ().asIPString();
 	}
 
-	nlinfo("New Listen Addresss is : '%s'", ListenAddr.c_str());
+	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
 }
 
 
@@ -263,7 +261,7 @@ void cfcbListenAddress (CConfigFile::CVar &var)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl, CConfigFile *cfg)
+void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 {
 	// connect to the welcome service
 	connectToWS ();
@@ -272,24 +270,22 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl, CConfi
 	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
 	server.setConnectionCallback (ClientConnection, NULL);
 
-	if (cfg != NULL)
+	try
 	{
-		try
-		{
-			cfcbListenAddress (cfg->getVar("ListenAddress"));
-			cfg->setCallback("ListenAddress", cfcbListenAddress);
-		}
-		catch(Exception &)
-		{
-		}
+		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
+		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
 	}
-	
+	catch(Exception &)
+	{
+	}
+
+	// if the listen addr is not in the config file, try to find it dynamically
 	if (ListenAddr.empty())
 	{
 		ListenAddr = server.listenAddress ().asIPString();
 	}
 
-	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
+	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
 
 	NewClientCallback = ncl;
 	Server = &server;
@@ -300,8 +296,22 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 	// connect to the welcome service
 	connectToWS ();
 
-	ListenAddr = server.localAddr().asIPString();
-	nlinfo("Listen Addresss trapped %s", ListenAddr.c_str());
+	try
+	{
+		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
+		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
+	}
+	catch(Exception &)
+	{
+	}
+	
+	// if the listen addr is not in the config file, try to find it dynamically
+	if (ListenAddr.empty())
+	{
+		ListenAddr = server.localAddr ().asIPString();
+	}
+
+	nlinfo("Listen Addresss trapped '%s'", ListenAddr.c_str());
 
 	DisconnectClientCallback = dc;
 }
@@ -384,7 +394,7 @@ void CLoginServer::clientDisconnected (uint32 userId)
 // Commands
 //
 
-NLMISC_COMMAND (ls_users, "displays the list of all connected users", "")
+NLMISC_COMMAND (lsUsers, "displays the list of all connected users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -398,7 +408,7 @@ NLMISC_COMMAND (ls_users, "displays the list of all connected users", "")
 	return true;
 }
 
-NLMISC_COMMAND (ls_pending, "displays the list of all pending users", "")
+NLMISC_COMMAND (lsPending, "displays the list of all pending users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -411,6 +421,33 @@ NLMISC_COMMAND (ls_pending, "displays the list of all pending users", "")
 
 	return true;
 }
+
+
+NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the client to connect on this front_end")
+{
+	if (get)
+	{
+		*pointer = ListenAddr;
+	}
+	else
+	{
+		if ((*pointer).find (":") == string::npos)
+		{
+			log.displayNL ("You must set the address + port (ie: \"itsalive.nevrax.org:38000\")");
+			return;
+		}
+		else if ((*pointer).empty())
+		{
+			ListenAddr = Server->listenAddress ().asIPString();
+		}
+		else
+		{
+			ListenAddr = *pointer;
+		}
+		log.displayNL ("Listen Address trapped '%s'", ListenAddr.c_str());
+	}
+}
+
 
 } // NLNET
 

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.10 2002/03/15 15:19:57 lecroart Exp $
+ * $Id: command.cpp,v 1.11 2002/03/26 09:43:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	if (comm != (*Commands).end ())
 	{
 		// 2 commands have the same name
-		nlstopex (("There are 2 commands that have the same name in the project (command name '%s')", commandName));
+		nlstopex (("There are 2 commands that have the same name in the project (command name '%s'), skip the second definition", commandName));
 	}
 	else
 	{
@@ -60,10 +60,9 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 		HelpString = commandHelp;
 		CommandArgs = commandArgs;
 		_CommandName = commandName;
+		Type = Command;
 		(*Commands)[commandName] = this;
 	}
-
-	Type = Command;
 }
 
 ICommand::~ICommand()

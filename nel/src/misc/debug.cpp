@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.45 2002/03/25 09:24:25 lecroart Exp $
+ * $Id: debug.cpp,v 1.46 2002/03/26 09:43:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,7 @@ void createDebug (const char *logPath)
 // Commands
 //
 
-NLMISC_COMMAND (display_memlog, "displays the last N line of the log in memory", "[<NbLines>]")
+NLMISC_COMMAND (displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {
 	uint nbLines;
 
@@ -229,7 +229,7 @@ NLMISC_COMMAND (display_memlog, "displays the last N line of the log in memory",
 }
 
 
-NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
+NLMISC_COMMAND(resetFilters, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
 {
 	if(args.size() == 0)
 	{
@@ -256,56 +256,63 @@ NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "[debug|info|warn
 }
 
 
-NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(addPositiveFilterDebug, "add a positive filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	DebugLog->addPositiveFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(addNegativeFilterDebug, "add a negative filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	DebugLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterDebug, "remove a filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	DebugLog->removeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(addPositiveFilterInfo, "add a positive filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	InfoLog->addPositiveFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(addNegativeFilterInfo, "add a negative filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	InfoLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterInfo, "remove a filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	InfoLog->removeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(addnegfilter_warning, "add a negative filter on WarningLog", "<filterstr>")
+NLMISC_COMMAND(addPositiveFilterWarning, "add a positive filter on WarningLog", "<filterstr>")
+{
+	if(args.size() != 1) return false;
+	WarningLog->addPositiveFilter( args[0].c_str() );
+	return true;
+}
+
+NLMISC_COMMAND(addNegativeFilterWarning, "add a negative filter on WarningLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	WarningLog->addNegativeFilter( args[0].c_str() );
 	return true;
 }
 
-NLMISC_COMMAND(removefilter_warning, "remove a filter on WarningLog", "<filterstr>")
+NLMISC_COMMAND(removeFilterWarning, "remove a filter on WarningLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	WarningLog->removeFilter( args[0].c_str() );

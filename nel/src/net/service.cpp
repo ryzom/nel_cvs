@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.111 2002/03/25 09:23:39 lecroart Exp $
+ * $Id: service.cpp,v 1.112 2002/03/26 09:44:47 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1239,7 +1239,7 @@ NLMISC_COMMAND (quit, "exit the service", "")
 	return true;
 }
 
-NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
+NLMISC_COMMAND (brutalQuit, "exit the service brutally", "")
 {
 	if(args.size() != 0) return false;
 
@@ -1269,7 +1269,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 }
 #endif // MUTEX_DEBUG
 
-NLMISC_COMMAND (service_info, "display information about this service", "")
+NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 {
 	if(args.size() != 0) return false;
 

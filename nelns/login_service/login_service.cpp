@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.17 2002/03/25 09:29:24 lecroart Exp $
+ * $Id: login_service.cpp,v 1.18 2002/03/26 09:45:06 lecroart Exp $
  *
  */
 
@@ -510,7 +510,7 @@ NLNET_OLD_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, OldEmptyCal
 // Variables
 //
 
-NLMISC_DYNVARIABLE(uint32, online_users_nb, "number of connected users")
+NLMISC_DYNVARIABLE(uint32, OnlineUsersNumber, "number of actually connected users")
 {
 	// we can only read the value
 	if (get)
@@ -547,7 +547,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	return true;
 }
 
-NLMISC_COMMAND (registered_users, "displays the list of all registered users", "")
+NLMISC_COMMAND (registeredUsers, "displays the list of all registered users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -563,7 +563,7 @@ NLMISC_COMMAND (registered_users, "displays the list of all registered users", "
 	return true;
 }
 
-NLMISC_COMMAND (online_users, "displays the list of online users", "")
+NLMISC_COMMAND (onlineUsers, "displays the list of online users", "")
 {
 	if(args.size() != 0) return false;
 

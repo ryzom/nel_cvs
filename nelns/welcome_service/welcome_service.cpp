@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.13 2002/03/25 09:29:52 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.14 2002/03/26 09:45:15 lecroart Exp $
  *
  */
 
@@ -382,7 +382,7 @@ NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArra
 // Variables
 //
 
-NLMISC_DYNVARIABLE(uint32, online_users_nb, "number of connected users on this shard")
+NLMISC_DYNVARIABLE(uint32, OnlineUsersNumber, "number of connected users on this shard")
 {
 	// we can only read the value
 	if (get)

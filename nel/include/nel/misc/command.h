@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.12 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: command.h,v 1.13 2002/03/26 09:43:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,18 +60,22 @@ namespace NLMISC {
 	}
  * \endcode
  *
+ * Please use the same casing than for the function (first letter in lower case and after each word first letter in upper case)
+ * ie: myFunction, step, orderByName, lookAtThis
+ *
+ *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
 #define NLMISC_COMMAND(__name,__help,__args) \
-struct __name##class : public ICommand \
+struct __name##Class: public ICommand \
 { \
-	__name##class() : NLMISC::ICommand(#__name,__help,__args) { } \
+	__name##Class() : NLMISC::ICommand(#__name,__help,__args) { } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log); \
 }; \
-__name##class __name##instance; \
-bool __name##class::execute(const std::vector<std::string> &args, NLMISC::CLog &log)
+__name##Class __name##Instance; \
+bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log)
 
 
 
@@ -84,15 +88,18 @@ bool __name##class::execute(const std::vector<std::string> &args, NLMISC::CLog &
 	// I want to look and change the variable 'foobar' in realtime, so, first i create it:
 	uint8 foobar;
 	// and then, I add it
-	NLMISC_VARIABLE(uint8, foobar, "this is a dummy variable");
+	NLMISC_VARIABLE(uint8, FooBar, "this is a dummy variable");
  * \endcode
+ *
+ * Please use the same casing than for the variable (first letter of each word in upper case)
+ * ie: MyVariable, NetSpeedLoop, Time
  *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
 #define NLMISC_VARIABLE(__type,__var,__help) \
-CVariable<__type> __var##instance(#__var, __help " (" #__type ")", &__var)
+CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
 
 
 
@@ -109,7 +116,7 @@ CVariable<__type> __var##instance(#__var, __help " (" #__type ")", &__var)
 	void setVar(uint8 val) { ...=val; }
 
 	// I want to look and change the variable in realtime:
-	NLMISC_DYNVARIABLE(uint8, foobar, "this is a dummy variable")
+	NLMISC_DYNVARIABLE(uint8, FooBar, "this is a dummy variable")
 	{
 		// read or write the variable
 		if (get)
@@ -119,15 +126,18 @@ CVariable<__type> __var##instance(#__var, __help " (" #__type ")", &__var)
 	}
  * \endcode
  *
+ * Please use the same casing than for the variable (first letter of each word in upper case)
+ * ie: MyVariable, NetSpeedLoop, Time
+ *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
 #define NLMISC_DYNVARIABLE(__type,__name,__help) \
-class __name##class : public NLMISC::ICommand \
+class __name##Class : public NLMISC::ICommand \
 { \
 public: \
-	__name##class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { Type = Variable; } \
+	__name##Class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { Type = Variable; } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
 	{ \
 		if (args.size() == 1) \
@@ -153,8 +163,8 @@ public: \
  \
 	void pointer(__type *pointer, bool get, NLMISC::CLog &log); \
 }; \
-__name##class __name##instance; \
-void __name##class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
+__name##Class __name##Instance; \
+void __name##Class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
 
 
 /**

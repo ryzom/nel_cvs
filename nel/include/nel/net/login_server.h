@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.8 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: login_server.h,v 1.9 2002/03/26 09:43:19 lecroart Exp $
  * 
  */
 
@@ -66,10 +66,11 @@ class CLoginServer {
 public:
 
 	/// Create the connection to the Welcome Service and install callbacks to the callback server (for a TCP cnx)
-	/// If the cfg is not NULL, init() will try to find the ListenAddress in it and it will be used to say to the client
-	/// the address to connect to this frontend (using the login system). You can modify this in real time
-	/// The ListenAddress must be in the form of "itsalive.nevrax.org:3800" (ip+port)
-	static void init (CCallbackServer &server, TNewClientCallback ncl, NLMISC::CConfigFile *cfg = NULL);
+	/// init() will try to find the ListenAddress in the config file and it will be used to say to the client
+	/// the address to connect to this frontend (using the login system). You can modify this in real time in
+	/// the config file or with the ls_listen_address command
+	/// The ListenAddress must be in the form of "itsalive.nevrax.org:38000" (ip+port)
+	static void init (CCallbackServer &server, TNewClientCallback ncl);
 
 	/// Create the connection to the Welcome Service for an UDP connection
 	/// the dc will be call when the Welcome Service decides to disconnect a player (double login...)

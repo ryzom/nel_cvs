@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.14 2002/03/25 10:19:13 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.15 2002/03/26 09:44:58 lecroart Exp $
  *
  *
  */
@@ -401,7 +401,7 @@ static void cbStartAllServices()
 		return;
 	}
 	
-	string cmd = "startall_services ";
+	string cmd = "startAllServices ";
 	cmd += toString (PopupAS->Id);
 	ICommand::execute (cmd, logstdout);
 
@@ -418,7 +418,7 @@ static void cbStopAllServices()
 		return;
 	}
 
-	string cmd = "stopall_services ";
+	string cmd = "stopAllServices ";
 	cmd += toString (PopupAS->Id);
 	ICommand::execute (cmd, logstdout);
 
@@ -535,7 +535,7 @@ static void cbStartAllServices()
 {
 	nlassert (PopupAES != NULL);
 	
-	string cmd = "startall ";
+	string cmd = "startAll ";
 	cmd += toString (AES->Id);
 	ICommand::execute (cmd, logstdout);
 
@@ -1450,7 +1450,7 @@ NLMISC_COMMAND (quit, "quit", "")
 
 	saveConfig ();
 	gtk_main_quit ();
-	
+
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.20 2002/03/25 09:29:29 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.21 2002/03/26 09:45:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -391,6 +391,7 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 			{
 				if ((*it).SId == sid)
 				{
+					nlwarning ("Sid %d already used by another service", sid);
 					ok = false;
 					break;
 				}
@@ -628,7 +629,7 @@ NLNET_OLD_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackA
 //
 
 
-NLMISC_COMMAND (services_ns, "displays the list of all registered services", "")
+NLMISC_COMMAND (nsServices, "displays the list of all registered services", "")
 {
 	if(args.size() != 0) return false;
 

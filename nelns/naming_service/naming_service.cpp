@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.28 2002/10/24 08:19:08 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.29 2003/06/25 10:15:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,181 @@ struct CServiceEntry
 	TTime				WaitingUnregistrationTime;		// time of the beginning of the inregistration process
 	list<TServiceId>	WaitingUnregistrationServices;	// list of service that we wait the answer
 };
+
+
+
+// Helper that emulates layer5's send()
+//void sendToService( uint16 sid, CMessage& msgout );
+
+// Helper that emulate layer5's getServiceName()
+string getServiceName( uint16 sid );
+
+// Helper that returns the first address of a service
+CInetAddress getHostAddress( uint16 sid );
+
+// Asks a service to stop and tell every one
+void doUnregisterService (TServiceId sid);
+
+
+/**
+ * Manager for services instances
+ * (Moved from the TICKS to the NS)
+ * Implementable with layer 5, here implemented in NS (layer 3)
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2003
+ */
+class CServiceInstanceManager
+{
+public:
+	
+	/// Constructor
+	CServiceInstanceManager();
+
+	/** Add the name of a service which must not be duplicated
+	 * If uniqueOnShard is true, only one service is allowed.
+	 * If uniqueOnShard is false, one service is allowed by physical machine.
+	 */
+	void		addUniqueService( const std::string& serviceName, bool uniqueOnShard )
+	{
+		_UniqueServices.insert( std::make_pair( serviceName, uniqueOnShard ) );
+	}
+
+	/// Check if a service is allowed to start (if so, add it)
+	bool		queryStartService( const std::string& serviceName, uint16 serviceId, const std::vector<NLNET::CInetAddress> &addr, string& reason );
+
+	/// Release a service instance
+	void		releaseService( uint16 serviceId );
+
+	/// Display information
+	void		displayInfo( NLMISC::CLog *log = NLMISC::InfoLog ) const;
+
+	/// Make all controlled services quit
+	void		killAllServices();
+
+private:
+
+	/// List of restricted services
+	std::map< std::string, bool >	_UniqueServices;
+
+	/// List of granted (online) services
+	std::set< uint16 >				_OnlineServices;
+};
+
+
+CServiceInstanceManager *SIMInstance = NULL;
+
+
+/*
+ * Constructor
+ */
+CServiceInstanceManager::CServiceInstanceManager()
+{
+	nlassert( ! SIMInstance );
+	SIMInstance = this;
+
+	// Note: addCallbackArray() done in CRangeMirrorManager::init()
+}
+
+
+/*
+ * Check if a service is allowed to start. Answer with a GSTS (Grant Start Service) message
+ */
+bool		CServiceInstanceManager::queryStartService( const std::string& serviceName, uint16 serviceId, const vector<CInetAddress> &addr, string& reason )
+{
+	bool grantStarting = true;
+	std::map< std::string, bool >::iterator ius = _UniqueServices.find( serviceName );
+	if ( ius != _UniqueServices.end() )
+	{
+		// Service is restricted
+		set< uint16 >::iterator ios;
+		bool uniqueOnShard = (*ius).second;
+		for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
+		{
+			string name = getServiceName( *ios );
+			if ( name == serviceName )
+			{
+				if ( uniqueOnShard )
+				{
+					// Only one service by shard is allowed => deny
+					grantStarting = false;
+					reason = toString( "Service %s already found as %hu, must be unique on shard", serviceName.c_str(), *ios );
+					nlinfo( reason.c_str() );
+					break;
+				}
+				else
+				{
+					// Only one service by physical machine is allowed
+
+					// Implementation for layer5
+					//TSockId hostid1, hostid2;
+					/*CCallbackNetBase *cnb1 = CUnifiedNetwork::getInstance()->getNetBase( serviceId, hostid1 );
+					CCallbackNetBase *cnb2 = CUnifiedNetwork::getInstance()->getNetBase( *ios, hostid2 );
+					if ( cnb1->hostAddress( hostid1 ).internalIPAddress() == cnb2->hostAddress( hostid2 ).internalIPAddress() )*/
+
+					// Implementation for NS
+					if ( addr[0].internalIPAddress() == getHostAddress( *ios ).internalIPAddress() )
+					{
+						grantStarting = false;
+						reason = toString( "Service %s already found as %hu on same machine", serviceName.c_str(), *ios );
+						nlinfo( reason.c_str() );
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if ( grantStarting )
+	{
+		_OnlineServices.insert( serviceId );
+	}
+	return grantStarting;
+}
+
+
+/*
+ * Release a service instance
+ */
+void		CServiceInstanceManager::releaseService( uint16 serviceId )
+{
+	_OnlineServices.erase( serviceId ); // not a problem if not found
+}
+
+
+/*
+ * Display information
+ */
+void		CServiceInstanceManager::displayInfo( NLMISC::CLog *log ) const
+{
+	log->displayNL( "Restricted services:" );
+	std::map< std::string, bool >::const_iterator ius;
+	for ( ius=_UniqueServices.begin(); ius!=_UniqueServices.end(); ++ius )
+	{
+		log->displayNL( "%s -> only one per %s", (*ius).first.c_str(), (*ius).second?"shard":"machine" );
+	}
+	log->displayNL( "Online registered services:" );
+	std::set< uint16 >::const_iterator ios;
+	for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
+	{
+		log->displayNL( "%s", CUnifiedNetwork::getInstance()->getServiceUnifiedName( *ios ).c_str() );
+	}
+}
+
+
+/*
+ * Make all controlled services quit
+ */
+void		CServiceInstanceManager::killAllServices()
+{
+	// Send to all known online services
+	std::set< uint16 >::const_iterator ios;
+	for ( ios=_OnlineServices.begin(); ios!=_OnlineServices.end(); ++ios )
+	{
+		doUnregisterService( (TServiceId)(*ios) );
+	}
+}
+
 
 
 //
@@ -237,6 +412,9 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 	{
 		return ++it;
 	}
+
+	// Release from the service instance manager
+	SIMInstance->releaseService( (*it).SId );
 }
 
 void doUnregisterService (TServiceId sid)
@@ -295,7 +473,8 @@ void doUnregisterService (TSockId from)
  */
 bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceId sid, TSockId from, CCallbackNetBase &netbase, bool reconnection = false)
 {
-	// find if the service is not already registered
+	// Find if the service is not already registered
+	string reason;
 	uint8 ok = true;
 	bool needRegister = true;
 	/*for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
@@ -353,6 +532,7 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 					}
 				}
 			}
+
 		}
 		else
 		{
@@ -376,37 +556,46 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 		// if ok, register the service and send a broadcast to other people
 		if (ok)
 		{
-			// add him in the registered list
-			RegisteredServices.push_back (CServiceEntry(from, addr, name, sid));
-
-			// tell to everybody but not him that this service is registered
-			if (!reconnection)
+			// Check if the instance is allowed to start, according to the restriction in the config file			
+			if ( SIMInstance->queryStartService( name, sid, addr, reason ) )
 			{
-				CMessage msgout ("RGB");
-				uint8 s = 1;
-				msgout.serial (s);
-				msgout.serial (const_cast<string &>(name));
-				msgout.serial (sid);
-				// we need to send all addr to all services even if the service can't access because we use the address index
-				// to know which connection comes.
-				msgout.serialCont (const_cast<vector<CInetAddress> &>(addr));
-				nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
+				// add him in the registered list
+				RegisteredServices.push_back (CServiceEntry(from, addr, name, sid));
 
-				vector<CInetAddress> accessibleAddress;
-				for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
+				// tell to everybody but not him that this service is registered
+				if (!reconnection)
 				{
-					// send only services that can be accessed and not itself
-					if ((*it3).SId != sid && canAccess(addr, (*it3), accessibleAddress))
+					CMessage msgout ("RGB");
+					uint8 s = 1;
+					msgout.serial (s);
+					msgout.serial (const_cast<string &>(name));
+					msgout.serial (sid);
+					// we need to send all addr to all services even if the service can't access because we use the address index
+					// to know which connection comes.
+					msgout.serialCont (const_cast<vector<CInetAddress> &>(addr));
+					nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
+
+					vector<CInetAddress> accessibleAddress;
+					for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
 					{
-						CallbackServer->send (msgout, (*it3).SockId);
-						//CNetManager::send ("NS", msgout, (*it3).SockId);
-						nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+						// send only services that can be accessed and not itself
+						if ((*it3).SId != sid && canAccess(addr, (*it3), accessibleAddress))
+						{
+							CallbackServer->send (msgout, (*it3).SockId);
+							//CNetManager::send ("NS", msgout, (*it3).SockId);
+							nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+						}
 					}
 				}
-			}
 
-			// set the sid only if it s ok
-			from->setAppId (sid);
+				// set the sid only if it s ok
+				from->setAppId (sid);
+			}
+			else
+			{
+				// Reply "startup denied", and do not send registration to other services
+				ok = false;
+			}
 		}
 
 		// send the message to the service to say if it s ok or not
@@ -442,6 +631,10 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 						msgout.serialCont ((*it).Addr);
 					}
 				}
+			}
+			else
+			{
+				msgout.serial( reason );
 			}
 			
 			netbase.send (msgout, from);
@@ -690,6 +883,56 @@ static void cbRegisteredServices(CMessage& msgin, TSockId from, CCallbackNetBase
 }*/
 
 
+/*
+ * Helper that emulates layer5 send()
+ */
+/*void sendToService( uint16 sid, CMessage& msgout )
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			CallbackServer->send (msgout, (*it).SockId);
+		}
+	}
+}*/
+
+
+/*
+ * Helper that emulate layer5's getServiceName()
+ */
+string getServiceName( uint16 sid )
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			return (*it).Name;
+		}
+	}
+	return ""; // not found
+}
+
+
+/*
+ * Helper that returns the first address of a service
+ */
+CInetAddress getHostAddress( uint16 sid )
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			return (*it).Addr[0];
+		}
+	}
+	return CInetAddress();
+}
+
+
 //
 // Callback array
 //
@@ -713,6 +956,9 @@ class CNamingService : public NLNET::IService
 {
 public:
 
+	/**
+	 * Init
+	 */
 	void init()
 	{
 		// if a baseport is available in the config file, get it
@@ -726,6 +972,29 @@ public:
 			MinBasePort = newBasePort;
 			MaxBasePort = MinBasePort + uint16 (delta);
 		}
+
+		// Parameters for the service instance manager
+		try
+		{
+			CConfigFile::CVar& uniqueServices = ConfigFile.getVar("UniqueOnShardServices");
+			for ( sint i=0; i!=uniqueServices.size(); ++i )
+			{
+				_ServiceInstances.addUniqueService( uniqueServices.asString(i), true );
+			}
+		}
+		catch(Exception &)
+		{}
+		try
+		{
+			CConfigFile::CVar& uniqueServicesM = ConfigFile.getVar("UniqueByMachineServices");
+			for ( sint i=0; i!=uniqueServicesM.size(); ++i )
+			{
+				_ServiceInstances.addUniqueService( uniqueServicesM.asString(i), false );
+			}
+		}
+		catch(Exception &)
+		{}
+
 /*
 		// we don't try to associate message from client
 		CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
@@ -760,6 +1029,9 @@ public:
 		CallbackServer->ignoreAllUnknownId (true);
 	}
 
+	/**
+	 * Update
+	 */
 	bool update ()
 	{
 		checkWaitingUnregistrationServices ();
@@ -768,6 +1040,11 @@ public:
 
 		return true;
 	}
+
+private:
+
+	/// Service instance manager singleton
+	CServiceInstanceManager		_ServiceInstances;
 };
 
 
@@ -819,5 +1096,18 @@ NLMISC_COMMAND (kill, "kill a service and send an unregister broadcast to other 
 	}
 
 	doUnregisterService (sid);
+	return true;
+}
+
+
+NLMISC_COMMAND( displayServiceInstances, "SIM: Display info on service instances", "" )
+{
+	SIMInstance->displayInfo( &log );
+	return true;
+}
+
+NLMISC_COMMAND( killAllServices, "SIM: Make all the controlled services quit", "" )
+{
+	SIMInstance->killAllServices();
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.3 2003/02/07 17:35:23 coutelas Exp $
+ * $Id: chat_service.cpp,v 1.4 2003/02/07 17:43:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,15 +86,16 @@ public:
 //		InfoLog->addNegativeFilter("flood");
 //		WarningLog->addNegativeFilter("flood");
 
-	  string s;
+		string s;
 
-	  uint v = (uint)frand(80);
-	  for (uint i = 0; i < v; i++)
-	    {
-	      s+='a'+rand()%26;
-	    }
+		uint v = (uint)frand(80), i;
+		for (i = 0; i < v; i++)
+		{
+			s+='a'+rand()%26;
+		}
+	
 		static uint32 val = 0;
-		for(uint i = 0; i < 10; i++)
+		for(i = 0; i < 10; i++)
 		{
 			nldebug ("debg flood %d %s", val++, s.c_str());
 			nlinfo ("info flood %d %s", val++, s.c_str());

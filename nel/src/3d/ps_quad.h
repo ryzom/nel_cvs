@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ * $Id: ps_quad.h,v 1.2 2002/02/20 11:16:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,6 +158,7 @@ public:
 } // NL3D
 
 
-#endif // NL_PS_PARTICLE_H
+#endif // NL_PS_QUAD_H
 
-/* End of ps_particle.h */
+/* End of ps_quad.h */
+

@@ -104,9 +104,15 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 #if 1
 	item.Save( CStringEx( lpszPathName ) );		
 	SetModifiedFlag( FALSE );
-	return( TRUE );
 #else
+	std::vector< CStringEx > v;
+	v.push_back( "essai21" );
+	v.push_back( "essai102" );
+	v.push_back( "essai113" );
+	v.push_back( "essai154" );
+	loader.SetTypPredef( "patat_name.typ", v );
 #endif
+	return( TRUE );
 }
 
 BOOL CGeorgesDoc::OnNewDocument()

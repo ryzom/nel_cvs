@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.6 2001/03/08 11:16:12 corvazier Exp $
+ * $Id: track.h,v 1.7 2001/03/08 12:57:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -372,7 +372,7 @@ public:
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date );
+							CAnimationTime date ) {};
 
 private:
 	CAnimatedValueBlendable<T>	_Value;
@@ -401,7 +401,7 @@ public:
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
 							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date );
+							CAnimationTime date ) {};
 private:
 	CAnimatedValueBlendable<T>	_Value;
 };

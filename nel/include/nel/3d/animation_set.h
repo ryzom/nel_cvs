@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
+ * $Id: animation_set.h,v 1.4 2001/03/08 12:57:40 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,42 +50,42 @@ public:
 
 	enum { NotFound=0xffffffff };
 
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 	/**
 	  * Get channel ID count. This number is the count of different track name in the animation set.
 	  */
-	uint getNumChannelId () const
-	{
-		return _ChannelIdByName.size ();
-	}
+	uint getNumChannelId () const;
 
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 	/**
 	  * Get a channel ID with its name.
 	  */
-	uint getChannelIdByName (const std::string& name) const
-	{
-		// Look for an id with this name
-		std::map <std::string, uint>::const_iterator ite=_ChannelIdByName.find (name);
-		if (ite!=_ChannelIdByName.end ())
-			return ite->second;
-		else
-			return NotFound;
-	}
+	uint getChannelIdByName (const std::string& name) const;
 
 	/**
-	  * Get an animation pointer
+	  * Get a animation ID by name.
 	  */
-	const CAnimation* getAnimation (uint animationId) const
-	{
-		// Look for an id with this name
-		return &_Animation[animationId];
-	}
+	uint getAnimationIdByName (const std::string& name) const;
 
+	/**
+	  * Get a read only animation pointer.
+	  */
+	const CAnimation* getAnimation (uint animationId) const;
+
+	/**
+	  * Get a writable animation pointer.
+	  */
+	CAnimation* getAnimation (uint animationId);
+
+	/**
+	  * Add an animation to the set.
+	  *
+	  * \return the id of the new animation.
+	  */
+	uint addAnimation (const std::string& name) const;
 
 private:
 	std::vector <CAnimation>		_Animation;
-	std::map <std::string, uint>	_ChannelIdByName;
+	std::map <std::string, uint32>	_ChannelIdByName;
+	std::map <std::string, uint32>	_AnimationIdByName;
 };
 
 

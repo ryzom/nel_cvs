@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.14 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: export_nel.h,v 1.15 2001/07/18 12:18:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 
 #define NEL_LIGHT_CLASS_ID_A	0x36e3181f
 #define NEL_LIGHT_CLASS_ID_B	0x3ac24049
+#define NEL_PARTICLE_SYSTEM_CLASS_ID 0x58ce2893
 
 // ***************************************************************************
 
@@ -190,6 +191,9 @@ public:
 	// Build a NeL track with a 3dsmax node and a controller.
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
 												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
+
+	// Add tracks for particle systems
+	static void CExportNel::addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip) ;
 
 	// Add tracks for the bone and its children (recursive)
 	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);

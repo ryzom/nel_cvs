@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.7 2001/03/28 12:13:31 berenguier Exp $
+ * $Id: transformable.cpp,v 1.8 2001/04/03 13:47:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,8 +49,8 @@ ITransformable::ITransformable()
 	_Pivot.Value= CVector::Null;
 
 	_Father= NULL;
-	_FatherScaleDate= 0;
-	_LocalScaleDate= 0;
+	_FatherMatrixDate= 0;
+	_LocalMatrixDate= 0;
 }
 
 
@@ -142,9 +142,9 @@ bool	ITransformable::needCompute() const
 	bool	fatherOk;
 	bool	fatherScaleTest;
 	fatherOk= _Father && _Father->_Mode!=DirectMatrix;
-	fatherScaleTest= fatherOk && (_Father->isTouched(OwnerBit) || _Father->_LocalScaleDate>_FatherScaleDate) ;
+	fatherScaleTest= fatherOk && (_Father->isTouched(OwnerBit) || _Father->_LocalMatrixDate>_FatherMatrixDate) ;
 	// should we update?
-	return  isTouched(OwnerBit) || fatherScaleTest;
+	return  _Mode!=DirectMatrix && (isTouched(OwnerBit) || fatherScaleTest);
 }
 
 
@@ -152,11 +152,11 @@ bool	ITransformable::needCompute() const
 void	ITransformable::updateMatrix() const
 {
 	// should we update?
-	if(_Mode!=DirectMatrix && needCompute())
+	if(needCompute())
 	{
 		clearTransformFlags();
 		// update scale date (so sons are informed of change).
-		_LocalScaleDate++;
+		_LocalMatrixDate++;
 
 		// update the matrix.
 		_LocalMatrix.identity();
@@ -166,7 +166,7 @@ void	ITransformable::updateMatrix() const
 		if(fatherOk)
 		{
 			// copy the scale date to say we are up to date.
-			_FatherScaleDate= _Father->_LocalScaleDate;
+			_FatherMatrixDate= _Father->_LocalMatrixDate;
 
 			// unherit the father scale.
 			// T*Sp-1*P

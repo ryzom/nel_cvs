@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.14 2001/04/03 07:56:35 corvazier Exp $
+ * $Id: transform.h,v 1.15 2001/04/03 13:47:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,8 +132,9 @@ protected:
 	{
 		IModel::update();
 		// test if the matrix has been changed in ITransformable.
-		if(ITransformable::needCompute())
+		if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
 		{
+			_LastTransformableMatrixDate= ITransformable::getMatrixDate();
 			foul(TransformDirty);
 		}
 	}
@@ -146,6 +147,9 @@ private:
 
 	// For anim detail.
 	NLMISC::CRefPtr<CChannelMixer>		_ChannelMixer;
+
+	// Last date of ITransformable matrix.
+	uint64			_LastTransformableMatrixDate;
 
 };
 

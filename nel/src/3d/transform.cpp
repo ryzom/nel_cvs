@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.15 2001/04/03 07:56:35 corvazier Exp $
+ * $Id: transform.cpp,v 1.16 2001/04/03 13:47:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ CTransform::CTransform()
 	TouchObs.resize(Last);
 
 	Visibility= CHrcTrav::Herit;
+
+	_LastTransformableMatrixDate= 0;
 }
 // ***************************************************************************
 void		CTransform::hide()

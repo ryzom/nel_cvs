@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.8 2001/04/02 16:00:36 besson Exp $
+ * $Id: transformable.h,v 1.9 2001/04/03 13:47:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,9 +74,23 @@ public:
 	/// Get the matrix, compute her if necessary (work in all modes).
 	const CMatrix	&getMatrix() const {updateMatrix(); return _LocalMatrix;}
 
-	/// Tells if the matrix needs to be computed, either if data are modified, or if father is modified (if unheritScale enabled).
-	bool			needCompute() const;
 
+	/** Tells if the LocalMatrix is newer than what caller except.
+	 * This return true either if the matrix components (pos/rot etc...) are touched, or if matrix is newer than caller date.
+	 */
+	bool			compareMatrixDate(uint64 callerDate) const
+	{
+		return callerDate<_LocalMatrixDate || needCompute();
+	}
+
+
+	/** return the last date of computed matrix. updateMatrix() if necessary.
+	 */
+	uint64			getMatrixDate() const
+	{
+		updateMatrix();
+		return _LocalMatrixDate;
+	}
 
 
 	/// \name Transform Mode.
@@ -149,8 +163,8 @@ public:
 	{
 		nlassert(_Mode==DirectMatrix);
 		_LocalMatrix= mat;
-		// just for information.
-		touch(PosValue, OwnerBit);
+		// The matrix has changed.
+		_LocalMatrixDate++;
 	}
 
 	//@}
@@ -291,8 +305,8 @@ private:
 	CMatrix::TRotOrder		_RotOrder;
 	// For father scale un-inheritance.
 	ITransformable			*_Father;
-	mutable	uint64			_FatherScaleDate;
-	mutable	uint64			_LocalScaleDate;
+	mutable	uint64			_FatherMatrixDate;
+	mutable	uint64			_LocalMatrixDate;
 
 	// For animation, Pos, rot scale pivot animated values
 	CAnimatedValueVector	_Pos;
@@ -306,6 +320,9 @@ private:
 
 	// compute the matrix.
 	void	updateMatrix() const;
+
+	/// Tells if the matrix needs to be computed, either if data are modified, or if father is modified (if unheritScale enabled).
+	bool			needCompute() const;
 
 };
 

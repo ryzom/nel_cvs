@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.45 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.46 2004/06/29 13:43:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,6 +498,13 @@ void			CDriverUser::setMatrixMode3D(UCamera &camera)
 	setFrustum(camera.getFrustum());
 }
 
+// ***************************************************************************
+void CDriverUser::setDepthRange(float znear, float zfar)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+	_Driver->setDepthRange(znear, zfar);
+}
 
 // ***************************************************************************
 // ***************************************************************************

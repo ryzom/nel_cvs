@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.42 2004/06/23 09:13:14 besson Exp $
+ * $Id: driver_user.h,v 1.43 2004/06/29 13:43:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,6 +282,8 @@ public:
 	 * Frustum setuped to UCamera frustum.
 	 */
 	virtual	void			setMatrixMode3D(UCamera &camera);
+	virtual void			setDepthRange(float znear, float zfar);
+
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.27 2004/11/15 10:24:27 lecroart Exp $
+ * $Id: rgba.h,v 1.28 2005/01/31 15:44:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_RGBA_H
 #define NL_RGBA_H
+
+#include <algorithm>
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"

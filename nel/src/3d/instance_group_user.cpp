@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.24 2002/06/24 17:10:19 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.25 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/instance_user.h"
+#include "nel/misc/debug.h"
 #include "3d/instance_group_user.h"
 #include "3d/scene_user.h"
 #include "nel/misc/path.h"
@@ -146,7 +147,7 @@ void CInstanceGroupUser::setIGAddBeginCallback(IIGAddBegin *callback)
 void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
 {
 	// Get driver pointer
-	IDriver *cDriver= driver ? safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
+	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 
 	// Add to the scene
 	addToScene (((CSceneUser*)&scene)->getScene(), cDriver);
@@ -180,7 +181,7 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 // ***************************************************************************
 void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
 {
-	IDriver *cDriver= driver ? safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
+	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 	// Add to the scene
 	_InstanceGroup.addToSceneAsync (((CSceneUser*)&scene)->getScene(), cDriver);
 	_AddToSceneState = StateAdding;

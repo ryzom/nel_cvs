@@ -1,7 +1,7 @@
 /** \file camera_user.h
  * <File description>
  *
- * $Id: camera_user.h,v 1.2 2002/06/28 16:46:23 berenguier Exp $
+ * $Id: camera_user.h,v 1.3 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CAMERA_USER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 #include "nel/3d/u_camera.h"
 #include "3d/transform_user.h"
 #include "3d/camera.h"
@@ -57,7 +58,7 @@ public:
 	CCameraUser(CScene *scene) : 
 	  CTransformUser(scene, scene->createModel(CameraId) )
 	{
-		_Camera= safe_cast<CCamera*>(_Transform);
+		_Camera= NLMISC::safe_cast<CCamera*>(_Transform);
 
 		// Default perspective.
 		setFrustum(UCamera::DefLx, UCamera::DefLy, UCamera::DefLzNear, UCamera::DefLzFar);

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.35 2002/06/28 16:47:31 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.36 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -368,7 +368,7 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 void	CParticleSystemDetailObs::traverse(IObs *caller)
 {    
 	CTransformAnimDetailObs::traverse(caller);	
-	CParticleSystemModel *psm= safe_cast<CParticleSystemModel *>(Model);
+	CParticleSystemModel *psm= NLMISC::safe_cast<CParticleSystemModel *>(Model);
 	CParticleSystem *ps = psm->getPS();
 	if (psm->_Invalidated) return;
 

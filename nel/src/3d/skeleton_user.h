@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.9 2002/06/28 16:46:23 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.10 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_SKELETON_USER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 #include "nel/3d/u_skeleton.h"
 #include "nel/3d/u_instance.h"
 #include "3d/transform_user.h"
@@ -63,7 +64,7 @@ public:
 	CSkeletonUser(CScene *scene, IModel *model) : 
 	  CTransformUser(scene, model)
 	{
-		_Skeleton= safe_cast<CSkeletonModel*>(_Transform);
+		_Skeleton= NLMISC::safe_cast<CSkeletonModel*>(_Transform);
 
 		// create user bones.
 		uint	numBones= _Skeleton->Bones.size();

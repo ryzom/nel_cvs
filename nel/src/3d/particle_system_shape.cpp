@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.33 2002/06/28 16:47:31 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.34 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -226,7 +226,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	H_AUTO ( NL3D_Particles_Render );
 
 	nlassert(drv);
-	CParticleSystemModel *psm = safe_cast<CParticleSystemModel *>(trans);
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(trans);
 	if (psm->_Invalidated) return;
 	CParticleSystem *ps = psm->getPS();
 	/// has the system been triggered yet ?

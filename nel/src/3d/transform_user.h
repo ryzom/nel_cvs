@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.12 2002/06/28 16:46:23 berenguier Exp $
+ * $Id: transform_user.h,v 1.13 2002/06/28 16:52:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TRANSFORM_USER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 #include "nel/3d/u_transform.h"
 #include "3d/transform.h"
 #include "3d/transform_shape.h"
@@ -65,7 +66,7 @@ public:
 		nlassert(scene && trans);
 		_Scene= scene;
 		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
-		_Transform= safe_cast<CTransform*>(trans);
+		_Transform= NLMISC::safe_cast<CTransform*>(trans);
 		_pIG = NULL;
 		// Same enums!!
 		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);

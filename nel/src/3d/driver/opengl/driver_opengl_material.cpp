@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.50 2001/12/14 15:54:14 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.51 2001/12/14 16:54:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -529,6 +529,8 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		env.Env.SrcArg0RGB= CMaterial::Texture;
 		env.Env.OpArg0RGB= CMaterial::SrcColor;
 		activateTexEnvMode(0, env);
+		// Since Lighting is disabled, as well as colorArray, must setup alpha.
+		glColor4ub(0, 0, 0, 255);
 
 		// Setup gen tex off
 		_DriverGLStates.activeTextureARB(0);
@@ -648,6 +650,10 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 				// activate the texture at last stage.
 				// setup default env (modulate). (this may disable possible COMBINE4_NV setup).
 				CMaterial::CTexEnv	env;
+				// must set replace for alpha part.
+				env.Env.OpAlpha= CMaterial::Replace;
+				env.Env.SrcArg0Alpha= CMaterial::Texture;
+				env.Env.OpArg0Alpha= CMaterial::SrcAlpha;
 				activateTexEnvMode(stage, env);
 
 				// Setup gen tex off

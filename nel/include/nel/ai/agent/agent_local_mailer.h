@@ -1,7 +1,7 @@
-/** \file agent_mailer.h
+/** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.1 2001/01/31 15:36:41 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.2 2001/01/31 15:38:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

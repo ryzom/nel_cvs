@@ -1,6 +1,6 @@
-/** \file agent_mailer.cpp
+/** \file agent_local_mailer.cpp
  *
- * $Id: agent_mailer.cpp,v 1.5 2001/01/22 16:12:51 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.1 2001/01/31 15:38:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

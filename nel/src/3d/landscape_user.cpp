@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.38 2003/10/09 15:44:36 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.39 2003/11/18 11:02:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -512,6 +512,29 @@ bool		CLandscapeUser::canReceiveShadowMap() const
 	return _Landscape->canReceiveShadowMap();
 }
 
+// ***************************************************************************
+void		CLandscapeUser::setRefineCenterAuto(bool mode)
+{
+	_Landscape->setRefineCenterAuto(mode);
+}
+
+// ***************************************************************************
+void		CLandscapeUser::setRefineCenterUser(const CVector &refineCenter)
+{
+	_Landscape->setRefineCenterUser(refineCenter);
+}
+
+// ***************************************************************************
+bool		CLandscapeUser::getRefineCenterAuto() const
+{
+	return _Landscape->getRefineCenterAuto();
+}
+
+// ***************************************************************************
+const CVector	&CLandscapeUser::getRefineCenterUser() const
+{
+	return _Landscape->getRefineCenterUser();
+}
 
 
 } // NL3D

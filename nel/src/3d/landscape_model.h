@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.12 2003/08/19 15:13:27 berenguier Exp $
+ * $Id: landscape_model.h,v 1.13 2003/11/18 11:02:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,15 @@ public:
 		return _ActiveAdditive;
 	}
 
+	/** if true, the refine Center is auto computed each frame from Camera Position. Else must be given by
+	 *	setRefineCenterUser()
+	 *	Default to true.
+	 */
+	void			setRefineCenterAuto(bool mode) {_RefineCenterAuto= mode;}
+	bool			getRefineCenterAuto() const {return _RefineCenterAuto;}
+	void			setRefineCenterUser(const CVector &refineCenter) {_RefineCenterUser= refineCenter;}
+	const CVector	&getRefineCenterUser() const {return _RefineCenterUser;}
+	
 
 	/** Override CTransform::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
 	 */
@@ -140,6 +149,9 @@ private:
 	// This is The Last WorldMatrix used to render (not identity for ZBuffer considerations).
 	CMatrix					_RenderWorldMatrix;
 
+	// 
+	CVector					_RefineCenterUser;
+	bool					_RefineCenterAuto;
 };
 
 

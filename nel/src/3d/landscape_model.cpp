@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.36 2003/08/19 15:13:27 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.37 2003/11/18 11:02:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,9 @@ CLandscapeModel::CLandscapeModel()
 
 	// Mesh support shadow map receiving only
 	CTransform::setIsShadowMapReceiver(true);
+
+	_RefineCenterUser= CVector::Null;
+	_RefineCenterAuto= true;
 }
 
 
@@ -178,9 +181,16 @@ void	CLandscapeModel::clipAndRenderLandscape()
 	// Before Landscape clip, must setup Driver, for good VB allocation.
 	Landscape.setDriver(getOwnerScene()->getRenderTrav().getDriver());
 
+	// get the refineCenter.
+	CVector		refineCenter;
+	if(_RefineCenterAuto)
+		refineCenter= clipTrav.CamPos;
+	else
+		refineCenter= _RefineCenterUser;
+
 	// Use the Clustered pyramid for Patch, but Frustum pyramid for TessBlocks.
 	// We are sure that pyramid has normalized plane normals.
-	Landscape.clip(clipTrav.CamPos, ClusteredPyramid);
+	Landscape.clip(refineCenter, ClusteredPyramid);
 
 
 	// Render
@@ -234,12 +244,12 @@ void	CLandscapeModel::clipAndRenderLandscape()
 
 	// First, refine.
 	H_BEFORE( NL3D_Landscape_Refine );
-	Landscape.refine(renderTrav.CamPos);
+	Landscape.refine(refineCenter);
 	H_AFTER( NL3D_Landscape_Refine );
 
 	// then render.
 	H_BEFORE( NL3D_Landscape_Render );
-	Landscape.render(renderTrav.CamPos, renderTrav.CamLook, CurrentPyramid, isAdditive ());
+	Landscape.render(refineCenter, renderTrav.CamLook, CurrentPyramid, isAdditive ());
 	H_AFTER( NL3D_Landscape_Render );
 }
 

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.21 2003/08/07 08:53:50 berenguier Exp $
+ * $Id: u_landscape.h,v 1.22 2003/11/18 11:03:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,15 @@ public:
 	/// hide the landscape. It is nor refined, nor rendered (=> take 0 CPU time).
 	virtual	void		hide() =0;
 
+	/** if true, the refine Center is auto computed each frame from Camera Position. Else must be given by
+	 *	setRefineCenterUser()
+	 *	Default to true.
+	 */
+	virtual void			setRefineCenterAuto(bool mode) =0;
+	virtual bool			getRefineCenterAuto() const =0;
+	/// \see setRefineCenterAuto
+	virtual void			setRefineCenterUser(const CVector &refineCenter) =0;
+	virtual const CVector	&getRefineCenterUser() const =0;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.21 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape_user.h,v 1.22 2003/11/18 11:02:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,11 @@ public:
 	virtual	void		enableAdditive (bool enable);
 	virtual	bool		isAdditiveEnabled () const;
 
+	virtual	void			setRefineCenterAuto(bool mode);
+	virtual bool			getRefineCenterAuto() const;
+	virtual void			setRefineCenterUser(const CVector &refineCenter);
+	virtual const CVector	&getRefineCenterUser() const;
+	
 	// @}
 
 

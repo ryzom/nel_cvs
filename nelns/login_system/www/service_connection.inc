@@ -134,6 +134,7 @@
 			{
 				// can't accept it, display the error
 				// echo "Can't connect to the shard: $reason";
+				$res = $reason;
 			}
 
 			//printf("receive response '$reason' '$cookie' '$addr'<br>");

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.11 2001/04/03 13:31:17 corvazier Exp $
+ * $Id: mesh.h,v 1.12 2001/04/09 14:26:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,8 +48,14 @@ using	NLMISC::CMatrix;
 
 
 // ***************************************************************************
+// Should be 4.
+#define		NL3D_MESH_SKINNING_MAX_MATRIX	4
+
+
+// ***************************************************************************
 /**
  * An instanciable mesh.
+ * Skinning support: support only palette skinning.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -70,30 +76,9 @@ public:
 		CRGBA		Color;
 		CRGBA		Specular;
 
-
-		//--------------------------------------------------------------
-		// Note for In-Orbit:
-		// This field is a mistake because there is only a weight per vertex and not a weight per corner.
-		// So, you should pass a weight array at the build function instead.
-
-		float		Weights[IDRV_VF_MAXW];		// 
-
-		//--------------------------------------------------------------
-
-
-
 		// Setup all to 0, but Color (to white)... Important for good corner comparison.
 		// This is slow but doesn't matter since used at mesh building....
 		CCorner();
-
-		bool		operator<(const CCorner &c) const;
-
-	private:
-		// The result of the compression.
-		mutable sint	VBId;
-		// The flags to know what to compare.
-		static	sint	Flags;
-		friend class CMesh;
 	};
 
 	/// A Triangle face.
@@ -102,6 +87,17 @@ public:
 		CCorner		Corner[3];
 		sint		MaterialId;
 	};
+
+
+	/// Skinning: A skin weight for a vertex.
+	struct	CSkinWeight
+	{
+		// What matrix of the skeleton shape this vertex use.
+		uint			MatrixId[NL3D_MESH_SKINNING_MAX_MATRIX];
+		// weight of this matrix (sum of 4 must be 1).
+		float			Weights[NL3D_MESH_SKINNING_MAX_MATRIX];
+	};
+
 
 	/// A mesh information.
 	struct	CMeshBuild
@@ -123,6 +119,10 @@ public:
 
 		// Vertices array
 		std::vector<CVector>	Vertices;
+
+		// Palette Skinning Vertices array (same size as Vertices). NULL if no skinning.
+		std::vector<CSkinWeight>	SkinWeights;
+
 
 		// Faces array
 		std::vector<CFace>		Faces;
@@ -183,29 +183,152 @@ public:
 
 // ************************
 private:
+
+	/// A block of primitives, sorted by material used.
 	class	CRdrPass
 	{
 	public:
-		CMaterial			Material;
+		// The id of this material.
+		uint32				MaterialId;
+		// The list of primitives.
 		CPrimitiveBlock		PBlock;
+
 
 		// Serialize a rdrpass.
 		void	serial(NLMISC::IStream &f)
 		{
 			sint	ver= f.serialVersion(0);
 
+			f.serial(MaterialId);
+			f.serial(PBlock);
+		}
+	};
+
+
+	/// The V2- Old CRdrPass structure.
+	class	CRdrPassV2
+	{
+	public:
+		CMaterial			Material;
+		CPrimitiveBlock		PBlock;
+		void	serial(NLMISC::IStream &f)
+		{
+			sint	ver= f.serialVersion(0);
 			f.serial(Material);
 			f.serial(PBlock);
 		}
 	};
 
+
+	/// A block of RdrPasses, sorted by matrix use.
+	class	CMatrixBlock
+	{
+	public:
+		/// Which matrix we use for this block.
+		uint32					MatrixId[IDriver::MaxModelMatrix];
+		/// Number of matrix actually used.
+		uint32					NumMatrix;
+		/// List of rdr pass, for this matrix block.
+		std::vector<CRdrPass>	RdrPass;
+
+		void	serial(NLMISC::IStream &f)
+		{
+			sint	ver= f.serialVersion(0);
+
+			// Code written for IDriver::MaxModelMatrix==16 matrixs.
+			nlassert(IDriver::MaxModelMatrix == 16);
+			for(uint i=0;i<IDriver::MaxModelMatrix;i++)
+				f.serial(MatrixId[i]);
+			f.serial(NumMatrix);
+			f.serialCont(RdrPass);
+		}
+	};
+
+
+private:
+	/**  Just for build process.
+	 * NB: we must store palette info by corner (not by vertex) because Matrix Block grouping may insert vertex
+	 * discontinuities. eg: a vertex use Matrix23. After Matrix grouping (16matrix), Matrix23 could be Matrix2 for a group
+	 * of face, but Matrix13 for an other!!
+	 */
+	struct	CCornerTmp : public CCorner
+	{
+		CPaletteSkin	Palette;
+		float			Weights[NL3D_MESH_SKINNING_MAX_MATRIX];
+
+		// The comparison.
+		bool		operator<(const CCornerTmp &c) const;
+		// The result of the compression.
+		mutable sint	VBId;
+		// The flags to know what to compare.
+		static	sint	Flags;
+
+		// Setup all to 0, but Color (to white)... Important for good corner comparison.
+		// This is slow but doesn't matter since used at mesh building....
+		CCornerTmp()
+		{
+			VBId= 0;
+			for(sint i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+			{
+				Palette.MatrixId[i]=0;
+				Weights[i]=0;
+			}
+		}
+
+		// copy from corner.
+		CCornerTmp &operator=(const CCorner &o)
+		{
+			Vertex= o.Vertex;
+			Normal= o.Normal;
+			for(sint i=0;i<= IDRV_VF_MAXSTAGES;i++)
+				Uvs[i]= o.Uvs[i];
+			Color= o.Color;
+			Specular= o.Specular;
+
+			return *this;
+		}
+
+	};
+
+
+	/** Just for build process. A Triangle face.
+	 */
+	struct	CFaceTmp
+	{
+		CCornerTmp		Corner[3];
+		uint			MaterialId;
+		// which matrixblock own this face. -1 <=> Not owned.
+		sint			MatrixBlockId;
+
+		CFaceTmp()
+		{
+			MatrixBlockId= -1;
+		}
+		CFaceTmp	&operator=(const CFace& o)
+		{
+			Corner[0]= o.Corner[0];
+			Corner[1]= o.Corner[1];
+			Corner[2]= o.Corner[2];
+			MaterialId= o.MaterialId;
+
+			return *this;
+		}
+
+	};
+
+
+
 private:
 	/// The only one VBuffer of the mesh.
-	CVertexBuffer			_VBuffer;
-	/// The face.
-	std::vector<CRdrPass>	_RdrPass;
+	CVertexBuffer				_VBuffer;
+	/// The Materials.
+	std::vector<CMaterial>		_Materials;
+	/// The matrix blocks.
+	std::vector<CMatrixBlock>	_MatrixBlocks;
 	/// For clipping.
-	NLMISC::CAABBoxExt				_BBox;
+	NLMISC::CAABBoxExt			_BBox;
+	/// This tells if the mesh is correctly skinned.
+	bool						_Skinned;
 
 
 	/// Animated Material mgt.
@@ -214,35 +337,35 @@ private:
 
 
 	/// Transform default tracks. Those default tracks are instancied, ie, CInstanceMesh will have the same and can't specialize it.
-	CTrackDefaultVector		_DefaultPos;
-	CTrackDefaultVector		_DefaultPivot;
-	CTrackDefaultVector		_DefaultRotEuler;
-	CTrackDefaultQuat		_DefaultRotQuat;
-	CTrackDefaultVector		_DefaultScale;
+	CTrackDefaultVector			_DefaultPos;
+	CTrackDefaultVector			_DefaultPivot;
+	CTrackDefaultVector			_DefaultRotEuler;
+	CTrackDefaultQuat			_DefaultRotQuat;
+	CTrackDefaultVector			_DefaultScale;
 
 private:
 	// Locals, for build.
 	class	CCornerPred
 	{
 	public:
-		bool operator()(const CCorner *x, const CCorner *y) const
+		bool operator()(const CCornerTmp *x, const CCornerTmp *y) const
 		{
 			return (*x<*y);
 		}
 	};
-	typedef		std::set<CCorner*, CCornerPred>	TCornerSet;
+	typedef		std::set<CCornerTmp*, CCornerPred>	TCornerSet;
 	typedef		TCornerSet::iterator ItCornerSet;
 
 	// Find and fill the VBuffer.
-	void	findVBId(TCornerSet  &corners, const CCorner *corn, sint &currentVBIndex, const CVector &vert)
+	void	findVBId(TCornerSet  &corners, const CCornerTmp *corn, sint &currentVBIndex, const CVector &vert)
 	{
-		ItCornerSet  it= corners.find(const_cast<CCorner *>(corn));
+		ItCornerSet  it= corners.find(const_cast<CCornerTmp *>(corn));
 		if(it!=corners.end())
 			corn->VBId= (*it)->VBId;
 		else
 		{
 			// Add corner to the set to not insert same corner two times.
-			corners.insert (const_cast<CCorner *>(corn));
+			corners.insert (const_cast<CCornerTmp *>(corn));
 			sint	i;
 			corn->VBId= currentVBIndex++;
 			// Fill the VBuffer.
@@ -251,24 +374,26 @@ private:
 			// XYZ.
 			_VBuffer.setVertexCoord(id, vert);
 			// Normal
-			if(CCorner::Flags & IDRV_VF_NORMAL)
+			if(CCornerTmp::Flags & IDRV_VF_NORMAL)
 				_VBuffer.setNormalCoord(id, corn->Normal);
 			// Uvs.
 			for(i=0;i<IDRV_VF_MAXSTAGES;i++)
 			{
-				if(CCorner::Flags & IDRV_VF_UV[i])
+				if(CCornerTmp::Flags & IDRV_VF_UV[i])
 					_VBuffer.setTexCoord(id, i, corn->Uvs[i].U, corn->Uvs[i].V);
 			}
 			// Color.
-			if(CCorner::Flags & IDRV_VF_COLOR)
+			if(CCornerTmp::Flags & IDRV_VF_COLOR)
 				_VBuffer.setColor(id, corn->Color);
 			// Specular.
-			if(CCorner::Flags & IDRV_VF_SPECULAR)
+			if(CCornerTmp::Flags & IDRV_VF_SPECULAR)
 				_VBuffer.setSpecular(id, corn->Specular);
-			// Weights
-			for(i=0;i<IDRV_VF_MAXW;i++)
+
+			// setup palette skinning.
+			if( (CCornerTmp::Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
 			{
-				if(CCorner::Flags & IDRV_VF_W[i])
+				_VBuffer.setPaletteSkin(id, corn->Palette);
+				for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
 					_VBuffer.setWeight(id, i, corn->Weights[i]);
 			}
 		}

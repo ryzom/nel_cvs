@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.10 2001/04/03 13:31:17 corvazier Exp $
+ * $Id: mesh.cpp,v 1.11 2001/04/09 14:26:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,9 @@
 #include "nel/3d/mesh.h"
 #include "nel/3d/mesh_instance.h"
 #include "nel/3d/scene.h"
+
+
+using namespace std;
 
 
 namespace NL3D 
@@ -53,12 +56,26 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 	return ret;
 }
 
+
 // ***************************************************************************
-sint	CMesh::CCorner::Flags=0;
+CMesh::CCorner::CCorner()
+{
+	sint	i;
+	Vertex= 0;
+	Normal= CVector::Null;
+	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+		Uvs[i]= CUV(0,0);
+	Color.set(255,255,255,255);
+	Specular.set(0,0,0,0);
+}
 
 
 // ***************************************************************************
-bool	CMesh::CCorner::operator<(const CCorner &c) const
+sint	CMesh::CCornerTmp::Flags=0;
+
+
+// ***************************************************************************
+bool	CMesh::CCornerTmp::operator<(const CCornerTmp &c) const
 {
 	sint	i;
 
@@ -66,43 +83,34 @@ bool	CMesh::CCorner::operator<(const CCorner &c) const
 	if(Vertex!=c.Vertex)
 		return Vertex<c.Vertex;
 
-	// Order: normal, uvs, color0, color1, then weights
-	if((CCorner::Flags & IDRV_VF_NORMAL) && Normal!=c.Normal)
+	// Order: normal, uvs, color0, color1, skinning.
+	if((CCornerTmp::Flags & IDRV_VF_NORMAL) && Normal!=c.Normal)
 		return Normal<c.Normal;
 	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
 	{
-		if(CCorner::Flags & IDRV_VF_UV[i] && Uvs[i]!=c.Uvs[i])
+		if(CCornerTmp::Flags & IDRV_VF_UV[i] && Uvs[i]!=c.Uvs[i])
 			return Uvs[i]<c.Uvs[i];
 	}
-	if((CCorner::Flags & IDRV_VF_COLOR) && Color!=c.Color)
+	if((CCornerTmp::Flags & IDRV_VF_COLOR) && Color!=c.Color)
 		return Color<c.Color;
-	if((CCorner::Flags & IDRV_VF_SPECULAR) && Specular!=c.Specular)
+	if((CCornerTmp::Flags & IDRV_VF_SPECULAR) && Specular!=c.Specular)
 		return Specular<c.Specular;
-	for(i=0;i<IDRV_VF_MAXW;i++)
+
+	if( (CCornerTmp::Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
 	{
-		if(CCorner::Flags & IDRV_VF_W[i] && Weights[i]!=c.Weights[i])
-			return Weights[i]<c.Weights[i];
+		for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+		{
+			if(Palette.MatrixId[i] != c.Palette.MatrixId[i])
+				return Palette.MatrixId[i] < c.Palette.MatrixId[i];
+			if(Weights[i] != c.Weights[i])
+				return Weights[i] < c.Weights[i];
+		}
 	}
+
 
 	// All are equal!!
 	return false;
 }
-
-// ***************************************************************************
-CMesh::CCorner::CCorner()
-{
-	sint	i;
-	VBId= 0;
-	Vertex= 0;
-	Normal= CVector::Null;
-	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
-		Uvs[i]= CUV(0,0);
-	Color.set(255,255,255,255);
-	Specular.set(0,0,0,0);
-	for(i=0;i<IDRV_VF_MAXW;i++)
-		Weights[i]= 0;
-}
-
 
 
 
@@ -117,12 +125,15 @@ CMesh::CCorner::CCorner()
 // ***************************************************************************
 CMesh::CMesh()
 {
+	_Skinned= false;
 }
 
 
 // ***************************************************************************
 void	CMesh::build(const CMeshBuild &m)
 {
+	sint	i;
+
 	// clear the animated materials.
 	_AnimatedMaterials.clear();
 
@@ -131,7 +142,7 @@ void	CMesh::build(const CMeshBuild &m)
 	{
 		_VBuffer.setNumVertices(0);
 		_VBuffer.reserve(0);
-		_RdrPass.clear();
+		_MatrixBlocks.clear();
 		_BBox.setCenter(CVector::Null);
 		_BBox.setSize(CVector::Null);
 		return;
@@ -144,7 +155,34 @@ void	CMesh::build(const CMeshBuild &m)
 	_BBox= makeBBox(m.Vertices);
 
 
-	/// 1. Then, for all faces, resolve continuities, building VBuffer.
+	/// 1. If skinning, group by matrix Block the vertices.
+	//================================================
+
+	// First, copy Face array.
+	vector<CFaceTmp>	tmpFaces;
+	tmpFaces.resize(m.Faces.size());
+	for(i=0;i<(sint)tmpFaces.size();i++)
+		tmpFaces[i]= m.Faces[i];
+
+	_Skinned= (m.VertexFlags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+
+
+	// If the mesh is not skinned, we have just 1 _MatrixBlocks.
+	if(!_Skinned)
+	{
+		_MatrixBlocks.resize(1);
+		// For each faces, assign it to the matrix block 0.
+		for(i=0;i<(sint)tmpFaces.size();i++)
+			tmpFaces[i].MatrixBlockId= 0;
+	}
+	// Else We must group/compute the matrixs blocks.
+	else
+	{
+		// TODODO.
+	}
+
+
+	/// 2. Then, for all faces, resolve continuities, building VBuffer.
 	//================================================
 	// Setup VB.
 	_VBuffer.setNumVertices(0);
@@ -152,42 +190,59 @@ void	CMesh::build(const CMeshBuild &m)
 	_VBuffer.setVertexFormat(m.VertexFlags | IDRV_VF_XYZ);
 
 	// Set local flags for corner comparison.
-	CCorner::Flags= m.VertexFlags;
+	CCornerTmp::Flags= m.VertexFlags;
 	// Setup locals.
 	TCornerSet	corners;
-	const CFace		*pFace= &(*m.Faces.begin());
-	sint		N= m.Faces.size();
+	const CFaceTmp		*pFace= &(*tmpFaces.begin());
+	sint		N= tmpFaces.size();
 	sint		currentVBIndex=0;
+
+	// process each face, building up the VB.
 	for(;N>0;N--, pFace++)
 	{
 		ItCornerSet	it;
-		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[pFace->Corner[0].Vertex]);
-		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[pFace->Corner[1].Vertex]);
-		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[pFace->Corner[2].Vertex]);
+		sint	v0= pFace->Corner[0].Vertex;
+		sint	v1= pFace->Corner[1].Vertex;
+		sint	v2= pFace->Corner[2].Vertex;
+		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[v0]);
+		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[v1]);
+		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[v2]);
 	}
 
 
-	/// 2. build the RdrPass material.
+	/// 3. build the RdrPass material.
 	//================================
-	sint	i;
-	_RdrPass.resize(m.Materials.size());
-	// TODO: it should be interesting to sort the materials, depending of their attributes.
-	for(i=0;i<(sint)_RdrPass.size(); i++)
+	uint	mb;
+	// copy the materials.
+	_Materials= m.Materials;
+
+	// For each _MatrixBlocks, point on those materials.
+	for(mb= 0;mb<_MatrixBlocks.size();mb++)
 	{
-		_RdrPass[i].Material= m.Materials[i];
+		// Build RdrPass ids.
+		_MatrixBlocks[mb].RdrPass.resize(m.Materials.size());
+		// TODO: it should be interesting to sort the materials, depending of their attributes.
+		for(i=0;i<(sint)_MatrixBlocks[mb].RdrPass.size(); i++)
+		{
+			_MatrixBlocks[mb].RdrPass[i].MaterialId= i;
+		}
 	}
 
 	
-	/// 3. Then, for all faces, build the RdrPass PBlock.
+	/// 4. Then, for all faces, build the RdrPass PBlock.
 	//===================================================
-	pFace= &(*m.Faces.begin());
-	N= m.Faces.size();
+	pFace= &(*tmpFaces.begin());
+	N= tmpFaces.size();
 	for(;N>0;N--, pFace++)
 	{
-		_RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
+		sint	mbId= pFace->MatrixBlockId;
+		nlassert(mbId>=0 && mbId<_MatrixBlocks.size());
+		// Insert the face in good MatrixBlock/RdrPass.
+		_MatrixBlocks[mbId].RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
 	}
 
-	/// 4. Copy default position values
+	/// 5. Copy default position values
+	//===================================================
 	_DefaultPos.setValue (m.DefaultPos);
 	_DefaultPivot.setValue (m.DefaultPivot);
 	_DefaultRotEuler.setValue (m.DefaultRotEuler);
@@ -209,11 +264,7 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 
 	// setup materials.
 	//=================
-	mi->Materials.resize(_RdrPass.size());
-	for(sint i=0;i<(sint)_RdrPass.size();i++)
-	{
-		mi->Materials[i]= _RdrPass[i].Material;
-	}
+	mi->Materials= _Materials;
 
 	// setup animated materials.
 	//==========================
@@ -255,7 +306,11 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 // ***************************************************************************
 void	CMesh::render(IDriver *drv, CTransformShape *trans)
 {
-	if(_RdrPass.size()==0)
+	// TODODO. skinning and good renderpass.
+
+	if(_MatrixBlocks.size()==0)
+		return;
+	if(_MatrixBlocks[0].RdrPass.size()==0)
 		return;
 
 	nlassert(drv);
@@ -266,10 +321,10 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 	CMeshInstance	*mi= (CMeshInstance*)trans;
 
 	// Render all pass.
-	for(sint i=0;i<(sint)_RdrPass.size();i++)
+	for(sint i=0;i<(sint)_MatrixBlocks[0].RdrPass.size();i++)
 	{
 		// Render with the Mateirals of the MeshInstance.
-		drv->render(_RdrPass[i].PBlock, mi->Materials[i]);
+		drv->render(_MatrixBlocks[0].RdrPass[i].PBlock, mi->Materials[i]);
 	}
 }
 
@@ -278,6 +333,8 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans)
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 3:
+		- skinning.
 	Version 2:
 		- Default track for position.
 	Version 1:
@@ -285,10 +342,38 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(2);
+	sint	ver= f.serialVersion(3);
 
 	f.serial(_VBuffer);
-	f.serialCont(_RdrPass);
+
+	// New Architecture for V3+ meshs.
+	if(ver>=3)
+	{
+		f.serialCont(_Materials);
+		f.serialCont(_MatrixBlocks);
+	}
+	else
+	{
+		// Old versions: must read RdrPassV0 struct, then fill _Materials and RdrPass.
+		vector<CRdrPassV2>	oldRdrPass;
+		f.serialCont(oldRdrPass);
+
+		// copy to MatrixBlock 0.
+		_MatrixBlocks.resize(1);
+		_Materials.resize(oldRdrPass.size());
+		_MatrixBlocks[0].RdrPass.resize(oldRdrPass.size());
+		// fill V3+ rdrPass.
+		for(uint i=0;i<oldRdrPass.size(); i++)
+		{
+			_Materials[i]= oldRdrPass[i].Material;
+			_MatrixBlocks[0].RdrPass[i].PBlock= oldRdrPass[i].PBlock;
+			_MatrixBlocks[0].RdrPass[i].MaterialId= i;
+		}
+
+		// V2- => We are not skinned.
+		_Skinned= false;
+	}
+
 	f.serial(_BBox);
 
 	// _AnimatedMaterials
@@ -303,6 +388,8 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// New features
 	switch (ver)
 	{
+	case 3:
+		f.serial (_Skinned);
 	case 2:
 		f.serial (_DefaultPos);
 		f.serial (_DefaultPivot);
@@ -323,12 +410,12 @@ void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void			CMesh::setAnimatedMaterial(uint id, const std::string &matName)
 {
-	if(id<_RdrPass.size())
+	if(id<_Materials.size())
 	{
 		// add / replace animated material.
 		_AnimatedMaterials[id].Name= matName;
 		// copy Material default.
-		_AnimatedMaterials[id].copyFromMaterial(&_RdrPass[id].Material);
+		_AnimatedMaterials[id].copyFromMaterial(&_Materials[id]);
 	}
 }
 

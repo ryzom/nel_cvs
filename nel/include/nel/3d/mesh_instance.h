@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.4 2001/04/05 12:17:14 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.5 2001/04/09 14:26:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,7 @@ protected:
 	CMeshInstance()
 	{
 		IAnimatable::resize(AnimValueLast);
+		_ApplySkinOk= false;
 	}
 	/// Destructor
 	virtual ~CMeshInstance() {}
@@ -104,11 +105,16 @@ private:
 	static IModel	*creator() {return new CMeshInstance;}
 	friend	class CMesh;
 	friend	class CMeshInstanceAnimDetailObs;
+	friend	class CSkeletonModel;
 
 
 	/** The list of animated materials, instanciated from the mesh.
 	 */
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
+
+
+	/// Skinning. true if skinned to the _Skeleton.
+	bool		_ApplySkinOk;
 
 };
 

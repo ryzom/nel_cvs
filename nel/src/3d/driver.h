@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.79 2004/10/05 17:18:12 vizerie Exp $
+ * $Id: driver.h,v 1.80 2004/10/19 12:42:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -375,6 +375,11 @@ public:
      */
 	virtual bool			supportVolatileVertexBuffer() const = 0;
 
+	/** return true if driver support indices offset. That is, allow to specify a constant value that is added to each
+	  * index in current active active index buffer when rendering indexed primitives
+	  */
+	virtual bool			supportIndexOffset() const = 0;
+
 	/** return true if driver support VertexBufferHard, but vbHard->unlock() are slow (ATI-openGL).
 	 */
 	virtual	bool			slowUnlockVertexBufferHard() const =0;
@@ -488,6 +493,15 @@ public:
 	 *  \param numTri is the number of triangle to render.
 	 */
 	virtual bool			renderRawTriangles(CMaterial& mat, uint32 startVertex, uint32 numTri)=0;
+
+	/** If the driver support it, primitive can be rendered with an offset added to each index
+      * These are the offseted version of the 'render' functions
+	  * \see supportIndexOffset
+	  */
+	virtual bool			renderLinesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 nlines, uint indexOffset)=0;
+	virtual bool			renderTrianglesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 ntris, uint indexOffset)=0;
+	virtual bool			renderSimpleTrianglesWithIndexOffset(uint32 firstIndex, uint32 ntris, uint indexOffset)=0;	
+	
 
 	/** render quads with previously setuped VertexBuffer / Matrixes.
 	 *  Quads are stored as a sequence in the vertex buffer.
@@ -1065,6 +1079,9 @@ public:
 	 *	Interesting only for debug and profiling purpose.
 	 */
 	virtual	void			finish() =0;
+
+	// Flush command queue an immediately returns
+	virtual void            flush() = 0;
 
 	/** Use AntiAliasing For polygons (GL_POLYGON_SMOOTH like, not the FSAA).
 	 *	See GL_POLYGON_SMOOTH help, and GL_SRC_ALPHA_SATURATE OpenGL doc (not yet implemented now since 

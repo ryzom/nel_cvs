@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.3 2001/11/07 10:38:39 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.4 2001/11/07 17:10:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,12 +26,50 @@
 #include "3d/water_pool_manager.h"
 #include "3d/texture_blend.h"
 #include "3d/water_shape.h"
+#include "nel/misc/command.h"
 #include "water_height_map.h"
 
 
 
 namespace NL3D {
 
+
+/*
+NLMISC_COMMAND(setWaterPool, "Setup a pool of water in the water pool manager",
+			   "<ID>,<Size>,<Damping>,<FilterWeight>,<UnitSize>,<WaveIntensity>,<WavePeriod>")
+{
+	CWaterPoolManager::CWaterHeightMapBuild whmb;
+	const uint numArgs = args.size();
+	if (numArgs == 0) return false;
+	if (numArgs == 1)
+	{
+		whmb.ID = ::atoi(args[0].c_str());
+	}
+	if (numArgs == 2)
+	{
+		whmb.Size = ::atoi(args[1].c_str());
+	}
+	if (numArgs == 3)
+	{
+		whmb.FilterWeight = ::atof(args[2].c_str());
+	}
+	if (numArgs == 4)
+	{
+		whmb.UnitSize = ::atof(args[3].c_str());
+	}
+	if (numArgs == 5)
+	{
+		whmb.WaveIntensity = ::atof(args[4].c_str());
+	}
+	if (numArgs == 4)
+	{
+		whmb.WavePeriod = ::atof(args[5].c_str());
+	}
+	// create the water pool
+	GetWaterPoolManager().createWaterPool(whmb);	
+	return true;
+}
+*/
 
 CWaterPoolManager &GetWaterPoolManager()
 {
@@ -82,8 +120,9 @@ void CWaterPoolManager::registerWaterShape(CWaterShape *shape)
 void CWaterPoolManager::unRegisterWaterShape(CWaterShape *shape)
 {
 	TWaterShapeVect::iterator it = std::find(_WaterShapes.begin(), _WaterShapes.end(), shape);
-	nlassert(it != _WaterShapes.end()); // shape not registered!
-	_WaterShapes.erase(it);
+//	nlassert(it != _WaterShapes.end()); // shape not registered!
+	if (it != _WaterShapes.end())
+		_WaterShapes.erase(it);
 }
 
 void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)

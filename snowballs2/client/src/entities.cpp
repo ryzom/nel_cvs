@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.1 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: entities.cpp,v 1.2 2001/07/12 13:51:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,17 +40,28 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
+#include <nel/pacs/u_move_container.h>
+#include <nel/pacs/u_move_primitive.h>
+
 #include "client.h"
 #include "entities.h"
+#include "pacs.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
+using namespace NLPACS;
 
 
 map<uint32, CEntity> Entities;
 typedef map<uint32, CEntity>::iterator EIT;
 
+enum
+{
+	SelfCollisionBit = 1,
+	OtherCollisionBit = 2,
+	SnowballCollisionBit = 4
+};
 
 // these variables are set with the config file
 
@@ -78,11 +89,49 @@ void addEntity (uint32 eid, CEntity::TType type)
 	{
 		nlerror ("Entity %d already exist", eid);
 	}
-	CEntity newEntity;
-	newEntity.Id = eid;
-	newEntity.Type = type;
-	newEntity.Name = "Entity"+toString(rand());
-	Entities.insert (make_pair (eid, newEntity));
+
+	eit = (Entities.insert (make_pair (eid, CEntity()))).first;
+	CEntity	&entity = (*eit).second;
+
+	entity.Id = eid;
+	entity.Type = type;
+	entity.Name = "Entity"+toString(rand());
+	entity.MovePrimitive = MoveContainer->addCollisionablePrimitive(0, 1);
+
+	// setup the move primitive depending on the type of entity
+	switch (type)
+	{
+	case CEntity::Self:
+		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
+		entity.MovePrimitive->setCollisionMask(OtherCollisionBit+SnowballCollisionBit);
+		entity.MovePrimitive->setOcclusionMask(SelfCollisionBit);
+		entity.MovePrimitive->setObstacle(true);
+		entity.MovePrimitive->setRadius(0.5f);
+		entity.MovePrimitive->setHeight(1.8f);
+		break;
+	case CEntity::Other:
+		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setTriggerType(UMovePrimitive::NotATrigger);
+		entity.MovePrimitive->setCollisionMask(SelfCollisionBit+SnowballCollisionBit);
+		entity.MovePrimitive->setOcclusionMask(OtherCollisionBit);
+		entity.MovePrimitive->setObstacle(true);
+		entity.MovePrimitive->setRadius(0.5f);
+		entity.MovePrimitive->setHeight(1.8f);
+		break;
+	case CEntity::Snowball:
+		entity.MovePrimitive->setPrimitiveType(UMovePrimitive::_2DOrientedCylinder);
+		entity.MovePrimitive->setReactionType(UMovePrimitive::Slide);
+		entity.MovePrimitive->setTriggerType(UMovePrimitive::EnterTrigger);
+		entity.MovePrimitive->setCollisionMask(SelfCollisionBit+OtherCollisionBit);
+		entity.MovePrimitive->setOcclusionMask(SnowballCollisionBit);
+		entity.MovePrimitive->setObstacle(false);
+		entity.MovePrimitive->setRadius(0.2f);
+		entity.MovePrimitive->setHeight(0.4f);
+		break;
+	}
 }
 
 void removeEntity (uint32 eid)
@@ -90,12 +139,16 @@ void removeEntity (uint32 eid)
 	nlinfo ("removing entity %d", eid);
 
 	EIT eit = findEntity (eid);
+
+	MoveContainer->removePrimitive((*eit).second.MovePrimitive);
+	
 	Entities.erase (eit);
 }
 
 void updateEntities ()
 {
 	/// \todo
+
 }
 
 void cbUpdateRadar (CConfigFile::CVar &var)

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.14 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: client.cpp,v 1.15 2001/07/12 13:51:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include <nel/misc/i18n.h>
 #include <nel/misc/config_file.h>
 #include <nel/misc/vectord.h>
+#include <nel/misc/time_nl.h>
 
 #include <string>
 #include <deque>
@@ -57,6 +58,7 @@
 #include "landscape.h"
 #include "entities.h"
 #include "camera.h"
+#include "pacs.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -74,6 +76,10 @@ U3dMouseListener	*MouseListener = NULL;
 UInstance			*Cube = NULL;
 
 UTextContext		*TextContext = NULL;
+
+TTime				LastTime, 
+					NewTime;
+
 
 // true if you want to exit the main loop
 bool				 NeedExit = false;
@@ -112,6 +118,7 @@ int main(int argc, char **argv)
 	CPath::addSearchPath (dataPath + "tiles/");
 	CPath::addSearchPath (dataPath + "meshes/");
 	CPath::addSearchPath (dataPath + "materials/");
+	CPath::addSearchPath (dataPath + "pacs/");
 
 	// Create a driver
 	Driver = UDriver::createDriver();
@@ -126,7 +133,7 @@ int main(int argc, char **argv)
 	Scene = Driver->createScene();
 
 	// load a default cube shape
-	Cube = Scene->createInstance("Box.shape");
+	Cube = Scene->createInstance("BARMAN.shape");
 //	Cube->setTransformMode (UTransformable::DirectMatrix);
 	Cube->setScale(1.0f, 1.0f, 1.0f);
 	Cube->setPivot(0.0f, 0.0f, 0.0f);
@@ -151,8 +158,13 @@ int main(int argc, char **argv)
 	// Init the landscape using the previously created UScene
 	initLandscape();
 
+	// Init the pacs
+	initPACS();
+
 	// Display the firsts line
 	nlinfo ("Welcome to Snowballs 2");
+
+	LastTime = CTime::getLocalTime();
 
 	while ((!NeedExit) && Driver->isActive())
 	{
@@ -167,7 +179,11 @@ int main(int argc, char **argv)
 
 		// update the box
 		CMatrix		cmat = MouseListener->getViewMatrix();
-		Cube->setMatrix(cmat);
+		//Cube->setMatrix(cmat);
+		Cube->setPos(cmat.getPos());
+		CVector	j = cmat.getJ();
+		j.z = 0.0f;
+		Cube->setRotQuat(j);
 
 		// setup the camera
 		updateCamera();
@@ -215,6 +231,7 @@ int main(int argc, char **argv)
 		CConfigFile::checkConfigFiles ();
 	}
 
+	releasePACS();
 	releaseLandscape();
 
 	delete Driver;

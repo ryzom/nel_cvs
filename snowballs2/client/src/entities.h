@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.1 2001/07/12 12:54:15 lecroart Exp $
+ * $Id: entities.h,v 1.2 2001/07/12 13:51:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,11 @@
 
 #include <string>
 
+namespace NLPACS
+{
+	class UMovePrimitive;
+};
+
 class CEntity
 {
 public:
@@ -41,6 +46,8 @@ public:
 	enum TType { Self, Other, Snowball };
 	
 	TType Type;
+
+	NLPACS::UMovePrimitive		*MovePrimitive;
 };
 
 

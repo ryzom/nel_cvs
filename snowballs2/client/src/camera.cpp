@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.1 2001/07/12 10:11:02 legros Exp $
+ * $Id: camera.cpp,v 1.2 2001/07/12 13:51:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,15 +37,18 @@ using namespace NL3D;
 
 UCamera				*Camera = NULL;
 
-float				ViewLagBehind = 10.0f;
-float				ViewHeight = 4.0f;
+float				ViewLagBehind = 3.0f;
+float				ViewHeight = 2.0f;
 
 void	initCamera()
 {
 	Camera = Scene->getCam();
 	Camera->setTransformMode (UTransformable::DirectMatrix);
 	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
-	Camera->lookAt (CVector(1000.0f, -1000.0f, 0.0f), CVectorD (0,0,0));
+	Camera->lookAt (CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+							ConfigFile.getVar("StartPoint").asFloat(1),
+							ConfigFile.getVar("StartPoint").asFloat(2)),
+					CVectorD (0,0,0));
 }
 
 void	updateCamera()

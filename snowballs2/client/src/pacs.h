@@ -1,7 +1,7 @@
-/** \file client.h
+/** \file pacs.h
  * 
  *
- * $Id: client.h,v 1.4 2001/07/12 13:51:37 legros Exp $
+ * $Id: pacs.h,v 1.1 2001/07/12 13:51:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,27 +23,24 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef PACS_H
+#define PACS_H
 
-#include <nel/misc/config_file.h>
-
-
-namespace NL3D
+namespace NLPACS
 {
-	class UDriver;
-	class UScene;
-	class UTextContext;
-	class U3dMouseListener;
-}
+	class URetrieverBank;
+	class UGlobalRetriever;
+	class UMoveContainer;
+};
 
-extern NLMISC::CConfigFile		ConfigFile;
+extern NLPACS::URetrieverBank		*RetrieverBank;
+extern NLPACS::UGlobalRetriever		*GlobalRetriever;
+extern NLPACS::UMoveContainer		*MoveContainer;
 
-extern NL3D::UDriver			*Driver;
-extern NL3D::UScene				*Scene;
-extern NL3D::UTextContext		*TextContext;
-extern NL3D::U3dMouseListener	*MouseListener;
+void	initPACS();
 
-#endif // CLIENT_H
+void	releasePACS();
 
-/* End of client.h */
+#endif // PACS_H
+
+/* End of pacs.h */

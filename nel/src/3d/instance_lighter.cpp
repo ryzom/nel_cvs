@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.10 2002/03/14 10:16:17 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.11 2002/03/14 18:07:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -428,7 +428,7 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 				// Input file
 				CIFile inputFile;
 
-				if (inputFile.open (name))
+				if (!name.empty() && inputFile.open (name))
 				{
 					// Load it
 					CShapeStream stream;
@@ -1533,7 +1533,7 @@ void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInsta
 					// Input file
 					CIFile inputFile;
 
-					if (inputFile.open (name))
+					if (!name.empty() && inputFile.open (name))
 					{
 						// Load it
 						CShapeStream stream;

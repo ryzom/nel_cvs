@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.71 2004/04/27 12:13:14 vizerie Exp $
+ * $Id: driver.h,v 1.72 2004/06/02 16:35:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -989,8 +989,8 @@ public:
 	  * adressing mode and a color op.
 	  * NB : EMBM may not be supported by all stages.
 	  *
-	  * if embm unit is at last stage, it operates on texture at previous stage
-	  * otherwise it operates on texture at first stage
+	  * if embm unit is at last last stage, it operates on texture at first stage
+	  * otherwise it operates on texture at next stage
 	  */
 
 	// @{

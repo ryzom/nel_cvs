@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.27 2002/06/13 16:27:06 corvazier Exp $
+ * $Id: move_container.cpp,v 1.28 2002/06/13 16:37:01 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1801,7 +1801,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 		// Get the world image
 		CPrimitiveWorldImage *wI = ((CMovePrimitive*)primitive)->getWorldImage (0);
 
-		bool found;
+		CCollisionOTInfo *firstCollision = NULL;
 		do
 		{
 			// Update the primitive
@@ -1816,11 +1816,11 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 			CCollisionOTStaticInfo staticColInfo;
 			CCollisionOTDynamicInfo dynamicColInfoWI0;
 			CCollisionOTDynamicInfo dynamicColInfoWI;
-			CCollisionOTInfo *firstCollision = NULL;
-			found = evalOneTerrainCollision (beginTime, (CMovePrimitive*)primitive, worldImage, false, testMoveValid, &staticColInfo);
+
+			firstCollision = NULL;
 
 			// If collision found, note it is on the landscape
-			if (found)
+			if (evalOneTerrainCollision (beginTime, (CMovePrimitive*)primitive, worldImage, false, testMoveValid, &staticColInfo))
 			{
 				firstCollision = &staticColInfo;
 			}
@@ -1891,7 +1891,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 			beginTime = collisionTime;
 		}
-		while (found);
+		while (firstCollision);
 	}
 	else
 		return false;

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.40 2003/10/23 09:21:37 vizerie Exp $
+ * $Id: particle_system.h,v 1.41 2003/11/06 14:49:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,7 +168,7 @@ public:
 		const NLMISC::CMatrix &getSysMat(void) const { return _SysMat; }
 
 		/// return the previous matrix of the system
-		const NLMISC::CMatrix &getOldSysMat(void) const { return _SysMat; }
+		const NLMISC::CMatrix &getOldSysMat(void) const { return _OldSysMat; }
 
 		/// return the inverted matrix of the system
 		const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat; } 

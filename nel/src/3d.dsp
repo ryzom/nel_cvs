@@ -2145,6 +2145,10 @@ SOURCE=.\3d\ps_misc.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\3d\ps_spawn_info.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_util.cpp
 # End Source File
 # Begin Source File

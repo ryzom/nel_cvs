@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.20 2003/01/08 15:38:42 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.21 2003/02/06 09:09:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,14 +251,18 @@ public:
 	virtual void		setBackgroundFilterFades(const TBackgroundFilterFades &backgroundFilterFades) = 0;
 	virtual const TBackgroundFilterFades &getBackgroundFilterFades() = 0;
 
+	/// Deprecated
 	virtual void		loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+	/// Deprecated
 	virtual void		loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+	/// Deprecated
 	virtual void		loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region) = 0;
+	virtual void		loadBackgroundAudioFromPrimitives(const NLLIGO::IPrimitive &audioRoot) =0;
 	virtual void		loadBackgroundSound (const std::string &continent) = 0;
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
 
-	virtual void		getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
+	virtual void		getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.14 2004/04/01 19:09:23 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.15 2004/04/27 12:07:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,8 +159,8 @@ public:
 	  */
 	void			enableVertexAttribArrayForEXTVertexShader(uint glIndex, bool enable, uint *variants);	
 
-	// special version for ARB_vertex_program
-	void			enableVertexAttribArrayARB(uint glIndex, bool enable);	
+	// special version for ARB_vertex_program used with ARB_vertex_buffer or ATI_vertex_attrib_array_object
+	void			enableVertexAttribArrayARB(uint glIndex, bool enable);		
 
 	// @}
 	

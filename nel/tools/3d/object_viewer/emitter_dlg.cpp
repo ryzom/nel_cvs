@@ -155,7 +155,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	_PeriodDlg->setSchemeWrapper(&_PeriodWrapper) ;
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_EMISSION_PERIOD)) ;
 	_PeriodDlg->init(bmh, posX, posY, this) ;
-	posY += 80 ;
+	posY += 120 ;
 
 	// setup the dialog that helps tuning the number of particle being emitted at a time
 
@@ -165,7 +165,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	_GenNbDlg->setSchemeWrapper(&_GenNbWrapper) ;
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_EMISSION_QUANTITY)) ;
 	_GenNbDlg->init(bmh, posX, posY, this) ;
-	posY += 80 ;
+	posY += 120 ;
 
 	if (dynamic_cast<NL3D::CPSModulatedEmitter *>(_Emitter))
 	{
@@ -175,7 +175,7 @@ BOOL CEmitterDlg::OnInitDialog()
 		_StrenghtModulateDlg->setSchemeWrapper(&_ModulatedStrenghtWrapper) ;
 		bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_MODULATE_STRENGHT)) ;
 		_StrenghtModulateDlg->init(bmh, posX, posY, this) ;
-		posY += 80 ;
+		posY += 120 ;
 	}
 
 	m_UseSpeedBasis = _Emitter->isSpeedBasisEmissionEnabled() ;

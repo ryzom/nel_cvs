@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.18 2001/05/31 09:34:15 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.19 2001/06/12 08:21:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 
 	_Touch|= IDRV_VF_TOUCHED_VERTEX_FORMAT;
 
+	uint8 oldVertexSize = _VertexSize ;
 	_VertexSize=0;
 	offset=0;
 	_Flags=0;
@@ -144,6 +145,9 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 		_PaletteSkinOff=_VertexSize;
 		_VertexSize+=sizeof(CPaletteSkin);
 	}
+
+	// compute new capacity
+	_Capacity = floorf(_Capacity * (float(oldVertexSize) / _VertexSize)) ;
 
 	return(true);
 }

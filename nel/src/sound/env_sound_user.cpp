@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.7 2001/07/18 17:14:35 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.8 2001/07/19 12:50:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,10 +55,12 @@ CEnvSoundUser::~CEnvSoundUser()
 		delete (*ipe);
 	}
 
-	if ( _Source != NULL )
+	vector<IPlayable*>::iterator ipp;
+	for ( ipp=_SrcBank.begin(); ipp!=_SrcBank.end(); ++ipp )
 	{
-		delete _Source;
+		delete (*ipp);
 	}
+
 	if ( _BoundingShape != NULL )
 	{
 		delete _BoundingShape;
@@ -95,7 +97,11 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 		// Set the position which was not serialized
 		if ( (_Source!=NULL) && (_BoundingShape != NULL) )
 		{
-			_Source->moveTo( _BoundingShape->getCenter() );
+			vector<IPlayable*>::iterator ipp;
+			for ( ipp=_SrcBank.begin(); ipp!=_SrcBank.end(); ++ipp )
+			{
+				(*ipp)->moveTo( _BoundingShape->getCenter() );
+			}
 		}
 
 		// Init the source (not transition)
@@ -103,14 +109,21 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 		{
 			if ( (_Source != NULL) )
 			{
+				vector<IPlayable*>::iterator ipp;
 				if ( _BoundingShape != NULL )
 				{
-					_Source->initPos( const_cast<CVector*>(&(_BoundingShape->getCenter())) );
+					for ( ipp=_SrcBank.begin(); ipp!=_SrcBank.end(); ++ipp )
+					{
+						(*ipp)->initPos( const_cast<CVector*>(&(_BoundingShape->getCenter())) );
+					}
 				}
 				else
 				{
 					// The world envsound will be heard at the listener
-					_Source->initPos( &CAudioMixerUser::instance()->getListenPosVector() );
+					for ( ipp=_SrcBank.begin(); ipp!=_SrcBank.end(); ++ipp )
+					{
+						(*ipp)->initPos( &CAudioMixerUser::instance()->getListenPosVector() );
+					}
 				}
 			}
 		}
@@ -158,14 +171,15 @@ void			CEnvSoundUser::selectEnv( const std::string& tag )
 	{
 		if ( _Tags[i] == tag )
 		{
+			_Source->enable( false, 1.0f );
 			_Source = _SrcBank[i];
 			nldebug( "AM: EnvSound: Environment changed to %s", tag.c_str() );
+			CAudioMixerUser::instance()->getEnvSounds()->recompute();
 			return;
 		}
 	}
 	nldebug( "AM: EnvSound: Environment %s not found", tag.c_str() );
 	// Don't change _Source if not found
-
 }
 
 

@@ -1,28 +1,7 @@
-/** \file resource.h
- * <File description>
- *
- * $Id: resource.h,v 1.1 2001/04/26 16:37:32 corvazier Exp $
- */
-
-/* Copyright, 2000 Nevrax Ltd.
- *
- * This file is part of NEVRAX NEL.
- * NEVRAX NEL is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
-
- * NEVRAX NEL is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with NEVRAX NEL; see the file COPYING. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
- */
-
+//{{NO_DEPENDENCIES}}
+// Microsoft Developer Studio generated include file.
+// Used by tile_utility.rc
+//
 #define IDS_LIBDESCRIPTION              1
 #define IDS_CATEGORY                    2
 #define IDS_CLASS_NAME                  3
@@ -38,6 +17,7 @@
 #define IDC_TILE_COUNT1                 1004
 #define IDC_TILE_COUNT2                 1005
 #define IDC_TILE_COUNT3                 1006
+#define IDC_VERSION                     1007
 #define IDD_RGBMULT                     1059
 #define IDC_MULT_TEX1                   1214
 #define IDC_MULT_TEX2                   1215

@@ -55,7 +55,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
+# ADD LINK32 maxscrpt.lib version.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PreLink_Desc=Change version number
+PreLink_Cmds=buildinc version.ver nel_patch_converter.rc	rc /l 0x40c /fo"Release/nel_patch_converter.res" /d "NDEBUG" nel_patch_converter.rc
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Debug"
 
@@ -82,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
+# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
 
 !ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Hybrid"
 
@@ -108,7 +113,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 delayimp.lib edmodel.lib mnmath.lib acap.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /nodefaultlib:"msvcrtd.lib" /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
+# ADD LINK32 delayimp.lib edmodel.lib mnmath.lib acap.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /nodefaultlib:"msvcrtd.lib" /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /pdbtype:sept /libpath:"C:\3dsmax3_1\Maxsdk\lib"
 # SUBTRACT LINK32 /nodefaultlib
 
 !ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 ReleaseDebug"
@@ -136,7 +141,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
-# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
+# ADD LINK32 maxscrpt.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib /nologo /base:"0x105b0000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1\plugins\nelconvertpatch.dlm" /libpath:"C:\3dsmax3_1\Maxsdk\lib" /release
 
 !ENDIF 
 
@@ -146,31 +151,6 @@ LINK32=link.exe
 # Name "nel_patch_converter - Win32 Debug"
 # Name "nel_patch_converter - Win32 Hybrid"
 # Name "nel_patch_converter - Win32 ReleaseDebug"
-# Begin Source File
-
-SOURCE=..\nel_export\checkversion.cpp
-
-!IF  "$(CFG)" == "nel_patch_converter - Win32 Release"
-
-# SUBTRACT CPP /YX
-
-!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 Hybrid"
-
-# SUBTRACT CPP /YX
-
-!ELSEIF  "$(CFG)" == "nel_patch_converter - Win32 ReleaseDebug"
-
-# SUBTRACT CPP /YX
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\nel_export\checkversion.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\DllEntry.cpp

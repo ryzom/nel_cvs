@@ -1,7 +1,7 @@
 /** \file po2rpo.h
  * <File description>
  *
- * $Id: PO2RPO.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: PO2RPO.h,v 1.2 2001/08/10 07:54:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "istdplug.h"
 #include "iparamb2.h"
 #include "iparamm2.h"
-#include "..\nel_export\checkversion.h"
 
 #include "meshadj.h"
 
@@ -113,14 +112,6 @@ class PO2RPOClassDesc:public ClassDesc2 {
 	int 			IsPublic() {return 1;}
 	void *			Create(BOOL loading = FALSE) 
 	{
-		// Check version
-		static bool bPassed=false;
-		if (!bPassed)
-		{
-			bPassed=true;
-			CheckPluginVersion ("plugins max\\plugins\\nelconvertpatch.dlm");
-		}
-
 		return new PO2RPO();
 	}
 	const TCHAR *	ClassName() {return "NeLConvert";}

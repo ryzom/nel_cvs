@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 101
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 116
 STYLE WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -37,6 +37,7 @@ BEGIN
     LTEXT           "Static",IDC_TILE_COUNT1,10,45,85,8
     LTEXT           "Static",IDC_TILE_COUNT2,10,55,85,8
     LTEXT           "Static",IDC_TILE_COUNT3,10,65,85,8
+    CTEXT           "Can't load version",IDC_VERSION,10,100,85,8
 END
 
 IDD_RGBMULT DIALOGEX 0, 0, 217, 133
@@ -79,7 +80,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 101
         TOPMARGIN, 7
-        BOTTOMMARGIN, 94
+        BOTTOMMARGIN, 109
     END
 
     IDD_RGBMULT, DIALOG
@@ -123,7 +124,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
+ FILEVERSION 1, 0, 0, 8
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -140,7 +141,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "\0"
-            VALUE "FileVersion", "3.0.0.0\0"
+            VALUE "FileVersion", "1, 0, 0, 8\0"
             VALUE "InternalName", "Tile_utility\0"
             VALUE "LegalCopyright", "\0"
             VALUE "OriginalFilename", "Tile_utility.dlu\0"

@@ -26,13 +26,11 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 81
+IDD_PANEL DIALOG DISCARDABLE  0, 0, 108, 17
 STYLE WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif"
 BEGIN
-    EDITTEXT        ID_TST,10,45,85,20,ES_AUTOHSCROLL
-    PUSHBUTTON      "Convert PatchMesh to RykolPatchMesh",ID_CVT,5,10,95,20,
-                    BS_MULTILINE
+    CTEXT           "Can't read version",IDC_VERSION,10,5,90,10
 END
 
 
@@ -49,7 +47,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 101
         TOPMARGIN, 7
-        BOTTOMMARGIN, 74
+        BOTTOMMARGIN, 10
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -88,7 +86,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
+ FILEVERSION 1, 0, 0, 8
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -107,7 +105,7 @@ BEGIN
             VALUE "Comments", "TECH: \0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "PatchMesh to RykolPatchMesh\0"
-            VALUE "FileVersion", "3.0.0.0\0"
+            VALUE "FileVersion", "1, 0, 0, 8\0"
             VALUE "InternalName", "PatchMesh to RykolPatchMesh\0"
             VALUE "LegalCopyright", "\0"
             VALUE "LegalTrademarks", "\0"

@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.4 2002/02/20 16:36:12 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.5 2002/05/28 16:57:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,10 +163,14 @@ protected:
 	/// the UVs for each texture in the group
 	TFourUVList _TexUVs;
 
-
 	// Copy this class attributes from src; Used by the = operator and the copy ctor
 	void duplicate(const CTextureGrouped &src);
 
+	// make textures as a group of dummy. This is used when textures formet are incompatible
+	void makeDummies(CSmartPtr<ITexture> *textureTab, uint nbTex);
+
+	// display a warning to tell that a set of grouped textures are incompatibles
+	void displayIncompatibleTextureWarning(CSmartPtr<ITexture> *textureTab, uint nbTex);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.10 2002/03/11 13:40:17 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.11 2002/05/28 16:57:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,9 +147,13 @@ void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex)
 {
 	nlassert(nbTex > 0);	
 	
-	#ifdef NL_DEBUG
-		nlassert(areValid(textureTab, nbTex));
-	#endif
+	
+	if (!areValid(textureTab, nbTex))
+	{
+		displayIncompatibleTextureWarning(textureTab, nbTex);		
+		makeDummies(textureTab, nbTex);
+	}
+	
 	
 	// Generate the first texture to get the size	
 	uint width, height;
@@ -302,7 +306,7 @@ void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			ptTex = *it;
 			f.serialPolyPtr(ptTex);
 		}		
-	}
+	}	
 }
 
 ///=====================================================================================================
@@ -317,5 +321,34 @@ void CTextureGrouped::release()
 		}
 	}
 }
+
+///=====================================================================================================
+void CTextureGrouped::makeDummies(CSmartPtr<ITexture> *textureTab,uint nbTex)
+{
+ 	for(uint k = 0; k < nbTex; ++k)
+	{
+		textureTab[k] = new CTextureFile("DummyTex"); // well this shouldn't exist..
+	}	
+}
+
+///=====================================================================================================
+void CTextureGrouped::displayIncompatibleTextureWarning(CSmartPtr<ITexture> *textureTab,uint nbTex)
+{
+	nlwarning("=======================================================");
+	nlwarning("CTextureGrouped : found incompatible textures, that differs by size or format :"	);
+	for(uint k = 0; k < nbTex; ++k)
+	{
+		if (textureTab[k])
+		{		
+			nlwarning((textureTab[k]->getShareName()).c_str());
+		}
+		else
+		{
+			nlwarning("NULL Texture found");
+		}
+	}
+	nlwarning("=======================================================");
+}
+
 
 } // NL3D

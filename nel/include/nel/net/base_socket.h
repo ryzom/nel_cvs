@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.10 2000/10/09 08:46:29 cado Exp $
+ * $Id: base_socket.h,v 1.11 2000/10/09 14:09:03 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -33,11 +33,10 @@ namespace NLNET {
 
 
 /**
- * \exception ESocket Network exceptions.
+ * Network exceptions
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
-
  */
 class ESocket : public Exception
 {
@@ -66,7 +65,7 @@ protected:
 };
 
 
-/// \exception ESocketConnectionClosed Exception raised when a connection is gracefully closed by peer
+/// Exception raised when a connection is gracefully closed by peer
 class ESocketConnectionClosed : public ESocket
 {
 public:

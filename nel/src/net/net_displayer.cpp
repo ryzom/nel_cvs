@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: net_displayer.cpp,v 1.5 2000/10/06 15:27:27 cado Exp $
+ * $Id: net_displayer.cpp,v 1.6 2000/10/09 14:09:03 cado Exp $
  *
  * Implementation of CNetDisplayer
  */
@@ -77,7 +77,7 @@ void CNetDisplayer::display( const std::string& str )
 			//	_Server.close();
 			//}
 		}
-		CMessage msg( false );
+		CMessage msg( "", false );
 		msg.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
 		msg.serial( const_cast<std::string&>(str) );
 		_Server.send( msg );

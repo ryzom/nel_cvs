@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.h,v 1.10 2000/10/06 15:44:13 cado Exp $
+ * $Id: message.h,v 1.11 2000/10/09 14:09:03 cado Exp $
  *
  * Interface of CMessage
  */
@@ -80,7 +80,7 @@ class CMessage : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMessage( bool inputStream=false, uint32 defaultcapacity=0 );
+	CMessage( std::string type="", bool inputStream=false, uint32 defaultcapacity=0 );
 
 	/// Copy constructor
 	CMessage( const CMessage& other );

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.14 2000/10/06 15:27:27 cado Exp $
+ * $Id: socket.cpp,v 1.15 2000/10/09 14:09:03 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -64,7 +64,8 @@ CSocket::CSocket( bool reliable, bool logging ) :
 	CBaseSocket( reliable, logging ),
 	_DataAvailable( false ),
 	_SenderId( 0 ),
-	_IsListening( false )
+	_IsListening( false ),
+	_OwnerClient( NULL )
 {
 }
 
@@ -76,7 +77,8 @@ CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) 
 	CBaseSocket( sock, remoteaddr ),
 	_DataAvailable( false ),
 	_SenderId( 0 ),
-	_IsListening( false )
+	_IsListening( false ),
+	_OwnerClient( NULL )
 {
 }
 
@@ -168,7 +170,7 @@ void CSocket::packMessage( CMessage& message )
  */
 CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 {
-	CMessage alldata( false, msg.length()+CMessage::maxHeaderLength() );
+	CMessage alldata( "", false, msg.length()+CMessage::maxHeaderLength() );
 
 	// 1. Write message type
 	packMessage( msg );
@@ -227,7 +229,7 @@ CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 	alldata.serial( msgsize );
 
 	// Set message type
-	CMessage msg( true );
+	CMessage msg( "", true );
 	if ( msgtype < 0 )
 	{
 		msg.setType( std::string(msgname) );
@@ -370,7 +372,7 @@ bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESock
 {
 	// Receive incoming message
 	uint32 msgtotalsize = CMessage::maxLength();
-	CMessage alldata( true, msgtotalsize );
+	CMessage alldata( "", true, msgtotalsize );
 	if ( CBaseSocket::receivedFrom( alldata.bufferToFill( msgtotalsize ), msgtotalsize, addr ) )
 	{
 		message = decode( alldata );

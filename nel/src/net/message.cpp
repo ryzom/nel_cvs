@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: message.cpp,v 1.9 2000/10/06 15:44:13 cado Exp $
+ * $Id: message.cpp,v 1.10 2000/10/09 14:09:03 cado Exp $
  *
  * Implementation of CMessage
  */
@@ -36,12 +36,17 @@ uint32	CMessage::_MaxHeaderLength = 64;
 /*
  * Initialization constructor
  */
-CMessage::CMessage( bool inputStream, uint32 defaultcapacity ) :
+CMessage::CMessage( std::string name, bool inputStream, uint32 defaultcapacity ) :
 	NLMISC::IStream( inputStream, true ),
 	_MsgType( 0 )
 {
 	_Buffer.reserve( defaultcapacity );
 	_BufPos = _Buffer.begin();
+
+	if ( name != "" )
+	{
+		setType( name );
+	}
 }
 
 

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.12 2000/10/06 15:27:27 cado Exp $
+ * $Id: msg_socket.cpp,v 1.13 2000/10/09 14:09:03 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -88,6 +88,7 @@ CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const 
 {
 	init( callbackarray, arraysize );
 	_ClientSock = new CSocket();
+	_ClientSock->_OwnerClient = this;
 	_ClientSock->_IsListening = false;
 	_ClientSock->connect( servaddr );
 	addNewConnection( _ClientSock );
@@ -234,8 +235,7 @@ void CMsgSocket::update()
 					CSocket& sock = accept( (*ilps)->descriptor() );
 					CInetAddress addr = sock.remoteAddr();
 					msgout.serial( addr );
-					CMessage msgin( true );
-					msgin.setType( "C" );
+					CMessage msgin( "C", true );
 					msgin.fill( msgout.buffer(), msgout.length() );
 					processReceivedMessage( msgin, sock );
 				}
@@ -244,7 +244,7 @@ void CMsgSocket::update()
 					try
 					{
 						// Receive message from a connected client
-						CMessage msg( true );
+						CMessage msg( "", true );
 						(*ilps)->receive( msg );
 						if ( msgIsBinding( msg ) )
 						{
@@ -262,9 +262,13 @@ void CMsgSocket::update()
 						// Handle a connection closure (gracefull (if ESocketConnectionClosed) or not), when
 						// receive() has thrown an exception.
 						(*ilps)->close();
-						CMessage msg;
-						msg.setType( "D" );
+						CMessage msg( "D" );
 						processReceivedMessage( msg, **ilps );
+						if ( (*ilps)->_OwnerClient != NULL )
+						{
+							// If the socket is pointed by a client socket, neutralize its property _ClientSock
+							(*ilps)->_OwnerClient->_ClientSock = NULL;
+						}
 						delete (*ilps);
 						ilps = _Connections.erase( ilps );
 						erased = true;
@@ -328,7 +332,7 @@ bool CMsgSocket::getDataAvailableStatus()
 	}
 	else
 	{
-		SOCKET descmax;
+		SOCKET descmax = 0;
 		fd_set readers, writers;
 		FD_ZERO (&readers);
 		FD_ZERO (&writers);

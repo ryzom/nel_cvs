@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.14 2000/10/06 15:44:13 cado Exp $
+ * $Id: socket.h,v 1.15 2000/10/09 14:09:03 cado Exp $
  *
  * Interface for CSocket
  */
@@ -152,6 +152,7 @@ private:
 	bool			_DataAvailable; // can be modified only by CMsgSocket
 	TSenderId		_SenderId;		// the same
 	bool			_IsListening;	// the same
+	CMsgSocket		*_OwnerClient;	// the same
 
 };
 

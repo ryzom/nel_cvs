@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.11 2000/10/06 15:27:27 cado Exp $
+ * $Id: msg_socket.h,v 1.12 2000/10/09 14:09:03 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -57,6 +57,7 @@ typedef std::set<CPtCallbackItem> CSearchSet;
  * Call CMsgSocket::receive() every frame.
  * Several methods and members are static, so that only one "select" is done for all message sockets.
  *
+ * \todo cado Replace (TSenderId from) by something faster;
  * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
@@ -85,6 +86,14 @@ public:
 
 	/// Send a message (client mode only)
 	void			send( CMessage& outmsg );
+
+	/** Returns true if the client is still connected (client mode only).
+	 * It becomes false when the remote server disconnects the client.
+	 */
+	bool			connected()
+	{
+		return (_ClientSock != NULL);
+	}
 
 	/// Send a message to the specified host id
 	static void		send( CMessage& outmsg, TSenderId id );

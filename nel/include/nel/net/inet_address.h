@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: inet_address.h,v 1.9 2000/10/09 08:46:29 cado Exp $
+ * $Id: inet_address.h,v 1.10 2000/10/09 14:09:03 cado Exp $
  *
  * Interface for CInetAddress
  */
@@ -49,6 +49,7 @@ class ESocket;
 /**
  * Internet address (IP + port).
  * The structure sockaddr_in is internally in network byte order
+ * \todo cado Allow to use addreses without hostname
  * \todo cado Test to check if byte ordering is ok.
  * \author Olivier Cado
  * \author Nevrax France

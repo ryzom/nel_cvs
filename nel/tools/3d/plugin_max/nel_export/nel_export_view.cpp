@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.20 2002/02/12 15:46:18 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.21 2002/02/15 17:41:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 {
 	// Register classes
 	// done in dllentry registerSerial3d ();
+
 	CScene::registerBasics ();
 	
 	// Create an object viewer
@@ -393,6 +394,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		ProgBar.uninitProgressBar();
 		opt.FeedBack = NULL;
+	
 
 		// *******************
 		// * Export instance Group.

@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.cpp
  * <File description>
  *
- * $Id: play_list_manager_user.cpp,v 1.6 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: play_list_manager_user.cpp,v 1.7 2003/04/08 23:11:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,9 +65,19 @@ void		CPlayListManagerUser::deletePlayList(UPlayList *playList)
 void		CPlayListManagerUser::animate(TGlobalAnimationTime	time)
 {
 	NL3D_MEM_PLAYLIST_MANAGER
-	H_AUTO( NL3D_Render_PlayListMgr_Animate );
-
+		H_AUTO( NL3D_Render_PlayListMgr_Animate );
+	
 	_PlayListManager.animate(time);
+}
+
+
+// ***************************************************************************
+void		CPlayListManagerUser::setup(TGlobalAnimationTime	time)
+{
+	NL3D_MEM_PLAYLIST_MANAGER
+	H_AUTO( NL3D_Render_PlayListMgr_Setup );
+	
+	_PlayListManager.setup(time);
 }
 
 

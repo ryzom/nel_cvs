@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * <File description>
  *
- * $Id: play_list_manager.cpp,v 1.6 2002/02/28 12:59:50 besson Exp $
+ * $Id: play_list_manager.cpp,v 1.7 2003/04/08 23:11:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,31 @@ void	CPlayListManager::animate(TGlobalAnimationTime time)
 			// animate!!
 			node->PlayList->setupMixer(*node->ChannelMixer, time);
 			node->ChannelMixer->eval(false);
+			it++;
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CPlayListManager::setup(TGlobalAnimationTime time)
+{
+	TPlayListList::iterator		it;
+	
+	for(it=_List.begin();it!=_List.end();)
+	{
+		CNode	*node= &(it->second);
+		// Test refPtrs.
+		if( node->PlayList==NULL || node->ChannelMixer==NULL)
+		{
+			// erase it from map.
+			TPlayListList::iterator		itDel= it++;
+			_List.erase(itDel);
+		}
+		else
+		{
+			// animate!!
+			node->PlayList->setupMixer(*node->ChannelMixer, time);
 			it++;
 		}
 	}

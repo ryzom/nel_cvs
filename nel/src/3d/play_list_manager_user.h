@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.h
  * <File description>
  *
- * $Id: play_list_manager_user.h,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: play_list_manager_user.h,v 1.6 2003/04/08 23:11:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,12 @@ public:
 	 */
 	virtual	void		animate(TGlobalAnimationTime	time);
 
+
+	/** Setup all the playlist.
+	 * NB: all AnimationTime are in second.
+	 */
+	virtual	void		setup(TGlobalAnimationTime	time);
+	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file play_list_manager.h
  * <File description>
  *
- * $Id: play_list_manager.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: play_list_manager.h,v 1.5 2003/04/08 23:11:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,11 @@ public:
 	 * If a playlist/channelmixer has been deleted (RefPtr), the node is removed from the list.
 	 */
 	void	animate(TGlobalAnimationTime time);
+	
+	/** steup all the playlist: setupMixer() the channelMixer.
+	 * If a playlist/channelmixer has been deleted (RefPtr), the node is removed from the list.
+	 */
+	void	setup(TGlobalAnimationTime time);
 
 	/** Perform a deletion of all pair playlist channel mixer
 	 */

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.26 2002/03/13 10:59:41 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.27 2002/03/13 11:12:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "../nel_patch_lib/nel_patch_mesh.h"
 
 using namespace NLMISC;
+
+#define NEL_OBJET_NAME_DATA 1970
 
 // ***************************************************************************
 
@@ -694,7 +696,7 @@ int CALLBACK InstanceDialogCallback (
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
 
-			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_SHAPE), currentParam->InstanceShape.c_str());
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_SHAPE), currentParam->InstanceShape.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
 
@@ -722,7 +724,7 @@ int CALLBACK InstanceDialogCallback (
 					case IDOK:
 						{
 							char tmp[512];
-							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_SHAPE), tmp, 512);
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_SHAPE), tmp, 512);
 							currentParam->InstanceShape=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;

@@ -1,7 +1,7 @@
 /** \file stdgeorges.h
  * Georges system files
  *
- * $Id: stdgeorges.h,v 1.2 2002/05/17 06:28:04 corvazier Exp $
+ * $Id: stdgeorges.h,v 1.3 2004/07/19 08:16:33 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
 #include <math.h>
 #include <list>
 #include <map>
 #include <vector>
 #include <string>
 #include <time.h>
-#include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 

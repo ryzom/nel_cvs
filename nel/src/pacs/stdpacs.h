@@ -1,4 +1,6 @@
 
+#include "nel/misc/types_nl.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -16,7 +18,6 @@
 #include <utility>
 #include <deque>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/stream.h"

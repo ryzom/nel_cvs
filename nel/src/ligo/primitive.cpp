@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.34 2004/07/15 13:15:42 ledorze Exp $
+ * $Id: primitive.cpp,v 1.35 2004/07/19 08:15:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/ligo/primitive.h"
 #include "nel/ligo/ligo_config.h"

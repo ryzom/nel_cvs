@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.10 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: bit_set.cpp,v 1.11 2003/01/20 14:17:32 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,10 +113,6 @@ void	CBitSet::resizeNoReset(uint numBits, bool value)
 	// Set new bit to value
 	for (uint i=oldNum; i<(uint)NumBits; i++)
 		set(i, value);
-}
-uint	CBitSet::size() const
-{
-	return NumBits;
 }
 void	CBitSet::setAll()
 {

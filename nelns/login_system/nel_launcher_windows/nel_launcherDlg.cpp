@@ -71,8 +71,10 @@ BOOL CNel_launcherDlg::OnInitDialog()
 
 	//CWebBrowser2 m_browser - member variable  
 
+	// load the pleasewait html page if available
 	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
-	m_explore.Navigate(PleaseWaitFullPath.c_str(), NULL, NULL, NULL, NULL);
+	if (NLMISC::CFile::isExists (PleaseWaitFullPath))
+		m_explore.Navigate(PleaseWaitFullPath.c_str(), NULL, NULL, NULL, NULL);
 
 	ConfigFile.load ("nel_launcher.cfg");
 

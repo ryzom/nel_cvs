@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.9 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.10 2004/02/20 16:28:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -492,10 +492,28 @@ CPSMaterial::CPSMaterial()
 ///===================================================================================
 void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);	
+	sint ver = f.serialVersion(2);	
 	TBlendingMode m = getBlendingMode();
 	f.serialEnum(m);
 	setBlendingMode(m);	
+	if (ver >= 2)
+	{	
+		bool zTest = isZTestEnabled();
+		f.serial(zTest);
+		enableZTest(zTest);
+	}
+}
+
+///===================================================================================
+void CPSMaterial::enableZTest(bool enabled)
+{
+	_Mat.setZFunc(enabled ? CMaterial::less : CMaterial::always);
+}
+
+///===================================================================================
+bool CPSMaterial::isZTestEnabled() const
+{
+	return _Mat.getZFunc() != CMaterial::always;
 }
 
 ///===================================================================================

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.12 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.13 2004/02/20 16:28:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -828,6 +828,10 @@ public:
 	 */
 	void forceTexturedMaterialStages(uint numStages);
 
+	// enable / disable z-test (default is enabled)
+	void enableZTest(bool enabled);
+	// test if z test is enabled
+	bool isZTestEnabled() const;
 	
 protected:
 	CMaterial _Mat;		

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.27 2003/08/22 09:01:47 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.28 2004/02/20 16:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/ps_emitter.h"
 #include "3d/ps_zone.h"
 #include "3d/particle_system_model.h"
+
 
 
 #include "texture_chooser.h"
@@ -109,14 +110,21 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	// has the particle a material ?
 	if (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))
 	{
+		// blending mode
 		m_BlendingMode.SetCurSel((uint) (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))->getBlendingMode() );
+		// z-test
+		bool ztest = dynamic_cast<NL3D::CPSMaterial *>(_Bindable)->isZTestEnabled();
+		((CButton *) GetDlgItem(IDC_ZTEST))->SetCheck(ztest ? BST_CHECKED : BST_UNCHECKED);
 	}
 	else
 	{
 		m_BlendingMode.ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_BLENDING_MODE_STATIC)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_ZTEST)->ShowWindow(SW_HIDE);
 	}
 	GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_HIDE);
+	// enable disable z-test	
+	//
 	if (dynamic_cast<NL3D::CPSParticle *>(_Bindable))
 	{
 		NL3D::CPSParticle *p = (NL3D::CPSParticle *) _Bindable;
@@ -543,6 +551,7 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(IDC_NO_AUTO_LOD, OnNoAutoLod)
 	ON_BN_CLICKED(ID_GLOBAL_COLOR_LIGHTING, OnGlobalColorLighting)
 	ON_BN_CLICKED(IDC_ALIGN_ON_MOTION, OnAlignOnMotion)
+	ON_BN_CLICKED(IDC_ZTEST, OnZtest)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -682,4 +691,13 @@ void CLocatedBindableDialog::OnAlignOnMotion()
 			_MotionBlurWnd[k]->EnableWindow(enable);
 		}
 	}	
+}
+
+//***********************************************************************************
+void CLocatedBindableDialog::OnZtest() 
+{
+	UpdateData();
+	NL3D::CPSMaterial *mat = dynamic_cast<NL3D::CPSMaterial *>(_Bindable);
+	nlassert(mat);
+	mat->enableZTest(((CButton *) GetDlgItem(IDC_ZTEST))->GetCheck() != BST_UNCHECKED);
 }

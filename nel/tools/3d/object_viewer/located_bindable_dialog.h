@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.17 2003/08/22 09:01:47 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.18 2004/02/20 16:29:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,7 @@ protected:
 	afx_msg void OnNoAutoLod();
 	afx_msg void OnGlobalColorLighting();
 	afx_msg void OnAlignOnMotion();
+	afx_msg void OnZtest();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

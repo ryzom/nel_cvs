@@ -567,7 +567,9 @@ BEGIN
     CONTROL         "Global color lighting",ID_GLOBAL_COLOR_LIGHTING,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,7,19,70,11
     CONTROL         "Align on motion",IDC_ALIGN_ON_MOTION,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,82,21,67,8
+                    BS_AUTOCHECKBOX | WS_TABSTOP,82,21,57,8
+    CONTROL         "Z-Test",IDC_ZTEST,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    142,21,31,9
 END
 
 IDD_COLOR_EDIT DIALOG DISCARDABLE  0, 0, 226, 32

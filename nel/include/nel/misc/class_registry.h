@@ -1,7 +1,7 @@
-/** \file class_registry.cpp
+/** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.8 2001/05/21 16:58:50 cado Exp $
+ * $Id: class_registry.h,v 1.9 2002/02/20 18:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file collision_desc.h
+/** \file u_collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: u_collision_desc.h,v 1.3 2001/06/07 12:42:55 corvazier Exp $
+ * $Id: u_collision_desc.h,v 1.4 2002/02/20 18:05:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

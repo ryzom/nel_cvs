@@ -1,6 +1,6 @@
-/** \file zone.h
+/** \file character/zone.h
  *
- * $Id: zone.h,v 1.3 2001/03/26 11:28:07 chafik Exp $
+ * $Id: zone.h,v 1.4 2002/02/20 18:05:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

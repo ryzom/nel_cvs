@@ -1,7 +1,7 @@
-/** \file interpret_object_list.h
+/** \file interpret_object_manager.h
  * Class for define an agent manager.
  *
- * $Id: interpret_object_manager.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_object_manager.h,v 1.7 2002/02/20 18:05:16 lecroart Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *

@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file bool_operator.h
  *	0 order logic operators base class 
  *
- * $Id: bool_operator.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: bool_operator.h,v 1.7 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file interpret_object_operator.h
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.19 2001/12/05 10:00:35 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.20 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

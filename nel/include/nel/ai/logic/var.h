@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file var.h
  *	Base variable class for first order and fuzzy logic
  *
- * $Id: var.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: var.h,v 1.6 2002/02/20 18:05:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.11 2002/01/18 10:04:04 berenguier Exp $
+ * $Id: u_driver.h,v 1.12 2002/02/20 18:04:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,14 +131,6 @@ public:
 	// @}
 
 
-
-
-	/// \name Window / driver management.
-	// @{
-
-	/// Enum All Fullscreen modes.
-	virtual TModeList		enumModes()=0;
-
 	/// \name Disable Hardware Feature 
 	/**	Disable some Feature that may be supported by the Hardware 
 	 *	Call before setDisplay() to work properly
@@ -148,6 +140,13 @@ public:
 	virtual void			disableHardwareVertexArrayAGP()=0;
 	virtual void			disableHardwareTextureShader()=0;
 	// @}
+
+
+	/// \name Window / driver management.
+	// @{
+
+	/// Enum All Fullscreen modes.
+	virtual TModeList		enumModes()=0;
 
 	/// create the window. call activate().
 	virtual	void			setDisplay(const CMode &mode) =0;

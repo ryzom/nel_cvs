@@ -1,7 +1,7 @@
-/** \file ident.h
+/** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.21 2002/01/03 15:05:40 chafik Exp $
+ * $Id: identtype.h,v 1.22 2002/02/20 18:04:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

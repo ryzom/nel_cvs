@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file varset.h
  *	Set of variables
  *
- * $Id: varset.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
+ * $Id: varset.h,v 1.5 2002/02/20 18:05:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

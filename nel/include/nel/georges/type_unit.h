@@ -1,7 +1,7 @@
-/** \file type_uint.h
+/** \file type_unit.h
  * Georges system files
  *
- * $Id: type_unit.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: type_unit.h,v 1.2 2002/02/20 18:05:28 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

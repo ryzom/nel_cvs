@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.4 2001/11/21 17:49:58 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.5 2002/02/20 18:04:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 
 	
 	/// \name System parameters
-	// @{
+	//@{
 
 		/** Set a user param of the system. Each user param must be >= 0 and < 1
 		  * The system must be present otherwise => nlassert	  
@@ -97,10 +97,10 @@ public:
 		  * \see isSystemPresent()
 		  */
 		virtual float		getUserParam		(uint index) const = 0;
-	// @}
+	//@}
 
 	///\name System validity
-		//{@
+	//@{
 		/** Test if the system is valid. A system is invalid when it should be destroyed.
 		  * It's then up to the system user to destroy it (thus avoiding invalid pointers...)
 		  * This usually happens when the system has been created with the flag 
@@ -154,9 +154,6 @@ public:
 			  * An assertion is raised if there is no emitter with the given ID.
 			  */
 			virtual void   removeByID(uint32 id) = 0;
-
-	 //@}
-
 	 //@}
 };
 

@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file operator.h
  *	Base class for operators
  *
- * $Id: operator.h,v 1.6 2001/06/14 10:23:31 chafik Exp $
+ * $Id: operator.h,v 1.7 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
-/** \file agentexport.h
+/** \file agentpack.h
  *
- * $Id: agentpack.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: agentpack.h,v 1.4 2002/02/20 18:04:49 lecroart Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *

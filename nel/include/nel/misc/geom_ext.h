@@ -1,7 +1,7 @@
-/** \file triangle_ext.h
+/** \file geom_ext.h
  * Set of extension of triangles (triangle with uv, color, uvcolor etc...)
  *
- * $Id: geom_ext.h,v 1.1 2001/02/28 14:31:35 berenguier Exp $
+ * $Id: geom_ext.h,v 1.2 2002/02/20 18:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

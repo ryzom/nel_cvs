@@ -1,7 +1,7 @@
-/** \file common.h
+/** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.35 2002/02/18 12:53:55 lecroart Exp $
+ * $Id: common.h,v 1.36 2002/02/20 18:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

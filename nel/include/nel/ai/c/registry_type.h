@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.16 2001/12/11 09:26:49 chafik Exp $
+ * $Id: registry_type.h,v 1.17 2002/02/20 18:04:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,7 @@ namespace NLAIC
 			_Bites = bites;
 			return *this;
 		}
+		//@}
 		
 		/// \name operator OR.
 		//@{
@@ -159,6 +160,7 @@ namespace NLAIC
 		//@}
 
 		/// \name operator RSHIFT.
+		//@{
 		CBinaryType &operator >>= (sint32 bites)
 		{
 			_Bites >>= bites;
@@ -168,7 +170,6 @@ namespace NLAIC
 		{			
 			return CBinaryType(_Bites >> bites);
 		}
-		//@}
 
 		///Not operator.
 		bool operator !()

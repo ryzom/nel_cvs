@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.19 2002/01/17 12:15:43 chafik Exp $
+ * $Id: codage.h,v 1.20 2002/02/20 18:05:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -374,9 +374,6 @@ namespace NLAISCRIPT
 			InputOutput = io;			
 		}
 
-		/// \name pure virtual method realize.		
-		//@{
-
 		/// \name IBasicInterface method.
 		//@{
 		const NLAIC::CIdentType &getType(void) const
@@ -420,7 +417,6 @@ namespace NLAISCRIPT
 		}
 		//@}
 
-		//@}
 		~CCodeContext()
 		{
 			if(InputOutput != NULL) InputOutput->release();
@@ -638,9 +634,6 @@ namespace NLAISCRIPT
 			return *_TableCode[_Ip++];
 		}					
 
-		/// \name pure virtual method realize.		<
-		//@{
-
 		/// \name ICodeBranche method.
 		//@{		
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(NLAIAGENT::IObjectIA &self);
@@ -675,8 +668,6 @@ namespace NLAISCRIPT
 		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();		
 		//@}
 		
-		//@}
-
 	};
 }
 #include "nel/ai/script/opcode.h"

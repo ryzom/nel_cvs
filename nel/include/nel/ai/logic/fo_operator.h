@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file fo_operator.h
  *	First order logic operators with forward and backward chaining
  *
- * $Id: fo_operator.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fo_operator.h,v 1.6 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

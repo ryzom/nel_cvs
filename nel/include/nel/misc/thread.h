@@ -1,7 +1,7 @@
-/** \file thread.h
+/** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.14 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: thread.h,v 1.15 2002/02/20 18:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

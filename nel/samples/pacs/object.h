@@ -1,7 +1,7 @@
-/** \file object.h
+/** \file net_layer5/object.h
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.h,v 1.1 2001/07/19 11:59:02 corvazier Exp $
+ * $Id: object.h,v 1.2 2002/02/20 18:07:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

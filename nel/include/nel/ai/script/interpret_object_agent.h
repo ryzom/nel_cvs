@@ -1,7 +1,7 @@
-/** \file interpret_object.h
+/** \file interpret_object_agent.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.22 2002/01/03 15:06:00 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.23 2002/02/20 18:05:16 lecroart Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *

@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file valueset.h
  *	Set of values
  *
- * $Id: valueset.h,v 1.6 2001/06/19 10:10:49 portier Exp $
+ * $Id: valueset.h,v 1.7 2002/02/20 18:05:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

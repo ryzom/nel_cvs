@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file boolval.h
  *	Base classes for boolean values (conditions, rules...)
  *
- * $Id: boolval.h,v 1.5 2001/06/19 10:10:49 portier Exp $
+ * $Id: boolval.h,v 1.6 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

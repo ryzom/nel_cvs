@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file bool_cond.h
  *	Base classes for simple and composed boolean conditions
  *
- * $Id: bool_cond.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: bool_cond.h,v 1.4 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

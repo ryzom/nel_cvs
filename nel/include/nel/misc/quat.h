@@ -1,7 +1,7 @@
-/** \file quaternion.h
+/** \file quat.h
  * CQuat class
  *
- * $Id: quat.h,v 1.5 2001/03/13 17:11:53 corvazier Exp $
+ * $Id: quat.h,v 1.6 2002/02/20 18:05:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

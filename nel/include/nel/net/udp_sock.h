@@ -1,7 +1,7 @@
 /** \file udp_sock.h
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.h,v 1.5 2001/10/09 09:34:34 cado Exp $
+ * $Id: udp_sock.h,v 1.6 2002/02/20 18:05:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ public:
 	/// Same as bind(uint16) but binds on a specified address/port (useful when the host has several addresses)
 	void				bind( const CInetAddress& addr );
 
+	//@}
 
 	/// @name Receiving data
 	//@{

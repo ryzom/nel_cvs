@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file fact.h
  *	First order logic facts
  *
- * $Id: fact.h,v 1.9 2001/07/19 13:19:54 portier Exp $
+ * $Id: fact.h,v 1.10 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file factbase.h
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.8 2001/07/19 13:19:54 portier Exp $
+ * $Id: factbase.h,v 1.9 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

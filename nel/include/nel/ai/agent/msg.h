@@ -1,7 +1,7 @@
-/** \file messagerie.h
+/** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.18 2001/12/04 12:53:08 chafik Exp $
+ * $Id: msg.h,v 1.19 2002/02/20 18:04:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

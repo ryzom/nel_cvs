@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.11 2001/10/24 16:37:16 chafik Exp $
+ * $Id: agent_timer.h,v 1.12 2002/02/20 18:04:49 lecroart Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -111,7 +111,6 @@ namespace NLAIAGENT
 
 		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
 		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
-		//@}
 
 		/// \name NLAIC::IBasicInterface method.
 		//@{

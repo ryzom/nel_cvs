@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file logic.h
  *	Includes all logic related files
  *
- * $Id: logic.h,v 1.4 2001/01/30 10:33:20 portier Exp $
+ * $Id: logic.h,v 1.5 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file goal_stack.cpp
+/** \file logic/goal_stack.h
  *	Base class for and agent's goals container and action selection mechanism.
  *
- * $Id: goal_stack.h,v 1.1 2001/07/04 08:59:42 portier Exp $
+ * $Id: goal_stack.h,v 1.2 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

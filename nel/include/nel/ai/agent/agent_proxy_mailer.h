@@ -1,7 +1,7 @@
-/** \file agent_server_mailer.h
+/** \file agent_proxy_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.15 2001/10/04 13:29:06 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.16 2002/02/20 18:04:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

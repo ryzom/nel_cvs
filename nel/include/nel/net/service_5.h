@@ -1,7 +1,7 @@
-/** \file service.h
+/** \file service_5.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.11 2002/02/19 13:14:38 lecroart Exp $
+ * $Id: service_5.h,v 1.12 2002/02/20 18:05:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

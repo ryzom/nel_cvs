@@ -1,8 +1,8 @@
-/** \file actor_script.h
+/** \file operator_script.h
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.26 2002/01/03 15:05:48 chafik Exp $
+ * $Id: operator_script.h,v 1.27 2002/02/20 18:05:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

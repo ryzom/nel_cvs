@@ -1,7 +1,7 @@
-/** \file file.cpp
+/** \file fo_assert.h
  *	Frst order logic assertions
  *
- * $Id: fo_assert.h,v 1.6 2001/06/01 14:49:45 portier Exp $
+ * $Id: fo_assert.h,v 1.7 2002/02/20 18:05:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

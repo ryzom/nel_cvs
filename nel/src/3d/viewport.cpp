@@ -1,7 +1,7 @@
 /** \file viewport.cpp
  * <File description>
  *
- * $Id: viewport.cpp,v 1.2 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: viewport.cpp,v 1.3 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,12 +24,13 @@
  */
 
 #include "nel/3d/viewport.h"
-#include "nel/3d/camera.h"
 #include "nel/misc/common.h"
 
 using namespace NLMISC;
 
-namespace NL3D {
+
+namespace NL3D
+{
 
 CViewport::CViewport()
 {

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.9 2001/02/12 17:01:32 corvazier Exp $
+ * $Id: transform.cpp,v 1.10 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,41 @@ void		CTransform::heritVisibility()
 		Visibility= CHrcTrav::Herit;
 	}
 }
+
+
+// ***************************************************************************
+void		CTransform::lookAt (const CVector& eye, const CVector& target, float roll)
+{
+	// Roll matrix
+	CMatrix rollMT;
+	rollMT.identity();
+	if (roll!=0.f)
+		rollMT.rotateY (roll);
+
+	// Make the target base
+	CVector j=target;
+	j-=eye;
+	j.normalize();
+	CVector i=j^CVector (0,0,1.f);
+	CVector k=i^j;
+	k.normalize();
+	i=j^k;
+	i.normalize();
+
+	// Make the target matrix
+	CMatrix targetMT;
+	targetMT.identity();
+	targetMT.setRot (i, j, k);
+	targetMT.setPos (eye);
+
+	// Compose matrix
+	targetMT*=rollMT;
+
+	// Set the matrix
+	setMatrix (targetMT);
+}
+
+
 // ***************************************************************************
 uint		CTransform::getValueCount () const
 {

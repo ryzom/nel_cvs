@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.6 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: camera.cpp,v 1.7 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,37 +77,7 @@ bool		CCamera::isPerspective() const
 {
 	return _Frustum.Perspective;
 }
-// ***************************************************************************
-void		CCamera::lookAt (const CVector& eye, const CVector& target, float roll)
-{
-	// Roll matrix
-	CMatrix rollMT;
-	rollMT.identity();
-	if (roll!=0.f)
-		rollMT.rotateY (roll);
 
-	// Make the target base
-	CVector j=target;
-	j-=eye;
-	j.normalize();
-	CVector i=j^CVector (0,0,1.f);
-	CVector k=i^j;
-	k.normalize();
-	i=j^k;
-	i.normalize();
-
-	// Make the target matrix
-	CMatrix targetMT;
-	targetMT.identity();
-	targetMT.setRot (i, j, k);
-	targetMT.setPos (eye);
-
-	// Compose matrix
-	targetMT*=rollMT;
-
-	// Set the matrix
-	setMatrix (targetMT);
-}
 
 }
 

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.36 2001/02/20 14:19:56 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.37 2001/02/28 14:28:57 berenguier Exp $
  *
  */
 
@@ -1782,6 +1782,26 @@ void		CTessFace::forceMerge()
 		// If still a parent, merge.
 		if(!isLeaf())
 			merge();
+	}
+}
+
+
+// ***************************************************************************
+void		CTessFace::forceMergeAtTileLevel()
+{
+	if(this== &CantMergeFace)
+		return;
+
+	if(!isLeaf())
+	{
+		SonLeft->forceMergeAtTileLevel();
+		SonRight->forceMergeAtTileLevel();
+	}
+	else
+	{
+		// If we are at tile subdivision, we must force our sons to merge.
+		if(Level==Patch->TileLimitLevel)
+			forceMerge();
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.47 2001/02/22 13:38:23 berenguier Exp $
+ * $Id: landscape.cpp,v 1.48 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 
 #include "nel/3d/landscape.h"
-#include "nel/3d/bsphere.h"
+#include "nel/misc/bsphere.h"
 #include "nel/3d/texture_file.h"
 #include "nel/3d/texture_far.h"
 #include "nel/3d/landscape_profile.h"
@@ -130,6 +130,8 @@ CLandscape::CLandscape()
 	_Threshold= 0.001f;
 	_RefineMode=true;
 
+	_TileMaxSubdivision= 0;
+
 	_NFreeLightMaps= 0;
 }
 // ***************************************************************************
@@ -176,12 +178,42 @@ void			CLandscape::setTileNear (float tileNear)
 
 
 // ***************************************************************************
+void			CLandscape::setTileMaxSubdivision (uint tileDiv)
+{
+	nlassert(tileDiv>=0 && tileDiv<=4);
+
+	if(tileDiv!=_TileMaxSubdivision)
+	{
+		_TileMaxSubdivision= tileDiv;
+		// Force at Tile==0. Nex refine will split correctly.
+		forceMergeAtTileLevel();
+	}
+}
+// ***************************************************************************
+uint 			CLandscape::getTileMaxSubdivision ()
+{
+	return _TileMaxSubdivision;
+}
+
+
+// ***************************************************************************
 void			CLandscape::resetRenderFar()
 {
 	// For all patch of all zones.
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
 		((*it).second)->resetRenderFar();
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::forceMergeAtTileLevel()
+{
+	// For all patch of all zones.
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		((*it).second)->forceMergeAtTileLevel();
 	}
 }
 
@@ -281,6 +313,7 @@ void			CLandscape::updateGlobals (const CVector &refineCenter) const
 	CTessFace::FarTransition= _FarTransition;
 
 	// Tile subdivsion part.
+	CTessFace::TileMaxSubdivision= _TileMaxSubdivision;
 	CTessFace::TileDistNear = _TileDistNear;
 	CTessFace::TileDistFar = CTessFace::TileDistNear+20;
 	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);

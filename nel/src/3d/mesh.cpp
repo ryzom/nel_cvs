@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.5 2000/12/18 15:11:45 corvazier Exp $
+ * $Id: mesh.cpp,v 1.6 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,9 +38,9 @@ namespace NL3D
 
 
 // ***************************************************************************
-static	CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
+static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 {
-	CAABBox		ret;
+	NLMISC::CAABBox		ret;
 	nlassert(Vertices.size());
 	ret.setCenter(Vertices[0]);
 	for(sint i=0;i<(sint)Vertices.size();i++)

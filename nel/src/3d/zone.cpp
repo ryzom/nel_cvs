@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.32 2001/02/23 09:06:41 corvazier Exp $
+ * $Id: zone.cpp,v 1.33 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -773,7 +773,7 @@ void			CZone::refine()
 {
 	nlassert(Compiled);
 	// Must be 2^X-1.
-	static const	sint	hideRefineFreq= 7;
+	static const	sint	hideRefineFreq= 15;
 
 	// DebugYoyo.
 	// For the monkey bind test.
@@ -799,11 +799,12 @@ void			CZone::refine()
 	CPatch		*pPatch= &(*Patchs.begin());
 	if(ClipResult==ClipSide)
 	{
-		// Force refine of invisible patchs only every 8 times.
+		// Force refine of invisible patchs only every 16 times.
 		// NB: do this only if zone is clipSide
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
-			if(pPatch->isClipped() && (CTessFace::CurrentDate & hideRefineFreq)!=(n & hideRefineFreq))
+			// "ZoneId+n", because there is only 70 approx patchs per zone. doing this may stabilize framerate.
+			if(pPatch->isClipped() && (CTessFace::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq))
 				continue;
 			pPatch->refine();
 		}
@@ -883,6 +884,17 @@ void			CZone::resetRenderFar()
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->resetRenderFar();
+	}
+}
+
+
+// ***************************************************************************
+void			CZone::forceMergeAtTileLevel()
+{
+	CPatch		*pPatch= &(*Patchs.begin());
+	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	{
+		pPatch->forceMergeAtTileLevel();
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.45 2001/02/22 13:39:23 berenguier Exp $
+ * $Id: patch.cpp,v 1.46 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -408,7 +408,7 @@ void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// TODODO: mgt TessEdgeBlock. For now, insert them in MasterBlock...
+	// TODO_OPTIMIZE: mgt TessEdgeBlock. For now, insert them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.append(fv);
@@ -429,7 +429,7 @@ void			CPatch::removeFarVertexFromRenderList(CTessFarVertex *fv)
 	getNumTessBlock(fv->PCoord, type, numtb);
 	
 	
-	// TODODO: mgt TessEdgeBlock. For now, remove them in MasterBlock...
+	// TODO_OPTIMIZE: mgt TessEdgeBlock. For now, remove them in MasterBlock...
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.remove(fv);
@@ -923,7 +923,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 		if(doClipFar)
 			TessBlocks[i].clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
 	}
-	// TODODO: CTessBlockEdge gestion.
+	// TODO_OPTIMIZE: CTessBlockEdge gestion.
 
 
 
@@ -947,7 +947,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 		}
 	}
-	// TODODO: CTessBlockEdge gestion (add new vertices).
+	// TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
 
 	// FAR1.
 	//=======
@@ -966,7 +966,7 @@ void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 			}
 		}
 	}
-	// TODODO: CTessBlockEdge gestion (add new vertices).
+	// TODO_OPTIMIZE: CTessBlockEdge gestion (add new vertices).
 
 
 	// TILE.
@@ -1516,6 +1516,18 @@ void			CPatch::bind(CBindInfo	Edges[4])
 	Son1->updateBind();
 
 }
+
+
+// ***************************************************************************
+void			CPatch::forceMergeAtTileLevel()
+{
+	nlassert(Son0 && Son1);
+
+	Son0->forceMergeAtTileLevel();
+	Son1->forceMergeAtTileLevel();
+}
+
+
 
 // ***************************************************************************
 void			CPatch::serial(NLMISC::IStream &f)

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.30 2001/02/23 09:05:23 corvazier Exp $
+ * $Id: dru.cpp,v 1.31 2001/02/28 14:28:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/material.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
+
 
 #ifdef NL_OS_WINDOWS
 
@@ -326,7 +327,7 @@ void	CDRU::drawWiredQuad (float xcenter, float ycenter, float radius, IDriver& d
 
 
 // ***************************************************************************
-void			CDRU::drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver)
+void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
 	vb.setVertexFormat (IDRV_VF_XYZ | IDRV_VF_UV[0]);
@@ -352,7 +353,7 @@ void			CDRU::drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMateria
 
 
 // ***************************************************************************
-void			CDRU::drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMaterial &mat, IDriver& driver)
+void			CDRU::drawTrianglesUnlit(const std::vector<NLMISC::CTriangleUV> &trilist, CMaterial &mat, IDriver& driver)
 {
 	if(trilist.size()==0)
 		return;
@@ -362,7 +363,7 @@ void			CDRU::drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMateri
 
 
 // ***************************************************************************
-void			CDRU::drawLinesUnlit(const CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver)
+void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
 	vb.setVertexFormat (IDRV_VF_XYZ);
@@ -382,7 +383,7 @@ void			CDRU::drawLinesUnlit(const CLine	*linelist, sint nlines, CMaterial &mat, 
 	driver.render(pb, mat);
 }
 // ***************************************************************************
-void			CDRU::drawLinesUnlit(const std::vector<CLine> &linelist, CMaterial &mat, IDriver& driver)
+void			CDRU::drawLinesUnlit(const std::vector<NLMISC::CLine> &linelist, CMaterial &mat, IDriver& driver)
 {
 	if(linelist.size()==0)
 		return;
@@ -391,7 +392,7 @@ void			CDRU::drawLinesUnlit(const std::vector<CLine> &linelist, CMaterial &mat, 
 // ***************************************************************************
 void			CDRU::drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& driver)
 {
-	static	CLine		line;
+	static	NLMISC::CLine		line;
 	static	CMaterial	mat;
 	static	bool		inited= false;
 

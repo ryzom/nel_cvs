@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.35 2004/02/06 18:07:25 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.36 2004/04/01 19:10:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,14 +99,15 @@ struct	CGlExtensions
 	// ATI Extensions.
 	bool	ATIVertexArrayObject;
 	bool    ATIMapObjectBuffer;
-	bool	ATIXTextureEnvCombine3;
+	bool	ATITextureEnvCombine3;
 	bool    ATIEnvMapBumpMap;
 	bool    ATIFragmentShader;
 	bool	ATIXTextureEnvRoute;
 	// ARB Extensions
 	bool	ARBTextureCompression;
 	bool	ARBFragmentProgram;
-
+	bool	ARBVertexBufferObject;
+	bool	ARBVertexProgram;
 public:
 
 	/// \name Disable Hardware feature. False by default. setuped by IDriver
@@ -132,7 +133,7 @@ public:
 		EXTVertexWeighting= false;
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
-		ATIXTextureEnvCombine3= false;
+		ATITextureEnvCombine3= false;
 		ATIXTextureEnvRoute= false;
 		ARBTextureCubeMap= false;
 		NVTextureShader= false;
@@ -149,6 +150,9 @@ public:
 		ATIVertexArrayObject = false;
 		ATIMapObjectBuffer = false;
 		EXTVertexShader= false;
+		ARBFragmentProgram = false;
+		ARBVertexBufferObject = false;
+		ARBVertexProgram = false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;
@@ -464,6 +468,86 @@ extern NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvA
 extern NEL_PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
 extern NEL_PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
 extern NEL_PFNGLISPROGRAMARBPROC nglIsProgramARB;
+
+// GL_ARB_vertex_buffer_object
+//==================================
+extern PFNGLBINDBUFFERARBPROC nglBindBufferARB;
+extern PFNGLDELETEBUFFERSARBPROC nglDeleteBuffersARB;
+extern PFNGLGENBUFFERSARBPROC nglGenBuffersARB;
+extern PFNGLISBUFFERARBPROC nglIsBufferARB;
+extern PFNGLBUFFERDATAARBPROC nglBufferDataARB;
+extern PFNGLBUFFERSUBDATAARBPROC nglBufferSubDataARB;
+extern PFNGLGETBUFFERSUBDATAARBPROC nglGetBufferSubDataARB;
+extern PFNGLMAPBUFFERARBPROC nglMapBufferARB;
+extern PFNGLUNMAPBUFFERARBPROC nglUnmapBufferARB;
+extern PFNGLGETBUFFERPARAMETERIVARBPROC nglGetBufferParameterivARB;
+extern PFNGLGETBUFFERPOINTERVARBPROC nglGetBufferPointervARB;
+
+// GL_ARB_vertex_program
+//==================================
+extern PFNGLVERTEXATTRIB1SARBPROC nglVertexAttrib1sARB;
+extern PFNGLVERTEXATTRIB1FARBPROC nglVertexAttrib1fARB;
+extern PFNGLVERTEXATTRIB1DARBPROC nglVertexAttrib1dARB;
+extern PFNGLVERTEXATTRIB2SARBPROC nglVertexAttrib2sARB;
+extern PFNGLVERTEXATTRIB2FARBPROC nglVertexAttrib2fARB;
+extern PFNGLVERTEXATTRIB2DARBPROC nglVertexAttrib2dARB;
+extern PFNGLVERTEXATTRIB3SARBPROC nglVertexAttrib3sARB;
+extern PFNGLVERTEXATTRIB3FARBPROC nglVertexAttrib3fARB;
+extern PFNGLVERTEXATTRIB3DARBPROC nglVertexAttrib3dARB;
+extern PFNGLVERTEXATTRIB4SARBPROC nglVertexAttrib4sARB;
+extern PFNGLVERTEXATTRIB4FARBPROC nglVertexAttrib4fARB;
+extern PFNGLVERTEXATTRIB4DARBPROC nglVertexAttrib4dARB;
+extern PFNGLVERTEXATTRIB4NUBARBPROC nglVertexAttrib4NubARB;
+extern PFNGLVERTEXATTRIB1SVARBPROC nglVertexAttrib1svARB;
+extern PFNGLVERTEXATTRIB1FVARBPROC nglVertexAttrib1fvARB;
+extern PFNGLVERTEXATTRIB1DVARBPROC nglVertexAttrib1dvARB;
+extern PFNGLVERTEXATTRIB2SVARBPROC nglVertexAttrib2svARB;
+extern PFNGLVERTEXATTRIB2FVARBPROC nglVertexAttrib2fvARB;
+extern PFNGLVERTEXATTRIB2DVARBPROC nglVertexAttrib2dvARB;
+extern PFNGLVERTEXATTRIB3SVARBPROC nglVertexAttrib3svARB;
+extern PFNGLVERTEXATTRIB3FVARBPROC nglVertexAttrib3fvARB;
+extern PFNGLVERTEXATTRIB3DVARBPROC nglVertexAttrib3dvARB;
+extern PFNGLVERTEXATTRIB4BVARBPROC nglVertexAttrib4bvARB;
+extern PFNGLVERTEXATTRIB4SVARBPROC nglVertexAttrib4svARB;
+extern PFNGLVERTEXATTRIB4IVARBPROC nglVertexAttrib4ivARB;
+extern PFNGLVERTEXATTRIB4UBVARBPROC nglVertexAttrib4ubvARB;
+extern PFNGLVERTEXATTRIB4USVARBPROC nglVertexAttrib4usvARB;
+extern PFNGLVERTEXATTRIB4UIVARBPROC nglVertexAttrib4uivARB;
+extern PFNGLVERTEXATTRIB4FVARBPROC nglVertexAttrib4fvARB;
+extern PFNGLVERTEXATTRIB4DVARBPROC nglVertexAttrib4dvARB;
+extern PFNGLVERTEXATTRIB4NBVARBPROC nglVertexAttrib4NbvARB;
+extern PFNGLVERTEXATTRIB4NSVARBPROC nglVertexAttrib4NsvARB;
+extern PFNGLVERTEXATTRIB4NIVARBPROC nglVertexAttrib4NivARB;
+extern PFNGLVERTEXATTRIB4NUBVARBPROC nglVertexAttrib4NubvARB;
+extern PFNGLVERTEXATTRIB4NUSVARBPROC nglVertexAttrib4NusvARB;
+extern PFNGLVERTEXATTRIB4NUIVARBPROC nglVertexAttrib4NuivARB;
+extern PFNGLVERTEXATTRIBPOINTERARBPROC nglVertexAttribPointerARB;
+extern PFNGLENABLEVERTEXATTRIBARRAYARBPROC nglEnableVertexAttribArrayARB;
+extern PFNGLDISABLEVERTEXATTRIBARRAYARBPROC nglDisableVertexAttribArrayARB;
+extern PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
+extern PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
+extern PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
+extern PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
+extern PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
+extern PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
+extern PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
+extern PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
+extern PFNGLPROGRAMLOCALPARAMETER4FARBPROC nglProgramLocalParameter4fARB;
+extern PFNGLPROGRAMLOCALPARAMETER4DARBPROC nglProgramLocalParameter4dARB;
+extern PFNGLPROGRAMLOCALPARAMETER4FVARBPROC nglProgramLocalParameter4fvARB;
+extern PFNGLPROGRAMLOCALPARAMETER4DVARBPROC nglProgramLocalParameter4dvARB;
+extern PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
+extern PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
+extern PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
+extern PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
+extern PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
+extern PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
+extern PFNGLGETVERTEXATTRIBDVARBPROC nglGetVertexAttribdvARB;
+extern PFNGLGETVERTEXATTRIBFVARBPROC nglGetVertexAttribfvARB;
+extern PFNGLGETVERTEXATTRIBIVARBPROC nglGetVertexAttribivARB;
+extern PFNGLGETVERTEXATTRIBPOINTERVARBPROC nglGetVertexAttribPointervARB;
+extern PFNGLISPROGRAMARBPROC nglIsProgramARB;
+
 
 
 #ifdef NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.208 2004/04/01 09:24:49 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.209 2004/04/01 19:10:53 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1123,21 +1123,24 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		_SupportVBHard= true;
 		_MaxVerticesByVBHard= _Extensions.NVVertexArrayRangeMaxVertex;
 	}
+	// Else, try with ARB ext
+	else if (_Extensions.ARBVertexBufferObject)
+	{
+		_AGPVertexArrayRange= new CVertexArrayRangeARB(this);
+		_VRAMVertexArrayRange= new CVertexArrayRangeARB(this);
+		_SupportVBHard= true;
+		_MaxVerticesByVBHard = ~0; // cant' know the value..
+	}
 	// Else, try with ATI ext
 	else if(_Extensions.ATIVertexArrayObject)
 	{
+		_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
+		_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);			
 		if (!_Extensions.ATIMapObjectBuffer)
-		{		
-			_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
-			_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);			
+		{						
 			// BAD ATI extension scheme.
-			_SlowUnlockVBHard= true;		
-		}
-		else
-		{
-			_AGPVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);
-			_VRAMVertexArrayRange= new CVertexArrayRangeMapObjectATI(this);			
-		}
+			_SlowUnlockVBHard= true;
+		}		
 		_SupportVBHard= true;
 		// _MaxVerticesByVBHard= 65535; // should always work with recent drivers.		
 		// tmp fix for ati
@@ -1257,7 +1260,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	checkForPerPixelLightingSupport();
 
 	// if EXTVertexShader is used, bind  the standard GL arrays, and allocate constant
-	if (!_Extensions.NVVertexProgram && _Extensions.EXTVertexShader)
+	if (!_Extensions.NVVertexProgram && !_Extensions.ARBVertexProgram && _Extensions.EXTVertexShader)
 	{
 			_EVSPositionHandle = nglBindParameterEXT(GL_CURRENT_VERTEX_EXT);
 			_EVSNormalHandle   = nglBindParameterEXT(GL_CURRENT_NORMAL);
@@ -1542,6 +1545,7 @@ bool CDriverGL::swapBuffers()
 	// Reset texture shaders
 	//resetTextureShaders();
 
+	activeVertexProgram(NULL);
 
 	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
 		Setup a std vertex buffer to ensure NVidia synchronisation.
@@ -1586,19 +1590,22 @@ bool CDriverGL::swapBuffers()
 		AS NV_Fence GeForce Implementation says. Test each frame the NVFence, until completion. 
 		NB: finish is not required here. Just test. This is like a "non block synchronisation"
 	 */
-	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
-	while(itVBHard != _VertexBufferHardSet.Set.end() )
-	{
-		if((*itVBHard)->VBType == IVertexBufferHardGL::NVidiaVB)
+	if (_Extensions.NVVertexArrayRange)
+	{	
+		set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+		while(itVBHard != _VertexBufferHardSet.Set.end() )
 		{
-			CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
-			if(vbHardNV->isFenceSet())
+			if((*itVBHard)->VBType == IVertexBufferHardGL::NVidiaVB)
 			{
-				// update Fence Cache.
-				vbHardNV->testFence();
+				CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
+				if(vbHardNV->isFenceSet())
+				{
+					// update Fence Cache.
+					vbHardNV->testFence();
+				}
 			}
+			itVBHard++;
 		}
-		itVBHard++;
 	}
 
 
@@ -2295,7 +2302,7 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 
 	/** Special : with vertex program, using the extension EXT_vertex_shader, fog is emulated using 1 more constant to scale result to [0, 1]
 	  */
-	if (_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram)
+	if (_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram && !_Extensions.ARBVertexProgram)
 	{
 		if (!_ATIFogRangeFixed)
 		{		
@@ -2413,7 +2420,7 @@ bool CDriverGL::supportTextureShaders() const
 // ***************************************************************************
 bool CDriverGL::isWaterShaderSupported() const
 {
-	if (!_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram) return false; // should support vertex programms
+	if (!_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram && !_Extensions.ARBVertexProgram) return false; // should support vertex programms
 	if (!_Extensions.NVTextureShader && !_Extensions.ATIFragmentShader && !_Extensions.ARBFragmentProgram) return false;
 	return true;
 }
@@ -2468,15 +2475,15 @@ void CDriverGL::checkForPerPixelLightingSupport()
 	// TODO : support for EnvCombine3
 	// TODO : support for less than 3 stages
 
-	_SupportPerPixelShaderNoSpec = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3)
+	_SupportPerPixelShaderNoSpec = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3)
 								   && _Extensions.ARBTextureCubeMap
 								   && _Extensions.NbTextureStages >= 3
-								   && (_Extensions.NVVertexProgram || _Extensions.EXTVertexShader);
+								   && (_Extensions.NVVertexProgram || _Extensions.ARBVertexProgram || _Extensions.EXTVertexShader);
 	
-	_SupportPerPixelShader = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3) 
+	_SupportPerPixelShader = (_Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3) 
 							 && _Extensions.ARBTextureCubeMap
 							 && _Extensions.NbTextureStages >= 2
-							 && (_Extensions.NVVertexProgram || _Extensions.EXTVertexShader);	
+							 && (_Extensions.NVVertexProgram || _Extensions.ARBVertexProgram || _Extensions.EXTVertexShader);
 }
 
 // ***************************************************************************
@@ -3337,7 +3344,7 @@ void CDriverGL::retrieveATIDriverVersion()
 // ***************************************************************************
 bool CDriverGL::supportMADOperator() const
 {
-	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATIXTextureEnvCombine3;
+	return _Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3;
 }
 
 

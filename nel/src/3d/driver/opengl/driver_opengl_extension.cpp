@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.42 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.43 2004/04/01 19:10:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -300,27 +300,112 @@ NEL_PFNGLALPHAFRAGMENTOP2ATIPROC				nglAlphaFragmentOp2ATI;
 NEL_PFNGLALPHAFRAGMENTOP3ATIPROC				nglAlphaFragmentOp3ATI;
 NEL_PFNGLSETFRAGMENTSHADERCONSTANTATIPROC	nglSetFragmentShaderConstantATI;
 
-// GL_ARG_fragment_program
+// GL_ARB_fragment_program
 //===================================
-NEL_PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
-NEL_PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
-NEL_PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
-NEL_PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
-NEL_PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
-NEL_PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
-NEL_PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
-NEL_PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
+
+// the following functions are the sames than with GL_ARB_vertex_program
+
+//NEL_PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
+//NEL_PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
+//NEL_PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
+//NEL_PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
+//NEL_PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
+//NEL_PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
+//NEL_PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
+//NEL_PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
 NEL_PFNGLPROGRAMLOCALPARAMETER4DARBPROC nglGetProgramLocalParameter4dARB;
 NEL_PFNGLPROGRAMLOCALPARAMETER4DVARBPROC nglGetProgramLocalParameter4dvARB;
 NEL_PFNGLPROGRAMLOCALPARAMETER4FARBPROC nglGetProgramLocalParameter4fARB;
 NEL_PFNGLPROGRAMLOCALPARAMETER4FVARBPROC nglGetProgramLocalParameter4fvARB;
-NEL_PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
-NEL_PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
-NEL_PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
-NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
-NEL_PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
-NEL_PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
-NEL_PFNGLISPROGRAMARBPROC nglIsProgramARB;
+//NEL_PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
+//NEL_PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
+//NEL_PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
+//NEL_PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
+//NEL_PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
+//NEL_PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
+//NEL_PFNGLISPROGRAMARBPROC nglIsProgramARB;
+
+// GL_ARB_vertex_buffer_object
+//==================================
+PFNGLBINDBUFFERARBPROC nglBindBufferARB;
+PFNGLDELETEBUFFERSARBPROC nglDeleteBuffersARB;
+PFNGLGENBUFFERSARBPROC nglGenBuffersARB;
+PFNGLISBUFFERARBPROC nglIsBufferARB;
+PFNGLBUFFERDATAARBPROC nglBufferDataARB;
+PFNGLBUFFERSUBDATAARBPROC nglBufferSubDataARB;
+PFNGLGETBUFFERSUBDATAARBPROC nglGetBufferSubDataARB;
+PFNGLMAPBUFFERARBPROC nglMapBufferARB;
+PFNGLUNMAPBUFFERARBPROC nglUnmapBufferARB;
+PFNGLGETBUFFERPARAMETERIVARBPROC nglGetBufferParameterivARB;
+PFNGLGETBUFFERPOINTERVARBPROC nglGetBufferPointervARB;
+
+
+// GL_ARB_vertex_program
+//==================================
+PFNGLVERTEXATTRIB1SARBPROC nglVertexAttrib1sARB;
+PFNGLVERTEXATTRIB1FARBPROC nglVertexAttrib1fARB;
+PFNGLVERTEXATTRIB1DARBPROC nglVertexAttrib1dARB;
+PFNGLVERTEXATTRIB2SARBPROC nglVertexAttrib2sARB;
+PFNGLVERTEXATTRIB2FARBPROC nglVertexAttrib2fARB;
+PFNGLVERTEXATTRIB2DARBPROC nglVertexAttrib2dARB;
+PFNGLVERTEXATTRIB3SARBPROC nglVertexAttrib3sARB;
+PFNGLVERTEXATTRIB3FARBPROC nglVertexAttrib3fARB;
+PFNGLVERTEXATTRIB3DARBPROC nglVertexAttrib3dARB;
+PFNGLVERTEXATTRIB4SARBPROC nglVertexAttrib4sARB;
+PFNGLVERTEXATTRIB4FARBPROC nglVertexAttrib4fARB;
+PFNGLVERTEXATTRIB4DARBPROC nglVertexAttrib4dARB;
+PFNGLVERTEXATTRIB4NUBARBPROC nglVertexAttrib4NubARB;
+PFNGLVERTEXATTRIB1SVARBPROC nglVertexAttrib1svARB;
+PFNGLVERTEXATTRIB1FVARBPROC nglVertexAttrib1fvARB;
+PFNGLVERTEXATTRIB1DVARBPROC nglVertexAttrib1dvARB;
+PFNGLVERTEXATTRIB2SVARBPROC nglVertexAttrib2svARB;
+PFNGLVERTEXATTRIB2FVARBPROC nglVertexAttrib2fvARB;
+PFNGLVERTEXATTRIB2DVARBPROC nglVertexAttrib2dvARB;
+PFNGLVERTEXATTRIB3SVARBPROC nglVertexAttrib3svARB;
+PFNGLVERTEXATTRIB3FVARBPROC nglVertexAttrib3fvARB;
+PFNGLVERTEXATTRIB3DVARBPROC nglVertexAttrib3dvARB;
+PFNGLVERTEXATTRIB4BVARBPROC nglVertexAttrib4bvARB;
+PFNGLVERTEXATTRIB4SVARBPROC nglVertexAttrib4svARB;
+PFNGLVERTEXATTRIB4IVARBPROC nglVertexAttrib4ivARB;
+PFNGLVERTEXATTRIB4UBVARBPROC nglVertexAttrib4ubvARB;
+PFNGLVERTEXATTRIB4USVARBPROC nglVertexAttrib4usvARB;
+PFNGLVERTEXATTRIB4UIVARBPROC nglVertexAttrib4uivARB;
+PFNGLVERTEXATTRIB4FVARBPROC nglVertexAttrib4fvARB;
+PFNGLVERTEXATTRIB4DVARBPROC nglVertexAttrib4dvARB;
+PFNGLVERTEXATTRIB4NBVARBPROC nglVertexAttrib4NbvARB;
+PFNGLVERTEXATTRIB4NSVARBPROC nglVertexAttrib4NsvARB;
+PFNGLVERTEXATTRIB4NIVARBPROC nglVertexAttrib4NivARB;
+PFNGLVERTEXATTRIB4NUBVARBPROC nglVertexAttrib4NubvARB;
+PFNGLVERTEXATTRIB4NUSVARBPROC nglVertexAttrib4NusvARB;
+PFNGLVERTEXATTRIB4NUIVARBPROC nglVertexAttrib4NuivARB;
+PFNGLVERTEXATTRIBPOINTERARBPROC nglVertexAttribPointerARB;
+PFNGLENABLEVERTEXATTRIBARRAYARBPROC nglEnableVertexAttribArrayARB;
+PFNGLDISABLEVERTEXATTRIBARRAYARBPROC nglDisableVertexAttribArrayARB;
+PFNGLPROGRAMSTRINGARBPROC nglProgramStringARB;
+PFNGLBINDPROGRAMARBPROC nglBindProgramARB;
+PFNGLDELETEPROGRAMSARBPROC nglDeleteProgramsARB;
+PFNGLGENPROGRAMSARBPROC nglGenProgramsARB;
+PFNGLPROGRAMENVPARAMETER4FARBPROC nglProgramEnvParameter4fARB;
+PFNGLPROGRAMENVPARAMETER4DARBPROC nglProgramEnvParameter4dARB;
+PFNGLPROGRAMENVPARAMETER4FVARBPROC nglProgramEnvParameter4fvARB;
+PFNGLPROGRAMENVPARAMETER4DVARBPROC nglProgramEnvParameter4dvARB;
+PFNGLPROGRAMLOCALPARAMETER4FARBPROC nglProgramLocalParameter4fARB;
+PFNGLPROGRAMLOCALPARAMETER4DARBPROC nglProgramLocalParameter4dARB;
+PFNGLPROGRAMLOCALPARAMETER4FVARBPROC nglProgramLocalParameter4fvARB;
+PFNGLPROGRAMLOCALPARAMETER4DVARBPROC nglProgramLocalParameter4dvARB;
+PFNGLGETPROGRAMENVPARAMETERFVARBPROC nglGetProgramEnvParameterfvARB;
+PFNGLGETPROGRAMENVPARAMETERDVARBPROC nglGetProgramEnvParameterdvARB;
+PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC nglGetProgramLocalParameterfvARB;
+PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC nglGetProgramLocalParameterdvARB;
+PFNGLGETPROGRAMIVARBPROC nglGetProgramivARB;
+PFNGLGETPROGRAMSTRINGARBPROC nglGetProgramStringARB;
+PFNGLGETVERTEXATTRIBDVARBPROC nglGetVertexAttribdvARB;
+PFNGLGETVERTEXATTRIBFVARBPROC nglGetVertexAttribfvARB;
+PFNGLGETVERTEXATTRIBIVARBPROC nglGetVertexAttribivARB;
+PFNGLGETVERTEXATTRIBPOINTERVARBPROC nglGetVertexAttribPointervARB;
+PFNGLISPROGRAMARBPROC nglIsProgramARB;
+
+
 
 
 // Pbuffer extension
@@ -532,9 +617,9 @@ static bool	setupNVTextureEnvCombine4(const char	*glext)
 }
 
 // *********************************
-static bool	setupATIXTextureEnvCombine3(const char	*glext)
+static bool	setupATITextureEnvCombine3(const char	*glext)
 {
-	if(strstr(glext, "GL_ATIX_texture_env_combine3")==NULL)
+	if(strstr(glext, "GL_ATI_texture_env_combine3")==NULL)
 		return false;
 
 	return true;
@@ -543,8 +628,9 @@ static bool	setupATIXTextureEnvCombine3(const char	*glext)
 // *********************************
 static bool	setupATIXTextureEnvRoute(const char *glext)
 {
-	if(strstr(glext, "GL_ATIX_texture_env_route")==NULL)
-		return false;
+	return false;
+	/*if(strstr(glext, "GL_ATIX_texture_env_route")==NULL)
+		return false;*/
 	
 	return true;
 }
@@ -907,9 +993,95 @@ static bool	setupARBFragmentProgram(const char *glext)
 	return true;
 }
 
+// ***************************************************************************
+static bool	setupARBVertexBufferObject(const char	*glext)
+{
+	if(strstr(glext, "GL_ARB_vertex_buffer_object")==NULL)
+		return false;
+	if (!(nglBindBufferARB= (PFNGLBINDBUFFERARBPROC)nelglGetProcAddress("glBindBufferARB"))) return false;
+	if (!(nglDeleteBuffersARB= (PFNGLDELETEBUFFERSARBPROC)nelglGetProcAddress("glDeleteBuffersARB"))) return false;
+	if (!(nglGenBuffersARB= (PFNGLGENBUFFERSARBPROC)nelglGetProcAddress("glGenBuffersARB"))) return false;
+	if (!(nglIsBufferARB= (PFNGLISBUFFERARBPROC)nelglGetProcAddress("glIsBufferARB"))) return false;
+	if (!(nglBufferDataARB= (PFNGLBUFFERDATAARBPROC)nelglGetProcAddress("glBufferDataARB"))) return false;
+	if (!(nglBufferSubDataARB= (PFNGLBUFFERSUBDATAARBPROC)nelglGetProcAddress("glBufferSubDataARB"))) return false;
+	if (!(nglGetBufferSubDataARB= (PFNGLGETBUFFERSUBDATAARBPROC)nelglGetProcAddress("glGetBufferSubDataARB"))) return false;
+	if (!(nglMapBufferARB= (PFNGLMAPBUFFERARBPROC)nelglGetProcAddress("glMapBufferARB"))) return false;
+	if (!(nglUnmapBufferARB= (PFNGLUNMAPBUFFERARBPROC)nelglGetProcAddress("glUnmapBufferARB"))) return false;
+	if (!(nglGetBufferParameterivARB= (PFNGLGETBUFFERPARAMETERIVARBPROC)nelglGetProcAddress("glGetBufferParameterivARB"))) return false;
+	if (!(nglGetBufferPointervARB= (PFNGLGETBUFFERPOINTERVARBPROC)nelglGetProcAddress("glGetBufferPointervARB"))) return false;	
+	
+	return true;
+}
 
-
-
+// ***************************************************************************
+static bool	setupARBVertexProgram(const char	*glext)
+{
+	if(strstr(glext, "GL_ARB_vertex_program")==NULL)
+		return false;
+	 if (!(nglVertexAttrib1sARB= (PFNGLVERTEXATTRIB1SARBPROC)nelglGetProcAddress("glVertexAttrib1sARB"))) return false;
+	 if (!(nglVertexAttrib1fARB= (PFNGLVERTEXATTRIB1FARBPROC)nelglGetProcAddress("glVertexAttrib1fARB"))) return false;
+	 if (!(nglVertexAttrib1dARB= (PFNGLVERTEXATTRIB1DARBPROC)nelglGetProcAddress("glVertexAttrib1dARB"))) return false;
+	 if (!(nglVertexAttrib2sARB= (PFNGLVERTEXATTRIB2SARBPROC)nelglGetProcAddress("glVertexAttrib2sARB"))) return false;
+	 if (!(nglVertexAttrib2fARB= (PFNGLVERTEXATTRIB2FARBPROC)nelglGetProcAddress("glVertexAttrib2fARB"))) return false;
+	 if (!(nglVertexAttrib2dARB= (PFNGLVERTEXATTRIB2DARBPROC)nelglGetProcAddress("glVertexAttrib2dARB"))) return false;
+	 if (!(nglVertexAttrib3sARB= (PFNGLVERTEXATTRIB3SARBPROC)nelglGetProcAddress("glVertexAttrib3sARB"))) return false;
+	 if (!(nglVertexAttrib3fARB= (PFNGLVERTEXATTRIB3FARBPROC)nelglGetProcAddress("glVertexAttrib3fARB"))) return false;
+	 if (!(nglVertexAttrib3dARB= (PFNGLVERTEXATTRIB3DARBPROC)nelglGetProcAddress("glVertexAttrib3dARB"))) return false;
+	 if (!(nglVertexAttrib4sARB= (PFNGLVERTEXATTRIB4SARBPROC)nelglGetProcAddress("glVertexAttrib4sARB"))) return false;
+	 if (!(nglVertexAttrib4fARB= (PFNGLVERTEXATTRIB4FARBPROC)nelglGetProcAddress("glVertexAttrib4fARB"))) return false;
+	 if (!(nglVertexAttrib4dARB= (PFNGLVERTEXATTRIB4DARBPROC)nelglGetProcAddress("glVertexAttrib4dARB"))) return false;
+	 if (!(nglVertexAttrib4NubARB= (PFNGLVERTEXATTRIB4NUBARBPROC)nelglGetProcAddress("glVertexAttrib4NubARB"))) return false;
+	 if (!(nglVertexAttrib1svARB= (PFNGLVERTEXATTRIB1SVARBPROC)nelglGetProcAddress("glVertexAttrib1svARB"))) return false;
+	 if (!(nglVertexAttrib1fvARB= (PFNGLVERTEXATTRIB1FVARBPROC)nelglGetProcAddress("glVertexAttrib1fvARB"))) return false;
+	 if (!(nglVertexAttrib1dvARB= (PFNGLVERTEXATTRIB1DVARBPROC)nelglGetProcAddress("glVertexAttrib1dvARB"))) return false;
+	 if (!(nglVertexAttrib2svARB= (PFNGLVERTEXATTRIB2SVARBPROC)nelglGetProcAddress("glVertexAttrib2svARB"))) return false;
+	 if (!(nglVertexAttrib2fvARB= (PFNGLVERTEXATTRIB2FVARBPROC)nelglGetProcAddress("glVertexAttrib2fvARB"))) return false;
+	 if (!(nglVertexAttrib2dvARB= (PFNGLVERTEXATTRIB2DVARBPROC)nelglGetProcAddress("glVertexAttrib2dvARB"))) return false;
+	 if (!(nglVertexAttrib3svARB= (PFNGLVERTEXATTRIB3SVARBPROC)nelglGetProcAddress("glVertexAttrib3svARB"))) return false;
+	 if (!(nglVertexAttrib3fvARB= (PFNGLVERTEXATTRIB3FVARBPROC)nelglGetProcAddress("glVertexAttrib3fvARB"))) return false;
+	 if (!(nglVertexAttrib3dvARB= (PFNGLVERTEXATTRIB3DVARBPROC)nelglGetProcAddress("glVertexAttrib3dvARB"))) return false;
+	 if (!(nglVertexAttrib4bvARB= (PFNGLVERTEXATTRIB4BVARBPROC)nelglGetProcAddress("glVertexAttrib4bvARB"))) return false;
+	 if (!(nglVertexAttrib4svARB= (PFNGLVERTEXATTRIB4SVARBPROC)nelglGetProcAddress("glVertexAttrib4svARB"))) return false;
+	 if (!(nglVertexAttrib4ivARB= (PFNGLVERTEXATTRIB4IVARBPROC)nelglGetProcAddress("glVertexAttrib4ivARB"))) return false;
+	 if (!(nglVertexAttrib4ubvARB= (PFNGLVERTEXATTRIB4UBVARBPROC)nelglGetProcAddress("glVertexAttrib4ubvARB"))) return false;
+	 if (!(nglVertexAttrib4usvARB= (PFNGLVERTEXATTRIB4USVARBPROC)nelglGetProcAddress("glVertexAttrib4usvARB"))) return false;
+	 if (!(nglVertexAttrib4uivARB= (PFNGLVERTEXATTRIB4UIVARBPROC)nelglGetProcAddress("glVertexAttrib4uivARB"))) return false;
+	 if (!(nglVertexAttrib4fvARB= (PFNGLVERTEXATTRIB4FVARBPROC)nelglGetProcAddress("glVertexAttrib4fvARB"))) return false;
+	 if (!(nglVertexAttrib4dvARB= (PFNGLVERTEXATTRIB4DVARBPROC)nelglGetProcAddress("glVertexAttrib4dvARB"))) return false;
+	 if (!(nglVertexAttrib4NbvARB= (PFNGLVERTEXATTRIB4NBVARBPROC)nelglGetProcAddress("glVertexAttrib4NbvARB"))) return false;
+	 if (!(nglVertexAttrib4NsvARB= (PFNGLVERTEXATTRIB4NSVARBPROC)nelglGetProcAddress("glVertexAttrib4NsvARB"))) return false;
+	 if (!(nglVertexAttrib4NivARB= (PFNGLVERTEXATTRIB4NIVARBPROC)nelglGetProcAddress("glVertexAttrib4NivARB"))) return false;
+	 if (!(nglVertexAttrib4NubvARB= (PFNGLVERTEXATTRIB4NUBVARBPROC)nelglGetProcAddress("glVertexAttrib4NubvARB"))) return false;
+	 if (!(nglVertexAttrib4NusvARB= (PFNGLVERTEXATTRIB4NUSVARBPROC)nelglGetProcAddress("glVertexAttrib4NusvARB"))) return false;
+	 if (!(nglVertexAttrib4NuivARB= (PFNGLVERTEXATTRIB4NUIVARBPROC)nelglGetProcAddress("glVertexAttrib4NuivARB"))) return false;
+	 if (!(nglVertexAttribPointerARB= (PFNGLVERTEXATTRIBPOINTERARBPROC)nelglGetProcAddress("glVertexAttribPointerARB"))) return false;
+	 if (!(nglEnableVertexAttribArrayARB= (PFNGLENABLEVERTEXATTRIBARRAYARBPROC)nelglGetProcAddress("glEnableVertexAttribArrayARB"))) return false;
+	 if (!(nglDisableVertexAttribArrayARB= (PFNGLDISABLEVERTEXATTRIBARRAYARBPROC)nelglGetProcAddress("glDisableVertexAttribArrayARB"))) return false;
+	 if (!(nglProgramStringARB= (PFNGLPROGRAMSTRINGARBPROC)nelglGetProcAddress("glProgramStringARB"))) return false;
+	 if (!(nglBindProgramARB= (PFNGLBINDPROGRAMARBPROC)nelglGetProcAddress("glBindProgramARB"))) return false;
+	 if (!(nglDeleteProgramsARB= (PFNGLDELETEPROGRAMSARBPROC)nelglGetProcAddress("glDeleteProgramsARB"))) return false;
+	 if (!(nglGenProgramsARB= (PFNGLGENPROGRAMSARBPROC)nelglGetProcAddress("glGenProgramsARB"))) return false;
+	 if (!(nglProgramEnvParameter4fARB= (PFNGLPROGRAMENVPARAMETER4FARBPROC)nelglGetProcAddress("glProgramEnvParameter4fARB"))) return false;
+	 if (!(nglProgramEnvParameter4dARB= (PFNGLPROGRAMENVPARAMETER4DARBPROC)nelglGetProcAddress("glProgramEnvParameter4dARB"))) return false;
+	 if (!(nglProgramEnvParameter4fvARB= (PFNGLPROGRAMENVPARAMETER4FVARBPROC)nelglGetProcAddress("glProgramEnvParameter4fvARB"))) return false;
+	 if (!(nglProgramEnvParameter4dvARB= (PFNGLPROGRAMENVPARAMETER4DVARBPROC)nelglGetProcAddress("glProgramEnvParameter4dvARB"))) return false;
+	 if (!(nglProgramLocalParameter4fARB= (PFNGLPROGRAMLOCALPARAMETER4FARBPROC)nelglGetProcAddress("glProgramLocalParameter4fARB"))) return false;
+	 if (!(nglProgramLocalParameter4dARB= (PFNGLPROGRAMLOCALPARAMETER4DARBPROC)nelglGetProcAddress("glProgramLocalParameter4dARB"))) return false;
+	 if (!(nglProgramLocalParameter4fvARB= (PFNGLPROGRAMLOCALPARAMETER4FVARBPROC)nelglGetProcAddress("glProgramLocalParameter4fvARB"))) return false;
+	 if (!(nglProgramLocalParameter4dvARB= (PFNGLPROGRAMLOCALPARAMETER4DVARBPROC)nelglGetProcAddress("glProgramLocalParameter4dvARB"))) return false;
+	 if (!(nglGetProgramEnvParameterfvARB= (PFNGLGETPROGRAMENVPARAMETERFVARBPROC)nelglGetProcAddress("glGetProgramEnvParameterfvARB"))) return false;
+	 if (!(nglGetProgramEnvParameterdvARB= (PFNGLGETPROGRAMENVPARAMETERDVARBPROC)nelglGetProcAddress("glGetProgramEnvParameterdvARB"))) return false;
+	 if (!(nglGetProgramLocalParameterfvARB= (PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC)nelglGetProcAddress("glGetProgramLocalParameterfvARB"))) return false;
+	 if (!(nglGetProgramLocalParameterdvARB= (PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC)nelglGetProcAddress("glGetProgramLocalParameterdvARB"))) return false;
+	 if (!(nglGetProgramivARB= (PFNGLGETPROGRAMIVARBPROC)nelglGetProcAddress("glGetProgramivARB"))) return false;
+	 if (!(nglGetProgramStringARB= (PFNGLGETPROGRAMSTRINGARBPROC)nelglGetProcAddress("glGetProgramStringARB"))) return false;
+	 if (!(nglGetVertexAttribdvARB= (PFNGLGETVERTEXATTRIBDVARBPROC)nelglGetProcAddress("glGetVertexAttribdvARB"))) return false;
+	 if (!(nglGetVertexAttribfvARB= (PFNGLGETVERTEXATTRIBFVARBPROC)nelglGetProcAddress("glGetVertexAttribfvARB"))) return false;
+	 if (!(nglGetVertexAttribivARB= (PFNGLGETVERTEXATTRIBIVARBPROC)nelglGetProcAddress("glGetVertexAttribivARB"))) return false;
+	 if (!(nglGetVertexAttribPointervARB= (PFNGLGETVERTEXATTRIBPOINTERVARBPROC)nelglGetProcAddress("glGetVertexAttribPointervARB"))) return false;
+	 if (!(nglIsProgramARB= (PFNGLISPROGRAMARBPROC)nelglGetProcAddress("glIsProgramARB"))) return false;	
+	 return true;
+}
 
 // ***************************************************************************
 // Extension Check.
@@ -947,15 +1119,16 @@ void	registerGlExtensions(CGlExtensions &ext)
 	ext.ARBTextureCompression= setupARBTextureCompression(glext);
 
 	// Check NVVertexArrayRange
-	// Disable feature ???
+	// Disable feature ???			
 	if(!ext.DisableHardwareVertexArrayAGP)
-		ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);
+		ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);	
 	if(ext.NVVertexArrayRange)
 	{
 		GLint	nverts;
 		glGetIntegerv((GLenum)GL_MAX_VERTEX_ARRAY_RANGE_ELEMENT_NV, &nverts);
 		ext.NVVertexArrayRangeMaxVertex= nverts;
-	}
+	}	
+
 
 	// Compression S3TC OK iff ARBTextureCompression.
 	ext.EXTTextureCompressionS3TC= (ext.ARBTextureCompression && setupEXTTextureCompressionS3TC(glext)); 
@@ -976,14 +1149,16 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check vertex program
 	// Disable feature ???
 	if(!ext.DisableHardwareVertexProgram)
-	{	
+	{		
 		ext.NVVertexProgram = setupNVVertexProgram(glext);
 		ext.EXTVertexShader = setupEXTVertexShader(glext);
+		ext.ARBVertexProgram= setupARBVertexProgram(glext);				
 	}
 	else
 	{
 		ext.NVVertexProgram = false;
 		ext.EXTVertexShader = false;
+		ext.ARBVertexProgram = false;
 	}
 
 
@@ -1009,7 +1184,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check EXTBlendColor
 	ext.EXTBlendColor= setupEXTBlendColor(glext);
 
-	// Check NVVertexArrayRange2
+	// Check NVVertexArrayRange2		
 	ext.NVVertexArrayRange2= setupNVVertexArrayRange2(glext);
 	// if supported
 	if(ext.NVVertexArrayRange2)
@@ -1028,21 +1203,25 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(!ext.DisableHardwareVertexArrayAGP)
 	{	
 		ext.ATIVertexArrayObject= setupATIVertexArrayObject(glext);
-		ext.ATIMapObjectBuffer= setupATIMapObjectBuffer(glext);
+		ext.ATIMapObjectBuffer= setupATIMapObjectBuffer(glext);		
 	}
 	// Check ATIXTextureEnvCombine3.
-	ext.ATIXTextureEnvCombine3= setupATIXTextureEnvCombine3(glext);
+	ext.ATITextureEnvCombine3= setupATITextureEnvCombine3(glext);
 	// Check ATIXTextureEnvRoute
 	ext.ATIXTextureEnvRoute= setupATIXTextureEnvRoute(glext);
 	// Check ATIEnvMapBumpMap
 	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
 	// Check ATIFragmentShader
 	ext.ATIFragmentShader = setupATIFragmentShader(glext);
+	ext.ATIFragmentShader = false;
 
 	// ARB extensions
 	// -------------
 	ext.ARBFragmentProgram = setupARBFragmentProgram(glext);
-
+	if(!ext.DisableHardwareVertexArrayAGP)
+	{
+		ext.ARBVertexBufferObject = setupARBVertexBufferObject(glext);
+	}
 }
 
 

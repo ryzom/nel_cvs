@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.163 2004/04/01 09:24:49 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.164 2004/04/01 19:10:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,14 +192,18 @@ public:
 	// NB: ptrs are invalid if VertexFormat does not support the compoennt. must test VertexFormat, not the ptr.
 	void					*ValuePtr[CVertexBuffer::NumValue];
 
+	
+	enum TVBMode { None = 0, SysMem, HwNVIDIA, HwARB, HwATI }; // standard VBs, or Hard VBs using different extensions
 
-	// ATI Special setup ?
-	bool					ATIVBHardMode;
-	// the handle of ATI memory
-	uint					ATIVertexObjectId;
-	// This is the offset relative to the ATIVertexObjectId start mem.
-	uint					ATIValueOffset[CVertexBuffer::NumValue];
+	// Kind of vb
+	TVBMode					VBMode;
+	// the handle of ATI or ARB vertex object
+	uint					VertexObjectId;	
 
+	CVertexBufferInfo()
+	{		
+		VBMode = None;
+	}
 
 	void		setupVertexBuffer(CVertexBuffer &vb);
 	void		setupVertexBufferHard(IVertexBufferHardGL &vb);
@@ -873,8 +877,10 @@ private:
 	/// Tools fct used by setupGLArrays
 	void			setupGlArraysStd(CVertexBufferInfo &vb);
 	void			setupGlArraysForNVVertexProgram(CVertexBufferInfo &vb);
+	void			setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb);
 	void			setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb);
 	void			toggleGlArraysForNVVertexProgram();
+	void			toggleGlArraysForARBVertexProgram();
 	void			toggleGlArraysForEXTVertexShader();
 
 	/// Test/activate normalisation of normal.
@@ -908,6 +914,8 @@ private:
 	friend class					CVertexArrayRangeNVidia;
 	friend class					CVertexBufferHardGLNVidia;
 	friend class					CVertexArrayRangeATI;
+	friend class					CVertexArrayRangeARB;
+	friend class					CVertexBufferHardARB;
 	friend class					CVertexBufferHardGLATI;
 	friend class					CVertexArrayRangeMapObjectATI;
 	friend class					CVertexBufferHardGLMapObjectATI;
@@ -998,7 +1006,8 @@ private:
 	/// \name Vertex program implementation
 	// @{
 		bool activeNVVertexProgram (CVertexProgram *program);
-		bool activeEXTVertexShader (CVertexProgram *program);		
+		bool activeARBVertexProgram (CVertexProgram *program);
+		bool activeEXTVertexShader (CVertexProgram *program);
 	//@}
 
 
@@ -1037,6 +1046,7 @@ private:
 	static const uint NumCoordinatesType[CVertexBuffer::NumType];
 	static const uint GLType[CVertexBuffer::NumType];
 	static const uint GLVertexAttribIndex[CVertexBuffer::NumValue];
+	static const bool GLTypeIsIntegral[CVertexBuffer::NumType];
 	static const uint GLMatrix[IDriver::NumMatrix];
 	static const uint GLTransform[IDriver::NumTransform];
 
@@ -1074,6 +1084,7 @@ private:
 			static const uint _EVSNumConstant;
 			// 
 			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
+			bool   setupARBVertexProgram (const CVPParser::TProgram &parsedProgram, GLuint id);
 			//			
 	// @}
 
@@ -1133,6 +1144,9 @@ class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos
 public:
 	// The GL Id.
 	GLuint					ID;
+
+	// ARB_vertex_program specific -> must know if specular part is written
+	bool					SpecularWritten;
 
 	/**  EXTVertexShader specific 
 	  *  handle of allocated variants

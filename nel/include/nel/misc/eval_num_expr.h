@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.4 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: eval_num_expr.h,v 1.5 2002/08/21 12:48:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLMISC
 class CEvalNumExpr
 {
 public:
-	virtual ~CEvalNumExpr();
+	virtual ~CEvalNumExpr() {}
 	/// Eval return error.
 	enum TReturnState
 	{

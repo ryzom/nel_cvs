@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.78 2002/09/05 17:59:55 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.79 2002/09/24 12:53:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -931,260 +931,282 @@ void CObjectViewer::go ()
 
 	do
 	{
-		CNELU::Driver->activate ();
-
-		
-
-		// Handle animation
-		_AnimationDlg->handle ();
-
-		// Handle sound animation
-		_SoundAnimDlg->handle ();
-
-		// Setup the channel mixer
-		_AnimationSetDlg->UpdateData ();
-
-		// Setup the play list
-		setupPlaylist (_AnimationDlg->getTime());
-
-		// Eval sound tracks
-		evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
-
-		// Animate the automatic animation in the scene
-		//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
-
-		CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
-
-		// Eval channel mixer for transform
-		for (uint i=0; i<_ListInstance.size(); i++)
-			_ListInstance[i]->ChannelMixer.eval (false);
-
-		// Clear the buffers
-
-
-		CNELU::clearBuffers(_BackGroundColor);
-
-		// Draw the scene		
-		CNELU::Scene.render();		
-		
-		// call of callback list
+		// Get the foreground window
+		HWND foreGroundWindow = GetForegroundWindow();
+		HWND parent = GetParent (foreGroundWindow);
+		if ((foreGroundWindow == _MainFrame->m_hWnd) || (_MainFrame->m_hWnd == parent))
 		{
-			std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
+ 			CNELU::Driver->activate ();
 
-			for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
+			// Handle animation
+			_AnimationDlg->handle ();
+
+			// Handle sound animation
+			_SoundAnimDlg->handle ();
+
+			// Setup the channel mixer
+			_AnimationSetDlg->UpdateData ();
+
+			// Setup the play list
+			setupPlaylist (_AnimationDlg->getTime());
+
+			// Eval sound tracks
+			evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
+
+			// Animate the automatic animation in the scene
+			//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+
+			CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
+
+			// Eval channel mixer for transform
+			for (uint i=0; i<_ListInstance.size(); i++)
+				_ListInstance[i]->ChannelMixer.eval (false);
+
+			// Clear the buffers
+
+
+			CNELU::clearBuffers(_BackGroundColor);
+
+			// Draw the scene		
+			CNELU::Scene.render();		
+			
+			// call of callback list
 			{
-				(*it)->go();
+				std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
+
+				for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
+				{
+					(*it)->go();
+				}
 			}
-		}
 
-		// Profile polygon count
-		CPrimitiveProfile in, out;
-		CNELU::Driver->profileRenderedPrimitives (in, out);
+			// Profile polygon count
+			CPrimitiveProfile in, out;
+			CNELU::Driver->profileRenderedPrimitives (in, out);
 
-		// Draw the hotSpot
-		if (_MainFrame->MoveMode)
-		{
-			float radius=_HotSpotSize/2.f;
-			CNELU::Driver->setupModelMatrix (CMatrix::Identity);
-			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (radius, 0, 0), _MouseListener.getHotSpot()+CVector (-radius, 0, 0), _HotSpotColor, *CNELU::Driver);
-			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, radius, 0), _MouseListener.getHotSpot()+CVector (0, -radius, 0), _HotSpotColor, *CNELU::Driver);
-			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, 0, radius), _MouseListener.getHotSpot()+CVector (0, 0, -radius), _HotSpotColor, *CNELU::Driver);
-		}
-
-		// Test some keys
-		if (CNELU::AsyncListener.isKeyPushed(KeyF3))
-		{
-			// Change render mode
-			switch (CNELU::Driver->getPolygonMode())
+			// Draw the hotSpot
+			if (_MainFrame->MoveMode)
 			{
-			case IDriver::Filled:
-				CNELU::Driver->setPolygonMode (IDriver::Line);
-				break;
-			case IDriver::Line:
-				CNELU::Driver->setPolygonMode (IDriver::Point);
-				break;
-			case IDriver::Point:
-				CNELU::Driver->setPolygonMode (IDriver::Filled);
-				break;
+				float radius=_HotSpotSize/2.f;
+				CNELU::Driver->setupModelMatrix (CMatrix::Identity);
+				CDRU::drawLine (_MouseListener.getHotSpot()+CVector (radius, 0, 0), _MouseListener.getHotSpot()+CVector (-radius, 0, 0), _HotSpotColor, *CNELU::Driver);
+				CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, radius, 0), _MouseListener.getHotSpot()+CVector (0, -radius, 0), _HotSpotColor, *CNELU::Driver);
+				CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, 0, radius), _MouseListener.getHotSpot()+CVector (0, 0, -radius), _HotSpotColor, *CNELU::Driver);
 			}
-		}
-		
-		// Test Window Keys
-		bool	keyWndOk= false;
-		if (CNELU::AsyncListener.isKeyPushed(Key1))
-			_MainFrame->OnWindowAnimation(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key2))
-			_MainFrame->OnWindowAnimationset(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key3))
-			_MainFrame->OnWindowMixersslots(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key4))
-			_MainFrame->OnWindowParticles(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key5))
-			_MainFrame->OnWindowDayNight(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key6))
-			_MainFrame->OnWindowWaterPool(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key7))
-			_MainFrame->OnWindowVegetable(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key8))
-			_MainFrame->OnWindowGlobalwind(), keyWndOk= true;
-		if (CNELU::AsyncListener.isKeyPushed(Key9))
-			_MainFrame->OnWindowSoundAnim(), keyWndOk= true;
 
-		// Reload texture ?
-		if (CNELU::AsyncListener.isKeyPushed(KeyR))
-			_MainFrame->OnReloadTextures();
-
-		// If some window activated, reset the focus to the main wnd.
-		if(keyWndOk)
-			_MainFrame->SetActiveWindow();
-
-		// Calc FPS
-		static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
-		sint64 newTime=NLMISC::CTime::getPerformanceTime ();
-		float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
-		lastTime=newTime;
-		char msgBar[1024];
-		uint nbPlayingSources, nbSources;
-		if (CSoundSystem::getAudioMixer())
-		{
-			nbPlayingSources = CSoundSystem::getAudioMixer()->getPlayingSourcesNumber();
-			nbSources = CSoundSystem::getAudioMixer()->getSourcesNumber();
-		}
-		else
-		{
-			nbPlayingSources = nbSources = NULL;
-		}
-
-		// Display std info.
-		sprintf (msgBar, "Nb tri: %d -Texture VRAM used (Mo): %5.2f -Texture VRAM allocated (Mo): %5.2f -Distance: %5.0f -Sounds: %d/%d -Fps: %03.1f",						 
-						 in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
-						 (float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
-						 (_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm(),						 
-						 nbPlayingSources,
-						 nbSources,
-						 fps
-						 );
-		// Display
-		_MainFrame->StatusBar.SetWindowText (msgBar);
-
-		// Display Vegetable info.
-		if(_VegetableDlg!=NULL)
-		{
-			if(_VegetableLandscape != NULL)
+			// Test some keys
+			if (CNELU::AsyncListener.isKeyPushed(KeyF3))
 			{
-				char vegetMsgBar[1024];
-				sprintf (vegetMsgBar, "%d", _VegetableLandscape->Landscape.getNumVegetableFaceRendered());
-				_VegetableDlg->StaticPolyCount.SetWindowText(vegetMsgBar);
+				// Change render mode
+				switch (CNELU::Driver->getPolygonMode())
+				{
+				case IDriver::Filled:
+					CNELU::Driver->setPolygonMode (IDriver::Line);
+					break;
+				case IDriver::Line:
+					CNELU::Driver->setPolygonMode (IDriver::Point);
+					break;
+				case IDriver::Point:
+					CNELU::Driver->setPolygonMode (IDriver::Filled);
+					break;
+				}
+			}
+			
+			// Test Window Keys
+			bool	keyWndOk= false;
+			if (CNELU::AsyncListener.isKeyPushed(Key1))
+				_MainFrame->OnWindowAnimation(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key2))
+				_MainFrame->OnWindowAnimationset(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key3))
+				_MainFrame->OnWindowMixersslots(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key4))
+				_MainFrame->OnWindowParticles(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key5))
+				_MainFrame->OnWindowDayNight(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key6))
+				_MainFrame->OnWindowWaterPool(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key7))
+				_MainFrame->OnWindowVegetable(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key8))
+				_MainFrame->OnWindowGlobalwind(), keyWndOk= true;
+			if (CNELU::AsyncListener.isKeyPushed(Key9))
+				_MainFrame->OnWindowSoundAnim(), keyWndOk= true;
+
+			// Reload texture ?
+			if (CNELU::AsyncListener.isKeyPushed(KeyR))
+				_MainFrame->OnReloadTextures();
+
+			// If some window activated, reset the focus to the main wnd.
+			if(keyWndOk)
+				_MainFrame->SetActiveWindow();
+
+			// Calc FPS
+			static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
+			sint64 newTime=NLMISC::CTime::getPerformanceTime ();
+			float fps = (float)(1.0 / NLMISC::CTime::ticksToSecond (newTime-lastTime));
+			lastTime=newTime;
+			char msgBar[1024];
+			uint nbPlayingSources, nbSources;
+			if (CSoundSystem::getAudioMixer())
+			{
+				nbPlayingSources = CSoundSystem::getAudioMixer()->getPlayingSourcesNumber();
+				nbSources = CSoundSystem::getAudioMixer()->getSourcesNumber();
 			}
 			else
 			{
-				_VegetableDlg->StaticPolyCount.SetWindowText("0");
+				nbPlayingSources = nbSources = NULL;
 			}
-		}
 
-	
+			// Display std info.
+			sprintf (msgBar, "Nb tri: %d -Texture VRAM used (Mo): %5.2f -Texture VRAM allocated (Mo): %5.2f -Distance: %5.0f -Sounds: %d/%d -Fps: %03.1f",						 
+							 in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
+							 (float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
+							 (_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm(),						 
+							 nbPlayingSources,
+							 nbSources,
+							 fps
+							 );
+			// Display
+			_MainFrame->StatusBar.SetWindowText (msgBar);
 
-		// Swap the buffers
-		CNELU::swapBuffers();
-
-
-		if (_MainFrame->MoveMode)
-			_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
-		else
-		{
-			_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
-			_MouseListener.setSpeed (_MainFrame->MoveSpeed);
-		}
-
-		// Reset camera aspect ratio
-		initCamera (_CameraFocal);
-
-		if (_MainFrame->isMoveElement())
-		{
-			// for now we apply a transform on the selected object in the particle system			
-			_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
-		}
-		else if (_MainFrame->isMoveObjectLightTest())
-		{
-			_ObjectLightTestMatrix= _MouseListener.getModelMatrix();
-		}
-		else if (_MainFrame->isMoveSceneRoot())
-		{
-			_SceneRoot->setTransformMode (ITransformable::DirectMatrix);
-			_SceneRoot->setMatrix (_MouseListener.getModelMatrix());
-		}
-		else
-		{
-			nlassert(_MainFrame->isMoveCamera());
-
-			// New matrix from camera
-			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
-			CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
-
-			// Vegetable: manage collision snapping if wanted and possible
-			if(_VegetableSnapToGround && _VegetableLandscape)
+			// Display Vegetable info.
+			if(_VegetableDlg!=NULL)
 			{
-				// get matrix from camera.
-				CMatrix	matrix= CNELU::Camera->getMatrix();
-				// snap To ground.
-				CVector	pos= matrix.getPos();
-				// if succes to snap to ground
-				if(_VegetableCollisionEntity->snapToGround(pos))
+				if(_VegetableLandscape != NULL)
 				{
-					pos.z+= _VegetableSnapHeight;
-					matrix.setPos(pos);
-					// reset the moveListener and the camera.
-					_MouseListener.setMatrix(matrix);
-					CNELU::Camera->setMatrix(matrix);
+					char vegetMsgBar[1024];
+					sprintf (vegetMsgBar, "%d", _VegetableLandscape->Landscape.getNumVegetableFaceRendered());
+					_VegetableDlg->StaticPolyCount.SetWindowText(vegetMsgBar);
+				}
+				else
+				{
+					_VegetableDlg->StaticPolyCount.SetWindowText("0");
 				}
 			}
-		}
+
+		
+
+			// Swap the buffers
+			CNELU::swapBuffers();
 
 
-		// Update lighting test Dynamic object position
-		if(_ObjectLightTest && _GlobalRetriever)
-		{
-			// Get the position of the object snapped.
-			UGlobalPosition		gPos= _GlobalRetriever->retrievePosition(_ObjectLightTestMatrix.getPos());
-			CVector	pos= _GlobalRetriever->getGlobalPosition(gPos);
-			_ObjectLightTest->setPos(pos);
-			_ObjectLightTest->setRotQuat(_ObjectLightTestMatrix.getRot());
-
-			// Update the matrix and the mouseListener.
-			if (_MainFrame->isMoveObjectLightTest())
+			if (_MainFrame->MoveMode)
+				_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+			else
 			{
-				_ObjectLightTestMatrix.setPos(pos);
-				_MouseListener.setModelMatrix(_ObjectLightTestMatrix);
+				_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
+				_MouseListener.setSpeed (_MainFrame->MoveSpeed);
 			}
 
-			// Update the logicInfo so lighting is well computed.
-			_ObjectLightTestLogicInfo.GPos= gPos;
+			// Reset camera aspect ratio
+			initCamera (_CameraFocal);
+
+			if (_MainFrame->isMoveElement())
+			{
+				// for now we apply a transform on the selected object in the particle system			
+				_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
+			}
+			else if (_MainFrame->isMoveObjectLightTest())
+			{
+				_ObjectLightTestMatrix= _MouseListener.getModelMatrix();
+			}
+			else if (_MainFrame->isMoveSceneRoot())
+			{
+				_SceneRoot->setTransformMode (ITransformable::DirectMatrix);
+				_SceneRoot->setMatrix (_MouseListener.getModelMatrix());
+			}
+			else
+			{
+				nlassert(_MainFrame->isMoveCamera());
+
+				// New matrix from camera
+				CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
+				CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
+
+				// Vegetable: manage collision snapping if wanted and possible
+				if(_VegetableSnapToGround && _VegetableLandscape)
+				{
+					// get matrix from camera.
+					CMatrix	matrix= CNELU::Camera->getMatrix();
+					// snap To ground.
+					CVector	pos= matrix.getPos();
+					// if succes to snap to ground
+					if(_VegetableCollisionEntity->snapToGround(pos))
+					{
+						pos.z+= _VegetableSnapHeight;
+						matrix.setPos(pos);
+						// reset the moveListener and the camera.
+						_MouseListener.setMatrix(matrix);
+						CNELU::Camera->setMatrix(matrix);
+					}
+				}
+			}
+
+
+			// Update lighting test Dynamic object position
+			if(_ObjectLightTest && _GlobalRetriever)
+			{
+				// Get the position of the object snapped.
+				UGlobalPosition		gPos= _GlobalRetriever->retrievePosition(_ObjectLightTestMatrix.getPos());
+				CVector	pos= _GlobalRetriever->getGlobalPosition(gPos);
+				_ObjectLightTest->setPos(pos);
+				_ObjectLightTest->setRotQuat(_ObjectLightTestMatrix.getRot());
+
+				// Update the matrix and the mouseListener.
+				if (_MainFrame->isMoveObjectLightTest())
+				{
+					_ObjectLightTestMatrix.setPos(pos);
+					_MouseListener.setModelMatrix(_ObjectLightTestMatrix);
+				}
+
+				// Update the logicInfo so lighting is well computed.
+				_ObjectLightTestLogicInfo.GPos= gPos;
+			}
+
+			// Pump message from the server
+			CNELU::EventServer.pump();
+
+			// Pump others message for the windows
+			MSG	msg;
+			while ( PeekMessage(&msg, NULL,0,0,PM_REMOVE) )
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			
+			CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix());
+			CSoundSystem::poll();
+
+
+			// simulate lag
+			if (_Lag)
+			{
+				NLMISC::nlSleep(_Lag);
+			}
+
+
+			// Save last time
+			_LastTime=_AnimationDlg->getTime();
 		}
-
-		// Pump message from the server
-		CNELU::EventServer.pump();
-
-		// Pump others message for the windows
-		MSG	msg;
-		while ( PeekMessage(&msg, NULL,0,0,PM_REMOVE) )
+		else
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			// Traditionnal message loop
+			MSG	msg;
+			while (GetMessage( &msg, NULL, 0, 0) == TRUE)
+			{
+				::TranslateMessage(&msg);
+				::DispatchMessage(&msg);
+				if (!IsWindow (_MainFrame->m_hWnd))
+					break;
+
+				// Get the foreground window
+				HWND foreGroundWindow = GetForegroundWindow();
+				HWND parent = GetParent (foreGroundWindow);
+				if ((foreGroundWindow == _MainFrame->m_hWnd) || (_MainFrame->m_hWnd == parent))
+					break;
+			}
 		}
-		
-		CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix());
-		CSoundSystem::poll();
-
-
-		// simulate lag
-		if (_Lag)
-		{
-			NLMISC::nlSleep(_Lag);
-		}
-
-
-		// Save last time
-		_LastTime=_AnimationDlg->getTime();
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());
 	_InstanceRunning = false;
@@ -3179,12 +3201,6 @@ void CObjectViewer::reloadTextures ()
 			}
 		}
 	}
-
-	// Get the slot dialog
-	CMainDlg *getSlotDlg ();
-
-	// Get number of instances
-	uint  const;
 }
 
 // ***************************************************************************

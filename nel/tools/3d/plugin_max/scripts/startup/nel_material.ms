@@ -754,16 +754,16 @@ plugin material NelMaterial
 				ciLightMapChannel.enabled = (not bWater) and bLightmap
 				cbStainedGlassWindow.enabled = not bWater
 
-				cbAlphaBlend.enabled = ((not bWater) and (not bLightmap)) and (not bAlphaTest)
-				btSetBlend.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-				btSetAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-				btSetAlphaAdd.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-				dlBlendSrcFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
-				dlBlendDestFunc.enabled = ((not bWater) and (not bLightmap)) and bAlphaBlend and (not bAlphaTest)
+				cbAlphaBlend.enabled = (not bWater) and (not bAlphaTest)
+				btSetBlend.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
+				btSetAdd.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
+				btSetAlphaAdd.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
+				dlBlendSrcFunc.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
+				dlBlendDestFunc.enabled = (not bWater)  and bAlphaBlend and (not bAlphaTest)
 				cbAlphaTest.enabled = (not bWater) and (not bAlphaBlend)
 
-				cbForceZWrite.enabled = (not bWater) and (not bLightmap) and bAlphaBlend
-				cbForceNoZWrite.enabled = (not bWater) and (not bLightmap)  and (not bAlphaBlend)
+				cbForceZWrite.enabled = (not bWater) and bAlphaBlend
+				cbForceNoZWrite.enabled = (not bWater) and (not bAlphaBlend)
 				cbAlphaVertex.enabled = (not bWater) and (not bLightmap) and (not bLightMap)
 				ciAlphaVertexChannel.enabled = (not bWater) and bAlphaVertex and (not bLightMap)
 				cbColorVertex.enabled = not bWater

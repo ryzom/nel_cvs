@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.66 2002/03/01 14:06:59 berenguier Exp $
+ * $Id: scene.cpp,v 1.67 2002/03/04 16:26:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,8 @@ CScene::CScene()
 	_LightingSystemEnabled= false;
 
 	_GlobalWindDirection.set(1,0,0);
-	_GlobalWindPower= 1.f;
+	// Default as Sithikt wants.
+	_GlobalWindPower= 0.2f;
 }
 // ***************************************************************************
 void	CScene::release()

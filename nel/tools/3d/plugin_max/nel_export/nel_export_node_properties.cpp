@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.23 2002/03/04 13:03:01 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.24 2002/03/04 16:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,10 @@ DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, Instan
 int CALLBACK VPWindTreeCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 const int				SubVPTab[VP_COUNT]	= {IDD_VP_WINDTREE};
 DLGPROC					SubVPProc[VP_COUNT]	= {VPWindTreeCallback};
+
+
+// The last opened TAB.
+static int				LastTabActivated= 0;
 
 
 // ***************************************************************************
@@ -1587,8 +1591,10 @@ int CALLBACK LodDialogCallback (
 				SetWindowPos (currentParam->SubDlg[tab], NULL, client.left, client.top, client.right-client.left, client.bottom-client.top, SWP_NOOWNERZORDER|SWP_NOZORDER);
 			}
 
-			// Show the first dialog
-			ShowWindow (currentParam->SubDlg[0], SW_SHOW);
+			// Activate the last activated TAB
+			SendMessage (GetDlgItem (hwndDlg, IDC_TAB), TCM_SETCURSEL, LastTabActivated, 0);
+			// Show the last activated TAB
+			ShowWindow (currentParam->SubDlg[LastTabActivated], SW_SHOW);
 		}
 		break;
 
@@ -1605,6 +1611,8 @@ int CALLBACK LodDialogCallback (
 						{
 							ShowWindow (currentParam->SubDlg[tab], (tab == curSel)?SW_SHOW:SW_HIDE);
 						}
+						LastTabActivated= curSel;
+						clamp(LastTabActivated, 0, TAB_COUNT-1);
 						break;
 					}
 				}
@@ -2131,7 +2139,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.SWTWeight = toString (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_SWT_WEIGHT, 0.f));
 
 		// RealTimeLigt.
-		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
+		param.ExportRealTimeLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_CHECKED);
 
 		// LightmapLigt. (true by default)
 		param.ExportLightMapLight= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
@@ -2264,7 +2272,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.SWTWeight = "";
 
 			// RealTimeLight
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED) != param.ExportRealTimeLight)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_CHECKED) != param.ExportRealTimeLight)
 				param.ExportRealTimeLight= BST_INDETERMINATE;
 
 			// ExportLightMapLight

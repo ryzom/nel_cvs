@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.14 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.15 2002/03/04 16:26:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -438,7 +438,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 		if ( sLightBuild.canConvertFromMaxLight(pNode, tvTime) )
 		{
 			// And if this light is checked to realtime export
-			int		nRTExport= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_UNCHECKED);
+			int		nRTExport= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_EXPORT_REALTIME_LIGHT, BST_CHECKED);
 			if(nRTExport == BST_CHECKED)
 			{
 				// get Max Light info.

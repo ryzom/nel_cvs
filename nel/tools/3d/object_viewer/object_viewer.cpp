@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.74 2002/08/02 13:47:32 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.75 2002/08/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,6 +200,8 @@ IMPLEMENT_DYNCREATE(CObjView, CView)
 CObjectViewer::CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	_SceneRoot= NULL;
 	
 	init3d ();
 
@@ -558,6 +560,9 @@ void CObjectViewer::initUI (HWND parent)
 	// Init NELU
 	CNELU::init (640, 480, viewport, 32, true, view->m_hWnd);
 	//CNELU::init (640, 480, viewport, 32, true, _MainFrame->m_hWnd);
+
+	// Create a root.
+	_SceneRoot= (CTransform*)CNELU::Scene.createModel(NL3D::TransformId);
 
 	// Init default lighting seutp.
 	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunAmbiant, _SceneLightSunDiffuse, _SceneLightSunSpecular);
@@ -1065,17 +1070,24 @@ void CObjectViewer::go ()
 		// Reset camera aspect ratio
 		initCamera (_CameraFocal);
 
-		if (_MainFrame->MoveElement)
+		if (_MainFrame->isMoveElement())
 		{
 			// for now we apply a transform on the selected object in the particle system			
 			_ParticleDlg->moveElement(_MouseListener.getModelMatrix());		
 		}
-		else if (_MainFrame->MoveObjectLightTest)
+		else if (_MainFrame->isMoveObjectLightTest())
 		{
 			_ObjectLightTestMatrix= _MouseListener.getModelMatrix();
 		}
+		else if (_MainFrame->isMoveSceneRoot())
+		{
+			_SceneRoot->setTransformMode (ITransformable::DirectMatrix);
+			_SceneRoot->setMatrix (_MouseListener.getModelMatrix());
+		}
 		else
 		{
+			nlassert(_MainFrame->isMoveCamera());
+
 			// New matrix from camera
 			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
 			CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
@@ -1110,7 +1122,7 @@ void CObjectViewer::go ()
 			_ObjectLightTest->setRotQuat(_ObjectLightTestMatrix.getRot());
 
 			// Update the matrix and the mouseListener.
-			if (_MainFrame->MoveObjectLightTest)
+			if (_MainFrame->isMoveObjectLightTest())
 			{
 				_ObjectLightTestMatrix.setPos(pos);
 				_MouseListener.setModelMatrix(_ObjectLightTestMatrix);
@@ -1196,6 +1208,10 @@ void CObjectViewer::releaseUI ()
 
 	// Release all instances and all Igs.
 	removeAllInstancesFromScene();
+
+	// release Root
+	CNELU::Scene.deleteModel(_SceneRoot);
+	_SceneRoot= NULL;
 
 	// release other 3D.
 	CNELU::release();
@@ -1717,6 +1733,10 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 		// Create a model and add it to the scene
 		CTransformShape	*pTrShape=CNELU::Scene.createInstance (meshName);
 		nlassert (pTrShape);
+
+		// link to the root for manipulation
+		CNELU::Scene.getHrcTrav()->link(_SceneRoot, pTrShape);
+
 		// Get the real shape used by the instance.
 		pMeshShape= pTrShape->Shape;
 
@@ -1842,6 +1862,10 @@ uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 	// Create a model and add it to the scene
 	CTransformShape	*pTrShape=CNELU::Scene.createInstance (skelName);
 	nlassert (pTrShape);
+
+	// link to the root for manipulation
+	CNELU::Scene.getHrcTrav()->link(_SceneRoot, pTrShape);
+
 	// Get the real shape used by the instance.
 	pSkelShape= pTrShape->Shape;
 
@@ -2343,6 +2367,9 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 		_ObjectLightTest= CNELU::Scene.createInstance(_ObjectLightTestShape);
 		if(_ObjectLightTest!=NULL)
 		{
+			// link to the root for manipulation
+			CNELU::Scene.getHrcTrav()->link(_SceneRoot, _ObjectLightTest);
+
 			// setup the matrix.
 			_ObjectLightTestMatrix= _ObjectLightTest->getMatrix();
 			// setup the logic info.

@@ -38,6 +38,8 @@ public:
 // Attributes
 public:
 
+	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest};
+
 	CStatusBar		StatusBar;
 	CToolBar		ToolBar;
 
@@ -54,8 +56,7 @@ public:
 	bool		    VegetableWindow;
 	bool		    GlobalWindWindow;
 	bool		    SoundAnimWindow;
-	bool			MoveElement;
-	bool			MoveObjectLightTest;
+	TMouseMove		MouseMoveType;
 	bool			X;
 	bool			Y;
 	bool			Z;
@@ -70,6 +71,11 @@ public:
 	
 	void update ();
 	void registerValue (bool update=true);
+
+	bool			isMoveCamera() const {return MouseMoveType==MoveCamera;}
+	bool			isMoveSceneRoot() const {return MouseMoveType==MoveSceneRoot;}
+	bool			isMoveElement() const {return MouseMoveType==MoveElement;}
+	bool			isMoveObjectLightTest() const {return MouseMoveType==MoveObjectLightTest;}
 
 // Operations
 public:
@@ -138,6 +144,11 @@ public:
 	afx_msg void OnUpdateWindowGlobalwind(CCmdUI* pCmdUI);
 	afx_msg void OnEditMoveObjectLightTest();
 	afx_msg void OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI);
+	afx_msg void OnEditMovecamera();
+	afx_msg void OnUpdateEditMovecamera(CCmdUI* pCmdUI);
+	afx_msg void OnEditMovescene();
+	afx_msg void OnUpdateEditMovescene(CCmdUI* pCmdUI);
+	afx_msg void OnViewResetSceneRoot();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

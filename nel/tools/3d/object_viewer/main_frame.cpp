@@ -102,8 +102,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	VegetableWindow=false;
 	GlobalWindWindow= false;
 	SoundAnimWindow=false;
-	MoveElement=false;
-	MoveObjectLightTest=false;
+	MouseMoveType= MoveCamera;
 	MoveMode=true;
 	X=true;
 	Y=true;
@@ -172,14 +171,19 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
 	ON_COMMAND(IDM_SET_LAG, OnSetLag)
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
-	ON_COMMAND(IDM_SHUFFLE_TEXTURE_SET, OnShuffleTextureSet)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
+	ON_COMMAND(IDM_SHUFFLE_TEXTURE_SET, OnShuffleTextureSet)	
 	ON_COMMAND(ID_WINDOW_VEGETABLE, OnWindowVegetable)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_VEGETABLE, OnUpdateWindowVegetable)
 	ON_COMMAND(ID_WINDOW_GLOBALWIND, OnWindowGlobalwind)
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_GLOBALWIND, OnUpdateWindowGlobalwind)
 	ON_COMMAND(ID_EDIT_MOVE_OBJECT_LIGHT_TEST, OnEditMoveObjectLightTest)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_OBJECT_LIGHT_TEST, OnUpdateEditMoveObjectLightTest)
+	ON_COMMAND(ID_EDIT_MOVECAMERA, OnEditMovecamera)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVECAMERA, OnUpdateEditMovecamera)
+	ON_COMMAND(ID_EDIT_MOVESCENE, OnEditMovescene)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVESCENE, OnUpdateEditMovescene)
+	ON_COMMAND(ID_VIEW_RESET_SCENE_ROOT, OnViewResetSceneRoot)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -431,31 +435,6 @@ void CMainFrame::OnClear()
 
 	// Remove all the instance
 	ObjView->removeAllInstancesFromScene();
-}
-
-void CMainFrame::OnEditMoveelement() 
-{
-	MoveElement^=true;
-	// In all case, disable MoveObjectLightTest
-	MoveObjectLightTest= false;
-	UpdateData() ;
-	ToolBar.Invalidate ();
-
-	if (!MoveElement) // switch back to camera mode ?
-	{
-		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
-		ObjView->getMouseListener().enableTranslateXYInWorld(false);
-	}
-	else
-	{
-		ObjView->getMouseListener().enableModelMatrixEdition() ;
-		ObjView->getMouseListener().enableTranslateXYInWorld(false);
-		ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
-	}
-
-	/*ctrl->EnableXCtrl.EnableWindow(MoveElement) ;
-	EnableYCtrl.EnableWindow(MoveElement) ;
-	EnableZCtrl.EnableWindow(MoveElement) ;*/
 }
 
 void CMainFrame::OnEditX() 
@@ -864,10 +843,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	ToolBar.SetButtonStyle (0, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (1, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (3, TBBS_CHECKBOX);
+	ToolBar.SetButtonStyle (4, TBBS_CHECKBOX);
 	ToolBar.SetButtonStyle (5, TBBS_CHECKBOX);
-	ToolBar.SetButtonStyle (6, TBBS_CHECKBOX);
-	ToolBar.SetButtonStyle (7, TBBS_CHECKBOX);
-	ToolBar.SetButtonStyle (9, TBBS_CHECKBOX);
+	ToolBar.SetButtonStyle (7, TBBS_CHECKGROUP);
+	ToolBar.SetButtonStyle (8, TBBS_CHECKGROUP);
+	ToolBar.SetButtonStyle (9, TBBS_CHECKGROUP);
+	ToolBar.SetButtonStyle (10, TBBS_CHECKGROUP);
 	ToolBar.EnableDocking(CBRS_ALIGN_ANY);
 
 	InitialUpdateFrame (NULL, TRUE);
@@ -956,11 +937,6 @@ void CMainFrame::OnUpdateEditZ(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (Z);
 }
 
-void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI) 
-{
-	pCmdUI->SetCheck (MoveElement);
-}
-
 void CMainFrame::OnHelpAboutobjectviewer() 
 {
 	CAboutDialog about;
@@ -1012,31 +988,114 @@ void CMainFrame::OnShuffleTextureSet()
 }
 
 
+// ***************************************************************************
+// ***************************************************************************
+// Mouse Edit Mode
+// ***************************************************************************
+// ***************************************************************************
 
-///===========================================================================================
-void CMainFrame::OnEditMoveObjectLightTest() 
+
+// ***************************************************************************
+void CMainFrame::OnEditMovecamera() 
 {
-	MoveObjectLightTest^=true;
-	// In all case, disable MoveElement
-	MoveElement= false;
+	// no op if already the case
+	if(isMoveCamera())
+		return;
+
+	MouseMoveType= MoveCamera;
 	UpdateData() ;
 	ToolBar.Invalidate ();
 
-	if (!MoveObjectLightTest) // switch back to camera mode ?
-	{
-		ObjView->getMouseListener().enableModelMatrixEdition(false) ;
-		ObjView->getMouseListener().enableTranslateXYInWorld(false);
-	}
-	else
-	{
-		ObjView->getMouseListener().enableModelMatrixEdition() ;
-		// Better to move in XY world plane.
-		ObjView->getMouseListener().enableTranslateXYInWorld(true);
-		ObjView->getMouseListener().setModelMatrix(ObjView->_ObjectLightTestMatrix) ;
-	}
+	ObjView->getMouseListener().enableModelMatrixEdition(false) ;
+	ObjView->getMouseListener().enableTranslateXYInWorld(false);
+}
+
+void CMainFrame::OnEditMovescene() 
+{
+	// no op if already the case
+	if(isMoveSceneRoot())
+		return;
+
+	MouseMoveType= MoveSceneRoot;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
+	ObjView->getMouseListener().enableTranslateXYInWorld(false);
+	ObjView->getMouseListener().setModelMatrix(ObjView->_SceneRoot->getMatrix()) ;
+	// Each move must be multiplied by identity
+	ObjView->getMouseListener().setModelMatrixTransformMove(CMatrix::Identity);
+}
+
+void CMainFrame::OnEditMoveelement() 
+{
+	// no op if already the case
+	if(isMoveElement())
+		return;
+
+	MouseMoveType= MoveElement;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
+	ObjView->getMouseListener().enableTranslateXYInWorld(false);
+	ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
+	// Each move must be multiplied by inverese of scene root matrix.
+	ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+
+	/*ctrl->EnableXCtrl.EnableWindow(MoveElement) ;
+	EnableYCtrl.EnableWindow(MoveElement) ;
+	EnableZCtrl.EnableWindow(MoveElement) ;*/
+}
+
+void CMainFrame::OnEditMoveObjectLightTest() 
+{
+	// no op if already the case
+	if(isMoveObjectLightTest())
+		return;
+
+	MouseMoveType= MoveObjectLightTest;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
+	// Better to move in XY world plane.
+	ObjView->getMouseListener().enableTranslateXYInWorld(true);
+	ObjView->getMouseListener().setModelMatrix(ObjView->_ObjectLightTestMatrix) ;
+	// Each move must be multiplied by inverese of scene root matrix.
+	ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+}
+
+// ***************************************************************************
+void CMainFrame::OnUpdateEditMovecamera(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (isMoveCamera());
+}
+
+void CMainFrame::OnUpdateEditMovescene(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (isMoveSceneRoot());
+}
+
+void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (isMoveElement());
 }
 
 void CMainFrame::OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck (MoveObjectLightTest);
+	pCmdUI->SetCheck (isMoveObjectLightTest());
+}
+
+
+void CMainFrame::OnViewResetSceneRoot() 
+{
+	CMatrix	ident;
+	ObjView->_SceneRoot->setTransformMode(ITransformable::DirectMatrix);
+	ObjView->_SceneRoot->setMatrix(ident);
+
+	if(isMoveSceneRoot())
+	{
+		ObjView->_MouseListener.setModelMatrix (ident);
+	}
 }

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.13 2002/04/25 08:30:41 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.14 2002/08/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,8 @@ void CParticleDlg::resetSystem(void)
 	
 	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene.createInstance(emptySystemName) ;
 
+	// link to the root for manipulation
+	CNELU::Scene.getHrcTrav()->link(_ObjView->getSceneRoot(), _CurrSystemModel);
 
 	_CurrSystemModel->enableDisplayTools() ;
 	_CurrSystemModel->enableAutoGetEllapsedTime(false) ;		

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.39 2002/07/03 12:22:31 vizerie Exp $
+ * $Id: object_viewer.h,v 1.40 2002/08/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -418,6 +418,8 @@ public:
 	float		getGlobalWindPower() const;
 	void		setGlobalWindPower(float w);
 
+	/// Get the scene roor for manip.
+	NL3D::CTransform	*getSceneRoot() const {return _SceneRoot;}
 
 private:
 
@@ -526,6 +528,9 @@ private:
 
 	// Scale the pos of the skeleton
 	float										_CharacterScalePos;
+
+	// The root of all objects added to the scene. Rotated for user convenience
+	NL3D::CTransform							*_SceneRoot;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

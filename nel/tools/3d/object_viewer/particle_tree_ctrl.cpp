@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.34 2002/04/25 12:22:54 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.35 2002/08/06 15:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -340,7 +340,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 			CObjectViewer *ov = _ParticleDlg->MainFrame->ObjView;
 
-			if(_ParticleDlg->MainFrame->MoveElement)
+			if(_ParticleDlg->MainFrame->isMoveElement())
 			{
 				ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix());
 			}
@@ -800,6 +800,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 					if (newModel)
 					{		
+						// link to the root for manipulation
+						NL3D::CNELU::Scene.getHrcTrav()->link(_ParticleDlg->_ObjView->getSceneRoot(), newModel);
+
 						_ParticleDlg->StartStopDlg->reset();
 						CParticleSystemModel *psm = newModel;					
 						psm->setEditionMode(true); // this also force the system instanciation
@@ -868,6 +871,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 					if (newModel)
 					{									
+						// link to the root for manipulation
+						NL3D::CNELU::Scene.getHrcTrav()->link(_ParticleDlg->_ObjView->getSceneRoot(), newModel);
+
 						nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape) );				
 					}
 					NL3D::CNELU::Scene.deleteInstance(newModel);

@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.2 2001/06/19 16:02:34 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.3 2001/07/04 12:29:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 		 *  \param startIndex usually 0, it gives the index of the first element in the located
 		 */
 
-		virtual void make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const ;
+		virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy = false) const ;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
@@ -120,6 +120,20 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 			f.serialVersion(1) ;
 		}
 
+} ;
+
+
+
+
+/** this memorize value by applying some function on the emitter. For a particle's attribute, each particle has its
+  * own value memorized
+  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
+  */
+class CPSPlaneBasisMemory : public CPSAttribMakerMemory<CPlaneBasis>
+{
+public:
+	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(CVector::K)) ; }
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisMemory) ;
 } ;
 
 

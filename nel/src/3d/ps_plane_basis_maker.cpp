@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.2 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.3 2001/07/04 12:29:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ CPlaneBasis CPSPlaneBasisFollowSpeed::get(CPSLocated *loc, uint32 index)
 }
 
 
-void CPSPlaneBasisFollowSpeed::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy /* = false*/) const
 {
 	nlassert(numAttrib) ;
 	TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin() + startIndex
@@ -55,6 +55,7 @@ void CPSPlaneBasisFollowSpeed::make(CPSLocated *loc, uint32 startIndex, void *ta
 		ptDat += stride ;
 	}
 	while (speedIt != endSpeedIt) ;
+	return tab ;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.6 2001/10/03 15:50:32 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.7 2001/12/06 16:52:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 namespace NL3D {
 
 
-CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(NLMISC::CVector::I), CPlaneBasis(NLMISC::CVector::J) } ;
+CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(NLMISC::CVector::I), CPlaneBasis(NLMISC::CVector::J) };
 
 /////////////////////////////////////////////
 // CPSPlaneBasisFollowSpeed implementation //
@@ -37,73 +37,73 @@ CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(NLMISC
 
 CPlaneBasis CPSPlaneBasisFollowSpeed::get(CPSLocated *loc, uint32 index)
 {
-   return (CPlaneBasis(loc->getSpeed()[index])) ;
+   return (CPlaneBasis(loc->getSpeed()[index]));
 }
 
 
 void *CPSPlaneBasisFollowSpeed::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool enableNoCopy /* = false*/) const
 {
-	nlassert(numAttrib) ;
+	nlassert(numAttrib);
 	TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin() + startIndex
-									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib ;
-	uint8 *ptDat  = (uint8 *) tab ; 
+									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib;
+	uint8 *ptDat  = (uint8 *) tab; 
 	do
 	{
-		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt) ;
-		++ speedIt ;
-		ptDat += stride ;
+		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt);
+		++ speedIt;
+		ptDat += stride;
 	}
-	while (speedIt != endSpeedIt) ;
-	return tab ;
+	while (speedIt != endSpeedIt);
+	return tab;
 }
 
 
 void CPSPlaneBasisFollowSpeed::make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
 {
-	nlassert(numAttrib) ;
+	nlassert(numAttrib);
 	TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin() + startIndex
-									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib ;	
-	uint8 *ptDat  = (uint8 *) tab  ;
+									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib;	
+	uint8 *ptDat  = (uint8 *) tab;
 	do
 	{
-		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt) ;
-		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat  ;
-		ptDat += stride ;
-		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat  ;
-		ptDat += stride ;
-		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat  ;
+		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt);
+		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat;
+		ptDat += stride;
+		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat;
+		ptDat += stride;
+		*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat;
 		ptDat += stride << 1;
-		++ speedIt ;		
+		++ speedIt;		
 	}
-	while (speedIt != endSpeedIt) ;
+	while (speedIt != endSpeedIt);
 }		
 
 
 void CPSPlaneBasisFollowSpeed::makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
 {
-	nlassert(numAttrib) ;
-	nlassert(nbReplicate > 1) ; 
+	nlassert(numAttrib);
+	nlassert(nbReplicate > 1); 
 	TPSAttribVector::const_iterator speedIt = loc->getSpeed().begin() + startIndex
-									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib ;	
-	uint8 *ptDat  = (uint8 *) tab  ;
-	uint k ; 
+									, endSpeedIt = loc->getSpeed().begin() + startIndex + numAttrib;	
+	uint8 *ptDat  = (uint8 *) tab;
+	uint k; 
 	do
 	{
-		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt) ;
+		*(CPlaneBasis *) ptDat = CPlaneBasis(*speedIt);
 		
-		k = nbReplicate - 1 ;
-		ptDat += stride ;
+		k = nbReplicate - 1;		
 
 		do
 		{
-			*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat  ;
-			ptDat += stride ;
+			*(CPlaneBasis *) (ptDat + stride) = *(CPlaneBasis *) ptDat;
+			ptDat += stride;
 		}
-		while (--k) ;
+		while (--k);
+		ptDat += stride;
 	
-		++ speedIt ;		
+		++ speedIt;		
 	}
-	while (speedIt != endSpeedIt) ;
+	while (speedIt != endSpeedIt);
 }
 
 
@@ -149,7 +149,7 @@ void CSpinnerFunctor::updateSamples(void)
 	_PBTab.resize(_NbSamples);
 	NLMISC::CMatrix mat;
 	// compute each sample
-	for (uint32 k = 0; k < _NbSamples ; ++k)
+	for (uint32 k = 0; k < _NbSamples; ++k)
 	{		
 		mat.setRot(NLMISC::CQuat(_Axis, k * angInc));
 		_PBTab[k] = CPlaneBasis(mat.getI(), mat.getJ());

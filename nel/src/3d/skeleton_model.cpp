@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.59 2004/07/27 16:16:07 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.59.4.1 2004/09/14 17:15:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -801,14 +801,7 @@ void	CSkeletonModel::traverseAnimDetail()
 	{
 		lodBoneInterp=1.f;
 	}
-	// If the interpolation value is different from last one, must update.
-	if(lodBoneInterp != _CurLodInterp)
-	{
-		// set new one.
 		_CurLodInterp= lodBoneInterp;
-		// must update bone compute.
-		forceUpdate= true;
-	}
 
 
 
@@ -816,12 +809,8 @@ void	CSkeletonModel::traverseAnimDetail()
 	//===============
 
 	// If User AnimCtrl, then must update
-	if(_AnimCtrlUsage>0)
-		forceUpdate= true;
 
 	// test if bones must be updated. either if animation change or if BoneUsage change.
-	if(IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
-	{
 		// Retrieve the WorldMatrix of the current CTransformShape.
 		const CMatrix		&modelWorldMatrix= getWorldMatrix();
 
@@ -845,7 +834,6 @@ void	CSkeletonModel::traverseAnimDetail()
 		}
 
 		IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
-	}
 
 	// Sticked Objects: 
 	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:

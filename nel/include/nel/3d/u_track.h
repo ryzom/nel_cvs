@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.6 2003/02/19 17:46:52 besson Exp $
+ * $Id: u_track.h,v 1.7 2003/02/20 11:26:00 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,6 +200,9 @@ public:
 		float			EaseFrom;
 		float			EaseTo;
 	};
+
+	UTrackKeyframer(){}
+	virtual ~UTrackKeyframer(){}
 
 	static	UTrackKeyframer	*createLinearFloatTrack();
 	static	UTrackKeyframer	*createBezierFloatTrack();

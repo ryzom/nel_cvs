@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.36 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: msg_socket.h,v 1.37 2001/02/05 16:27:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,7 +209,7 @@ public:
 	 * is the received message, thus in the callback you have to check the type of the message, which can be either a number
 	 * or a string), otherwise a warning is emitted.
 	 *
-	 * - When a connection is closed, the callback of name "D" is called if it exists. The message is empty.
+	 * - When a connection is closed, the callback of name "D" is called if it exists. The message contains the address of the remote socket (CInetAddress).
 	 *
 	 * When a message with a name (as a string) is received, a binding message is replied to the sender, so that
 	 * next time it sends this type of message, the type is represented by a message type code.

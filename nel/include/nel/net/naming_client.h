@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.14 2001/01/29 17:47:55 cado Exp $
+ * $Id: naming_client.h,v 1.15 2001/02/05 16:27:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,6 +123,12 @@ public:
 
 	/// Same as lookup(const string&, CInetAddress&, uint16&)
 	static bool			lookup( TServiceId sid, CInetAddress& addr, uint16& validitytime );
+
+	/**
+	 * Returns all services corresponding to the specified name.
+	 * Ex: lookupAll( "AS", addresses );
+	 */
+	static void			lookupAll( const std::string& name, std::vector<CInetAddress>& addresses );
 
 	/** Tells the Naming Service the specified address does not respond for the specified service,
 	 * and returns true and another address for the service if available, otherwise returns false

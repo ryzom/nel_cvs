@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.54 2001/01/29 17:47:55 cado Exp $
+ * $Id: msg_socket.cpp,v 1.55 2001/02/05 16:27:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -506,15 +506,6 @@ bool CMsgSocket::update()
 				if ( (*ilps).second->isListening() )
 				{
 					// Accept connection request
-					/* // Old code
-					CMessage msgout;
-					CSocket& sock = accept( (*ilps)->descriptor() );
-					CInetAddress addr = sock.remoteAddr();
-					msgout.serial( addr );
-					CMessage msgin( "C", true );
-					msgin.fill( msgout.buffer(), msgout.length() );
-					processReceivedMessage( msgin, sock );*/
-					// New code
 					CMessage msgoutin( "C" );
 					CSocket& sock = accept( (*ilps).second->descriptor() );
 					CInetAddress addr = sock.remoteAddr();
@@ -659,6 +650,8 @@ void CMsgSocket::handleConnectionClosure( const CConnections::iterator& ilps )
 		_BytesSentByClosedConnections += (*ilps).second->bytesSent();
 
 		CMessage msg( "D" );
+		CInetAddress addr = (*ilps).second->remoteAddr();
+		msg.serial( addr );
 		processReceivedMessage( msg, *((*ilps).second) );
 		if ( (*ilps).second->ownerClient() != NULL )
 		{

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.20 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.21 2001/02/05 16:27:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,8 @@ const sint16 LKI_CBINDEX = 5;
 const sint16 LAI_CBINDEX = 6;
 const sint16 RGI_CBINDEX = 7;
 const sint16 UNI_CBINDEX = 8;
+
+const sint16 LKA_CBINDEX = 9;
 //@}
 
 
@@ -448,6 +450,27 @@ bool CNamingClient::lookupAlternate( TServiceId sid, CInetAddress& addr, uint16&
 	CNamingClient::_ClientSock->send( msgout );
 
 	return doReceiveLookupAnswer( sIdToString(sid), addr, validitytime );
+}
+
+
+/*
+ * Returns all services corresponding to the specified name.
+ * Ex: lookupAll( "AS", addresses );
+ */
+void CNamingClient::lookupAll( const std::string& name, std::vector<CInetAddress>& addresses )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up all services %s", name.c_str() );
+	CMessage msgout( "" ); // "LKA"
+	msgout.setType( LKA_CBINDEX );
+	msgout.serial( const_cast<string&>(name) );
+	CNamingClient::_ClientSock->send( msgout );
+
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	msgin.serialCont( addresses );
 }
 
 

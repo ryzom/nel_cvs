@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.8 2001/09/10 13:43:56 cado Exp $
+ * $Id: sock.cpp,v 1.9 2001/09/12 16:56:01 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 
+#include "nel/misc/time_nl.h"
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>
@@ -199,7 +200,9 @@ CSock::CSock( bool logging ) :
 	_Logging( logging ),
 	_BytesReceived( 0 ),
 	_BytesSent( 0 ),
-	_NonBlocking( false )
+	_NonBlocking( false ),
+	_MaxReceiveTime( 0 ),
+	_MaxSendTime( 0 )
 {
 	nlassert( CSock::_Initialized );
 	/*{
@@ -282,6 +285,9 @@ void CSock::close()
  */
 CSock::~CSock()
 {
+	nlinfo( "Report for %s socket:", _NonBlocking?"non-blocking":"blocking" );
+	nlinfo( "Max send time: %u", _MaxSendTime );
+	nlinfo( "Max recv time: %u", _MaxReceiveTime );
 	if ( _Sock != INVALID_SOCKET )
 	{
 		if ( _Logging )
@@ -404,7 +410,9 @@ void CSock::setLocalAddress()
  */
 CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exception )
 {
+	TTicks before = CTime::getPerformanceTime();
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
+	_MaxSendTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
 	if ( len == SOCKET_ERROR )
 	{
 		if ( ERROR_NUM == ERROR_WOULDBLOCK )
@@ -437,7 +445,9 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 	if ( _NonBlocking )
 	{
 		// Receive incoming message (only the received part)
+		TTicks before = CTime::getPerformanceTime();
 		len = ::recv( _Sock, (char*)buffer, len, 0 );
+		_MaxReceiveTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 		switch ( len )
 		{
 			// Graceful disconnection
@@ -483,7 +493,9 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		uint brecvd;
 		while ( total < len )
 		{
+			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
+			_MaxReceiveTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 			switch ( brecvd )
 			{
 				// Graceful disconnection

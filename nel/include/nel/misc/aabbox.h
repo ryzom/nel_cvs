@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.3 2002/01/07 14:34:27 vizerie Exp $
+ * $Id: aabbox.h,v 1.4 2002/01/09 18:08:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,7 @@ public:
 	// @{
 	void			setCenter(const CVector &center) {Center= center;}
 	void			setHalfSize(const CVector &hs) {HalfSize= hs;}
+	/// Set the size of the bbox (ie 2* the halfSize).
 	void			setSize(const CVector &s) {HalfSize= s/2;}
 	/// Build the bbox, with a min/max style bbox.
 	void			setMinMax(const CVector &bmin, const CVector &bmax)

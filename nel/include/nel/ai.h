@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: ia.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: ai.h,v 1.1 2000/09/14 08:48:50 lecroart Exp $
  *
  * Main ia header that include all ia files
  */

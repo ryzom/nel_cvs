@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.9 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.10 2001/06/18 16:32:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,11 +122,12 @@ void CPSEmitter::showTool(void)
 		
 	
 
-		CPSLocated *loc ;
+		CPSLocated *loc ;		
 		uint32 index ;
-		_Owner->getOwner()->getCurrentEditedElement(loc, index) ;
+		CPSLocatedBindable *lb ;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
 
-		mat.setColor(loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
 		
 
 		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: particle_system.h,v 1.2 2001/06/18 16:32:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,20 +296,23 @@ public:
 	/** For edition purposes only : this allow to highlight in red the current element being edited
 	 *  \param located The located the current element belongs to, or NULL if no element is selected
 	 *  \index the index of the element in the located
+	 *  \lb the located bindable that is selected into a located (NULL = all)
 	 */
-	 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0)
+	 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0, class CPSLocatedBindable *bd = NULL )
 	 {
 		_CurrEditedElementLocated = loc ;
+		_CurrEditedElementLocatedBindable = bd ; 
 		_CurrEditedElementIndex = index ;
 	 }
 
 	/** retrieve the current edited element
 	 *  \see setCurrentEditedElement()
 	 */
-	 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index)
+	 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index, CPSLocatedBindable *&lb)
 	 {
 		loc = _CurrEditedElementLocated ;
 		index = _CurrEditedElementIndex ;
+		lb = _CurrEditedElementLocatedBindable ;
 	 }
      		
 		
@@ -337,6 +340,8 @@ protected:
 
 	// current edited element located (edition purpose only)
 	CPSLocated *_CurrEditedElementLocated ;
+	// current edited located bindable, NULL means all binadable of a located. (edition purpose only)
+	CPSLocatedBindable *_CurrEditedElementLocatedBindable ;
 	// current edited element index in its located (edition purpose only)
 	uint32 _CurrEditedElementIndex ;
 

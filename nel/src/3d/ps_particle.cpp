@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.20 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.21 2001/06/18 16:32:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,10 +118,11 @@ void CPSParticle::showTool()
 	
 
 		CPSLocated *loc ;
-		uint32 index ;
-		_Owner->getOwner()->getCurrentEditedElement(loc, index) ;
-
-		mat.setColor(loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		uint32 index ;		
+		CPSLocatedBindable *lb ;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index, lb) ;
+	
+		mat.setColor((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
 		
 
 		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.65 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: path.cpp,v 1.66 2002/12/16 16:39:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1273,5 +1273,38 @@ bool CFile::createDirectory(const std::string &filename)
 #endif
 }
 
+bool CFile::setRWAccess(const std::string &filename)
+{
+#ifdef NL_OS_WINDOWS
+	// if the file exists and there's no write access
+	if (_access (filename.c_str(), 00) == 0 && _access (filename.c_str(), 06) == -1)
+	{
+		// try to set the read/write access
+		if (_chmod (filename.c_str(), _S_IREAD | _S_IWRITE) == -1)
+		{
+			nlwarning ("Can't set RW access to file '%s': %d %s", filename.c_str(), errno, strerror(errno));
+			return false;
+		}
+	}
+#endif
+	return true;
+}
+
+
+#ifdef NL_OS_WINDOWS
+#define unlink _unlink
+#endif
+
+bool CFile::deleteFile(const std::string &filename)
+{
+	setRWAccess(filename);
+	int res = unlink (filename.c_str());
+	if (res == -1)
+	{
+		nlwarning ("Can't delete file '%s': %d %s", filename.c_str(), errno, strerror(errno));
+		return false;
+	}
+	return true;
+}
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.15 2002/08/21 10:30:26 legros Exp $
+ * $Id: edge_collide.cpp,v 1.16 2003/07/03 11:59:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,10 +199,12 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 	float		r0, r1, res;
 	CVector2f	relC, relV;
 
+	// As long as delta is not NULL (ensured in testCircleMove() ), this code should not generate Divide by 0.
+
 	// compute quadratic..
 	relC= start-point;
 	relV= delta;
-	a= relV.x*relV.x + relV.y*relV.y;		// a>=0.
+	a= relV.x*relV.x + relV.y*relV.y;		// a>0.
 	b= 2* (relC.x*relV.x + relC.y*relV.y);
 	c= relC.x*relC.x + relC.y*relC.y - radius*radius;
 	// compute delta of the quadratic.
@@ -249,6 +251,10 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 // ***************************************************************************
 float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
 {
+	// If the movement is NULL, return 1 (no collision!)
+	if(	delta.isNull() )
+		return 1;
+
 	// distance from point to line.
 	double	dist= start*Norm + C;
 	// projection of speed on normal.
@@ -270,6 +276,10 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 	{
 		// if signs are equals, same side of the line, so we allow the circle to leave the line.
 		if(sensPos==sensSpeed )
+			return 1;
+
+		// if speed is 0, it means that movement is parralel to the line => never collide.
+		if(speed==0)
 			return 1;
 
 		// collide the line, at what time.

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.13 2002/01/14 13:55:21 lecroart Exp $
+ * $Id: login_server.cpp,v 1.14 2002/03/04 10:35:24 lecroart Exp $
  *
  */
 
@@ -375,8 +375,6 @@ void CLoginServer::clientDisconnected (uint32 userId)
 	{
 		CNetManager::send("WS", msgout);
 	}
-	
-	CUnifiedNetwork::getInstance()->send("WS", msgout);
 
 	// remove the user association
 	UserIdSockAssociations.erase (userId);

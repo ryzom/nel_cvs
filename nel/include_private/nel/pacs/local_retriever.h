@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.5 2001/06/05 10:37:47 legros Exp $
+ * $Id: local_retriever.h,v 1.6 2001/06/05 13:50:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,6 +212,7 @@ private:
 		}
 	};
 
+	/// The intersection between an ordered chain and the path.
 	struct CIntersectionMarker
 	{
 		float	Position;
@@ -221,6 +222,8 @@ private:
 
 		CIntersectionMarker() {}
 		CIntersectionMarker(float position, uint16 ochain, uint16 edge, bool in) : Position(position), OChain(ochain), Edge(edge), In(in) {}
+
+		bool	operator< (const CIntersectionMarker &comp) const { return Position < comp.Position; }
 	};
 
 public:

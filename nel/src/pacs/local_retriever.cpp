@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.13 2001/06/05 10:37:59 legros Exp $
+ * $Id: local_retriever.cpp,v 1.14 2001/06/05 13:50:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,7 +354,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 	// examine each chain tip to match another tip inside the surface tips
 	// if there is no matching tip, then creates a new one
 
-	uint	i, j, k;
+	uint	i, j;
 
 	for (i=0; i<_Surfaces.size(); ++i)
 	{
@@ -716,6 +716,12 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 
 
 
+
+
+
+
+
+
 void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<uint8> &retrieveTable) const
 {
 	uint	ochain;
@@ -806,6 +812,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 	}
 }
 
+
 void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, 
 										  const NLPACS::CLocalRetriever::CLocalPosition &B, 
 										  std::vector<NLPACS::CVector2s> &path, 
@@ -860,7 +867,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 				if (va*vb <= 0.0f)
 				{
 					const CChain	&parent = _Chains[chain.getParentId()];
-					bool			isIn = (va < 0.0f) ^ (parent.getRight() == surface);
+					bool			isIn = (va < 0.0f) ^ (parent.getLeft() == surface) ^ chain.isForward();
 
 					intersections.push_back(CIntersectionMarker(va/(va-vb), entry.OChainId, j, isIn));
 				}
@@ -868,7 +875,28 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 		}
 	}
 
+	sort(intersections.begin(), intersections.end());
 
+	if (intersections.size() & 1)
+	{
+		nlwarning("in NLPACS::CLocalRetriever::findPath()");
+		nlerror("Found an odd (%d) number of intersections", intersections.size());
+	}
+	
+	for (i=0; i<intersections.size(); )
+	{
+		if (intersections[i++].In)
+		{
+			nlwarning("in NLPACS::CLocalRetriever::findPath()");
+			nlerror("Entered the surface before exited", intersections.size());
+		}
+
+		if (!intersections[i++].In)
+		{
+			nlwarning("in NLPACS::CLocalRetriever::findPath()");
+			nlerror("Exited twice the surface", intersections.size());
+		}
+	}
 }
 
 

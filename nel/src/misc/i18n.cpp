@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.31 2003/03/06 17:26:45 boucher Exp $
+ * $Id: i18n.cpp,v 1.32 2003/03/10 16:09:23 besson Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -453,6 +453,12 @@ void CI18N::load (uint32 lid)
 */
 const ucstring &CI18N::get (const std::string &label)
 {
+	if (label.empty())
+	{
+		static ucstring	emptyString;
+		return emptyString;
+	}
+
 	StrMapContainer::iterator it(_StrMap.find(label));
 
 	if (it != _StrMap.end())

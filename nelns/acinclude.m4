@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.4 2002/01/22 14:24:56 valignat Exp $
+dnl $Id: acinclude.m4,v 1.5 2002/01/28 14:40:26 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -64,7 +64,7 @@ dnl AM_PATH_OPENAL
 dnl
 dnl    Option:      "yes" if the use of the OpenAL library is mandatory.
 dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 OPENAL_CFLAGS and OPENAL_LIB variables to use it.
+dnl                 OPENAL_CFLAGS and OPENAL_LIBS variables to use it.
 dnl
 dnl
 dnl AM_PATH_PYTHON
@@ -226,10 +226,10 @@ then
         
     if test $nel_libraries
     then
-        NEL_TEST_LIB="-L$nel_libraries -l$nel_test_lib"
+        NEL_TEST_LIBS="-L$nel_libraries -l$nel_test_lib"
 
     else
-        NEL_TEST_LIB="$nel_dir_lnk -l$nel_test_lib"
+        NEL_TEST_LIBS="$nel_dir_lnk -l$nel_test_lib"
     fi
 
     _CPPFLAGS="$CPPFLAGS"
@@ -881,7 +881,7 @@ if test "$openal_libraries"
 then
     OPENAL_LIBS="-L$openal_libraries"
 fi
-OPENAL_LIB="$OPENAL_LIB -l$openal_lib"
+OPENAL_LIBS="$OPENAL_LIBS -l$openal_lib"
 
 _CPPFLAGS="$CPPFLAGS"
 CPPFLAGS="$CXXFLAGS $OPENAL_CFLAGS"
@@ -910,7 +910,7 @@ fi
 dnl Test the libraries
 AC_MSG_CHECKING(for OpenAL libraries)
 
-CPPFLAGS="$CXXFLAGS $OPENAL_LIB"
+CPPFLAGS="$CXXFLAGS $OPENAL_LIBS"
 
 AC_TRY_LINK( , , have_openal_libraries="yes", have_openal_libraries="no")
 
@@ -944,7 +944,7 @@ then
 fi
 
 AC_SUBST(OPENAL_CFLAGS)
-AC_SUBST(OPENAL_LIB)
+AC_SUBST(OPENAL_LIBS)
 
 
 ])

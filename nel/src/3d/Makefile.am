@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.110 2004/08/23 18:05:17 lecroart Exp $
+# $Id: Makefile.am,v 1.111 2005/03/22 10:01:27 cado Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -72,6 +72,8 @@ libnel3d_la_SOURCES  = \
 	cube_grid.h \
 	cube_map_builder.cpp \
 	cube_map_builder.h \
+	debug_vb.cpp \
+	debug_vb.h \
 	deform_2d.cpp \
 	deform_2d.h \
 	driver.cpp \
@@ -364,6 +366,8 @@ libnel3d_la_SOURCES  = \
 	raw_skin.h \
 	raw_skinned.cpp \
 	raw_skinned.h \
+	ray_mesh.cpp \
+	ray_mesh.h \
 	register_3d.cpp \
 	register_3d.h \
 	render_trav.cpp \
@@ -389,6 +393,8 @@ libnel3d_la_SOURCES  = \
 	shadow_map_manager.h \
 	shadow_poly_receiver.cpp \
 	shadow_poly_receiver.h \
+	shadow_skin.cpp \
+	shadow_skin.h \
 	shape.cpp \
 	shape.h \
 	shape_bank.cpp \
@@ -535,6 +541,8 @@ libnel3d_la_SOURCES  = \
 	vegetablevb_allocator.h \
 	vertex_buffer.cpp \
 	vertex_buffer.h \
+	vertex_buffer_heap.cpp \
+	vertex_buffer_heap.h \
 	vertex_program.cpp \
 	vertex_program.h \
 	vertex_program_parse.cpp \

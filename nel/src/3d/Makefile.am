@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.57 2001/11/09 16:04:30 corvazier Exp $
+# $Id: Makefile.am,v 1.58 2001/12/06 17:03:03 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -102,6 +102,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        ps_attrib.h \
                        ps_attrib_maker.h \
                        ps_attrib_maker_bin_op.h \
+                       ps_attrib_maker_bin_op_include.h \
                        ps_attrib_maker_helper.h \
                        ps_attrib_maker_template.h \
                        ps_color.h \
@@ -113,6 +114,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        ps_int.h \
                        ps_located.h \
                        ps_lod.h \
+                       ps_mesh.h\
                        ps_misc.h \
                        ps_particle.h \
                        ps_particle2.h \
@@ -306,8 +308,10 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        ps_force.cpp \
                        ps_int.cpp \
                        ps_located.cpp \
+                       ps_mesh.cpp \
                        ps_particle.cpp \
                        ps_particle2.cpp \
+                       ps_particle_basic.cpp \
                        ps_plane_basis_maker.cpp \
                        ps_sound.cpp \
                        ps_util.cpp \

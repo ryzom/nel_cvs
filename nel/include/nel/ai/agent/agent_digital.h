@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.6 2001/01/17 10:16:08 saffray Exp $
+ * $Id: agent_digital.h,v 1.7 2001/01/18 15:16:19 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -451,61 +451,6 @@ namespace NLAIAGENT
 		virtual void getDebugString(char *text) const
 		{
 			sprintf(text,"%c",getValue());
-		}		
-
-		virtual const CProcessResult &run();
-	};
-
-	/**	
-	This class store a vector<float,float,float> in an IObjectIA.
-
-	* \author Chafik sameh	 
-	* \author Portier Pierre
-	* \author Saffray Alain
-	* \author Nevrax France
-	* \date 2001
-	*/
-	class VectorType: public IVector
-	{
-	public:
-
-		static const NLAIC::CIdentType IdVectorType;
-
-	public:
-		VectorType(float x, float y, float z):IVector(x, y, z)
-		{			
-		}
-
-		VectorType():IVector()
-		{			
-		}
-
-		VectorType(const VectorType &a):IVector(a)
-		{			
-		}
-
-		VectorType(NLMISC::IStream &is):IVector(is)
-		{
-		}
-		
-		virtual const NLAIC::IBasicType *clone() const
-		{
-			NLAIC::IBasicInterface *m = new VectorType(*this);
-			m->incRef();
-			return m;
-		}
-		
-		virtual const NLAIC::IBasicType *newInstance() const
-		{
-			return clone();
-		}
-
-		virtual const NLAIC::CIdentType &getType() const;		
-		
-
-		virtual void getDebugString(char *text) const
-		{
-			sprintf(text,"Vector <%f %f %f>",getValue().x, getValue().y, getValue().z);
 		}		
 
 		virtual const CProcessResult &run();

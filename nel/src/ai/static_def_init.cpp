@@ -175,14 +175,6 @@
 															NLAIC::CTypeOfOperator::opNot |
 															NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType VectorType::IdVectorType("CVector",	NLAIC::CSelfClassCFactory(VectorType(0, 0, 0)), 
-																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
-																NLAIC::CTypeOfOperator::opSub | 
-																NLAIC::CTypeOfOperator::opEq | 
-																NLAIC::CTypeOfOperator::opDiff));
-
-
 
 	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassCFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/

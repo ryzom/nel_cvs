@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.27 2001/11/19 14:06:57 lecroart Exp $
+ * $Id: displayer.cpp,v 1.28 2001/12/03 17:55:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,7 +167,10 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 	ss << message;
 
-	cout << ss.str();
+	string s = ss.str();
+
+	// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
+	printf ("%s", s.c_str()); 
 
 	fflush(stdout);
 

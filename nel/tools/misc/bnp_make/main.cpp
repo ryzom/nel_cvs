@@ -286,29 +286,29 @@ int main (int nNbArg, char **ppArgs)
 
 		// Read options
 
-		char sCurDir[MAX_PATH];
+		string sCurDir;
 
 		if (nNbArg >= 4)
 		{
 			// store current path
-			getcwd (sCurDir, MAX_PATH);
-	
+			sCurDir = CPath::getCurrentPath();
+
 			// go to the dest path
-			char sDestDir[MAX_PATH];
-			if (chdir (ppArgs[3]) != -1)
+			string sDestDir;
+			if (CPath::setCurrentPath(ppArgs[3]))
 			{
-				getcwd (sDestDir, MAX_PATH);
-				
-				int tmp = chdir (sCurDir);
+				sDestDir = CPath::getCurrentPath();
+
+				bool tmp = CPath::setCurrentPath(sCurDir.c_str());
 				// restore current path, should not failed
-				nlassert (tmp != -1); // removed in release
+				nlassert (tmp); // removed in release
 
 				// go to the source dir
-				if (chdir (ppArgs[2]) != -1)
+				if (CPath::setCurrentPath(ppArgs[2]))
 				{
-					getcwd (sCurDir, MAX_PATH);
-					
-					gDestBNPFile = string(sDestDir) + '/';
+					sCurDir = CPath::getCurrentPath();
+
+					gDestBNPFile = CPath::standardizePath(sDestDir);
 
 					if(nNbArg == 5)
 					{
@@ -319,7 +319,7 @@ int main (int nNbArg, char **ppArgs)
 					}
 					else
 					{
-						char *pos = strrchr (sCurDir, '/');
+						char *pos = strrchr (sCurDir.c_str(), '/');
 						if (pos != NULL)
 						{
 							gDestBNPFile += string(pos+1);
@@ -375,8 +375,7 @@ int main (int nNbArg, char **ppArgs)
 			gDestBNPFile = "";
 			for (; i < (int)wholeName.size(); ++i)
 				gDestBNPFile += wholeName[i];
-			char sCurDir[MAX_PATH];
-			if (chdir (path.c_str()) != -1)
+			if (CPath::setCurrentPath(path.c_str()))
 			{
 				path = CPath::getCurrentPath();
 			}

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.45 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: scene.cpp,v 1.46 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@
 #include "3d/cluster.h"
 #include "3d/scene_group.h"
 #include "3d/flare_model.h"
+#include "3d/skip_model.h"
+
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
@@ -79,6 +81,7 @@ void	CScene::registerBasics()
 	CCoarseMeshManager::registerBasic();
 	CCluster::registerBasic();
 	CFlareModel::registerBasic();
+	CSkipModel::registerBasic();
 }
 
 	
@@ -102,6 +105,7 @@ CScene::CScene()
 	_DynamicCoarseMeshManager = NULL;
 
 	Root= NULL;
+	SkipModelRoot= NULL;
 
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
@@ -159,6 +163,7 @@ void	CScene::release()
 
 	_ShapeBank = NULL;
 	Root= NULL;
+	SkipModelRoot= NULL;
 	CurrentCamera= NULL;
 }
 // ***************************************************************************
@@ -203,6 +208,12 @@ void	CScene::initDefaultRoots()
 
 
 	// \todo yoyo: create / setRoot the lightgroup.
+
+
+	// Create a SkipModelRoot, for CTransform::freezeHRC().
+	SkipModelRoot= static_cast<CSkipModel*>(createModel(SkipModelId));
+	// Inform the HrcTrav of this model.
+	HrcTrav->setSkipModelRoot(SkipModelRoot);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.3 2001/08/01 09:41:12 berenguier Exp $
+ * $Id: mot.h,v 1.4 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,8 +196,13 @@ private:
 	};
 
 private:
+	// must do this for _ValidateModelList access.
+	friend	class IModel;
+
 	std::vector<CTravEntry>			Traversals;
 	std::set<IModel*>				Models;
+	IModel							*_ValidateModelList;
+
 	static std::set<CModelEntry>	RegModels;
 	static std::set<CObsEntry>		RegObservers;
 
@@ -296,6 +301,14 @@ protected:
 	IObs	*getObs(const NLMISC::CClassId &idTrav) const;
 
 
+	// A link to the CMOT which created us, filled in createModel().
+	CMOT			*_OwnerMot;
+
+	// linked list of models to validate.
+	IModel			*_PrecModelToValidate;
+	IModel			*_NextModelToValidate;
+
+
 protected:
 
 
@@ -333,7 +346,13 @@ protected:
 	{
 		TouchObs.clearAll();
 	}
+
+	// for CMOT::createModel() and for CTransform::freezeHRC() only.
+	void	linkToValidateList();
+	void	unlinkFromValidateList();
+
 	//@}
+
 
 };
 

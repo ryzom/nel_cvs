@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.11 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.12 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -514,5 +514,17 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 }
 
 // ***************************************************************************
+float CMeshMultiLod::getDistMax () const
+{
+	// Last element
+	std::vector<CMeshSlot>::const_iterator ite=_MeshVector.end();
+	ite--;
+	if (ite!=_MeshVector.end())
+		return ite->DistMax;
+	else
+		return -1;
+}
+
+
 
 } // NL3D

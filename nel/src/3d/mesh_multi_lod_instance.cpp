@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.3 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.4 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,6 @@ void		CMeshMultiLodInstance::registerBasic()
 {
 	CMOT::registerModel (MeshMultiLodInstanceId, MeshBaseInstanceId, CMeshMultiLodInstance::creator);
 	CMOT::registerObs (LoadBalancingTravId, MeshMultiLodInstanceId, CMeshMultiLodBalancingObs::creator);
-	CMOT::registerObs (ClipTravId, MeshMultiLodInstanceId, CMeshMultiLodClipObs::creator);
 }
 
 // ***************************************************************************
@@ -197,38 +196,6 @@ void		CMeshMultiLodBalancingObs::traverse(IObs *caller)
 		else
 			model->Lod0=0xffffffff;
 	}
-}
-
-// ***************************************************************************
-
-bool CMeshMultiLodClipObs::clip(IBaseClipObs *caller)
-{
-	// Call previous
-	bool show=CTransformShapeClipObs::clip(caller);
-
-	// Clipped ?
-	if (show)
-	{
-		// Cast
-		CClipTrav *trav = safe_cast<CClipTrav*> (Trav);
-		CMeshMultiLodInstance *m = safe_cast<CMeshMultiLodInstance*> (Model);
-		CMeshMultiLod *shape = safe_cast <CMeshMultiLod*> ((IShape*)m->Shape);
-
-		// Calc the distance
-		float sqrDist = (trav->CamPos - m->getMatrix ().getPos()).sqrnorm ();
-		float maxDist = shape->getDistMax();
-		maxDist*=maxDist;
-		
-		// Good distance
-		if (sqrDist < maxDist)
-		{
-			// Ok, shown
-			return true;
-		}
-	}
-
-	// Not shown
-	return false;
 }
 
 // ***************************************************************************

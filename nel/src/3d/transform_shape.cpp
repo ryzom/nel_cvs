@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.13 2001/08/23 10:13:14 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.14 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,22 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 
 	if(m->Shape)
 	{
+		// first test DistMax (faster).
+		float maxDist = m->Shape->getDistMax();
+		// if DistMax test enabled
+		if(maxDist!=-1)
+		{
+			// Calc the distance
+			float sqrDist = (trav->CamPos - m->getMatrix().getPos()).sqrnorm ();
+			maxDist*=maxDist;
+			
+			// if dist > maxDist, skip
+			if (sqrDist > maxDist)
+				// Ok, not shown
+				return false;
+		}
+
+		// Else finer clip with pyramid.
 		return m->Shape->clip(trav->WorldPyramid, HrcObs->WorldMatrix);
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.9 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.10 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,16 +138,7 @@ public:
 	// @}
 
 	/// Return the global max dist for this lod
-	float getDistMax () const
-	{
-		// Last element
-		std::vector<CMeshSlot>::const_iterator ite=_MeshVector.end();
-		ite--;
-		if (ite!=_MeshVector.end())
-			return ite->DistMax;
-		else
-			return 0;
-	}
+	virtual	float getDistMax () const;
 
 	/// Get slot mesh count.
 	uint			getNumSlotMesh ()

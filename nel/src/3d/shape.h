@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.5 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: shape.h,v 1.6 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,11 @@ public:
 	/** return the bounding box of the shape. Default is to return Null bbox.
 	 */
 	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
+
+	/** return the DistMax where the shape is no more displayed.
+	 *	Default is to return -1, meaning DistMax = infinite.
+	 */
+	virtual	float				getDistMax() const {return -1;}
 
 	/// \name Load balancing methods
 	// @{

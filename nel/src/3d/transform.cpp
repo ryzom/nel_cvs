@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.23 2001/08/23 10:13:14 berenguier Exp $
+ * $Id: transform.cpp,v 1.24 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
+#include "3d/skip_model.h"
 
 
 using namespace NLMISC;
@@ -60,6 +61,8 @@ CTransform::CTransform()
 	_Opaque = true;
 
 	_ClusterSystem = NULL;
+
+	_FreezeHRCState= FreezeHRCStateDisabled;
 }
 
 // ***************************************************************************
@@ -194,6 +197,81 @@ const CMatrix& CTransform::getWorldMatrix()
 
 
 // ***************************************************************************
+void		CTransform::freezeHRC()
+{
+	// if disabled, say we are ready to validate our worldMatrix for long.
+	if(_FreezeHRCState==FreezeHRCStateDisabled)
+		_FreezeHRCState= FreezeHRCStateRequest;
+}
+
+
+// ***************************************************************************
+void		CTransform::unfreezeHRC()
+{
+	// if this model is no HRC frozen disabled
+	if(_FreezeHRCState!=FreezeHRCStateDisabled)
+	{
+		// if model correctly frozen.
+		if(_FreezeHRCState == CTransform::FreezeHRCStateEnabled )
+		{
+			// Trick: get the traversal via the HrcObs.
+			IObs		*hrcObs= getObs(HrcTravId);
+			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(hrcObs->Trav);
+			// if linked to SkipModelRoot, link this model to root of HRC.
+			if( hrcTrav->getFirstParent(this) == hrcTrav->SkipModelRoot )
+				hrcTrav->link(NULL, this);
+
+			// Link this object to the validateList.
+			linkToValidateList();
+		}
+
+		_FreezeHRCState= FreezeHRCStateDisabled;
+	}
+}
+
+
+// ***************************************************************************
+void		CTransform::update()
+{
+	IModel::update();
+
+	// test if the matrix has been changed in ITransformable.
+	if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
+	{
+		_LastTransformableMatrixDate= ITransformable::getMatrixDate();
+		foul(TransformDirty);
+	}
+
+	// update the freezeHRC state.
+	if(_FreezeHRCState != CTransform::FreezeHRCStateDisabled)
+	{
+		// if the model request to be frozen in HRC
+		if(_FreezeHRCState == CTransform::FreezeHRCStateRequest )
+		{
+			// Wait for next Hrc traversal to compute good WorldMatrix for this model and his sons.
+			_FreezeHRCState = CTransform::FreezeHRCStateReady;
+		}
+		// if the model is ready to be frozen in HRC, then do it!!
+		else if( _FreezeHRCState == CTransform::FreezeHRCStateReady )
+		{
+			// Trick: get the traversal via the HrcObs.
+			IObs		*hrcObs= getObs(HrcTravId);
+			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(hrcObs->Trav);
+			// if linked to root of HRC, link this model to SkipModelRoot.
+			if( hrcTrav->getFirstParent(this) == hrcTrav->getRoot() )
+				hrcTrav->link(hrcTrav->SkipModelRoot, this);
+
+			// unLink this object from the validateList. NB: the list will still be correclty parsed.
+			unlinkFromValidateList();
+
+			// Now this model won't be tested for validation nor for worldMatrix update. End!!
+			_FreezeHRCState = CTransform::FreezeHRCStateEnabled;
+		}
+	}
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // Observers.
 // ***************************************************************************
@@ -216,6 +294,7 @@ void	CTransformHrcObs::update()
 		// The transform has been modified. Hence, it is no more frozen.
 		Frozen= false;
 	}
+
 }
 
 

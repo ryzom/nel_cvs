@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.6 2001/08/23 10:13:14 berenguier Exp $
+ * $Id: transform.h,v 1.7 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,28 @@ public:
 	void		freeze();
 	void		setDontUnfreezeChildren(bool val);
 
+
+	/** freeze the HRC so the WorldMatrix computed at next render() will be kept for long, and the model won't 
+	 *	either be tested in HRC (which is still expensive, even if the worldmatrix doesn't need to be recomputed).
+	 *	The model won't either be validated. It is suposed to not change at all.
+	 *
+	 *	NB: the model won't be tested in HRC only if this model is a "root", ie 
+	 *	 HrcTrav->getFirstParent()==HrcTrav->getRoot().
+	 *	calling freezeHRC() on a model in a hierarchy without calling it to the root of the hierarchy 
+	 *	will result in that the model won't be validated, but still HRC traversed.
+	 *	To be simplier, you should freezeHRC() all the models of a hierarchy, from base root to leaves.
+	 *
+	 *	NB: if the hierarchy of this object must change, or if the object must moves, you must call unfreezeHRC() first,
+	 *	and you should do this for all the parents of this model.
+	 */
+	void		freezeHRC();
+
+
+	/**	see freezeHRC().
+	 */
+	void		unfreezeHRC();
+
+
 	/**
 	 * Get the worldMatrix that is stored in the hrc observer
 	 */
@@ -157,16 +179,7 @@ protected:
 	virtual ~CTransform();
 
 	/// Implement the update method.
-	virtual void	update()
-	{
-		IModel::update();
-		// test if the matrix has been changed in ITransformable.
-		if(ITransformable::compareMatrixDate(_LastTransformableMatrixDate))
-		{
-			_LastTransformableMatrixDate= ITransformable::getMatrixDate();
-			foul(TransformDirty);
-		}
-	}
+	virtual void	update();
 
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
@@ -197,6 +210,9 @@ private:
 
 	CInstanceGroup* _ClusterSystem;
 
+
+	enum	TFreezeHRCState	{ FreezeHRCStateDisabled=0, FreezeHRCStateRequest, FreezeHRCStateReady, FreezeHRCStateEnabled};
+	TFreezeHRCState			_FreezeHRCState;
 };
 
 

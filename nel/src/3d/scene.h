@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.8 2001/07/30 14:40:14 besson Exp $
+ * $Id: scene.h,v 1.9 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@ class	IDriver;
 class	CShapeBank;
 class	CCoarseMeshManager;
 class	CInstanceGroup;
+class	CSkipModel;
 
 
 // ***************************************************************************
@@ -303,6 +304,7 @@ private:
 
 	// The root models (will be deleted by CScene).
 	CTransform		*Root;
+	CSkipModel		*SkipModelRoot;
 
 	// The Ligths automatic movements
 	CAnimationSet	_LightmapAnimations;

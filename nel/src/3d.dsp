@@ -276,6 +276,14 @@ SOURCE=.\3d\skeleton_model.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\skip_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\skip_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\transform.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.14 2001/08/16 15:50:00 besson Exp $
+ * $Id: scene_group.cpp,v 1.15 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -421,6 +421,11 @@ bool CInstanceGroup::addToScene (CScene& scene)
 	for (i = 0; i < _ClusterInstances.size(); ++i)
 		pHrcTrav->link (_Root, _ClusterInstances[i]);
 
+
+	// Default: freezeHRC all instances.
+	freezeHRC();
+
+
 	return true;
 }
 
@@ -603,5 +608,34 @@ CQuat CInstanceGroup::getRotQuat ()
 	else
 		return CQuat();
 }
+
+
+// ***************************************************************************
+void		CInstanceGroup::freezeHRC()
+{
+	// For all instances.
+	for (uint i=0; i < _Instances.size(); i++)
+	{
+		if(_Instances[i])
+			_Instances[i]->freezeHRC();
+	}
+	// and for root.
+	_Root->freezeHRC();
+}
+
+
+// ***************************************************************************
+void		CInstanceGroup::unfreezeHRC()
+{
+	// For all instances.
+	for (uint i=0; i < _Instances.size(); i++)
+	{
+		if(_Instances[i])
+			_Instances[i]->unfreezeHRC();
+	}
+	// and for root.
+	_Root->unfreezeHRC();
+}
+
 
 } // NL3D

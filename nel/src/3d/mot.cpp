@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.15 2001/08/01 09:41:12 berenguier Exp $
+ * $Id: mot.cpp,v 1.16 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,7 @@ void	CMOT::registerObs(const CClassId &idTrav, const CClassId &idModel, IObs* (*
 // ***************************************************************************
 CMOT::CMOT()
 {
+	_ValidateModelList= NULL;
 }
 // ***************************************************************************
 CMOT::~CMOT()
@@ -135,6 +136,8 @@ void	CMOT::release()
 		deleteModel(*it);
 		it= Models.begin();
 	}
+	// No models at all.
+	_ValidateModelList= NULL;
 
 	// Then release the traversals ptrs.
 	Traversals.clear();
@@ -161,6 +164,10 @@ IModel	*CMOT::createModel(const CClassId &idModel)
 		IModel	*m= (*itModel).Creator();
 		if(!m)	return NULL;
 
+		// Set the owner for the model.
+		m->_OwnerMot= this;
+
+		// create observer for each trav.
 		std::vector<CTravEntry>::const_iterator	itTrav;
 		for(itTrav= Traversals.begin(); itTrav!=Traversals.end(); itTrav++)
 		{
@@ -185,8 +192,11 @@ IModel	*CMOT::createModel(const CClassId &idModel)
 			o->init();
 		}
 
-		// Insert the model into the list.
+		// Insert the model into the set.
 		Models.insert(m);
+
+		// By default the model is validate() in CMOT::validateModels().
+		m->linkToValidateList();
 
 		return m;
 	}
@@ -208,17 +218,19 @@ void	CMOT::deleteModel(IModel *model)
 // ***************************************************************************
 void	CMOT::validateModels()
 {
-	// check all the models.
-	set<IModel*>::iterator	itmodel;
-	itmodel= Models.begin();
-	while( itmodel!=Models.end())
+	// check all the models which must be checked.
+	IModel	*model= _ValidateModelList;
+	IModel	*next;
+	while( model )
 	{
-		IModel*		model= (*itmodel);
+		// next to validate. get next now, because model->validate() may remove model from the list.
+		next= model->_NextModelToValidate;
 
 		// chek / validate the model.
 		model->validate();
 
-		itmodel++;
+		// next.
+		model= next;
 	}
 }
 
@@ -448,10 +460,18 @@ IModel::IModel()
 	TouchObs.resize(Last);
 	LastClassId= 0;
 	LastObs= NULL;
+
+	_OwnerMot= NULL;
+	_PrecModelToValidate= NULL;
+	_NextModelToValidate= NULL;
 }
 // ***************************************************************************
 IModel::~IModel()
 {
+	// ensure the model is no more linked to the validateList.
+	unlinkFromValidateList();
+
+	// delte observers.
 	CObsMap::iterator	it;
 	for(it=Observers.begin();it!=Observers.end();it++)
 	{
@@ -498,6 +518,52 @@ void	IModel::validate()
 		cleanTouch();
 	}
 }
+
+
+// ***************************************************************************
+void	IModel::linkToValidateList()
+{
+	if(!_OwnerMot)
+		return;
+
+	// If the model is not already inserted.
+	if( ! (_PrecModelToValidate!=NULL  ||  _OwnerMot->_ValidateModelList==this) )
+	{
+		// insert it.
+		_NextModelToValidate= _OwnerMot->_ValidateModelList;
+		_PrecModelToValidate= NULL;
+		if(_NextModelToValidate)
+			_NextModelToValidate->_PrecModelToValidate= this;
+		_OwnerMot->_ValidateModelList= this;
+	}
+}
+
+
+// ***************************************************************************
+void	IModel::unlinkFromValidateList()
+{
+	if(!_OwnerMot)
+		return;
+
+	// If the model is inserted.
+	if( _PrecModelToValidate!=NULL  ||  _OwnerMot->_ValidateModelList==this )
+	{
+		// update prec.
+		if(_PrecModelToValidate)
+			_PrecModelToValidate->_NextModelToValidate= _NextModelToValidate;
+		else
+			_OwnerMot->_ValidateModelList= _NextModelToValidate;
+
+		// update next.
+		if(_NextModelToValidate)
+			_NextModelToValidate->_PrecModelToValidate= _PrecModelToValidate;
+
+		// End.
+		_PrecModelToValidate= NULL;
+		_NextModelToValidate= NULL;
+	}
+}
+
 
 
 // ***************************************************************************

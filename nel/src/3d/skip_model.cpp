@@ -1,10 +1,10 @@
-/** \file hrc_trav.cpp
+/** \file skip_model.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.5 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: skip_model.cpp,v 1.1 2001/08/24 16:37:16 berenguier Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2001 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -23,29 +23,25 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/hrc_trav.h"
 #include "3d/skip_model.h"
-
-using namespace std;
-using namespace NLMISC;
+#include "3d/hrc_trav.h"
 
 
-namespace	NL3D
+namespace NL3D 
 {
 
 
-// ***************************************************************************
-IObs				*CHrcTrav::createDefaultObs() const
+void	CSkipModel::registerBasic()
 {
-	return new CDefaultHrcObs;
+	CMOT::registerModel( SkipModelId, 0, CSkipModel::creator);
+	CMOT::registerObs( HrcTravId, SkipModelId, CSkipModelHrcObs::creator );
 }
 
 
-// ***************************************************************************
-void				CHrcTrav::setSkipModelRoot(CSkipModel *m)
+void	CSkipModelHrcObs::traverse(IObs *caller)
 {
-	SkipModelRoot= m;
+	// do nothing.
 }
 
 
-}
+} // NL3D

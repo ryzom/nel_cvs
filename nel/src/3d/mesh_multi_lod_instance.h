@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.5 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.6 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,6 @@ private:
 	static IModel	*creator() {return new CMeshMultiLodInstance;}
 	friend	class CMeshMultiLod;
 	friend	class CMeshMultiLodBalancingObs;
-	friend	class CMeshMultiLodClipObs;
 };
 
 
@@ -122,32 +121,6 @@ public:
 	virtual	void	traverse(IObs *caller);
 
 	static IObs	*creator() {return new CMeshMultiLodBalancingObs;}
-
-
-protected:
-};
-
-
-// ***************************************************************************
-/**
- * This observer:
- * - Call the previous clip observer.
- * - Check if the lod is not in this far clip limite.
- *
- * \sa CHrcTrav IBaseHrcObs
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
- */
-class	CMeshMultiLodClipObs : public CTransformShapeClipObs
-{
-public:
-
-	/// clip the shape, and set renderable.
-	virtual	bool	clip(IBaseClipObs *caller);
-	virtual	bool	isRenderable() const {return true;}
-
-	static IObs	*creator() {return new CMeshMultiLodClipObs;}
 
 
 protected:

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.2 2001/07/30 14:40:14 besson Exp $
+ * $Id: hrc_trav.h,v 1.3 2001/08/24 16:37:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,8 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
-class IBaseHrcObs;
+class	IBaseHrcObs;
+class	CSkipModel;
 
 
 // ***************************************************************************
@@ -104,6 +105,9 @@ public:
 	//@}
 
 
+	void		setSkipModelRoot(CSkipModel *m);
+
+
 public:
 
 	std::vector<IModel*> _MovingObjects;
@@ -111,6 +115,8 @@ public:
 	// ONLY FOR OBSERVERS.
 
 	sint64		CurrentDate;	// The current date of the traversal, usefull for matrix update.
+
+	CSkipModel		*SkipModelRoot;
 };
 
 

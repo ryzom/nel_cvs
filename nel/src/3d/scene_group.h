@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.5 2001/08/14 13:29:48 besson Exp $
+ * $Id: scene_group.h,v 1.6 2001/08/24 16:37:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,7 @@ public:
 	/// Add all the instances to the scene
 	void createRoot (CScene& scene);
 
-	/// Add all the instances to the scene
+	/// Add all the instances to the scene. By default, freezeHRC() those instances and the root.
 	bool addToScene (CScene& scene);
 
 	/// Remove all the instances from the scene
@@ -196,6 +196,13 @@ public:
 	
 	/// Get the rotation of the IG
 	CQuat getRotQuat ();
+
+	/// see CTransform::freezeHRC(). Do it for all instances (not clusters), and for the root of the IG.
+	void		freezeHRC();
+
+	/// see CTransform::unfreezeHRC(). Do it for all instances (not clusters), and for the root of the IG.
+	void		unfreezeHRC();
+
 
 private:
 

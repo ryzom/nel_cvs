@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.7 2002/02/07 19:32:56 berenguier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.8 2002/02/07 19:49:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,12 +31,16 @@
 
 #include <GL/gl.h>
 // if <GL/glext.h> not already included.
-#ifndef __glext_h_
+/*#ifndef __glext_h_
 #ifdef GL_VERSION_1_2
 #define	NEL_GL_VERSION_1_2_IN_GL_H
 #else
 #undef NEL_GL_VERSION_1_2_IN_GL_H
 #endif
+#endif*/
+// \todo yoyo: awfull but prec do not work, must skip 1.1 version....
+#ifdef NL_OS_UNIX
+#define	NEL_GL_VERSION_1_2_IN_GL_H
 #endif
 #include <GL/glext.h>	// Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.18 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_zone.cpp,v 1.19 2002/02/15 17:12:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,6 +185,7 @@ void CPSZonePlane::show(TAnimationTime)
 
 void CPSZonePlane::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	_Normal.resize(size);
 }
 
@@ -504,6 +505,7 @@ void CPSZoneSphere::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSZoneSphere::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	_Radius.resize(size);
 }
 
@@ -697,6 +699,7 @@ void CPSZoneDisc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSZoneDisc::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	_Radius.resize(size);
 	_Normal.resize(size);
 }
@@ -1236,6 +1239,7 @@ void CPSZoneCylinder::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSZoneCylinder::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	_Basis.resize(size);
 	_Dim.resize(size);
 }
@@ -1436,6 +1440,7 @@ void CPSZoneRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSZoneRectangle::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	_Basis.resize(size);
 	_Width.resize(size);
 	_Height.resize(size);

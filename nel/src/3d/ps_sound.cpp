@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.12 2001/11/29 16:47:42 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.13 2002/02/15 17:11:12 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -350,6 +350,7 @@ void			CPSSound::deleteElement(uint32 index)
 
 void			CPSSound::resize(uint32 size)
 {
+	nlassert(size < (1 << 16));
 	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->resize(size, getOwner()->getSize());
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(size, getOwner()->getSize());
 	_Sounds.resize(size);

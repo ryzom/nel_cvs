@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.4 2004/01/07 18:31:13 lecroart Exp $
+ * $Id: string_common.h,v 1.5 2004/03/19 18:47:47 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -103,13 +103,13 @@ inline void _check(char a) { }
 inline void _check(unsigned char a) { }
 inline void _check(long a) { }
 inline void _check(unsigned long a) { }
-#ifndef NL_COMP_VC7
+#ifdef NL_COMP_VC6
 inline void _check(uint8 a) { }
 #endif
 inline void _check(sint8 a) { }
 inline void _check(uint16 a) { }
 inline void _check(sint16 a) { }
-#ifndef NL_COMP_VC7
+#ifdef NL_COMP_VC6
 inline void _check(uint32 a) { }
 inline void _check(sint32 a) { }
 #endif
@@ -195,7 +195,7 @@ inline std::string toString(const float &val) { return toString("%f", val); }
 inline std::string toString(const double &val) { return toString("%lf", val); }
 inline std::string toString(const bool &val) { return toString("%u", val?1:0); }
 inline std::string toString(const std::string &val) { return val; }
-#ifdef NL_OS_WINDOWS
+#ifdef NL_COMP_VC6
 inline std::string toString(const uint &val) { return toString("%u", val); }
 inline std::string toString(const sint &val) { return toString("%d", val); }
 #endif // NL_OS_WINDOWS
@@ -212,7 +212,7 @@ inline void fromString(const std::string &str, float &val) { sscanf(str.c_str(),
 inline void fromString(const std::string &str, double &val) { sscanf(str.c_str(), "%lf", &val); }
 inline void fromString(const std::string &str, bool &val) { uint32 v; fromString(str, v); val = (v==1); }
 inline void fromString(const std::string &str, std::string &val) { val = str; }
-#ifdef NL_OS_WINDOWS
+#ifdef NL_COMP_VC6
 inline void fromString(const std::string &str, uint &val) { sscanf(str.c_str(), "%u", &val); }
 inline void fromString(const std::string &str, sint &val) { sscanf(str.c_str(), "%d", &val); }
 #endif // NL_OS_WINDOWS

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.27 2002/01/10 10:03:27 berenguier Exp $
+ * $Id: driver.h,v 1.28 2002/01/18 10:05:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,16 @@ public:
 
 	virtual ModeList		enumModes()=0;
 
+	/// \name Disable Hardware Feature 
+	/**	Disable some Feature that may be supported by the Hardware 
+	 *	Call before setDisplay() to work properly
+	 */
+	// @{
+	virtual void			disableHardwareVertexProgram()=0;
+	virtual void			disableHardwareVertexArrayAGP()=0;
+	virtual void			disableHardwareTextureShader()=0;
+	// @}
+
 	// first param is the associated window. 
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay)=0;
@@ -204,6 +214,13 @@ public:
 	 *	and if bitmap format is RGBA.
 	 */
 	virtual void			forceDXTCCompression(bool dxtcComp)=0;
+
+	/** if !=1, force mostly all the textures (but TextureFonts lightmaps, interfaces  etc..)
+	 *	to be divided by Divisor (2, 4, 8...)
+	 *	Default is 1.
+	 *	NB: this is done only on TextureFile
+	 */
+	virtual void			forceTextureResize(uint divisor)=0;
 
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;

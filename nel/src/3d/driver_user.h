@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.8 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_user.h,v 1.9 2002/01/18 10:05:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,10 @@ public:
 
 	/// Enum All Fullscreen modes.
 	virtual TModeList		enumModes();
+
+	virtual void			disableHardwareVertexProgram();
+	virtual void			disableHardwareVertexArrayAGP();
+	virtual void			disableHardwareTextureShader();
 
 	/// create the window.
 	virtual	void			setDisplay(const CMode &mode) ;
@@ -541,6 +545,12 @@ public:
 	{
 		_Driver->forceDXTCCompression(dxtcComp);
 	}
+
+	virtual void			forceTextureResize(uint divisor)
+	{
+		_Driver->forceTextureResize(divisor);
+	}
+
 
 	// @}
 

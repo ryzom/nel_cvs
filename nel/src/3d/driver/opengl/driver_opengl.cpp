@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.133 2001/12/28 15:37:01 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.134 2002/01/18 10:08:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -196,6 +196,7 @@ CDriverGL::CDriverGL()
 	_AllocatedTextureMemory= 0;
 
 	_ForceDXTCCompression= false;
+	_ForceTextureResizePower= 0;
 
 	_SumTextureMemoryUsed = false;
 
@@ -215,6 +216,7 @@ CDriverGL::CDriverGL()
 	// reserve enough space to never reallocate, nor test for reallocation.
 	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
 	_UserTexMatEnabled = 0;
+
 }
 
 
@@ -270,6 +272,23 @@ ModeList CDriverGL::enumModes()
 	}
 #endif // NL_OS_WINDOWS
 	return ML;
+}
+
+// --------------------------------------------------
+
+void CDriverGL::disableHardwareVertexProgram()
+{
+	_Extensions.DisableHardwareVertexProgram= true;
+}
+
+void CDriverGL::disableHardwareVertexArrayAGP()
+{
+	_Extensions.DisableHardwareVertexArrayAGP= true;
+}
+
+void CDriverGL::disableHardwareTextureShader()
+{
+	_Extensions.DisableHardwareTextureShader= true;
 }
 
 // --------------------------------------------------
@@ -856,6 +875,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_Initialized = true;
 
 	_ForceDXTCCompression= false;
+	_ForceTextureResizePower= 0;
 
 	// Reset profiling.
 	_AllocatedTextureMemory= 0;

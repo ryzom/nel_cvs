@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.46 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.47 2002/01/18 10:08:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -470,12 +470,20 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							else
 								nMipMaps= 1;
 
+							// Degradation in Size allowed only if DXTC texture are provided with mipmaps.
+							// Because use them to resize !!!
+							uint	decalMipMapResize= 0;
+							if(_ForceTextureResizePower>0 && tex.allowDegradation() && nMipMaps>1)
+							{
+								decalMipMapResize= min(_ForceTextureResizePower, (uint)(nMipMaps-1));
+							}
+
 							// Fill mipmaps.
-							for(sint i=0;i<nMipMaps;i++)
+							for(sint i=decalMipMapResize;i<nMipMaps;i++)
 							{
 								void	*ptr= &(*tex.getPixels(i).begin());
 								sint	size= tex.getPixels(i).size();
-								glCompressedTexImage2DARB(GL_TEXTURE_2D, i, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
+								glCompressedTexImage2DARB(GL_TEXTURE_2D, i-decalMipMapResize, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
 									size, ptr );
 
 								// profiling: count TextureMemory usage.
@@ -487,6 +495,17 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							sint	nMipMaps;
 							if(glSrcFmt==GL_RGBA && tex.getPixelFormat()!=CBitmap::RGBA )
 								tex.convertToType(CBitmap::RGBA);
+
+							// Degradation in Size.
+							if(_ForceTextureResizePower>0 && tex.allowDegradation())
+							{
+								uint	w= tex.getWidth(0) >> _ForceTextureResizePower;
+								uint	h= tex.getHeight(0) >> _ForceTextureResizePower;
+								w= max(1U, w);
+								h= max(1U, h);
+								tex.resample(w, h);
+							}
+
 							if(tex.mipMapOn())
 							{
 								tex.buildMipMaps();
@@ -848,6 +867,15 @@ void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 void		CDriverGL::forceDXTCCompression(bool dxtcComp)
 {
 	_ForceDXTCCompression= dxtcComp;
+}
+
+// ***************************************************************************
+void		CDriverGL::forceTextureResize(uint divisor)
+{
+	clamp(divisor, 1U, 256U);
+
+	// 16 -> 4.
+	_ForceTextureResizePower= getPowerOf2(divisor);
 }
 
 

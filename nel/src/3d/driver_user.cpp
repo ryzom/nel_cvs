@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.15 2001/09/18 14:42:01 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.16 2002/01/18 10:05:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,6 +164,21 @@ UDriver::TModeList		CDriverUser::enumModes()
 
 	return retlist;
 }
+
+// ***************************************************************************
+void			CDriverUser::disableHardwareVertexProgram()
+{
+	_Driver->disableHardwareVertexProgram();
+}
+void			CDriverUser::disableHardwareVertexArrayAGP()
+{
+	_Driver->disableHardwareVertexArrayAGP();
+}
+void			CDriverUser::disableHardwareTextureShader()
+{
+	_Driver->disableHardwareTextureShader();
+}
+
 // ***************************************************************************
 void			CDriverUser::setDisplay(const CMode &mode) 
 {

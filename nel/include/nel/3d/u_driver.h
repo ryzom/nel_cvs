@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.10 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: u_driver.h,v 1.11 2002/01/18 10:04:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,16 @@ public:
 
 	/// Enum All Fullscreen modes.
 	virtual TModeList		enumModes()=0;
+
+	/// \name Disable Hardware Feature 
+	/**	Disable some Feature that may be supported by the Hardware 
+	 *	Call before setDisplay() to work properly
+	 */
+	// @{
+	virtual void			disableHardwareVertexProgram()=0;
+	virtual void			disableHardwareVertexArrayAGP()=0;
+	virtual void			disableHardwareTextureShader()=0;
+	// @}
 
 	/// create the window. call activate().
 	virtual	void			setDisplay(const CMode &mode) =0;
@@ -451,6 +461,13 @@ public:
 	 *	NB: this is done only on TextureFile, with format Automatic
 	 */
 	virtual void			forceDXTCCompression(bool dxtcComp)=0;
+
+	/** if !=1, force mostly all the textures (but TextureFonts lightmaps, interfaces  etc..)
+	 *	to be divided by Divisor (2, 4, 8...)
+	 *	Default is 1.
+	 *	NB: this is done only on TextureFile
+	 */
+	virtual void			forceTextureResize(uint divisor)=0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.107 2002/01/10 10:02:14 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.108 2002/01/18 10:08:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -344,6 +344,10 @@ public:
 
 	virtual ModeList		enumModes();
 
+	virtual void			disableHardwareVertexProgram();
+	virtual void			disableHardwareVertexArrayAGP();
+	virtual void			disableHardwareTextureShader();
+
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode) throw(EBadDisplay);
 
 	virtual void*			getDisplay()
@@ -372,6 +376,8 @@ public:
 	virtual bool			setupTexture(ITexture& tex);
 
 	virtual void			forceDXTCCompression(bool dxtcComp);
+
+	virtual void			forceTextureResize(uint divisor);
 
 	virtual bool			setupMaterial(CMaterial& mat);
 
@@ -858,6 +864,8 @@ private:
 
 
 	bool							_ForceDXTCCompression;
+	/// Divisor for textureResize (power).
+	uint							_ForceTextureResizePower;
 
 
 	// user texture matrix
@@ -871,6 +879,7 @@ private:
 	static const uint GLVertexAttribIndex[CVertexBuffer::NumValue];
 	static const uint GLMatrix[IDriver::NumMatrix];
 	static const uint GLTransform[IDriver::NumTransform];
+
 };
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.24 2001/12/31 15:56:22 besson Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.25 2002/01/18 10:08:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -596,7 +596,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 	ext.ARBTextureCompression= setupARBTextureCompression(glext);
 
 	// Check NVVertexArrayRange
-	ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);
+	// Disable feature ???
+	if(!ext.DisableHardwareVertexArrayAGP)
+		ext.NVVertexArrayRange= setupNVVertexArrayRange(glext);
 	if(ext.NVVertexArrayRange)
 	{
 		GLint	nverts;
@@ -620,10 +622,14 @@ void	registerGlExtensions(CGlExtensions &ext)
 	ext.ARBTextureCubeMap = setupARBTextureCubeMap(glext);
 
 	// Check vertex program
-	ext.NVVertexProgram = setupNVVertexProgram(glext);
+	// Disable feature ???
+	if(!ext.DisableHardwareVertexProgram)
+		ext.NVVertexProgram = setupNVVertexProgram(glext);
 
 	// Check texture shaders
-	ext.NVTextureShader = setupNVTextureShader(glext);
+	// Disable feature ???
+	if(!ext.DisableHardwareTextureShader)
+		ext.NVTextureShader = setupNVTextureShader(glext);
 
 	// For now, the only way to know if emulation, is to test some extension which exist only on GeForce3.
 	// if GL_NV_texture_shader is not here, then we are not on GeForce3.

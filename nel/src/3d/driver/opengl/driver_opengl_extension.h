@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.19 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: driver_opengl_extension.h,v 1.20 2002/01/18 10:08:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,17 @@ struct	CGlExtensions
 	bool	WGLARBPBuffer;
 	bool	WGLARBPixelFormat;
 
+
+public:
+
+	/// \name Disable Hardware feature. False by default. setuped by IDriver
+	// @{
+	bool				DisableHardwareVertexProgram;
+	bool				DisableHardwareVertexArrayAGP;
+	bool				DisableHardwareTextureShader;
+	// @}
+
+
 public:
 	CGlExtensions()
 	{
@@ -113,6 +124,11 @@ public:
 		EXTSecondaryColor= false;
 		WGLARBPBuffer= false;
 		WGLARBPixelFormat= false;
+
+		/// \name Disable Hardware feature. False by default. setuped by IDriver
+		DisableHardwareVertexProgram= false;
+		DisableHardwareVertexArrayAGP= false;
+		DisableHardwareTextureShader= false;
 	};
 };
 

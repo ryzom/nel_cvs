@@ -1,7 +1,7 @@
 /** \file log_report.h
  * <File description>
  *
- * $Id: log_report.h,v 1.3 2004/06/15 13:34:48 cado Exp $
+ * $Id: log_report.h,v 1.4 2005/02/16 11:47:51 lancon Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -89,6 +89,10 @@ public:
 	bool	isComplete() const { return _Complete; }
 
 	virtual void run();
+
+
+	/// Set the path of logfile directory. 
+	void setLogPath(const std::string & logPath);
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.68 2004/12/24 14:12:09 vuarand Exp $
+ * $Id: admin_executor_service.cpp,v 1.69 2005/02/16 11:47:51 lancon Exp $
  *
  */
 
@@ -1691,8 +1691,18 @@ CMakeLogTask MakingLogTask;
 
 NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop]" )
 {
-	if ( args.empty() )
+
+
+	bool start = args.empty() || (!args.empty() && args[0] != "stop");
+
+	if ( start)
 	{
+
+		if (!args.empty())
+		{
+			MakingLogTask.setLogPath(args[0]);
+		}
+
 		if ( ! MakingLogTask.isRunning() )
 		{
 			MakingLogTask.start();
@@ -1713,7 +1723,7 @@ NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine",
 		}
 		else
 			log.displayNL( "Task is not running" );
-	}
+	} 
 
 	return true;
 }

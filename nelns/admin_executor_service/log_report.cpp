@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.3 2004/07/13 11:17:51 coutelas Exp $
+ * $Id: log_report.cpp,v 1.4 2005/02/16 11:47:51 lancon Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -86,6 +86,11 @@ void sortLogFiles( vector<std::string>& filenames )
 			filenames[i] = name.c_str();
 		}
 	}
+}
+
+void	CMakeLogTask::setLogPath(const std::string & logPath)
+{
+	LogPath = logPath;
 }
 
 

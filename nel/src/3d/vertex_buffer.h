@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.15 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.16 2004/08/13 15:46:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,6 +284,11 @@ public:
 	  * Default constructor. Make an empty vertex buffer. No value, no vertex. Vertex color format is set to TRGBA.
 	  */
 	CVertexBuffer(void);
+
+	/**
+	  * Named vertex buffer. Make an empty vertex buffer. No value, no vertex. Vertex color format is set to TRGBA.
+	  */
+	CVertexBuffer(const char *name);
 
 	/**
 	  * Copy constructor.
@@ -609,6 +614,8 @@ public:
 	const std::string &getName () const { return _Name; };
 
 private:
+
+	void construct();
 
 	// Check locked buffers
 	bool checkLockedBuffer () const { return _LockedBuffer || (!isResident() && _NonResidentVertices.empty()); }
@@ -1243,3 +1250,24 @@ inline void CVertexBuffer::unlock () const
 #endif // NL_VERTEX_BUFFER_H
 
 /* End of vertex_buffer.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

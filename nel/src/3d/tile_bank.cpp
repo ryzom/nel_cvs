@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.45 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.46 2003/09/15 11:14:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -441,6 +441,12 @@ void CTileBank::cleanUnusedData ()
 // ***************************************************************************
 CTileNoiseMap *CTileBank::getTileNoiseMap (uint tileNumber, uint tileSubNoise)
 {
+	if (_DisplacementMap.size() == 0)
+	{
+		// it happens when serial a tile bank with version < 4
+		return NULL;
+	}
+
 	// Check tile number..
 	if (tileNumber<_TileVector.size())
 	{

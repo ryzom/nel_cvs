@@ -1,7 +1,7 @@
 /** \file mutex.h
  * class CMutex
  *
- * $Id: mutex.h,v 1.2 2001/02/13 17:40:33 cado Exp $
+ * $Id: mutex.h,v 1.3 2001/02/20 15:35:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,26 +107,26 @@ public:
 		CAccessor(CSynchronized<T> *cs)
 		{
 			Synchronized = cs;
-			Synchronized->Mutex.enter();
+			const_cast<CMutex&>(Synchronized->Mutex).enter();
 		}
 
 		/// release the mutex
 		~CAccessor()
 		{
-			Synchronized->Mutex.leave();
+			const_cast<CMutex&>(Synchronized->Mutex).leave();
 		}
 
 		/// access to the Value
 		T &value()
 		{
-			return Synchronized->Value;
+			return const_cast<T&>(Synchronized->Value);
 		}
 	};
 
 	/// The mutex of the synchronized value. \warning Don't access to the Mutex directly.
-	CMutex	Mutex;
+	volatile	CMutex	Mutex;
 	/// The synchronized value. \warning Don't access to the Value directly.
-	T		Value;
+	volatile	T		Value;
 };
 
 

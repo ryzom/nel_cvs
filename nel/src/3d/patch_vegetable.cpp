@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.10 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.11 2002/01/22 17:13:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,15 +113,12 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	for(i= 0; i<NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE; i++)
 	{
 		// mul by 2, because shade is done twice here: by vertex, and by landscape.
-		sint	R= 2*tileLumelmap[i];
-		sint	G= 2*tileLumelmap[i];
-		sint	B= 2*tileLumelmap[i];
-		clamp(R, 0, 255);
-		clamp(G, 0, 255);
-		clamp(B, 0, 255);
-		diffuseColorF[i].R= R / 255.f;
-		diffuseColorF[i].G= G / 255.f;
-		diffuseColorF[i].B= B / 255.f;
+		sint	tileLumel= 2*tileLumelmap[i];
+		tileLumel= min(tileLumel, 255);
+		float	tlf= tileLumel / 255.f;
+		diffuseColorF[i].R= tlf;
+		diffuseColorF[i].G= tlf;
+		diffuseColorF[i].B= tlf;
 		diffuseColorF[i].A= 1;
 	}
 

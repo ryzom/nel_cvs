@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.4 2002/06/17 14:25:12 corvazier Exp $
+ * $Id: build_surf.h,v 1.5 2002/07/16 17:14:43 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,6 +261,11 @@ public:
 	sint32				SurfaceId;
 
 	/**
+	 * The Id of the no level surface container.
+	 */
+	sint32				NoLevelSurfaceId;
+
+	/**
 	 * Set if the element has already be cut on a border of the zone
 	 */
 	uint8				CutFlag;
@@ -366,9 +371,11 @@ public:
 
 	sint8							Edge;
 
+	bool							DontSmooth;
+
 public:
 	/// Constructor.
-	CComputableSurfaceBorder(sint32 left = 0, sint32 right = 0, sint edge=-1) : Left(left), Right(right), Edge(edge) {}
+	CComputableSurfaceBorder(sint32 left = 0, sint32 right = 0, sint edge=-1) : Left(left), Right(right), Edge(edge), DontSmooth(false) {}
 
 	/// Dump the vertices that constitue the border.
 	void	dump();
@@ -410,6 +417,9 @@ public:
 public:
 	/// The Id of the surface
 	sint32									SurfaceId;
+
+	/// No level surf id
+	sint32									NoLevelSurfaceId;
 
 	/// The references on the elements that belong to the surface
 	std::vector<CSurfElement *>				Elements;

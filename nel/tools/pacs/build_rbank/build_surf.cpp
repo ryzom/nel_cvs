@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.7 2002/07/03 16:38:48 legros Exp $
+ * $Id: build_surf.cpp,v 1.8 2002/07/16 17:14:43 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/plane.h"
 #include "nel/misc/triangle.h"
+#include "nel/misc/polygon.h"
 
 #include "3d/landscape.h"
 #include "3d/mesh.h"
@@ -581,6 +582,7 @@ CAABBox	NLPACS::CSurfElement::getBBox() const
 	return box;
 }
 
+/*
 void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 {
 	if (!IsHorizontal)
@@ -590,18 +592,29 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 	}
 
 	CVector	center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
-	CVector top = center-CVector(0.0f, 0.0f, 4.0e1f);
+	CVector top = center-CVector(0.0f, 0.0f, 8.0e1f);
 	grid.select(center, center);
 	CQuadGrid<CSurfElement *>::CIterator	it;
 	uint	level = 0;
 
-	vector<CTriangle>				triangles;
-	vector<CTriangle>				selected;
 	vector<CVector>					hits;
 
 	vector<CAABBox>					boxes;
 	uint							i;
-	
+
+	CAABBox							ownBox;
+
+	const CVector	&v0 = (*(el.Vertices))[el.Tri[0]],
+					&v1 = (*(el.Vertices))[el.Tri[1]],
+					&v2 = (*(el.Vertices))[el.Tri[2]];
+
+	ownBox.setCenter(V0+CVector(0.05f, 0.05f, 0.05f));
+	ownBox.extend(V0-CVector(0.05f, 0.05f, 0.05f));
+	ownBox.extend(V1+CVector(0.05f, 0.05f, 0.05f));
+	ownBox.extend(V1-CVector(0.05f, 0.05f, 0.05f));
+	ownBox.extend(V2+CVector(0.05f, 0.05f, 0.05f));
+	ownBox.extend(V2-CVector(0.05f, 0.05f, 0.05f));
+
 	for (it=grid.begin(); it!=grid.end(); ++it)
 	{
 		CSurfElement	&el = *(*it);
@@ -609,9 +622,8 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
 						&V1 = (*(el.Vertices))[el.Tri[1]],
 						&V2 = (*(el.Vertices))[el.Tri[2]];
-		selected.push_back(CTriangle(V0, V1, V2));
 
-		if (&el == this)
+		if (&el == this || ownBox.intersect(V0, V1, V2))
 			continue;
 
 		for (i=0; i<boxes.size(); ++i)
@@ -652,8 +664,96 @@ void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
 
 	Level = level;
 }
+*/
 
+void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
+{
+	if (!IsHorizontal)
+	{
+		Level = 0;
+		return;
+	}
 
+	CPolygon		tri1;
+	CPolygon		tri2;
+
+	tri1.Vertices.push_back((*Vertices)[Tri[0]]);
+	tri1.Vertices.push_back((*Vertices)[Tri[1]]);
+	tri1.Vertices.push_back((*Vertices)[Tri[2]]);
+
+	vector<CPlane>	planes;
+	planes.resize(3);
+
+	planes[0].make((tri1.Vertices[1]-tri1.Vertices[0])^CVector::K, tri1.Vertices[0]);
+	planes[1].make((tri1.Vertices[2]-tri1.Vertices[1])^CVector::K, tri1.Vertices[1]);
+	planes[2].make((tri1.Vertices[0]-tri1.Vertices[2])^CVector::K, tri1.Vertices[2]);
+
+	uint			level = 0;
+	CVector			center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
+	grid.select(center-CVector(0.01f, 0.01f, 0.01f), center+CVector(0.01f, 0.01f, 0.01f));
+	CQuadGrid<CSurfElement *>::CIterator	it;
+
+	CAABBox			centerBox;
+	vector<CAABBox>	checkedBoxes;
+	uint			i;
+
+	centerBox.setCenter((*Vertices)[Tri[0]]);
+	centerBox.extend((*Vertices)[Tri[1]]);
+	centerBox.extend((*Vertices)[Tri[2]]);
+	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.05f, 0.05f, 0.05f));
+
+	for (it=grid.begin(); it!=grid.end(); ++it)
+	{
+		CSurfElement	&el = *(*it);
+
+		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
+						&V1 = (*(el.Vertices))[el.Tri[1]],
+						&V2 = (*(el.Vertices))[el.Tri[2]];
+
+		if (&el == this || centerBox.intersect(V0, V1, V2))
+			continue;
+
+		float			minz = std::min(V0.z, std::min(V1.z, V2.z));
+		float			maxz = std::max(V0.z, std::max(V1.z, V2.z));
+
+		if (minz > centerBox.getCenter().z+centerBox.getHalfSize().z)
+			continue;
+
+		for (i=0; i<checkedBoxes.size(); ++i)
+			if (checkedBoxes[i].intersect(V0, V1, V2))
+				break;
+
+		if (i<checkedBoxes.size())
+		{
+			checkedBoxes[i].extend(V0);
+			checkedBoxes[i].extend(V1);
+			checkedBoxes[i].extend(V2);
+			continue;
+		}
+
+		tri2.Vertices.clear();
+
+		tri2.Vertices.push_back(V0);
+		tri2.Vertices.push_back(V1);
+		tri2.Vertices.push_back(V2);
+
+		tri2.clip(planes);
+
+		if (!tri2.Vertices.empty())
+		{
+			++level;
+
+			CAABBox		box;
+
+			box.setCenter(CVector(centerBox.getCenter().x, centerBox.getCenter().y, (maxz+minz)/2.0f));
+			box.setHalfSize(CVector(centerBox.getHalfSize().x, centerBox.getHalfSize().y, (maxz-minz)/2.0f+0.1f));
+
+			checkedBoxes.push_back(box);
+		}
+	}
+
+	Level = level;
+}
 
 
 
@@ -920,6 +1020,8 @@ void	NLPACS::CComputableSurface::buildBorders()
 				CComputableSurfaceBorder	&border = BorderKeeper->back();
 
 				border.Left = Elements[elem]->SurfaceId;
+
+				border.DontSmooth = (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->NoLevelSurfaceId == Elements[elem]->EdgeLinks[edge]->SurfaceId);
 
 				if (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->EdgeLinks[edge]->Root->ZoneId != Elements[elem]->Root->ZoneId)
 				{
@@ -1856,7 +1958,10 @@ void	NLPACS::CZoneTessellation::compile()
 
 	//
 	for (i=0; i<(sint)Elements.size(); ++i)
+	{
+		Elements[i]->NoLevelSurfaceId = Elements[i]->SurfaceId;
 		Elements[i]->SurfaceId = UnaffectedSurfaceId;
+	}
 
 	//
 	{
@@ -1884,6 +1989,9 @@ void	NLPACS::CZoneTessellation::compile()
 
 			
 				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
+
+				surf.NoLevelSurfaceId = Elements[p]->NoLevelSurfaceId;
+
 				surf.BorderKeeper = &Borders;
 				surf.floodFill(Elements[p], thisSurfId);
 				surf.BBox = BestFittingBBox;
@@ -1917,7 +2025,7 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 	{
 		float	smScale = (Borders[border].Right < 0) ? 0.5f : 1.0f;
 		uint	before = Borders[border].Vertices.size();
-		if (SmoothBorders)
+		if (SmoothBorders && !Borders[border].DontSmooth)
 		{
 			Borders[border].smooth(smooth*smScale);
 		}

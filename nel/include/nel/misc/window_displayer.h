@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.14.2.1 2003/05/13 16:27:40 lecroart Exp $
+ * $Id: window_displayer.h,v 1.14.2.2 2003/05/16 17:55:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,10 +110,10 @@ protected:
 	sint _ToolBarHeight;
 	sint _InputEditHeight;
 
-	CLog *Log;
-
 	// the thread used to update the display
 	NLMISC::IThread *_Thread;
+
+	CLog *Log;
 
 	friend class CUpdateThread;
 };

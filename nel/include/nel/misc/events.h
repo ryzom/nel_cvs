@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.5 2000/11/13 10:02:25 corvazier Exp $
+ * $Id: events.h,v 1.6 2000/11/13 11:25:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,8 @@ const CClassId EventCharId (0x552255fe, 0x75a2373f);
 const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
 const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
 const CClassId EventActivateId (0x7da66b0a, 0x1ef74519);
+const CClassId EventSetFocusId (0x17650fac, 0x19f85dde);
+
 enum TKey 
 {
 	Key0				='0',
@@ -290,6 +292,30 @@ public:
 		Activate = activate;
 	}
 };
+
+
+/**
+ * CEventSetFocus. Called when window lost / get keyboard focus.
+ */
+class CEventSetFocus : public CEvent
+{
+public:
+	/**
+	  * True if window get the focus, false if it lost it.
+	  */
+	bool Get;
+
+	/**
+	  * Create a activate message. Notify the activation disactivation of a window.
+	  * \param activate is True if window get the focus, false if it lost it.
+	  */
+	CEventSetFocus (bool get) : CEvent (EventSetFocusId)
+	{
+		Get = get;
+	}
+};
+
+
 
 } // NLMISC
 

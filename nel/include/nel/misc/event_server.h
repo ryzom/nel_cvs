@@ -1,7 +1,7 @@
 /** \file event_server.h
  * <File description>
  *
- * $Id: event_server.h,v 1.3 2000/11/10 13:28:44 corvazier Exp $
+ * $Id: event_server.h,v 1.4 2000/11/13 11:25:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,15 +72,6 @@ public:
 	 * \date 2000
 	 */	
 	void pump();
-
-	/** 
-	 * call every callbacks associated with event id
-	 * \param event
-	 * \author Stephane Coutelas
-	 * \date 2000
-	 */	
-	void pumpEvent(const CEvent& event);
-	
 		
 	/** 
 	 * Add a callback (associated with an id)
@@ -115,7 +106,15 @@ public:
 	 * \date 2000
 	 */	
 	void removeEmitter(IEventEmitter * emitter);
-
+protected:
+	/** 
+	 * call every callbacks associated with event id
+	 * \param event
+	 * \return true if the pointer must be delete, false if it not. (post to another message queue...)
+	 * \author Stephane Coutelas
+	 * \date 2000
+	 */	
+	virtual bool pumpEvent(CEvent* event);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * <File description>
  *
- * $Id: event_emitter.h,v 1.3 2000/11/10 13:28:44 corvazier Exp $
+ * $Id: event_emitter.h,v 1.4 2000/11/13 11:25:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_EVENT_EMITTER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/event_server.h"
 
 
 namespace NLMISC {
@@ -83,6 +84,32 @@ public:
 	 */	
 	virtual void submitEvents(CEventServer & server);
 private:
+	// Private internal server message
+	class CEventServerWin32 : CEventServer
+	{
+		friend class CEventEmitterWin32;
+	public:
+		void setServer (CEventServer *server)
+		{
+			_Server=server;
+		}
+	private:
+		virtual bool pumpEvent(CEvent* event)
+		{
+			CEventServer::pumpEvent(event);
+			_Server->postEvent (event);
+			return false;
+		}
+	private:
+		CEventServer *_Server;
+	};
+
+public:
+	/** Process a win32 message.
+	  */
+	void processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
+private:
+	CEventServerWin32 _InternalServer;
 	uint32 _HWnd;
 };
 #endif // NL_OS_WINDOWS

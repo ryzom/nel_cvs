@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * <File description>
  *
- * $Id: event_server.cpp,v 1.4 2000/11/10 13:28:36 corvazier Exp $
+ * $Id: event_server.cpp,v 1.5 2000/11/13 11:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,8 +64,9 @@ void CEventServer::pump()
 	while(itev!=_Events.end())
 	{
 		// pump event
-		pumpEvent(**itev);
-		delete *itev;
+		bool bDelete=pumpEvent(*itev);
+		if (bDelete)
+			delete *itev;
 		itev=_Events.erase (itev);
 	}
 }
@@ -74,7 +75,7 @@ void CEventServer::pump()
 /*------------------------------------------------------------------*\
 							pumpEvent()
 \*------------------------------------------------------------------*/
-void CEventServer::pumpEvent(const CEvent& event)
+bool CEventServer::pumpEvent(CEvent* event)
 {
 	// taking id
 	uint64 id = (uint64) event;
@@ -85,9 +86,12 @@ void CEventServer::pumpEvent(const CEvent& event)
 	// calling every callbacks
 	while(it!=_Listeners.end() && (uint64)(*it).first == id)
 	{
-		(*((*it).second)) (event);
+		(*((*it).second)) (*event);
 		it++;
 	}
+
+	// delete the pointer
+	return true;
 }
 
 

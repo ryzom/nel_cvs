@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.10 2000/11/10 10:38:16 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.11 2000/11/13 11:25:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,14 @@ __declspec(dllexport) IDriver* NL3D_createIDriverInstance(void)
 #ifdef WIN32
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	// Get the driver pointer..
+	CDriverGL *pDriver=(CDriverGL*)GetWindowLong (hWnd, GWL_USERDATA);
+	if (pDriver)
+	{
+		// Process the message by the emitter
+		pDriver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
+	}
+
 	switch(message)
 	{
 	// ---
@@ -161,6 +169,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 		{
 			return(false);
 		}
+		SetWindowLong (_hWnd, GWL_USERDATA, (LONG)this);
 		ShowWindow(_hWnd,SW_SHOW);
 	}
 	_EventEmitter.setHWnd((uint32)_hWnd);

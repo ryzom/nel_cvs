@@ -51,6 +51,9 @@ public:
 
 class CDriverGL : public IDriver
 {
+#ifdef NL_OS_WINDOWS
+	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+#endif // NL_OS_WINDOWS
 private:
 #ifdef NL_OS_WINDOWS
 	HWND					_hWnd;
@@ -80,7 +83,7 @@ public:
 
 	virtual bool			activate(void);
 
-	virtual NLMISC::CEventEmitter*	getEventEmitter(void) { return((NLMISC::CEventEmitter*)&_EventEmitter); };
+	virtual NLMISC::IEventEmitter*	getEventEmitter(void) { return((NLMISC::IEventEmitter*)&_EventEmitter); };
 
 	virtual bool			clear2D(CRGBA& rgba);
 

@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.6 2000/11/13 10:02:17 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.7 2000/11/13 11:24:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,33 +42,44 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 
+		// Dispatch sended messages
+		_InternalServer.setServer (&server);
+		_InternalServer.pump ();
+
 		if (msg.hwnd==(HWND)_HWnd)
 		{
-			switch (msg.message)
-			{
-				case WM_KEYDOWN:
-					server.postEvent (new CEventKeyDown ((TKey)msg.wParam));
-				break;
-				case WM_KEYUP:
-					server.postEvent (new CEventKeyUp ((TKey)msg.wParam));
-				break;
-				case WM_CHAR:
-					server.postEvent (new CEventChar ((ucchar)msg.wParam));
-				/*	
-				case WM_MBUTTONDOWN:
-					server.postEvent (new CEventMouseDown (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-				case WM_MBUTTONUP:
-					server.postEvent (new CEventMouseUp (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-				*/	
-				break;
-				case WM_ACTIVATE:
-					if (WA_INACTIVE)
-						server.postEvent (new CEventActivate (false));
-					else
-						server.postEvent (new CEventActivate (true));
-				break;
-			}
+			processMessage ((uint32)msg.hwnd, msg.message, msg.wParam, msg.lParam, &server);
 		}
+	}
+}
+
+void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
+{
+	if (!server)
+		server=&_InternalServer;
+	switch (msg)
+	{
+		case WM_KEYDOWN:
+			server->postEvent (new CEventKeyDown ((TKey)wParam));
+			break;
+		case WM_KEYUP:
+			server->postEvent (new CEventKeyUp ((TKey)wParam));
+			break;
+		case WM_CHAR:
+			server->postEvent (new CEventChar ((ucchar)wParam));
+			break;
+		case WM_ACTIVATE:
+			if (WA_INACTIVE==LOWORD(wParam))
+				server->postEvent (new CEventActivate (false));
+			else
+				server->postEvent (new CEventActivate (true));
+			break;
+		case WM_KILLFOCUS:
+			server->postEvent (new CEventSetFocus (false));
+			break;
+		case WM_SETFOCUS:
+			server->postEvent (new CEventSetFocus (true));
+			break;
 	}
 }
 

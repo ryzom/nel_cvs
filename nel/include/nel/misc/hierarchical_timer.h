@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.23 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: hierarchical_timer.h,v 1.24 2003/11/03 10:09:15 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -199,6 +199,7 @@ public:
 						};
 public:
 	/// ctor
+	CHTimer() : _Name(NULL), _IsRoot(false) {}
 	CHTimer(const char *name, bool isRoot = false) : _Name(name), _IsRoot(isRoot) {}
 	/// Starts a measuring session
 	void		before();
@@ -206,6 +207,7 @@ public:
 	void		after(bool displayAfter = false);	
 	// Get this node name
 	const char	   *getName() const { return _Name; }
+	void			setName(const char *name) { _Name = name; }
 	/** Starts a bench session
 	  * \param wantStandardDeviation When true, benchs will report the standard deviation of values. This require more memory, however, because each samples must be kept.
 	  * \param quick if true, quick compute the frequency of the processor

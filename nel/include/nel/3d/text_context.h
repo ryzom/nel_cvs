@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.14 2001/01/23 17:43:00 coutelas Exp $
+ * $Id: text_context.h,v 1.15 2001/01/29 15:35:59 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -257,7 +257,7 @@ public:
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
-		return _StringList.size()-1;
+		return _MaxIndex;
 	}
 
 	/**
@@ -273,7 +273,7 @@ public:
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
-		return _StringList.size()-1;
+		return _MaxIndex;
 	}
 	
 	/**

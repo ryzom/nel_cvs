@@ -340,9 +340,10 @@ namespace NLAILOGIC
 
 	void CGoal::cancel()
 	{
-		for ( int i = 0; i < (int) _Successors.size(); i++ )
+		std::vector<NLAIAGENT::IBasicAgent *>::iterator i, end = _Successors.end();
+		for ( i = _Successors.begin(); i != end; i++ )		
 		{
-			( (NLAIAGENT::COperatorScript *)_Successors[i] )->cancel();
+			( (NLAIAGENT::COperatorScript *)*i )->cancel();
 		}
 	}
 
@@ -351,10 +352,11 @@ namespace NLAILOGIC
 		if ( _Successors.empty() )
 			return 0.0;
 
-		float pri = 256;
-		for ( int i = 0; i < (int) _Successors.size(); i++ )
+		float pri = 256;		
+		std::vector<NLAIAGENT::IBasicAgent *>::const_iterator i, end = _Successors.end();
+		for ( i = _Successors.begin(); i != end; i++ )
 		{
-			float suc_pri = ( (NLAIAGENT::COperatorScript *)_Successors[i] )->priority();
+			float suc_pri = ( (NLAIAGENT::COperatorScript *)*i )->priority();
 			if ( suc_pri < pri )
 			{
 				pri = suc_pri;

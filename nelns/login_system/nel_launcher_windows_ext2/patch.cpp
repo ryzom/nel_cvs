@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.3 2004/01/20 18:49:14 lecroart Exp $
+ * $Id: patch.cpp,v 1.4 2004/02/19 13:09:30 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -28,12 +28,19 @@
 
 #include "std_afx.h"
 
+#define USE_CURL
+
+#ifdef USE_CURL
+#include <curl/curl.h>
+#endif
+
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 #include "nel/misc/thread.h"
 
 #include "patch.h"
 #include "nel_launcher_dlg.h"
+
 
 
 //
@@ -151,6 +158,9 @@ string getVersion()
 	}
 	return "";
 }
+
+static string currentFile;
+int myProgressFunc(void *foo, double t, double d, double ultotal, double ulnow);
 
 class CPatchThread : public IRunnable
 {
@@ -644,10 +654,93 @@ private:
 		}
 		if(VerboseLog) nlinfo("Exiting the decompressing file");
 	}
+	
+	void downloadFileWithCurl (const string &source, const string &dest)
+	{
+#ifdef USE_CURL
 
+		if(VerboseLog) nlinfo("downloadFileWithCurl file '%s'", dest.c_str());
+
+		// user agent = nel_launcher
+
+		CURL *curl;
+		CURLcode res;
+
+		setState(true, true, "Getting %s", NLMISC::CFile::getFilename (source).c_str ());
+		currentFile = NLMISC::CFile::getFilename (source);
+
+		curl_global_init(CURL_GLOBAL_ALL);
+		curl = curl_easy_init();
+		if(curl == NULL)
+		{
+			// file not found, delete local file
+			throw Exception ("curl init failed");
+		}
+		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, FALSE);
+		curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, myProgressFunc);
+		curl_easy_setopt(curl, CURLOPT_URL, source.c_str());
+
+		// create the local file
+		setRWAccess(dest);
+		FILE *fp = fopen (dest.c_str(), "wb");
+		if (fp == NULL)
+		{
+			throw Exception ("Can't open file '%s' for writing: code=%d %s (error code 37)", dest.c_str (), errno, strerror(errno));
+		}
+		curl_easy_setopt(curl, CURLOPT_FILE, fp);
+
+		CurrentFilesToGet++;
+
+		res = curl_easy_perform(curl);
+
+		long r;
+		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &r);
+
+		curl_easy_cleanup(curl);
+
+		fclose(fp);
+		curl_global_cleanup();
+
+		currentFile = "";
+
+		if(CURLE_FTP_COULDNT_RETR_FILE == res)
+		{
+			// file not found, delete local file
+			NLMISC::CFile::deleteFile(dest.c_str());
+			throw Exception ("curl download failed: (ec %d %d)", res, r);
+		}
+
+		if(CURLE_OK != res)
+		{
+			NLMISC::CFile::deleteFile(dest.c_str());
+			throw Exception ("curl download failed: (ec %d %d)", res, r);
+		}
+
+		if(r == 404)
+		{
+			// file not found, delete it
+			NLMISC::CFile::deleteFile(dest.c_str());
+			throw Exception ("curl download failed: (ec %d %d)", res, r);
+		}	
+#else
+		throw Exception("USE_CURL is not defined, no curl method");
+#endif
+	}
 
 	void downloadFile (const string &source, const string &dest)
 	{
+		// only use curl to test
+		try
+		{
+			downloadFileWithCurl(source, dest);
+			// download ok, don't continue;
+			return;
+		}
+		catch(Exception &e)
+		{
+			nlwarning("downloadFileWithCurl failed '%s', try with windows method", e.what());
+		}
+
 		const uint32 bufferSize = 8000;
 		uint8 buffer[bufferSize];
 
@@ -812,6 +905,8 @@ private:
 	string UrlOk;
 	string UrlFailed;
 
+	friend int myProgressFunc(void *foo, double t, double d, double ultotal, double ulnow);	
+
 public:
 	uint TotalFilesToGet;
 	uint TotalBytesToGet;
@@ -821,6 +916,16 @@ public:
 
 CPatchThread *PatchThread = NULL;
 IThread *thread = NULL;
+
+int myProgressFunc(void *foo, double t, double d, double ultotal, double ulnow)
+{
+	double pour1 = t!=0.0?d*100.0/t:0.0;
+	double pour2 = ultotal!=0.0?ulnow*100.0/ultotal:0.0;
+	//changeSplash("Progression : dl %s / %s (%5.02f %%) ul %s / %s (%5.02f %%)\n", NLMISC::bytesToHumanReadable((uint32)d).c_str(), NLMISC::bytesToHumanReadable((uint32)t).c_str(), pour1, NLMISC::bytesToHumanReadable((uint32)ulnow).c_str(), NLMISC::bytesToHumanReadable((uint32)ultotal).c_str(), pour2);
+	if(PatchThread)
+		PatchThread->setState(false, false, "Getting file %s : %s / %s (%5.02f %%)", currentFile.c_str(), NLMISC::bytesToHumanReadable((uint32)d).c_str(), NLMISC::bytesToHumanReadable((uint32)t).c_str(), pour1);
+	return 0;
+}
 
 void startPatchThread (const std::string &serverPath, const std::string &serverVersion, const std::string &urlOk, const std::string &urlFailed, const std::string &logSeparator)
 {

@@ -1,6 +1,6 @@
 /** \file connexion.cpp
  *
- * $Id: connection.cpp,v 1.5 2004/01/20 18:50:11 lecroart Exp $
+ * $Id: connection.cpp,v 1.6 2004/02/19 13:09:30 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -185,11 +185,11 @@ string checkLogin(const string &login, const string &password, const string &cli
 
 		if(VerboseLog)
 		{
-			nlinfo ("Exploded '%s', with '%s', %d res", res.c_str(), "\n", lines.size());
-			for (uint i = 0; i < lines.size(); i++)
+			nlinfo ("Exploded, with nl, %d res", lines.size());
+/*			for (uint i = 0; i < lines.size(); i++)
 			{
 				nlinfo (" > '%s'", lines[i].c_str());
-			}
+			}*/
 		}
 
 		if(lines.size() != nbs+1)
@@ -206,11 +206,11 @@ string checkLogin(const string &login, const string &password, const string &cli
 
 			if(VerboseLog)
 			{
-				nlinfo ("Exploded '%s', with '%s', %d res", lines[i].c_str(), "|", res.size());
-				for (uint i = 0; i < res.size(); i++)
+				nlinfo ("Exploded with '%s', %d res", "|", res.size());
+/*				for (uint i = 0; i < res.size(); i++)
 				{
 					nlinfo (" > '%s'", res[i].c_str());
-				}
+				}*/
 			}
 
 			if(res.size() != 7)

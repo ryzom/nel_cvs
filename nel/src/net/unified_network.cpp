@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.31 2002/03/11 11:32:57 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.32 2002/03/12 14:12:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,20 +299,7 @@ TCallbackItem	ServerCbArray[] =
 //
 //
 
-CUnifiedNetwork	*CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
-							  const string &shortName, uint16 port, TServiceId &sid)
-{
-	nlassert (_Instance == NULL);
-
-	_Instance = new CUnifiedNetwork();
-
-	_Instance->initInstance (addr, rec, shortName, port, sid);
-
-	return _Instance;
-}
-
-
-void	CUnifiedNetwork::initInstance(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
+void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordingState rec,
 							  const string &shortName, uint16 port, TServiceId &sid)
 {
 	_RecordingState = rec;
@@ -365,10 +352,14 @@ void	CUnifiedNetwork::initInstance(const CInetAddress *addr, CCallbackNetBase::T
 	}
 
 	nlinfo ("HNETL5: Server '%s' added, registered and listen to port %hu", shortName.c_str (), port);
+
+	_Initialised = true;
 }
 
 void	CUnifiedNetwork::connect()
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::connect() whereas it is not initialised yet"));
+
 	if (CNamingClient::connected())
 	{
 		// get the services list
@@ -397,6 +388,8 @@ void	CUnifiedNetwork::connect()
 
 void	CUnifiedNetwork::release()
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::release() whereas it is not initialised yet"));
+
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CWriteAccessor	idAccess(&_IdCnx);
 	CRWSynchronized<TNameMappedConnection>::CWriteAccessor				nameAccess(&_NamedCnx);
 
@@ -434,6 +427,8 @@ void	CUnifiedNetwork::release()
 
 void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, bool sendId, bool external, uint16 sid, bool autoRetry)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::addService() whereas it is not initialised yet"));
+
 	if (external)
 		sid = _ExtSId++;
 
@@ -524,6 +519,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 void	CUnifiedNetwork::update(TTime timeout)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::update() whereas it is not initialised yet"));
+
 	bool	enableRetry;	// true every 5 seconds to reconnect if necessary
 
 //	nldebug("In CUnifiedNetwork::update()");
@@ -794,6 +791,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 
 void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(const string&, const CMessage&) whereas it is not initialised yet"));
+
 	enterReentrant();
 	{
 		CRWSynchronized<TNameMappedConnection>::CReadAccessor				nameAccess(&_NamedCnx);
@@ -847,6 +846,8 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 
 void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(uint16, const CMessage&) whereas it is not initialised yet"));
+
 	enterReentrant();
 	{
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
@@ -886,6 +887,8 @@ SendCSLeave:
 
 void	CUnifiedNetwork::send(const CMessage &msgout)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::send(const CMessage&) whereas it is not initialised yet"));
+
 	enterReentrant();
 	{
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
@@ -1029,6 +1032,8 @@ uint64 CUnifiedNetwork::getReceiveQueueSize ()
 
 CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &host)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::getNetBase() whereas it is not initialised yet"));
+
 	CRWSynchronized<TNameMappedConnection>::CReadAccessor				nameAccess(&_NamedCnx);
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 
@@ -1060,6 +1065,8 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 
 CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 {
+	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::getNetBase() whereas it is not initialised yet"));
+
 	CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 
 	if (sid>=idAccess.value().size() || !idAccess.value()[sid].EntryUsed || !idAccess.value()[sid].EntryUsed)
@@ -1089,7 +1096,9 @@ CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
 
 CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
 {
-	nlassertex (_Instance != NULL, ("Try to CUnifiedNetwork::getInstance() but it was never initialized"));
+	if (_Instance == NULL)
+		_Instance = new CUnifiedNetwork();
+
 	return _Instance;
 }
 

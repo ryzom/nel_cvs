@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.17 2002/03/11 11:33:04 lecroart Exp $
+ * $Id: unified_network.h,v 1.18 2002/03/12 14:12:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 	 * \param addr address of the naming service (NULL is you don't want to use the naming service)
 	 * \param rec recorging state to know if we have to record or replay messages
 	 */
-	static CUnifiedNetwork	*init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
+	void	init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
 
 	/** Registers to the Naming Service, and connects to the present services
 	 */
@@ -307,15 +307,15 @@ private:
 	// Naming service
 	NLNET::CInetAddress											_NamingServiceAddr;
 
+	// Initialised
+	bool														_Initialised;
+
 	//
-	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _MThreadId(0xFFFFFFFF), _MutexCount(0), _CbServer(NULL), _NextUpdateTime(0)
+	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _MThreadId(0xFFFFFFFF), _MutexCount(0), _CbServer(NULL), _NextUpdateTime(0), _Initialised(false)
 	{
 	}
 
 	~CUnifiedNetwork() { }
-
-	//
-	void	initInstance (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec, const std::string &shortName, uint16 port, TServiceId &sid );
 	
 	//
 	void	updateConnectionTable();

@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.19 2002/03/11 11:32:57 lecroart Exp $
+ * $Id: service_5.cpp,v 1.20 2002/03/12 14:12:49 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -302,7 +302,7 @@ void IService5::setServiceName (const char *shortName, const char *longName)
 	// now we have the service name, we create the log with this service
 
 	createDebug ();
-
+/* DEBUG BEN
 	fd.setParam (_LongName + ".log", false);
 
 	DebugLog->addDisplayer (&fd);
@@ -310,6 +310,7 @@ void IService5::setServiceName (const char *shortName, const char *longName)
 	WarningLog->addDisplayer (&fd);
 	AssertLog->addDisplayer (&fd);
 	ErrorLog->addDisplayer (&fd);
+*/
 }
 
 //
@@ -607,7 +608,7 @@ sint IService5::main ()
 		/// Layer5 Startup
 		///
 
-		CUnifiedNetwork	*instance = NULL;
+		CUnifiedNetwork	*instance = CUnifiedNetwork::getInstance();
 
 		// get the sid
 		try
@@ -639,7 +640,7 @@ sint IService5::main ()
 				CInetAddress loc(ConfigFile.getVar("NSHost").asString(), ConfigFile.getVar("NSPort").asInt());
 				try
 				{
-					instance = CUnifiedNetwork::init (&loc, _RecordingState, _ShortName, _Port, _SId);
+					instance->init (&loc, _RecordingState, _ShortName, _Port, _SId);
 					ok = true;
 				}
 				catch (ESocketConnectionFailed &)
@@ -651,7 +652,7 @@ sint IService5::main ()
 		}
 		else
 		{
-			instance = CUnifiedNetwork::init(NULL, _RecordingState, _ShortName, _Port, _SId);
+			instance->init(NULL, _RecordingState, _ShortName, _Port, _SId);
 		}
 
 

@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.5 2002/05/13 16:47:57 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.6 2002/05/14 11:51:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_transform.h"
+#include "nel/3d/animation_time.h"
 
 
 namespace NL3D

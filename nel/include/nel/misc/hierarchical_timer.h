@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.30 2004/08/27 12:57:03 legros Exp $
+ * $Id: hierarchical_timer.h,v 1.30.4.1 2004/11/04 12:38:44 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -195,6 +195,7 @@ public:
 						  NumVisits,
 						  MaxTime,
 						  MinTime,
+						  MaxSession,
 						  SortCriterionsLast
 						};
 public:

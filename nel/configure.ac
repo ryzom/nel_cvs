@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.1 2004/01/15 17:42:13 lecroart Exp $
+# $Id: configure.ac,v 1.2 2004/01/19 16:19:53 lecroart Exp $
 # 
 
 # ====================================================================
@@ -16,8 +16,8 @@ AC_PREREQ(2.57)
 AC_INIT([nel],[0.4.0],[nel-all@nevrax.org])
 AM_INIT_AUTOMAKE
 
-AC_CONFIG_SRCDIR([include/nel/misc/types_nl.h])
-AM_CONFIG_HEADER([include/nelconfig.h])
+AC_CONFIG_SRCDIR(include/nel/misc/types_nl.h)
+AM_CONFIG_HEADER(include/nelconfig.h)
 
 AC_SUBST(LIBTOOL_VERSION, [0:4:0])
 

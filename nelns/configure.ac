@@ -2,7 +2,7 @@
 # Configuration script for NeLNS
 # ====================================================================
 #
-# $Id: configure.ac,v 1.2 2004/01/15 19:47:01 distrib Exp $
+# $Id: configure.ac,v 1.3 2004/01/19 16:21:02 lecroart Exp $
 # 
 
 # ====================================================================
@@ -21,7 +21,7 @@ AC_CANONICAL_TARGET
 AM_INIT_AUTOMAKE
 
 
-AC_CONFIG_HEADERS([config.h])
+AM_CONFIG_HEADER(config.h)
 
 AC_SUBST(LIBTOOL_VERSION, [0:4:0])
 

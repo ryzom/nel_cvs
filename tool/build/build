@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ###########################################################################
-# $Id: build,v 1.2 2002/04/26 15:37:19 valignat Exp $
+# $Id: build,v 1.3 2002/04/30 10:30:13 valignat Exp $
 ###########################################################################
 ###########################################################################
 ###########################################################################
@@ -358,33 +358,6 @@ case $1 in
                     echo " done"
                 fi
 
-                # VPATH compilation and NeL include's Makefile.am
-                # command '$(wildcard *.h)' doesn't like each other
-                # very much. So the include files must be copied
-                # in NeL's compilation directory
-                if test "$BUILD_ARG" = "nel"
-                then
-                    # Delete any existing include file in the compilation
-                    # directory to avoid any kind of conflict
-                    if test -d $BUILD_DIR/nel/include/nel
-                    then
-                        cd $BUILD_DIR/nel/include/nel
-                        find . -type f -name \*.h -exec rm -rf \{\} \;
-                    else
-                        printError "You must get the source files first !..."
-                    fi
-
-                    # Copy the headers
-                    mkdir -p $BUILD_DIR/nel \
-                        && cp -Rfdp $NEL_SRC/include $BUILD_DIR/nel
-
-                    # Remove from the compilation directory the useless CVS
-                    # informations
-                    cd $BUILD_DIR/nel/include \
-                        && find . -prune -type d -name CVS -exec rm -rf \{\} \;
-
-                fi
-
                 # Erase the already existing configuration cache
                 rm -f $BUILD_DIR/$BUILD_ARG/config.cache \
                       $BUILD_DIR/$BUILD_ARG/config.h
@@ -415,6 +388,33 @@ case $1 in
     nel|nelns|snowballs)
         BUILD_MODULE=$1
         shift
+
+        # VPATH compilation and NeL include's Makefile.am command
+        # '$(wildcard *.h)' doesn't like each other very much. So the
+        # include files must be copied in NeL's compilation directory
+        # before each build (in case one or several header files changed).
+        if test "$BUILD_MODULE" = "nel"
+        then
+            # Delete any existing include file in the compilation
+            # directory to avoid any kind of conflict
+            if test -d $BUILD_DIR/nel/include/nel
+            then
+                cd $BUILD_DIR/nel/include/nel
+                find . -type f -name \*.h -exec rm -rf \{\} \;
+            else
+                printError "You must get the source files first !..."
+            fi
+
+            # Copy the headers
+            mkdir -p $BUILD_DIR/nel \
+                && cp -Rfdp $NEL_SRC/include $BUILD_DIR/nel
+
+            # Remove from the compilation directory the useless CVS
+            # informations
+            cd $BUILD_DIR/nel/include \
+                && find . -prune -type d -name CVS -exec rm -rf \{\} \;
+
+        fi
 
         cd $BUILD_DIR/$BUILD_MODULE || exit 1
 

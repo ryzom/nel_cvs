@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.21 2004/03/08 17:45:09 vizerie Exp $
+ * $Id: polygon.cpp,v 1.22 2004/03/10 11:15:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1549,35 +1549,26 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 				iposx += iInverseSlope;
 				++ currRaster;			
 			}
-			while (--height);						
-			// fill bottom of segment
-			if (ceilf(y2) != y2)
-			{
-				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
-			}	
+			while (--height);			
 		}
 		else
 		{
 			// start of segment		
 			if (floorf(y1) != y1)
-			{			
+			{	
 				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
 				++ currRaster;
 				-- height;
 				if (height == 0) return;
 			}
-			do
+			while (--height)
 			{
 				iposx += iInverseSlope;
 				currRaster->second = std::min((sint) (iposx >> 16), currRaster->second);
 				++ currRaster;			
-			}
-			while (--height);
-			// fill bottom of segment
-			if (ceilf(y2) != y2)
-			{
-				currRaster->second = std::min((sint) floorf(x2) - 1, currRaster->second);
-			}
+			}			
+			// fill bottom of segment			
+			currRaster->second = std::min((sint) floorf(x2) - 1, currRaster->second);			
 		}								
 	}
 	else
@@ -1599,35 +1590,26 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 				iposx += iInverseSlope;
 				++ currRaster;			
 			}
-			while (--height);
-			// fill bottom of segment
-			if (ceilf(y2) != y2)
-			{
-				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
-			}
+			while (--height);			
 		}
 		else
 		{
 			// start of segment		
 			if (floorf(y1) != y1)
-			{			
+			{		
 				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
 				++ currRaster;
 				-- height;
 				if (height == 0) return;
 			}
-			do
+			while (--height)
 			{
 				iposx += iInverseSlope;
 				currRaster->first = std::max((sint) (iposx >> 16), currRaster->first);
 				++ currRaster;			
-			}
-			while (--height);
-			// fill bottom of segment
-			if (ceilf(y2) != y2)
-			{
-				currRaster->first = std::max((sint) ceilf(x1), currRaster->first);
-			}
+			}			
+			// fill bottom of segment			
+			currRaster->first = std::max((sint) ceilf(x1), currRaster->first);			
 		}										
 	}
 }
@@ -1951,5 +1933,24 @@ CPolygon2D::CPolygon2D(const CTriangle &tri, const CMatrix &projMat)
 	Vertices[1].set(proj[1].x, proj[1].y);
 	Vertices[2].set(proj[2].x, proj[2].y);
 }
+
+// *******************************************************************************
+bool operator ==(const CPolygon2D &lhs,const CPolygon2D &rhs)
+{
+	if (lhs.Vertices.size() != rhs.Vertices.size()) return false;
+	return std::equal(lhs.Vertices.begin(), lhs.Vertices.end(), rhs.Vertices.begin());
+}
+
+// *******************************************************************************
+bool operator < (const CPolygon2D &lhs, const CPolygon2D &rhs)
+{
+	if (lhs.Vertices.size() != rhs.Vertices.size()) return lhs.Vertices.size() < rhs.Vertices.size();
+	for(uint k = 0; k < lhs.Vertices.size(); ++k)
+	{
+		if (lhs.Vertices[k] != rhs.Vertices[k]) return lhs.Vertices[k] < rhs.Vertices[k];
+	}
+	return false;
+}
+
 
 } // NLMISC

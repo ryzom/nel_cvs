@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.31 2002/11/04 15:40:43 boucher Exp $
+ * $Id: bitmap.cpp,v 1.32 2002/11/14 17:40:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2750,7 +2750,7 @@ void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 
 	const CBitmap *nBm0, *nBm1; // pointer to the bitmap that is used for blending, or to a copy is a conversion wa required
 
-	static CBitmap cp0, cp1; // these bitmap are copies of Bm1 and Bm0 if a conversion was needed
+	CBitmap cp0, cp1; // these bitmap are copies of Bm1 and Bm0 if a conversion was needed
 
 	if (Bm0.PixelFormat != RGBA)
 	{

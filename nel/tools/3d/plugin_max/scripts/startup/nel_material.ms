@@ -808,7 +808,15 @@ plugin material NelMaterial
 
 		on dlShaderType selected newState do
 		(
+			precShaderType= iShaderType
+
 			globalUpdateUI false
+
+			-- Yoyo: if Normal shader applied, reload Normal Shader (sithik wants)
+			if ( (iShaderType == ShaderNormal) and (iShaderType != precShaderType) )then
+			(
+				loadShader iShader
+			)
 		)
 
 		on cbUnlighted changed bNewState do

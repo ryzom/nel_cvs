@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.8 2002/11/29 09:11:13 lecroart Exp $
+ * $Id: i18n.h,v 1.9 2003/03/03 13:00:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,16 @@ namespace NLMISC {
  * If the string doesn't exist, it will be automatically added in all language files with a <Not Translated> mention.
  * If the language file doesn't exist, it'll be automatically create.
  *
+ *	Update 26-02-2002 Boris Boucher
+ *
+ *	Language are now preferably handled via official language code.
+ *	We use the ISO 639-2 code for language.
+ *	Optionnaly, we can append a country code (ISO 3066) to differentiate
+ *	between language flavor (eg chinese is ISO 639-2 zh, but come in
+ *	traditionnal or simplified form. So we append the country code :
+ *	zh-CN (china) for simplified, zh-TW (taiwan) for traditionna).
+ *	
+ *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -67,46 +77,82 @@ public:
 
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
-	/// \warning you *must* call this function before calling load()
 	static const std::vector<ucstring> &getLanguageNames();
-
+	/** Return a vector with all language code available.
+	 *	Code are ISO 639-2 compliant.
+	 *	As in getLanguageNames(), the index in the vector can be used to call load()
+	 */
+	static const std::vector<std::string> &getLanguageCodes();
 	/// Load a language file depending of the language
 	static void load (uint32 lid);
 
 	/// Returns the name of the language in english (french, english...)
-	static std::string getCurrentLanguage ();
+	static ucstring getCurrentLanguageName ();
 
 	/// Find a string in the selected language and return his association.
-	static const ucstring &get (const char *str);
+	static const ucstring &get (const std::string &label);
 
 	/// Temporary, we don't have file system for now, so we do a tricky cheat. there s not check so be careful!
-	static void setPath (const char* str);
+//	static void setPath (const char* str);
+
+	/** Read the content of a file as a unicode text.
+	 *	The method support 16 bits or 8bits utf-8 tagged files.
+	 *	8 bits UTF-8 encofing can be reconized by a non official header :
+	 *	EF,BB, BF.
+	 *	16 bits encoding can be reconized by the official header :
+	 *	FF, FE, witch can be reversed if the data are MSB first.
+	 *	
+	 *	Optionnaly, you can force the reader to consider the file as
+	 *	UTF-8 encoded.
+	 */
+	static void readTextFile(const std::string &filename, ucstring &result, bool forceUtf8 = false);
+
+	/** Remove any C style comment from the passed string.
+	 */
+	static void remove_C_Comment(ucstring &commentedString);
+
+	//@{
+	//\name Parsing utility
+	/// Skip the white space.
+	static void		skipWhiteSpace		(ucstring::const_iterator &it, ucstring::const_iterator &last);
+	/// Parse a label
+	static bool		parseLabel			(ucstring::const_iterator &it, ucstring::const_iterator &last, std::string &label);
+	/// Parse a marked string. NB : usualy, we use [ and ] as string delimiters in translation files.
+	static bool		parseMarkedString	(ucchar openMark, ucchar closeMark, ucstring::const_iterator &it, ucstring::const_iterator &last, ucstring &result);
+	//@}
+
 
 private:
 
-	typedef std::map<std::string, ucstring>::iterator			 ItStrMap;
-	typedef std::map<std::string, ucstring>::value_type			 ValueStrMap;
+	typedef std::map<std::string, ucstring>						StrMapContainer;
 
-	static std::map<std::string, ucstring>						 _StrMap;
+//	typedef std::map<std::string, ucstring>::iterator			 ItStrMap;
+//	typedef std::map<std::string, ucstring>::value_type			 ValueStrMap;
+
+	static StrMapContainer										 _StrMap;
 	static bool													 _StrMapLoaded;
 
-	static std::string											 _Path;
-	static std::string											 _FileName;
-	static const char											*_LanguageFiles[];
+//	static std::string											 _Path;
+//	static std::string											 _FileName;
+	static const std::string									 _LanguageCodes[];
+	static const uint											_NbLanguages;
 
-	static std::vector<ucstring>								 _LanguageNames;
+//	static std::vector<ucstring>								 _LanguageNames;
+//	static std::vector<std::string>								 _LanguageCodes;
 	static bool													 _LanguagesNamesLoaded;
 
 	static sint32												 _SelectedLanguage;
+	static const ucstring										_NotTranslatedValue;
 
-	static ucchar	eatChar				(IStream &is);
-	static void		checkASCII7B		(ucchar c);
+//	static void		enumFiles			();
+//	static ucchar	eatChar				(IStream &is);
+//	static void		checkASCII7B		(ucchar c);
 
-	static void		createLanguageFile	(uint32 lid);
-	static void		createLanguageEntry (const std::string &lval, const std::string &rval);
+//	static void		createLanguageFile	(uint32 lid);
+//	static void		createLanguageEntry (const std::string &lval, const std::string &rval);
 
-	static void		skipComment			(IStream &is, int &line);
-	static ucchar	skipWS				(IStream &is, int &line);
+//	static void		skipComment			(IStream &is, int &line);
+//	static ucchar	skipWS				(IStream &is, int &line);
 };
 
 
@@ -116,3 +162,24 @@ private:
 #endif // NL_I18N_H
 
 /* End of i18n.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

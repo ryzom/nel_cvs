@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.3 2002/06/28 19:41:27 hanappe Exp $
+ * $Id: sound_animation.h,v 1.4 2002/07/03 10:00:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,10 +46,10 @@ class CSoundAnimation
 {
 public:
 
-	/*enum 
+	enum 
 	{ 
 		NoId = -1
-	};*/
+	};
 
 	CSoundAnimation(std::string& name, TSoundAnimId id) : _Name(name), _Id(id), _Dirty(false) {}
 

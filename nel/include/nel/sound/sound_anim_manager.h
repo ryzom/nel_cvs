@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.3 2002/06/28 19:41:13 hanappe Exp $
+ * $Id: sound_anim_manager.h,v 1.4 2002/07/03 10:00:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ typedef sint32 TSoundAnimId;
 const CSoundAnimationNoId = -1;
 
 ///
-//typedef sint32 TSoundAnimPlayId;
+typedef sint32 TSoundAnimPlayId;
 
 /// Animation name-to-id hash map
 typedef std::hash_map<const char*, TSoundAnimId, std::hash<const char*>, eqsndanim> TSoundAnimMap;
@@ -111,27 +111,27 @@ public:
 	 *  or -1 if the animation was not found.
  	 *  \param name The id of the animation to play.
 	 */
-	//virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NLMISC::CVector* position);
 
 	/** Start playing a sound animation. Returns an id number of this playback instance
 	 *  or -1 if the animation was not found.
  	 *  \param name The name of the animation to play.
 	 */
-	//virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
+	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NLMISC::CVector* position);
 
 	/** Stop the playing of a sound animation. 
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	//virtual void					stopAnimation(TSoundAnimPlayId playbackId);
+	virtual void					stopAnimation(TSoundAnimPlayId playbackId);
 
 	/** Returns true is the animation with the specified playback ID is playing
  	 *  \param name The playback id that was returned by playAnimation.
 	 */
-	//virtual bool					isPlaying(TSoundAnimPlayId playbackId);
+	virtual bool					isPlaying(TSoundAnimPlayId playbackId);
 
 	/** Update all the sound animations during playback. 
 	 */
-	//virtual void					update(float lastTime, float curTime);
+	virtual void					update(float lastTime, float curTime);
 
 	/** Play all the events of an animation in the interval between lastTime and curTime.
 	 *  Both lastTime and curTime are measured relatively from the beginning of the

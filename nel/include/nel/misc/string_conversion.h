@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.1 2003/01/29 18:34:26 vizerie Exp $
+ * $Id: string_conversion.h,v 1.2 2003/02/04 14:46:29 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -163,7 +163,7 @@ CStringConversion<DestType, Pred>::CStringConversion(const CPair *pairs, uint nu
 template <class DestType, class Pred>
 const DestType &CStringConversion<DestType, Pred>::fromString(const std::string &str) const
 {
-	TString2DestType::const_iterator it = _String2DestType.find(str);
+	typename TString2DestType::const_iterator it = _String2DestType.find(str);
 	if (it == _String2DestType.end())
 	{		
 		return _NotFoundValue;
@@ -178,7 +178,7 @@ const DestType &CStringConversion<DestType, Pred>::fromString(const std::string 
 template <class DestType, class Pred>
 const std::string &CStringConversion<DestType, Pred>::toString(const DestType &value) const
 {
-	TDestType2String::const_iterator it = _DestType2String.find(value);
+	typename TDestType2String::const_iterator it = _DestType2String.find(value);
 	if (it == _DestType2String.end())
 	{
 		static std::string emptyString;		
@@ -200,3 +200,4 @@ const std::string &CStringConversion<DestType, Pred>::toString(const DestType &v
 
 
 #endif
+

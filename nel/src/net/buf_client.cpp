@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.19 2002/08/22 15:04:21 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.20 2002/08/22 16:08:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,6 +129,74 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
  */
 bool CBufClient::dataAvailable()
 {
+	//H_AUTO (CBufClient_dataAvailable);
+	{
+		/* If no data available, enter the 'while' loop and return false (1 volatile test)
+		 * If there are user data available, enter the 'while' and return true immediately (1 volatile test + 1 short locking)
+		 * If there is a disconnection event (rare), call the callback and loop
+		 */
+		while ( dataAvailableFlag() )
+		{
+			// Because _DataAvailable is true, the receive queue is not empty at this point
+			uint8 val;
+			{
+				CFifoAccessor recvfifo( &receiveQueue() );
+				val = recvfifo.value().frontLast ();
+			}
+
+			// Test if it the next block is a system event
+			switch ( val )
+			{
+				
+			// Normal message available
+			case CBufNetBase::User:
+				return true; // return immediatly, do not extract the message
+
+			// Process disconnection event
+			case CBufNetBase::Disconnection:
+
+				nldebug( "Disconnection event" );
+				_BufSock->setConnectedState( false );
+
+				// Call callback if needed
+				if ( disconnectionCallback() != NULL )
+				{
+					disconnectionCallback()( id(), argOfDisconnectionCallback() );
+				}
+
+				// Unlike the server version, we do not delete the CBufSock object here,
+				// it will be done in the destructor of CBufClient
+				break;
+
+			default: // should not occur
+				{
+					CFifoAccessor recvfifo( &receiveQueue() );
+					vector<uint8> buffer;
+					recvfifo.value().front (buffer);
+					nlinfo( "LNETL1: Invalid block type: %hu (should be = %hu)", (uint16)(buffer[buffer.size()-1]), (uint16)val );
+					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
+					nlinfo( "LNETL1: Receive queue:" );
+					recvfifo.value().display();
+					nlerror( "LNETL1: Invalid system event type in client receive queue" );
+				}
+			}
+			// Extract system event
+			{
+				CFifoAccessor recvfifo( &receiveQueue() );
+				recvfifo.value().pop();
+				setDataAvailableFlag( ! recvfifo.value().empty() );
+			}
+
+		}
+		// _DataAvailable is false here
+		return false;
+	}
+}
+
+
+/* // OLD VERSION
+bool CBufClient::dataAvailable()
+{
 //	H_AUTO (CBufClient_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
@@ -185,11 +253,11 @@ bool CBufClient::dataAvailable()
 		while ( true );
 	}
 }
+*/
 
-  
 /*
  * Receives next block of data in the specified buffer (resizes the vector)
- * Precond: dataAvailbable() has returned true
+ * Precond: dataAvailable() has returned true
  */
 void CBufClient::receive( NLMISC::CMemStream& buffer )
 {
@@ -202,6 +270,7 @@ void CBufClient::receive( NLMISC::CMemStream& buffer )
 		nlassert( ! recvfifo.value().empty() );
 		recvfifo.value().front( buffer );
 		recvfifo.value().pop();
+		setDataAvailableFlag( ! recvfifo.value().empty() );
 	}
 
 	// Extract event type
@@ -252,6 +321,7 @@ void CBufClient::disconnect( bool quick )
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		recvfifo.value().clear();
+		setDataAvailableFlag( false );
 	}
 }
 
@@ -366,14 +436,12 @@ void CClientReceiveTask::run()
 				}
 
 				// Receive message payload (in blocking mode)
-
 				CObjectVector<uint8> buffer;
 				buffer.resize(len+1);
 
 				sock()->receive( buffer.getPtr(), len );
 				
-				// TODO OPTIM remove the nldebug for speed
-				//commented for optimisation nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
+				//commented out for optimisation: nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
 				// Add event type
 				buffer[len] = CBufNetBase::User;
 
@@ -388,6 +456,7 @@ void CClientReceiveTask::run()
 		catch ( ESocketConnectionClosed& )
 		{
 			nldebug( "LNETL1: Client connection %s closed", _SockId->asString().c_str() );
+			// The socket went to _Connected=false when throwing the exception
 			connected = false;
 		}
 		catch ( ESocket& )

@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.9 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.10 2002/08/22 16:10:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,7 @@ protected:
 			recvfifo.value().push( buffer );
 			//nldebug( "BNB: Pushed, releasing the receive queue..." );
 			//mbsize = recvfifo.value().size() / 1048576;
+			setDataAvailableFlag( true );
 		}
 		//nldebug( "BNB: Released." );
 		//if ( mbsize > 1 )
@@ -178,6 +179,7 @@ protected:
 			recvfifo.value().push( buffer, size );
 			//nldebug( "BNB: Pushed, releasing the receive queue..." );
 			//mbsize = recvfifo.value().size() / 1048576;
+			setDataAvailableFlag( true );
 		}
 		//nldebug( "BNB: Released." );
 		/*if ( mbsize > 1 )
@@ -186,11 +188,19 @@ protected:
 		}*/
 	}
 
+	/// Sets _DataAvailable
+	void				setDataAvailableFlag( bool da ) { _DataAvailable = da; }
+
+	/// Return _DataAvailable
+	volatile bool		dataAvailableFlag() const { return _DataAvailable; }
 
 private:
 
 	/// The receive queue, protected by a mutex-like device
 	CSynchronizedFIFO	_RecvFifo;
+
+	/// True if there is data available (avoids locking a mutex)
+	volatile bool		_DataAvailable;
 
 	/// Callback for disconnection
 	TNetCallback		_DisconnectionCallback;

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.33 2002/08/21 09:44:50 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.34 2002/08/22 16:10:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -373,6 +373,107 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
  */
 bool CBufServer::dataAvailable()
 {
+	//H_AUTO (CBufServer_dataAvailable);
+	{
+		/* If no data available, enter the 'while' loop and return false (1 volatile test)
+		 * If there are user data available, enter the 'while' and return true immediately (1 volatile test + 1 short locking)
+		 * If there is a connection/disconnection event (rare), call the callback and loop
+		 */
+		while ( dataAvailableFlag() )
+		{
+			// Because _DataAvailable is true, the receive queue is not empty at this point
+			vector<uint8> buffer;
+			uint8 val;
+			{
+				CFifoAccessor recvfifo( &receiveQueue() );
+				val = recvfifo.value().frontLast();
+				if ( val != CBufNetBase::User )
+				{
+					recvfifo.value().front( buffer );
+				}
+			}
+
+			/*sint32 mbsize = recvfifo.value().size() / 1048576;
+			if ( mbsize > 0 )
+			{
+			  nlwarning( "The receive queue size exceeds %d MB", mbsize );
+			}*/
+
+			/*vector<uint8> buffer;
+			recvfifo.value().front( buffer );*/
+
+			// Test if it the next block is a system event
+			//switch ( buffer[buffer.size()-1] )
+			switch ( val )
+			{
+				
+			// Normal message available
+			case CBufNetBase::User:
+				return true; // return immediatly, do not extract the message
+
+			// Process disconnection event
+			case CBufNetBase::Disconnection:
+			{
+				TSockId sockid = *((TSockId*)(&*buffer.begin()));
+				nldebug( "LNETL1: Disconnection event for %p %s", sockid, sockid->asString().c_str());
+
+				sockid->setConnectedState( false );
+
+				// Call callback if needed
+				if ( disconnectionCallback() != NULL )
+				{
+					disconnectionCallback()( sockid, argOfDisconnectionCallback() );
+				}
+
+				// Add socket object into the synchronized remove list
+				nldebug( "LNETL1: Adding the connection to the remove list" );
+				nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
+				((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
+				break;
+			}
+			// Process connection event
+			case CBufNetBase::Connection:
+			{
+				TSockId sockid = *((TSockId*)(&*buffer.begin()));
+				nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
+
+				sockid->setConnectedState( true );
+				
+				// Call callback if needed
+				if ( connectionCallback() != NULL )
+				{
+					connectionCallback()( sockid, argOfConnectionCallback() );
+				}
+				break;
+			}
+			default: // should not occur
+				nlinfo( "LNETL1: Invalid block type: %hu (should be = to %hu", (uint16)(buffer[buffer.size()-1]), (uint16)(val) );
+				nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
+				nlinfo( "LNETL1: Receive queue:" );
+				{
+					CFifoAccessor recvfifo( &receiveQueue() );
+					recvfifo.value().display();
+				}
+				nlerror( "LNETL1: Invalid system event type in server receive queue" );
+
+			}
+
+			// Extract system event
+			{
+				CFifoAccessor recvfifo( &receiveQueue() );
+				recvfifo.value().pop();
+				setDataAvailableFlag( ! recvfifo.value().empty() );
+			}
+		}
+		// _DataAvailable is false here
+		return false;
+	}
+}
+
+
+/* // OLD VERSION
+bool CBufServer::dataAvailable()
+{
 	H_AUTO (CBufServer_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
@@ -385,16 +486,16 @@ bool CBufServer::dataAvailable()
 			}
 			else
 			{
-			  /*sint32 mbsize = recvfifo.value().size() / 1048576;
-			  if ( mbsize > 0 )
-			    {
-			      nlwarning( "The receive queue size exceeds %d MB", mbsize );
-			    }*/
+			  //sint32 mbsize = recvfifo.value().size() / 1048576;
+			  //if ( mbsize > 0 )
+			    //{
+			    //  nlwarning( "The receive queue size exceeds %d MB", mbsize );
+			    //}
 
 				uint8 val = recvfifo.value().frontLast();
 				
-				/*vector<uint8> buffer;
-				recvfifo.value().front( buffer );*/
+				//vector<uint8> buffer;
+				//recvfifo.value().front( buffer );
 
 				// Test if it the next block is a system event
 				//switch ( buffer[buffer.size()-1] )
@@ -465,7 +566,7 @@ bool CBufServer::dataAvailable()
 		while ( true );
 	}
 }
-
+*/
  
 /*
  * Receives next block of data in the specified. The length and hostid are output arguments.
@@ -481,6 +582,7 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 		nlassert( ! recvfifo.value().empty() );
 		recvfifo.value().front( buffer );
 		recvfifo.value().pop();
+		setDataAvailableFlag( ! recvfifo.value().empty() );
 	}
 
 	// Extract hostid (and event type)
@@ -877,7 +979,6 @@ void CServerReceiveTask::run()
 			for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
 			{
 				if ( (*ipb)->Sock->connected() ) // exclude disconnected sockets that are not deleted
-												 // Note: there is a mutex in there !
 				{
 					alldisconnected = false;
 					// Copy _Connections element
@@ -976,6 +1077,7 @@ void CServerReceiveTask::run()
 							CFifoAccessor recvfifo( &_Server->receiveQueue() );
 							//nldebug( "RCV: Acquired, pushing the received buffer... ");
 							recvfifo.value().push( serverbufsock->receivedBuffer(), hidvec );
+							_Server->setDataAvailableFlag( true );
 							//nldebug( "RCV: Pushed, releasing the receive queue..." );
 							//recvfifo.value().display();
 							//bufsize = serverbufsock->receivedBuffer().size();
@@ -998,6 +1100,7 @@ void CServerReceiveTask::run()
 				catch ( ESocketConnectionClosed& )
 				{
 					nldebug( "LNETL1: Connection %s closed", serverbufsock->asString().c_str() );
+					// The socket went to _Connected=false when throwing the exception
 				}
 				catch ( ESocket& )
 				{

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.h
  * <File description>
  *
- * $Id: point_light_named_array.h,v 1.6 2003/09/26 14:25:33 lecroart Exp $
+ * $Id: point_light_named_array.h,v 1.7 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,10 @@ class CScene;
 class CPointLightNamedArray
 {
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 	/// Constructor
 	CPointLightNamedArray();

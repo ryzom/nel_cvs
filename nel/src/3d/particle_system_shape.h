@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.24 2004/06/17 08:07:52 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.25 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,11 @@ class CParticleSystemDetailObs;
 class CParticleSystemShape : public IShape
 {
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 
 	/// Default ctor
 	CParticleSystemShape();

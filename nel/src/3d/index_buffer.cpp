@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.5 2004/10/19 12:48:51 vizerie Exp $
+ * $Id: index_buffer.cpp,v 1.6 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,11 @@ IIBDrvInfos::~IIBDrvInfos()
 
 CIndexBuffer::CIndexBuffer()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_Capacity = 0;
 	_NbIndexes = 0;
 	_InternalFlags = 0;
@@ -65,6 +70,10 @@ CIndexBuffer::CIndexBuffer()
 
 CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	_Capacity = 0;
 	_NbIndexes = 0;
 	_LockCounter = 0;
@@ -79,6 +88,10 @@ CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
 // ***************************************************************************
 CIndexBuffer::CIndexBuffer(const char *name)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	_Capacity = 0;
 	_NbIndexes = 0;
 	_InternalFlags = 0;
@@ -95,6 +108,11 @@ CIndexBuffer::CIndexBuffer(const char *name)
 
 CIndexBuffer::~CIndexBuffer()
 {	
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// Single value
 	if (DrvInfos)
 		DrvInfos->IndexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
@@ -325,6 +343,11 @@ void CIndexBuffer::restoreFromSerialVector(const std::vector<uint32> &src)
 // ***************************************************************************
 void CIndexBuffer::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/** Version 2 : no more write only flags
 	  * Version 1 : index buffer
 	  * Version 0 : primitive block

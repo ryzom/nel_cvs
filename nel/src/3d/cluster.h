@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.15 2004/04/13 17:01:15 berenguier Exp $
+ * $Id: cluster.h,v 1.16 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,11 @@ const NLMISC::CClassId	ClusterId=NLMISC::CClassId(0x13f37e46, 0x3e880780);
  */
 class CCluster : public CTransform
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.22 2004/02/05 09:48:57 besson Exp $
+ * $Id: zone.h,v 1.23 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,6 +64,11 @@ typedef	std::map<uint16, CZone*>::iterator	ItZoneMap;
  */
 struct	CBorderVertex
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// The index of vertex in the current zone to bind.
 	uint16			CurrentVertex;
 	// The neighbor zone Id.
@@ -85,6 +90,10 @@ struct	CBorderVertex
  */
 struct	CPatchInfo
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 public:
 
 	/** A bind Info on a edge of a patch.
@@ -311,6 +320,10 @@ public:
 	};
 
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 	/// Constructor
 	CZone();

@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_morpher.cpp,v 1.11 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,11 @@ namespace NL3D
 // ***************************************************************************
 void CBlendShape::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// version 1 : added tangent space support
 	sint ver = f.serialVersion (1);
 
@@ -58,6 +63,11 @@ void CBlendShape::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 CMeshMorpher::CMeshMorpher()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	_VBOri = NULL;
 	_VBDst = NULL;
 
@@ -343,6 +353,11 @@ void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 // ***************************************************************************
 void CMeshMorpher::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	(void)f.serialVersion (0);
 
 	f.serialCont (BlendShapes);

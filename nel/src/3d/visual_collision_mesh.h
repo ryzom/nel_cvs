@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * <File description>
  *
- * $Id: visual_collision_mesh.h,v 1.4 2004/08/03 16:16:18 vizerie Exp $
+ * $Id: visual_collision_mesh.h,v 1.5 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -77,6 +77,11 @@ public:
 	};
 	
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 
 	/// Constructor
 	CVisualCollisionMesh();
@@ -108,6 +113,11 @@ private:
 	// A Static Grid Container. Only 65535 elements max can be inserted
 	class	CStaticGrid
 	{
+		/* ***********************************************
+		 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+		 *	It can be loaded/called through CAsyncFileManager for instance
+		 * ***********************************************/
+
 	public:
 		// create
 		void	create(uint nbQuads, uint nbElts, const NLMISC::CAABBox &gridBBox);

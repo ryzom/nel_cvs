@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.6 2004/07/20 16:21:11 berenguier Exp $
+ * $Id: ig_surface_light.h,v 1.7 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -47,6 +47,11 @@ class	CInstanceGroup;
  */
 class CIGSurfaceLight
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 public:
 	struct	CRetrieverLightGrid
 	{

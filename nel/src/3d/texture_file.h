@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.13 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: texture_file.h,v 1.14 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,11 @@ namespace NL3D
 class CTextureFile : public ITexture
 {
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 
 	/** 
 	 * Default constructor
@@ -65,6 +70,11 @@ public:
 	 */	
 	CTextureFile(const std::string &s) 
 	{ 
+		/* ***********************************************
+		 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+		 *	It can be loaded/called through CAsyncFileManager for instance
+		 * ***********************************************/
+		
 		touch(); _FileName = s; 
 		_AllowDegradation=true;
 		_SupportSharing= true; 

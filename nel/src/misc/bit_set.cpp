@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.14 2004/01/15 17:39:40 lecroart Exp $
+ * $Id: bit_set.cpp,v 1.15 2004/10/22 12:52:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,23 +43,39 @@ namespace	NLMISC
 // ***************************************************************************
 CBitSet::CBitSet()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	NumBits= 0;
 	MaskLast= 0;
 }
 CBitSet::CBitSet(uint numBits)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	NumBits= 0;
 	MaskLast= 0;
 	resize(numBits);
 }
 CBitSet::CBitSet(const CBitSet &bs)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	NumBits= bs.NumBits;
 	MaskLast= bs.MaskLast;
 	Array= bs.Array;
 }
 CBitSet::~CBitSet()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 }
 CBitSet	&CBitSet::operator=(const CBitSet &bs)
 {
@@ -293,6 +309,11 @@ bool	CBitSet::allCleared()
 
 void	CBitSet::serial(IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	(void)f.serialVersion(0);
 	uint32	sz=0;
 	vector<uint32>	array32;

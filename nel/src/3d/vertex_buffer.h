@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.17 2004/09/17 15:12:23 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.18 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,6 +279,11 @@ public:
 	// @}
 
 public:
+
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 	/**
 	  * Default constructor. Make an empty vertex buffer. No value, no vertex. Vertex color format is set to TRGBA.

@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.24 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: texture_file.cpp,v 1.25 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,11 @@ namespace NL3D
 ///==================================================================
 void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip, bool dontStretchNonPOW2Tex)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());
 	try
@@ -201,6 +206,11 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 \*------------------------------------------------------------------*/
 void CTextureFile::doGenerate(bool async)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _DontStretchNonPOW2Tex);
 }
 

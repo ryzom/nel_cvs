@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.28 2004/10/05 17:03:33 vizerie Exp $
+ * $Id: material.h,v 1.29 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,6 +256,11 @@ public:
 	enum TTexCoordGenMode	{TexCoordGenReflect=0, TexCoordGenObjectSpace, TexCoordGenEyeSpace, numTexCoordGenMode};
 
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/// \name Object.
 	// @{
 	/** ctor.

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.36 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.37 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -242,6 +242,11 @@ static CVertexProgram *BuildWaterVP(bool diffuseMap, bool bumpMap, bool use2Bump
  */
 CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeightFactor(3), _ComputeLightmap(false), _SplashEnabled(true)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_DefaultPos.setDefaultValue(NLMISC::CVector::Null);
 	_DefaultScale.setDefaultValue(NLMISC::CVector(1, 1, 1));
 	_DefaultRotQuat.setDefaultValue(CQuat::Identity);
@@ -261,6 +266,11 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 //============================================
 CWaterShape::~CWaterShape()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	if (
 		(_EnvMap[0] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[0]))
 		|| (_EnvMap[1] && dynamic_cast<CTextureBlend *>((ITexture *) _EnvMap[1]))
@@ -416,6 +426,11 @@ const ITexture		*CWaterShape::getHeightMap(uint k) const
 //============================================
 void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// version 4 : added scene water env map
 	// version 3 : added '_Splashenabled' flag
 	sint ver = f.serialVersion(4);

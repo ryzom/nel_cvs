@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.17 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_shape.h,v 1.18 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -76,6 +76,11 @@ const uint WATER_VERTEX_SOFT_SIZE = sizeof(float[5]);
  */
 class CWaterShape : public IShape
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 public:
 	NLMISC_DECLARE_CLASS(CWaterShape);
 

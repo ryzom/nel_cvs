@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.26 2004/05/24 16:10:47 berenguier Exp $
+ * $Id: file.h,v 1.27 2004/10/22 12:51:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,10 @@ struct ERenameError : public EFile
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
+ * ***********************************************
+ *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+ *	It can be loaded/called through CAsyncFileManager for instance
+ * ***********************************************
  */
 class CIFile : public IStream
 {

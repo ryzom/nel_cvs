@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.50 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.51 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,11 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
 											   _Sharing(false),
 											   _NumBytesWanted(0)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	for (uint k = 0; k < 4; ++k)
 	{
 		_UserParamDefaultTrack[k].setDefaultValue(0);
@@ -105,6 +110,11 @@ CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),
 ///===========================================================================
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	sint ver = f.serialVersion(6);
 	/// version 6 : added sharing flag
 	//NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.49 2004/07/12 14:06:18 miller Exp $
+ * $Id: path.h,v 1.50 2004/10/22 12:51:36 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -103,6 +103,12 @@ public:
 	 * \param displayWarning set to false if you don't want the function displays a warning if the file is not found
 	 * \param lookupInLocalDirectory if true, the lookup() will first try to open the file without path.
 	 * \return empty string if file is not found or the full path + file name (ex: "c:/temp/test.txt");
+	 *
+	 * ***********************************************
+	 *	WARNING: This Method is NOT thread safe
+	 *	user must ensure that no mutator is called on CPath while async loading
+	 * ***********************************************
+	 *
 	 */
 	static std::string	lookup (const std::string &filename, bool throwException = true, bool displayWarning = true, bool lookupInLocalDirectory = true);
 

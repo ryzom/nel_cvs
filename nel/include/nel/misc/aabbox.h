@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.11 2004/02/05 20:23:31 berenguier Exp $
+ * $Id: aabbox.h,v 1.12 2004/10/22 12:51:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,10 @@ public:
 
 	/// Empty bbox Constructor.  (for AABBoxExt::getRadius() correctness).
 	CAABBox() : Center(0,0,0), HalfSize(0,0,0) {}
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 
 	/// \name Builds.
@@ -174,6 +178,10 @@ public:
 	CAABBoxExt() {RadiusMin= RadiusMax=0;}
 	/// Constructor from a normal BBox.
 	CAABBoxExt(const CAABBox &o) {RadiusMin= RadiusMax=0; *this=o;}
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 
 	/// \name Builds.

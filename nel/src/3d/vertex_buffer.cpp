@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.44 2004/08/13 15:46:28 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.45 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,10 @@ const CVertexBuffer::TType CVertexBuffer::DefaultValueType[NumValue]=
 
 void CVertexBuffer::construct()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	_Flags = 0;
 	_Capacity = 0;
 	_NbVerts = 0;
@@ -137,6 +141,11 @@ CVertexBuffer::CVertexBuffer(const char *name)
 
 CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_Flags = 0;
 	_Capacity = 0;
 	_NbVerts = 0;
@@ -160,6 +169,11 @@ CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
 
 CVertexBuffer::~CVertexBuffer()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	if (DrvInfos)
 		DrvInfos->VertexBufferPtr = NULL;	// Tell the driver info to not restaure memory when it will die
 
@@ -590,6 +604,11 @@ uint16		CVertexBuffer::remapV2Flags (uint32 oldFlags, uint& weightCount)
 
 void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 1:
 		- PaletteSkin version.
@@ -708,6 +727,11 @@ void		CVertexBuffer::serialOldV1Minus(NLMISC::IStream &f, sint ver)
 
 void		CVertexBuffer::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 2:
 		- cut to use serialHeader() serialSubset().
@@ -738,6 +762,11 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 
 void		CVertexBuffer::serialHeader(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 3:
 		- Preferred memory.
@@ -885,6 +914,11 @@ uint8		CVertexBuffer::getNumWeight () const
 
 void		CVertexBuffer::serialSubset(NLMISC::IStream &f, uint vertexStart, uint vertexEnd)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 2:
 		- UVRouting

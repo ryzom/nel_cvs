@@ -1,7 +1,7 @@
 /** \file ig_surface_light.cpp
  * <File description>
  *
- * $Id: ig_surface_light.cpp,v 1.6 2004/07/20 16:21:11 berenguier Exp $
+ * $Id: ig_surface_light.cpp,v 1.7 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,6 +34,11 @@ namespace NL3D
 // ***************************************************************************
 CIGSurfaceLight::CIGSurfaceLight()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	_Owner= NULL;
 	_CellSize= 1;
 	_OOCellSize= 1;
@@ -97,6 +102,11 @@ void			CIGSurfaceLight::clear()
 // ***************************************************************************
 void			CIGSurfaceLight::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	/*
 	Version 1:
 		- The retriever grid map is now a map<uint,CRetrieverLightGrid>. Discard compatibility but.

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.87 2004/10/19 12:51:19 vizerie Exp $
+ * $Id: mesh.cpp,v 1.88 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,6 +126,11 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 // ***************************************************************************
 CMeshGeom::CMeshGeom()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_Skinned= false;
 	_OriginalSkinRestored= true;
 	_MeshMorpher = new CMeshMorpher;
@@ -138,6 +143,11 @@ CMeshGeom::CMeshGeom()
 // ***************************************************************************
 CMeshGeom::~CMeshGeom()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	delete _MeshMorpher;
 }
 
@@ -861,6 +871,11 @@ void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatri
 // ***************************************************************************
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 5:
 		- Preferred memory.
@@ -976,6 +991,11 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void	CMeshGeom::compileRunTime()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// if skinned, prepare skinning
 	if(_Skinned)
 		bkupOriginalSkinVertices();
@@ -1014,6 +1034,11 @@ void	CMeshGeom::compileRunTime()
 // ***************************************************************************
 bool	CMeshGeom::retrieveVertices(std::vector<NLMISC::CVector> &vertices) const
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	uint	i;
 	
 	// if resident, fails!!! cannot read!
@@ -1041,6 +1066,11 @@ bool	CMeshGeom::retrieveVertices(std::vector<NLMISC::CVector> &vertices) const
 // ***************************************************************************
 bool	CMeshGeom::retrieveTriangles(std::vector<uint32> &indices) const
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	uint	i;
 
 	indices.clear();
@@ -2256,12 +2286,22 @@ CMesh::CMeshBuild::CMeshBuild()
 // ***************************************************************************
 CMesh::CMesh()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// create the MeshGeom
 	_MeshGeom= new CMeshGeom;
 }
 // ***************************************************************************
 CMesh::~CMesh()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// delete the MeshGeom
 	delete _MeshGeom;
 }
@@ -2394,6 +2434,11 @@ void	CMesh::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 // ***************************************************************************
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 6:
 		- cut in serialisation, because of:
@@ -2507,6 +2552,11 @@ void	CMesh::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, boo
 // ***************************************************************************
 void	CMesh::compileRunTime()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// **** try to build a Visual Collision Mesh
 	// clear first
 	if(_VisualCollisionMesh)

@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.14 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: shape.h,v 1.15 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,11 @@ class	CRenderTrav;
  */
 class IShape : public NLMISC::CRefCount, public NLMISC::IStreamable
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 public:
 
 	/// Constructor

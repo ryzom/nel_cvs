@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.19 2004/05/19 14:25:02 berenguier Exp $
+ * $Id: mesh_base.h,v 1.20 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,11 @@ class	CVisualCollisionMesh;
  */
 class CMeshBase : public IShape
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 public:
 	/** If AutoCameraCol, meshs will build the cameracollision mesh only if the mesh is lightmapped
 	 *	if NoCameraCol, the cameracollision won't be generated
@@ -155,6 +160,11 @@ public:
 
 
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/// Constructor
 	CMeshBase();
 	~CMeshBase();

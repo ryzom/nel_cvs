@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.39 2004/07/20 16:21:11 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.40 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,11 @@ void UInstanceGroup::stopCreateInstanceGroupAsync (UInstanceGroup **ppIG)
 // ***************************************************************************
 CInstanceGroupUser::CInstanceGroupUser()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	NL3D_MEM_IG
 	_AddToSceneState = StateNotAdded;
 
@@ -101,6 +106,11 @@ CInstanceGroupUser::CInstanceGroupUser()
 // ***************************************************************************
 CInstanceGroupUser::~CInstanceGroupUser()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// ensure all instances proxys are deleted
 	removeInstancesUser();
 }
@@ -520,6 +530,11 @@ UInstance	CInstanceGroupUser::getInstance (uint instanceNb) const
 // ***************************************************************************
 void		CInstanceGroupUser::removeInstancesUser()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// clear the array and the map
 	_InstanceMap.clear();
 }

@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.7 2003/07/01 10:11:35 cado Exp $
+ * $Id: bit_set.h,v 1.8 2004/10/22 12:51:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,11 @@ namespace	NLMISC
 class	CBitSet
 {
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/// \name Object.
 	//@{
 	CBitSet();

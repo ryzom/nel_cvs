@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.111 2004/09/29 14:17:11 boucher Exp $
+ * $Id: path.cpp,v 1.112 2004/10/22 12:52:29 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -376,6 +376,16 @@ void CPath::loadRemappedFiles (const std::string &file)
 // ***************************************************************************
 string CPath::lookup (const string &filename, bool throwException, bool displayWarning, bool lookupInLocalDirectory)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	/*
+		NB: CPath acess static instance getInstance() of course, so user must ensure
+		that no mutator is called while async loading
+	*/
+
+
 	// If the file already contains a @, it means that a lookup already proceed and returning a big file, do nothing
 	if (filename.find ("@") != string::npos)
 	{

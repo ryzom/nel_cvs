@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.31 2004/05/19 14:25:02 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.32 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,11 @@ namespace NL3D
 // ***************************************************************************
 CMeshBase::CMeshBase()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_UseLightingLocalAttenuation= false;
 
 	// To have same functionnality than previous version, init to identity.
@@ -66,6 +71,11 @@ CMeshBase::CMeshBase()
 // ***************************************************************************
 CMeshBase::~CMeshBase()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// free if exist
 	resetLodCharacterTexture();
 	// delete the Col mesh if created
@@ -159,6 +169,11 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 // ***************************************************************************
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 9:
 		- _CollisionMeshGeneration

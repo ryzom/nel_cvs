@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.24 2004/05/11 16:36:46 berenguier Exp $
+ * $Id: cluster.cpp,v 1.25 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,11 @@ namespace NL3D
 // ***************************************************************************
 CCluster::CCluster ()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	FatherVisible = VisibleFromFather = false;
 	FatherAudible = AudibleFromFather = false;
 	Father = NULL;
@@ -69,6 +74,11 @@ CCluster::CCluster ()
 // ***************************************************************************
 CCluster::~CCluster()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	unlinkFromClusterTree();
 }
 
@@ -113,6 +123,11 @@ NLMISC::TStringId CCluster::getEnvironmentFxId()
 // ***************************************************************************
 void CCluster::unlinkFromParent()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// unlink from father sons list
 	if (Father)
 	{
@@ -124,6 +139,11 @@ void CCluster::unlinkFromParent()
 // ***************************************************************************
 void CCluster::unlinkSons()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// tells all sons that they have no more father
 	for(uint k = 0; k < Children.size(); ++k)
 	{
@@ -140,6 +160,11 @@ void CCluster::unlinkSons()
 // ***************************************************************************
 void CCluster::unlinkFromClusterTree()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	unlinkFromParent();
 	unlinkSons();	
 }
@@ -260,6 +285,11 @@ void CCluster::unlink (CPortal* portal)
 // ***************************************************************************
 void CCluster::serial (IStream&f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	sint version = f.serialVersion (3);
 
 	if (version >= 1)

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.77 2004/10/19 12:57:18 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.78 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,11 @@ namespace NL3D
 // ***************************************************************************
 CInstanceGroup::CInstance::CInstance ()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	DontAddToScene = false;
 	AvoidStaticLightPreCompute= false;
 	StaticLightEnabled= false;
@@ -67,6 +72,11 @@ CInstanceGroup::CInstance::CInstance ()
 // ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	/*
 	Version 7:
 		- Visible
@@ -253,6 +263,11 @@ CTransformShape				*CInstanceGroup::getTransformShape(uint instanceNb) const
 // ***************************************************************************
 CInstanceGroup::CInstanceGroup()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	_IGSurfaceLight.setOwner(this);
 	_GlobalPos = CVector(0,0,0);
 	_Root = NULL;
@@ -269,6 +284,11 @@ CInstanceGroup::CInstanceGroup()
 // ***************************************************************************
 CInstanceGroup::~CInstanceGroup()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 }
 
 // ***************************************************************************
@@ -387,6 +407,11 @@ void CInstanceGroup::retrieve (CVector &vGlobalPos, TInstanceArray& array,
 
 void CInstanceGroup::serial (NLMISC::IStream& f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	// Serial a header
 	f.serialCheck ((uint32)'TPRG');
 

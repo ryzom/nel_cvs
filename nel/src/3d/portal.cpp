@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.12 2004/06/09 14:44:26 boucher Exp $
+ * $Id: portal.cpp,v 1.13 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,11 @@ namespace NL3D
 // ***************************************************************************
 CPortal::CPortal()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	_Clusters[0] = _Clusters[1] = NULL;
 	_Opened = true;
 	_OcclusionModelId = CStringMapper::map("no occlusion");
@@ -215,6 +220,11 @@ void CPortal::getPoly(std::vector<NLMISC::CVector> &dest) const
 // ***************************************************************************
 void CPortal::serial (NLMISC::IStream& f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	int version = f.serialVersion (1);
 
 	f.serialCont (_LocalPoly);

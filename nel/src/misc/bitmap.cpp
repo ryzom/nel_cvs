@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.54 2004/08/23 18:05:45 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.55 2004/10/22 12:52:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,11 @@ void MakeWhite(CBitmap &bitmaps)
 \*-------------------------------------------------------------------*/
 uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip) 
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	nlassert(f.isReading()); 
 	
 	// testing if DDS
@@ -251,6 +256,11 @@ void	CBitmap::makeDummy()
 \*-------------------------------------------------------------------*/
 uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	//------------------ Reading Header ------------------------
 
 	//-------------- reading entire header
@@ -1809,6 +1819,11 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 \*-------------------------------------------------------------------*/
 uint8 CBitmap::readTGA( NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	if(!f.isReading()) return 0;
 
 	uint32			size;

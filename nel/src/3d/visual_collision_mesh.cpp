@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: visual_collision_mesh.cpp,v 1.4 2004/10/19 13:01:09 vizerie Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.5 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -60,6 +60,11 @@ namespace NL3D
 // ***************************************************************************
 void	CVisualCollisionMesh::CStaticGrid::create(uint nbQuads, uint nbElts, const NLMISC::CAABBox &gridBBox)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	nlassert(nbQuads>0 && isPowerOf2(nbQuads));
 
 	// init the grid
@@ -88,6 +93,11 @@ void	CVisualCollisionMesh::CStaticGrid::create(uint nbQuads, uint nbElts, const 
 // ***************************************************************************
 void	CVisualCollisionMesh::CStaticGrid::add(uint16 id, const NLMISC::CAABBox &bbox)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	CVector	minp= bbox.getMin() - _GridPos;
 	CVector	maxp= bbox.getMax() - _GridPos;
 
@@ -121,6 +131,11 @@ void	CVisualCollisionMesh::CStaticGrid::add(uint16 id, const NLMISC::CAABBox &bb
 // ***************************************************************************
 void	CVisualCollisionMesh::CStaticGrid::compile()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	uint	i;
 
 	// create the data
@@ -167,6 +182,11 @@ void	CVisualCollisionMesh::CStaticGrid::compile()
 // ***************************************************************************
 uint	CVisualCollisionMesh::CStaticGrid::select(const NLMISC::CAABBox &bbox, std::vector<uint16> &res)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// increment the intersection session
 	_ItSession++;
 	// enlarge the result array as needed
@@ -225,11 +245,21 @@ uint	CVisualCollisionMesh::CStaticGrid::select(const NLMISC::CAABBox &bbox, std:
 // ***************************************************************************
 CVisualCollisionMesh::CVisualCollisionMesh()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 }
 
 // ***************************************************************************
 bool					CVisualCollisionMesh::build(const std::vector<CVector> &vertices, const std::vector<uint32> &triangles, CVertexBuffer &vbForShadowRender)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	uint	i;
 	// if no vertices, or no triangles, abort
 	if(vertices.empty())

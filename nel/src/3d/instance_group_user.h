@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.32 2004/07/20 16:21:11 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.33 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,11 @@ class CInstanceUser;
  */
 class CInstanceGroupUser : public UInstanceGroup
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 public:
 	CInstanceGroupUser ();
 	virtual ~CInstanceGroupUser ();

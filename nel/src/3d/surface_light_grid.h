@@ -1,7 +1,7 @@
 /** \file surface_light_grid.h
  * <File description>
  *
- * $Id: surface_light_grid.h,v 1.3 2004/07/20 16:23:49 berenguier Exp $
+ * $Id: surface_light_grid.h,v 1.4 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -56,6 +56,11 @@ class	CIGSurfaceLight;
  */
 class CSurfaceLightGrid
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 public:
 
 	/// We support only 2 light per corner. Should never be changed.

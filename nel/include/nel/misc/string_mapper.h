@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.12 2004/10/22 09:13:37 berenguier Exp $
+ * $Id: string_mapper.h,v 1.13 2004/10/22 12:51:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,13 +104,14 @@ public:
 		localClear();
 	}
 
-	/// Globaly map a string into a unique Id
+	/// Globaly map a string into a unique Id. ** This method IS Thread-Safe **
 	static TStringId			map(const std::string &str) { return _GlobalMapper.localMap(str); }
-	/// Globaly unmap a string
+	/// Globaly unmap a string. ** This method IS Thread-Safe **
 	static const std::string	&unmap(const TStringId &stringId) { return _GlobalMapper.localUnmap(stringId); }
 	/// Return the global id for the empty string (helper function)
 	static TStringId			emptyId() { return 0; }
 
+	// ** This method IS Thread-Safe **
 	static void					clear() { _GlobalMapper.localClear(); }
 
 	/// Create a local mapper. You can dispose of it by deleting it.

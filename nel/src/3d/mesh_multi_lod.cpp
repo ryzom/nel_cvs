@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.40 2004/10/19 12:52:34 vizerie Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.41 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,6 +297,11 @@ void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque
 
 void CMeshMultiLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// Serial a version number
 	(void)f.serialVersion (0);
 
@@ -853,6 +858,11 @@ void	CMeshMultiLod::compileCoarseMeshes()
 // ***************************************************************************
 void	CMeshMultiLod::compileRunTime()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// **** MultiLod basics
 	compileDistMax();
 	compileCoarseMeshes();

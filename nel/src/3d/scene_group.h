@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.31 2004/09/27 13:31:50 berenguier Exp $
+ * $Id: scene_group.h,v 1.32 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,11 @@ struct IIGAddBegin;
   */
 class CInstanceGroup : public NLMISC::CRefCount
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 public:
 
 	/// Should Never be changed

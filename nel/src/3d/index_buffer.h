@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.8 2004/10/19 12:48:51 vizerie Exp $
+ * $Id: index_buffer.h,v 1.9 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,6 +230,10 @@ public:
 	// @}
 	
 public:
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 
 	/**
 	  * Default constructor. Make an empty index buffer. No value, no index. Index color format is set to TRGBA.

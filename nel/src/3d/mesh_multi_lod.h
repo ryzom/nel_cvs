@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.24 2004/10/19 12:52:34 vizerie Exp $
+ * $Id: mesh_multi_lod.h,v 1.25 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,11 @@ class CCoarseMeshManager;
  */
 class CMeshMultiLod : public CMeshBase
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 public:
 
 	/// \name Structures for building a multi lod mesh.

@@ -1,7 +1,7 @@
 /** \file shape.cpp
  * <File description>
  *
- * $Id: shape.cpp,v 1.7 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: shape.cpp,v 1.8 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,11 @@ CTransformShape		*IShape::createInstance(CScene &scene)
 // ***************************************************************************
 IShape::IShape()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	_DistMax= -1;
 }
 

@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.7 2004/06/09 14:05:12 berenguier Exp $
+ * $Id: portal.h,v 1.8 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,11 @@ class CCluster;
   */
 class CPortal
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 
 public:
 

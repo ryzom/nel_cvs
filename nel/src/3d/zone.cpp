@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.73 2004/09/30 18:47:01 berenguier Exp $
+ * $Id: zone.cpp,v 1.74 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -401,6 +401,10 @@ void			CZone::build(const CZone &zone)
 // ***************************************************************************
 void			CBorderVertex::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	(void)f.serialVersion(0);
 
 	f.xmlSerial (CurrentVertex, "CURRENT_VERTEX");
@@ -409,6 +413,10 @@ void			CBorderVertex::serial(NLMISC::IStream &f)
 }
 void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	uint	ver= f.serialVersion(1);
 
 	if (ver<1)
@@ -420,6 +428,10 @@ void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 }
 void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	(void)f.serialVersion(0);
 	f.xmlSerial(NPatchs, "NPATCH");
 	nlassert ( (NPatchs==0) | (NPatchs==1) | (NPatchs==2) | (NPatchs==4) | (NPatchs==5) );
@@ -431,6 +443,10 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void			CZone::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	/*
 	Version 4:
 		- PointLights

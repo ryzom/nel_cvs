@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.50 2004/10/14 10:37:19 berenguier Exp $
+ * $Id: material.cpp,v 1.51 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,10 @@ namespace NL3D
 // ***************************************************************************
 CMaterial::CMaterial()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	_Touched= 0;
 	_Flags= IDRV_MAT_ZWRITE;
 	// Must init All the flags by default.
@@ -131,6 +135,11 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 // ***************************************************************************
 CMaterial::~CMaterial()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	// Must kill the drv mirror of this material.
 	_MatDrvInfo.kill();	
 }
@@ -139,6 +148,11 @@ CMaterial::~CMaterial()
 // ***************************************************************************
 void		CMaterial::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	/*
 	Version 9:
 		- Added support for third operand (for Mad operator)

@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.6 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: mesh_morpher.h,v 1.7 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,11 @@ public:
  */
 class CMeshMorpher
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+	
 	typedef enum
 	{
 		OriginalAll=0,		// The vertex is the same as original into VBDst and VBHard

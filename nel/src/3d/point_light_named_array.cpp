@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.8 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: point_light_named_array.cpp,v 1.9 2004/10/22 12:56:05 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,10 @@ namespace NL3D {
 // ***************************************************************************
 CPointLightNamedArray::CPointLightNamedArray()
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 }
 
 
@@ -163,6 +167,11 @@ void			CPointLightNamedArray::setPointLightFactor(const CScene &scene)
 // ***************************************************************************
 void			CPointLightNamedArray::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
 	sint ver = f.serialVersion(1);
 
 	f.serialCont(_PointLights);

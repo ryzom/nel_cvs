@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.11 2004/02/05 20:24:22 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.12 2004/10/22 12:52:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,10 @@ void			CAABBox::makePyramid(CPlane	planes[6]) const
 // ***************************************************************************
 void			CAABBox::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	(void)f.serialVersion(0);
 	f.serial(Center);
 	f.serial(HalfSize);
@@ -336,6 +340,10 @@ bool	CAABBoxExt::clipBack(const CPlane &p) const
 // ***************************************************************************
 void			CAABBoxExt::serial(NLMISC::IStream &f)
 {
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
 	CAABBox::serial(f);
 	if(f.isReading())
 		updateRadius();

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.38 2002/01/11 10:01:14 legros Exp $
+ * $Id: local_retriever.cpp,v 1.39 2002/01/11 14:31:39 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -843,6 +843,8 @@ bool	NLPACS::CLocalRetriever::insurePosition(NLPACS::ULocalPosition &local) cons
 			}
 		}
 	}
+
+	snapVector(M);
 
 	local.Estimation.x = M.x;
 	local.Estimation.y = M.y;

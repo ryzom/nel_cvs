@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.2 2001/07/24 10:00:55 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.3 2001/07/25 10:20:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -60,34 +60,31 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 	if (trav->isCurrentPassOpaque()) return ;
 
-	// Setup the matrix.
-	drv->setupModelMatrix(HrcObs->WorldMatrix);
-		
-	
 
 	// transform the flare on screen
 	
-	const CVector		pt = trav->ViewMatrix * m->getMatrix().getPos() ;
+	const CVector		upt = HrcObs->WorldMatrix.getPos() ; // unstransformed pos
+	const CVector		pt = trav->ViewMatrix * upt ;
 	if (pt.y <= trav->Near) return ;
 
 	uint32 width, height ;
 	drv->getWindowSize(width, height) ;
 
-	const float middleX = .5f * trav->Left + trav->Right ;
-	const float middleZ = .5f * trav->Bottom + trav->Top ;
+	const float middleX = .5f * (trav->Left + trav->Right) ;
+	const float middleZ = .5f * (trav->Bottom + trav->Top) ;
 
 	const sint xPos = (width>>1) + (sint) (width * (((trav->Near * pt.x) / pt.y) - middleX) / (trav->Right - trav->Left))  ;
-	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Right - trav->Left))  ;
+	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Top - trav->Bottom))  ;
 	
 
 	static std::vector<float> v(1) ;
 	NLMISC::CRect rect(xPos, yPos, 1, 1) ;
 	drv->getZBufferPart(v, rect) ;
 
-	const float z = (pt.z - trav->Near)  / (trav->Far - trav->Near) ;
+	const float z = pt.y / trav->Far ;
 	
 
-	if (z > v[0]) // test against z-buffer
+	if (!v.size() || z > v[0]) // test against z-buffer
 	{
 		m->_Intensity -= 0.01f ;
 		if (m->_Intensity < 0.f) m->_Intensity =0.f ;
@@ -105,12 +102,15 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape) ;
 	CRGBA        flareColor = fs->getColor() ; 
 	col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity)) ;
-	material.setColor(col) ;
+
+	material.setColor(col) ;	
 	material.setBlend(true) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	material.setZWrite(false) ;
 	material.setTexture(0, fs->getTexture()) ;
 	material.setZFunc(CMaterial::always) ;
+	material.setLighting(false) ;	
+	material.setDoubleSided(true) ;
 
 	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]) ;
 	vb.setNumVertices(4) ;
@@ -118,18 +118,22 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const CVector I = trav->CamMatrix.getI() ;
 	const CVector K = trav->CamMatrix.getK() ;
 
-	const float size = fs->getSize() ;
+	const float size = 10 * fs->getSize() ;
 
-	vb.setVertexCoord(0, pt + size * (I + K)) ;
-	vb.setVertexCoord(1, pt + size * (I - K)) ;
-	vb.setVertexCoord(2, pt + size * (-I - K)) ;
-	vb.setVertexCoord(3, pt + size * (-I + K)) ;
+	vb.setVertexCoord(0, size * (I + K)) ;
+	vb.setVertexCoord(1, size * (I - K)) ;
+	vb.setVertexCoord(2, size * (-I - K)) ;
+	vb.setVertexCoord(3, size * (-I + K)) ;
 
 	vb.setTexCoord(0, 0, NLMISC::CUV(1, 0)) ;
 	vb.setTexCoord(1, 0, NLMISC::CUV(1, 1)) ;
 	vb.setTexCoord(2, 0, NLMISC::CUV(0, 1)) ;
 	vb.setTexCoord(3, 0, NLMISC::CUV(0, 0)) ;
 
+
+	CMatrix tm ;
+	tm.setPos(upt) ;
+	drv->setupModelMatrix(tm) ;
 
 	drv->activeVertexBuffer(vb) ;
 

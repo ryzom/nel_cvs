@@ -527,6 +527,14 @@ SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\shared_memory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\shared_memory.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\stl_block_allocator.cpp
 # End Source File
 # Begin Source File

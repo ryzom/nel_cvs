@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.7 2003/10/22 13:40:39 besson Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.8 2004/10/06 09:12:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,7 +261,7 @@ void CAsyncFileManager3D::CMeshLoad::run()
 		CMeshBase *pMesh = dynamic_cast<CMeshBase *>(mesh.getShapePointer());
 
 		// If the shape is a mesh but the driver is not given or if the shape is not a mesh 
-		// so do not try to load the textures
+		// then do not try to load the textures
 
 		if ((pMesh == NULL) || ((pMesh != NULL) && (_pDriver == NULL)))
 		{

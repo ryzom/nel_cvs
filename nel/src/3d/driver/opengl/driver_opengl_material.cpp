@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.53 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_material.cpp,v 1.54 2002/01/10 13:19:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -676,16 +676,50 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 	// setup blend / lighting.
 	//=========================
-	if(pass==0)
+	// Blend is different if the material is blended or not
+	if( !mat.getBlend() )
 	{
-		// no transparency for first pass.
-		_DriverGLStates.enableBlend(false);
+		// Not blended, std case.
+		if(pass==0)
+		{
+			// no transparency for first pass.
+			_DriverGLStates.enableBlend(false);
+		}
+		else if(pass==1)
+		{
+			// setup an Additive transparency (only for pass 1, will be kept for successives pass).
+			_DriverGLStates.enableBlend(true);
+			_DriverGLStates.blendFunc(GL_ONE, GL_ONE);
+		}
 	}
-	else if(pass==1)
+	else
 	{
-		// setup an Additive transparency (only for pass 1, will be kept for successives pass).
-		_DriverGLStates.enableBlend(true);
-		_DriverGLStates.blendFunc(GL_ONE, GL_ONE);
+		/* 1st pass, std alphaBlend. 2nd pass, add to background. Demo:
+			T: texture.
+			l0: lightmap (or group of lightmap) of pass 0.
+			l1: lightmap (or group of lightmap) of pass 1. (same thing with 2,3 etc....)
+			B:	Background.
+			A:	Alpha of texture.
+
+			finalResult= T*(l0+l1) * A + B * (1-A).
+
+			We get it in two pass:
+				fint=			T*l0 * A + B * (1-A).
+				finalResult=	T*l1 * A + fint = T*l1 * A + T*l0 * A + B * (1-A)=
+					T* (l0+l1) * A + B * (1-A)
+		*/
+		if(pass==0)
+		{
+			// no transparency for first pass.
+			_DriverGLStates.enableBlend(true);
+			_DriverGLStates.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+		else if(pass==1)
+		{
+			// setup an Additive transparency (only for pass 1, will be kept for successives pass).
+			_DriverGLStates.enableBlend(true);
+			_DriverGLStates.blendFunc(GL_SRC_ALPHA, GL_ONE);
+		}
 	}
 
 }

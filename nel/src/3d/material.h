@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.11 2001/12/12 10:25:20 vizerie Exp $
+ * $Id: material.h,v 1.12 2002/01/10 13:19:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,8 @@ public:
 	 *	- Alpha Blending ignore Alpha of texture (of course :) ), but use Alpha diffuse (vertex/material color).
 	 * LightMap:
 	 *	- Texture of stage 0 is blended with sum of lightmaps (see setLightmap()). Vertex Color (or color, or lighting)
-	 *	doesn't affect the final result (neither diffuse part nor specular part). No Blending is applied too.
+	 *	doesn't affect the final result (neither diffuse part nor specular part).
+	 *	Blending is special. If enabled, Lightmap shader apply a standard transparency srcalpha/invsrcalpha.
 	 *	- NB: if no texture in stage 0, undefined result.
 	 *	- UV0 is the UV for decal Texture. UV1 is the UVs for all the lightmaps.
 	 * Specular:

@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.8 2001/11/19 14:08:12 lecroart Exp $
+ * $Id: win_displayer.h,v 1.9 2002/01/14 17:52:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #include <windows.h>
+#undef min
+#undef max
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/reader_writer.h"

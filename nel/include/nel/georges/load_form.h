@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.28 2003/10/17 14:56:50 ledorze Exp $
+ * $Id: load_form.h,v 1.29 2003/10/23 13:06:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,9 @@ struct TLoadFormDicoEntry
 };
 */
 const uint32		PACKED_SHEET_HEADER = 'PKSH';
-const uint32		PACKED_SHEET_VERSION = 4;
+const uint32		PACKED_SHEET_VERSION = 5;
+// This Version may be used if you want to use the serialVersion() system in loadForm()
+const uint32		PACKED_SHEET_VERSION_COMPATIBLE = 0;
 
 
 /** This function is used to load values from georges sheet in a quick way.
@@ -159,8 +161,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// make sure the CSheetId singleton has been properly initialised
 	NLMISC::CSheetId::init(updatePackedSheet);
 
-	bool olde, newe;
-	NLMISC::CIFile::getVersionException(olde, newe);
 	// load the packed sheet if exists
 	try
 	{
@@ -177,33 +177,48 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// read the header
 		ifile.serialCheck(PACKED_SHEET_HEADER);
 		ifile.serialCheck(PACKED_SHEET_VERSION);
+		sint	loadFormVersion= ifile.serialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
 
-		// read the dictionnary
+		// Read depend block size
+		uint32	dependBlockSize;
+		ifile.serial(dependBlockSize);
+
+		// Read the dependencies only if update packed sheet
+		if(updatePackedSheet)
 		{
-			ifile.serialCont(dictionnary);
-		}
-		// read the dependency data
-		{
-			uint32 depSize;
-			ifile.serial(depSize);
-			for (uint i=0; i<depSize; ++i)
+			// read the dictionnary
 			{
-				NLMISC::CSheetId sheetId;
-				std::vector<uint32> depends;
+				ifile.serialCont(dictionnary);
+			}
+			// read the dependency data
+			{
+				uint32 depSize;
+				ifile.serial(depSize);
+				for (uint i=0; i<depSize; ++i)
+				{
+					NLMISC::CSheetId sheetId;
 
-				ifile.serial(sheetId);
-				ifile.serialCont(depends);
-
-				dependencies.insert(std::make_pair(sheetId, depends));
+					// Avoid copy, use []
+					ifile.serial(sheetId);
+					ifile.serialCont(dependencies[sheetId]);
+				}
 			}
 		}
-		
+		// else dummy read one big block => no heavy reallocation / free
+		else if(dependBlockSize>0)
+		{
+			std::vector<uint8>	bigBlock;
+			bigBlock.resize(dependBlockSize);
+			ifile.serialBuffer(&bigBlock[0], dependBlockSize);
+		}
+				
 		// read the packed sheet data
-		uint32 nbEntries;
+		uint32	nbEntries;
+		uint32	ver;
 		ifile.serial (nbEntries);
-		ifile.setVersionException (true, true);
-		uint ver = T::getVersion ();
-		ifile.serialVersion(ver);
+		ifile.serial (ver);
+		if(ver != T::getVersion ())
+			throw Exception("The packed sheet version in stream is different of the code");
 		ifile.serialCont (container);
 		ifile.close ();
 	}
@@ -225,7 +240,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
 		}
 	}
-	NLMISC::CIFile::setVersionException(olde, newe);
 
 	// if we don't want to update packed sheet, we nothing more to do
 	if (!updatePackedSheet)
@@ -436,28 +450,39 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			// write the header.
 			ofile.serialCheck(PACKED_SHEET_HEADER);
 			ofile.serialCheck(PACKED_SHEET_VERSION);
-
+			ofile.serialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
+			
+			// Write a dummy block size for now
+			sint32	posBlockSize= ofile.getPos();
+			uint32	dependBlockSize= 0;
+			ofile.serial(dependBlockSize);
+			
 			// write the dictionnary
 			ofile.serialCont(dictionnary);
 
 			// write the dependencies data
+			uint32 depSize = dependencies.size();
+			ofile.serial(depSize);
+			std::map<NLMISC::CSheetId, std::vector<uint32> >::iterator first(dependencies.begin()), last(dependencies.end());
+			for (; first != last; ++first)
 			{
-				uint32 depSize = dependencies.size();
-				ofile.serial(depSize);
-				std::map<NLMISC::CSheetId, std::vector<uint32> >::iterator first(dependencies.begin()), last(dependencies.end());
-				for (; first != last; ++first)
-				{
-					NLMISC::CSheetId si = first->first;
-					ofile.serial(si);
-					ofile.serialCont(first->second);
-				}
+				NLMISC::CSheetId si = first->first;
+				ofile.serial(si);
+				ofile.serialCont(first->second);
 			}
 
+			// Then get the dicionary + dependencies size, and write it back to posBlockSize
+			sint32	endBlockSize= ofile.getPos();
+			dependBlockSize= (endBlockSize - posBlockSize) - 4;
+			ofile.seek(posBlockSize, NLMISC::IStream::begin);
+			ofile.serial(dependBlockSize);
+			ofile.seek(endBlockSize, NLMISC::IStream::begin);
+			
 			// write the sheet data
-			uint ver = T::getVersion ();
 			uint32 nbEntries = sheetIds.size();
+			uint32 ver = T::getVersion ();
 			ofile.serial (nbEntries);
-			ofile.serialVersion(ver);
+			ofile.serial (ver);
 			ofile.serialCont(container);
 			ofile.close ();
 		}
@@ -512,8 +537,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	// make sure the CSheetId singleton has been properly initialised
 //	NLMISC::CSheetId::init(updatePackedSheet);
 
-	bool olde, newe;
-	NLMISC::CIFile::getVersionException(olde, newe);
 	// load the packed sheet if exists
 	try
 	{
@@ -527,33 +550,48 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		// read the header
 		ifile.serialCheck(PACKED_SHEET_HEADER);
 		ifile.serialCheck(PACKED_SHEET_VERSION);
-
-		// read the dictionnary
+		sint	loadFormVersion= ifile.serialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
+		
+		// Read depend block size
+		uint32	dependBlockSize;
+		ifile.serial(dependBlockSize);
+		
+		// Read the dependencies only if update packed sheet
+		if(updatePackedSheet)		
 		{
-			ifile.serialCont(dictionnary);
-		}
-		// read the dependency data
-		{
-			uint32 depSize;
-			ifile.serial(depSize);
-			for (uint i=0; i<depSize; ++i)
+			// read the dictionnary
 			{
-				std::string sheetName;
-				std::vector<uint32> depends;
-
-				ifile.serial(sheetName);
-				ifile.serialCont(depends);
-
-				dependencies.insert(std::make_pair(sheetName, depends));
+				ifile.serialCont(dictionnary);
 			}
+			// read the dependency data
+			{
+				uint32 depSize;
+				ifile.serial(depSize);
+				for (uint i=0; i<depSize; ++i)
+				{
+					std::string sheetName;
+
+					// Avoid copy, use []
+					ifile.serial(sheetName);
+					ifile.serialCont(dependencies[sheetName]);
+				}
+			}
+		}
+		// else dummy read one big block => no heavy reallocation / free
+		else if(dependBlockSize>0)
+		{
+			std::vector<uint8>	bigBlock;
+			bigBlock.resize(dependBlockSize);
+			ifile.serialBuffer(&bigBlock[0], dependBlockSize);
 		}
 		
 		// read the packed sheet data
-		uint32 nbEntries;
+		uint32	nbEntries;
+		uint32	ver;
 		ifile.serial (nbEntries);
-		ifile.setVersionException (true, true);
-		uint ver = T::getVersion ();
-		ifile.serialVersion(ver);
+		ifile.serial (ver);
+		if(ver != T::getVersion ())
+			throw Exception("The packed sheet version in stream is different of the code");
 		ifile.serialCont (container);
 		ifile.close ();
 	}
@@ -575,8 +613,6 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			nlinfo ("loadForm(): Exception during reading the packed file, I'll reconstruct it (%s)", e.what());
 		}
 	}
-
-	NLMISC::CIFile::setVersionException(olde, newe);
 
 	// if we don't want to update packed sheet, we nothing more to do
 	if (!updatePackedSheet)
@@ -780,28 +816,39 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			// write the header.
 			ofile.serialCheck(PACKED_SHEET_HEADER);
 			ofile.serialCheck(PACKED_SHEET_VERSION);
-
+			ofile.serialVersion(PACKED_SHEET_VERSION_COMPATIBLE);
+			
+			// Write a dummy block size for now
+			sint32	posBlockSize= ofile.getPos();
+			uint32	dependBlockSize= 0;
+			ofile.serial(dependBlockSize);
+			
 			// write the dictionnary
 			ofile.serialCont(dictionnary);
 
 			// write the dependencies data
+			uint32 depSize = dependencies.size();
+			ofile.serial(depSize);
+			std::map<std::string, std::vector<uint32> >::iterator first(dependencies.begin()), last(dependencies.end());
+			for (; first != last; ++first)
 			{
-				uint32 depSize = dependencies.size();
-				ofile.serial(depSize);
-				std::map<std::string, std::vector<uint32> >::iterator first(dependencies.begin()), last(dependencies.end());
-				for (; first != last; ++first)
-				{
-					std::string  sheetName = first->first;
-					ofile.serial(sheetName);
-					ofile.serialCont(first->second);
-				}
+				std::string  sheetName = first->first;
+				ofile.serial(sheetName);
+				ofile.serialCont(first->second);
 			}
 
-
-			uint ver = T::getVersion ();
+			// Then get the dicionary + dependencies size, and write it back to posBlockSize
+			sint32	endBlockSize= ofile.getPos();
+			dependBlockSize= (endBlockSize - posBlockSize) - 4;
+			ofile.seek(posBlockSize, NLMISC::IStream::begin);
+			ofile.serial(dependBlockSize);
+			ofile.seek(endBlockSize, NLMISC::IStream::begin);
+		
+			// write the sheet data
 			uint32 nbEntries = sheetNames.size();
+			uint32 ver = T::getVersion ();
 			ofile.serial (nbEntries);
-			ofile.serialVersion(ver);
+			ofile.serial (ver);
 			ofile.serialCont(container);
 			ofile.close ();
 		}

@@ -1,7 +1,7 @@
 /** \file tile_far_bank.h
  * <File description>
  *
- * $Id: tile_far_bank.h,v 1.6 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: tile_far_bank.h,v 1.7 2001/03/05 09:14:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ class CTileFarBank
 public:
 	// Order of the tile
 	enum TFarOrder { order0=0, order1=1, order2=2, orderCount };
-	enum TFarType { diffuse=0, additive=1, typeCount };
+	enum TFarType { diffuse=0, additive=1, alpha=2, typeCount=2 };
 
 	/// Constructor
 	CTileFarBank();
@@ -92,11 +92,7 @@ public:
 		}
 
 		/// Set the pixel array of a far Tile
-		void				setPixels (TFarType type, TFarOrder order, NLMISC::CRGBA* pixels, uint size)
-		{
-			_Pixels[type][order].resize (size);
-			memcpy (&_Pixels[type][order][0], pixels, size*sizeof(NLMISC::CRGBA));
-		}
+		void				setPixels (TFarType type, TFarOrder order, NLMISC::CRGBA* pixels, uint size);
 
 		/// Erase a pixel array type
 		void				erasePixels (TFarType type)

@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Implementation for CInetAddress.
  *
- * $Id: inet_address.h,v 1.19 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: inet_address.h,v 1.20 2001/06/18 09:01:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@ struct sockaddr_in;
 namespace NLMISC
 {
 	class IStream;
+	class CStringStream;
 }
 
 
@@ -88,8 +89,12 @@ public:
 
 	/// Resolves a name
 	CInetAddress&		setByName( const std::string& hostname );
+
 	/// Sets port
 	void				setPort( uint16 port );
+
+	/// Sets hostname and port (ex: www.nevrax.com:80)
+	void				setNameAndPort( const std::string& hostNameAndPort );
 
 	/** Sets internal socket address directly (contents is copied).
 	 * It also retrieves the host name if CInetAddress::RetrieveNames is true.
@@ -119,6 +124,9 @@ public:
 
 	/// Returns IP address and port as a string
 	std::string			asIPString() const;
+
+	/// Serialize from/to string stream
+	void serial( NLMISC::CStringStream& s );
 
 	/// Serialize
 	void serial( NLMISC::IStream& s );

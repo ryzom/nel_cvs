@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Implementation for CInetAddress.
  *
- * $Id: inet_address.cpp,v 1.30 2001/05/15 14:45:38 cado Exp $
+ * $Id: inet_address.cpp,v 1.31 2001/06/18 09:01:01 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/sock.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/string_stream.h"
 #include "nel/misc/debug.h"
 #include <sstream>
 
@@ -82,27 +83,14 @@ CInetAddress::CInetAddress( const std::string& hostName, uint16 port ) :
 
 
 /*
- * Alternate constructor (calls setByName())
+ * Alternate constructor (calls setNameAndPort())
  */
 CInetAddress::CInetAddress( const std::string& hostNameAndPort ) :
 	_Valid( false )
 {
 	init();
-
-	int pos = hostNameAndPort.find_first_of (':');
-	if (pos != string::npos)
-	{
-		setPort( atoi(hostNameAndPort.substr(pos + 1).c_str()) );
-	}
-	else
-	{
-		setPort( 0 );
-	}
-
-	// if pos == -1, it will copy all the string
-	setByName( hostNameAndPort.substr (0, pos) );
+	setNameAndPort( hostNameAndPort );
 }
-
 
 
 /*
@@ -187,6 +175,26 @@ CInetAddress::~CInetAddress()
 {
 	delete _SockAddr;
 	// _Valid = false;
+}
+
+
+/*
+ * Sets hostname and port (ex: www.nevrax.com:80)
+ */
+void CInetAddress::setNameAndPort( const std::string& hostNameAndPort )
+{
+	int pos = hostNameAndPort.find_first_of (':');
+	if (pos != string::npos)
+	{
+		setPort( atoi(hostNameAndPort.substr(pos + 1).c_str()) );
+	}
+	else
+	{
+		setPort( 0 );
+	}
+
+	// if pos == -1, it will copy all the string
+	setByName( hostNameAndPort.substr (0, pos) );
 }
 
 
@@ -343,13 +351,41 @@ std::string CInetAddress::asIPString() const
 
 
 /*
+ * Serialize from/to string stream
+ */
+void CInetAddress::serial( NLMISC::CStringStream& s )
+{
+	string addrs;
+	if ( s.isReading() )
+	{
+		s.serial( addrs );
+		setNameAndPort( addrs );
+	}
+	else
+	{
+		addrs = asIPString();
+		s.serial( addrs );
+	}
+	s.serial( _Valid );
+}
+
+
+/*
  * Serialize
  */
 void CInetAddress::serial( NLMISC::IStream& s )
 {
-	//s.serial( _HostName );
-	s.serialBuffer( (uint8*)_SockAddr, sizeof(*_SockAddr) ); // this is possible only because the contents of _SockAddr is platform-independant !
-	s.serial( _Valid );
+	// If serial() is called by a method from IStream, the method called is serial( IStream& )
+	// even if the real type of s is CStringStream&.
+	if ( dynamic_cast< NLMISC::CStringStream*>(&s) )
+	{
+		serial( static_cast< NLMISC::CStringStream&>(s) );
+	}
+	else
+	{
+		s.serialBuffer( (uint8*)_SockAddr, sizeof(*_SockAddr) ); // this is possible only because the contents of _SockAddr is platform-independant !
+		s.serial( _Valid );
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.13 2000/11/13 14:30:47 lecroart Exp $
+ * $Id: types_nl.h,v 1.14 2000/11/21 15:27:25 lecroart Exp $
  *
  * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
  *
@@ -38,6 +38,7 @@
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
+#include	<string>
 #include	<exception>
 
 // Operating systems definition
@@ -181,7 +182,7 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 typedef	uint16	ucchar;
 
-// TODO: ucstring
+typedef std::basic_string<ucchar, std::char_traits<ucchar>, std::allocator<ucchar> > ucstring;
 
 /*
  * base class for all exceptions

@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.6 2000/11/23 12:09:18 corvazier Exp $
+ * $Id: quad_tree.h,v 1.7 2000/11/23 15:53:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,23 @@
  * MA 02111-1307, USA.
  */
 
-/** ============================================================================================
+
+#ifndef	NL_QUAD_TREE_H
+#define	NL_QUAD_TREE_H
+
+#include "nel/misc/vector.h"
+#include "nel/misc/plane.h"
+#include "nel/misc/matrix.h"
+#include <list>
+#include <vector>
+
+
+namespace	NL3D
+{
+
+
+
+/**
   * class:	CQuadTree.
   * 
   * 
@@ -35,6 +51,7 @@
   * 
   * The quadtree is geometrically delimited. By default, his size is 1*1, centered on (0,0,0). If an element
   * which is out this zone is inserted, then it will ALWAYS be considered selected in select*() methods.
+  * By default, the quad tree is aligned on XZ.
   * 
   * Sample code using CQuadTree:
   * \code
@@ -74,34 +91,6 @@
   * 	it++;
   * }
   * \endcode
-  * 
-  * ============================================================================================
-  */
-
-
-
-#ifndef	NL_QUAD_TREE_H
-#define	NL_QUAD_TREE_H
-
-#include "nel/misc/vector.h"
-#include "nel/misc/plane.h"
-#include "nel/misc/matrix.h"
-#include <list>
-#include <vector>
-
-
-namespace	NL3D
-{
-
-// ============================================================================================
-/** A template CQuadTree.
-  *
-  * This first implementation support real-time quad node split, but never merge the quad node.
-  * The possibility to merge (delete) empty quads, when an element erase occurs, will be added later.
-  * 
-  * The quadtree is geometrically delimited. By default, his size is 1*1, centered on (0,0,0). If an element
-  * which is out this zone is inserted, then it will ALWAYS be considered selected in select*() methods.
-  * By default, the quad tree is aligned on XZ
   */
 template<class T>	class	CQuadTree
 {

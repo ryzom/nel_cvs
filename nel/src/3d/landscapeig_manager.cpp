@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.8 2002/06/06 12:05:18 vizerie Exp $
+ * $Id: landscapeig_manager.cpp,v 1.9 2002/06/12 10:14:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"
+#include "nel/misc/file.h"
+
 // std.
 #include <fstream>
 
@@ -79,13 +81,18 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 	_Scene= scene;
 
 	// Load the file.
-	if(igDesc=="")
+	if(igDesc.empty())
 		return;
+
 	string igFile = CPath::lookup(igDesc);
-	ifstream file(igFile.c_str(), ios::in);
+
+	//ifstream file(igFile.c_str(), ios::in);
+
+	CIFile file;
 
 	// if loading ok.
-	if(file.is_open())
+	//if(file.is_open())
+	if (file.open (igFile))
 	{
 		char tmpBuff[260];
 		char delimiterBox[] = "\t";
@@ -111,8 +118,11 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 				}
 			}
 		}
-
 		file.close();
+	}
+	else
+	{
+		nlwarning ("Couldn't load '%s'", igFile.c_str());
 	}
 }
 // ***************************************************************************

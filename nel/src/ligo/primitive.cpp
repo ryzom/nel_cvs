@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.46 2004/11/15 10:24:58 lecroart Exp $
+ * $Id: primitive.cpp,v 1.47 2004/11/18 17:52:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1064,7 +1064,20 @@ void IPrimitive::serial (NLMISC::IStream &f)
 //	f.serial(Expanded);
 
 	// serial the childrens
-	f.serialContPolyPtr(_Children);
+	if (f.isReading())
+	{
+		std::vector<IPrimitive*> children;
+		f.serialContPolyPtr(children);
+		uint index = 0;
+		for(std::vector<IPrimitive*>::iterator it = children.begin(); it != children.end(); ++it, ++index)
+		{
+			insertChild(*it, index);
+		}
+	}
+	else
+	{
+		f.serialContPolyPtr(_Children);
+	}
 
 	if (f.isReading())
 	{
@@ -2370,7 +2383,7 @@ CPrimitives& CPrimitives::operator= (const CPrimitives &other)
 //	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
 //	return *this;
 
-
+	_AliasStaticPart = other._AliasStaticPart;
 	_LastGeneratedAlias = other._LastGeneratedAlias;
 	// get the current ligo context (if any)
 	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
@@ -2392,6 +2405,7 @@ bool CPrimitives::read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &c
 {
 	nlassert (xmlNode);
 
+	_Filename = CFile::getFilename(filename);
 	if (_LigoConfig)
 	{
 		// try to get the static alias mapping
@@ -2506,8 +2520,12 @@ void CPrimitives::serial(NLMISC::IStream &f)
 		RootNode->removeChildren ();
 		RootNode->removeProperties ();
 	}
-
 	f.serialPolyPtr(RootNode);
+	f.serial(_Filename);	
+	if (f.isReading() && _LigoConfig)
+	{		
+		_AliasStaticPart = _LigoConfig->getFileStaticAliasMapping(_Filename);
+	}
 }
 
 // ***************************************************************************

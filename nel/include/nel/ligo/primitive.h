@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.38 2004/11/15 10:24:23 lecroart Exp $
+ * $Id: primitive.h,v 1.39 2004/11/18 17:52:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -729,6 +729,9 @@ private:
 	uint32				_LastGeneratedAlias;
 	/// List of alias in use in the primitive (dynamic part only)
 	std::map<uint32, const IPrimitive*>	_AliasInUse;
+	// Store the filename
+	// This allows to retrieve the static alias when reloading from binary file
+	std::string			_Filename;
 };
 
 // ***************************************************************************

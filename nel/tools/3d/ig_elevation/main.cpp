@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.5 2002/06/07 12:35:33 vizerie Exp $
+ * $Id: main.cpp,v 1.6 2002/06/17 15:30:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -366,6 +366,7 @@ int main(int nNbArg, char**ppArgs)
 		SetCurrentDirectory (sCurDir);
 		if (pIG != NULL)
 		{
+			bool realTimeSunContribution = pIG->getRealTimeSunContribution();
 			// For all instances !!!
 			CVector vGlobalPos;
 			CInstanceGroup::TInstanceArray IA;
@@ -434,6 +435,7 @@ int main(int nNbArg, char**ppArgs)
 
 			CInstanceGroup *pIGout = new CInstanceGroup;
 			pIGout->build (vGlobalPos, IA, Clusters, Portals, PLN);
+			pIGout->enableRealTimeSunContribution(realTimeSunContribution);
 
 
 			SetCurrentDirectory (options.OutputIGDir.c_str());

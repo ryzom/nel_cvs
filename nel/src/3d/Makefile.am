@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.36 2001/05/14 10:10:50 vizerie Exp $
+# $Id: Makefile.am,v 1.37 2001/05/23 15:18:00 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -45,7 +45,7 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
                        shape_bank_user.cpp shape_bank.cpp height_map.cpp\
                        particle_system.cpp ps_color.cpp ps_emitter.cpp \
 					   ps_float.cpp ps_force.cpp ps_int.cpp ps_located.cpp \
-					   ps_particle.cpp ps_util.cpp ps_zone.cpp \
+					   ps_particle.cpp ps_plane_basis_maker.cpp ps_util.cpp ps_zone.cpp \
 					   particle_system_shape.cpp particle_system_model.cpp\
                        async_file_manager.cpp
 

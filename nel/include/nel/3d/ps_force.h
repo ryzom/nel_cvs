@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.7 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_force.h,v 1.8 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/ps_located.h"
+#include "nel/3d/ps_util.h"
 
 
 namespace NL3D {
@@ -99,6 +100,108 @@ protected:
 
 	
 };
+
+
+/** a helper class to create isotropic force : they are independant of the basis, and have no position 
+ s*  (fluid friction for example)
+ *  To use this class you should provide to it a functor class that define the () operator with 3 parameters
+ *  param1 = a const reference to the position of the particle
+ *  param2 = a reference to the position, that must be updated
+ *  param3 =  a float giving the inverse of the mass
+ *  param4 = the ellapsed time, in second (has the CAnimationTime type).
+ *  Example of use :
+ *  class MyForceFunctor
+ *  {
+ *    public:
+ *      /// it is strongly recommended to have your operator inlined
+ *      void operator() (const CVector &pos, CVector &speed, float invMass , CanimationTime ellapsedTime)
+ *      {
+ *			// perform the speed update there
+ *		}
+ *		
+ *      // you must provide a serialization method
+ *		void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+ *
+ *    protected:
+ *      ...
+ *  } ;
+ *
+ *
+ * because of the serialization process, you must proceed like the following. (but you don't need to redefine serial, which
+ * will serilize the functor object you passed for you
+ *
+ *	class MyForce : public CHomogenousForceT<MyForceFunctor>
+ *  {
+ *		public:
+ *         MyForce() ;
+ *		   NLMISC_DECLARE_CLASS(Myforce) ;
+ *
+ *      protected:
+ *			...
+ *
+ *  } ;
+ */
+
+template <class T> class CIsotropicForceT : public CPSForce
+{
+public: 
+
+	/// Compute the force on the targets
+	virtual void performMotion(CAnimationTime ellapsedTime) ;
+
+
+/// serialization
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serialVersion(1) ;
+		CPSForce::serial(f) ;
+		f.serial(_F) ;
+	}
+
+	
+	/** Show the force (edition mode). The default does nothing
+	 *  TODO later
+	 */
+
+	 void show(CAnimationTime ellapsedTime)  {}
+
+protected:
+	
+	/// the functor object
+	T _F ;
+
+	
+		
+	virtual void newElement(void) { } ;		
+	virtual void deleteElement(uint32 index) {} ;	
+	virtual void resize(uint32 size) {} ;
+
+
+} ;
+
+//////////////////////////////////////////////////////////////////////
+// implementation of method of thetemplate class  CHomogenousForceT //
+//////////////////////////////////////////////////////////////////////
+
+
+template <class T> void CIsotropicForceT<T>::performMotion(CAnimationTime ellapsedTime)
+{
+	for (uint32 k = 0 ; k < _Owner->getSize() ; ++k)
+	{	
+		for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+		{			
+			
+			TPSAttribVector::iterator speedIt = (*it)->getSpeed().begin(), endSpeedIt = (*it)->getSpeed().end() ;
+			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;
+			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
+			
+			for (; speedIt != endSpeedIt ; ++speedIt, ++posIt, ++invMassIt)
+			{
+				_F(*posIt, *speedIt, *invMassIt, ellapsedTime) ;				
+			}
+		}
+	}
+}
 
 
 /// a gravity class
@@ -193,7 +296,108 @@ protected:
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
 	virtual void resize(uint32 size) {} ;
+} ;
 
+
+
+/// a fluid friction functor, it is used by the fluid friction class
+class CPSFluidFrictionFunctor
+{
+public:
+	CPSFluidFrictionFunctor() : _K(.2f) {}
+
+	 void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 {
+		speed += (ellapsedTime * _K * invMass * speed)  ;
+	 }
+
+	 virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	 {
+		f.serial(_K) ;
+	 }
+
+	 // get the friction coefficient
+	 float getK(void) const { return -_K ; }
+
+	 // set the friction coefficient usually, it is < 1
+	 void setK(float coeff) { _K = -coeff ; }
+protected:
+	// the friction coeff
+	float _K ;
+} ;
+
+
+// the fluid friction force
+
+class CPSFluidFriction : public CIsotropicForceT<CPSFluidFrictionFunctor>
+{
+public:
+	// create the force with a friction coefficient
+	CPSFluidFriction(float frictionCoeff = .1f)
+	{
+		_F.setK(frictionCoeff) ;
+	}
+
+	// get the friction coefficient
+	 float getK(void) const { return _F.getK() ; }
+
+	 // set the friction coefficient usually, it is < 1
+	 float setK(float coeff) { _F.setK(coeff) ; }
+
+	NLMISC_DECLARE_CLASS(CPSFluidFriction)
+} ;
+
+
+/// a turubulence force functor
+
+struct CPSTurbulForceFunc
+{	
+	void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	{
+		speed += ellapsedTime * _Intensity 
+			   * CVector(2.f * (-0.5f + CPSUtil::buildPerlinNoise(_Scale * pos, _NumOctaves))
+						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  CVector(1.235f, - 45.32f, 157.5f)) , _NumOctaves))
+						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  CVector(-0.35f, 7.77f, 220.77f)) , _NumOctaves))
+						 ) ;
+	}
+
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	 {
+		f.serial(_Scale, _Intensity, _NumOctaves) ;
+	 }
+
+	float _Scale ;
+	float _Intensity ;
+	uint32 _NumOctaves ;
+} ;
+
+
+// the turbulence force
+
+class CPSTurbul : public CIsotropicForceT<CPSTurbulForceFunc>
+{
+public:
+	// create the force with a friction coefficient
+	CPSTurbul(float intensity = 1.f , float scale = 1.f , uint numOctaves = 4)
+	{
+		nlassert(numOctaves > 0) ;
+		setScale(scale) ;
+		setIntensity(intensity) ;
+		setNumOctaves(numOctaves) ;
+	}
+
+	
+	float getScale(void) const { return _F._Scale ; }
+	void setScale(float scale) { _F._Scale = scale ; } 
+
+	float getIntensity(void) const { return _F._Intensity ; }
+	void setIntensity(float intensity) { _F._Intensity = intensity ; } 
+
+	uint getNumOctaves(void) const { return _F._NumOctaves ; }
+	void setNumOctaves(uint numOctaves) { _F._NumOctaves = numOctaves ; } 
+
+
+	NLMISC_DECLARE_CLASS(CPSTurbul)
 } ;
 
 

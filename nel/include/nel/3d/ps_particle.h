@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.10 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_particle.h,v 1.11 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,15 +28,25 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/ps_located.h"
+#include "nel/3d/ps_plane_basis.h"
 #include "nel/3d/material.h"
 #include "nel/3d/ps_util.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
-
+#include "nel/3d/mesh.h"
 
 
 
 namespace NL3D {
+
+
+
+
+
+////////////////////////////////
+// class forward declarations //
+////////////////////////////////
+
 
 template <typename T> class CPSAttribMaker ;
 class CTextureGrouped ;
@@ -291,17 +301,6 @@ class CPSTexturedParticle
 
 
 
-/// A basis for plane object, such as face and shockwaves
-struct CPlaneBasis
-{	
-	CVector X ;
-	CVector Y ;
-
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-	{
-		f.serial(X, Y) ;
-	}
-} ;
  
 
 
@@ -384,7 +383,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		
 		/** Set the nax number of dot		
 	    */
-		void resize(uint32 size) { _Vb.setNumVertices(size) ;}
+		void resize(uint32 size) ;
 
 		/// we don't save datas so it does nothing for now
 		void newElement(void) {}
@@ -436,16 +435,18 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		/// complete the bbox depending on the size of particles
 		virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
-		/// calculate current color and texture coordinate before any rendering
-		void updateVbColNUVForRender(void) ;
+		/** calculate current color and texture coordinate before any rendering
+		 *  size can't be higher that quadBufSize ...
+		 */
+		void updateVbColNUVForRender(uint32 startIndex, uint32 numQuad)	 ;	
 
 
 
 		CMaterial _Mat ;
 		CVertexBuffer _Vb ;
 
-		/// an index buffer used for drawing
-		uint32 *_IndexBuffer ;
+		/// an index buffer used for drawing the quads
+		CPrimitiveBlock _Pb ;
 
 		/// DERIVER MUST CALL this		 
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;	
@@ -482,11 +483,35 @@ public:
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
 	
 		
+	/** activate 'fake' motion blur (its done by deforming the quad)
+	 *  This is slower, however. This has no effect with rotated particles.
+	 *  \param coeff a coefficient for motion blur (too high value may give unrealistic result)
+	 *         0 deactivate the motion blur
+	 *  \param threshold : speed will be clamped below this value	 
+	 */
+	void activateMotionBlur(float coeff = 1.f, float threshold = 1.f)
+	{
+		_MotionBlurCoeff = coeff ;
+		_Threshold = threshold ;
+	}
+
+	/** return the motion blur coeff (0.f means none)
+	 *  \see  activateMotionBlur()
+	 */
+	float getMotionBlurCoeff(void) const { return _MotionBlurCoeff ; }
+
 	/// we don't save datas so it does nothing for now
 	void newElement(void) {}
 
 	/// we don't save datas so it does nothing for now
 	void deleteElement(uint32) {}
+
+protected:
+
+	float _MotionBlurCoeff ;
+
+	// threshold for the motion blur
+	float _Threshold ;
 
 } ;
 
@@ -977,9 +1002,14 @@ public:
 	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
 	 *          If this is too low, a lot of particles will have the same orientation	           	 
 	 *          If it is 0, then the hint is disabled
+ 	 *  \param  minAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
 	 *  \see    CPSRotated3dPlaneParticle
 	 */
-	void hintRotateTheSame(uint32 nbConfiguration = 32) ;
+	void hintRotateTheSame(uint32 nbConfiguration
+							, float minAngularVelocity = NLMISC::Pi
+							, float maxAngularVelocity = NLMISC::Pi
+						  ) ;
 
 	/** disable the hint 'hintRotateTheSame'
 	 *  The previous set scheme for roation is used
@@ -1010,13 +1040,20 @@ protected:
 	
 	virtual void resize(uint32 size) ;
 		
+
+
+	// we must store them for serialization
+	float _MinAngularVelocity ;
+	float _MaxAngularVelocity ;
+
 	struct CPlaneBasisPair
-	{
-		// transformed and untransformed basis
-		CPlaneBasis untrans, trans ;
+	{		
+		CPlaneBasis Basis ;
+		CVector Axis ; // an axis for rotation
+		float AngularVelocity ; // an angular velocity
 	} ;
 
-	/// a set of precomp basis, before and after transfomation in world space, use if the hint 'RotateTheSame' has been called
+	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
 	std::vector< CPlaneBasisPair > _PrecompBasis ;
 
 	/// this contain an index in _PrecompBasis for each particle
@@ -1026,6 +1063,308 @@ protected:
 	void fillIndexesInPrecompBasis(void) ;
 
 } ;
+
+
+class CPSShockWave : public CPSParticle, public CPSSizedParticle, public CPSColoredParticle
+					, public CPSTexturedParticle, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
+{
+public:
+
+	/** ctor
+	 *  \param nbSeg : number of seg for the circonference of the shockwave. must be >= 3 and <= 64.
+	 *  \param radiusCut : indicate how much to subtract to the outter radius to get the inner radius
+	 *  \param  tex : the texture that must be applied to the shockwave
+	 */
+	CPSShockWave(uint nbSeg = 9, float radiusRatio = 0.8f , CSmartPtr<ITexture> tex = NULL) ;
+
+	/** set a new number of seg (mus be >= 3 and <= 64)
+	 *  \see CPSShockWave()
+	 */
+	void setNbSegs(uint nbSeg) ;
+
+	/// retrieve the number of segs
+	uint getNbSegs(void) const { return _NbSeg ; }
+
+	/** set a new radius cut
+	 *  \see CPSShockWave()
+	 */
+	void setRadiusCut(float aRatio) ;
+
+	/// get the radius ratio
+	float getRadiusCut(void) const { return _RadiusCut ; }
+
+
+	/// serialisation. Derivers must override this, and call their parent version
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	NLMISC_DECLARE_CLASS(CPSShockWave) ;
+
+	virtual void draw(void) ;
+
+
+	/// complete the bbox depending on the size of particles
+	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
+
+	
+	
+protected:
+	/// initialisations
+	virtual void init(void) ;	
+
+
+	/** calculate current color and texture coordinate before any rendering
+	 *  size can't be higher that shockWaveBufSize ...
+	 */
+	void updateVbColNUVForRender(uint32 startIndex, uint32 size)	 ;	
+
+
+	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+	virtual void updateMatAndVbForColor(void) ;
+
+	/// update the material and the vb so that they match the texture scheme.
+	virtual void updateMatAndVbForTexture(void) ;
+
+
+
+
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
+	 */
+	virtual void newElement(void)  ;
+	
+	/** Delete an element given its index
+	 *  Attributes of the located that hold this bindable are still accessible for the index given
+	 *  index out of range -> nl_assert
+	 */
+	virtual void deleteElement(uint32 index)  ;
+
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void resize(uint32 size)  ;	
+
+
+	// the number of seg in the shockwave
+	uint32 _NbSeg ; 
+
+	// ratio to get the inner circle radius from the outter circle radius
+	float _RadiusCut ;
+
+
+	// material
+	CMaterial _Mat ;
+
+	// a vertex buffer
+	CVertexBuffer _Vb ;
+
+	// an index buffer
+	CPrimitiveBlock _Pb ;
+
+
+} ;
+
+
+/** This class is for mesh handling. It operates with any mesh, but it must insert them in the scene...
+ *  It is not very adapted for lots of little meshs..
+ *  To create the mesh basis, we use CPlaneBasis here. It give us the I and J vector of the basis for each mesh 
+ *  and compute K ( K =  I ^ J)
+ */
+
+class CPSMesh : public  CPSParticle, public CPSSizedParticle
+				, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
+{
+public:
+	/// construct the system by using the given shape for mesh
+	CPSMesh(const std::string &shape = "") : _Invalidated(false)
+	{
+		_Shape = shape ;
+	}
+
+	/// set a new shape for that kind of particles
+	void setShape(const std::string &shape) { _Shape = shape ; }
+
+	/// get the shape used for thos particles
+	
+	const std::string &getShape(void) const { return _Shape ; }
+
+		/// serialisation. Derivers must override this, and call their parent version
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	virtual ~CPSMesh() ;
+
+	NLMISC_DECLARE_CLASS(CPSMesh) ;
+
+
+	/** invalidate the transformShapes that were inserted in the scene, so they need to be rebuilt
+	 *  during the next rendering. This is useful for clipping, or when the system has been loaded
+	 */
+
+	void invalidate() 
+	{ 
+		_Invalidated = true ; 
+		_Instances.clear() ;
+	}
+
+protected:
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
+	 */
+	virtual void newElement(void)  ;
+	
+	/** Delete an element given its index
+	 *  Attributes of the located that hold this bindable are still accessible for the index given
+	 *  index out of range -> nl_assert
+	 */
+	virtual void deleteElement(uint32 index)  ;
+
+
+	virtual void draw(void) ;
+
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void resize(uint32 size)  ;	
+
+	//CSmartPtr<IShape> _Shape ;
+
+	std::string _Shape ;
+
+	// a container for mesh instances
+	typedef CPSAttrib<CTransformShape *> TInstanceCont ;
+
+	TInstanceCont _Instances ;
+
+	// this is set to true when the transformed shape have to be recerated
+
+	bool _Invalidated ;
+} ; 
+
+
+/** This class is for mesh that have very simple geometry : solid mesh with one texture
+ *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
+ */
+
+class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
+				, public CPSRotated3DPlaneParticle
+{
+public:	
+	CPSConstraintMesh()
+	{		
+	}
+
+	/** construct the mesh by using the given CMeshBuild
+	 *  It can only have one material
+	 */
+
+	void build(const CMesh::CMeshBuild &meshBuild) ;
+
+	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
+	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
+	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
+	 *          If this is too low, a lot of particles will have the same orientation	           	 
+	 *          If it is 0, then the hint is disabled	
+ 	 *  \param  minAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
+	 *  \see    CPSRotated3dPlaneParticle
+	 */
+	void hintRotateTheSame(uint32 nbConfiguration
+							, float minAngularVelocity = NLMISC::Pi
+							, float maxAngularVelocity = NLMISC::Pi
+						  ) ;
+
+	/** disable the hint 'hintRotateTheSame'
+	 *  The previous set scheme for roation is used
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+	void disableHintRotateTheSame(void)
+	{
+		hintRotateTheSame(0) ;
+	}
+
+	/** check wether a call to hintRotateTheSame was performed
+	 *  \return 0 if the hint is disabled, the number of configurations else
+	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
+	 */
+
+	uint32 checkHintRotateTheSame(void) const
+	{
+		return _PrecompBasis.size() ; 
+	}
+
+
+		/// serialisation. Derivers must override this, and call their parent version
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	virtual ~CPSConstraintMesh() ;
+
+	NLMISC_DECLARE_CLASS(CPSConstraintMesh) ;
+	
+
+protected:
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
+	 */
+	virtual void newElement(void)  ;
+	
+	/** Delete an element given its index
+	 *  Attributes of the located that hold this bindable are still accessible for the index given
+	 *  index out of range -> nl_assert
+	 */
+	virtual void deleteElement(uint32 index)  ;
+
+
+	virtual void draw(void) ;
+
+	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
+	 * should not be called directly. Call CPSLocated::resize instead
+	 */
+	virtual void resize(uint32 size)  ;	
+	
+	// the primitive block for the model mesh. It consists of triangles lists
+	CPrimitiveBlock _ModelPb ;
+
+	//  the vertex buffer for the model mesh
+	CVertexBuffer _ModelVb ;
+
+
+	// the vertex buffer for pre-rotated meshs (it is computed before each new mesh is shown)
+	CVertexBuffer  _PreRotatedMeshVb ;
+
+
+	/** the vertex buffer for a batch of primitive
+	 *  If prerotation are used, then portion of the _PreRotatedMeshVb are duplicated thre, by just 
+	 *  performing translation and scaling
+	 */
+
+	CVertexBuffer _MeshBatchVb ;
+
+	// the primitive block for a batch of meshs. It is only computed once
+	CPrimitiveBlock _MeshBatchPb ;
+
+
+	
+	// we must store them for serialization
+	float _MinAngularVelocity ;
+	float _MaxAngularVelocity ;
+
+
+	// use for rotation of precomputed meshs
+	struct CPlaneBasisPair
+	{		
+		CPlaneBasis Basis ;
+		CVector Axis ; // an axis for rotation
+		float AngularVelocity ; // an angular velocity
+	} ;
+
+	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
+	std::vector< CPlaneBasisPair > _PrecompBasis ;
+
+	/// this contain an index in _PrecompBasis for each particle
+	std::vector<uint32> _IndexInPrecompBasis ;
+
+	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
+	void fillIndexesInPrecompBasis(void) ;
+
+
+} ; 
+
 
 
 

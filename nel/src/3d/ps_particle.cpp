@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.10 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.11 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,40 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/ps_attrib_maker.h"
 #include "nel/3d/texture_grouped.h"
+#include "nel/3d/scene.h"
+#include "nel/3d/transform_shape.h"
+
+
 #include "nel/misc/common.h"
+#include "nel/misc/quat.h"
 
 #include <algorithm>
 
 
 namespace NL3D {
+
+
+
+using NLMISC::CQuat ; 							   
+
+///////////////////////////
+// constant definition   //
+///////////////////////////
+
+
+const uint dotBufSize = 1024 ; // size used for point particles batching
+
+const uint quadBufSize = 800 ; // size used for quad particles batching. 
+							   // If this is too high, the cache may be broken
+							   // too small values will result in too much driver calls
+
+
+const uint shockWaveBufSize = 64 ; // number of shockwave to be processed at once
+
+
+const uint meshBufSize = 16 ; // number of meshs to be processed at once...
+
+const uint constraintMeshBufSize = 64 ; // number of meshs to be processed at once...
 
 
 /*
@@ -506,6 +534,10 @@ void CPSDot::updateMatAndVbForColor(void)
 }
 
 
+void CPSDot::resize(uint32 size)
+{
+	_Vb.setNumVertices(size < dotBufSize ? size : dotBufSize) ;
+}
 
 void CPSDot::draw(void)
 {
@@ -521,33 +553,50 @@ void CPSDot::draw(void)
 	
 	setupDriverModelMatrix() ;
 	
-	
-	if (_UseColorScheme)
-	{
-		// compute the colors
-		_ColorScheme->make(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
-	}
-	
-	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
-	TPSAttribVector::iterator itEnd = _Owner->getPos().end() ;
-	
-	
-	
-	uint8    *currPos = (uint8 *) _Vb.getVertexCoordPointer() ;	
-	uint32 stride = _Vb.getVertexSize() ;
-	do
-	{
-
-		*((CVector *) currPos) =  *it ;	
-		++it  ;
-		currPos += stride ;
-	}
-	while (it != itEnd) ;
-
-	
 	IDriver *driver = getDriver() ;
 	driver->activeVertexBuffer(_Vb) ;		
-	driver->renderPoints(_Mat, size) ;
+
+
+
+	uint32 leftToDo = size, toProcess ;
+
+	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
+	TPSAttribVector::iterator itEnd ;
+
+	do
+	{
+		
+		toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize ;
+
+		if (_UseColorScheme)
+		{
+			// compute the colors
+			_ColorScheme->make(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), toProcess) ;
+			itEnd = it + toProcess ;
+				
+		
+			uint8    *currPos = (uint8 *) _Vb.getVertexCoordPointer() ;	
+			uint32 stride = _Vb.getVertexSize() ;
+			do
+			{
+				*((CVector *) currPos) =  *it ;	
+				++it  ;
+				currPos += stride ;
+			}
+			while (it != itEnd) ;
+		}
+		else
+		{
+			// there's no color information in the buffer, so we can copy it directly
+			memcpy(_Vb.getVertexCoordPointer(), &(*it), sizeof(CVector) * toProcess) ;
+			it += toProcess ;
+		}
+				
+		driver->renderPoints(_Mat,toProcess) ;
+
+		leftToDo -= toProcess ;
+	}
+	while (leftToDo) ;
 
 }
 
@@ -572,7 +621,7 @@ void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //////////////////////////////////
 
 
-CPSQuad::CPSQuad(CSmartPtr<ITexture> tex) : _IndexBuffer(NULL)
+CPSQuad::CPSQuad(CSmartPtr<ITexture> tex)
 {
 	setTexture(tex) ;
 	init() ;
@@ -582,7 +631,6 @@ CPSQuad::CPSQuad(CSmartPtr<ITexture> tex) : _IndexBuffer(NULL)
 
 CPSQuad::~CPSQuad()
 {
-	delete _IndexBuffer ;
 }
 
 
@@ -621,27 +669,34 @@ bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const
 	return true  ;	
 }
 
-void CPSQuad::resize(uint32 size)
+void CPSQuad::resize(uint32 aSize)
 {
+
+	// the size used for buffer can't be hiher that quad buf size
+	// to have too large buffer will broke the cache
+
+	const uint32 size = aSize > quadBufSize ? quadBufSize : aSize ;
+
 	_Vb.setNumVertices(size << 2) ;
-	
-	delete _IndexBuffer ;		
+		
 
-	_IndexBuffer = new uint32[ size * 6 ] ;
+	
+	_Pb.reserveQuad(size) ;
 	
 
-	// we precompute the uv's and the index buffer because they won't change
 
 	// TODO : fan optimisation
 
 	for (uint32 k = 0 ; k < size ; ++k)
 	{
-		_IndexBuffer[6 * k] = 4 * k + 2 ;
+		/*_IndexBuffer[6 * k] = 4 * k + 2 ;
 		_IndexBuffer[6 * k + 1] = 4 * k + 1 ;
 		_IndexBuffer[6 * k + 2] = 4 * k ;		
 		_IndexBuffer[6 * k + 3] = 4 * k  ;
 		_IndexBuffer[6 * k + 4] = 4 * k + 3 ;
-		_IndexBuffer[6 * k + 5] = 4 * k + 2;			
+		_IndexBuffer[6 * k + 5] = 4 * k + 2;*/
+
+		_Pb.setQuad(k, (k <<  2), (k << 2) + 1, (k << 2) + 2, (k << 2) + 3) ;
 
 		_Vb.setTexCoord(k * 4, 0, CUV(0, 0)) ;
 		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1, 0)) ;
@@ -679,61 +734,44 @@ void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
-void CPSQuad::updateVbColNUVForRender(void)
+void CPSQuad::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 {
-	nlassert(_Owner) ;
+nlassert(_Owner) ;
 
-	const uint32 quadBufferSize = 1024 ;  // size of the buffer for temporary attributes
-	const uint32 size = _Owner->getSize() ;
+if (!size) return ;
 
-	if (!size) return ;
+if (_UseColorScheme)
+{
+	// compute the colors, each color is replicated 4 times
+	_ColorScheme->make4(_Owner, startIndex, _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
+}
 
-	if (_UseColorScheme)
+
+if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
+{	
+	sint32 textureIndex[quadBufSize] ;
+	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
+	uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;				
+	
+
+	const sint32 *currIndex, *endIndex = &textureIndex[0] + size ;		
+	_TextureScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
+	
+	for (currIndex = &textureIndex[0] ; currIndex != endIndex ; ++currIndex)
 	{
-		// compute the colors, each color is replicated 4 times
-		_ColorScheme->make4(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
-	}
+		// for now, we don't make texture index wrapping
+		const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
 
+		// copy the 4 uv's for this face
+		*(CUV *) currUV = uvGroup.uv0 ;
+		*(CUV *) (currUV + stride) = uvGroup.uv1 ;
+		*(CUV *) (currUV + stride2) = uvGroup.uv2 ;
+		*(CUV *) (currUV + stride3) = uvGroup.uv3 ;
 
-	if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
-	{
-		sint32 textureIndex[quadBufferSize] ;
-		uint32 texturesLeft = size ;		
-		
-		
-		uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;
-		const uint8 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
-		uint k ;
-		const sint32 *currIndex ;
-
-		while (texturesLeft)
-		{			
-
-			const uint32 nbTexToProcess = texturesLeft >= quadBufferSize ? quadBufferSize : texturesLeft ;
-
-			_TextureScheme->make(_Owner, size - texturesLeft, textureIndex, sizeof(sint32), nbTexToProcess) ;
-
-			currIndex = &textureIndex[0] ;
-			for (k = 0 ; k < nbTexToProcess ; ++k, ++currIndex)
-			{
-				// for now, we don't make texture index wrapping
-				const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
-
-				// copy the 4 uv's for this face
-				*(CUV *) currUV = uvGroup.uv0 ;
-				*(CUV *) (currUV + stride) = uvGroup.uv1 ;
-				*(CUV *) (currUV + stride2) = uvGroup.uv2 ;
-				*(CUV *) (currUV + stride3) = uvGroup.uv3 ;
-
-				// point the next face
-				currUV += stride4 ;
-			}
-
-
-			texturesLeft -= nbTexToProcess ;
-
-		}
-	}
+		// point the next face
+		currUV += stride4 ;
+	}		
+}
 }
 
 
@@ -742,7 +780,7 @@ void CPSQuad::updateVbColNUVForRender(void)
 //////////////////////////////////
 
 /// create the face look at by giving a texture and an optionnal color
-CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex)
+CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlurCoeff(0.f)
 {	
 }
 
@@ -753,318 +791,315 @@ void CPSFaceLookAt::draw(void)
 	const uint32 size = _Owner->getSize() ;
 	if (!size) return ;
 
-	CPSQuad::updateVbColNUVForRender() ;
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+	IDriver *driver = getDriver() ;
 
-	const uint32 faceLookAtBufferSize = 1024 ;  // size of the buffer for temporary attributes
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
 
 	setupDriverModelMatrix() ;
+	driver->activeVertexBuffer(_Vb) ;	
+
+
 	const CVector I = computeI() ;
+	const CVector J = computeJ() ;
 	const CVector K = computeK() ;
-
-	
-
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
-
-	if (_UseColorScheme)
-	{
-		// compute the colors, each color is replicated 4 times
-		_ColorScheme->make4(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize(), size) ;
-	}
-
-
-	if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
-	{
-		sint32 textureIndex[faceLookAtBufferSize] ;
-		uint32 texturesLeft = size ;		
-		
-		
-		uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;
-		const uint8 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
-		uint k ;
-		const sint32 *currIndex ;
-
-		while (texturesLeft)
-		{			
-
-			const uint32 nbTexToProcess = texturesLeft >= faceLookAtBufferSize ? faceLookAtBufferSize : texturesLeft ;
-
-			_TextureScheme->make(_Owner, size - texturesLeft, textureIndex, sizeof(sint32), nbTexToProcess) ;
-
-			currIndex = &textureIndex[0] ;
-			for (k = 0 ; k < nbTexToProcess ; ++k, ++currIndex)
-			{
-				// for now, we don't make texture index wrapping
-				const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
-
-				// copy the 4 uv's for this face
-				*(CUV *) currUV = uvGroup.uv0 ;
-				*(CUV *) (currUV + stride) = uvGroup.uv1 ;
-				*(CUV *) (currUV + stride2) = uvGroup.uv2 ;
-				*(CUV *) (currUV + stride3) = uvGroup.uv3 ;
-
-				// point the next face
-				currUV += stride4 ;
-			}
-
-
-			texturesLeft -= nbTexToProcess ;
-
-		}
-	}
-
 
 	
 	TPSAttribVector::iterator it = _Owner->getPos().begin() ;
 
-	IDriver *driver = getDriver() ;
+
 
 
 	const float *rotTable = CPSRotated2DParticle::getRotTable() ;
 
-	// we have 4 drawing version : one with fixed size, and the other, with variable size.
+	
 	// for each the particle can be constantly rotated or have an independant rotation for each particle
 	
-	if (!_UseSizeScheme)
+	
+	
+	
+
+	// number of face left, and number of face to process at once
+	uint32 leftToDo = size, toProcess ;
+
+	float pSizes[quadBufSize] ; // the sizes to use
+	float *currentSize ; 
+	uint32 currentSizeStep = _UseSizeScheme ? 1 : 0 ;
+
+
+	
+
+	// point the vector part in the current vertex
+	uint8 *ptPos ;
+
+	// strides to go from one vertex to another one
+	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2 ;					
+	
+	if (!_UseAngle2DScheme)
 	{
-		if (!_UseAngle2DScheme)
-		{			
-			const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2 ;
-			const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-			const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-			
-			uint8 *ptPos = (uint8 *) _Vb.getVertexCoordPointer() ;
-			const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2 ;
-			TPSAttribVector::iterator endIt = _Owner->getPos().end() ;
-		
-			// first version : cste rotation
+		// constant rotation case
 
-			do
-			{
-				*(CVector *) ptPos = *it  + v1 ;  			
-				*(CVector *) (ptPos + stride) = *it + v2 ;	
-				*(CVector *) (ptPos + stride2) = *it - v1 ;
-				*(CVector *) (ptPos + stride3) = *it - v2 ;
-						
+		const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2 ;
+		const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
+		const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
 
-				ptPos += stride4 ;			
-				++it ;
-			}
-			while (it != endIt) ;
-		}
-		else
+		do
 		{
-			// there's a different rotation for each particle
-			// we compute the effective rotation for each 'faceLookAtBufferSize' particle and then we draw
-
-			uint32 leftToDo = size ;
-
-			float pAngles[faceLookAtBufferSize] ; // the angles to use
-
-			const float *currentAngle ;
 			
-			uint32 l ;
+				// restart at the beginning of the vertex buffer
+				ptPos = (uint8 *) _Vb.getVertexCoordPointer() ;
 
-			uint8 *ptPos = (uint8 *) _Vb.getVertexCoordPointer() ;
-			const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2 ;			
+				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize ;
 
-			for (;;)
-			{
-				if (leftToDo < faceLookAtBufferSize)
+				if (_UseSizeScheme)
 				{
-					_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), leftToDo) ;				
-					currentAngle = &pAngles[0] ;					
-					TPSAttribVector::iterator endIt = _Owner->getPos().end() ;
-
-					while (it != endIt)
-					{
-						const uint32 tabIndex = (((uint32) *currentAngle) & 0xff) << 2 ;
-						const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-						const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-
-						*(CVector *) ptPos = *it  + v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - v1 ;
-						*(CVector *) (ptPos + stride3) = *it - v2 ;								
-
-						++it ;
-						++currentAngle ;
-						ptPos += stride4 ;
-					}				
-					break ;
+					_SizeScheme->make(_Owner, size- leftToDo, pSizes, sizeof(float), toProcess) ;				
+					currentSize = &pSizes[0] ;		
 				}
 				else
 				{
-					// we compute 'faceLookAtBufferSize' new sizes at a time
-
-					_Angle2DScheme->make(_Owner, leftToDo, pAngles, sizeof(float), faceLookAtBufferSize) ;				
-
-					currentAngle = &pAngles[0] ;
-					for (l = 0 ; l < faceLookAtBufferSize ; ++l)
-					{
-						const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2 ;
-						const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-						const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-
-						*(CVector *) ptPos = *it  + v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - v1 ;
-						*(CVector *) (ptPos + stride3) = *it - v2 ;		
-						
-						++it ;
-						++currentAngle ;
-						ptPos += stride4 ;
-					}											
-					leftToDo -= faceLookAtBufferSize ;
+					currentSize = &_ParticleSize ;
 				}
-			}
 
-		}		
+				//
+				updateVbColNUVForRender(size - leftToDo, toProcess) ;
+
+						
+				TPSAttribVector::iterator endIt = it + toProcess ;
+
+				/* version 1 : slow code because the CVector ctor can't be inlined !! */
+				/*
+				while (it != endIt)
+				{
+					*(CVector *) ptPos = *it  + *currentSize * v1 ;  			
+					*(CVector *) (ptPos + stride) = *it + *currentSize * v2 ;	
+					*(CVector *) (ptPos + stride2) = *it - *currentSize * v1 ;
+					*(CVector *) (ptPos + stride3) = *it - *currentSize * v2 ;	
+
+					++it ;
+					currentSize += currentSizeStep ;
+					ptPos += stride4 ;
+				}
+				*/
+
+				/* version 2 : here, we avoid ctor calls, but we must perform the op ourself  */
+				
+				if (_MotionBlurCoeff == 0.f)
+				{
+					while (it != endIt)
+					{
+						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x ;  			
+						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y ;  			
+						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z ;  			
+						ptPos += stride ;
+
+						((CVector *) ptPos)->x = it->x  + *currentSize * v2.x ;  			
+						((CVector *) ptPos)->y = it->y  + *currentSize * v2.y ;  			
+						((CVector *) ptPos)->z = it->z  + *currentSize * v2.z ;  			
+						ptPos += stride ;
+
+						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x ;  			
+						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y ;  			
+						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z ;  			
+						ptPos += stride ;
+
+						((CVector *) ptPos)->x = it->x  - *currentSize * v2.x ;  			
+						((CVector *) ptPos)->y = it->y  - *currentSize * v2.y ;  			
+						((CVector *) ptPos)->z = it->z  - *currentSize * v2.z ;  			
+						ptPos += stride ;
+						
+
+						++it ;
+						currentSize += currentSizeStep ;					
+					}
+				}
+				else
+				{
+					// perform motion, blur, we need an iterator on speed
+					TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin() + (size - leftToDo) ;
+
+					
+					const CVector v1 = I + K ;
+					const CVector v2 = K - I ;
+
+					
+					
+					CVector startV, endV, mbv1, mbv1n, mbv12, mbv2, speed ;
+
+
+					// norme of the v1 vect
+					float n ;
+
+					const float epsilon  = 10E-6f ;
+					const float normEpsilon  = 10E-7f ;
+
+
+
+					
+					CMatrix tMat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
+															  : getViewMat() ;
+			
+
+					while (it != endIt)
+					{
+						// project the speed in the projection plane
+						// this give us the v1 vect
+
+
+
+
+						startV = tMat * *it  ;						
+						endV = tMat * (*it + *speedIt) ;
+
+						
+									
+						if (startV.y > epsilon || endV.y > epsilon)																																		
+						{	
+							if (startV.y < epsilon)
+							{
+								startV = endV + (endV.y - epsilon) / (endV.y - startV.y) * (startV - endV) ;
+							}
+							else if (endV.y < epsilon)
+							{
+								endV = startV + (startV.y - epsilon) / (startV.y - endV.y) * (endV - startV) ;
+							}
+							
+							mbv1 = (startV.x / startV.y - endV.x / endV.y) * I
+											+ (startV.z / startV.y - endV.z / endV.y) * K  ;
+
+
+							
+						
+							n = mbv1.norm() ;
+
+							if (n > _Threshold)
+							{
+								mbv1 *= _Threshold / n ;
+								n = _Threshold ;								
+							}
+							
+																					
+							if (n > normEpsilon)												
+							{															
+
+								mbv1n = mbv1 / n ;														
+								mbv2 = *currentSize * (J ^ mbv1n) ;
+								mbv12 = -*currentSize * mbv1n ;							
+								mbv1 *= *currentSize * (1 + _MotionBlurCoeff * n * n) / n ;
+
+						
+
+								
+								*(CVector *) ptPos = *it - mbv2 ;												
+								*(CVector *) (ptPos + stride) = *it  + mbv1 ;  			
+								*(CVector *) (ptPos + stride2) = *it + mbv2 ;	
+								*(CVector *) (ptPos + stride3) = *it + mbv12 ;
+								
+							}
+							else // speed too small, we must avoid a zero divide
+							{
+								*(CVector *) ptPos = *it - *currentSize * v2 ;
+								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
+								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
+								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1 ;						
+							}
+						}
+						else
+						{
+								 *(CVector *) ptPos = *it - *currentSize * v2 ;
+								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1 ;  			
+								*(CVector *) (ptPos + stride2) = *it + *currentSize * v2 ;	
+								*(CVector *) (ptPos + stride3) = *it - *currentSize * v1 ;	
+						}
+						
+
+						
+						
+
+					
+						ptPos += stride4 ;
+						++it ;
+						++speedIt ;
+						currentSize += currentSizeStep ;					
+					}
+
+				}
+					
+				_Pb.setNumQuad(toProcess) ;
+				driver->render(_Pb, _Mat) ;
+				leftToDo -= toProcess ;				
+		}
+		while (leftToDo) ;
 	}
 	else
 	{
-		// all particle have different sizes
-
-		uint32 leftToDo = size ;
-
-		float pSizes[faceLookAtBufferSize] ; // the sizes to use
-		float *currentSize ; 
-
-	
-		uint32 l ;
-
-		uint8 *ptPos = (uint8 *) _Vb.getVertexCoordPointer() ;
-		const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2 ;					
 		
-		if (!_UseAngle2DScheme)
-		{
-			// constant rotation case
+		float pAngles[quadBufSize] ; // the angles to use
+		float *currentAngle ;
 
-			const uint32 tabIndex = (((uint32) _Angle2D) & 0xff) << 2 ;
-			const CVector v1 = _ParticleSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-			const CVector v2 = _ParticleSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-
-			for (;;)
-			{
-				if (leftToDo < faceLookAtBufferSize)
-				{
-					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), leftToDo) ;				
-
-					currentSize = &pSizes[0] ;				
-
-					TPSAttribVector::iterator endIt = _Owner->getPos().end() ;
-
-					while (it != endIt)
-					{
-						*(CVector *) ptPos = *it  + *currentSize * v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + *currentSize * v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - *currentSize * v1 ;
-						*(CVector *) (ptPos + stride3) = *it - *currentSize * v2 ;	
-
-						++it ;
-						++currentSize ;
-						ptPos += stride4 ;
-					}				
-					break ;
-				}
-				else
-				{
-					// we compute 'aceLookAtBufferSize'new size at a time
-
-					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), faceLookAtBufferSize) ;				
-
-					currentSize = &pSizes[0] ;
-					for (l = 0 ; l < faceLookAtBufferSize ; ++l)
-					{
-						*(CVector *) ptPos = *it  + *currentSize * v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + *currentSize * v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - *currentSize * v1 ;
-						*(CVector *) (ptPos + stride3) = *it - *currentSize * v2 ;	
-
-						++it ;
-						++currentSize ;
-						ptPos += stride4 ;
-					}												
-					leftToDo -= faceLookAtBufferSize ;
-				}
-			}
-		}
-		else
+		
+		do
 		{
 			
-			float pAngles[faceLookAtBufferSize] ; // the angles to use
-			float *currentAngle ;
-	
-			for (;;)
-			{
-				if (leftToDo < faceLookAtBufferSize)
+				// restart at the beginning of the vertex buffer
+				ptPos = (uint8 *) _Vb.getVertexCoordPointer() ;
+
+
+				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize ;
+
+				if (_UseSizeScheme)
 				{
-					// compute sizes
-					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), leftToDo) ;				
-					// compute rotations
-					_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), leftToDo) ;				
-
-					
-
-					currentSize = &pSizes[0] ;				
-					currentAngle = &pAngles[0] ;				
-
-					TPSAttribVector::iterator endIt = _Owner->getPos().end() ;
-
-					while (it != endIt)
-					{
-						const uint32 tabIndex = (((uint32) *currentAngle) & 0xff) << 2 ;
-						const CVector v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-						const CVector v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-
-						*(CVector *) ptPos = *it  + v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - v1 ;
-						*(CVector *) (ptPos + stride3) = *it - v2 ;		
-
-
-						++it ;
-						++currentSize ;
-						++currentAngle ;
-						ptPos += stride4 ;
-					}				
-					break ;
+					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), toProcess) ;									
+					currentSize = &pSizes[0] ;						
 				}
 				else
 				{
-					// we compute 'faceLookAtBufferSize'new size and angles at a time
-					_SizeScheme->make(_Owner, size - leftToDo, pSizes, sizeof(float), faceLookAtBufferSize) ;				
-					_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), faceLookAtBufferSize) ;				
-
-
-					currentSize = &pSizes[0] ;
-					currentAngle = &pAngles[0] ;	
-
-					for (l = 0 ; l < faceLookAtBufferSize ; ++l)
-					{
-						const uint32 tabIndex = (((uint32) *currentAngle) & 0xff) << 2 ;
-						const CVector v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
-						const CVector v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
-
-						*(CVector *) ptPos = *it  + v1 ;  			
-						*(CVector *) (ptPos + stride) = *it + v2 ;	
-						*(CVector *) (ptPos + stride2) = *it - v1 ;
-						*(CVector *) (ptPos + stride3) = *it - v2 ;	
-
-						++it ;
-						++currentSize ;
-						++currentAngle ;
-						ptPos += stride4 ;
-					}												
-					leftToDo -= faceLookAtBufferSize ;
+					currentSize = &_ParticleSize ;
 				}
-			}
+
+
+				_Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), toProcess) ;	
+				currentAngle = &pAngles[0] ;
+
+				//
+				updateVbColNUVForRender(size - leftToDo, toProcess) ;
+
+						
+				TPSAttribVector::iterator endIt = it + toProcess ;
+
+				CVector v1, v2 ;
+
+				
+				while (it != endIt)
+				{
+					const uint32 tabIndex = (((uint32) *currentAngle) & 0xff) << 2 ;
+					v1 = *currentSize * (rotTable[tabIndex] * I + rotTable[tabIndex + 1] * K) ;
+					v2 = *currentSize * (rotTable[tabIndex + 2] * I + rotTable[tabIndex + 3] * K) ;
+					
+					*(CVector *) ptPos = *it  + v1 ;  			
+					*(CVector *) (ptPos + stride) = *it + v2 ;	
+					*(CVector *) (ptPos + stride2) = *it - v1 ;
+					*(CVector *) (ptPos + stride3) = *it - v2 ;	
+
+					++it ;
+					currentSize += currentSizeStep ;
+					++currentAngle ;
+					ptPos += stride4 ;
+				}											
+				
+					
+				_Pb.setNumQuad(toProcess) ;
+				driver->render(_Pb, _Mat) ;
+				leftToDo -= toProcess ;
 		}
+		while (leftToDo) ;
+
+
+
 	}
 
-	driver->activeVertexBuffer(_Vb) ;	
-	driver->renderTriangles(_Mat, _IndexBuffer, size * 2) ;
+
+
 
 }
 
@@ -1077,6 +1112,13 @@ void CPSFaceLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSQuad::serial(f) ;
 	CPSRotated2DParticle::serialAngle2DScheme(f) ;
 	
+	f.serial(_MotionBlurCoeff) ;
+
+	if (_MotionBlurCoeff != 0)
+	{
+		f.serial(_Threshold) ;
+	}
+
 	if (f.isReading())
 	{
 		init() ;		
@@ -2916,20 +2958,18 @@ void CPSFace::draw(void)
 
 	setupDriverModelMatrix() ;
 
-	CPSQuad::updateVbColNUVForRender() ;
+	
 
 	const uint32 vSize = _Vb.getVertexSize() ;
 	
 	
-	uint8 *currVertex = (uint8 *) _Vb.getVertexCoordPointer() ; 
-	uint8 *endVertex ; // points the last vertex to draw in a pool of faces
-
-	const uint faceBufSize = 512 ; // compute several particles at a time
-									// if the value is too high, this may broke the cache
-									// if it is too low, to many call to the driver will be performed
+	uint8 *currVertex  ; 
 
 
-	uint32 leftFaces = size ;
+
+
+	// number of left faces to draw, number of faces to process at once
+	uint32 leftFaces = size, toProcess ;
 
 
 	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
@@ -2939,65 +2979,64 @@ void CPSFace::draw(void)
 
 	driver->activeVertexBuffer(_Vb) ;	
 
+	float sizeBuf[quadBufSize] ;
+	float *ptSize ;
+	std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin() ;
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt ;
+
+	// if constant size is used, the pointer points always the same float 
+	uint32 ptSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+
+
 	if (_PrecompBasis.size()) // do we use precomputed basis ?
 	{
-		float sizeBuf[faceBufSize] ;
-		float *ptSize ;
+			
+		// rotate all precomputed basis
 
-		std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin() ;
+		// TODO : mettre la bonne vlauer ici !!
+		const float ellapsedTime = 0.01f ;
 
-		TPSAttribVector::const_iterator posIt = _Owner->getPos().begin() ;
-
-		// if constant size is used, the pointer points always the same float 
-		uint32 ptSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+		for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
+		{
+			// not optimized at all, but this will apply to very few elements anyway...
+			CMatrix mat ;
+			mat.rotate(CQuat(it->Axis, ellapsedTime * it->AngularVelocity)) ;
+			CVector n = mat * it->Basis.getNormal() ;
+			it->Basis = CPlaneBasis(n) ;
+		}
 
 		do
 		{
+			
+			toProcess = leftFaces > quadBufSize ? quadBufSize : leftFaces ;
 
-			uint32 ibIndex = size - leftFaces ; 
+
+
+			currVertex = (uint8 *) _Vb.getVertexCoordPointer()  ; 
 
 			if (_UseSizeScheme)
-			{
-				if (leftFaces > faceBufSize)
-				{
-					_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), faceBufSize) ;
-					leftFaces -= faceBufSize ;
-					endVertex = currVertex + faceBufSize * (vSize << 2) ;
-				}
-				else
-				{
-					_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), leftFaces) ;				
-					endVertex = currVertex + leftFaces * (vSize  << 2) ;
-					leftFaces = 0 ;
-				}
+			{				
+				_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess) ;				
 				ptSize = &sizeBuf[0] ;
 			}
 			else
 			{	
-				ptSize = &_ParticleSize ;
-				if (leftFaces > faceBufSize)
-				{
-					leftFaces -= faceBufSize ;
-					endVertex = currVertex + faceBufSize * (vSize << 2) ;
-				}
-				else
-				{
-					endVertex = currVertex + leftFaces * (vSize  << 2) ;
-					leftFaces = 0 ;
-				}									
+				ptSize = &_ParticleSize ;			
 			}
-		
+			
+			
+			updateVbColNUVForRender(size - leftFaces, toProcess) ;
+			
 
-			// setup the vb
+			const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
 
-			const uint8 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
+			endPosIt = posIt + toProcess ;
 
-			uint32 toRender = (endVertex - currVertex) / (vSize * 4) ;
-
-			while (currVertex != endVertex)
+			/* version 1 : genere du code moyen ...*/
+		/*	do		
 			{
 				// points the current basis
-				const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].untrans ;
+				<const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].untrans ;
 
 				*(CVector *) currVertex	= *posIt + *ptSize * currBasis.X ;
 				*(CVector *) (currVertex + stride) = *posIt + *ptSize * currBasis.Y ;
@@ -3008,30 +3047,150 @@ void CPSFace::draw(void)
 				++indexIt ;
 				++posIt ;
 			}
+			while (posIt != endPosIt) ; */
+
+
+				/* version 2 : here, we avoid ctor calls, but we must perform the op ourself  */
+				
+			do		
+			{
+			
+				const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].Basis ;
+
+				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.X.x ;  			
+				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.X.y ;  			
+				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.X.z ;  			
+				currVertex += stride ;
+
+				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.Y.x ;  			
+				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.Y.y ;  			
+				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.Y.z ;  			
+				currVertex += stride ;
+
+				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.X.x ;  			
+				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.X.y ;  			
+				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.X.z ;  			
+				currVertex += stride ;
+
+				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.Y.x ;  			
+				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.Y.y ;  			
+				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.Y.z ;  			
+				currVertex += stride ;
 				
 			
-			driver->renderTriangles(_Mat, _IndexBuffer + 6 * ibIndex, toRender << 1) ;
+				ptSize += ptSizeIncrement ;
+
+				++indexIt ;
+				++posIt ;
+			}
+			while (posIt != endPosIt) ;
+			
+
+			
+				
+			
+			_Pb.setNumQuad(toProcess) ;
+			driver->render(_Pb, _Mat) ;
+
+			leftFaces -= toProcess ;
 
 		}
 		while (leftFaces) ;
 
-
-
-
-
-
-
-
 	}
 	else
 	{
-		// must must compute each particle basis at each time
+		// must compute each particle basis at each time
+
+		static CPlaneBasis planeBasis[quadBufSize] ; // buffer to compute each particle basis
+
+		CPlaneBasis *currBasis ;
+		uint32    ptPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0 ;
+		const uint32 vSize = _Vb.getVertexSize() ;
+
+
+		do
+		{
+			
+			toProcess = leftFaces > quadBufSize ? quadBufSize : leftFaces ;
 
 
 
+			currVertex = (uint8 *) _Vb.getVertexCoordPointer()  ; 
 
+			if (_UseSizeScheme)
+			{				
+				_SizeScheme->make(_Owner, size - leftFaces, sizeBuf, sizeof(float), toProcess) ;				
+				ptSize = &sizeBuf[0] ;
+			}
+			else
+			{	
+				ptSize = &_ParticleSize ;			
+			}
 
+			if (_UsePlaneBasisScheme)
+			{
+				_PlaneBasisScheme->make(_Owner, size - leftFaces, planeBasis, sizeof(CPlaneBasis), toProcess) ;
+				currBasis = &planeBasis[0] ;
+			}
+			else
+			{
+				currBasis = &_PlaneBasis ;
+			}
+			
+			
+			updateVbColNUVForRender(size - leftFaces, toProcess) ;
+			
 
+			
+
+			endPosIt = posIt + toProcess ;
+
+					
+			do		
+			{
+			
+
+				// we use this instead of the + operator, because we avoid 4 constructor calls this way
+				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->X.x ;  			
+				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->X.y ;  			
+				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->X.z ;  			
+				currVertex += vSize ;
+
+				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->Y.x ;  			
+				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->Y.y ;  			
+				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->Y.z ;  			
+				currVertex += vSize ;
+
+				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->X.x ;  			
+				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->X.y ;  			
+				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->X.z ;  			
+				currVertex += vSize ;
+
+				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->Y.x ;  			
+				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->Y.y ;  			
+				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->Y.z ;  			
+				currVertex += vSize ;
+	
+				ptSize += ptSizeIncrement ;
+			
+			
+				++posIt ;
+				currBasis += ptPlaneBasisIncrement ;
+			}
+			while (posIt != endPosIt) ;
+			
+
+			
+				
+			
+			_Pb.setNumQuad(toProcess) ;
+			driver->render(_Pb, _Mat) ;
+
+			leftFaces -= toProcess ;
+
+		}
+		while (leftFaces) ;
 	}
 
 
@@ -3044,8 +3203,37 @@ void CPSFace::draw(void)
 
 void CPSFace::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;
 	CPSQuad::serial(f) ;
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
+
+	if (f.isReading())
+	{
+		uint32 nbConfigurations ;
+		f.serial(nbConfigurations) ;
+		if (nbConfigurations)
+		{
+			f.serial(_MinAngularVelocity, _MaxAngularVelocity) ;		
+		}
+		hintRotateTheSame(nbConfigurations, _MinAngularVelocity, _MaxAngularVelocity) ;
+
+		init() ;		
+	}
+	else	
+	{				
+		uint32 nbConfigurations = _PrecompBasis.size() ;
+		f.serial(nbConfigurations) ;
+		if (nbConfigurations)
+		{
+			f.serial(_MinAngularVelocity, _MaxAngularVelocity) ;		
+		}
+	}
+
+
+	
+	
+
+	//f.serialCheck((uint32) '_FAC') ;
 }
 	
 	
@@ -3061,38 +3249,44 @@ static CVector MakeRandomUnitVect(void)
 	return v ;
 }
 
-void CPSFace::hintRotateTheSame(uint32 nbConfs)
+void CPSFace::hintRotateTheSame(uint32 nbConfiguration
+						, float minAngularVelocity
+						, float maxAngularVelocity
+					  )
 {
-	_PrecompBasis.resize(nbConfs) ;
+	_MinAngularVelocity = minAngularVelocity ;
+	_MaxAngularVelocity = maxAngularVelocity ;
 
-	// each precomp basis is created randomly ;
-	for (uint k = 0 ; k < nbConfs ; ++k)
+
+
+	_PrecompBasis.resize(nbConfiguration) ;
+
+	if (nbConfiguration)
 	{
-		 CVector v1 = MakeRandomUnitVect(), v2 ;
-		_PrecompBasis[k].untrans.X = v1 ;
-
-		// compute another vector that is not too much aligned with this one
-		do
+		// each precomp basis is created randomly ;
+		for (uint k = 0 ; k < nbConfiguration ; ++k)
 		{
-			v2 = MakeRandomUnitVect() ;
-		}
-		while (fabs(1.0f - v2 * v1) < 10E-3) ;
+			 CVector v = MakeRandomUnitVect() ;
+			_PrecompBasis[k].Basis = CPlaneBasis(v) ;
+			_PrecompBasis[k].Axis = MakeRandomUnitVect() ;
+			_PrecompBasis[k].AngularVelocity = minAngularVelocity 
+											   + (rand() % 20000) / 20000.f * (maxAngularVelocity - minAngularVelocity) ;
 
-		// now, make an orthogonal basis from them
-		v2 -= (v2 * v1) * v1 ;
-		v2.normalize() ;
+		}	
 
-		_PrecompBasis[k].untrans.Y = v2 ;
-	}	
-
-	// we need to do this because nbConfs may have changed
-	fillIndexesInPrecompBasis() ;
+		// we need to do this because nbConfs may have changed
+		fillIndexesInPrecompBasis() ;
+	}
 }
 
 
 void CPSFace::fillIndexesInPrecompBasis(void)
 {
 	const uint32 nbConf = _PrecompBasis.size() ;
+	if (_Owner)
+	{
+		_IndexInPrecompBasis.resize( _Owner->getMaxSize() ) ;
+	}	
 	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end() ; ++it)
 	{
 		*it = rand() % nbConf ;
@@ -3113,8 +3307,11 @@ void CPSFace::newElement(void)
 	
 void CPSFace::deleteElement(uint32 index)
 {
-	// replace ourself by the last element...
-	_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1] ;
+	if (_PrecompBasis.size()) // do we use precomputed basis ?
+	{
+		// replace ourself by the last element...
+		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1] ;
+	}
 }
 	
 void CPSFace::resize(uint32 size)
@@ -3126,6 +3323,603 @@ void CPSFace::resize(uint32 size)
 	CPSQuad::resize(size) ;
 
 }
+
+
+
+/////////////////////////////////
+// CPSShockWave implementation //
+/////////////////////////////////
+
+
+
+CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex) :  _NbSeg(nbSeg)
+																					  , _RadiusCut(radiusCut)						
+{
+	nlassert(nbSeg > 2 && nbSeg <= 64) ;
+	setTexture(tex) ;
+	init() ;
+}
+
+
+	
+	// we don't init the _IndexBuffer for now, as it will be when resize is called
+
+
+	
+
+void CPSShockWave::setNbSegs(uint nbSeg)
+{
+	nlassert(nbSeg > 2 && nbSeg <= 64) ;
+
+	_NbSeg = nbSeg ;
+	if (_Owner)
+	{
+		resize(_Owner->getMaxSize()) ;
+	}
+}
+
+
+void CPSShockWave::setRadiusCut(float radiusCut)
+{
+	_RadiusCut = radiusCut ;
+	
+	if (_Owner)
+	{
+		resize(_Owner->getMaxSize()) ;
+	}
+
+}
+
+
+void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(1) ;
+	CPSParticle::serial(f) ;
+	CPSColoredParticle::serialColorScheme(f) ;
+	CPSTexturedParticle::serialTextureScheme(f) ;
+	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
+	CPSRotated2DParticle::serialAngle2DScheme(f) ;
+	f.serial(_NbSeg, _RadiusCut) ;
+	init() ;
+
+}
+
+
+void CPSShockWave::draw(void)
+{
+	nlassert(_Owner) ;
+	const uint32 size = _Owner->getSize() ;
+	if (!size) return ;
+
+
+	const uint32 vSize = _Vb.getVertexSize() ;
+
+	IDriver *driver = getDriver() ;
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+
+	setupDriverModelMatrix() ;
+	driver->activeVertexBuffer(_Vb) ;	
+
+	static CPlaneBasis planeBasis[shockWaveBufSize] ;
+	float       sizes[shockWaveBufSize] ;
+	float       angles[shockWaveBufSize] ;
+	
+	uint leftToDo  = size, toProcess ;
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endIt  ;
+	uint8 *currVertex = (uint8 *) _Vb.getVertexCoordPointer() ;
+	uint k  ;
+
+	const float angleStep = 256.f / _NbSeg ;
+	float currAngle ;
+
+
+	CPlaneBasis *ptCurrBasis ;
+	uint32	ptCurrBasisIncrement = _UsePlaneBasisScheme ? 1 : 0 ;
+
+	float *ptCurrSize ;
+	uint32 ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+
+	float *ptCurrAngle ;
+	uint32 ptCurrAngleIncrement = _UseAngle2DScheme ? 1 : 0 ;
+
+	CVector radVect, innerVect ;
+
+	float _RadiusRatio ;
+
+	do
+	{
+		toProcess = leftToDo > shockWaveBufSize ? shockWaveBufSize : leftToDo ;
+
+		endIt = posIt + toProcess ;
+
+		if (_UseSizeScheme)
+		{
+			_SizeScheme->make(_Owner, size - leftToDo, (void *) sizes, sizeof(float), toProcess) ;
+			ptCurrSize = &sizes[0] ;
+		}
+		else
+		{
+			ptCurrSize = &_ParticleSize ;
+		}
+
+		if (_UsePlaneBasisScheme)
+		{
+			_PlaneBasisScheme->make(_Owner, size - leftToDo, (void *) planeBasis, sizeof(CPlaneBasis), toProcess) ;
+			ptCurrBasis = &planeBasis[0] ;
+		}
+		else
+		{
+			ptCurrBasis = &_PlaneBasis ;
+		}
+
+		if (_UseAngle2DScheme)
+		{
+			_Angle2DScheme->make(_Owner, size - leftToDo, (void *) angles, sizeof(float), toProcess) ;
+			ptCurrAngle = &angles[0] ;
+		}
+		else
+		{
+			ptCurrAngle = &_Angle2D ;
+		}
+
+		
+		if (_UseColorScheme)
+		{
+			_ColorScheme->makeN(_Owner, size - leftToDo, (uint8 *) _Vb.getVertexCoordPointer() + _Vb.getColorOff(), vSize, toProcess, (_NbSeg + 1) << 1 ) ;
+		}
+
+		
+		do
+		{			
+			currAngle = *ptCurrAngle ;
+			_RadiusRatio = (*ptCurrSize - _RadiusCut) / *ptCurrSize ;
+			for (k = 0 ; k <= _NbSeg ; ++k)
+			{
+				radVect = *ptCurrSize * (CPSUtil::getCos((sint32) currAngle) * ptCurrBasis->X + CPSUtil::getSin((sint32) currAngle) * ptCurrBasis->Y) ;
+				innerVect = _RadiusRatio * radVect ;
+				* (CVector *) currVertex = *posIt + radVect ;
+				currVertex += vSize ;
+				* (CVector *) currVertex = *posIt + innerVect ;
+				currVertex += vSize ;
+
+				currAngle += angleStep ;				
+			}
+			
+			++posIt ;
+			ptCurrBasis +=  ptCurrBasisIncrement ;
+			ptCurrSize  +=  ptCurrSizeIncrement ;
+			ptCurrAngle  +=  ptCurrAngleIncrement ;
+		}
+		while (posIt != endIt) ;
+
+		_Pb.setNumQuad(toProcess * _NbSeg) ;
+		driver->render(_Pb, _Mat) ;
+		leftToDo -= toProcess ;
+
+	}
+	while (leftToDo) ;
+
+
+}
+
+
+
+bool CPSShockWave::completeBBox(NLMISC::CAABBox &box) const
+{
+	// TODO : implement this
+	return false ;
+}
+
+	
+	
+void CPSShockWave::init(void)
+{
+	_Mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+	_Mat.setZWrite(false) ;
+	_Mat.setLighting(false) ;	
+	_Mat.setBlend(true) ;
+	_Mat.setZFunc(CMaterial::less) ;
+	_Mat.setDoubleSided(true) ;
+
+
+	updateMatAndVbForColor() ;
+	updateMatAndVbForTexture() ;
+}
+
+
+void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
+{
+	nlassert(_Owner) ;
+
+	if (!size) return ;
+
+	if (_UseColorScheme)
+	{
+		// compute the colors, each color is replicated n times...
+		_ColorScheme->makeN(_Owner, startIndex, _Vb.getColorPointer(), _Vb.getVertexSize(), size, (_NbSeg + 1) << 1) ;
+	}
+
+
+	if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
+	{	
+		sint32 textureIndex[shockWaveBufSize] ;
+		const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1 ;
+		uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;				
+		uint k ;
+		
+
+		const sint32 *currIndex, *endIndex = &textureIndex[0] + size ;		
+		_TextureScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
+		
+		for (currIndex = &textureIndex[0] ; currIndex != endIndex ; ++currIndex)
+		{
+			// for now, we don't make texture index wrapping
+			const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
+
+			k = _NbSeg + 1 ;
+
+			for (k = 0 ; k <= _NbSeg ; ++k)
+			{
+				
+				*(CUV *) currUV = uvGroup.uv0 + CUV((float) k, 0) ;
+				*(CUV *) (currUV + stride) = uvGroup.uv3 + CUV((float) k, 0) ;				
+				// point the next quad
+				currUV += stride2;
+			}
+			while (--k) ;
+
+			
+		}		
+	}	
+}
+
+
+
+void CPSShockWave::updateMatAndVbForColor(void)
+{
+	if (!_UseColorScheme)
+	{
+		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]) ;		
+		_Mat.setColor(_Color) ;
+	}
+	else
+	{
+		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]) ;
+		_Mat.setColor(CRGBA::White) ;
+	}
+
+	if (_Owner)
+	{
+		resize(_Owner->getMaxSize()) ;
+	}	
+}
+
+
+void CPSShockWave::updateMatAndVbForTexture(void)
+{
+	_Mat.setTexture(0, _UseTextureScheme ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
+}
+
+
+
+
+void CPSShockWave::newElement(void)
+{
+
+}
+	
+void CPSShockWave::deleteElement(uint32 index)
+{
+
+}
+
+
+void CPSShockWave::resize(uint32 aSize)
+{
+		
+	const uint32 size = aSize > shockWaveBufSize ? shockWaveBufSize : aSize ;
+
+	_Vb.setNumVertices((size * (_NbSeg + 1)) << 1 ) ;
+		
+
+	_Pb.reserveQuad(size * _NbSeg) ;
+	for (uint32 k = 0 ; k < size ; ++k)
+	{
+		for (uint32 l = 0 ; l < _NbSeg ; ++l)
+		{
+	
+			const uint32 index = ((k * (_NbSeg + 1)) + l) << 1 ;
+			
+			
+			_Pb.setQuad(l + (k * _NbSeg) , index , index + 2, index + 3, index + 1) ;
+			
+			_Vb.setTexCoord(index, 0, CUV((float) l, 0)) ;
+			_Vb.setTexCoord(index + 1, 0, CUV((float) l, 1)) ;			
+		}
+
+		const uint32 index = ((k * (_NbSeg + 1)) + _NbSeg) << 1 ;
+
+		_Vb.setTexCoord(index, 0, CUV((float) _NbSeg, 0)) ;
+		_Vb.setTexCoord(index + 1, 0, CUV((float) _NbSeg, 1)) ;			
+
+	}
+}
+
+
+////////////////////////////
+// CPSMesh implementation //
+////////////////////////////
+
+void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	CPSParticle::serial(f) ;
+	CPSSizedParticle::serialSizeScheme(f) ;
+	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
+	CPSRotated2DParticle::serialAngle2DScheme(f) ;
+
+	f.serial(_Shape) ;
+
+	if (f.isReading())
+	{
+		invalidate() ;
+	}
+}
+
+
+
+void CPSMesh::newElement(void)
+{
+
+	nlassert(_Owner) ;
+	nlassert(_Owner->getOwner()) ;
+
+	CScene *scene = _Owner->getOwner()->getScene() ;
+	nlassert(scene) ; // the setScene method of the particle system should have been called
+	//CTransformShape *instance = _Shape->createInstance(*scene) ;
+
+	CTransformShape *instance = scene->createInstance(_Shape) ;
+
+	instance->setTransformMode(CTransform::DirectMatrix) ;
+
+	instance->hide() ; // the object hasn't the right matrix yet so we hide it. It'll be shown once it is computed
+	nlassert(instance) ;
+
+	_Instances.insert(instance) ;
+}
+	
+void CPSMesh::deleteElement(uint32 index)
+{	
+	// check wether CTransformShape have been instanciated
+	if (_Invalidated) return ;
+
+	nlassert(_Owner) ;
+	nlassert(_Owner->getOwner()) ;
+
+	CScene *scene = _Owner->getOwner()->getScene() ;
+	nlassert(scene) ; // the setScene method of the particle system should have been called
+
+	scene->deleteInstance(_Instances[index]) ;
+	_Instances.remove(index) ;
+}
+
+
+void CPSMesh::draw(void)
+{
+	nlassert(_Owner) ;
+	const uint32 size = _Owner->getSize() ;
+	if (!size) return ;
+
+
+	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+
+	if (_Invalidated)
+	{
+		// need to rebuild all the transform shapes
+		nlassert(_Owner) ;
+		nlassert(_Owner->getOwner()) ;
+
+		CScene *scene = _Owner->getOwner()->getScene() ;
+		nlassert(scene) ; // the setScene method of the particle system should have been called
+	
+
+		resize(_Owner->getMaxSize()) ;
+
+		for (uint k = 0 ; k < size ; ++k)
+		{
+			CTransformShape *instance = scene->createInstance(_Shape) ;
+			instance->setTransformMode(CTransform::DirectMatrix) ;
+			instance->hide() ;
+			_Instances.insert(instance) ;
+		}
+
+		_Invalidated = false ;
+	}
+	
+	float sizes[meshBufSize] ;
+	float angles[meshBufSize] ;
+	static CPlaneBasis planeBasis[meshBufSize] ;
+
+	uint32 leftToDo = size, toProcess ;
+
+
+	float *ptCurrSize ;
+	const uint  ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0 ;
+
+	float *ptCurrAngle ;
+	const uint  ptCurrAngleIncrement = _UseAngle2DScheme ? 1 : 0 ;
+
+	CPlaneBasis *ptBasis ;
+	const uint  ptCurrPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0 ;
+
+	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt ;
+
+
+	TInstanceCont::iterator instanceIt = _Instances.begin() ;
+
+	do
+	{
+		toProcess = leftToDo < meshBufSize ? leftToDo : meshBufSize ;
+
+		if (_UseSizeScheme)
+		{
+			_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess) ;
+			ptCurrSize = sizes ;
+		}
+		else
+		{
+			ptCurrSize =& _ParticleSize ;
+		}
+
+		if (_UseAngle2DScheme)
+		{
+			_Angle2DScheme->make(_Owner, size - leftToDo, &angles[0], sizeof(float), toProcess) ;
+			ptCurrAngle = angles ;
+		}
+		else
+		{
+			ptCurrAngle =& _Angle2D ;
+		}
+
+
+		if (_UsePlaneBasisScheme)
+		{
+			_PlaneBasisScheme->make(_Owner, size - leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess) ;
+			ptBasis = planeBasis ;
+		}
+		else
+		{
+			ptBasis = &_PlaneBasis ;
+		}
+
+		endPosIt = posIt + toProcess ;
+
+
+		
+		CMatrix mat, tmat ;
+		
+
+		// the matrix used to get in the right basis
+		const CMatrix &transfo = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : CMatrix::Identity ;
+
+		do
+		{
+			(*instanceIt)->show() ;
+
+			tmat.identity() ;
+			mat.identity() ;
+
+			tmat.translate(*posIt) ;
+
+			
+
+			mat.setRot( ptBasis->X * CPSUtil::getCos((sint32) *ptCurrAngle) + ptBasis->Y * CPSUtil::getSin((sint32) *ptCurrAngle)
+						, ptBasis->X * CPSUtil::getCos((sint32) *ptCurrAngle + 64) + ptBasis->Y * CPSUtil::getSin((sint32) *ptCurrAngle + 64)
+						, ptBasis->X ^ ptBasis->Y
+					  ) ;
+
+			mat.scale(*ptCurrSize) ;			
+			
+			(*instanceIt)->setMatrix(transfo * tmat * mat) ;			
+
+			++instanceIt ;
+			++posIt ;
+			ptCurrSize += ptCurrSizeIncrement ;
+			ptCurrAngle += ptCurrAngleIncrement ;
+			ptBasis += ptCurrPlaneBasisIncrement ;
+		}
+		while (posIt != endPosIt) ;
+
+
+
+		leftToDo -= toProcess ;
+	}
+	while (leftToDo) ;
+
+}
+
+void CPSMesh::resize(uint32 size)
+{
+	_Instances.resize(size) ;
+}
+
+
+CPSMesh::~CPSMesh()
+{
+
+	nlassert(_Owner) ;
+	nlassert(_Owner->getOwner()) ;
+
+	CScene *scene = _Owner->getOwner()->getScene() ;
+	nlassert(scene) ; // the setScene method of the particle system should have been called
+
+	for (TInstanceCont::iterator it = _Instances.begin() ; it != _Instances.end() ; ++it)
+	{
+		scene->deleteInstance(*it) ;
+	}
+}
+
+//////////////////////////////////////
+// CPSConstraintMesh implementation //
+//////////////////////////////////////
+
+
+
+
+void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
+{
+
+}
+
+
+void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration
+										, float minAngularVelocity
+										, float maxAngularVelocity
+										)
+{
+
+}
+
+
+	
+/// serialisation. Derivers must override this, and call their parent version
+void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+
+}
+
+CPSConstraintMesh::~CPSConstraintMesh() 
+{
+
+}
+
+	
+	
+
+void CPSConstraintMesh::newElement(void)
+{
+
+}
+
+
+	
+void CPSConstraintMesh::deleteElement(uint32 index)
+{
+
+}
+
+
+void CPSConstraintMesh::draw(void)
+{
+
+}
+
+
+void CPSConstraintMesh::resize(uint32 size)
+{
+
+}
+	
 
 
 

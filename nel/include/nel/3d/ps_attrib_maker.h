@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.5 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.6 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NL3D {
  */
 
 
+
 /**
  * This is the base class for any attrib maker
  * It can be used to fill a vertex buffer, or a table
@@ -75,9 +76,9 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/** The same as make4, but with n replication instead of 4	 
 	 *  \see make4
 	 */
-	//  virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
+	 virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
 
-	/// serialisation of the object. Derivers MUST call this
+	/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_NbCycles) ;	
@@ -125,9 +126,11 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 };
 
 
-/** This template generate an attrib filler by defining the methods of the CPSCAttribMaker class. You can derive your own class but it is a shortcut to do the job
+/** This template generate an attrib maker by defining the methods of the CPSCAttribMaker class. You can derive your own class 
+ * but it is a shortcut to do the job
  *  \param T : the type to produce
- *  \param F : a class that override the () operator, the input is time (CAnimationTime) , and the output is the same type as T.
+ *  \param F : a class that override the () operator, the input is the age of the particle (CAnimationTime) 
+ *             , and the output is the same type as T.
  *             Inline is preferable, as it will be called a lot 
  *             It can stores info that indicate how to build it
  */
@@ -154,7 +157,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 	/** The same as make4, but with n replication instead of 4	 
 	 *  \see make4
 	 */
-	 // virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const ;
+	 virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const ;
 
 
 	/// serialisation of the object
@@ -250,7 +253,8 @@ void CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab, 
 	}
 }
 
-template <typename T, class F> void CPSAttribMakerT<T, F>::make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+template <typename T, class F> 
+void CPSAttribMakerT<T, F>::make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
 {
 	nlassert(loc) ;
 
@@ -314,10 +318,106 @@ template <typename T, class F> void CPSAttribMakerT<T, F>::make4(CPSLocated *loc
 				++it ;
 			}
 		}
-	}
-
-	
+	}	
 }
+
+
+template <typename T, class F> 
+void CPSAttribMakerT<T, F>::makeN(CPSLocated *loc, uint32 startIndex, void *tab
+								  , uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+{
+	nlassert(loc) ;
+	nlassert(nbReplicate > 1) ; 
+
+
+	TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;
+
+	uint8 *pt = (uint8 *) tab ;
+
+	// loop counter
+	uint k ;
+
+
+	if (_NbCycles > 1 || loc->getLastForever())
+	{
+		// the value could cycle, so we need to clamp it to 0.0f 1.0f
+
+		if (_NbCycles == 1)
+		{			
+			while (numAttrib --)
+			{		
+				// fill 4 attrib with the same value at once 
+				*(T *)pt = _F((*it) - (uint32) (*it)) ;						
+				k = nbReplicate - 1;
+				do 
+				{
+					*(T *) (pt + stride) = *(T *) pt ;
+					pt += stride ;
+				}
+				while (--k) ;
+				
+				++it ;
+			}
+		}
+		else
+		{			
+			while (numAttrib --)
+			{		
+				const float time =  _NbCycles * (*it) ;
+				// fill 4 attrib with the same value at once 
+				*(T *)pt = _F(time - (uint32) time) ;					
+				k = nbReplicate - 1;
+				do 
+				{
+					*(T *) (pt + stride) = *(T *) pt ;
+					pt += stride ;
+				}
+				while (--k) ;
+				++it ;
+			}
+		}
+	}
+	else
+	{
+		// the fastest case : it match the particle's life perfeclty
+
+		if (_NbCycles == 1)
+		{
+			while (numAttrib --)
+			{		
+				// fill 4 attrib with the same value at once 
+				*(T *)pt = _F(*it) ;						
+				k = nbReplicate - 1;
+				do 
+				{
+					*(T *) (pt + stride) = *(T *) pt ;
+					pt += stride ;
+				}
+				while (--k) ;
+				++it ;
+			}
+		}
+		else
+		{
+			// the particle won't cover the whole pattern durin his life
+
+			while (numAttrib --)
+			{		
+				// fill 4 attrib with the same value at once 
+				*(T *)pt =  _F(_NbCycles * *it) ;					
+				k = nbReplicate - 1;
+				do 
+				{
+					*(T *) (pt + stride) = *(T *) pt ;
+					pt += stride ;
+				}
+				while (--k) ;
+				++it ;
+			}
+		}
+	}	
+}
+
 
 /*
 template <typename T, class F> void CPSAttribMakerT<T, F>::makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const

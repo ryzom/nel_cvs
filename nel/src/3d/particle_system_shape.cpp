@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.2 2001/05/14 13:07:20 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.3 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,7 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	
 	nlassert(dynamic_cast<CParticleSystemModel *>(ps)) ;
 	CParticleSystemModel *psi = (CParticleSystemModel *) ps ;
+	myInstance->setScene(&scene) ;
 	psi->setParticleSystem(myInstance) ;
 	return ps ;
 }

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.8 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.9 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include "nel/3d/ps_color.h"
 #include "nel/3d/ps_float.h"
 #include "nel/3d/ps_int.h"
+#include "nel/3d/ps_plane_basis_maker.h"
 
 #include "nel/3d/particle_system_shape.h"
 
@@ -59,10 +60,26 @@ using NLMISC::CVector ;
 
 #ifdef NL_DEBUG
 	bool CPSUtil::_CosTableInitialized = false ;
+	bool CPSUtil::_PerlinNoiseTableInitialized = false ;
 #endif
 
 float CPSUtil::_CosTable[256] ;
 float CPSUtil::_SinTable[256] ;
+
+
+float CPSUtil::_PerlinNoiseTab[1024] ;
+
+
+void CPSUtil::initPerlinNoiseTable(void)
+{
+	for (uint32 k = 0 ; k < 1024 ; ++k)
+	{
+		_PerlinNoiseTab[k] = (rand() % 30000) / 30000.f ; 
+	}
+	#ifdef NL_DEBUG
+		_PerlinNoiseTableInitialized = true ;
+	#endif
+}
 
 
 void CPSUtil::initFastCosNSinTable(void)
@@ -83,11 +100,14 @@ void CPSUtil::registerSerialParticleSystem(void)
 {
 		NLMISC_REGISTER_CLASS(CPSEmitterOmni) ;
 		NLMISC_REGISTER_CLASS(CPSGravity) ; 
+		NLMISC_REGISTER_CLASS(CPSFluidFriction) ;
+		NLMISC_REGISTER_CLASS(CPSTurbul) ;
 		NLMISC_REGISTER_CLASS(CPSLocated) ; 
 		NLMISC_REGISTER_CLASS(CPSDot) ;
 		NLMISC_REGISTER_CLASS(CPSFaceLookAt) ;
 		NLMISC_REGISTER_CLASS(CPSZonePlane) ;
-		NLMISC_REGISTER_CLASS(CPSColorFader) ;
+		NLMISC_REGISTER_CLASS(CPSColorBlender) ;
+		NLMISC_REGISTER_CLASS(CPSColorBlenderExact) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
 		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSFloatGradient) ;
@@ -97,11 +117,18 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
 		NLMISC_REGISTER_CLASS(CPSTailDot) ;
 		NLMISC_REGISTER_CLASS(CPSRibbon) ;
+		NLMISC_REGISTER_CLASS(CPSShockWave) ;
 		NLMISC_REGISTER_CLASS(CPSFace) ;
+		NLMISC_REGISTER_CLASS(CPSMesh) ;
 		NLMISC_REGISTER_CLASS(CParticleSystemShape) ;
+		NLMISC_REGISTER_CLASS(CPSPlaneBasisBlender) ;
+		NLMISC_REGISTER_CLASS(CPSPlaneBasisGradient) ;
+		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed) ;
+
 		// while we are here, we perform some important inits
 		CPSRotated2DParticle::initRotTable() ; // init the precalc rot table for face lookat
 		initFastCosNSinTable() ; // init fast cosine lookup table
+		initPerlinNoiseTable() ; // init perlin noise table
 		CPSFanLight::initFanLightPrecalc() ;
 }
 

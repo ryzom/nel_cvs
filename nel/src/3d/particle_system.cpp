@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.11 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.12 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,7 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
  * Constructor
  */
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
+									, _Date(NULL), _Scene(NULL)
 {
 }
 
@@ -111,12 +112,15 @@ CParticleSystem::~CParticleSystem()
 
 void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
+	
 	if (pass == PSSolidRender ||pass == PSBlendRender)
 	{
+		++_Date ; // update time
 		 // store the view matrix for the rendring pass
 		 // it is needed for FaceLookat or the like
 		_ViewMat = CNELU::Driver->getViewMatrix() ;
-		_ViewMat.transpose() ;
+		_InvertedViewMat = _ViewMat.inverted() ;
+		//_ViewMat.transpose() ;
 	}
 
 	for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
@@ -129,8 +133,9 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
 	f.serialCheck((uint32) 'PSYS') ;
 	f.serialVersion(1) ;	
-	f.serial(_ViewMat) ;
+	//f.serial(_ViewMat) ;
 	f.serial(_SysMat) ;
+	f.serial(_Date) ;
 	if (f.isReading())
 	{
 		// delete previously attached process

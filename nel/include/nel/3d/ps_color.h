@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.5 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_color.h,v 1.6 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_PS_COLOR_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/ps_attrib_maker.h"
+#include "nel/3d/ps_attrib_maker_template.h"
 #include "nel/misc/rgba.h"
 #include "nel/3d/tmp/animation_time.h"
 
@@ -42,125 +42,67 @@ using NLMISC::CRGBA ;
 
 /**
  * Here, we got color maker
- * \see ps_attrib_maker.h
+ * \see ps_attrib_maker.h, ps_attrib_maker_template.h
  */
 
 
 
-/** this class is a color fader functor
- *  It is used by CPSColorFader
- *  \see CPScolorFader
- */
-class CPSColorFaderFunc
+
+/// these are some attribute makers for int
+
+/// This is a int blender class. It just blend between 2 values. The blending is exact, ands thus slow...
+class CPSColorBlenderExact : public CPSValueBlender<CRGBA>
 {
 public:
-	inline CRGBA operator()(CAnimationTime time) const
+	NLMISC_DECLARE_CLASS(CPSColorBlenderExact) ;
+	CPSColorBlenderExact(CRGBA startColor = CRGBA::White , CRGBA endColor = CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlender<CRGBA>(nbCycles)
 	{
-		return _Tab[(uint32) (time * 63.0f)] ;		
+		_F.setValues(startColor, endColor) ;
 	}
-
 	
-	/// copie the start and end color in the referenced colors
-	void getColors(CRGBA &c1, CRGBA &c2) const
-	{
-		c1 = _Tab[0] ;
-		c2 = _Tab[63] ;
-	}
+	// F is serialized by base classes...
 
-	/// set the colors
-
-	void setColors(CRGBA c1, CRGBA c2) ;
-	
-
-	/// serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-
-protected:	
-	// a precomputed color tab
-	CRGBA _Tab[64] ;
-} ;
-
-
-/// Affect this class to a particle to have a particle fader
-class CPSColorFader : public CPSAttribMakerT<CRGBA, CPSColorFaderFunc>
-{
-public:
-		NLMISC_DECLARE_CLASS(CPSColorFader) ;
-
-		CPSColorFader(CRGBA c1 = CRGBA(255, 255, 255), CRGBA c2 = CRGBA(0, 0, 0), float nbCycles = 1.0f) 
-					: CPSAttribMakerT<CRGBA, CPSColorFaderFunc>(nbCycles) 
-		{
-			_F.setColors(c1, c2) ;
-		}
-
-		// serialization is done by CPSAttribMakerT
 } ;
 
 
 
-/** this class is a color gradient functor
- *  It is used by CPSColorGradient
- *  \see CPScolorFader
- */
-class CPSColorGradientFunc
+// an int blender class that perform 64 color sample between colors, it is faster
+class CPSColorBlender : public CPSValueBlenderSample<CRGBA, 64>
 {
 public:
-	inline CRGBA operator()(CAnimationTime time) const
+	NLMISC_DECLARE_CLASS(CPSColorBlender) ;
+	CPSColorBlender(CRGBA startColor = CRGBA::White , CRGBA endColor = CRGBA::Black, float nbCycles = 1.0f) : CPSValueBlenderSample<CRGBA, 64>(nbCycles)
 	{
-		nlassert(_Tab) ;
-		return _Tab[(uint32) (time * _NumCol)] ;		
+		_F.setValues(startColor, endColor) ;
 	}
-
 	
-	/// copie the colors in the specified table
-	void getColors(CRGBA *tab) const ;	
+	// F is serialized by base classes...
 
-	uint32 getNumCol(void) const { return ((_NumCol - 1) >> 6) + 1 ; }
+} ;
 
-	/** set the colors
-	 *  \param numCol number of color, must be >= 2
-	 *  \colorTab a table containing the colors. color will be blended, so you must only provide keyframe colors	 
+
+
+/// This is a int gradient class
+class CPSColorGradient : public CPSValueGradient<CRGBA>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSColorGradient) ;
+
+	/**	
+	 *	Construct the value gradient blender by passing a pointer to a color table.
+	 *  \param nbStages The result is sampled into a table by linearly interpolating values. This give the number of step between each value
+	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
 	 */
 
-	void setColors(const CRGBA *colorTab, uint32 numCol) ;
-	
+	CPSColorGradient(const CRGBA *colorTab = CPSColorGradient::_DefaultGradient
+						, uint32 nbValues = 2, uint32 nbStages = 64, float nbCycles = 1.0f) ;
 
-	/// serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-
-	// ctor
-	CPSColorGradientFunc() ;
-
-	// dtor
-	~CPSColorGradientFunc() ;
-
-protected:	
-	uint32 _NumCol ;
-	// a precomputed color tab
-	CRGBA  *_Tab ;
-} ;
-
-
-/// Affect this class to a particle to have a particle fader
-class CPSColorGradient : public CPSAttribMakerT<CRGBA, CPSColorGradientFunc>
-{
-public:
-		NLMISC_DECLARE_CLASS(CPSColorGradient) ;
-
-		CPSColorGradient(const CRGBA *tab = CPSColorGradient::_DefaultGradient, uint32 numCol = 2
-						 ,float nbCycles = 1.0f) : CPSAttribMakerT<CRGBA, CPSColorGradientFunc>(nbCycles) 
-		{
-			_F.setColors(tab, numCol) ;
-		}
 
 	static CRGBA _DefaultGradient[] ;
+	
+	// F is serialized by base classes...	
 
-	// serialization is done by CPSAttribMakerT
 } ;
-
-
-
-
 
 } // NL3D
 

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.1 2001/05/11 17:18:46 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.2 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ class CParticleSystemModel : public CTransformShape
 		void setParticleSystem(CParticleSystem *ps)
 		{
 			nlassert(!_ParticleSystem) ;
-			_ParticleSystem = ps ;
+			_ParticleSystem = ps ;			
 		}
 
 		// instance of the particle system that this model holds

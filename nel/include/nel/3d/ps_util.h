@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.4 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_util.h,v 1.5 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,16 +123,43 @@ struct CPSUtil
 	 */
 	static void initFastCosNSinTable(void) ;
 
+
+	/** compute a perlin noise value, that will range from [0 to 1]
+	 *  The first octave has the unit size
+	 *  \see initPerlinNoiseTable()
+	 */
+	static inline float buildPerlinNoise(CVector &pos, uint nbOctaves) ;
+
+	/** init the table used by perlin noise.
+	 *  This must be used before any call to  buildPerlinNoise
+	 */
+	static void initPerlinNoiseTable(void) ;
+		
+
 	protected:
 
-	#ifdef NL_DEBUG
-		static bool _CosTableInitialized ;
-	#endif
+		#ifdef NL_DEBUG
+			static bool _CosTableInitialized ;
+		#endif
+
+		#ifdef NL_DEBUG
+			static bool _PerlinNoiseTableInitialized ;
+		#endif
 
 		// a table for fast cosine lookup
 		static float _CosTable[256] ;
 		// a table for fast sinus lookup
 		static float _SinTable[256] ;
+
+		static float _PerlinNoiseTab[1024] ;
+
+
+		// used by perlin noise to compute each octave		
+		static float getInterpolatedNoise(const CVector &pos) ;
+
+		// get non interpolated noise 
+		static float getPerlinNoise(uint x, uint y, uint z) ;
+
 
 
 };
@@ -141,16 +168,81 @@ struct CPSUtil
 // inline implementation //
 ///////////////////////////
 
-void CPSUtil::addRadiusToAABBox(NLMISC::CAABBox &box, float radius)
+inline void CPSUtil::addRadiusToAABBox(NLMISC::CAABBox &box, float radius)
 {
 	box.setHalfSize(box.getHalfSize() + NLMISC::CVector(radius, radius, radius) ) ;
 }
 
 
+// get non interpolated noise 
+inline float CPSUtil::getPerlinNoise(uint x, uint y, uint z)
+{
+	return _PerlinNoiseTab[(x ^ y ^ z) & 1023] ;
+}
 
 
+inline float CPSUtil::getInterpolatedNoise(const CVector &pos)
+{
+	uint x = (uint) pos.x
+		, y = (uint) pos.y
+		, z = (uint) pos.z ;
+
+	// we want to avoid costly ctor call there...
+	float fx = pos.x - x
+		  , fy = pos.y - y
+		  , fz = pos.z - z ;
+
+	// we use the following topology to get the value :
+	//
+	//
+	//  z
+	//  | 7-----6
+	//   /     /
+	//  4-----5 |
+	//  |     | |
+	//  |  3  | |2
+	//  |     | /
+	//  0_____1/__x
+
+	
+	const float v0 = getPerlinNoise(x, y, z)
+		 ,v1 = getPerlinNoise(x + 1, y, z)
+		 ,v2 = getPerlinNoise(x + 1, y + 1, z)
+ 		 ,v3 = getPerlinNoise(x, y + 1, z)
+		 ,v4 = getPerlinNoise(x, y, z + 1)
+		 ,v5 = getPerlinNoise(x + 1, y, z + 1)
+		 ,v6 = getPerlinNoise(x + 1, y + 1, z + 1)
+ 		 ,v7 = getPerlinNoise(x, y + 1, z + 1) ;
+
+	
+	const float h1  = fx * v1 + (1.f - fx) * v0
+				,h2 = fx * v3 + (1.f - fx) * v2 
+				,h3  = fx * v5 + (1.f - fx) * v4
+				,h4 = fx * v7 + (1.f - fx )* v6 ; 
+
+    const float c1  = fy * h2 + (1.f - fy) * h1
+		       ,c2  = fy * h4 + (1.f - fy) * h3 ;
+
+	return fz * c2 + (1.f - fz) * c1 ;
+}
 
 
+inline float CPSUtil::buildPerlinNoise(CVector &pos, uint numOctaves)
+{
+	nlassert(_PerlinNoiseTableInitialized) ;
+
+	float result = 0 ;
+	float fact = .5f ;
+	float scale = 1.f ;
+
+	for (uint k = 0 ; k < numOctaves ; k++)
+	{
+		result += fact * getInterpolatedNoise(scale * pos) ;
+		fact *= .5f ;
+		scale *= 1.2537f ;
+	}	
+	return result ;
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.3 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_color.cpp,v 1.4 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,132 +29,16 @@
 namespace NL3D {
 
 
-//////////////////////////////////////
-// CPSColorFaderFunc implementation //
-//////////////////////////////////////
+
+CRGBA CPSColorGradient::_DefaultGradient[] = { CRGBA::White, CRGBA::Black } ;
 
 
-
-void CPSColorFaderFunc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+CPSColorGradient::CPSColorGradient(const CRGBA *colorTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
+				: CPSValueGradient<CRGBA>(nbCycles)
 {
-	f.serialCheck((uint32) 'FFUN') ;
-	f.serial(_Tab[0], _Tab[63]) ; 
-	if (f.isReading())
-	{
-		setColors(_Tab[0], _Tab[63]) ;
-	}
+	_F.setValues(colorTab, nbValues, nbStages) ;
 }
 
-
-void CPSColorFaderFunc::setColors(CRGBA c1, CRGBA c2)
-{
-	for (uint k = 0 ; k < 64 ; ++k)
-	{
-		CRGBA c ;
-		c.blendFromui(c1, c2, (uint32) (256.0f * k * (1.0f / 63.0f))) ;
-		_Tab[k] = c ;
-	}
-}
-
-
-//////////////////////////////////////
-// CPSColorGradientFunc implementation //
-//////////////////////////////////////
-
-void CPSColorGradientFunc::getColors(CRGBA *tab) const
-{	
-	nlassert(tab) ;
-	for (uint32 k = 0 ; k < _NumCol ; ++k)
-	{
-		tab[k] = _Tab[k << 6] ;
-	}	
-}
-
-
-
-void CPSColorGradientFunc::setColors(const CRGBA *colorTab, uint32 numCol)
-{
-	nlassert(numCol > 1) ;
-
-	if (_Tab)
-	{
-		delete[] _Tab ;		
-	}
-
-
-	// we have a 64 colors gradient for each tansition
-	_NumCol = ((numCol - 1) << 6) + 1 ;
-	_Tab = new CRGBA[_NumCol] ;
-
-	for (uint32 k = 0 ; k  < (numCol - 1) ; ++k)
-	{
-		for(uint32 l = 0 ; l < 64 ; ++l)
-		{
-			CRGBA c ;
-			c.blendFromui(colorTab[k], colorTab[k + 1], (uint32) (256.0f * l * (1.0f / 64.0f))) ;
-			_Tab[ (k << 6) + l ] = c ;
-		}
-	}
-	_Tab[_NumCol - 1] = colorTab[numCol - 1] ;
-}
-	
-
-
-/// serialization
-void CPSColorGradientFunc::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-	f.serialCheck((uint32) 'GCF_') ;
-	if (f.isReading())
-	{
-		uint32 numCol ;
-		f.serial(numCol) ;
-		_NumCol = ((numCol - 1) << 6) + 1 ;
-
-		// create the table on the stack for small gradient
-		if (numCol < 256)
-		{
-			CRGBA tab[256] ;
-			for (uint32 k = 0 ; k < numCol ; ++k)
-			{
-				f.serial(tab[k]) ;
-			}
-			setColors(tab, numCol) ;
-		}	
-		else
-		{
-			CRGBA *tab = new CRGBA[numCol] ;
-			for (uint32 k = 0 ; k < numCol ; ++k)
-			{
-				f.serial(tab[k]) ;
-			}
-			setColors(tab, numCol) ;
-			delete[] tab ;
-		}
-	}
-	else
-	{
-		uint32 numCol = getNumCol() ;
-		f.serial(numCol) ;
-		for (uint32 k = 0 ; k < numCol ; ++k)
-		{
-			f.serial(_Tab[k << 6]) ;
-		}
-	}
-}
-
-
-CPSColorGradientFunc::CPSColorGradientFunc() : _Tab(NULL), _NumCol(0)
-{
-}
-
-
-CPSColorGradientFunc::~CPSColorGradientFunc()
-{
-	delete[] _Tab ;
-}
-
-
-CRGBA CPSColorGradient::_DefaultGradient[2] = { CRGBA::White, CRGBA::Black } ;
 
 
 } // NL3D

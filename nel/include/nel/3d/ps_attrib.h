@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.6 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.7 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,11 +103,19 @@ public:
 	uint32 getMaxSize(void) const { return _MaxSize ; }
 
 
-	//// remove an object from the tab
+	/// remove an object from the tab
 	void remove(uint32 index) ; 
 
-	//// Serialization method
+	/// Serialization method
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	/// clear the container
+	void clear(void)
+	{
+		_Tab.clear() ;
+		_Tab.reserve(_MaxSize) ;
+		_Size = 0 ;
+	}
 
 protected:		
 	TContType _Tab ; 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.8 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_located.h,v 1.9 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -274,6 +274,17 @@ public:
 		return _MaxSize ; 
 	}
 
+	/** set the Refresh Rate of this located. Default is motion every frame (frameToSkip = 0)
+	 *  The drawing process will still occur every frame anyway...
+	 *  It's a speed / quality tradeof
+	 */
+
+	 void setFrameRate(uint32 nbFramesToSkip = 0) { _NbFramesToSkip = nbFramesToSkip ; }
+
+	 // retrieve the frame rate
+	 uint32 getFrameRate(void) const { return _NbFramesToSkip ; }
+
+
 	/**
 	* Resize the located container, in order to accept more instances
 	*/
@@ -296,6 +307,12 @@ public:
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
 	inline CVector computeI(void) const  ;
+
+	/** Compute a vector that will map to (0 1 0) after view and model transform.
+	*  This allow to  have object that always faces the user, whatever basis they are in
+	*/
+	inline CVector computeJ(void) const  ;
+
 	/** Compute a vector that will map to (0 0 1) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
@@ -362,9 +379,12 @@ public:
 
 
 
-	  
+	 
 
-protected:		
+protected:	
+	
+	// number of frame to skip between motion ...
+	uint32 _NbFramesToSkip ;
 
 	// container of all object that are bound to a located
 	typedef std::vector< CPSLocatedBindable *> TLocatedBoundCont ;
@@ -469,26 +489,41 @@ inline CVector CPSLocated::computeI(void) const
 {
 	if (!_SystemBasisEnabled)
 	{
-		return _Owner->getViewMat().getI() ;
+		return _Owner->getInvertedViewMat().getI() ;
 	}
 	else
 	{
 		// we must express the I vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getViewMat().getI()) ;
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getI()) ;
 	}
 }
+
+
+inline CVector CPSLocated::computeJ(void) const 
+{
+	if (!_SystemBasisEnabled)
+	{
+		return _Owner->getInvertedViewMat().getJ() ;
+	}
+	else
+	{
+		// we must express the J vector in the system basis, so we need to multiply it by the inverted matrix of the system
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getJ()) ;
+	}
+}
+
 
 
 inline CVector CPSLocated::computeK(void) const
 {
 	if (!_SystemBasisEnabled)
 	{
-		return _Owner->getViewMat().getK() ;
+		return _Owner->getInvertedViewMat().getK() ;
 	}
 	else
 	{
 		// we must express the K vector in the system basis, so we need to multiply it by the inverted matrix of the system
-		return _Owner->getInvertedSysMat().mulVector(_Owner->getViewMat().getK()) ;
+		return _Owner->getInvertedSysMat().mulVector(_Owner->getInvertedViewMat().getK()) ;
 	}
 }
 
@@ -688,11 +723,18 @@ public:
 	}
 
 
-	/// shortcut to get the view matrix (trasposed)
+	/// shortcut to get the view matrix
 	const CMatrix &getViewMat(void) const 
 	{
 		nlassert(_Owner) ;
 		return _Owner->getOwner()->getViewMat() ;	
+	}	
+
+	/// shortcut to get the inverted view matrix
+	const CMatrix &getInvertedViewMat(void) const 
+	{
+		nlassert(_Owner) ;
+		return _Owner->getOwner()->getInvertedViewMat() ;	
 	}	
 
 
@@ -707,6 +749,12 @@ public:
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
 	inline CVector computeI(void)  const { return _Owner->computeI() ; }
+
+	/** Compute a vector that will map to (0 1 0) after view and model transform.
+	 *  This allow to  have object that always faces the user, whatever basis they are in
+	 */
+	inline CVector computeJ(void)  const { return _Owner->computeJ() ; }
+
 	 /** Compute a vector that will map to (0 0 1) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
@@ -719,7 +767,7 @@ public:
 	 /// get the located that owns this bindable (const version)
  	 const CPSLocated *getOwner(void) const { return _Owner ; }
 	
-
+	 
 
 protected:    
 
@@ -750,7 +798,7 @@ protected:
 		nlassert(psl) ; _Owner = psl ; 
 	}
 
-	CPSLocated  *_Owner ;
+	CPSLocated  *_Owner ;	
 
 } ;
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.9 2001/05/17 10:03:58 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.10 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 						 , _MaxLife(1.0f), _MinLife(1.0f), _Size(0)
 						 , _MaxSize(DefaultMaxLocatedInstance), _UpdateLock(false)
 						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)
+						 , _NbFramesToSkip(0)
 {		
 }
 
@@ -289,6 +290,8 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_MinMass, _MaxMass) ;
 	f.serial(_MaxLife, _MinLife) ;
 
+	f.serial(_NbFramesToSkip) ;
+
 	f.serialContPolyPtr(_DtorObserversVect) ;
 
 	if (f.isReading())
@@ -348,82 +351,128 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	if (pass == PSMotion)
 	{		
 		
-		
+		// check if we must skip frames
 
-		// update the located creation requests that may have been posted
-		updateNewElementRequestStack() ;
 
-		TPSAttribVector::iterator itPos = _Pos.begin() ;			
-
-		// there are 2 integration steps : with and without collisions
-
-		if (!_CollisionInfo) // no collisionner are used
+		if (!_NbFramesToSkip || !( (uint32) _Owner->getDate() % (_NbFramesToSkip + 1)))
 		{
-			TPSAttribVector::const_iterator itSpeed = _Speed.begin() ;		
-			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
-			{
-				/* (*itPos) += ellapsedTime * (*itSpeed) ; */
 
-				// let's avoid a constrictor call
-				itPos->x += ellapsedTime * itSpeed->x ;
-				itPos->y += ellapsedTime * itSpeed->y ;
-				itPos->z += ellapsedTime * itSpeed->z ;
+			// update the located creation requests that may have been posted
+			updateNewElementRequestStack() ;
+
+			TPSAttribVector::iterator itPos = _Pos.begin() ;			
+
+			// there are 2 integration steps : with and without collisions
+
+			if (!_CollisionInfo) // no collisionner are used
+			{
+				TPSAttribVector::const_iterator itSpeed = _Speed.begin() ;		
+
+
+				// unoptimized version for speed integration
+				 for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed)
+				{				
+					// let's avoid a constructor call				
+					itPos->x += ellapsedTime * itSpeed->x ;
+					itPos->y += ellapsedTime * itSpeed->y ;
+					itPos->z += ellapsedTime * itSpeed->z ;
+				} 
+
+				/* optimized version (in fact it doesn't change speed at all ;( )
+				uint leftToDo = _Size ;
+
+				while (leftToDo)			
+				{	
+
+					// let's use an ugly macro to unroll this loop more easily
+					// note thta we perform the op directly to avoid a ctor call 
+					#define INTEGRATE_SPEED_ONCE \
+						itPos->x += ellapsedTime * itSpeed->x ; \
+						itPos->y += ellapsedTime * itSpeed->y ; \
+						itPos->z += ellapsedTime * itSpeed->z ; \
+						++itPos ; ++itSpeed ;
+
+					#define INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE  INTEGRATE_SPEED_ONCE 
+					#define INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR INTEGRATE_SPEED_FOUR
+					#define INTEGRATE_SPEED_SIXTYFOUR INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN INTEGRATE_SPEED_SIXTEEN
+							
+
+					if (leftToDo >= 64) // try to batch computations
+					{
+						INTEGRATE_SPEED_SIXTYFOUR ;
+						leftToDo -= 64 ;
+					}
+					else
+					{
+						do
+						{
+							INTEGRATE_SPEED_ONCE ;
+						}
+						while (-- leftToDo) ;
+						break ;
+					}				
+				}
+				*/
+			}
+			else
+			{
+				// integration with collisions
+
+				nlassert(_CollisionInfo) ;
+				TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
+				TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
+				for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itc)
+				{
+					if (itc->dist != -1)
+					{
+						(*itPos) = itc->newPos ;
+						(*itSpeed) = itc->newSpeed ;
+					}
+					else
+					{
+						(*itPos) += ellapsedTime * (*itSpeed) ;
+					}
+				}
+
+				
+				// reset collision info for the next time
+
+				resetCollisionInfo() ;
+				
+			}
+
+
+			if (! _LastForever)
+			{
+				TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin() ;
+				for (uint32 k = 0 ; k < _Size ;)
+				{
+					*itTime += ellapsedTime * *itTimeInc ;
+					if (*itTime >= 1.0f)
+					{
+						deleteElement(k) ;
+					}
+					else
+					{
+						++k ;
+						++itTime ;
+						++itTimeInc ;
+					}
+				}
+			}
+			else
+			{
+				// the time attribute gives the life in seconds
+				TPSAttribTime::iterator itTime = _Time.begin(), endItTime = _Time.end() ;
+				for (; itTime != endItTime ; ++itTime)
+				{
+					*itTime += ellapsedTime ;
+				}
 			}
 		}
 		else
 		{
-			// integration with collisions
-
-			nlassert(_CollisionInfo) ;
-			TPSAttribCollisionInfo::const_iterator itc = _CollisionInfo->begin() ;
-			TPSAttribVector::iterator itSpeed = _Speed.begin() ;		
-			for (uint k = 0 ; k < _Size ; ++k, ++itPos, ++itSpeed, ++itc)
-			{
-				if (itc->dist != -1)
-				{
-					(*itPos) = itc->newPos ;
-					(*itSpeed) = itc->newSpeed ;
-				}
-				else
-				{
-					(*itPos) += ellapsedTime * (*itSpeed) ;
-				}
-			}
-
-			
-			// reset collision info for the next time
-
-			resetCollisionInfo() ;
-			
-		}
-
-
-		if (! _LastForever)
-		{
-			TPSAttribTime::iterator itTime = _Time.begin(), itTimeInc = _TimeIncrement.begin() ;
-			for (uint32 k = 0 ; k < _Size ;)
-			{
-				*itTime += ellapsedTime * *itTimeInc ;
-				if (*itTime >= 1.0f)
-				{
-					deleteElement(k) ;
-				}
-				else
-				{
-					++k ;
-					++itTime ;
-					++itTimeInc ;
-				}
-			}
-		}
-		else
-		{
-			// the time attribute gives the life in seconds
-			TPSAttribTime::iterator itTime = _Time.begin(), endItTime = _Time.end() ;
-			for (; itTime != endItTime ; ++itTime)
-			{
-				*itTime += ellapsedTime ;
-			}
+			return ; // we skip the frame...
 		}
 	}
 

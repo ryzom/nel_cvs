@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.6 2001/05/09 14:56:57 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.7 2001/05/23 15:18:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,7 +209,7 @@ void CPSSpring::performMotion(CAnimationTime ellapsedTime)
 
 			
 
-			uint32 size = (*it)->getSize() ;	
+			uint32 size = (*it)->getSize() ;
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2End = (*it)->getSpeed().end() ;
 			TPSAttribFloat::const_iterator invMassIt = (*it)->getInvMass().begin() ;
 			TPSAttribVector::const_iterator posIt = (*it)->getPos().begin() ;

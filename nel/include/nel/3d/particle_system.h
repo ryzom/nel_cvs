@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.11 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: particle_system.h,v 1.12 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,7 @@ class CParticleSystem ;
 class CFontGenerator ;
 class CFontManager ;
 class CPSCopyHelper ;
+class CScene ;
 
 
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
@@ -244,9 +245,11 @@ public:
 
 
 
-	/// shortcut to get the view matrix (transposed version) . It is stored each time a new frame is processed	 
-	 
+	/// get the view matrix . It is stored each time a new frame is processed	 
 	const CMatrix &getViewMat(void) const { return _ViewMat ; }
+
+	/// get the inverted view matrix . It is stored each time a new frame is processed	 
+	const CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat ; }
 
 	/// Set a font generator. Useful only for edition. don't need that in runtime
 	void setFontGenerator(CFontGenerator *fg) { _FontGenerator = fg ; }
@@ -271,18 +274,48 @@ public:
 	static uint32 _NbParticlesDrawn ;
 
 
+	/** get the date of the system (the number of time it has been drawn in fact)
+	 *  This may be used to skip frames in an animation for example
+	 */
+
+	uint64 getDate(void) const
+	{
+		return _Date ;
+	}
+
+	/** Set the scene in which the particle system is inserted. This is needed when
+	 * system must add objects to the scene (for particle that are mesh for instance)
+	 */
+	void setScene(CScene *scene) { _Scene = scene ; }
+
+	//// get the scene set by setScene()
+	CScene *getScene(void) { return _Scene ; }
+
 protected:
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
 	TProcessVect _ProcessVect ;
 	CFontGenerator *_FontGenerator ;
 	CFontManager *_FontManager ;
-	// the transposed view matrix
+	// the view matrix
 	CMatrix _ViewMat ;
+
+	// the inverted view matrix
+	CMatrix _InvertedViewMat ;
+
 	// the matrix of the system
 	CMatrix _SysMat ; 
 	// the inverted matrix of the system
 	CMatrix _InvSysMat ;
+
+	// number of rendered pass on the system, incremented each time the system is redrawn
+	uint64 _Date ;
+
+	/** the scene in which the particle system is inserted. This is needed because
+	 * the system may add objects to the scene (for particle that are mesh for instance)
+	 */
+
+	CScene *_Scene ;
 
 };
 

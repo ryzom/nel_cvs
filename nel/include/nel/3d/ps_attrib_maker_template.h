@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.2 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.3 2001/05/23 15:18:00 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/ps_attrib_maker.h"
+#include "nel/3d/ps_plane_basis.h"
 
 
 namespace NL3D {
@@ -40,12 +41,47 @@ namespace NL3D {
 
 
 
+
+/** a blending function
+ * it blends between t1 and t2 by the alpha amount
+ * specializing this function may help with some types of data that don't have the needed operator (CRGBA)
+ */
+
+template <typename T>
+inline T PSValueBlend(const T &t1, const T &t2, float alpha)
+{
+	return T(alpha * t2 + (1.f - alpha) * t1) ;
+}
+
+
+/// CRGBA specialization of the PSValueBlend function
+template <>
+inline CRGBA PSValueBlend(const CRGBA &t1, const CRGBA &t2, float alpha)
+{
+	CRGBA result ;
+	result.blendFromui(t1, t2, (uint) (255.0f * alpha)) ;
+	return result ;
+}
+
+
+/// CPlaneBasis specilization of the PSValueBlend function
+template <>
+inline CPlaneBasis PSValueBlend(const CPlaneBasis &t1, const CPlaneBasis &t2, float alpha)
+{	
+	return CPlaneBasis(PSValueBlend(t1.getNormal(), t2.getNormal(), alpha)) ;
+}
+
+
+
+
 /**
- * This temlate functor blend between 2 value
- * It is used by CPSValueBlend
+ * This temlate functor blend exactly between 2 value (no samples)
+ * To accomplish blending, it use the template function PSValueBlend
+ * It is used by CPSValueBlend 
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
+ * \see PSValueBlend
  */
 template <typename T> class CPSValueBlendFunc
 {
@@ -54,7 +90,7 @@ public:
 	T operator()(CAnimationTime time) const
 	{
 
-		return (T) (time * _ValueRatio + _CstValue) ;	// a cast to T is necessary, because 
+		return PSValueBlend(_StartValue, _EndValue, time) ;	// a cast to T is necessary, because 
 														// the specialization couls be done with integer
 	}
 
@@ -70,8 +106,8 @@ public:
 
 	void setValues(T startValue, T endValue)
 	{
-		_CstValue = startValue ;
-		_ValueRatio = endValue - startValue ;
+		_StartValue = startValue ;
+		_EndValue = endValue ;
 	}
 
 	/// ctor
@@ -80,7 +116,7 @@ public:
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
-		f.serial(_CstValue, _ValueRatio) ;
+		f.serial(_StartValue, _EndValue) ;
 	}
 
 	T getMaxValue(void) const
@@ -89,16 +125,19 @@ public:
 	}
 
 protected:
-	T _CstValue ;
-	T _ValueRatio ;
+	T _StartValue, _EndValue ;	
 };
 
 
-
-/** This is a Value blender class
- *  To use this, just derive a class, create a ctor, and declare it to the class registry 
- *  in the ctor, you should call _F.setValue to init the functor object.
- */
+/** This is a Value blender class. The blending between value is not sampled with this class.
+  *  So it may be slow, but it is exact.
+  *  It work with most type, but some of them may need special  blending between value : 
+  *  if so you must specialize the template function PSValueBlend defined in this file
+  *  defined above to do the job...
+  *  To use this, just derive a class, create a ctor, and declare it to the class registry 
+  *  
+  *  in the ctor, you should call _F.setValue to init the functor object.
+  */
 
 template <typename T> class CPSValueBlender : public CPSAttribMakerT<T, CPSValueBlendFunc<T> >
 {
@@ -119,8 +158,108 @@ public:
 } ;
 
 
+
+
 /**
- * This functor blend between several Value
+ * This temlate functor blend between 2 values by performing n samples (n = template parameter)
+ * It may be faster that the CPSValueBlendFunc in some cases.
+ * To accomplish blending, it use the template function PSValueBlend
+ * It is used by CPSValueBlend 
+ * \author Nicolas Vizerie
+ * \author Nevrax France
+ * \date 2001
+ * \see PSValueBlend
+ */
+
+template <typename T, const uint n> class CPSValueBlendSampleFunc
+{
+public:
+	/// this produce Values
+	T operator()(CAnimationTime time) const
+	{
+
+		return _Values[(uint) (time * n)] ;	
+	}
+
+	/// restrieve the start and end Value
+
+	void getValues(T &startValue, T &endValue) const
+	{
+		startValue = _Value[0] ;
+		endValue = _Value[n] ;
+	}	
+
+	/// set the Values
+
+	void setValues(T startValue, T endValue)
+	{
+		float step = 1.f / n ;
+		float alpha = 0.0f ;
+		for (uint k = 0 ; k < n ; ++k)
+		{
+			_Values[k] = PSValueBlend(startValue, endValue, alpha) ;
+			alpha += step ;
+		}
+		_Values[n] = endValue ;
+	}
+
+	/// ctor
+	CPSValueBlendSampleFunc() {}
+
+	/// serialization
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		if (f.isReading())
+		{
+			T t1, t2 ;
+			f.serial(t1, t2) ;
+			setValues(t1, t2) ;
+		}
+		else
+		{
+			f.serial(_Values[0], _Values[n]) ;
+		}
+	}
+
+	T getMaxValue(void) const
+	{
+		return std::max((*this)(0), (*this)(1)) ;
+	}
+
+protected:
+	T  _Values[n + 1] ;
+};
+
+
+
+
+/** This is a Values blender (sampled version, with n sample) class, that operate on value of type T
+ *  To use this, just derive a class from a specialization of this template , create a ctor, and declare it to the class registry
+ *  in the ctor, you should call _F.setValue to init the functor object
+ */
+
+template <typename T, const uint n> class CPSValueBlenderSample : public CPSAttribMakerT<T, CPSValueBlendSampleFunc<T, n> >
+{
+public:
+
+	/** ctor
+	 *  With nbCycles, you can set the pattern frequency. It is usually one. See ps_attrib_maker.h
+	 *  For further details
+	 */
+
+	CPSValueBlenderSample(float nbCycles) : CPSAttribMakerT<T, CPSValueBlendSampleFunc<T, n> >(nbCycles)
+	{
+	}
+
+	virtual T getMaxValue(void) const { return _F.getMaxValue() ; }	
+
+} ;
+
+
+
+
+/**
+ * This functor blend between several Value. Intermediate value are sampled with a given number of steps
  * It is used by CPSValueGradient, that you can use to have gradients with your own types
  * \author Nicolas Vizerie
  * \author Nevrax France
@@ -253,84 +392,35 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 	_Tab = new T[_NbValues] ;
 
 
-	float invNbStages = 1.0f / float(nbStages) ;
-	T currVal ;
-	T step ; // the step between each interpolated value
+	float step = 1.0f / float(nbStages) ;
+	float alpha ; 
+
+	
 
 	T *dest = _Tab ;
 
 	// copy the tab performing linear interpolation between values given in parameter
 	for (uint32 k = 0 ; k  < (numValues - 1) ; ++k)
-	{
-		currVal = valueTab[k] ;
-		step = (valueTab[k + 1] - currVal) * invNbStages ;
-		
-		if (currVal > _MaxValue)
+	{				
+		if (!(valueTab[k] < _MaxValue))
 		{
-			_MaxValue = currVal ;
+			_MaxValue = valueTab[k] ;
 		}
 
+		alpha = 0 ;
+
 		for(uint32 l = 0 ; l < nbStages ; ++l)
-		{
-			
-			*dest++ = currVal ;
-			currVal += step ;
+		{			
+			// use the right version of the template function PSValueBlend
+			// to do the job
+			*dest++ = PSValueBlend(valueTab[k], valueTab[k + 1], alpha) ;
+			alpha += step ;
 		}
 	}
 	*dest++ = valueTab[numValues - 1] ;
 }
 
 
-// sint32 specialization
-// this is needed to get a correct step between values (wrong interpolation if an int is used)
-// implementation in ps_attrib_maker_template.cpp ...
-
-template <> 
-inline void CPSValueGradientFunc<sint32>::setValues(const sint32 *valueTab, uint32 numValues, uint32 nbStages)
-{
-	nlassert(numValues > 1) ;
-	nlassert(nbStages > 0) ;
-
-	_NbStages = nbStages ;
-
-	_MaxValue = valueTab[0] ;
-
-	if (_Tab)
-	{
-		delete[] _Tab ;		
-	}
-
-	_NbValues = 1 + (numValues - 1) * nbStages ;
-
-	_Tab = new sint32[_NbValues] ;
-
-
-	float invNbStages = 1.0f / float(nbStages) ;
-	float currVal ;
-	float step ; // the step between each interpolated value
-
-	sint32 *dest = _Tab ;
-
-	// copy the tab performing linear interpolation between values given in parameter
-	for (uint32 k = 0 ; k  < (numValues - 1) ; ++k)
-	{
-		currVal = (float) valueTab[k] ;
-		step = (valueTab[k + 1] - currVal) * invNbStages ;
-		
-		if (currVal > _MaxValue)
-		{
-			_MaxValue = (sint32) currVal ;
-		}
-
-		for(uint32 l = 0 ; l < nbStages ; ++l)
-		{
-			
-			*dest++ = (sint32) currVal ;
-			currVal += step ;
-		}
-	}
-	*dest++ = valueTab[numValues - 1] ;
-}
 
 
 	

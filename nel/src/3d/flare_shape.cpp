@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.7 2002/02/28 12:59:49 besson Exp $
+ * $Id: flare_shape.cpp,v 1.8 2002/04/03 12:26:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -131,8 +131,11 @@ void				CFlareShape::flushTextures (IDriver &driver)
 	// Flush each texture
 	for (uint tex=0; tex<MaxFlareNum; tex++)
 	{
-		/// Flush texture
-		driver.setupTexture (*_Tex[tex]);
+		if (_Tex[tex] != NULL)
+		{
+			/// Flush texture
+			driver.setupTexture (*_Tex[tex]);
+		}
 	}
 }
 

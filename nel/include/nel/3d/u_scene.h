@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.43 2003/10/13 13:51:02 besson Exp $
+ * $Id: u_scene.h,v 1.44 2003/10/17 15:01:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,8 @@ public:
 	  */
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup,														
 													    UInstanceGroup **pIG,
-														const NLMISC::CVector &offset,
+														const NLMISC::CVector &pos,
+														const NLMISC::CQuat &rot,
 														uint selectedTexture,
 														IAsyncLoadCallback *pCB = NULL
 													   ) = 0;

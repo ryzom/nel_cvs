@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.47 2003/10/13 13:50:36 besson Exp $
+ * $Id: scene_user.h,v 1.48 2003/10/17 15:01:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,10 +96,11 @@ protected:
 	{
 		UInstanceGroup	*IGToLoad;
 		UInstanceGroup	**CallerPtr;
-		NLMISC::CVector Offset;
+		NLMISC::CVector Pos;
+		NLMISC::CQuat	Rot;
 		uint			SelectedTexture;
 		IAsyncLoadCallback *Callback;
-		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &offset, uint selectedTexture, IAsyncLoadCallback *pCB)	: IGToLoad(NULL), CallerPtr(callerPtr), Offset(offset), SelectedTexture(selectedTexture), Callback(pCB)
+		CWaitingIG(UInstanceGroup **callerPtr, const NLMISC::CVector &pos, const NLMISC::CQuat &rot, uint selectedTexture, IAsyncLoadCallback *pCB)	: IGToLoad(NULL), CallerPtr(callerPtr), Pos(pos), Rot(rot), SelectedTexture(selectedTexture), Callback(pCB)
 		{}
 	};	
 	//
@@ -144,8 +145,8 @@ public:
 	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture);
 	virtual	void			deleteInstance(UInstance *inst);
 
-	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 
-														uint selectedTexture, IAsyncLoadCallback *pCB = NULL);
+	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &pos, 
+														const NLMISC::CQuat &rot, uint selectedTexture, IAsyncLoadCallback *pCB = NULL);
 
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG);
 	virtual void deleteInstanceGroup(UInstanceGroup *pIG);

@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.6 2003/09/25 12:13:13 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.7 2003/10/17 15:01:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2379,6 +2379,7 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 	{
 		PROCESS_HEAP_ENTRY entry;
 		entry.lpData = NULL;
+		uint block = 0;
 		while (HeapWalk (hHeap[heap], &entry))
 		{
 			if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
@@ -2388,6 +2389,7 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 					CPointerEntry::find (entries, (void*)((char*)entry.lpData+32) ) )
 					nelSystemMemory += entry.cbData + entry.cbOverhead;
 			}
+			block++;
 		}
 	}
 #endif // NL_OS_WINDOWS

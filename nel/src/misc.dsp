@@ -374,6 +374,14 @@ SOURCE=.\misc\win_event_emitter.cpp
 SOURCE=..\include\nel\misc\win_event_emitter.h
 # End Source File
 # End Group
+# Begin Group "Makefile"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\Makefile.am
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\misc\bit_set.cpp

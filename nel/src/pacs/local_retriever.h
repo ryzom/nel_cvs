@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.24 2003/01/30 17:56:43 legros Exp $
+ * $Id: local_retriever.h,v 1.25 2003/04/22 12:02:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -319,6 +319,9 @@ public:
 
 	/// Is loaded ?
 	bool								isLoaded() const { return _Loaded; }
+
+	/// Force Loaded State.
+	void								forceLoaded(bool state) { _Loaded= state; }
 
 	/// build BBoxes of interior surfaces in surfaceBBoxes (cleared first)
 	void								buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAABBox>	&surfaceBBoxes) const;

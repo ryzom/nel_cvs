@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.15 2002/12/09 13:35:35 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.16 2003/04/22 12:01:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -432,6 +432,9 @@ void	CExportNel::computeCollisionRetrieverFromScene(TimeValue time,
 			{
 				// set his id to the igname.
 				lr.setIdentifier(igname);
+
+				// Force Loaded State since computed here!
+				lr.forceLoaded(true);
 
 				// Add to the retrieverBank
 				uint32	lrId= retrieverBank->addRetriever(lr);

@@ -371,7 +371,7 @@ STYLE DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,48,111,12
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12
     CONTROL         "Use system basis",IDC_SYSTEM_BASIS,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,29,69,13
     LTEXT           "Max number of particles",IDC_STATIC,16,7,52,19
@@ -382,6 +382,10 @@ BEGIN
                     BS_AUTOCHECKBOX | WS_TABSTOP,94,31,69,11
     CONTROL         "Parametric motion",IDC_PARAMETRIC_MOTION,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,171,31,84,12
+    CONTROL         "Trigger on death",IDC_TRIGGER_ON_DEATH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,94,46,67,13
+    PUSHBUTTON      "Edit",IDC_EDIT_TRIGGER_ON_DEATH,165,47,26,12
+    GROUPBOX        "",IDC_STATIC,89,40,106,22
 END
 
 IDD_SELECT_RANGE DIALOG DISCARDABLE  0, 0, 119, 66
@@ -1250,7 +1254,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 64
+ FILEVERSION 1, 0, 0, 74
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1269,7 +1273,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 64\0"
+            VALUE "FileVersion", "1, 0, 0, 74\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -1322,6 +1326,7 @@ BEGIN
             MENUITEM "Central gravity",             IDM_CENTRAL_GRAVITY
             MENUITEM "Cylindric vortex",            IDM_CYLINDRIC_VORTEX
             MENUITEM "Brownian move",               IDM_BROWNIAN_MOVE
+            MENUITEM "Magnetic force",              IDM_MAGNETIC_FORCE
         END
         POPUP "Bind zone..."
         BEGIN
@@ -1396,6 +1401,7 @@ BEGIN
             MENUITEM "Central gravity",             IDM_CENTRAL_GRAVITY_LOC
             MENUITEM "Cylindric vortex",            IDM_CYLINDRIC_VORTEX_LOC
             MENUITEM "Brownian move",               IDM_BROWNIAN_MOVE_LOC
+            MENUITEM "Magnetic Force",              IDM_MAGNETIC_FORCE_LOC
         END
         POPUP "Bind zone..."
         BEGIN

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.20 2002/05/07 16:04:02 vizerie Exp $
+ * $Id: u_scene.h,v 1.21 2002/05/13 16:47:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -359,6 +359,33 @@ public:
 	//@}
 
 
+	/// \name CLod / Character Lod mgt
+	//@{
+
+	/// reset the manager.
+	virtual void				resetCLodManager() =0;
+
+	/** Load a Shape Bank. The ShapeMap is rebuilded. Hence slow call.
+	 *	NB: a vector of ShapeBank is maintained internally, hence, not so many shapeBank should be 
+	 *	created at same Time.
+	 *	trhow exception if failed to load the file
+	 *	\param fileName is a .clodbank file, to be loaded. CPath::lookup is used.
+	 *	\return	id of the shape Bank.
+	 */
+	virtual uint32				loadCLodShapeBank(const std::string &fileName) =0;
+
+	/// delete a Shape Bank. No-op if bad id.
+	virtual void				deleteCLodShapeBank(uint32 bankId) =0;
+
+	/** Get a shapeId by its name. -1 if not found.
+	 */
+	virtual sint32				getCLodShapeIdByName(const std::string &name) const =0;
+
+	/** Get a AnimId of a shape by its name. -1 if not found.
+	 */
+	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const =0;
+
+	//@}
 
 };
 

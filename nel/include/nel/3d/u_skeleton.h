@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.4 2002/04/26 15:05:10 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.5 2002/05/13 16:47:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,11 @@ public:
 	 * NB: replaced if already here.
 	 */
 	virtual	void		stickObject(UTransform *mi, uint boneId) =0;
+	/** same method as stickObject(), but if you set forceCLod as true, then this object will be visible
+	 *	even if the skeleton father is in CLod state (ie displayed with a CLodCharacterShape)
+	 *	NB: if "mi" is a skeleton model, forceCLod is considerer true, whatever the value passed in.
+	 */
+	virtual	void		stickObjectEx(UTransform *mi, uint boneId, bool forceCLod) =0;
 	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not here.
 	 * NB: mi is placed at root of hierarchy.
 	 */
@@ -88,7 +93,7 @@ public:
 	// @}
 
 
-	/// \name Lod interaction
+	/// \name Bone Lod interaction
 	// @{
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
@@ -118,6 +123,42 @@ public:
 	/// see setShapeDistMax()
 	virtual float		getShapeDistMax() const =0;
 
+	// @}
+
+
+	/// \name CLod / Character Lod
+	/**	At a certain distance, the whole skeleton and all its skins may be replaced with a small Lod, animated
+	 *	with a CLodCharacterManager.
+	 */
+	// @{
+
+	/** Change the Character Lod shape Id. set -1 if want to disable the feature (default)
+	 */
+	virtual void		setLodCharacterShape(sint shapeId) =0;
+	/// see setLodCharacterShape
+	virtual sint		getLodCharacterShape() const =0;
+
+	/// Change/get the Character Lod anim setup.
+	virtual void		setLodCharacterAnimId(uint animId) =0;
+	virtual uint		getLodCharacterAnimId() const =0;
+	virtual void		setLodCharacterAnimTime(TGlobalAnimationTime time) =0;
+	virtual TGlobalAnimationTime	getLodCharacterAnimTime() const =0;
+
+	/// tells if the animation must loop or clamp.
+	virtual void		setLodCharacterWrapMode(bool wrapMode) =0;
+	virtual bool		getLodCharacterWrapMode() const =0;
+
+	/** True if the skeleton model and his skins have been displayed with a CLodCharacterShape at last scene render
+	 */
+	virtual bool		isDisplayedAsLodCharacter() const =0;
+
+	/** This is the distance at which the skeleton use a CLodCharacterShape to display himself
+	 *	if 0, never display the skeleton as a CLodCharacterShape
+	 */
+	virtual void		setLodCharacterDistance(float dist) =0;
+
+	/// see setLodCharacterDistance. 0 if disabled
+	virtual float		getLodCharacterDistance() const =0;
 
 	// @}
 

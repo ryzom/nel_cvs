@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.14 2001/04/06 16:08:27 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.15 2001/04/12 16:32:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,7 +312,7 @@ void CBufFIFO::resize (uint32 size)
 	{
 		if (_Tail < _Head)
 		{
-			memcpy (NewBuffer, _Buffer, UsedSize);
+			memcpy (NewBuffer, _Tail, UsedSize);
 		}
 		else if (_Tail >= _Head)
 		{
@@ -357,21 +357,21 @@ void CBufFIFO::resize (uint32 size)
 
 void CBufFIFO::displayStats ()
 {
-	nldebug ("_BiggestBlock: %d\n", this, _BiggestBlock);
-	nldebug ("_SmallestBlock: %d\n", this, _SmallestBlock);
-	nldebug ("_BiggestBuffer: %d\n", this, _BiggestBuffer);
-	nldebug ("_SmallestBuffer: %d\n", this, _SmallestBuffer);
-	nldebug ("_Pushed : %d\n", this, _Pushed );
-	nldebug ("_Fronted: %d\n", this, _Fronted);
-	nldebug ("_Resized: %d\n", this, _Resized);
-	nldebug ("_PushedTime: %"NL_I64"d %f\n", this, _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
-	nldebug ("_FrontedTime: %"NL_I64"d %f\n", this, _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
-	nldebug ("_ResizedTime: %"NL_I64"d %f\n", this, _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
+	nlinfo ("%p _BiggestBlock: %d", this, _BiggestBlock);
+	nlinfo ("%p _SmallestBlock: %d", this, _SmallestBlock);
+	nlinfo ("%p _BiggestBuffer: %d", this, _BiggestBuffer);
+	nlinfo ("%p _SmallestBuffer: %d", this, _SmallestBuffer);
+	nlinfo ("%p _Pushed : %d", this, _Pushed);
+	nlinfo ("%p _Fronted: %d", this, _Fronted);
+	nlinfo ("%p _Resized: %d", this, _Resized);
+	nlinfo ("%p _PushedTime: %"NL_I64"d %f", this, _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
+	nlinfo ("%p _FrontedTime: %"NL_I64"d %f", this, _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
+	nlinfo ("%p _ResizedTime: %"NL_I64"d %f", this, _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
 }
 
 void CBufFIFO::display ()
 {
-	int size = 500;
+	int size = 64;
 	int gran = size/30;
 
 	char str[1024];

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.29.4.2 2004/10/18 17:18:37 boucher Exp $
+ * $Id: primitive.h,v 1.29.4.3 2004/10/20 10:39:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -573,7 +573,7 @@ private:
 */
 class CPrimAlias : public IPrimitive
 {
-	friend CPrimitives;
+	friend class CPrimitives;
 
 	/// The 'dynamic' part of the alias
 	uint32				_Alias;

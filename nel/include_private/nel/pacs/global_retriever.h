@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.9 2001/06/06 09:42:43 corvazier Exp $
+ * $Id: global_retriever.h,v 1.10 2001/06/06 10:17:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,7 +160,7 @@ public:
 	NLMISC::CVectorD				getDoubleGlobalPosition(const CGlobalPosition &global) const;
 
 	/// Make a raytrace test. For the time, always return false.
-	bool							testRaytrace (const CVectorD &v0, const CVectorD &v1);
+	bool							testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1);
 
 	//@}
 

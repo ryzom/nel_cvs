@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.2 2001/06/06 09:42:43 corvazier Exp $
+ * $Id: u_global_retriever.h,v 1.3 2001/06/06 10:17:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ public:
 	UGlobalRetriever();
 
 	/// Make a raytrace test. For the time, always return false.
-	virtual bool			testRaytrace (const CVectorD &v0, const CVectorD &v1) =0;
+	virtual bool			testRaytrace (const NLMISC::CVectorD &v0, const NLMISC::CVectorD &v1) =0;
 
 	/**
 	  * Create a global retriever.

@@ -524,7 +524,7 @@ END
 
 IDD_CHOOSE_MESH DIALOGEX 0, 0, 252, 19
 STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     LTEXT           "Static",IDC_SHAPE_NAME,49,3,142,15,WS_DISABLED,
                     WS_EX_CLIENTEDGE | WS_EX_STATICEDGE
@@ -890,6 +890,16 @@ BEGIN
         MENUITEM "x rotate",                    ID_ENABLE_ELEMENT_XROTATE
         MENUITEM "y rotate",                    ID_ENABLE_ELEMENT_YROTATE
         MENUITEM "z rotate",                    ID_ENABLE_ELEMENT_ZROTATE
+        MENUITEM SEPARATOR
+        MENUITEM "reset",                       IDM_RESET_ROTATION
+    END
+END
+
+IDR_LOCATED_INSTANCE_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "Delete",                      IDM_DELETE_LOCATED_INSTANCE
     END
 END
 

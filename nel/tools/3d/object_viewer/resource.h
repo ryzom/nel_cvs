@@ -130,6 +130,7 @@
 #define IDC_SYSTEM_BASIS                1055
 #define IDC_TAIL_PERSIST_AFTER_DEATH    1055
 #define IDR_MOVE_ELEMENT                1055
+#define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_LIFE_MIN_VALUE              1057
 #define IDC_LIFE_MAX_VALUE              1058
 #define IDC_PARTICLE_NUMBER_POS         1059
@@ -238,16 +239,16 @@
 #define ID_ENABLE_ELEMENT_YROTATE       32811
 #define ID_ENABLE_ELEMENT_ZROTATE       32812
 #define IDM_SHOCKWAVE                   32813
+#define IDM_DELETE_LOCATED_INSTANCE     32814
+#define IDM_RESET_ROTATION              32815
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-
-#define _APS_NEXT_RESOURCE_VALUE        1056
-#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_RESOURCE_VALUE        1057
+#define _APS_NEXT_COMMAND_VALUE         32816
 #define _APS_NEXT_CONTROL_VALUE         1135
-
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.17 2003/03/28 15:53:01 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.18 2003/11/24 09:24:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,13 +102,9 @@ void			CLoadBalancingGroup::computeRatioAndSmooth(TPolygonBalancingMode polMode)
 	// if not PolygonBalancingOff, smooth the ratio.
 	if(polMode!=PolygonBalancingOff)
 	{
-#ifdef NL_OS_WINDOWS
 		// FIX: If the _FaceRatio is not a float (NaN or +-oo), don't add it!!
-		if(_finite(_FaceRatio))
+		if(isValidDouble(_FaceRatio))
 			_ValueSmoother.addValue(_FaceRatio);
-#else
-		_ValueSmoother.addValue(_FaceRatio);
-#endif
 		float	fSmooth= _ValueSmoother.getSmoothValue();
 
 		// If after smoothing, the number of faces is still too big, reduce smooth effect! (frustrum clip effect)

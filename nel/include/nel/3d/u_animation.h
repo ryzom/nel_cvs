@@ -1,7 +1,7 @@
 /** \file u_animation.h
  * User interface to access animations fonctionnalities
  *
- * $Id: u_animation.h,v 1.1 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: u_animation.h,v 1.2 2001/07/04 08:53:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,9 +50,6 @@ class UTrack;
 class UAnimation
 {
 public:
-
-	/// Constructor
-	UAnimation();
 
 	/// \name Create / delete animations
 	// @{

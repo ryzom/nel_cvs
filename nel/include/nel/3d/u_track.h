@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.1 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: u_track.h,v 1.2 2001/07/04 08:53:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,9 +53,6 @@ namespace NL3D
 class UTrack
 {
 public:
-
-	/// Constructor
-	UTrack();
 
 	/// \name Time range methods.
 	// @{

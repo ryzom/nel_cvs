@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.26 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.27 2002/04/09 12:23:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1015,11 +1015,13 @@ void CServerReceiveTask::clearClosedConnections()
 				{
 					nldebug( "LNETL1: Removing a connection" );
 
-					// Delete the socket object
-					delete (*ic);
+					TSockId sid = (*ic);
 
 					// Remove from the connection list
 					connectionssync.value().erase( *ic );
+
+					// Delete the socket object
+					delete sid;
 				}
 				// Clear remove list
 				removesetsync.value().clear();

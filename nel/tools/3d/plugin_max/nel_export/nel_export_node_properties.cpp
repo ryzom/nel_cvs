@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.38 2002/05/24 14:15:07 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.39 2002/05/29 09:24:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,10 +28,38 @@
 #include "../nel_mesh_lib/export_lod.h"
 #include "../nel_mesh_lib/calc_lm.h"
 #include "../nel_patch_lib/nel_patch_mesh.h"
+#include <locale.h>
 
 using namespace NLMISC;
 
 #define NEL_OBJET_NAME_DATA 1970
+
+
+static std::string OldDecimalSeparatorLocale;
+static uint  DecimalSeparatorAsPoint = 0;
+
+static void setDecimalSeparatorAsPoint()
+{			
+	if (DecimalSeparatorAsPoint == 0)
+	{	
+		OldDecimalSeparatorLocale = ::setlocale(LC_NUMERIC, NULL);
+		const char *result = ::setlocale(LC_NUMERIC, "English");
+		nlassert(result);
+	}
+	++ DecimalSeparatorAsPoint;
+}
+
+static void restoreDecimalSeparator()
+{
+	nlassert(DecimalSeparatorAsPoint != 0);
+	if (DecimalSeparatorAsPoint == 1)
+	{	
+		const char *result = ::setlocale(LC_NUMERIC, OldDecimalSeparatorLocale.c_str());	
+		nlassert(result);
+	}
+	-- DecimalSeparatorAsPoint;
+}
+
 
 // ***************************************************************************
 
@@ -1233,6 +1261,7 @@ void	updateVPWTStatic(HWND hwndDlg, uint type, uint depth, const CVPWindTreeAppD
 	// case 4: special code from -2 to 2 ...
 	}
 
+	setDecimalSeparatorAsPoint();
 	// update static according to type.
 	switch(type)
 	{
@@ -1264,6 +1293,7 @@ void	updateVPWTStatic(HWND hwndDlg, uint type, uint depth, const CVPWindTreeAppD
 		SetWindowText( GetDlgItem(hwndDlg, VPWTBiasStaticId[depth]), stmp );
 		break;
 	}
+	restoreDecimalSeparator();
 }
 
 
@@ -1338,6 +1368,7 @@ int CALLBACK VPWindTreeCallback (
 			CVPWindTreeAppData		&vpwt= currentParam->VertexProgramWindTree;
 			int	nticks= CVPWindTreeAppData::NumTicks;
 
+			setDecimalSeparatorAsPoint();
 			// Init Global. editBox
 			char		stmp[256];
 			sprintf(stmp, "%.2f", vpwt.FreqScale);
@@ -1345,6 +1376,7 @@ int CALLBACK VPWindTreeCallback (
 			sprintf(stmp, "%.2f", vpwt.DistScale);
 			SetWindowText( GetDlgItem(hwndDlg, IDC_EDIT_VPWT_DIST_SCALE), stmp );
 			SendDlgItemMessage(hwndDlg, IDC_CHECK_VP_SPECLIGHT, BM_SETCHECK, vpwt.SpecularLighting, 0);
+			restoreDecimalSeparator();
 
 			// Init sliders for each level.
 			nlassert(CVPWindTreeAppData::HrcDepth==3);
@@ -1459,8 +1491,9 @@ int CALLBACK VPWindTreeCallback (
 			// EditBox change: ...
 			if( HIWORD(wParam) == EN_KILLFOCUS || EnChangeReturn)
 			{
+				setDecimalSeparatorAsPoint();
 				switch (LOWORD(wParam)) 
-				{
+				{					
 					case IDC_EDIT_VPWT_FREQ_SCALE:
 					{
 						// Read FreqScale
@@ -1504,6 +1537,7 @@ int CALLBACK VPWindTreeCallback (
 					}
 					break;
 				}
+				restoreDecimalSeparator();
 			}
 		}
 		break;
@@ -1566,6 +1600,7 @@ int CALLBACK MiscDialogCallback (
 	{
 		case WM_INITDIALOG:
 		{ 
+			setDecimalSeparatorAsPoint();
 			// Param pointers
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
@@ -1588,14 +1623,15 @@ int CALLBACK MiscDialogCallback (
 			// Mesh interfaces
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), currentParam->InterfaceFileName.c_str());
 			
+
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), 
 							currentParam->InterfaceThreshold != -1.f ? toString(currentParam->InterfaceThreshold).c_str()
 																	 : ""
 						  );
-
 			// Skeleton Scale
 			SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_SETCHECK, currentParam->ExportBoneScale, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), currentParam->ExportBoneScaleNameExt.c_str());
+			restoreDecimalSeparator();
 		}
 		break;
 
@@ -1637,12 +1673,15 @@ int CALLBACK MiscDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_FILE), tmp, 512);
 							currentParam->InterfaceFileName=tmp;
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INTERFACE_THRESHOLD), tmp, 512);
+							// hack to have '.' as a decimal value separator
+							
 							float threshold;
+							setDecimalSeparatorAsPoint();
 							if (::sscanf(tmp, "%g", &threshold) == 1)
 							{
 								currentParam->InterfaceThreshold = threshold;
-							}							
-
+							}
+							restoreDecimalSeparator();
 							// Skeleton Scale
 							currentParam->ExportBoneScale= SendMessage( GetDlgItem(hwndDlg, IDC_EXPORT_BONE_SCALE), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_BONE_SCALE_NAME_EXT), tmp, 512);
@@ -2204,12 +2243,13 @@ int CALLBACK LodDialogCallback (
 
 void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 {
+
 	// Get 
 	uint nNumSelNode=listNode.size();
 
-
 	if (nNumSelNode)
 	{
+		setDecimalSeparatorAsPoint();
 		// Get the selected node
 		INode* node=*listNode.begin();
 
@@ -2716,6 +2756,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				ite++;
 			}
 		}
+		restoreDecimalSeparator();
 	}
 }
 

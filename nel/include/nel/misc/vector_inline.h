@@ -1,7 +1,7 @@
 /** \file vector_inline.h
  * CVector class inline definitions
  *
- * $Id: vector_inline.h,v 1.9 2000/11/21 18:19:43 valignat Exp $
+ * $Id: vector_inline.h,v 1.10 2000/12/11 15:54:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,6 +149,15 @@ inline	bool	CVector::isNull() const
 {
 	return *this==CVector::Null;
 }
+inline	bool	CVector::operator<(const CVector &v) const
+{
+	if(x!=v.x)
+		return x<v.x;
+	if(y!=v.y)
+		return y<v.y;
+	return z<v.z;
+}
+
 inline	void	CVector::cartesianToSpheric(float &r, float &theta,float &phi) const
 {
 	CVector v;

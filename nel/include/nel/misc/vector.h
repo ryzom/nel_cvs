@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.6 2000/10/25 10:09:57 berenguier Exp $
+ * $Id: vector.h,v 1.7 2000/12/11 15:54:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,8 @@ public:		// Methods.
 	bool	operator==(const CVector &v) const;
 	bool	operator!=(const CVector &v) const;
 	bool	isNull() const;
+	/// This operator is here just for map/set insertion (no meaning). comparison order is x,y,z.
+	bool	operator<(const CVector &v) const;
 	/** 
 	 * Setup the vector with spheric coordinates.
 	 * the formula is:  \n

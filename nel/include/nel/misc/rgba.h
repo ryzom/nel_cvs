@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.6 2000/10/25 09:06:51 corvazier Exp $
+ * $Id: rgba.h,v 1.7 2000/12/11 15:54:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,10 @@ public:
 	 * Comparison operator.
 	 */
 	bool	operator<(const CRGBA &c) const {return getPacked()<c.getPacked();}
+	/** 
+	 * Comparison operator.
+	 */
+	bool	operator!=(const CRGBA &c) const {return !(*this==c);}
 
 	/** 
 	 * Equality operator.

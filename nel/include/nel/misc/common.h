@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.30 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: common.h,v 1.31 2001/06/26 15:26:23 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,22 @@ uint			getPowerOf2 (uint v);
 /** Return \c true if the value is a power of 2.
  */
 bool			isPowerOf2 (sint32 v);
+
+
+/** Converts from degrees to radians
+ */
+inline float	degToRad( float deg )
+{
+	return deg * (float)Pi / 180.0f;
+}
+
+
+/** Converts from radians to degrees
+ */
+inline float	radToDeg( float rad )
+{
+	return rad * 180.0f / (float)Pi;
+}
 
 
 /** Convert a string in lower case.

@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.28 2002/06/06 08:47:16 berenguier Exp $
+ * $Id: register_3d.cpp,v 1.29 2002/07/03 09:07:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/mesh_mrm.h"
 #include "3d/flare_shape.h"
 #include "3d/water_shape.h"
+#include "3d/seg_remanence_shape.h"
 #include "3d/texture_bump.h"
 #include "3d/texture_blend.h"
 #include "3d/texture_multi_file.h"
@@ -124,6 +125,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CFlareShape);
 		NLMISC_REGISTER_CLASS(CWaterShape);
 		NLMISC_REGISTER_CLASS(CWaveMakerShape);
+		NLMISC_REGISTER_CLASS(CSegRemanenceShape);
 
 		// Shapes VPs.
 		NLMISC_REGISTER_CLASS(CMeshVPWindTree);

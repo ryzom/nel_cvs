@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.3 2002/05/28 12:55:51 vizerie Exp $
+ * $Id: hierarchical_timer.h,v 1.4 2002/05/28 13:42:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -121,7 +121,9 @@ public:
 	// get measure
 	uint64	getNumTicks() const
 	{
-		nlassert(!_Started);
+		#ifdef NL_DEBUG
+			nlassert(!_Started);
+		#endif
 		nlassert(_NumTicks != 0);
 		return _NumTicks;
 	}	

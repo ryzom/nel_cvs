@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.1 2002/08/30 11:58:02 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.2 2003/03/12 13:40:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -193,13 +193,14 @@ public:
 	void					initGL(CVertexArrayRangeNVidia *var, void *vertexPtr);
 
 
-	// true if a setFence() has been done, without a finishFence().
+	// true if a setFence() has been done, without a finishFence(). NB: not the same thing as nglTestFenceNV()!!
 	bool			isFenceSet() const {return _FenceSet;}
-	// if(!isFenceSet()), set the fence, else no-op
+	// set or re-set the fence, whatever isFenceSet().
 	void			setFence();
 	// if(isFenceSet()), finish the fence, else no-op
 	void			finishFence();
-
+	// if fence is not set, no-op, else test nglTestFenceNV(), and update local _FenceSet flag.
+	void			testFence();
 
 public:
 	void				*getNVidiaValueEx (uint value)

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.174 2003/03/06 10:05:13 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.175 2003/03/12 13:41:44 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1332,24 +1332,40 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 	glColorMask (bRed, bGreen, bBlue, bAlpha);
 }
 
-
 // --------------------------------------------------
-
 bool CDriverGL::swapBuffers()
 {	
 	// Reset texture shaders
 	//resetTextureShaders();
-	// Reset VertexArrayRange.
-	if(_CurrentVertexBufferHard)
+
+
+	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
+		Setup a std vertex buffer to ensure NVidia synchronisation.
+	*/
+	static	CVertexBuffer	dummyVB;
+	static	bool			dummyVBinit= false; 
+	if(!dummyVBinit)
 	{
-		// Then, we'll wait for this VBHard to finish before this frame. Even if some rendering done
-		_CurrentVertexBufferHard->lock();
-		_CurrentVertexBufferHard->unlock();
-		// and we disable it.
-		_CurrentVertexBufferHard->disable();
+		dummyVBinit= true;
+		// setup a full feature VB (maybe not usefull ... :( ).
+		dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
+			CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
+			CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
+			CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
+			);
+		// some vertices.
+		dummyVB.setNumVertices(10);
 	}
+	/* activate each frame to close VBHard rendering. 
+		NVidia: This also force a SetFence on if last VB was a VBHard, "closing" it before swap.
+	*/
+	activeVertexBuffer(dummyVB);
+	nlassert(_CurrentVertexBufferHard==NULL);
 
 
+	/* PATCH For Possible NVidia Synchronisation.
+		Disabled because seems to no more be a problem.
+	/*
 	// Because of Bug with GeForce, must finishFence() for all VBHard.
 	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
@@ -1363,26 +1379,27 @@ bool CDriverGL::swapBuffers()
 			vbHardNV->GPURenderingAfterFence= false;
 		}
 		itVBHard++;
-	}
-
-	/* Yoyo: must do this (GeForce bug ??) esle weird results if end render with a VBHard.
-		Setup a std vertex buffer to ensure NVidia synchronisation.
-	*/
-	static	CVertexBuffer	dummyVB;
-	static	bool			dummyVBinit= false;
-	if(!dummyVBinit)
+	}*/
+	/* AS NV_Fence GeForce Implementation says. Test each frame the NVFence, until completion. 
+		NB: finish is not required here. Just test. This is like a "non block synchronisation"
+	 */
+	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
-		// setup a full feature VB (maybe not usefull ... :( ).
-		dummyVB.setVertexFormat(CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag|
-			CVertexBuffer::PrimaryColorFlag|CVertexBuffer::SecondaryColorFlag|
-			CVertexBuffer::TexCoord0Flag|CVertexBuffer::TexCoord1Flag|
-			CVertexBuffer::TexCoord2Flag|CVertexBuffer::TexCoord3Flag
-			);
-		// some vertices.
-		dummyVB.setNumVertices(10);
+		if((*itVBHard)->NVidiaVertexBufferHard)
+		{
+			CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
+			if(vbHardNV->isFenceSet())
+			{
+				// update Fence Cache.
+				vbHardNV->testFence();
+				// If now cleared, update GPURenderingAfterFence flag
+				if(!vbHardNV->isFenceSet())
+					vbHardNV->GPURenderingAfterFence= false;
+			}
+		}
+		itVBHard++;
 	}
-	// activate each frame to close VBHard rendering.
-	activeVertexBuffer(dummyVB);
 
 
 #ifdef NL_OS_WINDOWS

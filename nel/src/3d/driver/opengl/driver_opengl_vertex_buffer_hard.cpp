@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.5 2003/03/12 13:40:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -303,18 +303,17 @@ void		*CVertexBufferHardGLNVidia::lock()
 {
 	// sync the 3d card with the system.
 
-	// Ensure the GPU has finished with the current VBHard.
-	finishFence();
 	// If the user lock an activated VBHard, after rendering some primitives, we must stall the CPU
 	if(GPURenderingAfterFence)
 	{
-		// Set a fence at the current position in the command stream.
+		// Set a new fence at the current position in the command stream, replacing the old one
 		setFence();
-		// wait for him to finish.
-		finishFence();
-		// And so the GPU render all our primitives.
-		GPURenderingAfterFence= false;
 	}
+
+	// Ensure the GPU has finished with the current VBHard.
+	finishFence();
+	// And so the GPU has rendered all our primitives.
+	GPURenderingAfterFence= false;
 
 
 	return _VertexPtr;
@@ -361,11 +360,9 @@ void			CVertexBufferHardGLNVidia::disable()
 // ***************************************************************************
 void			CVertexBufferHardGLNVidia::setFence()
 {
-	if(!isFenceSet())
-	{
-		nglSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
-		_FenceSet= true;
-	}
+	// NB: if the Fence was set and not finished, then the new one will KICK the old.
+	nglSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
+	_FenceSet= true;
 }
 
 // ***************************************************************************
@@ -376,6 +373,17 @@ void			CVertexBufferHardGLNVidia::finishFence()
 		// Stall CPU while the fence command is not reached in the GPU command stream.
 		nglFinishFenceNV(_Fence);
 		_FenceSet= false;
+	}
+}
+
+// ***************************************************************************
+void			CVertexBufferHardGLNVidia::testFence()
+{
+	if(isFenceSet())
+	{
+		// Don't stall the CPU
+		GLboolean	b= nglTestFenceNV(_Fence);
+		_FenceSet= b!=0;
 	}
 }
 

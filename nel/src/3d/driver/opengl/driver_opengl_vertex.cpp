@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.33 2003/03/06 18:55:53 coutelas Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.34 2003/03/12 13:41:44 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1171,17 +1171,14 @@ void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 		// If some render() have been done with this VB.
 		if( vbHardNV->GPURenderingAfterFence )
 		{
-			// If an old fence is activated, we wait for him.
-			/* NB: performance issue: maybe a wait for nothing in some cases like this one:
-				render with VBHard_A	---- end with a fence
-				render with VBHard_B	....
-				render with VBHard_A	---- end: must finish prec fence before setting a new one.
+			/*
+				Since we won't work with this VB for a long time, we set a fence.
 
-				This is not a hard issue, if we suppose first A is finished to be rendered during render of VBHard_B.
+				NB: if the fence was previously set. NV_Fence Specification says that the new ONE replaces it.
+				This is EXACTLY what we wants, since the old one is no more interesting.
 			*/
-			vbHardNV->finishFence();
-			// Since we won't work with this VB for a long time, we set a fence.
 			vbHardNV->setFence();
+			// Since we have set a new Fence, we won't need to do it at next vbHardNV->lock()
 			vbHardNV->GPURenderingAfterFence= false;
 		}
 	}

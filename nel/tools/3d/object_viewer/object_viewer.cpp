@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.21 2001/07/20 09:19:33 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.22 2001/07/24 09:05:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,8 +45,10 @@
 #include "range_manager.h"
 #include "located_properties.h"
 #include "color_button.h"
+#include "particle_dlg.h"
 #include "resource.h"
 #include "main_frame.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -393,6 +395,16 @@ void CObjectViewer::go ()
 		// Draw the scene
 		CNELU::Scene.render();
 
+		// call of callback list
+		{
+			std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end()) ;
+
+			for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end() ; ++it)
+			{
+				(*it)->go() ;
+			}
+		}
+
 		// Profile polygon count
 		CPrimitiveProfile in, out;
 		CNELU::Driver->profileRenderedPrimitives (in, out);
@@ -434,6 +446,7 @@ void CObjectViewer::go ()
 		sprintf (msgBar, "Fps: %5.1f   -   Nb tri: %d   -   Texture VRAM used (Mo): %5.2f", fps, in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips,
 			(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024) );
 		_MainFrame->StatusBar.SetWindowText (msgBar);
+
 
 		// Swap the buffers
 		CNELU::swapBuffers();
@@ -998,3 +1011,21 @@ void CObjectViewer::setLight (unsigned char id, const NL3D::CLight& light)
 }
 
 // ***************************************************************************
+
+
+/** add an object that will be notified each time a frame is processed
+  * \see removeMainLoopCallBack()
+  */
+void CObjectViewer::registerMainLoopCallBack(IMainLoopCallBack *i)
+{
+//	nlassert(std::find(_CallBackList.begin(), _CallBackList.end(), i) == _CallBackList.begin()) ; // the object was register twice !!
+	_CallBackList.push_back(i) ;
+}
+
+/// remove an object that was registered with registerMainLoopCallBack()
+void CObjectViewer::removeMainLoopCallBack(IMainLoopCallBack *i)
+{
+	std::vector<IMainLoopCallBack *>::iterator it = std::find(_CallBackList.begin(), _CallBackList.end(), i) ;
+	nlassert(it  != _CallBackList.end()) ; // this object wasn't registered
+	_CallBackList.erase(it) ;	
+}

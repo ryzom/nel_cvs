@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.15 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: object_viewer.h,v 1.16 2001/07/24 09:04:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,8 @@
 #include "main_dlg.h"
 #include "animation_set_dlg.h"
 #include "animation_dlg.h"
-#include "particle_dlg.h"
+//#include "scene_dlg.h"
+//#include "particle_dlg.h"
 #include <3d/animation_set.h>
 #include <3d/channel_mixer.h>
 #include <3d/shape.h>
@@ -64,6 +65,8 @@ class CFontGenerator;
 }
 
 class CMainFrame;
+
+class CParticleDlg ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CObject_viewerApp
@@ -189,6 +192,25 @@ public:
 	NL3D::CFontGenerator	*getFontGenerator () { return _FontGenerator; };
 	// @}
 
+	/** an interface for objects that want to be called during the loop
+	  * First use : display of an optionnal bbox for a particle system
+	  */
+	struct IMainLoopCallBack
+	{
+		/// this will be called each time the main loop is processed
+		virtual void go() = 0 ;
+	} ;
+
+	/** add an object that will be notified each time a frame is processed
+	  * \see removeMainLoopCallBack()
+	  */
+	void registerMainLoopCallBack(IMainLoopCallBack *i)  ;
+
+	/// remove an object that was registered with registerMainLoopCallBack()
+	void removeMainLoopCallBack(IMainLoopCallBack *i) ;
+	  
+
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -210,6 +232,7 @@ private:
 	NL3D::CFontManager							_FontManager;
 	NL3D::CFontGenerator						*_FontGenerator;
 	std::string									_FontPath;
+	std::vector<IMainLoopCallBack *>			_CallBackList ;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

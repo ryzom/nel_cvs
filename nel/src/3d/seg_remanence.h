@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.1 2002/07/03 09:10:50 vizerie Exp $
+ * $Id: seg_remanence.h,v 1.2 2002/07/04 10:35:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -81,10 +81,14 @@ public:
 		virtual bool				canStartStop() { return true; }
 		// start the fx (by default it is off).
 		virtual void				start();
-		// stop the fx.
+		/// Stop the fx and let it unroll		   
 		virtual void				stop();
+		/// Stop the fx with no unrolling
+		virtual void				stopNoUnroll();
 		// Test wether the fx is started
 		virtual bool				isStarted() const { return _Started; }
+		// Test if the fx is stopping (unrollinh)
+		bool						isStopping() const { return _Stopping; }
 		// Equivalent to a call to start, then stop
 		void						restart();
 	//@}
@@ -105,7 +109,7 @@ public:
 
 		AnimValueLast,
 	};
-
+	
 ////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 private:	
@@ -136,9 +140,11 @@ private:
 	uint				_NumSlice;
 	uint				_NumCorners;
 	bool				_Started;
+	bool				_Stopping; // true if the effect is unrolling
 	bool				_Restarted;
 	float				_StartDate;
 	float				_CurrDate;
+	float				_UnrollRatio;	
 	CAnimatedMaterial   *_AniMat;	
 private:
 	void		updateOpacityFromShape();

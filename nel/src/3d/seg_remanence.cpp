@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.3 2002/07/03 17:26:56 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.4 2002/07/04 10:35:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -60,7 +60,12 @@ static inline void BuildHermiteVector(const NLMISC::CVector &P0,
 }
 
 //===============================================================
-CSegRemanence::CSegRemanence() : _NumSlice(0), _Started(false), _Restarted(false), _AniMat(NULL)
+CSegRemanence::CSegRemanence() : _NumSlice(0),
+								 _Started(false),
+								 _Restarted(false),
+								 _AniMat(NULL),
+								 _Stopping(false),
+								 _UnrollRatio(0)
 {	
 	IAnimatable::resize(AnimValueLast);
 }
@@ -103,6 +108,7 @@ void CSegRemanence::copyFromOther(CSegRemanence &other)
 	_NumCorners = other._NumCorners;
 	_Started    = other._Started;
 	_Restarted  = other._Restarted;
+	_Stopping   = other._Stopping;
 	_StartDate  = other._StartDate;
 	_CurrDate   = other._CurrDate;
 	
@@ -129,29 +135,34 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), srs->getSliceTime());
 		datas += (_NumSlice + 1) * vertexSize;
 	}	
-	if (srs->getTextureShifting())
-	{	
-		CMatrix texMat;
-		texMat.setPos(NLMISC::CVector(std::max( 1.f - (_CurrDate - _StartDate) / (srs->getNumSlices() * srs->getSliceTime()), 0.f), 0, 0));		
-		if (mat.getTexture(0) != NULL)
-			mat.setUserTexMat(0, texMat);		
-	}
+	
+	// roll / unroll using texture matrix
+	CMatrix texMat;	
+	texMat.setPos(NLMISC::CVector(1.f - _UnrollRatio, 0, 0));
+	if (mat.getTexture(0) != NULL)
+		mat.setUserTexMat(0, texMat);
+	
 	
 	
 	drv->activeVertexBuffer(vb);	
 	drv->render(pb, mat);
 
-/*	
-	drv->setPolygonMode(IDriver::Line);
-	CMaterial testMat;
-	testMat.texEnvArg0RGB(0, CMaterial::Constant, CMaterial::SrcColor);
-	testMat.texEnvOpRGB(0, CMaterial::Replace);
-	testMat.setLighting(false);
-	testMat.setDoubleSided(true);
-	testMat.texConstantColor(0, NLMISC::CRGBA::White);
-	drv->render(pb, testMat);
-	drv->setPolygonMode(IDriver::Filled);
-*/
+	CScene *scene = NLMISC::safe_cast<ITravScene *>(_HrcObs->Trav)->Scene;
+	// change unroll ratio
+	if (!_Stopping)
+	{
+		if (_UnrollRatio != 1.f)
+		_UnrollRatio = std::min(1.f, _UnrollRatio + scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
+	}
+	else
+	{
+		_UnrollRatio = std::max(0.f, _UnrollRatio - scene->getEllapsedTime() / (srs->getNumSlices() * srs->getSliceTime()));
+		if (_UnrollRatio == 0.f)
+		{
+			_Stopping = false;
+			_Started = false;
+		}
+	}
 }
 
 //===============================================================
@@ -305,9 +316,17 @@ void CSegRemanenceHrcObs::traverse(IObs *caller)
 		CScene *scene = NLMISC::safe_cast<ITravScene *>(Trav)->Scene;
 		if (scene->getNumRender() != (_LastSampleFrame + 1))
 		{
-			// if wasn't visible at previous frame, must invalidate position
-			sr->restart();
-		}
+			if (!sr->isStopping())
+			{			
+				// if wasn't visible at previous frame, must invalidate position
+				sr->restart();
+			}
+			else
+			{
+				// ribbon started unrolling when it disapperaed from screen so simply remove it
+				sr->stopNoUnroll();
+			}
+		}		
 		_LastSampleFrame = scene->getNumRender();
 		sr->setupFromShape();
 		sr->samplePos((float) scene->getCurrentTime());
@@ -323,21 +342,37 @@ CSegRemanenceHrcObs::CSegRemanenceHrcObs() : _LastSampleFrame(0)
 //===============================================================
 void CSegRemanence::start()
 {
-	if (_Started) return;
-	_Started = true;
-	_Restarted = true;
+	if (_Started && !_Stopping) return;
+	restart();		
 }
 
 //===============================================================
 void CSegRemanence::restart()
 {
+	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);	
+	if (!srs->getTextureShifting())
+	{	
+		_UnrollRatio = 1.f;
+	}
+	else
+	{
+		if (!_Stopping)
+			_UnrollRatio = 0.f;
+	}
 	_Started = _Restarted = true;
+	_Stopping = false;	
 }
 
 //===============================================================
 void CSegRemanence::stop()
 {
-	_Restarted = _Started = false;
+	_Stopping = true;
+}
+
+//===============================================================
+void CSegRemanence::stopNoUnroll()
+{
+	_Started = _Restarted = _Stopping = false;
 }
 
 //===============================================================

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.1 2002/07/03 09:10:59 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.2 2002/07/04 10:35:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -208,23 +208,9 @@ void CSegRemanenceShape::setTextureShifting(bool on /*=true*/)
 //===========================================================
 void CSegRemanenceShape::setupMaterial()
 {
-	if (!_MatTouched) return;
-	if (_TextureShifting)
-	{		
-		if (_Mat.getTexture(0))
-		{			
-			_Mat.enableUserTexMat(0);
-			_Mat.getTexture(0)->setWrapS(ITexture::Clamp);
-		}
-	}
-	else
-	{		
-		if (_Mat.getTexture(0))
-		{			
-			_Mat.enableUserTexMat(0, false);
-			_Mat.getTexture(0)->setWrapS(ITexture::Repeat);
-		}		
-	}
+	if (!_MatTouched) return;	
+	_Mat.enableUserTexMat(0);
+	_Mat.getTexture(0)->setWrapS(ITexture::Clamp);	
 	_Mat.setDoubleSided(true);
 	_Mat.setLighting(false); // lighting not supported (the vb has no normals anyway..)
 	_MatTouched = false;

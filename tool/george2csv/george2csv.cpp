@@ -464,6 +464,16 @@ void fillFromDFN( UFormLoader *formLoader, set<string>& dfnFields, UFormDfn *for
 
 
 /*
+ * Clear the form to reuse it (and all contents below node)
+ */
+void clearSheet( CForm *form, UFormElm* node )
+{
+	((CFormElm*)node)->clean();
+	form->clean();
+}
+
+
+/*
  *
  */
 void eraseCarriageReturns( string& s )
@@ -544,6 +554,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 	uint dirmapLetterIndex = ~0;
 	vector<string> dirmapDirs;
 	string dirmapSheetCode, addExtension, outputPath;
+	bool WriteEmptyProperties = false, WriteSheetsToDisk = true;
 
 	if ( generate )
 	{
@@ -588,13 +599,29 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			if ( addExt )
 				addExtension = addExt->asString();
 			if ( ! addExtension.empty() )
-				nlinfo( "Adding extension: %s", addExtension.c_str() );
+				nlinfo( "Adding extension if not present: %s", addExtension.c_str() );
 
 			CConfigFile::CVar *path = dirmapcfg.getVarPtr( "OutputPath" );
 			if ( path )
 				outputPath = path->asString();
 			if ( ! outputPath.empty() )
+			{
 				nlinfo( "Using output path: %s", outputPath.c_str() );
+				if ( outputPath[outputPath.size()-1] != '/' )
+					nlwarning( "Output path is not a path but a filename prefix (not ending with '/')" );
+				else if ( ! CFile::isDirectory( outputPath ) )
+					nlwarning( "Output path does not exist" );
+			}
+
+			CConfigFile::CVar *wep = dirmapcfg.getVarPtr( "WriteEmptyProperties" );
+			if ( wep )
+				WriteEmptyProperties = (wep->asInt() == 1);
+			nlinfo( "Write empty properties mode: %s", WriteEmptyProperties ? "ON" : "OFF" );
+
+			CConfigFile::CVar *wstd = dirmapcfg.getVarPtr( "WriteSheetsToDisk" );
+			if ( wstd )
+				WriteSheetsToDisk = (wstd->asInt() == 1);
+			nlinfo( "Write sheets to disk mode: %s", WriteSheetsToDisk ? "ON" : "OFF" );
 		}
 		catch ( EConfigFile& e )
 		{
@@ -627,6 +654,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		if ( args[0].empty() || (args[0] == string(".")+sheetType) )
 			continue;
 
+		//nldebug( "%s: %u", args[0].c_str(), args.size() );
 		string& filebase = dirmapSheetCode + args[0];
 		strlwr( filebase );
 		string filename, dirbase;
@@ -716,7 +744,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			eraseCarriageReturns( val );
 
 			// Skip column with inactive field (empty or not in DFN)
-			if ( (! activeFields[i]) || (val.empty()) )
+			if ( (! activeFields[i]) )
+				continue;
+
+			// Skip setting of empty cell except if required
+			if ( (! WriteEmptyProperties) && val.empty() )
 				continue;
 
 			// Special case for parent sheet
@@ -735,17 +767,20 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				continue;
 			}
 
-			if (val[0] == '"')
-				val.erase(0, 1);
-			if (val.size()>0 && val[val.size()-1] == '"')
-				val.resize(val.size()-1);
+			if ( ! val.empty() )
+			{
+				if (val[0] == '"')
+					val.erase(0, 1);
+				if (val.size()>0 && val[val.size()-1] == '"')
+					val.resize(val.size()-1);
 
-			if (val == "ValueForm" ||
-				val == "ValueParentForm" ||
-				val == "ValueDefaultDfn" ||
-				val == "ValueDefaultType" ||
-				val == "ERR")
-				continue;
+				if (val == "ValueForm" ||
+					val == "ValueParentForm" ||
+					val == "ValueDefaultDfn" ||
+					val == "ValueDefaultType" ||
+					val == "ERR")
+					continue;
+			}
 
 			if ( ! isNewSheet )
 			{
@@ -756,6 +791,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				}
 			}
 
+			//nldebug( "%s: %s %s", args[0].c_str(), var.c_str(), val.c_str() );
 			form->getRootNode().setValueByName(val.c_str(), var.c_str());
 
 			if ( ! isNewSheet )
@@ -779,11 +815,15 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		// Write sheet
 		if ( isNewSheet || displayed )
 		{
-			++nbWritten;
-			string path = isNewSheet ? outputPath : "";
-			COFile	output( path + dirbase + filename + addExtension );
-			form->write(output, true);
-			form->clearParents();
+			if ( WriteSheetsToDisk )
+			{
+				++nbWritten;
+				string path = isNewSheet ? outputPath : "";
+				string ext = (filename.find( addExtension ) == string::npos) ? addExtension : "";
+				COFile	output( path + dirbase + filename + ext );
+				form->write(output, true);
+			}
+			clearSheet( form, &form->getRootNode() );
 		}
 	}
 

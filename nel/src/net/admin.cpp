@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.14 2003/09/19 08:56:38 lecroart Exp $
+ * $Id: admin.cpp,v 1.15 2004/02/12 16:27:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,12 +25,14 @@
 
 
 //
-// Inlcudes
+// Includes
 //
 
 #include "stdnet.h"
 
 #include <time.h>
+
+#include <windows.h>
 
 #include "nel/net/service.h"
 #include "nel/net/admin.h"
@@ -147,6 +149,14 @@ static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint
 }
 
 
+// AES wants to know if i'm not dead, I have to answer faster as possible or i'll be killed
+static void cbAdminPing (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// Send back a pong to say to the AES that I'm alive
+	CMessage msgout("ADMIN_PONG");
+	CUnifiedNetwork::getInstance()->send(sid, msgout);
+}
+
 static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	nlinfo ("ADMIN: Receive a stop from service %s-%d, need to quit", serviceName.c_str(), sid);
@@ -178,6 +188,7 @@ void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 
 static void cbAESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
+	nlinfo("Lost connection to the %s-%hu", serviceName.c_str(), sid);
 }
 
 
@@ -187,6 +198,7 @@ static TUnifiedCallbackItem CallbackArray[] =
 	{ "GET_VIEW",		cbServGetView },
 	{ "STOPS",			cbStopService },
 	{ "EXEC_COMMAND",	cbExecCommand },
+	{ "ADMIN_PING",		cbAdminPing },
 };
 
 
@@ -198,6 +210,7 @@ void setRemoteClientCallback (TRemoteClientCallback cb)
 {
 	RemoteClientCallback = cb;
 }
+
 
 //
 // Request functions

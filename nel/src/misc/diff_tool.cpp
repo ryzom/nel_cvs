@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.7 2004/03/19 18:15:07 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.8 2004/04/01 20:37:57 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -325,7 +325,14 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 
 		if (first == last)
+		{
+			if (!phrase.Comments.empty())
+			{
+				// push the resulting comment
+				phrases.push_back(phrase);
+			}
 			break;
+		}
 		if (!CI18N::parseLabel(first, last, phrase.Identifier))
 		{
 			nlwarning("DT: Error parsing phrase identifier after %s\n", lastRead.c_str());
@@ -418,6 +425,15 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		{
 			// the hash is not in the comment, compute it.
 			phrase.HashValue = makePhraseHash(phrase);
+			if (forceRehash)
+			{
+				// the has is perhaps in the comment
+				ucstring::size_type pos = phrase.Comments.find(ucstring("// HASH_VALUE"));
+				if (pos != ucstring::npos)
+				{
+					phrase.Comments = phrase.Comments.substr(0, pos);
+				}
+			}
 		}
 
 //		nldebug("DT : storing phrase '%s'", phrase.Identifier.c_str());

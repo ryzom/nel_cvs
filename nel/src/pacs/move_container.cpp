@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.14 2001/09/06 15:35:57 legros Exp $
+ * $Id: move_container.cpp,v 1.15 2001/09/13 08:41:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -358,16 +358,22 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 	CPrimitiveWorldImage *wI=primitive->getWorldImage (worldImage);
 
 	// Check BB width not too large
-	nlassertonce (wI->getBBXMax() - wI->getBBXMin() < _CellWidth);
+	if (wI->getBBXMax() - wI->getBBXMin() > _CellWidth)
+	{
+		nlwarning ("Primitives have moved more than a cell.");
+	}
 
 	// Check BB height not too large
-	nlassertonce (wI->getBBYMax() - wI->getBBYMin() < _CellHeight);
+	if (wI->getBBYMax() - wI->getBBYMin() > _CellHeight)
+	{
+		nlwarning ("Primitives have moved more than a cell.");
+	}
 
 	// Get coordinate in the cell array
-	int minx=(int)floor ((wI->getBBXMin() - _Xmin) / _CellWidth);
-	int miny=(int)floor ((wI->getBBYMin() - _Ymin) / _CellHeight);
-	int maxx=(int)floor ((wI->getBBXMax() - _Xmin) / _CellWidth);
-	int maxy=(int)floor ((wI->getBBYMax() - _Ymin) / _CellHeight);
+	sint minx=(int)floor ((wI->getBBXMin() - _Xmin) / _CellWidth);
+	sint miny=(int)floor ((wI->getBBYMin() - _Ymin) / _CellHeight);
+	sint maxx=(int)floor ((wI->getBBXMax() - _Xmin) / _CellWidth);
+	sint maxy=(int)floor ((wI->getBBYMax() - _Ymin) / _CellHeight);
 
 	// Born
 	if (minx<0)

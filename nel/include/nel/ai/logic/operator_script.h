@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.24 2001/08/28 14:45:05 portier Exp $
+ * $Id: operator_script.h,v 1.25 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ namespace NLAIAGENT
 				fid_isActivable,
 				fid_background,
 				fid_exclusive,
+				fid_achieve,
 				fid_last
 			};
 
@@ -134,6 +135,8 @@ namespace NLAIAGENT
 			void execOnActivate();
 			void checkPause();
 			bool isExclusive();
+
+			virtual bool checkTrigMsg();
 	};
 }
 #endif

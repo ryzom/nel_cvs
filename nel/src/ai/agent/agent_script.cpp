@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.93 2001/12/04 14:13:06 chafik Exp $
+ * $Id: agent_script.cpp,v 1.94 2001/12/05 09:59:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/ai/agent/message_script.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
+#include "nel/ai/script/interpret_message_getvalue.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_nombre.h"
 #include "nel/ai/agent/performative.h"
@@ -65,6 +66,9 @@ namespace NLAIAGENT
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::IdMsgNotifyParent = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamRunParentNotify = NULL;
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdGetValueMsg = NULL;
+	NLAISCRIPT::CParam *CAgentScript::ParamGetValueMsg = NULL;
+
 
 	void CAgentScript::initAgentScript()
 	{
@@ -116,11 +120,16 @@ namespace NLAIAGENT
 																new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass),
 																new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
 
-		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
+		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent); 
 		
 		NLAISCRIPT::COperandSimple *idMsgTellCompoment = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellCompomentType));
 		NLAISCRIPT::CParam *ParamTellCompoment = new NLAISCRIPT::CParam(1,idMsgTellCompoment);
 
+		CAgentScript::ParamIdGetValueMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+																  new NLAIC::CIdentType(NLAIAGENT::CGetValueMsg::IdGetValueMsg),
+																  new NLAIC::CIdentType(NLAISCRIPT::CGetValueMsgClass::IdGetValueMsgClass)	);
+
+		CAgentScript::ParamGetValueMsg = new NLAISCRIPT::CParam(1,ParamIdGetValueMsg);
 
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
@@ -221,6 +230,14 @@ namespace NLAIAGENT
 																				CAgentScript::CheckCount,
 																				2,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
+
+
+		StaticMethod[CAgentScript::TGetValue] = new CAgentScript::CMethodCall(	_RUNASK_, 
+																				CAgentScript::TGetValue, ParamGetValueMsg,
+																				CAgentScript::CheckCount,
+																				1,
+																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
+
 	}
 
 
@@ -358,10 +375,15 @@ namespace NLAIAGENT
 		_AgentManager = manager;
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
-			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			const NLAIC::CTypeOfObject obj_type = (const NLAIC::CTypeOfObject) _Components[i]->getType();
+			if( obj_type & NLAIC::CTypeOfObject::tAgentInterpret ) 
 			{
-				//_AgentManager->incRef();
-				((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
+				sint32 test = ( obj_type & NLAIC::CTypeOfObject::tMessage );
+				if ( test == 0)
+				{
+					//_AgentManager->incRef();
+					((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
+				}
 			}
 		}
 	}
@@ -701,6 +723,32 @@ namespace NLAIAGENT
 		return r;
 	}
 
+	IObjectIA::CProcessResult CAgentScript::runAskGetValue(IBaseGroupType *g)
+	{
+		NLAIAGENT::IMessageBase &msg_result = (NLAIAGENT::IMessageBase &)*g->get();
+		msg_result.incRef();
+
+		CStringType *comp_name = (CStringType *)msg_result[(sint32)0];
+		
+		msg_result.setPerformatif(IMessageBase::PTell);
+		msg_result.setMethodIndex(-1,-1);
+		msg_result.setContinuation( (IObjectIA *) msg_result.getSender() );
+		
+		sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+		if ( index != -1 )
+		{
+			msg_result.set( 1, _Components[ index ] );
+		}
+		else
+		{
+			// Component not foud: return error msg
+		}
+
+		IObjectIA::CProcessResult r;
+		r.Result = &msg_result;
+		return r;
+	}
+
 	IObjectIA::CProcessResult CAgentScript::getDynamicName(NLAIAGENT::IBaseGroupType *g)
 	{	
 #ifdef NL_DEBUG
@@ -753,9 +801,9 @@ namespace NLAIAGENT
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(CStringType(compName)));
 
 #ifdef NL_DEBUG
-	const char *txt = (const char *)msg->getType();
-	std::string txtName;
-	compName.getDebugString(txtName);
+		const char *txt = (const char *)msg->getType();
+		std::string txtName;
+		compName.getDebugString(txtName);
 #endif
 
 		while(p.first != p.second)
@@ -1272,22 +1320,6 @@ namespace NLAIAGENT
 				return runTellCompoment((IBaseGroupType *)o);
 			}
 
-		/*case TGoal:
-			{				
-				return runGoalMsg((IBaseGroupType *)o);
-			}
-
-		case TCancelGoal:
-			{				
-				return runCancelGoalMsg((IBaseGroupType *)o);
-			}
-
-		case TFact:
-			{				
-				return runFactMsg((IBaseGroupType *)o);
-			}*/
-
-	////////////////////////////////////////////////////////////////////////
 
 		case TSetStatic:
 			{
@@ -1296,13 +1328,27 @@ namespace NLAIAGENT
 				IObjectIA *value = (IObjectIA *)((IBaseGroupType *)param)->popFront();
 				int index = _AgentClass->getComponentIndex(  comp_name->getStr()  );
 				_AgentClass->updateStaticMember(index, value);
+				return IObjectIA::CProcessResult();
+			}
+
+		case TGetValue:
+			{
+				return runAskGetValue( (IBaseGroupType *) o );
+/*
+				CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
+				if ( index != -1 )
+				{
+					sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+					r.Result =  _Components[ index ];				
+				}
+				return r;
+				*/
 			}
 
 		default:
 			return IAgent::runMethodeMember(index,o);
 				
-		}
-		
+		}		
 	}
 
 	IObjectIA::CProcessResult CAgentScript::runMethodBase(int index,IObjectIA *o)
@@ -1374,6 +1420,12 @@ namespace NLAIAGENT
 				a.Result = NULL;
 				return a;
 			}
+
+		case TGetValue:
+			{
+				return runAskGetValue( (IBaseGroupType *) o );
+			}
+
 
 
 		default:
@@ -1619,6 +1671,15 @@ namespace NLAIAGENT
 												const NLAIAGENT::IVarName *methodName,
 												const NLAIAGENT::IObjectIA &param)
 	{
+
+#ifdef NL_DEBUG
+		if ( className != NULL )
+			const char *dbg_class = className->getString();
+		const char *dbg_method = methodName->getString();
+		std::string dbg_param;
+		param.getDebugString(dbg_param);
+#endif
+
 		int index = count;
 		int i;
 		for(i = 0; i < count; i ++)

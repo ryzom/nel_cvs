@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.24 2001/07/19 13:20:15 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.25 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/ai/agent/msg_fact.h"
 #include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_on_change.h"
+#include "nel/ai/c/registry_type.h"
 
 namespace NLAISCRIPT
 {
@@ -39,30 +40,40 @@ namespace NLAISCRIPT
 	//###############################
 	CMessageClass::CMessageClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());		
 		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 	
 	CMessageClass::CMessageClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 
 	CMessageClass::CMessageClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 
 	CMessageClass::CMessageClass(const CMessageClass &c) : CAgentClass( c )
 	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}	
 
 	CMessageClass::CMessageClass()
 	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
 		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));
 	}
@@ -94,6 +105,14 @@ namespace NLAISCRIPT
 		NLAIAGENT::CMessageScript *instance = new NLAIAGENT::CMessageScript( components,  (CMessageClass *) this );
 		return instance;
 	}
+
+	const NLAIC::CIdentType &CMessageClass::getType() const
+	{
+		if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
+
+		return *_IdType;
+	}		
 
 	CMessageClass::~CMessageClass()
 	{

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.19 2001/07/26 13:16:47 chafik Exp $
+ * $Id: interpret_object_message.h,v 1.20 2001/12/05 10:00:35 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -23,9 +23,10 @@
  */
 #ifndef NL_INTERPRET_OBJECT_MESSAGE_H
 #define NL_INTERPRET_OBJECT_MESSAGE_H
+
 #include "nel/ai/script/interpret_object_agent.h"
 
-namespace NLAISCRIPT
+namespace NLAISCRIPT 
 {
 	class CMessageClass: public CAgentClass
 	{
@@ -48,8 +49,10 @@ namespace NLAISCRIPT
 
 		NLAIC::CTypeOfObject getTypeClass() const
 		{
-			return NLAIC::CTypeOfObject::tObject;
+			return NLAIC::CTypeOfObject::tObject; // | NLAIC::CTypeOfObject::tMessage;
 		}
+
+		virtual const NLAIC::CIdentType &getType() const;
 
 		virtual ~CMessageClass();
 	};

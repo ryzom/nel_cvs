@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal_stack.h,v 1.3 2001/07/25 08:40:06 portier Exp $
+ * $Id: goal_stack.h,v 1.4 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,6 @@
 
 namespace NLAILOGIC 
 {
-
 	class CGoalStack : public NLAIAGENT::IObjectIA
 	{
 		private:

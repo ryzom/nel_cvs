@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.17 2001/12/05 09:54:38 chafik Exp $
+ * $Id: ident_type.cpp,v 1.18 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,13 @@ namespace NLAIC
 		return getRegistry()->getFactory(_Index);
 	}
 
+	void CIdentType::addObjectType(sint32 t)
+	{
+		if ( _ObjType != NULL )
+			_ObjType->addType(t);
+	}
+
+	
 	void CIdentType::operator = (const CIdentType &i)
 	{
 		delete _Ident;

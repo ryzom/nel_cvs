@@ -45,7 +45,7 @@ using  namespace NLAIFUZZY;
 %token	NEW 
 
 // Operator tokens
-%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY MSG
 
 // Logic tokens
 %token	LOGICVAR RULE IA_ASSERT OR AND
@@ -507,6 +507,26 @@ using  namespace NLAIFUZZY;
 */				
 							}
 							ACCOL_D
+							| TrigMsgCond
+							{
+								if ( classIsAnOperator() )
+								{
+									const char *msg_name = _LastBooleanConds.back()->getString();
+									_LastBooleanConds.pop_back();
+									const char *class_name = _LastBooleanConds.back()->getString();
+									_LastBooleanConds.pop_back();
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									try
+									{	
+										op_class->RegisterMessage(_LastPerf, class_name, msg_name );
+									}
+									catch(NLAIE::IException &a)
+									{									
+										yyerror((char *)a.what());
+										return 0;
+									}
+								}
+							}
 							;
 
 	BooleanCond			:	INTERROGATION IDENT
@@ -515,6 +535,51 @@ using  namespace NLAIFUZZY;
 							_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 						}
 						;
+
+
+	Performatif			: ASK
+						{
+							_LastPerf = NLAIAGENT::IMessageBase::PAsk;
+						}
+						| TELL
+						{
+							_LastPerf = NLAIAGENT::IMessageBase::PTell;
+						}
+						| ACHIEVE
+						{
+							_LastPerf = NLAIAGENT::IMessageBase::PAchieve;
+						}
+						;
+
+
+						
+
+
+	TrigMsgCond			:	MSG PAR_G 
+							IDENT
+							{
+								char *param_name = LastyyText[1];
+								_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
+							}
+							Performatif
+							IDENT
+							{
+								char *param_name = LastyyText[1];
+								_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
+							}
+							PAR_D POINT_VI
+							;
+
+
+	AskCond					: ASK PAR_G
+							IDENT
+							{
+								
+							}
+							ACCOL_G
+							DuCode
+							ACCOL_D
+							;
 
 
 	FuzzyCond			:	FUZZY	PAR_G

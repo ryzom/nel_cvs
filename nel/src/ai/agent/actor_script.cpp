@@ -865,7 +865,6 @@ namespace NLAIAGENT
 					( (CActorScript *)_Components[i] )->setTopLevel( this );
 			}
 		}
-
 	}
 
 	const CAgentScript *CActorScript::getTopLevel() const

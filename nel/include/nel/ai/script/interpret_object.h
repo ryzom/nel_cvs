@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.15 2001/10/30 10:04:31 chafik Exp $
+ * $Id: interpret_object.h,v 1.16 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,11 +60,11 @@ namespace NLAISCRIPT
 		bool Static;
 		CComponent()
 		{
-			RegisterName = NULL;
-			ObjectName = NULL;
-			Local = false;
-			Static = false;
-			StaticValue = NULL;
+			RegisterName = NULL;			// name of the type of component in the registry
+			ObjectName = NULL;				// name of the member component in the class
+			Local = false;					// true if the object is not accessible from a remote machine
+			Static = false;					// true if the component is static (defined and stored in the class)
+			StaticValue = NULL;				// static value of the component, NULL if non static
 		}
 		/**
 		Save component characteristic.
@@ -92,10 +92,11 @@ namespace NLAISCRIPT
 	private:
 		///Name of the class
 		NLAIAGENT::IVarName *_Name;
+
+	protected:
 		///Type of the class.
 		NLAIC::CIdentType *_IdType;
 
-	protected:
 		IClassInterpret(const NLAIAGENT::IVarName &,const IClassInterpret &);
 
 	public:

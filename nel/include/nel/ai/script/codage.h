@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.17 2001/08/30 17:11:38 chafik Exp $
+ * $Id: codage.h,v 1.18 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -335,7 +335,7 @@ namespace NLAISCRIPT
 		///InputOutput for the out put and in put request.
 		NLAIC::IIO			*InputOutput;
 		///Param shared the function attribut.
-		std::list<NLAIAGENT::IObjectIA	*>Param;
+		std::list<NLAIAGENT::IObjectIA	*> Param;
 		///If the debugger is in run ContextDebug define its context.
 		CContextDebug		ContextDebug;
 

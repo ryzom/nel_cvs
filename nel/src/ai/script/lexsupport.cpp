@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.21 2001/11/05 13:37:07 portier Exp $
+ * $Id: lexsupport.cpp,v 1.22 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,13 +112,14 @@ namespace NLAISCRIPT
 
 		DicoDeNom.insert(Arbre::value_type("Local", LOCAL) );
 		DicoDeNom.insert(Arbre::value_type("Static", STATIC) );
+		DicoDeNom.insert(Arbre::value_type("Static", STATIC) );
 		
 		DicoDeNom.insert(Arbre::value_type("Begin",BEGINING) );
 		
 		DicoDeNom.insert(Arbre::value_type("As",AS) );
 				
 		DicoDeNom.insert(Arbre::value_type("Trigger",TRIGGER) );
-//		DicoDeNom.insert(Arbre::value_type("Message",MESSAGE) );
+		DicoDeNom.insert(Arbre::value_type("MessageCond",MSG) );
 		DicoDeNom.insert(Arbre::value_type("PreCondition",PRECONDITION) );
 		DicoDeNom.insert(Arbre::value_type("PostCondition",POSTCONDITION) );
 		DicoDeNom.insert(Arbre::value_type("Goal",GOAL) );

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.44 2001/10/24 16:37:04 chafik Exp $
+ * $Id: agents.cpp,v 1.45 2001/12/05 09:59:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,15 +215,13 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &IAgent::run()
 	{		
-
-
 		runChildren();		// Gestion des fils
 		getMail()->run();	// Execution de la boite aux lettres
 
 		processMessages();	// Traitement de ses propres messages
 
 		if(haveActivity() && getState().ResultState == processIdle) runActivity();		
-		return getState();  
+			return getState();  
 	}
 
 	const IObjectIA::CProcessResult &IAgent::runStep()
@@ -237,8 +235,8 @@ namespace NLAIAGENT
 			if(haveActivity() && getState().ResultState == processIdle) runActivity();
 			return getState();
 		}
-		else return IObjectIA::ProcessNotComplit;
-		
+		else 
+			return IObjectIA::ProcessNotComplit;
 	}	
 
 	const NLAIC::CIdentType &IAgent::getType() const
@@ -544,11 +542,11 @@ namespace NLAIAGENT
 		}
 		else
 		{
-			std::string debugString;
+/*			std::string debugString;
 			std::string text;
 			getDebugString(debugString);
 			text += NLAIC::stringGetBuild("runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString.c_str());
-			throw NLAIE::CExceptionNotImplemented(text.c_str());
+			throw NLAIE::CExceptionNotImplemented(text.c_str()); */
 			return NULL;
 		}
 	}	

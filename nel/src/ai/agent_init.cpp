@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.12 2001/10/30 15:34:44 portier Exp $
+ * $Id: agent_init.cpp,v 1.13 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

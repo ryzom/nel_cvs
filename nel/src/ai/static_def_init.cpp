@@ -7,6 +7,7 @@
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
+#include "nel/ai/script/interpret_message_getvalue.h"
 #include "nel/ai/agent/main_agent_script.h"
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/agent/msg_group.h"
@@ -31,6 +32,7 @@
 #include "nel/ai/agent/msg_fact.h"
 #include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_action.h"
+#include "nel/ai/agent/msg_getvalue.h"
 #include "nel/ai/agent/msg_on_change.h"
 
 	using namespace NLAIAGENT;
@@ -284,13 +286,13 @@
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	const NLAIC::CIdentType CMessageGroup::IdMessageGroup(	"MessageGroup",NLAIC::CSelfClassFactory(CMessageGroup(1)),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject | NLAIC::CTypeOfObject::tMessage),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	const NLAIC::CIdentType CMessageList::IdMessage("MessageList",	NLAIC::CSelfClassFactory(CMessageList()),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList | NLAIC::CTypeOfObject::tMessage),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | NLAIC::CTypeOfOperator::opSub ));
 	const NLAIC::CIdentType CMessageVector::IdMessageVector("MessageVector",	NLAIC::CSelfClassFactory(CMessageVector()),
-														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList | NLAIC::CTypeOfObject::tMessage),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | NLAIC::CTypeOfOperator::opSub ));
 
 	
@@ -340,7 +342,7 @@
 
 
 	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassFactory( CMessageScript() ),
-		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 		NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CFuzzyInterval::IdFuzzyInterval = NLAIC::CIdentType("FuzzyInterval",NLAIC::CSelfClassFactory(CFuzzyInterval("Inst",0,0)),
@@ -459,7 +461,7 @@
 		NLAIC::CTypeOfOperator::opNot );
 
 	const NLAIC::CIdentType CVectorMsgContainer::IdVectorMsgContainer("VectorMsgContainer",NLAIC::CSelfClassFactory(CVectorMsgContainer()),
-																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject | NLAIC::CTypeOfObject::tMessage)  ,NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	const NLAIC::CIdentType CFactPattern::IdFactPattern = NLAIC::CIdentType( "FactPattern", NLAIC::CSelfClassFactory(CFactPattern()), 
 		NLAIC::CTypeOfObject::tLogic,
@@ -649,54 +651,58 @@ namespace NLAISCRIPT
 
 	static CMessageClass messageClass(NLAIAGENT::CStringVarName("XXX_Message"));
 	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", CClassInterpretFactory((const IClassInterpret &)messageClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CMsgNotifyParentClass msgNotifyParentClass(NLAIAGENT::CStringVarName("XXX_MsgNotifyParent"));
 	const NLAIC::CIdentType CMsgNotifyParentClass::IdMsgNotifyParentClass("MsgNotifyParent", CClassInterpretFactory((const IClassInterpret &)msgNotifyParentClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CGoalMsgClass goalMsgClass(NLAIAGENT::CStringVarName("XXX_GoalMsg"));
 	const NLAIC::CIdentType CGoalMsgClass::IdGoalMsgClass("GoalMsg", CClassInterpretFactory((const IClassInterpret &)goalMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CCancelGoalMsgClass cancelGoalMsgClass(NLAIAGENT::CStringVarName("XXX_CancelGoalMsg"));
 	const NLAIC::CIdentType CCancelGoalMsgClass::IdCancelGoalMsgClass("CancelGoalMsg", CClassInterpretFactory((const IClassInterpret &)cancelGoalMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CFactMsgClass factMsgClass(NLAIAGENT::CStringVarName("XXX_FactMsg"));
 	const NLAIC::CIdentType CFactMsgClass::IdFactMsgClass("FactMsg", CClassInterpretFactory((const IClassInterpret &)factMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),	
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),	
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CSuccessMsgClass successMsgClass(NLAIAGENT::CStringVarName("XXX_SuccessMsg"));
 	const NLAIC::CIdentType CSuccessMsgClass::IdSuccessMsgClass("SuccessMsg", CClassInterpretFactory((const IClassInterpret &)successMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),	
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),	
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
 	static CFailureMsgClass failureMsgClass(NLAIAGENT::CStringVarName("XXX_FailureMsg"));
 	const NLAIC::CIdentType CFailureMsgClass::IdFailureMsgClass("FailureMsg", CClassInterpretFactory((const IClassInterpret &)failureMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
+	static CGetValueMsgClass getvalueMsgClass(NLAIAGENT::CStringVarName("XXX_GetValueMsg"));
+	const NLAIC::CIdentType CGetValueMsgClass::IdGetValueMsgClass("GetValueMsg", CClassInterpretFactory((const IClassInterpret &)getvalueMsgClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	
 	static CDebugMsgClass msgDebugMsgClass(NLAIAGENT::CStringVarName("MsgDebug"));
 	const NLAIC::CIdentType CDebugMsgClass::IdDebugMsgClass("MsgDebug", CClassInterpretFactory((const IClassInterpret &)msgDebugMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 
 	static COnChangeMsgClass onChangeMsgClass;
 	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", CClassInterpretFactory((const IClassInterpret &)onChangeMsgClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static COperatorClass operatorClass(NLAIAGENT::CStringVarName("XXX_Operator"));
 	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", CClassInterpretFactory((const IClassInterpret &)operatorClass),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 
@@ -720,34 +726,38 @@ namespace NLAISCRIPT
 	const NLAIC::CIdentType CScriptDebugSourceMemory::IdScriptDebugSourceMemory("ScriptDebugSourceMemory",NLAIC::CSelfClassFactory(CScriptDebugSourceMemory("","")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 }
 	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassFactory( CNotifyParentScript(&NLAISCRIPT::msgNotifyParentClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 			NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CGoalMsg::IdGoalMsg("GoalMsgScript", NLAIC::CSelfClassFactory( CGoalMsg(&NLAISCRIPT::goalMsgClass) ),
-																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 																NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CCancelGoalMsg::IdCancelGoalMsg("CancelGoalMsgScript", NLAIC::CSelfClassFactory( CCancelGoalMsg(&NLAISCRIPT::cancelGoalMsgClass) ),
-																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 																NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CSuccessMsg::IdSuccessMsg("SuccessMsgScript", NLAIC::CSelfClassFactory( CSuccessMsg(&NLAISCRIPT::successMsgClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 			NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CFailureMsg::IdFailureMsg("FailureMsgScript", NLAIC::CSelfClassFactory( CFailureMsg(&NLAISCRIPT::failureMsgClass) ),
-		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 		NLAIC::CTypeOfOperator::opEq );	
 
+	const NLAIC::CIdentType CGetValueMsg::IdGetValueMsg("GetValueMsgScript", NLAIC::CSelfClassFactory( CGetValueMsg(&NLAISCRIPT::getvalueMsgClass) ),
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
+			NLAIC::CTypeOfOperator::opEq );
+
 	const NLAIC::CIdentType CFactMsg::IdFactMsg("FactMsgScript", NLAIC::CSelfClassFactory( CFactMsg(&NLAISCRIPT::factMsgClass) ),
-																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 																NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret| NLAIC::CTypeOfObject::tMessage,
 			NLAIC::CTypeOfOperator::opEq );
 
 
 	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret | NLAIC::CTypeOfObject::tMessage,
 			NLAIC::CTypeOfOperator::opEq );

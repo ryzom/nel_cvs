@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.8 2001/11/12 15:35:26 chafik Exp $
+ * $Id: pylib.cpp,v 1.9 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,8 +214,6 @@ namespace NLAIPYSERVER
 				if(!Result) 
 						PyErr_Print ();
 			}
-			
-			
 			
 			Py_DECREF(Method);
 			Py_DECREF(Arg);

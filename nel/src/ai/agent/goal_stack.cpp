@@ -66,7 +66,7 @@ namespace NLAILOGIC
 						(*it_g)->unSelect();
 				}
 				else
-					(*it_g)->select();			// B&ackground operator
+					(*it_g)->select();			// Background operators
 			}
 			else
 				(*it_g)->unSelect();

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.14 2001/10/29 15:54:46 chafik Exp $
+ * $Id: registry_type.h,v 1.15 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,6 +219,11 @@ namespace NLAIC
 			_Bites = (uint32) bytes;
 		}
 		//@}
+
+		void addType(sint32 b)
+		{
+			_Bites = _Bites | b;
+		}
 	};
 
 
@@ -257,8 +262,9 @@ namespace NLAIC
 			tPerformative = 512,
 			/// The object is an actor
 			tActor = 1024,
+			tMessage = 2048,
 			///Last definition.
-			tLast = tActor,
+			tLast = tMessage,
 			///That is an undef object.
 			tUndef = 0xFFFFFFFF - tLast*2
 			

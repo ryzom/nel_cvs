@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.18 2001/07/13 14:52:59 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.19 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,10 +51,11 @@ namespace NLAISCRIPT
 		std::vector<NLAILOGIC::IBaseAssert *>		_Concs;				/// Postconditions asserts			
 		std::vector< std::vector<sint32> >			_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
 
+		std::vector<NLAIAGENT::IMessageBase::TPerformatif>	_TrigMsgPerf;
+		std::vector<NLAIC::CIdentType>				_TrigMsgClass;
+		std::vector<std::string>					_TrigMsgVarname;
+		std::vector<sint32>							_TrigMsgPos;
 
-/*		std::vector< int >							_FuzzyVars;
-		std::vector< NLAIFUZZY::IFuzzySet *>		_FuzzySets;
-*/
 		char										*_Comment;			/// Description of the operator
 
 		std::vector<NLAILOGIC::CGoal>				_Steps;				// Successive goals to be achieved
@@ -247,6 +248,13 @@ public:
 		float getPriority()
 		{
 			return _Priority;
+		}
+
+		void RegisterMessage(NLAIAGENT::IMessageBase::TPerformatif , const std::string &, const std::string & );
+		virtual sint32 checkTriggerMsg(const NLAIAGENT::IMessageBase *);
+		inline sint32 NbMsgTrigger()
+		{
+			return _TrigMsgPerf.size();
 		}
 	};
 }

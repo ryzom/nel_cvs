@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.6 2001/06/01 14:51:00 portier Exp $
+ * $Id: init.cpp,v 1.7 2001/12/05 10:00:24 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_message_action.h"
+#include "nel/ai/script/interpret_message_getvalue.h"
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/logic/interpret_object_operator.h"
@@ -31,7 +32,6 @@
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
-//#include "nel/ai/script/gd_agent_class.h"	
 #include "nel/ai/script/interpret_fsm.h"
 
 
@@ -52,7 +52,7 @@ namespace NLAISCRIPT
 		CLibTest c;
 
 		reinitClass(CAgentClass(CAgentClass::IdAgentClass), CAgentClass::IdAgentClass);
-//		reinitClass(CGDAgentClass(CGDAgentClass::IdGDAgentClass),CGDAgentClass::IdGDAgentClass);
+
 		reinitClass(COperatorClass(COperatorClass::IdOperatorClass),COperatorClass::IdOperatorClass);
 		reinitClass(CFsmClass(CFsmClass::IdFsmClass),CFsmClass::IdFsmClass);
 		reinitClass(CSeqFsmClass(CSeqFsmClass::IdSeqFsmClass),CSeqFsmClass::IdSeqFsmClass);
@@ -65,6 +65,7 @@ namespace NLAISCRIPT
 		reinitClass(CCancelGoalMsgClass(CCancelGoalMsgClass::IdCancelGoalMsgClass),CCancelGoalMsgClass::IdCancelGoalMsgClass);
 		reinitClass(CSuccessMsgClass(CSuccessMsgClass::IdSuccessMsgClass),CSuccessMsgClass::IdSuccessMsgClass);
 		reinitClass(CFailureMsgClass(CFailureMsgClass::IdFailureMsgClass),CFailureMsgClass::IdFailureMsgClass);
+		reinitClass(CGetValueMsgClass(CGetValueMsgClass::IdGetValueMsgClass),CGetValueMsgClass::IdGetValueMsgClass);
 		reinitClass(CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass),CDebugMsgClass::IdDebugMsgClass);
 		reinitClass(CManagerClass(CManagerClass::IdManagerClass),CManagerClass::IdManagerClass);
 		reinitClass(COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass),COnChangeMsgClass::IdOnChangeMsgClass);

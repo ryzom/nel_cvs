@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.27 2001/12/04 16:54:43 chafik Exp $
+ * $Id: compilateur.h,v 1.28 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,7 @@ namespace NLAISCRIPT
 		sint32 _LastFVarIndex;
 		sint32 _NbLogicParams;
 		bool _InCond;
+		NLAIAGENT::IMessageBase::TPerformatif _LastPerf;
 		///////////////////////////////////////////////////
 		
 		bool   _InLineParse;

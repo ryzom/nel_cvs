@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
+ * $Id: message_script.h,v 1.10 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/script/virtual_op_code.h"
+#include "nel/ai/agent/agent_manager.h"
 
 namespace NLAISCRIPT 
 {
@@ -101,6 +102,10 @@ namespace NLAIAGENT
 			const NLAISCRIPT::CMessageClass *getCreatorClass() const
 			{
 				return _MessageClass;
+			}
+
+			virtual void setAgentManager(IAgentManager *)
+			{
 			}
 	};
 }

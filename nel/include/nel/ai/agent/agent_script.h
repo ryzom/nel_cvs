@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.41 2001/09/06 13:46:33 portier Exp $
+ * $Id: agent_script.h,v 1.42 2001/12/05 10:00:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_manager.h"
 #include "nel/ai/logic/operator.h"
+#include "nel/ai/agent/msg_getvalue.h"
 
 ////////////////////////////////////////
 // Temp to be transfered in CGDAgentScript
@@ -79,6 +80,8 @@ namespace NLAIAGENT
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
 			TSetStatic,	/// Method to assign a new value to a static component
+			TGetValue,	/// Processes the "Ask(GetValueMsg)" msg to obtain a public value of the agent
+//			TGetValueReturn,	/// Processes the "Tell(GetValueMsg)" msg resulting from a "Ask(GetValueMsg)" message sent.
 			TLastM ///The count of export method.
 		};
 
@@ -129,6 +132,8 @@ namespace NLAIAGENT
 		static NLAISCRIPT::CParam *ParamSetStatic;
 		static NLAISCRIPT::CParam *SendCompParamMessageScript;
 		static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass;
+		static NLAISCRIPT::COperandSimpleListOr *ParamIdGetValueMsg;
+		static NLAISCRIPT::CParam *ParamGetValueMsg;
 		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
 		static NLAISCRIPT::CParam *ParamRunParentNotify;
 	private:
@@ -209,6 +214,8 @@ namespace NLAIAGENT
 		*/
 		virtual IObjectIA::CProcessResult runTellCompoment(IBaseGroupType *);
 
+		IObjectIA::CProcessResult runAskGetValue(IBaseGroupType *);
+
 		/**
 		This function process the message CNotifyParentScript for the runTell.
 		*/
@@ -237,7 +244,7 @@ namespace NLAIAGENT
 		virtual sint32 getChildMessageIndex(const IMessageBase *, sint32 );
 
 		///Set the manager for this instance.
-		void setAgentManager(IAgentManager *manager);		
+		virtual void setAgentManager(IAgentManager *manager);		
 		//@}
 
 		/// \name IAgentManager member method. 

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.14 2002/03/04 10:35:24 lecroart Exp $
+ * $Id: login_server.cpp,v 1.15 2002/03/25 09:23:07 lecroart Exp $
  *
  */
 
@@ -351,9 +351,9 @@ void CLoginServer::connectToWS ()
 		CNetManager::addCallbackArray ("WS", WSCallbackArray, sizeof (WSCallbackArray) / sizeof (WSCallbackArray[0]));
 
 		CMessage	msg("UN_SIDENT");
-		nlassert (IService::Instance);
-		uint16		ssid = IService::Instance->serviceId();
-		string name = IService::Instance->serviceName();
+		nlassert (IService::getInstance());
+		uint16		ssid = IService::getInstance()->getServiceId();
+		string name = IService::getInstance()->getServiceShortName();
 		msg.serial(name);
 		msg.serial(ssid);	// serializes a 16 bits service id
 		CNetManager::send("WS", msg);

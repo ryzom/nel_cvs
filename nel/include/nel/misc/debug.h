@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.41 2002/06/14 14:44:55 corvazier Exp $
+ * $Id: debug.h,v 1.42 2002/06/26 09:51:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -419,7 +419,10 @@ struct EFatalError : public Exception
  */
 template<class T, class U>	inline T	safe_cast(U o)
 {
+	// NB: must check debug because assert may still be here in release
+#ifdef	NL_DEBUG
 	nlassert(dynamic_cast<T>(o));
+#endif
 	return static_cast<T>(o);
 }
 

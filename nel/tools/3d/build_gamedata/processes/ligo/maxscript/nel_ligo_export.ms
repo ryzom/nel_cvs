@@ -183,7 +183,7 @@ fn exportCollisionsFromZone outputPath filename =
 	-- Export the collision
 	if (NelExportCollision ($selection as array) outputPath) == false then
 	(
-		nlerror ("WARNING No collision exported from file "+filename)
+		-- nlerror ("WARNING No collision exported from file "+filename)
 	)
 	else
 	(

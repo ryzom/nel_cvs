@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.75 2004/03/15 15:17:23 cado Exp $
+ * $Id: unified_network.cpp,v 1.76 2004/04/01 18:27:53 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -857,7 +857,8 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 void	CUnifiedNetwork::update(TTime timeout)
 {
 	H_AUTO(CUnifiedNetworkUpdate);
-	
+
+	H_BEFORE(UNMisc1);
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::update() whereas it is not initialised yet"));
 
 	if (ThreadCreator != NLMISC::getThreadId()) nlwarning ("HNETL5: Multithread access but this class is not thread safe thread creator = %u thread used = %u", ThreadCreator, NLMISC::getThreadId());
@@ -894,6 +895,9 @@ void	CUnifiedNetwork::update(TTime timeout)
 	if ((enableRetry = (t0-_LastRetry > 5000)))
 		_LastRetry = t0;
 
+	H_AFTER(UNMisc1);
+
+	H_BEFORE(UNNamingCheck);
 	// Try to reconnect to the naming service if connection lost
 	if (_NamingServiceAddr.isValid ())
 	{
@@ -919,7 +923,9 @@ void	CUnifiedNetwork::update(TTime timeout)
 			}
 		}
 	}
+	H_AFTER(UNNamingCheck);
 
+	H_BEFORE(UNUpdateCnx);
 	while (true)
 	{
 		// update all server connections
@@ -1020,8 +1026,9 @@ void	CUnifiedNetwork::update(TTime timeout)
 		// Enable windows multithreading before rescanning all connections
 		H_TIME(L5UpdateSleep, nlSleep(1););
 	}
+	H_AFTER(UNUpdateCnx);
 
-	autoCheck();
+	H_TIME(UNAutoCheck, autoCheck(););
 }
 
 //

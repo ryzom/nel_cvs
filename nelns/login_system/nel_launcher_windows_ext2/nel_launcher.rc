@@ -44,6 +44,7 @@ BEGIN
     CONTROL         "Progress1",IDC_PATCH_PROGRESS,"msctls_progress32",
                     WS_BORDER,7,174,306,14
     LTEXT           "",IDC_PATCH_STATUS,7,192,306,12
+    PUSHBUTTON      "Sign Up",IDC_SIGNUP,240,44,73,14
 END
 
 

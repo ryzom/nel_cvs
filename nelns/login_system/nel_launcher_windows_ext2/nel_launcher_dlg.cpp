@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.cpp
  *
- * $Id: nel_launcher_dlg.cpp,v 1.4 2004/01/29 14:18:58 lecroart Exp $
+ * $Id: nel_launcher_dlg.cpp,v 1.5 2004/04/15 12:12:30 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -94,6 +94,7 @@ BEGIN_MESSAGE_MAP(CNeLLauncherDlg, CDialog)
 	ON_NOTIFY(NM_DBLCLK, IDC_SHARDS, OnDblclkShards)
 	ON_BN_CLICKED(ID_CONNECT, OnConnect)
 	ON_WM_TIMER()
+	ON_BN_CLICKED(IDC_SIGNUP, OnSignup)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -507,4 +508,67 @@ void CNeLLauncherDlg::OnCancel()
 	quit();
 
 	CDialog::OnCancel();
+}
+
+
+LONG GetRegKey(HKEY key, LPCTSTR subkey, LPTSTR retdata)
+{
+    HKEY hkey;
+    LONG retval = RegOpenKeyEx(key, subkey, 0, KEY_QUERY_VALUE, &hkey);
+	
+    if (retval == ERROR_SUCCESS) 
+	{
+        long datasize = MAX_PATH;
+        char data[MAX_PATH];
+        RegQueryValue(hkey, NULL, data, &datasize);
+        lstrcpy(retdata,data);
+        RegCloseKey(hkey);
+    }
+	
+    return retval;
+}
+
+void GotoURL(LPCTSTR url)
+{
+    char key[MAX_PATH + MAX_PATH];
+	
+    // First try ShellExecute()
+    HINSTANCE result = ShellExecute(NULL, "open", url, NULL,NULL, SW_SHOW);
+	
+    // If it failed, get the .htm regkey and lookup the program
+    if ((UINT)result <= HINSTANCE_ERROR) {
+		
+        if (GetRegKey(HKEY_CLASSES_ROOT, ".htm", key) == ERROR_SUCCESS) 
+		{
+            lstrcat(key, "\\shell\\open\\command");
+			
+            if (GetRegKey(HKEY_CLASSES_ROOT,key,key) == ERROR_SUCCESS) 
+			{
+                char *pos;
+                pos = strstr(key, "\"%1\"");
+                if (pos == NULL) 
+				{                     // No quotes found
+                    pos = strstr(key, "%1");       // Check for %1, without quotes 
+                    if (pos == NULL)                   // No parameter at all...
+                        pos = key+lstrlen(key)-1;
+                    else
+                        *pos = '\0';                   // Remove the parameter
+                }
+                else
+                    *pos = '\0';                       // Remove the parameter
+				
+                lstrcat(pos, " ");
+                lstrcat(pos, url);
+                result = (HINSTANCE) WinExec(key, SW_SHOW);
+            }
+        }
+    }
+}
+
+void CNeLLauncherDlg::OnSignup() 
+{
+	if(ConfigFile.exists("SignUpURL"))
+		GotoURL(ConfigFile.getVar("SignUpURL").asString().c_str());
+	else
+		GotoURL("http://www.ryzom.com");
 }

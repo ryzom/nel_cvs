@@ -1,7 +1,7 @@
 /** \file mold_loader.cpp
  * Georges system files
  *
- * $Id: mold_loader.cpp,v 1.2 2002/02/21 16:54:42 besson Exp $
+ * $Id: mold_loader.cpp,v 1.3 2002/03/06 08:36:18 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,11 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 		return( 0 );											
 	CStringEx sxfileextension = sxfn.get_right( sxfn.length()-ipos-1 );
 
+	// Get only the filename
+	ipos = sxfn.reverse_find('\\');
+	if (ipos >= 0)
+		sxfn = sxfn.get_right (sxfn.length()-ipos-1);
+
 	// find if loaded
 	CMoldElt* pme;
 	CStringEx sxfullname = pl->WhereIsDfnTyp( sxfn );
@@ -93,7 +98,18 @@ CMoldElt* CMoldLoader::LoadMold( const CStringEx _sxfilename )
 		throw NLMISC::Exception ("Unable to find " + sxfn);
 
 	sxfullname.make_lower();
-	std::map< CStringEx, CMoldElt* >::iterator it = mmold.find( sxfullname );
+	std::map< CStringEx, CMoldElt* >::iterator it;
+
+	// DEBUG
+	/*for (it = mmold.begin(); it != mmold.end(); ++it)
+	{
+		CMoldElt *pME = it->second;
+		CStringEx sTmp = it->first + " Name:" + pME->GetName() + " formula:" + pME->GetFormula();
+		nlwarning (sTmp.c_str());
+	}*/
+	// DEBUG
+
+	it = mmold.find( sxfullname );
 	if( it != mmold.end() )
 		if( blst )
 		{

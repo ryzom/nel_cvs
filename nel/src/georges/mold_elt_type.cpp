@@ -1,7 +1,7 @@
 /** \file mold_elt_type.cpp
  * Georges system files
  *
- * $Id: mold_elt_type.cpp,v 1.4 2002/03/04 12:53:29 cado Exp $
+ * $Id: mold_elt_type.cpp,v 1.5 2002/03/06 08:36:18 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,7 +139,8 @@ CStringEx CMoldEltType::CalculateResult( const CStringEx _sxbasevalue, const CSt
 	if( benum )
 	{
 		CStringEx sx2 = ptu->CalculateResult( _sxbasevalue, sx );
-		return( GetPredefDesignation( sx2 ) );
+//		return( GetPredefDesignation( sx2 ) );
+		return sx2;
 	}
 	if( sx.empty() )
 		return( ptu->CalculateResult( _sxbasevalue, _sxvalue ) );

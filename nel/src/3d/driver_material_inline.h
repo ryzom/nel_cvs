@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.7 2001/12/12 10:24:50 vizerie Exp $
+ * $Id: driver_material_inline.h,v 1.8 2002/02/15 16:57:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,8 +117,11 @@ inline void CMaterial::setZBias(float val)
 
 inline void CMaterial::setColor(NLMISC::CRGBA rgba)
 {
-	_Color=rgba;
-	_Touched|=IDRV_TOUCHED_COLOR;
+	if (_Color != rgba)
+	{
+		_Color=rgba;
+		_Touched|=IDRV_TOUCHED_COLOR;
+	}
 }
 
 inline void CMaterial::setLighting(	bool active, bool DefMat,

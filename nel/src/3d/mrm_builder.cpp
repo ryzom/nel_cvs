@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.8 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.9 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -563,9 +563,9 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 			newWedge= TmpAttributes[attId][ face.Corner[0].Attributes[attId] ].CollapsedTo;
 			if(newWedge>=0)	face.Corner[0].Attributes[attId]= newWedge;
 			newWedge= TmpAttributes[attId][ face.Corner[1].Attributes[attId] ].CollapsedTo;
-			if(newWedge>=1)	face.Corner[1].Attributes[attId]= newWedge;
+			if(newWedge>=0)	face.Corner[1].Attributes[attId]= newWedge;
 			newWedge= TmpAttributes[attId][ face.Corner[2].Attributes[attId] ].CollapsedTo;
-			if(newWedge>=2)	face.Corner[2].Attributes[attId]= newWedge;
+			if(newWedge>=0)	face.Corner[2].Attributes[attId]= newWedge;
 		}
 
 		// good edges.
@@ -759,7 +759,6 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 	// Vertices.
 	//==========
 	index=0;
-	// Here, CollpasedTo is used to store the new indexation.
 	for(i=0;i<(sint)TmpVertices.size();i++)
 	{
 		CMRMVertex	&vert=TmpVertices[i];
@@ -776,7 +775,6 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 
 	// Attributes.
 	//============
-	// Here, CollpasedTo is used to store the new indexation.
 	for(attId=0;attId<NumAttributes;attId++)
 	{
 		index=0;
@@ -790,7 +788,7 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 				index++;
 			}
 			else
-				wedge.CoarserIndex=-1;	// indicate that this vertex no more exist and is to be geomorphed to an other.
+				wedge.CoarserIndex=-1;	// indicate that this wedge no more exist and is to be geomorphed to an other.
 		}
 	}
 

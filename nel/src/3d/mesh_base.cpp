@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.4 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.5 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/mesh_base.h"
+#include "3d/mesh_base_instance.h"
 
 
 namespace NL3D 
@@ -146,6 +147,40 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 
 }
 
+
+
+// ***************************************************************************
+void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi)
+{
+	// setup materials.
+	//=================
+	mi->Materials= _Materials;
+
+	// setup animated materials.
+	//==========================
+	TAnimatedMaterialMap::iterator	it;
+	mi->_AnimatedMaterials.reserve(_AnimatedMaterials.size());
+	for(it= _AnimatedMaterials.begin(); it!= _AnimatedMaterials.end(); it++)
+	{
+		CAnimatedMaterial	aniMat(&it->second);
+
+		// set the target instance material.
+		nlassert(it->first < mi->Materials.size());
+		aniMat.setMaterial(&mi->Materials[it->first]);
+
+		// Must set the Animatable father of the animated material (the mesh_base_instance!).
+		aniMat.setFather(mi, CMeshBaseInstance::OwnerBit);
+
+		// Append this animated material.
+		mi->_AnimatedMaterials.push_back(aniMat);
+	}
+	
+	// Setup position with the default value
+	mi->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
+	mi->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
+	mi->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
+}
 
 
 } // NL3D

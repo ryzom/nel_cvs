@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.3 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "3d/mesh_mrm.h"
 #include "3d/mrm_builder.h"
 #include "3d/mrm_parameters.h"
+#include "3d/mesh_mrm_instance.h"
+#include "3d/scene.h"
 
 
 namespace NL3D 
@@ -76,8 +78,8 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m)
 
 	/// 0. First, make bbox.
 	//======================
-	// NB: this is the same as building BBox from MRM VBuffer, because CMRMBuilder create new vertices which are
-	// interpolation of original vertices.
+	// NB: this is equivalent as building BBox from MRM VBuffer, because CMRMBuilder create new vertices 
+	// which are just interpolation of original vertices.
 	_BBox= makeBBox(m.Vertices);
 
 
@@ -92,6 +94,85 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m)
 	_VBuffer= meshBuildMRM.VBuffer;
 	_Lods= meshBuildMRM.Lods;
 
+
+}
+
+
+// ***************************************************************************
+CTransformShape		*CMeshMRM::createInstance(CScene &scene)
+{
+	// Create a CMeshMRMInstance, an instance of a mesh.
+	//===============================================
+	CMeshMRMInstance		*mi= (CMeshMRMInstance*)scene.createModel(NL3D::MeshMRMInstanceId);
+	mi->Shape= this;
+
+
+	// instanciate the material part of the MeshMRM, ie the CMeshBase.
+	CMeshBase::instanciateMeshBase(mi);
+
+
+	return mi;
+}
+
+
+// ***************************************************************************
+bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
+{
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		// We are sure that pyramid has normalized plane normals.
+		if(!_BBox.clipBack(pyramid[i]))
+			return false;
+	}
+
+	return true;
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
+{
+	nlassert(drv);
+	// get the meshMRM instance.
+	nlassert(dynamic_cast<CMeshMRMInstance*>(trans));
+	CMeshMRMInstance	*mi= (CMeshMRMInstance*)trans;
+
+
+
+	CLod	&lod= _Lods[0];
+	if(lod.RdrPass.size()==0)
+		return;
+
+	// active VB.
+	drv->activeVertexBuffer(_VBuffer);
+
+	// Render all pass.
+	for(uint i=0;i<lod.RdrPass.size();i++)
+	{
+		CRdrPass	&rdrPass= lod.RdrPass[i];
+		// Render with the Materials of the MeshInstance.
+		drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+	}
+
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	/*
+	Version 0:
+		- base version.
+	*/
+	sint	ver= f.serialVersion(0);
+
+	// serial Materials infos contained in CMeshBase.
+	CMeshBase::serialMeshBase(f);
+
+	// serial geometry.
+	f.serial(_VBuffer);
+	f.serialCont(_Lods);
+	f.serial(_BBox);
 
 }
 

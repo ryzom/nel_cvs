@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.31 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: scene.cpp,v 1.32 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/landscape_model.h"
 #include "3d/driver.h"
 #include "3d/transform_shape.h"
+#include "3d/mesh_base_instance.h"
 #include "3d/mesh_instance.h"
 #include "3d/shape_bank.h"
 #include "3d/skeleton_model.h"
@@ -56,6 +57,7 @@ void	CScene::registerBasics()
 {
 	CTransform::registerBasic();
 	CCamera::registerBasic();
+	CMeshBaseInstance::registerBasic();
 	CMeshInstance::registerBasic();
 	CLandscapeModel::registerBasic();
 	CTransformShape::registerBasic();

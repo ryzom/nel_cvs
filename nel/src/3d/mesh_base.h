@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh_base.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,9 @@
 
 
 namespace NL3D {
+
+
+class	CMeshBaseInstance;
 
 
 // ***************************************************************************
@@ -169,6 +172,9 @@ protected:
 protected:
 	/// Just copy informations from a CMeshBaseBuild.
 	void	buildMeshBase(CMeshBaseBuild &m);
+
+	/// instanciate MeshBase part to an instance (a CMeshBaseInstance).
+	void	instanciateMeshBase(CMeshBaseInstance *mi);
 
 };
 

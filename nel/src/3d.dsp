@@ -175,11 +175,27 @@ SOURCE=.\3d\landscape_model.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_base_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_base_instance.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh_instance.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\mesh_instance.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_mrm_instance.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
-/** \file mesh_instance.h
+/** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.1 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MESH_INSTANCE_H
-#define NL_MESH_INSTANCE_H
+#ifndef NL_MESH_MRM_INSTANCE_H
+#define NL_MESH_MRM_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
 #include "3d/mesh_base_instance.h"
@@ -36,64 +36,49 @@ namespace NL3D
 {
 
 
-class CMesh;
+class CMeshMRM;
 
 
 // ***************************************************************************
 // ClassIds.
-const NLMISC::CClassId		MeshInstanceId=NLMISC::CClassId(0x6bfe0a34, 0x23b26dc9);
+const NLMISC::CClassId		MeshMRMInstanceId=NLMISC::CClassId(0xec608f3, 0x1111c33);
 
 
 // ***************************************************************************
 /**
- * An instance of CMesh.
+ * An instance of CMeshMRM.
  * NB: no observers are needed, since same functionnality as CMeshBaseInstance.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
  */
-class CMeshInstance : public CMeshBaseInstance
+class CMeshMRMInstance : public CMeshBaseInstance
 {
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
-public:
-
-	// Return true if this mesh is a skin apply on a skeleton else false.
-	bool isSkinApply () const
-	{
-		return _ApplySkinOk;
-	}
-
 
 protected:
 	/// Constructor
-	CMeshInstance()
+	CMeshMRMInstance()
 	{
-		_ApplySkinOk= false;
 	}
 	/// Destructor
-	virtual ~CMeshInstance() {}
+	virtual ~CMeshMRMInstance() {}
 
 
 private:
-	static IModel	*creator() {return new CMeshInstance;}
-	friend	class CMesh;
-	friend	class CSkeletonModel;
-
-
-	/// Skinning. true if skinned to the _Skeleton.
-	bool		_ApplySkinOk;
+	static IModel	*creator() {return new CMeshMRMInstance;}
+	friend	class CMeshMRM;
 
 };
-
 
 
 
 } // NL3D
 
 
-#endif // NL_MESH_INSTANCE_H
+#endif // NL_MESH_MRM_INSTANCE_H
 
-/* End of mesh_instance.h */
+/* End of mesh_mrm_instance.h */

@@ -1,7 +1,7 @@
-/** \file mesh_instance.cpp
+/** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.7 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.1 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,20 +23,17 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/mesh_instance.h"
-#include "3d/mesh.h"
-#include <list>
+#include "3d/mesh_mrm_instance.h"
 
-using namespace std;
 
 namespace NL3D 
 {
 
 
 // ***************************************************************************
-void		CMeshInstance::registerBasic()
+void		CMeshMRMInstance::registerBasic()
 {
-	CMOT::registerModel(MeshInstanceId, MeshBaseInstanceId, CMeshInstance::creator);
+	CMOT::registerModel(MeshMRMInstanceId, MeshBaseInstanceId, CMeshMRMInstance::creator);
 }
 
 

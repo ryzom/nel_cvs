@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal mesh for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mrm_mesh.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 
 public:
 	/// Constructor
-	CMRMMeshGeom();
+	CMRMMeshGeom() {}
 };
 
 

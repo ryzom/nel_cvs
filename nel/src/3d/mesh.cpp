@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.21 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh.cpp,v 1.22 2001/06/19 10:22:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -329,34 +329,10 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 	CMeshInstance		*mi= (CMeshInstance*)scene.createModel(NL3D::MeshInstanceId);
 	mi->Shape= this;
 
-	// setup materials.
-	//=================
-	mi->Materials= _Materials;
 
-	// setup animated materials.
-	//==========================
-	TAnimatedMaterialMap::iterator	it;
-	mi->_AnimatedMaterials.reserve(_AnimatedMaterials.size());
-	for(it= _AnimatedMaterials.begin(); it!= _AnimatedMaterials.end(); it++)
-	{
-		CAnimatedMaterial	aniMat(&it->second);
+	// instanciate the material part of the Mesh, ie the CMeshBase.
+	CMeshBase::instanciateMeshBase(mi);
 
-		// set the target instance material.
-		nlassert(it->first < mi->Materials.size());
-		aniMat.setMaterial(&mi->Materials[it->first]);
-
-		// Must set the Animatable father of the animated material (the mesh_instance!).
-		aniMat.setFather(mi, CMeshInstance::OwnerBit);
-
-		// Append this animated material.
-		mi->_AnimatedMaterials.push_back(aniMat);
-	}
-	
-	// Setup position with the default value
-	mi->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
-	mi->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
-	mi->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
-	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
 
 	return mi;
 }

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.14 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: ps_particle.h,v 1.15 2001/06/06 08:24:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1246,7 +1246,7 @@ class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 				, public CPSRotated3DPlaneParticle
 {
 public:	
-	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL)
+	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(false)
 	{		
 	}
 
@@ -1317,15 +1317,24 @@ protected:
 	virtual void resize(uint32 size)  ;	
 	
 
+	/// build the mesh data
+	void update(void) ;
+
+	
+
 	/// a rendering pass
 	struct RdrPass
 	{
 		CMaterial Mat ;
 		CPrimitiveBlock Pb ;
+		
 	} ;
 
 	// name of the mesh shape  it was generated from
 	std::string _MeshShapeFileName ;
+
+	// A new mesh has been set, so we must reconstruct it when needed
+	bool _Touched ;
 
 	// the shape bank containing the shape
 	CShapeBank  *_ModelBank ;

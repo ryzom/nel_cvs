@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.14 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.15 2001/06/06 08:24:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/common.h"
 #include "nel/misc/quat.h"
+#include "nel/misc/file.h"
 
 #include <algorithm>
 
@@ -3905,7 +3906,7 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 		currTriPtr = triPtr ;
 		for (l = 0 ; l < numTri ; ++l)
 		{
-			destBlock.setTri(index, currTriPtr[0], currTriPtr[1], currTriPtr[2]) ;
+			destBlock.setTri(index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset) ;
 			currTriPtr += 3 ;
 			++ index ;
 		}
@@ -3928,7 +3929,7 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 		currQuadPtr = QuadPtr ;
 		for (l = 0 ; l < numQuad ; ++l)
 		{
-			destBlock.setQuad(index, currQuadPtr[0], currQuadPtr[1], currQuadPtr[2], currQuadPtr[3]) ;
+			destBlock.setQuad(index, currQuadPtr[0] + currVertOffset, currQuadPtr[1] + currVertOffset, currQuadPtr[2] + currVertOffset, currQuadPtr[3] + currVertOffset) ;
 			currQuadPtr += 4 ;
 			++ index ;
 		}
@@ -3950,7 +3951,7 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 		currLinePtr = LinePtr ;
 		for (l = 0 ; l < numLine ; ++l)
 		{
-			destBlock.setLine(index, currLinePtr[0], currLinePtr[1]) ;
+			destBlock.setLine(index, currLinePtr[0] + currVertOffset, currLinePtr[1] + currVertOffset) ;
 			currLinePtr += 4 ;
 			++ index ;
 		}
@@ -3965,17 +3966,33 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 }
 
 
-
 void CPSConstraintMesh::build(const std::string meshFileName)
 {
+	_MeshShapeFileName = meshFileName ;
+	_Touched = true ;
+}
 
+
+void CPSConstraintMesh::update(void)
+{
+	if (!_Touched) return ;
+
+	clean() ;
+	
 	nlassert(_Owner->getOwner()->getScene()) ;
 
 	CScene *scene = _Owner->getOwner()->getScene() ;
 
 	CShapeBank *sb = scene->getShapeBank() ;
 
-	IShape *is = sb->addRef(meshFileName) ;
+	sb->load(_MeshShapeFileName) ;
+
+	if (!sb->isPresent(_MeshShapeFileName))
+	{
+		throw NLMISC::EFileNotOpened(_MeshShapeFileName) ;
+	}
+
+	IShape *is = sb->addRef(_MeshShapeFileName) ;
 
 
 	nlassert(dynamic_cast<CMesh *>(is)) ;
@@ -3983,7 +4000,7 @@ void CPSConstraintMesh::build(const std::string meshFileName)
 
 
 
-	_MeshShapeFileName = meshFileName ;
+	
 
 	// we don't support skinning, so there must be only one matrix block
 	// duplicate rendering pass
@@ -4007,120 +4024,16 @@ void CPSConstraintMesh::build(const std::string meshFileName)
 	_ModelVb = &m.getVertexBuffer() ;
 
 	setupPreRotatedVb(_ModelVb->getVertexFormat()) ;
-
+	setupVb(_ModelVb->getVertexFormat()) ;
 
 	_ModelBank = sb ;
 	_ModelShape = is ;
+
+	_Touched = false ;
 	
 }
 
-/*
-void CPSConstraintMesh::build(const CMesh::CMeshBuild &mb)
-{
-	nlassert(mb.VertexFlags & IDRV_VF_XYZ) ; // need the position at least
 
-	nlassert(mb.Faces.size()) ;
-
-	nlassert(mb.Materials.size() == 1) ;
-
-	// copy first material
-	_Mat = mb.Materials[0] ;
-
-
-
-	// when constructing the mesh, we need to reuse vertices that have the same values 
-	// (because uv, normal ... are not encoded in the vertex list in the CMeshBuild struct)
-
-
-
-	// now we create our version of the mesh	
-	_ModelVb->setVertexFormat(mb.VertexFlags) ;
-	_ModelVb->setNumVertices(mb.Vertices.size()) ; // we may need to enlarge this later....
-	_ModelPb.setNumTri(mb.Faces.size()) ;
-
-	// size of vertices
-	uint vSize = _ModelVb->getVertexSize() ;
-
-	//  vertex used before being copied in the before (it is copied only if we can't find a similar vertex)
-	uint8 *myVert = new uint8[vSize] ;
-
-	uint k, l, m ;
-
-	sint vertIndex[3] ;
-
-	// the number of vertices we've created yet
-	uint32 numVertices = 0 ; 
-
-	for (k = 0 ; k < mb.Faces.size() ; ++k)
-	{
-		
-
-
-		for (m = 0 ; m < 3 ; ++m)
-		{
-
-			// copy the vertex position
-
-			*(CVector *) myVert = mb.Vertices[mb.Faces[k].Corner[m].Vertex] ;
-
-			// copy the vertices texture coordinates
-			for (l = 0 ; l < IDRV_VF_MAXSTAGES ; ++l)
-			{
-				if (mb.VertexFlags & IDRV_VF_UV[l])
-				{
-					*(CUV *) (myVert + _ModelVb->getTexCoordOff(l)) = mb.Faces[k].Corner[m].Uvs[l] ;
-				}
-			}
-
-			// normal 
-			if (mb.VertexFlags & IDRV_VF_NORMAL)
-			{
-				*(CVector *) (myVert + _ModelVb->getNormalOff()) = mb.Faces[k].Corner[m].Normal ;
-			}	
-
-			// color
-			if (mb.VertexFlags & IDRV_VF_COLOR)
-			{
-				*(CRGBA *) (myVert + _ModelVb->getColorOff()) = mb.Faces[k].Corner[m].Color ;
-			}	
-
-			// specular
-			if (mb.VertexFlags & IDRV_VF_SPECULAR)
-			{
-				*(CRGBA *) (myVert + _ModelVb->getSpecularOff()) = mb.Faces[k].Corner[m].Specular ;
-			}	
-
-
-			sint currVertIndex = ConstraintMeshFindVert(myVert, vSize, (uint8 *) _ModelVb->getVertexCoordPointer(), numVertices) ;
-
-			if (currVertIndex != -1)
-			{
-				vertIndex[m] = currVertIndex ;
-			}
-			else
-			{				
-				_ModelVb->setNumVertices(numVertices + 1) ;
-				memcpy((uint8 *) _ModelVb->getVertexCoordPointer() + vSize * numVertices, myVert, vSize) ;
-				vertIndex[m] = numVertices ;
-				++ numVertices ;
-			}
-		}
-
-
-		_ModelPb.setTri(k, vertIndex[0]
-						  , vertIndex[1]
-						  , vertIndex[2]) ;
-	}
-
-
-	delete[] myVert ;
-
-	setupPreRotatedVb(mb.VertexFlags) ;
-
-	setupVbAndPb(mb.VertexFlags) ;
-	
-}
-*/
 
 
 void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
@@ -4251,6 +4164,7 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		clean() ;
 	}
 
+
 	CPSParticle::serial(f) ;
 	CPSSizedParticle::serialSizeScheme(f) ;
 	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f) ;
@@ -4281,23 +4195,27 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 	static std::string emptyStr("") ;
 
-	if (f.isReading())
+	if (!f.isReading())
 	{
-		f.serial(_MeshShapeFileName) ;
-		if (_MeshShapeFileName != emptyStr)
+		if (_ModelShape)
 		{
-			build(_MeshShapeFileName) ;
-		}		
-	}
-	else
-	{
-		if (!_ModelVb)
-		{
-			f.serial(emptyStr) ;
+			f.serial(_MeshShapeFileName) ;			
 		}
 		else
 		{
-			f.serial(_MeshShapeFileName) ;
+			f.serial(emptyStr) ; 
+		}
+	}
+	else
+	{	
+		f.serial(_MeshShapeFileName) ;
+		if (_MeshShapeFileName == emptyStr)
+		{
+			_Touched = false ;	
+		}
+		else
+		{
+				_Touched = true ;	
 		}
 	}
 
@@ -4329,6 +4247,7 @@ void CPSConstraintMesh::draw(void)
 {
 	nlassert(_Owner) ;
 
+	update() ; // update mesh datas if needed
 
 	if (!_ModelVb) return ; // no mesh has been set for now
 
@@ -4509,9 +4428,9 @@ void CPSConstraintMesh::draw(void)
 			{
 				// TODO : update this when new primitive will be added
 
-				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.getNumTri() * toProcess) ;
-				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.getNumQuad() * toProcess) ;
-				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.getNumLine() * toProcess) ;
+				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
+				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
+				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
 
 				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
 
@@ -4637,9 +4556,9 @@ void CPSConstraintMesh::draw(void)
 			{
 				// TODO : update this when new primitive will be added
 
-				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.getNumTri() * toProcess) ;
-				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.getNumQuad() * toProcess) ;
-				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.getNumLine() * toProcess) ;
+				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess) ;
+				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess) ;
+				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess) ;
 
 				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
 

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.12 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.13 2001/06/06 08:24:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,6 +128,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSShockWave) ;
 		NLMISC_REGISTER_CLASS(CPSFace) ;
 		NLMISC_REGISTER_CLASS(CPSMesh) ;
+		NLMISC_REGISTER_CLASS(CPSConstraintMesh) ;
 		NLMISC_REGISTER_CLASS(CParticleSystemShape) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisBlender) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisGradient) ;

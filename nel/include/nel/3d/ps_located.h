@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.10 2001/05/28 15:30:11 vizerie Exp $
+ * $Id: ps_located.h,v 1.11 2001/06/06 08:24:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,9 +134,19 @@ public:
 	uint32 getNbBoundObjects(void) const { return _LocatedBoundCont.size() ; }
 
 	/**
-	* get a reference to a bound object
+	* get a pointer to a bound object (const version)
 	*/
 	const CPSLocatedBindable *getBoundObject(uint32 index) const 
+	{
+		nlassert(index < _LocatedBoundCont.size()) ;
+		return _LocatedBoundCont[index] ;
+	}
+
+
+	/**
+	* get a pointer to a bound object
+	*/
+	CPSLocatedBindable *getBoundObject(uint32 index)
 	{
 		nlassert(index < _LocatedBoundCont.size()) ;
 		return _LocatedBoundCont[index] ;
@@ -385,6 +395,11 @@ public:
 
 
 
+	/** enum the types of attributes that any located has
+	 *  used by attribute maker for now ... (see ps_attrib_maker.h
+	 */
+
+	enum AttributeType { attrDate = 0, attrPosition = 1, attrInvMass = 2, attrSpeed = 3, attrLast } ;
 	 
 
 protected:	

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.175 2003/03/12 13:41:44 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.176 2003/03/17 15:16:59 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1364,8 +1364,8 @@ bool CDriverGL::swapBuffers()
 
 
 	/* PATCH For Possible NVidia Synchronisation.
-		Disabled because seems to no more be a problem.
-	/*
+		seems to still be a problem for GeFroce2MX400 with 4.1.0.9 driver (at least this configuration....)
+	/*/
 	// Because of Bug with GeForce, must finishFence() for all VBHard.
 	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
@@ -1379,11 +1379,12 @@ bool CDriverGL::swapBuffers()
 			vbHardNV->GPURenderingAfterFence= false;
 		}
 		itVBHard++;
-	}*/
-	/* AS NV_Fence GeForce Implementation says. Test each frame the NVFence, until completion. 
+	}
+	/* Need to Do this code only if Synchronisation PATCH not done!
+		AS NV_Fence GeForce Implementation says. Test each frame the NVFence, until completion. 
 		NB: finish is not required here. Just test. This is like a "non block synchronisation"
 	 */
-	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	/*set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
 		if((*itVBHard)->NVidiaVertexBufferHard)
@@ -1399,7 +1400,7 @@ bool CDriverGL::swapBuffers()
 			}
 		}
 		itVBHard++;
-	}
+	}*/
 
 
 #ifdef NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.9 2002/10/10 12:48:43 berenguier Exp $
+ * $Id: u_instance.h,v 1.10 2002/10/25 15:50:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,6 +145,14 @@ public:
 	 *	since last enableAsyncTextureMode(true)
 	 */
 	virtual	bool		isAsyncTextureReady() =0;
+
+	/** For Lod of texture, and load balancing, set the approximate distance of the instance to the camera.
+	 */
+	virtual	void		setAsyncTextureDistance(float dist) =0;
+	/** \see setAsyncTextureDistance()
+	 */
+	virtual	float		getAsyncTextureDistance() const =0;
+
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.25 2002/10/14 12:50:18 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.26 2002/10/25 15:51:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -809,20 +809,5 @@ void						CSceneUser::deleteVisualCollisionManager(UVisualCollisionManager *mgr)
 	_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
 }
 
-// ***************************************************************************
-void				CSceneUser::setupAsyncTextureLod(uint baseLevel, uint maxLevel)
-{
-	_Scene.getAsyncTextureManager().setupLod(baseLevel, maxLevel);
-}
-// ***************************************************************************
-void				CSceneUser::setupAsyncTextureMaxUploadPerFrame(uint maxup)
-{
-	_Scene.getAsyncTextureManager().setupMaxUploadPerFrame(maxup);
-}
-// ***************************************************************************
-void				CSceneUser::updateAscyncTexture()
-{
-	_Scene.getAsyncTextureManager().update(_DriverUser->getDriver());
-}
 
 } // NL3D

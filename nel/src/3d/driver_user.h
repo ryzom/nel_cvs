@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.16 2002/09/04 13:00:53 corvazier Exp $
+ * $Id: driver_user.h,v 1.17 2002/10/25 15:52:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "3d/shape_bank_user.h"
 #include "3d/light_user.h"
 #include "3d/mesh_skin_manager.h"
+#include "3d/async_texture_manager.h"
 
 
 namespace NL3D 
@@ -72,38 +73,40 @@ protected:
 
 
 protected:
-	IDriver			*_Driver;
-	bool			_WindowInit;
-	CMatrixContext	_CurrentMatrixContext;
-	CFontManager	_FontManager;
+	IDriver					*_Driver;
+	bool					_WindowInit;
+	CMatrixContext			_CurrentMatrixContext;
+	CFontManager			_FontManager;
 	// Components List.
 	typedef	CPtrSet<CTextureUser>		TTextureSet;
 	typedef	CPtrSet<CMaterialUser>		TMaterialSet;
 	typedef	CPtrSet<CTextContextUser>	TTextContextSet;
 	typedef	CPtrSet<CSceneUser>			TSceneSet;
-	TTextureSet			_Textures;
-	TMaterialSet		_Materials;
-	TTextContextSet		_TextContexts;
-	TSceneSet			_Scenes;
-	CShapeBankUser		_ShapeBank;
-	// Ther be one MeshSkinManager per driver, and for all scenes.
-	CMeshSkinManager	_MeshSkinManager;
+	TTextureSet				_Textures;
+	TMaterialSet			_Materials;
+	TTextContextSet			_TextContexts;
+	TSceneSet				_Scenes;
+	CShapeBankUser			_ShapeBank;
+	// There is one MeshSkinManager per driver, and for all scenes.
+	CMeshSkinManager		_MeshSkinManager;
+	// There is one AsyncTextureManager per driver, and for all scenes
+	CAsyncTextureManager	_AsyncTextureManager;
 
 	// For 2D/3D Interface.
-	CVertexBuffer		_VBFlat;
-	CVertexBuffer		_VBColor;
-	CVertexBuffer		_VBUv;
-	CVertexBuffer		_VBColorUv;
-	CPrimitiveBlock		_PBLine, _PBTri, _PBQuad;
+	CVertexBuffer			_VBFlat;
+	CVertexBuffer			_VBColor;
+	CVertexBuffer			_VBUv;
+	CVertexBuffer			_VBColorUv;
+	CPrimitiveBlock			_PBLine, _PBTri, _PBQuad;
 
-	CVertexBuffer		_VBQuadsColUv;
+	CVertexBuffer			_VBQuadsColUv;
 	// For security, texture are initUnlit() at init()/release().
-	CMaterialUser		_MatFlat;
-	CMaterialUser		_MatText;
+	CMaterialUser			_MatFlat;
+	CMaterialUser			_MatText;
 
 
 	// StaticInit
-	static	bool	_StaticInit;
+	static	bool			_StaticInit;
 
 protected:
 	void			setupMatrixContext();
@@ -406,6 +409,19 @@ public:
 	
 	virtual uint32			getUsedTextureMemory() const;
 
+	// @}
+
+
+	/// \name Async Texture loading mgt
+	// @{
+	virtual void				setupAsyncTextureLod(uint baseLevel, uint maxLevel);
+	virtual void				setupAsyncTextureMaxUploadPerFrame(uint maxup);
+	virtual void				setupMaxTotalAsyncTextureSize(uint maxText);
+	virtual void				setupMaxHLSColoringPerFrame(uint maxCol);
+	virtual void				updateAsyncTexture();
+	virtual	uint				getTotalAsyncTextureSizeAsked() const;
+	virtual	uint				getLastAsyncTextureSizeGot() const;
+	virtual void				loadHLSBank(const std::string &fileName);
 	// @}
 
 

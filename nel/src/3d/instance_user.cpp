@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.12 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.13 2002/10/25 15:52:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,6 +136,20 @@ bool		CInstanceUser::isAsyncTextureReady()
 	nlassert(_Instance->isMeshBaseInstance());
 	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
 	return mbi->isAsyncTextureReady();
+}
+// ***************************************************************************
+void		CInstanceUser::setAsyncTextureDistance(float dist)
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	mbi->setAsyncTextureDistance(dist);
+}
+// ***************************************************************************
+float		CInstanceUser::getAsyncTextureDistance() const
+{
+	nlassert(_Instance->isMeshBaseInstance());
+	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(_Instance);
+	return mbi->getAsyncTextureDistance();
 }
 
 

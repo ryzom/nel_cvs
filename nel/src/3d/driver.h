@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.42 2002/10/14 15:50:11 besson Exp $
+ * $Id: driver.h,v 1.43 2002/10/25 15:52:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,18 +218,27 @@ public:
 	/// Set the color mask filter through where the operation done will pass
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)=0;
 
-	/** if upload is true the texture is created and uploaded to VRAM, if false the texture is only created
-	 *  it is useful for the async upload texture to only create the texture and then make invalidate to upload
-	 *  small piece each frame.
+	/** setup a texture, generate and upload if needed. same as setupTextureEx(tex, true, dummy);
 	 */
 	virtual bool			setupTexture(ITexture& tex)=0;
 
-	/** The texture must be created or uploadTexture do nothing.
-	 *  These function can be used to upload piece by piece a texture
-	 *  setupTextureEx : request a texture upload or just a texture creation but the request can be different to
-	 *  the real fact if texture must be converted at runtime.
+	/** setup a texture in the driver.
+	 *	\param bUpload if true the texture is created and uploaded to VRAM, if false the texture is only created
+	 *  it is useful for the async upload texture to only create the texture and then make invalidate to upload
+	 *  small piece each frame. There is ONE case where bUpload is forced to be true inside the method: if the texture
+	 *	must be converted to RGBA. \see bAllUploaded
+	 *	\param bAllUploaded true if any upload arise (texture invalid, must convert texture etc...).
+	 *	\param bMustRecreateSharedTexture if true and if the texture supportSharing, then the texture is recreated 
+	 *	(and uploaded if bUpload==true) into the shared DrvInfo (if found). Default setup (false) imply that the DrvInfo
+	 *	is only bound to tex (thus creating and uploading nothing)
+	 *	NB: the texture must be at least touch()-ed for the recreate to work.
 	 */
-	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool& bAllUploaded)=0;
+	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool& bAllUploaded, 
+		bool bMustRecreateSharedTexture= false)=0;
+
+	/** The texture must be created or uploadTexture do nothing.
+	 *  These function can be used to upload piece by piece a texture. Use it in conjunction with setupTextureEx(..., false);
+	 */
 	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap)=0;
 	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace)=0;
 
@@ -850,6 +859,15 @@ public:
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const =0;
 
 	// @}
+
+
+	/**	Special method to internally swap the Driver handle of 2 textures.
+	 *	USE IT WITH CARE (eg: may have Size problems, mipmap problems, format problems ...)
+	 *	Actually, it is used only by CAsyncTextureManager, to manage Lods of DXTC CTextureFile.
+	 *	NB: internally, all textures slots are disabled.
+	 */
+	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1) =0;
+
 
 protected:
 	friend	class	IVBDrvInfos;

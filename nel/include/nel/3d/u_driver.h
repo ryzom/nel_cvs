@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.17 2002/09/04 13:00:53 corvazier Exp $
+ * $Id: u_driver.h,v 1.18 2002/10/25 15:50:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -574,6 +574,40 @@ public:
 	 *  the sum with enableUsedTextureMemorySum().
 	 */
 	virtual uint32			getUsedTextureMemory() const =0;
+
+	// @}
+
+
+	/// \name Async Texture loading mgt (see UInstance)
+	// @{
+	/** setup the mipMap levels. 
+	 *	\baseLevel When the texture is first added, it is loaded skipping the baseLevel
+	 *	first mipmap
+	 *	\maxLevel During time, furhter mipmap are loaded, according to instance position etc... maxLevel
+	 *	tells where to stop. If 0, the texture will finally be entirely uploaded.
+	 *	Default is 3,0.
+	 */
+	virtual void				setupAsyncTextureLod(uint baseLevel, uint maxLevel) =0;
+	/// Setup max texture upload in driver per updateAsyncTexture() call.
+	virtual void				setupAsyncTextureMaxUploadPerFrame(uint maxup) =0;
+	/// Setup max total texture size allowed. Default is 10Mo
+	virtual void				setupMaxTotalAsyncTextureSize(uint maxText) =0;
+	/// Setup max texture HLS Coloring per update() call (in bytes). Default to 20K.
+	virtual void				setupMaxHLSColoringPerFrame(uint maxCol) =0;
+	/** update the manager. New loaded texture are uploaded. Instances are updated to know if all their 
+	 *	pending textures have been uploaded.
+	 */
+	virtual void				updateAsyncTexture() =0;
+
+	/// get the async texture Size asked (ie maybe bigger than MaxTotalTextureSize).
+	virtual	uint				getTotalAsyncTextureSizeAsked() const =0;
+	/// get what the system really allows
+	virtual	uint				getLastAsyncTextureSizeGot() const =0;
+
+	/** Load a .hlsBank, add it to the HLSManager of the AsyncTextureManager. 
+	 *	Use CPath::lookup. throw EPathNotFound if error
+	 */
+	virtual void				loadHLSBank(const std::string &fileName) =0;
 
 	// @}
 

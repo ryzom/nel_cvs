@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.31 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: scene_user.h,v 1.32 2002/10/25 15:51:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,13 +292,6 @@ public:
 	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const;
 	//@}
 
-
-	/// \name Async Texture loading mgt
-	// @{
-	virtual void				setupAsyncTextureLod(uint baseLevel, uint maxLevel);
-	virtual void				setupAsyncTextureMaxUploadPerFrame(uint maxup);
-	virtual void				updateAscyncTexture();
-	// @}
 
 public:
 	/// \name Accessor for CSceneUser.

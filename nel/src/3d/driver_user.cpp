@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.23 2002/09/04 13:00:53 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.24 2002/10/25 15:52:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1057,5 +1057,76 @@ void			CDriverUser::setCapture (bool b)
 
 	_Driver->setCapture (b);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Async Texture loading mgt
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void				CDriverUser::setupAsyncTextureLod(uint baseLevel, uint maxLevel)
+{
+	_AsyncTextureManager.setupLod(baseLevel, maxLevel);
+}
+// ***************************************************************************
+void				CDriverUser::setupAsyncTextureMaxUploadPerFrame(uint maxup)
+{
+	_AsyncTextureManager.setupMaxUploadPerFrame(maxup);
+}
+// ***************************************************************************
+void				CDriverUser::updateAsyncTexture()
+{
+	_AsyncTextureManager.update(getDriver());
+}
+
+
+// ***************************************************************************
+void				CDriverUser::setupMaxTotalAsyncTextureSize(uint maxText)
+{
+	_AsyncTextureManager.setupMaxTotalTextureSize(maxText);
+}
+// ***************************************************************************
+uint				CDriverUser::getTotalAsyncTextureSizeAsked() const
+{
+	return _AsyncTextureManager.getTotalTextureSizeAsked();
+}
+// ***************************************************************************
+uint				CDriverUser::getLastAsyncTextureSizeGot() const
+{
+	return _AsyncTextureManager.getLastTextureSizeGot();
+}
+
+// ***************************************************************************
+void				CDriverUser::setupMaxHLSColoringPerFrame(uint maxCol)
+{
+	_AsyncTextureManager.setupMaxHLSColoringPerFrame(maxCol);
+}
+
+// ***************************************************************************
+void				CDriverUser::loadHLSBank(const std::string &fileName)
+{
+	// load it.
+	CHLSTextureBank			*hlsBank= new CHLSTextureBank;
+	try
+	{
+		std::string	path= CPath::lookup(fileName);
+		CIFile	fIn;
+		if(!fIn.open(path))
+			throw EPathNotFound(path);
+		fIn.serial(*hlsBank);
+	}
+	catch(Exception &)
+	{
+		delete hlsBank;
+		throw;
+	}
+
+	// add it to the manager.
+	_AsyncTextureManager.HLSManager.addBank(hlsBank);
+}
+
 
 } // NL3D

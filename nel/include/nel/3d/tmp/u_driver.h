@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.5 2001/03/06 11:19:35 berenguier Exp $
+ * $Id: u_driver.h,v 1.6 2001/03/21 11:39:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,12 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
+
+
+#ifdef NL_OS_WINDOWS
+// automatically add the freetype library. MUST fo it because of link problems.
+#pragma comment(lib, "freetype.lib")
+#endif
 
 
 namespace NL3D

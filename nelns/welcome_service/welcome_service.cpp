@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.24 2003/06/30 09:30:27 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.25 2003/09/04 13:49:51 cado Exp $
  *
  */
 
@@ -58,6 +58,121 @@
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+
+
+/**
+ * Using expected services and current running service instances, this class
+ * reports a main "online status".
+ */
+class COnlineServices
+{
+public:
+
+	/// Set expected instances. Ex: { "TICKS", "FS", "FS", "FS" }
+	void		setExpectedInstances( CConfigFile::CVar& var )
+	{
+		// Reset "expected" counters (but don't clear the map, keep the running instances)
+		CInstances::iterator ici;
+		for ( ici=_Instances.begin(); ici!=_Instances.end(); ++ici )
+		{
+			(*ici).second.Expected = 0;
+		}
+		// Rebuild "expected" counters
+		for ( sint i=0; i!=var.size(); ++i )
+		{
+			++_Instances[var.asString(i)].Expected;
+		}
+	}
+	
+	/// Add a service instance
+	void		addInstance( const std::string& serviceName )
+	{
+		++_Instances[serviceName].Running;
+	}
+
+	/// Remove a service instance
+	void		removeInstance( const std::string& serviceName ) 
+	{
+		CInstances::iterator ici = _Instances.find( serviceName );
+		if ( ici != _Instances.end() )
+		{
+			--(*ici).second.Running;
+
+			// Remove from the map only if not part of the expected list
+			if ( ((*ici).second.Expected == 0) && ((*ici).second.Running == 0) )
+			{
+				_Instances.erase( ici );
+			}
+		}
+		else
+		{
+			nlwarning( "Can't remove instance of %s", serviceName.c_str() );
+		}
+	}
+
+	/// Check if all expected instances are online
+	bool		getOnlineStatus() const
+	{
+		CInstances::const_iterator ici;
+		for ( ici=_Instances.begin(); ici!=_Instances.end(); ++ici )
+		{
+			if ( ! (*ici).second.isOnlineAsExpected() )
+				return false;
+		}
+		return true;
+	}
+
+	/// Display contents
+	void		display( NLMISC::CLog& log = *NLMISC::DebugLog )
+	{
+		CInstances::const_iterator ici;
+		for ( ici=_Instances.begin(); ici!=_Instances.end(); ++ici )
+		{
+			log.displayNL( "%s: %s (%u expected, %u running)",
+				(*ici).first.c_str(),
+				(*ici).second.Expected ? ((*ici).second.isOnlineAsExpected() ? "ONLINE" : "MISSING") : "OPTIONAL",
+				(*ici).second.Expected, (*ici).second.Running );
+		}
+	}
+
+private:
+
+	struct TInstanceCounters
+	{
+		TInstanceCounters() : Expected(0), Running(0) {}
+
+		// If not expected, count as online as well
+		bool isOnlineAsExpected() const { return Running >= Expected; }
+
+		uint	Expected;
+		uint	Running;
+	};
+
+	typedef std::map< std::string, TInstanceCounters > CInstances;
+
+	CInstances	_Instances;
+};
+
+/// Online services
+COnlineServices OnlineServices;
+
+
+/// Main online status
+bool OnlineStatus;
+
+/// Send changes of status to the LS
+void reportOnlineStatus( bool newStatus )
+{
+	if ( newStatus != OnlineStatus )
+	{
+		CMessage msgout( "OL_ST" );
+		msgout.serial( newStatus );
+		CUnifiedNetwork::getInstance()->send( "LS", msgout );
+		OnlineStatus = newStatus;
+	}
+}
+
+
 
 /// Set the version of the shard. you have to increase it each time the client-server protocol changes.
 /// You have to increment the client too (the server and client version must be the same to run correctly)
@@ -203,6 +318,7 @@ void cbFESConnection (const std::string &serviceName, uint16 sid, void *arg)
 	displayFES ();
 }
 
+
 // a front end closes the connection, deconnect him
 void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
@@ -243,6 +359,23 @@ void cbFESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 	displayFES ();
 }
 
+
+//
+void cbServiceUp (const std::string &serviceName, uint16 sid, void *arg)
+{
+	OnlineServices.addInstance( serviceName );
+	reportOnlineStatus( OnlineServices.getOnlineStatus() );
+}
+
+
+//
+void cbServiceDown (const std::string &serviceName, uint16 sid, void *arg)
+{
+	OnlineServices.removeInstance( serviceName );
+	reportOnlineStatus( OnlineServices.getOnlineStatus() );
+}
+
+
 // Callback Array for message from FES
 TUnifiedCallbackItem FESCallbackArray[] =
 {
@@ -274,7 +407,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	{
 		msgin.serial (userPriv);
 	}
-	catch (Exception &e)
+	catch (Exception &)
 	{
 		nlwarning ("LS didn't give me the user privilege for user '%s', set to empty", userName.c_str());
 	}
@@ -360,7 +493,11 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 }
 
 
-
+// Callback for detection of config file change about "ExpectedServices"
+void cbUpdateExpectedServices( CConfigFile::CVar& var )
+{
+	OnlineServices.setExpectedInstances( var );
+}
 
 
 // Callback Array for message from LS
@@ -387,6 +524,8 @@ public:
 
 		CUnifiedNetwork::getInstance()->setServiceUpCallback(FrontendServiceName, cbFESConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback(FrontendServiceName, cbFESDisconnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbServiceUp, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback("*", cbServiceDown, NULL);
 
 		for (sint i = 0; i < ConfigFile.getVar("LSHost").size (); i++)
 		{
@@ -401,6 +540,10 @@ public:
 			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
 			CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
 		}
+
+		// List of expected service instances
+		ConfigFile.setCallback( "ExpectedServices", cbUpdateExpectedServices );
+		cbUpdateExpectedServices( ConfigFile.getVar( "ExpectedServices" ) );
 	}
 };
 
@@ -460,3 +603,11 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 
 	return true;
 }
+
+NLMISC_COMMAND( displayOnlineServices, "Display the online service instances", "" )
+{
+	OnlineServices.display( log );
+	return true;
+}
+
+NLMISC_VARIABLE( bool, OnlineStatus, "Main online status of the shard" );

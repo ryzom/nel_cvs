@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.7 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: camera.h,v 1.8 2000/12/13 14:59:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 	/// Set the frustum of the camera.
 	void		setFrustum(const CFrustum &f) {_Frustum= f;}
 	/// Get the frustum of the camera.
-	CFrustum	getFrustum() const {return _Frustum;}
+	const CFrustum&	getFrustum() const {return _Frustum;}
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true);
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.2 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.3 2000/12/13 14:59:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,8 +69,8 @@ public:
 
 	/** 
 	  * Constructor. 
-	  * You should call setViewMatrix + setFrustrum or setCamera, setViewport, setHotStop and setMouseMode to initialize
-	  * the whole object. By default, the viewmatrix is identity, the frustrum is (1,1,1,1,1), the hot spot is (0,0,0) 
+	  * You should call setMatrix, setFrustrum, setViewport, setHotStop and setMouseMode to initialize
+	  * the whole object. By default, the viewmatrix is identity, the frustrum is (-1,1,-1,1,1,-1), the hot spot is (0,0,0) 
 	  * and the viewport is fullscreen. The mouse mode is set to the NelStyle.
 	  */
 	CEvent3dMouseListener();
@@ -80,38 +80,21 @@ public:
 	/** 
 	  * Set the current view matrix to use.
 	  * \param matrix is the matrix to set.
-	  * \see setWithCamera() getViewMatrix()
+	  * \see getViewMatrix()
 	  */
-	void setViewMatrix (const NLMISC::CMatrix& matrix)
+	void setMatrix (const NLMISC::CMatrix& matrix)
 	{
-		_ViewMatrix=matrix;
+		_Matrix=matrix;
 	}
 
 	/** 
 	  * Set the current frustrum to use.
-	  * \param left is the left border of the frustrum.
-	  * \param right is the right border of the frustrum.
-	  * \param top is the top border of the frustrum.
-	  * \param bottom is the bottom border of the frustrum.
-	  * \param depth is the depth coordinate left, right, top and bottom values.
-	  * \see setWithCamera()
+	  * \param frustrum is the frustrum.
 	  */
-	void setFrustrum (float left, float right, float bottom, float top, float depth)
+	void setFrustrum (const CFrustum& frustrum)
 	{
-		_Left=left;
-		_Right=right;
-		_Bottom=bottom;
-		_Top=top;
-		_Depth=depth;
+		_Frustrum=frustrum;
 	}
-
-	/** 
-	  * Set the view matrix and the frustrum with a camera.
-	  * \param camMat the camera matrix.
-	  * \param camFrust the camera frutum.
-	  * \see setViewMatrix() setFrustrum()
-	  */
-	void setWithCamera  (const CMatrix &camMat, const CFrustum &camFrust);
 
 	/** 
 	  * Set the viewport in use in the window. By default, the viewport is fullwindow.
@@ -148,11 +131,11 @@ public:
 	/**
 	  * Get the current view matrix. This matrix is updated with mouse events.
 	  * \return The current view matrix.
-	  * \see setViewMatrix()
+	  * \see setMatrix()
 	  */
 	const NLMISC::CMatrix& getViewMatrix () const
 	{
-		return _ViewMatrix;
+		return _Matrix;
 	}
 
 	/** 
@@ -169,14 +152,10 @@ private:
 	/// Internal use
 	virtual void operator ()(const NLMISC::CEvent& event);
 
-	CMatrix		_ViewMatrix;
+	CMatrix		_Matrix;
+	CFrustum	_Frustrum;
 	CVector		_HotSpot;
 	NL3D::CViewport		_Viewport;
-	float		_Top;
-	float		_Bottom;
-	float		_Left;
-	float		_Right;
-	float		_Depth;
 	bool		_LeftPushed;
 	bool		_MiddlePushed;
 	bool		_RightPushed;

@@ -134,15 +134,5 @@ void CEventListenerAsync::removeFromServer (CEventServer& server)
 }
 \endcode
 
-The function getKey() retrieves a key state : 
-
-\code
-bool getKey(NLMISC::TKey key)
-{
- if( asyncListener.isKeyPush(key) )
-   return true;
- return false;
-}
-\endcode
 
 */

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.18 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.19 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -583,6 +583,17 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		// do it for this Lod only, and if cache say it is necessary.
 		if(!lod.OriginalSkinRestored)
 			restoreOriginalSkinPart(lod);
+	}
+
+	// If skinning, Setup the skeleton matrix
+	if(skinOk)
+	{
+		drv->setupModelMatrix(skeleton->getWorldMatrix());
+	}
+	// else set the instance worldmatrix.
+	else
+	{
+		drv->setupModelMatrix(trans->getWorldMatrix());
 	}
 
 

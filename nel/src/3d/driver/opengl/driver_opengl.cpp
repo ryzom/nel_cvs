@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.114 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.115 2001/08/29 17:07:35 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -149,8 +149,11 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 */
 #endif // NL_OS_UNIX
 
-CDriverGL::CDriverGL() : _AGPVertexArrayRange(this), _VRAMVertexArrayRange(this)
+CDriverGL::CDriverGL()
 {
+
+	_AGPVertexArrayRange.init(this);
+	_VRAMVertexArrayRange.init(this);
 
 #ifdef NL_OS_WINDOWS
 	_hWnd = NULL;

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.11 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: driver.h,v 1.12 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,19 @@ public:
 	 * \see setupVertexMode
 	 */
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
+
+	/** multipliy a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
+	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer, and setupVertexMode).
+	 *
+	 * NB: you must use multiplyModelMatrix() AFTER setupModelMatrix() (and so setupViewMatrix()) or an other multiplyModelMatrix(), 
+	 *	or else undefined results.
+	 *
+	 *	Using of multiplyModelMatrix() instead of just one setupModelMatrix() may be usefull for precision consideration.
+	 *
+	 * \see setupVertexMode
+	 */
+	virtual void			multiplyModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
+
 
 	virtual CMatrix			getViewMatrix(void)const=0;
 

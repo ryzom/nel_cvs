@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: bone.h,v 1.2 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,14 +112,18 @@ public:
 	// @}
 
 
-	/** Compute the WorldMatrix, and the BoneSkinMatrix (for skinning).
+	/** Compute the LocalSkeletonMatrix, the WorldMatrix, and the BoneSkinMatrix (for skinning).
+	 * NB: the result localSkeletonMatrix depends on BoneBase::UnheritScale. \n
 	 * NB: the result worldMatrix depends on BoneBase::UnheritScale. \n
 	 * NB: the result boneSkinMatrix depends on BoneBase::InvBindPos. \n
 	 * \param parent the parent of this bone (maybe NULL if root). his WorldMatrix is used, so it should be computed before.
-	 * \param rootMatrix is used as father worldmatrix if parent==NULL. Usefull for root bones.
+	 * \param rootMatrix is used as father worldmatrix if parent==NULL. Usefull for computing WorldMatrix.
 	 */
 	void			compute(CBone *parent, const CMatrix &rootMatrix);
 
+
+	/// retrieve the matrix local to the skeleton, computed in compute().
+	const CMatrix	&getLocalSkeletonMatrix() const {return _LocalSkeletonMatrix;}
 
 	/// retrieve the WorldMatrix computed in compute().
 	const CMatrix	&getWorldMatrix() const {return _WorldMatrix;}
@@ -135,9 +139,11 @@ private:
 	// the boneBase of the skeletonShape which create this bone..
 	NLMISC::CRefPtr<CBoneBase>	_BoneBase;
 
+	// The result Matrix, local to the skeleton.
+	CMatrix						_LocalSkeletonMatrix;
 	// The result WorldMatrix.
 	CMatrix						_WorldMatrix;
-	// The result Disaplcement WorldMatrix.
+	// The result Disaplcement _LocalSkeletonMatrix, local to the skeleton.
 	CMatrix						_BoneSkinMatrix;
 };
 

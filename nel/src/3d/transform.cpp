@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.25 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: transform.cpp,v 1.26 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,8 @@ void	CTransform::registerBasic()
 // ***************************************************************************
 CTransform::CTransform()
 {
+	_HrcObs= NULL;
+
 	TouchObs.resize(Last);
 
 	Visibility= CHrcTrav::Herit;
@@ -161,11 +163,8 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 // ***************************************************************************
 void			CTransform::updateWorldMatrixFromSkeleton(const CMatrix &parentWM)
 {
-	// Get the HrcObs.
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
-
 	// Compute the HRC WorldMatrix.
-	hrcObs->WorldMatrix= parentWM*hrcObs->LocalMatrix;
+	_HrcObs->WorldMatrix= parentWM*_HrcObs->LocalMatrix;
 }
 
 
@@ -177,24 +176,20 @@ void			CTransform::freeze()
 	validate();
 
 	// Then flag the frozen state.
-	// Get the HrcObs.
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
-	hrcObs->Frozen= true;
+	_HrcObs->Frozen= true;
 }
 
 // ***************************************************************************
 void			CTransform::setDontUnfreezeChildren(bool val)
 {
-	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
-	hrcObs->DontUnfreezeChildren = val;
+	_HrcObs->DontUnfreezeChildren = val;
 }
 
 
 // ***************************************************************************
 const CMatrix& CTransform::getWorldMatrix()
 {
-	CTransformHrcObs *pObs = (CTransformHrcObs*)getObs(HrcTravId);
-	return pObs->WorldMatrix;
+	return _HrcObs->WorldMatrix;
 }
 
 
@@ -220,8 +215,7 @@ void		CTransform::unfreezeHRC()
 		if(_FreezeHRCState == CTransform::FreezeHRCStateEnabled )
 		{
 			// Trick: get the traversal via the HrcObs.
-			IObs		*hrcObs= getObs(HrcTravId);
-			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(hrcObs->Trav);
+			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
 			// if linked to SkipModelRoot, link this model to root of HRC.
 			if( hrcTrav->getFirstParent(this) == hrcTrav->SkipModelRoot )
 				hrcTrav->link(NULL, this);
@@ -261,8 +255,7 @@ void		CTransform::update()
 		else if( _FreezeHRCState == CTransform::FreezeHRCStateReady )
 		{
 			// Trick: get the traversal via the HrcObs.
-			IObs		*hrcObs= getObs(HrcTravId);
-			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(hrcObs->Trav);
+			CHrcTrav	*hrcTrav= static_cast<CHrcTrav*>(_HrcObs->Trav);
 			// if linked to root of HRC, link this model to SkipModelRoot.
 			if( hrcTrav->getFirstParent(this) == hrcTrav->getRoot() )
 				hrcTrav->link(hrcTrav->SkipModelRoot, this);
@@ -282,6 +275,14 @@ void		CTransform::update()
 // Observers.
 // ***************************************************************************
 // ***************************************************************************
+
+
+// ***************************************************************************
+void	CTransformHrcObs::init()
+{
+	CTransform	*transform= (CTransform*)Model;
+	transform->_HrcObs= this;
+}
 
 
 // ***************************************************************************

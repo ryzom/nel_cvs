@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.33 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh.cpp,v 1.34 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,10 +378,15 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
 
 
-	// enable driver skinning.
+	// If skinning, enable driver skinning.
 	if(skinOk)
 	{
 		drv->setupVertexMode(NL3D_VERTEX_MODE_SKINNING);
+	}
+	// else setup instance matrix
+	else
+	{
+		drv->setupModelMatrix(trans->getWorldMatrix());
 	}
 
 
@@ -399,7 +404,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		if(mBlock.RdrPass.size()==0)
 			continue;
 
-		// If skinning, Setup matrixs (else MeshInstance has computed the worldmatrix for me).
+		// If skinning, Setup matrixs (else worldmatrix setuped before).
 		if(skinOk)
 		{
 			uint idMat;
@@ -419,7 +424,14 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					continue;
 
 				// Else, we must setup the matrix computed in skeleton to the driver.
-				drv->setupModelMatrix(skeleton->Bones[curBoneId].getBoneSkinMatrix(), idMat);
+				/* Use separate multiply for precision consideration:
+					In OpenGL, The modelViewMatrix is first computed in setupModelMatrix(), and so
+					the result is nearly identity (because in camera basis).
+					If we do setupModelMatrix(skeleton->getWorldMatrix() * skeleton->Bones[curBoneId].getBoneSkinMatrix()),
+					the result is worse.
+				*/
+				drv->setupModelMatrix(skeleton->getWorldMatrix(), idMat);
+				drv->multiplyModelMatrix(skeleton->Bones[curBoneId].getBoneSkinMatrix(), idMat);
 			}
 		}
 

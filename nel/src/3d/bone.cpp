@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.3 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: bone.cpp,v 1.4 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,11 +127,11 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 {
 	nlassert(_BoneBase);
 
-	// Compute WorldMatrix.
+	// Compute LocalSkeletonMatrix.
 	// Root case?
 	if(!parent)
 	{
-		_WorldMatrix= rootMatrix * getMatrix();
+		_LocalSkeletonMatrix= getMatrix();
 	}
 	// Else, son case, take world matrix from parent.
 	else
@@ -162,16 +162,18 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 			invScaleComp.translate(-trans);
 
 			// And finally, we got ParentWM * T*Sf-1*P*R*S*P-1.
-			_WorldMatrix= parent->_WorldMatrix * invScaleComp * getMatrix();
+			_LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * invScaleComp * getMatrix();
 		}
 		// Normal case.
 		else
-			_WorldMatrix= parent->_WorldMatrix * getMatrix();
+			_LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * getMatrix();
 	}
 
+	// Compute WorldMatrix.
+	_WorldMatrix= rootMatrix * _LocalSkeletonMatrix;
 
 	// Compute BoneSkinMatrix.
-	_BoneSkinMatrix= _WorldMatrix * _BoneBase->InvBindPos;
+	_BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos;
 }
 
 

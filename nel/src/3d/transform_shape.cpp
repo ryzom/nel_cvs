@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.14 2001/08/24 16:37:16 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.15 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,9 +102,6 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 	IDriver				*drv= trav->getDriver();
-
-	// Setup the matrix.
-	drv->setupModelMatrix(HrcObs->WorldMatrix);
 
 	// render the shape.
 	if(m->Shape)

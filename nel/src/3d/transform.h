@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.8 2001/08/28 11:44:22 berenguier Exp $
+ * $Id: transform.h,v 1.9 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,9 @@ private:
 
 	// For fast clip.
 	bool			_QuadGridClipManagerEnabled;
+
+	// shortcut to the HrcObs.
+	CTransformHrcObs	*_HrcObs;
 };
 
 
@@ -243,6 +246,9 @@ public:
 		Frozen = false;
 		DontUnfreezeChildren = false;
 	}
+
+	// some init: copy a shortcut of me in the model.
+	virtual	void	init();
 
 	virtual	void	update();
 

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.23 2001/08/16 17:07:38 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.24 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "3d/particle_system_shape.h"
 #include "3d/particle_system_model.h"
 #include "3d/scene.h"
+#include "3d/driver.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
 
@@ -217,6 +218,8 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 
 	// render particles
 	
+	// Setup the matrix.
+	drv->setupModelMatrix(trans->getWorldMatrix());
 
 	ps->setDriver(drv);
 

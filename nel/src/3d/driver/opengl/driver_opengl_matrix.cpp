@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.8 2001/07/05 09:19:03 besson Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.9 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,23 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 
 	// Put the matrix in the opengl world, and store it.
 	_ModelViewMatrix[n]= _ViewMtx*mtx;
+}
+
+void CDriverGL::multiplyModelMatrix(const CMatrix& mtx, uint8 n)
+{
+	// Check args
+	nlassert (n<IDriver::MaxModelMatrix);
+
+
+	// Dirt flags.
+	_MatrixSetupDirty= true;
+	// because we don't know for which (skin/normal/paletteSkin) mode this will be used, we must set the 2 flags.
+	_ModelViewMatrixDirty.set(n);
+	_ModelViewMatrixDirtyPaletteSkin.set(n);
+
+
+	// multiply this modelMatrix with the _ModelViewMatrix.
+	_ModelViewMatrix[n]= _ModelViewMatrix[n]*mtx;
 }
 
 

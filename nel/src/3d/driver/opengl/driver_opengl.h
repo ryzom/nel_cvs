@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.80 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.81 2001/08/29 17:07:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,13 +150,18 @@ public:
 class CVertexArrayRange
 {
 public:
-	CVertexArrayRange(CDriverGL *drv)
+	CVertexArrayRange()
 	{
-		_Driver= drv;
+		_Driver= NULL;
 		_VertexArrayPtr= NULL;
 		_VertexArraySize= 0;
 	}
 
+
+	void			init(CDriverGL *drv)
+	{
+		_Driver= drv;
+	}
 
 	bool			allocated() const {return _VertexArrayPtr!=NULL;}
 
@@ -343,6 +348,8 @@ public:
 	virtual void			setupViewMatrix(const CMatrix& mtx);
 
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0);
+
+	virtual void			multiplyModelMatrix(const CMatrix& mtx, uint8 n=0);
 
 	virtual CMatrix			getViewMatrix() const;
 

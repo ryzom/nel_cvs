@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.7 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.8 2003/06/04 15:09:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -54,6 +54,10 @@ CSegRemanenceShape::CSegRemanenceShape() : _GeomTouched(true),
 //===========================================================
 void CSegRemanenceShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	// version 2 : added default tracks
+	// version 1 : rollup ratio
+	// version 0 : base version
+
 	sint ver = f.serialVersion(1);
 	f.serial(_NumSlices);
 	f.serial(_SliceTime);
@@ -70,6 +74,12 @@ void CSegRemanenceShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (ver >= 1)
 	{
 		f.serial(_RollUpRatio);
+	}
+	if (ver >= 2)
+	{
+		f.serial(_DefaultPos);		
+		f.serial(_DefaultRotQuat);
+		f.serial(_DefaultScale);		
 	}
 }
 
@@ -119,11 +129,11 @@ void CSegRemanenceShape::render(IDriver *drv, CTransformShape *trans, bool opaqu
 	   )
 	{
 		CSegRemanence *sr = NLMISC::safe_cast<CSegRemanence *>(trans);
-		if (!sr->isStarted()) return;		
+		#ifndef DEBUG_SEG_REMANENCE_DISPLAY
+		if (!sr->isStarted()) return;	
+		#endif
 		setupVBnPB();
-		setupMaterial();
-		// vertices are rendered in world space
-		drv->setupModelMatrix(NLMISC::CMatrix::Identity);		
+		setupMaterial();		
 		//		
 		sr->render(drv, _VB, _PB, _Mat);		
 	}

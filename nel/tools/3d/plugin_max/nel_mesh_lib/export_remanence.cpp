@@ -1,6 +1,6 @@
 /** \file export_remanence.cpp
  *
- * $Id: export_remanence.cpp,v 1.4 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_remanence.cpp,v 1.5 2003/06/04 15:09:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -121,6 +121,25 @@ NL3D::IShape *CExportNel::buildRemanence(INode& node, TimeValue time)
 		srs->setAnimatedMaterial(mmbb.MaterialInfo[0].MaterialName);
 	}					
 	
+
+	// ********************************
+	// *** Export default transformation
+	// ********************************
+
+	// Get the node matrix
+	Matrix3 localTM;
+	getLocalMatrix (localTM, node, time);
+
+	// Get the translation, rotation, scale of the node
+	CVector pos, scale;
+	CQuat rot;
+	decompMatrix (scale, rot, pos, localTM);
+
+	// Set the default values
+	srs->getDefaultPos()->setValue(pos);					
+	srs->getDefaultScale()->setValue(scale);					
+	srs->getDefaultRotQuat()->setValue(rot);
+
 
 	return srs.release();
 

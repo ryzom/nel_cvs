@@ -1,6 +1,6 @@
 /** \file seg_remanence.h
  * A segment that let a remanence on the screen (for sword trace)
- * $Id: seg_remanence.h,v 1.5 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: seg_remanence.h,v 1.6 2003/06/04 15:09:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -110,6 +110,9 @@ public:
 		AnimValueLast,
 	};
 	
+	
+	virtual ITrack *getDefaultTrack (uint valueId);
+
 
 	/// \name CTransform traverse specialisation
 	// @{

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.10 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: seg_remanence.cpp,v 1.11 2003/06/04 15:09:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/scene.h"
 #include "3d/anim_detail_trav.h"
 #include "3d/skeleton_model.h"
+#include "3d/dru.h"
+
 
 
 
@@ -141,7 +143,16 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	const uint vertexSize = vb.getVertexSize();
 	uint8 *datas = (uint8 *) vb.getVertexCoordPointer();
 	uint numCorners = _Ribbons.size();
-	for(uint k = 0; k < numCorners; ++k)
+	uint k;	
+	#ifdef DEBUG_SEG_REMANENCE_DISPLAY
+		drv->setupModelMatrix(getWorldMatrix());
+		if (!numCorners) return;
+		for(k = 0; k < numCorners - 1; ++k)
+		{
+			CDRU::drawLine(srs->getCorner(k), srs->getCorner(k + 1), CRGBA::White, *drv);
+		}
+	#endif
+	for(k = 0; k < numCorners; ++k)
 	{
 		_Ribbons[k].fillVB(datas, vertexSize, srs->getNumSlices(), srs->getSliceTime());
 		datas += (_NumSlice + 1) * vertexSize;
@@ -153,7 +164,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 	if (mat.getTexture(0) != NULL)
 		mat.setUserTexMat(0, texMat);
 	
-	
+	drv->setupModelMatrix(CMatrix::Identity);
 	
 	drv->activeVertexBuffer(vb);	
 	drv->render(pb, mat);
@@ -173,7 +184,7 @@ void CSegRemanence::render(IDriver *drv, CVertexBuffer &vb, CPrimitiveBlock &pb,
 			_Stopping = false;
 			_Started = false;
 		}
-	}
+	}	
 }
 
 //===============================================================
@@ -409,10 +420,27 @@ void CSegRemanence::registerToChannelMixer(CChannelMixer *chanMixer, const std::
 }
 
 //===============================================================
+ITrack *CSegRemanence::getDefaultTrack (uint valueId)
+{	
+	CSegRemanenceShape *srs = NLMISC::safe_cast<CSegRemanenceShape *>((IShape *) Shape);
+	switch (valueId)
+	{
+		case PosValue:			return srs->getDefaultPos();		
+		case RotQuatValue:		return srs->getDefaultRotQuat();
+		case ScaleValue:		return srs->getDefaultScale();		
+	}	
+	return CTransformShape::getDefaultTrack(valueId);	
+	return NULL;
+
+}
+
+//===============================================================
 void CSegRemanence::traverseAnimDetail()
 {
 	CTransformShape::traverseAnimDetail();
-	if (isStarted())
+	#ifndef DEBUG_SEG_REMANENCE_DISPLAY
+		if (isStarted())
+	#endif
 	{	
 		/////////////////////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.5 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: seg_remanence_shape.h,v 1.6 2003/06/04 15:09:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -42,8 +42,8 @@
 
 
 
-
-
+// for debug only
+//#define DEBUG_SEG_REMANENCE_DISPLAY
 
 
 namespace NL3D
@@ -143,7 +143,13 @@ public:
 	// from IShape
 	virtual bool		clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
-		
+	/// \name access default tracks.
+	// @{
+		CTrackDefaultVector*	getDefaultPos()		{return &_DefaultPos;}		
+		CTrackDefaultQuat*		getDefaultRotQuat()	{return &_DefaultRotQuat;}
+		CTrackDefaultVector*	getDefaultScale()		{return &_DefaultScale;}		
+	// @}	
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -173,6 +179,10 @@ private:
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
 	CMaterialBase				*_AnimatedMat;
+	// Default tracks
+	CTrackDefaultVector			_DefaultPos;	
+	CTrackDefaultQuat			_DefaultRotQuat;
+	CTrackDefaultVector			_DefaultScale;	
 private:	
 	void	setupVBnPB();
 	void    setupMaterial();

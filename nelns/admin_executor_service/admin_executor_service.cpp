@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.68 2004/12/24 14:12:09 vuarand Exp $
+ * $Id: admin_executor_service.cpp,v 1.68.8.1 2005/02/21 13:46:08 lancon Exp $
  *
  */
 
@@ -1689,10 +1689,24 @@ NLMISC_COMMAND (aesSystem, "Execute a system() call", "<command>")
 CMakeLogTask MakingLogTask;
 
 
-NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop]" )
+NLMISC_COMMAND( makeLogReport, "Build a report of logs produced on the machine", "[stop | <logpath>]" )
 {
-	if ( args.empty() )
+
+
+	bool start = args.empty() || (!args.empty() && args[0] != "stop");
+
+	if ( start)
 	{
+
+		if (!args.empty())
+		{
+			MakingLogTask.setLogPath(args[0]);
+		}
+		else
+		{
+			MakingLogTask.setLogPathToDefault();
+		}
+
 		if ( ! MakingLogTask.isRunning() )
 		{
 			MakingLogTask.start();

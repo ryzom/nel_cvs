@@ -1,7 +1,7 @@
 /** \file log_report.h
  * <File description>
  *
- * $Id: log_report.h,v 1.3 2004/06/15 13:34:48 cado Exp $
+ * $Id: log_report.h,v 1.3.22.1 2005/02/21 13:46:08 lancon Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -90,12 +90,23 @@ public:
 
 	virtual void run();
 
+
+	/// Set the path of logfile directory. 
+	void setLogPath(const std::string & logPath);
+
+	/// Set the path of logfile directory to default value
+	void setLogPathToDefault();
+
+
+
+
 private:
 
 	void	pleaseStop() { _Stopping = true; }
 
 	volatile bool	_Stopping;
 	volatile bool	_Complete;
+	std::string _DefaultLogPath;
 
 	NLMISC::IThread	*_Thread;
 };

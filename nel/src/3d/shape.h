@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.7 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: shape.h,v 1.8 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,9 @@ public:
 	/// \name Load balancing methods
 	// @{
 
-	/// get an approximation of the number of triangles this instance will render for a fixed distance.
+	/** get an approximation of the number of triangles this instance will render for a fixed distance.
+	 *	return 0 if do not support degradation.
+	 */
 	virtual float				getNumTriangles (float distance)=0;
 
 	// @}

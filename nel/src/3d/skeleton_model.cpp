@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.7 2001/08/23 10:13:14 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.8 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,8 +96,14 @@ void		CSkeletonModel::bindSkin(CMeshBaseInstance *mi)
 	cacheTravs();
 	HrcTrav->link(this, mi);
 
-	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
-	ClipTrav->unlink(NULL, mi);
+	// ClipTrav is no more a Tree (it is a graph now), so must unlink from ALL olds models.
+	IModel	*father= ClipTrav->getFirstParent(mi);
+	while(father)
+	{
+		ClipTrav->unlink(father, mi);
+		father= ClipTrav->getFirstParent(mi);
+	}
+	// And link to me.
 	ClipTrav->link(this, mi);
 
 }
@@ -123,8 +129,14 @@ void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 	cacheTravs();
 	HrcTrav->link(this, mi);
 
-	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
-	ClipTrav->unlink(NULL, mi);
+	// ClipTrav is no more a Tree (it is a graph now), so must unlink from ALL olds models.
+	IModel	*father= ClipTrav->getFirstParent(mi);
+	while(father)
+	{
+		ClipTrav->unlink(father, mi);
+		father= ClipTrav->getFirstParent(mi);
+	}
+	// And link to me.
 	ClipTrav->link(this, mi);
 
 }

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.79 2001/09/14 17:27:22 berenguier Exp $
+ * $Id: landscape.cpp,v 1.80 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -974,8 +974,9 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 
 		// Setup the material.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		// TODO: delete this line later. Not done because Bug In RenderFar mgt.
-		driver->setupMaterial(FarMaterial);
+		// If the texture need to be updated, do it now.
+		if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
+			driver->setupTexture(*pass.TextureDiffuse);
 
 		// Add triangles to array
 		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar0();
@@ -1019,8 +1020,9 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 
 		// Setup the material.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		// TODO: delete this line later. Not done because Bug In RenderFar mgt.
-		driver->setupMaterial(FarMaterial);
+		// If the texture need to be updated, do it now.
+		if(pass.TextureDiffuse && pass.TextureDiffuse->touched())
+			driver->setupTexture(*pass.TextureDiffuse);
 
 		// Add triangles to array
 		CRdrPatchId		*patchToRdr= pass.getRdrPatchFar1();

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.39 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: mesh.cpp,v 1.40 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1125,7 +1125,8 @@ uint32 CMesh::getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex)
 // ***************************************************************************
 float	CMesh::getNumTriangles (float distance)
 {
-	return _MeshGeom->getNumTriangles (distance);
+	// A CMesh do not degrad himself, so return 0, to not be taken into account.
+	return 0;
 }
 // ***************************************************************************
 const	CMeshGeom& CMesh::getMeshGeom () const

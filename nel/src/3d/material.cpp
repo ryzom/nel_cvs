@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.23 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: material.cpp,v 1.24 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,6 +267,22 @@ void			CMaterial::flushTextures (IDriver &driver)
 			driver.setupTexture (*_Textures[tex]);
 		}
 	}
+
+	// If Lightmap material
+	if(_ShaderType==LightMap)
+	{
+		// For each lightmap
+		for (uint lmap=0; lmap<_LightMaps.size(); lmap++)
+		{
+			// Texture exist?
+			if(_LightMaps[lmap].Texture)
+			{
+				// Force setup texture
+				driver.setupTexture (*_LightMaps[lmap].Texture);
+			}
+		}
+	}
+
 }
 
 

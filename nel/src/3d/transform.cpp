@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.26 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: transform.cpp,v 1.27 2001/09/18 08:33:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -396,13 +396,11 @@ void	CTransformClipObs::traverse(IObs *caller)
 		{
 			// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
 			// This works because we are sons of the SkeletonModel in the Clip traversal...
-			bool	skeletonClip= false;
 			if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
-				skeletonClip= callerClipObs->Visible;
-
-			// clip.
-			if( skeletonClip  ||  clip(callerClipObs)  )
-				Visible= true;
+				Visible= callerClipObs->Visible;
+			// else, clip.
+			else
+				Visible= clip(callerClipObs);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.15 2003/01/17 13:24:46 corvazier Exp $
+ * $Id: primitive.h,v 1.16 2003/01/20 10:05:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -502,6 +502,9 @@ public:
 	CPrimitives ();
 	CPrimitives (const CPrimitives &other);
 	~CPrimitives ();
+
+	// Operator copy
+	CPrimitives&	operator= (const CPrimitives &other);
 
 	// Convert from old format to the new one
 	void			convert (const CPrimRegion &region);

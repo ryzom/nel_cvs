@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.12 2003/01/17 13:24:46 corvazier Exp $
+ * $Id: primitive.cpp,v 1.13 2003/01/20 10:05:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1616,6 +1616,14 @@ CPrimitives::CPrimitives (const CPrimitives &other)
 CPrimitives::~CPrimitives ()
 {
 	delete RootNode;
+}
+
+// ***************************************************************************
+
+CPrimitives& CPrimitives::operator= (const CPrimitives &other)
+{
+	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+	return *this;
 }
 
 // ***************************************************************************

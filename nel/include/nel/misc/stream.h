@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.20 2000/10/09 14:38:16 corvazier Exp $
+ * $Id: stream.h,v 1.21 2000/10/19 10:05:21 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -151,7 +151,7 @@ public:
 	/**
 	 * Constructor.
 	 * You must set needSwap only if your stream need it (a CMemoryStream may not need it).
-	 * IStream::IStream() force needSwap=false if \c NL_BIG_ENDIAN defined!
+	 * IStream::IStream() force needSwap=false if \c NL_LITTLE_ENDIAN defined!
 	 * Notice that those behavior can be set at construction only.
 	 * \param inputStream is the stream an Input (read) stream?
 	 * \param needSwap is the stream need endian swapping?

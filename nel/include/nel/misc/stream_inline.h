@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.11 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: stream_inline.h,v 1.12 2000/10/19 10:05:21 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -35,9 +35,10 @@ namespace	NLMISC
 inline	IStream::IStream(bool inputStream, bool needSwap)
 {
 	_InputStream= inputStream;
-	_NeedSwap= needSwap;
-#ifdef NL_BIG_ENDIAN
+#ifdef NL_LITTLE_ENDIAN
 	_NeedSwap=false;
+#else
+	_NeedSwap= needSwap;
 #endif
 }
 

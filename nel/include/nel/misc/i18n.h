@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation
  *
- * $Id: i18n.h,v 1.3 2000/11/23 16:41:33 lecroart Exp $
+ * $Id: i18n.h,v 1.4 2000/12/05 16:12:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,9 @@ public:
 	/// Find a string in the selected language and return his association.
 	static const ucstring &get (const char *str);
 
+	/// Temporary, we don't have file system for now, so we do a tricky cheat. there s not check so be careful!
+	static void setPath (const char* str);
+
 private:
 
 	typedef std::map<std::string, ucstring>::iterator		 ItStrMap;
@@ -83,6 +86,7 @@ private:
 	static std::map<std::string, ucstring>					 _StrMap;
 	static bool													 _StrMapLoaded;
 
+	static std::string											 _Path;
 	static std::string											 _FileName;
 	static const char											*_LanguageFiles[];
 

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.8 2000/11/24 15:02:20 lecroart Exp $
+ * $Id: i18n.cpp,v 1.9 2000/12/05 16:12:28 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -37,6 +37,7 @@ const char						*CI18N::_LanguageFiles[] = { "english", "french", "fun" };
 
 map<string, ucstring>			 CI18N::_StrMap;
 bool							 CI18N::_StrMapLoaded = false;
+string							 CI18N::_Path = "";
 string							 CI18N::_FileName;
 
 vector<ucstring>				 CI18N::_LanguageNames;
@@ -221,11 +222,17 @@ void CI18N::createLanguageEntry (const string &lval, const string &rval)
 	}
 }
 
+void CI18N::setPath (const char* str)
+{
+	_Path = str;
+}
+
 void CI18N::load (uint32 lid)
 {
 	nlassert (lid >= 0 && lid < sizeof (_LanguageFiles)/sizeof(_LanguageFiles[0]));
 
-	_FileName = _LanguageFiles[lid];
+	_FileName  = _Path;
+	_FileName  = _LanguageFiles[lid];
 	_FileName += ".uxt";
 
 	if (_StrMapLoaded)	_StrMap.clear ();
@@ -233,7 +240,7 @@ void CI18N::load (uint32 lid)
 	
 	CIFile cf;
 	// if the file does not exist, it'll be create automatically
-	if (!cf.open (_FileName, true))
+	if (!cf.open (_Path + _FileName, true))
 	{
 		nlwarning ("Could not open file \"%s\" (this file should contain the %s language (lid:%d))", _FileName.c_str (), _LanguageNames[lid].c_str (), lid);
 		createLanguageFile (lid);
@@ -391,8 +398,7 @@ const vector<ucstring> &CI18N::getLanguageNames()
 	{
 		for (int i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
 		{
-			string fn = _LanguageFiles[i];
-			fn += ".uxt";
+			string fn = _Path + _LanguageFiles[i] + ".uxt";
 
 			ucstring lg;
 

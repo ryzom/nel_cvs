@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.5 2001/06/15 13:19:19 besson Exp $
+ * $Id: bitmap.h,v 1.6 2001/07/05 09:19:56 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,6 +431,7 @@ public:
 	 */
 	bool blit(const CBitmap *src, sint32 x, sint32 y) ;
 
+
 	/**
 	 * Get the color in the bitmap given a pixel size
 	 * The mipmaps must be built. If not just return the bilinear at the given point.
@@ -438,6 +439,27 @@ public:
 	 */
 	CRGBAF getColor(float x,float y);
 
+
+	/**
+	 * Horizontal flip (all the columns are flipped)
+	 */
+	void flipH();
+
+
+	/**
+	 * Vertical flip (all the rows are flipped)
+	 */
+	void flipV();
+
+	/**
+	 * Rotation of the bitmap of 90 degree in clockwise
+	 */
+	void rot90CW();
+
+	/**
+	 * Rotation of the bitmap of 90 degree in counter clockwise
+	 */
+	void rot90CCW();
 };
 
 

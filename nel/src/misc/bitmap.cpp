@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.7 2001/06/15 13:19:19 besson Exp $
+ * $Id: bitmap.cpp,v 1.8 2001/07/05 09:20:14 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2383,6 +2383,131 @@ void	CBitmap::loadSize(const std::string &path, uint32 &retWidth, uint32 &retHei
 	CIFile		f(path);
 	if(f.open(path))
 		loadSize(f, retWidth, retHeight);
+}
+
+
+void	CBitmap::flipH()
+{
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	sint32 i, j;
+	NLMISC::CRGBA *pBitmap = (NLMISC::CRGBA*)&_Data[0][0];
+	bool needRebuild;
+	CRGBA temp;
+
+	if(_MipMapCount>1)
+		needRebuild = true;
+	releaseMipMaps();
+
+	for( i = 0; i < nHeight; ++i )
+		for( j = 0; j < nWidth/2; ++j )
+		{
+			temp = pBitmap[i*nWidth+j];
+			pBitmap[i*nWidth+j] = pBitmap[i*nWidth+nWidth-j-1];
+			pBitmap[i*nWidth+nWidth-j-1] = temp;
+		}
+
+	// Rebuilding mipmaps
+	if(needRebuild)
+	{
+		buildMipMaps();
+	}
+}
+
+
+void	CBitmap::flipV()
+{
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	sint32 i, j;
+	NLMISC::CRGBA *pBitmap = (NLMISC::CRGBA*)&_Data[0][0];
+	bool needRebuild;
+	CRGBA temp;
+
+	if(_MipMapCount>1)
+		needRebuild = true;
+	releaseMipMaps();
+
+	for( j = 0; j < nHeight/2; ++j )
+		for( i = 0; i < nWidth; ++i )
+		{
+			temp = pBitmap[j*nWidth+i];
+			pBitmap[j*nWidth+i] = pBitmap[(nHeight-j-1)*nWidth+i];
+			pBitmap[(nHeight-j-1)*nWidth+i] = temp;
+		}
+
+	// Rebuilding mipmaps
+	if(needRebuild)
+	{
+		buildMipMaps();
+	}
+}
+
+
+void	CBitmap::rot90CW()
+{
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	sint32 i, j;
+	NLMISC::CRGBA *pSrcRgba = (NLMISC::CRGBA*)&_Data[0][0];
+	bool needRebuild;
+
+	if(_MipMapCount>1)
+		needRebuild = true;
+	releaseMipMaps();
+
+	std::vector<uint8> pDestui;
+	pDestui.resize(nWidth*nHeight*4);
+	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
+
+	for( j = 0; j < nHeight; ++j )
+	for( i = 0; i < nWidth;  ++i )
+		pDestRgba[j+i*nWidth] = pSrcRgba[i+(nHeight-1-j)*nWidth];
+
+	uint32 nTemp = _Width;
+	_Width = _Height;
+	_Height = nTemp;
+
+	NLMISC::contReset(_Data[0]); // free memory
+	_Data[0] =  pDestui;
+	// Rebuilding mipmaps
+	if(needRebuild)
+	{
+		buildMipMaps();
+	}
+}
+
+void	CBitmap::rot90CCW()
+{
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	sint32 i, j;
+	NLMISC::CRGBA *pSrcRgba = (NLMISC::CRGBA*)&_Data[0][0];
+	bool needRebuild;
+
+	if(_MipMapCount>1)
+		needRebuild = true;
+	releaseMipMaps();
+
+	std::vector<uint8> pDestui;
+	pDestui.resize(nWidth*nHeight*4);
+	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
+
+	for( j = 0; j < nHeight; ++j )
+	for( i = 0; i < nWidth;  ++i )
+		pDestRgba[j+i*nWidth] = pSrcRgba[nWidth-1-i+j*nWidth];
+
+	uint32 nTemp = _Width;
+	_Width = _Height;
+	_Height = nTemp;
+
+	NLMISC::contReset(_Data[0]); // free memory
+	_Data[0] =  pDestui;
+	// Rebuilding mipmaps
+	if(needRebuild)
+	{
+		buildMipMaps();
+	}
 }
 
 

@@ -1,7 +1,9 @@
 /**
-\page network Network engine
+\page network Network engine (until May 1, 2001)
 
 \author Olivier Cado
+
+Warning: this document describes the network engine as it was available in the NeL CVS tree until May 1, 2001. The updated documentation is available at http://www.nevrax.org/docs/nelnet.php3
 
 \section networkintro Introduction
 

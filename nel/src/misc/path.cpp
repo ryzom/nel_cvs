@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.106 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: path.cpp,v 1.107 2004/07/09 12:43:55 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1232,7 +1232,7 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 
 			if (path2 == sPathOnly)
 				return;
-			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path2.c_str());
+			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it\n%s\n%s", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path2.c_str(),filepath.c_str(),path2.c_str());
 		}
 	}
 	else
@@ -1731,6 +1731,40 @@ bool CFile::createDirectory(const std::string &filename)
 	// Set full permissions....
 	return mkdir(filename.c_str(), 0xFFFF)==0;
 #endif
+}
+
+bool CFile::createDirectoryTree(const std::string &filename)
+{
+	bool lastResult=true;
+	uint32 i=0;
+
+	// skip dos drive name eg "a:"
+	if (filename.size()>1 && filename[1]==':')
+		i=2;
+
+	// iterate over the set of directories in the routine's argument
+	while (i<filename.size())
+	{
+		// skip passed leading slashes
+		for (;i<filename.size();++i)
+			if (filename[i]!='\\' && filename[i]!='/')
+				break;
+
+		// if the file name ended with a '/' then there's no extra directory to create
+		if (i==filename.size())
+			break;
+
+		// skip forwards to next slash
+		for (;i<filename.size();++i)
+			if (filename[i]=='\\' || filename[i]=='/')
+				break;
+
+		// try to create directory
+		std::string s= filename.substr(0,i);
+		lastResult= createDirectory(s);
+	}
+
+	return lastResult;
 }
 
 bool CPath::makePathRelative (const char *basePath, std::string &relativePath)

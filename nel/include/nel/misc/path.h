@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.47 2004/04/30 13:57:29 lecroart Exp $
+ * $Id: path.h,v 1.48 2004/07/09 12:43:56 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -439,6 +439,11 @@ struct CFile
 	  *	\return true if succes
 	  */
 	static bool	createDirectory(const std::string &dirname);
+
+	/** Create a directory and any missing parent directories
+	  *	\return true if succes
+	  */
+	static bool	createDirectoryTree(const std::string &dirname);
 
 	/** Try to set the file access to read/write if not already set.
 	 * return true if the file doesn't exists or if the file already have RW access.

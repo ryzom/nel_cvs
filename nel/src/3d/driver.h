@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.50 2003/03/31 10:25:47 vizerie Exp $
+ * $Id: driver.h,v 1.51 2003/04/01 15:35:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -842,6 +842,9 @@ public:
 	// @{
 		/// test wether the device supports some form of texture shader. (could be limited to DX6 EMBM for example)
 		virtual bool supportTextureShaders() const = 0;
+		// Is the shader water supported ? If not, the driver caller should implement its own version
+		virtual bool isWaterShaderSupported() const = 0;
+		//
 		/// test wether a texture addressing mode is supported
 		virtual bool isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const = 0;
 		/** setup the 2D matrix for the OffsetTexture, OffsetTextureScale and OffsetTexture addressing mode

@@ -19,6 +19,7 @@
 #define IDC_PHI_SCROLLBAR               1004
 #define IDC_BLEND                       1005
 #define IDD_SCENE                       1005
+#define IDC_ALPHA_AMOUNT                1005
 #define IDD_PARTICLE                    1006
 #define IDC_DOOMY_BLEND                 1007
 #define IDD_EDITABLE_RANGE              1007
@@ -136,10 +137,15 @@
 #define IDC_LIFE_MAX_VALUE              1058
 #define IDB_ANIM_SEQUENCE               1058
 #define IDC_PARTICLE_NUMBER_POS         1059
+#define IDD_SCHEME_EDIT                 1059
+#define IDD_MEMORY_VALUE_DLG            1060
 #define IDC_MASS_MIN_VALUE              1061
+#define IDB_FORCE_INTENSITY             1061
 #define IDC_MASS_MAX_VALUE              1062
 #define IDC_LIFETIME_MIN_STATIC         1063
+#define IDB_LIFE_TIME                   1063
 #define IDC_LOWER_BOUND                 1064
+#define IDB_WEIGHT                      1064
 #define IDC_UPPER_BOUND                 1065
 #define IDC_COMBO1                      1070
 #define IDC_USE_SCHEME                  1070
@@ -208,6 +214,8 @@
 #define IDC_ENABLE_TEXTURE_ANIM         1139
 #define IDC_CHOOSE_TEXTURES             1140
 #define IDC_NO_SAMPLES                  1141
+#define IDC_BLENDING_MODE               1142
+#define IDC_BLENDING_MODE_STATIC        1143
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -246,14 +254,20 @@
 #define IDM_SHOCKWAVE                   32813
 #define IDM_DELETE_LOCATED_INSTANCE     32814
 #define IDM_RESET_ROTATION              32815
+#define IDM_FLUID_FRICTION              32816
+#define IDM_CYLINDRIC_VORTEX            32818
+#define IDM_SPHERICAL_EMITTER           32819
+#define IDM_DIRECTIONNAL_FORCE          32820
+#define IDM_CENTRAL_GRAVITY             32821
+#define IDM_BROWNIAN_MOVE               32822
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1059
-#define _APS_NEXT_COMMAND_VALUE         32816
-#define _APS_NEXT_CONTROL_VALUE         1142
+#define _APS_NEXT_RESOURCE_VALUE        1065
+#define _APS_NEXT_COMMAND_VALUE         32823
+#define _APS_NEXT_CONTROL_VALUE         1144
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

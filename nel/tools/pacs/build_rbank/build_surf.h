@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.11 2004/01/13 16:36:59 legros Exp $
+ * $Id: build_surf.h,v 1.12 2004/01/16 19:38:28 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -443,10 +443,10 @@ public:
 
 
 	/// Builds the border of the CComputableSurface.
-	void	buildBorders();
+	void	buildBorders(CZoneTessellation *zoneTessel);
 
 private:
-	void	followBorder(CSurfElement *first, uint edge, uint sens, std::vector<NLMISC::CVector> &vstore, bool &loop);
+	void	followBorder(CZoneTessellation *zoneTessel, CSurfElement *first, uint edge, uint sens, std::vector<NLMISC::CVector> &vstore, bool &loop);
 };
 
 
@@ -527,6 +527,11 @@ public:
 	 * The box that force merge into surface
 	 */
 	std::vector<CMergeForceBox>				ForceMerge;
+
+	/**
+	 * Flags
+	 */
+	std::vector<uint8>						VerticesFlags;
 
 public:
 	/**

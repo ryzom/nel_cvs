@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.17 2004/01/13 16:36:59 legros Exp $
+ * $Id: build_surf.cpp,v 1.18 2004/01/16 19:38:28 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,8 +267,16 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 	CVector		v0 = (*Vertices)[Tri[0]],
 				v1 = (*Vertices)[Tri[1]],
 				v2 = (*Vertices)[Tri[2]];
-	
-	CVector	n = (v1-v0) ^ (v2-v0);
+
+	CVector		nv0 = v0,
+				nv1 = v1,
+				nv2 = v2;
+
+	nv0.z = 0.0f;
+	nv1.z = 0.0f;
+	nv2.z = 0.0f;
+
+	CVector	n = (nv1-nv0) ^ (nv2-nv0);
 
 /*
 	CAABBox		zbbox = Root->RootZoneTessellation->OriginalBBox;
@@ -278,7 +286,7 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 	double	hmin = std::min(v0.z, std::min(v1.z, v2.z));
 	//QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
 	QuantHeight = ((uint8)floor(hmin/2.0))%255;
-	
+
 	Area = 0.5f*n.norm();
 
 	IsValid = (Normal.z > 0.707f);
@@ -450,7 +458,7 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
  *
  *
  */
-void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, uint sens, vector<CVector> &vstore, bool &loop)
+void	NLPACS::CComputableSurface::followBorder(CZoneTessellation *zoneTessel, CSurfElement *first, uint edge, uint sens, vector<CVector> &vstore, bool &loop)
 {
 	CSurfElement	*current = first;
 	CSurfElement	*next = current->EdgeLinks[edge];
@@ -479,10 +487,10 @@ void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, ui
 
 		if ((oppositeSurfId != UnaffectedSurfaceId && (next == NULL || (next->SurfaceId != oppositeSurfId && next->SurfaceId != currentSurfId))) ||
 			(oppositeSurfId == UnaffectedSurfaceId && (next != NULL && next->SurfaceId != currentSurfId || next == NULL && current->getZoneIdOnEdge(nextEdge) != oppositeZid)) ||
-			(current->EdgeFlag[nextEdge] && !allowThis))
+			((current->EdgeFlag[nextEdge] || zoneTessel->VerticesFlags[current->Tri[pivot]]!=0) && !allowThis))
 		{
 			// if reaches the end of the border, then quits.
-			loop = absoluteEquals(vstore.front(), vstore.back(), 1e-2f);
+			loop = (absoluteEquals(vstore.front(), vstore.back(), 1e-2f) && loopCount != 1);
 			break;
 		}
 		else if ((oppositeSurfId != UnaffectedSurfaceId && next->SurfaceId == oppositeSurfId) ||
@@ -521,7 +529,7 @@ void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, ui
 	}
 }
 
-void	NLPACS::CComputableSurface::buildBorders()
+void	NLPACS::CComputableSurface::buildBorders(CZoneTessellation *zoneTessel)
 {
 	sint	elem, edge;
 
@@ -571,7 +579,7 @@ void	NLPACS::CComputableSurface::buildBorders()
 				vector<CVector>		bwdVerts;
 				vector<CVector>		&fwdVerts = border.Vertices;
 
-				followBorder(Elements[elem], edge, 2, bwdVerts, loop);
+				followBorder(zoneTessel, Elements[elem], edge, 2, bwdVerts, loop);
 
 				sint	i;
 
@@ -590,7 +598,7 @@ void	NLPACS::CComputableSurface::buildBorders()
 				else
 				{
 					fwdVerts.resize(fwdVerts.size()-2);
-					followBorder(Elements[elem], edge, 1, fwdVerts, loop);
+					followBorder(zoneTessel, Elements[elem], edge, 1, fwdVerts, loop);
 				}
 			}
 		}
@@ -989,7 +997,6 @@ void	NLPACS::CZoneTessellation::build()
 
 void	NLPACS::CZoneTessellation::compile()
 {
-	uint	zone;
 	sint	el;
 	uint	i, j;
 
@@ -1191,6 +1198,40 @@ void	NLPACS::CZoneTessellation::compile()
 		if (Verbose)
 			nlinfo("%d surfaces generated", totalSurf);
 	}
+
+	// flag vertices that are pointed by more than 2 surfaces
+	VerticesFlags.resize(_Vertices.size(), 0);
+
+	for (p=0; p<(sint)Elements.size(); ++p)
+	{
+		CSurfElement	*elem = Elements[p];
+
+		sint32		s = elem->SurfaceId;
+		sint32		s0 = (elem->EdgeLinks[0] != NULL ? elem->EdgeLinks[0]->SurfaceId : UnaffectedSurfaceId);
+		sint32		s1 = (elem->EdgeLinks[1] != NULL ? elem->EdgeLinks[1]->SurfaceId : UnaffectedSurfaceId);
+		sint32		s2 = (elem->EdgeLinks[2] != NULL ? elem->EdgeLinks[2]->SurfaceId : UnaffectedSurfaceId);
+
+		if (s != s0 && s != s1 && s0 != s1)
+		{
+			VerticesFlags[elem->Tri[2]] = 1;
+//			if (s >= 0)
+//				nlstop
+		}
+
+		if (s != s1 && s != s2 && s1 != s2)
+		{
+			VerticesFlags[elem->Tri[0]] = 1;
+//			if (s >= 0)
+//				nlstop
+		}
+
+		if (s != s2 && s != s0 && s2 != s0)
+		{
+			VerticesFlags[elem->Tri[1]] = 1;
+//			if (s >= 0)
+//				nlstop
+		}
+	}
 }
 
 
@@ -1204,7 +1245,7 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 		nlinfo("generate tessellation borders");
 	// for each surface, build its border
 	for (surf=0; surf<(sint)Surfaces.size(); ++surf)
-		Surfaces[surf].buildBorders();
+		Surfaces[surf].buildBorders(this);
 
 	// then, for each border, link the related surfaces...
 	if (Verbose)

@@ -168,6 +168,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(IDM_SHOW_SCENE_MATRIX, OnShowSceneMatrix)
 	ON_COMMAND(IDM_SHOW_FX_MATRIX, OnShowFXMatrix)
 	ON_COMMAND(IDM_SHOW_FX_USER_MATRIX, OnShowFXUserMatrix)
+	ON_COMMAND(iDM_SHOW_OCCLUSION_TEST_MESHS, OnShowOcclusionTestMeshs)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -193,6 +194,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(IDM_SHOW_SCENE_MATRIX, OnUpdateShowSceneMatrix)
 	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_MATRIX, OnUpdateShowFXMatrix)
 	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_USER_MATRIX, OnUpdateShowFXUserMatrix)
+	ON_UPDATE_COMMAND_UI(iDM_SHOW_OCCLUSION_TEST_MESHS, OnUpdateShowOcclusionTestMeshs)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)	
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
@@ -848,6 +850,12 @@ void CMainFrame::OnShowFXUserMatrix()
 	ObjView->setFXUserMatrixVisible(!ObjView->getFXUserMatrixVisible());
 }
 
+void CMainFrame::OnShowOcclusionTestMeshs()
+{
+	ObjView->setOcclusionTestMeshsVisible(!ObjView->getOcclusionTestMeshsVisible());
+}
+
+
 void CMainFrame::OnUpdateShowSceneMatrix(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(ObjView->getSceneMatrixVisible());
@@ -861,6 +869,11 @@ void CMainFrame::OnUpdateShowFXMatrix(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateShowFXUserMatrix(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(ObjView->getFXUserMatrixVisible());
+}
+
+void CMainFrame::OnUpdateShowOcclusionTestMeshs(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(ObjView->getOcclusionTestMeshsVisible());
 }
 
 

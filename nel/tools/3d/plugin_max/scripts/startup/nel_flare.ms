@@ -40,7 +40,7 @@ extends:Sphere
 		size8			 type:#Float   default: 1      ui:UISize8
 		size9			 type:#Float   default: 1      ui:UISize9
 
-		pos0			 type:#Float   default: 0      ui:UIPos0
+		pos0			 type:#Float   default: 0        ui:UIPos0
 		pos1			 type:#Float   default: 0.1      ui:UIPos1
 		pos2			 type:#Float   default: 0.2      ui:UIPos2
 		pos3			 type:#Float   default: 0.3      ui:UIPos3
@@ -64,10 +64,20 @@ extends:Sphere
 		DazzleAttenuationRange	 type:#float	animatable:false default:  0.5   ui:UIDazzleAttenuationRange
 		MaxViewDist				 type:#float	animatable:false default:  1000  ui:UIMaxViewDist
 		MaxViewDistRatio		 type:#float	animatable:false default:  0.9   ui:UIMaxViewDistRatio
+
+		occlusionTestMesh 				 type:#String default:""
+		occlusionTestMeshInheritScaleRot type:#boolean  animatable:false default:false ui:UIOcclusionTestMeshInheritScaleRot
+		
+		sizeDisappear			 type:#Float   default: 0        ui:UISizeDisappear
+		angleDisappear			 type:#Float   default: 0        ui:UIAngleDisappear
+		scaleWhenDisappear 		 type:#boolean  animatable:false default:  false ui:UIScaleWhenDisappear
+
+		lookAtMode 				type:#boolean  animatable:false default:true ui:UIScaleLookAtMode
 	)
 
 	rollout param "Parameters"
-	(		
+	(	
+		checkbox	UILookAtMode		"LookAt mode"			   type:#boolean	
 		colorpicker UIColorParam 		"color" 	               color:white 
 		spinner 	UIPersistenceParam  "persistence    :"	       range:[0,20,1]  type:#float scale:0.01 align:#left
 		spinner 	UISpacing           "flare spacing  :" 	       range:[0,20,1]  type:#float scale:0.01 align:#left
@@ -76,12 +86,21 @@ extends:Sphere
 		checkbox    UIFirstFlareKeepSize "keep 1st size  :"	       type:#boolean
 		checkbox	UIHasDazzle			 "Enable dazzle  :"		   type:#boolean
 		spinner     UIDazzleAttenuationRange  "dazzle atten.:" 	   range:[0,20,1]  type:#float align:#left
-		colorpicker UIDazzleColor 		"dazzle color" 	               color:white 
-
+		colorpicker UIDazzleColor 		 "dazzle color" 	           color:white 
+		edittext    UIOcclusionTestMesh  "TestMesh:"
+		button      UIBrowseOcclusionMesh  "Browse occlusion mesh ..."
+		checkbox	UIOcclusionTestMeshInheritScaleRot	"Test mesh inherit Scale/Rot" type:#boolean
 		group "Distance"
 		(
 			spinner     UIMaxViewDist		"Max view dist." 	   range:[0,1000,1]  type:#float align:#left
 			spinner     UIMaxViewDistRatio  "Atten. start" range:[0,0.9,0.05]  type:#float align:#left
+		)
+
+		group "Disappear behaviour"
+		(
+			checkbox  UIScaleWhenDisappear "Scale when disappear"	       type:#boolean
+			spinner   UISizeDisappear      "size :"  range:[0,500,1] type:#float scale:0.01 align:#left
+			spinner   UIAngleDisappear	   "angle  :"  range:[0,3600,0]   type:#float scale:0.01 align:#left
 		)
 		
 		group "Flare 0"
@@ -165,6 +184,24 @@ extends:Sphere
 			spinner   UIPos9			"pos  :"  range:[0,1,0.9]   type:#float scale:0.01 align:#left
 		)		
 		
+		fn updateUI =
+		(
+			UISizeDisappear.enabled = scaleWhenDisappear
+			tex_file_name_et0.text = texFileName0
+			tex_file_name_et1.text = texFileName1
+	 		tex_file_name_et2.text = texFileName2
+			tex_file_name_et3.text = texFileName3
+			tex_file_name_et4.text = texFileName4
+			tex_file_name_et5.text = texFileName5
+	 		tex_file_name_et6.text = texFileName6
+			tex_file_name_et7.text = texFileName7
+			tex_file_name_et8.text = texFileName8
+			tex_file_name_et9.text = texFileName9
+			UIOcclusionTestMesh.text = occlusionTestMesh
+		)
+
+		on UIScaleWhenDisappear changed val do ( updateUI() )
+		on UIOcclusionTestMesh changed val do ( occlusionTestMesh = val )
 		on tex_file_name_et0 changed val do ( texFileName0 = val )
 		on tex_file_name_et1 changed val do ( texFileName1 = val )
 		on tex_file_name_et2 changed val do ( texFileName2 = val )
@@ -178,16 +215,7 @@ extends:Sphere
 		
 		on param open do
 		(
-			tex_file_name_et0.text = texFileName0
-			tex_file_name_et1.text = texFileName1
-	 		tex_file_name_et2.text = texFileName2
-			tex_file_name_et3.text = texFileName3
-			tex_file_name_et4.text = texFileName4
-			tex_file_name_et5.text = texFileName5
-	 		tex_file_name_et6.text = texFileName6
-			tex_file_name_et7.text = texFileName7
-			tex_file_name_et8.text = texFileName8
-			tex_file_name_et9.text = texFileName9
+			updateUI()			
 		)
 		
 		on browse0 pressed do
@@ -279,6 +307,16 @@ extends:Sphere
 			  texFileName9 = fname 
 			  tex_file_name_et9.text = texFileName7
 			)			
+		)
+
+		on UIBrowseOcclusionMesh pressed do
+		(
+			fname = getOpenFileName caption: "shape file" types:"shape(*.shape)|" filename:"*.shape"
+			if not fname == undefined then
+			(
+			  occlusionTestMesh = fname 
+			  UIOcclusionTestMesh.text = occlusionTestMesh
+			)
 		)
 	)
 )

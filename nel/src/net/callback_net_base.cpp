@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.7 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.8 2001/05/04 09:53:42 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -318,14 +318,17 @@ void	CCallbackNetBase::displayAllMyAssociations ()
 	_OutputSIDA.display ();
 }
 
-void	CCallbackNetBase::authorizeOnly (std::string callbackName, TSockId hostid)
+void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 {
-	nldebug ("L3: authorizeOnly (%s, %s)", callbackName.c_str(), hostid->asString().c_str());
+	nldebug ("L3: authorizeOnly (%s, %s)", callbackName, hostid->asString().c_str());
 
 	hostid = getSockId (hostid);
 	
 	nlassert (hostid != NULL);
-	hostid->AuthorizedCallback = callbackName;
+	if (callbackName == NULL)
+		hostid->AuthorizedCallback = "";
+	else
+		hostid->AuthorizedCallback = callbackName;
 }
 
 } // NLNET

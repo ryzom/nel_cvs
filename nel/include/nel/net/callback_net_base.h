@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.11 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.12 2001/05/04 09:53:42 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	 * On a client, the hostid must be 0 (or ommited).
 	 * On a server, you must provide a hostid.
 	 */
-	void	authorizeOnly (std::string callbackName, TSockId hostid = 0);
+	void	authorizeOnly (const char *callbackName, TSockId hostid = 0);
 
 	/// Returns true if this is a CCallbackServer
 	bool	isAServer () const { return _IsAServer; }

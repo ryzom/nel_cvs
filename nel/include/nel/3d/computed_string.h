@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.10 2001/01/02 15:30:08 coutelas Exp $
+ * $Id: computed_string.h,v 1.11 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,36 +41,6 @@ namespace NL3D {
 
 class CTextureFont;
 struct CFontDescriptor;
-
-/*******************************************************************/
-
-
-/**
- * CDisplayDescriptor
- * used to describe screen configuration :
- * - screen width
- * - screen height
- * - font ratio  
- * \author Stephane Coutelas
- * \author Nevrax France
- * \date 2000
- */
-struct CDisplayDescriptor
-{
-	uint32	ResX;
-	uint32	ResY;
-	float	FontRatio;
-
-	/**
-	 * Default constructor
-	 */
-	CDisplayDescriptor()
-	{
-		ResX = ResY = 0;
-	    FontRatio = 1;
-	}
-};
-
 
 
 /*******************************************************************/

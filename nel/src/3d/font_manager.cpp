@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.14 2000/12/21 16:58:42 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.15 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,14 +128,18 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
  *
  */
 template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T> > &s,
-				CFontGenerator *fontGen, 
+				CFontGenerator *fontGen,
 				const NLMISC::CRGBA &color,
-				uint32 fontSize, 
-				const CDisplayDescriptor &desc, 
+				uint32 fontSize,
+				IDriver *driver,
 				CComputedString &output)
 {
+	uint32 width, height;
+	driver->getWindowSize (width, height);
+	float FontRatio = 1.0;
+
 	// keep the 800*600 ratio
-	fontSize = fontSize*desc.ResX/800;
+	fontSize = fontSize*width/800;
 	
 	// Setting vertices format
 	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
@@ -163,34 +167,34 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 
 		if (pTexFont->getWidth() > 0 && pTexFont->getHeight() > 0)
 		{
-			x = (penx + dx) * desc.FontRatio;
-			z = (penz + dz) * desc.FontRatio;
-			x/= desc.ResY;
-			z/= desc.ResY;
+			x = (penx + dx) * FontRatio;
+			z = (penz + dz) * FontRatio;
+			x/= height;
+			z/= height;
 			output.Vertices.setVertexCoord(4*i, x, 0, z);
 			output.Vertices.setTexCoord(4*i,0,0,vm);
 			output.Vertices.setColor(4*i, color);
 
-			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
-			z = (penz + dz) * desc.FontRatio;
-			x/= desc.ResY;
-			z/= desc.ResY;
+			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
+			z = (penz + dz) * FontRatio;
+			x/= height;
+			z/= height;
 			output.Vertices.setVertexCoord(4*i+1, x, 0, z);
 			output.Vertices.setTexCoord(4*i+1,0,um,vm);
 			output.Vertices.setColor(4*i+1, color);
 
-			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * desc.FontRatio;
-			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
-			x/= desc.ResY;
-			z/= desc.ResY;
+			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
+			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
+			x/= height;
+			z/= height;
 			output.Vertices.setVertexCoord(4*i+2, x, 0, z); 
 			output.Vertices.setTexCoord(4*i+2,0,um,0);
 			output.Vertices.setColor(4*i+2, color);
 
-			x = (penx + dx) * desc.FontRatio;
-			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * desc.FontRatio;
-			x/= desc.ResY;
-			z/= desc.ResY;
+			x = (penx + dx) * FontRatio;
+			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
+			x/= height;
+			z/= height;
 			output.Vertices.setVertexCoord(4*i+3, x, 0, z); 
 			output.Vertices.setTexCoord(4*i+3,0,0,0);
 			output.Vertices.setColor(4*i+3, color);
@@ -208,8 +212,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 		
 	}
 
-	output.StringWidth = penx * desc.FontRatio;
-	output.StringWidth /= desc.ResY;
+	output.StringWidth = penx * FontRatio;
+	output.StringWidth /= height;
 }
 
 
@@ -221,10 +225,10 @@ void CFontManager::computeString (const std::string &s,
 								  CFontGenerator *fontGen,
 								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
-								  const CDisplayDescriptor &desc,
+								  IDriver *driver,
 								  CComputedString &output)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, desc, output);
+	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output);
 }
 
 
@@ -235,10 +239,10 @@ void CFontManager::computeString (const ucstring &s,
 								  CFontGenerator *fontGen,
 								  const NLMISC::CRGBA &color,
 								  uint32 fontSize,
-								  const CDisplayDescriptor &desc,
+								  IDriver *driver,
 								  CComputedString &output)
 {
-	NL3DcomputeString (this, s, fontGen, color, fontSize, desc, output);
+	NL3DcomputeString (this, s, fontGen, color, fontSize, driver, output);
 }
 
 

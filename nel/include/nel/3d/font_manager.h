@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.10 2001/01/02 15:30:08 coutelas Exp $
+ * $Id: font_manager.h,v 1.11 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,6 @@
 namespace NL3D {
 
 class CFontGenerator;
-struct CDisplayDescriptor;
 struct CComputedString;
 struct CFontDescriptor;
 
@@ -129,7 +128,7 @@ public:
 						CFontGenerator *fontGen, 
 						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
-						const CDisplayDescriptor& desc, 
+					    IDriver *driver,
 						CComputedString& output);
 
 	/** 
@@ -139,7 +138,7 @@ public:
 						CFontGenerator *fontGen, 
 						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
-						const CDisplayDescriptor &desc, 
+					    IDriver *driver,
 						CComputedString &output);
 };
 

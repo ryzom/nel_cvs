@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.31 2001/01/02 14:23:14 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.32 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,7 @@ public:
 	// between 0.0 and 1.0
 	virtual void setMousePos(float x, float y);
 
+	virtual void getWindowSize(uint32 &width, uint32 &height);
 
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.

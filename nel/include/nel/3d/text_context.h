@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.6 2001/01/02 15:30:08 coutelas Exp $
+ * $Id: text_context.h,v 1.7 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,9 +60,6 @@ class CTextContext
 	/// font generator
 	NL3D::CFontGenerator * _FontGen;
 	
-	/// display decriptor (window description)
-	NL3D::CDisplayDescriptor _DispDesc;
-
 	/// font size;
 	uint32 _FontSize;
 	
@@ -93,10 +90,6 @@ public:
 		_FontGen = NULL;
 
 		_FontSize = 12;
-		
-		_DispDesc.ResX = 800;
-		_DispDesc.ResY = 600;
-		_DispDesc.FontRatio = 1.0f;
 
 		_Color = NLMISC::CRGBA(0,0,0);
 
@@ -115,18 +108,6 @@ public:
 	void setFontGenerator(const std::string fontFileName, const std::string fontExFileName = "")
 	{
 		_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
-	}
-
-	/**
-	 *	setWindowSize
-	 * set the window size infos. Should be called before the first print
-	 * \param width the window width
-	 * \param height the window height 
-	 */
-	void setWindowSize(uint16 width, uint16 height)
-	{
-		_DispDesc.ResX = width;
-		_DispDesc.ResY = height;
 	}
 
 	/**
@@ -235,7 +216,7 @@ public:
 		va_end(args);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		_StringList.push_back(cptdstr);
 		return _StringList.size()-1;
 	}
@@ -251,7 +232,7 @@ public:
 		nlassert(_FontGen);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		_StringList.push_back(cptdstr);
 		return _StringList.size()-1;
 	}
@@ -293,7 +274,7 @@ public:
 	void printAt(float x, float z, ucstring ucstr)
 	{
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		cptdstr.render2D(*NL3D::CNELU::Driver,
 							x,z,
 							_HotSpot,
@@ -315,7 +296,7 @@ public:
 		va_end(args);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
 		cptdstr.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 	}
 	
@@ -356,7 +337,7 @@ public:
 	 */
 	void computeString(const std::string& s, CComputedString& output)
 	{
-		_FontManager.computeString(s,_FontGen,_Color,_FontSize,_DispDesc,output);
+		_FontManager.computeString(s,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,output);
 	}
 
 	/**
@@ -367,7 +348,7 @@ public:
 	 */
 	void computeString(const ucstring& s, CComputedString& output)
 	{
-		_FontManager.computeString(s,_FontGen,_Color,_FontSize,_DispDesc,output);
+		_FontManager.computeString(s,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,output);
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.42 2001/01/02 16:21:53 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.43 2001/01/03 09:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x0;
+const uint32		CDriverGL::ReleaseVersion = 0x1;
 
 #ifdef NL_OS_WINDOWS
 
@@ -651,6 +651,22 @@ void CDriverGL::setMousePos(float x, float y)
 	int x1 = (int)(x * (float) xwa.width);
 	int y1 = (int)((1.0f - y) * (float) xwa.height);
 	XWarpPointer (dpy, None, win, None, None, None, None, x1, y1);
+#endif // NL_OS_UNIX
+}
+
+
+void CDriverGL::getWindowSize(uint32 &width, uint32 &height)
+{
+#ifdef NL_OS_WINDOWS
+	RECT client;
+	GetClientRect (_hWnd, &client);
+	width = (uint32)(client.right-client.left);
+	height = (uint32)(client.bottom-client.top);
+#elif defined (NL_OS_UNIX)
+	XWindowAttributes xwa;
+	XGetWindowAttributes (dpy, win, &xwa);
+	width = (uint32) xwa.width;
+	height = (uint32) xwa.height;
 #endif // NL_OS_UNIX
 }
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.6 2001/03/21 11:39:47 berenguier Exp $
+ * $Id: u_driver.h,v 1.7 2001/03/27 10:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,10 @@ public:
 
 	/// \name Buffers.
 	// @{
+	/// This clear only the RGBA back buffer
+	virtual	void			clearRGBABuffer(CRGBA col= CRGBA(255,255,255,255)) =0;
+	/// This clear only the Zbuffer
+	virtual	void			clearZBuffer() =0;
 	/// This clear the buffers (ALL the buffer :) )
 	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255)) =0;
 	/// This swap the back and front buffer (ALL the buffer :) ).
@@ -218,6 +222,10 @@ public:
 	/// \name Matrix context for Interface 2D/3D.
 	/** UScene ignore those function (use camera parameters instead, and UScene viewport), and do not disturb 
 	 * this active Matrix context. (after a scene rendering, the Matrix context for this interface is restored).
+	 * Remarks are nearly same for UTextContext, except for UTextContext::render3D() (see doc):
+	 *		- UTextContext use the setuped viewport of UDriver Matrix context.
+	 *		- UTextContext use its own Matrix2D setup (own Frustum and own ViewAMtrix/ ModelMatrix).
+	 *		- UTextContext restore ALL the matrix context, after any rendering function.
 	 */
 	// @{
 

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.4 2001/03/21 17:59:04 puzin Exp $
+ * $Id: text_context_user.h,v 1.5 2001/03/27 10:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,6 +169,8 @@ public:
 		_TextContext.computeString(ucstr,computedStr);
 		
 		computedStr.render3D(*_Driver,mat);
+
+		_DriverUser->restoreMatrixContext();
 	}
 	void render3D(const CMatrix &mat, const char *format, ...) 
 	{
@@ -176,6 +178,8 @@ public:
 		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		render3D(mat, ucstring(str));
+
+		_DriverUser->restoreMatrixContext();
 	}
 
 

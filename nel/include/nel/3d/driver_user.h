@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
+ * $Id: driver_user.h,v 1.3 2001/03/27 10:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,16 @@ public:
 
 	/// \name Buffers.
 	// @{
+	/// This clear only the RGBA back buffer
+	virtual	void			clearRGBABuffer(CRGBA col= CRGBA(255,255,255,255))
+	{
+		_Driver->clear2D(col);
+	}
+	/// This clear only the RGBA back buffer
+	virtual	void			clearZBuffer()
+	{
+		_Driver->clearZBuffer();
+	}
 	/// This clear the buffers (ALL the buffer :) )
 	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255))
 	{

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.2 2001/03/21 17:56:46 puzin Exp $
+ * $Id: u_text_context.h,v 1.3 2001/03/27 10:29:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,8 +135,10 @@ public:
 
 
 	/// \name Rendering.
-	/** All rendering are done in current UDriver matrix context. So verify your 2D/3D modes.
-	 *
+	/** All rendering are done in proprietary matrix context for UTextContext: 
+	 *		- UTextContext use the setuped viewport of UDriver Matrix context.
+	 *		- UTextContext use its own Matrix2D setup (own Frustum and own ViewAMtrix/ ModelMatrix).
+	 *			  Exception: render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix.
 	 */
 	// @{
 	/**
@@ -175,10 +177,12 @@ public:
 
 	/**
 	 * compute and render a ucstring at the location (3D method)
+	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
 	virtual	void			render3D(const NLMISC::CMatrix &mat, ucstring ucstr) =0;
 	/**
 	 * compute and render a string at the location (3D method)
+	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
 	virtual	void			render3D(const NLMISC::CMatrix &mat, const char * format, ...) =0;
 

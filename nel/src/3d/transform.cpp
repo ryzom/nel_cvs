@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.16 2001/04/03 13:47:47 berenguier Exp $
+ * $Id: transform.cpp,v 1.17 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/transform.h"
+#include "nel/3d/skeleton_model.h"
 
 
 namespace	NL3D
@@ -52,7 +53,22 @@ CTransform::CTransform()
 	Visibility= CHrcTrav::Herit;
 
 	_LastTransformableMatrixDate= 0;
+
+	_FatherSkeletonModel= NULL;
 }
+
+// ***************************************************************************
+CTransform::~CTransform()
+{
+	if(_FatherSkeletonModel)
+	{
+		// detach me from the skeleton.
+		// Observers hierarchy is modified.
+		_FatherSkeletonModel->detachSkeletonSon(this);
+		_FatherSkeletonModel= NULL;
+	}
+}
+
 // ***************************************************************************
 void		CTransform::hide()
 {
@@ -130,6 +146,17 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 	// Deriver note: if necessary, call	BaseClass::registerToChannelMixer(chanMixer, prefix);
 }
 
+
+
+// ***************************************************************************
+void			CTransform::updateWorldMatrixFromSkeleton(const CMatrix &parentWM)
+{
+	// Get the HrcObs.
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)getObs(HrcTravId);
+
+	// Compute the HRC WorldMatrix.
+	hrcObs->WorldMatrix= parentWM*hrcObs->LocalMatrix;
+}
 
 
 }

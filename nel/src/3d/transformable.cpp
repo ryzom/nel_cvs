@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.8 2001/04/03 13:47:47 berenguier Exp $
+ * $Id: transformable.cpp,v 1.9 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,8 +48,6 @@ ITransformable::ITransformable()
 	_Scale.Value= CVector(1,1,1);
 	_Pivot.Value= CVector::Null;
 
-	_Father= NULL;
-	_FatherMatrixDate= 0;
 	_LocalMatrixDate= 0;
 }
 
@@ -139,12 +137,7 @@ void	ITransformable::clearTransformFlags() const
 // ***************************************************************************
 bool	ITransformable::needCompute() const
 {
-	bool	fatherOk;
-	bool	fatherScaleTest;
-	fatherOk= _Father && _Father->_Mode!=DirectMatrix;
-	fatherScaleTest= fatherOk && (_Father->isTouched(OwnerBit) || _Father->_LocalMatrixDate>_FatherMatrixDate) ;
-	// should we update?
-	return  _Mode!=DirectMatrix && (isTouched(OwnerBit) || fatherScaleTest);
+	return  _Mode!=DirectMatrix && isTouched(OwnerBit);
 }
 
 
@@ -161,26 +154,9 @@ void	ITransformable::updateMatrix() const
 		// update the matrix.
 		_LocalMatrix.identity();
 
-		bool	fatherOk;
-		fatherOk= _Father && _Father->_Mode!=DirectMatrix;
-		if(fatherOk)
-		{
-			// copy the scale date to say we are up to date.
-			_FatherMatrixDate= _Father->_LocalMatrixDate;
-
-			// unherit the father scale.
-			// T*Sp-1*P
-			_LocalMatrix.translate(_Pos.Value);
-			CVector		&vs= _Father->_Scale.Value;
-			_LocalMatrix.scale(CVector(1.0f/vs.x, 1.0f/vs.y, 1.0f/vs.z));
-			_LocalMatrix.translate(_Pivot.Value);
-		}
-		else
-		{
-			// father scale will be herited.
-			// T*P
-			_LocalMatrix.translate(_Pos.Value+_Pivot.Value);
-		}
+		// father scale will be herited.
+		// T*P
+		_LocalMatrix.translate(_Pos.Value+_Pivot.Value);
 
 		// R*S*P-1.
 		if(_Mode==RotEuler)

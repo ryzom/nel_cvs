@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.7 2001/03/16 16:50:14 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.8 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,27 +112,6 @@ void		IBaseClipObs::init()
 	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
 	nlassert( dynamic_cast<IBaseRenderObs*> (getObs(RenderTravId)) );
 	RenderObs= static_cast<IBaseRenderObs*> (getObs(RenderTravId));
-}
-// ***************************************************************************
-void		IBaseClipObs::traverse(IObs *caller)
-{
-	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
-	bool	renderable;
-
-	Visible= false;
-	if(HrcObs->WorldVis && clip(static_cast<IBaseClipObs*>(caller), renderable) )
-	{
-		Visible= true;
-
-		// Insert the model in the render list.
-		if(renderable)
-		{
-			nlassert(dynamic_cast<CClipTrav*>(Trav));
-			static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-		}
-		// DoIt the sons.
-		traverseSons();
-	}
 }
 
 

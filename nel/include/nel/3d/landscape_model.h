@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.5 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: landscape_model.h,v 1.6 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,10 @@ class	CLandscapeClipObs : public CTransformClipObs
 public:
 
 	/// Hey!! I'm renderable!!!
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable);
+	virtual	bool	isRenderable() const {return true;}
+
+	/// clip.
+	virtual	bool	clip(IBaseClipObs *caller);
 
 	// The creator.
 	static IObs	*creator() {return new CLandscapeClipObs;}

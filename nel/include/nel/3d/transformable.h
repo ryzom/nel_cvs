@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.9 2001/04/03 13:47:47 berenguier Exp $
+ * $Id: transformable.h,v 1.10 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,20 +100,6 @@ public:
 	{
 		_Mode= mode;
 		_RotOrder= ro;
-		// just for information.
-		touch(PosValue, OwnerBit);
-	}
-	/// Herit the scale of father (default).
-	void	heritScale()
-	{
-		_Father= NULL;
-		// just for information.
-		touch(PosValue, OwnerBit);
-	}
-	/// Do not Herit the scale of father (default). => use scale part of father (if not DirectMatrix mode)
-	void	unheritScale(ITransformable *father)
-	{
-		_Father= father;
 		// just for information.
 		touch(PosValue, OwnerBit);
 	}
@@ -303,9 +289,6 @@ private:
 	mutable CMatrix			_LocalMatrix;
 	TTransformMode			_Mode;
 	CMatrix::TRotOrder		_RotOrder;
-	// For father scale un-inheritance.
-	ITransformable			*_Father;
-	mutable	uint64			_FatherMatrixDate;
 	mutable	uint64			_LocalMatrixDate;
 
 	// For animation, Pos, rot scale pivot animated values
@@ -321,7 +304,7 @@ private:
 	// compute the matrix.
 	void	updateMatrix() const;
 
-	/// Tells if the matrix needs to be computed, either if data are modified, or if father is modified (if unheritScale enabled).
+	/// Tells if the matrix needs to be computed, ie, if data are modified.
 	bool			needCompute() const;
 
 };

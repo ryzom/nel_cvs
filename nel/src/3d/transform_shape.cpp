@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.4 2001/03/27 09:53:08 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.5 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,12 +40,11 @@ void		CTransformShape::registerBasic()
 }
 
 // ***************************************************************************
-bool	CTransformShapeClipObs::clip(IBaseClipObs *caller, bool &renderable) 
+bool	CTransformShapeClipObs::clip(IBaseClipObs *caller) 
 {
 	CClipTrav			*trav= (CClipTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 
-	renderable= true; 
 	if(m->Shape)
 	{
 		std::vector<CPlane>	pyramid= trav->WorldPyramid;

@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.6 2001/03/16 16:48:35 berenguier Exp $
+ * $Id: clip_trav.h,v 1.7 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,13 +111,12 @@ public:
  * Clip observers MUST derive from IBaseClipObs.
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - implement a default traverse() method. See traverse() for more information.
  * - implement the init() method, to set shortcut to neighbor observers.
  *
  * \b DERIVER \b RULES:
  * - implement the notification system (see IObs and IObs() for details).
  * - implement the clip() method.
- * - Possibly re-implement the traverse(). See traverse() for more information. 
+ * - implement the traverse(), which should call clip() and isRenderable(). see CTransform for an implementation.
  * - possibly modify/extend the graph methods (such as a graph behavior).
  *
  * \sa CClipTrav
@@ -151,23 +150,28 @@ public:
 	virtual	void	init();
 
 
-	/** Should return true if object is visible (eg in frustum)
-	 * \param caller the caller obs (may NULL)
-	 * \param renderable clip() should set to true if the observer has to be inserted in the renderlist (if visible).
+
+	/** Should return true if object has to be inserted in RenderTrav list.
 	 *	eg: a mesh must be inserted in a render list, but not a light, or a NULL transform.
 	 */
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable)=0;
+	virtual	bool	isRenderable() const =0;
+
+
+	/** Should return true if object is visible (eg in frustum)
+	 * \param caller the caller obs (may NULL)
+	 */
+	virtual	bool	clip(IBaseClipObs *caller)=0;
 
 
 	/** The base doit method.
-	 * The default behavior is to:
+	 * The default behavior should be:
 	 *	- test if HrcObs->WorldVis is visible.
 	 *	- test if the observer is clipped with clip()
 	 *	- if visible and not clipped, set \c Visible=true (else false).
-	 *	- if visible, not clipped, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
-	 *	- if visible and not clipped, traverseSons(), to clip the sons.
+	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
+	 *	- always traverseSons(), to clip the sons.
 	 */
-	virtual	void	traverse(IObs *caller);
+	virtual	void	traverse(IObs *caller) =0;
 
 
 };
@@ -190,9 +194,19 @@ class CDefaultClipObs : public IBaseClipObs
 {
 public:
 
+	/// don't render.
+	virtual	bool	isRenderable() const {return false;}
 
-	/// Don't clip, but don't render.
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable) {renderable= false; return true;}
+	/// Don't clip.
+	virtual	bool	clip(IBaseClipObs *caller) {return true;}
+
+
+	/// just traverseSons().
+	virtual	void	traverse(IObs *caller)
+	{
+		traverseSons();
+	}
+
 };
 
 

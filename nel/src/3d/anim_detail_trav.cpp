@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.1 2001/03/19 14:07:32 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.2 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "nel/3d/anim_detail_trav.h"
+#include "nel/3d/hrc_trav.h"
+#include "nel/3d/clip_trav.h"
 
 
 namespace NL3D 
@@ -34,6 +36,16 @@ namespace NL3D
 IObs				*CAnimDetailTrav::createDefaultObs() const
 {
 	return new CDefaultAnimDetailObs;
+}
+
+// ***************************************************************************
+void	IBaseAnimDetailObs::init()
+{
+	IObs::init();
+	nlassert( dynamic_cast<IBaseHrcObs*> (getObs(HrcTravId)) );
+	HrcObs= static_cast<IBaseHrcObs*> (getObs(HrcTravId));
+	nlassert( dynamic_cast<IBaseClipObs*> (getObs(ClipTravId)) );
+	ClipObs= static_cast<IBaseClipObs*> (getObs(ClipTravId));
 }
 
 

@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.1 2001/03/19 14:07:57 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.2 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,8 @@ using NLMISC::CMatrix;
 
 
 class IBaseAnimDetailObs;
+class IBaseHrcObs;
+class IBaseClipObs;
 
 
 // ***************************************************************************
@@ -76,8 +78,10 @@ public:
 	//@{
 	IObs				*createDefaultObs() const;
 	NLMISC::CClassId	getClassId() const {return AnimDetailTravId;}
-	// render after light and before render.
-	sint				getRenderOrder() const {return 3200;}
+	/** render after Clip and before light.
+	 * This order is important for possibles lights sticked to bones of skeletons.
+	 */
+	sint				getRenderOrder() const {return 2200;}
 	void				traverse()
 	{
 		// Inc the date.
@@ -117,11 +121,20 @@ public:
 class IBaseAnimDetailObs : public IObs
 {
 public:
-	
+	/// Shortcut to observers.
+	IBaseHrcObs		*HrcObs;
+	IBaseClipObs	*ClipObs;
+
+public:
+
 	/// Constructor.
 	IBaseAnimDetailObs()
 	{
+		HrcObs=NULL;
+		ClipObs= NULL;
 	}
+	/// Build shortcut to Hrc and Clip.
+	virtual	void	init();
 
 
 	/// \name The base doit method.

@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.9 2001/04/03 13:19:11 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.10 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,9 +119,9 @@ public:
  * - define his traverse() method.
  *
  * \b DERIVER \b RULES:
- * - implement the notification system (see IObs for details). The update() method should call
- * updateLocal() so the node know it is updated.
- * - possibly modify/extend the traverse() method.
+ * - implement the notification system (see IObs for details). The update() method should update LocalDate.
+ * so the node know it is updated.
+ * - implement the traverse() method.
  *
  * \sa CHrcTrav
  * \author Lionel Berenguier
@@ -160,63 +160,10 @@ public:
 	}
 
 	
-	/// \name Utility methods.
-	//@{
-	/// Update the world state according to the parent world state and the local states.
-	void	updateWorld(IBaseHrcObs *caller)
-	{
-		if(caller)
-		{
-			if(LocalDate>WorldDate || caller->WorldDate>WorldDate)
-			{
-				// Must recompute the world matrix.
-				WorldMatrix= caller->WorldMatrix * LocalMatrix;
-				WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-			}
-			switch(LocalVis)
-			{
-				case CHrcTrav::Herit: WorldVis= caller->WorldVis; break;
-				case CHrcTrav::Hide: WorldVis= false; break;
-				case CHrcTrav::Show: WorldVis= true; break;
-			}
-		}
-		else
-		{
-			// Root case.
-			if(LocalDate>WorldDate)
-			{
-				// The world matrix is the local matrix, since we are root.
-				WorldMatrix= LocalMatrix;
-				WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-			}
-			switch(LocalVis)
-			{
-				// In the root case, Herit means Show.
-				case CHrcTrav::Herit: WorldVis= true; break;
-				case CHrcTrav::Hide: WorldVis= false; break;
-				case CHrcTrav::Show: WorldVis= true; break;
-			}
-		}
-	}
-	/// update() should call updateLocal() to notify the local modification of the matrix.
-	void	updateLocal()
-	{
-		LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-	}
-	//@}
-
-
 	/// \name The base doit method.
 	//@{
 	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
-	virtual	void	traverse(IObs *caller)
-	{
-		// Recompute the matrix, according to caller matrix mode, and local matrix.
-		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
-		updateWorld(static_cast<IBaseHrcObs*>(caller));
-		// DoIt the sons.
-		traverseSons();
-	}
+	virtual	void	traverse(IObs *caller) =0;
 	//@}
 
 
@@ -228,7 +175,7 @@ public:
  * The default hierarchy observer, used by unspecified models.
  * This observer:
  * - leave the notification system to DO NOTHING.
- * - leave the traverse() method as IBaseHrcObs.
+ * - traverse() just traverseSons().
  *
  * \sa IBaseHrcObs
  * \author Lionel Berenguier
@@ -242,6 +189,14 @@ public:
 
 	/// Constructor.
 	CDefaultHrcObs() {}
+
+
+	/// The default behavior is traverseSons() only.
+	virtual	void	traverse(IObs *caller)
+	{
+		// DoIt the sons.
+		traverseSons();
+	}
 
 
 };

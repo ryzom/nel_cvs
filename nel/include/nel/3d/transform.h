@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.15 2001/04/03 13:47:47 berenguier Exp $
+ * $Id: transform.h,v 1.16 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/3d/mot.h"
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
+#include "nel/3d/render_trav.h"
 #include "nel/3d/track.h"
 #include "nel/3d/transformable.h"
 #include "nel/3d/animated_value.h"
@@ -48,7 +49,8 @@ using NLMISC::CMatrix;
 
 class	CTransformHrcObs;
 class	CTransformClipObs;
-
+class	CSkeletonModel;
+class	CSkeletonModelAnimDetailObs;
 
 // ***************************************************************************
 // ClassIds.
@@ -125,7 +127,7 @@ protected:
 	/// Constructor
 	CTransform();
 	/// Destructor
-	virtual ~CTransform() {}
+	virtual ~CTransform();
 
 	/// Implement the update method.
 	virtual void	update()
@@ -139,11 +141,22 @@ protected:
 		}
 	}
 
+
+	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
+	CSkeletonModel	*_FatherSkeletonModel;
+
+
 private:
 	static IModel	*creator() {return new CTransform;}
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
 	friend class	CTransformAnimDetailObs;
+	friend class	CSkeletonModel;
+	friend class	CSkeletonModelAnimDetailObs;
+
+	// For Skeleton Object Stick.
+	void			updateWorldMatrixFromSkeleton(const CMatrix &parentWM);
+
 
 	// For anim detail.
 	NLMISC::CRefPtr<CChannelMixer>		_ChannelMixer;
@@ -158,6 +171,7 @@ private:
 /**
  * This observer:
  * - implement the notification system (just the update() method).
+ * - implement the traverse() method.
  *
  * \sa CHrcTrav IBaseHrcObs
  * \author Lionel Berenguier
@@ -179,10 +193,67 @@ public:
 			LocalMatrix= static_cast<CTransform*>(Model)->getMatrix();
 			IBaseHrcObs::LocalVis= static_cast<CTransform*>(Model)->Visibility;
 			// update the date of the local matrix.
-			updateLocal();
+			LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
 		}
 	}
 
+
+	/// \name Utility methods.
+	//@{
+	/// Update the world state according to the parent world state and the local states.
+	void	updateWorld(IBaseHrcObs *caller)
+	{
+		const	CMatrix		*pFatherWM;
+		bool				visFather;
+
+
+		// If not root case, link to caller.
+		if(caller)
+		{
+			pFatherWM= &(caller->WorldMatrix);
+			visFather= caller->WorldVis;
+		}
+		// else, default!!
+		else
+		{
+			pFatherWM= &(CMatrix::Identity);
+			visFather= true;
+		}
+
+		// Combine matrix
+		if(LocalDate>WorldDate || (caller && caller->WorldDate>WorldDate) )
+		{
+			// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON!
+			if( ((CTransform*)Model)->_FatherSkeletonModel==NULL)
+			{
+				WorldMatrix=  *pFatherWM * LocalMatrix;
+				WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
+			}
+		}
+
+		// Combine visibility.
+		switch(LocalVis)
+		{
+			case CHrcTrav::Herit: WorldVis= visFather; break;
+			case CHrcTrav::Hide: WorldVis= false; break;
+			case CHrcTrav::Show: WorldVis= true; break;
+		}
+	}
+	//@}
+
+
+	/// \name The base doit method.
+	//@{
+	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
+	virtual	void	traverse(IObs *caller)
+	{
+		// Recompute the matrix, according to caller matrix mode, and local matrix.
+		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
+		updateWorld(static_cast<IBaseHrcObs*>(caller));
+		// DoIt the sons.
+		traverseSons();
+	}
+	//@}
 
 };
 
@@ -203,11 +274,52 @@ class	CTransformClipObs : public IBaseClipObs
 {
 public:
 
-	/// Don't clip, but don't render.
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable) 
+	/// don't render.
+	virtual	bool	isRenderable() const {return false;}
+
+	/// Don't clip.
+	virtual	bool	clip(IBaseClipObs *caller) 
 	{
-		renderable= false; 
 		return true;
+	}
+
+	/** The base doit method.
+	 * The behavior is to:
+	 *	- test if HrcObs->WorldVis is visible.
+	 *	- test if the observer is clipped with clip() OR IF SKELETON MODEL, USE SKELETON MODEL clip!!
+	 *	- if visible and not clipped, set \c Visible=true (else false).
+	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
+	 *	- always traverseSons(), to clip the sons.
+	 */
+	virtual	void	traverse(IObs *caller)
+	{
+		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
+
+		Visible= false;
+
+		// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
+		// This works because we are sons of the SkeletonModel in the Clip traversal...
+		bool	skeletonClip= false;
+		if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
+		{
+			skeletonClip= static_cast<IBaseClipObs*>(caller)->Visible;
+		}
+
+		// Test visibility or clip.
+		if(HrcObs->WorldVis && ( skeletonClip  ||  clip( static_cast<IBaseClipObs*>(caller)) )  )
+		{
+			Visible= true;
+
+			// Insert the model in the render list.
+			if(isRenderable())
+			{
+				nlassert(dynamic_cast<CClipTrav*>(Trav));
+				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+			}
+		}
+
+		// DoIt the sons.
+		traverseSons();
 	}
 
 };
@@ -229,17 +341,21 @@ class	CTransformAnimDetailObs : public IBaseAnimDetailObs
 public:
 
 	/** this do all the good things:
-	 *	- animdetail if the model channelmixer is not NULL.
+	 *	- animdetail if the model channelmixer is not NULL, AND if model not clipped!!
 	 *	- traverseSons().
 	 */
 	virtual	void	traverse(IObs *caller)
 	{
-		// test if the refptr is NULL or not (RefPtr).
-		CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
-		if(chanmix)
+		// AnimDetail behavior: animate only if not clipped.
+		if(ClipObs->Visible)
 		{
-			// eval detail!!
-			chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
+			// test if the refptr is NULL or not (RefPtr).
+			CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
+			if(chanmix)
+			{
+				// eval detail!!
+				chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
+			}
 		}
 
 		// important for the root only. Else, There is no reason to do a hierarchy for AnimDetail.

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.7 2001/03/16 16:50:14 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.8 2001/04/09 14:23:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,10 +44,9 @@ void	CLandscapeModel::registerBasic()
 }
 
 // ***************************************************************************
-bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
+bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 {
-	renderable= true;
-	
+
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
 	CClipTrav		*trav= (CClipTrav*)Trav;
 	vector<CPlane>	&pyramid= trav->WorldPyramid;

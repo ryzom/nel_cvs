@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.1 2000/12/08 10:37:02 berenguier Exp $
+ * $Id: transform_shape.h,v 1.2 2001/04/09 14:23:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,9 @@ class	CTransformShapeClipObs : public CTransformClipObs
 public:
 
 	/// clip the shape, and set renderable.
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable);
+	virtual	bool	clip(IBaseClipObs *caller);
+	virtual	bool	isRenderable() const {return true;}
+
 
 	static IObs	*creator() {return new CTransformShapeClipObs;}
 };

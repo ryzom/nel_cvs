@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.14 2002/03/12 15:52:38 chafik Exp $
+ * $Id: agent_nombre.h,v 1.15 2002/05/07 15:26:49 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -266,14 +266,14 @@ namespace NLAIAGENT
 
 		virtual IObjetOp *operator <= (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombre &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value <= v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator >= (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombre &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value >= v);			
 			return x;
 		}

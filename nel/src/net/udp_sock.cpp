@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.12 2002/08/21 09:44:10 lecroart Exp $
+ * $Id: udp_sock.cpp,v 1.13 2002/10/10 13:36:40 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,7 +153,7 @@ void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
 /*
  * Receives data from the peer. (blocking function)
  */
-void CUdpSock::receive( uint8 *buffer, uint32& len )
+bool CUdpSock::receive( uint8 *buffer, uint32& len, bool throw_exception )
 {
 	nlassert( _Connected && (buffer!=NULL) );
 
@@ -163,7 +163,9 @@ void CUdpSock::receive( uint8 *buffer, uint32& len )
 	// Check for errors (after setting the address)
 	if ( ((int)len) == SOCKET_ERROR )
 	{
-		throw ESocket( "Cannot receive data" );
+		if ( throw_exception )
+			throw ESocket( "Cannot receive data" );
+		return false;
 	}
 
 	_BytesReceived += len;
@@ -171,13 +173,14 @@ void CUdpSock::receive( uint8 *buffer, uint32& len )
 	{
 		nldebug( "LNETL0: Socket %d received %d bytes from peer %s", _Sock, len, _RemoteAddr.asString().c_str() );
 	}
+	return true;
 }
 
 
 /*
  * Receives data and say who the sender is. (blocking function)
  */
-void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
+bool CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr, bool throw_exception )
 {
 	// Receive incoming message
 	sockaddr_in saddr;
@@ -192,7 +195,9 @@ void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 	// Check for errors (after setting the address)
 	if ( ((int)len) == SOCKET_ERROR )
 	{
-		throw ESocket( "Cannot receive data" );
+		if ( throw_exception )
+			throw ESocket( "Cannot receive data" );
+		return false;
 	}
 
 	_BytesReceived += len;
@@ -200,6 +205,7 @@ void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 	{
 		nldebug( "LNETL0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
 	}
+	return true;
 }
 
 

@@ -637,6 +637,14 @@ SOURCE=.\3d\track.cpp
 
 SOURCE=..\include\nel\3d\track.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\transformable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\transformable.h
+# End Source File
 # End Group
 # Begin Group "UserImp"
 

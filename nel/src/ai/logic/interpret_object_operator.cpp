@@ -175,7 +175,7 @@ namespace NLAISCRIPT
 		return instance;
 	}
 
-	/// Verifies if the preconditions are validated<
+	/// Verifies if the preconditions are validated
 	bool COperatorClass::isValid(NLAILOGIC::CFactBase *fb)
 	{		
 		std::list<NLAILOGIC::CFact *> *facts = new std::list<NLAILOGIC::CFact *>;

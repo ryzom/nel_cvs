@@ -28,7 +28,7 @@ namespace NLAILOGIC
 		_Name = (NLAIAGENT::IVarName *) name.clone();
 		while ( !args.empty() )
 		{
-			_Args.push_back( (NLAIAGENT::IObjectIA *) args.front() );
+			_Args.push_back( (NLAIAGENT::IObjectIA *) args.front()->clone() );
 			args.pop_front();
 		}
 		_Sender = NULL;
@@ -206,11 +206,10 @@ namespace NLAILOGIC
 	{
 
 #ifdef NL_DEBUG	
-		std::string nameP;
-		std::string nameM;
+	std::string nameP;
+	std::string nameM;
 	funcName->getDebugString(nameM);
 	params.getDebugString(nameP);
-
 	const char *dbg_class_name = (const char *) getType();
 #endif
 		static NLAIAGENT::CStringVarName constructor_name("Constructor");
@@ -370,5 +369,4 @@ namespace NLAILOGIC
 		else
 			return ( (NLAIAGENT::COperatorScript *)_Successors.front())->isExclusive();
 	}
-
 }

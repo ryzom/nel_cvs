@@ -713,6 +713,9 @@ namespace NLAIAGENT
 
 	bool COperatorScript::isExclusive()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_exclusive = (const char *) getType();
+#endif
 		return _Exclusive;
 	}
 }

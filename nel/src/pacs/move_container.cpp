@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.44 2004/01/14 09:40:42 legros Exp $
+ * $Id: move_container.cpp,v 1.45 2004/02/09 14:57:33 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -670,7 +670,12 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 		wI=primitive->getWorldImage (primitiveWorldImage);
 
 	// Begin time must be the same as beginTime
-	nlassert (wI->getInitTime()==beginTime);
+	//nlassert (wI->getInitTime()==beginTime);
+	if (wI->getInitTime() != beginTime)
+	{
+		nlwarning("PACS: evalOneTerrainCollision() failure, wI->getInitTime() [%f] != beginTime [%f]", wI->getInitTime(), beginTime);
+		return false;
+	}
 
 	// Test its static collision
 	if (_Retriever)
@@ -764,7 +769,12 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 		wI=primitive->getWorldImage (primitiveWorldImage);
 
 	// Begin time must be the same as beginTime
-	nlassert (wI->getInitTime()==beginTime);
+	//nlassert (wI->getInitTime()==beginTime);
+	if (wI->getInitTime() != beginTime)
+	{
+		nlwarning("PACS: evalOnePrimitiveCollision() failure, wI->getInitTime() [%f] != beginTime [%f]", wI->getInitTime(), beginTime);
+		return false;
+	}
 
 	// Element table
 	CMoveElement	tableNotInserted[4];
@@ -1023,8 +1033,9 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		// No collision ?
 		if (!found)
 		{
-			nlassert ((d0==d1)&&(d0==d2));
-//			nlassert (f1==f2);
+			//nlassert ((d0==d1)&&(d0==d2));
+			//nlassert (f1==f2);
+
 			if (_Retriever&&testMoveValid)
 			{								
 				// Do move
@@ -1076,7 +1087,12 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 			second->addCollisionOTInfo (info);
 
 			// Insert in the time ordered table
-			nlassert (index<(int)_TimeOT.size());
+			//nlassert (index<(int)_TimeOT.size());
+			if (index >= (int)_TimeOT.size())
+			{
+				nlwarning("PACS: newCollision() failure, index [%d] >= (int)_TimeOT.size() [%d], clamped to max", index, (int)_TimeOT.size());
+				index = _TimeOT.size()-1;
+			}
 			_TimeOT[index].link (info);
 
 			// Check it is after the last hard collision
@@ -1116,12 +1132,12 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 
 	if (beginTime > time)
 	{
-		nlwarning("beginTime=%f > time=%f", beginTime, time);
+		nlwarning("PACS: beginTime=%f > time=%f", beginTime, time);
 	}
 
 	if (time >= _DeltaTime)
 	{
-		nlwarning("time=%f >= _DeltaTime=%f", time, _DeltaTime);
+		nlwarning("PACS: time=%f >= _DeltaTime=%f", time, _DeltaTime);
 	}
 
 
@@ -1137,13 +1153,13 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 
 	if (ratio < 0.0)
 	{
-		nlwarning("ratio=%f < 0.0", ratio);
+		nlwarning("PACS: ratio=%f < 0.0", ratio);
 		ratio = 0.0;
 	}
 
 	if (ratio > 1.0)
 	{
-		nlwarning("ratio=%f > 1.0", ratio);
+		nlwarning("PACS: ratio=%f > 1.0", ratio);
 		ratio = 1.0;
 	}
 
@@ -1182,7 +1198,12 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 			first->addCollisionOTInfo (info);
 
 			// Insert in the time ordered table
-			nlassert (index<(int)_TimeOT.size());
+			//nlassert (index<(int)_TimeOT.size());
+			if (index >= (int)_TimeOT.size())
+			{
+				nlwarning("PACS: newCollision() failure, index [%d] >= (int)_TimeOT.size() [%d], clamped to max", index, (int)_TimeOT.size());
+				index = _TimeOT.size()-1;
+			}
 			_TimeOT[index].link (info);
 
 			// Check it is after the last hard collision
@@ -1950,8 +1971,12 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 		CCollisionOTInfo *firstCollision = NULL;
 		do
 		{
-
-			nlassert (beginTime < 1.0);
+			//nlassert (beginTime < 1.0);
+			if (beginTime >= 1.0)
+			{
+				nlwarning("PACS: evalNCPrimitiveCollision() failure, beginTime [%f] >= 1.0", beginTime);
+				return false;
+			}
 
 			// Update the primitive
 			wI->update (beginTime, deltaTime, *(CMovePrimitive*)primitive);
@@ -2018,7 +2043,13 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 			{
 				collisionTime = firstCollision->getCollisionTime ();
 				reaction (*firstCollision);
-				nlassert (collisionTime != 1);
+				//nlassert (collisionTime != 1);
+
+				if (collisionTime == 1)
+				{
+					nlwarning("PACS: evalNCPrimitiveCollision() failure, collisionTime [%f] == 1", collisionTime);
+					return false;
+				}
 			}
 			else
 			{

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.3 2001/02/14 17:14:16 lecroart Exp $
+ * $Id: command.cpp,v 1.4 2001/05/31 15:28:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,7 @@ ICommand::~ICommand()
 
 void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 {
+	nlinfo ("Executing command : '%s'", commandWithArgs.c_str());
 
 	// convert the buffer into string vector
 

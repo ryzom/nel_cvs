@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.37 2001/09/12 16:55:23 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.38 2001/11/13 12:00:44 lecroart Exp $
  *
  */
 
@@ -28,7 +28,9 @@
 #include "nel/net/naming_client.h"
 #include "nel/net/callback_client.h"
 
+#include "nel/misc/command.h"
 #include "nel/misc/debug.h"
+
 #include <sstream>
 
 
@@ -572,6 +574,19 @@ void CNamingClient::checkThreadId ()
 	}
 }
 
+NLMISC_COMMAND(services, "displays registered services", "")
+{
+	if(args.size() != 0) return false;
+
+	nldebug ("Display the %d registered services :", CNamingClient::getRegisteredServices().size());
+	for (std::list<CNamingClient::CServiceEntry>::const_iterator it = CNamingClient::getRegisteredServices().begin(); it != CNamingClient::getRegisteredServices().end(); it++)
+	{
+		nldebug (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+	}
+	nldebug ("End ot the list");
+
+	return true;
+}
 
 
 ////////////////////////////////////////

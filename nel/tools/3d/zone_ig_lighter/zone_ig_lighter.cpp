@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.4 2002/02/18 12:59:59 corvazier Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.5 2002/02/18 13:01:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,13 +199,14 @@ int main(int argc, char* argv[])
 					return 0;
 
 				// Get bank path
-				CConfigFile::CVar &bank_name = parameter.getVar ("bank_name");
-				bank_name_lookup = CPath::lookup (bank_name);
+				CConfigFile::CVar &bank_name_var = parameter.getVar ("bank_name");
+				string bank_name = bank_name_var.asString ();
+				string bank_name_lookup = CPath::lookup (bank_name);
 				if (!bank_name_lookup.empty())
 					bank_name = bank_name_lookup;
 
 				// Load the bank
-				if (inputFile.open (bank_name.asString()))
+				if (inputFile.open (bank_name))
 				{
 					try
 					{
@@ -216,13 +217,13 @@ int main(int argc, char* argv[])
 					catch (Exception &e)
 					{
 						// Error
-						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_name.asString().c_str(), e.what());
+						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_name.c_str(), e.what());
 					}
 				}
 				else
 				{
 					// Error
-					nlwarning ("ERROR can't load tile bank %s\n", bank_name.asString().c_str());
+					nlwarning ("ERROR can't load tile bank %s\n", bank_name.c_str());
 				}
 
 				// Add the zone

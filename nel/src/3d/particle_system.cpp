@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.39 2001/11/23 18:48:56 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.40 2002/01/07 15:18:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -424,11 +424,11 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 			if (!(*it)->isInSystemBasis())
 			{
 				// rotate the aabbox so that it is in the correct basis
-				tmpBox = CPSUtil::transformAABBox(_InvSysMat, tmpBox);
+				tmpBox = NLMISC::CAABBox::transformAABBox(_InvSysMat, tmpBox);
 			}
 			if (foundOne)
 			{
-				aabbox = CPSUtil::computeAABBoxUnion(aabbox, tmpBox);
+				aabbox = NLMISC::CAABBox::computeAABBoxUnion(aabbox, tmpBox);
 			}
 			else
 			{

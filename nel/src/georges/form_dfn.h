@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.12 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: form_dfn.h,v 1.13 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,7 +213,7 @@ public:
 	bool							getEntryType (uint entry, UType **type);
 	uint							getNumParents () const;
 	bool							getParent (uint parent, UFormDfn **parentRet);
-	const std::string				&getComment (std::string &comment) const;
+	const std::string				&getComment () const;
 	bool							getEntryFilename (uint entry, std::string& filename) const;
 	bool							getParentFilename (uint parent, std::string &filename) const;
 

@@ -1,7 +1,7 @@
 /** \file u_form_loader.h
  * Georges form loader interface
  *
- * $Id: u_form_loader.h,v 1.2 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: u_form_loader.h,v 1.3 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,6 +32,7 @@
 namespace NLGEORGES 
 {
 
+class UType;
 class UForm;
 class UFormDfn;
 
@@ -48,15 +49,21 @@ public:
 
 	/** Load a form, use NMISC::CPath to find the file.
 	  * 
-	  * The pointer on the form must be held in a CSmartPtr<UForm> or NULL if the form can't be loaded.
+	  * The pointer on the form must be held in a CSmartPtr<UForm>. Returns NULL if the form can't be loaded.
 	  */
 	virtual UForm *loadForm (const char *filename) = 0;
 
 	/** Load a DFN, use NMISC::CPath to find the file.
 	  * 
-	  * The pointer on the form must be held in a CSmartPtr<UFormDfn> or NULL if the form can't be loaded.
+	  * The pointer on the form must be held in a CSmartPtr<UFormDfn>. Returns NULL if the DFN can't be loaded.
 	  */
 	virtual UFormDfn *loadFormDfn (const char *filename) = 0;
+
+	/** Load a type, use NMISC::CPath to find the file.
+	  * 
+	  * The pointer on the form must be held in a CSmartPtr<UType>. Returns NULL if the type can't be loaded.
+	  */
+	virtual UType *loadFormType (const char *filename) = 0;
 
 	/// Create a form loader
 	static UFormLoader *createLoader ();

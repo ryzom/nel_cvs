@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.10 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.11 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -302,6 +302,13 @@ UForm *CFormLoader::loadForm (const char *filename)
 UFormDfn *CFormLoader::loadFormDfn (const char *filename)
 {
 	return loadFormDfn (filename, false);
+}
+
+// ***************************************************************************
+
+UType *CFormLoader::loadFormType (const char *filename)
+{
+	return loadType (filename);
 }
 
 // ***************************************************************************

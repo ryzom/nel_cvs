@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.14 2002/09/12 16:04:27 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.15 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -760,7 +760,7 @@ bool CFormDfn::getParentFilename (uint parent, std::string &filename) const
 
 // ***************************************************************************
 
-const std::string& CFormDfn::getComment (std::string &comment) const
+const std::string& CFormDfn::getComment () const
 {
 	return Header.Comments;
 }

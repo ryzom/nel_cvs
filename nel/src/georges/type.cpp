@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.10 2002/09/06 14:48:03 corvazier Exp $
+ * $Id: type.cpp,v 1.11 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -551,13 +551,6 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 
 // ***************************************************************************
 
-UType::TType CType::getType () const
-{
-	return Type;
-}
-
-// ***************************************************************************
-
 bool CType::uiCompatible (TType type, TUI ui)
 {
 	switch (type)
@@ -602,6 +595,69 @@ void CType::warning2 (bool exception, const char *function, const char *format, 
 
 	// Set the warning
 	NLGEORGES::warning (exception, "(CType::%s) : %s", function, buffer);
+}
+
+// ***************************************************************************
+
+UType::TType CType::getType () const
+{
+	return Type;
+}
+
+// ***************************************************************************
+
+const string &CType::getDefault () const
+{
+	return Default;
+}
+
+// ***************************************************************************
+
+const string	&CType::getMin () const
+{
+	return Min;
+}
+
+// ***************************************************************************
+
+const string	&CType::getMax () const
+{
+	return Max;
+}
+
+// ***************************************************************************
+
+const string	&CType::getIncrement () const
+{
+	return Increment;
+}
+
+// ***************************************************************************
+
+uint CType::getNumDefinition () const
+{
+	return Definitions.size ();
+}
+
+// ***************************************************************************
+
+bool CType::getDefinition (uint index, std::string &label, std::string &value) const
+{
+	if (index < Definitions.size ())
+	{
+		label = Definitions[index].Label;
+		value = Definitions[index].Value;
+		return true;
+	}
+	warning2 (false, "getDefinition", "Index out of bounds (%d >= %d)", index, Definitions.size ());
+	return false;
+}
+
+// ***************************************************************************
+
+const string	&CType::getComment () const
+{
+	return Header.Comments;
 }
 
 // ***************************************************************************

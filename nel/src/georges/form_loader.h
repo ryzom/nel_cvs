@@ -1,7 +1,7 @@
 /** \file form_loader.h
  * Georges form loader implementation
  *
- * $Id: form_loader.h,v 1.4 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_loader.h,v 1.5 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -53,6 +53,7 @@ public:
 	// From UFormLoader
 	UForm		*loadForm (const char *filename);
 	UFormDfn	*loadFormDfn (const char *filename);
+	UType		*loadFormType (const char *filename);
 
 	// Load type and formDfn
 	CType		*loadType (const char *filename);

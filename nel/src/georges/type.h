@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.6 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: type.h,v 1.7 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,12 +61,6 @@ public:
 	// Is a UI compatible with a type ?
 	static bool uiCompatible (TType type, TUI ui);
 
-	// Get the default value
-	const std::string& getDefault () const
-	{
-		return Default;
-	}
-
 	// ** IO functions
 	void				write (xmlDocPtr doc, bool georges4CVS) const;
 
@@ -114,7 +108,14 @@ public:
 	static const char *getUIName (TUI type);
 
 	// From UType
-	virtual TType getType () const;
+	virtual TType				getType () const;
+	virtual const std::string	&getDefault () const;
+	virtual const std::string	&getMin () const;
+	virtual const std::string	&getMax () const;
+	virtual const std::string	&getIncrement () const;
+	virtual uint				getNumDefinition () const;
+	virtual bool				getDefinition (uint index, std::string &label, std::string &value) const;
+	virtual const std::string	&getComment () const;
 
 private:
 

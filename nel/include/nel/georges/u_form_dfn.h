@@ -1,7 +1,7 @@
 /** \file u_form_dfn.h
  * Georges form element interface
  *
- * $Id: u_form_dfn.h,v 1.3 2002/07/17 15:23:18 robert Exp $
+ * $Id: u_form_dfn.h,v 1.4 2002/09/25 09:38:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,7 @@ public:
 	/**
 	  * Get the comment
 	  */
-	virtual const std::string &getComment (std::string &comment) const = 0;
+	virtual const std::string &getComment () const = 0;
 };
 
 } // NLGEORGES

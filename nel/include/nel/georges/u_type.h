@@ -1,7 +1,7 @@
 /** \file u_type.h
  * Georges form loader interface
  *
- * $Id: u_type.h,v 1.1 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: u_type.h,v 1.2 2002/09/25 09:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -55,9 +55,51 @@ public:
 	};
 
 	/**
-	  * Get the type
+	  * Get the type of this type.
 	  */
-	virtual TType getType () const = 0;
+	virtual TType				getType () const = 0;
+
+	/**
+	  * Get the default value of this type.
+	  */
+	virtual const std::string	&getDefault () const = 0;
+
+	/**
+	  * Get the min value of this type.
+	  */
+	virtual const std::string	&getMin () const = 0;
+
+	/**
+	  * Get the max value of this type.
+	  */
+	virtual const std::string	&getMax () const = 0;
+
+	/**
+	  * Get the increment value of this type.
+	  */
+	virtual const std::string	&getIncrement () const = 0;
+
+	/**
+	  * Get the definition count for this type.
+	  */
+	virtual uint				getNumDefinition () const = 0;
+
+	/**
+	  * Get a definition for this type.
+	  *
+	  * index is the index of the defnition you want to get.
+	  * If the method returns true, label will be filled with
+	  * the definition label and value will be filled with the
+	  * defnition value.
+	  * The method returns false if the index is invalid. In this 
+	  * case, label and value are not changed.
+	  */
+	virtual bool				getDefinition (uint index, std::string &label, std::string &value) const = 0;
+
+	/**
+	  * Get theh comments of type.
+	  */
+	virtual const std::string	&getComment () const = 0;
 };
 
 

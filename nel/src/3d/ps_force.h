@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.13 2002/01/28 14:28:27 vizerie Exp $
+ * $Id: ps_force.h,v 1.14 2002/02/15 17:04:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,10 +40,9 @@ namespace NL3D {
 
 /**
  * All forces in the system derive from this class
- * It all a list all located on which the force can apply
- * Only the motion and toolRender passes are supported for a force
- * The corresponding virtual calls are done
- * Not sharable.
+ * It has a list with all located on which the force can apply.
+ * Only the motion and toolRender passes are supported for a force.
+ * Not sharable accross systems.
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001

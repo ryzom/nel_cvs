@@ -77,7 +77,7 @@ namespace NLAIAGENT
 
 	void COperatorScript::onKill(IConnectIA *a)
 	{
-		
+		CActorScript::onKill(a);
 	}
 
 	const NLAIC::IBasicType *COperatorScript::clone() const

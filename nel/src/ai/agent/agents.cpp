@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.48 2002/01/28 10:24:44 chafik Exp $
+ * $Id: agents.cpp,v 1.49 2002/01/31 11:07:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,8 @@ namespace NLAIAGENT
 		while ( /*i_agl != _AgentList.end()*/n -- )
 		{					
 			IBasicAgent *c = *i_agl;
+
+			
 			c->run();
 			switch(c->getState().ResultState)
 			{
@@ -229,15 +231,34 @@ namespace NLAIAGENT
 		}
 	}
 
+	/*std::string Shift="-";
+	sint kShift = 1;*/
+
 	const IObjectIA::CProcessResult &IAgent::run()
-	{		
+	{	
+				
+		/*nlinfo("%s<%4x> go to run %s with %d childs:",Shift.c_str(),this, (const char *)getType(),_AgentList.size());
+		Shift += "\t";
+		kShift++;*/
+
 		runChildren();		// Gestion des fils
 		getMail()->run();	// Execution de la boite aux lettres
 
 		processMessages();	// Traitement de ses propres messages
 
-		if(haveActivity() && getState().ResultState == processIdle) runActivity();		
-			return getState();  
+		if(haveActivity() && getState().ResultState == processIdle) runActivity();
+
+		/*kShift --;
+		std::string chaine;
+		sint i;
+		for(i = 0; i < (sint)kShift; i ++)
+		{
+			chaine += Shift [i];				
+		}
+		Shift = chaine;*/
+
+
+		return getState();  
 	}
 
 	const IObjectIA::CProcessResult &IAgent::runStep()

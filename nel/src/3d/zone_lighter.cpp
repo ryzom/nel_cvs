@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.11 2002/01/28 14:45:34 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.12 2002/01/28 16:07:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2722,7 +2722,7 @@ void CZoneLighter::makeQuadGridFromWaterShapes()
 	}
 
 	/// free the vector of water shapes
-	_WaterShapes.swap(TShapeVect());
+	NLMISC::contReset(_WaterShapes);
 }
 
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.16 2000/10/05 09:34:37 corvazier Exp $
+ * $Id: stream.h,v 1.17 2000/10/05 09:45:44 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -112,10 +112,11 @@ class	IStreamable;
 	void	serial(IStream &f)
 	{
 		sint	streamver= serialVersion(3);
-		serial(x,y,a);
-		serialPtr(c);
+		f.serial(x,y,a);
+		f.serialPtr(c);
+		f.serialCont(tab);
 		if(streamver>=2)
-			serialPtr(d);
+			f.serialPtr(d);
 	}
  };
  \endcode
@@ -197,6 +198,25 @@ public:
 	void			serial(wchar &b) throw(EStream);
 	void			serial(std::wstring &b) throw(EStream);
 	//@}
+
+
+	/// Template enum serialisation. Serialized as a sint32.
+    template<class T>
+	void			serialEnum(T &em) throw(EStream)
+	{
+		if(isReading())
+		{
+			sint32	i;
+			serial(i);
+			em= (T)i;
+		}
+		else
+		{
+			sint32	i= em;
+			serial(i);
+		}
+	}
+
 
 	/** \name Multiple serialisation.
 	 * Template for easy multiple serialisation.
@@ -312,7 +332,7 @@ public:
 			T::iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serialPtr((*it));
+				serialPtr(const_cast<T::value_type&>(*it));
 			}
 		}
 	}
@@ -357,7 +377,7 @@ public:
 			T::iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serialPolyPtr((*it));
+				serialPolyPtr(const_cast<T::value_type&>(*it));
 			}
 		}
 	}

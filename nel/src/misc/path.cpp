@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.10 2001/09/07 11:54:11 lecroart Exp $
+ * $Id: path.cpp,v 1.11 2001/09/10 15:12:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,29 +74,31 @@ void CPath::addSearchPath( const string& path )
 /* Returns the long name (path and filename) for the specified file, using search paths
  * stored by addSearchPath.
  */
-string CPath::lookup( const string& filename )
+string CPath::lookup( const string& filename, bool throwException )
 {
-	if(filename.empty())
+	if(!filename.empty())
 	{
-		throw EPathNotFound( filename );
-	}
-	if ( CFile::fileExists(filename) )
-	{
-		NL_DISPLAY_PATH(filename);
-		return filename;
-	}
-	CStringVector::iterator isv;
-	string s;
-	for ( isv=CPath::_SearchPaths.begin(); isv!=CPath::_SearchPaths.end(); ++isv )
-	{
-		s = *isv + filename;
-		if ( CFile::fileExists(s) )
+		if ( CFile::fileExists(filename) )
 		{
-			NL_DISPLAY_PATH(s);
-			return s;
+			NL_DISPLAY_PATH(filename);
+			return filename;
+		}
+		CStringVector::iterator isv;
+		string s;
+		for ( isv=CPath::_SearchPaths.begin(); isv!=CPath::_SearchPaths.end(); ++isv )
+		{
+			s = *isv + filename;
+			if ( CFile::fileExists(s) )
+			{
+				NL_DISPLAY_PATH(s);
+				return s;
+			}
 		}
 	}
-	throw EPathNotFound( filename );
+
+	if (throwException)
+		throw EPathNotFound( filename );
+
 	return "";
 }
 

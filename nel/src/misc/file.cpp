@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.15 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: file.cpp,v 1.16 2001/09/10 15:12:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,7 @@ bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 			origin_c=SEEK_END;
 			break;
 		default:
-			nlassert (0);		// no!
+			nlstop;
 		}
 
 		if (fseek (_F, offset, origin_c)!=0)
@@ -237,7 +237,7 @@ bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 			origin_c=SEEK_END;
 			break;
 		default:
-			nlassert (0);		// no!
+			nlstop;
 		}
 
 		if (fseek (_F, offset, origin_c)!=0)

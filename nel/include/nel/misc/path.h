@@ -1,7 +1,7 @@
 /** \file path.h
  * Abstract system directory architecture and file management
  *
- * $Id: path.h,v 1.7 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: path.h,v 1.8 2001/09/10 15:13:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,9 +61,9 @@ public:
 
 	/** Returns the long name (path and filename) for the specified file, trying first the local path, then 
 	 * using search paths stored by addSearchPath in the same order as they were added.
-	 * If no path is found where path/file exists, an exception EPathNotFound is raised.
+	 * If no path is found where path/file exists, an exception EPathNotFound is raised if the boolean is true.
 	 */
-	static std::string	lookup( const std::string& filename );
+	static std::string	lookup( const std::string& filename, bool throwException = true );
 
 private:
 

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.16 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.17 2004/08/13 15:23:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,9 +40,9 @@ namespace NL3D
 // ***************************************************************************
 
 // Number of vertices that can be rendered in one pass
-#define NL3D_COARSEMESH_VERTEXBUFFER_SIZE				2000
+#define NL3D_COARSEMESH_VERTEXBUFFER_SIZE				20000
 // Number of trianges that can be rendered in one pass
-#define NL3D_COARSEMESH_TRIANGLE_SIZE					1000
+#define NL3D_COARSEMESH_TRIANGLE_SIZE					10000
 // The vertex Format used by the coarseMesh manager
 #define NL3D_COARSEMESH_VERTEX_FORMAT_MGR				(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag|CVertexBuffer::PrimaryColorFlag)
 // The Vertex Format used for export CoarseMesh. MUST NOT HAVE color (important for material coloring/alphaTrans)
@@ -133,6 +133,18 @@ private:
 
 	// Texture category for profilings
 	NLMISC::CSmartPtr<ITexture::CTextureCategory>		_TextureCategory;
+	//
+	CIndexBufferReadWrite				_IBA;
+	CVertexBufferReadWrite				_VBA;	
+
+	struct CMeshInfo
+	{
+		uint            NumVertices;
+		const uint8     *VBuffer;
+		uint            NumTris;
+		const uint32    *IndexBuffer;
+	};
+	std::vector<CMeshInfo> _Meshs;
 };
 
 

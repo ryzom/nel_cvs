@@ -2,4 +2,4 @@
 R:
 cd \code\nel\doc
 del html\*.* /Q
-doxygen nel.dox
+s:\bin\doxygen nel.dox

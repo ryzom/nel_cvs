@@ -5,6 +5,7 @@
 #include "object_viewer.h"
 #include "main_frame.h"
 #include "set_value_dlg.h"
+#include "particle_dlg.h"
 
 #include <nel/misc/file.h>
 

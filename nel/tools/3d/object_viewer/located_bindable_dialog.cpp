@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.10 2001/07/12 16:08:17 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.11 2001/07/24 09:06:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #include "tail_particle_dlg.h"
 #include "mesh_dlg.h"
 #include "texture_anim_dlg.h"
+#include "particle_dlg.h"
 
 
 using NL3D::CPSLocatedBindable ; 

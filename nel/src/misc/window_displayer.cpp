@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.10 2003/01/20 14:07:31 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.11 2003/02/03 15:53:56 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,11 +45,11 @@ class CUpdateThread : public IRunnable
 {
 	CWindowDisplayer *Disp;
 	string WindowNameEx;
+	bool Iconified;
 	sint X, Y, W, H, HS;
 	uint32 FS;
-	bool WW;
 	string FN;
-	bool Iconified;
+	bool WW;
 
 public:
 	CUpdateThread (CWindowDisplayer *disp, string windowNameEx, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww) :

@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.11 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: camera.h,v 1.12 2001/03/13 17:06:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,10 @@ public:
 	 */
 	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 
+	/// \name Get some track name
 
+	/// Return the name of the pos track
+	static const char *getRollValueName() {return "roll";}
 
 protected:
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.7 2001/06/27 16:49:32 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.8 2001/07/04 12:19:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CLocatedBindableDialog)
 	enum { IDD = IDD_LOCATED_BINDABLE };
-		// NOTE: the ClassWizard will add data members here
+	CComboBox	m_BlendingMode;
 	//}}AFX_DATA
 
 
@@ -92,7 +92,7 @@ protected:
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedBindableDialog)
-		// NOTE: the ClassWizard will add member functions here
+	afx_msg void OnSelchangeBlendingMode();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

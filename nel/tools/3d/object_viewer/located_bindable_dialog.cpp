@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.7 2001/06/27 16:49:32 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.8 2001/07/04 12:19:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,16 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 	const uint xPos = 5 ;
 	RECT rect ;
 
+	// has the particle a material ?
+	if (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))
+	{
+		m_BlendingMode.SetCurSel((uint) (dynamic_cast<NL3D::CPSMaterial *>(_Bindable))->getBlendingMode() ) ;
+	}
+	else
+	{
+		m_BlendingMode.ShowWindow(SW_HIDE) ;
+		GetDlgItem(IDC_BLENDING_MODE_STATIC)->ShowWindow(SW_HIDE) ;
+	}
 
 	if (dynamic_cast<NL3D::CPSParticle *>(_Bindable))
 	{
@@ -369,16 +379,24 @@ void CLocatedBindableDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLocatedBindableDialog)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, IDC_BLENDING_MODE, m_BlendingMode);
 	//}}AFX_DATA_MAP
 }
 
 
 BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	//{{AFX_MSG_MAP(CLocatedBindableDialog)
-		// NOTE: the ClassWizard will add message map macros here
+	ON_CBN_SELCHANGE(IDC_BLENDING_MODE, OnSelchangeBlendingMode)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedBindableDialog message handlers
+
+void CLocatedBindableDialog::OnSelchangeBlendingMode() 
+{
+	UpdateData() ;
+	NL3D::CPSMaterial *m = dynamic_cast<NL3D::CPSMaterial *>(_Bindable) ;
+	nlassert(m) ;
+	m->setBlendingMode( (NL3D::CPSMaterial::TBlendingMode) m_BlendingMode.GetCurSel()) ;	
+}

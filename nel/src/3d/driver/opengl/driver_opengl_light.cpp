@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.6 2002/01/10 10:02:15 berenguier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.7 2002/02/18 13:37:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 			glLightf (lightNum, GL_SPOT_EXPONENT, exponent);
 
 			// Get the cutoff of the spot
-			float cutoff=180.f*light.getCutoff ()/(float)NLMISC::Pi;
+			float cutoff=180.f*(light.getCutoff ()/(float)NLMISC::Pi);
 
 			// Set it
 			glLightf (lightNum, GL_SPOT_CUTOFF, cutoff);

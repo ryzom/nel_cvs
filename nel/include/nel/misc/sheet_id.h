@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.16 2004/02/17 19:27:36 cado Exp $
+ * $Id: sheet_id.h,v 1.17 2004/05/18 16:30:48 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -205,9 +205,6 @@ private :
 	static CStaticMap<uint32, CChar> _SheetIdToName;
 	static CStaticMap<CChar,uint32, CCharComp> _SheetNameToId;
 
-	static std::map<uint32,std::string> _SheetIdToAlias;
-	static std::map<std::string,uint32> _SheetAliasToId;
-	
 	static std::vector<std::string> _FileExtensions;
 	static bool _Initialised;
 

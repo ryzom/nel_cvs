@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.28 2003/11/07 11:47:54 saffray Exp $
+ * $Id: sheet_id.cpp,v 1.29 2004/05/18 16:30:48 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -44,8 +44,6 @@ CStaticMap<uint32,CSheetId::CChar> CSheetId::_SheetIdToName;
 CStaticMap<CSheetId::CChar,uint32, CSheetId::CCharComp> CSheetId::_SheetNameToId;
 //map<uint32,std::string> CSheetId::_SheetIdToName;
 //map<std::string,uint32> CSheetId::_SheetNameToId;
-map<uint32,std::string> CSheetId::_SheetIdToAlias;
-map<std::string,uint32> CSheetId::_SheetAliasToId;
 vector<std::string> CSheetId::_FileExtensions;
 bool CSheetId::_Initialised=false;
 bool CSheetId::_RemoveUnknownSheet=true;
@@ -81,16 +79,6 @@ CSheetId::CSheetId( const string& sheetName )
 bool CSheetId::build(const std::string& sheetName)
 {
 	nlassert(_Initialised);
-
-	map<string,uint32>::const_iterator itIdAlias;
-	
-	itIdAlias = _SheetAliasToId.find( strlwr(sheetName) );
-	if( itIdAlias != _SheetAliasToId.end() )
-	{
-		_Id.Id = (*itIdAlias).second;
-		return true;
-	}
-	
 
 	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
 	CChar c;
@@ -233,69 +221,6 @@ void CSheetId::loadSheetId ()
 	}
 }
 
-void CSheetId::loadSheetAlias ()
-{
-	// Open the sheet id to sheet alias association
-	CIFile file;
-	if(file.open(CPath::lookup("alias.packed_sheets", false, false)))
-	{
-		// clear entries
-		_SheetIdToAlias.clear ();
-		_SheetAliasToId.clear ();
-
-		// Get the map.
-		uint32 nbEntries;
-		file.serial (nbEntries);
-		file.setVersionException (false, false);
-		uint ver = 1;
-		file.serialVersion(ver);
-		file.serialCont(_SheetIdToAlias);
-
-		// Close the file.
-		file.close();
-
-		if (_RemoveUnknownSheet)
-		{
-		  //uint32 nbfiles = _SheetIdToAlias.size();
-
-			// now we remove all files that not available
-			map<uint32,string>::iterator itStr2;
-			for( itStr2 = _SheetIdToAlias.begin(); itStr2 != _SheetIdToAlias.end(); )
-			{
-				if (CPath::exists (CSheetId((*itStr2).first).toString()))
-				{
-					++itStr2;
-				}
-				else
-				{
-					map<uint32,string>::iterator olditStr = itStr2;
-					itStr2++;
-					_SheetIdToAlias.erase (olditStr);
-				}
-			}
-		}
-
-		// build the invert map
-		map<uint32,string>::iterator itStr;
-		for( itStr = _SheetIdToAlias.begin(); itStr != _SheetIdToAlias.end(); ++itStr )
-		{
-			// add entry to the inverse map
-			if( !(*itStr).second.empty() )
-			{
-				_SheetAliasToId.insert( make_pair(strlwr((*itStr).second),(*itStr).first) );
-			}
-			else
-			{
-				//nlwarning("<CSheetId::loadSheetAlias> The sheet %s doesn't have alias",CSheetId((*itStr).first).toString().c_str());
-			}
-		}
-	}
-	else
-	{
-		nlinfo("SHEETID: Can't open the file alias.packed_sheets");
-	}
-}
-
 
 //-----------------------------------------------
 //	init
@@ -313,7 +238,6 @@ void CSheetId::init(bool removeUnknownSheet)
 
 	loadSheetId ();
 	_Initialised=true;
-	loadSheetAlias ();
 
 
 } // init //
@@ -356,16 +280,6 @@ CSheetId& CSheetId::operator=( const CSheetId& sheetId )
 CSheetId& CSheetId::operator=( const string& sheetName )
 {
 	nlassert(_Initialised);
-
-	map<string,uint32>::const_iterator itIdAlias;
-	
-	itIdAlias = _SheetAliasToId.find( strlwr(sheetName) );
-	if( itIdAlias != _SheetAliasToId.end() )
-	{
-		_Id.Id = (*itIdAlias).second;
-		return *this;
-	}
-	
 
 	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
 	CChar c;

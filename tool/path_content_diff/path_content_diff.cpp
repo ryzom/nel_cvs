@@ -1,7 +1,7 @@
 /** \file path_content.cpp
  *	list the path content with details on each files
  *
- * $Id: path_content_diff.cpp,v 1.4 2003/01/14 12:12:12 lecroart Exp $
+ * $Id: path_content_diff.cpp,v 1.5 2003/02/20 17:22:12 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "nel/misc/path.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
+
+#include "nel/misc/sha1.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -66,10 +68,6 @@ int main( int argc, char ** argv )
 		}
 	}
 
-	// add ref path in search paths
-	string refPath(argv[1]);
-	CPath::addSearchPath(refPath, true, false);
-
 	// content of new path
 	string newPath(argv[2]);
 	vector<string> newPathContent;
@@ -83,11 +81,59 @@ int main( int argc, char ** argv )
 		return EXIT_FAILURE;
 	}
 
+	// add ref path in search paths
+	string refPath(argv[1]);
+	CPath::addSearchPath(refPath, true, false);
+	
+	map<string,CHashKey> refSHAMap;
+	CIFile refSHAFile;
+	if( refSHAFile.open(refPath +".sha1key") )
+	{
+		// load the map of SHA hash key for the ref files
+		refSHAFile.serialCont( refSHAMap );
+		refSHAFile.close();
+	}
+	else
+	{
+		// build the map of SHA hash key for the ref files
+		string extension;
+		vector<string> refPathContent;
+		CPath::getFileList(extension, refPathContent);
+		vector<string>::const_iterator itFile;
+		for( itFile = refPathContent.begin(); itFile != refPathContent.end(); ++itFile )
+		{
+			refSHAMap.insert( make_pair(*itFile,getSHA1(*itFile)) );
+		}
+		COFile refSHAFile(refPath + ".sha1key");
+		refSHAFile.serialCont( refSHAMap );
+	}
+
+
+	// build the map of SHA hash key for new files
+	map<string,CHashKey> newSHAMap;
+	vector<string>::const_iterator itFile;
+	for( itFile = newPathContent.begin(); itFile != newPathContent.end(); ++itFile )
+	{
+		newSHAMap.insert( make_pair(*itFile,getSHA1(*itFile)) );
+	}
+
+// display (debug)
+	map<string,CHashKey>::iterator itSHA;
+	for( itSHA = refSHAMap.begin(); itSHA != refSHAMap.end(); ++itSHA )
+	{
+		nlinfo("(ref) %s : %s",(*itSHA).first.c_str(),(*itSHA).second.toString().c_str());
+	}
+	for( itSHA = newSHAMap.begin(); itSHA != newSHAMap.end(); ++itSHA )
+	{
+		nlinfo("(new) %s : %s",(*itSHA).first.c_str(),(*itSHA).second.toString().c_str());
+	}
+//
+
 	uint32 LastDisplay = 0, curFile = 0;
 
 	// get the list of new or modified files
 	vector<string> differentFiles;
-	for( vector<string>::const_iterator itFile = newPathContent.begin(); itFile != newPathContent.end(); ++itFile )
+	for( itFile = newPathContent.begin(); itFile != newPathContent.end(); ++itFile )
 	{
 		string newFileName = *itFile;
 		string newFileNameShort = CFile::getFilename(newFileName);
@@ -108,7 +154,7 @@ int main( int argc, char ** argv )
 
 		bool keepIt = false;
 
-		string refFileName = CPath::lookup(newFileNameShort, false, false, false);
+		string refFileName = CPath::lookup(strlwr(newFileNameShort), false, false, false);
 		if( refFileName.empty() )
 		{
 			keepIt = true;
@@ -116,6 +162,24 @@ int main( int argc, char ** argv )
 		}
 		else
 		{
+			itSHA = refSHAMap.find( newFileNameShort );
+			CHashKey refSHA;
+			if( itSHA != refSHAMap.end() )
+			{
+				refSHA = (*itSHA).second;
+			}
+
+			itSHA = newSHAMap.find( newFileName );
+			CHashKey newSHA;
+			if( itSHA != newSHAMap.end() )
+			{
+				newSHA = (*itSHA).second;
+			}
+
+			if( !(refSHA==newSHA) )
+				keepIt = true;
+			
+			/*
 			uint32 refModificationDate = CFile::getFileModificationDate( refFileName );
 			uint32 newModificationDate = CFile::getFileModificationDate( newFileName );		
 
@@ -134,6 +198,7 @@ int main( int argc, char ** argv )
 					nlwarning ("DATE PROBLEM: file '%s' have the same date but not the same size than '%s'", newFileName.c_str(), refFileName.c_str());
 				}
 			}
+			*/
 		}
 
 		if( keepIt )

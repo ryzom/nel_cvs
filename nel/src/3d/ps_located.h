@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.19 2002/02/27 13:56:04 vizerie Exp $
+ * $Id: ps_located.h,v 1.20 2002/04/25 08:27:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,20 +135,44 @@ public:
 
 	virtual ~CPSLocated();
 
-	/**
-	* attach a bindable object to this located, such as a force or a particle
-	* a bindable must be attached only once (-> nlassert)
-	* the bindable is then owned by the system
-	* and will be deleted by it
-	*/
+	/** attach a bindable object to this located, such as a force or a particle
+	  * a bindable must be attached only once (-> nlassert)
+	  * The bindable is then owned by the system and will be deleted by it.
+	  */
 	void bind(CPSLocatedBindable *lb);
+
+	/** Detach a bindable object from this located. Ownership is transferred to the caller	 
+	  * Any reference the object may have in the system is lost (targets..)
+	  * After that is may be inserted an other system.	  
+	  */
+	CPSLocatedBindable *unbind(uint index);
+
+	/// test wether a located bindable is attached to that object
+	bool isBound(const CPSLocatedBindable *lb) const;
+
+	/** Get the index of a located bindable that is bound to that object.
+	  * If it isn't bound, an assertion is raised
+	  */
+	uint getIndexOf(const CPSLocatedBindable *lb) const;
 
 	/** remove a bound object from the located
 	*  if the object doesnt exist -> nlassert
 	*  it is deleted
 	*/
-
 	void remove(const CPSLocatedBindable *lb);
+
+	/** From CParticleSystemProcess.
+	  * Release any reference this located may have on the given process.
+	  * For example, this is used when detaching a located of a system.
+	  */
+	virtual	void			 releaseRefTo(const CParticleSystemProcess *other);
+
+	/** From CParticleSystemProcess.
+	  * Release any reference this located may have to other process of the system
+	  * For example, this is used when detaching a process of a system.
+	  */
+	virtual void			 releaseAllRef();
+
 
 	/**
 	* count the number of bound objects
@@ -751,46 +775,35 @@ const uint32 PSSound = 5;
 
 class CPSLocatedBindable : public NLMISC::IStreamable
 {
-public:
-	
-	/**
+public:	
+	///\name Object
+	//@{
+		/// ctor	
+		CPSLocatedBindable();	
+		/// serialization
+		virtual void		serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+		/** this should be called before to delete any bindable inserted in a system, but this is done
+		  * by the system, so you should never need calling it. This has been introduced because calls in dtor are not polymorphic
+		  * to derived class (which are already destroyed anyway), and some infos are needed in some dtor. The default behaviour does nothing
+		  */
+		virtual void		finalize(void) {}
+		/// dtor
+		virtual ~CPSLocatedBindable();		
+	//@}
+
+  /**
 	*  Gives the type for this bindable.
 	*  types are encoded as constant uint32
 	*/
-	virtual uint32 getType(void) const = 0;
-
+	virtual uint32			getType(void) const = 0;
 	/**
 	* Get the priority of the bindable
 	* The more high it is, the earlier it is dealt with
 	*/
-	virtual uint32 getPriority(void) const = 0;
-	
-	/// ctor	
-	CPSLocatedBindable();	
-
-
-	/** this should be called before to delete any bindable inserted in a system, but this is done
-	  * by the system, so you should never need it. This ha been introduced beacuse calls in dtor are not polymorphic
-	  * to derived class, and some infos are needed in some dtor. The default behaviour does nothing
-	  */
-	virtual void finalize(void) {}
-
-
-	/// dtor
-	virtual ~CPSLocatedBindable();	
-
-	//  CPSLocatedBindable() : _Owner(NULL) {}
-
-
-	/// serialization
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-
-
+	virtual uint32			getPriority(void) const = 0;			
 	/// process one pass for this bindable
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0;
-
-
-	/** can be used by located bindable that have located as targets (emitter, collision zone, forces)
+	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0;
+	/** Can be used by located bindable that have located as targets (emitter, collision zone, forces)
      *	to be notified that one of their target has been removed.
 	 *  To do this :
 	 *  The object that focus the target must call registerDTorObserver on the target, with himself as a parameter
@@ -799,8 +812,17 @@ public:
 	 *   
 	 *  \see CPSLocated::registerDTorObserver()
 	 */
-	virtual void notifyTargetRemoved(CPSLocated *ptr) ;	
-	
+	virtual void			notifyTargetRemoved(CPSLocated *ptr);	
+
+	/** Release any reference this obj may have on the given process.
+	  * For example, this is used when detaching a located bindable from a system.  	 
+	  */
+	virtual	void			 releaseRefTo(const CParticleSystemProcess *other) {}
+	 
+	/** Release any reference this obj may have to other process of the system
+	  * For example, this is used when detaching a located bindable from a system.	  
+	  */
+	virtual void			 releaseAllRef();
 	/***
 	* The following is used to complete an aabbox that was computed using the located positions
 	* You may not need to do anything with that, unless your bindable has a space extents. For exAmple,
@@ -808,134 +830,103 @@ public:
 	* The default behaviour does nothing
 	* \return true if you modified the bbox
 	*/	
-	virtual bool completeBBox(NLMISC::CAABBox &box) const  { return false ;}
-
+	virtual bool			completeBBox(NLMISC::CAABBox &box) const  { return false ;}
 	/***
 	 * Override the following to say that you don't want to be part of a bbox computation
 	 */
-
-	virtual bool doesProduceBBox(void) const { return true; }
-
-
-
-
+	virtual bool			doesProduceBBox(void) const { return true; }
 	/// shortcut to get an instance of the driver
-	 IDriver *getDriver() const 
+	 IDriver				*getDriver() const 
 	 { 
 		 nlassert(_Owner);
 		 nlassert(_Owner->getDriver());
 		 return _Owner->getDriver();
 	 }		
-
-
-
 	/// Shortcut to get the font generator if one was set
-	 CFontGenerator *getFontGenerator(void)
+	 CFontGenerator			*getFontGenerator(void)
 	 {
 		nlassert(_Owner);
 		return _Owner->getFontGenerator();
 	 }
 
 	 /// Shortcut to get the font generator if one was set (const version)
-	 const CFontGenerator *getFontGenerator(void) const
+	 const CFontGenerator	*getFontGenerator(void) const
 	 {
 		nlassert(_Owner);
 		return _Owner->getFontGenerator();
 	 }
 
  	/// Shortcut to get the font manager if one was set
-	CFontManager *getFontManager(void);
+	CFontManager			*getFontManager(void);
 	 
 	/// Shortcut to get the font manager if one was set (const version)
-	const CFontManager *getFontManager(void) const;	 
+	const CFontManager		*getFontManager(void) const;	 
 
 	/// Shortcut to get the matrix of the system		 
-	const NLMISC::CMatrix &getSysMat(void) const;	
-
+	const NLMISC::CMatrix	&getSysMat(void) const;	
 	/// shortcut to get the inverted matrix of the system	
-	const NLMISC::CMatrix &getInvertedSysMat(void) const;	
-
+	const NLMISC::CMatrix	&getInvertedSysMat(void) const;	
 	/** Get the matrix applied to this set of located bindable
 	 *  It may be the identity or the system matrix
 	 */
-	const NLMISC::CMatrix &getLocatedMat(void) const;
-	
-
+	const NLMISC::CMatrix	&getLocatedMat(void) const;	
 	/** Get the matrix applied to this set of located bindable
 	 *  It may be the identity sor the inverted system matrix
 	 */
-	const NLMISC::CMatrix &getInvertedLocatedMat(void) const;
-	
+	const NLMISC::CMatrix	&getInvertedLocatedMat(void) const;	
 	/// shortcut to get the view matrix
-	const NLMISC::CMatrix &getViewMat(void) const;	
-
+	const NLMISC::CMatrix	&getViewMat(void) const;	
 	/// shortcut to get the inverted view matrix
-	const NLMISC::CMatrix &getInvertedViewMat(void) const;	
-
+	const NLMISC::CMatrix	&getInvertedViewMat(void) const;	
 	/// shortcut to setup the model matrix (system basis or world basis)
-	void setupDriverModelMatrix(void);	
-
+	void					setupDriverModelMatrix(void);	
 	/** Compute a vector that will map to (1 0 0) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
-	inline NLMISC::CVector computeI(void)  const { return _Owner->computeI(); }
+	inline NLMISC::CVector	computeI(void)  const { return _Owner->computeI(); }
 
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
-	inline NLMISC::CVector computeJ(void)  const { return _Owner->computeJ(); }
-
+	inline NLMISC::CVector	computeJ(void)  const { return _Owner->computeJ(); }
 	 /** Compute a vector that will map to (0 0 1) after view and model transform.
 	 *  This allow to  have object that always faces the user, whatever basis they are in
 	 */
  	 inline NLMISC::CVector computeK(void)  const { return _Owner->computeK(); }
-
-
 	 /// get the located that owns this bindable
-	 CPSLocated *getOwner(void) { return _Owner; }
-
+	 CPSLocated				*getOwner(void) { return _Owner; }
 	 /// get the located that owns this bindable (const version)
- 	 const CPSLocated *getOwner(void) const { return _Owner; }
-	
-	
+ 	 const CPSLocated		*getOwner(void) const { return _Owner; }		
 	 /// set the located bindable name (edition purpose)
-	void setName(const std::string &name) { _Name = name; }
-
+	 void					setName(const std::string &name) { _Name = name; }
 	/// get the located bindable name (edition purpose)
-	std::string getName(void) const { return _Name; }
-
-	
+	std::string				getName(void) const { return _Name; }	
 	/** set the LODs that apply to that object (warning : it is based on the position of the system, and don't act on a per instance basis ...)
       * To have per instance precision, you must use an attribute maker that has LOD as its input
 	  */
-
-	void setLOD(TPSLod lod) { _LOD = lod; }
-
+	void					setLOD(TPSLod lod) { _LOD = lod; }
 	/// get the valid lods for that object
-	TPSLod getLOD(void) const { return _LOD; }
-
+	TPSLod					getLOD(void) const { return _LOD; }
 	/// tells wether there are alive entities / particles
-	virtual bool		hasParticles(void) const { return false; }
-
+	virtual bool			hasParticles(void) const { return false; }
 	/// tells wether there are alive emitters
-	virtual bool		hasEmitters(void) const { return false; }
-
+	virtual bool			hasEmitters(void) const { return false; }
 	/** set the extern ID of this located bindable. 0 means no extern access. The map of ID-locatedBindable. Is in th
 	  * particle system, so this located bindable must have been attached to a particle system, otherwise an assertion is raised
 	  */
-	void				setExternID(uint32 id);
-
+	void					setExternID(uint32 id);
 	/// get the extern ID of this located bindable
-	uint32				getExternID(void) const { return _ExternID; }
-
-
+	uint32					getExternID(void) const { return _ExternID; }
 	/** Called when the basis of the owner changed. the default behaviour does nothing
 	  * \param newBasis : True if in the system basis, false for the world basis.
 	  */
-	virtual void		basisChanged(bool systemBasis) {}
+	virtual void			basisChanged(bool systemBasis) {}
 
 	/// called when a located has switch between incrmental / parametric motion. The default does nothing
-	virtual	void	    motionTypeChanged(bool parametric) {}
+	virtual	void			motionTypeChanged(bool parametric) {}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 protected:    
 
@@ -982,10 +973,7 @@ protected:
 
 
 	/// set the located that hold this located bindable
-	virtual void setOwner(CPSLocated *psl) 
-	{ 
-		nlassert(psl); _Owner = psl; 
-	}
+	virtual void setOwner(CPSLocated *psl);	
 
 	CPSLocated  *_Owner;
 	uint32		_ExternID;
@@ -1016,69 +1004,63 @@ inline bool operator<(const CPSLocatedBindable &lhs, const CPSLocatedBindable &r
 
 class CPSTargetLocatedBindable : public CPSLocatedBindable
 {
-	public:
-
-		/** Add a new type of located for this to apply on. nlassert if already present.
-		 *  You should only call this if this object and the target are already inserted in a system.
-		 *  By overriding this and calling the CPSTargetLocatedBindable version,
-		 *  you can also send some notificiation to the object that's being attached.
-		 */
-		virtual void attachTarget(CPSLocated *ptr);
-
-		/** remove a target
-		 *  \see attachTarget
-		 */
-		void detachTarget(CPSLocated *ptr)
-		{
-			notifyTargetRemoved(ptr);
-		}				
-
-		/// return the number of targets
-		uint32 getNbTargets(void) const { return _Targets.size(); }
-
-		/// Return a ptr on a target. Invalid range -> nlassert
-		CPSLocated *getTarget(uint32 index) 
-		{
-			nlassert(index < _Targets.size());
-			return _Targets[index];
-		}
-
-		/// Return a const ptr on a target. Invalid range -> nlassert
-		const CPSLocated *getTarget(uint32 index) const
-		{
-			nlassert(index < _Targets.size());
-			return _Targets[index];
-		}
-
-
-		
-		/** it is called when a target is destroyed or detached
-		 *  Override this if you allocated resources from the target (to release them)
-		 *  NOTE : as objects are no polymorphic while being destroyed, this class
-		 *  can't call your releaseTargetRsc override in its destructor, it does it in its finalize method,
-		 *  which is called by the particle system
-		 */
-		virtual void releaseTargetRsc(CPSLocated *target) {};
-
-
-		/// Seralization, must be called by derivers
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-
-		/// Finalize this object : the default is to call releaseTargetRsc on targets
-		virtual void finalize(void);
-
-		virtual ~CPSTargetLocatedBindable();
-
-
-	protected:
-
-		/** Inherited from CPSLocatedBindable. A target has been remove If not present -> assert
-		 * This also call releaseTargetRsc for clean up
-		 */		
-		virtual void notifyTargetRemoved(CPSLocated *ptr);
-
-		typedef std::vector<CPSLocated *> TTargetCont;
-		TTargetCont _Targets;	
+public:
+	/** Add a new type of located for this to apply on. nlassert if already present.
+	 *  You should only call this if this object and the target are already inserted in a system.
+	 *  By overriding this and calling the CPSTargetLocatedBindable version,
+	 *  you can also send some notificiation to the object that's being attached.
+	 */
+	virtual void		attachTarget(CPSLocated *ptr);
+	/** remove a target
+	 *  \see attachTarget
+	 */
+	void				detachTarget(CPSLocated *ptr)
+	{
+		notifyTargetRemoved(ptr);
+	}
+	/** From CPSLocatedBindable.
+	  * Release any reference this obj may have on the given process.
+	  * For example, this is used when detaching a located of a system.
+	  */
+	virtual	void			 releaseRefTo(const CParticleSystemProcess *other);
+	/** From CPSLocatedBindable
+	  * Release any reference this obj may have to other process of the system
+	  * For example, this is used when detaching a located bindable from a system.	  
+	  */
+	virtual void			 releaseAllRef();
+	/// return the number of targets
+	uint32				getNbTargets(void) const { return _Targets.size(); }
+	/// Return a ptr on a target. Invalid range -> nlassert
+	CPSLocated			*getTarget(uint32 index) 
+	{
+		nlassert(index < _Targets.size());
+		return _Targets[index];
+	}
+	/// Return a const ptr on a target. Invalid range -> nlassert
+	const CPSLocated	*getTarget(uint32 index) const
+	{
+		nlassert(index < _Targets.size());
+		return _Targets[index];
+	}		
+	/** it is called when a target is destroyed or detached
+	 *  Override this if you allocated resources from the target (to release them)
+	 *  NOTE : as objects are no polymorphic while being destroyed, this class
+	 *  can't call your releaseTargetRsc override in its destructor, it does it in its finalize method,
+	 *  which is called by the particle system
+	 */
+	virtual void		releaseTargetRsc(CPSLocated *target) {};
+	/// Seralization, must be called by derivers
+	void				serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	/// Finalize this object : the default is to call releaseTargetRsc on targets
+	virtual void		finalize(void);
+	virtual				~CPSTargetLocatedBindable();
+protected:
+	/** Inherited from CPSLocatedBindable. A target has been remove If not present -> assert
+	 * This also call releaseTargetRsc for clean up
+	 */		
+	virtual void		notifyTargetRemoved(CPSLocated *ptr);
+	typedef std::vector<CPSLocated *> TTargetCont;
+	TTargetCont _Targets;	
 
 };
 

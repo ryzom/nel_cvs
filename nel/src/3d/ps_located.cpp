@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.46 2002/04/18 12:12:05 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.47 2002/04/25 08:27:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,27 +54,82 @@ namespace NL3D {
 /**
  * Constructor
  */
-	CPSLocated::CPSLocated() : _LastForever(true)
-						 , _InitialLife(1.f), _LifeScheme(NULL)
-						 , _InitialMass(1.f), _MassScheme(NULL)
-						 , _Size(0), _MaxSize(DefaultMaxLocatedInstance)
-						 , _UpdateLock(false)
-						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)						 
-						 , _NbFramesToSkip(0)
-						 , _Name(std::string("located"))
-						 , _LODDegradation(false)
-						 , _MaxNumFaces(0)
-						 , _NonIntegrableForceNbRefs(0)
-						 , _NumIntegrableForceWithDifferentBasis(0)
-						 , _ParametricMotion(false)
-						 , _TriggerOnDeath(false)
-						 , _TriggerID((uint32) 'NONE')
+	CPSLocated::CPSLocated() : _LastForever(true),
+							   _InitialLife(1.f), _LifeScheme(NULL),
+							   _InitialMass(1.f), _MassScheme(NULL),
+							   _Size(0), _MaxSize(DefaultMaxLocatedInstance),
+							   _UpdateLock(false),
+							   _CollisionInfo(NULL), _CollisionInfoNbRef(0),
+							   _NbFramesToSkip(0),
+							   _Name(std::string("located")),
+							   _LODDegradation(false),
+							   _MaxNumFaces(0),
+							   _NonIntegrableForceNbRefs(0),
+							   _NumIntegrableForceWithDifferentBasis(0),
+							   _ParametricMotion(false),
+							   _TriggerOnDeath(false),
+							   _TriggerID((uint32) 'NONE')
 {		
 }
 
 
 
+///=============================================================================
+void CPSLocated::releaseRefTo(const CParticleSystemProcess *other)
+{
+	// located bindables
+	{	
+		for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+		{
+			(*it)->releaseRefTo(other);
+		}
+	}
+	// dtor observers
+	{	
+				
+		for(TDtorObserversVect::iterator it = _DtorObserversVect.begin(); it != _DtorObserversVect.end(); ++it)
+		{	
+			if ((*it)->getOwner() == other)
+			{									
+				CPSLocatedBindable *refMaker = *it;				
+				refMaker->notifyTargetRemoved(this);
+				break;
+			}
+		}
+	}
+}
 
+///=============================================================================
+void CPSLocated::releaseAllRef()
+{
+	 // located bindables
+	{	
+		for(TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+		{
+			(*it)->releaseAllRef();
+		}
+	}
+
+	// we must do a copy, because the subsequent call can modify this vector
+	TDtorObserversVect copyVect(_DtorObserversVect.begin(), _DtorObserversVect.end());
+	// call all the dtor observers
+	for (TDtorObserversVect::iterator it = copyVect.begin(); it != copyVect.end(); ++it)
+	{
+		(*it)->notifyTargetRemoved(this);
+	}
+	_DtorObserversVect.clear();	
+	
+	nlassert(_CollisionInfoNbRef == 0); //If this is not = 0, then someone didnt call releaseCollisionInfo
+										 // If this happen, you can register with the registerDTorObserver
+										 // (observer pattern)
+										 // and override notifyTargetRemove to call releaseCollisionInfo
+	nlassert(_IntegrableForces.size() == 0);
+	nlassert(_NonIntegrableForceNbRefs == 0);
+	nlassert(!_CollisionInfo);
+}
+
+
+///=============================================================================
 void CPSLocated::notifyMotionTypeChanged(void)
 {
 	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
@@ -83,6 +138,8 @@ void CPSLocated::notifyMotionTypeChanged(void)
 	}
 }
 
+
+///=============================================================================
 void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,								
 								uint32 indexInLocated,
 								NLMISC::CVector *destPos,						
@@ -236,7 +293,8 @@ void CPSLocated::setSystemBasis(bool sysBasis)
 
 void CPSLocated::notifyMaxNumFacesChanged(void)
 {
-
+	if (!_Owner) return;
+	
 	// we examine wether we have particle attached to us, and ask for the max number of faces they may want
 	_MaxNumFaces  = 0;
 	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
@@ -248,12 +306,6 @@ void CPSLocated::notifyMaxNumFacesChanged(void)
 			_MaxNumFaces += maxNumFaces;
 		}
 	}	
-
-
-	if (_Owner)
-	{
-		_Owner->notifyMaxNumFacesChanged();
-	}
 }
 
 
@@ -480,7 +532,7 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 	// we resize it anyway...
 
 	uint32 initialSize  = _Size;
-	for (uint32 k = 0; k < initialSize; ++k)
+	for (uint k = 0; k < initialSize; ++k)
 	{
 		_Size = k;
 		lb->newElement(NULL, 0);
@@ -1381,17 +1433,65 @@ void CPSLocated::integrableForceBasisChanged(bool basis)
 }
 
 
+///=============================================================================
+CPSLocatedBindable *CPSLocated::unbind(uint index)
+{	
+	nlassert(index < _LocatedBoundCont.size());
+	CPSLocatedBindable *lb = _LocatedBoundCont[index];		
+	lb->setOwner(NULL);	
+	_LocatedBoundCont.erase(_LocatedBoundCont.begin() + index);
+	return lb;
+}
+
+///=============================================================================
+bool CPSLocated::isBound(const CPSLocatedBindable *lb) const
+{
+	TLocatedBoundCont::const_iterator it = std::find(_LocatedBoundCont.begin(), _LocatedBoundCont.end(), lb);
+	return it != _LocatedBoundCont.end();
+}
+
+///=============================================================================
+uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
+{
+	for(uint k = 0; k < _LocatedBoundCont.size(); ++k)
+	{
+		if (_LocatedBoundCont[k] == lb) return k;
+	}
+	nlassert(0);
+	return 0;
+}
+
+
+
 ///////////////////////////////////////
 // CPSLocatedBindable implementation //
 ///////////////////////////////////////
 
 
+///=============================================================================
 CPSLocatedBindable::CPSLocatedBindable() : _Owner(NULL), _LOD(PSLod1n2), _ExternID(0)
 {
 	_Owner = NULL;
 }
 
+void CPSLocatedBindable::setOwner(CPSLocated *psl)
+{ 
+	if (psl == NULL)
+	{
+		releaseAllRef();
+		if (_Owner)
+		{
+			// empty this located bindable. Need to be empty if it must be rebound to another located.
+			for (uint k = 0; k < _Owner->getSize(); ++k)
+			{
+				deleteElement(0);
+			}
+		}
+	}
+	_Owner = psl; 
+}
 
+///=============================================================================
 CPSLocatedBindable::~CPSLocatedBindable()
 {
 	if (_ExternID)
@@ -1403,7 +1503,7 @@ CPSLocatedBindable::~CPSLocatedBindable()
 	}
 }
 
-
+///=============================================================================
 const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
 {
 	nlassert(_Owner);
@@ -1418,11 +1518,13 @@ const NLMISC::CMatrix &CPSLocatedBindable::getLocatedMat(void) const
 }
 
 
+///=============================================================================
 void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 {
 	ptr->unregisterDtorObserver(this);
 }
 
+///=============================================================================
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint ver = f.serialVersion(4);
@@ -1445,6 +1547,7 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	
 }
 
+///=============================================================================
 void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float scale)
 {
 	uint32 size = _Owner->getSize();
@@ -1497,12 +1600,14 @@ void CPSLocatedBindable::displayIcon2d(const CVector tab[], uint nbSegs, float s
 
 }
 
+///=============================================================================
 CFontManager *CPSLocatedBindable::getFontManager(void)
 {
 	nlassert(_Owner);
 	return _Owner->getFontManager();
 }
 
+///=============================================================================
  /// Shortcut to get the font manager if one was set (const version)
 const CFontManager *CPSLocatedBindable::getFontManager(void) const
 {
@@ -1511,6 +1616,7 @@ const CFontManager *CPSLocatedBindable::getFontManager(void) const
 }
 
 
+///=============================================================================
 // Shortcut to get the matrix of the system	
  const NLMISC::CMatrix &CPSLocatedBindable::getSysMat(void) const 
 {
@@ -1518,8 +1624,8 @@ const CFontManager *CPSLocatedBindable::getFontManager(void) const
 	return _Owner->getOwner()->getSysMat();
 }
 
+ ///=============================================================================
 /// shortcut to get the inverted matrix of the system
-
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const 
 {
 	nlassert(_Owner);
@@ -1527,6 +1633,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedSysMat(void) const
 
 }
 
+///=============================================================================
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
 {
 	nlassert(_Owner);
@@ -1540,7 +1647,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedLocatedMat(void) const
 	}
 }
 
-
+///=============================================================================
 /// shortcut to get the view matrix
 const NLMISC::CMatrix &CPSLocatedBindable::getViewMat(void) const 
 {
@@ -1548,6 +1655,8 @@ const NLMISC::CMatrix &CPSLocatedBindable::getViewMat(void) const
 	return _Owner->getOwner()->getViewMat();	
 }	
 
+
+///=============================================================================
 /// shortcut to get the inverted view matrix
 const NLMISC::CMatrix &CPSLocatedBindable::getInvertedViewMat(void) const 
 {
@@ -1555,6 +1664,7 @@ const NLMISC::CMatrix &CPSLocatedBindable::getInvertedViewMat(void) const
 	return _Owner->getOwner()->getInvertedViewMat();	
 }	
 
+///=============================================================================
 /// shortcut to setup the model matrix (system basis or world basis)
 void CPSLocatedBindable::setupDriverModelMatrix(void)  
 {
@@ -1562,7 +1672,7 @@ void CPSLocatedBindable::setupDriverModelMatrix(void)
 	_Owner->setupDriverModelMatrix();
 }
 
-
+///=============================================================================
 void	CPSLocatedBindable::setExternID(uint32 id)
 {
 	if (id == _ExternID) return;
@@ -1576,6 +1686,11 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 	}	
 }
 
+///=============================================================================
+void CPSLocatedBindable::releaseAllRef()
+{
+}
+
 	 
 
 
@@ -1584,6 +1699,7 @@ void	CPSLocatedBindable::setExternID(uint32 id)
 // CPSTargetLocatedBindable implementation //
 /////////////////////////////////////////////
 
+///=============================================================================
 void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint32 ver = f.serialVersion(1);	
@@ -1602,6 +1718,7 @@ void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+///=============================================================================
 void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
 {
 
@@ -1622,6 +1739,7 @@ void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
 }
 
 
+///=============================================================================
 void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr) 
 {	
 	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr);
@@ -1636,17 +1754,19 @@ void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
 
 // dtor
 
+///=============================================================================
 void CPSTargetLocatedBindable::finalize(void)
 {	
-	// release the collisionInfos we've querried. We can't do it in the dtor, as calls to releaseTargetRsc wouldn't be polymorphics for derived class!
+	/** Release the collisionInfos we've querried. We can't do it in the dtor, as calls to releaseTargetRsc wouldn't be polymorphics for derived class!
+	  * And the behaviour of releaseTergetRsc is implemented in derived class
+	  */
 	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 	{		
 		releaseTargetRsc(*it);
 	}
 }
 
-
-
+///=============================================================================
 CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 {	
 	// we unregister to all the targets
@@ -1656,9 +1776,28 @@ CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 	}
 }
 
+///=============================================================================
+void CPSTargetLocatedBindable::releaseRefTo(const CParticleSystemProcess *other)
+{
+	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), other);
+	if (it == _Targets.end()) return;
+	releaseTargetRsc(*it);
+	(*it)->unregisterDtorObserver(this);
+	_Targets.erase(it);
+	nlassert(std::find(_Targets.begin(), _Targets.end(), other) == _Targets.end());
+}
 
-
-
+///=============================================================================
+void CPSTargetLocatedBindable::releaseAllRef()
+{
+	for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
+	{
+		releaseTargetRsc(*it);
+		(*it)->unregisterDtorObserver(this);		
+	}
+	_Targets.clear();
+	CPSLocatedBindable::releaseAllRef();
+}
 
 
 

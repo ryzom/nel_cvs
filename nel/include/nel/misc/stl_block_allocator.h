@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.3 2001/12/27 17:14:51 berenguier Exp $
+ * $Id: stl_block_allocator.h,v 1.4 2002/02/07 16:45:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,8 +155,8 @@ public:
 	}
 
 
-	template <class T, class U>
-	CSTLBlockAllocator<U>& __stl_alloc_rebind(CSTLBlockAllocator<T>& __a, const U*)
+	template <class _Tp, class U>
+	CSTLBlockAllocator<U>& __stl_alloc_rebind(CSTLBlockAllocator<_Tp>& __a, const U*)
 	{
 		// must change the internal eltSize of __a.
 		__a._BlockMemory->__stl_alloc_changeEltSize(sizeof(U));
@@ -164,8 +164,8 @@ public:
 		return (CSTLBlockAllocator<U>&)(__a); 
 	}
 
-	template <class T, class U>
-	CSTLBlockAllocator<U> __stl_alloc_create(const CSTLBlockAllocator<T>&, const U*)
+	template <class _Tp, class U>
+	CSTLBlockAllocator<U> __stl_alloc_create(const CSTLBlockAllocator<_Tp>&, const U*)
 	{
 		return CSTLBlockAllocator<U>();
 	}

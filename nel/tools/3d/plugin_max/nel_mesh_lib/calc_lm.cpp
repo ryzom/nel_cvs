@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.52 2004/04/14 12:35:29 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.53 2004/04/14 12:55:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2127,7 +2127,7 @@ void appendLightmapLog (COFile &outputLog, const char *lightmapName, const vecto
 		for (i=0; i<lightIndexes.size(); i++)
 		{
 			text += "\t";
-			text += lights[lightIndexes[i]].Name;
+			text += lights[lightIndexes[i]].Name + toString (" (group %d, animation \"%s\")", lights[lightIndexes[i]].LightGroup, lights[lightIndexes[i]].AnimatedLight.c_str());
 			text += "\n";
 		}
 		

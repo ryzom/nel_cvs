@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.21 2002/07/10 14:40:54 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.22 2002/07/11 13:21:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1339,6 +1339,18 @@ exit:;
 			formName += ".";
 		formName += name;
 
+		// Backup first parent default value
+		bool defaultValue = false;
+		const CFormDfn *defaultParentDfnParent;
+		uint defaultIndexDfnParent;
+		const CFormDfn *defaultNodeDfnParent;
+		const CType *defaultNodeTypeParent;
+		CFormElm *defaultNodeParent;
+		UFormDfn::TEntryType defaultTypeParent;
+		bool defaultArrayParent;
+		bool defaultCreatedParent;
+		bool defaultParentVDfnArray;
+
 		// Look in parent form
 		for (uint parent=0; parent<form->getParentCount (); parent++)
 		{
@@ -1356,20 +1368,55 @@ exit:;
 			bool arrayParent;
 			bool createdParent;
 			bool parentVDfnArray;
-			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false) && nodeParent)
+			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false))
 			{
-				// Found copy return values
-				*parentDfn = parentDfnParent;
-				indexDfn = indexDfnParent;
-				*nodeDfn = nodeDfnParent;
-				*nodeType = nodeTypeParent;
-				*node = nodeParent;
-				type = typeParent;
-				array = arrayParent;
-				created = createdParent;
+				// Node found ?
+				if (nodeParent)
+				{
+					// Found copy return values
+					*parentDfn = parentDfnParent;
+					indexDfn = indexDfnParent;
+					*nodeDfn = nodeDfnParent;
+					*nodeType = nodeTypeParent;
+					*node = nodeParent;
+					type = typeParent;
+					array = arrayParent;
+					created = createdParent;
 
-				return true;
+					return true;
+				}
+				else 
+				{
+					// Backup the first parent default value found
+					if (!defaultValue)
+					{
+						defaultParentDfnParent = parentDfnParent;
+						defaultIndexDfnParent = indexDfnParent;
+						defaultNodeDfnParent = nodeDfnParent;
+						defaultNodeTypeParent = nodeTypeParent;
+						defaultNodeParent = nodeParent;
+						defaultTypeParent = typeParent;
+						defaultArrayParent = arrayParent;
+						defaultCreatedParent = createdParent;
+						defaultParentVDfnArray = parentVDfnArray;
+						defaultValue = true;
+					}
+				}
 			}
+		}
+
+		// Default value available ?
+		if (defaultValue)
+		{
+			*parentDfn = defaultParentDfnParent;
+			indexDfn = defaultIndexDfnParent;
+			*nodeDfn = defaultNodeDfnParent;
+			*nodeType = defaultNodeTypeParent;
+			*node = defaultNodeParent;
+			type = defaultTypeParent;
+			array = defaultArrayParent;
+			created = defaultCreatedParent;
+			return true;
 		}
 	}
 

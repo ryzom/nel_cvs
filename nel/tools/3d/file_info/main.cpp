@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.16 2004/04/07 09:54:05 berenguier Exp $
+ * $Id: main.cpp,v 1.17 2004/04/07 11:54:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,7 @@ void	displayMRMSkinnedGeom(FILE *logStream, const CMeshMRMSkinnedGeom &geom)
 		{
 			CIndexBuffer block;
 			geom.getRdrPassPrimitiveBlock(i,j,block);
-			uint	nPassFaces= block.getNumIndexes()*3;
+			uint	nPassFaces= block.getNumIndexes()/3;
 			numFaces+= nPassFaces;
 			if(i==geom.getNbLod()-1)
 				numFacesLodMax+= nPassFaces;
@@ -144,6 +144,8 @@ void	displayMeshBase(FILE *logStream, CMeshBase *meshBase)
 	{
 		fprintf(logStream, "The Mesh has %d Materials\n", nMat );
 	}
+
+	fprintf(logStream, "The mesh has a LodCharacterTexture: %s\n", meshBase->getLodCharacterTexture()?"true":"false");
 }
 
 

@@ -144,7 +144,7 @@
 		$msgout = new CMemStream;
 		$fake = 0;
 		$msgout->serialuint32 ($fake);			// fake used to number the packet
-		$messageType = 1;
+		$messageType = 0;
 		$msgout->serialuint8 ($messageType);
 		$msgout->serialuint32 ($shardid);
 		$msgout->serialuint32 ($uid);

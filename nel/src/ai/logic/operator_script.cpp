@@ -19,6 +19,7 @@ namespace NLAIAGENT
 		_IsActivable = a._IsActivable;
 		_Maintain = a._Maintain;
 		_Priority = 0;
+		_Exclusive = a._Exclusive;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -32,6 +33,7 @@ namespace NLAIAGENT
 		_IsActivable = false;
 		_Maintain = false;
 		_Priority = 0;
+		_Exclusive = false;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -41,6 +43,7 @@ namespace NLAIAGENT
 		_IsActivable = false;
 		_Maintain = false;
 		_Priority = 0;
+		_Exclusive = false;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -611,6 +614,18 @@ namespace NLAIAGENT
 			case fid_getPriority:
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = new NLAIAGENT::DigitalType( priority() );
+				return r;
+
+			case fid_background:
+				_Exclusive = false;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				return r;
+
+			case fid_exclusive:
+				_Exclusive = true;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
 				return r;
 
 		}

@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.20 2002/10/25 16:22:06 berenguier Exp $
+ * $Id: panoply_maker.cpp,v 1.21 2003/11/27 10:20:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -401,6 +401,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 		// ok, can move the cache
 		if (!NLMISC::CFile::moveFile(outputHLSInfo.c_str(), cacheHLSInfo.c_str()))
 		{
+			nlwarning(("Couldn't move " + cacheHLSInfo + " to " + outputHLSInfo).c_str());
 			return true;
 		}
 	}

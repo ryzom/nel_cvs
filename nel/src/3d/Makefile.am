@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2000/12/06 14:43:22 berenguier Exp $
+# $Id: Makefile.am,v 1.6 2000/12/12 15:21:32 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -17,6 +17,8 @@ libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
                        tile_bank.cpp tile_element.cpp transform.cpp \
                        vertex_buffer.cpp viewport.cpp zone.cpp frustum.cpp
 
+libnel3d_la_LIBADD    = @FREETYPE_LIBS@
+
+AM_CXXFLAGS           = @FREETYPE_CFLAGS@
 
 # End of Makefile.am
-

@@ -217,7 +217,7 @@
 		NLAIC::CTypeOfOperator::opNot ); 
 
 	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( CStringVarName("Inst") )),
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( (NLAIAGENT::IVarName &) CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 
@@ -299,7 +299,8 @@
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
-	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", NLAIC::CSelfClassCFactory(CLocalAgentMail()), 
+	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail()), 
 		NLAIC::CTypeOfObject::tAgent,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

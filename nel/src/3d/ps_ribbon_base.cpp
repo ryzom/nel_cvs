@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.8 2003/04/10 16:39:36 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.9 2003/04/14 15:25:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -619,5 +619,17 @@ void CPSRibbonBase::updateLOD()
 
 }
 
+//=======================================================	
+void CPSRibbonBase::systemDateChanged()
+{
+	nlassert(_Owner->getOwner());
+	_Owner->getOwner()->getSystemDate();
+	float date = _Owner->getOwner()->getSystemDate();
+	std::fill(_SamplingDate.begin(), _SamplingDate.end(), date);	
+	_LastUpdateDate = date;
+}
+
+
 
 } // NL3D
+

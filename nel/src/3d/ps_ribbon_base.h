@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.4 2003/04/10 16:39:36 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.5 2003/04/14 15:25:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,6 +183,8 @@ private:
 											     NLMISC::CVector *dest,
 										         uint stride = sizeof(NLMISC::CVector)
 										       );
+	// called by the system when its date has been manually changed
+	virtual void			systemDateChanged();
 };
 
 } // NL3D

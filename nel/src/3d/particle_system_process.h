@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.9 2002/04/25 08:26:40 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.10 2003/04/14 15:27:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,9 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		/// Update the life of objects..
 		virtual void updateLife(TAnimationTime ellapsedTime) = 0;
+
+		// Called by the system when its date has been manually changed
+		virtual void systemDateChanged() {}
 			
 	protected:
 		CParticleSystem *_Owner ;

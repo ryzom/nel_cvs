@@ -201,6 +201,34 @@ SOURCE=.\misc\config_file\config_file.yacc.cpp
 SOURCE=.\misc\config_file\config_file.yacc.cpp.h
 # End Source File
 # End Group
+# Begin Group "Events"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\event_emitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\event_emitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\event_server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\event_server.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\events.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\events.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\misc\bit_set.cpp

@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.7 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: form_dfn.h,v 1.8 2002/06/06 13:33:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,7 @@ public:
 	// Get an entry
 	CEntry							&getEntry (uint entry);
 
+	/* Deprecated
 	// From UFormElm
 	bool							getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true) const;
 	bool							getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose=true);
@@ -237,7 +238,7 @@ public:
 	bool							getValue (double &result, bool evaluate) const;
 	bool							getValue (bool &result, bool evaluate) const;
 	bool							getValue (NLMISC::CRGBA &result, bool evaluate) const;
-
+*/
 	// Form UFormDfn
 	bool							getEntryType (uint entry, TEntryType &type, bool &array) const;
 	bool							getEntryName (uint entry, std::string &name) const;

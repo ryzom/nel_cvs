@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.7 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.8 2002/06/06 13:33:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,6 +548,7 @@ const CFormDfn *CFormDfn::CEntry::getDfnPtr () const
 }
 
 // ***************************************************************************
+/*Deprecated
 
 bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormElm::TWhereIsNode *where, bool verbose) const
 {
@@ -559,8 +560,9 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
 	bool created;
+	bool parentVDfnArray;
 
-	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, verbose))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, parentVDfnArray, verbose))
 	{
 		if (type == UFormDfn::EntryDfn)
 		{
@@ -609,8 +611,9 @@ bool CFormDfn::getValueByName (std::string &result, const char *name, bool evalu
 	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
 	bool created;
+	bool parentVDfnArray;
 
-	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, true))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created, parentVDfnArray, true))
 	{
 		if (type == UFormDfn::EntryType)
 		{
@@ -1062,7 +1065,7 @@ bool CFormDfn::getValue (NLMISC::CRGBA &result, bool evaluate) const
 	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
 	return false;
 }
-
+*/
 // ***************************************************************************
 
 CFormDfn *CFormDfn::getSubDfn (uint index, uint &dfnIndex)

@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.4 2002/05/31 10:07:28 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.5 2002/06/06 13:33:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,29 @@ public:
 	/// Warning, only R, G and B members are filled, not A.
 	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL) const = 0;
 
+	/**
+	  * Set a form value with its name. If the node doesn't exist, it is created.
+	  *
+	  * \param value is a reference on the value to set in the form.
+	  * \param name is the form name of the value to set or create.
+	  * \param where is a pointer on the information flag of the value. If Where is not NULL, it is filled with 
+	  * the position where the value has been found.
+	  * \param created is a pointer on the creatation flag. If created is not NULL, it is filled with 
+	  * true if the value has been created, false it the value has been filled.
+	  * \return true if the value has been set, false if the value has not been found or hasn't been created.
+	  */
+	virtual bool	setValueByName (const char *value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (sint8 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (uint8 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (sint16 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (uint16 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (sint32 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (uint32 value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (float value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (double value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (bool value, const char *name, bool *created = NULL) = 0;
+	virtual bool	setValueByName (NLMISC::CRGBA value, const char *name, bool *created = NULL) = 0;
+
 	
 	// ** Array element methods
 
@@ -177,6 +200,9 @@ public:
 
 	/// Return true if the element is a virtual struct
 	virtual bool	isVirtualStruct () const = 0;
+
+	/// Get the dfn filename for this virtual struct. Must be a virtual struct node.
+	virtual bool	getDfnName (std::string &dfnName ) const = 0;
 
 	/// Return the struct size
 	virtual bool	getStructSize (uint &size) const = 0;

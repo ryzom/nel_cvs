@@ -1,7 +1,7 @@
 /** \file u_form_dfn.h
  * Georges form element interface
  *
- * $Id: u_form_dfn.h,v 1.1 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: u_form_dfn.h,v 1.2 2002/06/06 13:33:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ class UType;
   * \author Nevrax France
   * \date 2002
   */
-class UFormDfn : public NLMISC::CRefCount, public UFormElm
+class UFormDfn : public NLMISC::CRefCount // Deprecated , public UFormElm
 {
 public:
 

@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.7 2002/05/31 10:07:29 corvazier Exp $
+ * $Id: form_elm.h,v 1.8 2002/06/06 13:33:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,17 @@ public:
 	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where) const;
+	virtual bool	setValueByName (const char *value, const char *name, bool *created);
+	virtual bool	setValueByName (sint8 value, const char *name, bool *created);
+	virtual bool	setValueByName (uint8 value, const char *name, bool *created);
+	virtual bool	setValueByName (sint16 value, const char *name, bool *created);
+	virtual bool	setValueByName (uint16 value, const char *name, bool *created);
+	virtual bool	setValueByName (sint32 value, const char *name, bool *created);
+	virtual bool	setValueByName (uint32 value, const char *name, bool *created);
+	virtual bool	setValueByName (float value, const char *name, bool *created);
+	virtual bool	setValueByName (double value, const char *name, bool *created);
+	virtual bool	setValueByName (bool value, const char *name, bool *created);
+	virtual bool	setValueByName (NLMISC::CRGBA value, const char *name, bool *created);
 	virtual UFormElm	*getParent () const;
 	virtual bool	isArray () const;
 	virtual bool	getArraySize (uint &size) const;
@@ -96,6 +107,7 @@ public:
 	virtual bool	getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const;
 	virtual bool	isStruct () const;
 	virtual bool	isVirtualStruct () const;
+	virtual bool	getDfnName (std::string &dfnName ) const;
 	virtual bool	getStructSize (uint &size) const;
 	virtual bool	getStructNodeName (uint element, std::string &result) const;
 	virtual bool	getStructNode (uint element, const UFormElm **result) const;
@@ -147,7 +159,7 @@ public:
 	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array, bool verbose) const;
+										bool &array, bool &parentVDfnArray, bool verbose) const;
 
 	/** 
 	  * Insert an array node by name
@@ -187,7 +199,7 @@ protected:
 	static bool	getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
 										CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array, TNodeAction action, bool &created, bool verbose);
+										bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose);
 
 	/**
 	  * Unlink a child
@@ -301,6 +313,7 @@ public:
 
 	// From UFormElm
 	bool				isVirtualStruct () const;
+	bool				getDfnName (std::string &dfnName ) const;
 
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;

@@ -1,7 +1,7 @@
 /** \file sound_sources/main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.6 2002/02/20 18:07:22 lecroart Exp $
+ * $Id: main.cpp,v 1.7 2002/11/29 10:09:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/path.h"
 #include "nel/misc/vector.h"
 using namespace NLMISC;
 
@@ -54,18 +55,23 @@ void Init()
 {
 	try
 	{
+
+		CPath::addSearchPath("DFN", true, false);
+
 		/*
 		 * 1. Create the audio mixer object and init it.
 		 * If the sound driver cannot be loaded, an exception is thrown.
 		 */
 		AudioMixer = UAudioMixer::createAudioMixer();
-		AudioMixer->init();
+		AudioMixer->init(50000);
 
 		/*
 		 * 2. Load a "sources sounds file" (.nss), its sound properties and
 		 * its attached wave data files (.wav)
 		 */
-		AudioMixer->loadSoundBuffers( "sample_sounds.nss" );
+		AudioMixer->setSamplePath(".");
+		AudioMixer->loadSampleBank("sounds");
+		AudioMixer->loadSoundBank("sounds");
 
 		/*
 		 * In this small example, we don't have any environmental effects or
@@ -111,7 +117,7 @@ USource *OnAddSource( const char *name, float x, float y, float z )
 		/* The initial gain, pitch and looping state are stored
 		 * in the "source sounds file".
 		 */
-
+		source->setLooping(true);
 		source->play(); // start playing immediately
 	}
 	else
@@ -163,8 +169,8 @@ void main()
 	printf( "One is 20 meters ahead, on the right\n" );
 	printf( "The other is 5 meters ahead, on the left\n" );
 	getchar();
-	USource *src1 = OnAddSource( "Beep", 1.0f, 20.0f, 0.0f );  // Beep on the right, 20 meters ahead
-	USource *src2 = OnAddSource( "Tuut", -2.0f, 5.0f, 0.0f ); // Tuut on the left, 5 meters ahead
+	USource *src1 = OnAddSource( "beep", 1.0f, 20.0f, 0.0f );  // Beep on the right, 20 meters ahead
+	USource *src2 = OnAddSource( "tuut", -2.0f, 5.0f, 0.0f ); // Tuut on the left, 5 meters ahead
 
 	// Second step: we will move the listener ahead
 	printf( "Press ENTER again to start moving the listener\n" );
@@ -188,6 +194,7 @@ void main()
 		for ( listenerpos.y=0.0f; listenerpos.y<30.0f; listenerpos.y+=0.1f )
 		{
 			OnMove( listenerpos );
+			AudioMixer->update();
 		}
 
 		// Backward velocity
@@ -199,6 +206,7 @@ void main()
 		for ( listenerpos.y=30.0f; listenerpos.y>0.0f; listenerpos.y-=0.1f )
 		{
 			OnMove( listenerpos );
+			AudioMixer->update();
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_profile.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_profile.cpp,v 1.5 2004/08/09 14:53:52 vizerie Exp $
+ * $Id: driver_direct3d_profile.cpp,v 1.6 2004/08/13 15:27:14 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -112,6 +112,7 @@ void CDriverD3D::startProfileVBHardLock()
 	_VBHardProfiling= true;
 	_CurVBHardLockCount= 0;
 	_NumVBHardProfileFrame= 0;
+	_VolatileVBLockTime = 0;
 }
 
 // ***************************************************************************
@@ -123,7 +124,7 @@ void CDriverD3D::endProfileVBHardLock(std::vector<std::string> &result)
 
 	// Fill infos.
 	result.clear();
-	result.resize(_VBHardProfiles.size() + 1);
+	result.resize(_VBHardProfiles.size() + 2);
 	float	total= 0;
 	for(uint i=0;i<_VBHardProfiles.size();i++)
 	{
@@ -147,6 +148,8 @@ void CDriverD3D::endProfileVBHardLock(std::vector<std::string> &result)
 		result[i]= tmp;
 	}
 	result[_VBHardProfiles.size()]= toString("Total: %2.3f", total);
+	float	volatileVBTimeLock = (float)CTime::ticksToSecond(_VolatileVBLockTime)*1000 / max(_NumVBHardProfileFrame,1U);
+	result[_VBHardProfiles.size() + 1]= toString("Volatile Vertex Buffer lock time = %2.3f", _VolatileVBLockTime);
 	
 	// clear.
 	_VBHardProfiling= false;
@@ -181,8 +184,7 @@ void CDriverD3D::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 
 // ***************************************************************************
 void CDriverD3D::startProfileIBLock() 
-{	
-	/*
+{		
 	if(_IBProfiling)
 		return;
 	
@@ -192,20 +194,19 @@ void CDriverD3D::startProfileIBLock()
 	_IBProfiling= true;
 	_CurIBLockCount= 0;
 	_NumIBProfileFrame= 0;	
-	*/
+	_VolatileIBLockTime = 0;
 }
 
 // ***************************************************************************
 
 void CDriverD3D::endProfileIBLock(std::vector<std::string> &result) 
-{	
-	/*
+{		
 	if(!_IBProfiling)
 		return;
 	
 	// Fill infos.
 	result.clear();
-	result.resize(_IBProfiles.size() + 1);
+	result.resize(_IBProfiles.size() + 2);
 	float	total= 0;
 	for(uint i=0;i<_IBProfiles.size();i++)
 	{
@@ -229,19 +230,20 @@ void CDriverD3D::endProfileIBLock(std::vector<std::string> &result)
 		result[i]= tmp;
 	}
 	result[_IBProfiles.size()]= toString("Total: %2.3f", total);
+	float	volatileIBTimeLock = (float)CTime::ticksToSecond(_VolatileIBLockTime)*1000 / max(_NumIBProfileFrame,1U);
+	result[_IBProfiles.size() + 1]= toString("Volatile Index Buffer lock time = %2.3f", volatileIBTimeLock);
 	nlwarning("IB lock time = %2.3f", total);
+	nlwarning("Volatile IB lock time = %2.3f", volatileIBTimeLock);
 	
 	// clear.
 	_IBProfiling= false;
 	contReset(_IBProfiles);	
-	*/
 }
 
 // ***************************************************************************
 
 void CDriverD3D::appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib)
-{	
-	/*
+{		
 	// must allocate a new place?
 	if(_CurIBLockCount>=_IBProfiles.size())
 	{
@@ -260,8 +262,7 @@ void CDriverD3D::appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib)
 	}
 	
 	// next!
-	_CurIBLockCount++;	
-	*/
+	_CurIBLockCount++;		
 }
 
 // ***************************************************************************
@@ -302,8 +303,7 @@ void CDriverD3D::profileVBHardAllocation(std::vector<std::string> &result)
 
 // ***************************************************************************
 void CDriverD3D::profileIBAllocation(std::vector<std::string> &result)
-{
-	/*
+{	
 	result.clear();
 	result.reserve(1000);
 	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4d Ko in VRAM", 
@@ -331,8 +331,7 @@ void CDriverD3D::profileIBAllocation(std::vector<std::string> &result)
 			result.push_back(toString("  %16s: %4d ko ", 
 				ib->IndexBufferPtr->getName().c_str(), sizeof(uint32) * numIndex));
 		}
-	}
-	*/
+	}	
 }
 
 // ***************************************************************************

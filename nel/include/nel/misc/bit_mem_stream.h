@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.8 2002/03/04 17:36:22 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.9 2002/04/11 14:33:21 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -102,20 +102,30 @@ public:
 		{
 			if ( isReading() )
 			{
-				uint32 dw = 0;
-				serial( dw, nbits-32 );
-				value = (uint64)dw << 32;
+				// Reset and read MSD
+				uint32 msd = 0;
+				serial( msd, nbits-32 );
+				value = (uint64)msd << 32;
+				// Reset and read LSD
 				serial( (uint32&)value, 32 );
 			}
 			else
 			{
+				// Write MSD
 				uint32 msd = (uint32)(value >> 32);
 				serial( msd, nbits-32 );
+				// Write LSD
 				serial( (uint32&)value, 32 );
 			}
 		}
 		else
 		{
+			if ( isReading() )
+			{
+				// Reset MSB (=0 is faster than value&=0xFFFFFFFF)
+				value = 0;
+			}
+			// Read or write LSB
 			serial( (uint32&)value, nbits );
 		}
 	}

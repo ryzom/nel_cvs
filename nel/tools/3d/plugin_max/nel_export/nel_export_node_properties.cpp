@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.6 2001/08/16 15:50:00 besson Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.7 2001/08/30 10:16:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,8 +106,9 @@ public:
 										// 4th bit -> Visible from father
 										// 5th bit -> Dynamic Portal
 										// 6th bit -> Clusterize
-	std::string				InstanceName;
-	int						DontAddToScene;
+	std::string				InstanceName;	
+	int						DontAddToScene;	
+	int						ExportNoteTrack;
 };
 
 // ***************************************************************************
@@ -258,6 +259,19 @@ int CALLBACK LodDialogCallback (
 				EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), false);
 			}
 
+			
+			if (currentParam->ExportNoteTrack != -1)
+			{
+				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
+				SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
+			}
+			else
+			{
+				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
+			}
+
+
+
 			// Move dialog
 			RECT windowRect, desktopRect;
 			GetWindowRect (hwndDlg, &windowRect);
@@ -284,7 +298,7 @@ int CALLBACK LodDialogCallback (
 							currentParam->BlendOut=SendMessage (GetDlgItem (hwndDlg, IDC_BLEND_OUT), BM_GETCHECK, 0, 0);
 							currentParam->CoarseMesh=SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_GETCHECK, 0, 0);
 							currentParam->DynamicMesh=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_GETCHECK, 0, 0);
-
+							
 							char tmp[512];
 							GetWindowText (GetDlgItem (hwndDlg, IDC_DIST_MAX), tmp, 512);
 							currentParam->DistMax=tmp;
@@ -346,7 +360,7 @@ int CALLBACK LodDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
-							
+							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);							
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -565,6 +579,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0);
+		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, 0);
 		
 
 		// Something selected ?
@@ -609,6 +624,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)!=param.DontAddToScene)
 				param.DontAddToScene = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, 0)!=param.ExportNoteTrack)
+				param.ExportNoteTrack = -1;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
 				param.InstanceName = "";
 
@@ -682,6 +699,8 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
 				if (param.DontAddToScene != -1)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
+				if (param.ExportNoteTrack != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
 
 				if (param.ListActived)
 				{

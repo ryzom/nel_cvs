@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.31 2001/06/07 15:35:21 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.32 2001/06/14 14:48:55 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -733,6 +733,12 @@ namespace NLAISCRIPT
 			else
 			{
 #ifdef NL_DEBUG
+				std::string comp_name;
+				comp->RegisterName->getDebugString( comp_name );
+
+				std::string comp_type;
+				comp->ObjectName->getDebugString( comp_type );
+
 				std::string buf;
 				comp->StaticValue->getDebugString(buf);
 #endif
@@ -1038,8 +1044,27 @@ namespace NLAISCRIPT
 		std::string buf;
 		obj->getDebugString(buf);
 #endif
-		sint32 base_index = getBaseClass()->getStaticMemberSize();
-		CComponent *comp = _Components[index - base_index];
-		comp->StaticValue = obj;
+		sint32 nb_components = 0;
+		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
+		while ( it_bc != _VTable.end() && nb_components <= index )
+		{
+			nb_components = nb_components + (*it_bc)->getStaticMemberSize();
+			it_bc++;
+		}
+		it_bc--;
+		CComponent *component = (*it_bc)->getComponent( index - ( nb_components - (*it_bc)->getStaticMemberSize() ) );
+#ifdef NL_DEBUG
+		std::string buf2, buf3;
+		component->RegisterName->getDebugString(buf2);
+		component->ObjectName->getDebugString(buf3);
+#endif
+
+		component->StaticValue = obj;
+	}
+
+	NLAIAGENT::IObjectIA *CAgentClass::getStaticComponentValue(std::string &c_name)
+	{
+		CComponent *component = getComponent( NLAIAGENT::CStringVarName( c_name.c_str() ) );
+		return component->StaticValue;
 	}
 }

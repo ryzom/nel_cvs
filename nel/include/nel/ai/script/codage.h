@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.15 2001/05/22 16:08:01 chafik Exp $
+ * $Id: codage.h,v 1.16 2001/06/14 14:45:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,7 +347,7 @@ namespace NLAISCRIPT
 		Self(thisClass),
 		InputOutput(io)		
 		{
-			//if(InputOutput != NULL) InputOutput->incRef();
+			if(InputOutput != NULL) InputOutput->incRef();
 		}
 
 		///For reinit the context after using.

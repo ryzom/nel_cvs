@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: fuzzyset.cpp,v 1.4 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,13 +130,13 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CFuzzyInterval::clone() const 
 	{
 		CFuzzyInterval *clone = new CFuzzyInterval( *this );
-		clone->incRef();
 		return clone;
 	}
 
-	const NLAIC::IBasicType *CFuzzyInterval::newInstance() const	{
+	const NLAIC::IBasicType *CFuzzyInterval::newInstance() const
+	{
 		NLAIC::IBasicType *instance = new CFuzzyInterval( *this );
-		instance->incRef();
+
 		return instance;
 	}
 
@@ -238,13 +238,11 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CRightFuzzySet::clone() const
 	{ 
 		CRightFuzzySet *clone = new CRightFuzzySet( *this );
-		clone->incRef();
 		return clone;
 	}
 	const NLAIC::IBasicType *CRightFuzzySet::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CRightFuzzySet( *this );
-		instance->incRef();
 		return instance;
 	}
 
@@ -452,13 +450,11 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CTriangleFuzzySet::clone() const
 	{
 		CTriangleFuzzySet *clone = new CTriangleFuzzySet( *this );
-		clone->incRef();
 		return clone;
 	}
 	const NLAIC::IBasicType *CTriangleFuzzySet::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CTriangleFuzzySet( *this );
-		instance->incRef();
 		return instance;
 	}
 
@@ -569,13 +565,11 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CLeftFuzzySet::clone() const
 	{ 
 		CLeftFuzzySet *clone = new CLeftFuzzySet( *this );
-		clone->incRef();
 		return clone;
 	}
 	const NLAIC::IBasicType *CLeftFuzzySet::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CLeftFuzzySet( *this );
-		instance->incRef();
 		return instance;
 	}
 
@@ -694,13 +688,11 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CTrapezeFuzzySet::clone() const
 	{ 
 		CTrapezeFuzzySet *clone = new CTrapezeFuzzySet( *this );
-		clone->incRef();
 		return clone;
 	}
 	const NLAIC::IBasicType *CTrapezeFuzzySet::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CTrapezeFuzzySet( *this );
-		instance->incRef();
 		return instance;
 	}
 

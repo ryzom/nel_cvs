@@ -54,7 +54,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CBoolType::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CBoolType( *this );
-		m->incRef();
 		return m;
 	}
 
@@ -147,14 +146,12 @@ namespace NLAILOGIC
 	IObjetOp *CBoolType::operator < (IObjetOp &a) const
 	{
 		CBoolType *result = new CBoolType( _Value && !((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 
 	IObjetOp *CBoolType::operator > (IObjetOp &a) const
 	{
 		CBoolType *result = new CBoolType( !_Value && ((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 
@@ -162,21 +159,18 @@ namespace NLAILOGIC
 	{
 
 		CBoolType *result = new CBoolType( !_Value || ((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 
 	IObjetOp *CBoolType::operator >= (IObjetOp &a) const
 	{
 		CBoolType *result = new CBoolType( _Value || !((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 
 	IObjetOp *CBoolType::operator ! () const
 	{
 		CBoolType *result = new CBoolType( !_Value );
-		result->incRef();
 		return result;
 	}
 
@@ -184,7 +178,6 @@ namespace NLAILOGIC
 	{
 		// Le truc pas beau qui embête Sam qui fait que des trucs beaux:
 		CBoolType *result = new CBoolType( _Value ^ ((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 
@@ -199,7 +192,6 @@ namespace NLAILOGIC
 	IObjetOp *CBoolType::operator == (IObjetOp &a) const
 	{
 		CBoolType *result = new CBoolType( _Value == ((CBoolType &)a)._Value );
-		result->incRef();
 		return result;
 	}
 }

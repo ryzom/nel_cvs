@@ -61,14 +61,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *COperatorClass::clone() const
 	{
 		NLAIC::IBasicType *clone = new COperatorClass(*this);
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *COperatorClass::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new COperatorClass();
-		instance->incRef();
 		return instance;
 	}
 
@@ -77,16 +75,7 @@ namespace NLAISCRIPT
 	}
 
 	NLAIAGENT::IObjectIA *COperatorClass::buildNewInstance() const
-	{
-		// Création des composants statiques
-		/*std::list<NLAIAGENT::IObjectIA *> components;
-		createBaseClassComponents( components );
-
-		// Création du message
-		NLAILOGIC::COperatorScript *instance;// = new NLAIAGENT::COperatorScript( components,  (COperatorClass *) this );
-		instance->incRef();
-
-		return instance;*/
+	{		
 		return NULL;
 	}
 

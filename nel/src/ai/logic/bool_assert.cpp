@@ -74,7 +74,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CBoolAssert::clone() const
 	{
 		CBoolAssert *clone = new CBoolAssert( *this );
-		clone->incRef();
 		return clone;
 	}
 
@@ -82,7 +81,6 @@ namespace NLAILOGIC
 	{
 	  NLAIAGENT::CStringVarName x("");
 		CBoolAssert *instance = new CBoolAssert(x);
-		instance->incRef();
 		return instance;
 	}
 

@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.8 2001/01/17 10:47:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,8 +173,7 @@ namespace NLAIPYSERVER
 		bool PyExiste = false;
 		//HKEY	hKey;
 
-		Interface = P;
-		Interface->incRef();
+		Interface = P;		
 
 		Py_Initialize();
 

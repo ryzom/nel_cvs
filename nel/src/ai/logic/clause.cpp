@@ -98,14 +98,12 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CClause::clone() const
 	{
 		CClause *clone = new CClause( *this );
-		clone->incRef();
 		return clone;
 	}	
 	
 	const NLAIC::IBasicType *CClause::newInstance() const
 	{
 		CClause *instance = new CClause();
-		instance->incRef();
 		return instance;
 	}
 

@@ -1,7 +1,7 @@
 /** \file interpret_fuzzytype.cpp
  * Base class for the integration of fuzzy facts in conditions
  *
- * $Id: fuzzytype.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: fuzzytype.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,6 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *FuzzyType::clone() const
 	{
 		NLAIC::IBasicInterface *m = new FuzzyType(*this);
-		m->incRef();
 		return m;
 	}
 

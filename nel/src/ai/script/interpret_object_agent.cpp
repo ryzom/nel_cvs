@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.15 2001/01/17 10:45:12 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.16 2001/01/17 10:47:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,6 +254,7 @@ namespace NLAISCRIPT
 					index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
 				_MsgIndirectTable[ father_index ] = index;
 			}
+
 		}
 	}
 

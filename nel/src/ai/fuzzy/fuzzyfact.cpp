@@ -1,7 +1,7 @@
 /** \file fuzzyfact.cpp
  * Fuzzy facts
  *
- * $Id: fuzzyfact.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: fuzzyfact.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,6 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CFuzzyFact::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CFuzzyFact( *this );
-		m->incRef();
 		return m;
 	}
 

@@ -59,7 +59,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CVarSet::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CVarSet(*this);
-		m->incRef();
 		return m;
 	}
 
@@ -292,7 +291,6 @@ namespace NLAILOGIC
 	CValueSet *CVarSet::asCValueSet()
 	{
 		CValueSet *result = new CValueSet( _Vars );
-		result->incRef();
 		return result;
 	}
 
@@ -390,7 +388,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CFactPattern::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CFactPattern(*this);
-		m->incRef();
 		return m;
 	}
 

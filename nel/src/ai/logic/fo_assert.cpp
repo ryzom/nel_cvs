@@ -131,8 +131,7 @@ namespace NLAILOGIC
 
 	const NLAIC::IBasicType *CFirstOrderAssert::clone() const
 	{
-		CFirstOrderAssert *clone = new CFirstOrderAssert( *this );
-		clone->incRef();
+		CFirstOrderAssert *clone = new CFirstOrderAssert( *this );		
 		return (NLAIC::IBasicInterface *) clone;
 	}
 
@@ -179,7 +178,6 @@ namespace NLAILOGIC
 	void CFirstOrderAssert::addInput(CClause *clause, std::vector<sint32> &posvars)
 	{
 		_Clauses.push_back( clause );
-		clause->incRef();
 		_PosVarsInputs.push_back( std::vector<sint32>() );
 		
 		std::vector<sint32>::iterator it_pos = posvars.begin();
@@ -280,7 +278,6 @@ namespace NLAILOGIC
 		while ( it_f != _Facts.end() )
 		{
 			CFact *tmp = new CFact( (IBaseAssert *) this, *it_f );
-			tmp->incRef();
 			result->push_back( tmp );
 			it_f++;
 		}

@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: interpret_fuzzy_controler.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: interpret_fuzzy_controler.cpp,v 1.6 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,14 +63,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CFuzzyControlerClass::clone() const
 	{
 		NLAIC::IBasicType *clone = new CFuzzyControlerClass(*this);
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CFuzzyControlerClass::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CFuzzyControlerClass();
-		instance->incRef();
 		return instance;
 	}
 
@@ -86,7 +84,6 @@ namespace NLAISCRIPT
 
 		// Création du message
 		NLAIFUZZY::CFuzzyControlerScript *instance = new NLAIFUZZY::CFuzzyControlerScript( components,  (CFuzzyControlerClass *) this );
-		instance->incRef();
 
 		return instance;
 	}

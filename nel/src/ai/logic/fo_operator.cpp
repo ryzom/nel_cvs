@@ -225,7 +225,6 @@ namespace NLAILOGIC
 	CValueSet *CFirstOrderOperator::unifyBackward(std::list<CFact *> &facts)
 	{
 		CValueSet *unified = new CValueSet( _Vars.size() );
-		unified->incRef();
 		std::list<CFact *>::iterator it_f = facts.begin();
 		while ( it_f != facts.end() )
 		{
@@ -265,7 +264,6 @@ namespace NLAILOGIC
 	CValueSet *CFirstOrderOperator::unifyForward(std::list<CFact *> &facts)
 	{
 		CValueSet *unified = new CValueSet( _Vars.size() );
-		unified->incRef();
 		std::list<CFact *>::iterator it_f = facts.begin();
 		while ( it_f != facts.end() )
 		{
@@ -305,7 +303,6 @@ namespace NLAILOGIC
 	CFact *CFirstOrderOperator::buildFromVars(IBaseAssert *assert, std::vector<sint32> &pl, CValueSet *vars)
 	{
 		CFact *result = new CFact( assert);	// TODO:: pas besoin du nombre dans ce constructeur puisqu'on a l'assert
-		result->incRef();
 		for (sint32 i = 0; i < (sint32) pl.size() ; i++ )
 		{
 			sint32 p = pl[i];
@@ -352,7 +349,6 @@ namespace NLAILOGIC
 		std::list<CFact *> *conflicts = new std::list<CFact *>;
 		std::list< CValueSet *>	liaisons;
 		CValueSet *empty = new CValueSet( _Vars.size() );
-		empty->incRef();
 		liaisons.push_back( empty );
 
 		std::list<CFact *>::iterator it_f = facts.begin();
@@ -474,14 +470,12 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CFirstOrderOperator::clone() const
 	{
 		CFirstOrderOperator *clone = new CFirstOrderOperator( *this );
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CFirstOrderOperator::newInstance() const
 	{
 		CFirstOrderOperator *instance = new CFirstOrderOperator;
-		instance->incRef();
 		return instance;
 	}
 

@@ -38,7 +38,6 @@ namespace NLAILOGIC
 	CFact::CFact(IBaseAssert *a, bool v) : CValueSet(1)
 	{
 		_Values[0] = new CBoolType(v);
-		_Values[0]->incRef();
 	}
 
 	CFact::CFact(IBaseAssert *a, CVarSet *vars) : CValueSet( vars->size() )
@@ -118,7 +117,6 @@ namespace NLAILOGIC
 			result->setValue(i, _Values[i] );
 			_Values[i]->incRef();
 		}
-		result->incRef();
 		return result;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.6 2001/01/12 13:02:28 portier Exp $
+ * $Id: fuzzyvar.cpp,v 1.7 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,6 @@ namespace NLAIFUZZY
 		_sets.push_back(my_set);
 		my_set->incRef();
 		NLAIAGENT::CStringVarName *qual = new NLAIAGENT::CStringVarName( set_name );
-		qual->incRef();
 		_qual.push_back( qual );
 	}
 
@@ -176,7 +175,6 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CFuzzyVar::clone() const
 	{
 		CFuzzyVar *clone = new CFuzzyVar(*this);
-		clone->incRef();
 		return clone;
 	}
 
@@ -184,7 +182,6 @@ namespace NLAIFUZZY
 	{      
 	  NLAIAGENT::CStringVarName x("Inst");
 	  CFuzzyVar *instance = new CFuzzyVar(x,0,0);
-	  instance->incRef();
 	  return instance;
 	}
 
@@ -348,7 +345,6 @@ namespace NLAIFUZZY
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = new NLAIAGENT::DigitalType( (float) _Value);
-			r.Result->incRef();
 		}
 
 		// TODO: throw exception....
@@ -400,13 +396,11 @@ namespace NLAIFUZZY
 			if ( *name == CStringVarName( _ADDSUBSET_ ) )
 			{
 				IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandVoid();
-				op_type->incRef();
 				result.push( NLAIAGENT::CIdMethod(1 + IObjetOp::getMethodIndexSize(), 0.0,NULL, op_type ) );
 			}
 			if ( *name == CStringVarName(_UNFUZIFY_) )
 			{
 				IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandSimple( new NLAIC::CIdentType( DigitalType::IdDigitalType) );
-				op_type->incRef();
 				result.push( NLAIAGENT::CIdMethod(2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, op_type ) );
 			}
 		}

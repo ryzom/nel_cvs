@@ -38,7 +38,6 @@ namespace NLAILOGIC
 	IBaseVar::IBaseVar(const char *n)	
 	{
 		_Name = new CStringVarName(n);
-		_Name->incRef();
 	}
 
 	IBaseVar::IBaseVar(const IBaseVar &cp)
@@ -57,7 +56,6 @@ namespace NLAILOGIC
 		if ( *name == CStringVarName("set") )
 		{
 			IObjectIA *op_type = (IObjectIA *) new NLAISCRIPT::COperandVoid();
-			op_type->incRef();
 			result.push( CIdMethod(IObjetOp::getMethodIndexSize() + 1,0.0,NULL, op_type ) );
 		}
 		return result;
@@ -161,7 +159,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CVar::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CVar( *this );
-		m->incRef();
 		return m;
 	}
 

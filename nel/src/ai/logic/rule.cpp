@@ -88,14 +88,12 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CRule::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CRule(*this);
-		m->incRef();
 		return m;
 	}
 
 	const NLAIC::IBasicType *CRule::newInstance() const
 	{
 		CRule *instance = new CRule();
-		instance->incRef();
 		return instance;
 	}
 
@@ -401,7 +399,6 @@ namespace NLAILOGIC
 	{
 		sint32 nb_undefined = pos.size();
 		CValueSet *unified = new CValueSet( *liaison );
-		unified->incRef();
 		std::vector<sint32>::iterator it_pos = pos.begin();
 		std::list<IObjetOp *>::iterator it_v = vals.begin();
 		while ( it_pos != pos.end() )

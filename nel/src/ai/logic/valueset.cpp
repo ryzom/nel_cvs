@@ -149,7 +149,6 @@ namespace NLAILOGIC
 	CValueSet *CValueSet::unify(const CValueSet *un) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
-		result->incRef();
 		int i;
 		for( i = 0; i < _NbValues; i++ )
 		{
@@ -197,7 +196,6 @@ namespace NLAILOGIC
 	CValueSet *CValueSet::unify(std::list<IObjetOp *> *vals, std::vector<sint32> &pos_vals) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
-		result->incRef();
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{
 			result->_Values[i] = _Values[i];
@@ -251,7 +249,6 @@ namespace NLAILOGIC
 	CValueSet *CValueSet::unify(CValueSet *vals, std::vector<sint32> &pos_vals) const
 	{
 		CValueSet *result = new CValueSet( _NbValues );
-		result->incRef();
 		int i;
 		for ( i = 0; i < _NbValues; i++ )
 		{
@@ -348,7 +345,6 @@ namespace NLAILOGIC
 	const NLAIC::IBasicType *CValueSet::clone() const
 	{
 		NLAIC::IBasicType *tmp = new CValueSet( *this );
-		tmp->incRef();
 		return tmp;
 	}
 
@@ -449,7 +445,6 @@ namespace NLAILOGIC
 	IObjetOp *CValueSet::operator ! () const
 	{
 		CBoolType *result = new CBoolType ( !isTrue() );
-		result->incRef();
 		return result;
 	}
 
@@ -458,7 +453,6 @@ namespace NLAILOGIC
 		if ( _NbValues != ((CValueSet &)a)._NbValues )
 		{
 			CBoolType *result = new CBoolType ( false );
-			result->incRef();
 			return result;
 		}
 
@@ -468,13 +462,11 @@ namespace NLAILOGIC
 			if ( _Values[i] != ((CValueSet &)a)._Values[i] )
 			{
 				CBoolType *result = new CBoolType ( false );
-				result->incRef();
 				return result;
 			}
 
 		}
 		CBoolType *result = new CBoolType ( true );
-		result->incRef();
 		return result;
 	}
 
@@ -483,7 +475,6 @@ namespace NLAILOGIC
 		if ( _NbValues != ((CValueSet &)a)._NbValues )
 		{
 			CBoolType *result = new CBoolType ( false );
-			result->incRef();
 			return result;
 		}
 
@@ -495,12 +486,10 @@ namespace NLAILOGIC
 			if ( test_result )
 			{
 				CBoolType *result = new CBoolType ( false );
-				result->incRef();
 				return result;
 			}
 		}
 		CBoolType *result = new CBoolType ( true );
-		result->incRef();
 		return result;
 	}
 

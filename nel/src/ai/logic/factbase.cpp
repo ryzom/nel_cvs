@@ -121,13 +121,11 @@ namespace NLAILOGIC
 			result->_Asserts.push_back( (IBaseAssert *) (*it_a)->clone() );
 			it_a++;
 		}
-		result->incRef();
 		return result;
 	}
 	const NLAIC::IBasicType *CFactBase::newInstance() const
 	{
 		CFactBase *instance = new CFactBase();
-		instance->incRef();
 		return instance;
 	}
 

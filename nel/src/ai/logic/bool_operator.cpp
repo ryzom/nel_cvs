@@ -53,7 +53,6 @@ namespace NLAILOGIC
 		for ( sint32 i = 0; i < (sint32) _Conds.size(); i++ )
 		{
 			CFact *tmp = new CFact (_Conds[i], _CondsVal[i] );
-			tmp->incRef();
 			result->push_back( tmp );
 		}
 		return result;
@@ -138,14 +137,12 @@ namespace NLAILOGIC
 		{
 			clone->addPrecondition( _Concs[i], _ConcsVal[i] );
 		}
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CBoolOperator::newInstance() const
 	{
 		CBoolOperator *instance = new CBoolOperator();
-		instance->incRef();
 		return instance;
 	}
 
@@ -246,7 +243,6 @@ namespace NLAILOGIC
 		for (i = 0; i < (sint32) _Concs.size(); i++ )
 		{
 			CFact *tmp = new CFact (_Concs[i], _ConcsVal[i] );
-			tmp->incRef();
 			result->push_back( tmp );
 		}
 		return result;

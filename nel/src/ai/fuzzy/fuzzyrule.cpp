@@ -1,7 +1,7 @@
 /** \file fuzzyrule.cpp
  * Fuzzy rules
  *
- * $Id: fuzzyrule.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: fuzzyrule.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,14 +172,12 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CFuzzyRule::clone() const
 	{
 		CFuzzyRule *tmp = new CFuzzyRule( *this );
-		tmp->incRef();
 		return (NLAIC::IBasicType *) tmp;
 	}
 
 	const NLAIC::IBasicType *CFuzzyRule::newInstance() const
 	{
 		CFuzzyRule *tmp = new CFuzzyRule();
-		tmp->incRef();
 		return (NLAIC::IBasicType *) tmp;
 	}
 
@@ -215,7 +213,6 @@ namespace NLAIFUZZY
 	NLAIAGENT::IObjetOp *CFuzzyRule::operator== (NLAIAGENT::IObjetOp &) const
 	{
 		NLAILOGIC::CBoolFalse *x = new NLAILOGIC::CBoolFalse;
-		x->incRef();
 		return x;
 	}
 

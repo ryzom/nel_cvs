@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.cpp
  *	A container for fuzzy rules
  *	
- * $Id: fuzzyruleset.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: fuzzyruleset.cpp,v 1.5 2001/01/17 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,14 +96,12 @@ namespace NLAIFUZZY
 	const NLAIC::IBasicType *CFuzzyRuleSet::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CFuzzyRuleSet( *this );
-		m->incRef();
 		return m;
 	}
 
 	const NLAIC::IBasicType *CFuzzyRuleSet::newInstance() const
 	{
 		CFuzzyRuleSet *instance = new CFuzzyRuleSet();
-		instance->incRef();
 		return instance;
 	}
 

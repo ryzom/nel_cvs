@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.46 2003/09/15 11:14:43 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.47 2004/02/13 10:10:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -457,7 +457,10 @@ CTileNoiseMap *CTileBank::getTileNoiseMap (uint tileNumber, uint tileSubNoise)
 		if (tileSet<_TileSetVector.size())
 		{
 			nlassert (tileSubNoise<CTileSet::CountDisplace);
-			nlassert (_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]<_DisplacementMap.size());
+			//nlassert (_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]<_DisplacementMap.size());
+
+			if (_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]>=_DisplacementMap.size())
+				return NULL;
 
 			// Return the tile noise map
 			CTileNoise &tileNoise=_DisplacementMap[_TileSetVector[tileSet]._DisplacementBitmap[tileSubNoise]];
@@ -543,6 +546,9 @@ CTileNoiseMap *CTileBank::getTileNoiseMap (uint tileNumber, uint tileSubNoise)
 			return tileNoise._TileNoiseMap;
 		}
 	}
+
+	if (_DisplacementMap.size()==0 || _DisplacementMap[0]._TileNoiseMap)
+		return NULL;
 
 	// Checks
 	nlassert (_DisplacementMap[0]._TileNoiseMap);

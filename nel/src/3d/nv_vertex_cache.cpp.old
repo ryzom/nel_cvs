@@ -13,6 +13,8 @@ Comments:
 ******************************************************************************/
 
 
+#include "std3d.h"
+
 #include "nv_vertex_cache.h"
 
 VertexCache::VertexCache()

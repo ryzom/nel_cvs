@@ -15,6 +15,8 @@ Comments:
 
 #pragma warning( disable : 4786 )  
 
+#include "std3d.h"
+
 #include "nel/misc/debug.h"
 #include <set>
 #include <algorithm>

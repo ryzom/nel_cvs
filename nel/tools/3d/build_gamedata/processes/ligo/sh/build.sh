@@ -28,8 +28,8 @@ echo "LigoBankDir = \"zoneligos\";" >> land_exporter.cfg
 
 # TileBankFile is the .bank file (used to know if a tile is oriented and the like)
 
-name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g' | sed -e 's/"//g' | sed -e 's/;//g'`
-echo "TileBankFile = \"../smallbank/smallbank/$name_bank\";" >> land_exporter.cfg
+name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+echo "TileBankFile = $name_bank" >> land_exporter.cfg
 
 # HeightMapFile1 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
 

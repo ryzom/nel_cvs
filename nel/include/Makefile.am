@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.11 2001/03/30 09:12:58 valignat Exp $
+# $Id: Makefile.am,v 1.12 2001/06/06 16:01:54 valignat Exp $
 #
 
 install-exec-local:
@@ -45,26 +45,8 @@ uninstall-local:
 
 dist-hook:
 	cp -pr $(srcdir)/nel $(distdir)
-	rm -rf $(distdir)/CVS                   \
-	       $(distdir)/nel/CVS               \
-	       $(distdir)/nel/misc/CVS          \
-	       $(distdir)/nel/net/CVS           \
-	       $(distdir)/nel/3d/CVS            \
-	       $(distdir)/nel/3d/tmp/CVS        \
-	       $(distdir)/nel/ai/CVS            \
-	       $(distdir)/nel/ai/agent/CVS      \
-	       $(distdir)/nel/ai/c/CVS          \
-	       $(distdir)/nel/ai/character/CVS  \
-	       $(distdir)/nel/ai/e/CVS          \
-	       $(distdir)/nel/ai/fuzzy/CVS      \
-	       $(distdir)/nel/ai/logic/CVS      \
-	       $(distdir)/nel/ai/nimat/CVS      \
-	       $(distdir)/nel/ai/pyserver/CVS   \
-	       $(distdir)/nel/ai/script/CVS     \
-	       $(distdir)/nel/ai/tools/CVS      \
-	       $(distdir)/nel/db/CVS            \
-	       $(distdir)/nel/python/CVS        \
-	       $(distdir)/nel/sys/CVS
+	cvslst=`ls -R $(distdir) | fgrep 'CVS:' | sed -e 's/:$$//' `; \
+	-rm -rf $$cvslst
 
 
 # End of Makefile.am

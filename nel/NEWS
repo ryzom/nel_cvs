@@ -1,4 +1,12 @@
 
+March 28 2002
+=============
+
+*  NLNET: Added a new command "serviceInfo" that displays usefull informations on the services.
+
+* samples: Added a new udp sample that contains a client and server (service) that tests UDP
+           connection and create some stat files.
+
 March 23 2002
 =============
 

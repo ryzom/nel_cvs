@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.49 2003/09/01 15:55:20 besson Exp $
+ * $Id: config_file.cpp,v 1.50 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,11 +94,21 @@ float CConfigFile::CVar::asFloat (int index) const
 	return (float) asDouble (index);
 }
 
-const std::string &CConfigFile::CVar::asString (int index) const
+std::string CConfigFile::CVar::asString (int index) const
 {
-	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
-	if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
-	return StrValues[index];
+	if (CheckType && Type != T_STRING) throw EBadType (Name, Type, T_STRING);
+	switch (Type)
+	{
+	case T_INT:
+		if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+		return toString(IntValues[index]);
+	case T_REAL:
+		if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+		return toString(RealValues[index]);
+	default:
+		if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+		return StrValues[index];
+	}
 }
 
 
@@ -420,25 +430,11 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 {
-	uint i;
-	for (i = 0; i < _Vars.size(); i++)
-	{
-		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
-		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
-		{
-			return _Vars[i];
-			break;
-		}
-	}
-
-	// if not found, add it in the array if necessary
-	for (i = 0; i < UnknownVariables.size(); i++)
-		if(UnknownVariables[i] == varName)
-			break;
-	if (i == UnknownVariables.size())
-		UnknownVariables.push_back(varName);
-
-	throw EUnknownVar (FileNames[0], varName);
+	CVar *var =  getVarPtr (varName);
+	if (var == 0) 
+		throw EUnknownVar (getFilename(), varName);
+	else
+		return *var;
 }
 
 
@@ -448,7 +444,7 @@ CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 	for (i = 0; i < _Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
-		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
+		if (_Vars[i].Name == varName && _Vars[i].Type != CVar::T_UNKNOWN)
 		{
 			return &(_Vars[i]);
 		}
@@ -554,7 +550,7 @@ void CConfigFile::display (CLog *log) const
 {
 	createDebug ();
 
-	log->displayRawNL ("Config file %s have %d variables and %d root config file:", FileNames[0].c_str(), _Vars.size(), FileNames.size()-1);
+	log->displayRawNL ("Config file %s have %d variables and %d root config file:", getFilename().c_str(), _Vars.size(), FileNames.size()-1);
 	log->displayRaw ("Root config files: ");
 	for(int i = 1; i < (int)FileNames.size(); i++)
 	{
@@ -638,7 +634,7 @@ void CConfigFile::display (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":FileNames[0].c_str());
+	nlinfo ("Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":getFilename().c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -648,7 +644,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
-			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), FileNames[0].c_str());
+			nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), getFilename().c_str());
 			return;
 		}
 	}
@@ -658,7 +654,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Callback = cb;
 	Var.Type = CVar::T_UNKNOWN;
 	_Vars.push_back (Var);
-	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), FileNames[0].c_str());
+	nlinfo ("Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.34 2003/08/21 15:15:14 lecroart Exp $
+ * $Id: config_file.h,v 1.35 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,13 +138,13 @@ public:
 		/// \name Access to the variable content.
 		//@{
 		/// Get the content of the variable as an integer
-		int					 asInt		(int index=0) const;
+		int					asInt		(int index=0) const;
 		/// Get	the content of the variable as a double
-		double				 asDouble	(int index=0) const;
+		double				asDouble	(int index=0) const;
 		/// Get the content of the variable as a float
-		float				 asFloat	(int index=0) const;
+		float				asFloat		(int index=0) const;
 		/// Get the content of the variable as a STL string
-		const std::string	&asString	(int index=0) const;
+		std::string			asString	(int index=0) const;
 		//@}
 
 		/// \name Set the variable content.

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.187 2003/09/01 12:22:25 lecroart Exp $
+ * $Id: service.cpp,v 1.188 2003/09/03 13:50:56 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -110,6 +110,7 @@ static const char* NegFiltersNames[] =
 // Variables
 //
 
+TUnifiedCallbackItem EmptyCallbackArray[1] = { { "", NULL } };
 
 // class static member
 IService	*IService::_Instance = NULL;
@@ -117,7 +118,9 @@ IService	*IService::_Instance = NULL;
 static sint ExitSignalAsked = 0;
 
 // services stat
-sint32 NetSpeedLoop, UserSpeedLoop;
+CVariable<sint32> UserSpeedLoop ("UserSpeedLoop", "duration of the last network loop (in ms)", 10, false);
+CVariable<sint32> NetSpeedLoop ("NetSpeedLoop", "duration of the last user loop (in ms)", 10, false);
+
 
 // this is the thread that initialized the signal redirection
 // we ll ignore other thread signals
@@ -144,11 +147,10 @@ string CompilationMode = "NL_RELEASE";
 string CompilationMode = "???";
 #endif
 
-static bool Bench = false;
+//static bool Bench = false;
 
-//
-// Callback managing
-//
+CVariable<bool> Bench ("Bench", "1 if benching 0 if not", 0, true);
+
 
 //
 // Signals managing
@@ -221,6 +223,31 @@ static void initSignal()
 #endif
 }
 
+static void cbRunningDirectoryChanged (IVariable &var)
+{
+	string vp = CPath::getFullPath(var.toString());
+	if (vp != var.toString())
+	{
+		nlinfo ("Running dir changed to '%s'", vp.c_str());
+		var.fromString(vp);
+#ifdef NL_OS_WINDOWS
+		_chdir (vp.c_str());
+#else
+		chdir (vp.c_str());
+#endif
+	}
+}
+
+void cbDirectoryChanged (IVariable &var)
+{
+	string vp = CPath::getFullPath(var.toString());
+	if (vp != var.toString())
+	{
+		nlinfo ("%s changed to '%s'", var.getName().c_str(), vp.c_str());
+		var.fromString(vp);
+	}
+}
+
 //
 // Class implementation
 //
@@ -228,7 +255,6 @@ static void initSignal()
 // Ctor
 IService::IService() :
 	WindowDisplayer(0),
-	_Port(0),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
 	_SId(0),
@@ -238,7 +264,14 @@ IService::IService() :
 	_CallbackArraySize (0),
 	_DontUseNS(false),
 	_DontUseAES(false),
-	_ResetMeasures(false)
+	_ResetMeasures(false),
+	ListeningPort("ListeningPort", "listening port for this service", 0, 0, true),
+	RunningDirectory("RunningDirectory", "directory where the service is running on", ".", 0, true, cbRunningDirectoryChanged),
+	ConfigDirectory("ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
+	LogDirectory("LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
+	Version("Version", "Version of the shard", ""),
+	WriteFilesDirectory("WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
+	SaveFilesDirectory("SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged)
 {
 	// Singleton
 	_Instance = this;
@@ -301,15 +334,6 @@ void IService::setArgs (int argc, const char **argv)
 		_Args.push_back (argv[i]);
 	}
 }
-
-/*
- * Returns a pointer to the CCallbackServer object
- */
-CCallbackServer *IService::getServer()
-{
-	return NULL;
-}
-
 
 
 void cbLogFilter (CConfigFile::CVar &var)
@@ -385,14 +409,16 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Init parameters
 		//
 		
-		_ConfigDir = CPath::standardizePath(configDir);
-		_LogDir = CPath::standardizePath(logDir);
+		ConfigDirectory = CPath::standardizePath(configDir);
+		LogDirectory = CPath::standardizePath(logDir);
 		_ShortName = serviceShortName;
 		_LongName = serviceLongName;
 
 		CompilationDate = compilationDate;
 
 		LaunchingDate = CTime::getSecondsSince1970();
+
+		ListeningPort = servicePort;
 
 		// Set the process name
 		CLog::setProcessName (_ShortName);
@@ -402,14 +428,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		// get the path where to run the service if any in the command line
 		if (haveArg('A'))
-		{
-			_RunningPath = CPath::standardizePath(getArg('A'));
-#ifdef NL_OS_WINDOWS
-			_chdir (_RunningPath.c_str());
-#else
-			chdir (_RunningPath.c_str());
-#endif
-		}
+			RunningDirectory = CPath::standardizePath(getArg('A'));
 
 		//
 		// Init debug/log stuffs (must be first things otherwise we can't log if errors)
@@ -417,18 +436,18 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		// get the log dir if any in the command line
 		if (haveArg('L'))
-			_LogDir = CPath::standardizePath(getArg('L'));
+			LogDirectory = CPath::standardizePath(getArg('L'));
 
 		// get the config file dir if any in the command line
 		if (haveArg('C'))
-			_ConfigDir = CPath::standardizePath(getArg('C'));
+			ConfigDirectory = CPath::standardizePath(getArg('C'));
 
-		createDebug (_LogDir.c_str(), false);
+		createDebug (LogDirectory.c_str(), false);
 
 		//DebugLog->addNegativeFilter ("NETL");
 
 		// we create the log with service name filename ("test_service.log" for example)
-		fd.setParam (_LogDir + _LongName + ".log", false);
+		fd.setParam (LogDirectory.c_str() + _LongName + ".log", false);
 
 		DebugLog->addDisplayer (&fd);
 		InfoLog->addDisplayer (&fd);
@@ -449,11 +468,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Load the config file
 		//
 
-		string cfn = _ConfigDir + _LongName + ".cfg";
-		if (!CFile::fileExists(_ConfigDir + _LongName + ".cfg"))
+		string cfn = ConfigDirectory.c_str() + _LongName + ".cfg";
+		if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + ".cfg"))
 		{
 			// check if the default exists
-			if (!CFile::fileExists(_ConfigDir + _LongName + "_default.cfg"))
+			if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + "_default.cfg"))
 			{
 				nlerror ("The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
 			}
@@ -472,6 +491,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}	
 		
 		ConfigFile.load (cfn);
+
+		// setup variable with config file variable
+		IVariable::init (ConfigFile);
 
 
 		//
@@ -665,22 +687,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Initialize server parameters
 		//
 
-		// Get the port from config file or in the macro (overload the port set by the user init())
-		if ((var = ConfigFile.getVarPtr("Port")) != NULL)
-		{
-			// set the listen port with the value in the config file if any
-			_Port = var->asInt();
-		}
-		else
-		{
-			// set the listen port with the value in the NLNET_SERVICE_MAIN macro
-			_Port = servicePort;
-		}
-
 		// set the listen port if there are a port arg in the command line
 		if (haveArg('P'))
 		{
-			_Port = atoi(getArg('P').c_str());
+			ListeningPort = atoi(getArg('P').c_str());
 		}
 
 		// set the aliasname if is present in the command line
@@ -825,7 +835,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CInetAddress loc(LSAddr);
 				try
 				{
-					if ( CUnifiedNetwork::getInstance()->init (&loc, _RecordingState, _ShortName, _Port, _SId) )
+					if ( CUnifiedNetwork::getInstance()->init (&loc, _RecordingState, _ShortName, ListeningPort, _SId) )
 					{
 						ok = true;
 					}
@@ -847,7 +857,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 		else
 		{
-			CUnifiedNetwork::getInstance()->init(NULL, _RecordingState, _ShortName, _Port, _SId);
+			CUnifiedNetwork::getInstance()->init(NULL, _RecordingState, _ShortName, ListeningPort, _SId);
 		}
 
 		// At this point, the _SId must be ok if we use the naming service.
@@ -913,29 +923,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				CPath::addSearchPath (var->asString(i), false, false);
 			}
 		}
-
-
-		// if we can, try to setup where to write files
-		if ((var = ConfigFile.getVarPtr ("WriteFilesDirectory")) != NULL)
-		{
-			WriteFilesDirectory = CPath::getFullPath(var->asString());
-		}
-
-
+		
 		// if we can, try to setup where to save files
 		if (IService::getInstance()->haveArg('W'))
 		{
 			// use the command line param if set
 			SaveFilesDirectory = IService::getInstance()->getArg('W');
 		}
-		else if (IService::getInstance()->ConfigFile.exists ("SaveFilesDirectory"))
-		{
-			// use the config file param if set
-			SaveFilesDirectory = IService::getInstance()->ConfigFile.getVar ("SaveFilesDirectory").asString();
-		}
-		if (!SaveFilesDirectory.empty())
-			SaveFilesDirectory = CPath::getFullPath(SaveFilesDirectory);
-		
+
 		//
 		// Call the user service init
 		//
@@ -993,7 +988,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		nlinfo ("Service ready");
 
 		if (WindowDisplayer != NULL)
-			WindowDisplayer->setTitleBar (_ShortName + " " + _LongName + " " + _Version);
+			WindowDisplayer->setTitleBar (_ShortName + " " + _LongName + " " + Version.c_str());
 
 		//
 		// Call the user service update each loop and check files and network activity
@@ -1076,6 +1071,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
+			sint32 ok = UserSpeedLoop;
 
 			if (WindowDisplayer != NULL)
 			{
@@ -1324,54 +1320,18 @@ NLMISC_DYNVARIABLE(string, Uptime, "time from the launching of the program")
 	}
 }
 
-NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");
+//NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");
 
 NLMISC_VARIABLE(string, CompilationDate, "date of the compilation");
 NLMISC_VARIABLE(string, CompilationMode, "mode of the compilation");
 
-NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
-NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
-
 NLMISC_VARIABLE(uint32, NbUserUpdate, "number of time the user IService::update() called");
 
-NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
+/*NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
 {
 	if (get) *pointer = IService::getInstance()->getPort();
 }
-
-NLMISC_DYNVARIABLE(string, Version, "")
-{
-	if (get) *pointer = IService::getInstance()->_Version;
-}
-
-NLMISC_DYNVARIABLE(string, RunningDirectory, "path where the service is running")
-{
-	if (get) *pointer = IService::getInstance()->_RunningPath;
-}
-
-NLMISC_DYNVARIABLE(string, LogDirectory, "path where the service is logging")
-{
-	if (get) *pointer = IService::getInstance()->_LogDir;
-	else IService::getInstance()->_LogDir = *pointer;
-}
-
-NLMISC_DYNVARIABLE(string, ConfigDirectory, "path where the config file is")
-{
-	if (get) *pointer = IService::getInstance()->_ConfigDir + IService::getInstance()->_LongName + ".cfg";
-}
-
-NLMISC_DYNVARIABLE(string, WriteFilesDirectory, "path where to save generic shard information (packed_sheets for example)")
-{
-	if (get) *pointer = IService::getInstance()->WriteFilesDirectory;
-	else IService::getInstance()->WriteFilesDirectory = *pointer;
-}
-
-NLMISC_DYNVARIABLE(string, SaveFilesDirectory, "path where to save specific shard information (shard time for example)")
-{
-	if (get) *pointer = IService::getInstance()->SaveFilesDirectory;
-	else IService::getInstance()->SaveFilesDirectory = *pointer;
-}
-
+*/
 NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")
 {
 	if (get)
@@ -1429,10 +1389,12 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	if(args.size() != 0) return false;
 
 	log.displayNL ("Service %s '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->getServiceLongName().c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
-	log.displayNL ("Service listening port: %d", IService::getInstance()->_Port);
-	log.displayNL ("Service running directory: '%s'", IService::getInstance()->_RunningPath.c_str());
-	log.displayNL ("Service log directory: '%s'", IService::getInstance()->_LogDir.c_str());
-	log.displayNL ("Service config directory: '%s' config filename: '%s.cfg'", IService::getInstance()->_ConfigDir.c_str(), IService::getInstance()->_LongName.c_str());
+	log.displayNL ("Service listening port: %d", IService::getInstance()->ListeningPort.get());
+	log.displayNL ("Service running directory: '%s'", IService::getInstance()->RunningDirectory.c_str());
+	log.displayNL ("Service log directory: '%s'", IService::getInstance()->LogDirectory.c_str());
+	log.displayNL ("Service save files directory: '%s'", IService::getInstance()->SaveFilesDirectory.c_str());
+	log.displayNL ("Service write files directory: '%s'", IService::getInstance()->WriteFilesDirectory.c_str());
+	log.displayNL ("Service config directory: '%s' config filename: '%s.cfg'", IService::getInstance()->ConfigDirectory.c_str(), IService::getInstance()->_LongName.c_str());
 	log.displayNL ("Service id: %d", IService::getInstance()->_SId);
 	log.displayNL ("Service update timeout: %dms", IService::getInstance()->_UpdateTimeout);
 	log.displayNL ("Service %suse naming service", IService::getInstance()->_DontUseNS?"don't ":"");
@@ -1493,111 +1455,6 @@ NLMISC_COMMAND (freeze, "Freeze the service for N seconds (for debug purpose)", 
 	nlSleep(n * 1000);	
 	return true;
 }
-
-/*
-string foo = "205kb", bar = "2b";
-
-NLMISC_VARIABLE(string, foo, "test the get view system");
-NLMISC_VARIABLE(string, bar, "test the get view system");
-
-vector<pair<uint32,uint32> > _Entities;
-
-void selectEntities (const string entityName, vector <uint32> &entities)
-{
-	if (entityName.empty ())
-		return;
-
-	uint32 entity = atoi (entityName.c_str());
-
-	if (entityName == "*")
-	{
-		// we want all entities
-		for (uint i = 0; i < _Entities.size(); i++)
-			entities.push_back (i);
-	}
-	else if (entityName.find ("-") != string::npos)
-	{
-		// it's a range
-		uint ent2 = atoi(entityName.substr(entityName.find ("-")+1).c_str());
-		for (uint i = entity; i <= ent2; i++)
-			entities.push_back (i);
-	}
-	else
-	{
-		// we want a specific entity
-		entities.push_back (entity);
-	}
-}
-
-
-
-#define ENTITY_VARIABLE(__name,__help) \
-struct __name##Class : public NLMISC::ICommand \
-{ \
-__name##Class () : NLMISC::ICommand(#__name, __help, "<entity> [<value>]") { Type = Variable; } \
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
-	{ \
-		if (args.size () != 1 && args.size () != 2) \
-			return false; \
- \
-		vector <uint32> entities; \
-		selectEntities	(args[0], entities); \
- \
-		for (uint i = 0; i < entities.size(); i++) \
-		{ \
-			string value; \
-			if (args.size()==2) \
-				value = args[1]; \
-			else \
-				value = "???"; \
-			pointer (entities[i], (args.size()==1), value); \
-			log.displayNL ("Entity %d Variable %s = %s", entities[i], _CommandName.c_str(), value.c_str()); \
-		} \
-		return true; \
-	} \
-	void pointer(uint32 entity, bool get, std::string &value); \
-}; \
-__name##Class __name##Instance; \
-void __name##Class::pointer(uint32 entity, bool get, std::string &value)
-
-ENTITY_VARIABLE(test, "test")
-{
-	if (get)
-	{
-		// get the value if available
-		if(entity < _Entities.size())
-			value = toString(_Entities[entity].first);
-	}
-	else
-	{
-		// set the variable with the new value
-		if(entity >= _Entities.size())
-			_Entities.resize(entity+1);
-
-		_Entities[entity].first = atoi(value.c_str());
-	}
-}
-
-ENTITY_VARIABLE(test2, "test2")
-{
-	if (get)
-	{
-		// get the value if available
-		if(entity < _Entities.size())
-			value = toString(_Entities[entity].second);
-	}
-	else
-	{
-		// set the variable with the new value
-		if(entity >= _Entities.size())
-			_Entities.resize(entity+1);
-		
-		_Entities[entity].second = atoi(value.c_str());
-	}
-}
-*/
-
-
 
 
 // -1 = service is quitting

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.66 2003/09/01 12:22:24 lecroart Exp $
+ * $Id: service.h,v 1.67 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,9 @@
 #endif
 
 #include "nel/misc/config_file.h"
+#include "nel/misc/entity_id.h"
+#include "nel/misc/variable.h"
+#include "nel/misc/command.h"
 #include "nel/misc/entity_id.h"
 
 #include "nel/net/unified_network.h"
@@ -94,7 +97,7 @@ class CCallbackServer;
  *
  * -A followed by the path where to execute the service (it uses chdir())
  * -C followed by the directory where we can find the config file
- * -D followed by the listend address for the login system
+ * -D followed by the listening address for the login system
  * -I to start the service iconified
  * -L followed by the directory where we have to log
  * -N followed by the alias name (used by the admin system)
@@ -146,9 +149,8 @@ typedef uint8 TServiceId;
 // Variables provided to application and unused in the NeL library itself.
 //
 
-static TUnifiedCallbackItem EmptyCallbackArray[] = { { "", NULL } };
+extern TUnifiedCallbackItem EmptyCallbackArray[1];
 
-extern sint32 NetSpeedLoop, UserSpeedLoop;
 
 //
 // Classes
@@ -232,9 +234,6 @@ public:
 		return id.getRawId ();
 	}
 	
-	/// Returns a pointer to the CCallbackServer object
-	CCallbackServer					*getServer();
-
 	/// Returns the recording state (don't needed if you use layer5)
 	CCallbackNetBase::TRecordingState	getRecordingState() const { return _RecordingState; }
 
@@ -306,14 +305,16 @@ public:
 	NLMISC::CWindowDisplayer			*WindowDisplayer;
 
 	/// Directory where to store files that the services will write but are the same for all shard instance (for example: packet_sheets)
-	std::string							WriteFilesDirectory;
-
-	/// Directory where to store files that the services will write during the exploitation of the game (for example: player backup, string cache)
-	std::string							SaveFilesDirectory;
+	/// Use .toString() to access to the value
+	NLMISC::CVariable<std::string>		WriteFilesDirectory;
 	
-	void								setVersion (const std::string &version) { _Version = version; }
+	/// Directory where to store files that the services will write during the exploitation of the game (for example: player backup, string cache)
+	/// Use .toString() to access to the value
+	NLMISC::CVariable<std::string>		SaveFilesDirectory;
+	
+	void								setVersion (const std::string &version) { Version = version; }
 
-	uint32								getPort() { return _Port; }
+	uint16								getPort() { return ListeningPort; }
 
 private:
 
@@ -333,7 +334,7 @@ private:
 	std::vector<std::string>			_Args;
 
 	/// Listening port of this service
-	uint16								_Port;
+	NLMISC::CVariable<uint16>			ListeningPort;
 
 	/// Recording state
 	CCallbackNetBase::TRecordingState	_RecordingState;
@@ -362,15 +363,15 @@ private:
 	NLMISC::CEntityId					_NextEntityId;
 
 	/// The directory where the configfile is
-	std::string							_ConfigDir;
-
+	NLMISC::CVariable<std::string>		ConfigDirectory;
+	
 	/// The directory where the logfiles are
-	std::string							_LogDir;
-
+	NLMISC::CVariable<std::string>		LogDirectory;
+	
 	/// The directory where the service is running
-	std::string							_RunningPath;
+	NLMISC::CVariable<std::string>		RunningDirectory;
 
-	std::string							_Version;
+	NLMISC::CVariable<std::string>		Version;
 
 	TUnifiedCallbackItem				*_CallbackArray;
 	uint								_CallbackArraySize;
@@ -389,10 +390,7 @@ private:
 	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;
-	friend class RunningDirectoryClass;
-	friend class LogDirectoryClass;
-	friend class ConfigDirectoryClass;
-	friend class VersionClass;
+	friend void cbDirectoryChanged (const NLMISC::IVariable &var);		
 };
 
 

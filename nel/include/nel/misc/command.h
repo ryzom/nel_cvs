@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.25 2003/08/26 14:52:22 lecroart Exp $
+ * $Id: command.h,v 1.26 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,8 +118,6 @@ public:
 	static TCommand *Commands;
 	static bool		 CommandsInit;
 
-	static void init (CConfigFile &configFile);
-
 	/// Executes the command and display output to the log
 	/// \param quiet true if you don't want to display the "executing the command ..."
 	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log, bool quiet = false, bool human = true);
@@ -144,10 +142,14 @@ public:
 		return isupper(str[0]) == 0;
 	}
 	
+	const std::string &getName () const { return _CommandName; }
 
 protected:
 
 	std::string _CommandName;
+
+	friend void cbVarChanged (CConfigFile::CVar &var);
+
 };
 
 /** This class is only used to serialize easily a command for the admin service for example */

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: variable.cpp,v 1.1 2003/03/06 10:00:20 lecroart Exp $
+ * $Id: variable.cpp,v 1.2 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,5 +33,44 @@ using namespace NLMISC;
 namespace NLMISC {
 
 
+void cbVarChanged (CConfigFile::CVar &cvar)
+{
+	for (ICommand::TCommand::iterator comm = (*ICommand::Commands).begin(); comm != (*ICommand::Commands).end(); comm++)
+	{
+		if ((*comm).second->Type == ICommand::Variable && (*comm).second->_CommandName == cvar.Name)
+		{
+			IVariable *var = (IVariable *)((*comm).second);
+			string val = cvar.asString();
+			nlinfo ("Setting variable '%s' with value '%s' from config file", cvar.Name.c_str(), val.c_str());
+			var->fromString(val, true);
+		}
+	}
+}
 
+void IVariable::init (NLMISC::CConfigFile &configFile)
+{
+	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+	{
+		if ((*comm).second->Type == ICommand::Variable)
+		{
+			IVariable *var = (IVariable *)((*comm).second);
+			if (var->_UseConfigFile)
+			{
+				configFile.setCallback(var->_CommandName, cbVarChanged);
+				CConfigFile::CVar *cvar = configFile.getVarPtr(var->_CommandName);
+				if (cvar != 0)
+				{
+					string val = cvar->asString();
+					nlinfo ("Setting variable '%s' with value '%s' from config file '%s'", var->_CommandName.c_str(), val.c_str(), configFile.getFilename().c_str());
+					var->fromString(val, true);
+				}
+				else
+				{
+					nlwarning ("No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
+				}
+			}
+		}
+	}
+}
+	
 } // NLMISC

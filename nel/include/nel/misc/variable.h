@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.3 2003/06/11 15:22:07 lecroart Exp $
+ * $Id: variable.h,v 1.4 2003/09/03 13:50:56 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -102,7 +102,7 @@ class __name##Class : public NLMISC::IVariable \
 public: \
 	__name##Class () : IVariable(#__name, __help) { } \
 	 \
-	virtual void fromString(const std::string &val, bool human) \
+	virtual void fromString(const std::string &val, bool human=false) \
 	{ \
 		std::stringstream ss (val); \
 		__type p; \
@@ -124,83 +124,6 @@ public: \
 __name##Class __name##Instance; \
 void __name##Class::pointer(__type *pointer, bool get, bool human) const
 
-
-/**
- * Create a variable that can be modify in realtime. Don't use this class directly but use the macro NLMISC_VARIABLE
- *
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2001
- */
-/*template <class T>
-class CVariable : public ICommand
-{
-public:
-	CVariable (const char *commandName, const char *commandHelp, uint nbMeanValue = 0, bool useConfigFile = false) :
-	  NLMISC::ICommand(commandName, commandHelp, "[<value>|stat]"),
-	  _Mean(nbMeanValue), UseConfigFile(useConfigFile)
-	{
-		Type = Variable;
-	}
-	  
-	void set(const T &val)
-	{
-		_Value = val;
-		_Mean.addValue(val);
-	}
-
-	const T &get() const
-	{
-		return _Value;
-	}
-
-	string getStat() const
-	{
-		std::stringstream s;
-		s << _CommandName << "=" << _Value;
-		if (_Mean.getNumFrame()>0)
-		{
-			s << " Mean=" << _Mean.getSmoothValue();
-			s << " LastValues=";
-			for (uint i = 0; i < _Mean.getNumFrame(); i++)
-			{
-				s << _Mean.getLastFrames()[i];
-				if (i < _Mean.getNumFrame()-1)
-					s << ",";
-			}
-		}
-		return s.str();
-	}
-
-	bool UseConfigFile;
-
-	  CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) {	Type = Variable; }
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
-	{
-		if (args.size() == 1)
-		{
-			std::stringstream s2 (args[0]);
-			s2 >> *_Pointer;
-		}
-		{
-			std::stringstream s;
-			s << "Variable " << _CommandName << " = " << *_Pointer;
-			log.displayNL(s.str().c_str());
-		}
-		return (args.size() <= 1);
-	}
-
-private:
-	T *_Pointer;
-
-	// some stat about the variable
-
-};
-*/
-
-//
-//
-//
 //
 //
 //
@@ -210,15 +133,15 @@ class IVariable : public ICommand
 {
 public:
 
-	IVariable(const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false) :
-		ICommand(commandName, commandHelp, commandArgs), _UseConfigFile(useConfigFile)
+	IVariable(const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		ICommand(commandName, commandHelp, commandArgs), _UseConfigFile(useConfigFile), ChangeCallback(cc)
 	{
 		Type = Variable;
 	}
 		  
-	virtual void fromString(const std::string &val, bool human) = 0;
+	virtual void fromString(const std::string &val, bool human=false) = 0;
 	
-	virtual std::string toString(bool human) const = 0;
+	virtual std::string toString(bool human=false) const = 0;
 
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
@@ -243,10 +166,16 @@ public:
 		return true;
 	}
 	
+	static void init (CConfigFile &configFile);
 
 private:
 
 	bool _UseConfigFile;
+
+protected:
+	
+	void (*ChangeCallback)(IVariable &var);
+	
 };
 
 
@@ -257,24 +186,25 @@ class CVariablePtr : public IVariable
 {
 public:
 
-	CVariablePtr (const char *commandName, const char *commandHelp, T *valueptr, bool useConfigFile = false) :
-		IVariable(commandName, commandHelp, "[<value>]", useConfigFile), _ValuePtr(valueptr)
+	CVariablePtr (const char *commandName, const char *commandHelp, T *valueptr, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		IVariable (commandName, commandHelp, "[<value>]", useConfigFile, cc), _ValuePtr(valueptr)
 	{
 	}
-	  
-	virtual void fromString(const std::string &val, bool human)
+
+	virtual void fromString (const std::string &val, bool human=false)
 	{
 		std::stringstream ss (val);
 		ss >> *_ValuePtr;
+		if (ChangeCallback) ChangeCallback (*this);
 	}
-	
-	virtual std::string toString(bool human) const
+
+	virtual std::string toString (bool human) const
 	{
 		std::stringstream ss;
 		ss << *_ValuePtr;
 		return ss.str();
 	}
-		
+
 private:
 
 	T *_ValuePtr;
@@ -286,40 +216,67 @@ class CVariable : public IVariable
 {
 public:
 
-	CVariable(const char *commandName, const char *commandHelp, uint nbMeanValue = 0, bool useConfigFile = false) :
-		IVariable(commandName, commandHelp, "[<value>|stat]", useConfigFile), _Mean(nbMeanValue)
+	CVariable (const char *commandName, const char *commandHelp, const T &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		IVariable (commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
 	{
+		set (defaultValue);
 	}
 
-	virtual void fromString(const std::string &val, bool human)
+	virtual void fromString (const std::string &val, bool human=false)
 	{
 		std::stringstream ss (val);
-		ss >> _Value;
-		_Mean.addValue(val);
+		T v;
+		ss >> v;
+		set (v);
 	}
 	
-	virtual std::string toString(bool human) const
+	virtual std::string toString (bool human) const
 	{
 		std::stringstream ss;
 		ss << _Value;
 		return ss.str();
 	}
 	
-	void set(const T &val)
+	CVariable<T> &operator= (const T &val)
+	{
+		set (val);
+		return *this;
+	}
+
+	operator T () const
+	{
+		return get ();
+	}
+
+	void set (const T &val)
 	{
 		_Value = val;
-		_Mean.addValue(val);
+		_Mean.addValue (_Value);
+		if (_First)
+		{
+			_First = false;
+			_Min = _Value;
+			_Max = _Value;
+		}
+		else
+		{
+			if (_Value > _Max) _Max = _Value;
+			if (_Value < _Min) _Min = _Value;
+		}
+		if (ChangeCallback) ChangeCallback (*this);
 	}
 	
-	const T &get() const
+	const T &get () const
 	{
 		return _Value;
 	}
 
-	std::string getStat() const
+	std::string getStat () const
 	{
 		std::stringstream s;
 		s << _CommandName << "=" << _Value;
+		s << " Min=" << _Min;
+		s << " Max=" << _Max;
 		if (_Mean.getNumFrame()>0)
 		{
 			s << " Mean=" << _Mean.getSmoothValue();
@@ -334,11 +291,14 @@ public:
 		return s.str();
 	}
 	
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+	virtual bool execute (const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size() > 1)
 			return false;
-		
+
+		bool haveVal=false;
+		std::string val;
+
 		if (args.size() == 1)
 		{
 			if (args[0] == "stat")
@@ -346,6 +306,21 @@ public:
 				// display the stat value
 				log.displayNL(getStat().c_str());
 				return true;
+			}
+			else if (args[0] == "mean")
+			{
+				haveVal = true;
+				val = NLMISC::toString(_Mean.getSmoothValue());
+			}
+			else if (args[0] == "min")
+			{
+				haveVal = true;
+				val = NLMISC::toString(_Min);
+			}
+			else if (args[0] == "max")
+			{
+				haveVal = true;
+				val = NLMISC::toString(_Max);
 			}
 			else
 			{
@@ -355,13 +330,18 @@ public:
 		}
 
 		// display the value
+		if (!haveVal)
+		{
+			val = toString(human);
+		}
+
 		if (quiet)
 		{
-			log.displayNL(toString(human).c_str());
+			log.displayNL(val.c_str());
 		}
 		else
 		{
-			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString(human).c_str());
+			log.displayNL("Variable %s = %s", _CommandName.c_str(), val.c_str());
 		}
 		return true;
 	}
@@ -370,6 +350,88 @@ private:
 
 	T _Value;
 	CValueSmootherTemplate<T> _Mean;
+	T _Min, _Max;
+	bool _First;
+};
+
+class CVariable<std::string> : public IVariable
+{
+public:
+	
+	CVariable (const char *commandName, const char *commandHelp, const std::string &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		IVariable (commandName, commandHelp, "[<value>]", useConfigFile, cc)
+	{
+		set (defaultValue);
+	}
+	  
+	virtual void fromString (const std::string &val, bool human=false)
+	{
+		set (val);
+	}
+
+	virtual std::string toString (bool human=false) const
+	{
+		return _Value;
+	}
+
+	CVariable<std::string> &operator= (const std::string &val)
+	{
+		set (val);
+		return *this;
+	}
+
+	operator std::string () const
+	{
+		return get();
+	}
+
+	operator const char * () const
+	{
+		return get().c_str();
+	}
+
+	const char *c_str () const
+	{
+		return get().c_str();
+	}
+
+	void set (const T &val)
+	{
+		_Value = val;
+		if (ChangeCallback) ChangeCallback(*this);
+	}
+
+	const T &get () const
+	{
+		return _Value;
+	}
+
+	virtual bool execute (const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+	{
+		if (args.size () > 1)
+			return false;
+
+		if (args.size () == 1)
+		{
+			// set the value
+			fromString (args[0], human);
+		}
+
+		// display the value
+		if (quiet)
+		{
+			log.displayNL (toString(human).c_str());
+		}
+		else
+		{
+			log.displayNL ("Variable %s = %s", _CommandName.c_str(), toString(human).c_str());
+		}
+		return true;
+	}
+
+private:
+
+	T _Value;
 };
 
 

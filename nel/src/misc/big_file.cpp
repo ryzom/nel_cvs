@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.11 2003/11/20 15:26:22 corvazier Exp $
+ * $Id: big_file.cpp,v 1.12 2003/11/21 10:56:15 besson Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -152,6 +152,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 		return false;
 
 	// Convert temp map
+	if (nNbFile > 0)
 	{
 		uint nSize = 0, nNb = 0;
 		map<string,BNPFile>::iterator it = tempMap.begin();
@@ -290,6 +291,12 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	}
 
 	BNP &rbnp = _BNPs.find (zeBigFileName)->second;
+	if (rbnp.Files.size() == 0)
+	{
+		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
+		return NULL;
+	}
+
 	vector<BNPFile>::iterator itNBPFile;
 	itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), zeFileName.c_str(), CBNPFileComp());
 	if (itNBPFile != rbnp.Files.end())
@@ -335,6 +342,8 @@ char *CBigFile::getFileNamePtr(const std::string &sFileName, const std::string &
 	{
 		BNP &rbnp = _BNPs.find (bigfilenamealone)->second;
 		vector<BNPFile>::iterator itNBPFile;
+		if (rbnp.Files.size() == 0)
+			return NULL;
 		string lwrFileName = strlwr (sFileName);
 		itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), lwrFileName.c_str(), CBNPFileComp());
 		if (itNBPFile != rbnp.Files.end())

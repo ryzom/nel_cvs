@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.55 2003/03/03 12:56:08 boucher Exp $
+ * $Id: particle_system.cpp,v 1.56 2003/04/07 12:34:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,8 +75,10 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _LODRatio(0.5f),									 
 									 _OneMinusCurrentLODRatio(0),
 									 _MaxViewDist(PSDefaultMaxViewDist),
+									 _MaxDistLODBias(0.05f),
 									 _InvMaxViewDist(1.f / PSDefaultMaxViewDist),
 									 _InvCurrentViewDist(1.f / PSDefaultMaxViewDist),
+									 _AutoLODEmitRatio(0.f),
 									 _DieCondition(none),
 									 _DelayBeforeDieTest(0.2f),									 									
 									 _MaxNumFacesWanted(0),
@@ -84,7 +86,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _UserParamGlobalValue(NULL),
 									 _BypassGlobalUserParam(0),
 									 _PresetBehaviour(UserBehaviour),									 
-									 _AutoLODStartDistPercent(0.3f),
+									 _AutoLODStartDistPercent(0.1f),
 									 _AutoLODDegradationExponent(1),																		 
 									 _ColorAttenuationScheme(NULL),
 									 _GlobalColor(NLMISC::CRGBA::White),
@@ -99,6 +101,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _KeepEllapsedTimeForLifeUpdate(false),
 									 _AutoLODSkipParticles(false),
 									 _EnableLoadBalancing(true),
+									 _EmitThreshold(true),
 									 _InverseEllapsedTime(0.f),
 									 _CurrentDeltaPos(NLMISC::CVector::Null),
 									 _DeltaPos(NLMISC::CVector::Null)
@@ -382,6 +385,26 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			}
 			updateLODRatio();
 
+			if (_AutoLOD && !_Sharing)
+			{
+				float currLODRatio = 1.f - _OneMinusCurrentLODRatio;
+				if (currLODRatio <= _AutoLODStartDistPercent)
+				{
+					_AutoLODEmitRatio = 1.f; // no LOD applied
+				}
+				else
+				{
+					float lodValue = (currLODRatio - 1.f) / (_AutoLODStartDistPercent - 1.f);
+					NLMISC::clamp(lodValue, 0.f, 1.f);
+					float finalValue = lodValue;
+					for(uint l = 1; l < _AutoLODDegradationExponent; ++l)
+					{
+						finalValue *= lodValue;
+					}
+					_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
+				}
+			}
+
 			// set start position. Used by emitters that emit from Local basis to world
 			_CurrentDeltaPos = -_DeltaPos;
 			//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
@@ -420,7 +443,9 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(12);
+	sint version =  f.serialVersion(14);
+	// version 14: emit threshold
+	// version 13: max dist lod bias for auto-LOD
 	// version 12: global userParams
 	// version 11: enable load balancing flag 
 	// version 9: Sharing flag added
@@ -583,6 +608,17 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			}
 		}		
 	}	
+	if (version >= 13)
+	{
+		if (_AutoLOD && !_Sharing)
+		{
+			f.serial(_MaxDistLODBias);
+		}
+	}
+	if (version >= 14)
+	{
+		f.serial(_EmitThreshold);
+	}
 
 	if (f.isReading())
 	{
@@ -1023,6 +1059,14 @@ CParticleSystem::CGlobalVectorValueHandle CParticleSystem::getGlobalVectorValueH
 	handle._Name = &it->first;
 	return handle;
 }
+
+///=======================================================================================
+void CParticleSystem::setMaxDistLODBias(float lodBias)
+{
+	NLMISC::clamp(lodBias, 0.f, 1.f);
+	_MaxDistLODBias = lodBias;
+}
+
 
 
 

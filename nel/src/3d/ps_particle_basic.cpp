@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.5 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_particle_basic.cpp,v 1.6 2003/04/07 12:34:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ void CPSParticle::computeSrcStep(uint32 &step, uint &numToProcess)
 {		
 	nlassert(_Owner && _Owner->getOwner());
 	const CParticleSystem &ps = *(_Owner->getOwner());
-	if (_DisableAutoLOD || !ps.isAutoLODEnabled() || _Owner->getSize() == 0) // Should Auto-LOD be used ?
+	if (_DisableAutoLOD || !ps.isAutoLODEnabled() || !ps.isSharingEnabled() || _Owner->getSize() == 0) // Should Auto-LOD be used ?
 	{
 		step = (1 << 16);
 		numToProcess = _Owner->getSize();
@@ -96,7 +96,7 @@ void CPSParticle::computeSrcStep(uint32 &step, uint &numToProcess)
 			float factor = (LODRatio - 1.f) / (ps.getAutoLODStartDistPercent() - 1.f);
 			NLMISC::clamp(factor, 0.f, 1.f);
 			float r = factor;
-			for (uint k = 0; k < ps.getAutoLODDegradationExponent(); ++k)
+			for (uint k = 1; k < ps.getAutoLODDegradationExponent(); ++k)
 			{
 				r *= factor;
 			}
@@ -105,7 +105,7 @@ void CPSParticle::computeSrcStep(uint32 &step, uint &numToProcess)
 
 			step =	 ps.getAutoLODMode() ?				   // skip or limit number, depending on the mode
 				(_Owner->getSize() << 16) / numToProcess : // skip particles
-				(1<<16);							   // just display less particles
+				(1 << 16);							   // just display less particles
 		}
 		else
 		{

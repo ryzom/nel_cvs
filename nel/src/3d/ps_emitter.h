@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.21 2002/10/14 09:49:42 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.22 2003/04/07 12:34:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -232,6 +232,10 @@ public:
 	  */
 	virtual void			 releaseAllRef();
 
+	// bypass the auto-LOD : no auto-LOD will be applied to that emitter
+	void					 setBypassAutoLOD(bool bypass) { _BypassAutoLOD = bypass; }
+	bool					 getBypassAutoLOD() const {	return _BypassAutoLOD; }
+
 protected:	
 
 	/// This will call emit, and will add additionnal features (speed addition and so on)
@@ -247,11 +251,14 @@ protected:
 													 );
 
 	/// Regular emission processing
-	void							processRegularEmission(TAnimationTime ellapsedTime);
+	void							processRegularEmission(TAnimationTime ellapsedTime, float emitLOD);
+	void							processRegularEmissionWithNoLOD(TAnimationTime ellapsedTime);
 
 	/** Regular emission processing, with low-framrate compensation
 	  */
-	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
+	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio, float emitLOD, float inverseEmitLOD);
+	void							processRegularEmissionConsistentWithNoLOD(TAnimationTime ellapsedTime, float realEllapsedTimeRatio);
+
 
 
 
@@ -303,6 +310,7 @@ protected:
 	bool							_SpeedBasisEmission;
 	bool							_EmitDirBasis; // true when emission direction is in the emitter basis
 	bool							_ConsistentEmission; 
+	bool							_BypassAutoLOD;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

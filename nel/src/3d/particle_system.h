@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.30 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system.h,v 1.31 2003/04/07 12:34:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,7 +281,7 @@ public:
 
 	//*****************************************************************************************************
 
-	/**\name User parameters. They may be or not used by the system. Theyr meaning is defined during the construction
+	/**\name User parameters. They may be or not used by the system. Their meaning is defined during the construction
 	  * of the system
 	  */
 
@@ -457,8 +457,9 @@ public:
 
 	/**\name LOD managment. LOD, when used  can be performed in 2 ways :
 	  *						- Hand tuned LOD (for emission, color, size : this uses LOD as an input for attribute makers).
-	  *                     - Auto LOD : Results are less good than with Hand- tuned LOD, but this may be needed when sharing is
-	  *						  enabled. NB : auto-lod may not be supported by all kinds of particles.
+	  *                     - Auto LOD : - With non-shared systems, it modulates the emission period, quantity etc.. to get the desired result.
+	  *									 - With shared systems : One version is animated with full LOD (no hand tuned LOD should be applied !).
+	  *                                                          All version are displayed with fewer particle than the full LOD, depending on their distance. Visually, this is not as good as hand-tuned system, or auto-LOD on non-shared systems, however ..
 	  */
 
 
@@ -515,12 +516,21 @@ public:
 			_AutoLODStartDistPercent    = 	startDistPercent;
 			_AutoLODDegradationExponent =	degradationExponent;
 		}
+		
+		/** when auto-lod on a non shared system is used, this set the degradation of the system when it is far
+		  * A value of 0 mean no more emissions at all.
+		  * A value of 0.1 means 10% of emission and so on.
+		  * A value of 1 means there's no LOD at all..
+		  */
+		void    setMaxDistLODBias(float lodBias);
+		float   getMaxDistLODBias() const { return _MaxDistLODBias; }		
+		
 
 		
 		float	getAutoLODStartDistPercent() const { return _AutoLODStartDistPercent; }
 		uint8   getAutoLODDegradationExponent() const { return _AutoLODDegradationExponent; }		
 
-		/** There are 2 modes for the auto-LOD :
+		/** There are 2 modes for the auto-LOD (apply to shared systems only) :
 		  * - Particle are skip in the source container when display is performed (the default)
 		  * - There are just less particles displayed, but this can lead to 'pulse effect'. This is faster, though.
 		  */
@@ -811,6 +821,20 @@ public:
 				  */
 				void getIDs(std::vector<uint32> &dest) const;
 		// @}
+
+	//*****************************************************************************************************
+	///\name Misc. options
+		// @{
+			/** When using an emitter, it is allowed to have a period of '0'. This special value means that the emitter
+			  * should emit at each frame. This is deprecated now (not framerate independent ..), but some previous systems may use it.
+			  * This option force a minimum period for all emitters.
+			  * NB : the system should be restarted for this to work correctly
+			  * The default is true
+			  */
+				void enableEmitThreshold(bool enabled = true) { _EmitThreshold = enabled; }
+				bool isEmitThresholdEnabled() const { return _EmitThreshold; }
+		// @}
+
 	
 
 private:
@@ -884,9 +908,11 @@ private:
 	float										_LODRatio;
 	float										_OneMinusCurrentLODRatio;
 	float										_MaxViewDist;
+	float										_MaxDistLODBias;
 	float										_InvMaxViewDist;
 	float										_InvCurrentViewDist; // inverse of the current view dist. It can be the same than _InvMaxViewDist
 														        // but when there's LOD, the view distance may be reduced	
+	float										_AutoLODEmitRatio;
 
 	TDieCondition								_DieCondition;
 	TAnimationTime								_DelayBeforeDieTest;	
@@ -925,12 +951,15 @@ private:
 	bool										_KeepEllapsedTimeForLifeUpdate;
 	bool										_AutoLODSkipParticles;
 	bool										_EnableLoadBalancing;
+	bool										_EmitThreshold;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	
 public:
 	// For use by emitters only : This compute a delta of position to ensure that spaning position are correct when the system moves
 	void		interpolatePosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
+	// For use by emitters only : Get the current emit ratio when auto-LOD is used. Valid only during the 'Emit' pass
+	float		getAutoLODEmitRatio() const { return _AutoLODEmitRatio; }	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.44 2002/11/14 17:34:15 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.45 2003/04/07 12:34:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,8 +36,29 @@ namespace NL3D {
 
 
 
-// number of emitter to be processed at once
-const uint emitterBuffSize = 512;
+
+static const uint  EMITTER_BUFF_SIZE = 512;			   // number of emitter to be processed at once
+static const float EMIT_PERIOD_THRESHOLD = 1.f / 75.f; // assuming the same behaviour than with a 75 hz rendering
+
+//////////////////////
+// STATIC FUNCTIONS //
+//////////////////////
+/** In an arrey of float, all value that are 0.f are replaced by EMIT_PERIOD_THRESHOLD
+  * A period of 0 is allowed for emitter and means "emit at each frame"
+  * This is deprecated now, and this helps to avoid that behaviour
+  */
+static void replaceNullPeriodsByThreshold(float *tab, uint numElem)
+{
+	const float *endTab = tab + numElem;
+	while (tab != endTab)
+	{
+		if (*tab == 0.f) *tab = EMIT_PERIOD_THRESHOLD;
+		++ tab;
+	}
+}
+
+
+
 
 ///////////////////////////////
 // CPSEmitter implementation //
@@ -53,7 +74,8 @@ CPSEmitter::CPSEmitter() : _EmittedType(NULL),
 						   _MaxEmissionCount(0),
 						   _SpeedBasisEmission(false),
 						   _EmitDirBasis(true),
-						   _ConsistentEmission(true)
+						   _ConsistentEmission(true),
+						   _BypassAutoLOD(false)
 {
 }
 
@@ -409,14 +431,19 @@ void CPSEmitter::singleEmit(uint32 index, uint quantity)
 }
 
 
+
 ///==========================================================================
-void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime)
+void CPSEmitter::processRegularEmissionWithNoLOD(TAnimationTime ellapsedTime)
 {
 	nlassert(_Owner);
+	nlassert(_Owner->getOwner());
+	//
+	const bool emitThreshold = _Owner->getOwner()->isEmitThresholdEnabled();
+	//
 	const uint size = _Owner->getSize();
 	uint leftToDo = size, toProcess;
-	float emitPeriod[emitterBuffSize]; 
-	float *currEmitPeriod;
+	float emitPeriod[EMITTER_BUFF_SIZE]; 
+	const float *currEmitPeriod;
 	uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0;			
 	sint32 nbToGenerate;
 
@@ -427,16 +454,35 @@ void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime)
 	// because it could be invalidated if size change (a located could generate itself)	
 	do
 	{
-		toProcess = leftToDo < emitterBuffSize ? leftToDo : emitterBuffSize;
+		toProcess = leftToDo < EMITTER_BUFF_SIZE ? leftToDo : EMITTER_BUFF_SIZE;
 
 
 		if (_PeriodScheme)
 		{
 			currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true));				
+			if (emitThreshold)
+			{
+				
+				/** Test if 'make' filled our buffer. If this is not the case, we assume that values where precomputed, and that
+				  * all null period have already been replaced by the threshold
+				  */
+				if (currEmitPeriod == emitPeriod) 
+				{
+					// TODO: see if the scheme could effectively produce null periods!
+					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+				}				
+			}
 		}
 		else
 		{
-			currEmitPeriod = &_Period;
+			if (_Period != 0.f || !emitThreshold)
+			{			
+				currEmitPeriod = &_Period;
+			}
+			else
+			{
+				currEmitPeriod = &EMIT_PERIOD_THRESHOLD;
+			}
 		}
 
 		endPhaseIt = phaseIt + toProcess;
@@ -465,7 +511,7 @@ void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime)
 				}
 				while (phaseIt != endPhaseIt);
 			}
-			else // thhere's an emission delay
+			else // there's an emission delay
 			{
 				do			
 				{
@@ -547,6 +593,238 @@ void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime)
 	while (leftToDo);
 }
 
+
+///==========================================================================
+void CPSEmitter::processRegularEmission(TAnimationTime ellapsedTime, float emitLOD)
+{
+	nlassert(_Owner);
+	nlassert(_Owner->getOwner());
+	//
+	const bool emitThreshold = _Owner->getOwner()->isEmitThresholdEnabled();
+	//
+	const uint size = _Owner->getSize();
+	uint leftToDo = size, toProcess;
+	float emitPeriod[EMITTER_BUFF_SIZE]; 
+	const float *currEmitPeriod;
+	uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0;			
+	sint32 nbToGenerate;
+
+	TPSAttribTime::iterator phaseIt = _Phase.begin(), endPhaseIt; 
+	TPSAttribUInt8::iterator numEmitIt = _NumEmission.begin(); 	
+
+	float ellapsedTimeLOD = emitLOD * ellapsedTime;
+	uint maxEmissionCountLOD = (uint8) (_MaxEmissionCount * emitLOD);
+	maxEmissionCountLOD = std::max(1u, maxEmissionCountLOD);
+
+	// we don't use an iterator here
+	// because it could be invalidated if size change (a located could generate itself)	
+	do
+	{
+		toProcess = leftToDo < EMITTER_BUFF_SIZE ? leftToDo : EMITTER_BUFF_SIZE;
+
+
+		if (_PeriodScheme)
+		{
+			currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true));				
+			if (emitThreshold)
+			{
+				
+				/** Test if 'make' filled our buffer. If this is not the case, we assume that values where precomputed, and that
+				  * all null period have already been replaced by the threshold
+				  */
+				if (currEmitPeriod == emitPeriod) 
+				{
+					// TODO: see if the scheme could effectively produce null periods!
+					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+				}				
+			}
+		}
+		else
+		{
+			if (_Period != 0.f || !emitThreshold)
+			{			
+				currEmitPeriod = &_Period;
+			}
+			else
+			{
+				currEmitPeriod = &EMIT_PERIOD_THRESHOLD;
+			}
+		}
+
+		endPhaseIt = phaseIt + toProcess;
+
+		if (_MaxEmissionCount == 0) // no emission count limit
+		{
+			/// is there an emission delay ?
+			if (_EmitDelay == 0.f) // no emission delay
+			{
+				do			
+				{
+					*phaseIt += ellapsedTimeLOD;
+					if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
+					{					
+						if (*currEmitPeriod != 0)
+						{
+							*phaseIt -= ::floorf(*phaseIt / *currEmitPeriod) * *currEmitPeriod;
+						}
+						const uint32 k = phaseIt - (_Phase.begin());
+						nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb;
+						if (nbToGenerate)
+						{						
+							nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+							if (!nbToGenerate) nbToGenerate = 1;
+							processEmit(k, nbToGenerate);
+						}
+					}	
+					
+					++phaseIt;
+					currEmitPeriod += currEmitPeriodPtrInc;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+			else // there's an emission delay
+			{
+				do			
+				{
+					if (*phaseIt < _EmitDelay)
+					{					
+						*phaseIt += ellapsedTime;
+						if (*phaseIt < _EmitDelay)
+						{
+							++phaseIt;
+							currEmitPeriod += currEmitPeriodPtrInc;
+							continue;
+						}
+						else
+						{
+							*phaseIt = 	(*phaseIt - _EmitDelay) * emitLOD + _EmitDelay;
+						}
+					}
+					else
+					{
+						*phaseIt += ellapsedTimeLOD;
+					}
+
+					if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
+					{
+						if (*currEmitPeriod != 0)
+						{
+							*phaseIt -= ::floorf((*phaseIt - _EmitDelay)  / *currEmitPeriod) * *currEmitPeriod;
+						}
+						const uint32 k = phaseIt - (_Phase.begin());
+						nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb;
+						if (nbToGenerate)
+						{						
+							nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+							if (!nbToGenerate) nbToGenerate = 1;
+							processEmit(k, nbToGenerate);
+						}						
+					}	
+					
+					++phaseIt;
+					currEmitPeriod += currEmitPeriodPtrInc;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+		}
+		else // there's an emission count limit
+		{
+				/// is there an emission delay ?
+			if (_EmitDelay == 0.f) // no emission delay
+			{
+				do			
+				{
+					if (*numEmitIt < maxEmissionCountLOD)
+					{
+						*phaseIt += ellapsedTimeLOD;
+						if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
+						{
+							if (*currEmitPeriod != 0)
+							{
+								*phaseIt -= ::floorf(*phaseIt / *currEmitPeriod) * *currEmitPeriod;
+							}
+							const uint32 k = phaseIt - (_Phase.begin());
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb;					
+							if (nbToGenerate)
+							{						
+								nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+								if (!nbToGenerate) nbToGenerate = 1;
+								processEmit(k, nbToGenerate);
+							}
+							++*numEmitIt;
+						}	
+					}
+					else
+					{
+						*numEmitIt = _MaxEmissionCount;
+					}
+					++phaseIt;
+					currEmitPeriod += currEmitPeriodPtrInc;							
+					++ numEmitIt;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+			else // there's an emission delay
+			{
+				do			
+				{
+					if (*numEmitIt < maxEmissionCountLOD)
+					{
+						if (*phaseIt < _EmitDelay)
+						{					
+							*phaseIt += ellapsedTime;
+							if (*phaseIt < _EmitDelay)
+							{
+								++phaseIt;
+								currEmitPeriod += currEmitPeriodPtrInc;
+								++numEmitIt;
+								currEmitPeriod += currEmitPeriodPtrInc;
+								continue;
+							}
+							else
+							{
+								*phaseIt = 	(*phaseIt - _EmitDelay) * emitLOD + _EmitDelay;
+							}
+						}
+						else
+						{
+							*phaseIt += ellapsedTimeLOD;
+						}
+
+						if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
+						{
+							if (*currEmitPeriod != 0)
+							{
+								*phaseIt -= ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod) * *currEmitPeriod;
+							}
+							const uint32 k = phaseIt - (_Phase.begin());
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, k) : _GenNb;					
+							if (nbToGenerate)
+							{						
+								nbToGenerate = (sint32) (nbToGenerate * emitLOD);
+								if (!nbToGenerate) nbToGenerate = 1;
+								processEmit(k, nbToGenerate);
+							}
+							++*numEmitIt;
+						}
+					}
+					else
+					{
+						*numEmitIt = _MaxEmissionCount;
+					}
+					++phaseIt;
+					currEmitPeriod += currEmitPeriodPtrInc;
+					++numEmitIt;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+		}
+
+		leftToDo -= toProcess;
+	}
+	while (leftToDo);
+}
+
 /// private : generate the various position of an emitter in the given tab for the given slice of time,
 //  depending on wether its motion is parametric or incremental. This is used to create emittees at the right position
 
@@ -597,18 +875,499 @@ static inline uint GenEmitterPositions(CPSLocated *emitter,
 	return toProcess;
 }
 
+
+/** The same as GenEmitterPositions, but with LOD taken in account. 
+  */
+static inline uint GenEmitterPositionsWithLOD(CPSLocated *emitter,
+									   CPSLocated *emittee,
+									   uint emitterIndex,
+									   uint numStep,
+									   TAnimationTime deltaT, /* fraction of time needed to reach the first emission */
+									   TAnimationTime step,
+									   float invLODRatio,
+									   std::vector<NLMISC::CVector> &dest
+									  )
+{
+	const uint toProcess = std::max(1U, std::min(numStep, (uint) emittee->getMaxSize()));	
+	dest.resize(toProcess);
+	
+	
+	if (!emitter->isParametricMotionEnabled()) // standard case : take current pos and integrate
+	{
+		if (toProcess == 1) // only one emission -> takes current pos
+		{
+			dest[0] = emitter->getPos()[emitterIndex] - deltaT * emitter->getSpeed()[emitterIndex];
+		}
+		else
+		{
+			std::vector<NLMISC::CVector>::iterator outIt = dest.end();
+			std::vector<NLMISC::CVector>::iterator endIt = dest.begin();
+			NLMISC::CVector pos = emitter->getPos()[emitterIndex] - deltaT * emitter->getSpeed()[emitterIndex];
+			NLMISC::CVector speed = step * invLODRatio * emitter->getSpeed()[emitterIndex];
+			do
+			{
+				-- outIt;
+				*outIt = pos;
+				pos -= speed;				
+			}
+			while (outIt != endIt);
+		}
+	}
+	else // compute parametric trajectory
+	{
+		emitter->integrateSingle(emitter->getOwner()->getSystemDate() - deltaT - step * toProcess,
+								 step,
+								 toProcess,									 
+								 emitterIndex,
+								 &dest[0]
+								);				
+	}
+	
+	return toProcess;
+}
+
 ///==========================================================================
-void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio)
+void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, float realEllapsedTimeRatio, float emitLOD, float inverseEmitLOD)
 {
 	/// hmm some code factorisation would do no harm, but we want to keep tests outside the loops as much as possible...
+
+	nlassert(_Owner);
+	nlassert(_Owner->getOwner());
+	//
+	const bool emitThreshold = _Owner->getOwner()->isEmitThresholdEnabled();
+	//
+
 
 	static std::vector<NLMISC::CVector> emitterPositions; 
 	// Positions for the emitter. They are computed by using a parametric trajectory or by using integration
 
 	const uint size = _Owner->getSize();
 	uint leftToDo = size, toProcess;
-	float emitPeriod[emitterBuffSize]; 
-	float *currEmitPeriod;
+	float emitPeriod[EMITTER_BUFF_SIZE]; 
+	const float *currEmitPeriod;
+	uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0;			
+	sint32 nbToGenerate;
+
+
+	TPSAttribTime::iterator phaseIt = _Phase.begin(), endPhaseIt; 
+	TPSAttribUInt8::iterator numEmitIt = _NumEmission.begin(); 
+
+	float ellapsedTimeLOD = ellapsedTime * emitLOD;
+	uint maxEmissionCountLOD = (uint8) (_MaxEmissionCount * emitLOD);
+	maxEmissionCountLOD = std::max(1u, maxEmissionCountLOD);
+
+	// we don't use an iterator here
+	// because it could be invalidated if size change (a located could generate itself)	
+	do
+	{
+		toProcess = leftToDo < EMITTER_BUFF_SIZE ? leftToDo : EMITTER_BUFF_SIZE;
+
+
+		if (_PeriodScheme)
+		{
+			currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true));				
+			if (emitThreshold)
+			{
+				
+				/** Test if 'make' filled our buffer. If this is not the case, we assume that values where precomputed, and that
+				  * all null period have already been replaced by the threshold
+				  */
+				if (currEmitPeriod == emitPeriod) 
+				{
+					// TODO: see if the scheme could effectively produce null periods!
+					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+				}				
+			}
+		}
+		else
+		{
+			if (_Period != 0.f || !emitThreshold)
+			{			
+				currEmitPeriod = &_Period;
+			}
+			else
+			{
+				currEmitPeriod = &EMIT_PERIOD_THRESHOLD;
+			}
+		}
+
+		endPhaseIt = phaseIt + toProcess;
+
+		if (_MaxEmissionCount == 0) // no emission count limit
+		{
+			/// is there an emission delay ?
+			if (_EmitDelay == 0.f) // no emission delay
+			{
+				do			
+				{
+					*phaseIt += ellapsedTimeLOD;
+					if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
+					{									
+						if (*currEmitPeriod != 0)
+						{		
+							/** Must ensure phase is valid if period decrease over time
+							  */
+							*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTimeLOD);
+							//
+							/// compute the number of emissions
+							uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
+							*phaseIt -= *currEmitPeriod * numEmissions;
+														
+							uint emitterIndex = phaseIt - _Phase.begin();
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;
+							if (nbToGenerate)
+							{
+								float deltaT = std::max(0.f, *phaseIt);								
+
+								/// compute the position of the emitter for the needed dates
+								numEmissions = GenEmitterPositionsWithLOD(_Owner,
+																		  _EmittedType,
+																		  emitterIndex,
+																		  numEmissions,
+																		  deltaT,
+																		  *currEmitPeriod,
+																		  inverseEmitLOD,
+																		  emitterPositions
+																		 );
+
+								/// process each emission at the right pos at the right date																				
+								nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+								if (!nbToGenerate) nbToGenerate = 1;
+								uint k = numEmissions;							
+								float deltaTInc = *currEmitPeriod * inverseEmitLOD;
+								do
+								{	
+									--k;
+									processEmitConsistent(emitterPositions[k],
+														  emitterIndex,
+														  nbToGenerate,
+														  deltaT,
+														  ellapsedTime,
+														  realEllapsedTimeRatio);
+									deltaT += deltaTInc;								
+								}
+								while (k);
+							}
+						}
+						else
+						{
+							const uint32 emitterIndex = phaseIt - (_Phase.begin());
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;
+							if (nbToGenerate)
+							{
+								nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+								if (!nbToGenerate) nbToGenerate = 1;
+								processEmit(emitterIndex, nbToGenerate);
+							}
+						}
+					}	
+					
+					++phaseIt;					
+					currEmitPeriod += currEmitPeriodPtrInc;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+			else // thhere's an emission delay
+			{
+				do			
+				{
+					if (*phaseIt < _EmitDelay)
+					{					
+						*phaseIt += ellapsedTime;
+						if (*phaseIt < _EmitDelay)
+						{
+							++phaseIt;
+							currEmitPeriod += currEmitPeriodPtrInc;
+							continue;
+						}
+						else
+						{
+							*phaseIt = 	(*phaseIt - _EmitDelay) * emitLOD + _EmitDelay;
+						}
+					}
+					else
+					{
+						*phaseIt += ellapsedTimeLOD;
+					}
+										
+					if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
+					{						
+						if (*currEmitPeriod != 0)
+						{		
+							/** Must ensure phase is valid if period decrease over time
+							  */
+							*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTimeLOD + _EmitDelay);
+							//
+							uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
+							*phaseIt -= *currEmitPeriod * numEmissions;
+							float deltaT = std::max(*phaseIt - _EmitDelay, 0.f);
+							//nlassert(deltaT >= 0.f);
+							/// process each emission at the right pos at the right date							
+							uint emitterIndex = phaseIt - _Phase.begin();
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;																				
+							if (nbToGenerate)
+							{
+								
+								/// compute the position of the emitter for the needed date
+								numEmissions = GenEmitterPositionsWithLOD(  _Owner,
+																			_EmittedType,
+																			emitterIndex,
+																			numEmissions,
+																			deltaT,
+																			*currEmitPeriod,
+																			inverseEmitLOD,
+																			emitterPositions
+																		   );
+											
+								nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+								if (!nbToGenerate) nbToGenerate = 1;
+								uint k = numEmissions;							
+								float deltaTInc = *currEmitPeriod * inverseEmitLOD;
+								do
+								{	
+									--k;
+									processEmitConsistent(emitterPositions[k],
+														  emitterIndex,
+														  nbToGenerate,
+														  deltaT,
+														  ellapsedTime,
+														  realEllapsedTimeRatio);
+									deltaT += deltaTInc;								
+								}
+								while (k);
+							}
+						}
+						else
+						{		
+							const uint32 emitterIndex = phaseIt - (_Phase.begin());
+							nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;
+							if (nbToGenerate)
+							{
+								nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+								if (!nbToGenerate) nbToGenerate = 1;
+								processEmit(emitterIndex, nbToGenerate);
+							}
+						}									
+					}	
+					
+					++phaseIt;					
+					currEmitPeriod += currEmitPeriodPtrInc;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+		}
+		else // there's an emission count limit
+		{
+				/// is there an emission delay ?
+			if (_EmitDelay == 0.f) // no emission delay
+			{
+				do			
+				{
+					if (*numEmitIt < maxEmissionCountLOD)
+					{
+						*phaseIt += ellapsedTimeLOD;
+						if ( *phaseIt >= *currEmitPeriod) // phase is greater than period -> must emit
+						{
+							if (*currEmitPeriod != 0)
+							{
+								/** Must ensure phase is valid if period decrease over time
+								 */
+								*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTimeLOD);
+								//
+								uint numEmissions = (uint) ::floorf(*phaseIt / *currEmitPeriod);
+								*numEmitIt +=  numEmissions;								
+								*phaseIt -= *currEmitPeriod * numEmissions;
+								float deltaT = std::max(*phaseIt, 0.f);
+								//nlassert(deltaT >= 0.f);
+								uint emitterIndex = phaseIt - _Phase.begin();
+								if (*numEmitIt > _MaxEmissionCount) // make sure we don't go over the emission limit
+								{
+									numEmissions -= *numEmitIt - _MaxEmissionCount;
+									*numEmitIt = _MaxEmissionCount;
+								}
+								nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;								
+								if (nbToGenerate)
+								{
+									/// compute the position of the emitter for the needed date
+									numEmissions = GenEmitterPositionsWithLOD(_Owner,
+																				_EmittedType,
+																				emitterIndex,
+																				numEmissions,
+																				deltaT,
+																				*currEmitPeriod,
+																				inverseEmitLOD,
+																				emitterPositions
+																			 );
+									uint k = numEmissions;								
+									/// process each emission at the right pos at the right date
+									nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+									if (!nbToGenerate) nbToGenerate = 1;
+									float deltaTInc = *currEmitPeriod * inverseEmitLOD;
+									do
+									{
+										--k;
+										processEmitConsistent(emitterPositions[k],
+															  emitterIndex,
+															  nbToGenerate,
+															  deltaT,
+															  ellapsedTime,
+															  realEllapsedTimeRatio);
+										deltaT += deltaTInc;									
+									}
+									while (k);
+								}
+							}
+							else
+							{
+								const uint32 emitterIndex = phaseIt - _Phase.begin();
+								nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;								
+								if (nbToGenerate)
+								{
+									nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+									if (!nbToGenerate) nbToGenerate = 1;
+									processEmit(emitterIndex, nbToGenerate);								
+									++*numEmitIt;
+								}
+							}
+						}	
+					}
+					else
+					{
+						*numEmitIt = _MaxEmissionCount; // if the lod change, must ensure that the 
+					}
+					++phaseIt;					
+					currEmitPeriod += currEmitPeriodPtrInc;							
+					++ numEmitIt;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+			else // there's an emission delay
+			{
+				do			
+				{
+					if (*numEmitIt < maxEmissionCountLOD)
+					{
+						if (*phaseIt < _EmitDelay)
+						{					
+							*phaseIt += ellapsedTime;
+							if (*phaseIt < _EmitDelay)
+							{
+								++phaseIt;					
+								currEmitPeriod += currEmitPeriodPtrInc;
+								++numEmitIt;
+								continue;
+							}
+							else
+							{
+								*phaseIt = 	(*phaseIt - _EmitDelay) * emitLOD + _EmitDelay;
+							}
+						}
+						else
+						{
+							*phaseIt += ellapsedTimeLOD;
+						}
+						//
+						if ( *phaseIt >= *currEmitPeriod + _EmitDelay) // phase is greater than period -> must emit
+						{							
+							if (*currEmitPeriod != 0)
+							{		
+								/** Must ensure phase is valid if period decrease over time
+								 */
+								*phaseIt = std::min(*phaseIt, *currEmitPeriod + ellapsedTimeLOD + _EmitDelay);
+								//
+								uint numEmissions = (uint) ::floorf((*phaseIt - _EmitDelay) / *currEmitPeriod);
+								*numEmitIt +=  numEmissions;								
+								*phaseIt -= *currEmitPeriod * numEmissions;
+								float deltaT = std::max(*phaseIt - _EmitDelay, 0.f);
+								//nlassert(deltaT >= 0.f);
+								uint emitterIndex = phaseIt - _Phase.begin();
+								if (*numEmitIt > _MaxEmissionCount) // make sure we don't go over the emission limit
+								{
+									numEmissions -= *numEmitIt - _MaxEmissionCount;
+									*numEmitIt = _MaxEmissionCount;
+								}
+								nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;								
+								if (nbToGenerate)
+								{
+									/// compute the position of the emitter for the needed date
+									numEmissions = GenEmitterPositionsWithLOD(	_Owner,
+																				_EmittedType,
+																				emitterIndex,
+																				numEmissions,
+																				deltaT,
+																				*currEmitPeriod,
+																				inverseEmitLOD,
+																				emitterPositions
+																			 );
+									uint k = numEmissions;							
+									/// process each emission at the right pos at the right date
+									nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+									if (!nbToGenerate) nbToGenerate = 1;
+									float deltaTInc = *currEmitPeriod * inverseEmitLOD;
+									do
+									{	
+										--k;
+										processEmitConsistent(emitterPositions[k],
+															  emitterIndex,
+															  nbToGenerate,
+															  deltaT,
+															  ellapsedTime,
+															  realEllapsedTimeRatio);
+										deltaT += deltaTInc;									
+									}
+									while (k);
+								}
+							}
+							else
+							{
+								const uint32 emitterIndex = phaseIt - (_Phase.begin());
+								nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, emitterIndex) : _GenNb;
+								if (nbToGenerate)
+								{
+									nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+									if (!nbToGenerate) nbToGenerate = 1;
+									processEmit(emitterIndex, nbToGenerate);								
+									++*numEmitIt;
+								}
+							}
+						}
+					}							
+					else
+					{
+						*numEmitIt = _MaxEmissionCount; // if the lod change, must ensure that the 
+					}
+					++phaseIt;					
+					currEmitPeriod += currEmitPeriodPtrInc;
+					++numEmitIt;
+				}
+				while (phaseIt != endPhaseIt);
+			}
+		}
+
+		leftToDo -= toProcess;
+	}
+	while (leftToDo);
+}
+
+///==========================================================================
+void CPSEmitter::processRegularEmissionConsistentWithNoLOD(TAnimationTime ellapsedTime, float realEllapsedTimeRatio)
+{
+	/// hmm some code factorisation would do no harm, but we want to keep tests outside the loops as much as possible...
+
+	nlassert(_Owner);
+	nlassert(_Owner->getOwner());
+	//
+	const bool emitThreshold = _Owner->getOwner()->isEmitThresholdEnabled();
+	//
+
+
+	static std::vector<NLMISC::CVector> emitterPositions; 
+	// Positions for the emitter. They are computed by using a parametric trajectory or by using integration
+
+	const uint size = _Owner->getSize();
+	uint leftToDo = size, toProcess;
+	float emitPeriod[EMITTER_BUFF_SIZE]; 
+	const float *currEmitPeriod;
 	uint currEmitPeriodPtrInc = _PeriodScheme ? 1 : 0;			
 	sint32 nbToGenerate;
 
@@ -620,17 +1379,36 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 	// because it could be invalidated if size change (a located could generate itself)	
 	do
 	{
-		toProcess = leftToDo < emitterBuffSize ? leftToDo : emitterBuffSize;
+		toProcess = leftToDo < EMITTER_BUFF_SIZE ? leftToDo : EMITTER_BUFF_SIZE;
 
 
 		if (_PeriodScheme)
 		{
 			currEmitPeriod = (float *) (_PeriodScheme->make(_Owner, size - leftToDo, emitPeriod, sizeof(float), toProcess, true));				
+			if (emitThreshold)
+			{
+				
+				/** Test if 'make' filled our buffer. If this is not the case, we assume that values where precomputed, and that
+				  * all null period have already been replaced by the threshold
+				  */
+				if (currEmitPeriod == emitPeriod) 
+				{
+					// TODO: see if the scheme could effectively produce null periods!
+					replaceNullPeriodsByThreshold(emitPeriod, toProcess);
+				}				
+			}
 		}
 		else
 		{
-			currEmitPeriod = &_Period;
-		}
+			if (_Period != 0.f || !emitThreshold)
+			{			
+				currEmitPeriod = &_Period;
+			}
+			else
+			{
+				currEmitPeriod = &EMIT_PERIOD_THRESHOLD;
+			}
+		}		
 
 		endPhaseIt = phaseIt + toProcess;
 
@@ -896,6 +1674,7 @@ void CPSEmitter::processRegularEmissionConsistent(TAnimationTime ellapsedTime, f
 	while (leftToDo);
 }
 
+
 ///==========================================================================
 void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEllapsedTime)
 {	
@@ -910,35 +1689,87 @@ void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 
 	if (ellapsedTime == 0.f) return; // do nothing when paused
 
+	CParticleSystem *ps = _Owner->getOwner();	
+	nlassert(ps);
+	float emitLOD;
+	if (ps->isAutoLODEnabled() && !ps->isSharingEnabled() && !_BypassAutoLOD)
+	{
+		// temp test for auto lod
+		emitLOD = ps->getAutoLODEmitRatio();
+	}
+	else
+	{
+		emitLOD = 1.f; 
+	}
+	
+
 	// our behaviour depend of the frequency
 	switch (_EmissionType)
 	{
 		case CPSEmitter::once :
 		{
-			TPSAttribTime::iterator timeIt = _Phase.begin()
-										  , timeEndIt = _Phase.end();
+			if (!_GenNbScheme && _GenNb == 0) return;
+			TPSAttribTime::iterator timeIt = _Phase.begin(), timeEndIt = _Phase.end();
 
-			while (timeIt != timeEndIt)
-			{
-				if (*timeIt == 0.f)
+			if (emitLOD == 1.f)
+			{			
+				while (timeIt != timeEndIt)
 				{
-					const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb;		
-					processEmit(timeIt - _Phase.begin(), nbToGenerate);		
-					*timeIt = 1.f;
+					if (*timeIt == 0.f)
+					{
+						const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb;		
+						processEmit(timeIt - _Phase.begin(), nbToGenerate);		
+						*timeIt = 1.f;
+					}
+					++timeIt;
 				}
-				++timeIt;
-			}			
+			}
+			else
+			{
+				while (timeIt != timeEndIt)
+				{
+					if (*timeIt == 0.f)
+					{
+						uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, timeIt - _Phase.begin()) : _GenNb;
+						if (nbToGenerate > 0)
+						{				
+							nbToGenerate = (sint32) (emitLOD * nbToGenerate);
+							if (!nbToGenerate) nbToGenerate = 1;
+							processEmit(timeIt - _Phase.begin(), nbToGenerate);
+						}
+						*timeIt = 1.f;
+					}
+					++timeIt;
+				}
+			}
 		}
 		break;
 		case (CPSEmitter::regular):
 		{
 			if (!_ConsistentEmission)
 			{
-				processRegularEmission(ellapsedTime);
+				if (emitLOD != 1.f)
+				{
+					processRegularEmission(ellapsedTime, emitLOD);
+				}
+				else
+				{
+					processRegularEmissionWithNoLOD(ellapsedTime);
+				}
 			}
 			else
 			{
-				processRegularEmissionConsistent(ellapsedTime, realEllapsedTime / ellapsedTime);
+				if (emitLOD != 1.f)
+				{
+					if (emitLOD != 0.f)
+					{					
+						processRegularEmissionConsistent(ellapsedTime, realEllapsedTime / ellapsedTime, emitLOD, 1.f / emitLOD);
+					}
+				}
+				else
+				{
+					processRegularEmissionConsistentWithNoLOD(ellapsedTime, realEllapsedTime / ellapsedTime);
+				}
 			}
 		}
 		break;	
@@ -1008,6 +1839,7 @@ void CPSEmitter::bounceOccured(uint32 index)
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
+	/// version 5  : added _BypassAutoLOD
 	/// version 4  : added consistent emissions
 	sint ver = f.serialVersion(4);	
 	CPSLocatedBindable::serial(f);
@@ -1102,6 +1934,10 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if (ver >= 4)
 	{
 		f.serial(_ConsistentEmission);
+	}
+	if (ver >= 5)
+	{
+		f.serial(_BypassAutoLOD);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.18 2002/12/06 14:20:54 coutelas Exp $
+ * $Id: bitmap.h,v 1.19 2003/03/20 17:54:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -545,7 +545,7 @@ public:
 #ifdef USE_JPEG
 
 extern NLMISC::IStream *JPGStream;
-extern const uint32 JPGBufferSize = 1000;
+static const uint32 JPGBufferSize = 1000;
 extern char JPGBuffer[JPGBufferSize];
 
 static void jpgCompressInit(j_compress_ptr cinfo)

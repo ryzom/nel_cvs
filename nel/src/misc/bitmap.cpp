@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.37 2003/02/17 16:25:39 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.38 2003/03/20 17:54:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,9 +84,9 @@ const uint32 CBitmap::DXTC1HEADER = NL_MAKEFOURCC('D','X', 'T', '1');
 const uint32 CBitmap::DXTC3HEADER = NL_MAKEFOURCC('D','X', 'T', '3');
 const uint32 CBitmap::DXTC5HEADER = NL_MAKEFOURCC('D','X', 'T', '5');
 
-// static data for jpeg compression (used by writeJPG())
+// data for jpeg compression (used by writeJPG())
 NLMISC::IStream *JPGStream = NULL;
-const uint32 JPGBufferSize = 1000;
+static const uint32 JPGBufferSize = 1000;
 char JPGBuffer[JPGBufferSize];
 
 

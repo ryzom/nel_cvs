@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.7 2001/06/12 11:50:02 berenguier Exp $
+ * $Id: event_mouse_listener.h,v 1.8 2001/06/15 16:06:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@ using NLMISC::CMatrix;
 
 /**
  * CEvent3dMouseListener is a listener that handle a 3d matrix with mouse events.
+ * This can be the view matrix, or the matrix of any object.
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000
@@ -88,13 +89,23 @@ public:
 	/// \name Setup
 
 	/** 
-	  * Set the current view matrix to use.
+	  * Set both the current view matrix to use.
 	  * \param matrix is the matrix to set.
 	  * \see getViewMatrix()
 	  */
 	void setMatrix (const NLMISC::CMatrix& matrix)
 	{
-		_Matrix=matrix;
+		_Matrix=matrix;	
+	}
+
+	/** Set the model matrix only
+	  *  
+	  * param matrix is the matrix to set.
+	  * getModelMatrix()
+	  */
+	void setModelMatrix(const NLMISC::CMatrix& matrix)
+	{
+		_ModelMatrix = matrix ;
 	}
 
 	/** 
@@ -136,6 +147,13 @@ public:
 		_MouseMode=mouseMode;
 	}
 
+	/// enable / disable model matrix edition mode. (the default deals with the with matrix)
+	void enableModelMatrixEdition(bool enable = true) 
+	{ 
+		_EnableModelMatrixEdition = enable ;
+	}
+	  
+
 	/** 
 	  * Set the speed for first person mode. Default 10.f;
 	  * \param speed is in unit per second.
@@ -149,11 +167,24 @@ public:
 	/// \name Get
 
 	/**
-	  * Get the current view matrix. This matrix is updated with mouse events.
+	  * Get the current view matrix.	  
 	  * \return The current view matrix.
 	  * \see setMatrix()
 	  */
-	const NLMISC::CMatrix& getViewMatrix ();
+	const NLMISC::CMatrix& getViewMatrix () ;
+
+
+	/**
+	  * Get the current model matrix.
+	  * \return The current view matrix.
+	  * \see setModelMatrix()
+	  */
+	const NLMISC::CMatrix& getModelMatrix()
+	{
+		return _ModelMatrix ;	
+	}
+
+
 
 	/** 
 	  * Get the current hot spot.
@@ -181,6 +212,8 @@ private:
 	virtual void operator ()(const NLMISC::CEvent& event);
 
 	CMatrix				_Matrix;
+	CMatrix				_ModelMatrix ;
+	bool				_EnableModelMatrixEdition  ;
 	CFrustum			_Frustrum;
 	CVector				_HotSpot;
 	NL3D::CViewport		_Viewport;

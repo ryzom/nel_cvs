@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.5 2001/04/24 14:55:51 corvazier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.6 2001/06/15 16:06:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,8 @@ namespace NL3D
 CEvent3dMouseListener::CEvent3dMouseListener()
 {
 	_Matrix.identity();
+	_ModelMatrix.identity() ;
+	_EnableModelMatrixEdition = false ;
 	_HotSpot.set (0,0,0);
 	_Viewport.initFullScreen();
 	_Frustrum.init (2.f, 2.f, -1.f, 1.f);
@@ -118,6 +120,7 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			Pivot*=turnX;
 			Pivot*=goToHotSpot;
 			Pivot*=_Matrix;
+
 			_Matrix=Pivot;
 
 			// Normalize, too much transformation could give an ugly matrix..
@@ -128,9 +131,18 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		{
 			// Move in plane
 
-			// Plane of the hotspot
 			CPlane plane;
-			plane.make (_Matrix.getJ(), axis);
+
+			// Plane of the hotspot
+			if (! _EnableModelMatrixEdition)
+			{			
+				plane.make (_Matrix.getJ(), axis);
+			}
+			else
+			{			
+				plane.make (_Matrix.getJ(), _ModelMatrix.getPos());
+			}
+
 
 			// Get ray from mouse point
 			CVector worldPoint1, worldPoint2;
@@ -142,18 +154,41 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 			// Move the camera
 			if (bTranslateXY)
-				_Matrix.setPos(_Matrix.getPos()+worldPoint1-worldPoint2);
+			{
+				if (! _EnableModelMatrixEdition)
+				{
+					_Matrix.setPos(_Matrix.getPos()+worldPoint1-worldPoint2);
+				}
+				else
+				{
+					_ModelMatrix.setPos(_ModelMatrix.getPos()-worldPoint1+worldPoint2);
+				}
+			}
 			else if (bTranslateZ)
 			{
 				CVector vect=worldPoint1-worldPoint2;
-				_Matrix.setPos(_Matrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
+				if (! _EnableModelMatrixEdition)
+				{
+					_Matrix.setPos(_Matrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
+				}
+				else
+				{
+					_ModelMatrix.setPos(_ModelMatrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
+				}
 			}
 			else if (bZoom)
 			{
 				CVector vect=worldPoint1-worldPoint2;
 				CVector direc=axis-_Matrix.getPos();
 				direc.normalize();
-				_Matrix.setPos(_Matrix.getPos()+direc*(vect.x+vect.y+vect.z));
+				if (! _EnableModelMatrixEdition)
+				{
+					_Matrix.setPos(_Matrix.getPos()+direc*(vect.x+vect.y+vect.z));
+				}
+				else
+				{
+					_ModelMatrix.setPos(_ModelMatrix.getPos()+direc*(vect.x+vect.y+vect.z));
+				}
 			}
 		}
 		
@@ -184,7 +219,14 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		CEventMouseWheel* mouseEvent=(CEventMouseWheel*)&event;
 
 		CVector direc=_HotSpot-_Matrix.getPos();
-		_Matrix.setPos(_Matrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
+		if (! _EnableModelMatrixEdition)
+		{
+			_Matrix.setPos(_Matrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
+		}
+		else
+		{
+			_ModelMatrix.setPos(_ModelMatrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
+		}
 	}
 }
 
@@ -264,15 +306,18 @@ const NLMISC::CMatrix& CEvent3dMouseListener::getViewMatrix ()
 			dir=_Matrix.mulVector (dir);
 
 			// New position
-			_Matrix.setPos (_Matrix.getPos ()+dir);
+			_ModelMatrix.setPos (_ModelMatrix.getPos ()+dir);
 		}
 	}
 
 	// Last time
 	_LastTime=CTime::getLocalTime ();
 
+	
 	// Return the matrix
 	return _Matrix;
 }
+
+
 
 }; // NL3D

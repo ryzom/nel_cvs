@@ -1,6 +1,6 @@
 /** \file fixed_size_allocator.cpp
  *
- * $Id: fixed_size_allocator.cpp,v 1.2 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: fixed_size_allocator.cpp,v 1.3 2004/05/18 14:35:32 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -36,7 +36,7 @@ CFixedSizeAllocator::CFixedSizeAllocator(uint numBytesPerBlock, uint numBlockPer
 	_NumChunks = 0;
 	nlassert(numBytesPerBlock > 1);
 	_NumBytesPerBlock = numBytesPerBlock;
-	_NumBlockPerChunk = std::min(numBlockPerChunk, (uint) 3);
+	_NumBlockPerChunk = std::max(numBlockPerChunk, (uint) 3);
 	_NumAlloc = 0;
 }
 
@@ -197,6 +197,7 @@ void CFixedSizeAllocator::CNode::link()
 	Prev = &head;
 	if (Next)
 	{
+		nlassert(Next->Prev = &head);
 		Next->Prev = &Next;
 	}
 	Chunk->Allocator->_FreeSpace = this;

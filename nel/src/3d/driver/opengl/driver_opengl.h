@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.68 2001/06/19 16:57:41 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.69 2001/06/26 08:00:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -458,6 +458,13 @@ private:
 	sint			beginLightMapMultiPass(const CMaterial &mat);
 	void			setupLightMapPass(const CMaterial &mat, uint pass);
 	void			endLightMapMultiPass(const CMaterial &mat);
+	// @}
+
+	/// \name Specular.
+	// @{
+	sint			beginSpecularMultiPass(const CMaterial &mat);
+	void			setupSpecularPass(const CMaterial &mat, uint pass);
+	void			endSpecularMultiPass(const CMaterial &mat);
 	// @}
 
 

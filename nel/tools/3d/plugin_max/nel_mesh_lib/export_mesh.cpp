@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.6 2001/06/26 08:00:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,6 +390,9 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		// Check the matId is valid
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
 		nlassert (buildMesh.Faces[face].MaterialId<nNumMaterials);
+
+		//if( buildMesh.Materials[buildMesh.Faces[face].MaterialId].getShader() == CMaterial::Specular )
+		//	buildMesh.VertexFlags |= IDRV_VF_UV[1];
 
 		// Export the 3 corners
 		for (int corner=0; corner<3; corner++)

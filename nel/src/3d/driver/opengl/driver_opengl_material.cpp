@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.28 2001/06/01 11:56:58 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.29 2001/06/26 08:00:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -268,6 +268,8 @@ sint			CDriverGL::beginMultiPass(const CMaterial &mat)
 	{
 	case CMaterial::LightMap: 
 		return  beginLightMapMultiPass(mat);
+	case CMaterial::Specular: 
+		return  beginSpecularMultiPass(mat);
 
 	// All others materials require just 1 pass.
 	default: return 1;
@@ -280,6 +282,8 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 	{
 	case CMaterial::LightMap: 
 		setupLightMapPass(mat, pass);
+	case CMaterial::Specular: 
+		setupSpecularPass(mat, pass);
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -294,6 +298,8 @@ void			CDriverGL::endMultiPass(const CMaterial &mat)
 	{
 	case CMaterial::LightMap: 
 		endLightMapMultiPass(mat);
+	case CMaterial::Specular: 
+		endSpecularMultiPass(mat);
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -373,6 +379,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 	// setup all stages.
 	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++, lmapId++)
 	{
+		// if must setup a lightmap stage.
 		if(stage<nstages-1)
 		{
 			// setup lightMap.
@@ -515,6 +522,84 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 
 
 	// NB: for now, nothing to do with blending/lighting, since always setuped in activeMaterial().
+}
+
+// ***************************************************************************
+sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
+{
+	// One texture stage hardware not supported.
+	if(getNbTextureStages()<2)
+		return 1;
+	return 2;
+
+}
+// ***************************************************************************
+void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
+{
+	// One texture stage hardware not supported.
+	if(getNbTextureStages()<2)
+		return;
+
+	//if( _Extensions.NVTextureEnvCombine4 )
+	//{ // Ok we can do it in a single pass
+	//}
+	//else
+	{ // We have to do it in 2 passes
+
+		if (pass == 0)
+		{ // Just display the texture
+			glDisable(GL_BLEND);
+			glActiveTextureARB(GL_TEXTURE0_ARB+1);
+			glDisable(GL_TEXTURE_2D);
+		}
+		else
+		{ // Multiply texture1 by alpha_texture0 and display with add
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+
+			// Set stage 0
+			glActiveTextureARB(GL_TEXTURE0_ARB+0);
+			CMaterial::CTexEnv	env;
+
+			env.Env.OpRGB = CMaterial::Replace;
+			env.Env.SrcArg0RGB = CMaterial::Texture;
+			env.Env.OpArg0RGB = CMaterial::SrcAlpha;
+
+			if(_CurrentTexEnv[0].EnvPacked!= env.EnvPacked)
+				activateTexEnvMode(0, env);
+
+
+			// Set stage 1
+			env.Env.OpRGB = CMaterial::Modulate;
+			env.Env.SrcArg0RGB = CMaterial::Texture;
+			env.Env.OpArg0RGB = CMaterial::SrcColor;
+
+			env.Env.SrcArg1RGB = CMaterial::Previous;
+			env.Env.OpArg1RGB = CMaterial::SrcColor;
+
+			if(_CurrentTexEnv[1].EnvPacked!= env.EnvPacked)
+				activateTexEnvMode(1, env);
+
+
+			glActiveTextureARB(GL_TEXTURE0_ARB+1);
+			glEnable( GL_TEXTURE_2D );
+			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
+			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
+			glEnable( GL_TEXTURE_GEN_S );
+			glEnable( GL_TEXTURE_GEN_T );
+			glDisable( GL_TEXTURE_GEN_R );
+
+			setupUVPtr(1, *_LastVB, 0);
+		}
+	}
+}
+// ***************************************************************************
+void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
+{
+	glActiveTextureARB(GL_TEXTURE0_ARB+1);
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	setupUVPtr(1, *_LastVB, 1);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.6 2001/06/22 12:45:42 besson Exp $
+ * $Id: export_material.cpp,v 1.7 2001/06/26 08:00:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,19 +135,27 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	// Look for a diffuse texmap
 	Texmap* pDifTexmap=mtl.GetSubTexmap(ID_DI);
 	Texmap* pOpaTexmap=mtl.GetSubTexmap(ID_OP);
+	Texmap* pSpeTexmap=mtl.GetSubTexmap(ID_SP);
 
 	// Is there a lightmap handling wanted
 	int bLightMap = 0; // false
 
-	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);
-	
-	if (bLightMap)
+	if( pSpeTexmap != NULL )
 	{
-		material.setShader (CMaterial::LightMap);
+		material.setShader (CMaterial::Specular);
 	}
 	else
 	{
-		material.setShader (CMaterial::Normal);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);
+		
+		if (bLightMap)
+		{
+			material.setShader (CMaterial::LightMap);
+		}
+		else
+		{
+			material.setShader (CMaterial::Normal);
+		}
 	}
 
 	int bStainedGlassWindow = 0;
@@ -203,6 +211,27 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 				remap3dsTexChannel[1]._IndexInMaxMaterial = 2;
 				remap3dsTexChannel[1]._IndexInMaxMaterialAlternative = remap3dsTexChannel[0]._IndexInMaxMaterial;
 			}
+		}
+	}
+
+	if (pSpeTexmap)
+	{
+		// Pointer on the  diffuse texture
+		static ITexture* pTexture=NULL;
+
+		// Is it a simple file ?
+		if (isClassIdCompatible(*pSpeTexmap, Class_ID (BMTEX_CLASS_ID,0)))
+		{
+			// List of channels used by this texture
+			std::vector<CMaterialDesc> _3dsTexChannel;
+			
+			// Ok export the texture in NeL format
+			pTexture=buildATexture (*pSpeTexmap, _3dsTexChannel, tvTime, absolutePath);
+			pTexture->setWrapS( ITexture::Repeat );
+			pTexture->setWrapT( ITexture::Repeat );
+			pTexture->setFilterMode(ITexture::Linear,ITexture::LinearMipMapOff);
+			// Add the texture if it exist
+			material.setTexture(1, pTexture);
 		}
 	}
 

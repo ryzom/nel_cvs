@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: material.h,v 1.2 2001/06/26 08:00:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,8 +99,11 @@ public:
 	 *	doesn't affect the final result (neither diffuse part nor specular part). No Blending is applied too.
 	 *	- NB: if no texture in stage 0, undefined result.
 	 *	- UV0 is the UV for decal Texture. UV1 is the UVs for all the lightmaps.
+	 * Specular:
+	 *  - Texture of stage 0 is added to the multiplication of Texture Alpha of stage 0 and Texture of stage 1
+	 *  - This is done in 2 passes
 	 */
-	enum TShader			{ Normal=0, Bump, UserColor, LightMap, shaderCount};
+	enum TShader			{ Normal=0, Bump, UserColor, LightMap, Specular, shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{

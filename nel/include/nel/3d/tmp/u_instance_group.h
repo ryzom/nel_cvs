@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.1 2001/04/09 14:27:58 corvazier Exp $
+ * $Id: u_instance_group.h,v 1.2 2001/05/04 13:30:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,11 @@ namespace NL3D
 class UInstanceGroup
 {
 public:
+
+	/**
+	 *	This is the static function create a stand alone instance group.
+	 */
+	static	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);
 
 	/**
 	  * Return the count of shape instance in this group.

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.1 2001/04/09 14:26:49 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.2 2001/05/04 13:30:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,27 @@ namespace NL3D
 
 // ***************************************************************************
 
+UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instanceGroup)
+{
+	// Create the instance group
+	CInstanceGroupUser *user=new CInstanceGroupUser;
+
+	// Init the class
+	if (!user->init (instanceGroup))
+	{
+		// Prb, erase it
+		delete user;
+
+		// Return error code
+		return NULL;
+	}
+
+	// return the good value
+	return user;
+}
+
+// ***************************************************************************
+
 bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 {
 	// Create a file
@@ -47,6 +68,39 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup, CScene& scene)
 
 			// Add to the scene
 			_InstanceGroup.addToScene (scene);
+		}
+		catch (EStream& e)
+		{
+			// Avoid visual warning
+			EStream ee=e;
+
+			// Serial problem
+			return false;
+		}
+	}
+	else
+	{
+		// Failed.
+		return false;
+	}
+
+	// Ok
+	return true;
+}
+
+// ***************************************************************************
+
+bool CInstanceGroupUser::init (const std::string &instanceGroup)
+{
+	// Create a file
+	CIFile file;
+	if (file.open (instanceGroup))
+	{
+		// Serialize this class
+		try
+		{
+			// Read the class
+			_InstanceGroup.serial (file);
 		}
 		catch (EStream& e)
 		{

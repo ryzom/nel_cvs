@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
  * <File description>
  *
- * $Id: tile_utility.cpp,v 1.3 2001/08/09 17:19:43 corvazier Exp $
+ * $Id: tile_utility.cpp,v 1.4 2001/08/10 08:40:25 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,36 +105,59 @@ static BOOL CALLBACK Tile_utilityDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPA
 			HMODULE hModule = GetModuleHandle("neltileutility.dlu");
 			if (hModule)
 			{
-				// Find the verion resource
-				HRSRC hRSrc=FindResource (hModule, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
-				if (hRSrc)
+				// Get module file name
+				char moduldeFileName[512];
+				if (GetModuleFileName (hModule, moduldeFileName, 512))
 				{
-					HGLOBAL hGlobal=LoadResource (hModule, hRSrc);
-					if (hGlobal)
+					// Get version info size
+					DWORD doomy;
+					uint versionInfoSize=GetFileVersionInfoSize (moduldeFileName, &doomy);
+					if (versionInfoSize)
 					{
-						void *pInfo=LockResource (hGlobal);
-						if (pInfo)
+						// Alloc the buffer
+						char *buffer=new char[versionInfoSize];
+
+						// Find the verion resource
+						if (GetFileVersionInfo(moduldeFileName, 0, versionInfoSize, buffer))
 						{
 							uint *versionTab;
 							uint versionSize;
-							if (VerQueryValue (pInfo, "\\", (void**)&versionTab,  &versionSize))
+							if (VerQueryValue (buffer, "\\", (void**)&versionTab,  &versionSize))
 							{
 								// Get the pointer on the structure
 								VS_FIXEDFILEINFO *info=(VS_FIXEDFILEINFO*)versionTab;
-
- 								// Setup version number
-								char version[512];
-								sprintf (version, "Version %d.%d.%d.%d", 
-									info->dwFileVersionMS>>16, 
-									info->dwFileVersionMS&0xffff, 
-									info->dwFileVersionLS>>16,  
-									info->dwFileVersionLS&0xffff);
-								SetWindowText (GetDlgItem (hWnd, IDC_VERSION), version);
+								if (info)
+								{
+ 									// Setup version number
+									char version[512];
+									sprintf (version, "Version %d.%d.%d.%d", 
+										info->dwFileVersionMS>>16, 
+										info->dwFileVersionMS&0xffff, 
+										info->dwFileVersionLS>>16,  
+										info->dwFileVersionLS&0xffff);
+									SetWindowText (GetDlgItem (hWnd, IDC_VERSION), version);
+								}
+								else
+									SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "VS_FIXEDFILEINFO * is NULL");
 							}
+							else
+								SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "VerQueryValue failed");
 						}
+						else
+							SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "GetFileVersionInfo failed");
+
+						// Free the buffer
+						delete [] buffer;
 					}
+					else
+						SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "GetFileVersionInfoSize failed");
 				}
+				else
+					SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "GetModuleFileName failed");
 			}
+			else
+				SetWindowText (GetDlgItem (hWnd, IDC_VERSION), "GetModuleHandle failed");
+
 
 			theTile_utility.Init(hWnd);
 		}

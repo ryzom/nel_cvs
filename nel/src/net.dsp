@@ -296,6 +296,10 @@ SOURCE=.\net\net_log.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\net\pacs_client.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\service.cpp
 # End Source File
 # Begin Source File

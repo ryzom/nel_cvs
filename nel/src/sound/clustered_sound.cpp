@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.3 2003/01/10 17:11:56 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.4 2003/01/10 18:08:56 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -386,8 +386,14 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	// check for source to stop
 	{
 //		std::map<std::string, CClusterSound>	oldSources;
+
+#if _STLPORT_VERSION >= 0x450
 		std::hash_map<uint, CClusterSound>	oldSources;
 		oldSources.swap(_Sources);
+#else
+		std::hash_map<uint, CClusterSound>	oldSources(_Sources);
+		_Sources.clear();
+#endif
 
 //		std::map<std::string, CClusterSound>::iterator first(newSources.begin()), last(newSources.end());
 		std::hash_map<uint, CClusterSound>::iterator first(newSources.begin()), last(newSources.end());

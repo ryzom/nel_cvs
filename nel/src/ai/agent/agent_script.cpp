@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.75 2001/07/09 09:14:39 chafik Exp $
+ * $Id: agent_script.cpp,v 1.76 2001/07/09 13:48:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,9 +138,18 @@ namespace NLAIAGENT
 																						CAgentScript::CheckAll,
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass));
-				
+		
+		idMsgTellCompoment->incRef();
 		StaticMethod[CAgentScript::TRunTellCompoment] = new CAgentScript::CMethodCall(	_RUNTEL_, 
 																						CAgentScript::TRunTellCompoment, ParamTellCompoment,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(idMsgTellCompoment));
+
+		ParamTellCompoment->incRef();
+		idMsgTellCompoment->incRef();
+		StaticMethod[CAgentScript::TRunAskCompoment] = new CAgentScript::CMethodCall(	_RUNASK_, 
+																						CAgentScript::TRunAskCompoment, ParamTellCompoment,
 																						CAgentScript::CheckAll,
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(idMsgTellCompoment));
@@ -1221,6 +1230,7 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
+		case TRunAskCompoment:
 		case TRunTellCompoment:
 			{				
 				return runTellCompoment((IBaseGroupType *)o);
@@ -1303,6 +1313,7 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
+		case TRunAskCompoment:
 		case TRunTellCompoment:
 			{				
 				return runTellCompoment((IBaseGroupType *)o);

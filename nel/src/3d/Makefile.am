@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.101 2003/11/17 10:31:01 lecroart Exp $
+# $Id: Makefile.am,v 1.102 2003/12/03 12:28:04 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -207,8 +207,6 @@ libnel3d_la_SOURCES  = \
 		mesh_multi_lod.h \
 		mesh_multi_lod_instance.cpp \
 		mesh_multi_lod_instance.h \
-		mesh_skin_manager.cpp \
-		mesh_skin_manager.h \
 		mesh_vertex_program.cpp \
 		mesh_vertex_program.h \
 		meshvp_per_pixel_light.cpp \
@@ -536,6 +534,8 @@ libnel3d_la_SOURCES  = \
 		vertex_program.h \
 		vertex_program_parse.cpp \
 		vertex_program_parse.h \
+		vertex_stream_manager.cpp \
+		vertex_stream_manager.h \
 		viewport.cpp \
 		visual_collision_entity.cpp \
 		visual_collision_entity.h \

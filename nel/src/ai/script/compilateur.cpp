@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.20 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: compilateur.cpp,v 1.21 2002/11/05 14:07:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,9 @@ namespace NLAISCRIPT
 
 	void CCompilateur::onEndClass()
 	{
-		((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
+		NLAIAGENT::IObjectIA *o = (NLAIAGENT::IObjectIA *)_SelfClass.pop();
+		((IClassInterpret *)o)->classIsMounted();
+		o->release();		
 	}
 
 	NLAIC::CIdentType CCompilateur::getTypeOfClass(const NLAIAGENT::IVarName &className)/// throw (NLAIE::IException)

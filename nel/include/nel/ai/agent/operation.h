@@ -1,7 +1,7 @@
 /** \file operation.h
  * <File description>
  *
- * $Id: operation.h,v 1.3 2002/06/06 09:12:02 chafik Exp $
+ * $Id: operation.h,v 1.4 2002/11/05 14:07:28 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,7 @@ namespace NLAIAGENT
 		{
 			if(_Name != NULL) 
 					_Name->release();
-			_Name = new CStringType (CIndexedVarName(name.getStr().getString()));
+			_Name = new CStringType (CStringVarName(name.getStr().getString()));
 		}
 
 		const CStringType *getName() const

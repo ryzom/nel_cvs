@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.7 2002/01/17 12:16:08 chafik Exp $
+ * $Id: opcode_call_method.cpp,v 1.8 2002/11/05 14:07:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,17 +41,18 @@ namespace NLAISCRIPT
 	{
 		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
 		NLAIAGENT::CIteratorContener It = param->getIterator();
-		
+		uint z = 0;
 		while(!It.isInEnd())
 		{			
 			NLAIAGENT::IObjectIA *o = (NLAIAGENT::IObjectIA *)It++;
 			o->incRef();
 			context.Heap[(int)context.Heap] = o;
 			context.Heap ++;
+			z ++;
 		}				
 		int bp = (int)context.Heap;
 		CVarPStackParam::_Shift += bp;
-		context.Heap.addStack(param->size());
+		context.Heap.addStack(z);
 		context.Heap.setShift((int)context.Heap);
 		context.Param.push_back(param);
 		param->incRef();

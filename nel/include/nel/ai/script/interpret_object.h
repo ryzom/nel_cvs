@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.19 2002/10/04 10:12:31 coutelas Exp $
+ * $Id: interpret_object.h,v 1.20 2002/11/05 14:07:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,7 +119,9 @@ namespace NLAISCRIPT
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const = 0;
 
 		/// Registers a new static component
-		virtual sint32 registerComponent(const NLAIAGENT::IVarName &) = 0;		
+		virtual sint32 registerComponent(const NLAIAGENT::IVarName &) = 0;
+		/// Registers a new static component
+		virtual void classIsMounted() = 0;
 				
 		/// Returns the number of static components in the class
 		virtual sint32 getStaticMemberSize() const = 0;		

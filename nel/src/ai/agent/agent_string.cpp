@@ -1,6 +1,6 @@
 /** \file agent_string.cpp
  *
- * $Id: agent_string.cpp,v 1.4 2001/12/19 11:14:42 chafik Exp $
+ * $Id: agent_string.cpp,v 1.5 2002/11/05 14:07:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,6 +296,7 @@ namespace NLAIAGENT
 
 	const char *CIndexedVarName::getString() const
 	{
-		return _TableName[_Index].Name->getString();
+		return (*(_TableName + _Index)).Name->getString();
+		//return _TableName[_Index].Name->getString();
 	}	
 }

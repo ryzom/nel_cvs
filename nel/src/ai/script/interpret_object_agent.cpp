@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.53 2002/09/30 13:13:53 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.54 2002/11/05 14:07:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,6 +255,10 @@ namespace NLAISCRIPT
 	{
 		return _MsgIndirectTable[ msg->getMethodIndex() - getBaseMethodCount() ][child_index];
 	}
+
+	void CAgentClass::classIsMounted()
+	{
+	}
 	
 	/// Adds a static component to an agent
 	sint32 CAgentClass::registerComponent(const NLAIAGENT::IVarName &type_name)
@@ -268,6 +272,7 @@ namespace NLAISCRIPT
 		c->RegisterName = (NLAIAGENT::IVarName *)type_name.clone();
 		c->ObjectName = NULL;
 		_Components.push_back(c);
+		
 		return _Components.size() - 1;
 	}
 	 

@@ -1,7 +1,7 @@
 /** \file interpret_object_agent.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.25 2002/08/21 14:52:44 portier Exp $
+ * $Id: interpret_object_agent.h,v 1.26 2002/11/05 14:07:28 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -152,6 +152,7 @@ namespace NLAISCRIPT
 		static const NLAIC::CIdentType IdAgentClass;
 	private:
 		std::vector<CComponent *> _Components;
+		std::map <std::string, uint> _ComponentMap;
 		std::vector<NLAIAGENT::IObjectIA *> _StaticComponents;
 
 		typedef std::vector<CMethodType>	tVectorMethode;
@@ -189,6 +190,7 @@ namespace NLAISCRIPT
 
 
 		//// Static components
+		virtual void classIsMounted();
 		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name);
 		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name, const NLAIAGENT::CStringVarName &field_name);
 		/// Returns a CComponent struct describing a static component from its index in the class

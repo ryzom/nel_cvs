@@ -409,7 +409,7 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
-	const NLAIC::CIdentType CGoalPath::IdGoalPath = NLAIC::CIdentType( "GoalPathScript", NLAIC::CSelfClassFactory( CGoalPath( NULL )),
+	const NLAIC::CIdentType CGoalPath::IdGoalPath = NLAIC::CIdentType( "GoalPathScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CCGoalPath( NULL )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 

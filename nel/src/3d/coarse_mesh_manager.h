@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.5 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.6 2001/08/08 07:36:01 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,9 +95,9 @@ public:
 
 	enum
 	{
-		CantAddCoarseMesh = 0xffffffffffffffff
+		CantAddCoarseMesh = 0xffffffff
 	};
-	
+
 	/// Constructor
 	CCoarseMeshManager ();
 

@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.14 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: service_5.cpp,v 1.15 2001/12/31 13:32:39 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -93,7 +93,7 @@ string		 IService5::_ShortName		= "";
 string		 IService5::_LongName		= "";
 string		 IService5::_AliasName		= "";
 uint16		 IService5::_DefaultPort	= 0;
-TTime	 IService5::_UpdateTimeout	= 0.1;
+TTime		 IService5::_UpdateTimeout	= 100;
 CEntityId	 IService5::_NextEntityId;
 
 IService5	*IService5::Instance		= NULL;

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.13 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: unified_network.h,v 1.14 2001/12/31 13:32:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -301,6 +301,8 @@ private:
 	volatile uint												_MThreadId;
 	volatile uint												_MutexCount;
 
+	// Naming service
+	NLNET::CInetAddress											_NamingServiceAddr;
 
 	//
 	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0), _MThreadId(0xFFFFFFFF), _MutexCount(0), _CbServer(NULL), _NextUpdateTime(0)

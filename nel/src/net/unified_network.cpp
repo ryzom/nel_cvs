@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.26 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.27 2001/12/31 13:32:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -278,12 +278,15 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	_RecordingState = rec;
 	_Name = shortName;
 	_SId = sid;
+	
+	if (addr != NULL)
+		_NamingServiceAddr = *addr;
 
 	// if the address isn't null, uses the naming service
-	if (addr != NULL)
+	if (_NamingServiceAddr.isValid ())
 	{
 		// connect to the naming service (may generate a ESocketConnectionFailed exception)
-		CNamingClient::connect(*addr, rec);
+		CNamingClient::connect(_NamingServiceAddr, _RecordingState);
 
 		// connect the callback to know when a new service comes in or goes down
 		CNamingClient::setRegistrationBroadcastCallback(uNetRegistrationBroadcast);
@@ -475,6 +478,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 
 void	CUnifiedNetwork::update(TTime timeout)
 {
+	bool	enableRetry;	// true every 5 seconds to reconnect if necessary
+
 //	nldebug("In CUnifiedNetwork::update()");
 	enterReentrant();
 	{
@@ -505,14 +510,37 @@ void	CUnifiedNetwork::update(TTime timeout)
 			}
 		}
 
+		// check if we need to retry to connect to the client
+		if ((enableRetry = (t0-_LastRetry > 5000)))
+			_LastRetry = t0;
+
+		// Try to reconnect to the naming service if connection lost
+		if (_NamingServiceAddr.isValid ())
+		{
+			if (CNamingClient::connected ())
+			{
+				CNamingClient::update ();
+			}
+			else if (enableRetry)
+			{
+				try
+				{
+					CNamingClient::connect (_NamingServiceAddr, _RecordingState);
+					// re-register the service
+					CInetAddress laddr = CInetAddress::localHost ();
+					laddr.setPort(_ServerPort);
+					CNamingClient::registerServiceWithSId (_Name, laddr, _SId);
+				}
+				catch (ESocketConnectionFailed &)
+				{
+					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", _NamingServiceAddr.asString().c_str());
+				}
+			}
+		}
+
 		// lock read access to the connections
 		CRWSynchronized< std::vector<CUnifiedConnection> >::CReadAccessor	idAccess(&_IdCnx);
 		const vector<CUnifiedConnection>									&connections = idAccess.value();
-
-		//
-		bool	enableRetry;
-		if ((enableRetry = (t0-_LastRetry > 5000)))
-			_LastRetry = t0;
 
 		_ConnectionRetriesStack.clear();
 		_ConnectionStack.clear();
@@ -557,11 +585,6 @@ void	CUnifiedNetwork::update(TTime timeout)
 
 	autoCheck();
 	updateConnectionTable();
-
-	// do nothing but here just for fun because the unifiednetwork doesn't need un/registration info from
-	// naming service (don't remove it anyway)
-	if (CNamingClient::connected ())
-		CNamingClient::update ();
 
 	leaveReentrant();
 //	nldebug("Out CUnifiedNetwork::update()");

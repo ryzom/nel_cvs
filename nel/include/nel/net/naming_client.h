@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.28 2001/10/16 09:21:05 legros Exp $
+ * $Id: naming_client.h,v 1.29 2001/12/31 13:32:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,16 +26,12 @@
 #ifndef NL_NAMING_CLIENT_H
 #define NL_NAMING_CLIENT_H
 
+#include <string>
+
 #include "nel/misc/mutex.h"
 
 #include "nel/net/inet_address.h"
 #include "nel/net/callback_client.h"
-
-//#include "nel/misc/config_file.h"
-//#include "nel/net/service.h"
-
-#include <string>
-//#include <map> // only one address per service
 
 
 namespace NLNET {
@@ -48,6 +44,9 @@ typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, cons
 /**
  * Client side of Naming Service. Allows to register/unregister services, and to lookup for
  * a registered service.
+ *
+ * \warning the Naming Service can be down, it will reconnect when up but if other services try to register during the
+ * NS is offline, it will cause bug
  *
  * \author Olivier Cado
  * \author Vianney Lecroart
@@ -223,139 +222,6 @@ protected:
 	/// \todo ace: debug feature that we should remove one day before releasing the game
 	static uint	_ThreadId;
 	static void	checkThreadId ();
-
-
-//////////////////////
-////////////////////// OLD NAMING CLIENT
-//////////////////////
-private:
-
-	/// Finalization. Unregisters all services registered by registerService() and not unregistered yet.
-//	static void			finalize();
-
-	/// Connection to the naming service (exits from transaction mode)
-//	static void			open();
-
-	/// Disconnection from the naming service (reenters transaction mode)
-//	static void			close();
-
-	/** \name Requests to the Naming Service. 
-	 * If TransactionMode is true, these method perform open() and close() themselves.
-	 * Do not use transaction mode for (un)registering a service, but only for look-ups !
-	 */
-	//@{
-
-	/** Requests the naming service to choose a port for the service
-	 * \param name [in] Name of the service
-	 * \param addr [in] Address of the service (the port can be 0 as returned by CInetAddress::localHost())
-	 * \return The allocated port number
-	 */
-//	static uint16		queryServicePort( const std::string& name, const CInetAddress& addr );
-
-	/** Register a service within the naming service, using a specified service identifier.
-	 * Returns false if the service identifier is unavailable i.e. the registration failed.
-	 */
-//	static bool			registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid );
-
-	// Unregister a service from the naming service, by name & address (*deprecated*)
-	//static void		unregisterService( const std::string& name, const CInetAddress& addr );
-
-	/** Returns true and the address of the specified service if it is found, otherwise returns false
-	 * \param name [in] Name of the service to find
-	 * \param addr [out] Address of the service
-	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
-	 * before sending a message to the service
-	 * \return True if all worked fine
-	 */
-//	static bool			lookup( const std::string& name, CInetAddress& addr, uint16& validitytime );
-
-	/// Same as lookup(const string&, CInetAddress&, uint16&)
-//	static bool			lookup( TServiceId sid, CInetAddress& addr, uint16& validitytime );
-
-	/** Tells the Naming Service the specified address does not respond for the specified service,
-	 * and returns true and another address for the service if available, otherwise returns false
-	 * \param name [in] Name of the service to find
-	 * \param addr [in/out] In: Address of the service that does not respond. Out: Alternative address
-	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
-	 * before sending a message to the service
-	 * \return True if all worked fine
-	 */
-//	static bool			lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime );
-
-	/// Same as lookupAlternate(const string&, CInetAddress&, uint16&)
-//	static bool			lookupAlternate( TServiceId sid, CInetAddress& addr, uint16& validitytime );
-
-	/** Obtains a socket connected to a server providing the service \e name.
-	 * In case of failure to connect, the method informs the Naming Service and tries to get another server
-	 * \param name [in] Name of the service to find and connected
-	 * \param sock [out] The connected socket.
-	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
-	 * before sending a message to the service
-	 * \return false if the service was not found
-	 */
-//	static bool			lookupAndConnect( const std::string& name, CTcpSock& sock, uint16& validitytime );
-
-	/// See lookupAndConnect( const std::string&, CSocket&, uint16& )
-//	static bool			lookupAndConnect( const std::string& name, CCallbackClient& sock, uint16& validitytime );
-
-	/**
-	 * Returns all services corresponding to the specified name.
-	 * Ex: lookupAll( "AS", addresses );
-	 */
-//	static void			lookupAll( const std::string& name, std::vector<CInetAddress>& addresses );
-
-	/**
-	 * Returns all services corresponding to the specified name with service id as key
-	 * Ex: lookupAll( "AS", addressmap );
-	 */
-//	static void			lookupAllServices( const std::string& name, std::map<TServiceId,CInetAddress>& addressmap );
-
-	//@}
-
-	/*
-	/// Address of naming service
-	static CInetAddress NamingServiceAddress;
-
-	/// Config file name
-	static const char	*NamingServiceAddrFile;
-
-	/// Default NS host name
-	static const char	*NamingServiceDefHost;
-
-	/// Default NS port
-	static const uint16	NamingServiceDefPort;
-	*/
-	
-	/// Returns transaction mode
-//	static bool	transactionMode() { return CNamingClient::_TransactionMode; }
-
-	/// Callback for dynamic config file change
-//	friend void cbNamingServiceAddrChanged();
-/*
-protected:
-
-	/// Call doOpen() is _TransactionMode is true
-	static void			openT();
-
-	/// Call doClose() if _TransactionMode is true
-	static void			closeT();
-
-	/// Performs a socket connection
-	static void			doOpen();
-
-	/// Performs a socket disconnection
-	static void			doClose();
-
-	/// Helper function for lookup() and loopupAlternate()
-	static bool			doReceiveLookupAnswer( const std::string& name, NLNET::CInetAddress& addr, uint16& validitytime );
-
-
-private:
-*/	
-	/*static CTcpSock		*_ClientSock;
-	static NLMISC::CConfigFile	*_ConfigFile;
-	*/
-//	static bool			_TransactionMode;
 };
 
 

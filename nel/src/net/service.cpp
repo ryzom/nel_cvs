@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.112 2002/03/26 09:44:47 lecroart Exp $
+ * $Id: service.cpp,v 1.113 2002/03/28 17:46:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -703,20 +703,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 
 		// look if we don't want to use NS
-		bool DontUseNS;
 		try
 		{
 			// if we set the value in the config file, get it
-			DontUseNS = ConfigFile.getVar("DontUseNS").asInt() == 1;
+			_DontUseNS = ConfigFile.getVar("DontUseNS").asInt() == 1;
 		}
 		catch ( EUnknownVar& )
 		{
 			// if not, we use ns only if service is not ns, ls, aes, as
-			DontUseNS = (IService::_ShortName == "NS" || IService::_ShortName == "LS" || IService::_ShortName == "AES" || IService::_ShortName == "AS");
+			_DontUseNS = (_ShortName == "NS" || _ShortName == "LS" || _ShortName == "AES" || _ShortName == "AS");
 		}
 
 		// normal setup for the common services
-		if (!DontUseNS)
+		if (!_DontUseNS)
 		{
 			bool ok = false;
 			while (!ok)
@@ -759,19 +758,18 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		// look if we don't want to use NS
-		bool DontUseAES;
 		try
 		{
 			// if we set the value in the config file, get it
-			DontUseAES = ConfigFile.getVar("DontUseAES").asInt() == 1;
+			_DontUseAES = ConfigFile.getVar("DontUseAES").asInt() == 1;
 		}
 		catch ( EUnknownVar& )
 		{
 			// if not, we use aes only if service is not aes or as
-			DontUseAES = (_ShortName == "AES" || _ShortName == "AS");
+			_DontUseAES = (_ShortName == "AES" || _ShortName == "AS");
 		}
 
-		if (!DontUseAES)
+		if (!_DontUseAES)
 		{
 			if (isService5())
 			{
@@ -947,7 +945,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Say to the AES that the service is ready
 		//
 
-		if (!DontUseAES)
+		if (!_DontUseAES)
 		{
 			if (isService5())
 			{
@@ -1274,6 +1272,26 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	if(args.size() != 0) return false;
 
 	log.displayNL ("Service %d '%s' '%s' '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->isService5()?5:4, IService::getInstance()->_ShortName.c_str(), IService::getInstance()->_LongName.c_str(), IService::getInstance()->_AliasName.c_str());
+	log.displayNL ("Service listening port: %d", IService::getInstance()->_Port);
+	log.displayNL ("Service log directory: '%s'", IService::getInstance()->_LogDir.c_str());
+	log.displayNL ("Service config directory: '%s' config filename: '%s.cfg'", IService::getInstance()->_ConfigDir.c_str(), IService::getInstance()->_LongName.c_str());
+	log.displayNL ("Service id: %d", IService::getInstance()->_SId);
+	log.displayNL ("Service update timeout: %dms", IService::getInstance()->_UpdateTimeout);
+	log.displayNL ("Service %suse naming service", IService::getInstance()->_DontUseNS?"don't ":"");
+	log.displayNL ("Service %suse admin executor service", IService::getInstance()->_DontUseAES?"don't ":"");
+#ifdef NL_RELEASE_DEBUG
+	string mode = "NL_RELEASE_DEBUG";
+#elif defined(NL_DEBUG_FAST)
+	string mode = "NL_DEBUG_FAST";
+#elif defined(NL_DEBUG)
+	string mode = "NL_DEBUG";
+#elif defined(NL_RELEASE)
+	string mode = "NL_RELEASE";
+#else
+	string mode = "???";
+#endif
+	log.displayNL ("NeL is compiled in %s mode", mode);
+
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.11 2003/04/25 13:59:08 berenguier Exp $
+ * $Id: tga2dds.cpp,v 1.12 2004/01/29 09:23:02 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@ using namespace NLMISC;
 using namespace std;
 
 
+#define	TGA8	8
 #define	TGA16	16
 #define NOT_DEFINED 0xff
 
@@ -214,6 +215,7 @@ void writeInstructions()
 	cout<<"            3  for DXTC3"<<endl;
 	cout<<"            5  for DXTC5"<<endl;
 	cout<<"            tga16  for TGA 16 bits"<<endl;
+	cout<<"            tga8   for TGA 8  bits"<<endl;
 	cout<<"-m        : Create MipMap"<<endl;
 	cout<<"-rFACTOR  : Reduce the bitmap size before compressing"<<endl;
 	cout<<"            FACTOR is 0, 1, 2, 3, 4, 5, 6, 7 or 8"<<endl;
@@ -267,6 +269,8 @@ bool	parseOptions(int argc, char **argv)
 			if(!strcmp(argv[i],"5"))	OptAlgo = DXT5;
 			else
 			if(!strcmp(argv[i],"tga16"))	OptAlgo = TGA16;
+			else
+			if(!strcmp(argv[i],"tga8"))	OptAlgo = TGA8;
 			else
 			{
 				cerr<<"Algorithm unknown : "<<argv[i]<<endl;
@@ -588,8 +592,8 @@ void main(int argc, char **argv)
 		Reduce--;
 	}
 
-	// 16 bits tga ?
-	if (algo==TGA16)
+	// 8 or 16 bits tga ?
+	if ((algo == TGA16) || (algo == TGA8))
 	{
 		// Saving TGA file
 		//=================
@@ -601,7 +605,15 @@ void main(int argc, char **argv)
 		}
 		try 
 		{
-			picSrc.writeTGA (output, 16);
+			if (algo == TGA16)
+			{
+				picSrc.writeTGA (output, 16);
+			} 
+			else if (algo == TGA8)
+			{
+				picSrc.convertToType(CBitmap::Luminance);
+				picSrc.writeTGA (output, 8);
+			}
 		}
 		catch(NLMISC::EWriteError &e)
 		{

@@ -116,8 +116,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "tga2dds___Win32_DebugFast"
-# PROP Intermediate_Dir "tga2dds___Win32_DebugFast"
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_CONSOLE" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /YX /FD /GZ /c

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.29 2002/10/02 15:51:39 lecroart Exp $
+ * $Id: path.h,v 1.30 2002/11/25 14:04:04 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -171,6 +171,10 @@ public:
 	 */
 	static std::string getCurrentPath ();
 
+	/** Create a list of file having the requested extension.
+	*/
+	static void getFileList(const std::string &extension, std::vector<std::string> &filenames);
+
 private:
 
 	static CPath *getInstance ();
@@ -185,7 +189,7 @@ private:
 		CFileEntry (std::string	path, bool remapped, std::string ext) : Path(path), Remapped(remapped), Extension(ext) { }
 		std::string	Path;
 		bool		Remapped;		// true if the file is remapped
-		std::string	Extension;		// extention of the faile
+		std::string	Extension;		// extention of the file
 	};
 
 	/** first is the filename, second the full path for the filename.

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.59 2002/09/27 09:56:55 portier Exp $
+ * $Id: agent_script.h,v 1.60 2002/09/30 13:10:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,7 +226,8 @@ namespace NLAIAGENT
 		/**		
 		remove an agent from the manager. The rgument g must store an CStringType. This string is the name of the agent to remove.
 		The methode return the state of the operation, an digital at 1.0 if the remove is done an digital at 0.0 is the method did'nt find the agent.
-		*/
+		*/		
+		virtual void removeDynamic(NLAIAGENT::IBasicAgent *ag);
 		virtual IObjectIA::CProcessResult removeDynamic(NLAIAGENT::IBaseGroupType *g);
 
 		/**		

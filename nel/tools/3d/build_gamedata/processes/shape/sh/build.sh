@@ -5,9 +5,24 @@
 # Bin
 tga_2_dds='../../bin/tga2dds.exe'
 build_coarse_mesh='../../bin/build_coarse_mesh.exe'
+lightmap_optimizer='../../bin/lightmap_optimizer.exe'
 
 # Log error
 echo ------- > log.log
+echo --- Build shape : optimize lightmaps >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build shape : optimize lightmaps
+echo ------- 
+date >> log.log
+date
+
+#backup lightmap to lightmap_not_optimized and shape to shape_not_optimized
+./sh/backup_lm_s.bat
+$lightmap_optimizer ./lightmap ./shape
+
+
+echo ------- >> log.log
 echo --- Build shape : convert lightmaps in 16 bits >> log.log
 echo ------- >> log.log
 echo ------- 

@@ -14,7 +14,7 @@
 	// return true if the check is ok
 	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason)
 	{
-		global $DBHost, $DBUserName, $DBPassword, $DBName;
+		global $DBHost, $DBUserName, $DBPassword, $DBName, $AcceptUnknownUser;
 
 		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database host:$DBHost user:$DBUserName");
 		mysql_select_db ($DBName) or die ("Can't access to the table dbname:$DBName");
@@ -23,29 +23,37 @@
 
 		if (mysql_num_rows ($result) == 0)
 		{
-			// login doesn't exist, create it
-			$query = "INSERT INTO user (Login, Password) VALUES ('$login', '$password')";
-			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
-
-			// get the user to have his UId
-			$query = "SELECT * FROM user WHERE Login='$login'";
-			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
-
-			if (mysql_num_rows ($result) == 1)
+			if ($AcceptUnknownUser)
 			{
-				$reason = "Login '".$login."' was created because it was not found in database";
-				$row = mysql_fetch_row ($result);
-				$id = $row[0];
-
-				// add the default permission
-				$query = "INSERT INTO permission (UId) VALUES ('$id')";
+				// login doesn't exist, create it
+				$query = "INSERT INTO user (Login, Password) VALUES ('$login', '$password')";
 				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
-				$res = true;
+				// get the user to have his UId
+				$query = "SELECT * FROM user WHERE Login='$login'";
+				$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
+
+				if (mysql_num_rows ($result) == 1)
+				{
+					$reason = "Login '".$login."' was created because it was not found in database";
+					$row = mysql_fetch_row ($result);
+					$id = $row[0];
+
+					// add the default permission
+					$query = "INSERT INTO permission (UId) VALUES ('$id')";
+					$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
+
+					$res = true;
+				}
+				else
+				{
+					$reason = "Can't fetch the login '".$login."'";
+					$res = false;
+				}
 			}
 			else
 			{
-				$reason = "Can't fetch the login '".$login."'";
+				$reason = "Unknown login '".$login."'";
 				$res = false;
 			}
 		}
@@ -334,8 +342,8 @@
 		{
 			// user logged, display the available shard
 
-echo "DEBUG: id: '$id' login: '$login' password: '$password' prog: '$clientApplication' version: '$clientVersion'\n";
-echo "basename: '".basename($PHP_SELF)."'<br><br>\n";
+echo "<!-- DEBUG: id: '$id' login: '$login' password: '$password' prog: '$clientApplication' version: '$clientVersion'\n";
+echo "basename: '".basename($PHP_SELF)."'<br><br>\n -->";
 
 			echo "Hello $login, nice to meet you.<br>\n";
 

@@ -12,7 +12,7 @@
 	$DBPassword	= "";
 	$DBName		= "nel";
 
-	// where we can find directories where the dir.gz and other files are.
+	// where we can find directories where the dir.ngz and other files are.
 	// you can use a secure access using .htaccess and .htpasswd, in this case, set the url like this:
 	// "http://login:password@localhost/patch" (no / at the end of the path)
 	$RootPatchURL = "http://localhost/patch";
@@ -21,11 +21,14 @@
 	// no / at the end of the path
 	$RootPatchInternalAccess = "patch";
 
+	// If true, the server will add automatically unknown user in the database
+	$AcceptUnknownUser = false;
+
 // ---------------------------------------------------------------------------------------- 
 // Variables for service_connection.inc
 // ---------------------------------------------------------------------------------------- 
 
-	$LSHost = "localhost";
+	$LSHost = "linuxdev01";
 	$LSPort = 49998;
 
 ?>

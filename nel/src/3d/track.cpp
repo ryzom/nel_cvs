@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.4 2001/03/07 16:49:46 berenguier Exp $
+ * $Id: track.cpp,v 1.5 2001/03/07 17:08:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,9 +76,8 @@ CTrackDefaultBool ttoto15;
 
 // ***************************************************************************
 void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
-			const CKeyQuat* pPrevious, const CKeyQuat* previous, const CKeyQuat* next, const CKeyQuat* nNext, 
-			CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-			CAnimationTime dateNext, CAnimationTime dateNNext, 
+			const CKeyQuat* previous, const CKeyQuat* next, 
+			CAnimationTime datePrevious, CAnimationTime dateNext, 
 			CAnimationTime date )
 {
 	if(previous && next)

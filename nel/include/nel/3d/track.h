@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.3 2001/03/07 16:49:24 berenguier Exp $
+ * $Id: track.h,v 1.4 2001/03/07 17:07:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,14 +96,10 @@ public:
 	/// From ITrack. 
 	virtual void eval (const CAnimationTime& date)
 	{
-		const CKeyT *pPrevious=NULL;
 		const CKeyT *previous=NULL;
 		const CKeyT *next=NULL;
-		const CKeyT *nNext=NULL;
-		CAnimationTime datePPrevious;
 		CAnimationTime datePrevious;
 		CAnimationTime dateNext;
-		CAnimationTime dateNNext;
 
 		// Return upper key
 		std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite=_MapKey.upper_bound (date);
@@ -114,16 +110,6 @@ public:
 			// Next
 			next=ite->second.get();
 			dateNext=ite->first;
-
-			// Next next
-			std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite2=ite;
-			ite2++;
-			if (ite2!=_MapKey.end())
-			{
-				// Next
-				nNext=ite2->second.get();
-				dateNNext=ite2->first;
-			}
 		}
 
 		// Previous
@@ -135,20 +121,10 @@ public:
 			// Previous
 			previous=ite->second.get();
 			datePrevious=ite->first;
-
-			// Previous previous
-			std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite2=ite;
-			ite2--;
-			if (ite2!=_MapKey.end())
-			{
-				// Next
-				pPrevious=ite2->second.get();
-				datePPrevious=ite2->first;
-			}
 		}
 
 		// Call evalutation fonction
-		evalKey (pPrevious, previous, next, nNext, datePPrevious, datePrevious, dateNext, dateNNext, date);
+		evalKey (previous, next, datePrevious, dateNext, date);
 	}
 
 	/**
@@ -161,9 +137,8 @@ public:
 	  * \param next is the i+1 key in the keyframe. NULL if no key.
 	  * \param nNext is the i+2 key in the keyframe. NULL if no key.
 	  */
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext, 
 							CAnimationTime date ) =0;
 private:
 	std::map <CAnimationTime, std::auto_ptr<CKeyT > >		_MapKey;
@@ -209,9 +184,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date )
 	{
 		// Const key.
@@ -247,9 +221,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date )
 	{
 		// Const key.
@@ -285,9 +258,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date )
 	{
 		if(previous && next)
@@ -334,9 +306,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date );
 
 private:
@@ -364,9 +335,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyT* pPrevious, const CKeyT* previous, const CKeyT* next, const CKeyT* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date );
 
 private:
@@ -402,9 +372,8 @@ public:
 	}
 	
 	/// From ITrackKeyFramer
-	virtual void evalKey (	const CKeyQuat* pPrevious, const CKeyQuat* previous, const CKeyQuat* next, const CKeyQuat* nNext, 
-							CAnimationTime datePPrevious, CAnimationTime datePrevious, 
-							CAnimationTime dateNext, CAnimationTime dateNNext, 
+	virtual void evalKey (	const CKeyQuat* previous, const CKeyQuat* next, 
+							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date );
 
 private:

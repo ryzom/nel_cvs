@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.35 2002/02/28 12:59:52 besson Exp $
+ * $Id: transform.cpp,v 1.36 2002/03/04 19:00:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -752,10 +752,14 @@ void	CTransformLightObs::traverse(IObs *caller)
 	if(transform->_NeedUpdateFrozenStaticLightSetup)
 	{
 		// Now, the correct matrix is computed.
-		CVector	worldModelPos= transform->getWorldMatrix().getPos();
-		uint	numPointLights= transform->_LightContribution.NumFrozenStaticLight;
+		// get the untransformed bbox from the model.
+		CAABBox		bbox;
+		transform->getAABBox(bbox);
+		// get transformed center pos of bbox
+		CVector	worldModelPos= transform->getWorldMatrix() * bbox.getCenter();
 
 		// So we can compute AttFactor for each static light influencing this static object
+		uint	numPointLights= transform->_LightContribution.NumFrozenStaticLight;
 		for(uint i=0;i<numPointLights;i++)
 		{
 			const CPointLight	*pl= transform->_LightContribution.PointLight[i];

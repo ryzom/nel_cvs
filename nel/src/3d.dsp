@@ -583,6 +583,14 @@ SOURCE=..\include\nel\3d\animation.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\animation_playlist.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation_playlist.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\animation_set.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file tess_face_priority_list.h
  * <File description>
  *
- * $Id: tess_face_priority_list.h,v 1.2 2002/08/22 14:41:41 berenguier Exp $
+ * $Id: tess_face_priority_list.h,v 1.3 2002/08/22 15:17:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TESS_FACE_PRIORITY_LIST_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 #include <vector>
 
 
@@ -119,11 +120,11 @@ public:
 	 *	Camera -> center of interest.
 	 *	\return 0 if no quadrant available, else the quadrant id
 	 */
-	uint			selectQuadrant(const CVector &direction);
+	uint			selectQuadrant(const NLMISC::CVector &direction);
 
 	/**	get the quadrant dir associated to the Id. Undefined if 0.
 	 */
-	const CVector	&getQuadrantDirection(uint quadrantId) const {return _RollingTables[quadrantId].QuadrantDirection;}
+	const NLMISC::CVector	&getQuadrantDirection(uint quadrantId) const {return _RollingTables[quadrantId].QuadrantDirection;}
 
 	/** Insert an element at a given distance, and in a given quadrant.
 	 *	Insert at the closest step. eg insert(1.2, elt) will insert elt at entry 1 (assuming distStep==1 here).
@@ -141,7 +142,7 @@ public:
 	 *	NB: for each rolling table, even if shiftDistance==0, all elements in the entry 0 are pulled out.
 	 *	\parm pulledElements is the root of the list which will contains elements pulled from the list.
 	 */
-	void			shift(const CVector &direction, CTessFacePListNode	&pulledElements);
+	void			shift(const NLMISC::CVector &direction, CTessFacePListNode	&pulledElements);
 
 	/** Same as shift(), but shift all the array.
 	 */
@@ -174,7 +175,7 @@ private:
 	{
 	public:
 		// The quadrant Direction for this rolling table.
-		CVector		QuadrantDirection;
+		NLMISC::CVector		QuadrantDirection;
 
 		// computed and decremented by CTessFacePriorityList
 		float		Remainder;

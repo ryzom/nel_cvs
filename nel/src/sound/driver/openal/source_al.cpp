@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.6 2001/07/19 12:47:28 cado Exp $
+ * $Id: source_al.cpp,v 1.7 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,11 @@ using namespace NLMISC;
 
 
 namespace NLSOUND {
+
+#ifdef NL_OS_UNIX
+#define alGetSourcei alGetSourceiv
+#define alGetSourcef alGetSourcefv
+#endif
 
 
 /*
@@ -356,10 +361,12 @@ void					CSourceAL::getCone( float& innerAngle, float& outerAngle, float& outerG
  */
 void					CSourceAL::setEAXProperty( uint prop, void *value, uint valuesize )
 {
+#ifdef EAX_AVAILABLE
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_SourceProperties, prop, _SourceName, value, valuesize );
 	}
+#endif
 }
 
 

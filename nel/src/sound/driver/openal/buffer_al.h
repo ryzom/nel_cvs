@@ -1,7 +1,7 @@
 /** \file buffer_al.h
  * OpenAL buffer
  *
- * $Id: buffer_al.h,v 1.2 2001/07/04 13:13:07 cado Exp $
+ * $Id: buffer_al.h,v 1.3 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/debug.h"
 #include "sound/driver/buffer.h"
 
-#include "al/al.h"
+#include "AL/al.h"
 
 namespace NLSOUND {
 

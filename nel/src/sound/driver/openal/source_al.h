@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.4 2001/07/17 14:19:59 cado Exp $
+ * $Id: source_al.h,v 1.5 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "sound/driver/source.h"
-#include "al/al.h"
+#include "AL/al.h"
 
 
 namespace NLSOUND {

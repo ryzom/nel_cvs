@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.4 2001/07/17 14:19:59 cado Exp $
+ * $Id: listener_al.cpp,v 1.5 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "listener_al.h"
 #include "sound_driver_al.h"
-#include "al/al.h"
+#include "AL/al.h"
 #include "nel/misc/vector.h"
 
 using namespace NLMISC;
@@ -69,7 +69,13 @@ void					CListenerAL::setPos( const NLMISC::CVector& pos )
  */
 void					CListenerAL::getPos( NLMISC::CVector& pos ) const
 {
+#ifdef NL_OS_WINDOWS
 	alGetListener3f( AL_POSITION, &pos.x, &pos.y, &pos.z );
+#else
+	float posarray [3];
+	alGetListenerfv( AL_POSITION, posarray );
+	pos.set( posarray[0], posarray[1], posarray[2] );
+#endif
 	nlassert( alGetError() == AL_NO_ERROR );
 }
 
@@ -89,7 +95,13 @@ void					CListenerAL::setVelocity( const NLMISC::CVector& vel )
  */
 void				 	CListenerAL::getVelocity( NLMISC::CVector& vel ) const
 {
+#ifdef NL_OS_WINDOWS
 	alGetListener3f( AL_VELOCITY, &vel.x, &vel.y, &vel.z );
+#else
+	float velarray [3];
+	alGetListenerfv( AL_VELOCITY, velarray );
+	vel.set( velarray[0], velarray[1], velarray[2] );
+#endif
 	nlassert( alGetError() == AL_NO_ERROR );
 }
 
@@ -145,7 +157,11 @@ void					CListenerAL::setGain( float gain )
 float					CListenerAL::getGain() const
 {
 	ALfloat gain;
+#ifdef NL_OS_WINDOWS
 	alGetListenerf( AL_GAIN, &gain );
+#else
+	alGetListenerfv( AL_GAIN, &gain );
+#endif
 	nlassert( alGetError() == AL_NO_ERROR );
 	return gain;
 }
@@ -176,11 +192,13 @@ void					CListenerAL::setRolloffFactor( float f )
  */
 void					CListenerAL::setEnvironment( uint env, float size )
 {
+#ifdef EAX_AVAILABLE
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENT, 0, &env, sizeof(unsigned long) );
 		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE, 0, &size, sizeof(float) );
 	}
+#endif
 }
 
 
@@ -189,10 +207,12 @@ void					CListenerAL::setEnvironment( uint env, float size )
  */
 void					CListenerAL::setEAXProperty( uint prop, void *value, uint valuesize )
 {
+#ifdef EAX_AVAILABLE
 	if ( EAXSetProp != NULL )
 	{
 		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, prop, 0, value, valuesize );
 	}
+#endif
 }
 
 

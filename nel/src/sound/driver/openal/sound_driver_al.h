@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.4 2001/07/19 12:47:07 cado Exp $
+ * $Id: sound_driver_al.h,v 1.5 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,11 +30,16 @@
 #include "sound/driver/sound_driver.h"
 #include "sound/driver/openal/source_al.h"
 #include "sound/driver/openal/buffer_al.h"
-#include <al/al.h>
+#include <AL/al.h>
 #ifdef NL_OS_WINDOWS
 #include <objbase.h> // needed before eax.h
+define EAX_AVAILABLE
 #endif
-#include <eax.h>
+
+#ifdef EAX_AVAILABLE
+#include <eax.h> // no EAX on Linux !
+#endif
+
 #include <vector>
 
 
@@ -50,11 +55,13 @@ typedef ALvoid (*TGenFunctionAL) ( ALsizei, ALuint* );
 typedef ALboolean (*TTestFunctionAL) ( ALuint );
 
 
+#ifdef EAX_AVAILABLE
 // EAXSet global function
 extern EAXSet	EAXSetProp;
 
 // EAXGet global function
 extern EAXGet	EAXGetProp;
+#endif
 
 
 #ifdef NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.4 2001/07/19 12:47:07 cado Exp $
+ * $Id: sound_driver_al.cpp,v 1.5 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 #include "buffer_al.h"
 #include "listener_al.h"
 
-#include "al/alut.h"
-#include "al/al.h"
+#include "AL/alut.h"
+#include "AL/al.h"
 
 using namespace std;
 
@@ -37,11 +37,13 @@ using namespace std;
 namespace NLSOUND {
 
 
+#ifdef EAX_AVAILABLE
 // EAXSet global function
 EAXSet					EAXSetProp = NULL;
 
 // EAXGet global function
 EAXGet					EAXGetProp = NULL;
+#endif
 
 
 #ifdef NL_DEBUG
@@ -53,9 +55,17 @@ void TestALError()
 	{
 	case AL_NO_ERROR : break;
 	case AL_INVALID_NAME : nlerror( "OpenAL: Invalid name" );
+#ifdef NL_OS_WINDOWS
 	case AL_INVALID_ENUM  : nlerror( "OpenAL: Invalid enum" );
+#else
+	case AL_ILLEGAL_ENUM  : nlerror( "OpenAL: Invalid enum" );
+#endif
 	case AL_INVALID_VALUE  : nlerror( "OpenAL: Invalid value" );
+#ifdef NL_OS_WINDOWS
 	case AL_INVALID_OPERATION  : nlerror( "OpenAL: Invalid operation" );
+#else
+	case AL_ILLEGAL_COMMAND  : nlerror( "OpenAL: Invalid operation" );
+#endif
 	case AL_OUT_OF_MEMORY  : nlerror( "OpenAL: Out of memory" );
 	// alGetString( errcode ) does not work !
 	}
@@ -153,7 +163,7 @@ bool		CSoundDriverAL::init()
 	alutInit( NULL, NULL );
 
 	// Display version information
-	unsigned char *alversion, *alrenderer, *alvendor, *alext;
+	const ALubyte *alversion, *alrenderer, *alvendor, *alext;
 	alversion = alGetString( AL_VERSION );
 	alrenderer = alGetString( AL_RENDERER );
 	alvendor = alGetString( AL_VENDOR );
@@ -162,6 +172,7 @@ bool		CSoundDriverAL::init()
 	nlinfo( "Loading OpenAL lib: %s, %s, %s", alversion, alrenderer, alvendor );
 	nlinfo( "Listing extensions: %s", alext );
 
+#ifdef EAX_AVAILABLE
     // Set EAX environment if EAX is available
 	if ( alIsExtensionPresent((ALubyte *)"EAX") == AL_TRUE ) // or EAX2.0
 	{
@@ -179,6 +190,7 @@ bool		CSoundDriverAL::init()
 		}
 	}
 	else
+#endif
 	{
 		nlinfo( "EAX not available" );
 	}
@@ -413,18 +425,28 @@ TSampleFormat ALtoNLSoundFormat( ALenum alformat )
  */
 bool			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, const char *filename )
 {
+#ifdef NL_OS_WINDOWS
 	ALsizei size,freq;
 	ALenum format;
 	ALvoid *data;
 	ALboolean loop;
 	alutLoadWAVFile( const_cast<char*>(filename), &format, &data, &size, &freq, &loop ); // last arg in some al.h
+#else
+	ALsizei bits;
+	ALsizei size,freq;
+	ALsizei format;
+	ALvoid *data;
+	alutLoadWAV( const_cast<char*>(filename), &data, &format, &size, &bits, &freq ); 
+#endif
 	if ( data == NULL )
 	{
 		return false;
 	}
 	destbuffer->setFormat( ALtoNLSoundFormat(format), freq );
 	destbuffer->fillBuffer( data, size );
-	alutUnloadWAV(format,data,size,freq);
+#ifdef NL_OS_WINDOWS
+	alutUnloadWAV(format,data,size,freq); // Where is it on Linux ?!?
+#endif
 	return true;
 }
 

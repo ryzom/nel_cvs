@@ -1,7 +1,7 @@
 /** \file bounding_shape.h
  * IBoundingShape: interface for bounding shapes
  *
- * $Id: bounding_shape.h,v 1.2 2001/07/17 15:32:12 cado Exp $
+ * $Id: bounding_shape.h,v 1.3 2001/07/24 14:24:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 
 
 	/// Destructor
-	~IBoundingShape() {}
+	virtual ~IBoundingShape() {}
 
 protected:
 

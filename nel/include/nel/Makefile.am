@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2004/01/15 17:30:56 lecroart Exp $
+# $Id: Makefile.am,v 1.7 2004/01/15 19:25:34 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -10,7 +10,7 @@ SUBDIRS              = @NEL_SUBDIRS@
 
 includedir           = ${prefix}/include/nel
 
-include_HEADERS      = $(wildcard *.h)
+#include_HEADERS      = $(wildcard *.h)
 
 
 # End of Makefile.am

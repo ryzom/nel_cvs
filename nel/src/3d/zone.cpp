@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.26 2001/01/11 13:55:23 berenguier Exp $
+ * $Id: zone.cpp,v 1.27 2001/01/18 14:14:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,10 @@
 
 using namespace NLMISC;
 using namespace std;
+
+
+// define it only for debug bind.
+//#define	NL3D_DEBUG_DONT_BIND_PATCH
 
 
 namespace NL3D {
@@ -464,6 +468,9 @@ void			CZone::rebindBorder(TZoneMap &loadedZones)
 // ***************************************************************************
 CPatch		*CZone::getZonePatch(TZoneMap &loadedZones, sint zoneId, sint patch)
 {
+#ifdef NL3D_DEBUG_DONT_BIND_PATCH
+	return NULL;
+#endif
 	if(loadedZones.find(zoneId)==loadedZones.end())
 		return NULL;
 	else

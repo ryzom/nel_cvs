@@ -398,6 +398,14 @@ SOURCE=..\include\nel\3d\triangle.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\triangle_ext.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\triangle_ext.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\uv.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.4 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: path.cpp,v 1.5 2001/01/18 14:14:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,10 +24,21 @@
  */
 
 #include "nel/misc/path.h"
+#include "nel/misc/debug.h"
 //#include <stdio.h>
 #include <fstream>
 
 using namespace std;
+
+
+// Use this define if you want to display the absolute paths in the console.
+//#define	NL_DEBUG_PATH
+
+#ifdef	NL_DEBUG_PATH
+#define	NL_DISPLAY_PATH(_x_)	nlinfo("Patch: %s", _x_.c_str())
+#else 
+#define	NL_DISPLAY_PATH(_x_) NULL
+#endif
 
 
 namespace NLMISC {
@@ -86,6 +97,7 @@ string CPath::lookup( const string& filename )
 {
 	if ( fileExists(filename) )
 	{
+		NL_DISPLAY_PATH(filename);
 		return filename;
 	}
 	CStringVector::iterator isv;
@@ -95,6 +107,7 @@ string CPath::lookup( const string& filename )
 		s = *isv + filename;
 		if ( fileExists(s) )
 		{
+			NL_DISPLAY_PATH(s);
 			return s;
 		}
 	}

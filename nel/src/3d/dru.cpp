@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.24 2001/01/17 16:34:36 lecroart Exp $
+ * $Id: dru.cpp,v 1.25 2001/01/18 14:14:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ typedef uint32 (*IDRV_VERSION_PROC)(void);
 const char *IDRV_VERSION_PROC_NAME = "NL3D_interfaceVersion";
 
 
+// ***************************************************************************
 IDriver		*CDRU::createGlDriver() throw (EDru)
 {
 	IDRV_CREATE_PROC	createDriver = NULL;
@@ -125,6 +126,8 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 	return ret;
 }
 
+
+// ***************************************************************************
 void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport)
 {
 	CMatrix mtx;
@@ -160,6 +163,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 }
 
 
+// ***************************************************************************
 void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport)
 {
 	CMatrix mtx;
@@ -188,6 +192,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 }
 
 
+// ***************************************************************************
 void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, IDriver& driver, CRGBA col, CViewport viewport)
 {
 	CMatrix mtx;
@@ -221,6 +226,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 
 
 
+// ***************************************************************************
 void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport)
 {
 	CMatrix mtx;
@@ -255,6 +261,7 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 }
 
 
+// ***************************************************************************
 void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport)
 {
 	CMatrix mtx;
@@ -287,6 +294,44 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 
 	driver.render(pb, mat);
 }
+
+
+// ***************************************************************************
+void			CDRU::drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver)
+{
+	static CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ | IDRV_VF_UV[0]);
+	vb.setNumVertices (ntris*3);
+
+	static	CPrimitiveBlock pb;
+	pb.setNumTri(ntris);
+
+	for(sint i=0;i<ntris;i++)
+	{
+		vb.setVertexCoord (i*3+0, trilist[i].V0);
+		vb.setVertexCoord (i*3+1, trilist[i].V1);
+		vb.setVertexCoord (i*3+2, trilist[i].V2);
+		vb.setTexCoord (i*3+0, 0, trilist[i].Uv0);
+		vb.setTexCoord (i*3+1, 0, trilist[i].Uv1);
+		vb.setTexCoord (i*3+2, 0, trilist[i].Uv2);
+		pb.setTri(i, i*3+0, i*3+1, i*3+2);
+	}
+	
+	driver.activeVertexBuffer(vb);
+	driver.render(pb, mat);
+}
+
+
+// ***************************************************************************
+void			CDRU::drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMaterial &mat, IDriver& driver)
+{
+	if(trilist.size()==0)
+		return;
+	
+	CDRU::drawTrianglesUnlit( &(*trilist.begin()), trilist.size(), mat, driver);
+}
+
+
 
 } // NL3D
 

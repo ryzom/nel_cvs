@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.1 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: polygon.cpp,v 1.2 2001/01/18 14:14:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,8 @@ void			CPolygon::clip(const CPlane	 *planes, uint nPlanes)
 	vector<CVector>		tab0, tab1;
 	tab0.resize(getNumVertices()+nPlanes);
 	tab1.resize(getNumVertices()+nPlanes);
+	// Init tab0 with Vertices.
+	copy(Vertices.begin(), Vertices.end(), tab0.begin());
 	CVector				*in=&(*tab0.begin()), *out= &(*tab1.begin());
 	sint				nin= getNumVertices(), nout;
 	for(sint i=0;i<(sint)nPlanes;i++)

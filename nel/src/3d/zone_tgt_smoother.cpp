@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.2 2001/01/16 11:00:59 berenguier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.3 2001/01/18 14:14:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,17 +129,21 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 		// Test if there is no bind 1/x on this patch, around this vertex.
 		// TODO later: binds should works...
 		std::list<CPatchId>::iterator	itPatch;
+		bool	bindFound= false;
 		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
 		{
 			// Tests the two edges around the vertex (before: e0, and after: e1).
 			sint	e0= (itPatch->IdVert+4-1)%4;
 			sint	e1= itPatch->IdVert;
 
-			if(itPatch->Patch->BindEdges[e0].NPatchs!= 1)
-				continue;
-			if(itPatch->Patch->BindEdges[e1].NPatchs!= 1)
-				continue;
+			if(itPatch->Patch->BindEdges[e0].NPatchs!= 1 || itPatch->Patch->BindEdges[e1].NPatchs!= 1)
+			{
+				bindFound= true;
+				break;
+			}
 		}
+		if(bindFound)
+			continue;
 
 
 

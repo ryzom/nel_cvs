@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.10 2001/01/12 17:02:27 coutelas Exp $
+ * $Id: mini_col.cpp,v 1.11 2001/01/18 14:14:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -452,6 +452,29 @@ bool			CMiniCol::testMove(const CVector &prec, CVector &cur)
 		}
 	}
 	return true;
+}
+
+
+// ***************************************************************************
+void			CMiniCol::getFaces(std::vector<CTriangle>	&triresult, const CAABBox &bbox)
+{
+	triresult.clear();
+
+	// Select.
+	_Grid.select(bbox.getMin(),bbox.getMax());
+
+	// For each face, test if it is under pos, then test if height is correct.
+	CQuadGrid<CFace>::CIterator	iFace;
+	for(iFace= _Grid.begin();iFace!=_Grid.end();iFace++)
+	{
+		CTriangle	&face= (*iFace).Face;
+
+		if(bbox.intersect(face.V0, face.V1, face.V2))
+		{
+			triresult.push_back(face);
+		}
+	}
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.6 2001/01/17 10:14:38 coutelas Exp $
+ * $Id: zone_welder.cpp,v 1.7 2001/01/18 14:19:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -527,10 +527,6 @@ void weldZones(const char *center)
 		{
 			for(j=0; j<4; j++)
 			{
-				if(adjZonePatchs[ptch].BindEdges[j].ZoneId ==0)
-				{
-					adjZonePatchs[ptch].BindEdges[j].ZoneId	= adjZonesId[i];
-				}
 				if(adjZonePatchs[ptch].BindEdges[j].ZoneId == centerZoneId)
 				{
 					adjZonePatchs[ptch].BindEdges[j].NPatchs = 0;
@@ -538,7 +534,7 @@ void weldZones(const char *center)
 			}
 		}
 
-		fprintf(fdbg,"(before) zone %d vertices size : %d\n",i,adjZoneBorderVertices.size());
+		fprintf(fdbg,"(before) zone %d bordervertices size : %d\n",i,adjZoneBorderVertices.size());
 
 		// delete border vertices of the adjacent zone if their neighbour zoneId
 		// is equal to current zone zoneId
@@ -552,7 +548,7 @@ void weldZones(const char *center)
 			else
 				itborder++;
 		}
-		fprintf(fdbg,"(after) zone %d vertices size : %d\n",i,adjZoneBorderVertices.size());
+		fprintf(fdbg,"(after) zone %d bordervertices size : %d\n",i,adjZoneBorderVertices.size());
 
 		// A set for storing base vertex index already added in the quad tree
 		std::set<uint16> adjBaseVertexIndexSet;

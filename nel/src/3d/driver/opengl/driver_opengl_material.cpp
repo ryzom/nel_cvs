@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.19 2001/01/12 13:27:46 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.20 2001/01/18 14:14:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,8 @@ static void convBlend(CMaterial::TBlend blend, GLenum& glenum)
 		case CMaterial::zero:		glenum=GL_ZERO; break;
 		case CMaterial::srcalpha:	glenum=GL_SRC_ALPHA; break;
 		case CMaterial::invsrcalpha:glenum=GL_ONE_MINUS_SRC_ALPHA; break;
+		case CMaterial::srccolor:	glenum=GL_SRC_COLOR; break;
+		case CMaterial::invsrccolor:glenum=GL_ONE_MINUS_SRC_COLOR; break;
 		default: nlstop;
 	}
 }

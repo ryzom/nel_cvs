@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.16 2001/07/27 09:07:22 lecroart Exp $
+ * $Id: landscape.cpp,v 1.17 2002/07/10 15:25:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,9 +144,6 @@ void	initLandscape()
 		diffuse,
 		CRGBA(ConfigFile.getVar("LandscapeAmbiantColor").asInt(0), ConfigFile.getVar("LandscapeAmbiantColor").asInt(1), ConfigFile.getVar("LandscapeAmbiantColor").asInt(2)),
 		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat());
-
-	Scene->setDynamicCoarseMeshManagerColor (diffuse);
-	Scene->setStaticCoarseMeshManagerColor (diffuse);
 
 	CConfigFile::CVar igv = ConfigFile.getVar("InstanceGroups");
 	for (sint32 i = 0; i < igv.size (); i++)

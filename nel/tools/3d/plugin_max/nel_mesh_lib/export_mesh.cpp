@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.18 2001/08/31 14:39:15 besson Exp $
+ * $Id: export_mesh.cpp,v 1.19 2001/09/03 10:00:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,6 +120,9 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
 	IShape *retShape=NULL;
+
+	if (CExportNel::getScriptAppData (&node, NEL3D_APPDATA_DONTEXPORT, 0))
+		return NULL;
 
 	// If skinning, disable skin modifier
 	if (nodeMap)

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.7 2001/08/30 10:16:16 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.8 2001/09/03 10:00:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,10 @@ public:
 										// 6th bit -> Clusterize
 	std::string				InstanceName;	
 	int						DontAddToScene;	
+	std::string				InstanceGroupName;
+	int						DontExport;
 	int						ExportNoteTrack;
+
 };
 
 // ***************************************************************************
@@ -249,29 +252,20 @@ int CALLBACK LodDialogCallback (
 			}
 
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
-			if (currentParam->DontAddToScene != -1)
-			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), true);
-				SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
-			}
+			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
+
+			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
+
+			EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), true);
+			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_SETCHECK, currentParam->DontExport, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
+
+			if (currentParam->DontExport == BST_UNCHECKED)
+				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
 			else
-			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), false);
-			}
+				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
 
 			
-			if (currentParam->ExportNoteTrack != -1)
-			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
-				SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_SETCHECK, currentParam->ExportNoteTrack, 0);
-			}
-			else
-			{
-				EnableWindow (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
-			}
-
-
-
 			// Move dialog
 			RECT windowRect, desktopRect;
 			GetWindowRect (hwndDlg, &windowRect);
@@ -360,7 +354,10 @@ int CALLBACK LodDialogCallback (
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
-							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);							
+							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
+							currentParam->InstanceGroupName=tmp;
+							currentParam->DontExport=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_EXPORT), BM_GETCHECK, 0, 0);
+							currentParam->ExportNoteTrack=SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_NOTE_TRACK), BM_GETCHECK, 0, 0);
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -483,6 +480,23 @@ int CALLBACK LodDialogCallback (
 						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
 						EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
 						break;
+					case IDC_DONT_ADD_TO_SCENE:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						break;
+					case IDC_DONT_EXPORT:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_UNCHECKED)
+							EnableWindow (GetDlgItem(hwndDlg, IDC_EXPORT_NOTE_TRACK), true);
+						else
+							EnableWindow (GetDlgItem(hwndDlg, IDC_EXPORT_NOTE_TRACK), false);
+						break;
+					case IDC_EXPORT_NOTE_TRACK:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						break;
 				}
 			}
 			else if (HIWORD(wParam)==LBN_DBLCLK)
@@ -578,8 +592,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32);
 
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
-		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0);
-		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, 0);
+		param.DontAddToScene=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED);
+		param.InstanceGroupName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
+		param.DontExport=CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED);
+		param.ExportNoteTrack=CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED);
 		
 
 		// Something selected ?
@@ -622,12 +638,16 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 32)!=param.AccelType)
 				param.AccelType = -1;
 
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, 0)!=param.DontAddToScene)
-				param.DontAddToScene = -1;
-			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, 0)!=param.ExportNoteTrack)
-				param.ExportNoteTrack = -1;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, BST_UNCHECKED)!=param.DontAddToScene)
+				param.DontAddToScene = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "")!=param.InstanceName)
 				param.InstanceName = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_IGNAME, "")!=param.InstanceGroupName)
+				param.InstanceName = "";
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, BST_UNCHECKED)!=param.DontExport)
+				param.DontExport= BST_INDETERMINATE;
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, BST_UNCHECKED)!=param.ExportNoteTrack)
+				param.ExportNoteTrack = BST_INDETERMINATE;
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -697,10 +717,16 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 				if (param.InstanceName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
-				if (param.DontAddToScene != -1)
+				if (param.DontAddToScene != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
-				if (param.ExportNoteTrack != -1)
-					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
+				if (param.InstanceGroupName != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);
+				if (param.DontExport != BST_INDETERMINATE)
+				{
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONTEXPORT, param.DontExport);
+					if (param.ExportNoteTrack != BST_INDETERMINATE)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, param.ExportNoteTrack);
+				}
 
 				if (param.ListActived)
 				{

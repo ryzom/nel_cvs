@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.6 2001/08/30 10:17:39 vizerie Exp $
+ * $Id: export_lod.h,v 1.7 2001/09/03 10:00:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,10 +49,15 @@
 #define NEL3D_APPDATA_LOD_DISTANCE_MIDDLE			(NEL3D_APPDATA_LOD_DISTANCE_FINEST+1)
 #define NEL3D_APPDATA_LOD_DISTANCE_COARSEST			(NEL3D_APPDATA_LOD_DISTANCE_MIDDLE+1)
 
+// Last APPDATA_LOD value is						1423062560
+
 #define NEL3D_APPDATA_ACCEL							(1423062561)
 #define NEL3D_APPDATA_INSTANCE_NAME					(1423062562)
 #define NEL3D_APPDATA_DONT_ADD_TO_SCENE				(1423062563)
-#define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062564)
+#define NEL3D_APPDATA_IGNAME						(1423062564)
+
+#define NEL3D_APPDATA_DONTEXPORT					(1423062565)
+#define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062566)
 
 // ***************************************************************************
 

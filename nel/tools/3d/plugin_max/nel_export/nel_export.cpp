@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.13 2001/08/28 08:39:37 besson Exp $
+ * $Id: nel_export.cpp,v 1.14 2001/09/03 10:00:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
 #include "../nel_mesh_lib/export_nel.h"
+#include "../nel_mesh_lib/export_lod.h"
 #include "../nel_patch_lib/rpo.h"
 #include "nel_export_scene.h"
 
@@ -311,6 +312,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							strcpy (sSavePath, pNode->GetName());
 
 							// Choose a file to export
+							if (!CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONTEXPORT, 0))
 							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, meshFilter, sSavePath))
 							{
 								// Skin objects

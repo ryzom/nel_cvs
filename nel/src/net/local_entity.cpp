@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.7 2000/11/08 15:52:25 cado Exp $
+ * $Id: local_entity.cpp,v 1.8 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/net/local_entity.h"
+#include "nel/net/local_area.h"
 #include "nel/net/msg_socket.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/common.h"
@@ -179,18 +180,21 @@ void CLocalEntity::computeVector()
 void CLocalEntity::propagateState()
 {
 	// Send
-	CMessage msgout;
-	if ( groundMode() )
+	if ( ClientSocket->connected()	)
 	{
-		msgout.setType( "GES" ); // Entity State, Ground mode
+		CMessage msgout;
+		if ( groundMode() )
+		{
+			msgout.setType( "GES" ); // Entity State, Ground mode
+		}
+		else
+		{
+			msgout.setType( "FES" ); // Full Entity State
+		}
+		msgout.serial( *this );
+		ClientSocket->send( msgout );
+		nlinfo( "Entity State sent, with id %u", id() );
 	}
-	else
-	{
-		msgout.setType( "FES" ); // Full Entity State
-	}
-	msgout.serial( *this );
-	ClientSocket->send( msgout );
-	nlinfo( "Entity State sent, with id %u", id() );
 
 	// Update local replica
 	drReplica().changeStateTo( *this );

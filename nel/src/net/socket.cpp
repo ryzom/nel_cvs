@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.21 2000/11/08 14:58:03 lecroart Exp $
+ * $Id: socket.cpp,v 1.22 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,6 @@ CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) 
  */
 void CSocket::close()
 {
-	_Connected = false;
 	CBaseSocket::close();
 }
 
@@ -122,7 +121,7 @@ void CSocket::send( CMessage& message ) throw(ESocket)
  */
 bool CSocket::dataAvailable() throw (ESocket)
 {
-	if ( _DataAvailable ) // true if a CMsgSocket object has just tested positively the socket
+	if ( dataAvailable() ) // true if a CMsgSocket object has just tested positively the socket
 	{
 		return true;
 	}

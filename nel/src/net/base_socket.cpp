@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.15 2000/11/08 15:52:25 cado Exp $
+ * $Id: base_socket.cpp,v 1.16 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,9 +166,19 @@ void CBaseSocket::close()
 		}
 		_Sock = INVALID_SOCKET;
 		_Bound = false;
+		_Connected = false;
 	}
 }
 
+
+
+/*
+ * Disables a connected socket (sends/receives will do nothing)
+ */
+void CBaseSocket::disable()
+{
+	_Connected = false;
+}
 
 
 /*

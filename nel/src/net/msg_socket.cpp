@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.22 2000/11/08 15:52:25 cado Exp $
+ * $Id: msg_socket.cpp,v 1.23 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ using namespace std;
 #ifdef NL_OS_WINDOWS
 
 #include <winsock2.h>
+#define ERROR_NUM WSAGetLastError()
 
 #elif defined NL_OS_UNIX
 
@@ -50,6 +51,7 @@ using namespace std;
 #include <fcntl.h>
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
+#define ERROR_NUM errno
 typedef int SOCKET;
 
 #endif
@@ -58,20 +60,21 @@ typedef int SOCKET;
 namespace NLNET
 {
 
-bool				CMsgSocket::_Binded;
-CConnections		CMsgSocket::_Connections;
-TSenderId			CMsgSocket::_SenderIdNb;
-long				CMsgSocket::_TimeoutS = 0;
-long				CMsgSocket::_TimeoutM = 0;
+bool					CMsgSocket::_Binded;
+CConnections			CMsgSocket::_Connections;
+CConnectionIterators	CMsgSocket::_ConnectionsToDelete;
+TSenderId				CMsgSocket::_SenderIdNb;
+long					CMsgSocket::_TimeoutS = 0;
+long					CMsgSocket::_TimeoutM = 0;
 
-bool				CMsgSocket::_ReceiveAll;
+bool					CMsgSocket::_ReceiveAll;
 
-const TCallbackItem	*CMsgSocket::_CallbackArray;
-TTypeNum			CMsgSocket::_CbaSize;
-CSearchSet			CMsgSocket::_SearchSet;
+const TCallbackItem		*CMsgSocket::_CallbackArray;
+TTypeNum				CMsgSocket::_CbaSize;
+CSearchSet				CMsgSocket::_SearchSet;
 
-uint32				CMsgSocket::_PrevBytesReceived = 0;
-uint32				CMsgSocket::_PrevBytesSent = 0;
+uint32					CMsgSocket::_PrevBytesReceived = 0;
+uint32					CMsgSocket::_PrevBytesSent = 0;
 
   
 /*
@@ -82,7 +85,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 {
 	init( callbackarray, arraysize );
 	CSocket *listensock = new CSocket();
-	listensock->_IsListening = true;
+	listensock->setListening( true );
 	addNewConnection( listensock );
 	listen( listensock, port );
 }
@@ -112,8 +115,8 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 {
 	init( callbackarray, arraysize );
 	_ClientSock = new CSocket();
-	_ClientSock->_OwnerClient = this;
-	_ClientSock->_IsListening = false;
+	_ClientSock->setOwnerClient( this );
+	_ClientSock->setListening( false );
 	_ClientSock->connect( servaddr );
 	addNewConnection( _ClientSock );
 }
@@ -147,8 +150,8 @@ void CMsgSocket::connectToService()
 		while ( ! service_ok )
 		{
 			_ClientSock = new CSocket();
-			_ClientSock->_OwnerClient = this;
-			_ClientSock->_IsListening = false;
+			_ClientSock->setOwnerClient( this );
+			_ClientSock->setListening( false );
 			try
 			{
 				_ClientSock->connect( servaddr );
@@ -180,7 +183,7 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
 	_Binded = false;
 	_SenderIdNb = 0;
-	_ReceiveAll = true;
+	_ReceiveAll = false;
 	_PrevBytesReceivedFromHost = 0;
 	_PrevBytesSentToHost = 0;
 	_CallbackArray = callbackarray;
@@ -289,7 +292,16 @@ void CMsgSocket::send( CMessage& outmsg )
 		{
 			connectToService();
 		}
-		_ClientSock->send( outmsg );
+		try
+		{
+			_ClientSock->send( outmsg );
+		}
+		catch ( ESocket& )
+		{
+			CConnections::iterator ilps = _Connections.begin();
+			ilps++; // no need to test the first one which is the listening socket
+			handleConnectionClosure( find( ilps, _Connections.end(), _ClientSock ) );
+		}
 	}
 }
 
@@ -299,10 +311,17 @@ void CMsgSocket::send( CMessage& outmsg )
  */
 void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 {
-	CSocket *sock = socketFromId( id );
-	if ( sock != NULL )
+	CConnections::iterator ilps = iteratorFromId( id );
+	if ( (*ilps) != NULL )
 	{
-		sock->send( outmsg );
+		try
+		{
+			(*ilps)->send( outmsg );
+		}
+		catch ( ESocket& )
+		{
+			handleConnectionClosure( ilps );
+		}
 	}
 	else
 	{
@@ -316,10 +335,17 @@ void CMsgSocket::send( CMessage& outmsg, TSenderId id )
  */
 void CMsgSocket::sendToAll( CMessage& outmsg )
 {
-	CConnections::iterator ipc = _Connections.begin();
-	for ( ipc++; ipc!=_Connections.end(); ++ipc )
+	CConnections::iterator ilps = _Connections.begin();
+	try
 	{
-		(*ipc)->send( outmsg );
+		for ( ilps++; ilps!=_Connections.end(); ++ilps ) // not including the first one which is the listening socket
+		{
+			(*ilps)->send( outmsg );
+		}
+	}
+	catch ( ESocket& )
+	{
+		handleConnectionClosure( ilps );
 	}
 }
 
@@ -329,15 +355,25 @@ void CMsgSocket::sendToAll( CMessage& outmsg )
  */
 void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
 {
-	CConnections::iterator ipc = _Connections.begin();
-	for ( ipc++; ipc!=_Connections.end(); ++ipc )
+	CConnections::iterator ilps = _Connections.begin();
+	try
 	{
-		if ( (*ipc)->_SenderId != excluded )
+		for ( ilps++; ilps!=_Connections.end(); ++ilps ) // not including the first one which is the listening socket
 		{
-			(*ipc)->send( outmsg );
+			if ( (*ilps)->senderId() != excluded )
+			{
+				(*ilps)->send( outmsg );
+			}
 		}
 	}
+	catch ( ESocket& )
+	{
+		handleConnectionClosure( ilps );
+	}
+
 }
+
+
 
 
 /*
@@ -350,12 +386,11 @@ void CMsgSocket::update()
 	{
 		// Iterate on the sockets where data are available
 		CConnections::iterator ilps;
-		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); ) // we don't check the newly added connections because their flag _DataAvailable is false
+		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); ++ilps ) // we don't check the newly added connections because their flag dataAvailable() is false
 		{
-			bool erased = false;
-			if ( (*ilps)->_DataAvailable )
+			if ( (*ilps)->dataAvailable() )
 			{
-				if ( (*ilps)->_IsListening )
+				if ( (*ilps)->isListening() )
 				{
 					// Accept connection request
 					CMessage msgout;
@@ -392,31 +427,26 @@ void CMsgSocket::update()
 							}
 						}
 						// Reset flag
-						(*ilps)->_DataAvailable = false;
+						(*ilps)->setDataAvailable( false );
 					}
 					catch ( ESocket& )
 					{
 						// Handle a connection closure (gracefull (if ESocketConnectionClosed) or not), when
 						// receive() has thrown an exception.
-						(*ilps)->close();
-						CMessage msg( "D" );
-						processReceivedMessage( msg, **ilps );
-						if ( (*ilps)->_OwnerClient != NULL )
-						{
-							// If the socket is pointed by a client socket, neutralize its property _ClientSock
-							(*ilps)->_OwnerClient->_ClientSock = NULL;
-						}
-						delete (*ilps);
-						ilps = _Connections.erase( ilps );
-						erased = true;
+						handleConnectionClosure( ilps );
 					}
 				}
 			}
-			if ( !erased )
-			{
-				ilps++;
-			}
 		}
+		// Delete closed sockets
+		CConnectionIterators::iterator iilps;
+		for ( iilps=_ConnectionsToDelete.begin(); iilps!=_ConnectionsToDelete.end(); ++iilps )
+		{
+			delete *(*iilps);
+			_Connections.erase( *iilps );
+		}
+		_ConnectionsToDelete.clear();
+
 		// Receive only one message per update if not in "receive all" mode
 		if ( ! receiveAllMode() )
 		{
@@ -458,9 +488,32 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
  */
 void CMsgSocket::addNewConnection( CSocket *connection )
 {
-	connection->_SenderId = newSenderId();
+	connection->setSenderId( newSenderId() );
 	_Connections.push_back( connection );
 }
+
+
+/*
+ * Handle a connection closure (graceful or not)
+ */
+void CMsgSocket::handleConnectionClosure( const CConnections::iterator& ilps )
+{
+	if ( (*ilps)->connected() ) // if not, connection closure has already been handled
+	{
+		(*ilps)->close();
+		(*ilps)->setDataAvailable( false );
+		(*ilps)->disable();
+		CMessage msg( "D" );
+		processReceivedMessage( msg, **ilps );
+		if ( (*ilps)->ownerClient() != NULL )
+		{
+			// If the socket is pointed by a client socket, neutralize its property _ClientSock
+			(*ilps)->ownerClient()->_ClientSock = NULL;
+		}
+		_ConnectionsToDelete.push_back( ilps );
+	}
+}
+
 
 
 /* Returns if the connection sockets have incoming data available.
@@ -478,13 +531,25 @@ bool CMsgSocket::getDataAvailableStatus()
 		fd_set readers, writers;
 		FD_ZERO (&readers);
 		FD_ZERO (&writers);
-		CConnections::iterator itps;
-		for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
+
+		// Add the listening socket
+		CConnections::iterator itps = _Connections.begin();
+		FD_SET( (*itps)->descriptor(), &readers );
+		if ( (*itps)->descriptor() > descmax )
 		{
-			FD_SET( (*itps)->descriptor(), &readers );
-			if ( (*itps)->descriptor() > descmax )
+			descmax = (*itps)->descriptor();
+		}
+
+		// Add the connections
+		for ( itps++; itps!=_Connections.end(); ++itps )
+		{
+			if ( (*itps)->connected() ) // exclude disconnected sockets that are not deleted
 			{
-				descmax = (*itps)->descriptor();
+				FD_SET( (*itps)->descriptor(), &readers );
+				if ( (*itps)->descriptor() > descmax )
+				{
+					descmax = (*itps)->descriptor();
+				}
 			}
 		}
 
@@ -496,13 +561,14 @@ bool CMsgSocket::getDataAvailableStatus()
 		switch ( res  )
 		{
 			case  0 : return false;
-			case -1 : throw ESocket("getDataAvailableStatus(): select failed"); return false;
+			case -1 : //throw ESocket("getDataAvailableStatus(): select failed", ERROR_NUM ); return false;
+					  nlerror( "getDataAvailableStatus(): select failed: %d", ERROR_NUM ); return false;
 		}
 		
 		// Get results
 		for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
 		{
-			(*itps)->_DataAvailable = (FD_ISSET( (*itps)->descriptor(), &readers ) != 0);
+			(*itps)->setDataAvailable( FD_ISSET( (*itps)->descriptor(), &readers ) != 0 );
 		}
 		return true;
 	}
@@ -541,7 +607,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		if ( num < _CbaSize )
 		{
 			// Call the callback by index
-			_CallbackArray[num].Callback( msg, sock._SenderId );
+			_CallbackArray[num].Callback( msg, sock.senderId() );
 		}
 		else
 		{
@@ -574,8 +640,8 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 			sock.send( bindmsg );
 		}
 
-		// Call the callback funtion
-		callback( msg, sock._SenderId );
+		// Call the callback function
+		callback( msg, sock.senderId() );
 	}
 	return true;
 }
@@ -586,16 +652,26 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
  */
 CSocket *CMsgSocket::socketFromId( TSenderId id )
 {
+	return *iteratorFromId( id );
+}
+
+
+/*
+ * Returns an iterator to the socket pointer in the list of connections, with the specified sender id
+ */
+CConnections::iterator CMsgSocket::iteratorFromId( TSenderId id )
+{
 	CConnections::iterator itps;
 	for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
 	{
-		if ( (*itps)->_SenderId == id )
+		if ( (*itps)->senderId() == id )
 		{
-			return *itps;
+			return itps;
 		}
 	}
-	return NULL;
+	return _Connections.end();
 }
+
 
 
 /*
@@ -604,7 +680,7 @@ CSocket *CMsgSocket::socketFromId( TSenderId id )
 const CInetAddress *CMsgSocket::listenAddress()
 {
 	CConnections::iterator ips = _Connections.begin();
-	if ( (*ips)->_IsListening )
+	if ( (*ips)->isListening() )
 	{
 		CSocket *sock = *ips;
 		return &((*ips)->localAddr());

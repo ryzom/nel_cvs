@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.19 2000/11/08 15:52:25 cado Exp $
+ * $Id: msg_socket.h,v 1.20 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,9 @@ class CMessage;
 
 /// List of connections
 typedef std::list<CSocket*> CConnections;
+
+/// List of iterators on connections
+typedef std::list<CConnections::iterator> CConnectionIterators;
 
 
 /// Set of "special pointers to callback items"
@@ -202,6 +205,9 @@ protected:
 	/// Add a new connection socket
 	static void		addNewConnection( CSocket *connection );
 
+	/// Handle a connection closure (graceful or not)
+	static void		handleConnectionClosure( const CConnections::iterator& ilps );
+
 	/// Returns true if msg is a binding message
 	static bool		msgIsBinding( const CMessage& msg );
 
@@ -217,6 +223,9 @@ protected:
 
 	/// Returns a pointer to the socket object having the specified sender id
 	static CSocket	*socketFromId( TSenderId id );
+
+	/// Returns an iterator to the socket pointer in the list of connections, with the specified sender id
+	static CConnections::iterator	CMsgSocket::iteratorFromId( TSenderId id );
 
 	/// Gets new sender id
 	static TSenderId newSenderId()
@@ -249,6 +258,7 @@ private:
 	static bool					_Binded;
 	static CConnections			_Connections;
 	static TSenderId			_SenderIdNb;
+	static CConnectionIterators	_ConnectionsToDelete;	
 
 	static bool					_ReceiveAll;
 

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.15 2000/11/08 15:52:24 cado Exp $
+ * $Id: base_socket.h,v 1.16 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,6 +155,9 @@ public:
 
 	/// Sets/unsets TCP_NODELAY (reliable sockets only)
 	void				setNoDelay( bool value ) throw (ESocket);
+
+	/// Disables a connected socket (sends/receives will do nothing)
+	void				disable();
 
 	/// Closure
 	void				close();

@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.5 2000/11/08 15:52:24 cado Exp $
+ * $Id: local_area.h,v 1.6 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,25 +60,25 @@ public:
 	~CLocalArea();
 	
 	/// Initialization
-	void	init();
+	void					init();
 
 	/// Update the entity states
-	void	update();
+	void					update();
 
 	/// Adds a replica of a remote entity to the area. It will be automatically removed when it exists.
-	void	addNeighbor( CRemoteEntity *neighbor )
+	void					addNeighbor( CRemoteEntity *neighbor )
 	{
 		_Neighbors.insert( std::make_pair(neighbor->id(),neighbor) );
 	}
 
 	/// Read access to the neighbors
-	const CRemoteEntities& neighbors() const
+	const CRemoteEntities&	neighbors() const
 	{
 		return _Neighbors;
 	}
 
 	/// The entity controlled by the player
-	CLocalEntity	User;
+	CLocalEntity			User;
 
 	// Friend helper functions
 	friend inline void createRemoteEntity( const IMovingEntity& es );
@@ -90,7 +90,8 @@ public:
 	friend void cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom );
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
 	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
-
+	friend void cbHandleDisconnection( CMessage& msgin, TSenderId idfrom );
+	
 	/// Singleton
 	static CLocalArea *Instance;
 

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.5 2000/11/08 15:52:25 cado Exp $
+ * $Id: local_area.cpp,v 1.6 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ using namespace std;
 
 
 // Pointer to the local area singleton
-CLocalArea* CLocalArea::Instance;
+CLocalArea* CLocalArea::Instance = NULL;
 
 
 // Creates a new remote entity
@@ -138,6 +138,16 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 
 
 /*
+ * Callback cbHandleDisconnection (friend of CLocalArea)
+ */
+void NLNET::cbHandleDisconnection( CMessage& msgin, TSenderId idfrom )
+{
+	nldebug( "Disconnection: local area goes off-line" );
+	// Now ClientSocket->connected() is false
+}
+
+
+/*
  * Callback array
  */
 TCallbackItem CbArray [] =
@@ -145,7 +155,8 @@ TCallbackItem CbArray [] =
 	{ "GES", cbProcessEntityStateInGroundMode },
 	{ "FES", cbProcessEntityStateFull },
 	{ "ID", cbAssignId },
-	{ "RM", cbRemoveEntity }
+	{ "RM", cbRemoveEntity },
+	{ "D", cbHandleDisconnection }
 };
 
 
@@ -161,6 +172,7 @@ namespace NLNET {
 CLocalArea::CLocalArea() :
 	_Radius( 400 )
 {
+	nlassert( CLocalArea::Instance == NULL );
 	CLocalArea::Instance = this;
 	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
 	ClientSocket->setTimeout( 0 );
@@ -201,7 +213,10 @@ void CLocalArea::init()
  */
 void CLocalArea::update()
 {
-	ClientSocket->update();
+	if ( ClientSocket->connected() )
+	{
+		ClientSocket->update();
+	}
 
 	// Compute time difference
 #ifdef NL_OS_WINDOWS

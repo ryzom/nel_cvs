@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.5 2000/11/08 15:52:24 cado Exp $
+ * $Id: local_entity.h,v 1.6 2000/11/10 10:06:24 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,12 @@ public:
 	 * The heading vector multiplied by the velocity is added to the current position.
 	 */
 	void			update( TDuration deltatime );
+
+	/* Sends an update to all replicas, including local replica.
+	 * Call it yourself only if you explicitly want to send an update
+	 * (e.g. just after the creation and setup of the local entity)
+	 */
+	void			propagateState();
 
 	///	Sets the initial position
 	void			resetPos( const NLMISC::CVector& p )
@@ -125,9 +131,6 @@ protected:
 
 	/// Computes trajectory vector. \todo Cado: rotateZ() for NeL instead of rotateY() for GLTest (also in yaw() and roll())
 	void			computeVector();
-
-	/// Sends update to all replicas, including local replica
-	void			propagateState();
 
 	/// Dead reckoning divergence test: returns true if the replica needs to converge
 	bool			drDivergeTest();

@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.10 2001/01/24 09:35:06 robert Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.11 2001/01/30 16:38:26 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,7 @@ namespace NLAISCRIPT
 		lineNumber = this->getCurrentSourceCodeLineNumber();
 		code = " ";
 		code += _SourceCode->getSourceBuffer();
+		code +="\n";
 		size = code.size();
 		buf = code.c_str();
 

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.42 2001/01/26 13:33:37 cado Exp $
+ * $Id: socket.cpp,v 1.43 2001/02/22 16:16:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,7 @@ CSocket::CSocket( bool reliable, bool logging ) :
 	_AuthCallback( NULL ),
 	_CurrentMsgNumberSend( 0 )
 {
+	setNoDelay( true );
 }
 
 
@@ -88,6 +89,7 @@ CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) 
 	_AuthCallback( NULL ),
 	_CurrentMsgNumberSend( 0 )
 {
+	setNoDelay( true );
 }
 
 

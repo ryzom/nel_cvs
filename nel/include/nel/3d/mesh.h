@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.8 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: mesh.h,v 1.9 2001/03/02 18:22:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,18 @@ public:
 		NLMISC::CUV			Uvs[IDRV_VF_MAXSTAGES];
 		CRGBA		Color;
 		CRGBA		Specular;
-		float		Weights[IDRV_VF_MAXW];
+
+
+		//--------------------------------------------------------------
+		// Note for In-Orbit:
+		// This field is a mistake because there is only a weight per vertex and not a weight per corner.
+		// So, you should pass a weight array at the build function instead.
+
+		float		Weights[IDRV_VF_MAXW];		// 
+
+		//--------------------------------------------------------------
+
+
 
 		// Setup all to 0, but Color (to white)... Important for good corner comparison.
 		// This is slow but doesn't matter since used at mesh building....

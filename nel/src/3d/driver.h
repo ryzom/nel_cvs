@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.57 2003/05/19 13:14:12 corvazier Exp $
+ * $Id: driver.h,v 1.58 2003/08/07 08:29:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -536,6 +536,22 @@ public:
 	 */
 	virtual uint32			getUsedTextureMemory() const =0;
 
+
+	/** If the driver support it, enable profile VBHard locks.
+	 *	No-Op if already profiling
+	 */
+	virtual	void			startProfileVBHardLock() = 0;
+
+	/** If the driver support it, stop profile VBHard locks, and "print" result
+	 *	No-Op if already profiling
+	 *	NB: The results are the Locks in Chronogical time (since last swapBuffers).
+	 *	Since multiple frame are summed, an "*" is marked againts the VBHard name to show if it was not
+	 *	always this one (ptr test and not name test) in the chronogical order.
+	 *	NB: if the driver does not support VBHard or VBHard profiling (like ATI VBHard), result is empty.
+	 *	NB: ???? string is displayed if the VBHard has no name or if was just deleted.
+	 */
+	virtual	void			endProfileVBHardLock(std::vector<std::string> &result) = 0;
+
 	// @}
 
 
@@ -545,6 +561,10 @@ public:
 	virtual	void			enableFog(bool enable)=0;
 	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
 	virtual	void			setupFog(float start, float end, CRGBA color)=0;
+	/// Get.
+	virtual	float			getFogStart() const =0;
+	virtual	float			getFogEnd() const =0;
+	virtual	CRGBA			getFogColor() const =0;
 	// @}
 
 	/// Deriver should calls IDriver::release() first, to destroy all driver components (textures, shaders, VBuffers).
@@ -919,6 +939,15 @@ public:
 	 *	Interesting only for debug and profiling purpose.
 	 */
 	virtual	void			finish() =0;
+
+	/** Use AntiAliasing For polygons (GL_POLYGON_SMOOTH like, not the FSAA).
+	 *	See GL_POLYGON_SMOOTH help, and GL_SRC_ALPHA_SATURATE OpenGL doc (not yet implemented now since 
+	 *	used only for alpha part in ShadowMap gen)
+	 */
+	virtual	void			enablePolygonSmoothing(bool smooth) =0;
+
+	/// see enablePolygonSmoothing()
+	virtual	bool			isPolygonSmoothingEnabled() const =0;
 
 	// @}
 

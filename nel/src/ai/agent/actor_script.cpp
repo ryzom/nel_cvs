@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.67 2002/08/26 13:56:41 portier Exp $
+ * $Id: actor_script.cpp,v 1.68 2002/08/27 09:05:41 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/ai/logic/fsm_seq_script.h"
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/script/interpret_message_action.h"
+#include "nel/ai/logic/goal_path.h"
 
 namespace NLAIAGENT
 {
@@ -520,7 +521,24 @@ namespace NLAIAGENT
 				r.Result = NULL;
 				return r;
 				break;
-			
+
+				
+			case fid_launch_goal:
+				{
+					NLAILOGIC::CGoalPath *goal_path = new NLAILOGIC::CGoalPath( this );
+					goal_path->setFather( (CProxyAgentMail *) new CLocalAgentMail( this ) );
+					// If the constructor() function is explicitely called and the object has already been initialised
+					NLAIAGENT::IBaseGroupType *p = (NLAIAGENT::IBaseGroupType *) params;
+					while ( p->size() )
+					{
+						goal_path->addGoal( (NLAILOGIC::CGoal *) p->getFront()->clone() );
+						p->popFront();
+					}
+					Launch( "goal_path", goal_path );
+					return IObjectIA::CProcessResult();
+				}
+				break;
+
 			case fid_launched:
 				{
 					CVectorGroupType *result = new CVectorGroupType();
@@ -753,6 +771,7 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName onunactivate_name("onUnActivate");
 		static NLAIAGENT::CStringVarName switch_name("switch");
 		static NLAIAGENT::CStringVarName launch_name("Launch");
+		static NLAIAGENT::CStringVarName launch_goal_name("LaunchGoals");
 		static NLAIAGENT::CStringVarName launched_name("Launched");
 		static NLAIAGENT::CStringVarName tell_name("RunTell");
 		static NLAIAGENT::CStringVarName toplevel_name("TopLevel");
@@ -797,6 +816,12 @@ namespace NLAIAGENT
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == launch_goal_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch_goal, 0.0, NULL, r_type ) );
 		}
 
 		if ( *name == launched_name )

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.172 2004/05/14 15:00:05 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.173 2004/05/17 12:44:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -819,6 +819,7 @@ private:
 	uint			_NLightMaps;
 	uint			_NLightMapPerPass;
 	uint			_NLightMapPass;
+	bool			_LightMapNoMulAddFallBack;
 	// This array is the LUT from lmapId in [0, _NLightMaps[, to original lightmap id in material.
 	std::vector<uint>		_LightMapLUT;
 

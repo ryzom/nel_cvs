@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.89 2004/05/14 14:58:36 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.90 2004/05/17 12:44:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -659,7 +659,14 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 	_NLightMapPerPass = inlGetNumTextStages()-1;
 	// Can do more than 2 texture stages only if NVTextureEnvCombine4 or ATITextureEnvCombine3
 	if (!_Extensions.NVTextureEnvCombine4 && !_Extensions.ATITextureEnvCombine3)
+	{
 		_NLightMapPerPass = 1;
+		_LightMapNoMulAddFallBack= true;
+	}
+	else
+	{
+		_LightMapNoMulAddFallBack= false;
+	}
 
 	// Number of pass.
 	_NLightMapPass = (_NLightMaps + _NLightMapPerPass-1)/(_NLightMapPerPass);
@@ -729,6 +736,33 @@ void			CDriverGL::setupLightMapPass(uint pass)
 	lmapId= pass * _NLightMapPerPass; // Nb lightmaps already processed
 	// N lightmaps for this pass, plus the texture.
 	nstages= std::min(_NLightMapPerPass, _NLightMaps-lmapId) + 1;
+
+	// For LMC (lightmap 8Bit compression) compute the total AmbientColor in vertex diffuse
+	// need only if standard MulADD version
+	if (!_LightMapNoMulAddFallBack)
+	{
+		uint32	r=0;
+		uint32	g=0;
+		uint32	b=0;
+		// sum only the ambient of lightmaps that will be drawn this pass
+		for(uint sa=0;sa<nstages-1;sa++)
+		{
+			uint	wla= _LightMapLUT[lmapId+sa];
+			// must mul them by their respective mapFactor too
+			CRGBA ambFactor = mat._LightMaps[wla].Factor;
+			CRGBA lmcAmb= mat._LightMaps[wla].LMCAmbient;
+			r+= ((uint32)ambFactor.R  * ((uint32)lmcAmb.R+(lmcAmb.R>>7))) >>8;
+			g+= ((uint32)ambFactor.G  * ((uint32)lmcAmb.G+(lmcAmb.G>>7))) >>8;
+			b+= ((uint32)ambFactor.B  * ((uint32)lmcAmb.B+(lmcAmb.B>>7))) >>8;
+		}
+		r= std::min(r, (uint32)255);
+		g= std::min(g, (uint32)255);
+		b= std::min(b, (uint32)255);
+
+		// this will be added to the first lightmap
+		glColor4ub((uint8)r, (uint8)g, (uint8)b, 255);
+	}
+					
 	// setup all stages.
 	for(uint stage= 0; stage<(uint)inlGetNumTextStages(); stage++)
 	{
@@ -742,6 +776,11 @@ void			CDriverGL::setupLightMapPass(uint pass)
 			CRGBA lmapFactor = mat._LightMaps[whichLightMap].Factor;
 			// Modulate the factor with LightMap compression Diffuse
 			CRGBA lmcDiff= mat._LightMaps[whichLightMap].LMCDiffuse;
+			// FallBack if the (very common) extension for MulADD was not found
+			if(_LightMapNoMulAddFallBack)
+			{
+				lmcDiff.addRGBOnly(lmcDiff, mat._LightMaps[whichLightMap].LMCAmbient);
+			}
 			lmapFactor.R = (uint8)(((uint32)lmapFactor.R  * ((uint32)lmcDiff.R+(lmcDiff.R>>7))) >>8);
 			lmapFactor.G = (uint8)(((uint32)lmapFactor.G  * ((uint32)lmcDiff.G+(lmcDiff.G>>7))) >>8);
 			lmapFactor.B = (uint8)(((uint32)lmapFactor.B  * ((uint32)lmcDiff.B+(lmcDiff.B>>7))) >>8);
@@ -755,48 +794,21 @@ void			CDriverGL::setupLightMapPass(uint pass)
 			{
 				static CMaterial::CTexEnv	stdEnv;
 
-				// TempYoyo. TEST. must find a drawBack if extension not found (Ambient+Diffuse ??)
-
-				// if first stage, compute the total AmbientColor in vertex diffuse
-				if (stage==0)
-				{
-					uint32	r=0;
-					uint32	g=0;
-					uint32	b=0;
-					// sum only the ambient of lightmaps that will be drawn this pass
-					for(uint sa=0;sa<nstages-1;sa++)
-					{
-						uint	wla= _LightMapLUT[lmapId+sa];
-						// must mul them by their respective mapFactor too
-						CRGBA ambFactor = mat._LightMaps[wla].Factor;
-						CRGBA lmcAmb= mat._LightMaps[wla].LMCAmbient;
-						r+= ((uint32)ambFactor.R  * ((uint32)lmcAmb.R+(lmcAmb.R>>7))) >>8;
-						g+= ((uint32)ambFactor.G  * ((uint32)lmcAmb.G+(lmcAmb.G>>7))) >>8;
-						b+= ((uint32)ambFactor.B  * ((uint32)lmcAmb.B+(lmcAmb.B>>7))) >>8;
-					}
-					r= std::min(r, (uint32)255);
-					g= std::min(g, (uint32)255);
-					b= std::min(b, (uint32)255);
-					glColor4ub((uint8)r, (uint8)g, (uint8)b, 255);
-				}
-
-				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
-				/*if (stage==0)
+				// fallBack if extension MulAdd not found. just mul factor with (Ambient+Diffuse)
+				if(_LightMapNoMulAddFallBack)
 				{
 					// do not use consant color to blend lightmap, but incoming diffuse color, for stage0 only.
 					// (NB: lighting and vertexcolorArray are disabled here)
 					glColor4ub(lmapFactor.R, lmapFactor.G, lmapFactor.B, 255);
 					
-						
-
 					// Leave stage as default env (Modulate with previous)
 					activateTexEnvMode(stage, stdEnv);
-
+					
 					// Setup gen tex off
 					_DriverGLStates.activeTextureARB(stage);
 					_DriverGLStates.setTexGenMode(stage, 0);
 				}
-				else*/
+				else
 				{
 					// Here, we are sure that texEnvCombine4 or texEnvCombine3 is OK.
 					nlassert(_Extensions.NVTextureEnvCombine4 || _Extensions.ATITextureEnvCombine3);

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.57 2001/06/08 16:09:23 berenguier Exp $
+ * $Id: landscape.cpp,v 1.58 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1523,6 +1523,25 @@ void			CLandscape::buildCollideFaces(sint zoneId, sint patch, std::vector<CTrian
 			}
 		}
 	}
+}
+
+
+// ***************************************************************************
+CVector			CLandscape::getTesselatedPos(const CPatchIdent &patchId, const CUV &uv) const
+{
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find(patchId.ZoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId.PatchId>=0);
+		nlassert(patchId.PatchId<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId.PatchId);
+
+		return pa->getTesselatedPos(uv);
+	}
+	else
+		return CVector::Null;
 }
 
 

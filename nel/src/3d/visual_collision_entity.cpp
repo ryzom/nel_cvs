@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.1 2001/06/08 16:12:52 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.2 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,6 +88,14 @@ void		CVisualCollisionEntity::snapToGround(CVector &pos)
 	CVector		segP0= pos - CVector(0,0,100);
 	CVector		segP1= pos + CVector(0,0,100);
 
+
+	// triangles builded from this list.
+	static	vector<CTrianglePatch>		testTriangles;
+	// NB: not so many reallocation here, because static.
+	testTriangles.clear();
+	sint	bestTriangle= 0;
+
+
 	// For all the faces in this quadgrid node.
 	while(ptr)
 	{
@@ -97,13 +105,14 @@ void		CVisualCollisionEntity::snapToGround(CVector &pos)
 		CPatchQuadBlock		&qb= *_PatchQuadBlocks[qbId];
 
 		// Build the 2 triangles of this tile Id.
-		static	CTrianglePatch		triangles[2];
-		qb.buildTileTriangles((uint8)ptr->QuadId, triangles);
+		sint	idStart= testTriangles.size();
+		testTriangles.resize(idStart+2);
+		qb.buildTileTriangles((uint8)ptr->QuadId, &testTriangles[idStart]);
 
 		// Test the 2 triangles.
 		for(sint i=0; i<2; i++)
 		{
-			CTrianglePatch	&tri= triangles[i];
+			CTrianglePatch	&tri= testTriangles[idStart+i];
 			// test if the ray intersect.
 			// NB: triangleIntersect() is faster than CTriangle::intersect().
 			if(triangleIntersect(tri, segP0, segP1, hit))
@@ -112,6 +121,7 @@ void		CVisualCollisionEntity::snapToGround(CVector &pos)
 				float sqrdist= (hit-pos).sqrnorm();
 				if(sqrdist<sqrBestDist)
 				{
+					bestTriangle= idStart+i;
 					res= hit;
 					sqrBestDist= sqrdist;
 				}
@@ -125,7 +135,35 @@ void		CVisualCollisionEntity::snapToGround(CVector &pos)
 
 	// result. NB: if not found, dot not modify.
 	if(sqrBestDist<sqr(1000))
+	{
+		// snap the position to the highest tesselation.
 		pos= res;
+		// snap the position to the current rendered tesselation.
+		snapToLandscapeCurrentTesselation(pos, testTriangles[bestTriangle]);
+	}
+}
+
+
+// ***************************************************************************
+void		CVisualCollisionEntity::snapToLandscapeCurrentTesselation(CVector &pos, const CTrianglePatch &tri)
+{
+	// Must find the Uv under the position.
+	// compute UV gradients.
+	CVector		Gu;
+	CVector		Gv;
+	tri.computeGradient(tri.Uv0.U, tri.Uv1.U, tri.Uv2.U, Gu);
+	tri.computeGradient(tri.Uv0.V, tri.Uv1.V, tri.Uv2.V, Gv);
+	// compute UV for position.
+	CUV		uv;
+	uv.U= tri.Uv0.U + Gu*(pos-tri.V0);
+	uv.V= tri.Uv0.V + Gv*(pos-tri.V0);
+
+	// Ask pos to landscape.
+	CVector		posLand;
+	posLand= _Owner->_Landscape->getTesselatedPos(tri.PatchId, uv);
+
+	// just keep Z.
+	pos.z= posLand.z;
 }
 
 

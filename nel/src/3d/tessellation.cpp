@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.38 2001/03/05 09:12:25 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.39 2001/06/11 13:35:01 berenguier Exp $
  *
  */
 
@@ -2287,6 +2287,98 @@ void		CTessFace::heritTileMaterial()
 		// Fill the new near vertex, with middle of Left/Right father.
 		SonLeft->heritTileUv(this);
 	}
+
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// For getTesselatedPos
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CTessFace::getTesselatedPos(const CUV &uv, bool verifInclusion, CVector &ret)
+{
+	CVector		uvPos(uv.U, uv.V, 0);
+
+	// may verif if uv is In this triangle. supposed true if rectangular branch.
+	if(verifInclusion && !(isRectangular() && !isLeaf()) )
+	{
+		CVector		uvs[3];
+		uvs[0].set( PVBase.getS(), PVBase.getT(), 0);
+		uvs[1].set( PVLeft.getS(), PVLeft.getT(), 0);
+		uvs[2].set( PVRight.getS(), PVRight.getT(), 0);
+		for(sint i=0; i<3; i++)
+		{
+			CVector		dUv= uvs[(i+1)%3] - uvs[i];
+			CVector		normalUv(dUv.y, -dUv.x, 0);
+			// if out this 2D plane, uv is out this triangle
+			if(normalUv * (uvPos-uvs[i]) <0)
+				return;
+		}
+	}
+
+	// compute tesselated pos in this face.
+	if(isLeaf())
+		// ok, no more sons, let's do it.
+		computeTesselatedPos(uv, ret);
+	else
+	{
+		// must subdivide.
+		// if we are rectangular (strange tesselation), must test in both leaves, else, choose only one.
+		if(isRectangular())
+		{
+			SonLeft->getTesselatedPos(uv, true, ret);
+			SonRight->getTesselatedPos(uv, true, ret);
+		}
+		else
+		{
+			// Compute the uv plane which separate the 2 leaves.
+			CVector		uvBase, uvMiddle;
+			uvBase.set  ( PVBase.getS(), PVBase.getT(), 0);
+			uvMiddle.set( SonLeft->PVBase.getS(), SonLeft->PVBase.getT(), 0);
+			CVector		dUv= uvMiddle - uvBase;
+			CVector		normalUv(dUv.y, -dUv.x, 0);
+			// choose what leaf to recurs.
+			if(normalUv * (uvPos - uvBase) <0)
+				SonLeft->getTesselatedPos(uv, false, ret);
+			else
+				SonRight->getTesselatedPos(uv, false, ret);
+
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void			CTessFace::computeTesselatedPos(const CUV &uv, CVector &ret)
+{
+	CVector		uvPos(uv.U, uv.V, 0);
+
+	// compute the UV triangle of this face.
+	CTriangle	uvTri;
+	uvTri.V0.set( PVBase.getS(), PVBase.getT(), 0);
+	uvTri.V1.set( PVLeft.getS(), PVLeft.getT(), 0);
+	uvTri.V2.set( PVRight.getS(), PVRight.getT(), 0);
+
+	// must interpolate the position with given UV, so compute XYZ gradients.
+	CVector		Gx;
+	CVector		Gy;
+	CVector		Gz;
+	// NB: take geomorphed position.
+	uvTri.computeGradient(VBase->Pos.x, VLeft->Pos.x, VRight->Pos.x, Gx);
+	uvTri.computeGradient(VBase->Pos.y, VLeft->Pos.y, VRight->Pos.y, Gy);
+	uvTri.computeGradient(VBase->Pos.z, VLeft->Pos.z, VRight->Pos.z, Gz);
+
+	// Compute interpolated position.
+	ret= VBase->Pos;
+	uvPos-= uvTri.V0;
+	ret.x+= Gx*uvPos;
+	ret.y+= Gy*uvPos;
+	ret.z+= Gz*uvPos;
 
 }
 

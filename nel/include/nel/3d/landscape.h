@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.43 2001/06/08 16:09:23 berenguier Exp $
+ * $Id: landscape.h,v 1.44 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,6 +241,12 @@ public:
 	 * nlassert(PatchId size is less than NL_PATCH_BLOCK_MAX_QUAD)
 	 */
 	void			fillPatchQuadBlock(CPatchQuadBlock &quadBlock) const;
+
+
+	/** From the current tesselation of a patch of landscape, and a UV in this patch, return tesselated position.
+	 * NB: return Null if patch not found.
+	 */
+	CVector			getTesselatedPos(const CPatchIdent &patchId, const CUV &uv) const;
 
 	// @}
 

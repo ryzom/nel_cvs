@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.1 2001/06/08 16:12:52 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.2 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,6 +95,10 @@ private:
 	void		testComputeLandscape(const CVector &pos);
 	/// compute tiles infos around the position.
 	void		doComputeLandscape(const CVector &pos);
+
+	/// snap to current rendered tesselation.
+	void		snapToLandscapeCurrentTesselation(CVector &pos, const CTrianglePatch &tri);
+
 	// @}
 
 

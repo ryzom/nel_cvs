@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.29 2001/03/05 09:14:16 corvazier Exp $
+ * $Id: tessellation.h,v 1.30 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,6 +296,9 @@ public:
 	void			recreateTileUvs();
 
 
+	// Used by CPatch::getTesselatedPos(). recurs call.
+	void			getTesselatedPos(const CUV &uv, bool verifInclusion, CVector &ret);
+
 public:
 
 	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
@@ -405,6 +408,10 @@ private:
 
 	// Far Vertices: update info (ptr, and PCoord).
 	void			updateNearFarVertices();
+
+
+	// Final copmute the 3D pos in a face, according to UV (with gradients).
+	void			computeTesselatedPos(const CUV &uv, CVector &ret);
 
 private:
 	// Fake face are the only ones which have a NULL patch ptr (with mult face).

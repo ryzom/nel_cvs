@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.36 2001/06/08 16:09:23 berenguier Exp $
+ * $Id: patch.h,v 1.37 2001/06/11 13:35:01 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -486,6 +486,12 @@ public:
 	 * \param paBlockIds array to be filled (no clear performed, elements added).
 	 */
 	void		addPatchBlocksInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds) const;
+
+
+	/** From the current tesselation of this patch, and a UV in this patch, return tesselated position.
+	 */
+	CVector		getTesselatedPos(CUV uv) const;
+
 	// @}
 
 

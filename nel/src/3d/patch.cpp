@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.49 2001/06/08 16:09:23 berenguier Exp $
+ * $Id: patch.cpp,v 1.50 2001/06/11 13:35:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,7 +338,7 @@ void		CPatchQuadBlock::buildTileTriangles(uint8 quadId, CTrianglePatch  triangle
 	uint	sd1= sd0+1;
 	uint	td1= td0+1;
 	uint	s= PatchBlockId.S0+sd0;
-	uint	t= PatchBlockId.T0+sd0;
+	uint	t= PatchBlockId.T0+td0;
 	nlassert(s<PatchBlockId.S1);
 	nlassert(t<PatchBlockId.T1);
 
@@ -495,6 +495,20 @@ void		CPatch::addPatchBlocksInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, 
 
 }
 
+
+// ***************************************************************************
+CVector		CPatch::getTesselatedPos(CUV uv) const
+{
+	// clamp values.
+	clamp(uv.U, 0, 1);
+	clamp(uv.V, 0, 1);
+	// recurs down the 2 sons.
+	CVector		ret= CVector::Null;
+	Son0->getTesselatedPos(uv, true, ret);
+	Son1->getTesselatedPos(uv, true, ret);
+
+	return ret;
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 <?php 
 
 	include_once('../config.php');
-	include_once('service_connection2.php');
+	include_once('service_connection.php');
 
 // ---------------------------------------------------------------------------------------- 
 // Functions

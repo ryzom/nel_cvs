@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.37 2001/12/06 10:15:10 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.38 2002/01/09 09:45:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -479,6 +479,13 @@ CTileNoiseMap *CTileBank::getTileNoiseMap (uint tileNumber, uint tileSubNoise)
 				}
 				else
 				{
+					// This is not a normal behaviour.
+					string	pathname= getAbsPath()+tileNoise._FileName;
+					if( texture.getWidth ()==0 || texture.getHeight ()==0 )
+						nlwarning("TileNoiseMap not found: %s.", pathname.c_str());
+					else
+						nlwarning("Bad TileNoiseMap size: %s.", pathname.c_str());
+
 					// Not good size, copy a static map
 					sint8 notGoodSizeForm[NL3D_TILE_NOISE_MAP_SIZE*NL3D_TILE_NOISE_MAP_SIZE]=
 					{

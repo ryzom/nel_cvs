@@ -1,6 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tile_edit_exe", "tile_edit_exe.vcproj", "{FDCF7A44-14FF-4C23-8071-908D980CD5D8}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
 		{88CA6D0E-5F23-478F-8334-0427817FFB18} = {88CA6D0E-5F23-478F-8334-0427817FFB18}
 	EndProjectSection
 EndProject

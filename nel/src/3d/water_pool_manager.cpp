@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.2 2001/10/26 09:21:21 vizerie Exp $
+ * $Id: water_pool_manager.cpp,v 1.3 2001/11/07 10:38:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -24,7 +24,10 @@
  */
 
 #include "3d/water_pool_manager.h"
+#include "3d/texture_blend.h"
+#include "3d/water_shape.h"
 #include "water_height_map.h"
+
 
 
 namespace NL3D {
@@ -36,7 +39,17 @@ CWaterPoolManager &GetWaterPoolManager()
 	return singleton;
 }
 
-
+CWaterHeightMap *CWaterPoolManager::createWaterPool(const CWaterHeightMapBuild &params)
+{
+	CWaterHeightMap *whm = _PoolMap.count(params.ID) == 0 ? new CWaterHeightMap : _PoolMap[params.ID];	
+	whm->setDamping(params.Damping);
+	whm->setFilterWeight(params.FilterWeight);
+	whm->setSize(params.Size);
+	whm->setUnitSize(params.UnitSize);
+	whm->setWaves(params.WaveIntensity, params.WavePeriod);
+	_PoolMap[params.ID] = whm; // in case it was just created
+	return whm;
+}
 
 CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID)
 {
@@ -46,9 +59,7 @@ CWaterHeightMap &CWaterPoolManager::getPoolByID(uint ID)
 	}
 	else
 	{
-		CWaterHeightMap *whm = new CWaterHeightMap;
-		_PoolMap[ID] = whm;
-		return *whm;
+		return *createWaterPool();	
 	}
 }
 	
@@ -62,5 +73,35 @@ void CWaterPoolManager::reset()
 }
 	
 
+void CWaterPoolManager::registerWaterShape(CWaterShape *shape)
+{	
+	nlassert(std::find(_WaterShapes.begin(), _WaterShapes.end(), shape) == _WaterShapes.end()); // Shape registered twice!
+	_WaterShapes.push_back(shape);
+}
+
+void CWaterPoolManager::unRegisterWaterShape(CWaterShape *shape)
+{
+	TWaterShapeVect::iterator it = std::find(_WaterShapes.begin(), _WaterShapes.end(), shape);
+	nlassert(it != _WaterShapes.end()); // shape not registered!
+	_WaterShapes.erase(it);
+}
+
+void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
+{
+	nlassert(factor >= 0 && factor <= 1);
+	for (TWaterShapeVect::iterator it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it)
+	{
+		CTextureBlend *tb = NLMISC::safe_cast<CTextureBlend *>((*it)->getEnvMap());
+		if (tb->setBlendFactor((uint16) (256.f * factor)))
+		{
+			drv->setupTexture(*tb);
+		}
+	}
+}
+
+bool CWaterPoolManager::isWaterShapeObserver(const CWaterShape *shape) const
+{
+	return std::find(_WaterShapes.begin(), _WaterShapes.end(), shape) != _WaterShapes.end();
+}
 
 } // NL3D

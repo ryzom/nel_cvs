@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * <File description>
  *
- * $Id: water_pool_manager.h,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_pool_manager.h,v 1.2 2001/11/07 10:38:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,11 +27,14 @@
 #define NL_WATER_POOL_MANAGER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
 #include <map>
+#include <vector>
 
 namespace NL3D {
 
 class CWaterHeightMap;
+class IDriver;
 
 /**
  * This class helps managing various waters pools
@@ -42,21 +45,46 @@ class CWaterHeightMap;
 class CWaterPoolManager
 {
 public:
-	/// create a water pool with the given id and the given parameters. It replaces any existing pool with the same ID
-	void createWaterPool(uint ID, uint size, float fluidity, float filterWeight, float unitSize);
+	struct CWaterHeightMapBuild
+	{
+		uint		ID;
+		uint		Size;
+		float		Damping;
+		float		FilterWeight;
+		float		UnitSize;
+		float		WaveIntensity;
+		float		WavePeriod;
+		CWaterHeightMapBuild() : ID(0), Size(256), Damping(0.999f), FilterWeight(5), UnitSize(0.4f), WaveIntensity(0.5f), WavePeriod(0) {}
+	};
+	/// create a water pool with the given id and the given parameters. If the pool existed before, its parameter are reset
+	CWaterHeightMap *createWaterPool(const CWaterHeightMapBuild &params = CWaterHeightMapBuild());
 	/// Get a water pool by its ID. If the ID doesn't exist, a new pool is created with default parameters
-	CWaterHeightMap &getPoolByID(uint ID);
+	CWaterHeightMap		&getPoolByID(uint ID);	
 	
 	/// delete all heightmaps
 	void reset();
 	
 	// dtor
 	~CWaterPoolManager() { reset(); }
-private:	
-	friend CWaterPoolManager &GetWaterPoolManager();	
-	CWaterPoolManager() {}	
+
+	/** Set a blend factor for all pool (more precisely, all models based on a water shape) that have a blend texture for their envmap (to have cycle between night and day for example)
+	  * \param factor The blend factor which range from 0 to 1
+	  */
+	void setBlendFactor(IDriver *drv, float factor);
+
+private:		
+	friend class CWaterShape;
+	friend CWaterPoolManager				  &GetWaterPoolManager();	
+	CWaterPoolManager() {}	// private ctor needed to use the singleton pattern
 	typedef std::map<uint, CWaterHeightMap *> TPoolMap;
-	TPoolMap _PoolMap;	
+	TPoolMap _PoolMap;
+	
+	/// register a water height map. The water height map will be notified when a setBlend is applied
+	void	registerWaterShape(CWaterShape *shape);
+	void	unRegisterWaterShape(CWaterShape *shape);
+	bool    isWaterShapeObserver(const CWaterShape *shape) const;
+	typedef std::vector<CWaterShape *> TWaterShapeVect;
+	TWaterShapeVect _WaterShapes;
 };
 
 

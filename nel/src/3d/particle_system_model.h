@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.11 2001/07/26 17:16:12 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.12 2001/08/06 10:22:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ class CParticleSystemModel : public CTransformShape
 	public:
 	
 		///\name Object
-			//{@
+			//@{
 			/// ctor
 			CParticleSystemModel() ;
 			/// dtor
@@ -66,7 +66,7 @@ class CParticleSystemModel : public CTransformShape
 			//@}
 	
 		///\name Embedded particle system
-			//{@
+			//@{
 
 			/** Get the particle system contained in this transform shape
 			  * \return pointer to the system, or NULL if no system is currently hold by this model.
@@ -98,7 +98,7 @@ class CParticleSystemModel : public CTransformShape
 			//@}
 
 		///\name Life managment 
-			//{@
+			//@{
 			/**
 			 * test wether the system has become invalid. The condition for a system to be invalid
 			 * are encoded in the system itself (no more particles for example). When a system has become invalid, you may want to remove it most of the time
@@ -127,7 +127,7 @@ class CParticleSystemModel : public CTransformShape
 						
 
 		//\name Time managment
-			//{@
+			//@{
 
 			/** when called with true, this force the model to querry himself the ellapsed time to the scene.
 			  * This is the default. Otherwise, setEllapsedTime must be called
@@ -158,7 +158,7 @@ class CParticleSystemModel : public CTransformShape
 			//@}
 		
 		///\name Edition related methods
-			//{@
+			//@{
 			/// activate the display of tool (for edition purpose)
 			void						enableDisplayTools(bool enable = true) 
 			{ 
@@ -193,7 +193,7 @@ class CParticleSystemModel : public CTransformShape
 			//@}
 	
 		///\name User params / animation
-			//{@
+			//@{
 			/// for now, we have 4 animatables value in a system
 			enum	TAnimValues
 			{

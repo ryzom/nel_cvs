@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.12 2001/07/25 13:15:42 vizerie Exp $
+ * $Id: particle_system.h,v 1.13 2001/08/06 10:23:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,10 +63,10 @@ const uint MaxPSUserParam = 4 ;
 
 
 /**
- * This class holds a particle system. Most of the time it is used within a particle system.
- * See particle_system_shape.h and particle_system_model;h for that
+ * This class holds a particle system. Most of the time it is used with a particle system model.
+ * See particle_system_shape.h and particle_system_model.h for more details.
  * It can be used directly to create a shape.
- * If you plan to use this without a particle_system_model, make sure :
+ * If you plan to use this without a particle system model, make sure :
  * - you've setup the driver before calls to step()
  * - you've setup the font manager if you want to display font informations
  * \author Nicolas Vizerie
@@ -81,7 +81,7 @@ public:
 	//*****************************************************************************************************
 
 	///\name Object
-		//{@
+		//@{
 			/// ctor
 			CParticleSystem();
 			/// dtor
@@ -97,7 +97,7 @@ public:
 	//*****************************************************************************************************	  
 
 	///\name Driver setup
-		//{@
+		//@{
 		/// set the driver use to render the system
 		void setDriver(IDriver *driver) { _Driver = driver ; }
 
@@ -107,7 +107,7 @@ public:
 	//*****************************************************************************************************
 
 	///\name Scene setup
-		//{@
+		//@{
 		/** Set the scene in which the particle system is inserted. This is needed when
 		 * system must add objects to the scene (for particle that are mesh for instance)
 		 */
@@ -120,7 +120,7 @@ public:
 	//*****************************************************************************************************
 	
 	///\name Position of the system
-		//{@
+		//@{
 
 
 		/** Set the matrix for the system. This only affect elements that are in the same basis
@@ -154,10 +154,10 @@ public:
 	//*****************************************************************************************************
 
 	///\name Execution of the system
-		//{@
+		//@{
 
 		/**
-		* execute all the process of the system. It uses the driver that was set by a call to setDriver
+		* execute all the process of the system. It uses the driver that was set by a call to setDriver. 
 		* \param ellapsedTime The ellapsed time since the last call
 		* \param pass the pass to be executed
 		* \see setDriver
@@ -176,9 +176,9 @@ public:
 	  * in space
 	  */
 
-		//{@
-		/** attach a process (such as a located : see particle_system_located.h) to the system
-		 *  It is then owned by the process and will be deleted by it
+		//@{
+		/** attach a process (such as a located : see particle_system_process.h, and os_located.h) to the system. 
+		 *  It is then owned by the process and will be deleted by it. 
 		 *  if already present -> nl assert	 
 		 */
 		void attach(CParticleSystemProcess *ptr) ;
@@ -194,7 +194,7 @@ public:
 		uint32 getNbProcess(void) const { return _ProcessVect.size() ; }
 
 		/**
-		 *  Get a ref to the nth process.
+		 *  Get a pointer to the nth process.
 		 *  Out of range -> nlassert
 		 */	
 		CParticleSystemProcess *getProcess(uint32 index)
@@ -204,7 +204,7 @@ public:
 		}
 
 		/**
-		 *  Get a const ref to the nth process.
+		 *  Get a const pointer to the nth process.
 		 *  Out of range -> nlassert
 		 */	
 		const CParticleSystemProcess *getProcess(uint32 index) const
@@ -218,13 +218,13 @@ public:
 	//*****************************************************************************************************
 
 	///\name Date / Time
-		//{@
+		//@{
 
-		/// get the time ellapsed since the system was created
+		/// get the time ellapsed since the system was created.
 		CAnimationTime getSystemDate(void) const { return _SystemDate ; }
 
-		/** get the date of the system (the number of time it has been drawn in fact)
-		 *  This may be used to skip frames in an animation for example
+		/** Get the date of the system (the number of time it has been drawn in fact)
+		 *  This may be used to skip frames in an animation for example.
 		 */
 
 		uint64 getDate(void) const
@@ -239,9 +239,9 @@ public:
 	  * of the system
 	  */
 
-	//{@
-		/** Set the value of a user parameter. It must range from 0 to 1. The user value are not saved, and their default value is 0.f
-		  * The max number of user param is in MaxPSUserParam
+	//@{
+		/** Set the value of a user parameter. It must range from 0 to 1. The user value are not saved, and their default value is 0.f.
+		  * The max number of user param is MaxPSUserParam.
 		  */
 		void setUserParam(uint numParam, float value) 
 		{
@@ -250,8 +250,8 @@ public:
 			_UserParam[numParam].Value = value ;
 		}
 
-		/** get a user param
-		  * * The max number of user param is in MaxPSUserParam
+		/** Get a user param.
+		  * The max number of user param is in MaxPSUserParam.
 		  */
 		float getUserParam(uint numParam) const
 		{
@@ -259,7 +259,7 @@ public:
 			return _UserParam[numParam].Value ;
 		}
 
-		/// get a pointer to a param, as an animated value
+		/// Get a pointer to a param, as an animated value.
 		CAnimatedValueFloat *getUserParamAnimatedValue(uint numParam)
 		{
 			nlassert(numParam < MaxPSUserParam) ;
@@ -272,10 +272,10 @@ public:
 	//*****************************************************************************************************
 
 	///\name Edition methods : provides some tools for an external editor
-		// {@
-		/** For edition purposes only : this allow to highlight in red the current element being edited
-		 *  \param located The located the current element belongs to, or NULL if no element is selected
-		 *  \index the index of the element in the located
+		// @{
+		/** For edition purposes only : this allow to highlight in red the current element being edited.
+		 *  \param located The located the current element belongs to, or NULL if no element is selected.
+		 *  \index the index of the element in the located.
 		 *  \lb the located bindable that is selected into a located (NULL = all)
 		 */
 		 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0, class CPSLocatedBindable *bd = NULL )
@@ -285,7 +285,7 @@ public:
 			_CurrEditedElementIndex = index ;
 		 }
 
-		/** retrieve the current edited element
+		/** Retrieve the current edited element
 		 *  \see setCurrentEditedElement()
 		 */
 		 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index, CPSLocatedBindable *&lb)
@@ -295,53 +295,53 @@ public:
 			lb = _CurrEditedElementLocatedBindable ;
 		 }
 	
-		/// Set a font generator. Useful only for edition. don't need that in runtime
+		/// Set a font generator. Useful only for edition. don't need that in runtime.
 		void setFontGenerator(CFontGenerator *fg) { _FontGenerator = fg ; }
 
-		/// retrieve the font generator. Edition purpose only
+		/// Retrieve the font generator. Edition purpose only.
 		CFontGenerator *getFontGenerator(void) { return _FontGenerator ; }
 
-		/// retrieve the font generator (const version). Edition purpose only
+		/// Retrieve the font generator (const version). Edition purpose only.
 		const CFontGenerator *getFontGenerator(void) const { return _FontGenerator ; }
 
 		/// Set a font Manager. Useful only for edition. don't need that in runtime
 		void setFontManager(CFontManager *fg) { _FontManager = fg ; }
 
-		/// retrieve the font Manager. Edition purpose only
+		/// Retrieve the font Manager. Edition purpose only.
 		CFontManager *getFontManager(void) { return _FontManager ; }
 
-		/// retrieve the font Manager (const version). Edition purpose only
+		/// Retrieve the font Manager (const version). Edition purpose only.
 		const CFontManager *getFontManager(void) const { return _FontManager ; }
 		// @}
 		
-		/// set the name of the system
+		/// Set the name of the system.
 		void setName(const std::string &s) { _Name = s ; }
 
-		/// get the name of the system
+		/// Get the name of the system.
 		std::string getName(void) const { return _Name ; }
 		
 	//*****************************************************************************************************
 
 	///\name Transparency / opacity
-	// {@
-		/// return true if the system has opaque object in it
+	// @{
+		/// Return true if the system has opaque object in it.
 		bool hasOpaqueObjects(void) const ;
 
-		/// return true if the system has transparent objects in it
+		/// Return true if the system has transparent objects in it.
 		bool hasTransparentObjects(void) const ;
 	// @}
 
 	//*****************************************************************************************************
 
 	///\name Integration parameters
-	// {@
+	// @{
 		/** This enable for more accurate integrations of movement. When this is activated,
-		  *  integration is performed in a more accurate way when the ellapsed time goes over a threshold, but it is more slow to perform	  
+		  *  integration is performed in a more accurate way when the ellapsed time goes over a threshold, but it is more slow to perform.	  
 		  */
 		void enableAccurateIntegration(bool enable = true) { _AccurateIntegration = enable ; }
 		bool isAccurateIntegrationEnabled(void) const { return _AccurateIntegration ; }
 
-		/** the the time threshold and the max number of integration to perform, when accurate integration is activated
+		/** the the time threshold and the max number of integration to perform, when accurate integration is activated.
 		  * The default is 0.10 for time threshold and 4 for max NbIntegrations
 		  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
 		  *  It is useful for critical situations where the framerate is very low. The default is true.
@@ -353,7 +353,9 @@ public:
 			_CanSlowDown = canSlowDown ;
 		}
 
-		/// get the parameters used for integration
+		/** get the parameters used for integration.
+		  * \see setAccurateIntegrationParams()
+		  */
 		void getAccurateIntegrationParams(CAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
 		{
 			threshold = _TimeThreshold  ;
@@ -365,9 +367,9 @@ public:
 	//*****************************************************************************************************
 
 	///\name LOD managment
-		// {@
+		// @{
 
-		/// set the max view distance for the system (in meters) . The default is 50 meter
+		/// set the max view distance for the system (in meters) . The default is 50 meters.
 		void setMaxViewDist(float maxDist) 
 		{ 
 			nlassert(maxDist > 0.f) ; 
@@ -378,16 +380,16 @@ public:
 		/// get the max view distance
 		float getMaxViewDist(void) const { return _MaxViewDist ; }
 
-		/// set a percentage that indicate where the 2nd LOD is located. Default is 0.5
+		/// set a percentage that indicate where the 2nd LOD is located. Default is 0.5.
 		void setLODRatio(float ratio) { nlassert(ratio > 0 && ratio <= 1.f) ; _LODRatio =  ratio ; }
 
-		/// get the lod ratio
+		/// get the lod ratio.
 		float getLODRatio(void) const  { return _LODRatio ; }
 
 
 		/** compute a vector and a distance that are used for LOD computations. 
 		  * You'll have for a given pos : pos * v + offset  = 0 at the nearest point, and 1 when
-		  * pos is at maxDist from the viewer. This is used by sub-component of the system
+		  * pos is at maxDist from the viewer. This is used by sub-component of the system.
 		  */
 		void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis) ;
 
@@ -402,7 +404,7 @@ public:
 	//*****************************************************************************************************
 
 		// \name LOD balancing
-		// {@
+		// @{
 			// get an evaluation of how many tris are needed with the system for the given distance
 			float getWantedNumTris(float dist) ;
 
@@ -419,7 +421,7 @@ public:
 	//*****************************************************************************************************
 
 	///\name Bounding box managment
-		// {@		
+		// @{		
 		/** Compute the aabbox of this system, (expressed in thesystem basis)	
 		 *  \param aabbox a ref to the result box
 		 */
@@ -452,7 +454,7 @@ public:
 	//*****************************************************************************************************
 
 	///\name Invalidity flags (no direct effect, just indications for a thirs party, a model holding the system for example)
-		// {@
+		// @{
 		/** Tell the system that it is invalid when its out of range. The default is false.	  
 		  * This is only a indication flag and must be checked by third party (a model holding the system for example)
 		  */
@@ -516,68 +518,71 @@ public:
 protected:
 
 	/// when set to true, the system will compute his BBox every time computeBBox is called
-	bool _ComputeBBox ;
-	NLMISC::CAABBox _PreComputedBBox ;
+	bool					 _ComputeBBox ;
+	NLMISC::CAABBox			 _PreComputedBBox ;
 
 	// the driver used for rendering
-	IDriver *_Driver ;
+	IDriver					 *_Driver ;
 
 	/// user params of the system
-	CAnimatedValueFloat _UserParam[MaxPSUserParam] ;
+	CAnimatedValueFloat		 _UserParam[MaxPSUserParam] ;
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
-	TProcessVect _ProcessVect ;
-	CFontGenerator *_FontGenerator ;
-	CFontManager *_FontManager ;
+	TProcessVect			 _ProcessVect ;
+	CFontGenerator			 *_FontGenerator ;
+	CFontManager			 *_FontManager ;
 	// the view matrix
-	NLMISC::CMatrix _ViewMat ;
+	NLMISC::CMatrix			 _ViewMat ;
 
 	// the inverted view matrix
-	NLMISC::CMatrix _InvertedViewMat ;
+	NLMISC::CMatrix			 _InvertedViewMat ;
 
 	// the matrix of the system
-	NLMISC::CMatrix _SysMat ; 
+	NLMISC::CMatrix			 _SysMat ; 
 	// the inverted matrix of the system
-	NLMISC::CMatrix _InvSysMat ;
+	NLMISC::CMatrix			 _InvSysMat ;
 
 	// number of rendered pass on the system, incremented each time the system is redrawn
-	uint64 _Date ;	
+	uint64					 _Date ;	
 
 	// current edited element located (edition purpose only)
-	CPSLocated *_CurrEditedElementLocated ;
+	CPSLocated				 *_CurrEditedElementLocated ;
 	// current edited located bindable, NULL means all binadable of a located. (edition purpose only)
-	CPSLocatedBindable *_CurrEditedElementLocatedBindable ;
+	CPSLocatedBindable		 *_CurrEditedElementLocatedBindable ;
 	// current edited element index in its located (edition purpose only)
-	uint32 _CurrEditedElementIndex ;
+	uint32					 _CurrEditedElementIndex ;
 
 
 	/** the scene in which the particle system is inserted. This is needed because
 	 * the system may add objects to the scene (for particle that are mesh for instance)
 	 */
 
-	CScene *_Scene ;
+	CScene					 *_Scene ;
 
 
 	// contains the name of the system. (VERSION >= 2 only)
 	std::string _Name ;
 
 
-	bool _AccurateIntegration ;	
-	CAnimationTime _TimeThreshold ;
-	CAnimationTime _SystemDate ;
-	uint32 _MaxNbIntegrations ;
-	bool _CanSlowDown ;
+	bool					 _AccurateIntegration ;	
+	CAnimationTime			 _TimeThreshold ;
+	CAnimationTime			 _SystemDate ;
+	uint32					 _MaxNbIntegrations ;
+	bool					 _CanSlowDown ;
 
-	float _LODRatio, _OneMinusCurrentLODRatio ;
-	float _MaxViewDist, _InvMaxViewDist ;
-	float _InvCurrentViewDist ; // inverse of the current view dist. It can be the same than _InvMaxViewDist
-								// but when there's LOD, the view distance may be reduced
-	bool _Touch ;
 
-	TDieCondition  _DieCondition ;
-	CAnimationTime _DelayBeforeDieTest ;
-	bool		   _DestroyModelWhenOutOfRange ;
-	bool		   _DestroyWhenOutOfFrustrum ;
+	float					 _LODRatio ;
+	float					 _OneMinusCurrentLODRatio ;
+	float					 _MaxViewDist ;
+	float					 _InvMaxViewDist ;
+	float					 _InvCurrentViewDist ; // inverse of the current view dist. It can be the same than _InvMaxViewDist
+											       // but when there's LOD, the view distance may be reduced
+	bool					 _Touch ;
+
+	TDieCondition			 _DieCondition ;
+	CAnimationTime			 _DelayBeforeDieTest ;
+	bool					 _DestroyModelWhenOutOfRange ;
+	bool					 _DestroyWhenOutOfFrustrum ;
 	
 	uint _MaxNumFacesWanted ;	
 	

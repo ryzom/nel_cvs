@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.2 2001/07/25 13:13:25 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.3 2001/08/06 10:23:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,14 +49,14 @@ class CParticleSystemInstanceUser : virtual public UParticleSystemInstance
 {
 public:	
 	// \name Object
-	// {@		
+	// @{		
 		CParticleSystemInstanceUser(CScene *scene, IModel *model);
 		~CParticleSystemInstanceUser() ;
 	// @}
 
 
 	// \name inherited from uinstance
-	// {@					
+	// @{				
 		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const ;
 		virtual	uint				getNumMaterials() const ;	
 		virtual	UInstanceMaterial	&getMaterial(uint materialId) ;
@@ -73,7 +73,7 @@ public:
 	// @}
 
 	// \name inherited from  CParticleSystemModel::IPSModelObserver
-	// {@
+	// @{
 		virtual void invalidPS(CParticleSystemModel *psm) ; 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
  * <File description>
  *
- * $Id: stripifier.cpp,v 1.1 2001/10/15 14:21:39 berenguier Exp $
+ * $Id: stripifier.cpp,v 1.2 2001/10/31 10:18:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,8 @@
  */
 
 #include "3d/stripifier.h"
-#include "nv_tri_strip_objects.h"
+// For now, don't use NVidia stripifier.
+//#include "nv_tri_strip_objects.h"
 #include <vector>
 #include <deque>
 

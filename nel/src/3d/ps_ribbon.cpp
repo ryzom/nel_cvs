@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.18 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.19 2004/08/03 16:23:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ static ITexture *CreateGradientTexture()
 												   false, /* not a file */
 												   2, 1)
 								  );
-	tex->setWrapS(ITexture::Clamp);
+	//tex->setWrapS(ITexture::Clamp);
 	tex->setShareName("#GradBW");
 	return tex.release();
 }
@@ -1166,8 +1166,8 @@ inline void	CPSRibbon::updateTexturedMaterial()
 	/////////////////////
 	if (_Tex)
 	{	
-		_Tex->setWrapS(ITexture::Clamp);
-		_Tex->setWrapT(ITexture::Clamp);
+		//_Tex->setWrapS(ITexture::Clamp);
+		//_Tex->setWrapT(ITexture::Clamp);
 	}
 	static NLMISC::CRefPtr<ITexture> ptGradTexture;
 	CParticleSystem &ps = *(_Owner->getOwner());

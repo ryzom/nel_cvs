@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.34 2001/05/23 08:34:36 corvazier Exp $
+ * $Id: debug.h,v 1.35 2001/07/05 08:27:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -367,6 +367,20 @@ struct EFatalError : public Exception
 #undef assert
 #endif
 #define assert(a) you_must_not_use_assert___use_nl_assert___read_debug_h_file
+
+
+
+/**
+ * safe_cast<>: this is a function wihch nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
+ * So slow check is made in debug, but only fast cast is made in release.
+ */
+template<class T, class U>	inline T	safe_cast(U o)
+{
+	nlassert(dynamic_cast<T>(o));
+	return static_cast<T>(o);
+}
+
+
 
 } // NLMISC
 

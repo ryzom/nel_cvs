@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.12 2001/09/07 07:32:08 corvazier Exp $
+ * $Id: mesh.h,v 1.13 2001/09/07 09:34:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -528,7 +528,7 @@ private:
 			// XYZ.
 			_VBuffer.setVertexCoord(id, vert);
 			// Normal
-			if(CCornerTmp::Flags & CVertexBuffer::PositionFlag)
+			if(CCornerTmp::Flags & CVertexBuffer::NormalFlag)
 				_VBuffer.setNormalCoord(id, corn->Normal);
 			// Uvs.
 			for(i=0;i<CVertexBuffer::MaxStage;i++)

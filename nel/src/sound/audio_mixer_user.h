@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.51 2004/09/23 12:14:29 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.52 2004/10/07 14:37:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -326,8 +326,8 @@ public:
 	float		getUserVar(NLMISC::TStringId varName);
 
 	// music
-	virtual bool	playMusic(const std::string &fileName);
-	virtual void	stopMusic();
+	virtual bool	playMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true);
+	virtual void	stopMusic(uint xFadeTime= 0);
 	virtual void	setMusicVolume(float gain);
 
 public:

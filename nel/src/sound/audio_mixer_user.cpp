@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.76 2004/09/28 17:20:41 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.77 2004/10/07 14:37:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdsound.h"
 #include "nel/memory/memory_manager.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/big_file.h"
 
 #include "simple_sound.h"
 #include "complex_sound.h"
@@ -2258,15 +2259,43 @@ void CAudioMixerUser::debugLogEvent(const char *reason)
 
 
 // ***************************************************************************
-bool	CAudioMixerUser::playMusic(const std::string &fileName)
+bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, bool async)
 {
 	if(getSoundDriver())
 	{
-		NLMISC::CIFile		fileIn;
 		bool	state= false;
-		if(fileIn.open(CPath::lookup(fileName, false)))
+
+		// no file caching if async loading
+		string	pathName= CPath::lookup(fileName, false);
+		if(async)
 		{
-			state= getSoundDriver()->playMusic(fileIn);
+			// if the file is in a bnp
+			if(pathName.find('@')!=string::npos)
+			{
+				// get info for location in this bnp
+				uint32	fileOffset, fileSize;
+				if(CBigFile::getInstance().getFileInfo (pathName, fileSize, fileOffset))
+				{
+					// then play async this bnp file (with offset/size)
+					string	bnpName= pathName.substr(0, pathName.find('@'));
+					state= getSoundDriver()->playMusicAsync(CPath::lookup(bnpName, false), xFadeTime, fileOffset, fileSize);
+				}
+			}
+			// else standard file
+			else
+			{
+				// play it async
+				state= getSoundDriver()->playMusicAsync(pathName, xFadeTime, 0, 0);
+			}
+		}
+		else
+		{
+			NLMISC::CIFile		fileIn;
+			if(fileIn.open(pathName))
+			{
+				// fileIn handled and owned by the sound driver
+				state= getSoundDriver()->playMusic(fileIn, xFadeTime);
+			}
 		}
 
 		// failed?
@@ -2280,10 +2309,10 @@ bool	CAudioMixerUser::playMusic(const std::string &fileName)
 }
 
 // ***************************************************************************
-void	CAudioMixerUser::stopMusic()
+void	CAudioMixerUser::stopMusic(uint xFadeTime)
 {
 	if(getSoundDriver())
-		getSoundDriver()->stopMusic();
+		getSoundDriver()->stopMusic(xFadeTime);
 }
 
 // ***************************************************************************

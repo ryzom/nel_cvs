@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.23 2004/09/23 15:04:22 berenguier Exp $
+ * $Id: sound_driver.h,v 1.24 2004/10/07 14:38:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,17 +158,34 @@ public:
 	// Filled at createDriver()
 	const std::string		&getDllName() const {return _DllName;}
 
-	/** Play some music (.mp3 etc...) (implemented in fmod only)
-	 *	FMOD: The File is loaded in memory, but decompressed by FMod in a thread
+	/** Play some music syncrhonously (.mp3 etc...) (implemented in fmod only)
+	 *	FMOD: The File is loaded synchronously in memory, but decompressed by FMod in a thread
 	 *	Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
 	 *	NB: if an old music was played, it is first stop with stopMusic()
-	 *	\param CIFile opened file
+	 *	\param CIFile opened file (must use a CIFile if for instance you want to load from a BNP, and CBigFile is static....)
+	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
 	 */
-	virtual bool	playMusic(NLMISC::CIFile &file) =0;
+	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0) =0;
 
-	/** Stop the music previously loaded and played (the Memory is also freed)
+	/** Play some music asynchronously (.mp3 etc...) (implemented in fmod only)
+	 *	FMOD: the file is load asynchronously
+	 *	NB: if an old music was played, it is first stop with stopMusic()
+	 *	\param path full file path (no CPath::lookup is done since static)
+	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
+	 *	\param fileOffset and fileSize: if not 0, use it to load a .mp3 that reside in a BNP. 
+	 *		the offset and size have to be retrieved with CBigFile methods. 
+	 *		e.g.: use either 
+	 *			playMusicAsync("C:/test/mymusic.mp3");
+	 *		or
+	 * 			playMusicAsync("C:/test/mydata.bnp", offsetOfMp3InBnp, sizeOfMp3InBnp);
+	 *		Notice that you must give the full path of the bnp (eg: "C:/test/mydata.bnp") in path.
 	 */
-	virtual void	stopMusic() =0;
+	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0) =0;
+	
+	/** Stop the music previously loaded and played (the Memory is also freed)
+	 *	\param xFadeTime if not 0 the old music played is not stoped but faded out of xFadeTime (in ms)
+	 */
+	virtual void	stopMusic(uint xFadeTime= 0) =0;
 	
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()

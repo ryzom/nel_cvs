@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.4 2004/09/23 15:05:23 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.5 2004/10/07 14:42:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,10 +117,13 @@ public:
 	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
 
 	// play the music
-	virtual bool	playMusic(NLMISC::CIFile &file);
+	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime);
+	
+	// play the music async
+	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0);
 	
 	// stop the music
-	virtual void	stopMusic();
+	virtual void	stopMusic(uint xFadeTime=0);
 
 	// set music volume
 	virtual void	setMusicVolume(float gain);
@@ -167,11 +170,40 @@ private:
 	/// If want to create buffer in software (no hardware)
 	bool					_ForceSoftwareBuffer;
 
+	
 	/// Music
-	FSOUND_STREAM			*_FModMusicStream;	// The FMod stream, pointing on
-	uint8					*_FModMusicBuffer;	// this RAM buffer (representation of a MP3 file)
-	sint					_FModMusicChannel;	// channel played for music
-	uint8					_FModMusicVolume;
+	class CMusicChannel
+	{
+	public:
+		FSOUND_STREAM			*FModMusicStream;	// The FMod stream
+		uint8					*FModMusicBuffer;	// the RAM buffer (representation of a MP3 file, only for sync play)
+		sint					FModMusicChannel;	// channel played for music. CAN BE -1 while FModMusicStream!=NULL in case of Async Loading
+		float					XFadeVolume;		// 0--1
+		float					XFadeDVolume;		// dt
+
+	public:
+		CMusicChannel()
+		{
+			FModMusicStream= NULL;
+			FModMusicBuffer= NULL;
+			FModMusicChannel= -1;
+			XFadeVolume= 0.f;
+			XFadeDVolume= 0.f;
+		}
+	};
+	// 2 musics channels for XFade
+	enum	{MaxMusicChannel= 2};
+	CMusicChannel			_MusicChannel[MaxMusicChannel];
+	uint8					_ActiveMusicChannel;
+	sint64					_LastXFadeTime;
+	float					_FModMusicVolume;
+	std::list<FSOUND_STREAM*>	_FModMusicStreamWaitingForClose;	// see stopMusicChannel()
+	void	playMusicStartFade(uint xFadeTime);
+	void	playMusicStartChannel(uint musicChannel);
+	void	stopMusicChannel(uint musicChannel);
+	void	updateMusicVolumeChannel(uint musicChannel);
+	void	updateMusic();
+	void	updateMusicFModStreamWaitingForClose();
 	
 };
 

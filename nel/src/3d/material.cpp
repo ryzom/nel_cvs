@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.30 2001/12/12 10:25:20 vizerie Exp $
+ * $Id: material.cpp,v 1.31 2001/12/12 14:03:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,8 +223,8 @@ void		CMaterial::serial(NLMISC::IStream &f)
 
 		if ((_Flags & IDRV_MAT_USER_TEX_MAT_ALL)) // are there user textrue coordinates matrix ?
 		{
-			/// get rsc for these infos
-			std::swap(_TexUserMat, std::auto_ptr<CUserTexMat>(new CUserTexMat));
+			std::auto_ptr<CUserTexMat> newPtr(new CUserTexMat); // create new			
+			std::swap(_TexUserMat, newPtr); // replace old
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.41 2003/05/06 15:33:02 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.42 2003/05/12 16:07:40 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,7 @@ class	CRawVertexNormalSkin2;
 class	CRawVertexNormalSkin4;
 class	CRawSkinNormalCache;
 class	CMeshMRMInstance;
+class	CSkinSpecularRdrPass;
 
 // ***************************************************************************
 /**

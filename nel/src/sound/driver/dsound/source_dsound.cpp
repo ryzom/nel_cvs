@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.11 2002/07/16 14:30:17 lecroart Exp $
+ * $Id: source_dsound.cpp,v 1.12 2002/07/19 15:07:49 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -572,7 +572,7 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
 		}
 		else
 		{
-			//nldebug ("NLSOUND: %p set source NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
+			//nlwarning ("%p set source NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
 	}
 }
@@ -656,7 +656,7 @@ void CSourceDSound::setDirection( const NLMISC::CVector& dir )
 		}
 		else
 		{
-			//nldebug ("NLSOUND: %p set source direction NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, dir.x, dir.y, dir.z, dir.x, dir.z, dir.y);
+			//nlwarning ("NLSOUND: %p set source direction NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, dir.x, dir.y, dir.z, dir.x, dir.z, dir.y);
 		}
 	}
 }
@@ -698,10 +698,12 @@ void CSourceDSound::setGain( float gain )
 	_Volume = (uint32)(100.0 * 20.0 * log10(gain));
 	clamp(_Volume, DSBVOLUME_MIN, DSBVOLUME_MAX);
 
+	//nlwarning ("set gain %f vol %d", gain, _Volume);
+
 	/*
 	if ((_SecondaryBuffer != 0) && (_SecondaryBuffer->SetVolume(_Volume) != DS_OK))
 	{
-		nldebug("SetVolume failed");
+		nlwarning("SetVolume failed");
 	}
 	*/
 }
@@ -731,11 +733,11 @@ void CSourceDSound::setPitch( float coeff )
 
 		_SampleRate = (uint32) (coeff * (float) freq);
 
-		//nldebug("Freq=%d", newfreq);
+		//nlwarning("Freq=%d", newfreq);
 
 		if (_SecondaryBuffer->SetFrequency(_SampleRate) != DS_OK)
 		{
-			//nldebug("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
+			//nlwarning("SetFrequency failed (buffer freq=%d, NeL freq=%.5f, DSound freq=%d)", freq, coeff, newfreq);
 		}
 	}
 }
@@ -884,12 +886,12 @@ void CSourceDSound::updateVolume( NLMISC::CVector& listener )
 	if (sqrdist < min * min) 
 	{
 		_SecondaryBuffer->SetVolume(_Volume);
-		//nldebug("VOLUME = %ddB, rolloff = %0.2f", _Volume/100, CListenerDSound::instance()->getRolloffFactor());
+		//nlwarning("VOLUME = %ddB, rolloff = %0.2f", _Volume/100, CListenerDSound::instance()->getRolloffFactor());
 	}
 	else if (sqrdist > max * max)
 	{
 		_SecondaryBuffer->SetVolume(DSBVOLUME_MIN);
-		//nldebug("VOLUME = %ddB, rolloff = %0.2f", DSBVOLUME_MIN/100, CListenerDSound::instance()->getRolloffFactor());
+		//nlwarning("VOLUME = %ddB, rolloff = %0.2f", DSBVOLUME_MIN/100, CListenerDSound::instance()->getRolloffFactor());
 	}
 	else
 	{
@@ -918,7 +920,7 @@ void CSourceDSound::updateVolume( NLMISC::CVector& listener )
 
 		_SecondaryBuffer->SetVolume(db);
 		
-		//nldebug("VOLUME = %d dB, rolloff = %0.2f", db/100, CListenerDSound::instance()->getRolloffFactor());
+		//nlwarning("VOLUME = %d dB, rolloff = %0.2f", db/100, CListenerDSound::instance()->getRolloffFactor());
 	}
 
 }
@@ -964,7 +966,7 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
 
 		if (_3DBuffer->SetConeAngles(inner, outer, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetConeAngles failed");			
+			nlwarning("SetConeAngles failed");			
 		}
 
 		// Set the outside volume
@@ -987,13 +989,13 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
 
 		if (_3DBuffer->SetConeOutsideVolume(volume, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetConeOutsideVolume failed"); 		
+			nlwarning("SetConeOutsideVolume failed"); 		
 		}
 
 	}
 	else
 	{
-		nldebug("Requested setCone on a non-3D source");
+		nlwarning("Requested setCone on a non-3D source");
 	}
 }
 
@@ -1008,7 +1010,7 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 
 		if (_3DBuffer->GetConeAngles(&inner, &outer) != DS_OK)
 		{
-			nldebug("GetConeAngles failed");			
+			nlwarning("GetConeAngles failed");			
 			innerAngle = outerAngle = (float)(2.0 * Pi);
 		}
 		else
@@ -1019,7 +1021,7 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 
 		if (_3DBuffer->GetConeOutsideVolume(&volume) != DS_OK)
 		{
-			nldebug("GetConeOutsideVolume failed"); 		
+			nlwarning("GetConeOutsideVolume failed"); 		
 			outerGain = 0.0f;
 		}
 		else
@@ -1029,7 +1031,7 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 	}
 	else
 	{
-		nldebug("Requested getCone on a non-3D source");
+		nlwarning("Requested getCone on a non-3D source");
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file camera.h
  * Animation interface between the game and NeL
  *
- * $Id: camera.h,v 1.8 2001/07/20 09:55:49 lecroart Exp $
+ * $Id: camera.h,v 1.9 2002/11/05 09:47:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,9 +52,14 @@ void	initCamera();
 void	updateCamera();
 void	releaseCamera();
 
+
+void	initSky ();
+
 // Update the sky for this frame, and render it.
 // Must be called before ANY rendering
 void	updateSky ();
+
+void	animateSky (NLMISC::TTime dt);
 
 void	update3dLogo ();
 

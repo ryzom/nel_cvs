@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.18 2001/08/14 13:45:55 lecroart Exp $
+ * $Id: camera.cpp,v 1.19 2002/11/05 09:47:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <nel/3d/u_skeleton.h>
 #include <nel/3d/u_visual_collision_entity.h>
 #include <nel/3d/u_visual_collision_manager.h>
+#include <nel/3d/u_cloud_scape.h>
 #include <nel/3d/viewport.h>
 
 #include "client.h"
@@ -72,6 +73,7 @@ static UInstance			*Sky = NULL;
 static UScene				*LogoScene = NULL;
 static UInstance			*Logo = NULL;
 
+static UCloudScape			*Clouds = NULL;
 
 //
 // Functions
@@ -133,8 +135,21 @@ void	updateCamera()
 	Snow->setMatrix(mat);
 }
 
+void initSky ()
+{
+	SCloudScapeSetup css;
+	Clouds = Scene->createCloudScape ();
+	Clouds->init (&css);
+	Clouds->setQuality (160);
+	Clouds->setNbCloudToUpdateIn80ms (1);
+}
 
-void	updateSky ()
+void animateSky (TTime dt)
+{
+	Clouds->anim ((double)dt);
+}
+
+void updateSky ()
 {
 	CMatrix skyCameraMatrix;
 	skyCameraMatrix.identity();
@@ -147,9 +162,11 @@ void	updateSky ()
 	SkyScene->render ();
 	// Must clear ZBuffer For incoming rendering.
 	Driver->clearZBuffer();
+
+	Clouds->render ();
 }
 
-void	releaseCamera()
+void releaseCamera()
 {
 	Driver->deleteScene (SkyScene);
 }

@@ -1,13 +1,4 @@
 
-If you find any bugs use the Nevrax Bug Tracking System :
-
-   <URL:http://www.nevrax.org/bugs/>
-
-If you need any help contact us on the NeL mailing-list :
-
-   <URL:http://www.nevrax.org/mail/>
-
-
 Requirements
 ============
 
@@ -16,6 +7,7 @@ Requirements
       - STLPort  4.0   <URL:http://www.stlport.org/>
       - FreeType 2     <URL:http://freetype.sourceforge.net/>
       - Python   1.5   <URL:http://www.python.org/>
+      - OpenAL         <URL:http://www.openal.org/>
 
    STLPort need to be compiled. NeL is using the SGI iostreams and it require
    the STLPort compilation and a linking of NeL with the STLPort library.
@@ -130,15 +122,12 @@ Compilation
  
          % ./bootstrap
 
-         % ./configure --with-stlport=<Path_to_the_stlport_headers_files> \
-                       --with-python=<Path_to_the_python_headers_files>
+         % ./configure --with-stlport=<Path_to_the_stlport_install_directory>
+
          % make
 
-      The "configure" script must be call with the "--with-stlport" and
-      "--with-python" options.
+      The "configure" script must be call with the "--with-stlport".
       The option "--with-stlport" allow to override the default STL headers
-      and the option "--with-python" tell to the configuration script, where
-      to find the Python headers files.
 
       You migth need to specify the FreeType 2 installation prefix by using
       the "--with-freetype" argument (ex: "/usr/local" will look for the
@@ -169,4 +158,16 @@ Installation
 
       % make install
 
+
+Contact us
+==========
+
+   If you find any bugs use the Nevrax Bug Tracking System :
+   
+      <URL:http://www.nevrax.org/bugs/>
+
+   If you need any help contact us on the NeL mailing-list :
+      
+      <URL:http://www.nevrax.org/mail/>
+      
 

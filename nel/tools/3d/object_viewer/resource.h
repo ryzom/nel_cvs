@@ -621,6 +621,7 @@
 #define IDC_DIRECTION                   1390
 #define IDC_DIRECTION_MODE              1391
 #define IDC_KEEP_ORIGINAL_PITCH         1392
+#define IDC_ZTEST                       1393
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -826,7 +827,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1134
 #define _APS_NEXT_COMMAND_VALUE         32967
-#define _APS_NEXT_CONTROL_VALUE         1393
+#define _APS_NEXT_CONTROL_VALUE         1394
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

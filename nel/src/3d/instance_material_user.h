@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.3 2002/06/03 08:50:11 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.4 2002/06/03 16:55:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,7 +185,7 @@ public:
 				lastStage = k;
 			}
 		}
-		return k;
+		return lastStage;
 	}
 
 

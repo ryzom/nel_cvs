@@ -26,6 +26,9 @@
 #include "nel/georges/u_form_dfn.h"
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/load_form.h"
+// Georges, bypassing interface
+#include "georges/stdgeorges.h"
+#include "georges/form.h"
 
 // Basic C++
 #include <iostream.h>
@@ -171,11 +174,11 @@ void scanFiles(std::string filespec)
 		fprintf(Outf,"%s%s",SEPARATOR, fields[i]._name.c_str());
 	fprintf(Outf,"\n");
 
-	NLGEORGES::UFormLoader *formLoader = NULL;
+	UFormLoader *formLoader = NULL;
 	NLMISC::TTime last = NLMISC::CTime::getLocalTime ();
 	NLMISC::TTime start = NLMISC::CTime::getLocalTime ();
 
-	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+	NLMISC::CSmartPtr<UForm> form;
 
 
 	for (uint j = 0; j < filenames.size(); j++)
@@ -195,7 +198,7 @@ void scanFiles(std::string filespec)
 		if (formLoader == NULL)
 		{
 			WarningLog->addNegativeFilter("CFormLoader: Can't open the form file");
-			formLoader = NLGEORGES::UFormLoader::createLoader ();
+			formLoader = UFormLoader::createLoader ();
 		}
 
 		// Load the form with given sheet id
@@ -208,7 +211,7 @@ void scanFiles(std::string filespec)
 			fprintf(Outf,"%s",CFile::getFilenameWithoutExtension(filenames[j]));
 			for (unsigned i=0;i<fields.size();i++)
 			{
-				NLGEORGES::UFormElm::TWhereIsValue where;
+				UFormElm::TWhereIsValue where;
 				bool result=form->getRootNode ().getValueByName(s,fields[i]._name.c_str(),fields[i]._evaluated,&where);
 				if (!result)
 				{
@@ -216,10 +219,10 @@ void scanFiles(std::string filespec)
 						s="ERR";
 					else switch(where)
 					{
-						case NLGEORGES::UFormElm::ValueForm: s="ValueForm"; break;
-						case NLGEORGES::UFormElm::ValueParentForm: s="ValueParentForm"; break;
-						case NLGEORGES::UFormElm::ValueDefaultDfn: s="ValueDefaultDfn"; break;
-						case NLGEORGES::UFormElm::ValueDefaultType: s="ValueDefaultType"; break;
+						case UFormElm::ValueForm: s="ValueForm"; break;
+						case UFormElm::ValueParentForm: s="ValueParentForm"; break;
+						case UFormElm::ValueDefaultDfn: s="ValueDefaultDfn"; break;
+						case UFormElm::ValueDefaultType: s="ValueDefaultType"; break;
 						default: s="ERR";
 					}
 				}
@@ -248,7 +251,7 @@ void scanFiles(std::string filespec)
 	// free the georges loader if necessary
 	if (formLoader != NULL)
 	{
-		NLGEORGES::UFormLoader::releaseLoader (formLoader);
+		UFormLoader::releaseLoader (formLoader);
 		WarningLog->removeFilter ("CFormLoader: Can't open the form file");
 	}
 
@@ -412,7 +415,7 @@ void	loadSheetPath()
 /*
  *
  */
-void fillFromDFN( NLGEORGES::UFormLoader *formLoader, set<string>& dfnFields, NLGEORGES::UFormDfn *formDfn, const string& rootName, const string& dfnFilename )
+void fillFromDFN( UFormLoader *formLoader, set<string>& dfnFields, UFormDfn *formDfn, const string& rootName, const string& dfnFilename )
 {
 	uint i;
 	for ( i=0; i!=formDfn->getNumEntry(); ++i )
@@ -421,23 +424,23 @@ void fillFromDFN( NLGEORGES::UFormLoader *formLoader, set<string>& dfnFields, NL
 		formDfn->getEntryName( i, entryName );
 		rootBase = rootName.empty() ? "" : (rootName+".");
 
-		NLGEORGES::UFormDfn::TEntryType entryType;
+		UFormDfn::TEntryType entryType;
 		bool array;
 		formDfn->getEntryType( i, entryType, array );
 		switch ( entryType )
 		{
-			case NLGEORGES::UFormDfn::EntryVirtualDfn:
+			case UFormDfn::EntryVirtualDfn:
 			{
-				CSmartPtr<NLGEORGES::UFormDfn> subFormDfn = formLoader->loadFormDfn( (entryName + ".dfn").c_str() );
+				CSmartPtr<UFormDfn> subFormDfn = formLoader->loadFormDfn( (entryName + ".dfn").c_str() );
 				if ( ! subFormDfn )
 					nlwarning( "Can't load virtual DFN %s", entryName.c_str() );
 				else
 					fillFromDFN( formLoader, dfnFields, subFormDfn, rootBase + entryName, entryName + ".dfn" );
 				break;
 			}
-			case NLGEORGES::UFormDfn::EntryDfn:
+			case UFormDfn::EntryDfn:
 			{
-				NLGEORGES::UFormDfn *subFormDfn;
+				UFormDfn *subFormDfn;
 				if ( formDfn->getEntryDfn( i, &subFormDfn) )
 				{
 					string filename;
@@ -446,7 +449,7 @@ void fillFromDFN( NLGEORGES::UFormLoader *formLoader, set<string>& dfnFields, NL
 				}
 				break;
 			}
-			case NLGEORGES::UFormDfn::EntryType:
+			case UFormDfn::EntryType:
 			{
 				dfnFields.insert( rootBase + entryName );
 				//nlinfo( "DFN entry: %s (in %s)", (rootBase + entryName).c_str(), dfnFilename.c_str() );
@@ -476,9 +479,9 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 	loadSheetPath();
 
-	NLGEORGES::UFormLoader *formLoader = NLGEORGES::UFormLoader::createLoader ();
-	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
-	NLMISC::CSmartPtr<NLGEORGES::UFormDfn> formDfn;
+	UFormLoader *formLoader = UFormLoader::createLoader ();
+	NLMISC::CSmartPtr<CForm> form;
+	NLMISC::CSmartPtr<UFormDfn> formDfn;
 
 
 	fgets(lineBuffer, 2048, s);
@@ -502,6 +505,10 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			nlinfo( "Skipping field #%u (empty)", i );
 			activeFields[i] = false;
 		}
+		else if ( nlstricmp( fields[i], "parent" ) == 0 )
+		{
+			strlwr( fields[i] ); // non-const version
+		}
 		else
 		{
 			set<string>::iterator ist = dfnFields.find( fields[i] );
@@ -520,6 +527,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 	uint dirmapLetterIndex = ~0;
 	vector<string> dirmapDirs;
+	string dirmapSheetCode;
 
 	if ( generate )
 	{
@@ -554,6 +562,9 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				nlinfo( "Mapping letter #%u of sheet name to directory", dirmapLetterIndex + 1 );
 			}
 			
+			CConfigFile::CVar sheetCode = dirmapcfg.getVar( "SheetCode" );
+			dirmapSheetCode = sheetCode.asString();
+			nlinfo( "Sheet code: %s", dirmapSheetCode.c_str() );
 		}
 		catch ( EConfigFile& e )
 		{
@@ -587,8 +598,8 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		if ( generate )
 		{
 			// Load template sheet
-			filename = strlwr( filebase );
-			form = formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
+			filename = strlwr( static_cast<const string&>(dirmapSheetCode + filebase) );
+			form = (CForm*)formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
 			if (form == NULL)
 			{
 				nlerror( "Can't load sheet _empty.sheet" );
@@ -599,11 +610,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			{
 				if ( dirmapLetterIndex < filebase.size() )
 				{
-					char c = filebase[dirmapLetterIndex];
+					char c = tolower(filebase[dirmapLetterIndex]);
 					vector<string>::const_iterator idm;
 					for ( idm=dirmapDirs.begin(); idm!=dirmapDirs.end(); ++idm )
 					{
-						if ( (! (*idm).empty()) && ((*idm)[0] == c) )
+						if ( (! (*idm).empty()) && (tolower((*idm)[0]) == c) )
 						{
 							dirbase = (*idm) + "/";
 							break;
@@ -634,7 +645,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 
 			// Load sheet (skip if failed)
 			filename = (*it).second;
-			form = formLoader->loadForm( filename.c_str() );
+			form = (CForm*)formLoader->loadForm( filename.c_str() );
 			if (form == NULL)
 			{
 				nlwarning( "Can't load sheet %s", filename.c_str() );
@@ -652,6 +663,20 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			// Skip column with inactive field (empty or not in DFN)
 			if ( ! activeFields[i] )
 				continue;
+
+			// Special case for parent sheet
+			if ( generate && (var == "parent") ) // already case-lowered
+			{
+				if ( ! val.empty() )
+				{
+					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm( val.c_str() );
+					if ( ! parentForm )
+						nlwarning( "Can't load parent form %s", val.c_str() );
+					else
+						form->insertParent( 0, val.c_str(), parentForm );
+				}
+				continue;
+			}
 
 			if (val[0] == '"')
 				val.erase(0, 1);
@@ -689,10 +714,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		{
 			COFile	output( dirbase + filename );
 			form->write(output, true);
+			form->clearParents();
 		}
 	}
 
-	NLGEORGES::UFormLoader::releaseLoader (formLoader);
+	UFormLoader::releaseLoader (formLoader);
 }
 
 //

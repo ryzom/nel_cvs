@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.7 2001/06/22 12:45:42 besson Exp $
+ * $Id: calc_lm.cpp,v 1.8 2001/07/02 16:30:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2418,29 +2418,11 @@ CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n,
 					x = ((x / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					y = ((y / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					
-					//x *= rLight.pProjMap->Width();
-					//y *= rLight.pProjMap->Height();
-					//dotSize = ((rLight.pProjMap->Width()+rLight.pProjMap->Height())/2.0)*
-					//			(dotSize / tanf( rLight.rFallof ))/2.0f;
 					CRGBAF col = wrt.proj[vLights[nLight]].getColor(x, y);
 					lightDiffCol.R *= col.R/255.0f;
 					lightDiffCol.G *= col.G/255.0f;
 					lightDiffCol.B *= col.B/255.0f;
 					lightDiffCol.A *= col.A/255.0f;
-/*
-					x *= rLight.pProjMap->Width();
-					y *= rLight.pProjMap->Height();
-					if( x < 0.0f ) x = 0.0f;
-					if( y < 0.0f ) y = 0.0f;
-					if( x >= rLight.pProjMap->Width()  ) x = (float)rLight.pProjMap->Width() -1.0f;
-					if( y >= rLight.pProjMap->Height() ) y = (float)rLight.pProjMap->Height()-1.0f;
-					BMM_Color_64 OnePixel;
-					rLight.pProjMap->GetPixels( (sint32)x, (sint32)y, 1, &OnePixel );
-					lightDiffCol.R *= OnePixel.r/65535.0f;
-					lightDiffCol.G *= OnePixel.g/65535.0f;
-					lightDiffCol.B *= OnePixel.b/65535.0f;
-					lightDiffCol.A *= OnePixel.a/65535.0f;
-*/
 				}
 			}
 			break;
@@ -2516,7 +2498,8 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 		pF = *ItFace;
 
 		bool doubleSided = pMB->Materials[pF->MaterialId].detDoubleSided();
-
+		CRGBA matDiff = pMB->Materials[pF->MaterialId].getDiffuse();
+		
 		// Select bounding square of the triangle
 		for( j = 0; j < 3; ++j )
 		{
@@ -2549,9 +2532,9 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 				CVector n = g.getInterpolatedNormal( j+0.5, k+0.5);
 				CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
 				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].R = col.R*(vl.R/255.0f);
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].G = col.G*(vl.G/255.0f);
-				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].B = col.B*(vl.B/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].R = col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].G = col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].B = col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].A = 1.0f;
 				// Darken the plane to indicate pixel is calculated
 				Plane.msk[j-Plane.x + (k-Plane.y)*Plane.w] = 2;
@@ -2587,6 +2570,8 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 			CMesh::CFace *pF1 = *ItParseI;
 			double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
 			bool doubleSided = pMB->Materials[pF1->MaterialId].detDoubleSided();
+			CRGBA matDiff = pMB->Materials[pF1->MaterialId].getDiffuse();
+
 			// Select bounding square of the triangle
 			for( j = 0; j < 3; ++j )
 			{
@@ -2682,9 +2667,9 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 										CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
 										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
 										//float f = 1.0f;
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].R += col.R*(vl.R/255.0f);
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].G += col.G*(vl.G/255.0f);
-										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].B += col.B*(vl.B/255.0f);
+										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
 										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].A += 1.0f;
 									}
 								}
@@ -2705,9 +2690,9 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 						CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
 						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
 						//float f = 1.0f;
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].R += col.R*(vl.R/255.0f);
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].G += col.G*(vl.G/255.0f);
-						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].B += col.B*(vl.B/255.0f);
+						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
+						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
+						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].B += col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
 						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].A += 1.0f;
 					}
 				}

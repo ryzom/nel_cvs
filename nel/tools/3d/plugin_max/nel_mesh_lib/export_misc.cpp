@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.5 2001/07/02 16:30:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ Control* CExportNel::getControlerByName (Animatable& node, const char* sName)
 // --------------------------------------------------
 
 // Return the pointer on the subanim with the name sName of the node. If it doesn't exist, return NULL.
-bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue time)
+bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime)
 {
 	// for all parameters block in this node
 	for (int nBlock=0; nBlock<node.NumParamBlocks(); nBlock++)
@@ -278,19 +278,28 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 					{
 					case TYPE_PCNT_FRAC:
 					case TYPE_FLOAT:
-						bRes=param->GetValue(id, time, *(float*)pValue, ivalid);
+						bRes=param->GetValue(id, tvTime, *(float*)pValue, ivalid);
 						break;
 					case TYPE_BOOL:
 					case TYPE_INT:
-						bRes=param->GetValue(id, time, *(int*)pValue, ivalid);
+						bRes=param->GetValue(id, tvTime, *(int*)pValue, ivalid);
 						break;
 					case TYPE_RGBA:
 					case TYPE_POINT3:
-						bRes=param->GetValue(id, time, *(Point3*)pValue, ivalid);
+						bRes=param->GetValue(id, tvTime, *(Point3*)pValue, ivalid);
 						break;
 					case TYPE_STRING:
-						//bRes=param->GetValue(id, time, *(TCHAR**)pValue, ivalid);
-						*(std::string*)pValue = param->GetStr(id, time);
+						//bRes=param->GetValue(id, tvTime, *(TCHAR**)pValue, ivalid);
+						*(std::string*)pValue = param->GetStr(id, tvTime);
+						break;
+					case TYPE_STRING_TAB:
+						{
+							std::vector<std::string> &rTab = *(std::vector<std::string>*)pValue;
+							uint total = param->Count(id);
+							rTab.resize(total);
+							for( uint i = 0; i < total; ++i )
+								rTab[i] = param->GetStr(id, tvTime, i);
+						}
 						break;
 					}
 
@@ -311,7 +320,7 @@ bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* s
 		if (node.SubAnim(s))
 		{
 			// Get the ctrl for sub anim
-			if( getValueByNameUsingParamBlock2 (*node.SubAnim(s), sName, type, pValue, time) )
+			if( getValueByNameUsingParamBlock2 (*node.SubAnim(s), sName, type, pValue, tvTime) )
 				return true;
 		}
 	}

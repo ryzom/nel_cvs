@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.8 2001/06/27 17:41:12 besson Exp $
+ * $Id: export_material.cpp,v 1.9 2001/07/02 16:30:58 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,12 @@
 #include <3d/texture_file.h>
 #include <3d/texture_cube.h>
 
+#include <vector>
+#include <string>
+
 using namespace NLMISC;
 using namespace NL3D;
+using namespace std;
 
 // Name of animatable values
 #define BMTEX_CROP_APPLY "apply"
@@ -226,7 +230,22 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		pTextureCube->setWrapT( ITexture::Clamp );
 		pTextureCube->setFilterMode(ITexture::Linear,ITexture::LinearMipMapOff);
 
-		if( isClassIdCompatible(*pSpeTexmap, Class_ID (COMPOSITE_CLASS_ID,0)))
+		if( isClassIdCompatible(*pSpeTexmap, Class_ID (ACUBIC_CLASS_ID,0)) )
+		{
+			CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
+													CTextureCube::negative_x, CTextureCube::positive_x,
+													CTextureCube::negative_y, CTextureCube::positive_y	};
+			vector<string> names;
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, tvTime);
+			for( int i = 0; i< names.size(); ++i )
+			{
+				CTextureFile *pT = new CTextureFile;
+				pT->setFileName(names[i]);
+				pTextureCube->setTexture(tfNewOrder[i], pT);
+			}
+		}
+		else
+		if( isClassIdCompatible(*pSpeTexmap, Class_ID (COMPOSITE_CLASS_ID,0)) )
 		{
 			int nNbSubMap = pSpeTexmap->NumSubTexmaps();
 			if( nNbSubMap > 6 )

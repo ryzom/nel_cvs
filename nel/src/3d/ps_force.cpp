@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.30 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_force.cpp,v 1.31 2002/11/14 17:35:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,20 +249,27 @@ void CPSForceIntensityHelper::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSDirectionnalForce::performDynamic(TAnimationTime ellapsedTime)
 {
 	// perform the operation on each target
-
 	CVector toAdd;
-
-
 	for (uint32 k = 0; k < _Owner->getSize(); ++k)
 	{	
-		CVector toAddLocal = ellapsedTime * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K ) * _Dir;
+		CVector toAddLocal;
+		CVector dir;
+		
+		if (_GlobalValueHandle.isValid()) // is direction a global variable ?
+		{		
+			dir = _GlobalValueHandle.get(); // takes direction from global variable instead			
+		}
+		else
+		{
+			dir = _Dir;
+		}
+		
+		toAddLocal = ellapsedTime * (_IntensityScheme ? _IntensityScheme->get(_Owner, k) : _K ) * dir;			
 		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 		{
 
-			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis			
-
+			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end();
-
 			// 1st case : non-constant mass
 			if ((*it)->getMassScheme())
 			{
@@ -275,7 +282,8 @@ void CPSDirectionnalForce::performDynamic(TAnimationTime ellapsedTime)
 			}
 			else
 			{
-				toAdd *= (*it)->getInitialMass();
+				// the mass is constant
+				toAdd /= (*it)->getInitialMass();
 				for (; it2 != it2end; ++it2)
 				{
 					(*it2) += toAdd;									
@@ -294,19 +302,76 @@ void CPSDirectionnalForce::show(TAnimationTime ellapsedTime)
 	_Owner->getOwner()->getCurrentEditedElement(loc, index, lb);
 
 	setupDriverModelMatrix();
+
+	CVector dir;		
+	if (_GlobalValueHandle.isValid()) // is direction a global variable ?
+	{		
+		dir = _GlobalValueHandle.get(); // takes direction from global variable instead			
+	}
+	else
+	{
+		dir = _Dir;
+	}
 	
+	// for each element, see if it is the selected element, and if yes, display in red
 	for (uint k = 0; k < _Owner->getSize(); ++k)
 	{
-		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
-		CPSUtil::displayArrow(getDriver(), _Owner->getPos()[k], _Dir, 1.f, col, CRGBA(80, 80, 0));
+		const CRGBA col = (((lb == NULL || this == lb) && loc == _Owner && index == k)  ? CRGBA::Red : CRGBA(127, 127, 127));
+		CPSUtil::displayArrow(getDriver(), _Owner->getPos()[k], dir, 1.f, col, CRGBA(80, 80, 0));
 	}
 }
 
 void CPSDirectionnalForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);		
+	// Version 2 : added link to a global vector value
+	//
+	sint ver = f.serialVersion(2);		
 	CPSForceIntensityHelper::serial(f);	
-	f.serial(_Dir);
+	if (ver == 1)
+	{	
+		f.serial(_Dir);
+		_GlobalValueHandle.reset();
+	}
+	else
+	{
+		bool useHandle = _GlobalValueHandle.isValid();
+		f.serial(useHandle);
+		if (useHandle)
+		{
+			// a global value is used
+			if (f.isReading())
+			{
+				std::string handleName;
+				f.serial(handleName);
+				// retrieve a handle to the global value from the particle system
+				_GlobalValueHandle = CParticleSystem::getGlobalVectorValueHandle(handleName);
+			}
+			else
+			{
+				std::string handleName = _GlobalValueHandle.getName();
+				f.serial(handleName);
+			}
+		}
+		else
+		{
+			f.serial(_Dir);
+		}
+	}
+}
+
+void CPSDirectionnalForce::enableGlobalVectorValue(const std::string &name)
+{
+	if (name.empty())
+	{
+		_GlobalValueHandle.reset();
+		return;
+	}
+	_GlobalValueHandle = CParticleSystem::getGlobalVectorValueHandle(name);
+}
+
+std::string CPSDirectionnalForce::getGlobalVectorValueName() const
+{
+	return _GlobalValueHandle.isValid() ? _GlobalValueHandle.getName() : "";
 }
 
 ////////////////////////////
@@ -324,12 +389,7 @@ void CPSGravity::performDynamic(TAnimationTime ellapsedTime)
 		CVector toAddLocal = ellapsedTime * CVector(0, 0, _IntensityScheme ? - _IntensityScheme->get(_Owner, k) : - _K);
 		for (TTargetCont::iterator it = _Targets.begin(); it != _Targets.end(); ++it)
 		{
-
-			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis			
-
-			
-
-
+			toAdd = CPSLocated::getConversionMatrix(*it, this->_Owner).mulVector(toAddLocal); // express this in the target basis
 			TPSAttribVector::iterator it2 = (*it)->getSpeed().begin(), it2end = (*it)->getSpeed().end();
 			
 			if (toAdd.x && toAdd.y)
@@ -351,6 +411,7 @@ void CPSGravity::performDynamic(TAnimationTime ellapsedTime)
 		}
 	}
 }
+
 void CPSGravity::show(TAnimationTime ellapsedTime) 
 {	
 	CVector I = computeI();
@@ -667,7 +728,6 @@ void CPSCentralGravity::performDynamic(TAnimationTime ellapsedTime)
 
 }
 
-
 void CPSCentralGravity::show(TAnimationTime ellapsedTime)
 {
 	CVector I = CVector::I;
@@ -684,9 +744,7 @@ void CPSCentralGravity::show(TAnimationTime ellapsedTime)
 
 	const float sSize = 0.08f;
 	displayIcon2d(tab, tabSize, sSize);
-}
-
-	
+}	
 
 void CPSCentralGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
@@ -726,7 +784,6 @@ void CPSSpring::performDynamic(TAnimationTime ellapsedTime)
 			for (; it2 != it2End; ++it2, ++invMassIt, ++posIt)
 			{
 				// apply the spring equation
-
 				(*it2) += (*invMassIt) * ellapsedTimexK * (center - *posIt);								
 			}
 		}
@@ -746,19 +803,22 @@ void CPSSpring::show(TAnimationTime ellapsedTime)
 {
 	CVector I = CVector::I;
 	CVector J = CVector::J;
-
-	const CVector tab[] = { -I + 2 * J, I + 2 * J
-							, I + 2 * J, -I + J
-							, -I + J, I + J
-							, I + J, -I
-							,  -I, I
-							, I, -I - J
-							, -I - J, I - J
-							, I - J, - I - 2 * J
-							, - I - 2 * J, I - 2 * J
-							};
+	static const CVector tab[] = 
+	{ 
+	   -I + 2 * J,
+	   I + 2 * J,
+	   I + 2 * J, -I + J,
+	   -I + J, I + J,
+	   I + J, -I,
+	   -I, I,
+	   I, -I - J,
+	   -I - J, I - J,
+	   I - J,
+	   - I - 2 * J,
+	   - I - 2 * J,
+	   I - 2 * J
+	};
 	const uint tabSize = sizeof(tab) / (2 * sizeof(CVector));
-
 	const float sSize = 0.08f;
 	displayIcon2d(tab, tabSize, sSize);
 }
@@ -770,7 +830,7 @@ void CPSSpring::show(TAnimationTime ellapsedTime)
 
 void CPSCylindricVortex::performDynamic(TAnimationTime ellapsedTime)
 {
-		uint32 size = _Owner->getSize();
+	uint32 size = _Owner->getSize();
 		
 	for (uint32 k = 0; k < size; ++k) // for each vortex
 	{					
@@ -952,7 +1012,7 @@ void CPSMagneticForce::performDynamic(TAnimationTime ellapsedTime)
 			}
 			else
 			{
-				float i = intensity * (*it)->getInitialMass();
+				float i = intensity / (*it)->getInitialMass();
 				for (; it2 != it2end; ++it2)
 				{
 					(*it2) += i * (*it2 ^ toAdd);
@@ -1309,7 +1369,7 @@ void CPSBrownianForce::performDynamic(TAnimationTime ellapsedTime)
 				{			
 					uint toProcess = std::min((uint) (BFNumPrecomputedImpulsions - startPos) , (uint) size);
 					it2End = it2 + toProcess;
-					float factor = intensity * ellapsedTime * (*it)->getInitialMass();
+					float factor = intensity * ellapsedTime / (*it)->getInitialMass();
 					do
 					{						
 						it2->set(it2->x + factor * imp->x,
@@ -1324,8 +1384,7 @@ void CPSBrownianForce::performDynamic(TAnimationTime ellapsedTime)
 					size -= toProcess;
 				}
 				while (size != 0);
-			}
-			
+			}			
 		}
 	}	
 }

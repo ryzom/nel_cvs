@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.16 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_force.h,v 1.17 2002/11/14 17:35:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/ps_attrib_maker.h"
 #include "3d/ps_edit.h"
 #include "3d/ps_direction.h"
+#include "3d/particle_system.h"
 
 
 namespace NL3D {
@@ -370,20 +371,23 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 
 	NLMISC_DECLARE_CLASS(CPSDirectionnalForce); 
 
-	/// set the direction of the force
-	virtual void setDir(const NLMISC::CVector &dir) { _Dir = dir; }
-
-	/// get the direction of the force
-	virtual NLMISC::CVector getDir(void) const  { return _Dir; }
-
+	///\name From CPSDirection
+	//@{
+		/// set the direction of the force
+		virtual void setDir(const NLMISC::CVector &dir) { _Dir = dir; }
+		/// get the direction of the force
+		virtual NLMISC::CVector getDir(void) const  { return _Dir; }
+		// Tells that a global vector value of the system can be used as a direction
+		virtual bool supportGlobalVectorValue() const { return true; }
+		/// Bind the direction to a global vaariable (e.g "WIND" ). The value can be changed in CParticleSystem::setGlobalVectorValue
+		virtual void				enableGlobalVectorValue(const std::string &name);
+		// See if the direction is bound to a global variable. Return an empty string if not
+		virtual std::string         getGlobalVectorValueName() const;
+	//@}
 protected:	
-	NLMISC::CVector _Dir;	
+	NLMISC::CVector								_Dir;	
+	CParticleSystem::CGlobalVectorValueHandle   _GlobalValueHandle; // a global vector value may override the value of _Dir (example of use : global direction for wind)
 };
-
-
-
-
-
 
 
 /// a gravity class. Mass isn't taken in account (true with a uniform gravity model, near earth )

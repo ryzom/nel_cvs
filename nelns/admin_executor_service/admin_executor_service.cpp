@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.44 2003/03/21 09:47:26 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.45 2003/04/16 16:37:40 lecroart Exp $
  *
  */
 
@@ -615,7 +615,11 @@ void cleanRequest ()
 			}
 		}
 		nlinfo ("Waiting request %d: NbRef %d NbWaiting %d NbReceived %d", Requests[t].Id, NbRef, NbWaiting, NbReceived);
-		nlassert (NbRef == NbWaiting - NbReceived);
+		
+		if (NbRef != NbWaiting - NbReceived)
+		{
+			nlwarning ("**** i %d rid %d -> NbRef (%d) != NbWaiting (%d) - NbReceived(%d) ", t, Requests[t].Id, NbRef, NbWaiting, NbReceived);
+		}
 	}
 
 	for (uint i = 0 ; i < Requests.size ();)
@@ -653,7 +657,10 @@ void cleanRequest ()
 					}
 				}
 			}
-			nlassert (Requests[i].NbWaiting == Requests[i].NbReceived);
+			if (Requests[i].NbWaiting != Requests[i].NbReceived)
+			{
+				nlwarning ("**** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			}
 		}
 
 		if (Requests[i].NbWaiting <= Requests[i].NbReceived)

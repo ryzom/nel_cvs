@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.14 2001/04/23 09:14:27 besson Exp $
+ * $Id: mesh.h,v 1.15 2001/05/31 08:29:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,9 @@ public:
 
 	// @}
 
+	/// \name Geometry and material accessors
+	// @{
+
 	/// Get the number of materials in the mesh
 	uint getNbMaterial()
 	{
@@ -204,6 +207,38 @@ public:
 		return _BBox;
 	}
 
+	/// get the vertex buffer used by the mesh
+	const CVertexBuffer &getVertexBuffer() const { return _VBuffer ; }
+
+	/// get the number of matrix block
+	uint getNbMatrixBlock() const { return _MatrixBlocks.size() ; }
+
+	/** get the number of rendering pass for a given matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the rendering passes belong to
+	 */
+	uint getNbRdrPass(uint matrixBlockIndex) const { return _MatrixBlocks[matrixBlockIndex].RdrPass.size() ; }
+
+	/** get the primitive block associated with a rendering pass of a matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
+	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
+	 */
+	const CPrimitiveBlock &getRdrPassPrimitiveBlock(uint matrixBlockIndex, uint renderingPassIndex) const
+	{
+		return _MatrixBlocks[matrixBlockIndex].RdrPass[renderingPassIndex].PBlock ;
+	}
+
+	/** get the material ID associated with a rendering pass of a matrix block
+	 *  \param matrixBlockIndex the index of the matrix block the renderin pass belong to
+	 *  \param renderingPassIndex the index of the rendering pass in the matrix block
+	 */
+	uint32 getRdrPassMaterial(uint matrixBlockIndex, uint renderingPassIndex) const
+	{
+		return _MatrixBlocks[matrixBlockIndex].RdrPass[renderingPassIndex].MaterialId ;
+	}
+
+
+
+	// @}
 
 // ************************
 private:
@@ -472,5 +507,5 @@ private:
 
 
 #endif // NL_MESH_H
-
+            
 /* End of mesh.h */

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.26 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.27 2002/09/03 11:08:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -759,7 +759,7 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 
 bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, const CFormDfn **nodeDfn, const CType **nodeType, CFormElm **node, UFormDfn::TEntryType &type, bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round)
 {
-	// Recurce warning !
+	/*// Recurse warning !
 	if (*node)
 	{
 		if ((*node)->Round == round)
@@ -770,7 +770,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 		}
 		else
 			(*node)->Round = round;
-	}
+	}*/
 
 	// *** Init output variables
 	created = false;

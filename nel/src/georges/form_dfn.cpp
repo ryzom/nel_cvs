@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.10 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.11 2002/09/03 11:08:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,14 +350,14 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 uint CFormDfn::countParentDfn (uint32 round) const
 {
 	// Checkout recurcive calls
-	if (Round == round)
+	/*if (Round == round)
 	{
 		// Turn around..
 		nlwarning ("Georges (CFormDfn::countParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
 		return 0;
 	}
 	else
-		Round = round;
+		Round = round;*/ 
 
 	uint count = 0;
 	uint i;
@@ -373,14 +373,14 @@ uint CFormDfn::countParentDfn (uint32 round) const
 void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 {
 	// Checkout recurcive calls
-	if (Round == round)
+	/*if (Round == round)
 	{
 		// Turn around..
 		nlwarning ("Georges (CFormDfn::getParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
 	else
-		Round = round;
+		Round = round;*/
 
 	uint count = 0;
 	uint i;
@@ -396,14 +396,14 @@ void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 void CFormDfn::getParentDfn (std::vector<const CFormDfn*> &array, uint32 round) const
 {
 	// Checkout recurcive calls
-	if (Round == round)
+	/*if (Round == round)
 	{
 		// Turn around..
 		nlwarning ("Georges (CFormDfn::getParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
 	else
-		Round = round;
+		Round = round;*/
 
 	uint count = 0;
 	uint i;

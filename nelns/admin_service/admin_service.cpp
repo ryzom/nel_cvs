@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.31 2003/06/16 15:23:01 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.32 2003/07/03 19:02:18 lecroart Exp $
  *
  */
 
@@ -70,18 +70,24 @@ using namespace NLNET;
 
 struct CRequest
 {
-	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), From(from), NbRow(0), NbLines(1) { }
+	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), From(from), NbRow(0), NbLines(1)
+	{
+		Time = CTime::getSecondsSince1970 ();
+	}
 
 	uint32			Id;
 	uint			NbWaiting;
 	uint32			NbReceived;
 	TSockId			From;
+	uint32			Time;	// when the request was ask
 	
 	uint32			NbRow;
 	uint32			NbLines;
 
 	vector<vector<string> > Array;	// it's the 2 dimensional array that will be send to the php for variables
 	vector<string> Log;				// this log contains the answer if a command was asked, othewise, Array contains the results
+
+	
 
 	uint32 getVariable(const string &variable)
 	{
@@ -208,6 +214,8 @@ TAdminExecutorServices AdminExecutorServices;
 MYSQL *DatabaseConnection = NULL;
 
 vector<CRequest> Requests;
+
+uint32 RequestTimeout = 5;	// in second
 
 // cumulate 5 seconds of alert
 sint32 AdminAlertAccumlationTime = 5;
@@ -450,30 +458,31 @@ uint32 newRequest (TSockId from)
 	return NextId++;
 }
 
-void addRequestWaitingNb (uint32 request)
+void addRequestWaitingNb (uint32 rid)
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
-		if (Requests[i].Id == request)
+		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting++;
+			Requests[i].Time = CTime::getSecondsSince1970 ();
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
-void subRequestWaitingNb (uint32 request)
+void subRequestWaitingNb (uint32 rid)
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
-		if (Requests[i].Id == request)
+		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting--;
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 void addRequestReceived (uint32 rid)
@@ -487,7 +496,7 @@ void addRequestReceived (uint32 rid)
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
@@ -518,7 +527,7 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("Received an answer from an unknown resquest %d (perhaps due to a AS timeout)", rid);
 }
 
 bool emptyRequest (uint32 rid)
@@ -535,25 +544,50 @@ bool emptyRequest (uint32 rid)
 
 void cleanRequest ()
 {
+	uint32 currentTime = CTime::getSecondsSince1970 ();
+
+	bool timeout;
+
 	for (uint i = 0 ; i < Requests.size ();)
 	{
-		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		// the AES doesn't answer quickly
+		timeout = (currentTime >= Requests[i].Time+RequestTimeout);
+
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived || timeout)
 		{
 			// the request is over, send to the php
 
 			string str;
+
+			if (timeout)
+			{
+				nlwarning ("Request %d timeouted, only %d on %d services have replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
+			}
+			
 			if (Requests[i].Log.empty())
 			{
-				str = toString(Requests[i].NbRow) + " ";
-				for (uint k = 0; k < Requests[i].NbLines; k++)
+				if (Requests[i].NbRow == 0 && timeout)
 				{
-					for (uint j = 0; j < Requests[i].NbRow; j++)
+					str = "1 ((TIMEOUT))";
+				}
+				else
+				{
+					str = toString(Requests[i].NbRow) + " ";
+					for (uint k = 0; k < Requests[i].NbLines; k++)
 					{
-						nlassert (Requests[i].Array.size () == Requests[i].NbRow);
-						if (Requests[i].Array[j][k].empty ())
-							str += "??? ";
-						else
-							str += Requests[i].Array[j][k] + " ";
+						for (uint j = 0; j < Requests[i].NbRow; j++)
+						{
+							nlassert (Requests[i].Array.size () == Requests[i].NbRow);
+							if (Requests[i].Array[j][k].empty ())
+								str += "??? ";
+							else
+							{
+								str += Requests[i].Array[j][k];
+								if (timeout)
+									str += "((TIMEOUT))";
+								str += " ";
+							}
+						}
 					}
 				}
 			}
@@ -562,6 +596,8 @@ void cleanRequest ()
 				for (uint k = 0; k < Requests[i].Log.size(); k++)
 				{
 					str += Requests[i].Log[k];
+					if (timeout)
+						str += "((TIMEOUT))";
 				}
 			}
 
@@ -1766,8 +1802,13 @@ void addRequest (const string &rawvarpath, TSockId from)
 	}
 }
 
+static void varRequestTimeout(CConfigFile::CVar &var)
+{
+	RequestTimeout = var.asInt();
+	nlinfo ("Request timeout is now after %d seconds", RequestTimeout);
+}
 
-void varAdminAlertAccumlationTime (CConfigFile::CVar &var)
+static void varAdminAlertAccumlationTime (CConfigFile::CVar &var)
 {
 	AdminAlertAccumlationTime = var.asInt();
 }
@@ -1804,9 +1845,12 @@ public:
 		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbAESConnection);
 		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbAESDisconnection);
 
-		ConfigFile.setCallback("AdmimAlertAccumlationTime", &varAdminAlertAccumlationTime);
+		varRequestTimeout (ConfigFile.getVar ("RequestTimeout"));
+		ConfigFile.setCallback("RequestTimeout", &varRequestTimeout);
+		
 		varAdminAlertAccumlationTime (ConfigFile.getVar ("AdminAlertAccumlationTime"));
-
+		ConfigFile.setCallback("AdmimAlertAccumlationTime", &varAdminAlertAccumlationTime);
+		
 		//
 		// Get the list of AESHosts, add in the structures and create connection to all AES
 		//

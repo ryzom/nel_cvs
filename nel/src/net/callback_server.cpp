@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.6 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.7 2001/05/29 09:30:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ void cbsNewConnection (TSockId from, void *data)
 	nlassert (data != NULL);
 	CCallbackServer *server = (CCallbackServer *)data;
 
-	nldebug("L3: newConnection()");
+	nldebug("L3S: newConnection()");
 
 	// send all my association to the new client
 	server->sendAllMyAssociations (from);
@@ -66,13 +66,13 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
 	CStringIdArray::TStringId size;
 	size = _OutputSIDA.size ();
 
-	nldebug ("L3: Send all (%d) my string association to %s", size, to->asString().c_str());
+	nldebug ("L3S: Send all (%d) my string association to %s", size, to->asString().c_str());
 	
 	msgout.serial (size);
 
 	for (CStringIdArray::TStringId i = 0; i < size; i++)
 	{
-		nldebug ("L3:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
+		nldebug ("L3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
 		string str(_OutputSIDA.getString(i));
 		msgout.serial (str);
 		msgout.serial (i);
@@ -91,7 +91,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 
 //	if (log)
 	{
-		nldebug ("L3: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
+		nldebug ("L3S: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
 	}
 
 	CStreamServer::send (buffer, hostid);
@@ -100,7 +100,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 
 void CCallbackServer::update ( sint32 timeout )
 {
-	//nldebug ("L3: Client: update()");
+//	nldebug ("L3S: Client: update()");
 	baseUpdate ( timeout ); // first receive
 	CStreamServer::update (); // then send
 }

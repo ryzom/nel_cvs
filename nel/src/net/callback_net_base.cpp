@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.10 2001/05/17 15:36:45 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.11 2001/05/29 09:30:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBas
 	CStringIdArray::TStringId size;
 	msgin.serial (size);
 
-	nldebug ("L3: The other side gave me %d association strings", size);
+	nldebug ("L3NB: The other side gave me %d association strings", size);
 
 	for (CStringIdArray::TStringId i = 0; i < size; i++)
 	{
@@ -63,7 +63,7 @@ void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBas
 		// and put NULL if you don't want to manage this message
 		nlassert (id != -1);
 
-		nldebug ("L3:  association '%s' -> %d", name.c_str (), id);
+		nldebug ("L3NB:  association '%s' -> %d", name.c_str (), id);
 		netbase.getSIDA().addString (name, id);
 	}
 }
@@ -76,7 +76,7 @@ void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase
 	CStringIdArray::TStringId size;
 	msgin.serial (size);
 
-	nldebug ("L3: The other side want %d string associations", size);
+	nldebug ("L3NB: The other side want %d string associations", size);
 
 	msgout.serial (size);
 
@@ -84,7 +84,7 @@ void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase
 	{
 		string name;
 		msgin.serial (name);
-		nldebug ("L3:  sending association '%s' -> %d", name.c_str (), netbase._OutputSIDA.getId(name));
+		nldebug ("L3NB:  sending association '%s' -> %d", name.c_str (), netbase._OutputSIDA.getId(name));
 
 		// if this assert occurs, it means that the other side ask an unknown message
 		nlassert(netbase._OutputSIDA.getId(name) != -1);
@@ -109,7 +109,7 @@ void cbnbNewDisconnection (TSockId from, void *data)
 	nlassert (data != NULL);
 	CCallbackNetBase *base = (CCallbackNetBase *)data;
 
-	nldebug("L3: cbnbNewDisconnection()");
+	nldebug("L3NB: cbnbNewDisconnection()");
 
 	// call the client callback if necessary
 	if (base->_DisconnectionCallback != NULL)
@@ -144,12 +144,12 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 	_CallbackArray.resize (oldsize + arraysize);
 	_OutputSIDA.resize (oldsize + arraysize);
 
-	nldebug ("L3: Adding %d callback to the array", arraysize);
+	nldebug ("L3NB: Adding %d callback to the array", arraysize);
 
 	for (sint i = 0; i < arraysize; i++)
 	{
 		CStringIdArray::TStringId ni = oldsize + i;
-		nldebug ("L3: Adding callback to message '%s', id '%d'", callbackarray[i].Key, ni);
+		nldebug ("L3NB: Adding callback to message '%s', id '%d'", callbackarray[i].Key, ni);
 		// copy callback value
 		
 		_CallbackArray[ni] = callbackarray[i];
@@ -157,7 +157,7 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 		_OutputSIDA.addString (callbackarray[i].Key, ni);
 
 	}
-	nldebug ("L3: Now, having %d callback associated with message", _CallbackArray.size ());
+	nldebug ("L3NB: Now, having %d callback associated with message", _CallbackArray.size ());
 }
 
 
@@ -169,7 +169,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	// The first time, we init time counters
 	if (_FirstUpdate)
 	{
-//		nldebug("L3: First update()");
+		nldebug("L3NB: First update()");
 		_FirstUpdate = false;
 		_LastUpdateTime = CTime::getLocalTime ();
 		_LastMovedStringArray = CTime::getLocalTime ();
@@ -178,7 +178,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	// Every 1 seconds if we have new unknown association, we ask them to the other side
 	if (_LastUpdateTime + 1000 < CTime::getLocalTime ())
 	{
-//		nldebug("L3: baseUpdate()");
+		nldebug("L3NB: baseUpdate()");
 		_LastUpdateTime = CTime::getLocalTime ();
 
 		const set<string> &sa = _InputSIDA.getNeedToAskedStringArray ();
@@ -187,11 +187,11 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			CMessage msgout (_InputSIDA, "AA");
 			nlassert (sa.size () < 65536);
 			CStringIdArray::TStringId size = sa.size ();
-			nldebug ("L3: I need %d string association, ask them to the other side", size);
+			nldebug ("L3NB: I need %d string association, ask them to the other side", size);
 			msgout.serial (size);
 			for (set<string>::iterator it = sa.begin(); it != sa.end(); it++)
 			{
-				nldebug ("L3:  what is the id of '%s'?", (*it).c_str ());
+				nldebug ("L3NB:  what is the id of '%s'?", (*it).c_str ());
 				string str(*it);
 				msgout.serial (str);
 			}
@@ -210,11 +210,11 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		CMessage msgout (_InputSIDA, "AA");
 		nlassert (sa.size () < 65536);
 		CStringIdArray::TStringId size = sa.size ();
-		nldebug ("L3: client didn't answer my asked association, retry! I need %d string association, ask them to the other side", size);
+		nldebug ("L3NB: client didn't answer my asked association, retry! I need %d string association, ask them to the other side", size);
 		msgout.serial (size);
 		for (set<string>::iterator it = sa.begin(); it != sa.end(); it++)
 		{
-			nldebug ("L3:  what is the id of '%s'?", (*it).c_str ());
+			nldebug ("L3NB:  what is the id of '%s'?", (*it).c_str ());
 			string str(*it);
 			msgout.serial (str);
 		}
@@ -238,7 +238,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		TSockId tsid;
 		receive (msgin, &tsid);
 
-		nldebug ("L3: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
+		nldebug ("L3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
 		
 		// now, we have to call the good callback
 		pos = -1;
@@ -262,7 +262,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 
 		if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
 		{
-			nlerror ("Callback %s not found in _CallbackArray", msgin.toString().c_str());
+			nlerror ("L3NB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
 		}
 		else
 		{
@@ -270,16 +270,16 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 
 			if (!realid->AuthorizedCallback.empty() && msgin.getName() != realid->AuthorizedCallback)
 			{
-				nlwarning ("%s try to call the callback %s but only %s is authorized. Disconnect him!", tsid->asString().c_str(), msgin.toString().c_str(), tsid->AuthorizedCallback.c_str());
+				nlwarning ("L3NB: %s try to call the callback %s but only %s is authorized. Disconnect him!", tsid->asString().c_str(), msgin.toString().c_str(), tsid->AuthorizedCallback.c_str());
 				disconnect (tsid);
 			}
 			else if (_CallbackArray[pos].Callback == NULL)
 			{
-				nlwarning ("Callback %s is NULL, can't call it", msgin.toString().c_str());
+				nlwarning ("L3NB: Callback %s is NULL, can't call it", msgin.toString().c_str());
 			}
 			else
 			{
-				nldebug ("L3: Calling callback (%s)", _CallbackArray[pos].Key);
+				nldebug ("L3NB: Calling callback (%s)", _CallbackArray[pos].Key);
 				_CallbackArray[pos].Callback (msgin, realid, *this);
 			}
 		}
@@ -310,11 +310,11 @@ const	CInetAddress& CCallbackNetBase::hostAddress (TSockId hostid)
 
 void	CCallbackNetBase::setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize)
 {
-	nldebug ("L3: setOtherSideAssociations() sets %d association strings", arraysize);
+	nldebug ("L3NB: setOtherSideAssociations() sets %d association strings", arraysize);
 
 	for (sint i = 0; i < arraysize; i++)
 	{
-		nldebug ("L3:  association '%s' -> %d", associationarray[i], i);
+		nldebug ("L3NB:  association '%s' -> %d", associationarray[i], i);
 		getSIDA().addString (associationarray[i], i);
 	}
 }
@@ -326,7 +326,7 @@ void	CCallbackNetBase::displayAllMyAssociations ()
 
 void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 {
-	nldebug ("L3: authorizeOnly (%s, %s)", callbackName, hostid->asString().c_str());
+	nldebug ("L3NB: authorizeOnly (%s, %s)", callbackName, hostid->asString().c_str());
 
 	hostid = getSockId (hostid);
 	

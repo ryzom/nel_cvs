@@ -1,7 +1,7 @@
 /** \file stream_client.cpp
  * Network engine, layer 2, client
  *
- * $Id: stream_client.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: stream_client.cpp,v 1.2 2001/05/29 09:30:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,14 +40,14 @@ void CStreamClient::send (const CMemStream &buffer)
 {
 	nlassert (buffer.length() > 0 && buffer.length() < 65536);
 
-	nldebug ("L2: Client: send()");
+	nldebug ("L2C: send()");
 
 	CBufClient::send (buffer.bufferAsVector ());
 }
 
 void CStreamClient::receive (NLMISC::CMemStream &buffer)
 {
-	nldebug ("L2: Client: receive()");
+	nldebug ("L2C: receive()");
 
 	CBufClient::receive (buffer.bufferAsVector ());
 	buffer.resetBufPos ();

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.127 2004/07/20 16:24:54 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.128 2004/07/27 09:23:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1703,9 +1703,10 @@ float CObjectViewer::getFrameRate ()
 
 string getFilename (const string &file)
 {
-	if (CPath::exists (file))
+	// if the direct file exist, return it
+	if (NLMISC::CFile::fileExists(file))
 		return file;
-	
+
 	string path = NLMISC::CFile::getFilename(file);
 	path = CPath::lookup (path, false, false, false);
 	if (path.empty())

@@ -1437,5 +1437,5 @@ void CMainFrame::OnWindowSkeletonScale()
 
 void CMainFrame::OnUpdateWindowSkeletonScale(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck (ChooseBGColorWindow);
+	pCmdUI->SetCheck (SkeletonScaleWindow);
 }

@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.4 2001/06/08 15:38:28 legros Exp $
+ * $Id: surface_quad.cpp,v 1.5 2001/07/19 10:14:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -303,20 +303,21 @@ bool	NLPACS::CSurfaceQuadTree::check() const
 
 const NLPACS::CQuadLeaf	*NLPACS::CSurfaceQuadTree::getLeaf(const CVector &v) const
 {
-	if (_Root == NULL || !_BBox.include(v))
+	CVector	pos = CVector(v.x, v.y, 0.0f);
+	if (_Root == NULL || !_BBox.include(pos))
 		return NULL;
 
 	const IQuadNode	*node = _Root;
 
 	while (node != NULL && !node->isLeaf())
 	{
-		nlassert(node->getBBox().include(v));
+		nlassert(node->getBBox().include(pos));
 		uint	child;
 
-		if (v.x > node->_XCenter)
-			child = ((v.y > node->_YCenter) ? 2 : 1);
+		if (pos.x > node->_XCenter)
+			child = ((pos.y > node->_YCenter) ? 2 : 1);
 		else
-			child = ((v.y > node->_YCenter) ? 3 : 0);
+			child = ((pos.y > node->_YCenter) ? 3 : 0);
 
 		node = node->getChild(child);
 	}

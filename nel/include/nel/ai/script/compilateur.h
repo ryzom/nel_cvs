@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.14 2001/01/23 15:46:31 robert Exp $
+ * $Id: compilateur.h,v 1.15 2001/01/23 16:39:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -465,6 +465,7 @@ namespace NLAISCRIPT
 		void initMessageManager();
 		bool endMessageManager();
 		bool caseRunMsg();
+		bool classIsAnOperator();
 	};
 }
 #endif

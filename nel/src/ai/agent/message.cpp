@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.7 2001/01/23 14:26:24 portier Exp $
+ * $Id: message.cpp,v 1.8 2001/01/23 16:39:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,7 +245,7 @@ namespace NLAIAGENT
 			{
 				if( *methodName == IMessageBase::_Method[i].MethodName )
 				{					
-					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(IAgent::IdAgent));
 					a.push( CIdMethod( IMessageBase::_Method[i].Index + IBaseGroupType::getMethodIndexSize(), 0.0, NULL, c) );					
 					break;
 				}
@@ -276,7 +276,10 @@ namespace NLAIAGENT
 					if ( _Sender != NULL )
 						a.Result = new CLocalAgentMail( (IBasicAgent *) _Sender );				
 					else
-						a.Result = NULL;
+					{
+						a.Result = &DigitalType::NullOperator;
+						a.Result->incRef();
+					}
 					return a;
 				}			
 				break;
@@ -287,7 +290,10 @@ namespace NLAIAGENT
 					if ( _Receiver != NULL )
 						a.Result = new CLocalAgentMail( (IBasicAgent *) _Receiver );				
 					else
-						a.Result = NULL;
+					{
+						a.Result = &DigitalType::NullOperator;
+						a.Result->incRef();
+					}
 					return a;
 				}	
 				break;
@@ -298,8 +304,10 @@ namespace NLAIAGENT
 					if ( _Continuation != NULL )
 						a.Result = new CLocalAgentMail( (IBasicAgent *) _Continuation );				
 					else
-						a.Result = NULL;
-
+					{
+						a.Result = &DigitalType::NullOperator;
+						a.Result->incRef();
+					}
 					return a;
 				}			
 				break;

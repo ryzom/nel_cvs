@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.7 2001/01/23 09:15:49 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.8 2001/01/23 16:39:32 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,16 @@ namespace NLAISCRIPT
 
 	void CConstraintFindRun::run(CCompilateur &c)
 	{		
+#ifdef NL_DEBUG
+		char mtxt[1024*2];
+		char ptxt[1024*2];
+		char txt[1024*8];
+		
+		_MethodName->getDebugString(mtxt);
+		_Param->getDebugString(ptxt);
+		sprintf(txt,"%s%s",mtxt,ptxt);
+#endif	
+
 		if(_BaseClass)
 		{
 			if(!_BaseClass->satisfied()) _BaseClass->run(c);
@@ -79,7 +89,7 @@ namespace NLAISCRIPT
 						case heapCall:
 							o = new CLoadHeapObject(m.Member,_PosHeap);
 							break;
-
+	
 						case newCall:
 							o = NULL;
 							break;

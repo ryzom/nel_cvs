@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.8 2001/01/18 17:53:52 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.9 2001/01/23 16:39:32 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,9 +109,10 @@ namespace NLAISCRIPT
 		
 		DicoDeNom.insert(Arbre::value_type("As",AS) );
 				
-		DicoDeNom.insert(Arbre::value_type("CTrigger",TRIGGER) );
-		DicoDeNom.insert(Arbre::value_type("PreCondition",PRESCONDITION) );
+		DicoDeNom.insert(Arbre::value_type("Trigger",TRIGGER) );
+		DicoDeNom.insert(Arbre::value_type("PreCondition",PRECONDITION) );
 		DicoDeNom.insert(Arbre::value_type("PostCondition",POSTCONDITION) );
+		DicoDeNom.insert(Arbre::value_type("Goal",GOAL) );
 		DicoDeNom.insert(Arbre::value_type("Return",RETURN) );
 		DicoDeNom.insert(Arbre::value_type("MessageCollector",COLLECTOR) );
 		DicoDeNom.insert(Arbre::value_type("defrule", RULE) );
@@ -121,7 +122,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("assert", IA_ASSERT) );
 		DicoDeNom.insert(Arbre::value_type("deffuzzyrule",FUZZYRULE) );
 		DicoDeNom.insert(Arbre::value_type("fuzzyruleset",FUZZYRULESET) );
-		DicoDeNom.insert(Arbre::value_type("CFuzzyVar", FUZZYVAR) );
+		DicoDeNom.insert(Arbre::value_type("FuzzyVar", FUZZYVAR) );
 		DicoDeNom.insert(Arbre::value_type("is", FIS) );
 		DicoDeNom.insert(Arbre::value_type("sets", SETS) );
 		DicoDeNom.insert(Arbre::value_type("Null",NILL) );

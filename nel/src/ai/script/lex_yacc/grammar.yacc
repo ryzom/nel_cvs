@@ -29,7 +29,7 @@ using  namespace NLAIFUZZY;
 %token	FROM 
 %token	DEFINE	GROUP
 %token	COMPONENT CONSTRUCTION DESTRUCTION MESSAGE_MANAGER MAESSAGELOOP
-%token	TRIGGER	PRESCONDITION	POSTCONDITION RETURN
+%token	TRIGGER	PRECONDITION	POSTCONDITION GOAL RETURN
 %token	COS SIN TAN POW LN LOG FACT 
 %token	AS
 %token	DIGITAL	COLLECTOR	
@@ -56,7 +56,7 @@ using  namespace NLAIFUZZY;
 
 	DefinitionClass		:	CorpDeDefinition 
 							ACCOL_G
-							BlocDeDefinition
+							DefinitionDeProgram
 							ACCOL_D
 							{						
 								if(!computContraint()) return false;
@@ -147,14 +147,52 @@ using  namespace NLAIFUZZY;
 	CParam				:	IDENT
 						|	CParam VIRGULE IDENT
 						;	
+	DefinitionDeProgram	:	BlocDeDefinition						
+						|	DefinitionDeProgram
+						;
+	
+	
 
-	BlocDeDefinition	:	RegistDesAttributs
-						|	RegistDesAttributs BlocPourLesCode
+	BlocDeDefinition	:	Register
+						|	Register BlocPourLesCode
 						|	BlocPourLesCode
+						;
+
+	Register			:	RegistDesAttributs
+						|	RegistDesAttributs RegisterOperator
 						;
 
 	RegistDesAttributs	:	COMPONENT POINT_DEUX TypeDeDeclaration END;
 						|	COMPONENT POINT_DEUX END
+						;
+
+	RegisterOperator	:	PostCondition 
+							PreCondition
+							Goal
+						;
+
+	PostCondition		:	POSTCONDITION
+							{
+								if(!classIsAnOperator()) return 0;
+							}
+							POINT_DEUX
+							END
+						;
+
+	PreCondition		:	PRECONDITION
+							{
+								if(!classIsAnOperator()) return 0;
+							}
+							POINT_DEUX
+							END
+						;
+
+	Goal				:	GOAL
+							{
+								if(!classIsAnOperator()) return 0;
+							} 
+							POINT_DEUX
+							END
 						;
 
 	BlocPourLesCode		:	BlocAvecCode

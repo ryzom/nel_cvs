@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.12 2001/01/23 09:15:49 chafik Exp $
+ * $Id: var_control.cpp,v 1.13 2001/01/23 16:39:32 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,11 @@ namespace NLAISCRIPT
 		return true;
 	}
 
+	bool CCompilateur::classIsAnOperator()
+	{		
+		return true;
+	}
+	
 	sint32 CCompilateur::castVariable(const NLAIAGENT::CStringVarName &v,NLAIAGENT::CStringVarName &t)
 	{
 		NLAIAGENT::IObjectIA *var = getVar(v.getString());

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.8 2001/01/22 16:12:51 chafik Exp $
+ * $Id: agents.cpp,v 1.9 2001/01/23 16:39:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_mailer.h"
-
+#include "nel/ai/agent/agent_digital.h"
 namespace NLAIAGENT
 {
 
@@ -339,7 +339,10 @@ namespace NLAIAGENT
 				if ( father )
 					a.Result = new CLocalAgentMail( (IBasicAgent *) father );				
 				else
-					a.Result = NULL;
+				{
+					a.Result = &DigitalType::NullOperator;
+					a.Result->incRef();
+				}
 				return a;
 			}			
 

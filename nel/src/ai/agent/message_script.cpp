@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.8 2001/01/22 16:12:51 chafik Exp $
+ * $Id: message_script.cpp,v 1.9 2001/01/23 16:39:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 namespace NLAIAGENT
 {
+	static CGroupType listBidon;
 
 	CMessageScript::CMessageScript(const CMessageScript &m):IMessageBase(m)
 	{
@@ -110,6 +111,10 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CMessageScript::runMethodeMember(sint32 inheritance, sint32 index, IObjectIA *c)
 	{
+		if(c->getType() != NLAISCRIPT::CCodeContext::IdCodeContext)
+		{
+			return IMessageBase::runMethodeMember(inheritance,index, c);
+		}
 
 		NLAISCRIPT::IOpCode *opPtr = NULL;
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
@@ -117,7 +122,20 @@ namespace NLAIAGENT
 		sint32 i = index - getBaseMethodCount();
 		if(i < 0)
 		{
-			return IMessageBase::runMethodeMember(inheritance,index,(IObjectIA *)context.Param.back());
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.Param.push_back(&listBidon);
+				listBidon.incRef();
+			}
+
+			IObjectIA::CProcessResult r = IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
+			if(r.Result != NULL)
+			{
+				context.Stack++;
+				context.Stack[(int)context.Stack] = r.Result;
+			}
+			r.Result = NULL;
+			return r;
 		}
 		else
 		{
@@ -155,13 +173,31 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CMessageScript::runMethodeMember(sint32 index,IObjectIA *c)
 	{
+		if(c->getType() != NLAISCRIPT::CCodeContext::IdCodeContext)
+		{
+			return IMessageBase::runMethodeMember(index, c);
+		}
+
 		NLAISCRIPT::IOpCode *opPtr = NULL;
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
 
 		sint32 i = index - getBaseMethodCount();
 		if(i < 0)
 		{
-			return IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
+			if (context.ContextDebug.Active)
+			{
+				context.ContextDebug.Param.push_back(&listBidon);
+				listBidon.incRef();
+			}
+
+			IObjectIA::CProcessResult r = IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
+			if(r.Result != NULL)
+			{
+				context.Stack++;
+				context.Stack[(int)context.Stack] = r.Result;
+			}
+			r.Result = NULL;
+			return r;
 		}
 		else
 		{

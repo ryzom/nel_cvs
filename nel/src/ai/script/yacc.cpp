@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.12 2001/01/23 09:15:49 chafik Exp $
+ * $Id: yacc.cpp,v 1.13 2001/01/23 16:39:32 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -895,11 +895,11 @@ namespace NLAISCRIPT
 			}
 			_LastbaseClass->incRef();
 			paramRun->incRef();
-			c = getMethodConstraint(CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,paramRun,0,0));
+			c = getMethodConstraint(CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,_LastPosHeap,_LastbaseClass,nameRun,paramRun,0,0));
 			if(c == NULL)
 			{								
 				if(_LastbaseClass && !baseIsNew) _LastbaseClass->incRef();
-				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,paramRun,yyLine,yyColone);				
+				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,_LastPosHeap,_LastbaseClass,nameRun,paramRun,yyLine,yyColone);				
 				_MethodConstraint.push_back(c);
 			}
 			else

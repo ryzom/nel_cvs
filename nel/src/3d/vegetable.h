@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.9 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: vegetable.h,v 1.10 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,8 @@ public:
 	CNoiseValue			BendFactor;
 	/// Random Bend Phase.
 	CNoiseValue			BendPhase;
+	/// Fixed Bend FrequencyFactor. NB: rounded during addInstance to the nearest NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC
+	float				BendFrequencyFactor;
 	/// The color to modulate the instance.
 	CNoiseColorGradient	Color;
 	/** At which distance this vegetable will be rendered.

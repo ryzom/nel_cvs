@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.10 2001/12/12 10:05:46 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.11 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,7 +177,7 @@ public:
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase, float blendDistMax);
+		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax);
 
 	// @}
 

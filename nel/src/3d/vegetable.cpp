@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.10 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,7 @@ CVegetable::CVegetable()
 	// No BendFactor.
 	BendFactor.Abs= 1;
 	BendFactor.Rand= 0;
+	BendFrequencyFactor= 1;
 
 	// Appear at 0.
 	DistType= 0;
@@ -348,14 +349,21 @@ void	CVegetable::generateInstance(CVegetableInstanceGroup *ig, const NLMISC::CMa
 
 	// Append to the vegetableManager
 	// ===============
-	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, bendFactor, bendPhase, blendDistMax);
+	_Manager->addInstance(ig, _VegetableShape, finalMatrix, ambient, diffuse, 
+		bendFactor, bendPhase, BendFrequencyFactor, blendDistMax);
 }
 
 
 // ***************************************************************************
 void	CVegetable::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- add BendFrequencyFactor
+	Version 0:
+		- base version
+	*/
+	sint	ver= f.serialVersion(1);
 
 	f.serial(ShapeName);
 	f.serial(Density);
@@ -368,6 +376,11 @@ void	CVegetable::serial(NLMISC::IStream &f)
 	f.serial(BendPhase);
 	f.serial(Color);
 	f.serial(DistType);
+
+	if(ver>=1)
+		f.serial(BendFrequencyFactor);
+	else
+		BendFrequencyFactor= 1;
 }
 
 

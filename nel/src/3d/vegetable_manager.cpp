@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.13 2001/12/12 10:05:46 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.14 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,16 +224,16 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	v[3]  == Color (if unlit) or DiffuseColor (if lighted)
 	v[4]  == SecondaryColor (==ambient if Lighted or backFace color if Unlit)
 	v[8]  == Tex0 (xy) 
-	v[9]  == BendInfo (xy) = {BendWeight/2, BendPhase} (no blendDist if Lighted)
+	v[9]  == BendInfo (xyz) = {BendWeight/2, BendPhase, BendFrequencyFactor}
 		NB: /2 because compute a quaternion
 
 	Changes: If unlit, then small changes:
 	v[0]  == Pos to center, with v[0].w == BendWeight * v[0].norm()
-	v[9]  == BendInfo/BlendInfo (xyz) = {v[0].norm(), BendPhase, BlendDist}
+	v[9]  == BendInfo/BlendInfo (xyzw) = {v[0].norm(), BendPhase, BendFrequencyFactor, BlendDist}
 
 	NB: if Unlit and Not 2Sided, v[4] is present, but not used (prefer do this for gestion purpose:
 		to have only one VBAllocator for both modes).
-		same reasoning for v[9].z. Used only in Unlit+2Sided+AlphaBlend
+		same reasoning for v[9].w. Used only in Unlit+2Sided+AlphaBlend
 
 	Constant:
 	--------
@@ -291,8 +291,8 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 // ***********************
 const char* NL3D_FastBendProgram=
 "!!VP1.0																				\n\
-	# compute time of animation: time + phase.											\n\
-	ADD	R0.x, c[17].x, v[9].y;		# R0.x= time of animation							\n\
+	# compute time of animation: time*freqfactor + phase.								\n\
+	MAD	R0.x, c[17].x, v[9].z, v[9].y;	# R0.x= time of animation							\n\
 																						\n\
 	# animation: use the 64 LUT entries													\n\
 	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1[						\n\
@@ -359,8 +359,8 @@ const char* NL3D_FastBendProgram=
 // Splitted in 2 parts because of the 2048 char limit
 const char* NL3D_BendProgramP0=
 "!!VP1.0																				\n\
-	# compute time of animation: time + phase.											\n\
-	ADD	R0.x, c[17].x, v[9].y;		# R0.x= time of animation							\n\
+	# compute time of animation: time*freqfactor + phase.								\n\
+	MAD	R0.x, c[17].x, v[9].z, v[9].y;	# R0.x= time of animation							\n\
 																						\n\
 	# animation: f(x)= cos(x). compute a high precision cosinus							\n\
 	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1] <=> [-Pi, Pi]		\n\
@@ -522,8 +522,8 @@ const char* NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram=
 	RSQ R0.y, R0.x;																		\n\
 	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
 	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
-	MAD o[COL0].w, R0.x, c[11].x, v[9].z;												\n\
-	MAD o[BFC0].w, R0.x, c[11].x, v[9].z;												\n\
+	MAD o[COL0].w, R0.x, c[11].x, v[9].w;												\n\
+	MAD o[BFC0].w, R0.x, c[11].x, v[9].w;												\n\
 ";
 
 
@@ -933,7 +933,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase, float blendDistMax)
+		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax)
 {
 	sint	i;
 
@@ -985,6 +985,12 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// useFull if 2Sided
 		secondaryRGBA= primaryRGBA;
 	}
+
+
+	// normalize bendFreqFactor
+	bendFreqFactor*= NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC;
+	bendFreqFactor= (float)floor(bendFreqFactor + 0.5f);
+	bendFreqFactor/= NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC;
 
 
 	// Get allocator, and manage VBhard overriding.
@@ -1204,24 +1210,26 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 		// Bend.
 		//-------
-		CUV		*dstBendPtr= (CUV*)(dstPtr + dstBendOff);
+		CVector		*dstBendPtr= (CVector*)(dstPtr + dstBendOff);
 		// setup bend Phase.
-		dstBendPtr->V= bendPhase;
+		dstBendPtr->y= bendPhase;
 		// setup bend Weight.
 		// if !destLighted, then VP is different, vertexBendWeight is stored in v[0].w
 		if(destLighted)
-			dstBendPtr->U= vertexBendWeight;
+			dstBendPtr->x= vertexBendWeight;
 		else
 			// the VP need the norm of relPos in v[9].x
-			dstBendPtr->U= deltaPosNorm;
+			dstBendPtr->x= deltaPosNorm;
+		// setup bendFreqFactor
+		dstBendPtr->z= bendFreqFactor;
 		/// If AlphaBlend / ZSort rdrPass, then setup AlphaBlend computing.
 		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
 		{
-			// get ptr on v[9]. NB: in Unlit mode, it has 3 components.
-			CVector		*dstBendPtr= (CVector*)(dstPtr + dstBendOff);
+			// get ptr on v[9].w NB: in Unlit mode, it has 4 components.
+			CVectorH		*dstBendPtr= (CVectorH*)(dstPtr + dstBendOff);
 			// setup the constant of linear formula:
 			// Alpha= -1/blendTransDist * dist + blendDistMax/blendTransDist
-			dstBendPtr->z= blendDistMax/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST;
+			dstBendPtr->w= blendDistMax/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST;
 		}
 
 
@@ -1632,7 +1640,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	// AnimFrequency factor.
 	// Doing it incrementaly allow change of of frequency each frame with good results.
 	_WindAnimTime+= (_Time - _WindPrecRenderTime)*_WindFrequency;
-	_WindAnimTime= fmod(_WindAnimTime, 1.0f);
+	_WindAnimTime= fmod(_WindAnimTime, (float)NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC);
 	// NB: Leave timeBend (_WindAnimTime) as a time (ie [0..1]), because VP do a "EXP time".
 	// For incremental computing.
 	_WindPrecRenderTime= _Time;

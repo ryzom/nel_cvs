@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.5 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.6 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,15 +356,15 @@ void				CVegetableVBAllocator::setupVBFormat()
 	{
 		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,	CVertexBuffer::Float3);		// v[0]
 		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_NORMAL, CVertexBuffer::Float3);		// v[2]
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float2);		// v[9]
+		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float3);		// v[9]
 	}
 	// If unlit
 	else
 	{
 		// slightly different VertexProgram, v[0].w== BendWeight, and v[9].x== v[0].norm()
 		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,		CVertexBuffer::Float4);		// v[0]
-		// Unlit VP has BlendDistance in v[9].z
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float3);		// v[9]
+		// Unlit VP has BlendDistance in v[9].w
+		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float4);		// v[9]
 	}
 	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR0,		CVertexBuffer::UChar4);		// v[3]
 	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1,		CVertexBuffer::UChar4);		// v[4]

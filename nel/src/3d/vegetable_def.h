@@ -1,7 +1,7 @@
 /** \file vegetable_def.h
  * Some global definitions for CVegetable*
  *
- * $Id: vegetable_def.h,v 1.5 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetable_def.h,v 1.6 2001/12/12 13:29:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,10 @@ namespace NL3D
 
 /// The number of Quadrant for vegetable sorting.
 #define	NL3D_VEGETABLE_NUM_QUADRANT		8
+
+
+/// The precision of frequency factor: 1/16.
+#define	NL3D_VEGETABLE_FREQUENCY_FACTOR_PREC		16
 
 
 } // NL3D

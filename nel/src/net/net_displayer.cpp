@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.18 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.19 2001/05/18 14:46:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ void CNetDisplayer::findAndConnect()
 	if ( CNamingClient::lookupAndConnect( "LOGS", _Server ) )
 	{
 		nldebug( "Connected to logging service" );
+		_ServerNumber = 1;
 	}
 }
 
@@ -74,20 +75,28 @@ void CNetDisplayer::findAndConnect()
  */
 void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
 {
-	if ( ! _Server.connected() )
+	if (_ServerNumber==1 && _Server.connected()) return;
+	if (_ServerNumber==2 && _Server2->connected()) return;
+
+	_ServerAddr = logServerAddr;
+	try
 	{
-		_ServerAddr = logServerAddr;
-		try
-		{
-			_Server.connect( _ServerAddr );
-		}
-		catch( ESocket& )
-		{
-			// Silence
-		}
+		_Server.connect( _ServerAddr );
+		_ServerNumber = 1;
+	}
+	catch( ESocket& )
+	{
+		// Silence
 	}
 }
 
+void CNetDisplayer::setLogServer( CCallbackClient *server )
+{
+	if (_ServerNumber==1 && _Server.connected()) return;
+
+	_Server2 = server;
+	_ServerNumber = 2;
+}
 
 
 /*
@@ -95,7 +104,8 @@ void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
  */
 CNetDisplayer::~CNetDisplayer()
 {
-	_Server.disconnect();
+	if (_ServerNumber == 1)
+		_Server.disconnect();
 }
 
 
@@ -104,45 +114,55 @@ CNetDisplayer::~CNetDisplayer()
  *
  * Log format: "2000/01/15 12:05:30 <LogType> <ProcessName>: <Msg>"
  */
-void CNetDisplayer::doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
+void CNetDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
 {
-	try {
-		if ( ! _Server.connected() )
+	try
+	{
+		CCallbackClient	*server;
+		if (_ServerNumber == 1) server = &_Server;
+		else if (_ServerNumber == 2) server = _Server2;
+		else nlstop;
+
+		if ( _ServerNumber == 1 && !_Server.connected() )
 		{
 			findAndConnect();
+		}
+		else if (_ServerNumber ==2 && !_Server2->connected())
+		{
+			return;
 		}
 
 		bool needSpace = false;
 		stringstream ss;
 
-		if (date != 0)
+		if (args.Date != 0)
 		{
-			ss << dateToHumanString(date);
+			ss << dateToHumanString(args.Date);
 			needSpace = true;
 		}
 
-		if (logType != CLog::LOG_NO)
+		if (args.LogType != CLog::LOG_NO)
 		{
 			if (needSpace) { ss << " "; needSpace = false; }
-			ss << logTypeToString(logType);
+			ss << logTypeToString(args.LogType);
 			needSpace = true;
 		}
 
-		if (!processName.empty())
+		if (!args.ProcessName.empty())
 		{
 			if (needSpace) { ss << " "; needSpace = false; }
-			ss << processName;
+			ss << args.ProcessName;
 			needSpace = true;
 		}
 		
 		if (needSpace) { ss << ": "; needSpace = false; }
 
 		ss << message;
-		
-		CMessage msg(_Server.getSIDA(), "LOG" );
+
+		CMessage msg(server->getSIDA(), "LOG" );
 		string s = ss.str();
 		msg.serial( s );
-		_Server.send (msg, 0, false);
+		server->send (msg, 0, false);
 	}
 	catch( NLMISC::Exception& )
 	{

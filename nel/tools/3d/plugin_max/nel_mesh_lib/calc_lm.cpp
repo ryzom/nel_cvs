@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.45 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.46 2003/04/22 13:58:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2533,8 +2533,12 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
-				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, AllLights[vvLights[j].operator[](0)].LightGroup, 
-					(uint8)i, (uint8)nLightMapNb );				
+				// If some light for this layer
+				if( !vvLights.empty() && !vvLights[j].empty() )
+				{
+					addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, AllLights[vvLights[j].operator[](0)].LightGroup, 
+						(uint8)i, (uint8)nLightMapNb );
+				}
 			}
 			++nLightMapNb;
 		}

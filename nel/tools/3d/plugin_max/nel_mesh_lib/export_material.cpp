@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.41 2004/03/23 10:23:31 vizerie Exp $
+ * $Id: export_material.cpp,v 1.42 2004/04/09 14:46:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ using namespace std;
 
 #define NEL_BITMAP_TEXTURE_CLASS_ID_A 0x5a8003f9
 #define NEL_BITMAP_TEXTURE_CLASS_ID_B 0x43e0955
+
 
 /** Test wether the given max material is a water material. A water object should only have one material, and must have planar, convex geometry.
   * Morevover, the mapping should only have scale and offsets, no rotation
@@ -667,10 +668,24 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					{					
 						material.texEnvOpRGB (stage, (CMaterial::TTexOperator)(opRGBBlend+3));
 					}
+				}								
+				material.texEnvArg0RGB (stage, (CMaterial::TTexSource)(opRGBArg0-1), (CMaterial::TTexOperand)(opRGBArg0Operand-1));				
+				if (opRGBArg1 == 4)
+				{				
+					material.texEnvArg1RGB (stage, CMaterial::Texture, (CMaterial::TTexOperand)(opRGBArg1Operand-1));
 				}
-				material.texEnvArg0RGB (stage, (CMaterial::TTexSource)(opRGBArg0-1), (CMaterial::TTexOperand)(opRGBArg0Operand-1));
-				material.texEnvArg1RGB (stage, (CMaterial::TTexSource)(opRGBArg1), (CMaterial::TTexOperand)(opRGBArg1Operand-1));
-				material.texEnvArg2RGB (stage, (CMaterial::TTexSource)(opRGBArg2), (CMaterial::TTexOperand)(opRGBArg2Operand-1));
+				else
+				{
+					material.texEnvArg1RGB (stage, (CMaterial::TTexSource)(opRGBArg1), (CMaterial::TTexOperand)(opRGBArg1Operand-1));				
+				}
+				if (opRGBArg2 == 4)
+				{
+					material.texEnvArg2RGB (stage, CMaterial::Texture, (CMaterial::TTexOperand)(opRGBArg2Operand-1));				
+				}
+				else
+				{									
+					material.texEnvArg2RGB (stage, (CMaterial::TTexSource)(opRGBArg2), (CMaterial::TTexOperand)(opRGBArg2Operand-1));
+				}
 
 				// Alpha, get the values
 				int opAlpha = 0;
@@ -705,8 +720,22 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					}
 				}
 				material.texEnvArg0Alpha (stage, (CMaterial::TTexSource)(opAlphaArg0-1), (CMaterial::TTexOperand)(opAlphaArg0Operand-1));
-				material.texEnvArg1Alpha (stage, (CMaterial::TTexSource)(opAlphaArg1), (CMaterial::TTexOperand)(opAlphaArg1Operand-1));
-				material.texEnvArg2Alpha (stage, (CMaterial::TTexSource)(opAlphaArg2), (CMaterial::TTexOperand)(opAlphaArg2Operand-1));
+				if (opAlphaArg1 == 4)
+				{
+					material.texEnvArg1Alpha (stage, CMaterial::Texture, (CMaterial::TTexOperand)(opAlphaArg1Operand-1));					
+				}
+				else
+				{				
+					material.texEnvArg1Alpha (stage, (CMaterial::TTexSource)(opAlphaArg1), (CMaterial::TTexOperand)(opAlphaArg1Operand-1));
+				}
+				if (opAlphaArg2 == 4)
+				{				
+					material.texEnvArg2Alpha (stage, CMaterial::Texture, (CMaterial::TTexOperand)(opAlphaArg2Operand-1));
+				}
+				else
+				{
+					material.texEnvArg2Alpha (stage, (CMaterial::TTexSource)(opAlphaArg2), (CMaterial::TTexOperand)(opAlphaArg2Operand-1));					
+				}
 		
 				// Constant color
 				Point3 constantColor;
@@ -1373,3 +1402,5 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 	// Return the texture pointer
 	return pTexture;
 }
+
+#pragma optimize("", on)

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.37 2001/01/19 09:17:43 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.38 2001/01/19 09:29:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,9 @@
 
 #include "nel/net/base_socket.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/common.h"
 
+using namespace NLMISC;
 
 #ifdef NL_OS_WINDOWS
 #include <winsock2.h>
@@ -82,7 +84,8 @@ ESocket::ESocket( const char *reason, bool systemerror )
 	{
 		_Reason += " (";
 		char str[128];
-		_Reason += itoa (ERROR_NUM,str,10);
+		smprintf(str,128,"%d", ERROR_NUM);
+		_Reason += str;
 #ifdef NL_OS_UNIX
 		_Reason += ": ";
 		_Reason += ERROR_MSG;

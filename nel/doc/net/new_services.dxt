@@ -18,10 +18,6 @@ are located in /code/server.
 \subsection new_service How to create a user-defined service ?
 
 -# Create a class inherited from NLNET::IService (optional).
--# Set the default port for your service :
-\code
-uint16 IService::_DefaultPort = 40000;
-\endcode
 -# Create an array of callbacks. Example :
 \code
 void cbProcessConnection( CMessage& message, TSenderId from )
@@ -46,10 +42,11 @@ Before each call to update(), CMsgSocket::update() is
 automatically called, so that the server can handle
 incoming messages by calling the callbacks.
 -# Add in your source file the following line, where
-\e CNewService is the name of your class and where
-\e NAME is the name of your service :
+\e CNewService is the name of your class, where
+\e NAME is the name of your service and where
+\e 41200 is the chosen port number :
 \code
-NLNET_SERVICE_MAIN( CNewService, "NAME" );
+NLNET_SERVICE_MAIN( CNewService, "NAME", 41200 );
 \endcode
 
 Note: if your service does nothing else calling your callbacks,

@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.3 2004/09/02 17:07:44 vizerie Exp $
+ * $Id: water_env_map.cpp,v 1.4 2004/09/23 16:17:52 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -207,13 +207,11 @@ void CWaterEnvMap::update(TGlobalAnimationTime time, IDriver &driver)
 		//mat.scale(0.8f);
 		driver.setupModelMatrix(mat);
 		_MaterialPassThru.setTexture(0, _EnvCubic);
-		_MaterialPassThru.texConstantColor(0, CRGBA(255, 255, 255, _Alpha));
-		driver.setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity); // tmp		
+		_MaterialPassThru.texConstantColor(0, CRGBA(255, 255, 255, _Alpha));		
 		driver.renderTriangles(_MaterialPassThru, 0, FVB_NUM_TRIS);
 		_NumRenderedFaces = 0; // start to render again		
 	}	
-	driver.setRenderTarget(NULL);	
-	driver.activeVertexProgram(NULL);
+	driver.setRenderTarget(NULL);		
 }
 
 //*******************************************************************************	

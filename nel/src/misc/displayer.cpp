@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.6 2000/12/14 15:30:57 lecroart Exp $
+ * $Id: displayer.cpp,v 1.7 2001/01/17 10:16:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,24 @@ void CFileDisplayer::display (const std::string& str)
 void CMsgBoxDisplayer::display (const std::string& str)
 {
 #ifdef NL_OS_WINDOWS
-	MessageBox (NULL, str.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
+
+	if (OpenClipboard (NULL))
+	{
+		HGLOBAL mem = GlobalAlloc (GHND|GMEM_DDESHARE, str.size()+1);
+		if (mem)
+		{
+			char *pmem = (char *)GlobalLock (mem);
+			strcpy (pmem, str.c_str());
+			GlobalUnlock (mem);
+			EmptyClipboard ();
+			SetClipboardData (CF_TEXT, mem);
+		}
+		CloseClipboard ();
+	}
+	
+	string strf = str;
+	strf += "\n\n(this message was copied in the clipboard)";
+	MessageBox (NULL, strf.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
 

@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.9 2000/12/18 14:16:56 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.10 2001/01/17 10:16:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 	error = FT_New_Face (_Library, fontFileName.c_str (), 0, &_Face);
 	if (error)
 	{
-		nlerror ("FT_New_Face() failed: %s", getFT2Error(error));
+		nlerror ("FT_New_Face() failed with file 's%': %s", fontFileName.c_str(), getFT2Error(error));
 	}
 
 	if (fontExFileName != "")
@@ -107,7 +107,7 @@ CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::stri
 		error = FT_Attach_File (_Face, fontExFileName.c_str ());
 		if (error)
 		{
-			nlerror ("FT_Attach_File() failed: %s", getFT2Error(error));
+			nlwarning ("FT_Attach_File() failed with file '%s': %s", fontExFileName.c_str(), getFT2Error(error));
 		}
 	}
 }

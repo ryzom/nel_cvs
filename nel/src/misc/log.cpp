@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.18 2001/01/04 18:16:25 lecroart Exp $
+ * $Id: log.cpp,v 1.19 2001/01/17 10:16:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ CLog::CLog( TLogPriority priority, bool longinfo ) :
 	_File( NULL ),
 	_Long( longinfo )
 {
-	setLocalHostAndService( "<Unknown>", "<Unknown>" );
+	// by default service and host or NULL so they ll not display
 }
 
 

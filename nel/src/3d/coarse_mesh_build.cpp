@@ -1,7 +1,7 @@
 /** \file coarse_mesh_build.cpp
  * <File description>
  *
- * $Id: coarse_mesh_build.cpp,v 1.8 2004/06/21 17:38:41 lecroart Exp $
+ * $Id: coarse_mesh_build.cpp,v 1.9 2004/09/17 15:24:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -518,6 +518,7 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 					{
 						// Remap the vertex
 						float *UVCoordinate=(float*)vba.getTexCoordPointer(*iteRemap);
+						CHECK_VBA(vba, UVCoordinate);
 						UVCoordinate[0]=UVCoordinate[0]*descBitmap.FactorU+descBitmap.U;
 						UVCoordinate[1]=UVCoordinate[1]*descBitmap.FactorV+descBitmap.V;
 

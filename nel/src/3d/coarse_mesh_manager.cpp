@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.18 2004/08/13 15:23:21 vizerie Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.19 2004/09/17 15:24:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,6 @@ H_AUTO_DECL( NL3D_StaticLod_AddMesh )
 
 
 // ***************************************************************************
-
 CCoarseMeshManager::CCoarseMeshManager()
 {
 	// ** Init texture
@@ -88,7 +87,7 @@ void CCoarseMeshManager::setTextureFile (const char* file)
 // ***************************************************************************
 
 bool CCoarseMeshManager::addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer)
-{
+{	
 	H_AUTO_USE( NL3D_StaticLod_AddMesh );
 
 	// if 0 mesh, quit
@@ -132,6 +131,7 @@ void CCoarseMeshManager::flushRender (IDriver *drv)
 	{
 		// Copy Vertices to VBuffer
 		uint	baseVertex= currentNumVertices;	
+		CHECK_VBA_RANGE(_VBA, _VBA.getVertexCoordPointer(baseVertex), it->NumVertices*_VBuffer.getVertexSize());
 		CFastMem::memcpy(_VBA.getVertexCoordPointer(baseVertex), it->VBuffer, it->NumVertices*_VBuffer.getVertexSize());
 		
 		// next
@@ -144,6 +144,7 @@ void CCoarseMeshManager::flushRender (IDriver *drv)
 		// NB: for the majority of CoarseMesh (4 faces==48 bytes of indices), not interressant to use CFastMem::precache()
 		for(;numIdx>0;numIdx--, triSrc++, triDst++)
 		{
+			CHECK_IBA(_IBA, triDst)
 			*triDst= *triSrc + baseVertex;
 		}
 		// next

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.34 2004/08/13 15:24:12 vizerie Exp $
+ * $Id: computed_string.cpp,v 1.35 2004/09/17 15:24:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,6 +249,8 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 		for(uint i=0;i<numVerts;i++)
 		{
 			// copy and translate pos
+			CHECK_VBA_RANGE(srcvba, srcPtr, Vertices.getVertexSize());
+			CHECK_VBA_RANGE(dstvba, dstPtr, rdrBuffer.Vertices.getVertexSize())
 			((CVector*)dstPtr)->x= x + ((CVector*)srcPtr)->x;
 			((CVector*)dstPtr)->y= ((CVector*)srcPtr)->y;
 			((CVector*)dstPtr)->z= z + ((CVector*)srcPtr)->z;
@@ -466,6 +468,8 @@ void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer 
 		for(uint i=0;i<numVerts;i++)
 		{
 			// copy and translate pos
+			CHECK_VBA_RANGE(dstvba, dstPtr, Vertices.getVertexSize());
+			CHECK_VBA_RANGE(srcvba, srcPtr, rdrBuffer.Vertices.getVertexSize());
 			((CVector*)dstPtr)->x= x + ((CVector*)srcPtr)->x;
 			((CVector*)dstPtr)->z= z + ((CVector*)srcPtr)->z;
 			

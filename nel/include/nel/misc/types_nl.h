@@ -1,8 +1,7 @@
 
 /*
- * Compilation mode :	DEBUG	: no optimization, full debug information, all log for the client
- *						BETA	: full optimization, full debug information, all log for the client
- *						RELEASE	: full optimization, no debug information, no log for the client
+ * Compilation mode :	NL_DEBUG	: no optimization, full debug information, all log for the client
+ *						NL_RELEASE	: full optimization, no debug information, no log for the client
  */
 
 /*
@@ -26,6 +25,13 @@
 #ifdef WIN32
 #  define NL_OS_WINDOWS
 #  define NL_LITTLE_ENDIAN
+#  ifdef _DEBUG
+#    define NL_DEBUG
+#  elif defined(NDEBUG)
+#    define NL_RELEASE
+#  else
+#    error "No debug mode defined"
+#  endif
 #else
 #  define NL_OS_LINUX
 #  define NL_BIG_ENDIAN

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.6 2000/09/15 15:17:42 berenguier Exp $
+ * $Id: stream.cpp,v 1.7 2000/09/19 08:48:21 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -167,7 +167,7 @@ uint IStream::serialVersion(uint currentVersion) throw(EStream)
 		}
 		else
 		{
-			b=v;
+			b= (uint8)v;
 			serial(b);
 		}
 	}

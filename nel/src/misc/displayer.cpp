@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.19 2001/06/18 16:08:44 lecroart Exp $
+ * $Id: displayer.cpp,v 1.20 2001/06/27 08:31:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,7 +171,6 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 #ifdef NL_OS_WINDOWS
 	// display the string in the debugger is the application is started with the debugger
-	// todo to the display like this "R:\code\nel\src\misc\displayer.cpp(168) : message"
 	if (IsDebuggerPresent ())
 	{
 		stringstream ss2;

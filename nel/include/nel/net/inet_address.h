@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.21 2001/06/21 08:44:56 cado Exp $
+ * $Id: inet_address.h,v 1.22 2001/06/27 08:30:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ struct ESocket;
 /**
  * Internet address (IP + port).
  * The structure sockaddr_in is internally in network byte order
- * \todo cado Test big/little endian transfers to check if byte ordering is ok.
+ * \todo cado: Test big/little endian transfers to check if byte ordering is ok.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

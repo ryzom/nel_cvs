@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.35 2001/06/20 16:50:45 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.36 2001/06/27 08:31:20 lecroart Exp $
  *
  */
 
@@ -446,7 +446,7 @@ nlassert (addrs.size()==1);
 }
 */
 
-/// \todo now the lookupAlternate doesn't say to the naming service that this addr is bad so the NS can't remove it from his list. find a solution
+/// \todo ace: now the lookupAlternate doesn't say to the naming service that this addr is bad so the NS can't remove it from his list. find a solution
 bool CNamingClient::lookupAlternate (const std::string &name, CInetAddress &addr)
 {
 	nlassert (_Connection != NULL && _Connection->connected ());

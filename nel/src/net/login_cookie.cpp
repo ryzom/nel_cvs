@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
  * <File description>
  *
- * $Id: login_cookie.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: login_cookie.cpp,v 1.2 2001/06/27 08:31:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CLoginCookie::CLoginCookie (uint32 addr, uint32 id) : _UserAddr(addr), _UserId(i
 	_UserKey = generateKey();
 }
 
-/// \todo ace: is it enough to avoid pirates to predice keys?
+/// \todo ace: is the cookie enough to avoid hackers to predice keys?
 
 uint32 CLoginCookie::generateKey()
 {

@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.5 2001/06/21 08:45:03 cado Exp $
+ * $Id: string_stream.cpp,v 1.6 2001/06/27 08:31:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,11 +94,7 @@ void CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 	sprintf( number_as_cstring, format, src ); \
 	serialSeparatedBufferOut( (uint8*)&number_as_cstring, strlen(number_as_cstring) );
 
-/*
- * \todo NLMISC::CStringStream: Use strtoul() functions instead of atoi(), to handle conversion errors
- */
-
-
+/// \todo cado: NLMISC::CStringStream: Use strtoul() functions instead of atoi(), to handle conversion errors
 
 /*
  * atoihex

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.26 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: naming_client.h,v 1.27 2001/06/27 08:30:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,7 +214,7 @@ private:
 
 
 protected:
-	/// \todo debug feature that we should remove one day
+	/// \todo ace: debug feature that we should remove one day before releasing the game
 	static uint	_ThreadId;
 	static void	checkThreadId ();
 

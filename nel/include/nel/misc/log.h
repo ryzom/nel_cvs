@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.22 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: log.h,v 1.23 2001/06/27 08:30:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ class IDisplayer;
  * See the nldebug/nlinfo... macros in debug.h.
  *
  * \ref log_howto
- * \todo cado display() and displayRaw() should save the string and send it only when displayRawNL()
+ * \todo cado: display() and displayRaw() should save the string and send it only when displayRawNL()
  * (or a flush()-style method) is called.
  * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France

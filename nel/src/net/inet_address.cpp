@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.32 2001/06/21 08:45:13 cado Exp $
+ * $Id: inet_address.cpp,v 1.33 2001/06/27 08:31:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,7 +160,7 @@ bool operator<( const CInetAddress& a1, const CInetAddress& a2 )
  */
 void CInetAddress::init()
 {
-	CSock::initNetwork(); // TODO: handle exception (because init() is called within a constructor)
+	CSock::initNetwork(); /// \todo cado: handle exception (because init() is called within a constructor)
 	
 	_SockAddr = new sockaddr_in;
 	_SockAddr->sin_family = AF_INET;

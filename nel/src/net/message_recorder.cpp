@@ -1,7 +1,7 @@
 /** \file message_recorder.cpp
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.cpp,v 1.2 2001/06/21 08:45:13 cado Exp $
+ * $Id: message_recorder.cpp,v 1.3 2001/06/27 08:31:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,7 +155,7 @@ void CMessageRecorder::recordNext( sint64 updatecounter, TNetworkEvent event, TS
 		_File << "* ";
 		_File <<  len; // if we put the expression directly, it makes an access violation ! Weird.
 		_File << " ";
-		_File << (char*)stream.buffer() << endl; // TODO: Does a silent Access Violation
+		_File << (char*)stream.buffer() << endl; /// \todo cado: Does a silent Access Violation
 	}
 }
 

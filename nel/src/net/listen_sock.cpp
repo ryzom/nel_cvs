@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.2 2001/06/27 08:31:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,8 +64,7 @@ CListenSock::CListenSock() : CTcpSock(), _Bound( false )
 	// Create socket
 	createSocket( SOCK_STREAM, IPPROTO_TCP );
 
-	// TODO: Tune backlog value, not too small, not to big (20-200)
-	// to prevent SYN attacks (see http://www.cyberport.com/~tangent/programming/winsock/advanced.html)
+	/// \todo cado: tune backlog value, not too small, not to big (20-200) to prevent SYN attacks (see http://www.cyberport.com/~tangent/programming/winsock/advanced.html)
 	setBacklog( -1 );
 }
 

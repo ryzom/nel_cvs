@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.cpp,v 1.1 2000/09/21 09:45:09 cado Exp $
+ * $Id: datagram_socket.cpp,v 1.2 2000/09/21 14:12:10 cado Exp $
  *
  * Implementation for CDatagramSocket
  */
@@ -60,6 +60,7 @@ CDatagramSocket::CDatagramSocket() throw (ESocket) :
 	{
 		throw ESocket("Datagram socket creation failed");
 	}
+	_Log.display( "Socket %d open\n", _Sock );
 }
 
 
@@ -92,6 +93,7 @@ void CDatagramSocket::bind( uint16 port ) throw (ESocket)
 		#endif
 	}
 	_Bound = true;
+	_Log.display( "Socket %d bound at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 }
 
 
@@ -107,6 +109,7 @@ void CDatagramSocket::sendTo( const CMessage& message, const CInetAddress& addr 
 	{
 		throw ESocket("Unable to send datagram");
 	}
+	_Log.display( "Socket %d sent %d bytes to %s/%hu\n", _Sock, alldata.length(), addr.ipAddress().c_str(), addr.port() );
 
 	// 5bis. If socket is unbound, retrieve local address
 	if ( ! _Bound )
@@ -147,6 +150,8 @@ bool CDatagramSocket::receiveFrom( CMessage& message, CInetAddress& addr ) throw
 
 	// Decode message
 	message.decode( alldata );
+
+	_Log.display( "Socket %d received %d bytes from %s/%hu\n", _Sock, alldata.length(), addr.ipAddress().c_str(), addr.port() );
 
 	return true;
 }

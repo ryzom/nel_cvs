@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.1 2000/09/21 09:45:09 cado Exp $
+ * $Id: base_socket.h,v 1.2 2000/09/21 14:12:10 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -28,6 +28,7 @@
 
 
 #include "nel/net/inet_address.h"
+#include "nel/misc/log.h"
 
 
 namespace NLNET {
@@ -108,6 +109,20 @@ public:
 	/// Checks if there are some data to receive
 	bool	dataAvailable() throw (ESocket);
 
+	/// Returns a const reference on the local address
+	const CInetAddress&	localAddr() const
+	{
+		return _LocalAddr;
+	}
+
+	/** Returns a reference to the CLog object that can be bound to displayers.
+	 * Usage: \code mysocket.logger().addDisplayer(&mydisplayer) \endcode
+	 */
+	NLMISC::CLog&	logger()
+	{
+		return _Log;
+	}
+
 protected:
 
 	/// Sets the local address
@@ -115,6 +130,7 @@ protected:
 
 	SOCKET			_Sock;
 	CInetAddress	_LocalAddr;
+	NLMISC::CLog	_Log;
 
 private:
 

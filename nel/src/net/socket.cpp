@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.6 2000/09/21 12:31:54 cado Exp $
+ * $Id: socket.cpp,v 1.7 2000/09/21 14:12:10 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -122,6 +122,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Socket creation failed");
 	}
+	_Log.display( "Socket %d open\n", _Sock );
 
 	// Connection
 	// log( "Trying TCP connection on " + addr.ipAddress() );
@@ -129,6 +130,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Connection failed");
 	}
+	_Log.display( "Socket %d connected to %s/%hu\n", _Sock, addr.ipAddress().c_str(), addr.port() );
 
 	// Get local socket name
 	sockaddr saddr;
@@ -138,6 +140,7 @@ void CSocket::connect( const CInetAddress& addr ) throw (ESocket)
 		// log( "Network error: getsockname() failed (CSocket::connect)" );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
+	_Log.display( "Socket %d is at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 	_RemoteAddr = addr;
 	_Connected = true;
 }
@@ -154,6 +157,7 @@ void CSocket::send( const CMessage& message ) throw(ESocket)
 	{
 		throw ESocket("Unable to send message");
 	}
+	_Log.display( "Socket %d sent %d bytes\n", _Sock, alldata.length() );
 
 	/*// Old code
 
@@ -258,6 +262,7 @@ bool CSocket::receive( CMessage& message ) throw (ESocket)
 	{
 		throw ESocket("Cannot receive message");
 	}
+	_Log.display( "Socket %d received %d bytes\n", _Sock, sizeof(msgtype)+msgnamelen+sizeof(msgsize)+message.length() );
 
 	return true;
 }

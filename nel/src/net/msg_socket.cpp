@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.4 2000/09/21 12:31:54 cado Exp $
+ * $Id: msg_socket.cpp,v 1.5 2000/09/21 14:12:10 cado Exp $
  *
  * Implementation of CServerSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -105,6 +105,7 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Server socket creation failed");
 	}
+	_Log.display( "Socket %d open as a server socket\n", _Sock );
 
 	// Bind socket to port	
 	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
@@ -128,6 +129,7 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
+	_Log.display( "Socket %d listening at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 }
 
 
@@ -151,6 +153,7 @@ CSocket& CServerSocket::accept() throw (ESocket)
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
 	_Connections.push_back( connection );
+	_Log.display( "Socket %d accepted an incoming connection from %s/%hu and opened socket %d\n", _Sock, addr.ipAddress().c_str(), addr.port(), newsock );
 	return *connection;
 }
 

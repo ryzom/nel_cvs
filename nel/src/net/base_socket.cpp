@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.1 2000/09/21 09:45:09 cado Exp $
+ * $Id: base_socket.cpp,v 1.2 2000/09/21 14:12:10 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -112,8 +112,9 @@ void CBaseSocket::close()
 		#elif defined NL_OS_LINUX
 			::close( _Sock );
 		#endif
-	}
+	_Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
 	_Sock = INVALID_SOCKET;
+	}
 }
 
 

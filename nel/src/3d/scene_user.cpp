@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.64 2004/06/29 13:36:13 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.65 2004/08/03 16:20:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/lod_character_shape_bank.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/async_texture_manager.h"
+#include "3d/water_env_map_user.h"
 
 
 using namespace NLMISC;
@@ -968,6 +969,8 @@ CSceneUser::CSceneUser(CDriverUser *drv, bool bSmallScene) : _Scene(bSmallScene)
 
 	// Create default camera, and active!!
 	setCam(createCamera());
+
+	_WaterEnvMap = NULL;
 }
 
 CSceneUser::~CSceneUser()
@@ -1147,6 +1150,30 @@ void CSceneUser::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDistan
 {
 	_Scene.getRenderTrav().setupTransparencySorting(maxPriority, NbDistanceEntries);
 }
+
+// ***************************************************************************
+void CSceneUser::setWaterEnvMap(UWaterEnvMap *waterEnvMap)
+{	
+	if (waterEnvMap)
+	{		
+		if (((CWaterEnvMapUser *) waterEnvMap)->EnvMap.Driver != _DriverUser)
+		{
+			nlwarning("Water envmap can only be set in a scene that was created from the same driver");
+			return;
+		}
+	}
+	_Scene.setWaterEnvMap(&((CWaterEnvMapUser *) waterEnvMap)->EnvMap);
+	_WaterEnvMap = waterEnvMap;
+}
+
+
+// ***************************************************************************
+void CSceneUser::updateWaterEnvMaps(TGlobalAnimationTime time)
+{
+	_Scene.updateWaterEnvMaps(time);
+}
+
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.57 2004/06/29 13:35:54 vizerie Exp $
+ * $Id: scene_user.h,v 1.58 2004/08/03 16:20:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@
 
 namespace NL3D {
 
+
+class UWaterEnvMap;
 
 /**
  * <Class description>
@@ -95,6 +97,7 @@ protected:
 	//
 	typedef std::list<CWaitingIG> TWaitingIGList;
 	TWaitingIGList		  _WaitingIGs;
+	UWaterEnvMap		  *_WaterEnvMap;
 
 public:
 
@@ -302,7 +305,13 @@ public:
 	IWaterSurfaceAddedCallback *getWaterCallback() const;
 	//
 	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024);
-	
+
+	/// \name Water envmaps
+	// @{
+	virtual void		  setWaterEnvMap(UWaterEnvMap *waterEnvMap);	
+	virtual UWaterEnvMap *getWaterEnvMap() const { return _WaterEnvMap; }	
+	virtual void		  updateWaterEnvMaps(TGlobalAnimationTime time);
+	// @}
 
 public:
 	/// \name Accessor for CSceneUser.

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.7 2001/07/13 13:17:40 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.8 2001/07/16 08:29:28 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1208,7 +1208,11 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		while(agpMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
 			if(_AGPVertexArrayRange.allocate(agpMem, IDriver::VBHardAGP))
+			{
+				nlinfo("VAR: %.d vertices supported", _Extensions.NVVertexArrayRangeMaxVertex);
+				nlinfo("VAR: Success to allocate %.1f Mo of AGP VAR Ram", agpMem / 1000000.f);
 				break;
+			}
 			else
 			{
 				agpMem/=2;
@@ -1216,7 +1220,12 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 			}
 		}
 
-		ok= false;
+		if(agpMem< NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
+		{
+			nlinfo("VAR: %.d vertices supported", _Extensions.NVVertexArrayRangeMaxVertex);
+			nlinfo("VAR: Failed to allocate %.1f Mo of AGP VAR Ram", NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE / 1000000.f);
+			ok= false;
+		}
 	}
 
 
@@ -1236,7 +1245,10 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 			}
 		}
 
-		ok= false;
+		if(vramMem< NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
+		{
+			ok= false;
+		}
 	}
 
 

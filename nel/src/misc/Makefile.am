@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.18 2001/02/28 16:46:24 berenguier Exp $
+# $Id: Makefile.am,v 1.19 2001/02/28 17:44:09 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -17,7 +17,7 @@ libnelmisc_la_SOURCES = bit_set.cpp class_id.cpp class_registry.cpp \
                         time_nl.cpp vector.cpp vector_h.cpp vectord.cpp \
                         win_event_emitter.cpp win_thread.cpp rect.cpp \
                         system_info.cpp command.cpp p_thread.cpp common.cpp \
-						aabbox.cpp bitmap.cpp bsphere.cpp frustum.cpp line.cpp polygon.cpp triangle.cpp geom_ext.cpp uv.cpp
+						aabbox.cpp bitmap.cpp bsphere.cpp line.cpp polygon.cpp triangle.cpp geom_ext.cpp uv.cpp
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la -lpthread
 

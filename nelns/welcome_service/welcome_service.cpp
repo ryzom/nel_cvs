@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.20 2002/10/22 13:57:06 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.21 2002/10/24 08:19:44 lecroart Exp $
  *
  */
 
@@ -285,6 +285,13 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	best->NbEstimatedUser++;
 }
 
+void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// I can't connect to the Login Service, just nlerror ();
+	string reason;
+	msgin.serial (reason);
+	nlerror (reason.c_str());
+}
 
 void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
@@ -341,6 +348,7 @@ TUnifiedCallbackItem LSCallbackArray[] =
 {
 	{ "CS", cbLSChooseShard },
 	{ "DC", cbLSDisconnectClient },
+	{ "FAILED", cbFailed },
 };
 
 class CWelcomeService : public IService

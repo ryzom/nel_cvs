@@ -1,1 +1,1 @@
-bash sh\build.sh
+echo > log.log

@@ -1,7 +1,7 @@
 /** \file constraint_mesh_global_tex_anim_dlg.h
  * A dialog for editing constraint meshs texture global animation
  *
- * $Id: constraint_mesh_global_tex_anim_dlg.h,v 1.1 2001/12/18 18:35:01 vizerie Exp $
+ * $Id: constraint_mesh_global_tex_anim_dlg.h,v 1.2 2003/07/03 16:17:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CConstraintMeshGlobalTexAnimDlg)
 	enum { IDD = IDD_CONSTRAINT_MESH_GLOBAL_TEX_ANIM_DLG };
+	CEditEx	m_VStartCtrl;
+	CEditEx	m_UStartCtrl;
 	CEditEx	m_UScaleStartCtrl;
 	CEditEx	m_WRotSpeedCtrl;
 	CEditEx	m_WRotAccelCtrl;

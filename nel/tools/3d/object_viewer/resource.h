@@ -527,9 +527,13 @@
 #define IDC_WROT_ACCEL                  1323
 #define IDC_ANIM_TYPE_CTRL              1323
 #define IDC_LIFE_MGT_PRESETS            1324
+#define IDC_U_START_TEXT                1324
 #define IDC_SHARABLE                    1325
+#define IDC_V_START_TEXT                1325
 #define IDC_ENABLE_AUTO_LOD             1326
+#define IDC_U_START                     1326
 #define IDC_EDIT_AUTO_LOD               1327
+#define IDC_V_START                     1327
 #define IDC_START_PERCENT_DIST          1328
 #define IDC_NO_AUTO_LOD                 1329
 #define IDC_MAX_DIST_LOD_BIAS           1329

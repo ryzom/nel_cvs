@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.11 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.12 2003/07/03 16:16:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -323,6 +323,7 @@ public:
 		/// Properties of global texture animation
 		struct CGlobalTexAnim
 		{
+			NLMISC::CVector2f TransOffset; /* = (0, 0) */
 			NLMISC::CVector2f TransSpeed; /* = (0, 0) */
 			NLMISC::CVector2f TransAccel; /* = (0, 0) */
 			NLMISC::CVector2f ScaleStart; /* = (1, 1) */

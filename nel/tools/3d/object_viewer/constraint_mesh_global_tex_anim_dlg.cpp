@@ -1,7 +1,7 @@
 /** \file constraint_mesh_global_tex_anim_dlg.cpp
  * A dialog for editing constraint meshs texture global animation
  *
- * $Id: constraint_mesh_global_tex_anim_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
+ * $Id: constraint_mesh_global_tex_anim_dlg.cpp,v 1.3 2003/07/03 16:17:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,8 @@ void CConstraintMeshGlobalTexAnimDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CConstraintMeshGlobalTexAnimDlg)
+	DDX_Control(pDX, IDC_V_START, m_VStartCtrl);
+	DDX_Control(pDX, IDC_U_START, m_UStartCtrl);
 	DDX_Control(pDX, IDC_U_SCALE_START, m_UScaleStartCtrl);
 	DDX_Control(pDX, IDC_WROT_SPEED, m_WRotSpeedCtrl);
 	DDX_Control(pDX, IDC_WROT_ACCEL, m_WRotAccelCtrl);
@@ -88,6 +90,7 @@ BOOL CConstraintMeshGlobalTexAnimDlg::OnInitDialog()
 	m_WRotSpeedCtrl.setType(CEditEx::FloatType);
 	m_WRotAccelCtrl.setType(CEditEx::FloatType);
 	m_VSpeedCtrl.setType(CEditEx::FloatType);
+	m_VStartCtrl.setType(CEditEx::FloatType);
 	m_VScaleStartCtrl.setType(CEditEx::FloatType);
 	m_VScaleSpeedCtrl.setType(CEditEx::FloatType);
 	m_VScaleAccelCtrl.setType(CEditEx::FloatType);
@@ -96,11 +99,13 @@ BOOL CConstraintMeshGlobalTexAnimDlg::OnInitDialog()
 	m_UScaleAccel.setType(CEditEx::FloatType);
 	m_UAccelCtrl.setType(CEditEx::FloatType);
 	m_USpeedCtrl.setType(CEditEx::FloatType);
+	m_UStartCtrl.setType(CEditEx::FloatType);
 	m_UScaleStartCtrl.setType(CEditEx::FloatType);
 
 	m_WRotSpeedCtrl.setListener(this);
 	m_WRotAccelCtrl.setListener(this);
 	m_VSpeedCtrl.setListener(this);
+	m_VStartCtrl.setListener(this);
 	m_VScaleStartCtrl.setListener(this);
 	m_VScaleSpeedCtrl.setListener(this);
 	m_VScaleAccelCtrl.setListener(this);
@@ -109,6 +114,7 @@ BOOL CConstraintMeshGlobalTexAnimDlg::OnInitDialog()
 	m_UScaleAccel.setListener(this);
 	m_UAccelCtrl.setListener(this);
 	m_USpeedCtrl.setListener(this);
+	m_UStartCtrl.setListener(this);
 	m_UScaleStartCtrl.setListener(this);
 
 	const NL3D::CPSConstraintMesh::CGlobalTexAnim &gta = _CM->getGlobalTexAnim(_Stage);
@@ -116,6 +122,7 @@ BOOL CConstraintMeshGlobalTexAnimDlg::OnInitDialog()
 	m_WRotSpeedCtrl.setFloat(gta.WRotSpeed);
 	m_WRotAccelCtrl.setFloat(gta.WRotAccel);
 	m_VSpeedCtrl.setFloat(gta.TransSpeed.y);
+	m_VStartCtrl.setFloat(gta.TransOffset.y);
 	m_VScaleStartCtrl.setFloat(gta.ScaleStart.y);
 	m_VScaleSpeedCtrl.setFloat(gta.ScaleSpeed.y);
 	m_VScaleAccelCtrl.setFloat(gta.ScaleAccel.y);
@@ -124,6 +131,7 @@ BOOL CConstraintMeshGlobalTexAnimDlg::OnInitDialog()
 	m_UScaleAccel.setFloat(gta.ScaleAccel.x);
 	m_UAccelCtrl.setFloat(gta.TransAccel.x);
 	m_USpeedCtrl.setFloat(gta.TransSpeed.x);
+	m_UStartCtrl.setFloat(gta.TransOffset.x);
 	m_UScaleStartCtrl.setFloat(gta.ScaleStart.x);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -138,6 +146,7 @@ void CConstraintMeshGlobalTexAnimDlg::editExValueChanged(CEditEx *ctrl)
 	gta.WRotSpeed    = m_WRotSpeedCtrl.getFloat();
 	gta.WRotAccel    = m_WRotAccelCtrl.getFloat();
 	gta.TransSpeed.y = m_VSpeedCtrl.getFloat();
+	gta.TransOffset.y = m_VStartCtrl.getFloat();
 	gta.ScaleStart.y = m_VScaleStartCtrl.getFloat();
 	gta.ScaleSpeed.y = m_VScaleSpeedCtrl.getFloat();
 	gta.ScaleAccel.y = m_VScaleAccelCtrl.getFloat();
@@ -146,6 +155,7 @@ void CConstraintMeshGlobalTexAnimDlg::editExValueChanged(CEditEx *ctrl)
 	gta.ScaleAccel.x = m_UScaleAccel.getFloat();
 	gta.TransAccel.x = m_UAccelCtrl.getFloat();
 	gta.TransSpeed.x = m_USpeedCtrl.getFloat();
+	gta.TransOffset.x = m_UStartCtrl.getFloat();
 	gta.ScaleStart.x = m_UScaleStartCtrl.getFloat();
 
 	_CM->setGlobalTexAnim(_Stage, gta);

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.24 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.25 2003/07/03 16:16:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -2056,20 +2056,26 @@ CPSConstraintMesh::CMeshDisplayShare::CKey::~CKey()
 }
 
 //=====================================================================================	
-CPSConstraintMesh::CGlobalTexAnim::CGlobalTexAnim() : TransSpeed(NLMISC::CVector2f::Null),
-							 TransAccel(NLMISC::CVector2f::Null),
-							 ScaleStart(1 ,1),
-							 ScaleSpeed(NLMISC::CVector2f::Null),
-							 ScaleAccel(NLMISC::CVector2f::Null),
-							 WRotSpeed(0),
-							 WRotAccel(0)
+CPSConstraintMesh::CGlobalTexAnim::CGlobalTexAnim() : TransOffset(NLMISC::CVector2f::Null),
+													  TransSpeed(NLMISC::CVector2f::Null),
+													  TransAccel(NLMISC::CVector2f::Null),
+													  ScaleStart(1 ,1),
+													  ScaleSpeed(NLMISC::CVector2f::Null),
+													  ScaleAccel(NLMISC::CVector2f::Null),
+													  WRotSpeed(0),
+													  WRotAccel(0)
 {
 }
 
 //=====================================================================================
 void	CPSConstraintMesh::CGlobalTexAnim::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(0);
+	// version 1 : added offset
+	sint ver = f.serialVersion(1);
+	if (ver >= 1)
+	{
+		f.serial(TransOffset);
+	}
 	f.serial(TransSpeed, TransAccel, ScaleStart, ScaleSpeed, ScaleAccel);
 	f.serial(WRotSpeed, WRotAccel);
 }
@@ -2079,7 +2085,7 @@ void CPSConstraintMesh::CGlobalTexAnim::buildMatrix(float &date, NLMISC::CMatrix
 {
 	float fDate = (float) date;
 	float halfDateSquared   = 0.5f * fDate * fDate;
-	NLMISC::CVector2f pos   = fDate * TransSpeed + halfDateSquared * fDate * TransAccel;
+	NLMISC::CVector2f pos   = fDate * TransSpeed + halfDateSquared * fDate * TransAccel + TransOffset;
 	NLMISC::CVector2f scale = ScaleStart + fDate * ScaleSpeed + halfDateSquared * fDate * ScaleAccel;
 	float rot = fDate * WRotSpeed + halfDateSquared * WRotAccel;
 	

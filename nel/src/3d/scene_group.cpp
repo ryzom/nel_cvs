@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.58 2003/07/07 10:25:59 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.59 2003/07/30 16:05:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -551,7 +551,7 @@ void CInstanceGroup::getShapeName (uint instanceIndex, std::string &shapeName) c
 		// the name of the shape to load.
 		if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 		{												
-			shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName);								
+			shapeName = _TransformName->transformName (instanceIndex, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 			if (!shapeName.empty())
 				getShapeName = false;
 		}
@@ -799,7 +799,7 @@ bool CInstanceGroup::addToSceneAsync (CScene& scene, IDriver *driver, uint selec
 
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
-				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);		
 				if (!shapeName.empty())
 					getShapeName = false;
 			}
@@ -859,7 +859,7 @@ void CInstanceGroup::stopAddToSceneAsync ()
 
 			if (_TransformName != NULL && !rInstanceInfo.InstanceName.empty())
 			{												
-				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName);								
+				shapeName = _TransformName->transformName (i, rInstanceInfo.InstanceName, rInstanceInfo.Name);
 				if (!shapeName.empty())
 					getShapeName = false;
 			}

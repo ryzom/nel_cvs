@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.1 2001/05/08 13:35:50 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.2 2001/05/09 13:39:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ CTextureGrouped::CTextureGrouped(const CTextureGrouped &src) : ITexture(src)
 	duplicate(src) ;
 }
 
-CTextureGrouped::duplicate(const CTextureGrouped &src)
+void CTextureGrouped::duplicate(const CTextureGrouped &src)
 {
 	_NbTex = src._NbTex ;
 	TTexList texCopy(src._Textures.begin(), src._Textures.end()) ;

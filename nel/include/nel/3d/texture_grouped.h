@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.1 2001/05/08 13:35:50 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.2 2001/05/09 13:39:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	void doGenerate();
 
 	/// serialization
-	virtual void	serial(NLMISC::IStream &f) ;
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 	/// a group of 4 uvs
@@ -162,7 +162,7 @@ protected:
 
 
 	// Copy this class attributes from src; Used by the = operator and the copy ctor
-	duplicate(const CTextureGrouped &src) ;
+	void duplicate(const CTextureGrouped &src) ;
 
 };
 

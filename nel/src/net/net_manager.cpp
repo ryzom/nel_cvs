@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.13 2001/08/30 17:07:36 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.14 2001/09/06 09:15:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -357,6 +357,14 @@ void CNetManager::update (sint32 timeout)
 		{
 			sint32 err = (sint32)(t0 - _NextUpdateTime);
 			_NextUpdateTime += timeout;
+
+			// if we are too late, resync to the next value
+			while (err > timeout)
+			{
+				err -= timeout;
+				_NextUpdateTime += timeout;
+			}
+			
 			timeout -= err;
 			if (timeout < 0) timeout = 0;
 		}

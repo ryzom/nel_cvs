@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.40 2003/07/09 15:20:00 cado Exp $
+ * $Id: buf_server.cpp,v 1.41 2003/08/13 09:13:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,22 +225,10 @@ CBufServer::~CBufServer()
 					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
 					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
 					{
-						delete (*ipb);
+						delete (*ipb); // closes and deletes the socket
 					}
 				}
 
-	#ifdef NL_OS_UNIX
-				// Under Unix, close the sockets now
-				nlnettrace( "Closing sockets (Unix)" );
-				{
-					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
-					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
-					{
-						(*ipb)->Sock->close();
-					}
-				}
-	#endif
-				
 				// Delete the task objects
 				delete task;
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * TODO: File description
  *
- * $Id: mesh.cpp,v 1.92 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh.cpp,v 1.93 2005/03/14 12:58:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1654,6 +1654,13 @@ void	CMeshGeom::buildBoneUsageVer3 ()
 			if(boneUsage[i])
 				_BonesId.push_back(i);
 		}
+
+		// Must also compute _BonesSphere
+		// Cannot do it easily, deprecated data format => suppose radius 0 sphere
+		CBSphere	sphere(CVector::Null, 0.f);
+		_BonesSphere.clear();
+		_BonesSphere.resize(_BonesId.size(), sphere);
+		
 	}
 }
 

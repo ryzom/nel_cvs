@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.5 2000/11/21 18:03:45 corvazier Exp $
+ * $Id: tile_bank.h,v 1.6 2000/12/13 14:59:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ public:
 	CTile ()
 	{
 		_free=true;
+		_invert=false;
 	}
 	const std::string& getFileName (TBitmap bitmapType) const 
 	{ 
@@ -77,11 +78,20 @@ public:
 		nlassert (!_free);
 		_free=true;
 	}
+	bool isInvert () const
+	{
+		return _invert;
+	}
+	void setInvert (bool invert)
+	{
+		_invert=invert;
+	}
 	void    serial(class NLMISC::IStream &f);
 	void	clearTile (CTile::TBitmap type);
 
 private:
 	bool _free;
+	bool _invert;
 	std::string	_bitmapName[bitmapCount];
 	static const sint _version;
 };
@@ -139,19 +149,10 @@ public:
 	{
 		return _tile;
 	}
-	bool isInvert () const
-	{
-		return _invert;
-	}
-	void setInvert (bool invert)
-	{
-		_invert=invert;
-	}
 	void    serial(class NLMISC::IStream &f);
 
 private:
 	sint32	_tile;
-	bool	_invert;
 	static const sint _version;
 };
 
@@ -190,8 +191,9 @@ public:
 	{
 		return _height;
 	}
+	void	invertAlpha();
 
-	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante);
+	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2, int& pixel, int& composante, bool bInvertFirst=false, bool bInvertSecond=false);
 
 private:
 	bool _set;
@@ -233,15 +235,14 @@ public:
 	void setName (const std::string& name);
 	void setTile128 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
 	void setTile256 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
-	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border);
-	void setTileTransitionInvert (TTransition transition, bool invert);
+	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border, bool bInvert);
 	void setBorder (CTile::TBitmap type, const CTileBorder& border);
 
 	// check
 	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border, int& pixel, int& composante);
 	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border, int& indexError,
-		int& pixel, int& composante);
+		int& pixel, int& composante, bool bInvert);
 
 	// get
 	const std::string& getName () const;
@@ -268,10 +269,6 @@ public:
 	const CTileSetTransition* getTransition (sint index) const
 	{
 		return _tileTransition+index;
-	}
-	bool getTileTransitionInvert (TTransition transition, bool invert)
-	{
-		return _tileTransition[transition]._invert;
 	}
 	static const char* getErrorMessage (TError error)
 	{

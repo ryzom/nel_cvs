@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.8 2000/09/15 15:17:51 berenguier Exp $
+ * $Id: stream_inline.h,v 1.9 2000/09/20 09:07:02 lecroart Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -28,16 +28,6 @@ namespace	NLMISC
 // IBasicStream Inline Implementation.
 // ======================================================================================================
 // ======================================================================================================
-
-
-// For Big/little Endian.
-#  define BSWAP16(src)	(src) = (((src)>>8)&0xFF) | (((src)&0xFF)<<8)
-#  ifdef OS_WINDOWS
-#    define BSWAP32(src) _asm mov eax,(src) _asm bswap eax _asm mov (src),eax
-#  else
-#    define BSWAP32(src) (src) = (((src)>>24)&0xFF) | ((((src)>>16)&0xFF)<<8) | ((((src)>>8)&0xFF)<<16) | (((src)&0xFF)<<24)
-#  endif
-#  define BSWAP64(src) (src) = (((src)>>56)&0xFF) | ((((src)>>48)&0xFF)<<8) | ((((src)>>40)&0xFF)<<16) | ((((src)>>32)&0xFF)<<24) | ((((src)>>24)&0xFF)<<32) | ((((src)>>16)&0xFF)<<40) | ((((src)>>8)&0xFF)<<48) | (((src)&0xFF)<<56)
 
 
 // ======================================================================================================
@@ -91,13 +81,13 @@ inline	void		IStream::serial(uint16 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 2);
-			BSWAP16(v);
+			NLMISC_BSWAP16(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP16(v);
+			NLMISC_BSWAP16(v);
 			serialBuffer((uint8 *)&v, 2);
 		}
 	}
@@ -116,13 +106,13 @@ inline	void		IStream::serial(sint16 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 2);
-			BSWAP16(v);
+			NLMISC_BSWAP16(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP16(v);
+			NLMISC_BSWAP16(v);
 			serialBuffer((uint8 *)&v, 2);
 		}
 	}
@@ -141,13 +131,13 @@ inline	void		IStream::serial(uint32 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 4);
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			serialBuffer((uint8 *)&v, 4);
 		}
 	}
@@ -166,13 +156,13 @@ inline	void		IStream::serial(sint32 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 4);
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			serialBuffer((uint8 *)&v, 4);
 		}
 	}
@@ -191,13 +181,13 @@ inline	void		IStream::serial(uint64 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 8);
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			serialBuffer((uint8 *)&v, 8);
 		}
 	}
@@ -216,13 +206,13 @@ inline	void		IStream::serial(sint64 &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 8);
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			b=v;
 		}
 		else
 		{
 			v=b;
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			serialBuffer((uint8 *)&v, 8);
 		}
 	}
@@ -241,13 +231,13 @@ inline	void		IStream::serial(float &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 4);
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			b=*((float*)&v);
 		}
 		else
 		{
 			v=*((uint32*)&b);
-			BSWAP32(v);
+			NLMISC_BSWAP32(v);
 			serialBuffer((uint8 *)&v, 4);
 		}
 	}
@@ -266,13 +256,13 @@ inline	void		IStream::serial(double &b) throw(EStream)
 		if(isReading())
 		{
 			serialBuffer((uint8 *)&v, 8);
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			b=*((double*)&v);
 		}
 		else
 		{
 			v=*((uint64*)&b);
-			BSWAP64(v);
+			NLMISC_BSWAP64(v);
 			serialBuffer((uint8 *)&v, 8);
 		}
 	}

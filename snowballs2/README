@@ -62,9 +62,9 @@ framework. The program compiles reasonably under a Unix/GCC environment,
 but it has been chiefly tested under a Linux environment.
 
 The server has been compiled and executed on a Windows machine, but it
-is highly recommended that you run it on a separate Linux machine. The
-client has been compiled and executed on a Linux machine, but will
-probably not work on other unix systems (yet).
+is highly recommended that you run it on a separate GNU/Linux machine. The
+client has been compiled and executed on a GNU/Linux machine, but will
+probably not work on other unix compatible systems (yet).
 
 The client and server require an operating TCP/IP stack to communicate.
 

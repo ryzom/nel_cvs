@@ -1,7 +1,7 @@
 /** \file service_5.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.12 2002/02/20 18:05:53 lecroart Exp $
+ * $Id: service_5.h,v 1.13 2002/03/19 17:42:48 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,6 @@
 #include <string>
 #include <vector>
 
-
 namespace NLMISC
 {
 	class CWindowDisplayer;
@@ -83,10 +82,12 @@ typedef uint8 TServiceId;
 
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
 
-#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
+#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
 { \
+	IService5::setConfigDir (__ConfigDir); \
+	IService5::setLogDir (__LogDir); \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
@@ -98,10 +99,12 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 #else
 
-#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
+#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
 int main(int argc, char **argv) \
 { \
+	IService5::setConfigDir (__ConfigDir); \
+	IService5::setLogDir (__LogDir); \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
@@ -167,6 +170,12 @@ public:
 	sint				main (char *args);
 
 	static void			setServiceName (const char *shortName, const char *longName);
+
+	static void			setConfigDir (const char *configDir) { if(_ConfigDir) free(_ConfigDir); _ConfigDir = strdup(configDir); }
+	static const char		*getConfigDir () { return _ConfigDir; }
+
+	static void			setLogDir (const char *logDir) { if(_LogDir) free(_LogDir); _LogDir = strdup(logDir); }
+	static const char		*getLogDir () { return _LogDir; }
 
 	static void			setPort (uint16 Port) { _DefaultPort = Port; }
 
@@ -249,6 +258,9 @@ private:
 
 	/// This variable is used to generate uniq id for entities on this service.
 	static NLMISC::CEntityId	_NextEntityId;
+
+	static char			*_ConfigDir;
+	static char			*_LogDir;
 };
 
 }; // NLNET

@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.3 2001/08/31 14:23:24 berenguier Exp $
+ * $Id: dru.h,v 1.4 2002/03/19 17:42:48 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@
 #error "Unknown dll name"
 #endif
 #elif defined (NL_OS_UNIX)
-#define NL3D_DLL_NAME "libnel_drv_opengl.so"
+#define NL3D_DLL_NAME "libnel_drv_opengl.so.0"
 #else
 #error "Unknown system"
 #endif

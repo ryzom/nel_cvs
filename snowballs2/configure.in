@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for Snowballs 2
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.10 2002/01/29 13:21:42 valignat Exp $
+dnl $Id: configure.in,v 1.11 2002/03/19 17:42:49 valignat Exp $
 dnl 
 
 
@@ -134,11 +134,8 @@ AM_PATH_OPENAL($enable_client)
 dnl ====================================================================
 dnl NeL
 
+dnl         misc   net    3d              pacs            sound           ai
 AM_PATH_NEL("yes", "yes", $enable_client, $enable_client, $enable_client, "no")
-
-CXXFLAGS="$CXXFLAGS ${NEL_CFLAGS}"
-LIBS="$LIBS ${NEL_LIBS}"
-
 
 dnl ====================================================================
 dnl FreeType 2
@@ -149,6 +146,23 @@ dnl ====================================================================
 dnl Checks for library functions.
 dnl ====================================================================
 
+dnl ====================================================================
+dnl Snowballs data, configuration and logs file location
+dnl ====================================================================
+
+eval SNOWBALLS_DATABASE=\"$datadir/games/snowballs/\"
+AC_SUBST(SNOWBALLS_DATABASE)
+
+pkgsysconfdir='${sysconfdir}/snowballs'
+AC_SUBST(pkgsysconfdir)
+
+test "x$prefix" = xNONE && prefix=$ac_default_prefix
+
+eval SNOWBALLS_CONFIG=\"$sysconfdir/snowballs/\"
+AC_DEFINE_UNQUOTED(SNOWBALLS_CONFIG, "$SNOWBALLS_CONFIG")
+
+eval SNOWBALLS_LOGS=\"$localstatedir/log/snowballs/\"
+AC_DEFINE_UNQUOTED(SNOWBALLS_LOGS, "$SNOWBALLS_LOGS")
 
 dnl ====================================================================
 dnl Output files to generate.
@@ -156,6 +170,7 @@ dnl ====================================================================
 
 AC_OUTPUT( Makefile                                         \
            client/Makefile                                  \
+           client/client.cfg                                \
            client/src/Makefile                              \
            server/Makefile                                  \
            server/frontend/Makefile                         \

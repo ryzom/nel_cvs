@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.108 2002/03/14 13:48:28 lecroart Exp $
+ * $Id: service.cpp,v 1.109 2002/03/19 17:42:48 valignat Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -97,6 +97,9 @@ uint16 IService::_DefaultPort = 0;
 TTime IService::_UpdateTimeout = 100;
 
 CConfigFile IService::ConfigFile;
+
+char	 *IService::_ConfigDir = NULL;
+char	 *IService::_LogDir = NULL;
 
 IService	 *IService::Instance = NULL;
 
@@ -194,6 +197,7 @@ IService::IService()
 	IService::Instance = this;
 	_Initialized = false;
 	_WindowDisplayer = NULL;
+	_ConfigDir = strdup("");
 }
 
 
@@ -312,7 +316,7 @@ void IService::setServiceName (const char *shortName, const char *longName)
 
 	createDebug ();
 
-	fd.setParam (_LongName + ".log", false);
+	fd.setParam ((getLogDir() ? getLogDir() : "") + _LongName + ".log", false);
 
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
@@ -370,7 +374,7 @@ sint IService::main ()
 		// Load the config file
 		//
 
-		ConfigFile.load (_LongName + ".cfg");
+		ConfigFile.load ((getConfigDir() ? getConfigDir() : "") + _LongName + ".cfg");
 
 		try
 		{

@@ -1,10 +1,12 @@
 #
-# $Id: Makefile.am,v 1.5 2001/10/22 10:35:49 lecroart Exp $
+# $Id: Makefile.am,v 1.6 2002/03/19 17:42:48 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
                        config.sub ltconfig aclocal.m4 config.h.in \
-                       install-sh mkinstalldirs
+                       install-sh mkinstalldirs 
+
+EXTRA_DIST	     = acconfig.h services.dsw bootstrap doc
 
 SUBDIRS              = login_service          \
                        naming_service         \
@@ -12,10 +14,8 @@ SUBDIRS              = login_service          \
                        admin_service          \
                        welcome_service
 
-
 dist-hook:
-	cp -pr $(srcdir)/bootstrap $(distdir)
-
+	find $(distdir) -name CVS -print | xargs rm -fr
 
 # End of Makefile.am
 

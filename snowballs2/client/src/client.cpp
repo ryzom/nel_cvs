@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.53 2002/02/20 09:43:47 lecroart Exp $
+ * $Id: client.cpp,v 1.54 2002/03/19 17:42:49 valignat Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,14 @@
 //
 // Includes
 // 
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef SNOWBALLS_CONFIG
+#define SNOWBALLS_CONFIG ""
+#endif // SNOWBALLS_CONFIG
 
 #include <nel/misc/types_nl.h>
 
@@ -145,7 +153,7 @@ int main(int argc, char **argv)
 	nlinfo ("Starting Snowballs !");
 
 	// Load config file
-	ConfigFile.load ("client.cfg");
+	ConfigFile.load (SNOWBALLS_CONFIG "client.cfg");
 
 	// Set the ShowCommands with the value set in the clietn config file
 	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;

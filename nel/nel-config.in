@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $Id: nel-config.in,v 1.2 2001/11/07 16:25:13 valignat Exp $
+# $Id: nel-config.in,v 1.3 2002/03/19 17:42:48 valignat Exp $
 #
 # nel-config
 #
@@ -31,6 +31,7 @@ Options:
    [--version]
    [--libs]
    [--libtool]
+   [--ldflags]
    [--cflags]
    [--without-network]
    [--without-3d]
@@ -75,6 +76,9 @@ do
             ;;
         --cflags)
             echo_cflags=yes
+            ;;
+        --ldflags)
+            echo_ldflags=yes
             ;;
         --libs)
             echo_libs=yes
@@ -126,6 +130,12 @@ if test "$echo_cflags" = "yes"
 then
     cflags="-I$include_dir/"
     echo $cflags
+fi
+
+if test "$echo_ldflags" = "yes"
+then
+    ldflags="-L$lib_dir"
+    echo $ldflags
 fi
 
 if test "$echo_libs" = "yes"

@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.9 2002/03/18 14:05:08 lecroart Exp $
+ * $Id: main.cpp,v 1.10 2002/03/19 17:42:49 valignat Exp $
  */
 
 /*
@@ -24,6 +24,17 @@
  * MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef SNOWBALLS_CONFIG
+#define SNOWBALLS_CONFIG ""
+#endif // SNOWBALLS_CONFIG
+
+#ifndef SNOWBALLS_LOGS
+#define SNOWBALLS_LOGS ""
+#endif // SNOWBALLS_LOGS
 
 // This include is mandatory to use NeL. It include NeL types.
 #include <nel/misc/types_nl.h>
@@ -453,7 +464,9 @@ NLNET_SERVICE_MAIN( CPositionService,
 					"POS",
 					"position_service",
 					0,
-					CallbackArray )
+					CallbackArray,
+					SNOWBALLS_CONFIG,
+					SNOWBALLS_LOGS )
 
 
 /* end of file */

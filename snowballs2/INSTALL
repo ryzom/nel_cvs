@@ -13,7 +13,7 @@ Requirements
 
    Snowballs need the folowing libraries :
 
-      - STLPort 4.0           <URL:http://www.stlport.org/>
+      - STLPort 4.5           <URL:http://www.stlport.org/>
       - NeL                   <URL:http://www.nevrax.org/>
             Default install plus NeL Sound.
 	    You need to launch the configure script with the '--enable-sound'

@@ -2,15 +2,15 @@
 Requirements
 ============
 
-   The NeL library need the following libraries :
+   The NeL library needs the following libraries :
 
-      - STLPort 4.0    <URL:http://www.stlport.org/>            (Mandatory)
+      - STLPort 4.5    <URL:http://www.stlport.org/>            (Mandatory)
       - LibXML 2.4.13  <URL:http://www.xmlsoft.org/>            (NeL Misc)
       - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
 
-   STLPort need to be compiled. NeL is using the SGI iostreams and it require
+   STLPort needs to be compiled. NeL is using the SGI iostreams and it require
    the STLPort compilation and a linking of NeL with the STLPort library.
 
    On a GNU/Linux platform you will need the following libraries and
@@ -43,7 +43,7 @@ Requirements
    provided on your installation disk. 
 
    The given sofware or library version numbers are the ones that we are
-   using. We don't know if it working with other (older or more recent)
+   using. We don't know if NeL will work with other (older or more recent)
    versions of these softwares or libraries. You are welcome to help us
    to define more precisely these informations ;-)
 
@@ -91,10 +91,10 @@ Compilation
            The STLPort include *must* be inserted before the microsoft one or
            the compiler will take microsoft STL instead of STLPort STL.
            (use the arrow button to put the STLPort include at the top)
-           ex: D:/stlport-4.0/stlport
+           ex: D:/stlport-4.5/stlport
 
          - Add the STLPort library directory to the "Library Files" category.
-           ex: D:/stlport-4.0/lib
+           ex: D:/stlport-4.5/lib
 
          - Add the FreeType include directory to the "Include Files" category.
            ex: D:/freetype-2.0/include

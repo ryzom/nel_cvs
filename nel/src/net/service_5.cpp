@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.21 2002/03/14 13:48:28 lecroart Exp $
+ * $Id: service_5.cpp,v 1.22 2002/03/19 17:42:48 valignat Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -98,6 +98,9 @@ CEntityId	 IService5::_NextEntityId;
 
 IService5	*IService5::Instance		= NULL;
 CConfigFile	 IService5::ConfigFile;
+
+char		*IService5::_ConfigDir		= NULL;
+char		*IService5::_LogDir		= NULL;
 
 //
 // Prototypes
@@ -302,8 +305,9 @@ void IService5::setServiceName (const char *shortName, const char *longName)
 	// now we have the service name, we create the log with this service
 
 	createDebug ();
+
 /* DEBUG BEN
-	fd.setParam (_LongName + ".log", false);
+	fd.setParam ((getLogDir() ? getLogDir() : "") + _LongName + ".log", false);
 
 	DebugLog->addDisplayer (&fd);
 	InfoLog->addDisplayer (&fd);
@@ -362,7 +366,7 @@ sint IService5::main ()
 		// Load the config file
 		//
 
-		ConfigFile.load (_LongName + ".cfg");
+		ConfigFile.load ((getConfigDir() ? getConfigDir() : "") + _LongName + ".cfg");
 
 		try
 		{

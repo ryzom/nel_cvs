@@ -1,15 +1,16 @@
 #
-# $Id: Makefile.am,v 1.2 2001/07/27 15:51:10 valignat Exp $
+# $Id: Makefile.am,v 1.3 2002/03/19 17:42:49 valignat Exp $
 #
 
 MAINTAINERCLEANFILES   = Makefile.in
 
-bin_PROGRAMS           = naming_service
+EXTRA_DIST		       = naming_service.cfg \
+				 naming_service.dsp
 
-naming_service_SOURCES = naming_service.cpp                \
-                         naming_service.h
+sbin_PROGRAMS          = naming_service
 
-naming_service_LDADD   = -lnelnet -lnelmisc
+naming_service_SOURCES = naming_service.cpp
 
+pkgsysconf_DATA        = naming_service.cfg
 
 # End of Makefile.am

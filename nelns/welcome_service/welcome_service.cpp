@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.11 2002/03/04 15:33:43 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.12 2002/03/19 17:42:49 valignat Exp $
  *
  */
 
@@ -23,6 +23,18 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef NELNS_CONFIG
+#define NELNS_CONFIG ""
+#endif // NELNS_CONFIG
+
+#ifndef NELNS_LOGS
+#define NELNS_LOGS ""
+#endif // NELNS_LOGS
 
 #include "nel/misc/types_nl.h"
 
@@ -365,7 +377,7 @@ public:
 
 
 // Service instanciation
-NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray);
+NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
 //

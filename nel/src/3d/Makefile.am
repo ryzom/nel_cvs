@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.71 2002/03/14 18:32:02 vizerie Exp $
+# $Id: Makefile.am,v 1.72 2002/03/19 17:42:48 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -74,7 +74,6 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        event_mouse_listener.h                          \
                        fast_floor.cpp                                  \
                        fast_floor.h                                    \
-                       files.txt                                       \
                        flare_model.cpp                                 \
                        flare_model.h                                   \
                        flare_shape.cpp                                 \
@@ -487,6 +486,8 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        zone_smoother.h                                 \
                        zone_tgt_smoother.cpp                           \
                        zone_tgt_smoother.h
+
+noinst_HEADERS	     = std3d.h mesh_vertex_program.h meshvp_wind_tree.h
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src @FREETYPE_CFLAGS@
 

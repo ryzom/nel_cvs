@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.18 2002/01/14 17:50:49 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.19 2002/03/19 17:42:49 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,17 @@
  * MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef NELNS_CONFIG
+#define NELNS_CONFIG ""
+#endif // NELNS_CONFIG
+
+#ifndef NELNS_LOGS
+#define NELNS_LOGS ""
+#endif // NELNS_LOGS
 
 //
 // Includes
@@ -609,7 +620,7 @@ public:
 //
 /// Naming Service
 //
-NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray)
+NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray, NELNS_CONFIG, NELNS_LOGS)
 
 
 //

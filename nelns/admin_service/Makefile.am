@@ -1,15 +1,17 @@
 #
-# $Id: Makefile.am,v 1.3 2001/07/27 15:51:10 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/03/19 17:42:48 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
 
-bin_PROGRAMS          = admin_service
+EXTRA_DIST		       = admin_service.cfg \
+				 admin_service.dsp
+
+sbin_PROGRAMS         = admin_service
 
 admin_service_SOURCES = admin_service.cpp
 
-admin_service_LDADD   = -lnelnet -lnelmisc
-
+pkgsysconf_DATA	      = admin_service.cfg
 
 # End of Makefile.am
 

@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for NeLNS
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.10 2002/01/10 14:33:20 valignat Exp $
+dnl $Id: configure.in,v 1.11 2002/03/19 17:42:48 valignat Exp $
 dnl 
 
 
@@ -61,8 +61,6 @@ dnl ====================================================================
 dnl Checks for typedefs, structures, and compiler characteristics.
 dnl ====================================================================
 
-AC_C_CONST
-
 dnl Add the define _REENTRANT for a correct use of the threads
 if test "X$CC" = "Xgcc";
 then
@@ -82,6 +80,8 @@ dnl ====================================================================
 dnl Checks for libraries.
 dnl ====================================================================
 
+AC_CHECK_LIB(crypt, crypt)
+
 dnl ====================================================================
 dnl STLPort
 
@@ -91,16 +91,28 @@ AM_PATH_STLPORT
 dnl ====================================================================
 dnl NeL
 
-AM_PATH_NEL("yes", "yes", "no", "no", "no", "no")
-
-CXXFLAGS="$CXXFLAGS ${NEL_CFLAGS}"
-LIBS="$LIBS ${NEL_LIBS}"
-
+dnl         misc   net    3d    pacs  sound  ai
+AM_PATH_NEL("yes", "yes", "no", "no", "no",  "no")
 
 dnl ====================================================================
 dnl Checks for library functions.
 dnl ====================================================================
 
+dnl ====================================================================
+dnl nelns configuration and logs file location
+dnl ====================================================================
+
+pkgsysconfdir='${sysconfdir}/nelns'
+AC_SUBST(pkgsysconfdir)
+
+eval NELNS_STATE=\"$localstatedir/games/nelns/\"
+AC_DEFINE_UNQUOTED(NELNS_STATE, "$NELNS_STATE")
+
+eval NELNS_CONFIG=\"$sysconfdir/nelns/\"
+AC_DEFINE_UNQUOTED(NELNS_CONFIG, "$NELNS_CONFIG")
+
+eval NELNS_LOGS=\"$localstatedir/log/nelns/\"
+AC_DEFINE_UNQUOTED(NELNS_LOGS, "$NELNS_LOGS")
 
 dnl ====================================================================
 dnl Output files to generate.

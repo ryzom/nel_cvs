@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.12 2001/10/22 10:35:49 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.13 2002/03/19 17:42:48 valignat Exp $
  *
  */
 
@@ -23,6 +23,18 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef NELNS_CONFIG
+#define NELNS_CONFIG ""
+#endif // NELNS_CONFIG
+
+#ifndef NELNS_LOGS
+#define NELNS_LOGS ""
+#endif // NELNS_LOGS
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -515,4 +527,4 @@ public:
 
 
 /// Naming Service
-NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, ServicesCallbackArray);
+NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, ServicesCallbackArray, NELNS_CONFIG, NELNS_LOGS);

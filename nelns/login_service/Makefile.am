@@ -1,10 +1,13 @@
 #
-# $Id: Makefile.am,v 1.4 2002/01/07 16:09:52 valignat Exp $
+# $Id: Makefile.am,v 1.5 2002/03/19 17:42:49 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
 
-bin_PROGRAMS          = login_service
+EXTRA_DIST		       = login_service.cfg \
+				 login_service.dsp
+
+sbin_PROGRAMS         = login_service
 
 login_service_SOURCES = connection_client.cpp              \
                         connection_client.h                \
@@ -13,8 +16,7 @@ login_service_SOURCES = connection_client.cpp              \
                         login_service.cpp                  \
                         login_service.h
 
-login_service_LDADD   = -lnelmisc -lnelnet -lcrypt
-
+pkgsysconf_DATA	      = login_service.cfg
 
 # End of Makefile.am
 

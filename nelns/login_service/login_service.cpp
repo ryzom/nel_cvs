@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.15 2002/03/04 18:13:15 lecroart Exp $
+ * $Id: login_service.cpp,v 1.16 2002/03/19 17:42:49 valignat Exp $
  *
  */
 
@@ -23,6 +23,22 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef NELNS_CONFIG
+#define NELNS_CONFIG ""
+#endif // NELNS_CONFIG
+
+#ifndef NELNS_LOGS
+#define NELNS_LOGS ""
+#endif // NELNS_LOGS
+
+#ifndef NELNS_STATE
+#define NELNS_STATE ""
+#endif // NELNS_STATE
 
 #include <stdio.h>
 #include <ctype.h>
@@ -70,7 +86,7 @@ bool AcceptExternalShard = true;
 bool CryptPassword = true;
 
 // store specific user information
-NLMISC::CFileDisplayer Fd ("login_service.stat");
+NLMISC::CFileDisplayer Fd (NELNS_LOGS "login_service.stat");
 NLMISC::CStdDisplayer Sd;
 NLMISC::CLog Output;
 
@@ -83,7 +99,7 @@ vector<CShard>	Shards;
 
 IService *ServiceInstance = NULL;
 
-const char		*PlayerDatabaseName = "login_service.udb";
+const char		*PlayerDatabaseName = NELNS_STATE "login_service.udb";
 
 //
 // Functions
@@ -489,7 +505,7 @@ public:
 
 
 // Service instanciation
-NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray);
+NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
 
 
 //

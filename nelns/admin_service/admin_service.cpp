@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.13 2002/03/01 10:20:32 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.14 2002/03/19 17:42:48 valignat Exp $
  *
  */
 
@@ -23,6 +23,18 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef NELNS_CONFIG
+#define NELNS_CONFIG ""
+#endif // NELNS_CONFIG
+
+#ifndef NELNS_LOGS
+#define NELNS_LOGS ""
+#endif // NELNS_LOGS
 
 #include <string>
 #include <list>
@@ -970,4 +982,4 @@ public:
 // AESAS is a client connection to the admin executor
 
 /// Naming Service
-NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49995, ClientCallbackArray);
+NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49995, ClientCallbackArray, NELNS_CONFIG, NELNS_LOGS);

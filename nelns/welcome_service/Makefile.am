@@ -1,14 +1,16 @@
 #
-# $Id: Makefile.am,v 1.3 2001/07/27 15:51:10 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/03/19 17:42:49 valignat Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
 
-bin_PROGRAMS            = welcome_service
+EXTRA_DIST		       = welcome_service.cfg \
+				 welcome_service.dsp
+
+sbin_PROGRAMS           = welcome_service
 
 welcome_service_SOURCES = welcome_service.cpp
 
-welcome_service_LDADD   = -lnelnet -lnelmisc
-
+pkgsysconf_DATA	        = welcome_service.cfg
 
 # End of Makefile.am

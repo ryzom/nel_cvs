@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.42 2002/03/14 13:49:15 lecroart Exp $
+ * $Id: debug.cpp,v 1.43 2002/03/19 17:42:48 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "nelconfig.h"
+#endif // HAVE_CONFIG_H
+
 #include "stdmisc.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
@@ -40,10 +44,22 @@ using namespace std;
  
 // If you don't want to add default displayer, put 0 instead of 1. In this case, you
 // have to manage yourself displayer (in final release for example, we have to put 0)
-#define DEFAULT_DISPLAYER 1
+// Alternatively, you can use --without-logging when using configure to set
+// it to 0.
+#ifndef NEL_DEFAULT_DISPLAYER
+#define NEL_DEFAULT_DISPLAYER 1
+#endif // NEL_DEFAULT_DISPLAYER
 
 // Put 0 if you don't want to display in file "log.log"
-#define LOG_IN_FILE 1
+// Alternatively, you can use --without-logging when using configure to set
+// it to 0.
+#ifndef NEL_LOG_IN_FILE
+#define NEL_LOG_IN_FILE 1
+#endif // NEL_LOG_IN_FILE
+
+#define DEFAULT_DISPLAYER NEL_DEFAULT_DISPLAYER
+
+#define LOG_IN_FILE NEL_LOG_IN_FILE
 
 namespace NLMISC {
 

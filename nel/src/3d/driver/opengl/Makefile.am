@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.10 2002/01/07 16:09:52 valignat Exp $
+# $Id: Makefile.am,v 1.11 2002/03/19 17:42:48 valignat Exp $
 #
 
 MAINTAINERCLEANFILES         = Makefile.in
@@ -22,10 +22,13 @@ libnel_drv_opengl_la_SOURCES = driver_opengl.cpp                 \
                                unix_event_emitter.cpp            \
                                unix_event_emitter.h
 
+noinst_HEADERS		     = stdopengl.h
+
 AM_CXXFLAGS                  = -I$(top_srcdir)/src \
                                @OPENGL_CFLAGS@ @XF86VIDMODE_CFLAGS@
 
 libnel_drv_opengl_la_LIBADD  = @OPENGL_LIBS@ @XF86VIDMODE_LIBS@
+libnel_drv_opengl_la_LDFLAGS = -no-undefined
 
 
 # End of Makefile.am

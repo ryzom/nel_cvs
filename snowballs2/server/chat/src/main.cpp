@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Chat Service.
  *
- * $Id: main.cpp,v 1.4 2002/03/18 14:05:00 lecroart Exp $
+ * $Id: main.cpp,v 1.5 2002/03/19 17:42:49 valignat Exp $
  */
 
 /*
@@ -23,6 +23,18 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif // HAVE_CONFIG_H
+
+#ifndef SNOWBALLS_CONFIG
+#define SNOWBALLS_CONFIG ""
+#endif // SNOWBALLS_CONFIG
+
+#ifndef SNOWBALLS_LOGS
+#define SNOWBALLS_LOGS ""
+#endif // SNOWBALLS_LOGS
 
 #include <string>
 
@@ -114,7 +126,9 @@ NLNET_SERVICE_MAIN( CChatService,
 					"CHAT",
 					"chat_service",
 					0,
-					CallbackArray )
+					CallbackArray,
+					SNOWBALLS_CONFIG,
+					SNOWBALLS_LOGS )
 
 
 /* end of file */

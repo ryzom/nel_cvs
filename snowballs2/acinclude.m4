@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.8 2002/02/18 12:58:38 lecroart Exp $
+dnl $Id: acinclude.m4,v 1.9 2002/03/19 17:42:48 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -214,37 +214,13 @@ AC_DEFUN(MY_NEL_LIB_CHK,
 [ AC_REQUIRE_CPP()
 
 chk_message_obj="$1"
-nel_libraries="$2"
-nel_test_lib="$3"
-nel_additional_libs="$4"
-is_mandatory="$5"
+nel_test_lib="$2"
+is_mandatory="$3"
 
 if test $is_mandatory = "yes"
 then
 
-    AC_MSG_CHECKING(for -l$nel_test_lib)
-        
-    NEL_TEST_LIBS="$NEL_LIBS $nel_additional_libs -l$nel_test_lib"
-
-    _CPPFLAGS="$CPPFLAGS"
-
-    CPPFLAGS="$CXXFLAGS $LIBS $NEL_TEST_LIBS"
-
-    AC_TRY_LINK( , , have_nel_test_libraries="yes", have_nel_test_libraries="no")
-
-    CPPFLAGS="$_CPPFLAGS"
-
-    if test "$have_nel_test_libraries" = "yes"
-    then    
-        AC_MSG_RESULT(yes)
-    else
-        if test "$is_mandatory" = "yes"
-        then
-            AC_MSG_ERROR([$chk_message_obj must be installed (http://www.nevrax.org).])
-        else
-            AC_MSG_RESULT(no)
-        fi
-    fi
+    AC_CHECK_LIB($nel_test_lib, main,,[AC_MSG_ERROR([$chk_message_obj must be installed (http://www.nevrax.org).])])
 fi
 ])
 
@@ -269,13 +245,6 @@ AC_ARG_WITH( nel-lib,
                           e.g. /usr/local/nel/lib])
 
 
-nel_misc_lib="nelmisc"
-nel_net_lib="nelnet"
-nel_3d_lib="nel3d"
-nel_pacs_lib="nelpacs"
-nel_sound_lib="nelsnd"
-nel_ai_lib="nelai"
-
 nelmisc_is_mandatory="$1"
 nelnet_is_mandatory="$2"
 nel3d_is_mandatory="$3"
@@ -286,23 +255,40 @@ nelai_is_mandatory="$6"
 dnl Check for nel-config
 AC_PATH_PROG(NEL_CONFIG, nel-config, no)
 
-if test "$NEL_CONFIG" = "no"
+dnl 
+dnl Configure options (--with-nel*) have precendence 
+dnl over nel-config only set variables if they are not 
+dnl specified
+dnl
+if test "$NEL_CONFIG" != "no"
 then
-    have_nel_config="no"
-else
-    NEL_CFLAGS=`nel-config --cflags`
+    if test -z "$with_nel" -a -z "$with_nel_include"
+    then
+	CXXFLAGS="$CXXFLAGS `nel-config --cflags`"
+    fi
 
-    NEL_LIBS_CONFIG=`nel-config --libs`
-
-    NEL_LIBS=`echo '$NEL_LIBS_CONFIG' | sed -e 's/[[:space:]]*-l[^[:space:]]*//g'`
-
-    have_nel_config="yes"
+    if test -z "$with_nel" -a -z "$with_nel_lib"
+    then
+	LDFLAGS="`nel-config --ldflags` $LDFLAGS"
+    fi
 fi
 
-if test "$with_nel"
+dnl
+dnl Set nel_libraries and nel_includes according to
+dnl user specification (--with-nel*) if any. 
+dnl --with-nel-include and --with-nel-lib have precendence
+dnl over --with-nel
+dnl
+if test "$with_nel" = "no"
 then
-    nel_includes="$with_nel/include"
-    nel_libraries="$with_nel/lib"
+    dnl The user explicitly disabled the use of the NeL
+    AC_MSG_ERROR([NeL is mandatory: do not specify --without-nel])
+else
+    if test "$with_nel" -a "$with_nel" != "yes"
+    then
+	nel_includes="$with_nel/include"
+	nel_libraries="$with_nel/lib"
+    fi
 fi
 
 if test "$with_nel_include"
@@ -315,17 +301,24 @@ then
     nel_libraries="$with_nel_lib"
 fi
 
+dnl
+dnl Set compilation variables 
+dnl
 if test "$nel_includes"
 then
-    NEL_CFLAGS="-I$nel_includes"
+    CXXFLAGS="$CXXFLAGS -I$nel_includes"
 fi
 
 if test "$nel_libraries"
 then
-    NEL_LIBS="-L$nel_libraries"
+    LDFLAGS="-L$nel_libraries $LDFLAGS"
 fi
 
-dnl Checking for NeL headers
+dnl
+dnl Collect headers information and bark if missing and
+dnl mandatory
+dnl
+
 MY_NEL_HEADER_CHK([NeL Misc], [nel/misc/types_nl.h], [NL_TYPES_H], $nelmisc_is_mandatory)
 MY_NEL_HEADER_CHK([NeL Network], [nel/net/sock.h], [NL_SOCK_H], $nelnet_is_mandatory)
 MY_NEL_HEADER_CHK([NeL 3D], [nel/3d/u_camera.h], [NL_U_CAMERA_H], $nel3d_is_mandatory)
@@ -333,13 +326,17 @@ MY_NEL_HEADER_CHK([NeL PACS], [nel/pacs/u_global_position.h], [NL_U_GLOBAL_POSIT
 MY_NEL_HEADER_CHK([NeL Sound], [nel/sound/u_source.h], [NL_U_SOURCE_H], $nelsound_is_mandatory)
 MY_NEL_HEADER_CHK([NeL AI], [nel/ai/nl_ai.h], [_IA_NEL_H], $nelai_is_mandatory)
 
-dnl Checking for NeL libraries
-MY_NEL_LIB_CHK([NeL Misc], $nel_libraries, $nel_misc_lib, "", $nelmisc_is_mandatory)
-MY_NEL_LIB_CHK([NeL Network],$nel_libraries, $nel_net_lib, "-lnelmisc", $nelnet_is_mandatory)
-MY_NEL_LIB_CHK([NeL 3D], $nel_libraries, $nel_3d_lib, "-lnelmisc", $nel3d_is_mandatory)
-MY_NEL_LIB_CHK([NeL PACS], $nel_libraries, $nel_pacs_lib, "-lnelmisc", $nelpacs_is_mandatory)
-MY_NEL_LIB_CHK([NeL AI], $nel_libraries, $nel_ai_lib, "-lnelmisc", $nelai_is_mandatory)
-MY_NEL_LIB_CHK([NeL Sound], $nel_libraries, $nel_sound_lib, "-lnelmisc" $OPENAL_LIBS, $nelsound_is_mandatory)
+dnl
+dnl Collect libraries information and bark if missing and
+dnl mandatory
+dnl
+
+MY_NEL_LIB_CHK([NeL Misc], [nelmisc], $nelmisc_is_mandatory)
+MY_NEL_LIB_CHK([NeL Network], [nelnet], $nelnet_is_mandatory)
+MY_NEL_LIB_CHK([NeL 3D], [nel3d], $nel3d_is_mandatory)
+MY_NEL_LIB_CHK([NeL PACS], [nelpacs], $nelpacs_is_mandatory)
+MY_NEL_LIB_CHK([NeL AI], [nelai], $nelai_is_mandatory)
+MY_NEL_LIB_CHK([NeL Sound], [nelsnd], $nelsound_is_mandatory)
 
 ])
 
@@ -374,11 +371,10 @@ fi
 if test "$with_stlport" = no
 then
     dnl The user explicitly disabled the use of the STLPorts
-    AC_MSG_CHECKING(STLPort)
-    have_stlport="disabled"
-    AC_MSG_RESULT(disabled (*** EXPERIMENTAL ***))
+    AC_MSG_ERROR([STLPort is mandatory: do not specify --without-stlport])
 else
-    if test "$with_stlport"
+    stlport_includes="/usr/include/stlport"
+    if test "$with_stlport" -a "$with_stlport" != yes
     then
         stlport_includes="$with_stlport/stlport"
         stlport_libraries="$with_stlport/lib"
@@ -390,82 +386,73 @@ else
     fi
 fi
 
-if test -z "$have_stlport" -a "$with_stlport_include"
+if test "$with_stlport_include"
 then
     stlport_includes="$with_stlport_include"
 fi
 
-if test -z "$have_stlport" -a "$with_stlport_lib"
+if test "$with_stlport_lib"
 then
     stlport_libraries="$with_stlport_lib"
 fi
 
-if test -z "$have_stlport"
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+
+dnl Put STLPorts includes in CXXFLAGS
+if test "$stlport_includes"
 then
-    dnl Put STLPorts includes in CXXFLAGS
-    if test "$stlport_includes"
-    then
-        CXXFLAGS="$CXXFLAGS -I$stlport_includes"
-    fi
-
-    dnl Put STLPorts libraries in LIBS
-    if test "$stlport_libraries"
-    then
-        LIBS="-L$stlport_libraries $LIBS -l$stlport_lib"
-    fi
-
-    dnl Test the headers
-    AC_MSG_CHECKING(for STLPort headers)
-
-    _CPPFLAGS="$CPPFLAGS"
-
-    CPPFLAGS="$CXXFLAGS"
-
-    AC_EGREP_CPP( yo_stlport,
-    [#include <algorithm>
-#ifdef __SGI_STL_PORT
-   yo_stlport
-#endif],
-      have_stlport_headers="yes",
-      have_stlport_headers="no" )
-
-    if test "$have_stlport_headers" = "yes"
-    then
-        AC_MSG_RESULT([$stlport_includes])
-    else
-        AC_MSG_RESULT(no)
-    fi
-
-    dnl Test the libraries
-    AC_MSG_CHECKING(for STLPort libraries)
-
-    CPPFLAGS="$CXXFLAGS $LIBS"
-
-    AC_TRY_LINK( , , have_stlport_libraries="yes", have_stlport_libraries="no")
-
-    CPPFLAGS="$_CPPFLAGS"
-
-    if test "$have_stlport_libraries" = "yes"
-    then
-        AC_MSG_RESULT([$stlport_libraries])
-    else
-        AC_MSG_RESULT(no)
-    fi
-
-    if test "$have_stlport_headers" = "yes" \
-       && test "$have_stlport_libraries" = "yes"
-    then
-        have_stlport="yes"
-    else
-        have_stlport="no"
-    fi
-
-    if test "$have_stlport" = "no"
-    then
-        AC_MSG_ERROR([STLPort must be installed (http://www.stlport.org).])
-    fi
-
+    CXXFLAGS="$CXXFLAGS -I$stlport_includes"
 fi
+
+dnl Put STLPorts libraries directory in LIBS
+if test "$stlport_libraries"
+then
+    LIBS="-L$stlport_libraries $LIBS"
+else
+    stlport_libraries='default'
+fi
+
+dnl Test the headers
+
+AC_CHECK_HEADER(algorithm,
+    have_stlport_headers="yes",
+    have_stlport_headers="no" )
+
+AC_MSG_CHECKING(for STLPort headers)
+
+if test "$have_stlport_headers" = "yes"
+then
+    AC_MSG_RESULT([$stlport_includes])
+else
+    AC_MSG_RESULT(no)
+fi
+
+AC_CHECK_LIB($stlport_lib, main,, have_stlport_libraries="no")
+
+AC_MSG_CHECKING(for STLPort library)
+
+if test "$have_stlport_libraries" != "no"
+then
+    AC_MSG_RESULT([$stlport_libraries])
+else
+    AC_MSG_RESULT(no)
+fi
+
+if test "$have_stlport_headers" = "yes" &&
+    test "$have_stlport_libraries" != "no"
+then
+    have_stlport="yes"
+else
+    have_stlport="no"
+fi
+
+if test "$have_stlport" = "no"
+then
+    AC_MSG_ERROR([STLPort must be installed (http://www.stlport.org).])
+fi
+
+AC_LANG_RESTORE
 
 ])
 

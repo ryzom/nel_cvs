@@ -220,6 +220,10 @@ SOURCE=.\global_wind_dlg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\graph.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\light_group_factor.cpp
 # End Source File
 # Begin Source File
@@ -352,6 +356,10 @@ SOURCE=.\fog_dlg.h
 # Begin Source File
 
 SOURCE=.\global_wind_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\graph.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.112 2003/12/15 16:06:28 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.113 2004/03/04 14:46:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,7 @@
 #include "choose_bg_color_dlg.h"
 #include "choose_sun_color_dlg.h"
 #include "choose_frame_delay.h"
-
+#include "graph.h"
 
 
 
@@ -1051,6 +1051,7 @@ void CObjectViewer::go ()
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	_InstanceRunning = true;
+	CGraph graph("ms", 10, 10, 200, 100, CRGBA(64, 64, 64), 20, 200);
 
 	do
 	{		
@@ -1214,7 +1215,9 @@ void CObjectViewer::go ()
 				}
 			}
 
-		
+			// graph disabled for now..
+			// graph.addValue(CNELU::Scene->getEllapsedTime() * 1000.f);
+			// graph.renderGraph();
 
 			// Swap the buffers
 			CNELU::swapBuffers();
@@ -3549,6 +3552,7 @@ void		CObjectViewer::shootScene()
 			window.right += movieSize.Width - width;
 			window.bottom += movieSize.Height - height;
 			_MainFrame->SetWindowPos (NULL, 0, 0, window.right-window.left, window.bottom-window.top, SWP_NOMOVE|SWP_NOZORDER);
+			
 
 			// Swap the buffers
 			CNELU::swapBuffers();
@@ -3589,6 +3593,7 @@ void		CObjectViewer::shootScene()
 
 				// Draw the scene		
 				CNELU::Scene->render ();
+
 
 				// Swap the buffers
 				CNELU::swapBuffers();

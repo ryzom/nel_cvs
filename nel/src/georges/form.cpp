@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.17 2003/10/08 17:10:45 corvazier Exp $
+ * $Id: form.cpp,v 1.18 2003/11/25 14:40:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,9 @@ void warning (bool exception, const char *format, ... )
 		throw EXmlParsingError (tmp);
 	}
 	else
+	{	
 		nlwarning ("NeL::Georges %s", buffer);
+	}
 }
 
 // ***************************************************************************

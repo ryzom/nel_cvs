@@ -135,6 +135,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_CLEAR, OnClear)
 	ON_COMMAND(ID_EDIT_MOVEELEMENT, OnEditMoveelement)
 	ON_COMMAND(ID_EDIT_MOVE_FX, OnEditMoveFX)
+	ON_COMMAND(ID_EDIT_MOVE_FX_USER_MATRIX, OnEditMoveFXUserMatrix)
 	ON_COMMAND(ID_EDIT_X, OnEditX)
 	ON_COMMAND(ID_EDIT_Y, OnEditY)
 	ON_COMMAND(ID_EDIT_Z, OnEditZ)
@@ -164,6 +165,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_WINDOW_CHOOSE_BG_COLOR, OnWindowChooseBGColor)
 	ON_COMMAND(ID_WINDOW_CHOOSE_SUN_COLOR, OnWindowChooseSunColor)
 	ON_COMMAND(ID_SCENE_SETLIGHTGROUPFACTOR, OnSetLightGroupFactor)
+	ON_COMMAND(IDM_SHOW_SCENE_MATRIX, OnShowSceneMatrix)
+	ON_COMMAND(IDM_SHOW_FX_MATRIX, OnShowFXMatrix)
+	ON_COMMAND(IDM_SHOW_FX_USER_MATRIX, OnShowFXUserMatrix)
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
 	ON_UPDATE_COMMAND_UI(ID_WINDOW_ANIMATION, OnUpdateWindowAnimation)
@@ -185,6 +189,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_FX, OnUpdateEditMoveFX)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVE_FX_USER_MATRIX, OnUpdateEditMoveFXUserMatrix)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_SCENE_MATRIX, OnUpdateShowSceneMatrix)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_MATRIX, OnUpdateShowFXMatrix)
+	ON_UPDATE_COMMAND_UI(IDM_SHOW_FX_USER_MATRIX, OnUpdateShowFXUserMatrix)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)	
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
@@ -200,7 +208,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_EDIT_MOVESCENE, OnEditMovescene)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVESCENE, OnUpdateEditMovescene)
 	ON_COMMAND(ID_VIEW_RESET_SCENE_ROOT, OnViewResetSceneRoot)
-	ON_COMMAND(ID_VIEW_RESET_FX_ROOT, OnViewResetFXRoot)	
+	ON_COMMAND(ID_VIEW_RESET_FX_ROOT, OnViewResetFXRoot)
+	ON_COMMAND(IDM_RESET_FX_USER_MATRIX, OnViewResetFXUserMatrix)	
 	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
 	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
 	//}}AFX_MSG_MAP
@@ -804,6 +813,39 @@ void CMainFrame::OnSetupFog()
 	}
 }
 
+
+void CMainFrame::OnShowSceneMatrix()
+{
+	ObjView->setSceneMatrixVisible(!ObjView->getSceneMatrixVisible());
+}
+
+void CMainFrame::OnShowFXMatrix()
+{
+	ObjView->setFXMatrixVisible(!ObjView->getFXMatrixVisible());
+}
+
+void CMainFrame::OnShowFXUserMatrix()
+{
+	ObjView->setFXUserMatrixVisible(!ObjView->getFXUserMatrixVisible());
+}
+
+void CMainFrame::OnUpdateShowSceneMatrix(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(ObjView->getSceneMatrixVisible());
+}
+
+void CMainFrame::OnUpdateShowFXMatrix(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(ObjView->getFXMatrixVisible());
+}
+
+void CMainFrame::OnUpdateShowFXUserMatrix(CCmdUI* pCmdUI)
+{
+	pCmdUI->SetCheck(ObjView->getFXUserMatrixVisible());
+}
+
+
+
 void CMainFrame::OnWindowAnimation() 
 {
 	AnimationWindow^=true;
@@ -1163,6 +1205,29 @@ void CMainFrame::OnEditMoveFX()
 	EnableZCtrl.EnableWindow(MoveElement) ;*/
 }
 
+void CMainFrame::OnEditMoveFXUserMatrix() 
+{
+	// no op if already the case
+	if(isMoveFXUserMatrix())
+		return;
+
+	MouseMoveType= MoveFXUserMatrix;
+	UpdateData() ;
+	ToolBar.Invalidate ();
+
+	ObjView->getMouseListener().enableModelMatrixEdition(true) ;
+	ObjView->getMouseListener().enableTranslateXYInWorld(false);
+	ObjView->getMouseListener().setModelMatrix(ObjView->getFXUserMatrix());
+	// Each move must be multiplied by inverese of scene root matrix.
+	//ObjView->getMouseListener().setModelMatrixTransformMove(ObjView->_SceneRoot->getMatrix().inverted());
+	ObjView->getMouseListener().setModelMatrixTransformMove(CMatrix::Identity);
+
+	/*ctrl->EnableXCtrl.EnableWindow(MoveElement) ;
+	EnableYCtrl.EnableWindow(MoveElement) ;
+	EnableZCtrl.EnableWindow(MoveElement) ;*/
+}
+
+
 
 void CMainFrame::OnEditMoveObjectLightTest() 
 {
@@ -1193,7 +1258,7 @@ void CMainFrame::OnUpdateEditMovescene(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck (isMoveSceneRoot());
 }
 
-void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI) 
+void CMainFrame:: OnUpdateEditMoveelement(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (isMoveElement());
 }
@@ -1206,6 +1271,12 @@ void CMainFrame::OnUpdateEditMoveFX(CCmdUI* pCmdUI)
 		pCmdUI->Enable(!ObjView->getParticleDialog()->isPSStickedToSkeleton());
 	}
 }
+
+void CMainFrame::OnUpdateEditMoveFXUserMatrix(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (isMoveFXUserMatrix());	
+}
+
 
 void CMainFrame::OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI) 
 {
@@ -1235,6 +1306,18 @@ void CMainFrame::OnViewResetFXRoot()
 		ObjView->_MouseListener.setModelMatrix (ident);
 	}
 }
+
+// ***************************************************************************
+void CMainFrame::OnViewResetFXUserMatrix() 
+{
+	CMatrix	ident;
+	ObjView->setFXUserMatrix(ident);
+	if(isMoveFXUserMatrix())
+	{
+		ObjView->_MouseListener.setModelMatrix (ident);
+	}
+}
+
 
 // ***************************************************************************
 void CMainFrame::OnViewSetSceneRotation() 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.51 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: object_viewer.h,v 1.52 2003/11/25 14:40:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -478,6 +478,16 @@ public:
 	// get the main frame
 	CMainFrame *getMainFrame() const { return _MainFrame; }	
 
+	const NLMISC::CMatrix &getFXUserMatrix() const { return _FXUserMatrix; }
+	void setFXUserMatrix(const NLMISC::CMatrix &fxUserMatrix) {	_FXUserMatrix = fxUserMatrix; }
+
+	void		setSceneMatrixVisible(bool visible) { _SceneMatrixVisible = visible; }
+	bool		getSceneMatrixVisible() const { return _SceneMatrixVisible; }
+	void		setFXMatrixVisible(bool visible) { _FXMatrixVisible = visible; }
+	bool		getFXMatrixVisible() const { return _FXMatrixVisible; }
+	void		setFXUserMatrixVisible(bool visible) { _FXUserMatrixVisible = visible; }
+	bool		getFXUserMatrixVisible() const { return _FXUserMatrixVisible; }
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -495,6 +505,9 @@ private:
 	CChooseSunColorDlg							*_ChooseSunColorDlg;
 	uint32										_SelectedObject;
 	sint										_CurrentCamera;
+
+	// FX user matrix
+	NLMISC::CMatrix								_FXUserMatrix;
 
 	// Vector of camera
 	std::vector<uint>							_Cameras;
@@ -574,6 +587,10 @@ private:
 	// The matrix not snapped by pacs.
 	NLMISC::CMatrix								_ObjectLightTestMatrix;
 
+	bool										_FXMatrixVisible;
+	bool										_FXUserMatrixVisible;
+	bool										_SceneMatrixVisible;
+
 	// the lightInfo linked to the ig.
 	class	COVLogicInfo : public NL3D::ILogicInfo
 	{
@@ -599,6 +616,12 @@ private:
 
 	// load the config file
 	void	loadConfigFile();
+
+	void	drawFXUserMatrix();	
+	void	drawFXMatrix();
+	void	drawSceneMatrix();
+
+	void	drawNamedMatrix(const NLMISC::CMatrix &matrix, const std::string &name, NLMISC::CRGBA color, float textZOffset, float testSize);
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

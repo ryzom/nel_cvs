@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.109 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.110 2003/11/25 14:40:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@
 #include <3d/landscape_model.h>
 #include <3d/visual_collision_manager.h>
 #include <3d/visual_collision_entity.h>
+#include <3d/ps_util.h>
 
 
 #include <pacs/global_retriever.h>
@@ -259,7 +260,11 @@ CObjectViewer::CObjectViewer ()
 	_CharacterScalePos= 1;
 	_CurrentCamera = -1;
 
-	
+	_FXUserMatrix.identity();
+
+	_FXMatrixVisible = false;
+	_FXUserMatrixVisible = false;
+	_SceneMatrixVisible = false;
 }
 
 // ***************************************************************************
@@ -1129,6 +1134,11 @@ void CObjectViewer::go ()
 					break;
 				}
 			}
+
+			// draw various matrix
+			if (_FXMatrixVisible) drawFXMatrix();
+			if (_FXUserMatrixVisible) drawFXUserMatrix();
+			if (_SceneMatrixVisible) drawSceneMatrix();			
 			
 			// Test Window Keys
 			bool	keyWndOk= false;
@@ -1247,6 +1257,10 @@ void CObjectViewer::go ()
 			else if (_MainFrame->isMoveFX())
 			{
 				_ParticleDlg->setPSWorldMatrix(_MouseListener.getModelMatrix());
+			}
+			else if (_MainFrame->isMoveFXUserMatrix())
+			{
+				setFXUserMatrix(_MouseListener.getModelMatrix());
 			}
 			else if (_MainFrame->isMoveObjectLightTest())
 			{
@@ -3608,6 +3622,59 @@ void		CObjectViewer::shootScene()
 		}
 	}
 }
+
+void CObjectViewer::drawFXUserMatrix()
+
+{
+	static std::string fxUserMatrixStr;
+	static bool stringRetrieved = false;
+	if (!stringRetrieved)
+	{	
+		CString fxUserMatrix;
+		fxUserMatrix.LoadString(IDS_FX_USER_MATRIX);
+		fxUserMatrixStr = (LPCTSTR) fxUserMatrix;
+		stringRetrieved = true;
+	}
+	nlassert(_ParticleDlg);
+	drawNamedMatrix(getFXUserMatrix(), fxUserMatrixStr, NLMISC::CRGBA::Red, 0.2f, 10.f);
+}
+
+void CObjectViewer::drawFXMatrix()
+{
+	static std::string fxStr;
+	static bool stringRetrieved = false;
+	if (!stringRetrieved)
+	{	
+		CString fx;
+		fx.LoadString(IDS_FX_MATRIX);
+		fxStr = (LPCTSTR) fx;
+		stringRetrieved = true;
+	}
+	drawNamedMatrix(_ParticleDlg->getPSWorldMatrix(), fxStr, NLMISC::CRGBA::Blue, -0.2f, 10.f);
+}
+
+void CObjectViewer::drawSceneMatrix()
+{
+	static std::string sceneMatrixStr;
+	static bool stringRetrieved = false;
+	if (!stringRetrieved)
+	{	
+		CString sceneMatrix;
+		sceneMatrix.LoadString(IDS_SCENE_MATRIX);
+		sceneMatrixStr = (LPCTSTR) sceneMatrix;
+		stringRetrieved = true;
+	}
+	drawNamedMatrix(_SceneRoot->getMatrix(), sceneMatrixStr, NLMISC::CRGBA::White, 0.f, 10.f);
+}
+
+
+void CObjectViewer::drawNamedMatrix(const NLMISC::CMatrix &matrix, const std::string &name, NLMISC::CRGBA color, float textZOffset, float testSize)
+{
+	CPSUtil::displayBasis(CNELU::Driver, matrix, NLMISC::CMatrix::Identity, 1.f, *_FontGenerator, _FontManager);	
+	CPSUtil::print(CNELU::Driver, name, *_FontGenerator, _FontManager, matrix.getPos() + NLMISC::CVector(0.f, 0.f, textZOffset), testSize,  color);
+}
+
+
 
 sint CObjectViewer::getCurrentCamera () const
 {

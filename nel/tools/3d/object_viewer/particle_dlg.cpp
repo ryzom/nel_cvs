@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.23 2003/11/07 14:29:32 besson Exp $
+ * $Id: particle_dlg.cpp,v 1.24 2003/11/25 14:40:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -350,6 +350,9 @@ void CParticleDlg::go(void)
 		}
 		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
 	}
+	// copy user matrix into current fx
+	nlassert(_ObjView);
+	_CurrSystemModel->setUserMatrix(&_ObjView->getFXUserMatrix());
 }
 
 //**************************************************************************************************************************

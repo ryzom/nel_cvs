@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.16 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.17 2003/11/25 14:40:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -285,7 +285,7 @@ BOOL CEmitterDlg::OnInitDialog()
 	{
 		m_DirectionModeCtrl.SetCurSel((int)InWorld);
 	}
-	else if (_Emitter->getUserMatrixModeForEmissionDirection() == NL3D::PSFatherSkeletonWorldMatrix)
+	else if (_Emitter->getUserMatrixModeForEmissionDirection() == NL3D::PSUserMatrix)
 	{
 		m_DirectionModeCtrl.SetCurSel((int)LocalToFatherSkeleton);
 	}
@@ -369,7 +369,7 @@ void CEmitterDlg::OnSelchangeDirectionMode()
 		case LocalToFatherSkeleton:
 			_Emitter->enableSpeedBasisEmission(false);
 			_Emitter->enableUserMatrixModeForEmissionDirection(true);
-			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSFatherSkeletonWorldMatrix);
+			_Emitter->setUserMatrixModeForEmissionDirection(NL3D::PSUserMatrix);
 		break;
 	}
 	

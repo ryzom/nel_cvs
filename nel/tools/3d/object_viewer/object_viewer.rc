@@ -48,6 +48,7 @@ BEGIN
     BUTTON      ID_EDIT_MOVEELEMENT
     BUTTON      ID_EDIT_MOVE_OBJECT_LIGHT_TEST
     BUTTON      ID_EDIT_MOVE_FX
+    BUTTON      ID_EDIT_MOVE_FX_USER_MATRIX
 END
 
 
@@ -188,6 +189,9 @@ BEGIN
     IDS_NO_SKELETON_IN_SCENE "No skeleton in scene. Can't select a bone"
     IDS_CHOOSE_BONE_FOR_PS  "Choose bone to stick particle system"
     IDS_NOT_STICKED_TO_SKELETON "Particle system not sticked to a bone."
+    IDS_FX_USER_MATRIX      "FX User"
+    IDS_SCENE_MATRIX        "Scene"
+    IDS_FX_MATRIX           "FX"
 END
 
 #endif    // English (U.S.) resources
@@ -2441,6 +2445,7 @@ BEGIN
         MENUITEM "&Reset camera",               ID_VIEW_RESET_CAMERA
         MENUITEM "Reset Scene &Matrix",         ID_VIEW_RESET_SCENE_ROOT
         MENUITEM "Reset F&X Matrix",            ID_VIEW_RESET_FX_ROOT
+        MENUITEM "Reset FX user Matrix",        IDM_RESET_FX_USER_MATRIX
         MENUITEM "Set Scene Rotation",          ID_VIEW_SET_SCENE_ROTATION
         MENUITEM SEPARATOR
         MENUITEM "Activate texture set &1",     IDM_ACTIVATE_TEXTURE_SET_1
@@ -2453,6 +2458,10 @@ BEGIN
         MENUITEM "Activate texture set &8",     IDM_ACTIVATE_TEXTURE_SET_8
         MENUITEM SEPARATOR
         MENUITEM "Shuffle texture set",         IDM_SHUFFLE_TEXTURE_SET
+        MENUITEM SEPARATOR
+        MENUITEM "Show scene matrix",           IDM_SHOW_SCENE_MATRIX
+        MENUITEM "Show fx matrix",              IDM_SHOW_FX_MATRIX
+        MENUITEM "Show FX user matrix",         IDM_SHOW_FX_USER_MATRIX
     END
     POPUP "&Scene"
     BEGIN
@@ -2576,10 +2585,8 @@ BEGIN
     IDC_DIRECTION_MODE, 0x403, 33, 0
 0x6944, 0x6572, 0x7463, 0x6f69, 0x206e, 0x7369, 0x6c20, 0x636f, 0x6c61, 
 0x7420, 0x206f, 0x6874, 0x2065, 0x7973, 0x7473, 0x6d65, "\000" 
-    IDC_DIRECTION_MODE, 0x403, 42, 0
-0x6944, 0x6572, 0x7463, 0x6f69, 0x206e, 0x7369, 0x6c20, 0x636f, 0x6c61, 
-0x7420, 0x206f, 0x6874, 0x2065, 0x6166, 0x6874, 0x7265, 0x7320, 0x656b, 
-0x656c, 0x6f74, 0x006e, 
+    IDC_DIRECTION_MODE, 0x403, 5, 0
+0x7355, 0x7265, "\000" 
     0
 END
 
@@ -2775,10 +2782,8 @@ BEGIN
     IDC_MATRIX_MODE, 0x403, 23, 0
 0x6150, 0x7472, 0x6369, 0x656c, 0x2073, 0x7261, 0x2065, 0x6e69, 0x7720, 
 0x726f, 0x646c, "\000" 
-    IDC_MATRIX_MODE, 0x403, 39, 0
-0x6150, 0x7472, 0x6369, 0x656c, 0x2073, 0x7261, 0x2065, 0x6f6c, 0x6163, 
-0x206c, 0x6f74, 0x6620, 0x7461, 0x6568, 0x2072, 0x6b73, 0x6c65, 0x7465, 
-0x6e6f, "\000" 
+    IDC_MATRIX_MODE, 0x403, 5, 0
+0x7355, 0x7265, "\000" 
     0
 END
 

@@ -38,7 +38,7 @@ public:
 // Attributes
 public:
 
-	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest, MoveFX};
+	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest, MoveFX, MoveFXUserMatrix };
 	enum	TCameraMode {FirstMode=0, ObjectMode, CameraMode };
 
 	CStatusBar		StatusBar;
@@ -81,6 +81,7 @@ public:
 	bool			isMoveSceneRoot() const {return MouseMoveType==MoveSceneRoot;}
 	bool			isMoveElement() const {return MouseMoveType==MoveElement;}
 	bool			isMoveFX() const {return MouseMoveType==MoveFX;}
+	bool			isMoveFXUserMatrix() const {return MouseMoveType==MoveFXUserMatrix;}
 	bool			isMoveObjectLightTest() const {return MouseMoveType==MoveObjectLightTest;}
 
 // Operations
@@ -102,6 +103,7 @@ public:
 	afx_msg void OnClear();
 	afx_msg void OnEditMoveelement();
 	afx_msg void OnEditMoveFX();
+	afx_msg void OnEditMoveFXUserMatrix();
 	afx_msg void OnEditX();
 	afx_msg void OnEditY();
 	afx_msg void OnEditZ();
@@ -131,6 +133,12 @@ public:
 	afx_msg void OnWindowChooseBGColor();
 	afx_msg void OnWindowChooseSunColor();
 	afx_msg void OnSetLightGroupFactor();
+	afx_msg void OnShowSceneMatrix();
+	afx_msg void OnShowFXMatrix();
+	afx_msg void OnShowFXUserMatrix();
+	afx_msg void OnUpdateShowSceneMatrix(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateShowFXMatrix(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateShowFXUserMatrix(CCmdUI* pCmdUI);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnUpdateWindowAnimation(CCmdUI* pCmdUI);
@@ -151,6 +159,7 @@ public:
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditMoveFX(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditMoveFXUserMatrix(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowLightGroup(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();	
 	afx_msg void OnRemoveAllInstancesFromScene();
@@ -168,6 +177,7 @@ public:
 	afx_msg void OnUpdateEditMovescene(CCmdUI* pCmdUI);
 	afx_msg void OnViewResetSceneRoot();
 	afx_msg void OnViewResetFXRoot();
+	afx_msg void OnViewResetFXUserMatrix();
 	afx_msg void OnViewSetSceneRotation();
 	afx_msg void OnShootScene();
 	//}}AFX_MSG

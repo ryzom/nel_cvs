@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized (using mutex) and CFairlySynchronized (using semaphore)
  *
- * $Id: mutex.h,v 1.8 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: mutex.h,v 1.9 2001/09/10 13:40:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,8 @@
 #include <semaphore.h>
 #endif
 
-//#define MUTEX_DEBUG
+#undef MUTEX_DEBUG
+
 
 namespace NLMISC {
 
@@ -73,15 +74,21 @@ public:
 private:
 
 #ifdef NL_OS_WINDOWS
+
 	void *Mutex;
+
 #elif defined NL_OS_UNIX
+
 	pthread_mutex_t mutex;
+
 #endif // NL_OS_WINDOWS
 
 };
 
 
-// Debug info
+/*
+ * Debug info
+ */
 #ifdef MUTEX_DEBUG
 
 struct TMutexLocks
@@ -91,7 +98,7 @@ struct TMutexLocks
 	uint32	Time;     // cumulated time blocking on enter
 	uint32	Nb;       // number of calls of enter
 	bool	Locked;   // thread is still locked
-        uint32  MutexNum; // identifying a mutex
+    uint32  MutexNum; // identifying a mutex
 };
 
 /// Inits the "mutex debugging info system"
@@ -106,7 +113,62 @@ extern uint32 NbMutexes;
 #endif // MUTEX_DEBUG
 
 
+
+
+
+
 #ifdef NL_OS_WINDOWS
+
+/**
+ * Trick to avoid including <windows.h> !
+ * winbase.h: typedef RTL_CRITICAL_SECTION CRITICAL_SECTION;
+ * The original RTL_CRITICAL_SECTION is in winnt.h.
+ */
+struct TNelRtlCriticalSection {
+    void *DebugInfo;
+    long LockCount;
+    long RecursionCount;
+    void *OwningThread;        // from the thread's ClientId->UniqueThread
+    void *LockSemaphore;
+    unsigned long SpinCount;
+};
+
+#endif
+
+
+/**
+ * Kind of "fair" mutex (implemented by semaphore on Unix, critical section on Windows)
+ */
+class CCriticalSection
+{
+public:
+
+	/// Constructor
+	CCriticalSection();
+
+	/// Destructor
+	~CCriticalSection();
+
+	void enter ();
+	void leave ();
+
+private:
+
+#ifdef NL_OS_WINDOWS
+
+	/// Windows critical section
+	TNelRtlCriticalSection	_Cs;
+
+#elif defined NL_OS_UNIX
+
+	/// Unix semaphore
+	volatile sem_t			_Sem;
+
+#endif // NL_OS_WINDOWS
+
+};
+
+
 
 
 /**
@@ -131,7 +193,7 @@ extern uint32 NbMutexes;
  * \date 2000
  */
 template <class T>
-class CSynchronized
+class CMutexSynchronized
 {
 public:
 
@@ -140,43 +202,45 @@ public:
 	 */
 	class CAccessor
 	{
-		CSynchronized<T> *Synchronized;
+		CMutexSynchronized<T> *Synchronized;
 	public:
 
 		/// get the mutex or wait
-		CAccessor(CSynchronized<T> *cs)
+		CAccessor(CMutexSynchronized<T> *cs)
 		{
 			Synchronized = cs;
-			const_cast<CMutex&>(Synchronized->Mutex).enter();
+			const_cast<CMutex&>(Synchronized->_Mutex).enter();
 		}
 
 		/// release the mutex
 		~CAccessor()
 		{
-			const_cast<CMutex&>(Synchronized->Mutex).leave();
+			const_cast<CMutex&>(Synchronized->_Mutex).leave();
 		}
 
 		/// access to the Value
 		T &value()
 		{
-			return const_cast<T&>(Synchronized->Value);
+			return const_cast<T&>(Synchronized->_Value);
 		}
 	};
 
-	/// The mutex of the synchronized value. \warning Don't access to the Mutex directly.
-	volatile	CMutex	Mutex; // not to be optimized by the compiler
-	/// The synchronized value. \warning Don't access to the Value directly.
-	volatile	T		Value; // not to be optimized by the compiler
+private:
+
+	friend class CMutexSynchronized::CAccessor;
+
+	/// The mutex of the synchronized value.
+	volatile CMutex		_Mutex;
+
+	/// The synchronized value.
+	volatile T			_Value;
 };
 
-#endif
-
-#ifdef NL_OS_UNIX
 
 /**
- * This class is similar to CSynchronized, but it ensures that the threads
+ * This class is similar to CMutexSynchronized, but it ensures that the threads
  * are woken-up in the same order as they were put to sleep.
- * Internally, it uses a semaphore instead of a CMutex object.
+ * Internally, it uses a CCriticalSection object instead of a CMutex object.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -197,44 +261,38 @@ public:
 		/// get the mutex or wait
 		CAccessor(CFairlySynchronized<T> *cs)
 		{
-		  Synchronized = cs;
-		  sem_wait ( const_cast<sem_t*>(&Synchronized->Sem) );
+			Synchronized = cs;
+			const_cast<CCriticalSection&>(Synchronized->_Cs).enter();
 		}
 
 		/// release the mutex
 		~CAccessor()
 		{
-		  sem_post( const_cast<sem_t*>(&Synchronized->Sem) );
+			const_cast<CCriticalSection&>(Synchronized->_Cs).leave();
 		}
 
 		/// access to the Value
 		T &value()
 		{
-		  return const_cast<T&>(Synchronized->Value);
+			return const_cast<T&>(Synchronized->_Value);
 		}
 	};
 
-	/// Constructor
-	CFairlySynchronized<T>()
-	  {
-	    sem_init( const_cast<sem_t*>(&Sem), 0, 1 );
-	  }
+private:
 
-	/// Destructor
-	~CFairlySynchronized<T>()
-	  {
-	    sem_destroy( const_cast<sem_t*>(&Sem) ); // needs that no thread is waiting on the semaphore
-	  }
+	friend class CFairlySynchronized::CAccessor;
 
-	/// The mutex of the synchronized value. \warning Don't access to the Mutex directly.
-	volatile        sem_t           Sem; // not to be optimized by the compiler
-	/// The synchronized value. \warning Don't access to the Value directly.
-	volatile	T		Value; // not to be optimized by the compiler
+	/// The mutex of the synchronized value.
+	volatile CCriticalSection	_Cs;
+
+	/// The synchronized value.
+	volatile T					_Value;
 };
 
+
+// Shortcut
 #define CSynchronized CFairlySynchronized
 
-#endif // NL_OS_UNIX
 
 
 } // NLMISC

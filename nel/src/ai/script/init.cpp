@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.1 2001/03/14 13:19:34 chafik Exp $
+ * $Id: init.cpp,v 1.2 2001/03/26 10:05:50 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

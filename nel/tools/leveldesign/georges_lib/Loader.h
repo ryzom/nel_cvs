@@ -37,14 +37,17 @@ public:
 	CStringEx WhereIsDfnTyp( const CStringEx _sxfilename );
 	CStringEx WhereIsForm( const CStringEx _sxfilename );
 
-	void SetWorkDirectory( const CStringEx _sxworkdirectory );
-	void SetRootDirectory( const CStringEx _sxrootdirectory );
 	CStringEx GetWorkDirectory() const;
 	CStringEx GetRootDirectory() const;
 
-	void MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine );
-	void MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent );
+// interface:
+	void SetWorkDirectory( const CStringEx _sxworkdirectory );
+	void SetRootDirectory( const CStringEx _sxrootdirectory );
 	void SetTypPredef( const CStringEx _sxfilename, const std::vector< CStringEx >& _pvsx );
+
+// temporaire:
+	void MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvdefine = 0 );
+	void MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef = 0, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent = 0 );
 };
 
 #endif // !defined(AFX_LOADER_H__3A379212_CAE2_48A7_84FA_3EB5D45DC7A9__INCLUDED_)

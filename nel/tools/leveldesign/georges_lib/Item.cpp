@@ -49,6 +49,8 @@ void CItem::SetLoader( CLoader* const _pl )
 
 void CItem::Load( const CStringEx& _sxfullname )
 {
+	Clear();
+
 	// Load the form
 	CForm form, formcurrent, formparent;
 	pl->LoadForm( formcurrent, _sxfullname );
@@ -87,6 +89,7 @@ void CItem::Load( const CStringEx& _sxfullname )
 
 void CItem::New( const CStringEx& _sxdfnfilename )
 {
+	Clear();
 	CMoldElt* pme = pl->LoadMold( _sxdfnfilename );
 	CMoldEltDefine* pmed = dynamic_cast< CMoldEltDefine* >( pme );
 	nlassert( pmed );

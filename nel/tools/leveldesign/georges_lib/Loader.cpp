@@ -106,19 +106,20 @@ void CLoader::MakeDfn( const CStringEx _sxfullname, const std::vector< std::pair
 	CFormBodyEltStruct* pbody = f.GetBody();
 	CFormBodyEltAtom* pfbea;
 
-	for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvdefine->begin(); it != _pvdefine->end(); ++it )
-	{
-		pfbea = new CFormBodyEltAtom;
-		pfbea->SetName( it->first );
-		pfbea->SetValue( it->second );
-		pbody->AddElt( pfbea );
-	}
+	if( ( _pvdefine )&&( !_pvdefine->empty() ) )
+		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvdefine->begin(); it != _pvdefine->end(); ++it )
+		{
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( it->first );
+			pfbea->SetValue( it->second );
+			pbody->AddElt( pfbea );
+		}
 
 	pff.SetForm( f );
 	pff.Save( _sxfullname );
 }
 
-void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent )
+void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, const CStringEx _sxformula, const CStringEx _sxenum, const CStringEx _sxlow, const CStringEx _sxhigh, const CStringEx _sxdefault, const std::vector< std::pair< CStringEx, CStringEx > >* const _pvpredef , const std::vector< std::pair< CStringEx, CStringEx > >* const _pvparent )
 {
 	CFormFile pff;
 	CForm f;
@@ -159,50 +160,56 @@ void CLoader::MakeTyp( const CStringEx _sxfullname, const CStringEx _sxtype, con
 	pbody->AddElt( pfbea );
 
 	CStringEx sx;
-	pfbel = new CFormBodyEltList;
-	pfbel->SetName( "Predef" );
-	int i = 0;
-	std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it;
-	for( it = _pvpredef->begin(); it != _pvpredef->end(); ++it )
+
+	if( ( _pvpredef )&&( !_pvpredef->empty() ) )
 	{
-		pfbes = new CFormBodyEltStruct;
-		sx.format( "#%d", i++ );
-		pfbes->SetName( sx );
-		pfbel->AddElt( pfbes );
-		
-		pfbea = new CFormBodyEltAtom;
-		pfbea->SetName( "Designation" );
-		pfbea->SetValue( it->first );
-		pfbes->AddElt( pfbea );
+		pfbel = new CFormBodyEltList;
+		pfbel->SetName( "Predef" );
+		int i = 0;
+		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvpredef->begin(); it != _pvpredef->end(); ++it )
+		{
+			pfbes = new CFormBodyEltStruct;
+			sx.format( "#%d", i++ );
+			pfbes->SetName( sx );
+			pfbel->AddElt( pfbes );
+			
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Designation" );
+			pfbea->SetValue( it->first );
+			pfbes->AddElt( pfbea );
 
-		pfbea = new CFormBodyEltAtom;
-		pfbea->SetName( "Substitute" );
-		pfbea->SetValue( it->second );
-		pfbes->AddElt( pfbea );
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Substitute" );
+			pfbea->SetValue( it->second );
+			pfbes->AddElt( pfbea );
+		}
+		pbody->AddElt( pfbel );
 	}
-	pbody->AddElt( pfbel );
 
-	pfbel = new CFormBodyEltList;
-	pfbel->SetName( "Parent" );
-	i = 0;
-	for( it = _pvparent->begin(); it != _pvparent->end(); ++it )
+	if( ( _pvparent )&&( !_pvparent->empty() ) )
 	{
-		pfbes = new CFormBodyEltStruct;
-		sx.format( "#%d", i++ );
-		pfbes->SetName( sx );
-		pfbel->AddElt( pfbes );
+		pfbel = new CFormBodyEltList;
+		pfbel->SetName( "Parent" );
+		int i = 0;
+		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = _pvparent->begin(); it != _pvparent->end(); ++it )
+		{
+			pfbes = new CFormBodyEltStruct;
+			sx.format( "#%d", i++ );
+			pfbes->SetName( sx );
+			pfbel->AddElt( pfbes );
 
-		pfbea = new CFormBodyEltAtom;
-		pfbea->SetName( "Activity" );
-		pfbea->SetValue( it->first );
-		pfbes->AddElt( pfbea );
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Activity" );
+			pfbea->SetValue( it->first );
+			pfbes->AddElt( pfbea );
 
-		pfbea = new CFormBodyEltAtom;
-		pfbea->SetName( "Filename" );
-		pfbea->SetValue( it->second );
-		pfbes->AddElt( pfbea );
+			pfbea = new CFormBodyEltAtom;
+			pfbea->SetName( "Filename" );
+			pfbea->SetValue( it->second );
+			pfbes->AddElt( pfbea );
+		}
+		pbody->AddElt( pfbel );
 	}
-	pbody->AddElt( pfbel );
 
 	pff.SetForm( f );
 	pff.Save( _sxfullname );

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.31 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.32 2003/09/10 14:05:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,7 +222,7 @@ inline float testZPercentageCloserFilter (float x, float y, float z, CZoneLighte
 	{
 		const sint fx = dx + (sint)ix;
 		const sint fy = dy + (sint)iy;
-		if ((fx >= 0) || (fx < zbuffer.LocalZBufferWidth) || (fy >= 0) || (fy < zbuffer.LocalZBufferHeight))
+		if ((fx >= 0) && (fx < zbuffer.LocalZBufferWidth) && (fy >= 0) && (fy < zbuffer.LocalZBufferHeight))
 		{
 			const float zRed = zbuffer.Pixels[fx + (zbuffer.LocalZBufferHeight - 1 - fy) * zbuffer.LocalZBufferWidth];
 

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.24 2002/07/18 15:02:09 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.25 2002/08/22 12:10:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,10 @@
 #endif // NELNS_LOGS
 
 //
+/// \todo ace: check that if there are 2 subnet with different service that services are well connected with well services for his subnet and not the other one
+//
+
+//
 // Includes
 //
 
@@ -66,12 +70,14 @@ using namespace NLNET;
 
 struct CServiceEntry
 {
-	CServiceEntry (TSockId sock, CInetAddress a, string n, TServiceId s) : SockId(sock), Addr(a), Name(n), SId (s), WaitingUnregistration(false) { }
+	CServiceEntry (TSockId sock, const vector<CInetAddress> &a, const string &n, TServiceId s) : SockId(sock), Addr(a), Name(n), SId (s), WaitingUnregistration(false) { }
 
-	TSockId				SockId;			// the connection between the service and the naming service
-	CInetAddress		Addr;			// address to send to the service who wants to lookup this service
-	string				Name;			// name of the service
-	TServiceId			SId;			// id of the service
+	TSockId						SockId;			// the connection between the service and the naming service
+	vector<CInetAddress>		Addr;			// address to send to the service who wants to lookup this service
+												// it s possible to have more than one addr, anyway, the naming service
+												// will send good address depending of the sub net address of the service
+	string						Name;			// name of the service
+	TServiceId					SId;			// id of the service
 
 	bool				WaitingUnregistration;			// true if this service is in unregistration process (wait other service ACK)
 	TTime				WaitingUnregistrationTime;		// time of the beginning of the inregistration process
@@ -96,22 +102,57 @@ const TTime			UnregisterTimeout = 10000;	/// After 10s we remove an unregister s
 // Functions
 //
 
-void displayRegisteredServices ()
+bool canAccess (const vector<CInetAddress> &addr, const CServiceEntry &entry, vector<CInetAddress> &accessibleAddr)
 {
-	nlinfo ("Display the %d registered services :", RegisteredServices.size());
+	accessibleAddr.clear ();
+	
+	if (entry.WaitingUnregistration)
+		return false;
+
+	for (uint i = 0; i < addr.size(); i++)
+	{
+		uint32 net = addr[i].internalNetAddress();
+		for (uint j = 0; j < entry.Addr.size(); j++)
+		{
+			if (net == entry.Addr[j].internalNetAddress())
+			{
+				accessibleAddr.push_back (entry.Addr[j]);
+			}
+		}
+	}
+
+	if (accessibleAddr.empty())
+	{
+		nldebug ("service %s-%hu is not accessible by '%s'", entry.Name.c_str, (uint16)entry.SId, vectorCInetAddressToString (addr).c_str ());
+	}
+	else
+	{
+		nldebug ("service %s-%hu is accessible by '%s'", entry.Name.c_str(), (uint16)entry.SId, vectorCInetAddressToString (accessibleAddr).c_str ());
+	}
+
+	return !accessibleAddr.empty ();
+}
+
+void displayRegisteredServices (CLog *log = InfoLog)
+{
+	log->displayNL ("Display the %d registered services :", RegisteredServices.size());
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
 		TSockId id = (*it).SockId;
 		if (id == NULL)
 		{
-			nlinfo ("> %s '%s' %s-%hu '%s' %s", "<NULL>", "<NULL>", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"");
+			log->displayNL ("> %s '%s' %s-%hu %s", "<NULL>", "<NULL>", (*it).Name.c_str(), (uint16)(*it).SId, (*it).WaitingUnregistration?"WaitUnreg":"");
+			for(uint i = 0; i < (*it).Addr.size(); i++)
+				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
 		else
 		{
-			nlinfo ("> %s '%s' %s-%hu '%s' %s", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("NS")->hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"");
+			log->displayNL ("> %s '%s' %s-%hu %s", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("NS")->hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).WaitingUnregistration?"WaitUnreg":"");
+			for(uint i = 0; i < (*it).Addr.size(); i++)
+				log->displayNL ("              '%s'", (*it).Addr[i].asString().c_str());
 		}
 	}
-	nlinfo ("End of the list");
+	log->displayNL ("End of the list");
 }
 
 
@@ -128,16 +169,24 @@ list<CServiceEntry>::iterator effectivelyRemove (list<CServiceEntry>::iterator &
  */
 list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 {
-	nldebug ("Unregister the service %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+	nldebug ("Unregister the service %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr[0].asString().c_str());
 	
 	// tell to everybody that this service is unregistered
 
 	CMessage msgout ("UNB");
 	msgout.serial ((*it).Name);
 	msgout.serial ((*it).SId);
-	msgout.serial ((*it).Addr);
-	CNetManager::send ("NS", msgout, 0);
-	nlinfo ("Broadcast the Unregistration of %s-%hu to everybody", (*it).Name.c_str(), (uint16)(*it).SId);
+
+	vector<CInetAddress> accessibleAddress;
+	nlinfo ("Broadcast the Unregistration of %s-%hu to all registered services", (*it).Name.c_str(), (uint16)(*it).SId);
+	for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
+	{
+		if (canAccess((*it).Addr, (*it3), accessibleAddress))
+		{
+			CNetManager::send ("NS", msgout, (*it3).SockId);
+			nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+		}
+	}
 
 	// new system, after the unregistation broadcast, we wait ACK from all services before really remove
 	// the service, before, we tag the service as 'wait before unregister'
@@ -148,7 +197,7 @@ list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
 	(*it).WaitingUnregistration = true;
 	(*it).WaitingUnregistrationTime = CTime::getLocalTime();
 
-	// we remove all service awaiting his ACK because this service is down so it'll never ACK
+	// we remove all services awaiting his ACK because this service is down so it'll never ACK
 	for (list<CServiceEntry>::iterator itr = RegisteredServices.begin(); itr != RegisteredServices.end (); itr++)
 	{
 		for (list<TServiceId>::iterator itw = (*itr).WaitingUnregistrationServices.begin(); itw != (*itr).WaitingUnregistrationServices.end ();)
@@ -219,7 +268,7 @@ void doUnregisterService (TSockId from)
 	}
 }
 
-void doUnregisterService (const CInetAddress &addr)
+/*void doUnregisterService (const CInetAddress &addr)
 {
 	list<CServiceEntry>::iterator it;
 	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
@@ -232,7 +281,7 @@ void doUnregisterService (const CInetAddress &addr)
 		}
 	}
 	nlwarning ("Service %s not found", addr.asString().c_str());
-}
+}*/
 
 /*
  * Helper function for cbRegister.
@@ -240,7 +289,7 @@ void doUnregisterService (const CInetAddress &addr)
  * Returns false in case of failure of sid allocation or bad sid provided
  * Note: the reply is included in this function, because it must be done before things such as syncUniTime()
  */
-bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, TSockId from, CCallbackNetBase &netbase, bool reconnection = false)
+bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceId sid, TSockId from, CCallbackNetBase &netbase, bool reconnection = false)
 {
 	// find if the service is not already registered
 	uint8 ok = true;
@@ -323,10 +372,10 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 		// if ok, register the service and send a broadcast to other people
 		if (ok)
 		{
+			// add him in the registered list
 			RegisteredServices.push_back (CServiceEntry(from, addr, name, sid));
 
-			// tell to everybody that this service is registered
-
+			// tell to everybody but not him that this service is registered
 			if (!reconnection)
 			{
 				CMessage msgout ("RGB");
@@ -334,24 +383,64 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 				msgout.serial (s);
 				msgout.serial (const_cast<string &>(name));
 				msgout.serial (sid);
-				msgout.serial (const_cast<CInetAddress &>(addr));
-				CNetManager::send ("NS", msgout, 0);
+				msgout.serialCont (const_cast<vector<CInetAddress> &>(addr));
 				nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
+
+				vector<CInetAddress> accessibleAddress;
+				for (list<CServiceEntry>::iterator it3 = RegisteredServices.begin(); it3 != RegisteredServices.end (); it3++)
+				{
+					// send only services that can be accessed and not itself
+					if ((*it3).SId != sid && canAccess(addr, (*it3), accessibleAddress))
+					{
+						CNetManager::send ("NS", msgout, (*it3).SockId);
+						nldebug ("Broadcast to %s-%hu", (*it3).Name.c_str(), (uint16)(*it3).SId);
+					}
+				}
 			}
+
+			// set the sid only if it s ok
+			from->setAppId (sid);
+		}
+
+		// send the message to the service to say if it s ok or not
+		if (!reconnection)
+		{
+			// send the answer to the client
+			CMessage msgout ("RG");
+			msgout.serial (ok);
+			if (ok)
+			{
+				msgout.serial (sid);
+
+				// send him all services available (also itself)
+				uint8 nb = 0;
+
+				vector<CInetAddress> accessibleAddress;
+
+				for (list<CServiceEntry>::iterator it2 = RegisteredServices.begin(); it2 != RegisteredServices.end (); it2++)
+				{
+					// send only services that are available
+					if (canAccess(addr, (*it2), accessibleAddress))
+						nb++;
+				}
+				msgout.serial (nb);
+
+				for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+				{
+					// send only services that are available
+					if (canAccess(addr, (*it), accessibleAddress))
+					{
+						msgout.serial ((*it).Name);
+						msgout.serial ((*it).SId);
+						msgout.serialCont (accessibleAddress);
+					}
+				}
+			}
+			
+			netbase.send (msgout, from);
+			netbase.flush (from);
 		}
 	}
-
-	if (!reconnection)
-	{
-		// send the answer to the client
-		CMessage msgout ("RG");
-		msgout.serial (ok);
-		if (ok) msgout.serial (sid);
-		netbase.send (msgout, from);
-		netbase.flush (from);
-	}
-
-	from->setAppId (sid);
 
 	//displayRegisteredServices ();
 
@@ -420,10 +509,10 @@ static void cbACKUnregistration (CMessage& msgin, TSockId from, CCallbackNetBase
 static void cbResendRegisteration (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
-	CInetAddress addr;
+	vector<CInetAddress> addr;
 	TServiceId sid;
 	msgin.serial (name);
-	msgin.serial (addr);
+	msgin.serialCont (addr);
 	msgin.serial (sid);
 
 	doRegister (name, addr, sid, from, netbase, true);
@@ -444,10 +533,10 @@ static void cbResendRegisteration (CMessage& msgin, TSockId from, CCallbackNetBa
 static void cbRegister (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
-	CInetAddress addr;
+	vector<CInetAddress> addr;
 	TServiceId sid;
 	msgin.serial (name);
-	msgin.serial (addr);
+	msgin.serialCont (addr);
 	msgin.serial (sid);
 
 	doRegister (name, addr, sid, from, netbase);
@@ -490,7 +579,7 @@ uint16 doAllocatePort (const CInetAddress &addr)
 		list<CServiceEntry>::iterator it;
 		for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 		{
-			if ((*it).Addr.port () == nextAvailablePort)
+			if ((*it).Addr[0].port () == nextAvailablePort)
 			{
 				nextAvailablePort++;
 				ok = false;
@@ -546,14 +635,34 @@ static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
  */
 static void cbConnect (const string &serviceName, TSockId from, void *arg)
 {
+	// we have to wait the registred services message to send all services because it this points, we can't know which sub net
+	// the service can use
+
+	//displayRegisteredServices ();
+
+	// set the appid with a bad id (-1)
+	from->setAppId (~0);
+}
+
+/*// returns the list of accessible services with a list of address
+static void cbRegisteredServices(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	vector<CInetAddress> addr;
+	msgin.serialCont (addr);
+
+	nlinfo ("New service ask me the available services, sending him all services available");
+	// send to the new service the list of all services that this service can access (depending of his sub net)
+
 	CMessage msgout ("RGB");
 
 	uint8 nb = 0;
 
+	vector<CInetAddress> accessibleAddress;
+
 	for (list<CServiceEntry>::iterator it2 = RegisteredServices.begin(); it2 != RegisteredServices.end (); it2++)
 	{
 		// send only services that are available
-		if (!(*it2).WaitingUnregistration)
+		if (canAccess(addr, (*it2), accessibleAddress))
 			nb++;
 	}
 
@@ -562,21 +671,16 @@ static void cbConnect (const string &serviceName, TSockId from, void *arg)
 	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
 		// send only services that are available
-		if (!(*it).WaitingUnregistration)
+		if (canAccess(addr, (*it), accessibleAddress))
 		{
 			msgout.serial ((*it).Name);
 			msgout.serial ((*it).SId);
-			msgout.serial ((*it).Addr);
+			msgout.serialCont (accessibleAddress);
 		}
 	}
+
 	CNetManager::send ("NS", msgout, from);
-
-	nlinfo ("New service connection, sending him all services available");
-	//displayRegisteredServices ();
-
-	// set the appid with a bad id (-1)
-	from->setAppId (~1);
-}
+}*/
 
 
 //
@@ -589,7 +693,8 @@ TCallbackItem CallbackArray[] =
 	{ "RRG", cbResendRegisteration },
 	{ "QP", cbQueryPort },
 	{ "UNI", cbUnregisterSId },
-	{ "ACK_UNI", cbACKUnregistration }
+	{ "ACK_UNI", cbACKUnregistration },
+//	{ "RS", cbRegisteredServices },
 };
 
 
@@ -626,6 +731,13 @@ public:
 
 		// DEBUG
 		// DebugLog->addDisplayer( new CStdDisplayer() );
+
+		vector<CInetAddress> v = CInetAddress::localAddresses();
+		nlinfo ("%d detected local addresses:", v.size());
+		for (uint i = 0; i < v.size(); i++)
+		{
+			nlinfo (" %d - '%s'",i, v[i].asString().c_str());
+		}
 	}
 
 	bool update ()
@@ -652,20 +764,7 @@ NLMISC_COMMAND (nsServices, "displays the list of all registered services", "")
 {
 	if(args.size() != 0) return false;
 
-	log.displayNL ("Display the %d registered services :", RegisteredServices.size());
-	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
-	{
-		TSockId id = (*it).SockId;
-		if (id == NULL)
-		{
-			nlinfo ("> %s '%s' %s-%hu '%s' %s", "<NULL>", "<NULL>", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"");
-		}
-		else
-		{
-			nlinfo ("> %s '%s' %s-%hu '%s' %s", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("NS")->hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str(), (*it).WaitingUnregistration?"WaitUnreg":"");
-		}
-	}
-	log.displayNL ("End of the list");
+	displayRegisteredServices (&log);
 
 	return true;
 }

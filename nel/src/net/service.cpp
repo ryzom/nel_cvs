@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.138 2002/07/29 17:15:08 lecroart Exp $
+ * $Id: service.cpp,v 1.139 2002/08/22 12:09:55 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -305,7 +305,15 @@ static void initSignal()
 
 // Ctor
 IService::IService() :
-	_Initialized(false), WindowDisplayer(NULL), _UpdateTimeout(100), _Port(0), _RecordingState(CCallbackNetBase::Off), _SId(0), _Status(0), _IsService5(false), _ResetMeasures(false)
+	WindowDisplayer(NULL),
+	_Port(0),
+	_RecordingState(CCallbackNetBase::Off),
+	_UpdateTimeout(100),
+	_SId(0),
+	_Status(0),
+	_Initialized(false),
+	_IsService5(false),
+	_ResetMeasures(false)
 {
 	// Singleton
 	nlassert( _Instance == NULL );
@@ -351,7 +359,7 @@ void IService::setArgs (const char *args)
 	_Args.push_back ("<ProgramName>");
 
 	string sargs (args);
-	sint pos1 = 0, pos2 = 0;
+	uint32 pos1 = 0, pos2 = 0;
 
 	do
 	{
@@ -469,7 +477,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		createDebug (_LogDir.c_str(), false);
 
-		DebugLog->addNegativeFilter ("NETL");
+		//DebugLog->addNegativeFilter ("NETL");
 
 		// we create the log with service name filename ("test_service.log" for example)
 		fd.setParam (_LogDir + _LongName + ".log", false);
@@ -809,6 +817,22 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			_DontUseNS = (_ShortName == "NS" || _ShortName == "LS" || _ShortName == "AES" || _ShortName == "AS");
 		}
 
+		//
+		// Register all network associations (must be before the CUnifiedNetwork::getInstance()->init)
+		//
+
+		if ((var = ConfigFile.getVarPtr ("Networks")) != NULL && isService5())
+		{
+			for (uint8 i = 0; i < var->size (); i++)
+				CUnifiedNetwork::getInstance()->addNetworkAssociation (var->asString(i), i);
+		}
+
+		if ((var = ConfigFile.getVarPtr ("DefaultNetworks")) != NULL && isService5())
+		{
+			for (uint8 i = 0; i < var->size (); i++)
+				CUnifiedNetwork::getInstance()->addDefaultNetwork(var->asString(i));
+		}
+
 		// normal setup for the common services
 		if (!_DontUseNS)
 		{
@@ -846,7 +870,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			else
 				CNetManager::init( NULL, _RecordingState );
 		}
-
 
 		//
 		// Connect to the local AES and send identification
@@ -1130,7 +1153,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 					string dispName = displayedVariables[i].first;
 					string varName = dispName;
-					sint pos = dispName.find("|");
+					uint32 pos = dispName.find("|");
 					if (pos != string::npos)
 					{
 						varName = displayedVariables[i].first.substr(pos+1);
@@ -1147,10 +1170,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					const std::deque<std::string>	&strs = md.lockStrings();
 					if (strs.size()>0)
 					{
-						sint pos = strs[0].find("=");
-						if(pos != string::npos && pos + 2 < (sint)strs[0].size())
+						uint32 pos = strs[0].find("=");
+						if(pos != string::npos && pos + 2 < strs[0].size())
 						{
-							sint pos2 = string::npos;
+							uint32 pos2 = string::npos;
 							if(strs[0][strs[0].size()-1] == '\n')
 								pos2 = strs[0].size() - pos - 2 - 1;
 

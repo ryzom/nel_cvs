@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.22 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.23 2002/08/22 12:09:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,7 @@ void CNetManager::createConnection(CBaseStruct &Base, const CInetAddress &Addr, 
 }
 
 
-void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr)
+void RegistrationBroadcast (const std::string &name, TServiceId sid, const vector<CInetAddress> &addr)
 {
 	nldebug("HNETL4: RegistrationBroadcast() of service %s-%hu", name.c_str (), (uint16)sid);
 
@@ -130,7 +130,8 @@ void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInet
 			if (name == (*itbm).first)
 			{
 				// ok! it's cool, the service is here, go and connect to him!
-				CNetManager::createConnection ((*itbm).second, addr, name);
+// ace warning don't work if more than one connection
+				CNetManager::createConnection ((*itbm).second, addr[0], name);
 			}
 		}
 		else if ((*itbm).second.Type == CBaseStruct::Group)
@@ -140,7 +141,8 @@ void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInet
 			{
 				if ((*itbm).second.ServiceNames[i] == name)
 				{
-					CNetManager::createConnection ((*itbm).second, addr, name);
+// ace warning don't work if more than one connection
+					CNetManager::createConnection ((*itbm).second, addr[0], name);
 					break;
 				}
 			}
@@ -149,7 +151,7 @@ void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInet
 
 }
 
-static void UnregistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr)
+static void UnregistrationBroadcast (const std::string &name, TServiceId sid, const vector<CInetAddress> &addr)
 {
 	nldebug("HNETL4: UnregistrationBroadcast() of service %s-%hu", name.c_str (), (uint16)sid);
 }
@@ -161,7 +163,9 @@ void CNetManager::init (const CInetAddress *addr, CCallbackNetBase::TRecordingSt
 	_RecordingState = rec;
 
 	// connect to the naming service (may generate a ESocketConnectionFailed exception)
-	CNamingClient::connect( *addr, _RecordingState );
+
+	vector<CInetAddress> laddr = CInetAddress::localAddresses();
+	CNamingClient::connect( *addr, _RecordingState, laddr );
 
 	// connect the callback to know when a new service comes in or goes down
 	CNamingClient::setRegistrationBroadcastCallback (RegistrationBroadcast);
@@ -220,12 +224,15 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort,
 
 	if (CNamingClient::connected ())
 	{
-		CInetAddress addr = CInetAddress::localHost ();
-		addr.setPort (servicePort);
+		//CInetAddress addr = CInetAddress::localHost ();
+		//addr.setPort (servicePort);
+		vector<CInetAddress> addr = CInetAddress::localAddresses();
+		for (uint i = 0; i < addr.size(); i++)
+			addr[i].setPort(servicePort);
 
 		if (sid == 0)
 		{
-			sid = CNamingClient::registerService (serviceName, addr);
+			CNamingClient::registerService (serviceName, addr, sid);
 		}
 		else
 		{

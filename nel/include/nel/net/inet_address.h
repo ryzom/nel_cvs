@@ -1,7 +1,7 @@
 /** \file inet_address.h
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.25 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: inet_address.h,v 1.26 2002/08/22 12:10:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,19 +113,22 @@ public:
 	/// Returns internal IP address
 	uint32				internalIPAddress() const;
 
-	/// Returns readable IP address
+	/// Returns the internal network address (it s the network address for example 192.168.0.0 for a C class) 
+	uint32				internalNetAddress () const;
+
+	/// Returns readable IP address. (ex: "195.68.21.195")
 	std::string			ipAddress() const;
 
-	/// Returns hostname
+	/// Returns hostname. (ex: "www.nevrax.org")
 	const std::string&	hostName() const;
 
 	/// Returns port
 	uint16				port() const;
 
-	/// Returns hostname and port as a string
+	/// Returns hostname and port as a string. (ex: "www.nevrax.org:80 (195.68.21.195)")
 	std::string			asString() const;
 
-	/// Returns IP address and port as a string
+	/// Returns IP address and port as a string. (ex: "195.68.21.195:80")
 	std::string			asIPString() const;
 
 	/// Serialize
@@ -157,6 +160,14 @@ private:
 	bool				_Valid;
 
 };
+
+/// Take a internet dot string and convert it in an uint32 internal format for example "128.64.32.16" -> 0xF0804020
+uint32 stringToInternalIPAddress (const std::string &addr);
+
+/// Take an internal address and convert it to a internet dot string
+std::string internalIPAddressToString (uint32 addr);
+
+std::string vectorCInetAddressToString(const std::vector<CInetAddress> &addrs);
 
 }
 

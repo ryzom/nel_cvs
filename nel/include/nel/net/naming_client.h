@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.33 2002/07/18 15:01:31 lecroart Exp $
+ * $Id: naming_client.h,v 1.34 2002/08/22 12:10:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLNET {
 
 typedef uint8 TServiceId;
 
-typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, const CInetAddress &addr);
+typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 
 /**
  * Client side of Naming Service. Allows to register/unregister services, and to lookup for
@@ -60,20 +60,20 @@ class CNamingClient
 public:
 	struct CServiceEntry
 	{
-		CServiceEntry (std::string n, TServiceId s, CInetAddress a) : Addr(a), Name(n), SId (s) { }
+		CServiceEntry (std::string n, TServiceId s, std::vector<CInetAddress> a) : Addr(a), Name(n), SId (s) { }
 
 		// name of the service
-		std::string		Name;
+		std::string					Name;
 		// id of the service
-		TServiceId		SId;
-		// address to send to the service who wants to lookup this service
-		CInetAddress	Addr;
+		TServiceId					SId;
+		// address to send to the service who wants to lookup this service (could have more than one)
+		std::vector<CInetAddress>	Addr;
 	};
 
 public:
 
 	/// Connect to the naming service.
-	static void			connect( const CInetAddress& addr, CCallbackNetBase::TRecordingState rec );
+	static void			connect( const CInetAddress& addr, CCallbackNetBase::TRecordingState rec, const std::vector<CInetAddress> &addresses );
 
 	/// Return true if the connection to the Naming Service was done.
 	static bool			connected () { return _Connection != NULL && _Connection->connected (); }
@@ -85,19 +85,19 @@ public:
 	static std::string	info ();
 
 	/** Register a service within the naming service.
-	 * Returns the service identifier assigned by the NS (or 0 if it failed)
+	 * Returns false if the registration failed.
 	 */
-	static TServiceId	registerService (const std::string &name, const CInetAddress &addr);
+	static bool			registerService (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId &sid);
 
 	/** Register a service within the naming service, using a specified service identifier.
 	 * Returns false if the service identifier is unavailable i.e. the registration failed.
 	 */
-	static bool			registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid);
+	static bool			registerServiceWithSId (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId sid);
 
 	/** If the NS is down and goes up, we have to send it again the registration. But in this case, the NS
 	 * must not send a registration broadcast, so we have a special message
 	 */
-	static void			resendRegisteration (const std::string &name, const CInetAddress &addr, TServiceId sid);
+	static void			resendRegisteration (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId sid);
 
 	/// Unregister a service from the naming service, service identifier.
 	static void			unregisterService (TServiceId sid);
@@ -169,6 +169,20 @@ public:
 	/// You can link a callback if you want to know when a new service is unregistered (NULL to disable callback)
 	static void			setUnregistrationBroadcastCallback (TBroadcastCallback cb);
 
+	static void displayRegisteredServices (NLMISC::CLog *log = NLMISC::DebugLog)
+	{
+		RegisteredServicesMutex.enter ();
+		log->displayNL ("Display the %d registered services :", RegisteredServices.size());
+		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+		{
+			log->displayNL (" > %s-%hu", (*it).Name.c_str(), (uint16)(*it).SId);
+			for(uint i = 0; i < (*it).Addr.size(); i++)
+				log->displayNL ("            '%s'", (*it).Addr[i].asString().c_str());
+		}
+		log->displayNL ("End of the list");
+		RegisteredServicesMutex.leave ();
+	}
+
 private:
 
 	static CCallbackClient *_Connection;
@@ -194,24 +208,12 @@ private:
 	static std::list<CServiceEntry>	RegisteredServices;
 	static NLMISC::CMutex RegisteredServicesMutex;
 
-	static void displayRegisteredServices ()
-	{
-		RegisteredServicesMutex.enter ();
-		nldebug ("Display the %d registered services :", RegisteredServices.size());
-		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
-		{
-			nldebug (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
-		}
-		nldebug ("End of the list");
-		RegisteredServicesMutex.leave ();
-	}
-
 	static void find (const std::string &name, std::vector<CInetAddress> &addrs)
 	{
 		RegisteredServicesMutex.enter ();
 		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 			if (name == (*it).Name)
-				addrs.push_back ((*it).Addr);
+				addrs.push_back ((*it).Addr[0]);
 		RegisteredServicesMutex.leave ();
 	}
 
@@ -220,7 +222,7 @@ private:
 		RegisteredServicesMutex.enter ();
 		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 			if (sid == (*it).SId)
-				addrs.push_back ((*it).Addr);
+				addrs.push_back ((*it).Addr[0]);
 		RegisteredServicesMutex.leave ();
 	}
 

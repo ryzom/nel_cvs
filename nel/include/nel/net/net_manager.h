@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.14 2002/06/12 10:16:41 lecroart Exp $
+ * $Id: net_manager.h,v 1.15 2002/08/22 12:10:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,7 +171,7 @@ private:
 	// Finds the service or add it if not found
 	static	ItBaseMap find (const std::string &serviceName);
 
-	friend	void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
+	friend	void RegistrationBroadcast (const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 
 
 	// It's a static class, you can't instanciate it

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.12 2002/06/03 15:10:03 lecroart Exp $
+ * $Id: transport_class.h,v 1.13 2002/08/22 12:10:04 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -71,7 +71,7 @@ namespace NLNET {
 class CTransportClass
 {
 public:
-
+	virtual ~CTransportClass() {}
 	/** Different types that we can use in a Transport class
 	 * warning: if you add/change a prop, change also in CTransportClass::init()
 	 * warning: PropUKN must be the last value (used to resize a vector)
@@ -232,6 +232,8 @@ private:
 	struct CRegisteredBaseProp
 	{
 		CRegisteredBaseProp () : Type(PropUKN) { }
+		virtual ~CRegisteredBaseProp() {}
+
 
 		CRegisteredBaseProp (const std::string &name, TProp type) : Name(name), Type(type) { }
 		

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.48 2002/07/18 15:00:43 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.49 2002/08/22 12:09:55 lecroart Exp $
  *
  */
 
@@ -79,12 +79,20 @@ void CNamingClient::setUnregistrationBroadcastCallback (TBroadcastCallback cb)
 
 static bool Registered;
 static TServiceId RegisteredSuccess;
-static TServiceId RegisteredSID;
+static TServiceId *RegisteredSID = NULL;
 
 static void cbRegister (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlassert(RegisteredSID != NULL);
+
 	msgin.serial (RegisteredSuccess);
-	if (RegisteredSuccess) msgin.serial (RegisteredSID);
+	if (RegisteredSuccess)
+	{
+		msgin.serial (*RegisteredSID);
+
+		// decode the registered services at the register process
+		cbRegisterBroadcast (msgin, from, netbase);
+	}
 	Registered = true;
 }
 
@@ -101,14 +109,14 @@ static void cbQueryPort (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 //
 
-static bool FirstRegisteredBroadcast;
+//static bool FirstRegisteredBroadcast;
 
 void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	TServiceId size;
 	string name;
 	TServiceId sid;
-	CInetAddress addr;
+	vector<CInetAddress> addr;
 
 	msgin.serial (size);
 
@@ -116,7 +124,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 	{
 		msgin.serial (name);
 		msgin.serial (sid);
-		msgin.serial (addr);
+		msgin.serialCont (addr);
 
 		// add it in the list
 
@@ -129,7 +137,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 			CNamingClient::RegisteredServices.push_back (CNamingClient::CServiceEntry (name, sid, addr));
 			CNamingClient::RegisteredServicesMutex.leave ();
 
-			nlinfo ("NC: Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+			nlinfo ("NC: Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, vectorCInetAddressToString(addr).c_str());
 
 			if (_RegistrationBroadcastCallback != NULL)
 				_RegistrationBroadcastCallback (name, sid, addr);
@@ -147,7 +155,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 				}
 			}
 			CNamingClient::RegisteredServicesMutex.leave ();
-			nlinfo ("NC: Registration Broadcast (update) of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+			nlinfo ("NC: Registration Broadcast (update) of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr[0].asString().c_str());
 		}
 		else
 		{
@@ -155,7 +163,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 		}
 	}
 
-	FirstRegisteredBroadcast = true;
+//	FirstRegisteredBroadcast = true;
 
 	//CNamingClient::displayRegisteredServices ();
 }
@@ -166,11 +174,10 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 {
 	string name;
 	TServiceId sid;
-	CInetAddress addr;
+	vector<CInetAddress> addrs;
 
 	msgin.serial (name);
 	msgin.serial (sid);
-	msgin.serial (addr);
 
 	// remove it in the list, if the service is not found, ignore it
 
@@ -181,7 +188,8 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 		{
 			// check the structure
 			nlassertex ((*it).Name == name, ("%s %s",(*it).Name.c_str(), name.c_str()));
-			nlassertex ((*it).Addr == addr, ("%d %d",(*it).Addr.asString().c_str(), addr.asString().c_str()));
+
+			addrs = (*it).Addr;
 
 			CNamingClient::RegisteredServices.erase (it);
 			break;
@@ -206,7 +214,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	}
 
 	if (_UnregistrationBroadcastCallback != NULL)
-		_UnregistrationBroadcastCallback (name, sid, addr);
+		_UnregistrationBroadcastCallback (name, sid, addrs);
 
 	//CNamingClient::displayRegisteredServices ();
 }
@@ -222,7 +230,7 @@ static TCallbackItem NamingClientCallbackArray[] =
 	{ "UNB", cbUnregisterBroadcast },
 };
 
-void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecordingState rec )
+void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecordingState rec, const vector<CInetAddress> &addresses )
 {
 	nlassert (_Connection == NULL || _Connection != NULL && !_Connection->connected ());
 	_ThreadId = getThreadId ();
@@ -235,21 +243,19 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 
 	_Connection->connect (addr);
 
-	// now we are connected, clear the old registered service table
-/*
-	CNamingClient::RegisteredServicesMutex.enter ();
-	CNamingClient::RegisteredServices.clear ();
-	CNamingClient::RegisteredServicesMutex.leave ();
-*/
+/*	// send the available addresses
+	CMessage msgout (_Connection->getSIDA(), "RS");
+	msgout.serialCont (const_cast<vector<CInetAddress>&>(addresses));
+	_Connection->send (msgout);
+	
 	// wait the message that contains all already connected services
-
 	FirstRegisteredBroadcast = false;
 	while (!FirstRegisteredBroadcast && _Connection->connected ())
 	{
 		_Connection->update (-1);
 		nlSleep (1);
 	}
-}
+*/}
 
 
 void CNamingClient::disconnect ()
@@ -287,20 +293,21 @@ string CNamingClient::info ()
 	return res;
 }
 
-TServiceId CNamingClient::registerService (const std::string &name, const CInetAddress &addr)
+bool CNamingClient::registerService (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId &sid)
 {
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "RG");
 	msgout.serial (const_cast<std::string&>(name));
-	msgout.serial (const_cast<CInetAddress&>(addr));
-	TServiceId sid = 0;
+	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
+	sid = 0;
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
 	// wait the answer of the naming service "RG"
 	Registered = false;
+	RegisteredSID = &sid;
 	while (!Registered)
 	{
 		_Connection->update (-1);
@@ -309,26 +316,28 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 
 	if (RegisteredSuccess)
 	{
-		_MySId = RegisteredSID;
-		_RegisteredServices.insert (make_pair (RegisteredSID, name));
-		nldebug ("NC: Registered service %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr.asString().c_str());
+		_MySId = sid;
+		_RegisteredServices.insert (make_pair (*RegisteredSID, name));
+		nldebug ("NC: Registered service %s-%hu at %s", name.c_str(), (uint16)sid, addr[0].asString().c_str());
 	}
 	else
 	{
-		nlerror ("NC: Naming service refused to register service %s at %s", name.c_str(), addr.asString().c_str());
+		nlerror ("NC: Naming service refused to register service %s at %s", name.c_str(), addr[0].asString().c_str());
 	}
 
-	return RegisteredSID;
+	RegisteredSID = NULL;
+
+	return RegisteredSuccess == 1;
 }
 
-bool CNamingClient::registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid)
+bool CNamingClient::registerServiceWithSId (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId sid)
 {
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "RG");
 	msgout.serial (const_cast<std::string&>(name));
-	msgout.serial (const_cast<CInetAddress&>(addr));
+	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
@@ -343,25 +352,25 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 	if (RegisteredSuccess)
 	{
 		_MySId = sid;
-		_RegisteredServices.insert (make_pair (RegisteredSID, name));
-		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr.asString().c_str());
+		_RegisteredServices.insert (make_pair (*RegisteredSID, name));
+		nldebug ("NC: Registered service with sid %s-%hu at %s", name.c_str(), (uint16)RegisteredSID, addr[0].asString().c_str());
 	}
 	else
 	{
-		nlerror ("NC: Naming service refused to register service with sid %s at %s", name.c_str(), addr.asString().c_str());
+		nlerror ("NC: Naming service refused to register service with sid %s at %s", name.c_str(), addr[0].asString().c_str());
 	}
 
 	return RegisteredSuccess == 1;
 }
 
-void CNamingClient::resendRegisteration (const std::string &name, const CInetAddress &addr, TServiceId sid)
+void CNamingClient::resendRegisteration (const std::string &name, const std::vector<CInetAddress> &addr, TServiceId sid)
 {
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "RRG");
 	msgout.serial (const_cast<std::string&>(name));
-	msgout.serial (const_cast<CInetAddress&>(addr));
+	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
 	msgout.serial (sid);
 	_Connection->send (msgout);
 }
@@ -455,7 +464,7 @@ bool CNamingClient::lookupAlternate (const std::string &name, CInetAddress &addr
 	RegisteredServicesMutex.enter ();
 	for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 	{
-		if ((*it).Addr == addr)
+		if ((*it).Addr[0] == addr)
 		{
 			RegisteredServices.erase (it);
 			break;
@@ -542,12 +551,7 @@ NLMISC_COMMAND(services, "displays registered services", "")
 {
 	if(args.size() != 0) return false;
 
-	log.displayNL ("Display the %d registered services :", CNamingClient::getRegisteredServices().size());
-	for (std::list<CNamingClient::CServiceEntry>::const_iterator it = CNamingClient::getRegisteredServices().begin(); it != CNamingClient::getRegisteredServices().end(); it++)
-	{
-		log.displayNL (" > %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
-	}
-	log.displayNL ("End ot the list");
+	CNamingClient::displayRegisteredServices (&log);
 
 	return true;
 }

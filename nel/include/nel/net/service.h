@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.55 2002/07/29 17:14:40 lecroart Exp $
+ * $Id: service.h,v 1.56 2002/08/22 12:10:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ typedef uint8 TServiceId;
 
 
 //
-// Variables
+// Variables provided to application and unused in the NeL library itself.
 //
 
 static TUnifiedCallbackItem EmptyCallbackArray[] = { { "", NULL } };

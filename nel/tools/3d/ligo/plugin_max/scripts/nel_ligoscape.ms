@@ -114,6 +114,13 @@ fn selectAllPatch =
 )
 
 
+-- Minimise
+fn minimise =
+(
+	if (viewport.numViews == 1) then
+		max tool maximize
+)
+
 -- Is a material
 fn isMaterial name =
 (
@@ -1234,6 +1241,7 @@ group "Projects management"
 		refresh_list ()
 		for curMat in MaterialProject.items do
 		(
+			minimise ()
 			curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
 			loadMaxFile curFileName
 			selectAllPatch ()
@@ -1254,6 +1262,7 @@ group "Projects management"
 		refresh_list ()
 		for curMat in MaterialProject.items do
 		(
+			minimise ()
 			if (substring curMat 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_material_prefix + (substring curMat 5 100) + ".max"
@@ -1271,6 +1280,7 @@ group "Projects management"
 
 	on ExportMaterial pressed do 
 	(
+		minimise ()
 		if (project_cur_file != "") then
 		(
 			saveMaxFile project_cur_file
@@ -1515,6 +1525,7 @@ group "Projects management"
 		refresh_list ()
 		for curTrans in TransitionProject.items do
 		(
+			minimise ()
 			curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
 			loadMaxFile curFileName
 			selectAllPatch ()
@@ -1535,6 +1546,7 @@ group "Projects management"
 		refresh_list ()
 		for curTrans in TransitionProject.items do
 		(
+			minimise ()
 			if (substring curTrans 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_transition_prefix + (substring curtrans 5 100) + ".max"
@@ -1552,6 +1564,7 @@ group "Projects management"
 
 	on ExportTransition pressed do 
 	(
+		minimise ()
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
 		export_and_check_and_debug_transition_template CheckOnly.checked Debug.checked true
@@ -2026,6 +2039,7 @@ group "Projects management"
 		refresh_zone_list MaterialDDL.selected
 		for curZone in ZoneProject.items do
 		(
+			minimise ()
 			curFileName = ligo_root_path + ligo_zonematerial_prefix
 			if (MaterialDDL.selected != "-- ALL --") then
 				curFileName = curFileName + MaterialDDL.selected + "-" 
@@ -2049,6 +2063,7 @@ group "Projects management"
 		refresh_zone_list MaterialDDL.selected
 		for curZone in ZoneProject.items do
 		(
+			minimise ()
 			if (substring curZone 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_zonematerial_prefix
@@ -2069,6 +2084,7 @@ group "Projects management"
 
 	on ExportZone pressed do 
 	(
+		minimise ()
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
 		export_and_check_and_debug_zone CheckOnly.checked Debug.checked true
@@ -2463,6 +2479,7 @@ group "Projects management"
 		refresh_list TransitionDDL.selected
 		for curTrans in ZoneProject.items do
 		(
+			minimise ()
 			curFileName = ligo_root_path + ligo_zonetransition_prefix
 			if (TransitionDDL.selected != "-- ALL --") then
 				curFileName = curFileName + TransitionDDL.selected + "-" 
@@ -2486,6 +2503,7 @@ group "Projects management"
 		refresh_list TransitionDDL.selected
 		for curTrans in ZoneProject.items do
 		(
+			minimise ()
 			if (substring curTrans 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_zonetransition_prefix
@@ -2506,6 +2524,7 @@ group "Projects management"
 
 	on ExportZone pressed do 
 	(
+		minimise ()
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
 		export_and_check_and_debug_transition_zone CheckOnly.checked Debug.checked true
@@ -2940,6 +2959,7 @@ group "Projects management"
 		refresh_zone_list ()
 		for curZone in ZoneProject.items do
 		(
+			minimise ()
 			curFileName = ligo_root_path + ligo_zonespecial_prefix
 			curFileName = curFileName + (substring curZone 5 100) + ".max"
 			loadMaxFile curFileName
@@ -2963,6 +2983,7 @@ group "Projects management"
 		refresh_zone_list ()
 		for curZone in ZoneProject.items do
 		(
+			minimise ()
 			if (substring curZone 1 4) == "[..]" then
 			(
 				curFileName = ligo_root_path + ligo_zonespecial_prefix
@@ -2982,6 +3003,7 @@ group "Projects management"
 
 	on ExportZone pressed do 
 	(
+		minimise ()
 		if (project_cur_file != "") then
 			saveMaxFile project_cur_file
 		export_and_check_and_debug_special_zone CheckOnly.checked Debug.checked true

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.13 2002/07/16 12:06:48 corvazier Exp $
+ * $Id: script.cpp,v 1.14 2002/07/25 16:45:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include <nel/misc/file.h>
 #include <nel/misc/o_xml.h>
 #include <nel/misc/i_xml.h>
+#include <nel/misc/config_file.h>
 
 #include "MAXScrpt.h"
 #include "3dmath.h"
@@ -1146,6 +1147,9 @@ Value* export_zone_cf (Value** arg_list, int count)
 
 								if (tileBank != NULL)
 								{
+									// Continue ?
+									bool cont = true;
+
 									// The .TGA
 									if (weWantToMakeASnapshot)
 									{
@@ -1181,6 +1185,7 @@ Value* export_zone_cf (Value** arg_list, int count)
 												char tmp[512];
 												smprintf (tmp, 512, "Can't open the tga file %s for writing.", outputFilenameSnapShot);
 												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+												cont = false;
 											}
 										}
 										else
@@ -1189,103 +1194,107 @@ Value* export_zone_cf (Value** arg_list, int count)
 											char tmp[512];
 											smprintf (tmp, 512, "Can't open the farbank file %s for reading.", farBankPathName );
 											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+											cont = false;
 										}
 									}
 
 									// The .ZONE
+									if (cont)
 									{
-										COFile outputZone;
-										if (outputZone.open (outputFilenameZone))
 										{
-											// Serial the NeL zone
-											zone.serial (outputZone);
-										}
-										else
-										{
-											// Error message
-											char tmp[512];
-											smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilenameZone);
-											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
-										}
-									}
-
-
-									// The .LIGOZONE
-									{
-										// Is filled ?
-										uint j;
-										for (j=0; j<mask.size(); j++)
-											if (!mask[j]) break;
-										
-										// Add filled zone	
-										if (j >= mask.size())
-										{
-											categories.push_back (pair<string,string> ("filled", "yes"));
-										}
-										else
-										{
-											categories.push_back (pair<string,string> ("filled", "no"));
-										}
-
-										// Add the zone categorie
-										if (width == height)
-										{
-											categories.push_back (pair<string,string> ("square", "yes"));
-										}
-										else
-										{
-											categories.push_back (pair<string,string> ("square", "no"));
-										}
-
-										// Add the size category
-										char size[30];
-										smprintf (size, 30, "%dx%d", width, height);
-										categories.push_back (pair<string,string> ("size", size));
-
-										// Create the zone bank element
-										CZoneBankElement bankElm;
-										bankElm.setMask (mask, width,height);
-
-										// Add the category
-										for (j=0; j<categories.size(); j++)
-										{
-											bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
-										}
-
-
-										// Write the zone
-										COFile outputLigoZone;
-
-										// Catch exception
-										try
-										{
-											// Open the selected zone file
-											if (outputLigoZone.open (outputFilenameLigozone))
+											COFile outputZone;
+											if (outputZone.open (outputFilenameZone))
 											{
-												// Create an xml stream
-												COXml outputXml;
-												outputXml.init (&outputLigoZone);
-
-												// Serial the class
-												bankElm.serial (outputXml);
-
-												// Return true
-												return &true_value;
+												// Serial the NeL zone
+												zone.serial (outputZone);
 											}
 											else
 											{
 												// Error message
 												char tmp[512];
-												smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", outputFilenameLigozone );
+												smprintf (tmp, 512, "Can't open the NeL zone file %s for writing.", outputFilenameZone);
 												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
 											}
 										}
-										catch (Exception &e)
+
+
+										// The .LIGOZONE
 										{
-											// Error message
-											char tmp[512];
-											smprintf (tmp, 512, "Error while writing the file %s : %s", outputFilenameLigozone, e.what());
-											CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+											// Is filled ?
+											uint j;
+											for (j=0; j<mask.size(); j++)
+												if (!mask[j]) break;
+											
+											// Add filled zone	
+											if (j >= mask.size())
+											{
+												categories.push_back (pair<string,string> ("filled", "yes"));
+											}
+											else
+											{
+												categories.push_back (pair<string,string> ("filled", "no"));
+											}
+
+											// Add the zone categorie
+											if (width == height)
+											{
+												categories.push_back (pair<string,string> ("square", "yes"));
+											}
+											else
+											{
+												categories.push_back (pair<string,string> ("square", "no"));
+											}
+
+											// Add the size category
+											char size[30];
+											smprintf (size, 30, "%dx%d", width, height);
+											categories.push_back (pair<string,string> ("size", size));
+
+											// Create the zone bank element
+											CZoneBankElement bankElm;
+											bankElm.setMask (mask, width,height);
+
+											// Add the category
+											for (j=0; j<categories.size(); j++)
+											{
+												bankElm.addCategory (strlwr (categories[j].first), strlwr (categories[j].second));
+											}
+
+
+											// Write the zone
+											COFile outputLigoZone;
+
+											// Catch exception
+											try
+											{
+												// Open the selected zone file
+												if (outputLigoZone.open (outputFilenameLigozone))
+												{
+													// Create an xml stream
+													COXml outputXml;
+													outputXml.init (&outputLigoZone);
+
+													// Serial the class
+													bankElm.serial (outputXml);
+
+													// Return true
+													return &true_value;
+												}
+												else
+												{
+													// Error message
+													char tmp[512];
+													smprintf (tmp, 512, "Can't open the ligozone file %s for writing.", outputFilenameLigozone );
+													CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+												}
+											}
+											catch (Exception &e)
+											{
+												// Error message
+												char tmp[512];
+												smprintf (tmp, 512, "Error while writing the file %s : %s", outputFilenameLigozone, e.what());
+												CMaxToLigo::errorMessage (tmp, "NeL Ligo export zone", *MAXScript_interface, errorInDialog);
+											}
 										}
 									}
 								}
@@ -1968,10 +1977,21 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 		sint oversampledWidth = widthPixel*4;
 		sint oversampledHeight = heightPixel*4;
 
+		// Oversampled size should be < 2048
 		if (oversampledWidth > 2048)
 			oversampledWidth = 2048;
 		if (oversampledHeight > 2048)
 			oversampledHeight = 2048;
+		
+		// Oversampled size should be < sreen size
+		DEVMODE	devMode;
+		devMode.dmSize= sizeof(DEVMODE);
+		devMode.dmDriverExtra= 0;
+		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &devMode);
+		if (oversampledWidth > (sint)devMode.dmPelsWidth)
+			oversampledWidth = devMode.dmPelsWidth;
+		if (oversampledHeight > (sint)devMode.dmPelsHeight)
+			oversampledHeight = devMode.dmPelsHeight;
 
 		// Region
 		float width = config.CellSize * (float)(xmax-xmin);
@@ -1980,62 +2000,67 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 		float posY = config.CellSize * (float)ymin;
 
 		// Use NELU
-		CNELU::init (oversampledWidth, oversampledHeight, CViewport(), 32, true, NULL, true);
+		if (CNELU::init (oversampledWidth, oversampledHeight, CViewport(), 32, true, NULL, true))
+		{
+			// Setup the camera
+			CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
+			CMatrix view;
+			view.setPos (CVector (width/2 + posX, height/2 + posY, width));
+			view.setRot (CVector::I, -CVector::K, CVector::J);
+			CNELU::Camera->setFrustum (width, height, 0.1f, 1000.f, false);
+			CNELU::Camera->setMatrix (view);
 
-		// Setup the camera
-		CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
-		CMatrix view;
-		view.setPos (CVector (width/2 + posX, height/2 + posY, width));
-		view.setRot (CVector::I, -CVector::K, CVector::J);
-		CNELU::Camera->setFrustum (width, height, 0.1f, 1000.f, false);
-		CNELU::Camera->setMatrix (view);
+			// Create a Landscape.
+			CLandscapeModel	*theLand= (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
 
-		// Create a Landscape.
-		CLandscapeModel	*theLand= (CLandscapeModel*)CNELU::Scene.createModel(LandscapeModelId);
+			// Build the scene
+			CExportNelOptions options;
+			CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone");
+			export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, options, &theLand->Landscape, NULL, false, false, false);
 
-		// Build the scene
-		CExportNelOptions options;
-		CExportNel export (errorInDialog, false, true, MAXScript_interface, "Snapshot ligozone");
-		export.buildScene (CNELU::Scene, *CNELU::ShapeBank, *CNELU::Driver, 0, options, &theLand->Landscape, NULL, false, false, false);
+			theLand->Landscape.setTileNear (50.f);
+			theLand->Landscape.TileBank=tileBank;
+			theLand->Landscape.TileFarBank=tileFarBank;
+			theLand->Landscape.initTileBanks ();
 
-		theLand->Landscape.setTileNear (50.f);
-		theLand->Landscape.TileBank=tileBank;
-		theLand->Landscape.TileFarBank=tileFarBank;
-		theLand->Landscape.initTileBanks ();
+			// Enable additive tiles
+			theLand->enableAdditive (true);
+			theLand->Landscape.setRefineMode (true);
 
-		// Enable additive tiles
-		theLand->enableAdditive (true);
-		theLand->Landscape.setRefineMode (true);
+			// Enbable automatique lighting
+	#ifndef NL_DEBUG
+			theLand->Landscape.enableAutomaticLighting (true);
+			theLand->Landscape.setupAutomaticLightDir (CVector (0, 0, -1));
+	#endif // NL_DEBUG
 
-		// Enbable automatique lighting
-#ifndef NL_DEBUG
-		theLand->Landscape.enableAutomaticLighting (true);
-		theLand->Landscape.setupAutomaticLightDir (CVector (0, 0, -1));
-#endif // NL_DEBUG
+			// Clear the backbuffer and the alpha
+			CNELU::clearBuffers(CRGBA(255,0,255,0));
 
-		// Clear the backbuffer and the alpha
-		CNELU::clearBuffers(CRGBA(255,0,255,0));
+			// Render the scene
+			CNELU::Scene.render();
+			CNELU::Scene.render();
+		
+			// Snapshot
+			CNELU::Driver->getBuffer (snapshot);
+			snapshot.flipV ();
 
-		// Render the scene
-		CNELU::Scene.render();
-		CNELU::Scene.render();
-		CNELU::Driver->swapBuffers ();
-	
-		// Snapshot
-		CNELU::Driver->getBuffer (snapshot);
-		snapshot.flipV ();
+			// Release the driver
+			CNELU::Driver->release ();
 
-		// Release the driver
-		CNELU::Driver->release ();
+			// Release NELU
+			CNELU::release();
 
-		// Release NELU
-		CNELU::release();
+			// Resample the bitmap
+			snapshot.resample (widthPixel, heightPixel);
 
-		// Resample the bitmap
-		snapshot.resample (widthPixel, heightPixel);
-
-		// Ok
-		result = true;
+			// Ok
+			result = true;
+		}
+		else
+		{
+			// Output an error
+			CMaxToLigo::errorMessage ("Can't initialise opengl offscreen renderer", "NeL Ligo check zone", *MAXScript_interface, errorInDialog);
+		}
 	}
 	catch (Exception &e)
 	{

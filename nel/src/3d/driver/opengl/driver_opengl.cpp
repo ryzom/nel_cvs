@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.146 2002/07/12 14:28:47 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.147 2002/07/25 16:45:48 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -308,6 +308,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	_OffScreen = mode.OffScreen;
 
+	// Init pointers
+	_PBuffer = NULL;
+	_hWnd = NULL;
+	_hRC = NULL;
+	_hDC = NULL;
+	
 	// Offscreen mode ?
 	if (_OffScreen)
 	{
@@ -345,8 +351,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Get the temporary HDC
 		HDC tempHDC = GetDC(tmpHWND);
-		wglMakeCurrent(tempHDC,NULL);
+
 		_Depth=GetDeviceCaps(tempHDC,BITSPIXEL);
+
 		// ---
 		memset(&_pfd,0,sizeof(_pfd));
 		_pfd.nSize        = sizeof(_pfd);
@@ -363,10 +370,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		pf=ChoosePixelFormat(tempHDC,&_pfd);
 		if (!pf) 
 		{
+			nlwarning ("CDriverGL::setDisplay: ChoosePixelFormat failed");
+			DestroyWindow (tmpHWND);
 			return false;
 		} 
 		if ( !SetPixelFormat(tempHDC,pf,&_pfd) ) 
 		{
+			nlwarning ("CDriverGL::setDisplay: SetPixelFormat failed");
+			DestroyWindow (tmpHWND);
 			return false;
 		} 
 
@@ -374,16 +385,25 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		HGLRC tempGLRC = wglCreateContext(tempHDC);
 		if (tempGLRC == NULL)
 		{
-			nlwarning ("wglCreateContext failed");
+			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed");
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
 		// Make the context current
 		if (!wglMakeCurrent(tempHDC,tempGLRC))
 		{
-			nlwarning ("wglMakeCurrent failed");
+			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed");
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
@@ -393,8 +413,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// Have some pbuffer ?
 		if ((!_Extensions.WGLARBPBuffer) || (!_Extensions.WGLARBPixelFormat))
 		{
-			nlwarning ("Extension for off-screen rendering not supported");
+			nlwarning ("CDriverGL::setDisplay: Extension for off-screen rendering not supported");
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
@@ -413,22 +438,33 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			WGL_SUPPORT_OPENGL_ARB,		true,
 		};		
 		float fattributes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		int pformat[4];
+		int pformat[4] = { 0, 0, 0, 0};
 		unsigned int nformats;
 		if ( !wglChoosePixelFormatARB( tempHDC, iattributes, fattributes, 4, pformat, &nformats ) )
 		{
-			nlwarning ("wglChoosePixelFormatARB failed");
+			nlwarning ("CDriverGL::setDisplay: wglChoosePixelFormatARB failed");
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
 		// Create pbuffer
-		iattributes[0] = 0;
-	    _PBuffer = wglCreatePbufferARB( tempHDC, pformat[0], mode.Width, mode.Height, iattributes );
+		int iattributes2[1] = {0};
+	    _PBuffer = wglCreatePbufferARB( tempHDC, pformat[0], mode.Width, mode.Height, iattributes2 );
 		if (_PBuffer == NULL)
 		{
-			nlwarning ("wglCreatePbufferARB failed");
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglCreatePbufferARB failed: 0x%x", error);
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
@@ -436,8 +472,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_hDC = wglGetPbufferDCARB( _PBuffer );
 		if ( _hDC == NULL )
 		{
-			nlwarning ("wglGetPbufferDCARB failed");
+			nlwarning ("CDriverGL::setDisplay: wglGetPbufferDCARB failed");
+			wglDestroyPbufferARB( _PBuffer );
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
@@ -445,16 +487,31 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_hRC = wglCreateContext( _hDC );
 		if ( _hRC == NULL )
 		{
-			nlwarning ("wglCreateContext failed");
+			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed");
+			wglReleasePbufferDCARB( _PBuffer, _hDC );
+			wglDestroyPbufferARB( _PBuffer );
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
 		// Make the context current
 		if (!wglMakeCurrent(_hDC,_hRC))
 		{
-			nlwarning ("wglMakeCurrent failed");
+			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed");
+			wglDeleteContext (_hRC);
+			wglReleasePbufferDCARB( _PBuffer, _hDC );
+			wglDestroyPbufferARB( _PBuffer );
+			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
 			return false;
 		}
 
@@ -463,9 +520,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Destroy temporary window
 		if (!wglDeleteContext (tempGLRC))
-			nlwarning ("wglDeleteContext failed");
+			nlwarning ("CDriverGL::setDisplay: wglDeleteContext failed");
 		if (!DestroyWindow (tmpHWND))
-			nlwarning ("DestroyWindow failed");
+			nlwarning ("CDriverGL::setDisplay: DestroyWindow failed");
  	}
 	else
 	{
@@ -555,15 +612,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		{
 			return false;
 		}
-
-		// Debug.
-		/*{
-			PIXELFORMATDESCRIPTOR  pfd; 
-			DescribePixelFormat(_hDC, pf,  
-					sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-			nlinfo("PixelFormat: Color: %d. Depth: %d. Stencil: %d", 
-				pfd.cColorBits, pfd.cDepthBits, pfd.cStencilBits);
-		}*/
 
 		if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
 		{

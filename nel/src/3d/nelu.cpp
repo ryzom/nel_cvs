@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.28 2002/02/28 12:59:50 besson Exp $
+ * $Id: nelu.cpp,v 1.29 2002/07/25 16:45:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
 
 
-void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
+bool			CNELU::initDriver (uint w, uint h, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
 {
 	// Init debug system
 //	NLMISC::InitDebug();
@@ -62,9 +62,22 @@ void			CNELU::initDriver(uint w, uint h, uint bpp, bool windowed, void *systemWi
 	ShapeBank = new CShapeBank;
 	// Init driver.
 	CNELU::Driver= CDRU::createGlDriver();
-	nlverify(CNELU::Driver->init());
-	nlverify(CNELU::Driver->setDisplay(systemWindow, GfxMode(w, h, bpp, windowed, offscreen)));
-	nlverify(CNELU::Driver->activate());
+	if (!CNELU::Driver->init())
+	{
+		nlwarning ("CNELU::initDriver: init() failed");
+		return false;
+	}
+	if (!CNELU::Driver->setDisplay(systemWindow, GfxMode(w, h, bpp, windowed, offscreen)))
+	{
+		nlwarning ("CNELU::initDriver: setDisplay() failed");
+		return false;
+	}
+	if (!CNELU::Driver->activate())
+	{
+		nlwarning ("CNELU::initDriver: activate() failed");
+		return false;
+	}
+	return true;
 }
 
 
@@ -150,14 +163,19 @@ void			CNELU::releaseDriver()
 	}
 }
 
-
-void			CNELU::init(uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
+bool			CNELU::init (uint w, uint h, CViewport viewport, uint bpp, bool windowed, void *systemWindow, bool offscreen) throw(EDru)
 {
 	NL3D::registerSerial3d();
-	initDriver(w,h,bpp,windowed,systemWindow,offscreen);
-	initScene(viewport);
-	initEventServer();
+	if (initDriver(w,h,bpp,windowed,systemWindow,offscreen))
+	{
+		initScene(viewport);
+		initEventServer();
+		return true;
+	}
+	else
+		return false;
 }
+
 void			CNELU::release()
 {
 	releaseEventServer();

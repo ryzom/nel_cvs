@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.3 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: nelu.h,v 1.4 2002/07/25 16:45:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	 *
 	 * You can access the driver with CNELU::Driver.
 	 */
-	static void		initDriver(uint w, uint h, uint bpp=32, bool windowed=true, void *systemWindow=NULL, bool offscreen=false) throw(EDru);
+	static bool		initDriver(uint w, uint h, uint bpp=32, bool windowed=true, void *systemWindow=NULL, bool offscreen=false) throw(EDru);
 
 	/** Init all that we need for a Scene.
 	 * - register scene basics models, 
@@ -117,7 +117,7 @@ public:
 	 * - initScene();
 	 * - initEventServer();
 	 */
-	static void		init(uint w, uint h, CViewport viewport=CViewport(), uint bpp=32, bool windowed=true, void *systemWindow=NULL, bool offscreen = false) throw(EDru);
+	static bool		init(uint w, uint h, CViewport viewport=CViewport(), uint bpp=32, bool windowed=true, void *systemWindow=NULL, bool offscreen = false) throw(EDru);
 
 	/** Delete all:
 	 * - releaseEventServer();

@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.14 2002/11/25 14:08:25 boucher Exp $
+ * $Id: u_source.h,v 1.15 2003/02/06 09:09:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,10 +104,6 @@ class USource
 {
 public:
 
-	/** Change the sound binded to the source.
-	  * The source must be of the same type as the source (ie simple or complex or background sound).
-	  */
-//	virtual void					setSound( TSoundId id, CSoundContext *context = 0) = 0;
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound() = 0;
 	/// Change the priority of the source

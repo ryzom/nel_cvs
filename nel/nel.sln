@@ -58,6 +58,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sound_lowlevel", "src\sound
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "driver_fmod", "src\sound\driver\fmod\driver_fmod.vcproj", "{9440443B-97BA-43C2-A762-31EEC8958BEE}"
 	ProjectSection(ProjectDependencies) = postProject
+		{D7CB0575-6FB4-4D2F-9958-BF83D8F729CA} = {D7CB0575-6FB4-4D2F-9958-BF83D8F729CA}
+		{4AF7ADB2-DAF8-4F04-9793-F92010001470} = {4AF7ADB2-DAF8-4F04-9793-F92010001470}
 	EndProjectSection
 EndProject
 Global

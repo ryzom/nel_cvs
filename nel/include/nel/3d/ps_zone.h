@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.7 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_zone.h,v 1.8 2001/05/30 10:02:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/ps_force.h"
 #include "nel/3d/ps_edit.h"
 #include "nel/3d/ps_attrib.h"
+#include "nel/3d/ps_plane_basis.h"
 
 
 namespace NL3D {
@@ -38,12 +39,12 @@ namespace NL3D {
 /** This epsilon is in meter and give a thickness to surfaces for tests. It must be above above 0
 * for the system to work correctly
 */
-const float PSCollideEpsilon = 10E-5f ;
+const float PSCollideEpsilon = 10E-3f ;
 
 
 
 /**
- * This class hold any entity that has an effect over located : a sink, a bouncing zone etc
+ * This class hold any entity that has an effect over located : a sink , a bouncing zone etc
  * This is a kind a specialized force, and it has an attached list of the targets
  * Not sharable.
  * 
@@ -87,16 +88,16 @@ public:
 	/// This is usually called by the step method for the pass dedicated to zone
 	virtual void performMotion(CAnimationTime ellapsedTime) = 0 ;
 
-	/// Show the zone (edition mode). This is usually called 
+	/// Show the zone (edition mode).
 	virtual void show(CAnimationTime ellapsedTime) = 0 ;
 		
 
-	/// Add a new type of located for this zone to apply on. nlassert if present	
+	/// Add a new type of located for this zone to apply on. nlassert if already present	
 	virtual void attachTarget(CPSLocated *ptr) ;
 
 
 	
-	/// serialisation, DERIVER must override this
+	/// serialization, DERIVER must override this, and call the parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) 
 	{ 
 		CPSTargetLocatedBindable::serial(f) ; 
@@ -106,7 +107,7 @@ public:
 	}
 
 
-	/** Inherited from CPSTargetLocatedBindable. Its called when one of the targets has been detroyed or detached
+	/** Inherited from CPSTargetLocatedBindable. It's called when one of the targets has been detroyed or detached
 	 *  The default behaviour, release collision infos from the located
 	 */
 	
@@ -275,6 +276,53 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 		virtual void deleteElement(uint32 index) ;
 
 } ;
+
+
+
+/// a caped cylinder
+
+
+class CPSZoneCylinder : public CPSZone, public IPSMover
+{
+	public:
+		virtual void performMotion(CAnimationTime ellapsedTime) ;
+		virtual void show(CAnimationTime ellapsedTime)  ;
+	
+
+		NLMISC_DECLARE_CLASS(CPSZoneCylinder) ;
+
+
+		// left multiply the current matrix by the given one. No valid index -> assert
+		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
+		// return a matrix of the system. No valid index -> assert
+		virtual CMatrix getMatrix(uint32 index) const ;
+
+		// serialization
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+
+		// inherited from IPSMover
+		virtual bool supportScaling(void) const { return true ; }
+
+	protected:
+
+		// the I and J vector of the cylinder
+		CPSAttrib<CPlaneBasis> _Basis ;
+
+		// dimension of cylinder in each direction, encoded in a vector
+		TPSAttribVector _Dim ;
+
+		CMatrix buildBasis(uint32 index) const ;
+
+		virtual void resize(uint32 size) ;
+
+		virtual void newElement(void) ;
+
+		virtual void deleteElement(uint32 index) ;
+} ;
+
  
 
 

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.5 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.6 2001/05/30 10:02:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -638,6 +638,525 @@ void CPSZoneDisc::deleteElement(uint32 index)
 {
 	_Radius.remove(index) ;
 	_Normal.remove(index) ;
+}
+
+
+////////////////////////////////////
+// CPSZoneCylinder implementation //
+////////////////////////////////////
+
+
+/*
+void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
+{
+	TPSAttribVector::const_iterator dimIt = _Dim.begin() ;
+	CPSAttrib<CPlaneBasis>::const_iterator basisIt = _Basis.begin() ;
+	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd, targetPosIt, targetPosEnd ;
+	CVector dest ;
+	CPSCollisionInfo ci ;
+	CVector startEnd ;
+	uint32 k ;
+	const TPSAttribVector *speedAttr ;
+
+
+
+	for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+	{
+
+		speedAttr = &((*it)->getSpeed()) ;
+
+
+		// cycle through the cylinders
+
+		cylinderPosEnd = _Owner->getPos().end() ;
+		for (cylinderPosIt = _Owner->getPos().begin() ; cylinderPosIt != cylinderPosEnd
+				; ++cylinderPosIt, ++dimIt, ++basisIt)
+		{
+			
+			// we must setup the cylinder in the good basis
+
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+
+			
+
+			// compute the new center pos
+			CVector center = m * *cylinderPosIt ;
+
+			// compute a basis for the cylinder
+			CVector I = m.mulVector(basisIt->X) ;
+			CVector J = m.mulVector(basisIt->Y) ;
+			CVector K = m.mulVector(basisIt->X ^ basisIt->Y) ;
+
+						
+			// the pos projected (and scale) over the plane basis of the cylinder, the pos minus the center
+			CVector projectedPos, tPos ;
+
+			// the same, but with the final position
+			CVector destProjectedPos, destTPos ;
+
+
+			// deals with each particle
+			targetPosEnd = (*it)->getPos().end() ;
+			for (targetPosIt = (*it)->getPos().begin(), k = 0 ; targetPosIt != targetPosEnd ; ++targetPosIt, ++k)
+			{	
+				const CVector &speed = (*speedAttr)[k] ;
+				const CVector &pos = *targetPosIt ;
+
+				
+				
+				// check wether current pos was outside the cylinder
+
+
+				tPos = pos - center ;
+				projectedPos = (1 / dimIt->x) * (I * tPos) * I + (1 / dimIt->y)  * (J * tPos) * J ;
+				
+				if (!
+					 (
+						((tPos * K) < dimIt->z)
+						&& ((tPos * K) > -dimIt->z)
+						&& (projectedPos * projectedPos < 1.f) 
+					 )
+				   )
+				{
+					dest = pos + ellapsedTime *  speed ;
+					destTPos = dest - center ;
+					destProjectedPos = (1.f / dimIt->x) * (I * tPos) * I + (1.f / dimIt->y)  * (J * tPos) * J ;
+
+					// test wether the new position is inside the cylinder
+
+					
+					if (!
+						 (
+							((destTPos * K) < dimIt->z)
+							&& ((destTPos * K) > -dimIt->z)
+							&& (destProjectedPos * destProjectedPos < 1.f) 
+						 )
+					   )
+					{
+						// now, detect the closest hit point (the smallest alpha, with alpha, the percent of the move vector
+						// to reach the hit point)
+
+						const float epsilon = 10E-6f ;
+
+						float alphaTop, alphaBottom, alphaCyl ;
+
+						const float denum = (dest - pos) * K ;
+
+						// top plane
+
+						if (fabs(denum) < epsilon)
+						{
+							alphaTop = (dimIt->z - (tPos * K)) / denum ;
+							if (alphaTop < 0.f) alphaTop = 1.f ;
+						}
+						else
+						{
+							alphaTop = 1.f ;
+						}
+
+						// bottom plane
+
+						if (fabs(denum) < epsilon)
+						{
+							alphaBottom = (- dimIt->z - (tPos * K)) / denum ;
+							if (alphaBottom < 0.f) alphaBottom = 1.f ;
+						}
+						else
+						{
+							alphaBottom = 1.f ;
+						}
+
+						// cylinder
+
+						//expressed the src and dest positions in the cylinder basis
+
+						const float ox = tPos * I, oy = tPos * J, dx = (destTPos - tPos) * I, dy = (destTPos - tPos) * J ;
+
+						// coefficients of the equation : a * alpha ^ 2 + b * alpha + c = 0
+						const float a = (dx * dx) / (dimIt->x * dimIt->x)
+								  + (dy * dy) / (dimIt->y * dimIt->y) ;
+						const float b = 2.f * (ox * dx) / (dimIt->x * dimIt->x)
+								  + (oy * dy) / (dimIt->y * dimIt->y) ;
+						const float c = ox * ox + oy * oy - 1 ;
+
+						// discriminant
+						const float delta = b * b - 4.f * a * c ;
+
+						if (delta < epsilon)
+						{
+							alphaCyl = 1.f ;
+						}
+						else
+						{
+							const float deltaRoot = sqrtf(delta) ;
+							const float r1 = (- b - deltaRoot) / (2.f / a) ;
+							const float r2 = (- b - deltaRoot) / (2.f / a) ;
+
+							if (r1 < 0.f) alphaCyl = r2 ;
+								else if (r2 < 0.f) alphaCyl = r1 ;
+									else alphaCyl = r1 < r2 ? r1 : r2 ;
+						}
+
+
+						// now, choose the minimum positive dist
+						
+						if (alphaTop < alphaBottom && alphaTop < alphaCyl)
+						{
+							// collision with the top plane
+							CVector startEnd = alphaTop * (dest - pos) ;
+							ci.newPos = pos + startEnd + PSCollideEpsilon * K ;
+							ci.dist = startEnd.norm() ;
+							ci.newSpeed = (-2.f * (speed * K)) * K + speed ;
+							ci.collisionZone = this ;
+							
+							(*it)->collisionUpdate(ci, k) ;
+						}
+						else
+							if (alphaBottom < alphaCyl)
+							{	
+								// collision with the bottom plane
+								CVector startEnd = alphaBottom * (dest - pos) ;
+								ci.newPos = pos + startEnd - PSCollideEpsilon * K ;
+								ci.dist = startEnd.norm() ;
+								ci.newSpeed = (-2.f * (speed * K)) * K + speed ;
+								ci.collisionZone = this ;
+						
+								
+								(*it)->collisionUpdate(ci, k) ;
+							}
+							else
+							{
+								// collision with the cylinder
+
+								CVector startEnd = alphaCyl * (dest - pos) ;
+
+								// normal at the hit point. It is the gradient of the implicit equation x^2 / a^2 + y^2 / b^2 - R^ 2=  0
+								// so we got unormalized n =  (2 x / a ^ 2, 2 y / b ^ 2, 0) in the basis of the cylinder
+								// As we'll normalize it, we don't need  the 2 factor
+								
+								float px = ox + alphaCyl * dx ;
+								float py = oy + alphaCyl * dy ;
+
+								CVector normal = px / (dimIt->x * dimIt->x) * I + py / (dimIt->y * dimIt->y) * J ;
+								normal.normalize() ;
+
+								ci.newPos = pos + startEnd - PSCollideEpsilon * normal ;
+								ci.dist = startEnd.norm() ;
+								ci.newSpeed = (-2.f * (speed * normal)) * normal + speed ;
+								ci.collisionZone = this ;
+
+								(*it)->collisionUpdate(ci, k) ;
+							}						
+
+					}
+				}									
+			}
+		}
+	}
+}
+*/
+
+
+
+void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
+{
+	TPSAttribVector::const_iterator dimIt = _Dim.begin() ;
+	CPSAttrib<CPlaneBasis>::const_iterator basisIt = _Basis.begin() ;
+	TPSAttribVector::const_iterator cylinderPosIt, cylinderPosEnd, targetPosIt, targetPosEnd ;
+	CVector dest ;
+	CPSCollisionInfo ci ;
+	CVector startEnd ;
+	uint32 k ;
+	const TPSAttribVector *speedAttr ;
+
+
+
+	for (TTargetCont::iterator it = _Targets.begin() ; it != _Targets.end() ; ++it)
+	{
+
+		speedAttr = &((*it)->getSpeed()) ;
+
+
+		// cycle through the cylinders
+
+		cylinderPosEnd = _Owner->getPos().end() ;
+		for (cylinderPosIt = _Owner->getPos().begin() ; cylinderPosIt != cylinderPosEnd
+				; ++cylinderPosIt, ++dimIt, ++basisIt)
+		{
+			
+			// we must setup the cylinder in the good basis
+
+			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner) ;
+
+			
+
+			// compute the new center pos
+			CVector center = m * *cylinderPosIt ;
+
+			// compute a basis for the cylinder
+			CVector I = m.mulVector(basisIt->X) ;
+			CVector J = m.mulVector(basisIt->Y) ;
+			CVector K = m.mulVector(basisIt->X ^ basisIt->Y) ;
+
+						
+			// the pos projected (and scale) over the plane basis of the cylinder, the pos minus the center
+			CVector projectedPos, tPos ;
+
+			// the same, but with the final position
+			CVector destProjectedPos, destTPos ;
+
+
+			// deals with each particle
+			targetPosEnd = (*it)->getPos().end() ;
+			for (targetPosIt = (*it)->getPos().begin(), k = 0 ; targetPosIt != targetPosEnd ; ++targetPosIt, ++k)
+			{	
+				const CVector &speed = (*speedAttr)[k] ;
+				const CVector &pos = *targetPosIt ;
+
+				
+				
+				// check wether current pos was outside the cylinder
+
+
+				tPos = pos - center ;
+				projectedPos = (1 / dimIt->x) * (I * tPos) * I + (1 / dimIt->y)  * (J * tPos) * J ;
+				
+				if (!
+					 (
+						((tPos * K) < dimIt->z)
+						&& ((tPos * K) > -dimIt->z)
+						&& (projectedPos * projectedPos < 1.f) 
+					 )
+				   )
+				{
+					dest = pos + ellapsedTime *  speed ;
+					destTPos = dest - center ;
+					destProjectedPos = (1.f / dimIt->x) * (I * tPos) * I + (1.f / dimIt->y)  * (J * tPos) * J ;
+
+					// test wether the new position is inside the cylinder
+
+					
+					if (!
+						 (
+							((destTPos * K) < dimIt->z)
+							&& ((destTPos * K) > -dimIt->z)
+							&& (destProjectedPos * destProjectedPos < 1.f) 
+						 )
+					   )
+					{
+						// now, detect the closest hit point (the smallest alpha, with alpha, the percent of the move vector
+						// to reach the hit point)
+
+						const float epsilon = 10E-6f ;
+
+						float alphaTop, alphaBottom, alphaCyl ;
+
+						const float denum = (dest - pos) * K ;
+
+						// top plane
+
+						if (fabs(denum) < epsilon)
+						{
+							alphaTop = (dimIt->z - (tPos * K)) / denum ;
+							if (alphaTop < 0.f) alphaTop = 1.f ;
+						}
+						else
+						{
+							alphaTop = 1.f ;
+						}
+
+						// bottom plane
+
+						if (fabs(denum) < epsilon)
+						{
+							alphaBottom = (- dimIt->z - (tPos * K)) / denum ;
+							if (alphaBottom < 0.f) alphaBottom = 1.f ;
+						}
+						else
+						{
+							alphaBottom = 1.f ;
+						}
+
+						// cylinder
+
+						//expressed the src and dest positions in the cylinder basis
+
+						const float ox = tPos * I, oy = tPos * J, dx = (destTPos - tPos) * I, dy = (destTPos - tPos) * J ;
+
+						// coefficients of the equation : a * alpha ^ 2 + b * alpha + c = 0
+						const float a = (dx * dx) / (dimIt->x * dimIt->x)
+								  + (dy * dy) / (dimIt->y * dimIt->y) ;
+						const float b = 2.f * (ox * dx) / (dimIt->x * dimIt->x)
+								  + (oy * dy) / (dimIt->y * dimIt->y) ;
+						const float c = ox * ox + oy * oy - 1 ;
+
+						// discriminant
+						const float delta = b * b - 4.f * a * c ;
+
+						if (delta < epsilon)
+						{
+							alphaCyl = 1.f ;
+						}
+						else
+						{
+							const float deltaRoot = sqrtf(delta) ;
+							const float r1 = (- b - deltaRoot) / (2.f / a) ;
+							const float r2 = (- b - deltaRoot) / (2.f / a) ;
+
+							if (r1 < 0.f) alphaCyl = r2 ;
+								else if (r2 < 0.f) alphaCyl = r1 ;
+									else alphaCyl = r1 < r2 ? r1 : r2 ;
+						}
+
+
+						// now, choose the minimum positive dist
+						
+						if (alphaTop < alphaBottom && alphaTop < alphaCyl)
+						{
+							// collision with the top plane
+							CVector startEnd = alphaTop * (dest - pos) ;
+							ci.newPos = pos + startEnd + PSCollideEpsilon * K ;
+							ci.dist = startEnd.norm() ;
+							ci.newSpeed = (-2.f * (speed * K)) * K + speed ;
+							ci.collisionZone = this ;
+							
+							(*it)->collisionUpdate(ci, k) ;
+						}
+						else
+							if (alphaBottom < alphaCyl)
+							{	
+								// collision with the bottom plane
+								CVector startEnd = alphaBottom * (dest - pos) ;
+								ci.newPos = pos + startEnd - PSCollideEpsilon * K ;
+								ci.dist = startEnd.norm() ;
+								ci.newSpeed = (-2.f * (speed * K)) * K + speed ;
+								ci.collisionZone = this ;
+						
+								
+								(*it)->collisionUpdate(ci, k) ;
+							}
+							else
+							{
+								// collision with the cylinder
+
+								CVector startEnd = alphaCyl * (dest - pos) ;
+
+								// normal at the hit point. It is the gradient of the implicit equation x^2 / a^2 + y^2 / b^2 - R^ 2=  0
+								// so we got unormalized n =  (2 x / a ^ 2, 2 y / b ^ 2, 0) in the basis of the cylinder
+								// As we'll normalize it, we don't need  the 2 factor
+								
+								float px = ox + alphaCyl * dx ;
+								float py = oy + alphaCyl * dy ;
+
+								CVector normal = px / (dimIt->x * dimIt->x) * I + py / (dimIt->y * dimIt->y) * J ;
+								normal.normalize() ;
+
+								ci.newPos = pos + startEnd - PSCollideEpsilon * normal ;
+								ci.dist = startEnd.norm() ;
+								ci.newSpeed = (-2.f * (speed * normal)) * normal + speed ;
+								ci.collisionZone = this ;
+
+								(*it)->collisionUpdate(ci, k) ;
+							}						
+
+					}
+				}									
+			}
+		}
+	}
+}
+
+void CPSZoneCylinder::show(CAnimationTime ellapsedTime)
+{
+	TPSAttribVector::const_iterator dimIt = _Dim.begin()
+									,posIt = _Owner->getPos().begin()
+									, endPosIt = _Owner->getPos().end() ;
+
+	CPSAttrib<CPlaneBasis>::const_iterator basisIt = _Basis.begin() ;
+									
+	setupDriverModelMatrix() ;	
+	CMatrix mat ;
+	for ( ; posIt != endPosIt ; ++posIt, ++dimIt, ++basisIt) 
+	{			
+		mat.setRot(basisIt->X, basisIt->Y, basisIt->X ^ basisIt->Y) ;
+		CPSUtil::displayCylinder(*getDriver(), *posIt, mat, *dimIt, 32) ; 
+	}
+}
+	
+
+
+void CPSZoneCylinder::applyMatrix(uint32 index, const CMatrix &m)
+{
+	CVector Z = _Basis[index].X ^ _Basis[index].Y ;
+	// rescale dimensions
+	CVector dim ;
+	
+	
+	dim =  m.mulVector(_Dim[index].x * _Basis[index].X) ;
+	_Dim[index].x = dim.norm() ;
+
+	dim =  m.mulVector(_Dim[index].y * _Basis[index].Y) ;
+	_Dim[index].y = dim.norm() ;
+
+	dim =  m.mulVector(_Dim[index].z * Z) ;
+	_Dim[index].z = dim.norm() ;
+
+
+	// transform the basis
+	
+	_Basis[index].X = m.mulVector(_Basis[index].X) ;
+	_Basis[index].X.normalize() ;
+
+	_Basis[index].Y = m.mulVector(_Basis[index].Y) ;
+	_Basis[index].Y.normalize() ;
+
+
+	// compute new pos
+	CVector &p = _Owner->getPos()[index] ;
+	p = m * p ;
+				 
+}
+
+
+
+CMatrix CPSZoneCylinder::getMatrix(uint32 index) const
+{
+	CMatrix m ;
+	m.setRot(_Dim[index].x *  _Basis[index].X, _Dim[index].y *_Basis[index].Y 
+			 , _Dim[index].z * (_Basis[index].X ^ _Basis[index].Y)) ;
+
+	m.setPos(_Owner->getPos()[index]) ;	
+	return m ;
+}
+
+
+void CPSZoneCylinder::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialCheck((uint32) 'ZCYL') ;
+	CPSZone::serial(f) ;
+	f.serialVersion(1) ;
+	f.serial(_Basis) ;		
+	f.serial(_Dim)  ;
+}
+
+
+
+void CPSZoneCylinder::resize(uint32 size)
+{
+	_Basis.resize(size) ;
+	_Dim.resize(size) ;
+}
+
+void CPSZoneCylinder::newElement(void)
+{
+	_Basis.insert(CPlaneBasis(CVector::K)) ;
+	_Dim.insert(CVector(1, 1, 1)) ;
+}
+
+void CPSZoneCylinder::deleteElement(uint32 index)
+{
+	_Basis.remove(index) ;
+	_Dim.remove(index) ;
 }
 
 

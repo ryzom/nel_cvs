@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.8 2003/07/30 16:00:02 vizerie Exp $
+ * $Id: lod_character_shape.cpp,v 1.9 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/lod_character_texture.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/polygon.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -570,6 +571,8 @@ const uint32	*CLodCharacterShape::getTriangleArray() const
 // ***************************************************************************
 const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId, TGlobalAnimationTime time, bool wrapMode, CVector &unPackScaleFactor) const
 {
+	H_AUTO( NL3D_LodCharacterShape_getAnimKey )
+
 	float	localTime;
 
 	if(animId>=_Anims.size())
@@ -620,73 +623,35 @@ const CVector	*CLodCharacterShape::getNormals() const
 
 // ***************************************************************************
 // ***************************************************************************
-// Bone coloring
+// Bone Alpha Testing
 // ***************************************************************************
 // ***************************************************************************
 
 
 // ***************************************************************************
-void			CLodCharacterShape::startBoneColor(std::vector<NLMISC::CRGBAF>	&tmpColors) const
+void			CLodCharacterShape::startBoneAlpha(std::vector<uint8>	&tmpAlphas) const
 {
-	// alocate
-	tmpColors.resize(getNumVertices());
-	// fill with black (in Alpha too)
-	CRGBAF	black(0,0,0,0);
-	fill(tmpColors.begin(), tmpColors.end(), black);
+	// clear
+	tmpAlphas.clear();
+	// alocate, and fill
+	tmpAlphas.resize(getNumVertices(), 0);
 }
 
 // ***************************************************************************
-void			CLodCharacterShape::addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors) const
+void			CLodCharacterShape::addBoneAlpha(uint boneId, std::vector<uint8> &tmpAlphas) const
 {
 	// Yoyo: This is an error to not have the same skeleton that the one stored in the lod shape. But must not crash
 	if(boneId>=_Bones.size())
 		return;
 	const CBoneInfluence	&bone= _Bones[boneId];
 
-	// for all vertices influenced by this bone, must influence the color
+	// for all vertices influenced by this bone, must set the alpha to full
 	for(uint i=0; i<bone.InfVertices.size(); i++)
 	{
 		const CVertexInf	&vInf= bone.InfVertices[i];
-		// Add the color, modulated by the vertex weight
-		tmpColors[vInf.VertexId].R+= color.R * vInf.Influence;
-		tmpColors[vInf.VertexId].G+= color.G * vInf.Influence;
-		tmpColors[vInf.VertexId].B+= color.B * vInf.Influence;
-		// Add the weight in alpha channel
-		tmpColors[vInf.VertexId].A+= vInf.Influence;
+		tmpAlphas[vInf.VertexId]= 255;
 	}
 }
-
-// ***************************************************************************
-void			CLodCharacterShape::endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors) const
-{
-	// The default value if vertex is not influenced at all
-	CRGBA	defaultColor(128,128,128,0);
-
-	// resize dstColors
-	nlassert(tmpColors.size() == getNumVertices());
-	dstColors.resize(getNumVertices());
-
-	// For all vertices
-	for(uint i=0; i<dstColors.size(); i++)
-	{
-		// If the vertex is not influenced, set transparent
-		if(tmpColors[i].A==0)
-			dstColors[i]= defaultColor;
-		else
-		{
-			// Average the color.
-			float	R= tmpColors[i].R / tmpColors[i].A;
-			float	G= tmpColors[i].G / tmpColors[i].A;
-			float	B= tmpColors[i].B / tmpColors[i].A;
-			// store.
-			dstColors[i].R= (uint8)NLMISC::OptFastFloor(R);
-			dstColors[i].G= (uint8)NLMISC::OptFastFloor(G);
-			dstColors[i].B= (uint8)NLMISC::OptFastFloor(B);
-			dstColors[i].A= 255;
-		}
-	}
-}
-
 
 
 } // NL3D

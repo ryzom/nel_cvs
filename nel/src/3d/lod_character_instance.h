@@ -1,7 +1,7 @@
 /** \file lod_character_instance.h
  * <File description>
  *
- * $Id: lod_character_instance.h,v 1.1 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: lod_character_instance.h,v 1.2 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -62,11 +62,11 @@ public:
 	/// wrapMode if true, the anim loop, else just clamp
 	bool					WrapMode;
 
-	/** The precomputed color array
+	/** The precomputed alpha array
 	 *	must be same size of the shape number vertices, else the
-	 *	whole mesh is supposed to be white. see CLodCharacterShape::startBoneColor() for how to build this array
+	 *	whole mesh is supposed to be opaque. see CLodCharacterShape::startBoneAlpha() for how to build this array
 	 */
-	std::vector<CRGBA>		VertexColors;
+	std::vector<uint8>		VertexAlphas;
 
 public:
 	CLodCharacterInstance()

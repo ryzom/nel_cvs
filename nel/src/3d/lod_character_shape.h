@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * <File description>
  *
- * $Id: lod_character_shape.h,v 1.4 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: lod_character_shape.h,v 1.5 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -162,7 +162,7 @@ public:
 	CLodCharacterShape();
 
 	/** build the Mesh base information
-	 *	NB: SkinWeights array tells for each vertex what bone color to use.
+	 *	NB: SkinWeights array tells for each vertex what bone to use (for alpha test removing)
 	 */
 	void			buildMesh(const std::string &name, const CLodCharacterShapeBuild &lodBuild);
 
@@ -202,21 +202,17 @@ public:
 	const CVector	*getNormals() const;
 
 
-	/// \name Vertex per Bone coloring
+	/** \name Vertex per Bone AlphaTesting
+	 *	This system is used for example to remove weapon of a Lod, using AlphaTesting (ie the polygons
+	 *	of the weapons are still drawn, but with alpha==0 => invisible)
+	 */
 	// @{
 
-	/// init the process by resize-ing a tmp RGBAF vector of getNumVertices() size, and reset to full black
-	void			startBoneColor(std::vector<NLMISC::CRGBAF>	&tmpColors) const;
+	/// init the process by resize-ing a tmp uint8 vector of getNumVertices() size, and reset to 0
+	void			startBoneAlpha(std::vector<uint8>	&tmpAlphas) const;
 
-	/// Add a bone color influence to tmpColors. 
-	void			addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors) const;
-
-	/** Compile boneColor result into a CRGBA vector (resize-ed by the method), averaging with weight stored in A.
-	 *	NB: if a final vertex is not influenced by any BoneColor, then it will receive (128,128,128,0).
-	 *	Hence it will be somewhat transparent (AlphaTest is used to render lod character shapes). 
-	 *	This may be interressant to hide some parts if they are not used.
-	 */
-	void			endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors) const;
+	/// Add a bone alpha influence to tmpAlpha. 
+	void			addBoneAlpha(uint boneId, std::vector<uint8> &tmpAlphas) const;
 
 	// @}
 

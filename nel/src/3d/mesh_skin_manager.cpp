@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.cpp
  * <File description>
  *
- * $Id: mesh_skin_manager.cpp,v 1.4 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_skin_manager.cpp,v 1.5 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/mesh_skin_manager.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D 
@@ -125,17 +126,23 @@ void			CMeshSkinManager::release()
 // ***************************************************************************
 uint8			*CMeshSkinManager::lock()
 {
+	H_AUTO( NL3D_MeshSkinManager_lock )
+
 	return	(uint8*)_VBHard[_CurentVBHard]->lock();
 }
 // ***************************************************************************
 void			CMeshSkinManager::unlock(uint numVertices)
 {
+	H_AUTO( NL3D_MeshSkinManager_unlock )
+		
 	// ATI: release only vertices used.
 	_VBHard[_CurentVBHard]->unlock(0, numVertices);
 }
 // ***************************************************************************
 void			CMeshSkinManager::activate()
 {
+	H_AUTO( NL3D_MeshSkinManager_activate )
+		
 	_Driver->activeVertexBufferHard(_VBHard[_CurentVBHard]);
 }
 // ***************************************************************************

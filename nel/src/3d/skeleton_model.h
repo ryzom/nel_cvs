@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.37 2003/11/13 18:10:30 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.38 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,10 +277,6 @@ public:
 	 */
 	void			setDisplayLodCharacterFlag(bool displayCLod);
 
-	/** Called by CTransform::setMeanColor()
-	 */
-	void			dirtLodVertexColor() {_CLodVertexColorDirty= true;}
-
 	/** Call it when you want the system to recompute the Lod texture
 	 *	NB: Lod texturing is possible only in conjunction with AsyncTextureManager. Hence, instances skinned
 	 *	to the skeleton should be in AsyncTextureMode.
@@ -474,12 +470,13 @@ private:
 	CLodCharacterInstance	_CLodInstance;
 
 	/** dirt when a bindSkin/stickObject/detachSkeletonSon is called
-	 *	dirt when a transform mean color is changed.
 	 */
-	bool					_CLodVertexColorDirty;
+	bool					_CLodVertexAlphaDirty;
 
-	/// recompute _CLodVertexColors, ignoring _CLodVertexColorDirty
-	void				computeCLodVertexColors(CLodCharacterManager *mngr);
+	void				dirtLodVertexAlpha() {_CLodVertexAlphaDirty= true;}
+	
+	/// recompute _CLodVertexAlpha, ignoring _CLodVertexAlphaDirty
+	void				computeCLodVertexAlpha(CLodCharacterManager *mngr);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.10 2003/08/07 08:47:52 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.11 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,6 +34,9 @@
 #include "nel/misc/fast_floor.h"
 #include "3d/lod_character_texture.h"
 #include "nel/misc/file.h"
+#include "nel/misc/algo.h"
+#include "nel/misc/fast_mem.h"
+#include "nel/misc/system_info.h"
 
 
 using	namespace std;
@@ -370,31 +373,58 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 
 
 // ***************************************************************************
-static inline CRGBA	computeLodLighting(const CVector &lightObjectSpace, const CVector &normalPtr, CRGBA ambient, CRGBA diffuse)
+static inline void	computeLodLighting(CRGBA &lightRes, const CVector &lightObjectSpace, const CVector &normalPtr, CRGBA ambient, CRGBA diffuse)
 {
 	// \todo yoyo: TODO_OPTIMIZE
 	float	f= lightObjectSpace * normalPtr;
-	f= max(0.f,f);
-	sint	f8= NLMISC::OptFastFloor(f*255);
-	CRGBA	lightRes;
-	lightRes.modulateFromuiRGBOnly(diffuse, f8);
-	lightRes.addRGBOnly(lightRes, ambient);
-	return lightRes;
+	sint	f8= NLMISC::OptFastFloor(f);
+	fastClamp8(f8);
+	sint	r,g,b;
+	r= (diffuse.R * f8)>>8;
+	g= (diffuse.G * f8)>>8;
+	b= (diffuse.B * f8)>>8;
+	r+= ambient.R;
+	g+= ambient.G;
+	b+= ambient.B;
+	fastClamp8(r);
+	fastClamp8(g);
+	fastClamp8(b);
+	lightRes.R= r;
+	lightRes.G= g;
+	lightRes.B= b;
 }
 
 
 // ***************************************************************************
 bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instance, const CMatrix &worldMatrix, 
-	CRGBA ambient, CRGBA diffuse, const CVector &lightDir)
+	CRGBA paramAmbient, CRGBA paramDiffuse, const CVector &lightDir)
 {
-	H_AUTO_USE ( NL3D_CharacterLod_Render )
+	H_AUTO ( NL3D_CharacterLod_AddRenderKey )
 
 	nlassert(_Driver);
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());
 
-	CVector		unPackScaleFactor;
-	uint		numVertices;
+
+	// regroup all variables that will be accessed in the ASM loop (minimize cache problems)
+	uint			numVertices;
+	const CLodCharacterShape::CVector3s		*vertPtr;
+	const CVector	*normalPtr;
+	const CUV		*uvPtr;
+	const uint8		*alphaPtr;
+	CVector			lightObjectSpace;
+	CVector			matPos;
+	float			a00, a01, a02; 
+	float			a10, a11, a12; 
+	float			a20, a21, a22; 
+	sint			f8;
+	uint64			blank= 0;
+	CRGBA			ambient= paramAmbient;
+	CRGBA			diffuse= paramDiffuse;
+	// For ASM / MMX, must set 0 to alpha part, because replaced by *alphaPtr (with add)
+	ambient.A= 0;
+	diffuse.A= 0;
+	
 
 	// Get the Shape and current key.
 	//=============
@@ -406,14 +436,14 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 		return true;
 
 	// get UV/Normal array. NULL => error
-	const CVector	*normalPtr= clod->getNormals();
+	normalPtr= clod->getNormals();
 	// get UV of the instance
-	const CUV		*uvPtr= instance.getUVs();
+	uvPtr= instance.getUVs();
 	// uvPtr is NULL means that initInstance() has not been called!!
 	nlassert(normalPtr && uvPtr);
 
 	// get the anim key
-	const CLodCharacterShape::CVector3s		*vertPtr;
+	CVector		unPackScaleFactor;
 	vertPtr= clod->getAnimKey(instance.AnimId, instance.AnimTime, instance.WrapMode, unPackScaleFactor);
 	// if not found quit, return true
 	if(!vertPtr)
@@ -429,25 +459,39 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 	if(_CurrentVertexId+numVertices > _MaxNumVertices)
 		return false;
 
-	// verify colors.
-	bool	vertexColor= instance.VertexColors.size() == numVertices;
-	// if error, take white as global color.
+	// get alpha array
+	static	vector<uint8>	defaultAlphaArray;
+	// get the instance alpha if correctly setuped
+	if(instance.VertexAlphas.size() == numVertices)
+	{
+		alphaPtr= &instance.VertexAlphas[0];
+	}
+	// if error, take 255 as alpha.
+	else
+	{
+		// NB: still use an array. This case should never arise, but support it not at full optim.
+		if(defaultAlphaArray.size()<numVertices)
+			defaultAlphaArray.resize(numVertices, 255);
+		alphaPtr= &defaultAlphaArray[0];
+	}
 
 
-	// Transform and Add vertices.
+	// Prepare Transform
 	//=============
 
+	// HTimerInfo: all this block takes 0.1%
+
 	// Get matrix pos.
-	CVector		matPos= worldMatrix.getPos();
+	matPos= worldMatrix.getPos();
 	// compute in manager space.
 	matPos -= _ManagerMatrixPos;
 	// Get rotation line vectors
-	float	a00= worldMatrix.get()[0]; float	a01= worldMatrix.get()[4]; float	a02= worldMatrix.get()[8]; 
-	float	a10= worldMatrix.get()[1]; float	a11= worldMatrix.get()[5]; float	a12= worldMatrix.get()[9]; 
-	float	a20= worldMatrix.get()[2]; float	a21= worldMatrix.get()[6]; float	a22= worldMatrix.get()[10];
+	const float *worldM= worldMatrix.get();
+	a00= worldM[0]; a01= worldM[4]; a02= worldM[8]; 
+	a10= worldM[1]; a11= worldM[5]; a12= worldM[9]; 
+	a20= worldM[2]; a21= worldM[6]; a22= worldM[10];
 
 	// get the light in object space.
-	CVector		lightObjectSpace;
 	// Multiply light dir with transpose of worldMatrix. This may be not exact (not uniform scale) but sufficient.
 	lightObjectSpace.x= a00 * lightDir.x + a10 * lightDir.y + a20 * lightDir.z;
 	lightObjectSpace.y= a01 * lightDir.x + a11 * lightDir.y + a21 * lightDir.z;
@@ -457,96 +501,254 @@ bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instan
 	// normalize, and neg for Dot Product.
 	lightObjectSpace.normalize();
 	lightObjectSpace= -lightObjectSpace;
+	// preMul by 255 for RGBA uint8
+	lightObjectSpace*= 255;
 
 	// multiply matrix with scale factor for Pos.
 	a00*= unPackScaleFactor.x; a01*= unPackScaleFactor.y; a02*= unPackScaleFactor.z; 
 	a10*= unPackScaleFactor.x; a11*= unPackScaleFactor.y; a12*= unPackScaleFactor.z; 
 	a20*= unPackScaleFactor.x; a21*= unPackScaleFactor.y; a22*= unPackScaleFactor.z; 
-
-
+	
 	// get dst Array.
 	uint8	*dstPtr;
 	dstPtr= _VertexData + _CurrentVertexId * _VertexSize;
 
-	// 2 modes, with or without per vertexColor
-	if(vertexColor)
-	{
-		// get color array
-		const CRGBA		*colorPtr= &instance.VertexColors[0];
-		for(;numVertices>0;numVertices--)
+
+	/* PreCaching Note: CFastMem::precache() has been tested (done on the 4 arrays) but not very interesting, 
+		maybe because the cache miss improve //ism a bit below.
+	*/
+
+	// Fill the VB
+	//=============
+#ifdef NL_OS_WINDOWS
+	// optimized version
+	if(CSystemInfo::hasMMX())
+	{   
+		H_AUTO( NL3D_CharacterLod_vertexFill );
+
+		if(numVertices)
 		{
-			// NB: order is important for AGP filling optimisation
-			// transform vertex, and store.
-			CVector		*dstVector= (CVector*)dstPtr;
-			dstVector->x= a00 * vertPtr->x + a01 * vertPtr->y + a02 * vertPtr->z + matPos.x;
-			dstVector->y= a10 * vertPtr->x + a11 * vertPtr->y + a12 * vertPtr->z + matPos.y;
-			dstVector->z= a20 * vertPtr->x + a21 * vertPtr->y + a22 * vertPtr->z + matPos.z;
-			// Copy UV
-			*(CUV*)(dstPtr + NL3D_CLOD_UV_OFF)= *uvPtr;
+			/* NB: order is important for AGP filling optimisation in dstPtr
 
-			// Compute Lighting.
-			CRGBA	lightRes= computeLodLighting(lightObjectSpace, *normalPtr, ambient, diffuse);
-			// modulate color and store.
-			((CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF))->modulateFromColorRGBOnly(*colorPtr, lightRes);
-			// Copy Alpha.
-			((CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF))->A= colorPtr->A;
+				Pentium2+ optimisation notes:
 
-			// next
-			vertPtr++;
-			uvPtr++;
-			normalPtr++;
-			colorPtr++;
-			dstPtr+= NL3D_CLOD_VERTEX_SIZE;
+				- "uop" comment formating: 
+					A/B means "A micro-ops in port 0, and B micro-ops in port 2".  (port 1 is very rare for FPU)
+					A/B/C/D means "A micro-ops in port 0, B in port 2, C in port 3 and D in port 4".
+					The number in () is the delay (if any).
+				- the "compute lighting part" must done first, because of the "fistp f8" mem writes that must
+						be place far away from the "mov eax, f8" read in clamp lighting part
+						(else seems that it crashes all the //ism)
+				- No need to Interleave on Pentium2+. But prevents "write/read stall" by putting the write 
+					far away from the next read. Else stall of 3 cycles + BIG BREAK OF //ism (I think).
+					This had save me 120 cycles / 240 !!!
+
+				BenchResults:
+				- The "transform vertex part" and "all next part" cost 42 cycles, but is somewhat optimal:
+					63 uop (=> min 21 cycles), but 36 uop in the P0 port (=> this is the bottleneck)
+				- The lighting part adds 1 cycle only ?????  (44 cycles) But still relevant and optimal:
+					43 uop in port P0!!!! 
+				- The UV part adds 4 cycles (47) (should not since 0 in Port P0), still acceptable.
+				- The clamp part adds 3 cycles (50), and add 11 cycles in "P0 or P1" (but heavy dependency)
+					If we assume all goes into P1, it should takes 0... still acceptable (optimal==43?)
+				- The alpha part adds 2 cycles (52, optimal=45). OK.
+				- The modulate part adds 15 cycles. OK
+
+				TOTAL: 67 cycles in theory (write in RAM, no cache miss problem)
+				BENCH: ASM version: 91 cycles (Write in AGP, some cache miss problems, still good against 67)
+					   C version: 316 cycles.
+			*/
+			__asm
+			{
+				mov		edi, dstPtr
+			theLoop:
+				// **** compute lighting
+				mov		esi,normalPtr			// uop: 0/1
+				// dot3
+				fld		dword ptr [esi]			// uop: 0/1
+				fmul	lightObjectSpace.x		// uop: 1/1 (5)
+				fld		dword ptr [esi+4]		// uop: 0/1
+				fmul	lightObjectSpace.y		// uop: 1/1 (5)
+				faddp	st(1),st				// uop: 1/0 (3)
+				fld		dword ptr [esi+8]		// uop: 0/1
+				fmul	lightObjectSpace.z		// uop: 1/1 (5)
+				faddp	st(1),st				// uop: 1/0 (3)
+				fistp	f8						// uop: 2/0/1/1 (5)
+				// next
+				add		esi, 12					// uop: 1/0
+				mov		normalPtr, esi			// uop: 0/0/1/1
+
+				
+				// **** transform vertex, and store
+				mov		esi, vertPtr			// uop: 0/1
+				fild	word ptr[esi]			// uop: 3/1 (5)
+				fild	word ptr[esi+2]			// uop: 3/1 (5)
+				fild	word ptr[esi+4]			// uop: 3/1 (5)
+				// x
+				fld		a00						// uop: 0/1
+				fmul	st, st(3)				// uop: 1/0 (5)
+				fld		a01						// uop: 0/1
+				fmul	st, st(3)				// uop: 1/0 (5)
+				faddp	st(1), st				// uop: 1/0 (3)
+				fld		a02						// uop: 0/1
+				fmul	st, st(2)				// uop: 1/0 (5)
+				faddp	st(1), st				// uop: 1/0 (3)
+				fld		matPos.x				// uop: 0/1
+				faddp	st(1), st				// uop: 1/0 (3)
+				fstp	dword ptr[edi]			// uop: 0/0/1/1
+				// y
+				fld		a10
+				fmul	st, st(3)
+				fld		a11
+				fmul	st, st(3)
+				faddp	st(1), st
+				fld		a12
+				fmul	st, st(2)
+				faddp	st(1), st
+				fld		matPos.y
+				faddp	st(1), st
+				fstp	dword ptr[edi+4]
+				// z
+				fld		a20
+				fmul	st, st(3)
+				fld		a21
+				fmul	st, st(3)
+				faddp	st(1), st
+				fld		a22
+				fmul	st, st(2)
+				faddp	st(1), st
+				fld		matPos.z
+				faddp	st(1), st
+				fstp	dword ptr[edi+8]
+				// flush stack
+				fstp	st						// uop: 1/0
+				fstp	st						// uop: 1/0
+				fstp	st						// uop: 1/0
+				// next
+				add		esi, 6					// uop: 1/0
+				mov		vertPtr, esi			// uop: 0/0/1/1
+
+			
+				// **** copy uv
+				mov		esi, uvPtr							// uop: 0/1
+				mov		eax, [esi]							// uop: 0/1
+				mov		[edi+NL3D_CLOD_UV_OFF], eax			// uop: 0/0/1/1
+				mov		ebx, [esi+4]						// uop: 0/1
+				mov		[edi+NL3D_CLOD_UV_OFF+4], ebx		// uop: 0/0/1/1
+				// next
+				add		esi, 8					// uop: 1/0
+				mov		uvPtr, esi				// uop: 0/0/1/1
+
+
+				// **** Clamp lighting
+				// clamp to 0 only. will be clamped to 255 by MMX
+				mov		eax, f8					// uop: 0/1
+				cmp		eax, 0x80000000			// if>=0 => CF=1
+				sbb		ebx, ebx				// if>=0 => CF==1 => ebx=0xFFFFFFFF
+				and		eax, ebx				// if>=0 => eax unchanged, else eax=0 (clamped)
+				
+				
+				// **** Modulate lighting modulate with diffuse color, add ambient term, using MMX
+				movd			mm0, eax		// 0000000L		uop: 1/0
+				packuswb		mm0, mm0		// 000L000L		uop: 1/0 (p1)
+				packuswb		mm0, mm0		// 0L0L0L0L		uop: 1/0 (p1)
+				movd			mm1, diffuse	//				uop: 0/1
+				punpcklbw		mm1, blank		//				uop: 1/1 (p1)
+				pmullw			mm0, mm1		// diffuse*L	uop: 1/0 (3)
+				psrlw			mm0, 8			// 0A0B0G0R		uop: 1/0 (p1)
+				packuswb		mm0, blank		// 0000ABGR		uop: 1/1 (p1)
+				movd			mm2, ambient	//				uop: 0/1
+				paddusb			mm0, mm2		//				uop: 1/0
+				movd			ebx, mm0		// ebx= AABBGGRR	uop: 1/0
+				// NB: emms is not so bad on P2+: delay of 6, +11 (NB: far better than no MMX instructions)
+				emms							// uop: 11/0 (6).  (?????)
+				
+				
+				// **** append alpha, and store
+				mov		esi, alphaPtr						// uop: 0/1
+				movzx	eax, byte ptr[esi]					// uop: 0/1
+				shl		eax, 24								// uop: 1/0
+				add		ebx, eax							// uop: 1/0
+				// now, ebx=  AABBGGRR
+				mov		[edi+NL3D_CLOD_COLOR_OFF], ebx		// uop: 0/0/1/1
+				// next
+				add		esi, 1					// uop: 1/0
+				mov		alphaPtr, esi			// uop: 0/0/1/1
+				
+				
+				// **** next
+				add		edi, NL3D_CLOD_VERTEX_SIZE		// uop: 1/0
+
+				mov		eax, numVertices		// uop: 0/1
+				dec		eax						// uop: 1/0
+				mov		numVertices, eax		// uop: 0/0/1/1
+
+				jnz		theLoop					// uop: 1/1 (p1)
+
+				// To have same behavior than c code
+				mov		dstPtr, edi
+			}
 		}
 	}
 	else
+#endif
 	{
-		for(;numVertices>0;numVertices--)
+		H_AUTO( NL3D_CharacterLod_vertexFill );
+
+		CVector		fVect;
+		
+		for(;numVertices>0;)
 		{
 			// NB: order is important for AGP filling optimisation
 			// transform vertex, and store.
 			CVector		*dstVector= (CVector*)dstPtr;
-			dstVector->x= a00 * vertPtr->x + a01 * vertPtr->y + a02 * vertPtr->z + matPos.x;
-			dstVector->y= a10 * vertPtr->x + a11 * vertPtr->y + a12 * vertPtr->z + matPos.y;
-			dstVector->z= a20 * vertPtr->x + a21 * vertPtr->y + a22 * vertPtr->z + matPos.z;
+			fVect.x= vertPtr->x; fVect.y= vertPtr->y; fVect.z= vertPtr->z; 
+			++vertPtr;
+			dstVector->x= a00 * fVect.x + a01 * fVect.y + a02 * fVect.z + matPos.x;
+			dstVector->y= a10 * fVect.x + a11 * fVect.y + a12 * fVect.z + matPos.y;
+			dstVector->z= a20 * fVect.x + a21 * fVect.y + a22 * fVect.z + matPos.z;
 			// Copy UV
 			*(CUV*)(dstPtr + NL3D_CLOD_UV_OFF)= *uvPtr;
-
+			++uvPtr;
+			
 			// Compute Lighting.
-			CRGBA	lightRes= computeLodLighting(lightObjectSpace, *normalPtr, ambient, diffuse);
-			lightRes.A= 255;
-			// store global color
-			*(CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF)= lightRes;
+			CRGBA	lightRes;
+			computeLodLighting(lightRes, lightObjectSpace, *normalPtr, ambient, diffuse);
+			++normalPtr;
+			lightRes.A= *alphaPtr;
+			++alphaPtr;
+			// store.
+			*((CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF))= lightRes;
 
 			// next
-			vertPtr++;
-			uvPtr++;
-			normalPtr++;
 			dstPtr+= NL3D_CLOD_VERTEX_SIZE;
+			numVertices--;
 		}
 	}
-
 
 	// Add Primitives.
 	//=============
 
-	// get number of tri indexes
-	uint	numTriIdxs= clod->getNumTriangles() * 3;
-
-	// realloc tris if needed.
-	if(_CurrentTriId+numTriIdxs > _Triangles.size())
 	{
-		_Triangles.resize(_CurrentTriId+numTriIdxs);
-	}
+		H_AUTO( NL3D_CharacterLod_primitiveFill )
+			
+		// get number of tri indexes
+		uint	numTriIdxs= clod->getNumTriangles() * 3;
 
-	// reindex and copy tris
-	const uint32	*srcIdx= clod->getTriangleArray();
-	uint32			*dstIdx= &_Triangles[_CurrentTriId];
-	for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
-	{
-		*dstIdx= *srcIdx + _CurrentVertexId;
-	}
+		// realloc tris if needed.
+		if(_CurrentTriId+numTriIdxs > _Triangles.size())
+		{
+			_Triangles.resize(_CurrentTriId+numTriIdxs);
+		}
 
+		// reindex and copy tris
+		const uint32	*srcIdx= clod->getTriangleArray();
+		uint32			*dstIdx= &_Triangles[_CurrentTriId];
+		for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
+		{
+			*dstIdx= *srcIdx + _CurrentVertexId;
+		}
+	}
 
 	// Next
 	//=============

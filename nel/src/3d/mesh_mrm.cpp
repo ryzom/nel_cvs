@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.66 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.67 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,6 @@ namespace NL3D
 {
 
 
-H_AUTO_DECL( NL3D_MeshMRMGeom_RenderSkinned )
 H_AUTO_DECL( NL3D_MeshMRMGeom_RenderShadow )
 
 
@@ -1144,6 +1143,8 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 // ***************************************************************************
 void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 {
+	H_AUTO( NL3D_MeshMRMGeom_renderSkin );
+	
 	if(_Lods.size()==0)
 		return;
 
@@ -1190,7 +1191,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 
 	// Profiling
 	//===========
-	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
+	H_AUTO( NL3D_MeshMRMGeom_renderSkin_go );
 
 
 	// Morphing
@@ -1333,6 +1334,8 @@ bool	CMeshMRMGeom::supportSkinGrouping() const
 // ***************************************************************************
 sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest)
 {
+	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpGeom )
+
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
@@ -1371,7 +1374,7 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 
 	// Profiling
 	//===========
-	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
+	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpGeom_go );
 
 
 	// Morphing
@@ -1466,6 +1469,8 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 // ***************************************************************************
 void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex)
 {
+	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpPrimitives );
+	
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
@@ -1477,10 +1482,6 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 	// Get the lod choosen in renderSkinGroupGeom()
 	CLod	&lod= _Lods[_LastLodComputed];
 
-
-	// Profiling
-	//===========
-	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
 
 	// must update primitive cache
 	updateShiftedTriangleCache(mi, _LastLodComputed, baseVertex);
@@ -1550,6 +1551,8 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 // ***************************************************************************
 void	CMeshMRMGeom::renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdrPassId)
 {
+	H_AUTO( NL3D_MeshMRMGeom_rdrSkinGrpSpecularRdrPass );
+	
 	// get a ptr on scene
 	CScene				*ownerScene= mi->getOwnerScene();
 	// get a ptr on renderTrav
@@ -1561,10 +1564,6 @@ void	CMeshMRMGeom::renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdr
 	// Get the lod choosen in renderSkinGroupGeom()
 	CLod	&lod= _Lods[_LastLodComputed];
 
-
-	// Profiling
-	//===========
-	H_AUTO_USE( NL3D_MeshMRMGeom_RenderSkinned );
 
 	// _ShiftedTriangleCache must have been computed in renderSkinGroupPrimitives
 	nlassert(mi->_ShiftedTriangleCache);

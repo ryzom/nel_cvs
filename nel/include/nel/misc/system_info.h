@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.9 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: system_info.h,v 1.10 2003/11/21 16:20:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,13 +61,13 @@ public:
 	  * This is initialized at started, so its fast
 	  * (always false on non 0x86 architecture ...)
 	  */	  
-	static bool hasMMX ();
+	static bool hasMMX () {return _HaveMMX;}
 
 	/** helps to know wether the processor has streaming SIMD instructions (the OS must supports it)
 	  * This is initialized at started, so its fast
 	  * (always false on non 0x86 architecture ...)
 	  */
-	static bool hasSSE ();
+	static bool hasSSE () {return _HaveSSE;}
 
 	static bool isNT();
 
@@ -78,6 +78,11 @@ public:
 	/** returns all the physical memory on this computer
 	  */
 	static uint32 totalPhysicalMemory ();
+
+private:
+	static bool _HaveMMX;
+	static bool _HaveSSE;
+	
 };
 
 

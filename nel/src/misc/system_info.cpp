@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.20 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: system_info.cpp,v 1.21 2003/11/21 16:20:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -352,8 +352,8 @@ static bool DetectSSE()
 	#endif
 }
 
-static bool HaveMMX = DetectMMX ();
-static bool HaveSSE = DetectSSE ();
+bool CSystemInfo::_HaveMMX = DetectMMX ();
+bool CSystemInfo::_HaveSSE = DetectSSE ();
 
 bool CSystemInfo::hasCPUID ()
 {
@@ -391,8 +391,6 @@ bool CSystemInfo::hasCPUID ()
 		 return false;
 	#endif
 }
-bool CSystemInfo::hasMMX () { return HaveMMX; }
-bool CSystemInfo::hasSSE () { return HaveSSE; }
 
 
 bool CSystemInfo::isNT()

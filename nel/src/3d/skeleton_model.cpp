@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.51 2003/11/18 13:56:43 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.52 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,7 @@ CSkeletonModel::CSkeletonModel()
 
 	_SkinToRenderDirty= false;
 
-	_CLodVertexColorDirty= true;
+	_CLodVertexAlphaDirty= true;
 
 	// Inform the transform that I am a skeleton
 	CTransform::setIsSkeleton(true);
@@ -526,8 +526,8 @@ bool		CSkeletonModel::bindSkin(CTransform *mi)
 	mi->_ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
 
 
-	// must recompute lod vertex color when LodCharacter used
-	dirtLodVertexColor();
+	// must recompute lod vertex alpha when LodCharacter used
+	dirtLodVertexAlpha();
 	// must recompute list of skins.
 	dirtSkinRenderLists();
 
@@ -567,8 +567,8 @@ void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	hrcLinkSon( mi );
 
-	// must recompute lod vertex color when LodCharacter used
-	dirtLodVertexColor();
+	// must recompute lod vertex alpha when LodCharacter used
+	dirtLodVertexAlpha();
 }
 // ***************************************************************************
 void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
@@ -618,8 +618,8 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	}
 
 
-	// must recompute lod vertex color when LodCharacter used
-	dirtLodVertexColor();
+	// must recompute lod vertex alpha when LodCharacter used
+	dirtLodVertexAlpha();
 	// must recompute list of skins if was skinned
 	if( wasSkinned )
 		dirtSkinRenderLists();
@@ -1038,7 +1038,7 @@ void		CSkeletonModel::traverseRender()
 
 
 // ***************************************************************************
-void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
+void			CSkeletonModel::computeCLodVertexAlpha(CLodCharacterManager *mngr)
 {
 	// if shape id set.
 	if(_CLodInstance.ShapeId<0)
@@ -1047,12 +1047,9 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 	const CLodCharacterShape	*lodShape= mngr->getShape(_CLodInstance.ShapeId);
 	if(lodShape)
 	{
-		static vector<CRGBAF>	tmpColors;
-		tmpColors.clear();
-
 		// start process.
 		//-----------------
-		lodShape->startBoneColor(tmpColors);
+		lodShape->startBoneAlpha(_CLodInstance.VertexAlphas);
 
 		// build an Id map, from Skeleton Ids to the lodShapes ids. (because may be differents)
 		static vector<sint>	boneMap;
@@ -1073,9 +1070,6 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 		{
 			CTransform	*skin= *it;
 
-			// get color of this skin.
-			CRGBA	color= skin->getMeanColor();
-
 			// get array of bone used for this skin.
 			const vector<sint32>	*skinUsage= skin->getSkinBoneUsage();
 			// check correct skin
@@ -1090,7 +1084,7 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 					// only if id found in the lod shape
 					if(idInLod>=0)
 						// add color to this bone.
-						lodShape->addBoneColor(idInLod, color, tmpColors);
+						lodShape->addBoneAlpha(idInLod, _CLodInstance.VertexAlphas);
 				}
 
 			}
@@ -1102,9 +1096,6 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 		{
 			CTransform	*object= *it;
 
-			// get color of this object.
-			CRGBA	color= object->getMeanColor();
-
 			// get on which bone this object is linked.
 			// use the boneMap to translate id to lodShape id.
 			sint	idInLod= boneMap[object->_FatherBoneId];
@@ -1112,13 +1103,9 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 			// only if id found in the lod shape
 			if(idInLod>=0)
 				// add color to this bone.
-				lodShape->addBoneColor(idInLod, color, tmpColors);
+				lodShape->addBoneAlpha(idInLod, _CLodInstance.VertexAlphas);
 		}
 
-
-		// compile colors
-		//-----------------
-		lodShape->endBoneColor(tmpColors, _CLodInstance.VertexColors);
 	}
 
 }
@@ -1364,13 +1351,13 @@ void			CSkeletonModel::renderCLod()
 	//=================
 	// NB: even if texturing is sufficient, still important for AlphaTest.
 
-	// If must recompute color because of change of skin color or if skin added/deleted
-	if(_CLodVertexColorDirty)
+	// If must recompute alpha because of change of skin added/deleted
+	if(_CLodVertexAlphaDirty)
 	{
-		// recompute vertex colors
-		computeCLodVertexColors(mngr);
-		// set _CLodVertexColorDirty to false.
-		_CLodVertexColorDirty= false;
+		// recompute vertex alpha
+		computeCLodVertexAlpha(mngr);
+		// set _CLodVertexAlphaDirty to false.
+		_CLodVertexAlphaDirty= false;
 	}
 
 	// render the Lod in the LodManager.
@@ -1500,7 +1487,7 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 		}
 
 		H_AUTO( NL3D_Skin_Grouped );
-
+		
 		// For each skin, have an index which gives the decal of the vertices in the buffer
 		baseVertices.resize(skinsToGroup.size());
 
@@ -1512,11 +1499,12 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 			uint	remainingVertices= maxVertices;
 			uint	currentBaseVertex= 0;
 
+
 			// First pass, fill The VB.
 			//------------
 			// lock buffer
 			uint8	*vbDest= meshSkinManager.lock();
-
+			
 			// For all skins until the buffer is full
 			uint	startSkinId= skinId;
 			while(skinId<skinsToGroup.size())
@@ -1539,11 +1527,11 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 
 			// release buffer. ATI: release only vertices used.
 			meshSkinManager.unlock(currentBaseVertex);
-
+			
 			// Second pass, render the primitives.
 			//------------
 			meshSkinManager.activate();
-
+			
 			/* Render any primitives that are not specular. Group specular ones into specularRdrPasses.
 				NB: this speed a lot (specular setup is heavy)!
 			*/
@@ -1558,12 +1546,12 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 			// If any skin Specular rdrPass to render
 			if(!specularRdrPasses.empty())
 			{
-				// Sort by Specular Map
+				// Sort by Specular Map. HTimerInfo: take 0.0% time
 				sort(specularRdrPasses.begin(), specularRdrPasses.end());
-
-				// Batch Specular!
+				
+				// Batch Specular! HTimerInfo: take 0.2%
 				rdrTrav.getDriver()->startSpecularBatch();
-
+				
 				// Render all of them
 				for(uint i=0;i<specularRdrPasses.size();i++)
 				{
@@ -1572,12 +1560,12 @@ void			CSkeletonModel::renderSkinList(NLMISC::CObjectVector<CTransform*, false> 
 					skinsToGroup[specRdrPass.SkinIndex]->renderSkinGroupSpecularRdrPass(specRdrPass.RdrPassIndex);
 				}
 
-				// End Batch Specular!
+				// End Batch Specular! HTimerInfo: take 0.0%
 				rdrTrav.getDriver()->endSpecularBatch();
 			}
 
 
-			// End of this block, swap to the next buffer
+			// End of this block, swap to the next buffer. HTimerInfo: take 0.0%
 			meshSkinManager.swapVBHard();
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.68 2003/11/17 10:39:28 besson Exp $
+ * $Id: transform.cpp,v 1.69 2003/11/21 16:19:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -543,12 +543,6 @@ void		CTransform::setMeanColor(CRGBA color)
 	{
 		// change it.
 		_MeanColor= color;
-		// if skinned or sticked to a skeleton model.
-		if(_FatherSkeletonModel)
-		{
-			// must dirt the vertex color of the lod skeleton because some object color has changed
-			_FatherSkeletonModel->dirtLodVertexColor();
-		}
 	}
 }
 

@@ -1,8 +1,8 @@
+#include "nel/misc/types_nl.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <io.h>
 #include <direct.h>
-#include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 
 #include <vector>
@@ -112,6 +112,7 @@ void packSubRecurse ()
 	char sCurDir[MAX_PATH];
 
 	getcwd (sCurDir, MAX_PATH);
+	printf ("Treating directory : %s\n", sCurDir);
 	hFind = _findfirst ("*.*", &findData);	
 	while (hFind != -1)
 	{
@@ -140,11 +141,13 @@ void packSubRecurse ()
 		else if ((strcmp(findData.name, ".") != 0) && (strcmp(findData.name, "..") != 0))
 		{
 			// Should not failed
-			nlassert (chdir (findData.name) != -1);
+			sint tmp = chdir (findData.name);
+			nlassert (tmp != -1);
 			packSubRecurse ();
 
 			// Should not failed
-			nlassert (chdir (sCurDir) != -1);
+			tmp = chdir (sCurDir);
+			nlassert (tmp != -1);
 		}
 		if (_findnext (hFind, &findData) == -1)
 			break;
@@ -215,8 +218,9 @@ int main (int nNbArg, char **ppArgs)
 			{
 				getcwd (sDestDir, MAX_PATH);
 				
+				int tmp = chdir (sCurDir);
 				// restore current path, should not failed
-				nlassert (chdir (sCurDir) != -1);
+				nlassert (tmp != -1); // removed in release
 
 				// go to the source dir
 				if (chdir (ppArgs[2]) != -1)

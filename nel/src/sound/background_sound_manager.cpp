@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.18 2003/07/03 15:16:12 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.19 2003/07/22 13:30:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -349,6 +349,7 @@ void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive 
 				{
 					uint layerId = 0;
 					std::string layerString;
+					std::string soundName;
 					if (child->getPropertyByName("layer", layerString))
 					{
 						// extract layer number.
@@ -361,11 +362,16 @@ void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive 
 					}
 
 					child->getPropertyByName("name", primName);
+					child->getPropertyByName("sound", soundName);
+					// compatibility with older primitive
+					if (soundName.empty())
+						soundName = primName;
+
 					if (className == "sound_zone")
 					{
 						if(child->getNumVector()>2)
 						{
-							addSound(primName, layerId, static_cast<const CPrimZone*>(child)->VPoints, false);
+							addSound(soundName, layerId, static_cast<const CPrimZone*>(child)->VPoints, false);
 						}
 						else
 						{
@@ -376,7 +382,7 @@ void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive 
 					{
 						if(child->getNumVector() > 1)
 						{
-							addSound(primName, layerId, static_cast<const CPrimPath*>(child)->VPoints, true);
+							addSound(soundName, layerId, static_cast<const CPrimPath*>(child)->VPoints, true);
 						}
 						else
 						{
@@ -388,7 +394,7 @@ void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive 
 						std::vector<NLLIGO::CPrimVector>	points;
 						points.push_back(static_cast<const CPrimPoint*>(child)->Point);
 
-						addSound(primName, layerId, points, false);
+						addSound(soundName, layerId, points, false);
 					}
 					else if (className == "sound_folder")
 					{

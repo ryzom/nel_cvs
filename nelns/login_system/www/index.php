@@ -13,20 +13,20 @@
 	// return true if the check is ok
 	function checkLoginPassword ($login, $password, &$id, &$reason)
 	{
-		$link = mysql_connect() or die ("Can't connect to database");
-		mysql_select_db ("nel") or die ("Can't access to the table");
-		$query = "SELECT * FROM users where Login='".$login."'";
-		$result = mysql_query ($query) or die ("Can't execute the query");
+		$link = mysql_connect() or die ("Can't connect to database: ".mysql_error());
+		mysql_select_db ("nel") or die ("Can't access to the table: ".mysql_error());
+		$query = "SELECT * FROM user where Login='".$login."'";
+		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 		
 		if (mysql_num_rows ($result) == 0)
 		{
 			// login doesn't exist, create it
 
-			$query = "INSERT INTO users (Login, Password) VALUES ('".$login."', '".$password."')";
-			$result = mysql_query ($query) or die ("Can't execute the query");
+			$query = "INSERT INTO user (Login, Password) VALUES ('".$login."', '".$password."')";
+			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
-			$query = "SELECT * FROM users WHERE Login='".$login."'";
-			$result = mysql_query ($query) or die ("Can't execute the query");
+			$query = "SELECT * FROM user WHERE Login='".$login."'";
+			$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
 			if (mysql_num_rows ($result) == 1)
 			{
@@ -142,8 +142,8 @@
 	{
 		$link = mysql_connect() or die ("Can't connect to database");
 		mysql_select_db ("nel") or die ("Can't access to the table");
-		$query = "SELECT * FROM shards";
-		$result = mysql_query ($query) or die ("Can't execute the query");
+		$query = "SELECT * FROM shard";
+		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 
 		echo 'Please, select a shard:<ul>';
 		

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.12 2002/02/18 18:10:29 berenguier Exp $
+ * $Id: rpo2nel.cpp,v 1.13 2002/02/25 11:04:17 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -708,46 +708,43 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 	if (symmetry)
 	{
 		// For each patches
-		for(i=0 ; i<pPM->numPatches ; i++)
+		for (i=0 ; i<pPM->numPatches ; i++)
 		{
+			// Ref on the patch info
+			CPatchInfo &patchInfo = patchinfo[i];
+
 			// Xchg left and right
-			CPatchInfo::CBindInfo tmp = patchinfo[i].BindEdges[0];
-			patchinfo[i].BindEdges[0] = patchinfo[i].BindEdges[2];
-			patchinfo[i].BindEdges[2] = tmp;
-			uint16 tmpVrt= patchinfo[i].BaseVertices[0];
-			patchinfo[i].BaseVertices[0] = patchinfo[i].BaseVertices[3];
-			patchinfo[i].BaseVertices[3] = tmpVrt;
-			tmpVrt= patchinfo[i].BaseVertices[1];
-			patchinfo[i].BaseVertices[1] = patchinfo[i].BaseVertices[2];
-			patchinfo[i].BaseVertices[2] = tmpVrt;
+			swap (patchInfo.BindEdges[0], patchInfo.BindEdges[2]);
+			swap (patchInfo.BaseVertices[0], patchInfo.BaseVertices[3]);
+			swap (patchInfo.BaseVertices[1], patchInfo.BaseVertices[2]);
 
 			// Flip edges
 			for (uint edge=0; edge<4; edge++)
 			{
+				// Ref on the patch info
+				CPatchInfo::CBindInfo &bindEdge = patchinfo[i].BindEdges[edge];
+
 				uint next;
 				// Look if it is a bind ?
-				if ( (patchinfo[i].BindEdges[edge].NPatchs>1) && (patchinfo[i].BindEdges[edge].NPatchs!=5) )
+				if ( (bindEdge.NPatchs>1) && (bindEdge.NPatchs!=5) )
 				{
-					for (next=0; next<(uint)patchinfo[i].BindEdges[edge].NPatchs/2; next++)
+					for (next=0; next<(uint)bindEdge.NPatchs/2; next++)
 					{
-						uint16	tmpPtr = patchinfo[i].BindEdges[edge].Next[patchinfo[i].BindEdges[edge].NPatchs - next - 1];
-						uint8	tmpEdge = patchinfo[i].BindEdges[edge].Edge[patchinfo[i].BindEdges[edge].NPatchs - next - 1];
-						patchinfo[i].BindEdges[edge].Next[patchinfo[i].BindEdges[edge].NPatchs - next - 1] = patchinfo[i].BindEdges[edge].Next[next];
-						patchinfo[i].BindEdges[edge].Edge[patchinfo[i].BindEdges[edge].NPatchs - next - 1] = patchinfo[i].BindEdges[edge].Edge[next];
-						patchinfo[i].BindEdges[edge].Next[next] = tmpPtr;
-						patchinfo[i].BindEdges[edge].Edge[next] = tmpEdge;
+						swap (bindEdge.Next[bindEdge.NPatchs - next - 1], bindEdge.Next[next]);
+						swap (bindEdge.Edge[bindEdge.NPatchs - next - 1], bindEdge.Edge[next]);
 					}
 				}
 
 				// Look if we are binded on a reversed edge
-				for (next=0; next<patchinfo[i].BindEdges[edge].NPatchs; next++)
+				uint bindCount = (bindEdge.NPatchs==5) ? 1 : bindEdge.NPatchs;
+				for (next=0; next<bindCount; next++)
 				{
 					// Left or right ?
-					if ( (patchinfo[i].BindEdges[edge].Edge[next] & 1) == 0)
+					if ( (bindEdge.Edge[next] & 1) == 0)
 					{
 						// Invert
-						patchinfo[i].BindEdges[edge].Edge[next] += 2;
-						patchinfo[i].BindEdges[edge].Edge[next] &= 3;
+						bindEdge.Edge[next] += 2;
+						bindEdge.Edge[next] &= 3;
 					}
 				}
 			}

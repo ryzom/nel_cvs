@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.10 2005/02/22 10:19:20 besson Exp $
+ * $Id: context_sound.h,v 1.11 2005/03/25 09:52:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ class CContextSoundContainer : public IContextSoundContainer
 
 		if (i != NbJoker)
 			return;
-		nlassertex(i==NbJoker, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
+		nlassertex(i==NbJoker, ("Error while adding sound '%s' into context sound container", NLMISC::CStringMapper::unmap(sound->getName()).c_str()));
 
 		int randomValue;
 		if (UseRandom)
@@ -190,7 +190,7 @@ class CContextSoundContainer : public IContextSoundContainer
 				}
 				else if (!arg.empty())
 				{
-					nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
+					nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", NLMISC::CStringMapper::unmap(sound->getName()).c_str()));
 					// end of the argument.
 					randomValue = atoi(arg.c_str());
 					arg = "";
@@ -200,13 +200,13 @@ class CContextSoundContainer : public IContextSoundContainer
 			// read the potential last arg.
 			if (!arg.empty())
 			{
-				nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
+				nlassertex (ok == false, ("Error while adding sound '%s' into context sound container", NLMISC::CStringMapper::unmap(sound->getName()).c_str()));
 				// end of the argument.
 				randomValue = atoi(arg.c_str());
 				arg = "";
 				ok = true;
 			}
-			nlassertex (ok == true, ("Error while adding sound '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
+			nlassertex (ok == true, ("Error while adding sound '%s' into context sound container", NLMISC::CStringMapper::unmap(sound->getName()).c_str()));
 
 		}
 		else
@@ -238,7 +238,7 @@ class CContextSoundContainer : public IContextSoundContainer
 		if (!ret.second)
 		{
 			THashContextSound::iterator it = _ContextSounds.find(cm);
-			nlassertex(it != _ContextSounds.end(), ("Error wile adding soudn '%s' into context sound container", CStringMapper::unmap(sound->getName()).c_str()));
+			nlassertex(it != _ContextSounds.end(), ("Error wile adding soudn '%s' into context sound container", NLMISC::CStringMapper::unmap(sound->getName()).c_str()));
 
 			nlwarning("Sound %s has the same context matcher as the sound %s", NLMISC::CStringMapper::unmap(sound->getName()).c_str(), NLMISC::CStringMapper::unmap(it->second->getName()).c_str());
 		}

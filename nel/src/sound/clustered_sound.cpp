@@ -1,7 +1,7 @@
 /** \file clustered_sound.cpp
  * 
  *
- * $Id: clustered_sound.cpp,v 1.24 2005/02/22 10:19:20 besson Exp $
+ * $Id: clustered_sound.cpp,v 1.25 2005/03/25 09:52:20 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -116,14 +116,14 @@ float EAX_MATERIAL_PARAM[][3] =
 // No EAX, just have an array of gain factor to apply for each material type
 float EAX_MATERIAL_PARAM[] =
 {
-	float(pow(10, -2800/2000)),
-	float(pow(10, -5000/2000)),
-	float(pow(10, -1800/2000)),
-	float(pow(10, -4400/2000)),
-	float(pow(10, -4000/2000)),
-	float(pow(10, -5000/2000)),
-	float(pow(10, -6000/2000)),
-	float(pow(10, -1200/2000))
+	float(pow((double)10, (double)-2800/2000)),
+	float(pow((double)10, (double)-5000/2000)),
+	float(pow((double)10, (double)-1800/2000)),
+	float(pow((double)10, (double)-4400/2000)),
+	float(pow((double)10, (double)-4000/2000)),
+	float(pow((double)10, (double)-5000/2000)),
+	float(pow((double)10, (double)-6000/2000)),
+	float(pow((double)10, (double)-1200/2000))
 };
 #define EAXLISTENER_MAXENVIRONMENTSIZE 100
 #endif	// EAX_AVAILABLE

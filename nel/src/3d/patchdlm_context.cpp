@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.7 2002/04/18 15:32:15 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.8 2002/04/22 16:35:42 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/fast_floor.h"
 #include "3d/tile_far_bank.h"
 #include "3d/landscape.h"
+#include "nel/misc/cpu_info.h"
+#include "3d/fast_mem.h"
 
 
 using namespace std;
@@ -584,6 +586,44 @@ void			CPatchDLMContext::clearLighting()
 	}
 }
 
+
+// ***************************************************************************
+
+// TestYoyo: I thought this code was better, but actually, this is not the case
+/*
+static	float	NL3D_Val1= 1.f;
+inline void	__stdcall fastClamp01(float &x)
+{
+	__asm
+	{
+		mov esi, x
+		mov eax, [esi]
+
+		// clamp to 0.
+		cmp eax, 0x80000001		// set carry if sign bit is set.
+		sbb ecx, ecx			// if attDist is negative, ecx==0 , else 0xFFFFFFFF.
+		and eax, ecx			// if attDist is negative, eax=0, else unchanged
+
+		// clamp eax to 1 (NB: now we are sure eax>=0).
+		cmp	eax, NL3D_Val1		// set carry if < Val1.
+		sbb	ecx, ecx			// if < Val1, ecx==0xFFFFFFFF, else 0.
+		and	eax, ecx			// if < Val1, ecx= eax, else ecx=0
+		not	ecx
+		and	ecx, NL3D_Val1		// if > Val1, ecx== Val1, else ecx= 0.
+		add	eax, ecx			// finally, eax= val clamped to 1.
+
+		// store.
+		mov [esi], eax
+	}
+}*/
+
+// faster to do a simple clamp ???
+inline void	fastClamp01(float &x)
+{
+	clamp(x, 0.f, 1.f);
+}
+
+
 // ***************************************************************************
 void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 {
@@ -644,13 +684,37 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 	// TestYoyo only.
 	/*extern uint YOYO_LandDLCount;
 	YOYO_LandDLCount+= (endX - startX) * (endY - startY);*/
-
+	
 	// process all vertices
 	//================
 	float	r,g,b;
 	CRGBA	*dst= &_LightMap[0];
 	CVertex		*originVert= vert;
 	CRGBA		*originDst= dst;
+
+	// TestYoyo: finally, precache does not seems to impact final result.
+	// precache loading, for better cache use. NB: precache the entire line, ignoring clip result.
+	// Precache only if interesting.
+	/*if( (endX - startX)*4>=Width && (endY-startY)>=2)
+	{
+		vert= originVert + startY*Width;
+		dst= originDst + startY*Width;
+		uint	nPixelLine= (endY-startY)*Width;
+		if(CCpuInfo::hasSSE())
+		{
+			CFastMem::precacheSSE(vert, nPixelLine * sizeof(CVertex));
+			CFastMem::precacheSSE(dst, nPixelLine * sizeof(CRGBA));
+		}
+		else if(CCpuInfo::hasMMX())
+		{
+			CFastMem::precacheMMX(vert, nPixelLine * sizeof(CVertex));
+			CFastMem::precacheMMX(dst, nPixelLine * sizeof(CRGBA));
+		}
+	}*/
+
+	// Start 24 precision, for faster compute.
+	OptFastFloorBegin24();
+
 	// If the pointLight is a spot, compute is more complex/slower
 	if(pl.IsSpot)
 	{
@@ -669,15 +733,15 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 				// compute cos for pl. attenuation
 				float	cosSpot= dirToP * pl.Dir;
 				float	attSpot= (cosSpot-pl.CosMin) * pl.OOCosDelta;
-				clamp(attSpot, 0.f, 1.f);
+				fastClamp01(attSpot);
 
 				// distance attenuation
 				float	attDist= (dist-pl.AttMax) * pl.OOAttDelta;
-				clamp(attDist, 0.f, 1.f);
+				fastClamp01(attDist);
 
 				// compute diffuse lighting
 				float	diff= -(vert->Normal * dirToP);
-				clamp(diff, 0.f, 1.f);
+				fastClamp01(diff);
 				
 				// compute colors.
 				diff*= attSpot * attDist;
@@ -686,18 +750,50 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 				b= pl.B*diff;
 
 				CRGBA	col;
-				col.R= (uint8)OptFastFloor(r);
-				col.G= (uint8)OptFastFloor(g);
-				col.B= (uint8)OptFastFloor(b);
+				col.R= (uint8)OptFastFloor24(r);
+				col.G= (uint8)OptFastFloor24(g);
+				col.B= (uint8)OptFastFloor24(b);
 
 				// add to map.
+#ifdef NL_OS_WINDOWS
+				// Fast AddClamp.
+				__asm
+				{
+					mov	esi, dst
+
+					mov	al, [esi]dst.R
+					add	al, col.R
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.R, al
+
+					mov	al, [esi]dst.G
+					add	al, col.G
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.G, al
+
+					mov	al, [esi]dst.B
+					add	al, col.B
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.B, al
+				}
+#else
+				// add and clamp to map.
 				dst->addRGBOnly(*dst, col);
+#endif
 			}
 		}
 	}
 	// else, pointLight with no Spot cone attenuation
 	else
 	{
+		// TestYoyo
+		/*extern	void	YOYO_startDLMItCount();
+		YOYO_startDLMItCount();*/
+
+		// Compute lightmap pixels of interest 
 		for(y=startY; y<endY; y++)
 		{
 			nverts= endX - startX;
@@ -708,15 +804,16 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 			{
 				CVector	dirToP= vert->Pos - pl.Pos;
 				float	dist= dirToP.norm();
-				dirToP/= dist;
+				float	OODist= 1.0f / dist;
+				dirToP*= OODist;
 
 				// distance attenuation
 				float	attDist= (dist-pl.AttMax) * pl.OOAttDelta;
-				clamp(attDist, 0.f, 1.f);
+				fastClamp01(attDist);
 
 				// compute diffuse lighting
 				float	diff= -(vert->Normal * dirToP);
-				clamp(diff, 0.f, 1.f);
+				fastClamp01(diff);
 				
 				// compute colors.
 				diff*= attDist;
@@ -725,16 +822,49 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 				b= pl.B*diff;
 
 				CRGBA	col;
-				col.R= (uint8)OptFastFloor(r);
-				col.G= (uint8)OptFastFloor(g);
-				col.B= (uint8)OptFastFloor(b);
+				col.R= (uint8)OptFastFloor24(r);
+				col.G= (uint8)OptFastFloor24(g);
+				col.B= (uint8)OptFastFloor24(b);
 
 				// add to map.
+#ifdef NL_OS_WINDOWS
+				// Fast AddClamp.
+				__asm
+				{
+					mov	esi, dst
+
+					mov	al, [esi]dst.R
+					add	al, col.R
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.R, al
+
+					mov	al, [esi]dst.G
+					add	al, col.G
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.G, al
+
+					mov	al, [esi]dst.B
+					add	al, col.B
+					sbb	cl, cl
+					or	al, cl
+					mov	[esi]dst.B, al
+				}
+#else
+				// add and clamp to map.
 				dst->addRGBOnly(*dst, col);
+#endif
 			}
 		}
+
+		// TestYoyo
+		/*extern	void	YOYO_endDLMItCount();
+		YOYO_endDLMItCount();*/
 	}
 
+	// Stop 24 bit precision
+	OptFastFloorEnd24();
 
 	// Src texture is modified, hence it can't be black.
 	//==============

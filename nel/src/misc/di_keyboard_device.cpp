@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.14 2004/08/16 12:44:42 vizerie Exp $
+ * $Id: di_keyboard_device.cpp,v 1.15 2004/10/05 17:18:37 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -434,7 +434,7 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 		sendUnicode(charValue, dikey, server, pressed);
 	}	
 	
-	_FirstPressDate  = NLMISC::CTime::getLocalTime(); // can't use the time stamp, because we can't not sure it matches the local time.
+	_FirstPressDate  = (uint32) NLMISC::CTime::getLocalTime(); // can't use the time stamp, because we can't not sure it matches the local time.
 	                                                  // time stamp is used for evenrts sorting only
 }
 

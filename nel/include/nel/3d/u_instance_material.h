@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.13 2003/11/17 14:25:09 besson Exp $
+ * $Id: u_instance_material.h,v 1.14 2004/03/23 10:11:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/bitmap.h"
 
 
 namespace NL3D
@@ -140,7 +141,21 @@ public:
 	 *	NB: if success and if instanceOwner->getAsyncTextureMode()==true, then instanceOwner->setAsyncTextureDirty(true) 
 	 *	is called
 	 */
-	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;		
+	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;
+	/** Set the texture datas to be read from memory rather than from a file. This erases any previous texture at that slot.
+	  * The provided block can be a memory image of a file, however
+	  * \param stage The stage at which texture must be set
+	  * \param data Pointer of the file, or of the pixels datas
+	  * \param length length, in bytes, of the datas.
+	  * \param isFile is true if the data must be interpreted as a texture file. Otherwise, it is interpreted
+	  *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
+	  *        the raw datas
+	  * \param _delete Is true if the texture has ownership on the texture datas
+	  * \param texType relevant only when isFile is set to false. Gives the format to expand the texture to when it is generated.
+	  */
+	virtual void				setTextureMem(uint stage, uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, NLMISC::CBitmap::TType texType = NLMISC::CBitmap::RGBA) = 0;
+
+	// set 
 
 	/// \name Texture matrix
 	// @{

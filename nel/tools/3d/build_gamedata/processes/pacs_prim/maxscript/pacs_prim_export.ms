@@ -1,19 +1,8 @@
 
--- Clear the log
-fn clearlog =
-(
-	filename = ((getdir #maxroot)+"log.log")
-	deleteFile filename
-	createFile filename
-)
-
 -- Allocate 20 Me for the script
 heapSize += 15000000
 
--- Clear log
-clearlog ()
-
-nlErrorFilename = ((getdir #maxroot)+"log.log")
+nlErrorFilename = "output_logfile"
 nlErrorStream = openFile nlErrorFilename mode:"a"
 if nlErrorStream == undefined then
 	nlErrorStream = createFile nlErrorFilename

@@ -47,26 +47,17 @@ date
 
 for i in $zone_source_directories ; do
 	# Copy the script
-	cat maxscript/zone_export.ms | sed -e "s&zone_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/zone/zone_exported&g" > $max_directory/scripts/zone_export.ms
+	cat maxscript/zone_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/zone/log.log&g" | sed -e "s&zone_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/zone/zone_exported&g" > $max_directory/scripts/zone_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

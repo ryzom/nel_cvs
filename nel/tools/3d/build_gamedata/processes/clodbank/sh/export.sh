@@ -35,26 +35,17 @@ date
 
 for i in $clod_source_directories ; do
 	# Copy the script
-	cat maxscript/clod_export.ms | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_clod&$build_gamedata_directory/processes/clodbank/clod&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/clodbank/tag&g" > $max_directory/scripts/clod_export.ms
+	cat maxscript/clod_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/clodbank/log.log&g" | sed -e "s&shape_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_clod&$build_gamedata_directory/processes/clodbank/clod&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/clodbank/tag&g" > $max_directory/scripts/clod_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

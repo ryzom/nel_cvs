@@ -40,26 +40,17 @@ date
 
 for i in $ig_land_source_directories ; do
 	# Copy the script
-	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/ig/tag&g" | sed -e "s&output_directory_ig&$build_gamedata_directory/processes/ig/ig_land_max&g" > $max_directory/scripts/ig_export.ms
+	cat maxscript/ig_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/ig/log.log&g" | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/ig/tag&g" | sed -e "s&output_directory_ig&$build_gamedata_directory/processes/ig/ig_land_max&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat
@@ -70,26 +61,17 @@ done
 
 for i in $ig_other_source_directories ; do
 	# Copy the script
-	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/ig/tag&g" | sed -e "s&output_directory_ig&$build_gamedata_directory/processes/ig/ig_other&g" > $max_directory/scripts/ig_export.ms
+	cat maxscript/ig_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/ig/log.log&g" | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/ig/tag&g" | sed -e "s&output_directory_ig&$build_gamedata_directory/processes/ig/ig_other&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

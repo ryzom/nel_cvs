@@ -34,26 +34,17 @@ date
 
 for i in $skel_source_directories ; do
 	# Copy the script
-	cat maxscript/skel_export.ms | sed -e "s&skel_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/skel/skel&g" > $max_directory/scripts/skel_export.ms
+	cat maxscript/skel_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/skel/log.log&g" | sed -e "s&skel_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/skel/skel&g" > $max_directory/scripts/skel_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

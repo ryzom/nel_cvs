@@ -34,26 +34,17 @@ date
 
 for i in $pacs_prim_source_directories ; do
 	# Copy the script
-	cat maxscript/pacs_prim_export.ms | sed -e "s&pacs_prim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/pacs_prim/pacs_prim&g" > $max_directory/scripts/pacs_prim_export.ms
+	cat maxscript/pacs_prim_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/pacs_prim/log.log&g" | sed -e "s&pacs_prim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/pacs_prim/pacs_prim&g" > $max_directory/scripts/pacs_prim_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript pacs_prim_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

@@ -34,26 +34,17 @@ date
 
 for i in $anim_source_directories ; do
 	# Copy the script
-	cat maxscript/anim_export.ms | sed -e "s&anim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/anim/anim_export&g" > $max_directory/scripts/anim_export.ms
+	cat maxscript/anim_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/anim/log.log&g" | sed -e "s&anim_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/anim/anim_export&g" > $max_directory/scripts/anim_export.ms
 
 	# Start max
-	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript anim_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript anim_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript anim_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript anim_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

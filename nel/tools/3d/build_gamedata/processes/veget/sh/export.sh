@@ -29,26 +29,17 @@ date
 
 for i in $veget_source_directories ; do
 	# Copy the script
-	cat maxscript/veget_export.ms | sed -e "s&veget_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_veget&$build_gamedata_directory/processes/veget/veget&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/veget/tag&g" > $max_directory/scripts/veget_export.ms
+	cat maxscript/veget_export.ms | sed -e "s&output_logfile&$build_gamedata_directory/processes/veget/log.log&g" | sed -e "s&veget_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_veget&$build_gamedata_directory/processes/veget/veget&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/veget/tag&g" > $max_directory/scripts/veget_export.ms
 
 	# Start max
-	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
-
-	# Concat log.log files
 	echo Try 1 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 2 >> log.log
-	cat $max_directory/log.log >> log.log
-
 	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
-	# Concat log.log files
 	echo Try 3 >> log.log
-	cat $max_directory/log.log >> log.log
+	$max_directory/3dsmax.exe -U MAXScript veget_export.ms -q -mi -vn
 
 	# Idle
 	../../idle.bat

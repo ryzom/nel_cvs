@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.89 2004/04/30 18:05:55 corvazier Exp $
+ * $Id: debug.cpp,v 1.90 2004/05/03 09:37:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -468,7 +468,7 @@ public:
 			if(!shortExc.empty() || !longExc.empty())
 			{
 				bool i = false;
-				report (progname+shortExc, "", subject, _Reason, true, 1, true, 1, true, i);
+				report (progname+shortExc, "", subject, _Reason, true, 1, true, 1, true, i, NL_CRASH_DUMP_FILE);
 			}
 		}
 	}

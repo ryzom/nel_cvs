@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.19 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.20 2003/04/04 17:33:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,12 +204,18 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, T
 			}
 			catch (Exception& e)
 			{
-				MessageBox (NULL, e.what(), "NeL export", MB_OK|MB_ICONEXCLAMATION);
+				if (_ErrorInDialog)
+					MessageBox (NULL, e.what(), "NeL export", MB_OK|MB_ICONEXCLAMATION);
+				else
+					nlwarning ("ERROR : %s", e.what ());
 			}
 		}
 		else
 		{
-			MessageBox (NULL, "Can't open the file for writing.", "NeL export", MB_OK|MB_ICONEXCLAMATION);
+			if (_ErrorInDialog)
+				MessageBox (NULL, "Can't open the file for writing.", "NeL export", MB_OK|MB_ICONEXCLAMATION);
+			else
+				nlwarning ("ERROR : Can't open the file (%s) for writing", sPath);
 		}
 	}
 	return bRet;

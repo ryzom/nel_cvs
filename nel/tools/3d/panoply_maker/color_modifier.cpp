@@ -1,7 +1,7 @@
 /** \file color_modifier.cpp
  * A class describing color modifications
  *
- * $Id: color_modifier.cpp,v 1.4 2002/05/27 08:16:17 vizerie Exp $
+ * $Id: color_modifier.cpp,v 1.5 2002/07/02 16:17:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -48,7 +48,7 @@ void CColorModifier::convertBitmap(NLMISC::CBitmap &destBitmap, const NLMISC::CB
 	float h, s, l;
 	uint8 grey;
 	evalBitmapStats(srcBitmap, maskBitmap, h, s, l, grey);
-	nlinfo("Bitmap stats : (H, L, S) = (%g, %g, %g)", h, s, l);
+	//nlinfo("Bitmap stats : (H, L, S) = (%g, %g, %g)", h, s, l);
 	float deltaH = Hue - h;
 	
 	

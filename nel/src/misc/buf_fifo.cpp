@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.4 2001/02/26 15:13:30 cado Exp $
+ * $Id: buf_fifo.cpp,v 1.5 2001/02/27 17:35:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,10 +44,10 @@ CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Head(NULL), _Tail(NULL), 
 	_BiggestBuffer = 0;
 	_SmallestBuffer = 999999999;
 	_Pushed = 0;
-	_Poped = 0;
+	_Fronted = 0;
 	_Resized = 0;
 	_PushedTime = 0;
-	_PopedTime = 0;
+	_FrontedTime = 0;
 	_ResizedTime = 0;
 }
 
@@ -66,29 +66,31 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
 	TTicks before = CTime::getPerformanceTime();
 
+	uint32 size = buffer.size();
+
 #if DEBUG_FIFO
 	nldebug("push(%d)", size);
 #endif
 
-	nlassert(buffer.size() > 0 && buffer.size() < 1000);
+	nlassert(size > 0 && size < 1000);
 
 	// stat code
-	if (buffer.size() > _BiggestBlock) _BiggestBlock = buffer.size();
-	if (buffer.size() < _SmallestBlock) _SmallestBlock = buffer.size();
+	if (size > _BiggestBlock) _BiggestBlock = size;
+	if (size < _SmallestBlock) _SmallestBlock = size;
 
 	_Pushed++;
 
-	while (!canFit (buffer.size() + sizeof (uint32)))
+	while (!canFit (size + sizeof (uint32)))
 	{
 		resize(_BufferSize * 2);
 	}
 
-	*(uint32 *)_Head = buffer.size();
+	*(uint32 *)_Head = size;
 	_Head += sizeof(uint32);
 
-	memcpy(_Head, &(buffer[0]), buffer.size());
+	memcpy(_Head, &(buffer[0]), size);
 
-	_Head += buffer.size();
+	_Head += size;
 
 	_Empty = false;
 
@@ -97,24 +99,56 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	_PushedTime += after - before;
 }
 
-void CBufFIFO::pop (vector<uint8> &buffer)
+void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> &buffer2)
 {
 	TTicks before = CTime::getPerformanceTime();
-	
-	buffer.clear ();
 
+	uint32 size = buffer1.size() + buffer2.size ();
+
+#if DEBUG_FIFO
+	nldebug("push2(%d)", size);
+#endif
+
+	nlassert(size > 0 && size < 1000);
+
+	// stat code
+	if (size > _BiggestBlock) _BiggestBlock = size;
+	if (size < _SmallestBlock) _SmallestBlock = size;
+
+	_Pushed++;
+
+	while (!canFit (size + sizeof (uint32)))
+	{
+		resize(_BufferSize * 2);
+	}
+
+	*(uint32 *)_Head = size;
+	_Head += sizeof(uint32);
+
+	memcpy(_Head, &(buffer1[0]), buffer1.size ());
+	memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size ());
+
+	_Head += size;
+
+	_Empty = false;
+
+	TTicks after = CTime::getPerformanceTime();
+
+	_PushedTime += after - before;
+}
+
+void CBufFIFO::pop ()
+{
 	if (empty ())
 	{
-		nlwarning("Try to pop but the fifo is empty!");
+		nlwarning("Try to pop an empty fifo!");
 		return;
 	}
 
-	_Poped++;
-	
 	if (_Rewinder != NULL && _Tail == _Rewinder)
 	{
 #if DEBUG_FIFO
-		nldebug("rewind!");
+		nldebug("pop rewind!");
 #endif
 
 		// need to rewind
@@ -124,27 +158,65 @@ void CBufFIFO::pop (vector<uint8> &buffer)
 
 	uint32 size = *(uint32 *)_Tail;
 
-	nlassert(size > 0 && size<1000);
+	nlassert(size > 0 && size < 1000);
 
 #if DEBUG_FIFO
 	nldebug("pop(%d)", size);
 #endif
 
-	_Tail += sizeof (uint32);
+	// clear the message to be sure you don't use it anymore
+#ifdef NL_DEBUG
+	memset (_Tail, '-', size + sizeof (uint32));
+#endif
+
+	_Tail += size + sizeof (uint32);
+
+	if (_Tail == _Head) _Empty = true;
+}
+	
+void CBufFIFO::front (vector<uint8> &buffer)
+{
+	uint8	*tail = _Tail;
+	
+	TTicks before = CTime::getPerformanceTime ();
+	
+	buffer.clear ();
+
+	if (empty ())
+	{
+		nlwarning("Try to get the front of an empty fifo!");
+		return;
+	}
+
+	_Fronted++;
+	
+	if (_Rewinder != NULL && tail == _Rewinder)
+	{
+#if DEBUG_FIFO
+		nldebug("front rewind!");
+#endif
+
+		// need to rewind
+		tail = _Buffer;
+	}
+
+	uint32 size = *(uint32 *)tail;
+
+	nlassert (size > 0 && size < 1000);
+
+#if DEBUG_FIFO
+	nldebug("front(%d)", size);
+#endif
+
+	tail += sizeof (uint32);
 
 	buffer.resize (size);
 
-	memcpy(&(buffer[0]), _Tail, size);
+	memcpy (&(buffer[0]), tail, size);
 
-	memset(_Tail, '-', size);
+	TTicks after = CTime::getPerformanceTime ();
 
-	_Tail += size;
-
-	if (_Tail == _Head) _Empty = true;
-
-	TTicks after = CTime::getPerformanceTime();
-
-	_PopedTime += after - before;
+	_FrontedTime += after - before;
 }
 
 
@@ -248,10 +320,10 @@ void CBufFIFO::displayStats ()
 	printf ("_BiggestBuffer: %d\n", _BiggestBuffer);
 	printf ("_SmallestBuffer: %d\n", _SmallestBuffer);
 	printf ("_Pushed : %d\n", _Pushed );
-	printf ("_Poped: %d\n", _Poped);
+	printf ("_Fronted: %d\n", _Fronted);
 	printf ("_Resized: %d\n", _Resized);
 	printf ("_PushedTime: %"NL_I64"d %f\n", _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
-	printf ("_PopedTime: %"NL_I64"d %f\n", _PopedTime, (double)(sint64)_PopedTime / (double)_Poped);
+	printf ("_FrontedTime: %"NL_I64"d %f\n", _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
 	printf ("_ResizedTime: %"NL_I64"d %f\n", _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
 }
 

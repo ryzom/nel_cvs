@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.4 2001/08/27 10:47:27 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.5 2001/09/04 14:02:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 NLSOUND::UAudioMixer *CSoundSystem::_AudioMixer = NULL;
 std::string			 CSoundSystem::_SoundBankFileName;
-
+static				 NLMISC::CVector SoundListenerPos = NLMISC::CVector::Null;
 
 
 void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
@@ -41,7 +41,8 @@ void CSoundSystem::setListenerMatrix(const NLMISC::CMatrix &m)
 	if (_AudioMixer)
 	{	
 		NLSOUND::UListener *l = _AudioMixer->getListener();
-		l->setPos(m.getPos());	
+		SoundListenerPos = m.getPos();
+		l->setPos(SoundListenerPos);		
 		NLMISC::CVector j = m.getJ(), k = m.getK();
 		l->setOrientation(j, k);
 	}
@@ -54,7 +55,7 @@ void CSoundSystem::initSoundSystem(void)
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
-		_AudioMixer->init();
+		_AudioMixer->init(AUTOBALANCE_DEFAULT_PERIOD);
 	}
 	catch (NLMISC::Exception &e)
 	{
@@ -95,5 +96,17 @@ void CSoundSystem::releaseSoundSystem(void)
 {
 	delete _AudioMixer;
 	_AudioMixer = NULL;
+}
+
+
+void CSoundSystem::play(const std::string &soundName)
+{
+	if (_AudioMixer)
+	{
+		NLSOUND::USource *src =  _AudioMixer->createSource(soundName.c_str(), true);
+		src->setLooping(false);
+		src->setPos(SoundListenerPos);
+		src->play();
+	}
 }
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.8 2001/07/12 14:27:09 legros Exp $
+ * $Id: global_retriever.h,v 1.9 2001/07/19 10:15:31 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -365,7 +365,7 @@ private:
 
 	const CRetrieverInstance		*getInstancePtr(uint x, uint y) const
 	{
-		if (x<0 || x>_Width || y<0 || y>_Height || _Instances[x+_Width*y].getInstanceId()==-1)
+		if (x<0 || x>=_Width || y<0 || y>=_Height || _Instances[x+_Width*y].getInstanceId()==-1)
 			return NULL;
 		else
 			return &_Instances[x+_Width*y];
@@ -373,7 +373,7 @@ private:
 
 	CRetrieverInstance				*getInstancePtr(sint x, sint y)
 	{
-		if (x<0 || x>_Width || y<0 || y>_Height || _Instances[x+_Width*y].getInstanceId()==-1)
+		if (x<0 || x>=_Width || y<0 || y>=_Height || _Instances[x+_Width*y].getInstanceId()==-1)
 			return NULL;
 		else
 			return &_Instances[x+_Width*y];

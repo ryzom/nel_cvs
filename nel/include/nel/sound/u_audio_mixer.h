@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.18 2002/11/04 15:40:42 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.19 2002/11/25 14:07:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ class UEnvSound;
 class UListener;
 
 
-const uint32 AUTOBALANCE_DEFAULT_PERIOD = 20;
+//const uint32 AUTOBALANCE_DEFAULT_PERIOD = 20;
 
 
 /**
@@ -70,6 +70,12 @@ public:
 	struct TBackgroundFlags
 	{
 		bool	Flags[16];
+
+		void serial(NLMISC::IStream &s)
+		{
+			for (uint i = 0; i<16; ++i)
+				s.serial(Flags[i]);
+		}
 	};
 
 	/// Create the audio mixer singleton and return a pointer to its instance
@@ -82,8 +88,36 @@ public:
 	 * The sources will be auto-balanced every "balance_period" in millisecond (but in update())
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void		init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD ) = 0;
-	/// Resets the audio system (deletes all the sources, include envsounds)
+	virtual void		init(/* uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD */) = 0;
+	/** Set the priority channel reserve.
+	 *	Each priority channel can be assign a restrictive reserve value.
+	 *	This value is used when the number free track available for playing drop
+	 *	under the low water mark value (see setLowWaterMark).
+	 *	The mixer count the number of playing source in each priority channel. 
+	 *	A priority channel can orverflow it's reserve value only if the low water
+	 *	mark is not reach.
+	 *	In other word, when the number of played source increase, you can control
+	 *	a 'smooth' cut in priority layer. The idea is to try to keep some free track
+	 *	for the HighestPri source.
+	 *	By default, reserve are set for each channel to the number of available tracks.
+	 */
+	virtual void		setPriorityReserve(TSoundPriority priorityChannel, uint reserve) = 0;
+	/** Set the Low water mark.
+	 *	This value is use to mute sound source that try to play when there priority
+	 *	channel is full (see setPriorityReserve).
+	 *	Set a value 1 to 4 to keep some extra track available when a
+	 *	HighestPri source need to play.
+	 *	By default, the value is set to 0, witch mean no special treatment is done
+	 *	and the mixer will mute sound with no user control at all.
+	 *	Note also that the availability of a track is not guarantie if the sum of
+	 *	the priority reserve (see setPriorityReserve) is grater than the number od
+	 *	available tracks (witch is almos alwais the case). But this value will help
+	 *	the mixer make it's best.
+	 */
+	virtual void		setLowWaterMark(uint value) = 0;
+
+
+	 /// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void		reset() = 0;
 	/// Disables or reenables the sound
 	virtual void		enable( bool b ) = 0;
@@ -117,7 +151,7 @@ public:
 	 */
 //	virtual	void		loadEnvSounds( const char *filename, UEnvSound **treeRoot=NULL ) = 0;
 	/// Load sounds. Returns the number of sounds successfully loaded.
-	virtual void		loadSoundBank( const std::string &path ) = 0;
+//	virtual void		loadSoundBank( const std::string &path ) = 0;
 	/// Get a TSoundId from a name (returns NULL if not found)
 	virtual TSoundId	getSoundId( const std::string &name ) = 0;
 
@@ -134,7 +168,7 @@ public:
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */
-	virtual void		removeSource( USource *source ) = 0;
+//	virtual void		removeSource( USource *source ) = 0;
 
 
 	/** Use this method to set the listener position instead of using getListener->setPos();
@@ -184,6 +218,8 @@ public:
 	virtual void		playBackgroundSound () = 0;
 	virtual void		stopBackgroundSound () = 0;
 //	virtual void		setBackgroundSoundDayNightRatio (float ratio) = 0;
+
+	virtual void		getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos) =0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

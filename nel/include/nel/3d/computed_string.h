@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.8 2000/12/21 16:58:32 berenguier Exp $
+ * $Id: computed_string.h,v 1.9 2001/01/02 14:23:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/3d/primitive_block.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/material.h"

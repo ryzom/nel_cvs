@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.15 2000/12/22 10:42:05 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.16 2001/01/02 14:23:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -893,7 +893,8 @@ void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
 
 
 	// Check all the transitions tiles
-	for (int trans=0; trans<count; trans++)
+	sint trans;
+	for (trans=0; trans<count; trans++)
 	{
 		// Get the tile associed with the transition
 		int nTile=_TileTransition[trans]._Tile;

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.2 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: material.h,v 1.3 2001/01/02 14:23:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
-
+#include "nel/3d/texture.h"
+#include "nel/3d/shader.h"
 
 namespace NL3D {
-
-class ITexture;
-class IShader;
 
 using NLMISC::CRefCount;
 using NLMISC::CRGBA;

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * <File description>
  *
- * $Id: mrm_builder.cpp,v 1.3 2001/01/02 10:22:02 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.4 2001/01/02 14:23:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,8 @@ bool	CMRMBuilder::vertexClosed(sint numvertex)
 	CMRMVertex	&vert= TmpVertices[numvertex];
 	map<CMRMEdge, sint>		EdgeShare;
 	// Init to 0.
-	for(sint i=0;i<(sint)vert.SharedFaces.size();i++)
+	sint i;
+	for(i=0;i<(sint)vert.SharedFaces.size();i++)
 	{
 		CMRMFaceBuild		&f=TmpFaces[vert.SharedFaces[i]];
 		EdgeShare[f.getEdge(0)]= 0;
@@ -170,7 +171,8 @@ bool	CMRMBuilder::edgeContinue(const CMRMEdge &edge)
 
 	// build list sharing edge.
 	vector<sint>	deletedFaces;
-	for(sint i=0;i<(sint)Vertex1.SharedFaces.size();i++)
+	sint i;
+	for(i=0;i<(sint)Vertex1.SharedFaces.size();i++)
 	{
 		sint	numFace= Vertex1.SharedFaces[i];
 		if(TmpFaces[numFace].hasVertex(v1))
@@ -214,7 +216,8 @@ bool	CMRMBuilder::edgeNearUniqueMatFace(const CMRMEdge &edge)
 
 	// build list sharing edge.
 	vector<sint>	deletedFaces;
-	for(sint i=0;i<(sint)Vertex1.SharedFaces.size();i++)
+	sint i;
+	for(i=0;i<(sint)Vertex1.SharedFaces.size();i++)
 	{
 		sint	numFace= Vertex1.SharedFaces[i];
 		if(TmpFaces[numFace].hasVertex(v1))

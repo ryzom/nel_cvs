@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.30 2000/12/22 13:31:20 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.31 2001/01/02 14:23:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 
 #include "nel/3d/driver.h"
 #include "nel/3d/material.h"
+#include "nel/3d/shader.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"

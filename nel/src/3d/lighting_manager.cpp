@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.10 2003/05/26 09:04:19 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.11 2003/06/24 13:45:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -416,7 +416,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 					// don't worry about the precision of floor, because of *255.
 					lightContrib.Factor[i]= (uint8)OptFastFloor(bkupInf*255);
 					// Indicate that this light don't need to be merged at all!
-					lightToMergeWeight[i]= 0;
+					lightToMergeWeight[ligthSrcId]= 0;
 				}
 				else
 				{
@@ -427,7 +427,7 @@ void		CLightingManager::computeModelLightContributions(CTransform *model, CLight
 					clamp(fi, 0, 255);
 					lightContrib.Factor[i]= fi;
 					// The rest of the light contribution is to be merged.
-					lightToMergeWeight[i]= 1-f;
+					lightToMergeWeight[ligthSrcId]= 1-f;
 				}
 
 				// Compute the Final Att factor for models using Global Attenuation. NB: modulate with Factor

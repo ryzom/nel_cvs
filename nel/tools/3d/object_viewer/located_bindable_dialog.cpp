@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.13 2001/09/12 13:29:18 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.14 2001/09/12 16:04:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,10 +427,10 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		{
 			NL3D::CPSFaceLookAt *la = static_cast<NL3D::CPSFaceLookAt *>(_Bindable);
 			m_IndependantSizes = la->hasIndependantSizes();
+			((CButton *) GetDlgItem(IDC_INDE_SIZES))->SetCheck(m_IndependantSizes);
 			updateIndependantSizes();
 		}
-
-
+		
 	}	
 }
 

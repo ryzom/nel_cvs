@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.11 2000/12/05 14:04:59 berenguier Exp $
+ * $Id: matrix.h,v 1.12 2001/02/28 14:30:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,8 @@ public:
 		ZYX
 	};
 
+	/// The identity matrix. Same as CMatrix().
+	static	const CMatrix	Identity;
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file path.h
  * CPath
  *
- * $Id: path.h,v 1.4 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: path.h,v 1.5 2001/02/28 14:30:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,8 +59,8 @@ public:
 	/// Adds a search path. The separator for directories is '/'.
 	static void			addSearchPath( const std::string& path );
 
-	/** Returns the long name (path and filename) for the specified file, using search paths
-	 * stored by addSearchPath in the same order as they were added.
+	/** Returns the long name (path and filename) for the specified file, trying first the local path, then 
+	 * using search paths stored by addSearchPath in the same order as they were added.
 	 * If no path is found where path/file exists, an exception EPathNotFound is raised.
 	 */
 	static std::string	lookup( const std::string& filename );

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.25 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: types_nl.h,v 1.26 2001/02/28 14:30:39 berenguier Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -65,6 +65,7 @@
 #  pragma warning (disable : 4503)			// STL: Decorated name length exceeded, name was truncated
 #  pragma warning (disable : 4786)			// STL: too long indentifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
+#  pragma warning (disable : 4250)			// inherits via dominance (informational warning).
 #endif // NL_OS_WINDOWS
 
 

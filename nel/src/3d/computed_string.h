@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.7 2002/11/21 15:55:06 berenguier Exp $
+ * $Id: computed_string.h,v 1.8 2002/12/18 16:27:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,10 @@ public:
 	 */
 	float StringLine; 
 
+	/// Optionnal: each render*() method can draw a subset of letters. Default is 0/FFFFFFFF
+	uint32	SelectStart;
+	uint32	SelectSize;
+
 	/**
 	 * Hotspot positions (origine for the string placement)
 	 * You should take care that for vertical hotspot, an imaginary line is defined under
@@ -108,6 +112,8 @@ public:
 			Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 			VerticesClipped.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 		}
+		SelectStart= 0;
+		SelectSize= ~0;
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.26 2002/11/21 16:32:49 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.27 2002/12/18 16:27:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,9 @@ void CComputedString::render2D (IDriver& driver,
 	Material->setZFunc (CMaterial::always);
 	Material->setZWrite (false);
 	Material->setColor (Color);
-	driver.renderQuads (*Material, 0, Vertices.getNumVertices()/4);
+	// Clamp for selection
+	uint32	nNumQuad= Vertices.getNumVertices()/4;
+	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
 }
 
 /*------------------------------------------------------------------*\
@@ -259,7 +261,8 @@ void CComputedString::render2DClip (IDriver& driver,
 	}
 	//VerticesClipped.setNumVertices (4*nNumQuad);
 	driver.activeVertexBuffer (VerticesClipped);
-	driver.renderQuads (*Material, 0, nNumQuad);
+	// Clamp for selection
+	driver.renderQuads (*Material, SelectStart, min((uint32)nNumQuad, SelectSize) );
 }
 
 /*------------------------------------------------------------------*\
@@ -288,7 +291,9 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	Material->setZFunc (CMaterial::lessequal);
 	Material->setZWrite (true);
 	Material->setColor (Color);
-	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
+	// Clamp for selection
+	uint32	nNumQuad= Vertices.getNumVertices()/4;
+	driver.renderQuads (*Material, SelectStart, min(nNumQuad, SelectSize) );
 }
 
 

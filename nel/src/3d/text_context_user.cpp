@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.11 2002/12/13 11:13:31 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.12 2002/12/18 16:27:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,6 +222,24 @@ void CTextContextUser::setStringColor(uint32 i, CRGBA newCol)
 	if(str)
 	{
 		str->Color= newCol;
+	}
+}
+void CTextContextUser::setStringSelection(uint32 i, uint32 selectStart, uint32 selectSize)
+{
+	CComputedString	*str= _TextContext.getComputedString(i);
+	if(str)
+	{
+		str->SelectStart= selectStart;
+		str->SelectSize= selectSize;
+	}
+}
+void CTextContextUser::resetStringSelection(uint32 i)
+{
+	CComputedString	*str= _TextContext.getComputedString(i);
+	if(str)
+	{
+		str->SelectStart= 0;
+		str->SelectSize= ~0;
 	}
 }
 void CTextContextUser::erase(uint32 i)  

@@ -541,6 +541,10 @@ SOURCE=.\rot3.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\tile32_32.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\tile_edit_exe.ico
 # End Source File
 # Begin Source File

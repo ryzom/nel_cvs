@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.67 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: landscape.cpp,v 1.68 2001/07/11 11:36:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2249,6 +2249,9 @@ void				CLandscape::deleteAllVertexBufferHards()
 // ***************************************************************************
 void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint32 format, uint32 numVertices)
 {
+	if(!drv->supportVertexBufferHard())
+		return;
+
 	// If the vbufferhard is not here, or if do not have enough vertices.
 	if(vbHard==NULL || vbHard->getNumVertices() < numVertices)
 	{
@@ -2267,14 +2270,22 @@ void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHa
 		vbHard= _Driver->createVertexBufferHard(format, numVertices + NL3D_VBHARD_VERTEX_SECURITY, IDriver::VBHardAGP);
 
 		// TempYoyo.
-		if(vbHard!=NULL)
+		/*if(vbHard!=NULL)
 		{
 			string	whatVB;
 			if(vbHard==_TileVBHard)	whatVB= "Tile";
 			else if(vbHard==_Far0VBHard)	whatVB= "Far0";
 			else if(vbHard==_Far1VBHard)	whatVB= "Far1";
-			nlinfo("Landscape: reallocate a %sVertexBufferHard of %d vertices", whatVB.c_str(), numVertices);
+			nlinfo("Landscape: allocate a %sVBHard of %d vertices", whatVB.c_str(), numVertices);
 		}
+		else
+		{
+			string	whatVB;
+			if(vbHard==_TileVBHard)	whatVB= "Tile";
+			else if(vbHard==_Far0VBHard)	whatVB= "Far0";
+			else if(vbHard==_Far1VBHard)	whatVB= "Far1";
+			nlinfo("Landscape: Failed to allocate a %sVBHard of %d vertices", whatVB.c_str(), numVertices);
+		}*/
 	}
 
 }

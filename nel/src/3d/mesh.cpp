@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.31 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh.cpp,v 1.32 2001/07/11 11:36:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,6 +294,10 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid)
 // ***************************************************************************
 void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 {
+	if(!drv->supportVertexBufferHard())
+		return;
+
+
 	// If the mesh is skinned and if the driver do not support hardware palette skinning, still use normal CVertexBuffer.
 	if(_VertexBufferHardDirty && _Skinned && !drv->supportPaletteSkinning())
 	{

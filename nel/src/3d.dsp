@@ -2058,7 +2058,7 @@ SOURCE=.\3d\ps_emitter.h
 SOURCE=.\3d\ps_register_emitters.cpp
 # End Source File
 # End Group
-# Begin Group "sound"
+# Begin Group "sounds"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -2068,6 +2068,18 @@ SOURCE=.\3d\ps_sound.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_sound.h
+# End Source File
+# End Group
+# Begin Group "lights"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_light.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_light.h
 # End Source File
 # End Group
 # Begin Source File
@@ -2101,6 +2113,19 @@ SOURCE=.\3d\ps_edit.h
 # Begin Source File
 
 SOURCE=.\3d\ps_iterator.h
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

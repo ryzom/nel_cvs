@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.6 2001/08/24 12:44:03 cado Exp $
+ * $Id: sound.h,v 1.7 2001/08/28 16:59:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,8 @@ public:
 	float				getGain() const					{ return _Gain; }
 	/// Return the pitch
 	float				getPitch() const				{ return _Pitch; }
+	/// Return the looping state
+	bool				getLooping() const				{ return _Looping; }
 	/// Return true if distances and cone are meaningful
 	bool				isDetailed() const				{ return _Detailed; }
 	/// Return the min distance (if detailed())
@@ -115,7 +117,7 @@ public:
 
 	/// Set properties. Returns false if one or more values are invalid (EDIT)
 	bool				setProperties( const std::string& name, const std::string& filename,
-									   float gain, float pitch, bool detail,
+									   float gain, float pitch, bool looping, bool detail,
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
@@ -128,8 +130,11 @@ private:
 	// Sound driver
 	static ISoundDriver *_SoundDriver;
 
-	// Support V1 files
+	// Support old V1 files
 	static bool			_InputIgnorePitch;
+
+	// Support old V2 files
+	static bool			_InputIgnoreLooping;
 
 	// Allow to load sound files when corresponding wave file is missing ?
 	static bool			_AllowMissingWave;
@@ -140,6 +145,7 @@ private:
 	// Static properties
 	float				_Gain;	// [0,1]
 	float				_Pitch; // ]0,1]
+	bool				_Looping;
 	bool				_Detailed;
 	float				_MinDist, _MaxDist;
 	float				_ConeInnerAngle, _ConeOuterAngle, _ConeOuterGain;

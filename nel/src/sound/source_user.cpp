@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.11 2001/08/24 12:41:16 cado Exp $
+ * $Id: source_user.cpp,v 1.12 2001/08/28 16:59:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,7 @@ void					CSourceUser::setSound( TSoundId id )
 	{
 		_Gain = _Sound->getGain();
 		_Pitch = _Sound->getPitch();
+		_Looping = _Sound->getLooping();
 	}
 
 	// Set the buffer
@@ -89,9 +90,10 @@ void					CSourceUser::setSound( TSoundId id )
 			nlassert( ! isPlaying() );
 			_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
 
-			// Take into account the static properties in _Sound (including the gain)
+			// Take into account the static properties in _Sound
 			_Track->DrvSource->setGain( _Gain );
 			_Track->DrvSource->setPitch( _Pitch );
+			_Track->DrvSource->setLooping( _Looping );
 			if ( ! _Sound->getBuffer()->isStereo() )
 			{
 				_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );

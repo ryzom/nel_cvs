@@ -38,6 +38,7 @@ public:
 	BOOL	m_Looped;
 	CString	m_Stereo;
 	float	m_Pitch;
+	BOOL	m_Looping;
 	//}}AFX_DATA
 
 

@@ -1,7 +1,7 @@
 /** \file bounding_sphere.h
  * CBoundingSphere: Bounding sphere (different from the NL3D ones)
  *
- * $Id: bounding_sphere.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
+ * $Id: bounding_sphere.h,v 1.4 2001/08/28 16:59:34 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,7 +52,6 @@ public:
 	}
  
 
-	
 	/// Return true if the box includes the specified point
 	virtual bool					include( const NLMISC::CVector& pos ) const;
 	/// Return the approximate diameter

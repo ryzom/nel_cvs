@@ -104,7 +104,6 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CSoundPage)
 	m_Filename = _T("");
 	m_Gain = 1.0f;
-	m_Pitch = 1.0f;
 	m_Pos3D = FALSE;
 	m_MinDist = 1.0f;
 	m_MaxDist = 1000000.0f;
@@ -113,7 +112,9 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_OuterGain = 1.0f;
 	m_Looped = FALSE;
 	m_Stereo = _T("");
+	m_Pitch = 1.0f;
 	m_Pitch = 0.0f;
+	m_Looping = FALSE;
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
@@ -193,6 +194,7 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_Stereo, m_Stereo);
 	DDX_Text(pDX, IDC_EditPitch, m_Pitch);
 	DDV_MinMaxFloat(pDX, m_Pitch, 1.e-011f, 1.f);
+	DDX_Check(pDX, IDC_Looping, m_Looping);
 	//}}AFX_DATA_MAP
 }
 
@@ -274,6 +276,7 @@ void		CSoundPage::getPropertiesFromSound()
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
 	m_Pitch = _CurrentSound->getPitch();
+	m_Looping = _CurrentSound->getLooping();
 	m_Pos3D = _CurrentSound->isDetailed();
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderPitch ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Pitch*100.0f ) );
@@ -555,11 +558,11 @@ void CSoundPage::UpdateCurrentSound()
 	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
 	if ( ! m_Pos3D )
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Pos3D!=0 );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0 );
 	}
 	else
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Pos3D!=0,
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Looping!=0, m_Pos3D!=0,
 			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
 	}
 	// Argument checking is already done by the dialog wizard

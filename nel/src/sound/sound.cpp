@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.8 2001/08/27 08:50:56 cado Exp $
+ * $Id: sound.cpp,v 1.9 2001/08/28 16:59:34 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,8 +39,11 @@ namespace NLSOUND {
 ISoundDriver	*CSound::_SoundDriver = NULL;
 
 
-// Support V1 files
+// Support old V1 files
 bool			CSound::_InputIgnorePitch = false;
+
+// Support old V2 files
+bool			CSound::_InputIgnoreLooping = false;
 
 // Allow to load sound files when corresponding wave file is not present ?
 bool			CSound::_AllowMissingWave = false;
@@ -98,6 +101,10 @@ void				CSound::serial( NLMISC::IStream& s )
 	if ( ! (s.isReading() && CSound::_InputIgnorePitch) )
 	{
 		s.serial( _Pitch );
+	}
+	if ( ! (s.isReading() && CSound::_InputIgnoreLooping) )
+	{
+		s.serial( _Looping );
 	}
 	s.serial( _Detailed );
 	if ( _Detailed )
@@ -170,16 +177,20 @@ void				CSound::loadBuffer( const std::string& filename )
 void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'SSN' ); // NeL Source Sounds
-	uint ver = s.serialVersion( 2 );
-	if ( ver < 2 )
+	uint ver = s.serialVersion( 3 );
+	if ( ver < 3 )
 	{
-		if ( ver == 1 )
+		switch ( ver )
 		{
-			// Supporting version 1
+		case 1:
+			// Supporting old version 1
 			CSound::_InputIgnorePitch = true; // warning: not multithread-compliant : do not serialize in different threads !
-		}
-		else
-		{
+			// no break
+		case 2:
+			// Supporting old version 2
+			CSound::_InputIgnoreLooping = true; // same
+			break;
+		default:
 			// Not supporting version 0 anymore
 			throw EOlderStream();
 		}
@@ -226,6 +237,7 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 			}
 		}
 		CSound::_InputIgnorePitch = false; // warning: not multithread-compliant : do not serialize in different threads !
+		CSound::_InputIgnoreLooping = false;
 		return nb - notfound;
 	}
 	else
@@ -240,7 +252,7 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
  * Set properties. Returns false if one or more values are invalid (EDIT)
  */
 bool				CSound::setProperties( const std::string& name, const std::string& filename,
-										   float gain, float pitch, bool detail,
+										   float gain, float pitch, bool looping, bool detail,
 										   float mindist, float maxdist,
 										   float innerangle, float outerangle, float outergain )
 {
@@ -255,7 +267,8 @@ bool				CSound::setProperties( const std::string& name, const std::string& filen
 	else
 	{
 		_Name = name; _Filename = filename;
-		_Gain = gain; _Pitch = pitch; _Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
+		_Gain = gain; _Pitch = pitch; _Looping = looping;
+		_Detailed = detail; _MinDist = mindist; _MaxDist = maxdist;
 		_ConeInnerAngle = innerangle; _ConeOuterAngle = outerangle; _ConeOuterGain = outergain;
 		return true;
 	}

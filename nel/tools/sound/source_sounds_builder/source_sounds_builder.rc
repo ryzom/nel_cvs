@@ -26,7 +26,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_SOURCE_SOUNDS_BUILDER_DIALOG DIALOGEX 0, 0, 404, 245
+IDD_SOURCE_SOUNDS_BUILDER_DIALOG DIALOGEX 0, 0, 404, 254
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "NeL Source Sounds Builder"
@@ -34,7 +34,7 @@ FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Tree1",IDC_TREE1,"SysTreeView32",TVS_HASLINES | 
                     TVS_EDITLABELS | TVS_DISABLEDRAGDROP | TVS_SHOWSELALWAYS | 
-                    WS_BORDER | WS_TABSTOP,5,25,175,215
+                    WS_BORDER | WS_TABSTOP,5,25,175,225
     PUSHBUTTON      "Add a Sound",IDC_AddSound,65,5,55,14
     PUSHBUTTON      "Save File...",IDC_Save,350,5,50,14
     PUSHBUTTON      "Load File...",IDC_Load,295,5,50,14
@@ -49,55 +49,57 @@ BEGIN
                     190,140,205,35
 END
 
-IDD_SoundPage DIALOG DISCARDABLE  183, 20, 222, 227
+IDD_SoundPage DIALOG DISCARDABLE  183, 20, 222, 237
 STYLE DS_CONTROL | WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        " Sound Properties ",IDC_SoundGroup,5,0,210,220
+    GROUPBOX        " Sound Properties ",IDC_SoundGroup,5,0,210,230
     LTEXT           "Filename",IDC_Filename,10,17,29,8
     EDITTEXT        IDC_EditFilename,75,15,80,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "...",IDC_ChooseFile,160,15,15,12,WS_GROUP
     LTEXT           "Gain",IDC_Gain,10,32,15,8
     EDITTEXT        IDC_EditGain,75,30,40,12,ES_AUTOHSCROLL | WS_GROUP
     CONTROL         "Ext. 3D Properties",IDC_Pos3D,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,9,60,73,10
-    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,75,200,120,WS_GROUP
-    DEFPUSHBUTTON   "Apply",IDC_Apply,10,200,50,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDC_Cancel,65,200,50,14,WS_GROUP
-    LTEXT           "Min dist.",IDC_MinDist,15,90,60,8
-    LTEXT           "Max dist.",IDC_MaxDist,15,105,60,8
-    EDITTEXT        IDC_EditMaxDist,75,105,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,120,55,8
-    EDITTEXT        IDC_EditInnerAngle,75,120,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,135,60,8
-    EDITTEXT        IDC_EditOuterAngle,75,135,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,150,60,8
-    EDITTEXT        IDC_EditOuterGain,75,150,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EditMinDist,75,90,40,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Remove",IDC_Remove,160,200,50,14
+                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,9,75,73,10
+    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,90,200,115,WS_GROUP
+    DEFPUSHBUTTON   "Apply",IDC_Apply,10,210,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDC_Cancel,65,210,50,14,WS_GROUP
+    LTEXT           "Min dist.",IDC_MinDist,15,105,60,8
+    LTEXT           "Max dist.",IDC_MaxDist,15,120,60,8
+    EDITTEXT        IDC_EditMaxDist,75,120,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,135,55,8
+    EDITTEXT        IDC_EditInnerAngle,75,135,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,150,60,8
+    EDITTEXT        IDC_EditOuterAngle,75,150,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,165,60,8
+    EDITTEXT        IDC_EditOuterGain,75,165,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EditMinDist,75,105,40,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Remove",IDC_Remove,160,210,50,14
     PUSHBUTTON      "Play",IDC_PlaySound,160,35,50,14
     CONTROL         "Play Looped",IDC_Looped,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE | WS_TABSTOP,160,55,50,15
     CTEXT           "",IDC_Stereo,180,15,30,12,SS_CENTERIMAGE | SS_SUNKEN
-    CTEXT           "",IDC_BadCone,145,110,60,8
+    CTEXT           "",IDC_BadCone,145,125,60,8
     CONTROL         "Slider1",IDC_SliderInnerAngle,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,120,30,12
-    CONTROL         "Slider1",IDC_SliderOuterAngle,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,135,30,12
-    CONTROL         "Slider1",IDC_SliderOuterGain,"msctls_trackbar32",
+    CONTROL         "Slider1",IDC_SliderOuterAngle,"msctls_trackbar32",
                     TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,150,30,12
+    CONTROL         "Slider1",IDC_SliderOuterGain,"msctls_trackbar32",
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,165,30,12
     CONTROL         "Slider1",IDC_SliderMinDist,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,115,90,30,12
-    CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,105,30,12
-    PUSHBUTTON      "Read Me !",IDC_ButtonHelp,15,171,50,14
+    CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,115,120,30,12
+    PUSHBUTTON      "Read Me !",IDC_ButtonHelp,15,186,50,14
     CONTROL         "Slider1",IDC_SliderGain,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,30,30,12
-    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,170,50,14
+    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,185,50,14
     LTEXT           "Pitch",IDC_Pitch,10,46,16,8
     EDITTEXT        IDC_EditPitch,75,45,40,12,ES_AUTOHSCROLL
     CONTROL         "Slider1",IDC_SliderPitch,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,45,30,15
+    CONTROL         "Looping",IDC_Looping,"Button",BS_AUTOCHECKBOX | 
+                    BS_LEFTTEXT | WS_TABSTOP,9,61,73,10
 END
 
 
@@ -157,7 +159,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 397
         TOPMARGIN, 7
-        BOTTOMMARGIN, 238
+        BOTTOMMARGIN, 247
     END
 
     IDD_SoundPage, DIALOG
@@ -165,7 +167,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 215
         TOPMARGIN, 7
-        BOTTOMMARGIN, 220
+        BOTTOMMARGIN, 230
     END
 END
 #endif    // APSTUDIO_INVOKED

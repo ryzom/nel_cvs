@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.40 2001/07/27 15:40:25 valignat Exp $
+# $Id: Makefile.am,v 1.41 2001/07/27 17:25:40 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -307,7 +307,7 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        zone_tgt_smoother.cpp               \
                        zone_tgt_smoother.h
 
-AM_CXXFLAGS          = @FREETYPE_CFLAGS@
+AM_CXXFLAGS          = -I$(top_srcdir)/src @FREETYPE_CFLAGS@
 
 libnel3d_la_LIBADD   = @FREETYPE_LIBS@ -ldl -lGL
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.12 2001/09/14 09:39:36 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.13 2001/09/14 17:27:22 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -269,6 +269,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// 2. Setup Arrays.
 	//===================
 
+	// Fence mgt.
+	fenceOnCurVBHardIfNeeded(NULL);
+
 	// For MultiPass Material.
 	_LastVB.setupVertexBuffer(VB);
 
@@ -365,6 +368,10 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	_PrimitiveProfileOut.NTriangles+= PB.getNumTri() * nPass;
 	_PrimitiveProfileOut.NQuads+= PB.getNumQuad() * nPass;
 
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
+
 	return true;
 }
 
@@ -421,6 +428,10 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	// Profiling.
 	_PrimitiveProfileIn.NTriangles+= ntris;
 	_PrimitiveProfileOut.NTriangles+= ntris * nPass;
+
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
 }
 
 
@@ -464,6 +475,10 @@ void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
 	// Profiling.
 	_PrimitiveProfileIn.NTriangles+= ntris;
 	_PrimitiveProfileOut.NTriangles+= ntris;
+
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
 }
 
 
@@ -498,6 +513,10 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 	// Profiling.
 	_PrimitiveProfileIn.NPoints+= numPoints;
 	_PrimitiveProfileOut.NPoints+= numPoints * nPass;
+
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
 }
 
 
@@ -534,6 +553,10 @@ void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 	// Profiling.
 	_PrimitiveProfileIn.NQuads  += numQuads ;
 	_PrimitiveProfileOut.NQuads += numQuads  * nPass;
+
+	// We have render some prims. inform the VBHard.
+	if(_CurrentVertexBufferHard)
+		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
 }
 
 
@@ -728,6 +751,9 @@ CVertexBufferHardGL::CVertexBufferHardGL()
 	_Driver= NULL;
 	_VertexArrayRange= NULL;
 	_VertexPtr= NULL;
+
+	GPURenderingAfterFence= false;
+	_FenceSet= false;
 }
 
 
@@ -770,7 +796,11 @@ bool	CVertexBufferHardGL::init(CDriverGL *drv, uint16 vertexFormat, const uint8 
 		return false;
 	}
 	else
+	{
+		// Ok, we can allocate the fence.
+		glGenFencesNV(1, &_Fence);
 		return true;
+	}
 }
 
 
@@ -779,6 +809,13 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 {
 	if(_VertexArrayRange)
 	{
+		// Destroy Fence.
+		// First wait for completion.
+		finishFence();
+		// then delete.
+		glDeleteFencesNV(1, &_Fence);
+
+		// Then free the VAR.
 		_VertexArrayRange->freeVB(_VertexPtr);
 		_VertexPtr= NULL;
 		_VertexArrayRange= NULL;
@@ -790,7 +827,19 @@ CVertexBufferHardGL::~CVertexBufferHardGL()
 void		*CVertexBufferHardGL::lock()
 {
 	// sync the 3d card with the system.
-	glFlushVertexArrayRangeNV();
+
+	// Ensure the GPU has finished with the current VBHard.
+	finishFence();
+	// If the user lock an activated VBHard, after rendering some primitives, we must stall the CPU
+	if(GPURenderingAfterFence)
+	{
+		// Set a fence at the current position in the command stream.
+		setFence();
+		// wait for him to finish.
+		finishFence();
+		// And so the GPU render all our primitives.
+		GPURenderingAfterFence= false;
+	}
 
 
 	return _VertexPtr;
@@ -800,8 +849,7 @@ void		*CVertexBufferHardGL::lock()
 // ***************************************************************************
 void		CVertexBufferHardGL::unlock()
 {
-	// sync the 3d card with the system.
-	// no op for now.
+	// no op.
 }
 
 
@@ -825,6 +873,28 @@ void			CVertexBufferHardGL::disable()
 		nlassert(_VertexArrayRange);
 		_VertexArrayRange->disable();
 		_Driver->_CurrentVertexBufferHard= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void			CVertexBufferHardGL::setFence()
+{
+	if(!isFenceSet())
+	{
+		glSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
+		_FenceSet= true;
+	}
+}
+
+// ***************************************************************************
+void			CVertexBufferHardGL::finishFence()
+{
+	if(isFenceSet())
+	{
+		// Stall CPU while the fence command is not reached in the GPU command stream.
+		glFinishFenceNV(_Fence);
+		_FenceSet= false;
 	}
 }
 
@@ -1042,6 +1112,9 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 
 	// 2. Setup Arrays.
 	//===================
+
+	// Fence mgt.
+	fenceOnCurVBHardIfNeeded(VB);
 
 	// For MultiPass Material.
 	_LastVB.setupVertexBufferHard(*VB);
@@ -1427,5 +1500,29 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 
 
 // ***************************************************************************
+void				CDriverGL::fenceOnCurVBHardIfNeeded(CVertexBufferHardGL *newVBHard)
+{
+	// If old VB is a VBHard, and if we do not activate the same (NB: newVBHard==NULL if not a VBHard).
+	if(_CurrentVertexBufferHard!=NULL && _CurrentVertexBufferHard!=newVBHard)
+	{
+		// If some render() have been done with this VB.
+		if( _CurrentVertexBufferHard->GPURenderingAfterFence )
+		{
+			// If an old fence is activated, we wait for him.
+			/* NB: performance issue: maybe a wait for nothing in some cases like this one:
+				render with VBHard_A	---- end with a fence
+				render with VBHard_B	....
+				render with VBHard_A	---- end: must finish prec fence before setting a new one.
+
+				This is not a hard issue, if we suppose first A is finished to be rendered during render of VBHard_B.
+			*/
+			_CurrentVertexBufferHard->finishFence();
+			// Since we won't work with this VB for a long time, we set a fence.
+			_CurrentVertexBufferHard->setFence();
+			_CurrentVertexBufferHard->GPURenderingAfterFence= false;
+		}
+	}
+}
+
 
 } // NL3D

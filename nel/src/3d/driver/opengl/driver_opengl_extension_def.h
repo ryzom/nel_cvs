@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.1 2001/09/06 07:33:58 corvazier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.2 2001/09/14 17:27:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,6 +194,27 @@ typedef void (APIENTRY * PFNGLVERTEXATTRIBS4DVNVPROC) (GLuint index, GLsizei cou
 typedef void (APIENTRY * PFNGLVERTEXATTRIBS4FVNVPROC) (GLuint index, GLsizei count, const GLfloat *v);
 typedef void (APIENTRY * PFNGLVERTEXATTRIBS4SVNVPROC) (GLuint index, GLsizei count, const GLshort *v);
 typedef void (APIENTRY * PFNGLVERTEXATTRIBS4UBVNVPROC) (GLuint index, GLsizei count, const GLubyte *v);
+
+
+/* NV_fence extension */
+
+
+// NV_fence 
+#ifndef GL_NV_fence
+#define GL_NV_fence
+#define GL_ALL_COMPLETED_NV               0x84F2
+#define GL_FENCE_STATUS_NV                0x84F3
+#define GL_FENCE_CONDITION_NV             0x84F4
+typedef void (APIENTRY * PFNGLDELETEFENCESNVPROC) (GLsizei n, const GLuint *fences);
+typedef void (APIENTRY * PFNGLGENFENCESNVPROC) (GLsizei n, GLuint *fences);
+typedef GLboolean (APIENTRY * PFNGLISFENCENVPROC) (GLuint fence);
+typedef GLboolean (APIENTRY * PFNGLTESTFENCENVPROC) (GLuint fence);
+typedef void (APIENTRY * PFNGLGETFENCEIVNVPROC) (GLuint fence, GLenum pname, GLint *params);
+typedef void (APIENTRY * PFNGLFINISHFENCENVPROC) (GLuint fence);
+typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
+#endif
+
+
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.14 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: driver_opengl_extension.h,v 1.15 2001/09/14 17:27:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,7 @@ struct	CGlExtensions
 
 	// Optionnal Extensions.
 	bool	ARBTextureCompression;
+	// NB: Fence is not here, because NVVertexArrayRange is false if GL_NV_fence is not here.
 	bool	NVVertexArrayRange;
 	uint	NVVertexArrayRangeMaxVertex;
 	bool	EXTTextureCompressionS3TC;
@@ -174,6 +175,17 @@ extern PFNGLFLUSHVERTEXARRAYRANGENVPROC		glFlushVertexArrayRangeNV;
 extern PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 extern PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
 extern PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
+
+
+// FenceNV.
+//====================
+extern PFNGLDELETEFENCESNVPROC				glDeleteFencesNV;
+extern PFNGLGENFENCESNVPROC					glGenFencesNV;
+extern PFNGLISFENCENVPROC					glIsFenceNV;
+extern PFNGLTESTFENCENVPROC					glTestFenceNV;
+extern PFNGLGETFENCEIVNVPROC				glGetFenceivNV;
+extern PFNGLFINISHFENCENVPROC				glFinishFenceNV;
+extern PFNGLSETFENCENVPROC					glSetFenceNV;
 
 
 // VertexWeighting.

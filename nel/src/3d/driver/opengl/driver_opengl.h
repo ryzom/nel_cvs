@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.85 2001/09/14 09:39:36 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.86 2001/09/14 17:27:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,6 +215,16 @@ public:
 	void			disable();
 
 
+	// true if a setFence() has been done, without a finishFence().
+	bool			isFenceSet() const {return _FenceSet;}
+	// if(!isFenceSet()), set the fence, else no-op
+	void			setFence();
+	// if(isFenceSet()), finish the fence, else no-op
+	void			finishFence();
+
+
+	// For Fence access.
+	bool			GPURenderingAfterFence;
 
 public:
 	// NB: do not check if format is OK. return invalid result if format is KO.
@@ -263,6 +273,11 @@ private:
 	CDriverGL			*_Driver;
 	CVertexArrayRange	*_VertexArrayRange;
 	void				*_VertexPtr;
+
+	// The fence inserted in command stream
+	GLuint				_Fence;
+	// True if a setFence() has been done, without a finishFence().
+	bool				_FenceSet;
 
 };
 
@@ -705,6 +720,9 @@ private:
 
 
 	void							resetVertexArrayRange();
+
+	void							fenceOnCurVBHardIfNeeded(CVertexBufferHardGL *newVBHard);
+
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.116 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.117 2001/09/14 17:27:22 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -756,6 +756,18 @@ bool CDriverGL::swapBuffers()
 		_CurrentVertexArrayRange->disable();
 		_CurrentVertexArrayRange= NULL;
 	}
+
+
+	// Because of Bug with GeForce, must finishFence() for all VBHard.
+	set<CVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	while(itVBHard != _VertexBufferHardSet.Set.end() )
+	{
+		// If needed, "flush" these VB.
+		(*itVBHard)->finishFence();
+		(*itVBHard)->GPURenderingAfterFence= false;
+		itVBHard++;
+	}
+
 
 
 #ifdef NL_OS_WINDOWS

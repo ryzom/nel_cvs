@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.16 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.17 2001/09/14 17:27:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,17 @@ PFNGLFLUSHVERTEXARRAYRANGENVPROC	glFlushVertexArrayRangeNV;
 PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
 PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
+
+
+// FenceNV.
+//====================
+PFNGLDELETEFENCESNVPROC				glDeleteFencesNV;
+PFNGLGENFENCESNVPROC				glGenFencesNV;
+PFNGLISFENCENVPROC					glIsFenceNV;
+PFNGLTESTFENCENVPROC				glTestFenceNV;
+PFNGLGETFENCEIVNVPROC				glGetFenceivNV;
+PFNGLFINISHFENCENVPROC				glFinishFenceNV;
+PFNGLSETFENCENVPROC					glSetFenceNV;
 
 
 // VertexWeighting.
@@ -274,14 +285,29 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 #endif
 
 
+	// Test if VAR is present.
 	if(strstr(glext, "GL_NV_vertex_array_range")==NULL)
+		return false;
+	// Tess Fence too.
+	if( strstr(glext, "GL_NV_fence")==NULL )
 		return false;
 
 #ifdef NL_OS_WINDOWS
+	// Get VAR adress.
 	if(!(glFlushVertexArrayRangeNV=(PFNGLFLUSHVERTEXARRAYRANGENVPROC)wglGetProcAddress("glFlushVertexArrayRangeNV")))return false;
 	if(!(glVertexArrayRangeNV=(PFNGLVERTEXARRAYRANGENVPROC)wglGetProcAddress("glVertexArrayRangeNV")))return false;
 	if(!(wglAllocateMemoryNV= (PFNWGLALLOCATEMEMORYNVPROC)wglGetProcAddress("wglAllocateMemoryNV")))return false;
 	if(!(wglFreeMemoryNV= (PFNWGLFREEMEMORYNVPROC)wglGetProcAddress("wglFreeMemoryNV")))return false;
+
+	// Get fence adress.
+	if(!(glDeleteFencesNV= (PFNGLDELETEFENCESNVPROC)wglGetProcAddress("glDeleteFencesNV")))return false;
+	if(!(glGenFencesNV= (PFNGLGENFENCESNVPROC)wglGetProcAddress("glGenFencesNV")))return false;
+	if(!(glIsFenceNV= (PFNGLISFENCENVPROC)wglGetProcAddress("glIsFenceNV")))return false;
+	if(!(glTestFenceNV= (PFNGLTESTFENCENVPROC)wglGetProcAddress("glTestFenceNV")))return false;
+	if(!(glGetFenceivNV= (PFNGLGETFENCEIVNVPROC)wglGetProcAddress("glGetFenceivNV")))return false;
+	if(!(glFinishFenceNV= (PFNGLFINISHFENCENVPROC)wglGetProcAddress("glFinishFenceNV")))return false;
+	if(!(glSetFenceNV= (PFNGLSETFENCENVPROC)wglGetProcAddress("glSetFenceNV")))return false;
+
 #endif
 
 	return true;

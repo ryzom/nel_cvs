@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.34 2002/06/06 15:48:29 lecroart Exp $
+ * $Id: path.cpp,v 1.35 2002/06/12 10:12:16 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include <fstream>
 
+#include "nel/misc/big_file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/hierarchical_timer.h"
 
@@ -113,6 +114,11 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		nlwarning ("CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 
+	if (ext1lwr == "bnp" || ext2lwr == "bnp")
+	{
+		nlwarning ("CPath::remapExtension(%s, %s, %d): you can't remap a big file", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
+	}
+
 	if (!substitute)
 	{
 		// remove the mapping from the mapping list
@@ -187,6 +193,13 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		return filename;
 	}
 
+	// If the file already contains a @, it means that a lookup already proceed and returning a big file, do nothing
+	if (filename.find ("@") != string::npos)
+	{
+		NL_DISPLAY_PATH("CPath::lookup(%s):	already found", filename.c_str());
+		return filename;
+	}
+
 	// Try to find in the map directories
 	CPath *inst = CPath::getInstance();
 	string str = strlwr (filename);
@@ -225,7 +238,9 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 
 	// Not found
 	if (displayWarning)
+	{
 		nlwarning ("CPath::lookup(%s): file not found", filename.c_str());
+	}
 
 	if (throwException)
 		throw EPathNotFound (filename);
@@ -617,6 +632,15 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 		return;
 	}
 
+	// check if it s a big file
+	if (CFile::getExtension(newFile) == "bnp")
+	{
+		NL_DISPLAY_PATH ("CPath::addSearchFile(%s, %d, %s): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		CBigFile::getInstance().add (file, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN);
+		addSearchBigFile(file, false, false);
+		return;
+	}
+
 	string filenamewoext = CFile::getFilenameWithoutExtension (newFile);
 	string filename, ext;
 	
@@ -919,6 +943,7 @@ string CFile::findNewFile (const string &filename)
 	return npath;
 }
 
+// \warning doesn't work with bif file
 uint32	CFile::getFileSize (const std::string &filename)
 {
 	FILE *fp = fopen (filename.c_str(), "rb");

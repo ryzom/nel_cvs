@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.18 2003/04/08 23:12:26 corvazier Exp $
+ * $Id: primitive_world_image.cpp,v 1.19 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1429,7 +1429,7 @@ void CPrimitiveWorldImage::setGlobalPosition (const UGlobalPosition& pos, CMoveC
 
 // ***************************************************************************
 
-void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage, bool keepZ /*= false*/)
+void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, uint8 worldImage, bool keepZ /*= false*/, UGlobalPosition::TType type /* =UGlobalPosition::Unspecified*/)
 {
 	// Cast type
 	nlassert (dynamic_cast<const CMoveContainer*>(&container));
@@ -1445,7 +1445,7 @@ void CPrimitiveWorldImage::setGlobalPosition (const NLMISC::CVectorD& pos, CMove
 //		CVector vect=pos;		// better with CVectorD
 
 		// Get global position
-		UGlobalPosition globalPosition=retriever->retrievePosition (pos);
+		UGlobalPosition globalPosition=retriever->retrievePosition (pos, 1.0e10, type);
 
 		if (keepZ)
 		{

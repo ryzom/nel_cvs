@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.26 2003/05/06 09:47:36 legros Exp $
+ * $Id: local_retriever.h,v 1.27 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -560,7 +560,10 @@ protected:
 	bool								insurePosition(ULocalPosition &local) const;
 
 	/// Retrieves a position inside the retriever (from the local position), returns true if the position is close to a border
-	void								retrievePosition(NLMISC::CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const;
+	void								retrievePosition(NLMISC::CVector estimated, CCollisionSurfaceTemp &cst) const;
+
+	/// Retrieves a position inside the retriever (from the local position), returns true if the position is close to a border
+	void								retrieveAccuratePosition(CVector2s estimated, CCollisionSurfaceTemp &cst, bool &onBorder) const;
 
 	/// Retrieves a position inside the retriever (from the local position), returns true if the position is close to a border
 	bool								testPosition(ULocalPosition &local, CCollisionSurfaceTemp &cst) const;

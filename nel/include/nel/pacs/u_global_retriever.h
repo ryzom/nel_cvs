@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.19 2003/05/26 09:05:02 berenguier Exp $
+ * $Id: u_global_retriever.h,v 1.20 2003/06/26 15:35:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 
 #include "nel/pacs/u_retriever_bank.h"
+#include "nel/pacs/u_global_position.h"
 
 namespace NLMISC
 {
@@ -98,6 +99,12 @@ public:
 	  * Returns the material corresponding to the global position
 	  */
 	virtual uint32					getMaterial(const UGlobalPosition &pos) const =0;
+
+	/**
+	  * Retrieves the position of an estimated point in the global retriever (double instead.),
+	  * with specification of whether it si on landscape or in interior
+	  */
+	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, double threshold, UGlobalPosition::TType retrieveSpec) const;
 
 	/**
 	  * Retrieves the position of an estimated point in the global retriever.

@@ -1,7 +1,7 @@
 /** \file u_global_position.h
  * <File description>
  *
- * $Id: u_global_position.h,v 1.3 2002/05/24 12:35:03 vizerie Exp $
+ * $Id: u_global_position.h,v 1.4 2003/06/26 15:35:30 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,14 @@ public:
 class UGlobalPosition
 {
 public:
+
+	enum TType
+	{
+		Unspecified = 0,
+		Landscape,
+		Interior
+	};
+
 	/// The id of the instance referred by this global position.
 	sint32								InstanceId;
 

@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.13 2003/05/06 09:47:36 legros Exp $
+ * $Id: retriever_instance.h,v 1.14 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,6 +254,12 @@ public:
 	 * is a LOCAL position (to the retriever).
 	 */
 	void								retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst, bool sortByDistance=true) const;
+	/**
+	 * Retrieves the position in the instance from an estimated position (double instead.)
+	 * WARNING: the estimated position is a GLOBAL position, and the returned position
+	 * is a LOCAL position (to the retriever).
+	 */
+	//void								retrieveAccuratePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst, ) const;
 
 	/// For the interior instances, snaps the point to the ground.
 	void								snapToInteriorGround(ULocalPosition &position, const CLocalRetriever &retriever) const;

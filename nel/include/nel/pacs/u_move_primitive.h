@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.10 2002/05/28 08:08:55 legros Exp $
+ * $Id: u_move_primitive.h,v 1.11 2003/06/26 15:35:24 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_MOVE_PRIMITIVE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/pacs/u_global_position.h"
 
 namespace NLMISC
 {
@@ -376,7 +377,7 @@ public:
 	  *
 	  * \param pos is the new global position of the primitive.
 	  */
-	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage) =0;
+	virtual void	setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage, UGlobalPosition::TType type = UGlobalPosition::Unspecified) =0;
 
 	/**
 	  * Set the global position of the move primitive. This method is fast because 

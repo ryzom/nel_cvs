@@ -1,7 +1,7 @@
 /** \file primitive_world_image.h
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.h,v 1.8 2002/07/01 18:23:55 legros Exp $
+ * $Id: primitive_world_image.h,v 1.9 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 	  * \param pos is the new global position of the primitive.
 	  */
 	void	setGlobalPosition (const NLMISC::CVectorD& pos, CMoveContainer& container, CMovePrimitive &primitive, 
-								uint8 worldImage, bool keepZ = false);
+								uint8 worldImage, bool keepZ = false, UGlobalPosition::TType type = UGlobalPosition::Unspecified);
 
 	/**
 	  * Get the position of the move primitive at the end of the movement.

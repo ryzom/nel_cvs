@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.30 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: global_retriever.h,v 1.31 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,7 +211,7 @@ public:
 	/** Select the instances that are in contact with the given bbox.
 	 * The selected instances are stored in CCollisionSurfaceTemp.CollisionInstances
 	 */
-	bool							selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const;
+	bool							selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst, UGlobalPosition::TType type = UGlobalPosition::Unspecified) const;
 
 	/// Get the retriever bank associated to this global retriever.
 	const CRetrieverBank			*getRetrieverBank() const { return _RetrieverBank; }
@@ -275,6 +275,12 @@ public:
 
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
 	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const;
+
+
+
+	/// Retrieves the position of an estimated point in the global retriever (double instead.)
+	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, double threshold, UGlobalPosition::TType retrieveSpec) const;
+
 
 
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)

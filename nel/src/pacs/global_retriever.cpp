@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.83 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.84 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,7 @@ void	NLPACS::CGlobalRetriever::initRetrieveTable()
 
 //
 
-bool	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const
+bool	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst, UGlobalPosition::TType type) const
 {
 	_InstanceGrid.select(bbox.getMin(), bbox.getMax());
 	cst.CollisionInstances.clear();
@@ -113,6 +113,10 @@ bool	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCol
 	NLPACS::CQuadGrid<uint32>::CIterator	it;
 	for (it=_InstanceGrid.begin(); it!=_InstanceGrid.end(); ++it)
 	{
+		if (type == UGlobalPosition::Landscape && _Instances[*it].getType() == CLocalRetriever::Interior ||
+			type == UGlobalPosition::Interior && _Instances[*it].getType() == CLocalRetriever::Landscape)
+			continue;
+
 		if (_Instances[*it].getBBox().intersect(bbox))
 		{
 			if (!_RetrieverBank->isLoaded(_Instances[*it].getRetrieverId()))
@@ -428,119 +432,31 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 
 //
 
-/*
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
 {
-	// the retrieved position
-	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
-
-	if (!_BBox.include(estimated))
-		return result;
-	
-	// get the best matching instances
-	CAABBox	bbpos;
-	bbpos.setCenter(estimated);
-	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
-	selectInstances(bbpos, _InternalCST);
-
-	uint	i;
-	float	bestDist = threshold;
-	bool	snapinterior = false;
-
-	// for each instance, try to retrieve the position
-	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
-	{
-		uint32	id = _InternalCST.CollisionInstances[i];
-		// if the retrieved position is on a surface and it best match the estimated position
-		// remember it
-		const CRetrieverInstance		&instance = _Instances[id];
-		CVector							lestim = instance.getLocalPosition(estimated);
-		CLocalRetriever::CLocalPosition	ret = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
-		// go preferably on interior instances
-		float							d = (float)fabs(lestim.z-ret.Estimation.z);
-		bool							itype = (instance.getType() == CLocalRetriever::Interior);
-		if (ret.Surface != -1 && (snapinterior && itype && d < bestDist ||
-								  !snapinterior && itype && d < 1.0f ||
-								  !snapinterior && itype && d >= 1.0f && d < bestDist ||
-								  !snapinterior && !itype && d < bestDist))
-		{
-			if (itype && d < 1.0f)
-				snapinterior = true;
-			bestDist = d;
-			result.LocalPosition = ret;
-			result.InstanceId = id;
-		}
-	}
-
-	return result;
+	return retrievePosition(CVectorD(estimated), (double)threshold, UGlobalPosition::Unspecified);
 }
-*/
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated, float threshold) const
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
+{
+	return retrievePosition(estimated, threshold, UGlobalPosition::Unspecified);
+}
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
+{
+	return retrievePosition(estimated, 1.0e10f, UGlobalPosition::Unspecified);
+}
+
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
+{
+	return retrievePosition(estimated, 1.0e10, UGlobalPosition::Unspecified);
+}
+
+// Retrieves the position of an estimated point in the global retriever (double instead.)
+NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold, NLPACS::UGlobalPosition::TType retrieveSpec) const
 {
 	NLPACS_HAUTO_RETRIEVE_POSITION
 
-	return retrievePosition(CVectorD(estimated), (double)threshold);
-}
-
-/*
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
-{
-	// the retrieved position
-	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
-
-	if (!_BBox.include(CVector((float)estimated.x, (float)estimated.y, (float)estimated.z)))
-		return result;
-	
-	
-	// get the best matching instances
-	CAABBox	bbpos;
-	bbpos.setCenter(estimated);
-	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
-	selectInstances(bbpos, _InternalCST);
-
-	uint	i;
-	double	bestDist = threshold;
-	bool	snapinterior = false;
-
-	// for each instance, try to retrieve the position
-	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
-	{
-		uint32	id = _InternalCST.CollisionInstances[i];
-		// if the retrieved position is on a surface and it best match the estimated position
-		// remember it
-		const CRetrieverInstance		&instance = _Instances[id];
-		CVector							lestim = instance.getLocalPosition(estimated);
-		CLocalRetriever::CLocalPosition	ret = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()), _InternalCST);
-		// go preferably on interior instances
-		double							d = fabs(lestim.z-ret.Estimation.z);
-		bool							itype = (instance.getType() == CLocalRetriever::Interior);
-		if (ret.Surface != -1 && (snapinterior && itype && d < bestDist ||
-								  !snapinterior && itype && d < 1.0f ||
-								  !snapinterior && itype && d >= 1.0f && d < bestDist ||
-								  !snapinterior && !itype && d < bestDist))
-		{
-			if (itype && d < 1.0)
-				snapinterior = true;
-			bestDist = d;
-			result.LocalPosition = ret;
-			result.InstanceId = id;
-		}
-
-//		double	d = fabs(lestim.z-ret.Estimation.z) * (_Instances[id].getType() == CLocalRetriever::Interior ? 0.5 : 1.0);
-//		if (ret.Surface != -1 && d < bestDist)
-//		{
-//			bestDist = d;
-//			result.LocalPosition = ret;
-//			result.InstanceId = _Instances[id].getInstanceId();
-//		}
-	}
-
-	return result;
-}
-*/
-
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated, double threshold) const
-{
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
 
@@ -555,7 +471,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	CAABBox	bbpos;
 	bbpos.setCenter(estimated);
 	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
-	if (!selectInstances(bbpos, _InternalCST))
+	if (!selectInstances(bbpos, _InternalCST, retrieveSpec))
 		return result;
 
 	uint	i;
@@ -651,16 +567,6 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 	}
 
 	return result;
-}
-
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
-{
-	return retrievePosition(estimated, 1.0e10f);
-}
-
-NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
-{
-	return retrievePosition(estimated, 1.0e10);
 }
 
 //

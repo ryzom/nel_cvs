@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.17 2003/04/08 23:12:26 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.18 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,7 +242,7 @@ void CMovePrimitive::setGlobalPosition (const UGlobalPosition& pos, uint8 worldI
 
 // ***************************************************************************
 
-void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage)
+void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage, UGlobalPosition::TType type)
 {
 	NLPACS_HAUTO_SET_UGLOBAL_POSITION
 

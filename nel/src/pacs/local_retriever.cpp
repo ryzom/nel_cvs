@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.63 2003/06/19 15:23:38 corvazier Exp $
+ * $Id: local_retriever.cpp,v 1.64 2003/06/26 15:36:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1043,7 +1043,7 @@ bool	NLPACS::CLocalRetriever::testPosition(NLPACS::ULocalPosition &local, CColli
 }
 
 
-void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<uint8> &retrieveTable,*/ CCollisionSurfaceTemp &cst) const
+void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, CCollisionSurfaceTemp &cst) const
 {
 	if (!_Loaded)
 		return;
@@ -1215,6 +1215,161 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, /*std::vector<
 		}
 	}
 }
+
+
+void	NLPACS::CLocalRetriever::retrieveAccuratePosition(CVector2s estim, CCollisionSurfaceTemp &cst, bool &onBorder) const
+{
+	if (!_Loaded)
+		return;
+
+	CAABBox			box;
+	CVector			estimated = estim.unpack3f();
+	const double	BorderThreshold = 2.0e-2f;
+	box.setMinMax(CVector(estimated.x-(float)BorderThreshold, _BBox.getMin().y, 0.0f), 
+				  CVector(estimated.x+(float)BorderThreshold, _BBox.getMax().y, 0.0f));
+	uint			numEdges = _ChainQuad.selectEdges(box, cst);
+
+	uint			ochain, i;
+
+	onBorder = false;
+
+	cst.PossibleSurfaces.clear();
+
+	// WARNING!!
+	// cst.SurfaceLUT is assumed to be 0 filled !!
+
+	//nldebug("estim=(%d,%d)", estim.x, estim.y);
+
+	// for each ordered chain, checks if the estimated position is between the min and max.
+	for (i=0; i<numEdges; ++i)
+	{
+		ochain = cst.EdgeChainEntries[i].OChainId;
+
+		const COrderedChain	&sub = _OrderedChains[ochain];
+		const CVector2s	&min = sub.getMin(),
+						&max = sub.getMax();
+
+		// checks the position against the min and max of the chain
+		if (estim.x < min.x || estim.x > max.x)
+			continue;
+
+		bool	isUpper;
+		bool	isOnBorder = false;
+
+		sint32	left = _Chains[sub.getParentId()].getLeft(),
+				right = _Chains[sub.getParentId()].getRight();
+
+		if (estim.y < min.y)
+		{
+			if (estim.x == max.x)
+				continue;
+			isUpper = false;
+		}
+		else if (estim.y > max.y)
+		{
+			if (estim.x == max.x)
+				continue;
+			isUpper = true;
+		}
+		else
+		{
+			const vector<CVector2s>	&vertices = sub.getVertices();
+			uint					start = 0, stop = vertices.size()-1;
+
+			// then finds the smallest segment of the chain that includes the estimated position.
+			while (stop-start > 1)
+			{
+				uint	mid = (start+stop)/2;
+
+				if (vertices[mid].x > estim.x)
+					stop = mid;
+				else
+					start = mid;
+			}
+
+			// if a vertical edge
+			if (vertices[start].x == vertices[stop].x)
+			{
+				// look for maximal bounds
+				while (start > 0 && vertices[start].x == vertices[start-1].x)
+					--start;
+
+				while (stop < vertices.size()-1 && vertices[stop].x == vertices[stop+1].x)
+					++stop;
+
+				// if upper or lower the bounds, do nothing
+				if (estim.y > vertices[start].y && estim.y > vertices[stop].y ||
+					estim.y < vertices[start].y && estim.y < vertices[stop].y)
+					continue;
+
+				onBorder = true;
+				continue;
+			}
+			else if (vertices[stop].x == estim.x)
+			{
+				// if (yes)
+				continue;
+			}
+
+			// and then checks if the estimated position is up or down the chain.
+
+			// first trivial case (up both tips)
+			if (estim.y > vertices[start].y && estim.y > vertices[stop].y)
+			{
+				isUpper = true;
+			}
+			// second trivial case (down both tips)
+			else if (estim.y < vertices[start].y && estim.y < vertices[stop].y)
+			{
+				isUpper = false;
+			}
+			// full test...
+			else
+			{
+				const CVector2s	&vstart = vertices[start],
+								&vstop = vertices[stop];
+
+				// this test is somewhat more accurate
+				// no division performed
+				sint32	det = (estim.y-vstart.y)*(vstop.x-vstart.x) - (estim.x-vstart.x)*(vstop.y-vstart.y);
+
+				isUpper = (det > 0);
+				
+				if (det == 0)
+					onBorder = true;
+			}
+		}
+
+		// Depending on the chain is forward, up the position, increase/decrease the surface table...
+		if (sub.isForward())
+		{
+			if (isUpper)
+			{
+				cst.incSurface(left);
+				cst.decSurface(right);
+			}
+			else
+			{
+				cst.decSurface(left);
+				cst.incSurface(right);
+			}
+		}
+		else
+		{
+			if (isUpper)
+			{
+				cst.decSurface(left);
+				cst.incSurface(right);
+			}
+			else
+			{
+				cst.incSurface(left);
+				cst.decSurface(right);
+			}
+		}
+	}
+}
+
 
 
 void	NLPACS::CLocalRetriever::initFaceGrid()

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.24 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.25 2000/12/13 15:01:46 corvazier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -1704,6 +1704,7 @@ void		CTessFace::deleteTileUvs()
 {
 	if(!isLeaf())
 	{
+		// Must delete the materials of leaves first.
 		SonLeft->deleteTileUvs();
 		SonRight->deleteTileUvs();
 		if(SonLeft->Level== Patch->TileLimitLevel)
@@ -1734,8 +1735,7 @@ void		CTessFace::recreateTileUvs()
 {
 	if(!isLeaf())
 	{
-		SonLeft->recreateTileUvs();
-		SonRight->recreateTileUvs();
+		// Must recreate the materials of parent first.
 
 		// There is no problem with rectangular patch, since tiles are always squares.
 		// If new tile ....
@@ -1749,6 +1749,9 @@ void		CTessFace::recreateTileUvs()
 		{
 			heritTileMaterial();
 		}
+
+		SonLeft->recreateTileUvs();
+		SonRight->recreateTileUvs();
 	}
 }
 

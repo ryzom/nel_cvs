@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.3 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.4 2000/12/13 15:01:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,25 +35,11 @@ namespace NL3D
 
 CEvent3dMouseListener::CEvent3dMouseListener()
 {
-	_ViewMatrix.identity();
+	_Matrix.identity();
 	_HotSpot.set (0,0,0);
 	_Viewport.initFullScreen();
-	_Top=1.f;
-	_Bottom=1.f;
-	_Left=1.f;
-	_Right=1.f;
-	_Depth=1.f;
+	_Frustrum.init (2.f, 2.f, -1.f, 1.f);
 	_MouseMode=nelStyle;
-}
-
-void CEvent3dMouseListener::setWithCamera  (const CMatrix &camMat, const CFrustum &camFrust)
-{
-	_ViewMatrix= camMat;
-	_Left= camFrust.Left;
-	_Right = camFrust.Left;
-	_Bottom= camFrust.Bottom;
-	_Top= camFrust.Top;
-	_Depth= camFrust.Near;
 }
 
 void CEvent3dMouseListener::operator ()(const CEvent& event)
@@ -75,16 +61,16 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		}
 		else	// 3d edit style (edit3dStyle)
 		{
-			bRotate=(mouseEvent->Button==(altButton|leftButton));
-			bTranslateXY=(mouseEvent->Button==(ctrlButton|leftButton));
-			bTranslateZ=(mouseEvent->Button==(ctrlButton|shiftButton|leftButton));
-			bZoom=(mouseEvent->Button==(shiftButton|leftButton));
+			bRotate=(mouseEvent->Button==(altButton|middleButton)) || (mouseEvent->Button==(altButton|leftButton));
+			bTranslateXY=(mouseEvent->Button==(ctrlButton|leftButton)) || (mouseEvent->Button==middleButton);
+			bTranslateZ=(mouseEvent->Button==(ctrlButton|shiftButton|leftButton)) || (mouseEvent->Button==(ctrlButton|middleButton));
+			bZoom=(mouseEvent->Button==(shiftButton|leftButton)) || (mouseEvent->Button==(ctrlButton|altButton|middleButton));
 		}
 
 		if (bRotate)
 		{
 			// First in the hotSpot
-			CMatrix comeFromHotSpot=_ViewMatrix;
+			CMatrix comeFromHotSpot=_Matrix;
 			comeFromHotSpot.setPos (_HotSpot);
 
 			// Then turn along the Z axis with X mouse
@@ -109,17 +95,17 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			Pivot.setPos (_HotSpot);
 
 			// Make this transformation \\//
-			//_ViewMatrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_ViewMatrix;
+			//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
 			Pivot*=turnZ;
 			Pivot*=negPivot;
 			Pivot*=comeFromHotSpot;
 			Pivot*=turnX;
 			Pivot*=goToHotSpot;
-			Pivot*=_ViewMatrix;
-			_ViewMatrix=Pivot;
+			Pivot*=_Matrix;
+			_Matrix=Pivot;
 
 			// Normalize, too much transformation could give an ugly matrix..
-			_ViewMatrix.normalize (CMatrix::XYZ);
+			_Matrix.normalize (CMatrix::XYZ);
 		}
 
 		if (bTranslateXY||bTranslateZ||bZoom)
@@ -128,36 +114,30 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 			// Plane of the hotspot
 			CPlane plane;
-			plane.make (_ViewMatrix.getJ(), _HotSpot);
-
-			// Make a temp camera
-			CMatrix		camMatrix;
-			CFrustum	camFrust;
-			camMatrix= _ViewMatrix;
-			camFrust.init (_Left, _Right, _Bottom, _Top, _Depth, _Depth+10.f);
+			plane.make (_Matrix.getJ(), _HotSpot);
 
 			// Get ray from mouse point
 			CVector worldPoint1, worldPoint2;
 			CVector pos, dir;
-			_Viewport.getRayWithPoint (_X, _Y, pos, dir, camMatrix, camFrust);
+			_Viewport.getRayWithPoint (_X, _Y, pos, dir, _Matrix, _Frustrum);
 			worldPoint1=plane.intersect (pos, pos+dir);
-			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, camMatrix, camFrust);
+			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, _Matrix, _Frustrum);
 			worldPoint2=plane.intersect (pos, pos+dir);
 
 			// Move the camera
 			if (bTranslateXY)
-				_ViewMatrix.setPos(_ViewMatrix.getPos()+worldPoint1-worldPoint2);
+				_Matrix.setPos(_Matrix.getPos()+worldPoint1-worldPoint2);
 			else if (bTranslateZ)
 			{
 				CVector vect=worldPoint1-worldPoint2;
-				_ViewMatrix.setPos(_ViewMatrix.getPos()+_ViewMatrix.getK()*(vect.x+vect.y+vect.z));
+				_Matrix.setPos(_Matrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
 			}
 			else if (bZoom)
 			{
 				CVector vect=worldPoint1-worldPoint2;
-				CVector direc=_HotSpot-_ViewMatrix.getPos();
+				CVector direc=_HotSpot-_Matrix.getPos();
 				direc.normalize();
-				_ViewMatrix.setPos(_ViewMatrix.getPos()+direc*(vect.x+vect.y+vect.z));
+				_Matrix.setPos(_Matrix.getPos()+direc*(vect.x+vect.y+vect.z));
 			}
 		}
 		
@@ -187,8 +167,8 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		// Zoom..
 		CEventMouseWheel* mouseEvent=(CEventMouseWheel*)&event;
 
-		CVector direc=_HotSpot-_ViewMatrix.getPos();
-		_ViewMatrix.setPos(_ViewMatrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
+		CVector direc=_HotSpot-_Matrix.getPos();
+		_Matrix.setPos(_Matrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
 	}
 }
 

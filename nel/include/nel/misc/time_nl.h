@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * CTime class
  *
- * $Id: time_nl.h,v 1.3 2000/11/22 11:17:06 lecroart Exp $
+ * $Id: time_nl.h,v 1.4 2000/12/13 15:01:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLMISC
 
 /// Time type
 typedef uint64 TTime;
+typedef uint64 TTicks;
 
 
 /**
@@ -56,6 +57,17 @@ public:
 	 * \warning On Windows, the value is on 32 bits only.
 	 */
 	static TTime	getLocalTime ();
+
+	/** get the time in processor ticks. Use it for profile purpose. Only implemented
+	 *  under windows for the time. If the performance time is not supported on this
+	 *  hardware, it returns 0.
+	 */
+	static TTicks	getPerformanceTime ();
+
+	/** convert a ticks count into second. If the performance time is not supported on this
+	 *  hardware, it returns 0.0.
+	 */
+	static double	ticksToSecond (TTicks ticks);
 };
 
 } // NLMISC

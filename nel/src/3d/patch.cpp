@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.23 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: patch.cpp,v 1.24 2000/12/13 15:01:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -852,6 +852,8 @@ void			CPatch::getTileUvInfo(sint tileId, sint pass, uint8 &orient, CVector &uvS
 		uvScaleBias.x=0;
 		uvScaleBias.y=0;
 		uvScaleBias.z=1;
+		is256x256=false;
+		uvOff=0;
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.4 2000/12/08 10:34:12 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.5 2000/12/13 15:01:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	// First, refine.
 	landModel->Landscape.refine(trav->CamPos);
 	// then render.
-	landModel->Landscape.render(trav->getDriver(), trav->CamPos);
+	landModel->Landscape.render(trav->getDriver(), trav->CamPos, landModel->isAdditive ());
 }
 
 

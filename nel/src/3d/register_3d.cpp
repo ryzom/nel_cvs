@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.2 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: register_3d.cpp,v 1.3 2000/12/13 15:01:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,15 +36,20 @@ namespace NL3D
 //****************************************************************************
 void	registerSerial3d()
 {
-	// Textures.
-	NLMISC_REGISTER_CLASS(CTextureFile);
-	NLMISC_REGISTER_CLASS(CTextureMem);
-	NLMISC_REGISTER_CLASS(CTextureFont);
-	// Don't register CTextureCroos,, since local, and not designed to be serialised.
+	static bool bInitialized=false;
+	if (!bInitialized)
+	{
+		// Textures.
+		NLMISC_REGISTER_CLASS(CTextureFile);
+		NLMISC_REGISTER_CLASS(CTextureMem);
+		NLMISC_REGISTER_CLASS(CTextureFont);
 
-	// Shapes.
-	NLMISC_REGISTER_CLASS(CMesh);
+		// Don't register CTextureCroos,, since local, and not designed to be serialised.
 
+		// Shapes.
+		NLMISC_REGISTER_CLASS(CMesh);
+		bInitialized=true;
+	}
 }
 
 

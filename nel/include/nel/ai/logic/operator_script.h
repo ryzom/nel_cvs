@@ -2,7 +2,7 @@
  *	
  *	Scripted operators	
  *
- * $Id: operator_script.h,v 1.4 2001/01/25 10:09:48 portier Exp $
+ * $Id: operator_script.h,v 1.5 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,9 @@ namespace NLAIAGENT
 			COperatorScript(const COperatorScript &);
 			COperatorScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::COperatorClass *);
 			virtual ~COperatorScript();
+
+			/// Priority of the operator
+//			virtual float priority() const;
 
 			virtual int getBaseMethodCount() const;
 

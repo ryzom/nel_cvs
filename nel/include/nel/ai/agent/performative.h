@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.2 2001/01/19 14:34:46 chafik Exp $
+ * $Id: performative.h,v 1.3 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

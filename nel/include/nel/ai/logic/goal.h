@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.2 2001/01/24 13:42:14 portier Exp $
+ * $Id: goal.h,v 1.3 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,15 +26,27 @@
 #ifndef NL_GOAL_
 #define NL_GOAL_
 
-/*
+#include "nel/ai/logic/boolval.h"
+//#include "nel/ai/agent/agent.h"
 
-namespace AILOGIC {
-	class CGoal
+namespace NLAILOGIC 
+{
+	class IBaseOperator;
+
+	class CGoal : public IBaseBoolType
 	{
 		private:
-			NLAIAGENT::CStringVarName *name;
-			std::vector<IBaseOperator *> operators;
+			NLAIAGENT::IVarName *_Name;
+			std::vector<IBaseOperator *> _Successors;
+			std::vector<IBaseOperator *> _Predecessors;
 		public:
+
+			CGoal(const NLAIAGENT::IVarName &);
+			CGoal(const CGoal &);
+			~CGoal();
+
+			static const NLAIC::CIdentType IdGoal;
+
 			virtual void failure();
 			virtual void success();
 
@@ -42,7 +54,20 @@ namespace AILOGIC {
 			virtual void operatorFailure(IBaseOperator *);
 
 			const std::vector<IBaseOperator *> getOperators();
+
+			const NLAIC::IBasicType *clone() const;
+			const NLAIC::IBasicType *newInstance() const;
+			void save(NLMISC::IStream &os);
+			void load(NLMISC::IStream &is);
+			void getDebugString(char *text) const;
+			bool isTrue() const;
+			float truthValue() const;
+			const IObjectIA::CProcessResult &run();
+			bool isEqual(const CGoal &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			std::vector<IBaseVar *> *getVars();
+			const NLAIC::CIdentType &getType() const;
 	};
 }
-*/
+
 #endif

@@ -90,55 +90,7 @@ namespace NLAIAGENT
 			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
-
-		if ( index == fid_onActivate )
-		{
-			onActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
-
-		if ( index == fid_unActivate )
-		{
-			unActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
-
-		if ( index == fid_onUnActivate )
-		{
-			onUnActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
-
-		if ( index == fid_switch )
-		{
-			std::vector<CStringType *> handles;
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
-				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
-				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
-				while ( fw->size() )
-				{
-					handles.push_back( (CStringType *) fw->getFront() );
-					fw->popFront();
-				}
-				std::vector<CComponentHandle *> switched;
-				for ( int i = 0; i < (int) handles.size(); i++)
-					switched.push_back( new CComponentHandle(  handles[ i ]->getStr() , (IAgent *) getParent() ) );
-
-				switchActor( switched, false );
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
-
-  */
+*/
 		return CAgentScript::runMethodeMember(heritance,index,params);
 	}
 
@@ -282,4 +234,8 @@ namespace NLAIAGENT
 		*/
 		return result;
 	}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Includes all logic related files
  *
- * $Id: logic.h,v 1.3 2001/01/11 17:02:18 chafik Exp $
+ * $Id: logic.h,v 1.4 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,5 +41,6 @@
 #include "nel/ai/logic/operator.h"
 #include "nel/ai/logic/bool_operator.h"
 #include "nel/ai/logic/fo_operator.h"
+#include "nel/ai/logic/goal.h"
 
 #endif

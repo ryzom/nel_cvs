@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.7 2001/01/24 15:35:53 chafik Exp $
+ * $Id: agent_method_def.h,v 1.8 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

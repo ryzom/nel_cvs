@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.5 2001/01/25 10:09:48 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.6 2001/01/30 10:33:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,67 +28,77 @@
 
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/logic/goal.h"
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/logic/var.h"
 
 namespace NLAISCRIPT
 {
 	class COperatorClass: public CAgentClass
 	{
 	private:
-		/// Goal the operator tris to validate
-/*		CGoal							*_Goal;
+		NLAILOGIC::CGoal							*_Goal;				/// Goal the operator tris to validate
 
-		/// Preconditions asserts
-		std::vector<IBaseAssert *>		_Conds;				
-		std::vector< std::vector<sint32> >	_PosVarsCond;		/// Pos of a precondition pattern's vars in the operator's vars table
+		std::vector<NLAILOGIC::IBaseVar *>			_Vars;				/// Variables of the operator
 
-		/// Postconditions asserts			
-		std::vector<IBaseAssert *>		_Concs;	
-		std::vector< std::vector<sint32> >	_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
+		std::vector< NLAILOGIC::IBaseAssert *>		_Conds;				/// Preconditions asserts
+		std::vector< std::vector<sint32> >			_PosVarsCond;		/// Pos of a precondition pattern's vars in the operator's vars table
 
-		/// Description of the operator
-		char							*_Comment;
+		std::vector<NLAILOGIC::IBaseAssert *>		_Concs;				/// Postconditions asserts			
+		std::vector< std::vector<sint32> >			_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
 
-  */
+		char										*_Comment;			/// Description of the operator
+
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
 		
-/*
-			/// Sets the comment for the operator
-			void setComment(char *);
+		/// Sets the comment for the operator
+		void setComment(char *);
 
-			/// Sets the goal the operator tries to achieve
-			virtual void setGoal(CGoal *);
-			virtual const CGoal *getGoal();
+		/// Sets the goal the operator tries to achieve
+		virtual void setGoal(NLAILOGIC::CGoal *);
+		virtual const NLAILOGIC::CGoal *getGoal();
 
-			/// Asks wether the operator's preconditions are validated,
-			virtual bool isValid(CFactBase *);
+		/// Asks wether the operator's preconditions are validated,
+		virtual bool isValid(NLAILOGIC::CFactBase *);
 
-			/// Priority of the operator
-			virtual float priority() const;
+		///Transforms a CFactPattern in an assert and a list of variable positions in the operator
+		void compileFactPattern (NLAILOGIC::CFactPattern   *, std::vector<NLAILOGIC::IBaseAssert *> &, std::vector<sint32> &);
 
-			/// Own success and failure functions
-			/// These function telle other operators and goals that might be waiting for
-			/// the execution of this one.
-			virtual void success();
-			virtual void failure();
+		// Buils a CFact from its assret and an instanciation for the values of the variables of the rule.
+		NLAILOGIC::CFact *buildFromVars(NLAILOGIC::IBaseAssert *, std::vector<sint32> &, NLAILOGIC::CValueSet *);
 
-			/// Dependencies failure and success notification
-			/// These functions are called by other operators or goals who failed or succeeded
-			virtual void success( IBaseOperator *);
-			virtual void failure( IBaseOperator *);
+		/// Returns the pos of a vraiables in the operator's vars table, -1 if not found.
+		sint32 getVarPos(NLAILOGIC::IBaseVar *);
 
-			///Transforms a CFactPattern in an assert and a list of variable positions in the operator
-			void compileFactPattern (CFactPattern   *, std::vector<IBaseAssert *> &, std::vector<sint32> &);
+		/// Tries to unify an instaciation of the operator's variables with a new CFact
+		NLAILOGIC::CValueSet *unifyLiaison( const NLAILOGIC::CValueSet *, NLAILOGIC::CValueSet *, std::vector<sint32> &);
 
-			/// Returns the pos of a vraiables in the operator's vars table, -1 if not found.
-			sint32 CFirstOrderOperator::getVarPos(IBaseVar *var);
-			void getPosListForward(sint32, sint32, std::vector<sint32> &);
-			void getPosListBackward(sint32, sint32, std::vector<sint32> &);
-			void getAssertPos(IBaseAssert *, std::vector<IBaseAssert *> &, std::vector<sint32> &);
-			CValueSet *unifyBackward(std::list<CFact *> &);
-			CValueSet *unifyForward(std::list<CFact *> &);
-*/
-	public:
+		void getPosListForward(sint32, sint32, std::vector<sint32> &);
+		void getPosListBackward(sint32, sint32, std::vector<sint32> &);
+		void getAssertPos(NLAILOGIC::IBaseAssert *, std::vector<NLAILOGIC::IBaseAssert *> &, std::vector<sint32> &);
+		NLAILOGIC::CValueSet *unifyBackward(std::list<NLAILOGIC::CFact *> &);
+		NLAILOGIC::CValueSet *unifyForward(std::list<NLAILOGIC::CFact *> &);
+
+		virtual std::list<NLAILOGIC::CFact *> *test(std::list<NLAILOGIC::CFact *> &) {return NULL;}
+		virtual std::list<NLAILOGIC::CFact *> *backward(std::list<NLAILOGIC::CFact *> &);
+		virtual std::list<NLAILOGIC::CFact *> *forward(std::list<NLAILOGIC::CFact *> &);
+		virtual std::list<NLAILOGIC::CFact *> *propagate(std::list<NLAILOGIC::CFact *> &);
+
+		/// Priority of the operator
+		virtual float priority() const;
+
+		/// Own success and failure functions
+		/// These function telle other operators and goals that might be waiting for
+		/// the execution of this one.
+		virtual void success();
+		virtual void failure();
+
+		/// Dependencies failure and success notification
+		/// These functions are called by other operators or goals who failed or succeeded
+		virtual void success( NLAILOGIC::IBaseOperator *);
+		virtual void failure( NLAILOGIC::IBaseOperator *);
+
+public:
 		COperatorClass(const NLAIAGENT::IVarName &);
 		COperatorClass(const NLAIC::CIdentType &);
 		COperatorClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);

@@ -224,7 +224,7 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", NLAIC::CSelfClassCFactory( COperatorScript(NULL) ),
+	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", NLAIC::CSelfClassCFactory( (NLAIC::IBasicInterface &) COperatorScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
@@ -283,6 +283,13 @@
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
+
+	const NLAIC::CIdentType CGoal::IdGoal = NLAIC::CIdentType( "Goal", NLAIC::CSelfClassCFactory( CGoal( CStringVarName("Inst") )),
+		NLAIC::CTypeOfObject::tLogic,
+		NLAIC::CTypeOfOperator::opEq |
+		NLAIC::CTypeOfOperator::opNeg | 
+		NLAIC::CTypeOfOperator::opNot ); 
+
 
 	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", 
 		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( (const NLAIAGENT::IVarName &) CStringVarName("Inst") )),

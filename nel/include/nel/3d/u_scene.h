@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.56 2004/06/29 13:33:03 vizerie Exp $
+ * $Id: u_scene.h,v 1.57 2004/08/03 16:18:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,7 @@ class UVisualCollisionManager;
 class UAnimationSet;
 class UPlayListManager;
 class UPointLight;
+class UWaterEnvMap;
 
 
 //****************************************************************************
@@ -72,9 +73,10 @@ class IWaterSurfaceAddedCallback
 {
 public:
 	// A water surface with the given height has been added. 	 
-	virtual void waterSurfaceAdded(const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix, bool splashEnabled) = 0;
-	
+	virtual void waterSurfaceAdded(const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix, bool splashEnabled, bool usesSceneWaterenvmap) = 0;
+	virtual void waterSurfaceRemoved(bool usesSceneWaterenvmap) = 0;
 };
+
 
 //****************************************************************************
 /**
@@ -592,9 +594,23 @@ public:
 	  *                          that the sorting accuracy will be of D / N meters at worst (when visible objects occupy the whole distance range)
 	  * NB : The memory allocated is a multiple of NumPriority * NbDistanceEntries * 2 (2 if because of water ordering)
 	  */
-	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024) = 0;
+	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024) = 0;	
 
+	/// \name Water envmaps
+	// @{
+	/** Set a water envmap to be used with water surfaces in that scene. Water envmap may be shared accross several scene.
+	  * The envmap should have been created from the same UDriver interface than the scene
+	  */
+	virtual void		  setWaterEnvMap(UWaterEnvMap *waterEnvMap) = 0;
+	// Get currenlty used water envmap for that scene.
+	virtual UWaterEnvMap *getWaterEnvMap() const = 0;
+	/** Update water envmaps. Water textures that need to be updated includes UWaterEnvMap textures & Day/Night textures (as defined in the water material).
+	  * Should be called at the beginning of the frame before anything is rendered.
+	  */
+	virtual void		  updateWaterEnvMaps(TGlobalAnimationTime time) = 0;
+	// @} 
 };
+
 
 
 } // NL3D

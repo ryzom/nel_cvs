@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /Zm400 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_NO_DEFINE_NEW" /Yu"std_afx.h" /FD /Zm400 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -77,7 +77,7 @@ PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/objec
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_NO_DEFINE_NEW" /FR /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDLL" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "WIN32" /D "NDEBUG" /Yu"std_afx.h" /FD /Zm400 /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "NL_RELEASE_DEBUG" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_NO_DEFINE_NEW" /Yu"std_afx.h" /FD /Zm400 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -133,7 +133,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_DEBUG_FAST" /D "_STLP_USE_DEBUG_LIB" /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_STLP_USE_DEBUG_LIB" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_NO_DEFINE_NEW" /Yu"std_afx.h" /FD /D /GZ /Zm500 /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32

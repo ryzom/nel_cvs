@@ -1,61 +1,90 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.1 2001/04/18 13:54:25 valignat Exp $
+ * $Id: naming_service.cpp,v 1.2 2001/05/02 12:36:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
  *
- * This file is part of NEVRAX NeL Network Services.
- * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
+ * This file is part of NEVRAX D.T.C. SYSTEM.
+ * NEVRAX D.T.C. SYSTEM is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
+ * NEVRAX D.T.C. SYSTEM is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
+ * along with NEVRAX D.T.C. SYSTEM; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+// todo remettre le log dans le log service mais il faut virer le prob de la recursion dans le send
+
+#include <list>
 
 #include "naming_service.h"
 
 #include "nel/misc/debug.h"
 
-#include "nel/net/message.h"
-#include "nel/net/msg_socket.h"
-#include "nel/net/net_displayer.h"
 #include "nel/net/unitime.h"
-#include "nel/net/net_log.h"
+#include "nel/net/net_manager.h"
 
 using namespace std;
 using namespace NLNET;
 using namespace NLMISC;
 
 
-/// Default validity time is 2 minutes
-const uint16		CNamingService::ValidTime = 120;
 
-/// Ports begin at 51000 (note: in this implementation there can be no more than 14536 services)
-const uint16		CNamingService::BasePort = 51000;
+///////////////////
+///////////////////
 
-/// Allocated SIds begin at 128 (except for Agent Service)
-const TServiceId	CNamingService::BaseSId = 128;
+struct CServiceEntry
+{
+	CServiceEntry (TSockId sock, CInetAddress a, string n, TServiceId s) : SockId(sock), Addr(a), Name(n), SId (s) { }
+
+	// the connection between the service and the naming service
+	TSockId			SockId;
+	// address to send to the service who wants to lookup this service
+	CInetAddress	Addr;
+	// name of the service
+	string			Name;
+	// id of the service
+	TServiceId		SId;
+};
+
+list<CServiceEntry>	RegisteredServices;
+
+void displayRegisteredServices (CCallbackNetBase &netbase)
+{
+	nlinfo ("Display the %d registered services :", RegisteredServices.size());
+	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		nlinfo ("> %s '%s' %s-%hu '%s'", (*it).SockId->asString().c_str(), netbase.hostAddress((*it).SockId).asString().c_str(), (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+	}
+	nlinfo ("End ot the list");
+}
+
+///////////////////
+///////////////////
 
 
+
+
+// adress of the log service
+/*CInetAddress ndaddr;
 CNetDisplayer *nd = NULL;
-
+*/
 
 
 /*
  * CInetAddressRef
  */
-
+/*
 CInetAddressRef::CInetAddressRef() :
 	CInetAddress(),
 	_RefCounter( 0 ),
@@ -95,7 +124,7 @@ typedef CNamingMap::iterator ItN;
 CNamingMap	NamingMap;
 CAddressSet	AddressSet;
 CSIdMap		SIdMap;
-
+*/
 
 
 /* Important note: the replies do not have a message type because the caller is expected to
@@ -107,6 +136,93 @@ CSIdMap		SIdMap;
  * Helper procedure for cbLookupAlternate and cbUnregister.
  * Note: name is used for a LOGS.
  */
+list<CServiceEntry>::iterator doRemove (list<CServiceEntry>::iterator it)
+{
+	nldebug ("Unregister the service %s-%hu '%s'", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.asString().c_str());
+	
+/*	if ((*it).Name == "LOGS" && nd != NULL && ndaddr == (*it).Addr)
+	{
+		nlinfo ("The Log Service is down, stop logging my info on it!");
+
+		// Remove the log service from displayer
+		NetLog.removeDisplayer (nd);
+
+		// Add the net displayer for all debug information
+		ErrorLog->removeDisplayer (nd);
+		WarningLog->removeDisplayer (nd);
+		InfoLog->removeDisplayer (nd);
+#ifdef NL_DEBUG
+		DebugLog->removeDisplayer (nd);
+		AssertLog->removeDisplayer (nd);
+#endif
+
+		delete nd;
+		nd = NULL;
+	}
+*/
+	// tell to everybody that this service is unregistered
+
+	CMessage msgout ("UNB");
+	//	uint16 vt = CNamingService::ValidTime;
+	msgout.serial ((*it).Name);
+	msgout.serial ((*it).SId);
+	msgout.serial ((*it).Addr);
+	CNetManager::send ("NS", msgout, 0);
+	nlinfo ("Broadcast the Unregistration to everybody");
+
+	// remove the service from the registered service list
+	return RegisteredServices.erase (it);
+}
+
+void doUnregisterService (TServiceId sid)
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).SId == sid)
+		{
+			// found it, remove it
+			doRemove (it);
+			return;
+		}
+	}
+	nlwarning ("Service %hu not found", (uint16)sid);
+}
+
+void doUnregisterService (TSockId from)
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end ();)
+	{
+		if ((*it).SockId == from)
+		{
+			// it's possible that one "from" have more than one registred service, so we have to find in all the list
+			// found it, remove it
+			it = doRemove (it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+}
+
+void doUnregisterService (const CInetAddress &addr)
+{
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).Addr == addr)
+		{
+			// found it, remove it
+			doRemove (it);
+			return;
+		}
+	}
+	nlwarning ("Service %s not found", addr.asString().c_str());
+}
+
+/*
 void doUnregisterService( const CInetAddress& addr, CSIdMap::iterator isidm, const string& name )
 {
 	// Remove address from AddressSet and SId from SIdMap
@@ -136,71 +252,71 @@ void doUnregisterService( const CInetAddress& addr, CSIdMap::iterator isidm, con
 			SIdMap.erase( isidm );
 		}
 	}
-
+*/
 	// Remove association from NamingMap
 	/*pair<ItN,ItN> range = NamingMap.equal_range( name );
 	for ( inm = range.first; inm != range.second; ++inm )
 	{
 		if ( (*inm).second == addr )
 		{*/
-
+/*
 	string servicename = (*inm).first;
 	TServiceId sid = (*inm).second.sId();
 	NamingMap.erase( inm );
 	nlinfo( "Service %s-%hu unregistered at %s", servicename.c_str(), (uint16)sid, addrstr.c_str() );
-
+*//****
 	if (name == "LOGS" && nd != NULL)
 	{
 		// Remove the log service from displayer
 		NetLog.removeDisplayer (nd);
 
 		// Add the net displayer for all debug information
-		ErrorLog->removeDisplayer (nd);
-		WarningLog->removeDisplayer (nd);
-		InfoLog->removeDisplayer (nd);
+		ErrorLog.removeDisplayer (nd);
+		WarningLog.removeDisplayer (nd);
+		InfoLog.removeDisplayer (nd);
 #ifdef NL_DEBUG
-		DebugLog->removeDisplayer (nd);
-		AssertLog->removeDisplayer (nd);
+		DebugLog.removeDisplayer (nd);
+		AssertLog.removeDisplayer (nd);
 #endif
 
 		delete nd;
 		nd = NULL;
 	}
-			
+*/			
 	/*		return; // assuming there is only one pair (name,addr)
 		}
 	}*/
-}
+//}
 
 
 /*
  * Helper function for cbLookup and cbLookupAlternate.
  * Returns NULL if service not found
  */
-CInetAddressRef *doLookupService( const string& name )
+/*CInetAddressRef *doLookupService( const string& name )
 {
 	// Search service name in NamingMap
 	pair<ItN,ItN> range = NamingMap.equal_range( name );
 	if ( range.first != range.second )
 	{
 		return &((*range.first).second); // we don't select the best one yet
-		/*for ( ItN inm = range.first; inm != range.second; ++inm )
+*/		/*for ( ItN inm = range.first; inm != range.second; ++inm )
 		{
 		}
 		*/
-	}
+/*	}
 	else
 	{
 		return NULL;
 	}
 }
-
+*/
 
 /*
  * Helper function for cbLookupSId and cbLookupAlternateSId.
  * Returns NULL if service not found
  */
-CInetAddressRef *doLookupServiceBySId( TServiceId sid )
+/*CInetAddressRef *doLookupServiceBySId( TServiceId sid )
 {
 	CSIdMap::iterator isidm;
 	if ( (isidm=SIdMap.find(sid)) != SIdMap.end() )
@@ -212,7 +328,44 @@ CInetAddressRef *doLookupServiceBySId( TServiceId sid )
 		return NULL;
 	}
 }
+*/
+void doLookup (const string &sname, TServiceId sid, TSockId from, CCallbackNetBase &netbase, bool sendAll, bool useSId)
+{
+	string name;
 
+	if (useSId)
+		name = toString (sid);
+	else
+		name = sname;
+
+	nlinfo ("Lookup for service '%s' for '%s'...", name.c_str(), netbase.hostAddress(from).asString().c_str());
+
+	displayRegisteredServices (netbase);
+
+	// Send list
+	vector<CInetAddress> addrs;
+	list<CServiceEntry>::iterator it;
+	for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((useSId && (*it).SId == sid) || (!useSId && (*it).Name == name))
+		{
+			addrs.push_back ((*it).Addr);
+			// if it only want one, stop now to search
+			if (!sendAll) break;
+		}
+	}
+
+	if (addrs.size()==0)
+		nldebug ("Service %s is not found", name.c_str());
+	else if (addrs.size()==1)
+		nldebug ("Service %s is at %s", name.c_str(), addrs[0].asString().c_str());
+	else
+		nldebug ("%d Services %s found", addrs.size(), name.c_str());
+	
+	CMessage msgout ("LK");
+	msgout.serialCont (addrs);
+	netbase.send (msgout, from);
+}
 
 /**
  * Callback for service look-up.
@@ -220,18 +373,22 @@ CInetAddressRef *doLookupServiceBySId( TServiceId sid )
  * Message expected : LK
  * - Name of service to find (string)
  *
- * Message emitted : no name (NS)
+ * Message emitted : LK
  * - Validity time in seconds, or 0 if service not found (uint16)
  * - Address of service if service found, otherwise nothing (CInetAddress)
  *
  * \todo Olivier: Select the best service provider, not the first one in the list
  */
-void cbLookup( CMessage& message, TSenderId from )
+static void cbLookup (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
-	message.serial( name );
-	nlinfo( "Lookup for service %s", name.c_str() );
+	msgin.serial (name);
+	
+	// Find and return a service
+	doLookup (name, 0, from, netbase, false, false);
 
+////////////////////////////
+/*
 	// Return server
 	CInetAddressRef *addr = doLookupService( name );
 	if ( addr != NULL )
@@ -256,8 +413,78 @@ void cbLookup( CMessage& message, TSenderId from )
 		CMsgSocket::send( msgout, from );
 		nlinfo( "Service %s not found", name.c_str() );
 	}
-}
+*/}
 
+/**
+ * Callback for alternate service look-up when a service is not responding
+ *
+ * Message expected : LA
+ * - Name of service (string)
+ * - Address of server not responding (CInetAddress)
+ *
+ * Message emitted : no name (NS)
+ * - Validity time in seconds, or 0 if service not found (uint16)
+ * - Address of service if service found, otherwise nothing (CInetAddress)
+ */
+static void cbLookupAlternate (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	string name;
+	CInetAddress addr;
+	msgin.serial (name);
+	msgin.serial (addr);
+
+	nlinfo ("Server %s looks down, looking-up for alternative service %s", addr.asString().c_str(), name.c_str() );
+
+	// Unregister down server
+	doUnregisterService (addr);
+
+	// Find and return another servive
+	doLookup (name, 0, from, netbase, false, false);
+
+/*	// Return another server
+	CInetAddressRef *newaddr = doLookupService( name );
+	if ( newaddr != NULL )
+	{
+		// Send address
+		CMessage msgout( "" ); // NS
+		uint16 vt = CNamingService::ValidTime;
+		msgout.serial( vt );
+		msgout.serial( static_cast<CInetAddress&>( *newaddr ) );
+		CMsgSocket::send( msgout, from );
+
+		// Increment reference counter
+		newaddr->incCounter();
+		nlinfo( "Service %s found at %s for %s", name.c_str(), newaddr->asString().c_str(), CMsgSocket::addressFromId( from )->asString().c_str() );
+	}
+	else
+	{
+		// Not found
+		CMessage msgout( "" ); // NS
+		uint16 v = 0;
+		msgout.serial( v );
+		CMsgSocket::send( msgout, from );
+		nlinfo( "Service %s not found", name.c_str() );
+	}		
+*/}
+
+/**
+ * Callback for service look-up for all corresponding to a name.
+ *
+ * Message expected : LKA
+ * - Name of service to find (string)
+ *
+ * Message emitted : no name (ALKA)
+ * - List of addresses (vector<CInetAddress>)
+ */
+static void cbLookupAll (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// Receive name
+	string name;
+	msgin.serial (name);
+
+	// Find and return a service
+	doLookup (name, 0, from, netbase, true, false);
+}
 
 /**
  * Callback for service look-up by identifier
@@ -271,9 +498,9 @@ void cbLookup( CMessage& message, TSenderId from )
  *
  * \todo Olivier: Select the best service provider, not the first one in the list
  */
-void cbLookupSId( CMessage& message, TSenderId from )
+static void cbLookupSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	TServiceId sid;
+/*	TServiceId sid;
 	message.serial( sid );
 	nlinfo( "Lookup for service %hu", (uint16)sid );
 
@@ -301,7 +528,7 @@ void cbLookupSId( CMessage& message, TSenderId from )
 		CMsgSocket::send( msgout, from );
 		nlinfo( "Service %hu not found", (uint16)sid );
 	}
-}
+*/}
 
 
 /**
@@ -315,7 +542,7 @@ void cbLookupSId( CMessage& message, TSenderId from )
  * - Validity time in seconds, or 0 if service not found (uint16)
  * - Address of service if service found, otherwise nothing (CInetAddress)
  */
-void cbLookupAlternate( CMessage& message, TSenderId from )
+/*static void cbLookupAlternate (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
 	CInetAddress addr;
@@ -350,7 +577,7 @@ void cbLookupAlternate( CMessage& message, TSenderId from )
 		CMsgSocket::send( msgout, from );
 		nlinfo( "Service %s not found", name.c_str() );
 	}		
-}
+}*/
 
 
 /**
@@ -364,7 +591,7 @@ void cbLookupAlternate( CMessage& message, TSenderId from )
  * - Validity time in seconds, or 0 if service not found (uint16)
  * - Address of service if service found, otherwise nothing (CInetAddress)
  */
-void cbLookupAlternateSId( CMessage& message, TSenderId from )
+/*static void cbLookupAlternateSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	TServiceId sid;
 	CInetAddress addr;
@@ -399,7 +626,7 @@ void cbLookupAlternateSId( CMessage& message, TSenderId from )
 		CMsgSocket::send( msgout, from );
 		nlinfo( "Service %hu not found", (uint16)sid );
 	}		
-}
+}*/
 
 
 /*
@@ -408,8 +635,8 @@ void cbLookupAlternateSId( CMessage& message, TSenderId from )
  * Returns false in case of failure of sid allocation or bad sid provided
  * Note: the reply is included in this function, because it must be done before things such as syncUniTime()
  */
-bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, TServiceId sid, TSenderId from )
-{
+bool doRegister (const string &name, const CInetAddress &addr, bool alloc_sid, TServiceId sid, TSockId from, CCallbackNetBase &netbase)
+{/*
 	CInetAddressRef addrr ( addr );
 
 	// Check if the association is not already in NamingMap
@@ -452,9 +679,10 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 				}
 			}
 		}
-		CMessage msgout( "" ); // SID
-		msgout.serial( sid );
-		CMsgSocket::send( msgout, from );
+		// answer of the registration
+//		CMessage msgout ("RG");
+//		msgout.serial (sid);
+//		netbase.send (msgout, from);
 		if ( sid == 0 )
 		{
 			return false;
@@ -474,15 +702,148 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 			// Check that the sid is not attributed yet
 			ok = ( SIdMap.find(sid) == SIdMap.end() );
 		}
-		CMessage msgout( "" ); // ASID
-		msgout.serial( ok );
-		CMsgSocket::send( msgout, from );
+		CMessage msgout ("RGI");
+		msgout.serial (ok);
+		netbase.send ( msgout, from );
 		if ( ! ok )
 		{
 			return false;
 		}
 	}
 	addrr.setSId( sid );
+*/
+//////////////
+
+	uint8 ok = true;
+	bool needRegister = true;
+	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		if ((*it).Addr.asString() == addr)
+		{
+			// we already have a service on this address, remplace it if it's the same name
+			if ((*it).Name == name)
+			{
+				// it's the same service, replace it
+				(*it).SockId = from;
+				sid = (*it).SId;
+				nlinfo ("Replace the service %s", name.c_str());
+			}
+			else
+			{
+				nlwarning ("Try to register %s to %s but the service %s already on this address. ignore it!", name.c_str(), addr.asIPString().c_str(), (*it).Name.c_str());
+				ok = false;
+			}
+			needRegister = false;
+			break;
+		}
+	}
+
+	if (needRegister)
+	{
+		// we have to find a sid
+		sid = CNamingService::BaseSId;
+		bool found = false;
+		while (!found)
+		{
+			list<CServiceEntry>::iterator it;
+			for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+			{
+				if ((*it).SId == sid)
+				{
+					break;
+				}
+			}
+			if (it == RegisteredServices.end ())
+			{
+				// ok, we have an empty sid
+				found = true;
+			}
+			else
+			{
+				sid++;
+				if (sid == 0) // round the clock
+				{
+					nlwarning ("Service identifier allocation overflow");
+					ok = false;
+					break;
+				}
+			}
+		}
+
+		// if ok, register the service and send a broadcast to other people
+		if (ok)
+		{
+			RegisteredServices.push_back (CServiceEntry(from, addr, name, sid));
+
+			// tell to everybody that this service is registered
+
+			CMessage msgout ("RGB");
+			//uint16 vt = CNamingService::ValidTime;
+			msgout.serial (const_cast<string &>(name));
+			msgout.serial (sid);
+			msgout.serial (const_cast<CInetAddress &>(addr));
+			CNetManager::send ("NS", msgout, 0);
+			nlinfo ("Broadcast the Registration to everybody");
+		}
+	}
+
+	// send the answer to the client
+	CMessage msgout ("RG");
+	msgout.serial (ok);
+	if (ok) msgout.serial (sid);
+	netbase.send (msgout, from);
+	netbase.flush (from);
+
+	displayRegisteredServices (netbase);
+
+	if (ok)
+	{
+		//
+		// now, for specific services, we do special things
+		//
+		
+		// for the Time Service, we sync the time
+		if (name == "TS" && !CUniTime::Sync)
+		{
+			// don't call the sync if it's the Time Service and Naming Service
+			nlinfo ("I found a Time Service, get the Unified time!");
+			CUniTime::syncUniTimeFromService (&addr);
+		}
+/*		else if (name == "LOGS" && nd == NULL)
+		{
+			// we have a log service, so we can log our message!
+			// Setup Net Displayer
+			nlinfo ("I found a Log Service, Try to put my info on it!");
+			nd = new CNetDisplayer(false);
+			nd->setLogServer (addr);
+			ndaddr = addr;
+
+			if ( nd->connected() )
+			{
+				NetLog.addDisplayer (nd);
+
+				// Add the net displayer for all debug information
+				ErrorLog->addDisplayer (nd);
+				WarningLog->addDisplayer (nd);
+				InfoLog->addDisplayer (nd);
+#ifdef NL_DEBUG
+				DebugLog->addDisplayer (nd);
+				AssertLog->addDisplayer (nd);
+#endif
+			}
+			else
+			{
+				delete nd;
+				nd = NULL;
+			}
+		}
+*/	}
+
+	return ok!=0;
+
+///////////
+/*
+
 
 	// Insert association in NamingMap and in SIdMap
 	if ( replace_entry )
@@ -502,7 +863,7 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 		}
 
 		// Get the universal time (useful for debugging)
-		if (name == "TS" && !CUniTime::Sync)
+*//****		if (name == "TS" && !CUniTime::Sync)
 		{
 			// don't call the sync if it's the Time Service and Naming Service
 			nlinfo ("I found a Time Service, get the Unified time!");
@@ -521,12 +882,12 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 				NetLog.addDisplayer (nd);
 
 				// Add the net displayer for all debug information
-				ErrorLog->addDisplayer (nd);
-				WarningLog->addDisplayer (nd);
-				InfoLog->addDisplayer (nd);
+				ErrorLog.addDisplayer (nd);
+				WarningLog.addDisplayer (nd);
+				InfoLog.addDisplayer (nd);
 	#ifdef NL_DEBUG
-				DebugLog->addDisplayer (nd);
-				AssertLog->addDisplayer (nd);
+				DebugLog.addDisplayer (nd);
+				AssertLog.addDisplayer (nd);
 	#endif
 			}
 			else
@@ -536,8 +897,8 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 			}
 			
 		}
-	}
-
+	}*/
+/*
 #ifdef NL_DEBUG
 	NLMISC::DebugLog->displayNL( "List of registered services:" );
 	for ( inm=NamingMap.begin(); inm!=NamingMap.end(); ++inm )
@@ -546,8 +907,8 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
 	}
 	NLMISC::DebugLog->displayRawNL( "End of list" );
 #endif
-
-	return true;
+*/
+//	return true;
 }
 
 
@@ -558,17 +919,17 @@ bool doRegister( const string& name, const CInetAddress& addr, bool alloc_sid, T
  * - Name of service to register (string)
  * - Address of service (CInetAddress)
  *
- * Message emitted : no name (SID)
+ * Message emitted : RG
  * - Allocated service identifier (TServiceId) or 0 if failed
  */
-void cbRegister( CMessage& message, TSenderId from )
+static void cbRegister (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
 	CInetAddress addr;
-	message.serial( name );
-	message.serial( addr );
+	msgin.serial (name);
+	msgin.serial (addr);
 
-	doRegister( name, addr, true, 0, from );
+	doRegister (name, addr, true, 0, from, netbase);
 }
 
 
@@ -583,7 +944,7 @@ void cbRegister( CMessage& message, TSenderId from )
  * Message emitted : no name (ASID)
  * - Result of registration (bool)
  */
-void cbRegisterWithSId( CMessage& message, TSenderId from )
+/*static void cbRegisterWithSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
 	CInetAddress addr;
@@ -593,7 +954,7 @@ void cbRegisterWithSId( CMessage& message, TSenderId from )
 	message.serial( sid );
 
 	bool ok = doRegister( name, addr, false, sid, from );
-}
+}*/
 
 
 /**
@@ -604,7 +965,7 @@ void cbRegisterWithSId( CMessage& message, TSenderId from )
  * - Address of service (CInetAddress)
  * \todo cado Add service authentification
  */
-void cbUnregister( CMessage& message, TSenderId from )
+/*static void cbUnregister (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	string name;
 	CInetAddress addr;
@@ -612,7 +973,7 @@ void cbUnregister( CMessage& message, TSenderId from )
 	message.serial( addr );
 
 	doUnregisterService( addr, SIdMap.end(), name );
-}
+}*/
 
 
 /**
@@ -621,30 +982,57 @@ void cbUnregister( CMessage& message, TSenderId from )
  * Message expected : UNI
  * - Service identifier (TServiceId)
  */
-void cbUnregisterSId( CMessage& message, TSenderId from )
+static void cbUnregisterSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	TServiceId sid;
-	message.serial( sid );
+	msgin.serial( sid );
 
-	CSIdMap::iterator isidm;
+	doUnregisterService (sid);
+	displayRegisteredServices (netbase);
+
+///////////////
+/*	CSIdMap::iterator isidm;
 	if ( (isidm=SIdMap.find(sid)) != SIdMap.end() )
 	{
 		doUnregisterService( (*(*isidm).second).second, isidm, "" );
 	}
-}
+*/}
 
 
 /*
  * Helper function for cbQueryPort
  */
-uint16 doAllocatePort( const string& name, const CInetAddress& addr )
+uint16 doAllocatePort (const CInetAddress &addr)
 {
-	// In this implementation, we do not use name.
 	uint16 port = CNamingService::BasePort;
-	CInetAddress addr2( addr );
-	addr2.setPort( port );
+	bool found = false;
+	while (!found)
+	{
+		list<CServiceEntry>::iterator it;
+		for (it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+		{
+			if ((*it).Addr.port () == port)
+			{
+				break;
+			}
+		}
+		if (it == RegisteredServices.end ())
+		{
+			// ok, we have an empty sid
+			found = true;
+		}
+		else
+		{
+			port++;
+			if (port == 0) // round the clock
+			{
+				nlwarning ("Service port allocation overflow");
+				break;
+			}
+		}
+	}
 
-	nldebug( "Searching %s in :", addr2.asString().c_str() );
+/*	nldebug( "Searching %s in :", addr2.asString().c_str() );
 	for ( CAddressSet::iterator it=AddressSet.begin(); it!=AddressSet.end(); ++it )
 	{
 		NLMISC::DebugLog->displayRawNL( "> %s", (*it).asString().c_str() );
@@ -665,7 +1053,7 @@ uint16 doAllocatePort( const string& name, const CInetAddress& addr )
 
 	// Insert address in AddressSet
 	AddressSet.insert( addr2 );
-	
+*/	
 	return port;
 }
 
@@ -679,56 +1067,20 @@ uint16 doAllocatePort( const string& name, const CInetAddress& addr )
  * - Name of service to register (string)
  * - Address of service (CInetAddress) (its port can be 0)
  *
- * Message emitted : no name (AQP)
+ * Message emitted : QP
  * - Allocated port number (uint16)
  */
-void cbQueryPort( CMessage& message, TSenderId from )
+static void cbQueryPort (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	string name;
-	CInetAddress addr;
-	message.serial( name );
-	message.serial( addr );
-
 	// Allocate port
-	uint16 port = doAllocatePort( name, addr );
+	uint16 port = doAllocatePort (netbase.hostAddress (from));
 
 	// Send port back
-	CMessage msgout( "" ); // AQP
-	msgout.serial( port );
-	CMsgSocket::send( msgout, from );
+	CMessage msgout ("QP");
+	msgout.serial (port);
+	netbase.send (msgout, from);
 
-	nlinfo( "Service %s got port %hu", name.c_str(), port );
-}
-
-
-/**
- * Callback for service look-up for all corresponding to a name.
- *
- * Message expected : LKA
- * - Name of service to find (string)
- *
- * Message emitted : no name (ALKA)
- * - List of addresses (vector<CInetAddress>)
- */
-void cbLookupAll( CMessage& message, TSenderId from )
-{
-	// Receive name
-	string name;
-	message.serial( name );
-
-	// Send list
-	vector<CInetAddress> addresses;
-	pair<ItN,ItN> range = NamingMap.equal_range( name );
-	ItN inm;
-	for ( inm=range.first; inm!=range.second; ++inm )
-	{
-		addresses.push_back( (CInetAddress)((*inm).second) );
-	}
-	CMessage msgout( "" ); // ALKA
-	msgout.serialCont( addresses );
-	CMsgSocket::send( msgout, from );
-
-	nlinfo( "%d services found", addresses.size() );
+	nlinfo ("A service got port %hu", port);
 }
 
 
@@ -741,7 +1093,7 @@ void cbLookupAll( CMessage& message, TSenderId from )
  * Message emitted : no name (ALKS)
  * - List of service ids and corresponding addresses (map<TServiceId,CInetAddress>)
  */
-void cbLookupAllServices( CMessage& message, TSenderId from )
+/*static void cbLookupAllServices (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// Receive name
 	string name;
@@ -760,7 +1112,7 @@ void cbLookupAllServices( CMessage& message, TSenderId from )
 	CMsgSocket::send( msgout, from );
 
 	nlinfo( "%d services found", addresses.size() );
-}
+}*/
 
 
 /*
@@ -768,16 +1120,20 @@ void cbLookupAllServices( CMessage& message, TSenderId from )
  * Note: this callback is called whenever someone disconnects from the NS.
  * May be there are too many calls if many clients perform many transactional lookups.
  */
-void cbDisconnect( CMessage& message, TSenderId from )
+static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
 {
-	CInetAddress addr;
-	message.serial( addr );
+	doUnregisterService (from);
+	displayRegisteredServices (*CNetManager::getNetBase(serviceName));
+	
+/////////
+/*	CInetAddress addr;
+	addr = CNetManager::getNetBase(serviceName)->hostAddress(from);
 	if ( AddressSet.find( addr ) != AddressSet.end() )
 	{
 		nlinfo( "Unregistering a disconnected service..." );
 		doUnregisterService( addr, SIdMap.end(), "" );
 	}
-}
+*/}
 
 
 /** Callback Array
@@ -791,20 +1147,39 @@ TCallbackItem CallbackArray[] =
 	{ "LK", cbLookup },
 	{ "LA", cbLookupAlternate },
 	{ "RG", cbRegister },
-	{ "UN", cbUnregister },
+//	{ "UN", cbUnregister },
 
 	{ "QP", cbQueryPort },
 
 	{ "LKI", cbLookupSId },
-	{ "LAI", cbLookupAlternateSId },
-	{ "RGI", cbRegisterWithSId },
+//	{ "LAI", cbLookupAlternateSId },
+//	{ "RGI", cbRegisterWithSId },
 	{ "UNI", cbUnregisterSId },
 
 	{ "LKA", cbLookupAll },
-	{ "LKS", cbLookupAllServices },
-	{ "D", cbDisconnect }
+//	{ "LKS", cbLookupAllServices },
 };
 
 
+void CNamingService::init()
+{
+	// we don't try to associate message from client
+	CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
+	
+	// add the callback in case of disconnection
+	CNetManager::setDisconnectionCallback ("NS", cbDisconnect, NULL);
+}
+
+
+/// Default validity time is 2 minutes
+const uint16		CNamingService::ValidTime = 120;
+
+/// Ports begin at 51000 (note: in this implementation there can be no more than 14536 services)
+const uint16		CNamingService::BasePort = 51000;
+
+/// Allocated SIds begin at 128 (except for Agent Service)
+const TServiceId	CNamingService::BaseSId = 128;
+
+
 /// Naming Service
-NLNET_SERVICE_MAIN( CNamingService, "NS", 50000 );
+NLNET_SERVICE_MAIN (CNamingService, "NS", "naming_service", 50000, CallbackArray);

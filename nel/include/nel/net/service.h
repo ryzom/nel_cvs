@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.18 2001/03/29 09:31:21 lecroart Exp $
+ * $Id: service.h,v 1.19 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #define NL_SERVICE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/config_file.h"
+
+#include "nel/net/callback_net_base.h"
 
 #include <string>
 #include <vector>
@@ -35,15 +38,13 @@
 namespace NLNET
 {
 
-
-class CMsgSocket;
-
-
 typedef uint8 TServiceId;
 
 
 /**
- * The goal of this macro is to simplify the creation of a service, it creates the main body function.
+ * The goal of this macro is to simplify the service creation, it creates the main body function.
+ *
+ * If you don't want to give a callback array, just put EmptyCallbacArray in the last argument
  *
  * Example:
  *\code
@@ -56,22 +57,28 @@ typedef uint8 TServiceId;
 		void release () { nlinfo("release()"); }
 	};
 	// Create the main() function that create a foo service instance and execute it.
-	// ("FS" is the short service name)
-	NLNET_SERVICE_MAIN(CFooService, "FS", 41200);
+	// "NS" is the short service name and "namgin_service" is the long one.
+	// The name of the config file is based on the long name!
+	NLNET_SERVICE_MAIN(CFooService, "NS", "naming_service", 50000);
  *\endcode
  *
  * If you want the port to be auto-assigned by the naming service, set the port to 0. 
  */
-#define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName, ServicePort) \
-const char IService::_Name[] = ServiceName; \
-const uint16 IService::_DefaultPort = ServicePort; \
-sint16 CallbackArraySize = sizeof(CallbackArray)/sizeof(TCallbackItem); \
-int main(int argc, char **argv) { \
-ServiceClassName *scn = new ServiceClassName; \
-sint retval = scn->main (argc, argv); \
-delete scn; \
-return retval; \
+#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
+ \
+int main(int argc, char **argv) \
+{ \
+	__ServiceClassName *scn = new __ServiceClassName; \
+	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
+	scn->setPort (__ServicePort); \
+	if (__ServiceCallbackArray != NULL) \
+		scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
+	sint retval = scn->main (argc, argv); \
+	delete scn; \
+	return retval; \
 }
+
+static TCallbackItem EmptyCallbackArray[] = { { "", NULL } };
 
 
 /**
@@ -80,7 +87,7 @@ return retval; \
  * create ctor and dtor but implement init() and release() methods.
  * You have to create a global callback array called CallbackArray.
  *
- * \ref new_service_howto
+ * \ref service_howto
  *
  * Temporary command line arguments :
  * \li Arg 1 : port number for listening
@@ -109,13 +116,10 @@ public:
 	virtual void		release () {}
 
 	/// Returns the current service name
-	static std::string	serviceName ()
-	{
-		return IService::_Name;
-	};
+	static std::string	serviceName () { return IService::_ShortName; };
 
 	/// Returns the service identifier
-	NLNET::TServiceId	serviceId() const						{ return _SId; }
+	NLNET::TServiceId	serviceId() const { return _SId; }
 
 	/// Returns the status
 	sint				getStatus () { return _Status; }
@@ -128,6 +132,17 @@ public:
 	/// User must just have to call this function in his main C function
 	sint				main (int argc, char **argv);
 
+	static void			setServiceName (const char *shortName, const char *longName) { _ShortName = shortName; _LongName = longName; }
+
+	static void			setPort (uint16 Port) { _DefaultPort = Port; }
+
+	/** Select timeout value in milliseconds for each update. If you set the value to 1000, the user update
+	 * function will be call every second. By default the value is 1
+	 */
+	static void			setUpdateTimeout (uint32 timeout) { _UpdateTimeout = timeout; } 
+
+	void setCallbackArray (TCallbackItem *callbackArray, uint16 callbackArraySize) { _CallbackArray=callbackArray; _CallbackArraySize=callbackArraySize; }
+
 protected:
 
 	/// Array of arguments
@@ -136,23 +151,15 @@ protected:
 	/// Port for listening
 	uint16						_Port;
 
-	/// Select timeout value in milliseconds
-	uint32						_Timeout;
-
-	/// Server socket
-	NLNET::CMsgSocket			*_Server;
-
-	/// Default select timeout value in milliseconds (common to all services)
-	static const uint32			_DefaultTimeout;
-
 	/// @name Static members that must be defined by the deriver class
 	//@{
 
 	/// Current service name. Is set by the actual service when declaring NLNET_SERVICE_MAIN
-	static const char			_Name [];
+	static std::string			_ShortName;	// ex: "NS"
+	static std::string			_LongName;	// ex: "naming_service"
 
 	/// Current service default port. Must be set by the deriver class
-	static const uint16			_DefaultPort;
+	static uint16				_DefaultPort;
 
 	//@}
 
@@ -161,16 +168,25 @@ protected:
 	void getCustomParams();
 
 	/// Sets the service identifier
-	void				setServiceId( NLNET::TServiceId sid )	{ _SId = sid; }
+	void setServiceId (NLNET::TServiceId sid)	{ _SId = sid; }
 
 	/// Singleton
 	static IService				*Instance;
 
+	static NLMISC::CConfigFile	_ConfigFile;
+
+
 private:
+
+	/// Select timeout value in milliseconds
+	static uint32				_UpdateTimeout;
 
 	TServiceId					_SId;
 
 	sint						_Status;
+
+	TCallbackItem				*_CallbackArray;
+	uint16						_CallbackArraySize;
 };
 
 }; // NLNET

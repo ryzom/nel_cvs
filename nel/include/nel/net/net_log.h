@@ -1,7 +1,7 @@
 /** \file net_log.h
  * <File description>
  *
- * $Id: net_log.h,v 1.3 2000/12/13 10:12:21 cado Exp $
+ * $Id: net_log.h,v 1.4 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * <File description>
  *
- * $Id: net_log.cpp,v 1.8 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: net_log.cpp,v 1.9 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

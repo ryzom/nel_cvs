@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.15 2000/12/07 15:18:42 cado Exp $
+ * $Id: message.cpp,v 1.16 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,60 +27,6 @@
 
 namespace NLNET
 {
-
-uint32	CMessage::_MaxLength = 65536;
-uint32	CMessage::_MaxHeaderLength = 64;
-
-
-/*
- * Constructor
- */
-CMessage::CMessage( std::string name, bool inputStream, uint32 defaultcapacity ) :
-	CMemStream( inputStream, defaultcapacity )
-{
-	if ( name != "" )
-	{
-		setType( name );
-	}
-	else
-	{
-		setType( 0 );
-	}
-}
-
-
-/*
- * Copy constructor
- */
-CMessage::CMessage( const CMessage& other ) :
-	NLMISC::CMemStream( other.isReading() )
-{
-	operator=( other );
-}
-
-
-/*
- * Assignment
- */
-CMessage& CMessage::operator=( const CMessage& other )
-{
-	CMemStream::operator=( other );
-	_MsgType = other._MsgType;
-	_MsgName = other._MsgName;
-	_TypeIsNumber = other._TypeIsNumber;
-	return *this;
-}
-
-
-/*
- * Clears the message
- */
-void CMessage::clear()
-{
-	CMemStream::clear();
-	setType( 0 );
-	_MsgName = "";
-}
 
 
 }

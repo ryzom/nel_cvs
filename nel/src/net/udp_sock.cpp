@@ -1,0 +1,167 @@
+/** \file udp_sock.cpp
+ * Network engine, layer 0, udp socket
+ *
+ * $Id: udp_sock.cpp,v 1.1 2001/05/02 12:36:31 lecroart Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "nel/net/udp_sock.h"
+#include "nel/misc/debug.h"
+
+
+#ifdef NL_OS_WINDOWS
+#include <winsock2.h>
+#define socklen_t int
+#define ERROR_NUM WSAGetLastError()
+
+#elif defined NL_OS_UNIX
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <errno.h>
+//#include <fcntl.h>
+#define SOCKET_ERROR -1
+#define INVALID_SOCKET -1
+#define ERROR_NUM errno
+#define ERROR_MSG strerror(errno)
+typedef int SOCKET;
+
+#endif
+
+using namespace NLMISC;
+
+namespace NLNET {
+
+
+/*
+ * Constructor
+ */
+CUdpSock::CUdpSock( bool logging ) :
+	CSock( logging ),
+	_Bound( false )
+{
+	// Socket creation
+	createSocket( SOCK_DGRAM, IPPROTO_UDP );
+}
+
+
+/** Binds the socket to the specified port. Call bind() for an unreliable socket if the host acts as a server and waits for
+ * messages. If the host acts as a client, call sendTo(), there is no need to bind the socket.
+ */
+void CUdpSock::bind( uint16 port )
+{
+#ifndef NL_OS_WINDOWS
+	// Set Reuse Address On (does not work on Win98 and is useless on Win2000)
+	int value = true;
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value) ) == SOCKET_ERROR )
+	{
+		throw ESocket( "ReuseAddr failed" );
+	}
+#endif
+
+	// Get local socket name
+	/*const uint MAXLENGTH = 80;
+	char localhost [MAXLENGTH];
+	if ( gethostname( localhost, MAXLENGTH ) != 0 )
+	{
+		throw ESocket( "Unabled to get local hostname" );
+	}
+	_LocalAddr.setByName( localhost );*/
+	_LocalAddr.setPort( port );
+
+	// Bind the socket
+	if ( ::bind( _Sock, (sockaddr*)(_LocalAddr.sockAddr()), sizeof(sockaddr) ) == SOCKET_ERROR )
+	{
+		throw ESocket( "Bind failed" );
+	}
+	_Bound = true;
+	if ( _Logging )
+	{
+		nldebug( "L0: Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
+	}
+}
+
+
+/*
+ * Sends a message
+ */
+void CUdpSock::sendTo( const uint8 *buffer, uint len, const CInetAddress& addr )
+{
+	//  Send
+	if ( ::sendto( _Sock, (const char*)buffer, len, 0, (sockaddr*)(addr.sockAddr()), sizeof(sockaddr) ) != (sint32)len )
+	{
+		throw ESocket( "Unable to send datagram" );
+	}
+	_BytesSent += len;
+
+	if ( _Logging )
+	{
+		nldebug( "L0: Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
+	}
+
+	// If socket is unbound, retrieve local address
+	if ( ! _Bound )
+	{
+		setLocalAddress();
+		_Bound = true;
+	}
+}
+
+
+/*
+ * Receives data (returns false if !dataAvailable()).
+ */
+bool CUdpSock::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr )
+{
+	if ( ! dataAvailable() )
+	{
+		return false;
+	}
+
+	// Receive incoming message
+	sockaddr_in saddr;
+	socklen_t saddrlen = sizeof(saddr);
+
+	int brecvd = ::recvfrom( _Sock, (char*)buffer, len , 0, (sockaddr*)&saddr, &saddrlen );
+	if ( brecvd == SOCKET_ERROR )
+	{
+		throw ESocket( "Cannot receive data" );
+	}
+
+	// Get sender's address
+	addr.setSockAddr( &saddr );
+
+	_BytesReceived += len;
+	if ( _Logging )
+	{
+		nldebug( "L0: Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
+	}
+
+	return true;
+}
+
+
+} // NLNET

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
- * Network engine, layer 4, client
+ * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.3 2001/02/23 09:48:38 cado Exp $
+ * $Id: callback_client.cpp,v 1.4 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,55 +23,74 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/net/callback_net_base.h"
 #include "nel/net/callback_client.h"
-#include "nel/net/msg_socket.h"
+
+#include "nel/net/stream_client.h"
 
 
 namespace NLNET {
 
-
-/*
- * Constructor
- */
-CCallbackClient::CCallbackClient()
+static void cbcMessageRecvAllAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	netbase.getSIDA().ignoreAllUnknownId (false);
+	cbnbMessageRecvAssociations (msgin, from, netbase);
+}
+
+static TCallbackItem ClientMessageAssociationArray[] =
+{
+	{ "RAA", cbcMessageRecvAllAssociations },
+};
+
+CCallbackClient::CCallbackClient ()
+{
+	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
+
+	// add the callback needed to associate messages with id
+	addCallbackArray (ClientMessageAssociationArray, sizeof (ClientMessageAssociationArray) / sizeof (ClientMessageAssociationArray[0]));
+
+	_InputSIDA.ignoreAllUnknownId (true);
+
+	_IsAServer = false;
 }
 
 
 /*
- * Connects to the specified host
+ * Send a message to the specified host
  */
-void CCallbackClient::connect( const CInetAddress& addr )
+void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	// Connect
-	_MsgSocket = new CMsgSocket( _CallbackArray, _CbArraySize, addr );
+	nlassert (buffer.length() > 0 && buffer.length() < 65536);
+	nlassert (buffer.typeIsSet());
 
-	// Map TSockId -> this (CCallbackNetBase*)
-	CCallbackNetBase::_SockIdMap.insert( std::make_pair(_MsgSocket->id(),this) ); 
+//	if (log)
+	{
+		nldebug ("L3: Client: send(%s)", buffer.toString().c_str());
+	}
+
+	CStreamClient::send (buffer);
 }
 
 
-/*
- * Disconnect the remote host
- */
-void CCallbackClient::disconnect()
+void CCallbackClient::update ( sint32 timeout )
 {
-	nlassert( _MsgSocket != NULL );
-	CMsgSocket::close( _MsgSocket->id() );
+//	nldebug ("L3: Client: update()");
+
+	CStreamClient::update ();
+	baseUpdate (timeout);
 }
 
-
-/*
- * Send a message to the remote host
- */
-void CCallbackClient::send( CMessage& outmsg )
+void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 {
-	nlassert( _MsgSocket != NULL );
-	_MsgSocket->send( outmsg );
+	*hostid = NULL;
+	CStreamClient::receive (buffer);
+	buffer.readType ();
 }
 
-
-
-
+TSockId	CCallbackClient::getSockId (TSockId hostid)
+{
+	nlassert (hostid == NULL);
+	return id ();
+}
 
 } // NLNET

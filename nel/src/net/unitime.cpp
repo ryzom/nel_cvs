@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.19 2001/02/23 10:58:12 lecroart Exp $
+ * $Id: unitime.cpp,v 1.20 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,11 +24,14 @@
  */
 
 #include "nel/misc/debug.h"
-#include "nel/net/msg_socket.h"
-#include "nel/net/naming_client.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/time_nl.h"
+
+#include "nel/net/callback_client.h"
+#include "nel/net/naming_client.h"
+#include "nel/net/message.h"
+
 #include "nel/net/unitime.h"
 
 using namespace NLMISC;
@@ -50,59 +53,77 @@ TTime CUniTime::getUniTime ()
 	return getLocalTime () - (_SyncLocalTime - _SyncUniTime);
 }
 
+
+static bool GetUniversalTime;
+static TTime GetUniversalTimeTime;
+
+static void cbGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	msgin.serial (GetUniversalTimeTime);
+	GetUniversalTime = true;
+}
+
+static TCallbackItem UniTimeCallbackArray[] =
+{
+	{ "GUT", cbGetUniversalTime }
+};
+
 void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 {
-	uint16 validitytime;
-	CSocket server;
+	CCallbackClient server;
+	server.addCallbackArray (UniTimeCallbackArray, sizeof (UniTimeCallbackArray) / sizeof (UniTimeCallbackArray[0]));
 	if (addr != NULL)
 	{
 		server.connect(*addr);
 	}
 	else
 	{
-		CNamingClient::lookupAndConnect( "TS", server, validitytime );
+		CNamingClient::lookupAndConnect ("TS", server);
 	}
 
-	if (server.connected ())
+	sint attempt = 0;
+	TTime bestdelta = 60000;	// 1 minute
+
+	if (!server.connected ()) goto error;
+
+	while (attempt < 10)
 	{
-		sint attempt = 0;
-		TTime bestdelta = 60000;	// 1 minute
-		while (attempt < 10)
+		CMessage msgout (server.getSIDA(), "AUT");
+
+		if (!server.connected()) goto error;
+
+		// send the message
+		server.send (msgout);
+
+		// before time
+		TTime before = CTime::getLocalTime ();
+
+		// receive the answer
+		GetUniversalTime = false;
+		while (!GetUniversalTime)
 		{
-			CMessage msgout( "" );
-			msgout.setType( 0 ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
-
-			// send the message
-			server.send( msgout );
-
-			// before time
-			TTime before = CTime::getLocalTime ();
-
-			// receive the answer
-			CMessage msgin( "", true );
-			server.receive ( msgin );
-
-			TTime after = CTime::getLocalTime (), delta = after - before;
-
-			if (delta < 10 || delta < bestdelta)
-			{
-				bestdelta = delta;
-
-				TTime time;
-				msgin.serial (time);
-				CUniTime::setUniTime (time, (before+after)/2);
-
-				if (delta < 10) break;
-			}
-			attempt++;
+			if (!server.connected()) goto error;
+				
+			server.update ();
 		}
-		server.close();
-		nlinfo ("Universal time is %"NL_I64"dms with a mean error of %"NL_I64"dms", CUniTime::getUniTime(), bestdelta/2);
+
+		TTime after = CTime::getLocalTime (), delta = after - before;
+
+		if (delta < 10 || delta < bestdelta)
+		{
+			bestdelta = delta;
+
+			CUniTime::setUniTime (GetUniversalTimeTime, (before+after)/2);
+
+			if (delta < 10) break;
+		}
+		attempt++;
 	}
-	else
-	{
-		nlwarning ("TS not found, can't synchronize universal time");
-	}
+	server.disconnect ();
+	nlinfo ("Universal time is %"NL_I64"dms with a mean error of %"NL_I64"dms", CUniTime::getUniTime(), bestdelta/2);
+	return;
+error:
+	nlwarning ("TS not found or lost, can't synchronize universal time");
 }
 
 const char *CUniTime::getStringUniTime ()

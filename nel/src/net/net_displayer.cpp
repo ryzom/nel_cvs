@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.17 2001/03/07 15:43:59 cado Exp $
+ * $Id: net_displayer.cpp,v 1.18 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,8 +51,8 @@ const sint16 LOG_CBINDEX = 0;
 /*
  * Constructor
  */
-CNetDisplayer::CNetDisplayer(bool autoConnect) :
-	_Server( true, false ) // disable logging otherwise an infinite recursion may occur
+CNetDisplayer::CNetDisplayer(bool autoConnect)/* :
+	_Server( true, false ) */// disable logging otherwise an infinite recursion may occur
 {
 	if (autoConnect) findAndConnect();
 }
@@ -63,8 +63,7 @@ CNetDisplayer::CNetDisplayer(bool autoConnect) :
  */
 void CNetDisplayer::findAndConnect()
 {
-	uint16 validitytime; // unused for LOGS
-	if ( CNamingClient::lookupAndConnect( "LOGS", _Server, validitytime ) )
+	if ( CNamingClient::lookupAndConnect( "LOGS", _Server ) )
 	{
 		nldebug( "Connected to logging service" );
 	}
@@ -96,7 +95,7 @@ void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
  */
 CNetDisplayer::~CNetDisplayer()
 {
-	_Server.close();
+	_Server.disconnect();
 }
 
 
@@ -140,11 +139,10 @@ void CNetDisplayer::doDisplay (time_t date, CLog::TLogType logType, const std::s
 
 		ss << message;
 		
-		CMessage msg( "", false );
-		msg.setType( LOG_CBINDEX ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
+		CMessage msg(_Server.getSIDA(), "LOG" );
 		string s = ss.str();
 		msg.serial( s );
-		_Server.send( msg );
+		_Server.send (msg, 0, false);
 	}
 	catch( NLMISC::Exception& )
 	{

@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
- * Network engine, layer 4, server
+ * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.5 2001/02/26 15:13:30 cado Exp $
+ * $Id: callback_server.cpp,v 1.6 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,90 +23,98 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/net/callback_server.h"
-#include "nel/net/msg_socket.h"
+#include <string>
 
+#include "nel/misc/string_id_array.h"
+
+#include "nel/net/callback_server.h"
+
+using namespace std;
+using namespace NLMISC;
 
 namespace NLNET {
 
-
-CCallbackServer *CCallbackServer::_TheServer = NULL;
-
-
-/*
- * cbProcessDisconnectionCallback
- */
-void cbProcessConnectionCallback( CMessage& msg, TSockId id )
+void cbsNewConnection (TSockId from, void *data)
 {
-	// Map TSockId -> the server object (CCallbackNetBase*)
-	CCallbackServer::_SockIdMap.insert( std::make_pair(id,CCallbackServer::_TheServer) ); 
+	nlassert (data != NULL);
+	CCallbackServer *server = (CCallbackServer *)data;
 
-	if ( CCallbackServer::_TheServer->_ConnectionCallback != NULL )
+	nldebug("L3: newConnection()");
+
+	// send all my association to the new client
+	server->sendAllMyAssociations (from);
+
+	// call the client callback if necessary
+	if (server->_ConnectionCallback != NULL)
+		server->_ConnectionCallback (from, server->_ConnectionCbArg);
+}
+
+
+CCallbackServer::CCallbackServer () : _ConnectionCallback(NULL), _ConnectionCbArg(NULL)
+{
+	CBufServer::setDisconnectionCallback (_NewDisconnectionCallback, this);
+	CBufServer::setConnectionCallback (cbsNewConnection, this);
+
+	_IsAServer = true;
+}
+
+void CCallbackServer::sendAllMyAssociations (TSockId to)
+{
+	// he wants all associations
+	CMessage msgout (getSIDA(), "RAA");
+
+	CStringIdArray::TStringId size;
+	size = _OutputSIDA.size ();
+
+	nldebug ("L3: Send all (%d) my string association to %s", size, to->asString().c_str());
+	
+	msgout.serial (size);
+
+	for (CStringIdArray::TStringId i = 0; i < size; i++)
 	{
-		CCallbackServer::_TheServer->_ConnectionCallback( id );
+		nldebug ("L3:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
+		string str(_OutputSIDA.getString(i));
+		msgout.serial (str);
+		msgout.serial (i);
 	}
-}
-
-
-/*
- * DisconnectionCallbackArray
- */
-TCallbackItem ConnectionCallbackArray [] =
-{
-	{ "C", cbProcessConnectionCallback }
-};
-
-
-/*
- * Constructor
- */
-CCallbackServer::CCallbackServer() :
-	_ConnectionCallback( NULL )
-{
-	nlassert( CCallbackServer::_TheServer == NULL );
-	CCallbackServer::_TheServer = this; // Only one server object in this implementation
-
-	// Setup incoming connection handling
-	addCallbackArray( ConnectionCallbackArray, sizeof(ConnectionCallbackArray) / sizeof(TCallbackItem) );
-}
-
-
-/*
- * Listens on the specified port
- */
-void CCallbackServer::init( uint16 port )
-{
-	_MsgSocket = new CMsgSocket( _CallbackArray, _CbArraySize, port );
-}
-
-
-/*
- * Disconnect the specified host
- */
-void CCallbackServer::disconnect( TSockId hostid )
-{
-	CMsgSocket::close( hostid );
+	send (msgout, to);
 }
 
 
 /*
  * Send a message to the specified host
  */
-void CCallbackServer::send( CMessage& outmsg, TSockId hostid )
+void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
-	CMsgSocket::send( outmsg, hostid );
+	nlassert (buffer.length() > 0 && buffer.length() < 65536);
+	nlassert (buffer.typeIsSet());
+
+//	if (log)
+	{
+		nldebug ("L3: Server: send(%s, %s)", buffer.toString().c_str(), hostid->asString().c_str());
+	}
+
+	CStreamServer::send (buffer, hostid);
 }
 
 
-/*
- * Returns the internet address of the listening socket
- */
-const CInetAddress& CCallbackServer::listenAddress()
+void CCallbackServer::update ( sint32 timeout )
 {
-	const CInetAddress *addr = CMsgSocket::listenAddress();
-	nlassert( addr != NULL );
-	return *addr;
+	//nldebug ("L3: Client: update()");
+	baseUpdate ( timeout ); // first receive
+	CStreamServer::update (); // then send
 }
 
+void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
+{
+	CStreamServer::receive (buffer, hostid);
+	buffer.readType ();
+}
+
+TSockId CCallbackServer::getSockId (TSockId hostid)
+{
+	nlassert (hostid != NULL);
+	return hostid;
+}
 
 } // NLNET

@@ -1,0 +1,231 @@
+/** \file buf_client.h
+ * Network engine, layer 1, client
+ *
+ * $Id: buf_client.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_BUF_CLIENT_H
+#define NL_BUF_CLIENT_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/net/buf_net_base.h"
+#include "nel/net/tcp_sock.h"
+#include "nel/net/buf_sock.h"
+
+
+namespace NLNET {
+
+
+class CInetAddress;
+class CBufClient;
+
+
+/**
+ * Code of receiving thread for clients
+ */
+class CClientReceiveTask : public NLMISC::IRunnable
+{
+public:
+
+	/// Constructor (increments the reference to the object pointed to by the smart pointer sockid)
+	CClientReceiveTask( CBufClient *client, TSockId sockid ) : _Client(client), _SockId(sockid) {}	
+
+	/// Run
+	virtual void run();
+
+	/// Returns the socket
+	CTcpSock		*sock() { return _SockId->Sock; }
+
+	/// Returns the socket identifier
+	TSockId			sockId() { return _SockId; }
+
+private:
+
+	CBufClient		*_Client;
+
+	TSockId			_SockId;
+};
+
+
+
+/**
+ * Client class for layer 1
+ *
+ * Active connection with packet scheme and buffering.
+ * The provided buffers are sent raw (no endianness conversion).
+ * By default, the size time trigger is disabled, the time trigger is set to 20 ms.
+ *
+ * Where do the methods take place:
+ * \begincode
+ * send()             ->  send buffer   ->  update(), flush(),
+ *                                          bytesUploaded(), newBytesUploaded()
+ *
+ * receive(),         <- receive buffer <-  receive thread,
+ * dataAvailable(),                         bytesDownloaded(), newBytesDownloaded()
+ * disconnection callback
+ * \endcode
+ *
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2001
+ */
+class CBufClient : public CBufNetBase
+{
+public:
+
+	/// Constructor. Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
+	CBufClient( bool nodelay=true );
+
+	/// Destructor
+	~CBufClient();
+	
+	/// Connects to the specified host
+	void	connect( const CInetAddress& addr );
+		
+	/** Disconnects the remote host and empties the receive queue.
+	 * Before that, flushes pending data to send unless quick is true.
+	 * The disconnection callback will *not* be called.
+	 */
+	void	disconnect( bool quick=false );
+
+	/// Sends a message to the remote host (in fact the message is buffered into the send queue)
+	void	send( const std::vector<uint8>& buffer );
+
+	/** Checks if there is some data to receive. Returns false if the receive queue is empty.
+	 * This is where the connection/disconnection callbacks can be called
+	 */
+	bool	dataAvailable();
+
+	/** Receives next block of data in the specified buffer (resizes the vector)
+	 * You must call dataAvailable() before every call to receive()
+	 */
+	void	receive( std::vector<uint8>& buffer );
+
+	/// Update the network (call this method evenly)
+	void	update();
+
+
+
+	// Returns the size in bytes of the data stored in the send queue.
+	uint32	getSendQueueSize() const { return _BufSock->SendFifo.size(); }
+
+	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
+	 * all data in the send queue is automatically sent (-1 to disable this trigger)
+	 */
+	void	setTimeFlushTrigger( sint32 ms ) { _BufSock->setTimeFlushTrigger( ms ); }
+
+	/** Sets the size flush trigger. When the size of the send queue reaches or exceeds this
+	 * calue, all data in the send queue is automatically sent (-1 to disable this trigger )
+	 */
+	void	setSizeFlushTrigger( sint32 size ) { _BufSock->setSizeFlushTrigger( size ); }
+
+	/** Force to send all data pending in the send queue.
+	 * \returns False if an error has occured (e.g. the remote host is disconnected).
+	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
+	 */
+	bool	flush() { return _BufSock->flush(); }
+
+
+	
+	/** Returns true if the connection is still connected (changed when a disconnection
+	 * event has reached the front of the receive queue, just before calling the disconnection callback
+	 * if there is one)
+	 */
+	bool	connected() const { return _Connected; } 
+
+	/// Returns the address of the remote host
+	const CInetAddress&	remoteAddress() const { return _BufSock->Sock->remoteAddr(); }
+
+	/// Returns the number of bytes downloaded (read or still in the receive buffer) since the latest connection
+	uint64	bytesDownloaded() const { return _BufSock->Sock->bytesReceived(); }
+
+	/// Returns the number of bytes uploaded (flushed) since the latest connection
+	uint64	bytesUploaded() const { return _BufSock->Sock->bytesSent(); }
+
+	/// Returns the number of bytes downloaded since the previous call to this method
+	uint64	newBytesDownloaded();
+
+	/// Returns the number of bytes uploaded since the previous call to this method
+	uint64	newBytesUploaded();
+
+	/*//Not right because we add callbacks in the receive queue
+	/// Returns the number of bytes popped by receive() since the beginning (mutexed on the receive queue)
+	uint64	bytesReceived() {  }
+	
+	/// Returns the number of bytes pushed by send() since the beginning
+	uint64	bytesSent() { return bytesUploaded() + getSendQueueSize(); }
+
+	/// Returns the number of bytes popped by receive() since the previous call to this method
+	uint64	newBytesReceived();
+
+	/// Returns the number of bytes pushed by send() since the previous call to this method
+	uint64	newBytesSent();
+	*/
+
+	/// Returns the id of the connection
+	TSockId	id() const { return _RecvTask->sockId(); }
+
+
+protected:
+
+	friend class CClientReceiveTask;
+
+private:
+
+	/// Send buffer and connection
+	CBufSock			*_BufSock;
+
+	/// Receive task
+	CClientReceiveTask	*_RecvTask;
+
+	/// Receive thread
+	NLMISC::IThread		*_RecvThread;
+
+	/// True when the Nagle algorithm must be disabled (TCP_NODELAY)
+	bool				_NoDelay;
+
+	/// Previous number of bytes downloaded
+	uint64				_PrevBytesDownloaded;
+
+	/// Previous number of bytes uploaded
+	uint64				_PrevBytesUploaded;
+
+	/// True if connected to the remote host (from the user's point of view, i.e. changed when the connection/disconnection event is at the front of the receive queue)
+	bool				_Connected;
+
+	/*
+	/// Previous number of bytes received
+	uint32				_PrevBytesReceived;
+
+	/// Previous number of bytes sent
+	uint32				_PrevBytesSent;
+	*/
+};
+
+
+
+} // NLNET
+
+
+#endif // NL_BUF_CLIENT_H
+
+/* End of buf_client.h */

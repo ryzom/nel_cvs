@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.17 2001/01/31 15:50:45 cado Exp $
+ * $Id: message.h,v 1.18 2001/05/02 12:36:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,27 +26,206 @@
 #ifndef NL_MESSAGE_H
 #define NL_MESSAGE_H
 
+#include <sstream>
+
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/string_id_array.h"
+
 #include <vector>
 
 namespace NLNET
 {
 
-/// Type of message as a number
-typedef sint16 TTypeNum;
-
 
 /**
  * Message memory stream for network. Can be serialized to/from (see SerialBuffer()). Can be sent or received
  * over a network, using a CSocket or preferably a CMsgSocket object.
- * \author Olivier Cado
+ *
+ * warning: if you don't put a sida, the message type will not be associated with id so, it'll not be optimized
+ *
+ * \author Vianney Lecroart
  * \author Nevrax France
- * \date 2000
+ * \date 2001
  */
 class CMessage : public NLMISC::CMemStream
 {
 public:
 
+	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
+		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (&sida)
+	{
+		if (!name.empty())
+			setType (name);
+	}
+
+	CMessage (const std::string &name = "", bool inputStream = false, uint32 defaultCapacity = 0) :
+		CMemStream (inputStream, defaultCapacity), _TypeSet (false), _SIDA (NULL)
+	{
+		if (!name.empty())
+			setType (name);
+	}
+
+	CMessage (NLMISC::CMemStream &memstr)
+	{
+		fill (memstr.buffer (), memstr.length ());
+		uint8 LongFormat;
+		serial (LongFormat);
+
+		if (LongFormat)
+		{
+			std::string name;
+			serial (name);
+			setType (name);
+		}
+		else
+		{
+			NLMISC::CStringIdArray::TStringId id;
+			serial (id);
+			setType (id);
+		}
+	}
+	
+
+	/// Copy constructor
+	CMessage (const CMessage &other)
+	{
+		operator= (other);
+	}
+
+	/// Assignment operator
+	CMessage &operator= (const CMessage &other)
+	{
+		CMemStream::operator= (other);
+		_TypeSet = other._TypeSet;
+		_SIDA = other._SIDA;
+		return *this;
+	}
+	
+	/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
+	void setType (NLMISC::CStringIdArray::TStringId id)
+	{
+		// check if we already do a setType ()
+		nlassert (!_TypeSet);
+		// don't accept negative value
+		nlassert (id >= 0 && id < pow(2, sizeof (NLMISC::CStringIdArray::TStringId)*8));
+
+		_Id = id;
+		TypeHasAnId = true;
+		TypeHasAName = false;
+
+		if (!isReading ())
+		{
+			// check if they don't already serial some stuffs
+			nlassert (length () == 0);
+
+			uint8 LongFormat = false;
+			serial (LongFormat);
+			serial (id);
+		}
+
+		_TypeSet = true;
+	}
+
+	/// Sets the message type as a string and put it in the buffer if we are in writing mode
+	void setType (const std::string &name)
+	{
+		// check if we already do a setType ()
+		nlassert (!_TypeSet);
+		// don't accept empty string
+		nlassert (!name.empty ());
+
+		_Name = name;
+		TypeHasAnId = false;
+		TypeHasAName = true;
+
+		if (!isReading ())
+		{
+			// check if they don't already serial some stuffs
+			nlassert (length () == 0);
+
+			// if we can send the id instead of the string, just do it (c)nike!
+			NLMISC::CStringIdArray::TStringId id = _SIDA->getId (name);
+
+			if (id == -1)
+			{
+				uint8 LongFormat = true;
+				serial (LongFormat);
+				serial ((std::string&)name);
+			}
+			else
+			{
+				uint8 LongFormat = false;
+				serial (LongFormat);
+				serial (id);
+
+				_Id = id;
+				TypeHasAnId = true;
+			}
+		}
+
+		_TypeSet = true;
+	}
+
+	// The message was filled with an CMemStream, Now, we'll get the message type on this buffer
+	void readType ()
+	{
+		nlassert (isReading ());
+
+		uint8 LongFormat;
+		serial (LongFormat);
+		if (LongFormat)
+		{
+			std::string name;
+			serial (name);
+			setType (name);
+		}
+		else
+		{
+			NLMISC::CStringIdArray::TStringId id;
+			serial (id);
+			setType (id);
+		}
+	}
+
+	bool typeIsSet () const
+	{
+		return _TypeSet;
+	}
+
+	void clear ()
+	{
+		CMemStream::clear ();
+		_TypeSet = false;
+	}
+
+	std::string getName () const { nlassert (_TypeSet && TypeHasAName); return _Name; }
+	NLMISC::CStringIdArray::TStringId getId () const { nlassert (_TypeSet && TypeHasAnId); return _Id; }
+
+	std::string toString () const
+	{
+		nlassert (_TypeSet);
+		std::stringstream s;
+		if (TypeHasAName && TypeHasAnId) s << "('" << _Name << "'," << _Id << ")";
+		else if (TypeHasAName) s << "('" << _Name << "'," << _SIDA->getId (_Name, true) << ")";
+		else if (TypeHasAnId) s << "('" << _SIDA->getString (_Id) << "'," << _Id << "')";
+		return s.str();
+	}
+
+
+	bool TypeHasAnId;
+	bool TypeHasAName;
+
+private:
+	bool _TypeSet;
+	NLMISC::CStringIdArray *_SIDA;
+	
+	std::string	_Name;
+	NLMISC::CStringIdArray::TStringId _Id;
+	
+	
+///////////////////////////////////////
+/*
+	
 	/// Constructor
 	CMessage( std::string name="", bool inputStream=false, uint32 defaultcapacity=0 );
 
@@ -123,7 +302,7 @@ private:
 	TTypeNum			_MsgType;
 	std::string			_MsgName;
 	bool				_TypeIsNumber;
-
+*/
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * CNetDisplayer class
  *
- * $Id: net_displayer.h,v 1.13 2001/03/07 15:43:51 cado Exp $
+ * $Id: net_displayer.h,v 1.14 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
-#include "nel/net/socket.h"
 
+#include "nel/net/callback_client.h"
 
 namespace NLNET {
 
@@ -76,7 +76,7 @@ protected:
 private:
 
 	CInetAddress	_ServerAddr;
-	CSocket			_Server;
+	CCallbackClient	_Server;
 };
 
 

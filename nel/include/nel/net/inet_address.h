@@ -1,9 +1,7 @@
 /** \file inet_address.h
  * Implementation for CInetAddress.
- * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
- * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.18 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: inet_address.h,v 1.19 2001/05/02 12:36:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +25,6 @@
 
 #ifndef NL_INET_ADDRESS_H
 #define NL_INET_ADDRESS_H
-
 
 #include <nel/misc/types_nl.h>
 #include <string>
@@ -68,7 +65,11 @@ public:
 	CInetAddress();
 
 	/// Alternate constructor (calls setByName())
-	CInetAddress( const std::string& hostName, uint16 port=0 );
+	CInetAddress( const std::string& hostName, uint16 port );
+
+	/// Alternate constructor (calls setByName())
+	/// example: CInetAddress("www.nevrax.com:80")
+	CInetAddress( const std::string& hostNameAndPort );
 
 	/// Copy constructor
 	CInetAddress( const CInetAddress& other );
@@ -100,6 +101,9 @@ public:
 	
 	/// Returns internal socket address (read only)
 	const sockaddr_in	 *sockAddr() const;
+
+	/// Returns internal IP address
+	uint32				internalIPAddress() const;
 
 	/// Returns readable IP address
 	std::string			ipAddress() const;

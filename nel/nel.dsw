@@ -33,7 +33,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ia"=.\src\ia.dsp - Package Owner=<4>
+Project: "ia"=.\src\ai.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

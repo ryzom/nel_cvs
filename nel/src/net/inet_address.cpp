@@ -1,9 +1,7 @@
 /** \file inet_address.cpp
  * Implementation for CInetAddress.
- * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
- * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.28 2001/03/28 09:35:47 cado Exp $
+ * $Id: inet_address.cpp,v 1.29 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +24,7 @@
  */
 
 #include "nel/net/inet_address.h"
-#include "nel/net/socket.h"
+#include "nel/net/sock.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/debug.h"
 #include <sstream>
@@ -80,6 +78,29 @@ CInetAddress::CInetAddress( const std::string& hostName, uint16 port ) :
 	init();
 	setPort( port );
 	setByName( hostName );
+}
+
+
+/*
+ * Alternate constructor (calls setByName())
+ */
+CInetAddress::CInetAddress( const std::string& hostNameAndPort ) :
+	_Valid( false )
+{
+	init();
+
+	int pos = hostNameAndPort.find_first_of (':');
+	if (pos != string::npos)
+	{
+		setPort( atoi(hostNameAndPort.substr(pos + 1).c_str()) );
+	}
+	else
+	{
+		setPort( 0 );
+	}
+
+	// if pos == -1, it will copy all the string
+	setByName( hostNameAndPort.substr (0, pos) );
 }
 
 
@@ -151,7 +172,8 @@ bool operator<( const CInetAddress& a1, const CInetAddress& a2 )
  */
 void CInetAddress::init()
 {
-	CBaseSocket::init();
+	CSock::initNetwork(); // TODO: handle exception (because init() is called within a constructor)
+	
 	_SockAddr = new sockaddr_in;
 	_SockAddr->sin_family = AF_INET;
 	memset( _SockAddr->sin_zero, 0, 8 );
@@ -189,7 +211,7 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 		if ( phostent == NULL )
 		{
 			_Valid = false;
-			nldebug( "Network error: resolution of hostname '%s' failed", hostName.c_str() );
+			nldebug( "L0: Network error: resolution of hostname '%s' failed", hostName.c_str() );
 			// return *this;
 			throw ESocket( (string("Hostname resolution failed for ")+hostName).c_str() );
 		}
@@ -260,7 +282,16 @@ const sockaddr_in *CInetAddress::sockAddr() const
 
 
 /*
- * Returns readable IP address
+ * Returns internal IP address
+ */
+uint32 CInetAddress::internalIPAddress() const
+{
+	return _SockAddr->sin_addr.s_addr;
+}
+
+
+/*
+ * Returns readable IP address. (ex: "195.68.21.195")
  */
 string CInetAddress::ipAddress() const
 {
@@ -272,7 +303,7 @@ string CInetAddress::ipAddress() const
 
 
 /*
- * Returns host name
+ * Returns host name. (ex: "www.nevrax.org")
  */
 const string& CInetAddress::hostName() const
 {
@@ -290,23 +321,23 @@ uint16 CInetAddress::port() const
 
 
 /*
- * Returns hostname and port as a string
+ * Returns hostname and port as a string. (ex: "www.nevrax.org:80 (195.68.21.195)")
  */
 std::string CInetAddress::asString() const
 {
 	stringstream ss;
-	ss << hostName() << "/" << port() << "(" << ipAddress() << ")";
+	ss << hostName() << ":" << port() << " (" << ipAddress() << ")";
 	return ss.str();
 }
 
 
 /*
- * Returns IP address and port as a string
+ * Returns IP address and port as a string. (ex: "195.68.21.195:80")
  */
 std::string CInetAddress::asIPString() const
 {
 	stringstream ss;
-	ss << ipAddress() << "/" << port();
+	ss << ipAddress() << ":" << port();
 	return ss.str();
 }
 

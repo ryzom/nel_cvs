@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.51 2001/04/09 10:06:18 cado Exp $
+ * $Id: service.cpp,v 1.52 2001/05/02 12:36:31 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -28,6 +28,8 @@
 
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
+
 #include "nel/net/unitime.h"
 
 #include <stdlib.h>
@@ -49,15 +51,15 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/displayer.h"
 
-#include "nel/net/base_socket.h"
-#include "nel/net/service.h"
-#include "nel/net/inet_address.h"
 #include "nel/net/naming_client.h"
-#include "nel/net/msg_socket.h"
-#include "nel/net/pt_callback_item.h"
+#include "nel/net/service.h"
 #include "nel/net/net_displayer.h"
 #include "nel/net/net_log.h"
+
+//#includenel/netv2/callback_server.h"
+#include "nel/net/net_manager.h"
 
 #include <sstream>
 
@@ -65,14 +67,17 @@ using namespace std;
 using namespace NLMISC;
 
 
-extern NLNET::TCallbackItem CallbackArray [];
-extern sint16				CallbackArraySize;
-
-
 namespace NLNET
 {
 
-const uint32 IService::_DefaultTimeout = 1000;
+string IService::_ShortName = "";
+string IService::_LongName = "";
+uint16 IService::_DefaultPort = 0;
+
+uint32 IService::_UpdateTimeout = 1;
+
+
+CConfigFile IService::_ConfigFile;
 
 IService	 *IService::Instance = NULL;
 
@@ -99,7 +104,7 @@ static void sigHandler (int Sig);
 
 // Functions
 
-void initSignal()
+static void initSignal()
 {
 
 #ifdef NL_DEBUG
@@ -137,8 +142,16 @@ static void sigHandler(int Sig)
 			case SIGTERM :
 			// you should not call a function and system function like printf in a SigHandle because
 			// signal-handler routines are usually called asynchronously when an interrupt occurs.
-				ExitSignalAsked = Sig;
-				return;
+				if (ExitSignalAsked == 0)
+				{
+					ExitSignalAsked = Sig;
+					return;
+				}
+				else
+				{
+					nlinfo ("Signal already received, launch the brutal exit");
+					exit (EXIT_FAILURE);
+				}
 				break;
 			}
 		}
@@ -156,6 +169,7 @@ IService::IService()
 	// Singleton
 	nlassert( IService::Instance == NULL );
 	IService::Instance = this;
+
 }
 
 
@@ -178,7 +192,7 @@ void IService::getCustomParams()
 			stringstream ss( _Args[2] );
 			uint timeout;
 			ss >> timeout;
-			_Timeout = timeout;
+			_UpdateTimeout = timeout;
 			return;
 		}
 	}
@@ -189,20 +203,10 @@ void IService::getCustomParams()
 // The main function of the service
 sint IService::main (int argc, char **argv)
 {
+	bool userInitCalled = false;
+
 	try
 	{
-		_Server = NULL;
-
-		//
-		// Initialize debug stuffs, create displayers for nl* functions
-		//
-
-		//initDebug(); // deprecated
-#ifdef NL_RELEASE
-		ErrorLog->addDisplayer (&sd);
-		WarningLog->addDisplayer (&sd);
-		InfoLog->addDisplayer (&sd);
-#endif // NL_RELEASE
 
 		//
 		// Parse argc argv into easy to use format
@@ -215,6 +219,7 @@ sint IService::main (int argc, char **argv)
 
 		setStatus (EXIT_SUCCESS);
 
+
 		//
 		// Initialize the network system
 		//
@@ -223,7 +228,7 @@ sint IService::main (int argc, char **argv)
 		try
 		{
 			// Initialize WSAStartup and network stuffs
-			CBaseSocket::init();
+			CSock::initNetwork();
 
 			// Get the localhost name
 			localhost = CInetAddress::localHost().hostName();
@@ -236,8 +241,9 @@ sint IService::main (int argc, char **argv)
 		// Set the localhost name and service name to the logger
 		string processName = localhost;
 		processName += '/';
-		processName += _Name;
+		processName += _ShortName;
 		CLog::setProcessName (processName);
+
 
 		//
 		// Redirect signal if needed (in release mode only)
@@ -261,6 +267,7 @@ sint IService::main (int argc, char **argv)
 #else // NL_OS_UNIX
 		initSignal();
 #endif
+
 
 		//
 		// Ignore SIGPIPE (broken pipe) on unix system
@@ -290,120 +297,169 @@ sint IService::main (int argc, char **argv)
 		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
 #endif // NL_OS_UNIX
 
+
+		//
+		// Load the config file
+		//
+
+		_ConfigFile.load (_LongName + ".cfg");
+
 		//
 		// Initialize server parameters
 		//
 
 		_Port = IService::_DefaultPort;
-		_Timeout = IService::_DefaultTimeout;
 		getCustomParams();
 
 		//
-		// Register the name to the NS (except for the NS itself)
+		// Layer4 Startup (Connect to the Naming Service (except for the NS itself and Login Service))
 		//
 
-		if ( strcmp( IService::_Name, "NS" ) != 0 )
+		if (IService::_ShortName != "NS" && IService::_ShortName != "LS" && IService::_ShortName != "AES" && IService::_ShortName != "AS")
 		{
-			// Setup Net Displayer
-			CNetDisplayer *nd = new CNetDisplayer();
-			if ( nd->connected() )
+			bool ok = false;
+			while (!ok)
 			{
-				NetLog.addDisplayer( nd );
-
-				// Add the net displayer for all debug information
-				ErrorLog->addDisplayer (nd);
-				WarningLog->addDisplayer (nd);
-				InfoLog->addDisplayer (nd);
-#ifdef NL_DEBUG
-				DebugLog->addDisplayer (nd);
-				AssertLog->addDisplayer (nd);
-#endif
-			}
-
-
-			// Get the universal time (useful for debugging)
-			if ( strcmp( IService::_Name, "TS" ) !=0 )
-			{
-				// Don't call the sync if it's the Time Service and Naming Service
-				CUniTime::syncUniTimeFromService ();
-			}
-
-
-			if ( strcmp( IService::_Name, "LS" ) != 0 ) // The Login Service must not register itself
-			{
-				// Talk with the NS
-				bool registered = false;
-				while ( ! registered )
+				// todo read the naming service address from the config file
+				CInetAddress loc(_ConfigFile.getVar("NSHost").asString(), _ConfigFile.getVar("NSPort").asInt());
+				try
 				{
-					try
-					{
-						// Connect to the NS and keep connection (to detect unexpected service closure)
-						CNamingClient::open();
-
-						if ( _Port == 0 )
-						{
-							// Auto-assign port
-							_Port = CNamingClient::queryServicePort( IService::_Name, CInetAddress::localHost() );
-						}
-						// Server start-up
-						_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
-						CMsgSocket::setTimeout( _Timeout );
-				
-						// Register service
-						nlassert( _Server->listenAddress() != NULL );
-						setServiceId( CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) ) );
-						registered = true;
-					}
-					catch ( ESocketConnectionFailed& )
-					{
-						nlwarning( "Could not connect to the Naming Service. Retrying in a few seconds..." );
-						CNamingClient::close();
-
-					}
-					catch ( ESocket& e )
-					{
-						nlwarning( "Could not register service into the Naming Service : %s", e.what() );
-						CNamingClient::close();
-					}
-					if ( ! registered )
-					{
-	#ifdef NL_OS_WINDOWS
-						Sleep( 5000 ); // wait 5 seconds
-	#elif defined NL_OS_UNIX
-						sleep( 5 ); // wait 5 seconds
-	#endif
-					}
+					CNetManager::init (&loc);
+					ok = true;
 				}
-			}
-			else
-			{
-				// Server start-up
-				_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
-				CMsgSocket::setTimeout( _Timeout );
+				catch (ESocketConnectionFailed &)
+				{
+					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
+					nlSleep (5000);
+				}
 			}
 		}
 		else
 		{
-			// Server start-up
-			_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
-			CMsgSocket::setTimeout( _Timeout );
+			CNetManager::init (NULL);
 		}
+
+		//
+		// Connect to the local AES
+		//
+
+		if (_ShortName != "AES" && _ShortName != "AS")
+		{
+			CNetManager::addClient ("AES", "localhost:49997");
+
+			// send the identification
+			CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
+			msgout.serial (_ShortName);
+			msgout.serial (_LongName);
+			CNetManager::send ("AES", msgout);
+		}
+
+		//
+		// Add the server of this service
+		//
+
+		CNetManager::addServer (_ShortName, _Port);
+		CNetManager::addCallbackArray (_ShortName, _CallbackArray, _CallbackArraySize);
 
 		//
 		// Call the user service init
 		//
 
+		userInitCalled = true; // the bool must be put *before* the call to init()
 		init ();
 
 		//
-		// On unix system, the service fork itself to give back the hand to the shell
+		// Register the name to the NS (except for the NS itself)
+		//
+
+		if (IService::_ShortName != "NS" && IService::_ShortName != "LS" && IService::_ShortName != "AES" && IService::_ShortName != "AS")
+		{
+
+			//
+			// Setup Net Displayer
+			//
+/* todo: mettre le netloger kan on aura reussi a virer le probleme des log recursif
+   todo: ne pas oublier de deleter nd a la fin du programme
+			if (IService::_Name != "LOGS")
+			{
+				CNetDisplayer *nd = new CNetDisplayer();
+				if ( nd->connected() )
+				{
+					NetLog.addDisplayer( nd );
+
+					// Add the net displayer for all debug information
+					ErrorLog->addDisplayer (nd);
+					WarningLog->addDisplayer (nd);
+					InfoLog->addDisplayer (nd);
+#ifdef NL_DEBUG
+					DebugLog->addDisplayer (nd);
+					AssertLog->addDisplayer (nd);
+#endif
+				}
+			}
+*/
+
+			//
+			// Get the universal time (useful for debugging)
+			//
+
+			if ( IService::_ShortName != "TS" )
+			{
+				// Don't call the sync if it's the Time Service and Naming Service
+				CUniTime::syncUniTimeFromService ();
+			}
+
+			//
+			// Talk with the NS to get the port if necessary and register the service
+			//
+/*
+			bool registered = false;
+			while (!registered)
+			{
+				try
+				{
+					if (_Port == 0)
+					{
+						// Auto-assign port, ask it to the naming service
+						_Port = CNamingClient::queryServicePort ();
+					}
+
+
+					Server->init (_Port);
+
+					// Register service
+					setServiceId (CNamingClient::registerService (IService::_Name, Server->listenAddress ()));
+					registered = true;
+				}
+				catch ( ESocket& e )
+				{
+					nlwarning( "Could not register service into the Naming Service : %s", e.what() );
+				}
+				if ( ! registered )
+				{
+					// wait 5s before retrying
+					nlSleep (5000);
+				}
+			}
+		}
+		else
+		{
+			Server->init (_Port);
+		*/
+		}
+
+
+		//
+		// On Unix system, the service fork itself to give back the hand to the shell
 		//
 
 #ifdef NL_OS_UNIX
-
+		/*
 		nlinfo( "Forking the service" );
 
 		int pid = fork();
+
+		// todo ace: probleme kan on fork sous linux car le process pere essaie de liberer les thread => torche
 
 		if (pid == -1)
 		{
@@ -414,19 +470,50 @@ sint IService::main (int argc, char **argv)
 			// It's the father, return the hand to the shell.
 			exit(EXIT_SUCCESS);
 		}
-
+		*/
 #endif // NL_OS_UNIX
 
-		nlinfo( "Service ready" );
+
+		//
+		// Say to the AES that the service is ready
+		//
+
+		if (_ShortName != "AES" && _ShortName != "AS")
+		{
+			// send the identification
+			CMessage msgout (CNetManager::getSIDA ("AES"), "SR");
+			CNetManager::send ("AES", msgout);
+		}
+
+		nlinfo ("Service ready");
+
 		//
 		// Call the user service update each loop and check files and network activity
 		//
 
-		while ( update() && !ExitSignalAsked)
+		do
 		{
+			// call the user update and exit if the user update asks it
+			if (!update ()) break;
+			
+			// stop the loop if the exit signal asked
+			if (ExitSignalAsked) break;
+
+			// count the amount of time to manage internal system
+			TTime before = CTime::getLocalTime ();
+	
 			CConfigFile::checkConfigFiles ();
-			CMsgSocket::update();
+
+			// get and manage layer 4 messages
+			CNetManager::update ();
+			
+			uint32 delta = (uint32)(CTime::getLocalTime () - before);
+
+			// now, sleep the rest of the time if needed
+			if (delta <= _UpdateTimeout)
+				nlSleep (_UpdateTimeout - delta);
 		}
+		while (true);
 	}
 	catch (EFatalError &)
 	{
@@ -440,59 +527,34 @@ sint IService::main (int argc, char **argv)
 	{
 		// Catch NeL exception to release the system cleanly
 		setStatus (EXIT_FAILURE);
-
-		try
-		{
-			nlerror ("NeL Exception: Error running the service \"%s\": %s", _Name, e.what());
-		}
-		catch (EFatalError &)
-		{
-			// Ignore the fatalerror
-		}
+		nlerrornoex ("NeL Exception: Error running the service \"%s\": %s", _ShortName.c_str(), e.what());
 	}
 	catch (...)
 	{
 		// Catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
-
-		try
-		{
-			nlerror ("Unknown external exception");
-		}
-		catch (EFatalError &)
-		{
-			// Ignore the fatalerror
-		}
+		nlerrornoex ("Unknown external exception");
 	}
 #endif
-	
+
 	try
 	{
 		//
-		// Call the user service release
+		// Call the user service release() if the init() was called
 		//
 
-		release ();
+		if (userInitCalled)
+			release ();
+
 
 		//
-		// Unregister the service if needed
+		// Disconnect from the Naming Service, if necessary
 		//
 
-		if ( (strcmp( IService::_Name, "NS" ) != 0) && (strcmp( IService::_Name, "LS" ) != 0)  )
-		{
-			CNamingClient::finalize();
-			CNamingClient::close(); // close connection to the NS
-		}
+		CNetManager::release ();
 
-		//
-		// Close server network
-		//
+		CSock::releaseNetwork();
 
-		if (_Server != NULL )
-		{
-			delete _Server;
-			_Server = NULL;
-		}
 		nlinfo ("Service stopped");
 	}
 	catch (EFatalError &)
@@ -506,28 +568,13 @@ sint IService::main (int argc, char **argv)
 	catch (Exception &e)
 	{
 		setStatus (EXIT_FAILURE);
-		try
-		{
-			nlerror ("NeL Exception: Error releasing the service \"%s\": %s", _Name, e.what());
-		}
-		catch (EFatalError &)
-		{
-			// Ignore the fatalerror
-		}
+		nlerrornoex ("NeL Exception: Error releasing the service \"%s\": %s", _ShortName.c_str(), e.what());
 	}
 	catch (...)
 	{
 		// Catch anything we can to release the system cleanly
 		setStatus (EXIT_FAILURE);
-
-		try
-		{
-			nlerror ("Unknown external exception");
-		}
-		catch (EFatalError &)
-		{
-			// Ignore the fatalerror
-		}
+		nlerrornoex ("Unknown external exception");
 	}
 #endif
 

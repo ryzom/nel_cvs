@@ -38,8 +38,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "net/bin/release"
-# PROP Intermediate_Dir "net/bin/release"
+# PROP Output_Dir "Release"
+# PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FD /c
@@ -62,8 +62,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "net/bin/Debug"
-# PROP Intermediate_Dir "net/bin/Debug"
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /YX /FD /GZ /c
@@ -85,8 +85,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "misc/bin/release_debug"
-# PROP Intermediate_Dir "misc/bin/release_debug"
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
@@ -106,17 +106,9 @@ LIB32=link.exe -lib
 # Name "net - Win32 Release"
 # Name "net - Win32 Debug"
 # Name "net - Win32 ReleaseDebug"
-# Begin Group "network_engine"
+# Begin Group "Layer0"
 
 # PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\net\base_socket.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\base_socket.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\net\inet_address.cpp
@@ -127,102 +119,94 @@ SOURCE=..\include\nel\net\inet_address.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\message.cpp
+SOURCE=.\net\listen_sock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\message.h
+SOURCE=..\include\nel\net\listen_sock.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\msg_socket.cpp
+SOURCE=.\net\sock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\msg_socket.h
+SOURCE=..\include\nel\net\sock.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\pt_callback_item.cpp
+SOURCE=.\net\tcp_sock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\pt_callback_item.h
+SOURCE=..\include\nel\net\tcp_sock.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\socket.cpp
+SOURCE=.\net\udp_sock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\socket.h
+SOURCE=..\include\nel\net\udp_sock.h
 # End Source File
 # End Group
-# Begin Group "dead_reckoning"
+# Begin Group "Layer1"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\net\cubic_entity_interpolator.cpp
+SOURCE=.\net\buf_client.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\cubic_entity_interpolator.h
+SOURCE=..\include\nel\net\buf_client.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\entity_interpolator.h
+SOURCE=.\net\buf_net_base.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\linear_entity_interpolator.cpp
+SOURCE=..\include\nel\net\buf_net_base.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\linear_entity_interpolator.h
+SOURCE=.\net\buf_server.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\local_area.cpp
+SOURCE=..\include\nel\net\buf_server.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\local_area.h
+SOURCE=.\net\buf_sock.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\local_entity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\local_entity.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\net\moving_entity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\moving_entity.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\net\remote_entity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\remote_entity.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\net\replica.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\replica.h
+SOURCE=..\include\nel\net\buf_sock.h
 # End Source File
 # End Group
-# Begin Group "new_network_engine"
+# Begin Group "Layer2"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\net\stream_client.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\stream_client.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\stream_server.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\stream_server.h
+# End Source File
+# End Group
+# Begin Group "Layer3"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -249,18 +233,35 @@ SOURCE=.\net\callback_server.cpp
 
 SOURCE=..\include\nel\net\callback_server.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\net\new_service.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\new_service.h
-# End Source File
 # End Group
-# Begin Group "service_clients"
+# Begin Group "Layer4"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\net\net_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\net_manager.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\net\login_cookie.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\login_cookie.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\message.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\message.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\net\naming_client.cpp
@@ -275,15 +276,15 @@ SOURCE=.\net\net_displayer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\net_displayer.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\net\net_log.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\net_log.h
+SOURCE=.\net\service.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\service.h
 # End Source File
 # Begin Source File
 
@@ -292,15 +293,6 @@ SOURCE=.\net\unitime.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\unitime.h
-# End Source File
-# End Group
-# Begin Source File
-
-SOURCE=.\net\service.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\net\service.h
 # End Source File
 # End Target
 # End Project

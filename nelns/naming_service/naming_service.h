@@ -1,24 +1,24 @@
 /** \file naming_service.h
  * Naming Service (NS)
  *
- * $Id: naming_service.h,v 1.1 2001/04/18 13:54:25 valignat Exp $
+ * $Id: naming_service.h,v 1.2 2001/05/02 12:36:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
  *
- * This file is part of NEVRAX NeL Network Services.
- * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
+ * This file is part of NEVRAX D.T.C. SYSTEM.
+ * NEVRAX D.T.C. SYSTEM is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
+ * NEVRAX D.T.C. SYSTEM is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
+ * along with NEVRAX D.T.C. SYSTEM; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
@@ -29,20 +29,20 @@
 #include "nel/net/service.h"
 #include "nel/net/inet_address.h"
 
-#include <map>
-#include <set>
+//#include <map>
+//#include <set>
 
-
+/************
 namespace NLNET
 {
 	class CMsgSocket;
 }
-
+*/
 
 /**
  * Internet Addresses plus a reference counter and a service identifier
  */
-class CInetAddressRef : public NLNET::CInetAddress
+/*class CInetAddressRef : public NLNET::CInetAddress
 {
 public:
 
@@ -73,17 +73,16 @@ private:
 	uint32				_RefCounter;
 	NLNET::TServiceId	_SId;
 };
-
+*/
 
 /// Naming multimap
-typedef std::multimap<std::string,CInetAddressRef> CNamingMap;
+//typedef std::multimap<std::string,CInetAddressRef> CNamingMap;
 
 /// Address set
-typedef std::set<NLNET::CInetAddress> CAddressSet;
+//typedef std::set<NLNET::CInetAddress> CAddressSet;
 
 /// Service identifier map
-typedef std::map<NLNET::TServiceId,CNamingMap::iterator> CSIdMap;
-
+//typedef std::map<NLNET::TServiceId,CNamingMap::iterator> CSIdMap;
 
 /**
  * Naming Service (NS).
@@ -92,8 +91,9 @@ typedef std::map<NLNET::TServiceId,CNamingMap::iterator> CSIdMap;
  *
  * \todo Cado: Use RefCount to prevent from flooding a particular service
  * \author Olivier Cado
+ * \author Vianney Lecroart
  * \author Nevrax France
- * \date 2000
+ * \date 2001
  */
 class CNamingService : public NLNET::IService
 {
@@ -107,11 +107,10 @@ public:
 
 	/// Base SId for SId allocation
 	static const NLNET::TServiceId	BaseSId;
-
-
+	
+	void init();
 
 };
-
 
 #endif // NL_NAMING_SERVICE_H
 

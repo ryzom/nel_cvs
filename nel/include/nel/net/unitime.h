@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.7 2001/01/29 17:47:55 cado Exp $
+ * $Id: unitime.h,v 1.8 2001/05/02 12:36:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

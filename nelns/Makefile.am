@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2001/04/18 13:54:25 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/05/02 12:36:39 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
@@ -11,7 +11,9 @@ SUBDIRS              = login_service          \
                        naming_service         \
                        time_service           \
                        agent_service          \
-                       admin_executor_service
+                       admin_executor_service \
+                       admin_service          \
+                       welcome_service        \
 
 
 dist-hook:

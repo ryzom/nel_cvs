@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
- * Network engine, layer 4, base
+ * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.10 2001/04/03 09:31:33 cado Exp $
+ * $Id: callback_net_base.h,v 1.11 2001/05/02 12:36:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,25 +26,26 @@
 #ifndef NL_CALLBACK_NET_BASE_H
 #define NL_CALLBACK_NET_BASE_H
 
+#include <vector>
+
 #include "nel/misc/types_nl.h"
+#include "nel/misc/time_nl.h"
 
+#include "nel/net/buf_net_base.h"
 #include "nel/net/message.h"
-#include "nel/net/pt_callback_item.h"
-
-#include <map>
+#include "nel/net/inet_address.h"
 
 
 namespace NLNET {
 
+class CCallbackNetBase;
 
-typedef uint32 TSockId;
-
-/// Callback function for message processing
-typedef void (*TNetCallback) ( TSockId );
+/// Callback function type for message processing
+typedef void (*TMsgCallback) (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 
 /// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
-/*typedef struct
+typedef struct
 {
 	/// Key C string. It is a message type name, or "C" for connection or "D" for disconnection
 	char			*Key;
@@ -52,72 +53,130 @@ typedef void (*TNetCallback) ( TSockId );
 	TMsgCallback	Callback;
 
 } TCallbackItem;
-*/
-
-typedef sint16 TTypeNum;
-
-
-class CMsgSocket;
-class CCallbackNetBase;
-
-// Internal use
-typedef std::map<TSockId,CCallbackNetBase*> CSockIdToLayer4Map;
 
 
 /**
- * Layer 4
- * \author Olivier Cado
+ * Layer 3
+ * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
 class CCallbackNetBase
 {
 public:
+	virtual ~CCallbackNetBase() {}
 
-	/**	Append callback array with the specified array (call BEFORE init() or connect()).
-	 * arraysize is the number of callback items.
+
+	/** Sends a message to special connection.
+	 * On a client, the hostid isn't used.
+	 * On a server, you must provide a hostid. If you hostid = 0, the message will be sent to all connected client.
 	 */
-	void	addCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize );
+	virtual void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true) = 0;
 
-	/** Update the network (call this method evenly).
-	 * Reads incoming messages until the timeout (in millisecond) expires or no data are available
-	 * Particular values for timeout:
-	 * - 0: reads only one message
-	 * - -1: reads all messages until no data are available.
-	 *
-	 * If you read only one message at a time, you may get late in processing the incoming
-	 * messages that accumulate faster than you read them.
-	 * On the contrary, if you read all messages and you receive a lot of them very quickly,
-	 * your program may not exit update() (or very late), blocking your main thread.
-	 * That's why the timeout allows you to allocate a maximum amount of time to update().
-	 * Note: take care about the time your callbacks (called by update()) take to complete,
-	 * they may make update() exceed the time allowed.
+	/** Force to send all data pending in the send queue.
+	 * On a client, the hostid isn't used.
+	 * On a server, you must provide a hostid.
 	 */
-	void	update( sint32 timeout=0 );
+	virtual bool	flush (TSockId hostid = 0) = 0;
+	
+	/**	Appends callback array with the specified array. You can add callback only *after* adding the server or the client.
+	 * \param arraysize is the number of callback items.
+	 */
+	void	addCallbackArray (const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
-	/// Sets callback for detecting a disconnection (or NULL to disable callback)
-	void	setDisconnectionCallback( TNetCallback cb ) { _DisconnectionCallback = cb; }
+	/// Sets callback for disconnections (or NULL to disable callback)
+	void	setDisconnectionCallback (TNetCallback cb, void *arg) { _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
-	/// Sets timeout for receive() in milliseconds
-	void	setTimeout( uint32 ms );
+	/// returns the sockid of a connection. On a server, this function returns the parameter. On a client, it returns the connection.
+	virtual TSockId	getSockId (TSockId hostid = 0) = 0;
 
-	// Internal use
-	friend void cbProcessDisconnectionCallback( CMessage& msg, TSockId id );
+	/** Sets the callback that you want the other side calls. If it didn't call this callback, it will be disconnected
+	 * If cb is NULL, we authorize *all* callback.
+	 * On a client, the hostid must be 0 (or ommited).
+	 * On a server, you must provide a hostid.
+	 */
+	void	authorizeOnly (std::string callbackName, TSockId hostid = 0);
+
+	/// Returns true if this is a CCallbackServer
+	bool	isAServer () const { return _IsAServer; }
+
+	/// Use this function to get the String ID Array needed when you want to create a message
+	NLMISC::CStringIdArray	&getSIDA () { return _InputSIDA; }
+
+	/// This function is implemented in the client and server class
+	virtual bool	dataAvailable () { nlstop; return false; }
+	/// This function is implemented in the client and server class
+	virtual void	update ( sint32 timeout=0 ) { nlstop; }
+	/// This function is implemented in the client and server class
+	virtual bool	connected () const { nlstop; return false; }
+	/// This function is implemented in the client and server class
+	virtual void	disconnect (TSockId hostid = 0) { nlstop; }
+
+	/// Returns the address of the specified host
+	virtual const	CInetAddress& hostAddress (TSockId hostid);
+
+	/// Used by client and server class
+	void	sendAllMyAssociations (TSockId to);
+
+	/** Gives some association of the other side. The goal is, in specific case, we don't want to
+	 * ask associations to the other side (client is not secure for example). In this case, we can
+	 * set other side associations by hand using this functions.
+	 */
+	void	setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize);
+
+	void	CCallbackNetBase::displayAllMyAssociations ();
+
+	/// If you ignore all unknown id, the net will not ask for other side to know new association.
+	/// It's used in the naming service for example because the naming client will never answer.
+	/// In this case, it will always send the message with the full string name (slower)
+	void	ignoreAllUnknownId(bool b)
+	{
+		_InputSIDA.ignoreAllUnknownId (b);
+	}
 
 protected:
 
-	/// Constructor
-	CCallbackNetBase();
+	/// Used by client and server class
+	TNetCallback _NewDisconnectionCallback;
 
-	CMsgSocket			*_MsgSocket;
+	/// Constructor.
+	CCallbackNetBase ();
 
-	TNetCallback		_DisconnectionCallback;
+	/// Used by client and server class
+	void baseUpdate ( sint32 timeout=0 );
 
-	TCallbackItem		*_CallbackArray;
+	/// On this layer, you can't call directly receive, It s the update() function that receive and call your callaback
+	virtual void	receive (CMessage &buffer, TSockId *hostid) = 0;
 
-	TTypeNum			_CbArraySize;
+	/* It's the layer4 that full the buffer association because it's based on callback system
+	 * this is message association used when received a message number from the socket to know the
+	 * associated message name
+	 */
+	NLMISC::CStringIdArray _InputSIDA;
 
-	static CSockIdToLayer4Map	_SockIdMap;
+	/* It's the layer4 that full the buffer association because it's based on callback system
+	 * this is message association used when you want to send a message to a socket
+	 */
+	NLMISC::CStringIdArray _OutputSIDA;
+
+	// contains callbacks
+	std::vector<TCallbackItem>	_CallbackArray;
+
+	bool _IsAServer;
+	bool _FirstUpdate;
+
+private:
+
+	NLMISC::TTime _LastUpdateTime;
+	NLMISC::TTime _LastMovedStringArray;
+	
+	TNetCallback		 _DisconnectionCallback;
+	void				*_DisconnectionCbArg;
+
+	friend void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+	friend void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
+
+	friend void cbnbNewDisconnection (TSockId from, void *data);
 };
 
 

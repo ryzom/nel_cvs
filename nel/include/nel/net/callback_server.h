@@ -1,7 +1,7 @@
 /** \file callback_server.h
- * Network engine, layer 4, server
+ * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.5 2001/02/26 15:13:30 cado Exp $
+ * $Id: callback_server.h,v 1.6 2001/05/02 12:36:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,54 +27,66 @@
 #define NL_CALLBACK_SERVER_H
 
 #include "nel/misc/types_nl.h"
+
 #include "nel/net/callback_net_base.h"
+#include "nel/net/stream_server.h"
 
 
 namespace NLNET {
 
 
-class CInetAddress;
-
-
 /**
- * Server class for layer 4
- * Implementation: using CMsgSocket
- * Limitation: you can instanciate only 1 server object in this implementation
- *
- * \author Olivier Cado
+ * Server class for layer 3
+ * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
-class CCallbackServer : public CCallbackNetBase
+class CCallbackServer : public CCallbackNetBase, public CStreamServer
 {
 public:
 
-	/// Constructor
-	CCallbackServer();
+	CCallbackServer ();
 
-	/// Listens on the specified port (call addCallbackArray() before)
-	void	init( uint16 port );
+	/// Sends a message to the specified host
+	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
 
-	/// Disconnect the specified host
-	void	disconnect( TSockId hostid );
+	/// Force to send all data pending in the send queue.
+	bool	flush (TSockId destid) { nlassert( destid != NULL ); return CStreamServer::flush(destid); }
 
-	/// Send a message to the specified host
-	void	send( CMessage& outmsg, TSockId hostid );
+	/// Updates the network (call this method evenly)
+	void	update ( sint32 timeout=0 );
 
 	/// Sets callback for incoming connections (or NULL to disable callback)
-	void	setConnectionCallback( TNetCallback cb ) { _ConnectionCallback = cb; }
+	void	setConnectionCallback (TNetCallback cb, void *arg) { _ConnectionCallback = cb; _ConnectionCbArg = arg; }
 
-	/// Returns the internet address of the listening socket
-	const CInetAddress&	listenAddress();
+	/// Sets callback for disconnections (or NULL to disable callback)
+	void	setDisconnectionCallback (TNetCallback cb, void *arg) { CCallbackNetBase::setDisconnectionCallback (cb, arg); }
 
-	// Internal use
-	friend void cbProcessConnectionCallback( CMessage& msg, TSockId id );
+	/// Returns true if the connection is still connected. on server, we always "connected"
+	bool	connected () const { return true; } 
+
+	/// Disconnect a connection
+	void	disconnect (TSockId hostid) { CStreamServer::disconnect (hostid); }
+
+	/// Returns the address of the specified host
+	const CInetAddress& hostAddress (TSockId hostid) { return CStreamServer::hostAddress (hostid); }
+
+	virtual TSockId	getSockId (TSockId hostid = 0);
 
 private:
 
-	TNetCallback	_ConnectionCallback;
+	/// This function is public in the base class and put it private here because user cannot use it in layer 2
+	void	send (const NLMISC::CMemStream &buffer, TSockId hostid) { nlstop; }
 
-	static CCallbackServer *_TheServer;
+	bool	dataAvailable () { return CStreamServer::dataAvailable (); }
+	void	receive (CMessage &buffer, TSockId *hostid);
+
+	void	sendAllMyAssociations (TSockId to);
+
+	TNetCallback	 _ConnectionCallback;
+	void			*_ConnectionCbArg;
+
+	friend void cbsNewConnection (TSockId from, void *data);
 };
 
 

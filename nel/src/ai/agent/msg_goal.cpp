@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.8 2001/05/02 13:22:55 portier Exp $
+ * $Id: msg_goal.cpp,v 1.9 2001/05/02 13:58:26 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,8 +133,6 @@ namespace NLAIAGENT
 				char buffer[1024 * 2];
 				goal->getDebugString( buffer );
 #endif
-				if ( getFront() != NULL )
-					( (IObjectIA *) getFront() )->release();
 				set(0, goal);
 			}
 			break;
@@ -252,8 +250,6 @@ namespace NLAIAGENT
 				char buffer[1024 * 2];
 				goal->getDebugString( buffer );
 #endif
-				if ( getFront() != NULL )
-					( (IObjectIA *) getFront() )->release();
 				set(0, goal);
 			}
 			break;

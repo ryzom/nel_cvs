@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.3 2001/05/02 13:22:55 portier Exp $
+ * $Id: msg_action.cpp,v 1.4 2001/05/02 13:58:26 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,8 +126,6 @@ namespace NLAIAGENT
 				char buffer[1024 * 2];
 				param->getDebugString( buffer );
 #endif
-				if ( getFront() != NULL )
-					( (IObjectIA *) getFront() )->release();
 				set(0, param);
 			}
 			break;
@@ -238,8 +236,6 @@ namespace NLAIAGENT
 				char buffer[1024 * 2];
 				param->getDebugString( buffer );
 #endif
-				if ( getFront() != NULL )
-					( (IObjectIA *) getFront() )->release();
 				set(0, param);
 			}
 			break;

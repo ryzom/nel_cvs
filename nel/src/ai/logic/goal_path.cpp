@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.5 2002/08/27 09:12:44 portier Exp $
+ * $Id: goal_path.cpp,v 1.1 2002/10/07 12:21:51 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

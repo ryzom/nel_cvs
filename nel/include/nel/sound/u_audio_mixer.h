@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.3 2001/07/17 14:30:14 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.4 2001/07/19 12:46:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,10 @@ public:
 	/// Create the audio mixer singleton and return a pointer to its instance
 	static UAudioMixer	*createAudioMixer();
 	/** Initialization
+	 *
+	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:
+	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion.
+	 *
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */

@@ -147,6 +147,14 @@ SOURCE=..\include\nel\net\tcp_sock.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\udp_sim_sock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\udp_sim_sock.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\udp_sock.cpp
 # End Source File
 # Begin Source File

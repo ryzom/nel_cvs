@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.65 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: patch.cpp,v 1.66 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,10 +45,6 @@ CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
 uint32			CPatch::_Version=4;
 
-
-IDriver			*CPatch::PatchCurrentDriver= NULL;
-std::vector<uint32>	CPatch::PassTriArray;
-uint				CPatch::PassNTri= 0;
 
 // ***************************************************************************
 CPatch::CPatch()
@@ -1069,9 +1065,9 @@ void			CPatch::makeRoots()
 	appendFaceToRenderList(Son0);
 	appendFaceToRenderList(Son1);
 
-	// UseFull for VertexProgram only: Init 2 root faces MaxNearLimit, and MaxFaceSize
+	// Usefull for geomorph: Init 2 root faces MaxNearLimit, and MaxFaceSize
 	// NB: since no geomorph is made on endpoints (StartPos==EndPos) of patchs, this is not usefull.
-	// but it is important to ensure the VP won't crash with bad float values.
+	// but it is important to ensure the VP or software geomorph won't crash with bad float values.
 	// Init MaxFaceSize.
 	Son0->VBase->MaxFaceSize= 1;
 	Son0->VLeft->MaxFaceSize= 1;
@@ -1179,7 +1175,7 @@ void			CPatch::refine()
 	if(Zone->ComputeTileErrorMetric)
 	{
 		// Must test more precisely...
-		if(BSphere.intersect(CTessFace::TileFarSphere))
+		if(BSphere.intersect(CLandscapeGlobals::TileFarSphere))
 			ComputeTileErrorMetric= true;
 		else
 			ComputeTileErrorMetric= false;
@@ -1187,7 +1183,7 @@ void			CPatch::refine()
 		if(ComputeTileErrorMetric)
 		{
 			// Do the zone include ALL the patch???
-			if(!CTessFace::TileNearSphere.include(BSphere))
+			if(!CLandscapeGlobals::TileNearSphere.include(BSphere))
 				TileFarTransition= true;
 		}
 	}
@@ -1198,6 +1194,27 @@ void			CPatch::refine()
 	Son0->refine();
 	Son1->refine();
 }
+
+
+// ***************************************************************************
+void			CPatch::refineAll()
+{
+	if(Zone->ComputeTileErrorMetric)
+	{
+		// Must test more precisely...
+		if(BSphere.intersect(CLandscapeGlobals::TileFarSphere))
+			ComputeTileErrorMetric= true;
+		else
+			ComputeTileErrorMetric= false;
+	}
+	else
+		ComputeTileErrorMetric= false;
+	nlassert(Son0);
+	nlassert(Son1);
+	Son0->refineAll();
+	Son1->refineAll();
+}
+
 
 
 // ***************************************************************************

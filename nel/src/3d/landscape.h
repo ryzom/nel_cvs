@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.15 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: landscape.h,v 1.16 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,7 +204,7 @@ public:
 	uint			getRefinePeriod() const;
 
 	// \todo yoyo: other landscape param setup (Transition etc...).
-	// Store it by landscape, and not only globally in CTessFace statics.
+	// Store it by landscape, and not only globally in CLandscapeGlobals statics.
 	// @}
 
 
@@ -635,6 +635,17 @@ private:
 	// @{
 	// guess.
 	bool			_NoiseEnabled;
+	// @}
+
+
+	/// Priority list.
+	// @{
+	/// The priority list of faces to compute their refine.
+	// TODO_PLIST
+	//CTessFacePriorityList		_RefinePriorityList;
+	/// OldRefineCenter setuped in prec refine()
+	CVector						_OldRefineCenter;
+	bool						_RefineCenterSetuped;
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.13 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: patch.h,v 1.14 2001/10/04 11:57:36 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -418,17 +418,14 @@ public:
 	void			forceRenderClip() {RenderClipped= true;}
 	/// Classify this patch.
 	void			clip(const std::vector<CPlane>	&pyramid);
-	/// Refine / geomorph this patch. Even if clipped.
+	/// Refine this patch. Even if clipped.
 	void			refine();
+	/// Refine this patch. Even if clipped. Don't bother NeedCompute. Refine all leaves.
+	void			refineAll();
 
 
 	/// \name Render
 	//@{
-	// Globals for speed render.
-	static IDriver	*PatchCurrentDriver;
-	// The triangles array for the current pass rendered.
-	static std::vector<uint32>	PassTriArray;
-	static uint					PassNTri;
 
 	/// preRender this patch. no-op if(RenderClipped). Build Max faces / pass etc...
 	void			preRender();
@@ -900,10 +897,10 @@ private:
 	void		checkDeleteVertexVBNear(CTessNearVertex	*pVert);
 
 	// For Render, geomorph / Alpha in software.
+	void		computeGeomorphVertexList(CTessList<CTessFarVertex>  &vertList);
 	void		computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertList);
 	void		computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &vertList);
 	void		computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertList);
-
 
 	/// \name Subdivision private.
 	// @{

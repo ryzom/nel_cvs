@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.2 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.3 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,6 +380,17 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	c[4]= {0, 1, 0.5, 0}
 	c[5]= RefineCenter
 	c[6]= {TileDistNearSqr, OOTileDistDeltaSqr, *, *}
+	c[7]= ???
+	c[8..11]= ModelView Matrix (for Fog).
+
+
+	Fog Note:
+	-----------
+	Fog is computed on geomorphed position R1.
+	R1.w==1, and suppose that ModelViewMatrix has no Projection Part.
+	Then Homogenous-coordinate == Non-Homogenous-coordinate.
+	Hence we need only (ModelView*R1).z to get the FogC value.
+	=> computed in just on instruction.
 */
 
 
@@ -484,6 +495,7 @@ const char* NL3D_LandscapeFar0EndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
 
@@ -509,6 +521,7 @@ const char* NL3D_LandscapeFar1EndProgram=
 	DP4 o[HPOS].w, c[3], R1;															\n\
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[COL0].xyz, c[4].yyyy;		# col.RGB= (1,1,1)									\n\
+	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
 
@@ -528,6 +541,7 @@ const char* NL3D_LandscapeTileEndProgram=
 	MOV o[TEX0].xy, v[8];																\n\
 	MOV o[TEX1].xy, v[9];																\n\
 	MOV o[COL0].xyzw, c[4].yyyy;	# col.RGBA= (1,1,1,1)								\n\
+	DP4	o[FOGC].x, c[10], -R1;		# fogc>0 => fogc= - (ModelView*R1).z				\n\
 	END																					\n\
 ";
 

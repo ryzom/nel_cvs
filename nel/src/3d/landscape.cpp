@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.82 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: landscape.cpp,v 1.83 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,20 @@ namespace NL3D
 #define	NL3D_TESS_ALLOC_BLOCKSIZE		16000
 #define	NL3D_TESSRDR_ALLOC_BLOCKSIZE	8000
 
+
+// ***************************************************************************
+// This value is important for the precision of the priority list
+#define	NL3D_REFINE_PLIST_DIST_STEP		0.25
+/* This value is important, because faces will be inserted at maximum at this entry in the priority list.
+	If not so big (eg 500 meters), a big bunch of faces may be inserted in this entry, which may cause slow down
+	sometimes, when all this bunch comes to 0 in the priority list.
+*/
+#define	NL3D_REFINE_PLIST_DIST_MAX		3000
+
+/*
+	OverHead size of the priority list is 8 * (NL3D_REFINE_PLIST_DIST_MAX / NL3D_REFINE_PLIST_DIST_STEP).
+	So here, it is "only" 108K.
+*/
 
 
 // ***************************************************************************
@@ -184,6 +198,11 @@ CLandscape::CLandscape() :
 	_VPThresholdChange= false;
 
 	_RenderMustRefillVB= false;
+
+	// priority list.
+	// TODO_PLIST
+	//_RefineCenterSetuped= false;
+	//_RefinePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX);
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -466,7 +485,7 @@ void			CLandscape::refine(const CVector &refineCenter)
 	// NB: refine may change vertices in VB in visible patchs => buffers are locked.
 
 	// Increment the update date.
-	CTessFace::CurrentDate++;
+	CLandscapeGlobals::CurrentDate++;
 
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -490,7 +509,7 @@ void			CLandscape::refineAll(const CVector &refineCenter)
 	// NB: refineAll may change vertices in VB in visible patchs => buffers are locked.
 
 	// Increment the update date.
-	CTessFace::CurrentDate++;
+	CLandscapeGlobals::CurrentDate++;
 
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -525,7 +544,7 @@ void			CLandscape::averageTesselationVertices()
 	// NB: averageTesselationVertices may change vertices in VB in visible patchs => buffers are locked.
 
 	// Increment the update date.
-	CTessFace::CurrentDate++;
+	CLandscapeGlobals::CurrentDate++;
 
 	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -547,41 +566,41 @@ void			CLandscape::averageTesselationVertices()
 // ***************************************************************************
 void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 {
-	// Setup CTessFace static members...
+	// Setup CLandscapeGlobals static members...
 
 	// Far limits.
-	CTessFace::FarTransition= _FarTransition;
+	CLandscapeGlobals::FarTransition= _FarTransition;
 
 	// Tile subdivsion part.
-	CTessFace::TileMaxSubdivision= _TileMaxSubdivision;
-	CTessFace::TileDistNear = _TileDistNear;
-	CTessFace::TileDistFar = CTessFace::TileDistNear+20;
-	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);
-	CTessFace::TileDistFarSqr = sqr(CTessFace::TileDistFar);
-	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
+	CLandscapeGlobals::TileMaxSubdivision= _TileMaxSubdivision;
+	CLandscapeGlobals::TileDistNear = _TileDistNear;
+	CLandscapeGlobals::TileDistFar = CLandscapeGlobals::TileDistNear+20;
+	CLandscapeGlobals::TileDistNearSqr = sqr(CLandscapeGlobals::TileDistNear);
+	CLandscapeGlobals::TileDistFarSqr = sqr(CLandscapeGlobals::TileDistFar);
+	CLandscapeGlobals::OOTileDistDeltaSqr = 1.0f / (CLandscapeGlobals::TileDistFarSqr - CLandscapeGlobals::TileDistNearSqr);
 
 	// Tile Pixel size part.
 	// \todo yoyo: choose according to wanted tile pixel size.
-	CTessFace::TilePixelSize= 128.0f;
+	CLandscapeGlobals::TilePixelSize= 128.0f;
 
 	// RefineThreshold.
-	CTessFace::RefineThreshold= _Threshold;
-	CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
+	CLandscapeGlobals::RefineThreshold= _Threshold;
+	CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
 
 	// Refine Center*.
-	CTessFace::RefineCenter= refineCenter;
-	CTessFace::TileFarSphere.Center= CTessFace::RefineCenter;
-	CTessFace::TileFarSphere.Radius= CTessFace::TileDistFar;
-	CTessFace::TileNearSphere.Center= CTessFace::RefineCenter;
-	CTessFace::TileNearSphere.Radius= CTessFace::TileDistNear;
+	CLandscapeGlobals::RefineCenter= refineCenter;
+	CLandscapeGlobals::TileFarSphere.Center= CLandscapeGlobals::RefineCenter;
+	CLandscapeGlobals::TileFarSphere.Radius= CLandscapeGlobals::TileDistFar;
+	CLandscapeGlobals::TileNearSphere.Center= CLandscapeGlobals::RefineCenter;
+	CLandscapeGlobals::TileNearSphere.Radius= CLandscapeGlobals::TileDistNear;
 
 	// VB Allocators.
-	CTessFace::CurrentFar0VBAllocator= &_Far0VB;
-	CTessFace::CurrentFar1VBAllocator= &_Far1VB;
-	CTessFace::CurrentTileVBAllocator= &_TileVB;
+	CLandscapeGlobals::CurrentFar0VBAllocator= &_Far0VB;
+	CLandscapeGlobals::CurrentFar1VBAllocator= &_Far1VB;
+	CLandscapeGlobals::CurrentTileVBAllocator= &_TileVB;
 
 	// RefinePeriod
-	CTessFace::PatchRefinePeriod= _RefinePeriod;
+	CLandscapeGlobals::PatchRefinePeriod= _RefinePeriod;
 
 	// Must check driver, and create VB infos,locking buffers.
 	if(_Driver)
@@ -598,12 +617,12 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 // ***************************************************************************
 void			CLandscape::lockBuffers ()
 {
-	_Far0VB.lockBuffer(CTessFace::CurrentFar0VBInfo);
-	_Far1VB.lockBuffer(CTessFace::CurrentFar1VBInfo);
-	_TileVB.lockBuffer(CTessFace::CurrentTileVBInfo);
+	_Far0VB.lockBuffer(CLandscapeGlobals::CurrentFar0VBInfo);
+	_Far1VB.lockBuffer(CLandscapeGlobals::CurrentFar1VBInfo);
+	_TileVB.lockBuffer(CLandscapeGlobals::CurrentTileVBInfo);
 
 	// VertexProgrma mode???
-	CTessFace::VertexProgramEnabled= _VertexShaderOk;
+	CLandscapeGlobals::VertexProgramEnabled= _VertexShaderOk;
 }
 
 
@@ -638,11 +657,11 @@ void			CLandscape::updateTessBlocksFaceVector()
 // ***************************************************************************
 static inline void	drawPassTriArray(CMaterial &mat)
 {
-	if(CPatch::PassNTri>0)
+	if(CLandscapeGlobals::PassNTri>0)
 	{
-		CPatch::PatchCurrentDriver->setupMaterial(mat);
-		CPatch::PatchCurrentDriver->renderSimpleTriangles(&CPatch::PassTriArray[0], CPatch::PassNTri);
-		CPatch::PassNTri= 0;
+		CLandscapeGlobals::PatchCurrentDriver->setupMaterial(mat);
+		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(&CLandscapeGlobals::PassTriArray[0], CLandscapeGlobals::PassNTri);
+		CLandscapeGlobals::PassNTri= 0;
 	}
 }
 
@@ -654,7 +673,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	nlassert(driver);
 
 	// Increment the update date for preRender.
-	CTessFace::CurrentRenderDate++;
+	CLandscapeGlobals::CurrentRenderDate++;
 
 
 	ItZoneMap	it;
@@ -779,6 +798,21 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 				patch->computeSoftwareGeomorphAndAlpha();
 			}
 		}
+
+		/*
+			Optim note: here, lot of vertices are 
+				1/ geomorphed twice (vertices on edges of patchs)
+				2/ vertices are geomorphed, but not used (because o the Tessblock clip), 
+					because lot of vertices used by faces in small TessBlocks are still in MasterBlock.
+
+			Some tries have been made to solve this, but result are even worse (2 times or more), because:
+				1/
+					- does not really matter edges of patchs (and corner) because the majority is in interior of patch.
+					- in this case, we need to reset all the flags which is very costly (reparse all zones...) .
+				2/ Except for the old CTessBlockEdge management which not solve all the thing, the other solution is
+					to test all faces not clipped (on a per TessBlock basis), to compute only vertices needed.
+					But in this cases, result are worse, maybe because there is 6 times more tests, and with bad BTB cache.
+		*/
 	}
 
 
@@ -798,7 +832,9 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 		// c[5] take RefineCenter
 		driver->setConstant(5, &refineCenter);
 		// c[6] take info for Geomorph trnasition to TileNear.
-		driver->setConstant(6, CTessFace::TileDistNearSqr, CTessFace::OOTileDistDeltaSqr, 0, 0);
+		driver->setConstant(6, CLandscapeGlobals::TileDistNearSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
+		// c[8..11] take the ModelView Matrix.
+		driver->setConstantMatrix(8, IDriver::ModelView, IDriver::Identity);
 	}
 
 
@@ -816,7 +852,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	// Render.
 	// ==================
 	// Before any render call. Set the global driver used to render.
-	CPatch::PatchCurrentDriver= driver;
+	CLandscapeGlobals::PatchCurrentDriver= driver;
 
 
 	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
@@ -967,7 +1003,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 				}
 
 				// Pass not empty ?
-				if(CPatch::PassNTri>0)
+				if(CLandscapeGlobals::PassNTri>0)
 				{
 					// Setup material.
 					// Setup Diffuse texture of the tile.
@@ -1093,7 +1129,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 	TileMaterial.setTexture(3, NULL);
 
 	// To ensure no use but in render()..
-	CPatch::PatchCurrentDriver= NULL;
+	CLandscapeGlobals::PatchCurrentDriver= NULL;
 
 	// Desactive the vertex program (if anyone)
 	if(_VertexShaderOk)

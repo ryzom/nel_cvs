@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.4 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.5 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,19 +52,19 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 {
 	// Classify the patch.
 	//========================
-	float	r= (CTessFace::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
+	float	r= (CLandscapeGlobals::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
 	float	rr;
-	if(r<CTessFace::TileDistNear)
-		rr= r-CTessFace::TileDistNear, newFar0= 0;
-	else if(r<CTessFace::Far0Dist)
-		rr= r-CTessFace::Far0Dist, newFar0= 1;
-	else if(r<CTessFace::Far1Dist)
-		rr= r-CTessFace::Far1Dist, newFar0= 2;
+	if(r<CLandscapeGlobals::TileDistNear)
+		rr= r-CLandscapeGlobals::TileDistNear, newFar0= 0;
+	else if(r<CLandscapeGlobals::Far0Dist)
+		rr= r-CLandscapeGlobals::Far0Dist, newFar0= 1;
+	else if(r<CLandscapeGlobals::Far1Dist)
+		rr= r-CLandscapeGlobals::Far1Dist, newFar0= 2;
 	else
 		newFar0= 3;
 	// Transition with the next level.
 	newFar1=0;
-	if(newFar0<3 && rr>-(CTessFace::FarTransition+2*BSphere.Radius))
+	if(newFar0<3 && rr>-(CLandscapeGlobals::FarTransition+2*BSphere.Radius))
 	{
 		newFar1= newFar0+1;
 	}
@@ -186,12 +186,12 @@ void			CPatch::computeNewFar(sint &newFar0, sint &newFar1)
 				float	farDist;
 				switch(newFar1)
 				{
-					case 1: farDist= CTessFace::TileDistNear; break;
-					case 2: farDist= CTessFace::Far0Dist; break;
-					case 3: farDist= CTessFace::Far1Dist; break;
+					case 1: farDist= CLandscapeGlobals::TileDistNear; break;
+					case 2: farDist= CLandscapeGlobals::Far0Dist; break;
+					case 3: farDist= CLandscapeGlobals::Far1Dist; break;
 					default: nlstop;
 				};
-				TransitionSqrMin= sqr(farDist-CTessFace::FarTransition);
+				TransitionSqrMin= sqr(farDist-CLandscapeGlobals::FarTransition);
 				OOTransitionSqrDelta= 1.0f/(sqr(farDist)-TransitionSqrMin);
 			}
 			else	// no more far pass1
@@ -361,7 +361,7 @@ void			CPatch::preRender()
 			tblock.clip();
 			// If we are in Tile/FarTransition
 			if(doClipFar)
-				tblock.clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
+				tblock.clipFar(CLandscapeGlobals::RefineCenter, CLandscapeGlobals::TileDistNear, CLandscapeGlobals::FarTransition);
 
 			// If TileMode, and if tile visible
 			if(Far0==0 && !tblock.Clipped && !tblock.FullFar1)
@@ -402,16 +402,16 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 		// here we have NumTri>0, because fv!=NULL.
 
 		// making lot of render() is slower than copy a block, and render it.
-		//CPatch::PatchCurrentDriver->renderSimpleTriangles(fv->TriPtr, fv->NumTri);
+		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv->TriPtr, fv->NumTri);
 
 		uint	nTriIndex= fv->NumTri*3;
-		uint	oldSize= CPatch::PassNTri*3;
+		uint	oldSize= CLandscapeGlobals::PassNTri*3;
 		// realloc if necessary
-		if( CPatch::PassTriArray.size() < oldSize + nTriIndex )
-			CPatch::PassTriArray.resize( oldSize + nTriIndex );
+		if( CLandscapeGlobals::PassTriArray.size() < oldSize + nTriIndex )
+			CLandscapeGlobals::PassTriArray.resize( oldSize + nTriIndex );
 		// Fill and increment the array.
-		memcpy( &CPatch::PassTriArray[oldSize], fv->TriPtr, nTriIndex * sizeof(uint32) );
-		CPatch::PassNTri+= fv->NumTri;
+		memcpy( &CLandscapeGlobals::PassTriArray[oldSize], fv->TriPtr, nTriIndex * sizeof(uint32) );
+		CLandscapeGlobals::PassNTri+= fv->NumTri;
 	}
 }
 
@@ -678,9 +678,9 @@ void		CPatch::updateFar0VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc
 	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
 	{
 		if(alloc)
-			pVert->Index0= CTessFace::CurrentFar0VBAllocator->allocateVertex();
+			pVert->Index0= CLandscapeGlobals::CurrentFar0VBAllocator->allocateVertex();
 		else
-			CTessFace::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
+			CLandscapeGlobals::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
 	}
 }
 
@@ -693,9 +693,9 @@ void		CPatch::updateFar1VBAlloc(CTessList<CTessFarVertex>  &vertList, bool alloc
 	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
 	{
 		if(alloc)
-			pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
+			pVert->Index1= CLandscapeGlobals::CurrentFar1VBAllocator->allocateVertex();
 		else
-			CTessFace::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
+			CLandscapeGlobals::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
 	}
 }
 
@@ -708,9 +708,9 @@ void		CPatch::updateTileVBAlloc(CTessList<CTessNearVertex>  &vertList, bool allo
 	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
 	{
 		if(alloc)
-			pVert->Index= CTessFace::CurrentTileVBAllocator->allocateVertex();
+			pVert->Index= CLandscapeGlobals::CurrentTileVBAllocator->allocateVertex();
 		else
-			CTessFace::CurrentTileVBAllocator->deleteVertex(pVert->Index);
+			CLandscapeGlobals::CurrentTileVBAllocator->deleteVertex(pVert->Index);
 	}
 }
 
@@ -866,15 +866,15 @@ void		CPatch::debugAllocationMarkIndices(uint marker)
 inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 {
 	// The Buffers must have been locked
-	nlassert(CTessFace::CurrentFar0VBAllocator);
-	nlassert(CTessFace::CurrentFar0VBAllocator->bufferLocked());
+	nlassert(CLandscapeGlobals::CurrentFar0VBAllocator);
+	nlassert(CLandscapeGlobals::CurrentFar0VBAllocator->bufferLocked());
 	// VBInfo must be OK.
-	nlassert(!CTessFace::CurrentFar0VBAllocator->reallocationOccurs());
+	nlassert(!CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs());
 
 	static	uint8	*CurVBPtr;
 	// Compute/build the new vertex.
-	CurVBPtr= (uint8*)CTessFace::CurrentFar0VBInfo.VertexCoordPointer;
-	CurVBPtr+= pVert->Index0 * CTessFace::CurrentFar0VBInfo.VertexSize;
+	CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar0VBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
@@ -893,12 +893,12 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 	}
 
 	// If not VertexProgram (NB: Suppose BTB kill this test).
-	if( !CTessFace::VertexProgramEnabled )
+	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
 	}
 	else
 	{
@@ -906,16 +906,16 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		// v[0]== StartPos.
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.TexCoordOff0)= uv;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
-		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.GeomInfoOff)= geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
-		*(CVector*)(CurVBPtr + CTessFace::CurrentFar0VBInfo.DeltaPosOff)=
+		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 	}
 }
@@ -924,15 +924,15 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 {
 	// The Buffers must have been locked
-	nlassert(CTessFace::CurrentFar1VBAllocator);
-	nlassert(CTessFace::CurrentFar1VBAllocator->bufferLocked());
+	nlassert(CLandscapeGlobals::CurrentFar1VBAllocator);
+	nlassert(CLandscapeGlobals::CurrentFar1VBAllocator->bufferLocked());
 	// VBInfo must be OK.
-	nlassert(!CTessFace::CurrentFar1VBAllocator->reallocationOccurs());
+	nlassert(!CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs());
 
 	static	uint8	*CurVBPtr;
 	// Compute/build the new vertex.
-	CurVBPtr= (uint8*)CTessFace::CurrentFar1VBInfo.VertexCoordPointer;
-	CurVBPtr+= pVert->Index1 * CTessFace::CurrentFar1VBInfo.VertexSize;
+	CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar1VBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index1 * CLandscapeGlobals::CurrentFar1VBInfo.VertexSize;
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
@@ -951,15 +951,15 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 	}
 
 	// If not VertexProgram (NB: Suppose BTB kill this test).
-	if( !CTessFace::VertexProgramEnabled )
+	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
 		// Set default color.
 		static CRGBA	col(255,255,255,255);
-		*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+		*(CRGBA*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff)= col;
 	}
 	else
 	{
@@ -967,16 +967,16 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		// v[0]== StartPos.
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.TexCoordOff0)= uv;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.TexCoordOff0)= uv;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
-		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.GeomInfoOff)= geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
-		*(CVector*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.DeltaPosOff)=
+		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 
 		// v[12]== Alpha information
@@ -984,7 +984,7 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		// So TransitionSqrMin and OOTransitionSqrDelta in CPath are valid.
 		geomInfo.U= TransitionSqrMin;
 		geomInfo.V= OOTransitionSqrDelta;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.AlphaInfoOff)= geomInfo;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.AlphaInfoOff)= geomInfo;
 
 	}
 }
@@ -993,27 +993,27 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 {
 	// The Buffers must have been locked
-	nlassert(CTessFace::CurrentTileVBAllocator);
-	nlassert(CTessFace::CurrentTileVBAllocator->bufferLocked());
+	nlassert(CLandscapeGlobals::CurrentTileVBAllocator);
+	nlassert(CLandscapeGlobals::CurrentTileVBAllocator->bufferLocked());
 	// VBInfo must be OK.
-	nlassert(!CTessFace::CurrentTileVBAllocator->reallocationOccurs());
+	nlassert(!CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs());
 
 	static	uint8	*CurVBPtr;
 	// Compute/build the new vertex.
-	CurVBPtr= (uint8*)CTessFace::CurrentTileVBInfo.VertexCoordPointer;
-	CurVBPtr+= pVert->Index * CTessFace::CurrentTileVBInfo.VertexSize;
+	CurVBPtr= (uint8*)CLandscapeGlobals::CurrentTileVBInfo.VertexCoordPointer;
+	CurVBPtr+= pVert->Index * CLandscapeGlobals::CurrentTileVBInfo.VertexSize;
 
 
 	// NB: the filling order of data is important, for AGP write combiners.
 
 	// If not VertexProgram (NB: Suppose BTB kill this test).
-	if( !CTessFace::VertexProgramEnabled )
+	if( !CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// Set Pos.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 		// Set Uvs.
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
 	}
 	else
 	{
@@ -1021,18 +1021,18 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 		// v[0]== StartPos.
 		*(CVector*)CurVBPtr= pVert->Src->StartPos;
 		// v[8]== Tex0
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff0)= pVert->PUv0;
 		// v[9]== Tex1
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.TexCoordOff1)= pVert->PUv1;
 
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
-		geomInfo.U= pVert->Src->MaxFaceSize * CTessFace::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CTessFace::RefineThreshold;
-		*(CUV*)(CurVBPtr + CTessFace::CurrentTileVBInfo.GeomInfoOff)= geomInfo;
+		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
-		*(CVector*)(CurVBPtr + CTessFace::CurrentTileVBInfo.DeltaPosOff)=
+		*(CVector*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.DeltaPosOff)=
 			pVert->Src->EndPos - pVert->Src->StartPos;
 	}
 }
@@ -1081,7 +1081,7 @@ void			CPatch::fillVB()
 	// Fill Far0.
 	//=======
 	// fill only if no reallcoation occurs
-	if(Far0>0 && !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+	if(Far0>0 && !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
 	{
 		// Fill Far0 VB.
 		fillFar0VertexListVB(MasterBlock.FarVertexList);
@@ -1091,7 +1091,7 @@ void			CPatch::fillVB()
 			fillFar0VertexListVB(tblock.FarVertexList);
 		}
 	}
-	else if(Far0==0 && !CTessFace::CurrentTileVBAllocator->reallocationOccurs() )
+	else if(Far0==0 && !CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs() )
 	{
 		// Fill Tile VB.
 		// No Tiles in MasterBlock!!
@@ -1106,7 +1106,7 @@ void			CPatch::fillVB()
 
 	// Fill Far1.
 	//=======
-	if(Far1>0 && !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+	if(Far1>0 && !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
 	{
 		// Fill VB.
 		fillFar1VertexListVB(MasterBlock.FarVertexList);
@@ -1131,7 +1131,7 @@ void		CPatch::fillVBIfVisible()
 // ***************************************************************************
 void		CPatch::fillVBFar0Only()
 {
-	if(Far0>0 && !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+	if(Far0>0 && !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
 	{
 		// Fill Far0 VB.
 		fillFar0VertexListVB(MasterBlock.FarVertexList);
@@ -1147,7 +1147,7 @@ void		CPatch::fillVBFar0Only()
 // ***************************************************************************
 void		CPatch::fillVBFar1Only()
 {
-	if(Far1>0 && !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+	if(Far1>0 && !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
 	{
 		// Fill VB.
 		fillFar1VertexListVB(MasterBlock.FarVertexList);
@@ -1167,6 +1167,19 @@ void		CPatch::fillVBFar1Only()
 
 
 // ***************************************************************************
+void		CPatch::computeGeomorphVertexList(CTessList<CTessFarVertex>  &vertList)
+{
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
+	{
+		// compute geomorph.
+		pVert->Src->computeGeomPos();
+	}
+}
+
+
+// ***************************************************************************
 void		CPatch::computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertList)
 {
 	// Traverse the vertList.
@@ -1175,10 +1188,10 @@ void		CPatch::computeGeomorphFar0VertexListVB(CTessList<CTessFarVertex>  &vertLi
 	{
 		static	uint8	*CurVBPtr;
 		// Compute/build the new vertex.
-		CurVBPtr= (uint8*)CTessFace::CurrentFar0VBInfo.VertexCoordPointer;
-		CurVBPtr+= pVert->Index0 * CTessFace::CurrentFar0VBInfo.VertexSize;
+		CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar0VBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index0 * CLandscapeGlobals::CurrentFar0VBInfo.VertexSize;
 
-		// Set Pos computed in refine().
+		// Set Geomorphed Position.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 	}
 }
@@ -1193,22 +1206,23 @@ void		CPatch::computeGeomorphAlphaFar1VertexListVB(CTessList<CTessFarVertex>  &v
 	{
 		static	uint8	*CurVBPtr;
 		// Compute/build the new vertex.
-		CurVBPtr= (uint8*)CTessFace::CurrentFar1VBInfo.VertexCoordPointer;
-		CurVBPtr+= pVert->Index1 * CTessFace::CurrentFar1VBInfo.VertexSize;
+		CurVBPtr= (uint8*)CLandscapeGlobals::CurrentFar1VBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index1 * CLandscapeGlobals::CurrentFar1VBInfo.VertexSize;
 
 		// NB: the filling order of data is important, for AGP write combiners.
 
-		// Set Pos.
+		// Set Geomorphed Position.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 
 		// Set Alpha color.
 		static CRGBA	col(255,255,255,255);
 		// For Far1, use alpha fro transition.
-		float	f= (pVert->Src->Pos - CTessFace::RefineCenter).sqrnorm();
+		// Prefer Use Pos, because of caching. So little difference between Soft and VertexProgram mode.
+		float	f= (pVert->Src->Pos - CLandscapeGlobals::RefineCenter).sqrnorm();
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
-		*(CRGBA*)(CurVBPtr + CTessFace::CurrentFar1VBInfo.ColorOff)= col;
+		*(CRGBA*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.ColorOff)= col;
 	}
 }
 
@@ -1222,10 +1236,10 @@ void		CPatch::computeGeomorphTileVertexListVB(CTessList<CTessNearVertex>  &vertL
 	{
 		static	uint8	*CurVBPtr;
 		// Compute/build the new vertex.
-		CurVBPtr= (uint8*)CTessFace::CurrentTileVBInfo.VertexCoordPointer;
-		CurVBPtr+= pVert->Index * CTessFace::CurrentTileVBInfo.VertexSize;
+		CurVBPtr= (uint8*)CLandscapeGlobals::CurrentTileVBInfo.VertexCoordPointer;
+		CurVBPtr+= pVert->Index * CLandscapeGlobals::CurrentTileVBInfo.VertexSize;
 
-		// Set Pos.
+		// Set Geomorphed Position.
 		*(CVector*)CurVBPtr= pVert->Src->Pos;
 	}
 }
@@ -1237,6 +1251,34 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 {
 	if(RenderClipped)
 		return;
+
+	// Compute Geomorph.
+	//=======
+	// Need only to fill CTessVertex, so do it only for FarVertices
+	// Hence Geomorph is done twice on edges of patches!!.
+	// If not too near for precise, fast compute of geomorph.
+	if( TessBlocks.size()==0 )
+	{
+		// Just update all vertices of master block.
+		computeGeomorphVertexList(MasterBlock.FarVertexList);
+	}
+	else
+	{
+		// update all vertices of master block.
+		computeGeomorphVertexList(MasterBlock.FarVertexList);
+		// update vertices of others block.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			// Precise Clip.
+			if(!tblock.Clipped)
+			{
+				// compute the geomorph of the vertices in the tessblock.
+				computeGeomorphVertexList(tblock.FarVertexList);
+			}
+		}
+	}
+
 
 	// Fill Far0.
 	//=======
@@ -1332,13 +1374,13 @@ void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0>0)
 	{
-		pVert->Index0= CTessFace::CurrentFar0VBAllocator->allocateVertex();
+		pVert->Index0= CLandscapeGlobals::CurrentFar0VBAllocator->allocateVertex();
 	}
 
 	// Idem for Far1
 	if(!RenderClipped && Far1>0)
 	{
-		pVert->Index1= CTessFace::CurrentFar1VBAllocator->allocateVertex();
+		pVert->Index1= CLandscapeGlobals::CurrentFar1VBAllocator->allocateVertex();
 	}
 
 }
@@ -1352,14 +1394,14 @@ void		CPatch::checkFillVertexVBFar(CTessFarVertex *pVert)
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0>0)
 	{
-		if( !CTessFace::CurrentFar0VBAllocator->reallocationOccurs() )
+		if( !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
 			fillFar0VertexVB(pVert);
 	}
 
 	// Idem for Far1
 	if(!RenderClipped && Far1>0)
 	{
-		if( !CTessFace::CurrentFar1VBAllocator->reallocationOccurs() )
+		if( !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
 			fillFar1VertexVB(pVert);
 	}
 }
@@ -1373,7 +1415,7 @@ void		CPatch::checkCreateVertexVBNear(CTessNearVertex	*pVert)
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0==0)
 	{
-		pVert->Index= CTessFace::CurrentTileVBAllocator->allocateVertex();
+		pVert->Index= CLandscapeGlobals::CurrentTileVBAllocator->allocateVertex();
 	}
 }
 
@@ -1387,7 +1429,7 @@ void		CPatch::checkFillVertexVBNear(CTessNearVertex	*pVert)
 	if(!RenderClipped && Far0==0)
 	{
 		// try to fill.
-		if( !CTessFace::CurrentTileVBAllocator->reallocationOccurs() )
+		if( !CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs() )
 			fillTileVertexVB(pVert);
 	}
 }
@@ -1401,13 +1443,13 @@ void		CPatch::checkDeleteVertexVBFar(CTessFarVertex *pVert)
 	// NB: must test Far0>0 because vertices are deleted in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0>0)
 	{
-		CTessFace::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
+		CLandscapeGlobals::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
 	}
 
 	// Idem for Far1
 	if(!RenderClipped && Far1>0)
 	{
-		CTessFace::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
+		CLandscapeGlobals::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
 	}
 }
 
@@ -1419,7 +1461,7 @@ void		CPatch::checkDeleteVertexVBNear(CTessNearVertex	*pVert)
 	// NB: must test Far0==0 because vertices are deleted in preRender() if a change of Far occurs.
 	if(!RenderClipped && Far0==0)
 	{
-		CTessFace::CurrentTileVBAllocator->deleteVertex(pVert->Index);
+		CLandscapeGlobals::CurrentTileVBAllocator->deleteVertex(pVert->Index);
 	}
 }
 

@@ -408,6 +408,14 @@ SOURCE=.\3d\landscapevb_allocator.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscapevb_info.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\landscapevb_info.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patch.cpp
 # End Source File
 # Begin Source File

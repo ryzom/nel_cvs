@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.1 2001/09/14 09:44:26 berenguier Exp $
+ * $Id: landscape_def.cpp,v 1.2 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,60 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/landscape_def.h"
 
+#include "3d/landscape_def.h"
+#include "nel/misc/common.h"
+
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+sint		CLandscapeGlobals::CurrentDate=0;
+sint		CLandscapeGlobals::CurrentRenderDate=0;
+CVector		CLandscapeGlobals::RefineCenter= CVector::Null;
+float		CLandscapeGlobals::RefineThreshold= 0.001f;
+float		CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
+
+float		CLandscapeGlobals::ChildrenStartComputeLimit= 1.9f;
+float		CLandscapeGlobals::SelfEndComputeLimit= 2.1f;
+
+float		CLandscapeGlobals::TileDistNear= 50;
+float		CLandscapeGlobals::TileDistFar= CLandscapeGlobals::TileDistNear+20;
+float		CLandscapeGlobals::TileDistNearSqr= sqr(CLandscapeGlobals::TileDistNear);
+float		CLandscapeGlobals::TileDistFarSqr= sqr(CLandscapeGlobals::TileDistFar);
+float		CLandscapeGlobals::OOTileDistDeltaSqr= 1.0f / (CLandscapeGlobals::TileDistFarSqr - CLandscapeGlobals::TileDistNearSqr);
+sint		CLandscapeGlobals::TileMaxSubdivision=0;
+CBSphere	CLandscapeGlobals::TileFarSphere;
+CBSphere	CLandscapeGlobals::TileNearSphere;
+float		CLandscapeGlobals::TilePixelSize= 128;
+
+
+float		CLandscapeGlobals::Far0Dist= 200;		// 200m.
+float		CLandscapeGlobals::Far1Dist= 400;		// 400m.
+float		CLandscapeGlobals::FarTransition= 10;	// Alpha transition= 10m.
+
+
+bool					CLandscapeGlobals::VertexProgramEnabled= false;
+
+CFarVertexBufferInfo	CLandscapeGlobals::CurrentFar0VBInfo;
+CFarVertexBufferInfo	CLandscapeGlobals::CurrentFar1VBInfo;
+CNearVertexBufferInfo	CLandscapeGlobals::CurrentTileVBInfo;
+
+CLandscapeVBAllocator	*CLandscapeGlobals::CurrentFar0VBAllocator= NULL;
+CLandscapeVBAllocator	*CLandscapeGlobals::CurrentFar1VBAllocator= NULL;
+CLandscapeVBAllocator	*CLandscapeGlobals::CurrentTileVBAllocator= NULL;
+
+
+uint		CLandscapeGlobals::PatchRefinePeriod= 1;
+
+
+IDriver					*CLandscapeGlobals::PatchCurrentDriver= NULL;
+std::vector<uint32>		CLandscapeGlobals::PassTriArray;
+uint					CLandscapeGlobals::PassNTri= 0;
 
 
 } // NL3D

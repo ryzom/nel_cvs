@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.54 2001/10/02 08:46:59 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.55 2001/10/04 11:57:36 berenguier Exp $
  *
  */
 
@@ -30,8 +30,6 @@
 #include "nel/misc/common.h"
 #include "3d/landscape_profile.h"
 #include "3d/landscape.h"
-#include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -54,232 +52,6 @@ const	uint8	TileUvFmtNormal5= 4;
 // \todo yoyo: may change this.
 const	float TileSize= 128;
 
-
-
-// ***************************************************************************
-// ***************************************************************************
-// VertexBufferInfo.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void		CFarVertexBufferInfo::setupNullPointers()
-{
-	VertexCoordPointer= NULL;
-	TexCoordPointer0= NULL;
-	ColorPointer= NULL;
-	GeomInfoPointer= NULL;
-	DeltaPosPointer= NULL;
-	AlphaInfoPointer= NULL;
-}
-
-
-// ***************************************************************************
-void		CFarVertexBufferInfo::setupPointersForVertexProgram()
-{
-	// see CLandscapeVBAllocator for program definition.
-	uint8	*vcoord= (uint8*)VertexCoordPointer;
-
-	TexCoordPointer0= vcoord + TexCoordOff0;
-	GeomInfoPointer= vcoord + GeomInfoOff;			
-	DeltaPosPointer= vcoord + DeltaPosOff;
-	AlphaInfoPointer= vcoord + AlphaInfoOff;
-}
-
-
-// ***************************************************************************
-void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vb.getVertexCoordPointer();
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		GeomInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO);			// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS);			// v[11]= EndPos-StartPos
-		// Init Alpha Infos only if enabled (enabled if Value 5 are).
-		AlphaInfoOff= 0;
-		if( vb.getVertexFormat() & (1<<NL3D_LANDSCAPE_VPPOS_ALPHAINFO) )
-			AlphaInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_ALPHAINFO);		// v[12]= AlphaInfos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordOff0= vb.getTexCoordOff(0);
-		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-
-		// In Far0, we don't have Color component.
-		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		{
-			ColorOff= vb.getColorOff();
-			ColorPointer= vb.getColorPointer();
-		}
-		else
-		{
-			ColorOff= 0;
-			ColorPointer= NULL;
-		}
-	}
-
-}
-// ***************************************************************************
-void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vcoord;
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
-		// Init Alpha Infos only if enabled (enabled if Value 5 are).
-		AlphaInfoOff= 0;
-		if( vb.getVertexFormat() & (1<<NL3D_LANDSCAPE_VPPOS_ALPHAINFO) )
-			AlphaInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_ALPHAINFO);		// v[12]= AlphaInfos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
-
-		// In Far0, we don't have Color component.
-		if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		{
-			ColorOff= vb.getValueOff (CVertexBuffer::PrimaryColor);
-			ColorPointer= (uint8*)vcoord + ColorOff;
-		}
-		else
-		{
-			ColorOff= 0;
-			ColorPointer= NULL;
-		}
-	}
-}
-
-
-// ***************************************************************************
-void		CNearVertexBufferInfo::setupNullPointers()
-{
-	VertexCoordPointer= NULL;
-	TexCoordPointer0= NULL;
-	TexCoordPointer1= NULL;
-	GeomInfoPointer= NULL;
-	DeltaPosPointer= NULL;
-}
-
-
-// ***************************************************************************
-void		CNearVertexBufferInfo::setupPointersForVertexProgram()
-{
-	// see CLandscapeVBAllocator for program definition.
-	uint8	*vcoord= (uint8*)VertexCoordPointer;
-
-	TexCoordPointer0= vcoord + TexCoordOff0;
-	TexCoordPointer1= vcoord + TexCoordOff1;
-	GeomInfoPointer= vcoord + GeomInfoOff;			
-	DeltaPosPointer= vcoord + DeltaPosOff;
-
-}
-
-
-// ***************************************************************************
-void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vb.getVertexCoordPointer();
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		TexCoordOff1= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
-		GeomInfoOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_GEOMINFO);			// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOffEx(NL3D_LANDSCAPE_VPPOS_DELTAPOS);			// v[11]= EndPos-StartPos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordPointer0= vb.getTexCoordPointer(0, 0);
-		TexCoordPointer1= vb.getTexCoordPointer(0, 1);
-
-		TexCoordOff0= vb.getTexCoordOff(0);
-		TexCoordOff1= vb.getTexCoordOff(1);
-	}
-}
-// ***************************************************************************
-void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram)
-{
-	VertexFormat= vb.getVertexFormat();
-	VertexSize= vb.getVertexSize();
-	NumVertices= vb.getNumVertices();
-
-	if(NumVertices==0)
-	{
-		setupNullPointers();
-		return;
-	}
-
-	VertexCoordPointer= vcoord;
-
-	if(forVertexProgram)
-	{
-		// With VertexCoordPointer setuped, init for VP.
-		TexCoordOff0= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX0);				// v[8]= Tex0.
-		TexCoordOff1= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_TEX1);				// v[9]= Tex1.
-		GeomInfoOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_GEOMINFO);				// v[10]= GeomInfos.
-		DeltaPosOff= vb.getValueOff(NL3D_LANDSCAPE_VPPOS_DELTAPOS);				// v[11]= EndPos-StartPos
-
-		// update Ptrs.
-		setupPointersForVertexProgram();
-	}
-	else
-	{
-		TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
-
-		TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
-		TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
-	}
-}
 
 
 
@@ -318,53 +90,58 @@ void		CTileMaterial::appendTileToEachRenderPass()
 
 // ***************************************************************************
 // ***************************************************************************
+//	CTessVertex
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CTessVertex::computeGeomPos()
+{
+	// Compute Basic ErrorMetric.
+	float	sqrDist= (StartPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+	float	pgeom= MaxFaceSize * CLandscapeGlobals::OORefineThreshold / sqrDist;
+
+	// Compute ErrorMetric modified by TileNear transition, only if TileNear transition.
+	if( sqrDist< CLandscapeGlobals::TileDistFarSqr )
+	{
+		float	maxNearLimit= MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		// Soft optim: do it only if necessary, ie result of max(errorMetric, errorMetricModified) is foreseeable here.
+		if(pgeom < maxNearLimit)
+		{
+			float	f= (sqrDist - CLandscapeGlobals::TileDistNearSqr) * CLandscapeGlobals::OOTileDistDeltaSqr;
+			clamp(f, 0, 1);
+			f= 1-f;
+			// ^4 gives better smooth result
+			f= sqr(f);	f= sqr(f);
+			// interpolate the errorMetric
+			pgeom= maxNearLimit*f + pgeom*(1-f);
+		}
+	}
+
+	// Interpolate StartPos to EndPos, between 1 and 2.
+	if(pgeom<=1.0f)
+		Pos= StartPos;
+	else if(pgeom>=2.0f)
+		Pos= EndPos;
+	else
+	{
+		float		f= pgeom - 1.0f;
+		Pos= f * (EndPos-StartPos) + StartPos;
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
 // CTessFace
 // ***************************************************************************
 // ***************************************************************************
 
+
 // ***************************************************************************
-sint		CTessFace::CurrentDate=0;
-sint		CTessFace::CurrentRenderDate=0;
-CVector		CTessFace::RefineCenter= CVector::Null;
-float		CTessFace::RefineThreshold= 0.001f;
-float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
-
-float		CTessFace::ChildrenStartComputeLimit= 1.9f;
-float		CTessFace::SelfEndComputeLimit= 2.1f;
-
-float		CTessFace::TileDistNear= 50;
-float		CTessFace::TileDistFar= CTessFace::TileDistNear+20;
-float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
-float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
-float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
-sint		CTessFace::TileMaxSubdivision=0;
-CBSphere	CTessFace::TileFarSphere;
-CBSphere	CTessFace::TileNearSphere;
-float		CTessFace::TilePixelSize= 128;
-
-
-float		CTessFace::Far0Dist= 200;		// 200m.
-float		CTessFace::Far1Dist= 400;		// 400m.
-float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
-
-
-bool					CTessFace::VertexProgramEnabled= false;
-
-CFarVertexBufferInfo	CTessFace::CurrentFar0VBInfo;
-CFarVertexBufferInfo	CTessFace::CurrentFar1VBInfo;
-CNearVertexBufferInfo	CTessFace::CurrentTileVBInfo;
-
-CLandscapeVBAllocator	*CTessFace::CurrentFar0VBAllocator= NULL;
-CLandscapeVBAllocator	*CTessFace::CurrentFar1VBAllocator= NULL;
-CLandscapeVBAllocator	*CTessFace::CurrentTileVBAllocator= NULL;
-
-
 CTessFace	CTessFace::CantMergeFace;
 CTessFace	CTessFace::MultipleBindFace;
-
-
-uint		CTessFace::PatchRefinePeriod= 1;
-
 
 
 // ***************************************************************************
@@ -442,9 +219,9 @@ void			CTessFace::computeTileErrorMetric()
 	// We must take a more correct errometric here: We must have sons face which have
 	// lower projectedsize than father. This is not the case if Center of face is taken (but when not in
 	// tile mode this is nearly the case). So take the min dist from 3 points.
-	float	s0= (VBase->EndPos-RefineCenter).sqrnorm();
-	float	s1= (VLeft->EndPos-RefineCenter).sqrnorm();
-	float	s2= (VRight->EndPos-RefineCenter).sqrnorm();
+	float	s0= (VBase->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+	float	s1= (VLeft->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+	float	s2= (VRight->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
 	float	sqrdist= minof(s0, s1, s2);
 	// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
 	// to blend (see Patch::renderFar1() render).
@@ -452,22 +229,22 @@ void			CTessFace::computeTileErrorMetric()
 	// NB: VertexProgram geomorph take sqrdist= (SplitPoint - RefineCenter).sqrnorm();
 	// It's OK because geomorph will start "far" after the split.
 
-	if(sqrdist< TileDistFarSqr)
+	if(sqrdist< CLandscapeGlobals::TileDistFarSqr)
 	{
 		float	nearLimit;
-		nearLimit= RefineThreshold * computeNearLimit();
+		nearLimit= CLandscapeGlobals::RefineThreshold * computeNearLimit();
 		nlassert(Level<14);
 		// If we are not so subdivided.
 		if(ErrorMetric<nearLimit)
 		{
-			if(sqrdist< TileDistNearSqr)
+			if(sqrdist< CLandscapeGlobals::TileDistNearSqr)
 			{
 				ErrorMetric=nearLimit;
 			}
 			else
 			{
 				// Smooth transition to the nearLimit of tesselation.
-				float	f= (sqrdist- TileDistNearSqr) * OOTileDistDeltaSqr;
+				float	f= (sqrdist- CLandscapeGlobals::TileDistNearSqr) * CLandscapeGlobals::OOTileDistDeltaSqr;
 				// sqr gives better result, by smoothing more the start of transition.
 				f= sqr((1-f));
 				f= sqr(f);
@@ -485,10 +262,10 @@ void			CTessFace::computeTileErrorMetric()
 void		CTessFace::updateErrorMetric()
 {
 	// If already updated for this pass...
-	if(ProjectedSizeDate>= CurrentDate)
+	if(ProjectedSizeDate>= CLandscapeGlobals::CurrentDate)
 		return;
 
-	CVector	viewdir= SplitPoint-RefineCenter;
+	CVector	viewdir= SplitPoint - CLandscapeGlobals::RefineCenter;
 	float	sqrdist= viewdir.sqrnorm();
 
 	// trivial formula.
@@ -530,7 +307,7 @@ void		CTessFace::updateErrorMetric()
 		computeTileErrorMetric();
 	}
 
-	ProjectedSizeDate= CurrentDate;
+	ProjectedSizeDate= CLandscapeGlobals::CurrentDate;
 }
 
 
@@ -820,9 +597,9 @@ void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, C
 	CVector		hBias;
 	float		tsize;
 	if(is256)
-		tsize= CTessFace::TilePixelSize*2.0f;
+		tsize= CLandscapeGlobals::TilePixelSize*2.0f;
 	else
-		tsize= CTessFace::TilePixelSize;
+		tsize= CLandscapeGlobals::TilePixelSize;
 	hBias.x= 0.5f/tsize;
 	hBias.y= 0.5f/tsize;
 	hBias.z= 1-1/tsize;
@@ -1136,7 +913,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		vtop->Pos= vtop->StartPos;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		vtop->MaxFaceSize= f1->Size;
 		vtop->MaxNearLimit= f1->computeNearLimit();
 	}
@@ -1147,7 +924,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// NB: this work with both rectangular and square triangles.
 		vtop= f1->FLeft->SonLeft->VBase;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		vtop->MaxFaceSize= max( vtop->MaxFaceSize, f1->Size);
 		vtop->MaxNearLimit= max( vtop->MaxNearLimit, f1->computeNearLimit());
 	}
@@ -1163,7 +940,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		vbot->Pos= vbot->StartPos;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		vbot->MaxFaceSize= f0->Size;
 		vbot->MaxNearLimit= f0->computeNearLimit();
 	}
@@ -1174,7 +951,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// NB: this work with both rectangular and square triangles.
 		vbot= f0->FLeft->SonLeft->VBase;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		vbot->MaxFaceSize= max( vbot->MaxFaceSize, f0->Size);
 		vbot->MaxNearLimit= max( vbot->MaxNearLimit, f0->computeNearLimit());
 	}
@@ -1197,7 +974,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 
 	// For VertexProgram only, must refill the Far vertex of neighbor(s), 
 	// because MaxFaceSize, and MaxNearLimit may have change.
-	if( CTessFace::VertexProgramEnabled )
+	if( CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// f0
 		if( ! (f0->FLeft==NULL || f0->FLeft->isLeaf()) )
@@ -1315,7 +1092,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 
 	// NB: but must test update of tile info for neighboring, ie 2 faces around the splits.
 	// For Vertex program only
-	if( CTessFace::VertexProgramEnabled )
+	if( CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// if neighbor face splitted, and if 2 different patchs, we must update the Tile vertices
 		// because MaxFaceSize and MaxNearLimit may have changed.
@@ -1530,7 +1307,7 @@ void		CTessFace::split(bool propagateSplit)
 		// Init Pos= InitialPos. Important in the case of enforced split.
 		newVertex->Pos= newVertex->StartPos;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		newVertex->MaxFaceSize= Size;
 		newVertex->MaxNearLimit= computeNearLimit();
 	}
@@ -1542,7 +1319,7 @@ void		CTessFace::split(bool propagateSplit)
 		SonRight->VBase= FBase->SonLeft->VBase;
 		SonLeft->VBase= FBase->SonLeft->VBase;
 
-		// For VertexProgram, compute MaxFaceSize and MaxNearLimit.
+		// For geomorph (VertexProgram or soft), compute MaxFaceSize and MaxNearLimit.
 		SonLeft->VBase->MaxFaceSize= max( SonLeft->VBase->MaxFaceSize, Size);
 		SonLeft->VBase->MaxNearLimit= max( SonLeft->VBase->MaxNearLimit, computeNearLimit());
 	}
@@ -1571,7 +1348,7 @@ void		CTessFace::split(bool propagateSplit)
 
 		// For VertexProgram only, must refill the Far vertex of neighbor, 
 		// because MaxFaceSize, and MaxNearLimit may have change.
-		if( CTessFace::VertexProgramEnabled && ! (FBase==NULL || FBase->isLeaf()) )
+		if( CLandscapeGlobals::VertexProgramEnabled && ! (FBase==NULL || FBase->isLeaf()) )
 			FBase->Patch->checkFillVertexVBFar(FBase->SonLeft->FVBase);
 	}
 	else
@@ -1605,7 +1382,7 @@ void		CTessFace::split(bool propagateSplit)
 	}
 
 	// For Vertex program only
-	if( CTessFace::VertexProgramEnabled )
+	if( CLandscapeGlobals::VertexProgramEnabled )
 	{
 		// if neighbor face splitted, and if 2 different patchs, we must update the Tile vertices
 		// because MaxFaceSize and MaxNearLimit may have changed.
@@ -1706,7 +1483,7 @@ bool		CTessFace::canMerge(bool testEm)
 	{
 		updateErrorMetric();
 		float	ps2= ErrorMetric;
-		ps2*= OORefineThreshold;
+		ps2*= CLandscapeGlobals::OORefineThreshold;
 		if(ps2>=1.0f)
 			return false;
 	}
@@ -1933,17 +1710,17 @@ void		CTessFace::refine()
 
 		updateErrorMetric();
 		float	ps=ErrorMetric;
-		ps*= OORefineThreshold;
+		ps*= CLandscapeGlobals::OORefineThreshold;
 		// 1.0f is the point of split().
 		// 2.0f is the end of geomorph.
 
 
-		// 0. Test split/merge.
+		// Test split/merge.
 		//---------------------
 		// If wanted, not already done, and limit not reached, split().
 		if(isLeaf())
 		{
-			if(ps>1.0f && Level< (Patch->TileLimitLevel+TileMaxSubdivision) )
+			if(ps>1.0f && Level< (Patch->TileLimitLevel + CLandscapeGlobals::TileMaxSubdivision) )
 				split();
 		}
 		else
@@ -1962,66 +1739,12 @@ void		CTessFace::refine()
 		}
 
 
-		// 1. Geomorph.
-		//-------------
-		// Here, GeomDone is used to do the geomorph only one time per vertex. This is a hack trick, but it works 
-		// everywhere  BUT in borders of the screen (since the neighbor patch may not be here). It is not a problem,
-		// since border vertices will be done at the next frame, and so the only one problem is that geomorph are made 
-		// at half rate on those vertices on border screen....
-		// If we don't use this trick, the geomorph would be done twice, one for the face and one for his FBase.
-		// NB: errorMetric are never computed twice.
-		// NB: do geomoprh only if patch is visible. (refine still may be done on clipped patch, to have correct 
-		// splitted patchs)
-		// Use Clipped state, because of  refineAll().
-		if(!isLeaf() && ps>1.0f && !Patch->Clipped)
-		{
-			// NB: morph ptr is good even with rectangular patch. See splitRectangular().
-			CTessVertex		*morph=SonLeft->VBase;
-			if(morph->GeomDone)
-			{
-				morph->GeomDone= false;
-			}
-			else
-			{
-				morph->GeomDone= true;
-
-				float			pgeom= ps;
-
-				// get the neighbor, to have the max projectedsize.
-				// => geo-split() at the maximum level of the two faces.
-				CTessFace	*nbor;
-				if(!isRectangular())
-					nbor= FBase;
-				else
-					nbor= FLeft;	// Rectangular subdivision...
-				if(nbor && nbor!=&CantMergeFace)
-				{
-					nbor->updateErrorMetric();
-					float	ps2= nbor->ErrorMetric;
-					ps2*= OORefineThreshold;
-					pgeom= max(pgeom, ps2);
-				}
-
-				// Interpolate beetween trheshold and treshold*2 => beetween 1.0 and 2.0
-				if(pgeom<=1.0f)
-					morph->Pos= morph->StartPos;
-				else if(pgeom>=2.0f)
-					morph->Pos= morph->EndPos;
-				else
-				{
-					float		delta= pgeom - 1.0f;
-					morph->Pos= morph->StartPos *(1-delta) + morph->EndPos * delta;
-				}
-			}
-		}
-
-
-		// 2. Update NeedCompute.
+		// Update NeedCompute.
 		//-----------------------
 
 		// If father should compute himself for geomoprh....
 		// NB: this is done BEFORE ps may be modified. ie, ps==ErrorMetric, not ProjectedSize.
-		if(Father && ps<SelfEndComputeLimit*0.5)			// 2.1/2
+		if(Father && ps<CLandscapeGlobals::SelfEndComputeLimit*0.5)				// 2.1/2
 		{
 			// Force him to do it. This is done too in doMerge().
 			Father->NeedCompute= true;
@@ -2030,7 +1753,7 @@ void		CTessFace::refine()
 		if(isLeaf())
 		{
 			// If leaf and below a merge(), I may not need to compute.
-			if(Father && ps<ChildrenStartComputeLimit*0.5)	// 1.9/2
+			if(Father && ps<CLandscapeGlobals::ChildrenStartComputeLimit*0.5)	// 1.9/2
 			{
 				NeedCompute= false;
 				// Remark: see below, Father IS NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
@@ -2042,12 +1765,12 @@ void		CTessFace::refine()
 			// Why? because of computeTileErrorMetric() which makes a false (too big) value.
 			// Tiles faces ErrorMetric do NOT computeTileErrorMetric(), so this test.
 			if(SonLeft->Level>=Patch->TileLimitLevel)
-				ps= ProjectedSize*OORefineThreshold;
+				ps= ProjectedSize*CLandscapeGlobals::OORefineThreshold;
 
 			// We may force our sons to compute, only if they are not already at MaxSubdivision.
-			if(SonLeft->Level<Patch->TileLimitLevel+TileMaxSubdivision)
+			if(SonLeft->Level<Patch->TileLimitLevel+CLandscapeGlobals::TileMaxSubdivision)
 			{
-				if(ps>ChildrenStartComputeLimit)			// 1.9
+				if(ps>CLandscapeGlobals::ChildrenStartComputeLimit)				// 1.9
 				{
 					// The sons may split soon.
 					SonLeft->NeedCompute= true;
@@ -2055,16 +1778,9 @@ void		CTessFace::refine()
 
 					// We may decide to stop compute us, because the geomorph is ended.
 					// Do this only if sons Compute themselves (because this is them which update NeedCompute of us.
-					if(ps>SelfEndComputeLimit)				// 2.1
+					if(ps>CLandscapeGlobals::SelfEndComputeLimit)				// 2.1
 					{
 						NeedCompute=false;
-						// If patch clipped, we must ensure that Geomorph is correctly setuped.
-						// Use Clipped state, because of  refineAll().
-						if(Patch->Clipped)
-						{
-							CTessVertex		*morph=SonLeft->VBase;
-							morph->Pos= morph->EndPos;
-						}
 					}
 					// Remark: see below, Sons ARE NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
 				}
@@ -2072,6 +1788,9 @@ void		CTessFace::refine()
 			// NB: NeedCompute is automatically set to true in split().
 		}
 	}
+
+	// Recurs.
+	//-----------------------
 	if(SonLeft)
 	{
 		SonLeft->refine();
@@ -2081,6 +1800,65 @@ void		CTessFace::refine()
 
 	// Unstable case: the child say "NeedCompute=false", but his father say "child->NeedCompute=true".
 	// OK: At the next refine, the child will be processed again...
+}
+
+
+// ***************************************************************************
+void		CTessFace::refineAll()
+{
+	NL3D_PROFILE_LAND_ADD(ProfNRefineFaces, 1);
+	NL3D_PROFILE_LAND_ADD(ProfNRefineLeaves, isLeaf()?1:0);
+
+	/*
+		if(ps<RefineThreshold), the face must be merged (ie have no leaves).
+		if(ps E [RefineThreshold, RefineTreshold*2]), the face must be splitted (ave leaves), and is geomorphed.
+		if(ps>RefineThreshold*2), the face is fully splitted/geomoprhed (tests reported on sons...).
+	*/
+
+	// Test for Split or merge.
+	//-----------------------
+	{
+		NL3D_PROFILE_LAND_ADD(ProfNRefineComputeFaces, 1);
+
+		updateErrorMetric();
+		float	ps=ErrorMetric;
+		ps*= CLandscapeGlobals::OORefineThreshold;
+		// 1.0f is the point of split().
+		// 2.0f is the end of geomorph.
+
+
+		// Test split/merge.
+		//---------------------
+		// If wanted, not already done, and limit not reached, split().
+		if(isLeaf())
+		{
+			if(ps>1.0f && Level< (Patch->TileLimitLevel + CLandscapeGlobals::TileMaxSubdivision) )
+				split();
+		}
+		else
+		{
+			// Else, if splitted, must merge (if not already the case).
+			if(ps<1.0f)
+			{
+				// Merge only if agree, and neighbors agree.
+				// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
+				// The test is propagated to neighbors.
+				if(canMerge(true))
+				{
+					merge();
+				}
+			}
+		}
+	}
+
+	// Recurs.
+	//-----------------------
+	if(SonLeft)
+	{
+		SonLeft->refineAll();
+		SonRight->refineAll();
+	}
+
 }
 
 
@@ -2144,7 +1922,7 @@ void		CTessFace::unbind(CPatch *except[4])
 					*(SonLeft->VBase)= *old;
 					SonRight->VBase= SonLeft->VBase;
 
-					// For VertexProgram, compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+					// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
 					// update us.
 					SonLeft->VBase->MaxFaceSize= Size;
 					SonLeft->VBase->MaxNearLimit= computeNearLimit();
@@ -2186,7 +1964,7 @@ void		CTessFace::unbind(CPatch *except[4])
 					FBase->SonLeft->VRight= SonLeft->VBase;
 
 
-					// For VertexProgram, compute good MaxFaceSize and MaxNearLimit (change since unbinded)
+					// For geomorph (VertexProgram or soft), compute good MaxFaceSize and MaxNearLimit (change since unbinded)
 					// update us.
 					SonLeft->VBase->MaxFaceSize= Size;
 					SonLeft->VBase->MaxNearLimit= computeNearLimit();

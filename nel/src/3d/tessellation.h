@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.9 2001/10/02 08:47:00 berenguier Exp $
+ * $Id: tessellation.h,v 1.10 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,8 +46,6 @@ using NLMISC::CUV;
 
 
 class	CPatch;
-class	CVertexBuffer;
-class	IVertexBufferHard;
 class	CTessFace;
 class	CLandscapeVBAllocator;
 class	CLandscapeFaceVector;
@@ -55,68 +53,6 @@ class	CLandscapeFaceVector;
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
-
-
-// ***************************************************************************
-/// Info for the current Far VertexBuffer setuped (iether normal or hard).
-class	CFarVertexBufferInfo
-{
-public:
-	uint32		VertexFormat;
-	uint32		VertexSize;
-	uint32		NumVertices;
-	void		*VertexCoordPointer;
-	void		*TexCoordPointer0;
-	void		*ColorPointer;
-	uint32		TexCoordOff0;
-	uint32		ColorOff;
-
-	// VertexProgram Only.
-	void		*GeomInfoPointer;
-	void		*DeltaPosPointer;
-	void		*AlphaInfoPointer;
-	uint32		GeomInfoOff;
-	uint32		DeltaPosOff;
-	uint32		AlphaInfoOff;
-
-
-	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
-
-private:
-	void		setupNullPointers();
-	void		setupPointersForVertexProgram();
-};
-
-
-/// Info for the current Far VertexBuffer setuped (iether normal or hard).
-class	CNearVertexBufferInfo
-{
-public:
-	uint32		VertexFormat;
-	uint32		VertexSize;
-	uint32		NumVertices;
-	void		*VertexCoordPointer;
-	void		*TexCoordPointer0;
-	void		*TexCoordPointer1;
-	uint32		TexCoordOff0;
-	uint32		TexCoordOff1;
-
-
-	// VertexProgram Only.
-	void		*GeomInfoPointer;
-	void		*DeltaPosPointer;
-	uint32		GeomInfoOff;
-	uint32		DeltaPosOff;
-
-
-	void		setupVertexBuffer(CVertexBuffer &vb, bool forVertexProgram);
-	void		setupVertexBufferHard(IVertexBufferHard &vb, void *vcoord, bool forVertexProgram);
-
-private:
-	void		setupNullPointers();
-	void		setupPointersForVertexProgram();
-};
 
 
 
@@ -162,20 +98,20 @@ public:
 	// The current position, + geomorph.
 	CVector			Pos;
 	CVector			StartPos, EndPos;
-	// The swap, for geomorph "optim"
-	bool			GeomDone;
 	// Geomorph Information, for VertexProgram geomorph. NB: no RefineThreshold dependency here.
 	float			MaxFaceSize;	// max(SizeFaceA, SizeFaceB)
 	float			MaxNearLimit;	// max(NearLimitFaceA, NearLimitFaceB) with NearLimitFace= (1<<Patch->TileLimitLevel) * (OO32768*(32768>>Level));
 
 	CTessVertex()
 	{
-		// Must init to 0.
-		GeomDone= false;
 		// init to 0, so max always() works.
 		MaxFaceSize= 0;
 		MaxNearLimit= 0;
 	}
+
+	// Compute the geomorphed position, with MaxFaceSize, MaxNearLimit ..., and current globals.
+	void			computeGeomPos();
+
 };
 
 
@@ -352,6 +288,9 @@ public:
 	bool			merge();
 	// if NeedCompute, refine the node, and his sons.
 	void			refine();
+	/// refine the node, and his sons. Don't bother NeedCompute. Refine all leaves.
+	void			refineAll();
+
 
 	// compute the SplitPoint. VBase / VLeft and VRight must be valid.
 	void	computeSplitPoint();
@@ -385,72 +324,6 @@ public:
 	// Used by CPatch::appendTessellationLeaves(). recurs call.
 	void			appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
 
-
-public:
-
-	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
-	// The current date of LandScape for refine only.
-	static	sint	CurrentDate;
-	// The current date of LandScape for render only.
-	static	sint	CurrentRenderDate;
-	// The center view for refinement.
-	static	CVector RefineCenter;
-	// What is the treshold for tessellation.
-	static	float	RefineThreshold;
-	// Guess.
-	static	float	OORefineThreshold;
-	// Limits for merge/split propagation. See refine(). Defaults:  1.1, 1.9, 2.1.
-	static	float	ChildrenStartComputeLimit;
-	static	float	SelfEndComputeLimit;
-
-
-	// Tile Global Info.
-	// What are the limit distances for Tile tesselation transition.
-	static	float	TileDistNear, TileDistFar;
-	// System, computed from prec.
-	static	float	TileDistNearSqr, TileDistFarSqr;
-	// System, computed from prec.
-	static	float	OOTileDistDeltaSqr;
-	// The tiles are not subdivided above this limit (but because of enforced splits). Default: 4 => 50cm.
-	static	sint	TileMaxSubdivision;
-	// The sphere for TileFar test.
-	static	NLMISC::CBSphere	TileFarSphere;
-	// The sphere for TileNear test.
-	static	NLMISC::CBSphere	TileNearSphere;
-	// The size of a 128x128 tile, in pixel. UseFull for HalfPixel Scale/Bias.
-	static	float		TilePixelSize;
-
-
-	// Render Global info. Used by Patch.
-	// The distance transition for Far0 and Far1 (200m / 400m).
-	static	float	Far0Dist, Far1Dist;
-	// Distance for Alpha blend transition
-	static	float	FarTransition;
-
-
-	// This Tells if VertexProgram is activated for the current landscape.
-	static	bool					VertexProgramEnabled;
-	// The current VertexBuffer for Far0
-	static	CFarVertexBufferInfo	CurrentFar0VBInfo;
-	// The current VertexBuffer for Far1.
-	static	CFarVertexBufferInfo	CurrentFar1VBInfo;
-	// The current VertexBuffer for Tile.
-	static	CNearVertexBufferInfo	CurrentTileVBInfo;
-
-	// The current VertexBuffer Allocator for Far0
-	static	CLandscapeVBAllocator	*CurrentFar0VBAllocator;
-	// The current VertexBuffer Allocator for Far1.
-	static	CLandscapeVBAllocator	*CurrentFar1VBAllocator;
-	// The current VertexBuffer Allocator for Tile.
-	static	CLandscapeVBAllocator	*CurrentTileVBAllocator;
-
-	// For CLandscape::setRefineModeFrequency()
-	static	uint					PatchRefinePeriod;
-
-
-	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().
-	// NO!!! REMIND: can't have any patch global, since a propagated split()/updateErrorMetric()
-	// can arise. must use Patch pointer.
 
 
 private:

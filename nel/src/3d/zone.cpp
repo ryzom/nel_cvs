@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.53 2001/10/02 08:47:00 berenguier Exp $
+ * $Id: zone.cpp,v 1.54 2001/10/04 11:57:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -816,7 +816,7 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 
 	// Fill computeTileErrorMetric.
 	CBSphere		zonesphere(ZoneBB.getCenter(), ZoneBB.getRadius());
-	if(zonesphere.intersect(CTessFace::TileFarSphere))
+	if(zonesphere.intersect(CLandscapeGlobals::TileFarSphere))
 		ComputeTileErrorMetric= true;
 	else
 		ComputeTileErrorMetric= false;
@@ -946,7 +946,7 @@ void			CZone::refine()
 	nlassert(Compiled);
 	// Must be 2^X-1.
 	static const	sint	hideRefineFreq= 15;
-	sint	showRefineFreq= CTessFace::PatchRefinePeriod-1;
+	sint	showRefineFreq= CLandscapeGlobals::PatchRefinePeriod-1;
 
 	// DebugYoyo.
 	// For the monkey bind test.
@@ -963,7 +963,7 @@ void			CZone::refine()
 
 	
 	// Force refine of invisible zones only every 8 times.
-	if(ClipResult==ClipOut && (CTessFace::CurrentDate & hideRefineFreq)!=(ZoneId & hideRefineFreq))
+	if(ClipResult==ClipOut && (CLandscapeGlobals::CurrentDate & hideRefineFreq)!=(ZoneId & hideRefineFreq))
 		return;
 	// Fuck stlport....
 	if(Patchs.size()==0)
@@ -979,13 +979,13 @@ void			CZone::refine()
 			// "ZoneId+n", because there is only 70 approx patchs per zone. doing this may stabilize framerate.
 			if(pPatch->isClipped())
 			{
-				if( (CTessFace::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq) )
+				if( (CLandscapeGlobals::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq) )
 					continue;
 			}
 			// Visible.
 			else
 			{
-				if( (CTessFace::CurrentDate & showRefineFreq)!=((ZoneId+n) & showRefineFreq) )
+				if( (CLandscapeGlobals::CurrentDate & showRefineFreq)!=((ZoneId+n) & showRefineFreq) )
 					continue;
 			}
 			// If really want to refine, do it.
@@ -997,7 +997,7 @@ void			CZone::refine()
 		// Else refine ALL patchs (even those which may be invisible).
 		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 		{
-			if( (CTessFace::CurrentDate & showRefineFreq)==((ZoneId+n) & showRefineFreq) )
+			if( (CLandscapeGlobals::CurrentDate & showRefineFreq)==((ZoneId+n) & showRefineFreq) )
 				pPatch->refine();
 		}
 	}
@@ -1045,7 +1045,7 @@ void			CZone::refineAll()
 	{
 		// For Pacs construction: may exclude some patch from refineAll (for speed improvement).
 		if(!pPatch->ExcludeFromRefineAll)
-			pPatch->refine();
+			pPatch->refineAll();
 	}
 
 }
@@ -1077,7 +1077,7 @@ void			CZone::preRender()
 	// Must be 2^X-1.
 	static const	sint	updateFarRefineFreq= 15;
 	// Take the renderDate here.
-	sint		curDateMod= CTessFace::CurrentRenderDate & updateFarRefineFreq;
+	sint		curDateMod= CLandscapeGlobals::CurrentRenderDate & updateFarRefineFreq;
 
 	// If no patchs, do nothing.
 	if(Patchs.empty())

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.9 2001/11/07 17:42:00 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.10 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-
-#include "nel/misc/debug.h"
+#include "stdpacs.h"
 
 #include "pacs/retrievable_surface.h"
-
-#include <vector>
 
 using namespace std;
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.19 2001/11/21 13:53:10 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.20 2001/12/28 15:37:02 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -25,9 +25,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdopengl.h"
+
 #include "3d/primitive_block.h"
-#include "driver_opengl.h"
 
 
 using namespace std;

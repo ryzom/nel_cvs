@@ -1,7 +1,7 @@
 /** \file bounding_box.cpp
  * CBoundingBox: Bounding box (different from the NL3D ones)
  *
- * $Id: bounding_box.cpp,v 1.3 2001/09/04 16:53:29 cado Exp $
+ * $Id: bounding_box.cpp,v 1.4 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdsound.h"
 
 #include "bounding_box.h"
 #include "nel/misc/plane.h"

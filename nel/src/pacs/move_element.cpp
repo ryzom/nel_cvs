@@ -1,7 +1,7 @@
 /** \file move_element.cpp
  * Element to insert in sorted lists
  *
- * $Id: move_element.cpp,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: move_element.cpp,v 1.3 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdpacs.h"
 
 #include "pacs/move_element.h"
 #include "pacs/move_element_inline.h"

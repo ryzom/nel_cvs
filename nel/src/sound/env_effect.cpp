@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.6 2001/09/10 13:21:47 berenguier Exp $
+ * $Id: env_effect.cpp,v 1.7 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdsound.h"
 
 #include "env_effect.h"
 

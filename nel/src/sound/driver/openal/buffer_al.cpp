@@ -1,7 +1,7 @@
 /** \file buffer_al.cpp
  * OpenAL buffer
  *
- * $Id: buffer_al.cpp,v 1.5 2001/07/17 14:19:59 cado Exp $
+ * $Id: buffer_al.cpp,v 1.6 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "buffer_al.h"
-#include "sound_driver_al.h"
+#include "stdopenal.h"
 
+#include "buffer_al.h"
 
 namespace NLSOUND {
 

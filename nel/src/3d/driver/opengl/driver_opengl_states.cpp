@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.11 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.12 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-
-// Must include "driver_opengl.h" for good GL.h definition
-#include "driver_opengl.h"
+#include "stdopengl.h"
 
 
 // ***************************************************************************

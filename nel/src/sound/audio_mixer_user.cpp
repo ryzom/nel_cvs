@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.20 2001/09/15 17:53:37 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.21 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "audio_mixer_user.h"
+#include "stdsound.h"
+
 #include "source_user.h"
 #include "env_sound_user.h"
 #include "env_effect.h"

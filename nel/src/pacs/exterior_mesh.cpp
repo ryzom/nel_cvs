@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.4 2001/08/29 14:55:50 legros Exp $
+ * $Id: exterior_mesh.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-
-#include "nel/misc/debug.h"
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
+#include "stdpacs.h"
 
 #include "pacs/exterior_mesh.h"
 #include "pacs/local_retriever.h"

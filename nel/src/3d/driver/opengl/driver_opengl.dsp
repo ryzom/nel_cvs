@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /Yu"stdopengl.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "__STL_DEBUG" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "__STL_DEBUG" /Yu"stdopengl.h" /FD /GZ /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -98,7 +98,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdopengl.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
@@ -125,7 +125,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "__STL_DEBUG" /FR /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENGL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /Yu"stdopengl.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -200,6 +200,15 @@ SOURCE=.\driver_opengl_vertex.cpp
 # Begin Source File
 
 SOURCE=.\driver_opengl_vertex_program.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdopengl.cpp
+# ADD CPP /Yc"stdopengl.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdopengl.h
 # End Source File
 # End Target
 # End Project

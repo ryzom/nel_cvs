@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.35 2001/11/07 17:42:00 legros Exp $
+ * $Id: local_retriever.cpp,v 1.36 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
+#include "stdpacs.h"
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/vector_2f.h"
 #include "nel/misc/plane.h"
-
-#include "nel/misc/debug.h"
 
 #include "pacs/local_retriever.h"
 #include "pacs/collision_desc.h"

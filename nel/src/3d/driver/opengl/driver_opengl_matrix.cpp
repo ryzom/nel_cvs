@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.11 2001/11/22 08:48:11 corvazier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.12 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "driver_opengl.h"
+#include "stdopengl.h"
 
 namespace NL3D {
 

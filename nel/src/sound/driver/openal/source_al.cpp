@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.11 2001/09/03 14:21:39 cado Exp $
+ * $Id: source_al.cpp,v 1.12 2001/12/28 15:37:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdopenal.h"
+
 #include "source_al.h"
-#include "sound_driver_al.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/common.h"
 
 using namespace NLMISC;
 

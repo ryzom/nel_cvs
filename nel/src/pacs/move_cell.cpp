@@ -1,7 +1,7 @@
 /** \file move_cell.cpp
  * <File description>
  *
- * $Id: move_cell.cpp,v 1.4 2001/06/15 09:47:01 corvazier Exp $
+ * $Id: move_cell.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "stdpacs.h"
 
 #include "pacs/move_cell.h"
 #include "pacs/move_element.h"

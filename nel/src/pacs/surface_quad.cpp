@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.7 2001/08/10 12:09:44 legros Exp $
+ * $Id: surface_quad.cpp,v 1.8 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <float.h>
-
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
+#include "stdpacs.h"
 
 #include "nel/misc/file.h"
 

@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.4 2001/07/09 08:26:26 legros Exp $
+ * $Id: retriever_bank.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,13 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-#include <list>
-#include <map>
+#include "stdpacs.h"
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/file.h"
-#include "nel/misc/debug.h"
 #include "nel/misc/path.h"
 
 #include "pacs/retriever_bank.h"

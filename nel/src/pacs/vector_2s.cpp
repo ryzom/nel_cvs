@@ -1,7 +1,7 @@
 /** \file vector_2s.cpp
  * <File description>
  *
- * $Id: vector_2s.cpp,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: vector_2s.cpp,v 1.3 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
-#include "pacs/vector_2s.h"
+#include "stdpacs.h"
 
+#include "pacs/vector_2s.h"
 
 namespace NLPACS {
 

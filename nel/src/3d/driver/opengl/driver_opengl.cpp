@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.132 2001/12/12 10:31:29 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.133 2001/12/28 15:37:01 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -25,7 +25,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "stdopengl.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -45,7 +45,6 @@
 #include <vector>
 #include <GL/gl.h>
 
-#include "driver_opengl.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
 #include "3d/vertex_buffer.h"

@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.18 2001/09/14 14:40:14 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.19 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,9 +23,10 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdsound.h"
+
 #include "env_sound_user.h"
 #include "sound.h"
-#include "audio_mixer_user.h"
 #include "bounding_shape.h"
 #include <stdlib.h>
 

@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.7 2001/08/01 16:12:14 valignat Exp $
+ * $Id: sound_driver_al.cpp,v 1.8 2001/12/28 15:37:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,13 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include "sound_driver_al.h"
+#include "stdopenal.h"
 
 #include "buffer_al.h"
 #include "listener_al.h"
-
-#include "AL/alut.h"
-#include "AL/al.h"
 
 using namespace std;
 

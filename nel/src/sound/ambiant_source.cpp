@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.5 2001/09/14 14:40:14 cado Exp $
+ * $Id: ambiant_source.cpp,v 1.6 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,8 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdsound.h"
+
 #include "ambiant_source.h"
-#include "audio_mixer_user.h"
 #include "sound.h"
 
 using namespace NLMISC;

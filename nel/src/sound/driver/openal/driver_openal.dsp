@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /Yu"stdopenal.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -72,8 +72,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /YX
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /Yu"stdopenal.h" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -100,7 +100,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "NL_RELEASE_DEBUG" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "NL_RELEASE_DEBUG" /Yu"stdopenal.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -129,8 +129,8 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
 # SUBTRACT BASE CPP /Gy /YX
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /FD /GZ /c
-# SUBTRACT CPP /Gy /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_WINDOWS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /Yu"stdopenal.h" /FD /GZ /c
+# SUBTRACT CPP /Gy
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
@@ -185,6 +185,15 @@ SOURCE=.\source_al.cpp
 # Begin Source File
 
 SOURCE=.\source_al.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdopenal.cpp
+# ADD CPP /Yc"stdopenal.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\stdopenal.h
 # End Source File
 # End Target
 # End Project

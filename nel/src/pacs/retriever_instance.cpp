@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.30 2001/09/21 11:53:30 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.31 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,12 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-
-#include "nel/misc/debug.h"
+#include "stdpacs.h"
 
 #include "pacs/retriever_instance.h"
 #include "pacs/global_retriever.h"

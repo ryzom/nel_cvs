@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.19 2001/11/27 14:12:59 lecroart Exp $
+ * $Id: source_user.cpp,v 1.20 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdsound.h"
+
 #include "source_user.h"
-#include "nel/misc/vector.h"
 #include "driver/buffer.h"
 #include "driver/source.h"
 #include "mixing_track.h"
 #include "sound.h"
-#include "audio_mixer_user.h"
-
 
 using namespace NLMISC;
 

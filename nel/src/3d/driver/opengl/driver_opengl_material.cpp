@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.52 2001/12/19 14:58:42 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.53 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
+#include "stdopengl.h"
 
-#include "driver_opengl.h"
 
 namespace NL3D {
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.52 2001/09/12 10:07:05 legros Exp $
+ * $Id: global_retriever.cpp,v 1.53 2001/12/28 15:37:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,18 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#include <vector>
-#include <list>
-#include <map>
+#include "stdpacs.h"
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/vectord.h"
-#include "nel/misc/vector_2f.h"
 #include "nel/misc/path.h"
 #include "nel/misc/line.h"
-
-#include "nel/misc/debug.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.42 2002/07/01 18:27:42 legros Exp $
+ * $Id: unified_network.cpp,v 1.43 2002/07/25 14:32:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 using namespace std;
 using namespace NLMISC;
 
+#define L5_APPID_MARK(a) (((uint64)a)<<32)
+#define L5_APPID_UNMARKED(a) ((uint32)a)
 
 namespace NLNET {
 
@@ -145,14 +147,15 @@ void	uncbConnection(TSockId from, void *arg)
 	nlinfo ("L5UN: + connec %s", from->asString().c_str());
 	// set the service id to an unknown value, besause we don't know yet
 	// which service is connecting at this moment.
-	from->setAppId (0xFFFFFF);
+	nlinfo("L5UNDBG: uncbConnection(from=%s, arg=%p): setAppId(0xFFFFFF) (previous appId=%"NL_I64"x)", from->asString().c_str(), arg, from->appId());
+	from->setAppId (0xFFFFFF+L5_APPID_MARK(0x0100));
 
 	nldebug("Received Connection signal from %s connection", from->asString().c_str());
 }
 
 void	uncbDisconnection(TSockId from, void *arg)
 {
-	if (from->appId() == 0xFFFFFF)
+	if (L5_APPID_UNMARKED(from->appId()) == 0xFFFFFF)
 	{
 		nlinfo ("L5UN: - connec UKN");
 		return;
@@ -180,7 +183,7 @@ void	uncbDisconnection(TSockId from, void *arg)
 ////////////////////
 ////////////////////
 
-	if (from->appId() == 0xFFFFFF)
+	if (L5_APPID_UNMARKED(from->appId()) == 0xFFFFFF)
 	{
 		// the service didn't identified before disconnection
 	}
@@ -281,7 +284,8 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 	nlinfo("Received identification from service %s %u", inSName.c_str(), inSid);
 
 	// setup the sock with the sid.
-	from->setAppId(inSid);
+	nlinfo("L5UNDBG: uncbServiceIdentification(from=%s): setAppId(inSid=%d) (previous appId=%"NL_I64"x)", from->asString().c_str(), inSid, from->appId());
+	from->setAppId(inSid+L5_APPID_MARK(0x0201));
 
 	// add a new connection to the list
 	CUnifiedNetwork		*instance = CUnifiedNetwork::getInstance();
@@ -334,7 +338,7 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 // the callbacks wrapper
 void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	if (from->appId() != 0xFFFFFF)
+	if (L5_APPID_UNMARKED(from->appId()) != 0xFFFFFF)
 	{
 		CUnifiedNetwork									*inst = CUnifiedNetwork::getInstance();
 		uint16											sid = (uint16)from->appId();
@@ -552,7 +556,8 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 	try
 	{
 		cbc->connect(addr);
-		cbc->getSockId()->setAppId(sid);
+		nlinfo("L5UNDBG: addService(name=%s, addr=%s): setAppId(sid=%d) (previous appId=%"NL_I64"x)", name.c_str(), addr.asString().c_str(), sid, cbc->getSockId()->appId());
+		cbc->getSockId()->setAppId(sid+L5_APPID_MARK(0x0202));
 		connectSuccess = true;
 	}
 	catch (ESocketConnectionFailed &e)
@@ -769,7 +774,8 @@ void	CUnifiedNetwork::updateConnectionTable()
 			try
 			{
 				cnx.Connection.CbClient->connect(cnx.ExtAddress);
-				cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId);
+				nlinfo("L5UNDBG: updateConnectionTable(): in connection retry (cnx.ServiceName=%s, cnx.ServiceId=%d) setAppId(cnx.ServiceId=%d) (previous appId=%"NL_I64"x)", cnx.ServiceName.c_str(), cnx.ServiceId, cnx.ServiceId, cnx.Connection.CbClient->getSockId()->appId());
+				cnx.Connection.CbClient->getSockId()->setAppId(cnx.ServiceId+L5_APPID_MARK(0x0203));
 				cnx.IsConnected = true;
 			}
 			catch (ESocketConnectionFailed &e)
@@ -798,7 +804,10 @@ void	CUnifiedNetwork::updateConnectionTable()
 
 				// if the cnx isn't extern or if no autoretry, delete it.
 				if (!cnx.IsServerConnection)
+				{
+					nlinfo("L5UNDBG: updateConnectionTable(): delete client connection %s %d (in disconnection stack)", cnx.ServiceName.c_str(), cnx.ServiceId);
 					delete cnx.Connection.CbClient;
+				}
 
 				// get all map nodes of that service name
 				TNameMappedConnection::iterator											it;
@@ -849,6 +858,7 @@ void	CUnifiedNetwork::updateConnectionTable()
 				// if was a callback  client before (!IsServerConnection), delete the callback client
 				if (!cnx.IsServerConnection)
 				{
+					nlinfo("L5UNDBG: updateConnectionTable(): delete client connection %s %d (in connection stack, remove previous connection)", cnx.ServiceName.c_str(), cnx.ServiceId);
 					delete cnx.Connection.CbClient;
 					cnx.Connection.CbClient = NULL;
 				}
@@ -1320,12 +1330,17 @@ void	CUnifiedNetwork::autoCheck()
 		if (!stillConnected || !idAccess.value()[i].IsConnected)
 			continue;
 
-		uint16 appId = (idAccess.value()[i].IsServerConnection) ?
-			(uint16)(idAccess.value()[i].Connection.HostId->appId()) :
-			(uint16)(idAccess.value()[i].Connection.CbClient->getSockId()->appId());
+		uint64 appId = (idAccess.value()[i].IsServerConnection) ?
+			(idAccess.value()[i].Connection.HostId->appId()) :
+			(idAccess.value()[i].Connection.CbClient->getSockId()->appId());
 
 		// ca crash ici des fois kan on quitte violement
-		nlassertex(i == appId, ("%d == %d", i, appId));
+		if (i != (uint16)appId)
+		{
+			nlwarning("i != appId !! -- (i = %x) != (appId = %"NL_I64"x)", i, appId);
+			if (DefaultMemDisplayer)
+				DefaultMemDisplayer->write(InfoLog);
+		}
 	}
 
 	for (i=0; i<_ConnectionStack.size(); ++i)

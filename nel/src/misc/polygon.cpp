@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.10 2002/01/28 14:50:14 vizerie Exp $
+ * $Id: polygon.cpp,v 1.11 2002/04/11 08:40:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,475 @@ void CPolygon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(0);
 	f.serialCont(Vertices);
 }
+
+
+
+// ***************************************************************************
+bool CPolygon::chain (const CPolygon &other)
+{
+	// Look for a joining vertex
+	uint i, j;
+	uint firstSize = Vertices.size();
+	uint secondSize = other.Vertices.size();
+	for (i=0; i<firstSize; i++)
+	for (j=0; j<secondSize; j++)
+	{
+		// Check the edge in the polygon
+		//if (clip
+	}
+	return false;
+}
+
+
+
+// ***************************************************************************
+
+class CConcavePolygonsVertexDesc
+{
+public:
+
+	CConcavePolygonsVertexDesc (float length, uint index)
+	{
+		Length = length;
+		Index = index;
+	}
+
+	// Length > 0
+	float	Length;
+
+	// First vertex index
+	uint	Index;
+};
+typedef std::map<float, CConcavePolygonsVertexDesc> TCConcavePolygonsVertexMap;
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1)
+{
+	float Aa = (a0.y - a1.y) / (a0.x - a1.x);
+	float Ba = a0.y - a0.x * Aa;
+	float Ab = (b0.y - b1.y) / (b0.x - b1.x);
+	float Bb = b0.y - b0.x * Ab;
+
+	// Intersection 
+	CVector2f intersection;
+	intersection.x = (Bb - Ba) / (Aa - Ab);
+	intersection.y = Aa * intersection.x + Ba;
+
+	// In it ?
+	return ( ( (a0-intersection)*(a1-intersection) < 0 ) && ( (b0-intersection)*(b1-intersection) < 0 ) );
+}
+
+// ***************************************************************************
+
+class CBSPNode2v
+{
+public:
+	CBSPNode2v ( const CPlane &plane, CVector p0, CVector p1, uint v0, uint v1 ) : Plane (plane), P0 (p0), P1 (p1)
+	{
+		Back = NULL;
+		Front = NULL;
+		Parent = NULL;
+		V0 = v0;
+		V1 = v1;
+	}
+	~CBSPNode2v ()
+	{
+		if (Front)
+			delete Front;
+		if (Back)
+			delete Back;
+	}
+
+	void insert (CBSPNode2v *node)
+	{
+		// Front ?
+		bool p0Front = (Plane * node->P0) > 0;
+		bool p1Front = (Plane * node->P1) > 0;
+		if (p0Front && p1Front)
+		{
+			// Front child ?
+			if (Front)
+				Front->insert (node);
+			else
+			{
+				// Link left
+				Front = node;
+				node->Parent = this;
+			}
+		}
+		else if ((!p0Front) && (!p1Front))
+		{
+			// Back child ?
+			if (Back)
+				Back->insert (node);
+			else
+			{
+				// Link left
+				Back = node;
+				node->Parent = this;
+			}
+		}
+		else
+		{
+			// Split vertex
+			CVector newVertex = Plane.intersect (node->P0, node->P1);
+
+			// New node
+			CBSPNode2v *newNode = new CBSPNode2v (node->Plane, node->P0, newVertex, node->V0, node->V1);
+
+			// Old node
+			node->P0 = newVertex;
+
+			// Insert child
+			CBSPNode2v **p0Parent;
+			CBSPNode2v **p1Parent;
+
+			// Get insertion pointer
+			if (p0Front)
+			{
+				p0Parent = &Front;
+				p1Parent = &Back;
+			}
+			else
+			{
+				p0Parent = &Back;
+				p1Parent = &Front;
+			}
+
+			// Insert children
+			if (*p0Parent)
+			{
+				(*p0Parent)->insert (newNode);
+			}
+			else
+			{
+				*p0Parent = newNode;
+				newNode->Parent = this;
+			}
+
+			// Insert children
+			if (*p1Parent)
+			{
+				(*p1Parent)->insert (node);
+			}
+			else
+			{
+				*p1Parent = node;
+				node->Parent = this;
+			}
+		}
+	}
+
+	bool intersect (const CVector &p0, const CVector &p1, uint v0, uint v1) const
+	{
+		// Front ?
+		bool p0Front = (Plane * p0) > 0;
+		bool p1Front = (Plane * p1) > 0;
+
+		if (p0Front != p1Front)
+			if ( (v0 != V0) && (v0 != V1) && (v1 != V0) && (v1 != V1) )
+				if (CPolygon::toConvexPolygonsEdgeIntersect (P0, P1, p0, p1))
+					return true;
+
+		if (p0Front || p1Front)
+		{
+			if (Front)
+				if (Front->intersect (p0, p1, v0, v1))
+					return true;
+		}
+
+		if ((!p0Front) || (!p1Front))
+		{
+			if (Back)
+				if (Back->intersect (p0, p1, v0, v1))
+					return true;
+		}
+
+		return false;
+	}
+
+	CBSPNode2v	*Back, *Front, *Parent;
+	CPlane		Plane;
+	CVector		P0;
+	CVector		P1;
+	uint		V0;
+	uint		V1;
+};
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygonsLeft (const std::vector<CVector> &vertex, uint a, uint b, uint c)
+{
+	return ( (vertex[b].x - vertex[a].x) * (vertex[c].y - vertex[a].y) - (vertex[c].x - vertex[a].x) * (vertex[b].y - vertex[a].y) ) < 0;
+}
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygonsLeftOn (const std::vector<CVector> &vertex, uint a, uint b, uint c)
+{
+	return ( (vertex[b].x - vertex[a].x) * (vertex[c].y - vertex[a].y) - (vertex[c].x - vertex[a].x) * (vertex[b].y - vertex[a].y) ) <= 0;
+}
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygonsInCone (const std::vector<CVector> &vertex, uint a, uint b)
+{
+	// Prev and next
+	uint a0 = a+1;
+	if (a0==vertex.size())
+		a0=0;
+	uint a1;
+	if (a==0)
+		a1=vertex.size()-1;
+	else
+		a1= a-1;
+
+	if (toConvexPolygonsLeftOn (vertex, a, a1, a0) )
+	{
+		return toConvexPolygonsLeft ( vertex, a, b, a0) && toConvexPolygonsLeft ( vertex, b, a, a1);
+	}
+	else
+	{
+		return !( toConvexPolygonsLeft ( vertex, a, b, a1) && toConvexPolygonsLeft ( vertex, b, a, a0) );
+	}
+}
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygonsDiagonal (const std::vector<CVector> &vertex, const CBSPNode2v &bsp, uint a, uint b)
+{
+	// Check it is a border
+	if ( ( (b - a) == 1) || ( (a - b) == 1) || ( (a==0) && (b ==(vertex.size()-1))) || ( (b==0) && (a ==(vertex.size()-1))) )
+		return true;
+
+	// Check visibility
+	if (toConvexPolygonsInCone (vertex, a, b) && toConvexPolygonsInCone (vertex, b, a))
+	{
+		// Intersection ?
+		return !bsp.intersect (vertex[a], vertex[b], a, b);
+	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CPolygon::toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const
+{
+	// Some vertices ?
+	if (Vertices.size()>2)
+	{
+		// Invert matrix
+		CMatrix invert = basis;
+		invert.invert ();
+
+		// Insert vertices in an ordered table
+		uint vertexCount = Vertices.size();
+		TCConcavePolygonsVertexMap vertexMap;
+		std::vector<CVector>	localVertices (vertexCount);
+		uint i, j;
+		
+		// Transform the vertex
+		for (i=0; i<vertexCount; i++)
+		{
+			CVector local = invert*Vertices[i];
+			localVertices[i] = CVector (local.x, local.y, 0);
+		}
+
+		// Plane direction
+		i=0;
+		j=Vertices.size()-1;
+		CVector normal = localVertices[i] - localVertices[j];
+		normal = normal ^ CVector::K;
+		CPlane clipPlane;
+		clipPlane.make(normal, localVertices[i]);
+
+		// Build the BSP root
+		CBSPNode2v root (clipPlane, localVertices[i], localVertices[j], i, j);
+
+		// Insert all others edges
+		j=i++;
+		for (; i<Vertices.size(); i++)
+		{
+			// Plane direction
+			normal = localVertices[i] - localVertices[j];
+			normal = normal ^ CVector::K;
+			clipPlane.make(normal, localVertices[i]);
+
+			// Build the BSP root
+			root.insert ( new CBSPNode2v (clipPlane, localVertices[i], localVertices[j], i, j) );
+
+			j=i;
+		}
+
+		// Build a vertex list
+		std::list<uint> vertexList;
+		for (i=0; i<Vertices.size(); i++)
+			vertexList.push_back (i);
+
+		// Clip ears while there is some polygons
+		std::list<uint>::iterator current=vertexList.begin();
+		std::list<uint>::iterator begin=vertexList.begin();
+		do
+		{
+again:;
+			// Search for a diagonal
+			bool found = false;
+
+			// Get next vertex
+			std::list<uint>::iterator first = current;
+			std::list<uint>::iterator lastPreviousPrevious=current;
+			std::list<uint>::iterator lastPrevious=current;
+			lastPrevious++;
+			if (lastPrevious==vertexList.end())
+				lastPrevious = vertexList.begin();
+			std::list<uint>::iterator currentNext = lastPrevious;
+			std::list<uint>::iterator last = lastPrevious;
+			last++;
+			if (last==vertexList.end())
+				last = vertexList.begin();
+			while (last != current)
+			{
+				// Is a diagonal ?
+				if ( 
+					(toConvexPolygonsDiagonal (localVertices, root, *lastPreviousPrevious, *last)) &&
+					(toConvexPolygonsDiagonal (localVertices, root, *currentNext, *last)) &&
+					(toConvexPolygonsDiagonal (localVertices, root, *last, *current)) 
+					)
+				{
+					// Find one
+					found = true;
+				}
+				else
+				{
+					// Come back
+					last = lastPrevious;
+					lastPrevious = lastPreviousPrevious;
+					break;
+				}
+
+				// Next vertex
+				lastPreviousPrevious = lastPrevious;
+				lastPrevious = last++;
+				if (last==vertexList.end())
+					last = vertexList.begin();
+			}
+
+			// Last polygon ?
+			if (last==current)
+			{
+				// Add a polygon
+				outputPolygons.push_back (CPolygon());
+				CPolygon &back = outputPolygons.back ();
+				back.Vertices.reserve (vertexList.size());
+
+				// Add each vertex in the new polygon
+				current=vertexList.begin();
+				while (current!=vertexList.end())
+				{
+					back.Vertices.push_back (Vertices[*current]);
+					current++;
+				}
+
+				// Exit
+				return true;
+			}
+			else
+			{
+				std::list<uint>::iterator firstNext = current;
+				std::list<uint>::iterator firstNextNext = currentNext;
+				if (first != vertexList.begin())
+					first--;
+				else
+				{
+					first = vertexList.end();
+					first--;
+				}
+
+				while (current != first)
+				{
+					// Is a diagonal ?
+					if (
+						(toConvexPolygonsDiagonal (localVertices, root, *firstNextNext, *first)) &&
+						(toConvexPolygonsDiagonal (localVertices, root, *lastPrevious, *first)) &&
+						(toConvexPolygonsDiagonal (localVertices, root, *last, *first)) 
+						)
+					{
+						// Find one
+						found = true;
+					}
+					else
+					{
+						// Come back
+						first = firstNext;
+						break;
+					}
+
+					// Next vertex
+					firstNextNext = firstNext;
+					firstNext = first;
+					if (first==vertexList.begin())
+					{
+						first = vertexList.end();
+						first--;
+					}
+					else
+						first--;
+				}
+			}
+
+			// Found ?
+			if (found)
+			{
+				// Count vertex
+				outputPolygons.push_back (CPolygon());
+				CPolygon &back = outputPolygons.back ();
+
+				// Vertex count
+				uint vertexCount = 1;
+				current = first;
+				while (current != last)
+				{
+					vertexCount++;
+					current++;
+					if (current == vertexList.end())
+						current = vertexList.begin();
+				}
+
+				// Alloc vertices
+				back.Vertices.reserve (vertexCount);
+
+				// Copy and remove vertices
+				back.Vertices.push_back (Vertices[*first]);
+				first++;
+				if (first == vertexList.end())
+					first = vertexList.begin();
+				while (first != last)
+				{
+					back.Vertices.push_back (Vertices[*first]);
+
+					// Remove from list
+					first = vertexList.erase (first);
+					if (first == vertexList.end())
+						first = vertexList.begin();
+					nlassert (first != vertexList.end());
+				}
+				back.Vertices.push_back (Vertices[*first]);
+				current = begin = last;
+				goto again;
+			}
+
+			// Next current
+			current++;
+			if (current == vertexList.end())
+				current = vertexList.begin ();
+		}
+		while (current != begin);
+	}
+	return false;
+}
+
+// ***************************************************************************
 
 
 //====================================//

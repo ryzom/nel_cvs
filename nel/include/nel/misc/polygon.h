@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.5 2002/01/28 14:21:04 vizerie Exp $
+ * $Id: polygon.h,v 1.6 2002/04/11 08:40:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@ using NLMISC::CMatrix;
 
 class CTriangle;
 
+// Used by the method toConvexPolygons
+class CBSPNode2v;
 
 // ***************************************************************************
 /**
@@ -55,7 +57,6 @@ class CPolygon
 {
 public:
 	std::vector<CVector>	Vertices;
-	
 
 public:
 
@@ -70,12 +71,42 @@ public:
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
 	void			clip(const std::vector<CPlane> &planes);
-	
+
+	/**
+	  * Chain the arg polygons with this polygon.
+	  *
+	  * The polygon a-b-c-d-e-a chained with f-g-h-i-j-f will give a polygon like a-b-f-g-h-i-j-f-b-c-d-e-a
+	  * if the edge f-j is not clipped by any edge plane.
+	  *
+	  * \return false if chain failed.
+	  */
+	bool			chain (const CPolygon &other);
+
 	/// Serial this polygon
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	/**
+	  * Convert a concave polygon into a list of convex polygons using a 2d projection.
+	  * The polygon mustn't overlap itself in the XY plane of the basis passed in parameter.
+	  * The polygon must be direct in the XY plane of the basis passed in parameter. (Counter clock wise)
+	  *
+	  * The subdivison is in non-constant n*log(n) with n is the number of vertices.
+	  *
+	  * \param outputPolygons is the list filled with clipped convex polygons. The list is not cleared at the begining.
+	  * New polygons are just appended at the end.
+	  * \param basis is the basis of the polygon projection.
+	  * \return true if the polygon has been subdivided. false if the polygon overlap itself in the XY plane of the basis
+	  * or if the polygon is not direct (clock wise).
+	  */
+	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;
+
+	// Used by the method toConvexPolygons
+	static bool		toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1);
+	static bool		toConvexPolygonsLeft (const std::vector<CVector> &vertex, uint a, uint b, uint c);
+	static bool		toConvexPolygonsLeftOn (const std::vector<CVector> &vertex, uint a, uint b, uint c);
+	static bool		toConvexPolygonsInCone (const std::vector<CVector> &vertex, uint a, uint b);
+	static bool		toConvexPolygonsDiagonal (const std::vector<CVector> &vertex, const CBSPNode2v &bsp, uint a, uint b);
 };
-
 
 /**
   * A 2d convex polygon

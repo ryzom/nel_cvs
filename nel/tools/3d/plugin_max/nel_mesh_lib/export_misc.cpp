@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.11 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.12 2001/12/12 11:07:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -672,4 +672,16 @@ void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExcl
 }
 
 // --------------------------------------------------
+/// Transform a 3dsmax uv matrix to a nel uv matrix
+void CExportNel::uvMatrix2NelUVMatrix (const Matrix3& uvMatrix, NLMISC::CMatrix &dest)
+{
+	CMatrix mat;
+	convertMatrix(mat, uvMatrix);
+	CMatrix convMat;
+	convMat.setRot(CVector::I, - CVector::J, CVector::K);
+	convMat.setPos(CVector::J);
+	dest = convMat * mat;
+	convertMatrix(dest, uvMatrix);
+}
+
 

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.36 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: export_nel.h,v 1.37 2001/12/12 11:07:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -367,6 +367,9 @@ public:
 	// Convert a NeL matrix in 3dsmax matrix
 	static void						convertMatrix (Matrix3& maxMatrix, const NLMISC::CMatrix& nelMatrix);
 
+	/// Convert a 3dsmax uv matrix to a nel uv matrix
+	static void						uvMatrix2NelUVMatrix (const Matrix3& uvMatrix, NLMISC::CMatrix &dest);
+
 	// Convert a 3dsmax vector in NeL vector
 	static void						convertVector (NLMISC::CVector& nelVector, const Point3& maxVector);
 
@@ -475,6 +478,7 @@ private:
 			_CropW=1.f;
 			_CropH=1.f;
 		}
+		const Matrix3 &getUVMatrix() const { return _UVMatrix; }
 	private:
 		// *** Data
 
@@ -522,6 +526,9 @@ private:
 
 		// Alpha vertex channel for this material
 		uint										AlphaVertexChannel;
+
+		// allow to export a user texture matrix
+		bool										TextureMatrixEnabled;
 	};
 
 	// Max base build structure

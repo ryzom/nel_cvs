@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.54 2002/01/10 13:19:17 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.55 2002/01/15 15:28:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -913,9 +913,7 @@ void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 {
 	// Disable Texture coord generation.
 	_DriverGLStates.activeTextureARB(1);
-	glDisable( GL_TEXTURE_GEN_S );
-	glDisable( GL_TEXTURE_GEN_T );
-	glDisable( GL_TEXTURE_GEN_R );
+	_DriverGLStates.enableTexGen (1, false);
 	//_DriverGLStates.setTextureMode(1, CDriverGLStates::TextureDisabled);
 
 	// Happiness !!! we have already enabled the stage 1

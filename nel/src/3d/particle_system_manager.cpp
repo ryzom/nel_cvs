@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.13 2003/11/06 14:51:06 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.14 2003/11/18 13:58:42 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -143,8 +143,7 @@ CParticleSystemManager::TAlwaysAnimatedModelHandle	CParticleSystemManager::addPe
 	#endif
 	CAlwaysAnimatedPS aaps;
 	aaps.Model = ps;
-	aaps.HasAncestorSkeleton = false; // even if there's an ancestor skeleton yet, force the manager to recompute relative pos of the system when clipped	
-	//#error finir de remplir la structure
+	aaps.HasAncestorSkeleton = false; // even if there's an ancestor skeleton yet, force the manager to recompute relative pos of the system when clipped		
 	_PermanentlyAnimatedModelList.push_front(aaps);
 
 

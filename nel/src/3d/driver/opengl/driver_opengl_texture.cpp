@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.9 2000/12/18 08:57:17 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.10 2000/12/22 13:31:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,12 +32,22 @@ namespace NL3D
 {
 
 
-// Get the Id of an existing setuped texture.
-static	inline GLint	getTextureGlId(ITexture& tex)
+// Get the glText mirror of an existing setuped texture.
+static	inline CTextureDrvInfosGL*	getTextureGl(ITexture& tex)
 {
 	CTextureDrvInfosGL*	gltex;
 	gltex= (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex.TextureDrvShare->DrvTexture);
-	return gltex->ID;
+	return gltex;
+}
+
+
+// Translation of Wrap mode.
+static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode)
+{
+	if(mode== ITexture::Repeat)
+		return GL_REPEAT;
+	else
+		return GL_CLAMP;
 }
 
 
@@ -98,7 +108,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		//===============
 		if(mustload)
 		{
-			glBindTexture(GL_TEXTURE_2D, getTextureGlId(tex));
+			CTextureDrvInfosGL*	gltext;
+			gltext= getTextureGl(tex);
+			glBindTexture(GL_TEXTURE_2D, gltext->ID);
 
 			tex.generate();
 
@@ -123,8 +135,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 			// Basic parameters.
 			glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+			gltext->WrapS= tex.getWrapS();
+			gltext->WrapT= tex.getWrapT();
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS));
+			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 			//glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
@@ -147,7 +161,19 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		if(tex)
 		{
 			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, getTextureGlId(*tex));
+			CTextureDrvInfosGL*	gltext;
+			gltext= getTextureGl(*tex);
+			glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
+			if(gltext->WrapS!= tex->getWrapS())
+			{
+				gltext->WrapS= tex->getWrapS();
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS));
+			}
+			if(gltext->WrapT!= tex->getWrapT())
+			{
+				gltext->WrapT= tex->getWrapT();
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT));
+			}
 		}
 		else
 		{

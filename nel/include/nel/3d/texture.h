@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.17 2000/12/22 13:17:09 corvazier Exp $
+ * $Id: texture.h,v 1.18 2000/12/22 13:30:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,8 +74,17 @@ public:
  */
 class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
+public:
+	enum	TWrapMode
+	{
+		Repeat= 0,
+		Clamp
+	};
+
 private:
-	bool	_Releasable;
+	bool		_Releasable;
+	TWrapMode	_WrapS;
+	TWrapMode	_WrapT;
 
 protected:
 	// Derived texture should set it to true when they are updated.
@@ -95,14 +104,27 @@ public:
 public:
 
 	// Object.
-	/// By default, a texture is releasable.
-	ITexture() {_Touched= false; _Releasable= true;}
+	/// By default, a texture is releasable, wrap= repeat.
+	ITexture() {_Touched= false; _Releasable= true; _WrapS= _WrapT= Repeat;}
 	/// see operator=.
-	ITexture(const ITexture &tex) {_Touched= false; _Releasable= true; operator=(tex);}
+	ITexture(const ITexture &tex) {_Touched= false; _Releasable= true; _WrapS= _WrapT= Repeat; operator=(tex);}
 	/// Need a virtual dtor.
 	virtual ~ITexture();
 	/// The operator= do not copy drv info, and set touched=true. _Releasable is copied.
 	ITexture &operator=(const ITexture &tex);
+
+
+	/// \name Texture parameters.
+	/** By default, parameters are:
+		- WrapS==Repeat.
+		- WrapT==Repeat.
+	 */
+	// @{
+	void		setWrapS(TWrapMode mode) {_WrapS= mode;}
+	void		setWrapT(TWrapMode mode) {_WrapT= mode;}
+	TWrapMode	getWrapS() const {return _WrapS;}
+	TWrapMode	getWrapT() const {return _WrapT;}
+	// @}
 
 
 	/**
@@ -152,9 +174,10 @@ public:
 	 */
 	void	clearTouched(void) 
 	{ 
-		_Touched=0; 
+		_Touched=false; 
 		_ListInvalidRect.clear();
 	}
+
 	
 	/** 
 	 * Return whether texture can be released. If it returns true, the driver will release the texture

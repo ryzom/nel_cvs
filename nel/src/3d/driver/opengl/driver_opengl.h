@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.29 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.30 2000/12/22 13:31:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,10 @@ using NLMISC::CVector;
 class CTextureDrvInfosGL : public ITextureDrvInfos
 {
 public:
-		GLuint		ID;
+		GLuint					ID;
+		// The current wrap modes assigned to the texture.
+		ITexture::TWrapMode		WrapS;
+		ITexture::TWrapMode		WrapT;
 
 		CTextureDrvInfosGL()
 		{

@@ -474,6 +474,10 @@ SOURCE=.\3d\patch.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\patch_lightmap.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\patch_noise.cpp
 # End Source File
 # Begin Source File
@@ -2308,19 +2312,6 @@ SOURCE=.\3d\mini_col.h
 # Begin Source File
 
 SOURCE=.\3d\mot.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-# ADD BASE CPP /YX
-
-!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

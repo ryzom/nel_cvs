@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.2 2004/01/13 18:34:01 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.3 2004/01/14 10:31:25 distrib Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -64,7 +64,7 @@ bool CWordsDictionary::init( const string& configFileName )
 		nlwarning( "WD: %s", e.what() );
 	}
 	string wordsPath, languageCode;
-	bool utf8;
+	bool utf8 = false;
 	if ( cfFound )
 	{
 		CConfigFile::CVar *v = cf.getVarPtr( "WordsPath" );
@@ -111,7 +111,7 @@ bool CWordsDictionary::init( const string& configFileName )
 						continue;
 					STRING_MANAGER::TWorksheet::TRow& row = *ip;
 					_Keys.push_back( row[ck].toString() );
-					string& word = utf8 ? row[cw].toUtf8() : row[cw].toString();
+					string word = utf8 ? row[cw].toUtf8() : row[cw].toString();
 					_Words.push_back( word );
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.3 2001/03/27 09:51:50 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.4 2001/03/27 15:33:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,6 +148,10 @@ CAnimatedMaterial::CAnimatedMaterial(CMaterialBase *baseMat)
 	_Shininess.affect(_MaterialBase->DefaultShininess.getValue());
 	_Emissive.affect(_MaterialBase->DefaultEmissive.getValue());
 	_Opacity.affect(_MaterialBase->DefaultOpacity.getValue());
+
+
+	// IAnimatable.
+	IAnimatable::resize(AnimValueLast);
 }
 
 

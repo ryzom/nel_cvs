@@ -1413,7 +1413,21 @@ void CMainFrame::onOptionsSetRoot ()
 	}
 	_Environnement.RootDir = str;
 	_Environnement.RootDir += "\\";
+	// TREE
 	_Tree->update (_Environnement.RootDir);
+	// WORLDEDITOR
+	if (_WorldEditor != NULL)
+		_WorldEditor->setRootDir (_Environnement.RootDir.c_str());
+	// GEORGES
+	if (_Georges != NULL)
+	{
+		_Georges->SetRootDirectory (_Environnement.RootDir + "common");
+		_Georges->SetWorkDirectory (_Environnement.RootDir + "common\\dfn");
+		georgesCreatePlantName ();
+	}
+	// LOGICEDITOR
+//	if (_LogicEditor != NULL)
+//		_LogicEditor->setRootDir (_Environnement.RootDir.c_str());
 }
 
 // ---------------------------------------------------------------------------

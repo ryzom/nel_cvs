@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.3 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: displayer.cpp,v 1.4 2000/11/08 14:59:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,10 @@
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
+// these defines is for IsDebuggerPresent(). it'll not compile on windows 95
+// just comment this and the IsDebuggerPresent to compile on wiindows 95
+#define _WIN32_WINDOWS	0x0410
+#define WINVER			0x0400
 #include <windows.h>
 #endif
 
@@ -41,7 +45,9 @@ void CStdDisplayer::display (const std::string& str)
 	printf("%s", str.c_str ());
 	
 #ifdef NL_OS_WINDOWS
-	OutputDebugString(str.c_str ());
+	// don't install signal is the application is started in debug mode
+	if (IsDebuggerPresent ())
+		OutputDebugString(str.c_str ());
 #endif
 }
 

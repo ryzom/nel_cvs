@@ -1,7 +1,9 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.2 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: i18n.cpp,v 1.3 2000/11/08 14:59:33 lecroart Exp $
+ *
+ * \todo ace: manage unicode format
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +42,6 @@ string							 CI18N::_FileName;
 vector<string>					 CI18N::_LanguageNames;
 bool							 CI18N::_LanguagesNamesLoaded = false;
 
-/// \todo ACE: manage unicode format
 void CI18N::skipComment(IStream &is, int &line)
 {
 	// the first '/' is already eated

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.18 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: debug.cpp,v 1.19 2000/11/08 14:59:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,10 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
+
+#ifdef NL_OS_WINDOWS
+#include <windows.h>
+#endif
 
 /**
  * \page log_howto How to log information ?
@@ -102,6 +106,26 @@ CLog AssertLog( LOG_ASSERT, true );
 CStdDisplayer sd;
 
 
+void nlFatalError (const char *format, ...)
+{
+	// Build the string
+	char cstring [1024];
+
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+
+	NLMISC::ErrorLog.displayNL (cstring);
+
+#if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
+	// don't install signal is the application is started in debug mode
+	_asm int 3;
+#endif
+
+	throw EFatalError();
+}
+
 void nlError (const char *format, ...)
 {
 	// Build the string
@@ -111,10 +135,13 @@ void nlError (const char *format, ...)
 	va_start( args, format );
 	vsprintf( cstring, format, args );
 	va_end( args );
-	strcat( cstring, "\n" );
 
 	NLMISC::ErrorLog.displayNL (cstring);
-	exit (EXIT_FAILURE);
+
+#if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
+	// don't install signal is the application is started in debug mode
+	_asm int 3;
+#endif
 }
 
 void InitDebug ()
@@ -134,7 +161,7 @@ void InitDebug ()
 	}
 	else
 	{
-		nlwarning ("RMISC_InitDebug already called");
+		nlerror ("RMISC_InitDebug already called");
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.11 2001/09/24 15:59:12 cado Exp $
+ * $Id: sock.cpp,v 1.12 2001/10/25 14:58:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -413,7 +413,7 @@ CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exc
 {
 	TTicks before = CTime::getPerformanceTime();
 	len = ::send( _Sock, (const char*)buffer, len, 0 );
-	_MaxSendTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
+	_MaxSendTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxSendTime );
 	if ( len == SOCKET_ERROR )
 	{
 		if ( ERROR_NUM == ERROR_WOULDBLOCK )
@@ -448,7 +448,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		// Receive incoming message (only the received part)
 		TTicks before = CTime::getPerformanceTime();
 		len = ::recv( _Sock, (char*)buffer, len, 0 );
-		_MaxReceiveTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
+		_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 		switch ( len )
 		{
 			// Graceful disconnection
@@ -496,7 +496,7 @@ CSock::TSockResult CSock::receive( uint8 *buffer, uint32& len, bool throw_except
 		{
 			TTicks before = CTime::getPerformanceTime();
 			brecvd = ::recv( _Sock, (char*)(buffer+total), len-total, 0 );
-			_MaxReceiveTime = std::max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
+			_MaxReceiveTime = max( (uint32)(CTime::ticksToSecond(CTime::getPerformanceTime()-before)*1000.0f), _MaxReceiveTime );
 			switch ( brecvd )
 			{
 				// Graceful disconnection

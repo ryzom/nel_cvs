@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.32 2001/07/04 12:41:52 lecroart Exp $
+ * $Id: common.h,v 1.33 2001/10/25 14:58:23 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,7 +294,7 @@ template<class T> std::string toString (const T &t)
 
 #define NLMISC_ADD_BASIC_ISTREAM_OPERATOR(__type,__casttype) \
 template <class _CharT, class _Traits> \
-std::basic_istream<_CharT, _Traits>& __STL_CALL \
+std::basic_istream<_CharT, _Traits>& __cdecl \
 operator>>(std::basic_istream<_CharT, _Traits>& __is, __type& __z) \
 { \
 	__casttype __z2 = (__casttype) __z; \
@@ -304,7 +304,7 @@ operator>>(std::basic_istream<_CharT, _Traits>& __is, __type& __z) \
 } \
  \
 template <class _CharT, class _Traits> \
-std::basic_ostream<_CharT, _Traits>& __STL_CALL \
+std::basic_ostream<_CharT, _Traits>& __cdecl \
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const __type& __z) \
 { \
 	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __tmp; \
@@ -321,7 +321,7 @@ NLMISC_ADD_BASIC_ISTREAM_OPERATOR(sint32, signed int);
 
 
 template <class _CharT, class _Traits>
-std::basic_istream<_CharT, _Traits>& __STL_CALL
+std::basic_istream<_CharT, _Traits>& __cdecl
 operator>>(std::basic_istream<_CharT, _Traits>& __is, uint64& __z)
 {
 	__z = 0;
@@ -354,7 +354,7 @@ operator>>(std::basic_istream<_CharT, _Traits>& __is, uint64& __z)
 }
 
 template <class _CharT, class _Traits>
-std::basic_ostream<_CharT, _Traits>& __STL_CALL
+std::basic_ostream<_CharT, _Traits>& __cdecl
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const uint64& __z)
 {
 	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __res;
@@ -381,7 +381,7 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const uint64& __z)
 }
 
 template <class _CharT, class _Traits>
-std::basic_istream<_CharT, _Traits>& __STL_CALL
+std::basic_istream<_CharT, _Traits>& __cdecl
 operator>>(std::basic_istream<_CharT, _Traits>& __is, sint64& __z)
 {
 	__z = 0;
@@ -414,7 +414,7 @@ operator>>(std::basic_istream<_CharT, _Traits>& __is, sint64& __z)
 }
 
 template <class _CharT, class _Traits>
-std::basic_ostream<_CharT, _Traits>& __STL_CALL
+std::basic_ostream<_CharT, _Traits>& __cdecl
 operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 {
 	std::basic_ostringstream<_CharT, _Traits, std::allocator<_CharT> > __res;

@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.2 2001/05/02 12:54:13 lecroart Exp $
+ * $Id: login_server.h,v 1.3 2001/05/03 16:26:27 coutelas Exp $
  * 
  */
 
@@ -33,12 +33,13 @@
 #include "nel/misc/types_nl.h"
 
 #include "nel/net/callback_server.h"
+#include "nel/net/login_cookie.h"
 
 namespace NLNET
 {
 
 /// Callback function type called when a new client is identified (with the login password procedure)
-typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
+	typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
 
 
 class IDisplayer;

@@ -12,7 +12,7 @@
 
 	// $reason contains the reason why the check failed or success
 	// return true if the check is ok
-	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason, &$priv, &$extended)
+	function checkUserValidity ($login, $password, $clientApplication, $cp, &$id, &$reason, &$priv, &$extended)
 	{
 		global $DBHost, $DBUserName, $DBPassword, $DBName, $AcceptUnknownUser;
 
@@ -63,7 +63,7 @@
 		{
 			$row = mysql_fetch_row ($result);
 			$salt = substr($row[2],0,2);
-			if ($row[2] == crypt($password, $salt))
+			if (($cp && $row[2] == $password) || (!$cp && $row[2] == crypt($password, $salt)))
 			{
 				// check if the user can use this application
 
@@ -160,11 +160,41 @@
 		return $res;
 	}
 
+	function askSalt($login)
+	{
+		global $PHP_SELF;
+		global $DBHost, $DBUserName, $DBPassword, $DBName;
+
+		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("0:Can't connect to database host:$DBHost user:$DBUserName");
+		mysql_select_db ($DBName) or die ("0:Can't access to the table dbname:$DBName");
+
+		$query = "SELECT Password FROM user WHERE Login='$login'";
+		$result = mysql_query ($query) or die ("0:Can't execute the query: ".$query);
+
+		if (mysql_num_rows ($result) != 1)
+			die ("0:Can't select the user $login");
+
+		$res_array = mysql_fetch_array($result);
+		$salt = substr($res_array['Password'], 0, 2);
+
+		echo "1:".$salt;
+		mysql_close($link);
+	}
+
 // --------------------------------------------------------------------------------------
 // main 
 // --------------------------------------------------------------------------------------
 
-	if (!checkUserValidity($login, $password, $clientApplication, $id, $reason, $priv, $extended))
+	if ($cmd = "ask")
+	{
+		askSalt($login);
+		die();
+	}
+
+	// check cp is set (force bool)
+	$cp = ($cp == "1");
+
+	if (!checkUserValidity($login, $password, $clientApplication, $cp, $id, $reason, $priv, $extended))
 	{
 		echo "0:".$reason;
 	}

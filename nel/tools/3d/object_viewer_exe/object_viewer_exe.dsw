@@ -11,9 +11,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -86,6 +83,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name driver_openal
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_opengl
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound_lowlevel
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -110,6 +113,15 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name misc
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_openal
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound_lowlevel
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -122,12 +134,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name sound_lowlevel
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -140,9 +146,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
 }}}
 
 ###############################################################################

@@ -32,28 +32,19 @@ echo -------
 date >> log.log
 date
 
-
+database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 
 panoply_file_list=`cat ../../cfg/config.cfg | grep "panoply_file_list" | sed -e 's/panoply_file_list//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test "$panoply_file_list" ; then
-	panoply_source_directories=`cat ../../cfg/directories.cfg | grep "panoply_source_directory" | sed -e 's/panoply_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-	panoply_masks_directories=`cat ../../cfg/directories.cfg | grep "panoply_mask_directory" | sed -e 's/panoply_mask_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-
-	mask_list='additionnal_paths = {'
-	for pmask in $panoply_masks_directories ; do
-		mask_list=`echo "$mask_list \"$pmask\","`
-   	done
-	mask_list=`echo "$mask_list};"`
-	mask_list=`echo $mask_list | sed -e 's/,}/ }/'`
-
-	for psource in $panoply_source_directories ; do
-		cp ../../cfg/panoply.cfg current_panoply.cfg
-		echo "input_path = \"$psource\";" >> current_panoply.cfg
-		echo $mask_list >> current_panoply.cfg
-		../../bin/panoply_maker current_panoply.cfg	
+	rm $panoply_file_list
+	panoply_config_file=`cat ../../cfg/directories.cfg | grep "panoply_config_file" | sed -e 's/panoply_config_file//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	for psource in $panoply_config_file ; do
+		cp $database_directory/$psource current_panoply.cfg
+		echo "output_path=\"panoply\";" >> current_panoply.cfg
+		../../bin/panoply_maker current_panoply.cfg
 	done
-	ls panoply > $panoply_file_list
+	ls panoply >> $panoply_file_list
 fi
 
 

@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.8 2002/10/29 14:40:46 berenguier Exp $
+ * $Id: u_instance_material.h,v 1.9 2002/11/14 17:37:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,11 +55,25 @@ protected:
 	// @}
 
 public:
+	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
+public:
 
 	/// \name Modes.
 	// @{
 	virtual	bool				isLighted() const =0;
 	virtual	bool				isUserColor() const =0;
+	// @}
+
+	/// \name Blending.
+	// @{
+	virtual void			setBlend(bool active) =0;
+	virtual void			setBlendFunc(TBlend src, TBlend dst) =0;
+	virtual void			setSrcBlend(TBlend val) =0;
+	virtual void			setDstBlend(TBlend val) =0;
+
+	virtual bool			getBlend() const =0;
+	virtual TBlend			getSrcBlend(void)  const =0;
+	virtual TBlend			getDstBlend(void)  const =0;
 	// @}
 
 
@@ -117,6 +131,8 @@ public:
 	virtual bool				isTextureFile(uint stage = 0) const = 0;
 	/// Get the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
 	virtual std::string			getTextureFileName(uint stage = 0) const = 0;
+	// Empty the texture at the given stage
+	virtual void				emptyTexture(uint stage = 0) = 0;
 	/** Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
 	 *	NB: if success and if instanceOwner->getAsyncTextureMode()==true, then instanceOwner->setAsyncTextureDirty(true) 
 	 *	is called

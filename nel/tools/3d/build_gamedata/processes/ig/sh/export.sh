@@ -12,7 +12,10 @@ database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -
 build_gamedata_directory=`cat ../../cfg/config.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the ig directories
-ig_source_directories=`cat ../../cfg/directories.cfg | grep "ig_source_directory" | sed -e 's/ig_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+ig_land_source_directories=`cat ../../cfg/directories.cfg | grep "ig_land_source_directory" | sed -e 's/ig_land_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the ig directories
+ig_other_source_directories=`cat ../../cfg/directories.cfg | grep "ig_other_source_directory" | sed -e 's/ig_other_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log
@@ -24,9 +27,29 @@ echo -------
 
 # For each directoy
 
-for i in $ig_source_directories ; do
+# List landscape ig
+rm landscape_ig.txt
+
+for i in $ig_land_source_directories ; do
 	# Copy the script
-	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig&g" > $max_directory/scripts/ig_export.ms
+	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_land&g" > $max_directory/scripts/ig_export.ms
+
+	# Start max
+	$max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi
+
+	# Concat log.log files
+	cat $max_directory/log.log >> log.log
+done
+
+cd ig_land
+for i in *.ig ; do
+	echo $i >> ../landscape_ig.txt
+done
+cd ..
+
+for i in $ig_other_source_directories ; do
+	# Copy the script
+	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_other&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
 	$max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi

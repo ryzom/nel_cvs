@@ -19,4 +19,6 @@ echo -------
 echo --- Install Ig 
 echo ------- 
 
-cp -u ig/*.ig $client_directory/$ig_install_directory  2>> log.log
+cp -u ig_land/*.ig $client_directory/$ig_install_directory  2>> log.log
+cp -u ig_other/*.ig $client_directory/$ig_install_directory  2>> log.log
+cp -u landscape_ig.txt $client_directory  2>> log.log

@@ -954,6 +954,10 @@ SOURCE=..\include\nel\3d\tmp\viewport.h
 SOURCE=.\3d\Makefile.am
 # End Source File
 # End Group
+# Begin Group "sfx"
+
+# PROP Default_Filter ""
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.cpp

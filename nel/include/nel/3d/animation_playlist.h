@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.4 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: animation_playlist.h,v 1.5 2001/03/29 15:13:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,7 +233,7 @@ public:
 	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
 	  * \param wrapMode is the mode to use.
 	  */
-	void setWrapMode (TWrapMode wrapMode);
+	void setWrapMode (uint8 slot, TWrapMode wrapMode);
 
 	/**
 	  * Get the wrap mode in use in the play list.
@@ -241,15 +241,20 @@ public:
 	  * Wrap mode tells the play list how to use an animation when current time is not in the animation.
 	  * \return the wrap mode in use.
 	  */
-	TWrapMode getWrapMode () const;
+	TWrapMode getWrapMode (uint8 slot) const;
+
+	/**
+	  * Serial
+	  */
+	void serial (NLMISC::IStream& f);
 
 private:
 
 	// Animation in slot
-	uint				_Animations[CChannelMixer::NumAnimationSlot];
+	uint32				_Animations[CChannelMixer::NumAnimationSlot];
 
 	// Skeleton weight in slot
-	uint				_SkeletonWeight[CChannelMixer::NumAnimationSlot];
+	uint32				_SkeletonWeight[CChannelMixer::NumAnimationSlot];
 
 	// Invert Skeleton weight in slot
 	bool				_InvertWeight[CChannelMixer::NumAnimationSlot];
@@ -276,7 +281,7 @@ private:
 	float				_Smoothness[CChannelMixer::NumAnimationSlot];
 
 	// Wrap mode
-	TWrapMode			_WrapMode;
+	TWrapMode			_WrapMode[CChannelMixer::NumAnimationSlot];
 };
 
 

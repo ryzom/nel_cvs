@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.2 2001/03/20 15:30:12 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.3 2001/03/29 15:13:30 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,8 +24,11 @@
  */
 
 #include "nel/3d/animation_playlist.h"
+#include "nel/misc/common.h"
+#include "nel/misc/stream.h"
 #include <math.h>
 
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -38,7 +41,8 @@ CAnimationPlaylist::CAnimationPlaylist()
 	emptyPlayList ();
 
 	// Set default wrap mode
-	_WrapMode=Clamp;
+	for (uint i=0; i<CChannelMixer::NumAnimationSlot; i++)
+		_WrapMode[i]=Clamp;
 }
 
 // ***************************************************************************
@@ -192,14 +196,26 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, CAnimationTime time) 
 					CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(time-_TimeOrigin[s])/_SpeedFactor[s];
 
 					// Wrap mode
-					switch (_WrapMode)
+					switch (_WrapMode[s])
 					{
 					case Clamp:
+						clamp (wrappedTime, pAnimation->getBeginTime (), pAnimation->getEndTime ());
 						break;
 					case Repeat:
 						// Mod repeat the time
-						wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), pAnimation->getEndTime ()-
-							pAnimation->getBeginTime());
+						{
+							float length=pAnimation->getEndTime ()-pAnimation->getBeginTime();
+							if (length>0.f)
+							{
+								while (wrappedTime<pAnimation->getBeginTime())
+									wrappedTime+=length;
+							}
+
+							if (wrappedTime>=pAnimation->getBeginTime())
+								wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length);
+							else
+								wrappedTime=pAnimation->getBeginTime()+(float)fmod (wrappedTime-pAnimation->getBeginTime(), length)+length;
+						}
 						break;
 					case Disable:
 						// Disable the animation if out of bounds
@@ -283,16 +299,40 @@ float CAnimationPlaylist::getWeightValue (float startWeightTime, float endWeight
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setWrapMode (TWrapMode wrapMode)
+void CAnimationPlaylist::setWrapMode (uint8 slot, TWrapMode wrapMode)
 {
-	_WrapMode=wrapMode;
+	_WrapMode[slot]=wrapMode;
 }
 
 // ***************************************************************************
 
-CAnimationPlaylist::TWrapMode CAnimationPlaylist::getWrapMode () const
+CAnimationPlaylist::TWrapMode CAnimationPlaylist::getWrapMode (uint8 slot) const
 {
-	return _WrapMode;
+	return _WrapMode[slot];
+}
+
+// ***************************************************************************
+
+void CAnimationPlaylist::serial (NLMISC::IStream& f)
+{
+	// Serial a version
+	int ver=f.serialVersion (0);
+
+	// Serial all the values
+	for (uint i=0; i<CChannelMixer::NumAnimationSlot; i++)
+	{
+		f.serial (_Animations[i]);
+		f.serial (_SkeletonWeight[i]);
+		f.serial (_InvertWeight[i]);
+		f.serial (_TimeOrigin[i]);
+		f.serial (_SpeedFactor[i]);
+		f.serial (_StartWeight[i]);
+		f.serial (_StartWeightTime[i]);
+		f.serial (_EndWeight[i]);
+		f.serial (_EndWeightTime[i]);
+		f.serial (_Smoothness[i]);
+		f.serialEnum (_WrapMode[i]);
+	}
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.29 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.30 2002/10/10 12:59:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "export_nel.h"
 #include "export_appdata.h"
 #include "calc_lm.h"
+#include "nel/misc/path.h"
 #include <3d/texture_file.h>
 #include <modstack.h> // class IDerivedObject
 #include <decomp.h> // class IDerivedObject
@@ -492,6 +493,23 @@ std::string	CExportNel::getName (INode& mtl)
 // Get the NEL node name
 std::string		CExportNel::getNelObjectName (INode& node)
 {
+	// Workaround for FX (don't know why, but the AppData are not copied when FX are duplicated, so try to get the name in another way)
+	// If this is a particle system, try to get the name of the shape.from the param blocks
+	Object *obj = node.EvalWorldState(0).obj;
+	// Check if there is an object
+	if (obj)
+	{
+		Class_ID  clid = obj->ClassID();
+		// is the object a particle system ? (we do this defore meshs, because for now there is a mesh in max scenes to say where a particle system is...)		
+		if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
+		{
+			std::string shapeName;
+			if (CExportNel::getValueByNameUsingParamBlock2(node, "ps_file_name", (ParamType2) TYPE_STRING, &shapeName, 0))
+			{
+				return NLMISC::CFile::getFilename(shapeName);
+			}			
+		}
+	}
 	// Try to get an APPDATA for the name of the object			
 	AppDataChunk *ad = node.GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL3D_APPDATA_INSTANCE_SHAPE);
 	if (ad&&ad->data)

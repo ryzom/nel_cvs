@@ -1,6 +1,6 @@
 /** \file export_particle_system.cpp
  *
- * $Id: export_particle_system.cpp,v 1.2 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_particle_system.cpp,v 1.3 2002/10/10 13:00:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "StdAfx.h"
 #include <3d/particle_system_model.h>
 #include <3d/particle_system_shape.h>
+#include "nel/misc/path.h"
 #include "export_appdata.h"
 #include "export_nel.h"
 
@@ -35,13 +36,24 @@ IShape* CExportNel::buildParticleSystem(INode& node, TimeValue time)
 {
 	Object *obj = node.EvalWorldState(time).obj;
 	nlassert(obj);
-	// build the shape from the file name
- 	AppDataChunk *ad = obj->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL3D_APPDATA_INSTANCE_SHAPE );
-	if (ad&&ad->data)
+	std::string shapeName;
+	// try to get the complete path	
+	if (!CExportNel::getValueByNameUsingParamBlock2(node, "ps_file_name", (ParamType2) TYPE_STRING, &shapeName, 0))
+	{
+		// if not found, get from the APP_DATAS
+		shapeName = CExportNel::getNelObjectName(node);
+		if (shapeName.empty()) return NULL;
+		shapeName = NLMISC::CPath::lookup("shapeName", false);
+		if (shapeName.empty()) return NULL;
+	}
+	
+	//
+	
+	if (!shapeName.empty())
 	{											
 		NL3D::CShapeStream ss;
 		NLMISC::CIFile iF;
-		if (iF.open((const char *) ad->data))
+		if (iF.open(shapeName.c_str()))
 		{
 			iF.serial(ss);
 
@@ -68,7 +80,7 @@ IShape* CExportNel::buildParticleSystem(INode& node, TimeValue time)
 		}
 		else
 		{
-			mprintf("Error : Can't find %s while exporting a particle system \n", (const char *) ad->data);
+			mprintf("Error : Can't find %s while exporting a particle system \n", shapeName.c_str());
 			return NULL;
 		}				
 	}

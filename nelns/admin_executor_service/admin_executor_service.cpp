@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.18 2002/11/08 13:29:51 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.19 2002/11/12 17:21:58 lecroart Exp $
  *
  */
 
@@ -395,7 +395,13 @@ bool startService (const string &serviceAlias)
 	arg += " >/dev/null";
 #endif
 
-	return launchProgram (command, arg);
+	bool res = launchProgram (command, arg);
+
+	// if launching ok, leave 1 second to the new launching service before lauching next one
+	if (res)
+		nlSleep (1000);
+
+	return res;
 }
 
 
@@ -484,15 +490,15 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 
 						string val = "???";
 						// handle special case of non running service
-						if (subvarpath.Destination[k].first == "Running")
-							val = "0";
-						else if (subvarpath.Destination[k].first == "Running=1")
+						if (subvarpath.Destination[k].first == "State")
+							val = "Offline";
+						else if (subvarpath.Destination[k].first == "State=1")
 						{
 							// we want to start the service
 							if (startService (RegisteredServices[j]))
-								val = "2";
+								val = "Launching";
 							else
-								val = "3";
+								val = "Failed";
 						}
 
 						vala.push_back (val);
@@ -614,15 +620,15 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							
 							string val = "???";
 							// handle special case of non running service
-							if (subvarpath.Destination[k].first == "Running")
-								val = "0";
-							else if (subvarpath.Destination[k].first == "Running=1")
+							if (subvarpath.Destination[k].first == "State")
+								val = "Offline";
+							else if (subvarpath.Destination[k].first == "State=1")
 							{
 								// we want to start the service
 								if (startService (service))
-									val = "2";
+									val = "Launching";
 								else
-									val = "3";
+									val = "Failed";
 							}
 							
 							vala.push_back (val);

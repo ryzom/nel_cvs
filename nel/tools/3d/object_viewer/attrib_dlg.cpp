@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.16 2001/09/12 13:23:21 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.17 2001/09/13 14:26:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -502,7 +502,7 @@ void CAttribDlg::OnEditScheme()
 void CAttribDlg::OnGetScheme() 
 {
 CSchemeBankDlg sbd(getCurrentSchemePtr()->getType(), this);
-if (sbd.DoModal() == IDOK)
+if (sbd.DoModal() == IDOK && sbd.getSelectedScheme())
 {
 	setCurrentSchemePtr(sbd.getSelectedScheme()->clone());	
 	_FirstDrawing = true;
@@ -644,12 +644,12 @@ END_MESSAGE_MAP()
 
 	uint CAttribDlgFloat::getNumScheme(void) const
 	{	
-		return _DisableMemoryScheme ? 2 : 4;		
+		return _DisableMemoryScheme ? 3 : 5;		
 	}
 	std::string CAttribDlgFloat::getSchemeName(uint index) const
 	{
-		const char *types[] = { "value blender", "values gradient", "value computed from emitter", "binary operator"};
-		nlassert(index < 4);
+		const char *types[] = { "value blender", "values gradient", "lagrange curve", "value computed from emitter", "binary operator"};
+		nlassert(index < 5);
 		return std::string(types[index]);		
 	}
 	void CAttribDlgFloat::editScheme(void)
@@ -701,6 +701,10 @@ END_MESSAGE_MAP()
 			CBinOpDlgT<float> bod( (NL3D::CPSFloatBinOp *)(scheme), (CAttribDlgT<float> **) ad, m_AttrBitmap.GetBitmap());	
 			bod.DoModal();
 		}
+
+		if (dynamic_cast<const NL3D::CPSFloatLagrange *>(scheme)) 
+		{
+		}
 	}
 
 	sint CAttribDlgFloat::getCurrentScheme(void) const
@@ -709,8 +713,9 @@ END_MESSAGE_MAP()
 		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme();		
 		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme))  return 0;		
 		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) return 1;		
-		if (dynamic_cast<const NL3D::CPSFloatMemory *>(scheme)) return 2;		
-		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) return 3;
+		if (dynamic_cast<const NL3D::CPSFloatLagrange *>(scheme)) return 2;
+		if (dynamic_cast<const NL3D::CPSFloatMemory *>(scheme)) return 3;		
+		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) return 4;
 		
 		return -1;
 	}
@@ -718,24 +723,27 @@ END_MESSAGE_MAP()
 
 	void CAttribDlgFloat::setCurrentScheme(uint index)
 	{
-		nlassert(index < 4);
+		nlassert(index < 5);
 
 
 		NL3D::CPSAttribMaker<float> *scheme = NULL;
 
 		switch (index)
 		{
-			case 0 :
+			case 0:
 				scheme = new NL3D::CPSFloatBlender(_MinRange, _MaxRange);
 			break;
-			case 1 :
+			case 1:
 				scheme = new NL3D::CPSFloatGradient;
 			break;
-			case 2 :
+			case 2:
+				scheme = new NL3D::CPSFloatLagrange;
+			break;
+			case 3:
 				scheme = new NL3D::CPSFloatMemory;
 				((NL3D::CPSAttribMakerMemory<float> *) scheme)->setScheme(new NL3D::CPSFloatBlender(_MinRange, _MaxRange));
 			break;
-			case 3 :
+			case 4 :
 				scheme = new NL3D::CPSFloatBinOp;
 				((NL3D::CPSFloatBinOp *) scheme)->setArg(0, new NL3D::CPSFloatBlender);
 				((NL3D::CPSFloatBinOp *) scheme)->setArg(1, new NL3D::CPSFloatBlender);

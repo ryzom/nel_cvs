@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.44 2002/03/25 09:26:02 lecroart Exp $
+ * $Id: service.h,v 1.45 2002/03/25 10:16:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,6 +253,8 @@ public:
 	/// Returns a pointer to the CCallbackServer object
 	CCallbackServer					*getServer();
 
+	/// Returns the recording state (don't needed if you use layer4 or 5)
+	CCallbackNetBase::TRecordingState	getRecordingState() const { return _RecordingState; }
 
 
 	/// Returns true if this service use layer5
@@ -305,15 +307,15 @@ public:
 	void setOldCallbackArray (TCallbackItem *array, uint nbelem) { _IsService5 = false; _CallbackArray = array; _CallbackArraySize = nbelem; }
 	void setCallbackArray (TUnifiedCallbackItem *array, uint nbelem) { _IsService5 = true; _CallbackArray5 = array; _CallbackArraySize = nbelem; }
 
+	/// Ctor. You must not inherit ctor but overload init() function
+	IService ();
+
+	/// Dtor. You must not inherit dtor but overload release() function
+	virtual ~IService () {}
+
 	//@}
 
 protected:
-
-	/// Ctor
-	IService ();
-
-	/// Dtor
-	virtual ~IService () {}
 
 	/// The window displayer instance
 	NLMISC::CWindowDisplayer			*_WindowDisplayer;
@@ -325,9 +327,6 @@ private:
 
 	/// Changes the recording state (use if you know what you are doing)
 	void								setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
-
-	/// Returns the recording state
-	CCallbackNetBase::TRecordingState	getRecordingState() const { return _RecordingState; }
 
 	//@}
 

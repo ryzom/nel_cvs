@@ -127,8 +127,9 @@ void		addShadowMesh(CMeshMRMGeom *meshIn, float paramFaceRatio, sint paramMaxFac
 	// Some Info on what have been merged.
 	if(shadowVertices.size())
 	{
-		nlinfo("%d Vertices have been merged. => %d %%", numMerged, 
-			100*numMerged / (numMerged+shadowVertices.size()));
+		// TestYoyo.
+		/*nlinfo("%d Vertices have been merged. => %d %%", numMerged, 
+			100*numMerged / (numMerged+shadowVertices.size()));*/
 	}
 
 

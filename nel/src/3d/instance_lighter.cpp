@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.11 2002/03/14 18:07:10 vizerie Exp $
+ * $Id: instance_lighter.cpp,v 1.12 2002/06/14 09:36:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1660,10 +1660,10 @@ void			CInstanceLighter::nextCell()
 	{
 		_ItSurfId= 0;
 		_ItRetriever++;
-		// Get info.
-		_ItRetrieverInfo= _IGSurfaceLightBuild->RetrieverGridMap.find(_ItRetriever->first);
 		if(_ItRetriever != _IGRetrieverGridMap.end())
 		{
+			// Get info.
+			_ItRetrieverInfo= _IGSurfaceLightBuild->RetrieverGridMap.find(_ItRetriever->first);
 			nlassert(_ItRetrieverInfo != _IGSurfaceLightBuild->RetrieverGridMap.end() );
 		}
 	}

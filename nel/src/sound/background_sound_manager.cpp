@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.6 2002/07/30 14:25:42 miller Exp $
+ * $Id: background_sound_manager.cpp,v 1.7 2002/07/30 15:53:14 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,7 @@ static float OldRatio = 10.0f;
 void CBackgroundSoundManager::init (UAudioMixer *am)
 {
 	_AudioMixer = am;
+	OldRatio = 10.0f;
 }
 
 void CBackgroundSoundManager::release ()
@@ -99,7 +100,7 @@ void CBackgroundSoundManager::unload (uint32 i)
 		_AudioMixer->removeSource(BackgroundSounds[i].SourceDay);
 		BackgroundSounds[i].SourceDay = NULL;
 
-		nlinfo ("unloaded day background sound '%s'", BackgroundSounds[i].FullName.c_str());
+		//nlinfo ("unloaded day background sound '%s'", BackgroundSounds[i].FullName.c_str());
 	}
 
 	if(!BackgroundSounds[i].SourceNight)
@@ -113,7 +114,7 @@ void CBackgroundSoundManager::unload (uint32 i)
 		_AudioMixer->removeSource(BackgroundSounds[i].SourceNight);
 		BackgroundSounds[i].SourceNight = NULL;
 
-		nlinfo ("unloaded night background sound '%s'", BackgroundSounds[i].FullName.c_str());
+		//nlinfo ("unloaded night background sound '%s'", BackgroundSounds[i].FullName.c_str());
 	}
 	BackgroundSounds[i].Loaded = false;
 }
@@ -141,7 +142,7 @@ void CBackgroundSoundManager::load (uint32 i)
 			BackgroundSounds[i].SourceDay->setPos( srcpos );
 			BackgroundSounds[i].SourceDayMaxGain = BackgroundSounds[i].SourceDay->getGain ();
 			
-			nlinfo ("loaded day background sound '%s'", BackgroundSounds[i].Name.c_str());
+			//nlinfo ("loaded day background sound '%s'", BackgroundSounds[i].Name.c_str());
 		}
 	}
 
@@ -161,7 +162,7 @@ void CBackgroundSoundManager::load (uint32 i)
 			BackgroundSounds[i].SourceNight->setPos( srcpos );
 			BackgroundSounds[i].SourceNightMaxGain = BackgroundSounds[i].SourceNight->getGain ();
 
-			nlinfo ("loaded night background sound '%s'", BackgroundSounds[i].Name.c_str());
+			//nlinfo ("loaded night background sound '%s'", BackgroundSounds[i].Name.c_str());
 		}
 	}
 	BackgroundSounds[i].Loaded = true;
@@ -339,15 +340,15 @@ void CBackgroundSoundManager::setListenerPosition (const CVector &listenerPositi
 		// if the source is near, load the source
 		if(nearestDist < 190.0f && !BackgroundSounds[i].Loaded)
 		{
-nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
-			nlinfo ("background sound %d '%s' is too near (%f) , load it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
+//nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+//			nlinfo ("background sound %d '%s' is too near (%f) , load it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
 			load(i);
 		}
 		else if(nearestDist > 210.0f && BackgroundSounds[i].Loaded)
 		{
 			// if the source is far, unload the source
-nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
-			nlinfo ("background sound %d '%s' is too far (%f), unload it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
+//nlinfo ("nearest dist = %f pos = %f %f %f lis %f %f %f", nearestDist, nearestPoint.x, nearestPoint.y, nearestPoint.z, listenerPosition.x, listenerPosition.y, listenerPosition.z);
+//			nlinfo ("background sound %d '%s' is too far (%f), unload it", i, BackgroundSounds[i].FullName.c_str(), nearestDist);
 			unload(i);
 		}
 		

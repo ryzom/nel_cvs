@@ -78,13 +78,13 @@ using  namespace NLAIFUZZY;
 							ACCOL_D
 							{						
 								if(!computContraint()) return false;
-								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
+								onEndClass();
 							}								
 						|	CorpDeDefinition 
 							ACCOL_G 
 							ACCOL_D
 							{
-								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
+								onEndClass();								
 							}
 						|	MessageRun
 						;

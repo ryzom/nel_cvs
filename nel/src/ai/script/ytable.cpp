@@ -1219,13 +1219,13 @@ case 3:
 #line 79 "grammar.yacc"
 {						
 								if(!computContraint()) return false;
-								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
+								onEndClass();
 							;
     break;}
 case 4:
 #line 86 "grammar.yacc"
 {
-								((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
+								onEndClass();
 							;
     break;}
 case 7:

@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.22 2002/01/17 12:16:08 chafik Exp $
+ * $Id: codage.cpp,v 1.23 2002/06/27 16:58:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,8 +73,7 @@ namespace NLAISCRIPT
 			is.serial( s );
 #ifdef NL_DEBUG			
 			const char *ss = s.data();
-#endif
-			
+#endif			
 			is.serial( id );
 			_TableCode[i] = (IOpCode *)id.allocClass();
 			_TableCode[i]->load(is);			

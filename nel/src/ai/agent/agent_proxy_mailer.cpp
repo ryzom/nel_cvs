@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.13 2002/03/12 11:29:21 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.14 2002/06/27 16:58:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ namespace NLAIAGENT
 		catch(NLAIE::CExceptionNotImplemented &)
 		{
 #ifdef NL_DEBUG
-
+	const char *dName = (const char *)msg->getType();
 #endif
 		}
 		return r;
@@ -132,7 +132,10 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 		}
 		else
-		{			
+		{
+#ifdef NL_DEBUG
+	const char *dName = (const char *)m->getType();
+#endif
 			return MainAgent->sendMessage(*_AgentRef,msg);
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.24 2002/06/17 14:16:54 chafik Exp $
+ * $Id: identtype.h,v 1.25 2002/06/27 16:57:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,8 +48,7 @@ namespace NLAIAGENT
 	{		
 		///All agents id'S numbers have the 8th bit reserved on NLMISC::CEntityId::Type byte
 		///The CEntityId::Type field is for AI an user bits field becarful we dont't touch at the 8e bits.
-		static const uint8 AgentTypeBit;
-		static const CAgentNumber Unknow;
+		static const uint8 AgentTypeBit;		
 
 		CAgentNumber()
 		{

@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.4 2002/06/12 16:07:09 chafik Exp $
+ * $Id: operation.cpp,v 1.5 2002/06/27 16:58:09 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLAIAGENT
 	const NLAIC::CIdentType *CAgentOperation::idMsgOnChangeMsg = NULL;
 	const NLAIAGENT::IMessageBase *CAgentOperation::MsgOnChangeMsg = NULL;
 
-	CAgentOperation::CAgentOperation():CAgentScript(NULL), _Op(NULL), _Name(NULL), _Change(true)
+	CAgentOperation::CAgentOperation():CAgentScript(NULL), _Op(NULL), _Name(NULL), _Change(false)
 	{
 	}
 
@@ -43,7 +43,7 @@ namespace NLAIAGENT
 
 	}
 
-	CAgentOperation::CAgentOperation(const CAgentOperation &a):CAgentScript(a), _Op(a._Op), _Name(NULL), _Change(true)
+	CAgentOperation::CAgentOperation(const CAgentOperation &a):CAgentScript(a), _Op(a._Op), _Name(NULL), _Change(false)
 	{
 		if(_Op != NULL)
 				_Op->incRef();
@@ -83,10 +83,12 @@ namespace NLAIAGENT
 	void CAgentOperation::update(IObjectIA *obj)
 	{
 		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)CAgentOperation::MsgOnChangeMsg->clone();
+		msg->push(_Name);
 		msg->push(_Op);
 		msg->setPerformatif(IMessageBase::PTell);
 		msg->setSender((NLAIAGENT::IObjectIA *)((CAgentScript *)this));
 		_Op->incRef();
+		_Name->incRef();
 		(obj)->sendMessage(((NLAIAGENT::IObjectIA *)msg));
 	}
 
@@ -271,6 +273,12 @@ namespace NLAIAGENT
 			{
 				IObjetOp *obj = (NLAIAGENT::IObjetOp *)param->get();
 				setValue(obj);
+
+#ifdef NL_DEBUG
+	std::string dbug;
+	obj->getDebugString(dbug);
+	nlinfo ("%s", dbug);
+#endif
 				obj->incRef();
 			}
 			return r;

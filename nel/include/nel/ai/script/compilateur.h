@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.29 2002/01/30 15:40:10 chafik Exp $
+ * $Id: compilateur.h,v 1.30 2002/06/27 16:57:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -448,6 +448,7 @@ namespace NLAISCRIPT
 		void allocExpression(IOpCode *op,bool gd = false);
 		bool computContraint();
 		void RegisterClass();
+		void onEndClass();
 		sint32 affectationMember(sint32 member);
 		sint32 affectationMember(IClassInterpret *,sint32 member);
 		sint32 affectationiMember(const IClassInterpret *baseClass,std::list<NLAISCRIPT::CStringType> &varHName);

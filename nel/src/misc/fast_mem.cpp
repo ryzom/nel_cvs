@@ -1,7 +1,7 @@
 /** \file fast_mem.cpp
  * Fast memory copy and precache
  *
- * $Id: fast_mem.cpp,v 1.2 2002/05/21 16:35:11 lecroart Exp $
+ * $Id: fast_mem.cpp,v 1.3 2002/05/22 13:51:56 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -202,7 +202,7 @@ void		CFastMem::precache(const void *src, uint nbytes)
 
 
 // ***************************************************************************
-void		CFastMem::memcpySSE(void *dst, const void *src, size_t nbytes)
+void		*CFastMem::memcpySSE(void *dst, const void *src, size_t nbytes)
 {
 	// Use std memcpy.
 	memcpy(dst, src, nbytes);
@@ -215,7 +215,7 @@ void		CFastMem::precacheMMX(const void *src, uint nbytes)
 {
 	// no-op.
 }
-void		CFastMem::precacheBest(const void *src, uint nbytes)
+void		CFastMem::precache(const void *src, uint nbytes)
 {
 	// no-op.
 }

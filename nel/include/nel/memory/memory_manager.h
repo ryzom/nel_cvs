@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.3 2002/11/08 16:59:12 coutelas Exp $
+ * $Id: memory_manager.h,v 1.4 2002/12/17 10:37:03 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,26 @@
 
 #define NL_NEW new
 #define NL_ALLOC_CONTEXT(str) ((void)0);
+
+namespace NLMEMORY
+{
+
+//inline MEMORY_API void*		MemoryAllocate (unsigned int size);
+//inline MEMORY_API void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+//inline MEMORY_API void			MemoryDeallocate (void *p);
+inline MEMORY_API unsigned int GetAllocatedMemory () { return 0;}
+inline MEMORY_API unsigned int GetFreeMemory () { return 0;}
+inline MEMORY_API unsigned int GetTotalMemoryUsed () { return 0;}
+inline MEMORY_API unsigned int GetDebugInfoSize () { return 0;}
+inline MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category) { return 0;}
+inline MEMORY_API unsigned int GetBlockSize (void *pointer) { return 0;}
+inline MEMORY_API float		GetFragmentationRatio () { return 0.0f;}
+inline MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
+inline MEMORY_API unsigned int GetAllocatedSystemMemory () { return 0;}
+inline MEMORY_API bool			CheckHeap (bool stopOnError) { return true;}
+inline MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump) { return true; }
+
+}
 
 #else // NL_USE_DEFAULT_MEMORY_MANAGER
 // *********************************************************

@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.2 2000/12/01 16:57:23 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.3 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/patch_rdr_pass.h"
+#include "nel/3d/primitive_block.h"
 
 
 namespace NL3D 

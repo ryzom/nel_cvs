@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
+ * $Id: landscape.h,v 1.21 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,9 @@
 #include "nel/3d/tile_bank.h"
 #include "nel/3d/patch_rdr_pass.h"
 #include "nel/3d/triangle.h"
+#include "nel/3d/vertex_buffer.h"
+#include "nel/3d/primitive_block.h"
+#include "nel/3d/material.h"
 #include <map>
 
 

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.11 2000/12/18 15:11:32 corvazier Exp $
+ * $Id: driver.cpp,v 1.12 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/driver.h"
+#include "nel/3d/shader.h"
+#include "nel/3d/vertex_buffer.h"
 
 #include <stdio.h>
 

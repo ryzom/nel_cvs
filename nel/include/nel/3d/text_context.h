@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.4 2000/12/21 10:56:18 coutelas Exp $
+ * $Id: text_context.h,v 1.5 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/3d/font_manager.h"
 #include "nel/3d/font_generator.h"
 #include "nel/3d/computed_string.h"
+#include "nel/3d/primitive_block.h"
+#include "nel/3d/material.h"
 #include "nel/3d/nelu.h"
 
 

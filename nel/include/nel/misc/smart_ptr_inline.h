@@ -1,7 +1,7 @@
 /** \file smart_ptr_inline.h
  * SmartPtr class inline definitions.
  *
- * $Id: smart_ptr_inline.h,v 1.1 2000/12/04 11:52:40 berenguier Exp $
+ * $Id: smart_ptr_inline.h,v 1.2 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #ifndef NL_SMARTPTR_INLINE_H
 #define NL_SMARTPTR_INLINE_H
 
-
+#include "nel/3d/shader.h"
 
 namespace	NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.40 2000/12/20 19:02:54 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.41 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@
 #include <GL/gl.h>
 #include "driver_opengl.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/vertex_buffer.h"
+#include "nel/3d/primitive_block.h"
 
 using namespace NLMISC;
 

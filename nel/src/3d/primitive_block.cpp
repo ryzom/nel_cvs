@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.7 2000/12/12 10:04:48 berenguier Exp $
+ * $Id: primitive_block.cpp,v 1.8 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/driver.h"
+#include "nel/3d/primitive_block.h"
+#include "nel/misc/stream.h"
 
 namespace NL3D
 {

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.6 2000/12/21 10:56:18 coutelas Exp $
+ * $Id: computed_string.h,v 1.7 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/driver.h"
+#include "nel/3d/vertex_buffer.h"
 #include <vector>
 
 

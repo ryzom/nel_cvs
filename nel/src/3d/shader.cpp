@@ -1,7 +1,7 @@
-/** \file texture_far.h
+/** \file shader.cpp
  * <File description>
  *
- * $Id: texture_far.h,v 1.2 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: shader.cpp,v 1.1 2000/12/21 13:40:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,35 +23,10 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_TEXTURE_FAR_H
-#define NL_TEXTURE_FAR_H
-
-#include "nel/misc/types_nl.h"
-#include "nel/3d/texture.h"
+#include "nel/3d/shader.h"
 
 
 namespace NL3D {
 
 
-/**
- * <Class description>
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
- */
-class CTextureFar : public ITexture
-{
-public:
-
-	/// Constructor
-	CTextureFar();
-
-};
-
-
 } // NL3D
-
-
-#endif // NL_TEXTURE_FAR_H
-
-/* End of texture_far.h */

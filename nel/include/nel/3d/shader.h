@@ -1,7 +1,7 @@
-/** \file texture_far.h
+/** \file shader.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.2 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: shader.h,v 1.1 2000/12/21 13:40:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,15 +23,16 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_TEXTURE_FAR_H
-#define NL_TEXTURE_FAR_H
+#ifndef NL_SHADER_H
+#define NL_SHADER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/texture.h"
+#include "nel/misc/smart_ptr.h"
 
 
 namespace NL3D {
 
+using NLMISC::CRefCount;
 
 /**
  * <Class description>
@@ -39,19 +40,20 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2000
  */
-class CTextureFar : public ITexture
-{
-public:
+// --------------------------------------------------
 
-	/// Constructor
-	CTextureFar();
+class IShader : public CRefCount
+{
+protected:
+public:
+	// The virtual dtor is important.
+	virtual ~IShader() {};
 
 };
-
 
 } // NL3D
 
 
-#endif // NL_TEXTURE_FAR_H
+#endif // NL_SHADER_H
 
-/* End of texture_far.h */
+/* End of shader.h */

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.10 2000/12/21 09:43:18 berenguier Exp $
+ * $Id: material.cpp,v 1.11 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/driver.h"
+#include "nel/3d/material.h"
+#include "nel/3d/texture.h"
+#include "nel/3d/shader.h"
+#include "nel/misc/stream.h"
 
-using std::vector;
+using namespace std;
+using namespace NLMISC;
 
 namespace NL3D
 {

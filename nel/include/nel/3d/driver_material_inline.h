@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.8 2000/12/21 09:42:26 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.9 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 
 #ifndef NL_DRIVER_MATERIAL_INLINE_H
 #define NL_DRIVER_MATERIAL_INLINE_H
+
+#include "nel/misc/debug.h"
 
 namespace NL3D
 {
@@ -107,17 +109,17 @@ inline void CMaterial::setZBias(float val)
 	_Touched|=IDRV_TOUCHED_ZBIAS;
 }
 
-inline void CMaterial::setColor(CRGBA rgba)
+inline void CMaterial::setColor(NLMISC::CRGBA rgba)
 {
 	_Color=rgba;
 	_Touched|=IDRV_TOUCHED_COLOR;
 }
 
 inline void CMaterial::setLighting(	bool active, bool DefMat,
-									CRGBA emissive, 
-									CRGBA ambient, 
-									CRGBA diffuse, 
-									CRGBA specular )
+									NLMISC::CRGBA emissive, 
+									NLMISC::CRGBA ambient, 
+									NLMISC::CRGBA diffuse, 
+									NLMISC::CRGBA specular )
 {
 	if (active)
 	{

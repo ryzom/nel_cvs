@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.6 2000/12/19 13:09:17 corvazier Exp $
+ * $Id: mesh.h,v 1.7 2000/12/21 13:39:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,9 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/aabbox.h"
 #include "nel/3d/uv.h"
+#include "nel/3d/vertex_buffer.h"
+#include "nel/3d/material.h"
+#include "nel/3d/primitive_block.h"
 #include <set>
 
 

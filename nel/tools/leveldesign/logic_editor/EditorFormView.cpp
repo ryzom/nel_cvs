@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "logic_editor.h"
 #include "EditorFormView.h"
+#include "logic_editorDoc.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,30 +105,20 @@ void CEditorFormView::OnInitialUpdate()
 									 nWidth, nHeight, 
 									 SWP_SHOWWINDOW);//*SWP_NOZORDER | SWP_NOACTIVATE); 
 
-	m_pPropertySheet->m_variablePage.addVariable( NULL/*pChild*/, (CLogic_editorDoc*)GetDocument(), "toto" );
+	
+
+	CLogic_editorDoc * pDoc = (CLogic_editorDoc*)GetDocument();
+
+	POSITION pos;
+	CString eltName;
+	// init the variables
+	for( pos = pDoc->m_variables.GetHeadPosition(); pos != NULL; )
+	{
+		eltName = pDoc->m_variables.GetNext( pos );
+		m_pPropertySheet->m_variablePage.addVariable( pDoc, eltName );
+	}
 
 	m_bInitDone = TRUE;
 }
 
 
-extern CLogic_editorApp theApp;
-
-//-----------------------------------------------
-//	OnUpdate
-//
-//-----------------------------------------------
-void CEditorFormView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
-{
-	/*
-	POSITION pos;
-	CString variable;
-	for( pos = theApp.m_variables.GetHeadPosition(); pos != NULL; )
-	{
-		variable = theApp.m_variables.GetNext( pos );
-	}
-
-	//m_listVariables.AddString( m_sVarName );
-	*/
-	//CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (GetDocument());
-
-} // OnUpdate //

@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.9 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: quad_tree.h,v 1.10 2000/12/20 15:30:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -673,7 +673,7 @@ template<class T>	void		CQuadTree<T>::clear()
 // ============================================================================================
 template<class T>	void		CQuadTree<T>::create(uint DepthMax, const NLMISC::CVector& center, float size)
 {
-	CVector mycenter=_ChangeBasis*center;
+	NLMISC::CVector mycenter=_ChangeBasis*center;
 	clear();
 	_DepthMax= DepthMax;
 	_Size= size;

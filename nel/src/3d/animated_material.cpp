@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.13 2002/08/19 09:34:32 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.14 2003/05/26 14:16:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,29 +246,19 @@ void	CAnimatedMaterial::update()
 			if (_Material->isUserTexMatEnabled(k))
 			{
 				const CTexAnimatedMatValues &texMatAV = _TexAnimatedMatValues[k];
-				CMatrix texMat;	
-				float fCos, fSin;
-				if (texMatAV._WRot.Value != 0.f)
-				{
-					fCos = ::cosf(- texMatAV._WRot.Value);
-					fSin = ::sinf(- texMatAV._WRot.Value);
-				}
-				else
-				{
-					fCos = 1.f;
-					fSin = 0.f;
-				}
-				NLMISC::CVector I(fCos, fSin, 0);
-				NLMISC::CVector J(-fSin, fCos, 0);				
-				texMat.setRot(texMatAV._UScale.Value * I, texMatAV._VScale.Value * J, NLMISC::CVector::K);								
-				for (uint l = 0; l < NumTexAnimatedValues; ++l)
-				{
-					clearFlag(flagIndex++);
-				}
-				NLMISC::CVector center(-0.5f, -0.5f, 0.f);
-				NLMISC::CVector t(- texMatAV._UTrans.Value, texMatAV._VTrans.Value, 0);
-				texMat.setPos(t + texMat.mulVector(center) - center);
-				_Material->setUserTexMat(k, texMat);
+		
+				CMatrix convMat; // exported v are already inverted (todo : optim this if needed, this matrix shouldn't be necessary)
+				convMat.setRot(CVector::I, -CVector::J, CVector::K);
+				convMat.setPos(CVector::J);
+				float fCos = cosf(texMatAV._WRot.Value);
+				float fSin = sinf(texMatAV._WRot.Value);
+				CMatrix SR;
+				SR.setRot(CVector(texMatAV._UScale.Value * fCos, texMatAV._VScale.Value * fSin, 0.f),
+						  CVector(- texMatAV._UScale.Value * fSin, texMatAV._VScale.Value * fCos, 0.f),
+						  CVector::K);
+				CVector half(0.5f, 0.5f, 0.f);
+				SR.setPos(SR.mulVector(- half - CVector(texMatAV._UTrans.Value, texMatAV._VTrans.Value, 0.f)) + half);
+				_Material->setUserTexMat(k, convMat * SR * convMat);
 			}
 		}
 

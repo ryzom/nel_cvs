@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.40 2002/08/22 12:11:38 lecroart Exp $
+ * $Id: material.cpp,v 1.41 2003/05/26 14:16:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -462,24 +462,34 @@ void					CMaterial::decompUserTexMat(uint stage, float &uTrans, float &vTrans, f
 {
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	nlassert(isUserTexMatEnabled(stage)); // must activate animated texture matrix for this stage
-	const NLMISC::CMatrix texMat = _TexUserMat->TexMat[stage];
-	uTrans = texMat.getPos().x;
-	vTrans = texMat.getPos().y;
+	CMatrix convMat; // exported v are already inverted (todo: optim this...)
+	convMat.setRot(CVector::I, -CVector::J, CVector::K);
+	convMat.setPos(CVector::J);
+
+	const NLMISC::CMatrix texMat = convMat * _TexUserMat->TexMat[stage] * convMat;	
 	/// find the rotation around w
 	NLMISC::CVector i = texMat.getI();
-	NLMISC::CVector j = texMat.getJ();
-	float  normI = i.norm();
-	float  normJ = i.norm();
-	i /= normI;
-	j /= normJ;	
-	float angle = ::acosf(i.x);
+	NLMISC::CVector j = texMat.getJ();	
+	uScale = sqrtf(i.x * i.x + j.x * j.x);
+	vScale = sqrtf(i.y * i.y + j.y * j.y);		
+	//
+	i.normalize();	
+	//	
+	float angle = acosf(i.x / i.norm());
 	if (i.y < 0)
 	{
 		angle = 2.f * (float) NLMISC::Pi - angle;
 	}
-	wRot   = angle;	
-	uScale = normI;
-	vScale = normJ;
+	wRot = angle;
+
+	// compute position
+	CMatrix InvSR;
+	InvSR.setRot(texMat.getI(), texMat.getJ(), texMat.getK());
+	InvSR.invert();
+	CVector half(0.5f, 0.5f, 0.f);
+	CVector offset = half + InvSR * (texMat.getPos() -half);
+	uTrans = - offset.x;
+	vTrans = - offset.y;
 }
 
 // ***************************************************************************

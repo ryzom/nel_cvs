@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.7 2001/08/27 08:24:36 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.8 2001/08/30 09:19:46 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ private:
 	virtual void			unfreezeHRC();
 
 	friend class CTransformUser;
+	friend class CSceneUser;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.7 2001/07/12 16:04:15 lecroart Exp $
+ * $Id: u_scene.h,v 1.8 2001/08/30 09:19:46 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ public:
 	//virtual	UInstanceGroup	*createInstanceGroup(const std::string &instanceGroup) =0;
 	/// Delete an instance group from this scene.
 	//virtual	void			deleteInstanceGroup(UInstanceGroup	*group) =0;
-
+	virtual	void setToGlobalInstanceGroup(UInstanceGroup *pIGU) = 0;
 	//@}
 
 	/// \name Animation gestion.

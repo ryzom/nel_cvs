@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.12 2001/07/30 14:40:14 besson Exp $
+ * $Id: scene_user.h,v 1.13 2001/08/30 09:19:46 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,8 +84,7 @@ public:
 	{
 		nlassert(drv);
 		_DriverUser= drv;
-		_CurrentCamera= NULL;
-
+		_CurrentCamera = NULL;
 		// Init Scene.
 		_Scene.initDefaultTravs();
 		// Don't add any user trav.
@@ -319,6 +318,13 @@ public:
 		_InstanceGroups.erase (dynamic_cast<CInstanceGroupUser*>(group));
 	}
 */
+
+	virtual void setToGlobalInstanceGroup(UInstanceGroup *pIG)
+	{
+		CInstanceGroupUser *pIGU = (CInstanceGroupUser*)pIG;
+		pIGU->_InstanceGroup.setClusterSystem (_Scene.getGlobalInstanceGroup());
+	}
+
 	//@}
 
 	/// \name Animation.

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.5 2001/07/20 16:08:33 cado Exp $
+ * $Id: sound.cpp,v 1.6 2001/07/25 12:58:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,14 @@ void				CSound::serial( NLMISC::IStream& s )
 		if ( _SoundDriver != NULL )
 		{
 			nlassert ( _Filename != "" );
-			loadBuffer( _Filename );
+			try
+			{
+				loadBuffer( _Filename );
+			}
+			catch ( Exception& e )
+			{
+				nlwarning( "AM: %s", e.what() );
+			}
 		}
 	}
 	else

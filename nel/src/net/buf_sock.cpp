@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.3 2001/05/10 08:49:12 cado Exp $
+ * $Id: buf_sock.cpp,v 1.4 2001/05/10 15:41:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,29 +86,27 @@ bool CBufSock::flush()
 {
 	//nlnettrace( "CBufSock::flush" );
 
-	// Send all data in the send queue, or in _ReadyToSendBuffer if it has not been sent without error
-	if ( _ReadyToSendBuffer.empty() )
+	// Copy data from the send queue to _ReadyToSendBuffer
+	TBlockSize netlen;
+	vector<uint8> tmpbuffer;
+	
+	// Process each element in the send queue
+	while ( ! SendFifo.empty() )
 	{
-		TBlockSize netlen;
-		vector<uint8> tmpbuffer;
-		
-		// Process each element in the send queue
-		while ( ! SendFifo.empty() )
-		{
-			// Extract a temporary buffer from the send queue
-			SendFifo.front( tmpbuffer );
+		// Extract a temporary buffer from the send queue
+		SendFifo.front( tmpbuffer );
 
-			// Compute the size and add it into the beginning of the buffer
-			netlen = htons( (TBlockSize)(tmpbuffer.size()) );
-			_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), sizeof(TBlockSize), 0 );
-			memcpy( &*(_ReadyToSendBuffer.end()-2), (uint8*)&netlen, sizeof(TBlockSize) );
+		// Compute the size and add it into the beginning of the buffer
+		netlen = htons( (TBlockSize)(tmpbuffer.size()) );
+		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), sizeof(TBlockSize), 0 );
+		memcpy( &*(_ReadyToSendBuffer.end()-2), (uint8*)&netlen, sizeof(TBlockSize) );
 
-			// Append the temporary buffer to the global buffer
-			_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), tmpbuffer.begin(), tmpbuffer.end() );
-			SendFifo.pop();
-		}
+		// Append the temporary buffer to the global buffer
+		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), tmpbuffer.begin(), tmpbuffer.end() );
+		SendFifo.pop();
 	}
 
+	// Actual sending of _ReadyToSendBuffer
 	if ( ! _ReadyToSendBuffer.empty() )
 	{
 		// Send

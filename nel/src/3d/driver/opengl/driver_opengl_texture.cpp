@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.57 2002/09/05 17:59:55 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.58 2002/09/24 14:43:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 
 #include "3d/texture_cube.h"
 #include "nel/misc/rect.h"
+#include "nel/misc/file.h" // temp
+
 
 using	namespace NLMISC;
 using	namespace std;
@@ -132,7 +134,15 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::Luminance: return GL_LUMINANCE8;
 		case ITexture::Alpha: return GL_ALPHA8;
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
-		case ITexture::DsDt: return GL_DSDT_NV; 
+		case ITexture::DsDt: 
+			if (_Extensions.NVTextureShader) return GL_DSDT_NV;
+			else if (_Extensions.ATIEnvMapBumpMap) return GL_DU8DV8_ATI;
+			else
+			{			
+				nlassert(0);
+				return 0;
+			}
+		break;
 		default: return GL_RGBA8;
 	}
 }
@@ -158,10 +168,30 @@ static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 		return GL_DSDT_NV;
 	}
 
+	if (glfmt == GL_DU8DV8_ATI)
+	{
+		return GL_DUDV_ATI;
+	}
+
 	// Else, not a Src format for upload, or RGBA.
 	return GL_RGBA;
 }
 
+// ***************************************************************************
+static GLenum getGlSrcTextureComponentType(GLint texSrcFormat)
+{
+	switch (texSrcFormat)
+	{
+		case GL_DSDT_NV:
+		case GL_DU8DV8_ATI:
+			return GL_BYTE; // these are signed format			
+		break;		
+		default:
+			return GL_UNSIGNED_BYTE;
+		break;
+
+	}
+}
 
 // ***************************************************************************
 uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
@@ -181,6 +211,7 @@ uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
 	case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:	return w*h /2;
 	case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:	return w*h* 1;
 	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:	return w*h* 1;
+	case GL_DU8DV8_ATI:
 	case GL_DSDT_NV:						return w*h* 2;
 	};
 
@@ -210,7 +241,7 @@ static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtens
 
 // ***************************************************************************
 static inline GLenum	translateMagFilterToGl(ITexture::TMagFilter mode)
-{
+{	
 	switch(mode)
 	{
 		case ITexture::Linear: return GL_LINEAR;
@@ -446,6 +477,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 					// Get the correct texture format from texture...
 					GLint	glfmt= getGlTextureFormat(*pTInTC, gltext->Compressed);
 					GLint	glSrcFmt= getGlSrcTextureFormat(*pTInTC, glfmt);
+					GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
 
 					sint	nMipMaps;
 					if(glSrcFmt==GL_RGBA && pTInTC->getPixelFormat()!=CBitmap::RGBA )
@@ -466,12 +498,12 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 						uint	h= pTInTC->getHeight(i);
 						if (bUpload)
 						{
-							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt,GL_UNSIGNED_BYTE, ptr);
+							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, ptr);
 							bAllUploaded = true;
 						}
 						else
 						{
-							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt,GL_UNSIGNED_BYTE, NULL);
+							glTexImage2D (face_map[nText], i, glfmt, w, h, 0, glSrcFmt, glSrcType, NULL);
 						}
 						// profiling: count TextureMemory usage.
 						gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
@@ -488,6 +520,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 					// Get the correct texture format from texture...
 					GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
 					GLint	glSrcFmt= getGlSrcTextureFormat(tex, glfmt);
+					GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
 
 					// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
 					// We cannot build the mipmaps if they are not here.
@@ -524,7 +557,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 								//nglCompressedTexImage2DARB (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, 
 								//							tex.getWidth(i),tex.getHeight(i), 0, size, NULL);
 								glTexImage2D (GL_TEXTURE_2D, i-decalMipMapResize, glfmt, tex.getWidth(i), tex.getHeight(i), 
-												0, glSrcFmt, GL_UNSIGNED_BYTE, NULL);
+												0, glSrcFmt, glSrcType, NULL);
 							}
 
 							// profiling: count TextureMemory usage.
@@ -566,13 +599,13 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 							uint	h= tex.getHeight(i);
 
 							if (bUpload)
-							{
-								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr);
+							{																
+								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, ptr);
 								bAllUploaded = true;
 							}
 							else
-							{
-								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, NULL);
+							{								
+								glTexImage2D (GL_TEXTURE_2D, i, glfmt, w, h, 0,glSrcFmt, glSrcType, NULL);								
 							}
 							// profiling: count TextureMemory usage.
 							gltext->TextureMemory += computeMipMapMemoryUsage (w, h, glfmt);
@@ -602,6 +635,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 				bool	dummy;
 				GLint	glfmt= getGlTextureFormat(tex, dummy);
 				GLint	glSrcFmt= getGlSrcTextureFormat(tex, glfmt);
+				GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
 
 				sint	nMipMaps;
 				if(glSrcFmt==GL_RGBA && tex.getPixelFormat()!=CBitmap::RGBA )
@@ -646,9 +680,9 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 						glPixelStorei(GL_UNPACK_SKIP_ROWS, y0);
 						glPixelStorei(GL_UNPACK_SKIP_PIXELS, x0);
 						if (bUpload)
-							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,GL_UNSIGNED_BYTE, ptr);
+							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, ptr);
 						else
-							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,GL_UNSIGNED_BYTE, NULL);
+							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, NULL);
 
 						// Next mipmap!!
 						// floor .
@@ -693,6 +727,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
 		}
+
 
 
 		// Disable texture 0
@@ -747,6 +782,7 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	bool dummy;
 	GLint glfmt = getGlTextureFormat (tex, dummy);
 	GLint glSrcFmt = getGlSrcTextureFormat (tex, glfmt);
+	GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
 	// If DXTC format
 	//if (isDXTCFormat(glfmt))
 	if (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
@@ -818,7 +854,7 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, w);
 		glPixelStorei (GL_UNPACK_SKIP_ROWS, y0);
 		glPixelStorei (GL_UNPACK_SKIP_PIXELS, x0);
-		glTexSubImage2D (GL_TEXTURE_2D, nNumMipMap, x0, y0, x1-x0, y1-y0, glSrcFmt,GL_UNSIGNED_BYTE, ptr);
+		glTexSubImage2D (GL_TEXTURE_2D, nNumMipMap, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, ptr);
 
 		// Reset the transfer mode...
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, 0);
@@ -940,7 +976,7 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 			// Force no texturing for this stage.
 			_CurrentTextureInfoGL[stage]= NULL;
 			// setup texture mode, after activeTextureARB()
-			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);			
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);									
 		}
 
 		this->_CurrentTexture[stage]= tex;	
@@ -953,8 +989,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 {
 	// This maps the CMaterial::TTexOperator
-	static	const	GLenum	operatorLUT[8]= { GL_REPLACE, GL_MODULATE, GL_ADD, GL_ADD_SIGNED_EXT, 
-		GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT };
+	static	const	GLenum	operatorLUT[9]= { GL_REPLACE, GL_MODULATE, GL_ADD, GL_ADD_SIGNED_EXT, 
+		GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_INTERPOLATE_EXT, GL_BUMP_ENVMAP_ATI };
 
 	// This maps the CMaterial::TTexSource
 	static	const	GLenum	sourceLUT[4]= { GL_TEXTURE, GL_PREVIOUS_EXT, GL_PRIMARY_COLOR_EXT, GL_CONSTANT_EXT };

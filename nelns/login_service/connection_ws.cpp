@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.4 2002/01/23 10:55:13 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.5 2002/02/11 16:07:18 lecroart Exp $
  *
  */
 
@@ -71,13 +71,6 @@ sint findShard (TSockId senderId)
 
 static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 {
-/*	CCallbackNetBase *cnb = CNetManager::getNetBase("LS");
-	const CInetAddress &ia = cnb->hostAddress (from);
-
-	// at this time, it could be a new shard or a ne client.
-
-	nldebug("new connection: %s", ia.asString ().c_str ());
-*/
 	const CInetAddress &ia = CNetManager::getNetBase("WSLS")->hostAddress (from);
 
 	nldebug("new potential shard: %s", ia.asString ().c_str ());
@@ -85,21 +78,13 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 	// first, check if it an authorized shard
 	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
 	{
-		if (Shards[i].WSAddr == ia.ipAddress ())
+		if (!Shards[i].Online && Shards[i].WSAddr == ia.ipAddress ())
 		{
-			if (Shards[i].Online)
-			{
-				nlwarning("Shard with ip '%s' is already online! Disconnect the new one", ia.asString().c_str ());
-				CNetManager::getNetBase("WSLS")->disconnect(from);
-			}
-			else
-			{
-				// new shard connected
-				Shards[i].WSAddr = ia.ipAddress ();
-				Shards[i].Online = true;
-				Shards[i].SockId = from;
-				nlinfo("Shard with ip '%s' is online!", Shards[i].WSAddr.c_str ());
-			}
+			// new shard connected
+			Shards[i].WSAddr = ia.asIPString (); // put addr+port to detect different shard on the same address
+			Shards[i].Online = true;
+			Shards[i].SockId = from;
+			nlinfo("Shard with ip '%s' is online!", Shards[i].WSAddr.c_str ());
 			return;
 		}
 	}
@@ -108,6 +93,7 @@ static void cbWSConnection (const string &serviceName, TSockId from, void *arg)
 		// New externam shard connected, add it in the file
 		Shards.push_back (CShard(ia));
 		sint32 pos = Shards.size()-1;
+		Shards[pos].WSAddr = ia.asIPString (); // put addr+port to detect different shard on the same address
 		Shards[pos].Online = true;
 		Shards[pos].SockId = from;
 		nlinfo("External shard with ip '%s' is online!", Shards[pos].WSAddr.c_str ());
@@ -137,6 +123,7 @@ static void cbWSDisconnection (const string &serviceName, TSockId from, void *ar
 				nlinfo("Shard with ip '%s' is offline!", Shards[i].WSAddr.c_str());
 				Shards[i].Online = false;
 				Shards[i].SockId = NULL;
+				Shards[i].WSAddr = Shards[i].WSAddr.substr (0, Shards[i].WSAddr.find (":"));
 
 				// put users connected on this shard offline
 				for (sint32 u = 0; u < (sint32) Users.size (); u++)
@@ -309,7 +296,7 @@ static void cbWSIdentification (CMessage &msgin, TSockId from, CCallbackNetBase 
 	// first, check if it an authorized shard
 	for (sint32 i = 0; i < (sint32) Shards.size (); i++)
 	{
-		if (Shards[i].WSAddr == ia.ipAddress ())
+		if (Shards[i].WSAddr == ia.asIPString ())
 		{
 			if (Shards[i].Online)
 			{

@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.6 2002/01/23 10:55:13 lecroart Exp $
+ * $Id: login_service.h,v 1.7 2002/02/11 16:07:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,8 +116,7 @@ struct CShard
 	CShard (string addr, string name) : Name(name), WSAddr(addr), NbPlayers(0), Loaded(true), Online(false), SockId(NULL) { }
 	CShard (const CInetAddress &ia) : NbPlayers(0), Loaded(true), Online(false), SockId(NULL)
 	{
-		Name = "External Shard '"+ia.hostName()+"'";
-		WSAddr = ia.ipAddress();
+		Name = "External Shard '"+ia.asString()+"'";
 	}
 
 	// used when reloading config file

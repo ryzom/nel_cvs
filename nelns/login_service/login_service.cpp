@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.11 2002/01/23 11:08:05 lecroart Exp $
+ * $Id: login_service.cpp,v 1.12 2002/02/11 16:07:18 lecroart Exp $
  *
  */
 
@@ -80,7 +80,16 @@ IService *ServiceInstance = NULL;
 const char		*PlayerDatabaseName = "login_service_database.cfg";
 CConfigFile		*PlayerDatabase = NULL;
 
+//
 // Functions
+//
+
+
+// transform "192.168.1.1:80" into "192.168.1.1"
+string removePort (const string &addr)
+{
+	return addr.substr (0, addr.find (":"));
+}
 
 void checkClients ()
 {
@@ -287,7 +296,7 @@ void readPlayerDatabase ()
 		{
 			for (k = 0; k < (sint)Shards.size (); k++)
 			{
-				if (Shards[k].WSAddr == v2.asString(i))
+				if (removePort(Shards[k].WSAddr) == v2.asString(i) && !Shards[k].Loaded)
 				{
 					nldebug("Update shard '%s' from '%s' to '%s'", Shards[k].WSAddr.c_str (), Shards[k].Name.c_str(), v2.asString(i+1).c_str());
 					Shards[k].Loaded = true;
@@ -350,7 +359,7 @@ void writePlayerDatabase ()
 		fprintf (fp, "\nShards = {\n");
 		for (i = 0; i < (sint) Shards.size (); i++)
 		{
-			fprintf (fp, " \"%s\", \"%s\",\n", Shards[i].WSAddr.c_str (), Shards[i].Name.c_str ());
+			fprintf (fp, " \"%s\", \"%s\",\n", removePort(Shards[i].WSAddr).c_str (), Shards[i].Name.c_str ());
 		}
 		fprintf (fp, "};\n");
 
@@ -391,6 +400,15 @@ void beep (uint freq, uint nb, uint beepDuration, uint pauseDuration)
 	{
 	}
 #endif // NL_OS_WINDOWS
+}
+
+void cbVar (CConfigFile::CVar &var)
+{
+	if (var.Name == "ServerVersion") ServerVersion = var.asInt();
+	else if (var.Name == "AcceptNewUser") AcceptNewUser = var.asInt() == 1;
+	else if (var.Name == "AcceptExternalShard") AcceptExternalShard = var.asInt() == 1;
+	else if (var.Name == "CryptPassword") CryptPassword = var.asInt() == 1;
+	else nlstop;
 }
 
 class CLoginService : public NLNET::IService
@@ -443,12 +461,22 @@ public:
 		}
 		connectionWSInit (port);
 
+		ConfigFile.setCallback ("ServerVersion", cbVar);
+		cbVar (ConfigFile.getVar ("ServerVersion"));
+		ConfigFile.setCallback ("AcceptNewUser", cbVar);
+		cbVar (ConfigFile.getVar ("AcceptNewUser"));
+		ConfigFile.setCallback ("AcceptExternalShard", cbVar);
+		cbVar (ConfigFile.getVar ("AcceptExternalShard"));
+		ConfigFile.setCallback ("CryptPassword", cbVar);
+		cbVar (ConfigFile.getVar ("CryptPassword"));
+
+/*
 		try { ServerVersion = ConfigFile.getVar("ServerVersion").asInt(); } catch (Exception &) { }
 
 		try { AcceptNewUser = ConfigFile.getVar("AcceptNewUser").asInt() == 1; } catch (Exception &) { }
 		try { AcceptExternalShard = ConfigFile.getVar("AcceptExternalShard").asInt() == 1; } catch (Exception &) { }
 		try { CryptPassword = ConfigFile.getVar("CryptPassword").asInt() == 1; } catch (Exception &) { }
-
+*/
 		Init = true;
 		
 		Output.displayNL ("Login Service initialised");
@@ -484,7 +512,7 @@ NLMISC_COMMAND (shards, "displays the list of all registered shards", "")
 	log.displayNL ("Display the %d registered shards :", Shards.size());
 	for (uint i = 0; i < Shards.size(); i++)
 	{
-		log.displayNL ("> %s %d %d %s '%s' '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName.c_str());
+		log.displayNL ("> '%s' %d %d '%s' '%s' '%s'", Shards[i].Name.c_str(), Shards[i].Online, Shards[i].NbPlayers, Shards[i].SockId->asString().c_str(), Shards[i].WSAddr.c_str(), Shards[i].ShardName.c_str());
 	}
 	log.displayNL ("End ot the list");
 
@@ -500,7 +528,7 @@ NLMISC_COMMAND (users, "displays the list of all registered users", "")
 	log.displayNL ("Display the %d registered users :", Users.size());
 	for (uint i = 0; i < Users.size(); i++)
 	{
-		log.displayNL ("> %d %d %s %s '%s' '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str(), Users[i].ShardPrivilege.c_str());
+		log.displayNL ("> %d %d '%s' '%s' '%s' '%s' '%s'", Users[i].Id, Users[i].State, Users[i].Login.c_str(), Users[i].Cookie.toString().c_str(), Users[i].SockId->asString().c_str(), Users[i].ShardId->asString().c_str(), Users[i].ShardPrivilege.c_str());
 	}
 	log.displayNL ("End ot the list");
 

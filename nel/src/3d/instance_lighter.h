@@ -1,7 +1,7 @@
 /** \file instance_lighter.h
  * <File description>
  *
- * $Id: instance_lighter.h,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: instance_lighter.h,v 1.2 2002/02/12 15:37:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,9 @@ public:
 		// Shape Path for load Shape to get correct shape center.
 		std::string				ShapePath;
 
+		// This is a user shapeMap.
+		std::map<std::string, IShape*>				UserShapeMap;
+
 	};
 
 	// A triangle used to light the zone
@@ -116,9 +119,9 @@ public:
 public:
 
 	/**	Tool method which take a single IG, and do all the god job to light this one, with no other dependencies
-	 *	NB: it uses a CInstanceLighter internally. And it load Shape in directory lightDesc.ShapePath
+	 *	NB: it uses instLighter passed, init() ing it. It use lightDesc.UserShapeMap or it load Shape in directory lightDesc.ShapePath
 	 */
-	static	void	lightIgSimple(const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc);
+	static	void	lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc);
 
 public:
 
@@ -131,8 +134,8 @@ public:
 	/** Light an InstanceGroup
 	 *	igOut has different PointLights than igIn. eg: if a pointLight do not light anything, then it is not
 	 *	present in igOut.
-	 *	NB: shapes are loaded to retrieve usefull info on them (center of AABBox ...) . Hence Must correctly setup
-	 *	lightDesc.ShapePath
+	 *	NB: shapes are used to retrieve usefull info on them (center of AABBox ...) . They are taken from 
+	 *	lightDesc.UserShapeMap, or loaded from lightDesc.ShapePath if not found.
 	 *	\param landscape if !NULL use this Landscape SunContribution, looking landscape faces under each instance, 
 	 *	for faster computing, and to get influence of Sky. NB: this landscape does not have to be tesselated,
 	 *	but all Zones that lies under igIn should be loaded in.

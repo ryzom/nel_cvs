@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.3 2002/02/12 15:37:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -398,32 +398,41 @@ void CInstanceLighter::light (const CInstanceGroup &igIn, CInstanceGroup &igOut,
 		CVector	overSamples[MaxOverSamples];
 
 		// Get the instance shape name
-		string name= lightDesc.ShapePath + _Instances[i].Name;
+		string name= _Instances[i].Name;
 
-		// Add a .shape at the end ?
-		if (name.find('.') == std::string::npos)
-			name += ".shape";
+		// Try to find the shape in the UseShapeMap.
+		std::map<string, IShape*>::const_iterator iteMap= lightDesc.UserShapeMap.find (name);
 
-		// Find the shape in the bank
-		std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
-		if (iteMap==shapeMap.end())
+		// If not found in userShape map, try to load it from the temp loaded ShapeBank.
+		if( iteMap == lightDesc.UserShapeMap.end() )
 		{
-			// Input file
-			CIFile inputFile;
+			// Get the instance shape name
+			name= lightDesc.ShapePath + name;
 
-			if (inputFile.open (name))
-			{
-				// Load it
-				CShapeStream stream;
-				stream.serial (inputFile);
+			// Add a .shape at the end ?
+			if (name.find('.') == std::string::npos)
+				name += ".shape";
 
-				// Get the pointer
-				iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
-			}
-			else
+			// Find the shape in the bank
+			if (iteMap==shapeMap.end())
 			{
-				// Error
-				nlwarning ("WARNING can't load shape %s\n", name.c_str());
+				// Input file
+				CIFile inputFile;
+
+				if (inputFile.open (name))
+				{
+					// Load it
+					CShapeStream stream;
+					stream.serial (inputFile);
+
+					// Get the pointer
+					iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+				}
+				else
+				{
+					// Error
+					nlwarning ("WARNING can't load shape %s\n", name.c_str());
+				}
 			}
 		}
 
@@ -1327,9 +1336,8 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 
 
 // ***************************************************************************
-void	CInstanceLighter::lightIgSimple(const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc)
+void	CInstanceLighter::lightIgSimple(CInstanceLighter &instLighter, const CInstanceGroup &igIn, CInstanceGroup &igOut, const CLightDesc &lightDesc)
 {
-	CInstanceLighter	instLighter;
 	sint				i;
 
 
@@ -1349,33 +1357,46 @@ void	CInstanceLighter::lightIgSimple(const CInstanceGroup &igIn, CInstanceGroup 
 		// For all instances of igIn.
 		for(i=0; i<(sint)igIn.getNumInstance();i++)
 		{
+			// Skip it??
+			if(igIn.getInstance(i).DontCastShadow)
+				continue;
+
 			// Get the instance shape name
-			string name= lightDesc.ShapePath + igIn.getShapeName(i);
+			string name= igIn.getShapeName(i);
 
-			// Add a .shape at the end ?
-			if (name.find('.') == std::string::npos)
-				name += ".shape";
+			// Try to find the shape in the UseShapeMap.
+			std::map<string, IShape*>::const_iterator iteMap= lightDesc.UserShapeMap.find (name);
 
-			// Find the shape in the bank
-			std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
-			if (iteMap==shapeMap.end())
+			// If not found in userShape map, try to load it from the temp loaded ShapeBank.
+			if( iteMap == lightDesc.UserShapeMap.end() )
 			{
-				// Input file
-				CIFile inputFile;
+				// Get the instance shape name
+				name= lightDesc.ShapePath + name;
 
-				if (inputFile.open (name))
-				{
-					// Load it
-					CShapeStream stream;
-					stream.serial (inputFile);
+				// Add a .shape at the end ?
+				if (name.find('.') == std::string::npos)
+					name += ".shape";
 
-					// Get the pointer
-					iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
-				}
-				else
+				// Find the shape in the bank
+				if (iteMap==shapeMap.end())
 				{
-					// Error
-					nlwarning ("WARNING can't load shape %s\n", name.c_str());
+					// Input file
+					CIFile inputFile;
+
+					if (inputFile.open (name))
+					{
+						// Load it
+						CShapeStream stream;
+						stream.serial (inputFile);
+
+						// Get the pointer
+						iteMap=shapeMap.insert (std::map<string, IShape*>::value_type (name, stream.getShapePointer ())).first;
+					}
+					else
+					{
+						// Error
+						nlwarning ("WARNING can't load shape %s\n", name.c_str());
+					}
 				}
 			}
 

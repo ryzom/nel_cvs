@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.21 2001/02/05 16:27:04 cado Exp $
+ * $Id: naming_client.cpp,v 1.22 2001/02/06 12:37:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ CSocket *CNamingClient::_ClientSock;
 const char		*CNamingClient::NamingServiceAddrFile = "ns.cfg";
 
 /// Default NS host name
-const char		*CNamingClient::NamingServiceDefHost = "pctest";
+const char		*CNamingClient::NamingServiceDefHost = "itsalive.nevrax.org";
 
 /// Default NS port
 const uint16	CNamingClient::NamingServiceDefPort = 50000;

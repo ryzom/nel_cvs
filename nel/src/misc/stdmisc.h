@@ -16,5 +16,6 @@
 #include <utility>
 #include <deque>
 
+#include "nel/misc/mem_displayer.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.35 2002/01/04 10:23:31 lecroart Exp $
+ * $Id: log.cpp,v 1.36 2002/03/14 13:49:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ void CLog::unsetPosition()
 }
 
 
-void CLog::addDisplayer (IDisplayer *displayer)
+void CLog::addDisplayer (IDisplayer *displayer, bool bypassFilter)
 {
 	if (displayer == NULL)
 	{
@@ -88,14 +88,29 @@ void CLog::addDisplayer (IDisplayer *displayer)
 		return;
 	}
 
-	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
-	if (idi == _Displayers.end ())
+	if (bypassFilter)
 	{
-		_Displayers.push_back (displayer);
+		CDisplayers::iterator idi = std::find (_BypassFilterDisplayers.begin (), _BypassFilterDisplayers.end (), displayer);
+		if (idi == _BypassFilterDisplayers.end ())
+		{
+			_BypassFilterDisplayers.push_back (displayer);
+		}
+		else
+		{
+			nlwarning ("Couldn't add the displayer, it was already added");
+		}
 	}
 	else
 	{
-		nlwarning ("Couldn't add the displayer, it was already added");
+		CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
+		if (idi == _Displayers.end ())
+		{
+			_Displayers.push_back (displayer);
+		}
+		else
+		{
+			nlwarning ("Couldn't add the displayer, it was already added");
+		}
 	}
 }
 
@@ -108,14 +123,17 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 	}
 
 	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
-	if (idi == _Displayers.end ())
-	{
-		nlwarning ("Couldn't remove the displayer, it isn't in the list");
-	}
-	else
+	if (idi != _Displayers.end ())
 	{
 		_Displayers.erase (idi);
 	}
+
+	idi = std::find (_BypassFilterDisplayers.begin (), _BypassFilterDisplayers.end (), displayer);
+	if (idi != _BypassFilterDisplayers.end ())
+	{
+		_BypassFilterDisplayers.erase (idi);
+	}
+
 }
 
 void CLog::removeDisplayer (const char *displayerName)
@@ -132,6 +150,18 @@ void CLog::removeDisplayer (const char *displayerName)
 		if ((*idi)->DisplayerName == displayerName)
 		{
 			idi = _Displayers.erase (idi);
+		}
+		else
+		{
+			idi++;
+		}
+	}
+
+	for (idi = _BypassFilterDisplayers.begin (); idi != _BypassFilterDisplayers.end ();)
+	{
+		if ((*idi)->DisplayerName == displayerName)
+		{
+			idi = _BypassFilterDisplayers.erase (idi);
 		}
 		else
 		{
@@ -156,6 +186,13 @@ IDisplayer *CLog::getDisplayer (const char *displayerName)
 			return *idi;
 		}
 	}
+	for (idi = _BypassFilterDisplayers.begin (); idi != _BypassFilterDisplayers.end (); idi++)
+	{
+		if ((*idi)->DisplayerName == displayerName)
+		{
+			return *idi;
+		}
+	}
 	return NULL;
 }
 
@@ -164,7 +201,8 @@ IDisplayer *CLog::getDisplayer (const char *displayerName)
  */
 bool CLog::attached(IDisplayer *displayer) const 
 {
-	return (find( _Displayers.begin(), _Displayers.end(), displayer ) != _Displayers.end());
+	return (find( _Displayers.begin(), _Displayers.end(), displayer ) != _Displayers.end()) ||
+			(find( _BypassFilterDisplayers.begin(), _BypassFilterDisplayers.end(), displayer ) != _BypassFilterDisplayers.end());
 }
 
 
@@ -202,25 +240,30 @@ void CLog::display (const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	if ( passFilter( str ) )
+	TDisplayInfo args;
+	time (&args.Date);
+	args.LogType = _LogType;
+	args.ProcessName = _ProcessName;
+	args.ThreadId = getThreadId();
+	args.Filename = _FileName;
+	args.Line = _Line;
+
+	IDisplayer *id = NULL;
+
+	// send to all bypass filter displayers
+	for (CDisplayers::iterator idi=_BypassFilterDisplayers.begin(); idi!=_BypassFilterDisplayers.end(); idi++ )
 	{
-		TDisplayInfo args;
-		time (&args.Date);
-		args.LogType = _LogType;
-		args.ProcessName = _ProcessName;
-		args.ThreadId = getThreadId();
-		args.Filename = _FileName;
-		args.Line = _Line;
+		id = *idi;
+		(*idi)->display( args, str );
+	}
 
-		uint pos = 0, npos = _Displayers.size ();
-		IDisplayer *id = NULL;
-
+	if (passFilter (str))
+	{
 		// Send to the attached displayers
 		for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
 			id = *idi;
 			(*idi)->display( args, str );
-			pos++;
 		}
 	}
 
@@ -292,16 +335,22 @@ void CLog::displayRaw( const char *format, ... )
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
+	TDisplayInfo args;
+	args.Date = 0;
+	args.LogType = LOG_NO;
+	args.ProcessName = "";
+	args.ThreadId = 0;
+	args.Filename = NULL;
+	args.Line = -1;
+
+	// send to all bypass filter displayers
+	for (CDisplayers::iterator idi=_BypassFilterDisplayers.begin(); idi!=_BypassFilterDisplayers.end(); idi++ )
+	{
+		(*idi)->display( args, str );
+	}
+
 	if ( passFilter( str ) )
 	{
-		TDisplayInfo args;
-		args.Date = 0;
-		args.LogType = LOG_NO;
-		args.ProcessName = "";
-		args.ThreadId = 0;
-		args.Filename = NULL;
-		args.Line = -1;
-
 		// Send to the attached displayers
 		for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
@@ -311,6 +360,27 @@ void CLog::displayRaw( const char *format, ... )
 
 	unsetPosition();
 }
+
+
+void CLog::forceDisplayRaw (const char *format, ...)
+{
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	TDisplayInfo args;
+
+	// Send to the attached displayers
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	{
+		(*idi)->display( args, str );
+	}
+}
+
 
 
 /*
@@ -359,6 +429,7 @@ void CLog::removeFilter( const char *filterstr )
 {
 	_PositiveFilter.remove( filterstr );
 	_NegativeFilter.remove( filterstr );
+	displayNL ("CLog::removeFilter('%s')", filterstr);
 }
 
 
@@ -366,16 +437,19 @@ void CLog::removeFilter( const char *filterstr )
 void CLog::addPositiveFilter( const char *filterstr )
 {
 	_PositiveFilter.push_back( filterstr );
+	displayNL ("CLog::addPositiveFilter('%s')", filterstr);
 }
 
 void CLog::addNegativeFilter( const char *filterstr )
 {
+	displayNL ("CLog::addNegativeFilter('%s')", filterstr);
 	_NegativeFilter.push_back( filterstr );
 }
 
 void CLog::resetFilters()
 {
 	_PositiveFilter.clear(); _NegativeFilter.clear();
+	displayNL ("CLog::resetFilter()");
 }
 
 

@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 user32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /machine:I386 /out:"../../../../obj/Debug/nel_drv_openal_win.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
+# ADD LINK32 user32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /machine:I386 /out:"../../../../lib/nel_drv_openal_win.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
 
 !ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
 
@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /debug /machine:I386 /out:"../../../../obj/Debug/nel_drv_openal_win_debug.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_openal_win_debug.dll" /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
 
@@ -93,8 +93,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ReleaseDebug"
-# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Output_Dir "../../../../obj/ReleaseDebug"
+# PROP Intermediate_Dir "../../../../obj/ReleaseDebug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "DRIVER_OPENAL_EXPORTS" /YX /FD /c
@@ -108,7 +108,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /machine:I386 /out:"../../../../obj/Debug/nel_drv_openal_win.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /debug /machine:I386 /out:"../../../../obj/Debug/nel_drv_openal_win.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ALut.lib OpenAL32.lib eax.lib eaxguid.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_openal_win_rd.dll" /libpath:"C:\Netshare\openal\win\alut\release" /libpath:"C:\Netshare\openal\win\openal32\release"
 
 !ENDIF 
 
@@ -152,57 +152,6 @@ SOURCE=.\source_al.cpp
 # Begin Source File
 
 SOURCE=.\source_al.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc_debug.lib
-
-!IF  "$(CFG)" == "driver_openal - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc.lib
-
-!IF  "$(CFG)" == "driver_openal - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
-
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\..\..\distrib\nel\lib\nlmisc_rd.lib
-
-!IF  "$(CFG)" == "driver_openal - Win32 Release"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "driver_openal - Win32 ReleaseDebug"
-
-!ENDIF 
-
 # End Source File
 # End Target
 # End Project

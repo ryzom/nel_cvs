@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.3 2003/10/22 16:38:26 berenguier Exp $
+ * $Id: diff_tool.cpp,v 1.4 2003/12/08 13:19:11 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -247,7 +247,20 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 				str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
 			str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
 			str += si.Identifier + '\t';
-			str += CI18N::makeMarkedString('[', ']', si.Text) + nl + nl;
+
+			ucstring text = CI18N::makeMarkedString('[', ']', si.Text);;
+			ucstring text2;
+			// add new line and tab after each \n tag
+			ucstring::size_type pos;
+			const ucstring nlTag("\\n");
+			while ((pos = text.find(nlTag)) != ucstring::npos)
+			{
+				text2 += text.substr(0, pos+2) + nl + "\t";
+				text = text.substr(pos+2);
+			}
+			text2 += text;//.substr(0, pos+2);
+			str += text2 + nl + nl;
+//			str += CI18N::makeMarkedString('[', ']', si.Text) + nl + nl;
 		}
 
 //		nldebug("Adding string [%s]", str.toString().c_str());
@@ -506,7 +519,22 @@ ucstring preparePhraseFile(const vector<TPhrase> &phrases, bool removeDiffCommen
 					ret += cond + nl;
 				}
 				ret += '\t';
-				ucstring text = CI18N::makeMarkedString('[', ']', c.Text);
+//				ucstring text = CI18N::makeMarkedString('[', ']', c.Text);
+
+				ucstring text = CI18N::makeMarkedString('[', ']', c.Text);;
+				ucstring text2;
+				// add new line and tab after each \n tag
+				ucstring::size_type pos;
+				const ucstring nlTag("\\n");
+				while ((pos = text.find(nlTag)) != ucstring::npos)
+				{
+					text2 += text.substr(0, pos+2) + nl;
+					text = text.substr(pos+2);
+				}
+				text2 += text;//.substr(0, pos+2);
+				
+				text.swap(text2);
+				
 				text = tabLines(3, text);
 				// remove begin tabs
 				text = text.substr(3);

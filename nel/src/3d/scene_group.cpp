@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.10 2001/08/02 16:37:55 besson Exp $
+ * $Id: scene_group.cpp,v 1.11 2001/08/09 09:19:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,6 +135,7 @@ const sint32 CInstanceGroup::getInstanceParent (uint instanceNb) const
 // ***************************************************************************
 CInstanceGroup::CInstanceGroup()
 {
+	_GlobalPos = CVector(0,0,0);
 	_Root = NULL;
 	_ClusterSystem = NULL;
 }
@@ -145,10 +146,12 @@ CInstanceGroup::~CInstanceGroup()
 }
 
 // ***************************************************************************
-void CInstanceGroup::build (const TInstanceArray& array, const std::vector<CCluster>& Clusters, 
+void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array, 
+							const std::vector<CCluster>& Clusters, 
 							const std::vector<CPortal>& Portals)
 
 {
+	_GlobalPos = vGlobalPos;
 	// Copy the array
 	_InstancesInfos = array;
 
@@ -209,7 +212,10 @@ void CInstanceGroup::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'TPRG');
 
 	// Serial a version number
-	sint version=f.serialVersion (1);
+	sint version=f.serialVersion (2);
+
+	if (version >= 2)
+		f.serial(_GlobalPos);
 
 	if (version >= 1)
 	{
@@ -259,6 +265,7 @@ void CInstanceGroup::createRoot (CScene& scene)
 {
 	_Root = (CTransform*)scene.createModel (TransformId);
 	_Root->setDontUnfreezeChildren (true);
+	setPos (CVector(0,0,0));
 }
 
 // ***************************************************************************
@@ -555,6 +562,7 @@ bool CInstanceGroup::getDynamicPortal (std::string& name)
 void CInstanceGroup::setPos (const CVector &pos)
 {
 	if (_Root != NULL)
+		/// \todo Make this work (precision): _Root->setPos (_GlobalPos+pos);
 		_Root->setPos (pos);
 }
 

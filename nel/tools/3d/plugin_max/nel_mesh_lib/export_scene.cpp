@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.1 2001/08/02 12:17:03 besson Exp $
+ * $Id: export_scene.cpp,v 1.2 2001/08/09 09:19:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ using namespace std;
 
 // \todo remove this and make a method
 extern void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB );
+extern CVector vGlobalPos;
 
 // ***************************************************************************
 
@@ -133,6 +134,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	}
 	aIGArray.resize( nNumIG );
 	// Build the array of node
+	vGlobalPos = CVector(0,0,0);
 	nNumIG = 0;
 	it = vectNode.begin();
 	for (i = 0; i < (sint)vectNode.size(); ++i, ++it)
@@ -173,9 +175,18 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 			aIGArray[nNumIG].Rot   = qRotTemp;
 			aIGArray[nNumIG].Pos   = vPosTemp;
 			aIGArray[nNumIG].Scale = vScaleTemp;
+			vGlobalPos += vPosTemp;
 			++nNumIG;
 		}
 	}
+	/// \todo Make this work (precision):
+	/*
+	vGlobalPos = vGlobalPos / nNumIG;
+	for (i = 0; i < nNumIG; ++i)
+		aIGArray[i].Pos -= vGlobalPos;
+	*/
+
+	vGlobalPos = CVector(0,0,0); // Temporary !!!
 
 	// Accelerator Portal/Cluster part
 
@@ -389,7 +400,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 	CInstanceGroup* pIG = new CInstanceGroup;
 
 	// Link portals and clusters and create meta cluster if one
-	pIG->build (aIGArray, vClusters, vPortals);
+	pIG->build (vGlobalPos,  aIGArray, vClusters, vPortals);
 
 	return pIG;
 }

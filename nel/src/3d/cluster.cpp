@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.3 2001/08/08 13:31:27 besson Exp $
+ * $Id: cluster.cpp,v 1.4 2001/08/09 09:19:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,9 @@ using namespace std;
 namespace NL3D 
 {
 
+// 0.5 cm of precision
+#define CLUSTERPRECISION 0.005
+
 // ***************************************************************************
 CCluster::CCluster ()
 {
@@ -63,7 +66,7 @@ bool CCluster::makeVolume (CVector& p1, CVector& p2, CVector& p3)
 		float f1 = fabsf (_LocalVolume[i]*p1);
 		float f2 = fabsf (_LocalVolume[i]*p2);
 		float f3 = fabsf (_LocalVolume[i]*p3);
-		if ((f1 < 0.0001) && (f2 < 0.0001) && (f3 < 0.0001))
+		if ((f1 < CLUSTERPRECISION) && (f2 < CLUSTERPRECISION) && (f3 < CLUSTERPRECISION))
 			return true;
 	}
 	// Check if we want to add a triangle not completely in the predefined volume
@@ -72,7 +75,7 @@ bool CCluster::makeVolume (CVector& p1, CVector& p2, CVector& p3)
 		float f1 = _LocalVolume[i]*p1;
 		float f2 = _LocalVolume[i]*p2;
 		float f3 = _LocalVolume[i]*p3;
-		if ((f1 > 0.0001) && (f2 > 0.0001) && (f3 > 0.0001))
+		if ((f1 > CLUSTERPRECISION) && (f2 > CLUSTERPRECISION) && (f3 > CLUSTERPRECISION))
 			return false;
 	}
 	// Build volume
@@ -96,7 +99,7 @@ bool CCluster::makeVolume (CVector& p1, CVector& p2, CVector& p3)
 bool CCluster::isIn (CVector& p)
 {
 	for (uint i = 0; i < _Volume.size(); ++i)
-		if (_Volume[i]*p > 0.0001)
+		if (_Volume[i]*p > CLUSTERPRECISION)
 			return false;
 	return true;
 }

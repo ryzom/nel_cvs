@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.3 2001/08/02 12:19:40 besson Exp $
+ * $Id: scene_group.h,v 1.4 2001/08/09 09:19:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,8 @@ public:
 	~CInstanceGroup();
 
 	/// Build the group
-	void build (const TInstanceArray& array, const std::vector<CCluster>& Portals, 
+	void build (CVector &vGlobalPos, const TInstanceArray& array, 
+				const std::vector<CCluster>& Portals, 
 				const std::vector<CPortal>& Clusters);
 
 	/// Serial the group
@@ -211,6 +212,8 @@ public:
 
 	CClipTrav *_ClipTrav;
 	CInstanceGroup *_ClusterSystem;
+
+	NLMISC::CVector _GlobalPos;
 };
 
 

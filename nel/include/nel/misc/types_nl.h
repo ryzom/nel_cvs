@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.41 2003/07/01 10:10:11 cado Exp $
+ * $Id: types_nl.h,v 1.42 2003/07/01 12:26:35 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -238,7 +238,9 @@ typedef	uint16	ucchar;
 #endif
 
 #ifdef NL_OS_WINDOWS
+#ifndef NL_EXTENDED_FOR_SCOPE
 #define for if(false) {} else for
+#endif
 #endif
 
 

@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.10 2003/08/21 15:41:29 robert Exp $
+ * $Id: mhics.h,v 1.11 2003/09/22 08:44:53 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -96,7 +96,7 @@ public :
 
 	const std::map<TMotivation, std::set<TClassifierNumber> >* getProviders() const;
 
-	void setWasPreviouslyActived(bool yesOrNo);
+//	void setWasPreviouslyActived(bool yesOrNo);
 	
 private :
 	void computeMotivationValue();
@@ -108,8 +108,7 @@ private :
 	//	std::map<TAction, TEnergyByMotivation>		_VirtualActionProviders;
 	TEnergyByMotivation							_EnergyByMotivation;	// <MotivationSource, motivationValue>
 	CMotivationValue							_MyMotivationValue;
-	bool										_WasPreviouslyActived;
-	uint32										_StartingTime;
+//	bool										_WasPreviouslyActived;
 };
 
 /**
@@ -244,6 +243,8 @@ public :
 
 	uint32 getTemporaryClassifierPriorityTime(TMotivation motivationName, TClassifierNumber classifierNumber) const;
 
+	bool wasClassifierPreviouslyActive (TMotivation motivationName, TClassifierNumber classifierNumber) const;
+
 private :
 	class CTemporaryPriority
 	{
@@ -251,12 +252,29 @@ private :
 //		TClassifierPriorityValue	MinPriorityInOtherActiveClassifier;
 		uint32						TemporaryClassifierPriorityTime;
 		uint32						StartTime;
+		uint32						LastTime;
+		bool						FixedStartTime;
 
 		CTemporaryPriority()
 		{
 //			MinPriorityInOtherActiveClassifier = 1000000;	// La priorité minimum parmis tous les classeurs déclenché par un classeur actif.
 			TemporaryClassifierPriorityTime = 0;		// Valeur de priorité temporaire des classeurs actifs.
 			StartTime = NLMISC::CTime::getSecondsSince1970();
+			LastTime = StartTime;
+			FixedStartTime = false;
+		}
+	};
+
+	class CClassifierActivityInfo
+	{
+	public :
+		bool IsActivable;
+		bool IsActive;
+
+		CClassifierActivityInfo()
+		{
+			IsActivable = false;
+			IsActive = false;
 		}
 	};
 
@@ -282,8 +300,9 @@ private :
 	bool														_Learning;	// Is MHiCS using learning ?
 //	std::map<TMotivation, uint32>								_TimeOfLastMotivationValueDecrease;
 //	std::multimap<TMotivation, std::pair <TClassifierNumber, uint32> >	_ActiveClassifiersByMotivation;			// Liste des classeurs actifs par motivations
-	std::map<TMotivation, std::map<TClassifierNumber, CTemporaryPriority> >	_TemporaryPriority;
-//	std::map<TMotivation, std::set<TClassifierNumber> >			_ActivedClassifier;
+	std::map<TMotivation, std::map<TClassifierNumber, CTemporaryPriority> >			_TemporaryPriority;
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >	*_pInfoClassifierActivity;
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >	*_pOldInfoClassifierActivity;
 };
 
 } // NLAINIMAT

@@ -1,7 +1,7 @@
 /** \file mhics.cpp
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.cpp,v 1.12 2003/08/29 13:36:41 robert Exp $
+ * $Id: mhics.cpp,v 1.13 2003/09/22 08:45:11 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -39,8 +39,7 @@ CMotivationEnergy::CMotivationEnergy()
 {
 	_SumValue = 0;
 	_MHiCSagent = NULL;
-	_WasPreviouslyActived = false;
-	_StartingTime = NLMISC::CTime::getSecondsSince1970();
+//	_WasPreviouslyActived = false;
 }
 
 CMotivationEnergy::~CMotivationEnergy()
@@ -87,10 +86,10 @@ void CMotivationEnergy::addProvider(TMotivation providerName, TClassifierNumber 
 //	_VirtualActionProviders[providerName] = providerMotivation._EnergyByMotivation ;
 //	computeMotivationValue();
 //}
-void CMotivationEnergy::setWasPreviouslyActived(bool yesOrNo)
-{
-	_WasPreviouslyActived = yesOrNo;
-}
+//void CMotivationEnergy::setWasPreviouslyActived(bool yesOrNo)
+//{
+//	_WasPreviouslyActived = yesOrNo;
+//}
 
 
 void CMotivationEnergy::computeMotivationValue()
@@ -98,35 +97,40 @@ void CMotivationEnergy::computeMotivationValue()
 	_EnergyByMotivation.clear();
 
 	TMotivation lastMotivationName = Motivation_Unknown;
-	double lastMaxMotiveValue = 0.0;
 	// We look for motivation values comming directly from Motivations
 	std::multimap<TMotivation, std::set<TClassifierNumber> >::iterator itMotivationProviders;
 	for (itMotivationProviders = _MotivationProviders.begin();
 		 itMotivationProviders != _MotivationProviders.end();
 		 itMotivationProviders++)
 	{
+		uint32 lastMaxMotiveValue = 0;
 		TMotivation motivationName = (*itMotivationProviders).first;
 		std::set<TClassifierNumber>::iterator itClassifierNumber;
 		for (itClassifierNumber = (*itMotivationProviders).second.begin(); itClassifierNumber != (*itMotivationProviders).second.end(); itClassifierNumber++)
 		{
 			TClassifierNumber classierNumber = (*itClassifierNumber);
-			uint32 classifierTimer;
-			if (_WasPreviouslyActived)
+			uint32 classifierTimer = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber).getClassifierTimer();;
+			bool wasPreviouslyActived = _MHiCSagent->wasClassifierPreviouslyActive(motivationName,classierNumber);
+			if (wasPreviouslyActived)
 			{
-				classifierTimer = _MHiCSagent->getTemporaryClassifierPriorityTime(motivationName, classierNumber)/2;
-			}
-			else
-			{
-				classifierTimer = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber).getClassifierTimer();
+				uint32 temporaryClassifierPriorityTime = _MHiCSagent->getTemporaryClassifierPriorityTime(motivationName, classierNumber);
+				// on donne une marge de 15 secondes à l'action activée.
+				if (temporaryClassifierPriorityTime > classifierTimer + 15)
+				{
+					classifierTimer = temporaryClassifierPriorityTime;
+				}
+				else
+				{
+					classifierTimer -=1; // Pour lui donner un avantage en cas d'égalité
+				}
 			}
 			double motiveValue = _MHiCSagent->getMotivationValue(motivationName);
 			double motivePP = _MHiCSagent->getMotivationPP(motivationName);
-			double priorityTimer = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber).getPriorityTimer();
+			uint32 priorityTimer = _MHiCSagent->getMHiCSbase()->getPriorityPart(motivationName, classierNumber).getPriorityTimer();
+			priorityTimer = std::max(priorityTimer, classifierTimer);
 
-//			uint32 randomeNumber = rand()%3;
-//			classifierTimer += randomeNumber;
 
-			double combinedValue = (motiveValue * 1000000) - priorityTimer - classifierTimer;
+			uint32 combinedValue = (motiveValue * 10000.0) - priorityTimer;
 			if (combinedValue > lastMaxMotiveValue)
 			{
 				lastMaxMotiveValue = combinedValue;
@@ -549,10 +553,19 @@ void CMHiCSbase::dbgPrintClassifierPriorityInFile(std::string fileName) const
 			TMotivation laMotive = (*itMotivationClassifierSystems).first;
 			for (i= 0; i< (*itMotivationClassifierSystems).second.getClassifierNumber(); i++)
 			{
+				ohlabellephrase += "MAX ";
 				ohlabellephrase += NLAINIMAT::conversionMotivation.toString(laMotive);
 				ohlabellephrase += " ";
 				(*itMotivationClassifierSystems).second.getDebugString(i,ohlabellephrase);
-//				ohlabellephrase += NLMISC::toString(i);
+				ohlabellephrase += ";T2S ";
+				ohlabellephrase += NLAINIMAT::conversionMotivation.toString(laMotive);
+				ohlabellephrase += " ";
+				(*itMotivationClassifierSystems).second.getDebugString(i,ohlabellephrase);
+				ohlabellephrase += ";ExT ";
+				ohlabellephrase += NLAINIMAT::conversionMotivation.toString(laMotive);
+				ohlabellephrase += " ";
+				(*itMotivationClassifierSystems).second.getDebugString(i,ohlabellephrase);
+				//				ohlabellephrase += NLMISC::toString(i);
 				
 				ohlabellephrase += ";";
 			}
@@ -573,6 +586,10 @@ void CMHiCSbase::dbgPrintClassifierPriorityInFile(std::string fileName) const
 		{
 			CClassifierPriority laSuperPrio = getPriorityPart(laMotive, i);
 			ohlabellephrase += NLMISC::toString(laSuperPrio.getPriority());
+			ohlabellephrase += ";";
+			ohlabellephrase += NLMISC::toString(laSuperPrio.getPriorityTimer());
+			ohlabellephrase += ";";
+			ohlabellephrase += NLMISC::toString(laSuperPrio.getClassifierTimer());
 			ohlabellephrase += ";";
 		}
 	}
@@ -604,12 +621,13 @@ void CMHiCSbase::learningUpdatePriorityValueTimeToSuccess(TMotivation motivation
 		}
 		else
 		{
-			newTime2Success = (timeToSuccess + oldTime2Success*7)/8;
+			newTime2Success = (timeToSuccess + oldTime2Success*3)/4;
 		}
 	}
 //	nlassert (newTime2Success != 0);
 	CClassifierPriority newPrio;
 	newPrio.setPriorityTimer(newTime2Success);
+//	newPrio.setPriorityTimer(timeToSuccess);
 	newPrio.SetClassifierTimer((*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getClassifierTimer());
 	(*itMotivationClassifierSystems).second.setPriorityPart(classifierNumber, newPrio);
 }
@@ -632,12 +650,13 @@ void CMHiCSbase::learningUpdatePriorityValueClassifierTime(TMotivation motivatio
 		}
 		else
 		{
-			newTime = (time*7 + oldTime)/8;
+			newTime = (time*3 + oldTime)/4;
 		}
 	}
 	CClassifierPriority newPrio;
 	newPrio.setPriorityTimer((*itMotivationClassifierSystems).second.getPriorityPart(classifierNumber).getPriorityTimer());
 	newPrio.SetClassifierTimer(newTime);
+//	newPrio.SetClassifierTimer(time);
 	(*itMotivationClassifierSystems).second.setPriorityPart(classifierNumber, newPrio);
 }
 
@@ -653,7 +672,9 @@ CMHiCSagent::CMHiCSagent(CMHiCSbase* pMHiCSbase)
 	_pActionsExecutionIntensityByTarget = new std::map<TTargetId, std::map<TAction, CMotivationEnergy> >();
 	_pOldActionsExecutionIntensityByTarget = new std::map<TTargetId, std::map<TAction, CMotivationEnergy> >();
 	_Learning = true;
-//	_ActionsExecutionIntensity[Action_DoNothing] = CMotivationEnergy();
+	_pInfoClassifierActivity = new std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >();
+	_pOldInfoClassifierActivity = new std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >();
+	//	_ActionsExecutionIntensity[Action_DoNothing] = CMotivationEnergy();
 //	_IdByActions[Action_DoNothing] = NullTargetId;
 //	_ItCurrentAction = _IdByActions.find(Action_DoNothing);
 }
@@ -662,6 +683,8 @@ CMHiCSagent::~CMHiCSagent()
 {
 	delete _pOldActionsExecutionIntensityByTarget;
 	delete _pActionsExecutionIntensityByTarget;
+	delete _pInfoClassifierActivity;
+	delete _pOldInfoClassifierActivity;
 }
 
 /// function used in debug to change a TTargetId in a string
@@ -958,14 +981,11 @@ double CMHiCSagent::getExecutionIntensity(TAction action, TTargetId target) cons
 
 void CMHiCSagent::motivationCompute()
 {
-	/*
-	Avant je sélectionnait par roulette wheel une motivation parmis les autres de façon à aléger le temps de calcul.
-	En fait je vais les faires toutes calculer ensemble pour simplifier mon problème.
-	*/
 	TAction behav;
 
 	std::map<TMotivation, CMotivationEnergy>::iterator itClassifiersAndMotivationIntensity;
 
+	// On parcour toutes les motivations.
 	for (itClassifiersAndMotivationIntensity = _ClassifiersAndMotivationIntensity.begin();
 		 itClassifiersAndMotivationIntensity != _ClassifiersAndMotivationIntensity.end();
 		 itClassifiersAndMotivationIntensity++)
@@ -973,97 +993,39 @@ void CMHiCSagent::motivationCompute()
 		CMotivationEnergy* pCSselection = &((*itClassifiersAndMotivationIntensity).second);
 		TMotivation selectionName = (*itClassifiersAndMotivationIntensity).first;
 		double energy = pCSselection->getSumValue();
+		// Si une motivation est active (une energie >0 ) on actionne ses règles.
 		if (energy > 0)
 		{
 			// On fait calculer le CS
-//			TClassifierNumber lastClassifierNumber = pCSselection->ClassifierNumber;
-//			TClassifierNumber selectedClassifierNumber = lastClassifierNumber;
-//			TTargetId currentTargetId = pCSselection->TargetId;
-//			double lastSelectionMaxPriority = pCSselection->LastSelectionMaxPriority;
 			std::multimap<CClassifierPriority, std::pair<TClassifierNumber, TTargetId> > mapActivableCS;
 			std::multimap<CClassifierPriority, std::pair<TClassifierNumber, TTargetId> >::iterator itMapActivableCS;
 
+			// On fait la liste des classeurs activables.
 			_pMHiCSbase->selectBehavior(selectionName,_pSensorsValues, mapActivableCS);
 
+			// Pour chaque classeur activable, on transmet la valeur de motivation à l'action selectionnée.
 			for (itMapActivableCS = mapActivableCS.begin(); itMapActivableCS != mapActivableCS.end(); itMapActivableCS++)
 			{
 				TClassifierNumber selectedClassifierNumber = (*itMapActivableCS).second.first;
 				TTargetId currentTargetId = (*itMapActivableCS).second.second;
 				behav = _pMHiCSbase->getActionPart(selectionName, selectedClassifierNumber);
-//				TClassifierPriority classifierPriority = _pMHiCSbase->getPriorityPart(selectionName, selectedClassifierNumber);
-					
-//				// We check the last action selected by the current motivation to remove the motivation influence on this action.
-//				if (lastClassifierNumber >= 0)
-//				{
-//					TAction lastActionName = _pMHiCSbase->getActionPart(selectionName, lastClassifierNumber);
-//					
-//					// We check if we have selected the same behavior.
-//					if (lastActionName != behav)
-//					{
-//						if (_pMHiCSbase->isAnAction(lastActionName))
-//						{
-//							_ActionsExecutionIntensity[lastActionName].removeProvider(selectionName);
-//							// If the action doesn't receive motivation any more, we remove it.
-//							double energy = _ActionsExecutionIntensity[lastActionName].getSumValue();
-//							if (energy <= 0)
-//							{
-//								_ActionsExecutionIntensity.erase(lastActionName);
-//								_IdByActions.erase(lastActionName);
-//								// we check if it was the current action
-//								if ((*_ItCurrentAction).first == lastActionName)
-//								{
-//									_ItCurrentAction = _IdByActions.find(Action_DoNothing);
-//									nlassert (_ItCurrentAction != _IdByActions.end());
-//								}
-//							}
-//						}
-//						else
-//						{
-//							_ClassifiersAndVirtualActionIntensity[lastActionName].removeProvider(selectionName);
-//							spreadMotivationReckon(lastActionName);
-//							// If the CS doesn't receive motivation any more, we remove it.
-//							double energy = _ClassifiersAndVirtualActionIntensity[lastActionName].getSumValue();
-//							if (energy <= 0)
-//							{
-//								_ClassifiersAndVirtualActionIntensity.erase(lastActionName);
-//							}
-//						}
-//					}
-//				}
-//				// We store the number of the new classifier actived by this motivation.
-//				_ClassifiersAndMotivationIntensity[selectionName].ClassifierNumber = selectedClassifierNumber;
-//				_ClassifiersAndMotivationIntensity[selectionName].TargetId = currentTargetId;
-//				_ClassifiersAndMotivationIntensity[selectionName].LastSelectionMaxPriority = lastSelectionMaxPriority;
+
+				(*_pInfoClassifierActivity)[selectionName][selectedClassifierNumber].IsActivable = true;
 				
 				// We add the current motivation energy to the selected action.
 				if (behav != Action_DoNothing)
 				{
-//					if (_pMHiCSbase->isAnAction(behav))
+//					std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::const_iterator itOldActionsExecutionIntensityByTarget = (*_pOldActionsExecutionIntensityByTarget).find(currentTargetId);
+//					if (itOldActionsExecutionIntensityByTarget != (*_pOldActionsExecutionIntensityByTarget).end() )
 //					{
-					std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::const_iterator itOldActionsExecutionIntensityByTarget = (*_pOldActionsExecutionIntensityByTarget).find(currentTargetId);
-						if (itOldActionsExecutionIntensityByTarget != (*_pOldActionsExecutionIntensityByTarget).end() )
-						{
-							std::map<TAction, CMotivationEnergy>::const_iterator itIntensityByTarget = (*itOldActionsExecutionIntensityByTarget).second.find(behav);
-							if (itIntensityByTarget != (*itOldActionsExecutionIntensityByTarget).second.end())
-							{
-								(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setWasPreviouslyActived(true);
-							}
-						}
-						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setMHiCSagent(this);
-						(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].addProvider(selectionName, selectedClassifierNumber);
-//						_ActionsExecutionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
+//						std::map<TAction, CMotivationEnergy>::const_iterator itIntensityByTarget = (*itOldActionsExecutionIntensityByTarget).second.find(behav);
+//						if (itIntensityByTarget != (*itOldActionsExecutionIntensityByTarget).second.end())
+//						{
+//							(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setWasPreviouslyActived(true);
+//						}
 //					}
-//					else
-//					{
-//						// Else it must be a virtual action (common CS)
-//						_ClassifiersAndVirtualActionIntensity[behav].addProvider(selectionName, pCSselection->MotivationIntensity);
-//						spreadMotivationReckon(behav);
-//					}
-					
-					// We set the Id of this action.
-					// For moment there's no test to see if it is the same target or not. In the futur it can be usefull to make this test
-					// to avoid unwilled target switch.
-//					_IdByActions[behav] = currentTargetId;
+					(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].setMHiCSagent(this);
+					(*_pActionsExecutionIntensityByTarget)[currentTargetId][behav].addProvider(selectionName, selectedClassifierNumber);
 				}
 			}
 		}
@@ -1200,6 +1162,12 @@ void CMHiCSagent::run()
 	_pOldActionsExecutionIntensityByTarget = _pActionsExecutionIntensityByTarget;
 	_pActionsExecutionIntensityByTarget = bibu;
 	_pActionsExecutionIntensityByTarget->clear();
+
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> > *biba = _pOldInfoClassifierActivity;
+	_pOldInfoClassifierActivity = _pInfoClassifierActivity;
+	_pInfoClassifierActivity = biba;
+	_pInfoClassifierActivity->clear();
+	
 	motivationCompute();
 //	virtualActionCompute();
 }
@@ -1259,13 +1227,14 @@ void CMHiCSagent::learningComputation()
 	 *	Celon le principe de bucket brigade, un classeur qui mène à satisfaire une motivation est un bon classeur.
 	 *	Ensuite un classeur qui a défaut de satisfaire la motivation mène à un classeur pouvant la satisfaire est bon mais un peut moins, etc.
 	 */
-	//	On note les descentes de motivations
-//	uint32 previousLastTime;
-	uint32 newTime = NLMISC::CTime::getSecondsSince1970();
+
 	
-//	std::map<TMotivation, uint32> motivationDiffTime;
+//	std::map<TMotivation, std::set<TClassifierNumber> > oldClassifierByMotivation; // Liste des classeurs actifs au pas précédent.
+//	std::map<TMotivation, std::set<TClassifierNumber> > classifierByMotivation; // Liste des classeurs activés
+	
+	//	On note les descentes de motivations
+	uint32 newTime = NLMISC::CTime::getSecondsSince1970();
 	std::set<TMotivation> decreasingMotivations;
-//	std::map<TMotivation, double> motivationProgressionByMotivation;
 	std::map<TMotivation, CMotivationEnergy>::iterator	itOldClassifiersAndMotivationIntensity, itClassifiersAndMotivationIntensity;
 	for(itOldClassifiersAndMotivationIntensity = _OldClassifiersAndMotivationIntensity.begin();
 		itOldClassifiersAndMotivationIntensity != _OldClassifiersAndMotivationIntensity.end();
@@ -1278,66 +1247,40 @@ void CMHiCSagent::learningComputation()
 		double newMV = (*itClassifiersAndMotivationIntensity).second.getMotivationValue(motivationName);
 		if (newMV < oldMV)
 		{
-//			motivationProgressionByMotivation[motivationName] = oldMV - newMV;
-			// On calcule le temps en seconde depuis la dernière récompense
-//			std::map<TMotivation, uint32>::const_iterator itTimeOfLastMotivationValueDecrease = _TimeOfLastMotivationValueDecrease.find(motivationName);
-//			nlassert (itTimeOfLastMotivationValueDecrease != _TimeOfLastMotivationValueDecrease.end());
-//			previousLastTime = (*itTimeOfLastMotivationValueDecrease).second;
-//			_TimeOfLastMotivationValueDecrease[motivationName] = newTime;
-//			uint32 diffTime = newTime - previousLastTime;
-//			motivationDiffTime[motivationName] = diffTime;
 			decreasingMotivations.insert(motivationName);
 		}
 	}
 
-	// On établit la liste des classeurs utilisés précédemment
-	std::map<TMotivation, std::set<TClassifierNumber> > oldClassifierByMotivation;
-	std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation;
-	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itOldActionsExecutionIntensityByTarget;
-	std::map<TAction, CMotivationEnergy>::iterator itOldActionsExecutionIntensity;
-	for(itOldActionsExecutionIntensityByTarget  = _pOldActionsExecutionIntensityByTarget->begin();
-		itOldActionsExecutionIntensityByTarget != _pOldActionsExecutionIntensityByTarget->end();
-		itOldActionsExecutionIntensityByTarget++)
-	{
-		for(itOldActionsExecutionIntensity  = (*itOldActionsExecutionIntensityByTarget).second.begin();
-			itOldActionsExecutionIntensity != (*itOldActionsExecutionIntensityByTarget).second.end();
-			itOldActionsExecutionIntensity++)
-		{
-			const std::map<TMotivation, std::set<TClassifierNumber> >* provounet = (*itOldActionsExecutionIntensity).second.getProviders();
-			std::map<TMotivation, std::set<TClassifierNumber> >::const_iterator itProvounet;
-			// On met à jour les classeurs qui ont participés à l'évolution des motivations.
-			for(itProvounet  = provounet->begin();
-				itProvounet != provounet->end();
-				itProvounet++)
-			{
-				TMotivation motivationName = (*itProvounet).first;
-				std::set<TClassifierNumber>::const_iterator itClassifierNumber;
-				for (itClassifierNumber = (*itProvounet).second.begin(); itClassifierNumber != (*itProvounet).second.end(); itClassifierNumber++)
-				{
-					TClassifierNumber classifierNumber = (*itClassifierNumber);
-//					std::set<TMotivation>::iterator itDecreasingMotivations = decreasingMotivations.find(motivationName);
-//					if ( itDecreasingMotivations != decreasingMotivations.end())
-//					{
-//						CClassifierPriority prio;
-//						uint32 diffTimeClassifier = newTime - _TemporaryPriority[motivationName][classifierNumber].StartTime;
-//						prio.setPriorityTimer(diffTimeClassifier);
-//						prio.SetClassifierTimer(diffTimeClassifier);
-//						_pMHiCSbase->learningUpdatePriorityValue(motivationName, classifierNumber, prio);
-//						//					double laSuperValeurDeDifferenceDeMotivation = (*itMotivationProgressionByMotivation).second;
-//						//					double laPriorityPrecedente = _pMHiCSbase->getPriorityPart(motivationName, classifierNumber);
-//						//					double laNouvellePriority = (laPriorityPrecedente+ (laPriorityPrecedente + ((1 - laPriorityPrecedente) * laSuperValeurDeDifferenceDeMotivation)))/2;
-//						//					_pMHiCSbase->setPriorityValue(motivationName, classifierNumber, laNouvellePriority);
-//						
-//						// On en profite pour rediviser l'ensemble des poids par le plus petit afin de ne pas se bloquer vers 1
-//						// (vu qu'il n'y a que des renforcements positifs)
-//						//					_pMHiCSbase->dividePriorityByTheMinPriorityPartInAMotivation(motivationName);
-//					}
-					// On établit une liste des classeurs ayant été actifs.
-					oldClassifierByMotivation[motivationName].insert(classifierNumber);
-				}
-			}
-		}
-	}
+//	// On établit la liste des classeurs utilisés précédemment
+//	std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation;
+//	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itOldActionsExecutionIntensityByTarget;
+//	std::map<TAction, CMotivationEnergy>::iterator itOldActionsExecutionIntensity;
+//	for(itOldActionsExecutionIntensityByTarget  = _pOldActionsExecutionIntensityByTarget->begin();
+//		itOldActionsExecutionIntensityByTarget != _pOldActionsExecutionIntensityByTarget->end();
+//		itOldActionsExecutionIntensityByTarget++)
+//	{
+//		for(itOldActionsExecutionIntensity  = (*itOldActionsExecutionIntensityByTarget).second.begin();
+//			itOldActionsExecutionIntensity != (*itOldActionsExecutionIntensityByTarget).second.end();
+//			itOldActionsExecutionIntensity++)
+//		{
+//			const std::map<TMotivation, std::set<TClassifierNumber> >* provounet = (*itOldActionsExecutionIntensity).second.getProviders();
+//			std::map<TMotivation, std::set<TClassifierNumber> >::const_iterator itProvounet;
+//			for(itProvounet  = provounet->begin();
+//				itProvounet != provounet->end();
+//				itProvounet++)
+//			{
+//				TMotivation motivationName = (*itProvounet).first;
+//				std::set<TClassifierNumber>::const_iterator itClassifierNumber;
+//				for (itClassifierNumber = (*itProvounet).second.begin(); itClassifierNumber != (*itProvounet).second.end(); itClassifierNumber++)
+//				{
+//					TClassifierNumber classifierNumber = (*itClassifierNumber);
+//					// On établit une liste des classeurs ayant été actifs.
+//					oldClassifierByMotivation[motivationName].insert(classifierNumber);
+//				}
+//			}
+//		}
+//	}
+
 	// On remet à zero les compteurs de temps pour les actions qui on satisfait une motivation
 	std::set<TMotivation>::iterator itDecreasingMotivations;
 	for (itDecreasingMotivations = decreasingMotivations.begin(); itDecreasingMotivations != decreasingMotivations.end(); itDecreasingMotivations++)
@@ -1349,21 +1292,28 @@ void CMHiCSagent::learningComputation()
 			std::map<TClassifierNumber, CTemporaryPriority>::iterator itPrioByCl;
 			for (itPrioByCl = (*itTemporaryPriority).second.begin(); itPrioByCl != (*itTemporaryPriority).second.end(); itPrioByCl++ )
 			{
-				uint32 timeToSatisfaction = newTime - (*itPrioByCl).second.StartTime;
-				TClassifierNumber classifierNumber = (*itPrioByCl).first;
-				_pMHiCSbase->learningUpdatePriorityValueTimeToSuccess(motivationName, classifierNumber, timeToSatisfaction);
+				// Si le temps a été fixé
+//				bool aUnFixedStartTime = (*itPrioByCl).second.FixedStartTime;
+//				if (aUnFixedStartTime)
+//				{
+					uint32 startTime = (*itPrioByCl).second.StartTime;
+					if (startTime > newTime)
+					{
+						newTime = startTime;
+					}
+					uint32 timeToSatisfaction = newTime - startTime;
+					TClassifierNumber classifierNumber = (*itPrioByCl).first;
+					// On met à jour la fitness des classeurs ayant été activés.
+					_pMHiCSbase->learningUpdatePriorityValueTimeToSuccess(motivationName, classifierNumber, timeToSatisfaction);
+//				}
 			}
 		}
 		_TemporaryPriority.erase(motivationName);
 	}
 		
 	// On établit la liste des classeurs nouveaux utilisés à ce pas ci
-	std::map<TMotivation, std::set<TClassifierNumber> > classifierByMotivation;
-	std::map<TMotivation, std::set<TClassifierNumber> > stillRunningClassifierByMotivation;
-	std::map<TMotivation, std::set<TClassifierNumber> >::iterator itClassifierByMotivation;
 	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >::iterator itActionsExecutionIntensityByTarget;
 	std::map<TAction, CMotivationEnergy>::iterator itActionsExecutionIntensity;
-	std::set<TClassifierNumber>::iterator itUnChtitClassifierNumber;
 	for(itActionsExecutionIntensityByTarget  = _pActionsExecutionIntensityByTarget->begin();
 		itActionsExecutionIntensityByTarget != _pActionsExecutionIntensityByTarget->end();
 		itActionsExecutionIntensityByTarget++)
@@ -1383,20 +1333,11 @@ void CMHiCSagent::learningComputation()
 				for (itClassifierNumber = (*itProvounet).second.begin(); itClassifierNumber != (*itProvounet).second.end(); itClassifierNumber++)
 				{
 					TClassifierNumber classifierNumber = (*itClassifierNumber);
-					itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
-					if (itOldClassifierByMotivation != oldClassifierByMotivation.end() )
-					{
-						classifierByMotivation[motivationName].insert(classifierNumber);
-						itUnChtitClassifierNumber = (*itOldClassifierByMotivation).second.find(classifierNumber);
-						if (itUnChtitClassifierNumber != (*itOldClassifierByMotivation).second.end() )
-						{
-							// S'il y avait des classeurs de la même motivation, et pas le même classeur, c'est que ce classeur
-							// est ancien au seins de cette motivation.
-							stillRunningClassifierByMotivation[motivationName].insert(classifierNumber);
-						}
-					}
-//					else
+//					itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+//					if (itOldClassifierByMotivation != oldClassifierByMotivation.end() )
 //					{
+						// ajout du classeur dans la liste des classeurs activés
+						(*_pInfoClassifierActivity)[motivationName][classifierNumber].IsActive = true;
 //						classifierByMotivation[motivationName].insert(classifierNumber);
 //					}
 				}
@@ -1404,85 +1345,201 @@ void CMHiCSagent::learningComputation()
 		}
 	}
 
-	// On regarde quelles sont les nouveaux classeurs activés
-	for(itClassifierByMotivation  = classifierByMotivation.begin();
-		itClassifierByMotivation != classifierByMotivation.end();
-		itClassifierByMotivation++)
+	// on établit la liste des classeurs qui étaient activables et qui ne le sont plus
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >::iterator itOldInfoClassifierActivity;
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >::iterator itInfoClassifierActivity;
+	for(itOldInfoClassifierActivity = (*_pOldInfoClassifierActivity).begin();
+		itOldInfoClassifierActivity != (*_pOldInfoClassifierActivity).end();
+		itOldInfoClassifierActivity++ )
 	{
-		TMotivation motivationName = (*itClassifierByMotivation).first;
-		// je commence par prendre le min des prios de mes nouvelles actions à ce tour ci.
-		TClassifierPriorityValue leMin = 1000000;
-		for(itUnChtitClassifierNumber  = (*itClassifierByMotivation).second.begin();
-			itUnChtitClassifierNumber != (*itClassifierByMotivation).second.end();
-			itUnChtitClassifierNumber++)
+		TMotivation motivationName = (*itOldInfoClassifierActivity).first;
+		std::map<TClassifierNumber, CClassifierActivityInfo>::iterator itClassifiers, itClassifiersBis;
+		for (itClassifiers = (*itOldInfoClassifierActivity).second.begin(); itClassifiers != (*itOldInfoClassifierActivity).second.end(); itClassifiers++)
 		{
-			TClassifierNumber leNumberDuClasseur = (*itUnChtitClassifierNumber);
-			TClassifierPriorityValue laPrio = _pMHiCSbase->getPriorityPart(motivationName,leNumberDuClasseur).getPriority();
-			leMin = std::min(laPrio, leMin);
-
-			// Si l'action ne fait pas partit des actions précédentes, c'est qu'elle est nouvelle et mérite un newTime et d'être rajoutée dans les classeurs activés.
-			std::map<TMotivation, std::set<TClassifierNumber> >::iterator itStillRunningClassifierByMotivation = stillRunningClassifierByMotivation.find(motivationName);
-			if (itStillRunningClassifierByMotivation != stillRunningClassifierByMotivation.end())
+//			std::set<TClassifierNumber>::iterator itClassifiersBisBis;
+//			bool isStillActivable = false;
+			TClassifierNumber classifierNumber = (*itClassifiers).first;
+			bool wasActive = (*itClassifiers).second.IsActive;
+			bool isActive = (*_pInfoClassifierActivity)[motivationName][classifierNumber].IsActive;
+			if (wasActive && !isActive)
 			{
-				std::set<TClassifierNumber>::iterator itLeNumeroDuClasseur = (*itStillRunningClassifierByMotivation).second.find(leNumberDuClasseur);
-				if (itLeNumeroDuClasseur == (*itStillRunningClassifierByMotivation).second.end())
+				// Le classeur vient de finir son activité, je calcule sa nouvelle priorité.
+				uint32 diffTime = _TemporaryPriority[motivationName][classifierNumber].TemporaryClassifierPriorityTime;
+				if (diffTime >0)
+				{
+					_pMHiCSbase->learningUpdatePriorityValueClassifierTime(motivationName, classifierNumber, diffTime);
+//					_TemporaryPriority[motivationName][classifierNumber].FixedStartTime = false;
+				}
+			}
+
+//			bool wasActivable = (*itClassifiers).second.IsActivable;
+//			if (wasActivable)
+//			{
+//				itInfoClassifierActivity = (*_pInfoClassifierActivity).find(motivationName);
+//				if (itInfoClassifierActivity != (*_pInfoClassifierActivity).end())
+//				{
+//					itClassifiersBis = (*itInfoClassifierActivity).second.find(classifierNumber);
+//					if ( itClassifiersBis != (*itInfoClassifierActivity).second.end() )
+//					{
+//						isStillActivable = true;
+//					}
+//				}
+//				if (isStillActivable)
+//				{
+//					// s'il est activable mais plus activé alors on met à jour son compteur de temps d'execution
+//					bool estActif = (*_pInfoClassifierActivity)[motivationName][classifierNumber].IsActive;
+////					std::map<TMotivation, std::set<TClassifierNumber> >::iterator itClassifierByMotivation = classifierByMotivation.find(motivationName);
+////					if (itClassifierByMotivation != classifierByMotivation.end())
+////					{
+////						itClassifiersBis = (*itClassifierByMotivation).second.find(classifierNumber);
+////						if ( itClassifiersBis != (*itClassifierByMotivation).second.end() )
+////						{
+////							estActif = true;
+////						}
+////					}
+//					if (!estActif)
+//					{
+//						std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+//						if (itOldClassifierByMotivation != oldClassifierByMotivation.end())
+//						{
+//							itClassifiersBisBis = (*itOldClassifierByMotivation).second.find(classifierNumber);
+//							if ( itClassifiersBisBis != (*itOldClassifierByMotivation).second.end() )
+//							{
+//								// Le classeur vient de finir son activité, je calcule sa nouvelle priorité.
+//								uint32 diffTime = _TemporaryPriority[motivationName][classifierNumber].TemporaryClassifierPriorityTime;
+//								if (diffTime >0)
+//								{
+//									_pMHiCSbase->learningUpdatePriorityValueClassifierTime(motivationName, classifierNumber, diffTime);
+//									_TemporaryPriority[motivationName][classifierNumber].FixedStartTime = false;
+//								}
+//							}
+//						}
+//					}
+//				}
+//				else
+//				{
+//					// Dans tous les cas on met à jour son temps d'activation s'il a été activé par le passé.
+//					std::map<TMotivation, std::map<TClassifierNumber, CTemporaryPriority> >::iterator itTemporaryPriority = _TemporaryPriority.find(motivationName);
+//					if (itTemporaryPriority != _TemporaryPriority.end())
+//					{
+//						std::map<TClassifierNumber, CTemporaryPriority>::iterator itClassifiersTerce = (*itTemporaryPriority).second.find(classifierNumber);
+//						if (itClassifiersTerce != (*itTemporaryPriority).second.end() )
+//						{
+//							// Le classeur vient de finir son activité, je calcule sa nouvelle priorité.
+//							uint32 diffTime = _TemporaryPriority[motivationName][classifierNumber].TemporaryClassifierPriorityTime;
+//							if (diffTime >0)
+//							{
+//								_pMHiCSbase->learningUpdatePriorityValueClassifierTime(motivationName, classifierNumber, diffTime);
+//								_TemporaryPriority[motivationName][classifierNumber].FixedStartTime = false;
+//							}
+//						}
+//					}
+//					
+//					// S'il n'était pas activé (avant de n'être plus activable), on le retire de la liste des éligibles au T2S
+////					bool etaitActifJusteAvant = (*itClassifiers).second.IsActive;
+////					std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+////					if (itOldClassifierByMotivation != oldClassifierByMotivation.end())
+////					{
+////						itClassifiersBis = (*itOldClassifierByMotivation).second.find(classifierNumber);
+////						if ( itClassifiersBis != (*itOldClassifierByMotivation).second.end() )
+////						{
+////							etaitActifJusteAvant = true;
+////						}
+////					}
+////					if (!etaitActifJusteAvant)
+////					{
+//						_TemporaryPriority[motivationName][classifierNumber].FixedStartTime = false;
+////					}
+//				}
+//			}
+		}
+	}
+
+	std::map<TClassifierNumber, CClassifierActivityInfo>::iterator itUnChtitClassifierNumberInfo;
+	// On regarde quelles sont les nouveaux classeurs activés
+	for(itInfoClassifierActivity  = (*_pInfoClassifierActivity).begin();
+		itInfoClassifierActivity != (*_pInfoClassifierActivity).end();
+		itInfoClassifierActivity++)
+	{
+		TMotivation motivationName = (*itInfoClassifierActivity).first;
+		
+		for(itUnChtitClassifierNumberInfo  = (*itInfoClassifierActivity).second.begin();
+			itUnChtitClassifierNumberInfo != (*itInfoClassifierActivity).second.end();
+			itUnChtitClassifierNumberInfo++)
+		{
+			TClassifierNumber leNumberDuClasseur = (*itUnChtitClassifierNumberInfo).first;
+			bool wasActive = (*_pOldInfoClassifierActivity)[motivationName][leNumberDuClasseur].IsActive;
+			bool isActive = (*itUnChtitClassifierNumberInfo).second.IsActive;
+			if (isActive)
+			{
+				if (!wasActive)
 				{
 					_TemporaryPriority[motivationName][leNumberDuClasseur].StartTime = newTime;
-//					_ActivedClassifier[motivationName].insert(leNumberDuClasseur);
+					_TemporaryPriority[motivationName][leNumberDuClasseur].LastTime = newTime;
+					_TemporaryPriority[motivationName][leNumberDuClasseur].FixedStartTime = true;
+					_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime = 0;
 				}
+				// Je fais progresser le timer
+				uint32 lastTime = _TemporaryPriority[motivationName][leNumberDuClasseur].LastTime;
+				if (lastTime > newTime)
+				{
+					newTime = lastTime;
+				}
+				uint32 diffTime = newTime - lastTime;
+				_TemporaryPriority[motivationName][leNumberDuClasseur].LastTime = newTime;
+				_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime += diffTime;
 			}
-			else
-			{
-				_TemporaryPriority[motivationName][leNumberDuClasseur].StartTime = newTime;
-			}
-		}
-		// Puis je met à jour les anciens classeurs
-		itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
-		nlassert (itOldClassifierByMotivation != oldClassifierByMotivation.end()); // Normalement c'est assuré par la boucle précédente
-		for(itUnChtitClassifierNumber  = (*itOldClassifierByMotivation).second.begin();
-			itUnChtitClassifierNumber != (*itOldClassifierByMotivation).second.end();
-			itUnChtitClassifierNumber++)
-		{
-			TClassifierNumber leNumberDuClasseur = (*itUnChtitClassifierNumber);
+			
+//			if (isActive)
+//			{
+//				// Si l'action n'avait pas de startTime fixé, on lui en donne un.
+//				bool avaitUnFixedStartTime = false;
+//				std::map<TMotivation, std::map<TClassifierNumber, CTemporaryPriority> >::iterator itTemporaryPriority = _TemporaryPriority.find(motivationName);
+//				if (itTemporaryPriority != _TemporaryPriority.end() )
+//				{
+//					std::map<TClassifierNumber, CTemporaryPriority>::iterator itClassifierAndPrio = (*itTemporaryPriority).second.find(leNumberDuClasseur);
+//					if (itClassifierAndPrio != (*itTemporaryPriority).second.end() )
+//					{
+//						avaitUnFixedStartTime = (*itClassifierAndPrio).second.FixedStartTime;
+//					}
+//				}
+//				if (!avaitUnFixedStartTime)
+//				{
+//					_TemporaryPriority[motivationName][leNumberDuClasseur].StartTime = newTime;
+//					_TemporaryPriority[motivationName][leNumberDuClasseur].FixedStartTime = true;
+//					_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime = 0;
+//				}
+//				else
+//				{
+//					// Si elle avait un startime, on regarde si elle était active au tour précédent.
+//					bool etaitActifJusteAvant = false;
+//					std::map<TMotivation, std::set<TClassifierNumber> >::iterator itOldClassifierByMotivation = oldClassifierByMotivation.find(motivationName);
+//					if (itOldClassifierByMotivation != oldClassifierByMotivation.end())
+//					{
+//						std::set<TClassifierNumber>::iterator itClassifier = (*itOldClassifierByMotivation).second.find(leNumberDuClasseur);
+//						if (itClassifier != (*itOldClassifierByMotivation).second.end() )
+//						{
+//							etaitActifJusteAvant = true;
+//						}
+//					}
+//					if (!etaitActifJusteAvant)
+//					{
+//						_TemporaryPriority[motivationName][leNumberDuClasseur].LastTime = newTime;
+////						_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime = 0;
+//					}
+//				}
+//				
+//				// Je fais progresser le timer
+//				uint32 lastTime = _TemporaryPriority[motivationName][leNumberDuClasseur].LastTime;
+//				if (lastTime > newTime)
+//				{
+//					newTime = lastTime;
+//				}
+//				uint32 diffTime = newTime - lastTime;
+//				_TemporaryPriority[motivationName][leNumberDuClasseur].LastTime = newTime;
+//				_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime += diffTime;
+//			}
 
-			std::map<TMotivation, std::set<TClassifierNumber> >::iterator itStillRunningClassifierByMotivation = stillRunningClassifierByMotivation.find(motivationName);
-			if (itStillRunningClassifierByMotivation != stillRunningClassifierByMotivation.end())
-			{
-				std::set<TClassifierNumber>::iterator itLeNumeroDuClasseur = (*itStillRunningClassifierByMotivation).second.find(leNumberDuClasseur);
-				if (itLeNumeroDuClasseur != (*itStillRunningClassifierByMotivation).second.end())
-				{
-					// Le classeur est toujours actif, je mets seulement à jour la valeur de min
-//					TClassifierPriorityValue bibuPrio = _TemporaryPriority[motivationName][leNumberDuClasseur].MinPriorityInOtherActiveClassifier;
-//					bibuPrio = std::min(bibuPrio, leMin);
-//					_TemporaryPriority[motivationName][leNumberDuClasseur].MinPriorityInOtherActiveClassifier = bibuPrio;
-					uint32 diffTime = newTime - _TemporaryPriority[motivationName][leNumberDuClasseur].StartTime;
-					_TemporaryPriority[motivationName][leNumberDuClasseur].TemporaryClassifierPriorityTime = diffTime;
-				}
-				else
-				{
-					// Le classeur vient de finir son activité, je calcule sa nouvelle priorité.
-//					TClassifierPriorityValue bibuPrio = _TemporaryPriority[motivationName][leNumberDuClasseur].MinPriorityInOtherActiveClassifier;
-//					bibuPrio = std::min(bibuPrio, leMin);
-					uint32 diffTime = newTime - _TemporaryPriority[motivationName][leNumberDuClasseur].StartTime;
-//					_TemporaryPriority[motivationName].erase(leNumberDuClasseur);
-//					CClassifierPriority newPrio;
-//					newPrio.setPriorityTimer(bibuPrio);
-//					newPrio.SetClassifierTimer(diffTime);
-					_pMHiCSbase->learningUpdatePriorityValueClassifierTime(motivationName, leNumberDuClasseur, diffTime);
-				}
-			}
-			else
-			{
-				// Le classeur vient de finir son activité, je calcule sa nouvelle priorité. (idem ci-dessus)
-//					TClassifierPriorityValue bibuPrio = _TemporaryPriority[motivationName][leNumberDuClasseur].MinPriorityInOtherActiveClassifier;
-//					bibuPrio = std::min(bibuPrio, leMin);
-					uint32 diffTime = newTime - _TemporaryPriority[motivationName][leNumberDuClasseur].StartTime;
-//					_TemporaryPriority[motivationName].erase(leNumberDuClasseur);
-//					CClassifierPriority newPrio;
-//					newPrio.setPriorityTimer(bibuPrio);
-//					newPrio.SetClassifierTimer(diffTime);
-					_pMHiCSbase->learningUpdatePriorityValueClassifierTime(motivationName, leNumberDuClasseur, diffTime);
-			}
 		}
 	}
 }
@@ -1562,6 +1619,23 @@ uint32 CMHiCSagent::getTemporaryClassifierPriorityTime(TMotivation motivationNam
 	}
 	uint32 bibureturn = (*itIteratorBis).second.TemporaryClassifierPriorityTime;
 	return bibureturn;
+}
+
+bool CMHiCSagent::wasClassifierPreviouslyActive (TMotivation motivationName, TClassifierNumber classifierNumber) const
+{
+	bool wasPreviouslyActived = false;
+
+	std::map<TMotivation, std::map<TClassifierNumber, CClassifierActivityInfo> >::const_iterator itOldInfoClassifierActivity;
+	itOldInfoClassifierActivity = (*_pOldInfoClassifierActivity).find(motivationName);
+	if (itOldInfoClassifierActivity != _pOldInfoClassifierActivity->end())
+	{
+		std::map<TClassifierNumber, CClassifierActivityInfo>::const_iterator itClassifierInfo = (*itOldInfoClassifierActivity).second.find(classifierNumber);
+		if (itClassifierInfo != (*itOldInfoClassifierActivity).second.end() )
+		{
+			wasPreviouslyActived = (*itClassifierInfo).second.IsActive;
+		}
+	}
+	return wasPreviouslyActived;	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.21 2003/08/21 15:41:43 robert Exp $
+ * $Id: classifier.cpp,v 1.22 2003/09/22 08:45:11 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ CClassifierPriority::CClassifierPriority()
 
 TClassifierPriorityValue CClassifierPriority::getPriority() const
 {
-	return (_PriorityTimer  + _ClassifierTimer);
+	return std::max(_PriorityTimer, _ClassifierTimer);
 }
 
 TClassifierPriorityValue CClassifierPriority::getPriorityTimer() const

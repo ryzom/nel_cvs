@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.26 2002/12/19 14:58:04 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.27 2002/12/23 14:46:51 lecroart Exp $
  *
  */
 
@@ -345,7 +345,10 @@ void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<str
 		{
 			for (uint t = 0; t < answer.size(); t++)
 			{
-				nlassert (answer[t].first.size() == answer[t].second.size());
+				if (!answer[t].first.empty() && answer[t].first[0] == "__log")
+				{	nlassert (answer[t].first.size() == 1); }
+				else
+				{	nlassert (answer[t].first.size() == answer[t].second.size()); }
 				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
 			}
 			Requests[i].NbReceived++;
@@ -359,7 +362,11 @@ void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<str
 
 void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
 {
-	nlassert (variables.size() == values.size());
+	if (!variables.empty() && variables[0] == "__log")
+	{	nlassert (variables.size() == 1); }
+	else
+	{	nlassert (variables.size() == values.size()); }
+
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
 		if (Requests[i].Id == rid)
@@ -614,7 +621,6 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 			{
 				if (Services[j].Connected)
 				{
-					addRequestWaitingNb (rid);
 					bool send = true;
 					
 					// check if the command is not to stop the service
@@ -640,6 +646,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					if (send)
 					{
 						// now send the request to the service
+						addRequestWaitingNb (rid);
 						Services[j].WaitingRequestId.push_back (rid);
 						CMessage msgout("GET_VIEW");
 						msgout.serial(rid);
@@ -839,7 +846,6 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				}
 				else
 				{
-					addRequestWaitingNb (rid);
 					bool send = true;
 					// check if the command is not to stop the service
 					CVarPath subvarpath(varpath.Destination[i].second);
@@ -864,6 +870,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					if (send)
 					{
 						// now send the request to the service
+						addRequestWaitingNb (rid);
 						(*sit).WaitingRequestId.push_back (rid);
 						CMessage msgout("GET_VIEW");
 						msgout.serial(rid);
@@ -1416,9 +1423,16 @@ NLMISC_VARIABLE(uint32, tata, "test the get view system");
 
 NLMISC_COMMAND (getViewAES, "send a view and receive an array as result", "<varpath>")
 {
-	if(args.size() != 1) return false;
+//	if(args.size() != 1) return false;
 
-	addRequest (0, args[0], 0);
+	string cmd;
+	for (uint i = 0; i < args.size(); i++)
+	{
+		if (i != 0) cmd += " ";
+		cmd += args[i];
+	}
+	
+	addRequest (0, cmd, 0);
 
 	return true;
 }

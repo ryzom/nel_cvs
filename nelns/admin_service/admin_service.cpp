@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.20 2002/12/19 14:58:22 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.21 2002/12/23 14:46:57 lecroart Exp $
  *
  */
 
@@ -79,7 +79,9 @@ struct CRequest
 	
 	uint32			NbRow;
 	uint32			NbLines;
-	vector<vector<string> > Array;	// it's the 2 dimensional array that will be send to the php
+
+	vector<vector<string> > Array;	// it's the 2 dimensional array that will be send to the php for variables
+	vector<string> Log;				// this log contains the answer if a command was asked, othewise, Array contains the results
 
 	uint32 getVariable(const string &variable)
 	{
@@ -105,17 +107,29 @@ struct CRequest
 
 	void display ()
 	{
-		nlinfo ("Display answer array for request %d: %d row %d lines", Id, NbRow, NbLines);
-		for (uint i = 0; i < NbLines; i++)
+		if (Log.empty())
 		{
-			for (uint j = 0; j < NbRow; j++)
+			nlinfo ("Display answer array for request %d: %d row %d lines", Id, NbRow, NbLines);
+			for (uint i = 0; i < NbLines; i++)
 			{
-				nlassert (Array.size () == NbRow);
-				InfoLog->displayRaw ("%-20s", Array[j][i].c_str());
+				for (uint j = 0; j < NbRow; j++)
+				{
+					nlassert (Array.size () == NbRow);
+					InfoLog->displayRaw ("%-20s", Array[j][i].c_str());
+				}
+				InfoLog->displayRawNL ("");
 			}
-			InfoLog->displayRawNL ("");
+			InfoLog->displayRawNL ("End of the array");
 		}
-		InfoLog->displayRawNL ("End of array");
+		else
+		{
+			nlinfo ("Display the log for request %d: %d lines", Id, Log.size());
+			for (uint i = 0; i < Log.size(); i++)
+			{
+				InfoLog->displayRaw ("%s", Log[i].c_str());
+			}
+			InfoLog->displayRawNL ("End of the log");
+		}
 	}
 };
 
@@ -254,11 +268,23 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 		Requests[i].addLine ();
 		if (Requests[i].Id == rid)
 		{
-			nlassert (variables.size() == values.size ())
-			for (uint j = 0; j < variables.size(); j++)
+			if (!variables.empty() && variables[0]=="__log")
 			{
-				uint32 pos = Requests[i].getVariable (variables[j]);
-				Requests[i].Array[pos][Requests[i].NbLines-1] = values[j];
+				nlassert (variables.size() == 1);
+
+				for (uint j = 0; j < values.size(); j++)
+				{
+					Requests[i].Log.push_back (values[j]);
+				}
+			}
+			else
+			{
+				nlassert (variables.size() == values.size ());
+				for (uint j = 0; j < variables.size(); j++)
+				{
+					uint32 pos = Requests[i].getVariable (variables[j]);
+					Requests[i].Array[pos][Requests[i].NbLines-1] = values[j];
+				}
 			}
 			return;
 		}
@@ -285,17 +311,28 @@ void cleanRequest ()
 		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
 		{
 			// the request is over, send to the php
-			string str = toString(Requests[i].NbRow) + " ";
-		
-			for (uint k = 0; k < Requests[i].NbLines; k++)
+
+			string str;
+			if (Requests[i].Log.empty())
 			{
-				for (uint j = 0; j < Requests[i].NbRow; j++)
+				str = toString(Requests[i].NbRow) + " ";
+				for (uint k = 0; k < Requests[i].NbLines; k++)
 				{
-					nlassert (Requests[i].Array.size () == Requests[i].NbRow);
-					if (Requests[i].Array[j][k].empty ())
-						str += "??? ";
-					else
-						str += Requests[i].Array[j][k] + " ";
+					for (uint j = 0; j < Requests[i].NbRow; j++)
+					{
+						nlassert (Requests[i].Array.size () == Requests[i].NbRow);
+						if (Requests[i].Array[j][k].empty ())
+							str += "??? ";
+						else
+							str += Requests[i].Array[j][k] + " ";
+					}
+				}
+			}
+			else
+			{
+				for (uint k = 0; k < Requests[i].Log.size(); k++)
+				{
+					str += Requests[i].Log[k];
 				}
 			}
 
@@ -1030,8 +1067,14 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 		for (i = 0; i < nb; i++)
 		{
 			msgin.serial (var);
+			if (var == "__log")
+			{
+				vara.clear ();
+				vala.clear ();
+			}
 			vara.push_back (var);
 		}
+
 
 		msgin.serial (nb);
 		for (i = 0; i < nb; i++)
@@ -1588,9 +1631,16 @@ NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49996, CallbackArray, 
 
 NLMISC_COMMAND (getViewAS, "send a view and receive an array as result", "<varpath>")
 {
-	if(args.size() != 1) return false;
+//	if(args.size() != 1) return false;
 
-	addRequest (args[0], NULL);
+	string cmd;
+	for (uint i = 0; i < args.size(); i++)
+	{
+		if (i != 0) cmd += " ";
+		cmd += args[i];
+	}
+
+	addRequest (cmd, NULL);
 
 	return true;
 }

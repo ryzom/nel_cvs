@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.8 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: unitime.h,v 1.9 2001/05/25 08:51:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@ namespace NLNET
 {
 
 class CInetAddress;
+class CCallbackServer;
+class CCallbackClient;
 
 /**
  * This class provide a independant universal time system.
@@ -57,16 +59,29 @@ public:
 
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.
+	 * This function assumes that all services run on server that are time synchronized with NTP for example.
+	 * If addr is NULL, the function will connect to the Time Service via the Naming Service. In this case,
+	 * the CNamingClient must be connected to a Naming Service.
+	 * This function can be called *ONLY* by services that are inside of the shard.
+	 * Don't use it for a client or a service outside of the shard.
 	 */
-	static void				syncUniTimeFromService (const CInetAddress *addr=NULL);
+	static void				syncUniTimeFromService (const CInetAddress *addr = NULL);
 
+	/** Call this function in the init part of the front end service to enable time syncro between
+	 * shard and clients.
+	 */
+	static void				installServer (CCallbackServer *server);
 
-
+	/** Call this functions in the init part of the client side to synchronize between client and shard.
+	 * client is the connection between the client and the front end. The connection must be established before
+	 * calling this function.
+	 */
+	static void				syncUniTimeFromServer (CCallbackClient *client);
 
 	/// \internal used by the time service to set the universal time the first time
-	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; nldebug ("CUniTime::setUniTime(%"NL_I64"d, %"NL_I64"d)",uTime,lTime); }
+	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime);
 	/// \internal
-	static void				setUniTime (NLMISC::TTime uTime) { setUniTime (uTime, getLocalTime ()); }
+	static void				setUniTime (NLMISC::TTime uTime);
 
 	static bool				Sync;				// true if the synchronization occured
 private:

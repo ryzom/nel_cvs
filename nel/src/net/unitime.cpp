@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.20 2001/05/02 12:36:31 lecroart Exp $
+ * $Id: unitime.cpp,v 1.21 2001/05/25 08:51:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/time_nl.h"
 
 #include "nel/net/callback_client.h"
+#include "nel/net/callback_server.h"
 #include "nel/net/naming_client.h"
 #include "nel/net/message.h"
 
@@ -44,6 +45,32 @@ TTime CUniTime::_SyncUniTime = 0;
 TTime CUniTime::_SyncLocalTime = 0;
 bool CUniTime::Sync = false;
 
+
+void CUniTime::setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime)
+{
+	if (Sync)
+	{
+		TTime lt = getLocalTime ();
+		TTime delta = uTime - lTime + _SyncLocalTime - _SyncUniTime;
+
+		nlinfo ("CUniTime::setUniTime(%"NL_I64"d, %"NL_I64"d): Resyncing delta %"NL_I64"dms",uTime,lTime,delta);
+	}
+	else
+	{
+		nlinfo ("CUniTime::setUniTime(%"NL_I64"d, %"NL_I64"d)",uTime,lTime);
+		Sync = true;
+	}
+	_SyncUniTime = uTime;
+	_SyncLocalTime = lTime;
+}
+
+void CUniTime::setUniTime (NLMISC::TTime uTime)
+{
+	setUniTime (uTime, getLocalTime ());
+}
+
+
+
 TTime CUniTime::getUniTime ()
 {
 	if (!Sync)
@@ -54,82 +81,11 @@ TTime CUniTime::getUniTime ()
 }
 
 
-static bool GetUniversalTime;
-static TTime GetUniversalTimeTime;
-
-static void cbGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	msgin.serial (GetUniversalTimeTime);
-	GetUniversalTime = true;
-}
-
-static TCallbackItem UniTimeCallbackArray[] =
-{
-	{ "GUT", cbGetUniversalTime }
-};
-
-void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
-{
-	CCallbackClient server;
-	server.addCallbackArray (UniTimeCallbackArray, sizeof (UniTimeCallbackArray) / sizeof (UniTimeCallbackArray[0]));
-	if (addr != NULL)
-	{
-		server.connect(*addr);
-	}
-	else
-	{
-		CNamingClient::lookupAndConnect ("TS", server);
-	}
-
-	sint attempt = 0;
-	TTime bestdelta = 60000;	// 1 minute
-
-	if (!server.connected ()) goto error;
-
-	while (attempt < 10)
-	{
-		CMessage msgout (server.getSIDA(), "AUT");
-
-		if (!server.connected()) goto error;
-
-		// send the message
-		server.send (msgout);
-
-		// before time
-		TTime before = CTime::getLocalTime ();
-
-		// receive the answer
-		GetUniversalTime = false;
-		while (!GetUniversalTime)
-		{
-			if (!server.connected()) goto error;
-				
-			server.update ();
-		}
-
-		TTime after = CTime::getLocalTime (), delta = after - before;
-
-		if (delta < 10 || delta < bestdelta)
-		{
-			bestdelta = delta;
-
-			CUniTime::setUniTime (GetUniversalTimeTime, (before+after)/2);
-
-			if (delta < 10) break;
-		}
-		attempt++;
-	}
-	server.disconnect ();
-	nlinfo ("Universal time is %"NL_I64"dms with a mean error of %"NL_I64"dms", CUniTime::getUniTime(), bestdelta/2);
-	return;
-error:
-	nlwarning ("TS not found or lost, can't synchronize universal time");
-}
-
 const char *CUniTime::getStringUniTime ()
 {
 	return getStringUniTime(CUniTime::getUniTime());
 }
+
 
 const char *CUniTime::getStringUniTime (TTime ut)
 {
@@ -162,5 +118,217 @@ const char *CUniTime::getStringUniTime (TTime ut)
 	return str;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////// SYNCHRONISATION BETWEEN TIME SERVICE AND OTHER SERVICES ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static bool GetUniversalTime;
+static uint32 GetUniversalTimeSecondsSince1970;
+static TTime GetUniversalTimeUniTime;
+
+static void cbGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// get the association between a date and unitime
+	msgin.serial (GetUniversalTimeSecondsSince1970);
+	msgin.serial (GetUniversalTimeUniTime);
+	GetUniversalTime = true;
+}
+
+static TCallbackItem UniTimeCallbackArray[] =
+{
+	{ "GUT", cbGetUniversalTime }
+};
+
+void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
+{
+	TTime deltaAdjust, lt;
+	uint32 firstsecond, nextsecond;
+	TTime before, after, delta;
+
+	// create a message with type in the full text format
+	CMessage msgout ("AUT");
+	CCallbackClient server;
+	server.addCallbackArray (UniTimeCallbackArray, sizeof (UniTimeCallbackArray) / sizeof (UniTimeCallbackArray[0]));
+
+	if (addr == NULL)
+	{
+		CNamingClient::lookupAndConnect ("TS", server);
+	}
+	else
+	{
+		server.connect (*addr);
+	}
+
+	if (!server.connected()) goto error;
+
+	server.send (msgout);
+
+	// before time
+	before = CTime::getLocalTime ();
+
+	// receive the answer
+	GetUniversalTime = false;
+	while (!GetUniversalTime)
+	{
+		if (!server.connected()) goto error;
+			
+		server.update ();
+	}
+
+	// after, before and delta is not used. It's only for information purpose.
+	after = CTime::getLocalTime ();
+	delta = after - before;
+
+	nlinfo ("CUniTime::syncUniTimeFromService(): ping:%"NL_I64"dms, time:%ds, unitime:%"NL_I64"dms", delta, GetUniversalTimeSecondsSince1970, GetUniversalTimeUniTime);
+
+	// <-- from here to the "-->" comment, the block must be executed in less than one second or an infinite loop occurs
+
+	// get the second
+	firstsecond = CTime::getSecondsSince1970 ();
+	nextsecond = firstsecond+1;
+	
+	// wait the next start of the second (take 100% of CPU to be more accurate)
+	while (nextsecond != CTime::getSecondsSince1970 ())
+		nlassert (CTime::getSecondsSince1970 () <= nextsecond);
+
+	// -->
+
+	// get the local time of the beginning of the next second
+	lt = CTime::getLocalTime ();
+
+	if (abs((sint32)((TTime)nextsecond - (TTime)GetUniversalTimeSecondsSince1970)) > 10)
+	{
+		nlwarning ("delta is too big (more than 10s) servers aren't NTP synchronized");
+		goto error;
+	}
+	
+	// compute the delta between the other side and our side number of second since 1970
+	deltaAdjust = ((TTime) nextsecond - (TTime) GetUniversalTimeSecondsSince1970) * 1000;
+
+	// adjust the unitime to the current localtime
+	GetUniversalTimeUniTime += deltaAdjust;
+
+	nlinfo ("CUniTime::syncUniTimeFromService(): rtime:%ds, runitime:%"NL_I64"ds, rlocaltime:%"NL_I64"d, deltaAjust:%"NL_I64"dms", nextsecond, GetUniversalTimeUniTime, lt, deltaAdjust);
+
+	CUniTime::setUniTime (GetUniversalTimeUniTime, lt);
+
+	server.disconnect ();
+	return;
+error:
+	nlwarning ("TS not found, lost or can't synchronize universal time");
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////// SYNCHRONISATION BETWEEN CLIENT AND SHARD ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Server part
+
+static void cbServerAskUniversalTime (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	TTime ut = CUniTime::getUniTime ();
+
+	// afficher l adresse de celui qui demande
+	nlinfo("Send the universal time %"NL_I64"d to '%s'", ut, netbase.hostAddress(from).asString().c_str());
+	
+	CMessage msgout (netbase.getSIDA(), "GUT");
+	msgout.serial (ut);
+	netbase.send (msgout, from);
+}
+
+TCallbackItem ServerTimeServiceCallbackArray[] =
+{
+	{ "AUT", cbServerAskUniversalTime },
+};
+
+void CUniTime::installServer (CCallbackServer *server)
+{
+	static alreadyAddedCallback = false;
+	nlassert (server != NULL);
+	nlassert (!alreadyAddedCallback)
+
+	server->addCallbackArray (ServerTimeServiceCallbackArray, sizeof (ServerTimeServiceCallbackArray) / sizeof (ServerTimeServiceCallbackArray[0]));
+	alreadyAddedCallback = true;
+}
+
+// Client part
+
+static bool GetClientUniversalTime;
+static TTime GetClientUniversalTimeUniTime;
+
+static void cbClientGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// get the association between a date and unitime
+	msgin.serial (GetClientUniversalTimeUniTime);
+	GetClientUniversalTime = true;
+}
+
+static TCallbackItem ClientUniTimeCallbackArray[] =
+{
+	{ "GUT", cbClientGetUniversalTime }
+};
+
+
+void CUniTime::syncUniTimeFromServer (CCallbackClient *client)
+{
+	static alreadyAddedCallback = false;
+	nlassert (client != NULL);
+
+	if (!alreadyAddedCallback)
+	{
+		client->addCallbackArray (ClientUniTimeCallbackArray, sizeof (ClientUniTimeCallbackArray) / sizeof (ClientUniTimeCallbackArray[0]));
+		alreadyAddedCallback = true;
+	}
+
+	sint attempt = 0;
+	TTime bestdelta = 60000;	// 1 minute
+
+	if (!client->connected ()) goto error;
+
+	while (attempt < 10)
+	{
+		CMessage msgout (client->getSIDA(), "AUT");
+
+		if (!client->connected()) goto error;
+
+		// send the message
+		client->send (msgout);
+
+		// before time
+		TTime before = CTime::getLocalTime ();
+
+		// receive the answer
+		GetClientUniversalTime = false;
+		while (!GetClientUniversalTime)
+		{
+			if (!client->connected()) goto error;
+				
+			client->update ();
+		}
+
+		TTime after = CTime::getLocalTime (), delta = after - before;
+
+		if (delta < 10 || delta < bestdelta)
+		{
+			bestdelta = delta;
+
+			CUniTime::setUniTime (GetClientUniversalTimeUniTime, (before+after)/2);
+
+			if (delta < 10) break;
+		}
+		attempt++;
+	}
+	client->disconnect ();
+	nlinfo ("Universal time is %"NL_I64"dms with a mean error of %"NL_I64"dms", CUniTime::getUniTime(), bestdelta/2);
+	return;
+error:
+	nlwarning ("there's no connection or lost or can't synchronize universal time");
+}
 
 } // NLNET

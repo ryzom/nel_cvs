@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.15 2002/02/28 12:59:52 besson Exp $
+ * $Id: water_shape.cpp,v 1.16 2002/03/14 18:35:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -375,6 +375,8 @@ void CWaterShape::computeBBox()
 		max.maxof(max, _Poly.Vertices[k]);
 	}
 	_BBox.setMinMax(CVector(min.x, min.y, 0), CVector(max.x, max.y, 0));
+	/* nlinfo("center x = %f, y = %f, z = %f", _BBox.getCenter().x, _BBox.getCenter().y, _BBox.getCenter().z);
+	nlinfo("halsize x = %f, y = %f, z = %f", _BBox.getHalfSize().x, _BBox.getHalfSize().y, _BBox.getHalfSize().z); */
 }
 
 //============================================

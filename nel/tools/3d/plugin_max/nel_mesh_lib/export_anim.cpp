@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.2 2001/04/30 17:01:00 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.3 2001/06/11 07:31:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,13 +34,6 @@
 
 using namespace NLMISC;
 using namespace NL3D;
-
-// --------------------------------------------------
-
-// Biped class ID
-#define BIPSLAVE_CONTROL_CLASS_ID Class_ID(0x9154,0)
-#define BIPBODY_CONTROL_CLASS_ID  Class_ID(0x9156,0) 
-#define FOOTPRINT_CLASS_ID Class_ID(0x3011,0)        
 
 // --------------------------------------------------
 
@@ -196,8 +189,12 @@ void CExportNel::addBoneTracks (NL3D::CAnimation& animation, INode& node, const 
 	addNodeTracks (animation, node, name.c_str(), ip);
 
 	// Recursive call
-	for (uint children=0; children<(uint)node.NumberOfChildren(); children++)
-		addBoneTracks (animation, *node.GetChildNode(children), parentName, ip);
+	uint childrenCont=(uint)node.NumberOfChildren();
+	for (uint children=0; children<childrenCont; children++)
+	{
+		INode *child=node.GetChildNode(children);
+		addBoneTracks (animation, *child, parentName, ip);
+	}
 }
 
 // --------------------------------------------------
@@ -661,7 +658,7 @@ ITrack* createKeyFramer (IKeyControl *ikeys, TTracker*, TKey*, TMaxKey*, float t
 
 class CDoomyKey : public IKey
 {
-	char toto[256];
+	char toto[2048];
 };
 
 // --------------------------------------------------

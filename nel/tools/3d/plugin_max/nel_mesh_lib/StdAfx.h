@@ -1,7 +1,7 @@
 /** \file stdafx.h
  * <File description>
  *
- * $Id: StdAfx.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: StdAfx.h,v 1.2 2001/06/11 07:31:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,13 +32,17 @@
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
-// Include for Max SDK
+// Max SDK includes
 #include <max.h>
 #include <stdmat.h>
 #include <shaders.h>
 #include <iparamb2.h>
 #include <maxscrpt.h>
 #include <parser.h>
+
+// Character Studio SDK include
+#include <bipexp.h>
+#include <phyexp.h>
 
 // TODO: reference additional headers your program requires here
 

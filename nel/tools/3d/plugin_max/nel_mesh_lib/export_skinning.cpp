@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.2 2001/06/11 07:31:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ using namespace NL3D;
 // ***************************************************************************
 
 #define SKIN_CLASS_ID Class_ID(9815843,87654)
+#define PHYSIQUE_CLASS_ID Class_ID(PHYSIQUE_CLASS_ID_A, PHYSIQUE_CLASS_ID_B)
 
 // ***************************************************************************
 
@@ -224,6 +225,34 @@ bool CExportNel::isSkin (INode& node)
 			}
 		}
 	}
+
+	// Try physic
+	if (!ok)
+	{
+		// Get the skin modifier
+		Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+		// Found it ?
+		if (skin)
+		{
+			// Modifier enabled ?
+			if (skin->IsEnabled())
+			{
+				// Get a com_skin2 interface
+				IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);
+
+				// Found com_skin2 ?
+				if (physiqueInterface)
+				{
+					// Skinned
+					ok=true;
+
+					// Release the interface
+					skin->ReleaseInterface (I_PHYINTERFACE, physiqueInterface);
+				}
+			}
+		}
+	}
 	return ok;
 }
 
@@ -237,12 +266,11 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonSha
 	// Get the skin modifier
 	Modifier* skin=getModifier (&node, SKIN_CLASS_ID);
 
-	// Should been controled with isSkin before.
-	nlassert (skin);
-
 	// Found it ?
 	if (skin)
 	{
+		// **********    COMSKIN EXPORT    **********
+
 		// Get a com_skin2 interface
 		ISkin *comSkinInterface=(ISkin*)skin->GetInterface (SKIN_INTERFACE);
 
@@ -271,12 +299,12 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonSha
 				}
 				else
 				{
-					// Rebuild the array
-					buildMesh.SkinWeights.resize (vertCount);
-
 					// If not the same count, return false (perhaps, the modifier is not in the good place in the stack..)
 					if (buildMesh.Vertices.size()==vertCount)
 					{
+						// Rebuild the array
+						buildMesh.SkinWeights.resize (vertCount);
+
 						// For each vertex
 						for (uint vert=0; vert<vertCount; vert++)
 						{
@@ -373,10 +401,211 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const CSkeletonSha
 					}
 				}
 			}
-
-			// Release the interface
-			skin->ReleaseInterface (SKIN_INTERFACE, comSkinInterface);
 		}
+
+		// Release the interface
+		skin->ReleaseInterface (SKIN_INTERFACE, comSkinInterface);
+	}
+	else
+	{
+		// **********    PHYSIQUE EXPORT    **********
+
+		// Physique mode
+		Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+		// Must exist
+		nlassert (skin);
+		
+		// Get a com_skin2 interface
+		IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);
+
+		// Should been controled with isSkin before.
+		nlassert (physiqueInterface);
+
+		// Found com_skin2 ?
+		if (physiqueInterface)
+		{
+			// Get local data
+			IPhyContextExport *localData=physiqueInterface->GetContextInterface(&node);
+
+			// Should been controled with isSkin before.
+			nlassert (localData);
+
+			// Found ?
+			if (localData)
+			{
+				// Use rigid export
+				localData->ConvertToRigid (TRUE);
+
+				// Allow blending
+				localData->AllowBlending (TRUE);
+
+				// Check same vertices count
+				uint vertCount=localData->GetNumberVertices();
+
+				// Ctrl we have the same number of vertices in the mesh and in the modifier.
+				if (buildMesh.Vertices.size()!=vertCount)
+				{
+					ok=InvalidSkeleton;
+				}
+				else
+				{
+					// If not the same count, return false (perhaps, the modifier is not in the good place in the stack..)
+					if (buildMesh.Vertices.size()==vertCount)
+					{
+						// Rebuild the array
+						buildMesh.SkinWeights.resize (vertCount);
+
+						// For each vertex
+						for (uint vert=0; vert<vertCount; vert++)
+						{
+							// Get a vertex interface
+							IPhyVertexExport *vertexInterface=localData->GetVertexInterface (vert);
+
+							// Check if it is a rigid vertex or a blended vertex
+							IPhyRigidVertex			*rigidInterface=NULL;
+							IPhyBlendedRigidVertex	*blendedInterface=NULL;
+							int type=vertexInterface->GetVertexType ();
+							if (type==RIGID_TYPE)
+							{
+								// this is a rigid vertex
+								rigidInterface=(IPhyRigidVertex*)vertexInterface;
+							}
+							else
+							{
+								// It must be a blendable vertex
+								nlassert (type==RIGID_BLENDED_TYPE);
+								blendedInterface=(IPhyBlendedRigidVertex*)vertexInterface;
+							}
+
+							// Get bones count for this vertex
+							uint boneCount;
+							if (blendedInterface)
+							{
+								// If blenvertex, only one bone
+								boneCount=blendedInterface->GetNumberNodes();
+							}
+							else
+							{
+								// If rigid vertex, only one bone
+								boneCount=1;
+							}
+
+							// No bones, can't export
+							if (boneCount==0)
+							{
+								// Error
+								ok=VertexWithoutWeight;
+								break;
+							}
+
+							// A map of float / string
+							std::multimap<float, INode*> weightMap;
+
+							// For each bones
+							for (uint bone=0; bone<boneCount; bone++)
+							{
+								if (blendedInterface)
+								{
+									// Get the bone weight
+									float weight=blendedInterface->GetWeight(bone);
+
+									// Get node
+									INode *node=blendedInterface->GetNode(bone);
+									nlassert (node);
+
+									// Insert in the map
+									weightMap.insert (std::map<float, INode*>::value_type (weight, node));
+								}
+								else
+								{
+									// Get node
+									INode *node=rigidInterface->GetNode();
+									nlassert (node);
+
+									// Insert in the map
+									weightMap.insert (std::map<float, INode*>::value_type (1, node));
+								}
+							}
+
+							// Keep only the NL3D_MESH_SKINNING_MAX_MATRIX highest bones
+							while (weightMap.size()>NL3D_MESH_SKINNING_MAX_MATRIX)
+							{
+								// Remove the lowest weights
+								weightMap.erase (weightMap.begin());
+							}
+
+							// Sum the NL3D_MESH_SKINNING_MAX_MATRIX highest bones
+							float sum=0.f;
+							std::map<float, INode*>::iterator ite=weightMap.begin();
+							while (ite!=weightMap.end())
+							{
+								// Add to the sum
+								sum+=ite->first;
+								
+								// Next value
+								ite++;
+							}
+
+							// Erase bones
+							for (uint i=0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+							{
+								// Erase
+								buildMesh.SkinWeights[vert].MatrixId[i]=0;
+								buildMesh.SkinWeights[vert].Weights[i]=0;
+							}
+
+							// For each bones in the list, build the skin information
+							uint id=0;
+							ite=weightMap.end();
+							while (ite!=weightMap.begin())
+							{
+								// Previous value
+								ite--;
+
+								// Get the bone name
+								std::string name=getName (*ite->second);
+								
+								// Get the bones ID
+								sint32 matrixId=skeletonShape.getBoneIdByName (name);
+
+								// Find the bone ?
+								if (matrixId==-1)
+								{
+									// no, error, wrong skeleton
+									ok=InvalidSkeleton;
+									break;
+								}
+
+								// Set the weight
+								buildMesh.SkinWeights[vert].MatrixId[id]=matrixId;
+								buildMesh.SkinWeights[vert].Weights[id]=ite->first/sum;
+								
+								// Next Id
+								id++;
+							}
+							
+							// Breaked ?
+							if (ite!=weightMap.begin())
+							{
+								// break again to exit
+								break;
+							}
+
+							// Release vertex interfaces
+							localData->ReleaseVertexInterface (vertexInterface);
+						}
+					}
+				}
+
+				// Release locaData interface
+				physiqueInterface->ReleaseContextInterface (localData);
+			}
+
+		}
+
+		// Release the interface
+		skin->ReleaseInterface (I_PHYINTERFACE, physiqueInterface);
 	}
 
 	return ok;
@@ -449,6 +678,102 @@ INode* CExportNel::getSkeletonRootBone (INode& node)
 			skin->ReleaseInterface (SKIN_INTERFACE, comSkinInterface);
 		}
 	}
+	else
+	{
+		// Get the skin modifier
+		skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+		// Should be not NULL
+		nlassert (skin);
+
+		// Found it ?
+		if (skin)
+		{
+			// Get a com_skin2 interface
+			IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);
+
+			// Found com_skin2 ?
+			if (physiqueInterface)
+			{
+				// Get local data
+				IPhyContextExport *localData=physiqueInterface->GetContextInterface(&node);
+
+				// Found ?
+				if (localData)
+				{
+					// Use rigid export
+					localData->ConvertToRigid (TRUE);
+
+					// Allow blending
+					localData->AllowBlending (TRUE);
+
+					// Look for a bone...
+
+					// For each vertices
+					uint numVert=(uint)localData->GetNumberVertices();
+					for (uint vtx=0; vtx<numVert; vtx++)
+					{
+						bool found=false;
+
+						// Get a vertex interface
+						IPhyVertexExport *vertexInterface=localData->GetVertexInterface (vtx);
+
+						// Check if it is a rigid vertex or a blended vertex
+						int type=vertexInterface->GetVertexType ();
+						if (type==RIGID_TYPE)
+						{
+							// this is a rigid vertex
+							IPhyRigidVertex			*rigidInterface=(IPhyRigidVertex*)vertexInterface;
+
+							// Get the bone
+							INode *newBone=rigidInterface->GetNode();
+
+							// Get the root of the hierarchy
+							ret=getRoot (newBone);
+							found=true;
+							break;
+						}
+						else
+						{
+							// It must be a blendable vertex
+							nlassert (type==RIGID_BLENDED_TYPE);
+							IPhyBlendedRigidVertex	*blendedInterface=(IPhyBlendedRigidVertex*)vertexInterface;
+
+							// For each bones
+							uint bone;
+							uint count=(uint)blendedInterface->GetNumberNodes ();
+							for (bone=0; bone<count; bone++)
+							{
+								// Get the bone pointer
+								INode *newBone=blendedInterface->GetNode(bone);
+
+								// Get the root of the hierarchy
+								ret=getRoot (newBone);
+								found=true;
+								break;
+							}
+						}
+
+						// Release vertex interfaces
+						localData->ReleaseVertexInterface (vertexInterface);
+
+						// Rebreak
+						if (found)
+							break;
+
+						// Release vertex interfaces
+						localData->ReleaseVertexInterface (vertexInterface);
+					}
+
+					// Release locaData interface
+					physiqueInterface->ReleaseContextInterface (localData);
+				}
+
+				// Release the interface
+				skin->ReleaseInterface (I_PHYINTERFACE, physiqueInterface);
+			}
+		}
+	}
 
 	// Return result;
 	return ret;
@@ -463,9 +788,6 @@ void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
 
 	// Get the skin modifier
 	Modifier* skin=getModifier (&node, SKIN_CLASS_ID);
-
-	// Should been controled with isSkin before.
-	nlassert (skin);
 
 	// Found it ?
 	if (skin)
@@ -520,6 +842,105 @@ void CExportNel::addSkeletonBindPos (INode& node, mapBoneBindPos& boneBindPos)
 			skin->ReleaseInterface (SKIN_INTERFACE, comSkinInterface);
 		}
 	}
+	else
+	{
+		// Get the skin modifier
+		Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+		// Should been controled with isSkin before.
+		nlassert (skin);
+
+		// Found it ?
+		if (skin)
+		{
+			// Get a com_skin2 interface
+			IPhysiqueExport *physiqueInterface=(IPhysiqueExport *)skin->GetInterface (I_PHYINTERFACE);
+
+			// Should been controled with isSkin before.
+			nlassert (physiqueInterface);
+
+			// Found com_skin2 ?
+			if (physiqueInterface)
+			{
+				// Get local data
+				IPhyContextExport *localData=physiqueInterface->GetContextInterface(&node);
+
+				// Should been controled with isSkin before.
+				nlassert (localData);
+
+				// Found ?
+				if (localData)
+				{
+					// Use rigid export
+					localData->ConvertToRigid (TRUE);
+
+					// Allow blending
+					localData->AllowBlending (TRUE);
+
+					// Check same vertices count
+					uint vertCount=localData->GetNumberVertices();
+
+					// For each vertex
+					for (uint vert=0; vert<vertCount; vert++)
+					{
+						// Get a vertex interface
+						IPhyVertexExport *vertexInterface=localData->GetVertexInterface (vert);
+
+						// Check if it is a rigid vertex or a blended vertex
+						int type=vertexInterface->GetVertexType ();
+						if (type==RIGID_TYPE)
+						{
+							// this is a rigid vertex
+							IPhyRigidVertex			*rigidInterface=(IPhyRigidVertex*)vertexInterface;
+
+							// Get bone INode*
+							INode *bone=rigidInterface->GetNode();
+
+							// Get the bind matrix of the bone
+							Matrix3 bindPos;
+							int res=physiqueInterface->GetInitNodeTM (bone, bindPos);
+							nlassert (res==MATRIX_RETURNED);
+
+							// Add an entry inthe map
+							boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos));
+						}
+						else
+						{
+							// It must be a blendable vertex
+							nlassert (type==RIGID_BLENDED_TYPE);
+							IPhyBlendedRigidVertex	*blendedInterface=(IPhyBlendedRigidVertex*)vertexInterface;
+
+							// For each bones
+							uint boneIndex;
+							uint count=(uint)blendedInterface->GetNumberNodes ();
+							for (boneIndex=0; boneIndex<count; boneIndex++)
+							{
+								// Get the bone pointer
+								INode *bone=blendedInterface->GetNode(boneIndex);
+
+								// Get the bind matrix of the bone
+								Matrix3 bindPos;
+								int res=physiqueInterface->GetInitNodeTM (bone, bindPos);
+								nlassert (res==MATRIX_RETURNED);
+
+								// Add an entry inthe map
+								boneBindPos.insert (mapBoneBindPos::value_type (bone, bindPos));
+							}
+						}
+					
+						// Release vertex interfaces
+						localData->ReleaseVertexInterface (vertexInterface);
+					}
+
+					// Release locaData interface
+					physiqueInterface->ReleaseContextInterface (localData);
+				}
+
+				// Release the interface
+				skin->ReleaseInterface (SKIN_INTERFACE, physiqueInterface);
+			}
+		}
+	}
 }
 
 // ***************************************************************************
@@ -538,6 +959,21 @@ void CExportNel::enableSkinModifier (INode& node, bool enable)
 			skin->EnableMod ();
 		else
 			skin->DisableMod ();
+	}
+	else
+	{
+		// Get the physique modifier
+		Modifier* skin=getModifier (&node, PHYSIQUE_CLASS_ID);
+
+		// Found it ?
+		if (skin)
+		{
+			// Enable ?
+			if (enable)
+				skin->EnableMod ();
+			else
+				skin->DisableMod ();
+		}
 	}
 }
 

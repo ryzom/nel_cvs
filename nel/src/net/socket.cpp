@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.5 2000/09/21 09:45:09 cado Exp $
+ * $Id: socket.cpp,v 1.6 2000/09/21 12:31:54 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -28,8 +28,8 @@
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
 
-#include <iostream> //debug
-using namespace std;
+/*#include <iostream> //debug
+using namespace std;*/
 
 #ifdef NL_OS_WINDOWS
 	#include <winsock2.h>
@@ -228,7 +228,7 @@ bool CSocket::receive( CMessage& message ) throw (ESocket)
 		throw ESocket("Cannot receive msgtype");
 	}
 	NLMISC_BSWAP16(msgtype);
-	cout << msgtype << " ";
+	//cout << msgtype << " ";
 
 	// 2. Read message name (optional)
 	uint16 msgnamelen = 0;
@@ -249,7 +249,7 @@ bool CSocket::receive( CMessage& message ) throw (ESocket)
 		throw ESocket("Cannot receive msgsize");
 	}
 	NLMISC_BSWAP32(msgsize);
-	cout << (int)msgsize << endl;
+	//cout << (int)msgsize << endl;
 
 	// 4. Read all buffer and dismiss
 	message.setHeader( msgtype, std::string( msgname!=NULL ? msgname : "" ) );

@@ -1,1 +1,3 @@
-doxygen nel.dox
+R:
+cd \code\nel\doc
+doxygen -s nel.dox

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.h,v 1.5 2000/09/21 09:45:09 cado Exp $
+ * $Id: socket.h,v 1.6 2000/09/21 12:31:54 cado Exp $
  *
  * Interface for CSocket
  */
@@ -39,7 +39,6 @@ class CMessage;
 /**
  * Client socket (for TCP connected streams). Allows to send/receive CMessage objects.
  * \todo Advanced error handling
- * \todo What about byte swapping for message headers ???
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

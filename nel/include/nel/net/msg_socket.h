@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.3 2000/09/21 09:45:09 cado Exp $
+ * $Id: msg_socket.h,v 1.4 2000/09/21 12:31:54 cado Exp $
  *
  * Interface for CServerSocket
  */
@@ -26,6 +26,7 @@
 #ifndef NL_SERVER_SOCKET_H
 #define NL_SERVER_SOCKET_H
 
+#include "nel/net/base_socket.h"
 #include "nel/net/socket.h"
 #include <vector>
 
@@ -43,7 +44,7 @@ class CInetAddress;
  * \author Nevrax France
  * \date 2000
  */
-class CServerSocket
+class CServerSocket : public CBaseSocket
 {
 public:
 
@@ -67,7 +68,6 @@ public:
 
 private:
 
-	SOCKET					_ServSock;
 	bool					_Binded;
 	std::vector<CSocket*>	_Connections;
 

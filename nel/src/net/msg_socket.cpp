@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.3 2000/09/21 09:45:09 cado Exp $
+ * $Id: msg_socket.cpp,v 1.4 2000/09/21 12:31:54 cado Exp $
  *
  * Implementation of CServerSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -54,11 +54,10 @@ namespace NLNET
 /*
  * Constructor
  */
-CServerSocket::CServerSocket()
-: _ServSock( 0 ), _Binded( false )
-{
-	CSocket::init();
-}
+CServerSocket::CServerSocket() :
+	CBaseSocket(),
+	_Binded( false )
+{}
 
 
 /*
@@ -66,14 +65,6 @@ CServerSocket::CServerSocket()
  */
 CServerSocket::~CServerSocket()
 {
-	if ( _Binded )
-	{
-		#ifdef NL_OS_WINDOWS
-			closesocket( _ServSock );
-		#elif defined NL_OS_LINUX
-			::close( _ServSock );
-		#endif
-	}
 	vector<CSocket*>::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
 	{
@@ -106,16 +97,17 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	{
 		throw ESocket("Invalid address for listening");
 	}
+	_LocalAddr = addr;
 
 	// Create a socket
-	_ServSock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
-	if ( _ServSock == INVALID_SOCKET )
+	_Sock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ); // IPPROTO_TCP or IPPROTO_IP (=0) ?
+	if ( _Sock == INVALID_SOCKET )
 	{
 		throw ESocket("Server socket creation failed");
 	}
 
 	// Bind socket to port	
-	if ( ::bind( _ServSock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
+	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )
 	{
 		throw ESocket("Unable to bind server socket to port");
 	}
@@ -124,7 +116,7 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 	// Retrieve socket error code (is this really necessary ?)
 	int errcode=0;
 	int errlen=sizeof(errcode);
-	getsockopt( _ServSock, SOL_SOCKET, SO_ERROR, (char*)&errcode, &errlen );
+	getsockopt( _Sock, SOL_SOCKET, SO_ERROR, (char*)&errcode, &errlen );
 	if ( errcode != 0 )
 	{
 		throw ESocket("Server socket raised an error after binding");
@@ -132,7 +124,7 @@ void CServerSocket::listen( const CInetAddress& addr ) throw (ESocket)
 
 	// Listen
 	const int backlog = 5; // maximum length of the queue of pending connections
-	if ( ::listen( _ServSock, backlog ) != 0 )
+	if ( ::listen( _Sock, backlog ) != 0 )
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
@@ -148,7 +140,7 @@ CSocket& CServerSocket::accept() throw (ESocket)
 	// Accept connection
 	sockaddr_in saddr;
 	sint saddrlen = sizeof(saddr);
-	SOCKET newsock = ::accept( _ServSock, (sockaddr*)&saddr, &saddrlen );
+	SOCKET newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
 	if ( newsock == INVALID_SOCKET )
 	{
 		throw ESocket( "accept return an invalid socket");

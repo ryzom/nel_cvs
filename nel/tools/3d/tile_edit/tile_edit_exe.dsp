@@ -19,6 +19,7 @@ CFG=tile_edit_exe - Win32 Debug
 !MESSAGE 
 !MESSAGE "tile_edit_exe - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "tile_edit_exe - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "tile_edit_exe - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -81,12 +82,40 @@ LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /out:"Debug/tile_edit.exe" /pdbtype:sept
 
+!ELSEIF  "$(CFG)" == "tile_edit_exe - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "tile_edit_exe___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "tile_edit_exe___Win32_ReleaseDebug"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /machine:I386 /out:"Release/tile_edit.exe"
+# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /out:"Release/tile_edit.exe"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "tile_edit_exe - Win32 Release"
 # Name "tile_edit_exe - Win32 Debug"
+# Name "tile_edit_exe - Win32 ReleaseDebug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.90 2004/05/03 09:37:07 corvazier Exp $
+ * $Id: debug.cpp,v 1.91 2004/05/10 14:44:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,8 +96,6 @@ CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
 
 static CStdDisplayer *sd = NULL;
 static CFileDisplayer *fd = NULL;
-
-#define NL_CRASH_DUMP_FILE "nel_debug.dmp"
 
 static TCrashCallback CrashCallback = NULL;
 

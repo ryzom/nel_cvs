@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.59 2004/02/13 10:03:48 lecroart Exp $
+ * $Id: displayer.cpp,v 1.60 2004/05/10 14:44:43 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -627,7 +627,7 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)
 		{
-			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, true, IgnoreNextTime))
+			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, true, IgnoreNextTime, NL_CRASH_DUMP_FILE))
 			{
 				DebugNeedAssert = true;
 			}

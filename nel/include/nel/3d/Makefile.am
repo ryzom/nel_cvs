@@ -1,10 +1,8 @@
 #
-# $Id: Makefile.am,v 1.1 2001/06/13 18:05:00 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/06/18 12:46:14 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
-
-SUBDIRS              = tmp
 
 includedir           = ${prefix}/include/nel/3d
 

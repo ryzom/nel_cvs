@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.31 2003/08/05 14:46:12 cado Exp $
+ * $Id: mem_stream.h,v 1.32 2003/09/24 10:45:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,8 +60,9 @@ typedef CVector8::iterator It8;
  *
  * How output mode works:
  * The buffer size is increased by factor 2. It means the stream can be smaller than the buffer size.
- * The size of the stream is the current position in the stream (given by lengthS() which then equal
+ * The size of the stream is the current position in the stream (given by lengthS() which is equal
  * to getPos()), because data is always written at the end (except when using poke()).
+ * About seek() particularities: see comment of the seek() method.
  *
  * buffer() ----------------------------------- getPos() ---------------- size()
  *              data already serialized out        |
@@ -128,6 +129,11 @@ public:
 	/** 
 	 * Moves the stream pointer to a specified location.
 	 * 
+	 * Warning: in output mode, seek(end) does not point to the end of the serialized data,
+	 * but on the end of the whole allocated buffer (see size()).
+	 * If you seek back and want to return to the end of the serialized data, you have to
+	 * store the position (a better way is to use reserve()/poke()).
+	 *
 	 * NB: If the stream doesn't support the seek fonctionnality, it throws ESeekNotSupported.
 	 * Default implementation: 
 	 * { throw ESeekNotSupported; }

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.20 2003/09/23 14:56:09 vizerie Exp $
+ * $Id: mem_stream.cpp,v 1.21 2003/09/24 10:45:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,17 @@ void CMemStream::serialBit(bool &bit)
 
 /*
  * seek (inherited from IStream)
+ *
+ * Warning: in output mode, seek(end) does not point to the end of the serialized data,
+ * but on the end of the whole allocated buffer (see size()).
+ * If you seek back and want to return to the end of the serialized data, you have to
+ * store the position (a better way is to use reserve()/poke()).
+ *
+ * Possible enhancement:
+ * In output mode, keep another pointer to track the end of serialized data.
+ * When serializing, increment the pointer if its value exceeds its previous value
+ * (to prevent from an "inside serial" to increment it).
+ * Then a seek(end) would get back to the pointer.
  */
 bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 {

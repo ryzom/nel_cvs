@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.27 2002/12/10 12:43:22 cado Exp $
+ * $Id: mem_stream.h,v 1.28 2003/07/09 15:16:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,10 +56,31 @@ typedef CVector8::iterator It8;
 
 
 /**
- * MemStream memory stream (see also NLNET::CMessage).
- * \author Olivier Cado
+ * Memory stream.
+ *
+ * How output mode works:
+ * The buffer size is increased by factor 2. It means the stream can be smaller than the buffer size.
+ * The size of the stream is the current position in the stream (given by lengthS() which then equal
+ * to getPos()), because data is always written at the end (except when using poke()).
+ *
+ * buffer() ----------------------------------- getPos() ---------------- size()
+ *              data already serialized out        |
+ *                                              length() = lengthS()
+ *
+ * How input mode works:
+ * The stream is exactly the buffer (the size is given by lengthR()). Data is read inside the stream,
+ * at the current position (given by getPos()). If you try to read data while getPos() is equal to
+ * lengthR(), you'll get an EStreamOverflow exception.
+ *
+ * buffer() ----------------------------------- getPos() ------------------------- size()
+ *              data already serialized in                   data not read yet      |
+ *                                                                               length() = lengthR() 
+ *
+ * \seealso CBitMemStream
+ * \seealso NLNET::CMessage
+ * \author Olivier Cado, Vianney Lecroart
  * \author Nevrax France
- * \date 2000
+ * \date 2000, 2002
  */
 class CMemStream : public NLMISC::IStream
 {
@@ -133,6 +154,41 @@ public:
 		return _BufPos - _Buffer.getPtr();
 	}
 
+	/**
+	 * When writing, skip 'len' bytes and return the position of the blank space for a future poke().
+	 */
+	sint32			reserve( uint len )
+	{
+		sint32 pos = _BufPos - _Buffer.getPtr();
+		if ( ! isReading() )
+		{
+			increaseBufferIfNecessary( len );
+			_BufPos += len;
+		}
+		return pos;
+	}
+
+	/**
+	 * When writing, fill a value previously reserved by reserve()
+	 * (warning: you MUST have called reserve() with sizeof(T) before poking).
+	 * Usually it's an alternative to use serialCont with a vector.
+	 * Example:
+	 *		uint8 counter=0;
+	 *		sint32 counterPos = msgout.reserve( sizeof(counter) );
+	 *		counter = serialSelectedItems( msgout );
+	 *		msgout.poke( counter, counterPos );
+	 */
+	template <class T>
+	void			poke( T value, sint32 pos )
+	{
+		if ( ! isReading() )
+		{
+			uint8 *pokeBufPos = _Buffer.getPtr() + pos;
+			nlassert( pokeBufPos + sizeof(T) <= _BufPos );
+			*(T*)pokeBufPos = value;
+		}
+	}
+
 	/// Clears the message
 	virtual void	clear()
 	{
@@ -159,6 +215,12 @@ public:
 		{
 			return lengthS();
 		}
+	}
+
+	/// Returns the size of the buffer (can be greater than the length, especially in output mode)
+	uint32			size() const
+	{
+		return _Buffer.size();
 	}
 
 	/** Returns a pointer to the message buffer (read only)
@@ -192,7 +254,8 @@ public:
 	// When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
 	void resetBufPos() { _BufPos = _Buffer.getPtr(); }
 
-	/** Resize the message buffer and fill data at position 0.
+	/**
+	 * Resize the message buffer and fill data at position 0.
 	 * Input stream: the current position is set at the beginning;
 	 * Output stream: the current position is set after the filled data.
 	 */
@@ -234,18 +297,30 @@ public:
 
 		_Buffer.resize( msgsize );
 		_BufPos = _Buffer.getPtr();
-		return _BufPos;
+		/*if ( ! isReading() )
+			_BufPos += msgsize;*/
+		return _Buffer.getPtr();
 	}
 
-	/// Transforms the message from input to output or from output to input
+	/**
+	 * Transforms the message from input to output or from output to input
+	 *
+	 * Precondition:
+	 * - If the stream is in input mode, it must not be empty (nothing filled), otherwise the position
+	 *   will be set to the end of the preallocated buffer (see DefaultCapacity).
+	 * Postcondition:
+	 * - Read->write, the position is set at the end of the stream, it is possible to add more data
+	 - - Write->Read, the position is set at the beginning of the stream
+	 */
 	virtual void	invert()
 	{
 		if ( isReading() )
 		{
 			// In->Out: We want to write (serialize out) what we have read (serialized in)
+			uint32 sizeOfReadStream = lengthR();
 			resetPtrTable();
 			setInOut( false );
-			_BufPos = _Buffer.getPtr()+_Buffer.size();
+			_BufPos = _Buffer.getPtr() + sizeOfReadStream;
 		}
 		else
 		{
@@ -410,14 +485,14 @@ protected:
 	/// Returns the serialized length (number of bytes written or read)
 	uint32			lengthS() const
 	{
-		return _BufPos-_Buffer.getPtr();
+		return _BufPos - _Buffer.getPtr(); // not calling getPos() because virtual and not const!
 	}
 
 	/// Returns the "read" message size (number of bytes to read)
 	uint32			lengthR() const
 	{
 //		return _BufPos-_Buffer.getPtr();
-		return _Buffer.size();
+		return size();
 	}
 
 	CObjectVector<uint8, false> _Buffer;

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.4 2001/08/23 09:36:10 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.5 2001/08/30 08:30:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,18 +47,19 @@ namespace NLAIAGENT
 	 * 
 	 */
 	tQueue IVector::isMember(const IVarName *baseClass,const IVarName *methodName,const IObjectIA &p) const
-	{
+	{		
+		//Type IVarName voir agent_string.h.
+		static const CStringVarName methodX("x");
+		static const CStringVarName methodY("y");
+		static const CStringVarName methodZ("z");
+		static const CStringVarName methodSquareLength("SquareLength");
+		static const CStringVarName methodLength("Length");
+		static const CStringVarName methodUnit("Unit");
+		static const CStringVarName selfName((const char *)getType());
+		static const CStringVarName constructor(_CONSTRUCTOR_);
+
 		//NLAISCRIPT::CParam est le type reel de p voir nel/ai/script/interpret_methodes.h pour la declaration de la class.
 		const NLAISCRIPT::CParam &param = (const NLAISCRIPT::CParam &)p;
-		//Type IVarName voir agent_string.h.
-		const CStringVarName methodX("x");
-		const CStringVarName methodY("y");
-		const CStringVarName methodZ("z");
-		const CStringVarName methodSquareLength("SquareLength");
-		const CStringVarName methodLength("Length");
-		const CStringVarName methodUnit("Unit");
-		const CStringVarName selfName((const char *)getType());
-		const CStringVarName constructor(_CONSTRUCTOR_);
 			
 		if(baseClass == NULL || (*baseClass) == selfName)
 		{

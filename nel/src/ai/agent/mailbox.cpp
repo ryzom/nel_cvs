@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.23 2001/07/06 08:26:59 chafik Exp $
+ * $Id: mailbox.cpp,v 1.24 2001/08/30 08:30:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -524,8 +524,8 @@ namespace NLAIAGENT
 			b->release();
 			_ListSharedMessage.pop_back();
 		}
-		tListMailBoxIter j;
-		fillMailBox();		
+		/*tListMailBoxIter j;
+		fillMailBox();*/
 		return getState();
 	}
 

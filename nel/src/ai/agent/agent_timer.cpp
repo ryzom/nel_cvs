@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.20 2001/08/28 15:34:24 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.21 2001/08/30 08:30:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,8 @@ namespace NLAIAGENT
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 				accessor.value()->run();
 			}
-			NLMISC::nlSleep(CAgentManagerTimer::ClockTick);
+			NLMISC::nlSleep(0);
+			//NLMISC::nlSleep(CAgentManagerTimer::ClockTick);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.11 2001/07/06 08:25:37 chafik Exp $
+ * $Id: mailbox.h,v 1.12 2001/08/30 08:30:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,8 @@ namespace NLAIAGENT
 
 		virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &*/) const= 0;
 
+		virtual const tListMessage &getMesseageListe() const = 0;
+
 		/*virtual void addGroup(IBasicMessageGroup &) = 0;
 		virtual void removeGroup(IBasicMessageGroup &) = 0;
 		virtual std::list<IBasicMessageGroup *> &getGroups() = 0;*/
@@ -112,6 +114,10 @@ namespace NLAIAGENT
 		virtual void load(NLMISC::IStream &is);
 		virtual void onKill(IConnectIA *);
 		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *);
+		virtual const tListMessage &getMesseageListe() const 
+		{
+			return _ListMessage;
+		}
 	private:
 			virtual IConnectIA &getConnection(IConnectIA &r);
 	};
@@ -166,6 +172,10 @@ namespace NLAIAGENT
 			virtual std::list<const IMessageBase *> *pumpMessages(/*IBasicMessageGroup &grp*/) const;
 			virtual const IObjectIA::CProcessResult &run();
 			virtual void getDebugString(std::string &t) const;
+			virtual const tListMessage &getMesseageListe() const 
+			{
+				return _ListMessageIn;
+			}
 			/*virtual void addGroup(IBasicMessageGroup &grp);
 			virtual std::list<IBasicMessageGroup *> &getGroups() ;
 			virtual void removeGroup(IBasicMessageGroup &grp);*/

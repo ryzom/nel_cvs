@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=ai_lib - Win32 Debug
+CFG=ai_lib - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,20 +13,21 @@ CFG=ai_lib - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ai_lib.mak" CFG="ai_lib - Win32 Debug"
+!MESSAGE NMAKE /f "ai_lib.mak" CFG="ai_lib - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "ai_lib - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "ai_lib - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE "ai_lib - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
+!MESSAGE "ai_lib - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "ai_lib - Win32 Release"
@@ -48,7 +49,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib.lib"
 
@@ -71,7 +72,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
 
@@ -94,9 +95,32 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\lib\nlai_lib_rd.lib"
+
+!ELSEIF  "$(CFG)" == "ai_lib - Win32 DebugFast"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "ai_lib___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "ai_lib___Win32_DebugFast"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "\bin\DebugFast"
+# PROP Intermediate_Dir "\bin\DebugFast"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /YX /FD /GZ /c
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=xilink6.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
 
 !ENDIF 
 
@@ -105,6 +129,7 @@ LIB32=link.exe -lib
 # Name "ai_lib - Win32 Release"
 # Name "ai_lib - Win32 Debug"
 # Name "ai_lib - Win32 ReleaseDebug"
+# Name "ai_lib - Win32 DebugFast"
 # Begin Group "agent"
 
 # PROP Default_Filter ""
@@ -178,6 +203,10 @@ SOURCE=.\ai\agent\digital.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\gd_agent_script.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\goal_stack.cpp
 # End Source File
 # Begin Source File
 
@@ -257,10 +286,6 @@ SOURCE=.\ai\agent\volatil_memory.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\ai\agent\actor.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\ai\agent\actor_script.h
 # End Source File
 # Begin Source File
@@ -334,6 +359,10 @@ SOURCE=..\include\nel\ai\agent\baseai.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\gd_agent_script.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\goal_stack.h
 # End Source File
 # Begin Source File
 

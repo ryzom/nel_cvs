@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.41 2001/07/27 15:13:02 chafik Exp $
+ * $Id: agents.cpp,v 1.42 2001/08/30 08:30:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,7 +165,10 @@ namespace NLAIAGENT
 	
 	void IAgent::processMessages()
 	{
-		while(!getMail()->isEmpty())
+		IMailBox *mail = getMail();
+		const IMailBox::tListMessage &l = mail->getMesseageListe();
+
+		while(l.begin() != l.end())
 		{
 			const IMessageBase &msg = getMail()->getMessage();
 #ifdef NL_DEBUG
@@ -175,7 +178,7 @@ namespace NLAIAGENT
 			try
 			{
 				IObjectIA *o = IBasicAgent::run( msg );
-				getMail()->popMessage();
+				mail->popMessage();
 			}
 			catch(NLAIE::IException &)
 			{
@@ -187,7 +190,7 @@ namespace NLAIAGENT
 				o->setReceiver((IObjectIA *)msg.getSender());
 				((IObjectIA *)msg.getSender())->sendMessage(o);
 
-				getMail()->popMessage();
+				mail->popMessage();
 			}		
 		}
 	}

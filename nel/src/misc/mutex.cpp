@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.28 2002/08/23 15:40:29 cado Exp $
+ * $Id: mutex.cpp,v 1.29 2002/10/18 10:02:21 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,6 +231,7 @@ void CFairMutex::leave()
 
 #include <pthread.h>
 #include <errno.h>
+#include <unistd.h>
 
 
 /*
@@ -316,13 +317,13 @@ void CUnfairMutex::leave()
 /*
  * Unix version
  */
-CFairMutex::CFairMutex()
+CFairMutex::CFairMutex() : _OwnerPid( ~0 )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
 
 
-CFairMutex::CFairMutex(	const std::string &name )
+CFairMutex::CFairMutex(	const std::string &name ) : _OwnerPid( ~0 )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
@@ -342,7 +343,13 @@ CFairMutex::~CFairMutex()
  */
 void CFairMutex::enter()
 {
-	sem_wait( const_cast<sem_t*>(&_Sem) );
+	// Allow the call to be reentrant (do not wait if same thread)
+	uint pid = getpid();
+	if ( pid != _OwnerPid )
+	{
+		_OwnerPid = pid;
+		sem_wait( const_cast<sem_t*>(&_Sem) );
+	}
 }
 
 
@@ -352,6 +359,7 @@ void CFairMutex::enter()
 void CFairMutex::leave()
 {
 	sem_post( const_cast<sem_t*>(&_Sem) );
+	_OwnerPid = ~0;
 }
 
 

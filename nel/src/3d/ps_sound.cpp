@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.6 2001/09/04 13:42:39 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.7 2001/09/14 17:36:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -295,7 +295,7 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
 	nlassert(_Owner);
-	if (_GainScheme && _GainScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
+	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->newElement(emitterLocated, emitterIndex);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
 	// if there's a sound server, we generate a new sound instance
 	if (!_Mute && CParticleSystem::getSoundServer())
@@ -325,7 +325,7 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 
 void			CPSSound::deleteElement(uint32 index)
 {
-	if (_GainScheme && _GainScheme->hasMemory()) _PitchScheme->deleteElement(index);
+	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->deleteElement(index);
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->deleteElement(index);
 	if (_Sounds[index])
 	{

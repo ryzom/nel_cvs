@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.11 2000/10/12 16:15:31 cado Exp $
+ * $Id: service.h,v 1.12 2000/10/19 16:35:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,7 @@ protected:
 	/// @name Static members that must be defined by the deriver class
 	//@{
 
-	/// Current service name. Must be set by the deriver class
+	/// Current service name. Is set by the actual service when declaring NLNET_SERVICE_MAIN
 	static const char			_Name [];
 
 	/// Current service default port. Must be set by the deriver class

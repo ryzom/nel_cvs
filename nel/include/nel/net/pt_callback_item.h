@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: pt_callback_item.h,v 1.2 2000/10/03 13:27:12 cado Exp $
+ * $Id: pt_callback_item.h,v 1.3 2000/10/19 16:35:57 cado Exp $
  *
  * Interface for CPtCallbackItem
  */
@@ -35,10 +35,12 @@ namespace NLNET {
 typedef void (*TMsgCallback) ( CMessage&, TSenderId );
 
 
-/// Callback items
+/// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
 typedef struct
 {
+	/// Key C string. It is a message type name, or "C" for connection or "D" for disconnection
 	char			*Key;
+	/// The callback function
 	TMsgCallback	Callback;
 
 } TCallbackItem;

@@ -1028,6 +1028,10 @@ SOURCE=.\3d\landscape_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscapeig_manager.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\light_user.cpp
 # End Source File
 # Begin Source File
@@ -1165,6 +1169,10 @@ SOURCE=..\include\nel\3d\frustum.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\height_map.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscapeig_manager.h
 # End Source File
 # Begin Source File
 

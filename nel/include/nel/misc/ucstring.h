@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.10 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: ucstring.h,v 1.11 2003/11/17 10:39:02 besson Exp $
  *
  */
 
@@ -52,7 +52,7 @@ public:
 		*this=str;
 	}
 
-	virtual ~ucstring () {}
+	~ucstring () {}
 	
 	ucstring &operator= (ucchar c)
 	{
@@ -122,6 +122,12 @@ public:
 		return *this;
 	}
 
+	const ucchar *c_str() const
+	{
+		const ucchar *tmp = ucstringbase::c_str();
+		const_cast<ucchar*>(tmp)[size()] = 0;
+		return tmp;
+	}
 
 	/// Converts the controlled ucstring to a string str
 	void toString (std::string &str) const

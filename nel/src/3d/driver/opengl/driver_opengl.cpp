@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.151 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.152 2002/08/21 09:56:13 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1360,6 +1360,7 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 {
 	// Get viewport
 	float x= scissor.X;
+	float y= scissor.Y;
 	float width= scissor.Width;
 	float height= scissor.Height;
 

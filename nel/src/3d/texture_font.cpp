@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.17 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture_font.cpp,v 1.18 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32 };
 const int NbLine[TEXTUREFONT_NBCATEGORY] = { 4, 6, 4, 1 }; // Based on textsize
 */
 // ---------------------------------------------------------------------------
-uint32 CTextureFont::SLetterKey::getVal()
+inline uint32 CTextureFont::SLetterKey::getVal()
 {
 	return Char + ((Size&255)<<16) + ((((uint32)FontGenerator)&255)<<24);
 }

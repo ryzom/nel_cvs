@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.5 2002/08/22 13:38:45 besson Exp $
+ * $Id: u_text_context.h,v 1.6 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,66 +96,66 @@ public:
 	 * set the font color
 	 * \param color the font color
 	 */
-	virtual	void			setColor(NLMISC::CRGBA color) =0;
+	virtual	void			setColor (NLMISC::CRGBA color) = 0;
 	/**
 	 * set the font size. Should be called before the first print
 	 * \param fonSize the font size
 	 */
-	virtual	void			setFontSize(uint32 fontSize) =0;
+	virtual	void			setFontSize (uint32 fontSize) = 0;
 	/**
 	 * get the font size
 	 * \return the font size
 	 */
-	virtual	uint32			getFontSize() const  =0;
+	virtual	uint32			getFontSize () const = 0;
 	/**
 	 * set the hot spot
 	 * \param fonSize the font size
 	 */
-	virtual	void			setHotSpot(THotSpot hotSpot)  =0;
+	virtual	void			setHotSpot (THotSpot hotSpot) = 0;
 	/**
 	 * get the hot spot
 	 * \return the hot spot
 	 */
-	virtual	THotSpot		getHotSpot() const =0;
+	virtual	THotSpot		getHotSpot () const = 0;
 	/**
 	 * set the X scale
 	 * \param scaleX the X scale
 	 */
-	virtual	void			setScaleX(float scaleX)  =0;
+	virtual	void			setScaleX (float scaleX) = 0;
 	/**
 	 * set the Y scale
 	 * \param scaleY the Y scale
 	 */
-	virtual	void			setScaleY(float scaleY)  =0;
+	virtual	void			setScaleY (float scaleY) = 0;
 	/**
 	 * \return the X scale
 	 */
-	virtual	float			getScaleX() const =0;
+	virtual	float			getScaleX () const = 0;
 	/**
 	 * \return the Y scale
 	 */
-	virtual	float			getScaleY() const =0;
+	virtual	float			getScaleY () const = 0;
 	/**
 	 * set the shade states
 	 * \param the shade state
 	 */
-	virtual	void			setShaded(bool b) =0;
+	virtual	void			setShaded (bool b) = 0;
 	/**
 	 * \return the shade state
 	 */
-	virtual	bool			getShaded() const  =0;
+	virtual	bool			getShaded () const = 0;
 	/**
 	 * set the shadow's size
 	 * \param the shade extent
 	 */
-	virtual	void			setShadeExtent(float shext) =0;
+	virtual	void			setShadeExtent (float shext) = 0;
 	/** set to true if you want that the font manager look at Driver window size, and resize 
 	 * fontSize so it keeps same size than if it was in 800x600...
 	 */
-	virtual	void			setKeep800x600Ratio(bool keep) =0;
+	virtual	void			setKeep800x600Ratio (bool keep) = 0;
 	/** return keep800x600Ratio state.
 	 */
-	virtual	bool			getKeep800x600Ratio() const  =0;
+	virtual	bool			getKeep800x600Ratio () const = 0;
 	// @}
 
 
@@ -171,50 +171,54 @@ public:
 	 * \param a string
 	 * \return the index where string has been inserted
 	 */
-	virtual	uint32			textPush(const char *format, ...)  =0;
+	virtual	uint32			textPush (const char *format, ...) = 0;
 	/**
 	 * computes an ucstring and adds the result to the stack
 	 * \param an ucstring
 	 * \return the index where computed string has been inserted
 	 */
-	virtual	uint32			textPush(const ucstring &str)  =0;
+	virtual	uint32			textPush (const ucstring &str) = 0;
 	/**
 	 * remove a string from the list
 	 */
-	virtual	void			erase(uint32 i)  =0;
+	virtual	void			erase (uint32 i) = 0;
 	/**
 	 * Get a string information from the list. return CStringInfo(0,0) if not found.
 	 */
-	virtual	CStringInfo		getStringInfo(uint32 i)  =0;
+	virtual	CStringInfo		getStringInfo (uint32 i) = 0;
+	/**
+	 * Get a string information from the ucstring
+	 */
+	virtual	CStringInfo		getStringInfo (const ucstring &ucstr) = 0;
 	/**
 	 * empty the map
 	 */
-	virtual	void			clear()  =0;
+	virtual	void			clear () = 0;
 	/**
 	 * print a string of the list (2D method). x/y E [0,1]
 	 * (rq : it leaves the string in the stack)
 	 */
-	virtual	void			printAt(float x, float y, uint32 i) =0;
-	virtual	void			printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) =0;
+	virtual	void			printAt (float x, float y, uint32 i) = 0;
+	virtual	void			printClipAt (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */
-	virtual	void			printAt(float x, float y, ucstring ucstr) =0;
+	virtual	void			printAt (float x, float y, ucstring ucstr) = 0;
 	/**
 	 * compute and print a string at the location (2D method) x/y E [0,1]
 	 */
-	virtual	void			printfAt(float x, float y, const char * format, ...) =0;
+	virtual	void			printfAt (float x, float y, const char *format, ...) = 0;
 
 	/**
 	 * compute and render a ucstring at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
-	virtual	void			render3D(const NLMISC::CMatrix &mat, ucstring ucstr) =0;
+	virtual	void			render3D (const NLMISC::CMatrix &mat, ucstring ucstr) = 0;
 	/**
 	 * compute and render a string at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
-	virtual	void			render3D(const NLMISC::CMatrix &mat, const char * format, ...) =0;
+	virtual	void			render3D (const NLMISC::CMatrix &mat, const char *format, ...) = 0;
 
 	/**
 	 * Return max x coordinate of last string printed. Useful to know if a string
@@ -222,9 +226,10 @@ public:
 	 * depend on driver's frustum).
 	 *	\return x coordinate
 	 */
-	virtual	float			getLastXBound() const =0;
+	virtual	float			getLastXBound () const = 0;
 	// @}
 
+	/// Used for debug
 	virtual void			dumpCacheTexture (const char *filename) = 0;
 
 };

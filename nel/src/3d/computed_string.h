@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.5 2002/08/22 13:38:45 besson Exp $
+ * $Id: computed_string.h,v 1.6 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,6 @@ namespace NL3D {
 
 class CTextureFont;
 class CMatrix;
-struct CFontDescriptor;
 
 
 /*******************************************************************/
@@ -51,7 +50,8 @@ struct CFontDescriptor;
 /**
  * CComputedString
  * A CComputedString is a structure which permits to render a string
- * in a driver. It computes 1 primitive block per char.
+ * in a driver. It computes 4 vertices per char the renderer draw quads from them.
+ * 
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -96,19 +96,22 @@ public:
 	/**
 	 * Default constructor
 	 */
-	CComputedString()
+	CComputedString (bool bSetupVB=true)
 	{
 		StringWidth = 0;
 		StringHeight = 0;
-		Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
-		VerticesClipped.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		if (bSetupVB)
+		{
+			Vertices.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+			VerticesClipped.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+		}
 	}
 
 	/**
 	 *	Get the string's origin
 	 * \param hotspot the origin of the string
 	 */
-	CVector getHotSpotVector(THotSpot hotspot);
+	CVector getHotSpotVector (THotSpot hotspot);
 
 	/** 
 	 * Render the unicode string in a driver.

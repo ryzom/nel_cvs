@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.4 2002/02/11 10:21:53 lecroart Exp $
+ * $Id: font_generator.h,v 1.5 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,45 +92,6 @@ private:
 
 #endif // NL_DONT_USE_EXTERNAL_CODE
 };
-
-
-
-/**
- * Descriptor of a character
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2000
- */
-struct CFontDescriptor 
-{
-	CFontGenerator *FontGen;
-	ucchar C;
-	uint32 Size;
-	
-	/** Constructor
-	 * \param fg the font generator
-	 * \param c the unicode char
-	 * \param sz size of the font
-	 */
-	CFontDescriptor(CFontGenerator *fg, ucchar c, uint32 sz): FontGen(fg),C(c),Size(sz) { }
-	
-	/** operator<
-	 * used for ordering generated char
-	 */
-	bool operator< (const CFontDescriptor& desc) const
-	{
-		if (FontGen->FontFileName<desc.FontGen->FontFileName)
-			return true;
-		if (FontGen->FontFileName>desc.FontGen->FontFileName)
-			return false;
-		if (C<desc.C)
-			return true;
-		if (C>desc.C)
-			return false;
-		return Size<desc.Size;
-	}
-};
-
 
 } // NL3D
 

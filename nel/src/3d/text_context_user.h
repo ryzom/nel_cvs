@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.7 2002/08/22 13:38:45 besson Exp $
+ * $Id: text_context_user.h,v 1.8 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ private:
 	CTextContext	_TextContext;
 	CDriverUser		*_DriverUser;
 	IDriver			*_Driver;
+	CComputedString _CacheString; // Performance Optimisation
 
 public:
 
@@ -94,7 +95,9 @@ public:
 	uint32 textPush(const char *format, ...)  ;
 	uint32 textPush(const ucstring &str)  ;
 	void erase(uint32 i)  ;
-	virtual	CStringInfo		getStringInfo(uint32 i);
+	virtual	CStringInfo		getStringInfo (uint32 i);
+	virtual	CStringInfo		getStringInfo (const ucstring &ucstr);
+
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
 	void printClipAt(float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.23 2002/08/23 12:26:32 besson Exp $
+ * $Id: computed_string.cpp,v 1.24 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,28 +49,28 @@ CVector CComputedString::getHotSpotVector(THotSpot hotspot)
 {
 	CVector hotspotVector(0,0,0);
 
-	if(hotspot==MiddleLeft)
+	if (hotspot==MiddleLeft)
 		hotspotVector = CVector(0,0,-StringHeight/2);
 	
-	if(hotspot==TopLeft)
+	if (hotspot==TopLeft)
 		hotspotVector = CVector(0,0,-StringHeight);
 	
-	if(hotspot==MiddleBottom)
+	if (hotspot==MiddleBottom)
 		hotspotVector = CVector(-StringWidth/2,0,0);
 	
-	if(hotspot==MiddleMiddle)
+	if (hotspot==MiddleMiddle)
 		hotspotVector = CVector(-StringWidth/2,0,-StringHeight/2);
 	
-	if(hotspot==MiddleTop)
+	if (hotspot==MiddleTop)
 		hotspotVector = CVector(-StringWidth/2,0,-StringHeight);
 	
-	if(hotspot==BottomRight)
+	if (hotspot==BottomRight)
 		hotspotVector = CVector(-StringWidth,0,0);
 	
-	if(hotspot==MiddleRight)
+	if (hotspot==MiddleRight)
 		hotspotVector = CVector(-StringWidth,0,-StringHeight/2);
 	
-	if(hotspot==TopRight)
+	if (hotspot==TopRight)
 		hotspotVector = CVector(-StringWidth,0,-StringHeight);
 
 	return hotspotVector;

@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.5 2002/02/28 12:59:51 besson Exp $
+ * $Id: text_context.cpp,v 1.6 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,9 +30,43 @@
 
 namespace NL3D {
 
+// ------------------------------------------------------------------------------------------------
+// Constructor
+// ------------------------------------------------------------------------------------------------
+CTextContext::CTextContext()
+{
+	_Driver = NULL;
+	_FontManager = NULL;
 
+	_FontGen = NULL;
 
-uint32 CTextContext::textPush(const char *format, ...)
+	_FontSize = 12;
+
+	_Color = NLMISC::CRGBA(0,0,0);
+
+	_HotSpot = CComputedString::BottomLeft;
+
+	_ScaleX = 1.0f;
+
+	_ScaleZ = 1.0f;
+
+	_Shaded = false;
+	_ShadeExtent = 0.001f;
+
+	_Keep800x600Ratio= true;
+
+	_CacheNbFreePlaces = 0;
+}
+
+// ------------------------------------------------------------------------------------------------
+CTextContext::~CTextContext()
+{
+	if (_FontGen)
+		delete _FontGen;
+}
+
+// ------------------------------------------------------------------------------------------------
+uint32 CTextContext::textPush (const char *format, ...)
 { 
 	nlassert(_FontGen);
 
@@ -40,55 +74,81 @@ uint32 CTextContext::textPush(const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	// Compute the string after insert in map, to avoid copy of vector<>
-	NL3D::CComputedString cptdstr;
-	_MaxIndex++;
-	std::map<uint32,CComputedString>::iterator	it;
-	it= ( _StringList.insert(std::make_pair(_MaxIndex,cptdstr)) ).first;
+	if (_CacheNbFreePlaces == 0)
+	{
+		CComputedString csTmp;
+
+		_CacheStrings.push_back (csTmp);
+		if (_CacheFreePlaces.size() == 0)
+			_CacheFreePlaces.resize (1);
+		_CacheFreePlaces[0] = _CacheStrings.size()-1;
+		_CacheNbFreePlaces = 1;
+	}
 
 	// compute the string.
-	NL3D::CComputedString	&strToFill= it->second;
-	_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver, strToFill, _Keep800x600Ratio);
+	uint32 index = _CacheFreePlaces[_CacheNbFreePlaces-1];
+	CComputedString &strToFill = _CacheStrings[index];
+	_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, strToFill, _Keep800x600Ratio);
 
-	return _MaxIndex;
+	_CacheNbFreePlaces--;
+
+	return index;
 }
 
-/**
- * computes an ucstring and adds the result to the stack
- * \param an ucstring
- * \return the index where computed string has been inserted
- */
-uint32 CTextContext::textPush(const ucstring &str)
+// ------------------------------------------------------------------------------------------------
+uint32 CTextContext::textPush (const ucstring &str)
 { 
 	nlassert(_FontGen);
 
-	// Compute the string after insert in map, to avoid copy of vector<>
-	NL3D::CComputedString cptdstr;
-	_MaxIndex++;
-	std::map<uint32,CComputedString>::iterator	it;
-	it= ( _StringList.insert(std::make_pair(_MaxIndex,cptdstr)) ).first;
+	if (_CacheNbFreePlaces == 0)
+	{
+		CComputedString csTmp;
+
+		_CacheStrings.push_back (csTmp);
+		if (_CacheFreePlaces.size() == 0)
+			_CacheFreePlaces.resize (1);
+		_CacheFreePlaces[0] = _CacheStrings.size()-1;
+		_CacheNbFreePlaces = 1;
+	}
 
 	// compute the string.
-	NL3D::CComputedString	&strToFill= it->second;
-	_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver, strToFill, _Keep800x600Ratio);
+	uint32 index = _CacheFreePlaces[_CacheNbFreePlaces-1];
+	CComputedString &strToFill = _CacheStrings[index];
+	_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, strToFill, _Keep800x600Ratio);
 
-	return _MaxIndex;
+	_CacheNbFreePlaces--;
+
+	return index;
+}
+
+// ------------------------------------------------------------------------------------------------
+void CTextContext::erase (uint32 i)
+{
+	if (_CacheFreePlaces.size() == _CacheNbFreePlaces)
+	{
+		_CacheFreePlaces.push_back (i);
+	}
+	else
+	{
+		_CacheFreePlaces[_CacheNbFreePlaces] = i;
+	}
+	_CacheNbFreePlaces++;
 }
 
 
-/**
- * init the font generator. Must be called before any print
- * \param (cf CFontGenerator constructor parameters)
- */
+// ------------------------------------------------------------------------------------------------
+void CTextContext::clear ()
+{
+	_CacheFreePlaces.clear();
+	_CacheNbFreePlaces = 0;
+	_CacheStrings.clear();
+}
+
+
+// ------------------------------------------------------------------------------------------------
 void CTextContext::setFontGenerator(const std::string fontFileName, const std::string fontExFileName)
 {
 	_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
-}
-
-/// destructor
-CTextContext::~CTextContext()
-{
-	if(_FontGen) delete _FontGen;
 }
 
 

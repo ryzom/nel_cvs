@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.7 2002/08/22 13:38:45 besson Exp $
+ * $Id: text_context_user.cpp,v 1.8 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,13 @@ UTextContext::CStringInfo		CTextContextUser::getStringInfo(uint32 i)
 	else
 		return	CStringInfo(cstr->StringWidth, cstr->StringHeight, cstr->StringLine);
 }
+UTextContext::CStringInfo		CTextContextUser::getStringInfo(const ucstring &str)
+{
+	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
+
+	_TextContext.computeStringInfo(str, _CacheString);
+	return CStringInfo (_CacheString.StringWidth, _CacheString.StringHeight, _CacheString.StringLine);
+}
 void CTextContextUser::clear()  
 {
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
@@ -262,7 +269,7 @@ float CTextContextUser::getLastXBound() const
 {
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 
-	return _TextContext.getLastXBound();
+	return 0.0f;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.6 2002/08/22 13:38:45 besson Exp $
+ * $Id: text_context.h,v 1.7 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,291 +43,123 @@ class CFontGenerator;
  */
 class CTextContext
 {
-	/// Driver
-	IDriver		*_Driver;
-
-	/// font manager
-	NL3D::CFontManager	*_FontManager;
-	
-	/// font generator
-	NL3D::CFontGenerator * _FontGen;
-	
-	/// font size;
-	uint32 _FontSize;
-	
-	/// current text color
-	NLMISC::CRGBA _Color;
-
-	/// hotspot
-	NL3D::CComputedString::THotSpot _HotSpot;
-
-	/// X scale 
-	float _ScaleX;
-	
-	/// Z scale
-	float _ScaleZ;
-
-	/// Y axe rotation angle
-	float _RotateY;
-
-	/// computed strings map
-	std::map<uint32,CComputedString> _StringList;
-	
-	/// max x coordinate of last string printed
-	float _XBound;
-
-	/// maximum index reached
-	sint32 _MaxIndex;
-
-	/// true if text is shaded
-	bool _Shaded;
-
-	/// shade's extent
-	float _ShadeExtent;
-
-	/// resize fontSize???
-	bool	_Keep800x600Ratio;
-
-
-	/// for printAt() and printfAt(). This prevents from creating VBdrvinfos each time they are called (N*each frame!!).
-	CComputedString		_TempString;
-	CComputedString		_TempShadowString;
-
-
 public:
 
-	/// Constructor
-	CTextContext()
-	{
-		_Driver= NULL;
-		_FontManager= NULL;
+	/// Constructor 
+	/// defaults : fontsize=12, color=black, hotspot=bottomleft, scale=1, shaded=false, 800x600ratio=true
+	CTextContext ();
 
-		_FontGen = NULL;
+	/// Destructor
+	~CTextContext();
 
-		_FontSize = 12;
-
-		_Color = NLMISC::CRGBA(0,0,0);
-
-		_HotSpot = NL3D::CComputedString::BottomLeft;
-
-		_ScaleX = 1;
-		_ScaleZ = 1;
-		_RotateY = 0;
-
-		_XBound = 0;
-
-		_MaxIndex = -1;
-
-		_Shaded = false;
-		_ShadeExtent = 0.001f;
-
-		_Keep800x600Ratio= true;
-	}
+	/**
+	 * Inits
+	 */
 
 	/// set the driver.
-	void	init(IDriver *drv, CFontManager *fmg)
+	void init (IDriver *drv, CFontManager *fmg)
 	{
 		nlassert(drv && fmg);
 		_Driver= drv;
 		_FontManager= fmg;
 	}
 
-	/**
-	 * init the font generator. Must be called before any print
-	 * \param (cf CFontGenerator constructor parameters)
-	 */
-	void setFontGenerator(const std::string fontFileName, const std::string fontExFileName = "");
-
-	/**
-	 * set the font color
-	 * \param color the font color
-	 */
-	void setColor(NLMISC::CRGBA color)
-	{
-		_Color = color;
-	}
-
-	/**
-	 * set the font size. Should be called before the first print
-	 * \param fonSize the font size
-	 */
-	void setFontSize(uint32 fontSize)
-	{
-		_FontSize = fontSize;
-	}
-
-	/**
-	 * get the font size
-	 * \return the font size
-	 */
-	uint32 getFontSize() const
-	{
-		return _FontSize;
-	}
-
-	/**
-	 * set the hot spot
-	 * \param fonSize the font size
-	 */
-	void setHotSpot(NL3D::CComputedString::THotSpot hotSpot)
-	{
-		_HotSpot = hotSpot;
-	}
-
-	/**
-	 * set the X scale
-	 * \param scaleX the X scale
-	 */
-	void setScaleX(float scaleX)
-	{
-		_ScaleX = scaleX;
-	}
-
-	/**
-	 * set the Z scale
-	 * \param scaleZ the Z scale
-	 */
-	void setScaleZ(float scaleZ)
-	{
-		_ScaleZ = scaleZ;
-	}
-
-	/**
-	 * \return the X scale
-	 */
-	float getScaleX() const
-	{
-		return _ScaleX;
-	}
-
-	/**
-	 * \return the Z scale
-	 */
-	float getScaleZ() const
-	{
-		 return _ScaleZ;
-	}
-
-	/**
-	 * set the shade states
-	 * \param the shade state
-	 */
-	void setShaded(bool b)
-	{
-		_Shaded = b;
-	}
-
-	/**
-	 * \return the shade state
-	 */
-	bool getShaded() const 
-	{
-		 return _Shaded;
-	}
-
-	/**
-	 * set the shadow's size
-	 * \param the shade extent
-	 */
-	void setShadeExtent(float shext)
-	{
-		_ShadeExtent = shext;
-	}
-
-	/**
-	 * get the hot spot
-	 * \return the hot spot
-	 */
-	NL3D::CComputedString::THotSpot getHotSpot() const
-	{
-		return _HotSpot;
-	}
-
+	/// Must be called before any print
+	void setFontGenerator (const std::string fontFileName, const std::string fontExFileName = "");
 	NL3D::CFontGenerator *getFontGenerator () { return _FontGen; }
 
 	/**
-	 * compute and add a string to the stack
-	 * \param a string
-	 * \return the index where string has been inserted
+	 * Accessors SET
 	 */
-	uint32 textPush(const char *format, ...);
+
+	void setColor (NLMISC::CRGBA color) { _Color = color; }
+
+	void setFontSize (uint32 fontSize)	{ _FontSize = fontSize; }
+
+	void setHotSpot (CComputedString::THotSpot hotSpot)	{ _HotSpot = hotSpot; }
+
+	void setScaleX (float scaleX) { _ScaleX = scaleX; }
+
+	void setScaleZ (float scaleZ) { _ScaleZ = scaleZ; }
+
+	void setShaded (bool b) { _Shaded = b; }
+
+	 /// Set the shadow's size
+	void setShadeExtent(float shext) { _ShadeExtent = shext; }
+
+	/// If true the CFontManager look at Driver window size, and resize fontSize to keep the same
+	/// size than if it was in 800x600...
+	void setKeep800x600Ratio (bool keep) { _Keep800x600Ratio = keep; }
 
 	/**
-	 * computes an ucstring and adds the result to the stack
-	 * \param an ucstring
-	 * \return the index where computed string has been inserted
+	 * Accessors GET
 	 */
-	uint32 textPush(const ucstring &str);
-	
-	/**
-	 * remove a string from the list
-	 */
-	void erase(uint32 i) 
-	{ 
-		_StringList.erase(i);
-	}
+
+	NLMISC::CRGBA				getColor () const { return _Color; }
+
+	uint32						getFontSize () const { return _FontSize; }
+
+	CComputedString::THotSpot	getHotSpot() const { return _HotSpot; }
+
+	float						getScaleX() const { return _ScaleX; }
+
+	float						getScaleZ() const { return _ScaleZ; }
+
+	bool						getShaded() const  { return _Shaded; }
+
+	bool						getKeep800x600Ratio() const {return _Keep800x600Ratio;}
 
 	/**
-	 * empty the map
+	 * Cache methods
 	 */
-	void clear() 
-	{ 
-		_StringList.clear();
-		_MaxIndex = -1;
-	}
+
+	/// compute and add a string to the cache (return the index)
+	uint32 textPush (const char *format, ...);
+
+	/// computes an ucstring and adds the result to the cache (return the index)
+	uint32 textPush (const ucstring &str);
+
+	/// remove a string from the cache
+	void erase (uint32 index);
+
+	/// Clear the cache
+	void clear();
 
 	/**
-	 * print a string of the list
-	 * (rq : it leaves the string in the stack)
+	 * Printing methods
 	 */
-	void printAt(float x, float z, uint32 i)
+
+	/// Print a string that is in the cache from its index (it leaves the string in the cache)
+	void printAt (float x, float z, uint32 index)
 	{
-		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
-		nlassert(itstr!= _StringList.end());
-		
-		(*itstr).second.render2D(*_Driver,
-								x, z,
-								_HotSpot,
-								_ScaleX, _ScaleZ);
-
-		_XBound = x + (*itstr).second.StringWidth;
+		nlassert (index < _CacheStrings.size());
+		CComputedString &rCS = _CacheStrings[index];
+		rCS.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 
-	void printClipAt (float x, float z, uint32 i, float xmin, float ymin, float xmax, float ymax)
+	/// Clip and print a string that is in the cache (it leaves the string in the cache)
+	void printClipAt (float x, float z, uint32 index, float xmin, float ymin, float xmax, float ymax)
 	{
-		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
-		nlassert(itstr!= _StringList.end());
-		CComputedString &cs = (*itstr).second;
-		cs.render2DClip (	*_Driver,
-							x, z,
-							xmin, ymin, xmax, ymax );
-
-		_XBound = x + (*itstr).second.StringWidth;
+		nlassert (index < _CacheStrings.size());
+		CComputedString &rCS = _CacheStrings[index];
+		rCS.render2DClip (*_Driver, x, z, xmin, ymin, xmax, ymax);
 	}
-	/**
-	 * compute and print a ucstring at the location
-	 */
-	void printAt(float x, float z, const ucstring &ucstr)
+
+	/// Directly print a string
+	void printAt (float x, float z, const ucstring &ucstr)
 	{
 		if(_Shaded)
 		{
-			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
-			_TempShadowString.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_FontManager->computeString (ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
+			_TempShadowString.render2D (*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
-		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,_TempString, _Keep800x600Ratio);
-		_TempString.render2D(*_Driver,
-							x,z,
-							_HotSpot,
-							_ScaleX,_ScaleZ);
-
-		_XBound = x + _TempString.StringWidth;
+		_FontManager->computeString (ucstr, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
+		_TempString.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 	
-	/**
-	 * compute and print a string at the location
-	 */
-	void printfAt(float x, float z, const char * format, ...)
+	/// Directly print a string
+	void printfAt (float x, float z, const char * format, ...)
 	{
 		nlassert(_FontGen);
 
@@ -336,41 +168,27 @@ public:
 
 		if(_Shaded)
 		{
-			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,_TempShadowString, _Keep800x600Ratio);
-			_TempShadowString.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_FontManager->computeString (str, _FontGen, NLMISC::CRGBA(0,0,0), _FontSize, _Driver, _TempShadowString, _Keep800x600Ratio);
+			_TempShadowString.render2D (*_Driver, x+_ShadeExtent, z-_ShadeExtent, _HotSpot, _ScaleX, _ScaleZ);
 		}
 
-		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,_TempString, _Keep800x600Ratio);
-		_TempString.render2D(*_Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
-
-		_XBound = x + _TempString.StringWidth;
+		_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, _TempString, _Keep800x600Ratio);
+		_TempString.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 	
-	
-	/**
-	 *	operator[]
-	 * \return the computed string
-	 */
-	CComputedString& operator[](uint32 i)
+	/// Get computed string from index
+	CComputedString& operator[](uint32 index)
 	{
-		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
-		
-		return (*itstr).second;
+		nlassert (index < _CacheStrings.size());
+		return _CacheStrings[index];
 	}
 
-
-	/**
-	 *	operator[]
-	 * \return the computed string, NULL if not found.
-	 */
-	CComputedString		*getComputedString(uint32 i)
+	CComputedString* getComputedString (uint32 index)
 	{
-		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
-
-		if(itstr==_StringList.end())
-			return NULL;
+		if (index < _CacheStrings.size())
+			return &_CacheStrings[index];
 		else
-			return &itstr->second;
+			return NULL;
 	}
 
 
@@ -380,9 +198,9 @@ public:
 	 * \param a string
 	 * \param the computed string
 	 */
-	void computeString(const std::string& s, CComputedString& output)
+	void computeString (const std::string& s, CComputedString& output)
 	{
-		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output, _Keep800x600Ratio);
+		_FontManager->computeString (s, _FontGen, _Color, _FontSize, _Driver, output, _Keep800x600Ratio);
 	}
 
 	/**
@@ -391,41 +209,76 @@ public:
 	 * \param an ucstring
 	 * \param the computed string
 	 */
-	void computeString(const ucstring& s, CComputedString& output)
+	void computeString (const ucstring& s, CComputedString& output)
 	{
-		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output, _Keep800x600Ratio);
+		_FontManager->computeString (s, _FontGen, _Color, _FontSize, _Driver, output, _Keep800x600Ratio);
 	}
 
-	/**
-	 * Return max x coordinate of last string printed. Useful to know if a string
-	 * goes out of the screen (screen limit is supposed at x==4/3, should actually 
-	 * depend on driver's frustum).
-	 *	\return x coordinate
-	 */
-	float getLastXBound() const
+	void computeStringInfo (const ucstring& s, CComputedString& output)
 	{
-		return _XBound;
+		_FontManager->computeStringInfo (s, _FontGen, _Color, _FontSize, _Driver, output, _Keep800x600Ratio);
 	}
 
-
-	/** set to true if you want that CFontManager look at Driver window size, and resize 
-	 * fontSize so it keeps same size than if it was in 800x600...
-	 */
-	void	setKeep800x600Ratio(bool keep) {_Keep800x600Ratio= keep;}
-
-
-	/** return keep800x600Ratio state.
-	 */
-	bool	getKeep800x600Ratio() const {return _Keep800x600Ratio;}
-
-
-	void	dumpCache (const char *filename)
+	/// Debug : write to the disk the texture cache
+	void dumpCache (const char *filename)
 	{
 		_FontManager->dumpCache (filename);
 	}
 
-	/// destructor
-	~CTextContext();
+private:
+
+  	/// Driver
+	IDriver		*_Driver;
+
+	/// Font manager
+	NL3D::CFontManager	*_FontManager;
+	
+	/// Font generator
+	NL3D::CFontGenerator * _FontGen;
+
+	/**
+	 * Text Style properties
+	 */
+
+	/// Font size;
+	uint32						_FontSize;
+	
+	/// Current text color
+	NLMISC::CRGBA				_Color;
+
+	/// Hotspot
+	CComputedString::THotSpot	_HotSpot;
+
+	/// X scale 
+	float						_ScaleX;
+	
+	/// Z scale
+	float						_ScaleZ;
+
+	/// true if text is shaded
+	bool _Shaded;
+
+	/// shade's extent
+	float _ShadeExtent;
+
+	/// resize the font to keep the same aspect ratio than in 800x600
+	bool _Keep800x600Ratio;
+
+	/**
+	 * Strings Caches
+	 */
+
+	/// Cache to manipulate strings with indexes
+	std::vector<CComputedString>	_CacheStrings;
+	std::vector<uint32>				_CacheFreePlaces;
+	uint32							_CacheNbFreePlaces;
+	
+
+	/// Cache for for printAt() and printfAt().
+	/// This prevents from creating VBdrvinfos each time they are called (N*each frame!!).
+	CComputedString		_TempString;
+	CComputedString		_TempShadowString;
+
 };
 
 

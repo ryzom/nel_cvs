@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.4 2001/12/27 10:19:16 lecroart Exp $
+ * $Id: font_manager.h,v 1.5 2002/09/11 13:51:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,20 +43,6 @@ namespace NL3D {
 
 class  CFontGenerator;
 struct CComputedString;
-struct CFontDescriptor;
-
-// we don't create a typedef because it generates too long decorated name, intead we, create a structure.
-struct pairRefPtrInt : public std::pair< std::list<NLMISC::CSmartPtr<CMaterial> >::iterator,  uint32>
-{
-	pairRefPtrInt (std::list<NLMISC::CSmartPtr<CMaterial> >::iterator ite,  uint32 intt)
-	{
-		first=ite;
-		second=intt;
-	}
-};
-
-typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
-
 
 /**
  * Font manager
@@ -79,11 +65,8 @@ class CFontManager
 	uint32 _MaxMemory;
 	uint32 _NbChar;
 
-	//mapFontDec _Letters;
 	CMaterial		*_MatFont;
 	CTextureFont	*_TexFont;
-
-	std::list<NLMISC::CSmartPtr<CMaterial> > _MaterialFontList;
 
 public:
 
@@ -150,6 +133,17 @@ public:
 					    IDriver *driver,
 						CComputedString &output,
 						bool	keep800x600Ratio= true);
+
+	/**
+	 * Same as computeString but do not make vertex buffers and primitives
+	 */
+	void computeStringInfo (const ucstring &s,
+							CFontGenerator *fontGen, 
+							const NLMISC::CRGBA &color,
+							uint32 fontSize, 
+							IDriver *driver,
+							CComputedString &output,
+							bool keep800x600Ratio= true);
 
 
 	/** 

@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.7 2003/12/04 17:52:39 lecroart Exp $
+ * $Id: email.cpp,v 1.8 2004/04/30 18:06:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,6 +252,10 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			else if(strlwr(ext) == "jpg" || strlwr(ext) == "jpeg")
 			{
 				formatedBody += "Content-Type: image/jpeg;\r\n";
+			}
+			else if(strlwr(ext) == "dmp")
+			{
+				formatedBody += "Content-Type: application/octet-stream;\r\n";
 			}
 			else
 			{

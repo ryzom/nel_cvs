@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.9 2003/12/30 11:14:35 lecroart Exp $
+ * $Id: report.cpp,v 1.10 2004/04/30 18:05:55 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -88,6 +88,7 @@ void report ()
 
 static string Body;
 static string Subject;
+static string AttachedFile;
 
 static HWND checkIgnore;
 static HWND debug;
@@ -139,7 +140,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 		{
 			if (EmailFunction != NULL)
 			{
-				bool res = EmailFunction ("", "", "", Subject, Body);
+				bool res = EmailFunction ("", "", "", Subject, Body, AttachedFile);
 				if (res)
 				{
 					EnableWindow(sendReport, FALSE);
@@ -165,7 +166,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return DefWindowProc (hWnd, message, wParam, lParam);
 }
 
-TReportResult report (const std::string &title, const std::string &header, const std::string &subject, const std::string &body, bool enableCheckIgnore, uint debugButton, bool ignoreButton, sint quitButton, bool sendReportButton, bool &ignoreNextTime)
+TReportResult report (const std::string &title, const std::string &header, const std::string &subject, const std::string &body, bool enableCheckIgnore, uint debugButton, bool ignoreButton, sint quitButton, bool sendReportButton, bool &ignoreNextTime, const string &attachedFile)
 {
 	// register the window
 	static bool AlreadyRegister = false;
@@ -197,6 +198,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 	HFONT font = CreateFont (-12, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
 
 	Subject = subject;
+	AttachedFile = attachedFile;
 
 	// create the edit control
 	HWND edit = CreateWindow ("EDIT", NULL, WS_BORDER | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | ES_READONLY | ES_LEFT | ES_MULTILINE, 7, 70, 429, 212, dialog, (HMENU) NULL, (HINSTANCE) GetWindowLong(dialog, GWL_HINSTANCE), NULL);

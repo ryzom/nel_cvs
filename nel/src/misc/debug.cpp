@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.88 2004/02/13 10:09:43 lecroart Exp $
+ * $Id: debug.cpp,v 1.89 2004/04/30 18:05:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,6 @@ using namespace std;
 // If true, debug system will trap crashs even if the appli is in debugger
 static const bool TrapCrashInDebugger = false;
 
-
 namespace NLMISC 
 {
 
@@ -98,6 +97,7 @@ CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
 static CStdDisplayer *sd = NULL;
 static CFileDisplayer *fd = NULL;
 
+#define NL_CRASH_DUMP_FILE "nel_debug.dmp"
 
 static TCrashCallback CrashCallback = NULL;
 
@@ -286,6 +286,78 @@ LPVOID __stdcall FunctionTableAccess (HANDLE hProcess, DWORD AddrBase)
 	return temp;
 }
 
+/* can't include dbghelp.h */
+typedef struct _NEL_MINIDUMP_EXCEPTION_INFORMATION {  DWORD ThreadId;  PEXCEPTION_POINTERS ExceptionPointers;  BOOL ClientPointers;
+} NEL_MINIDUMP_EXCEPTION_INFORMATION, *PNEL_MINIDUMP_EXCEPTION_INFORMATION;
+typedef enum _NEL_MINIDUMP_TYPE
+{
+  MiniDumpNormal = 0x00000000, 
+  MiniDumpWithDataSegs = 0x00000001, 
+  MiniDumpWithFullMemory = 0x00000002, 
+  MiniDumpWithHandleData = 0x00000004, 
+  MiniDumpFilterMemory = 0x00000010, 
+  MiniDumpWithUnloaded = 0x00000020, 
+  MiniDumpWithIndirectlyReferencedMemory = 0x00000040, 
+  MiniDumpFilterModulePaths = 0x00000080, 
+  MiniDumpWithProcessThreadData = 0x00000100, 
+  MiniDumpWithPrivateReadWriteMemory = 0x00000200, 
+  MiniDumpWithoutOptionalData = 0x00000400, 
+  MiniDumpWithFullMemoryInfo = 0x00000800, 
+  MiniDumpWithThreadInfo = 0x00001000, 
+  MiniDumpWithCodeSegs = 0x00002000
+} NEL_MINIDUMP_TYPE;
+
+static void DumpMiniDump(PEXCEPTION_POINTERS excpInfo)
+{
+	HANDLE file = CreateFile (NL_CRASH_DUMP_FILE, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (file)
+	{
+		HMODULE hm = LoadLibrary ("dbghelp.dll");
+		if (hm)
+		{
+			BOOL (WINAPI* MiniDumpWriteDump)(
+			  HANDLE hProcess,
+			  DWORD ProcessId,
+			  HANDLE hFile,
+			  NEL_MINIDUMP_TYPE DumpType,
+			  PNEL_MINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
+			  PNEL_MINIDUMP_EXCEPTION_INFORMATION UserStreamParam,
+			  PNEL_MINIDUMP_EXCEPTION_INFORMATION CallbackParam
+			) = NULL;
+			*(FARPROC*)&MiniDumpWriteDump = GetProcAddress(hm, "MiniDumpWriteDump");
+			if (MiniDumpWriteDump)
+			{
+				// OutputDebugString(_T("writing minidump\r\n"));
+				NEL_MINIDUMP_EXCEPTION_INFORMATION eInfo;
+				eInfo.ThreadId = GetCurrentThreadId();
+				eInfo.ExceptionPointers = excpInfo;
+				eInfo.ClientPointers = FALSE;
+
+				// note:  MiniDumpWithIndirectlyReferencedMemory does not work on Win98
+				MiniDumpWriteDump(
+					GetCurrentProcess(),
+					GetCurrentProcessId(),
+					file,
+					MiniDumpNormal,
+					excpInfo ? &eInfo : NULL,
+					NULL,
+					NULL);
+			}
+			else
+			{
+				nlwarning ("Can't get proc MiniDumpWriteDump in dbghelp.dll");
+			}
+		}
+		else
+		{
+			nlwarning ("Can't load dbghelp.dll");
+		}
+		CloseHandle (file);
+	}
+	else
+		nlwarning ("Can't create mini dump file");
+}
+
 class EDebug : public ETrapDebug
 {
 public:	
@@ -405,7 +477,7 @@ public:
 	void addStackAndLogToReason (sint skipNFirst = 0)
 	{
 		// ace hack
-		skipNFirst = 0;
+/*		skipNFirst = 0;
 		
 		DWORD symOptions = SymGetOptions();
 		symOptions |= SYMOPT_LOAD_LINES;
@@ -443,6 +515,9 @@ public:
 				_Reason += srcInfo + ": " + symInfo + "\n";
 			}
 		}
+		nlverify (SymCleanup(getProcessHandle()) == TRUE);
+*/
+		
 		_Reason += "-------------------------------\n";
 		_Reason += "\n";
 		if(DefaultMemDisplayer)
@@ -456,8 +531,6 @@ public:
 			_Reason += "No log\n";
 		}
 		_Reason += "-------------------------------\n";
-
-		nlverify (SymCleanup(getProcessHandle()) == TRUE);
 
 		// add specific information about the application
 		if(CrashCallback)
@@ -807,9 +880,11 @@ void force_exception_frame(...) {std::cout.flush();}
 
 static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
+	_set_se_translator(NULL);
 #ifdef FINAL_VERSION
 	// In final version, throw EDebug to display a smart dialog box with callstack & log when crashing
 #pragma message ( "Smart crash enabled" )
+	DumpMiniDump(pexp);
 	throw EDebug (pexp);
 #else
 	// In debug version, let the program crash and use a debugger (clicking "Cancel")
@@ -829,6 +904,7 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 			throw EDebug (pexp);
 	}*/
 #endif
+	_set_se_translator(exceptionTranslator);
 }
 
 #endif // NL_OS_WINDOWS

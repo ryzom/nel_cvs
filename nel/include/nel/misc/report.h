@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.h,v 1.1 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: report.h,v 1.2 2004/04/30 18:06:12 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NLMISC {
 
 enum TReportResult { ReportDebug, ReportIgnore, ReportQuit, ReportError };
 
-TReportResult report (const std::string &title, const std::string &header, const std::string &subject, const std::string &body, bool enableCheckIgnore, uint debugButton, bool ignoreButton, sint quitButton, bool sendReportButton, bool &ignoreNextTime);
+TReportResult report (const std::string &title, const std::string &header, const std::string &subject, const std::string &body, bool enableCheckIgnore, uint debugButton, bool ignoreButton, sint quitButton, bool sendReportButton, bool &ignoreNextTime, const std::string &attachedFile = "");
 
 /** call this in the main of your appli to enable email: setReportEmailFunction (sendEmail);
  */

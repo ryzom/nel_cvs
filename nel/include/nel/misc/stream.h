@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.4 2000/09/12 08:15:38 berenguier Exp $
+ * $Id: stream.h,v 1.5 2000/09/12 15:15:56 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -43,15 +43,15 @@ namespace	NLMISC
  * \author Nevrax France
  * \date 2000
  */
-class EStream
+struct EStream
 {
 	virtual const char	*what() const throw() {return "Stream Error";}
 };
-class EOlderStream : public EStream
+struct EOlderStream : public EStream
 {
 	virtual const char	*what() const throw() {return "The version in stream is older than the class";}
 };
-class ENewerStream : public EStream
+struct ENewerStream : public EStream
 {
 	virtual const char	*what() const throw() {return "The version in stream is newer than the class";}
 };
@@ -67,7 +67,7 @@ class	IStreamable;
  * \author Nevrax France
  * \date 2000
  * This is the base interface for stream objects. Differents kind of streams may be implemented,
- * by specifying serial(uint8*, len) methods. Sample of streams: COutMemoryStream, CInFileStream ...
+ * by specifying serialBuffer(uint8*, len) methods. Sample of streams: COutMemoryStream, CInFileStream ...
  */
 class IStream
 {
@@ -90,7 +90,8 @@ public:
 
 	/// template Object serialisation.
 	template<class T>
-	void			serial(T &obj) throw(EStream);
+	void			serial(T &obj) throw(EStream)
+	{ obj.serial(*this);	}
 
 	/// Base type serialisation.
 	void			serial(uint8 &b) throw(EStream);
@@ -111,25 +112,56 @@ public:
 
 	/// Template for easy multiple serialisation.
 	template<class T0,class T1>
-	void			serial(T0 &a, T1 &b) throw(EStream);
+	void			serial(T0 &a, T1 &b) throw(EStream)
+	{ serial(a); serial(b);}
 	template<class T0,class T1,class T2>
-	void			serial(T0 &a, T1 &b, T2 &c) throw(EStream);
+	void			serial(T0 &a, T1 &b, T2 &c) throw(EStream)
+	{ serial(a); serial(b); serial(c);}
 	template<class T0,class T1,class T2,class T3>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream);
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream)
+	{ serial(a); serial(b); serial(c); serial(d);}
 	template<class T0,class T1,class T2,class T3,class T4>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) throw(EStream);
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) throw(EStream)
+	{ serial(a); serial(b); serial(c); serial(d); serial(e);}
 	template<class T0,class T1,class T2,class T3,class T4,class T5>
-	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream);
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream)
+	{ serial(a); serial(b); serial(c); serial(d); serial(e); serial(f);}
 
 
 	/// STL pair<> support.
 	template<class T0, class T1>
-		void			serial(std::pair<T0, T1> &p) throw(EStream);
+	void			serial(std::pair<T0, T1> &p) throw(EStream)
+	{ serial(p.first); serial(p.second);}
+
 
 	/// Serialize standard STL containers.
-	/// Support up to uint64 length containers, but store the length as uint32 if less than 4G.
+	/// Support up to sint32 length containers.
 	template<class T>
-	void			serialCont(T &container) throw(EStream);
+	void			serialCont(T &cont) throw(EStream)
+	{
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			for(sint i=0;i<len;i++)
+			{
+				T::value_type	v;
+				serial(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			T::iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serial((*it));
+			}
+		}
+	}
 
 
 	/// Serialize Polymorphic Objet Ptr. Works with NULL pointers.
@@ -147,7 +179,7 @@ protected:
 	void				resetPtrTable();
 
 	/// Methods to specify.
-	virtual void		serial(uint8 *buf, uint len) throw(EStream)=0;
+	virtual void		serialBuffer(uint8 *buf, uint len) throw(EStream)=0;
 	virtual void		serialBit(bool &bit) throw(EStream)=0;
 
 private:

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.2 2000/09/12 08:15:38 berenguier Exp $
+ * $Id: stream_inline.h,v 1.3 2000/09/12 15:15:56 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -56,13 +56,6 @@ inline	bool		IStream::isReading()
 	return _InputStream;
 }
 
-// ======================================================================================================
-template<class T>
-inline	void		IStream::serial(T &obj) throw(EStream)
-{
-	obj.serial(*this);
-}
-
 
 // ======================================================================================================
 // ======================================================================================================
@@ -71,13 +64,13 @@ inline	void		IStream::serial(T &obj) throw(EStream)
 // ======================================================================================================
 inline	void		IStream::serial(uint8 &b) throw(EStream)
 {
-	serial((uint8 *)&b, 1);
+	serialBuffer((uint8 *)&b, 1);
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(sint8 &b) throw(EStream)
 {
-	serial((uint8 *)&b, 1);
+	serialBuffer((uint8 *)&b, 1);
 }
 
 // ======================================================================================================
@@ -85,14 +78,14 @@ inline	void		IStream::serial(uint16 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 2);
+		serialBuffer((uint8 *)&b, 2);
 	}
 	else
 	{
 		uint16	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 2);
+			serialBuffer((uint8 *)&v, 2);
 			BSWAP16(v);
 			b=v;
 		}
@@ -100,7 +93,7 @@ inline	void		IStream::serial(uint16 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP16(v);
-			serial((uint8 *)&v, 2);
+			serialBuffer((uint8 *)&v, 2);
 		}
 	}
 }
@@ -110,14 +103,14 @@ inline	void		IStream::serial(sint16 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 2);
+		serialBuffer((uint8 *)&b, 2);
 	}
 	else
 	{
 		uint16	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 2);
+			serialBuffer((uint8 *)&v, 2);
 			BSWAP16(v);
 			b=v;
 		}
@@ -125,7 +118,7 @@ inline	void		IStream::serial(sint16 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP16(v);
-			serial((uint8 *)&v, 2);
+			serialBuffer((uint8 *)&v, 2);
 		}
 	}
 }
@@ -135,14 +128,14 @@ inline	void		IStream::serial(uint32 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&b, 4);
 	}
 	else
 	{
 		uint32	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 			BSWAP32(v);
 			b=v;
 		}
@@ -150,7 +143,7 @@ inline	void		IStream::serial(uint32 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP32(v);
-			serial((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 		}
 	}
 }
@@ -160,14 +153,14 @@ inline	void		IStream::serial(sint32 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&b, 4);
 	}
 	else
 	{
 		uint32	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 			BSWAP32(v);
 			b=v;
 		}
@@ -175,7 +168,7 @@ inline	void		IStream::serial(sint32 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP32(v);
-			serial((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 		}
 	}
 }
@@ -185,14 +178,14 @@ inline	void		IStream::serial(uint64 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 8);
+		serialBuffer((uint8 *)&b, 8);
 	}
 	else
 	{
 		uint64	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 			BSWAP64(v);
 			b=v;
 		}
@@ -200,7 +193,7 @@ inline	void		IStream::serial(uint64 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP64(v);
-			serial((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 		}
 	}
 }
@@ -210,14 +203,14 @@ inline	void		IStream::serial(sint64 &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 8);
+		serialBuffer((uint8 *)&b, 8);
 	}
 	else
 	{
 		uint64	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 			BSWAP64(v);
 			b=v;
 		}
@@ -225,7 +218,7 @@ inline	void		IStream::serial(sint64 &b) throw(EStream)
 		{
 			v=b;
 			BSWAP64(v);
-			serial((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 		}
 	}
 }
@@ -235,14 +228,14 @@ inline	void		IStream::serial(float &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&b, 4);
 	}
 	else
 	{
 		uint32	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 			BSWAP32(v);
 			b=*((float*)&v);
 		}
@@ -250,7 +243,7 @@ inline	void		IStream::serial(float &b) throw(EStream)
 		{
 			v=*((uint32*)&b);
 			BSWAP32(v);
-			serial((uint8 *)&v, 4);
+			serialBuffer((uint8 *)&v, 4);
 		}
 	}
 }
@@ -260,14 +253,14 @@ inline	void		IStream::serial(double &b) throw(EStream)
 {
 	if(!_NeedSwap)
 	{
-		serial((uint8 *)&b, 8);
+		serialBuffer((uint8 *)&b, 8);
 	}
 	else
 	{
 		uint64	v;
 		if(isReading())
 		{
-			serial ((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 			BSWAP64(v);
 			b=*((double*)&v);
 		}
@@ -275,7 +268,7 @@ inline	void		IStream::serial(double &b) throw(EStream)
 		{
 			v=*((uint64*)&b);
 			BSWAP64(v);
-			serial((uint8 *)&v, 8);
+			serialBuffer((uint8 *)&v, 8);
 		}
 	}
 }
@@ -289,7 +282,7 @@ inline	void		IStream::serial(bool &b) throw(EStream)
 // ======================================================================================================
 inline	void		IStream::serial(char &b) throw(EStream)
 {
-	serial((uint8 *)&b, 8);
+	serialBuffer((uint8 *)&b, 1);
 }
 
 // ======================================================================================================
@@ -348,130 +341,6 @@ inline	void		IStream::serial(std::wstring &b) throw(EStream)
 		serial(b[i]);
 }
 
-
-// ======================================================================================================
-// ======================================================================================================
-// ======================================================================================================
-
-
-// ======================================================================================================
-template<class T0,class T1>
-inline	void			IStream::serial(T0 &a, T1 &b) throw(EStream)
-{
-	serial(a);
-	serial(b);
-}
-// ======================================================================================================
-template<class T0,class T1,class T2>
-inline	void			IStream::serial(T0 &a, T1 &b, T2 &c) throw(EStream)
-{
-	serial(a);
-	serial(b);
-	serial(c);
-}
-// ======================================================================================================
-template<class T0,class T1,class T2,class T3>
-inline	void			IStream::serial(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream)
-{
-	serial(a);
-	serial(b);
-	serial(c);
-	serial(d);
-}
-// ======================================================================================================
-template<class T0,class T1,class T2,class T3,class T4>
-inline	void			IStream::serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) throw(EStream)
-{
-	serial(a);
-	serial(b);
-	serial(c);
-	serial(d);
-	serial(e);
-}
-// ======================================================================================================
-template<class T0,class T1,class T2,class T3,class T4,class T5>
-inline	void			IStream::serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream)
-{
-	serial(a);
-	serial(b);
-	serial(c);
-	serial(d);
-	serial(e);
-	serial(f);
-}
-
-
-// ======================================================================================================
-template<class T0, class T1>
-inline	void			IStream::serial(std::pair<T0, T1> &p) throw(EStream)
-{
-	serial(p.first);
-	serial(p.second);
-}
-
-
-// ======================================================================================================
-template<class T>
-void			IStream::serialCont(T &cont) throw(EStream)
-{
-	uint32	len;
-	uint64	len64;
-
-	// Read the container.
-	if(isReading())
-	{
-		// NB: we use a "uint loop" as possible.
-		cont.clear();
-		serial(len);
-		if(len!=0xFFFFFFFF)
-		{
-			for(uint i=0;i<len;i++)
-			{
-				T::value_type	v;
-				serial(v);
-				cont.insert(cont.end(), v);
-			}
-		}
-		else
-		{
-			serial(len64);
-			for(uint64 i=0;i<len64;i++)
-			{
-				T::value_type	v;
-				serial(v);
-				cont.insert(cont.end(), v);
-			}
-		}
-	}
-
-	// Write the container.
-	else
-	{
-		// NB: we use a "uint loop" as possible.
-		len64= cont.size();
-		if(len64<0xFFFFFFFF)
-		{
-			len= len64;
-			serial(len);
-			T::iterator		it= cont.begin();
-			for(uint i=0;i<len;i++, it++)
-			{
-				serial((*it));
-			}
-		}
-		else
-		{
-			len= 0xFFFFFFFF;
-			serial(len);
-			serial(len64);
-			T::iterator		it= cont.begin();
-			for(uint64 i=0;i<len64;i++, it++)
-			{
-				serial((*it));
-			}
-		}
-	}
-}
 
 
 #endif // NL_STREAM_INLINE_H

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: class_registry.h,v 1.1 2000/09/12 08:15:39 berenguier Exp $
+ * $Id: class_registry.h,v 1.2 2000/09/12 15:15:56 berenguier Exp $
  *
  * This File handles CClassRegistry.
  */
@@ -33,15 +33,15 @@ namespace	NLMISC
  * \author Nevrax France
  * \date 2000
  */
-class ERegistry : public Exception
+struct ERegistry : public Exception
 {
 	virtual const char	*what() const throw() {return "Registry error";}
 };
-class ERegisteredClass : public ERegistry
+struct ERegisteredClass : public ERegistry
 {
 	virtual const char	*what() const throw() {return "Class already registered";}
 };
-class EUnregisteredClass : public ERegistry
+struct EUnregisteredClass : public ERegistry
 {
 	virtual const char	*what() const throw() {return "Class not registered";}
 };

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.h,v 1.1 2000/09/12 08:15:39 berenguier Exp $
+ * $Id: file.h,v 1.2 2000/09/12 15:15:56 berenguier Exp $
  *
  * Standard File Input/Output.
  */
@@ -22,6 +22,26 @@
 
 namespace NLMISC
 {
+
+// ======================================================================================================
+/**
+ * File Exception.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+struct EFile : public EStream
+{
+	virtual const char	*what() const throw() {return "File Error";}
+};
+struct EReadError : public EFile
+{
+	virtual const char	*what() const throw() {return "Read Error (End of file??), or file not opened";}
+};
+struct EWriteError : public EFile
+{
+	virtual const char	*what() const throw() {return "Write Error, or file not opened";}
+};
 
 
 // ======================================================================================================
@@ -49,8 +69,8 @@ public:		// Advanced Usage.
 	void	flush();
 
 protected:
-	virtual void		serial(uint8 *buf, uint len) throw(EStream);
-	virtual void		serialBit(bool &bit) throw(EStream);
+	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
+	virtual void		serialBit(bool &bit) throw(EReadError);
 
 private:
 	FILE	*_F;
@@ -82,8 +102,8 @@ public:		// Advanced Usage.
 	void	flush();
 
 protected:
-	virtual void		serial(uint8 *buf, uint len) throw(EStream);
-	virtual void		serialBit(bool &bit) throw(EStream);
+	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);
+	virtual void		serialBit(bool &bit) throw(EWriteError);
 
 private:
 	FILE	*_F;

@@ -36,7 +36,7 @@ RSC=rc.exe
 # PROP BASE Output_Dir "Release"
 # PROP BASE Intermediate_Dir "Release"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 1
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"

@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.40 2003/12/29 13:36:39 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.41 2004/01/15 15:34:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,24 +93,24 @@ void CFontManager::computeString (const ucstring &s,
 								  CComputedString &output,
 								  bool	keep800x600Ratio)
 {
-	uint32 width, height;
-
 	output.Color = color;
-	driver->getWindowSize (width, height);
-	if ((height == 0) || (width == 0))
-		return;
 
 	// resize fontSize if window not of 800x600.
 	if (keep800x600Ratio)
 	{
+		uint32 width, height;
+		driver->getWindowSize (width, height);
+		if ((height == 0) || (width == 0))
+			return;
+		
 		// keep the 800*600 ratio
 		fontSize = (uint32)floor(fontSize*height/600.f);
 		fontSize = max(fontSize, (uint32)2);
 	}
-	
+
 	// Setting vertices format
 	output.Vertices.setNumVertices (4 * s.size());
-	
+
 	// 1 character <-> 1 quad
 	sint32 penx = 0, dx;
 	sint32 penz = 0, dz;
@@ -140,7 +140,7 @@ void CFontManager::computeString (const ucstring &s,
 	output.ZMax= -FLT_MAX;
 
 	// string info.
-	sint32 nMaxZ = -(sint32)height*2, nMinZ = height*2;
+	sint32 nMaxZ = -1000000, nMinZ = 1000000;
 	output.StringHeight = 0;
 
 	// For all chats
@@ -234,23 +234,22 @@ void CFontManager::computeStringInfo (	const ucstring &s,
 										CComputedString &output,
 										bool keep800x600Ratio	)
 {
-	uint32 width, height;
-
 	output.Color = color;
-	driver->getWindowSize (width, height);
-	if ((height == 0) || (width == 0))
-		return;
 
 	// resize fontSize if window not of 800x600.
 	if (keep800x600Ratio)
 	{
+		uint32 width, height;
+		driver->getWindowSize (width, height);
+		if ((height == 0) || (width == 0))
+			return;
 		// keep the 800*600 ratio
 		fontSize = (uint32)floor(fontSize*height/600.f);
 		fontSize = max(fontSize, (uint32)2);
 	}
 	
 	sint32 penx = 0;
-	sint32 nMaxZ = -(sint32)height*2, nMinZ = height*2;
+	sint32 nMaxZ = -1000000, nMinZ = 1000000;
 	CMaterial		*pMatFont = getFontMaterial();
 	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
 

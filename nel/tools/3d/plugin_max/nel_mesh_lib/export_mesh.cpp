@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.13 2001/07/26 17:18:29 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.14 2001/08/07 14:23:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include <3d/mesh_mrm.h>
 #include <3d/mesh_multi_lod.h>
 #include <3d/particle_system_model.h>
+#include <3d/particle_system_shape.h>
 #include <3d/coarse_mesh_manager.h>
 #include <3d/flare_shape.h>
 
@@ -144,7 +145,27 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 				if (iF.open((const char *) ad->data))
 				{
 					iF.serial(ss) ;
-					return ss.getShapePointer() ;
+
+					CParticleSystemShape *pss = NLMISC::safe_cast<CParticleSystemShape *>(ss.getShapePointer()) ;
+
+					// ********************************
+					// *** Export default transformation
+					// ********************************
+
+						// Get the node matrix
+						Matrix3 localTM;
+						getLocalMatrix (localTM, node, time);
+
+						// Get the translation, rotation, scale of the node
+						CVector pos, scale;
+						CQuat rot;
+						decompMatrix (scale, rot, pos, localTM);
+
+						// Set the default values
+						pss->getDefaultPos()->setValue(pos) ;					
+						pss->getDefaultScale()->setValue(scale) ;					
+						pss->getDefaultRotQuat()->setValue(rot) ;												
+						return pss ;
 				}
 				else
 				{
@@ -160,9 +181,10 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 			CFlareShape *fs = new CFlareShape ;
 
 			Point3 col ;
-			float persistence, size, spacing, attenuationRange  ;
+			float persistence, size, spacing, attenuationRange, pos, maxViewDistRatio ;
 			int   attenuable ;
 			int	  firstFlareKeepSize ;
+			int   hasDazzle ;
 
 
 			// retrieve the color of the flare from the node
@@ -185,12 +207,37 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 			CExportNel::getValueByNameUsingParamBlock2(node, "FirstFlareKeepSize", (ParamType2) TYPE_BOOL, &firstFlareKeepSize, 0) ;			
 			fs->setFirstFlareKeepSize(firstFlareKeepSize ? true : false) ; // avoid VC++ warning
 
+			/// check for dazzle
+			CExportNel::getValueByNameUsingParamBlock2(node, "HasDazzle", (ParamType2) TYPE_BOOL, &hasDazzle, 0) ;			
+
+			if (hasDazzle)
+			{
+				fs->enableDazzle() ;
+				// get dazzle color
+				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleColor", (ParamType2) TYPE_RGBA, &col, 0) ;			
+				fs->setDazzleColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z))) ;
+				// get dazzle attenuation range
+				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleAttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0) ;			
+				fs->setDazzleAttenuationRange(attenuationRange) ;
+			}
+
+			/// retrieve maxViewDistRatio
+			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDistRatio", (ParamType2) TYPE_BOOL, &maxViewDistRatio, 0) ;
+			fs->setMaxViewDistRatio(maxViewDistRatio) ;
+
+
+
 			// retrieve sizes & tex
 			for (uint k = 0 ; k < MaxFlareNum ; ++k)
 			{
 				char out[16] ; sprintf(out, "size%d", k) ;
 				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &size, 0) ;
 				fs->setSize(k, size) ;
+				// get relative position
+				sprintf(out, "pos%d", k) ;
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &pos, 0) ;
+				fs->setRelativePos(k, pos) ;
+
 				// check wether the flare is used
 				int texUsed ;
 				sprintf(out, "flareUsed%d", k) ;
@@ -219,7 +266,15 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 				}	
 			}
 
-			
+			// Get the node matrix
+			Matrix3 localTM;
+			getLocalMatrix (localTM, node, time);			
+
+
+			Point3  fp = localTM.GetTrans() ;
+
+			// export default transformation
+			fs->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) ) ;					
 			
 
 			return fs ;

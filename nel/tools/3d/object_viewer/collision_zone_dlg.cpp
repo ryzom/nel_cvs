@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.cpp
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.cpp,v 1.4 2004/06/17 08:15:37 vizerie Exp $
+ * $Id: collision_zone_dlg.cpp,v 1.5 2004/06/18 13:16:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,9 @@
 
 // standard constructor
 CCollisionZoneDlg::CCollisionZoneDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSZone *zone, CParticleDlg *particleDlg)
-	: _Zone(zone), _ParticleDlg(particleDlg)
+	: _Zone(zone),
+	  _Node(ownerNode),
+	  _ParticleDlg(particleDlg)
 {
 	nlassert(particleDlg);
 	//{{AFX_DATA_INIT(CCollisionZoneDlg)

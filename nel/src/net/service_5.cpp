@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.1 2001/10/16 09:23:04 legros Exp $
+ * $Id: service_5.cpp,v 1.2 2001/10/16 12:28:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -290,7 +290,7 @@ static void cbStopService (CMessage &msgin, const std::string &serviceName, uint
 }
 
 
-TUnifiedCallbackItem AESCallbackArray[] =
+static TUnifiedCallbackItem AESCallbackArray[] =
 {
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.91 2001/10/16 09:25:13 legros Exp $
+ * $Id: service.cpp,v 1.92 2001/10/16 12:28:05 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -288,7 +288,7 @@ static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 }
 
 
-TCallbackItem AESCallbackArray[] =
+static TCallbackItem AESCallbackArray[] =
 {
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },

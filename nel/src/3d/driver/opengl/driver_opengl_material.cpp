@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.32 2001/07/05 09:19:03 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.33 2001/07/11 08:24:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}
 
 		// Double Sided Part.
-		//=================
+		//===================
 		if(mat.getFlags()&IDRV_MAT_DOUBLE_SIDED)
 		{
 			glDisable(GL_CULL_FACE);
@@ -209,6 +209,20 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			glEnable(GL_CULL_FACE);
 		}
+
+		// Alpha Test Part.
+		//=================
+		if(mat.getFlags()&IDRV_MAT_ALPHA_TEST)
+		{
+			glEnable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_GREATER, 0.5f);
+		}
+		else
+		{
+			glDisable(GL_ALPHA_TEST);
+			glAlphaFunc(GL_ALWAYS, 0.0f);
+		}
+
 
 		// Bind ZBuffer Part.
 		//===================

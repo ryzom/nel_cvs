@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.2 2001/06/26 08:00:46 besson Exp $
+ * $Id: material.h,v 1.3 2001/07/11 08:24:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,7 @@ const uint32 IDRV_TOUCHED_DEFMAT		=	0x00000080;
 const uint32 IDRV_TOUCHED_ZWRITE		=	0x00000100;
 const uint32 IDRV_TOUCHED_DOUBLE_SIDED	=	0x00000200;
 const uint32 IDRV_TOUCHED_LIGHTMAP		=	0x00000400;
+const uint32 IDRV_TOUCHED_ALPHA_TEST	=	0x00000800;
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -70,6 +71,7 @@ const uint32 IDRV_MAT_SPECULAR		=	0x00000020;
 const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
 const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
+const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
 
 // ***************************************************************************
 /**
@@ -192,8 +194,13 @@ public:
 	/// \name Double sided.
 	// @{
 	void					setDoubleSided(bool active);
+	bool					getDoubleSided() const { return (_Flags&IDRV_MAT_DOUBLE_SIDED)!=0; }
+	// @}
 
-	bool					detDoubleSided() const { return (_Flags&IDRV_MAT_DOUBLE_SIDED)!=0; }
+	/// \name Alpha Test
+	// @{
+	void					setAlphaTest(bool active);
+	bool					getAlphaTest() const { return (_Flags&IDRV_MAT_ALPHA_TEST)!=0; }
 	// @}
 
 
@@ -315,7 +322,7 @@ public:
 	void					initLighted();
 	// @}
 
-	// TODO : Clean this flag
+	// \todo mb Clean this flag
 	bool					getStainedGlassWindow() { return _StainedGlassWindow; }
 	void					setStainedGlassWindow(bool val) { _StainedGlassWindow = val; }
 
@@ -405,7 +412,7 @@ private:
 	float					_Shininess;
 	uint32					_Touched;
 
-	bool					_StainedGlassWindow; // TODO ; clean this flag (add a CMaterialBuil class)
+	bool					_StainedGlassWindow; // \todo mb : clean this flag (add a CMaterialBuil class)
 
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 

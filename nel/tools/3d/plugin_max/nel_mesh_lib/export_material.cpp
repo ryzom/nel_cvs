@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.12 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: export_material.cpp,v 1.13 2001/07/11 08:24:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,6 +146,14 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 	// Is there a lightmap handling wanted
 	int bLightMap = 0; // false
+	int bAlphaTest = 1; // true
+	int bForceZWrite = 0; // false
+	int bForceNoZWrite = 0; // false
+
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceZWrite", (ParamType2)TYPE_BOOL, &bForceZWrite, tvTime);
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceNoZWrite", (ParamType2)TYPE_BOOL, &bForceNoZWrite, tvTime);
+
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, tvTime);
 
 	if( pSpeTexmap != NULL )
 	{
@@ -153,8 +161,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	}
 	else
 	{
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);
-		
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, tvTime);		
 		if (bLightMap)
 		{
 			material.setShader (CMaterial::LightMap);
@@ -168,6 +175,8 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	int bStainedGlassWindow = 0;
 	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, tvTime);
 	material.setStainedGlassWindow( bStainedGlassWindow!=0 );
+
+	material.setAlphaTest(false);
 
 	// By default set blend to false
 	material.setBlend (false);
@@ -209,9 +218,22 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			// Active blend if texture in opacity
 			if( pOpaTexmap!=NULL )
 			{
-				material.setBlend( true );
-				// \todo mb disable the z write only if we are not in alpha test mode
-				material.setZWrite( false );
+				if( bAlphaTest )
+				{ // If Alpha Test enabled no blend required just check if we are forced to NOT write in the ZBuffer
+					material.setAlphaTest(true);
+					if( bForceNoZWrite )
+						material.setZWrite( false );
+					else
+						material.setZWrite( true );
+				}
+				else
+				{ // No Alpha Test so we have to blend and check if we are forced to write in the ZBuffer
+					material.setBlend( true );
+					if( bForceZWrite )
+						material.setZWrite( true );
+					else
+						material.setZWrite( false );
+				}
 			}
 			
 
@@ -338,11 +360,24 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		material.setColor (nelDiffuse);
 
 		// Set the blend mode on if opacity is not 1.f
-		if (fOp<0.99f)
+		if( fOp < 0.99f )
 		{
-			material.setBlend (true);
-			// \todo mb disable the z write only if we are not in alpha test mode
-			material.setZWrite( false );
+			if( bAlphaTest )
+			{ // If Alpha Test enabled no blend required just check if we are forced to NOT write in the ZBuffer
+				material.setAlphaTest(true);
+				if( bForceNoZWrite )
+					material.setZWrite( false );
+				else
+					material.setZWrite( true );
+			}
+			else
+			{ // No Alpha Test so we have to blend and check if we are forced to write in the ZBuffer
+				material.setBlend( true );
+				if( bForceZWrite )
+					material.setZWrite( true );
+				else
+					material.setZWrite( false );
+			}
 		}
 
 		// Get colors of 3dsmax material

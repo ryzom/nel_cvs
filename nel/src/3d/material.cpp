@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.21 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: material.cpp,v 1.22 2001/07/11 08:24:59 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 CMaterial::CMaterial()
 {
 	_Touched= 0;
-	_Flags= IDRV_MAT_ZWRITE ;
+	_Flags= IDRV_MAT_ZWRITE;
 	// Must init All the flags by default.
 	_ShaderType= Normal;
 	_SrcBlend= srcalpha;

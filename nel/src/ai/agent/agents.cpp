@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.16 2001/01/31 17:24:28 chafik Exp $
+ * $Id: agents.cpp,v 1.17 2001/02/01 11:15:26 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -394,12 +394,20 @@ namespace NLAIAGENT
 				return msg;
 			}
 		}
-		return NULL;
+		else
+		{
+			char debugString[1024*4];
+			char text[2048*8];
+			getDebugString(debugString);
+			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
 	}
 		
 	IMessageBase *IBasicAgent::runTell(const IMessageBase &m)
 	{
-		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
+		if(CNotifyParentScript::IdNotifyParentScript == m.getType())
 		{
 			const INombreDefine *n = (const INombreDefine *)m.getFront();
 			if(n->getNumber() != 0.0)
@@ -408,6 +416,14 @@ namespace NLAIAGENT
 			}
 			return (IMessageBase *)m.clone();			
 		}
-		return NULL;
+		else
+		{
+			char debugString[1024*4];
+			char text[2048*8];
+			getDebugString(debugString);
+			sprintf(text,"runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
 	}
 }

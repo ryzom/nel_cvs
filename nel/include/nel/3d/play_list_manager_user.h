@@ -1,0 +1,107 @@
+/** \file play_list_manager_user.h
+ * <File description>
+ *
+ * $Id: play_list_manager_user.h,v 1.1 2001/03/29 09:55:30 berenguier Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_PLAY_LIST_MANAGER_USER_H
+#define NL_PLAY_LIST_MANAGER_USER_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/3d/tmp/u_play_list_manager.h"
+#include "nel/3d/play_list_manager.h"
+#include "nel/3d/play_list_user.h"
+#include "nel/3d/animation_set_user.h"
+#include "nel/3d/ptr_set.h"
+
+
+namespace NL3D 
+{
+
+
+// ***************************************************************************
+/**
+ * UPlayListManager implementation
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CPlayListManagerUser : public UPlayListManager
+{
+private:
+	CPlayListManager		_PlayListManager;
+	CPtrSet<CPlayListUser>	_PlayLists;
+
+
+public:
+
+	/// Constructor
+	CPlayListManagerUser()
+	{
+	}
+
+
+	/** Create a playlist, instance of an animation set. nlerror if(animSet==NULL).
+	 */
+	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet)
+	{
+		if(!animSet)
+			nlerror("createPlayList(): animSet==NULL");
+		
+		nlassert(dynamic_cast<CAnimationSetUser*>(animSet));
+		CPlayListUser	*pl= new CPlayListUser( ((CAnimationSetUser*)animSet)->_AnimationSet );
+		_PlayLists.insert(pl);
+
+		_PlayListManager.addPlaylist(&pl->_PlayList, &pl->_ChannelMixer);
+
+		return pl;
+	}
+	/** Delete a playlist. nlerror if not found. no-op if playList==NULL.
+	 */
+	virtual	void		deletePlayList(UPlayList *playList)
+	{
+		nlassert(dynamic_cast<CPlayListUser*>(playList));
+		CPlayListUser	*pl= (CPlayListUser*)playList;
+
+		_PlayListManager.removePlaylist(&pl->_PlayList);
+		_PlayLists.erase(pl, "deletePlayList(): bad playList");
+	}
+
+
+	/** Animate all the playlist. Only the globals channels are animated.
+	 * NB: all AnimationTime are in second.
+	 */
+	virtual	void		animate(CAnimationTime	time)
+	{
+		_PlayListManager.animate(time);
+	}
+
+
+};
+
+
+} // NL3D
+
+
+#endif // NL_PLAY_LIST_MANAGER_USER_H
+
+/* End of play_list_manager_user.h */

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.9 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: water_model.h,v 1.10 2003/03/31 10:31:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #define NL_WATER_MODEL_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/polygon.h"
 #include "3d/transform_shape.h"
+#include "3d/material.h"
 #include "nel/3d/u_water.h"
 
 namespace MISC
@@ -76,17 +78,17 @@ public:
 	/// \name CTransform traverse specialisation
 	// @{
 	virtual void	traverseRender();
+	virtual	bool	clip(CTransform *caller);
 	// @}
 
 protected:
 	friend class CWaterShape;
-
+	static CMaterial _WaterMat;		
 	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight);
-	///   setup the vertex program to perform the right attenuation
-	//void setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist);
-	// disable attenuation with distance
-	//void disableAttenuation(IDriver *drv);
-
+	void computeClippedPoly();
+private:
+	NLMISC::CPolygon _ClippedPoly;
+	NLMISC::CPolygon _EndClippedPoly;	
 };
 
 //=====================================================================================================================

@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.11 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: water_shape.h,v 1.12 2003/03/31 10:31:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -222,7 +222,7 @@ private:
 	float								_WaveHeightFactor;
 	bool								_ComputeLightmap;
 	bool								_HeightMapTouch[2];
-	float								_HeightMapNormalizationFactor[2];
+	float								_HeightMapNormalizationFactor[2];	
 		
 	static uint32							_XScreenGridSize; // size with y rotation = 0
 	static uint32							_YScreenGridSize;
@@ -234,6 +234,7 @@ private:
 	static std::vector<uint32>				_IBUpDown;
 	static std::vector<uint32>				_IBDownUp;	
 	static bool								_GridSizeTouched;
+
 	//
 	static std::auto_ptr<CVertexProgram>	_VertexProgramBump1;
 	static std::auto_ptr<CVertexProgram>	_VertexProgramBump2;

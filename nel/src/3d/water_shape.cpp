@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.26 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: water_shape.cpp,v 1.27 2003/03/31 10:31:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -124,6 +124,7 @@ const char *WaterVpBump2LayersCode = "MUL R3, v[0], c[10];			#compute bump 0 uv'
 						   MAD o[TEX2].xy, R0, c[8], c[8];											\n\
 						   ";
 
+
 /** Version with one bump map only (Texture shaders support chaining of offset textures, EMBM does not)
   */
 const char *WaterVpBump1LayersCode = "MUL R3, v[0], c[12];			#compute bump 1 uv's				\n\
@@ -157,12 +158,12 @@ const char *WaterVpDiffuseMapStage1Code = "DP4 o[TEX1].x, R4, c[13]; #compute uv
 
 // Envmap is setup in texture 0, no bump is used
 const char *WaterVpNoBumpCode = "  DP3 R2.x, R1, R0;				#project view vector on normal for symetry	\n\
-										  MUL R0, R0, R2.x;															\n\
-										  ADD R2, R0, R0;															\n\
-										  ADD R0, R2, -R1;				#compute reflection vector					\n\
-										  MAD o[TEX0].xy, R0, c[8], c[8];											\n\
-										  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
-										  ";
+								   MUL R0, R0, R2.x;															\n\
+								   ADD R2, R0, R0;															\n\
+								   ADD R0, R2, -R1;				#compute reflection vector					\n\
+								   MAD o[TEX0].xy, R0, c[8], c[8];											\n\
+								   DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
+								 ";
 
 
 // static members
@@ -347,6 +348,11 @@ float CWaterShape::getNumTriangles (float distance)
 void CWaterShape::flushTextures (IDriver &driver)
 {
 	// Test if bump maps are supported by driver before to flush them.	
+	// TEMP : can't flush texture for water, because the upload format depends on the shader
+	// Only the driver can determine it.
+	// BumpMaps may be uploaded with unsigned or signed format
+
+	/*
 	if (
 		(driver.supportTextureShaders() && driver.isTextureAddrModeSupported(CMaterial::OffsetTexture))
 		|| driver.supportEMBM()
@@ -362,6 +368,7 @@ void CWaterShape::flushTextures (IDriver &driver)
 	}
 	if (_ColorMap != NULL)
 		driver.setupTexture(*_ColorMap);
+	*/
 }
 
 //============================================

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.15 2002/06/12 10:14:25 lecroart Exp $
+ * $Id: async_file_manager.cpp,v 1.16 2002/07/08 12:58:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,11 @@ void CAsyncFileManager::CMeshLoad::run()
 
 		if ((pMesh == NULL) || ((pMesh != NULL) && (_pDriver == NULL)))
 		{
-			nlwarning ("mesh or driver is NULL for file '%s'", MeshName.c_str());
+			if (_pDriver == NULL || mesh.getShapePointer() == NULL)
+			{			
+				nlwarning ("mesh or driver is NULL for file '%s'", MeshName.c_str());
+			}
+			
 			*_ppShp = mesh.getShapePointer();
 			delete this;
 			return;

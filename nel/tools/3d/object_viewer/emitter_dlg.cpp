@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.8 2001/12/19 15:48:01 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.9 2001/12/19 17:52:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,14 +149,10 @@ void CEmitterDlg::OnSelchangeTypeOfEmission()
 
 void CEmitterDlg::updatePeriodDlg(void)
 {
-	if (_Emitter->getEmissionType() != NL3D::CPSEmitter::regular)
-	{
-		_PeriodDlg->EnableWindow(FALSE);
-	}
-	else
-	{
-		_PeriodDlg->EnableWindow(TRUE);
-	}
+	BOOL bEnable = _Emitter->getEmissionType() == NL3D::CPSEmitter::regular;
+	_PeriodDlg->EnableWindow(bEnable);
+	_DelayedEmissionDlg->EnableWindow(bEnable);
+	_MaxEmissionCountDlg->EnableWindow(bEnable);
 }
 
 BOOL CEmitterDlg::OnInitDialog() 

@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.22 2004/06/29 13:42:26 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.23 2004/06/30 16:03:41 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CVertexBuffer CFlareModel::_OcclusionQueryVB;
 //********************************************************************************************************************
 CFlareModel::CFlareModel()
 {
-	std::fill(_Intensity, _Intensity + MaxNumContext, 0);
+	std::fill(_Intensity, _Intensity + MaxNumContext, 0.f);
 	setTransparency(true);
 	setOpacity(false);
 	// RenderFilter: We are a flare
@@ -159,7 +159,7 @@ void	CFlareModel::traverseRender()
 	// The swapBuffer counter is called only once per frame
 	uint64 currFrame = drv->getSwapBufferCounter();	
 	//
-	bool visibilityRetrieved;
+	bool visibilityRetrieved = false;
 	float visibilityRatio;
 	// if driver support occlusion query mechanism, use it	
 	CMesh *occlusionTestMesh = NULL;
@@ -181,8 +181,7 @@ void	CFlareModel::traverseRender()
 				{
 					switch(lastOQ->getOcclusionType())
 					{
-						case IOcclusionQuery::NotAvailable:	
-							visibilityRetrieved = false;
+						case IOcclusionQuery::NotAvailable:								
 							issueNewQuery = false;
 							++ _NumFrameForOcclusionQuery;
 						break;
@@ -202,11 +201,7 @@ void	CFlareModel::traverseRender()
 										//nlinfo("%d / %d", lastOQ->getVisibleCount(), lastDQ->getVisibleCount());
 										visibilityRatio = (float) lastOQ->getVisibleCount() / (float) lastDQ->getVisibleCount();
 										NLMISC::clamp(visibilityRatio, 0.f, 1.f);										
-									}
-									else
-									{
-										visibilityRetrieved = false;
-									}
+									}									
 								}
 								else
 								{
@@ -222,11 +217,7 @@ void	CFlareModel::traverseRender()
 							}
 						break;
 					}
-				}
-				else
-				{
-					visibilityRetrieved = false;
-				}
+				}				
 			}
 		}		
 		if (issueNewQuery)
@@ -285,9 +276,11 @@ void	CFlareModel::traverseRender()
 		_LastRenderIntervalBegin = currFrame;
 	}
 	_LastRenderIntervalEnd = currFrame;
-	// Update intensity depending on visibility
+	// Update intensity depending on visibility	
 	if (visibilityRetrieved)
 	{
+		nlassert(visibilityRatio >= 0.f);
+		nlassert(visibilityRatio <= 1.f);
 		_NumFrameForOcclusionQuery = 1; // reset number of frame needed to do the occlusion query
 		if (visibilityRatio < _Intensity[flareContext])
 		{
@@ -304,6 +297,7 @@ void	CFlareModel::traverseRender()
 					_Intensity[flareContext] = visibilityRatio;					
 				}
 			}
+			nlwarning("intensity update < of %x : %f", (int) this, _Intensity[flareContext]);
 		}
 		else if (visibilityRatio > _Intensity[flareContext])
 		{
@@ -320,6 +314,7 @@ void	CFlareModel::traverseRender()
 					_Intensity[flareContext] = visibilityRatio;					
 				}
 			}											
+			nlwarning("intensity update > of %x : %f", (int) this, _Intensity[flareContext]);
 		}		
 	}
 	if (_Intensity[flareContext] == 0.f) return;
@@ -437,7 +432,7 @@ void	CFlareModel::traverseRender()
 			CVector rI, rK;
 			if (fs->getFirstFlareKeepSize())
 			{
-				size /= renderTrav.Near;
+				size *= renderTrav.Near * (getWorldMatrix().getPos() - renderTrav.CamMatrix.getPos()) * J;
 			}			
 			if (fs->getAngleDisappear() == 0.f)
 			{
@@ -503,7 +498,7 @@ void	CFlareModel::traverseRender()
 				CVertexBufferReadWrite vba;
 				vb.lock (vba);
 
-				float size = fs->getSize(k) / renderTrav.Near;			
+				float size = fs->getSize(k) * zPos * renderTrav.Near;
 				vba.setVertexCoord(0, scrPos + size * (I + K));
 				vba.setVertexCoord(1, scrPos + size * (I - K));
 				vba.setVertexCoord(2, scrPos + size * (-I - K));

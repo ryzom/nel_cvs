@@ -1,7 +1,7 @@
 /** \file plane.cpp
  * class CPlane
  *
- * $Id: plane.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: plane.cpp,v 1.7 2004/07/29 09:26:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,7 +92,6 @@ bool	CPlane::clipSegmentFront(CVector &p0, CVector &p1) const
 	return true;
 }
 
-
 //============================================================
 sint	CPlane::clipPolygonBack(CVector in[], CVector out[], sint nIn) const
 {
@@ -106,7 +105,7 @@ sint	CPlane::clipPolygonBack(CVector in[], CVector out[], sint nIn) const
 		p=i;
 		if ( (*this)*in[p] < 0 )
 		{
-			if ( (*this)*in[s] > 0 ) 
+			if ( (*this)*in[s] >= 0 ) 
 				out[nOut++]= intersect(in[s],in[p]);
 			out[nOut++]=in[p];
 		}
@@ -134,7 +133,7 @@ sint	CPlane::clipPolygonFront(CVector in[], CVector out[], sint nIn) const
 		p=i;
 		if ( (*this)*in[p] > 0 )
 		{
-			if ( (*this)*in[s] < 0 ) 
+			if ( (*this)*in[s] <= 0 ) 
 				out[nOut++]= intersect(in[s],in[p]);
 			out[nOut++]=in[p];
 		}

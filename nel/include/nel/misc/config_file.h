@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.31 2002/10/02 15:52:09 lecroart Exp $
+ * $Id: config_file.h,v 1.32 2002/11/04 16:42:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,8 @@ namespace NLMISC
  * CConfigFile class. Useful when you want to have a configuration file with variables.
  * It manages integers, real (double), and string basic types. A variable can be an array of
  * basic type. In this case, all elements of the array must have the same type.
+ *
+ * If you setup the global callback before loading, it'll be call after the load() function.
  *
  * Example:
  *\code
@@ -193,6 +195,8 @@ public:
 		//@}
 	};
 
+	CConfigFile() : _Callback(NULL) {}
+	
 	virtual ~CConfigFile ();
 
 	/// Get a variable with the variable name
@@ -200,6 +204,9 @@ public:
 
 	/// Get a variable pointer with the variable name, without throwing exception. Return NULL if not found.
 	CVar *getVarPtr (const std::string &varName);
+
+	/// Return true if the variable exists, false otherwise
+	bool exists (const std::string &varName);
 
 	/// load and parse the file
 	void load (const std::string &fileName);
@@ -211,7 +218,7 @@ public:
 	bool loaded();
 
 	/// reload and reparse the file
-	void reparse (const char *filename = NULL);
+	void reparse (const char *filename = NULL, bool callingCallback = true);
 
 	/// display all variables with nlinfo (debug use)
 	void print () const;

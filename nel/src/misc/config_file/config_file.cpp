@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.38 2002/08/21 09:40:36 lecroart Exp $
+ * $Id: config_file.cpp,v 1.39 2002/11/04 16:42:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,7 +232,6 @@ void CConfigFile::load (const string &fileName)
 	}
 
  	_FileName = fileName;
-	_Callback = NULL;
 
 	if (_ConfigFiles == NULL)
 	{
@@ -268,7 +267,7 @@ bool CConfigFile::loaded()
 }
 
 
-void CConfigFile::reparse (const char *filename)
+void CConfigFile::reparse (const char *filename, bool callingCallback)
 {
 	if (filename == NULL)
 	{
@@ -284,7 +283,11 @@ void CConfigFile::reparse (const char *filename)
 			cf_OverwriteExistingVariable = true;
 			bool parsingOK = (cfparse (&(_Vars)) == 0);
 			cf_ifile.close();
-			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
+			if (!parsingOK)
+			{
+				nlwarning ("Parsing error in file %s line %d", _FileName.c_str(), cf_CurrentLine);
+				throw EParseError (_FileName, cf_CurrentLine);
+			}
 		}
 		else
 		{
@@ -322,7 +325,11 @@ void CConfigFile::reparse (const char *filename)
 			cf_OverwriteExistingVariable = false;
 			bool parsingOK = (cfparse (&(_Vars)) == 0);
 			cf_ifile.close ();
-			if (!parsingOK) throw EParseError (filename, cf_CurrentLine);
+			if (!parsingOK)
+			{
+				nlwarning ("Parsing error in file %s line %d", filename, cf_CurrentLine);
+				throw EParseError (filename, cf_CurrentLine);
+			}
 		}
 		else
 		{
@@ -343,6 +350,11 @@ void CConfigFile::reparse (const char *filename)
 			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
 		}
 */	}
+
+	if (callingCallback)
+	{
+		if (_Callback != NULL) _Callback();
+	}
 }
 
 
@@ -393,6 +405,18 @@ CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 	return NULL;
 }
 
+bool CConfigFile::exists (const std::string &varName)
+{
+	for (uint i = 0; i < _Vars.size(); i++)
+	{
+		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
+		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 void CConfigFile::save () const
 {
@@ -622,11 +646,10 @@ void CConfigFile::checkConfigFiles ()
 			try
 			{
 				(*it)->reparse ();
-				if ((*it)->_Callback != NULL) (*it)->_Callback();
 			}
-			catch (EConfigFile &ee)
+			catch (EConfigFile &e)
 			{
-				nlwarning (ee.what ());
+				nlwarning ("Exception will rereading modified config file: %s", e.what ());
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.43 2004/09/22 18:22:41 distrib Exp $
+ * $Id: primitive.cpp,v 1.44 2004/10/04 09:35:33 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2105,8 +2105,8 @@ IPrimitive *CPrimAlias::copy () const
 	CPrimAlias *pa = new CPrimAlias(*this);
 
 	// clear the alias and container reference
-	pa->_Alias = 0;
-	pa->_Container = 0;
+//	pa->_Alias = 0;
+//	pa->_Container = 0;
 
 	return pa;
 }
@@ -2325,6 +2325,12 @@ void CPrimitives::forceAlias(CPrimAlias *prim, uint32 alias)
 
 }
 
+// ***************************************************************************
+
+uint32 CPrimitives::getLastGeneratedAlias()
+{
+	return _LastGeneratedAlias;
+}
 
 // ***************************************************************************
 

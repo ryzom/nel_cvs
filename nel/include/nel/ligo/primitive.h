@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.35 2004/09/21 09:57:59 distrib Exp $
+ * $Id: primitive.h,v 1.36 2004/10/04 09:36:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -706,6 +706,8 @@ public:
 	// already old the alias, this other primitive is assigned a new alias.
 	void			forceAlias(CPrimAlias *prim, uint32 alias);
 
+	// getthe last generated alias value (for debug only)
+	uint32			getLastGeneratedAlias();
 
 private:
 	// Conversion internal methods

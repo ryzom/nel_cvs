@@ -987,10 +987,6 @@ SOURCE=.\ai\script\opcode_ldb.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ai\script\opcode_lpt.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ai\script\opcode_register.cpp
 # End Source File
 # Begin Source File
@@ -1152,10 +1148,6 @@ SOURCE=..\include\nel\ai\script\opcode_call_method.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\script\opcode_ldb.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\ai\script\opcode_lpt.h
 # End Source File
 # Begin Source File
 

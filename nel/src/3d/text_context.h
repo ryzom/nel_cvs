@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.13 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: text_context.h,v 1.14 2004/02/05 20:24:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,7 +177,7 @@ public:
 	/** Clip and print a string that is in the cache (it leaves the string in the cache)
 	  * z : if the hotspot is bottom z is the position of the line of the string, not the bottom of the string bounding box !
 	  */
-	void printClipAtUnProjected (CRenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 index, float xmin, float ymin, float xmax, float ymax)
+	void printClipAtUnProjected (CRenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, const NLMISC::CMatrix &scaleMatrix, float x, float y, float depth, uint32 index, float xmin, float ymin, float xmax, float ymax)
 	{
 		nlassert (index < _CacheStrings.size());
 		CComputedString &rCS = _CacheStrings[index];
@@ -186,10 +186,10 @@ public:
 			CRGBA	bkup = rCS.Color;
 			rCS.Color= _ShadeColor;
 			rCS.Color.A = bkup.A;
-			rCS.render2DUnProjected (*_Driver, renderBuffer, frustum, x+_ShadeExtent, y-_ShadeExtent, depth, xmin, ymin, xmax, ymax);
+			rCS.render2DUnProjected (*_Driver, renderBuffer, frustum, scaleMatrix, x+_ShadeExtent, y-_ShadeExtent, depth, xmin, ymin, xmax, ymax);
 			rCS.Color= bkup;
 		}
-		rCS.render2DUnProjected (*_Driver, renderBuffer, frustum, x, y, depth, xmin, ymin, xmax, ymax);
+		rCS.render2DUnProjected (*_Driver, renderBuffer, frustum, scaleMatrix, x, y, depth, xmin, ymin, xmax, ymax);
 	}
 
 	/// Directly print a string

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.16 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: text_context_user.h,v 1.17 2004/02/05 20:24:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ public:
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
 	void printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
-	void printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax);
+	void printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, const NLMISC::CMatrix &scaleMatrix, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax);
 	void printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax);
 
 	void printAt(float x, float y, const ucstring &ucstr) ;

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.16 2003/09/15 12:01:17 corvazier Exp $
+ * $Id: u_text_context.h,v 1.17 2004/02/05 20:23:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,8 +256,9 @@ public:
 	virtual	void			printClipAt (URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/** Same as printClipAt but special version for planar 3d interface: the final vertices are unproject using a frustum.
 	  * depth is the positive depth to used to unproject the string
+	  * worldSpaceMatrix is used to mul each vertex (when in 0..1 coordinate for x/y and in meter for z coordinate)
 	*/
-	virtual	void			printClipAtUnProjected (URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
+	virtual	void			printClipAtUnProjected (URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, const NLMISC::CMatrix &worldSpaceMatrix, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	// TEMP
 	virtual	void			printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) = 0;
 	/**

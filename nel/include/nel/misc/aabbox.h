@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.10 2003/11/06 09:15:27 berenguier Exp $
+ * $Id: aabbox.h,v 1.11 2004/02/05 20:23:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,6 +114,8 @@ public:
 	bool			intersect(const CBSphere &s) const;
 	/// Does the bbox instersect the segment AB
 	bool			intersect(const CVector &a, const CVector &b) const;
+	/// clip the segment by the bbox. return false if don't intersect. a and b are modified.
+	bool			clipSegment(CVector &a, CVector &b) const;
 	// @}
 
 	/// \name Misc

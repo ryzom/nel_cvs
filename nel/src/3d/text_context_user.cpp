@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.19 2003/10/13 09:40:53 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.20 2004/02/05 20:24:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,12 +307,12 @@ void CTextContextUser::printClipAt(URenderStringBuffer &renderBuffer, float x, f
 	_TextContext.printClipAt(static_cast<CRenderStringBuffer&>(renderBuffer), x, y, i, xmin, ymin, xmax, ymax);
 	// Don't need to restore Matrix context here since no driver change
 }
-void CTextContextUser::printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax)
+void CTextContextUser::printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, const NLMISC::CMatrix &scaleMatrix, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax)
 {
 	NL_ALLOC_CONTEXT( 3dTCPt1 )
 		NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
 	
-	_TextContext.printClipAtUnProjected(static_cast<CRenderStringBuffer&>(renderBuffer), frustum, x, y, depth, i, xmin, ymin, xmax, ymax);
+	_TextContext.printClipAtUnProjected(static_cast<CRenderStringBuffer&>(renderBuffer), frustum, scaleMatrix, x, y, depth, i, xmin, ymin, xmax, ymax);
 	// Don't need to restore Matrix context here since no driver change
 }
 void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax)

@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.11 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: computed_string.h,v 1.12 2004/02/05 20:24:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,10 +180,11 @@ public:
 					float xmin=0, float ymin=0, float xmax=1, float ymax=1
 					);
 
-	/** Special for interface. same as render2DClip but unproject the vertices using a frustum.
+	/** Special for interface. same as render2DClip but unproject the vertices using a frustum and a scale matrix
 	 *	Use the method CRenderStringBuffer::flush() to flush it all.
 	 */
 	void render2DUnProjected (IDriver& driver, CRenderStringBuffer &rdrBuffer, class NL3D::CFrustum &frustum,
+					const NLMISC::CMatrix &scaleMatrix, 
 					float x, float z, float depth, float xmin=0, float ymin=0, float xmax=1, float ymax=1);
 
 	/** 

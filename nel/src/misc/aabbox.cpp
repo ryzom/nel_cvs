@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.10 2003/11/06 09:15:45 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.11 2004/02/05 20:24:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,6 +149,28 @@ bool			CAABBox::intersect(const CVector &a, const CVector &b) const
 		if(!planes[i].clipSegmentBack(p0, p1))
 			return false;
 	}
+	return true;
+}
+
+// ***************************************************************************
+bool			CAABBox::clipSegment(CVector &a, CVector &b) const
+{
+	// Trivial test. If both are in, they are inchanged
+	if(include(a) && include(b))
+		return true;
+	// Else, must clip the segment againts the pyamid.
+	CPlane		planes[6];
+	makePyramid(planes);
+	CVector		p0=a , p1=b;
+	// clip the segment against all planes
+	for(uint i=0;i<6;i++)
+	{
+		if(!planes[i].clipSegmentBack(p0, p1))
+			return false;
+	}
+	// get result
+	a= p0;
+	b= p1;
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.30 2003/09/15 12:01:16 corvazier Exp $
+ * $Id: computed_string.cpp,v 1.31 2004/02/05 20:24:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -376,7 +376,7 @@ void CComputedString::render2DClip (IDriver& driver, CRenderStringBuffer &rdrBuf
 							render2DUnProjected()
 \*------------------------------------------------------------------*/
 void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer &rdrBuffer, class NL3D::CFrustum &frustum,
-					float x, float z, float depth, float xmin, float zmin, float xmax, float zmax)
+	const NLMISC::CMatrix &scaleMatrix, float x, float z, float depth, float xmin, float zmin, float xmax, float zmax)
 {
 	if (Vertices.getNumVertices() == 0)
 		return;
@@ -572,11 +572,14 @@ void CComputedString::render2DUnProjected (IDriver& driver, CRenderStringBuffer 
 	
 	while (dstPtrBackup != dstPtr)
 	{
-		// Unproject it
+		// preset unprojection
 		CVector tmp;
 		tmp.x = ((CVector*)dstPtrBackup)->x * OOW;
 		tmp.y = ((CVector*)dstPtrBackup)->z * OOH;
 		tmp.z = depth;
+		// mul by user scale matrix
+		tmp= scaleMatrix * tmp;
+		// Unproject it
 		*((CVector*)dstPtrBackup) = frustum.unProjectZ(tmp);
 		dstPtrBackup += dstSize;
 	}

@@ -153,6 +153,10 @@ SOURCE=.\pacs\exterior_mesh.cpp
 
 SOURCE=.\pacs\exterior_mesh.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\pacs\face_grid.h
+# End Source File
 # End Group
 # Begin Group "Dynamic Collisions"
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * <File description>
  *
- * $Id: located_bindable_dialog.h,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: located_bindable_dialog.h,v 1.5 2001/06/19 16:05:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NL3D
 #include "ps_wrapper.h"
 #include "nel/misc/rgba.h"
 #include "3d/texture.h"
+#include "3d/ps_plane_basis.h"
 
 
 using NLMISC::CRGBA ;
@@ -137,6 +138,19 @@ protected:
 			   scheme_type *getScheme(void) const { return S->getAngle2DScheme() ; }
 			   void setScheme(scheme_type *s) { S->setAngle2DScheme(s) ; }
 			} _Angle2DWrapper ;
+
+		/////////////////
+		// plane basis //
+		/////////////////
+			struct tagPlaneBasisWrapper : public IPSWrapper<NL3D::CPlaneBasis>, IPSSchemeWrapper<NL3D::CPlaneBasis>
+			{
+			   NL3D::CPSRotated3DPlaneParticle *S ;
+			   NL3D::CPlaneBasis get(void) const { return S->getPlaneBasis() ; }
+			   void set(const NL3D::CPlaneBasis &p) { S->setPlaneBasis(p) ; }
+			   scheme_type *getScheme(void) const { return S->getPlaneBasisScheme() ; }
+			   void setScheme(scheme_type *s) { S->setPlaneBasisScheme(s) ; }
+			} _PlaneBasisWrapper ;
+
 
 		///////////////
 		//   texture //

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * <File description>
  *
- * $Id: attrib_dlg.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: attrib_dlg.cpp,v 1.5 2001/06/19 16:05:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "attrib_dlg.h"
 #include "editable_range.h"
 #include "color_edit.h"
+#include "basis_edit.h"
 #include "value_blender_dlg.h"
 #include "value_gradient_dlg.h"
 
@@ -43,6 +44,7 @@
 #include "3d/ps_int.h"
 #include "3d/ps_color.h"
 #include "3d/ps_plane_basis.h"
+#include "3d/ps_plane_basis_maker.h"
 
 
 
@@ -884,5 +886,145 @@ END_MESSAGE_MAP()
 	
 		return ce ;
 	}
+
+
+
+/////////////////////////////
+// plane basis attributes  //
+/////////////////////////////
+	
+	//////////////////////////////////////////////////////////
+	// PLANE BASIS GRADIENT EDITION INTERFACE				//
+	//////////////////////////////////////////////////////////
+
+
+	class CPlaneBasisGradientDlgWrapper : public CValueGradientDlgClientT<NL3D::CPlaneBasis, CBasisEdit>
+	{
+	public:	
+		/// a function that can display a value in a gradient, with the given offset. Deriver must define this
+		void displayValue(CDC *dc, uint index, sint x, sint y)
+		{		
+				
+			NLMISC::CRGBA c1[] ={ NLMISC::CRGBA::Black, NLMISC::CRGBA::Black, NLMISC::CRGBA::Black } ;
+			NLMISC::CRGBA c2[] ={ NLMISC::CRGBA::Green, NLMISC::CRGBA::Green, NLMISC::CRGBA::Red } ;
+
+		
+			// read plane basis
+			NL3D::CPlaneBasis pb =  Scheme->getValue(index) ;
+
+			CPoint center(x + 20, y + 25) ;
+			
+			NLMISC::CMatrix m ;			
+			m.setRot(pb.X, pb.Y, pb.X ^ pb.Y) ;
+			DrawBasisInDC(center, 12, m, *dc, c2) ;
+		
+		}
+	} ;
+
+
+	
+
+
+
+	CAttribDlgPlaneBasis::CAttribDlgPlaneBasis(const std::string &valueID)  : CAttribDlgT<NL3D::CPlaneBasis>(valueID)
+	{
+	}
+
+	uint CAttribDlgPlaneBasis::getNumScheme(void) const
+	{
+		return 2 ;
+	}
+
+	std::string CAttribDlgPlaneBasis::getSchemeName(uint index) const
+	{
+		nlassert(index < 2) ;
+		switch (index)
+		{			
+			case 0:
+				return std::string("basis gradient") ;
+			break ;
+			case 1:
+				return std::string("follow path") ;
+			break ;
+			default:
+				return std::string("") ;
+			break ;
+		}
+	}
+
+
+
+	void CAttribDlgPlaneBasis::editScheme(void)
+	{	
+		const NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = _SchemeWrapper->getScheme() ;	
+		if (dynamic_cast<const NL3D::CPSPlaneBasisGradient *>(scheme)) 
+		{
+			CPlaneBasisGradientDlgWrapper wrapper ;
+			wrapper.Scheme = &(((NL3D::CPSPlaneBasisGradient *) (_SchemeWrapper->getScheme()) )->_F) ;
+			CValueGradientDlg gd(&wrapper, this) ;		
+			wrapper.GradDlg = &gd ;
+			wrapper.DefaultValue = NL3D::CPlaneBasis(NLMISC::CVector::K) ;
+			wrapper.Id = std::string("PLANE_BASIS_GRADIENT") ;
+			gd.DoModal() ;
+		}
+
+		if (dynamic_cast<const NL3D::CPSPlaneBasisFollowSpeed *>(scheme)) 
+		{
+			MessageBox("NO properties available", "edition", MB_OK) ;
+		}
+	
+	}
+
+	void CAttribDlgPlaneBasis::setCurrentScheme(uint index)
+	{
+		nlassert(index < 3) ;
+
+		NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = NULL ;
+
+		switch (index)
+		{	
+			case 0:	
+				scheme = new NL3D::CPSPlaneBasisGradient ;
+			break ;
+				case 1:	
+				scheme = new NL3D::CPSPlaneBasisFollowSpeed ;
+			break ;
+			default:	
+			break ;
+		}
+
+		if (scheme)
+		{
+			_SchemeWrapper->setScheme(scheme) ;
+		}
+	}
+
+	sint CAttribDlgPlaneBasis::getCurrentScheme(void) const
+	{
+		const NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = _SchemeWrapper->getScheme() ;	
+
+		if (dynamic_cast<const NL3D::CPSPlaneBasisGradient *>(scheme)) 
+		{
+			return 0 ;
+		}
+
+		if (dynamic_cast<const NL3D::CPSPlaneBasisFollowSpeed *>(scheme)) 
+		{
+			return 1 ;
+		}
+		
+		
+		return -1 ;
+	}
+
+	CEditAttribDlg *CAttribDlgPlaneBasis::createConstantValueDlg()
+	{
+		CBasisEdit *ce = new CBasisEdit(std::string("PLANE_BASIS_ATTRIB_EDIT")) ;
+
+		ce->setWrapper(_Wrapper) ;
+	
+		return ce ;
+	}
+
 
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * <File description>
  *
- * $Id: located_bindable_dialog.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.5 2001/06/19 16:05:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "located_bindable_dialog.h"
 
 
+
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_force.h"
@@ -35,8 +36,8 @@
 #include "3d/ps_zone.h"
 
 #include "texture_chooser.h"
-
 #include "attrib_dlg.h"
+#include "precomputed_rotations_dlg.h"
 
 
 using NL3D::CPSLocatedBindable ; 
@@ -147,6 +148,34 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			tc->setWrapper(&_TextureWrapper) ;
 			tc->init(xPos, yPos, this) ;
 			tc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		}
+
+		CAttribDlgPlaneBasis *pb = NULL ;
+
+		// check support for plane basis
+		if (dynamic_cast<NL3D::CPSRotated3DPlaneParticle *>(_Bindable))
+		{
+			pb = new CAttribDlgPlaneBasis("PARTICLE_PLANE_BASIS") ;
+			_SubDialogs.push_back(pb) ;
+			_PlaneBasisWrapper.S = dynamic_cast<NL3D::CPSRotated3DPlaneParticle *>(_Bindable) ;
+			pb->setWrapper(&_PlaneBasisWrapper) ;
+			pb->setSchemeWrapper(&_PlaneBasisWrapper) ;
+			HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_BASIS)) ;
+			pb->init(bmh, xPos, yPos, this) ;
+			pb->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		
+		}
+
+		// check support for precomputed rotations
+		if (dynamic_cast<NL3D::CPSHintParticleRotateTheSame *>(_Bindable))
+		{
+			CPrecomputedRotationsDlg *pr = new CPrecomputedRotationsDlg(dynamic_cast<NL3D::CPSHintParticleRotateTheSame *>(_Bindable)
+																		, pb) ;
+			_SubDialogs.push_back(pr) ;
+			pr->init(this, xPos, yPos) ;
+			pr->GetClientRect(&rect) ;
 			yPos += rect.bottom + 3 ;
 		}
 	}	

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * <File description>
  *
- * $Id: attrib_dlg.h,v 1.3 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.4 2001/06/19 16:05:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 
 #include "nel/misc/rgba.h"
+#include "3d/ps_plane_basis.h"
 #include "editable_range.h"
 
 
@@ -51,9 +52,8 @@ class CAttribDlg : public CDialog
 // Construction
 public:
 	CAttribDlg(const std::string &valueID);   // standard constructor
-
-
 	CAttribDlg::~CAttribDlg() ;
+	
 
 // Dialog Data
 	//{{AFX_DATA(CAttribDlg)
@@ -334,6 +334,36 @@ protected:
 	// ID for the cst float value  edition dialog
 	std::string _CstValueId ;	
 } ;
+
+
+/** an attribute editor specialized for plane basis values
+ */
+
+class CAttribDlgPlaneBasis : public CAttribDlgT<NL3D::CPlaneBasis>
+{	
+public:
+	/** ctor
+	 *  \param valueID an unique id for the constant value editable range dialog
+	 */
+	CAttribDlgPlaneBasis(const std::string &valueID)  ;
+
+	
+	// inherited from CAttribDlg
+	virtual uint getNumScheme(void) const ;	
+	virtual std::string getSchemeName(uint index) const ;	
+	virtual void editScheme(void) ;	
+	virtual void setCurrentScheme(uint index) ;
+	virtual sint getCurrentScheme(void) const  ;
+
+
+
+protected:
+
+	virtual CEditAttribDlg *createConstantValueDlg() ;
+	// ID for the cst float value  edition dialog
+	std::string _CstValueId ;	
+} ;
+
 
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.50 2002/04/25 09:20:46 cado Exp $
+# $Id: Makefile.am,v 1.51 2002/04/30 12:20:52 cado Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -30,6 +30,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         file.cpp                           \
                         geom_ext.cpp                       \
                         heap_memory.cpp                    \
+			hierarchical_timer.cpp             \
                         i_xml.cpp                          \
                         i18n.cpp                           \
                         line.cpp                           \

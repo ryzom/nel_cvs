@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.28 2003/06/30 09:33:38 lecroart Exp $
+ * $Id: login_server.cpp,v 1.29 2003/07/03 10:14:35 lecroart Exp $
  *
  */
 
@@ -297,20 +297,14 @@ void CLoginServer::init (const string &listenAddress)
 		IService::getInstance()->ConfigFile.setCallback("TimeBeforeEraseCookie", cfcbTimeBeforeEraseCookie);
 	} catch(Exception &) { }
 
-	try {
-		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
-		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
-		
-	} catch(Exception &) { }
-
 	// setup the listen address
 
 	string la;
 	
-	if (IService::getInstance()->haveArg('I'))
+	if (IService::getInstance()->haveArg('D'))
 	{
 		// use the command line param if set
-		la = IService::getInstance()->getArg('I');
+		la = IService::getInstance()->getArg('D');
 	}
 	else if (IService::getInstance()->ConfigFile.exists ("ListenAddress"))
 	{

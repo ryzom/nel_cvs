@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.29 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_direct3d.cpp,v 1.30 2005/03/29 13:30:33 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -242,6 +242,16 @@ CDriverD3D::CDriverD3D()
 	_FogColor = 0xffffffff;
 	_CurrIndexBufferFormat = CIndexBuffer::IndicesUnknownFormat;
 	_IsGeforce = false;
+
+	_FrustumLeft= -1.f;
+	_FrustumRight= 1.f;
+	_FrustumTop= 1.f;
+	_FrustumBottom= -1.f;
+	_FrustumZNear= -1.f;
+	_FrustumZFar= 1.f;
+	_FrustumPerspective= false;
+	_FogStart = 0;
+	_FogEnd = 1;
 }
 
 // ***************************************************************************

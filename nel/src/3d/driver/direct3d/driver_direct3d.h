@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.39 2005/03/15 18:09:40 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.40 2005/03/29 13:30:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1019,6 +1019,7 @@ public:
 		CRenderState()
 		{
 			Type = RenderState;
+			Value= 0;
 			ValueSet = false;
 		}
 		D3DRENDERSTATETYPE	StateID;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.1 2000/11/06 15:04:12 berenguier Exp $
+ * $Id: landscape.cpp,v 1.2 2000/11/06 17:39:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ void			CLandscape::init(bool bumpTiles)
 	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1] | IDRV_VF_RGBA );
 	TileVB.reserve(1024);
 
-	// TODO: bump. Need t3f in IDriver.
+	// TODO_BUMP: Need t3f in IDriver.
 	// v3f/t2f0/t2f1/t2f2/t2f3/c4ub
 
 
@@ -81,9 +81,9 @@ void			CLandscape::init(bool bumpTiles)
 	TileText->fillData(image);
 
 	// Fill mat and rdr pass.
-	//FarMat.setDefault();
+	FarMat.initUnlit();
 	FarMat.setTexture(FarText);
-	//TileMat.setDefault();
+	TileMat.initUnlit();
 	TileMat.setTexture(TileText);
 	FarRdrPass.Mat= &FarMat;
 	TileRdrPass.Mat= &TileMat;

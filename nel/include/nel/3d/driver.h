@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.6 2000/11/06 15:03:31 berenguier Exp $
+ * $Id: driver.h,v 1.7 2000/11/06 17:37:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,8 @@ const uint32	IDRV_MAT_ZLIST		= 0x00000008;
 const uint32	IDRV_MAT_LIGHTING	= 0x00000010;
 const uint32	IDRV_MAT_SPECULAR	= 0x00000020;
 const uint32	IDRV_MAT_DEFMAT		= 0x00000040;
+const uint32	IDRV_MAT_BLEND		= 0x00000080;
+
 
 enum ZFunc		{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
 enum TBlend		{ one, zero, srcalpha, invsrcalpha };
@@ -134,8 +136,12 @@ private:
 	CSmartPtr<CTexture>		pTex[4];
 
 public:
-
+	// Private. For Driver only.
 	CRefPtr<IShader>		pShader;
+
+
+public:
+	CMaterial() {_Touched= 0;}
 
 	uint32					getTouched(void) { return(_Touched); }
 
@@ -220,6 +226,12 @@ public:
 		_Touched|=IDRV_TOUCHED_COLOR;
 	}
 
+	void					setBlend(bool active)
+	{
+		if (active)	_Flags|=IDRV_MAT_BLEND;
+		else		_Flags&=~IDRV_MAT_BLEND;
+	}
+
 	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA& emissive=CRGBA(0,0,0), 
 											CRGBA& ambient=CRGBA(0,0,0), 
@@ -254,6 +266,17 @@ public:
 		_Alpha=val;
 		_Touched|=IDRV_TOUCHED_ALPHA;
 	}
+
+	/** Init the material as unlit. normal shader, no lighting ....
+	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, no blend.
+	 * All other states are undefined (such as blend function, since blend is disabled).
+	 */
+	void					initUnlit();
+	/** Init the material as default white lighted material. normal shader, lighting ....
+	 * Default to: normal shader, lighting to default material, no texture, ZBias=0, ZFunc= lessequal, no blend.
+	 * All other states are undefined (such as blend function, since blend is disabled).
+	 */
+	void					initLighted();
 };
 
 // --------------------------------------------------

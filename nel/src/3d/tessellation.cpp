@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.6 2000/11/06 15:04:03 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.7 2000/11/06 17:39:30 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -392,7 +392,7 @@ void		CTessFace::computeTileMaterial()
 	}
 	else
 	{
-		// TODOR: work with patch to create the good vertex format (TileMaterial), link Pass to the good materials etc...
+		// TODO_TEXTURE: work with patch to create the good vertex format (TileMaterial), link Pass to the good materials etc...
 		// for test only here....
 		TileMaterial= new CTileMaterial;
 		TileMaterial->Pass[0]= Patch->getTileRenderPass(TileId, 0);
@@ -415,7 +415,7 @@ void		CTessFace::computeTileMaterial()
 	//----------------
 	// Must allocate the base uv.
 	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
-	// TODOR: work with Patch, to create the good texcoordinates.
+	// TODO_TEXTURE: work with Patch, to create the good texcoordinates.
 	// for test only here....
 	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
 	((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;
@@ -432,7 +432,7 @@ void		CTessFace::computeTileMaterial()
 	{
 		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
 		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
-		// TODOR: work with Patch, to create the good texcoordinates.
+		// TODO_TEXTURE: work with Patch, to create the good texcoordinates.
 		// for test only here....
 		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.U= PVLeft.S<=middle.S? 0.0f: 1.0f;
 		((CTileUvNormal1*)TileUvLeft)->UvPasses[0].PUv0.V= PVLeft.T<=middle.T? 0.0f: 1.0f;

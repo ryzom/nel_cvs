@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.2 2001/01/11 17:02:24 chafik Exp $
+ * $Id: baseai.cpp,v 1.3 2001/01/12 11:31:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,9 +364,10 @@ namespace NLAIAGENT
 		_NumRef->release();
 	}
 
-	IRefrence::IRefrence(const IRefrence &A):IObjectIA(A),_Parent(A._Parent),_NumRef(A._NumRef)
+	IRefrence::IRefrence(const IRefrence &A):IObjectIA(A),_Parent(A._Parent)//,_NumRef(A._NumRef)
 	{			
 		if(_Parent != NULL) _Parent->incRef();
+		_NumRef = new CLocWordNumRef(*this);
 		_NumRef->incRef();
 	}		
 

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.7.4.1 2003/08/21 13:36:35 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.7.4.2 2003/08/21 15:13:07 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -428,7 +428,7 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 	if (args.size () == 0)
 	{
 		const map<CEntityId, CEntityIdTranslator::CEntity>	&res = CEntityIdTranslator::getInstance()->getRegisteredEntities ();
-		log.displayNL("%d entries in CEntityIdTranslator", res.size());
+		log.displayNL("%d result(s) for 'all players informations'", res.size());
 		for (map<CEntityId, CEntityIdTranslator::CEntity>::const_iterator it = res.begin(); it != res.end(); it++)
 		{
 			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s'", (*it).second.UId, (*it).second.UserName.c_str(), (*it).first.toString().c_str(), (*it).second.EntityName.toString().c_str());
@@ -459,7 +459,7 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 			CEntityIdTranslator::getInstance()->getByEntity (args[0], res, false);
 		}
 		
-		log.displayNL("%d result(s) for UId %d", res.size(), uid);
+		log.displayNL("%d result(s) for '%s'", res.size(), args[0]);
 		for (uint i = 0; i < res.size(); i++)
 		{
 			ucstring entityName;

@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_setvalue.cpp,v 1.1 2002/03/06 17:21:47 portier Exp $
+ * $Id: interpret_message_setvalue.cpp,v 1.2 2002/03/11 14:00:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,8 +33,6 @@ namespace NLAISCRIPT
 	CSetValueMsgClass::CSetValueMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSetValueMsg::IdSetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CSetValueMsgClass"));
 		buildVTable();
@@ -42,9 +40,7 @@ namespace NLAISCRIPT
 
 	CSetValueMsgClass::CSetValueMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSetValueMsg::IdSetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSetValueMsg::IdSetValueMsg.getFactory()->getClass());				
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CSetValueMsgClass"));
 		buildVTable();
@@ -53,8 +49,6 @@ namespace NLAISCRIPT
 	CSetValueMsgClass::CSetValueMsgClass() : CMessageClass()
 	{		
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSetValueMsg::IdSetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CSetValueMsgClass"));
 		buildVTable();

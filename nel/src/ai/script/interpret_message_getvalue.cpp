@@ -1,6 +1,6 @@
 /** \file interpret_message_getvalue.cpp
  *
- * $Id: interpret_message_getvalue.cpp,v 1.2 2002/02/20 18:08:58 lecroart Exp $
+ * $Id: interpret_message_getvalue.cpp,v 1.3 2002/03/11 14:00:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,8 +34,6 @@ namespace NLAISCRIPT
 	CGetValueMsgClass::CGetValueMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGetValueMsg::IdGetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CGetValueMsgClass"));
 		buildVTable();
@@ -44,8 +42,6 @@ namespace NLAISCRIPT
 	CGetValueMsgClass::CGetValueMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGetValueMsg::IdGetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CGetValueMsgClass"));
 		buildVTable();
@@ -53,10 +49,7 @@ namespace NLAISCRIPT
 
 	CGetValueMsgClass::CGetValueMsgClass() : CMessageClass()
 	{		
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGetValueMsg::IdGetValueMsg.getFactory()->getClass());		
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Param"));
-		registerComponent(NLAIAGENT::CStringVarName("String"),NLAIAGENT::CStringVarName("Result"));
-
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGetValueMsg::IdGetValueMsg.getFactory()->getClass());
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 		setClassName(NLAIAGENT::CStringVarName("CGetValueMsgClass"));
 		buildVTable();

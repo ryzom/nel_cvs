@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.13 2001/10/29 16:11:45 chafik Exp $
+ * $Id: registry.cpp,v 1.14 2002/01/04 15:06:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,8 @@ namespace NLAIC
 	// Creates a new instance from a class using its registry index
 	const IClassFactory *CRegistry::getFactory(sint32 i)
 	{
-		return _TableRegistry[i]->FactoryClass;
+		return (*(_TableRegistry.begin() + i))->FactoryClass;//_TableRegistry[i]->FactoryClass;
+		//return _TableRegistry[i]->FactoryClass;
 	}
 
 	const CIdentType& CRegistry::operator [](sint32 i) const

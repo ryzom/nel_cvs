@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.100 2002/01/03 15:06:14 chafik Exp $
+ * $Id: agent_script.cpp,v 1.101 2002/01/04 15:06:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,6 +236,12 @@ namespace NLAIAGENT
 																				CAgentScript::CheckAll,
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
+
+		StaticMethod[CAgentScript::TDeflautProccessMsg] = new CAgentScript::CMethodCall(	"DeflautProccessMsg",
+																						CAgentScript::TDeflautProccessMsg, NULL,
+																						CAgentScript::CheckCount,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
 
 	}
 
@@ -1197,7 +1203,14 @@ namespace NLAIAGENT
 #endif
 			if(msg.getMethodIndex() >= 0 && c != NULL)
 			{
-				processMessages(&msg,c);
+				sint indexM = msg.getMethodIndex() - IAgent::getMethodIndexSize();
+				IObjectIA *o;
+				if(indexM != CAgentScript::TDeflautProccessMsg) processMessages(&msg,c);
+				else 
+				{
+					o = IBasicAgent::run( msg );
+					if(o != NULL) o->release();
+				}
 				mail->popMessage();
 			}
 			else 
@@ -1205,13 +1218,14 @@ namespace NLAIAGENT
 				try
 				{
 					IObjectIA *o = IBasicAgent::run( msg );
+					if(o != NULL) o->release();
 					mail->popMessage();
 				}
 				catch(NLAIE::CExceptionNotImplemented &e)
 				{
 					mail->popMessage();
 					throw NLAIE::CExceptionNotImplemented(e.what());
-				}								
+				}
 			}			
 		}
 	}
@@ -1586,13 +1600,7 @@ namespace NLAIAGENT
 			else ip =0;
 			context.Code = (NLAISCRIPT::CCodeBrancheRun *)opPtr;
 			*context.Code = 0;
-
-			/*TProcessStatement k = IObjectIA::ProcessIdle;
-
-			while(k != IObjectIA::ProcessEnd)
-			{
-				k = op.run(context);	
-			}*/		
+			
 			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 
 			// If we are in Debug Mode
@@ -1635,7 +1643,11 @@ namespace NLAIAGENT
 				if(r.size()) return r;
 				else
 				{
-					return IAgent::isMember(className,methodName,param);
+					r = IAgent::isMember(className,methodName,param);
+					if(r.size())
+						return r;
+					else
+						return isDeflautProccessMsg(className,methodName,param);
 				}
 			}
 		
@@ -1655,12 +1667,39 @@ namespace NLAIAGENT
 					return r;
 				else
 				{			
-					return IAgent::isMember(className,methodName,param);
+					r = IAgent::isMember(className,methodName,param);
+					if(r.size())
+						return r;
+					else
+						return isDeflautProccessMsg(className,methodName,param);
 				}
 			}
 			
 		}
 		return tQueue();
+	}
+
+	tQueue CAgentScript::isDeflautProccessMsg(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	{
+		const char *name = methodName->getString();
+		if(name[0] == 'R' && name[1] == 'u' && name[2] == 'n')
+		{
+			static CStringVarName runMsgName[7] = {"RunTell", "RunAchieve", "RunAsk", "RunExec", "RunBreak", "RunKill", "RunError"};
+			sint i;
+			for(i = 0; i < 7; i ++)
+			{
+				if(*methodName == runMsgName[i])
+				{
+					tQueue r;			
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
+					r.push(CIdMethod(TDeflautProccessMsg + IAgent::getMethodIndexSize(),0.0,NULL,c));
+					return r;
+				}
+			}
+		}
+
+		return tQueue();
+
 	}
 
 	sint32 CAgentScript::isClassInheritedFrom(const IVarName &name) const

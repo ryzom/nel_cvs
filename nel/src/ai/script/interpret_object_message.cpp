@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.25 2001/12/05 10:00:24 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.26 2002/01/04 15:06:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,8 +108,8 @@ namespace NLAISCRIPT
 
 	const NLAIC::CIdentType &CMessageClass::getType() const
 	{
-		if ( _IdType != NULL )
-			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );
+		/*if ( _IdType != NULL )
+			_IdType->addObjectType( NLAIC::CTypeOfObject::tMessage );*/
 
 		return *_IdType;
 	}		

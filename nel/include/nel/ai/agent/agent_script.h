@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.44 2001/12/17 13:07:09 chafik Exp $
+ * $Id: agent_script.h,v 1.45 2002/01/04 15:06:33 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,7 @@ namespace NLAIAGENT
 			TSetStatic,	/// Method to assign a new value to a static component
 			TGetValue,	/// Processes the "Ask(GetValueMsg)" msg to obtain a public value of the agent
 //			TGetValueReturn,	/// Processes the "Tell(GetValueMsg)" msg resulting from a "Ask(GetValueMsg)" message sent.
+			TDeflautProccessMsg,
 			TLastM ///The count of export method.
 		};
 
@@ -286,6 +287,7 @@ namespace NLAIAGENT
 
 		virtual tQueue getPrivateMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual tQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
+		virtual tQueue isDeflautProccessMsg(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;			
 
 		virtual sint32 getMethodIndexSize() const;		

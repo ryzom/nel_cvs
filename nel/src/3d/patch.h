@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.5 2001/07/06 12:26:48 berenguier Exp $
+ * $Id: patch.h,v 1.6 2001/07/10 08:34:48 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -521,6 +521,10 @@ private:
 	CZone			*Zone;
 	// Tile Order for the patch.
 	uint8			OrderS, OrderT;
+
+	// This is especially for Pacs. false by default, and used by CZone::refineAll() and CZone::excludePatchFromRefineAll().
+	bool			ExcludeFromRefineAll;
+
 	// For this patch, which level is required for a face to be inserted in the secondary TessBlocks (and not the masterblock)??
 	sint			TessBlockLimitLevel;
 	// For this patch, which level is required for a face to be a valid Tile??

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.40 2001/07/09 13:28:24 berenguier Exp $
+ * $Id: zone.cpp,v 1.41 2001/07/10 08:34:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -332,6 +332,8 @@ void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 {
 	sint	i,j;
 	TZoneMap		neighborZones;
+
+	//nlinfo("Compile Zone: %d \n", (sint32)getZoneId());
 
 	// Can't compile if compiled.
 	nlassert(!Compiled);
@@ -832,6 +834,21 @@ void			CZone::refine()
 	}
 
 }
+
+
+// ***************************************************************************
+void			CZone::excludePatchFromRefineAll(uint patch, bool exclude)
+{
+	nlassert(Compiled);
+	nlassert(patch>=Patchs.size());
+
+	if(patch>=Patchs.size())
+		return;
+
+	Patchs[patch].ExcludeFromRefineAll= exclude;
+}
+
+
 // ***************************************************************************
 void			CZone::refineAll()
 {
@@ -856,7 +873,9 @@ void			CZone::refineAll()
 	pPatch= &(*Patchs.begin());
 	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
-		pPatch->refine();
+		// For Pacs construction: may exclude some patch from refineAll (for speed improvement).
+		if(!pPatch->ExcludeFromRefineAll)
+			pPatch->refine();
 	}
 
 }

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.65 2001/07/09 08:23:25 berenguier Exp $
+ * $Id: landscape.cpp,v 1.66 2001/07/10 08:34:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -402,6 +402,8 @@ void			CLandscape::refine(const CVector &refineCenter)
 		(*it).second->refine();
 	}
 }
+
+
 // ***************************************************************************
 void			CLandscape::refineAll(const CVector &refineCenter)
 {
@@ -416,6 +418,19 @@ void			CLandscape::refineAll(const CVector &refineCenter)
 		(*it).second->refineAll();
 	}
 }
+
+
+// ***************************************************************************
+void			CLandscape::excludePatchFromRefineAll(sint zoneId, uint patch, bool exclude)
+{
+	ItZoneMap it= Zones.find(zoneId);
+	if(it!=Zones.end())
+	{
+		it->second->excludePatchFromRefineAll(patch, exclude);
+	}
+
+}
+
 
 // ***************************************************************************
 void			CLandscape::updateGlobals (const CVector &refineCenter) const

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.55 2001/07/06 12:26:48 berenguier Exp $
+ * $Id: patch.cpp,v 1.56 2001/07/10 08:34:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,9 @@ CPatch::CPatch()
 	Son1=NULL;
 	TessBlockRefCount=0;
 	Clipped=false;
+
+	// for Pacs process. By default, false.
+	ExcludeFromRefineAll= false;
 
 	// To force computation of texture info on next preRender().
 	Far0= -1;

@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.14 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.15 2004/09/17 15:12:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,6 +262,8 @@ void			CVegetableVBAllocator::flushVertex(uint i)
 		uint	size= _VBSoft.getVertexSize();
 		const void	*src= _RAMBufferPtr + i*size;
 		void		*dst= _AGPBufferPtr + i*size;
+		CHECK_VBA_RANGE(_VBAHard, (uint8 *) dst, size);
+		CHECK_VBA_RANGE(_VBASoft, (uint8 *) src, size);
 		memcpy(dst, src, size);
 	}
 }

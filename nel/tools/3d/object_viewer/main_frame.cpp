@@ -470,6 +470,7 @@ void CMainFrame::OnClear()
 
 	// Remove all the instance
 	ObjView->removeAllInstancesFromScene();
+	ToolBar.Invalidate();
 }
 
 void CMainFrame::OnReloadTextures()
@@ -1200,6 +1201,10 @@ void CMainFrame::OnUpdateEditMoveelement(CCmdUI* pCmdUI)
 void CMainFrame::OnUpdateEditMoveFX(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck (isMoveFX());
+	if (ObjView->getParticleDialog())
+	{	
+		pCmdUI->Enable(!ObjView->getParticleDialog()->isPSStickedToSkeleton());
+	}
 }
 
 void CMainFrame::OnUpdateEditMoveObjectLightTest(CCmdUI* pCmdUI) 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.8 2001/07/04 12:19:17 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.9 2001/07/04 17:17:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,6 +337,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		{
 			_RibbonTextureWrapper.R = dynamic_cast<NL3D::CPSRibbon *>(_Bindable) ;
 			CTextureChooser *tc = new CTextureChooser  ;			
+			tc->enableRemoveButton() ;
 			tc->setWrapper(&_RibbonTextureWrapper) ;
 			pushWnd(tc) ;
 						

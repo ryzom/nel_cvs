@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.13 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.14 2003/03/31 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ CQuadGridClipManager::~CQuadGridClipManager()
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::init(float clusterSize, std::vector<float> maxDists, float radiusMax )
+void				CQuadGridClipManager::init(float clusterSize, uint numDist, float maxDist, float radiusMax )
 {
 	// reset first.
 	reset();
@@ -72,16 +72,9 @@ void				CQuadGridClipManager::init(float clusterSize, std::vector<float> maxDist
 	// copy params.
 	nlassert(clusterSize>0);
 	_ClusterSize= clusterSize;
-	_MaxDists= maxDists;
+	_MaxDist= maxDist;
+	_NumDist= numDist;
 	_RadiusMax= radiusMax;
-
-	// verify growing order.
-	float	prec= 0;
-	for(uint i=0; i<_MaxDists.size(); i++)
-	{
-		nlassert(_MaxDists[i] > prec);
-		prec=_MaxDists[i];
-	}
 }
 
 // ***************************************************************************
@@ -110,7 +103,6 @@ void				CQuadGridClipManager::reset()
 	}
 
 	// reset others params.
-	_MaxDists.clear();
 	_ClusterSize= 0;
 	_X= _Y= 0;
 	_Width= _Height= 0;
@@ -166,7 +158,7 @@ void				CQuadGridClipManager::updateClustersFromCamera(const CVector &camPos)
 
 		// build new array
 		// satic for alloc optimisation.
-		static	vector<CQuadGridClusterCase>	newQuadGridClusterCases;
+		static	vector<CQuadGridClipCluster*>	newQuadGridClusterCases;
 		sint	newWidth= newX1-newX0;
 		sint	newHeight= newY1-newY0;
 		newQuadGridClusterCases.resize(newWidth * newHeight);
@@ -175,18 +167,23 @@ void				CQuadGridClipManager::updateClustersFromCamera(const CVector &camPos)
 		{
 			for(x=newX0; x<newX1; x++)
 			{
-				CQuadGridClusterCase	&newCase= newQuadGridClusterCases[ (y-newY0)*newWidth + (x-newX0) ];
+				CQuadGridClipCluster	*&newCase= newQuadGridClusterCases[ (y-newY0)*newWidth + (x-newX0) ];
 
 				// if out the old square?
 				if(x<oldX0 || x>=oldX1 || y<oldY0 || y>=oldY1)
 				{
+					// build the 2D bbox where the models should fit.
+					CAABBox		pivotBBox;
+					pivotBBox.setMinMax(
+						CVector(x*_ClusterSize,y*_ClusterSize,0), 
+						CVector((x+1)*_ClusterSize,(y+1)*_ClusterSize,0) ); 
 					// build new case. Clusters are empty.
-					newCaseModels(newCase);
+					newCaseModels(newCase, pivotBBox);
 				}
 				else
 				{
 					// copy from old.
-					CQuadGridClusterCase	&oldCase= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
+					CQuadGridClipCluster	*oldCase= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
 
 					newCase= oldCase;
 				}
@@ -213,7 +210,6 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp)
 	// use the position to get the cluster to use.
 	CAABBox box;
 	pTfmShp->getAABBox (box);
-	float	distModelMax = pTfmShp->getDistMax();
 
 	// Transform the box in the world
 	const CMatrix &wm = pTfmShp->getWorldMatrix();
@@ -252,31 +248,8 @@ bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp)
 	// verify if IN the current grid of clusters created.
 	if( x>=_X && x<_X+_Width && y>=_Y && y<_Y+_Height )
 	{
-		CQuadGridClusterCase	&clusterCase= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
-		nlassert( _MaxDists.size()+1 == clusterCase.QuadGridClipClusters.size() );
-
-		// search the best cluster.
-		uint	bestCluster;
-		if(distModelMax==-1)
-		{
-			bestCluster= clusterCase.QuadGridClipClusters.size()-1;
-		}
-		else
-		{
-			nlassert(distModelMax>=0);
-			// search in which cluster against we must test.
-			uint i;
-			for(i=0; i<clusterCase.QuadGridClipClusters.size()-1;i++)
-			{
-				if(distModelMax<=_MaxDists[i])
-					break;
-			}
-			// NB: interval [?? , +oo[,  if i==clusterCase.QuadGridClipClusters.size()-1;
-			bestCluster= i;
-		}
-
 		// add the model and extend the bbox of this cluster.
-		CQuadGridClipCluster	*cluster= clusterCase.QuadGridClipClusters[bestCluster];
+		CQuadGridClipCluster	*cluster= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
 
 		// if this cluster is empty, add it now to the list of not empty (do the test before add)
 		if( cluster->isEmpty() )
@@ -304,38 +277,25 @@ void				CQuadGridClipManager::deleteCaseModels(CClipTrav *pClipTrav, sint x, sin
 
 	nlassert(x>=_X && x<_X+_Width && y>=_Y && y<_Y+_Height);
 
-	CQuadGridClusterCase	&clusterCase= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
-	for(uint j=0; j<clusterCase.QuadGridClipClusters.size(); j++)
-	{
-		CQuadGridClipCluster	*cluster= clusterCase.QuadGridClipClusters[j];
+	CQuadGridClipCluster	*cluster= _QuadGridClusterCases[ (y-_Y)*_Width + (x-_X) ];
 
-		// first, unlink all sons from cluster, and link thems to RootCluster.
-		cluster->resetSons(pClipTrav);
+	// first, unlink all sons from cluster, and link thems to RootCluster.
+	cluster->resetSons(pClipTrav);
 
-		// delete the cluster. NB: auto-unlinked from _NotEmptyQuadGridClipClusters
-		delete cluster;
-	}
+	// delete the cluster. NB: auto-unlinked from _NotEmptyQuadGridClipClusters
+	delete cluster;
 
 	// NB: do not delete array for alloc/free optimisation.
 }
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
+void				CQuadGridClipManager::newCaseModels(CQuadGridClipCluster *&cluster, const NLMISC::CAABBox &pivotBbox)
 {
 	H_AUTO( NL3D_QuadClip_newCaseModels );
 
-	// resize of the number of bbox per distance.
-	clusterCase.QuadGridClipClusters.resize(_MaxDists.size()+1);
-
 	// create clusters.
-	for(uint i=0; i<clusterCase.QuadGridClipClusters.size(); i++)
-	{
-		float	maxDist= i>=_MaxDists.size()?-1:_MaxDists[i];
-		// create the cluster.
-		CQuadGridClipCluster	*cluster= new CQuadGridClipCluster(maxDist);
-		clusterCase.QuadGridClipClusters[i]= cluster;
-	}
+	cluster= new CQuadGridClipCluster(_NumDist, _MaxDist, pivotBbox);
 }
 
 
@@ -361,65 +321,81 @@ void				CQuadGridClipManager::profile() const
 	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
 
 	nlinfo(" ***** CQuadGridClipManager stats");
-	nlinfo(" There is %d clusters per level", _Width*_Height );
-	for(uint lvl=0;lvl<_MaxDists.size()+1;lvl++)
-	{
-		nlinfo("    * Stats for Distance up to %f m", lvl<_MaxDists.size()?_MaxDists[lvl]:-1.0f);
-		sint	numEmptyClusters= 0;
-		float	minAreaRatio= 1000;
-		float	maxAreaRatio= 0;
-		float	meanAreaRatio= 0;
-		sint	minNumChildren= 100000000;
-		sint	maxNumChildren= 0;
-		float	meanNumChildren= 0;
-		sint	totalNumChildren= 0;
+	nlinfo(" There is %d clusters", _Width*_Height );
+	sint	numEmptyClusters= 0;
+	float	minAreaRatio= 1000;
+	float	maxAreaRatio= 0;
+	float	meanAreaRatio= 0;
 
-		// test all cases
-		for(sint y=0;y<_Height;y++)
+	// test all cases
+	for(sint y=0;y<_Height;y++)
+	{
+		for(sint x=0;x<_Width;x++)
 		{
-			for(sint x=0;x<_Width;x++)
+			const CQuadGridClipCluster	*cluster= _QuadGridClusterCases[y*_Width+x];
+			if( cluster->isEmpty() )
+				numEmptyClusters++;
+			else
 			{
-				const CQuadGridClusterCase	&cc= _QuadGridClusterCases[y*_Width+x];
-				const CQuadGridClipCluster	*cluster= cc.QuadGridClipClusters[lvl];
-				if( cluster->isEmpty() )
-					numEmptyClusters++;
-				else
-				{
-					CAABBox	bb= cluster->getBBox();
-					float	area= (bb.getSize().x*bb.getSize().y) / (_ClusterSize*_ClusterSize);
-					meanAreaRatio+= area;
-					minAreaRatio= min( minAreaRatio, area);
-					maxAreaRatio= max( maxAreaRatio, area);
-					// count number of sons
-					sint	numSons;
-					numSons= cluster->getNumChildren();
-					meanNumChildren+= numSons;
-					totalNumChildren+= numSons;
-					minNumChildren= min( minNumChildren, numSons);
-					maxNumChildren= max( maxNumChildren, numSons);
-				}
+				CAABBox	bb= cluster->getBBox();
+				float	area= (bb.getSize().x*bb.getSize().y) / (_ClusterSize*_ClusterSize);
+				meanAreaRatio+= area;
+				minAreaRatio= min( minAreaRatio, area);
+				maxAreaRatio= max( maxAreaRatio, area);
 			}
 		}
+	}
 
-		// display
-		if( numEmptyClusters==_Width*_Height )
+	// display
+	if( numEmptyClusters==_Width*_Height )
+	{
+		nlinfo( " The ClipManager is completely Empty!!!!");
+	}
+	else
+	{
+		sint	numClusters= _Width*_Height-numEmptyClusters;
+		nlinfo( "    This Level has %d clusters not empty over %d", numClusters, _Width*_Height);
+		meanAreaRatio/= numClusters;
+		nlinfo("     . minAreaRatio= %f", minAreaRatio);
+		nlinfo("     . maxAreaRatio= %f", maxAreaRatio);
+		nlinfo("     . meanAreaRatio= %f", meanAreaRatio);
+
+		// Do Stats per distance setup
+		for(uint lvl=0;lvl<_NumDist+1;lvl++)
 		{
-			nlinfo( "    This Level is completely Empty!!!!");
-		}
-		else
-		{
-			sint	numClusters= _Width*_Height-numEmptyClusters;
-			nlinfo( "    This Level has %d clusters not empty over %d", numClusters, _Width*_Height);
-			meanAreaRatio/= numClusters;
+			nlinfo("    * Stats for Distance up to %f m", lvl<_NumDist?(lvl+1)*_MaxDist/_NumDist:-1.0f);
+			sint	minNumChildren= 100000000;
+			sint	maxNumChildren= 0;
+			float	meanNumChildren= 0;
+			sint	totalNumChildren= 0;
+
+			// test all cases
+			for(sint y=0;y<_Height;y++)
+			{
+				for(sint x=0;x<_Width;x++)
+				{
+					const CQuadGridClipCluster	*cluster= _QuadGridClusterCases[y*_Width+x];
+					if( cluster->isEmpty() )
+						numEmptyClusters++;
+					else
+					{
+						// count number of sons
+						sint	numSons;
+						numSons= cluster->profileNumChildren(lvl);
+						meanNumChildren+= numSons;
+						totalNumChildren+= numSons;
+						minNumChildren= min( minNumChildren, numSons);
+						maxNumChildren= max( maxNumChildren, numSons);
+					}
+				}
+			}
+
+			// display
 			meanNumChildren/= numClusters;
-			nlinfo("     . minAreaRatio= %f", minAreaRatio);
-			nlinfo("     . maxAreaRatio= %f", maxAreaRatio);
-			nlinfo("     . meanAreaRatio= %f", meanAreaRatio);
 			nlinfo("     . minNumChildren= %d", minNumChildren);
 			nlinfo("     . maxNumChildren= %d", maxNumChildren);
 			nlinfo("     . meanNumChildren= %f", meanNumChildren);
 			nlinfo("     . totalNumChildren= %d", totalNumChildren);
-			
 		}
 	}
 }

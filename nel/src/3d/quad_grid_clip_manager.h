@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.h
  * <File description>
  *
- * $Id: quad_grid_clip_manager.h,v 1.5 2003/03/28 16:01:12 berenguier Exp $
+ * $Id: quad_grid_clip_manager.h,v 1.6 2003/03/31 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,9 +73,9 @@ public:
 	 *	\param clusterSize is the size of a cluster. eg: 160mx160m.
 	 *	\param maxDists eg (100, 500). Intervalls of distance for fast DistMax clip optimisation.
 	 *	there is maxDists.size()+1  clusters created by case of clusterSize*clusterSize. And as so many test.
-	 *	\param radiusMax a square of radiusMax*2 x radiusMax*2  of CQuadGridClusterCase are ensured to be created.
+	 *	\param radiusMax a square of radiusMax*2 x radiusMax*2  of CQuadGridCluster are ensured to be created.
 	 */
-	void				init(float clusterSize, std::vector<float> maxDists, float radiusMax );
+	void				init(float clusterSize, uint numDist, float maxDist, float radiusMax );
 
 	/// delete clusters from scene, and reset the manager.
 	void				reset();
@@ -110,19 +110,13 @@ private:
 	static CTransform	*creator() {return new CQuadGridClipManager;}
 
 private:
-
-	// One case of clusters. Each cluster is for each maxDist clip: eg: 0-100 m, 100-500 m, 500 - +oo
-	struct		CQuadGridClusterCase
-	{
-		std::vector<CQuadGridClipCluster*>	QuadGridClipClusters;
-	};
-
 	float							_ClusterSize;
 	float							_RadiusMax;
-	std::vector<float>				_MaxDists;
+	float							_MaxDist;
+	uint							_NumDist;
 	sint							_X, _Y;
 	sint							_Width, _Height;
-	std::vector<CQuadGridClusterCase>	_QuadGridClusterCases;
+	std::vector<CQuadGridClipCluster*>	_QuadGridClusterCases;
 
 	// List of not empty QuadGridClusters
 	typedef CFastPtrList<CQuadGridClipCluster>	TClusterList;
@@ -130,7 +124,7 @@ private:
 
 
 	void				deleteCaseModels(CClipTrav *pClipTrav, sint x, sint y);
-	void				newCaseModels(CQuadGridClusterCase &clusterCase);
+	void				newCaseModels(CQuadGridClipCluster	*&clusterCase, const NLMISC::CAABBox &pivotBbox);
 
 };
 

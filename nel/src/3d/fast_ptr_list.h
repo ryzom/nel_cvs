@@ -1,7 +1,7 @@
 /** \file fast_ptr_list.h
  * <File description>
  *
- * $Id: fast_ptr_list.h,v 1.2 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: fast_ptr_list.h,v 1.3 2003/03/31 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -82,6 +82,7 @@ class CFastPtrListBase
 public:
 	/// Constructor
 	CFastPtrListBase() {}
+	CFastPtrListBase(const CFastPtrListBase &o) {}
 	~CFastPtrListBase();
 
 	/// insert an element in the list through its Node, unlinking older if necessary
@@ -97,6 +98,9 @@ public:
 
 	/// clear the list
 	void			clear();
+
+	// operator= is noop. Cant do it because nodes keep a ptr on me!!
+	CFastPtrListBase	&operator=(const CFastPtrListBase &o) {return *this;}
 
 // **************
 private:

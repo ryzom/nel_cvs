@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.99 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: scene.cpp,v 1.100 2003/03/31 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,10 +74,11 @@ using namespace NLMISC;
 #define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
 #define NL3D_MEM_MOT						NL_ALLOC_CONTEXT( 3dMot )
 
-#define NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE	400
-const	float	NL3D_QuadGridClipManagerMaxDist[]= {200, 400, 600};
 // The manager is limited to a square of 3000m*3000m around the camera. Beyond, models are clipped individually (bad!!).
 const	float	NL3D_QuadGridClipManagerRadiusMax= 1500;
+const	float	NL3D_QuadGridClipClusterSize= 400;
+const	uint	NL3D_QuadGridClipNumDist= 10;
+const	float	NL3D_QuadGridClipMaxDist= 1000;
 
 
 namespace NL3D
@@ -252,14 +253,11 @@ void	CScene::initQuadGridClipManager ()
 		_QuadGridClipManager->clipUnlinkFromAll();
 		RootCluster->clipAddChild(_QuadGridClipManager);
 
-		// setup maxDists clip.
-		vector<float>	maxDists;
-		maxDists.resize( sizeof(NL3D_QuadGridClipManagerMaxDist) / sizeof(NL3D_QuadGridClipManagerMaxDist[0]) );
-		for(uint i=0; i<maxDists.size(); i++)
-			maxDists[i]= NL3D_QuadGridClipManagerMaxDist[i];
-
 		// init _QuadGridClipManager.
-		_QuadGridClipManager->init(NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
+		_QuadGridClipManager->init(NL3D_QuadGridClipClusterSize, 
+			NL3D_QuadGridClipNumDist, 
+			NL3D_QuadGridClipMaxDist, 
+			NL3D_QuadGridClipManagerRadiusMax);
 	}
 }
 

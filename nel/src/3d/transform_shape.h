@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.23 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: transform_shape.h,v 1.24 2003/03/31 14:36:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,7 @@ private:
 	bool					_CurrentUseLocalAttenuation;
 private:
 	friend	class	CQuadGridClipCluster;
+	friend	class	CQuadGridClipClusterListDist;
 
 	// The max dist for this model.
 	float                   _DistMax;	

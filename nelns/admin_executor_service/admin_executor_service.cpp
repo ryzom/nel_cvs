@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.38 2003/02/14 13:54:33 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.39 2003/02/14 14:07:02 lecroart Exp $
  *
  */
 
@@ -191,7 +191,7 @@ vector<CRequest> Requests;
 
 vector<string> RegisteredServices;
 
-const uint32 RequestTimeout = 5;	// in second
+uint32 RequestTimeout = 5;	// in second
 
 vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
 
@@ -1481,6 +1481,13 @@ static void ASDisconnection (const string &serviceName, uint16 sid, void *arg)
 	nlinfo ("Disconnected to %s-%hu", serviceName.c_str (), sid);
 }
 
+static void varRequestTimeout(CConfigFile::CVar &var)
+{
+	RequestTimeout = var.asInt();
+	nlinfo ("Request timeout is now after %d seconds", RequestTimeout);
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// SERVICE IMPLEMENTATION //////////////////////////////////////////////////////////////
@@ -1494,6 +1501,9 @@ public:
 	/// Init the service
 	void		init ()
 	{
+		ConfigFile.setCallback("RequestTimeout", &varRequestTimeout);
+		varRequestTimeout (ConfigFile.getVar ("RequestTimeout"));
+
 		// be warn when a new service comes
 		CUnifiedNetwork::getInstance()->setServiceUpCallback ("*", serviceConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback ("*", serviceDisconnection, NULL);

@@ -15,6 +15,26 @@ TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
 
 NEL3D_APPDATA_IGNAME = 1423062564			-- string : name of the Instance Group
 
+-- Lower case
+fn lowercase instring =
+(  
+	local upper, lower, outstring
+	upper="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lower="abcdefghijklmnopqrstuvwxyz" 
+
+	outstring = copy instring 
+
+	for iii = 1 to outstring.count do 
+	(  
+		jjj = findString upper outstring[iii]
+		if (jjj != undefined) then
+			outstring[iii] = lower[jjj] 
+		else
+			outstring[iii] = instring[iii]
+	)
+	return outstring     -- value of outstring will be returned as function result 
+)
+
 -- Clear the log
 fn clearlog =
 (
@@ -147,7 +167,10 @@ fn getIg node =
 	(
 		return undefined
 	)
-	return igName
+	if (igName != undefined) then
+		return (lowercase (igName))
+	else
+		return undefined
 )
 
 
@@ -164,13 +187,34 @@ fn exportCollisionsFromZone outputPath filename =
 	)
 	else
 	(
-		nlerror ("OK collision in folder "+output)
+		nlerror ("OK collision in folder "+outputPath)
 	)
 )
 
+fn buildTransitionMatrix mt transitionZone cellSize =
+(
+	copyMt = mt
+	backupPos = copyMt.pos
+	copyMt.pos = [0,0,0]
+
+	-- Scale ?
+	if TransitionScale[transitionZone] == true then
+	(
+		copyMt = scale copyMt [-1,1,1]
+	)
+
+	-- Rotate
+	if TransitionRot[transitionZone] != 0 then
+	(
+		copyMt = rotateZ copyMt (90*TransitionRot[transitionZone])
+	)
+
+	-- Translation
+	return translate copyMt ( (TransitionPos[transitionZone] * cellSize) + backupPos)
+)
 
 -- Export instance groups from the current loaded zone
-fn exportInstanceGroupFromZone inputFile outputPath = 
+fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSize = 
 (
 	-- Unhide
 	max unhide all
@@ -188,8 +232,15 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 	for node in geometry do
 	(
 		ig = getIg node
-		if (ig != undefined) then
+		if ( (ig != undefined) and (ig != "") and ( (igName == "") or (ig == igName) ) ) then
 		(
+			-- Transition ?
+			if ( ig == IgName) then
+			(
+				-- Transform the object
+				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+			)
+
 			-- Found ?
 			found = false
 
@@ -199,7 +250,6 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 				if (ig_array[j]==ig) then
 				(								
 					found = true
-					exit
 				)
 			)
 
@@ -214,8 +264,16 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 	for node in lights do
 	(
 		ig = getIg node
-		if (ig != undefined) then
+
+		if ( (ig != undefined) and (ig != "") and ( (igName == "") or ( ig == igName) ) ) then
 		(
+			-- Transition ?
+			if ( ig == IgName) then
+			(
+				-- Transform the object
+				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+			)
+
 			-- Found ?
 			found = false
 
@@ -225,7 +283,6 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 				if (ig_array[j]==ig) then
 				(								
 					found = true
-					exit
 				)
 			)
 
@@ -236,12 +293,19 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 			)
 		)
 	)
-	
+
 	for node in helpers do
 	(
 		ig = getIg node
-		if (ig != undefined) then
+		if ( (ig != undefined) and (ig != "") and ( (igName == "") or (ig == igName) ) ) then
 		(
+			-- Transition ?
+			if (ig == IgName) then
+			(
+				-- Transform the object
+				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+			)
+
 			-- Found ?
 			found = false
 			-- Already found ?
@@ -250,7 +314,6 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 				if (ig_array[j]==ig) then
 				(								
 					found = true
-					exit
 				)
 			)
 			-- Found ?
@@ -269,60 +332,63 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 		-- For each ig
 		for ig = 1 to ig_array.count do
 		(
-			-- Output filename
-			output = (outputPath + ig_array[ig] + ".ig")
-
-			-- Check date
-			if (NeLTestFileDate output inputFile) == true then
+			if ( (igName == "") or (ig_array[ig] == IgName) ) then
 			(
-				-- Select none
-				max select none
+				-- Output filename
+				output = (outputPath + ig_array[ig] + ".ig")
 
-				-- Select all node in this ig
-				for node in geometry do
+				-- Check date
+				if (NeLTestFileDate output inputFile) == true then
 				(
-					-- Select it if in the ig
-					if ( (getIg node) == ig_array[ig]) then
-						selectmore node
-				)
-				-- Select all lights in this ig
-				for node in lights do
-				(
-					-- Select it if in the ig
-					if ( (getIg node) == ig_array[ig]) then
-						selectmore node
-				)
-				-- Select all helpers in this ig
-				for node in helpers do
-				(
-					-- Select it if in the ig
-					if ( (getIg node) == ig_array[ig]) then
-						selectmore node
-				)
-				-- Check export
-				try
-				(
-					-- Export the ig
-					instancegroup2export = $selection as array
-					if (NelExportInstanceGroup instancegroup2export output) == true then
+					-- Select none
+					max select none
+
+					-- Select all node in this ig
+					for node in geometry do
 					(
-						nlerror ("OK "+output)
+						-- Select it if in the ig
+						if ( (getIg node) == ig_array[ig]) then
+							selectmore node
 					)
-					else
+					-- Select all lights in this ig
+					for node in lights do
+					(
+						-- Select it if in the ig
+						if ( (getIg node) == ig_array[ig]) then
+							selectmore node
+					)
+					-- Select all helpers in this ig
+					for node in helpers do
+					(
+						-- Select it if in the ig
+						if ( (getIg node) == ig_array[ig]) then
+							selectmore node
+					)
+					-- Check export
+					-- try
+					(
+						-- Export the ig
+						instancegroup2export = $selection as array
+						if (NelExportInstanceGroup instancegroup2export output) == true then
+						(
+							nlerror ("OK "+output)
+						)
+						else
+						(
+							-- Error
+							nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+inputFile)
+						)
+					)
+					-- catch
 					(
 						-- Error
-						nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+inputFile)
+					--	nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
 					)
 				)
-				catch
+				else
 				(
-					-- Error
-					nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
+					nlerror ("SKIPPED "+output)
 				)
-			)
-			else
-			(
-				nlerror ("SKIPPED "+output)
 			)
 		)
 	)
@@ -346,12 +412,13 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 
 -- EXPORT ZONES
 
-
-try
+-- try
 (
 	-- Set the bank pathname
 	bank_filename = "bankFilename"
 	NelSetTileBank bank_filename
+
+	cellSize = NeLLigoGetCellSize ()
 
 	for curFileName in MaxFilesList do
 	(		
@@ -394,7 +461,7 @@ try
 						dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
 
 						-- Error catching
-						try
+						-- try
 						(							
 							-- export ligo zone
 							if (NeLLigoExportZone $ dstFileName props false false) then
@@ -407,29 +474,29 @@ try
 							)							
 							
 						)
-						catch
+						-- catch
 						(
 							-- Error
-							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+						--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 
 						-- export matching igs
-						try
+						-- try
 						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
 						)
-						catch
+						-- catch
 						(
-							nlerror("couldn't export ig for " + curFileName)
+						-- 	nlerror("couldn't export ig for " + curFileName)
 						)
 						-- export collisions
-						try
+						-- try
 						(
 							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
-						catch
+						--catch
 						(
-							nlerror("couldn't export collision for " + curFileName)
+							-- nlerror("couldn't export collision for " + curFileName)
 						)
 
 					)
@@ -475,8 +542,6 @@ try
 			DeleteDebugMarkersFn ()
 			selectAllPatch ()
 			-- nlerror ("EXPORT "+ (getFilenameFile curFileName))
-
-			cellSize = NeLLigoGetCellSize ()
 
 			-- Array of selection
 			nodeArray = #()
@@ -559,26 +624,19 @@ try
 								c.name = "[NELLIGO] tmp export"
 
 								-- The matrix
-								mt = transitionZone[zone].transform
-								backupPos = mt.pos
-								mt.pos = [0,0,0]
+								mt = buildTransitionMatrix transitionZone[zone].transform zone cellSize
 
 								-- Scale ?
 								if TransitionScale[zone] == true then
 								(
-									mt = scale mt [-1,1,1]
 									setappdata c ligo_scale_app "1"
 								)
 
 								-- Rotate
 								if TransitionRot[zone] != 0 then
 								(
-									mt = rotateZ mt (90*TransitionRot[zone])
 									setappdata c ligo_rotate_app (TransitionRot[zone] as string)
 								)
-
-								-- Translation
-								mt = translate mt ( (TransitionPos[zone] * cellSize) + backupPos)
 
 								-- Transform the node
 								c.transform = mt
@@ -586,7 +644,7 @@ try
 								-- Export the zone
 
 								-- Error catching
-								try
+								-- try
 								(
 									-- nlerror ("EXPORT "+ (getFilenameFile filename))
 									if (NeLLigoExportZone c filename props false false) then
@@ -598,29 +656,29 @@ try
 										nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile filename))
 									)
 								)
-								catch
+								-- catch
 								(
 									-- Error
-									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+								--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 								)
 
 								-- export igs
-								try
+								-- try
 								(
-									exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
+									exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
 								)
-								catch
+								-- catch
 								(
-									nlerror("couldn't export ig for " + curFileName)
+									-- nlerror("couldn't export ig for " + curFileName)
 								)
 								-- export collisions
-								try
+								-- try
 								(
 									exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 								)
-								catch
+								-- catch
 								(
-									nlerror("couldn't export collision for " + curFileName)
+									-- nlerror("couldn't export collision for " + curFileName)
 								)
 
 								-- Delete
@@ -678,7 +736,7 @@ try
 						dstFileName = ligo_export_path + tokenArray[2] + ".ligozone"
 
 						-- Error catching
-						try
+						-- try
 						(
 							if (NeLLigoExportZone $ dstFileName props false false) then
 							(
@@ -689,30 +747,30 @@ try
 								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
 							)
 						)
-						catch
+						-- catch
 						(
 							-- Error
-							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+						--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 
 						-- export matching igs
-						try
+						-- try
 						(
-							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\")
+							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
 						)
-						catch
+						-- catch
 						(
-							nlerror("couldn't export ig for " + curFileName)
+						--	nlerror("couldn't export ig for " + curFileName)
 						)
 	
 						-- export collisions
-						try
+						-- try
 						(
 							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
-						catch
+						-- catch
 						(
-							nlerror("couldn't export collision for " + curFileName)
+						-- 	nlerror("couldn't export collision for " + curFileName)
 						)
 
 
@@ -727,10 +785,10 @@ try
 		)
 	)
 )
-catch 
+-- catch 
 (
 	-- Error
-	nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
+	-- nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
 )
 
 

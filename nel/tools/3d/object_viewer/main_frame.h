@@ -138,7 +138,7 @@ public:
 	afx_msg void OnUpdateEditMoveelement(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateWindowLightGroup(CCmdUI* pCmdUI);
 	afx_msg void OnHelpAboutobjectviewer();
-	afx_msg void OnSetLag();
+	afx_msg void OnSetFrameDelay();
 	afx_msg void OnRemoveAllInstancesFromScene();
 	afx_msg void OnActivateTextureSet(UINT nID);
 	afx_msg void OnShuffleTextureSet();

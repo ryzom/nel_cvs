@@ -7,7 +7,7 @@
 #include "set_value_dlg.h"
 #include "particle_dlg.h"
 #include "about_dialog.h"
-#include "choose_lag.h"
+#include "choose_frame_delay.h"
 #include "day_night_dlg.h"
 #include "water_pool_editor.h"
 #include "vegetable_dlg.h"
@@ -172,7 +172,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_MOVEELEMENT, OnUpdateEditMoveelement)
 	ON_COMMAND(ID_HELP_ABOUTOBJECTVIEWER, OnHelpAboutobjectviewer)
-	ON_COMMAND(IDM_SET_LAG, OnSetLag)
+	ON_COMMAND(IDM_SET_FRAME_DELAY, OnSetFrameDelay)
 	ON_COMMAND(IDM_REMOVE_ALL_INSTANCES_FROM_SCENE, OnRemoveAllInstancesFromScene)	
 	ON_COMMAND_RANGE(IDM_ACTIVATE_TEXTURE_SET_1, IDM_ACTIVATE_TEXTURE_SET_8, OnActivateTextureSet)
 	ON_COMMAND(IDM_SHUFFLE_TEXTURE_SET, OnShuffleTextureSet)	
@@ -968,13 +968,13 @@ void CMainFrame::OnHelpAboutobjectviewer()
 }
 
 
-void CMainFrame::OnSetLag()
+void CMainFrame::OnSetFrameDelay()
 {
-CChooseLag cl;
-cl.m_LagTime = ObjView->getLag();
-if (cl.DoModal() == IDOK)
+CChooseFrameDelay cfd;
+cfd.m_FrameDelay = ObjView->getFrameDelay();
+if (cfd.DoModal() == IDOK)
 {
-	ObjView->setLag(cl.m_LagTime);
+	ObjView->setFrameDelay(cfd.m_FrameDelay);
 }
 }
 

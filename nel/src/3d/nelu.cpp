@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.15 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: nelu.cpp,v 1.16 2001/02/14 17:13:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,10 @@ void			CNELU::initEventServer()
 void			CNELU::releaseEventServer()
 {
 	CNELU::AsyncListener.removeFromServer(CNELU::EventServer);
-	CNELU::EventServer.removeEmitter(CNELU::Driver->getEventEmitter());
+	if (CNELU::Driver != NULL)
+	{
+		CNELU::EventServer.removeEmitter(CNELU::Driver->getEventEmitter());
+	}
 }
 
 	
@@ -117,9 +120,12 @@ void			CNELU::releaseScene()
 void			CNELU::releaseDriver()
 {
 	// "Release" the driver.
-	CNELU::Driver->release();
-	delete CNELU::Driver;
-	CNELU::Driver= NULL;
+	if (CNELU::Driver != NULL)
+	{
+		CNELU::Driver->release();
+		delete CNELU::Driver;
+		CNELU::Driver = NULL;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.72 2001/07/05 09:19:03 besson Exp $
+ * $Id: driver_opengl.h,v 1.73 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,12 @@ public:
 	// Is the internal format of the texture is a compressed one?
 	bool					Compressed;
 
+	// This is the computed size of what memory this texture take.
+	uint32					TextureMemory;
+	// This is the owner driver.
+	CDriverGL				*_Driver;
+
+
 	// The current wrap modes assigned to the texture.
 	ITexture::TWrapMode		WrapS;
 	ITexture::TWrapMode		WrapT;
@@ -95,7 +101,7 @@ public:
 	ITexture::TMinFilter	MinFilter;
 
 	// The gl id is auto created here.
-	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it);
+	CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl);
 	// The gl id is auto deleted here.
 	~CTextureDrvInfosGL();
 };
@@ -371,6 +377,10 @@ public:
 
 	virtual bool			swapBuffers();
 
+	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
+
+	virtual	uint32			profileAllocatedTextureMemory();
+
 	virtual uint			getNumMatrix();
 
 	virtual bool			supportPaletteSkinning();
@@ -432,6 +442,8 @@ public:
 
 
 private:
+	friend class					CTextureDrvInfosGL;
+
 
 	// For fast vector/point multiplication.
 	struct	CMatrix3x4
@@ -639,12 +651,20 @@ private:
 	}
 
 
-
 	/// \name VertexBufferHard 
 	// @{
 	CPtrSet<CVertexBufferHardGL>	_VertexBufferHardSet;
 	friend class					CVertexArrayRange;
 	CVertexArrayRange				*_CurrentVertexArrayRange;
+	// @}
+
+
+	/// \name Profiling
+	// @{
+	CPrimitiveProfile				_PrimitiveProfileIn;
+	CPrimitiveProfile				_PrimitiveProfileOut;
+	uint32							_AllocatedTextureMemory;
+	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
 	// @}
 
 };

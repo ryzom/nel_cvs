@@ -963,6 +963,10 @@ SOURCE=.\3d\play_list_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\primitive_profile.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\scene_user.cpp
 # End Source File
 # Begin Source File
@@ -1052,6 +1056,10 @@ SOURCE=..\include\nel\3d\frustum.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\height_map.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\primitive_profile.h
 # End Source File
 # Begin Source File
 

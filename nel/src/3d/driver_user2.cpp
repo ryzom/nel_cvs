@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.7 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: driver_user2.cpp,v 1.8 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,6 +133,28 @@ UMaterial		*CDriverUser::createMaterial()
 void			CDriverUser::deleteMaterial(UMaterial *umat) 
 {
 	_Materials.erase( (CMaterialUser*)umat, "deleteMaterial: Bad material");
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Profile.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CDriverUser::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut)
+{
+	_Driver->profileRenderedPrimitives(pIn, pOut);
+}
+
+
+// ***************************************************************************
+uint32			CDriverUser::profileAllocatedTextureMemory()
+{
+	return _Driver->profileAllocatedTextureMemory();
 }
 
 

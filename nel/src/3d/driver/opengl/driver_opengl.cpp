@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.107 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.108 2001/07/06 17:05:27 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -177,6 +177,8 @@ CDriverGL::CDriverGL()
 	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 
 	_CurrentVertexArrayRange= NULL;
+
+	_AllocatedTextureMemory= 0;
 }
 
 
@@ -627,6 +629,12 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	_Initialized = true;
 
+
+	// Reset profiling.
+	_AllocatedTextureMemory= 0;
+	_PrimitiveProfileIn.reset();
+	_PrimitiveProfileOut.reset();
+
 	return true;
 }
 
@@ -724,6 +732,11 @@ bool CDriverGL::swapBuffers()
 		activateTexEnvColor(stage, env);
 	}
 	glActiveTextureARB(GL_TEXTURE0_ARB);
+
+
+	// Reset the profiling counter.
+	_PrimitiveProfileIn.reset();
+	_PrimitiveProfileOut.reset();
 
 
 	return true;
@@ -1275,6 +1288,20 @@ void				CDriverGL::cleanViewMatrix ()
 	_ViewMatrixSetupDirty=false;
 }
 
+
+// ***************************************************************************
+void			CDriverGL::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut)
+{
+	pIn= _PrimitiveProfileIn;
+	pOut= _PrimitiveProfileOut;
+}
+
+
+// ***************************************************************************
+uint32			CDriverGL::profileAllocatedTextureMemory()
+{
+	return _AllocatedTextureMemory;
+}
 
 
 } // NL3D

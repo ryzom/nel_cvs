@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.4 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver.h,v 1.5 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
 #include "nel/misc/mutex.h"
+#include "nel/3d/primitive_profile.h"
 
 #include <vector>
 #include <list>
@@ -87,7 +88,6 @@ public:
 };
 
 typedef std::vector<GfxMode> ModeList;
-
 
 
 //****************************************************************************
@@ -320,6 +320,26 @@ public:
 
 	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;
+
+
+	/// \name Profiling.
+	// @{
+
+
+	/** get the number of primitives rendered from the last swapBuffers() call.
+	 *	\param pIn the number of requested rendered primitive.
+	 *	\param pOut the number of effective rendered primitive. pOut==pIn if no multi-pass material is used
+	 *	(Lightmap, Specular ...).
+	 */
+	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut) =0;
+
+
+	/** return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
+	 *	NB: because of GeForce*, RGB888 is considered to be 32 bits. So it may be false for others cards :).
+	 */
+	virtual	uint32			profileAllocatedTextureMemory() =0;
+
+	// @}
 
 	/**
 	  * Returns the number of model matrices supported in hardware by the driver.

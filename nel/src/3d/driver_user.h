@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.2 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: driver_user.h,v 1.3 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -526,6 +526,16 @@ public:
 	{
 		return &_ShapeBank;
 	}
+	// @}
+
+
+	/// \name Profiling.
+	// @{
+
+	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
+
+	virtual	uint32			profileAllocatedTextureMemory();
+
 	// @}
 
 

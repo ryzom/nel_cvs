@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.2 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: u_driver.h,v 1.3 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
+#include "nel/3d/primitive_profile.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -452,6 +453,25 @@ public:
 	  */
 	virtual	UShapeBank*		getShapeBank() = 0;
 	// @}
+
+
+	/// \name Profiling.
+	// @{
+
+	/** get the number of primitives rendered from the last swapBuffers() call.
+	 *	\param pIn the number of requested rendered primitive.
+	 *	\param pOut the number of effective rendered primitive. pOut==pIn if no multi-pass material is used
+	 *	(Lightmap, Specular ...).
+	 */
+	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut) =0;
+
+	/** return the amount of Texture memory requested. taking mipmap, compression, texture format, etc... into account.
+	 *	NB: because of GeForce*, RGB888 is considered to be 32 bits. So it may be false for others cards :).
+	 */
+	virtual	uint32			profileAllocatedTextureMemory() =0;
+
+	// @}
+
 
 public:
 

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.28 2001/07/05 09:19:03 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.29 2001/07/06 17:05:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,17 +41,24 @@ namespace NL3D
 
 
 // ***************************************************************************
-CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it) : ITextureDrvInfos(drv, it)
+CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl) : ITextureDrvInfos(drv, it)
 {
 	// The id is auto created here.
 	glGenTextures(1,&ID);
 	Compressed= false;
+	TextureMemory= 0;
+
+	// Nb: at Driver dtor, all tex infos are deleted, so _Driver is always valid.
+	_Driver= drvGl;
 }
 // ***************************************************************************
 CTextureDrvInfosGL::~CTextureDrvInfosGL()
 {
 	// The id is auto deleted here.
 	glDeleteTextures(1,&ID);
+
+	// release profiling texture mem.
+	_Driver->_AllocatedTextureMemory-= TextureMemory;
 }
 
 
@@ -119,6 +126,35 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
 		default: return GL_RGBA8;
 	}
+}
+
+
+
+// ***************************************************************************
+uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
+{
+	switch(glfmt)
+	{
+	case GL_RGBA8:		return w*h* 4;
+	// Well this is ugly, but simple :). GeForce 888 is stored as 32 bits.
+	case GL_RGB8:		return w*h* 4;
+	case GL_RGBA4:		return w*h* 2;
+	case GL_RGB5_A1:	return w*h* 2;
+	case GL_RGB5:		return w*h* 2;
+	case GL_LUMINANCE8:	return w*h* 1;
+	case GL_ALPHA8:		return w*h* 1;
+	case GL_LUMINANCE8_ALPHA8:	return w*h* 2;
+	case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:	return w*h /2;
+	case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:	return w*h /2;
+	case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:	return w*h* 1;
+	case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:	return w*h* 1;
+	};
+
+	// One format has not been coded.
+	nlstop;
+
+	/// ???
+	return w*h* 4;
 }
 
 
@@ -246,7 +282,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					// insert into driver map. (so it is deleted when driver is deleted).
 					itTex= (rTexDrvInfos.insert(make_pair(name, (ITextureDrvInfos*)NULL))).first;
 					// create and set iterator, for future deletion.
-					itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(this, itTex);
+					itTex->second= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(this, itTex, this);
 
 					// need to load ALL this texture.
 					mustLoadAll= true;
@@ -271,7 +307,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				// Must create it. Create auto a GL id (in constructor).
 				// Do not insert into the map. This un-shared texture will be deleted at deletion of the texture.
 				// Inform ITextureDrvInfos by passing NULL _Driver.
-				tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(NULL, ItTexDrvInfoPtrMap());
+				tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL(NULL, ItTexDrvInfoPtrMap(), this);
 
 				// need to load ALL this texture.
 				mustLoadAll= true;
@@ -311,6 +347,11 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			//==============================
 			if (mustLoadAll)
 			{
+				// profiling. sub old textre memory usage, and reset.
+				_AllocatedTextureMemory-= gltext->TextureMemory;
+				gltext->TextureMemory= 0;
+
+
 				if(tex.isTextureCube())
 				{
 					static GLenum face_map[6] = {	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
@@ -343,7 +384,12 @@ bool CDriverGL::setupTexture(ITexture& tex)
 						for(sint i=0;i<nMipMaps;i++)
 						{
 							void	*ptr= &(*pTInTC->getPixels(i).begin());
-							glTexImage2D(face_map[nText],i,glfmt,pTInTC->getWidth(i),pTInTC->getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							uint	w= pTInTC->getWidth(i);
+							uint	h= pTInTC->getHeight(i);
+							glTexImage2D(face_map[nText],i,glfmt, w, h, 0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+
+							// profiling: count TextureMemory usage.
+							gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
 						}
 					}
 				}
@@ -375,6 +421,9 @@ bool CDriverGL::setupTexture(ITexture& tex)
 								sint	size= tex.getPixels(i).size();
 								glCompressedTexImage2DARB(GL_TEXTURE_2D, i, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
 									size, ptr );
+
+								// profiling: count TextureMemory usage.
+								gltext->TextureMemory+= tex.getPixels(i).size();
 							}
 						}
 						else
@@ -393,12 +442,21 @@ bool CDriverGL::setupTexture(ITexture& tex)
 							for(sint i=0;i<nMipMaps;i++)
 							{
 								void	*ptr= &(*tex.getPixels(i).begin());
-								glTexImage2D(GL_TEXTURE_2D,i,glfmt,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+								uint	w= tex.getWidth(i);
+								uint	h= tex.getHeight(i);
+								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+
+								// profiling: count TextureMemory usage.
+								gltext->TextureMemory+= computeMipMapMemoryUsage(w, h, glfmt);
 							}
 						}
 					}
 				}
 				//printf("%d,%d,%d\n", tex.getMipMapCount(), tex.getWidth(0), tex.getHeight(0));
+
+
+				// profiling. add new TextureMemory usage.
+				_AllocatedTextureMemory+= gltext->TextureMemory;
 			}
 			// b. Load part of the texture case.
 			//==================================

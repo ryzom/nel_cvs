@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.7 2001/05/24 14:17:51 cado Exp $
+ * $Id: buf_client.cpp,v 1.8 2001/06/01 13:38:06 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,13 +95,14 @@ void CBufClient::connect( const CInetAddress& addr )
 
 /*
  * Sends a message to the remote host
- * Precond: the length of the buffer is between 1 and 65535 bytes.
  */
 void CBufClient::send( const std::vector<uint8>& buffer )
 {
 	nlnettrace( "CBufClient::send" );
 	nlassert( ! buffer.empty() );
-	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
+
+	// Size check in debug
+	nlassert( buffer.size() <= maxSentBlockSize() )
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{
@@ -332,18 +333,25 @@ void CClientReceiveTask::run()
 		try
 		{
 			// Receive message length (in blocking mode)
-			TBlockSize len16;
-			uint lenoflen = sizeof(len16);
-			sock()->receive( (uint8*)&len16, lenoflen );
-			uint len = (uint)ntohs( len16 );
-
+			TBlockSize blocklen;
+			uint32 lenoflen = sizeof(blocklen);
+			sock()->receive( (uint8*)&blocklen, lenoflen );
+			uint32 len = ntohl( blocklen );
+	
 			if ( len != 0 )
 			{
+				// Test size limit
+				if ( len > _Client->maxExpectedBlockSize() )
+				{
+					nlwarning( "L1: Socket %s received length exceeding max expected, in block header... Disconnecting", _SockId->asString().c_str() );
+					throw ESocket( "Received length exceeding max expected", false );
+				}
+
 				// Receive message payload (in blocking mode)
 				vector<uint8> buffer ( len );
 				sock()->receive( &*buffer.begin(), len );
 #ifdef NL_DEBUG
-				nldebug( "L1: Client %s received buffer (%d B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
+				nldebug( "L1: Client %s received buffer (%u B): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
 #endif
 				// Add event type
 				buffer.push_back( CBufNetBase::User );

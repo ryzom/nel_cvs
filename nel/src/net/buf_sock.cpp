@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.7 2001/05/31 14:07:13 cado Exp $
+ * $Id: buf_sock.cpp,v 1.8 2001/06/01 13:38:06 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,8 +86,9 @@ CBufSock::~CBufSock()
  */
 string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 {
-	string s;
+	nlassert( pos+len < v.size() );
 
+	string s;
 	if ( ! v.empty() )
 	{
 		// Copy contents
@@ -131,9 +132,9 @@ bool CBufSock::flush()
 		nlassert( ! tmpbuffer.empty() );
 
 		// Compute the size and add it into the beginning of the buffer
-		netlen = htons( (TBlockSize)(tmpbuffer.size()) );
+		netlen = htonl( (TBlockSize)(tmpbuffer.size()) );
 		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), sizeof(TBlockSize), 0 );
-		memcpy( &*(_ReadyToSendBuffer.end()-2), (uint8*)&netlen, sizeof(TBlockSize) );
+		memcpy( &*(_ReadyToSendBuffer.end()-sizeof(TBlockSize)), (uint8*)&netlen, sizeof(TBlockSize) );
 
 		// Append the temporary buffer to the global buffer
 		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), tmpbuffer.begin(), tmpbuffer.end() );
@@ -145,7 +146,7 @@ bool CBufSock::flush()
 	{
 		// Send
 		CSock::TSockResult res;
-		uint len = _ReadyToSendBuffer.size() - _RTSBIndex;
+		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
 		if ( ( res = Sock->send( &*_ReadyToSendBuffer.begin()+_RTSBIndex, len, false )) == CSock::Ok )
 		{
 #ifdef NL_DEBUG
@@ -172,7 +173,7 @@ bool CBufSock::flush()
 				// Or clear only the data that was actually sent
 				//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len ); // TODO: Test efficiency
 				_RTSBIndex += len;
-				if ( _ReadyToSendBuffer.size() > 20480 )
+				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
 				{
 					nlassert( len <= _ReadyToSendBuffer.size() );
 					_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
@@ -189,46 +190,6 @@ bool CBufSock::flush()
 		}
 	}
 	return true;
-
-	/* This was not optimal especially if the Nagle algorithm was disabled (setNoDelay(true)).
-	 * New (above): construct a buffer with the entire contents of SendFifo, then send it.
-	 * If the sending would block, keep the buffer somewhere for later sending.
-	 * Warning about the size of the resulting buffer (?).
-	 */
-	/*//OLD CODE
-	vector<uint8> buffer, buffer2;
-	while ( ! SendFifo.empty() )
-	{
-		// Extract buffer from the send queue
-		SendFifo.front( buffer );
-
-		// Setup a buffer with length prefix and payload
-		TBlockSize len = (TBlockSize)buffer.size();
-		buffer2.resize( sizeof(len) + len );
-		TBlockSize netlen = htons( len );
-		memcpy( &*buffer2.begin(), (uint8*)&netlen, sizeof(netlen) );
-		memcpy( (&*buffer2.begin())+sizeof(netlen), &*buffer.begin(), len );
-
-		// Send
-		if ( ( res = Sock->send( &*buffer2.begin(), buffer2.size(), false )) == CSock::Ok )
-		{
-			// If sending is ok, pop data from the queue
-			SendFifo.pop();
-			nldebug( "L1: A buffer effectively sent" );
-#ifdef NL_DEBUG
-			string sbuf;
-			sbuf.resize( buffer.size() );
-			memcpy( &*sbuf.begin(), &*buffer.begin(), buffer.size() );
-			nldebug( "L1: Sent buffer: [%s]", sbuf.c_str() );
-#endif
-		}
-		else
-		{
-			// Stop sending (no error if "would block")
-			return ( res == CSock::WouldBlock );
-		}
-	}
-	return true;*/
 }
 
 
@@ -364,17 +325,26 @@ bool CServerBufSock::receivePart()
 {
 	nlnettrace( "CServerBufSock::receivePart" );
 
+	TBlockSize actuallen;
 	if ( ! _NowReadingBuffer )
 	{
 		// Receiving length prefix
-		uint actuallen = sizeof(_Length)-_BytesRead;
+		actuallen = sizeof(_Length)-_BytesRead;
 		Sock->receive( (uint8*)(&_Length)+_BytesRead, actuallen );
 		_BytesRead += actuallen;
 		if ( _BytesRead == sizeof(_Length ) )
 		{
 			if ( _Length != 0 )
 			{
-				_Length = ntohs( _Length );
+				_Length = ntohl( _Length );
+
+				// Test size limit
+				if ( _Length > _OwnerTask->server()->maxExpectedBlockSize() )
+				{
+					nlwarning( "L1: Socket %s received length exceeding max expected, in block header... Disconnecting", asString().c_str() );
+					throw ESocket( "Received length exceeding max expected", false );
+				}
+
 				_NowReadingBuffer = true;
 				_ReceiveBuffer.resize( _Length );
 			}
@@ -389,14 +359,14 @@ bool CServerBufSock::receivePart()
 	if ( _NowReadingBuffer )
 	{
 		// Receiving payload buffer
-		uint actuallen = _Length-_BytesRead;
+		actuallen = _Length-_BytesRead;
 		Sock->receive( &*_ReceiveBuffer.begin()+_BytesRead, actuallen );
 		_BytesRead += actuallen;
 
 		if ( _BytesRead == _Length )
 		{
 #ifdef NL_DEBUG
-			nldebug( "L1: %s received buffer (%d B): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
+			nldebug( "L1: %s received buffer (%u B): [%s]", asString().c_str(), _ReceiveBuffer.size(), stringFromVector(_ReceiveBuffer).c_str() );
 #endif
 			_NowReadingBuffer = false;
 			_BytesRead = 0;

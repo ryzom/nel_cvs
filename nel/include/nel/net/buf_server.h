@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.5 2001/05/24 14:17:35 cado Exp $
+ * $Id: buf_server.h,v 1.6 2001/06/01 13:36:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,6 @@ public:
 
 
 	/** Send a message to the specified host, or to all hosts if hostid is zero
-	 * The max length of the buffer is 65535 bytes.
 	 */
 	void	send( const std::vector<uint8>& buffer, TSockId hostid );
 
@@ -432,6 +431,9 @@ public:
 
 	/// Delete all connections referenced in the remove list (mutexed on _RemoveSet and on _Connections)
 	void	clearClosedConnections();
+
+	/// Access to the server
+	CBufServer	*server()	{ return _Server; }
 
 	friend	class CBufServer;
 

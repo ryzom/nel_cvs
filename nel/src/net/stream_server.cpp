@@ -1,7 +1,7 @@
 /** \file stream_server.cpp
  * Network engine, layer 2, server
  *
- * $Id: stream_server.cpp,v 1.2 2001/05/29 09:30:08 lecroart Exp $
+ * $Id: stream_server.cpp,v 1.3 2001/06/01 13:38:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLNET {
  */
 void CStreamServer::send (const CMemStream &buffer, TSockId hostid)
 {
-	nlassert (buffer.length() > 0 && buffer.length() < 65536);
+	nlassert (buffer.length() != 0);  // no size limit anymore
 
 	nldebug ("L2S: send()");
 

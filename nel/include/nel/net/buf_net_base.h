@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.2 2001/05/18 13:58:00 cado Exp $
+ * $Id: buf_net_base.h,v 1.3 2001/06/01 13:36:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,14 +55,17 @@ typedef NLMISC::CSynchronized<NLMISC::CBufFIFO> CSynchronizedFIFO;
 typedef CSynchronizedFIFO::CAccessor CFifoAccessor;
 
 /// Size of a block
-typedef uint16 TBlockSize;
+typedef uint32 TBlockSize;
 
 
 /**
  * Layer 1
  *
- * Base class for CBufClient and CBufServer
- * \author Olivier Cado
+ * Base class for CBufClient and CBufServer.
+ * The max block sizes for sending and receiving are controlled by setMaxSentBlockSize()
+ * and setMaxExpectedBlockSize(). Their default value is the maximum number contained in a sint32,
+ * that is 2^31-1 (i.e. 0x7FFFFFFF). The limit for sending is checked only in debug mode.
+ *
  * \author Nevrax France
  * \date 2001
  */
@@ -84,6 +87,48 @@ public:
 	{
 		CFifoAccessor syncfifo( &_RecvFifo );
 		return syncfifo.value().size();
+	}
+
+	/**
+	 * Sets the max size of the received messages.
+	 * Default value: 2^31-1 (0x7FFFFFF) (which is the very maximum !).
+	 * If you put a negative number as limit, the max size is reset to the default value.
+	 * Warning: you can call this method only at initialization time, before connecting (for a client)
+	 * or calling init() (for a server) !
+	 */
+	void	setMaxExpectedBlockSize( sint32 limit )
+	{
+		if ( limit < 0 )
+			_MaxExpectedBlockSize = 0x7FFFFFF;
+		else
+			_MaxExpectedBlockSize = (uint32)limit;
+	}
+
+	/**
+	 * Sets the max size of the sent messages.
+	 * Default value: 2^31-1 (0x7FFFFFF) (which is the very maximum !).
+	 * If you put a negative number as limit, the max size is reset to the default value.
+	 * Warning: you can call this method only at initialization time, before connecting (for a client)
+	 * or calling init() (for a server) !
+	 */
+	void	setMaxSentBlockSize( sint32 limit )
+	{
+		if ( limit < 0 )
+			_MaxSentBlockSize = 0x7FFFFFF;
+		else
+			_MaxSentBlockSize = (uint32)limit;
+	}
+
+	/// Returns the max size of the received messages (default: 2^31-1)
+	uint32	maxExpectedBlockSize() const
+	{
+		return _MaxExpectedBlockSize;
+	}
+
+	/// Returns the max size of the sent messages (default: 2^31-1)
+	uint32	maxSentBlockSize() const
+	{
+		return _MaxSentBlockSize;
 	}
 
 protected:
@@ -123,11 +168,20 @@ protected:
 
 private:
 
+	/// The receive queue, protected by a mutex-like device
 	CSynchronizedFIFO	_RecvFifo;
 
-	TNetCallback							_DisconnectionCallback;
-	void*									_DisconnectionCbArg;
+	/// Callback for disconnection
+	TNetCallback		_DisconnectionCallback;
 
+	/// Argument of the disconnection callback
+	void*				_DisconnectionCbArg;
+
+	/// Max size of received messages (limited by the user)
+	uint32				_MaxExpectedBlockSize;
+
+	/// Max size of sent messages (limited by the user)
+	uint32				_MaxSentBlockSize;
 };
 
 

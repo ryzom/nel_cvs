@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.6 2001/05/31 14:07:32 cado Exp $
+ * $Id: buf_sock.h,v 1.7 2001/06/01 13:36:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,7 +206,7 @@ private:
 	sint32				_TriggerSize;
 
 	std::vector<uint8>	_ReadyToSendBuffer;
-	uint32				_RTSBIndex;
+	TBlockSize			_RTSBIndex;
 
 	uint64				_AppId;
 
@@ -257,6 +257,11 @@ protected:
 		return advertiseSystemEvent( (CBufNetBase*)bnb, this, _KnowConnected, false, CBufNetBase::Connection );
 	}
 
+	void setMaxBlockSizeExpected( sint32 limit )
+	{
+
+	}
+
 	/// Returns "SRV " (server)
 	virtual std::string			typeStr() const { return "SRV "; }
 
@@ -269,10 +274,10 @@ private:
 	bool				_NowReadingBuffer;
 
 	// Counts the number of bytes read for the current element (length prefix or buffer)
-	uint16				_BytesRead;
+	TBlockSize			_BytesRead;
 
 	// Length of buffer to read
-	uint16				_Length;
+	TBlockSize			_Length;
 
 	// Buffer for nonblocking receives
 	std::vector<uint8>	_ReceiveBuffer;

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.5 2001/05/31 14:07:32 cado Exp $
+ * $Id: sock.h,v 1.6 2001/06/01 13:36:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,7 +201,7 @@ public:
 	 * - the return value is CSock::Error or an ESocket exception is thrown.
 	 * You may want to close the connection manually.
 	 */
-	CSock::TSockResult	receive( uint8 *buffer, uint& len, bool throw_exception=true );
+	CSock::TSockResult	receive( uint8 *buffer, uint32& len, bool throw_exception=true );
 
 	//@}
 
@@ -220,7 +220,7 @@ public:
 	 * \return CSock::Ok or CSock::Error (in case of failure).
 	 * When throw_exception is true, the method throws an ESocket exception in case of failure.
      */
-	CSock::TSockResult CSock::send( const uint8 *buffer, uint& len, bool throw_exception=true );
+	CSock::TSockResult CSock::send( const uint8 *buffer, uint32& len, bool throw_exception=true );
 
 	//@}
 

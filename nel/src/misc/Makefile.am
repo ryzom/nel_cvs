@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.71 2003/12/30 11:20:13 lecroart Exp $
+# $Id: Makefile.am,v 1.72 2004/01/29 10:51:09 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -64,6 +64,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         rect.cpp                           \
                         report.cpp                         \
                         rgba.cpp                           \
+                        sha1.cpp                           \
                         shared_memory.cpp                  \
                         sheet_id.cpp                       \
                         smart_ptr.cpp                      \

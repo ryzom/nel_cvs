@@ -495,6 +495,9 @@ void eraseCarriageReturnsAndMakeBlankNonAsciiChars( string& s )
 }
 
 
+string OutputPath;
+
+
 /*
  * CSV -> Georges
  */
@@ -564,10 +567,11 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		}
 	}
 
+	string addExtension = "." + sheetType;
 	uint dirmapLetterIndex = ~0;
 	bool dirmapLetterBackward = false;
 	vector<string> dirmapDirs;
-	string dirmapSheetCode, addExtension, outputPath;
+	string dirmapSheetCode;
 	bool WriteEmptyProperties = false, WriteSheetsToDisk = true;
 
 	if ( generate )
@@ -578,16 +582,18 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			CConfigFile dirmapcfg;
 			dirmapcfg.load( sheetType + "_dirmap.cfg" );
 
-			CConfigFile::CVar *path = dirmapcfg.getVarPtr( "OutputPath" );
-			if ( path )
-				outputPath = path->asString();
-			if ( ! outputPath.empty() )
+			if ( OutputPath.empty() )
 			{
-				nlinfo( "Using output path: %s", outputPath.c_str() );
-				if ( outputPath[outputPath.size()-1] != '/' )
-					outputPath += '/';
-				else if ( ! CFile::isDirectory( outputPath ) )
-					nlwarning( "Output path does not exist" );
+				CConfigFile::CVar *path = dirmapcfg.getVarPtr( "OutputPath" );
+				if ( path )
+					OutputPath = path->asString();
+				if ( ! OutputPath.empty() )
+				{
+					if ( OutputPath[OutputPath.size()-1] != '/' )
+						OutputPath += '/';
+					else if ( ! CFile::isDirectory( OutputPath ) )
+						nlwarning( "Output path does not exist" );
+				}
 			}
 
 			CConfigFile::CVar *letterIndex1 = dirmapcfg.getVarPtr( "LetterIndex" );
@@ -602,14 +608,14 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 				for ( sint idm=0; idm!=dirs.size(); ++idm )
 				{
 					dirmapDirs.push_back( dirs.asString( idm ) );
-					nlinfo( "Directory: %s", dirmapDirs.back() );
-					if ( ! CFile::isExists( outputPath + dirmapDirs.back() ) )
+					nlinfo( "Directory: %s", dirmapDirs.back().c_str() );
+					if ( ! CFile::isExists( OutputPath + dirmapDirs.back() ) )
 					{
-						CFile::createDirectory( outputPath + dirmapDirs.back() );
+						CFile::createDirectory( OutputPath + dirmapDirs.back() );
 					}
 					else
 					{
-						if ( ! CFile::isDirectory( outputPath + dirmapDirs.back() ) )
+						if ( ! CFile::isDirectory( OutputPath + dirmapDirs.back() ) )
 						{
 							nlwarning( "Already existing but not a directory!" );
 						}
@@ -623,12 +629,6 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			if ( sheetCode )
 				dirmapSheetCode = sheetCode->asString();
 			nlinfo( "Sheet code: %s", dirmapSheetCode.c_str() );
-
-			CConfigFile::CVar *addExt = dirmapcfg.getVarPtr( "AddExtension" );
-			if ( addExt )
-				addExtension = addExt->asString();
-			if ( ! addExtension.empty() )
-				nlinfo( "Adding extension if not present: %s", addExtension.c_str() );
 
 			if ( ! dirmapLetterBackward )
 				dirmapLetterIndex += dirmapSheetCode.size();
@@ -649,6 +649,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		}
 		
 
+		nlinfo( "Using output path: %s", OutputPath.c_str() );
 		nlinfo( "Press a key to generate *.%s", sheetType.c_str() );
 		getch();
 		nlinfo( "Generating...." );
@@ -711,7 +712,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 						uint letterIndex;
 						char c;
 						if ( dirmapLetterBackward )
-							letterIndex = filebase.size() - 2 - (CFile::getExtension( filebase ).size()+1) - dirmapLetterIndex;
+							letterIndex = filebase.size() - 1 - (CFile::getExtension( filebase ).size()+1) - dirmapLetterIndex;
 						else
 							letterIndex = dirmapLetterIndex;
 						c = tolower( filebase[letterIndex] );
@@ -844,7 +845,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			if ( WriteSheetsToDisk )
 			{
 				++nbWritten;
-				string path = isNewSheet ? outputPath : "";
+				string path = isNewSheet ? OutputPath : "";
 				string ext = (filename.find( addExtension ) == string::npos) ? addExtension : "";
 				COFile	output( path + dirbase + filename + ext );
 				form->write(output, true);
@@ -861,7 +862,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 void	usage(char *argv0, FILE *out)
 {
 	fprintf(out, "\n");
-	fprintf(out, "Syntax: %s [-p <sheet path>] [-s <field_separator>] [-g <sheet type>] [<script file name> | <csv file name>]", argv0);
+	fprintf(out, "Syntax: %s [-p <sheet path>] [-s <field_separator>] [-g <sheet type>] [-o <output path>] [<script file name> | <csv file name>]", argv0);
 	fprintf(out, "(-g = generate sheet files, needs template sheet _empty.<sheet type> and <sheet type>_dirmap.cfg in the current folder");
 	fprintf(out, "\n");
 	fprintf(out, "Script commands:\n");
@@ -919,6 +920,16 @@ int main(int argc, char* argv[])
 				}
 				generate = true;
 				sheetType = string(argv[i]);
+				break;
+			case 'o':
+				++i;
+				if ((sint)i == argc)
+				{
+					fprintf(stderr, "Missing <output path> after -o option\n");
+					usage(argv[0], stderr);
+					exit(0);
+				}
+				OutputPath = string(argv[i]);
 				break;
 			default:
 				fprintf(stderr, "Unrecognized option '%c'\n", arg[1]);

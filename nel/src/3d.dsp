@@ -1131,6 +1131,14 @@ SOURCE=.\3d\animation.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\animation_optimizer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animation_optimizer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\animation_playlist.cpp
 # End Source File
 # Begin Source File
@@ -1208,6 +1216,14 @@ SOURCE=.\3d\track_keyframer.cpp
 # Begin Source File
 
 SOURCE=.\3d\track_keyframer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_quat.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_quat.h
 # End Source File
 # Begin Source File
 

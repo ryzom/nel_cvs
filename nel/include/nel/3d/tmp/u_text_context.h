@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.3 2001/03/27 10:29:55 berenguier Exp $
+ * $Id: u_text_context.h,v 1.4 2001/03/27 12:10:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,23 @@ public:
 		TopRight,
 
 		HotSpotCount
+	};
+
+
+	/// The render size of a string.
+	struct	CStringInfo
+	{
+		float StringWidth;
+		float StringHeight;
+
+		CStringInfo() {StringWidth= StringHeight= 0;}
+		CStringInfo(float w, float h)  {StringWidth= w; StringHeight= h;}
+
+		/**
+		 *	Get the string's origin
+		 * \param hotspot the origin of the string
+		 */
+		NLMISC::CVector getHotSpotVector(THotSpot hotspot);
 	};
 
 
@@ -157,6 +174,10 @@ public:
 	 * remove a string from the list
 	 */
 	virtual	void			erase(uint32 i)  =0;
+	/**
+	 * Get a string information from the list. return CStringInfo(0,0) if not found.
+	 */
+	virtual	CStringInfo		getStringInfo(uint32 i)  =0;
 	/**
 	 * empty the map
 	 */

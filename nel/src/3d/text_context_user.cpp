@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.1 2001/02/28 14:43:19 berenguier Exp $
+ * $Id: text_context_user.cpp,v 1.2 2001/03/27 12:10:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,42 @@
 #include "nel/3d/text_context_user.h"
 
 
-namespace NL3D {
+namespace NL3D 
+{
+
+
+// ***************************************************************************
+NLMISC::CVector UTextContext::CStringInfo::getHotSpotVector(UTextContext::THotSpot hotspot)
+{
+	NLMISC::CVector hotspotVector(0,0,0);
+
+	if(hotspot==UTextContext::MiddleLeft)
+		hotspotVector = CVector(0,0,-StringHeight/2);
+	
+	if(hotspot==UTextContext::TopLeft)
+		hotspotVector = CVector(0,0,StringHeight);
+	
+	if(hotspot==UTextContext::MiddleBottom)
+		hotspotVector = CVector(-StringWidth/2,0,0);
+	
+	if(hotspot==UTextContext::MiddleMiddle)
+		hotspotVector = CVector(-StringWidth/2,0,-StringHeight/2);
+	
+	if(hotspot==UTextContext::MiddleTop)
+		hotspotVector = CVector(-StringWidth/2,0,-StringHeight);
+	
+	if(hotspot==UTextContext::BottomRight)
+		hotspotVector = CVector(-StringWidth,0,0);
+	
+	if(hotspot==UTextContext::MiddleRight)
+		hotspotVector = CVector(-StringWidth,0,-StringHeight/2);
+	
+	if(hotspot==UTextContext::TopRight)
+		hotspotVector = CVector(-StringWidth,0,-StringHeight);
+
+	return hotspotVector;
+}
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.5 2001/03/27 10:29:55 berenguier Exp $
+ * $Id: text_context_user.h,v 1.6 2001/03/27 12:10:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,14 @@ public:
 	void erase(uint32 i)  
 	{
 		_TextContext.erase(i);
+	}
+	virtual	CStringInfo		getStringInfo(uint32 i)
+	{
+		CComputedString		*cstr= _TextContext.getComputedString(i);
+		if(!cstr)
+			return CStringInfo(0,0);
+		else
+			return	CStringInfo(cstr->StringWidth, cstr->StringHeight);
 	}
 	void clear()  
 	{

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.20 2001/02/28 15:06:27 berenguier Exp $
+ * $Id: text_context.h,v 1.21 2001/03/27 12:10:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,6 +365,22 @@ public:
 		
 		return (*itstr).second;
 	}
+
+
+	/**
+	 *	operator[]
+	 * \return the computed string, NULL if not found.
+	 */
+	CComputedString		*getComputedString(uint32 i)
+	{
+		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
+
+		if(itstr==_StringList.end())
+			return NULL;
+		else
+			return &itstr->second;
+	}
+
 
 	/**
 	 * Compute a string as primitive blocks using the

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.40 2003/02/21 15:51:20 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.41 2003/02/26 16:52:50 lecroart Exp $
  *
  */
 
@@ -300,8 +300,13 @@ bool startService (const string &name)
 		return false;
 	}
 
+	if (IService::getInstance()->ConfigFile.getVar(alias).size() == 3)
+	{
+		arg = IService::getInstance()->ConfigFile.getVar(alias).asString(2);
+	}
+
 	// give the service alias to the service to forward it back when it will connected to the aes.
-	arg = " -N";
+	arg += " -N";
 	arg += alias;
 /* use the same path as -A for log and config
 	// set the path for the config file

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.28 2004/10/05 17:17:47 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.28.2.1 2004/10/28 17:37:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -578,6 +578,8 @@ public:
 	virtual bool			setMode(const GfxMode& mode);
 	virtual bool			getModes(std::vector<GfxMode> &modes);
 	virtual bool			getCurrentScreenMode(GfxMode &mode);
+	virtual void			beginDialogMode();
+	virtual void			endDialogMode();
 	virtual bool			activate();
 	virtual bool			isActive ();
 	virtual	bool			initVertexBufferHard(uint agpMem, uint vramMem);

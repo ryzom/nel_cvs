@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.183 2004/10/05 17:05:39 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.183.2.1 2004/10/28 17:37:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -295,6 +295,8 @@ public:
 	virtual bool			setMode(const GfxMode& mode);
 	virtual bool			getModes(std::vector<GfxMode> &modes);
 	virtual bool			getCurrentScreenMode(GfxMode &mode);
+	virtual void			beginDialogMode();
+	virtual void			endDialogMode();
 
 	virtual void*			getDisplay()
 	{

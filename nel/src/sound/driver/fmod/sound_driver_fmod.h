@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.5 2004/10/07 14:42:26 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.5.2.1 2004/10/28 17:37:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,17 +117,29 @@ public:
 	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
 
 	// play the music
-	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime);
+	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime, bool loop);
 	
 	// play the music async
-	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0);
+	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0, bool loop=true);
 	
 	// stop the music
 	virtual void	stopMusic(uint xFadeTime=0);
+	
+	// pause the music
+	virtual void	pauseMusic();
+	
+	// resume the music
+	virtual void	resumeMusic();
+	
+	// is the music playing
+	virtual bool	isMusicEnded();
 
 	// set music volume
 	virtual void	setMusicVolume(float gain);
-	
+
+	// get a song title
+	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
+
 	// Tool method to transform from Nel coords to FMod coords
 	static void	toFModCoord(const NLMISC::CVector &in, float out[3]);
 

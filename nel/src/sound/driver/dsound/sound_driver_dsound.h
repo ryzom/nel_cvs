@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.17 2004/10/07 14:39:14 berenguier Exp $
+ * $Id: sound_driver_dsound.h,v 1.17.2.1 2004/10/28 17:37:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,10 +113,14 @@ public:
 	LPKSPROPERTYSET		createPropertySet(CSourceDSound *source);
 #endif
 
-	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0);
-	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0);
+	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0, bool loop=true);
+	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0, bool loop=true);
 	virtual void	stopMusic(uint xFadeTime);
+	virtual void	pauseMusic();
+	virtual void	resumeMusic();
+	virtual bool	isMusicEnded();
 	virtual void	setMusicVolume(float gain);
+	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
 		
 private:
 

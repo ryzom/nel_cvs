@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.226 2004/10/05 17:05:59 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.226.2.1 2004/10/28 17:37:45 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -4019,6 +4019,15 @@ void CDriverGL::getNumPerStageConstant(uint &lightedMaterial, uint &unlightedMat
 	unlightedMaterial = inlGetNumTextStages();
 }
 
+// ***************************************************************************
+void CDriverGL::beginDialogMode()
+{	
+}
+
+// ***************************************************************************
+void CDriverGL::endDialogMode()
+{	
+}
 
 } // NL3D
 

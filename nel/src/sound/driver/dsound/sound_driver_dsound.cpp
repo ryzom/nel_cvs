@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.33 2004/10/07 14:39:14 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.33.2.1 2004/10/28 17:37:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1060,21 +1060,42 @@ void	CSoundDriverDSound::displayBench(CLog *log)
 
 
 // ***************************************************************************
-bool	CSoundDriverDSound::playMusic(NLMISC::CIFile &file, uint xFadeTime)
+bool	CSoundDriverDSound::playMusic(NLMISC::CIFile &file, uint xFadeTime, bool loop)
 {
 	// unsupported
 	return false;
 }
 
-bool	CSoundDriverDSound::playMusicAsync(const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize)
+bool	CSoundDriverDSound::playMusicAsync(const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize, bool loop)
 {
 	// unsupported
+	return false;
+}
+
+bool	CSoundDriverDSound::getSongTitle(const std::string &filename, std::string &result, uint fileOffset, uint fileSize)
+{
 	return false;
 }
 
 void	CSoundDriverDSound::stopMusic(uint xFadeTime)
 {
 	// unsupported
+}
+
+void	CSoundDriverDSound::pauseMusic()
+{
+	// unsupported
+}
+
+void	CSoundDriverDSound::resumeMusic()
+{
+	// unsupported
+}
+
+bool	CSoundDriverDSound::isMusicEnded()
+{
+	// unsupported
+	return false;
 }
 
 void	CSoundDriverDSound::setMusicVolume(float gain)

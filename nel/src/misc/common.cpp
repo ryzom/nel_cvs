@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.64 2004/09/24 12:38:47 lecroart Exp $
+ * $Id: common.cpp,v 1.64.4.1 2004/10/28 17:37:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -986,6 +986,18 @@ bool openDoc (const char *document)
 		return true;
 #endif // NL_OS_WINDOWS
 	return false;
+}
+
+std::string trim (const std::string &str)
+{
+	uint start = 0;
+	const uint size = str.size();
+	while (start < size && str[start] <= 32)
+		start++;
+	uint end = size;
+	while (end > start && str[end-1] <= 32)
+		end--;
+	return str.substr (start, end-start);
 }
 
 } // NLMISC

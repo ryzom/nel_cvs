@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.39 2004/10/07 14:50:09 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.39.2.1 2004/10/28 17:37:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -350,16 +350,30 @@ public:
 	 *	\param async if false, the music is entirely loaded in memory. Interesting for instance for music played 
 	 *		during loading (to not overload HardDrive). NB: The File is loaded in memory, but decompressed by FMod in a thread
 	 *		Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
+	 *	\param loop must be true to play the music in loop. 
 	 */
-	virtual bool	playMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true) =0;
+	virtual bool	playMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true, bool loop=true) =0;
 	/** Stop the music previously loaded and played (the Memory is also freed)
 	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a fade out of xFadeTime (in ms) is made
 	 */
 	virtual void	stopMusic(uint xFadeTime= 0) =0;
+	/** Pause the music previously loaded and played (the Memory is not freed)
+	 */
+	virtual void	pauseMusic() =0;
+	/** Resume the music previously paused
+	 */
+	virtual void	resumeMusic() =0;
+	/** Return true if a song is finished.
+	 */
+	virtual bool	isMusicEnded() =0;
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()
 	 */
 	virtual void	setMusicVolume(float gain) =0;
+	/** Get the song title. Returns false if the song is not found or the function is not implemented. 
+	 * If the song as no name, result is filled with the filename.
+	 */
+	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0) =0;
 	//@}
 
 

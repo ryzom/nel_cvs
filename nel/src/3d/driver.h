@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.79 2004/10/05 17:18:12 vizerie Exp $
+ * $Id: driver.h,v 1.79.2.1 2004/10/28 17:37:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,10 @@ public:
 
 	/// return the current screen mode (if we are in windowed, return the screen mode behind the window)
 	virtual bool			getCurrentScreenMode(GfxMode &mode)=0;
+
+	/// enter/leave the dialog mode
+	virtual void			beginDialogMode() =0;
+	virtual void			endDialogMode() =0;
 
 	// Return is the associated window information. (Implementation dependant)
 	// Must be a HWND for Windows (WIN32).

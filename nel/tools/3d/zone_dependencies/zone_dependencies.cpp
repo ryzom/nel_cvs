@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.4 2001/10/29 09:35:56 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.5 2002/02/15 17:39:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,22 @@
 
 #include "3d/zone.h"
 #include "3d/quad_grid.h"
+#include "3d/scene_group.h"
+#include "3d/shape.h"
+#include "3d/register_3d.h"
+
+
+
 
 #include "nel/misc/config_file.h"
 #include "nel/misc/file.h"
+#include "nel/misc/aabbox.h"
+#include "nel/misc/path.h"
+
+
 
 #include <stdio.h>
+#include <map>
 
 using namespace std;
 using namespace NLMISC;
@@ -74,8 +85,18 @@ public:
 	CAABBoxExt	BBox;
 };
 
+/// A map to cache the shapes bbox's
+typedef std::map<std::string, NLMISC::CAABBox> TShapeMap;
+
+
+static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap);
+
+
+///=========================================================
 int main (int argc, char* argv[])
 {
+	TShapeMap shapeMap;
+
 	// Check number of args
 	if (argc<5)
 	{
@@ -84,6 +105,7 @@ int main (int argc, char* argv[])
 	}
 	else
 	{
+		NL3D::registerSerial3d();
 		// Light direction
 		CVector lightDirection;
 
@@ -100,6 +122,16 @@ int main (int argc, char* argv[])
 			CConfigFile::CVar &sun_direction = properties.getVar ("sun_direction");
 			lightDirection.set (sun_direction.asFloat(0), sun_direction.asFloat(1), sun_direction.asFloat(2));
 			lightDirection.normalize();
+
+			CConfigFile::CVar &ig_path = properties.getVar ("ig_path");
+			NLMISC::CPath::addSearchPath(ig_path.asString(), true, true);
+
+			CConfigFile::CVar &shapes_path = properties.getVar ("shapes_path");
+			NLMISC::CPath::addSearchPath(shapes_path.asString(), true, true);
+
+			CConfigFile::CVar &compute_dependencies_with_igs = properties.getVar ("compute_dependencies_with_igs");
+			bool computeDependenciesWithIgs = compute_dependencies_with_igs.asInt() != 0;			
+
 
 			// Get the file extension
 			string ext=getExt (argv[2]);
@@ -171,11 +203,27 @@ int main (int argc, char* argv[])
 								// Serial the zone
 								file.serial (zone);
 
+								/// get bbox from the ig of this zone
+								NLMISC::CAABBox igBBox;
+								bool hasIgBBox = computeDependenciesWithIgs ? computeIGBBox(zoneName.c_str(), igBBox, shapeMap)
+																			: false;
+
 								// Create a zone descriptor
 								CZoneDescriptorBB zoneDesc;
 								zoneDesc.X=x;
 								zoneDesc.Y=y;
-								zoneDesc.BBox=zone.getZoneBB();
+
+								if (!hasIgBBox)
+								{
+									zoneDesc.BBox=zone.getZoneBB();
+								}
+								else
+								{
+									NLMISC::CAABBox zoneBox;
+									zoneBox.setCenter(zone.getZoneBB().getCenter());
+									zoneBox.setHalfSize(zone.getZoneBB().getHalfSize());
+									zoneDesc.BBox = CAABBoxExt(CAABBox::computeAABBoxUnion(zoneBox, igBBox));
+								}					
 
 								// Insert in the quad grid
 								quadGrid.insert (zoneDesc.BBox.getMin(), zoneDesc.BBox.getMax(), zoneDesc);
@@ -187,7 +235,7 @@ int main (int argc, char* argv[])
 								dependencies[index].Loaded=true;
 								dependencies[index].X=x;
 								dependencies[index].Y=y;
-								dependencies[index].BBox=zone.getZoneBB();
+								dependencies[index].BBox=zoneDesc.BBox;
 
 								// ZMin
 								float newZ=zoneDesc.BBox.getMin().z;
@@ -382,3 +430,126 @@ int main (int argc, char* argv[])
 
 	return 0;
 }
+
+///===========================================================================
+/** Load and compute the bbox of the models that are located in a given zone
+  * \return true if the computed bbox is valid
+  */
+static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap)
+{
+	std::string igFileName = zoneName + std::string(".ig");
+	std::string pathName = CPath::lookup(igFileName);
+
+	if (pathName.empty())
+	{
+		nlwarning("unable to find instance group of zone : %s", zoneName);
+		return false;
+	}
+
+
+	/// Load the instance group of this zone
+	CIFile igFile;
+	if (!igFile.open(pathName))
+	{
+		nlwarning("unable to open file : %s", pathName.c_str());
+		return false;
+	}
+
+	NL3D::CInstanceGroup ig;
+	try
+	{		
+		ig.serial(igFile);
+	}
+	catch (NLMISC::Exception &e)
+	{
+		nlwarning("Error while reading an instance group file : %s \n reason : %s", pathName.c_str(), e.what());
+		return false;
+	}
+
+	bool firstBBox = true;	
+	NLMISC::CAABBox bbox;
+
+	/// now, compute the union of all bboxs
+	for (CInstanceGroup::TInstanceArray::const_iterator it = ig._InstancesInfos.begin(); it != ig._InstancesInfos.end(); ++it)
+	{		
+		NLMISC::CAABBox currBBox;
+
+		bool validBBox = true; 
+		/// get the bbox from file or from map
+		if (shapeMap.count(it->Name)) // already loaded ?
+		{
+			currBBox = shapeMap[it->Name];
+		}
+		else // must load the shape to get its bbox
+		{		
+			std::string shapePathName;
+			std::string toLoad = it->Name;
+			if (getExt(toLoad).empty()) toLoad += ".shape";
+			try
+			{
+				shapePathName = NLMISC::CPath::lookup(toLoad, false);
+			}
+
+			catch(NLMISC::Exception &)			
+			{
+				nlwarning("Unable to find shape %s", it->Name.c_str());
+				validBBox = false;
+			}
+
+			if (validBBox)
+			{
+				CIFile shapeInputFile;
+				
+				if (shapeInputFile.open (shapePathName.c_str()))
+				{					
+					NL3D::CShapeStream shapeStream;
+					try
+					{
+						shapeStream.serial (shapeInputFile);
+						shapeStream.getShapePointer()->getAABBox(currBBox);
+						shapeMap[it->Name] = currBBox;
+					}
+					
+					catch (NLMISC::Exception &e)
+					{
+						nlwarning("Error while loading shape %s. \n\t Reason : %s ", it->Name.c_str(), e.what());
+					}				
+				}
+				else
+				{
+					nlwarning("Unable to open shape file %s to get its bbox", it->Name.c_str());
+				}
+			}
+		}
+
+		if (validBBox)
+		{
+			/// build the model matrix
+			NLMISC::CMatrix mat;
+			mat.scale(it->Scale);
+			NLMISC::CMatrix rotMat;
+			rotMat.setRot(it->Rot);
+			mat = rotMat * mat;
+			mat.setPos(it->Pos);
+
+			/// transform the bbox
+			currBBox = NLMISC::CAABBox::transformAABBox(mat, currBBox);
+	
+		
+			if (firstBBox)
+			{
+				bbox = currBBox;
+				firstBBox = false;
+			}
+			else // add to previous one
+			{						
+				bbox = NLMISC::CAABBox::computeAABBoxUnion(bbox, currBBox);
+			}			
+		}		
+	}
+
+	return !firstBBox; // found at least one bbox ?
+}
+
+
+

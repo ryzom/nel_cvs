@@ -154,7 +154,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,_AFXDLL,WIN32,_DEBUG,NL_DEBUG_FAST"
+				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

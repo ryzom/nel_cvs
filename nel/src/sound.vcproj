@@ -280,7 +280,7 @@
 			RelativePath=".\sound\mixing_track.h">
 		</File>
 		<File
-			RelativePath="..\obj\Debug\sound_lowlevel\nlsound_lowlevel_d.lib">
+			RelativePath="..\obj7\Debug\sound_lowlevel\nlsound_lowlevel_d.lib">
 			<FileConfiguration
 				Name="ReleaseDebug|Win32"
 				ExcludedFromBuild="TRUE">
@@ -301,7 +301,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\obj\DebugFast\sound_lowlevel\nlsound_lowlevel_df.lib">
+			RelativePath="..\obj7\DebugFast\sound_lowlevel\nlsound_lowlevel_df.lib">
 			<FileConfiguration
 				Name="ReleaseDebug|Win32"
 				ExcludedFromBuild="TRUE">
@@ -322,7 +322,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\obj\Release\sound_lowlevel\nlsound_lowlevel_r.lib">
+			RelativePath="..\obj7\Release\sound_lowlevel\nlsound_lowlevel_r.lib">
 			<FileConfiguration
 				Name="ReleaseDebug|Win32"
 				ExcludedFromBuild="TRUE">
@@ -343,7 +343,7 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\obj\ReleaseDebug\sound_lowlevel\nlsound_lowlevel_rd.lib">
+			RelativePath="..\obj7\ReleaseDebug\sound_lowlevel\nlsound_lowlevel_rd.lib">
 			<FileConfiguration
 				Name="Release|Win32"
 				ExcludedFromBuild="TRUE">

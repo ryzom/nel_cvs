@@ -867,6 +867,12 @@
 				RelativePath=".\3d\particle_system_shape.h">
 			</File>
 			<File
+				RelativePath="3d\raw_skin.cpp">
+			</File>
+			<File
+				RelativePath="3d\raw_skin.h">
+			</File>
+			<File
 				RelativePath=".\3d\seg_remanence_shape.cpp">
 			</File>
 			<File

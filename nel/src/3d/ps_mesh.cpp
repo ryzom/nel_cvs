@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.10 2002/01/16 11:11:14 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.11 2002/01/16 11:19:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1354,9 +1354,12 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 //====================================================================================
 void	CPSConstraintMesh::drawMeshs(bool opaque)
 {
-	
+	if (_Shapes.size() == 0) return;
+	if (!dynamic_cast<CMesh *>(_Shapes[0])) return;	
+
 	// get the vb from the original mesh
 	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>(_Shapes[0]);
+	
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
 	// size for model vertices

@@ -21,7 +21,7 @@ date
 # For each vegetset directory
 for i in $vegetset_source_directories ; do
 	# Copy
-	cp -u -p $database_directory/$i/*.vegetset vegetset 2>> log.log
+	cp -u -p $database_directory/$i/*.[vV][eE][gG][eE][tT][sS][eE][tT] vegetset 2>> log.log
 
 	# Idle
 	../../idle.bat

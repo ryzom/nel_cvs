@@ -69,7 +69,7 @@ date >> log.log
 date
 
 # List the zones to weld
-list_zone=`ls -1 zone_exported/*.zone`
+list_zone=`ls -1 zone_exported/*.[zZ][oO][nN][eE]`
 
 # Build a zones list to weld
 echo -- Build a list of file to weld

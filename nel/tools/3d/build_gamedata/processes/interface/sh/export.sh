@@ -21,7 +21,7 @@ date
 # For each interface directory
 for i in $interface_fullscreen_directories; do
 	# Copy
-	cp -u -p $database_directory/$i/*.tga tga 2>> log.log
+	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga 2>> log.log
 
 	# Idle
 	../../idle.bat

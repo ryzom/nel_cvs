@@ -23,8 +23,8 @@ date
 for i in $interface_source_directories ; do
 	# Copy
 	niouname=`echo $i | sed -e 's&/&_&g'`
-	rm tga_tmp/*.tga
-	cp -u -p $database_directory/$i/*.tga tga_tmp 2>> log.log
+	rm tga_tmp/*.[tT][gG][aA]
+	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga_tmp 2>> log.log
 	../../bin/build_interface tga_tmp tga/texture_$niouname.tga
 
 	# Idle

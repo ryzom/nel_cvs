@@ -21,10 +21,10 @@ date
 # For each font directory
 for i in $font_source_directories ; do
 	# Copy
-	cp -u -p $database_directory/$i/*.ttf fonts 2>> log.log
-	cp -u -p $database_directory/$i/*.afm fonts 2>> log.log
-	cp -u -p $database_directory/$i/*.pfb fonts 2>> log.log
-	cp -u -p $database_directory/$i/*.pfm fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.[tT][tT][fF] fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.[aA][fF][mM] fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.[pP][fF][bB] fonts 2>> log.log
+	cp -u -p $database_directory/$i/*.[pP][fF][mM] fonts 2>> log.log
 
 	# Idle
 	../../idle.bat

@@ -54,7 +54,7 @@ fi
 
 
 # For each directoy
-for i in tga/*.tga ; do
+for i in tga/*.[tT][gG][aA] ; do
 
 	# Destination file
 	dest=`echo $i | sed -e 's/tga/dds/g'`
@@ -77,7 +77,7 @@ for i in tga/*.tga ; do
 	../../idle.bat
 done
 
-for i in panoply/*.tga ; do
+for i in panoply/*.[tT][gG][aA] ; do
 
 	# Destination file
 	dest=`echo $i | sed -e 's%panoply/%dds/%g' | sed -e 's/tga/dds/g'`

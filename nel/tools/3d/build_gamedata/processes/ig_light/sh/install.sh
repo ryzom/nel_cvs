@@ -21,5 +21,5 @@ echo -------
 date >> log.log
 date
 
-cp -u -p ig_other_lighted/*.ig $client_directory/$ig_install_directory  2>> log.log
+cp -u -p ig_other_lighted/*.[iI][gG] $client_directory/$ig_install_directory  2>> log.log
 

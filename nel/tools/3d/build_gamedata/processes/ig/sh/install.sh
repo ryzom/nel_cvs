@@ -27,6 +27,6 @@ date
 cp -u -p "$landscape_name"_ig.txt $client_directory/$ig_install_directory  2>> log.log
 
 # Do not copy ig_land, because zone process will copy zone ig lighted versions into client directory.
-#cp -u -p ig_land/*.ig $client_directory/$ig_install_directory  2>> log.log
+#cp -u -p ig_land/*.[iI][gG] $client_directory/$ig_install_directory  2>> log.log
 # Do not copy ig_other, because ig_light process will copy ig lighted versions into client directory.
-#cp -u -p ig_other/*.ig $client_directory/$ig_install_directory  2>> log.log
+#cp -u -p ig_other/*.[iI][gG] $client_directory/$ig_install_directory  2>> log.log

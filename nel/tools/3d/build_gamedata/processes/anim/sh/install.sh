@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p anim/*.anim $client_directory/$anim_install_directory  2>> log.log
+cp -u -p anim/*.[aA][nN][iI][mM] $client_directory/$anim_install_directory  2>> log.log

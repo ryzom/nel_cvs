@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# *** Export maps files (.tga / *.dds) from the database
+# *** Export maps files (.tga / *.[dD][dD][sS]) from the database
 
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -25,7 +25,7 @@ date
 # For each directoy
 
 for i in $map_source_directories; do
-	for j in $database_directory/$i/*.tga; do
+	for j in $database_directory/$i/*.[tT][gG][aA]; do
 		if ( test -f $j )
 		then
 			# Get the dds version
@@ -45,7 +45,7 @@ done
 
 
 for i in $map_panoply_source_directories; do
-	for j in $database_directory/$i/*.tga; do
+	for j in $database_directory/$i/*.[tT][gG][aA]; do
 		if ( test -f $j )
 		then
 			# Get the dds version

@@ -18,6 +18,6 @@ echo -------
 date >> log.log
 date
 
-cp -u -p tga/*.tga $client_directory/$interface_install_directory  2>> log.log
-cp -u -p tga/*.txt $client_directory/$interface_install_directory  2>> log.log
+cp -u -p tga/*.[tT][gG][aA] $client_directory/$interface_install_directory  2>> log.log
+cp -u -p tga/*.[tT][xX][tT] $client_directory/$interface_install_directory  2>> log.log
 

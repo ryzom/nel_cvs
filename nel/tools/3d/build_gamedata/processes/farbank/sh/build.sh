@@ -19,7 +19,7 @@ date >> log.log
 date
 
 # list all the bank
-bank_list=`ls -1 ../smallbank/smallbank/*.smallbank`
+bank_list=`ls -1 ../smallbank/smallbank/*.[sS][mM][aA][lL][lL][bB][aA][nN][kK]`
 
 # For each bank
 for i in $bank_list ; do

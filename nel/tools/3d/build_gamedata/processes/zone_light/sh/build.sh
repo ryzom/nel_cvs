@@ -34,7 +34,7 @@ echo "level_design_dfn_directory = \"$ld_dfn_dir\";" >> zone_lighter_properties.
 echo "continent_name = \"$continent_file_name\";" >> zone_lighter_properties.cfg
 
 # List the zones to light
-list_zone_welded=`ls -1 ../zone/zone_welded/*.zonew`
+list_zone_welded=`ls -1 ../zone/zone_welded/*.[zZ][oO][nN][eE][wW]`
 
 # Light zones
 for i in $list_zone_welded ; do
@@ -57,7 +57,7 @@ for i in $list_zone_welded ; do
 done
 
 # List the zones lighted
-list_zone_lighted_remove=`ls -1 zone_lighted/*.zonel`
+list_zone_lighted_remove=`ls -1 zone_lighted/*.[zZ][oO][nN][eE][lL]`
 
 # Remove old lighted zones
 for i in $list_zone_lighted_remove ; do
@@ -87,7 +87,7 @@ date >> log.log
 date
 
 # List the zones lighted
-list_zone_lighted=`ls -1 zone_lighted/*.zonel`
+list_zone_lighted=`ls -1 zone_lighted/*.[zZ][oO][nN][eE][lL]`
 
 # Light zones
 for i in $list_zone_lighted ; do

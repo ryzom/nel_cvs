@@ -98,7 +98,7 @@ echo \}\; >> build_ig_boxes.cfg
 echo IGs = \{ >> build_ig_boxes.cfg
 for i in $rbank_ig_pathes ; do
 	cd $i
-	list_ig=`ls -1 *.ig`
+	list_ig=`ls -1 *.[iI][gG]`
 	cd $build_gamedata_directory"/processes/rbank"
 	for j in $list_ig ; do
 		n=`echo $j | sed -e 's/.ig//'`
@@ -127,7 +127,7 @@ fi
 
 # List the zones to add
 cd ../zone/zone_welded
-list_zone=`ls -1 *.zonew`
+list_zone=`ls -1 *.[zZ][oO][nN][eE][wW]`
 cd ../../rbank
 
 # Make a zone list
@@ -154,7 +154,7 @@ echo " " >> build_rbank.cfg
 
 # ******* PASS 1
 
-# For each ../zone/zone_welded/*.zonew files, checks if the associated scratch/tesselation/*.tessel file
+# For each ../zone/zone_welded/*.[zZ][oO][nN][eE][wW] files, checks if the associated scratch/tesselation/*.[tT][eE][sS][sS][eE][lL] file
 # are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
 
 # Log error
@@ -219,7 +219,7 @@ done
 
 # ******* PASS 2
 
-# For each ../zone/zone_welded/*.zonew files, checks if the associated scratch/tesselation/*.tessel file
+# For each ../zone/zone_welded/*.[zZ][oO][nN][eE][wW] files, checks if the associated scratch/tesselation/*.[tT][eE][sS][sS][eE][lL] file
 # are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
 
 # Log error
@@ -340,7 +340,7 @@ echo Meshes = { >> build_indoor_rbank.cfg
 
 # List the cmb to merge
 cd cmb
-list_cmb=`ls -1 *.cmb`
+list_cmb=`ls -1 *.[cC][mM][bB]`
 cd ..
 for i in $list_cmb ; do
 	n=`echo $i | sed -e 's/.cmb//'`

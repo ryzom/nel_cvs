@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p tga/*.tga $client_directory/$displace_install_directory  2>> log.log
+cp -u -p tga/*.[tT][gG][aA] $client_directory/$displace_install_directory  2>> log.log

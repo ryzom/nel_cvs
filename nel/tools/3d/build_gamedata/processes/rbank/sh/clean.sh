@@ -21,12 +21,12 @@ rbank_rbank_name=`cat ../../cfg/config.cfg | grep "rbank_rbank_name" | sed -e 's
 rbank_temp_path=`echo $rbank_scratch_path$rbank_rbank_name`/
 
 # Delete temp files
-rm $rbank_temp_path"tesselation"/*.tessel
-rm $rbank_temp_path"smooth"/*.lr
-rm $rbank_temp_path"smooth"/*.ochain
-rm $rbank_temp_path"smooth"/*.gr
-rm $rbank_temp_path"smooth"/*.rbank
-rm $rbank_temp_path"smooth"/preproc/*.lr
-rm $rbank_temp_path"retrievers"/*.gr
-rm $rbank_temp_path"retrievers"/*.rbank
+rm $rbank_temp_path"tesselation"/*.[tT][eE][sS][sS][eE][lL]
+rm $rbank_temp_path"smooth"/*.[lL][rR]
+rm $rbank_temp_path"smooth"/*.[oO][cC][hH][aA][iI][nN]
+rm $rbank_temp_path"smooth"/*.[gG][rR]
+rm $rbank_temp_path"smooth"/*.[rR][bB][aA][nN][kK]
+rm $rbank_temp_path"smooth"/preproc/*.[lL][rR]
+rm $rbank_temp_path"retrievers"/*.[gG][rR]
+rm $rbank_temp_path"retrievers"/*.[rR][bB][aA][nN][kK]
 

@@ -19,7 +19,7 @@ date >> log.log
 date
 
 # For each texture
-for i in maps_tga/*.tga ; do
+for i in maps_tga/*.[tT][gG][aA] ; do
 	if ( test -e $i )
 	then
 		dest=`echo $i | sed -e 's/maps_tga/maps_final/g' | sed -e 's/.tga/.dds/g'`

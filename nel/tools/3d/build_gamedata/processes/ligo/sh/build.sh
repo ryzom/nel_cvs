@@ -136,7 +136,7 @@ date
 echo Exporting
 $exec_timeout $land_exporter_timeout ../../bin/land_export.exe land_exporter.cfg
 
-# rename *.zonel *.zone
+# rename *.[zZ][oO][nN][eE][lL] *.[zZ][oO][nN][eE]
 # script is just too slow to do renaming... And we can't call directly dos command
 
 cd output
@@ -157,7 +157,7 @@ ligo_flag=`cat ../../cfg/config.cfg | grep "process_to_complete" | grep "ligo"`
 
 dir_current=`pwd`
 cd ../ligo/output
-list_zone=`ls -1 *.zone`
+list_zone=`ls -1 *.[zZ][oO][nN][eE]`
 for filename in $list_zone ; do
 	echo "Checking $filename for update"
 	if test -e ../../zone/zone_exported/$filename ; then
@@ -181,7 +181,7 @@ cd $dir_current
 if ( test "$ligo_flag" )
 then
 	cd ./zone_exported
-	list_zone=`ls -1 *.zone`
+	list_zone=`ls -1 *.[zZ][oO][nN][eE]`
 	for filename in $list_zone ; do
 		if test -e ../../ligo/output/$filename ; then
 			must_update=NO ;

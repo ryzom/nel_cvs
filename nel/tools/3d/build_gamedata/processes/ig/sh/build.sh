@@ -140,7 +140,7 @@ rm ig_land/*
 
 dir_current=`pwd`
 cd ig_land_ld
-list_ig=`ls -1 *.ig 2> /dev/null`
+list_ig=`ls -1 *.[iI][gG] 2> /dev/null`
 cd $dir_current
 for filename in $list_ig ; do
 	# Does this file exist in ig_land_max_elev ?
@@ -159,7 +159,7 @@ done
 # Merge ig in ig_land_max_elev with ig_land_ld in ig_merge_tmp
 
 cd ig_land_max_elev
-list_ig=`ls -1 *.ig 2> /dev/null`
+list_ig=`ls -1 *.[iI][gG] 2> /dev/null`
 cd $dir_current
 for filename in $list_ig ; do
 	# Does this file exist in ig_land_ld ?
@@ -175,7 +175,7 @@ done
 # Merge ig in ig_merge_tmp with ig_land_ligo_elev in ig_land
 
 cd ig_merge_tmp
-list_ig=`ls -1 *.ig 2> /dev/null`
+list_ig=`ls -1 *.[iI][gG] 2> /dev/null`
 cd $dir_current
 for filename in $list_ig ; do
 	# Does this file exist in ig_land_ligo_elev ?
@@ -194,7 +194,7 @@ done
 # Merge ig in ig_land_ligo_elev with ig_merge_tmp in ig_land
 
 cd ig_land_ligo_elev
-list_ig=`ls -1 *.ig 2> /dev/null`
+list_ig=`ls -1 *.[iI][gG] 2> /dev/null`
 cd $dir_current
 for filename in $list_ig ; do
 	# Does this file exist in ig_merge_tmp ?
@@ -225,7 +225,7 @@ then
 	fi
 
 	cd ig_land
-	for i in *.ig ; do
+	for i in *.[iI][gG] ; do
 		# Build an ig list
 		if ( test -f $i )
 		then

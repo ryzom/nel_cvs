@@ -64,7 +64,7 @@ done
 
 dir_current=`pwd`
 cd ../ligo/output
-list_zone=`ls -1 *.zone`
+list_zone=`ls -1 *.[zZ][oO][nN][eE]`
 for filename in $list_zone ; do
 	echo "Checking $filename for update"
 	if test -e ../../zone/zone_exported/$filename ; then
@@ -88,7 +88,7 @@ cd $dir_current
 if ( test "$ligo_flag" )
 then
 	cd ./zone_exported
-	list_zone=`ls -1 *.zone`
+	list_zone=`ls -1 *.[zZ][oO][nN][eE]`
 	for filename in $list_zone ; do
 		if test -e ../../ligo/output/$filename ; then
 			must_update=NO ;

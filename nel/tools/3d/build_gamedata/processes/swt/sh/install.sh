@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p swt/*.swt $client_directory/$swt_install_directory  2>> log.log
+cp -u -p swt/*.[sS][wW][tT] $client_directory/$swt_install_directory  2>> log.log

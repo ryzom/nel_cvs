@@ -18,4 +18,4 @@ echo -------
 date >> log.log
 date
 
-cp -u -p skel/*.skel $client_directory/$skel_install_directory  2>> log.log
+cp -u -p skel/*.[sS][kK][eE][lL] $client_directory/$skel_install_directory  2>> log.log

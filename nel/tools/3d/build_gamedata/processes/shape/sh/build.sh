@@ -35,7 +35,7 @@ date
 
 # For each directoy
 
-for i in lightmap/*.tga ; do
+for i in lightmap/*.[tT][gG][aA] ; do
 
 	if ( test -f $i )
 	then
@@ -101,7 +101,7 @@ echo 'list_mesh =' >> cfg/config_generated.cfg
 echo '{' >> cfg/config_generated.cfg
 
 # For each shape with coarse mesh
-for i in shape_with_coarse_mesh/*.shape; do
+for i in shape_with_coarse_mesh/*.[sS][hH][aA][pP][eE]; do
 	
 	if ( test -f $i )
 	then

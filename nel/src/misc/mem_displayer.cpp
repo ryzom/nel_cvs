@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.5 2003/02/07 17:44:00 cado Exp $
+ * $Id: mem_displayer.cpp,v 1.6 2003/03/25 16:05:35 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -393,25 +393,31 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	_Strings.push_back (ss.str());
 }
 
-void CMemDisplayer::write (CLog *log)
+void CMemDisplayer::write (CLog *log, bool quiet)
 {
 	if (log == NULL)
 		log = InfoLog;
 
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
-	log->forceDisplayRaw ("----------------------------------------- display MemDisplayer history -------\n");
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+	if ( ! quiet )
+	{
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+		log->forceDisplayRaw ("----------------------------------------- display MemDisplayer history -------\n");
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+	}
 	for (deque<string>::iterator it = _Strings.begin(); it != _Strings.end(); it++)
 	{
 		log->forceDisplayRaw ((*it).c_str());
 	}
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
-	log->forceDisplayRaw ("----------------------------------------- display MemDisplayer callstack -----\n");
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
-	displayCallStack(log);
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
-	log->forceDisplayRaw ("----------------------------------------- end of MemDisplayer display --------\n");
-	log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+	if ( ! quiet )
+	{
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+		log->forceDisplayRaw ("----------------------------------------- display MemDisplayer callstack -----\n");
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+		displayCallStack(log);
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+		log->forceDisplayRaw ("----------------------------------------- end of MemDisplayer display --------\n");
+		log->forceDisplayRaw ("------------------------------------------------------------------------------\n");
+	}
 }
 
 void CMemDisplayer::write (string &str)
@@ -433,7 +439,7 @@ void	CLightMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char 
 	ss << message;
 	
 	// clear old line
-	while (_Strings.size () > _MaxStrings)
+	while (_Strings.size () >= _MaxStrings)
 	{
 		_Strings.pop_front ();
 	}

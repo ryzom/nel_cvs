@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * <File description>
  *
- * $Id: mem_displayer.h,v 1.6 2003/02/07 17:42:30 cado Exp $
+ * $Id: mem_displayer.h,v 1.7 2003/03/25 16:05:13 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ public:
 	void			setParam (uint32 maxStrings = 50);
 
 	/// Write N last line into a displayer (InfoLog by default)
-	void			write (CLog *log = NULL);
+	void			write (CLog *log = NULL, bool quiet=true);
 	void			write (std::string &str);
 
 	const std::deque<std::string>	&lockStrings () { _CanUseStrings = false; return _Strings; }

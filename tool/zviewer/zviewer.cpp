@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.15 2002/01/29 09:43:41 besson Exp $
+ * $Id: zviewer.cpp,v 1.16 2002/04/12 16:20:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,6 +323,9 @@ void displayZones()
 
 	Landscape->Landscape.enableAutomaticLighting (ViewerCfg.AutoLight);
 	Landscape->Landscape.setupAutomaticLightDir (ViewerCfg.LightDir);
+
+	// Enable Additive Tiles.
+	Landscape->enableAdditive(true);
 
 	// HeightField.
 	CBitmap		heightBitmap;

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.6 2001/06/25 12:50:37 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.7 2001/07/04 12:14:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,8 @@ void CStartStopParticleSystem::OnStartSystem()
 {
 	_Running = true ;
 	_SystemInitialPos.copySystemInitialPos(_ParticleDlg->getCurrPS() ) ;
-	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.01f) ;
+	// enable the system to take the right date from the scene
+	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(true) ;	
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false) ; 
 
 	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0) ;
@@ -118,6 +119,7 @@ void CStartStopParticleSystem::OnStopSystem()
 	_SystemInitialPos.restoreSystem() ;
 
 	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance() ;
+	_ParticleDlg->getCurrPSModel()->enableAutoGetEllapsedTime(false) ;	
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f) ; // pause
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true) ; 
 

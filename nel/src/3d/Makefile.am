@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.18 2001/02/20 11:08:43 berenguier Exp $
+# $Id: Makefile.am,v 1.19 2001/02/28 16:46:24 berenguier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -8,24 +8,29 @@ SUBDIRS              = driver .
 
 lib_LTLIBRARIES      = libnel3d.la
 
-libnel3d_la_SOURCES  = aabbox.cpp bezier_patch.cpp bitmap.cpp bsphere.cpp \
+libnel3d_la_SOURCES  = bezier_patch.cpp \
                        camera.cpp clip_trav.cpp computed_string.cpp \
                        driver.cpp dru.cpp event_mouse_listener.cpp \
                        font_generator.cpp font_manager.cpp frustum.cpp \
                        hrc_trav.cpp landscape.cpp landscape_model.cpp \
                        light_trav.cpp material.cpp mesh.cpp mini_col.cpp \
                        mot.cpp nelu.cpp patch.cpp patch_rdr_pass.cpp \
-                       polygon.cpp primitive_block.cpp register_3d.cpp \
+                       primitive_block.cpp register_3d.cpp \
                        render_trav.cpp scene.cpp shape.cpp tessellation.cpp \
                        text_context.cpp texture.cpp texture_file.cpp \
                        texture_font.cpp texture_mem.cpp tile_bank.cpp \
                        tile_element.cpp tile_far_bank.cpp transform.cpp \
-                       transform_shape.cpp triangle.cpp uv.cpp \
+                       transform_shape.cpp \
                        vertex_buffer.cpp viewport.cpp zone.cpp \
                        texture_far.cpp shader.cpp mrm_builder.cpp \
                        mrm_mesh.cpp tile_lumel.cpp texture_near.cpp \
                        zone_smoother.cpp zone_tgt_smoother.cpp \
-                       landscape_profile.cpp tess_block.cpp tess_list.cpp
+                       landscape_profile.cpp tess_block.cpp tess_list.cpp \
+					   zone_manager.cpp zone_search.cpp \
+					   camera_user.cpp driver_user.cpp instance_user.cpp landscape_user.cpp material_user.cpp \
+					   scene_user.cpp text_context_user.cpp texture_user.cpp transform_user.cpp
+						
+
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

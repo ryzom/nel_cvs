@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.4 2001/11/07 17:05:10 vizerie Exp $
+ * $Id: polygon.h,v 1.5 2002/01/28 14:21:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ using NLMISC::CPlane;
 using NLMISC::CMatrix;
 
 
+class CTriangle;
 
 
 // ***************************************************************************
@@ -77,20 +78,25 @@ public:
 
 
 /**
-  * A 2d polygon
+  * A 2d convex polygon
   */
 class CPolygon2D
 {
 public:
 	/// default ctor
 	CPolygon2D() {}
-
+	
 	/** Build a 2D polygon from this 3D polygon, by using the given projection matrix
 	  * The x and y components of projected vertices are used to create the 2D polygon
 	  */
-	CPolygon2D(const CPolygon &src, CMatrix &projMat);
+	CPolygon2D(const CPolygon &src, const CMatrix &projMat = CMatrix::Identity);
 
-	/// check wether this polygon is convex
+	/** Build a 2D polygon from the given triangle, by using the given projection matrix
+	  * The x and y components of projected vertices are used to create the 2D polygon
+	  */
+	CPolygon2D(const CTriangle &tri, const CMatrix &projMat = CMatrix::Identity);	
+
+	/// Check wether this polygon is convex;
 	bool		isConvex();
 
 	/** Build a convex hull from this polygon. The result poly is ordered, so it can also be used to order a convex
@@ -113,9 +119,42 @@ public:
 	  *	Rasters are created from the min y to the highest y  
 	  */
 	void		computeBorders(TRasterVect &borders, sint &highestY);
+
+	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
+	bool        intersect(const CPolygon2D &other) const;
+
+	/// Check wether a point is contained by this poly
+	bool		contains(const CVector2f &p) const;
+
 public:
 	typedef std::vector<CVector2f> TVec2fVect;
 	TVec2fVect Vertices;
+
+protected:
+	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c
+	float sumDPAgainstLine(float a, float b, float c) const;
+
+	/// Get ref to the first vertex that start at index
+	const CVector2f &getSegRef0(uint index) const 
+	{ 
+		nlassert(index < Vertices.size()); return Vertices[index]; 
+	}
+	const CVector2f &getSegRef1(uint index) const 
+	{ 
+		nlassert(index < Vertices.size()); 		
+		return index == Vertices.size() - 1 ?
+			   Vertices[0]                 :
+		       Vertices[index + 1];
+	}
+
+
+	/** Get the index of a segment of this poly that is a non null segment.
+	  * \return true if such a segment was found
+	  */
+	bool  getNonNullSeg(uint &seg) const;
+
+	/// Get a line equation of the given seg
+	void  getLineEquation(uint index, float &a, float &b, float &c) const;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.17 2002/10/10 12:55:02 berenguier Exp $
+ * $Id: async_file_manager.cpp,v 1.18 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,9 @@
 
 using namespace std;
 using namespace NLMISC;
+
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_IG							NL_ALLOC_CONTEXT( 3dIg )
 
 namespace NL3D
 {
@@ -237,6 +240,8 @@ CAsyncFileManager::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** p
 
 void CAsyncFileManager::CMeshLoad::run()
 {
+	NL3D_MEM_INSTANCE
+
 	// This set represent the texture already loaded in memory
 	// We have to have this set because the driver load the textures only on the 
 	// setupTexture, done in CShapeBank::isPresent. This must be done in the main
@@ -408,6 +413,7 @@ CAsyncFileManager::CIGLoadUser::CIGLoadUser (const std::string &IGName, UInstanc
 // ***************************************************************************
 void CAsyncFileManager::CIGLoadUser::run (void)
 {
+	NL3D_MEM_IG
 	try
 	{
 		CInstanceGroupUser *pIG = new CInstanceGroupUser();

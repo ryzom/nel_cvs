@@ -1,7 +1,7 @@
 /** \file retriever_bank.cpp
  *
  *
- * $Id: retriever_bank.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: retriever_bank.cpp,v 1.6 2002/10/29 17:17:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ using namespace NLMISC;
 
 NLPACS::URetrieverBank *NLPACS::URetrieverBank::createRetrieverBank (const char *retrieverBank)
 {
+	NL_ALLOC_CONTEXT( Pacs )
+
 	CIFile	file;
 	if (file.open( CPath::lookup(retrieverBank) ))
 	{

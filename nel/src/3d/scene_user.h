@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.34 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: scene_user.h,v 1.35 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,14 @@
 #include "3d/play_list_manager_user.h"
 
 #define NL3D_MEM_SCENE						NL_ALLOC_CONTEXT( 3dScene )
+#define NL3D_MEM_SCENE_INIT					NL_ALLOC_CONTEXT( 3dScIni )
+#define NL3D_MEM_SCENE_INIT0				NL_ALLOC_CONTEXT( 3dScIn0 )
+#define NL3D_MEM_SCENE_INIT1				NL_ALLOC_CONTEXT( 3dScIn1 )
+#define NL3D_MEM_SCENE_INIT2				NL_ALLOC_CONTEXT( 3dScIn2 )
+#define NL3D_MEM_SCENE_INIT3				NL_ALLOC_CONTEXT( 3dScIn3 )
+#define NL3D_MEM_SCENE_INIT4				NL_ALLOC_CONTEXT( 3dScIn4 )
+#define NL3D_MEM_SCENE_INIT5				NL_ALLOC_CONTEXT( 3dScIn5 )
+#define NL3D_MEM_SCENE_INIT6				NL_ALLOC_CONTEXT( 3dScIn6 )
 
 namespace NL3D {
 
@@ -100,44 +108,8 @@ public:
 
 	/// \name Object
 	// @{
-	CSceneUser(CDriverUser *drv)
-	{
-		NL3D_MEM_SCENE
-		nlassert(drv);
-		_DriverUser= drv;
-		_CurrentCamera = NULL;
-		// Init Scene.
-		_Scene.initDefaultTravs();
-		// Don't add any user trav.
-		// init default Roots.
-		_Scene.initDefaultRoots();
-		// Set driver.
-		_Scene.setDriver(_DriverUser->getDriver());
-		// Set viewport
-		_Scene.setViewport (CViewport());
-		// Init the world instance group
-		_Scene.initGlobalnstanceGroup();
-		// Init coarse mesh manager
-		_Scene.initCoarseMeshManager ();
-		// init QuadGridClipManager
-		_Scene.initQuadGridClipManager ();
-
-		// Create default camera, and active!!
-		setCam(createCamera());
-	}
-	virtual	~CSceneUser()
-	{
-		NL3D_MEM_SCENE
-		_VisualCollisionManagers.clear();
-		_Transforms.clear();
-		_Landscapes.clear();
-		_CloudScapes.clear();
-		_Scene.release();
-		_Scene.setDriver(NULL);
-		_Scene.setCam(NULL);
-		_CurrentCamera= NULL;
-		_DriverUser= NULL;
-	}
+	CSceneUser(CDriverUser *drv);
+	virtual	~CSceneUser();
 	// @}
 
 public:

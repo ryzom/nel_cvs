@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.86 2002/10/25 16:00:14 berenguier Exp $
+ * $Id: scene.cpp,v 1.87 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,8 @@ using namespace NLMISC;
 #define NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE	"nel_coarse_texture.tga"
 #define NL3D_SCENE_DYNAMIC_COARSE_MANAGER_TEXTURE	NL3D_SCENE_STATIC_COARSE_MANAGER_TEXTURE
 
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
+#define NL3D_MEM_MOT						NL_ALLOC_CONTEXT( 3dMot )
 
 #define NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE	400
 #define NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST	3
@@ -239,6 +241,8 @@ CScene::~CScene()
 // ***************************************************************************
 void	CScene::initDefaultTravs()
 {
+	NL3D_MEM_MOT
+
 	// Add the 4 default traversals.
 	HrcTrav= new CHrcTrav;
 	ClipTrav= new CClipTrav;
@@ -511,6 +515,8 @@ void CScene::setShapeBank(CShapeBank*pShapeBank)
 
 CTransformShape	*CScene::createInstance(const string &shapeName)
 {
+	NL3D_MEM_INSTANCE
+
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
 	// the creation/deletion of the instances)
 	nlassert( _ShapeBank != NULL );

@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.1 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.2 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1209,7 +1209,7 @@ uint CHeapAllocator::getAllocatedMemory () const
 
 			// Node allocated ? Don't sum small blocks..
 			if (isNodeUsed (current) && (strcmp (current->Category, NL_HEAP_SB_CATEGORY) != 0))
-				memory += getNodeSize (current) ;
+				memory += getNodeSize (current) + ReleaseHeaderSize;
 
 			// Next node
 			current = getNextNode (current);
@@ -1419,7 +1419,7 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 					{
 						ite = blockMap.insert (TBlockMap::value_type (current->Category, CCategoryMap ())).first;
 					}
-					uint size = getNodeSize (current);
+					uint size = getNodeSize (current) + ReleaseHeaderSize;
 					ite->second.BlockCount++;
 					ite->second.Size += size;
 					if (size < ite->second.Min)
@@ -1477,8 +1477,8 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 		fprintf (file, "HEAP STATISTICS\n");
 		fprintf (file, "HEAP, TOTAL MEMORY USED, ALLOCATED MEMORY, FREE MEMORY, FRAGMENTATION RATIO, MAIN BLOCK SIZE, MAIN BLOCK COUNT\n");
 
-		fprintf (file, "%s, %d, %d, %d, %f, %d, %d\n", _Name, getTotalMemoryUsed (),
-			getAllocatedMemory (), getFreeMemory (), getFragmentationRatio (), getMainBlockSize (), getMainBlockCount ());
+		fprintf (file, "%s, %d, %d, %d, %f%%, %d, %d\n", _Name, getTotalMemoryUsed (),
+			getAllocatedMemory (), getFreeMemory (), 100.f*getFragmentationRatio (), getMainBlockSize (), getMainBlockCount ());
 
 		fprintf (file, "\n\nHEAP BLOCKS\n");
 		fprintf (file, "SMALL BLOCK MEMORY, SMALL BLOCK COUNT, LARGE BLOCK COUNT\n");

@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.15 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: skeleton_user.h,v 1.16 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/bone_user.h"
 
-#define NL3D_MEM_SKELETON						NL_ALLOC_CONTEXT( 3dSkl )
+#define NL3D_MEM_SKELETON						NL_ALLOC_CONTEXT( 3dSkel )
 
 namespace NL3D {
 

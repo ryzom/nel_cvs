@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.32 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: transform_shape.cpp,v 1.33 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/render_trav.h"
 #include "3d/load_balancing_trav.h"
 
+#define NL3D_MEM_INSTANCE					NL_ALLOC_CONTEXT( 3dInst )
 
 using namespace NLMISC;
 
@@ -171,6 +172,7 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 // ***************************************************************************
 void	CTransformShapeRenderObs::traverse(IObs *caller)
 {
+	NL3D_MEM_INSTANCE
 	H_AUTO( NL3D_TrShape_Render );
 
 	CTransformShape		*m= (CTransformShape*)Model;

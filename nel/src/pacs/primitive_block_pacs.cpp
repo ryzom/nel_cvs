@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.3 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.4 2002/10/29 17:17:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,8 @@ void CPrimitiveBlock::serial (NLMISC::IStream &s)
 // ***************************************************************************
 UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlock(NLMISC::IStream &src)
 {
+	NL_ALLOC_CONTEXT( Pacs )
+
 	nlassert(src.isReading());
 	std::auto_ptr<CPrimitiveBlock> pb(new CPrimitiveBlock);
 	pb->serial(src);
@@ -110,6 +112,8 @@ UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlock(NLMISC::IStream &src)
 // ***************************************************************************
 UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlockFromFile(const std::string &fileName)
 {
+	NL_ALLOC_CONTEXT( Pacs )
+
 	NLMISC::CIFile input(fileName);
 	NLMISC::CIXml xmlInput;
 	// Init

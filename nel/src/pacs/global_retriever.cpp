@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.65 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: global_retriever.cpp,v 1.66 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -599,6 +599,8 @@ const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosit
 
 bool			NLPACS::CGlobalRetriever::buildInstance(const string &id, const NLMISC::CVectorD &position, sint32 &instanceId)
 {
+	NL_ALLOC_CONTEXT( Pacs )
+
 	sint32	retrieverId = getIdentifier(id);
 
 	instanceId = -1;
@@ -2048,6 +2050,8 @@ void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSur
 
 NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const char *globalRetriever, const NLPACS::URetrieverBank *retrieverBank)
 {
+	NL_ALLOC_CONTEXT( Pacs )
+
 	// Cast
 //	nlassert (dynamic_cast<const NLPACS::CRetrieverBank*>(retrieverBank));
 	const NLPACS::CRetrieverBank*	bank=static_cast<const NLPACS::CRetrieverBank*>(retrieverBank);

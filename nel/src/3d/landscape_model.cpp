@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.27 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.28 2002/10/29 17:17:28 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 using namespace std;
 using namespace NLMISC;
 
+#define NL3D_MEM_LANDSCAPE					NL_ALLOC_CONTEXT( 3dLand )
 
 namespace NL3D 
 {
@@ -117,6 +118,8 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 // ***************************************************************************
 void	CLandscapeRenderObs::traverse(IObs *caller)
 {
+	NL3D_MEM_LANDSCAPE
+
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
 
 	CRenderTrav		*trav= (CRenderTrav*)Trav;

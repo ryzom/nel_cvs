@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.34 2002/08/22 16:10:30 cado Exp $
+ * $Id: buf_server.cpp,v 1.35 2002/08/23 07:57:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,7 +312,7 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 	nlassert( buffer.length() > 0);
 	nlassert( buffer.length() <= maxSentBlockSize() );
 
-	H_AUTO (CBufServer_send);
+	// slow down the layer H_AUTO (CBufServer_send);
 
 	if ( hostid != InvalidSockId )
 	{
@@ -373,7 +373,7 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
  */
 bool CBufServer::dataAvailable()
 {
-	//H_AUTO (CBufServer_dataAvailable);
+	// slow down the layer H_AUTO (CBufServer_dataAvailable);
 	{
 		/* If no data available, enter the 'while' loop and return false (1 volatile test)
 		 * If there are user data available, enter the 'while' and return true immediately (1 volatile test + 1 short locking)
@@ -474,7 +474,7 @@ bool CBufServer::dataAvailable()
 /* // OLD VERSION
 bool CBufServer::dataAvailable()
 {
-	H_AUTO (CBufServer_dataAvailable);
+	// slow down the layer H_AUTO (CBufServer_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		do

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.20 2002/08/22 16:08:00 cado Exp $
+ * $Id: buf_client.cpp,v 1.21 2002/08/23 07:57:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,7 +114,7 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
 	nlassert( buffer.length() > 0 );
 	nlassert( buffer.length() <= maxSentBlockSize() );
 
-	H_AUTO (CBufServer_send);
+	// slow down the layer H_AUTO (CBufServer_send);
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{
@@ -129,7 +129,7 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
  */
 bool CBufClient::dataAvailable()
 {
-	//H_AUTO (CBufClient_dataAvailable);
+	// slow down the layer H_AUTO (CBufClient_dataAvailable);
 	{
 		/* If no data available, enter the 'while' loop and return false (1 volatile test)
 		 * If there are user data available, enter the 'while' and return true immediately (1 volatile test + 1 short locking)
@@ -197,7 +197,7 @@ bool CBufClient::dataAvailable()
 /* // OLD VERSION
 bool CBufClient::dataAvailable()
 {
-//	H_AUTO (CBufClient_dataAvailable);
+	// slow down the layer H_AUTO (CBufClient_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		do

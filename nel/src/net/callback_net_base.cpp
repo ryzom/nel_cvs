@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.40 2002/08/22 15:06:55 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.41 2002/08/23 07:57:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,7 +224,7 @@ void CCallbackNetBase::processOneMessage ()
 {
 	checkThreadId ();
 
-	H_AUTO (CCallbackNetBase_processOneMessage);
+	// slow down the layer H_AUTO (CCallbackNetBase_processOneMessage);
 
 	CMessage msgin (_OutputSIDA, "", true);
 	TSockId tsid;
@@ -329,7 +329,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
 	checkThreadId ();
 
-//	H_AUTO (CCallbackNetBase_baseUpdate);
+	// slow down the layer H_AUTO (CCallbackNetBase_baseUpdate);
 
 	nlassert( timeout >= -1 );
 	TTime t0 = CTime::getLocalTime();
@@ -426,7 +426,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		else
 		{
 			// enable multithreading on windows :-/
-			H_AUTO (CCallbackNetBase_baseUpdate_nlSleep);
+			// slow down the layer H_AUTO (CCallbackNetBase_baseUpdate_nlSleep);
 			nlSleep (10);
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.22 2002/06/20 08:36:59 hanappe Exp $
+ * $Id: source_user.cpp,v 1.23 2002/06/28 19:33:41 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,8 @@
 using namespace NLMISC;
 
 
-namespace NLSOUND {
+namespace NLSOUND 
+{
 
 
 /*
@@ -163,7 +164,7 @@ void					CSourceUser::play()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
-		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+////		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 ////		nlinfo( "AM: Playing source %p", this);
 	}
 	_Playing = true;
@@ -383,6 +384,12 @@ void					CSourceUser::enterTrack( CTrack *track )
 {
 	_Track = track;
 
+	// FIXME: SWAPTEST
+	if ( _Track != NULL && _Track->DrvSource->isPlaying() )
+	{
+		nlassert(0);
+	}
+
 	if ( _Track != NULL )
 	{
 		nlassert( _Sound != NULL );
@@ -393,11 +400,11 @@ void					CSourceUser::enterTrack( CTrack *track )
 			// Play physically
 			_Track->DrvSource->play();
 		}
-		nldebug( "AM: Source %s selected for playing", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+		//nldebug( "AM: Source %s selected for playing", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 	else
 	{
-		nldebug( "AM: Source %s unselected", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+		//nldebug( "AM: Source %s unselected", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 	}
 }
 
@@ -537,7 +544,7 @@ bool					CSourceUser::isStopped()
 		{
 			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
 			{
-				nlwarning ("openal bug (think that the sample [%p] is finished but not : %u %u", getTrack()->DrvSource, (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
+				//nlwarning ("openal bug (think that the sample [%p] is finished but not : %u %u", getTrack()->DrvSource, (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.16.12.1 2004/09/03 16:06:30 legros Exp $
+ * $Id: login_service.h,v 1.16.12.2 2004/09/09 09:32:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,14 +68,62 @@ struct CShard
 };
 
 
+
+
+
 // Variables
 
-extern CFileDisplayer	Fd;
-extern CLog				*Output;
+extern CFileDisplayer		Fd;
+extern CLog*				Output;
 
-extern MYSQL *DatabaseConnection;
+extern MYSQL*				DatabaseConnection;
 
-extern std::vector<CShard> Shards;
+extern std::vector<CShard>	Shards;
+
+
+
+
+
+/**
+ * Encapsulation of MySQL result
+ */
+class CMySQLResult
+{
+public:
+
+	/// Constructor
+	CMySQLResult(MYSQL_RES* res = NULL);
+	/// Constructor
+	CMySQLResult(MYSQL* database);
+	/// Destructor
+	~CMySQLResult();
+
+	/// Cast operator
+	operator MYSQL_RES*();
+
+	/// Affectation
+	CMySQLResult&	operator = (MYSQL_RES* res);
+
+
+	/// Test success
+	bool			success() const;
+	/// Test failure
+	bool			failed() const;
+
+
+
+	/// Number of rows of result
+	uint			numRows();
+	/// Fetch row
+	MYSQL_ROW		fetchRow();
+
+
+private:
+
+	MYSQL_RES*	_Result;
+
+};
+
 
 // Functions
 

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.20.8.1 2004/09/03 16:05:28 legros Exp $
+ * $Id: connection_ws.cpp,v 1.20.8.2 2004/09/09 09:32:53 legros Exp $
  *
  */
 
@@ -120,14 +120,15 @@ static void cbWSConnection (const std::string &serviceName, uint16 sid, void *ar
 		return;
 	}
 
-	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == 0)
+	//MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	CMySQLResult	res(DatabaseConnection);
+	if (res.failed())
 	{
 		refuseShard (sid, "mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
 	}
 
-	if (mysql_num_rows(res) == 0)
+	if (res.numRows() == 0)
 	{
 		// if we are here, it s that the shard have not a valid wsaddr in the database
 		// we can't accept unknown shard
@@ -165,7 +166,7 @@ static void cbWSDisconnection (const std::string &serviceName, uint16 sid, void 
 
 			// put users connected on this shard offline
 
-			query = "update user set State=Offline, ShardId=-1 where ShardId="+toString(Shards[i].ShardId);
+			query = "update user set State='Offline', ShardId=-1 where ShardId="+toString(Shards[i].ShardId);
 			ret = mysql_query (DatabaseConnection, query.c_str ());
 			if (ret != 0)
 			{
@@ -288,14 +289,15 @@ static void cbWSIdentification (CMessage &msgin, const std::string &serviceName,
 		return;
 	}
 
-	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == 0)
+	//MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	CMySQLResult	res(DatabaseConnection);
+	if (res.failed())
 	{
 		refuseShard (sid, "mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
 	}
 
-	sint nbrow = (sint)mysql_num_rows(res);
+	sint nbrow = (sint)res.numRows();
 	if (nbrow == 0)
 	{
 		if(IService::getInstance ()->ConfigFile.getVar("AcceptExternalShards").asInt () == 1)
@@ -322,7 +324,7 @@ static void cbWSIdentification (CMessage &msgin, const std::string &serviceName,
 	}
 	else if (nbrow == 1)
 	{
-		MYSQL_ROW row = mysql_fetch_row(res);
+		MYSQL_ROW row = res.fetchRow();
 		if (row == 0)
 		{
 			refuseShard (sid, "mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
@@ -400,14 +402,15 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 		nlwarning ("mysql_query (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
 	}
-	MYSQL_RES *res = mysql_store_result(DatabaseConnection);
-	if (res == 0)
+	//MYSQL_RES *res = mysql_store_result(DatabaseConnection);
+	CMySQLResult	res(DatabaseConnection);
+	if (res.failed())
 	{
 		nlwarning ("mysql_store_result () failed from query '%s': %s", query.c_str (),  mysql_error(DatabaseConnection));
 		return;
 	}
-	sint nbrow = (sint)mysql_num_rows(res);
-	MYSQL_ROW row = mysql_fetch_row(res);
+	sint nbrow = (sint)res.numRows();
+	MYSQL_ROW row = res.fetchRow();
 	if (row == 0)
 	{
 		nlwarning ("mysql_fetch_row (%s) failed: %s", query.c_str (),  mysql_error(DatabaseConnection));

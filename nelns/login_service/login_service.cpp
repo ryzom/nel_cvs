@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.31 2003/06/11 09:04:59 lecroart Exp $
+ * $Id: login_service.cpp,v 1.31.8.1 2004/09/09 09:32:53 legros Exp $
  *
  */
 
@@ -358,6 +358,75 @@ public:
 
 // Service instanciation
 NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+
+
+
+
+
+
+
+
+
+// Constructor
+CMySQLResult::CMySQLResult(MYSQL_RES* res)
+{
+	_Result = res;
+}
+
+/// Constructor
+CMySQLResult::CMySQLResult(MYSQL* database)
+{ 
+	_Result = mysql_store_result(database);
+}
+/// Destructor
+CMySQLResult::~CMySQLResult()
+{
+	if (_Result != NULL)
+		mysql_free_result(_Result);
+}
+
+/// Cast operator
+CMySQLResult::operator MYSQL_RES*()
+{
+	return _Result;
+}
+
+/// Affectation
+CMySQLResult&	CMySQLResult::operator = (MYSQL_RES* res)
+{
+	if (res == _Result)
+		return *this;
+	if (_Result != NULL)
+		mysql_free_result(_Result);
+	_Result = res;
+}
+
+
+/// Test success
+bool			CMySQLResult::success() const
+{
+	return _Result != NULL;
+}
+/// Test failure
+bool			CMySQLResult::failed() const
+{
+	return !success();
+}
+
+
+
+/// Number of rows of result
+uint			CMySQLResult::numRows()
+{
+	return (uint)mysql_num_rows(_Result);
+}
+/// Fetch row
+MYSQL_ROW		CMySQLResult::fetchRow()
+{
+	return mysql_fetch_row(_Result);
+}
+
+
 
 
 //

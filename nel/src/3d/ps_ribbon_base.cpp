@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.4 2002/04/25 08:28:38 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.5 2002/07/03 17:27:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,7 @@ void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uin
 	if (nextNextIt == endIt) nextNextIt = startIt;	
 	float *date = &_SamplingDate[0];			
 
-	NLMISC::CVector t0 = (*currIt - *nextIt);
+	NLMISC::CVector t0 = (*nextIt - *currIt);
 	NLMISC::CVector t1 = 0.5f * (*nextNextIt - *currIt);
 
 	uint leftToDo = _UsedNbSegs + 1;
@@ -381,7 +381,7 @@ void CPSRibbonBase::computeHermitteCstSizeRibbon(uint index, NLMISC::CVector *de
 	TPosVect::iterator nextNextIt = nextIt + 1;	
 	if (nextNextIt == endIt) nextNextIt = startIt;
 
-	NLMISC::CVector t0 = (*currIt - *nextIt);
+	NLMISC::CVector t0 = (*nextIt - *currIt);
 	NLMISC::CVector t1 = 0.5f * (*nextNextIt - *currIt);
 
 	uint leftToDo = _UsedNbSegs + 1;

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.2 2002/07/03 09:25:16 vizerie Exp $
+ * $Id: seg_remanence.cpp,v 1.3 2002/07/03 17:26:56 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -164,7 +164,7 @@ void CSegRemanence::CRibbon::fillVB(uint8 *dest, uint stride, uint nbSegs, float
 {		
 	TSampledPosVect::iterator currIt      = _Ribbon.begin();			
 
-	NLMISC::CVector t0 = currIt->Pos - (currIt + 1)->Pos;
+	NLMISC::CVector t0 = (currIt + 1)->Pos - currIt->Pos;
 	NLMISC::CVector t1 = 0.5f * ((currIt + 2)->Pos - currIt->Pos);
 
 	uint leftToDo = nbSegs + 1;
@@ -284,7 +284,7 @@ void CSegRemanence::samplePos(float date)
 		}
 		if (_Restarted)
 		{
-			for(uint k = 0; k < _Ribbons.size(); ++k)
+			for(uint k = 0; k < numCorners; ++k)
 			{
 				_Ribbons[k].duplicateFirstPos();
 			}

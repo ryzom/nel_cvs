@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.4 2000/12/18 14:17:15 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.5 2000/12/19 14:34:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,12 @@ static const double MsgFontSize = 10.0;
 
 sint32 SelectedLine = -1;
 
+#include "nel/net/service.h"
+
+const char NLNET::IService::_Name[] = "toto";
+const uint16 NLNET::IService::_DefaultPort = 123456;
+sint16 CallbackArraySize = 0;
+NLNET::TCallbackItem CallbackArray [] = {};
 
 /*
 
@@ -548,6 +554,8 @@ class CKCallback : public IEventListener
 			// send fake
 			CMessage msgout;
 			char str2[1024];
+			nldebug("'%"NL_I64"d'", CUniTime::getUniTime());
+		     
 			sprintf(str2, "@@%"NL_I64"d@321.321.321.321/1000@%d@server@123.123.123.123/2001@TEST@10@\n", CUniTime::getUniTime (), nums++);
 			string str = str2;
 			msgout.serial (str);
@@ -844,14 +852,19 @@ TCallbackItem ClientCallbacks [] =
 \****************************************************************/
 void main()
 {
-	try
+  	try
 	{
 		// init scene
-		uint w = Width;
-		uint h = Height;
+		uint w = 800;
+		uint h = 600;
 		uint bpp = 32;
 		bool windowed = true;
 		NL3D::CNELU::init(w, h, CViewport(), bpp, windowed); 
+		/*
+		// Events management
+		CNELU::EventServer.addEmitter(scene->getDriver()->getEventEmitter());
+		CNELU::AsyncListener.addToServer(CNELU::EventServer);
+		*/
 
 		// Positioning camera
 		CMatrix	camera;
@@ -924,7 +937,12 @@ void main()
 		while(!CNELU::AsyncListener.isKeyPushed(KeyESCAPE));
 
 		CNELU::AsyncListener.removeFromServer(CNELU::EventServer);
-		
+		/*
+		do {
+		  CNELU::EventServer.pump();
+		}
+		while(!CNELU::AsyncListener.isKeyPushed(KeyESCAPE));
+		*/
 		// release nelu
 		NL3D::CNELU::release();
 		
@@ -933,5 +951,4 @@ void main()
 	{
 		nlerror ("main(): Exception trapped: %s", e.what ());
 	}
-	
 }

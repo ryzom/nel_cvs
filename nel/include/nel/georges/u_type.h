@@ -1,7 +1,7 @@
-/** \file u_form_loader.h
+/** \file u_type.h
  * Georges form loader interface
  *
- * $Id: u_form_loader.h,v 1.2 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: u_type.h,v 1.1 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,52 +23,47 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_U_FORM_LOADER_H
-#define NL_U_FORM_LOADER_H
+#ifndef NL_U_TYPE_H
+#define NL_U_TYPE_H
 
 #include "nel/misc/types_nl.h"
-
+#include "nel/misc/smart_ptr.h"
 
 namespace NLGEORGES 
 {
 
-class UForm;
-class UFormDfn;
-
 /**
- * Georges form loader interface
+ * Georges type interface
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2002
  */
-class UFormLoader
+class UType : public NLMISC::CRefCount
 {
 public:
 
-	/** Load a form, use NMISC::CPath to find the file.
-	  * 
-	  * The pointer on the form must be held in a CSmartPtr<UForm> or NULL if the form can't be loaded.
+	// ** Type
+	enum TType
+	{
+		UnsignedInt=0,
+		SignedInt,
+		Double,
+		String,
+		Color,
+		TypeCount
+	};
+
+	/**
+	  * Get the type
 	  */
-	virtual UForm *loadForm (const char *filename) = 0;
-
-	/** Load a DFN, use NMISC::CPath to find the file.
-	  * 
-	  * The pointer on the form must be held in a CSmartPtr<UFormDfn> or NULL if the form can't be loaded.
-	  */
-	virtual UFormDfn *loadFormDfn (const char *filename) = 0;
-
-	/// Create a form loader
-	static UFormLoader *createLoader ();
-
-	/// Create a form loader
-	static void releaseLoader (UFormLoader *loader);
+	virtual TType getType () const = 0;
 };
 
 
 } // NLGEORGES
 
 
-#endif // NL_U_FORM_LOADER_H
+#endif // NL_U_TYPE_H
 
-/* End of u_form_loader.h */
+/* End of u_type.h */

@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.1 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: type.h,v 1.2 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define _NLGEORGES__TYPE_H
 
 #include	"nel/misc/types_nl.h"
-#include	"nel/misc/smart_ptr.h"
+#include	"nel/georges/u_type.h"
 #include	"header.h"
 
 namespace NLGEORGES
@@ -38,7 +38,7 @@ class UFormElm;
 /**
   * This class is a basic type used by atomic form element.
   */
-class CType : public NLMISC::CRefCount
+class CType : public UType
 {
 	friend class CFormLoader;
 public:
@@ -46,17 +46,6 @@ public:
 	CType ();
 	~CType ();
 	
-	// ** Type
-	enum TType
-	{
-		UnsignedInt=0,
-		SignedInt,
-		Double,
-		String,
-		Color,
-		TypeCount
-	};
-
 	// ** UI
 	enum TUI
 	{
@@ -82,7 +71,7 @@ public:
 	CFileHeader			Header;
 	
 	// Type of the type
-	TType				Type;
+	UType::TType		Type;
 
 	// Type fo user interface
 	TUI					UIType;
@@ -115,8 +104,11 @@ public:
 	std::vector<CDefinition>	Definitions;
 
 	// Get the type names
-	static const char *getTypeName (TType type);
+	static const char *getTypeName (UType::TType type);
 	static const char *getUIName (TUI type);
+
+	// From UType
+	virtual TType getType () const;
 
 private:
 	// Type names

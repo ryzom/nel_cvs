@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.4 2002/05/22 16:02:58 corvazier Exp $
+ * $Id: form_elm.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,12 +125,12 @@ public:
 	// Search for a node by name
 	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
-										const CFormElm **node, CFormDfn::CEntry::TType &type, 
+										const CFormElm **node, UFormDfn::TEntryType &type, 
 										bool &array) const;
 
 	static bool	getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
-										const CFormElm **node, CFormDfn::CEntry::TType &type, 
+										const CFormElm **node, UFormDfn::TEntryType &type, 
 										bool &array);
 
 	// Get next token, return NULL if last token
@@ -214,9 +214,6 @@ public:
 
 	// Call by CFormLoader
 	void				read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, CForm *form);
-
-	// Get the sub DFN an the index in it of an struct element
-	CFormDfn			*getSubDfn (uint index, uint &dfnIndex) const;
 
 	// Sub Elements
 	std::vector<CFormElmStructElm>		Elements;

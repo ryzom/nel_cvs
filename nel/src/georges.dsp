@@ -193,11 +193,19 @@ SOURCE=..\include\nel\georges\u_form.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\georges\u_form_dfn.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\georges\u_form_elm.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\georges\u_form_loader.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\georges\u_type.h
 # End Source File
 # End Target
 # End Project

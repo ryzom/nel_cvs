@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.5 2002/05/22 12:09:44 cado Exp $
+ * $Id: form.cpp,v 1.6 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,6 +188,13 @@ CForm *CForm::getParent () const
 const std::string &CForm::getParentFilename () const
 {
 	return ParentFilename;
+}
+
+// ***************************************************************************
+
+const std::string &CForm::getComment () const
+{
+	return Header.Comments;
 }
 
 // ***************************************************************************

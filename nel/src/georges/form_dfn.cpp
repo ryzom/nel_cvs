@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.4 2002/05/22 16:02:58 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.5 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,15 +73,15 @@ void CFormDfn::write (xmlDocPtr doc) const
 		// What kind of element
 		switch (Entries[elm].TypeElement)
 		{
-		case CEntry::EntryType:
+		case UFormDfn::EntryType:
 			xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)"Type");
 			xmlSetProp (elmPtr, (const xmlChar*)"Filename", (const xmlChar*)Entries[elm].Filename.c_str());
 			break;
-		case CEntry::EntryDfn:
+		case UFormDfn::EntryDfn:
 			xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)"Dfn");
 			xmlSetProp (elmPtr, (const xmlChar*)"Filename", (const xmlChar*)Entries[elm].Filename.c_str());
 			break;
-		case CEntry::EntryDfnPointer:
+		case UFormDfn::EntryVirtualDfn:
 			xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)"DfnPointer");
 			break;
 		}
@@ -91,7 +91,7 @@ void CFormDfn::write (xmlDocPtr doc) const
 			xmlSetProp (elmPtr, (const xmlChar*)"Array", (const xmlChar*)"true");
 
 		// Default value for type
-		if ((Entries[elm].TypeElement == CEntry::EntryType) && (!Entries[elm].Default.empty ()))
+		if ((Entries[elm].TypeElement == UFormDfn::EntryType) && (!Entries[elm].Default.empty ()))
 			xmlSetProp (elmPtr, (const xmlChar*)"Default", (const xmlChar*)Entries[elm].Default.c_str ());
 	}
 
@@ -132,7 +132,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 			xmlFree ((void*)parentFilename);
 
 			// Load the parent
-			Parents[parentNumber].Parent = loader.loadFormDfn (Parents[parentNumber].ParentFilename.c_str ());
+			Parents[parentNumber].Parent = loader.loadFormDfn (Parents[parentNumber].ParentFilename.c_str (), forceLoad);
 		}
 		else
 		{
@@ -199,7 +199,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 				bool dfn = false;
 				if (stricmp (typeName, "Type") == 0)
 				{
-					Entries[childNumber].TypeElement = CEntry::EntryType;
+					Entries[childNumber].TypeElement = UFormDfn::EntryType;
 					type = true;
 
 					// Load the filename
@@ -238,14 +238,14 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 				}
 				else if (stricmp (typeName, "Dfn") == 0)
 				{
-					Entries[childNumber].TypeElement = CEntry::EntryDfn;
+					Entries[childNumber].TypeElement = UFormDfn::EntryDfn;
 					dfn = true;
 
 					// Load the filename
 					if (!Entries[childNumber].Filename.empty ())
 					{
 						// Load the filename
-						Entries[childNumber].Dfn = loader.loadFormDfn (Entries[childNumber].Filename.c_str ());
+						Entries[childNumber].Dfn = loader.loadFormDfn (Entries[childNumber].Filename.c_str (), forceLoad);
 						if ((Entries[childNumber].Dfn == NULL) && !forceLoad)
 						{
 							// Make an error message
@@ -268,7 +268,7 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 				}
 				else if (stricmp (typeName, "DfnPointer") == 0)
 				{
-					Entries[childNumber].TypeElement = CEntry::EntryDfnPointer;
+					Entries[childNumber].TypeElement = UFormDfn::EntryVirtualDfn;
 				}
 				else
 				{
@@ -422,7 +422,7 @@ void CFormDfn::setParent (uint parent, CFormLoader &loader, const char *filename
 	if (strcmp (filename, "")==0)
 		Parents[parent].Parent = NULL;
 	else
-		Parents[parent].Parent = loader.loadFormDfn (filename);
+		Parents[parent].Parent = loader.loadFormDfn (filename, false);
 	Parents[parent].ParentFilename = filename;
 }
 
@@ -443,14 +443,14 @@ void CFormDfn::CEntry::setDfn (CFormLoader &loader, const char *filename)
 	TypeElement = EntryDfn;
 	Filename = filename;
 	Type = NULL;
-	Dfn = loader.loadFormDfn (filename);
+	Dfn = loader.loadFormDfn (filename, false);
 }
 
 // ***************************************************************************
 
 void CFormDfn::CEntry::setDfnPointer ()
 {
-	TypeElement = EntryDfnPointer;
+	TypeElement = EntryVirtualDfn;
 	Filename = "";
 	Type = NULL;
 	Dfn = NULL;
@@ -500,7 +500,7 @@ bool CFormDfn::CEntry::getArrayFlag () const
 
 // ***************************************************************************
 
-CFormDfn::CEntry::TType CFormDfn::CEntry::getType () const
+UFormDfn::TEntryType CFormDfn::CEntry::getType () const
 {
 	return TypeElement;
 }
@@ -556,12 +556,12 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 	const CFormDfn *nodeDfn = this;
 	const CType *nodeType = NULL;
 	const CFormElm *node = NULL;
-	CFormDfn::CEntry::TType type = CEntry::EntryDfn;
+	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
 
 	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
 	{
-		if (type == CEntry::EntryDfn)
+		if (type == UFormDfn::EntryDfn)
 		{
 			nlassert (nodeType);
 			*result = NULL;
@@ -571,7 +571,7 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 		}
 		else 
 		{
-			nlassert (type == CEntry::EntryDfn);
+			nlassert (type == UFormDfn::EntryDfn);
 			nlassert (nodeDfn);
 			*result = nodeDfn;
 			if (where)
@@ -605,12 +605,12 @@ bool CFormDfn::getValueByName (std::string &result, const char *name, bool evalu
 	const CFormDfn *nodeDfn = this;
 	const CType *nodeType = NULL;
 	const CFormElm *node = NULL;
-	CFormDfn::CEntry::TType type = CEntry::EntryDfn;
+	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
 
 	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
 	{
-		if (type == CEntry::EntryType)
+		if (type == UFormDfn::EntryType)
 		{
 			nlassert (nodeType);
 			if (nodeType->getValue (result, NULL, NULL, *parentDfn, lastElement, evaluate, (uint32*)where) )
@@ -907,7 +907,7 @@ bool CFormDfn::getStructNode (uint element, const UFormElm **result) const
 	{
 		if (element < array[dfn]->Entries.size ())
 		{
-			if (array[dfn]->Entries[element].TypeElement == CEntry::EntryType)
+			if (array[dfn]->Entries[element].TypeElement == UFormDfn::EntryType)
 				*result = NULL;
 			else 
 				*result = array[dfn]->Entries[element].Dfn;
@@ -932,7 +932,7 @@ bool CFormDfn::getStructNode (uint element, UFormElm **result)
 	{
 		if (element < array[dfn]->Entries.size ())
 		{
-			if (array[dfn]->Entries[element].TypeElement == CEntry::EntryType)
+			if (array[dfn]->Entries[element].TypeElement == UFormDfn::EntryType)
 				*result = NULL;
 			else 
 				*result = array[dfn]->Entries[element].Dfn;
@@ -1031,6 +1031,182 @@ bool CFormDfn::getValue (bool &result, bool evaluate) const
 {
 	nlwarning ("Georges (CFormDfn::getValue) : the node is not an atom."); 
 	return false;
+}
+
+// ***************************************************************************
+
+CFormDfn *CFormDfn::getSubDfn (uint index, uint &dfnIndex)
+{
+	// Get the sub DFN
+	vector<CFormDfn*> parentDfn;
+	parentDfn.reserve (countParentDfn ());
+	getParentDfn (parentDfn);
+
+	// For each parent
+	uint dfn;
+	dfnIndex = index;
+	uint parentSize = parentDfn.size();
+	for (dfn=0; dfn<parentSize; dfn++)
+	{
+		// Good element ?
+		uint size = parentDfn[dfn]->Entries.size ();
+		if (dfnIndex<size)
+			return parentDfn[dfn];
+		dfnIndex -= size;
+	}
+
+	// Should be found..
+	nlstop
+	return NULL;
+}
+
+// ***************************************************************************
+
+const CFormDfn *CFormDfn::getSubDfn (uint index, uint &dfnIndex) const
+{
+	// Get the sub DFN
+	vector<const CFormDfn*> parentDfn;
+	parentDfn.reserve (countParentDfn ());
+	getParentDfn (parentDfn);
+
+	// For each parent
+	uint dfn;
+	dfnIndex = index;
+	uint parentSize = parentDfn.size();
+	for (dfn=0; dfn<parentSize; dfn++)
+	{
+		// Good element ?
+		uint size = parentDfn[dfn]->Entries.size ();
+		if (dfnIndex<size)
+			return parentDfn[dfn];
+		dfnIndex -= size;
+	}
+
+	// Should be found..
+	nlstop
+	return NULL;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryType (uint entry, TEntryType &type, bool &array) const
+{
+	if (entry < Entries.size ())
+	{
+		type = Entries[entry].TypeElement;
+		array = Entries[entry].Array;
+		return true;
+	}
+	nlwarning ("Georges (CFormDfn::getEntryType) : wrong entry ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryFilename (uint entry, std::string& filename) const
+{
+	if (entry < Entries.size ())
+	{
+		filename = Entries[entry].Filename;
+		return true;
+	}
+	nlwarning ("Georges (CFormDfn::getEntryFilename) : wrong entry ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryName (uint entry, std::string &name) const
+{
+	if (entry < Entries.size ())
+	{
+		if (Entries[entry].TypeElement != EntryVirtualDfn)
+		{
+			name = Entries[entry].Name;
+			return true;
+		}
+		nlwarning ("Georges (CFormDfn::getEntryName) : the entry is a virtual DFN."); 
+		return false;
+	}
+	nlwarning ("Georges (CFormDfn::getEntryName) : wrong entry ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryDfn (uint entry, UFormDfn **dfn)
+{
+	if (entry < Entries.size ())
+	{
+		if (Entries[entry].TypeElement == EntryDfn)
+		{
+			*dfn = Entries[entry].Dfn;
+			return true;
+		}
+		else
+			nlwarning ("Georges (CFormDfn::getEntryDfn) : this entry is not a DFN."); 
+	}
+	nlwarning ("Georges (CFormDfn::getEntryDfn) : wrong entry ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getEntryType (uint entry, UType **type)
+{
+	if (entry < Entries.size ())
+	{
+		if (Entries[entry].TypeElement == EntryType)
+		{
+			*type = Entries[entry].Type;
+			return true;
+		}
+		else
+			nlwarning ("Georges (CFormDfn::getEntryType) : this entry is not a type."); 
+	}
+	nlwarning ("Georges (CFormDfn::getEntryType) : wrong entry ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+uint CFormDfn::getNumParents () const
+{
+	return Parents.size ();
+}
+
+// ***************************************************************************
+
+bool CFormDfn::getParent (uint parent, UFormDfn **parentRet)
+{
+	if (parent < Parents.size ())
+	{
+		*parentRet = Parents[parent].Parent;
+		return true;
+	}
+	nlwarning ("Georges (CFormDfn::getParent) : wrong parent ID."); 
+	return false;
+}
+
+
+// ***************************************************************************
+
+bool CFormDfn::getParentFilename (uint parent, std::string &filename) const
+{
+	if (parent < Parents.size ())
+	{
+		filename = Parents[parent].ParentFilename;
+		return true;
+	}
+	nlwarning ("Georges (CFormDfn::getParentFilename) : wrong parent ID."); 
+	return false;
+}
+
+// ***************************************************************************
+
+const std::string& CFormDfn::getComment (std::string &comment) const
+{
+	return Header.Comments;
 }
 
 // ***************************************************************************

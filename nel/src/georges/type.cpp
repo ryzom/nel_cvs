@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.1 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: type.cpp,v 1.2 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #include "stdgeorges.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/georges/u_type.h"
+
 #include "georges/form_elm.h"
 
 #include "type.h"
@@ -359,5 +361,13 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 }
 
 // ***************************************************************************
+
+UType::TType CType::getType () const
+{
+	return Type;
+}
+
+// ***************************************************************************
+
 
 } // NLGEORGES

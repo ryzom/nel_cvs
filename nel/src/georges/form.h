@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.4 2002/05/22 12:09:44 cado Exp $
+ * $Id: form.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ public:
 	// From UForm
 	UFormElm&		getRootNode ();
 	const UFormElm& getRootNode () const;
+	const std::string &getComment () const;
+
 
 #pragma warning (disable : 4355)
 	CForm () : Elements (this, NULL, NULL, 0xffffffff) {};

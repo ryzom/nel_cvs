@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.4 2002/05/22 16:02:58 corvazier Exp $
+ * $Id: form_dfn.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/georges/u_form_dfn.h"
 #include "nel/georges/u_form_elm.h"
 #include "header.h"
 #include "georges/type.h"
@@ -42,7 +43,7 @@ class CFormLoader;
 /**
   * This class is the defnition for a familly of from.
   */
-class CFormDfn : public NLMISC::CRefCount, public UFormElm
+class CFormDfn : public UFormDfn
 {
 	friend class CForm;
 	friend class CType;
@@ -68,14 +69,6 @@ public:
 			TypeElement = EntryType;
 		}
 
-		// Type of dfn element
-		enum TType
-		{
-			EntryType,
-			EntryDfn,
-			EntryDfnPointer,
-		};
-
 		// Get the type
 		class CType					*getTypePtr ();
 
@@ -89,7 +82,7 @@ public:
 		const CFormDfn				*getDfnPtr () const;
 
 		// Get type flag
-		TType						getType () const;
+		TEntryType					getType () const;
 
 		// Set as a type
 		void						setType (CFormLoader &loader, const char *filename);
@@ -129,7 +122,7 @@ public:
 		std::string					Name;
 
 		// What is the type of the element ?
-		TType						TypeElement;
+		TEntryType					TypeElement;
 
 		// Is an array of this type ?
 		bool						Array;
@@ -241,6 +234,21 @@ public:
 	bool							getValue (float &result, bool evaluate) const;
 	bool							getValue (double &result, bool evaluate) const;
 	bool							getValue (bool &result, bool evaluate) const;
+
+	// Form UFormDfn
+	bool							getEntryType (uint entry, TEntryType &type, bool &array) const;
+	bool							getEntryName (uint entry, std::string &name) const;
+	bool							getEntryDfn (uint entry, UFormDfn **dfn);
+	bool							getEntryType (uint entry, UType **type);
+	uint							getNumParents () const;
+	bool							getParent (uint parent, UFormDfn **parentRet);
+	const std::string				&getComment (std::string &comment) const;
+	bool							getEntryFilename (uint entry, std::string& filename) const;
+	bool							getParentFilename (uint parent, std::string &filename) const;
+
+	// Get the sub dfn of a dfn
+	CFormDfn						*getSubDfn (uint index, uint &dfnIndex);
+	const CFormDfn					*getSubDfn (uint index, uint &dfnIndex) const;
 
 	// Header
 	CFileHeader						Header;

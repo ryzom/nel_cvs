@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: u_form.h,v 1.3 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,11 @@ public:
 
 	/// Get a const pointer on the root element of the form. It is a struct node.
 	virtual const UFormElm& getRootNode () const = 0;
+
+	/**
+	  * Get the comment
+	  */
+	virtual const std::string &getComment () const = 0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.5 2002/05/22 12:22:08 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.6 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -239,7 +239,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 			name += ".dfn";
 
 			// Load the dfn
-			CFormDfn	*dfn = loadFormDfn (name.c_str ());
+			CFormDfn	*dfn = loadFormDfn (name.c_str (), false);
 			if (dfn)
 			{
 				// Open the file
@@ -291,6 +291,13 @@ UForm *CFormLoader::loadForm (const char *filename)
 
 		return form;
 	}
+}
+
+// ***************************************************************************
+
+UFormDfn *CFormLoader::loadFormDfn (const char *filename)
+{
+	return loadFormDfn (filename, false);
 }
 
 // ***************************************************************************

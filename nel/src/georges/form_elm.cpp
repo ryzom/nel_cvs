@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.7 2002/05/22 16:02:58 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.8 2002/05/23 16:50:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -340,7 +340,7 @@ bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereI
 	const CFormElm *node;
 	uint lastElement;
 	bool array;
-	CFormDfn::CEntry::TType type;
+	UFormDfn::TEntryType type;
 
 	// Search for the node
 	if (getNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
@@ -372,13 +372,13 @@ bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, 
 	const CFormElm *node;
 	uint parentIndex;
 	bool array;
-	CFormDfn::CEntry::TType type;
+	UFormDfn::TEntryType type;
 
 	// Search for the node
 	if (getNodeByName (name, &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array))
 	{
 		// End, return the current index
-		if (type == CFormDfn::CEntry::EntryType)
+		if (type == UFormDfn::EntryType)
 		{
 			// The atom
 			const CFormElmAtom *atom = node ? safe_cast<const CFormElmAtom*> (node) : NULL;
@@ -540,7 +540,7 @@ UFormElm *CFormElm::getParent () const
 
 bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
 									const CFormDfn **nodeDfn, const CType **nodeType, 
-									const CFormElm **node, CFormDfn::CEntry::TType &type, 
+									const CFormElm **node, UFormDfn::TEntryType &type, 
 									bool &array) const
 {
 	*parentDfn = ParentDfn;
@@ -553,7 +553,7 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 
 // ***************************************************************************
 
-bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, const CFormDfn **nodeDfn, const CType **nodeType, const CFormElm **node, CFormDfn::CEntry::TType &type, bool &array)
+bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, const CFormDfn **nodeDfn, const CType **nodeType, const CFormElm **node, UFormDfn::TEntryType &type, bool &array)
 {
 	// *** Init output variables
 	
@@ -578,21 +578,21 @@ bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDf
 		lastElement = 0xffffffff;
 		*nodeType = (*node)->isAtom () ? safe_cast<const CFormElmAtom*>(*node)->Type : NULL;
 		*nodeDfn = (*node)->isStruct () ? (const CFormDfn *)(safe_cast<const CFormElmStruct*>(*node)->FormDfn) : NULL;
-		type = (*node)->isAtom () ? CFormDfn::CEntry::EntryType : (*node)->isVirtualStruct () ? CFormDfn::CEntry::EntryDfnPointer : CFormDfn::CEntry::EntryDfn;
+		type = (*node)->isAtom () ? UFormDfn::EntryType : (*node)->isVirtualStruct () ? UFormDfn::EntryVirtualDfn : UFormDfn::EntryDfn;
 		array = false;
 	}
 	else if (*nodeDfn)
 	{
 		lastElement = 0xffffffff;
 		*nodeType = NULL;
-		type = CFormDfn::CEntry::EntryDfn;
+		type = UFormDfn::EntryDfn;
 		array = false;
 	}
 	else if (*nodeType)
 	{
 		lastElement = 0xffffffff;
 		*nodeDfn = NULL;
-		type = CFormDfn::CEntry::EntryType;
+		type = UFormDfn::EntryType;
 		array = false;
 	}
 
@@ -632,7 +632,7 @@ bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDf
 			case TokenString:
 				{
 					// Are we a struct ?
-					if ( (type == CFormDfn::CEntry::EntryDfn) || (type == CFormDfn::CEntry::EntryDfnPointer))
+					if ( (type == UFormDfn::EntryDfn) || (type == UFormDfn::EntryVirtualDfn))
 					{
 						nlassert (*nodeDfn);
 
@@ -675,7 +675,7 @@ bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDf
 										CFormElm *nextElt = nodeStruct->Elements[formElm].Element;
 										
 										// If no next node, watch for parent node
-										if ((nextElt == NULL) && (!array) && nodeStruct->Parent)
+										if ((nextElt == NULL) && nodeStruct->Parent)
 											nextElt = nodeStruct->Parent->Elements[formElm].Element;
 										*node = nextElt;
 
@@ -721,7 +721,7 @@ bool CFormElm::getIternalNodeByName (const char *name, const CFormDfn **parentDf
 			case TokenPoint:
 				{
 					// Are we a struct ?
-					if ((type != CFormDfn::CEntry::EntryDfn) && (type != CFormDfn::CEntry::EntryDfnPointer))
+					if ((type != UFormDfn::EntryDfn) && (type != UFormDfn::EntryVirtualDfn))
 					{
 						// Error message
 						nlwarning ("Georges (CFormElm::getNodeByName) : %s is not a struct element. Can't open the node %s", currentName.c_str(), name);
@@ -1092,10 +1092,10 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, 
 					{
 						// Same type ?
 						if ( 
-							(atom && (dfnArray[dfnId]->Entries[elm].getType ()==CFormDfn::CEntry::EntryType) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) ) || 
-							(array && dfnArray[dfnId]->Entries[elm].getArrayFlag () && ( (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryType) || (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfn) ) ) || 
-							(_struct && (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfn) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) ) ||
-							(vStruct && (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfnPointer) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) )
+							(atom && (dfnArray[dfnId]->Entries[elm].getType ()==UFormDfn::EntryType) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) ) || 
+							(array && dfnArray[dfnId]->Entries[elm].getArrayFlag () && ( (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryType) || (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryDfn) ) ) || 
+							(_struct && (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryDfn) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) ) ||
+							(vStruct && (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryVirtualDfn) && (!dfnArray[dfnId]->Entries[elm].getArrayFlag ()) )
 							)
 						{
 							// Ok keep it
@@ -1143,13 +1143,13 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, 
 				{
 					// Array of type
 					CFormElmArray *newElm = NULL;
-					if (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryType)
+					if (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryType)
 					{
 						// Load the new element
 						newElm = new CFormElmArray (form, NULL, dfnArray[dfnId]->Entries[elm].getTypePtr (), this, dfnArray[dfnId], elm);
 					}
 					// Array of struct
-					else if (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfn)
+					else if (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryDfn)
 					{
 						newElm = new CFormElmArray (form, dfnArray[dfnId]->Entries[elm].getDfnPtr (), NULL, this, dfnArray[dfnId], elm);
 					}
@@ -1159,24 +1159,24 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, 
 					Elements[elmIndex].Element = newElm;
 					newElm->read (child, loader, form);
 				}
-				else if (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryType)
+				else if (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryType)
 				{
 					// Load the new element
 					CFormElmAtom *newElm = new CFormElmAtom (form, this, dfnArray[dfnId], elm);
 					Elements[elmIndex].Element = newElm;
 					newElm->read (child, loader, dfnArray[dfnId]->Entries[elm].getTypePtr (), form);
 				}
-				else if (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfn)
+				else if (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryDfn)
 				{
 					// Load the new element
 					CFormElmStruct *newElm = new CFormElmStruct (form, this, dfnArray[dfnId], elm);
 					Elements[elmIndex].Element = newElm;
 					newElm->read (child, loader, dfnArray[dfnId]->Entries[elm].getDfnPtr (), form);
 				}
-				else // if dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfnPointer)
+				else // if dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryVirtualDfn)
 				{
 					// Should be a struct
-					nlassert (dfnArray[dfnId]->Entries[elm].getType () == CFormDfn::CEntry::EntryDfnPointer);
+					nlassert (dfnArray[dfnId]->Entries[elm].getType () == UFormDfn::EntryVirtualDfn);
 
 					// Load the new element
 					CFormElmVirtualStruct *newElm = new CFormElmVirtualStruct (form, this, dfnArray[dfnId], elm);
@@ -1295,33 +1295,6 @@ bool CFormElmStruct::setParent (CFormElm *parent)
 }
 
 // ***************************************************************************
-
-CFormDfn *CFormElmStruct::getSubDfn (uint index, uint &dfnIndex) const
-{
-	// Get the sub DFN
-	vector<CFormDfn*> parentDfn;
-	parentDfn.reserve (FormDfn->countParentDfn ());
-	FormDfn->getParentDfn (parentDfn);
-
-	// For each parent
-	uint dfn;
-	dfnIndex = index;
-	uint parentSize = parentDfn.size();
-	for (dfn=0; dfn<parentSize; dfn++)
-	{
-		// Good element ?
-		uint size = parentDfn[dfn]->Entries.size ();
-		if (dfnIndex<size)
-			return parentDfn[dfn];
-		dfnIndex -= size;
-	}
-
-	// Should be found..
-	nlstop
-	return NULL;
-}
-
-// ***************************************************************************
 // class CFormElmVirtualStruct
 // ***************************************************************************
 
@@ -1379,7 +1352,7 @@ void CFormElmVirtualStruct::read (xmlNodePtr node, CFormLoader &loader, CForm *f
 		xmlFree ((void*)filename);
 
 		// Load the dfn
-		FormDfn = loader.loadFormDfn (DfnFilename.c_str ());
+		FormDfn = loader.loadFormDfn (DfnFilename.c_str (), false);
 	}
 	else
 	{

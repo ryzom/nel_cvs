@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.43 2002/01/24 20:32:18 legros Exp $
+ * $Id: local_retriever.cpp,v 1.44 2002/02/01 14:52:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1520,3 +1520,43 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 }
 
 
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	NLPACS::CLocalRetriever::buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAABBox>	&surfaceBBoxes) const
+{
+	// resize dest, and init.
+	vector<bool>	firstTriangle;
+	surfaceBBoxes.clear();
+	surfaceBBoxes.resize(_Surfaces.size());
+	firstTriangle.resize(_Surfaces.size(), true);
+
+	// For all _InteriorFaces.
+	for(uint iIntFace=0; iIntFace<_InteriorFaces.size(); iIntFace++)
+	{
+		const CInteriorFace	&intFace= _InteriorFaces[iIntFace];
+
+		// Extend the surface of this face with her 3 points.
+
+		// check good id.
+		nlassert(intFace.Surface<_Surfaces.size());
+
+		// If first time we extend the bbox of this surface
+		if(firstTriangle[intFace.Surface])
+		{
+			surfaceBBoxes[intFace.Surface].setCenter(_InteriorVertices[intFace.Verts[0]] );
+			firstTriangle[intFace.Surface]= false;
+		}
+		else
+			surfaceBBoxes[intFace.Surface].extend(_InteriorVertices[intFace.Verts[0]] );
+
+		// extend with other 2 points
+		surfaceBBoxes[intFace.Surface].extend(_InteriorVertices[intFace.Verts[1]] );
+		surfaceBBoxes[intFace.Surface].extend(_InteriorVertices[intFace.Verts[2]] );
+	}
+
+}

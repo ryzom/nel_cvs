@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.18 2002/01/11 10:01:14 legros Exp $
+ * $Id: local_retriever.h,v 1.19 2002/02/01 14:52:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -309,6 +309,9 @@ public:
 
 	/// Returns the identifier of the retriever.
 	const std::string					&getIdentifier() const { return _Id; }
+
+	/// build BBoxes of interior surfaces in surfaceBBoxes (cleared first)
+	void								buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAABBox>	&surfaceBBoxes) const;
 
 	// @}
 

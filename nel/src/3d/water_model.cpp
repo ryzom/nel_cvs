@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.18 2001/12/21 10:30:54 vizerie Exp $
+ * $Id: water_model.cpp,v 1.19 2002/02/15 17:14:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -482,8 +482,6 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		return;	
 	}
 
-
-
 	
 	NLMISC::CMatrix modelMat;
 	modelMat.setPos(NLMISC::CVector(0, 0, zHeight));
@@ -839,9 +837,10 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 		}
 		else
 		{
-			// setup bump proj matrix
-			static const float idMat[] = {0.25f, 0, 0, 0.25f};	
-			static const float idMat2[] = {1.f, 0, 0, 1.f};	
+			shape->updateHeightMapNormalizationFactors();
+			// setup bump proj matrix			
+			const float idMat[] = {0.25f * shape->_HeightMapNormalizationFactor[0], 0, 0, 0.25f * shape->_HeightMapNormalizationFactor[0]};	
+			const float idMat2[] = {shape->_HeightMapNormalizationFactor[1], 0, 0, shape->_HeightMapNormalizationFactor[1]};	
 
 			drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
 			drv->setMatrix2DForTextureOffsetAddrMode(2, idMat2);

@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.8 2002/01/28 14:42:14 vizerie Exp $
+ * $Id: water_shape.h,v 1.9 2002/02/15 17:14:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -196,11 +196,15 @@ public:
 	void				enableLightMapping(bool enable = true) { _ComputeLightmap = enable; }
 	bool				isLightMappingEnabled() const  { return _ComputeLightmap; }	
 
-private:	
+private:
 	friend class	CWaterModel;	
 	friend class	CWaterRenderObs;
 	void								computeBBox();
 	void								envMapUpdate();
+	void								updateHeightMapNormalizationFactors();
+	static void							initVertexProgram();
+	static void							setupVertexBuffer();	
+private:
 	NLMISC::CAABBox						_BBox;	// computed from the poly
 	NLMISC::CPolygon2D					_Poly;
 	uint32								_WaterPoolID;	
@@ -218,11 +222,9 @@ private:
 	float								_TransitionRatio;	
 	float								_WaveHeightFactor;
 	bool								_ComputeLightmap;
-
-
-
-	static void		initVertexProgram();
-	static void		setupVertexBuffer();	
+	bool								_HeightMapTouch[2];
+	float								_HeightMapNormalizationFactor[2];
+		
 	static uint32							_XScreenGridSize; // size with y rotation = 0
 	static uint32							_YScreenGridSize;
 	static uint32							_MaxGridSize; // size with max rotation around y (without borders)

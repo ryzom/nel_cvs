@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.13 2002/02/04 10:41:30 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.14 2002/02/15 17:14:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ const char *WaterVpCode = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX2].xy, R0, c[8];													\n\
+					  MAD o[TEX2].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
@@ -107,7 +107,7 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX2].xy, R0, c[8];													\n\
+					  MAD o[TEX2].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
@@ -140,7 +140,7 @@ const char *WaterVpCode2Stages = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX0].xy, R0, c[8];													\n\
+					  MUL o[TEX0].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
@@ -172,7 +172,7 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 					  MUL R0, R0, R2.x;															\n\
 					  ADD R2, R0, R0;															\n\
 					  ADD R0, R2, -R1;				#compute reflection vector					\n\
-					  MUL o[TEX0].xy, R0, c[8];													\n\
+					  MUL o[TEX0].xy, R0, c[8], c[8];											\n\
 					  DP4 o[FOGC].x, c[2], -R4;	#setup fog									    \n\
 					  END\
 					  ";
@@ -196,12 +196,7 @@ std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2Stages;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
 
 
-
-
-
-
-
-
+//============================================
 /*
  * Constructor
  */
@@ -215,6 +210,7 @@ CWaterShape::CWaterShape() :  _WaterPoolID(0), _TransitionRatio(0.6f), _WaveHeig
 	{
 		_HeightMapScale[k].set(1, 1);
 		_HeightMapSpeed[k].set(0, 0);
+		_HeightMapTouch[k] = true;
 	}
 	_ColorMapMatColumn0.set(1, 0);
 	_ColorMapMatColumn1.set(0, 1);
@@ -388,7 +384,9 @@ void				CWaterShape::setHeightMap(uint k, ITexture *hm)
 	{
 		_BumpMap[k] = new CTextureBump;
 	}
-	((CTextureBump *) (ITexture *) _BumpMap[k])->setHeightMap(hm);
+	static_cast<CTextureBump *>( (ITexture *) _BumpMap[k])->forceNormalize(true);
+	static_cast<CTextureBump *>( (ITexture *) _BumpMap[k])->setHeightMap(hm);
+	_HeightMapTouch[k] = true; // must recompute normalization factor
 }
 
 //============================================
@@ -577,6 +575,33 @@ void CWaterShape::getShapeInWorldSpace(NLMISC::CPolygon &poly) const
 }
 
 
+//============================================
+void  CWaterShape::updateHeightMapNormalizationFactors()
+{
+	for (uint k = 0; k < 2; ++k)
+	{
+		if (_HeightMapTouch[k])
+		{
+			if (_BumpMap[k] != NULL)
+			{
+				_BumpMap[k]->generate();
+				_HeightMapNormalizationFactor[k] = NLMISC::safe_cast<CTextureBump *>((ITexture *)_BumpMap[k])->getNormalizationFactor();
+				if (_BumpMap[k]->getReleasable())
+				{
+					_BumpMap[k]->release();
+				}
+			}
+			else
+			{
+				_HeightMapNormalizationFactor[k] = 1.f;
+			}
+			_HeightMapTouch[k] = false;
+		}
+	}
+}
+
+
+
 //======================================================//
 //						WaveMakerShape					//
 //======================================================//
@@ -631,13 +656,11 @@ bool	CWaveMakerShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &wo
 }
 
 //============================================
-	
 void	CWaveMakerShape::getAABBox(NLMISC::CAABBox &bbox) const
 {	
 	// its just a point
 	bbox.setCenter(NLMISC::CVector::Null);
 	bbox.setHalfSize(NLMISC::CVector::Null);
 }
-
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.29 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.30 2002/05/24 16:13:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1882,6 +1882,7 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 // --------------------------------------------------
 
 // TODO: remove interpolation when IK is available
+#define NEL3D_IKBLEND_ALLOW_OVERSAMPLING
 #define NEL3D_IKBLEND_OVERSAMPLING 30
 
 void CExportNel::addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 
@@ -1928,6 +1929,7 @@ void CExportNel::addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::se
 					ikeys->GetKey(i+1, &nextKey);
 
 					// Oversampling ?
+#ifdef	NEL3D_IKBLEND_ALLOW_OVERSAMPLING
 					if ( (ikBlend > 0.001) || (nextIkBlend > 0.001) )
 					{
 						// Ok, let's oversample
@@ -1941,6 +1943,7 @@ void CExportNel::addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::se
 							thisTime+=interpolationStep;
 						}
 					}
+#endif
 				}
 			}
 

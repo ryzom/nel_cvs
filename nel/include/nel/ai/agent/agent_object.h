@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.6 2001/01/31 14:01:54 chafik Exp $
+ * $Id: agent_object.h,v 1.7 2001/03/01 13:44:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -396,6 +396,7 @@ namespace NLAIAGENT
 
 	public:		
 
+		IBaseGroupType(const IBaseGroupType &c):IObjetOp(c){}		
 		IBaseGroupType();
 		virtual ~IBaseGroupType();
 		

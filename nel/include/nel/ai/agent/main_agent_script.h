@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.9 2001/02/21 11:07:39 chafik Exp $
+ * $Id: main_agent_script.h,v 1.10 2001/03/01 13:44:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,8 +65,8 @@ namespace NLAIAGENT
 	* \date 2000	
 	*/	
 	class CMainAgentScript : public IMainAgent 
-	{
-	
+	{	
+
 	protected:
 
 		///Context for the script.
@@ -108,7 +108,7 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text);
 		}
 		//virtual IObjectIA *run(const IMessageBase &); ///throw throw Exc::CExceptionNotImplemented;		
-		virtual const IObjectIA::CProcessResult &run();
-	};	
+		virtual const IObjectIA::CProcessResult &run();	
+	};
 }
 #endif

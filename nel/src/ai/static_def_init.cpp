@@ -187,6 +187,12 @@
 	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassCFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 	
+	const NLAIC::CIdentType CVectorListManager::IdVectorListManager("VectorListManager",NLAIC::CSelfClassCFactory(CVectorListManager()),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opNot));
+
 	const NLAIC::CIdentType CVectorGroupType::IdVectorGroupType("Vector",NLAIC::CSelfClassCFactory(CVectorGroupType()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 

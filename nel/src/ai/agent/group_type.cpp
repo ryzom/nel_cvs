@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.10 2001/02/05 10:35:48 chafik Exp $
+ * $Id: group_type.cpp,v 1.11 2001/03/01 13:44:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,8 @@ namespace NLAIAGENT
 	const static sint32 _Front = 6;
 	const static sint32 _Get = 7;
 	const static sint32 _Set = 8;
-	const static sint32 _LastM = 9;
+	const static sint32 _Size = 9;
+	const static sint32 _LastM = 10;
 
 	IBaseGroupType::CMethodCall IBaseGroupType::_Method[] = 
 	{
@@ -52,7 +53,8 @@ namespace NLAIAGENT
 		IBaseGroupType::CMethodCall("Back",_Back),
 		IBaseGroupType::CMethodCall("Front",_Front),		
 		IBaseGroupType::CMethodCall("Get",_Get),
-		IBaseGroupType::CMethodCall("Set",_Set)		
+		IBaseGroupType::CMethodCall("Set",_Set),
+		IBaseGroupType::CMethodCall("Size",_Size)
 	};
       
 	IBaseGroupType::IBaseGroupType()
@@ -79,14 +81,35 @@ namespace NLAIAGENT
 			for(int i = 0; i < _LastM; i++)
 			{
 				if(*methodName == IBaseGroupType::_Method[i].MethodName)
-				{					
-					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));					
-					a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));					
-					break;
+				{										
+					switch(_Method[i].Index)
+					{
+					case _Const:
+					case _Push:
+					case _PushFront:
+					case _Set:		
+						{
+							CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
+							a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));
+						}
+						return a;
+					case _Size:
+						{
+							CObjectType *c = new CObjectType(new NLAIC::CIdentType(DigitalType::IdDigitalType));
+							a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));
+						}
+						return a;
+					default:
+						{
+							CObjectType *c = new CObjectType(new NLAIC::CIdentType(IAgent::IdAgent));
+							a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));
+						}
+						return a;
+					}
 				}
 			}
 		}
-		return a;
+		return IObjetOp::isMember(className,methodName,p);
 	}
 
 	IObjectIA::CProcessResult IBaseGroupType::runMethodeMember(sint32, sint32, IObjectIA *)
@@ -112,7 +135,7 @@ namespace NLAIAGENT
 				}	
 			}
 			return IObjectIA::CProcessResult();
-		case _PushFront:	
+		case _PushFront:
 			{
 				CIteratorContener i = param->getIterator();
 				while(!i.isInEnd())
@@ -125,7 +148,7 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 			
 		
-		case _Pop:			
+		case _Pop:
 			{
 				IObjectIA::CProcessResult c;
 				IObjectIA *a = (IObjectIA *)pop();				
@@ -185,7 +208,15 @@ namespace NLAIAGENT
 				set((sint32)f->getValue(),n);
 				n->incRef();
 				return IObjectIA::CProcessResult();
-			}						
+			}
+		case _Size:
+			{
+				DigitalType *f = new DigitalType((float)size());
+				IObjectIA::CProcessResult c;
+				c.Result = f;
+				c.ResultState = IObjectIA::ProcessIdle;
+				return c;
+			}
 		}
 
 		return IObjectIA::CProcessResult();

@@ -1,7 +1,7 @@
 /** \file object_type.h
  * class encaputation a type of object.
  *
- * $Id: object_type.h,v 1.4 2001/01/09 17:16:52 chafik Exp $
+ * $Id: object_type.h,v 1.5 2001/03/01 13:44:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ namespace NLAIAGENT
 		
 		const IObjectIA::CProcessResult &run()
 		{
-			return IObjectIA::ProcessRun;;
+			return IObjectIA::ProcessRun;
 		}
 		
 

@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.5 2001/02/21 11:07:39 chafik Exp $
+ * $Id: msg.h,v 1.6 2001/03/01 13:44:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,11 +30,13 @@
 #include "nel/ai/agent/agent_object.h"
 #include "nel/ai/agent/msg_group.h"
 #include "nel/ai/agent/msg_container.h"
+#include "nel/ai/agent/list_manager.h"
 
 namespace NLAIAGENT
 {	
 	class CIdentType;
 	class IBasicAgent;
+	//class IListBasicManager;
 	
 	/**		
 		Abstract Base class for message, all message tansited by agent have this class as base class.
@@ -46,7 +48,7 @@ namespace NLAIAGENT
 		* \date 2000
 	*/
 	
-	class IMessageBase: public IBaseGroupType
+	class IMessageBase: public IListBasicManager
 	{
 	public:
 		enum TPerformatif
@@ -87,8 +89,10 @@ namespace NLAIAGENT
 		IObjectIA *_Continuation;
 		///Message is arranged by group.
 		IBasicMessageGroup *_MsgGroup;
+		/*
 		///This is the list whos containe the message.
 		IBaseGroupType *_Message;
+		*/
 		///This reserved variable represent the offset of the Run(MSG) if the message come from script.
 		sint32 _ReservedMethodIndexVar;
 		///if the message come from script then this reserved variable represent the offset of the base class which the Run(MSG) is.
@@ -103,16 +107,17 @@ namespace NLAIAGENT
 	protected:
 		void setMessageGroup(IBaseGroupType *g)
 		{
-			_Message = g;
+			if(_List != NULL) _List->release();
+			_List = g;
 		}
 
 		const IBaseGroupType *getMessageGroup() const
 		{
-			return _Message;
+			return _List;
 		}
 
 	public:
-		IMessageBase():_Sender(NULL),_MsgGroup(NULL),_Message(NULL)
+		IMessageBase():IListBasicManager(),_Sender(NULL),_MsgGroup(NULL)
 		{
 			_ReservedMethodIndexVar = -1;
 			_ReservedHeritanceIndexVar = 0;
@@ -122,7 +127,7 @@ namespace NLAIAGENT
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
 		}
-		IMessageBase(IObjectIA *sender,IBaseGroupType *g):_Sender(sender),_MsgGroup(NULL),_Message(g)
+		IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
 		{
 			_ReservedMethodIndexVar = -1;
 			_ReservedHeritanceIndexVar = 0;
@@ -133,7 +138,7 @@ namespace NLAIAGENT
 			_Dispatch = false;
 		}
 		IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
-			_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone()),_Message(g)
+			IListBasicManager(g),_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone())
 		{
 			_ReservedMethodIndexVar = -1;
 			_ReservedHeritanceIndexVar = 0;
@@ -143,7 +148,7 @@ namespace NLAIAGENT
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
 		}
-		IMessageBase(const IMessageBase &m)
+		IMessageBase(const IMessageBase &m):IListBasicManager((IBaseGroupType *)m._List->clone())
 		{
 			_Sender = m._Sender;
 			if(_Sender) _Sender->incRef();
@@ -154,7 +159,7 @@ namespace NLAIAGENT
 
 			if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();
 			else _MsgGroup = NULL;
-			_Message = (IBaseGroupType *)m._Message->clone();			
+			//_Message = (IBaseGroupType *)m._Message->clone();			
 			_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
 			_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
 			_Performatif = m._Performatif;
@@ -165,7 +170,7 @@ namespace NLAIAGENT
 		virtual ~IMessageBase()
 		{
 			if(_MsgGroup != NULL) _MsgGroup->release();
-			if(_Message != NULL) _Message->release();
+			//if(_Message != NULL) _Message->release();
 			if(_Sender != NULL) _Sender->release();
 			if(_Receiver != NULL) _Receiver->release();
 			if(_Continuation != NULL) _Continuation->release();
@@ -257,22 +262,14 @@ namespace NLAIAGENT
 		{
 			return _ReservedHeritanceIndexVar;
 		}
-		//@}
-		
-
-		///Get the list of message contents.
-		operator const IBaseGroupType *() const
-		{
-			return _Message;
-		}
+		//@}		
 
 	public:
 		
 		///\name IBaseGroupType methode realize.
 		//@{	
-		virtual IObjetOp &operator += (const IObjetOp &a);
-		virtual IObjetOp &operator -= (const IObjetOp &a);
-		virtual IObjectIA &operator = (const IObjectIA &a);
+		/*virtual IObjetOp &operator += (const IObjetOp &a);
+		virtual IObjetOp &operator -= (const IObjetOp &a);		
 
 		virtual const IObjectIA *operator[] (sint32) const;
 
@@ -302,14 +299,14 @@ namespace NLAIAGENT
 		virtual void erase(const IObjectIA *o); 
 		virtual void erase(const IObjectIA &obj);
 		virtual void erase(std::list<const IObjectIA *> &l);
-		virtual void clear();
+		virtual void clear();*/
 
-		virtual const CProcessResult &run();
+		virtual IObjectIA &operator = (const IObjectIA &a);		
 
-		sint32 getMethodIndexSize() const;
-		tQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
-		IObjectIA::CProcessResult runMethodeMember(sint32, sint32,IObjectIA *);
-		IObjectIA::CProcessResult runMethodeMember(sint32,IObjectIA *);
+		virtual sint32 getMethodIndexSize() const;
+		virtual tQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32,IObjectIA *);
+		virtual IObjectIA::CProcessResult runMethodeMember(sint32,IObjectIA *);
 		virtual bool isEqual(const IBasicObjectIA &a) const;
 		
 		virtual void save(NLMISC::IStream &os);

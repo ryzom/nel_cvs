@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.4 2001/02/21 11:36:39 chafik Exp $
+ * $Id: msg.cpp,v 1.5 2001/03/01 13:39:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,19 +64,19 @@ namespace NLAIAGENT
 		_Continuation = b._Continuation;
 		if(_Continuation) _Continuation->incRef();
 		setGroup((IBasicMessageGroup &)b.getGroup());
-		*_Message = *b._Message;
+		*_List = *b._List;
 		return *this;
 	}
 
 	bool IMessageBase::isEqual(const IBasicObjectIA &a) const
 	{
 		IMessageBase &b = (IMessageBase &)a;						
-		return _Sender->isEqual((const IBasicAgent &)b) && getGroup() == b.getGroup() && _Message->isEqual((const IBaseGroupType&)b);
+		return _Sender->isEqual((const IBasicAgent &)b) && getGroup() == b.getGroup() && IListBasicManager::isEqual(a);
 	}	
 
 	void IMessageBase::save(NLMISC::IStream &os)
 	{	
-		
+		IListBasicManager::save(os);
 		if(_Sender != NULL)
 		{
 			bool t = true;
@@ -118,9 +118,7 @@ namespace NLAIAGENT
 
 
 		os.serial( (NLAIC::CIdentType &) _MsgGroup->getType() );
-		os.serial( *_MsgGroup );
-		os.serial( (NLAIC::CIdentType &) _Message->getType() );
-		os.serial( *_Message );
+		os.serial( *_MsgGroup );		
 
 		sint32 i = _Performatif;
 		os.serial(i);
@@ -128,7 +126,8 @@ namespace NLAIAGENT
 	}
 	
 	void IMessageBase::load(NLMISC::IStream &is)
-	{			
+	{
+		IListBasicManager::load(is);
 		bool t;
 		is.serial(t);		
 		if(t)
@@ -205,11 +204,7 @@ namespace NLAIAGENT
 		is.serial( id );
 		if(_MsgGroup) delete _MsgGroup;
 		_MsgGroup = (IBasicMessageGroup *)id.allocClass();
-		is.serial( (IBasicMessageGroup &)*_MsgGroup );
-		is.serial( id );
-		if(_Message != NULL) _Message->release();
-		_Message = (IBaseGroupType *)id.allocClass();
-		is .serial( *_Message );
+		is.serial( (IBasicMessageGroup &)*_MsgGroup );				
 		sint32 i = _Performatif;
 		is.serial(i);
 		_Performatif = (TPerformatif)i;
@@ -221,107 +216,12 @@ namespace NLAIAGENT
 		char a[8*1024];
 		_Sender->getDebugString(a);	
 		char b[8*1024];
-		_Message->getDebugString(b);
+		IListBasicManager::getDebugString(b);
 		char g[8*1024];
 		_MsgGroup->getDebugString(g);
-		sprintf(t,"IMessageBase<%d>:\n_sender:'%s' _MsgGroup:'%s' _Message:'%s'",this,a,g,b);
-	}
-
-	IObjetOp &IMessageBase::operator += (const IObjetOp &a)
-	{
-		_Message->cpy(a);
-		return *this;
-	}
-
-	IObjetOp &IMessageBase::operator -= (const IObjetOp &a)
-	{		
-		_Message->erase(a);
-		return *this;
+		sprintf(t,"IMessageBase<%d>:\n_sender:'%s' _MsgGroup:'%s' Message:'%s'",this,a,g,b);
 	}
 	
-
-	const IObjectIA *IMessageBase::operator[] (sint32 index) const
-	{	
-		return (*_Message)[index];
-	}	
-
-	const IObjectIA::CProcessResult &IMessageBase::run()
-	{
-		return _Message->run();
-	}
-
-	bool IMessageBase::isTrue() const
-	{
-		return _Message->isTrue();
-	}
-	IObjetOp *IMessageBase::operator ! () const
-	{
-		return !(*_Message);
-	}
-	void IMessageBase::push(const IObjectIA *o)
-	{
-		_Message->push(o);
-	}
-
-	void IMessageBase::pushFront(const IObjectIA *o)
-	{
-		_Message->pushFront(o);
-	}
-	
-	void IMessageBase::cpy(const IObjectIA &o)
-	{
-		_Message->cpy(o);
-	}
-	const IObjectIA *IMessageBase::pop()
-	{
-		return _Message->pop();
-	}
-	const IObjectIA *IMessageBase::get() const
-	{
-		return _Message->get();
-	}
-	const IObjectIA *IMessageBase::popFront()
-	{
-		return _Message->popFront();
-	}
-	const IObjectIA *IMessageBase::getFront() const
-	{
-		return _Message->getFront();
-	}
-	sint32 IMessageBase::size() const
-	{
-		return _Message->size();
-	}
-
-	const IObjectIA *IMessageBase::find(const IObjectIA &obj) const
-	{
-		return _Message->find(obj);
-	}
-	void IMessageBase::eraseFirst(const IObjectIA &obj)
-	{
-		_Message->erase(obj);
-	}
-	void IMessageBase::eraseAll(const IObjectIA &obj)
-	{
-		_Message->eraseAll(obj);
-	}
-	void IMessageBase::erase(const IObjectIA *o)
-	{
-		_Message->erase(o);
-	}
-	void IMessageBase::erase(const IObjectIA &obj)
-	{
-		_Message->erase(obj);
-	}
- 
-	void IMessageBase::erase(std::list<const IObjectIA *> &l)
-	{
-		_Message->erase(l);
-	}
-	void IMessageBase::clear()
-	{
-		_Message->clear();
-	}
 
 
 	sint32 IMessageBase::getMethodIndexSize() const
@@ -349,7 +249,7 @@ namespace NLAIAGENT
 			else 
 				return IBaseGroupType::isMember( className, methodName, p);
 		}
-		return IBaseGroupType::isMember(className,methodName,p);
+		return IListBasicManager::isMember(className,methodName,p);
 	}
 
 	IObjectIA::CProcessResult IMessageBase::runMethodeMember(sint32 h, sint32 index,IObjectIA *p)

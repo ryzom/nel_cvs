@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.32 2001/02/28 17:01:30 portier Exp $
+ * $Id: agent_script.cpp,v 1.33 2001/03/01 13:44:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,9 @@
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/logic/factbase.h"
 #include "nel/ai/logic/goal.h"
+#include "nel/ai/agent/key_agent.h"
+#include "nel/ai/agent/list_manager.h"
+
 
 
 namespace NLAIAGENT
@@ -141,7 +144,8 @@ namespace NLAIAGENT
 																				CAgentScript::CheckCount,
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new 
-																				NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(IAgent::IdAgent))));
+																				NLAISCRIPT::COperandSimple(
+																				new NLAIC::CIdentType(CVectorListManager::IdVectorListManager))));
 		StaticMethod[CAgentScript::TAddChildTag] = new CAgentScript::CMethodCall(	_ADDCHILD_, 
 																						CAgentScript::TAddChildTag, 
 																						NULL,CAgentScript::CheckCount,
@@ -178,7 +182,7 @@ namespace NLAIAGENT
 																			1,
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
-																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+																			new NLAIC::CIdentType(CStringType::IdStringType))));
 
 		StaticMethod[CAgentScript::TRemoveChild] = new CAgentScript::CMethodCall(	_REMOVECHILD_, 
 																				CAgentScript::TRemoveChild, 
@@ -538,16 +542,28 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CAgentScript::getDynamicAgent(IBaseGroupType *g)
 	{		
 		CStringType *s = (CStringType *)g->get();
-		tmapDefNameAgent::iterator i = _DynamicAgentName.find(*s);
+		//tsetDefNameAgent::iterator i = _DynamicAgentName.find(*s);
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
 
-		if(i != _DynamicAgentName.end())
+		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
+		if(p.first != p.second)
 		{			
-			r.Result = (IObjectIA *)*((*i).second);
+			sint size = _DynamicAgentName.count(CKeyAgent(*s));
+			sint n = 0;
+			CVectorListManager *x;
+			while(p.first != p.second)
+			{
+				x = new CVectorListManager(size);
+				x->set(n++, *p.first->Itr);
+				p.first++;
+			}
+
+			r.Result = x;
 			r.Result->incRef();
 			return r;
-		}		
+			
+		}
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();
 		return r;
@@ -601,19 +617,16 @@ namespace NLAIAGENT
 
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
+		
+		o->setParent( (const IWordNumRef *) *this );
+		CNotifyParentScript *m = new CNotifyParentScript(this);
+		this->incRef();
+		m->setSender(this);
+		m->setPerformatif(IMessageBase::PTell);
+		((IObjectIA *)o)->sendMessage(m);
 
-		tmapDefNameAgent::iterator it = _DynamicAgentName.find(s);
-		if(it == _DynamicAgentName.end())
-		{
-			o->setParent( (const IWordNumRef *) *this );
-			CNotifyParentScript *m = new CNotifyParentScript(this);
-			this->incRef();
-			m->setSender(this);
-			m->setPerformatif(IMessageBase::PTell);
-			((IObjectIA *)o)->sendMessage(m);
-			_DynamicAgentName.insert(tPairName(s,addChild(o)));
-
-		}
+		_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
+		
 		r.Result = NULL;
 
 		return r;
@@ -628,13 +641,14 @@ namespace NLAIAGENT
 
 		IObjectIA::CProcessResult r;
 		const IObjectIA *o = ((CLocalAgentMail *)g->get())->getHost();
-		tmapDefNameAgent::iterator i = _DynamicAgentName.begin();
+		tsetDefNameAgent::iterator i = _DynamicAgentName.begin();
 
 		while(i != _DynamicAgentName.end())
 		{
-			if( o == ((IObjectIA *)*((*i).second)) )
+			CKeyAgent key = *i;
+			if( o == *key.Itr )
 			{
-				CStringType *s = new CStringType((*i).first);			
+				CStringType *s = new CStringType(key.Name);
 				r.Result = s;
 				return r;
 			}
@@ -646,15 +660,16 @@ namespace NLAIAGENT
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{
 		CStringType *s = (CStringType *)g->get();
-		tmapDefNameAgent::iterator i = _DynamicAgentName.find(*s);
+		tsetDefNameAgent::iterator i = _DynamicAgentName.find(CKeyAgent(*s));
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
 
 		if(i != _DynamicAgentName.end())
 		{			
-			removeChild((*i).second);
-			r.Result = new DigitalType(1.0);
-			return r;
+			//removeChild((*i).second);
+			//r.Result = new DigitalType(1.0);
+			//return r;
+			throw;
 		}		
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.17 2001/02/28 17:01:13 portier Exp $
+ * $Id: agent_script.h,v 1.18 2001/03/01 13:44:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLAISCRIPT
 namespace NLAIAGENT
 {
 	class IAgentManager;
-	
+	struct CKeyAgent;
 	/**
 		Class for managing script agent.
 
@@ -87,7 +87,7 @@ namespace NLAIAGENT
 		{			
 
 			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
-					MethodName (name),ArgType(a),ReturnValue(r)
+		 			MethodName (name),ArgType(a),ReturnValue(r)
 			{
 				Index = i;
 				CheckArgType = checkArg;
@@ -114,10 +114,9 @@ namespace NLAIAGENT
 
 		static CMethodCall **StaticMethod;
 	private:
-		///Type def for the map witch store the name of dynamic agent store in the agent.
-		typedef std::map<CStringType, std::list<IBasicAgent *>::iterator> tmapDefNameAgent;
-		///The pair return by the map.
-		typedef std::pair<CStringType, std::list<IBasicAgent *>::iterator> tPairName;
+		///Type def for the map witch store the name of dynamic agent store in the agent.		
+		typedef std::multiset<CKeyAgent> tsetDefNameAgent;
+		
 	private:			
 		///Table of static compoments.
 		IObjectIA **_Components;
@@ -133,7 +132,7 @@ namespace NLAIAGENT
 		*/
 		//IMailBox	*_ScriptMail;
 		///Map for store agent added in the dynamic child container.
-		tmapDefNameAgent _DynamicAgentName;
+		tsetDefNameAgent _DynamicAgentName;
 
 	protected:
 		///The creator of this instance. This useful for find scripted method entry point.
@@ -275,6 +274,9 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 
+
+
+	public:
 		static void initAgentScript();
 		static void releaseAgentScript();
 

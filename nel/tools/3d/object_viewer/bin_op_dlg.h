@@ -46,19 +46,19 @@ protected:
 };
 
 
-/** construct a dialog that allow to edit a binary operator that produce argument of a particle system
-  *  D is the type of the dialog to be crated for edition : CAttribDlgFloat / Int etc ..  
+/** construct a dialog that allow to edit a binary operator that produce argument of a particle system  
   */
-template <class T, class D> class CBinOpDlgT : public CBinOpDlg
+template <class T> class CBinOpDlgT : public CBinOpDlg
 {
 public:
 	/// ctruct the given dialog from the given scheme that owns memory
-	CBinOpDlgT(NL3D::CPSAttribMakerBinOp<T> *editedScheme, std::string &id, HBITMAP bitmapToDisplay)
-		: _Id(id), _BitmapToDisplay(bitmapToDisplay), _EditedScheme(editedScheme)
+	CBinOpDlgT(NL3D::CPSAttribMakerBinOp<T> *editedScheme, CAttribDlgT<T> **attrbDlg, HBITMAP bitmapToDisplay)
+		:  _BitmapToDisplay(bitmapToDisplay), _EditedScheme(editedScheme)
 	{
 		for (uint k = 0 ; k < 2 ; ++k)
 		{
-			_AttrbDlg[k] = NULL ;
+			nlassert(attrbDlg);
+			_AttrbDlg[k] = attrbDlg[k];
 			_SchemeWrapper[k].S = _EditedScheme ;
 			_SchemeWrapper[k].Index =  k ;
 		}
@@ -70,8 +70,7 @@ public:
 	
 		uint k ;
 		for (k = 0 ; k < 2 ; ++k)
-		{
-			_AttrbDlg[k] = new D(_Id) ;
+		{			
 			_AttrbDlg[k]->disableConstantValue() ;
 			_AttrbDlg[k]->setWrapper(&_DummyWrapper) ;
 			_AttrbDlg[k]->setSchemeWrapper(&_SchemeWrapper[k]) ;
@@ -108,10 +107,7 @@ public:
 protected:
 	
 	NL3D::CPSAttribMakerBinOp<T> *_EditedScheme ;
-
-	// id
-	std::string _Id ;
-
+	
 
 	// the bitmap displayed onthe left
 	HBITMAP _BitmapToDisplay ;

@@ -14,6 +14,21 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name misc
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name memory
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "memory"=..\..\..\src\memory.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################

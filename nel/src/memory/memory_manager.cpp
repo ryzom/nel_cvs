@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.2 2002/12/17 14:11:10 miller Exp $
+ * $Id: memory_manager.cpp,v 1.3 2003/03/13 15:06:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,11 +159,7 @@ MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump)
 
 MEMORY_API unsigned int GetBlockSize (void *pointer)
 {
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
 	return GlobalHeapAllocator->getBlockSize (pointer);
-#else // NL_HEAP_ALLOCATION_NDEBUG
-	return 0;
-#endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
 // *********************************************************

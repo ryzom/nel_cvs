@@ -1,7 +1,7 @@
 /** \file memory_mutex.h
  * Mutex used by the memory manager
  *
- * $Id: memory_mutex.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: memory_mutex.h,v 1.2 2003/03/13 15:06:54 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -62,12 +62,20 @@ public:
 		uint32 result;
 		__asm 
 		{ 
-			mov eax,1
+/*			mov eax,1
 			mov ebx,l
 
 			// Lock is implicit with xchg
 			xchg [ebx],eax
 
+			mov [result],eax*/
+			mov edx,1
+			mov ecx,l
+			mov eax,[ecx]
+test_again:
+			nop
+			cmpxchg     dword ptr [ecx],edx
+			jne         test_again
 			mov [result],eax
 		}
 		return result != 0;

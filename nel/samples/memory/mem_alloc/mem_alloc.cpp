@@ -9,8 +9,9 @@
 #include <winbase.h>
 
 #include <nel/misc/debug.h>
-#include <nel/misc/heap_allocator.h>
+#include <memory/heap_allocator.h>
 #include <nel/misc/thread.h>
+#include <nel/memory/memory_manager.h>
 #include <stdlib.h>
 #include <conio.h>
 
@@ -20,16 +21,18 @@
 #include <vector>
 
 using namespace NLMISC;
+using namespace NLMEMORY;
 using namespace std;
 
 // Choose the tests to perform
 //#define TEST_NEL_ALLOCATORS			// Test the NeL allocator
 //#define TEST_NEL_ALLOCATORS_SMALL	// Test the NeL allocator only small blocks
-//#define TEST_NEL_MULTI_THREAD		// Test multi thread
-#define TEST_MEMORY_ALLOCATOR		// Test memory allocator
+#define TEST_NEL_MULTI_THREAD		// Test multi thread
+//#define TEST_MEMORY_ALLOCATOR		// Test memory allocator
 //#define BENCH_ALLOCATORS			// Bench the differents allocators
 // Define this to get verbose informations
 #define VERBOSE 
+//#define VERBOSE2 
 
 // Define this to get step by step
 // #define STEP_BY_STEP 
@@ -71,6 +74,20 @@ void VOutput (const char *format, ... )
 	printf (buffer);
 	va_end( args );
 #endif // VERBOSE
+}
+
+// Verbose output strings
+void VOutput2 (const char *format, ... )
+{
+#ifdef VERBOSE2
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	printf (buffer);
+	va_end( args );
+#endif // VERBOSE2
 }
 
 // An allocator interface for test 
@@ -131,6 +148,14 @@ private:
 	const char* getName () const
 	{
 		return "New allocator";
+	}
+	bool	checkMemory (bool stopOnError)
+	{
+#ifdef NL_USE_DEFAULT_MEMORY_MANAGER
+		return true;
+#else // NL_USE_DEFAULT_MEMORY_MANAGER
+		return CheckHeap (stopOnError);
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
 	}
 };
 
@@ -208,7 +233,7 @@ private:
 		return "NeL allocator";
 	}
 
-	CHeapAllocator	_Allocator;
+	NLMEMORY::CHeapAllocator	_Allocator;
 };
 
 // A bench interface
@@ -313,8 +338,8 @@ public:
 		{
 			// Output
 			if ((count &0xff) == 0)
-				Output ("(%d) %d test to go\n", threadId, count);
-			VOutput ("(%d) %d test to go\n", threadId, count);
+				VOutput ("(%d) %d test to go\n", threadId, count);
+			VOutput2 ("(%d) %d test to go\n", threadId, count);
 			
 			if (goUp)
 			{
@@ -376,7 +401,7 @@ public:
 				allocations.push_back (CAllocation (ptr, size));
 
 				// Output
-				VOutput ("(%d) Alloc : %d\tTotal : %d\tBlock count : %d\n", threadId, size, allocatedMemory, allocations.size ());
+				VOutput2 ("(%d) Alloc : %d\tTotal : %d\tBlock count : %d\n", threadId, size, allocatedMemory, allocations.size ());
 			}
 			else
 			{
@@ -403,7 +428,7 @@ public:
 				allocations.resize (allocations.size ()-1);
 
 				// Output
-				VOutput ("(%d) Free  : %d\tTotal : %d\tBlock count : %d\tBlock index : %d\n", threadId, size, allocatedMemory, allocations.size (), blockId);
+				VOutput2 ("(%d) Free  : %d\tTotal : %d\tBlock count : %d\tBlock index : %d\n", threadId, size, allocatedMemory, allocations.size (), blockId);
 			}
 
 			// Check memory
@@ -412,11 +437,11 @@ public:
 				// Check heap integrity
 				if (allocator.checkMemory (true))
 				{
-					VOutput ("(%d) Check OK\n", threadId);
+					VOutput2 ("(%d) Check OK\n", threadId);
 				}
 				else
 				{
-					VOutput ("(%d) Check Failed\n", threadId);
+					VOutput2 ("(%d) Check Failed\n", threadId);
 				}
 
 				// Check allocated memory is the same
@@ -480,9 +505,9 @@ int main(int argc, char* argv[])
 #ifdef TEST_NEL_MULTI_THREAD
 	CRandomAllocBench testSmall ("TestMultiThread", 1, 10000, 10000000, 1000000, 10000, true);
 
-	CNeLAllocator nelAlloc (10000, false);
+	//CNeLAllocator nelAlloc (10000, false);
 	//CSTLAllocator nelAlloc;
-	//CNewAllocator nelAlloc;
+	CNewAllocator nelAlloc;
 	
 	testSmall.multi_thread_bench (nelAlloc, 2);
 #endif // TEST_NEL_MULTI_THREAD
@@ -551,15 +576,15 @@ int main(int argc, char* argv[])
 	multimapAlloc.insert (map<int,int>::value_type(0,0));
 
 	// Output stats
-	printf ("Allocated memory:\t%d\n", getGlobalHeapAllocator ()->getAllocatedMemory ());
-	printf ("Free memory:\t%d\n", getGlobalHeapAllocator ()->getFreeMemory ());
-	printf ("Total memory:\t%d\n", getGlobalHeapAllocator ()->getTotalMemoryUsed ());
-	printf ("Debug memory:\t%d\n", getGlobalHeapAllocator ()->debugGetDebugInfoSize ());
-	printf ("Main2 category memory:\t%d\n", getGlobalHeapAllocator ()->debugGetAllocatedMemoryByCategory ("Main2"));
-	printf ("Fragmentation:\t%f\n", getGlobalHeapAllocator ()->getFragmentationRatio ());
+	printf ("Allocated memory:\t%d\n", GetAllocatedMemory ());
+	printf ("Free memory:\t%d\n", GetFreeMemory ());
+	printf ("Total memory:\t%d\n", GetTotalMemoryUsed ());
+	printf ("Debug memory:\t%d\n", GetDebugInfoSize ());
+	printf ("Main2 category memory:\t%d\n", GetAllocatedMemoryByCategory ("Main2"));
+	printf ("Fragmentation:\t%f\n", GetFragmentationRatio ());
 
 	// Check 
-	getGlobalHeapAllocator ()->debugStatisticsReport ("test.csv");
+	StatisticsReport ("test.csv", false);
 
 #endif TEST_MEMORY_ALLOCATOR
 

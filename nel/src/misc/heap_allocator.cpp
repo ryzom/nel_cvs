@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.8 2003/01/03 17:43:24 coutelas Exp $
+ * $Id: heap_allocator.cpp,v 1.9 2003/03/13 15:06:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1009,10 +1009,12 @@ void CHeapAllocator::free (void *ptr)
 			// Check heap integrity
 			internalCheckHeap (true);
 		}
-
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+		
 		// Get the node pointer
 		CNodeBegin *node = (CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin));
 
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
 		// Check the node CRC
 		enterCriticalSectionSB ();
 		enterCriticalSectionLB ();
@@ -1217,8 +1219,11 @@ uint CHeapAllocator::getAllocatedMemory () const
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 			// Node allocated ? Don't sum small blocks..
-			if (isNodeUsed (current) && (strcmp (current->Category, NL_HEAP_SB_CATEGORY) != 0))
-				memory += getNodeSize (current) + ReleaseHeaderSize;
+			if (isNodeUsed (current))
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+				if (strcmp (current->Category, NL_HEAP_SB_CATEGORY) != 0)
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+					memory += getNodeSize (current) + ReleaseHeaderSize;
 
 			// Next node
 			current = getNextNode (current);

@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.26 2002/11/18 13:43:35 cado Exp $
+ * $Id: mem_stream.h,v 1.27 2002/12/10 12:43:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,7 +192,10 @@ public:
 	// When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
 	void resetBufPos() { _BufPos = _Buffer.getPtr(); }
 
-	/// Fills the message buffer, for reading
+	/** Resize the message buffer and fill data at position 0.
+	 * Input stream: the current position is set at the beginning;
+	 * Output stream: the current position is set after the filled data.
+	 */
 	void			fill( const uint8 *srcbuf, uint32 len )
 	{
 		if (len == 0) return;
@@ -211,18 +214,27 @@ public:
 
 	void resize (uint32 size);
 
-	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
-	 * you MUST fill the number of bytes you specify in "msgsize").
-	 * This method prevents from doing one useless buffer copy, using fill().
+	/**
+	 * Resize the stream with the specified size, set the current position at the beginning
+	 * of the stream and return a pointer to the stream buffer.
+	 *
+	 * Precondition: the stream is an input stream.
+	 *
+	 * Suggested usage: construct an input stream, resize and get the buffer using bufferToFillAndRead(),
+	 * fill it with raw data using any filling function (warning: don't fill more than 'msgsize'
+	 * bytes!), then you are ready to read, using serial(), the data you've just filled.
 	 */
 	uint8			*bufferToFill( uint32 msgsize )
 	{
-		if (msgsize == 0) return NULL;
+#ifdef NL_DEBUG
+		nlassert( isReading() );
+#endif
+		if ( msgsize == 0 )
+			return NULL;
 
-		// Same as fill() but the memcpy is done by an external function
 		_Buffer.resize( msgsize );
-		_BufPos = _Buffer.getPtr() + msgsize;
-		return _Buffer.getPtr();
+		_BufPos = _Buffer.getPtr();
+		return _BufPos;
 	}
 
 	/// Transforms the message from input to output or from output to input

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.3 2004/05/18 16:34:27 berenguier Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.4 2004/07/06 13:58:19 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -458,8 +458,12 @@ bool CDriverD3D::setShaderTexture (uint textureHandle, ITexture *texture)
 
 void CDriverD3D::disableHardwareTextureShader()
 {
+	// cannot disable pixel shader under DX, because it crashes with lightmap
+	// => no-op
+	/*
 	_DisableHardwarePixelShader = true;
 	_PixelShader = false;
+	*/
 }
 
 // ***************************************************************************

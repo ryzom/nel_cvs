@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.12 2002/11/04 15:40:45 boucher Exp $
+ * $Id: particle_system_edit.cpp,v 1.13 2002/11/18 18:00:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "editable_range.h"
 #include "auto_lod_dlg.h"
 #include "ps_global_color_dlg.h"
+#include "choose_name.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -265,6 +266,10 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_EDIT_GLOBAL_COLOR, OnEditGlobalColor)
 	ON_BN_CLICKED(IDC_GLOBAL_COLOR, OnGlobalColor)
 	ON_BN_CLICKED(IDC_ENABLE_LOAD_BALANCING, OnEnableLoadBalancing)
+	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_1, OnGlobalUserParam1)
+	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_2, OnGlobalUserParam2)
+	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_3, OnGlobalUserParam3)
+	ON_BN_CLICKED(IDC_GLOBAL_USER_PARAM_4, OnGlobalUserParam4)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -570,4 +575,40 @@ void CParticleSystemEdit::OnEnableLoadBalancing()
 		_PS->enableLoadBalancing(false);
 	}
 	UpdateData(FALSE);
+}
+
+//=====================================================
+static void chooseGlobalUserParam(uint userParam, NL3D::CParticleSystem *ps, CWnd *parent)
+{
+	nlassert(ps);
+	CChooseName cn(!ps->getGlobalValueName(userParam).empty() ? ps->getGlobalValueName(userParam).c_str() : "", parent);
+	if (cn.DoModal() == IDOK)
+	{
+		ps->bindGlobalValueToUserParam(cn.getName().c_str(), userParam);
+	}
+}	
+
+//=====================================================
+void CParticleSystemEdit::OnGlobalUserParam1() 
+{
+	nlassert(_PS)
+	chooseGlobalUserParam(0, _PS, this);
+}
+
+//=====================================================
+void CParticleSystemEdit::OnGlobalUserParam2() 
+{	
+	chooseGlobalUserParam(1, _PS, this);
+}
+
+//=====================================================
+void CParticleSystemEdit::OnGlobalUserParam3() 
+{
+	chooseGlobalUserParam(2, _PS, this);
+}
+
+//=====================================================
+void CParticleSystemEdit::OnGlobalUserParam4() 
+{
+	chooseGlobalUserParam(3, _PS, this);
 }

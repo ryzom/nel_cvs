@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.9 2002/10/14 09:50:56 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.10 2002/11/18 18:00:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,6 +159,10 @@ protected:
 	afx_msg void OnEditGlobalColor();
 	afx_msg void OnGlobalColor();
 	afx_msg void OnEnableLoadBalancing();
+	afx_msg void OnGlobalUserParam1();
+	afx_msg void OnGlobalUserParam2();
+	afx_msg void OnGlobalUserParam3();
+	afx_msg void OnGlobalUserParam4();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.22 2001/07/25 08:40:06 portier Exp $
+ * $Id: operator_script.h,v 1.23 2001/08/01 13:16:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,9 @@ namespace NLAIAGENT
 			{
 				fid_modeachieve,
 				fid_modemaintain,
+				fid_isPaused,
+				fid_getPriority,
+				fid_isActivable,
 				fid_last
 			};
 
@@ -61,6 +64,7 @@ namespace NLAIAGENT
 			std::list<NLAILOGIC::CGoal *>		_ActivatedGoals;
 			bool								_IsActivable;
 			bool								_Maintain;
+			float								_Priority;
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -70,7 +74,8 @@ namespace NLAIAGENT
 			virtual ~COperatorScript();
 
 			/// Priority of the operator
-			virtual float priority() const;
+			float priority() const;
+			void calcPriority();
 
 //			virtual int getBaseMethodCount() const;
 

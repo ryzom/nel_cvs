@@ -327,7 +327,7 @@ using  namespace NLAIFUZZY;
 								{
 									if ( classIsAnOperator() )
 									{
-										double priority = (double) LastyyNum;
+										float priority = (float) LastyyNum;
 										COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
 										op_class->setPriority( priority );
 										if(_LastFact.Value != NULL) 

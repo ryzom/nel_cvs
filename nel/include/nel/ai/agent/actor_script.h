@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.24 2001/07/25 08:40:06 portier Exp $
+ * $Id: actor_script.h,v 1.25 2001/08/01 13:16:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ namespace NLAIAGENT
 				fid_msg_failure,
 				fid_toplevel,
 				fid_owner,
+				fid_isactive,
 				fid_last
 			};
 

@@ -18,6 +18,7 @@ namespace NLAIAGENT
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
 		_IsActivable = a._IsActivable;
 		_Maintain = a._Maintain;
+		_Priority = 0;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -30,6 +31,7 @@ namespace NLAIAGENT
 		_CyclesBeforeUpdate = 0;
 		_IsActivable = false;
 		_Maintain = false;
+		_Priority = 0;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -38,6 +40,7 @@ namespace NLAIAGENT
 		_CyclesBeforeUpdate = 0;
 		_IsActivable = false;
 		_Maintain = false;
+		_Priority = 0;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -124,6 +127,7 @@ namespace NLAIAGENT
 		{
 			_IsActivable = checkActivation();
 			_CyclesBeforeUpdate = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getUpdateEvery();
+			calcPriority();
 		}
 		else
 			_CyclesBeforeUpdate--;
@@ -233,7 +237,8 @@ namespace NLAIAGENT
 
 		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL)
 		{
-			lookForGoals();
+//			if ( _CurrentGoal != NULL )
+				lookForGoals();
 
 			// If no goal is posted corresponding to this operator's one, returns false
 			if ( _ActivatedGoals.empty() )
@@ -292,11 +297,8 @@ namespace NLAIAGENT
 	//		- If the operator is not activable (no corresponding goal and / or preconditions are not validated), return 0
 	//		- If fuzzy conds exist,  returns their truth value multiplied by the operator's class priority (defined in the script using the Priority keyword)
 	//		- If no fuzzy conds, return 1 * the operator's class priority (defined in the script using the Priority keyword)
-	float COperatorScript::priority() const
+	void COperatorScript::calcPriority()
 	{
-		if (! _IsActivable )
-			return 0.0;
-
 		int i;
 		double pri = 1.0;
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
@@ -327,7 +329,16 @@ namespace NLAIAGENT
 #endif
 
 		float class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
-		return (float)pri * class_pri;
+
+		if (! _IsActivable )
+			_Priority = 0.0;
+		else
+			_Priority = (float)pri * class_pri;
+	}
+
+	float COperatorScript::priority() const
+	{
+		return _Priority;
 	}
 
 	NLAILOGIC::CFact *COperatorScript::buildFromVars(NLAILOGIC::IBaseAssert *assert, std::vector<sint32> &pl, NLAILOGIC::CValueSet *vars)
@@ -446,7 +457,7 @@ namespace NLAIAGENT
 	}
 
 
-	// Simple unifcation between to first order logic patterns
+	// Simple unifcation between two first order logic patterns
 	NLAILOGIC::CValueSet *COperatorScript::unifyLiaison( const NLAILOGIC::CValueSet *fp, NLAILOGIC::CValueSet *vals, std::vector<sint32> &pos_vals)
 	{
 		NLAILOGIC::CValueSet *result;
@@ -455,12 +466,11 @@ namespace NLAIAGENT
 			return result;
 		else
 		{
-			delete result;
 			return NULL;
 		}
 	}
 
-	// Instanciate a goals's args as static components of the operator
+	// Instanciates a goals's args as static components of the operator
 	void COperatorScript::linkGoalArgs(NLAILOGIC::CGoal *g)
 	{
 		std::vector<NLAIAGENT::IObjectIA *>::const_iterator it_arg = g->getArgs().begin();
@@ -474,9 +484,12 @@ namespace NLAIAGENT
 		}
 	}
 
-	// Function called when a lauched actor succeded
+	// Function called when a launched actor succeded
 	void COperatorScript::onSuccess( IObjectIA *)
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class = (const char *) getType();
+#endif
 		if(_CurrentGoal == NULL) 
 			return;
 		_CurrentGoal->operatorSuccess( this );
@@ -487,6 +500,10 @@ namespace NLAIAGENT
 	// Function called when a lauched actor failed
 	void COperatorScript::onFailure( IObjectIA *)
 	{
+
+#ifdef NL_DEBUG
+		const char *dbg_class = (const char *) getType();
+#endif
 
 		if(_CurrentGoal == NULL) 
 			return;
@@ -506,13 +523,28 @@ namespace NLAIAGENT
 				_Maintain = false;
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
-				break;
+				return r;
 
 			case fid_modemaintain:
 				_Maintain = true;
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
-				break;
+				return r;
+
+			case fid_isActivable:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAILOGIC::CBoolType( _IsActivable );
+				return r;
+
+			case fid_isPaused:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAILOGIC::CBoolType( _IsPaused );
+				return r;
+
+			case fid_getPriority:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( priority() );
+				return r;
 		}
 		return r;
 	}
@@ -541,13 +573,29 @@ namespace NLAIAGENT
 				_Maintain = true;
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
-				break;
+				return r;
 
 			case fid_modeachieve:
 				_Maintain = false;
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
-				break;
+				return r;
+
+			case fid_isActivable:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAILOGIC::CBoolType( _IsActivable );
+				return r;
+
+			case fid_isPaused:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAILOGIC::CBoolType( _IsPaused );
+				return r;
+
+			case fid_getPriority:
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = new NLAIAGENT::DigitalType( priority() );
+				return r;
+
 		}
 		return CActorScript::runMethodBase(index, params);
 	}
@@ -570,6 +618,10 @@ namespace NLAIAGENT
 
 		static NLAIAGENT::CStringVarName modeachieve_name("setModeAchieve");
 		static NLAIAGENT::CStringVarName modemaintain_name("setModeMaintain");
+		static NLAIAGENT::CStringVarName ispaused_name("IsPaused");
+		static NLAIAGENT::CStringVarName isactivable_name("IsActivable");
+		static NLAIAGENT::CStringVarName priority_name("GetPriority");
+
 
 		if ( *name == modeachieve_name )
 		{
@@ -581,6 +633,25 @@ namespace NLAIAGENT
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_modemaintain , 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == ispaused_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_isPaused , 0.0,NULL, r_type ) );
+		}
+
+
+		if ( *name == isactivable_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_isActivable , 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == priority_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_getPriority , 0.0,NULL, r_type ) );
 		}
 
 		if ( result.empty() )

@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.15 2001/07/26 13:16:47 chafik Exp $
+ * $Id: msg.h,v 1.16 2001/08/01 13:16:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 #ifndef NL_MSG_H
 #define NL_MSG_H
-
+ 
 #include "nel/ai/agent/agentexport.h"
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/agent_object.h"

@@ -496,6 +496,11 @@ namespace NLAIAGENT
 				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel()->getParent() );				
 				return r;
 				break;
+
+			case fid_isactive:
+				r.Result = new NLAILOGIC::CBoolType( _IsActivated );
+				return r;
+				break;
 		}
 		return r;
 	}
@@ -650,6 +655,12 @@ namespace NLAIAGENT
 				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel()->getParent() );				
 				return r;
 				break;
+
+			case fid_isactive:
+				r.Result = new NLAILOGIC::CBoolType( _IsActivated );
+				return r;
+				break;
+
 		}
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -683,6 +694,7 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName failure_name("Failure");
 		static NLAIAGENT::CStringVarName pause_name("Pause");
 		static NLAIAGENT::CStringVarName restart_name("Restart");
+		static NLAIAGENT::CStringVarName isactive_name("IsActivated");
 
 		if ( *name == activate_name )
 		{
@@ -773,6 +785,12 @@ namespace NLAIAGENT
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_restart, 0.0, NULL, r_type ) );
+		}
+
+		if ( *name == isactive_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_isactive, 0.0, NULL, r_type ) );
 		}
 
 		if ( result.empty() )

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.8 2001/07/27 13:42:28 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.9 2001/08/01 13:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,8 +274,10 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::IObjectIA::CProcessResult r;
 
-		if(_H )  r = obj->runMethodeMember(_H,_Id,param);
-		else r = obj->runMethodeMember(_Id,param);
+		if (_H )  
+			r = obj->runMethodeMember(_H,_Id,param);
+		else 
+			r = obj->runMethodeMember(_Id,param);
 		
 		if(r.Result != NULL)
 		{

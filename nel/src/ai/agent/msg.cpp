@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.12 2001/07/27 13:42:28 chafik Exp $
+ * $Id: msg.cpp,v 1.13 2001/08/01 13:15:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "nel/ai/logic/boolval.h"
 #include "nel/ai/agent/object_type.h"
 #include "nel/ai/agent/agent_method_def.h"
-#include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/agent/agent_digital.h" 
 
 namespace NLAIAGENT
 {

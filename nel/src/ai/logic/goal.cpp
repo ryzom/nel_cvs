@@ -42,8 +42,8 @@ namespace NLAILOGIC
 			_Name = (NLAIAGENT::IVarName *) c._Name->clone();
 		else
 			_Name = NULL;
-		_Sender = NULL;
-		_Receiver = NULL;
+		_Sender =c._Sender;
+		_Receiver = c._Receiver;
 		_Mode = c._Mode;
 
 		for ( int i = 0; i < (int) c._Args.size(); i++ )

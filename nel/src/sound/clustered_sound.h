@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.6 2003/07/03 15:16:12 boucher Exp $
+ * $Id: clustered_sound.h,v 1.7 2004/01/07 18:31:48 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/string_mapper.h"
 #include <vector>
 #include <map>
+#include <hash_map>
 
 namespace NLMISC
 {

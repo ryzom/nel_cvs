@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.3 2003/12/30 11:14:09 lecroart Exp $
+ * $Id: string_common.h,v 1.4 2004/01/07 18:31:13 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 
 #include <cstdio>
+#include <cstdarg>
 
 namespace	NLMISC
 {

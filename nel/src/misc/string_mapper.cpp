@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.8 2003/12/18 18:02:27 vizerie Exp $
+ * $Id: string_mapper.cpp,v 1.9 2004/01/07 18:31:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
  */
 
 #include "stdmisc.h"
+
+#include <map>
+
 #include "nel/misc/string_mapper.h"
 
 using namespace std;

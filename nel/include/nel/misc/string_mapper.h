@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.8 2003/12/18 18:02:27 vizerie Exp $
+ * $Id: string_mapper.h,v 1.9 2004/01/07 18:31:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #define STRING_MAPPER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
-#include <hash_map>
-#include <map>
+
 #include <vector>
 #include <set>
+
+#include "nel/misc/stream.h"
 
 namespace NLMISC
 {

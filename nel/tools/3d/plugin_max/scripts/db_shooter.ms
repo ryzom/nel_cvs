@@ -58,11 +58,6 @@ rollout db_shooter_rollout "Database Picture Shooter"
 				-- Render
 				render outputwidth:(Width.value as integer) outputheight:(Height.value as integer) outputfile:outputFileName shadows:false autoReflect:false vfb:false
 			)
-			else
-			(
-				if ReportErrors.checked == true then
-					Messagebox ("Can't open the file " + f)
-			)
 		)
 
 		-- Recursse ?

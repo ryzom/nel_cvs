@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.3 2002/06/07 09:04:17 puzin Exp $
+ * $Id: sheet_id.cpp,v 1.4 2002/06/07 09:16:53 puzin Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -39,7 +39,7 @@ map<std::string,uint32> CSheetId::_SheetNameToId;
 vector<std::string> CSheetId::_FileExtensions;
 bool CSheetId::_initialised=false;
 
-const CSheetId::Unknown(0);
+const CSheetId CSheetId::Unknown(0);
 
 
 

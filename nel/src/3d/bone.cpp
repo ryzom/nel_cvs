@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.7 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: bone.cpp,v 1.8 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,18 +45,32 @@ CBoneBase::CBoneBase() : DefaultPos(CVector(0,0,0)), DefaultRotEuler(CVector(0,0
 {
 	FatherId= -1;
 	UnheritScale= true;
+	// Default: never disable.
+	LodDisableDistance= 0.f;
 }
 
 
 // ***************************************************************************
 void			CBoneBase::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- LodDisableDistance
+	*/
+	sint	ver= f.serialVersion(1);
 
 	f.serial(Name);
 	f.serial(InvBindPos);
 	f.serial(FatherId);
 	f.serial(UnheritScale);
+
+	if(ver>=1)
+		f.serial(LodDisableDistance);
+	else
+	{
+		// Default: never disable.
+		LodDisableDistance= 0.f;
+	}
 
 	f.serial(DefaultPos);
 	f.serial(DefaultRotEuler);

@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.9 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.10 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,10 +30,21 @@
 #include "3d/scene.h"
 #include "nel/misc/bsphere.h"
 
+using namespace std;
 using namespace NLMISC;
 
 namespace NL3D
 {
+
+
+// ***************************************************************************
+void	CSkeletonShape::CLod::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	sint ver= f.serialVersion(0);
+
+	f.serial(Distance);
+	f.serialCont(ActiveBones);
+}
 
 
 // ***************************************************************************
@@ -60,14 +71,69 @@ sint32			CSkeletonShape::getBoneIdByName(const std::string &name) const
 // ***************************************************************************
 void			CSkeletonShape::build(const std::vector<CBoneBase> &bones)
 {
+	uint	i;
+
 	// copy bones.
 	_Bones= bones;
 
-	// build the map.
-	for(uint i=0;i<_Bones.size();i++)
+	// for all bones
+	for(i=0;i<_Bones.size();i++)
 	{
+		// build the map.
 		_BoneMap[_Bones[i].Name]= i;
+		// validate distances.
+		_Bones[i].LodDisableDistance= max(0.f, _Bones[i].LodDisableDistance);
 	}
+
+	// build Lod Information.
+	//==============
+	_Lods.clear();
+
+	// build all distances used.
+	set<float>	distSet;
+	for(i=0;i<_Bones.size();i++)
+	{
+		float	dist= _Bones[i].LodDisableDistance;
+		// if lod enabled for this bone, add a new distance, or do nothing
+		if(dist>0)
+			distSet.insert(dist);
+	}
+
+	// create a lod for each distance used + 1 (the "dist==0" distance).
+	_Lods.resize(distSet.size() + 1);
+	// create the default lod: all bones activated.
+	_Lods[0].Distance=0;
+	_Lods[0].ActiveBones.resize(_Bones.size(), 0xFF);
+
+	// For each lods not 0th.
+	set<float>::iterator	it= distSet.begin();
+	for(uint j=1; j<_Lods.size(); j++, it++)
+	{
+		float	lodDist= *it;
+		// set the distance of activation
+		_Lods[j].Distance= lodDist;
+		// resize and default to all enabled.
+		_Lods[j].ActiveBones.resize(_Bones.size(), 0xFF);
+
+		// Search what lod are to be disabled at this distance.
+		for(i=0;i<_Bones.size();i++)
+		{
+			float	dist= _Bones[i].LodDisableDistance;
+			// if the dist of the lod is greater (or equal) to the disableDist of the bone, 
+			// and if the bone is not "always enabled", disable the bone
+			if(lodDist>=dist && dist!=0 )
+				_Lods[j].ActiveBones[i]= 0;
+		}
+
+	}
+
+}
+
+
+// ***************************************************************************
+void			CSkeletonShape::retrieve(std::vector<CBoneBase> &bones) const
+{
+	bones= _Bones;
 }
 
 
@@ -100,10 +166,25 @@ CTransformShape		*CSkeletonShape::createInstance(CScene &scene)
 // ***************************************************************************
 void			CSkeletonShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- _Lods.
+	*/
+	sint	ver= f.serialVersion(1);
 
 	f.serialCont(_Bones);
 	f.serialCont(_BoneMap);
+
+	if(ver>=1)
+		f.serialCont(_Lods);
+	else
+	{
+		// create a skeleton shape with bones activated all the time
+		_Lods.resize(1);
+		// create the default lod: all bones activated.
+		_Lods[0].Distance=0;
+		_Lods[0].ActiveBones.resize(_Bones.size(), 0xFF);
+	}
 }
 
 // ***************************************************************************
@@ -143,6 +224,26 @@ bool	CSkeletonShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &wor
 void		CSkeletonShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	bbox= _BBox;
+}
+
+
+// ***************************************************************************
+uint		CSkeletonShape::getLodForDistance(float dist) const
+{
+	uint	start=0;
+	uint	end= _Lods.size();
+	// find lower_bound by dichotomy
+	while(end-1>start)
+	{
+		uint	pivot= (end+start)/2;
+		// return the lower_bound, ie return first start with _Lods[pivot].Distance<=dist
+		if(_Lods[pivot].Distance <= dist)
+			start= pivot;
+		else
+			end= pivot;
+	}
+
+	return start;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.47 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh.cpp,v 1.48 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -618,11 +618,11 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 				/* Use separate multiply for precision consideration:
 					In OpenGL, The modelViewMatrix is first computed in setupModelMatrix(), and so
 					the result is nearly identity (because in camera basis).
-					If we do setupModelMatrix(skeleton->getWorldMatrix() * skeleton->Bones[curBoneId].getBoneSkinMatrix()),
+					If we do setupModelMatrix(skeleton->getWorldMatrix() * skeleton->getActiveBoneSkinMatrix(curBoneId)),
 					the result is worse.
 				*/
 				drv->setupModelMatrix(skeleton->getWorldMatrix(), idMat);
-				drv->multiplyModelMatrix(skeleton->Bones[curBoneId].getBoneSkinMatrix(), idMat);
+				drv->multiplyModelMatrix(skeleton->getActiveBoneSkinMatrix(curBoneId), idMat);
 			}
 		}
 				
@@ -1318,12 +1318,11 @@ void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	// For all Bones used.
 	for(uint i=0; i<_BonesId.size();i++)
 	{
-		// increment or decrement Forced, because CMeshGeom does not support Skeleton LOD.
-		// Hence the bones that this mesh use must always be present
+		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesId[i], true);
+			sm->incBoneUsage(_BonesId[i], false);
 		else
-			sm->decBoneUsage(_BonesId[i], true);
+			sm->decBoneUsage(_BonesId[i], false);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.3 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: bone.h,v 1.4 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,9 @@ public:
 	CTrackDefaultQuat		DefaultRotQuat;
 	CTrackDefaultVector		DefaultScale;
 	CTrackDefaultVector		DefaultPivot;
+
+	/// The distance at which the bone is disabled in the skeleton. If 0, never disable.
+	float					LodDisableDistance;
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.28 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.29 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -902,12 +902,12 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		// apply skin for this Lod only.
 		if (!useTangentSpace)
 		{
-			applySkin (lod, skeleton->Bones); // skinning with no tangent space
+			applySkin (lod, skeleton); // skinning with no tangent space
 		}
 		else
 		{
 			// Tangent space stored in the last texture coordinate
-			applySkinWithTangentSpace(lod, skeleton->Bones, _VBufferFinal.getNumTexCoordUsed() - 1);
+			applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
 		}
 	}
 	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
@@ -1716,7 +1716,7 @@ struct	CMatrix3x4
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
+void	CMeshMRMGeom::applySkin(CLod &lod, const CSkeletonModel *skeleton)
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -1761,7 +1761,7 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 	{
 		// Get Matrix info.
 		uint	matId= lod.MatrixInfluences[i];
-		const CMatrix		&boneMat= bones[matId].getBoneSkinMatrix();
+		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
 		CMatrix				boneMatNormal;
 
 		// build the good boneMatNormal (with good scale inf).
@@ -1918,7 +1918,7 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const std::vector<CBone> &bones, uint tangentSpaceTexCoord)
+void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord)
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -1967,7 +1967,7 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const std::vector<CBone>
 	{
 		// Get Matrix info.
 		uint	matId= lod.MatrixInfluences[i];
-		const CMatrix		&boneMat= bones[matId].getBoneSkinMatrix();
+		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
 		CMatrix				boneMatNormal;
 
 		// build the good boneMatNormal (with good scale inf).
@@ -2413,12 +2413,11 @@ void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	// For all Bones used.
 	for(uint i=0; i<_BonesId.size();i++)
 	{
-		// increment or decrement Forced, because CMeshMRMGeom does not support Skeleton LOD (for now)
-		// Hence the bones that this mesh use must always be present
+		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesId[i], true);
+			sm->incBoneUsage(_BonesId[i], false);
 		else
-			sm->decBoneUsage(_BonesId[i], true);
+			sm->decBoneUsage(_BonesId[i], false);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.16 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: transform.h,v 1.17 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -491,10 +491,14 @@ class	CTransformAnimDetailObs : public IBaseAnimDetailObs
 {
 public:
 
-	/** this do all the good things:
-	 *	- animdetail if the model channelmixer is not NULL, AND if model not clipped!!
-	 *	- traverseSons().
+	/// update the WorldMatrix if needed.
+	void			updateWorldMatrixFromFather();
+	/** traverse without updatin WorldMatrixFromFather:
+	 *	- animdetail if the model channelmixer is not NULL, and if model not clipped
 	 */
+	void			traverseWithoutUpdateWorldMatrix(IObs *caller);
+
+	/// call updateWorldMatrixFromFather(), then traverseWithoutUpdateWorldMatrix()
 	virtual	void	traverse(IObs *caller);
 
 	static IObs	*creator() {return new CTransformAnimDetailObs;}

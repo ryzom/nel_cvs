@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.37 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: transform.cpp,v 1.38 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -607,22 +607,27 @@ void	CTransformClipObs::traverse(IObs *caller)
 }
 
 
+
 // ***************************************************************************
-void	CTransformAnimDetailObs::traverse(IObs *caller)
+void	CTransformAnimDetailObs::updateWorldMatrixFromFather()
 {
 	CTransform		*transModel= static_cast<CTransform*>(Model);
 
-	// AnimDetail behavior: animate only if not clipped.
-	// NB: no need to test because of VisibilityList use.
-
-	// First, test if I must update my HrcObs worldMatrix because of the ancestorSkeleton scheme
 	// If I have an ancestore Skeleton model
 	if(transModel->_HrcObs->_AncestorSkeletonModel)
 	{
 		// then must first update my worldMatrix.
 		transModel->updateWorldMatrixFromFather();
 	}
+}
 
+// ***************************************************************************
+void	CTransformAnimDetailObs::traverseWithoutUpdateWorldMatrix(IObs *caller)
+{
+	CTransform		*transModel= static_cast<CTransform*>(Model);
+
+	// AnimDetail behavior: animate only if not clipped.
+	// NB: no need to test because of VisibilityList use.
 
 	// test if the refptr is NULL or not (RefPtr).
 	CChannelMixer	*chanmix= transModel->_ChannelMixer;
@@ -631,6 +636,19 @@ void	CTransformAnimDetailObs::traverse(IObs *caller)
 		// eval detail!!
 		chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
 	}
+}
+
+// ***************************************************************************
+void	CTransformAnimDetailObs::traverse(IObs *caller)
+{
+	// First, test if I must update my HrcObs worldMatrix because of the ancestorSkeleton scheme
+	updateWorldMatrixFromFather();
+
+	// eval channelMixer.
+	traverseWithoutUpdateWorldMatrix(caller);
+
+	// NB: if want to add something, do it in traverseWithoutUpdateWorldMatrix(), because
+	// CSkeletonModel doesn't call CTransformAnimDetailObs::traverse()
 
 	// no need to traverseSons. No graph here.
 }

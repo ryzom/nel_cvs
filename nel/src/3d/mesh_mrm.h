@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.23 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.24 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -433,12 +433,12 @@ private:
 	void	restoreOriginalSkinVertices();
 
 	/// Skinning: Apply skinning to the _VBuffer (before geomorph).	  	  
-	void	applySkin(CLod &lod, const std::vector<CBone> &bones);
+	void	applySkin(CLod &lod, const CSkeletonModel *skeleton);
 
 	/** The same as apply skin, but with a tangent space added (encoded in a texture coordinate).
 	  * The tangent space is modified, but not normalized (must be done in a vertex program).
 	  */
-	void	applySkinWithTangentSpace(CLod &lod, const std::vector<CBone> &bones, uint tangentSpaceTexCoord);
+	void	applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, uint tangentSpaceTexCoord);
 
 	/// Skinning: same as restoreOriginalSkinVertices(), but for one Lod only.
 	void	restoreOriginalSkinPart(CLod &lod);

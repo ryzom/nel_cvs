@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.6 2001/09/14 18:27:51 berenguier Exp $
+ * $Id: skeleton_shape.h,v 1.7 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,20 @@ class CSkeletonShape : public IShape
 {
 public:
 
+	/// This is a lod for skeleton.
+	struct	CLod
+	{
+		/// The distance of activation of this bone.
+		float				Distance;
+		/// Size of Bones. If a bone is active in this lod, 0xFF, else 0.
+		std::vector<uint8>	ActiveBones;
+
+	public:
+		void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	};
+
+public:
+
 	/// Constructor
 	CSkeletonShape();
 
@@ -57,6 +71,9 @@ public:
 	 */
 	void			build(const std::vector<CBoneBase> &bones);
 
+	/** Retrieve Bones Information.
+	 */
+	void			retrieve(std::vector<CBoneBase> &bones) const;
 
 
 	/// Return the id of a bone, from it's name. -1 if not present.
@@ -93,11 +110,21 @@ public:
 
 	// @}
 
+
+	/// retrieve the lod to use for a given distance (log(n)).
+	uint			getLodForDistance(float dist) const;
+
+	/// get lod information.
+	const CLod		&getLod(uint lod) const {return _Lods[lod];}
+
+
+// ***************************
 private:
 	std::vector<CBoneBase>			_Bones;
 	std::map<std::string, uint32>	_BoneMap;
 	NLMISC::CAABBox					_BBox;
 
+	std::vector<CLod>				_Lods;
 };
 
 

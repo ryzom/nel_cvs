@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.11 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.12 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,11 +81,18 @@ CSkeletonModel::~CSkeletonModel()
 void		CSkeletonModel::initBoneUsages()
 {
 	// reset all to 0.
-	_BoneUsage.resize(Bones.size(), 0);
-	_ForcedBoneUsage.resize(Bones.size(), 0);
-	_BoneToCompute.resize(Bones.size(), 0);
+	_BoneUsage.resize(Bones.size());
+	for(uint i=0; i<_BoneUsage.size(); i++)
+	{
+		_BoneUsage[i].Usage= 0;
+		_BoneUsage[i].ForcedUsage= 0;
+		_BoneUsage[i].MustCompute= 0;
+		_BoneUsage[i].ValidBoneSkinMatrix= 0;
+	}
+
 	_BoneToComputeDirty= false;
 	_NumBoneComputed= 0;
+	_CurLod= 0;
 }
 
 
@@ -93,27 +100,26 @@ void		CSkeletonModel::initBoneUsages()
 void		CSkeletonModel::incBoneUsage(uint i, bool forced)
 {
 	nlassert(i<_BoneUsage.size());
-	nlassert(i<_ForcedBoneUsage.size());
 
 	if(forced)
 	{
-		// If the bone was not used before, must update _BoneToCompute.
-		if(_ForcedBoneUsage[i]==0)
+		// If the bone was not used before, must update MustCompute.
+		if(_BoneUsage[i].ForcedUsage==0)
 			_BoneToComputeDirty= true;
 
 		// Inc the refCount of the bone.
-		nlassert(_ForcedBoneUsage[i]<255);
-		_ForcedBoneUsage[i]++;
+		nlassert(_BoneUsage[i].ForcedUsage<255);
+		_BoneUsage[i].ForcedUsage++;
 	}
 	else
 	{
-		// If the bone was not used before, must update _BoneToCompute.
-		if(_BoneUsage[i]==0)
+		// If the bone was not used before, must update MustCompute.
+		if(_BoneUsage[i].Usage==0)
 			_BoneToComputeDirty= true;
 
 		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i]<255);
-		_BoneUsage[i]++;
+		nlassert(_BoneUsage[i].Usage<255);
+		_BoneUsage[i].Usage++;
 	}
 }
 
@@ -122,27 +128,26 @@ void		CSkeletonModel::incBoneUsage(uint i, bool forced)
 void		CSkeletonModel::decBoneUsage(uint i, bool forced)
 {
 	nlassert(i<_BoneUsage.size());
-	nlassert(i<_ForcedBoneUsage.size());
 
 	if(forced)
 	{
-		// If the bone was used before (and now won't be more), must update _BoneToCompute.
-		if(_ForcedBoneUsage[i]==1)
+		// If the bone was used before (and now won't be more), must update MustCompute.
+		if(_BoneUsage[i].ForcedUsage==1)
 			_BoneToComputeDirty= true;
 
 		// Inc the refCount of the bone.
-		nlassert(_ForcedBoneUsage[i]>0);
-		_ForcedBoneUsage[i]--;
+		nlassert(_BoneUsage[i].ForcedUsage>0);
+		_BoneUsage[i].ForcedUsage--;
 	}
 	else
 	{
-		// If the bone was used before (and now won't be more), must update _BoneToCompute.
-		if(_BoneUsage[i]==1)
+		// If the bone was used before (and now won't be more), must update MustCompute.
+		if(_BoneUsage[i].Usage==1)
 			_BoneToComputeDirty= true;
 
 		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i]>0);
-		_BoneUsage[i]--;
+		nlassert(_BoneUsage[i].Usage>0);
+		_BoneUsage[i].Usage--;
 	}
 }
 
@@ -200,35 +205,58 @@ void		CSkeletonModel::updateBoneToCompute()
 	// get the channelMixer owned by CTransform.
 	CChannelMixer	*chanMixer= getChannelMixer();
 
-	// TODODO: skel shape Lods infos.
+	// Get Lod infos from skeletonShape
+	const CSkeletonShape::CLod	&lod= ((CSkeletonShape*)(IShape*)Shape)->getLod(_CurLod);
 
 	// recompute _NumBoneComputed
 	_NumBoneComputed= 0;
 
 	// For all bones
-	for(uint i=0; i<_BoneToCompute.size(); i++)
+	for(uint i=0; i<_BoneUsage.size(); i++)
 	{
-		// set _BoneToCompute[i] to non 0 if BoneUsage[i] || ForcedBoneUsage[i];
-		_BoneToCompute[i]= _BoneUsage[i] | _ForcedBoneUsage[i];
+		// set MustCompute to non 0 if (Usage && Lod) || ForcedUsage;
+		_BoneUsage[i].MustCompute= (_BoneUsage[i].Usage & lod.ActiveBones[i]) | _BoneUsage[i].ForcedUsage;
 		// If the bone must be computed (if !0)
-		if(_BoneToCompute[i])
+		if(_BoneUsage[i].MustCompute)
 		{
 			// Inc _NumBoneComputed.
 			_NumBoneComputed++;
 			// lodEnable the channels of this bone
 			if(chanMixer)
 				Bones[i].lodEnableChannels(chanMixer, true);
+
+			// This bone is computed => take his valid boneSkinMatrix.
+			_BoneUsage[i].ValidBoneSkinMatrix= i;
 		}
 		else
 		{
 			// lodDisable the channels of this bone
 			if(chanMixer)
 				Bones[i].lodEnableChannels(chanMixer, false);
+
+			// This bone is not computed => take the valid boneSkinMatrix of his father
+			sint	fatherId= Bones[i].getFatherId();
+			if(fatherId<0)
+				// just take me, even if not computed.
+				_BoneUsage[i].ValidBoneSkinMatrix= i;
+			else
+				// NB: father ValidBoneSkinMatrix already computed because of the hierarchy order of Bones array.
+				_BoneUsage[i].ValidBoneSkinMatrix= _BoneUsage[fatherId].ValidBoneSkinMatrix;
 		}
 	}
 
 	// computed
 	_BoneToComputeDirty= false;
+}
+
+
+// ***************************************************************************
+const NLMISC::CMatrix	&CSkeletonModel::getActiveBoneSkinMatrix(uint boneId) const
+{
+	// Get me or first father with MustCompute==true.
+	uint validBoneId= _BoneUsage[boneId].ValidBoneSkinMatrix;
+	// return his WorldMatrix.
+	return Bones[validBoneId].getBoneSkinMatrix();
 }
 
 
@@ -331,21 +359,39 @@ sint32		CSkeletonModel::getBoneIdByName(const std::string &name) const
 // ***************************************************************************
 void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 {
-	CSkeletonModel	*sm= (CSkeletonModel*)Model;
-
-	/* If needed, let's know which bone has to be computed.
-		Additionaly, enable / disable (lod) channels in channelMixer.
-	*/ 
-	sm->updateBoneToCompute();
-
-	// Animate skeleton
-	CTransformAnimDetailObs::traverse(caller);
-
 	// if skeleton is clipped, no need to transform.
 	// NB: no need to test ClipObs->Visible because of VisibilityList use.
 
-	// test if bones must be updated.
-	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit))
+	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+
+	/*
+		CTransformAnimDetailObs::traverse() is torn in 2 here because 
+		channels may be enabled/disabled by updateBoneToCompute()
+	*/
+
+	// First update Skeleton WorldMatrix (case where the skeleton is sticked).
+	CTransformAnimDetailObs::updateWorldMatrixFromFather();
+	// get dist from camera.
+	float	dist= (HrcObs->WorldMatrix.getPos() - ((CClipTrav*)ClipObs->Trav)->CamPos).norm();
+	// Use dist to get current lod to use for this skeleton
+	uint	newLod= ((CSkeletonShape*)(IShape*)sm->Shape)->getLodForDistance( dist );
+	if(newLod != sm->_CurLod)
+	{
+		// set new lod to use.
+		sm->_CurLod= newLod;
+		// dirt the skeleton.
+		sm->_BoneToComputeDirty= true;
+	}
+
+	// If needed, let's know which bone has to be computed, and enable / disable (lod) channels in channelMixer.
+	bool forceUpdate= sm->_BoneToComputeDirty;
+	sm->updateBoneToCompute();
+
+	// Animate skeleton.
+	CTransformAnimDetailObs::traverseWithoutUpdateWorldMatrix(caller);
+
+	// test if bones must be updated. either if animation change or if BoneUsage change.
+	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
 	{
 		// Retrieve the WorldMatrix of the current CTransformShape.
 		CMatrix		&modelWorldMatrix= HrcObs->WorldMatrix;
@@ -355,7 +401,7 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 		for(uint i=0;i<sm->Bones.size();i++)
 		{
 			// Do nothing if the bone doesn't need to be computed (not used, lods ...)
-			if(sm->_BoneToCompute[i])
+			if(sm->_BoneUsage[i].MustCompute)
 			{
 				sint	fatherId= sm->Bones[i].getFatherId();
 				// if a root bone...

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.8 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.9 2002/03/21 10:44:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,9 +108,9 @@ public:
 
 	/// \name Skin/BoneUsage Accessor. Called by CMeshInstance only.
 	// @{
-	/// increment the refCount of the ith bone. set forced to false for MRM that follow MultiResolutionSkeleton reduction.
+	/// increment the refCount of the ith bone. set forced to false if enable Skeleton Bone degradation.
 	void		incBoneUsage(uint i, bool forced= true);
-	/// decrement the refCount of the ith bone. set forced to false for MRM that follow MultiResolutionSkeleton reduction.
+	/// decrement the refCount of the ith bone. set forced to the same param passed when incBoneUsage()
 	void		decBoneUsage(uint i, bool forced= true);
 
 	/** This method update boneUsage (must be of size of Bones).
@@ -128,6 +128,12 @@ public:
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject()).
 	uint		getNumBoneComputed() const {return _NumBoneComputed;}
+
+	/** if Bones[boneId] is "Computed" (usage/lod), return Bones[boneId].getBoneSkinMatrix()
+	 *	else return parent ones (recurs, but precomputed)
+	 */
+	const NLMISC::CMatrix	&getActiveBoneSkinMatrix(uint boneId) const;
+
 	// @}
 
 
@@ -174,18 +180,29 @@ private:
 	/// \name Bone Usage.
 	// @{
 
-	/// The list of BoneUsage (refCount). Updated by Meshes and stickObject().
-	std::vector<uint8>			_BoneUsage;
-	/// Same as BoneUsage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects, std Meshes, old MRM meshes).
-	std::vector<uint8>			_ForcedBoneUsage;
-	/// The current state: which bones need to be computed. ie (BoneUsage & currentLodUsage) | ForcedBoneUsage.
-	std::vector<uint8>			_BoneToCompute;
+	struct CBoneUsage
+	{
+		/// The bone Usage (refCount).
+		uint8			Usage;
+		/// Same as Usage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects, std Meshes, old MRM meshes).
+		uint8			ForcedUsage;
+		/// The current state: which bones need to be computed. ie (Usage & currentLodUsage) | ForcedUsage.
+		uint8			MustCompute;
+		/// Myself if MustCompute==true, or the first parent with MustCompute==true.
+		uint			ValidBoneSkinMatrix;
+	};
+
+	/// The list of BoneUsage. Updated by Meshes, stickObject(), and lod changes.
+	std::vector<CBoneUsage>		_BoneUsage;
 	/// Flag set if the MRSkeleton lod change, or if a new bone Usage change (only if was 0 or become 0).
 	bool						_BoneToComputeDirty;
 	/// Number of bones computed, ie number of entries in _BoneToCompute which are not 0.
 	uint						_NumBoneComputed;
+	/// The current lod activated for this skeleton
+	uint						_CurLod;
 
-	/// called by CSkeletonShape::createInstance(). init the 3 vectors.
+
+	/// called by CSkeletonShape::createInstance(). init the vector.
 	void		initBoneUsages();
 
 	/// increment the refCount of the ith bone and its parents. for stickObjects.
@@ -193,7 +210,7 @@ private:
 	/// increment the refCount of the ith bone and its parents. for stickObjects.
 	void		decForcedBoneUsageAndParents(uint i);
 
-	/// According to _BoneUsage, _ForedBoneUsage and current skeleton Lod, update _BoneToCompute.
+	/// According to Usage, ForedUsage and current skeleton Lod, update MustCompute and ValidBoneSkinMatrix
 	void		updateBoneToCompute();
 
 	// @}

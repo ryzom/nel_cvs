@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.47 2003/11/20 14:05:58 corvazier Exp $
+ * $Id: common.cpp,v 1.48 2003/11/20 15:38:26 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -624,7 +624,7 @@ char *strupr (char *str)
 	return str;
 }
 
-sint nlstricmp(const char *lhs,const char *rhs)
+/*sint nlstricmp(const char *lhs,const char *rhs)
 {
 	nlassert(lhs);
 	nlassert(rhs);
@@ -646,7 +646,7 @@ sint nlstricmp(const std::string &lhs,const std::string &rhs)
 {
 	return nlstricmp(lhs.c_str(), rhs.c_str());
 }
-
+*/
 
 
 //
@@ -932,7 +932,7 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 // This code doesn't work under windows : fseek() implementation uses a signed 32 bits offset. What ever we do, it can't seek more than 2 Go.
 // For the moment, i don't know if it works under linux for seek of more than 2 Go.
 
-	nlassert ((offset < (sint64)2147483647) && (offset > -(sint64)2147483648));
+	nlassert ((offset < INT64_CONSTANT(2147483647)) && (offset > INT64_CONSTANT(-2147483648)));
 
 	bool first = true;
 	do
@@ -940,9 +940,9 @@ int	nlfseek64( FILE *stream, sint64 offset, int origin )
 		// Get the size of the next fseek
 		sint nextSeek;
 		if (offset > 0)
-			nextSeek = (sint)std::min ((sint64)2147483647, offset);
+			nextSeek = (sint)std::min (INT64_CONSTANT(2147483647), offset);
 		else
-			nextSeek = (sint)std::max (-(sint64)2147483648, offset);
+			nextSeek = (sint)std::max (-INT64_CONSTANT(2147483648), offset);
 
 		// Make a seek
 		int result = fseek ( stream, nextSeek, first?origin:SEEK_CUR );

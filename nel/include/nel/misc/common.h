@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.64 2003/11/20 14:05:58 corvazier Exp $
+ * $Id: common.h,v 1.65 2003/11/20 15:38:26 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,28 +273,18 @@ char			*strupr ( char *str );
 
 /** Compare 2 C-Style strings without regard to case
   * \return 0 if strings are equal, < 0 if lhs < rhs, > 0 if lhs > rhs
+  *
+  * On Windows,   use stricmp
+  * On GNU/Linux, create stricmp using strcasecmp and use stricmp
   */
-sint			nlstricmp(const char *lhs, const char *rhs);
-
-
-/** Implement the stricmp on unix because windows program often use it without knowledge that this
-  *  function is not ANSI
-  */
-#ifdef NL_OS_UNIX
-inline int		stricmp(const char *lhs, const char *rhs)
-{
-	return nlstricmp(lhs, rhs);
-}
+#ifndef NL_OS_WINDOWS
+inline int stricmp(const char *lhs, const char *rhs) { return strcasecmp(lhs, rhs); }
 #endif
 
-/** Compare 2 strings without regard to case
-  */
-sint			nlstricmp(const std::string &lhs, const std::string &rhs);
-
-/** Compare 2 strings (1 of which is c-style) without regard to case
-  */
-inline sint		nlstricmp(const std::string &lhs, const char *rhs) { return nlstricmp(lhs.c_str(),rhs); }
-inline sint		nlstricmp(const char *lhs, const std::string &rhs) { return nlstricmp(lhs,rhs.c_str()); }
+inline sint nlstricmp(const char *lhs, const char *rhs) { return stricmp(lhs, rhs); }
+inline sint nlstricmp(const std::string &lhs, const std::string &rhs) { return stricmp(lhs.c_str(), rhs.c_str()); }
+inline sint nlstricmp(const std::string &lhs, const char *rhs) { return stricmp(lhs.c_str(),rhs); }
+inline sint nlstricmp(const char *lhs, const std::string &rhs) { return stricmp(lhs,rhs.c_str()); }
 
 /** Signed 64 bit fseek. Same interface than fseek
   */

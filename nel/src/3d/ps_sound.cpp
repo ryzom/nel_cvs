@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.19 2003/03/03 12:57:27 boucher Exp $
+ * $Id: ps_sound.cpp,v 1.20 2003/04/14 15:25:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -344,11 +344,10 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 			if (_Sounds[index])
 			{			
 				const NLMISC::CMatrix &mat = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : NLMISC::CMatrix::Identity;
-				_Sounds[index]->setSoundParams(
-					_GainScheme ? _GainScheme->get(getOwner(), 0) : 0,
-					mat * _Owner->getPos()[index], 
-					_Owner->getSpeed()[index], 
-					_PitchScheme ? _PitchScheme->get(getOwner(), 0) : 1 );
+				_Sounds[index]->setSoundParams(_GainScheme ? _GainScheme->get(getOwner(), 0) : 0,
+											   mat * _Owner->getPos()[index], 
+											   _Owner->getSpeed()[index], 
+											   _PitchScheme ? _PitchScheme->get(getOwner(), 0) : 1 );
 				_Sounds[index]->play();
 			}
 		}

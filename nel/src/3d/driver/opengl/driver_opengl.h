@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.133 2002/10/14 15:50:54 besson Exp $
+ * $Id: driver_opengl.h,v 1.134 2002/10/25 16:16:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,10 @@ class	IVertexBufferHardGL;
 class CTextureDrvInfosGL : public ITextureDrvInfos
 {
 public:
+	/*
+		ANY DATA ADDED HERE MUST BE SWAPPED IN swapTextureHandle() !!
+	*/
+
 	// The GL Id.
 	GLuint					ID;
 	// Is the internal format of the texture is a compressed one?
@@ -241,7 +245,7 @@ public:
 
 	virtual bool			setupTexture (ITexture& tex);
 
-	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded);
+	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture= false);
 	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap);
 	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace);
 
@@ -439,6 +443,10 @@ public:
 	virtual	NLMISC::CRGBA	getBlendConstantColor() const;
 	virtual bool			setMonitorColorProperties (const CMonitorColorProperties &properties);
 	// @}
+
+
+	virtual void			swapTextureHandle(ITexture &tex0, ITexture &tex1);
+
 
 private:
 	friend class					CTextureDrvInfosGL;

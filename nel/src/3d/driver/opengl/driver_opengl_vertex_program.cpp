@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.14 2002/09/24 14:40:20 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.15 2002/10/25 16:16:08 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -211,10 +211,10 @@ inline GLenum convSwizzleToGLFormat(CVPSwizzle::EComp comp, bool negate)
 	{
 		switch(comp)
 		{
-			case CVPSwizzle::X: return GL_NEGEXTVE_X_EXT;
-			case CVPSwizzle::Y: return GL_NEGEXTVE_Y_EXT;
-			case CVPSwizzle::Z: return GL_NEGEXTVE_Z_EXT;
-			case CVPSwizzle::W: return GL_NEGEXTVE_W_EXT;
+			case CVPSwizzle::X: return GL_NEGATIVE_X_EXT;
+			case CVPSwizzle::Y: return GL_NEGATIVE_Y_EXT;
+			case CVPSwizzle::Z: return GL_NEGATIVE_Z_EXT;
+			case CVPSwizzle::W: return GL_NEGATIVE_W_EXT;
 			default:
 				nlstop;
 				return 0;
@@ -316,26 +316,26 @@ static void doSwizzle(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum ou
 			case GL_X_EXT:
 				swzStr +=" X";
 			break;
-			case GL_NEGEXTVE_X_EXT:
+			case GL_NEGATIVE_X_EXT:
 				swzStr +=" -X";
 			break;
 			case GL_Y_EXT:
 				swzStr +=" Y";
 			break;
-			case GL_NEGEXTVE_Y_EXT:
+			case GL_NEGATIVE_Y_EXT:
 				swzStr +=" -Y";
 			break;
 			break;
 			case GL_Z_EXT:
 				swzStr +=" Z";
 			break;
-			case GL_NEGEXTVE_Z_EXT:
+			case GL_NEGATIVE_Z_EXT:
 				swzStr +=" -Z";
 			break;
 			case GL_W_EXT:
 				swzStr +=" W";
 			break;
-			case GL_NEGEXTVE_W_EXT:
+			case GL_NEGATIVE_W_EXT:
 				swzStr +=" -W";
 			break;
 			case GL_ZERO_EXT:

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.58 2002/09/24 14:43:51 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.59 2002/10/25 16:16:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,7 +313,7 @@ bool CDriverGL::setupTexture (ITexture& tex)
 }
 
 // ***************************************************************************
-bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
+bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
 {
 	bAllUploaded = false;
 	
@@ -398,9 +398,13 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 			{
 				tex.TextureDrvShare->DrvTexture= itTex->second;
 
-				// Do not need to reload this texture, even if the format/mipmap has changed, since we found this 
-				// couple in the map.
-				mustLoadAll= false;
+				if(bMustRecreateSharedTexture)
+					// reload this shared texture (user request)
+					mustLoadAll= true;
+				else
+					// Do not need to reload this texture, even if the format/mipmap has changed, since we found this 
+					// couple in the map.
+					mustLoadAll= false;
 			}
 		}
 		// Do not test if part of texture may need to be computed, because Rect invalidation is incompatible 
@@ -1113,6 +1117,37 @@ void		CDriverGL::forceTextureResize(uint divisor)
 
 	// 16 -> 4.
 	_ForceTextureResizePower= getPowerOf2(divisor);
+}
+
+
+// ***************************************************************************
+void		CDriverGL::swapTextureHandle(ITexture &tex0, ITexture &tex1)
+{
+	// ensure creation of both texture
+	setupTexture(tex0);
+	setupTexture(tex1);
+
+	// avoid any problem, disable all textures
+	for(sint stage=0; stage<inlGetNumTextStages() ; stage++)
+	{
+		activateTexture(stage, NULL);
+	}
+
+	// get the handle.
+	CTextureDrvInfosGL	*t0= getTextureGl(tex0);
+	CTextureDrvInfosGL	*t1= getTextureGl(tex1);
+
+	/* Swap contents. Can't swap directly the pointers cause would have to change all CTextureDrvShare which point on
+		Can't do swap(*t0, *t1), because must keep the correct _DriverIterator
+	*/
+	swap(t0->ID, t1->ID);
+	swap(t0->Compressed, t1->Compressed);
+	swap(t0->TextureMemory, t1->TextureMemory);
+	swap(t0->WrapS, t1->WrapS);
+	swap(t0->WrapT, t1->WrapT);
+	swap(t0->MagFilter, t1->MagFilter);
+	swap(t0->MinFilter, t1->MinFilter);
+
 }
 
 

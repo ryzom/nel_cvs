@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.1 2002/10/10 12:55:44 berenguier Exp $
+ * $Id: async_texture_manager.cpp,v 1.2 2002/10/25 16:13:10 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -37,14 +37,35 @@ using	namespace NLMISC;
 namespace NL3D 
 {
 
+// ***************************************************************************
+#define	NL3D_ATM_MIN_DISTANCE		1.0f
 
 // ***************************************************************************
 CAsyncTextureManager::CTextureEntry::CTextureEntry()
 {
+	IsTextureEntry= true;
+
 	Loaded= false;
 	UpLoaded= false;
 	CanHaveLOD= false;
+	BuildFromHLSManager= false;
+	HLSManagerTextId= -1;
 	BaseSize= 0;
+	TotalTextureSizeAsked= 0;
+}
+
+
+// ***************************************************************************
+CAsyncTextureManager::CTextureLod::CTextureLod()
+{
+	IsTextureEntry= false;
+
+	TextureEntry= NULL;
+	Weight= 0;
+	Level= 0;
+	Loaded= false;
+	UpLoaded= false;
+	ExtraSize= 0;
 }
 
 
@@ -59,7 +80,8 @@ CAsyncTextureManager::~CAsyncTextureManager()
 	}
 
 	// there must be no waitting textures, nor map, nor current upload texture
-	nlassert(_WaitingTextures.empty() && _TextureEntryMap.empty() && _CurrentUploadTexture==NULL);
+	nlassert(_WaitingTextures.empty() && _TextureEntryMap.empty() && _CurrentUploadTexture==NULL 
+		&& _CurrentTextureLodLoaded==NULL);
 }
 
 // ***************************************************************************
@@ -68,7 +90,14 @@ CAsyncTextureManager::CAsyncTextureManager()
 	_BaseLodLevel= 3;
 	_MaxLodLevel= 1;
 	_MaxUploadPerFrame= 65536;
+	_MaxHLSColoringPerFrame= 20*1024;
 	_CurrentUploadTexture= NULL;
+	_MaxTotalTextureSize= 10*1024*1024;
+	_TotalTextureSizeAsked= 0;
+	_LastTextureSizeGot= 0;
+
+	// Do not share this texture, to force uploading of the lods.
+	_CurrentTextureLodLoaded= NULL;
 }
 
 
@@ -86,6 +115,19 @@ void			CAsyncTextureManager::setupMaxUploadPerFrame(uint maxup)
 {
 	if(maxup>0)
 		_MaxUploadPerFrame= maxup;
+}
+
+// ***************************************************************************
+void			CAsyncTextureManager::setupMaxHLSColoringPerFrame(uint maxCol)
+{
+	if(maxCol>0)
+		_MaxHLSColoringPerFrame= maxCol;
+}
+
+// ***************************************************************************
+void			CAsyncTextureManager::setupMaxTotalTextureSize(uint maxText)
+{
+	_MaxTotalTextureSize= maxText;
 }
 
 
@@ -121,12 +163,26 @@ uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInst
 		// bkup the it for deletion
 		text->ItMap= it;
 
-		// Start Async loading.
+		// Start Color or Async loading.
 		text->Texture->setFileName(textName);
-		// start to load a small DDS version if possible
-		text->Texture->setMipMapSkipAtLoad(_BaseLodLevel);
-		// load it async.
-		CAsyncFileManager::getInstance().loadTexture(text->Texture, &text->Loaded);
+		// First try with the HLSManager
+		sint	colorTextId= HLSManager.findTexture(textName);
+		// If found
+		if(colorTextId!=-1)
+		{
+			// Mark the texture as Loaded, and ready to colorize (done in update()).
+			text->Loaded= true;
+			text->BuildFromHLSManager= true;
+			text->HLSManagerTextId= colorTextId;
+		}
+		// else must async load it.
+		else
+		{
+			// start to load a small DDS version if possible
+			text->Texture->setMipMapSkipAtLoad(_BaseLodLevel);
+			// load it async.
+			CAsyncFileManager::getInstance().loadTexture(text->Texture, &text->Loaded);
+		}
 		// Add to a list so we can check each frame if it has ended.
 		_WaitingTextures.push_back(i);
 	}
@@ -150,6 +206,9 @@ uint			CAsyncTextureManager::addTextureRef(const string &textName, CMeshBaseInst
 void			CAsyncTextureManager::deleteTexture(uint id)
 {
 	CTextureEntry	*text= _TextureEntries[id];
+
+
+	// **** Stop AsyncLoading/UpLoading of main texture.
 
 	// stop async loading if not ended
 	if(!text->Loaded)
@@ -181,7 +240,31 @@ void			CAsyncTextureManager::deleteTexture(uint id)
 		}
 	}
 
-	// delete texture entry.
+	// remove from bench
+	_TotalTextureSizeAsked-= text->TotalTextureSizeAsked;
+
+
+	// **** Stop AsyncLoading/UpLoading of HDLod 's texture.
+
+	// Check if must stop TextureLod loading/uploading.
+	CTextureLod		*textLod= &text->HDLod;
+	if(textLod==_CurrentTextureLodLoaded)
+	{
+		// stop the async loading if not ended.
+		if(!textLod->Loaded)
+		{
+			CAsyncFileManager::getInstance().cancelLoadTexture(textLod->Texture);
+		}
+		// stop uploading if was me
+		if(_CurrentUploadTexture==textLod)
+		{
+			_CurrentUploadTexture= NULL;
+		}
+		// stop loading me.
+		_CurrentTextureLodLoaded= NULL;
+	}
+
+	// At last delete texture entry.
 	delete text;
 	_TextureEntries[id]= NULL;
 }
@@ -231,10 +314,11 @@ bool			CAsyncTextureManager::isTextureUpLoaded(uint id) const
 void			CAsyncTextureManager::update(IDriver *pDriver)
 {
 	uint	nTotalUploaded = 0;
+	uint	nTotalColored = 0;
 
 	// if no texture to upload, get the next one
 	if(_CurrentUploadTexture==NULL)
-		getNextTextureToUpLoad();
+		getNextTextureToUpLoad(nTotalColored, pDriver);
 
 	// while some texture to upload
 	while(_CurrentUploadTexture)
@@ -242,17 +326,61 @@ void			CAsyncTextureManager::update(IDriver *pDriver)
 		ITexture	*pText= _CurrentUploadTexture->Texture;
 		if(uploadTexturePart(pText, pDriver, nTotalUploaded))
 		{
-			// If we are here, the texture is finally entirely uploaded. Compile it!
-			_CurrentUploadTexture->UpLoaded= true;
-			// Can Have lod if texture is DXTC and have mipMaps!
-			_CurrentUploadTexture->CanHaveLOD= validDXTCMipMap(pText);
-			// compute the size it takes in VRAM (with estimation of all mipmaps)
-			_CurrentUploadTexture->BaseSize= pText->getSize(0)*CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
-			_CurrentUploadTexture->BaseSize= (uint)(_CurrentUploadTexture->BaseSize*1.33f);
-			// UpLoaded !! => signal all instances.
-			for(uint i=0;i<_CurrentUploadTexture->Instances.size();i++)
+			// Stuff for TextureEntry
+			if(_CurrentUploadTexture->isTextureEntry())
 			{
-				_CurrentUploadTexture->Instances[i]->_AsyncTextureToLoadRefCount--;
+				uint	i;
+				CTextureEntry	*textEntry= static_cast<CTextureEntry*>(_CurrentUploadTexture);
+				// If we are here, the texture is finally entirely uploaded. Compile it!
+				textEntry->UpLoaded= true;
+				// Can Have lod if texture is DXTC and have mipMaps! Also disalbe if system disable it
+				textEntry->CanHaveLOD= validDXTCMipMap(pText) && _BaseLodLevel>_MaxLodLevel;
+				// compute the size it takes in VRAM
+				uint	baseMipMapSize= pText->getSize(0)*CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+				// full size with mipmap
+				textEntry->BaseSize= (uint)(baseMipMapSize*1.33f);
+				// UpLoaded !! => signal all instances.
+				for(i=0;i<textEntry->Instances.size();i++)
+				{
+					textEntry->Instances[i]->_AsyncTextureToLoadRefCount--;
+				}
+
+				// If CanHaveLOD, create now the lods entries.
+				if(textEntry->CanHaveLOD)
+				{
+					/* Allow only the MaxLod to be loaded async
+						This is supposed to be faster since a fseek is much longer than a texture Read.
+						Then it is more intelligent to read only One texture (the High Def), than to try to
+						read intermediate ones (512, 256, 128) because this made 3 more fseek.
+					*/
+					// create only the MaxLod possible entry
+					CTextureLod		&textLod= textEntry->HDLod;
+					// fill textLod
+					textLod.TextureEntry= textEntry;
+					textLod.Level= _MaxLodLevel;
+					// extra size of the lod only (important for LoadBalacing in updateTextureLodSystem())
+					textLod.ExtraSize= textEntry->BaseSize*(1<<(2*(_BaseLodLevel-_MaxLodLevel))) - textEntry->BaseSize;
+					// not yet loaded/upLoaded
+					textLod.Loaded= false;
+					textLod.UpLoaded= false;
+				}
+
+				// compute texture size for bench
+				textEntry->TotalTextureSizeAsked= textEntry->BaseSize + textEntry->HDLod.ExtraSize;
+
+				// Add texture size to global texture size
+				_TotalTextureSizeAsked+= textEntry->TotalTextureSizeAsked;
+			}
+			// else, stuff for textureLod.
+			else
+			{
+				CTextureLod		*textLod= static_cast<CTextureLod*>(_CurrentUploadTexture);
+				// Swap the uploaded Driver Handle with the Main texture.
+				pDriver->swapTextureHandle(*textLod->Texture, *textLod->TextureEntry->Texture);
+				// Flag the Lod.
+				textLod->UpLoaded= true;
+				// Ok, ended to completly load this textureLod.
+				_CurrentTextureLodLoaded= NULL;
 			}
 
 			// finally uploaded in VRAM, can release the RAM texture memory
@@ -260,7 +388,7 @@ void			CAsyncTextureManager::update(IDriver *pDriver)
 
 			// if not break because can't upload all parts, get next texture to upload
 			_CurrentUploadTexture= NULL;
-			getNextTextureToUpLoad();
+			getNextTextureToUpLoad(nTotalColored, pDriver);
 		}
 		else
 			// Fail to upload all, abort.
@@ -304,7 +432,12 @@ bool			CAsyncTextureManager::uploadTexturePart(ITexture *pText, IDriver *pDriver
 			bool isRel = pText->getReleasable ();
 			pText->setReleasable (false);
 			bool isAllUploaded = false;
-			pDriver->setupTextureEx (*pText, false, isAllUploaded);
+			/* Even if the shared texture is still referenced and so still exist in driver, we MUST recreate with good size
+				the texture. This is important for Texture Memory Load Balancing
+				(this may means that is used elsewhere than in the CAsyncTextureManager)
+				Hence: bMustRecreateSharedTexture==true
+			*/
+			pDriver->setupTextureEx (*pText, false, isAllUploaded, true);
 			pText->setReleasable (isRel);
 			// if the texture is already uploaded, abort partial uploading.
 			if (isAllUploaded)
@@ -366,7 +499,7 @@ bool			CAsyncTextureManager::uploadTexturePart(ITexture *pText, IDriver *pDriver
 
 
 // ***************************************************************************
-void			CAsyncTextureManager::getNextTextureToUpLoad()
+void			CAsyncTextureManager::getNextTextureToUpLoad(uint &nTotalColored, IDriver *pDriver)
 {
 	// Reset texture uploading
 	_CurrentUploadTexture= NULL;
@@ -381,12 +514,51 @@ void			CAsyncTextureManager::getNextTextureToUpLoad()
 		// If Async loading done.
 		if(text->Loaded)
 		{
+			// Is it a "texture to color" with HLSManager? yes=> color it now.
+			if(text->BuildFromHLSManager)
+			{
+				// If not beyond the max coloring texture
+				if(nTotalColored<_MaxHLSColoringPerFrame)
+				{
+					// Build the texture directly in the TextureFile.
+					nlverify(HLSManager.buildTexture(text->HLSManagerTextId, *text->Texture));
+					// Must validate the textureFile generation. NB: little weird since this is not really a textureFile.
+					// But it is the easier way to do it.
+					text->Texture->validateGenerateFlag();
+					// compute the texture size (approx). NB: DXTC5 means 1 pixel==1 byte.
+					uint	size= (uint)(text->Texture->getSize(0)*1.33);
+					// Add it to the num of colorised texture done in current update().
+					nTotalColored+= size;
+				}
+				// Else must quit and don't update any more texture this frame (_CurrentUploadTexture==NULL)
+				else
+					return;
+			}
+
 			// upload this one
 			_CurrentUploadTexture= text;
 			// remove it from list of waiting textures
 			_WaitingTextures.erase(it);
 			// found => end.
 			return;
+		}
+	}
+
+	// If here, and if no more waiting textures, update the Lod system.
+	if(_WaitingTextures.empty())
+	{
+		// if end to load the current lod.
+		if(_CurrentTextureLodLoaded && _CurrentTextureLodLoaded->Loaded)
+		{
+			// upload this one
+			_CurrentUploadTexture= _CurrentTextureLodLoaded;
+			return;
+		}
+
+		// if no Lod texture currently loading, try to load/unload one
+		if(_CurrentTextureLodLoaded == NULL)
+		{
+			updateTextureLodSystem(pDriver);
 		}
 	}
 }
@@ -401,6 +573,172 @@ bool			CAsyncTextureManager::validDXTCMipMap(ITexture *pText)
 		pText->getPixelFormat() == CBitmap::DXTC3 ||
 		pText->getPixelFormat() == CBitmap::DXTC5 );
 }
+
+
+// ***************************************************************************
+void			CAsyncTextureManager::updateTextureLodSystem(IDriver *pDriver)
+{
+	sint	i;
+
+	// the array to sort
+	static	vector<CTextureLod*>	lodArray;
+	lodArray.clear();
+	uint	reserveSize= 0;
+
+	// for each texture entry compute min distance of use
+	//=============
+	uint	currentBaseSize= 0;
+	for(i=0;i<(sint)_TextureEntries.size();i++)
+	{
+		if(!_TextureEntries[i])
+			continue;
+		CTextureEntry	&text= *_TextureEntries[i];
+		// do it only for Lodable textures
+		if(text.CanHaveLOD)
+		{
+			text.MinDistance= FLT_MAX;
+			// for all instances.
+			for(uint j=0;j<text.Instances.size();j++)
+			{
+				float	instDist= text.Instances[j]->getAsyncTextureDistance();
+				text.MinDistance= min(text.MinDistance, instDist);
+			}
+
+			// avoid /0
+			text.MinDistance= max(NL3D_ATM_MIN_DISTANCE, text.MinDistance);
+
+			// how many textLods to add
+			reserveSize++;
+
+			// the minimum mem size the system take with base lod.
+			currentBaseSize+= text.BaseSize;
+		}
+	}
+	// reserve space
+	lodArray.reserve(reserveSize);
+
+
+	// for each texture lod compute weight, and append
+	//=============
+	for(i=0;i<(sint)_TextureEntries.size();i++)
+	{
+		if(!_TextureEntries[i])
+			continue;
+		CTextureEntry	&text= *_TextureEntries[i];
+		// do it only for Lodable textures
+		if(text.CanHaveLOD)
+		{
+			// This Weight is actually a screen Pixel Ratio! (divide by distance)
+			CTextureLod	*textLod= &text.HDLod;
+			textLod->Weight= (1<<textLod->Level) / text.MinDistance;
+			// add to array
+			lodArray.push_back(textLod);
+		}
+	}
+
+
+	// sort
+	//=============
+	CPredTextLod	pred;
+	sort(lodArray.begin(), lodArray.end(), pred);
+
+
+	// Compute lod to load/unload
+	//=============
+	// Compute Pivot, ie what lods have to be loaded, and what lods do not
+	uint	pivot= 0;
+	uint	currentWantedSize= currentBaseSize;
+	uint	currentLoadedSize= currentBaseSize;
+	for(i=lodArray.size()-1;i>=0;i--)
+	{
+		uint	lodSize= lodArray[i]->ExtraSize;
+		currentWantedSize+= lodSize;
+		if(lodArray[i]->UpLoaded)
+			currentLoadedSize+= lodSize;
+		// if > max allowed, stop the pivot here. NB: the pivot is included in the "must load them" part.
+		if(currentWantedSize > _MaxTotalTextureSize)
+		{
+			pivot= i;
+			break;
+		}
+	}
+	// continue to count currentLoadedSize
+	for(;i>=0;i--)
+	{
+		if(lodArray[i]->UpLoaded)
+			currentLoadedSize+= lodArray[i]->ExtraSize;
+	}
+	// save bench.
+	_LastTextureSizeGot= currentLoadedSize;
+
+
+	// if the loadedSize is inferior to the wanted size, we can load a new LOD
+	CTextureLod		*textLod= NULL;
+	bool			unload;
+	if(currentLoadedSize<currentWantedSize)
+	{
+		unload= false;
+		// search from end of the list to pivot (included), the first LOD (ie the most important) to load.
+		for(i=lodArray.size()-1;i>=(sint)pivot;i--)
+		{
+			if(!lodArray[i]->UpLoaded)
+			{
+				textLod= lodArray[i];
+				break;
+			}
+		}
+		// One must have been found, since currentLoadedSize<currentWantedSize
+		nlassert(textLod);
+	}
+	else
+	{
+		unload= true;
+		// search from start to pivot (exclued), the first LOD (ie the less important) to unload.
+		for(i=0;i<(sint)pivot;i++)
+		{
+			if(lodArray[i]->UpLoaded)
+			{
+				textLod= lodArray[i];
+				break;
+			}
+		}
+		// it is possible that not found here. It means that All is Ok!!
+		if(textLod==NULL)
+			// no-op.
+			return;
+	}
+
+
+	// load/unload
+	//=============
+	if(!unload)
+	{
+		// create a new TextureFile, with no sharing system.
+		nlassert(textLod->Texture==NULL);
+		textLod->Texture= new CTextureFile;
+		textLod->Texture->enableSharing(false);
+		textLod->Texture->setFileName(textLod->TextureEntry->Texture->getFileName());
+		textLod->Texture->setMipMapSkipAtLoad(textLod->Level);
+		// setup async loading
+		_CurrentTextureLodLoaded= textLod;
+		// load it async.
+		CAsyncFileManager::getInstance().loadTexture(textLod->Texture, &textLod->Loaded);
+	}
+	else
+	{
+		// Swap now the lod.
+		nlassert(textLod->Texture!=NULL);
+		// Swap the uploaded Driver Handle with the Main texture (ot get the Ugly one)
+		pDriver->swapTextureHandle(*textLod->Texture, *textLod->TextureEntry->Texture);
+		// Flag the Lod.
+		textLod->UpLoaded= false;
+		textLod->Loaded= false;
+		// Release completly the texture in driver. (SmartPtr delete)
+		textLod->Texture= NULL;
+	}
+
+}
+
 
 
 } // NL3D

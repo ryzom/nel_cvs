@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.18 2002/10/25 15:50:09 berenguier Exp $
+ * $Id: u_driver.h,v 1.19 2002/10/25 16:11:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -585,7 +585,7 @@ public:
 	 *	first mipmap
 	 *	\maxLevel During time, furhter mipmap are loaded, according to instance position etc... maxLevel
 	 *	tells where to stop. If 0, the texture will finally be entirely uploaded.
-	 *	Default is 3,0.
+	 *	Default is 3,1.
 	 */
 	virtual void				setupAsyncTextureLod(uint baseLevel, uint maxLevel) =0;
 	/// Setup max texture upload in driver per updateAsyncTexture() call.

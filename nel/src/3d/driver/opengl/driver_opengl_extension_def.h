@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.15 2002/09/24 14:40:50 vizerie Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.16 2002/10/25 16:16:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -453,6 +453,8 @@ typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
 /* GL_EXT_vertex_shader */
 
 
+#ifndef GL_EXT_vertex_shader
+#define GL_EXT_vertex_shader
 #define      GL_VERTEX_SHADER_EXT					 0x8780
 #define      GL_VARIANT_VALUE_EXT                   0x87e4
 #define      GL_VARIANT_DATATYPE_EXT                0x87e5
@@ -552,10 +554,10 @@ typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
 #define      GL_Y_EXT                               0x87d6
 #define      GL_Z_EXT                               0x87d7
 #define      GL_W_EXT                               0x87d8
-#define      GL_NEGEXTVE_X_EXT                      0x87d9
-#define      GL_NEGEXTVE_Y_EXT                      0x87da
-#define      GL_NEGEXTVE_Z_EXT                      0x87db
-#define      GL_NEGEXTVE_W_EXT                      0x87dc
+#define      GL_NEGATIVE_X_EXT                      0x87d9
+#define      GL_NEGATIVE_Y_EXT                      0x87da
+#define      GL_NEGATIVE_Z_EXT                      0x87db
+#define      GL_NEGATIVE_W_EXT                      0x87dc
 #define      GL_ZERO_EXT                            0x87dd
 #define      GL_ONE_EXT                             0x87de
 #define      GL_NEGEXTVE_ONE_EXT                    0x87df
@@ -563,8 +565,11 @@ typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
 #define      GL_FULL_RANGE_EXT                      0x87e1
 #define      GL_CURRENT_VERTEX_EXT                  0x87e2
 #define      GL_MVP_MATRIX_EXT                      0x87e3
-
-
+#endif // GL_EXT_vertex_shader
+// Bad glext.h definition.....
+#ifndef GL_MAX_OPTIMIZED_VERTEX_SHADER_INVARIANTS_EXT
+#define      GL_MAX_OPTIMIZED_VERTEX_SHADER_INVARIANTS_EXT       0x87cd
+#endif
 
 /* NV_vertex_array_range2 */
 #ifndef GL_NV_vertex_array_range2

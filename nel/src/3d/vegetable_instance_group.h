@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.11 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_instance_group.h,v 1.12 2004/08/13 15:44:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,6 +131,7 @@ private:
 			NTriangles= 0;
 			NVertices= 0;
 			NLightedInstances= 0;
+			NL_SET_IB_NAME(TriangleIndices, "CVegetableRdrPass");
 		}
 	};
 

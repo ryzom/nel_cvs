@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.8 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_shape.h,v 1.9 2004/08/13 15:45:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,7 @@ public:
 		BestSidedPreComputeLighting= false;
 		MaxBendWeight= 0;
 		BendCenterMode= BendCenterNull;
+		NL_SET_IB_NAME(PB, "CVegetableShapeBuild");
 	}
 
 };

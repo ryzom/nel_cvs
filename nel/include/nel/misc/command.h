@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.13 2002/03/26 09:43:00 lecroart Exp $
+ * $Id: command.h,v 1.14 2002/04/11 13:13:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,6 +201,9 @@ public:
 	/// Executes the command and display output to the log
 	static void execute (const std::string &commandWithArgs, NLMISC::CLog &log);
 
+	/** Command name completion.
+	 * Case-sensitive. Displays the list after two calls with the same non-unique completion.
+	 */
 	static void	expand (std::string &commandName);
 
 	static void serialCommands (IStream &f);

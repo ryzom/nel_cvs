@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.11 2002/03/26 09:43:44 lecroart Exp $
+ * $Id: command.cpp,v 1.12 2002/04/11 13:13:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -244,14 +244,75 @@ end:
 }
 
 
+/*
+ * Command name completion.
+ * Case-sensitive. Displays the list after two calls with the same non-unique completion.
+ */
 void ICommand::expand (std::string &commandName)
 {
+	// Build the list of matching command names
+	vector<string> matchingnames;
 	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
-		if ((*comm).first.find(commandName) == 0)
+		if ((*comm).first.find( commandName ) == 0)
 		{
-			commandName = (*comm).first;
+			matchingnames.push_back( (*comm).first );
 		}
+	}
+
+	// Do not complete if there is no result
+	if ( matchingnames.empty() )
+	{
+		nlinfo( "No matching command" );
+		return;
+	}
+
+	// Complete if there is a single result
+	if ( matchingnames.size() == 1 )
+	{
+		commandName = matchingnames.front();
+		return;
+	}
+
+	// Try to complete to the common part if there are several results
+	// Stop loop when a name size is i or names[i] are different
+	string commonstr = commandName;
+	uint i = commandName.size();
+	while ( true )
+	{
+		char letter = 0;
+		vector<string>::iterator imn;
+		for ( imn=matchingnames.begin(); imn!=matchingnames.end(); ++imn )
+		{
+			// Return common string if the next letter is not the same in all matching names
+			if ( ((*imn).size() == i) || ( (letter!=0) && ((*imn)[i] != letter) ) )
+			{
+				nlinfo( "(Matching command not unique)" );
+				static string lastCommandName;
+				commandName = commonstr;
+				if ( lastCommandName == commandName )
+				{
+					// Display all the matching names 
+					vector<string>::iterator imn2;
+					stringstream ss;
+					ss << "Matching commands:" << endl;
+					for ( imn2=matchingnames.begin(); imn2!=matchingnames.end(); ++imn2 )
+					{
+						ss << " " << (*imn2);
+					}
+					nlinfo( "%s", ss.str().c_str() );
+				}
+				lastCommandName = commandName;
+				return;
+			}
+			// Add the next letter to the common string if it is the same in all matching names
+			else if ( letter == 0 )
+			{
+				letter = (*imn)[i];
+			}
+		}
+		commonstr += letter;
+		++i;
 	}
 }
 

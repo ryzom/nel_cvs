@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.8 2004/01/15 17:29:44 lecroart Exp $
+ * $Id: variable.h,v 1.9 2004/03/26 16:12:58 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -433,14 +433,18 @@ public:
 			fromString (args[0], human);
 		}
 
+		// convert the string from utf-8 to ascii (thrue unicode)
+		ucstring temp;
+		temp.fromUtf8(toString(human));
+		std::string disp = temp.toString();
 		// display the value
 		if (quiet)
 		{
-			log.displayNL (toString(human).c_str());
+			log.displayNL (disp.c_str());
 		}
 		else
 		{
-			log.displayNL ("Variable %s = %s", _CommandName.c_str(), toString(human).c_str());
+			log.displayNL ("Variable %s = %s", _CommandName.c_str(), disp.c_str());
 		}
 		return true;
 	}

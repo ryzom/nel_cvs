@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.31 2003/12/29 13:36:25 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.32 2004/03/26 16:15:06 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 //#include <sstream>
 #include <iomanip>
 #include <signal.h>
+#include <string.h>
 
 #include <windows.h>
 #include <windowsx.h>
@@ -45,6 +46,7 @@
 #include "nel/misc/path.h"
 #include "nel/misc/command.h"
 #include "nel/misc/thread.h"
+#include "nel/misc/ucstring.h"
 
 #include "nel/misc/win_displayer.h"
 
@@ -149,12 +151,16 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (pmf->wParam == VK_RETURN)
 				{
-					char TextSend[20000];
+					WCHAR	wText[20000];
+					string	TextSend;
 					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
-					TextSend[0] = TextSend[1] = (char)0xFF;
-					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
+					// get the text as unicode string
+					GetWindowTextW(cwd->_HInputEdit, wText, 20000);
+					ucstring ucs((ucchar*)wText);
+					// and convert it to UTF-8 encoding.
+					TextSend = ucs.toUtf8();
 					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)"");
-					char *pos1 = TextSend, *pos2 = TextSend;
+					const char *pos1 = TextSend.c_str(), *pos2 = TextSend.c_str();
 					string str;
 					while (*pos2 != '\0')
 					{
@@ -187,13 +193,16 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				else if (pmf->wParam == VK_TAB)
 				{
-					char TextSend[20000];
+					WCHAR	wText[20000];
+
 
 					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
 
-					TextSend[0] = TextSend[1] = (char)0xFF;
-					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
-					string str = TextSend;
+					// get the text as unicode string
+					GetWindowTextW(cwd->_HInputEdit, wText, 20000);
+					ucstring ucs((ucchar*)wText);
+					// and convert it to UTF-8 encoding
+					string str = ucs.toUtf8();
 					nlassert (cwd->Log != NULL);
 					ICommand::expand (str, *cwd->Log);
 					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)str.c_str());
@@ -214,8 +223,12 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					if (!cwd->_History.empty())
 					{
-						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)cwd->_History[cwd->_PosInHistory].c_str());
-						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)cwd->_History[cwd->_PosInHistory].size(), (LPARAM)cwd->_History[cwd->_PosInHistory].size());
+						ucstring ucs;
+						// convert the text from UTF-8 to unicode
+						ucs.fromUtf8(cwd->_History[cwd->_PosInHistory]);
+						// set the text as unicode string
+						SetWindowTextW(cwd->_HInputEdit, (LPCWSTR)ucs.c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)ucs.size(), (LPARAM)ucs.size());
 					}
 				}
 				else if (pmf->wParam == VK_DOWN)
@@ -227,8 +240,12 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					if (!cwd->_History.empty() && cwd->_PosInHistory < cwd->_History.size())
 					{
-						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)cwd->_History[cwd->_PosInHistory].c_str());
-						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)cwd->_History[cwd->_PosInHistory].size(), (LPARAM)cwd->_History[cwd->_PosInHistory].size());
+						ucstring ucs;
+						// convert the text from UTF-8 to unicode
+						ucs.fromUtf8(cwd->_History[cwd->_PosInHistory]);
+						// set the text as unicode string
+						SetWindowTextW(cwd->_HInputEdit, (LPCWSTR)ucs.c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)ucs.size(), (LPARAM)ucs.size());
 					}
 				}
 			}

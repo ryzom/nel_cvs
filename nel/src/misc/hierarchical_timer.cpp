@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.27 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.28 2003/03/20 17:54:11 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -202,12 +202,11 @@ uint64 CHTimer::getProcessorFrequency(bool quick)
 		const uint numLoops   = 50000000;
 
 		volatile uint k; // prevent optimisation for the loop
-		volatile dummy = 0;
 		for(uint l = 0; l < numSamples; ++l)
 		{	
 			TTicks startTick = NLMISC::CTime::getPerformanceTime();
 			uint64 startCycle = rdtsc();
-			uint dummy = 0;
+			volatile uint dummy = 0;
 			for(k = 0; k < numLoops; ++k)
 			{		
 				++ dummy;

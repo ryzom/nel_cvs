@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.33 2003/01/09 17:08:28 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.34 2003/01/13 14:13:33 lecroart Exp $
  *
  */
 
@@ -156,6 +156,27 @@ struct CService
 		PId = 0;
 		WaitingRequestId.clear ();
 	}
+
+	std::string getServiceUnifiedName () const
+	{
+		nlassert (!ShortName.empty());
+		string res;
+		if (!AliasName.empty())
+		{
+			res = AliasName+"/";
+		}
+		res += ShortName;
+		if (ServiceId != 0)
+		{
+			res += "-";
+			res += NLMISC::toString (ServiceId);
+		}
+		if(res.empty())
+			res = "???";
+		return res;
+	}
+	
+
 };
 
 
@@ -229,6 +250,7 @@ void decodeService (const string &name, string &alias, string &shortName, uint16
 	if (pos1 != string::npos)
 	{
 		alias = name.substr (0, pos1);
+		pos1++;
 	}
 	else
 	{
@@ -238,12 +260,12 @@ void decodeService (const string &name, string &alias, string &shortName, uint16
 	pos2 = name.find ("-");
 	if (pos2 != string::npos)
 	{
-		shortName = name.substr (pos1+1,pos2-pos1);
+		shortName = name.substr (pos1,pos2-pos1);
 		sid = atoi (name.substr (pos2+1).c_str());
 	}
 	else
 	{
-		shortName = name.substr (pos1,pos2-pos1);
+		shortName = name.substr (pos1);
 		sid = 0;
 	}
 
@@ -254,7 +276,7 @@ void decodeService (const string &name, string &alias, string &shortName, uint16
 }
 
 
-// start a service immediatly
+// start a service imediatly
 bool startService (const string &name)
 {
 	string command, path, arg;
@@ -1087,7 +1109,7 @@ static void cbServiceIdentification (CMessage &msgin, const std::string &service
 	if (!Services[sid].AliasName.empty())
 		Services[sid].AutoReconnect = true;
 
-	nlinfo ("*:*:%d is identified to be '%s/%s-%hu' '%s'", Services[sid].ServiceId, Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str(), Services[sid].ServiceId, Services[sid].LongName.c_str());
+	nlinfo ("*:*:%d is identified to be '%s' '%s'", Services[sid].ServiceId, Services[sid].getServiceUnifiedName().c_str(), Services[sid].LongName.c_str());
 }
 
 static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -1104,7 +1126,7 @@ static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &n
 		return;
 	}
 
-	nlinfo ("*:*:%d is ready (%s-%hu)", Services[sid].ServiceId, Services[sid].ShortName.c_str (), Services[sid].ServiceId);
+	nlinfo ("*:*:%d is ready '%s'", Services[sid].ServiceId, Services[sid].getServiceUnifiedName().c_str ());
 	Services[sid].Ready = true;
 }
 
@@ -1276,7 +1298,7 @@ void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg
 		else
 			nlinfo ("Don't restart the service because RestartDelay is %d", delay);
 
-		sendAdminEmail ("Server %s service %s/%s-%hu : Stopped, auto reconnect in %d seconds", Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str (), Services[sid].ServiceId, CInetAddress::localHost().hostName().c_str(), delay);
+		sendAdminEmail ("Server %s service '%s' : Stopped, auto reconnect in %d seconds", CInetAddress::localHost().hostName().c_str(), Services[sid].getServiceUnifiedName().c_str(), delay);
 	}
 
 	Services[sid].reset();
@@ -1630,3 +1652,37 @@ NLMISC_DYNVARIABLE(string, NetError, "Number of error on all networks cards")
 }
 
 #endif // NL_OS_UNIX
+
+NLMISC_COMMAND (system, "Execute a system() call", "<command>")
+{
+	if(args.size() <= 0)
+		return false;
+	
+	string cmd;
+	for (uint i =0; i < args.size(); i++)
+	{
+		cmd += args[i]+" ";
+	}
+	
+	string fn = CFile::findNewFile("aessystem.tmp");
+	
+	cmd += ">" + fn;
+	system (cmd.c_str());
+	
+	char str[1024];
+	FILE *fp = fopen (fn.c_str(), "rt");
+	if (fp != NULL)
+	{
+		while (true)
+		{
+			char *res = fgets (str, 1023, fp);
+			if (res == NULL)
+				break;
+			log.displayRaw(res);
+		}
+		
+		fclose (fp);
+	}
+	
+	CFile::deleteFile(fn);
+}

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.13 2001/10/24 15:03:52 chafik Exp $
+ * $Id: compilateur.cpp,v 1.14 2001/10/24 15:28:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLAISCRIPT
 
 	NLAIC::CIdentType CCompilateur::getTypeOfClass(const NLAIAGENT::IVarName &className)/// throw (NLAIE::IException)
 	{
-#ifdef NL_DEBEGU
+#ifdef NL_DEBUG
 		const char *nameDB = className.getString();
 #endif
 		try

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.28 2001/12/03 17:55:30 lecroart Exp $
+ * $Id: displayer.cpp,v 1.29 2001/12/10 17:51:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,14 +251,31 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 #endif
 }
 
-CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _FileName(filename), _NeedHeader(true)
+CFileDisplayer::CFileDisplayer (const std::string &filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true)
 {
-	if (eraseLastLog && !filename.empty())
+	setParam (filename, eraseLastLog);
+}
+
+CFileDisplayer::CFileDisplayer (const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true)
+{
+}
+
+void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
+{
+	_FileName = filename;
+
+	if (filename.empty())
+	{
+		nlwarning ("CFileDisplayer::setParam(): Can't create file with empty filename, don't log");
+		return;
+	}
+
+	if (eraseLastLog)
 	{
 		ofstream ofs (filename.c_str(), ios::out | ios::trunc);
 		if (!ofs.is_open())
 		{
-			nlwarning ("Can't open and clear the log file '%s'", filename.c_str());
+			nlwarning ("CFileDisplayer::setParam(): Can't open and clear the log file '%s', don't log", filename.c_str());
 		}
 	}
 }
@@ -270,6 +287,7 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	bool needSpace = false;
 	stringstream ss;
 
+	// if the filename is not set, don't log
 	if (_FileName.empty()) return;
 
 	if (args.Date != 0)

@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.9 2001/06/13 12:10:34 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.10 2001/06/18 09:06:26 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,11 @@ using namespace NLMISC;
 
 namespace NLNET {
 
+
 CNetManager::TBaseMap	CNetManager::_BaseMap;
+
+CCallbackNetBase::TRecordingState	CNetManager::_RecordingState;
+
 
 static void nmNewConnection (TSockId from, void *arg)
 {
@@ -82,7 +86,7 @@ static void nmNewDisconnection (TSockId from, void *arg)
 
 
 // find a not connected callbackclient or create a new one and connect to the Addr
-void createConnection(CBaseStruct &Base, const CInetAddress &Addr)
+void CNetManager::createConnection(CBaseStruct &Base, const CInetAddress &Addr, const string& name)
 {
 	uint i;
 	for (i = 0; i < Base.NetBase.size (); i++)
@@ -94,7 +98,7 @@ void createConnection(CBaseStruct &Base, const CInetAddress &Addr)
 	}
 	if (i == Base.NetBase.size ())
 	{
-		CCallbackClient *cc = new CCallbackClient;
+		CCallbackClient *cc = new CCallbackClient( _RecordingState, name+string(".nmr") );
 		Base.NetBase.push_back (cc);
 	}
 	
@@ -128,7 +132,7 @@ void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInet
 			if (name == (*itbm).first)
 			{
 				// ok! it's cool, the service is here, go and connect to him!
-				createConnection ((*itbm).second, addr);
+				CNetManager::createConnection ((*itbm).second, addr, name);
 			}
 		}
 		else if ((*itbm).second.Type == CBaseStruct::Group)
@@ -138,7 +142,7 @@ void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInet
 			{
 				if ((*itbm).second.ServiceNames[i] == name)
 				{
-					createConnection ((*itbm).second, addr);
+					CNetManager::createConnection ((*itbm).second, addr, name);
 					break;
 				}
 			}
@@ -152,12 +156,14 @@ static void UnregistrationBroadcast (const std::string &name, TServiceId sid, co
 	nldebug("L4: UnregistrationBroadcast() of service %s-%hu", name.c_str (), (uint16)sid);
 }
 
-void CNetManager::init (const CInetAddress *addr)
+void CNetManager::init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec )
 {
 	if (addr == NULL) return;
 
+	_RecordingState = rec;
+
 	// connect to the naming service (may generate a ESocketConnectionFailed exception)
-	CNamingClient::connect (*addr);
+	CNamingClient::connect( *addr, _RecordingState );
 
 	// connect the callback to know when a new service comes in or goes down
 	CNamingClient::setRegistrationBroadcastCallback (RegistrationBroadcast);
@@ -194,7 +200,7 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort,
 	// check if it's a new server
 	nlassert ((*itbm).second.NetBase.empty());
 	
-	CCallbackServer *cs = new CCallbackServer;
+	CCallbackServer *cs = new CCallbackServer( _RecordingState, serviceName+string(".nmr") );
 	(*itbm).second.NetBase.push_back (cs);
 
 	(*itbm).second.Type = CBaseStruct::Server;
@@ -251,7 +257,7 @@ void CNetManager::addClient (const std::string &serviceName, const std::string &
 
 	nlassert ((*itbm).second.NetBase.size() < 2);
 
-	createConnection ((*itbm).second, addr);
+	createConnection ((*itbm).second, addr, serviceName);
 }
 
 
@@ -264,7 +270,7 @@ void CNetManager::addClient (const std::string &serviceName)
 	// check if it's a new client
 	nlassert ((*itbm).second.NetBase.empty());
 
-	CCallbackClient *cc = new CCallbackClient;
+	CCallbackClient *cc = new CCallbackClient( _RecordingState, serviceName+string(".nmr") ); // ? - would not work if several clients with the same name
 	(*itbm).second.NetBase.push_back (cc);
 
 	(*itbm).second.Type = CBaseStruct::Client;
@@ -304,7 +310,7 @@ void CNetManager::addGroup (const std::string &groupName, const std::string &ser
 	// connect to all these services
 	for (uint i = 0; i < addrs.size (); i++)
 	{
-		createConnection ((*itbm).second, addrs[i]);
+		createConnection ((*itbm).second, addrs[i], serviceName);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.7 2001/06/12 15:41:20 lecroart Exp $
+ * $Id: net_manager.h,v 1.8 2001/06/18 09:06:31 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,7 +91,7 @@ public:
 	/** Creates the connection to the Naming Service.
 	 * If the connection failed, ESocketConnectionFailed exception is generated.
 	 */
-	static void	init (const CInetAddress *addr);
+	static void	init (const CInetAddress *addr, CCallbackNetBase::TRecordingState rec );
 
 	static void release ();
 
@@ -146,6 +146,8 @@ public:
 
 	static void setUpdateTimeout (uint32 timeout);
 
+	static void createConnection(CBaseStruct &Base, const CInetAddress &Addr, const std::string& name);
+
 private:
 
 	typedef	std::map<std::string, CBaseStruct>	TBaseMap;
@@ -154,11 +156,12 @@ private:
 	// Contains all the connections (client and server)
 	static	TBaseMap	_BaseMap;
 
+	static CCallbackNetBase::TRecordingState _RecordingState;
+
 	// Finds the service or add it if not found
 	static	ItBaseMap find (const std::string &serviceName);
 
 	friend void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
-
 
 	// It's a static class, you can't instanciate it
 	CNetManager() { }

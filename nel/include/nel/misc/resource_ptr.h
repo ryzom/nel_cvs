@@ -1,7 +1,7 @@
 /** \file resource_ptr.h
  * CResourcePtr class.
  *
- * $Id: resource_ptr.h,v 1.1 2004/11/17 16:12:01 corvazier Exp $
+ * $Id: resource_ptr.h,v 1.2 2004/11/17 16:46:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,9 +55,10 @@ namespace NLMISC
 	{
 	public:
 		int data;
+	    void thisIsGood();
 	};
 	
-	// Provided a class to retrieve a resource using a key (here it is a string)
+	// Provide a class to retrieve a resource using a key (here, it is a string)
 	class CResourceFinder
 	{
 	public:
@@ -79,6 +80,7 @@ namespace NLMISC
 	// Exemple of utilsation
 	void	foo()
 	{
+		// Get the "a" resource
 		TAPtr	rscA("a");
 
 		//	The test call the cast operator and update the cached pointer.
@@ -88,6 +90,14 @@ namespace NLMISC
 		{
 			// Use the pointer in cache, this is fast
 			rscA->thisIsGood();
+		}
+
+		// Get the "b" resource
+		rsc = "b";
+		if (rsc)
+		{
+			// Use the pointer in cache, this is fast
+			rsc->thisIsGood();
 		}
 	}
 

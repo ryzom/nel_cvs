@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.20 2001/07/12 15:45:32 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.21 2001/07/17 15:53:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,9 +54,30 @@ namespace NL3D {
 						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)						 
 						 , _NbFramesToSkip(0)
 						 , _Name(std::string("located"))
+						 , _LODDegradation(false)
 {		
 }
 
+
+/// tells wether there are alive entities / particles in the system
+bool CPSLocated::hasParticles(void) const
+{
+	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		if ((*it)->getType() == PSParticle && (*it)->hasParticles()) return true ;
+	}
+	return false ;
+}
+
+/// tells wether there are alive emitters
+bool CPSLocated::hasEmitters(void) const
+{
+	for (TLocatedBoundCont::const_iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+	{
+		if ((*it)->getType() == PSEmitter && (*it)->hasEmitters()) return true ;
+	}
+	return false ;
+}
 
 
 void CPSLocated::getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis)
@@ -428,7 +449,7 @@ void CPSLocated::resize(uint32 newSize)
 
 void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;
+	sint ver = f.serialVersion(2) ;
 	CParticleSystemProcess::serial(f) ;
 	
 	f.serial(_Name) ;
@@ -544,10 +565,13 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 
 	
-	f.serial(_UpdateLock) ;
-
-	
+	f.serial(_UpdateLock) ;	
 	f.serialContPolyPtr(_LocatedBoundCont) ;	
+
+	if (ver > 1)
+	{
+		f.serial(_LODDegradation) ;
+	}
 }
 
 
@@ -559,9 +583,26 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	if (pass == PSMotion)
 	{		
 		
+		// check wether we must perform LOD degradation
+		if (_LODDegradation)
+		{
+			if (ellapsedTime > 0)
+			{
+				nlassert(_Owner) ;
+				// compute the number of particles to show
+				const uint maxToHave = (uint) (_MaxSize * _Owner->getOneMinusCurrentLODRatio()) ;
+				if (_Size > maxToHave) // too much instances ?
+				{
+					do
+					{
+						deleteElement(0) ;
+					}
+					while ( --_Size !=maxToHave) ;				
+				}
+			}
+		}
+
 		// check if we must skip frames
-
-
 		if (!_NbFramesToSkip || !( (uint32) _Owner->getDate() % (_NbFramesToSkip + 1)))
 		{
 

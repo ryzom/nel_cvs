@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.5 2001/07/12 15:45:26 vizerie Exp $
+ * $Id: ps_located.h,v 1.6 2001/07/17 15:53:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -430,6 +430,24 @@ public:
 	std::string getName(void) const { return _Name ; }
 
 
+	/// tells wether there are alive entities / particles in the system
+	virtual bool hasParticles(void) const ;
+
+	/// tells wether there are alive emitters / particles in the system
+	virtual bool hasEmitters(void) const ;
+
+	/** Enable the to force LOD degradation. This will suppress instances immediately, (during the motion pass)  so that
+	  * there won't be more than maxNbInstance * dist / maxDist instances. This may not be desirable
+	  * every time since particle dissapear on screen, which may be noticeable.	
+	  */
+
+	void forceLODDegradation(bool enable = true) { _LODDegradation = true; }
+
+	/** Test whether LOD degradation was activated
+	  * \see forceLODDegradation()
+	  */
+	bool hasLODDegradation(void) const { return _LODDegradation ; }
+
 
 protected:	
 
@@ -534,7 +552,10 @@ protected:
 	
 	 typedef std::vector<CPSLocatedBindable *> TDtorObserversVect ;
 
-	TDtorObserversVect _DtorObserversVect ;
+	 TDtorObserversVect _DtorObserversVect ;
+
+	 /// true when LOD degradation apply to this located
+	 bool _LODDegradation ;
 } ;
 
 
@@ -735,6 +756,13 @@ public:
 
 	/// get the valid lods for that object
 	TPSLod getLOD(void) const { return _LOD ; }
+
+	/// tells wether there are alive entities / particles
+	virtual bool hasParticles(void) const { return false ; }
+
+	/// tells wether there are alive emitters
+	virtual bool hasEmitters(void) const { return false ; }
+
 
 protected:    
 

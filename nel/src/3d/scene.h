@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.22 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: scene.h,v 1.23 2002/04/12 16:20:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,12 +29,13 @@
 
 #include "3d/mot.h"
 #include "3d/camera.h"
-#include "3d/trav_scene.h"
 #include "3d/shape.h"
 #include "3d/animated_lightmap.h"
 #include "3d/play_list_manager.h"
 #include "3d/quad_grid_clip_manager.h"
 #include "3d/particle_system_manager.h"
+#include "3d/animation_set.h"
+
 
 
 #include "nel/3d/viewport.h"
@@ -158,8 +159,10 @@ public:
 	 * The getRenderOrder() is called only in the addTrav() method (so this is a static information).
 	 */
 	void			addTrav(ITrav *v);
+	
+
 	/// Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
-	void			release();
+	virtual void			release();
 	//@}
 
 
@@ -406,6 +409,13 @@ public:
 	/// Get a ref. to the particle system manager. You shouldn't call this (has methods for private processing)
 	CParticleSystemManager &getParticleSystemManager();
 
+
+	/// set the automatic animation set used by this scene. It is stored as a smart pointer
+	void				setAutomaticAnimationSet(CAnimationSet *as) { _AutomaticAnimationSet = as; }
+
+	/// Get a reference to the set of automatic animations
+	CAnimationSet		*getAutomaticAnimationSet() const { return _AutomaticAnimationSet; }	
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -491,6 +501,10 @@ private:
 	float						_GlobalWindPower;
 	CVector						_GlobalWindDirection;
 	//@}
+	
+
+	// A set of automatic animation
+	NLMISC::CSmartPtr<CAnimationSet>			_AutomaticAnimationSet;	
 
 };
 

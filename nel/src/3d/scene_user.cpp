@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.13 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.14 2002/04/12 16:22:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,16 @@ void			CSceneUser::deleteAnimationSet(UAnimationSet	*animationSet)
 {
 	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
 }
+
+// ***************************************************************************
+void			CSceneUser::setAutomaticAnimationSet(UAnimationSet *as)
+{
+	nlassert(as);
+	as->build();
+	CAnimationSetUser *asu = NLMISC::safe_cast<CAnimationSetUser *>(as);
+	_Scene.setAutomaticAnimationSet(asu->_AnimationSet);
+}
+
 // ***************************************************************************
 UPlayListManager			*CSceneUser::createPlayListManager() 
 {
@@ -287,6 +297,7 @@ const CVector	&CSceneUser::getGlobalWindDirection() const
 {
 	return _Scene.getGlobalWindDirection();
 }
+
 
 
 } // NL3D

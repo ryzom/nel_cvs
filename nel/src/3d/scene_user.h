@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.21 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: scene_user.h,v 1.22 2002/04/12 16:22:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,9 +340,12 @@ public:
 	/// Create an empty AnimationSet.
 	virtual	UAnimationSet	*createAnimationSet();
 	/// Create a new AnimationSet, load it from a file. Use CPath to search the animation set. exception EPathNotFound if not found.
-	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile) ;
+	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile);
 	/// Delete a AnimationSet.
-	virtual	void			deleteAnimationSet(UAnimationSet *animationSet) ;
+	virtual	void			deleteAnimationSet(UAnimationSet *animationSet);
+	/** Set the automatic animation set used by the scene.
+	  */
+	virtual void				setAutomaticAnimationSet(UAnimationSet *as);	
 	/// Create a new PlayListManager.
 	virtual	UPlayListManager	*createPlayListManager() ;
 	/// Delete a PlayListManager.

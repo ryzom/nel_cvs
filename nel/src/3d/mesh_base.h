@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.10 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_base.h,v 1.11 2002/04/12 16:19:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,6 +159,18 @@ public:
 	/// tells if the shape wants LocalAttenuation for RealTime lighting.  Default is false
 	virtual bool		useLightingLocalAttenuation () const;
 
+	/// \name Automatic animation
+	// @{
+	/** Tells that the model instanciated from this shape should be automatically animated.
+      * If so the scene will search for an automatic anim that has the same name than this shape and will bind it.
+	  * This state is serialized.
+	  * NB: This is a clue to scene::createInstance, a call to createInstance of this object won't make the animation binding.
+	  */
+	void						setAutoAnim(bool on = true) { _AutoAnim = on; }
+	// Check wether automatic animation is enabled
+	bool						getAutoAnim() const { return _AutoAnim; }
+	// @}
+
 
 // ************************
 protected:
@@ -190,6 +202,8 @@ protected:
 	bool						_IsLightable;
 	/// Is this mesh Use Lighting Local Attenuation ??
 	bool						_UseLightingLocalAttenuation;
+
+	bool						_AutoAnim;
 
 
 protected:

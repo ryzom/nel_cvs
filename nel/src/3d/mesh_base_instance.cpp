@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.7 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_base_instance.cpp,v 1.8 2002/04/12 16:19:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "3d/mesh_base_instance.h"
 #include "3d/mesh_base.h"
+#include "3d/scene.h"
+#include "3d/animation.h"
 #include "nel/misc/debug.h"
 
 
@@ -179,11 +181,51 @@ void CMeshBaseInstance::selectTextureSet(uint index)
 
 void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
 {
+	
+	CMeshBaseInstance	*mi = (CMeshBaseInstance*)Model;
+	CMeshBase			*mb = NLMISC::safe_cast<CMeshBase *>((IShape *) mi->Shape);
+
+	// if the base instance uses automatic animations, we must also setup the date of the channel mixer controlling this object
+	if (mb->getAutoAnim())
+	{
+		// setup the channel mixer date
+		CChannelMixer *chanMix = mi->getChannelMixer();
+		if (chanMix)
+		{			
+			ITravScene	*ts = NLMISC::safe_cast<ITravScene *>(Trav);
+			nlassert(ts->Scene);
+			const CAnimation *anim = chanMix->getSlotAnimation(0);
+			/** We perform wrapping ourselves.
+			  * We avoid using a playlist, to not create one more obj.
+			  */
+			if (anim)
+			{
+				float animLenght = anim->getEndTime() - anim->getBeginTime();
+				if (animLenght > 0)
+				{
+					float currTime = (TAnimationTime) ts->Scene->getCurrentTime();
+					float startTime = (uint) (currTime / animLenght) * animLenght;
+					// Set the channel mixer date using the global date of the scene
+					chanMix->setSlotTime(0, anim->getBeginTime() + currTime - startTime);
+				}
+				else
+				{
+					chanMix->setSlotTime(0, anim->getBeginTime());
+				}
+
+				/** temp: eval non detail animation 
+				  * The issue here is that this evaluation is performed after clipping.
+				  * This means that rotation will be ok, but translation may not work
+				  */
+				chanMix->eval(false);
+			}
+		}
+	}
+
 	CTransformAnimDetailObs::traverse(caller);
 
+	
 	// update animated materials.
-	CMeshBaseInstance	*mi= (CMeshBaseInstance*)Model;
-
 	// test if animated materials must be updated.
 	if(mi->IAnimatable::isTouched(CMeshBaseInstance::OwnerBit))
 	{

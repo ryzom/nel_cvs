@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.68 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: scene.cpp,v 1.69 2002/04/12 16:20:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/scene.h"
+#include "3d/trav_scene.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "3d/light_trav.h"
@@ -55,6 +56,9 @@
 #include "3d/vegetable_blend_layer_model.h"
 #include "3d/root_model.h"
 #include "3d/point_light_model.h"
+#include "3d/animation.h"
+
+#include <memory>
 
 
 #include "nel/misc/file.h"
@@ -149,6 +153,15 @@ void	CScene::release()
 
 	// First, delete models and un-register traversals.
 	CMOT::release();
+
+	for (uint k = 0; k < getNumTrav(); ++k)
+	{
+		ITravScene *ts = dynamic_cast<ITravScene *>(getTrav(k));
+		if (ts)
+		{
+			ts->Scene =	NULL; 
+		}
+	}
 
 	// Unlink the rendertrav.
 	RenderTraversals.clear();
@@ -321,7 +334,10 @@ void	CScene::addTrav(ITrav *v)
 	sint	order=0;
 
 	ITravScene	*sv= dynamic_cast<ITravScene*>(v);
-	if(sv)	order= sv->getRenderOrder();
+	if(sv)
+	{		
+		order= sv->getRenderOrder();
+	}
 
 	// If ok, add it to the render traversal list.
 	if(order)
@@ -493,6 +509,29 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 			}
 			++itLM;
 		}
+
+		// Auto animations
+		//==========================
+
+		if (_AutomaticAnimationSet)
+		{
+			if (pMB->getAutoAnim())
+			{
+				
+				std::string animName = CFile::getFilenameWithoutExtension(shapeName);			
+				uint animID = _AutomaticAnimationSet->getAnimationIdByName(animName);
+				if (animID != CAnimationSet::NotFound)
+				{
+					CChannelMixer *chanMix = new CChannelMixer;
+					chanMix->setAnimationSet((CAnimationSet *) _AutomaticAnimationSet);
+					chanMix->setSlotAnimation(0, animID);
+					
+					pMBI->registerToChannelMixer(chanMix, "");
+					// Gives this object ownership of the channel mixer so we don't need to keep track of it
+					pMBI->setChannelMixerOwnerShip(true);
+				}
+			}	
+		}
 	}
 
 	return pTShp;
@@ -536,6 +575,7 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 }
 
 // ***************************************************************************
+// ANIMATION FOR LIGHT MAPS
 void CScene::setAutoAnim( CAnimation *pAnim )
 {
 	uint nAnimNb;
@@ -873,6 +913,4 @@ void		CScene::setGlobalWindDirection(const CVector &gwd)
 }
 
 
-}
-
-
+} // NL3D

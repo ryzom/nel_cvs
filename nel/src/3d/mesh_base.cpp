@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.18 2002/02/28 12:59:49 besson Exp $
+ * $Id: mesh_base.cpp,v 1.19 2002/04/12 16:19:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "3d/mesh_base.h"
 #include "3d/mesh_base_instance.h"
+#include "3d/mesh_base_instance.h"
+
 
 
 namespace NL3D 
@@ -46,6 +48,8 @@ CMeshBase::CMeshBase()
 	_DefaultRotQuat.setValue(CQuat::Identity);
 	_DefaultScale.setValue(CVector(1,1,1));
 	_DefaultLMFactor.setValue(CRGBA(255,255,255,255));
+
+	_AutoAnim = false;
 }
 
 
@@ -132,6 +136,9 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5:
+		- _AutoAnim
+
 	Version 4:
 		- _UseLightingLocalAttenuation
 	Version 3:
@@ -144,7 +151,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(4);
+	sint ver = f.serialVersion(5);
 
 	if (ver >= 2)
 	{
@@ -175,6 +182,11 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_UseLightingLocalAttenuation);
 	else if( f.isReading() )
 		_UseLightingLocalAttenuation= false;
+
+	if (ver >= 5)
+	{
+		f.serial(_AutoAnim);
+	}
 
 }
 
@@ -272,7 +284,8 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	else
 	{
 		mi->setOpacity( true );
-	}
+	}	
+
 }
 
 // ***************************************************************************

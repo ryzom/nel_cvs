@@ -17,6 +17,17 @@ zone_source_directories=`cat ../../cfg/directories.cfg | grep "zone_source_direc
 # Get the water maps directories
 water_map_directories=`cat ../../cfg/directories.cfg | grep "zone_source_directory" | sed -e 's/zone_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the ligo value
+ligo_flag=`cat ../../cfg/config.cfg | grep "process_to_complete" | grep "ligo"`
+
+if ( test "$ligo_flag" )
+then
+	echo [Ligo] ON
+else
+	echo [Ligo] OFF
+fi
+
+read
 
 # Log error
 echo ------- > log.log
@@ -63,17 +74,20 @@ cd $dir_current
 
 # delete files only present in the zone_exported directory
 
-cd ./zone_exported
-list_zone=`ls -1 *.zone`
-for filename in $list_zone ; do
-	if test -e ../../ligo/output/$filename ; then
-		must_update=NO ;
-	else
-		echo "Removing $filename"
-		rm $filename ;
-	fi
-done
-cd ..
+if ( test "$ligo_flag" )
+then
+	cd ./zone_exported
+	list_zone=`ls -1 *.zone`
+	for filename in $list_zone ; do
+		if test -e ../../ligo/output/$filename ; then
+			must_update=NO ;
+		else
+			echo "Removing $filename"
+			rm $filename ;
+		fi
+	done
+	cd ..
+fi
 
 # ****************************
 

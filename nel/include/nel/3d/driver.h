@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.12 2000/11/09 17:57:32 viau Exp $
+ * $Id: driver.h,v 1.13 2000/11/10 09:51:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,7 @@ public:
 	// Private. For Driver only.
 	CRefPtr<IShader>		pShader;
 
+	uint32					getFlags() const {return _Flags;}
 
 public:
 							CMaterial() {_Touched= 0;}
@@ -216,7 +217,8 @@ class CVertexBuffer : public NLMISC::CRefCount
 private:
 	uint32					_Flags;
 	uint8					_VertexSize;
-	uint16					_NbVerts;
+	uint32					_NbVerts;
+	uint32					_Capacity;
 	std::vector<uint8>		_Verts;
 
 	uint					_WOff[4];
@@ -226,31 +228,36 @@ private:
 	uint					_UVOff[8];
 
 public:
-							CVertexBuffer(void);
-
+	// Private. For Driver only.
 	CRefPtr<IVBDrvInfos>	DrvInfos;
-	uint32					getFlags(void) { return(_Flags); };
 
-	bool					setVertexFormat(uint32 Flags);
-	bool					reserve(uint16 n);
-	sint					capacity() {return _Verts.size();}
-	bool					setNumVertices(uint16 n);
 
-	bool					setVertexCoord(uint idx, float x, float y, float z);
-	bool					setVertexCoord(uint idx, const CVector &v);
-	bool					setNormalCoord(uint idx, const CVector &v);
-	bool					setRGBA(uint idx, CRGBA& rgba);
-	bool					setTexCoord(uint idx, uint8 stage, float u, float v);
+public:
+							CVertexBuffer(void);
 							~CVertexBuffer(void);
 
-	uint8					getVertexSize(void)
-	{
-		return(_VertexSize);
-	}
-	uint16					getNumVertices(void)
-	{
-		return(_NbVerts);
-	}
+	/// Setup the vertex format. Do it before any other method.
+	bool					setVertexFormat(uint32 Flags);
+	uint32					getVertexFormat(void) { return(_Flags); };
+	uint8					getVertexSize(void) {return(_VertexSize);}
+
+	/// reserve space for nVerts vertices. You are allowed to write your vertices on this space.
+	void					reserve(uint32 nVerts);
+	/// Return the number of vertices reserved.
+	uint32					capacity() {return _Capacity;}
+	/// Set the number of active vertices. It enlarge capacity, if needed.
+	void					setNumVertices(uint32 n);
+	/// Get the number of active vertices.
+	uint32					getNumVertices(void) {return(_NbVerts);}
+
+
+	// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().
+	void					setVertexCoord(uint idx, float x, float y, float z);
+	void					setVertexCoord(uint idx, const CVector &v);
+	void					setNormalCoord(uint idx, const CVector &v);
+	void					setTexCoord(uint idx, uint8 stage, float u, float v);
+	void					setRGBA(uint idx, CRGBA& rgba);
+
 
 	void*					getVertexCoordPointer(uint idx=0);
 	void*					getNormalCoordPointer(uint idx=0);
@@ -263,19 +270,33 @@ public:
 class CPrimitiveBlock
 {
 private:
-	uint16					_TriIdx;
-	std::vector<uint32>		_Tri;
-	uint16					_StripIdx;
-	uint16*					_Strip;
-	uint16					_FanIdx;
-	uint16*					_Fan;
+	// Triangles.
+	uint32				_NbTris;
+	uint32				_TriCapacity;
+	std::vector<uint32>	_Tri;
+	// Strip/Fans (todo later).
+	uint32				_StripIdx;
+	uint32*				_Strip;
+	uint32				_FanIdx;
+	uint32*				_Fan;
 public:
-							CPrimitiveBlock(void) {};
-							~CPrimitiveBlock(void) {}; 
-	bool					setNumTri(uint16 n);
-	bool					addTri(uint16 idx1, uint16 idx2, uint16 idx3);
-	uint16					getNumTri(void);
-	void*					getTriPointer(void);
+						CPrimitiveBlock(void) {_TriCapacity=_NbTris=0;};
+						~CPrimitiveBlock(void) {}; 
+
+	// Triangles. A triangle is 3 uint32.
+	/// reserve space for nTris triangles. You are allowed to write your triangles indices on this space.
+	void				reserveTri(uint32 n);
+	/// Return the number of triangles reserved.
+	uint32				capacityTri() {return _TriCapacity;}
+	/// Set the number of active triangles. It enlarge Tri capacity, if needed.
+	void				setNumTri(uint32 n);
+	/// Get the number of active triangles.
+	uint32				getNumTri(void) {return _NbTris;}
+
+	/// Build a triangle.
+	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
+
+	uint32*				getTriPointer(void);
 };
 
 // --------------------------------------------------

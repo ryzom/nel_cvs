@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.3 2000/11/07 15:34:34 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.4 2000/11/10 09:52:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include "nel/3d/driver.h"
+#include "nel/misc/debug.h"
+using namespace NLMISC;
+
 
 namespace NL3D
 {
@@ -33,6 +36,8 @@ namespace NL3D
 CVertexBuffer::CVertexBuffer()
 {
 	_Flags=0;
+	_Capacity=0;
+	_NbVerts=0;
 }
 
 CVertexBuffer::~CVertexBuffer()
@@ -95,16 +100,19 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 
 // --------------------------------------------------
 
-bool CVertexBuffer::reserve(uint16 n)
+void CVertexBuffer::reserve(uint32 n)
 {
 	_Verts.resize(n*_VertexSize);
-	return(true);
+	_Capacity= n;
 }
 
-bool CVertexBuffer::setNumVertices(uint16 n)
+void CVertexBuffer::setNumVertices(uint32 n)
 {
+	if(_Capacity<n)
+	{
+		reserve(n);
+	}
 	_NbVerts=n;
-	return(true);
 }
 
 // --------------------------------------------------
@@ -162,64 +170,52 @@ void* CVertexBuffer::getTexCoordPointer(uint idx, uint8 stage)
 
 // --------------------------------------------------
 
-bool CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
+void CVertexBuffer::setVertexCoord(uint idx, float x, float y, float z)
 {
 	float*	ptr;
 
-	if ( !(_Flags & IDRV_VF_XYZ) )
-	{
-		return(false);
-	}
+	nlassert(_Flags & IDRV_VF_XYZ);
+
 	ptr=(float*)(&_Verts[idx*_VertexSize]);
 	*ptr=x;
 	ptr++;
 	*ptr=y;
 	ptr++;
 	*ptr=z;
-	return(true);
 }
 
 // --------------------------------------------------
 
-bool CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
+void CVertexBuffer::setVertexCoord(uint idx, const CVector &v)
 {
 	uint8*	ptr;
 
-	if ( !(_Flags & IDRV_VF_XYZ) )
-	{
-		return(false);
-	}
+	nlassert(_Flags & IDRV_VF_XYZ);
 	ptr=&_Verts[idx*_VertexSize];
 	memcpy(ptr, &(v.x), 3*sizeof(float));
-	return(true);
 }
 
 // --------------------------------------------------
 
-bool CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
+void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
 {
 	uint8*	ptr;
 
-	if ( !(_Flags & IDRV_VF_NORMAL) )
-	{
-		return(false);
-	}
+	nlassert(_Flags & IDRV_VF_NORMAL);
+
 	ptr=&_Verts[idx*_VertexSize];
 	ptr+=_NormalOff;
 	memcpy(ptr, &(v.x), 3*sizeof(float));
-	return(true);
 }
 
 // --------------------------------------------------
 
-bool CVertexBuffer::setRGBA(uint idx, CRGBA& rgba)
+void CVertexBuffer::setRGBA(uint idx, CRGBA& rgba)
 {
 	uint8*	ptr;
 
-	if ( !(_Flags & IDRV_VF_RGBA) )
-	{
-		return(false);
-	}
+	nlassert(_Flags & IDRV_VF_RGBA);
+
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_RGBAOff;
 	*ptr=rgba.R;
@@ -229,31 +225,24 @@ bool CVertexBuffer::setRGBA(uint idx, CRGBA& rgba)
 	*ptr=rgba.B;
 	ptr++;
 	*ptr=rgba.A;
-	return(true);
 }
 
 // --------------------------------------------------
 
-bool CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
+void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
 {
 	uint8*	ptr;
 	float*	ptrf;
 
-	if (stage>=IDRV_VF_MAXSTAGES)
-	{
-		return(false);
-	}
-	if ( !(_Flags & IDRV_VF_UV[stage]) )
-	{
-		return(false);
-	}
+	nlassert(stage<IDRV_VF_MAXSTAGES);
+	nlassert(_Flags & IDRV_VF_UV[stage]);
+
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_UVOff[stage];
 	ptrf=(float*)ptr;
 	*ptrf=u;
 	ptrf++;
 	*ptrf=v;
-	return(true);
 }
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.1 2000/10/26 13:10:32 viau Exp $
+ * $Id: primitive_block.cpp,v 1.2 2000/11/10 09:52:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,37 +30,42 @@ namespace NL3D
 
 // --------------------------------------------------
 
-bool CPrimitiveBlock::setNumTri(uint16 n)
-{
-	_TriIdx=0;
-	_Tri.resize(n*3);
-	return(false);
-}
 
-bool CPrimitiveBlock::addTri(uint16 idx1, uint16 idx2, uint16 idx3)
+uint32* CPrimitiveBlock::getTriPointer(void)
 {
-	uint32*	ptr;
-
-	ptr=(uint32*)(&_Tri[_TriIdx*3]);
-	*ptr=idx1;
-	ptr++;
-	*ptr=idx2;
-	ptr++;
-	*ptr=idx3;
-	_TriIdx++;
-	return(true);
-}
-
-uint16 CPrimitiveBlock::getNumTri(void)
-{
-	return(_TriIdx);
-}
-
-void* CPrimitiveBlock::getTriPointer(void)
-{
-	return((void*)&(*_Tri.begin()));
+	if(_Tri.begin()==_Tri.end())
+		return NULL;
+	else
+		return(&(*_Tri.begin()));
 }
 
 // --------------------------------------------------
+
+
+void				CPrimitiveBlock::reserveTri(uint32 n)
+{
+	_Tri.resize(n*3);
+	_TriCapacity= n;
+}
+void				CPrimitiveBlock::setNumTri(uint32 n)
+{
+	if(_TriCapacity<n)
+	{
+		reserveTri(n);
+	}
+	_NbTris= n;
+}
+void				CPrimitiveBlock::setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2)
+{
+	uint32*	ptr;
+
+	ptr=(uint32*)(&_Tri[triIdx*3]);
+	*ptr=vidx0;
+	ptr++;
+	*ptr=vidx1;
+	ptr++;
+	*ptr=vidx2;
+}
+
 
 }

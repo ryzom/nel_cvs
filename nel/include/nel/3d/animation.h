@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.2 2001/02/09 16:52:05 corvazier Exp $
+ * $Id: animation.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,6 @@ public:
 
 	enum { NotFound=0xffffffff };
 
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 	/** Get track with its name.
 	  *
 	  * \param name is the name of the desired track.
@@ -65,14 +64,13 @@ public:
 	  */
 	uint getIdTrackByName (const std::string& name) const;
 
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
-	/** Get a track
+	/** Get a track pointer
 	  *
 	  * \param channelId is the id of the desired channel.
 	  */
-	ITrack& getTrack (uint trackId)
+	const ITrack* getTrack (uint trackId) const
 	{
-		return *_TrackVector[trackId];
+		return _TrackVector[trackId].get();
 	}
 
 	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.

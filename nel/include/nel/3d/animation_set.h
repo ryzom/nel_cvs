@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.2 2001/02/12 14:20:24 corvazier Exp $
+ * $Id: animation_set.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ public:
 	/**
 	  * Get an animation pointer
 	  */
-	CAnimation* getChannelIdByName (uint animationId)
+	const CAnimation* getAnimation (uint animationId) const
 	{
 		// Look for an id with this name
 		return &_Animation[animationId];

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.2 2001/02/12 14:18:40 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.3 2001/03/07 17:11:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/3d/channel_mixer.h"
 #include "nel/3d/track.h"
 #include "nel/3d/animatable.h"
+#include "nel/3d/skeleton_weight.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 
@@ -35,8 +36,105 @@ using namespace std;
 namespace NL3D 
 {
 
-// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 // ***************************************************************************
+
+CChannelMixer::CChannelMixer()
+{
+	// No channel in the list
+	_FirstChannel=NULL;
+
+	// No animation set
+	_AnimationSet=NULL;
+
+	// Mixer no dirty
+	_Dirt=false;
+}
+
+// ***************************************************************************
+
+void CChannelMixer::setAnimationSet (const CAnimationSet* animationSet)
+{
+	// Set the animationSet Pointer
+	_AnimationSet=animationSet;
+
+	// Resize the channel array this the count of tracks
+	_Channels.resize (_AnimationSet->getNumChannelId ());
+}
+
+
+// ***************************************************************************
+
+void CChannelMixer::eval ()
+{
+	// Setup an array of animation that are not empty and stay
+	uint numActive=0;
+	uint activeSlot[NumAnimationSlot];
+
+	// Setup it up
+	for (uint s=0; s<NumAnimationSlot; s++)
+	{
+		// Dirt and not empty ? (add)
+		if (!_SlotArray[s].isEmpty())
+			// Add a dirt slot
+			activeSlot[numActive++]=s;
+	}
+
+	// For each selected channel
+	CChannel* pChannel=_FirstChannel;
+
+	while (pChannel)
+	{
+		// First slot found
+		bool bFirst=true;
+
+		// Last blend factor
+		float lastBlend;
+
+		// Eval each slot
+		for (uint a=0; a<numActive; a++)
+		{
+			// Slot number
+			uint slot=activeSlot[s];
+
+			// Is this an active slot ?
+			if (_SlotArray[slot]._Animation!=NULL)
+			{
+				// Current blend factor
+				float blend=pChannel->_Weights[slot]*_SlotArray[slot]._Weight;
+
+				// Eval the track at this time
+				((ITrack*)pChannel->_Tracks[slot])->eval (_SlotArray[slot]._Time);
+
+				// First track to be eval ?
+				if (bFirst)
+				{
+					// Copy the interpolated value
+					pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
+
+					// First blend factor
+					lastBlend=blend;
+
+					// Not first anymore
+					bFirst=false;
+				}
+				else
+				{
+					// Blend with this value and the previous sum
+					pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
+
+					// last blend update
+					lastBlend+=blend;
+				}
+
+				// Touch the animated value and its owner to recompute them later.
+				pChannel->_Object->touch (pChannel->_ValueId);
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+
 void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId)
 {
 	// Check the animationSet has been set
@@ -71,92 +169,292 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 		// Set the value ID in the object
 		entry._ValueId=valueId;
 
-		// Erase all slot values for this channel
-		for (uint slot=0; slot<NumAnimationSlot; slot++)
-		{
-			entry._Weights[slot]=1.f;
-
-			// Empty slot
-			entry._Tracks[slot]=NULL;
-
-			// Slot in use ?
-			if (_SlotArray[slot]._Animation)
-			{
-				// Track id in the animation
-				uint iDTrack=_SlotArray[slot]._Animation->getIdTrackByName (channelName);
-				if (iDTrack!=CAnimation::NotFound)
-				{
-					// Ok, get the track pointer for this animation for this channel
-					entry._Tracks[slot]=&_SlotArray[slot]._Animation->getTrack (iDTrack);
-				}
-				else
-				{
-					// Set the default track
-					entry._Tracks[slot]=entry._DefaultTracks;
-				}
-			}
-		}
+		// Dirt all the slots
+		dirtAll ();
 	}
 }
 
-
-// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
 // ***************************************************************************
-void CChannelMixer::eval ()
+
+void CChannelMixer::resetChannels ()
 {
-	// For purpose only, 'how to eval channels'
-	// Final implementation should only eval preselected channels
+	// Size of the array
 	uint size=_Channels.size();
-	for (uint channel=0; channel<size; channel++)
+
+	// For each channel entry
+	for (uint c=0; c<size; c++)
+		// Empty the channel
+		_Channels[c].empty();
+}
+
+// ***************************************************************************
+
+void CChannelMixer::setSlotAnimation (uint slot, uint animation)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Check an animationSet as been set.
+	nlassert (_AnimationSet);
+
+	// Find the animation pointer for this animation
+	const CAnimation* pAnimation=_AnimationSet->getAnimation (animation);
+
+	// Does this animation change ?
+	if (_SlotArray[slot]._Animation!=pAnimation)
 	{
-		// First slot found
-		bool bFirst=true;
+		// Change it
+		_SlotArray[slot]._Animation=pAnimation;
 
-		// The channel
-		CChannel& entry=_Channels[channel];
+		// Dirt it
+		_SlotArray[slot]._Dirt=true;
 
-		// Last blend factor
-		float lastBlend;
+		// Dirt the mixer
+		_Dirt=true;
+	}
+}
 
-		// Eval each slot
-		for (uint slot=0; slot<NumAnimationSlot; slot++)
+// ***************************************************************************
+
+void CChannelMixer::setSlotTime (uint slot, CAnimationTime time)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Set the time
+	_SlotArray[slot]._Time=time;
+}
+
+// ***************************************************************************
+
+void CChannelMixer::setSlotWeight (uint slot, float weight)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Set the time
+	_SlotArray[slot]._Weight=weight;
+}
+
+
+// ***************************************************************************
+
+void CChannelMixer::emptySlot (uint slot)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Does this animation already empty ?
+	if (!_SlotArray[slot].isEmpty ())
+	{
+		// Change it
+		_SlotArray[slot].empty ();
+
+		// Dirt it
+		_SlotArray[slot]._Dirt=true;
+
+		// Dirt the mixer
+		_Dirt=true;
+	}
+}
+
+// ***************************************************************************
+
+void CChannelMixer::resetSlots ()
+{
+	// Empty all slots
+	for (uint s=0; s<NumAnimationSlot; s++)
+		// Empty it
+		emptySlot (s);
+}
+
+// ***************************************************************************
+
+void CChannelMixer::applySkeletonWeight (uint slot, const CSkeletonWeight& skelWeight, bool invert)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Check the animationSet has been set
+	nlassert (_AnimationSet);
+
+	// Get number of node in the skeleton weight
+	uint sizeSkel=skelWeight.getNumNode ();
+
+	// For each entry of the skeleton weight
+	for (uint n=0; n<sizeSkel; n++)
+	{
+		// Get the name of the channel for this node
+		const string& channelName=skelWeight.getNodeName (n);
+
+		// Get the channel Id having the same name than the tracks in this animation set.
+		uint channelId=_AnimationSet->getChannelIdByName (channelName);
+
+		// Tracks exist in this animation set?
+		if (channelId!=CAnimationSet::NotFound)
 		{
-			// Is this an active slot ?
-			if (_SlotArray[slot]._Animation!=NULL)
-			{
-				// Current blend factor
-				float blend=entry._Weights[slot]*_SlotArray[slot]._Weight;
+			// Get the weight of the channel for this node
+			float weight=skelWeight.getNodeWeight (n);
 
-				// Eval the track at this time
-				entry._Tracks[slot]->eval (_SlotArray[slot]._Date);
-
-				// First track to be eval ?
-				if (bFirst)
-				{
-					// Copy the interpolated value
-					entry._Value->affect (entry._Tracks[slot]->getValue());
-
-					// First blend factor
-					lastBlend=blend;
-
-					// Not first anymore
-					bFirst=false;
-				}
-				else
-				{
-					// Blend with this value and the previous sum
-					entry._Value->blend (entry._Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
-
-					// last blend update
-					lastBlend+=blend;
-				}
-
-				// Touch the animated value and its owner to recompute them later.
-				entry._Object->touch (entry._ValueId);
-			}
+			// Set the weight of this channel for this slot
+			_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
 		}
 	}
 }
 
+// ***************************************************************************
+
+void CChannelMixer::resetSkeletonWeight (uint slot)
+{
+	// Check alot arg
+	nlassert (slot<NumAnimationSlot);
+
+	// Check alot arg
+	uint channelCount=_Channels.size();
+
+	// For each channels
+	for (uint c=0; c<channelCount; c++)
+		// Reset
+		_Channels[c]._Weights[slot]=1.f;
+}
+
+// ***************************************************************************
+
+void CChannelMixer::cleanAll ()
+{
+	// For each slot
+	for (uint s=0; s<NumAnimationSlot; s++)
+	{
+		// Clean it
+		_SlotArray[s]._Dirt=false;
+	}
+
+	// Clean the mixer
+	_Dirt=false;
+}
+
+// ***************************************************************************
+
+void CChannelMixer::dirtAll ()
+{
+	// For each slot
+	for (uint s=0; s<NumAnimationSlot; s++)
+	{
+		// Dirt
+		if (!_SlotArray[s].isEmpty())
+		{
+			// Dirt it
+			_SlotArray[s]._Dirt=true;
+
+			// Dirt the mixer
+			_Dirt=true;
+		}
+	}
+}
+
+// ***************************************************************************
+
+void CChannelMixer::refreshList ()
+{
+	// Setup an array of animation to add
+	uint numAdd=0;
+	uint addSlot[NumAnimationSlot];
+
+	// Setup an array of animation that are not empty and stay
+	uint numStay=0;
+	uint staySlot[NumAnimationSlot];
+
+	// Setup it up
+	uint s;
+	for (s=0; s<NumAnimationSlot; s++)
+	{
+		// Dirt and not empty ? (add)
+		if ((_SlotArray[s]._Dirt)&&(!_SlotArray[s].isEmpty()))
+			// Add a dirt slot
+			addSlot[numAdd++]=s;
+
+		// Not empty and not dirt ? (stay)
+		if ((!_SlotArray[s]._Dirt)&&(!_SlotArray[s].isEmpty()))
+			// Add a dirt slot
+			staySlot[numStay++]=s;
+	}
+
+	// Last channel pointer
+	CChannel **lastPointer=&_FirstChannel;
+
+	// Get num of channels
+	uint numChannel=_Channels.size();
+
+	// Now scan each channel
+	for (uint c=0; c<numChannel; c++)
+	{
+		// Add this channel to the list if true
+		bool add=false;
+
+		// For each slot to add
+		for (s=0; s<numAdd; s++)
+		{
+			// Find the index of the channel track in the animation set
+			uint iDTrack=_SlotArray[addSlot[s]]._Animation->getIdTrackByName (_Channels[c]._ChannelName);
+
+			// If this track exist
+			if (iDTrack!=CAnimation::NotFound)
+			{
+				// Set the track
+				_Channels[c]._Tracks[addSlot[s]]=_SlotArray[addSlot[s]]._Animation->getTrack (iDTrack);
+
+				// Add this channel to the list
+				add=true;
+			}
+			else
+			{
+				// Set the default track
+				_Channels[c]._Tracks[addSlot[s]]=_Channels[c]._DefaultTracks;
+			}
+		}
+
+		// Add this channel to the list ?
+		if (!add)
+		{
+			// Was it in the list ?
+			if (_Channels[c]._InTheList)
+			{
+				// Check if this channel is still in use
+
+				// For each slot in the stay list
+				for (s=0; s<numStay; s++)
+				{
+					// Use anything interesting ?
+					if (_Channels[c]._Tracks[staySlot[s]]!=_Channels[c]._DefaultTracks)
+					{
+						// Ok, add it to the list
+						add=true;
+
+						// Stop
+						break;
+					}
+				}
+			}
+		}
+
+		// Do i have to add the channel to the list
+		if (add)
+		{
+			// It is in the list
+			_Channels[c]._InTheList=true;
+
+			// Set the last pointer value
+			*lastPointer=&_Channels[c];
+
+			// Change last pointer
+			lastPointer=&_Channels[c]._Next;
+		}
+	}
+
+	// End of the list
+	*lastPointer=NULL;
+}
+
+// ***************************************************************************
 
 } // NL3D

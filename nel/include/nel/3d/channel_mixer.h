@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.2 2001/02/12 14:20:24 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.3 2001/03/07 17:11:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,9 +42,6 @@ class ITrack;
 class CSkeletonWeight;
 class CAnimationSet;
 
-// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
-// ***************************************************************************
-
 /**
  * A channel mixer. Animated value are registred in it. 
  * Each animated value create a channel in the mixer. Then, mixer animates
@@ -53,7 +50,7 @@ class CAnimationSet;
  * Animation are referenced in an animation slot (CSlot).
  * 
  * Each slot have an IAnimation pointer, a weight for this animation
- * between [0.f ~ 1.f] and a date for this animation.
+ * between [0.f ~ 1.f] and a time for this animation.
  *
  * Each CChannel have a weight on each animation slot between [0.f ~ 1.f].
  *
@@ -67,25 +64,62 @@ class CChannelMixer
 {
 public:
 
+	/// \name Const values
+
 	enum 
 	{ 
 		/// Number of animation slot in the CChannelMixer
 		NumAnimationSlot=8 
 	};
 
+private:
+
+	/// \name Internal classes
+
 	/// An animation slot.
 	class CSlot
 	{
 		friend class CChannelMixer;
+
+		/// Default Ctor
+		CSlot ()
+		{
+			// Not modified
+			_Dirt=false;
+
+			// Set it empty
+			empty ();
+		}
+
+		/// Empty the slot
+		void empty ()
+		{
+			_Animation=NULL;
+		}
+
+		/// Is the slot empty ?
+		bool isEmpty ()
+		{
+			return _Animation!=NULL;
+		}
+
 	private:
-		// Animation pointer in the animation set.
-		CAnimation*		_Animation;
+		/// Animation pointer to use by this slot. If NULL, slot is empty.
+		const CAnimation*	_Animation;
 
-		// Date to use in the animation
-		CAnimationTime	_Date;
+		/// Time to use to eval the animation.
+		CAnimationTime		_Time;
 
-		// Weight to apply to this slot
-		float			_Weight;
+		/**
+		  * Global weight to apply to the animation of this slot.
+		  * This weight can be gived in any range because renormalisatio is done in final
+		  * weight evaluation. If weight is 0.f, the final mix is not influenced by the animation
+		  * of this slot.
+		  */
+		float				_Weight;
+
+		/// Dirt flag. True if the animation of this slot as been modified
+		bool				_Dirt;
 	};
 
 	/**
@@ -99,86 +133,96 @@ public:
 	class CChannel
 	{
 		friend class CChannelMixer;
-	private:
+	public:
+		/// Default ctor
+		CChannel ()
+		{
+			// Set it empty
+			empty ();
 
-		/// Name of the channel in the channel mixer
+			// not in the list
+			_InTheList=false;
+		}
+	private:
+		/// Empty a channel
+		void empty ()
+		{
+			// Set the value pointer to NULL
+			_Value=NULL;
+		}
+
+		/// Is a channel empty ?
+		bool isEmpty ()
+		{
+			// If the value pointer is not NULL, not empty
+			return _Value!=NULL;
+		}
+
+		/// True if this channel is in the list
+		bool				_InTheList;
+
+		/// Name of the channel in the channel mixer. Must be the same than the animated value name.
 		std::string			_ChannelName;
 
-		/// A pointer on the IAnimatable object
+		/// A pointer on the IAnimatable object that handles the channel value.
 		IAnimatable*		_Object;
 
-		/// A pointer on the IAnimatedValue
+		/// A pointer on the IAnimatedValue animated by this channel. If NULL, the channel is empty
 		IAnimatedValue*		_Value;
 
-		/// The id of the value in the IAnimatable object.
+		/// The id of the animated value in the IAnimatable object.
 		uint32				_ValueId;
 
-		/// The default track used when track are missing in the animation.
-		ITrack*				_DefaultTracks;
+		/// The default track pointer used when track are missing in the animation. Can't be NULL.
+		const ITrack*		_DefaultTracks;
 
 		/** 
 		  * A track pointer on each slot CAnimation. Can't be NULL. If no track found for this 
-		  * channel, the pionter is _DefaultTracks.
+		  * channel, the pointer is _DefaultTracks.
 		  */
-		ITrack*				_Tracks[NumAnimationSlot];
+		const ITrack*		_Tracks[NumAnimationSlot];
 
-		/// A weight array for to blend each slot.
+		/**
+		  * A weight array for to blend each slot. 
+		  * This value must be between 0.f and 1.f. If it is 0.f, the slot is not used. If it is 1.f,
+		  * the slot is used at 100%. This weight can be set using a "skeleton template weight".
+		  * Default value is 1.f.
+		  */
 		float				_Weights[NumAnimationSlot];
 
-		/// Pointer on the next channel selected for the animations selected in the slots
+		/**
+		  * Pointer on the next channel selected for the animations selected in the slots
+		  *
+		  * This list is used to only visit the channels animated by the animations set in the slots
+		  * of the mixer
+		  */
 		CChannel*			_Next;
 
 	};
-
+public:
 	/// Constructor. The default constructor resets the slots and the channels.
 	CChannelMixer();
 
-	/// \name Acces to the slots
+	/// \name Setup the mixer
+
+	/**
+	  * Set the animation set used by this channel mixer.
+	  * The pointer is hold by the channel mixer until it changes.
+	  */
+	void setAnimationSet (const CAnimationSet* animationSet);
 
 	/** 
-	  * Set slot animation.
+	  * Launch evaluation of channels.
 	  *
-	  * Calling this method will dirt the slot, ie, all channels will be visited
-	  * to check if they are used by the new animation. If they are, they
-	  * will be linked in the internal IChannel list.
-	  * You must set an animationSet in the channel mixer before calling this.
-	  * 
-	  * \param slot is the slot number to change the animation.
-	  * \param animation is the new animation index in the animationSet use by this slot.
-	  * The slot keep this pointer until it is reseted or changed.
+	  * This is the main method. It evals animations selected in the slots for listed
+	  * channels.
+	  *
+	  * Only the channels that are animated by animations selected in the slots are evaluated.
+	  * They are stored in a linked list managed by the channel array.
+	  *
+	  * Others are initialized with the default channel value.
 	  */
-	void setSlotAnimation (uint slot, uint animation)
-	{}
-
-	/** 
-	  * Set slot date.
-	  * 
-	  * \param slot is the slot number to change the date.
-	  * \param date is the new date to use in the slot.
-	  */
-	void setSlotDate (uint slot, CAnimationTime date)
-	{}
-
-	/** 
-	  * Set slot weight.
-	  * 
-	  * \param slot is the slot number to change the weight.
-	  * \param weight is the new weight to use in the slot.
-	  */
-	void setSlotWeight (uint slot, float weigth)
-	{}
-
-	/** 
-	  * Empty a slot.
-	  * 
-	  * \param slot is the slot number to empty.
-	  */
-	void emptySlot (uint slot)
-	{}
-
-	/// Reset the slot of the mixer. All slot will be empty.
-	void resetSlots ()
-	{}
+	void eval ();
 
 	/// \name Channel access
 
@@ -196,44 +240,107 @@ public:
 	  */
 	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId);
 
-	/**
-	  * Apply a skelette weight template on a specific slot.
-	  * This method apply the weight of each node contains in skelWeight to the channel's slot weight.
-	  *
-	  * \param skelWeight is a skeleton weight template.
-	  */
-	void applySkeletonWeight (uint slot, const CSkeletonWeight& skelWeight)
-	{}
-
 	/// Reset the channel list if the mixer. All channels are removed from the mixer.
-	void resetChannels ()
-	{}
+	void resetChannels ();
 
-	/**
-	  * Set the animation set used by this channel mixer.
-	  * The pointer is hold by the channel mixer until it changes.
-	  */
-	// NOT TESTED, JUST COMPILED. FOR PURPOSE ONLY.
-	// ***************************************************************************
-	void setAnimationSet (const CAnimationSet* animationSet)
-	{
-		// Set the animationSet Pointer
-		_AnimationSet=animationSet;
-
-		// Resize the channel array this the count of tracks
-		_Channels.resize (_AnimationSet->getNumChannelId ());
-	}
+	/// \name Slots acces
 
 	/** 
-	  * Launch evaluation of channels.
+	  * Set slot animation.
+	  *
+	  * You must set an animationSet in the channel mixer before calling this.
+	  *
+	  * Calling this method will dirt the mixer, ie, all the mixer's channels will 
+	  * be visited to check if they are used by the new animation. If they are, they
+	  * will be linked in the internal CChannel list.
 	  * 
-	  * Only the channels that are animated by animations selected in the slots are evaluated.
-	  * They are stored in a linked list managed by the channel array.
-	  * Others are initialized the eval time with the default channel value.
+	  * \param slot is the slot number to change the animation. Must be >= 0 and < NumAnimationSlot.
+	  * \param animation is the new animation index in the animationSet use by this slot.
+	  * \see CAnimationSet, CAnimation
 	  */
-	void eval ();
+	void setSlotAnimation (uint slot, uint animation);
+
+	/** 
+	  * Set time of a slot.
+	  *
+	  * This time will be used to eval the animation set in this slot.
+	  * Each slot can have different time.
+	  *
+	  * Calling this method won't dirt the mixer.
+	  * 
+	  * \param slot is the slot number to change the time. Must be >= 0 and < NumAnimationSlot.
+	  * \param time is the new time to use in the slot.
+	  * \see CAnimationTime
+	  */
+	void setSlotTime (uint slot, CAnimationTime time);
+
+	/** 
+	  * Set slot weight.
+	  *
+	  * This weight will be used to eval the animation set in this slot.
+	  * Each slot can have different weight. Calling this method won't dirt the mixer.
+	  * 
+	  * \param slot is the slot number to change the weight.
+	  * \param weight is the new weight to use in the slot. No range for this weight. If the weight == 0.f, 
+	  * the slot have no effect on the final mix.
+	  */
+	void setSlotWeight (uint slot, float weigth);
+
+	/** 
+	  * Empty a slot.
+	  * 
+	  * Calling this method will dirt the mixer, ie, all the mixer's channels will 
+	  * be visited to check if they are used by the old animation. If they are, they
+	  * will be linked in the internal CChannel list.
+	  * 
+	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
+	  */
+	void emptySlot (uint slot);
+
+	/**
+	  * Reset the slot of the mixer. All slot will be empty.
+	  * 
+	  * Calling this method will dirt the mixer, ie, all the mixer's channels will 
+	  * be visited to check if they are used by the old animation. If they are, they
+	  * will be linked in the internal CChannel list.
+	  * 
+	  */
+	void resetSlots ();
+
+	/**
+	  * Apply a skeleton template weight on a specific slot.
+	  *
+	  * This method apply the weight of each node contains in skelWeight to the channel's slot weight.
+	  *
+	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
+	  * \param skelWeight is a skeleton template weight.
+	  * \param invert is true if the weights to attach to the channels are the weights of the skeleton template. 
+	  * false if the weights to attach to the channels are the 1.f-weights of the skeleton template.
+	  */
+	void applySkeletonWeight (uint slot, const CSkeletonWeight& skelWeight, bool invert=false);
+
+	/**
+	  * Reset the skeleton weight for a specific slot.
+	  *
+	  * This method apply set each channel's slot weight to 1.f.
+	  *
+	  * \param slot is the slot number to empty. Must be >= 0 and < NumAnimationSlot.
+	  */
+	void resetSkeletonWeight (uint slot);
 
 private:
+	
+	/// /name Iternal methods
+	
+	/// Clean the mixer
+	void cleanAll ();
+	
+	/// Dirt all slots
+	void dirtAll ();
+
+	/// Reshresh channel list
+	void refreshList ();
+
 	// The slot array
 	CSlot							_SlotArray[NumAnimationSlot];
 
@@ -242,6 +349,12 @@ private:
 
 	// The vector of IChannel infos.
 	std::vector<CChannel>			_Channels;
+
+	// The first channel. If NULL, no channel to animate.
+	CChannel*						_FirstChannel;
+
+	// The channels list is dirty if true.
+	bool							_Dirt;
 };
 
 

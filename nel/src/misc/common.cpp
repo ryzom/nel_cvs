@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.12 2001/06/28 12:21:39 lecroart Exp $
+ * $Id: common.cpp,v 1.13 2001/09/05 12:25:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,13 +91,13 @@ string stringFromVector( const vector<uint8>& v )
 		string::iterator is;
 		for ( is=s.begin(); is!=s.end(); ++is )
 		{
-			if ( ! isprint((*is)) )
+			// remplace non printable char and % with '?' chat
+			if ( ! isprint((*is)) || (*is) == '%')
 			{
 				(*is) = '?';
 			}
 		}
 	}
-
 	return s;
 }
 

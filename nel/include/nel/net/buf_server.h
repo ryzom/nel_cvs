@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.11 2001/12/10 14:37:18 lecroart Exp $
+ * $Id: buf_server.h,v 1.12 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,8 @@ public:
 
 	/** Send a message to the specified host, or to all hosts if hostid is zero
 	 */
-	void	send( const std::vector<uint8>& buffer, TSockId hostid );
+	//void	send( const std::vector<uint8>& buffer, TSockId hostid );
+	void	send( const NLMISC::CMemStream& buffer, TSockId hostid );
 
 	/** Checks if there is some data to receive. Returns false if the receive queue is empty.
 	 * This is where the connection/disconnection callbacks can be called.
@@ -194,7 +195,8 @@ public:
 	/** Receives next block of data in the specified (resizes the vector)
 	 * You must call dataAvailable() before every call to receive()
 	 */
-	void	receive( std::vector<uint8>& buffer, TSockId* hostid );
+	//void	receive( std::vector<uint8>& buffer, TSockId* hostid );
+	void	receive( NLMISC::CMemStream& buffer, TSockId* hostid );
 
 	/// Update the network (call this method evenly)
 	void	update();
@@ -277,11 +279,19 @@ protected:
 	}
 
 	/// Pushes a buffer to the specified host's send queue and update (unless not connected)
-	void pushBufferToHost( const std::vector<uint8>& buffer, TSockId hostid )
+	/*void pushBufferToHost( const std::vector<uint8>& buffer, TSockId hostid )
 	{
 		if ( hostid->pushBuffer( buffer ) )
 		{
 			_BytesPushedOut += buffer.size() + sizeof(TBlockSize); // statistics
+		}
+	}*/
+
+	void pushBufferToHost( const NLMISC::CMemStream& buffer, TSockId hostid )
+	{
+		if ( hostid->pushBuffer( buffer ) )
+		{
+			_BytesPushedOut += buffer.length() + sizeof(TBlockSize); // statistics
 		}
 	}
 

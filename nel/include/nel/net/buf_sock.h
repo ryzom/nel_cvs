@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.14 2002/02/28 15:22:06 lecroart Exp $
+ * $Id: buf_sock.h,v 1.15 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #define NL_BUF_SOCK_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/hierarchical_timer.h"
+
 #include "nel/net/buf_net_base.h"
 #include "nel/net/tcp_sock.h"
 
@@ -168,7 +170,31 @@ protected:
 	/** Pushes a buffer to the send queue and update,
 	 * or returns false if the socket is not physically connected the or an error occured during sending
 	 */
-	bool pushBuffer( const std::vector<uint8>& buffer )
+	bool pushBuffer( const NLMISC::CMemStream& buffer )
+	{
+		nlassert (this != InvalidSockId);	// invalid bufsock
+//		nldebug( "LNETL1: Pushing buffer to %s", asString().c_str() );
+
+		static uint32 biggerBufferSize = 64000;
+		if (buffer.length() > biggerBufferSize)
+		{
+			biggerBufferSize = buffer.length();
+			nlwarning ("LNETL1: new record! bigger network message pushed (sent) is %u bytes", biggerBufferSize);
+		}
+
+		if ( Sock->connected() )
+		{
+			// Push into host's send queue
+			SendFifo.push( buffer );
+
+			// Update sending
+			bool res = update ();
+			return res; // not checking the result as in CBufServer::update()
+		}
+		return false;
+	}
+
+	/*bool pushBuffer( const std::vector<uint8>& buffer )
 	{
 		nlassert (this != InvalidSockId);	// invalid bufsock
 //		nldebug( "LNETL1: Pushing buffer to %s", asString().c_str() );
@@ -186,10 +212,12 @@ protected:
 			SendFifo.push( buffer );
 
 			// Update sending
-			return update(); // not checking the result as in CBufServer::update()
+			bool res = update ();
+			return res; // not checking the result as in CBufServer::update()
 		}
 		return false;
-	}
+	}*/
+
 
 	/// Connects to the specified addr; set connectedstate to true if no connection advertising is needed
 	void connect( const CInetAddress& addr, bool nodelay, bool connectedstate );
@@ -223,7 +251,7 @@ private:
 	NLMISC::TTime		_TriggerTime;
 	sint32				_TriggerSize;
 
-	std::vector<uint8>	_ReadyToSendBuffer;
+	NLMISC::CObjectVector<uint8> _ReadyToSendBuffer;
 	TBlockSize			_RTSBIndex;
 
 	uint64				_AppId;

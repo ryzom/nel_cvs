@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.13 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.14 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,13 +106,11 @@ void CBufClient::connect( const CInetAddress& addr )
 /*
  * Sends a message to the remote host
  */
-void CBufClient::send( const std::vector<uint8>& buffer )
+void CBufClient::send( const NLMISC::CMemStream& buffer )
 {
 	nlnettrace( "CBufClient::send" );
-	nlassert( ! buffer.empty() );
-
-	// Size check in debug
-	nlassert( buffer.size() <= maxSentBlockSize() );
+	nlassert( buffer.length() > 0 );
+	nlassert( buffer.length() <= maxSentBlockSize() );
 
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{
@@ -138,11 +136,10 @@ bool CBufClient::dataAvailable()
 			}
 			else
 			{
-				vector<uint8> buffer;
-				recvfifo.value().front( buffer );
+				uint8 val = recvfifo.value().frontLast ();
 
 				// Test if it the next block is a system event
-				switch ( buffer[buffer.size()-1] )
+				switch ( val )
 				{
 					
 				// Normal message available
@@ -166,12 +163,15 @@ bool CBufClient::dataAvailable()
 					break;
 
 				default:
-					nlinfo( "LNETL1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
+					{
+					vector<uint8> buffer;
+					recvfifo.value().front (buffer);
+					nlinfo( "LNETL1: Invalid block type: %hu (should be = %hu)", (uint16)(buffer[buffer.size()-1]), (uint16)val );
 					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
 					nlinfo( "LNETL1: Receive queue:" );
 					recvfifo.value().display();
 					nlerror( "LNETL1: Invalid system event type in client receive queue" );
-
+					}
 				}
 				// Extract system event
 				recvfifo.value().pop();
@@ -186,7 +186,7 @@ bool CBufClient::dataAvailable()
  * Receives next block of data in the specified buffer (resizes the vector)
  * Precond: dataAvailbable() has returned true
  */
-void CBufClient::receive( std::vector<uint8>& buffer )
+void CBufClient::receive( NLMISC::CMemStream& buffer )
 {
 	nlnettrace( "CBufClient::receive" );
 	//nlassert( dataAvailable() );
@@ -200,9 +200,9 @@ void CBufClient::receive( std::vector<uint8>& buffer )
 	}
 
 	// Extract event type
-	nlassert( buffer[buffer.size()-1] == CBufNetBase::User );
-	nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.size(), sizeof(TSockId)+1 );
-	buffer.resize( buffer.size()-1 );
+	nlassert( buffer.buffer()[buffer.length()-1] == CBufNetBase::User );
+	nldebug( "LNETL1: Client read buffer (%d+%d B)", buffer.length(), sizeof(TSockId)+1 );
+	buffer.resize( buffer.length()-1 );
 }
 
 
@@ -361,14 +361,19 @@ void CClientReceiveTask::run()
 				}
 
 				// Receive message payload (in blocking mode)
-				vector<uint8> buffer ( len );
-				sock()->receive( &*buffer.begin(), len );
-				nldebug( "LNETL1: Client %s received buffer (%u bytes): [%s]", _SockId->asString().c_str(), buffer.size(), stringFromVector(buffer).c_str() );
+
+				CObjectVector<uint8> buffer;
+				buffer.resize(len+1);
+
+				sock()->receive( buffer.getPtr(), len );
+				
+				// TODO OPTIM remove the nldebug for speed
+				nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size()/*, stringFromVector(buffer).c_str()*/ );
 				// Add event type
-				buffer.push_back( CBufNetBase::User );
+				buffer[len] = CBufNetBase::User;
 
 				// Push message into receive queue
-				_Client->pushMessageIntoReceiveQueue( buffer );
+				_Client->pushMessageIntoReceiveQueue( buffer.getPtr(), buffer.size() );
 			}
 			else
 			{

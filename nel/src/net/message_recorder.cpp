@@ -1,7 +1,7 @@
 /** \file message_recorder.cpp
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.cpp,v 1.5 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: message_recorder.cpp,v 1.6 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -197,6 +197,10 @@ bool CMessageRecorder::startReplay( const std::string& filename )
  */
 bool CMessageRecorder::loadNext( TMessageRecord& record )
 {
+	// WARNING!!! This features doesn't work anymore becaues bufferAsVector() is not available with new CMemStream
+	nlstop;
+	return false;
+
 	nlassert( _File.is_open() );
 
 	// Dump from file
@@ -209,7 +213,7 @@ bool CMessageRecorder::loadNext( TMessageRecord& record )
 	if ( ! _File.fail() )
 	{
 		_File.get( (char*)stream.bufferToFill( len+1 ), len+1, '\0' );
-		stream.bufferAsVector().resize( len ); // cut end of cstring
+		//stream.bufferAsVector().resize( len ); // cut end of cstring
 		nldebug( "MR:%s: Reading [%s]", _Filename.c_str(), stream.buffer() );
 
 		// Serial from stream

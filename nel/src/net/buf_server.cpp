@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.28 2002/04/18 16:53:10 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.29 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,13 +304,11 @@ void CBufServer::disconnect( TSockId hostid, bool quick )
 /*
  * Send a message to the specified host
  */
-void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
+void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 {
 	nlnettrace( "CBufServer::send" );
-	nlassert( ! buffer.empty() );
-
-	// Size check in debug
-	nlassert( buffer.size() <= maxSentBlockSize() );
+	nlassert( buffer.length() > 0);
+	nlassert( buffer.length() <= maxSentBlockSize() );
 
 	if ( hostid != NULL )
 	{
@@ -323,7 +321,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 		uint32 val = hostid->SendNextValue;
 #endif
 
-		*(uint32*)&buffer[0] = val;
+		*(uint32*)buffer.buffer() = val;
 		hostid->SendNextValue++;
 
 		pushBufferToHost( buffer, hostid );
@@ -353,7 +351,7 @@ void CBufServer::send( const std::vector<uint8>& buffer, TSockId hostid )
 #else
 							uint32 val = (*ipb)->SendNextValue;
 #endif
-							*(uint32*)&buffer[0] = val;
+							*(uint32*)buffer.buffer() = val;
 							(*ipb)->SendNextValue++;
 
 							pushBufferToHost( buffer, *ipb );
@@ -387,11 +385,15 @@ bool CBufServer::dataAvailable()
 			    {
 			      nlwarning( "The receive queue size exceeds %d MB", mbsize );
 			    }*/
-				vector<uint8> buffer;
-				recvfifo.value().front( buffer );
+
+				uint8 val = recvfifo.value().frontLast();
+				
+				/*vector<uint8> buffer;
+				recvfifo.value().front( buffer );*/
 
 				// Test if it the next block is a system event
-				switch ( buffer[buffer.size()-1] )
+				//switch ( buffer[buffer.size()-1] )
+				switch ( val )
 				{
 					
 				// Normal message available
@@ -401,6 +403,8 @@ bool CBufServer::dataAvailable()
 				// Process disconnection event
 				case CBufNetBase::Disconnection:
 				{
+					vector<uint8> buffer;
+					recvfifo.value().front( buffer );
 
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
 					nldebug( "LNETL1: Disconnection event for %p", sockid );
@@ -422,6 +426,9 @@ bool CBufServer::dataAvailable()
 				// Process connection event
 				case CBufNetBase::Connection:
 				{
+					vector<uint8> buffer;
+					recvfifo.value().front( buffer );
+
 					TSockId sockid = *((TSockId*)(&*buffer.begin()));
 					nldebug( "LNETL1: Connection event for %p", sockid );
 
@@ -435,7 +442,10 @@ bool CBufServer::dataAvailable()
 					break;
 				}
 				default:
-					nlinfo( "LNETL1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
+					vector<uint8> buffer;
+					recvfifo.value().front( buffer );
+
+					nlinfo( "LNETL1: Invalid block type: %hu (should be = to %hu", (uint16)(buffer[buffer.size()-1]), (uint16)(val) );
 					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
 					nlinfo( "LNETL1: Receive queue:" );
 					recvfifo.value().display();
@@ -456,7 +466,7 @@ bool CBufServer::dataAvailable()
  * Receives next block of data in the specified. The length and hostid are output arguments.
  * Precond: dataAvailable() has returned true, phostid not null
  */
-void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
+void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 {
 	nlnettrace( "CBufServer::receive" );
 	//nlassert( dataAvailable() );
@@ -469,15 +479,15 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 	}
 
 	// Extract hostid (and event type)
-	*phostid = *((TSockId*)&(buffer[buffer.size()-sizeof(TSockId)-1]));
-	nlassert( buffer[buffer.size()-1] == CBufNetBase::User );
+	*phostid = *((TSockId*)&(buffer.buffer()[buffer.length()-sizeof(TSockId)-1]));
+	nlassert( buffer.buffer()[buffer.length()-1] == CBufNetBase::User );
 
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
 #ifdef NL_BIG_ENDIAN
-	uint32 val = NLMISC_BSWAP32(*(uint32*)&buffer[0]);
+	uint32 val = NLMISC_BSWAP32(*(uint32*)buffer.buffer());
 #else
-	uint32 val = *(uint32*)&buffer[0];
+	uint32 val = *(uint32*)buffer.buffer();
 #endif
 
 	//	nldebug ("receive message number %u", val);
@@ -490,11 +500,13 @@ void CBufServer::receive( std::vector<uint8>& buffer, TSockId* phostid )
 
 	(*phostid)->ReceiveNextValue++;
 
-	buffer.resize( buffer.size()-sizeof(TSockId)-1 );
-	nldebug( "LNETL1: Read buffer (%d+%d B): [%s] from %s", buffer.size(), sizeof(TSockId)+1, stringFromVector(buffer).c_str(), (*phostid)->asString().c_str() );
+	buffer.resize( buffer.length()-sizeof(TSockId)-1 );
+
+	// TODO OPTIM remove the nldebug for speed
+	nldebug( "LNETL1: Read buffer (%d+%d B) from %s", buffer.length(), sizeof(TSockId)+1, /*stringFromVector(buffer).c_str(), */(*phostid)->asString().c_str() );
 
 	// Statistics
-	_BytesPoppedIn += buffer.size() + sizeof(TBlockSize);
+	_BytesPoppedIn += buffer.length() + sizeof(TBlockSize);
 }
 
 

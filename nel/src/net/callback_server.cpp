@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.20 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.21 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ void cbsNewConnection (TSockId from, void *data)
  */
 CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename, bool recordall ) :
 	CCallbackNetBase( rec, recfilename, recordall ),
-	CStreamServer( DEFAULT_STRATEGY, DEFAULT_MAX_THREADS, DEFAULT_MAX_SOCKETS_PER_THREADS, true, rec==Replay ),
+	CBufServer( DEFAULT_STRATEGY, DEFAULT_MAX_THREADS, DEFAULT_MAX_SOCKETS_PER_THREADS, true, rec==Replay ),
 	_ConnectionCallback(NULL),
 	_ConnectionCbArg(NULL)
 {
@@ -110,6 +110,7 @@ void CCallbackServer::sendAllMyAssociations (TSockId to)
 		msgout.serial (str);
 		msgout.serial (i);
 	}
+
 	send (msgout, to);
 }
 
@@ -149,7 +150,7 @@ void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 #endif
 
 		// Send
-		CStreamServer::send (buffer, hostid);
+		CBufServer::send (buffer, hostid);
 
 #ifdef USE_MESSAGE_RECORDER
 		if ( _MR_RecordingState == Record )
@@ -185,7 +186,7 @@ void CCallbackServer::update ( sint32 timeout )
 #endif
 
 		// L1-2 Update (nothing to do in replay mode)
-		CStreamServer::update (); // then send
+		CBufServer::update (); // then send
 
 #ifdef USE_MESSAGE_RECORDER
 	}
@@ -209,7 +210,7 @@ void CCallbackServer::receive (CMessage &buffer, TSockId *hostid)
 #endif
 
 		// Receive
-		CStreamServer::receive (buffer, hostid);
+		CBufServer::receive (buffer, hostid);
 
 #ifdef USE_MESSAGE_RECORDER
 		if ( _MR_RecordingState == Record )
@@ -249,7 +250,7 @@ void CCallbackServer::disconnect( TSockId hostid )
 	{
 #endif
 		// Disconnect
-		CStreamServer::disconnect( hostid );
+		CBufServer::disconnect( hostid );
 
 #ifdef USE_MESSAGE_RECORDER
 	}
@@ -287,7 +288,7 @@ bool CCallbackServer::dataAvailable ()
 #endif
 
 		// Real dataAvailable()
-		return CStreamServer::dataAvailable (); 
+		return CBufServer::dataAvailable (); 
 
 #ifdef USE_MESSAGE_RECORDER
 	}

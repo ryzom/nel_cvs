@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.7 2002/03/28 17:45:42 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.8 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,7 @@ protected:
 	void*			argOfDisconnectionCallback() const { return _DisconnectionCbArg; }
 
 	/// Push message into receive queue (mutexed)
+	// TODO OPTIM never use this function
 	void	pushMessageIntoReceiveQueue( const std::vector<uint8>& buffer )
 	{
 		//sint32 mbsize;
@@ -161,11 +162,30 @@ protected:
 			//mbsize = recvfifo.value().size() / 1048576;
 		}
 		//nldebug( "BNB: Released." );
+		//if ( mbsize > 1 )
+		//{
+		//	nlwarning( "The receive queue size exceeds %d MB", mbsize );
+		//}
+	}
+
+	void	pushMessageIntoReceiveQueue( const uint8 *buffer, uint32 size)
+	{
+		//sint32 mbsize;
+		{
+			//nldebug( "BNB: Acquiring the receive queue... ");
+			CFifoAccessor recvfifo( &_RecvFifo );
+			//nldebug( "BNB: Acquired, pushing the received buffer... ");
+			recvfifo.value().push( buffer, size );
+			//nldebug( "BNB: Pushed, releasing the receive queue..." );
+			//mbsize = recvfifo.value().size() / 1048576;
+		}
+		//nldebug( "BNB: Released." );
 		/*if ( mbsize > 1 )
 		{
 			nlwarning( "The receive queue size exceeds %d MB", mbsize );
 		}*/
 	}
+
 
 private:
 

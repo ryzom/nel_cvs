@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.6 2001/06/18 09:03:35 cado Exp $
+ * $Id: buf_client.h,v 1.7 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,8 @@ public:
 
 	/** Sends a message to the remote host (in fact the message is buffered into the send queue)
 	 */
-	void	send( const std::vector<uint8>& buffer );
+	//void	send( const std::vector<uint8>& buffer );
+	void	send( const NLMISC::CMemStream& buffer );
 
 	/** Checks if there is some data to receive. Returns false if the receive queue is empty.
 	 * This is where the connection/disconnection callbacks can be called
@@ -120,7 +121,8 @@ public:
 	/** Receives next block of data in the specified buffer (resizes the vector)
 	 * You must call dataAvailable() before every call to receive()
 	 */
-	void	receive( std::vector<uint8>& buffer );
+	//void	receive( std::vector<uint8>& buffer );
+	void	receive( NLMISC::CMemStream& buffer );
 
 	/// Update the network (call this method evenly)
 	void	update();

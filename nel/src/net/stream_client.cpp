@@ -1,7 +1,7 @@
 /** \file stream_client.cpp
  * Network engine, layer 2, client
  *
- * $Id: stream_client.cpp,v 1.6 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: stream_client.cpp,v 1.7 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,15 +43,27 @@ void CStreamClient::send (const CMemStream &buffer)
 
 //	nldebug ("LNETL2C: send()");
 
-	CBufClient::send (buffer.bufferAsVector ());
+	// TODO OPTIM with removing vector
+/*	std::vector<uint8> vect;
+	vect.resize (buffer.length());
+	memcpy (&(*vect.begin()), buffer.buffer(), buffer.length());
+
+	CBufClient::send (vect);*/
+
+	CBufClient::send (buffer);
 }
 
 void CStreamClient::receive (NLMISC::CMemStream &buffer)
 {
 //	nldebug ("LNETL2C: receive()");
 
-	CBufClient::receive (buffer.bufferAsVector ());
-	buffer.resetBufPos ();
+	std::vector<uint8> vect;
+
+	// TODO OPTIM with removing vector
+
+	CBufClient::receive (vect);
+
+	buffer.fill (&(*vect.begin()), vect.size());
 }
 
 } // NLNET

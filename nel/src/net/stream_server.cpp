@@ -1,7 +1,7 @@
 /** \file stream_server.cpp
  * Network engine, layer 2, server
  *
- * $Id: stream_server.cpp,v 1.6 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: stream_server.cpp,v 1.7 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,12 @@ void CStreamServer::send (const CMemStream &buffer, TSockId hostid)
 
 //	nldebug ("LNETL2S: send()");
 
-	CBufServer::send (buffer.bufferAsVector(), hostid);
+	// TODO OPTIM with removing vector
+	std::vector<uint8> vect;
+	vect.resize (buffer.length());
+	memcpy (&(*vect.begin()), buffer.buffer(), buffer.length());
+
+	CBufServer::send (vect, hostid);
 }
 
 
@@ -51,8 +56,13 @@ void CStreamServer::receive (NLMISC::CMemStream &buffer, TSockId *hostid)
 {
 //	nldebug ("LNETL2S: receive()");
 
-	CBufServer::receive (buffer.bufferAsVector (), hostid);
-	buffer.resetBufPos ();
+	std::vector<uint8> vect;
+
+	// TODO OPTIM with removing vector
+
+	CBufServer::receive (vect, hostid);
+
+	buffer.fill (&(*vect.begin()), vect.size());
 }
 
 } // NLNET

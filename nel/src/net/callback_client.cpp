@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.20 2002/04/18 16:53:10 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.21 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ static TCallbackItem ClientMessageAssociationArray[] =
  * Constructor
  */
 CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall ) :
-	CCallbackNetBase( rec, recfilename, recordall ), CStreamClient( true, rec==Replay ), SendNextValue(0), ReceiveNextValue(0)
+	CCallbackNetBase( rec, recfilename, recordall ), CBufClient( true, rec==Replay ), SendNextValue(0), ReceiveNextValue(0)
 {
 	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
 
@@ -111,7 +111,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 #endif
 
 		// Send
-		CStreamClient::send (buffer);
+		CBufClient::send (buffer);
 
 #ifdef USE_MESSAGE_RECORDER
 		if ( _MR_RecordingState == Record )
@@ -143,7 +143,7 @@ bool CCallbackClient::flush (TSockId hostid)
 #endif
 
 		// Flush sending (nothing to do in replay mode)
-		return CStreamClient::flush();
+		return CBufClient::flush();
 		
 #ifdef USE_MESSAGE_RECORDER
 	}
@@ -174,7 +174,7 @@ void CCallbackClient::update ( sint32 timeout )
 #endif
 
 		// L1-2 Update (nothing to do in replay mode)
-		CStreamClient::update (); // then send
+		CBufClient::update (); // then send
 
 #ifdef USE_MESSAGE_RECORDER
 	}
@@ -197,7 +197,7 @@ bool CCallbackClient::dataAvailable ()
 #endif
 
 		// Real dataAvailable()
-		return CStreamClient::dataAvailable (); 
+		return CBufClient::dataAvailable (); 
 
 #ifdef USE_MESSAGE_RECORDER
 	}
@@ -227,7 +227,7 @@ void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 #endif
 		
 		// Receive
-		CStreamClient::receive (buffer);
+		CBufClient::receive (buffer);
 
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
@@ -297,7 +297,7 @@ void CCallbackClient::connect( const CInetAddress& addr )
 #endif
 
 			// Connect
-			CStreamClient::connect( addr );
+			CBufClient::connect( addr );
 
 #ifdef USE_MESSAGE_RECORDER
 			if ( _MR_RecordingState == Record )
@@ -368,7 +368,7 @@ void CCallbackClient::disconnect( TSockId hostid )
 #endif
 
 			// Disconnect
-			CStreamClient::disconnect ();
+			CBufClient::disconnect ();
 
 #ifdef USE_MESSAGE_RECORDER
 		}

@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.10 2001/08/23 17:21:55 lecroart Exp $
+ * $Id: callback_client.h,v 1.11 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CInetAddress;
  * \author Nevrax France
  * \date 2001
  */
-class CCallbackClient : public CCallbackNetBase, public CStreamClient
+class CCallbackClient : public CCallbackNetBase, public CBufClient
 {
 public:
 
@@ -66,7 +66,7 @@ public:
 	 * event has reached the front of the receive queue, just before calling the disconnection callback
 	 * if there is one)
 	 */
-	virtual bool	connected () const { checkThreadId (); return CStreamClient::connected (); } 
+	virtual bool	connected () const { checkThreadId (); return CBufClient::connected (); } 
 
 	/** Disconnect a connection
 	 * Unlike in CCallbackClient, you can call disconnect() on a socket that is already disconnected
@@ -80,8 +80,8 @@ public:
 	/// Returns the sockid
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
-	uint64	getReceiveQueueSize () { return CStreamClient::getReceiveQueueSize(); }
-	uint64	getSendQueueSize () { return CStreamClient::getSendQueueSize(); }
+	uint64	getReceiveQueueSize () { return CBufClient::getReceiveQueueSize(); }
+	uint64	getSendQueueSize () { return CBufClient::getSendQueueSize(); }
 
 private:
 

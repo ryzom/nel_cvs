@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.18 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: sock.cpp,v 1.19 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/net/sock.h"
 #include "nel/misc/time_nl.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #ifdef NL_OS_WINDOWS
 

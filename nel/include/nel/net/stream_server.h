@@ -1,7 +1,7 @@
 /** \file stream_server.h
  * Network engine, layer 2, server
  *
- * $Id: stream_server.h,v 1.2 2001/06/18 09:05:44 cado Exp $
+ * $Id: stream_server.h,v 1.3 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLNET {
  * \author Nevrax France
  * \date 2001
  */
-class CStreamServer : public CBufServer
+/*class CStreamServer___ : public CBufServer
 {
 public:
 
@@ -66,7 +66,7 @@ private:
 	/// This function is public in the base class and we put it private here because user cannot use it in layer 2
 	void	receive (std::vector<uint8> &buffer, TSockId *hostid) { nlstop; }
 };
-
+*/
 
 } // NLNET
 

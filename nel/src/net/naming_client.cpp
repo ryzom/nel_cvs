@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.43 2002/04/16 15:41:53 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.44 2002/05/21 16:37:38 lecroart Exp $
  *
  */
 
@@ -211,6 +211,7 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 	while (!FirstRegisteredBroadcast && _Connection->connected ())
 	{
 		_Connection->update (-1);
+		nlSleep (1);
 	}
 }
 
@@ -267,7 +268,10 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 	// wait the answer of the naming service "RG"
 	Registered = false;
 	while (!Registered)
-		_Connection->update ();
+	{
+		_Connection->update (-1);
+		nlSleep (1);
+	}
 
 	if (RegisteredSuccess)
 	{
@@ -296,7 +300,10 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 	// wait the answer of the naming service "RGI"
 	Registered = false;
 	while (!Registered)
-		_Connection->update ();
+	{
+		_Connection->update (-1);
+		nlSleep (1);
+	}
 
 	if (RegisteredSuccess)
 	{
@@ -349,7 +356,10 @@ uint16 CNamingClient::queryServicePort ()
 	// wait the answer of the naming service "QP"
 	QueryPort = false;
 	while (!QueryPort)
-		_Connection->update ();
+	{
+		_Connection->update (-1);
+		nlSleep (1);
+	}
 
 	nldebug ("NC: Got port %hu", QueryPortPort);
 

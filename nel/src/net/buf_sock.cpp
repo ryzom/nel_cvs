@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.21 2002/02/28 15:22:50 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.22 2002/05/21 16:37:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,32 +140,37 @@ bool CBufSock::flush()
 
 	// Copy data from the send queue to _ReadyToSendBuffer
 	TBlockSize netlen;
-	vector<uint8> tmpbuffer;
-	
+//	vector<uint8> tmpbuffer;
+
 	// Process each element in the send queue
 	while ( ! SendFifo.empty() )
 	{
-		// Extract a temporary buffer from the send queue
-		SendFifo.front( tmpbuffer );
-		nlassert( ! tmpbuffer.empty() );
+		uint8 *tmpbuffer;
+		uint32 size;
+		SendFifo.front( tmpbuffer, size );
 
 		// Compute the size and add it into the beginning of the buffer
-		netlen = htonl( (TBlockSize)(tmpbuffer.size()) );
-		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), sizeof(TBlockSize), 0 );
-		memcpy( &*(_ReadyToSendBuffer.end()-sizeof(TBlockSize)), (uint8*)&netlen, sizeof(TBlockSize) );
+		netlen = htonl( (TBlockSize)size );
+		uint32 oldBufferSize = _ReadyToSendBuffer.size();
+		_ReadyToSendBuffer.resize (oldBufferSize+sizeof(TBlockSize)+size);
+		*(TBlockSize*)&(_ReadyToSendBuffer[oldBufferSize])=netlen;
 
 		// Append the temporary buffer to the global buffer
-		_ReadyToSendBuffer.insert( _ReadyToSendBuffer.end(), tmpbuffer.begin(), tmpbuffer.end() );
+		CFastMem::memcpy (&_ReadyToSendBuffer[oldBufferSize+sizeof(TBlockSize)], tmpbuffer, size);
 		SendFifo.pop();
 	}
 
 	// Actual sending of _ReadyToSendBuffer
-	if ( ! _ReadyToSendBuffer.empty() )
-	{
+	//if ( ! _ReadyToSendBuffer.empty() )
+	if ( _ReadyToSendBuffer.size() != 0 )
+	{		
 		// Send
 		CSock::TSockResult res;
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
-		if ( ( res = Sock->send( &*_ReadyToSendBuffer.begin()+_RTSBIndex, len, false )) == CSock::Ok )
+
+		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
+
+		if ( res == CSock::Ok )
 		{
 /*			// Debug display
 			switch ( _FlushTrigger )
@@ -176,7 +181,10 @@ bool CBufSock::flush()
 			}
 			_FlushTrigger = FTManual;
 			nldebug( "LNETL1: %s sent effectively a buffer (%d on %d B)", asString().c_str(), len, _ReadyToSendBuffer.size() );
-*/			nldebug( "LNETL1: %s sent effectively %u/%u bytes: [%s]", asString().c_str(), len, _ReadyToSendBuffer.size(), stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str() );
+*/			
+			
+			// TODO OPTIM remove the nldebug for speed
+			nldebug( "LNETL1: %s sent effectively %u/%u bytes", asString().c_str(), len, _ReadyToSendBuffer.size()/*, stringFromVectorPart(_ReadyToSendBuffer,_RTSBIndex,len).c_str()*/ );
 
 			if ( len == _ReadyToSendBuffer.size() ) // for non-blocking mode (server)
 			{
@@ -191,7 +199,13 @@ bool CBufSock::flush()
 				_RTSBIndex += len;
 				if ( _ReadyToSendBuffer.size() > 20480 ) // if big, clear data already sent
 				{
-					_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
+					uint nbcpy = _ReadyToSendBuffer.size() - len;
+					for (uint i = 0; i < nbcpy; i++)
+					{
+						_ReadyToSendBuffer[i] = _ReadyToSendBuffer[i+len];
+					}
+					_ReadyToSendBuffer.resize(nbcpy);
+					//_ReadyToSendBuffer.erase( _ReadyToSendBuffer.begin(), _ReadyToSendBuffer.begin()+len );
 					_RTSBIndex = 0;
 				}
 			}
@@ -205,6 +219,7 @@ bool CBufSock::flush()
 			return false;
 		}
 	}
+
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.11 2001/07/18 16:13:22 lecroart Exp $
+ * $Id: callback_server.h,v 1.12 2002/05/21 16:38:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLNET {
  * \author Nevrax France
  * \date 2001
  */
-class CCallbackServer : public CCallbackNetBase, public CStreamServer
+class CCallbackServer : public CCallbackNetBase, public CBufServer
 {
 public:
 
@@ -52,7 +52,7 @@ public:
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != NULL ); return CStreamServer::flush(destid); }
+	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != NULL ); return CBufServer::flush(destid); }
 
 	/// Updates the network (call this method evenly)
 	void	update (sint32 timeout=0);
@@ -74,13 +74,13 @@ public:
 	void	disconnect (TSockId hostid);
 
 	/// Returns the address of the specified host
-	const CInetAddress& hostAddress (TSockId hostid) { nlassert(hostid!=InvalidSockId); checkThreadId(); return CStreamServer::hostAddress (hostid); }
+	const CInetAddress& hostAddress (TSockId hostid) { nlassert(hostid!=InvalidSockId); checkThreadId(); return CBufServer::hostAddress (hostid); }
 
 	/// Returns the sockid (cf. CCallbackClient)
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
-	uint64	getReceiveQueueSize () { return CStreamServer::getReceiveQueueSize(); }
-	uint64	getSendQueueSize () { return CStreamServer::getSendQueueSize(0); }
+	uint64	getReceiveQueueSize () { return CBufServer::getReceiveQueueSize(); }
+	uint64	getSendQueueSize () { return CBufServer::getSendQueueSize(0); }
 
 private:
 

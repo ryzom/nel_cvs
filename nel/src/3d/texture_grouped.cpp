@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.14 2004/03/15 18:15:18 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.15 2004/04/09 12:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,9 @@
 #include <algorithm>
 
 namespace NL3D {
+
+std::map<std::string, uint> CTextureGrouped::_NameToSize;
+
 
 ///=====================================================================================================
 /// This is used to get the size of a texture, with an optimisation in the case of texture files
@@ -189,17 +192,9 @@ void CTextureGrouped::doGenerate(bool async)
 		const uint width = _Textures[0]->getWidth(), height = _Textures[0]->getHeight();		
 		const uint totalHeight = height * _NbTex;
 		const uint realHeight  = NLMISC::raiseToNextPowerOf2(totalHeight);	
-
-		resize(width, realHeight, _Textures[0]->getPixelFormat());
-
-		const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / _Textures.size())
-			                            : 0.f;
-		_DeltaUV = CUV(1,  deltaV);
-		CUV currentUV(0, 0);
-		
+		resize(width, realHeight, _Textures[0]->getPixelFormat());		
 		uint k;
-		sint32 currY =  0;
-		_TexUVs.resize(_NbTex);
+		sint32 currY =  0;		
 		for(k = 0; k < _NbTex; ++k)
 		{			
 			_Textures[k]->generate();
@@ -211,14 +206,7 @@ void CTextureGrouped::doGenerate(bool async)
 				break;
 			}						
 			this->blit(_Textures[k], 0, currY);
-			currY += height;			
-
-			TFourUV &uvs = _TexUVs[k];	
-			uvs.uv0 = currentUV;
-			uvs.uv1 = currentUV + CUV(1, 0);
-			uvs.uv2 = currentUV + _DeltaUV;
-			uvs.uv3 = currentUV + CUV(0, deltaV);
-			currentUV.V += deltaV;			
+			currY += height;						
 		}
 
 		for(k = 0; k < _NbTex; ++k)
@@ -228,7 +216,65 @@ void CTextureGrouped::doGenerate(bool async)
 				_Textures[k]->release();
 			}
 		}
+
+		// save sub bitmap size so that bitmaps won't be reloaded to get their size the next time
+		_NameToSize[getShareName()] = height;
+		// compute the uvs
+		genUVs(height);
 	}	
+}
+
+///=====================================================================================================
+void CTextureGrouped::forceGenUVs()
+{
+	// retrieve size of sub-bitmap
+	std::string shareName = getShareName();
+	std::map<std::string, uint>::const_iterator it = _NameToSize.find(shareName);
+	if (it == _NameToSize.end())
+	{
+		doGenerate(); // this will retrieve size of sub-bitmaps
+		              // TODO : only load the size... not a problem for now because textures can be cached at startup
+		release();		
+		it = _NameToSize.find(getShareName());
+		if (it == _NameToSize.end())
+		{
+			_TexUVs.resize(_NbTex);					
+			// generate default uvs
+			for(uint k = 0; k < _NbTex; ++k)
+			{
+				TFourUV &uvs = _TexUVs[k];	
+				uvs.uv0.set(0.f, 0.f);
+				uvs.uv1.set(1.f, 0.f);
+				uvs.uv2.set(1.f, 1.f);
+				uvs.uv3.set(0.f, 1.f);
+			}
+			return;
+		}
+	}
+	genUVs(it->second);	
+}
+
+///=====================================================================================================
+void CTextureGrouped::genUVs(uint subBitmapHeight)
+{
+	_TexUVs.resize(_NbTex);			
+	//		
+	const uint totalHeight = subBitmapHeight * _NbTex; // *it contains the height of bitmap
+	const uint realHeight  = NLMISC::raiseToNextPowerOf2(totalHeight);				
+	// TODO : better ordering of sub-bitmaps
+	const float deltaV = realHeight ? (float(totalHeight) / float(realHeight)) * (1.0f / _NbTex)
+		: 0.f;
+	_DeltaUV = CUV(1,  deltaV);
+	CUV currentUV(0, 0);		
+	for(uint k = 0; k < _NbTex; ++k)
+	{				
+		TFourUV &uvs = _TexUVs[k];	
+		uvs.uv0 = currentUV;
+		uvs.uv1 = currentUV + CUV(1, 0);
+		uvs.uv2 = currentUV + _DeltaUV;
+		uvs.uv3 = currentUV + CUV(0, deltaV);
+		currentUV.V += deltaV;			
+	}
 }
 
 ///=====================================================================================================
@@ -291,6 +337,7 @@ void CTextureGrouped::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		
 		// setup the textures
 		setTextures(&texList[0], nbTex, false);
+		forceGenUVs();
 		touch();
 	}
 	else

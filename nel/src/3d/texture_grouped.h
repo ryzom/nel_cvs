@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.8 2004/02/19 09:46:33 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.9 2004/04/09 12:47:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,10 @@ protected:
 
 	/// the UVs for each texture in the group
 	TFourUVList _TexUVs;
+	
+
+	// cache sub bitmap size for each texture to avoid reloading of texture after each serial
+	static std::map<std::string, uint> _NameToSize;
 
 	// Copy this class attributes from src; Used by the = operator and the copy ctor
 	void duplicate(const CTextureGrouped &src);
@@ -179,6 +183,10 @@ protected:
 
 	// display a warning to tell that a set of grouped textures are incompatibles
 	void displayIncompatibleTextureWarning(CSmartPtr<ITexture> *textureTab, uint nbTex);
+
+	// generate uvs for each sub-texture
+	void forceGenUVs();
+	void genUVs(uint subBitmapHeight);
 };
 
 

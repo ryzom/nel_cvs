@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.19 2004/08/19 17:54:00 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.19.4.1 2004/09/14 15:33:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -64,9 +64,30 @@ HINSTANCE HInstDLL = NULL;
 //
 #define NL_VOLATILE_RAM_VB_MAXSIZE	512*1024
 #define NL_VOLATILE_AGP_VB_MAXSIZE	2500*1024
-#define NL_VOLATILE_RAM_IB_MAXSIZE	256*1024
+#define NL_VOLATILE_RAM_IB_MAXSIZE	1024*1024
 #define NL_VOLATILE_AGP_IB_MAXSIZE	256*1024
 
+
+
+// tmp
+/*
+class CDumpAuto
+{
+public:
+	CDumpAuto(const char *name) : _Name(name) 
+	{ 
+		nldebug(name);
+	}
+	~CDumpAuto()
+	{
+		nldebug(("Leaving" +  _Name).c_str());
+	}
+private:
+	std::string _Name;
+};
+
+#define DUMP_AUTO(label) CDumpAuto __dump__auto##label(#label);
+  */
 
 // ***************************************************************************
 
@@ -84,7 +105,7 @@ namespace NL3D
 // ***************************************************************************
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverD3D::ReleaseVersion = 0xa;
+const uint32		CDriverD3D::ReleaseVersion = 0xb; // nico
 
 // ***************************************************************************
 
@@ -99,6 +120,31 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 {
 	return IDriver::InterfaceVersion;
 }
+
+
+
+/*static*/ bool CDriverD3D::_CacheTest[CacheTest_Count] = 
+{
+	false, // CacheTest_CullMode = 0;
+	false, // CacheTest_RenderState = 1, 
+	false, // CacheTest_TextureState = 2,
+	false, // CacheTest_TextureIndexMode = 3,
+	false, // CacheTest_TextureIndexUV = 4,
+	false, // CacheTest_Texture = 5,
+	false, // CacheTest_VertexProgram = 6,
+	false, // CacheTest_PixelShader = 7,
+	false, // CacheTest_VertexProgramConstant = 8,
+	false, // CacheTest_PixelShaderConstant = 9,
+	false, // CacheTest_SamplerState = 10,
+	false, // CacheTest_VertexBuffer = 11,
+	false, // CacheTest_IndexBuffer = 12,
+	false, // CacheTest_VertexDecl = 13,
+	false, // CacheTest_Matrix = 14,
+	false, // CacheTest_RenderTarget = 15,
+	false, // CacheTest_MaterialState = 16,
+	false  // CacheTest_DepthRange = 17,	
+};
+
 
 // ***************************************************************************
 
@@ -127,6 +173,7 @@ CDriverD3D::CDriverD3D()
 	_Interval = 1;
 	_AGPMemoryAllocated = 0;
 	_VRAMMemoryAllocated = 0;
+	_Rasterizer = RASTERIZER;
 #ifdef NL_DISABLE_HARDWARE_VERTEX_PROGAM
 	_DisableHardwareVertexProgram = true;
 #else // NL_DISABLE_HARDWARE_VERTEX_PROGAM
@@ -194,6 +241,12 @@ CDriverD3D::CDriverD3D()
 	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
 	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
+	_StateBlockCategory = 0;
+	_MustRestoreLight = false;	
+	_VertexStreamStride = 0;
+	_VertexDeclStride = 0;
+	_Lost = false;
+	_SceneBegun = false;
 }
 
 // ***************************************************************************
@@ -293,9 +346,11 @@ void CDriverD3D::resetRenderVariables()
 	
 	// Vertices and indexes are not valid anymore
 	_VertexProgramCache.VertexProgram = NULL;
+	_VertexProgramCache.VP = NULL;
 	touchRenderVariable (&(_VertexProgramCache));
 	_PixelShaderCache.PixelShader = NULL;
-	touchRenderVariable (&(_PixelShaderCache));
+	touchRenderVariable (&(_PixelShaderCache));		
+	touchRenderVariable(&_MaterialState);		
 
 	for (i=0; i<MaxVertexProgramConstantState; i++)
 	{
@@ -483,7 +538,167 @@ void CDriverD3D::updateRenderVariables()
 }
 
 // ***************************************************************************
+/*
+inline void CDriverD3D::applyRenderVariable(CRenderVariable *currentRenderState)
+{
+	switch (currentRenderState->Type)
+	{
+	case CRenderVariable::RenderState:
+		{
+			CRenderState *renderState = static_cast<CRenderState*>(currentRenderState);
+			_DeviceInterface->SetRenderState (renderState->StateID, renderState->Value);
+		}
+		break;
+	case CRenderVariable::TextureState:
+		{
+			CTextureState *textureState = static_cast<CTextureState*>(currentRenderState);
+			_DeviceInterface->SetTextureStageState (textureState->StageID, textureState->StateID, textureState->Value);
+		}
+		break;
+	case CRenderVariable::TextureIndexState:
+		{
+			CTextureIndexState *textureState = static_cast<CTextureIndexState*>(currentRenderState);
+			if (textureState->TexGen)
+				setTextureState (textureState->StageID, D3DTSS_TEXCOORDINDEX, textureState->TexGenMode);
+			else
+				setTextureState (textureState->StageID, D3DTSS_TEXCOORDINDEX, textureState->UVChannel);
+		}
+		break;
+	case CRenderVariable::TexturePtrState:
+		{
+			CTexturePtrState *textureState = static_cast<CTexturePtrState*>(currentRenderState);
+			_DeviceInterface->SetTexture (textureState->StageID, textureState->Texture);
+		}
+		break;
+	case CRenderVariable::VertexProgramPtrState:
+		{
+			CVertexProgramPtrState *vertexProgram = static_cast<CVertexProgramPtrState*>(currentRenderState);
+			_DeviceInterface->SetVertexShader(vertexProgram->VertexProgram);
+		}
+		break;
+	case CRenderVariable::PixelShaderPtrState:
+		{
+			CPixelShaderPtrState *pixelShader = static_cast<CPixelShaderPtrState*>(currentRenderState);
+			_DeviceInterface->SetPixelShader(pixelShader->PixelShader);
+		}
+		break;
+	case CRenderVariable::VertexProgramConstantState:
+		{
+			CVertexProgramConstantState *vertexProgramConstant = static_cast<CVertexProgramConstantState*>(currentRenderState);
+			switch (vertexProgramConstant->ValueType)
+			{
+			case CVertexProgramConstantState::Float:
+				_DeviceInterface->SetVertexShaderConstantF (vertexProgramConstant->StateID, (float*)vertexProgramConstant->Values, 1);
+				break;
+			case CVertexProgramConstantState::Int:
+				_DeviceInterface->SetVertexShaderConstantI (vertexProgramConstant->StateID, (int*)vertexProgramConstant->Values, 1);
+				break;
+			}
+		}
+		break;
+	case CRenderVariable::PixelShaderConstantState:
+		{
+			CPixelShaderConstantState *pixelShaderConstant = static_cast<CPixelShaderConstantState*>(currentRenderState);
+			switch (pixelShaderConstant->ValueType)
+			{
+			case CPixelShaderConstantState::Float:
+				_DeviceInterface->SetPixelShaderConstantF (pixelShaderConstant->StateID, (float*)pixelShaderConstant->Values, 1);
+				break;
+			case CPixelShaderConstantState::Int:
+				_DeviceInterface->SetPixelShaderConstantI (pixelShaderConstant->StateID, (int*)pixelShaderConstant->Values, 1);
+				break;
+			}
+		}
+		break;
+	case CRenderVariable::SamplerState:
+		{
+			CSamplerState *samplerState = static_cast<CSamplerState*>(currentRenderState);
+			_DeviceInterface->SetSamplerState (samplerState->SamplerID, samplerState->StateID, samplerState->Value);
+		}
+		break;
+	case CRenderVariable::MatrixState:
+		{
+			CMatrixState *renderMatrix = static_cast<CMatrixState*>(currentRenderState);
+			_DeviceInterface->SetTransform (renderMatrix->TransformType, &(renderMatrix->Matrix));
+		}
+		break;
+	case CRenderVariable::VBState:
+		{
+			CVBState *renderVB = static_cast<CVBState*>(currentRenderState);
+			if (renderVB->VertexBuffer)
+			{
+				_DeviceInterface->SetStreamSource (0, renderVB->VertexBuffer, renderVB->Offset, renderVB->Stride);
+			}
+		}
+		break;
+	case CRenderVariable::IBState:
+		{
+			CIBState *renderIB = static_cast<CIBState*>(currentRenderState);
+			if (renderIB->IndexBuffer)
+			{
+				_DeviceInterface->SetIndices (renderIB->IndexBuffer);
+			}
+		}
+		break;
+	case CRenderVariable::VertexDecl:
+		{
+			CVertexDeclState *renderVB = static_cast<CVertexDeclState*>(currentRenderState);
+			if (renderVB->Decl)
+			{
+				_DeviceInterface->SetVertexDeclaration (renderVB->Decl);
+			}
+		}
+		break;
+	case CRenderVariable::LightState:
+		{
+			CLightState *renderLight = static_cast<CLightState*>(currentRenderState);
+			
+			// Enabel state modified ?
+			if (renderLight->EnabledTouched)
+				_DeviceInterface->LightEnable (renderLight->LightIndex, renderLight->Enabled);
 
+			// Light enabled ?
+			if (renderLight->Enabled)
+			{
+				if (renderLight->SettingsTouched)
+				{
+					// New position
+					renderLight->Light.Position.x -= _PZBCameraPos.x;
+					renderLight->Light.Position.y -= _PZBCameraPos.y;
+					renderLight->Light.Position.z -= _PZBCameraPos.z;
+					_DeviceInterface->SetLight (renderLight->LightIndex, &(renderLight->Light));
+					renderLight->SettingsTouched = false;
+				}
+			}
+
+			// Clean
+			renderLight->EnabledTouched = false;
+		}
+		break;
+	case CRenderVariable::RenderTargetState:
+		{
+			CRenderTargetState *renderTarget = static_cast<CRenderTargetState*>(currentRenderState);
+			_DeviceInterface->SetRenderTarget (0, renderTarget->Target);				
+			setupViewport (_Viewport);				
+			setupScissor (_Scissor);				
+		}
+		break;
+	}
+}*/
+
+
+
+
+
+static inline void fixTexStage(CDriverD3D &drv, D3DTEXTURESTAGESTATETYPE state, DWORD stage,  DWORD value)
+{	
+	if ((value & D3DTA_SELECTMASK) == D3DTA_DIFFUSE)
+	{
+		drv.setTextureState (stage, state, (value&~D3DTA_SELECTMASK)|D3DTA_TFACTOR);
+	}
+}
+
+// ***************************************************************************
 void CDriverD3D::updateRenderVariablesInternal()
 {
 	H_AUTO_D3D(CDriver3D_updateRenderVariablesInternal);
@@ -492,6 +707,7 @@ void CDriverD3D::updateRenderVariablesInternal()
 	/* The "unlighted without vertex color" trick */
 	if (_CurrentMaterialInfo && _CurrentMaterialInfo->NeedsConstantForDiffuse)
 	{
+		// The material IS unlighted
 		// No pixel shader ?
 		if (_CurrentMaterialInfo->PixelShader)
 		{
@@ -526,17 +742,26 @@ void CDriverD3D::updateRenderVariablesInternal()
 				uint i;
 				for (i=0; i<maxTexture; i++)
 				{
-					uint j;
-					for (j=0; j<NL_SRC_OPERATORS_COUNT; j++)
-					{
-						D3DTEXTURESTAGESTATETYPE state = SrcOperators[j];
-						DWORD value = _TextureStateCache[i][state].Value;
-						if ((value & D3DTA_SELECTMASK) == D3DTA_DIFFUSE)
+					if (_CurrentMaterialInfo->ColorOp[i] == D3DTOP_DISABLE) break;
+					fixTexStage(*this, D3DTSS_COLORARG1, i, _TextureStateCache[i][D3DTSS_COLORARG1].Value);
+					if (_CurrentMaterialInfo->NumColorArg[i] > 1)
+					{						
+						fixTexStage(*this, D3DTSS_COLORARG2, i, _TextureStateCache[i][D3DTSS_COLORARG2].Value);
+						if (_CurrentMaterialInfo->NumColorArg[i] > 2)
 						{
-							setTextureState (i, state, (value&~D3DTA_SELECTMASK)|D3DTA_TFACTOR);
+							fixTexStage(*this, D3DTSS_COLORARG0, i, _TextureStateCache[i][D3DTSS_COLORARG0].Value);
 						}
 					}
-
+					//
+					fixTexStage(*this, D3DTSS_ALPHAARG1, i, _TextureStateCache[i][D3DTSS_ALPHAARG1].Value);
+					if (_CurrentMaterialInfo->NumAlphaArg[i] > 1)
+					{
+						fixTexStage(*this, D3DTSS_ALPHAARG2, i, _TextureStateCache[i][D3DTSS_ALPHAARG2].Value);
+						if (_CurrentMaterialInfo->NumAlphaArg[i] > 2)
+						{
+							fixTexStage(*this, D3DTSS_ALPHAARG0, i, _TextureStateCache[i][D3DTSS_ALPHAARG0].Value);
+						}
+					}
 					// Operator is D3DTOP_BLENDDIFFUSEALPHA ?
 					if (_TextureStateCache[i][D3DTSS_COLOROP].Value == D3DTOP_BLENDDIFFUSEALPHA)
 					{
@@ -565,151 +790,8 @@ void CDriverD3D::updateRenderVariablesInternal()
 
 		// Unlinked
 		_ModifiedRenderState = currentRenderState->NextModified;
-
-		switch (currentRenderState->Type)
-		{
-		case CRenderVariable::RenderState:
-			{
-				CRenderState *renderState = static_cast<CRenderState*>(currentRenderState);
-				_DeviceInterface->SetRenderState (renderState->StateID, renderState->Value);
-			}
-			break;
-		case CRenderVariable::TextureState:
-			{
-				CTextureState *textureState = static_cast<CTextureState*>(currentRenderState);
-				_DeviceInterface->SetTextureStageState (textureState->StageID, textureState->StateID, textureState->Value);
-			}
-			break;
-		case CRenderVariable::TextureIndexState:
-			{
-				CTextureIndexState *textureState = static_cast<CTextureIndexState*>(currentRenderState);
-				if (textureState->TexGen)
-					setTextureState (textureState->StageID, D3DTSS_TEXCOORDINDEX, textureState->TexGenMode);
-				else
-					setTextureState (textureState->StageID, D3DTSS_TEXCOORDINDEX, textureState->UVChannel);
-			}
-			break;
-		case CRenderVariable::TexturePtrState:
-			{
-				CTexturePtrState *textureState = static_cast<CTexturePtrState*>(currentRenderState);
-				_DeviceInterface->SetTexture (textureState->StageID, textureState->Texture);
-			}
-			break;
-		case CRenderVariable::VertexProgramPtrState:
-			{
-				CVertexProgramPtrState *vertexProgram = static_cast<CVertexProgramPtrState*>(currentRenderState);
-				_DeviceInterface->SetVertexShader(vertexProgram->VertexProgram);
-			}
-			break;
-		case CRenderVariable::PixelShaderPtrState:
-			{
-				CPixelShaderPtrState *pixelShader = static_cast<CPixelShaderPtrState*>(currentRenderState);
-				_DeviceInterface->SetPixelShader(pixelShader->PixelShader);
-			}
-			break;
-		case CRenderVariable::VertexProgramConstantState:
-			{
-				CVertexProgramConstantState *vertexProgramConstant = static_cast<CVertexProgramConstantState*>(currentRenderState);
-				switch (vertexProgramConstant->ValueType)
-				{
-				case CVertexProgramConstantState::Float:
-					_DeviceInterface->SetVertexShaderConstantF (vertexProgramConstant->StateID, (float*)vertexProgramConstant->Values, 1);
-					break;
-				case CVertexProgramConstantState::Int:
-					_DeviceInterface->SetVertexShaderConstantI (vertexProgramConstant->StateID, (int*)vertexProgramConstant->Values, 1);
-					break;
-				}
-			}
-			break;
-		case CRenderVariable::PixelShaderConstantState:
-			{
-				CPixelShaderConstantState *pixelShaderConstant = static_cast<CPixelShaderConstantState*>(currentRenderState);
-				switch (pixelShaderConstant->ValueType)
-				{
-				case CPixelShaderConstantState::Float:
-					_DeviceInterface->SetPixelShaderConstantF (pixelShaderConstant->StateID, (float*)pixelShaderConstant->Values, 1);
-					break;
-				case CPixelShaderConstantState::Int:
-					_DeviceInterface->SetPixelShaderConstantI (pixelShaderConstant->StateID, (int*)pixelShaderConstant->Values, 1);
-					break;
-				}
-			}
-			break;
-		case CRenderVariable::SamplerState:
-			{
-				CSamplerState *samplerState = static_cast<CSamplerState*>(currentRenderState);
-				_DeviceInterface->SetSamplerState (samplerState->SamplerID, samplerState->StateID, samplerState->Value);
-			}
-			break;
-		case CRenderVariable::MatrixState:
-			{
-				CMatrixState *renderMatrix = static_cast<CMatrixState*>(currentRenderState);
-				_DeviceInterface->SetTransform (renderMatrix->TransformType, &(renderMatrix->Matrix));
-			}
-			break;
-		case CRenderVariable::VBState:
-			{
-				CVBState *renderVB = static_cast<CVBState*>(currentRenderState);
-				if (renderVB->VertexBuffer)
-				{
-					_DeviceInterface->SetStreamSource (0, renderVB->VertexBuffer, renderVB->Offset, renderVB->Stride);
-				}
-			}
-			break;
-		case CRenderVariable::IBState:
-			{
-				CIBState *renderIB = static_cast<CIBState*>(currentRenderState);
-				if (renderIB->IndexBuffer)
-				{
-					_DeviceInterface->SetIndices (renderIB->IndexBuffer);
-				}
-			}
-			break;
-		case CRenderVariable::VertexDecl:
-			{
-				CVertexDeclState *renderVB = static_cast<CVertexDeclState*>(currentRenderState);
-				if (renderVB->Decl)
-				{
-					_DeviceInterface->SetVertexDeclaration (renderVB->Decl);
-				}
-			}
-			break;
-		case CRenderVariable::LightState:
-			{
-				CLightState *renderLight = static_cast<CLightState*>(currentRenderState);
-				
-				// Enabel state modified ?
-				if (renderLight->EnabledTouched)
-					_DeviceInterface->LightEnable (renderLight->LightIndex, renderLight->Enabled);
-
-				// Light enabled ?
-				if (renderLight->Enabled)
-				{
-					if (renderLight->SettingsTouched)
-					{
-						// New position
-						renderLight->Light.Position.x -= _PZBCameraPos.x;
-						renderLight->Light.Position.y -= _PZBCameraPos.y;
-						renderLight->Light.Position.z -= _PZBCameraPos.z;
-						_DeviceInterface->SetLight (renderLight->LightIndex, &(renderLight->Light));
-						renderLight->SettingsTouched = false;
-					}
-				}
-
-				// Clean
-				renderLight->EnabledTouched = false;
-			}
-			break;
-		case CRenderVariable::RenderTargetState:
-			{
-				CRenderTargetState *renderTarget = static_cast<CRenderTargetState*>(currentRenderState);
-				_DeviceInterface->SetRenderTarget (0, renderTarget->Target);				
-				setupViewport (_Viewport);				
-				setupScissor (_Scissor);				
-			}
-			break;
-		}
-	}
+		currentRenderState->apply(this);
+	}	
 }
 
 // ***************************************************************************
@@ -830,8 +912,10 @@ bool CDriverD3D::handlePossibleSizeChange()
 		mode.Height = newHeight;
 		if ( ( (mode.Width != _CurrentMode.Width) || (mode.Height != _CurrentMode.Height) ) &&
 			( mode.Width != 0 ) &&
-			( mode.Height != 0 ) )
-			return reset (mode);
+			( mode.Height != 0 ) )		
+		{			
+			return reset (mode);			
+		}
 	}
 	return false;
 }
@@ -879,14 +963,14 @@ bool CDriverD3D::init (uint windowIcon)
 // ***************************************************************************
 
 // From the SDK
-bool CDriverD3D::isDepthFormatOk(UINT adapter, D3DFORMAT DepthFormat, 
+bool CDriverD3D::isDepthFormatOk(UINT adapter, D3DDEVTYPE rasterizer, D3DFORMAT DepthFormat, 
                       D3DFORMAT AdapterFormat, 
                       D3DFORMAT BackBufferFormat)
 {
 	H_AUTO_D3D(CDriverD3D_isDepthFormatOk);
     // Verify that the depth format exists
     HRESULT hr = _D3D->CheckDeviceFormat(adapter,
-                                         RASTERIZER,
+                                         rasterizer,
                                          AdapterFormat,
                                          D3DUSAGE_DEPTHSTENCIL,
                                          D3DRTYPE_SURFACE,
@@ -895,8 +979,8 @@ bool CDriverD3D::isDepthFormatOk(UINT adapter, D3DFORMAT DepthFormat,
     if(FAILED(hr)) return FALSE;
 
     // Verify that the depth format is compatible
-    hr = _D3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT,
-                                      RASTERIZER,
+    hr = _D3D->CheckDepthStencilMatch(adapter,
+                                      (D3DDEVTYPE) rasterizer,
                                       AdapterFormat,
                                       BackBufferFormat,
                                       DepthFormat);
@@ -1011,19 +1095,40 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		release();
 		return false;
 	}
+	
+	// The following code is taken from the NVPerfHud user guide
+	// Set default settings	
+	_Rasterizer = RASTERIZER;
+	#ifdef NL_D3D_USE_NV_PERF_HUD
+		// Look for 'NVIDIA NVPerfHUD' adapter
+		// If it is present, override default settings
+		for (UINT adapterIndex = 0; adapterIndex < _D3D->GetAdapterCount(); adapterIndex++)
+		{
+			D3DADAPTER_IDENTIFIER9 identifier;
+			HRESULT res = _D3D->GetAdapterIdentifier(adapterIndex, 0, &identifier);
+			if (strcmp(identifier.Description, "NVIDIA NVPerfHUD") == 0)
+			{
+				adapter = adapterIndex;
+				_Adapter = adapter;
+				_Rasterizer = D3DDEVTYPE_REF;
+				break;
+			}
+		}	
+	#endif
 
 	// Create device options
 	D3DPRESENT_PARAMETERS parameters;
 	D3DFORMAT adapterFormat;
-	if (!fillPresentParameter (parameters, adapterFormat, _CurrentMode, adapter, adapterMode))
+	if (!fillPresentParameter (parameters, adapterFormat, _CurrentMode, adapterMode))
 	{
 		release();
 		return false;
 	}
 
-	// Create the D3D device
-	HRESULT result = _D3D->CreateDevice (adapter, RASTERIZER, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, 
-		&parameters, &_DeviceInterface);
+	// Create the D3D device	
+
+	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);		
+
 	if (result != D3D_OK)
 	{
 		nlwarning ("CDriverD3D::setDisplay: Can't create device.");
@@ -1081,7 +1186,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 
 		for (j=0; j<CDriverD3D::FinalPixelFormatChoice; j++)
 		{
-			if (isTextureFormatOk(adapter, FinalPixelFormat[i][j], adapterFormat))
+			if (isTextureFormatOk(adapter, _Rasterizer, FinalPixelFormat[i][j], adapterFormat))
 				break;
 		}
 
@@ -1166,8 +1271,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	setupViewport (CViewport());
 
 	// Begin now
-	if (_DeviceInterface->BeginScene() != D3D_OK)
-		return false;
+	//nldebug("BeginScene");
+	if (!beginScene()) return false;	
 
 	// Done
 	return true;
@@ -1395,23 +1500,27 @@ void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 		);
 }
 
-// ***************************************************************************
 
+
+
+// ***************************************************************************
 bool CDriverD3D::swapBuffers() 
 {		
+	//DUMP_AUTO(swapBuffers);
 	H_AUTO_D3D(CDriverD3D_swapBuffers);
 	nlassert (_DeviceInterface);
 
 	++ _SwapBufferCounter;
 	// Swap & reset volatile buffers
-	_CurrentRenderPass++;
+	_CurrentRenderPass++;	
 	_VolatileVertexBufferRAM[_CurrentRenderPass&1]->reset ();
-	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();
+	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();	
 	_VolatileIndexBufferRAM[_CurrentRenderPass&1]->reset ();
 	_VolatileIndexBufferAGP[_CurrentRenderPass&1]->reset ();
+	
 
 	// todo hulud volatile
-	_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
+	//_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
 
 	// Is direct input running ?
 	if (_EventEmitter.getNumEmitters() > 1) 
@@ -1421,8 +1530,13 @@ bool CDriverD3D::swapBuffers()
 	}
 
 	// End now
-	if (_DeviceInterface->EndScene() != D3D_OK)
-		return false;
+	//nldebug("EndScene");
+	if (!endScene())
+	{
+		// tmp
+		nlassert(0);
+		return false;	
+	}
 
 	HRESULT result;
 	if ((result=_DeviceInterface->Present( NULL, NULL, NULL, NULL)) != D3D_OK)
@@ -1430,11 +1544,15 @@ bool CDriverD3D::swapBuffers()
 		// Device lost ?
 		if (result == D3DERR_DEVICELOST)
 		{
-			// Reset the driver
-			reset (_CurrentMode);
-			_DeviceInterface->EndScene();
+			_Lost = true;
+			// check if we can exit lost state
+			if (_DeviceInterface->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+			{
+				// Reset the driver
+				reset (_CurrentMode);				
+			}
 		}
-	}
+	}	
 	
 	// Check window size
 	handlePossibleSizeChange ();
@@ -1449,10 +1567,19 @@ bool CDriverD3D::swapBuffers()
 	_TextureUsed.clear();
 
 	// Reset vertex program
-	setVertexProgram (NULL);
+	setVertexProgram (NULL, NULL);
 
+	if (_VBHardProfiling)
+	{
+		++_NumVBHardProfileFrame;
+	}
+	if (_IBProfiling)
+	{
+		++ _NumIBProfileFrame;
+	}	
 	// Begin now
-	return _DeviceInterface->BeginScene() == D3D_OK;
+	//nldebug("BeginScene");
+	return beginScene();
 };
 
 // ***************************************************************************
@@ -1467,11 +1594,11 @@ void CDriverD3D::setPolygonMode (TPolygonMode mode)
 
 // ***************************************************************************
 
-bool CDriverD3D::isTextureFormatOk(UINT adapter, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat)
+bool CDriverD3D::isTextureFormatOk(UINT adapter, D3DDEVTYPE rasterizer, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat)
 {
 	H_AUTO_D3D(CDriverD3D_isTextureFormatOk);
     HRESULT hr = _D3D->CheckDeviceFormat( adapter,
-                                          RASTERIZER,
+                                          rasterizer,
                                           AdapterFormat,
                                           0,
                                           D3DRTYPE_TEXTURE,
@@ -1758,9 +1885,12 @@ void CDriverD3D::deleteIndexBuffer(CIBDrvInfosD3D *indexBuffer)
 // ***************************************************************************
 bool CDriverD3D::reset (const GfxMode& mode)
 {
+	//DUMP_AUTO(reset);
 	H_AUTO_D3D(CDriverD3D_reset);
 	// Current mode
 	_CurrentMode = mode;
+	_CurrentMaterial = NULL;
+	_CurrentMaterialInfo = NULL;
 
 	// Restaure non managed vertex buffer in system memory
 	ItVBDrvInfoPtrList iteVb = _VBDrvInfos.begin();
@@ -1827,8 +1957,22 @@ bool CDriverD3D::reset (const GfxMode& mode)
 		_BackBuffer->Release();
 	_BackBuffer = NULL;
 
+	// Invalidate all occlusion querries. They should be recreated by the user (remains in an invalid state otherwise)
+	// TODO nico : for now, even if a result has been retrieved succesfully by the query, the query is put in the lost state. See if its worth improving...
+	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)
+	{
+		if ((*it)->Query)
+		{			
+			(*it)->WasLost = true;			
+			(*it)->Query->Release();
+			(*it)->Query = NULL;			
+		}		
+	}
+
 	// Release internal shaders
 	releaseInternalShaders();
+
+
 
 	// Choose an adapter
 	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
@@ -1848,21 +1992,33 @@ bool CDriverD3D::reset (const GfxMode& mode)
 
 	D3DPRESENT_PARAMETERS parameters;
 	D3DFORMAT adapterFormat;
-	if (!fillPresentParameter (parameters, adapterFormat, mode, adapter, adapterMode))
+	if (!fillPresentParameter (parameters, adapterFormat, mode, adapterMode))
 		return false;
 
 	/* Do not reset if reset will fail */
 	if (_DeviceInterface->TestCooperativeLevel() != D3DERR_DEVICELOST)
 	{
 		_ResetCounter++;
+		bool sceneBegun = hasSceneBegun();
+		if (sceneBegun)
+		{
+			//nldebug("EndScene");
+			endScene();			
+		}
 		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
 		{
+			// tmp
+			nlassert(0);
 			nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
 			return false;
 		}
-
+		_Lost = false;
 		// BeginScene now
-		_DeviceInterface->BeginScene();
+		if (sceneBegun)
+		{
+			//nldebug("BeginScene");
+			beginScene();
+		}
 	}
 
 	// Reset internal caches
@@ -1871,13 +2027,22 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	// Init shaders
 	initInternalShaders();
 
+	// reallocate occlusion queries
+	for(TOcclusionQueryList::iterator it = _OcclusionQueryList.begin(); it != _OcclusionQueryList.end(); ++it)
+	{
+		if (!(*it)->Query)
+		{
+			_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &(*it)->Query);
+		}
+	}	
 	return true;
 }
 
 // ***************************************************************************
 
-bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, UINT adapter, const D3DDISPLAYMODE &adapterMode)
+bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, const D3DDISPLAYMODE &adapterMode)
 {
+	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
 	H_AUTO_D3D(CDriverD3D_fillPresentParameter);
 	memset (&parameters, 0, sizeof(D3DPRESENT_PARAMETERS));
 	parameters.BackBufferWidth = mode.Width;
@@ -1927,7 +2092,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 		uint backBuffer;
 		for (backBuffer=0; backBuffer<numFormat; backBuffer++)
 		{
-			if (_D3D->CheckDeviceType(adapter, RASTERIZER, adapterMode.Format, backBufferFormats[depthIndex][backBuffer], FALSE) == D3D_OK)
+			if (_D3D->CheckDeviceType(adapter, _Rasterizer, adapterMode.Format, backBufferFormats[depthIndex][backBuffer], TRUE) == D3D_OK)
 			{
 				parameters.BackBufferFormat = backBufferFormats[depthIndex][backBuffer];
 				adapterFormat = adapterMode.Format;
@@ -1945,7 +2110,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 			uint display;
 			for (display=0; display<numFormat; display++)
 			{
-				if (_D3D->CheckDeviceType(adapter, RASTERIZER, backBufferFormats[depthIndex][display], backBufferFormats[depthIndex][display], FALSE) == D3D_OK)
+				if (_D3D->CheckDeviceType(adapter, _Rasterizer, backBufferFormats[depthIndex][display], backBufferFormats[depthIndex][display], FALSE) == D3D_OK)
 				{
 					parameters.BackBufferFormat = backBufferFormats[depthIndex][backBuffer];
 					adapterFormat = backBufferFormats[depthIndex][display];
@@ -1979,7 +2144,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 	uint i;
 	for (i=0; i<zbufferFormatCount; i++)
 	{
-		if (isDepthFormatOk (adapter, zbufferFormats[i], adapterFormat, parameters.BackBufferFormat))
+		if (isDepthFormatOk (adapter, _Rasterizer, zbufferFormats[i], adapterFormat, parameters.BackBufferFormat))
 			break;
 	}
 
@@ -2182,8 +2347,10 @@ void CDriverD3D::finish()
 {
 	H_AUTO_D3D(CDriverD3D_finish);	
 	// Flush now
-	_DeviceInterface->EndScene();
-	_DeviceInterface->BeginScene();
+	//nldebug("EndScene");
+	endScene();
+	//nldebug("BeginScene");
+	beginScene();
 }
 
 // ***************************************************************************
@@ -2269,6 +2436,8 @@ IOcclusionQuery *CDriverD3D::createOcclusionQuery()
 	oqd3d->Query = query;
 	oqd3d->VisibleCount = 0;
 	oqd3d->OcclusionType = IOcclusionQuery::NotAvailable;
+	oqd3d->QueryIssued = false;
+	oqd3d->WasLost = false;
 	_OcclusionQueryList.push_front(oqd3d);
 	oqd3d->Iterator = _OcclusionQueryList.begin();
 	return oqd3d;
@@ -2282,8 +2451,11 @@ void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 	COcclusionQueryD3D *oqd3d = NLMISC::safe_cast<COcclusionQueryD3D *>(oq);
 	nlassert((CDriverD3D *) oqd3d->Driver == this); // should come from the same driver
 	oqd3d->Driver = NULL;
-	nlassert(oqd3d->Query);
-	oqd3d->Query->Release();	
+	if (oqd3d->Query)
+	{
+		oqd3d->Query->Release();
+		oqd3d->Query = NULL;
+	}	
 	_OcclusionQueryList.erase(oqd3d->Iterator);
 	if (oqd3d == _CurrentOcclusionQuery)
 	{
@@ -2296,30 +2468,37 @@ void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
 void COcclusionQueryD3D::begin()
 {	
 	H_AUTO_D3D(COcclusionQueryD3D_begin);	
+	if (!Query) return; // Lost device
 	nlassert(Driver);
-	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time
-	nlassert(Query);
+	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time		
 	Query->Issue(D3DISSUE_BEGIN);
 	Driver->_CurrentOcclusionQuery = this;
 	OcclusionType = NotAvailable;
+	QueryIssued = false;
+	WasLost = false;
 }
 
 // ***************************************************************************
 void COcclusionQueryD3D::end()
 {
 	H_AUTO_D3D(COcclusionQueryD3D_end);
+	if (!Query) return; // Lost device
 	nlassert(Driver);	
-	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time
-	nlassert(Query);
-	Query->Issue(D3DISSUE_END);
+	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time		
+	if (!WasLost)
+	{
+		Query->Issue(D3DISSUE_END);
+	}
 	Driver->_CurrentOcclusionQuery = NULL;
+	QueryIssued = true;	
 }
 
 // ***************************************************************************
 IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 {
+	if (!Query || WasLost) return QueryIssued ? Occluded : NotAvailable;	
 	H_AUTO_D3D(COcclusionQueryD3D_getOcclusionType);
-	nlassert(Driver);
+	nlassert(Driver);	
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
 	if (OcclusionType == NotAvailable)
@@ -2337,8 +2516,9 @@ IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
 // ***************************************************************************
 uint COcclusionQueryD3D::getVisibleCount()
 {
+	if (!Query || WasLost) return 0;
 	H_AUTO_D3D(COcclusionQueryD3D_getVisibleCount);	
-	nlassert(Driver);
+	nlassert(Driver);	
 	nlassert(Query);
 	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
 	if (getOcclusionType() == NotAvailable) return 0;
@@ -2357,7 +2537,7 @@ void CDriverD3D::setCullMode(TCullMode cullMode)
 {
 	H_AUTO_D3D(CDriver3D_cullMode);
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-	if (cullMode != _CullMode)
+	NL_D3D_CACHE_TEST(CacheTest_CullMode, cullMode != _CullMode)
 #endif
 	{
 		if (_InvertCullMode)
@@ -2381,5 +2561,287 @@ IDriver::TCullMode CDriverD3D::getCullMode() const
 
 
 
-} // NL3D
 
+// volatile bool preciseStateProfile = false;
+// ***************************************************************************
+void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
+{	
+	H_AUTO_D3D(CDriverD3D_CRenderState);
+	/*if (!preciseStateProfile)
+	{*/		
+		driver->_DeviceInterface->SetRenderState (StateID, Value);
+	/*
+	}
+	else
+	{
+		switch(StateID)
+		{
+			case D3DRS_ZENABLE: { H_AUTO_D3D(D3DRS_ZENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FILLMODE: { H_AUTO_D3D(D3DRS_FILLMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SHADEMODE: { H_AUTO_D3D(D3DRS_SHADEMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ZWRITEENABLE: { H_AUTO_D3D(D3DRS_ZWRITEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ALPHATESTENABLE: { H_AUTO_D3D(D3DRS_ALPHATESTENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_LASTPIXEL: { H_AUTO_D3D(D3DRS_LASTPIXEL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SRCBLEND: { H_AUTO_D3D(D3DRS_SRCBLEND); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DESTBLEND: { H_AUTO_D3D(D3DRS_DESTBLEND); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CULLMODE: { H_AUTO_D3D(D3DRS_CULLMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ZFUNC: { H_AUTO_D3D(D3DRS_ZFUNC); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ALPHAREF: { H_AUTO_D3D(D3DRS_ALPHAREF); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ALPHAFUNC: { H_AUTO_D3D(D3DRS_ALPHAFUNC); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DITHERENABLE: { H_AUTO_D3D(D3DRS_DITHERENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ALPHABLENDENABLE: { H_AUTO_D3D(D3DRS_ALPHABLENDENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGENABLE: { H_AUTO_D3D(D3DRS_FOGENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SPECULARENABLE: { H_AUTO_D3D(D3DRS_SPECULARENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGCOLOR: { H_AUTO_D3D(D3DRS_FOGCOLOR); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGTABLEMODE: { H_AUTO_D3D(D3DRS_FOGTABLEMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGSTART: { H_AUTO_D3D(D3DRS_FOGSTART); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGEND: { H_AUTO_D3D(D3DRS_FOGEND); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGDENSITY: { H_AUTO_D3D(D3DRS_FOGDENSITY); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_RANGEFOGENABLE: { H_AUTO_D3D(D3DRS_RANGEFOGENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILENABLE: { H_AUTO_D3D(D3DRS_STENCILENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILFAIL: { H_AUTO_D3D(D3DRS_STENCILFAIL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILZFAIL: { H_AUTO_D3D(D3DRS_STENCILZFAIL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILPASS: { H_AUTO_D3D(D3DRS_STENCILPASS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILFUNC: { H_AUTO_D3D(D3DRS_STENCILFUNC); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILREF: { H_AUTO_D3D(D3DRS_STENCILREF); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILMASK: { H_AUTO_D3D(D3DRS_STENCILMASK); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_STENCILWRITEMASK: { H_AUTO_D3D(D3DRS_STENCILWRITEMASK); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_TEXTUREFACTOR: { H_AUTO_D3D(D3DRS_TEXTUREFACTOR); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP0: { H_AUTO_D3D(D3DRS_WRAP0); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP1: { H_AUTO_D3D(D3DRS_WRAP1); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP2: { H_AUTO_D3D(D3DRS_WRAP2); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP3: { H_AUTO_D3D(D3DRS_WRAP3); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP4: { H_AUTO_D3D(D3DRS_WRAP4); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP5: { H_AUTO_D3D(D3DRS_WRAP5); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP6: { H_AUTO_D3D(D3DRS_WRAP6); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP7: { H_AUTO_D3D(D3DRS_WRAP7); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CLIPPING: { H_AUTO_D3D(D3DRS_CLIPPING); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_LIGHTING: { H_AUTO_D3D(D3DRS_LIGHTING); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_AMBIENT: { H_AUTO_D3D(D3DRS_AMBIENT); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_FOGVERTEXMODE: { H_AUTO_D3D(D3DRS_FOGVERTEXMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_COLORVERTEX: { H_AUTO_D3D(D3DRS_COLORVERTEX); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_LOCALVIEWER: { H_AUTO_D3D(D3DRS_LOCALVIEWER); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_NORMALIZENORMALS: { H_AUTO_D3D(D3DRS_NORMALIZENORMALS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DIFFUSEMATERIALSOURCE: { H_AUTO_D3D(D3DRS_DIFFUSEMATERIALSOURCE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SPECULARMATERIALSOURCE: { H_AUTO_D3D(D3DRS_SPECULARMATERIALSOURCE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_AMBIENTMATERIALSOURCE: { H_AUTO_D3D(D3DRS_AMBIENTMATERIALSOURCE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_EMISSIVEMATERIALSOURCE: { H_AUTO_D3D(D3DRS_EMISSIVEMATERIALSOURCE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_VERTEXBLEND: { H_AUTO_D3D(D3DRS_VERTEXBLEND); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CLIPPLANEENABLE: { H_AUTO_D3D(D3DRS_CLIPPLANEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSIZE: { H_AUTO_D3D(D3DRS_POINTSIZE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSIZE_MIN: { H_AUTO_D3D(D3DRS_POINTSIZE_MIN); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSPRITEENABLE: { H_AUTO_D3D(D3DRS_POINTSPRITEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSCALEENABLE: { H_AUTO_D3D(D3DRS_POINTSCALEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSCALE_A: { H_AUTO_D3D(D3DRS_POINTSCALE_A); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSCALE_B: { H_AUTO_D3D(D3DRS_POINTSCALE_B); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSCALE_C: { H_AUTO_D3D(D3DRS_POINTSCALE_C); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_MULTISAMPLEANTIALIAS: { H_AUTO_D3D(D3DRS_MULTISAMPLEANTIALIAS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_MULTISAMPLEMASK: { H_AUTO_D3D(D3DRS_MULTISAMPLEMASK); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_PATCHEDGESTYLE: { H_AUTO_D3D(D3DRS_PATCHEDGESTYLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DEBUGMONITORTOKEN: { H_AUTO_D3D(D3DRS_DEBUGMONITORTOKEN); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POINTSIZE_MAX: { H_AUTO_D3D(D3DRS_POINTSIZE_MAX); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_INDEXEDVERTEXBLENDENABLE: { H_AUTO_D3D(D3DRS_INDEXEDVERTEXBLENDENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_COLORWRITEENABLE: { H_AUTO_D3D(D3DRS_COLORWRITEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_TWEENFACTOR: { H_AUTO_D3D(D3DRS_TWEENFACTOR); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_BLENDOP: { H_AUTO_D3D(D3DRS_BLENDOP); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_POSITIONDEGREE: { H_AUTO_D3D(D3DRS_POSITIONDEGREE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_NORMALDEGREE: { H_AUTO_D3D(D3DRS_NORMALDEGREE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SCISSORTESTENABLE: { H_AUTO_D3D(D3DRS_SCISSORTESTENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SLOPESCALEDEPTHBIAS: { H_AUTO_D3D(D3DRS_SLOPESCALEDEPTHBIAS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ANTIALIASEDLINEENABLE: { H_AUTO_D3D(D3DRS_ANTIALIASEDLINEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_MINTESSELLATIONLEVEL: { H_AUTO_D3D(D3DRS_MINTESSELLATIONLEVEL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_MAXTESSELLATIONLEVEL: { H_AUTO_D3D(D3DRS_MAXTESSELLATIONLEVEL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ADAPTIVETESS_X: { H_AUTO_D3D(D3DRS_ADAPTIVETESS_X); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ADAPTIVETESS_Y: { H_AUTO_D3D(D3DRS_ADAPTIVETESS_Y); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ADAPTIVETESS_Z: { H_AUTO_D3D(D3DRS_ADAPTIVETESS_Z); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ADAPTIVETESS_W: { H_AUTO_D3D(D3DRS_ADAPTIVETESS_W); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_ENABLEADAPTIVETESSELLATION: { H_AUTO_D3D(D3DRS_ENABLEADAPTIVETESSELLATION); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_TWOSIDEDSTENCILMODE: { H_AUTO_D3D(D3DRS_TWOSIDEDSTENCILMODE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CCW_STENCILFAIL: { H_AUTO_D3D(D3DRS_CCW_STENCILFAIL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CCW_STENCILZFAIL: { H_AUTO_D3D(D3DRS_CCW_STENCILZFAIL); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CCW_STENCILPASS: { H_AUTO_D3D(D3DRS_CCW_STENCILPASS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_CCW_STENCILFUNC: { H_AUTO_D3D(D3DRS_CCW_STENCILFUNC); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_COLORWRITEENABLE1: { H_AUTO_D3D(D3DRS_COLORWRITEENABLE1); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_COLORWRITEENABLE2: { H_AUTO_D3D(D3DRS_COLORWRITEENABLE2); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_COLORWRITEENABLE3: { H_AUTO_D3D(D3DRS_COLORWRITEENABLE3); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_BLENDFACTOR: { H_AUTO_D3D(D3DRS_BLENDFACTOR); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SRGBWRITEENABLE: { H_AUTO_D3D(D3DRS_SRGBWRITEENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DEPTHBIAS: { H_AUTO_D3D(D3DRS_DEPTHBIAS); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP8: { H_AUTO_D3D(D3DRS_WRAP8); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP9: { H_AUTO_D3D(D3DRS_WRAP9); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP10: { H_AUTO_D3D(D3DRS_WRAP10); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP11: { H_AUTO_D3D(D3DRS_WRAP11); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP12: { H_AUTO_D3D(D3DRS_WRAP12); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP13: { H_AUTO_D3D(D3DRS_WRAP13); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP14: { H_AUTO_D3D(D3DRS_WRAP14); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_WRAP15: { H_AUTO_D3D(D3DRS_WRAP15); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SEPARATEALPHABLENDENABLE: { H_AUTO_D3D(D3DRS_SEPARATEALPHABLENDENABLE); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_SRCBLENDALPHA: { H_AUTO_D3D(D3DRS_SRCBLENDALPHA); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_DESTBLENDALPHA: { H_AUTO_D3D(D3DRS_DESTBLENDALPHA); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;
+			case D3DRS_BLENDOPALPHA: { H_AUTO_D3D(D3DRS_BLENDOPALPHA); driver->_DeviceInterface->SetRenderState(StateID, Value); } break;		
+		}
+	}
+	*/
+}
+		
+
+
+// ***************************************************************************
+void CDriverD3D::CTextureState::apply(CDriverD3D *driver)
+{	
+	H_AUTO_D3D(CDriverD3D_CTextureState);	
+	driver->_DeviceInterface->SetTextureStageState (StageID, StateID, Value);
+}
+
+// ***************************************************************************
+void CDriverD3D::CTextureIndexState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CTextureIndexState);
+	if (TexGen)
+		driver->setTextureState (StageID, D3DTSS_TEXCOORDINDEX, TexGenMode);
+	else
+		driver->setTextureState (StageID, D3DTSS_TEXCOORDINDEX, UVChannel);
+}
+
+// ***************************************************************************
+void CDriverD3D::CTexturePtrState::apply(CDriverD3D *driver)
+{	
+	H_AUTO_D3D(CDriverD3D_CTexturePtrState);
+	driver->_DeviceInterface->SetTexture (StageID, Texture);
+}
+
+// ***************************************************************************
+void CDriverD3D::CVertexProgramPtrState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CVertexProgramPtrState);
+	driver->_DeviceInterface->SetVertexShader(VertexProgram);
+}
+
+// ***************************************************************************
+void CDriverD3D::CPixelShaderPtrState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CPixelShaderPtrState);
+	driver->_DeviceInterface->SetPixelShader(PixelShader);
+}
+
+// ***************************************************************************
+void CDriverD3D::CVertexProgramConstantState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CVertexProgramConstantState);
+	switch (ValueType)
+	{
+	case CVertexProgramConstantState::Float:
+		driver->_DeviceInterface->SetVertexShaderConstantF (StateID, (float*)Values, 1);
+		break;
+	case CVertexProgramConstantState::Int:
+		driver->_DeviceInterface->SetVertexShaderConstantI (StateID, (int*)Values, 1);
+		break;
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::CPixelShaderConstantState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CPixelShaderConstantState);
+	switch (ValueType)
+	{
+	case CPixelShaderConstantState::Float:
+		driver->_DeviceInterface->SetPixelShaderConstantF (StateID, (float*)Values, 1);
+		break;
+	case CPixelShaderConstantState::Int:
+		driver->_DeviceInterface->SetPixelShaderConstantI (StateID, (int*)Values, 1);
+		break;
+	}
+}
+		
+// ***************************************************************************
+void CDriverD3D::CSamplerState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CSamplerState);
+	driver->_DeviceInterface->SetSamplerState (SamplerID, StateID, Value);
+}
+
+// ***************************************************************************
+void CDriverD3D::CMatrixState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CMatrixState);
+	driver->_DeviceInterface->SetTransform (TransformType, &Matrix);
+}
+
+// ***************************************************************************
+void CDriverD3D::CVBState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CVBState);
+	if (VertexBuffer)
+	{
+		driver->_DeviceInterface->SetStreamSource (0, VertexBuffer, Offset, Stride);
+		driver->_VertexStreamStride = Stride;
+	}
+}
+// ***************************************************************************
+void CDriverD3D::CIBState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CIBState);
+	if (IndexBuffer)
+	{
+		driver->_DeviceInterface->SetIndices (IndexBuffer);
+	}
+}
+		
+// ***************************************************************************
+void CDriverD3D::CVertexDeclState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CVertexDeclState);
+	if (Decl)
+	{
+		driver->_DeviceInterface->SetVertexDeclaration (Decl);
+		driver->_VertexDeclStride = Stride;
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::CLightState::apply(CDriverD3D *driver)
+{				
+	H_AUTO_D3D(CDriverD3D_CLightState);
+	// Enabel state modified ?
+	{
+		H_AUTO_D3D(CDriverD3D_CLightStateEnabled);
+		if (EnabledTouched)
+			driver->_DeviceInterface->LightEnable (LightIndex, Enabled);
+	}
+	{
+		H_AUTO_D3D(CDriverD3D_CLightStateSetup);
+		// Light enabled ?
+		if (Enabled)
+		{
+			if (SettingsTouched)
+			{
+				// New position
+				Light.Position.x -= driver->_PZBCameraPos.x;
+				Light.Position.y -= driver->_PZBCameraPos.y;
+				Light.Position.z -= driver->_PZBCameraPos.z;
+				driver->_DeviceInterface->SetLight (LightIndex, &Light);
+				SettingsTouched = false;
+			}
+		}
+		// Clean
+		EnabledTouched = false;
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::CRenderTargetState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CRenderTargetState);
+	driver->_DeviceInterface->SetRenderTarget (0, Target);
+	driver->setupViewport(driver->_Viewport);				
+	driver->setupScissor(driver->_Scissor);
+}
+
+// ***************************************************************************
+void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
+{
+	H_AUTO_D3D(CDriverD3D_CMaterialState);
+	driver->_DeviceInterface->SetMaterial(&Current);
+}
+} // NL3D

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.8 2004/08/13 15:26:12 vizerie Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.8.4.1 2004/09/14 15:33:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -46,9 +46,10 @@ namespace NL3D
 
 // ***************************************************************************
 
-CIBDrvInfosD3D::CIBDrvInfosD3D(IDriver *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) : IIBDrvInfos(drv, it, ib)
+CIBDrvInfosD3D::CIBDrvInfosD3D(CDriverD3D *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) : IIBDrvInfos(drv, it, ib)
 {
 	H_AUTO_D3D(CIBDrvInfosD3D_CIBDrvInfosD3D)
+	Driver = drv;
 	IndexBuffer = NULL;
 	VolatileIndexBuffer = NULL;
 }
@@ -71,6 +72,14 @@ CIBDrvInfosD3D::~CIBDrvInfosD3D()
 	// release index buffer
 	if (IndexBuffer && !Volatile)
 	{
+		if (Driver)
+		{
+			if (Driver->_IndexBufferCache.IndexBuffer == IndexBuffer)
+			{
+				Driver->_IndexBufferCache.IndexBuffer = NULL;
+				Driver->touchRenderVariable(&Driver->_IndexBufferCache);
+			}
+		}
 		indexCount--;
 		IndexBuffer->Release();
 	}
@@ -314,6 +323,7 @@ CVolatileIndexBuffer::CVolatileIndexBuffer()
 {
 	H_AUTO_D3D(CVolatileIndexBuffer_CVolatileIndexBuffer);
 	IndexBuffer = NULL;
+	Locked = false;
 }
 
 // ***************************************************************************
@@ -365,6 +375,7 @@ void CVolatileIndexBuffer::init (CIndexBuffer::TLocation	location, uint size, ui
 
 void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 {
+	nlassertex(!Locked, ("Volatile buffer usage should follow an atomic lock/unlock/render sequence"));
 	H_AUTO_D3D(CVolatileIndexBuffer_lock);
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
@@ -407,6 +418,7 @@ void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 
 	// New buffer position
 	CurrentIndex += size;
+	Locked = true;
 	return pbData;
 }
 
@@ -415,7 +427,9 @@ void *CVolatileIndexBuffer::lock (uint size, uint &offset)
 void CVolatileIndexBuffer::unlock ()
 {
 	H_AUTO_D3D(CVolatileIndexBuffer_unlock);
+	nlassertex(Locked, ("Volatile buffer usage should follow an atomic lock/unlock/render sequence"));
 	nlverify (IndexBuffer->Unlock () == D3D_OK);
+	Locked = false;
 }
 
 // ***************************************************************************

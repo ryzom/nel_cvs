@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.14 2004/08/13 15:26:47 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.14.4.1 2004/09/14 15:33:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -110,6 +110,19 @@ const D3DTEXTUREOP RemapTexOpTypeNeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTOP_MULTIPLYADD			// MAD
 };
 
+const uint OpNumArg[CMaterial::TexOperatorCount] = 
+{
+	1,			// Replace
+	2,			// Modulate
+	2,					// Add
+	2,			// AddSigned
+	2,	// InterpolateTexture
+	2,	// InterpolatePrevious
+	2,	// InterpolateDiffuse
+	3,				// InterpolateConstant
+	2,			// EMBM
+	3			// MAD
+};
 // ***************************************************************************
 
 // For stage 0 only
@@ -186,6 +199,7 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 		const DWORD *srcOp = (stage==0)?RemapTexArg0NeL2D3D:RemapTexArgNeL2D3D;
 
 		ColorOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpRGB];		
+		NumColorArg[stage] = OpNumArg[env.Env.OpRGB];
 		if (env.Env.OpRGB == CMaterial::Mad)
 		{						
 			ColorArg2[stage] = srcOp[env.Env.SrcArg0RGB];
@@ -205,6 +219,7 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 			ColorArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1RGB];
 		}
 		AlphaOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpAlpha];		
+		NumAlphaArg[stage] = OpNumArg[env.Env.OpAlpha];
 		if (env.Env.OpAlpha == CMaterial::Mad)
 		{
 			AlphaArg2[stage] = srcOp[env.Env.SrcArg0Alpha];
@@ -238,7 +253,20 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 		AlphaArg1[stage] = opSrc;
 		AlphaArg2[stage] = opSrc;
 		ConstantColor[stage] = NL_D3DCOLOR_RGBA(CRGBA::White);
+		NumColorArg[stage] = 1;
+		NumAlphaArg[stage] = 1;
 	}
+}
+
+
+// ***************************************************************************
+static inline DWORD replaceDiffuseWithConstant(DWORD value)
+{
+	if ((value & D3DTA_SELECTMASK) == D3DTA_DIFFUSE)
+	{
+		return (value & ~D3DTA_SELECTMASK) | D3DTA_TFACTOR;
+	}
+	return value;
 }
 
 
@@ -273,30 +301,44 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	// Now we can get the supported shader from the cache.
 	CMaterial::TShader matShader = mat.getShader();
 
-	// if the shader has changed since last time
-	if(matShader != _CurrentMaterialSupportedShader)
-	{
-		// if current shader is normal shader, then must restore uv routing, because it may have been changed by a previous shader (such as lightmap)
-		if (matShader == CMaterial::Normal)
+	H_AUTO_D3D(CDriverD3D_setupMaterial_light)
+	{			
+		// if the shader has changed since last time
+		if(matShader != _CurrentMaterialSupportedShader)
 		{
-			for(uint k = 0; k < MaxTexture; ++k)
-			{						
-				setTextureIndexUV (k, _CurrentUVRouting[k]);
+			// if current shader is normal shader, then must restore uv routing, because it may have been changed by a previous shader (such as lightmap)
+			if (matShader == CMaterial::Normal)
+			{
+				for(uint k = 0; k < MaxTexture; ++k)
+				{						
+					setTextureIndexUV (k, _CurrentUVRouting[k]);
+				}
+			}		
+			// if old was lightmap, restore standard lighting
+			if(_CurrentMaterialSupportedShader==CMaterial::LightMap)
+			{				
+				_MustRestoreLight = true;
 			}
-		}		
-		// if old was lightmap, restore standard lighting
-		if(_CurrentMaterialSupportedShader==CMaterial::LightMap)
+			
+			// if new is lightmap, setup dynamic lighting
+			if(matShader==CMaterial::LightMap)
+			{
+				setupLightMapDynamicLighting(true);
+				_MustRestoreLight = false;
+			}				
+		}
+		if (mat.isLighted() && _MustRestoreLight)
+		{
 			setupLightMapDynamicLighting(false);
-		
-		// if new is lightmap, setup dynamic lighting
-		if(matShader==CMaterial::LightMap)
-			setupLightMapDynamicLighting(true);
+			_MustRestoreLight = false;
+		}		
+		// setup the global
+		_CurrentMaterialSupportedShader= matShader;
 	}
 	
-	// setup the global
-	_CurrentMaterialSupportedShader= matShader;
-	
 
+	H_AUTO_D3D(CDriverD3D_setupMaterial_touchupdate)
+	{
 	// Something to setup ?
 	if (touched)
 	{
@@ -496,8 +538,11 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
 	}
+	}
 
 
+	H_AUTO_D3D(CDriverD3D_setupMaterial_bindTexture)
+	{
 	// 2. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
@@ -510,8 +555,10 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		for(stage=0 ; stage<(uint)maxTexture; stage++)
 		{
 			ITexture	*text= mat.getTexture(stage);
-			if (text != NULL && !setupTexture(*text))
-				return(false);
+				if (!text) break;
+				if (text != NULL && !setupTexture(*text))
+					return(false);
+			}
 		}
 	}
 		
@@ -519,6 +566,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 	// Do not do it for Lightmap and per pixel lighting , because done in multipass in a very special fashion.
 	// This avoid the useless multiple change of texture states per lightmapped object.
 	// Don't do it also for Specular because the EnvFunction and the TexGen may be special.
+	H_AUTO_D3D(CDriverD3D_setupMaterial_normalShaderActivateTextures)
+	{
 	if(matShader == CMaterial::Normal)
 	{
 		uint stage;
@@ -536,7 +585,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				if (stage != 0)
 				{
 					setTextureState (stage, D3DTSS_COLOROP, D3DTOP_DISABLE);
-					setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+						//setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 					break; // stage after this one are ignored
 				}
 			}
@@ -548,14 +597,25 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				if (pShader->PixelShader == NULL)
 				{
 					setTextureState (stage, D3DTSS_COLOROP, pShader->ColorOp[stage]);
-					setTextureState (stage, D3DTSS_COLORARG0, pShader->ColorArg0[stage]);
 					setTextureState (stage, D3DTSS_COLORARG1, pShader->ColorArg1[stage]);
-					setTextureState (stage, D3DTSS_COLORARG2, pShader->ColorArg2[stage]);
-					setTextureState (stage, D3DTSS_ALPHAOP, pShader->AlphaOp[stage]);
-					setTextureState (stage, D3DTSS_ALPHAARG0, pShader->AlphaArg0[stage]);
-					setTextureState (stage, D3DTSS_ALPHAARG1, pShader->AlphaArg1[stage]);
-					setTextureState (stage, D3DTSS_ALPHAARG2, pShader->AlphaArg2[stage]);
-
+						if (pShader->NumColorArg[stage] > 1)
+						{					
+							setTextureState (stage, D3DTSS_COLORARG2, pShader->ColorArg2[stage]);
+							if (pShader->NumColorArg[stage] > 2)
+							{
+								setTextureState (stage, D3DTSS_COLORARG0, pShader->ColorArg0[stage]);
+							}
+						}
+						setTextureState (stage, D3DTSS_ALPHAOP, pShader->AlphaOp[stage]);
+						setTextureState (stage, D3DTSS_ALPHAARG1, pShader->AlphaArg1[stage]);
+						if (pShader->NumColorArg[stage] > 1)
+						{
+							setTextureState (stage, D3DTSS_ALPHAARG2, pShader->AlphaArg2[stage]);
+							if (pShader->NumColorArg[stage] > 2)
+							{
+								setTextureState (stage, D3DTSS_ALPHAARG0, pShader->AlphaArg0[stage]);
+							}
+						}						
 					// If there is one constant and the tfactor is not needed for diffuse, use the tfactor as constant
 					if (!pShader->NeedsConstantForDiffuse && pShader->ConstantIndex == stage)
 						setRenderState (D3DRS_TEXTUREFACTOR, pShader->ConstantColor[stage]);
@@ -627,99 +687,121 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			}
 		}
 	}
-
-	// Material has changed ?
+	}
+	
 	if (_CurrentMaterial != &mat)
-	{
+	{							
+		// Material has changed ?
 		// Restaure fog state to its current value
-		setRenderState (D3DRS_FOGENABLE, _FogEnabled?TRUE:FALSE);
-
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_updateFog)
+			setRenderState (D3DRS_FOGENABLE, _FogEnabled?TRUE:FALSE);
+		}
+		
 		// Flags
 		const uint32 flags = mat.getFlags();
-
+		
 		// Two sided
 		_DoubleSided = (flags&IDRV_MAT_DOUBLE_SIDED)!=0;
 
-		// Handle backside
-		if (_CullMode == CCW)
-		{		
-			setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
-		}
-		else
-		{
-			setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CW:D3DCULL_CCW);
-		}	
-
-		
-		// Active states
-		bool blend = (flags&IDRV_MAT_BLEND) != 0;
-		if (blend)
-		{
-			setRenderState (D3DRS_ALPHABLENDENABLE, TRUE);
-			setRenderState (D3DRS_SRCBLEND, pShader->SrcBlend);
-			setRenderState (D3DRS_DESTBLEND, pShader->DstBlend);
-		}
-		else
-			setRenderState (D3DRS_ALPHABLENDENABLE, FALSE);
-
-		// Alpha test						
-		if (flags&IDRV_MAT_ALPHA_TEST)
-		{
-			setRenderState (D3DRS_ALPHATESTENABLE, TRUE);
-			setRenderState (D3DRS_ALPHAREF, pShader->AlphaRef);
-			setRenderState (D3DRS_ALPHAFUNC, D3DCMP_GREATER);
-		}
-		else
-			setRenderState (D3DRS_ALPHATESTENABLE, FALSE);
-
-		// Z buffer
-		setRenderState (D3DRS_ZWRITEENABLE, (flags&IDRV_MAT_ZWRITE)?TRUE:FALSE);
-		setRenderState (D3DRS_ZFUNC, pShader->ZComp);
-		float flt = mat.getZBias () * _OODeltaZ;
-		setRenderState (D3DRS_DEPTHBIAS, FTODW(flt));
-
-		// Active lighting
-		if (mat.isLighted())
-		{
-			setRenderState (D3DRS_LIGHTING, TRUE);
-			_DeviceInterface->SetMaterial( &(pShader->Material) );
-		}
-		else
-		{
-			setRenderState (D3DRS_LIGHTING, FALSE);
-
-			// Set pixel shader unlighted color ?
-			if (pShader->PixelShader)
-			{
-				float colors[4];
-				D3DCOLOR_FLOATS(colors,pShader->UnlightedColor);
-				setPixelShaderConstant (5, colors);
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_handleBackSide)
+			// Handle backside
+			if (_CullMode == CCW)
+			{		
+				setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CCW:D3DCULL_CW);
 			}
 			else
 			{
-				if (pShader->NeedsConstantForDiffuse)
-					setRenderState (D3DRS_TEXTUREFACTOR, pShader->UnlightedColor);
+				setRenderState (D3DRS_CULLMODE, _DoubleSided?D3DCULL_NONE:_InvertCullMode?D3DCULL_CW:D3DCULL_CCW);
+			}	
+		}
+		
+		
+		bool blend = (flags&IDRV_MAT_BLEND) != 0;
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_updateBlend)
+			// Active states				
+			if (blend)
+			{
+				setRenderState (D3DRS_ALPHABLENDENABLE, TRUE);
+				setRenderState (D3DRS_SRCBLEND, pShader->SrcBlend);
+				setRenderState (D3DRS_DESTBLEND, pShader->DstBlend);
+			}
+			else
+				setRenderState (D3DRS_ALPHABLENDENABLE, FALSE);
+			
+			// Alpha test						
+			if (flags&IDRV_MAT_ALPHA_TEST)
+			{
+				setRenderState (D3DRS_ALPHATESTENABLE, TRUE);
+				setRenderState (D3DRS_ALPHAREF, pShader->AlphaRef);
+				setRenderState (D3DRS_ALPHAFUNC, D3DCMP_GREATER);
+			}
+			else
+				setRenderState (D3DRS_ALPHATESTENABLE, FALSE);
+		}
+		
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_updateZBuffer)
+			// Z buffer
+			setRenderState (D3DRS_ZWRITEENABLE, (flags&IDRV_MAT_ZWRITE)?TRUE:FALSE);
+			setRenderState (D3DRS_ZFUNC, pShader->ZComp);
+			float flt = mat.getZBias () * _OODeltaZ;
+			setRenderState (D3DRS_DEPTHBIAS, FTODW(flt));
+		}
+		
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_updateLighting)
+			// Active lighting
+			if (mat.isLighted())
+			{
+				setRenderState (D3DRS_LIGHTING, TRUE);
+				setMaterialState(pShader->Material);
+			}
+			else
+			{
+				setRenderState (D3DRS_LIGHTING, FALSE);
+				
+				// Set pixel shader unlighted color ?
+				if (pShader->PixelShader)
+				{
+					float colors[4];
+					D3DCOLOR_FLOATS(colors,pShader->UnlightedColor);
+					setPixelShaderConstant (5, colors);
+				}
+				else
+				{
+					if (pShader->NeedsConstantForDiffuse)
+						setRenderState (D3DRS_TEXTUREFACTOR, pShader->UnlightedColor);
+				}
+			}					
+			setRenderState (D3DRS_SPECULARENABLE, pShader->SpecularEnabled);
+		}
+		
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_updateVertexColorLighted)
+			// Active vertex color if not lighted or vertex color forced
+			if (mat.isLightedVertexColor ())
+			{
+				setRenderState (D3DRS_COLORVERTEX, TRUE);
+				
+				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
+			}
+			else
+			{
+				setRenderState (D3DRS_COLORVERTEX, FALSE);
+				setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
 			}
 		}
-
-		setRenderState (D3DRS_SPECULARENABLE, pShader->SpecularEnabled);
-
-		// Active vertex color if not lighted or vertex color forced
-		if (mat.isLightedVertexColor ())
-		{
-			setRenderState (D3DRS_COLORVERTEX, TRUE);
-			setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
-		}
-		else
-		{
-			setRenderState (D3DRS_COLORVERTEX, FALSE);
-			setRenderState (D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-		}
-
-		// Disable fog if dest blend is ONE
-		if (blend && (pShader->DstBlend == D3DBLEND_ONE))
-		{
-			setRenderState (D3DRS_FOGENABLE, FALSE);
+		
+		{			
+			H_AUTO_D3D(CDriverD3D_setupMaterial_disableFog)
+			// Disable fog if dest blend is ONE
+			if (blend && (pShader->DstBlend == D3DBLEND_ONE))
+			{
+				setRenderState (D3DRS_FOGENABLE, FALSE);
+			}
 		}		
 
 		// Set the good shader
@@ -727,16 +809,19 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 		{
 		case CMaterial::Normal:
 			{
+				H_AUTO_D3D(CDriverD3D_setupMaterial_setupNormalshader)
 				// No shader
 				activeShader (NULL);
 
 				/* If unlighted trick is needed, set the shader later */
-				if (!pShader->NeedsConstantForDiffuse)
-					setPixelShader (pShader->PixelShader);
+				//if (!pShader->NeedsConstantForDiffuse)
+				//	setPixelShader (pShader->PixelShader);
+				setPixelShader (pShader->NeedsConstantForDiffuse ? pShader->PixelShader : NULL);
 			}
 			break;
 		case CMaterial::LightMap:
-			{				
+			{	
+				H_AUTO_D3D(CDriverD3D_setupMaterial_setupLightmapShader)
 				setPixelShader (NULL);				
 				static const uint32 RGBMaskPacked = CRGBA(255,255,255,0).getPacked();			
 
@@ -757,7 +842,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 						lightmapMask |= 1<<lightmap;
 					}
 				}
-
+				
+	
 				// activate the appropriate shader
 				if (mat.getBlend())
 				{
@@ -765,22 +851,22 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 					{
 						switch (lightmapCount)
 						{
-						case 0:	activeShader (&_ShaderLightmap0BlendX2);	break;
-						case 1:	activeShader (&_ShaderLightmap1BlendX2);	break;
-						case 2:	activeShader (&_ShaderLightmap2BlendX2);	break;
-						case 3:	activeShader (&_ShaderLightmap3BlendX2);	break;
-						default:	activeShader (&_ShaderLightmap4BlendX2);	break;
+						case 0:	activeShader (&_ShaderLightmap0BlendX2); break;
+						case 1:	activeShader (&_ShaderLightmap1BlendX2); break;
+						case 2:	activeShader (&_ShaderLightmap2BlendX2); break;
+						case 3:	activeShader (&_ShaderLightmap3BlendX2); break;
+						default:	activeShader (&_ShaderLightmap4BlendX2); break;
 						}
 					}
 					else
 					{
 						switch (lightmapCount)
 						{
-						case 0:	activeShader (&_ShaderLightmap0Blend);	break;
-						case 1:	activeShader (&_ShaderLightmap1Blend);	break;
-						case 2:	activeShader (&_ShaderLightmap2Blend);	break;
-						case 3:	activeShader (&_ShaderLightmap3Blend);	break;
-						default:	activeShader (&_ShaderLightmap4Blend);	break;
+						case 0:	activeShader (&_ShaderLightmap0Blend); break;
+						case 1:	activeShader (&_ShaderLightmap1Blend); break;
+						case 2:	activeShader (&_ShaderLightmap2Blend); break;
+						case 3:	activeShader (&_ShaderLightmap3Blend); break;
+						default:	activeShader (&_ShaderLightmap4Blend); break;
 						}
 					}
 				}
@@ -790,22 +876,22 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 					{
 						switch (lightmapCount)
 						{
-						case 0:	activeShader (&_ShaderLightmap0X2);	break;
-						case 1:	activeShader (&_ShaderLightmap1X2);	break;
-						case 2:	activeShader (&_ShaderLightmap2X2);	break;
-						case 3:	activeShader (&_ShaderLightmap3X2);	break;
-						default:	activeShader (&_ShaderLightmap4X2);	break;
+						case 0:	activeShader (&_ShaderLightmap0X2); break;
+						case 1:	activeShader (&_ShaderLightmap1X2); break;
+						case 2:	activeShader (&_ShaderLightmap2X2); break;
+						case 3:	activeShader (&_ShaderLightmap3X2); break;
+						default:	activeShader (&_ShaderLightmap4X2); break;
 						}
 					}
 					else
 					{
 						switch (lightmapCount)
 						{
-						case 0:	activeShader (&_ShaderLightmap0);	break;
+						case 0:	activeShader (&_ShaderLightmap0); break;
 						case 1:	activeShader (&_ShaderLightmap1);	break;
-						case 2:	activeShader (&_ShaderLightmap2);	break;
-						case 3:	activeShader (&_ShaderLightmap3);	break;
-						default:	activeShader (&_ShaderLightmap4);	break;
+						case 2:	activeShader (&_ShaderLightmap2); break;
+						case 3:	activeShader (&_ShaderLightmap3); break;
+						default:	activeShader (&_ShaderLightmap4); break;
 						}
 					}
 				}
@@ -890,6 +976,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			break;
 		case CMaterial::Specular:
 			{
+				H_AUTO_D3D(CDriverD3D_setupMaterial_setupSpecularShader)
 				// No shader
 				activeShader (NULL);
 				setPixelShader (NULL);
@@ -930,6 +1017,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			break;
 			case CMaterial::Cloud:
 			{
+				H_AUTO_D3D(CDriverD3D_setupMaterial_setupCloudShader)
 				activeShader (&_ShaderCloud);
 
 				// Get the shader
@@ -952,7 +1040,8 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			}
 			break;
 			case CMaterial::Water:
-			{				
+			{		
+				H_AUTO_D3D(CDriverD3D_setupMaterial_setupWaterShader)
 				activeShader(mat.getTexture(3) ? &_ShaderWaterDiffuse : &_ShaderWaterNoDiffuse);
 				// Get the shader
 				nlassert (_CurrentShader);
@@ -1618,6 +1707,6 @@ bool CDriverD3D::supportCloudRenderSinglePass () const
 	return _PixelShader;
 }
 
-// ***************************************************************************
+
 
 } // NL3D

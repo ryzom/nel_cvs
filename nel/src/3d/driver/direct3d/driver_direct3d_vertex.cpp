@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex.cpp,v 1.8 2004/08/13 15:31:16 vizerie Exp $
+ * $Id: driver_direct3d_vertex.cpp,v 1.8.4.1 2004/09/14 15:33:43 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -50,7 +50,7 @@ namespace NL3D
 
 // ***************************************************************************
 
-CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
+CVBDrvInfosD3D::CVBDrvInfosD3D(CDriverD3D *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
 {
 	H_AUTO_D3D(CVBDrvInfosD3D_CVBDrvInfosD3D)
 	CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
@@ -61,6 +61,7 @@ CVBDrvInfosD3D::CVBDrvInfosD3D(IDriver *drv, ItVBDrvInfoPtrList it, CVertexBuffe
 	#ifdef NL_DEBUG
 		Locked = false;
 	#endif
+	Driver = drv;
 }
 
 // ***************************************************************************
@@ -81,6 +82,14 @@ CVBDrvInfosD3D::~CVBDrvInfosD3D()
 	// Don't release VertexDecl, it is release by the driver
 	if (VertexBuffer && !Volatile)
 	{
+		if (Driver)
+		{
+			if (Driver->_VertexBufferCache.VertexBuffer == VertexBuffer)
+			{
+				Driver->_VertexBufferCache.VertexBuffer = NULL;
+				Driver->touchRenderVariable(&Driver->_VertexBufferCache);
+			}
+		}
 		vertexCount--;
 		VertexBuffer->Release();
 	}
@@ -420,8 +429,9 @@ bool CDriverD3D::activeVertexBuffer(CVertexBuffer& VB)
 	VB.fillBuffer ();
 
 	// Set the vertex buffer
-	setVertexDecl (info->VertexDecl);
-	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices(), VB.getPreferredMemory(), info->Usage);
+	setVertexDecl (info->VertexDecl, info->Stride);	
+	setVertexBuffer (info->VertexBuffer, info->Offset, info->Stride, info->UseVertexColor, VB.getNumVertices(), VB.getPreferredMemory(), info->Usage);	
+	nlassert(_VertexDeclStride == _VertexStreamStride);
 
 	// Set UVRouting
 	const uint8 *uvRouting = VB.getUVRouting();
@@ -555,6 +565,15 @@ bool CDriverD3D::supportVertexBufferHard() const
 
 // ***************************************************************************
 
+bool CDriverD3D::supportVolatileVertexBuffer() const
+{
+	H_AUTO_D3D(CDriverD3D_supportVolatileVertexBuffer)
+	return true;
+}
+
+
+// ***************************************************************************
+
 void CDriverD3D::disableHardwareVertexArrayAGP()
 {
 	H_AUTO_D3D(CDriverD3D_disableHardwareVertexArrayAGP)
@@ -684,6 +703,7 @@ CVolatileVertexBuffer::CVolatileVertexBuffer()
 {
 	H_AUTO_D3D(CVolatileVertexBuffer_CVolatileVertexBuffer)
 	VertexBuffer = NULL;
+	Locked = false;
 }
 
 // ***************************************************************************
@@ -738,6 +758,7 @@ void CVolatileVertexBuffer::init (CVertexBuffer::TLocation	location, uint size, 
 
 void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 {
+	nlassertex(!Locked, ("Volatile buffer usage should follow an atomic lock/unlock/render sequence"));
 	H_AUTO_D3D(CVolatileVertexBuffer_lock)
 	/* If not enough room to allocate this buffer, resise the buffer to Size+Size/2 but do not reset CurrentIndex
 	 * to be sure the buffer will be large enough next pass. */
@@ -755,13 +776,20 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 	// Enough room for this vertex ?
 	if (CurrentIndex+size+stride > Size)
 	{		
-
-		if (CurrentIndex+size+stride > MaxSize && CurrentIndex != 0) 
+		if (CurrentIndex+size > MaxSize && CurrentIndex != 0)
 		{
-			return NULL; // max size exceeded -> can reallocate only if we are at start of block
+			reset();
+			if (size > MaxSize)
+			{
+				init (Location, std::max (std::min(Size+Size/2, MaxSize),  size), MaxSize, Driver);
+			}
+		}	
+		else
+		{
+			// Max size not reached, so reallocate
+			init (Location, std::max (std::min(Size+Size/2, MaxSize),  CurrentIndex+size), MaxSize, Driver);
+			reset(); // reallocate will cause a cpu stall anyway ...
 		}
-		// No, reallocate
-		init (Location, std::max (std::min(Size+Size/2, MaxSize),  CurrentIndex+size+stride), MaxSize, Driver);
 	}
 
 	// Lock Profile?
@@ -775,7 +803,7 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 	VOID *pbData;
 	if (CurrentIndex==0)
 	{
-		nlverify (VertexBuffer->Lock (0, Size, &pbData, 0) == D3D_OK);
+		nlverify (VertexBuffer->Lock (0, Size, &pbData, D3DLOCK_DISCARD) == D3D_OK);
 	}
 	else
 	{
@@ -793,7 +821,8 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 
 	// New buffer position
 	CurrentIndex += size;
-	return pbData;
+	Locked = true;
+	return pbData;	
 }
 
 // ***************************************************************************
@@ -801,7 +830,9 @@ void *CVolatileVertexBuffer::lock (uint size, uint stride, uint &offset)
 void CVolatileVertexBuffer::unlock ()
 {
 	H_AUTO_D3D(CVolatileVertexBuffer_unlock )
+	nlassertex(Locked, ("Volatile buffer usage should follow an atomic lock/unlock/render sequence"));
 	nlverify (VertexBuffer->Unlock () == D3D_OK);
+	Locked = false;	
 }
 
 // ***************************************************************************

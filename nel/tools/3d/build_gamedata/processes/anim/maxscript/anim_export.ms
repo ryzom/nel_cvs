@@ -71,6 +71,9 @@ try
 						if $Bip01 != undefined then
 							select $Bip01
 
+						-- Always uncheck triangle pelvis
+						$Bip01.controller.trianglepelvis = false
+
 						-- For each node
 						for node in objects do
 						(
@@ -78,7 +81,16 @@ try
 							if (exportNodeAnmation != undefined) then
 							(
 								if (exportNodeAnmation == "1") then
+								(
 									selectmore node
+
+									-- Is it a biped ?
+									if (classof node.controller) == Vertical_Horizontal_Turn then
+									(
+										-- Always uncheck triangle pelvis
+										node.controller.trianglepelvis = false
+									)
+								)
 							)
 						)
 

@@ -4,13 +4,32 @@
 
 include "nel_utility.ms"
 
+NelRenameSample = "c:/dir/name.ext"
+
+NelRenameSelectionAlways = 1
+NelRenameSelectionSearch = 2
+
+NelRenameActionReplace = 1
+NelRenameActionPrefix = 2
+NelRenameActionPostfix = 3
+
+NelRenameFilterDir = 1
+NelRenameFilterDirName = 2
+NelRenameFilterDirNameExt = 3
+NelRenameFilterName = 4
+NelRenameFilterNameExt = 5
+NelRenameFilterExt = 6
+
 rollout rename_rollout "Properties"
 (
 	group "Global settings"
 	(
-		RadioButtons	Mode					"Mode"							labels:#("Replace", "Prefix") align:#left
-		Label			RemplaceWithLabel		"Remplace with / Prefix with:"							align:#left
+		RadioButtons	SelectionMode			"String selection"				labels:#("Apply to all the string", "Search pattern in the string") align:#left
+		RadioButtons	Action					"Action to perform"				labels:#("Replace", "Prefix", "Postfix") align:#left
+		Label			RemplaceWithLabel		"Remplace / Prefix / Postfix with:"			align:#left
 		EditText		RemplaceWith			""								width:500	align:#left
+		RadioButtons	PathNameFilter			"Path name filter"				labels:#("c:/dir", "c:/dir/name", "c:/dir/name.ext", "name", "name.ext", ".ext") align:#left
+		Label			Sample					""								align:#left
 	)
 
 	group "Replace"
@@ -18,28 +37,199 @@ rollout rename_rollout "Properties"
 		Label			FindWhatLabel			"Find what:"								align:#left
 		EditText		FindWhat				""								width:500	align:#left
 		CheckBox		MatchWholeWordOnly		"Match whole word only"			checked:true
+		CheckBox		MatchCase				"Match case"					checked:false
 	)
 
-	on Mode changed state do
+	fn replaceString str pattern_to_search =
 	(
-		if state == 1 then
+		local result, position, match, temp_str
+		
+		-- Default, doesn't match
+		match = false
+		if SelectionMode.state == NelRenameSelectionSearch then
+		(
+			-- Match all the word ?
+			if MatchWholeWordOnly.checked == true then
+			(
+				if str == pattern_to_search then
+					match = true
+			)
+			else
+			(
+				-- Find pattern
+				result = ""
+				temp_str = str
+				while (temp_str != "") do
+				(
+					-- Find the pattern in the temp_str ?
+					position = findString temp_str pattern_to_search
+
+					if position != undefined then
+					(
+						-- Contact the fist part
+						result = result + (substring temp_str 1 (position-1)) + RemplaceWith.text
+				
+						-- Remove the pattern
+						temp_str = substring temp_str (position+pattern_to_search.count) -1
+
+						-- Match
+						match = true
+					)
+					else
+					(
+						-- Final
+						result = result + temp_str
+						temp_str = ""
+					)
+				)
+
+				-- If replace, return the result
+				if Action.state == NelRenameActionReplace then
+					return result
+			)
+		)
+		else if SelectionMode.state == NelRenameSelectionAlways then
+		(
+			-- Always match
+			match = true
+		)
+
+		-- Match ?
+		if match == true then
+		(
+			if Action.state == NelRenameActionReplace then
+				return RemplaceWith.text
+			else if Action.state == NelRenameActionPrefix then
+				return RemplaceWith.text + str
+			else if Action.state == NelRenameActionPostfix then
+				return str + RemplaceWith.text
+		)
+		else
+		(
+			return str
+		)
+	)
+
+	fn modifyString filename =
+	(
+		local dir, name, ext, find_what, prefix, name_to_modify, postfix
+
+		-- Find what
+		find_what = FindWhat.text
+
+		-- Get the bitmap file
+		if MatchCase.checked == false then
+		(
+			filename = lowercase filename
+			find_what = lowercase find_what
+		)
+
+		-- Extract different part of the path string
+		dir = adjustPathStringForScript ((getFilenamePath filename)) + "/"
+		name = getFilenameFile filename
+		ext = getFilenameType filename
+
+		-- Build the final filename
+		prefix = ""
+		name_to_modify = ""
+		postfix = ""
+		if PathNameFilter.state == NelRenameFilterDir then
+		(
+			name_to_modify = dir
+			postfix = name + ext
+		)
+		else if PathNameFilter.state == NelRenameFilterDirName then
+		(
+			name_to_modify = dir + name
+			postfix = ext
+		)
+		else if PathNameFilter.state == NelRenameFilterDirNameExt then
+		(
+			name_to_modify = dir + name + ext
+		)
+		else if PathNameFilter.state == NelRenameFilterName then
+		(
+			prefix = dir
+			name_to_modify = name
+			postfix = ext
+		)
+		else if PathNameFilter.state == NelRenameFilterNameExt then
+		(
+			prefix = dir
+			name_to_modify = name + ext
+		)
+		else -- if PathNameFilter.state == NelRenameFilterExt then
+		(
+			prefix = dir + name
+			name_to_modify = ext
+		)
+
+		-- Replace
+		return (prefix + (replaceString name_to_modify find_what) + postfix)
+	)
+
+	fn updateSample =
+	(
+		Sample.text = "Sample: \"" + NelRenameSample + "\" -> \"" + (modifyString NelRenameSample) + "\""
+	)
+
+	fn updateSearchMode =
+	(
+		if SelectionMode.state == NelRenameSelectionSearch then
 		(
 			MatchWholeWordOnly.enabled = true
 			FindWhat.enabled = true
-			RemplaceWith.enabled = true
+			MatchCase.enabled = true
 		)
-		else if state == 2 then
+		else if SelectionMode.state == NelRenameSelectionAlways then
 		(
 			MatchWholeWordOnly.enabled = false
 			FindWhat.enabled = false
+			MatchCase.enabled = false
 		)
+	)
+
+	on FindWhat changed text do
+	(
+		updateSample ()
+	)
+
+	on RemplaceWith changed text do
+	(
+		updateSample ()
+	)
+
+	on SelectionMode changed state do
+	(
+		updateSearchMode ()
+		updateSample ()
+	)
+
+	on Action changed state do
+	(
+		updateSample ()
+	)
+
+	on PathNameFilter changed state do
+	(
+		updateSample ()
+	)
+
+	on MatchWholeWordOnly changed state do
+	(
+		updateSample ()
+	)
+
+	on MatchCase changed state do
+	(
+		updateSample ()
 	)
 
 	local countRenamed
 
 	fn renameMaterial material =
 	(
-		local find_what_lower, map, filename, init_filename, result, position, mat
+		local find_what_lower, map, filename, position, mat
 
 		-- Text to find in lower case
 		find_what_lower = lowercase FindWhat.text
@@ -57,77 +247,19 @@ rollout rename_rollout "Properties"
 					if (classof map) == Bitmaptexture then
 					(
 						-- Get the bitmap file
-						filename = lowercase map.filename
-						init_filename = filename
-						-- messagebox filename
+						filename = map.filename
 
-						-- Mode ?
-
-						result = filename
-
-						-- Replace ?
-						if (Mode.state == 1) then
-						(
-							-- messagebox (filename + " in material " + material.name)
-
-							-- Match whole string ?
-							if MatchWholeWordOnly.checked == true then
-							(
-								-- Same string ?
-								if find_what_lower == filename then
-								(
-									-- Remplace !
-									result = RemplaceWith.text
-								)
-							)
-							else
-							(
-								-- Find pattern
-								result = ""
-								while (filename != "") do
-								(
-									-- Find the pattern in the string ?
-									-- messagebox ("Find string : " + find_what_lower + " in " + filename)
-									position = findString filename find_what_lower
-									if position != undefined then
-									(
-										-- messagebox ("Pattern found")
-
-										-- Contact the fist part
-										result = result + (substring filename 1 (position-1)) + RemplaceWith.text
-
-										-- messagebox ("New string : " + result)
-
-										-- Remove the pattern
-										filename = substring filename (position+find_what_lower.count) -1
-
-										-- messagebox ("Remainder : " + filename)
-									)
-									else
-									(
-										-- Final
-										result = result + filename
-										filename = ""
-									)
-								)
-							)
-						)
-						
-						-- Prefix
-						if (Mode.state == 2) then
-						(
-							result = getFilenamePath (filename) + RemplaceWith.text + filenameFromPath (filename)
-						)
+						-- Modify it
+						filename = modifyString filename
 
 						-- Change something ?
-						if (result != init_filename) then
+						if (filename != map.filename) then
 						(
 							-- Remplace !
-							map.filename = result
+							map.filename = filename
 
 							-- Count replaces
 							countRenamed = countRenamed + 1
-							-- messagebox ("Final name : "+result)
 						)
 					)
 				)
@@ -152,7 +284,6 @@ rollout rename_rollout "Properties"
 		for mat in sceneMaterials do
 		(
 			-- Rename its material
-			-- messagebox mat.name
 			renameMaterial mat
 		)
 
@@ -161,6 +292,12 @@ rollout rename_rollout "Properties"
 	)
 
 	include "nel_batched_script.ms"	
+
+	on rename_rollout open do
+	(
+		updateSearchMode ()
+		updateSample ()
+	)
 )
 
 --

@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.15 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: primitive_world_image.cpp,v 1.16 2002/09/25 09:12:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1230,7 +1230,7 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 		// Make a domove in the Ben data
 		double	deltaDist= _DeltaPosition.norm();
 		double	deltaTime;
-		if(deltaDist==0)
+		if(deltaDist<0.000001)
 			deltaTime= 0;
 		else
 			deltaTime=(collisionPosition-_Position.getPos ()).norm()/deltaDist;

@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.6 2000/10/27 15:45:06 cado Exp $
+ * $Id: common.h,v 1.7 2000/11/06 18:19:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,19 +70,28 @@ const	double	PI= 3.1415926535897932384626433832795;
 // ============================================================================================
 // MIN/MAX extended functions.
 
-template<class T>	inline T minof(T a,  T b,  T c)
+template<class T>	inline T minof(const T& a,  const T& b,  const T& c)
 	{return std::min(std::min(a,b),c);}
-template<class T>	inline T minof(T a,  T b,  T c,  T d)
+template<class T>	inline T minof(const T& a,  const T& b,  const T& c,  const T& d)
 	{return std::min(minof(a,b,c),d);}
-template<class T>	inline T minof(T a,  T b,  T c,  T d,  T e)
+template<class T>	inline T minof(const T& a,  const T& b,  const T& c,  const T& d,  const T& e)
 	{return std::min(minof(a,b,c,d),e);}
-template<class T>	inline T maxof(T a,  T b,  T c)
+template<class T>	inline T maxof(const T& a,  const T& b,  const T& c)
 	{return std::max(std::max(a,b),c);}
-template<class T>	inline T maxof(T a,  T b,  T c,  T d)
+template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T& d)
 	{return std::max(maxof(a,b,c),d);}
-template<class T>	inline T maxof(T a,  T b,  T c,  T d,  T e)
+template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T& d,  const T& e)
 	{return std::max(maxof(a,b,c,d),e);}
 
+// ============================================================================================
+
+template<class T>	inline contReset (T& a)
+{
+	a.~T();
+	new (&a) T;
+}
+
+=======
 
 // ============================================================================================
 /// Return the value maximized to the next power of 2 of v.   eg: raiseToNextPowerOf2(8)==8.  raiseToNextPowerOf2(5)==8.
@@ -110,6 +119,7 @@ inline uint	getPowerOf2(uint v)
 }
 
 
+>>>>>>> 1.6
 }
 
 

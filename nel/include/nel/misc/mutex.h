@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.24 2003/03/27 18:23:20 cado Exp $
+ * $Id: mutex.h,v 1.25 2003/03/31 09:19:06 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 //#include <iostream>
 #include <pthread.h> // PThread
 #include <semaphore.h> // PThread POSIX semaphores
+#include <unistd.h>
 #define __forceinline inline
 #endif
 

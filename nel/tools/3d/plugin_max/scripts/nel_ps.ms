@@ -7,7 +7,7 @@ extends:Box
 (	
 	parameters pblock rollout:param
 	(
-		ps_file_name type:#String default:"dummy.ps"
+		ps_file_name type:#String default:"*.ps"
 		PSParam0 type:#float animatable:true ui:userParam1_s
 		PSParam1 type:#float animatable:true ui:userParam2_s
 		PSParam2 type:#float animatable:true ui:userParam3_s
@@ -38,7 +38,7 @@ extends:Box
 		
 		on browse pressed do
 		(
-			fname = getOpenFileName caption: "particle system file" types:"particle system file(*.ps)|" filename:"*.ps"
+			fname = getOpenFileName caption: "particle system file" types:"particle system file(*.ps)|" ps_file_name:"*.ps"
 			if not fname == undefined then
 			(
 			  -- ps_file_name = filenameFromPath fname 

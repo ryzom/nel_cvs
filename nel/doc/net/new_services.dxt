@@ -61,6 +61,14 @@ i.e. init(), update() and release() are empty, you don't need
 to create a new class : you can use IService directly and
 write IService instead of CMyService.
 
+To run your service, create a file "<service_long_name>.cfg" in the working directory, containing the location of your naming service.
+
+Example: my_service.cfg:
+\code
+NSHost = "itsalive.nevrax.org";
+NSPort = 50000;
+\endcode
+
 \subsection new_services_examples Examples
 
 See the nelns services source code for examples on how to create a class inherited from

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.49 2004/03/23 16:27:21 boucher Exp $
+ * $Id: i18n.cpp,v 1.50 2004/04/01 18:57:31 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -44,9 +44,10 @@ namespace NLMISC {
 const std::string		CI18N::_LanguageCodes[] =
 {
 	std::string("en"),		// english
+	std::string("de"),		// german
 	std::string("fr"),		// french
-	std::string("zh-TW"),	// traditionnal chinese
-	std::string("zh-CN")	// simplified chinese
+//	std::string("zh-TW"),	// traditionnal chinese
+//	std::string("zh-CN")	// simplified chinese
 };
 
 const uint				CI18N::_NbLanguages = sizeof(CI18N::_LanguageCodes) / sizeof(std::string);

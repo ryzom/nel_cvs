@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.26 2000/11/20 15:51:49 cado Exp $
+ * $Id: msg_socket.cpp,v 1.27 2000/11/21 17:41:09 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,15 +43,19 @@ using namespace std;
 
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
 #include <fcntl.h>
+
 #define SOCKET_ERROR -1
 #define INVALID_SOCKET -1
 #define ERROR_NUM errno
+
+typedef sint socklen_t;
 typedef int SOCKET;
 
 #endif
@@ -101,7 +105,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	_ClientSock( NULL ),
 	_ServiceName ( service )
 {
-	nldebug("Trying to connect to the service \"%s\"", service);
+	nldebug("Trying to connect to the service \"%s\"", service.c_str());
 	init( callbackarray, arraysize );
 	connectToService();
 	addNewConnection( _ClientSock );
@@ -254,14 +258,14 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	_Binded = true;
 
 	// Retrieve socket error code (is this really necessary ?)
-	int errcode=0;
+/*	int errcode=0;
 	int errlen=sizeof(errcode);
 	getsockopt( listensock->_Sock, SOL_SOCKET, SO_ERROR, (char*)&errcode, &errlen );
 	if ( errcode != 0 )
 	{
 		throw ESocket("Server socket raised an error after binding");
 	}
-
+*/
 	// Listen
 	if ( ::listen( listensock->_Sock, SOMAXCONN ) != 0 ) // SOMAXCONN = maximum length of the queue of pending connections
 	{
@@ -431,7 +435,7 @@ void CMsgSocket::update()
 								}
 								else
 								{
-									nlwarning( "Received a message with invalid type string %s", msg.typeAsString() );
+									nlwarning( "Received a message with invalid type string %s", msg.typeAsString().c_str() );
 								}
 							}
 						}
@@ -483,7 +487,7 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 {
 	// Accept connection
 	sockaddr_in saddr;
-	sint saddrlen = sizeof(saddr);
+	socklen_t saddrlen = sizeof(saddr);
 	SOCKET newsock = ::accept( listen_descr, (sockaddr*)&saddr, &saddrlen );
 	if ( newsock == INVALID_SOCKET )
 	{

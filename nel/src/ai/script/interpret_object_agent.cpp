@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.45 2002/04/30 15:11:45 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.46 2002/05/17 13:46:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NLAISCRIPT
 		setType(name, *this);	
 		_lastRef = -1;
 		_RunIndex = -1;
+		_ConstructorIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
@@ -53,6 +54,7 @@ namespace NLAISCRIPT
 		setType(name, *this);
 		_lastRef = -1;
 		_RunIndex = -1;
+		_ConstructorIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
@@ -64,6 +66,7 @@ namespace NLAISCRIPT
 		setType(new NLAIC::CIdentType(a.getType()));
 		_lastRef = -1;
 		_RunIndex = -1;
+		_ConstructorIndex = -1;
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = a._Base_class;
@@ -74,6 +77,7 @@ namespace NLAISCRIPT
 		setType(new NLAIC::CIdentType(ident));
 		_lastRef = -1;
 		_RunIndex = -1;
+		_ConstructorIndex = -1;
 
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
@@ -84,6 +88,8 @@ namespace NLAISCRIPT
 	{		
 		_lastRef = -1;
 		_RunIndex = -1;
+		_ConstructorIndex = -1;
+
 		_Methode.size();		
 
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
@@ -1075,6 +1081,16 @@ namespace NLAISCRIPT
 	void CAgentClass::setRunMethod(sint32 index)
 	{
 		_RunIndex = index + getBaseMethodCount();
+	}
+
+	sint32 CAgentClass::getConstroctorMethod() const
+	{
+		return _ConstructorIndex;
+	}
+
+	void CAgentClass::setConstroctorMethod(sint32 index)
+	{
+		_ConstructorIndex = index + getBaseMethodCount();
 	}
 
 	void CAgentClass::initStatics()

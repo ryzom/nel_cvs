@@ -13,6 +13,7 @@
 #include "nel/ai/logic/fsm_script.h"
 #include "nel/ai/agent/agent_timer.h"
 #include "nel/ai/agent/volatil_memory.h"
+#include "nel/ai/agent/agent_set.h"
 //#include "static_init.h"
 
 using namespace NLAIAGENT;
@@ -39,7 +40,7 @@ namespace NLAILINK
 		CAgentWatchTimer::initClass();
 		CAgentClockTimer::initClass();
 		CVolatilMemmory::initClass();
-		CHashTimerManager::initClass();
+		CHashTimerManager::initClass();		
 	}
 
 	void releaseIALib()
@@ -61,7 +62,6 @@ namespace NLAILINK
 		NLAICHARACTER::CCharacterChild::releaseClass();
 		CVolatilMemmory::releaseClass();
 		CHashTimerManager::releaseClass();
-
 		
 		staticReleaseLibClass();
 	}

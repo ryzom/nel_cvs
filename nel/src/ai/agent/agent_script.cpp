@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.117 2002/05/13 13:47:05 portier Exp $
+ * $Id: agent_script.cpp,v 1.118 2002/05/17 13:46:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,6 +303,18 @@ namespace NLAIAGENT
 																				CAgentScript::CheckAll,
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(ParamIdInitComponentMsg)) ;
+
+		NLAISCRIPT::CParam *ParamString =  new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CStringType::IdStringType)));
+		StaticMethod[CAgentScript::TIsEUU] = new CAgentScript::CMethodCall(	_ISA_,
+																		CAgentScript::TIsEUU,
+																		ParamString,CAgentScript::CheckAll,
+																		0, new NLAISCRIPT::CObjectUnknown(	new NLAISCRIPT::COperandSimple(
+																		   new NLAIC::CIdentType(NLAIAGENT::UInt32Type::IdUInt32Type))));
+		ParamString->incRef();
+		StaticMethod[CAgentScript::TAddSet] = new CAgentScript::CMethodCall(_ADD_SET_,
+																			CAgentScript::TAddSet,
+																			ParamString,CAgentScript::CheckAll,
+																			0, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));		
 
 
 		StaticMethod[CAgentScript::TDeflautProccessMsg] = new CAgentScript::CMethodCall("DeflautProccessMsg",
@@ -693,6 +705,25 @@ namespace NLAIAGENT
 			iter++;
 		}
 		IAgent::onKill(a);
+	}
+
+	///Test the set of the agent.
+	bool CAgentScript::isa(const std::string &s) const
+	{
+		std::set<std::string>::iterator it = mapSet.find(s);
+		if(it != mapSet.end()) return true;
+		else
+		if(isClassInheritedFrom(CStringVarName(s.c_str())) >= 0) return true;
+		else
+		if(s == (const char *) getType()) return true;
+		
+		return false;
+	}
+
+	///Add a set for the agent.
+	void CAgentScript::addSet(const std::string &s)
+	{
+		mapSet.insert(s);
 	}
 
 	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(IBaseGroupType *g)
@@ -1126,7 +1157,6 @@ namespace NLAIAGENT
 		}
 		return IObjectIA::CProcessResult();
 	}
-
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(IObjectIA *m)
 	{
@@ -1590,8 +1620,7 @@ namespace NLAIAGENT
 					i ++;
 				}
 				r.Result = new CStringType(CStringVarName("Unknown"));
-
-				r.Result->incRef();
+				
 				return r;
 			}
 
@@ -1604,9 +1633,7 @@ namespace NLAIAGENT
 					r.Result = new CStringType( *classname );
 				}
 				else
-					r.Result = new CStringType( CStringVarName("<unknown>"));
-
-				r.Result->incRef();
+					r.Result = new CStringType( CStringVarName("<unknown>"));				
 				return r;
 			}
 
@@ -1624,8 +1651,7 @@ namespace NLAIAGENT
 				}
 				else
 					r.Result = new NLAILOGIC::CBoolType( false );
-
-				r.Result->incRef();
+				
 				return r;
 			}
 
@@ -1813,6 +1839,28 @@ namespace NLAIAGENT
 			{
 				return runInitComponent( (IBaseGroupType *) o );
 			}
+
+		case TIsEUU:
+			{
+				CGroupType *param = (CGroupType *) o;
+				std::string s(((NLAIAGENT::CStringType *)param->get())->getStr().getString());
+				NLAIAGENT::IObjectIA::CProcessResult r;
+				
+				if(isa(s))				
+					r.Result = new NLAIAGENT::DigitalType(1.0);				
+				else
+					r.Result = new NLAIAGENT::DigitalType(0.0);
+				return r;
+			}			
+
+		case TAddSet:
+			{
+				CGroupType *param = (CGroupType *) o;
+				std::string s(((NLAIAGENT::CStringType *)param->get())->getStr().getString());				
+				addSet(s);
+
+				return NLAIAGENT::IObjectIA::CProcessResult();
+			}			
 
 		default:
 			return IAgent::runMethodeMember(index,o);

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.52 2002/05/06 16:26:25 portier Exp $
+ * $Id: agent_script.h,v 1.53 2002/05/17 13:46:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,8 @@ namespace NLAIAGENT
 //			TGetValueReturn,	/// Processes the "Tell(GetValueMsg)" msg resulting from a "Ask(GetValueMsg)" message sent.
 			TDeflautProccessMsg,
 			TInitComponent,
+			TIsEUU,
+			TAddSet,
 			TLastM ///The count of export method.
 		};
 
@@ -149,7 +151,7 @@ namespace NLAIAGENT
 		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
 		static NLAISCRIPT::CParam *ParamRunParentNotify;
 	private:
-		///Type def for the map witch store the name of dynamic agent store in the agent.		
+		///Type def for the map witch store the name of dynamic agent store in the agent.
 		typedef std::multiset<CKeyAgent> tsetDefNameAgent;
 		
 	protected:			
@@ -169,10 +171,13 @@ namespace NLAIAGENT
 		///Map for store agent added in the dynamic child container.
 		tsetDefNameAgent _DynamicAgentName;
 
+
 	protected:
 		///The creator of this instance. This useful for find scripted method entry point.
 		NLAISCRIPT::CAgentClass *_AgentClass;
 		sint _iComponents;
+		
+		std::set<std::string> mapSet;
 
 	public:
 		static const NLAIC::CIdentType IdAgentScript;
@@ -329,6 +334,12 @@ namespace NLAIAGENT
 		virtual void getDebugString(std::string &t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
+
+
+		///Test the set of the agent.
+		virtual bool isa(const std::string &) const;
+		///Add a set for the agent.
+		virtual void addSet(const std::string &);
 
 
 

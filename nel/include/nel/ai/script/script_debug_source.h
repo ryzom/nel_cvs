@@ -1,7 +1,7 @@
 /** \file script_debug_source.h
  * <File description>
  *
- * $Id: script_debug_source.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
+ * $Id: script_debug_source.h,v 1.3 2002/05/17 13:46:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,10 +74,14 @@ class CScriptDebugSourceFile : public IScriptDebugSource
 public :
 	static const NLAIC::CIdentType IdScriptDebugSourceFile;
 
+private:
+	std::string MemoryScript;
+	bool isMemory;
+
 public:
 
 	/// Constructor
-	CScriptDebugSourceFile(const char* sourceName);
+	CScriptDebugSourceFile(const char* sourceName, bool file = true);	
 
 	/// Return the entire source buffer.
 	std::string getSourceBuffer() const;

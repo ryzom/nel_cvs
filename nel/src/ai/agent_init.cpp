@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.13 2001/12/05 10:00:24 portier Exp $
+ * $Id: agent_init.cpp,v 1.14 2002/05/17 13:46:34 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/object_ident.h"
 
+
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
@@ -73,6 +74,7 @@ void staticInitAgent()
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	
+	
 }
 
 void registerLibClass()
@@ -83,7 +85,7 @@ void staticReleaseLibClass()
 {	
 	delete IAgent::IdAgent;
 	delete CObjectIdent::IdObjectIdent;
-	delete CLocWordNumRef::IdLocWordNumRef;
+	delete CLocWordNumRef::IdLocWordNumRef;	
 }
 
 namespace NLAIE

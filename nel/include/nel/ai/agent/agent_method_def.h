@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.19 2001/09/06 13:46:33 portier Exp $
+ * $Id: agent_method_def.h,v 1.20 2002/05/17 13:46:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,6 @@
 #define _SETCONTINUATION_	"SetContinuation"
 #define _FIRST_			"First"
 #define _SECOND_		"Second"
-
-
+#define _ISA_			"IsA"
+#define _ADD_SET_		"AddSet"
 #endif

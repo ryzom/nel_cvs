@@ -1,7 +1,7 @@
 /** \file script_debug_source.cpp
  * <File description>
  *
- * $Id: script_debug_source.cpp,v 1.3 2001/05/22 16:08:16 chafik Exp $
+ * $Id: script_debug_source.cpp,v 1.4 2002/05/17 13:46:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,35 +53,40 @@ std::string IScriptDebugSource::getSourceName () const
 /*
  * Constructor
  */
-CScriptDebugSourceFile::CScriptDebugSourceFile(const char* sourceName):
-IScriptDebugSource(sourceName)
+CScriptDebugSourceFile::CScriptDebugSourceFile(const char* sourceName, bool file): 
+	IScriptDebugSource((file) ? sourceName : "memoryScript"), isMemory(!file)
 {
+	if(!file) MemoryScript = sourceName;
 }
 
 /// Return the entire source buffer.
 std::string CScriptDebugSourceFile::getSourceBuffer() const
 {
-	FILE* f;
-	sint32 size;
-	char* buf;
-	std::string ret;
+	if(!isMemory)
+	{
+		FILE* f;
+		sint32 size;
+		char* buf;
+		std::string ret;
 
-	// Read the file
-	f = fopen(_SourceName.c_str(),"rb");
-	fseek(f,0,SEEK_END);
-	size = ftell(f);
-	rewind(f);
-	buf = new char [size + 4];
-	fread(buf+1, sizeof( char ), size, f);
-	fclose(f);
-	buf[0] = ' ';
-	buf[size+1] = '\n';
-	buf[size+2] = 0;
+		// Read the file
+		f = fopen(_SourceName.c_str(),"rb");
+		fseek(f,0,SEEK_END);
+		size = ftell(f);
+		rewind(f);
+		buf = new char [size + 4];
+		fread(buf+1, sizeof( char ), size, f);
+		fclose(f);
+		buf[0] = ' ';
+		buf[size+1] = '\n';
+		buf[size+2] = 0;
 
-	ret = buf;
-	delete[] buf;
-	
-	return ret;
+		ret = buf;
+		delete[] buf;
+		
+		return ret;
+	}
+	else return MemoryScript;
 }
 
 ///	Save the class in a stream.

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.50 2002/09/02 15:09:03 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.51 2002/09/06 08:47:18 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1289,13 +1289,14 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 	{
 		if (sid != _IdCnx[sid].ServiceId)
 		{
-			AUTOCHECK_DISPLAY ("Sid index %hu is not the same that in the entry", sid, _IdCnx[sid].ServiceId);
+			AUTOCHECK_DISPLAY ("Sid index %hu is not the same that in the entry %hu", sid, _IdCnx[sid].ServiceId);
+			return NULL;
 		}
 		return &_IdCnx[sid];
 	}
 	else
 	{
-		AUTOCHECK_DISPLAY ("Try to get a bad unified connection (sid %hu is not in the table)", sid);
+		nlwarning ("Try to get a bad unified connection (sid %hu is not in the table)", sid);
 		return NULL;
 	}
 }

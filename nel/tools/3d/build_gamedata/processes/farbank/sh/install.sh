@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Install the farbank in the client data
+
+# Get the bank install directory
+bank_install_directory=`cat ../../cfg/config.cfg | grep "bank_install_directory" | sed -e 's/bank_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the client directory
+client_directory=`cat ../../cfg/config.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Log error
+echo ------- > log.log
+echo --- Install farbank >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Install farbank 
+echo ------- 
+
+cp -u farbank/*.farbank $client_directory/$bank_install_directory  2>> log.log

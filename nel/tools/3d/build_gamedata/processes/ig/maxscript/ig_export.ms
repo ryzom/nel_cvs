@@ -1,0 +1,251 @@
+-- Some globals
+
+NEL3D_APPDATA_ACCEL = 1423062561			-- type of accelerator :	"32" = is not an accelerator and IS clusterized 
+											--							 "0" = is not an accelerator and IS NOT clusterized (always visible)
+											--							 "1" = is an accelerator type PORTAL
+											--							 "2" = is an accelerator type CLUSTER
+											--							 "6" = is an accelerator type CLUSTER FATHER-VISIBLE
+											--							"10" = is an accelerator type CLUSTER VISIBLE-FROM-FATHER
+											--							"14" = is an accelerator type CLUSTER FATHER-VISIBLE and VISIBLE-FROM-FATHER
+											--							"17" = is an accelerator type PORTAL DYNAMIC
+																			 
+NEL3D_APPDATA_DONOTEXPORT = 1423062565		-- do not export me : "undefined" = export me
+											--							  "0" = export me
+											--							  "1" = DONT export me
+
+NEL3D_APPDATA_IGNAME = 1423062564			-- string : name of the Instance Group
+
+NEL3D_APPDATA_LOD_NAME_COUNT_MAX	= 10
+NEL3D_APPDATA_LOD					= 1423062537
+NEL3D_APPDATA_LOD_NAME_COUNT		= NEL3D_APPDATA_LOD
+NEL3D_APPDATA_LOD_NAME				= NEL3D_APPDATA_LOD_NAME_COUNT+1
+NEL3D_APPDATA_LOD_BLEND_IN			= NEL3D_APPDATA_LOD_NAME+NEL3D_APPDATA_LOD_NAME_COUNT_MAX
+NEL3D_APPDATA_LOD_BLEND_OUT			= NEL3D_APPDATA_LOD_BLEND_IN+1
+NEL3D_APPDATA_LOD_COARSE_MESH		= NEL3D_APPDATA_LOD_BLEND_OUT+1
+
+NEL_OBJECT_NAME_DATA				= 1970
+
+-- Clear the log
+fn clearlog =
+(
+	filename = ((getdir #maxroot)+"log.log")
+	deleteFile filename
+	createFile filename
+)
+
+-- Log a message
+fn nlerror message =
+(
+	filename = ((getdir #maxroot)+"log.log")
+	stream = openFile filename mode:"a"
+	if stream == undefined then
+		stream = createFile filename
+	if stream != undefined then
+	(
+		format "%\n" message to:stream
+		close stream
+	)
+)
+
+-- This node is n accelerator ?
+fn isAccelerator node =
+(
+	accel = getappdata node NEL3D_APPDATA_ACCEL
+	if (accel != undefined) then
+	(
+		if (accel == "0") or (accel == "32") then
+			return false
+		else
+			return true
+	)
+	return false
+)
+
+-- Clear log
+clearlog ()
+
+-- Get the ig name of this object
+fn getIg node =
+(
+	return getappdata node NEL3D_APPDATA_IGNAME
+)
+
+--try
+(
+	-- Get files in the ig_source_directory
+	files = getFiles "ig_source_directory/*.max" 
+
+	-- No file ?
+	if files.count != 0 then
+	(
+		-- For each files
+		for i = 1 to files.count do
+		(
+			-- Ok ?
+			ok = false
+
+			-- Open the max project
+			if loadMaxFile files[i] == true then
+			(
+				-- Unhide
+				max unhide all
+
+				-- unselect
+				max select none
+
+				-- Exported object count
+				exported = 0
+
+				-- Ig array
+				ig_array = #()
+
+				-- Scan all the ig in this project
+				for node in geometry do
+				(
+					ig = getIg node
+					if (ig != undefined) then
+					(
+						-- Found ?
+						found = false
+
+						-- Already found ?
+						for j = 1 to ig_array.count do
+						(
+							if (ig_array[j]==ig) then
+							(
+								found = true
+								exit
+							)
+						)
+					)
+				)
+	
+				-- Have some ig ?
+				if (ig_array.count != 0) then
+				(
+					-- For each ig
+					for ig = 1 to ig_array.count do
+					(
+						-- Output filename
+						output = ("output_directory/"+ig_array[ig]+".ig")
+
+						-- Check date
+						if (NeLTestFileDate output files[i]) == true then
+						(
+							-- Select none
+							max select none
+
+							-- Select all node in this ig
+							for node in geometry do
+							(
+								-- Select it if in the ig
+								if ( (getIg node) == ig_array[ig]) then
+									selectmore node
+							)
+
+							-- Check export
+							try
+							(
+								-- Export the ig
+								instancegroup2export = $selection as array
+								if (NelExportInstanceGroup instancegroup2export output) == true then
+								(
+									nlerror ("OK "+output)
+								)
+								else
+								(
+									-- Error
+									nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+								)
+							)
+							catch
+							(
+								-- Error
+								nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+							)
+						)
+						else
+						(
+							nlerror ("SKIPPED "+output)
+						)
+					)
+				)
+				else
+				(
+					-- Select none
+					max select none
+
+					-- Select all node with instance information or accelerators
+					for node in geometry do
+					(
+						-- Some instance ref ?
+						if ( ((getAppData node NEL_OBJECT_NAME_DATA) != undefined) or (isAccelerator node) ) then
+							selectmore node
+					)
+
+					-- To export
+					instancegroup2export = $selection as array
+
+					-- Output filename
+					output = ("output_directory/"+(getFilenameFile files[i])+".ig")
+
+
+					-- Check date
+					if (NeLTestFileDate output files[i]) == true then
+					(
+						-- Check not empty
+						if (instancegroup2export.count != 0) then
+						(
+							-- Check export
+							try
+							(
+								-- Export the ig
+								if (NelExportInstanceGroup instancegroup2export output) == true then
+								(
+									nlerror ("OK "+output)
+								)
+								else
+								(
+									-- Error
+									nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+files[i])
+								)
+							)
+							catch
+							(
+								-- Error
+								nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+files[i])
+							)
+						)
+						else
+						(
+							-- Error
+							nlerror ("WARNING no object exported in the ig in file  "+files[i])
+						)
+					)
+					else
+					(
+						nlerror ("SKIPPED "+output)
+					)
+				)
+			)
+			else
+			(
+				-- Error
+				nlerror ("ERROR exporting ig: can't open the file "+files[i])
+			)
+		)
+	)
+	else
+	(
+		nlerror ("WARNING no max file in folder ig_source_directory")
+	)
+)
+--catch 
+(
+	-- Error
+--	nlerror ("ERROR fatal error exporting ig in folder ig_source_directory")
+)
+
+-- Bye
+quitMAX #noPrompt
+

@@ -1,0 +1,4 @@
+mkdir bank
+mkdir smallbank
+
+

@@ -1,0 +1,1 @@
+bash sh\install.sh

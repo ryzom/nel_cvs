@@ -1,0 +1,3 @@
+mkdir dds
+mkdir tga
+

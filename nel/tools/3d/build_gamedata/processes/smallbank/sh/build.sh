@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Build the small bank
+
+build_smallbank='../../bin/build_smallbank.exe'
+
+# Get the database directory
+database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Get the swt directories
+bank_source_directory=`cat ../../cfg/config.cfg | grep "bank_source_directory" | sed -e 's/bank_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
+# Log error
+echo ------- > log.log
+echo --- Build bank >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build bank 
+echo ------- 
+
+# list all the bank
+bank_list=`ls -1 bank/*.bank`
+
+# For each bank
+for i in $bank_list ; do
+	# Destination the name
+	dest=`echo $i | sed -e 's&bank&smallbank&g'`
+
+	# Make the dependencies
+	if ( ! test -e $dest ) || ( test $i -nt $dest ) 
+	then
+		$build_smallbank $i $dest $database_directory/$bank_source_directory/
+		if ( test -e $dest )
+		then
+			echo OK $dest >> log.log
+		else
+			echo ERROR building $dest >> log.log
+		fi
+	else
+		echo SKIPPED $dest >> log.log
+	fi
+done
+

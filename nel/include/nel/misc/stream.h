@@ -1,240 +1,142 @@
+/* stream.h
+ *
+ * Copyright (C) 2000 Nevrax. All rights reserved.
+ *
+ * The redistribution, use and modification in source or binary forms of
+ * this software is subject to the conditions set forth in the copyright
+ * document ("Copyright") included with this distribution.
+ */
+
+/*
+ * $Id: stream.h,v 1.3 2000/09/08 13:05:30 berenguier Exp $
+ *
+ * This File handles CRegistry and CBaseStream 
+ */
 
 #ifndef NL_STREAM_H
 #define NL_STREAM_H
 
-#include "nel/misc/types_nl.h"
 
-// If little endian, we have to swap
-#if BIG_ENDIAN
-#  define BSWAP16(src,dest)
-#  define BSWAP32(src,dest)
-#  define BSWAP64(src,dest)
-#else
-#  define BSWAP16(src,dest)	(dest) = (((src)>>8)&0xFF) | (((src)&0xFF)<<8)
-#  ifdef OS_WINDOWS
-#    define BSWAP32(src,dest) _asm mov eax,(src) _asm bswap eax _asm mov (dest),eax
-#  else
-#    define BSWAP32(src,dest) (dest) = (((src)>>24)&0xFF) | ((((src)>>16)&0xFF)<<8) | ((((src)>>8)&0xFF)<<16) | (((src)&0xFF)<<24)
-#  endif
-#  define BSWAP64(src,dest) (dest) = (((src)>>56)&0xFF) | ((((src)>>48)&0xFF)<<8) | ((((src)>>40)&0xFF)<<16) | ((((src)>>32)&0xFF)<<24) | ((((src)>>24)&0xFF)<<32) | ((((src)>>16)&0xFF)<<40) | ((((src)>>8)&0xFF)<<48) | (((src)&0xFF)<<56)
-#endif
+#include	"nel/misc/types_nl.h"
+#include	<string>
+#include	<set>
+using namespace std;
 
-class EStream : virtual public Exception
+
+namespace	MISC
 {
-};
 
-// ============================================================================
-class CBaseStream
+
+// ======================================================================================================
+// ======================================================================================================
+// Stream System.
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+class EStream : public Exception
 {
 public:
-
-	enum	Type
+	enum	TError
 	{
-		In, Out
+		Eof,
+		OlderVersion,
+		NewerVersion,
+		RegisteredClass,
+		UnregisteredClass
 	};
 
-	CBaseStream(Type type, bool needSwap)
-	{
-		_Type = type;
-		_needSwap = needSwap;
-	}
+public:
+	TError	Error;
 
-	// ou une fonction open....
+public:
+	EStream(const TError &e) {Error=e;}
+	const	char	*errorString() const
+	{
+		switch(Error)
+		{
+			case Eof: 
+				return "End of file"; break;
+			case OlderVersion: 
+				return "Too Older Version"; break;
+			case NewerVersion: 
+				return "The version read is newer than the reader"; break;
+			case RegisteredClass: 
+				return "Class already registered"; break;
+			case UnregisteredClass: 
+				return "Class not registered"; break;
+			default:
+				return "Unknown Stream Exception"; break;
+		};
+	}
+};
+
+
+class	IStreamable;
+
+// ======================================================================================================
+/**
+ * A IO stream interface.
+ * \author Lionel Berenguier
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ * This is the base interface for stream objects. Differents kind of streams may be implemented,
+ * by specifying write() / read() methods. Sample of streams: CMemoryStream, CFileStream ...
+ */
+class IStream
+{
+public:
+	/// Constructor.
+	IStream(bool inputStream, bool needSwap);
+	virtual ~IStream() {}
+
+	///
 	bool			isReading();
-	bool			isWriting();
 
-
-	// template Object serialisation.
+	/// template Object serialisation.
 	template<class T>
-	void			serialize(T &obj)
-	{
-		obj.serialize(*this);
-	}
-/*
-	void			serialize(uint &b) throw(EStream)
-	{
-		uint8	tab[4];
-		if(isReading())
-		{
-			read(tab, 4);
-			b = tab[0]<<24 | tab[1]<<16 | tab[2]<<8 | tab[3];
-		}
-		else
-		{
-			tab[0] = b>>24; tab[1]=b>>16; tab[2]=b>>8; tab[3]=b;
-			write(tab, 4);
-		}
-	}
-*/
+	void			serial(T &obj) throw(EStream);
 
-	// Base type serialisation.
-	void			serialize(uint8 &b) throw(EStream)
-	{
-		write ((uint8 *)&b, 1);
-	}
+	/// Base type serialisation.
+	void			serial(uint8 &b) throw(EStream);
+	void			serial(sint8 &b) throw(EStream);
+	void			serial(uint16 &b) throw(EStream);
+	void			serial(sint16 &b) throw(EStream);
+	void			serial(uint32 &b) throw(EStream);
+	void			serial(sint32 &b) throw(EStream);
+	void			serial(uint64 &b) throw(EStream);
+	void			serial(sint64 &b) throw(EStream);
+	void			serial(float &b) throw(EStream);
+	void			serial(double &b) throw(EStream);
+	void			serial(bool &b) throw(EStream);
+	void			serial(char &b) throw(EStream);
+	void			serial(string &b) throw(EStream);
+	void			serial(wchar &b) throw(EStream);
+	void			serial(wstring &b) throw(EStream);
 
-	void			serialize(sint8 &b) throw(EStream)
-	{
-		write ((uint8 *)&b, 1);
-	}
-
-	void			serialize(uint16 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint16 v;
-			BSWAP16(b,v);
-			write ((uint8 *)&v, 2);
-		}
-		else
-		{
-			write ((uint8 *)&b, 2);
-		}
-	}
-
-	void			serialize(sint16 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint16 v;
-			BSWAP16(b,v);
-			write ((uint8 *)&v, 2);
-		}
-		else
-		{
-			write ((uint8 *)&b, 2);
-		}
-	}
-
-	void			serialize(uint32 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint32 v;
-			BSWAP32(b,v);
-			write ((uint8 *)&v, 4);
-		}
-		else
-		{
-			write ((uint8 *)&b, 4);
-		}
-	}
-
-	void			serialize(sint32 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint32 v;
-			BSWAP32(b,v);
-			write ((uint8 *)&v, 4);
-		}
-		else
-		{
-			write ((uint8 *)&b, 4);
-		}
-	}
-
-	void			serialize(uint64 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint64 v;
-			BSWAP64(b,v);
-			write ((uint8 *)&v, 8);
-		}
-		else
-		{
-			write ((uint8 *)&b, 8);
-		}
-	}
-
-	void			serialize(sint64 &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint64 v;
-			BSWAP64(b,v);
-			write ((uint8 *)&v, 8);
-		}
-		else
-		{
-			write ((uint8 *)&b, 8);
-		}
-	}
-
-	void			serialize(float &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint32 v;
-			uint32 *b2 = (uint32 *)&b;
-			BSWAP32(*b2,v);
-			write ((uint8 *)&v, 4);
-		}
-		else
-		{
-			write ((uint8 *)&b, 4);
-		}
-	}
-
-	void			serialize(double &b) throw(EStream)
-	{
-		if (_needSwap)
-		{
-			uint64 v;
-			uint64 *b2 = (uint64 *)&b;
-			BSWAP64(*b2,v);
-			write ((uint8 *)&v, 8);
-		}
-		else
-		{
-			write ((uint8 *)&b, 8);
-		}
-	}
-
-	void			serialize(bool &b) throw(EStream)
-	{
-		uint8 b2 = (b)?1:0;
-		write (&b2, 1);
-	}
-
-	void			serialize(char &b) throw(EStream)
-	{
-		write ((uint8 *)&b, 1);
-	}
-
-//	void			serialize(string &b) throw(EStream);
-//	void			serialize(wchar &b) throw(EStream);
-//	void			serialize(wstring &b) throw(EStream);
-
-	// Multiple template serialisation.
+	/// Template for easy multiple serialisation.
 	template<class T0,class T1>
-	void			serialize(T0 &a, T1 &b) throw(EStream)
-	{
-		serialize(a);
-		serialize(b);
-	}
+	void			serial(T0 &a, T1 &b) throw(EStream);
 	template<class T0,class T1,class T2>
-	void			serialize(T0 &a, T1 &b, T2 &c) throw(EStream)
-	{
-		serialize(a);
-		serialize(b);
-		serialize(c);
-	}
+	void			serial(T0 &a, T1 &b, T2 &c) throw(EStream);
 	template<class T0,class T1,class T2,class T3>
-	void			serialize(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream)
-	{
-		serialize(a);
-		serialize(b);
-		serialize(c);
-		serialize(d);
-	}
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d) throw(EStream);
+	template<class T0,class T1,class T2,class T3,class T4>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e) throw(EStream);
+	template<class T0,class T1,class T2,class T3,class T4,class T5>
+	void			serial(T0 &a, T1 &b, T2 &c, T3 &d, T4 &e, T5 &f) throw(EStream);
+
+	/// Serialize Polymorphic Objet Ptr. Works with NULL pointers.
+	void			serialPtr(IStreamable* &ptr);
 
 protected:
 
-	// Methodes à spécifier.
-	virtual void		reset()=0;
+	/// Derived stream must call this method if they provide reset()-like methods.
+	void			resetPtrTable();
 
+	/// Methods to specify.
 	virtual void		write(const uint8 *buf, uint len) throw(EStream)=0;
 	virtual void		write(const bool &bit) throw(EStream)=0;
 
@@ -242,28 +144,91 @@ protected:
 	virtual void		read(bool &bit) throw(EStream)=0;
 
 private:
-	Type _Type;
-	bool _needSwap;
+	bool	_InputStream;
+	bool	_NeedSwap;
+
+	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
+	set<uint64>	_IdSet;
+	set<uint64>::iterator	ItIdSet;
 };
 
 
-// ============================================================================
-class	CSerializable
+// ======================================================================================================
+// ======================================================================================================
+// Handle for streaming Polymorphic classes.
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+/**
+ * An Object Streamable interface.
+ * \author Lionel Berenguier
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ */
+class IStreamable
 {
 public:
-	virtual void serialize (CBaseStream& buff) = 0;
+	virtual void		serial(IStream	&f) throw(EStream)=0;
+	virtual string		getClassName() =0;
 };
 
-class CIStream : virtual public CBaseStream
+
+// ======================================================================================================
+/**
+ * The Class registry where we can instanciate IStreamable objects from their name.
+ * \author Lionel Berenguier
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2000
+ */
+class CClassRegistry
 {
+public:
+	static	IStreamable	*create(const string &className) throw(EStream);
+	static	void		registerClass(const string &className, IStreamable* (*creator)(), const string &typeidCheck) throw(EStream);
+
+
+private:
+	static	bool		checkObject(IStreamable* obj);
+	friend	class		IStream;
+
+	struct	CClassNode
+	{
+		string			ClassName;
+		string			TypeIdCheck;
+		IStreamable*	(*Creator)();
+		bool	operator<(const CClassNode &n) const
+		{
+			return ClassName<n.ClassName;
+		}
+	};
+	static	set<CClassNode>		RegistredClasses;
 };
 
-class COStream : virtual public CBaseStream
-{
-};
 
-class CLStream : virtual public COStream
-{
-};
+// Usefull Macros.
+#define	MISC_DECLARE_STREAMABLE(_class_)					\
+	virtual string	getClassName() {return #_class_;}		\
+	static	void IStreamable	*creator() {return new _class_;}
+#define	MISC_REGISTER_CLASS(_class_) MISC::CRegistry::registerClass(#_class_, _class_::creator, typeid(_class_).name());
+
+
+
+// ======================================================================================================
+// Inline Implementation.
+// ======================================================================================================
+
+
+#include "nel/misc/stream_inline.h"
+
+
+
+}	// namespace MISC.
+
 
 #endif // NL_STREAM_H
+
+/* End of stream.h */

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.41 2001/05/22 08:55:10 berenguier Exp $
+ * $Id: landscape.h,v 1.42 2001/06/05 13:50:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "nel/3d/material.h"
 #include "nel/3d/tile_far_bank.h"
 #include "nel/3d/texture_near.h"
+#include "nel/3d/quad_grid.h"
 #include <map>
 
 #define NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT (NL_MAX_TILES_BY_PATCH_EDGE_SHIFT+NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)
@@ -218,6 +219,16 @@ public:
 	 *  then T order. There is two triangles by tiles. So the number of triangles for a patch is 2*OrderS*OrderT.
 	 */
 	void			buildCollideFaces(sint zoneId, sint patch, std::vector<CTriangle> &faces);
+
+	/** method relatively identical than buildCollideFaces(bbox....). Differences below:
+	 * NB: this method use first a quadgrid to locate patchs of interest, then for each patch, it uses a 
+	 * convex hull subdivion to search in O(logn) what part of the patch to insert.
+	 * \param bbox the bbox to test against. NB: you should modify your bbox according to heighfield.
+	 * \param triangles array to be filled (array first cleared, then elements added).
+	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
+	 */ 
+	void			addTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel);
+
 	// @}
 
 
@@ -457,6 +468,22 @@ private:
 		uint			Width, Height;
 	};
 	CHeightField	_HeightField;
+
+
+	/// \name Visual Collision system.
+	// @{
+	/** This method search only on the given patch.
+	 * NB: this method use a convex hull subdivion to search in O(logn) what part of the patch to insert.
+	 * \param bbox the bbox to test against.
+	 * \param triangles array to be filled (no clear performed, elements added).
+	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
+	 */ 
+	void			addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
+	/// The QuadGrid of patch.
+	CQuadGrid<CPatchIdent>		_PatchQuadGrid;
+	static	const uint			_PatchQuadGridSize;
+	static	const float			_PatchQuadGridEltSize;
+	// @}
 
 };
 

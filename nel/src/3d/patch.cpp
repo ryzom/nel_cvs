@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.47 2001/03/06 15:14:20 corvazier Exp $
+ * $Id: patch.cpp,v 1.48 2001/06/05 13:50:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,24 +139,20 @@ void			CPatch::computeDefaultErrorSize()
 }
 
 
-// ***************************************************************************
-CAABBox			CPatch::buildBBox() const
-{
-	sint			i;
-	CBezierPatch	&p= *unpackIntoCache();
-	CVector			&v0= p.Vertices[0];
-	CVector			&v1= p.Vertices[1];
-	CVector			&v2= p.Vertices[2];
 
-	// Compute Bounding Box. (easiest way...)
+// ***************************************************************************
+CAABBox			CPatch::buildBBoxFromBezierPatch(const CBezierPatch &p) const
+{
 	CAABBox		ret;
-	ret.setCenter(v0);
+	ret.setCenter(p.Vertices[0]);
+	sint			i;
 	for(i=0;i<4;i++)
 		ret.extend(p.Vertices[i]);
 	for(i=0;i<8;i++)
 		ret.extend(p.Tangents[i]);
 	for(i=0;i<4;i++)
 		ret.extend(p.Interiors[i]);
+
 	// Modulate with the maximum displacement map (usefull for patch clipping).
 	ret.setHalfSize(ret.getHalfSize()+CVector(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX));
 	// NB: this is not very optimal, since the BBox may be very too big. eg: patch 16mx16m => bbox 18mx18m.
@@ -165,6 +161,158 @@ CAABBox			CPatch::buildBBox() const
 	return ret;
 }
 
+
+// ***************************************************************************
+CAABBox			CPatch::buildBBox() const
+{
+	CBezierPatch	&p= *unpackIntoCache();
+
+	// Compute Bounding Box. (easiest way...)
+	CAABBox		ret;
+	ret= buildBBoxFromBezierPatch(p);
+
+	return ret;
+}
+
+
+// ***************************************************************************
+void		CPatch::addTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const
+{
+	CBezierPatch	&bpatch= *unpackIntoCache();
+
+	// call with the whole root patch.
+	addTrianglesInBBoxRecurs(paId, bbox, triangles, tileTessLevel, bpatch, 0, OrderS, 0, OrderT);
+}
+
+
+// ***************************************************************************
+void		CPatch::addTrianglesInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tessLevel, 
+		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const
+{
+	uint8	lenS=s1-s0, lenT=t1-t0;
+	nlassert(lenS>0);
+	nlassert(lenT>0);
+
+	// compute and compare bbox of the subdivision patch against request bbox.
+	//========================
+	// NB: this compute includes possible noise.
+	CAABBox		paBBox= buildBBoxFromBezierPatch(pa);
+	// if do not intersect, stop here.
+	if( !paBBox.intersect(bbox) )
+		return;
+	// else if at tile level, then just computeTriangles.
+	//========================
+	else if( lenS==1 && lenT==1 )
+	{
+		addTileTrianglesInBBox(paId, bbox, triangles, tessLevel, s0, t0);
+	}
+	// else subdiv and reccurs.
+	//========================
+	else
+	{
+		// Subdivide along the bigger side.
+		if(lenS>lenT)
+		{
+			// subdivide.
+			CBezierPatch	left, right;
+			pa.subdivideS(left, right);
+			uint8	sMiddle= (uint8)( ((uint)s0+(uint)s1) /2 );
+			// recurs left.
+			addTrianglesInBBoxRecurs(paId, bbox, triangles, tessLevel, left, s0, sMiddle, t0, t1);
+			// recurs right.
+			addTrianglesInBBoxRecurs(paId, bbox, triangles, tessLevel, right, sMiddle, s1, t0, t1);
+		}
+		else
+		{
+			// subdivide.
+			CBezierPatch	top, bottom;
+			pa.subdivideT(top, bottom);
+			uint8	tMiddle= (uint8)( ((uint)t0+(uint)t1) /2 );
+			// recurs top.
+			addTrianglesInBBoxRecurs(paId, bbox, triangles, tessLevel, top, s0, s1, t0, tMiddle);
+			// recurs bottom.
+			addTrianglesInBBoxRecurs(paId, bbox, triangles, tessLevel, bottom, s0, s1, tMiddle, t1);
+		}
+	}
+
+
+}
+
+
+// ***************************************************************************
+void		CPatch::addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tessLevel, uint8 s0, uint8 t0) const
+{
+	nlassert(s0<OrderS);
+	nlassert(t0<OrderT);
+	nlassert(tessLevel<=2);
+	uint	tessLen= 1<<tessLevel;
+
+	// compute bezier patch. (NB: because of cache, this cost nothing).
+	CBezierPatch	&bpatch= *unpackIntoCache();
+
+	// some preca.
+	float	startS0= (float)s0 / (float)(OrderS);
+	float	startT0= (float)t0 / (float)(OrderT);
+	float	ds= 1.0f/(float)(OrderS*tessLen);
+	float	dt= 1.0f/(float)(OrderT*tessLen);
+
+	// Parse all quads.
+	uint	sl,tl;
+	for(tl=0; tl<tessLen; tl++)
+	{
+		float	fs0, fs1, ft0, ft1;
+		// compute t patch coordinates.
+		ft0= startT0 + (float)tl * dt ;
+		ft1= ft0 + dt;
+		for(sl=0; sl<tessLen; sl++)
+		{
+			// compute s patch coordinates.
+			fs0= startS0 + (float)sl * ds ;
+			fs1= fs0 + ds;
+
+			// Compute Quad vectors (in CCW).
+			CVector		p0, p1, p2, p3;
+			CUV			uv0, uv1, uv2, uv3;
+			uv0.U= fs0; uv0.V= ft0;
+			uv1.U= fs0; uv1.V= ft1;
+			uv2.U= fs1; uv2.V= ft1;
+			uv3.U= fs1; uv3.V= ft0;
+			p0= bpatch.eval(uv0.U, uv0.V);
+			p1= bpatch.eval(uv1.U, uv1.V);
+			p2= bpatch.eval(uv2.U, uv2.V);
+			p3= bpatch.eval(uv3.U, uv3.V);
+
+			// build the bbox of this quad, and test with request bbox.
+			CAABBox		quadBBox;
+			quadBBox.setCenter(p0);
+			quadBBox.extend(p1);
+			quadBBox.extend(p2);
+			quadBBox.extend(p3);
+
+			// insert only if intersect with the bbox.
+			if(quadBBox.intersect(bbox))
+			{
+				// build triangles (in CCW).
+				CTrianglePatch	tri;
+				tri.PatchId= paId;
+
+				// first tri.
+				tri.V0= p0; tri.V1= p1; tri.V2= p2;
+				tri.Uv0= uv0; tri.Uv1= uv1; tri.Uv2= uv2;
+				triangles.push_back(tri);
+
+				// second tri.
+				tri.V0= p2; tri.V1= p3; tri.V2= p0;
+				tri.Uv0= uv2; tri.Uv1= uv3; tri.Uv2= uv0;
+				triangles.push_back(tri);
+
+				// NB: this is not the same tesselation than in tesselation.cpp.
+				// But this looks like Ben's NLPACS::CLocalRetriever tesselation.
+			}
+		}
+	}
+
+}
 
 
 // ***************************************************************************

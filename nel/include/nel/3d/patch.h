@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.34 2001/03/06 15:14:26 corvazier Exp $
+ * $Id: patch.h,v 1.35 2001/06/05 13:50:07 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -35,6 +35,8 @@
 #include "nel/3d/tessellation.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
+#include "nel/misc/triangle.h"
+#include "nel/misc/geom_ext.h"
 #include "nel/3d/tile_element.h"
 #include "nel/3d/tile_color.h"
 #include "nel/3d/tile_lumel.h"
@@ -96,6 +98,37 @@ public:
 		f.serial(x,y,z);
 	}
 };
+
+
+// ***************************************************************************
+/**
+ * A landscape patch identifier (zone/patch).
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+struct	CPatchIdent
+{
+	uint16		ZoneId;		// From which zone this patch come from...
+	uint16		PatchId;	// Id of this patch.
+};
+
+
+// ***************************************************************************
+/**
+ * A triangle from a patch identifier.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+struct	CTrianglePatch : public NLMISC::CTriangleUV
+{
+	/// from which patch this triangle comes from.
+	CPatchIdent		PatchId;
+};
+
 
 // ***************************************************************************
 /**
@@ -321,6 +354,21 @@ public:
 		// Test it
 		return ((Flags&(1<<(edge+NL_PATCH_SMOOTH_FLAG_SHIFT)))!=0);
 	}
+
+
+	/// \name Subdivision.
+	// @{
+	/** Add triangles to triangles array which intersect the bbox.
+	 * NB: this method use a convex hull subdivion to search in O(logn) what part of the patch to insert.
+	 * \param patchId the id of this patch, used to fill triangles.
+	 * \param bbox the bbox to test against.
+	 * \param triangles array to be filled (no clear performed, elements added).
+	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
+	 */
+	void		addTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
+	// @}
+
+
 public:
 
 	// only usefull for CZone refine.
@@ -504,6 +552,26 @@ private:
 	void		addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
 	void		addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
 	void		addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist);
+
+
+	/// \name Subdivision private.
+	// @{
+	/// build a bbox from the convex hull of a bezier patch, enlarged with noise.
+	CAABBox		buildBBoxFromBezierPatch(const CBezierPatch &p) const;
+	/** recurse subdivide of the bezierPatch.
+	 * 3 1st parameters are the parameter of addTrianglesInBBox(). \n
+	 * pa is the bezier patch for this subdivision of this patch. \n
+	 * s0, s1, t0, t1 represent the part of the bezier patch subdivided. At start, s0=0, s1=OrderS, t0=0, t1=OrderT.
+	 */
+	void		addTrianglesInBBoxRecurs(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tessLevel, 
+		const CBezierPatch &pa, uint8 s0, uint8 s1, uint8 t0, uint8 t1) const;
+	/** called by addTrianglesInBBoxRecurs(). effective fill the array of triangles from 1 tile at tile coordinates s0,t0.
+	 * depending of tessLevel (0,1,2), 2, 8 or 32 triangles are added.  (2*2m, 1*1*m or 0.5*0.5m).
+	 * NB: only triangles of quad included in the bbox are added.
+	 */
+	void		addTileTrianglesInBBox(CPatchIdent paId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tessLevel, 
+		uint8 s0, uint8 t0) const;
+	// @}
 
 
 private:

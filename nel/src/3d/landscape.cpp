@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.55 2001/04/25 13:53:52 besson Exp $
+ * $Id: landscape.cpp,v 1.56 2001/06/05 13:50:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,14 @@ using namespace std;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+// Size (in cases) of the quadgrid. must be e power of 2.
+const uint			CLandscape::_PatchQuadGridSize= 128;
+// Size of a case of the quadgrid.
+const float			CLandscape::_PatchQuadGridEltSize= 16;
+
 
 // ***************************************************************************
 
@@ -162,6 +170,9 @@ void			CLandscape::init()
 
 	// Init material for tile.
 	TileMaterial.initUnlit();
+
+	// init quadGrid.
+	_PatchQuadGrid.create(_PatchQuadGridSize, _PatchQuadGridEltSize);
 }
 
 
@@ -241,6 +252,17 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	// compile the zone for this landscape.
 	zone->compile(this, Zones);
 
+	// add patchs of this zone to the quadgrid.
+	for(sint i= 0; i<zone->getNumPatchs(); i++)
+	{
+		const CPatch *pa= ((const CZone*)zone)->getPatch(i);
+		CPatchIdent	paId;
+		paId.ZoneId= zoneId;
+		paId.PatchId= i;
+		CAABBox		bb= pa->buildBBox();
+		_PatchQuadGrid.insert(bb.getMin(), bb.getMax(), paId);
+	}
+
 	return true;
 }
 // ***************************************************************************
@@ -249,9 +271,34 @@ bool			CLandscape::removeZone(uint16 zoneId)
 	// -1. Update globals
 	updateGlobals (CVector::Null);
 
+	// find the zone.
 	if(Zones.find(zoneId)==Zones.end())
 		return false;
 	CZone	*zone= Zones[zoneId];
+
+
+	// delete patchs from this zone to the quadgrid.
+	// use the quadgrid itself to find where patch are. do this using bbox of zone.
+	CAABBoxExt		bb= zone->getZoneBB();
+	// for security, expand a little the bbox of the zone.
+	bb.setSize(bb.getSize()*1.1f);
+	// select iterators in the area of this zone.
+	_PatchQuadGrid.clearSelection();
+	_PatchQuadGrid.select(bb.getMin(), bb.getMax());
+	// for each patch, remove it if from deleted zone.
+	CQuadGrid<CPatchIdent>::CIterator	it;
+	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end();)
+	{
+		if( (*it).ZoneId== zone->getZoneId() )
+		{
+			it= _PatchQuadGrid.erase(it);
+		}
+		else
+			it++;
+	}
+
+
+	// remove the zone.
 	zone->release(Zones);
 	delete zone;
 
@@ -275,6 +322,9 @@ void			CLandscape::clear()
 	{
 		nlverify(removeZone(zoneIds[i]));
 	}
+
+	// ensure the quadgrid is empty.
+	_PatchQuadGrid.clear();
 
 }
 // ***************************************************************************
@@ -1256,6 +1306,47 @@ void			CLandscape::checkBinds(uint16 zoneId) throw(EBadBind)
 	}
 }
 
+
+
+// ***************************************************************************
+void			CLandscape::addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const
+{
+	// No clear here, just add triangles to the array.
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
+	if(it!=Zones.end())
+	{
+		// Then trace all patch.
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId>=0);
+		nlassert(patchId<N);
+		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId);
+
+		CPatchIdent		paId;
+		paId.ZoneId= zoneId;
+		paId.PatchId= patchId;
+		pa->addTrianglesInBBox(paId, bbox, triangles, tileTessLevel);
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::addTrianglesInBBox(const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel)
+{
+	// clear selection.
+	triangles.clear();
+
+	// search path of interest.
+	_PatchQuadGrid.clearSelection();
+	_PatchQuadGrid.select(bbox.getMin(), bbox.getMax());
+	CQuadGrid<CPatchIdent>::CIterator	it;
+
+	// for each patch, add triangles to the array.
+	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
+	{
+		addTrianglesInBBox((*it).ZoneId, (*it).PatchId, bbox, triangles, tileTessLevel);
+	}
+}
 
 
 // ***************************************************************************

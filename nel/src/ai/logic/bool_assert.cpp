@@ -26,7 +26,7 @@ namespace NLAILOGIC
 {
 	using namespace NLAIAGENT;
 
-	CBoolAssert::CBoolAssert( IVarName &n, bool truth) : IBaseAssert( n )
+	CBoolAssert::CBoolAssert( const IVarName &n, bool truth) : IBaseAssert( n )
 	{
 		_Value = truth;
 	}

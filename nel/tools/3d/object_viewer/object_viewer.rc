@@ -1958,7 +1958,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,97
+ FILEVERSION 1,0,0,100
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1977,7 +1977,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 97\0"
+            VALUE "FileVersion", "1, 0, 0, 100\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -2006,54 +2006,55 @@ IDR_LOCATED_MENU MENU DISCARDABLE
 BEGIN
     POPUP "MENU"
     BEGIN
-        MENUITEM "Instanciate",                 ID_INSTANCIATE_LOCATED
+        MENUITEM "&Instanciate",                ID_INSTANCIATE_LOCATED
         MENUITEM SEPARATOR
-        POPUP "Bind particle..."
+        POPUP "Bind &particle..."
         BEGIN
-            MENUITEM "Point",                       IDM_DOT
-            MENUITEM "LookAt",                      IDM_LOOKAT
-            MENUITEM "FanLight",                    IDM_FANLIGHT
-            MENUITEM "Ribbon",                      IDM_RIBBON
-            MENUITEM "TailDot",                     IDM_TAILDOT
-            MENUITEM "Mesh",                        IDM_MESH
-            MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH
-            MENUITEM "Face",                        IDM_FACE
-            MENUITEM "ShockWave",                   IDM_SHOCKWAVE
-            MENUITEM "Ribbon look at",              IDM_RIBBON_LOOK_AT
+            MENUITEM "&Point",                      IDM_DOT
+            MENUITEM "&LookAt",                     IDM_LOOKAT
+            MENUITEM "&FanLight",                   IDM_FANLIGHT
+            MENUITEM "&Ribbon",                     IDM_RIBBON
+            MENUITEM "&TailDot",                    IDM_TAILDOT
+            MENUITEM "&Mesh",                       IDM_MESH
+            MENUITEM "&ConstraintMesh",             IDM_CONSTRAINT_MESH
+            MENUITEM "F&ace",                       IDM_FACE
+            MENUITEM "&ShockWave",                  IDM_SHOCKWAVE
+            MENUITEM "Ri&bbon look at",             IDM_RIBBON_LOOK_AT
         END
-        POPUP "Bind force..."
+        POPUP "Bind &force..."
         BEGIN
-            MENUITEM "Gravity",                     IDM_GRAVITY_FORCE
-            MENUITEM "Directionnal force",          IDM_DIRECTIONNAL_FORCE
-            MENUITEM "Spring",                      IDM_SPRING_FORCE
-            MENUITEM "Fluid friction",              IDM_FLUID_FRICTION
-            MENUITEM "Central gravity",             IDM_CENTRAL_GRAVITY
-            MENUITEM "Cylindric vortex",            IDM_CYLINDRIC_VORTEX
-            MENUITEM "Brownian move",               IDM_BROWNIAN_MOVE
-            MENUITEM "Magnetic force",              IDM_MAGNETIC_FORCE
+            MENUITEM "&Gravity",                    IDM_GRAVITY_FORCE
+            MENUITEM "&Directionnal force",         IDM_DIRECTIONNAL_FORCE
+            MENUITEM "&Spring",                     IDM_SPRING_FORCE
+            MENUITEM "&Fluid friction",             IDM_FLUID_FRICTION
+            MENUITEM "&Central gravity",            IDM_CENTRAL_GRAVITY
+            MENUITEM "Cylindric &vortex",           IDM_CYLINDRIC_VORTEX
+            MENUITEM "&Brownian move",              IDM_BROWNIAN_MOVE
+            MENUITEM "&Magnetic force",             IDM_MAGNETIC_FORCE
         END
-        POPUP "Bind zone..."
+        POPUP "Bind &zone..."
         BEGIN
-            MENUITEM "Plane",                       IDM_ZONE_PLANE
-            MENUITEM "Sphere",                      IDM_ZONE_SPHERE
-            MENUITEM "Rectangle",                   IDM_ZONE_RECTANGLE
-            MENUITEM "Disc",                        IDM_ZONE_DISC
-            MENUITEM "Cylinder",                    IDM_ZONE_CYLINDER
+            MENUITEM "&Plane",                      IDM_ZONE_PLANE
+            MENUITEM "&Sphere",                     IDM_ZONE_SPHERE
+            MENUITEM "&Rectangle",                  IDM_ZONE_RECTANGLE
+            MENUITEM "&Disc",                       IDM_ZONE_DISC
+            MENUITEM "&Cylinder",                   IDM_ZONE_CYLINDER
         END
-        POPUP "Bind emitter..."
+        POPUP "Bind &emitter..."
         BEGIN
-            MENUITEM "Directionnal",                IDM_DIRECTIONNAL_EMITTER
-            MENUITEM "Omnidirectionnal",            IDM_OMNIDIRECTIONNAL_EMITTER
+            MENUITEM "&Directionnal",               IDM_DIRECTIONNAL_EMITTER
+            MENUITEM "&Omnidirectionnal",           IDM_OMNIDIRECTIONNAL_EMITTER
 
-            MENUITEM "Rectangle",                   IDM_RECTANGLE_EMITTER
-            MENUITEM "Conic",                       IDM_CONIC_EMITTER
-            MENUITEM "Spherical",                   IDM_SPHERICAL_EMITTER
-            MENUITEM "Radial Emitter",              IDM_RADIAL_EMITTER
+            MENUITEM "&Rectangle",                  IDM_RECTANGLE_EMITTER
+            MENUITEM "&Conic",                      IDM_CONIC_EMITTER
+            MENUITEM "&Spherical",                  IDM_SPHERICAL_EMITTER
+            MENUITEM "&Radial",                     IDM_RADIAL_EMITTER
         END
-        MENUITEM "Bind sound",                  IDM_SOUND
+        MENUITEM "Bind &sound",                 IDM_SOUND
         MENUITEM SEPARATOR
+        MENUITEM "&Copy located",               IDM_COPY_LOCATED
+        MENUITEM "&Paste bindable",             IDM_PASTE_BINDABLE
         MENUITEM "Delete",                      IDM_DELETE_LOCATED
-        MENUITEM SEPARATOR
     END
 END
 
@@ -2061,6 +2062,7 @@ IDR_LOCATED_BINDABLE_MENU MENU DISCARDABLE
 BEGIN
     POPUP "MENU"
     BEGIN
+        MENUITEM "&Copy bindable",              IDM_COPY_BINDABLE
         MENUITEM "Delete",                      IDM_DELETE_LOCATED_BINDABLE
         MENUITEM SEPARATOR
         MENUITEM "All LOD",                     IDM_LB_LOD1N2
@@ -2075,61 +2077,62 @@ IDR_PARTICLE_SYSTEM_MENU MENU DISCARDABLE
 BEGIN
     POPUP "MENU"
     BEGIN
-        MENUITEM "New located",                 ID_MENU_NEWLOCATED
+        MENUITEM "&New located",                ID_MENU_NEWLOCATED
         MENUITEM SEPARATOR
-        MENUITEM "Save",                        ID_MENU_SAVE_PS
-        MENUITEM "Load",                        ID_MENU_LOAD_PS
-        MENUITEM "Delete",                      ID_MENU_DELETE_PS
+        MENUITEM "&Save",                       ID_MENU_SAVE_PS
+        MENUITEM "&Load",                       ID_MENU_LOAD_PS
+        MENUITEM "&Delete",                     ID_MENU_DELETE_PS
         MENUITEM SEPARATOR
-        MENUITEM "Merge",                       IDM_MERGE_PS
+        MENUITEM "&Paste located",              IDM_PASTE_LOCATED
+        MENUITEM "&Merge",                      IDM_MERGE_PS
         MENUITEM SEPARATOR
-        POPUP "Bind particle..."
+        POPUP "Bind &particle..."
         BEGIN
-            MENUITEM "Point",                       IDM_DOT_LOC
-            MENUITEM "LookAt",                      IDM_LOOKAT_LOC
-            MENUITEM "FanLight",                    IDM_FANLIGHT_LOC
-            MENUITEM "Ribbon",                      IDM_RIBBON_LOC
-            MENUITEM "TailDot",                     IDM_TAILDOT_LOC
-            MENUITEM "Mesh",                        IDM_MESH_LOC
-            MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH_LOC
-            MENUITEM "Face",                        IDM_FACE_LOC
-            MENUITEM "ShockWave",                   IDM_SHOCKWAVE_LOC
-            MENUITEM "Ribbon look at",              IDM_RIBBON_LOOK_AT_LOC
+            MENUITEM "&Point",                      IDM_DOT_LOC
+            MENUITEM "&LookAt",                     IDM_LOOKAT_LOC
+            MENUITEM "&FanLight",                   IDM_FANLIGHT_LOC
+            MENUITEM "&Ribbon",                     IDM_RIBBON_LOC
+            MENUITEM "&TailDot",                    IDM_TAILDOT_LOC
+            MENUITEM "&Mesh",                       IDM_MESH_LOC
+            MENUITEM "&ConstraintMesh",             IDM_CONSTRAINT_MESH_LOC
+            MENUITEM "F&ace",                       IDM_FACE_LOC
+            MENUITEM "&ShockWave",                  IDM_SHOCKWAVE_LOC
+            MENUITEM "Ri&bbon look at",             IDM_RIBBON_LOOK_AT_LOC
         END
-        POPUP "Bind force..."
+        POPUP "Bind &force..."
         BEGIN
-            MENUITEM "Gravity",                     IDM_GRAVITY_FORCE_LOC
-            MENUITEM "Directionnal force",          IDM_DIRECTIONNAL_FORCE_LOC
+            MENUITEM "&Gravity",                    IDM_GRAVITY_FORCE_LOC
+            MENUITEM "&Directionnal force",         IDM_DIRECTIONNAL_FORCE_LOC
 
-            MENUITEM "Spring",                      IDM_SPRING_FORCE_LOC
-            MENUITEM "Fluid friction",              IDM_FLUID_FRICTION_LOC
-            MENUITEM "Central gravity",             IDM_CENTRAL_GRAVITY_LOC
-            MENUITEM "Cylindric vortex",            IDM_CYLINDRIC_VORTEX_LOC
-            MENUITEM "Brownian move",               IDM_BROWNIAN_MOVE_LOC
-            MENUITEM "Magnetic Force",              IDM_MAGNETIC_FORCE_LOC
+            MENUITEM "&Spring",                     IDM_SPRING_FORCE_LOC
+            MENUITEM "&Fluid friction",             IDM_FLUID_FRICTION_LOC
+            MENUITEM "&Central gravity",            IDM_CENTRAL_GRAVITY_LOC
+            MENUITEM "Cylindric &vortex",           IDM_CYLINDRIC_VORTEX_LOC
+            MENUITEM "&Brownian move",              IDM_BROWNIAN_MOVE_LOC
+            MENUITEM "&Magnetic Force",             IDM_MAGNETIC_FORCE_LOC
         END
-        POPUP "Bind zone..."
+        POPUP "Bind &zone..."
         BEGIN
-            MENUITEM "Plane",                       IDM_ZONE_PLANE_LOC
-            MENUITEM "Sphere",                      IDM_ZONE_SPHERE_LOC
-            MENUITEM "Rectangle",                   IDM_ZONE_RECTANGLE_LOC
-            MENUITEM "Disc",                        IDM_ZONE_DISC_LOC
-            MENUITEM "Cylinder",                    IDM_ZONE_CYLINDER_LOC
+            MENUITEM "&Plane",                      IDM_ZONE_PLANE_LOC
+            MENUITEM "&Sphere",                     IDM_ZONE_SPHERE_LOC
+            MENUITEM "&Rectangle",                  IDM_ZONE_RECTANGLE_LOC
+            MENUITEM "&Disc",                       IDM_ZONE_DISC_LOC
+            MENUITEM "&Cylinder",                   IDM_ZONE_CYLINDER_LOC
         END
-        POPUP "Bind emitter..."
+        POPUP "Bind &emitter..."
         BEGIN
-            MENUITEM "Directionnal",                IDM_DIRECTIONNAL_EMITTER_LOC
+            MENUITEM "&Directionnal",               IDM_DIRECTIONNAL_EMITTER_LOC
 
-            MENUITEM "Omnidirectionnal",            IDM_OMNIDIRECTIONNAL_EMITTER_LOC
+            MENUITEM "&Omnidirectionnal",           IDM_OMNIDIRECTIONNAL_EMITTER_LOC
 
-            MENUITEM "Rectangle",                   IDM_RECTANGLE_EMITTER_LOC
+            MENUITEM "&Rectangle",                  IDM_RECTANGLE_EMITTER_LOC
 
-            MENUITEM "Conic",                       IDM_CONIC_EMITTER_LOC
-            MENUITEM "Spherical",                   IDM_SPHERICAL_EMITTER_LOC
+            MENUITEM "&Conic",                      IDM_CONIC_EMITTER_LOC
+            MENUITEM "&Spherical",                  IDM_SPHERICAL_EMITTER_LOC
 
-            MENUITEM "Radial Emitter",              IDM_RADIAL_EMITTER_LOC
+            MENUITEM "&Radial",                     IDM_RADIAL_EMITTER_LOC
         END
-        MENUITEM "Bind sound",                  IDM_SOUND_LOC
+        MENUITEM "Bind s&ound",                 IDM_SOUND_LOC
     END
 END
 
@@ -2149,7 +2152,7 @@ IDR_LOCATED_INSTANCE_MENU MENU DISCARDABLE
 BEGIN
     POPUP "MENU"
     BEGIN
-        MENUITEM "Delete",                      IDM_DELETE_LOCATED_INSTANCE
+        MENUITEM "&Delete",                     IDM_DELETE_LOCATED_INSTANCE
     END
 END
 

@@ -651,13 +651,17 @@
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882
 #define ID_WINDOW_GLOBALWIND            32883
 #define ID_EDIT_MOVE_OBJECT_LIGHT_TEST  32884
+#define IDM_COPY_LOCATED                32885
+#define IDM_COPY_BINDABLE               32887
+#define IDM_PASTE_BINDABLE              32888
+#define IDM_PASTE_LOCATED               32889
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1118
-#define _APS_NEXT_COMMAND_VALUE         32885
+#define _APS_NEXT_COMMAND_VALUE         32890
 #define _APS_NEXT_CONTROL_VALUE         1343
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

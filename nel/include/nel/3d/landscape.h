@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.31 2001/01/19 14:25:49 berenguier Exp $
+ * $Id: landscape.h,v 1.32 2001/01/22 15:32:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,7 +212,7 @@ public:
 	  *  \param ambiant is the color of the ambiante componante of the lighting.
 	  *  \param multiply is the multiply factor. Final color is (diffuse*multiply*shading+ambiant*(1.0-shading))
 	  */
-	void setupStaticLight (CRGBA &diffuse, CRGBA &ambiant, float multiply);
+	void setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply);
 	/**
 	  *  Get the light color by shading table.
 	  *

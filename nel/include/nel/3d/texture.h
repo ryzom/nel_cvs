@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.22 2001/01/15 15:14:22 coutelas Exp $
+ * $Id: texture.h,v 1.23 2001/01/22 15:32:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,7 +192,7 @@ public:
      *
 	 * \see isAllInvalidated(), generate(), touch(), touched(), _ListInvalidRect
 	 */
-	void	touchRect(NLMISC::CRect& rect) 
+	void	touchRect(const NLMISC::CRect& rect) 
 	{ 
 		// The texture must not support sharing....
 		nlassert(!supportSharing());

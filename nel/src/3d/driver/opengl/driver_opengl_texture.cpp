@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.16 2001/01/16 14:46:56 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.17 2001/01/22 15:32:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ static	inline CTextureDrvInfosGL*	getTextureGl(ITexture& tex)
 
 // ***************************************************************************
 // Translation of TexFmt mode.
-inline GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
+GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 {
 	ITexture::TUploadFormat		texfmt= tex.getUploadFormat();
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.37 2001/01/19 14:26:04 berenguier Exp $
+ * $Id: landscape.cpp,v 1.38 2001/01/22 15:32:05 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1278,7 +1278,7 @@ bool			CLandscape::initTileBanks ()
 
 
 // ***************************************************************************
-void			CLandscape::setupStaticLight (CRGBA &diffuse, CRGBA &ambiant, float multiply)
+void			CLandscape::setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply)
 {
 	sint nMultiply=(sint)(256.f*multiply);
 	for (int i=0; i<256; i++)

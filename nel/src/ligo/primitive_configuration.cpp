@@ -1,7 +1,7 @@
 /** \file primitive_configuration.cpp
  * Ligo primitive configuration description.
  *
- * $Id: primitive_configuration.cpp,v 1.4 2003/11/28 15:04:09 corvazier Exp $
+ * $Id: primitive_configuration.cpp,v 1.5 2004/01/07 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -109,12 +109,13 @@ bool	CPrimitiveConfigurations::belong (const IPrimitive &primitive) const
 		for (rules=0; rules<numRules; rules++)
 		{
 			const std::pair<std::string, std::string> &pairs = matchGroup.Pairs[rules];
+			string key = strlwr(pairs.second);
 
 			// Get the property
 			string value;
 			if (primitive.getPropertyByName (pairs.first.c_str(), value))
 			{
-				if (value == pairs.second)
+				if (strlwr(value) == key)
 					continue;
 			}
 
@@ -125,7 +126,7 @@ bool	CPrimitiveConfigurations::belong (const IPrimitive &primitive) const
 				uint i;
 				for (i=0; i<array->size(); i++)
 				{
-					if ((*array)[i] == pairs.second)
+					if (strlwr((*array)[i]) == key)
 						break;
 				}
 				if (i!=array->size())

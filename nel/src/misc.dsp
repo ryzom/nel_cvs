@@ -235,7 +235,7 @@ SOURCE=..\include\nel\misc\log.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\misc\rgba.cpp
+SOURCE=.\misc\rgba.cpp
 # End Source File
 # Begin Source File
 

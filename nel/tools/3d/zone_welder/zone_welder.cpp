@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.16 2002/07/04 12:13:19 corvazier Exp $
+ * $Id: zone_welder.cpp,v 1.17 2002/08/30 14:03:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ std::string inputExt;
 std::string outputDir;
 std::string outputExt;
 
-float weldRadius = 0.35f;
+float weldRadius = 1.1f;
 
 
 /**
@@ -151,6 +151,7 @@ bool getPatchAndEdge(const std::vector<CPatchInfo>& patchs,
 	return false;
 }
 
+void CleanZone ( std::vector<CPatchInfo> &zoneInfos, uint zoneId, const CAABBoxExt &zoneBBox, float weldThreshold);
 
 /*******************************************************************\
 							weldZones()
@@ -199,6 +200,11 @@ void weldZones(const char *center)
 	fprintf(fdbg,"id(center) = %d\n",centerZoneId);
 #endif
 
+	// ***	Clean internal zone
+	// *	Bind 1-1 1-2 1-4 internal patches that are not binded
+	// *	Make a global welded on vertices
+	// *	Force tangents position
+	CleanZone ( centerZonePatchs, centerZoneId, zone.getZoneBB(), weldRadius);
 
 	// Yoyo was here: Smooth the tangents of the zone.
 	//================================================

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.17 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscape.h,v 1.18 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ using NLMISC::CBlockMemory;
 const	sint	NbTilesMax= 65536;
 // Size of a CTextureNear. 256 by default (works everywhere).
 // Texures must be square, because of uvscalebias...
-const	sint	TextureNearSize= 256;
+const	sint	TextureNearSize= 512;
 const	sint	NbTileLightMapByLine= TextureNearSize/NL_TILE_LIGHTMAP_SIZE;
 const	sint	NbTileLightMapByTexture= NbTileLightMapByLine*NbTileLightMapByLine;
 

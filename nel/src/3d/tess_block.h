@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.4 2001/10/04 11:40:45 berenguier Exp $
+ * $Id: tess_block.h,v 1.5 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,11 +64,12 @@ private:
 	NLMISC::CBSphere	BSphere;
 	bool		Empty;			// empty bbox? (first extend).
 
-public:
 	// Clip result.
 	bool		Clipped;
 	bool		FullFar1;		// block Entirely IN transition. (all alpha of Far1 should be 255)
 	bool		EmptyFar1;		// block Entirely OUT transition. (all alpha of Far1 should be 0)
+
+public:
 
 	// Vertices.
 	CTessList<CTessFarVertex>	FarVertexList;
@@ -92,34 +93,7 @@ public:
 	CPatchRdrPass				*LightMapRdrPass;
 
 public:
-	CTessBlock()
-	{
-		_Patch= NULL;
-
-		// init bounding info.
-		Empty= true;
-		Clipped= false;
-		FullFar1= false;
-		EmptyFar1= false;
-
-		// init vert/face list.
-		for(sint i=0;i<NL3D_TESSBLOCK_TILESIZE;i++)
-		{
-			RdrTileRoot[i]=NULL;
-		}
-
-		// init LightMap.
-		LightMapRefCount= 0;
-
-		Far0FaceVector= NULL;
-		Far1FaceVector= NULL;
-
-		_PrecToModify= NULL;
-		_NextToModify= NULL;
-
-		FaceTileMaterialRefCount= 0;
-	}
-
+	CTessBlock();
 	// in dtor, remove me from list of TessBlock to modify, if needed.
 	~CTessBlock();
 
@@ -132,20 +106,31 @@ public:
 
 	// Reset clip to no clipped.
 	void			resetClip();
+	// force clip to clipped.
+	void			forceClip();
 	// Clip. (set Clipped to true/false). Use the CurrentPyramid static.
 	static CPlane	CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 	void			clip();
 	// Clip Tile/Far.
 	void			clipFar(const CVector &refineCenter, float tileDistNear, float farTransition);
 
+	// Clip result.
+	bool			getClipped() const {return Clipped;}
+	bool			visibleFar0() const {return !Clipped && !FullFar1;}
+	bool			visibleTile() const {return !Clipped && !FullFar1;}
+	bool			visibleFar1() const {return !Clipped && !EmptyFar1;}
 
-	// create and build FaceVector, from the FaceList.
+	// create and fill FaceVector, from the FaceList.
 	void			createFaceVectorFar0(CLandscapeFaceVectorManager &mgr);
 	void			deleteFaceVectorFar0(CLandscapeFaceVectorManager &mgr);
 	void			createFaceVectorFar1(CLandscapeFaceVectorManager &mgr);
 	void			deleteFaceVectorFar1(CLandscapeFaceVectorManager &mgr);
 	void			createFaceVectorTile(CLandscapeFaceVectorManager &mgr);
 	void			deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr);
+	// suppose FV is created, and refill it.
+	void			refillFaceVectorFar0();
+	void			refillFaceVectorFar1();
+	void			refillFaceVectorTile();
 
 
 

@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.5 2001/10/02 15:58:30 berenguier Exp $
+ * $Id: tess_block.cpp,v 1.6 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,37 @@ namespace NL3D
 
 CPlane	CTessBlock::CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 
+
+
+// ***************************************************************************
+CTessBlock::CTessBlock()
+{
+	_Patch= NULL;
+
+	// init bounding info.
+	Empty= true;
+	// By default, the tessBlock is clipped.
+	Clipped= true;
+	FullFar1= false;
+	EmptyFar1= false;
+
+	// init vert/face list.
+	for(sint i=0;i<NL3D_TESSBLOCK_TILESIZE;i++)
+	{
+		RdrTileRoot[i]=NULL;
+	}
+
+	// init LightMap.
+	LightMapRefCount= 0;
+
+	Far0FaceVector= NULL;
+	Far1FaceVector= NULL;
+
+	_PrecToModify= NULL;
+	_NextToModify= NULL;
+
+	FaceTileMaterialRefCount= 0;
+}
 
 
 // ***************************************************************************
@@ -87,6 +118,15 @@ void			CTessBlock::resetClip()
 	FullFar1= false;
 	EmptyFar1= false;
 }
+
+
+// ***************************************************************************
+void			CTessBlock::forceClip()
+{
+	Clipped= true;
+}
+
+
 // ***************************************************************************
 void			CTessBlock::clip()
 {
@@ -117,15 +157,14 @@ void			CTessBlock::clipFar(const CVector &refineCenter, float tileDistNear, floa
 }
 
 
+
 // ***************************************************************************
-void			CTessBlock::createFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
+void			CTessBlock::refillFaceVectorFar0()
 {
-	nlassert(Far0FaceVector==NULL);
 	// If size is not 0.
 	if(FarFaceList.size()>0)
 	{
-		// Create a faceVector of the wanted triangles size.
-		Far0FaceVector= mgr.createFaceVector(FarFaceList.size());
+		nlassert(Far0FaceVector!=NULL);
 
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
@@ -136,6 +175,22 @@ void			CTessBlock::createFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
 			*(dest++)= pFace->FVLeft->Index0;
 			*(dest++)= pFace->FVRight->Index0;
 		}
+	}
+}
+
+
+// ***************************************************************************
+void			CTessBlock::createFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
+{
+	nlassert(Far0FaceVector==NULL);
+	// If size is not 0.
+	if(FarFaceList.size()>0)
+	{
+		// Create a faceVector of the wanted triangles size.
+		Far0FaceVector= mgr.createFaceVector(FarFaceList.size());
+
+		// init.
+		refillFaceVectorFar0();
 	}
 
 }
@@ -148,16 +203,14 @@ void			CTessBlock::deleteFaceVectorFar0(CLandscapeFaceVectorManager &mgr)
 		Far0FaceVector= NULL;
 	}
 }
+
 // ***************************************************************************
-void			CTessBlock::createFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
+void			CTessBlock::refillFaceVectorFar1()
 {
-	nlassert(Far1FaceVector==NULL);
 	// If size is not 0.
 	if(FarFaceList.size()>0)
 	{
-		// Create a faceVector of the wanted triangles size.
-		Far1FaceVector= mgr.createFaceVector(FarFaceList.size());
-
+		nlassert(Far1FaceVector!=NULL);
 		// Fill this faceVector, with FarFaceList
 		CTessFace	*pFace;
 		uint32		*dest= Far1FaceVector->TriPtr;
@@ -169,6 +222,21 @@ void			CTessBlock::createFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
 		}
 	}
 }
+
+// ***************************************************************************
+void			CTessBlock::createFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
+{
+	nlassert(Far1FaceVector==NULL);
+	// If size is not 0.
+	if(FarFaceList.size()>0)
+	{
+		// Create a faceVector of the wanted triangles size.
+		Far1FaceVector= mgr.createFaceVector(FarFaceList.size());
+
+		// init.
+		refillFaceVectorFar1();
+	}
+}
 // ***************************************************************************
 void			CTessBlock::deleteFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
 {
@@ -178,10 +246,47 @@ void			CTessBlock::deleteFaceVectorFar1(CLandscapeFaceVectorManager &mgr)
 		Far1FaceVector= NULL;
 	}
 }
+
+
+// ***************************************************************************
+void			CTessBlock::refillFaceVectorTile()
+{
+	// For all tiles existing, and for all facePass existing, fill the faceVector.
+	for(uint tileId=0; tileId<NL3D_TESSBLOCK_TILESIZE; tileId++)
+	{
+		// if tile exist.
+		if(RdrTileRoot[tileId])
+		{
+			// For all Pass faces of the tile.
+			for(uint facePass=0; facePass<NL3D_MAX_TILE_FACE; facePass++)
+			{
+				CTessList<CTileFace>	&faceList= RdrTileRoot[tileId]->TileFaceList[facePass];
+				CLandscapeFaceVector	*faceVector= RdrTileRoot[tileId]->TileFaceVectors[facePass];
+				// If some triangles create them.
+				if(faceList.size()>0)
+				{
+					nlassert( faceVector!=NULL );
+
+					// Fill this faceVector, with the TileFaceList
+					CTileFace	*pFace;
+					uint32		*dest= faceVector->TriPtr;
+					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
+					{
+						*(dest++)= pFace->VBase->Index;
+						*(dest++)= pFace->VLeft->Index;
+						*(dest++)= pFace->VRight->Index;
+					}
+				}
+			}
+		}
+	}
+}
+
+
 // ***************************************************************************
 void			CTessBlock::createFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 {
-	// For all tiles existing, and for all facePass existing, delete the faceVector.
+	// For all tiles existing, and for all facePass existing, create the faceVector.
 	for(uint tileId=0; tileId<NL3D_TESSBLOCK_TILESIZE; tileId++)
 	{
 		// if tile exist.
@@ -197,20 +302,13 @@ void			CTessBlock::createFaceVectorTile(CLandscapeFaceVectorManager &mgr)
 				{
 					// Create a faceVector of the wanted triangles size.
 					faceVector= mgr.createFaceVector(faceList.size());
-
-					// Fill this faceVector, with the TileFaceList
-					CTileFace	*pFace;
-					uint32		*dest= faceVector->TriPtr;
-					for(pFace= faceList.begin(); pFace; pFace= (CTileFace*)pFace->Next)
-					{
-						*(dest++)= pFace->VBase->Index;
-						*(dest++)= pFace->VLeft->Index;
-						*(dest++)= pFace->VRight->Index;
-					}
 				}
 			}
 		}
 	}
+
+	// init.
+	refillFaceVectorTile();
 }
 // ***************************************************************************
 void			CTessBlock::deleteFaceVectorTile(CLandscapeFaceVectorManager &mgr)

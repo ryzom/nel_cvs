@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.11 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: tessellation.h,v 1.12 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ class	CPatch;
 class	CTessFace;
 class	CLandscapeVBAllocator;
 class	CLandscapeFaceVector;
-
+class	CTessBlock;
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
@@ -119,6 +119,7 @@ public:
 // ***************************************************************************
 struct	CTessFarVertex : public CTessNodeList
 {
+	CTessBlock		*OwnerBlock;
 	sint32			Index0;		// The index of Far0 in the Far VB.
 	sint32			Index1;		// The index of Far1 in the Far VB.
 	CTessVertex		*Src;		// The src vertex to copy Pos, and compute alpha.
@@ -129,6 +130,7 @@ struct	CTessFarVertex : public CTessNodeList
 // ***************************************************************************
 struct	CTessNearVertex : public CTessNodeList
 {
+	CTessBlock		*OwnerBlock;
 	sint32			Index;		// The index in the Tile VB.
 	CTessVertex		*Src;		// The src vertex to copy Pos.
 	CUV				PUv0;

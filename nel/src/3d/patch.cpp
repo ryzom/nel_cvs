@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.67 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: patch.cpp,v 1.68 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,9 @@ CPatch::CPatch()
 	NoiseRotation= 0;
 	// No smooth by default.
 	_CornerSmoothFlag= 0;
+
+	// MasterBlock never clipped.
+	MasterBlock.resetClip();
 
 }
 // ***************************************************************************
@@ -855,6 +858,7 @@ void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
 	
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
+		fv->OwnerBlock= &MasterBlock;
 		MasterBlock.FarVertexList.append(fv);
 	}
 	else 
@@ -862,6 +866,7 @@ void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
 		// Alloc if necessary the TessBlocks.
 		addRefTessBlocks();
 
+		fv->OwnerBlock= &TessBlocks[numtb];
 		TessBlocks[numtb].FarVertexList.append(fv);
 	}
 }
@@ -876,10 +881,12 @@ void			CPatch::removeFarVertexFromRenderList(CTessFarVertex *fv)
 	if(type==FVMasterBlock || type==FVTessBlockEdge)
 	{
 		MasterBlock.FarVertexList.remove(fv);
+		fv->OwnerBlock= NULL;
 	}
 	else 
 	{
 		TessBlocks[numtb].FarVertexList.remove(fv);
+		fv->OwnerBlock= NULL;
 
 		// Destroy if necessary the TessBlocks.
 		decRefTessBlocks();
@@ -897,6 +904,7 @@ void			CPatch::appendNearVertexToRenderList(CTileMaterial *tileMat, CTessNearVer
 
 	uint	numtb, numtm;
 	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT);
+	nv->OwnerBlock= &TessBlocks[numtb];
 	TessBlocks[numtb].NearVertexList.append(nv);
 }
 // ***************************************************************************
@@ -907,6 +915,7 @@ void			CPatch::removeNearVertexFromRenderList(CTileMaterial *tileMat, CTessNearV
 	uint	numtb, numtm;
 	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT);
 	TessBlocks[numtb].NearVertexList.remove(nv);
+	nv->OwnerBlock= NULL;
 
 	// Destroy if necessary the TessBlocks.
 	decRefTessBlocks();

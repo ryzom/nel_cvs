@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.7 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.8 2001/10/11 13:29:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,8 +347,6 @@ void			CPatch::preRender()
 
 	// 4. Clip tess blocks.
 	//=====================
-	// MasterBlock never clipped.
-	MasterBlock.resetClip();
 	// If we are in Tile/FarTransition
 	bool	doClipFar= Far0==0 && Far1==1;
 	// Parse all TessBlocks.
@@ -357,11 +355,17 @@ void			CPatch::preRender()
 	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
 		CTessBlock		&tblock= *pTessBlock;
+
+		// bkup the old result for clipping
+		bool	oldVisibleFar0= tblock.visibleFar0();
+		bool	oldVisibleTile= tblock.visibleTile();
+		bool	oldVisibleFar1= tblock.visibleFar1();
+
 		// If this TessBlock is empty, do not need to clip
 		if(tblock.FaceTileMaterialRefCount==0)
 		{
 			// Simply force the clip.
-			tblock.Clipped= true;
+			tblock.forceClip();
 		}
 		else
 		{
@@ -373,7 +377,7 @@ void			CPatch::preRender()
 				tblock.clipFar(CLandscapeGlobals::RefineCenter, CLandscapeGlobals::TileDistNear, CLandscapeGlobals::FarTransition);
 
 			// If TileMode, and if tile visible
-			if(Far0==0 && !tblock.Clipped && !tblock.FullFar1)
+			if(Far0==0 && tblock.visibleTile() )
 			{
 				// Append all tiles (if any) to the renderPass list!
 				for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE; j++)
@@ -384,6 +388,62 @@ void			CPatch::preRender()
 						tblock.RdrTileRoot[j]->appendTileToEachRenderPass();
 				}
 			}	
+		}
+
+		// If change of clip in tessBlock, must update the tessBlock
+		if( Far0> 0 && oldVisibleFar0 != tblock.visibleFar0() )
+		{
+			if( tblock.visibleFar0() )
+			{
+				// allocate
+				updateFar0VBAlloc(tblock.FarVertexList, true);
+				// fill only if possible.
+				if(!CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs())
+					fillFar0VertexListVB(tblock.FarVertexList);
+				// rebuild triangles index list.
+				tblock.refillFaceVectorFar0();
+			}
+			else
+			{
+				// delete
+				updateFar0VBAlloc(tblock.FarVertexList, false);
+			}
+		}
+		if( Far0==0 && oldVisibleTile != tblock.visibleTile() )
+		{
+			if( tblock.visibleTile() )
+			{
+				// allocate
+				updateTileVBAlloc(tblock.NearVertexList, true);
+				// fill only if possible.
+				if(!CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs())
+					fillTileVertexListVB(tblock.NearVertexList);
+				// rebuild triangles index list.
+				tblock.refillFaceVectorTile();
+			}
+			else
+			{
+				// delete
+				updateTileVBAlloc(tblock.NearVertexList, false);
+			}
+		}
+		if( Far1> 0 && oldVisibleFar1 != tblock.visibleFar1() )
+		{
+			if( tblock.visibleFar1() )
+			{
+				// allocate
+				updateFar1VBAlloc(tblock.FarVertexList, true);
+				// fill only if possible.
+				if(!CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs())
+					fillFar1VertexListVB(tblock.FarVertexList);
+				// rebuild triangles index list.
+				tblock.refillFaceVectorFar1();
+			}
+			else
+			{
+				// delete
+				updateFar1VBAlloc(tblock.FarVertexList, false);
+			}
 		}
 	}
 
@@ -443,7 +503,7 @@ void			CPatch::renderFar0()
 	{
 		CTessBlock		&tblock= *pTessBlock;
 		// if block visible, render
-		if(!tblock.Clipped && !tblock.FullFar1)
+		if( tblock.visibleFar0() )
 		{
 			renderFaceVector(tblock.Far0FaceVector);
 			// profile
@@ -494,7 +554,7 @@ void			CPatch::renderFar1()
 	{
 		CTessBlock		&tblock= *pTessBlock;
 		// if block visible, render
-		if(!tblock.Clipped && !tblock.EmptyFar1)
+		if( tblock.visibleFar1() )
 		{
 			renderFaceVector(tblock.Far1FaceVector);
 			// profile.
@@ -736,7 +796,9 @@ void			CPatch::updateVBAlloc(bool alloc)
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			updateFar0VBAlloc(tblock.FarVertexList, alloc);
+			// need update VB only if tessBlock is visible.
+			if( tblock.visibleFar0() )
+				updateFar0VBAlloc(tblock.FarVertexList, alloc);
 		}
 	}
 	else if (Far0==0)
@@ -748,7 +810,9 @@ void			CPatch::updateVBAlloc(bool alloc)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
 			// Add the vertices.
-			updateTileVBAlloc(tblock.NearVertexList, alloc);
+			// need update VB only if tessBlock is visible.
+			if( tblock.visibleTile() )
+				updateTileVBAlloc(tblock.NearVertexList, alloc);
 		}
 	}
 
@@ -761,7 +825,9 @@ void			CPatch::updateVBAlloc(bool alloc)
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			updateFar1VBAlloc(tblock.FarVertexList, alloc);
+			// need update VB only if tessBlock is visible.
+			if( tblock.visibleFar1() )
+				updateFar1VBAlloc(tblock.FarVertexList, alloc);
 		}
 	}
 }
@@ -793,7 +859,9 @@ void		CPatch::deleteVBAndFaceVectorFar1Only()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			updateFar1VBAlloc(tblock.FarVertexList, false);
+			// need update VB only if tessBlock is visible.
+			if( tblock.visibleFar1() )
+				updateFar1VBAlloc(tblock.FarVertexList, false);
 		}
 	}
 
@@ -810,7 +878,9 @@ void		CPatch::allocateVBAndFaceVectorFar1Only()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			updateFar1VBAlloc(tblock.FarVertexList, true);
+			// need update VB only if tessBlock is visible.
+			if( tblock.visibleFar1() )
+				updateFar1VBAlloc(tblock.FarVertexList, true);
 		}
 	}
 
@@ -1097,7 +1167,9 @@ void			CPatch::fillVB()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			fillFar0VertexListVB(tblock.FarVertexList);
+			// fill only if tblock visible.
+			if( tblock.visibleFar0() )
+				fillFar0VertexListVB(tblock.FarVertexList);
 		}
 	}
 	else if(Far0==0 && !CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs() )
@@ -1108,8 +1180,9 @@ void			CPatch::fillVB()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			// Add the vertices.
-			fillTileVertexListVB(tblock.NearVertexList);
+			// fill only if tblock visible.
+			if( tblock.visibleTile() )
+				fillTileVertexListVB(tblock.NearVertexList);
 		}
 	}
 
@@ -1122,7 +1195,9 @@ void			CPatch::fillVB()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			fillFar1VertexListVB(tblock.FarVertexList);
+			// fill only if tblock visible.
+			if( tblock.visibleFar1() )
+				fillFar1VertexListVB(tblock.FarVertexList);
 		}
 	}
 
@@ -1147,7 +1222,9 @@ void		CPatch::fillVBFar0Only()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			fillFar0VertexListVB(tblock.FarVertexList);
+			// fill only if tblock visible.
+			if( tblock.visibleFar0() )
+				fillFar0VertexListVB(tblock.FarVertexList);
 		}
 	}
 }
@@ -1163,7 +1240,9 @@ void		CPatch::fillVBFar1Only()
 		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
 			CTessBlock	&tblock= TessBlocks[i];
-			fillFar1VertexListVB(tblock.FarVertexList);
+			// fill only if tblock visible.
+			if( tblock.visibleFar1() )
+				fillFar1VertexListVB(tblock.FarVertexList);
 		}
 	}
 }
@@ -1280,7 +1359,7 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 		{
 			CTessBlock	&tblock= TessBlocks[i];
 			// Precise Clip.
-			if(!tblock.Clipped)
+			if(!tblock.getClipped())
 			{
 				// compute the geomorph of the vertices in the tessblock.
 				computeGeomorphVertexList(tblock.FarVertexList);
@@ -1299,7 +1378,7 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 		{
 			CTessBlock	&tblock= TessBlocks[i];
 			// Precise Clip.
-			if(!tblock.Clipped && !tblock.FullFar1)
+			if( tblock.visibleFar0() )
 				computeGeomorphFar0VertexListVB(tblock.FarVertexList);
 		}
 	}
@@ -1312,7 +1391,7 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 		{
 			CTessBlock	&tblock= TessBlocks[i];
 			// Precise Clip.
-			if(!tblock.Clipped && !tblock.FullFar1)
+			if( tblock.visibleTile() )
 				computeGeomorphTileVertexListVB(tblock.NearVertexList);
 		}
 	}
@@ -1327,7 +1406,7 @@ void		CPatch::computeSoftwareGeomorphAndAlpha()
 		{
 			CTessBlock	&tblock= TessBlocks[i];
 			// Precise Clip.
-			if(!tblock.Clipped && !tblock.EmptyFar1)
+			if( tblock.visibleFar1() )
 				computeGeomorphAlphaFar1VertexListVB(tblock.FarVertexList);
 		}
 	}
@@ -1355,6 +1434,17 @@ void		CPatch::updateClipPatchVB()
 		{
 			// Then delete vertices.
 			deleteVBAndFaceVector();
+
+			// Now, all vertices in VB are deleted.
+			// Force clip state of all TessBlocks, so no allocation will be done on Vertices in VB.
+			if(!TessBlocks.empty())
+			{
+				for(uint i=0; i<TessBlocks.size();i++)
+				{
+					CTessBlock	&tblock= TessBlocks[i];
+					tblock.forceClip();
+				}
+			}
 		}
 		else
 		{
@@ -1381,13 +1471,13 @@ void		CPatch::checkCreateVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, allocate.
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0)
+	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0() )
 	{
 		pVert->Index0= CLandscapeGlobals::CurrentFar0VBAllocator->allocateVertex();
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0)
+	if(!RenderClipped && Far1>0 && pVert->OwnerBlock->visibleFar1())
 	{
 		pVert->Index1= CLandscapeGlobals::CurrentFar1VBAllocator->allocateVertex();
 	}
@@ -1401,14 +1491,14 @@ void		CPatch::checkFillVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, try to fill.
 	// NB: must test Far0>0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0)
+	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0())
 	{
 		if( !CLandscapeGlobals::CurrentFar0VBAllocator->reallocationOccurs() )
 			fillFar0VertexVB(pVert);
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0)
+	if(!RenderClipped && Far1>0 && pVert->OwnerBlock->visibleFar1())
 	{
 		if( !CLandscapeGlobals::CurrentFar1VBAllocator->reallocationOccurs() )
 			fillFar1VertexVB(pVert);
@@ -1422,7 +1512,7 @@ void		CPatch::checkCreateVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, allocate.
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0==0)
+	if(!RenderClipped && Far0==0 && pVert->OwnerBlock->visibleTile())
 	{
 		pVert->Index= CLandscapeGlobals::CurrentTileVBAllocator->allocateVertex();
 	}
@@ -1435,7 +1525,7 @@ void		CPatch::checkFillVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, try to fill.
 	// NB: must test Far0==0 because vertices are reallocated in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0==0)
+	if(!RenderClipped&& Far0==0 && pVert->OwnerBlock->visibleTile() )
 	{
 		// try to fill.
 		if( !CLandscapeGlobals::CurrentTileVBAllocator->reallocationOccurs() )
@@ -1450,13 +1540,13 @@ void		CPatch::checkDeleteVertexVBFar(CTessFarVertex *pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in !Tile Mode, ok, the vertex exist in VB, so delete.
 	// NB: must test Far0>0 because vertices are deleted in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0>0)
+	if(!RenderClipped && Far0>0 && pVert->OwnerBlock->visibleFar0() )
 	{
 		CLandscapeGlobals::CurrentFar0VBAllocator->deleteVertex(pVert->Index0);
 	}
 
 	// Idem for Far1
-	if(!RenderClipped && Far1>0)
+	if(!RenderClipped && Far1>0  && pVert->OwnerBlock->visibleFar1() )
 	{
 		CLandscapeGlobals::CurrentFar1VBAllocator->deleteVertex(pVert->Index1);
 	}
@@ -1468,7 +1558,7 @@ void		CPatch::checkDeleteVertexVBNear(CTessNearVertex	*pVert)
 	nlassert(pVert);
 	// If visible, and Far0 in Tile Mode, ok, the vertex exist in VB, so delete.
 	// NB: must test Far0==0 because vertices are deleted in preRender() if a change of Far occurs.
-	if(!RenderClipped && Far0==0)
+	if(!RenderClipped && Far0==0 && pVert->OwnerBlock->visibleTile() )
 	{
 		CLandscapeGlobals::CurrentTileVBAllocator->deleteVertex(pVert->Index);
 	}

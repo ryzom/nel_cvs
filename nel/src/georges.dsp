@@ -32,95 +32,63 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "georges - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/Release"
-# PROP Intermediate_Dir "../obj/Release"
+# PROP Output_Dir "../obj/Release/georges"
+# PROP Intermediate_Dir "../obj/Release/georges"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdgeorges.h" /FD /c
-# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/georges.lib"
+# ADD LIB32 /nologo /out:"../lib/nlgeorges_r.lib"
 
 !ELSEIF  "$(CFG)" == "georges - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/Debug"
-# PROP Intermediate_Dir "../obj/Debug"
+# PROP Output_Dir "../obj/Debug/georges"
+# PROP Intermediate_Dir "../obj/Debug/georges"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"stdgeorges.h" /FD /GZ /c
-# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"stdgeorges.h" /FD /GZ /c
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/georges_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nlgeorges_d.lib"
 
 !ELSEIF  "$(CFG)" == "georges - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "DebugFast"
-# PROP BASE Intermediate_Dir "DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast"
-# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Output_Dir "../obj/DebugFast/georges/georges"
+# PROP Intermediate_Dir "../obj/DebugFast/georges/georges"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /Yu"stdgeorges.h" /FD /GZ /c
-# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /Yu"stdgeorges.h" /FD /GZ /c
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/georges_debug_fast.lib"
+# ADD LIB32 /nologo /out:"../lib/nlgeorges_df.lib"
 
 !ELSEIF  "$(CFG)" == "georges - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseDebug"
-# PROP BASE Intermediate_Dir "ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../obj/ReleaseDebug"
+# PROP Output_Dir "../obj/ReleaseDebug/georges"
+# PROP Intermediate_Dir "../obj/ReleaseDebug/georges"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "NL_RELEASE_DEBUG" /Yu"stdgeorges.h" /FD /c
-# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/georges_rd.lib"
+# ADD LIB32 /nologo /out:"../lib/nlgeorges_rd.lib"
 
 !ENDIF 
 

@@ -32,95 +32,63 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "ligo - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/Release"
-# PROP Intermediate_Dir "../obj/Release"
+# PROP Output_Dir "../obj/Release/ligo"
+# PROP Intermediate_Dir "../obj/Release/ligo"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /YX /FD /c
-# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /FD /c
+# SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/ligo.lib"
+# ADD LIB32 /nologo /out:"../lib/nlligo_r.lib"
 
 !ELSEIF  "$(CFG)" == "ligo - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/Debug"
-# PROP Intermediate_Dir "../obj/Debug"
+# PROP Output_Dir "../obj/Debug/ligo"
+# PROP Intermediate_Dir "../obj/Debug/ligo"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /YX /FD /GZ /c
-# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FD /GZ /c
+# SUBTRACT CPP /Fr /YX
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/ligo_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nlligo_d.lib"
 
 !ELSEIF  "$(CFG)" == "ligo - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "DebugFast"
-# PROP BASE Intermediate_Dir "DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast"
-# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Output_Dir "../obj/DebugFast/ligo"
+# PROP Intermediate_Dir "../obj/DebugFast/ligo"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /FR /YX /FD /GZ /c
-# ADD BASE RSC /l 0x409 /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "NL_DEBUG_FAST" /FD /GZ /c
+# SUBTRACT CPP /Fr /YX
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/ligo_debug_fast.lib"
+# ADD LIB32 /nologo /out:"../lib/nlligo_df.lib"
 
 !ELSEIF  "$(CFG)" == "ligo - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "ReleaseDebug"
-# PROP BASE Intermediate_Dir "ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../obj/ReleaseDebug"
+# PROP Output_Dir "../obj/ReleaseDebug/ligo"
+# PROP Intermediate_Dir "../obj/ReleaseDebug/ligo"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /YX /FD /c
-# ADD BASE RSC /l 0x409 /d "NDEBUG"
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# SUBTRACT CPP /Fr /YX
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/ligo_rd.lib"
+# ADD LIB32 /nologo /out:"../lib/nlligo_rd.lib"
 
 !ENDIF 
 

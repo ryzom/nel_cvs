@@ -32,100 +32,67 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/Release"
-# PROP Intermediate_Dir "../obj/Release"
+# PROP Output_Dir "../obj/Release/misc"
+# PROP Intermediate_Dir "../obj/Release/misc"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"stdmisc.h" /FD /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"stdmisc.h" /FD /c
+# SUBTRACT CPP /Z<none> /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/nlmisc.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_r.lib"
 
 !ELSEIF  "$(CFG)" == "misc - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "misc___Win32_Debug"
-# PROP BASE Intermediate_Dir "misc___Win32_Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/Debug"
-# PROP Intermediate_Dir "../obj/Debug"
+# PROP Output_Dir "../obj/Debug/misc"
+# PROP Intermediate_Dir "../obj/Debug/misc"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "__STL_DEBUG" /D "_MBCS" /D "WIN32" /D "_DEBUG" /Yu"stdmisc.h" /FD /GZ /c
-# SUBTRACT CPP /Gy /Fr
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_MBCS" /D "WIN32" /D "_DEBUG" /Yu"stdmisc.h" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_d.lib"
 
 !ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "misc___Win32_ReleaseDebug"
-# PROP BASE Intermediate_Dir "misc___Win32_ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../obj/ReleaseDebug"
+# PROP Output_Dir "../obj/ReleaseDebug/misc"
+# PROP Intermediate_Dir "../obj/ReleaseDebug/misc"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"stdmisc.h" /FD /c
 # SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"../lib/nlmisc.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc_rd.lib"
 
 !ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "misc___Win32_DebugFast"
-# PROP BASE Intermediate_Dir "misc___Win32_DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast"
-# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Output_Dir "../obj/DebugFast/misc"
+# PROP Intermediate_Dir "../obj/DebugFast/misc"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
-# SUBTRACT BASE CPP /Gy
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdmisc.h" /FD /GZ /c
-# SUBTRACT CPP /Gy /Fr
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"stdmisc.h" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"../lib/nlmisc_debug.lib"
-# ADD LIB32 /nologo /out:"../lib/nlmisc_debug_fast.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_df.lib"
 
 !ENDIF 
 
@@ -375,27 +342,7 @@ SOURCE=.\misc\config_file\config_file.lex.cpp
 # Begin Source File
 
 SOURCE=.\misc\config_file\config_file.yacc
-
-!IF  "$(CFG)" == "misc - Win32 Release"
-
 # PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
-
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
-
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-
-!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
-
-# PROP BASE Exclude_From_Build 1
-# PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

@@ -32,100 +32,67 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "sound_lowlevel - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../obj/Release"
-# PROP Intermediate_Dir "../../../obj/Release"
+# PROP Output_Dir "../../../obj/Release/sound_lowlevel"
+# PROP Intermediate_Dir "../../../obj/Release/sound_lowlevel"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_AFXDLL" /YX /FD /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_AFXDLL" /FD /c
+# SUBTRACT CPP /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../../../obj/Release/nlsound_lowlevel.lib"
+# ADD LIB32 /nologo /out:"../../../obj/Release/sound_lowlevel/nlsound_lowlevel_r.lib"
 
 !ELSEIF  "$(CFG)" == "sound_lowlevel - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../obj/Debug"
-# PROP Intermediate_Dir "../../../obj/Debug"
+# PROP Output_Dir "../../../obj/Debug/sound_lowlevel"
+# PROP Intermediate_Dir "../../../obj/Debug/sound_lowlevel"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FD /GZ /c
-# SUBTRACT CPP /Gy /Fr /YX
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../../../obj/Debug/nlsound_lowlevel_debug.lib"
+# ADD LIB32 /nologo /out:"../../../obj/Debug/sound_lowlevel/nlsound_lowlevel_d.lib"
 
 !ELSEIF  "$(CFG)" == "sound_lowlevel - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "sound_lowlevel___Win32_ReleaseDebug"
-# PROP BASE Intermediate_Dir "sound_lowlevel___Win32_ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../../../obj/ReleaseDebug"
+# PROP Output_Dir "../../../obj/ReleaseDebug/sound_lowlevel"
+# PROP Intermediate_Dir "../../../obj/ReleaseDebug/sound_lowlevel"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_AFXDLL" /D "NL_RELEASE_DEBUG" /YX /FD /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "_AFXDLL" /D "NL_RELEASE_DEBUG" /FD /c
+# SUBTRACT CPP /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../../../obj/ReleaseDebug/nlsound_lowlevel_rd.lib"
+# ADD LIB32 /nologo /out:"../../../obj/ReleaseDebug/sound_lowlevel/nlsound_lowlevel_rd.lib"
 
 !ELSEIF  "$(CFG)" == "sound_lowlevel - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "sound_lowlevel___Win32_DebugFast"
-# PROP BASE Intermediate_Dir "sound_lowlevel___Win32_DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../obj/DebugFast"
-# PROP Intermediate_Dir "../../../obj/DebugFast"
+# PROP Output_Dir "../../../obj/DebugFast/sound_lowlevel"
+# PROP Intermediate_Dir "../../../obj/DebugFast/sound_lowlevel"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "_AFXDLL" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /c
-# SUBTRACT BASE CPP /Gy /YX
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "_AFXDLL" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /FD /GZ /c
-# SUBTRACT CPP /Gy /YX
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_AFXDLL" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /FD /GZ /c
+# SUBTRACT CPP /Gf /Gy /Fr /YX
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"../../../obj/Debug/nlsound_lowlevel_debug.lib"
-# ADD LIB32 /nologo /out:"../../../obj/DebugFast/nlsound_lowlevel_debug_fast.lib"
+# ADD LIB32 /nologo /out:"../../../obj/DebugFast/sound_lowlevel/nlsound_lowlevel_df.lib"
 
 !ENDIF 
 

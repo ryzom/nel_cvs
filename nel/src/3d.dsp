@@ -32,98 +32,67 @@ RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "3d___Win32_Release"
-# PROP BASE Intermediate_Dir "3d___Win32_Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/Release"
-# PROP Intermediate_Dir "../obj/Release"
+# PROP Output_Dir "../obj/Release/3d"
+# PROP Intermediate_Dir "../obj/Release/3d"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"std3d.h" /FD /Zm200 /c
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# SUBTRACT CPP /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/nl3d.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_r.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "3d___Win32_Debug"
-# PROP BASE Intermediate_Dir "3d___Win32_Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/Debug"
-# PROP Intermediate_Dir "../obj/Debug"
+# PROP Output_Dir "../obj/Debug/3d"
+# PROP Intermediate_Dir "../obj/Debug/3d"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"std3d.h" /FD /GZ /Zm200 /c
-# SUBTRACT CPP /Fr
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gf /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_d.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "3d___Win32_ReleaseDebug"
-# PROP BASE Intermediate_Dir "3d___Win32_ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../obj/ReleaseDebug"
+# PROP Output_Dir "../obj/ReleaseDebug/3d"
+# PROP Intermediate_Dir "../obj/ReleaseDebug/3d"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /Yu"std3d.h" /FD /Zm200 /c
-# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# SUBTRACT CPP /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "3d___Win32_DebugFast"
-# PROP BASE Intermediate_Dir "3d___Win32_DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast"
-# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Output_Dir "../obj/DebugFast/3d"
+# PROP Intermediate_Dir "../obj/DebugFast/3d"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /Fr /FD /GZ /Zm200 /c
-# SUBTRACT BASE CPP /Gy /YX
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Fr /Yu"std3d.h" /FD /GZ /Zm200 /c
-# SUBTRACT CPP /Gy
-# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "NL_DEBUG_FAST" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Gf /Gy /Fr
+# ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
-# ADD BASE LIB32 /nologo /out:"../lib/nl3d_debug.lib"
-# ADD LIB32 /nologo /out:"../lib/nl3d_debug_fast.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_df.lib"
 
 !ENDIF 
 
@@ -1747,21 +1716,6 @@ SOURCE=.\3d\Makefile.am
 # Begin Source File
 
 SOURCE=.\3d\ps_dot.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-# ADD CPP /FAs
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-# ADD CPP /FAs
-
-!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -1806,19 +1760,6 @@ SOURCE=.\3d\ps_mesh.h
 # Begin Source File
 
 SOURCE=.\3d\ps_particle.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-# ADD CPP /FAcs
-
-!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

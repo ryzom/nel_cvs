@@ -31,54 +31,34 @@ MTL=midl.exe
 
 !IF  "$(CFG)" == "nel - Win32 Release"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "Release"
-# PROP BASE Intermediate_Dir "Release"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/Release"
-# PROP Intermediate_Dir "../obj/Release"
+# PROP Output_Dir "../obj/Release/nel"
+# PROP Intermediate_Dir "../obj/Release/nel"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "nel - Win32 Debug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/Debug"
-# PROP Intermediate_Dir "../obj/Debug"
+# PROP Output_Dir "../obj/Debug/nel"
+# PROP Intermediate_Dir "../obj/Debug/nel"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "nel - Win32 ReleaseDebug"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "nel___Win32_ReleaseDebug"
-# PROP BASE Intermediate_Dir "nel___Win32_ReleaseDebug"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../obj/ReleaseDebug"
-# PROP Intermediate_Dir "../obj/ReleaseDebug"
+# PROP Output_Dir "../obj/ReleaseDebug/nel"
+# PROP Intermediate_Dir "../obj/ReleaseDebug/nel"
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "nel - Win32 DebugFast"
 
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "nel___Win32_DebugFast"
-# PROP BASE Intermediate_Dir "nel___Win32_DebugFast"
-# PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../obj/DebugFast"
-# PROP Intermediate_Dir "../obj/DebugFast"
+# PROP Output_Dir "../obj/DebugFast/nel"
+# PROP Intermediate_Dir "../obj/DebugFast/nel"
 # PROP Target_Dir ""
 
 !ENDIF 

@@ -18,6 +18,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "driver_dsound"=.\src\sound\driver\dsound\driver_dsound.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name sound_lowlevel
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "driver_openal"=.\src\sound\driver\openal\driver_openal.dsp - Package Owner=<4>
 
 Package=<5>
@@ -63,7 +81,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "logic"=.\src\logic.dsp - Package Owner=<4>
+Project: "ligo"=.\src\ligo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -75,7 +93,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ligo"=.\src\ligo.dsp - Package Owner=<4>
+Project: "logic"=.\src\logic.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -137,6 +155,12 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name ligo
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name driver_dsound
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name logic
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -191,9 +215,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name misc
-    End Project Dependency
 }}}
 
 ###############################################################################

@@ -2,7 +2,7 @@
 # Configuration script for NeLNS
 # ====================================================================
 #
-# $Id: configure.ac,v 1.3 2004/01/19 16:21:02 lecroart Exp $
+# $Id: configure.ac,v 1.4 2005/01/07 18:29:56 distrib Exp $
 # 
 
 # ====================================================================
@@ -65,7 +65,7 @@ AC_DEFINE(HAVE_MYSQL)
 CFLAGS="$CFLAGS $MYSQL_CFLAGS"
 CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
 
-LIBS="$LIBS $MYSQL_LIBS"
+LIBS="$LIBS -lrt $MYSQL_LIBS"
 
 
 # ====================================================================

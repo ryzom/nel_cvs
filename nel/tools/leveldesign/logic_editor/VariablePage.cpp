@@ -65,13 +65,38 @@ BOOL CVariablePage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
+
+//---------------------------------------------------------
+//	addVariable
+//
+//---------------------------------------------------------
+void CVariablePage::addVariable( CChildFrame *pChild, CLogic_editorDoc *pDoc, CString varName )
+{
+	// check if a var or a counter with the same name already exist in the doc
+	void *pointer;
+
+	if ( ( pDoc->m_variables.Find(m_sVarName) != NULL) || ( pDoc->m_counters.Lookup(m_sVarName, pointer) != FALSE) )
+		return;
+
+	// add this var in the list and in the document
+	m_listVariables.AddString( varName );
+	pDoc->m_variables.AddTail( varName );
+
+	//CEditorFormView *formView = static_cast<CEditorFormView *> (pChild->m_wndSplitter.GetPane(0,1));
+//	formView->m_pPropertySheet->Update();
+
+	UpdateData(FALSE);
+
+} // addVariable //
+
+
+
 void CVariablePage::OnButtonAdd() 
 {
 	UpdateData();	
 
 	if ( m_sVarName.IsEmpty() )
 		return;
-
 	
 	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
 	// Get the active MDI child window.
@@ -80,20 +105,7 @@ void CVariablePage::OnButtonAdd()
 	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
 	ASSERT_VALID(pDoc);	
 
-	// check if a var or a counter with the same name already exist in the doc
-	void *pointer;
-
-	if ( ( pDoc->m_variables.Find(m_sVarName) != NULL) || ( pDoc->m_counters.Lookup(m_sVarName, pointer) != FALSE) )
-		return;
-
-	// add this var in the list and in the document
-	m_listVariables.AddString( m_sVarName );
-	pDoc->m_variables.AddTail( m_sVarName );
-
-	CEditorFormView *formView = static_cast<CEditorFormView *> (pChild->m_wndSplitter.GetPane(0,1));
-//	formView->m_pPropertySheet->Update();
-
-	UpdateData(FALSE);
+	addVariable( pChild, pDoc, m_sVarName );
 }
 
 

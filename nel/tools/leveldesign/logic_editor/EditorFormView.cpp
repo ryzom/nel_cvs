@@ -102,10 +102,11 @@ void CEditorFormView::OnInitialUpdate()
 	m_pPropertySheet->SetWindowPos(NULL, 0, 0, 
 									 nWidth, nHeight, 
 									 SWP_SHOWWINDOW);//*SWP_NOZORDER | SWP_NOACTIVATE); 
-	
+
+	m_pPropertySheet->m_variablePage.addVariable( NULL/*pChild*/, (CLogic_editorDoc*)GetDocument(), "toto" );
+
 	m_bInitDone = TRUE;
 }
-
 
 
 extern CLogic_editorApp theApp;

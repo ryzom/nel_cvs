@@ -313,6 +313,35 @@ void CLogicEditor::go()
 
 
 //---------------------------------------------
+//	loadFile
+//
+//---------------------------------------------
+void CLogicEditor::loadFile( const char * fileName )
+{
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->load( fileName );
+	
+} // loadFile //
+
+
+
+//---------------------------------------------
+//	getMainFrame
+//
+//---------------------------------------------
+void * CLogicEditor::getMainFrame ()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
+	if (theApp.m_pMainWnd == NULL)
+		initUI();
+	
+	return theApp.m_pMainWnd;
+
+} // getMainFrame //
+
+
+
+//---------------------------------------------
 //	releaseUI
 //
 //---------------------------------------------
@@ -323,6 +352,17 @@ void CLogicEditor::releaseUI()
 	theApp.m_pMainWnd = NULL;
 	
 } // releaseUI
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -344,23 +384,6 @@ ILogicEditor * ILogicEditor::getInterface( int version )
 		return new CLogicEditor;
 
 } // getInterface //
-
-
-
-//---------------------------------------------
-//	getMainFrame
-//
-//---------------------------------------------
-void * CLogicEditor::getMainFrame ()
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	
-	if (theApp.m_pMainWnd == NULL)
-		initUI();
-	
-	return theApp.m_pMainWnd;
-
-} // getMainFrame //
 
 
 

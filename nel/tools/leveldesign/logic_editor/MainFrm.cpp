@@ -5,6 +5,8 @@
 #include "logic_editor.h"
 
 #include "MainFrm.h"
+#include "ChildFrm.h"
+#include "logic_editorDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -107,6 +109,27 @@ void CMainFrame::OnClose()
 	Exit = true;
 }
 
+
+//-----------------------------------------------
+//	load
+//
+//-----------------------------------------------
+void CMainFrame::load( const char * fileName )
+{
+	// child frame
+	CChildFrame *pChild = (CChildFrame *) GetActiveFrame();
+	ASSERT_VALID(pChild);	
+
+	// editor doc
+	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
+	ASSERT_VALID(pDoc);
+	pDoc->load( fileName );
+
+} // load //
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame diagnostics
 
@@ -122,6 +145,8 @@ void CMainFrame::Dump(CDumpContext& dc) const
 }
 
 #endif //_DEBUG
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame message handlers

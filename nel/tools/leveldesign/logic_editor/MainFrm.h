@@ -32,6 +32,12 @@ public:
 // Implementation
 public:
 	virtual ~CMainFrame();
+
+	/**
+	 *	load a logic state machine
+	 */
+	void load( const char * fileName );
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

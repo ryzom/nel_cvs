@@ -39,7 +39,7 @@ protected:
 // Operations
 public:
 
-// Overrides
+	// Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CEditorFormView)
 	public:

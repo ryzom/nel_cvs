@@ -84,6 +84,11 @@ public:
 	virtual void*getMainFrame ();
 
 	/**
+	 *	load file
+	 */
+	virtual void loadFile( const char * fileName );
+
+	/**
 	 *	Release the UI
 	 */
 	void releaseUI ();

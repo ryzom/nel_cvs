@@ -12,6 +12,8 @@
 #include "Counter.h"
 #include "Condition.h"
 #include "State.h"
+#include "ChildFrm.h"
+
 
 class CLogicStateMachine;
 
@@ -98,14 +100,11 @@ public:
 	 */
 	void deleteState( CString name);
 
-
 	/**
-	 * callback called at document save
+	 *	Load
 	 */
-	virtual BOOL OnSaveDocument( LPCTSTR fileName );
-
-
-
+	BOOL load( LPCTSTR fileName );
+	
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -114,6 +113,7 @@ public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
+	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	//}}AFX_VIRTUAL
 
 // Implementation

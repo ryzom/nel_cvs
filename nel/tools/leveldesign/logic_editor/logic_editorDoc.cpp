@@ -6,6 +6,9 @@
 
 #include "logic_editorDoc.h"
 #include "state.h"
+#include "EditorFormView.h"
+#include "ChildFrm.h"
+#include "MainFrm.h"
 
 #include "logic/logic_state_machine.h"
 
@@ -22,6 +25,8 @@ using namespace std;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+extern CLogic_editorApp theApp;
 
 /////////////////////////////////////////////////////////////////////////////
 // CLogic_editorDoc
@@ -445,6 +450,8 @@ void CLogic_editorDoc::deleteState( CString name)
 //------------------------------------------------------
 BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 {
+	while(true);
+
 	POSITION pos;
 	CString eltName;
 
@@ -518,15 +525,15 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 
 
 //------------------------------------------------------
-//	OnOpenDocument
+//	load
 //
 //------------------------------------------------------
-BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
+BOOL CLogic_editorDoc::load( LPCTSTR fileName )
 {
-	if (!CDocument::OnOpenDocument(lpszPathName))
+	if (!CDocument::OnOpenDocument(fileName))
 		return FALSE;
-	
-	CIFile f( lpszPathName );
+
+	CIFile f( fileName );
 
 	// load the logic state machine
 	vector<CLogicVariable> variables;
@@ -536,7 +543,7 @@ BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	f.serialCont( counters );
 	f.serialCont( states );
 
-	/// init the variables
+	// init the variables
 	vector<CLogicVariable>::iterator itVar;
 	for( itVar = variables.begin(); itVar != variables.end(); ++itVar )
 	{
@@ -551,11 +558,39 @@ BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		cLogicCounterToCCounter( *itCounter, *counter );
 		m_counters[CString((*itCounter).getName().c_str())] = counter;
 	}
+/*
+	// get the child frame
+	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	CChildFrame *pChild = (CChildFrame *) pFrame->MDIGetActive();
+
+	// form view
+	CEditorFormView *pFormView = static_cast<CEditorFormView *> ( pChild->m_wndSplitter.GetPane(0,1) );
+	ASSERT_VALID(pFormView);	
+
+	// property sheet
+	CEditorPropertySheet * pPropertySheet = pFormView->m_pPropertySheet;
+
+	// variable page
+	pPropertySheet->m_variablePage.addVariable( pChild, this, "toto" );
 	
+*/	
+//...
+
 	return TRUE;
 
+} // load //
+
+
+
+//------------------------------------------------------
+//	OnOpenDocument
+//
+//------------------------------------------------------
+BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
+{
+	OutputDebugString("Yoooooooooooozzzzaaa");
+	return load(lpszPathName);
+
 } // OnOpenDocument //
-
-
 
 

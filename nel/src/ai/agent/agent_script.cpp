@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.63 2001/05/15 12:55:21 chafik Exp $
+ * $Id: agent_script.cpp,v 1.64 2001/05/15 13:35:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,8 +152,8 @@ namespace NLAIAGENT
 
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-/*
-		StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
+
+		/*StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
 																			CAgentScript::TGoal, ParamGoalMsg,
 																			CAgentScript::CheckAll,
 																			1,
@@ -170,8 +170,8 @@ namespace NLAIAGENT
 																			CAgentScript::TFact, ParamFactMsg,
 																			CAgentScript::CheckAll,
 																			1,
-																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
-*/
+																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );*/
+
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -1096,7 +1096,7 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
-		case TGoal:
+		/*case TGoal:
 			{				
 				return runGoalMsg((IBaseGroupType *)o);
 			}
@@ -1109,7 +1109,7 @@ namespace NLAIAGENT
 		case TFact:
 			{				
 				return runFactMsg((IBaseGroupType *)o);
-			}
+			}*/
 
 	////////////////////////////////////////////////////////////////////////
 

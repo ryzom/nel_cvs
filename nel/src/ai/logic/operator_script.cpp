@@ -6,7 +6,8 @@
 #include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/agent/comp_handle.h"
 #include "nel/ai/fuzzy/fuzzyset.h"
-#include "agent_service/creature/creature.h"
+
+//#include "agent_service/creature/creature.h"
 
 namespace NLAIAGENT
 {
@@ -227,7 +228,7 @@ namespace NLAIAGENT
 
 		bool is_activated = false;
 
-		SRV::ICreature *father = (SRV::ICreature *) getParent();
+		/*CAgentScript *father = (CAgentScript *) getParent();
 		std::vector<NLAILOGIC::CGoal *> &goals = father->getGoalStack();
 		std::vector<NLAILOGIC::CGoal *> activated_goals;
 
@@ -306,7 +307,8 @@ namespace NLAIAGENT
 			if ( _IsActivated == true )
 				unActivate();			
 			return IObjectIA::ProcessRun;
-		}
+		}*/
+		return IObjectIA::ProcessRun;
 	}
 
 	void COperatorScript::cancel()

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.30 2001/05/10 15:16:19 portier Exp $
+ * $Id: agent_script.h,v 1.31 2001/05/15 13:35:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,10 +77,10 @@ namespace NLAIAGENT
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
 			/////////////////////////////////////////////////////////////////////
-/*			TGoal,			// Message to receive goals
+			/*TGoal,			// Message to receive goals
 			TCancelGoal,	// Message to cancel goals
-			TFact,			// Message to receive facts
-			*/
+			TFact,			// Message to receive facts*/
+			
 			/////////////////////////////////////////////////////////////////////
 			TLastM ///The count of export method.
 		};

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.4 2001/10/25 12:17:49 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.5 2001/11/09 13:12:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 	/// Clears the message
 	virtual void	clear();
+
+	/// Returns the number of bit from the beginning of the buffer (in bit)
+	sint32	getPosInBit();
 
 	/// Serialize a buffer
 	virtual void	serialBuffer(uint8 *buf, uint len);

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.37 2001/03/07 11:24:44 chafik Exp $
+ * $Id: agent_script.cpp,v 1.38 2001/03/08 13:42:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,8 @@
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/agent/key_agent.h"
 #include "nel/ai/agent/list_manager.h"
-
+#include "nel/ai/logic/fact.h"
+#include "nel/ai/agent/msg_fact.h"
 
 
 namespace NLAIAGENT
@@ -58,9 +59,13 @@ namespace NLAIAGENT
 
 /////////////////////////////////////////////////////////////////
 /// Temp. 
-	static NLAISCRIPT::COperandSimple *IdGoalMsgClass;
-	static NLAISCRIPT::COperandSimpleListOr *IdGoalMsg;
+//	static NLAISCRIPT::COperandSimple *IdGoalMsgClass;
+	static NLAISCRIPT::COperandSimple/*ListOr*/ *ParamIdGoalMsg;
 	static NLAISCRIPT::CParam *ParamGoalMsg;
+
+	static NLAISCRIPT::COperandSimple/*ListOr*/ *ParamIdFactMsg;
+	static NLAISCRIPT::CParam *ParamFactMsg;
+
 /////////////////////////////////////////////////////////////////
 
 	void CAgentScript::initAgentScript()
@@ -100,13 +105,13 @@ namespace NLAIAGENT
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
 
-		IdGoalMsgClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass));
+		ParamIdGoalMsg = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAIAGENT::CGoalMsg::IdGoalMsg));
 
-		IdGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
-														new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass),
-														new NLAIC::CIdentType(CGoalMsg::IdGoalMsg));
+		ParamGoalMsg = new NLAISCRIPT::CParam(1,ParamIdGoalMsg);
 
-		ParamGoalMsg = new NLAISCRIPT::CParam(1,IdGoalMsg);
+/*		ParamIdFactMsg = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAIAGENT::CFactMsg::IdFactMsg));
+
+		ParamFactMsg = new NLAISCRIPT::CParam(1,ParamIdFactMsg);*/
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -169,7 +174,15 @@ namespace NLAIAGENT
 																			CAgentScript::TGoal, ParamGoalMsg,
 																			CAgentScript::CheckAll,
 																			1,
-																			new NLAISCRIPT::CObjectUnknown(IdGoalMsgClass) );
+																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
+
+
+		StaticMethod[CAgentScript::TFact] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																			CAgentScript::TFact, ParamFactMsg,
+																			CAgentScript::CheckAll,
+																			1,
+																			new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) );
+
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -206,8 +219,8 @@ namespace NLAIAGENT
 		//IdMsgNotifyParentClass->release();		
 	////////////////////////////////////////////////////////////////////////
 	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-//		IdGoalMsgClass->release();
-//		IdGoalMsg->release();
+	// IdGoalMsgClass->release();
+	// IdGoalMsg->release();
 		ParamGoalMsg->release();
 	////////////////////////////////////////////////////////////////////////
 
@@ -218,42 +231,6 @@ namespace NLAIAGENT
 				delete StaticMethod[i];
 		delete StaticMethod;
 	}
-
-	/*CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 
-	{				
-		
-
-		CAgentScript::CMethodCall(	_ADDCHILD_, 
-									CAgentScript::TAddChildTag, 
-									NULL,CAgentScript::CheckCount,
-									2,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType)))),
-
-		CAgentScript::CMethodCall(	_FATHER_, 
-									CAgentScript::TFather, 
-									NULL,CAgentScript::CheckCount,
-									0,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
-
-		CAgentScript::CMethodCall(	_SELF_, 
-									CAgentScript::TSelf, 
-									NULL,CAgentScript::CheckCount,
-									0,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
-
-		CAgentScript::CMethodCall(	_GETNAME_, 
-									CAgentScript::TGetName, 
-									NULL,CAgentScript::CheckCount,
-									1,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(CAgentScript::IdAgentScript)))),
-
-		CAgentScript::CMethodCall(	_REMOVECHILD_, 
-									CAgentScript::TRemoveChild, 
-									NULL,CAgentScript::CheckCount,
-									0,
-									new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DigitalType::IdDigitalType))))
-
-	};*/
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
 	{
@@ -279,16 +256,6 @@ namespace NLAIAGENT
 			}
 		}
 
-		/*if(	a._ScriptMail) 
-		{
-			_ScriptMail = (IMailBox *)a._ScriptMail->clone();
-			_ScriptMail->setParent( (const IWordNumRef *) *this );
-		}
-		else 
-		{
-			_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
-		}*/
-		
 		_AgentManager = a._AgentManager;
 		//if(_AgentManager) _AgentManager->incRef();
 
@@ -340,8 +307,6 @@ namespace NLAIAGENT
 			it_c++;
 			id_c++;
 		}		
-		//_ScriptMail = new CScriptMailBox( (const IWordNumRef *) *this);
-		
 	}	
 
 	CAgentScript::~CAgentScript()
@@ -371,7 +336,6 @@ namespace NLAIAGENT
 				((CAgentScript *)_Components[i])->setAgentManager(_AgentManager);
 			}
 		}
-			
 	}
 
 	sint32 CAgentScript::getChildMessageIndex(const IMessageBase *msg, sint32 child_index )
@@ -570,6 +534,26 @@ namespace NLAIAGENT
 
 		return r;
 	}
+/*
+	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
+	{
+		CStringType *s = (CStringType *)g->get();
+		tsetDefNameAgent::iterator i = _DynamicAgentName.find(CKeyAgent(*s));
+		IObjectIA::CProcessResult r;
+		r.ResultState = IObjectIA::ProcessIdle;
+
+		if(i != _DynamicAgentName.end())
+		{			
+			//removeChild((*i).second);
+			//r.Result = new DigitalType(1.0);
+			//return r;
+			throw;
+		}		
+		r.Result = &DigitalType::NullOperator;
+		r.Result->incRef();
+		return r;
+	}
+*/
 
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{
@@ -687,7 +671,7 @@ namespace NLAIAGENT
 		}
 		r.Result = new CStringType(CStringVarName("Unknown"));
 		return r;
-	}	
+	}
 
 	IObjectIA::CProcessResult CAgentScript::sendMethod(IObjectIA *param)
 	{
@@ -718,6 +702,7 @@ namespace NLAIAGENT
 	{
 #ifdef NL_DEBUG
 	const char *txt = (const char *)m->getType();
+	const char *classBase = (const char *)getType();
 #endif
 		IMessageBase *msg = (IMessageBase *)m;
 		this->incRef();
@@ -835,6 +820,13 @@ namespace NLAIAGENT
 		IMessageBase *returnMsg = (IMessageBase *)context.Stack[(int)context.Stack];
 		returnMsg->incRef();
 		context.Stack--;
+		processContinuation(msg, returnMsg);
+
+		returnMsg->release();	
+	}
+
+	void CAgentScript::processContinuation(IMessageBase *msg, IMessageBase *returnMsg)
+	{
 		switch(msg->getPerformatif())
 		{
 		case IMessageBase::PExec:
@@ -924,7 +916,6 @@ namespace NLAIAGENT
 			break;
 
 		}
-		returnMsg->release();	
 	}
 
 	void CAgentScript::processMessages()
@@ -1076,6 +1067,12 @@ namespace NLAIAGENT
 			{				
 				return runGoalMsg((IBaseGroupType *)o);
 			}
+
+		case TFact:
+			{				
+				return runFactMsg((IBaseGroupType *)o);
+			}
+
 	////////////////////////////////////////////////////////////////////////
 
 
@@ -1201,13 +1198,6 @@ namespace NLAIAGENT
 			context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 			*context.Code = 0;
 
-			/*TProcessStatement k = IObjectIA::ProcessIdle;
-
-			while(k != IObjectIA::ProcessEnd)
-			{
-				k = op.run(context);
-			}*/
-
 			r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 			// If we are in Debug Mode
 			if (context.ContextDebug.Active)
@@ -1283,6 +1273,10 @@ namespace NLAIAGENT
 
 	tQueue CAgentScript::getPrivateMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
+
+#ifdef NL_DEBUG
+		const char *dgb_meth_name = methodName->getString();
+#endif
 		sint i;
 		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
 		for(i = 0; i < CAgentScript::TLastM; i ++)
@@ -1393,7 +1387,6 @@ namespace NLAIAGENT
 				{			
 					return IAgent::isMember(className,methodName,param);
 				}
-				
 			}
 			
 		}
@@ -1415,16 +1408,38 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::runGoalMsg(IBaseGroupType *g)
 	{
-		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) g->get();
+		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) g->get()->clone();
 #ifdef NL_DEBUG
-				char buffer[1024 * 2];
-				goal->getDebugString( buffer );
+		char buffer[1024 * 2];
+		goal->getDebugString( buffer );
 #endif
 		_GoalStack.push_back( goal );
 
 		IObjectIA::CProcessResult r;
 		r.Result = NULL;
+
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
+		context.Stack++;
+		context.Stack[(int)context.Stack] = new CGoalMsg();
 		return r;
+	}
+
+	IObjectIA::CProcessResult CAgentScript::runFactMsg(IBaseGroupType *g)
+	{
+		NLAILOGIC::CFact *fact = (NLAILOGIC::CFact *) g->get()->clone();
+#ifdef NL_DEBUG
+		char buffer[1024 * 2];
+		fact->getDebugString( buffer );
+#endif
+		//_FactBase->addFact( fact );
+
+		IObjectIA::CProcessResult r;
+		r.Result = NULL;
+
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
+		context.Stack++;
+		context.Stack[(int)context.Stack] = new CFactMsg();
+		return IObjectIA::CProcessResult();
 	}
 	////////////////////////////////////////////////////////////////////////
 }

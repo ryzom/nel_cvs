@@ -1,7 +1,7 @@
 /** \file interpret_message_action.h
  * Class for define success and failure message in the interpreter.
  *
- * $Id: interpret_message_action.h,v 1.2 2001/03/07 13:51:47 chafik Exp $
+ * $Id: interpret_message_action.h,v 1.3 2001/03/08 13:42:56 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -27,14 +27,14 @@
 
 namespace NLAISCRIPT
 {
-	class CMsgSuccessClass : public CMessageClass
+	class CSuccessMsgClass : public CMessageClass
 	{
 	public:
-		static const NLAIC::CIdentType IdMsgSuccessClass;
+		static const NLAIC::CIdentType IdSuccessMsgClass;
 	public:
-		CMsgSuccessClass(const NLAIC::CIdentType &);
-		CMsgSuccessClass();
-		~CMsgSuccessClass(){}
+		CSuccessMsgClass(const NLAIC::CIdentType &);
+		CSuccessMsgClass();
+		~CSuccessMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -42,20 +42,20 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const
 		{
-			return IdMsgSuccessClass;
+			return IdSuccessMsgClass;
 		}
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}
 	};
 
-	class CMsgFailureClass : public CMessageClass
+	class CFailureMsgClass : public CMessageClass
 	{
 	public:
-		static const NLAIC::CIdentType IdMsgFailureClass;
+		static const NLAIC::CIdentType IdFailureMsgClass;
 	public:
-		CMsgFailureClass(const NLAIC::CIdentType &);
-		CMsgFailureClass();
-		~CMsgFailureClass(){}
+		CFailureMsgClass(const NLAIC::CIdentType &);
+		CFailureMsgClass();
+		~CFailureMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -63,7 +63,7 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual const NLAIC::CIdentType &getType() const
 		{
-			return IdMsgFailureClass;
+			return IdFailureMsgClass;
 		}
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;		
 		//@}

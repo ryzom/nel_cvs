@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic facts
  *
- * $Id: fact.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fact.h,v 1.4 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLAILOGIC {
 		private:
 			IBaseAssert *_Assert;
 		public:
+			CFact();
 			CFact(IBaseAssert *);
 			CFact(IBaseAssert *, bool);
 			CFact(IBaseAssert *, CValueSet *);

@@ -201,11 +201,19 @@ SOURCE=.\ai\agent\msg.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_action.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\msg_container.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\ai\agent\msg_debug.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\msg_fact.cpp
 # End Source File
 # Begin Source File
 
@@ -329,11 +337,19 @@ SOURCE=..\include\nel\ai\agent\msg.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\agent\msg_action.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\msg_container.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\msg_debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\msg_fact.h
 # End Source File
 # Begin Source File
 

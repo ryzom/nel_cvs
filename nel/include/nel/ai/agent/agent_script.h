@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.20 2001/03/01 17:08:09 chafik Exp $
+ * $Id: agent_script.h,v 1.21 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ namespace NLAIAGENT
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
 			/////////////////////////////////////////////////////////////////////
 			TGoal,	// Message to receive goals
+			TFact,	// Message to receive facts
 			/////////////////////////////////////////////////////////////////////
 			TLastM ///The count of export method.
 		};
@@ -234,6 +235,7 @@ namespace NLAIAGENT
 		virtual void processMessages();
 
 		virtual void processMessages(IMessageBase *,IObjectIA *);
+		virtual void processContinuation(IMessageBase *, IMessageBase *);
 
 		virtual IObjectIA::CProcessResult runActivity();
 		virtual bool isEqual(const IBasicObjectIA &a) const;
@@ -295,6 +297,12 @@ namespace NLAIAGENT
 		}
 
 		IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *);
+		IObjectIA::CProcessResult runFactMsg(IBaseGroupType *);
+
+		std::vector<NLAILOGIC::CGoal *>	&getGoalStack()
+		{
+			return _GoalStack;
+		}
 	////////////////////////////////////////////////////////////////////////
 	};
 }

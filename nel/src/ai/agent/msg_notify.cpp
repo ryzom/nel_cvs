@@ -1,6 +1,6 @@
 /** \file msg_notify.cpp
  *
- * $Id: msg_notify.cpp,v 1.7 2001/03/07 11:24:44 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.8 2001/03/08 13:42:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@ namespace NLAIAGENT
 		set(0,new DigitalType(0.0));
 		set(1,new CLocalAgentMail(NULL));
 	}
+
 	CNotifyParentScript::CNotifyParentScript(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		CVectorGroupType *x = new CVectorGroupType(2);		
@@ -75,7 +76,6 @@ namespace NLAIAGENT
 		{
 			return new CNotifyParentScript();
 		}
-
 	}
 
 	const NLAIC::CIdentType &CNotifyParentScript::getType() const

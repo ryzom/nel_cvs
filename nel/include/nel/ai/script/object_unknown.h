@@ -1,7 +1,7 @@
 /** \file object_unknown.h
  * Class for store an IOpType.
  *
- * $Id: object_unknown.h,v 1.5 2001/01/09 17:16:52 chafik Exp $
+ * $Id: object_unknown.h,v 1.6 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_OBJECT_UNKNOWN_H
 #define NL_OBJECT_UNKNOWN_H
 
+#include "nel/ai/script/type_def.h"
 
 namespace NLAISCRIPT
 {

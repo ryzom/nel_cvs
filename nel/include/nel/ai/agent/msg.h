@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.7 2001/03/07 15:25:28 chafik Exp $
+ * $Id: msg.h,v 1.8 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,7 +148,8 @@ namespace NLAIAGENT
 			_comeFromC_PLUS = true;
 			_Dispatch = false;
 		}
-			IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone():NULL)
+
+		IMessageBase(const IMessageBase &m):IListBasicManager(m._List != NULL ? (IBaseGroupType *)m._List->clone(): NULL)
 		{
 			_Sender = m._Sender;
 			if(_Sender) _Sender->incRef();

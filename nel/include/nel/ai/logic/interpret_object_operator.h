@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.7 2001/02/28 09:43:29 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.8 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,9 @@ namespace NLAISCRIPT
 
 		char										*_Comment;			/// Description of the operator
 
+		std::vector<NLAILOGIC::CGoal>				_Steps;				// Successive goals to be achieved
+		std::vector<sint32>							_StepsMode;			// Infos about synchro for the steps of the operator
+
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
 		
@@ -55,7 +58,7 @@ namespace NLAISCRIPT
 		void setComment(char *);
 
 		/// Sets the goal the operator tries to achieve
-		virtual void setGoal(NLAILOGIC::CGoal *);
+//		virtual void setGoal(NLAILOGIC::CGoal *);
 		virtual void setGoal(NLAIAGENT::CStringVarName &);
 		virtual const NLAILOGIC::CGoal *getGoal();
 
@@ -132,7 +135,7 @@ public:
 	std::vector< IOpCode *> _ConcCode;
 
 	NLAILOGIC::CFactBase *fact_base;
-	NLAIAGENT::CStringVarName *_GoalName;
+//	NLAIAGENT::CStringVarName *_GoalName;
 	///////////////////////////////////////////////////
 
 /*

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of values
  *
- * $Id: valueset.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: valueset.h,v 1.4 2001/03/08 13:42:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NLAILOGIC {
 			sint32 _NbValues;
 
 		public: 
+			CValueSet();
 			CValueSet(sint32);
 			CValueSet(const CValueSet &);
 			CValueSet(std::vector<IBaseVar *> &);

@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.3 2001/03/01 15:18:23 portier Exp $
+ * $Id: msg_goal.cpp,v 1.4 2001/03/08 13:42:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,9 @@
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/agent/object_type.h"
+#include "nel/ai/script/codage.h"
+#include "nel/ai/script/object_unknown.h"
+
 
 namespace NLAIAGENT
 {
@@ -49,33 +52,22 @@ namespace NLAIAGENT
 		CVectorGroupType *x = new CVectorGroupType(1);
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
-		if(agent == NULL)
-		{
-			set(0, new NLAILOGIC::CGoal());
-		}
-		else
-		{
-			set(0, new NLAILOGIC::CGoal());
-		}
+		set(0, new NLAILOGIC::CGoal());
  	}
 
 	CGoalMsg::CGoalMsg(const CGoalMsg &m): CMessageScript(m)
 	{
 	}
 
+	CGoalMsg::~CGoalMsg()
+	{
+		
+	}
+
 	const NLAIC::IBasicType *CGoalMsg::clone() const
 	{
 		const NLAIC::IBasicType *x;
-		if(((const INombreDefine *)getFront())->getNumber() != 0.0)
-		{
-			//CLocalAgentMail *g = (CLocalAgentMail *)get();
-			x = new CGoalMsg(*this);
-		}
-		else
-		{
-			x = new CGoalMsg();
-		}
-
+		x = new CGoalMsg(*this);
 		return x;
 	}
 
@@ -105,16 +97,21 @@ namespace NLAIAGENT
 
 	tQueue CGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
+
 		tQueue r;
+
 		if(className == NULL)
 		{
 			if( (*funcName) == CStringVarName( "Constructor" ) )
 			{					
-				CObjectType *c = new CObjectType( new NLAIC::CIdentType( CGoalMsg::IdGoalMsg ) );					
-				r.push( CIdMethod( IMessageBase::getMethodIndexSize(), 0.0, NULL, c) );			
+				r.push( CIdMethod( IMessageBase::getMethodIndexSize(), 0.0, NULL, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid) ) );			
 			}
 		}
-		return r;
+
+		if ( r.empty() )
+			return CMessageScript::isMember(className, funcName, params);
+		else
+			return r;
 	}
 
 	NLAIAGENT::IObjectIA::CProcessResult CGoalMsg::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
@@ -122,15 +119,15 @@ namespace NLAIAGENT
 		return IObjectIA::CProcessResult();
 	}
 
-	IObjectIA::CProcessResult CGoalMsg::runMethodeMember(sint32 index, IObjectIA *p)
+	IObjectIA::CProcessResult CGoalMsg::runMethodeMember(sint32 index, IObjectIA *context)
 	{
-		IBaseGroupType *param = (IBaseGroupType *)p;
+		IBaseGroupType *param = (IBaseGroupType *) ( (NLAISCRIPT::CCodeContext *)context )->Param.back();
 
-		switch(index - CMessageScript::getMethodIndexSize())
+		switch(index - IMessageBase::getMethodIndexSize())
 		{
 		case 0:
 			{					
-				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get();
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get()->clone();
 				param->popFront();
 #ifdef NL_DEBUG
 				char buffer[1024 * 2];

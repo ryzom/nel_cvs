@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.58 2003/04/14 18:36:37 legros Exp $
+ * $Id: local_retriever.cpp,v 1.58.2.1 2003/05/07 09:18:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "pacs/retriever_instance.h"
 
 #include "nel/misc/hierarchical_timer.h"
+
 
 using namespace std;
 using namespace NLMISC;
@@ -436,7 +437,8 @@ sint32	NLPACS::CLocalRetriever::addChain(const vector<CVector> &verts,
 	chain._StopTip = 0xffff;
 
 	// make the chain and its subchains.
-	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains);
+	vector<uint>	empty;
+	chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains, empty);
 
 	return newId;
 }
@@ -1819,4 +1821,164 @@ void	NLPACS::CLocalRetriever::buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAA
 		surfaceBBoxes[intFace.Surface].extend(_InteriorVertices[intFace.Verts[2]] );
 	}
 
+}
+
+
+// ***************************************************************************
+void	NLPACS::CLocalRetriever::replaceChain(uint32 chainId, const std::vector<NLPACS::CLocalRetriever::CChainReplacement> &replacement)
+{
+	// free subchains
+	uint		i, j;
+	for (i=0; i<_Chains[chainId]._SubChains.size(); ++i)
+	{
+		FreeOChains.push_back(_Chains[chainId]._SubChains[i]);
+		_OrderedChains[_Chains[chainId]._SubChains[i]] = COrderedChain();
+		_FullOrderedChains[_Chains[chainId]._SubChains[i]] = COrderedChain3f();
+	}
+
+	// create new chains in replacement of this chain
+
+	for (i=0; i<replacement.size(); ++i)
+	{
+		vector<CVector>	vertices = replacement[i].Vertices;
+		sint			left = replacement[i].Left;
+		sint			right = replacement[i].Right;
+
+		if (CChain::isBorderChainId(right))
+		{
+			// check border already exists for this particular chain
+			sint32	border = CChain::convertBorderChainId(right);
+
+			if (border < (sint)_BorderChains.size() && (chainId != _BorderChains[border] || chainId != replacement[i].Chain))
+			{
+				nlwarning("replaceChain(): replacement of a border is forced whereas this border is already used and not replaced!");
+			}
+
+			if (border >= (sint)_BorderChains.size())
+			{
+				if (border > (sint)_BorderChains.size())
+				{
+					nlwarning("replaceChain(): _BorderChains size increased of more than 1 step, holes may result!");
+				}
+
+				_BorderChains.resize(border+1, 0xffff);
+			}
+
+			_BorderChains[border] = replacement[i].Chain;
+		}
+
+		nlassert(vertices.size() >= 2);
+
+		// Remove doubled vertices due to CVector2s snapping
+		vector<CVector2s>	converts;
+
+		for (j=0; j<vertices.size(); ++j)
+			converts.push_back(CVector2s(vertices[j]));
+
+		vector<CVector2s>::iterator	next2s = converts.begin(), it2s, prev2s;
+		prev2s = next2s; ++next2s;
+		it2s = next2s; ++next2s;
+
+		vector<CVector>::iterator	it3f = vertices.begin();
+		CVector						prev3f = *it3f;
+		++it3f;
+
+
+		for (; it2s != converts.end() && next2s != converts.end(); )
+		{
+			// if the next point is equal to the previous
+			if (*it2s == *prev2s || *it2s == *next2s)
+			{
+				// then remove the next point
+				it2s = converts.erase(it2s);
+				it3f = vertices.erase(it3f);
+
+				prev2s = it2s;
+				--prev2s;
+				next2s = it2s;
+				++next2s;
+			}
+			else
+			{
+				// else remember the next point, and step to the next...
+				++prev2s;
+				++it2s;
+				++next2s;
+				++it3f;
+				prev3f = *it3f;
+			}
+		}
+
+		nlassert(vertices.size() >= 2);
+
+		sint32		newId = replacement[i].Chain;
+		if (newId >= (sint)_Chains.size())
+			_Chains.resize(newId+1);
+
+		CChain		&nchain = _Chains[newId];
+
+		if (left>(sint)_Surfaces.size())
+			nlerror ("left surface id MUST be id<%d (id=%d)", _Surfaces.size(), left);
+		if (right>(sint)_Surfaces.size())
+			nlerror ("right surface id MUST be id<%d (id=%d)", _Surfaces.size(), right);
+
+		// checks if we can build the chain.
+		if (newId > 65535)
+			nlerror("in NLPACS::CLocalRetriever::addChain(): reached the maximum number of chains");
+
+		CRetrievableSurface	*leftSurface = (left>=0) ? &(_Surfaces[left]) : NULL;
+		CRetrievableSurface	*rightSurface = (right>=0) ? &(_Surfaces[right]) : NULL;
+
+		CChain		&chain = _Chains[newId];
+
+		chain._StartTip = 0xffff;
+		chain._StopTip = 0xffff;
+
+		// make the chain and its subchains.
+		chain.make(vertices, left, right, _OrderedChains, (uint16)newId, _FullOrderedChains, FreeOChains);
+	}
+
+	for (i=0; i<_Surfaces.size(); ++i)
+	{
+		// remove old chain and replace by new chains in surface links
+		for (j=0; j<_Surfaces[i]._Chains.size(); ++j)
+		{
+			if (_Surfaces[i]._Chains[j].Chain == (sint)chainId)
+			{
+				_Surfaces[i]._Chains.erase(_Surfaces[i]._Chains.begin()+j);
+
+				uint	k;
+				for (k=0; k<replacement.size(); ++k)
+				{
+					CRetrievableSurface::CSurfaceLink	link;
+
+					link.Chain = replacement[k].Chain;
+					link.Surface = (replacement[k].Left == (sint)i ? replacement[k].Right : replacement[k].Left);
+					_Surfaces[i]._Chains.push_back(link);
+				}
+
+				break;
+			}
+		}
+
+		// remove old chain and replace by new chains in surface loops
+		for (j=0; j<_Surfaces[i]._Loops.size(); ++j)
+		{
+			uint	k;
+
+			for (k=0; k<_Surfaces[i]._Loops[j].size(); ++k)
+			{
+				if (_Surfaces[i]._Loops[j][k] == chainId)
+				{
+					_Surfaces[i]._Loops[j].erase(_Surfaces[i]._Loops[j].begin()+k);
+					uint	m;
+
+					for (m=0; m<replacement.size(); ++m)
+						_Surfaces[i]._Loops[j].insert(_Surfaces[i]._Loops[j].begin()+k+m, replacement[m].Chain);
+
+					break;
+				}
+			}
+		}
+	}
 }

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.8 2003/01/30 17:56:43 legros Exp $
+ * $Id: retrievable_surface.h,v 1.8.4.1 2003/05/07 09:18:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ protected:
 	/// The loops of chains
 	std::vector<TLoop>					_Loops;
 
-	/// A Height QuadTree that allows to easily find the height out for a given 2D point.
+	/// A Height QuadTree that allows to easily find the height out for a given 2D point. -- deprecated
 	CSurfaceQuadTree					_Quad;
 
 	/// The topologies associated with the surface, for each type of model.

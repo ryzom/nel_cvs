@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.11 2003/04/14 18:36:37 legros Exp $
+ * $Id: retriever_bank.h,v 1.11.2.1 2003/05/07 09:18:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,6 +276,9 @@ public:
 
 	///
 	const std::string	&getNamePrefix() const	{ return _NamePrefix; }
+
+	///
+	void				setNamePrefix(const char *prefix) { _NamePrefix = prefix; }
 
 	///
 	bool		allLoaded() const { return _AllLoaded; }

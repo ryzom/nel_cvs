@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.78 2003/04/14 18:36:37 legros Exp $
+ * $Id: global_retriever.cpp,v 1.78.2.1 2003/05/07 09:18:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -587,13 +587,30 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		// if there are some selected surfaces, sort them
 		std::sort(_InternalCST.SortedSurfaces.begin(), _InternalCST.SortedSurfaces.end(), CCollisionSurfaceTemp::CDistanceSurface());
 
-		uint32							id = _InternalCST.SortedSurfaces[0].Instance;
+		uint	selInstance;
+		float	bestDist = 1.0e10f;
+		for (selInstance=0; selInstance<_InternalCST.SortedSurfaces.size(); ++selInstance)
+		{
+			uint32						id = _InternalCST.SortedSurfaces[selInstance].Instance;
+			const CRetrieverInstance	&instance = _Instances[id];
+
+			if (instance.getType() == CLocalRetriever::Interior && _InternalCST.SortedSurfaces[selInstance].Distance < bestDist+3.0f)
+				break;
+
+			if (selInstance == 0)
+				bestDist = _InternalCST.SortedSurfaces[0].Distance;
+		}
+
+		if (selInstance >= _InternalCST.SortedSurfaces.size())
+			selInstance = 0;
+
+		uint32							id = _InternalCST.SortedSurfaces[selInstance].Instance;
 		const CRetrieverInstance		&instance = _Instances[id];
 		const CLocalRetriever			&retriever = _RetrieverBank->getRetriever(instance.getRetrieverId());
 
 		// get the UGlobalPosition of the estimation for this surface
 		result.InstanceId = id;
-		result.LocalPosition.Surface = _InternalCST.SortedSurfaces[0].Surface;
+		result.LocalPosition.Surface = _InternalCST.SortedSurfaces[selInstance].Surface;
 		result.LocalPosition.Estimation = instance.getLocalPosition(estimated);
 
 		CRetrieverInstance::snapVector(result.LocalPosition.Estimation);
@@ -601,7 +618,7 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 		// if there are more than 1 one possible (and best matching) surface, insure the position within the surface (by moving the point)
 //		if (_InternalCST.SortedSurfaces.size() >= 2 && 
 //			_InternalCST.SortedSurfaces[1].Distance-_InternalCST.SortedSurfaces[0].Distance < InsureSurfaceThreshold)
-		if (_InternalCST.SortedSurfaces[0].FoundCloseEdge)
+		if (_InternalCST.SortedSurfaces[selInstance].FoundCloseEdge)
 		{
 			bool	moved;
 			uint	numMove = 0;

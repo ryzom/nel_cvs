@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.3 2001/08/27 09:26:47 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.4 2001/08/27 10:47:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,9 +56,10 @@ void CSoundSystem::initSoundSystem(void)
 	{
 		_AudioMixer->init();
 	}
-	catch (NLMISC::Exception &)
+	catch (NLMISC::Exception &e)
 	{
-		::MessageBox(NULL, "unable to init sound", "Object viewer", MB_OK);
+		std::string mess = std::string("Unable to load sound file :") + e.what();
+		::MessageBox(NULL, mess.c_str(), "Object viewer", MB_OK);
 		_AudioMixer = NULL;
 		return;
 	}

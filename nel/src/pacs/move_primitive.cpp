@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.16 2003/04/03 13:01:19 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.17 2003/04/08 23:12:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,13 @@
 using namespace NLMISC;
 
 H_AUTO_DECL ( NLPACS_Get_Global_Position )
+H_AUTO_DECL ( NLPACS_Set_Global_Position )
+H_AUTO_DECL ( NLPACS_Set_UGlobal_Position )
+H_AUTO_DECL ( NLPACS_Move )
 #define	NLPACS_HAUTO_GET_GLOBAL_POSITION	H_AUTO_USE ( NLPACS_Get_Global_Position )
+#define	NLPACS_HAUTO_SET_GLOBAL_POSITION	H_AUTO_USE ( NLPACS_Set_Global_Position )
+#define	NLPACS_HAUTO_SET_UGLOBAL_POSITION	H_AUTO_USE ( NLPACS_Set_UGlobal_Position )
+#define	NLPACS_HAUTO_MOVE					H_AUTO_USE ( NLPACS_Move )
 
 namespace NLPACS 
 {
@@ -226,6 +232,8 @@ void CMovePrimitive::setOrientation (double rot, uint8 worldImage)
 
 void CMovePrimitive::setGlobalPosition (const UGlobalPosition& pos, uint8 worldImage)
 {
+	NLPACS_HAUTO_SET_GLOBAL_POSITION
+
 	if (isNonCollisionable())
 		getWorldImage (0)->setGlobalPosition (pos, *_Container, *this, worldImage);
 	else
@@ -236,6 +244,8 @@ void CMovePrimitive::setGlobalPosition (const UGlobalPosition& pos, uint8 worldI
 
 void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, uint8 worldImage)
 {
+	NLPACS_HAUTO_SET_UGLOBAL_POSITION
+
 	if (isNonCollisionable())
 		getWorldImage (0)->setGlobalPosition (pos, *_Container, *this, worldImage, (_StaticFlags & DontSnapToGroundFlag) != 0);
 	else
@@ -246,6 +256,8 @@ void CMovePrimitive::setGlobalPosition (const NLMISC::CVectorD& pos, uint8 world
 
 void CMovePrimitive::move (const NLMISC::CVectorD& speed, uint8 worldImage)
 {
+	NLPACS_HAUTO_MOVE
+
 	if (isNonCollisionable())
 		getWorldImage (0)->move (speed, *_Container, *this, worldImage);
 	else

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.36 2003/04/03 13:01:19 corvazier Exp $
+ * $Id: move_container.cpp,v 1.37 2003/04/08 23:12:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,7 +198,11 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 	nlassert (!_PreviousCollisionNode->isInfo());
 
 	// Get next collision
-	CCollisionOTInfo	*nextCollision=_PreviousCollisionNode->getNextInfo ();
+	CCollisionOTInfo	*nextCollision;
+	{
+		H_AUTO (NLPACS_Get_Next_Info);
+		nextCollision=_PreviousCollisionNode->getNextInfo ();
+	}
 
 	// Collision ?
 	while (nextCollision)
@@ -353,7 +357,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 void CMoveContainer::updatePrimitives (double beginTime, uint8 worldImage)
 {
-//	H_AUTO(PACS_MC_updatePrimitives);
+	H_AUTO (NLPACS_Update_Primitives);
 
 	// For each changed primitives
 	CMovePrimitive *changed=_ChangedRoot[worldImage];
@@ -578,6 +582,8 @@ void CMoveContainer::getCells (CMovePrimitive *primitive, uint8 worldImage, uint
 
 void CMoveContainer::clearModifiedList (uint8 worldImage)
 {
+	H_AUTO (NLPACS_Clear_Modified_List);
+	
 	// For each changed primitives
 	CMovePrimitive *changed=_ChangedRoot[worldImage];
 	while (changed)
@@ -621,7 +627,8 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 									   bool testMove, bool &testMoveValid, CCollisionOTStaticInfo *staticColInfo, CVectorD *contactNormal)
 {
 //	H_AUTO(PACS_MC_evalOneCollision);
-
+	H_AUTO(NLPACS_Eval_One_Terrain_Collision);
+	
 	// Find its collisions
 	bool found=false;
 
@@ -714,6 +721,7 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 										CVectorD *contactNormal)
 {
 //	H_AUTO(PACS_MC_evalOneCollision);
+	H_AUTO(NLPACS_Eval_One_Primitive_Collision);
 
 	// Find its collisions
 	bool found=false;
@@ -911,7 +919,7 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 
 void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 {
-//	H_AUTO(PACS_MC_evalAllCollisions);
+	H_AUTO(NLPACS_Eval_All_Collisions);
 
 	// First primitive
 	CMovePrimitive	*primitive=_ChangedRoot[worldImage];
@@ -942,22 +950,30 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		// Eval collision on the terrain
 		found|=evalOneTerrainCollision (beginTime, primitive, primitiveWorldImage, false, testMoveValid, NULL, NULL);
 
-		// Eval collision in each static world image
-		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
-		while (ite!=_StaticWorldImage.end())
+		// If the primitive can collid other primitive..
+		if (primitive->getCollisionMask())
 		{
-			// Eval in this world image
-			found|=evalOnePrimitiveCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid, NULL, NULL);
+			// Eval collision in each static world image
+			std::set<uint8>::iterator ite=_StaticWorldImage.begin();
+			while (ite!=_StaticWorldImage.end())
+			{
+				// Eval in this world image
+				found|=evalOnePrimitiveCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid, NULL, NULL);
 
-			// Next world image
-			ite++;
+				// Next world image
+				ite++;
+			}
 		}
 
 		CVectorD d1=wI->getDeltaPosition();
 
-		// Eval collision in the world image if not already tested
-		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
-			found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, NULL, NULL);
+		// If the primitive can collid other primitive..
+		if (primitive->getCollisionMask())
+		{
+			// Eval collision in the world image if not already tested
+			if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
+				found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, NULL, NULL);
+		}
 
 		CVectorD d2=wI->getDeltaPosition();
 
@@ -1202,6 +1218,8 @@ CCollisionOTStaticInfo *CMoveContainer::allocateOTStaticInfo ()
 // Free all ordered table info
 void CMoveContainer::freeAllOTInfo ()
 {
+	H_AUTO (NLPACS_Free_All_OT_Info);
+	
 	_AllocOTDynamicInfo.free ();
 	_AllocOTStaticInfo.free ();
 }

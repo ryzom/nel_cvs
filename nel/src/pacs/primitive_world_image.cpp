@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.17 2003/03/13 17:21:12 coutelas Exp $
+ * $Id: primitive_world_image.cpp,v 1.18 2003/04/08 23:12:26 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,7 +200,8 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 
 void CPrimitiveWorldImage::doMove (CGlobalRetriever &retriever, CCollisionSurfaceTemp& surfaceTemp, double originalMax, double finalMax, bool keepZ /*= false*/)
 {
-//	H_AUTO(PACS_PWI_doMove_long);
+	H_AUTO(NLPACS_PWI_Do_Move);
+	
 
 	// Time to avance
 	double ratio;

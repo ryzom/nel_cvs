@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.5 2001/07/19 15:41:06 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.6 2001/07/20 15:09:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,28 +173,11 @@ public:
 	}
 
 	/**
-	  * Get begin time of an animation
-	  *
-	  * \return the begin time.
-	  */
-	virtual	CAnimationTime getAnimationBeginTime (uint animationId) const
-	{
-		if(animationId>=getNumAnimation())
-			nlerror("getAnimation*(): bad animation Id");
-		return _AnimationSet->getAnimation(animationId)->getBeginTime();
-	}
-
-	/**
-	  * Get end time of an animation
+	  * Get a writable animation pointer.
 	  *
 	  * \return the end time.
 	  */
-	virtual	CAnimationTime getAnimationEndTime (uint animationId) const
-	{
-		if(animationId>=getNumAnimation())
-			nlerror("getAnimation*(): bad animation Id");
-		return _AnimationSet->getAnimation(animationId)->getEndTime();
-	}
+	virtual UAnimation* getAnimation (uint animationId);
 
 	// @}
 

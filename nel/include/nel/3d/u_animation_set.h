@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.3 2001/07/19 15:41:06 corvazier Exp $
+ * $Id: u_animation_set.h,v 1.4 2001/07/20 15:09:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 namespace NL3D
 {
 
+class UAnimation;
 
 // ***************************************************************************
 /**
@@ -103,18 +104,11 @@ public:
 	virtual	const std::string& getAnimationName (uint animationId) const =0;
 
 	/**
-	  * Get begin time of an animation
-	  *
-	  * \return the begin time.
-	  */
-	virtual	CAnimationTime getAnimationBeginTime (uint animationId) const=0;
-
-	/**
-	  * Get end time of an animation
+	  * Get a writable animation pointer.
 	  *
 	  * \return the end time.
 	  */
-	virtual	CAnimationTime getAnimationEndTime (uint animationId) const=0;
+	virtual UAnimation *getAnimation (uint animationId) =0;
 
 	// @}
 

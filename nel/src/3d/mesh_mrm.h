@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.13 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.14 2001/07/13 13:22:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,7 @@ class	CMeshMRMGeom : public IMeshGeom
 public:
 	/// Constructor
 	CMeshMRMGeom();
+	~CMeshMRMGeom();
 
 	/** Build a mesh, replacing old.
 	 * this is much slower than CMeshGeom::build(), because it computes the MRM.
@@ -206,6 +207,22 @@ private:
 	};
 
 
+	/// A block of vertices descriptor.
+	struct	CVertexBlock
+	{
+		// The index of the start vertex.
+		uint32	VertexStart;
+		// Number of vertices.
+		uint32	NVertices;
+
+		void	serial(NLMISC::IStream &f)
+		{
+			f.serial(VertexStart, NVertices);
+		}
+	};
+
+
+
 	/// A LOD of the MRM.
 	class	CLod
 	{
@@ -225,6 +242,12 @@ private:
 		std::vector<uint32>				MatrixInfluences;
 		/// Skinning: does the VBuffer part of this Lod contains original skin vertices.
 		bool						OriginalSkinRestored;
+		/** Skinning: list of vertex blocks to copy from RAM to AGP, for this Lod only.
+		 *	NB: it is constructed from InfluencedVertices. Only usefull if skinned.
+		 */
+		std::vector<CVertexBlock>		SkinVertexBlocks;
+
+
 
 		CLod()
 		{
@@ -235,7 +258,14 @@ private:
 		// Serialize a Lod.
 		void	serial(NLMISC::IStream &f)
 		{
-			sint	ver= f.serialVersion(0);
+			/*
+			Version 1:
+				- add VertexBlocks;
+			Version 0:
+				- base vdrsion.
+			*/
+
+			sint	ver= f.serialVersion(1);
 			uint	i;
 
 			f.serial(NWedges);
@@ -246,8 +276,18 @@ private:
 			// Serial array of InfluencedVertices. NB: code written so far for NL3D_MESH_SKINNING_MAX_MATRIX==4 only.
 			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
 			for(i= 0; i<NL3D_MESH_SKINNING_MAX_MATRIX; i++)
+			{
 				f.serialCont(InfluencedVertices[i]);
+			}
+
+			if(ver>=1)
+				f.serialCont(SkinVertexBlocks);
+			else
+				buildSkinVertexBlocks();
 		}
+
+
+		void		buildSkinVertexBlocks();
 	};
 
 
@@ -346,6 +386,24 @@ private:
 
 	/// return a float [0,1], computed from a distance (should be >0).
 	float						getLevelDetailFromDist(float dist);
+	// @}
+
+
+	/// \name Hard VB
+	// @{
+
+	CRefPtr<IVertexBufferHard>	_VBHard;
+	// a refPtr on the driver, to delete VBuffer Hard at clear().
+	CRefPtr<IDriver>			_Driver;
+	bool						_VertexBufferHardDirty;
+
+	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
+		After this call, the vertexBufferHard may be NULL.
+	*/
+	void				updateVertexBufferHard(IDriver *drv, uint32 numVertices);
+	void				deleteVertexBufferHard();
+
+	void				fillAGPSkinPart(CLod &lod);
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.16 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.17 2001/07/13 13:22:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,73 @@ namespace NL3D
 {
 
 
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshMRMGeom::CLod
+// ***************************************************************************
+// ***************************************************************************
+
+	
+// ***************************************************************************
+void		CMeshMRMGeom::CLod::buildSkinVertexBlocks()
+{
+	contReset(SkinVertexBlocks);
+
+
+	// The list of vertices. true if used by this lod.
+	vector<bool>		vertexMap;
+	vertexMap.resize(NWedges, false);
+
+
+	// from InfluencedVertices, aknoledge what vertices are used.
+	uint	i;
+	for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
+	{
+		uint		nInf= InfluencedVertices[i].size();
+		if( nInf==0 )
+			continue;
+		uint32		*infPtr= &(InfluencedVertices[i][0]);
+
+		//  for all InfluencedVertices only.
+		for(;nInf>0;nInf--, infPtr++)
+		{
+			uint	index= *infPtr;
+			vertexMap[index]= true;
+		}
+	}
+
+	// For all vertices, test if they are used, and build the according SkinVertexBlocks;
+	CVertexBlock	*vBlock= NULL;
+	for(i=0; i<vertexMap.size();i++)
+	{
+		if(vertexMap[i])
+		{
+			// preceding block?
+			if(vBlock)
+			{
+				// yes, extend it.
+				vBlock->NVertices++;
+			}
+			else
+			{
+				// no, append a new one.
+				SkinVertexBlocks.push_back();
+				vBlock= &SkinVertexBlocks[SkinVertexBlocks.size()-1];
+				vBlock->VertexStart= i;
+				vBlock->NVertices= 1;
+			}
+		}
+		else
+		{
+			// Finish the preceding block (if any).
+			vBlock= NULL;
+		}
+	}
+
+}
+
+
 // ***************************************************************************
 // ***************************************************************************
 // CMeshMRMGeom.
@@ -67,14 +134,25 @@ static	NLMISC::CAABBoxExt	makeBBox(const std::vector<CVector>	&Vertices)
 // ***************************************************************************
 CMeshMRMGeom::CMeshMRMGeom()
 {
+	_VertexBufferHardDirty= true;
 	_Skinned= false;
 	_NbLodLoaded= 0;
 }
 
 
 // ***************************************************************************
+CMeshMRMGeom::~CMeshMRMGeom()
+{
+	deleteVertexBufferHard();
+}
+
+
+// ***************************************************************************
 void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRMParameters &params)
 {
+
+	// Dirt the VBuffer.
+	_VertexBufferHardDirty= true;
 
 	// Empty geometry?
 	if(m.Vertices.size()==0 || m.Faces.size()==0)
@@ -133,7 +211,8 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRM
 	//================================================
 	_LodInfos.resize(_Lods.size());
 	uint32	precNWedges= 0;
-	for(uint i=0;i<_Lods.size();i++)
+	uint	i;
+	for(i=0;i<_Lods.size();i++)
 	{
 		_LodInfos[i].StartAddWedge= precNWedges;
 		_LodInfos[i].EndAddWedges= _Lods[i].NWedges;
@@ -179,6 +258,15 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRM
 		bkupOriginalSkinVertices();
 	}
 
+
+	// For AGP SKinning optim.
+	//================================================
+	for(i=0;i<_Lods.size();i++)
+	{
+		_Lods[i].buildSkinVertexBlocks();
+	}
+
+
 }
 
 
@@ -221,6 +309,21 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	nlassert(flags & IDRV_VF_XYZ);
 
 
+	// If VBuffer Hard present
+	uint8		*vertexDestPtr;
+	if(_VBHard!=NULL)
+	{
+		// must write into it
+		vertexDestPtr= (uint8*)_VBHard->lock();
+		nlassert(vertexSize == _VBHard->getVertexSize());
+	}
+	else
+	{
+		// else write into vertexPtr.
+		vertexDestPtr= vertexPtr;
+	}
+
+
 	// if an offset is 0, it means that the component is not in the VBuffer.
 	sint32		normalOff;
 	sint32		colorOff;
@@ -253,9 +356,11 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	// For all geomorphs.
 	uint			nGeoms= geoms.size();
 	CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
-	uint8			*destPtr= vertexPtr;
+	uint8			*destPtr= vertexDestPtr;
 	/* NB: optimisation: lot of "if" in this Loop, but because of BTB, they always cost nothing (prediction is good).
 	   NB: this also is why we unroll the 4 1st Uv. The other (if any), are done in the other loop.
+	   NB: optimisation for AGP write cominers: the order of write (vertex, normal, uvs...) is important for good
+	   use of AGP write combiners.
 	*/
 	for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
 	{
@@ -278,22 +383,7 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 			CVector		*dst=	(CVector*)(destPtr  + normalOff);
 			*dst= *start * a + *end * a1;
 		}
-		// color.
-		if(colorOff)
-		{
-			CRGBA		*start= (CRGBA*)(startPtr + colorOff);
-			CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
-			CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
-			dst->blendFromui(*start, *end,  ua1);
-		}
-		// specular.
-		if(specularOff)
-		{
-			CRGBA		*start= (CRGBA*)(startPtr + specularOff);
-			CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
-			CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
-			dst->blendFromui(*start, *end,  ua1);
-		}
+
 
 		// Uvs.
 		// uv[0].
@@ -333,16 +423,37 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 			*dst= *start * a + *end * a1;
 		}
 
+
+		// color.
+		if(colorOff)
+		{
+			CRGBA		*start= (CRGBA*)(startPtr + colorOff);
+			CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
+			CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
+			dst->blendFromui(*start, *end,  ua1);
+		}
+		// specular.
+		if(specularOff)
+		{
+			CRGBA		*start= (CRGBA*)(startPtr + specularOff);
+			CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
+			CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
+			dst->blendFromui(*start, *end,  ua1);
+		}
+
 	}
 
 
-	// Process extra UVs (maybe never :)).
+	// Process extra UVs (maybe never, so don't bother optims :)).
 	// For all stages after 4.
 	for(i=4;i<IDRV_VF_MAXSTAGES;i++)
 	{
 		uint			nGeoms= geoms.size();
 		CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
-		uint8			*destPtr= vertexPtr;
+		uint8			*destPtr= vertexDestPtr;
+
+		if(uvOff[i]==0)
+			continue;
 
 		// For all geomorphs.
 		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
@@ -351,17 +462,22 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
 
 			// uv[i].
-			if(uvOff[i])
-			{
-				// Uv.
-				CUV			*start= (CUV*)(startPtr + uvOff[i]);
-				CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
-				CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
-				*dst= *start * a + *end * a1;
-			}
+			// Uv.
+			CUV			*start= (CUV*)(startPtr + uvOff[i]);
+			CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
+			CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
+			*dst= *start * a + *end * a1;
 
 		}
 	}
+
+
+	// If _VBHard here, unlock it.
+	if(_VBHard)
+	{
+		_VBHard->unlock();
+	}
+
 }
 
 
@@ -431,6 +547,13 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	if(lod.RdrPass.size()==0)
 		return;
 
+
+	// Update the vertexBufferHard (if possible).
+	// \toto yoyo: TODO_OPTIMIZE: allocate only what is needed for the current Lod (Max of all instances, like
+	// the loading....) (see loadHeader()).
+	updateVertexBufferHard(drv, _VBuffer.getNumVertices());
+
+
 	// Skinning.
 	//===========
 	// get the skeleton model to which I am binded (else NULL).
@@ -470,8 +593,13 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	bool	bkupNorm= drv->isForceNormalize();
 	drv->forceNormalize(true);
 
+
 	// active VB.
-	drv->activeVertexBuffer(_VBuffer);
+	if(_VBHard)
+		drv->activeVertexBufferHard(_VBHard);
+	else
+		drv->activeVertexBuffer(_VBuffer);
+
 
 	// Global alpha used ?
 	bool globalAlphaUsed=globalAlpha!=1;
@@ -618,6 +746,10 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
+	// because loading, flag the VertexBufferHard.
+	_VertexBufferHardDirty= true;
+
+
 	// Load the header of the stream.
 	// ==================
 	loadHeader(f);
@@ -755,6 +887,9 @@ void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint
 void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 {
 
+	// because loading, flag the VertexBufferHard.
+	_VertexBufferHardDirty= true;
+
 	// Load the header of the stream.
 	// ==================
 	loadHeader(f);
@@ -787,6 +922,10 @@ void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 // ***************************************************************************
 void	CMeshMRMGeom::loadNextLod(NLMISC::IStream &f)
 {
+
+	// because loading, flag the VertexBufferHard.
+	_VertexBufferHardDirty= true;
+
 	// If all is loaded, quit.
 	if(getNbLodLoaded() == getNbLod())
 		return;
@@ -891,6 +1030,13 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 {
 	nlassert(_Skinned);
 
+
+	/* NB: this copies into RAM, and not AGP.
+		This is because Geomorph needs to read Data in RAM. So the easiest way is to copy all date into RAM,
+		then duplicate  (see fillAGPSkinPart()) in AGP.
+	*/
+
+
 	// get vertexPtr / normalOff.
 	//===========================
 	uint8		*destVertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
@@ -930,8 +1076,10 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 			uint	index= *infPtr;
 			CVector				*srcVertex= srcVertexPtr + index;
 			CVector				*srcNormal= srcNormalPtr + index;
-			CVector				*dstVertex= (CVector*)(destVertexPtr + index * vertexSize);
-			CVector				*dstNormal= (CVector*)(dstVertex + normalOff);
+			uint8				*dstVertexVB= destVertexPtr + index * vertexSize;
+			CVector				*dstVertex= (CVector*)(dstVertexVB);
+			CVector				*dstNormal= (CVector*)(dstVertexVB + normalOff);
+
 
 			// Vertex.
 			*dstVertex= *srcVertex;
@@ -940,6 +1088,11 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 				*dstNormal= *srcNormal;
 		}
 	}
+
+
+	// Fill the usefull AGP memory (if any one loaded).
+	fillAGPSkinPart(lod);
+
 
 	// clean this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= true;
@@ -1226,8 +1379,107 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 	}
 
 
+	// Fill the usefull AGP memory (if any one loaded).
+	fillAGPSkinPart(lod);
+
+
 	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
 	lod.OriginalSkinRestored= false;
+}
+
+
+// ***************************************************************************
+void				CMeshMRMGeom::fillAGPSkinPart(CLod &lod)
+{
+	// Fill AGP vertices used by this lod from RAM. (not geomorphed ones).
+	if(_VBHard && lod.SkinVertexBlocks.size()>0 )
+	{
+		// Get VB info, and lock buffers.
+		uint8		*vertexSrc= (uint8*)_VBuffer.getVertexCoordPointer();
+		uint8		*vertexDst= (uint8*)_VBHard->lock();
+		uint32		vertexSize= _VBuffer.getVertexSize();
+		nlassert(vertexSize == _VBHard->getVertexSize());
+
+
+		// For all block of vertices.
+		CVertexBlock	*vBlock= &lod.SkinVertexBlocks[0];
+		uint	n= lod.SkinVertexBlocks.size();
+		for(;n>0; n--, vBlock++)
+		{
+			// For all vertices of this block, copy it from RAM to VRAM.
+			uint8		*src= vertexSrc + vertexSize * vBlock->VertexStart;
+			uint8		*dst= vertexDst + vertexSize * vBlock->VertexStart;
+
+			// big copy of all vertices and their data.
+			// NB: this not help RAM bandwidth, but this help AGP write combiners.
+			// For the majority of mesh (vertex/normal/uv), this is better (6/10).
+			memcpy(dst, src, vBlock->NVertices * vertexSize);
+		}
+
+
+		_VBHard->unlock();
+	}
+}
+
+
+// ***************************************************************************
+void				CMeshMRMGeom::deleteVertexBufferHard()
+{
+	// test (refptr) if the object still exist in memory.
+	if(_VBHard!=NULL)
+	{
+		// A vbufferhard should still exist only if driver still exist.
+		nlassert(_Driver!=NULL);
+
+		// delete it from driver.
+		_Driver->deleteVertexBufferHard(_VBHard);
+		_VBHard= NULL;
+	}
+}
+
+// ***************************************************************************
+void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
+{
+	if(!drv->supportVertexBufferHard() || numVertices==0)
+		return;
+
+
+	// If the vbufferhard is not here, or if diryt, or if do not have enough vertices.
+	if(_VBHard==NULL || _VertexBufferHardDirty || _VBHard->getNumVertices() < numVertices)
+	{
+		_VertexBufferHardDirty= false;
+
+		// delete possible old _VBHard.
+		if(_VBHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(_VBHard);
+		}
+
+		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
+		_Driver= drv;
+		// try to create new one, in AGP Ram
+		_VBHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), numVertices, IDriver::VBHardAGP);
+
+
+		// If KO, use normal VertexBuffer, else, Fill it with VertexBuffer.
+		if(_VBHard!=NULL)
+		{
+			void	*vertexPtr= _VBHard->lock();
+
+			nlassert(_VBuffer.getVertexFormat() == _VBHard->getVertexFormat());
+			nlassert(_VBuffer.getNumVertices() >= numVertices);
+			nlassert(_VBuffer.getVertexSize() == _VBHard->getVertexSize());
+
+			// \todo yoyo: TODO_DX8 and DX8 ???
+			// Because same internal format, just copy all block.
+			memcpy(vertexPtr, _VBuffer.getVertexCoordPointer(), numVertices * _VBuffer.getVertexSize() );
+
+			_VBHard->unlock();
+		}
+	}
+
 }
 
 

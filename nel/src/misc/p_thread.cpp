@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.8 2002/02/27 15:38:48 corvazier Exp $
+ * $Id: p_thread.cpp,v 1.9 2002/03/04 10:06:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,8 +51,7 @@ IThread *IThread::getCurrentThread ()
 {
 	/// \todo: implement this functionnality for posix thread
 	return NULL;
-)
- 
+} 
 
 /*
  * Thread beginning

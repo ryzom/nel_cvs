@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"std_afx.h" /FD /D /GZ /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -290,6 +290,18 @@ SOURCE=.\bmp00014.bmp
 # Begin Source File
 
 SOURCE=.\bmp00015.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00016.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00017.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bmp00018.bmp
 # End Source File
 # Begin Source File
 
@@ -518,6 +530,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\value_blender_dlg.cpp
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\value_blender_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\value_from_emitter_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\value_from_emitter_dlg.h
 # End Source File
 # Begin Source File
 

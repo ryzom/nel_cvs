@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.4 2003/01/16 09:16:08 lecroart Exp $
+ * $Id: email.cpp,v 1.5 2003/01/21 14:02:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code =
 				uint32 c = atoi (res.c_str());
 				if (c != code)
 				{
-					nlwarning ("EMail command '%s' returned '%s' instead of code %d", command.substr(0, 20).c_str(), res.substr(0, res.size()-2).c_str(), code);
+					nlwarning ("EMail command '%s' returned '%s' instead of code %d on sock %s", command.substr(0, 20).c_str(), res.substr(0, res.size()-2).c_str(), code, sock.remoteAddr().asString().c_str());
 					return false;
 				}
 				return true;
@@ -118,7 +118,7 @@ bool sendEMailCommand (CTcpSock &sock, const std::string &command, uint32 code =
 		}
 		else
 		{
-			nlwarning ("EMail connection closed before end of line, command '%s' returned '%s'", command.substr(0, 20).c_str(), res.c_str());
+			nlwarning ("EMail connection closed before end of line, command '%s' returned '%s' on sock %s (code %d)", command.substr(0, 20).c_str(), res.c_str(), sock.remoteAddr().asString().c_str(), code);
 			return false;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.36 2003/03/03 16:07:02 lecroart Exp $
+ * $Id: common.cpp,v 1.37 2003/03/20 17:54:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -649,7 +649,7 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	PROCESS_INFORMATION pi;
 */
 	string arg = " " + arguments;
-	BOOL res = CreateProcess(programName.c_str(), (char*)arg.c_str(), 0, 0, FALSE, CREATE_DEFAULT_ERROR_MODE, 0, 0, &si, &pi);
+	BOOL res = CreateProcess(programName.c_str(), (char*)arg.c_str(), 0, 0, FALSE, CREATE_DEFAULT_ERROR_MODE | CREATE_NO_WINDOW, 0, 0, &si, &pi);
 
 	if (res)
 	{

@@ -1,12 +1,12 @@
 Introduction
 ------------
 
-NeL is a complete platform aimed at running massively multi-user
+NeL is a software platform for creating and running massively multi-user
 entertainment in a 3D environment over the Internet.
 
-The NeL library is further divided into a few libraries: network, ai, 3d
-and misc. If you want to use ai, 3d or network you also need to use the
-misc part of the library. Ai, 3d and network are totally independant from
+The NeL library is further divided into specific modules: network, ai, 3d
+and misc. If you want to use any of these, you also need to use the misc
+part of the library, but ai, 3d and network are totally independant from
 each other so you can use only the parts you really need in your project.
 
 If you want know more about the library content and functionalities, you

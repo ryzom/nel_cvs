@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.4 2002/11/12 15:56:55 berenguier Exp $
+ * $Id: algo.h,v 1.5 2002/11/25 16:06:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include <vector>
+#include <string>
 
 
 namespace NLMISC 
@@ -146,6 +147,13 @@ static inline	void fastClamp8(sint &v)
  *	NB: case-sensitive
  */
 bool		testWildCard(const char *strIn, const char *wildCard);
+
+
+// ***************************************************************************
+/** From a string with some separator, build a vector of string.
+ *	eg: splitString("hello|bye|||bee", "|", list) return 3 string into list: "hello", "bye" and "bee".
+ */
+void		splitString(const std::string &str, const std::string &separator, std::vector<std::string> &retList);
 
 
 } // NLMISC

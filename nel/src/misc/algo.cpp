@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.2 2002/11/12 15:57:28 berenguier Exp $
+ * $Id: algo.cpp,v 1.3 2002/11/25 16:06:39 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -112,6 +112,25 @@ bool		testWildCard(const char *strIn, const char *wildCard)
 	return false;
 }
 
+
+// ***************************************************************************
+void		splitString(const std::string &str, const std::string &separator, std::vector<std::string> &retList)
+{
+	sint	pos=0;
+	sint	newPos=0;
+	retList.clear();
+	while( (newPos= str.find(separator,pos)) != string::npos)
+	{
+		// if not empty sub str. (skip repetition of separator )
+		if(newPos-pos>0)
+			retList.push_back(str.substr(pos, newPos-pos));
+		// skip token
+		pos= newPos+separator.size();
+	}
+	// copy the last substr
+	if( pos<(sint)str.size() )
+		retList.push_back(str.substr(pos, str.size()-pos));
+}
 
 
 } // NLMISC

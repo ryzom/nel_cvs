@@ -1,6 +1,6 @@
 /** \file string_mapper.cpp
  *
- * $Id: string_mapper.h,v 1.5 2003/11/06 12:50:03 besson Exp $
+ * $Id: string_mapper.h,v 1.6 2003/11/07 08:47:36 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NLMISC
 {
 
-// const string *  as  uint
+// const string *  as  uint (the TStringId returned by CStringMapper is a pointer to a string object)
 typedef uint TStringId;
 
 /** A static class that map string to integer and vice-versa
@@ -77,7 +77,7 @@ public:
 	/// Globaly unmap a string
 	static const std::string	&unmap(const TStringId &stringId) { return _GlobalMapper.localUnmap(stringId); }
 	/// Return the global id for the empty string (helper function)
-	static TStringId			emptyId() { return NULL; }
+	static TStringId			emptyId() { return 0; }
 
 	static void					clear() { _GlobalMapper.localClear(); }
 
@@ -86,19 +86,20 @@ public:
 	/// Localy map a string into a unique Id
 	TStringId				localMap(const std::string &str);
 	/// Localy unmap a string
-	const std::string		&localUnmap(const TStringId &stringId) { return (stringId==NULL)?*_EmptyId:*((std::string*)stringId); }
+	const std::string		&localUnmap(const TStringId &stringId) { return (stringId==0)?*_EmptyId:*((std::string*)stringId); }
 	/// Return the local id for the empty string (helper function)
-	TStringId				localEmptyId()	{ return NULL; }
+	TStringId				localEmptyId()	{ return 0; }
 
 	void					localClear();
 
 };
 
-// linear from 0 (0 is empty string)
+// linear from 0 (0 is empty string) (The TSStringId returned by CStaticStringMapper 
+// is an index in the vector and begin at 0)
 typedef uint TSStringId;
 
 /** 
- * After endAdd you cannot add strings anymore
+ * After endAdd you cannot add strings anymore or it will assert
  * \author Matthieu Besson
  * \author Nevrax France
  * \date November 2003

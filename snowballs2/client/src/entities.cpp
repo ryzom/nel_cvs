@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.17 2001/07/17 16:43:36 legros Exp $
+ * $Id: entities.cpp,v 1.18 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,9 +68,7 @@ using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
 
-
 map<uint32, CEntity> Entities;
-typedef map<uint32, CEntity>::iterator EIT;
 
 enum
 {
@@ -700,7 +698,7 @@ void cbUpdateRadar (CConfigFile::CVar &var)
 	else nlwarning ("Unknown variable update %s", var.Name.c_str());
 }
 
-void initRadar ()
+static void initRadar ()
 {
 	ConfigFile.setCallback ("RadarPosX", cbUpdateRadar);
 	ConfigFile.setCallback ("RadarPosY", cbUpdateRadar);
@@ -762,7 +760,7 @@ void displayRadarPoint (const CVector &Position, const CVector &Center, float Si
 }
 
 
-void updateRadar ()
+static void updateRadar ()
 {
 	// Display the back of the radar
 	Driver->setMatrixMode2D11 ();

@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.12 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: entities.h,v 1.13 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define ENTITIES_H
 
 #include <string>
+#include <map>
 
 #include <nel/misc/vector.h>
 #include <nel/misc/time_nl.h>
@@ -102,6 +103,10 @@ extern CEntity	*Self;
 
 extern float	 PlayerSpeed;
 
+extern std::map<uint32, CEntity> Entities;
+typedef std::map<uint32, CEntity>::iterator EIT;
+
+
 void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPosition, const NLMISC::CVector &serverPosition);
 void	removeEntity (uint32 eid);
 
@@ -111,8 +116,8 @@ void	initEntities();
 void	resetEntityPosition(uint32 eid);
 void	shotSnowball(uint32 eid, const NLMISC::CVector &target);
 
-void	initRadar ();
-void	updateRadar ();
+//void	initRadar ();
+//void	updateRadar ();
 void	renderEntitiesNames ();
 
 

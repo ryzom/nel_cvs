@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * <File description>
  *
- * $Id: mouse_listener.h,v 1.2 2001/07/17 16:43:36 legros Exp $
+ * $Id: mouse_listener.h,v 1.3 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_EVENT_MOUSE_LISTENER_H
-#define NL_EVENT_MOUSE_LISTENER_H
+#ifndef MOUSE_LISTENER_H
+#define MOUSE_LISTENER_H
 
 #include <nel/misc/types_nl.h>
 #include <nel/misc/event_listener.h>
@@ -33,14 +33,8 @@
 #include <nel/3d/frustum.h>
 #include <nel/3d/u_3d_mouse_listener.h>
 
-
-namespace NL3D 
-{
-
-
 using NLMISC::CVector;
 using NLMISC::CMatrix;
-
 
 /**
  * C3dMouseListener is a listener that handle a 3d matrix with mouse events.
@@ -49,7 +43,7 @@ using NLMISC::CMatrix;
  * \author Nevrax France
  * \date 2000
  */
-class C3dMouseListener : public NLMISC::IEventListener, public U3dMouseListener
+class C3dMouseListener : public NLMISC::IEventListener, public NL3D::U3dMouseListener
 {
 public:
 	/**
@@ -89,7 +83,7 @@ public:
 	/// \name Setup
 
 	/// Setup the camera to be used
-	void setCamera (UCamera *camera) { _Camera = camera; }
+	void setCamera (NL3D::UCamera *camera) { _Camera = camera; }
 
 	/** 
 	  * Set both the current view matrix to use.
@@ -115,7 +109,7 @@ public:
 	  * Set the current frustrum to use.
 	  * \param frustrum is the frustrum.
 	  */
-	void setFrustrum (const CFrustum& frustrum)
+	void setFrustrum (const NL3D::CFrustum& frustrum)
 	{
 		_Frustrum=frustrum;
 	}
@@ -269,7 +263,7 @@ private:
 	CMatrix				_Matrix;
 	CMatrix				_ModelMatrix ;
 	bool				_EnableModelMatrixEdition  ;
-	CFrustum			_Frustrum;
+	NL3D::CFrustum			_Frustrum;
 	CVector				_HotSpot;
 	NL3D::CViewport		_Viewport;
 	bool				_LeftPushed;
@@ -282,7 +276,7 @@ private:
 	TMouseMode			_MouseMode;
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
-	UCamera				*_Camera;
+	NL3D::UCamera				*_Camera;
 	float				_ViewLagBehind;
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
@@ -293,12 +287,10 @@ private:
 	  * \see enableModelTranslationAxis()
 	  */
 	void truncateVect(CVector &v) ;
-}; // NL3D
-
-}
+};
 
 void	initMouseListenerConfig();
 
-#endif // NL_EVENT_MOUSE_LISTENER_H
+#endif // MOUSE_LISTENER_H
 
-/* End of event_mouse_listener.h */
+/* End of mouse_listener.h */

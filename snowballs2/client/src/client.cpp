@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.31 2001/07/17 16:43:36 legros Exp $
+ * $Id: client.cpp,v 1.32 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,7 @@
 #include "interface.h"
 #include "lens_flare.h"
 #include "mouse_listener.h"
+#include "radar.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -97,7 +98,6 @@ TTime				LastTime,
 // true if you want to exit the main loop
 bool				NeedExit = false;
 
-bool				ShowRadar;
 bool				ShowCommands;
 bool				SnapSnowballs;
 
@@ -202,7 +202,6 @@ int main(int argc, char **argv)
 	ConfigFile.load ("client.cfg");
 
 	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
-	ShowRadar = ConfigFile.getVar("ShowRadar").asInt () == 1;
 
 	SnapSnowballs = false;
 
@@ -257,8 +256,11 @@ int main(int argc, char **argv)
 	MouseListener->setSpeed(PlayerSpeed);
 	initMouseListenerConfig();
 
-	// Init sound control
+	// Init interface
 	initInterface();
+
+	// Init radar
+	initRadar();
 
 	// Init sound control
 	initSound();
@@ -340,7 +342,7 @@ int main(int argc, char **argv)
 		if (ShowCommands) updateCommands ();
 
 		// Update the radar
-		if (ShowRadar) updateRadar ();
+		updateRadar ();
 
 		renderEntitiesNames();
 
@@ -363,13 +365,21 @@ int main(int argc, char **argv)
 		{
 			NeedExit = true;
 		}
+		else if(Driver->AsyncListener.isKeyDown(KeyF3))
+		{
+			RadarDistance += 50;
+		}
+		else if(Driver->AsyncListener.isKeyDown(KeyF4))
+		{
+			RadarDistance -= 50;
+		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF5))
 		{
 			ShowCommands = !ShowCommands;
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF6))
 		{
-			ShowRadar = !ShowRadar;
+			RadarState = (RadarState+1)%3;
 		}
 /// \todo virer a la fin
 		else if (Driver->AsyncListener.isKeyPushed (KeyF7))

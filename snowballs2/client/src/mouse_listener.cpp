@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: mouse_listener.cpp,v 1.2 2001/07/17 16:43:36 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.3 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,10 +38,7 @@
 #include "camera.h"
 
 using namespace NLMISC;
-
-namespace NL3D 
-{
-
+using namespace NL3D;
 
 C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 										_XModelTranslateEnabled(true),
@@ -340,9 +337,6 @@ void	C3dMouseListener::updateCamera()
 	_Camera->lookAt(cpos, tpos);
 }
 
-}; // NL3D
-
-
 void	cbUpdateMouseListenerConfig(CConfigFile::CVar &var)
 {
 	if (var.Name == "InvertMouse") MouseListener->setInvertMouseMode(var.asInt() != 0);
@@ -354,4 +348,3 @@ void	initMouseListenerConfig()
 	ConfigFile.setCallback ("InvertMouse", cbUpdateMouseListenerConfig);
 	cbUpdateMouseListenerConfig(ConfigFile.getVar ("InvertMouse"));
 }
-

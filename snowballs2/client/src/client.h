@@ -1,7 +1,7 @@
 /** \file client.h
  * 
  *
- * $Id: client.h,v 1.7 2001/07/17 12:27:42 legros Exp $
+ * $Id: client.h,v 1.8 2001/07/17 17:20:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,13 +29,13 @@
 #include <nel/misc/config_file.h>
 #include <nel/misc/time_nl.h>
 
+class C3dMouseListener;
 
 namespace NL3D
 {
 	class UDriver;
 	class UScene;
 	class UTextContext;
-	class C3dMouseListener;
 }
 
 extern NLMISC::CConfigFile		ConfigFile;
@@ -44,7 +44,7 @@ extern NL3D::UDriver			*Driver;
 extern NL3D::UScene				*Scene;
 extern NL3D::UTextContext		*TextContext;
 //extern NL3D::U3dMouseListener	*MouseListener;
-extern NL3D::C3dMouseListener	*MouseListener;
+extern C3dMouseListener	*MouseListener;
 
 extern NLMISC::TTime			LastTime, NewTime;
 

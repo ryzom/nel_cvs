@@ -1,7 +1,7 @@
-/** \file lens_flare.h
+/** \file radar.h
  * Class used to create and display a Lens-Flare
  *
- * $Id: lens_flare.h,v 1.2 2001/07/17 17:20:29 lecroart Exp $
+ * $Id: radar.h,v 1.1 2001/07/17 17:20:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,14 +23,17 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef LENS_FLARE_H
-#define LENS_FLARE_H
-
-void initLensFlare ();
-void updateLensFlare ();
-void releaseLensFlare ();
+#ifndef RADAR_H
+#define RADAR_H
 
 
-#endif // LENS_FLARE_H
+extern uint RadarDistance;
+extern uint RadarState;
 
-/* End of lens_flare.h */
+void initRadar ();
+void updateRadar ();
+void releaseRadar ();
+
+#endif // RADAR_H
+
+/* End of radar.h */

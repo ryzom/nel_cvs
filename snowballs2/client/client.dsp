@@ -206,6 +206,14 @@ SOURCE=.\src\pacs.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\radar.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\radar.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\sound.cpp
 # End Source File
 # Begin Source File

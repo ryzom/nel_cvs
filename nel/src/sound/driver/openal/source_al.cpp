@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: source_al.cpp,v 1.2 2001/07/04 13:10:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,32 +46,27 @@ CSourceAL::CSourceAL( ALuint sourcename ) : ISource(), _SourceName(sourcename)
  */
 CSourceAL::~CSourceAL()
 {
-	CSoundDriverAL *sdal = dynamic_cast<CSoundDriverAL*>(ISoundDriver::instance());
+	CSoundDriverAL *sdal = CSoundDriverAL::instance();
 	sdal->removeSource( this );
 }
 
 
 /* Set the buffer that will be played (no streaming)
- * If the buffer is stereo, the source mode becomes stereo, otherwise 3D.
+ * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
+ * otherwise the source is considered as a 3D source.
  */
 void					CSourceAL::setStaticBuffer( IBuffer *buffer )
 {
 	ISource::setStaticBuffer( buffer );
 
-	// TODO: check source is stopped
+	// TODO: check if source is stopped
 	CBufferAL *bufferAL = dynamic_cast<CBufferAL*>(buffer);
 	alSourcei( _SourceName, AL_BUFFER, bufferAL->bufferName() );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
+
+	// Set relative mode if the buffer is stereo
+	setSourceRelativeMode( bufferAL->isStereo() );
 }
-
-
-/*
- * Set the next source that is to be played immediately after the present source
- */
-/*void					CSourceAL::setNext( ISource *next )
-{
-	ISource::setNext( next );
-}*/
 
 
 /*
@@ -80,7 +75,7 @@ void					CSourceAL::setStaticBuffer( IBuffer *buffer )
 void					CSourceAL::setLooping( bool l )
 {
 	alSourcei( _SourceName, AL_LOOPING, l?AL_TRUE:AL_FALSE );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -91,7 +86,7 @@ bool					CSourceAL::getLooping() const
 {
 	ALint b;
 	alGetSourcei( _SourceName, AL_LOOPING, &b );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	return ( b == AL_TRUE );
 }
 
@@ -105,7 +100,7 @@ void					CSourceAL::play()
 	{
 		// Static playing mode
 		alSourcePlay( _SourceName );
-		nlassert( alGetError() == AL_NO_ERROR );
+		TestALError();
 
 		// TODO: handle _Next
 	}
@@ -126,7 +121,7 @@ void					CSourceAL::stop()
 	{
 		// Static playing mode
 		alSourceStop( _SourceName );
-		nlassert( alGetError() == AL_NO_ERROR );
+		TestALError();
 	}
 	else
 	{
@@ -153,7 +148,7 @@ void					CSourceAL::update()
 void					CSourceAL::setPosition( const NLMISC::CVector& pos )
 {
 	alSource3f( _SourceName, AL_POSITION, pos.x, pos.y, pos.z );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -164,7 +159,7 @@ void					CSourceAL::getPosition( NLMISC::CVector& pos ) const
 {
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_POSITION, v );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	pos.set( v[0], v[1], v[2] );
 }
 
@@ -175,7 +170,7 @@ void					CSourceAL::getPosition( NLMISC::CVector& pos ) const
 void					CSourceAL::setVelocity( const NLMISC::CVector& vel )
 {
 	alSource3f( _SourceName, AL_VELOCITY, vel.x, vel.y, vel.z );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -186,7 +181,7 @@ void					CSourceAL::getVelocity( NLMISC::CVector& vel ) const
 {
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_VELOCITY, v );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	vel.set( v[0], v[1], v[2] );
 }
 
@@ -197,7 +192,7 @@ void					CSourceAL::getVelocity( NLMISC::CVector& vel ) const
 void					CSourceAL::setDirection( const NLMISC::CVector& dir )
 {
 	alSource3f( _SourceName, AL_DIRECTION, dir.x, dir.y, dir.z );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -208,7 +203,7 @@ void					CSourceAL::getDirection( NLMISC::CVector& dir ) const
 {
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_DIRECTION, v );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	dir.set( v[0], v[1], v[2] );
 }
 
@@ -222,7 +217,7 @@ void					CSourceAL::getDirection( NLMISC::CVector& dir ) const
 void					CSourceAL::setGain( float gain )
 {
 	alSourcef( _SourceName, AL_GAIN, gain );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -231,9 +226,9 @@ void					CSourceAL::setGain( float gain )
  */
 float					CSourceAL::getGain() const
 {
-	float gain;
+	ALfloat gain;
 	alGetSourcef( _SourceName, AL_GAIN, &gain );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	return gain;
 }
 
@@ -244,7 +239,7 @@ float					CSourceAL::getGain() const
 void					CSourceAL::setSourceRelativeMode( bool mode )
 {
 	alSourcei( _SourceName, AL_SOURCE_RELATIVE, mode?AL_TRUE:AL_FALSE );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -255,7 +250,7 @@ bool					CSourceAL::getSourceRelativeMode() const
 {
 	ALint b;
 	alGetSourcei( _SourceName, AL_SOURCE_RELATIVE, &b );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	return (b==AL_TRUE);
 }
 
@@ -267,7 +262,7 @@ void					CSourceAL::setMinMaxDistances( float mindist, float maxdist )
 {
 	alSourcef( _SourceName, AL_REFERENCE_DISTANCE, mindist );
 	alSourcef( _SourceName, AL_MAX_DISTANCE, maxdist );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -278,7 +273,7 @@ void					CSourceAL::getMinMaxDistances( float& mindist, float& maxdist ) const
 {
 	alGetSourcef( _SourceName, AL_REFERENCE_DISTANCE, &mindist );
 	alGetSourcef( _SourceName, AL_MAX_DISTANCE, &maxdist );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -290,7 +285,7 @@ void					CSourceAL::setCone( float innerAngle, float outerAngle, float outerGain
 	alSourcef( _SourceName, AL_CONE_INNER_ANGLE, radToDeg(innerAngle) );
 	alSourcef( _SourceName, AL_CONE_OUTER_ANGLE, radToDeg(outerAngle) );
 	alSourcef( _SourceName, AL_CONE_OUTER_GAIN, outerGain );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -305,7 +300,7 @@ void					CSourceAL::getCone( float& innerAngle, float& outerAngle, float& outerG
 	alGetSourcef( _SourceName, AL_CONE_OUTER_ANGLE, &outa );
 	outerAngle = degToRad(outa);
 	alGetSourcef( _SourceName, AL_CONE_OUTER_GAIN, &outerGain );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 

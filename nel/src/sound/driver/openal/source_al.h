@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.1 2001/06/26 15:28:56 cado Exp $
+ * $Id: source_al.h,v 1.2 2001/07/04 13:10:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,8 @@ public:
 	/// \name Initialization
 	//@{
 	/** Set the buffer that will be played (no streaming)
-	 * If the buffer is stereo, the source mode becomes stereo, otherwise 3D.
+	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
+	 * otherwise the source is considered as a 3D source.
 	 */
 	virtual void			setStaticBuffer( IBuffer *buffer );
 	/// Set the next source that is to be played immediately after the present source
@@ -108,7 +109,7 @@ public:
 	virtual void			setGain( float gain );
 	/// Get the gain
 	virtual float			getGain() const;
-	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false) (3D mode only)
+	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
 	virtual void			setSourceRelativeMode( bool mode );
 	/// Get the source relative mode
 	virtual bool			getSourceRelativeMode() const;

@@ -105,6 +105,7 @@
 				<title>login form</title>
 			</head>
 			<body>
+basename:"<?php echo basename($PHP_SELF); ?>" 	
 			<h1>Welcome to the NeL login system</h1>
 			<p>Please enter your login and your password. If the login is not already existing, it'll be automatically added to the database.</p>
 			<p>You have to enable cookies in your browser to use this application.</p>
@@ -204,7 +205,9 @@
 			}
 			else
 			{
-				echo "<h1>Access denied</h1>$res";
+				echo "<h1>Access denied</h1>";
+				echo "<p>$res</p>";
+				echo '<p><a href="'.basename($PHP_SELF).'">Back to the shards page</a></p>';
 			}
 		}
 		else
@@ -212,7 +215,7 @@
 			// user logged, display the available shard
 
 			// echo "id: '$id' login: '$login' password: '$password'<br>";
-			echo "hello $login, nice to meet you.";
+			echo "basename: ".basename($PHP_SELF).". hello $login, nice to meet you.";
 
 			displayAvailableShards ();
 

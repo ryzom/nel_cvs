@@ -33,6 +33,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "ig_lighter_lib"=..\ig_lighter_lib\ig_lighter_lib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "ligo"=..\..\..\src\ligo.dsp - Package Owner=<4>
 
 Package=<5>
@@ -74,6 +86,18 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name misc
     End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "nel_mesh_lib"=..\plugin_max\nel_mesh_lib\nel_mesh_lib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################
@@ -142,6 +166,12 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name ligo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name nel_mesh_lib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ig_lighter_lib
     End Project Dependency
 }}}
 

@@ -933,24 +933,27 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 					// This is slow. Opti: insertParent() should have an option to do it without loading the form
 					//	parent have same type that this object (postulat).
 					string	localExtension=(val.find(addExtension)==string::npos)?addExtension:"";
-					string	parentName=val+localExtension;
-				
-					CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm(CFile::getFilename(parentName.c_str()).c_str());	//parentName.c_str());
-					if ( ! parentForm )
-					{
-						nlwarning( "Can't load parent form %s", parentName.c_str() );
-					}
-					else
-					{
-						for ( uint p=0; p!=parentVals.size(); ++p )
+					uint	nbinsertedparents=0;
+
+					for ( uint p=0; p!=parentVals.size(); ++p )
+					{						
+						string	parentName=parentVals[p]+localExtension;
+
+						CSmartPtr<CForm> parentForm = (CForm*)formLoader->loadForm(CFile::getFilename(parentName.c_str()).c_str());
+						if ( ! parentForm )
+						{
+							nlwarning( "Can't load parent form %s", parentName.c_str() );
+						}
+						else
 						{
 							form->insertParent( p, parentName.c_str(), parentForm );
 							isModified=true;
 							displayed = true;
+							nbinsertedparents++;
 						}
-						nldebug( "Inserted %u parent(s)", parentVals.size() );
-					}
 
+					}
+					nldebug( "Inserted %u parent(s)", nbinsertedparents );
 				}
 				// NOTE: Changing the parent is not currently implemented!
 				continue;

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.60 2001/06/01 13:05:29 lecroart Exp $
+ * $Id: service.cpp,v 1.61 2001/06/05 15:36:09 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -76,7 +76,7 @@ string IService::_LongName = "";
 string IService::_AliasName= "";
 uint16 IService::_DefaultPort = 0;
 
-uint32 IService::_UpdateTimeout = 1;
+sint32 IService::_UpdateTimeout = 0;
 
 
 CConfigFile IService::ConfigFile;
@@ -293,6 +293,9 @@ sint IService::main (int argc, char **argv)
 
 	try
 	{
+		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
+		DebugLog->addNegativeFilter ("L3NB_CB:");
+
 
 		//
 		// Parse argc argv into easy to use format
@@ -613,7 +616,7 @@ sint IService::main (int argc, char **argv)
 			CConfigFile::checkConfigFiles ();
 
 			// get and manage layer 4 messages
-			CNetManager::update ();
+			CNetManager::update (_UpdateTimeout);
 			
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -626,8 +629,9 @@ sint IService::main (int argc, char **argv)
 				}
 			}
 
-			
-			uint32 delta = (uint32)(CTime::getLocalTime () - before);
+			sint32 delta = (sint32)(CTime::getLocalTime () - before);
+
+//			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 
 			// now, sleep the rest of the time if needed
 			if (delta <= _UpdateTimeout)

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.24 2001/05/31 16:43:44 lecroart Exp $
+ * $Id: service.h,v 1.25 2001/06/05 15:36:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,9 +138,9 @@ public:
 	static void			setPort (uint16 Port) { _DefaultPort = Port; }
 
 	/** Select timeout value in milliseconds for each update. If you set the value to 1000, the user update
-	 * function will be call every second. By default the value is 1
+	 * function will be call every second. By default the value is 0 (read one message)
 	 */
-	static void			setUpdateTimeout (uint32 timeout) { _UpdateTimeout = timeout; } 
+	static void			setUpdateTimeout (sint32 timeout) { _UpdateTimeout = timeout; } 
 
 	void setCallbackArray (TCallbackItem *callbackArray, uint16 callbackArraySize) { _CallbackArray=callbackArray; _CallbackArraySize=callbackArraySize; }
 
@@ -185,7 +185,7 @@ protected:
 private:
 
 	/// Select timeout value in milliseconds
-	static uint32				_UpdateTimeout;
+	static sint32				_UpdateTimeout;
 
 	TServiceId					_SId;
 

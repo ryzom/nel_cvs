@@ -57,18 +57,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ia"=..\nel\src\ai.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "log_service"=.\log_service\log_service.dsp - Package Owner=<4>
 
 Package=<5>

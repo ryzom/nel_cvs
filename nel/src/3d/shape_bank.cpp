@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.16 2002/11/04 15:40:43 boucher Exp $
+ * $Id: shape_bank.cpp,v 1.17 2002/11/18 09:27:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/rect.h"
+#include "nel/misc/algo.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -54,8 +55,10 @@ CShapeBank::~CShapeBank()
 
 // ***************************************************************************
 
-IShape*CShapeBank::addRef(const string &shapeName)
+IShape*CShapeBank::addRef(const string &shapeNameNotLwr)
 {	
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	// If the shape is inserted in a shape cache remove it
 	TShapeInfoMap::iterator scfpmIt = ShapePtrToShapeInfo.find( getShapePtrFromShapeName( shapeName ) );
 	if( scfpmIt != ShapePtrToShapeInfo.end() )
@@ -376,8 +379,10 @@ bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploa
 
 // ***************************************************************************
 
-CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeName)
+CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeNameNotLwr)
 {
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	// Is the shape is found in the shape map so return Present
 	TShapeMap::iterator smIt = ShapeMap.find (shapeName);
 	if( smIt != ShapeMap.end() )
@@ -391,8 +396,10 @@ CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeName)
 
 // ***************************************************************************
 
-void CShapeBank::load (const string &shapeName)
+void CShapeBank::load (const string &shapeNameNotLwr)
 {
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if( smIt == ShapeMap.end() )
 	{
@@ -419,8 +426,10 @@ void CShapeBank::load (const string &shapeName)
 
 // ***************************************************************************
 
-void CShapeBank::loadAsync (const std::string &shapeName, IDriver *pDriver, bool *bSignal)
+void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver, bool *bSignal)
 {
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	TShapeMap::iterator smIt = ShapeMap.find(shapeName);
 	if (smIt != ShapeMap.end())
 		return;
@@ -439,8 +448,10 @@ void CShapeBank::loadAsync (const std::string &shapeName, IDriver *pDriver, bool
 
 // ***************************************************************************
 
-void CShapeBank::cancelLoadAsync (const std::string &shapeName)
+void CShapeBank::cancelLoadAsync (const std::string &shapeNameNotLwr)
 {
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find(shapeName);
 	if (wsmmIt != WaitingShapes.end())
 	{
@@ -467,8 +478,10 @@ bool CShapeBank::isShapeWaiting ()
 
 // ***************************************************************************
 
-void CShapeBank::add (const string &shapeName, IShape* pShp)
+void CShapeBank::add (const string &shapeNameNotLwr, IShape* pShp)
 {
+	string	shapeName= strlwr(shapeNameNotLwr);
+
 	// Is the shape name already used ?
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
 	if( smIt == ShapeMap.end() )
@@ -481,14 +494,14 @@ void CShapeBank::add (const string &shapeName, IShape* pShp)
 		CShapeInfo siTemp;
 		siTemp.sShpName = shapeName;
 		siTemp.pShpCache = getShapeCachePtrFromShapeName( shapeName );
-		// Is the shape has a shape cache ? 
+		// Is the shape has a valid shape cache ? 
 		if( siTemp.pShpCache == NULL )
 		{
 			// No -> link to default (which do the UpdateShapeInfo)
-			siTemp.pShpCache = getShapeCachePtrFromShapeName( "default" );
-			ShapePtrToShapeInfo.insert(TShapeInfoMap::value_type(pShp,siTemp));
+			siTemp.pShpCache = getShapeCachePtrFromShapeCacheName( "default" );
 			// Add the shape to the default shape cache
-			linkShapeToShapeCache( shapeName, "default" );
+			ShapePtrToShapeInfo[pShp]= siTemp;
+			ShapeNameToShapeCacheName[shapeName]= "default";
 		}
 		else
 		{
@@ -571,43 +584,55 @@ void CShapeBank::setShapeCacheSize(const string &shapeCacheName, sint32 maxSize)
 }
 
 // ***************************************************************************
-
-void CShapeBank::linkShapeToShapeCache(const string &shapeName, const string &shapeCacheName)
+sint CShapeBank::getShapeCacheFreeSpace(const std::string &shapeCacheName) const
 {
-	// Is the shape cache exist ?
-	CShapeCache *pShpCache = getShapeCachePtrFromShapeCacheName( shapeCacheName );
-	if( pShpCache != NULL )
+	TShapeCacheMap::const_iterator scmIt = ShapeCacheNameToShapeCache.find( shapeCacheName );
+	if( scmIt != ShapeCacheNameToShapeCache.end() )
 	{
-		// Check if the shape cache contains the shape
-		list<IShape*>::iterator lsIt = pShpCache->Elements.begin();
-		while(lsIt != pShpCache->Elements.end())
-		{
-			string *sTemp = getShapeNameFromShapePtr(*lsIt);
-			if( *sTemp == shapeName )
-			{
-				// Error the shape cache contains a pointer to the shape
-				// We cannot link the shape to another shape cache
-				return;
-			}			
-			++lsIt;
-		}
+		return scmIt->second.MaxSize - scmIt->second.Elements.size();
+	}
+	return 0;
+}
+
+// ***************************************************************************
+
+void CShapeBank::linkShapeToShapeCache(const string &shapeNameNotLwr, const string &shapeCacheName)
+{
+	string	shapeName= strlwr(shapeNameNotLwr);
+
+	bool	canSet= true;
+	while(1)
+	{
+		// Shape exist?
+		IShape	*shapePtr= getShapePtrFromShapeName(shapeName);
+		if(shapePtr == NULL)
+			// No, but still link the shape name to the shapeCache name.
+			break;
+		// Is the shape cache exist ?
+		CShapeCache *shapeCachePtr = getShapeCachePtrFromShapeCacheName( shapeCacheName );
+		if( shapeCachePtr == NULL )
+			// abort, since cannot correctly link to a valid shapeCache
+			return;
+
+		// Try to set to the same shape Cache as before?
+		CShapeInfo	&shapeInfo= ShapePtrToShapeInfo[shapePtr];
+		if( shapeCachePtr ==  shapeInfo.pShpCache)
+			// abort, since same cache name / cache ptr
+			return;
+
+		// If The shape is In the cache of an other Shape Cache, abort.
+		if( shapeInfo.isAdded )
+			// Abort, because impossible.
+			return;
 		
-	}
-	else
-	{
-		// The shape cache does not exist
-		return;
-	}
-	
-	// Is the shape is present ?
-	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
-	if( smIt != ShapeMap.end() )
-	{
-		// Yes -> UpdateShapeInfo
-		updateShapeInfo(getShapePtrFromShapeName(shapeName), getShapeCachePtrFromShapeCacheName(shapeCacheName));
+		// Is the shape is present ?
+		// Yes -> Update the ShapeInfo
+		shapeInfo.pShpCache= shapeCachePtr;
+
+		break;
 	}
 
-	// If the shape is not linked to a cache add it, else change the cache name of the shape
+	// change the cache name of the shape
 	ShapeNameToShapeCacheName[shapeName] = shapeCacheName;
 }
 
@@ -689,18 +714,59 @@ void CShapeBank::checkShapeCache(CShapeCache* pShpCache)
 	}
 }
 
-// ***************************************************************************
 
-void CShapeBank::updateShapeInfo(IShape* pShp, CShapeCache* pShpCache)
+// ***************************************************************************
+bool CShapeBank::isShapeCache(const std::string &shapeCacheName) const
 {
-	// update the shapeinfo with the pointer to the new shape cache
-	if( ( pShp == NULL ) || (pShpCache == NULL) )
-		return;
-	TShapeInfoMap::iterator simIt = ShapePtrToShapeInfo.find( pShp );
-	if( simIt != ShapePtrToShapeInfo.end() )
-	{
-		simIt->second.pShpCache = pShpCache;
-	}
+	return ShapeCacheNameToShapeCache.find(shapeCacheName) != ShapeCacheNameToShapeCache.end();
 }
+
+// ***************************************************************************
+void CShapeBank::preLoadShapes(const std::string &shapeCacheName, 
+	const std::vector<std::string> &listFile, const std::string &wildCardNotLwr)
+{
+	// Abort if cache don't exist.
+	if(!isShapeCache(shapeCacheName))
+		return;
+
+	// strlwr
+	string wildCard= strlwr(wildCardNotLwr);
+
+	// For all files
+	for(uint i=0;i<listFile.size();i++)
+	{
+		string	fileName= CFile::getFilename(listFile[i]);
+		strlwr(fileName);
+		// if the file is ok for the wildCard, process it
+		if( testWildCard(fileName.c_str(), wildCard.c_str()) )
+		{
+			// link the shape to the shapeCache
+			linkShapeToShapeCache(fileName, shapeCacheName);
+
+			// If !present in the shapeBank
+			if( isPresent(fileName)==CShapeBank::NotPresent )
+			{
+				// Don't load it if no more space in the cache
+				if( getShapeCacheFreeSpace(shapeCacheName)>0 )
+				{
+					// load it.
+					load(fileName);
+
+					// If success
+					if( isPresent(fileName)!=CShapeBank::NotPresent )
+					{
+						// When a shape is first added to the bank, it is not in the cache. 
+						// add it and release it to force it to be in the cache.
+						IShape	*shp= addRef(fileName);
+						if(shp)
+							release(shp);
+					}
+				}
+			}
+		}
+	}
+
+}
+
 
 }

@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.6 2002/11/04 15:40:43 boucher Exp $
+ * $Id: shape_bank.h,v 1.7 2002/11/18 09:27:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ class ITexture;
  * do any cache. When the release is called on the last reference to a shape 
  * linked to this cache, the shape is removed instantly. This is the behavior
  * of all newly created cache before we call the setShapeCacheSize method.
+ *
+ * NB: ShapeCacheName is case-sensitive but shapeName are not (all entry are lwrcased)
  *
  * \author Matthieu Besson
  * \author Nevrax France
@@ -115,6 +117,9 @@ public:
 	  */
 	void			removeShapeCache (const std::string &shapeCacheName);
 
+	/// true if the shape cache exist
+	bool			isShapeCache(const std::string &shapeCacheName) const;
+
 	/**
 	  * Remove all ShapeCache and suppress all links (even the link to the default cache are removed)
 	  */
@@ -123,9 +128,26 @@ public:
 	/// Set the shapeCache shapeCacheName the new size.(delete shapes if maxsize<shapeCacheSize).
 	void			setShapeCacheSize (const std::string &shapeCacheName, sint32 maxSize);
 
+	/// return free cache space (maxSize-nbCurrentInCache)
+	sint			getShapeCacheFreeSpace(const std::string &shapeCacheName) const;
+
 	/// Link a shape to a ShapeCache. The ShapeCache must exist and must not contains the shape.
 	void			linkShapeToShapeCache (const std::string &shapeName, const std::string &shapeCacheName);
 	//@}
+
+
+	/// \name Tools
+	// @{
+	/** PreLoad all shapes (.shape, .ps, .skel...) files from a list of files
+	 *	Shapes are Loaded if not present, assigned to the given cache, and fit in the cache Size as max possible.
+	 *	NB: crash if you try to load a non shape file (eg: a .dds etc...)
+	 *	\param shapeCacheName name of a shapeCache created with addShapeCache()/setShapeCacheSize(). no-op if don't exist
+	 *	\param fileList a list of file names. NB: CPath is used to load the shapes.
+	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally
+	 */
+	void			preLoadShapes(const std::string &shapeCacheName, 
+		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr);
+	// @}
 
 private:
 	/// \name Shape/Instances.
@@ -194,7 +216,6 @@ private:
 	CShapeCache*	getShapeCachePtrFromShapeCacheName(const std::string &shapeCacheName);
 	CShapeCache*	getShapeCachePtrFromShapeName(const std::string &shapeName);
 	void			checkShapeCache(CShapeCache* pShpCache);
-	void			updateShapeInfo(IShape* pShp, CShapeCache* pShpCache);
 
 	typedef		std::map<std::string,std::string>	TShapeCacheNameMap;
 	typedef		std::map<std::string,CShapeCache>	TShapeCacheMap;

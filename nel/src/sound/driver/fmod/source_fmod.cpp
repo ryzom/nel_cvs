@@ -1,7 +1,7 @@
 /** \file source_fmod.cpp
  * DirectSound sound source
  *
- * $Id: source_fmod.cpp,v 1.1.2.1 2004/09/09 14:02:32 berenguier Exp $
+ * $Id: source_fmod.cpp,v 1.1.2.2 2004/09/11 17:24:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,7 +164,7 @@ bool CSourceFMod::play()
 		// Update all setup for this channel
 		if(_FModChannel!=-1)
 		{
-			FSOUND_SetLoopMode(_FModChannel, _Loop);
+			FSOUND_SetLoopMode(_FModChannel, _Loop?FSOUND_LOOP_NORMAL:FSOUND_LOOP_OFF);
 			FSOUND_3D_SetMinMaxDistance(_FModChannel, _MinDist, _MaxDist);
 			updateFModPos();
 			// reset pitch
@@ -220,7 +220,7 @@ void CSourceFMod::setLooping( bool l )
 		{
 			// Must pause/unpause (Hardware limitation)
 			FSOUND_SetPaused(_FModChannel, true);
-			FSOUND_SetLoopMode(_FModChannel, _Loop);
+			FSOUND_SetLoopMode(_FModChannel, _Loop?FSOUND_LOOP_NORMAL:FSOUND_LOOP_OFF);
 			FSOUND_SetPaused(_FModChannel, false);
 		}
 	}
@@ -279,6 +279,7 @@ bool CSourceFMod::needsUpdate()
 
 bool CSourceFMod::update()
 {
+	// don't stop if loop
 	if(_FModChannel!=-1 && isPlaying())
 	{
 		// If FMod ended

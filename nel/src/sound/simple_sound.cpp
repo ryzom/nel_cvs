@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
+ * $Id: simple_sound.cpp,v 1.4.10.1 2004/09/11 17:24:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,9 @@ CSimpleSound::CSimpleSound() :
 	_Registered(false),
 	_NeedContext(false)
 {
+	// init with NULL in case of unexecpted access
+	_Filename= NULL;
+	_Buffername= NULL;
 }
 
 

@@ -193,6 +193,8 @@ namespace NLAIAGENT
 						_OnActivateIndex = -1;
 					}
 				}
+				else
+					onActivate();
 			}
 			return CAgentScript::run();
 		}

@@ -1,7 +1,7 @@
 /** \file water_height_map.cpp
  * <File description>
  *
- * $Id: water_height_map.cpp,v 1.10 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_height_map.cpp,v 1.11 2003/06/04 08:26:19 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ void CWaterHeightMap::updateUserPos()
 
 	nlassert(_Size != 0);
 	if ((uint) x == _X && (uint) y == _Y) return;
-	if ((uint) abs(x - _X) < _Size && (uint) abs(y - _Y) < _Size) // are there common pixels with the previous location?
+	if ((uint) abs((long int)(x - _X)) < _Size && (uint) abs((long int)(y - _Y)) < _Size) // are there common pixels with the previous location?
 	{
 		// compute zone
 	

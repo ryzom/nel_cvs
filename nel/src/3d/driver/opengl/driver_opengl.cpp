@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.188 2003/05/22 09:02:56 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.189 2003/06/04 08:26:26 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2261,7 +2261,7 @@ void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float sh
 // ***************************************************************************
 NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable, bool exclusive)
 {
-	#ifdef NL_OS_WINDOWS
+#ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
 		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<CDIEventEmitter *>(_EventEmitter.getEmitter(1));		
 		if (enable)
@@ -2281,15 +2281,15 @@ NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable, bool exclusive
 			diee->releaseMouse();			
 			return NULL;
 		}
-	#else
+#else
 		return NULL;
-	#endif
+#endif
 }
 		
 // ***************************************************************************
 NLMISC::IKeyboardDevice		*CDriverGL::enableLowLevelKeyboard(bool enable)
 {
-	#ifdef NL_OS_WINDOWS
+#ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
 		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
 		if (enable)
@@ -2309,26 +2309,27 @@ NLMISC::IKeyboardDevice		*CDriverGL::enableLowLevelKeyboard(bool enable)
 			diee->releaseKeyboard();
 			return NULL;
 		}
-	#else
+#else
 		return NULL;
-	#endif
+#endif
 }
 
 // ***************************************************************************
 NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
 {
-	#ifdef NL_OS_WINDOWS
+#ifdef NL_OS_WINDOWS
 		if (_EventEmitter.getNumEmitters() < 2) return NULL;
 		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
 		return diee;
-	#else
+#else
 		return NULL;
-	#endif
+#endif
 }
 
 // ***************************************************************************
 uint CDriverGL::getDoubleClickDelay(bool hardwareMouse)
 {
+#ifdef NL_OS_WINDOWS
 		NLMISC::IMouseDevice *md = NULL;
 		if (_EventEmitter.getNumEmitters() >= 2)
 		{		
@@ -2351,6 +2352,10 @@ uint CDriverGL::getDoubleClickDelay(bool hardwareMouse)
 		}
 		// try to read the good value from windows
 		return ::GetDoubleClickTime();
+#else
+		// FIXME: FAKE FIX
+		return 250;
+#endif
 }
 
 // ***************************************************************************

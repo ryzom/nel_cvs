@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.18 2003/04/23 12:45:30 corvazier Exp $
+ * $Id: cluster.cpp,v 1.19 2003/06/04 08:26:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,7 +114,7 @@ void CCluster::unlinkFromParent()
 	// unlink from father sons list
 	if (Father)
 	{
-		 Father->Children.erase(std::remove(Father->Children.begin(), Father->Children.end(), this), Father->Children.end());
+		 Father->Children.erase(remove(Father->Children.begin(), Father->Children.end(), this), Father->Children.end());
 		 Father = NULL;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_source.cpp,v 1.4 2003/02/06 09:20:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,11 +45,6 @@ CBackgroundSource::~CBackgroundSource()
 {
 	if (_Playing)
 		stop();
-}
-
-void CBackgroundSource::setSound( TSoundId id, CSoundContext *context)
-{
-	nlassert(false);
 }
 
 TSoundId CBackgroundSource::getSound()
@@ -161,6 +156,7 @@ void CBackgroundSource::stop()
 
 void CBackgroundSource::updateFilterValues(const float *filterValues)
 {
+	bool needUpdate = false;
 	std::vector<TSubSource>::iterator first(_Sources.begin()), last(_Sources.end());
 	for (; first != last; ++first)
 	{
@@ -180,7 +176,8 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 			if (gain == 0 && ss.Status != SUB_STATUS_STOP)
 			{
 				// need to completely stop the sound
-				ss.Source->stop();
+				if (ss.Source->isPlaying())
+					ss.Source->stop();
 				ss.Status = SUB_STATUS_STOP;
 			}
 			else if (gain > 0 && ss.Status != SUB_STATUS_PLAY)
@@ -189,7 +186,12 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 				ss.Source->setRelativeGain(gain);
 				ss.Source->setPos(_Position);
 				ss.Source->play();
-				ss.Status = SUB_STATUS_PLAY;
+				// some sub sound can be too far from the listener, 
+				// we must handle this in order to start them when the listener
+				// is closer
+				ss.Status = ss.Source->isPlaying() ? SUB_STATUS_PLAY : SUB_STATUS_PLAY_FAIL;
+
+				needUpdate |= (ss.Status == SUB_STATUS_PLAY_FAIL);
 			}
 			else if (ss.Status == SUB_STATUS_PLAY)
 			{
@@ -198,7 +200,36 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 			}
 		}
 	}
+
+	// if some some sub sound fail to play...
+	if (needUpdate)
+		CAudioMixerUser::instance()->registerUpdate(this);
+
 }
 
+void CBackgroundSource::onUpdate()
+{
+	bool needUpdate = false;
+	// Some sub source are distance clipped, so retry to start them.
+	std::vector<TSubSource>::iterator first(_Sources.begin()), last(_Sources.end());
+	for (; first != last; ++first)
+	{
+		TSubSource &ss = *first;
+		if (ss.Status == SUB_STATUS_PLAY_FAIL)
+		{
+			ss.Source->play();
+			// some sub sound can be too far from the listener, 
+			// we must handle this in order to start them when the listener
+			// is closer
+			ss.Status = ss.Source->isPlaying() ? SUB_STATUS_PLAY : SUB_STATUS_PLAY_FAIL;
+
+			needUpdate |= (ss.Status == SUB_STATUS_PLAY_FAIL);
+		}
+	}
+
+	// no more update needed ?
+	if (!needUpdate)
+		CAudioMixerUser::instance()->unregisterUpdate(this);
+}
 
 } // NLSOUND

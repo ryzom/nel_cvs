@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_source.h,v 1.4 2003/02/06 09:20:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ class CBackgroundSound;
  * \author Boris Boucher.
  * \author Nevrax
  */
-class CBackgroundSource : public CSourceCommon //, public CAudioMixerUser::IMixerEvent, public CAudioMixerUser::IMixerUpdate
+class CBackgroundSource : public CSourceCommon , public CAudioMixerUser::IMixerUpdate
 {
 public:
 	/// Constructor
@@ -49,8 +49,6 @@ public:
 	/// Destructor
 	~CBackgroundSource	();
 
-	/// Change the sound binded to the source
-	void							setSound( TSoundId id, CSoundContext *context = 0);
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound();
 
@@ -73,6 +71,9 @@ public:
 
 private:
 
+	/// Mixer update
+	void onUpdate();
+
 	/// Sub source possible status.
 	enum TSubSourceStatus
 	{
@@ -80,6 +81,8 @@ private:
 		SUB_STATUS_PLAY,
 		/// The sub source is stopped : it is masked by environnemt status.
 		SUB_STATUS_STOP,
+		/// The sub source have fail to play, either because of distance or no available track...
+		SUB_STATUS_PLAY_FAIL
 	};
 
 	/// Sub source info.

@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.9 2002/06/10 08:57:28 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.10 2002/06/10 09:54:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include <nel/misc/file.h>
 #include <nel/misc/bitmap.h>
 
+#include <time.h>
+
 
 
 // ========================================================================================================
@@ -54,8 +56,7 @@ struct CBuildInfo
 	std::string					 OutputPath;
 	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
 	std::string					 DefaultSeparator;
-	TColorMaskVect				 ColorMasks;
-	uint32						 ConfigFileDate;
+	TColorMaskVect				 ColorMasks;	
 };
 
 
@@ -89,6 +90,7 @@ static std::string replaceSlashes(const std::string &src)
 }
 
 
+
 ///=====================================================
 int main(int argc, char* argv[])
 {	
@@ -114,7 +116,7 @@ int main(int argc, char* argv[])
 			/// colors masks
 			BuildMasksFromConfigFile(cf, bi.ColorMasks);
 
-			bi.ConfigFileDate = NLMISC::CFile::getFileModificationDate(replaceSlashes(std::string(argv[1])));
+			
 
 			/// look paths
 			try
@@ -295,9 +297,8 @@ struct CLoopInfo
 
 ///======================================================
 static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::string &fileNameWithExtension)
-{	
-	uint32 srcDate = bi.ConfigFileDate;	
-	srcDate = std::max(srcDate, (uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.InputPath + fileNameWithExtension)));		
+{		
+	uint32 srcDate = (uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.InputPath + fileNameWithExtension));		
 	static std::vector<CLoopInfo> masks;
 	/// check the needed masks
 	masks.clear();
@@ -318,7 +319,7 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 
 			if (NLMISC::CFile::fileExists(maskFileName))
 			{
-				srcDate = std::max(srcDate, NLMISC::CFile::getFileModificationDate(replaceSlashes(maskFileName)));			
+				srcDate = std::max(srcDate, (uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(maskFileName)));			
 				masks.push_back(li);	
 			}			
 		}
@@ -345,7 +346,10 @@ static bool CheckIfNeedRebuildColoredVersionForOneBitmap(const CBuildInfo &bi, c
 		}
 
 					
-		if (NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.OutputPath + outputFileName + ".tga")) < srcDate) return true; // not found or more old => need rebuild			
+		if ((uint32) NLMISC::CFile::getFileModificationDate(replaceSlashes(bi.OutputPath + outputFileName + ".tga")) < srcDate) 
+		{					
+			return true; // not found or more old => need rebuild			
+		}
 
 		/// increment counters		
 		for (l  = 0; l < (uint) masks.size(); ++l)

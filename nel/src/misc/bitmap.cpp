@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.41 2003/08/27 16:16:25 distrib Exp $
+ * $Id: bitmap.cpp,v 1.42 2003/09/03 09:10:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -719,9 +719,6 @@ bool CBitmap::rgbaToAlpha()
 
 		for(i=0; i<_Data[m].size(); i+=4)
 		{
-			dataTmp[dstId++]= 0;
-			dataTmp[dstId++]= 0;
-			dataTmp[dstId++]= 0;
 			dataTmp[dstId++]= _Data[m][i+3];
 		}
 		NLMISC::contReset(_Data[m]); 
@@ -2143,8 +2140,9 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 {
 	if(f.isReading()) return false;
 	if(d!=24 && d!=32 && d!=16 && d!=8) return false;
-	if ((PixelFormat != RGBA)&&(PixelFormat != Alpha)) return false;
+	if ((PixelFormat != RGBA)&&(PixelFormat != Alpha)&&(PixelFormat != Luminance)) return false;
 	if ((PixelFormat == Alpha) && (d != 8)) return false;
+	if ((PixelFormat == Luminance) && (d != 8)) return false;
 
 	sint32	i,j,x,y;
 	uint8	* scanline;
@@ -2165,7 +2163,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	if (upsideDown)
 		desc |= 1<<5;
 
-	if (PixelFormat == Alpha)
+	if ((PixelFormat == Alpha) || (PixelFormat == Luminance))
 		imageType = 3; // Uncompressed grayscale
 
 	f.serial(lengthID);
@@ -2181,7 +2179,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	f.serial(imageDepth);
 	f.serial(desc);
 
-	if (PixelFormat == Alpha)
+	if ((PixelFormat == Alpha)||(PixelFormat == Luminance))
 		scanline = new uint8[width];
 	else
 		scanline = new uint8[width*4];
@@ -2195,25 +2193,36 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 		
 		uint32 k=0;
 		if (PixelFormat == Alpha)
-		for(i=0; i<width; ++i) // Alpha
 		{
-			scanline[k++] = _Data[0][(height-y-1)*width + i];
+			for(i=0; i<width; ++i) // Alpha
+			{
+				scanline[k++] = _Data[0][(height-y-1)*width + i];
+			}
+		}
+		else if (PixelFormat == Luminance)
+		{
+			for(i=0; i<width; ++i) // Luminance
+			{
+				scanline[k++] = _Data[0][(height-y-1)*width + i];
+			}
 		}
 		else
-		for(i=0; i<width*4; i+=4) // 4:RGBA
 		{
-			if(d==16)
+			for(i=0; i<width*4; i+=4) // 4:RGBA
 			{
-				for(j=0; j<(sint32)4; j++)
+				if(d==16)
 				{
-					scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+					for(j=0; j<(sint32)4; j++)
+					{
+						scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+					}
 				}
-			}
-			else
-			{
-				for(j=0; j<(sint32)d/8; j++)
+				else
 				{
-					scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+					for(j=0; j<(sint32)d/8; j++)
+					{
+						scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+					}
 				}
 			}
 		}

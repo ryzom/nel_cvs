@@ -15,6 +15,7 @@ Requirements
 
       - STLPort 4.0    <URL:http://www.stlport.org/>
       - FreeType 2     <URL:http://www.freetype.org/>
+      - Python         <URL:http://www.python.org/>
 
    On a GNU/Linux platform you will need the following libraries and
    softwares :
@@ -24,7 +25,6 @@ Requirements
       - Libtool        <URL:http://www.gnu.org/software/libtool/libtool.html>
       - Lex / Flex     <URL:http://www.gnu.org/software/flex/flex.html>
       - Yacc / Bison   <URL:http://www.gnu.org/software/bison/bison.html>
-      - Python         <URL:http://www.python.org/>
       - Mesa           <URL:http://www.mesa3d.org/>
 
    Most of these softwares should be already installed on your system or
@@ -73,11 +73,15 @@ Compilation
 
       In the NeL directory do :
 
-         % ./configure --with-stlport=<Path_to_the_stlport_headers_files>
+         % ./configure --with-stlport=<Path_to_the_stlport_headers_files> \
+                       --with-python=<Path_to_the_python_headers_files>
          % make
 
-      The "configure" script must be call with the "--with-stlport" option.
-      This option permit to override the default STL headers.
+      The "configure" script must be call with the "--with-stlport" and
+      "--with-python" options.
+      The option "--with-stlport" allow to override the default STL headers
+      and the option "--with-python" tell to the configuration script, where
+      to find the Python headers files.
 
       You migth need to specify the FreeType 2 installation prefix by using
       the "--with-freetype" argument (ex: "/usr/local" will look for the
@@ -93,9 +97,9 @@ Compilation
 
          % ./configure --help
 
-      In the case that you need to rebuild the "configure" script and/or the
-      "Makefile.in" files, execute the "bootstrap" script in the NeL
-      directory :
+      In the case (ex: after a cvs checkout) that you need to rebuild the
+      "configure" script and/or the "Makefile.in" files, execute the
+      "bootstrap" script in the NeL directory :
 
          % ./bootstrap
 

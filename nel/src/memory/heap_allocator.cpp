@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.4 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.5 2003/07/03 07:46:52 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include <string>
 #include "nel/memory/memory_manager.h"
 #include "heap_allocator.h"
 

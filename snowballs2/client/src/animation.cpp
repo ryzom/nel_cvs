@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.16 2002/01/15 13:34:06 lecroart Exp $
+ * $Id: animation.cpp,v 1.17 2002/08/20 12:40:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include <nel/misc/command.h>
 #include <nel/misc/log.h>
 #include <nel/misc/displayer.h>
+#include <nel/misc/aabbox.h>
 
 #include "nel/3d/u_scene.h"
 #include "nel/3d/u_skeleton.h"

@@ -150,7 +150,6 @@ fn getIg node =
 -- Export collisions from the current loaded zone
 fn exportCollisionsFromZone outputPath =
 (
-	Select all
 	max select all
 	-- Export the collision
 	if (NelExportCollision ($selection as array) outputPath) == false then

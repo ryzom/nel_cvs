@@ -591,6 +591,14 @@ SOURCE=..\include\nel\misc\ucstring.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\win_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win_displayer.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\win_thread.cpp
 # End Source File
 # Begin Source File

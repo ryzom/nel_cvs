@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.68 2001/06/13 12:10:17 lecroart Exp $
+ * $Id: service.cpp,v 1.69 2001/06/15 09:59:14 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -28,10 +28,6 @@
 
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
-#include "nel/misc/command.h"
-
-#include "nel/net/unitime.h"
 
 #include <stdlib.h>
 #include <signal.h>
@@ -44,12 +40,16 @@
 #define WINVER			0x0400
 #include <windows.h>
 
+#include "nel/misc/win_displayer.h"
+
 #elif defined NL_OS_UNIX
 
 #include <unistd.h>
 
 #endif
 
+#include "nel/misc/common.h"
+#include "nel/misc/command.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
@@ -58,6 +58,7 @@
 #include "nel/net/service.h"
 #include "nel/net/net_displayer.h"
 #include "nel/net/net_log.h"
+#include "nel/net/unitime.h"
 
 #include "nel/net/callback_server.h"
 #include "nel/net/net_manager.h"
@@ -292,15 +293,26 @@ CCallbackServer *IService::getServer()
 	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
 }
 
-
 // The main function of the service
-sint IService::main (int argc, char **argv)
+sint IService::main (int argc, char **argv, void *wd)
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
 
 	try
 	{
+		createDebug ();
+#if defined (NL_OS_WINDOWS)
+		if (wd != NULL)
+		{
+			DebugLog->addDisplayer ((CWinDisplayer *)wd);
+			InfoLog->addDisplayer ((CWinDisplayer *)wd);
+			WarningLog->addDisplayer ((CWinDisplayer *)wd);
+			ErrorLog->addDisplayer ((CWinDisplayer *)wd);
+			AssertLog->addDisplayer ((CWinDisplayer *)wd);
+		}
+#endif
+
 		nlinfo("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName);
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("L3NB_CB:");
@@ -355,6 +367,7 @@ sint IService::main (int argc, char **argv)
 		if (IsDebuggerPresent ())
 		{
 			nlinfo("Running with the debugger, don't redirect signals");
+			initSignal();
 		}
 		else
 		{
@@ -618,6 +631,9 @@ sint IService::main (int argc, char **argv)
 			
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked) break;
+
+			// update the window displayer
+			((CWinDisplayer *)wd)->update ();
 
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.27 2001/06/12 15:37:59 lecroart Exp $
+ * $Id: service.h,v 1.28 2001/06/15 09:59:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,11 @@
 #include <string>
 #include <vector>
 
+#if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
+#include <windows.h>
+#include "nel/misc/win_displayer.h"
+#endif
+
 namespace NLNET
 {
 
@@ -66,6 +71,26 @@ typedef uint8 TServiceId;
  *
  * If you want the port to be auto-assigned by the naming service, set the port to 0. 
  */
+#if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
+
+#define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
+ \
+NLMISC::CWinDisplayer __wd; \
+ \
+int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
+{ \
+	__wd.create (__ServiceShortName " " __ServiceLongName); \
+	__ServiceClassName *scn = new __ServiceClassName; \
+	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
+	scn->setPort (__ServicePort); \
+	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
+    sint retval = scn->main (0, NULL, &__wd); \
+	delete scn; \
+	return retval; \
+}
+
+#else
+
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
  \
 int main(int argc, char **argv) \
@@ -78,6 +103,8 @@ int main(int argc, char **argv) \
 	delete scn; \
 	return retval; \
 }
+
+#endif
 
 static TCallbackItem EmptyCallbackArray[] = { { "", NULL } };
 
@@ -129,8 +156,8 @@ public:
 	/// want to know the return value of the application to do the appropriate things.
 	void				setStatus (sint status) { _Status = status; }
 
-	/// User must just have to call this function in his main C function
-	sint				main (int argc, char **argv);
+	/// User must just have to call this function in his main C function (wd is used to pass the window displayer if necessary)
+	sint				main (int argc, char **argv, void *wd = NULL);
 
 	static void			setServiceName (const char *shortName, const char *longName) { _ShortName = shortName; _LongName = longName; }
 

@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/rk3d.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
 !ELSEIF  "$(CFG)" == "3d - Win32 Debug"
 
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"../lib/rk3d_debug.lib"
+# ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
 !ENDIF 
 

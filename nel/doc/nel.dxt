@@ -3,9 +3,9 @@
  *
  * \section intro Introduction
  *
- * "NeL" stands for RYzom Kernel Object Library.
+ * "NeL" stands for Nevrax Library.
  *
- * NeL is the kernel library for the game Ryzom. It is designed and maintained by Nevrax. This library contains a framework,
+ * NeL is a library. It is designed and maintained by Nevrax. This library contains a framework,
  * a 3D engine, an AI engine and a Network engine.
  *
  * You will find some overviews about features of NeL in the Related Pages.

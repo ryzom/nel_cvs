@@ -74,16 +74,25 @@ list_zone_lighted=`ls -1 zone_lighted/*.zonel`
 
 # Light zones
 for i in $list_zone_lighted ; do
-  dest=`echo $i | sed -e 's/zone_lighted/ig_land_lighted/g' | sed -e 's/.zonel/.ig/g'`
-  depend=`echo $i | sed -e 's&zone_lighted&../zone/zone_depend&g' | sed -e 's/.zonel/.depend/g'`
-  igsrc=`echo $i | sed -e 's&zone_lighted&../ig/ig_land&g' | sed -e 's/.zonel/.ig/g'`
-  if ( ! test -e $dest ) || ( test $i -nt $dest ) || ( test $igsrc -nt $dest )
-  then
-    echo -- IgLight $i
-    echo -- IgLight $i >> log.log
-    $exec_timeout $ig_light_timeout $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
-	echo 
-	echo 
-  fi
+	dest=`echo $i | sed -e 's/zone_lighted/ig_land_lighted/g' | sed -e 's/.zonel/.ig/g'`
+	depend=`echo $i | sed -e 's&zone_lighted&../zone/zone_depend&g' | sed -e 's/.zonel/.depend/g'`
+	igsrc=`echo $i | sed -e 's&zone_lighted&../ig/ig_land&g' | sed -e 's/.zonel/.ig/g'`
+	if ( ! test -e $dest ) || ( test $i -nt $dest ) 
+	then
+		echo -- IgLight $i
+		echo -- IgLight $i >> log.log
+		$exec_timeout $ig_light_timeout $zone_ig_lighter $i $dest ../../cfg/properties.cfg $depend
+		echo 
+		echo 
+	else
+		if ( ! test -e $dest ) || ( test $igsrc -nt $dest )
+		then
+			echo -- IgLight $i (not lighted copy)
+			echo -- IgLight $i (not lighted copy) >> log.log
+			cp $igsrc $dest
+			echo 
+			echo 
+		fi
+	fi
 done
 

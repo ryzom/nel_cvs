@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.5 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscapeig_manager.cpp,v 1.6 2002/05/23 09:29:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,10 +116,10 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 	}
 }
 // ***************************************************************************
-void	CLandscapeIGManager::loadZoneIG(const std::string &name)
+UInstanceGroup *CLandscapeIGManager::loadZoneIG(const std::string &name)
 {
-	if(name=="")
-		return;
+	if(name=="") 
+		return NULL;
 
 	// try to find this InstanceGroup.
 	ItZoneInstanceGroupMap	it;
@@ -135,14 +135,28 @@ void	CLandscapeIGManager::loadZoneIG(const std::string &name)
 			it->second.Ig->addToScene(*_Scene);
 			it->second.AddedToScene= true;
 		}
+		return it->second.Ig;
+	}
+	else
+	{
+		return NULL;
 	}
 }
 // ***************************************************************************
-void	CLandscapeIGManager::loadArrayZoneIG(const std::vector<std::string> &names)
+void	CLandscapeIGManager::loadArrayZoneIG(const std::vector<std::string> &names, std::vector<UInstanceGroup *> *dest /*= NULL*/)
 {
+	if (dest)
+	{
+		dest->clear();
+		dest->reserve(names.size());
+	}
 	for(uint i=0; i<names.size(); i++)
 	{
-		loadZoneIG(names[i]);
+		UInstanceGroup *ig = loadZoneIG(names[i]);
+		if (dest && ig)
+		{
+			dest->push_back(ig);
+		}
 	}
 }
 
@@ -282,6 +296,20 @@ void	CLandscapeIGManager::reloadAllIgs()
 		}
 	}
 }
+
+
+// ***************************************************************************
+void CLandscapeIGManager::getAllIG(std::vector<UInstanceGroup *> &dest) const
+{	
+	dest.clear();
+	dest.reserve(_ZoneInstanceGroupMap.size());
+	// add the instances
+	for(TZoneInstanceGroupMap::const_iterator it = _ZoneInstanceGroupMap.begin(); it != _ZoneInstanceGroupMap.end(); ++it)
+	{			
+		dest.push_back(it->second.Ig);			
+	}
+}
+
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.4 2002/01/16 10:58:01 berenguier Exp $
+ * $Id: landscapeig_manager.h,v 1.5 2002/05/23 09:30:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include <vector>
 #include <map>
+#include <string>
 
 
 namespace NL3D 
@@ -64,12 +65,14 @@ public:
 	 *	If exist (see initIG), The instanceGroup is added to the scene.
 	 *	call after ULandscape::refreshZonesAround()
 	 */
-	void	loadZoneIG(const std::string &name);
+	UInstanceGroup *loadZoneIG(const std::string &name);
 
 	/** same as prec loadZoneIG, but with an array of name. no-op if "".
 	 *	call after ULandscape::loadAllZonesAround().
+	 * \param names the igs to load
+	 * \param dest if not NUL, pointer to the created igs
 	 */
-	void	loadArrayZoneIG(const std::vector<std::string> &names);
+	void	loadArrayZoneIG(const std::vector<std::string> &names, std::vector<UInstanceGroup *> *dest = NULL);
 
 	/** unload of an instanceGroup of a zone. name is like "150_EM". no-op if "".
 	 *	If exist (see initIG), The instanceGroup is removed from the scene.
@@ -95,6 +98,8 @@ public:
 	/// reload all the Igs and re-add to scene.
 	void	reloadAllIgs();
 
+	/// get a list of the ig
+	void			getAllIG(std::vector<UInstanceGroup	*> &dest) const;
 
 private:
 	UScene			*_Scene;

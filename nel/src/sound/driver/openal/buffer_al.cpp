@@ -1,7 +1,7 @@
 /** \file buffer_al.cpp
  * OpenAL buffer
  *
- * $Id: buffer_al.cpp,v 1.2 2001/07/04 13:12:22 cado Exp $
+ * $Id: buffer_al.cpp,v 1.3 2001/07/10 16:50:01 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,10 +99,10 @@ float		CBufferAL::getDuration() const
 	uint32 bytespersample;
 	switch ( _SampleFormat )
 	{
-	case AL_FORMAT_MONO8 : bytespersample = 8; break;
-	case AL_FORMAT_MONO16 : bytespersample = 16; break;
-	case AL_FORMAT_STEREO8 : bytespersample = 16; break;
-	case  AL_FORMAT_STEREO16 : bytespersample = 32; break;
+	case AL_FORMAT_MONO8 : bytespersample = 1; break;
+	case AL_FORMAT_MONO16 : bytespersample = 2; break;
+	case AL_FORMAT_STEREO8 : bytespersample = 2; break;
+	case  AL_FORMAT_STEREO16 : bytespersample = 4; break;
 	default : return 0;
 	}
 	return (float)(getSize()) * 1000.0f / (float)_Frequency / (float)bytespersample;

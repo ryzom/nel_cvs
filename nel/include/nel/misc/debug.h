@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.36 2001/09/10 15:25:03 lecroart Exp $
+ * $Id: debug.h,v 1.37 2001/09/12 16:52:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,10 +72,12 @@ void createDebug ();
  *\endcode
  */
 
-
+#ifdef NL_DEBUG
 #define nldebug \
 NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
-
+#else
+#define nldebug if (false) 
+#endif
 
 /**
  * \def nlinfo(exp)

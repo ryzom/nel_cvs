@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.14 2000/12/01 18:41:18 berenguier Exp $
+ * $Id: landscape.cpp,v 1.15 2000/12/04 16:58:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,8 +382,10 @@ ITexture		*CLandscape::findTileTexture(const std::string &textName)
 {
 	ITexture	*text;
 	text= TileTextureMap[textName];
-	// If just inserted, SmartPtr is NULL!!  :)
+	// If just inserted, RefPtr is NULL!!  :)
 	// This test too if the RefPtr is NULL... (tile released)
+	// The object is not owned by this map. It will be own by the multiple RdrPass via CSmartPtr.
+	// They will destroy it when no more points to them.
 	if(!text)
 	{
 		TileTextureMap[textName]= text= new CTextureFile(textName);

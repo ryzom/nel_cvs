@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.11 2000/12/01 16:58:04 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.12 2000/12/04 16:58:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,13 +103,10 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	uint32		touched=mat.getTouched();
 
 
-	// \todo: yoyo: msut change the material operator=, so it doesn't copy Touched, and pShader.
-
-
 	// 0. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
-	for(i=0 ; i<4 ; i++)
+	for(i=0 ; i<IDRV_MAT_MAXTEXTURES ; i++)
 	{
 		ITexture	*text= mat.getTexture(i);
 		if ( text )
@@ -128,6 +125,9 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	if (!mat.pShader)
 	{
 		mat.pShader=new CShaderGL;
+		// insert into driver list.
+		_Shaders.push_back(mat.pShader);
+
 		// Must create all OpenGL shader states.
 		touched= 0xFFFFFFFF;
 	}
@@ -151,16 +151,16 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		mat.clearTouched(0xFFFFFFFF);
 
 		// Since modified, must rebind all openGL states.
-		_Material= NULL;
+		_CurrentMaterial= NULL;
 	}
 
 
 	// 3. Bind OpenGL States.
 	//=======================
-	if (_Material!=&mat)
+	if (_CurrentMaterial!=&mat)
 	{
 		// \todo: yoyo: optimize with precedent material flags test.
-		// => must change the way it works with _Material.
+		// => must change the way it works with _CurrentMaterial.
 
 		// Bind Blend Part.
 		if(mat.getFlags()&IDRV_MAT_BLEND)
@@ -177,7 +177,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		glColor4ub(col.R, col.G, col.B, col.A);
 
 
-		_Material=&mat;
+		_CurrentMaterial=&mat;
 	}
 
 

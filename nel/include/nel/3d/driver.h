@@ -2,7 +2,9 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.28 2000/12/04 11:52:11 berenguier Exp $
+ * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
+ *
+ * $Id: driver.h,v 1.29 2000/12/04 16:58:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,12 +59,17 @@ class IShader : public CRefCount
 {
 protected:
 public:
+	// The virtual dtor is important.
+	virtual ~IShader() {};
+
 };
 
 
 
+const uint32 IDRV_MAT_MAXTEXTURES	=	4;
+
 const uint32 IDRV_TOUCHED_BLENDFUNC	=	0x00000001;
-// There is a place here :)
+const uint32 IDRV_TOUCHED_BLEND		=	0x00000002;
 const uint32 IDRV_TOUCHED_OPACITY	=	0x00000004;
 const uint32 IDRV_TOUCHED_SHADER	=	0x00000008;
 const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000010;
@@ -71,11 +78,12 @@ const uint32 IDRV_TOUCHED_COLOR		=	0x00000040;
 const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000080;
 const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000100;
 const uint32 IDRV_TOUCHED_ALPHA		=	0x00000200;
-const uint32 IDRV_TOUCHED_TEX0		=	0x00000400;
-const uint32 IDRV_TOUCHED_TEX1		=	0x00000800;
-const uint32 IDRV_TOUCHED_TEX2		=	0x00001000;
-const uint32 IDRV_TOUCHED_TEX3		=	0x00002000;
-const uint32 IDRV_TOUCHED_BLEND		=	0x00004000;
+
+// Start texture touch at 0x10000.
+const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
+	{0x00010000, 0x00020000, 0x00040000, 0x00080000};
+const uint32 IDRV_TOUCHED_ALL		=	0xFFFFFFFF;
+
 
 const uint32 IDRV_MAT_HIDE			=	0x00000001;
 const uint32 IDRV_MAT_TSP			=	0x00000002;
@@ -107,7 +115,7 @@ private:
 	float					_Alpha;
 	uint32					_Touched;
 
-	CSmartPtr<ITexture>		pTex[4];
+	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
 
 public:
 	// Private. For Driver only.
@@ -116,13 +124,17 @@ public:
 	uint32					getFlags() const {return _Flags;}
 
 public:
+	// Object.
 							CMaterial() {_Touched= 0;_Flags=0;}
+							~CMaterial();
+	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
+	CMaterial				&operator=(const CMaterial &mat);
 
 	uint32					getTouched(void) { return(_Touched); }
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
 	bool					texturePresent(uint8 n);
-	ITexture*				getTexture(uint8 n) { return(pTex[n]); }
+	ITexture*				getTexture(uint8 n);
 	void 					setTexture(ITexture* ptex, uint8 n=0);
 
 	void					setShader(TShader val);
@@ -174,16 +186,19 @@ class IVBDrvInfos : public CRefCount
 {
 private:
 public:
+	// The virtual dtor is important.
+	virtual ~IVBDrvInfos() {};
 };
+
 // All these flags are similar to DX8
-const uint8		IDRV_VF_MAXW		=	4;
-const uint8		IDRV_VF_MAXSTAGES	=	8;
+const uint32	IDRV_VF_MAXW		=	4;
+const uint32	IDRV_VF_MAXSTAGES	=	8;
 const uint32	IDRV_VF_XYZ			=	0x00000001;
-const uint32	IDRV_VF_W[4]		= { 0x00000002,0x00000004,0x00000008,0x00000010 };
+const uint32	IDRV_VF_W[IDRV_VF_MAXW]			= { 0x00000002,0x00000004,0x00000008,0x00000010 };
 const uint32	IDRV_VF_NORMAL		=	0x00000020;
 const uint32	IDRV_VF_RGBA		=	0x00000040;
 const uint32	IDRV_VF_SPECULAR	=	0x00000080;
-const uint32	IDRV_VF_UV[8]		= { 0x00000100,0x00000200,0x00000400,0x00000800,0x00001000,0x00002000,0x00004000,0x00008000 };
+const uint32	IDRV_VF_UV[IDRV_VF_MAXSTAGES]	= { 0x00000100,0x00000200,0x00000400,0x00000800,0x00001000,0x00002000,0x00004000,0x00008000 };
 
 class CVertexBuffer : public CRefCount
 {
@@ -194,11 +209,11 @@ private:
 	uint32					_Capacity;
 	std::vector<uint8>		_Verts;
 
-	uint					_WOff[4];
+	uint					_WOff[IDRV_VF_MAXW];
 	uint					_NormalOff;
 	uint					_RGBAOff;
 	uint					_SpecularOff;
-	uint					_UVOff[8];
+	uint					_UVOff[IDRV_VF_MAXSTAGES];
 
 public:
 	// Private. For Driver only.
@@ -208,6 +223,9 @@ public:
 public:
 							CVertexBuffer(void);
 							~CVertexBuffer(void);
+	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
+	CVertexBuffer			&operator=(const CVertexBuffer &vb);
+
 
 	/// Setup the vertex format. Do it before any other method.
 	bool					setVertexFormat(uint32 Flags);
@@ -347,9 +365,18 @@ private:
 	static IDriver*							_Current;
 
 protected:
-	std::list< CRefPtr<ITextureDrvInfos> >	_pTexDrvInfos;
-	ITexture*								_CurrentTexture[4];
-	CMaterial*								_Material;
+	typedef	std::list< CRefPtr<ITextureDrvInfos> >	TTexDrvInfoPtrList;
+	typedef	std::list< CRefPtr<IShader> >			TShaderPtrList;
+	typedef	std::list< CRefPtr<IVBDrvInfos> >		TVBDrvInfoPtrList;
+	typedef	TTexDrvInfoPtrList::iterator			ItTexDrvInfoPtrList;
+	typedef	TShaderPtrList::iterator				ItShaderPtrList;
+	typedef	TVBDrvInfoPtrList::iterator				ItVBDrvInfoPtrList;
+
+
+protected:
+	TTexDrvInfoPtrList		_TexDrvInfos;
+	TShaderPtrList			_Shaders;
+	TVBDrvInfoPtrList		_VBDrvInfos;
 
 public:
 	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId };
@@ -395,7 +422,9 @@ public:
 
 	virtual bool			swapBuffers(void)=0;
 
-	virtual bool			release(void)=0;
+	/// Deriver should calls IDriver::release() first, to destroy all driver components (textures, shaders, VBuffers).
+	virtual bool			release(void);
+
 
 	/** Output a system message box and print a message with an icon. This method can be call even if the driver is not initialized.
 	  * This method is used to return internal driver problem when string can't be displayed in the driver window.

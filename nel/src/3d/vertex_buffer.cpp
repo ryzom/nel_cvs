@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.5 2000/11/21 18:13:33 valignat Exp $
+ * $Id: vertex_buffer.cpp,v 1.6 2000/12/04 16:58:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,33 @@ CVertexBuffer::CVertexBuffer()
 
 CVertexBuffer::~CVertexBuffer()
 {
+	// Must kill the drv mirror of this VB.
+	DrvInfos.kill();
 }
+
+CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
+{
+	_Flags= vb._Flags;
+	_VertexSize= vb._VertexSize;
+	_NbVerts= vb._NbVerts;
+	_Capacity= vb._Capacity;
+	_Verts= vb._Verts;
+
+	_NormalOff= vb._NormalOff;
+	_RGBAOff= vb._RGBAOff;
+	_SpecularOff= vb._SpecularOff;
+
+	sint i;
+	for(i=0;i<IDRV_VF_MAXW;i++)
+		_WOff[i]= vb._WOff[i];
+	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+		_UVOff[i]= vb._UVOff[i];
+
+	// Should Set touch flags here (no one for now...)
+
+	return *this;
+}
+
 
 // --------------------------------------------------
 

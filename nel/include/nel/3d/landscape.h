@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.12 2000/12/01 18:41:00 berenguier Exp $
+ * $Id: landscape.h,v 1.13 2000/12/04 16:58:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,9 @@ private:
 private:
 	TZoneMap		Zones;
 
+	// Parameters.
+	float			_TileDistNear;
+
 	// The temp VB for tiles and far passes.
 	CVertexBuffer	FarVB;
 	CVertexBuffer	TileVB;
@@ -170,13 +173,13 @@ private:
 
 
 	// Shortcuts.
-	// TODO: must use a CRefPtr instead for PTexture, when CRefPtr will be patched to work with CSmartPtr etc...
-	typedef	NLMISC::CSmartPtr<ITexture>			PTexture;
+	// Use a RefPtr because TileTextureMap must not reference the object, but the ptr.
+	typedef	NLMISC::CRefPtr<ITexture>			RPTexture;
 
 
 	// The map of tile texture loaded.
-	typedef	std::map<std::string, PTexture>	TTileTextureMap;
-	typedef	TTileTextureMap::iterator		ItTileTextureMap;
+	typedef	std::map<std::string, RPTexture>	TTileTextureMap;
+	typedef	TTileTextureMap::iterator			ItTileTextureMap;
 	TTileTextureMap		TileTextureMap;
 
 
@@ -210,16 +213,11 @@ private:
 	// The Tile material.
 	CMaterial		TileMaterial;
 
+
 	// TODO_TEXTURE.
 	// For test only. The only one Far material.
 	CMaterial		FarMaterial;
 	CPatchRdrPass	FarRdrPass;
-	CPatchRdrPass	TileRdrPass;
-	CMaterial		FarMat;
-	CMaterial		TileMat;
-	CSmartPtr<ITexture>		FarText;
-	CSmartPtr<ITexture>		TileText;
-	float					_TileDistNear;
 
 
 private:

@@ -27,15 +27,20 @@ class CTextureDrvInfosGL : public ITextureDrvInfos
 private:
 public:
 		GLuint		ID;
+
+		CTextureDrvInfosGL()
+		{
+			// The id is auto created here.
+			glGenTextures(1,&ID);
+		}
+		~CTextureDrvInfosGL()
+		{
+			// The id is auto deleted here.
+			glDeleteTextures(1,&ID);
+		}
+
 };
 
-// --------------------------------------------------
-
-class CVBDrvInfosGL : public IVBDrvInfos
-{
-private:
-public:
-};
 
 // --------------------------------------------------
 
@@ -71,11 +76,14 @@ private:
 	
 
 #endif
-	CShaderGL				_Shader;
+	bool					setupVertexBuffer(CVertexBuffer& VB);
 
-	bool					_setupVertexBuffer(CVertexBuffer& VB);
 
 	CMatrix					_ViewMtx;
+
+	// Prec settings, for optimisation.
+	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
+	CMaterial*				_CurrentMaterial;
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.7 2000/11/22 10:11:35 coutelas Exp $
+ * $Id: texture.h,v 1.8 2000/12/04 16:58:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,10 +70,13 @@ public:
 
 public:
 
+	// Object.
 	/// By default, a texture is releasable.
 	ITexture() {_Touched= false; _Releasable= true;}
 	/// Need a virtual dtor.
-	virtual ~ITexture() {}
+	virtual ~ITexture();
+	/// The operator= do not copy drv info, and set touched=true. _Releasable is copied.
+	ITexture &operator=(const ITexture &tex);
 
 
 	bool	touched(void) { return(_Touched); }

@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.7 2000/12/04 10:55:02 coutelas Exp $
+ * $Id: driver.cpp,v 1.8 2000/12/04 16:58:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,23 +43,55 @@ const uint32 IDriver::InterfaceVersion = 0x1;
 // ***************************************************************************
 IDriver::IDriver()
 {
-	_Material=NULL;
-	_CurrentTexture[0]= NULL;
-	_CurrentTexture[1]= NULL;
-	_CurrentTexture[2]= NULL;
-	_CurrentTexture[3]= NULL;
 }
 
 // ***************************************************************************
 IDriver::~IDriver()
-{ 
-	std::list< CRefPtr<ITextureDrvInfos> >::iterator it = _pTexDrvInfos.begin();
-	while( it!=_pTexDrvInfos.end() )
-	{
-		it->kill();
-		it++;
-	}
+{
+	// Must clean up everything before closing driver.
+	// Must doing this in release(), so assert here if not done...
+
+	nlassert(_TexDrvInfos.size()==0);
+	nlassert(_Shaders.size()==0);
+	nlassert(_VBDrvInfos.size()==0);
 }
+
+
+// ***************************************************************************
+bool		IDriver::release(void)
+{
+	// Called by derived classes.
+
+	// Release Textures drv.
+	ItTexDrvInfoPtrList		ittex = _TexDrvInfos.begin();
+	while( ittex!=_TexDrvInfos.end() )
+	{
+		ittex->kill();
+		ittex++;
+	}
+	_TexDrvInfos.clear();
+
+	// Release Shader drv.
+	ItShaderPtrList		itshd = _Shaders.begin();
+	while( itshd!=_Shaders.end() )
+	{
+		itshd->kill();
+		itshd++;
+	}
+	_Shaders.clear();
+
+	// Release VBs drv.
+	ItVBDrvInfoPtrList		itvb = _VBDrvInfos.begin();
+	while( itvb!=_VBDrvInfos.end() )
+	{
+		itvb->kill();
+		itvb++;
+	}
+	_VBDrvInfos.clear();
+
+	return true;
+}
+
 
 // ***************************************************************************
 GfxMode::GfxMode(uint16 w, uint16 h, uint8 d, bool windowed)

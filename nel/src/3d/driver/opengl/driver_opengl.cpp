@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.23 2000/12/04 10:54:51 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.24 2000/12/04 16:58:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,12 @@ CDriverGL::CDriverGL()
 	_hWnd = NULL;
 	_hRC = NULL;
 	_hDC = NULL;
+
+	_CurrentMaterial=NULL;
+	_CurrentTexture[0]= NULL;
+	_CurrentTexture[1]= NULL;
+	_CurrentTexture[2]= NULL;
+	_CurrentTexture[3]= NULL;
 }
 
 
@@ -299,8 +305,9 @@ bool CDriverGL::clearZBuffer(float zval)
 
 // --------------------------------------------------
 
-bool CDriverGL::_setupVertexBuffer(CVertexBuffer& VB)
+bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 {
+	// Do not create any drv infos for now...
 	return(true);
 }
 
@@ -310,7 +317,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 	if (VB.DrvInfos==NULL)
 	{
-		if ( !_setupVertexBuffer(VB) )
+		if ( !setupVertexBuffer(VB) )
 		{
 			return(false);
 		}
@@ -380,6 +387,10 @@ bool CDriverGL::swapBuffers(void)
 
 bool CDriverGL::release(void)
 {
+	// Call IDriver::release() before, to destroy textures, shaders and VBs...
+	IDriver::release();
+
+	// Then delete.
 	wglMakeCurrent(NULL,NULL);
 	if (_hRC)
 		wglDeleteContext(_hRC);

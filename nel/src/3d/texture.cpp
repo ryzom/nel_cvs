@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.7 2000/11/23 13:27:37 berenguier Exp $
+ * $Id: texture.cpp,v 1.8 2000/12/04 16:58:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,8 @@
 #include <vector>
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 /*==================================================================*\
@@ -38,6 +39,22 @@ namespace NL3D {
 \*==================================================================*/
 
 
+
+ITexture &ITexture::operator=(const ITexture &tex)
+{
+	// The operator= do not copy drv info
+	// set touched=true. _Releasable is copied.
+	_Touched= true;
+	_Releasable= tex._Releasable;
+	return *this;
+}
+
+
+ITexture::~ITexture()
+{
+	// Must kill the drv mirror of this texture.
+	DrvInfos.kill();
+}
 
 
 

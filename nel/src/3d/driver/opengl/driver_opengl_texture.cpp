@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.3 2000/11/30 10:56:37 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.4 2000/12/04 16:58:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,18 +38,16 @@ namespace NL3D
 
 bool CDriverGL::setupTexture(ITexture& tex)
 {
-	CTextureDrvInfosGL* infos;
 	bool	touched= tex.touched();
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
 	if ( !tex.DrvInfos )
 	{
-		infos = new CTextureDrvInfosGL;
-		tex.DrvInfos=infos;
-
-		glGenTextures(1,&infos->ID);
-		_pTexDrvInfos.push_back(infos);
+		// Create auto a GL id (in constructor).
+		tex.DrvInfos= new CTextureDrvInfosGL;
+		// Insert into Driver list.
+		_TexDrvInfos.push_back(tex.DrvInfos);
 
 		// Must (re)-create the texture.
 		touched= true;

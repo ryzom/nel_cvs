@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.7 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: material.cpp,v 1.8 2000/12/04 16:58:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,34 +33,60 @@ namespace NL3D
 
 // ***************************************************************************
 
-void	CMaterial::initUnlit()
+void			CMaterial::initUnlit()
 {
-	 setShader(normal);
-	 setLighting(false);
-	 setColor(CRGBA(255,255,255,255));
-	 setTexture(NULL, 0);
-	 setTexture(NULL, 1);
-	 setTexture(NULL, 2);
-	 setTexture(NULL, 3);
-	 setZBias(0);
-	 setZFunction(lessequal);
-	 setBlend(false);
+	setShader(normal);
+	setLighting(false);
+	setColor(CRGBA(255,255,255,255));
+	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+		setTexture(NULL, i);
+	setZBias(0);
+	setZFunction(lessequal);
+	setBlend(false);
 }
 
 // ***************************************************************************
 
-void	CMaterial::initLighted()
+void			CMaterial::initLighted()
 {
-	 setShader(normal);
-	 setLighting(true);
-	 setColor(CRGBA(255,255,255,255));
-	 setTexture(NULL, 0);
-	 setTexture(NULL, 1);
-	 setTexture(NULL, 2);
-	 setTexture(NULL, 3);
-	 setZBias(0);
-	 setZFunction(lessequal);
-	 setBlend(false);
+	initUnlit();
+	setLighting(true);
+}
+
+
+// ***************************************************************************
+CMaterial		&CMaterial::operator=(const CMaterial &mat)
+{
+	_ShaderType= mat._ShaderType;
+	_Opacity= mat._Opacity;
+	_Flags= mat._Flags;
+	_SrcBlend,_DstBlend= mat._SrcBlend,_DstBlend;
+	_ZFunction= mat._ZFunction;
+	_ZBias= mat._ZBias;
+	_Color= mat._Color;
+	_Emissive= mat._Emissive;
+	_Ambient= mat._Ambient;
+	_Diffuse= mat._Diffuse;
+	_Specular= mat._Specular;
+	_Alpha= mat._Alpha;
+
+	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+		_Textures[i]= mat._Textures[i];
+
+	// Must do not copy drv info.
+
+	// All states of material is modified.
+	_Touched= IDRV_TOUCHED_ALL;
+
+	return *this;
+}
+
+
+// ***************************************************************************
+CMaterial::~CMaterial()
+{
+	// Must kill the drv mirror of this material.
+	pShader.kill();
 }
 
 

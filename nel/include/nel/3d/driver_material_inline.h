@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.5 2000/12/01 16:57:48 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.6 2000/12/04 16:58:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,29 +34,25 @@ namespace NL3D
 
 inline bool CMaterial::texturePresent(uint8 n)
 {
-	if (pTex[n])
+	nlassert(n<IDRV_MAT_MAXTEXTURES);
+	if (_Textures[n])
 	{
 		return(true);
 	}
 	return(false);
 }
 
+inline ITexture*		CMaterial::getTexture(uint8 n)
+{ 
+	nlassert(n<IDRV_MAT_MAXTEXTURES);
+	return(_Textures[n]); 
+}
+
 inline void CMaterial::setTexture(ITexture* ptex, uint8 n)
 {
-	pTex[n]=ptex;
-	switch(n)
-	{
-	case 0:
-		_Touched|=IDRV_TOUCHED_TEX0;
-	case 1:
-		_Touched|=IDRV_TOUCHED_TEX1;
-	case 2:
-		_Touched|=IDRV_TOUCHED_TEX2;
-	case 3:
-		_Touched|=IDRV_TOUCHED_TEX3;
-	default:
-		break;
-	}
+	nlassert(n<IDRV_MAT_MAXTEXTURES);
+	_Textures[n]=ptex;
+	_Touched|=IDRV_TOUCHED_TEX[n];
 }
 
 inline void CMaterial::setShader(TShader val)

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.171 2003/01/28 13:23:09 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.172 2003/02/12 16:45:36 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1418,7 +1418,6 @@ bool CDriverGL::swapBuffers()
 	}
 	_CurrentMaterial= NULL;
 
-
 	// Reset the profiling counter.
 	_PrimitiveProfileIn.reset();
 	_PrimitiveProfileOut.reset();
@@ -1962,11 +1961,8 @@ bool			CDriverGL::fogEnabled()
 
 void			CDriverGL::enableFog(bool enable)
 {
+	_DriverGLStates.enableFog(enable);
 	_FogEnabled= enable;
-	if(enable)
-		glEnable(GL_FOG);
-	else
-		glDisable(GL_FOG);
 }
 
 void			CDriverGL::setupFog(float start, float end, CRGBA color)

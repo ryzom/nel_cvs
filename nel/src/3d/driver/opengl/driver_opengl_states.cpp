@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.16 2002/09/24 14:44:11 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.17 2003/02/12 16:45:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 // ***************************************************************************
 // define it For Debug purpose only. Normal use is to hide this line
-//#define		NL3D_GLSTATE_DISABLE_CACHE
+// #define		NL3D_GLSTATE_DISABLE_CACHE
 
 namespace NL3D 
 {
@@ -67,12 +67,14 @@ void			CDriverGLStates::init(bool supportTextureCubeMap)
 void			CDriverGLStates::forceDefaults(uint nbStages)
 {
 	// Enable / disable.
+	_CurFog= false;
 	_CurBlend= false;
 	_CurCullFace= true;
 	_CurAlphaTest= false;
 	_CurLighting= false;
 	_CurZWrite= true;
 	// setup GLStates.
+	glDisable(GL_FOG);
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_ALPHA_TEST);
@@ -678,6 +680,27 @@ void CDriverGLStates::enableVertexAttribArrayForEXTVertexShader(uint glIndex, bo
 		}		
 		_VertexAttribArrayEnabled[glIndex]= enable;
 	}	
+}
+
+
+
+// ***************************************************************************
+void			CDriverGLStates::enableFog(uint enable)
+{
+	// If different from current setup, update.
+	bool	enabled= (enable!=0);
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if( enabled != _CurFog )
+#endif
+	{
+		// new state.
+		_CurFog= enabled;
+		// Setup GLState.
+		if(_CurFog)
+			glEnable(GL_FOG);
+		else
+			glDisable(GL_FOG);
+	}
 }
 
 

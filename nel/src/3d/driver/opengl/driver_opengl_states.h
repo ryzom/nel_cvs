@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.11 2002/09/24 14:44:11 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.12 2003/02/12 16:45:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 			- GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP_ARB.
 			- GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R
 			- GL_COLOR_MATERIAL
+			- GL_FOG
 		- glActiveTextureARB()
 		- glClientActiveTextureARB()
 		- glEnableClientState() glDisableClientState() with:
@@ -90,6 +91,7 @@ public:
 	/// \name enable if !0
 	// @{
 	void			enableBlend(uint enable);
+	void			enableFog(uint enable);
 	void			enableCullFace(uint enable);
 	/// enable and set good AlphaFunc.
 	void			enableAlphaTest(uint enable);
@@ -162,6 +164,7 @@ public:
 	
 private:
 	bool			_CurBlend;
+	bool			_CurFog;
 	bool			_CurCullFace;
 	bool			_CurAlphaTest;
 	bool			_CurLighting;

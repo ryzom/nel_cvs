@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.68 2002/10/14 15:51:29 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.69 2003/02/12 16:45:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,8 +369,9 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	{
 		// Bind Blend Part.
 		//=================
-		_DriverGLStates.enableBlend(mat.getFlags()&IDRV_MAT_BLEND);
-		if(mat.getFlags()&IDRV_MAT_BLEND)
+		bool blend = (mat.getFlags()&IDRV_MAT_BLEND)!=0;
+		_DriverGLStates.enableBlend(blend);
+		if(blend)
 			_DriverGLStates.blendFunc(pShader->SrcBlend, pShader->DstBlend);
 
 		// Double Sided Part.
@@ -420,6 +421,20 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			_DriverGLStates.setVertexColorLighted(false);
 		}
 		
+		
+		// Fog Part.
+		//=================
+
+		// Disable fog if dest blend is ONE
+		if (blend && (pShader->DstBlend == GL_ONE))
+		{
+			_DriverGLStates.enableFog(false);
+		}
+		else
+		{
+			// Restaure fog state to its current value
+			_DriverGLStates.enableFog(_FogEnabled);
+		}
 		
 		// Texture shader part.
 		//=====================

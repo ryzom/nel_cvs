@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.57 2004/02/12 16:28:37 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.58 2004/02/12 17:51:50 lecroart Exp $
  *
  */
 
@@ -193,10 +193,10 @@ vector<CRequest> Requests;
 
 vector<string> RegisteredServices;
 
-CVariable<uint32> RequestTimeout("RequestTimeout", "", 5, 0, true);		// in seconds, timeout before canceling the request
+CVariable<uint32> RequestTimeout("RequestTimeout", "in seconds, time before a request is timeout", 5, 0, true);		// in seconds, timeout before canceling the request
 
-CVariable<uint32> PingTimeout("PingTimeout", "", 5, 0, true);		// in seconds, timeout before killing the service
-CVariable<uint32> PingFrequency("PingFrequency", "", 10, 0, true);		// in seconds, frequency of the send ping to services
+CVariable<uint32> PingTimeout("PingTimeout", "in seconds, time before services have to answer the ping message or will be killed", 900, 0, true);		// in seconds, timeout before killing the service
+CVariable<uint32> PingFrequency("PingFrequency", "in seconds, time between each ping message", 60, 0, true);		// in seconds, frequency of the send ping to services
 
 vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
 

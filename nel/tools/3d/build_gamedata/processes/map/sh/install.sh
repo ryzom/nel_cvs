@@ -37,3 +37,22 @@ if test "$panoply_file_list" ; then
 	done
 	ls panoply >> $panoply_file_list
 fi
+
+
+# Install hlsbank in the client data, in the "maps/" directory
+
+# Log error
+echo --- Install hlsbank >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Install hlsbank 
+echo ------- 
+date >> log.log
+date
+
+# build the HLSBank (if hlsInfo present, and if build wanted)
+hls_bank_file_name=`cat ../../cfg/config.cfg | grep "hls_bank_file_name" | sed -e 's/hls_bank_file_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+if test "$hls_bank_file_name" ; then
+	cp -u -p -R  $hls_bank_file_name $client_directory/$bitmap_install_directory  2>> log.log
+fi
+

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.35 2004/03/23 10:21:55 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.36 2004/04/09 14:32:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/scene_user.h"
 #include "3d/mesh_multi_lod_instance.h"
 #include "3d/text_context_user.h"
+#include "3d/particle_system_model.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
@@ -197,7 +198,7 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver, uint 
 		if (_InstanceGroup._Instances[i] != NULL)
 		{
 			// create but don't want to delete from scene, since added/removed with _InstanceGroup
-			pIU = new CInstanceUser (NULL, _InstanceGroup._Instances[i], false);
+			pIU = _InstanceGroup._Instances[i]->buildMatchingUserInterfaceObject(false);
 			_Instances[i]= pIU;
 			// insert in map (may fail if double name)
 			stmp = _InstanceGroup.getInstanceName (i);
@@ -241,7 +242,7 @@ UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 			if (_InstanceGroup._Instances[i] != NULL)
 			{
 				// create but don't want to delete from scene, since added/removed with _InstanceGroup
-				pIU = new CInstanceUser (NULL, _InstanceGroup._Instances[i], false);
+				pIU = _InstanceGroup._Instances[i]->buildMatchingUserInterfaceObject(false);
 				_Instances[i]= pIU;
 				// insert in map (may fail if double name)
 				stmp = _InstanceGroup.getInstanceName (i);
@@ -339,7 +340,6 @@ UInstance *CInstanceGroupUser::getByName (const std::string &name)
 }
 
 // ***************************************************************************
-
 const UInstance *CInstanceGroupUser::getByName (const std::string &name) const
 {
 	NL3D_MEM_IG
@@ -349,6 +349,20 @@ const UInstance *CInstanceGroupUser::getByName (const std::string &name) const
 	else
 		return NULL;
 }
+
+// ***************************************************************************
+sint CInstanceGroupUser::getIndexByName(const std::string &name) const
+{
+	NL3D_MEM_IG
+	map<string,CInstanceUser*>::const_iterator it = _InstanceMap.find (name);
+	if (it == _InstanceMap.end()) return -1;
+	for(uint k = 0; k < _Instances.size(); ++k)
+	{
+		if (_Instances[k] == it->second) return (sint) k;
+	}
+	return -1;	
+}
+
 
 // ***************************************************************************
 void CInstanceGroupUser::setBlendShapeFactor (const std::string &bsName, float rFactor)
@@ -572,6 +586,7 @@ void			CInstanceGroupUser::displayDebugClusters(UDriver *drv, UTextContext *txtC
 	// restore the matrix context cause of font rendering
 	((CDriverUser*)drv)->restoreMatrixContext();
 }
+
 
 
 } // NL3D

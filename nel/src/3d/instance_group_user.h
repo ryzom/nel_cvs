@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.28 2004/03/23 10:21:55 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.29 2004/04/09 14:32:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,8 @@ private:
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
 	UInstance *getByName (const std::string& name);
 	const UInstance *getByName (const std::string& name) const;
+	sint	  getIndexByName(const std::string &name) const;
+	
 
 	void setBlendShapeFactor (const std::string &bsName, float rFactor);
 
@@ -136,6 +138,8 @@ private:
 	friend class CSceneUser;
 
 	void		removeInstancesUser();
+
+
 	
 public:
 	// Debug purpose only.

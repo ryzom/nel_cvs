@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.7 2002/07/30 15:53:14 miller Exp $
+ * $Id: background_sound_manager.cpp,v 1.8 2002/07/31 17:49:37 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,7 +179,12 @@ void CBackgroundSoundManager::load (const string &continent)
 
 	nlinfo ("loading '%s'", fn.c_str());
 
-	if (!file.open (CPath::lookup(fn, false)))
+	string path = CPath::lookup(fn, false);
+
+	if(path.empty())
+		return;
+
+	if (!file.open (path))
 		return;
 	
 	unload();

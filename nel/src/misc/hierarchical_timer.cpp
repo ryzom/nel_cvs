@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.24 2003/02/07 17:44:00 cado Exp $
+ * $Id: hierarchical_timer.cpp,v 1.25 2003/02/17 10:53:06 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/common.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/command.h"
 
 #ifdef NL_CPU_INTEL
 #include "nel/misc/time_nl.h"
@@ -38,7 +39,6 @@
 namespace NLMISC
 {
 
-     
 bool   CSimpleClock::_InitDone = false;
 uint64 CSimpleClock::_StartStopNumTicks = 0;
 
@@ -874,6 +874,18 @@ void	CHTimer::after(bool displayAfter /*= false*/)
 	{
 		_PreambuleClock.stop();
 	}
+}
+
+
+//
+// Commands
+//
+
+NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
+{
+	CHTimer::display(&log);
+	CHTimer::displayHierarchicalByExecutionPathSorted (&log, CHTimer::TotalTime, true, 64);
+	return true;
 }
 
 } // NLMISC

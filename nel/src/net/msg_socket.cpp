@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.57 2001/04/06 16:08:12 lecroart Exp $
+ * $Id: msg_socket.cpp,v 1.58 2001/04/23 16:14:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -722,7 +722,7 @@ bool CMsgSocket::getDataAvailableStatus()
 void CMsgSocket::setTimeout( uint32 ms )
 {
 	_TimeoutS = ms/1000;
-	_TimeoutM = (_TimeoutS%1000)*1000;
+	_TimeoutM = (ms%1000)*1000;
 }
 
 

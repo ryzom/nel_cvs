@@ -113,5 +113,25 @@ LINK32=link.exe
 
 SOURCE=.\admin.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\commands.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\connection_as.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\connection_as.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\datas.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\datas.h
+# End Source File
 # End Target
 # End Project

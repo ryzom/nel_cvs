@@ -1,7 +1,7 @@
-/** \file admin.cpp
+/** \file datas.cpp
  * 
  *
- * $Id: admin.cpp,v 1.3 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: datas.cpp,v 1.1 2001/05/11 13:50:59 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -26,66 +26,64 @@
  * MA 02111-1307, USA.
  */
 
-#include <string>
+/*
 #include <conio.h>
+#include <io.h>
+#include <process.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
+#include <string>
+#include <list>
 
 #include "nel/misc/debug.h"
+#include "nel/misc/config_file.h"
+#include "nel/misc/thread.h"
+#include "nel/misc/command.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
-#include "nel/misc/command.h"
 
+#include "nel/net/service.h"
 #include "nel/net/net_manager.h"
+*/
  
+#include "nel/net/buf_sock.h"
+
+#include "datas.h"
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+uint32 CAdminService::NextId = 1;
 
-void printLine(string line)
+TAdminServices AdminServices;
+
+
+ASIT findAdminService (uint32 asid, bool asrt)
 {
-	printf("\r> %s \b", line.c_str());
+	ASIT asit;
+	for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+		if ((*asit).Id == asid)
+			break;
+	
+	if (asrt)
+		nlassert (asit != AdminServices.end());
+	return asit;
 }
 
-CLog logstdout;
-CStdDisplayer dispstdout;
-
-int main (int argc, char **argv)
+void displayServices ()
 {
-	logstdout.addDisplayer (&dispstdout);
-
-	nlinfo("Admin client for NeL Shard administration ("__DATE__" "__TIME__")\n");
-
-	DebugLog->addNegativeFilter ("L0:");
-	DebugLog->addNegativeFilter ("L1:");
-	DebugLog->addNegativeFilter ("L2:");
-
-	CNetManager::init (NULL);
-
-	// todo virer ca pour pas que ca connecte automatiquement
-	ICommand::execute ("connect localhost", logstdout);
-
-	string command;
-	printLine(command);
-
-	bool end = false;
-	while (!end)
+	for (ASIT asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
 	{
-		while (kbhit())
+		nlinfo ("AS %d %s", (*asit).Id, (*asit).SockId->asString().c_str());
+		for (AESIT aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
 		{
-			int c = getch();
-			switch (c)
+			nlinfo (" AES %d", (*aesit).Id);
+			for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
 			{
-			case  8: if (command.size()>0) command.resize (command.size()-1); printLine(command); break;
-			case 27: end = true; break;
-			case 13: printf("\n"); nlinfo("execute command: %s", command.c_str()); ICommand::execute(command, logstdout); command = ""; printLine(command); break;
-			default: command += c; printLine(command); break;
+				nlinfo ("  > %d:%d:%d %s %s", (*asit).Id, (*aesit).Id, (*sit).Id, (*sit).ShortName.c_str(), (*sit).LongName.c_str());
 			}
 		}
-
-		CNetManager::update();
 	}
-
-	CNetManager::release ();
-
-	return EXIT_SUCCESS;
 }

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.6 2003/11/06 14:51:06 vizerie Exp $
+ * $Id: particle_system_manager.h,v 1.7 2003/11/25 14:39:27 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -88,12 +88,21 @@ private:
 	friend class CParticleSystemModel;
 	
 	// info about a ps that is always animated
-	struct CAlwaysAnimatedPS
+	class CAlwaysAnimatedPS
 	{
+	public:
 		CParticleSystemModel *Model;		
 		CMatrix				 OldAncestorMatOrRelPos;	// last matrix of ancestor skeleton or relative matrix of ps to its ancestor (see flag below)
 		bool				 IsRelMatrix;				// gives usage of the field OldAncestorMatOrRelPos		
 		bool				 HasAncestorSkeleton;		// has the system an ancestor skeleton ?
+	public:
+		// ctor
+		CAlwaysAnimatedPS()
+		{
+			Model = NULL;
+			IsRelMatrix = false;
+			HasAncestorSkeleton = false;
+		}		
 	};
 
 	typedef std::list<CParticleSystemModel *>   TModelList;

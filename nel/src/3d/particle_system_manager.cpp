@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.14 2003/11/18 13:58:42 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.15 2003/11/25 14:39:27 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -191,18 +191,13 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 			if (psm.getAncestorSkeletonModel())
 			{								
 				if (!psm.isClipVisible()) // the system may not be visible because of clod
-				{
-					if (!it->HasAncestorSkeleton)
-					{
-						// no ancestor skeleton -> the ancestor skeleton matrix is not up to date, so must force to compute 
-						// the relative position of the system toward its ancestor skeleton
-						psm.forceCompute();
-						it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
-						it->HasAncestorSkeleton = true;
-					}
-					// update the fx matrix using the relative 
+				{																
 					if (!it->IsRelMatrix) // relative matrix already computed ?
 					{
+						if (!it->HasAncestorSkeleton)
+						{
+							psm.forceCompute();
+						}
 						it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
 						it->IsRelMatrix = true;
 					}					

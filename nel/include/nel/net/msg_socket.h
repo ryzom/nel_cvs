@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.27 2000/12/13 14:36:19 cado Exp $
+ * $Id: msg_socket.h,v 1.28 2000/12/14 10:52:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/net/pt_callback_item.h"
 #include <list>
 #include <set>
+#include <string>
 
 
 namespace NLNET
@@ -50,6 +51,18 @@ typedef std::list<CConnections::iterator> CConnectionIterators;
 
 /// Set of "special pointers to callback items"
 typedef std::set<CPtCallbackItem> CSearchSet;
+
+
+// Exception EDuplicateMsgName
+class EDuplicateMsgName : public ESocket
+{
+public:
+	EDuplicateMsgName( char *msgname )
+	{
+		_Reason = "Duplicate message name in callback array: " + std::string(msgname);
+		_ErrNum = 0;
+	}
+};
 
 
 /**
@@ -102,6 +115,11 @@ public:
 
 	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
 	~CMsgSocket();
+
+	/** Adds another client callback array
+	 * Please call this method before any update() or send()
+	 */
+	void			addClientCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize );
 
 	/// Sets the socket in "receive all" mode
 	static void		setReceiveAllMode( bool all )
@@ -296,9 +314,10 @@ private:
 	uint16						_ValidityTime;
 
 	// Callbacks per client
-	const TCallbackItem			*_ClientCallbackArray;
+	TCallbackItem				*_ClientCallbackArray;
 	TTypeNum					_ClientCbaSize;
 	CSearchSet					_ClientSearchSet;
+	bool						_Allocated;
 
 	// True if the listening socket is bound
 	static bool					_Binded;

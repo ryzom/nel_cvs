@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.37 2000/12/13 14:38:14 cado Exp $
+ * $Id: msg_socket.cpp,v 1.38 2000/12/14 10:52:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,12 +191,13 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, b
 {
 	_PrevBytesReceivedFromHost = 0;
 	_PrevBytesSentToHost = 0;
+	_Allocated = false;
 	const TCallbackItem *pt;
 	if ( clientmode )
 	{
-		_ClientCallbackArray = callbackarray;
+		_ClientCallbackArray = const_cast<TCallbackItem*>(callbackarray);
 		_ClientCbaSize = arraysize;
-		for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+		for ( pt=callbackarray; pt!=callbackarray+arraysize; pt++ )
 		{
 			_ClientSearchSet.insert( CPtCallbackItem(pt) );
 		}
@@ -205,12 +206,52 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, b
 	{
 		_CallbackArray = callbackarray;
 		_CbaSize = arraysize;
-		for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+		for ( pt=callbackarray; pt!=callbackarray+arraysize; pt++ )
 		{
 			_SearchSet.insert( CPtCallbackItem(pt) );
 		}
 	}
 	
+}
+
+
+/*
+ * Adds another client callback array
+ */
+void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize )
+{
+	// Reallocate array
+	if ( _Allocated )
+	{
+		delete [] _ClientCallbackArray;
+	}
+	const TCallbackItem *oldClientCallbackArray = _ClientCallbackArray;
+	TTypeNum oldClientCbaSize = _ClientCbaSize;
+	_ClientCbaSize += arraysize;
+	_ClientCallbackArray = new TCallbackItem [_ClientCbaSize];
+	_Allocated = true;
+
+	// Copy contents
+	TTypeNum i;
+	for ( i=0; i!=oldClientCbaSize; i++ )
+	{
+		_ClientCallbackArray[i] = oldClientCallbackArray[i];
+	}
+	for ( i=oldClientCbaSize; i!=_ClientCbaSize; i++ )
+	{
+		_ClientCallbackArray[i] = callbackarray[i-oldClientCbaSize];
+	}
+
+	// Setup search set
+	_ClientSearchSet.clear();
+	const TCallbackItem *pt;
+	for ( pt=_ClientCallbackArray; pt!=_ClientCallbackArray+_ClientCbaSize; pt++ )
+	{
+		if ( ! _ClientSearchSet.insert( CPtCallbackItem(pt) ).second )
+		{
+			throw EDuplicateMsgName( pt->Key );
+		}
+	}
 }
 
 
@@ -660,7 +701,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 	if ( clientsocket != NULL )
 	{
 		the_cba_size = clientsocket->_ClientCbaSize;
-		the_callback_array = clientsocket->_CallbackArray;
+		the_callback_array = clientsocket->_ClientCallbackArray;
 		the_search_set = clientsocket->_ClientSearchSet;
 	}
 

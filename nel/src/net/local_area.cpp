@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.18 2000/12/13 14:38:14 cado Exp $
+ * $Id: local_area.cpp,v 1.19 2000/12/14 10:52:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,7 +218,7 @@ namespace NLNET {
 /*
  * Constructor
  */
-CLocalArea::CLocalArea( const CVector& userpos, const CVector& userhdg ) :
+CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, const CVector& userhdg ) :
 	_Radius( 400 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
@@ -228,8 +228,8 @@ CLocalArea::CLocalArea( const CVector& userpos, const CVector& userhdg ) :
 	CLocalArea::Instance = this;
 	User.resetPos( userpos );
 	User.resetBodyHeading( userhdg );
-	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
-	ClientSocket->setTimeout( 0 );
+	ClientSocket = const_cast<CMsgSocket*>(clientsocket);
+	ClientSocket->addClientCallbackArray( CbArray, sizeof(CbArray)/sizeof(TCallbackItem) );
 }
 
 

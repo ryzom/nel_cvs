@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.11 2000/12/05 11:10:29 cado Exp $
+ * $Id: local_area.h,v 1.12 2000/12/14 10:52:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,8 @@ class CMessage;
 
 
 /**
- * Neighborhood of a player
+ * Neighborhood of a player.
+ * The local area handles messages for entity moves / dead reckoning.
  * \warning This class is test code and is highly subject to change.
  * \author Olivier Cado
  * \author Nevrax France
@@ -66,8 +67,9 @@ class CLocalArea
 {
 public:
 
-	/// Constructor
-	CLocalArea( const NLMISC::CVector& userpos=NLMISC::CVector(), const NLMISC::CVector& userhdg=NLMISC::CVector() );
+	/** Constructor. \e clientsocket is a pointer to a constructed client CMsgSocket object.
+	 */
+	CLocalArea( const CMsgSocket *clientsocket, const NLMISC::CVector& userpos=NLMISC::CVector(), const NLMISC::CVector& userhdg=NLMISC::CVector() );
 
 	/// Destructor
 	~CLocalArea();

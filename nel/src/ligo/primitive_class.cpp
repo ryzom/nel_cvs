@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.2 2003/08/13 08:43:15 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.3 2003/08/20 15:51:34 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -272,6 +272,10 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 						// Lookup
 						parameter.Lookup = false;
 						ReadBool ("LOOKUP", parameter.Lookup, paramNode, filename, config);
+
+						// Lookup
+						parameter.ReadOnly = false;
+						ReadBool ("READ_ONLY", parameter.ReadOnly, paramNode, filename, config);
 
 						// Read the file extension
 						parameter.FileExtension = "";

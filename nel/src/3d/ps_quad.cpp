@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.16 2004/06/02 16:30:11 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.17 2004/07/16 07:29:09 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -225,13 +225,12 @@ CVertexBuffer &CPSQuad::getNeededVB(IDriver &drv)
 	}
 	else if (_Tex)
 	{
-
 		flags |= VBTex;				
 	}
 
 	if (flags & VBTex)
 	{	
-		/// check is multitexturing is enabled, and which texture are enabled and / or animated
+		/// check if multitexturing is enabled, and which texture are enabled and / or animated
 		if (CPSMultiTexturedParticle::isMultiTextureEnabled())
 		{
 			if (!isAlternateTextureUsed(drv))
@@ -525,7 +524,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 
 	/// todo: vertex programm optimisation (& choose the vb accordingly)
 
-	if (CPSMultiTexturedParticle::isMultiTextureEnabled())
+	if (CPSMultiTexturedParticle::isMultiTextureEnabled() && (_Tex || _TexGroup))
 	{
 		
 		// perform tex1 animation if needed

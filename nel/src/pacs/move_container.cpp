@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.15 2001/09/13 08:41:36 corvazier Exp $
+ * $Id: move_container.cpp,v 1.16 2001/09/26 09:42:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -465,10 +465,16 @@ void CMoveContainer::getCells (CMovePrimitive *primitive, uint8 worldImage, uint
 		wI=primitive->getWorldImage (primitiveWorldImage);
 
 	// Check BB width not too large
-	nlassertonce (wI->getBBXMax() - wI->getBBXMin() < _CellWidth);
+	if (wI->getBBXMax() - wI->getBBXMin() > _CellWidth)
+	{
+		nlwarning ("Primitives have moved more than a cell.");
+	}
 
 	// Check BB height not too large
-	nlassertonce (wI->getBBYMax() - wI->getBBYMin() < _CellHeight);
+	if (wI->getBBYMax() - wI->getBBYMin() > _CellHeight)
+	{
+		nlwarning ("Primitives have moved more than a cell.");
+	}
 
 	// Get coordinate in the cell array
 	int minx=(int)floor ((wI->getBBXMin() - _Xmin) / _CellWidth);

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.12 2001/07/09 15:39:43 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.13 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/texture_user.h"
 #include "3d/material_user.h"
 #include "3d/scene_user.h"
+#include "3d/init_3d.h"
 #include "nel/3d/u_camera.h"
 
 
@@ -109,6 +110,7 @@ CDriverUser::CDriverUser()
 		_StaticInit= true;
 		// Register basic serial.
 		NL3D::registerSerial3d();
+		NL3D::init3d();
 		// Register basic csene.
 		CScene::registerBasics();
 	}

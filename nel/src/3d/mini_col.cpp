@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.14 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mini_col.cpp,v 1.15 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,6 @@ using namespace std;
 
 namespace NL3D 
 {
-
 
 static const	sint	QuadDepth= 10;
 

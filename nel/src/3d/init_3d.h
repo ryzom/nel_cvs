@@ -1,7 +1,7 @@
 /** \file init_3d.h
  * Startup initialisation.
  *
- * $Id: init_3d.h,v 1.1 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: init_3d.h,v 1.2 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,20 +33,16 @@ namespace NL3D
 
 //****************************************************************************
 /**
- * This class make startup initialisation. Warning:  initialisation are made in each module! (dll)
+ * Startup initialisation.
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000
  */
-class C3dInit
-{
-public:
-	C3dInit ();
-};
+void init3d ();
 
 } // NL3D
 
 
 #endif // NL_INIT_3D_H
 
-/* End of register_3d.h */
+/* End of init_3d.h */

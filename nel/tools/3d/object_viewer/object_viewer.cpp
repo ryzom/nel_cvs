@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.32 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.33 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include <3d/mesh_instance.h>
 #include <3d/text_context.h>
 #include <3d/skeleton_model.h>
+#include <3d/init_3d.h>
 
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
@@ -152,6 +153,9 @@ IMPLEMENT_DYNCREATE(CObjView, CView)
 CObjectViewer::CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
+	init3d ();
+
 	_SlotDlg=NULL;
 	_AnimationSetDlg=NULL;
 	_AnimationDlg=NULL;
@@ -480,10 +484,7 @@ void CObjectViewer::go ()
 			(_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm() );
 		_MainFrame->StatusBar.SetWindowText (msgBar);
 
-		
-		float toto=0;
-		float number=1/toto;
-
+	
 
 		// Swap the buffers
 		CNELU::swapBuffers();

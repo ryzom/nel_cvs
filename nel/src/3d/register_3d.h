@@ -1,7 +1,7 @@
 /** \file register_3d.h
  * <File description>
  *
- * $Id: register_3d.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: register_3d.h,v 1.2 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D
  * \date 2000
  */
 void	registerSerial3d();
-
+	
 
 } // NL3D
 

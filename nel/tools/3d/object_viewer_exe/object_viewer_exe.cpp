@@ -7,6 +7,7 @@
 #include <3d/register_3d.h>
 #include <3d/scene.h>
 #include "../object_viewer/object_viewer_interface.h"
+#include <3d/init_3d.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -19,6 +20,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	// Register 3d
 	registerSerial3d ();
 	CScene::registerBasics ();
+	init3d ();
 
 	// Remove command line ""
 	char commandLine[512];

@@ -1,7 +1,7 @@
 /** \file init_3d.cpp
  * 
  *
- * $Id: init_3d.cpp,v 1.1 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: init_3d.cpp,v 1.2 2001/08/30 12:52:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,19 +30,13 @@
 namespace NL3D 
 {
 
-// Force init
-C3dInit initClass;
-
-C3dInit::C3dInit()
+void init3d ()
 {
 	// Init for windows
 #ifdef NL_OS_WINDOWS
-
 	// Enable FPU exceptions
-	_control87 (_EM_INVALID|_EM_DENORMAL|_EM_ZERODIVIDE|_EM_OVERFLOW|_EM_UNDERFLOW|_EM_INEXACT, _MCW_EM);
-
+	_control87 (_EM_INVALID|_EM_DENORMAL/*|_EM_OVERFLOW|_EM_UNDERFLOW*/|_EM_INEXACT, _MCW_EM);
 #endif // NL_OS_WINDOWS
-
 }
 
 } // NL3D

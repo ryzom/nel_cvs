@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.9 2002/04/23 16:23:48 vizerie Exp $
+ * $Id: polygon.h,v 1.10 2002/11/05 11:32:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,11 +160,13 @@ public:
 	typedef std::pair<sint, sint> TRaster;
 	typedef std::vector<TRaster>  TRasterVect;
 
-	/** Compute the borders of this poly with sub-pixel accuracy. No clipping is performed
-	  * The output is in a vector of sint pairs. The highestY is the minimum y (assuming the highest vertex of the one with minimum y)
-	  *	Rasters are created from the min y to the highest y  
+	/** Compute the borders of this poly with sub-pixel accuracy. No clipping is performed.
+	  * Only points exactly inside or exactly on the left border of the polygon are kept. 	  
+	  * The output is in a vector of sint pairs. minimumY is filled with the minimum y value of the poly.
+	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
+	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valids.
 	  */
-	void		computeBorders(TRasterVect &borders, sint &highestY);
+	void		computeBorders(TRasterVect &borders, sint &minimumY);
 
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
 	bool        intersect(const CPolygon2D &other) const;

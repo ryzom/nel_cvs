@@ -123,7 +123,8 @@ private:
 	virtual void OnOk ()
 	{
 		UpdateData ();
-		for (int i=0; i<tileBank.getTileSetCount(); i++)
+		int i;
+		for (i=0; i<tileBank.getTileSetCount(); i++)
 		{
 			// remove tile set
 			tileBank.getLand(_land)->removeTileSet (tileBank.getTileSet(i)->getName());
@@ -222,7 +223,8 @@ private:
 	virtual void OnOk ()
 	{
 		UpdateData ();
-		for (int i=0; i<tileBank.getTileSetCount(); i++)
+		int i;
+		for (i=0; i<tileBank.getTileSetCount(); i++)
 		{
 			// remove tile set
 			tileBank.getTileSet(_tileSet)->removeChild (tileBank.getTileSet(i)->getName());
@@ -362,7 +364,8 @@ void SelectionTerritoire::OnSelect()
 				tileBank.serial (stream);
 			}
 			
-			for (int i=0; i<tileBank.getLandCount(); i++)
+			int i;
+			for (i=0; i<tileBank.getLandCount(); i++)
 			{
 				// Add to the list
 				list->AddString(tileBank.getLand(i)->getName().c_str());

@@ -472,7 +472,8 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					rect_scroll.bottom = rect_scroll.top + scroll_pixel;
 					pDC->FillRect(&rect_scroll,&brush);
-					for (int k = 0;k<iFV;k++) p++;
+					int k
+					for (k = 0;k<iFV;k++) p++;
 					for (k = iFV;k<(old_iFV+i);k++)
 					{
 						m_ctrl.DrawTile(p,pDC,0,m_128x128);

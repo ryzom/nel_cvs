@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.8 2001/05/18 14:41:38 chafik Exp $
+ * $Id: mem_stream.cpp,v 1.9 2001/05/28 15:36:02 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ CMemStream& CMemStream::operator=( const CMemStream& other )
 /*
  * serial (inherited from IStream)
  */
-void CMemStream::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
+void CMemStream::serialBuffer(uint8 *buf, uint len)
 {
 	if ( isReading() )
 	{
@@ -94,7 +94,7 @@ void CMemStream::serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow)
 /*
  * serialBit (inherited from IStream)
  */
-void CMemStream::serialBit(bool &bit) throw(EStreamOverflow)
+void CMemStream::serialBit(bool &bit)
 {
 	uint len = sizeof(uint8);
 	uint8 thebuf;

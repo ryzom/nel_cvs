@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.9 2001/05/21 16:58:50 cado Exp $
+ * $Id: mem_stream.h,v 1.10 2001/05/28 15:35:41 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,10 +82,10 @@ public:
 	CMemStream&		operator=( const CMemStream& other );
 
 	/// Method inherited from IStream
-	virtual void	serialBuffer(uint8 *buf, uint len) throw(EStreamOverflow);
+	virtual void	serialBuffer(uint8 *buf, uint len);
 
 	/// Method inherited from IStream
-	virtual void	serialBit(bool &bit) throw(EStreamOverflow);
+	virtual void	serialBit(bool &bit);
 
 	/** 
 	 * Moves the stream pointer to a specified location.

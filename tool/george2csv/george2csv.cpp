@@ -527,11 +527,15 @@ void	loadSheetPath()
 	NLMISC::createDebug();
 	NLMISC::WarningLog->addNegativeFilter( "CPath::insertFileInMap" );
 
-	CPath::addSearchPath(inputSheetPath, true, false);
-
-	vector<string>	files;
-	CPath::getPathContent (inputSheetPath, true, false, true, files);
-
+	vector<string> files;
+	vector<string> pathsToAdd;
+	explode( inputSheetPath, "*", pathsToAdd );
+	for ( vector<string>::const_iterator ip=pathsToAdd.begin(); ip!=pathsToAdd.end(); ++ip )
+	{
+		CPath::addSearchPath( *ip, true, false );
+		CPath::getPathContent( *ip, true, false, true, files );
+	}
+	
 	uint	i;
 	for (i=0; i<files.size(); ++i)
 	{

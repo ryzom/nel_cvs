@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.3 2003/06/06 12:54:34 lecroart Exp $
+ * $Id: string_conversion.h,v 1.4 2003/09/03 14:44:00 fleury Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -102,6 +102,9 @@ public:
 
 	// From a value, retrieve the associated string, or an empty string if not found
 	const std::string &toString(const TDestType &value) const;
+
+	// nb of pairs in the map
+	inline uint16 getNbPairs() const { return _String2DestType.size(); }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
 	typedef std::map<std::string, TDestType, TPred> TString2DestType;

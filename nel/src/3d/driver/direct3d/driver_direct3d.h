@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.21 2004/08/13 15:25:52 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.22 2004/08/19 12:43:51 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,7 @@
 // #define NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
 
 //#define NL_PROFILE_DRIVER_D3D
+
 #ifdef NL_PROFILE_DRIVER_D3D
 	#define H_AUTO_D3D(label) H_AUTO(label)
 #else
@@ -1521,6 +1522,8 @@ private:
 	bool					_HandlePossibleSizeChangeNextSize;
 	GfxMode					_CurrentMode;
 	uint					_Interval;
+	bool					_FullScreen;
+
 
 	// Directx
 	uint32					_Adapter;

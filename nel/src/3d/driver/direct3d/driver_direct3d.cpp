@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.16 2004/08/13 15:25:25 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.17 2004/08/19 12:43:51 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -114,6 +114,7 @@ CDriverD3D::CDriverD3D()
 	_CurrentMode.Height = 480;
 	_WindowX = 0;
 	_WindowY = 0;
+	_FullScreen = false;
 	_UserViewMtx.identity();
 	_UserModelMtx.identity();
 	_PZBCameraPos = CVector::Null;
@@ -1612,11 +1613,11 @@ bool CDriverD3D::getCurrentScreenMode(GfxMode &gfxMode)
 	UINT adapter = (_Adapter==0xffffffff)?D3DADAPTER_DEFAULT:(UINT)_Adapter;
 	D3DDISPLAYMODE mode;
 	_D3D->GetAdapterDisplayMode(adapter, &mode);
-	gfxMode.Windowed=false;
-	gfxMode.Width=(uint16)mode.Width;
-	gfxMode.Height=(uint16)mode.Height;
-	gfxMode.Depth= ((mode.Format==D3DFMT_A8R8G8B8)||(mode.Format==D3DFMT_X8R8G8B8))?32:16;
-	gfxMode.Frequency=(uint8)mode.RefreshRate;
+	gfxMode.Windowed = !_FullScreen;
+	gfxMode.Width = (uint16)mode.Width;
+	gfxMode.Height = (uint16)mode.Height;
+	gfxMode.Depth = ((mode.Format==D3DFMT_A8R8G8B8)||(mode.Format==D3DFMT_X8R8G8B8))?32:16;
+	gfxMode.Frequency = (uint8)mode.RefreshRate;
 
 	return true;
 }
@@ -1699,11 +1700,13 @@ bool CDriverD3D::setMode (const GfxMode& mode)
     {
         // Set windowed-mode style
         SetWindowLong( _HWnd, GWL_STYLE, D3D_WINDOWED_STYLE|WS_VISIBLE);
+		_FullScreen = false;
     }
     else
     {
         // Set fullscreen-mode style
         SetWindowLong( _HWnd, GWL_STYLE, D3D_FULLSCREEN_STYLE|WS_VISIBLE);
+		_FullScreen = true;
     }
 
 	// Reset the driver

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.3 2001/05/08 13:37:35 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.4 2001/05/09 08:21:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2092,7 +2092,7 @@ void CBitmap::rotateCCW()
 
 bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 {
-
+	
 	nlassert(this->PixelFormat == src->PixelFormat) ;
 	if (this->PixelFormat != src->PixelFormat)
 	{
@@ -2168,7 +2168,7 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	}
 
 
-	// divide all distance by 4 when usinf DXTC
+	// divide all distance by 4 when using DXTC
 	if (useDXTC)
 	{
 		destStartX <<= 2 ;
@@ -2189,14 +2189,14 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 	// size to go to the next line in the source
 	const uint srcStride = src->_Width * bytePerPixs ;
 	
-	// line in bytes of a line to copy
+	// lenght in bytes of a line to copy
 	const uint lineLenght = width * bytePerPixs ;
 
 
 	uint8  *destPos = &(_Data[0][0]) + destStride * destStartY + bytePerPixs * destStartX ;
 	const uint8 *srcPos = &(src->_Data[0][0]) + srcStride * srcStartY + bytePerPixs * srcStartX ;
 
-
+	// copy each hline
 	for (sint k = 0 ; k < height ; ++k)
 	{
 		::memcpy(destPos, srcPos, lineLenght) ;

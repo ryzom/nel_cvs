@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic facts
  *
- * $Id: fact.h,v 1.7 2001/06/19 10:10:49 portier Exp $
+ * $Id: fact.h,v 1.8 2001/06/19 16:50:17 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,13 +40,14 @@ namespace NLAILOGIC {
 			NLAIAGENT::IVarName *_AssertName;
 		public:
 
-			CFact();
+			CFact();			
 			CFact(IBaseAssert *);
 			CFact(IBaseAssert *, bool);
 			CFact(IBaseAssert *, CValueSet *);
 			CFact(IBaseAssert *, CVarSet *);
 			virtual ~CFact();
 
+			CFact(sint32,NLAIAGENT::IVarName *);
 			CFact(NLAIAGENT::IVarName &);
 			CFact(NLAIAGENT::IVarName &, bool);
 			CFact(NLAIAGENT::IVarName &, CValueSet *);

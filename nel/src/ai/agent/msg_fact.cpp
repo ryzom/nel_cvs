@@ -1,6 +1,6 @@
 /** \file msg_fact.cpp
  *
- * $Id: msg_fact.cpp,v 1.3 2001/06/01 14:50:38 portier Exp $
+ * $Id: msg_fact.cpp,v 1.4 2001/06/19 16:50:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,18 +80,9 @@ namespace NLAIAGENT
 	}	
 
 	void CFactMsg::getDebugString(std::string &t) const
-	{
-		double i = ((const INombreDefine *)getFront())->getNumber();
-		if(i != 0.0)
-		{
-			std::string txt;
-			get()->getDebugString(txt);
-			t += NLAIC::stringGetBuild("<CFactMsg> %s",txt.c_str());
-		}
-		else
-		{
-			t += "<CFactMsg> NULL";
-		}
+	{		
+		CMessageScript::getDebugString(t);
+		t +=">";
 	}
 
 

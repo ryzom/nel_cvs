@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_action.cpp,v 1.5 2001/03/28 12:15:14 portier Exp $
+ * $Id: interpret_message_action.cpp,v 1.6 2001/06/19 16:50:08 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CSuccessMsgClass"));
+		buildVTable();
 	}
 
 	CSuccessMsgClass::CSuccessMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
@@ -46,6 +48,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CSuccessMsgClass"));
+		buildVTable();
 	}
 
 	CSuccessMsgClass::CSuccessMsgClass() : CMessageClass()
@@ -53,6 +57,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CSuccessMsgClass"));
+		buildVTable();
 	}
 	
 	const NLAIC::IBasicType *CSuccessMsgClass::clone() const
@@ -83,6 +89,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
+		buildVTable();
 	}
 
 	CFailureMsgClass::CFailureMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
@@ -90,6 +98,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
+		buildVTable();
 	}
 
 	CFailureMsgClass::CFailureMsgClass() : CMessageClass()
@@ -97,6 +107,8 @@ namespace NLAISCRIPT
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
 		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("Param"));
 		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+		setClassName(NLAIAGENT::CStringVarName("CFailureMsgClass"));
+		buildVTable();
 	}
 	
 	const NLAIC::IBasicType *CFailureMsgClass::clone() const

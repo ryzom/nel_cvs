@@ -29,7 +29,8 @@ namespace NLAILOGIC
 	CFact::CFact() : CValueSet()
 	{
 		_AssertName = NULL;
-	}
+	}	
+
 
 	CFact::CFact(IBaseAssert *a) : CValueSet(a->nbVars() )
 	{
@@ -67,6 +68,13 @@ namespace NLAILOGIC
 	CFact::CFact(NLAIAGENT::IVarName &name) : CValueSet()
 	{
 		_AssertName = (NLAIAGENT::IVarName *) name.clone();
+	}
+
+	CFact::CFact(sint32 i,NLAIAGENT::IVarName *a) : CValueSet(i )
+	{
+		//_Assert = a;
+		_AssertName = (NLAIAGENT::IVarName *) a;
+		_Assert = NULL;
 	}
 
 	CFact::CFact(NLAIAGENT::IVarName &a, CValueSet *vals) : CValueSet( *vals )
@@ -108,7 +116,8 @@ namespace NLAILOGIC
 	void CFact::getDebugString(std::string &txt) const
 	{
 		std::string buf;
-		_Assert->getDebugString(buf);
+		if(_Assert != NULL) _Assert->getDebugString(buf);
+		else buf = "NULL";
 		txt += NLAIC::stringGetBuild("<CFact> %s\n", buf.c_str());
 		for (sint32 i = 0; i < _NbValues; i++ )
 		{

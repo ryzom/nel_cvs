@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.3 2002/05/28 14:46:03 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.4 2002/05/28 15:04:06 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -218,8 +218,12 @@ void	CHTimer::endBench()
 //=================================================================
 void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
 {	
-//	nlassert(!_Benching); // should have called endBench
 	nlassert(_BenchStartedOnce); // should have done at least one bench
+	bool wasBenching = _Benching;
+	if (_Benching)
+	{
+		endBench();
+	}
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -283,14 +287,21 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 			nlinfo(out);					
 		}
 	}
-	
+	if (wasBenching)
+	{
+		startBench();
+	}
 }
 
 //================================================================================================
 void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
-{
-//	nlassert(!_Benching); // should have called endBench
+{	
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
+	bool wasBenching = _Benching;
+	if (_Benching)
+	{
+		endBench();
+	}
 	//
 	typedef std::vector<CNodeStat>   TNodeStatVect;
 	typedef std::vector<CNodeStat *> TNodeStatPtrVect;
@@ -369,6 +380,10 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			NLMISC::smprintf(out, 2048, format.c_str(), nodePath.c_str(), statsInline.c_str());
 			nlinfo(out);
 		}
+	}	
+	if (wasBenching)
+	{
+		startBench();
 	}
 }
 
@@ -376,6 +391,11 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 /*static*/ void CHTimer::displayHierarchical(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
 {
 	nlassert(_BenchStartedOnce); // should have done at least one bench
+	bool wasBenching = _Benching;
+	if (_Benching)
+	{
+		endBench();
+	}
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -430,7 +450,11 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			displayStat = true;
 			++ depth;
 		}
-	}	
+	}
+	if (wasBenching)
+	{
+		startBench();
+	}
 }
 
 //=================================================================

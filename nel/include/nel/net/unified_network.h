@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.35 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: unified_network.h,v 1.36 2003/03/04 14:01:51 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -140,8 +140,7 @@ public:
 	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)
 	 * On a server, the callback is called each time a new client is connected to him
 	 * 
-	 * If the serviceName is "*", you can set more than one callback, each one will be called one after one.
-	 * Otherwise only the last setCallback will be called (and you can set cb to 0 to remove the callback).
+	 * You can set more than one callback, each one will be called one after one.
 	 * If the serviceName is "*", the callback will be call for any services
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is up)
@@ -154,8 +153,7 @@ public:
 	 * On a client, the callback will be call each time the connection to the server is lost.
 	 * On a server, the callback is called each time a client is disconnected.
 	 * 
-	 * If the serviceName is "*", you can set more than one callback, each one will be called one after one.
-	 * Otherwise only the last setCallback will be called (and you can set cb to 0 to remove the callback).
+	 * You can set more than one callback, each one will be called one after one.
 	 * If the serviceName is "*", the callback will be call for any services
 	 * If you set the same callback for a specific service S and for "*", the callback might be
 	 * call twice (in case the service S is down)
@@ -235,7 +233,7 @@ private:
 	typedef std::pair<TUnifiedNetCallback, void *>				TCallbackArgItem;
 
 	/// A map of service up/down callbacks with their user data.
-	typedef std::hash_multimap<std::string, TCallbackArgItem>	TNameMappedCallback;
+	typedef std::hash_map<std::string, std::list<TCallbackArgItem> >	TNameMappedCallback;
 
 
 
@@ -484,6 +482,9 @@ private:
 	// with a sid and a nid, find a good connection to send a message
 	uint8 findConnectionId (uint16 sid, uint8 nid);
 
+	void callServiceUpCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback = true);
+	void callServiceDownCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback = true);
+	
 	friend void	uncbConnection(TSockId from, void *arg);
 	friend void	uncbDisconnection(TSockId from, void *arg);
 	friend void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.61 2003/03/03 13:05:51 boucher Exp $
+ * $Id: unified_network.cpp,v 1.62 2003/03/04 14:02:12 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -110,6 +110,10 @@ void	uNetUnregistrationBroadcast(const string &name, TServiceId sid, const vecto
 	if (uc == 0) return;	// should never happen, the getUnifiedConnection() will generate a AUTOCHECK_DISPLAY
 
 	// call the user callback
+
+	uni->callServiceDownCallback(uc->ServiceName, uc->ServiceId);
+
+	/*
 	CUnifiedNetwork::TNameMappedCallback::iterator	it2 = uni->_DownCallbacks.find(uc->ServiceName);
 
 	if (it2 != uni->_DownCallbacks.end())
@@ -123,7 +127,7 @@ void	uNetUnregistrationBroadcast(const string &name, TServiceId sid, const vecto
 	{
 		if (uni->_DownUniCallback[c].first != NULL)
 			uni->_DownUniCallback[c].first(uc->ServiceName, uc->ServiceId, uni->_DownUniCallback[c].second);
-	}
+	}*/
 
 	if(!uc->Connection.empty ())
 	{
@@ -201,7 +205,9 @@ void	uncbDisconnection(TSockId from, void *arg)
 					// If it s a external service with no auto retry, remove the connection
 					
 					// call the user callback
-					CUnifiedNetwork::TNameMappedCallback::iterator	it2 = uni->_DownCallbacks.find(uc->ServiceName);
+					uni->callServiceDownCallback(uc->ServiceName, uc->ServiceId);
+					
+					/*CUnifiedNetwork::TNameMappedCallback::iterator	it2 = uni->_DownCallbacks.find(uc->ServiceName);
 
 					if (it2 != uni->_DownCallbacks.end())
 					{
@@ -214,7 +220,7 @@ void	uncbDisconnection(TSockId from, void *arg)
 					{
 						if (uni->_DownUniCallback[c].first != NULL)
 							uni->_DownUniCallback[c].first(uc->ServiceName, uc->ServiceId, uni->_DownUniCallback[c].second);
-					}
+					}*/
 
 					uni->removeNamedCnx (uc->ServiceName, uc->ServiceId);
 	
@@ -373,20 +379,25 @@ void	uncbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &
 		// insert the name in the map to be able to send message with the name
 		uni->addNamedCnx (inSName, inSid);
 
+		uni->callServiceUpCallback (inSName, inSid);
+/*
 		// now we warn the user
 		CUnifiedNetwork::TNameMappedCallback::iterator	it = uni->_UpCallbacks.find(inSName);
 		if (it != uni->_UpCallbacks.end())
 		{
 			// call it
-			TUnifiedNetCallback	cb = (*it).second.first;
-			cb(inSName, inSid, (*it).second.second);
+			for (list<TCallbackArgItem> it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
+			{
+				TUnifiedNetCallback	cb = (*it2).first;
+				if (cb) cb(inSName, inSid, (*it2).second);
+			}
 		}
 
 		for (uint c = 0; c < uni->_UpUniCallback.size (); c++)
 		{
 			if (uni->_UpUniCallback[c].first != NULL)
 				uni->_UpUniCallback[c].first (inSName, inSid, uni->_UpUniCallback[c].second);
-		}
+		}*/
 	}
 }
 
@@ -779,12 +790,18 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		// add the name only if at least one connection is ok
 		addNamedCnx (name, sid);
 
+		callServiceUpCallback (name, sid, !external);
+		
+/*		
 		// call the connection callback associated to this service
 		TNameMappedCallback::iterator	itcb = _UpCallbacks.find(name);
-		if (itcb != _UpCallbacks.end() && (*itcb).second.first != NULL)
+		if (itcb != _UpCallbacks.end())
 		{
-			TUnifiedNetCallback	cb = (*itcb).second.first;
-			cb(name, sid, (*itcb).second.second);
+			for (list<TCallbackArgItem> it2 = (*itcb).second.begin(); it2 != (*itcb).second.end(); it2++)
+			{				
+				TUnifiedNetCallback	cb = (*it2).first;
+				if (cb) cb(name, sid, (*it2).second);
+			}
 		}
 
 		if (!external)
@@ -795,7 +812,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 					_UpUniCallback[i].first (name, sid, _UpUniCallback[i].second);
 			}
 		}
-	}
+*/	}
 
 	nldebug ("HNETL5: addService was successful");
 }
@@ -930,12 +947,17 @@ void	CUnifiedNetwork::update(TTime timeout)
 						}
 
 						// call the user callback
+						callServiceUpCallback (uc.ServiceName, uc.ServiceId);
+						/*
 						CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(uc.ServiceName);
 						if (it != _UpCallbacks.end())
 						{
 							// call it
-							TUnifiedNetCallback	cb = (*it).second.first;
-							cb(uc.ServiceName, uc.ServiceId, (*it).second.second);
+							for (list<TCallbackArgItem> it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
+							{
+								TUnifiedNetCallback	cb = (*it2).first;
+								if (cb) cb(uc.ServiceName, uc.ServiceId, (*it2).second);
+							}
 						}
 
 						for (uint c = 0; c < _UpUniCallback.size (); c++)
@@ -943,7 +965,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 							if (_UpUniCallback[c].first != NULL)
 								_UpUniCallback[c].first (uc.ServiceName, uc.ServiceId, _UpUniCallback[c].second);
 						}
-
+						*/
 					}
 					catch (ESocketConnectionFailed &e)
 					{
@@ -1141,54 +1163,40 @@ void	CUnifiedNetwork::addCallbackArray (const TUnifiedCallbackItem *callbackarra
 
 void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg, bool back)
 {
+	nlassert (cb != NULL);
 	if (serviceName == "*")
 	{
-		nlassert (cb != NULL);
 		if (back)
 			_UpUniCallback.push_back (make_pair(cb, arg));
 		else
 			_UpUniCallback.insert (_UpUniCallback.begin(), make_pair(cb, arg));
-
-		return;
 	}
-
-	TNameMappedCallback::iterator	it = _UpCallbacks.find(serviceName);
-	if (it == _UpCallbacks.end())
+	else
 	{
-		TCallbackArgItem	ncb;
-		ncb.first = NULL;
-		ncb.second = NULL;
-		it = _UpCallbacks.insert(make_pair(serviceName, ncb));
-	}
-
-	(*it).second.first = cb;
-	(*it).second.second = arg;
+		if (back)
+			_UpCallbacks[serviceName].push_back (make_pair(cb, arg));
+		else
+			_UpCallbacks[serviceName].insert (_UpCallbacks[serviceName].begin(), make_pair(cb, arg));
+	}	
 }
 
 void	CUnifiedNetwork::setServiceDownCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg, bool back)
 {
+	nlassert (cb != NULL);
 	if (serviceName == "*")
 	{
-		nlassert (cb != NULL);
 		if (back)
 			_DownUniCallback.push_back (make_pair(cb, arg));
 		else
 			_DownUniCallback.insert (_DownUniCallback.begin(), make_pair(cb, arg));
-
-		return;
 	}
-
-	TNameMappedCallback::iterator	it = _DownCallbacks.find(serviceName);
-	if (it == _DownCallbacks.end())
+	else
 	{
-		TCallbackArgItem	ncb;
-		ncb.first = NULL;
-		ncb.second = NULL;
-		it = _DownCallbacks.insert(make_pair(serviceName, ncb));
+		if (back)
+			_DownCallbacks[serviceName].push_back (make_pair(cb, arg));
+		else
+			_DownCallbacks[serviceName].insert (_DownCallbacks[serviceName].begin(), make_pair(cb, arg));
 	}
-
-	(*it).second.first = cb;
-	(*it).second.second = arg;
 }
 
 //
@@ -1709,6 +1717,63 @@ void CUnifiedNetwork::addNetworkAssociation (const string &networkName, uint8 ni
 	nlinfo ("HNETL5: Associate network '%s' 0x%08x '%s' to nid %hu", networkName.c_str(), _NetworkAssociations[nid], internalIPAddressToString (_NetworkAssociations[nid]).c_str(), (uint16)nid);
 }
 
+void CUnifiedNetwork::callServiceUpCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback)
+{
+	// now we warn the user
+	CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(serviceName);
+	if (it != _UpCallbacks.end())
+	{
+		// call it
+		for (list<TCallbackArgItem>::iterator it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
+		{
+			TUnifiedNetCallback	cb = (*it2).first;
+			if (cb)
+				cb(serviceName, sid, (*it2).second);
+			else
+				nlwarning ("User set an empty callback for '%s' service up", serviceName.c_str());
+		}
+	}
+	
+	if(callGlobalCallback)
+	{
+		for (uint c = 0; c < _UpUniCallback.size (); c++)
+		{
+			if (_UpUniCallback[c].first != NULL)
+				_UpUniCallback[c].first (serviceName, sid, _UpUniCallback[c].second);
+			else
+				nlwarning ("User set an empty callback for '*' service up");
+		}
+	}
+}
+
+void CUnifiedNetwork::callServiceDownCallback (const std::string &serviceName, uint16 sid, bool callGlobalCallback)
+{
+	// now we warn the user
+	CUnifiedNetwork::TNameMappedCallback::iterator	it = _DownCallbacks.find(serviceName);
+	if (it != _DownCallbacks.end())
+	{
+		// call it
+		for (list<TCallbackArgItem>::iterator it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
+		{
+			TUnifiedNetCallback	cb = (*it2).first;
+			if (cb)
+				cb(serviceName, sid, (*it2).second);
+			else
+				nlwarning ("User set an empty callback for '%s' service down", serviceName.c_str());
+		}
+	}
+	
+	if(callGlobalCallback)
+	{
+		for (uint c = 0; c < _DownUniCallback.size (); c++)
+		{
+			if (_DownUniCallback[c].first != NULL)
+				_DownUniCallback[c].first (serviceName, sid, _DownUniCallback[c].second);
+			else
+				nlwarning ("User set an empty callback for '*' service down");
+		}
+	}
+}
 
 
 //

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.16 2004/08/13 15:46:51 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.17 2004/09/17 15:12:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -796,6 +796,8 @@ public:
 	  */
 	void					touchVertices (uint first, uint last);
 
+	const CVertexBuffer *getParent() const { return _Parent; }
+
 private:
 
 	// No copy operators available
@@ -851,6 +853,8 @@ public:
 	const float*			getWeightPointer(uint idx=0, uint8 wgt=0) const;
 	const CPaletteSkin*		getPaletteSkinPointer(uint idx=0) const;
 	const void*				getValueEx (CVertexBuffer::TValue valueId, uint idx=0) const { nlassert (_Parent->_Flags & (1<<valueId));	return (void*)(_Parent->_LockedBuffer+idx*_Parent->_VertexSize+_Parent->getValueOffEx (valueId)); }
+
+	const CVertexBuffer *getParent() const { return _Parent; }
 
 private:
 	

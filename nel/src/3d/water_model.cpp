@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_model.cpp,v 1.2 2001/10/26 09:05:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,7 +71,13 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	//===========================//
 	// perform water animation   //
 	//===========================//
-	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(shape->_WaterPoolID, waterHeightMapSize);
+	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(shape->_WaterPoolID);
+
+	const float waterRatio = whm.getUnitSize();
+	const float invWaterRatio = 1.f / waterRatio;
+	const uint  waterHeightMapSize = whm.getSize();
+	const uint  doubleWaterHeightMapSize = (waterHeightMapSize << 1);
+		
 	whm.setUserPos((sint) (ObsPos.x * invWaterRatio) - (waterHeightMapSize >> 1),
 				   (sint) (ObsPos.y * invWaterRatio) - (waterHeightMapSize >> 1)
 				  );
@@ -83,10 +89,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		whm.filterNStoreGradient();	
 	}
 
-	const float waterRatio = whm.getUnitSize();
-	const float invWaterRatio = 1.f / waterRatio;
-	const uint  waterHeightMapSize = whm.getSize();
-	const uint  doubleWaterHeightMapSize = (waterHeightMapSize << 1);
+	
 
 	//==================//
 	// polygon clipping //

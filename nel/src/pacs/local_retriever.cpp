@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.45 2002/02/01 18:17:58 berenguier Exp $
+ * $Id: local_retriever.cpp,v 1.46 2002/04/02 15:35:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -611,10 +611,67 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 				_Surfaces[i]._Loops[j].Length += _Chains[_Surfaces[i]._Chains[_Surfaces[i]._Loops[j][k]].Chain].getLength();
 		}
 	}
-
-
 }
 
+
+//
+void	NLPACS::CLocalRetriever::buildSurfacePolygons(uint32 surface, list<CPolygon> &polygons) const
+{
+	const CRetrievableSurface	&surf = _Surfaces[surface];
+
+	uint	i, j, k, l;
+
+	for (i=0; i<surf._Loops.size(); ++i)
+	{
+		polygons.push_back();
+		CPolygon	&poly = polygons.back();
+
+		for (j=0; j<surf._Loops[i].size(); ++j)
+		{
+			const CChain	&chain = _Chains[surf._Loops[i][j]];
+			bool			chainforward = (chain._Left == surface);
+
+			if (chainforward)
+			{
+				for (k=0; k<chain._SubChains.size(); ++k)
+				{
+					const COrderedChain		&ochain = _OrderedChains[chain._SubChains[k]];
+					bool					ochainforward = ochain.isForward();
+
+					if (ochainforward)
+					{
+						for (l=0; l<ochain.getVertices().size()-1; ++l)
+							poly.Vertices.push_back(ochain[l].unpack3f());
+					}
+					else
+					{
+						for (l=ochain.getVertices().size()-1; l>0; --l)
+							poly.Vertices.push_back(ochain[l].unpack3f());
+					}
+				}
+			}
+			else
+			{
+				for (k=chain._SubChains.size(); (sint)k>0; --k)
+				{
+					const COrderedChain		&ochain = _OrderedChains[chain._SubChains[k]];
+					bool					ochainforward = ochain.isForward();
+
+					if (ochainforward)
+					{
+						for (l=ochain.getVertices().size()-1; (sint)l>0; --l)
+							poly.Vertices.push_back(ochain[l].unpack3f());
+					}
+					else
+					{
+						for (l=0; l<ochain.getVertices().size()-1; ++l)
+							poly.Vertices.push_back(ochain[l].unpack3f());
+					}
+				}
+			}
+		}
+	}
+}
 
 
 // not implemented...

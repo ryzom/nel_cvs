@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.20 2002/02/20 18:09:21 lecroart Exp $
+ * $Id: local_retriever.h,v 1.21 2002/04/02 15:35:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,12 +28,14 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
 
 #include "nel/misc/aabbox.h"
+#include "nel/misc/polygon.h"
 
 #include "pacs/vector_2s.h"
 #include "pacs/surface_quad.h"
@@ -312,6 +314,20 @@ public:
 
 	/// build BBoxes of interior surfaces in surfaceBBoxes (cleared first)
 	void								buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAABBox>	&surfaceBBoxes) const;
+
+	/// Builds the polygons (loops) of a given surface
+	void								buildSurfacePolygons(uint32 surface, std::list<NLMISC::CPolygon> &polygons) const;
+
+	/// Builds the polygons (loops) of all surfaces in the retriever
+	void								buildSurfacePolygons(std::list< std::list<NLMISC::CPolygon> > &polygons) const
+	{
+		uint	i;
+		for (i=0; i<_Surfaces.size(); ++i)
+		{
+			polygons.push_back();
+			buildSurfacePolygons(i, polygons.back());
+		}
+	}
 
 	// @}
 

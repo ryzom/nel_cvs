@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.15 2001/06/22 13:50:32 portier Exp $
+ * $Id: goal.h,v 1.16 2001/06/26 13:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,11 +35,21 @@ namespace NLAILOGIC
 
 	class CGoal : public IBaseBoolType
 	{
+		public:
+			enum TTypeOfGoal
+			{
+				achieveOnce,
+				achieveForever
+			};
+
+
 		private:
 			NLAIAGENT::IVarName *_Name;
 			std::vector<NLAIAGENT::IObjectIA *>		_Args;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Predecessors;
 			std::vector<NLAIAGENT::IBasicAgent *>	_Successors;
+
+			TTypeOfGoal	type;
 
 			NLAIAGENT::IBasicAgent *_Sender;
 			NLAIAGENT::IBasicAgent *_Receiver;

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.14 2001/06/21 16:00:37 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.15 2001/06/26 13:28:21 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,9 +224,6 @@ public:
 		{
 			return _GoalPosVar;
 		}
-
-
-
 	};
 }
 #endif

@@ -359,7 +359,7 @@ namespace NLAIAGENT
 	void COperatorScript::linkGoalArgs(NLAILOGIC::CGoal *g)
 	{
 		std::vector<NLAIAGENT::IObjectIA *>::const_iterator it_arg = g->getArgs().begin();
-		std::vector<sint32>::iterator &it_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoalVarPos().begin();
+		std::vector<sint32>::iterator it_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoalVarPos().begin();
 		while ( it_arg != g->getArgs().end() )
 		{
 			setStaticMember( *it_pos, *it_arg );
@@ -373,7 +373,7 @@ namespace NLAIAGENT
 		// Tells the goal the operator succeded
 		_CurrentGoal->operatorSuccess( this );
 		_CurrentGoal = NULL;
-//		unActivate();
+		unActivate();
 	}
 	
 	void COperatorScript::onFailure( IObjectIA *)
@@ -381,6 +381,6 @@ namespace NLAIAGENT
 		// Tells the goal the operator failed
 		_CurrentGoal->operatorFailure( this );
 		_CurrentGoal = NULL;
-//		unActivate();
+		unActivate();
 	}
 }

@@ -187,10 +187,11 @@ namespace NLAILOGIC
 
 	const char *dbg_class_name = (const char *) getType();
 #endif
+		static NLAIAGENT::CStringVarName constructor_name("Constructor");
 		NLAIAGENT::tQueue r;
 		if(className == NULL)
 		{
-			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )
+			if( (*funcName) == constructor_name )
 			{					
 				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
 				r.push( NLAIAGENT::CIdMethod( 0 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					

@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.9 2003/03/31 10:29:59 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.9.2.1 2003/04/29 10:13:10 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,6 +29,9 @@
 
 
 namespace NL3D {
+
+
+CTextureBump::TNameToNI CTextureBump::_NameToNF;
 
 
 #define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
@@ -215,7 +218,7 @@ static float NormalizeDsDtAsRGBA(uint32 *src, sint width, sint height, bool abso
 /*
  * Constructor
  */
-CTextureBump::CTextureBump() : _NormalizationFactor(0.f),
+CTextureBump::CTextureBump() : _NormalizationFactor(NULL),
 							   _DisableSharing(false),
 							   _UseAbsoluteOffsets(false),
 							   _ForceNormalize(true),
@@ -306,17 +309,39 @@ void CTextureBump::doGenerate()
 		BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]), _UseAbsoluteOffsets, _Signed);
 	}
 
+	float normalizationFactor;
 	// Normalize the map if needed
 	if (_ForceNormalize)
 	{
 		if (getUploadFormat() == RGBA8888)
 		{
-			_NormalizationFactor = NormalizeDsDtAsRGBA((uint32 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets);
+			normalizationFactor = NormalizeDsDtAsRGBA((uint32 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets);
 		}
 		else
 		{
-			_NormalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets, _Signed);
+			normalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets, _Signed);
 		}
+	}
+
+	// create entry in the map for the normalization factor
+	std::string shareName = getShareName();
+	TNameToNI::iterator it = _NameToNF.find(shareName);
+	if (it == _NameToNF.end())
+	{
+		// create a new entry
+		CNormalizationInfo ni;
+		ni.NumRefs = 1;
+		ni.NormalizationFactor = normalizationFactor;
+		std::pair<TNameToNI::iterator, bool> pb = _NameToNF.insert(TNameToNI::value_type(shareName, ni));
+		_NormalizationFactor = &(pb.first->second.NormalizationFactor);
+		_NameToNFHandle = pb.first;
+	}
+	else
+	{
+		// another map has computed the factor
+		_NormalizationFactor = &(it->second.NormalizationFactor);
+		_NameToNFHandle = it;
+		++(it->second.NumRefs);
 	}
 
 	if (_HeightMap->getReleasable())
@@ -347,11 +372,49 @@ bool	CTextureBump::supportSharing() const
 
 
 ///==============================================================================================
-	std::string	CTextureBump::getShareName() const
+std::string	CTextureBump::getShareName() const
 {
 	nlassert(supportSharing());
 	return "BumpDsDt:" + _HeightMap->getShareName();
 }
+
+///==============================================================================================
+float CTextureBump::getNormalizationFactor()
+{
+	if (!_Touched)
+	{	
+		if (_NormalizationFactor) return *_NormalizationFactor;
+	}
+	// not computed yet, see if another map has computed it
+	TNameToNI::iterator it = _NameToNF.find(getShareName());
+	if (it != _NameToNF.end())
+	{
+		_NameToNFHandle = it;
+		_NormalizationFactor = &(it->second.NormalizationFactor);
+		++(it->second.NumRefs);
+	}
+	else
+	{
+		doGenerate();
+		if (this->getReleasable()) this->release();
+	}
+	return _NormalizationFactor ? *_NormalizationFactor : 1.f;		
+}
+
+///==============================================================================================
+CTextureBump::~CTextureBump()
+{
+	if (_NormalizationFactor)
+	{
+		--(_NameToNFHandle->second.NumRefs);
+		if (_NameToNFHandle->second.NumRefs == 0)
+		{
+			_NameToNF.erase(_NameToNFHandle);
+		}
+	}
+}
+
+
 
 
 } // NL3D

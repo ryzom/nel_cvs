@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.6 2003/03/31 10:29:59 vizerie Exp $
+ * $Id: texture_bump.h,v 1.6.2.1 2003/04/29 10:13:00 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -45,6 +45,8 @@ public:
 	NLMISC_DECLARE_CLASS(CTextureBump);
 	/// ctor
 	CTextureBump();
+	/// dtor
+	~CTextureBump();
 
 	/// set the height map used to generate this bump map
 	void				setHeightMap(ITexture *heightMap);
@@ -77,11 +79,8 @@ public:
 	bool				    isNormalizationForced() const { return _ForceNormalize; }
 
 	/// Get the normalization factor. This is valid only if the texture has been generated
-	float					getNormalizationFactor() 
-	{ 
-		nlassert(_ForceNormalize);
-		return _NormalizationFactor; 
-	}
+	float					getNormalizationFactor();
+	
 
 	/** Use signed format or not. Default is to used signed format
 	  * NB : when RGBA upload format is used, the format is never signed
@@ -101,12 +100,21 @@ public:
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
 	virtual void doGenerate();	
-	NLMISC::CSmartPtr<ITexture> _HeightMap;
-	float						_NormalizationFactor;
-	bool						_DisableSharing;
-	bool						_UseAbsoluteOffsets;
-	bool						_ForceNormalize;
-	bool                        _Signed;
+	NLMISC::CSmartPtr<ITexture>  _HeightMap;
+	float						 *_NormalizationFactor;
+	bool						 _DisableSharing;
+	bool						 _UseAbsoluteOffsets;
+	bool						 _ForceNormalize;
+	bool                         _Signed;
+	// Map that give the normalization factor for each map from its sharename. This avoid to generate several time the maps to get the normalization factor if a bumpmap is shared by severals CTextureBump instances;
+	struct CNormalizationInfo
+	{
+		uint  NumRefs;
+		float NormalizationFactor;
+	};
+	typedef std::map<std::string, CNormalizationInfo> TNameToNI; // sharename to the normalization factor
+	static TNameToNI	_NameToNF; // name to normalization factor
+	TNameToNI::iterator	_NameToNFHandle; // handle of this instance into the map
 private:
 	/// we don't allow for mipmap for bump so we redefine this to prevent the user from doing this on the base class Itexture
 	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);

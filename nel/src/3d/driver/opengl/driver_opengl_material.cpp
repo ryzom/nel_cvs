@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.71 2003/04/07 12:36:48 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.71.2.1 2003/04/29 10:13:19 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1880,7 +1880,7 @@ void CDriverGL::setupWaterPassR200(const CMaterial &mat)
 		nglSetFragmentShaderConstantATI(GL_CON_0_ATI, cst);
 	}
 	//
-	if (mat.getTexture(1) && mat.getTexture(0)->isBumpMap())
+	if (mat.getTexture(1) && mat.getTexture(1)->isBumpMap())
 	{
 		float factor = NLMISC::safe_cast<CTextureBump *>(mat.getTexture(1))->getNormalizationFactor();
 		float cst[4] = { factor, factor, factor, 0.f };

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.34 2003/04/01 15:44:34 vizerie Exp $
+ * $Id: water_model.cpp,v 1.34.2.1 2003/04/29 10:12:48 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -427,7 +427,7 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CPolygon &
 
 //***************************************************************************************************************
 void	CWaterModel::traverseRender()
-{			
+{				
 	H_AUTO( NL3D_Water_Render );
 
 	CRenderTrav					&renderTrav		= getOwnerScene()->getRenderTrav();
@@ -485,9 +485,12 @@ void	CWaterModel::traverseRender()
 
 	const float transitionDist	= shape->_TransitionRatio   * renderTrav.Far;
 	
+	
 	NLMISC::CMatrix modelMat;
 	modelMat.setPos(NLMISC::CVector(obsPos.x, obsPos.y, zHeight));
 	drv->setupModelMatrix(modelMat);
+
+	
 
 
 	//==================//
@@ -495,9 +498,14 @@ void	CWaterModel::traverseRender()
 	//==================//
 
 	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(shape->_WaterPoolID);
-	setupMaterialNVertexShader(drv, shape, obsPos, isAbove > 0, whm.getUnitSize() * (whm.getSize() >> 1), zHeight);
-
+		
+	setupMaterialNVertexShader(drv, shape, obsPos, isAbove > 0, whm.getUnitSize() * (whm.getSize() >> 1), zHeight);	
+	
+	
 	drv->setupMaterial(CWaterModel::_WaterMat);
+
+	
+
 	sint numPass = drv->beginMaterialMultiPass();
 	nlassert(numPass == 1); // for now, we assume water is always rendered in a single pass !
 	drv->setupMaterialPass(0);
@@ -799,13 +807,8 @@ void	CWaterModel::traverseRender()
 	drv->endMaterialMultiPass();	
 
 
-	if (drv->isVertexProgramSupported())
-	{
-		bool result =  drv->activeVertexProgram(NULL);
-		if (!result) nlwarning("no vertex program setupped");
-	}
+	drv->activeVertexProgram(NULL);
 	
-
 }
 
 //***********************
@@ -814,7 +817,7 @@ void	CWaterModel::traverseRender()
 
 
 void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
-{		
+{			
 	static bool matSetupped = false;
 	if (!matSetupped)
 	{	
@@ -828,131 +831,121 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 		_WaterMat.setShader(CMaterial::Water);
 	}
 	
-	if (drv->isVertexProgramSupported() && !drv->isVertexProgramEmulated())	
+	
+	const uint cstOffset = 4; // 4 places for the matrix
+	NLMISC::CVectorH cst[13];
+	
+	
+	//=========================//
+	//	setup Water material   //
+	//=========================//
+		
+	CWaterModel::_WaterMat.setTexture(0, shape->_BumpMap[0]);
+	CWaterModel::_WaterMat.setTexture(1, shape->_BumpMap[1]);
+	CWaterModel::_WaterMat.setTexture(3, shape->_ColorMap);
+
+	if (!above && shape->_EnvMap[1])
 	{
-		const uint cstOffset = 4; // 4 places for the matrix
-		NLMISC::CVectorH cst[13];
-		
-		
-		//=========================//
-		//	setup Water material   //
-		//=========================//
-			
-		CWaterModel::_WaterMat.setTexture(0, shape->_BumpMap[0]);
-		CWaterModel::_WaterMat.setTexture(1, shape->_BumpMap[1]);
-		CWaterModel::_WaterMat.setTexture(3, shape->_ColorMap);
-
-		if (!above && shape->_EnvMap[1])
-		{
-			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);				
-		}
-		else
-		{
-			CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
-		}
-
-	
-		shape->envMapUpdate();
-
-		const uint alphaMapStage = 3;
-		if (shape->_ColorMap)
-		{			
-			//WaterMat.setTexture(alphaMapStage, shape->_ColorMap);
-			//if (shape->_ColorMap->supportSharing()) nlinfo(shape->_ColorMap->getShareName().c_str());
-
-
-			// setup 2x3 matrix for lookup in diffuse map
-			cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * obsPos.x + shape->_ColorMapMatColumn1.x * obsPos.y + shape->_ColorMapMatPos.x); 
-			cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * obsPos.x + shape->_ColorMapMatColumn1.y * obsPos.y + shape->_ColorMapMatPos.y);						
-		}
-		else
-		{
-			cst[13 - cstOffset].set(0, 0, 0, 0);
-			cst[14 - cstOffset].set(0, 0, 0, 0);			
-		}
-
-		cst[16 - cstOffset].set(0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
-		// cst[16 - cstOffset].set(0.0f, 0.0f, 0.0f, 0.0f); // used to avoid imprecision when performing a RSQ to get distance from the origin
-
-					
-
-
-		cst[5  - cstOffset].set(0.f, 0.f, 0.f, 0.f); // claping negative values to 0
-
-		// slope of attenuation of normal / height with distance		
-		const float invMaxDist = shape->_WaveHeightFactor / maxDist;
-		cst[6  - cstOffset].set(invMaxDist, shape->_WaveHeightFactor, 0, 0);		
-
-		/*cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vectorshape->_WaveHeightFactor		
-		cst[15  - cstOffset].set(shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
-		*/
-
-
-				
-
-		/// set matrix		
-		drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
-
-		// retrieve current time
-		float date  = 0.001f * (NLMISC::CTime::getLocalTime() & 0xffffff); // must keep some precision.
-		// set bumpmaps pos
-		cst[9  - cstOffset].set(fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].x, 1.f), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].y, 1.f), 0.f, 1.f); // bump map 0 offset
-		cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 1); // bump map 0 scale
-		cst[11  - cstOffset].set(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].x, 1.f), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].y, 1.f), 0.f, 0.f); // bump map 1 offset
-		cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 1); // bump map 1 scale
-
-				
-		
-
-		cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 1.f);
-		cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
-
-	
-		
-
-		/// set all our constants in one call
-		drv->setConstant(4, sizeof(cst) / sizeof(cst[0]), (float *) &cst[0]);
-
-		shape->initVertexProgram();		
-		bool result;
-		/*
-		if (useBumpedVersion)
-		{
-			if (!useEMBM)
-			{			
-				result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
-												: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
-			}
-			else
-			{
-				result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump1Diffuse).get())
-												: drv->activeVertexProgram((shape->_VertexProgramBump1).get());
-			}
-		}
-		else
-		{
-			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramNoBumpDiffuse).get())
-										: drv->activeVertexProgram((shape->_VertexProgramNoBump).get());
-		}
-		*/
-		
-		result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
-												: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
-		
-		
-		//
-		if (!result) nlwarning("no vertex program setupped");				
-	}	
-	else
-	{		
-		CWaterModel::_WaterMat.setShader(CMaterial::Normal);
-		_WaterMat.setColor(NLMISC::CRGBA(0, 32, 190, 128));	
+		CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[1]);				
 	}
+	else
+	{
+		CWaterModel::_WaterMat.setTexture(2, shape->_EnvMap[0]);
+	}
+
+
+	shape->envMapUpdate();
+
+	const uint alphaMapStage = 3;
+	if (shape->_ColorMap)
+	{			
+		//WaterMat.setTexture(alphaMapStage, shape->_ColorMap);
+		//if (shape->_ColorMap->supportSharing()) nlinfo(shape->_ColorMap->getShareName().c_str());
+
+
+		// setup 2x3 matrix for lookup in diffuse map
+		cst[13 - cstOffset].set(shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatColumn0.x * obsPos.x + shape->_ColorMapMatColumn1.x * obsPos.y + shape->_ColorMapMatPos.x); 
+		cst[14 - cstOffset].set(shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatColumn0.y * obsPos.x + shape->_ColorMapMatColumn1.y * obsPos.y + shape->_ColorMapMatPos.y);						
+	}
+	else
+	{
+		cst[13 - cstOffset].set(0, 0, 0, 0);
+		cst[14 - cstOffset].set(0, 0, 0, 0);			
+	}
+
+	cst[16 - cstOffset].set(0.1f, 0.1f, 0.1f, 0.1f); // used to avoid imprecision when performing a RSQ to get distance from the origin
+	// cst[16 - cstOffset].set(0.0f, 0.0f, 0.0f, 0.0f); // used to avoid imprecision when performing a RSQ to get distance from the origin
+
+				
+
+
+	cst[5  - cstOffset].set(0.f, 0.f, 0.f, 0.f); // claping negative values to 0
+
+	// slope of attenuation of normal / height with distance		
+	const float invMaxDist = shape->_WaveHeightFactor / maxDist;
+	cst[6  - cstOffset].set(invMaxDist, shape->_WaveHeightFactor, 0, 0);		
+
+	/*cst[6  - cstOffset].set(invMaxDist, invMaxDist, invMaxDist, invMaxDist); // upcoming light vectorshape->_WaveHeightFactor		
+	cst[15  - cstOffset].set(shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor, shape->_WaveHeightFactor);
+	*/
+
+
+			
+
+	/// set matrix		
+	drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
+
+	// retrieve current time
+	float date  = 0.001f * (NLMISC::CTime::getLocalTime() & 0xffffff); // must keep some precision.
+	// set bumpmaps pos
+	cst[9  - cstOffset].set(fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].x, 1.f), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].y, 1.f), 0.f, 1.f); // bump map 0 offset
+	cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 1); // bump map 0 scale
+	cst[11  - cstOffset].set(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].x, 1.f), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].y, 1.f), 0.f, 0.f); // bump map 1 offset
+	cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 1); // bump map 1 scale
+
+			
 	
 
+	cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
+	cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 1.f);
+	cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
-	drv->setupMaterial(CWaterModel::_WaterMat);
+
+	
+
+	/// set all our constants in one call
+	drv->setConstant(4, sizeof(cst) / sizeof(cst[0]), (float *) &cst[0]);
+
+	shape->initVertexProgram();		
+	bool result;
+	/*
+	if (useBumpedVersion)
+	{
+		if (!useEMBM)
+		{			
+			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
+											: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
+		}
+		else
+		{
+			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump1Diffuse).get())
+											: drv->activeVertexProgram((shape->_VertexProgramBump1).get());
+		}
+	}
+	else
+	{
+		result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramNoBumpDiffuse).get())
+									: drv->activeVertexProgram((shape->_VertexProgramNoBump).get());
+	}
+	*/
+	
+	
+
+	result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramBump2Diffuse).get())
+											: drv->activeVertexProgram((shape->_VertexProgramBump2).get());
+			
+	//
+	if (!result) nlwarning("no vertex program setupped");							
 }
 
 //=======================================================================================

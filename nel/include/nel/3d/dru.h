@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.10 2001/01/05 18:44:40 coutelas Exp $
+ * $Id: dru.h,v 1.11 2001/01/11 08:54:59 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,9 @@ public:
 	/// Draw a Quad in 2D. Warning: this is slow...
 	static void			drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport);
 	
+	/// Draw a Quad in 2D. Warning: this is slow...
+	static void			drawQuad (float xcenter, float ycenter, float radius, IDriver& driver, CRGBA col, CViewport viewport);
+
 	/// Portable Function which create a GL Driver (using gl dll...).
 	static IDriver		*createGlDriver() throw(EDru);
 };

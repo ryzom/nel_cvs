@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.11 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.12 2002/11/28 16:19:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -870,7 +870,45 @@ xmlNodePtr CIXml::getRootNode () const
 }
 
 // ***************************************************************************
+	
+bool CIXml::getPropertyString (std::string &result, xmlNodePtr node, const char *property)
+{
+	// Get the value
+	const char *value = (const char*)xmlGetProp (node, (xmlChar*)property);
+	if (value)
+	{
+		// Active value
+		result = value;
 
+		// Delete the value
+		xmlFree ((void*)value);
+
+		// Found
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+	
+bool CIXml::getContentString (std::string &result, xmlNodePtr node)
+{
+	const char *valueText = (const char*)xmlNodeGetContent (node);
+	if (valueText)
+	{
+		result = valueText;
+
+		// Delete the value
+		xmlFree ((void*)valueText);
+	
+		// Found
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+	
 } // NLMISC
 
 #endif // NL_DONT_USE_EXTERNAL_CODE

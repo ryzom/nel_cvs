@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.4 2002/05/17 06:34:14 corvazier Exp $
+ * $Id: i_xml.h,v 1.5 2002/11/28 16:19:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -136,6 +136,20 @@ public:
 	/** Count number of sub node of type for a given node.
 	  */
 	static uint		countChildren (xmlNodePtr node, xmlElementType type);
+	
+	/** 
+	  * Read a property string
+	  *
+	  * Returns true and the result if the property has been found, else false.
+	  */
+	static bool		getPropertyString (std::string &result, xmlNodePtr node, const char *property);
+	
+	/** 
+	  * Read the content of the node as a string
+	  *
+	  * Returns true and the result if some text has been found, else false.
+	  */
+	static bool		getContentString (std::string &result, xmlNodePtr node);
 
 private:
 

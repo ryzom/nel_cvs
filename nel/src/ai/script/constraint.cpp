@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.7 2001/01/17 10:32:10 chafik Exp $
+ * $Id: constraint.cpp,v 1.8 2001/01/25 10:13:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,24 @@ namespace NLAISCRIPT
 		}
 		else
 		{
-			_M = comp.findMethode(*_MethodName,*_Param);
+			try
+			{
+				_M = comp.findMethode(*_MethodName,*_Param);
+			}
+			catch(NLAIE::IException &e)
+			{
+				char txt[1024*8];
+				char param[1024*8];
+				char Method[1024*8];
+				
+				_Param->getDebugString(param);
+				_MethodName->getDebugString(Method);
+				sprintf(txt,"error '%s' when serch '%s%s'",(char *) e.what(),Method,param);
+				_Txt = new char [strlen(txt) + 1];
+				strcpy(_Txt,txt);
+				return;
+
+			}
 			if(_M.MethodName == NULL)
 			{
 				isMember = false;
@@ -96,7 +113,7 @@ namespace NLAISCRIPT
 					
 					_Param->getDebugString(param);
 					_MethodName->getDebugString(Method);
-					sprintf(txt,"can't finde the methode '%s%s'",Method,param);
+					sprintf(txt,"can't find the method '%s%s'",Method,param);
 					_Txt = new char [strlen(txt) + 1];
 					strcpy(_Txt,txt);
 					

@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.6 2001/01/11 17:02:24 chafik Exp $
+ * $Id: registry.cpp,v 1.7 2001/01/25 10:13:19 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,9 @@ namespace NLAIC
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{
-			throw NLAIE::CExceptionUnRegisterClassError((char *)((const char *)ident));
+			char txt[1024*8];
+			sprintf(txt,"can't find '%s' in the registry",(char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError(txt);
 		}
 		return t->Index;			
 	}
@@ -113,7 +115,10 @@ namespace NLAIC
 			if ( !strcmp( (const char *)_TableRegistry[i]->NameClass, class_name ) )
 				return i;
 		}
-		throw NLAIE::CExceptionUnRegisterClassError((char *)class_name);
+
+		char txt[1024*8];
+		sprintf(txt,"can't find '%s' in the registry",(char *)class_name);
+		throw NLAIE::CExceptionUnRegisterClassError(txt);
 		return -1;
 	}
 
@@ -131,7 +136,9 @@ namespace NLAIC
 			if ( !strcmp( (const char *)_TableRegistry[i]->NameClass, class_name ) )
 				return _TableRegistry[ i ]->NameClass;
 		}
-		throw NLAIE::CExceptionUnRegisterClassError((char *)class_name );
+		char txt[1024*8];
+		sprintf(txt,"can't find '%s' in the registry",(char *)class_name);
+		throw NLAIE::CExceptionUnRegisterClassError(txt);
 	}
 
 	// Creates a new instance from a class using its identifier
@@ -161,8 +168,10 @@ namespace NLAIC
 		tMapRegistry::iterator Itr = _MapRegistry.find(ident);
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
-		{
-			throw NLAIE::CExceptionUnRegisterClassError((char *)((const char *)ident));
+		{			
+			char txt[1024*8];
+			sprintf(txt,"can't find '%s' in the registry",(char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError(txt);
 		}
 		return t->FactoryClass;
 	}

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.6 2001/11/21 15:57:16 vizerie Exp $
+ * $Id: texture.h,v 1.7 2002/02/04 10:35:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,8 +326,6 @@ public:
 		return TextureDrvShare!=NULL;
 	}
 
-	/// Does this texture is a cube texture
-	virtual bool isTextureCube() const { return false; }
 
 	/// Does this texture allow the driver to degrade 
 	virtual bool allowDegradation() const { return false; }
@@ -335,6 +333,16 @@ public:
 	/// serial ITexture basic infos (clamp ...).
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	/** Select a texture among several other (if this texture is a set of texture such as CTextureMultiFile)
+	  * The default does nothing
+	  */
+	virtual void selectTexture(uint index) {}
+	
+	/// Cubic textures.
+	// @{
+		/// Does this texture is a cube texture
+		virtual bool isTextureCube() const { return false; }	
+	// @}
 
 //****************************
 // Private part.

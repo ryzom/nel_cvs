@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.3 2001/07/30 14:41:08 besson Exp $
+ * $Id: texture_cube.cpp,v 1.4 2002/02/04 10:36:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,5 +144,15 @@ void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		touch();
 }
 
+
+
+// ***************************************************************************
+void CTextureCube::selectTexture(uint index)
+{
+	for( uint i = 0; i < 6; ++i )
+	{
+		_Textures[i]->selectTexture(index);
+	}
+}
 
 } // NL3D

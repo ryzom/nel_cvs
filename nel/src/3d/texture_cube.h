@@ -1,7 +1,7 @@
 /** \file texture_cube.h
  * Cube mapping (6 maps around the object)
  *
- * $Id: texture_cube.h,v 1.1 2001/06/27 17:41:12 besson Exp $
+ * $Id: texture_cube.h,v 1.2 2002/02/04 10:36:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,9 @@ public:
 	/// Save the texture file name.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureCube);
+
+	/// If the face support multiple texture (such has CTextureMultiFile), this allow to select the active set
+	virtual void selectTexture(uint index);
 
 private:
 

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.74 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.75 2004/04/27 12:07:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
 		case ITexture::DsDt: 
 			if (_Extensions.NVTextureShader) return GL_DSDT_NV;
-			else if (_Extensions.ATIEnvMapBumpMap) return GL_DU8DV8_ATI;
+			else if (_Extensions.ATIEnvMapBumpMap || _Extensions.ATIFragmentShader) return GL_DU8DV8_ATI;
 			else
 			{			
 				nlassert(0);
@@ -761,6 +761,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, ptr);
 						else
 							glTexSubImage2D (GL_TEXTURE_2D, i, x0, y0, x1-x0, y1-y0, glSrcFmt,glSrcType, NULL);
+						
+							
 
 						// Next mipmap!!
 						// floor .
@@ -776,6 +778,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 				glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 				glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 				glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+				
+					
 			}
 		}
 
@@ -805,6 +809,8 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 		}
+		
+			
 
 
 
@@ -856,11 +862,15 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 	glBindTexture (GL_TEXTURE_2D, gltext->ID);
 
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+	
+		
 
 	bool dummy;
 	GLint glfmt = getGlTextureFormat (tex, dummy);
 	GLint glSrcFmt = getGlSrcTextureFormat (tex, glfmt);
 	GLenum  glSrcType= getGlSrcTextureComponentType(glSrcFmt);
+	
+
 	// If DXTC format
 	if (_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt))
 	{
@@ -918,6 +928,8 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 			nglCompressedTexImage2DARB (GL_TEXTURE_2D, nNumMipMap-decalMipMapResize, 
 										glfmt, w, h, 0, imageSize, ptr);
 		}
+		
+			
 	}
 	else
 	{
@@ -934,6 +946,8 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 		glPixelStorei (GL_UNPACK_ROW_LENGTH, 0);
 		glPixelStorei (GL_UNPACK_SKIP_ROWS, 0);
 		glPixelStorei (GL_UNPACK_SKIP_PIXELS, 0);
+		
+			
 	}
 
 	// Disable texture 0
@@ -1008,6 +1022,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 							gltext->MinFilter= tex->getMinFilter();
 							glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 						}
+						
+							
 					}
 				}
 			}
@@ -1051,6 +1067,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 						gltext->MinFilter= tex->getMinFilter();					
 						glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
 					}
+					
+						
 				}
 			}
 		}
@@ -1089,6 +1107,8 @@ static	const	GLenum	InterpolateSrcLUT[8]= { GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, 
 static void	forceActivateTexEnvModeEnvCombine4(const CMaterial::CTexEnv  &env)
 {
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);					
+	
+		
 	//== RGB ==
 	switch(env.Env.OpRGB)
 	{
@@ -1369,6 +1389,8 @@ static void	forceActivateTexEnvModeEnvCombine4(const CMaterial::CTexEnv  &env)
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
 		break;
 	}
+	
+		
 }
 
 // ***************************************************************************
@@ -1504,6 +1526,8 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 	{
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	}
+	
+		
 
 }
 

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.23 2001/06/13 10:21:02 lecroart Exp $
+ * $Id: naming_client.h,v 1.24 2001/06/13 12:10:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,6 @@ public:
 	 * \return false if the service was not found.
 	 */
 	static bool			lookupAndConnect (const std::string &name, CCallbackClient &sock);
-
 
 
 	/// Call it evenly

@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.11 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: editable_range.h,v 1.12 2003/08/08 16:58:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -137,6 +137,7 @@ protected:
 	afx_msg void OnUpdateValue();	
 	afx_msg void OnKillfocusValue();
 	afx_msg void OnChangeValue();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

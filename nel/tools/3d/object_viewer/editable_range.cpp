@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.13 2003/04/07 12:42:49 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.14 2003/08/08 16:58:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,7 @@ BEGIN_MESSAGE_MAP(CEditableRange, CDialog)
 	ON_BN_CLICKED(IDC_UPDATE_VALUE, OnUpdateValue)
 	ON_EN_KILLFOCUS(IDC_VALUE, OnKillfocusValue)
 	ON_EN_CHANGE(IDC_VALUE, OnChangeValue)
+	ON_WM_HSCROLL()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -214,4 +215,28 @@ void CEditableRange::OnChangeValue()
 		m_ValueCtrl.GetWindowText(m_Value);
 		updateValueFromText();		
 	}
+}
+
+void CEditableRange::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
+{	
+	if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK)
+	{
+		UpdateData(TRUE);
+		m_SliderPos = nPos;
+		UpdateData(FALSE);
+
+		CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER);	
+		if (
+			(sl->GetRangeMax() -  sl->GetRangeMin()) != 0
+		   )
+		{
+			updateValueFromSlider(m_SliderPos * 1.f / (sl->GetRangeMax() -  sl->GetRangeMin()));		
+		}
+		else
+		{
+			updateValueFromSlider(0);
+		}
+
+		CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
+	}		
 }

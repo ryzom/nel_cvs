@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.4 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.5 2001/06/29 08:48:37 lecroart Exp $
  *
  *
  */
@@ -82,7 +82,18 @@ static CGtkDisplayer *GtkDisplayer;
 //
 
 bool queryValue (string &value);
+void saveConfig ();
 
+string toPath () { return "/"; }
+string toPath (CAdminService *as) { return toPath() + as->ASName; }
+string toPath (CAdminExecutorService *aes) { return toPath(aes->AS) + "/" + aes->ServerAlias; }
+string toPath (CService *s) { return toPath(s->AES) + "/" + s->AliasName; }
+string toPath (CAdminSerialCommand *asc) { return toPath(asc->Service) + "/" + asc->Name; }
+
+void activateVariable (CAdminSerialCommand *scmd, sint32 freq);
+
+bool wasActiveVariable (string path, sint32 &freq);
+bool wasExpanded (string path);
 
 /*void cbStartService ()
 {
@@ -216,6 +227,37 @@ void createTreeItem (GtkWidget *rootTree, void *&treeItem, void *&bitmap, void *
 
 	gtk_widget_show ((GtkWidget *)treeItem);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////// POPUP MENU FOR INTERNET ///////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GtkWidget *IMenu;
+GtkItemFactory *IItemFactory;
+
+gint cbPopupIMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+	if (event->type == GDK_BUTTON_PRESS && event->button.button == 3)
+	{
+		GdkEventButton *bevent = (GdkEventButton *) event; 
+		gtk_menu_popup (GTK_MENU (data), NULL, NULL, NULL, NULL, bevent->button, bevent->time);
+		gtk_signal_emit_stop_by_name (GTK_OBJECT(widget), "button_press_event");
+	}
+	return TRUE;
+}
+
+static void cbSaveConfig ()
+{
+	saveConfig ();
+}
+
+
+static GtkItemFactoryEntry IMenuItems[] = {
+	{ "/Save Configuration", NULL, cbSaveConfig, 0, NULL },
+};
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -450,7 +492,10 @@ void interfAddAS (CAdminService *as)
 	{
 		// it's the first AS, we have to add the subtree
 		gtk_tree_item_set_subtree (GTK_TREE_ITEM (RootTreeItem), RootSubTree);
-		gtk_tree_item_expand (GTK_TREE_ITEM (RootTreeItem));
+		
+		// expand if the last time it was expand
+		if (wasExpanded (toPath ()))
+			gtk_tree_item_expand (GTK_TREE_ITEM (RootTreeItem));
 	}
 }
 
@@ -506,7 +551,10 @@ void interfAddAES (CAdminService *as, CAdminExecutorService *aes)
 	{
 		// it's the first AS, we have to add the subtree
 		gtk_tree_item_set_subtree (GTK_TREE_ITEM (as->RootTreeItem), (GtkWidget*)as->RootSubTree);
-		gtk_tree_item_expand (GTK_TREE_ITEM (as->RootTreeItem));
+
+		// expand if the last time it was expand
+		if (wasExpanded (toPath (as)))
+			gtk_tree_item_expand (GTK_TREE_ITEM (as->RootTreeItem));
 	}
 }
 
@@ -593,19 +641,23 @@ void cbExecuteCommand (gpointer callback_data, guint callback_action, GtkWidget 
 	ICommand::execute (cmd, logstdout);
 }
 
-void cbExecuteVariable (gpointer callback_data, guint callback_action, GtkWidget *widget)
+void activateVariable (CAdminSerialCommand *scmd, sint32 freq)
 {
-	/// \todo ace: blinder si popups est pas bon
-	CAdminSerialCommand *scmd = (CAdminSerialCommand *)callback_action;
-	
 	if (scmd->IsActive)
 	{
 		nlwarning ("The variable '%s' is already active", scmd->Name.c_str());
 		return;
 	}
-
 	scmd->IsActive = true;
+	scmd->UpdateFrequency = freq;
 	interfAddVariable (scmd->Service, scmd);
+}
+
+void cbExecuteVariable (gpointer callback_data, guint callback_action, GtkWidget *widget)
+{
+	/// \todo ace: blinder si popups est pas bon
+	CAdminSerialCommand *scmd = (CAdminSerialCommand *)callback_action;
+	activateVariable (scmd, scmd->UpdateFrequency);
 }
 
 void interfUpdateService (CService *s)
@@ -667,6 +719,11 @@ void interfUpdateService (CService *s)
 			ife.callback_action = (guint)&(s->Commands[i]);
 			ife.item_type = NULL;
 			gtk_item_factory_create_items (GTK_ITEM_FACTORY(s->ItemFactory), 1, &ife, &(s->Commands[i]));
+
+			// if the variable was active, activate it again
+			sint32 freq;
+			if (wasActiveVariable (toPath (&(s->Commands[i])), freq))
+				activateVariable (&(s->Commands[i]), freq);
 		}
 		s->MenuCreated = true;
 	}
@@ -726,17 +783,20 @@ void interfAddService (CAdminExecutorService *aes, CService *s)
 	{
 		// it's the first AS, we have to add the subtree
 		gtk_tree_item_set_subtree (GTK_TREE_ITEM (aes->RootTreeItem), (GtkWidget*)aes->RootSubTree);
-		gtk_tree_item_expand (GTK_TREE_ITEM (aes->RootTreeItem));
+
+		// expand if the last time it was expand
+		if (wasExpanded (toPath (aes)))
+			gtk_tree_item_expand (GTK_TREE_ITEM (aes->RootTreeItem));
 	}
 }
 
 CAdminSerialCommand *PopupC = NULL;
 
-void cbSetUpdateFrequence (gpointer callback_data, guint callback_action, GtkWidget *widget)
+void cbSetUpdateFrequency (gpointer callback_data, guint callback_action, GtkWidget *widget)
 {
 	sint32 value = (sint32)callback_action;
 	nlinfo ("set freq to %d", value);
-	PopupC->UpdateFrequence = value;
+	PopupC->UpdateFrequency = value;
 	PopupC->LastAskUpdate = 0;	// force to update now
 	PopupC = NULL;
 }
@@ -744,7 +804,7 @@ void cbSetUpdateFrequence (gpointer callback_data, guint callback_action, GtkWid
 void cbRemoveVariable ()
 {
 	PopupC->IsActive = false;
-	PopupC->UpdateFrequence = -1;
+	PopupC->UpdateFrequency = -1;
 	PopupC->LastAskUpdate = 0;
 	interfRemoveVariable (PopupC);
 
@@ -775,13 +835,13 @@ void cbSetVariableValue ()
 static GtkItemFactoryEntry CMenuItems[] = {
 	{ "/Set Value", NULL, cbSetVariableValue, NULL, NULL },
 	{ "/Remove variable", NULL, cbRemoveVariable, 0, NULL },
-	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, -1, NULL },
-	{ "/Update every time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 0, NULL },
-	{ "/Update every 1s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 1000, NULL },
-	{ "/Update every 10s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 10*1000, NULL },
-	{ "/Update every 1mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 60*1000, NULL },
-	{ "/Update every 10mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 10*60*1000, NULL },
-	{ "/Update every 1h", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequence, 60*60*1000, NULL },
+	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, -1, NULL },
+	{ "/Update every time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 0, NULL },
+	{ "/Update every 1s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 1000, NULL },
+	{ "/Update every 10s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 10*1000, NULL },
+	{ "/Update every 1mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 60*1000, NULL },
+	{ "/Update every 10mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 10*60*1000, NULL },
+	{ "/Update every 1h", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 60*60*1000, NULL },
 };
 
 // POPUP MENU
@@ -835,14 +895,14 @@ void interfUpdateVariable (CAdminSerialCommand *c)
 	name += ", T";
 	name += toString(c->Type);
 	name += ", F";
-	name += toString(c->UpdateFrequence);
+	name += toString(c->UpdateFrequency);
 	name += ")";
 
 	// check if we already create widgets
 	nlassert (c->RootTreeItem != NULL);
 
 	/// \todo ace: icone pour les variables
-//	setBitmap (icon, c->Bitmap);
+	setBitmap ("variable.xpm", c->Bitmap);
 	setLabel (name, c->Label);
 }
 
@@ -879,7 +939,10 @@ void interfAddVariable (CService *s, CAdminSerialCommand *c)
 	{
 		// it's the first AS, we have to add the subtree
 		gtk_tree_item_set_subtree (GTK_TREE_ITEM (s->RootTreeItem), (GtkWidget*)s->RootSubTree);
-		gtk_tree_item_expand (GTK_TREE_ITEM (s->RootTreeItem));
+	
+		// expand if the last time it was expand
+		if (wasExpanded (toPath (s)))
+			gtk_tree_item_expand (GTK_TREE_ITEM (s->RootTreeItem));
 	}
 }
 
@@ -887,6 +950,7 @@ void interfAddVariable (CService *s, CAdminSerialCommand *c)
 
 void removeSubTree (CAdminService *as)
 {
+	if (as->RootTreeItem == NULL) return;
 	/// \todo ace: bug kan on kill un admin service et que on a selectionner un sous fils du subtree
 	GList *l = GTK_TREE_SELECTION(RootTree);
 	if (l != NULL)
@@ -899,6 +963,7 @@ void removeSubTree (CAdminService *as)
 
 void removeSubTree (CService *s)
 {
+	if (s->RootTreeItem == NULL) return;
 	/// \todo ace: bug kan on kill un admin service et que on a selectionner un sous fils du subtree
 	GList *l = GTK_TREE_SELECTION(RootTree);
 	if (l != NULL)
@@ -906,6 +971,7 @@ void removeSubTree (CService *s)
 		GtkWidget *g = GTK_WIDGET (l->data);
 		gtk_tree_item_deselect (GTK_TREE_ITEM(g));
 	}
+
 	gtk_tree_item_remove_subtree (GTK_TREE_ITEM(s->RootTreeItem));
 }
 
@@ -1132,6 +1198,19 @@ void initInterf ()
 	setBitmap ("internet.xpm", btm);
 	setLabel ("Internet", lbl);
 
+	// Internet POPUP MENU
+	{
+		GtkItemFactory *item_factory;
+		GtkAccelGroup *accel_group;
+		gint nmenu_items = sizeof (IMenuItems) / sizeof (IMenuItems[0]);
+		accel_group = gtk_accel_group_new ();
+		IItemFactory = gtk_item_factory_new (GTK_TYPE_MENU, "<main>", accel_group);
+		gtk_item_factory_create_items (IItemFactory, nmenu_items, IMenuItems, NULL);
+		gtk_window_add_accel_group (GTK_WINDOW (RootWindow), accel_group);
+		IMenu = gtk_item_factory_get_widget (IItemFactory, "<main>");
+		gtk_signal_connect (GTK_OBJECT (RootTreeItem), "button-press-event", GTK_SIGNAL_FUNC(cbPopupIMenu), IMenu);
+	}
+
 ////////
 
 	// OUTPUT TEXT
@@ -1224,10 +1303,10 @@ void checkActiveVariable ()
 							// it's the first time, update it anyway
 							askVariableUpdate (&(*cit));
 						}
-						else if ((*cit).ReceivedUpdateAnswer && (*cit).UpdateFrequence >= 0)
+						else if ((*cit).ReceivedUpdateAnswer && (*cit).UpdateFrequency >= 0)
 						{
 							// it's an active variable, check if we need to update it
-							if (CTime::getLocalTime () >= (*cit).LastAskUpdate + (*cit).UpdateFrequence)
+							if (CTime::getLocalTime () >= (*cit).LastAskUpdate + (*cit).UpdateFrequency)
 							{
 								askVariableUpdate (&(*cit));
 							}
@@ -1283,6 +1362,8 @@ void runInterf ()
 	InfoLog->removeDisplayer (GtkDisplayer);
 	ErrorLog->removeDisplayer (GtkDisplayer);
 
+	// save config in config file
+	saveConfig ();
 }
 
 
@@ -1334,7 +1415,8 @@ static bool queryValue (string &value)
 	GtkWidget *entry;
 
 	// Create modal window (Here you can use any window descendent )
-	window=gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	window=gtk_window_new (GTK_WINDOW_DIALOG);
+	gtk_window_set_position (GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
 	gtk_window_set_title (GTK_WINDOW(window),"Enter the value");
 
 	// Set window as modal 
@@ -1378,6 +1460,118 @@ static bool queryValue (string &value)
 		value = QueryValueValue;
 	}
 	return QueryValueResult;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////// SAVING SYSTEM /////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool wasActiveVariable (string path, sint32 &freq)
+{
+	CConfigFile::CVar &active = ConfigFile.getVar ("ActiveVariables");
+	for (sint i = 0 ; i < active.size (); i += 2)
+	{
+		if (active.asString(i) == path)
+		{
+			freq = active.asInt (i+1);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool wasExpanded (string path)
+{
+	CConfigFile::CVar &expanded = ConfigFile.getVar ("ExpandedTree");
+	for (sint i = 0 ; i < expanded.size (); i ++)
+	{
+		if (expanded.asString(i) == path)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+void saveConfig ()
+{
+	vector<string> exp, act, hs;
+	string path1 = "/";
+
+	if (RootTreeItem != NULL && GTK_TREE_ITEM(RootTreeItem)->expanded)
+	{
+		exp.push_back (path1);
+		nlinfo ("%s is expanded", path1.c_str());
+	}
+
+	ASIT asit;
+	for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+	{
+		string path2 = path1 + (*asit).ASName;
+		if ((*asit).RootTreeItem != NULL && GTK_TREE_ITEM((*asit).RootTreeItem)->expanded)
+		{
+			exp.push_back (path2);
+			nlinfo ("%s is expanded", path2.c_str());
+		}
+
+		hs.push_back ((*asit).ASName);
+		hs.push_back ((*asit).ASAddr);
+		hs.push_back (((*asit).Connected)?"1":"0");
+
+		AESIT aesit;
+		for (aesit = (*asit).AdminExecutorServices.begin(); aesit != (*asit).AdminExecutorServices.end(); aesit++)
+		{
+			string path3 = path2 + "/" + (*aesit).ServerAlias;
+			if ((*aesit).RootTreeItem != NULL && GTK_TREE_ITEM((*aesit).RootTreeItem)->expanded)
+			{
+				exp.push_back (path3);
+				nlinfo ("%s is expanded", path3.c_str());
+			}
+
+			SIT sit;
+			for (sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+			{
+				string path4 = path3 + "/" + (*sit).AliasName;
+				if ((*sit).RootTreeItem != NULL && GTK_TREE_ITEM((*sit).RootTreeItem)->expanded)
+				{
+					exp.push_back (path4);
+					nlinfo ("%s is expanded", path4.c_str());
+				}
+
+				CIT cit;
+				for (cit = (*sit).Commands.begin(); cit != (*sit).Commands.end(); cit++)
+				{
+					if ((*cit).IsActive)
+					{
+						string path5 = path4 + "/" + (*cit).Name;
+						act.push_back (path5);
+						act.push_back (toString((*cit).UpdateFrequency));
+						nlinfo ("%s is active var", path5.c_str());
+					}
+				}
+			}
+		}
+	}
+
+	CConfigFile::CVar &expanded = ConfigFile.getVar ("ExpandedTree");
+	expanded.setAsString (exp);
+
+	CConfigFile::CVar &active = ConfigFile.getVar ("ActiveVariables");
+	active.setAsString (act);
+
+	CConfigFile::CVar &hosts = ConfigFile.getVar ("ASHosts");
+	hosts.setAsString (hs);
+	
+	ConfigFile.save ();
+
 }
 
 

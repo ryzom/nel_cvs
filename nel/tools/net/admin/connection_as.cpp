@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.5 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.6 2001/06/29 08:48:37 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -485,10 +485,17 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 		SIT sit = (*aesit).findService (sid);
 		CIT cit = (*sit).findCommand (varname);
 
-		(*cit).Value = value;
-		(*cit).ReceivedUpdateAnswer = true;
-		interfUpdateVariable (&(*cit));
-		nlinfo ("update var %s", varname.c_str());
+		if ((*cit).IsActive)
+		{
+			(*cit).Value = value;
+			(*cit).ReceivedUpdateAnswer = true;
+			interfUpdateVariable (&(*cit));
+			nlinfo ("update var %s", varname.c_str());
+		}
+		else
+		{
+			InfoLog->displayRaw("%s",log.c_str());
+		}
 	}
 }
 

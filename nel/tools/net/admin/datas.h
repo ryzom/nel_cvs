@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.5 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: datas.h,v 1.6 2001/06/29 08:48:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,12 +49,12 @@ extern NLMISC::CConfigFile ConfigFile;
 /** Add some members into the classic serial command class */
 struct CAdminSerialCommand : public NLMISC::CSerialCommand
 {
-	CAdminSerialCommand () : IsActive(false), RootTreeItem(NULL), Service(NULL), Value("<Unknown>"), LastAskUpdate(0), UpdateFrequence(-1) { }
+	CAdminSerialCommand () : IsActive(false), RootTreeItem(NULL), Service(NULL), Value("<Unknown>"), LastAskUpdate(0), UpdateFrequency(-1) { }
 
 	bool IsActive;
 	std::string Value;
 
-	sint32	UpdateFrequence;	// -1 = only first time,  0 = realtime, other value in millisecond
+	sint32	UpdateFrequency;	// -1 = only first time,  0 = realtime, other value in millisecond
 	NLMISC::TTime	LastAskUpdate;
 	bool	ReceivedUpdateAnswer;
 

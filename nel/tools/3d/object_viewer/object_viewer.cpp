@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.22 2001/07/24 09:05:16 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.23 2001/07/26 17:17:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,7 @@ CObjectViewer::CObjectViewer ()
 	}
 	catch (Exception& e)
 	{
-		MessageBox (NULL, e.what(), "Objectviwer.cfg", MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (NULL, e.what(), "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.25 2001/10/10 15:39:11 besson Exp $
+ * $Id: calc_lm.cpp,v 1.26 2001/11/14 17:07:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2214,7 +2214,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			offsetSmooth = offsetMat;
 			for( uint32 nSmoothNb = 0; nSmoothNb < FaceGroupBySmooth.size(); ++nSmoothNb )
 			{
-				uint32 nPlaneNb, nLight;
+				sint32 nPlaneNb, nLight;
 				vector<sint32> FaceGroupByPlane;
 				
 				if (gOptions.FeedBack != NULL)
@@ -2261,7 +2261,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 				{
 					AllPlanes[AllPlanesPrevSize+nPlaneNb] = new SLMPlane;
-					for( nLight = 0; nLight < vvLights.size()-1; ++nLight )
+					for( nLight = 0; nLight < ((sint32)vvLights.size()-1); ++nLight )
 						AllPlanes[AllPlanesPrevSize+nPlaneNb]->newLayer();
 					// Fill planes (part of lightmap)
 					AllPlanes[AllPlanesPrevSize+nPlaneNb]->createFromFaceGroup( AllFaces.begin()+offsetPlane, 

@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.10 2001/09/13 08:09:58 lecroart Exp $
+ * $Id: sock.cpp,v 1.11 2001/09/24 15:59:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,7 +400,7 @@ void CSock::setLocalAddress()
 	socklen_t saddrlen = sizeof(saddr);
 	if ( getsockname( _Sock, &saddr, &saddrlen ) != 0 )
 	{
-		ESocket( "Unable to find local address" );
+		throw ESocket( "Unable to find local address" );
 	}
 	_LocalAddr.setSockAddr( (const sockaddr_in *)&saddr );
 }

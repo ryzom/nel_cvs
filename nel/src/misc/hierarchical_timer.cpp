@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.18 2002/06/12 16:49:36 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.19 2002/06/17 08:41:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -797,7 +797,8 @@ bool CHTimer::CStatSorter::operator()(const CHTimer::CStats *lhs, const CHTimer:
 		default:
 			nlassert(0); // not a valid criterion
 		break;
-	}	
+	}
+	return false;
 }
 
 

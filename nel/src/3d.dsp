@@ -67,6 +67,7 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "_MBCS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /Yu"std3d.h" /FD /GZ /Zm200 /c
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -314,6 +315,14 @@ SOURCE=.\3d\root_model.cpp
 # Begin Source File
 
 SOURCE=.\3d\root_model.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\seg_remanence.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\seg_remanence.h
 # End Source File
 # Begin Source File
 
@@ -956,6 +965,14 @@ SOURCE=.\3d\particle_system_shape.cpp
 # Begin Source File
 
 SOURCE=.\3d\particle_system_shape.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\seg_remanence_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\seg_remanence_shape.h
 # End Source File
 # Begin Source File
 

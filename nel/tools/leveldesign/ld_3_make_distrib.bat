@@ -5,12 +5,12 @@ REM ************ Upload LevelDesign Tools
 REM --- Directories
 
 mkdir \\server\code\tools
+rmdir /s /q \\server\code\tools\leveldesign
 mkdir \\server\code\tools\leveldesign
 mkdir \\server\code\tools\leveldesign\zoneBitmaps
 mkdir \\server\code\tools\leveldesign\zoneLigos
 mkdir \\server\code\tools\leveldesign\common
 mkdir \\server\code\tools\leveldesign\common\dfn
-del \\server\code\tools\leveldesign\*.* /Q
 
 REM --- Upload Binaries
 
@@ -34,6 +34,7 @@ REM - Master
 
 xcopy "r:\code\nel\tools\leveldesign\master\releasedebug\master.exe" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\master\n019003l.pfb" "\\server\code\tools\leveldesign" /D /Y
+xcopy "r:\code\nel\tools\leveldesign\master\readme.txt" "\\server\code\tools\leveldesign" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\test_root\common\dfn\*.*" "\\server\code\tools\leveldesign\common\dfn" /D /Y
 xcopy "r:\code\nel\tools\leveldesign\test_root\ligoscape.cfg" "\\server\code\tools\leveldesign" /D /Y
 

@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.h
  *
- * $Id: seg_remanence_shape.h,v 1.2 2002/07/04 10:35:39 vizerie Exp $
+ * $Id: seg_remanence_shape.h,v 1.3 2002/07/04 14:50:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -130,6 +130,16 @@ public:
 	void				setAnimatedMaterial(const std::string &name);
 	/// Get animated material or NULL if none
 	CMaterialBase	   *getAnimatedMaterial() const { return _AnimatedMat; }
+	/** When stop() is called, the fx doesn't disappear, it must rollup (a texture shifting is performed).
+	  * This set the speed of rollup.
+	  * 1 means it takes   sliceTime * numSlice to unroll
+	  * 0.5 means it takes  2 * sliceTime * numSlice to unroll
+	  * and so on
+	  * NB ratio must be > 0
+	  */ 
+	void				setRollupRatio(float ratio);
+	float				getRollupRatio() const { return _RollUpRatio; }
+	
 
 		
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,6 +162,7 @@ private:
 	//	
 	uint32						_NumSlices;
 	float						_SliceTime;
+	float						_RollUpRatio;
 	TCornerVect					_Corners;	// start of segment	
 	//
 	CMaterial					_Mat;

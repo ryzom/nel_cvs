@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.2 2002/07/04 10:35:39 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.3 2002/07/04 14:50:17 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NL3D
 //===========================================================
 CSegRemanenceShape::CSegRemanenceShape() : _NumSlices(8), _SliceTime(0.05f),
 										   _GeomTouched(true), _TextureShifting(true), _MatTouched(true),
-										   _AnimatedMat(NULL)
+										   _AnimatedMat(NULL), _RollUpRatio(1.f)
 {
 	_BBox.setCenter(NLMISC::CVector::Null);
 	_BBox.setHalfSize(NLMISC::CVector(3, 3, 3));
@@ -49,7 +49,7 @@ CSegRemanenceShape::CSegRemanenceShape() : _NumSlices(8), _SliceTime(0.05f),
 //===========================================================
 void CSegRemanenceShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(0);
+	sint ver = f.serialVersion(1);
 	f.serial(_NumSlices);
 	f.serial(_SliceTime);
 	f.serialCont(_Corners);	
@@ -61,6 +61,10 @@ void CSegRemanenceShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{	
 		_GeomTouched = true;
 		_MatTouched  = true;
+	}
+	if (ver >= 1)
+	{
+		f.serial(_RollUpRatio);
 	}
 }
 
@@ -206,6 +210,13 @@ void CSegRemanenceShape::setTextureShifting(bool on /*=true*/)
 }
 
 //===========================================================
+void CSegRemanenceShape::setRollupRatio(float ratio)
+{
+	nlassert(ratio > 0);
+	_RollUpRatio = ratio;
+}
+
+//===========================================================
 void CSegRemanenceShape::setupMaterial()
 {
 	if (!_MatTouched) return;	
@@ -269,6 +280,7 @@ void CSegRemanenceShape::copyFromOther(const CSegRemanenceShape &other)
 	_VB              = other._VB;
 	_PB              = other._PB;
 	_BBox			 = other._BBox;	
+	_RollUpRatio     = other._RollUpRatio;	
 }
 	
 }

@@ -10,6 +10,7 @@
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/agent/msg_group.h"
 #include "nel/ai/agent/agent_local_mailer.h"
+#include "nel/ai/agent/agent_proxy_mailer.h"
 #include "nel/ai/logic/logic.h"
 #include "nel/ai/fuzzy/fuzzy.h"
 #include "nel/ai/agent/actor.h"
@@ -376,6 +377,11 @@
 
 	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", 
 		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail((IBasicAgent *)&staticAgent)), 
+		NLAIC::CTypeOfObject::tAgent,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
+	const NLAIC::CIdentType CProxyAgentMail::IdProxyAgentMail = NLAIC::CIdentType( "ProxyAgentMail", 
+		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CProxyAgentMail()), 
 		NLAIC::CTypeOfObject::tAgent,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

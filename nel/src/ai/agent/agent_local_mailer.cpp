@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.2 2001/01/31 15:42:50 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.3 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,10 +23,12 @@
  */
 
 #include "nel/ai/agent/agent_local_mailer.h"
+#include "nel/ai/script/interpret_object_message.h"
+#include "nel/ai/agent/agent_digital.h"
 
 namespace NLAIAGENT
 {
-	CLocalAgentMail::CLocalAgentMail(IBasicAgent *host):IBasicAgent(NULL)
+	CLocalAgentMail::CLocalAgentMail(IBasicAgent *host):IAgent(NULL)
 	{
 		_HostAgent = host;
 		//_HostAgent->connect(this);
@@ -70,4 +72,26 @@ namespace NLAIAGENT
 			return cl->isMember(h,m,p);
 		}
 	}
+	
+
+	IObjectIA::CProcessResult CLocalAgentMail::sendMessage(IObjectIA *m)
+	{
+		IMessageBase *msg = (IMessageBase *)m;
+
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == msg->getType() )
+		{			
+			const INombreDefine *n = (const INombreDefine *)msg->getFront();
+			if(n->getNumber() != 0.0)
+			{
+				const CLocalAgentMail *parent = (const CLocalAgentMail *)msg->get();
+				setParent((const IWordNumRef *)*parent->getHost());
+			}
+			return IObjectIA::CProcessResult();			
+		}
+		else
+		{
+			return ((IObjectIA  *)_HostAgent)->sendMessage(msg);
+		}
+	}
+	
 }

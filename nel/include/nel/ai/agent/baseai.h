@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.6 2001/01/31 14:01:54 chafik Exp $
+ * $Id: baseai.h,v 1.7 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -333,6 +333,7 @@ namespace NLAIAGENT
 		IRefrence(const IRefrence &A);
 		///the loader of the class.
 		void refLoadStream(NLMISC::IStream &is);
+		void setNumRef(const IWordNumRef &ref);
 
 	public:
 		///default constructor, when it's called an new reference is created.

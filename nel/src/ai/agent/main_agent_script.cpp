@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.10 2001/01/26 13:36:35 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.11 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 namespace NLAIAGENT
 {
-	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): CAgentScript(a)
+	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): IMainAgent(a)
 	{
 		_Stack = new NLAISCRIPT::CStackPointer();
 		_Heap = new NLAISCRIPT::CStackPointer();
@@ -37,14 +37,14 @@ namespace NLAIAGENT
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
 	}
 
-	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):CAgentScript (main)
+	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):IMainAgent (main)
 	{
 		_Stack = new NLAISCRIPT::CStackPointer();
 		_Heap = new NLAISCRIPT::CStackPointer();
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 	
-	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):CAgentScript (NULL)
+	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):IMainAgent (NULL)
 	{		
 		_Stack = new NLAISCRIPT::CStackPointer();
 		_Heap = new NLAISCRIPT::CStackPointer();
@@ -101,12 +101,12 @@ namespace NLAIAGENT
 
 	void CMainAgentScript::processMessages()
 	{
-		if(getFactoryClass() != NULL)
+		/*if(getFactoryClass() != NULL)
 		{		
 			NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*getAgentManager()->getAgentContext();
-			while(getLocalMailBox()->getMessageCount())
+			while(getMail()->getMessageCount())
 			{
-				const IMessageBase &msg = ((IMailBox *)getLocalMailBox())->getMessage();
+				const IMessageBase &msg = getMail()->getMessage();
 				IBaseGroupType *param = new CGroupType();
 				param->push(&msg);
 				context.Stack ++;
@@ -116,10 +116,10 @@ namespace NLAIAGENT
 					runMethodeMember(msg.getHeritanceIndex(),msg.getMethodIndex(),&context);
 				}			
 			}
-		}
+		}*/
 		try
 		{
-			IAgent::processMessages();
+			CAgentScript::processMessages();
 		}
 		catch(NLAIE::IException &e)
 		{			
@@ -133,7 +133,7 @@ namespace NLAIAGENT
 
 		runChildren();
 
-		((IMailBox *)getLocalMailBox())->run();
+		//((IMailBox *)getLocalMailBox())->run();
 		getMail()->run();
 		
 		if(getFactoryClass() != NULL && getFactoryClass()->getRunMethod() >= 0) 

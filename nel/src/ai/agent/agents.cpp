@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.19 2001/02/05 10:35:48 chafik Exp $
+ * $Id: agents.cpp,v 1.20 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,10 @@ namespace NLAIAGENT
 		while(getMail()->getMessageCount())
 		{
 			const IMessageBase &msg = getMail()->getMessage();
+#ifdef NL_DEBUG
+	const char *msgBase = (const char *)msg.getType();
+	const char *classBase = (const char *)getType();
+#endif
 			try
 			{
 				IObjectIA *o = IBasicAgent::run( msg );
@@ -123,7 +127,7 @@ namespace NLAIAGENT
 			catch(NLAIE::IException &e)
 			{
 				getMail()->popMessage();
-				throw NLAIE::CExceptionContainer(e);
+				//throw NLAIE::CExceptionContainer(e);
 			}		
 		}
 	}
@@ -247,7 +251,7 @@ namespace NLAIAGENT
 		case IMessageBase::PUndefine:
 			{
 				char text[2048*8];
-				sprintf(text,"Function IObjectIA *IBasicAgent::run(const IMessageBase &msg) proccess an IMessageBase::PUndefine performatif");
+				sprintf(text,"Function IObjectIA *IBasicAgent::run('%s') proccess an IMessageBase::PUndefine performatif",(const char *)msg.getType());
 				throw NLAIE::CExceptionNotImplemented(text);
 			}
 			break;		
@@ -299,14 +303,16 @@ namespace NLAIAGENT
 	const static sint32 _Father = 1;
 	const static sint32 _RunTel = 2;
 	const static sint32 _RunAsk = 3;
-	const static sint32 _LastM = 4;
+	const static sint32 _GetNumId = 4;
+	const static sint32 _LastM = 5;
 
 	IBasicAgent::CMethodCall IBasicAgent::_Method[] = 
 	{
 		IBasicAgent::CMethodCall(_MAILER_,_GetMailer),
 		IBasicAgent::CMethodCall(_FATHER_,_Father),
 		IBasicAgent::CMethodCall(_RUNTEL_,_RunTel),
-		IBasicAgent::CMethodCall(_RUNASK_,_RunAsk)
+		IBasicAgent::CMethodCall(_RUNASK_,_RunAsk),
+		IBasicAgent::CMethodCall(_GETNUMID_,_GetNumId)
 	};
 	
 
@@ -319,20 +325,28 @@ namespace NLAIAGENT
 	{			
 		if(className == NULL)
 		{
-			tQueue a;		
-			
-
+			tQueue a;
 			for(int i = 0; i < _LastM; i++)
 			{
 				if(*methodName == IBasicAgent::_Method[i].MethodName)
-				{					
+				{	
+					CObjectType *c;
 					if(i == _RunTel || i == _RunAsk)
 					{
 						static NLAISCRIPT::CParam paramMsg(1,new NLAISCRIPT::COperandSimple (new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass)));
 
 						if(paramMsg.eval((NLAISCRIPT::CParam &)p) < 0.0) continue;
+						c = new CObjectType(new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
 					}
-					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
+					else
+					if (i == _GetNumId)
+					{
+						c = new CObjectType(new NLAIC::CIdentType(CStringType::IdStringType));
+					}
+					else
+					{
+						c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
+					}
 					a.push(CIdMethod(IBasicAgent::_Method[i].Index + IObjectIA::getMethodIndexSize(),0.0,NULL,c));					
 					break;
 				}
@@ -365,7 +379,7 @@ namespace NLAIAGENT
 
 		case _Father:
 			{
-				IObjectIA::CProcessResult a;				
+				IObjectIA::CProcessResult a;
 				IRefrence *father = getParent();
 				if ( father )
 					a.Result = new CLocalAgentMail( (IBasicAgent *) father );				
@@ -378,13 +392,32 @@ namespace NLAIAGENT
 			}	
 			break;
 
+		case _RunAsk:
+		case _RunTel:
+			{
+				IObjectIA::CProcessResult a;
+				a.Result = run((const IMessageBase &)*param->get());
+				return a;
+			}
+			break;
+
+		case _GetNumId:		
+			{
+				char text[256];
+				IObjectIA::CProcessResult a;
+				((const IWordNumRef &)*this).getNumIdent().getDebugString(text);
+				a.Result = new CStringType(CStringVarName(text));
+				return a;
+			}
+			break;
+
 		}
 		return IConnectIA::runMethodeMember(index,p);
 	}
 
 	IMessageBase *IBasicAgent::runAsk(const IMessageBase &m)
 	{
-		if(CNotifyParentScript::IdNotifyParentScript == m.getType())
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
 		{
 			if(getParent() != NULL)
 			{
@@ -410,7 +443,7 @@ namespace NLAIAGENT
 		
 	IMessageBase *IBasicAgent::runTell(const IMessageBase &m)
 	{
-		if(CNotifyParentScript::IdNotifyParentScript == m.getType())
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == m.getType())
 		{
 			const INombreDefine *n = (const INombreDefine *)m.getFront();
 			if(n->getNumber() != 0.0)
@@ -428,5 +461,5 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
-	}
+	}	
 }

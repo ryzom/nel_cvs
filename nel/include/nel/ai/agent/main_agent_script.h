@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.6 2001/01/19 14:34:46 chafik Exp $
+ * $Id: main_agent_script.h,v 1.7 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 namespace NLAIAGENT
 {	
 
+	struct CAgentNumber;
 	class NLAISCRIPT::CCodeContext;
 	class NLAISCRIPT::CStackPointer;
 
@@ -43,7 +44,27 @@ namespace NLAIAGENT
 	* \author Nevrax France
 	* \date 2000	
 	*/	
-	class CMainAgentScript : public CAgentScript 
+	class IMainAgent : public CAgentScript 
+	{
+	public:
+		IMainAgent(const IMainAgent &a):CAgentScript(a){}
+		IMainAgent(IAgentManager *a):CAgentScript(a){}
+		IMainAgent():CAgentScript(NULL){}
+
+
+		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &) = 0;
+		
+
+	};
+
+	/**	
+	concrete IMainAgent class.
+
+	* \author Chafik sameh	 	
+	* \author Nevrax France
+	* \date 2000	
+	*/	
+	class CMainAgentScript : public IMainAgent 
 	{
 	
 	private:
@@ -80,6 +101,12 @@ namespace NLAIAGENT
 
 		virtual	void CMainAgentScript::processMessages();
 		virtual	IObjectIA::CProcessResult sendMessage(IObjectIA *);
+		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &)
+		{			
+			char text[2048*8];			
+			sprintf(text,"virtual IObjectIA::CProcessResult sendMessage(const CAgentNumber &) note implementaited for the '%s' class",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+		}
 		//virtual IObjectIA *run(const IMessageBase &); ///throw throw Exc::CExceptionNotImplemented;		
 		virtual const IObjectIA::CProcessResult &run();
 	};	

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.10 2001/01/31 14:01:54 chafik Exp $
+ * $Id: agent.h,v 1.11 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,6 +212,7 @@ namespace NLAIAGENT
 		The processMessages method, process the loop/Run message.
 		*/
 		virtual void processMessages() = 0;	
+
 
 	public:
 		/**

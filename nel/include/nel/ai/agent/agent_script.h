@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.13 2001/02/05 10:36:24 chafik Exp $
+ * $Id: agent_script.h,v 1.14 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,7 @@ namespace NLAIAGENT
 		This is a mail box for script send message. Note that if message have a run message for prossing message, this message is achieve in this mail box, 
 		else he is achive in the base class mail box.
 		*/
-		IMailBox	*_ScriptMail;
+		//IMailBox	*_ScriptMail;
 		///Map for store agent added in the dynamic child container.
 		tmapDefNameAgent _DynamicAgentName;
 
@@ -197,10 +197,10 @@ namespace NLAIAGENT
 			return _AgentClass;
 		}
 		///get the mail boxe for scripted message.
-		const IMailBox *getLocalMailBox() const
+		/*const IMailBox *getLocalMailBox() const
 		{
 			return _ScriptMail;
-		}		
+		}*/		
 		virtual sint32 getChildMessageIndex(const IMessageBase *, sint32 );
 
 		///Set the manager for this instance.
@@ -223,6 +223,8 @@ namespace NLAIAGENT
 		virtual void runChildren();				
 		virtual void onKill(IConnectIA *A);		
 		virtual void processMessages();
+
+		virtual void processMessages(IMessageBase *,IObjectIA *);
 
 		virtual IObjectIA::CProcessResult runActivity();
 		virtual bool isEqual(const IBasicObjectIA &a) const;
@@ -260,6 +262,8 @@ namespace NLAIAGENT
 		virtual void getDebugString(char *t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
+
+
 
 		static void initAgentScript();
 		static void releaseAgentScript();

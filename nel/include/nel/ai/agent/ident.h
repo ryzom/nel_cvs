@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.11 2001/02/01 17:15:20 chafik Exp $
+ * $Id: ident.h,v 1.12 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,17 +321,26 @@ namespace NLAIAGENT
 		}
 	};
 
-	struct CAgentNumber
+	struct CAgentNumber: public NLMISC::IStreamable
 	{
+		static uint8 ServerID;
+
 		uint64	DynamicId   :  8;
 		uint64	CreatorId   :  8;
 		uint64	AgentNumber : 48;
 
 		CAgentNumber()
 		{
-			CreatorId = 0;
-			DynamicId = 0;
+			CreatorId = (uint64)ServerID;
+			DynamicId = (uint64)ServerID;
 			AgentNumber = 0;
+		}		
+
+		CAgentNumber(uint64 id,uint64 creator,uint64 dyn)
+		{
+			CreatorId = creator;
+			DynamicId = dyn;
+			AgentNumber = id;
 		}
 
 		CAgentNumber(const CAgentNumber &a)
@@ -346,6 +355,8 @@ namespace NLAIAGENT
 		{
 			load(is);
 		}
+
+		CAgentNumber(const char *id);
 
 		///\name comparison of two CIndexVariant.
 		//@{
@@ -416,33 +427,37 @@ namespace NLAIAGENT
 		{
 			uint8 p;
 			is.serial(p);
-			CreatorId = p;
+			CreatorId = (uint64)p;
 			is.serial(p);
-			DynamicId = p;
+			DynamicId = (uint64)p;
 			uint64 x;
 			is.serial(x);
 			AgentNumber = x;
 
 		}
 		///Have a debug string.
-		void getDebugString(char *str) const 
-		{									
-			str[0] = 0;
-			char b[49];
-			b[48] = 0;
-			memset(b,'0',48);
-			sint n = 48;
-			uint64 x = AgentNumber;
-			while(n --)
-			{												
-				if(x & 1)
-				{
-					b[n] = '1'; 
-				}
-				x >>= 1;													
-			}
-			strcat(str,b);
+		void getDebugString(char *str) const;		
+
+		/// \name NLMISC::IStreamable method.
+		//@{
+		virtual std::string	getClassName()
+		{
+			return std::string("<CAgentNumber>");
 		}
+
+		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		{
+			if(f.isReading())
+			{
+				load(f);
+			}
+			else
+			{				
+				save(f);
+			}
+
+		}
+		//@}
 
 	};
 
@@ -474,10 +489,19 @@ namespace NLAIAGENT
 		{			
 		}
 
+		CNumericIndex(const CNumericIndex &id): _Id(id._Id)
+		{
+		}
+
 		///copy constructor.
 		CNumericIndex(const CAgentNumber &i):_Id (i)
 		{			
 		}
+
+		CNumericIndex(CAgentNumber id): _Id(id)
+		{
+		}
+
 
 		///construct from a stream.
 		CNumericIndex(NLMISC::IStream &is): _Id(is)
@@ -528,13 +552,13 @@ namespace NLAIAGENT
 
 		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
 		{
-			if(!f.isReading())
-			{
-				save(f);
-			}
-			else
+			if(f.isReading())
 			{
 				load(f);
+			}
+			else
+			{				
+				save(f);
 			}
 
 		}
@@ -565,6 +589,7 @@ namespace NLAIAGENT
 		}
 		
 		virtual operator const IRefrence *() const = 0;
+		virtual const CNumericIndex &getNumIdent() const = 0;
 
 		virtual ~IWordNumRef()
 		{
@@ -582,35 +607,10 @@ namespace NLAIAGENT
 		* \date 2000
 	*/
 	class CLocWordNumRef: public IWordNumRef
-	{
-	
-
-	private:
-		/// internal class use for the std::map fonctionality
-		class CRootDico
-		{
-		private:
-			const IRefrence *_Ref;
-		public:
-
-			void setRef(const IRefrence *ref)
-			{
-				_Ref = ref;
-			}
-
-			CRootDico(const IRefrence *ref): _Ref(ref)
-			{
-			}
-
-			operator const IRefrence *() const
-			{
-				return _Ref;
-			}			
-		};
-
+	{			
 	private:		
 		///The map use an CNumericIndex as a key for the internal tree.
-		typedef std::map<CNumericIndex ,CRootDico> tMapRef;
+		typedef std::map<CNumericIndex ,IRefrence *> tMapRef;
 		static tMapRef *_LocRefence;
 
 	private:
@@ -619,7 +619,7 @@ namespace NLAIAGENT
 		CNumericIndex _Id;
 
 		///_Stock define the cross reference between agent and this class.
-		CRootDico _Stock;
+		IRefrence *_Stock;
 
 	public:
 		///The class factory ident of the class.
@@ -627,9 +627,9 @@ namespace NLAIAGENT
 
 	public:
 		///Construct object for an IRefrence agents objects.
-		CLocWordNumRef(const IRefrence &ref):_Stock(&ref)
+		CLocWordNumRef(IRefrence *ref):_Stock(ref)
 		{
-			_LocRefence->insert(tMapRef::value_type(_Id,&ref));			
+			_LocRefence->insert(tMapRef::value_type(_Id,ref));			
 		}
 		
 		/**
@@ -644,9 +644,27 @@ namespace NLAIAGENT
 			tMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
 			{				
-				_Stock.setRef((*Itr).second);
+				_Stock = (*Itr).second;
 			}
 			else throw NLAIE::CExceptionIndexHandeledError();
+		}
+
+		CLocWordNumRef(const CNumericIndex &id,IRefrence *ref) :_Id(id),_Stock(ref)
+		{
+			tMapRef::iterator itr = _LocRefence->find(_Id);
+			if(itr != _LocRefence->end())
+			{
+				if((*itr).second != _Stock)
+				{
+					return;
+				}
+				else
+				{
+					throw NLAIE::CExceptionIndexHandeledError();
+				}
+				_LocRefence->erase(itr);
+			}
+			_LocRefence->insert(tMapRef::value_type(_Id,_Stock));			
 		}
 
 		/**
@@ -658,7 +676,7 @@ namespace NLAIAGENT
 			tMapRef::iterator itr = _LocRefence->find(_Id);
 			if(itr != _LocRefence->end())
 			{
-				_Stock.setRef((*itr).second);
+				_Stock = (*itr).second;
 			}
 			else throw NLAIE::CExceptionIndexHandeledError();
 		}
@@ -708,7 +726,7 @@ namespace NLAIAGENT
 			tMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
 			{
-				_Stock.setRef((*Itr).second);
+				_Stock = (*Itr).second;
 			}
 			else throw NLAIE::CExceptionIndexHandeledError();
 		}
@@ -717,6 +735,11 @@ namespace NLAIAGENT
 		virtual operator const IRefrence *() const
 		{
 			return (const IRefrence *)_Stock;
+		}
+
+		virtual const CNumericIndex &getNumIdent() const
+		{
+			return _Id;
 		}
 
 		virtual ~CLocWordNumRef()
@@ -755,7 +778,7 @@ namespace NLAIAGENT
 		*/
 		static bool loadMapping(NLMISC::IStream &);
 
-		static IRefrence *getRef(CNumericIndex &);		
+		static IRefrence *getRef(CAgentNumber &);		
 		//@}
 	};
 	

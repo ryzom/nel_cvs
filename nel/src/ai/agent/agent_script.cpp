@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.26 2001/02/05 10:35:48 chafik Exp $
+ * $Id: agent_script.cpp,v 1.27 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,7 @@ namespace NLAIAGENT
 
 		_NbComponents = a._NbComponents;
 		_Components = new IObjectIA *[ _NbComponents ];
-		sint32 nb_scripted = 0;
+		//sint32 nb_scripted = 0;
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
 			_Components[i] = (IObjectIA *)a._Components[i]->clone();		
@@ -211,12 +211,12 @@ namespace NLAIAGENT
 			{
 				///incRef();
 				((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
-				( (CScriptMailBox *) ((CAgentScript *)_Components[i])->getLocalMailBox() )->setIndex(nb_scripted);
-				nb_scripted++;
+				//( (CScriptMailBox *) ((CAgentScript *)_Components[i])->getLocalMailBox() )->setIndex(nb_scripted);
+				//nb_scripted++;
 			}
 		}
 
-		if(	a._ScriptMail) 
+		/*if(	a._ScriptMail) 
 		{
 			_ScriptMail = (IMailBox *)a._ScriptMail->clone();
 			_ScriptMail->setParent( (const IWordNumRef *) *this );
@@ -224,7 +224,7 @@ namespace NLAIAGENT
 		else 
 		{
 			_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
-		}
+		}*/
 		
 		_AgentManager = a._AgentManager;
 		//if(_AgentManager) _AgentManager->incRef();
@@ -243,7 +243,7 @@ namespace NLAIAGENT
 		_NbComponents = 0;		
 		_AgentManager = manager;
 		//MangerIsReferenced = false;
-		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
+		//_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
 	}
 
 	CAgentScript::CAgentScript(IAgentManager *manager, IBasicAgent *father,//The agent's father 
@@ -260,7 +260,7 @@ namespace NLAIAGENT
 		_Components = new IObjectIA *[ _NbComponents ];
 		std::list<IObjectIA *>::iterator it_c = components.begin();
 		int id_c = 0;
-		sint32 nb_scripted = 0;
+		//sint32 nb_scripted = 0;
 		_AgentManager = manager;
 		while ( it_c != components.end() )
 		{
@@ -270,14 +270,14 @@ namespace NLAIAGENT
 			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
-				( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
-				nb_scripted++;
+				//( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
+				//nb_scripted++;
 			}
 
 			it_c++;
 			id_c++;
 		}		
-		_ScriptMail = new CScriptMailBox( (const IWordNumRef *) *this);
+		//_ScriptMail = new CScriptMailBox( (const IWordNumRef *) *this);
 		
 	}	
 
@@ -293,8 +293,7 @@ namespace NLAIAGENT
 		
 		//if(_AgentManager != NULL) _AgentManager->release();
 		
-		if ( _ScriptMail != NULL )
-			_ScriptMail->release();
+		//if ( _ScriptMail != NULL )	_ScriptMail->release();
 	}
 
 	void CAgentScript::setAgentManager(IAgentManager *manager)
@@ -332,7 +331,7 @@ namespace NLAIAGENT
 		if(((const NLAIC::CTypeOfObject &) op->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 		{
 			((CAgentScript *)op)->setParent( (const IWordNumRef *) *this);
-			( (CScriptMailBox *) ((CAgentScript *)op)->getLocalMailBox() )->setIndex( index );
+			//( (CScriptMailBox *) ((CAgentScript *)op)->getLocalMailBox() )->setIndex( index );
 		}
 	}
 
@@ -583,7 +582,7 @@ namespace NLAIAGENT
 		{
 			if( o == ((IObjectIA *)*((*i).second)) )
 			{
-				CStringType *s = new CStringType((*i).first);				
+				CStringType *s = new CStringType((*i).first);			
 				r.Result = s;
 				return r;
 			}
@@ -627,14 +626,17 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::sendMessage(IObjectIA *m)
 	{
+#ifdef NL_DEBUG
+	const char *txt = (const char *)m->getType();
+#endif
 		IMessageBase *msg = (IMessageBase *)m;
 		msg->setReceiver(this);
-		if(msg->getMethodIndex() >= 0)
+		//if(msg->getMethodIndex() < 0)
 		{
-			_ScriptMail->addMessage(msg);			
+		/*	_ScriptMail->addMessage(msg);			
 		}		
 		else 
-		{
+		{*/
 			if( ((const NLAIC::CTypeOfObject &)m->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				char runMsg[1024];
@@ -669,156 +671,168 @@ namespace NLAIAGENT
 				{
 					NLAIAGENT::CIdMethod m = r.top();
 					msg->setMethodIndex(0,m.Index);
-					_ScriptMail->addMessage(msg);
+					//_ScriptMail->addMessage(msg);
 				}
-				else return IAgent::sendMessage(msg);
+				//else return IAgent::sendMessage(msg);
 			}
-			else return IAgent::sendMessage(msg);
+			//else return IAgent::sendMessage(msg);			
 		}
-		return IObjectIA::CProcessResult();
+		return IAgent::sendMessage(msg);
+		//return IObjectIA::CProcessResult();
 	}
 
 	void CAgentScript::runChildren()
 	{
+#ifdef NL_DEBUG	
+	const char *classBase = (const char *)getType();
+#endif
 		// Activation des agents de la partie statique
 		for ( int i = 0; i < _NbComponents; i++ )
 		{
-			_Components[i]->run();
+			IObjectIA *o = _Components[i];
+			o->run();
 		}
 
 		// Activation des fils
 		IAgent::runChildren();
 	}
 
+	void CAgentScript::processMessages(IMessageBase *msg,IObjectIA *c)
+	{
+#ifdef NL_DEBUG
+	const char *txt = (const char *)msg->getType();
+#endif
+		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*c;
+		IBaseGroupType *param = new CGroupType();
+		msg->incRef();
+		param->push(msg);
+		context.Stack ++;
+		context.Stack[(int)context.Stack] = param;
+		
+		int indexM = msg->getMethodIndex() - getBaseMethodCount();
+		if(indexM >= 0)
+		{
+			IObjectIA *code = getMethode(indexM);
+			if(code == NULL)
+			{
+				getMail()->popMessage();
+				return;
+			}
+		}
+
+		NLAISCRIPT::IMethodContext *methodContex;				
+
+		if (context.ContextDebug.Active)
+		{
+			context.ContextDebug.Param.push_back(&listBidon);					
+			listBidon.incRef();
+			methodContex = new NLAISCRIPT::CMethodContextDebug();
+		}				
+		else
+		{
+			methodContex = new NLAISCRIPT::CMethodContext();
+		}
+		const IObjectIA *self = context.Self;
+		context.Self = this;
+		NLAISCRIPT::CCallMethod opCall(methodContex,msg->getHeritanceIndex(),msg->getMethodIndex());
+		opCall.runOpCode(context);
+		context.Self = self;
+		IMessageBase *returnMsg = (IMessageBase *)context.Stack[(int)context.Stack];
+		returnMsg->incRef();
+		context.Stack--;
+		switch(msg->getPerformatif())
+		{
+		case IMessageBase::PExec:
+			if(msg->getContinuation() != NULL)
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setReceiver((IObjectIA *)msg->getContinuation());
+				((IObjectIA *)msg->getContinuation())->sendMessage(o);
+			}
+			break;
+		case IMessageBase::PAchieve:
+			if(msg->getContinuation() != NULL)
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setReceiver((IObjectIA *)msg->getContinuation());
+				((IObjectIA *)msg->getContinuation())->sendMessage(o);
+			}
+			break;
+		case IMessageBase::PAsk:
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setPerformatif(IMessageBase::PTell);
+				o->setReceiver((IObjectIA *)returnMsg->getSender());
+				((IObjectIA *)msg->getSender())->sendMessage(o);
+
+
+				if(msg->getContinuation() != NULL)
+				{
+					IMessageBase *o = (IMessageBase *)returnMsg->clone();
+					o->setMethodIndex(-1,-1);
+					o->setSender(this);
+					o->setReceiver((IObjectIA *)msg->getContinuation());
+					o->setPerformatif(IMessageBase::PTell);
+					((IObjectIA *)msg->getContinuation())->sendMessage(o);
+				}
+			}
+
+			break;
+		case IMessageBase::PTell:
+			if(msg->getContinuation() != NULL)
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setReceiver((IObjectIA *)msg->getContinuation());
+				((IObjectIA *)msg->getContinuation())->sendMessage(o);
+			}
+			break;
+		case IMessageBase::PBreak:
+			if(msg->getContinuation() != NULL)
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setReceiver((IObjectIA *)msg->getContinuation());
+				((IObjectIA *)msg->getContinuation())->sendMessage(o);
+			}
+			break;
+		case IMessageBase::PKill:
+			if(msg->getContinuation() != NULL)
+			{
+				IMessageBase *o = (IMessageBase *)returnMsg->clone();
+				o->setMethodIndex(-1,-1);
+				o->setSender(this);
+				o->setReceiver((IObjectIA *)msg->getContinuation());
+				((IObjectIA *)msg->getContinuation())->sendMessage(o);
+			}
+			break;
+
+		}
+		returnMsg->release();	
+	}
+
 	void CAgentScript::processMessages()
 	{		
-#ifdef NL_DEBUG
+/*#ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
-		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
+		//const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
 		NLAISCRIPT::CCodeContext &context = (NLAISCRIPT::CCodeContext &)*_AgentManager->getAgentContext();
 		while(_ScriptMail->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)_ScriptMail->getMessage();
+
 #ifdef _NLDEBUG
 		const char *dbg_msg_name = (const char *) msg.getType();		
 #endif
-			IBaseGroupType *param = new CGroupType();
-			msg.incRef();
-			param->push(&msg);
-			context.Stack ++;
-			context.Stack[(int)context.Stack] = param;
-			if(msg.getMethodIndex() >= 0)
-			{
-				int indexM = msg.getMethodIndex() - getBaseMethodCount();
-				if(indexM >= 0)
-				{
-					IObjectIA *code = getMethode(indexM);
-					if(code == NULL)
-					{
-						_ScriptMail->popMessage();
-						continue;
-					}
-				}
-
-				NLAISCRIPT::IMethodContext *methodContex;				
-
-				if (context.ContextDebug.Active)
-				{
-					context.ContextDebug.Param.push_back(&listBidon);					
-					listBidon.incRef();
-					methodContex = new NLAISCRIPT::CMethodContextDebug();
-				}				
-				else
-				{
-					methodContex = new NLAISCRIPT::CMethodContext();
-				}
-				const IObjectIA *self = context.Self;
-				context.Self = this;
-				NLAISCRIPT::CCallMethod opCall(methodContex,msg.getHeritanceIndex(),msg.getMethodIndex());
-				opCall.runOpCode(context);
-				context.Self = self;
-				IMessageBase *returnMsg = (IMessageBase *)context.Stack[(int)context.Stack];
-				returnMsg->incRef();
-				context.Stack--;
-				switch(msg.getPerformatif())
-				{
-				case IMessageBase::PExec:
-					if(msg.getContinuation() != NULL)
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setReceiver((IObjectIA *)msg.getContinuation());
-						((IObjectIA *)msg.getContinuation())->sendMessage(o);
-					}
-					break;
-				case IMessageBase::PAchieve:
-					if(msg.getContinuation() != NULL)
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setReceiver((IObjectIA *)msg.getContinuation());
-						((IObjectIA *)msg.getContinuation())->sendMessage(o);
-					}
-					break;
-				case IMessageBase::PAsk:
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setPerformatif(IMessageBase::PTell);
-						o->setReceiver((IObjectIA *)returnMsg->getSender());
-						((IObjectIA *)msg.getSender())->sendMessage(o);
-
-
-						if(msg.getContinuation() != NULL)
-						{
-							IMessageBase *o = (IMessageBase *)returnMsg->clone();
-							o->setMethodIndex(-1,-1);
-							o->setSender(this);
-							o->setReceiver((IObjectIA *)msg.getContinuation());
-							o->setPerformatif(IMessageBase::PTell);
-							((IObjectIA *)msg.getContinuation())->sendMessage(o);
-						}
-					}
-
-					break;
-				case IMessageBase::PTell:
-					if(msg.getContinuation() != NULL)
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setReceiver((IObjectIA *)msg.getContinuation());
-						((IObjectIA *)msg.getContinuation())->sendMessage(o);
-					}
-					break;
-				case IMessageBase::PBreak:
-					if(msg.getContinuation() != NULL)
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setReceiver((IObjectIA *)msg.getContinuation());
-						((IObjectIA *)msg.getContinuation())->sendMessage(o);
-					}
-					break;
-				case IMessageBase::PKill:
-					if(msg.getContinuation() != NULL)
-					{
-						IMessageBase *o = (IMessageBase *)returnMsg->clone();
-						o->setMethodIndex(-1,-1);
-						o->setSender(this);
-						o->setReceiver((IObjectIA *)msg.getContinuation());
-						((IObjectIA *)msg.getContinuation())->sendMessage(o);
-					}
-					break;
-	
-				}
-				returnMsg->release();
-			}
 			_ScriptMail->popMessage();
 		}
 		try
@@ -829,7 +843,24 @@ namespace NLAIAGENT
 		{
 			NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
 			if(context !=NULL) context->InputOutput->Echo("\n\n%s\n\n",(char *)e.what());
-		}		
+		}*/
+
+		IObjectIA *c;
+		if( _AgentManager != NULL) c = (IObjectIA *)_AgentManager->getAgentContext();
+		else c = NULL;
+		while(getMail()->getMessageCount())
+		{
+			IMessageBase &msg = (IMessageBase &)getMail()->getMessage();
+			if(msg.getMethodIndex() >= 0)
+			{
+				processMessages(&msg,c);
+				getMail()->popMessage();
+			}
+			else 
+			{
+				IAgent::processMessages();
+			}			
+		}
 	}
 
 	IObjectIA::CProcessResult CAgentScript::runActivity()
@@ -853,10 +884,10 @@ namespace NLAIAGENT
 
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
-		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
+		//const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
 
-		_ScriptMail->run();
+		//_ScriptMail->run();
 		getMail()->run();
 		runChildren();
 		

@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.7 2001/02/05 10:36:24 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.8 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,28 +27,156 @@
 #include "nel/ai/agent/agent.h"
 
 namespace NLAIAGENT
-{
-	class IProxy
-	{
-	public:
-		virtual void send(IWordNumRef *_AgentRef,IMessageBase &m) = 0;
-		/// Destructor
-		virtual ~IProxy()
-		{
-		}
-
-	};
+{	
+	class IMainAgent;
 
 	class CProxyAgentMail: public IBasicAgent
 	{
 	public:
-		static IProxy *AgentProxy;
+		static const NLAIC::CIdentType IdProxyAgentMail;
+	public:
+		static IMainAgent *MainAgent;
+
+		enum  TMethodNumDef {
+			TConstructor,
+			TLast
+		};
+
+		enum TTypeCheck{
+				CheckAll,
+				CheckCount,
+				DoNotCheck
+			};
+		///Structure to define the name, id and argument type of hard coded mathod.
+		struct CMethodCall
+		{			
+
+			CMethodCall(const char *name, int i,const IObjectIA *a,TTypeCheck checkArg,int argCount,IObjectIA *r): 
+					MethodName (name),ArgType(a),ReturnValue(r)
+			{
+				Index = i;
+				CheckArgType = checkArg;
+				ArgCount = argCount;
+			}
+
+			~CMethodCall()
+			{
+				if(ReturnValue) ReturnValue->release();				
+			}
+			///Name of the method.
+			CStringVarName MethodName;
+			///Type of the method argument.
+			const IObjectIA *ArgType;
+			///Return value type.
+			IObjectIA *ReturnValue;
+			///CheckArg is for force the method argument test. If its true we test juste the name coherence.
+			TTypeCheck CheckArgType;			
+			///Count neaded when the CheckCount it set.
+			sint ArgCount;
+			///Index of the method in the class.
+			sint32 Index;				
+		};
+		static CMethodCall **StaticMethod;
+
+		static void initClass();
+		static void releaseClass();
 
 	private:
-		IWordNumRef *_AgentRef;
+		CAgentNumber *_AgentRef;
 	public:
-		CProxyAgentMail(IWordNumRef *agent);
+		CProxyAgentMail();
+		CProxyAgentMail(const CAgentNumber &agentRef);
+		CProxyAgentMail(const CProxyAgentMail &mailer);
 		~CProxyAgentMail();
+
+		/// \name IBasicInterface method.
+		//@{
+		virtual void save(NLMISC::IStream &os)
+		{
+			_AgentRef->save(os);
+		}
+
+		virtual void load(NLMISC::IStream &is)
+		{
+			delete _AgentRef;
+			_AgentRef = new CAgentNumber (is);
+		}
+
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdProxyAgentMail;
+		}
+
+		virtual const NLAIC::IBasicType *newInstance() const
+		{			
+			NLAIC::IBasicType *x = new CProxyAgentMail();
+			//incRef();
+			return x;
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			//if(_HostAgent != NULL) _HostAgent->incRef();
+			if(_AgentRef != NULL) return new CProxyAgentMail(*_AgentRef);
+			else return new CProxyAgentMail();			
+		}
+
+		virtual void getDebugString(char *t) const
+		{
+			if(_AgentRef != NULL)
+			{
+				char text[200];
+				_AgentRef->getDebugString(text);
+				sprintf(t,"CProxyAgentMail for '%s' agents",text);
+			}
+			else sprintf(t,"CProxyAgentMail 'NILL' agents");
+		}
+		//@}
+
+		/// \name IObjectIA method.
+		//@{
+		virtual const CProcessResult &run()
+		{
+			return IObjectIA::ProcessRun;
+		}
+
+		virtual bool isEqual(const IBasicObjectIA &a) const
+		{
+			const CProxyAgentMail &l = (const CProxyAgentMail &)a;
+			if(l._AgentRef != NULL && _AgentRef != NULL)
+			{
+				return *l._AgentRef == *_AgentRef;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
+		virtual	CProcessResult runMethodeMember(sint32 h, sint32 m, IObjectIA *p);
+		virtual	CProcessResult runMethodeMember(sint32 m,IObjectIA *p);
+		virtual sint32 getMethodIndexSize() const;
+		//@}
+
+		/// \name IBasicAgent method.
+		//@{
+		virtual void onKill(IConnectIA *a);
+		virtual std::list<IBasicAgent *>::iterator addChild(IBasicAgent *p);
+		virtual void removeChild(const IBasicAgent *p);
+		virtual void removeChild(std::list<IBasicAgent *>::iterator &iter);
+		virtual void runChildren();
+		virtual void processMessages();
+		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *msg);
+		virtual IObjectIA::CProcessResult runActivity()
+		{
+			return ProcessRun;
+		}
+		virtual bool haveActivity() const
+		{
+			return false;
+		}
+		//@}
 
 	};
 }

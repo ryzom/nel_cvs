@@ -1,6 +1,6 @@
 /** \file msg_group.h
  *
- * $Id: msg_notify.h,v 1.3 2001/02/01 17:15:20 chafik Exp $
+ * $Id: msg_notify.h,v 1.4 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType IdNotifyParentScript;
 	public:
+		CNotifyParentScript(const CNotifyParentScript &);
 		CNotifyParentScript( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CNotifyParentScript(NLAISCRIPT::CMessageClass *b = NULL);
 		CNotifyParentScript(IBasicAgent *);

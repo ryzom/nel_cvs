@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.11 2001/02/01 17:16:44 chafik Exp $
+ * $Id: baseai.cpp,v 1.12 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,8 +251,7 @@ namespace NLAIAGENT
 					msg->setReceiver(this);
 					IPerformative *p = (IPerformative *)((IBaseGroupType *)a)->pop();
 					msg->setPerformatif((IMessageBase::TPerformatif)(sint)p->getNumber());
-					p->release();
-					
+					p->release();					
 					msg->setContinuation(o);									
 				}
 				else
@@ -296,13 +295,13 @@ namespace NLAIAGENT
 
 	IRefrence::IRefrence():_Parent(NULL)
 	{
-		_NumRef = new CLocWordNumRef(*this);
+		_NumRef = new CLocWordNumRef(this);
 	}
 
 	IRefrence::IRefrence(const IWordNumRef *parent):_Parent((IWordNumRef *)parent)
 	{
 		if(_Parent != NULL) _Parent->incRef();
-		_NumRef = new CLocWordNumRef(*this);
+		_NumRef = new CLocWordNumRef(this);
 	}
 
 	IRefrence::IRefrence(NLMISC::IStream &is)
@@ -391,6 +390,12 @@ namespace NLAIAGENT
 		refLoadStream(is);
 	}
 
+	void IRefrence::setNumRef(const IWordNumRef &ref)
+	{
+		if(_NumRef != NULL) _NumRef->release();
+		_NumRef = new CLocWordNumRef(ref.getNumIdent(),this);
+	}
+
 	IRefrence::~IRefrence()
 	{
 		if(_Parent != NULL) _Parent->release();
@@ -400,7 +405,7 @@ namespace NLAIAGENT
 	IRefrence::IRefrence(const IRefrence &A):IObjectIA(A),_Parent(A._Parent)//,_NumRef(A._NumRef)
 	{			
 		if(_Parent != NULL) _Parent->incRef();
-		_NumRef = new CLocWordNumRef(*this);
+		_NumRef = new CLocWordNumRef(this);
 	}		
 
 

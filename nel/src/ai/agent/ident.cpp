@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.7 2001/02/02 09:10:27 chafik Exp $
+ * $Id: ident.cpp,v 1.8 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,153 @@
 namespace NLAIAGENT
 {	
 
+	uint8 CAgentNumber::ServerID = 0;
+
+	uint64 atoiInt64(const char *ident)
+	{
+		uint64 k = 0;
+
+		while(*ident != 0)
+		{
+			switch(*(ident++))
+			{
+			case '0':
+				k |= 0;
+				break;
+			case '1':
+				k |= 1;
+				break;
+			case '2':
+				k |= 2;
+				break;
+			case '3':
+				k |= 3;
+				break;
+			case '4':
+				k |= 4;
+				break;
+			case '5':
+				k |= 5;
+				break;
+			case '6':
+				k |= 6;
+				break;
+			case '7':
+				k |= 7;
+				break;
+			case '8':
+				k |= 8;
+				break;
+			case '9':
+				k |= 9;
+				break;
+			case 'a':
+				k |= 10;
+				break;
+			case 'b':
+				k |= 11;
+				break;
+			case 'c':
+				k |= 12;
+				break;
+			case 'd':
+				k |= 13;
+				break;
+			case 'e':
+				k |= 14;
+				break;
+			case 'f':
+				k |= 15;
+				break;
+
+			case 'A':
+				k |= 10;
+				break;
+			case 'B':
+				k |= 11;
+				break;
+			case 'C':
+				k |= 12;
+				break;
+			case 'D':
+				k |= 13;
+				break;
+			case 'E':
+				k |= 14;
+				break;
+			case 'F':
+				k |= 15;
+				break;
+
+			case 0:
+				return k;
+				break;
+			}
+			if(*ident != 0) k <<= 4;
+		}
+
+		return k;
+	}
+
+	CAgentNumber::CAgentNumber(const char *i)
+	{
+		char *ident = (char*)i;
+		char *id;
+		char *creator;
+		char *dyn;
+		id = ident;
+
+		sint n = 0;
+		while(*(ident++) != ':');
+		*(ident - 1) = 0;		
+		creator = ident;
+		while(*(ident++) != ':');
+		*(ident - 1) = 0;		
+		dyn = ident;	
+
+		AgentNumber = atoiInt64(id);
+		CreatorId = atoiInt64(creator);
+		DynamicId = atoiInt64(dyn);
+	}
+
+	void CAgentNumber::getDebugString(char *str) const 
+	{									
+		str[0] = 0;
+		char b[256];
+		memset(b,0,255);
+		memset(b,'0',18);
+		sint n;
+		uint64 x = AgentNumber;
+		char baseTable[] = "0123456789abcdef";
+		for(n = 7; n < 18; n ++)
+		{
+			b[18 - n] = baseTable[(x & 15)];
+			x >>= 4;
+		}
+		b[18 - 6] = ':';
+		x = CreatorId;
+		for(n = 4; n < 6; n ++)
+		{				
+			b[18 - n] = baseTable[(x & 15)];
+			x >>= 4;
+		}
+		b[18 - 3] = ':';
+
+		x = DynamicId;
+		for(n = 1; n < 3; n ++)
+		{							
+			b[18 - n] = baseTable[(x & 15)];
+			x >>= 4;
+		}
+		strcat(str,b);
+	}
+
 	const NLAIC::CIdentType &CLocWordNumRef::getType() const
 	{		
 		return IdLocWordNumRef;
-	}			
+	}
 
-	IRefrence *CLocWordNumRef::getRef(CNumericIndex &)
+	IRefrence *CLocWordNumRef::getRef(CAgentNumber &)
 	{
 		return NULL;
 	}

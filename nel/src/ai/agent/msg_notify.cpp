@@ -1,6 +1,6 @@
 /** \file msg_group.cpp
  *
- * $Id: msg_notify.cpp,v 1.5 2001/02/01 17:16:44 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.6 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,12 +60,16 @@ namespace NLAIAGENT
 		}
  	}
 
+	CNotifyParentScript::CNotifyParentScript(const CNotifyParentScript &m): CMessageScript(m)
+	{
+	}
+
 	const NLAIC::IBasicType *CNotifyParentScript::clone() const
 	{
 		if(((const INombreDefine *)getFront())->getNumber() != 0.0)
 		{
-			CLocalAgentMail *g = (CLocalAgentMail *)get();
-			return new CNotifyParentScript((IBasicAgent *)g->getHost());
+			//CLocalAgentMail *g = (CLocalAgentMail *)get();
+			return new CNotifyParentScript(*this);
 		}
 		else
 		{

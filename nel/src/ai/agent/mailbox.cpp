@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.10 2001/01/25 10:09:55 portier Exp $
+ * $Id: mailbox.cpp,v 1.11 2001/02/08 17:27:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -519,7 +519,7 @@ namespace NLAIAGENT
 	/// Gets messages from its father
 	void CScriptMailBox::fillMailBox()
 	{
-		NLAIAGENT::IRefrence *father =  getParent();
+		/*NLAIAGENT::IRefrence *father =  getParent();
 		if ( father )
 		{
 			father = father->getParent();
@@ -557,7 +557,7 @@ namespace NLAIAGENT
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 	void CScriptMailBox::setIndex(sint32 i)

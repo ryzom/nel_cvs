@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.12 2001/01/17 10:32:29 chafik Exp $
+ * $Id: abstract_interface.h,v 1.13 2001/02/08 17:27:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,8 +224,15 @@ namespace NLAIC //Gen pour general.
 		const IBasicInterface *allocClass() const;
 		///Get the class factory associate.
 		const IClassCFactory *getFactory() const;
-		
+				
+		/// \name NLMISC::IStreamable method.
+		//@{
+		virtual std::string	getClassName()
+		{
+			return std::string(_Ident);
+		}
 		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream);	
+		//@}
 	};
 
 

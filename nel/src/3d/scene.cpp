@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.29 2001/06/11 09:25:58 besson Exp $
+ * $Id: scene.cpp,v 1.30 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "nel/3d/mesh_instance.h"
 #include "nel/3d/shape_bank.h"
 #include "nel/3d/skeleton_model.h"
+#include "nel/3d/particle_system_model.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;
@@ -59,6 +60,7 @@ void	CScene::registerBasics()
 	CLandscapeModel::registerBasic();
 	CTransformShape::registerBasic();
 	CSkeletonModel::registerBasic();
+	CParticleSystemModel::registerBasic() ;
 }
 
 	

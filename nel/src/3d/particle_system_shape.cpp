@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.3 2001/05/23 15:18:01 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.4 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,6 +149,10 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
 	ps->step(PSBlendRender, delay) ;
 
 
+	if (psm->isToolDisplayEnabled())
+	{
+		ps->step(PSToolRender, delay) ;
+	}
 }
 
 

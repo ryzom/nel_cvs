@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.18 2001/06/08 12:22:20 vizerie Exp $
+ * $Id: ps_particle.h,v 1.19 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,14 +83,20 @@ public:
 		{
 			draw() ;
 		}
+		else
+		if (pass == PSToolRender) // edition mode only
+		{			
+			showTool() ;
+		}
 	}
 
 
 	/// draw the particles
-
 	virtual void draw(void) = 0 ;
 
-
+	/// draw the particles for edition mode. The default behaviour just draw a wireframe model 	 
+	virtual void showTool() ;
+	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{ 
@@ -311,7 +317,11 @@ class CPSTexturedParticle
 		void setTexture(CSmartPtr<ITexture> tex) ;
 
 		/// get the constant texture
+		ITexture *getTexture(void) { return _Tex ; }
+		// get the texture (const version)
 		const ITexture *getTexture(void) const { return _Tex ; }
+
+
 
 		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
 

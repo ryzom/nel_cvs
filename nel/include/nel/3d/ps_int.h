@@ -1,7 +1,7 @@
 /** \file ps_int.h
  * <File description>
  *
- * $Id: ps_int.h,v 1.2 2001/05/11 17:17:22 vizerie Exp $
+ * $Id: ps_int.h,v 1.3 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,23 @@ public:
 
 } ;
 
+class CPSUIntBlender : public CPSValueBlender<uint32>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSUIntBlender) ;
+	CPSUIntBlender(uint32 startInt = 0 , uint32 endInt = 10, float nbCycles = 1.0f) : CPSValueBlender<uint32>(nbCycles)
+	{
+		_F.setValues(startInt, endInt) ;
+	}	
+	// F is serialized by base classes...
+
+} ;
+
+
+
+
+
+
 
 /// This is a int gradient class
 class CPSIntGradient : public CPSValueGradient<sint32>
@@ -66,9 +83,27 @@ public:
 	CPSIntGradient(const sint32 *intTab = CPSIntGradient::_DefaultGradient
 						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
 
-
-
 	static sint32 _DefaultGradient[] ;
+	
+	// F is serialized by base classes...	
+
+} ;
+
+class CPSUIntGradient : public CPSValueGradient<uint32>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSUIntGradient) ;
+
+	/**	
+	 *	Construct the value gradient blender by passing a pointer to a float table.
+	 *  \param nbStages The result is sampled into a table by linearly interpolating values. This give the number of step between each value
+	 * \param nbCycles : The nb of time the pattern is repeated during particle life. see ps_attrib_maker.h
+	 */
+
+	CPSUIntGradient(const uint32 *intTab = CPSUIntGradient::_DefaultGradient
+						, uint32 nbValues = 2, uint32 nbStages = 10, float nbCycles = 1.0f) ;
+
+	static uint32 _DefaultGradient[] ;
 	
 	// F is serialized by base classes...	
 

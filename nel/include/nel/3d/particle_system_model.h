@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.2 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.3 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ class CParticleSystemModel : public CTransformShape
 		friend class CParticleSystemShape ;
 
 		/// ctor
-		CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f)
+		CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 		{}
 
 		/// dtor
@@ -79,6 +79,11 @@ class CParticleSystemModel : public CTransformShape
 		CAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
 		
 
+		/// activate the display of tool (for edition purpose)
+		void enableDisplayTools(bool enable = true) { _ToolDisplayEnabled = enable ; }
+
+		// check wether the display of tools is enabled
+		bool isToolDisplayEnabled(void) const { return _ToolDisplayEnabled ; }
 			
 		/// to instanciate that model from a scene
 		static IModel	*creator() {return new CParticleSystemModel ;}
@@ -108,6 +113,8 @@ class CParticleSystemModel : public CTransformShape
 		CParticleSystem *_ParticleSystem ;
 
 		CAnimationTime _EllapsedTime ;
+
+		bool _ToolDisplayEnabled ;
 } ;
 
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.10 2001/06/07 10:17:56 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.11 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,13 +153,13 @@ public:
 	bool useGenNbScheme(void) { return _GenNbScheme != NULL ; }
 
 	/// set a GenNb scheme
-	void setGenNbScheme(CPSAttribMaker<sint32> *scheme) ;
+	void setGenNbScheme(CPSAttribMaker<uint32> *scheme) ;
 
 	/// Retrieve the GenNb scheme, or null, if there'isnt
-	CPSAttribMaker<sint32> *getGenNbScheme(void) { return _GenNbScheme ; }
+	CPSAttribMaker<uint32> *getGenNbScheme(void) { return _GenNbScheme ; }
 
 	/// Retrieve the GenNb scheme, or null, if there'isnt (const version)
-	const CPSAttribMaker<sint32> *getGenNbScheme(void) const  { return _GenNbScheme ; }
+	const CPSAttribMaker<uint32> *getGenNbScheme(void) const  { return _GenNbScheme ; }
 
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -240,7 +240,7 @@ protected:
 	float _Period ;
 	CPSAttribMaker<float> *_PeriodScheme ;			
 	uint32 _GenNb ;
-	CPSAttribMaker<sint32> *_GenNbScheme ;	
+	CPSAttribMaker<uint32> *_GenNbScheme ;	
 };
 
 
@@ -251,6 +251,8 @@ protected:
 
 inline void CPSEmitter::processEmit(uint32 index, uint nbToGenerate)
 {
+	if (!_EmittedType) return ;
+
 	static CVector speed, pos ;
 	
 	if (!_SpeedBasisEmission)

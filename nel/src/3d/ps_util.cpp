@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.13 2001/06/06 08:24:07 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.14 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,8 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSFloatGradient) ;
 		NLMISC_REGISTER_CLASS(CPSIntBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSIntGradient) ;
+		NLMISC_REGISTER_CLASS(CPSUIntBlender) ;		
+		NLMISC_REGISTER_CLASS(CPSUIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
 		NLMISC_REGISTER_CLASS(CPSTailDot) ;
@@ -300,7 +302,7 @@ void CPSUtil::print(const std::string &text, CFontGenerator &fg, CFontManager &f
 						driver,
 						cptedString);
 			
-	
+		
 	CMatrix mat = driver->getViewMatrix() ;	
 	mat.setPos(CVector::Null) ;	
 	mat.scale(CVector(size, size, size)) ;		

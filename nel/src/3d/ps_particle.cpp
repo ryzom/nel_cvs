@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.17 2001/06/08 08:30:43 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.18 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/common.h"
 #include "nel/misc/quat.h"
 #include "nel/misc/file.h"
+#include "nel/misc/line.h"
 
 #include <algorithm>
 
@@ -62,6 +63,70 @@ const uint shockWaveBufSize = 64 ; // number of shockwave to be processed at onc
 const uint meshBufSize = 16 ; // number of meshs to be processed at once...
 
 const uint constraintMeshBufSize = 64 ; // number of meshs to be processed at once...
+
+
+/////////////////////////////////
+// CPSParticle implementation  //
+/////////////////////////////////
+
+void CPSParticle::showTool()
+{
+	uint32 size = _Owner->getSize() ;
+	if (!size) return ;		
+	setupDriverModelMatrix() ;	
+
+	const CVector I = computeI() ;
+	const CVector K = computeK() ;
+
+	// ugly slow code, but not for runtime
+	for (uint  k = 0 ; k < size ; ++k)
+	{
+		// center of the current particle
+		const CVector p = _Owner->getPos()[k]  ;
+		const float sSize =0.1f ;	
+		const CVector tab[] = { p + sSize * 2 * K
+								, p + sSize * (I + K)
+								, p + sSize * (2 * I + K)
+								, p + sSize * I
+								, p + sSize * (2 * I - K)
+								, p - sSize * (.5f * K) 
+								, p + sSize * (-2 * I - K)
+								, p - sSize * I
+								, p + sSize * (-2 * I + K)
+								, p + sSize * (- I + K)
+								, p + sSize * 2 * K
+							} ;
+		const uint tabSize = sizeof(tab) / sizeof(CVector) ;
+		std::vector<NLMISC::CLine> lines ;
+
+		for (uint l = 0 ; l < tabSize ; ++l)
+		{
+			NLMISC::CLine li ;
+			li.V0 = tab[l] ;
+			li.V1 = tab[(l + 1) % tabSize] ;
+			lines.push_back(li) ;
+		}
+	
+		CMaterial mat ;
+
+		mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+		mat.setZWrite(false) ;
+		mat.setLighting(false) ;
+		mat.setBlend(true) ;
+		mat.setZFunc(CMaterial::less) ;
+		
+	
+
+		CPSLocated *loc ;
+		uint32 index ;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index) ;
+
+		mat.setColor(loc == _Owner && index == k  ? CRGBA::Red : CRGBA::White) ;
+		
+
+		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
+	}
+}
 
 
 /*
@@ -1776,7 +1841,7 @@ void CPSTailDot::setupColor(void)
 
 void CPSTailDot::newElement(void)
 {
-	nlassert(_Owner->getSize() != _Owner->getMaxSize()) ;
+	
 
 
 	// if we got a constant color, everything has been setupped before
@@ -2694,8 +2759,7 @@ void CPSRibbon::setupColor(CRibbonsDesc &rb)
 
 
 void CPSRibbon::newElement(void)
-{
-	nlassert(_Owner->getSize() != _Owner->getMaxSize()) ;
+{	
 	
 	const uint32 index = _Owner->getNewElementIndex() ; 
 

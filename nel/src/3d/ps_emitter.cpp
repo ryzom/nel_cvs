@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.6 2001/05/30 10:01:21 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.7 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ void CPSEmitter::setGenNb(uint32 GenNb)
 }
 
 
-void CPSEmitter::setGenNbScheme(CPSAttribMaker<sint32> *scheme)
+void CPSEmitter::setGenNbScheme(CPSAttribMaker<uint32> *scheme)
 {
 	delete _GenNbScheme ;	
 	_GenNbScheme = scheme ;
@@ -89,6 +89,7 @@ if (pass != PSMotion) return ;
 const uint32 size = _Owner->getSize() ;
 if (!size) return ;
 
+if (ellapsedTime == 0.f) return ; // do nothing when paused
 
 // our behaviour depend of the frequency
 switch (_EmissionType)

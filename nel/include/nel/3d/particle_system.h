@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.12 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: particle_system.h,v 1.13 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ class CFontGenerator ;
 class CFontManager ;
 class CPSCopyHelper ;
 class CScene ;
+class CPSLocated ;
 
 
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
@@ -291,6 +292,29 @@ public:
 	//// get the scene set by setScene()
 	CScene *getScene(void) { return _Scene ; }
 
+
+	/** For edition purposes only : this allow to highlight in red the current element being edited
+	 *  \param located The located the current element belongs to, or NULL if no element is selected
+	 *  \index the index of the element in the located
+	 */
+	 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0)
+	 {
+		_CurrEditedElementLocated = loc ;
+		_CurrEditedElementIndex = index ;
+	 }
+
+	/** retrieve the current edited element
+	 *  \see setCurrentEditedElement()
+	 */
+	 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index)
+	 {
+		loc = _CurrEditedElementLocated ;
+		index = _CurrEditedElementIndex ;
+	 }
+     		
+		
+		
+
 protected:
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
@@ -310,6 +334,12 @@ protected:
 
 	// number of rendered pass on the system, incremented each time the system is redrawn
 	uint64 _Date ;
+
+	// current edited element located (edition purpose only)
+	CPSLocated *_CurrEditedElementLocated ;
+	// current edited element index in its located (edition purpose only)
+	uint32 _CurrEditedElementIndex ;
+
 
 	/** the scene in which the particle system is inserted. This is needed because
 	 * the system may add objects to the scene (for particle that are mesh for instance)

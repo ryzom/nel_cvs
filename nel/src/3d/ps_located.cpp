@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.12 2001/06/07 10:17:57 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.13 2001/06/15 16:00:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -348,10 +348,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
-	if (pass == PSCollision)
-	{
-		
-	}
+	
 
 	if (pass == PSMotion)
 	{		

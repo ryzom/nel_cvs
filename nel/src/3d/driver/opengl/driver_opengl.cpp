@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.192 2003/09/10 13:37:12 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.193 2003/09/12 15:42:04 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1310,14 +1310,13 @@ static void modifyStyle (HWND hWnd, int nStyleOffset, DWORD dwRemove, DWORD dwAd
 // --------------------------------------------------
 bool CDriverGL::setMode(const GfxMode& mode)
 {
+#ifdef NL_OS_WINDOWS
 	if (mode.Windowed)
 	{
 		if (_FullScreen)
 		{
-#ifdef NL_OS_WINDOWS
 			ChangeDisplaySettings (NULL,0);
 			modifyStyle(_hWnd, GWL_STYLE, WS_POPUP, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS);
-#endif
 		}
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
@@ -1327,7 +1326,6 @@ bool CDriverGL::setMode(const GfxMode& mode)
 		_WindowWidth  = mode.Width;
 		_WindowHeight = mode.Height;
 
-#ifdef NL_OS_WINDOWS
 		DEVMODE		devMode;
 		if (!_FullScreen)
 		{

@@ -1,9 +1,12 @@
 #ifndef WATER_HEIGHT_MAP_H
 #define WATER_HEIGHT_MAP_H
 
-#include <vector>
+
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector_2f.h"
+
+#include <vector>
+#include <string>
 
 
 
@@ -37,10 +40,10 @@ public:
 	/** Set this quad dimension. It is given as a power of 2
 	  * This also reset the eightField values
 	  */
-	void					setSize(uint size);
+	void					setSize(uint32 size);
 
 	/// return the size of the height map
-	uint					getSize(void) const { return _Size; }
+	uint32					getSize(void) const { return _Size; }
 
 	/// return the power of 2 used for this quad size
 
@@ -95,7 +98,7 @@ public:
 	  * \radius  the radius od the impulsion of the waves to be created
 	  * \border  true if waves should only be generated on the border of height map, (actually, where waves can't be seen because of distance, this avoid to see the impulsion)
 	  */
-	void setWaves(float intensity, float period, uint radius, bool border);
+	void					setWaves(float intensity, float period, uint radius, bool border);
 
 	/// get the intensity of waves
 	float					getWaveIntensity() const { return _WaveIntensity; }
@@ -104,38 +107,50 @@ public:
 	float					getWavePeriod() const { return _WavePeriod; }
 
 	/// radius of impulsion for the waves
-	uint					getWaveImpulsionRadius() const { return _WaveImpulsionRadius; }
+	uint32					getWaveImpulsionRadius() const { return _WaveImpulsionRadius; }
 
 	/// Test whether waves are enabled on the border
-	bool  getBorderWaves() const { return _BorderWaves; }
+	bool					getBorderWaves() const { return _BorderWaves; }
 
 	/// damping
-	void  setDamping(float damping) { _Damping = damping; }
-	float getDamping() const { return _Damping; }
+	void					setDamping(float damping) { nlassert(damping >= 0 && damping < 1); _Damping = damping; }
+	float					getDamping() const { return _Damping; }
 
 	/// filter weight
-	void  setFilterWeight(float filterWeight) { _FilterWeight = filterWeight; }
-	float getFilterWeight() const { return _FilterWeight; }
+	void					setFilterWeight(float filterWeight) { _FilterWeight = filterWeight; }
+	float					getFilterWeight() const { return _FilterWeight; }
 
 	/// water unit size
-	void  setUnitSize(float unitSize) { _UnitSize = unitSize; }
-	float getUnitSize() const { return _UnitSize; }
+	void					setUnitSize(float unitSize) { _UnitSize = unitSize; }
+	float					getUnitSize() const { return _UnitSize; }
 
 	/// the last update date
 	sint64					Date;
 
-private:
-	friend class CWaterPoolManager;
-	// ctor
+	/// serial the pools data's
+	void					serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
+
+	/// Set this pool name.
+	void					setName(const std::string &name) { _Name = name; }
+
+	/// Get this pool name.
+	const std::string		&getName() const { return _Name; }
+
+	// ctor (use the water pool manager instead)
 	CWaterHeightMap();
 
+
+private:
+	friend class CWaterPoolManager;
+
+	std::string                _Name;	
 	bool					   _WavesEnabled;
 	float					   _Damping;
 	float					   _FilterWeight;
 	float					   _UnitSize;
 	float					   _WaveIntensity;
 	float					   _WavePeriod;
-	uint					   _WaveImpulsionRadius;
+	uint32					   _WaveImpulsionRadius;
 	bool					   _BorderWaves;
 	float					   _EllapsedTime;
 
@@ -147,7 +162,7 @@ private:
 	TFloatVect				   _Map[2]; // the 2 maps used for propagation
 	TFloat2Vect				   _Grad;   // used to store the gradient 
 	uint8					   _CurrMap;	
-	uint					   _Size;	
+	uint32					   _Size;	
 
 	/// clear an area of the water height map (has clipping, but no wrapping)	
 	void						clearArea(uint8 currMap, sint x, sint y, sint width, sint height);

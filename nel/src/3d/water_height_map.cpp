@@ -23,7 +23,7 @@ CWaterHeightMap::CWaterHeightMap() : _X(0), _Y(0), _Size(0),
 {		
 }
 
-void		CWaterHeightMap::setSize(uint size)
+void		CWaterHeightMap::setSize(uint32 size)
 {
 	nlassert(size > 4);
 	_Size  = size;	
@@ -315,12 +315,12 @@ void	CWaterHeightMap::filterNStoreGradient()
 		x = _Size - 2;
 		do
 		{
-			*buf = totalBlurCoeff * (*buf * blurCoeff
+		/*	*buf = totalBlurCoeff * (*buf * blurCoeff
 										 +  buf[1] 
 										 + buf[-1]
 										 + buf[sizeX2]
 										 + buf[- sizeX2]
-									 );	
+									 );	*/
 			// compute gradient
 			ptGrad->x = buf[1]		    - buf[- 1];
 			ptGrad->y = buf[sizeX2]     - buf[- sizeX2];
@@ -351,6 +351,11 @@ void CWaterHeightMap::swapBuffers(float deltaT)
 			{
 				numWaves = (uint) (_EllapsedTime / _WavePeriod);
 				_EllapsedTime -= numWaves * _WavePeriod;
+				if (numWaves > 10) numWaves = 10;
+			}
+			else
+			{
+				numWaves = 0;
 			}
 		}
 		
@@ -532,6 +537,34 @@ void CWaterHeightMap::setWaves(float intensity, float period, uint radius, bool 
 
 }
 
+
+void CWaterHeightMap::serial(NLMISC::IStream &f)  throw(NLMISC::EStream)
+{
+	f.xmlPushBegin("WaterHeightMap");			
+		f.xmlSetAttrib ("NAME")					;
+		f.serial (_Name);
+	f.xmlPushEnd();
+	sint ver = f.serialVersion(0);
+	f.xmlSerial(_Size, "SIZE");
+	if (f.isReading())
+	{
+		setSize(_Size);
+	}
+	f.xmlSerial(_Damping, "DAMPING");
+	f.xmlSerial(_FilterWeight, "FILTER_WEIGHT");
+	f.xmlSerial(_UnitSize, "WATER_UNIT_SIZE");	
+	f.xmlSerial(_WavesEnabled, "WavesEnabled");
+	if (_WavesEnabled)
+	{
+		f.xmlPush("WavesParams");
+			f.xmlSerial(_WaveIntensity, "WAVE_INTENSITY");
+			f.xmlSerial(_WavePeriod, "WAVE_PERIOD");
+			f.xmlSerial(_WaveImpulsionRadius, "WAVE_IMPULSION_RADIUS");
+			f.xmlSerial(_BorderWaves, "BORDER_WAVES");
+		f.xmlPop();
+	}
+	f.xmlPop();
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
  * <File description>
  *
- * $Id: deform_2d.cpp,v 1.2 2001/09/06 07:25:37 corvazier Exp $
+ * $Id: deform_2d.cpp,v 1.3 2001/10/26 08:22:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ void CDeform2d::doDeform(const TPoint2DVect &surf, IDriver *drv, IPerturbUV *uvp
 	typedef CQuadEffect::TPoint2DVect TPoint2DVect;
 	TPoint2DVect dest;
 
-	CQuadEffect::processPoly(surf, _Width, _Height, _XGranularity, _YGranularity, dest);
+	CQuadEffect::processPoly(surf, (float) _XGranularity, (float) _YGranularity, dest);
 	
 	uint realWidth = NLMISC::raiseToNextPowerOf2(_Width);
 	uint realHeight= NLMISC::raiseToNextPowerOf2(_Height);

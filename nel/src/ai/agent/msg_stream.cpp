@@ -1,6 +1,6 @@
 /** \file msg_stream.cpp
  *
- * $Id: msg_stream.cpp,v 1.1 2002/01/03 15:10:22 chafik Exp $
+ * $Id: msg_stream.cpp,v 1.2 2002/03/25 15:21:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,11 +218,12 @@ namespace NLAIAGENT
 	void CMsgOStream::serial(IObjectIA &b) throw(NLMISC::EStream)
 	{
 		((NLAIC::CIdentType &)b.getType()).serial(*this);
-		serial(b);
+		b.serial(*this);
 	}
 
 	void CMsgOStream::serial(IObjectIA* &b) throw(NLMISC::EStream)
 	{
-		serial(*b);
+		((NLAIC::CIdentType &)b->getType()).serial(*this);
+		b->serial(*this);
 	}
 }

@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.3 2000/12/12 16:44:09 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.4 2000/12/18 14:17:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,12 +30,12 @@
 #include "nel/net/unitime.h"
 #include "nel/net/net_displayer.h"
 
-
 #include "nel/3d/driver.h"
 #include "nel/3d/camera.h"
 #include "nel/3d/nelu.h"
 #include "nel/3d/dru.h"
 #include "nel/3d/font_manager.h"
+#include "nel/3d/font_generator.h"
 #include "nel/3d/computed_string.h"
 
 #include <string>
@@ -45,6 +45,8 @@ using namespace std;
 using namespace NLNET;
 using namespace NLMISC;
 using namespace NL3D;
+
+const sint32	Width = 800, Height = 600;
 
 
 #ifdef NL_OS_WINDOWS
@@ -70,11 +72,11 @@ sint32 SelectedLine = -1;
 
 /*
 
-Envoi:
+Send:
 @@DATE@HOTE_SRC(IP/PORT)@NUM@PROCESS(SERVICE/PID)@HOTE_DEST(IP/PORT)@NOM_MESSAGE@TAILLE_MSG@
 
-Réception:
-##DATE#HOTE_SRC(IP/PORT)@NUM@PROCESS(SERVICE/PID)@
+Receive:
+##DATE#HOTE_SRC(IP/PORT)#NUM#PROCESS(SERVICE/PID)#HOTE_DEST(IP/PORT)#
 
 */
 
@@ -137,11 +139,21 @@ void switchView ()
 	}
 }
 
-CMsg &findOrAddMsg (sint32 cnxsrc, sint32 num, bool send)
+sint32 findMax (vector<CObject> &v)
+{
+	sint32 maxpos = 0;
+	for (sint32 i = 0; i < (sint32) v.size (); i++)
+	{
+		if (v[i].pos > maxpos) maxpos = v[i].pos;
+	}
+	return maxpos;
+}
+
+CMsg &findOrAddMsg (sint32 cnxsrc, sint32 cnxdst, sint32 num, bool send)
 {
 	for (sint32 i = 0; i < (sint32) Msgs.size (); i++)
 	{
-		if (Msgs[i].cnxsrc == cnxsrc && Msgs[i].num == num)
+		if (Msgs[i].cnxsrc == cnxsrc && Msgs[i].cnxdst == cnxdst && Msgs[i].num == num)
 		{
 			if (send && Msgs[i].timesrc != 0)
 			{
@@ -234,12 +246,13 @@ void finalize (CMsg &m)
 void setMessage (TTime timesrc, string cnxsrcname, sint32 num, string procsrcname, string cnxdstname, string name, sint32 size)
 {
 	sint32 cnxsrc = findOrAddCnx (cnxsrcname);
-	CMsg &m = findOrAddMsg(cnxsrc, num, false);
+	sint32 cnxdst = findOrAddCnx (cnxdstname);
+	CMsg &m = findOrAddMsg(cnxsrc, cnxdst, num, false);
 	m.timesrc = timesrc;
 	m.cnxsrc = cnxsrc;
 	m.num = num;
 	m.procsrc = findOrAddProc (procsrcname);
-	m.cnxdst = findOrAddCnx (cnxdstname);
+	m.cnxdst = cnxdst;
 	m.name = name;
 	m.cs = false;
 	m.size = size;
@@ -256,19 +269,24 @@ void setMessage (TTime timesrc, string cnxsrcname, sint32 num, string procsrcnam
 }
 
 // set a receive message (#)
-void setMessage (TTime timedst, string cnxsrcname, sint32 num, string procdstname)
+void setMessage (TTime timedst, string cnxsrcname, sint32 num, string procdstname, string cnxdstname)
 {
 	sint32 cnxsrc = findOrAddCnx (cnxsrcname);
-	CMsg &m = findOrAddMsg(cnxsrc, num, true);
+	sint32 cnxdst = findOrAddCnx (cnxdstname);
+	CMsg &m = findOrAddMsg(cnxsrc, cnxdst, num, true);
 	m.timedst = timedst;
 	m.cnxsrc = cnxsrc;
 	m.num = num;
 	m.procdst = findOrAddProc (procdstname);
+	m.cnxdst = cnxdst;
 
 	string hostname;
 	sint32 i;
 	for (i=0, hostname=""; cnxsrcname[i]!='/'; hostname+=cnxsrcname[i++])	;
 	m.hostsrc = findOrAddHost (hostname);
+
+	for (i=0, hostname=""; cnxdstname[i]!='/'; hostname+=cnxdstname[i++])	;
+	m.hostdst = findOrAddHost (hostname);
 
 	if (m.timesrc != 0) finalize (m);
 }
@@ -300,15 +318,21 @@ void RecomputeFont()
 
 double vx2sx (double px)
 {
-	double dx = 1.0 / ((double) (*View).size ()+1);
-	double cx = px - (double) (*View).size ()/2.0;
+	// utiliser maxpos au lieu de size
+	sint32 nb = findMax (*View);
+	if (nb > 6) nb = 6;
+	double dx = 1.0 / ((double) nb+1);
+	double cx = px - (double) nb/2.0;
 	return 0.5 + cx * dx * ZoomX + PosX;
 }
 
 double sx2vx (double px)
 {
-	double dx = 1.0 / ((double) (*View).size ()+1);
-	return (px - 0.5 - PosX) / (dx * ZoomX) + (double) (*View).size ()/2.0;
+	// utiliser maxpos au lieu de size
+	sint32 nb = findMax (*View);
+	if (nb > 6) nb = 6;
+	double dx = 1.0 / ((double) nb+1);
+	return (px - 0.5 - PosX) / (dx * ZoomX) + (double) nb/2.0;
 }
 
 double vy2sy (TTime py)
@@ -434,8 +458,8 @@ void CMsg::drawArrow()
 	if (!cs)
 	{
 		CDisplayDescriptor displayDesc;
-		displayDesc.ResX = 800;
-		displayDesc.ResY = 600;
+		displayDesc.ResX = Width;
+		displayDesc.ResY = Height;
 		cs = true;
 		fontManager.computeString(name, &fontGen, CRGBA(255,128,75), (uint32) (MsgFontSize*ZoomX), displayDesc, csname);
 	}
@@ -453,19 +477,19 @@ void render ()
 		if (!(*View)[i].cs)
 		{
 			CDisplayDescriptor displayDesc;
-			displayDesc.ResX = 800;
-			displayDesc.ResY = 600;
+			displayDesc.ResX = Width;
+			displayDesc.ResY = Height;
 			fontManager.computeString((*View)[i].name, &fontGen, CRGBA(255,255,128), (uint32)(HostFontSize*FontZoom), displayDesc, (*View)[i].csname);
 			(*View)[i].cs = true;
 		}
 
 		if (SelectedLine == i)
 		{
-			(*View)[i].csname.render2D(*scene->getDriver(), (float) pos, 1.0, CComputedString::RightBottom, 1.5, 1.5, (float) (-90.0*Pi/180.0));
+			(*View)[i].csname.render2D(*scene->getDriver(), (float) pos, 1.0, CComputedString::BottomRight, 1.5, 1.5, (float) (-90.0*Pi/180.0));
 		}
 		else
 		{
-			(*View)[i].csname.render2D(*scene->getDriver(), (float) pos, 1.0, CComputedString::RightBottom, 1.0, 1.0, (float) (-90.0*Pi/180.0));
+			(*View)[i].csname.render2D(*scene->getDriver(), (float) pos, 1.0, CComputedString::BottomRight, 1.0, 1.0, (float) (-90.0*Pi/180.0));
 		}
 	}
 
@@ -524,7 +548,7 @@ class CKCallback : public IEventListener
 			// send fake
 			CMessage msgout;
 			char str2[1024];
-			sprintf(str2, "@@%"NL_I64"d@123.123.123.123/1000@%d@client132@321.321.321.321/2000@TEST@10@", CUniTime::getUniTime (), nums++);
+			sprintf(str2, "@@%"NL_I64"d@321.321.321.321/1000@%d@server@123.123.123.123/2001@TEST@10@\n", CUniTime::getUniTime (), nums++);
 			string str = str2;
 			msgout.serial (str);
 			CMessage msgin( "C", true );
@@ -536,7 +560,7 @@ class CKCallback : public IEventListener
 			// send fake
 			CMessage msgout;
 			char str2[1024];
-			sprintf(str2, "##%"NL_I64"d#123.123.123.123/1000#%d#server321#", CUniTime::getUniTime (), numr++);
+			sprintf(str2, "##%"NL_I64"d#321.321.321.321/1000#%d#client1#123.123.123.123/2001#\n", CUniTime::getUniTime (), numr++);
 			string str = str2;
 			msgout.serial (str);
 			CMessage msgin( "C", true );
@@ -548,7 +572,7 @@ class CKCallback : public IEventListener
 			// send fake
 			CMessage msgout;
 			char str2[1024];
-			sprintf(str2, "@@%"NL_I64"d@123.123.123.123/3000@%d@client111@321.321.321.321/2001@TEST2@10@", CUniTime::getUniTime (), nums2++);
+			sprintf(str2, "@@%"NL_I64"d@321.321.321.321/1000@%d@server@123.123.123.123/2002@TEST2@10@\n", CUniTime::getUniTime (), nums2++);
 			string str = str2;
 			msgout.serial (str);
 			CMessage msgin( "C", true );
@@ -560,7 +584,7 @@ class CKCallback : public IEventListener
 			// send fake
 			CMessage msgout;
 			char str2[1024];
-			sprintf(str2, "##%"NL_I64"d#123.123.123.123/3000#%d#server321#", CUniTime::getUniTime (), numr2++);
+			sprintf(str2, "##%"NL_I64"d#321.321.321.321/1000#%d#client2#123.123.123.123/2002#\n", CUniTime::getUniTime (), numr2++);
 			string str = str2;
 			msgout.serial (str);
 			CMessage msgin( "C", true );
@@ -588,6 +612,50 @@ class CKCallback : public IEventListener
 		else if (ec.Key == KeyDOWN)
 		{
 			PosY -= sy2vy (0.1);
+		}
+		else if (ec.Key == KeyEND)
+		{
+			// put the selected line to the end
+			if (SelectedLine != -1)
+			{
+				sint32 maxpos = findMax (*View);
+				(*View)[SelectedLine].pos = maxpos+1;
+			}
+		}
+		else if (ec.Key == KeyDELETE)
+		{
+			// put the selected line to the end
+			if (SelectedLine != -1)
+			{
+				for (sint32 i = 0; i < (sint32) Msgs.size (); i++)
+				{
+					switch (SelectedView)
+					{
+					case 0:
+						if (Msgs[i].cnxsrc == SelectedLine) Msgs[i].cnxsrc = -1;
+						if (Msgs[i].cnxdst == SelectedLine) Msgs[i].cnxdst = -1;
+						break;
+					case 1:
+						if (Msgs[i].procsrc == SelectedLine) Msgs[i].procsrc = -1;
+						if (Msgs[i].procdst == SelectedLine) Msgs[i].procdst = -1;
+						break;
+					case 2:
+						if (Msgs[i].hostsrc == SelectedLine) Msgs[i].hostsrc = -1;
+						if (Msgs[i].hostdst == SelectedLine) Msgs[i].hostdst = -1;
+						break;
+					}
+				}
+				(*View).erase ((*View).begin()+SelectedLine);
+				SelectedLine = -1;
+			}
+		}
+		else if (ec.Key == KeyADD)
+		{
+			ZoomY *= 1.5;
+		}
+		else if (ec.Key == KeySUBTRACT)
+		{
+			ZoomY /= 1.5;
 		}
 	}
 };
@@ -753,10 +821,14 @@ void cbProcessReceivedMsg( CMessage& message, TSenderId from )
 		while (logstr[res] != '#') procdstname += logstr[res++];
 		res++;
 
+		string cnxdstname;
+		while (logstr[res] != '#') cnxdstname += logstr[res++];
+		res++;
+
 		sint64 timedst = str2sint64 (timedstname);
 
 		if (timedst == 0) timedst = CUniTime::getUniTime ();
-		setMessage (timedst, cnxsrcname, atoi(numname.c_str()), procdstname);
+		setMessage (timedst, cnxsrcname, atoi(numname.c_str()), procdstname, cnxdstname);
 	}
 }
 
@@ -775,8 +847,8 @@ void main()
 	try
 	{
 		// init scene
-		uint w = 800;
-		uint h = 600;
+		uint w = Width;
+		uint h = Height;
 		uint bpp = 32;
 		bool windowed = true;
 		NL3D::CNELU::init(w, h, CViewport(), bpp, windowed); 
@@ -815,8 +887,8 @@ void main()
 		CNELU::EventServer.addListener (EventMouseUpId, &cb4);
 
 		CDisplayDescriptor displayDesc;
-		displayDesc.ResX = 800;
-		displayDesc.ResY = 600;
+		displayDesc.ResX = Width;
+		displayDesc.ResY = Height;
 		CComputedString autoString, cnxString, procString, hostString;
 		fontManager.computeString("AutoScroll", &fontGen, CRGBA(255,0,0), 20, displayDesc, autoString);
 		fontManager.computeString("Connexion", &fontGen, CRGBA(255,128,255), 20, displayDesc, cnxString);
@@ -831,14 +903,14 @@ void main()
 
 			switch(SelectedView)
 			{
-			case 0: cnxString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::LeftBottom); break;
-			case 1: procString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::LeftBottom); break;
-			case 2: hostString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::LeftBottom); break;
+			case 0: cnxString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::BottomLeft); break;
+			case 1: procString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::BottomLeft); break;
+			case 2: hostString.render2D(*scene->getDriver(), 0.0f, 0.0f, CComputedString::BottomLeft); break;
 			}
 
 			if (Automat)
 			{
-				autoString.render2D(*scene->getDriver(), 1.0f, 0.0f, CComputedString::RightBottom);
+				autoString.render2D(*scene->getDriver(), 1.0f, 0.0f, CComputedString::BottomRight);
 				PosY = CUniTime::getUniTime ();
 			}
 
@@ -849,7 +921,7 @@ void main()
 
 			client->update();
 		}
-		while(!CNELU::AsyncListener.isKeyPush(KeyESCAPE));
+		while(!CNELU::AsyncListener.isKeyPushed(KeyESCAPE));
 
 		CNELU::AsyncListener.removeFromServer(CNELU::EventServer);
 		

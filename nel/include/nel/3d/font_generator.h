@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.5 2000/12/05 10:03:38 lecroart Exp $
+ * $Id: font_generator.h,v 1.6 2000/12/18 14:16:50 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,7 @@ public:
 	/** Constructor
 	 * \param fontFileName path+filename (ex: "c:\winnt\fonts\arial.ttf")
 	 */
-	CFontGenerator (const std::string fontFileName, const std::string fontExFileName = "");
+	CFontGenerator (const std::string &fontFileName, const std::string &fontExFileName = "");
 
 	/** generate and return a bitmap
 	 * \param c the unicode char

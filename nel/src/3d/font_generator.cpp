@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.8 2000/12/13 14:38:36 cado Exp $
+ * $Id: font_generator.cpp,v 1.9 2000/12/18 14:16:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 /*
  * Constructor
  */
-CFontGenerator::CFontGenerator (const std::string fontFileName, const std::string fontExFileName)
+CFontGenerator::CFontGenerator (const std::string &fontFileName, const std::string &fontExFileName)
 {
 	FT_Error error;
 

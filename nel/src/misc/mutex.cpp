@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * Class CMutex
  *
- * $Id: mutex.cpp,v 1.15 2001/06/21 08:45:03 cado Exp $
+ * $Id: mutex.cpp,v 1.16 2001/06/21 12:33:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,9 +164,13 @@ CMutex::~CMutex()
 	pthread_mutex_destroy( &mutex );
 #endif // NL_OS_UNIX
 
+	int i = 0;
+
 	// Nothing on Windows ?
 }
 
+
+bool entered = false;
 
 /*
  * enter
@@ -227,7 +231,16 @@ void CMutex::enter ()
 #endif // NL_OS_WINDOWS
 
 	// Debug Info
-	//printf("1");
+//	printf("1");
+/*	char str[1024];
+	sprintf(str, "enter %8p %8p %8p\n", this, Mutex, getThreadId ());
+	if (Mutex == (void*)0x88)
+	{
+		OutputDebugString (str);
+		if (entered) __asm int 3;
+		entered = true;
+	}
+*/
 #ifdef MUTEX_DEBUG
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
@@ -246,7 +259,16 @@ void CMutex::enter ()
  */
 void CMutex::leave ()
 {
-	//printf( "0" );
+//	printf( "0" );
+/*	char str[1024];
+	sprintf(str, "leave %8p %8p %8p\n", this, Mutex, getThreadId ());
+	if (Mutex == (void*)0x88)
+	{
+		OutputDebugString (str);
+		if (!entered) __asm int 3;
+		entered = false;
+	}
+*/
 #ifdef NL_OS_WINDOWS
 
 	if (ReleaseMutex(Mutex) == 0)

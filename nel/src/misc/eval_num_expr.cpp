@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.4 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: eval_num_expr.cpp,v 1.5 2002/09/03 10:25:07 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -584,13 +584,13 @@ CEvalNumExpr::TReturnState CEvalNumExpr::getNextToken (TToken &token)
 // ***************************************************************************
 
 CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (const char *expression, double &result, 
-														 int *errorIndex)
+														 int *errorIndex, uint32 userData)
 {
 	// Init the ptr
 	_ExprPtr = expression;
 
 	TToken nextToken;
-	TReturnState error = evalExpression (result, nextToken);
+	TReturnState error = evalExpression (result, nextToken, userData);
 	if (error == NoError)
 	{
 		// The end ?
@@ -613,7 +613,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (const char *expression,
 
 // ***************************************************************************
 
-CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TToken &nextToken)
+CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TToken &nextToken, uint32 userData)
 {
 	// Array of result
 
@@ -659,7 +659,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 		if (nextToken == Open)
 		{
 			// Eval sub expression
-			error = evalExpression (value, nextToken);
+			error = evalExpression (value, nextToken, userData);
 			if (error == NoError)
 			{
 				if (nextToken != Close)
@@ -693,7 +693,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 
 				// Eval an expression
 				double arg0;
-				error = evalExpression (arg0, nextToken);
+				error = evalExpression (arg0, nextToken, userData);
 				if (error == NoError)
 				{
 					// 2 arg ?
@@ -703,7 +703,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 						{
 							// Second argument
 							double arg1;
-							error = evalExpression (arg1, nextToken);
+							error = evalExpression (arg1, nextToken, userData);
 							if (error == NoError)
 							{
 								// Final with close ?
@@ -873,14 +873,14 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				{
 					// Eval an expression
 					double arg0;
-					error = evalExpression (arg0, nextToken);
+					error = evalExpression (arg0, nextToken, userData);
 					if (error == NoError)
 					{
 						if (nextToken == Coma)
 						{
 							// Second argument
 							double arg1;
-							error = evalExpression (arg1, nextToken);
+							error = evalExpression (arg1, nextToken, userData);
 							if (error == NoError)
 							{
 								// Final with close ?
@@ -926,7 +926,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				else
 				{
 					// This is a user value
-					error = evalValue (internalStringPtr, value);
+					error = evalValue (internalStringPtr, value, userData);
 					if (error != NoError)
 						return error;
 				}
@@ -1173,7 +1173,7 @@ const bool CEvalNumExpr::_StringChar[128] =
 
 // ***************************************************************************
 
-CEvalNumExpr::TReturnState CEvalNumExpr::evalValue (const char *value, double &result)
+CEvalNumExpr::TReturnState CEvalNumExpr::evalValue (const char *value, double &result, uint32 userData)
 {
 	return UnkownValue;
 }

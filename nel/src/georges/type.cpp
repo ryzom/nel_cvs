@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.6 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: type.cpp,v 1.7 2002/09/03 10:25:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,7 +337,7 @@ public:
 	{
 		Form = form;
 	}
-	CEvalNumExpr::TReturnState evalValue (const char *value, double &result, uint32 round)
+	virtual CEvalNumExpr::TReturnState evalValue (const char *value, double &result, uint32 round)
 	{
 		// If a form is available
 		if (Form)
@@ -377,7 +377,7 @@ public:
 					return CEvalNumExpr::NoError;
 			}
 		}
-		return CEvalNumExpr::evalValue (value, result);
+		return CEvalNumExpr::evalValue (value, result, round);
 	}
 
 	// The working form
@@ -438,7 +438,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 			double value;
 			CMyEvalNumExpr expr (form);
 			int offset;
-			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset);
+			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset, round);
 			if (error == CEvalNumExpr::NoError)
 			{
 				// To string

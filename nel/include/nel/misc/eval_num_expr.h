@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.5 2002/08/21 12:48:53 lecroart Exp $
+ * $Id: eval_num_expr.h,v 1.6 2002/09/03 10:25:07 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -68,6 +68,7 @@ public:
 	  * \param errorIndex is a pointer on an integer value filled with the index
 	  * of the parsing error in the input string if function doesn't return "NoError".
 	  * This value can be NULL.
+	  * \param userData is a user data used by user eval function
 	  *	\return NoError if the expression has been parsed. Result is filled with the evaluated value.
 	  *
 	  * This expression must follow the following grammar with the following evaluation priority:
@@ -163,7 +164,7 @@ public:
 	  *	11 - ^^
 	  *
 	  */
-	TReturnState evalExpression (const char *expression, double &result, int *errorIndex);
+	TReturnState evalExpression (const char *expression, double &result, int *errorIndex, uint32 userData = 0);
 
 	/// Get error string
 	const char* getErrorString (TReturnState state) const;
@@ -179,10 +180,11 @@ protected:
 	  *
 	  * \param value is the value to parse.
 	  * \param result is the result to fill if the value has been succesfully parsed.
+	  * \param userData is a user data used by user eval function.
 	  * \return UnkownValue if the value is not known, ValueError is the value evaluation failed or NoError 
 	  * if it has been parsed.
 	  */
-	virtual TReturnState evalValue (const char *value, double &result);
+	virtual TReturnState evalValue (const char *value, double &result, uint32 userData);
 
 	/**
 	  * Eval a user defined function. Default implementation returns UnkownFunction.
@@ -305,7 +307,7 @@ private:
 	TReturnState	getNextToken (TToken &token);
 
 	/// Evaluate an expression
-	TReturnState evalExpression (double &result, TToken &nextToken);
+	TReturnState	evalExpression (double &result, TToken &nextToken, uint32 userData);
 
 	/// Reserved word
 	TReservedWord	_ReservedWordFound;

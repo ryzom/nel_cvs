@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.115 2002/05/06 16:25:58 portier Exp $
+ * $Id: agent_script.cpp,v 1.116 2002/05/07 14:41:46 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,8 +58,6 @@
 
 namespace NLAIAGENT
 {	
-	//static CGroupType listBidon;
-
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::msgType = NULL;
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::msgPerf = NULL;
 	NLAISCRIPT::CParam *CAgentScript::SendParamMessageScript = NULL;

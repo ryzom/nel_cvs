@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.27 2002/04/17 09:56:04 portier Exp $
+ * $Id: actor_script.h,v 1.28 2002/05/07 14:41:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,9 @@ namespace NLAIAGENT
 			sint32	_OnUnActivateIndex;
 			sint32  _OnPauseIndex;
 			sint32	_OnRestartIndex;
+			sint32  _OnSuccessIndex;
+			sint32  _OnFailureIndex;
+
 			///////////////////////////////////
 
 			std::vector<CComponentHandle *> _Actors;
@@ -164,6 +167,8 @@ namespace NLAIAGENT
 			/// Own success and failure functions
 			/// These function telle other operators and goals that might be waiting for 
 			/// the execution of this one.
+			virtual void processSuccess(NLAIAGENT::IObjectIA *);
+			virtual void processFailure(NLAIAGENT::IObjectIA *);
 			virtual void success() {}
 			virtual void failure() {}
 

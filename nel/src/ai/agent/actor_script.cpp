@@ -621,14 +621,14 @@ namespace NLAIAGENT
 
 			case fid_success:
 			case fid_msg_success:
-				onSuccess(params);
+				processSuccess(params);
 				r.Result = new NLAIAGENT::CSuccessMsg();
 				return r;
 				break;
 
 			case fid_failure:
 			case fid_msg_failure:
-				onFailure(params);
+				processFailure(params);
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
 				break;
@@ -817,5 +817,43 @@ namespace NLAIAGENT
 	const CAgentScript *CActorScript::getTopLevel() const
 	{
 		return _TopLevel;
+	}
+
+	void CActorScript::processSuccess(NLAIAGENT::IObjectIA *param)
+	{
+		static CStringVarName onsuccess_func_name("OnSuccess");
+		tQueue r = _AgentClass->isMember( NULL, &onsuccess_func_name, NLAISCRIPT::CParam() );
+		if ( !r.empty() )
+		{	
+			_OnSuccessIndex = r.top().Index;
+			const NLAIAGENT::IAgentManager *manager = getAgentManager();
+			if ( manager != NULL )
+			{
+				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) manager->getAgentContext();
+				context->Self = this;
+				runMethodeMember( _OnSuccessIndex ,context);
+				_OnSuccessIndex = -1;
+			}
+		}
+		onSuccess( param );
+	}
+
+	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
+	{
+		static CStringVarName onfailure_func_name("OnSuccess");
+		tQueue r = _AgentClass->isMember( NULL, &onfailure_func_name, NLAISCRIPT::CParam() );
+		if ( !r.empty() )
+		{	
+			_OnFailureIndex = r.top().Index;
+			const NLAIAGENT::IAgentManager *manager = getAgentManager();
+			if ( manager != NULL )
+			{
+				NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) manager->getAgentContext();
+				context->Self = this;
+				runMethodeMember( _OnFailureIndex ,context);
+				_OnFailureIndex = -1;
+			}
+		}
+		onFailure( param );
 	}
 }

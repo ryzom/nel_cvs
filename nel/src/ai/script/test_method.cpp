@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: test_method.cpp,v 1.10 2001/07/12 14:07:44 chafik Exp $
+ * $Id: test_method.cpp,v 1.11 2001/07/16 09:02:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,9 +289,7 @@ namespace NLAISCRIPT
 
 	sint CLibTest::dRand(sint d1, sint d2) const
 	{
-		time_t t;
-		time(&t);
-		srand((sint)(t & 0xffffffffffff) );
+		srand((sint16)clock() );
 		sint ra = ::rand();
 		sint d = (d2 - d1);
 		if(d < 0) d = -d;

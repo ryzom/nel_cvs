@@ -288,7 +288,7 @@ namespace NLAIAGENT
 #endif
 
 		float class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
-		return pri * class_pri;
+		return (float)pri * class_pri;
 	}
 
 	NLAILOGIC::CFact *COperatorScript::buildFromVars(NLAILOGIC::IBaseAssert *assert, std::vector<sint32> &pl, NLAILOGIC::CValueSet *vars)
@@ -430,6 +430,9 @@ namespace NLAIAGENT
 
 	void COperatorScript::onSuccess( IObjectIA *)
 	{
+
+		//Scotsh!
+		if(_CurrentGoal == NULL) return;
 		// Tells the goal the operator succeded
 		_CurrentGoal->operatorSuccess( this );
 		_CurrentGoal = NULL;
@@ -438,6 +441,8 @@ namespace NLAIAGENT
 	
 	void COperatorScript::onFailure( IObjectIA *)
 	{
+		//Scotsh!
+		if(_CurrentGoal == NULL) return;
 		// Tells the goal the operator failed
 		_CurrentGoal->operatorFailure( this );
 		_CurrentGoal = NULL;

@@ -221,24 +221,28 @@ void CPaintColor::setVertexColor (int mesh, int patch, int s, int t, const CRGBA
 		_Undo->toUndo (elmt);
 	}
 
-	// Get the patch
-	std::vector<CTileColor>& copyZone = *nelPatchChg.getColorArray  (mesh, patch);
-
 	// Get the Nel patch mesh
 	RPatchMesh *pMesh=vectMesh[mesh].RMesh;
-
-	// Get order S of this patch
-	int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU)+1;
 
 	// Blend color
 	CRGBA color;
 	color.blendFromui ( old, newColor, blend );
-	
-	// Set the color in 
-	copyZone[s+t*OrderS].Color565=color.get565();
+
+	// For each nel zone
+	for (uint i=0; i<maxZoneToNeLZoneArray[mesh].size(); i++)
+	{
+		// Get the patch
+		std::vector<CTileColor>& copyZone = *nelPatchChg.getColorArray  (maxZoneToNeLZoneArray[mesh][i], patch);
+
+		// Get order S of this patch
+		int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU)+1;
+
+		// Set the color in 
+		copyZone[s+t*OrderS].Color565=color.get565();
+	}
 
 	// Set the color
-	vectMesh[mesh].RMesh->setVertexColor (patch, s, t, color);
+	pMesh->setVertexColor (patch, s, t, color);
 }
 
 /*-------------------------------------------------------------------*/

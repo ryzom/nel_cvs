@@ -53,6 +53,9 @@ CBankCont*	bankCont;
 // Tileset land
 CTileSetSelection	tileSetSelector;
 
+// The remap table
+std::vector< std::vector<CNeLZoneIndex> > maxZoneToNeLZoneArray;
+
 bool bWarningInvalidTileSet;
 
 CVector maxToNel (const Point3& p)
@@ -389,11 +392,38 @@ void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDr
 
 /*-------------------------------------------------------------------*/
 
+void addNeLZone ( Object *object, INode *current, std::vector<CNeLZoneIndex> &nelRef, uint &nelIndex)
+{
+	// Not the same
+	if (current->GetObjectRef() == object)
+	{
+		// Get app data
+		uint rotate = CExportNel::getScriptAppData (current, NEL3D_APPDATA_ZONE_ROTATE, 0);
+		bool symmetry = CExportNel::getScriptAppData (current, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
+
+		// Add to nel zone
+		nelRef.push_back ( CNeLZoneIndex (nelIndex++, rotate, symmetry, current) );
+	}
+
+	// Call to child
+	for (uint child=0; child<(uint)current->NumberOfChildren(); child++)
+		addNeLZone ( object, current->GetChildNode(child), nelRef, nelIndex);
+}
+
 // Tile painting algorithm. watch "doc/3d/tile_algorithm.doc" for details
 
 void makeVectMesh (std::vector<EPM_Mesh>& vectMesh, INodeTab& nodes, ModContextList& mcList, PaintPatchMod *pobj, TimeValue t)
 {
+	// Clear the mesh vector
 	vectMesh.clear ();
+
+	// Reset the max to nel map
+	maxZoneToNeLZoneArray.clear ();
+	maxZoneToNeLZoneArray.resize (mcList.Count ());
+
+	// Nel zone indexies
+	uint nelIndex = 0;
+
 	for (int i = 0; i < mcList.Count (); i++)
 	{
 		// 
@@ -410,6 +440,9 @@ void makeVectMesh (std::vector<EPM_Mesh>& vectMesh, INodeTab& nodes, ModContextL
 			continue;
 
 		vectMesh.push_back (EPM_Mesh (patch, rpatch, patchData, nodes[i], mcList[i], i));
+
+		// Look for another node
+		addNeLZone ( nodes[i]->GetObjectRef(), pobj->ip->GetRootNode(), maxZoneToNeLZoneArray[i], nelIndex );
 	}
 }
 
@@ -441,43 +474,46 @@ void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std:
 	// NeL update
 	if (land)
 	{
-
-		int patch=tile/NUM_TILE_SEL;
-		int ttile=tile%NUM_TILE_SEL;
-		int v=ttile/MAX_TILE_IN_PATCH;
-		int u=ttile%MAX_TILE_IN_PATCH;
-
-		// Get the patch
-		std::vector<CTileElement>& copyZone = *nelPatchChg.getTileArray (mesh, patch);
-		RPatchMesh *pMesh=vectMesh[mesh].RMesh;
-		int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU);
-		
-		for (int l=0; l<3; l++)
+		// For each nel zone
+		for (uint i=0; i<maxZoneToNeLZoneArray[mesh].size(); i++)
 		{
-			if (l>=pMesh->getUIPatch (patch).getTileDesc (u+v*OrderS).getNumLayer ())
-			{
-				copyZone[u+v*OrderS].Tile[l]=0xffff;
-			}
-			else
-			{
-				int toto=copyZone[u+v*OrderS].Tile[l];
-				copyZone[u+v*OrderS].Tile[l]=newDesc.getLayer (l).Tile;
-				copyZone[u+v*OrderS].setTileOrient (l, newDesc.getLayer (l).Rotate);
+			int patch=tile/NUM_TILE_SEL;
+			int ttile=tile%NUM_TILE_SEL;
+			int v=ttile/MAX_TILE_IN_PATCH;
+			int u=ttile%MAX_TILE_IN_PATCH;
 
+			// Get the patch
+			std::vector<CTileElement>& copyZone = *nelPatchChg.getTileArray (maxZoneToNeLZoneArray[mesh][i], patch);
+			RPatchMesh *pMesh=vectMesh[mesh].RMesh;
+			int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU);
+			
+			for (int l=0; l<3; l++)
+			{
+				if (l>=pMesh->getUIPatch (patch).getTileDesc (u+v*OrderS).getNumLayer ())
+				{
+					copyZone[u+v*OrderS].Tile[l]=0xffff;
+				}
+				else
+				{
+					int toto=copyZone[u+v*OrderS].Tile[l];
+					copyZone[u+v*OrderS].Tile[l]=newDesc.getLayer (l).Tile;
+					copyZone[u+v*OrderS].setTileOrient (l, newDesc.getLayer (l).Rotate);
+
+				}
 			}
-		}
-		if (copyZone[u+v*OrderS].Tile[0]==0xffff)
-			copyZone[u+v*OrderS].setTile256Info (false, 0);
-		else
-		{
-			if (newDesc.getCase()==0)
+			if (copyZone[u+v*OrderS].Tile[0]==0xffff)
 				copyZone[u+v*OrderS].setTile256Info (false, 0);
 			else
-				copyZone[u+v*OrderS].setTile256Info (true, newDesc.getCase()-1);
-		}
+			{
+				if (newDesc.getCase()==0)
+					copyZone[u+v*OrderS].setTile256Info (false, 0);
+				else
+					copyZone[u+v*OrderS].setTile256Info (true, newDesc.getCase()-1);
+			}
 
-		// Displace tile
-		copyZone[u+v*OrderS].setTileSubNoise (newDesc.getDisplace());
+			// Displace tile
+			copyZone[u+v*OrderS].setTileSubNoise (newDesc.getDisplace());
+		}
 
 		// Undo: push new value
 		if (undo)
@@ -3587,20 +3623,24 @@ DWORD WINAPI myThread (LPVOID vData)
 				if ((!patchData)||(!patch)||(!rpatch))
 					continue;
 
-				// Create the zone..
-				CZone	zone;
-				rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, i);
+				// For each NeL zone
+				for (uint nelZone=0; nelZone<maxZoneToNeLZoneArray[i].size(); nelZone++)
+				{
+					// Create the zone..
+					CZone	zone;
+					rpatch->exportZone (maxZoneToNeLZoneArray[i][nelZone].Node, patch, zone, maxZoneToNeLZoneArray[i][nelZone].Index);
 
-				// Smooth corner
-				CZoneCornerSmoother cornerSmoother;
-				std::vector<CZone*> emptyVector;
-				cornerSmoother.computeAllCornerSmoothFlags (&zone, emptyVector);
+					// Smooth corner
+					CZoneCornerSmoother cornerSmoother;
+					std::vector<CZone*> emptyVector;
+					cornerSmoother.computeAllCornerSmoothFlags (&zone, emptyVector);
 
-				// Add the zone
-				TheLand->Landscape.addZone (zone);
+					// Add the zone
+					TheLand->Landscape.addZone (zone);
 
-				// Return bb
-				CAABBoxExt bb=zone.getZoneBB();
+					// Return bb
+					//CAABBoxExt bb=zone.getZoneBB();
+				}
 			}
 
 			// Check zones

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.6 2001/11/14 15:17:21 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.7 2001/12/14 15:04:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,9 @@ extern ClassDesc* GetRPODesc();
 
 #define MAX_TILE_IN_PATCH 16
 #define NUM_TILE_SEL (MAX_TILE_IN_PATCH*MAX_TILE_IN_PATCH)
+
+#define NEL3D_APPDATA_ZONE_ROTATE		1266703978
+#define NEL3D_APPDATA_ZONE_SYMMETRY		1266703979
 
 #pragma warning (disable : 4786)
 

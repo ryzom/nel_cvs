@@ -208,6 +208,28 @@ public:
 
 /*-------------------------------------------------------------------*/
 
+class CNeLZoneIndex
+{
+public:
+	CNeLZoneIndex (uint index, uint rotate, bool symmetry, INode *node)
+	{
+		Index = index;
+		Rotate = rotate;
+		Symmetry = symmetry;
+		Node = node;
+	}
+	uint	Index;
+	uint	Rotate;
+	bool	Symmetry;
+	INode	*Node;
+};
+
+/*-------------------------------------------------------------------*/
+
+extern std::vector< std::vector<CNeLZoneIndex> > maxZoneToNeLZoneArray;
+
+/*-------------------------------------------------------------------*/
+
 class EPM_PaintMouseProc : public MouseCallBack 
 {
 	friend class EPM_PaintCMode;

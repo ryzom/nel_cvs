@@ -39,6 +39,8 @@ for i in $clod_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

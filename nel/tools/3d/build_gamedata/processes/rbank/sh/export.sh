@@ -38,6 +38,8 @@ for i in $collision_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript rbank_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

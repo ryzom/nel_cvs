@@ -51,6 +51,8 @@ for i in $zone_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript zone_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log

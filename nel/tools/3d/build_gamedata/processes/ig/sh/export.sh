@@ -44,6 +44,8 @@ for i in $ig_land_source_directories ; do
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
@@ -60,6 +62,8 @@ for i in $ig_other_source_directories ; do
 	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory_tag&$build_gamedata_directory/processes/ig/tag&g" | sed -e "s&output_directory_ig&$build_gamedata_directory/processes/ig/ig_other&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
 	# Concat log.log files

@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.3 2001/01/08 14:42:12 valignat Exp $
+ * $Id: lexsupport.cpp,v 1.4 2001/01/09 15:19:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ namespace NLAISCRIPT
 	};*/			
 
 	typedef std::map<CStringType , long,std::less<CStringType> > Arbre;
-	Arbre DicoDeNom;
+	static Arbre DicoDeNom;
 
 	void InitDico()
 	{		

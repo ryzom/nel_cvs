@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: pythonmethode.cpp,v 1.5 2001/01/09 15:19:15 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,7 +192,7 @@ namespace NLAIPYSERVER
 		/*strcpy(S,PathPython);
 		strcat(S,"/PyLib");*/
 				
-		sprintf(PathPython,"%s;/%s",Py_GetPath(),pathWay);			
+		sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);			
 				
 		CPyExport *m_pPyLib = new CPyExport;
 
@@ -216,7 +216,9 @@ namespace NLAIPYSERVER
 							"\t\treturn Read()\n\n\n"
 							"sys.stdout = PyWindowInOut()\n"
 							"sys.stderr = PyWindowInOut()\n"
-							"sys.stdin = PyWindowInOut()";
+							"sys.stdin = PyWindowInOut()\n"
+							"sys.argv = ' '\n"
+							"sys.argc = 1\n";
 							
 		m_pPyLib->runCode(CodeExec);
 

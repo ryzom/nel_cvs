@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: pylib.cpp,v 1.4 2001/01/09 15:19:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,34 @@
 
 namespace NLAIPYSERVER
 {		
+	PyObject *CPyExport::loadModule(char *name)
+	{
+		char *Name = (char *)getNameSpace(name);
+
+		PyObject *Module;
+
+		Module = PyDict_GetItemString(PyImport_GetModuleDict(),Name);
+
+
+		if(strcmp(Name,"__main__") == NULL) return PyImport_AddModule(Name);
+		else	
+		if(Module != NULL && PyDict_GetItemString(Module,"__dummy__")) return Module;	
+		else
+		{	
+			Module = PyImport_ImportModule(Name);
+			return Module;
+		}
+	}
+
+	PyObject *CPyExport::loadAttruibut(char *ModeName,char *Attribut)
+	{
+		PyObject *Module;
+
+		ModeName = (char *)getNameSpace((const char *)ModeName);
+		Module = loadModule(ModeName);
+		if(Module == NULL) return NULL;
+		return PyObject_GetAttrString(Module,Attribut);
+	}
 
 	sint32 CPyExport::convertResult(PyObject *Result,char *Format, void *Target)
 	{

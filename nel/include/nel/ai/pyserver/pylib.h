@@ -9,7 +9,7 @@
 namespace NLAIPYSERVER
 {		
 
-	#define PyCastMethod	struct _object *(__cdecl *)(struct _object *,struct _object *)
+#define PyCastMethod	struct _object *(__cdecl *)(struct _object *,struct _object *)
 
 	class CPyExport
 	{

@@ -1,19 +1,18 @@
 #
-# $Id: Makefile.am,v 1.5 2003/08/27 16:16:25 distrib Exp $
+# $Id: Makefile.am,v 1.6 2004/01/15 17:34:58 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
 
 lib_LTLIBRARIES       = libnelmemory.la
 
-libnelmemory_la_SOURCES = 
+#libnelmemory_la_SOURCES = 
 
-#libnelmemory_la_SOURCES = heap_allocator.cpp          \
-#			memory.cpp                  \
-#			memory_common.cpp           \
-#			memory_manager.cpp          \
-#			memory_mutex.cpp            \
-#			memory_tds.cpp
+libnelmemory_la_SOURCES = heap_allocator.cpp          \
+			memory.cpp                  \
+			memory_manager.cpp          \
+			memory_mutex.cpp            \
+			memory_tds.cpp
 
 noinst_HEADERS        = heap_allocator.h            \
                         heap_allocator_inline.h     \

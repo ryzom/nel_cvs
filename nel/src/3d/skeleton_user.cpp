@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: skeleton_user.cpp,v 1.4 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,23 @@ namespace NL3D
 {
 
 
+// ***************************************************************************
+uint		CSkeletonUser::getNumBoneComputed() const
+{
+	return _Skeleton->getNumBoneComputed();
+}
+
+// ***************************************************************************
+void		CSkeletonUser::setInterpolationDistance(float dist)
+{
+	_Skeleton->setInterpolationDistance(dist);
+}
+
+// ***************************************************************************
+float		CSkeletonUser::getInterpolationDistance() const
+{
+	return _Skeleton->getInterpolationDistance();
+}
 
 
 } // NL3D

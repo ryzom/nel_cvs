@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_skeleton.h,v 1.2 2002/03/21 16:08:19 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,21 @@ public:
 	virtual	UBone		&getBone(uint boneId) =0;
 	/// retrieve the bone Id, by his name. -1 if not found.
 	virtual	sint		getBoneIdByName(const std::string &boneName) const=0;
+	// @}
+
+
+	/// \name Lod interaction
+	// @{
+
+	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
+	virtual	uint		getNumBoneComputed() const =0;
+
+	/** change the Lod Bone interpolation distance (in meters). If 0, interpolation is disabled.
+	 *	The smaller this value is, the more Lod skeleton system will "pop". Default is 0.5 meters.
+	 */
+	virtual	void		setInterpolationDistance(float dist) =0;
+	/// see setInterpolationDistance()
+	virtual	float		getInterpolationDistance() const =0;
 	// @}
 
 

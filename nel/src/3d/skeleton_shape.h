@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.7 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: skeleton_shape.h,v 1.8 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,7 @@ public:
 
 	/** Build a skeletonShape, replacing old.
 	 * WARNING: bones must be organized in Depth-first order (this is not checked).
+	 * Bone.LodDisableDistance are minimized such sons have always a distance <= father distance.
 	 */
 	void			build(const std::vector<CBoneBase> &bones);
 
@@ -116,7 +117,7 @@ public:
 
 	/// get lod information.
 	const CLod		&getLod(uint lod) const {return _Lods[lod];}
-
+	uint			getNumLods() const {return _Lods.size();}
 
 // ***************************
 private:

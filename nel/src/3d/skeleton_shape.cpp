@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.10 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.11 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,19 @@ void			CSkeletonShape::build(const std::vector<CBoneBase> &bones)
 		_BoneMap[_Bones[i].Name]= i;
 		// validate distances.
 		_Bones[i].LodDisableDistance= max(0.f, _Bones[i].LodDisableDistance);
+
+		// get fahter dist.
+		sint32	fatherId= _Bones[i].FatherId;
+		// if father exist and is not "always enabled"
+		if(fatherId>=0 && _Bones[fatherId].LodDisableDistance!=0)
+		{
+			float	fatherDist= _Bones[fatherId].LodDisableDistance;
+			// I must disable me at least before my father (never after).
+			if(_Bones[i].LodDisableDistance==0)
+				_Bones[i].LodDisableDistance= fatherDist;
+			else
+				_Bones[i].LodDisableDistance= min(_Bones[i].LodDisableDistance, fatherDist);
+		}
 	}
 
 	// build Lod Information.

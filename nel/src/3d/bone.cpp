@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.8 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: bone.cpp,v 1.9 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,6 +201,32 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 
 	// Compute BoneSkinMatrix.
 	_BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos;
+}
+
+
+// ***************************************************************************
+void	CBone::interpolateBoneSkinMatrix(const CMatrix &otherMatrix, float interp)
+{
+	CMatrix		&curMatrix= _BoneSkinMatrix;
+
+	// interpolate rot/scale. Just interpolate basis vectors
+	CVector		fatherI= otherMatrix.getI();
+	CVector		curI= curMatrix.getI();
+	curI= fatherI*(1-interp) + curI*interp;
+	CVector		fatherJ= otherMatrix.getJ();
+	CVector		curJ= curMatrix.getJ();
+	curJ= fatherJ*(1-interp) + curJ*interp;
+	CVector		fatherK= otherMatrix.getK();
+	CVector		curK= curMatrix.getK();
+	curK= fatherK*(1-interp) + curK*interp;
+	// replace rotation
+	curMatrix.setRot(curI, curJ, curK);
+
+	// interpolate pos
+	CVector		fatherPos= otherMatrix.getPos();
+	CVector		curPos= curMatrix.getPos();
+	curPos= fatherPos*(1-interp) + curPos*interp;
+	curMatrix.setPos(curPos);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.3 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,6 +130,13 @@ public:
 		return _Skeleton->getBoneIdByName(boneName);
 	}
 
+	// @}
+
+	/// \name Lod interaction
+	// @{
+	virtual	uint		getNumBoneComputed() const;
+	virtual	void		setInterpolationDistance(float dist);
+	virtual	float		getInterpolationDistance() const;
 	// @}
 
 

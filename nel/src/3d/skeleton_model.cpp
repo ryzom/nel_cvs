@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.12 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.13 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,9 @@ void		CSkeletonModel::initBoneUsages()
 	_BoneToComputeDirty= false;
 	_NumBoneComputed= 0;
 	_CurLod= 0;
+	_CurLodInterp= 1.f;
+	// Default is 0.5 meters.
+	_LodInterpMultiplier= 1.f / 0.5f;
 }
 
 
@@ -357,12 +360,37 @@ sint32		CSkeletonModel::getBoneIdByName(const std::string &name) const
 
 
 // ***************************************************************************
+void		CSkeletonModel::setInterpolationDistance(float dist)
+{
+	dist= std::max(0.f, dist);
+	// disable interpolation?
+	if(dist==0)
+		_LodInterpMultiplier= 0.f;
+	else
+		_LodInterpMultiplier= 1.f / dist;
+}
+
+// ***************************************************************************
+float		CSkeletonModel::getInterpolationDistance() const
+{
+	if(_LodInterpMultiplier==0)
+		return 0.f;
+	else
+		return 1.f / _LodInterpMultiplier;
+}
+
+
+// ***************************************************************************
 void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 {
 	// if skeleton is clipped, no need to transform.
 	// NB: no need to test ClipObs->Visible because of VisibilityList use.
 
 	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)sm->Shape);
+
+	// Update Lod, and animate.
+	//===============
 
 	/*
 		CTransformAnimDetailObs::traverse() is torn in 2 here because 
@@ -374,7 +402,7 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 	// get dist from camera.
 	float	dist= (HrcObs->WorldMatrix.getPos() - ((CClipTrav*)ClipObs->Trav)->CamPos).norm();
 	// Use dist to get current lod to use for this skeleton
-	uint	newLod= ((CSkeletonShape*)(IShape*)sm->Shape)->getLodForDistance( dist );
+	uint	newLod= skeShape->getLodForDistance( dist );
 	if(newLod != sm->_CurLod)
 	{
 		// set new lod to use.
@@ -389,6 +417,43 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 
 	// Animate skeleton.
 	CTransformAnimDetailObs::traverseWithoutUpdateWorldMatrix(caller);
+
+
+	// Prepare Lod Bone interpolation.
+	//===============
+
+	float	lodBoneInterp;
+	const CSkeletonShape::CLod	*lodNext= NULL;
+	// if a lod exist after current lod, and if lod interpolation enabled
+	if( sm->_CurLod < skeShape->getNumLods()-1 && sm->_LodInterpMultiplier>0 )
+	{
+		// get next lod.
+		lodNext= &skeShape->getLod(sm->_CurLod+1);
+		// get interp value to next.
+		lodBoneInterp= (lodNext->Distance - dist) * sm->_LodInterpMultiplier;
+		NLMISC::clamp(lodBoneInterp, 0.f, 1.f);
+		// if still 1, keep cur matrix => disable interpolation
+		if(lodBoneInterp==1.f)
+			lodNext=NULL;
+	}
+	// else, no interpolation
+	else
+	{
+		lodBoneInterp=1.f;
+	}
+	// If the interpolation value is different from last one, must update.
+	if(lodBoneInterp != sm->_CurLodInterp)
+	{
+		// set new one.
+		sm->_CurLodInterp= lodBoneInterp;
+		// must update bone compute.
+		forceUpdate= true;
+	}
+
+
+
+	// Compute bones
+	//===============
 
 	// test if bones must be updated. either if animation change or if BoneUsage change.
 	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit) || forceUpdate)
@@ -409,8 +474,18 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 					// Compute root bone worldMatrix.
 					sm->Bones[i].compute( NULL, modelWorldMatrix);
 				else
+				{
 					// Compute bone worldMatrix.
 					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
+
+					// Lod interpolation on this bone ?? only if at next lod, the bone is disabled.
+					if(lodNext && lodNext->ActiveBones[i]==0 && sm->_BoneUsage[i].ForcedUsage==0)
+					{
+						// interpolate with my father matrix.
+						const CMatrix		&fatherMatrix= sm->Bones[fatherId].getBoneSkinMatrix();
+						sm->Bones[i].interpolateBoneSkinMatrix(fatherMatrix, lodBoneInterp);
+					}
+				}
 			}
 		}
 

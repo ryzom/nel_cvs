@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.4 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: bone.h,v 1.5 2002/03/21 16:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,11 @@ public:
 	 */
 	void			compute(CBone *parent, const CMatrix &rootMatrix);
 
+	/** Interpolate the current result of _BoneSkinMatrix fith otherMatrix.
+	 *	when interp==0.f, _BoneSkinMatrix= otherMatrix.
+	 *	NB: the interpolation is made on per-vector basis => bad matrix interpolation.
+	 */
+	void			interpolateBoneSkinMatrix(const CMatrix &otherMatrix, float interp);
 
 	/// retrieve the matrix local to the skeleton, computed in compute().
 	const CMatrix	&getLocalSkeletonMatrix() const {return _LocalSkeletonMatrix;}

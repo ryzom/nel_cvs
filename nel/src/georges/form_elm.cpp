@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.20 2002/06/25 09:45:33 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.21 2002/07/10 14:40:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1356,7 +1356,7 @@ exit:;
 			bool arrayParent;
 			bool createdParent;
 			bool parentVDfnArray;
-			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false))
+			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false) && nodeParent)
 			{
 				// Found copy return values
 				*parentDfn = parentDfnParent;

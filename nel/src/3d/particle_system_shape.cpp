@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.20 2001/08/09 08:02:04 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.21 2001/08/09 15:21:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,7 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
 	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+	
 
 	return psm;
 }

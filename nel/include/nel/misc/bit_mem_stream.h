@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.9 2002/04/11 14:33:21 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.10 2002/04/16 15:59:03 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -212,8 +212,8 @@ public:
 #else
 
 #define	serialAdapt64( b ) \
-	serial( *((uint32*)(&b)+1), 32);
-	serial( *((uint32*)(&b)), 32); \
+	serial( *((uint32*)(&b)+1), 32); \
+	serial( *((uint32*)(&b)), 32);
 
 #endif
 	

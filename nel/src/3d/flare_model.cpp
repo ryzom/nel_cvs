@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.4 2001/07/26 17:16:59 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.5 2001/08/07 14:17:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -70,9 +70,24 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const CVector	pt = trav->ViewMatrix * upt ;
 	if (pt.y <= trav->Near) return ; // flare behind us
 
-
 	nlassert(m->Shape) ;
 	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape) ;
+
+    if (pt.y > fs->getMaxViewDist()) return ;	// flare too far away
+
+	float distIntensity ;
+
+	if (fs->getFlareAtInfiniteDist())
+	{
+		distIntensity   = 1.f ;
+	}
+	else
+	{	
+		// compute a color ratio for attenuation with distance
+		const float distRatio = pt.y / fs->getMaxViewDist() ;
+		distIntensity = distRatio > fs->getMaxViewDistRatio() ? 1.f - distRatio / fs->getMaxViewDistRatio() : 1.f ;
+	}
+	
 
 	// compute position on screen
 	uint32 width, height ;
@@ -130,22 +145,10 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 	static CMaterial material ;
 	static CVertexBuffer vb ; 
-	CRGBA  col ;	
-	CRGBA        flareColor = fs->getColor() ; 
-	if (!fs->getAttenuable() )
-	{
-		col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity)) ;
-	}
-	else
-	{
-		const float norm = sqrtf((float) (((xPos - (width>>1)) * (xPos - (width>>1)) + (yPos - (height>>1))*(yPos - (height>>1)))))
-						   / (float) (width>>1) ;
-		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) return ; // nothing to draw ;
 
-		col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity * (1.f - norm / fs->getAttenuationRange() ))) ;
-	}
 
-	material.setColor(col) ;	
+    // setup material
+
 	material.setBlend(true) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	material.setZWrite(false) ;	
@@ -153,26 +156,17 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	material.setLighting(false) ;	
 	material.setDoubleSided(true) ;
 
+	// setup vertex buffer
 	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]) ;
 	vb.setNumVertices(4) ;
-
-	const CVector I = trav->CamMatrix.getI() ;
-	const CVector J = trav->CamMatrix.getJ() ;
-	const CVector K = trav->CamMatrix.getK() ;
-
-	CVector scrPos ; // vector that will map to the center of the flare on screen
-	
-
-
 	vb.setTexCoord(0, 0, NLMISC::CUV(1, 0)) ;
 	vb.setTexCoord(1, 0, NLMISC::CUV(1, 1)) ;
 	vb.setTexCoord(2, 0, NLMISC::CUV(0, 1)) ;
 	vb.setTexCoord(3, 0, NLMISC::CUV(0, 0)) ;
 
 
-	
-	drv->setupModelMatrix(CMatrix::Identity) ;
-	
+	// setup driver
+	drv->setupModelMatrix(CMatrix::Identity) ;	
 	drv->activeVertexBuffer(vb) ;
 
 	// we don't change the fustrum to draw 2d shapes : it is costly, and we need to restore it after the drawing has been done
@@ -185,16 +179,77 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	const float bX = - (sint) (width>>1) * aX + middleX * zPosDivNear ;
 	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear ;
 	const float bY = - (sint) (height>>1) * aY - middleZ * zPosDivNear ;
+
+	const CVector I = trav->CamMatrix.getI() ;
+	const CVector J = trav->CamMatrix.getJ() ;
+	const CVector K = trav->CamMatrix.getK() ;
+
+
+	CRGBA		 col ;	
+	CRGBA        flareColor = fs->getColor() ; 
+
+
+	const float norm = sqrtf((float) (((xPos - (width>>1)) * (xPos - (width>>1)) + (yPos - (height>>1))*(yPos - (height>>1)))))
+						   / (float) (width>>1) ;
+
+
+	// check for dazzle and draw it
+	if (fs->hasDazzle())
+	{
+		if (norm < fs->getDazzleAttenuationRange())
+		{
+			float dazzleIntensity = 1.f - norm / fs->getDazzleAttenuationRange() ;
+			col.modulateFromui(fs->getDazzleColor(), (uint) (255.f * m->_Intensity * dazzleIntensity)) ;
+			material.setColor(col) ;
+			material.setTexture(0, NULL) ;
+	
+			const CVector dazzleCenter = trav->CamPos + zPos * J ;
+			const CVector dI = (width>>1) * aX * I ;
+			const CVector dK = (height>>1) * bX * K ;
+
+			vb.setVertexCoord(0, dazzleCenter + dI + dK) ;
+			vb.setVertexCoord(1, dazzleCenter + dI - dK) ;
+			vb.setVertexCoord(2, dazzleCenter - dI - dK) ;
+			vb.setVertexCoord(3, dazzleCenter - dI + dK) ;
+
+			drv->renderQuads(material, 0, 1) ;
+		}
+	}
+
+		
+	if (!fs->getAttenuable() )
+	{
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity)) ;
+	}
+	else
+	{
+		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) return ; // nothing to draw ;		
+		col.modulateFromui(flareColor, (uint) (255.f * distIntensity * m->_Intensity * (1.f - norm / fs->getAttenuationRange() ))) ;
+	}
+
+
+
+	material.setColor(col) ;	
+
+
+
+	CVector scrPos ; // vector that will map to the center of the flare on screen
+	
+
+
+
+
+	
+	
+
    
-	float px = (float) xPos ;
-	float py = (float) yPos ;
+
 
 	// process each flare
 
 	// delta for each new Pos 
-	const float iK = 1.f / (MaxFlareNum) ;
-	const float dX = fs->getFlareSpacing() * ((width>>1) - px) * iK ;
-	const float dY = fs->getFlareSpacing() * ((height>>1) - py) * iK ;
+	const float dX = fs->getFlareSpacing() * ((width>>1) - xPos) ;
+	const float dY = fs->getFlareSpacing() * ((height>>1) - yPos) ;
 
 	float size ; // size of the current flare
 
@@ -233,7 +288,8 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		{
 			// compute vector that map to the center of the flare
 
-			scrPos = (aX * px + bX) * I +  zPos * J + (aY * py + bY) * K ; 
+			scrPos = (aX * (xPos + dX * fs->getRelativePos(k)) + bX) * I 
+				     +  zPos * J + (aY * (yPos + dY * fs->getRelativePos(k)) + bY) * K ; 
 
 
 			
@@ -249,9 +305,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 			material.setTexture(0, tex) ;
 			drv->renderQuads(material, 0, 1) ;
 
-
-			px += dX ;
-			py += dY ;
+		
 		}
 	}
 	

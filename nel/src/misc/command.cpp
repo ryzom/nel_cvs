@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.31 2004/07/12 14:01:27 miller Exp $
+ * $Id: command.cpp,v 1.32 2004/07/13 11:34:40 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -466,7 +466,7 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 	}
 
 	// treat the case where we're looking at help on a given command
-	if ((*Commands).find(args[0]) == (*Commands).end())
+	if ((*Commands).find(args[0]) != (*Commands).end())
 	{
 		TCommand::iterator comm = (*Commands).find(args[0]);
 		log.displayNL("%s", (*comm).second->HelpString.c_str());

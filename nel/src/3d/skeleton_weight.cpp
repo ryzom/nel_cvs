@@ -1,7 +1,7 @@
 /** \file skeleton_weight.cpp
  * <File description>
  *
- * $Id: skeleton_weight.cpp,v 1.1 2001/03/07 17:21:49 corvazier Exp $
+ * $Id: skeleton_weight.cpp,v 1.2 2001/03/07 17:41:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

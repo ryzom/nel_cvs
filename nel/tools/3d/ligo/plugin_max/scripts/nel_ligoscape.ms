@@ -677,7 +677,7 @@ fn export_and_check_and_debug_zone checkOnly debug displayMB =
 						addProperties $ props
 
 						-- Export the files ( The ligozone (*.ligozone), the NeL zone (*.zone), and the snap shot (*.tga) )
-						if (NeLLigoExportZone $ filename props true) == true then
+						if (NeLLigoExportZone $ filename props true true) == true then
 						(
 							-- Success message
 							if displayMB == true then
@@ -831,7 +831,7 @@ fn export_and_check_and_debug_transition_zone checkOnly debug displayMB =
 										c.transform = mt
 
 										-- Export the zone
-										if (NeLLigoExportZone c filename props true) == true then
+										if (NeLLigoExportZone c filename props true true) == true then
 										(
 										)
 										else

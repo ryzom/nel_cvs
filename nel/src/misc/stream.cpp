@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.22 2002/03/14 18:26:48 vizerie Exp $
+ * $Id: stream.cpp,v 1.23 2002/04/04 16:06:38 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,13 +305,15 @@ void			IStream::serialCont(vector<uint8> &cont)
 	{
 		serial(len);
 		cont.resize(len);
-		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+		if (len != 0)
+			serialBuffer( (uint8*)&(*cont.begin()) , len);
 	}
 	else
 	{
 		len= cont.size();
 		serial(len);
-		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+		if (len != 0)
+			serialBuffer( (uint8*)&(*cont.begin()) ,  len);
 	}
 }
 // ======================================================================================================
@@ -322,13 +324,15 @@ void			IStream::serialCont(vector<sint8> &cont)
 	{
 		serial(len);
 		cont.resize(len);
-		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+		if (len != 0)
+			serialBuffer( (uint8*)&(*cont.begin()) , len);
 	}
 	else
 	{
 		len= cont.size();
 		serial(len);
-		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+		if (len != 0)
+			serialBuffer( (uint8*)&(*cont.begin()) ,  len);
 	}
 }
 // ======================================================================================================
@@ -342,14 +346,17 @@ void			IStream::serialCont(vector<bool> &cont)
 		serial(len);
 		cont.resize(len);
 
-		// read as uint8*.
-		sint	lb= (len+7)/8;
-		vec.resize(lb);
-		serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
-		for(sint i=0;i<len;i++)
+		if (len != 0)
 		{
-			uint	bit= (vec[i>>3]>>(i&7)) & 1;
-			cont[i]= bit?true:false;
+			// read as uint8*.
+			sint	lb= (len+7)/8;
+			vec.resize(lb);
+			serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
+			for(sint i=0;i<len;i++)
+			{
+				uint	bit= (vec[i>>3]>>(i&7)) & 1;
+				cont[i]= bit?true:false;
+			}
 		}
 	}
 	else
@@ -357,16 +364,19 @@ void			IStream::serialCont(vector<bool> &cont)
 		len= cont.size();
 		serial(len);
 
-		// write as uint8*.
-		sint	lb= (len+7)/8;
-		vec.resize(lb);
-		fill_n(vec.begin(), lb, 0);
-		for(sint i=0;i<len;i++)
+		if (len != 0)
 		{
-			uint	bit= cont[i]?1:0;
-			vec[i>>3]|= bit<<(i&7);
+			// write as uint8*.
+			sint	lb= (len+7)/8;
+			vec.resize(lb);
+			fill_n(vec.begin(), lb, 0);
+			for(sint i=0;i<len;i++)
+			{
+				uint	bit= cont[i]?1:0;
+				vec[i>>3]|= bit<<(i&7);
+			}
+			serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
 		}
-		serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
 	}
 
 }

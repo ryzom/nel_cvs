@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.4 2001/06/25 16:13:11 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.5 2001/06/26 09:17:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 namespace NL3D
 {
 	class CEvent3dMouseListener ;
+	struct IPSMover ;
 }
 
 namespace NLMISC
@@ -55,8 +56,8 @@ class CPSMoverDlg : public CDialog
 {
 // Construction
 public:
-	// construct the object with a pointer to the tree ctrl, and to the item that is being edited
-	CPSMoverDlg(class CParticleTreeCtrl *parent, NL3D::CEvent3dMouseListener *ml,  HTREEITEM editedNode);   // standard constructor
+	// construct the object with a pointer to the item being edited, and to the mouse listener to update its model matrix
+	CPSMoverDlg(CWnd *parent, NL3D::CEvent3dMouseListener *ml,  NL3D::CPSLocated *editedLocated, uint32 editedLocatedIndex);   // standard constructor
 
 	// dtor
 	~CPSMoverDlg() ;
@@ -86,13 +87,26 @@ public:
 
 	void init(CWnd *parent) ;
 
+	// get the current moving interface, or NULL, if the selected object has no IPSMover interface
+	NL3D::IPSMover *getMoverInterface(void)  ;
+
+	// get the located being edited
+	NL3D::CPSLocated *getLocated(void) { return _EditedLocated ; }
+	const NL3D::CPSLocated *getLocated(void) const { return _EditedLocated ; }
+
+	// get the index of the current edited item
+	uint32 getLocatedIndex(void) const { return _EditedLocatedIndex ; }
+
+	// ghet the current located bindable being edited, or null
+	NL3D::CPSLocatedBindable *getLocatedBindable(void) ;
 	
 
 // Implementation
 protected:
 
-	CParticleTreeCtrl *_TreeCtrl ;
-	CParticleTreeCtrl::CNodeType *_EditedNode ;
+	
+	NL3D::CPSLocated *_EditedLocated ;
+	uint32 _EditedLocatedIndex ;
 	NL3D::CEvent3dMouseListener *_MouseListener ;
 
 

@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.cpp
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.cpp,v 1.5 2001/06/25 16:13:11 vizerie Exp $
+ * $Id: ps_mover_dlg.cpp,v 1.6 2001/06/26 09:17:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,20 +41,19 @@ static char THIS_FILE[] = __FILE__;
 // CPSMoverDlg dialog
 
 
-CPSMoverDlg::CPSMoverDlg(CParticleTreeCtrl *parent, NL3D::CEvent3dMouseListener *ml,  HTREEITEM editedItem)   // standard constructor
+CPSMoverDlg::CPSMoverDlg(CWnd *parent, NL3D::CEvent3dMouseListener *ml,  NL3D::CPSLocated *editedLocated, uint32 editedLocatedIndex)   // standard constructor
 	: CDialog(CPSMoverDlg::IDD, parent)
+	  , _EditedLocated(editedLocated)
+	  , _EditedLocatedIndex(editedLocatedIndex)
 	  , _DirectionDlg(NULL)
 	  , _MouseListener(ml)
 	  ,	_Scale(NULL), _XScale(NULL), _YScale(NULL), _ZScale(NULL)
 	  , _ScaleText(NULL), _XScaleText(NULL), _YScaleText(NULL), _ZScaleText(NULL)
 {
 
-	_TreeCtrl = parent ;
-	_EditedNode = (CParticleTreeCtrl::CNodeType *) parent->GetItemData(editedItem) ;
+	
 
-	nlassert(_EditedNode->Type == CParticleTreeCtrl::CNodeType::locatedInstance) ;
-
-	const NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;	
+	const NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	
 	m_X.Format("%.3g", pos.x) ;
 	m_Y.Format("%.3g", pos.y) ;
@@ -78,7 +77,7 @@ CPSMoverDlg::~CPSMoverDlg()
 
 void CPSMoverDlg::updateListener(void)
 {
-	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
+	const NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	NLMISC::CMatrix m ;
 	m = _MouseListener->getModelMatrix() ;
 	m.setPos(pos) ;
@@ -89,7 +88,7 @@ void CPSMoverDlg::updateListener(void)
 void CPSMoverDlg::updatePosition(void)
 {
 	UpdateData() ;
-	const NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;	
+	const NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	
 	m_X.Format("%.3g", pos.x) ;
 	m_Y.Format("%.3g", pos.y) ;
@@ -125,7 +124,7 @@ END_MESSAGE_MAP()
 void CPSMoverDlg::OnUpdateXpos() 
 {
 	UpdateData() ;
-	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
+	NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	float x ;
 	if (::sscanf(m_X, "%f", &x) == 1)
 	{
@@ -142,7 +141,7 @@ void CPSMoverDlg::OnUpdateXpos()
 void CPSMoverDlg::OnUpdateYpos() 
 {
 	UpdateData() ;
-	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
+	NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	float y ;
 	if (::sscanf(m_Y, "%f", &y) == 1)
 	{
@@ -159,7 +158,7 @@ void CPSMoverDlg::OnUpdateYpos()
 void CPSMoverDlg::OnUpdateZpos() 
 {
 	UpdateData() ;
-	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
+	NLMISC::CVector &pos = _EditedLocated->getPos()[_EditedLocatedIndex] ;
 	float z ;
 	if (::sscanf(m_Z, "%f", &z) == 1)
 	{
@@ -176,17 +175,17 @@ void CPSMoverDlg::OnUpdateZpos()
 BOOL CPSMoverDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	nlassert(_EditedNode) ;
-	uint numBound = _EditedNode->Loc->getNbBoundObjects() ;
+
+	uint numBound = _EditedLocated->getNbBoundObjects() ;
 	
 	uint nbCandidates = 0 ;
 
 	for (uint k = 0 ; k < numBound ; ++k)
 	{
-		if (dynamic_cast<NL3D::IPSMover *>(_EditedNode->Loc->getBoundObject(k)))
+		if (dynamic_cast<NL3D::IPSMover *>(_EditedLocated->getBoundObject(k)))
 		{
-			uint insertedLine = m_SubComponentCtrl.AddString(_EditedNode->Loc->getBoundObject(k)->getName().c_str()) ;
-			m_SubComponentCtrl.SetItemData(insertedLine, (DWORD) _EditedNode->Loc->getBoundObject(k)) ;
+			uint insertedLine = m_SubComponentCtrl.AddString(_EditedLocated->getBoundObject(k)->getName().c_str()) ;
+			m_SubComponentCtrl.SetItemData(insertedLine, (DWORD) _EditedLocated->getBoundObject(k)) ;
 			++nbCandidates ;			
 		}
 	}
@@ -194,7 +193,7 @@ BOOL CPSMoverDlg::OnInitDialog()
 	if (nbCandidates > 0)
 	{
 		m_SubComponentCtrl.SetCurSel(0) ;	
-		_EditedNode->Loc->getOwner()->setCurrentEditedElement(_EditedNode->Loc, _EditedNode->LocatedInstanceIndex, (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(0)) ;
+		_EditedLocated->getOwner()->setCurrentEditedElement(_EditedLocated, _EditedLocatedIndex, (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(0)) ;
 	}
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -221,14 +220,14 @@ void CPSMoverDlg::createScaleControls(void)
 {
 	cleanScaleCtrl() ;
 
-	if (m_SubComponentCtrl.GetCurSel() == -1) return ;
-	
-	NL3D::CPSLocatedBindable *lb = (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(m_SubComponentCtrl.GetCurSel()) ;
-	NL3D::IPSMover *m = dynamic_cast<NL3D::IPSMover *>(lb) ;
+			
+	NL3D::IPSMover *m = getMoverInterface() ;
+	if (!m) return ;
 
 	const sint xPos = 10 ;
 	sint yPos = 330 ;
 	
+
 
 	RECT r ;
 
@@ -236,7 +235,7 @@ void CPSMoverDlg::createScaleControls(void)
 	{
 		_Scale = new CEditableRangeFloat("UNIFORM SCALE", 0.f, 4.f)  ;
 		_UniformScaleWrapper.M = m ;
-		_UniformScaleWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_UniformScaleWrapper.Index = _EditedLocatedIndex ;
 
 		_Scale->setWrapper(&_UniformScaleWrapper) ;
 		_Scale->init(100 + xPos, yPos, this) ;
@@ -255,7 +254,7 @@ void CPSMoverDlg::createScaleControls(void)
 		// dialog for edition of x scale
 		_XScale = new CEditableRangeFloat("X SCALE", 0.f, 4.f)  ;
 		_XScaleWrapper.M = m ;
-		_XScaleWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_XScaleWrapper.Index = _EditedLocatedIndex ;
 		_XScale->setWrapper(&_XScaleWrapper) ;
 		_XScale->init(xPos + 70, yPos, this) ;
 		_XScale->GetClientRect(&r) ;
@@ -269,7 +268,7 @@ void CPSMoverDlg::createScaleControls(void)
 		// dialog for edition of y scale
 		_YScale = new CEditableRangeFloat("Y SCALE", 0.f, 4.f)  ;
 		_YScaleWrapper.M = m ;
-		_YScaleWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_YScaleWrapper.Index = _EditedLocatedIndex ;
 		_YScale->setWrapper(&_YScaleWrapper) ;
 		_YScale->init(xPos + 70, yPos, this) ;
 		_YScale->GetClientRect(&r) ;
@@ -284,7 +283,7 @@ void CPSMoverDlg::createScaleControls(void)
 		// dialog for edition of x scale
 		_ZScale = new CEditableRangeFloat("Z SCALE", 0.f, 4.f)  ;
 		_ZScaleWrapper.M = m ;
-		_ZScaleWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_ZScaleWrapper.Index = _EditedLocatedIndex ;
 		_ZScale->setWrapper(&_ZScaleWrapper) ;
 		_ZScale->init(xPos + 70, yPos, this) ;
 		_ZScale->GetClientRect(&r) ;
@@ -302,7 +301,7 @@ void CPSMoverDlg::createScaleControls(void)
 		_DirectionDlg = new CDirectionAttr(" ELEMENT DIRECTION") ;
 		_DirectionDlg->init(xPos, yPos, this) ;
 		_DirectionWrapper.M = m ;
-		_DirectionWrapper.Index = _EditedNode->LocatedInstanceIndex ;
+		_DirectionWrapper.Index = _EditedLocatedIndex ;
 		_DirectionDlg->setWrapper(&_DirectionWrapper) ;
 	}
 
@@ -311,16 +310,21 @@ void CPSMoverDlg::createScaleControls(void)
 
 void CPSMoverDlg::OnSelchangeSubComponent() 
 {
-	UpdateData() ;
-	nlassert(_EditedNode) ;
-
-	NL3D::CPSLocatedBindable *lb = (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(m_SubComponentCtrl.GetCurSel()) ;
-	_EditedNode->LocMover = dynamic_cast<NL3D::IPSMover *>(lb) ;
-	_EditedNode->Loc->getOwner()->setCurrentEditedElement(_EditedNode->Loc, _EditedNode->LocatedInstanceIndex, lb) ;
-	
+	UpdateData() ;	
 	createScaleControls() ;
-
+	_EditedLocated->getOwner()->setCurrentEditedElement(_EditedLocated, _EditedLocatedIndex, getLocatedBindable()) ;
 	UpdateData(FALSE) ;
+}
+
+
+NL3D::IPSMover *CPSMoverDlg::getMoverInterface(void)
+{
+	UpdateData() ;
+	nlassert(_EditedLocated) ;
+	sint currIndex = m_SubComponentCtrl.GetCurSel() ;
+	if (currIndex == -1) return NULL ;
+	
+	return dynamic_cast<NL3D::IPSMover *>((NL3D::CPSLocatedBindable *)(m_SubComponentCtrl.GetItemData(currIndex))) ;
 }
 
 void CPSMoverDlg::init(CWnd *parent)
@@ -330,3 +334,15 @@ void CPSMoverDlg::init(CWnd *parent)
 	ShowWindow(SW_SHOW) ;
 	createScaleControls() ;
 }
+
+
+NL3D::CPSLocatedBindable *CPSMoverDlg::getLocatedBindable(void)
+{
+	UpdateData() ;
+	nlassert(_EditedLocated) ;
+	sint currIndex = m_SubComponentCtrl.GetCurSel() ;
+	if (currIndex == -1) return NULL ;
+	
+	return (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(currIndex) ;
+}
+

@@ -20,7 +20,7 @@ using namespace std;
 
 /* Types */
 
-enum cf_type { T_INT, T_STRING, T_REAL };
+enum cf_type { T_UNKNOWN, T_INT, T_STRING, T_REAL };
 
 struct cf_value
 {

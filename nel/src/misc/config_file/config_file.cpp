@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.25 2001/11/13 15:12:28 lecroart Exp $
+ * $Id: config_file.cpp,v 1.26 2001/11/19 14:07:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,8 @@
 
 using namespace std;
 
-extern int cfparse (void *);
+extern void cfrestart (FILE *);	// used to reinit the file
+extern int cfparse (void *);	// used to parse the file
 extern FILE *cfin;
 extern int cf_CurrentLine;
 
@@ -236,6 +237,7 @@ void CConfigFile::reparse ()
 	{
 // if we clear all the array, we'll lost the callback on variable and all information
 //		_Vars.clear();
+		cfrestart (cfin);
 		bool parsingOK = (cfparse (&(_Vars)) == 0);
 		fclose (cfin);
 		if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
@@ -251,7 +253,8 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 {
 	for (int i = 0; i < (int)_Vars.size(); i++)
 	{
-		if (_Vars[i].Name == varName)
+		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
+		if (_Vars[i].Name == varName && _Vars[i].Type != CVar::T_UNKNOWN)
 		{
 			return _Vars[i];
 			break;
@@ -410,6 +413,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	CVar Var;
 	Var.Name = VarName;
 	Var.Callback = cb;
+	Var.Type = CVar::T_UNKNOWN;
 	_Vars.push_back (Var);
 }
 

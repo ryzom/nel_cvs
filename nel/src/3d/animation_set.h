@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
+ * $Id: animation_set.h,v 1.3 2001/07/19 15:41:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,7 +156,7 @@ public:
 	  */
 	const CSkeletonWeight* getSkeletonWeight (uint skeletonId) const
 	{
-		return &_SkeletonWeight[skeletonId];
+		return _SkeletonWeight[skeletonId];
 	}
 
 	/**
@@ -164,7 +164,7 @@ public:
 	  */
 	CSkeletonWeight* getSkeletonWeight (uint skeletonId)
 	{
-		return &_SkeletonWeight[skeletonId];
+		return _SkeletonWeight[skeletonId];
 	}
 
 	/**
@@ -178,11 +178,12 @@ public:
 	uint addAnimation (const char* name, CAnimation* animation);
 
 	/**
-	  * Add an empty skeleton weight to the set.
+	  * Add a skeleton weight to the set. The pointer of the skeletonWeight must be allocated with new.
+	  * It is then handled by the animation set.
 	  *
 	  * \return the id of the new skeleton.
 	  */
-	uint addSkeletonWeight (const char* name);
+	uint addSkeletonWeight (const char* name, CSkeletonWeight* skeletonWeight);
 
 	/**
 	  * Reset the animation set.
@@ -203,7 +204,7 @@ public:
 
 private:
 	std::vector <CAnimation*>		_Animation;
-	std::vector <CSkeletonWeight>	_SkeletonWeight;
+	std::vector <CSkeletonWeight*>	_SkeletonWeight;
 	std::vector <std::string>		_AnimationName;
 	std::vector <std::string>		_SkeletonWeightName;
 	std::map <std::string, uint32>	_ChannelIdByName;

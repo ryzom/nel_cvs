@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.4 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.5 2001/07/19 15:41:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,35 @@ public:
 	virtual	void build ()
 	{
 		_AnimationSet->build ();
+	}
+
+	/**
+	  *  Add a skeleton weight in the animation set.
+	  *  This method use CPath to search the skeleton file.
+	  *
+	  * \param fileName is the skeleton weight filename
+	  * \param animName is the name of the skeleton weight in the animation set.
+	  * \return the id of the new skeleton or NotFound if the file is not found.
+	  */
+	virtual uint addSkeletonWeight (const char* fileName, const char* skelName)
+	{
+		// Allocate an animation
+		std::auto_ptr<CSkeletonWeight> skeletonWeight (new CSkeletonWeight);
+
+		// Read it
+		NLMISC::CIFile file;
+		if (file.open ( NLMISC::CPath::lookup( fileName ) ) )
+		{
+			// Serial the animation
+			file.serial (*skeletonWeight);
+
+			// Add the animation
+			uint id=_AnimationSet->addSkeletonWeight (skelName, skeletonWeight.release());
+
+			// Return id
+			return id;
+		}
+		else return UAnimationSet::NotFound;
 	}
 
 	/// \name Animations mgt.

@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.2 2001/06/19 08:16:34 corvazier Exp $
+ * $Id: u_animation_set.h,v 1.3 2001/07/19 15:41:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,17 @@ public:
 	  *  Build the animation set. Call build after adding all your animations.
 	  */
 	virtual	void build () =0;
+
+	/**
+	  *  Add a skeleton weight in the animation set.
+	  *  This method use CPath to search the skeleton file.
+	  *
+	  * \param fileName is the skeleton weight filename
+	  * \param skelName is the name of the skeleton weight in the animation set.
+	  * \return the id of the new skeleton or NotFound if the file is not found.
+	  */
+	virtual	uint addSkeletonWeight (const char* fileName, const char* skelName) =0;
+
 	// @}
 
 	/// \name Animations mgt.

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.12 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.13 2001/07/19 15:41:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,8 @@ CAnimationSet::~CAnimationSet ()
 	// Erase all animations.
 	for (uint a=0; a<_Animation.size(); a++)
 		delete _Animation[a];
+	for (uint s=0; s<_SkeletonWeight.size(); s++)
+		delete _SkeletonWeight[s];
 }
 
 // ***************************************************************************
@@ -63,10 +65,10 @@ uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 
 // ***************************************************************************
 
-uint CAnimationSet::addSkeletonWeight (const char* name)
+uint CAnimationSet::addSkeletonWeight (const char* name, CSkeletonWeight* skeletonWeight)
 {
 	// Add an animation
-	_SkeletonWeight.resize (_SkeletonWeight.size()+1);
+	_SkeletonWeight.push_back (skeletonWeight);
 	_SkeletonWeightName.push_back (name);
 
 	// Add an entry name / animation
@@ -133,7 +135,7 @@ void CAnimationSet::serial (NLMISC::IStream& f)
 
 	// Serial the class
 	f.serialContPtr (_Animation);
-	f.serialCont (_SkeletonWeight);
+	f.serialContPtr (_SkeletonWeight);
 	f.serialCont (_AnimationName);
 	f.serialCont (_SkeletonWeightName);
 	f.serialCont(_ChannelIdByName);

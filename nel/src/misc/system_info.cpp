@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: system_info.cpp,v 1.6 2002/05/21 16:40:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,6 +238,120 @@ string CSystemInfo::getMem ()
 
 	return MemString;
 }
+
+
+static bool DetectMMX()
+{		
+	#ifdef NL_OS_WINDOWS		
+		if (!CSystemInfo::hasCPUID()) return false; // cpuid not supported ...
+
+		uint32 result = 0;
+		__asm
+		{
+			 mov  eax,1
+			 cpuid
+			 test edx,0x800000  // bit 23 = MMX instruction set
+			 je   noMMX
+			 mov result, 1	
+			noMMX:
+		}
+
+		return result == 1;
+ 
+		// printf("mmx detected\n");
+
+	#else
+		return false;
+	#endif
+}
+
+
+static bool DetectSSE()
+{	
+	#ifdef NL_OS_WINDOWS
+		if (!CSystemInfo::hasCPUID()) return false; // cpuid not supported ...
+
+		uint32 result = 0;
+		__asm
+		{			
+			mov eax, 1   // request for feature flags
+			cpuid 							
+			test EDX, 002000000h   // bit 25 in feature flags equal to 1
+			je noSSE
+			mov result, 1  // sse detected
+		noSSE:
+		}
+
+
+		if (result)
+		{
+			// check OS support for SSE
+			try 
+			{
+				__asm
+				{
+					xorps xmm0, xmm0  // Streaming SIMD Extension
+				}
+			}
+			catch(...)
+			{
+				return false;
+			}
+		
+			// printf("sse detected\n");
+
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	#else
+		return false;
+	#endif
+}
+
+static bool HaveMMX = DetectMMX ();
+static bool HaveSSE = DetectSSE ();
+
+bool CSystemInfo::hasCPUID ()
+{
+	#ifdef NL_OS_WINDOWS
+		 uint32 result;
+		 __asm
+		 {
+			 pushad
+			 pushfd
+			 //	 If ID bit of EFLAGS can change, then cpuid is available
+			 pushfd
+			 pop  eax					// Get EFLAG
+			 mov  ecx,eax
+			 xor  eax,0x200000			// Flip ID bit
+			 push eax
+			 popfd						// Write EFLAGS
+			 pushfd      
+			 pop  eax					// read back EFLAG
+			 xor  eax,ecx
+			 je   noCpuid				// no flip -> no CPUID instr.
+			 
+			 popfd						// restore state
+			 popad
+			 mov  result, 1
+			 jmp  CPUIDPresent
+		
+			noCpuid:
+			 popfd					    // restore state
+			 popad
+			 mov result, 0
+			CPUIDPresent:
+		 }
+		 return result == 1;
+	#else
+		 return false;
+	#endif
+}
+bool CSystemInfo::hasMMX () { return HaveMMX; }
+bool CSystemInfo::hasSSE () { return HaveSSE; }
 
 
 

@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.3 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: system_info.h,v 1.4 2002/05/21 16:40:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,22 @@ public:
 	static std::string getProc ();
 	static std::string getMem ();
 
+	/** test wether the cpuid instruction is supported
+	  * (always false on non intel architectures)
+	  */
+	static bool hasCPUID ();
+
+	/** helps to know wether the processor features mmx instruction set 
+	  * This is initialized at started, so its fast
+	  * (always false on non 0x86 architecture ...)
+	  */	  
+	static bool hasMMX ();
+
+	/** helps to know wether the processor has streaming SIMD instructions (the OS must supports it)
+	  * This is initialized at started, so its fast
+	  * (always false on non 0x86 architecture ...)
+	  */
+	static bool hasSSE ();
 };
 
 

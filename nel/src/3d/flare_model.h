@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.1 2001/07/24 08:45:37 vizerie Exp $
+ * $Id: flare_model.h,v 1.2 2001/07/25 10:19:44 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ public:
 
 	// register this model and his observers
 	static void registerBasic() ;
-
+	
 	
 protected:
 	friend class CFlareShape ;

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.54 2003/04/28 12:28:06 vizerie Exp $
+ * $Id: driver.h,v 1.55 2003/04/30 09:43:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -481,6 +481,13 @@ public:
 
 	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;
+
+	/** set the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
+	 *	Default depends of the 3D driver setup. Values >1 may be clamped to 1 by the driver.
+	 */
+	virtual void			setSwapVBLInterval(uint interval)=0;
+	/// get the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
+	virtual uint			getSwapVBLInterval()=0;
 
 
 	/// \name Profiling.

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.145 2003/04/28 12:28:22 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.146 2003/04/30 09:44:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,6 +334,10 @@ public:
 	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads) ;
 
 	virtual bool			swapBuffers();
+
+	virtual void			setSwapVBLInterval(uint interval);
+
+	virtual uint			getSwapVBLInterval();
 
 	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.184 2003/04/28 12:28:22 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.185 2003/04/30 09:44:21 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2821,6 +2821,34 @@ void CDriverGL::finish()
 {
 	glFinish();
 }
+
+
+// ***************************************************************************
+void	CDriverGL::setSwapVBLInterval(uint interval)
+{
+#ifdef NL_OS_WINDOWS
+	if(_Extensions.WGLEXTSwapControl)
+	{
+		wglSwapIntervalEXT(interval);
+	}
+#endif
+}
+
+// ***************************************************************************
+uint	CDriverGL::getSwapVBLInterval()
+{
+#ifdef NL_OS_WINDOWS
+	if(_Extensions.WGLEXTSwapControl)
+	{
+		return wglGetSwapIntervalEXT();
+	}
+	else
+		return 0;
+#else
+	return 0;
+#endif
+}
+
 
 
 } // NL3D

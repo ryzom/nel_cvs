@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.28 2003/04/28 12:32:58 vizerie Exp $
+ * $Id: u_driver.h,v 1.29 2003/04/30 09:43:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,6 +194,13 @@ public:
 	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255)) =0;
 	/// This swap the back and front buffer (ALL the buffer :) ).
 	virtual	void			swapBuffers() =0;
+
+	/** set the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
+	 *	Default depends of the 3D driver setup. Values >1 may be clamped to 1 by the driver.
+	 */
+	virtual void			setSwapVBLInterval(uint interval) =0;
+	/// get the number of VBL wait when a swapBuffers() is issued. 0 means no synchronisation to the VBL
+	virtual uint			getSwapVBLInterval() =0;
 
 	// @}
 

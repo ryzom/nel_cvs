@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.33 2003/04/28 12:29:06 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.34 2003/04/30 09:43:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1353,6 +1353,25 @@ void				CDriverUser::loadHLSBank(const std::string &fileName)
 
 	// add it to the manager.
 	_AsyncTextureManager.HLSManager.addBank(hlsBank);
+}
+
+
+// ***************************************************************************
+void				CDriverUser::setSwapVBLInterval(uint interval)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+
+	_Driver->setSwapVBLInterval(interval);
+}
+
+// ***************************************************************************
+uint				CDriverUser::getSwapVBLInterval()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+
+	return _Driver->getSwapVBLInterval();
 }
 
 

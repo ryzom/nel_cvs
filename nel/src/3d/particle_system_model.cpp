@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.45 2003/03/03 12:56:08 boucher Exp $
+ * $Id: particle_system_model.cpp,v 1.46 2003/03/04 18:16:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _Invalidated(false),
 											   _InsertedInVisibleList(false),
 											   _InClusterAndVisible(false),
-											   _BypassGlobalUserParam(0)
+											   _BypassGlobalUserParam(0),
+											   _AnimType(CParticleSystem::AnimVisible)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -148,10 +149,7 @@ void CParticleSystemModel::getAABBox(NLMISC::CAABBox &bbox) const
 CParticleSystemModel::~CParticleSystemModel()
 {	
 	nlassert(_Scene);
-	if (_ParticleSystem)
-	{
-		_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);		
-	}
+	releaseRsc();
 	// Auto detach me from skeleton. Must do it here, not in ~CTransform().
 	if(_FatherSkeletonModel)
 	{
@@ -173,6 +171,7 @@ void CParticleSystemModel::reallocRsc()
 	nlassert(_Scene);
 	CParticleSystemManager &psmgt = _Scene->getParticleSystemManager();
 	_ModelHandle = psmgt.addSystemModel(this);
+	_AnimType = _ParticleSystem->getAnimType();
 	if (_ParticleSystem->getAnimType() == CParticleSystem::AnimAlways)
 	{
 		_AnimatedModelHandle = psmgt.addPermanentlyAnimatedSystem(this);
@@ -384,7 +383,7 @@ bool CParticleSystemModel::checkAgainstPyramid(const std::vector<CPlane>	&pyrami
 	NLMISC::CAABBox bbox;
 	_ParticleSystem->computeBBox(bbox);		
 	const CMatrix		&mat = getMatrix();
-	
+		
 	// Transform the pyramid in Object space.	
 	for(sint i=0; i < (sint) pyramid.size(); i++)
 	{	
@@ -577,6 +576,23 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		{
 			// if there are no more particles, no need to even clip..
 			if (checkDestroyCondition(ps, m)) return;
+			// check for anim mode change
+			if (m->_AnimType != ps->getAnimType())
+			{
+				CParticleSystemManager &psmgt = m->_Scene->getParticleSystemManager();
+				if (m->_AnimType == CParticleSystem::AnimAlways) // was previously always animated ?
+				{
+					if (m->_AnimatedModelHandle.Valid)
+					{					
+						psmgt.removePermanentlyAnimatedSystem(m->_AnimatedModelHandle);
+					}
+				}
+				m->_AnimType = ps->getAnimType();
+				if (m->_AnimType == CParticleSystem::AnimAlways)
+				{
+					m->_AnimatedModelHandle = 	psmgt.addPermanentlyAnimatedSystem(m);
+				}
+			}
 		}
 		
 		// special case : system sticked to a skeleton
@@ -726,6 +742,19 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 		
 		nlassert(ps);						
 		/// Pyramid test. IMPORTANT : The test to see wether the system is not too far is performed by the particle system manager
+		// In edition mode, it isn't done by the manager (system never removed), so we do it here in this case
+		if (m->_EditionMode)
+		{
+			CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)m->Shape);
+			nlassert(pss);
+			const CVector pos = m->getMatrix().getPos();		
+			const CVector d = pos - trav->CamPos;
+			// check wether system not too far		
+			if (d * d > ps->getMaxViewDist() * ps->getMaxViewDist()) 
+			{
+				return; // not visible
+			}
+		}
 		if (m->checkAgainstPyramid(pyramid) == false)
 		{
 			if (!m->_EditionMode)
@@ -799,6 +828,18 @@ bool CParticleSystemModel::isGlobalUserParamValueBypassed(uint userParamIndex) c
 	nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
 	nlassert(userParamIndex < MaxPSUserParam);
 	return (_BypassGlobalUserParam & (1 << userParamIndex)) != 0;
+}
+
+//===================================================================
+void CParticleSystemModel::enableDisplayTools(bool enable /*=true*/)
+{	 
+	_ToolDisplayEnabled = enable; touchTransparencyState(); 	
+}
+
+//===================================================================
+void CParticleSystemModel::invalidateAutoAnimatedHandle()
+{
+	_AnimatedModelHandle.Valid  = false;
 }
 
 

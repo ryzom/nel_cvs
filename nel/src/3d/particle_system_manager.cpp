@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.6 2003/03/03 12:56:08 boucher Exp $
+ * $Id: particle_system_manager.cpp,v 1.7 2003/03/04 18:16:30 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -132,6 +132,7 @@ void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemMa
 {
 	nlassert(handle.Valid);
 	_PermanentlyAnimatedModelList.erase(handle.Iter);	
+	handle.Valid = false;
 }
 
 ///=========================================================	
@@ -143,6 +144,13 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 		CParticleSystem		 *ps  = psm.getPS();
 		if (ps)
 		{
+			// test if already auto-animated
+			if (ps->getAnimType() != CParticleSystem::AnimAlways)
+			{
+				psm.invalidateAutoAnimatedHandle();
+				it = _PermanentlyAnimatedModelList.erase(it);
+				continue;
+			}
 			if (psm.isAutoGetEllapsedTimeEnabled())
 			{
 				psm.setEllapsedTime(ps->getScene()->getEllapsedTime() * psm.getEllapsedTimeRatio());

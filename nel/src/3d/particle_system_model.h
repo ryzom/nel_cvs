@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.28 2002/11/14 17:33:03 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.29 2003/03/04 18:16:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,10 +170,8 @@ public:
 	///\name Edition related methods
 	//@{
 		/// activate the display of tool (for edition purpose)
-		void						enableDisplayTools(bool enable = true) 
-		{ 
-			_ToolDisplayEnabled = enable; touchTransparencyState(); 
-		}
+		void						enableDisplayTools(bool enable = true);
+		
 		// check wether the display of tools is enabled
 		bool						isToolDisplayEnabled(void) const 
 		{ 
@@ -234,7 +232,7 @@ public:
 	}		
 	virtual void				getAABBox(NLMISC::CAABBox &bbox) const;
 	/// inherited from CTransformShape. Returns the number of triangles wanted depeneding on the distance
-	virtual float				getNumTriangles (float distance);		
+	virtual float				getNumTriangles (float distance);
 	/// create an instance of this class
 	static IModel				*creator() 
 	{
@@ -267,6 +265,9 @@ private:
 	// Release PS and backup system params
 	void releasePSPointer();
 
+	void invalidateAutoAnimatedHandle();
+	
+
 private:		
 	CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
 															* of the model (_ParticleSystem) are deleted
@@ -279,6 +280,9 @@ private:
 	CScene							  	   *_Scene;
 	TAnimationTime						    _EllapsedTime;
 	float									_EllapsedTimeRatio;
+
+	// old animation mode for the system
+	CParticleSystem::TAnimType				_AnimType;
 
 	///\todo nico : may optimize this with a bitfield...
 	bool									_ToolDisplayEnabled;		

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.37 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: particle_system_shape.cpp,v 1.38 2003/03/04 18:16:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,13 +137,13 @@ void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 	// to have const correctness in the prototype, we must do this...
 	CParticleSystem *myPs = const_cast<CParticleSystem *>(&ps);
 	nlassert(myPs);
-	// build the prototype
+	// build the prototype	
 	_ParticleSystemProto.serialPtr(myPs);
 
 	// mirror some system values
 	_MaxViewDist = myPs->getMaxViewDist();
 	_DestroyWhenOutOfFrustum = myPs->doesDestroyWhenOutOfFrustum();	
-	_DestroyModelWhenOutOfRange    = myPs->getDestroyModelWhenOutOfRange();
+	_DestroyModelWhenOutOfRange = myPs->getDestroyModelWhenOutOfRange();
 	if (!myPs->getAutoComputeBBox())
 	{
 		_UsePrecomputedBBox = true;

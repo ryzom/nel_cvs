@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.20 2000/12/18 08:57:17 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.21 2000/12/18 09:30:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,9 @@ public:
 
 	virtual bool			activate();
 
+#ifdef NL_OS_WINDOWS
 	virtual NLMISC::IEventEmitter*	getEventEmitter() { return&_EventEmitter; };
+#endif // NL_OS_WINDOWS
 
 	virtual bool			clear2D(CRGBA rgba);
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.30 2000/12/18 08:57:17 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.31 2000/12/18 09:30:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,9 @@ using namespace NLMISC;
 namespace NL3D
 {
 
+#ifdef NL_OS_WINDOWS
 uint CDriverGL::_Registered=0;
+#endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 const uint32		CDriverGL::ReleaseVersion = 0x0;
@@ -121,9 +123,10 @@ bool CDriverGL::init()
 
 ModeList CDriverGL::enumModes()
 {
-	sint		n;
-	DEVMODE		devmode;
 	ModeList	ML;
+#ifdef NL_OS_WINDOWS
+	DEVMODE		devmode;
+	sint		n;
 	GfxMode		Mode;
 
 	n=0;
@@ -136,6 +139,7 @@ ModeList CDriverGL::enumModes()
 		ML.push_back(Mode);
 		n++;	
 	}
+#endif // NL_OS_WINDOWS
 	return ML;
 }
 
@@ -356,6 +360,8 @@ bool CDriverGL::swapBuffers()
 {
 #ifdef NL_OS_WINDOWS
 	return SwapBuffers(_hDC) == TRUE;
+#else // NL_OS_WINDOWS
+	return true;
 #endif // NL_OS_WINDOWS
 }
 

@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.7 2001/09/07 08:35:24 besson Exp $
+ * $Id: texture_font.cpp,v 1.8 2001/09/07 09:17:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,10 @@ namespace NL3D
 {
 
 
-const int TextureSizeX = 256*4;
-const int TextureSizeY = 256*4; // If change this value -> change NbLine too
+const int TextureSizeX = 1024;
+const int TextureSizeY = 1024; // If change this value -> change NbLine too
 const int Categories[TEXTUREFONT_NBCATEGORY] = { 8, 16, 24, 32 };
-const int NbLine[TEXTUREFONT_NBCATEGORY] = { 4*4, 6*4, 4*4, 1*4 }; // Based on textsize
+const int NbLine[TEXTUREFONT_NBCATEGORY] = { 16, 24, 16, 4 }; // Based on textsize
 
 
 // ---------------------------------------------------------------------------
@@ -305,6 +305,10 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	k.FontGenerator->getSizes (k.Char, k.Size, width, height);
 	cat = 0;
 
+	if (((sint)width > Categories[TEXTUREFONT_NBCATEGORY-1]) ||
+		((sint)height > Categories[TEXTUREFONT_NBCATEGORY-1]))
+		return NULL;
+
 	while (((sint)width > Categories[cat]) || ((sint)height > Categories[cat]))
 	{
 		++cat;
@@ -329,6 +333,8 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 	Back[cat]->Char = k.Char;
 	Back[cat]->FontGenerator = k.FontGenerator;
 	Back[cat]->Size = k.Size;
+	Back[cat]->CharWidth = width;
+	Back[cat]->CharHeight = height;
 	Back[cat]->Prev = NULL;
 	Back[cat]->Next = Front[cat];
 	Front[cat]->Prev = Back[cat];

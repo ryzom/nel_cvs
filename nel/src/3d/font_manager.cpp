@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.29 2001/09/06 16:24:01 besson Exp $
+ * $Id: font_manager.cpp,v 1.30 2001/09/07 09:17:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,42 +124,44 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 		k.FontGenerator = fontGen;
 		k.Size = fontSize;
 		CTextureFont::SLetterInfo *pLI = pTexFont->getLetterInfo (k);
-
-		if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+		if(pLI != NULL)
 		{
-			// Creating vertices
-			dx = pLI->Left;
-			dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
-			u1 = pLI->U - hlfW;
-			v1 = pLI->V - hlfH;
-			u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
-			v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
+			if ((pLI->CharWidth > 0) && (pLI->CharHeight > 0))
+			{
+				// Creating vertices
+				dx = pLI->Left;
+				dz = -((sint32)pLI->CharHeight-(sint32)(pLI->Top));
+				u1 = pLI->U - hlfW;
+				v1 = pLI->V - hlfH;
+				u2 = pLI->U + ((float)pLI->CharWidth) / pTexFont->getWidth() + hlfW;
+				v2 = pLI->V + ((float)pLI->CharHeight) / pTexFont->getHeight() + hlfH;
 
-			x1 = (penx + dx) * FontRatio - hlfPix;
-			z1 = (penz + dz) * FontRatio - hlfPix;
-			x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
-			z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
+				x1 = (penx + dx) * FontRatio - hlfPix;
+				z1 = (penz + dz) * FontRatio - hlfPix;
+				x2 = (penx + dx + (sint32)pLI->CharWidth)  * FontRatio + hlfPix;
+				z2 = (penz + dz + (sint32)pLI->CharHeight) * FontRatio + hlfPix;
 
-			output.Vertices.setVertexCoord	(j, x1, 0, z1);
-			output.Vertices.setTexCoord		(j, 0, u1, v2);
-			++j;
+				output.Vertices.setVertexCoord	(j, x1, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u1, v2);
+				++j;
 
-			output.Vertices.setVertexCoord	(j, x2, 0, z1);
-			output.Vertices.setTexCoord		(j, 0, u2, v2);
-			++j;
+				output.Vertices.setVertexCoord	(j, x2, 0, z1);
+				output.Vertices.setTexCoord		(j, 0, u2, v2);
+				++j;
 
-			output.Vertices.setVertexCoord	(j, x2, 0, z2); 
-			output.Vertices.setTexCoord		(j, 0, u2, v1);
-			++j;
+				output.Vertices.setVertexCoord	(j, x2, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u2, v1);
+				++j;
 
-			output.Vertices.setVertexCoord	(j, x1, 0, z2); 
-			output.Vertices.setTexCoord		(j, 0, u1, v1);
-			++j;
-			
-			if (z2 > output.StringHeight) 
-				output.StringHeight = z2;
+				output.Vertices.setVertexCoord	(j, x1, 0, z2); 
+				output.Vertices.setTexCoord		(j, 0, u1, v1);
+				++j;
+				
+				if (z2 > output.StringHeight) 
+					output.StringHeight = z2;
+			}
+			penx += pLI->AdvX;
 		}
-		penx += pLI->AdvX;
 
 		// Building Material
 		output.Material = pMatFont;

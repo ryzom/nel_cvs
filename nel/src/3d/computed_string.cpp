@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.18 2001/09/06 16:24:01 besson Exp $
+ * $Id: computed_string.cpp,v 1.19 2001/09/07 09:17:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,8 @@ void CComputedString::render2D (IDriver& driver,
 								float rotateY
 								)
 {
+	if (Vertices.getNumVertices() == 0)
+		return;
 	//x*=ResX/ResY;
 	x*=(float)4/3;
 
@@ -114,7 +116,7 @@ void CComputedString::render2D (IDriver& driver,
 	Material->setZFunc (CMaterial::always);
 	Material->setZWrite (false);
 	Material->setColor (Color);
-	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
+	driver.renderQuads (*Material, 0, Vertices.getNumVertices()/4);
 }
 
 
@@ -123,6 +125,8 @@ void CComputedString::render2D (IDriver& driver,
 \*------------------------------------------------------------------*/
 void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 {
+	if (Vertices.getNumVertices() == 0)
+		return;
 	// Computing hotspot translation vector
 	CVector hotspotVector = getHotSpotVector(hotspot);
 	matrix.translate(hotspotVector);

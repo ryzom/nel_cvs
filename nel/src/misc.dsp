@@ -25,7 +25,7 @@ CFG=misc - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "misc - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/rkmisc.lib"
 
@@ -64,13 +64,13 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "__STL_DEBUG" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/rkmisc_debug.lib"
 
@@ -211,6 +211,10 @@ SOURCE=..\include\nel\misc\class_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\common.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\debug.cpp
 # End Source File
 # Begin Source File
@@ -227,6 +231,14 @@ SOURCE=..\include\nel\misc\displayer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\i18n.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\i18n.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\log.cpp
 # End Source File
 # Begin Source File
@@ -236,14 +248,6 @@ SOURCE=..\include\nel\misc\log.h
 # Begin Source File
 
 SOURCE=.\misc\rgba.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\i18n.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\i18n.h
 # End Source File
 # Begin Source File
 

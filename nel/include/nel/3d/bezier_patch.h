@@ -1,0 +1,86 @@
+/** \file bezier_patch.h
+ * <File description>
+ *
+ * $Id: bezier_patch.h,v 1.1 2000/10/23 12:13:42 berenguier Exp $
+ */
+
+/** Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_BEZIER_PATCH_H
+#define NL_BEZIER_PATCH_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
+#include "nel/misc/vectord.h"
+
+
+namespace NL3D 
+{
+
+
+using NLMISC::CVector;
+using NLMISC::CVectorD;
+
+
+// ***************************************************************************
+/**
+ * A standard bezier patch of float.  (quadpatch only).
+ * 
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CBezierPatch
+{
+public:
+	/// The vertices a,b,c,d of the quad patch.
+	CVector		Vertices[4];		
+	/// The tangents ab, ba, bc, cb, cd, dc, da, ad. NB: tangents are points, not vectors.
+	CVector		Tangents[8];		
+	/// The interiors, ia,ib,ic,id. NB: interiors are points, not vectors.
+	CVector		Interiors[4];		
+
+
+public:
+	/// Constructor: undefined Bezier patch!!
+	CBezierPatch() {}
+
+	/// complete computation of Vertices, Tangents, and Interiors, provinding the vertices and vertex normals.
+	void		make(CVector vertices[4], CVector	normals[4]);
+	/// make default Interiors, according to Vertices and Tangents.
+	void		makeInteriors();
+
+	/// Evaluate.
+	CVector		eval(float u, float v);			// u,v coordinates for quad.
+	/// Evaluate, but return a vector double.
+	CVectorD	evalDouble(double u, double v);	// u,v coordinates for quad.
+	/// Evaluate the normal at (u,v).
+	CVector		evalNormal(float u, float v);			// u,v coordinates for quad.
+
+};
+
+
+
+} // NL3D
+
+
+#endif // NL_BEZIER_PATCH_H
+
+/* End of bezier_patch.h */

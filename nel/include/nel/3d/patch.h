@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.1 2000/10/23 12:13:42 berenguier Exp $
+ * $Id: patch.h,v 1.2 2000/10/23 12:16:38 berenguier Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,12 @@
 #define NL_PATCH_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 
 
 namespace NL3D {
 
+using NLMISC::CVector;
 
 /**
  * <Class description>

@@ -140,6 +140,34 @@ SOURCE=.\3d\transform.cpp
 SOURCE=..\include\nel\3d\transform.h
 # End Source File
 # End Group
+# Begin Group "Landscape"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\bezier_patch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\bezier_patch.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\patch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\patch.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tessellation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\tessellation.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\mot.cpp

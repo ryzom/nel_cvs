@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.14 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.15 2002/01/16 10:56:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,9 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 	_ZoneManager.loadAllZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius, true);
 	while(_ZoneManager.getTaskListSize() != 0)
 	{
+		// Must do it at init only.
+		nlassert(_ZoneManager.ZoneRemoved);
+
 		if(!_ZoneManager.ZoneAdded)
 		{
 			_Landscape->Landscape.addZone(*_ZoneManager.Zone);
@@ -109,6 +112,31 @@ void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::v
 	// Yoyo: must check the binds of the zones.
 	_Landscape->Landscape.checkBinds();
 }
+
+//****************************************************************************
+void	CLandscapeUser::refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved)
+{
+	zonesAdded.clear();
+	zonesRemoved.clear();
+	std::string		za, zr;
+
+	// refresh until finished
+	do
+	{
+		// refresh zone around me.
+		refreshZonesAround(pos, radius, za, zr);
+
+		// some zone added or removed??
+		if(za != "")
+			zonesAdded.push_back(za);
+		if(zr != "")
+			zonesRemoved.push_back(zr);
+	}
+	while(_ZoneManager.getTaskListSize() != 0);
+
+}
+
+
 //****************************************************************************
 void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius)
 {

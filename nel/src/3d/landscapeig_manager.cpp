@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.3 2002/01/03 17:22:25 besson Exp $
+ * $Id: landscapeig_manager.cpp,v 1.4 2002/01/16 10:56:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,16 @@ void	CLandscapeIGManager::loadArrayZoneIG(const std::vector<std::string> &names)
 		loadZoneIG(names[i]);
 	}
 }
+
+// ***************************************************************************
+void	CLandscapeIGManager::unloadArrayZoneIG(const std::vector<std::string> &names)
+{
+	for(uint i=0; i<names.size(); i++)
+	{
+		unloadZoneIG(names[i]);
+	}
+}
+
 // ***************************************************************************
 void	CLandscapeIGManager::unloadZoneIG(const std::string &name)
 {

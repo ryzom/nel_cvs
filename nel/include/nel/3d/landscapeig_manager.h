@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.3 2002/01/03 17:22:35 besson Exp $
+ * $Id: landscapeig_manager.h,v 1.4 2002/01/16 10:58:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,11 @@ public:
 	 *	call after ULandscape::refreshZonesAround()
 	 */
 	void	unloadZoneIG(const std::string &name);
+
+	/** same as prec unloadZoneIG, but with an array of name. no-op if "".
+	 *	call after ULandscape::refreshAllZonesAround().
+	 */
+	void	unloadArrayZoneIG(const std::vector<std::string> &names);
 
 	/// is the Ig added to scene? name is like "150_EM". false if not found.
 	bool	isIGAddedToScene(const std::string &name) const;

@@ -1,6 +1,6 @@
 /** \file init_agent.cpp
  *
- * $Id: init_agent.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: init_agent.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,12 +23,12 @@
  */
 #include "agent/agentpack.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	
-	void setRegister(const NLIAC::CSelfClassCFactory &m)
+	void setRegister(const NLAIC::CSelfClassCFactory &m)
 	{
-		//NLIAC::IBasicInterface *factory = (NLIAC::IBasicInterface *)m.clone();
-		NLIAC::registerClass(m.getType(),m);		
+		//NLAIC::IBasicInterface *factory = (NLAIC::IBasicInterface *)m.clone();
+		NLAIC::registerClass(m.getType(),m);		
 	}	
 }

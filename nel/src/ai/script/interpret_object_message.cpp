@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,47 +29,47 @@
 
 namespace NLIASCRIPT
 {
-	CMessageClass::CMessageClass(const NLIAAGENT::IVarName &n) : CAgentClass(n)
+	CMessageClass::CMessageClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
-		setBaseMethodCount(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());		
-		setBaseObjectInstance(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());		
+		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 	
-	CMessageClass::CMessageClass(const NLIAC::CIdentType &id): CAgentClass(id)
+	CMessageClass::CMessageClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
-		setBaseMethodCount(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 
-	CMessageClass::CMessageClass(const NLIAAGENT::IVarName &n, const NLIAAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	CMessageClass::CMessageClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
-		setBaseMethodCount(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}
 
 	CMessageClass::CMessageClass(const CMessageClass &c) : CAgentClass( c )
 	{
-		setBaseMethodCount(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));		
 	}	
 
 	CMessageClass::CMessageClass()
 	{
-		setBaseMethodCount(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMessageScript *)(NLIAAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMessageScript *)(NLAIAGENT::CMessageScript::IdMessageScript.getFactory()->getClass())));
 	}
 
 
-	const NLIAC::IBasicType *CMessageClass::clone() const
+	const NLAIC::IBasicType *CMessageClass::clone() const
 	{
-		NLIAC::IBasicType *clone = new CMessageClass(*this);
+		NLAIC::IBasicType *clone = new CMessageClass(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CMessageClass::newInstance() const
+	const NLAIC::IBasicType *CMessageClass::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CMessageClass();
+		NLAIC::IBasicType *instance = new CMessageClass();
 		instance->incRef();
 		return instance;
 	}
@@ -78,14 +78,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::IObjectIA *CMessageClass::buildNewInstance() const
+	NLAIAGENT::IObjectIA *CMessageClass::buildNewInstance() const
 	{
 		// Création des composants statiques
-		std::list<NLIAAGENT::IObjectIA *> components;
+		std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
 		// Création du message
-		NLIAAGENT::CMessageScript *instance = new NLIAAGENT::CMessageScript( components,  (CMessageClass *) this );
+		NLAIAGENT::CMessageScript *instance = new NLAIAGENT::CMessageScript( components,  (CMessageClass *) this );
 		instance->incRef();
 
 		return instance;

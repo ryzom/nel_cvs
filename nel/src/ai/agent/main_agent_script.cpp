@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "script/interpret_object_agent.h"
 #include "agent/main_agent_script.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): CAgentScript(a)
 	{
@@ -37,7 +37,7 @@ namespace NLIAAGENT
 		_CodeContext->incRef();
 	}
 
-	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLIAC::IIO *io):CAgentScript (main)
+	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):CAgentScript (main)
 	{
 		_Stack = new NLIASCRIPT::CStackPointer();
 		_Heap = new NLIASCRIPT::CStackPointer();
@@ -45,7 +45,7 @@ namespace NLIAAGENT
 		_CodeContext->incRef();
 	}
 	
-	CMainAgentScript::CMainAgentScript(NLIAC::IIO *io):CAgentScript (NULL)
+	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):CAgentScript (NULL)
 	{		
 		_Stack = new NLIASCRIPT::CStackPointer();
 		_Heap = new NLIASCRIPT::CStackPointer();
@@ -75,16 +75,16 @@ namespace NLIAAGENT
 		return CAgentScript::sendMessage(m);
 	}
 
-	const NLIAC::IBasicType *CMainAgentScript::clone() const
+	const NLAIC::IBasicType *CMainAgentScript::clone() const
 	{
-		NLIAC::IBasicType *x = new CMainAgentScript(*this);
+		NLAIC::IBasicType *x = new CMainAgentScript(*this);
 		x->incRef();
 		return x;
 	}
 	
-	const NLIAC::IBasicType *CMainAgentScript::newInstance() const
+	const NLAIC::IBasicType *CMainAgentScript::newInstance() const
 	{
-		NLIAC::IBasicType *x = new CMainAgentScript(_CodeContext->InputOutput);
+		NLAIC::IBasicType *x = new CMainAgentScript(_CodeContext->InputOutput);
 		x->incRef();
 		return x;
 	}
@@ -151,7 +151,7 @@ namespace NLIAAGENT
 		i++;
 		IBasicAgent *o = (IBasicAgent *)i++;
 
-		if(((const NLIAC::CTypeOfObject &)o->getType()) & NLIAC::CTypeOfObject::tAgentInterpret)
+		if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 		{
 			incRef();
 			((CAgentScript *)o)->setAgentManager(this);

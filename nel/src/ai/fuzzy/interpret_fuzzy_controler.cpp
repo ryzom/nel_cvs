@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: interpret_fuzzy_controler.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: interpret_fuzzy_controler.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,47 +29,47 @@
 namespace NLIASCRIPT
 {
 
-	CFuzzyControlerClass::CFuzzyControlerClass(const NLIAAGENT::IVarName &n) : CAgentClass(n)
+	CFuzzyControlerClass::CFuzzyControlerClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
-		setBaseMethodCount(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());		
-		setBaseObjectInstance(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());		
+		setBaseObjectInstance(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
 	}
 	
-	CFuzzyControlerClass::CFuzzyControlerClass(const NLIAC::CIdentType &id): CAgentClass(id)
+	CFuzzyControlerClass::CFuzzyControlerClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
-		setBaseMethodCount(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
 	}
 
-	CFuzzyControlerClass::CFuzzyControlerClass(const NLIAAGENT::IVarName &n, const NLIAAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	CFuzzyControlerClass::CFuzzyControlerClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
-		setBaseMethodCount(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
 	}
 
 	CFuzzyControlerClass::CFuzzyControlerClass(const CFuzzyControlerClass &c) : CAgentClass( c )
 	{
-		setBaseMethodCount(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));		
 	}	
 
 	CFuzzyControlerClass::CFuzzyControlerClass()
 	{
-		setBaseMethodCount(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAFUZZY::CFuzzyControlerScript *)(NLIAFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIFUZZY::CFuzzyControlerScript *)(NLAIFUZZY::CFuzzyControlerScript::IdFuzzyControlerScript.getFactory()->getClass())));
 	}
 
 
-	const NLIAC::IBasicType *CFuzzyControlerClass::clone() const
+	const NLAIC::IBasicType *CFuzzyControlerClass::clone() const
 	{
-		NLIAC::IBasicType *clone = new CFuzzyControlerClass(*this);
+		NLAIC::IBasicType *clone = new CFuzzyControlerClass(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CFuzzyControlerClass::newInstance() const
+	const NLAIC::IBasicType *CFuzzyControlerClass::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CFuzzyControlerClass();
+		NLAIC::IBasicType *instance = new CFuzzyControlerClass();
 		instance->incRef();
 		return instance;
 	}
@@ -78,14 +78,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::IObjectIA *CFuzzyControlerClass::buildNewInstance() const
+	NLAIAGENT::IObjectIA *CFuzzyControlerClass::buildNewInstance() const
 	{
 		// Création des composants statiques
-		std::list<NLIAAGENT::IObjectIA *> components;
+		std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
 		// Création du message
-		NLIAFUZZY::CFuzzyControlerScript *instance = new NLIAFUZZY::CFuzzyControlerScript( components,  (CFuzzyControlerClass *) this );
+		NLAIFUZZY::CFuzzyControlerScript *instance = new NLAIFUZZY::CFuzzyControlerScript( components,  (CFuzzyControlerClass *) this );
 		instance->incRef();
 
 		return instance;
@@ -95,27 +95,27 @@ namespace NLIASCRIPT
 	{
 	}
 
-	const std::vector<NLIAAGENT::IObjectIA *> &CFuzzyControlerClass::getInputs() const
+	const std::vector<NLAIAGENT::IObjectIA *> &CFuzzyControlerClass::getInputs() const
 	{
 		return _Inputs;
 	}
 
-	const std::vector<NLIAAGENT::IObjectIA *> &CFuzzyControlerClass::getOutputs() const
+	const std::vector<NLAIAGENT::IObjectIA *> &CFuzzyControlerClass::getOutputs() const
 	{
 		return _Outputs;
 	}
 
-	void CFuzzyControlerClass::addInput(NLIAAGENT::IObjectIA *input)
+	void CFuzzyControlerClass::addInput(NLAIAGENT::IObjectIA *input)
 	{
 		_Inputs.push_back( input );
 	}
 
-	void CFuzzyControlerClass::addOutput(NLIAAGENT::IObjectIA *output)
+	void CFuzzyControlerClass::addOutput(NLAIAGENT::IObjectIA *output)
 	{
 		_Outputs.push_back( output );
 	}
 
-	const NLIAAGENT::IVarName *CFuzzyControlerClass::getInputName(sint32 id)
+	const NLAIAGENT::IVarName *CFuzzyControlerClass::getInputName(sint32 id)
 	{
 		if ( id > (sint32) _InputNames.size() )
 		{
@@ -124,7 +124,7 @@ namespace NLIASCRIPT
 		return _InputNames[ id ];
 	}
 
-	const NLIAAGENT::IVarName *CFuzzyControlerClass::getOutputName(sint32 id)
+	const NLAIAGENT::IVarName *CFuzzyControlerClass::getOutputName(sint32 id)
 	{
 		if ( id > (sint32) _OutputNames.size() )
 		{

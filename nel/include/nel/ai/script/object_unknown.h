@@ -1,7 +1,7 @@
 /** \file object_unknown.h
  * Class for store an IOpType.
  *
- * $Id: object_unknown.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: object_unknown.h,v 1.3 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,10 +68,10 @@ namespace NLIASCRIPT
 
 		/// \name Base class method.
 		//@{
-		const NLAIC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
+		const NLAIC::CIdentType &getType() const throw (NLAIE::CExceptionUnReference)
 		{
 			const NLAIC::CIdentType *id = _opType->getConstraintTypeOf();
-			if(id == NULL) throw NLIAE::CExceptionUnReference("object type is unreference");
+			if(id == NULL) throw NLAIE::CExceptionUnReference("object type is unreference");
 			return *id;
 		}
 

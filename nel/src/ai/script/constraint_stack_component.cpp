@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,11 +67,11 @@ namespace NLIASCRIPT
 		{
 			if(_MemberName.size() == 1)
 			{
-				const NLIAAGENT::IObjectIA *c = (NLIAAGENT::IObjectIA *)((NLIAC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
-				sint32 i = c->getStaticMemberIndex(NLIAAGENT::CStringVarName(_MemberName.front().data()));
+				const NLAIAGENT::IObjectIA *c = (NLAIAGENT::IObjectIA *)((NLAIC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
+				sint32 i = c->getStaticMemberIndex(NLAIAGENT::CStringVarName(_MemberName.front().data()));
 				if(i >= 0)
 				{					
-					/*if((const NLIAC::CTypeOfObject &)c->getType() & NLIAC::CTypeOfObject::tAgentInterpret) 
+					/*if((const NLAIC::CTypeOfObject &)c->getType() & NLAIC::CTypeOfObject::tAgentInterpret) 
 					{
 						i += comp.getCompementShift((IClassInterpret *)c);
 					}*/					
@@ -111,13 +111,13 @@ namespace NLIASCRIPT
 			{
 				std::list<sint32> b;
 				IOpType *c;
-				NLIAAGENT::IObjectIA *cl = (NLIAAGENT::IObjectIA *)((NLIAC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
+				NLAIAGENT::IObjectIA *cl = (NLAIAGENT::IObjectIA *)((NLAIC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
 				if(!comp.isValidateVarName(cl,b,_MemberName,c) && c->getConstraintTypeOf() != NULL)
 				{
 					c->release();
 					return;
 				}
-				_Id = new NLIAC::CIdentType (*c->getConstraintTypeOf());
+				_Id = new NLAIC::CIdentType (*c->getConstraintTypeOf());
 				c->release();
 				IOpCode *x;
 
@@ -180,7 +180,7 @@ namespace NLIASCRIPT
 		return x;
 	}
 
-	const NLIAC::CIdentType *CConstraintStackComp::getConstraintTypeOf()
+	const NLAIC::CIdentType *CConstraintStackComp::getConstraintTypeOf()
 	{
 		return _Id;
 	}

@@ -1,7 +1,7 @@
 /** \file fuzzyfact.cpp
  * Fuzzy facts
  *
- * $Id: fuzzyfact.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzyfact.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 #include "fuzzy/fuzzyfact.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	
 	CFuzzyFact::CFuzzyFact(IFuzzySet *set, double value)
@@ -67,34 +67,34 @@ namespace NLIAFUZZY
 	{
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CFuzzyFact::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CFuzzyFact::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
-	bool CFuzzyFact::isEqual(const NLIAAGENT::IBasicObjectIA &) const
-	{
-		return false;
-	}
-
-	bool CFuzzyFact::isEqual(const NLIALOGIC::CBoolType &) const
+	bool CFuzzyFact::isEqual(const NLAIAGENT::IBasicObjectIA &) const
 	{
 		return false;
 	}
 
-	const NLIAC::CIdentType &CFuzzyFact::getType() const
+	bool CFuzzyFact::isEqual(const NLAILOGIC::CBoolType &) const
+	{
+		return false;
+	}
+
+	const NLAIC::CIdentType &CFuzzyFact::getType() const
 	{
 		return IdFuzzyFact;
 	}
 
-	const NLIAC::IBasicType *CFuzzyFact::clone() const
+	const NLAIC::IBasicType *CFuzzyFact::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CFuzzyFact( *this );
+		NLAIC::IBasicInterface *m = new CFuzzyFact( *this );
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CFuzzyFact::newInstance() const
+	const NLAIC::IBasicType *CFuzzyFact::newInstance() const
 	{
 		return clone();
 	}
@@ -111,7 +111,7 @@ namespace NLIAFUZZY
 		return false;
 	}
 
-	std::vector<NLIALOGIC::IBaseVar *> *CFuzzyFact::getVars()
+	std::vector<NLAILOGIC::IBaseVar *> *CFuzzyFact::getVars()
 	{
 		return NULL;
 	}

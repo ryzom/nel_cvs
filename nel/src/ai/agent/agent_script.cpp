@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: agent_script.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _NbComponents )
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		_Components[ index ]->release();
@@ -161,7 +161,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _NbComponents )
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return _Components[ index ];
@@ -172,12 +172,12 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 
 		if ( inheritance >= _AgentClass->sizeVTable())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return (NLIASCRIPT::IOpCode &)_AgentClass->getBrancheCode(inheritance,index).getCode();
@@ -188,7 +188,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _AgentClass->getMethodIndexSize())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return (NLIASCRIPT::IOpCode &)_AgentClass->getBrancheCode(index).getCode();
@@ -451,7 +451,7 @@ namespace NLAIAGENT
 		}
 		char buf[2048];
 		op->getDebugString(buf);
-		throw NLIAE::CExceptionObjectNotFoundError(buf);
+		throw NLAIE::CExceptionObjectNotFoundError(buf);
 	}	
 
 	const NLAIC::CIdentType &CAgentScript::getType() const

@@ -1099,7 +1099,7 @@ case 11:
 									_SelfClass.push((IClassInterpret *)(((CClassInterpretFactory *)id.getFactory())->getClass()->newInstance()));
 									((IClassInterpret *)_SelfClass.get())->setInheritanceName(interfName);
 								}
-								catch(NLIAE::IException &a)
+								catch(NLAIE::IException &a)
 								{									
 									yyerror((char *)a.what());
 									return 0;
@@ -1117,7 +1117,7 @@ case 14:
 									yyerror(text);
 									return 0;
 								}
-								catch(NLIAE::IException &)
+								catch(NLAIE::IException &)
 								{
 									((IClassInterpret *)_SelfClass.get())->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
 									((IClassInterpret *)_SelfClass.get())->buildVTable();

@@ -1,6 +1,6 @@
 /** \file register_class.cpp
  *
- * $Id: registry_class.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: registry_class.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "e/ia_exception.h" 
 #include "c/registry_class.h"
 
-namespace NLIAC
+namespace NLAIC
 {
 	CRegistry *registry = NULL;//new tRegistry;
 

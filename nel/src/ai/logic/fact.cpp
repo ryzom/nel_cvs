@@ -21,9 +21,9 @@
 #include "logic/ia_assert.h"
 #include "logic/varset.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CFact::CFact(IBaseAssert *a) : CValueSet(a->nbVars() )
 	{

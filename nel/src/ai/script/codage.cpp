@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: codage.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 namespace NLIASCRIPT
 {	
-	NLIAC::IIO	*CCodeBrancheRun::InputOutput = NULL;	
+	NLAIC::IIO	*CCodeBrancheRun::InputOutput = NULL;	
 
 	void CCodeBrancheRun::save(NLMISC::IStream &os)
 	{
@@ -42,7 +42,7 @@ namespace NLIASCRIPT
 				count = i;
 				std::string x( text );
 				os.serial(x );
-				os.serial( (NLIAC::CIdentType &)  _TableCode[i]->getType() );
+				os.serial( (NLAIC::CIdentType &)  _TableCode[i]->getType() );
 				os.serial( *_TableCode[i] );
 			}
 		}
@@ -50,7 +50,7 @@ namespace NLIASCRIPT
 
 	void CCodeBrancheRun::load(NLMISC::IStream &is)
 	{
-		NLIAC::CIdentTypeAlloc id;		
+		NLAIC::CIdentTypeAlloc id;		
 		del();
 
 		sint32 count;
@@ -72,9 +72,9 @@ namespace NLIASCRIPT
 
 	}
 
-	const NLIAC::IBasicType *CCodeBrancheRun::newInstance() const		
+	const NLAIC::IBasicType *CCodeBrancheRun::newInstance() const		
 	{
-		NLIAC::IBasicType *x = new CCodeBrancheRun(1,CHaltOpCode());
+		NLAIC::IBasicType *x = new CCodeBrancheRun(1,CHaltOpCode());
 		x->incRef();
 		return x;
 	}
@@ -83,14 +83,14 @@ namespace NLIASCRIPT
 	{		
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run()
 	{
-		_RunState.ResultState = NLIAAGENT::processBuzzy;
+		_RunState.ResultState = NLAIAGENT::processBuzzy;
 		_RunState.Result = NULL;
 		CStackPointer	stack,heap;
 		CCodeContext p(stack,heap,this,NULL,InputOutput);
 		
-		NLIAAGENT::TProcessStatement i = NLIAAGENT::processIdle;		
+		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;		
 		CVarPStack::_LocalTableRef = &heap[0];
 		stack --;
 
@@ -101,9 +101,9 @@ namespace NLIASCRIPT
 		return _RunState;
 	}	
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(NLIAAGENT::IObjectIA &self)
+	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(NLAIAGENT::IObjectIA &self)
 	{
-		_RunState.ResultState = NLIAAGENT::processBuzzy;
+		_RunState.ResultState = NLAIAGENT::processBuzzy;
 		_RunState.Result = NULL;
 		CStackPointer	stack,heap;
 		CCodeContext p(stack,heap,this,&self,InputOutput);	
@@ -117,20 +117,20 @@ namespace NLIASCRIPT
 		return _RunState;
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
+	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
 	{		
-		NLIAAGENT::TProcessStatement i = NLIAAGENT::processIdle;		
+		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;		
 		
-		while(i != NLIAAGENT::processEnd)
+		while(i != NLAIAGENT::processEnd)
 		{	
 			i = runOpCode(p);
 		}
 
-		_RunState.ResultState = NLIAAGENT::processIdle;
+		_RunState.ResultState = NLAIAGENT::processIdle;
 		return _RunState;
 	}
 	
-	NLIAAGENT::TProcessStatement CCodeBrancheRun::runOpCode(CCodeContext &p)
+	NLAIAGENT::TProcessStatement CCodeBrancheRun::runOpCode(CCodeContext &p)
 	{		
 		IOpCode &op = nextCode();
 		
@@ -167,7 +167,7 @@ namespace NLIASCRIPT
 		_TableCode[_Ip]->getDebugResult(str,P);
 	}
 	
-	const NLIAC::CIdentType &CCodeBrancheRun::getType() const
+	const NLAIC::CIdentType &CCodeBrancheRun::getType() const
 	{		
 		return IdCodeBrancheRun;
 	}

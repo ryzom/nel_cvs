@@ -9,17 +9,17 @@
 
 namespace NLIALINK 
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 	void initIALib()
 	{
-		NLIAC::initRegistry();
+		NLAIC::initRegistry();
 		NLIASCRIPT::initExternalLib();		
 	}
 
 	void releaseIALib()
 	{
 		CIndexedVarName::releaseClass();
-		NLIAC::releaseRegistry();
+		NLAIC::releaseRegistry();
 		CLocWordNumRef::clear();		
 	}
 }

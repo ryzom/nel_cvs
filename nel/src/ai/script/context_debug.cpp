@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: context_debug.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLIASCRIPT
 		delete &HeapDebug;
 		if (Param.size() >0 )
 		{
-			std::list<NLIAAGENT::IObjectIA	*>::const_iterator It = Param.begin();
+			std::list<NLAIAGENT::IObjectIA	*>::const_iterator It = Param.begin();
 			while(It != Param.end())
 			{
 				(*It)->release();
@@ -55,19 +55,19 @@ namespace NLIASCRIPT
 		}
 	}
 
-	const NLIAC::CIdentType &CContextDebug::getType() const
+	const NLAIC::CIdentType &CContextDebug::getType() const
 	{
 		return IdContextDebug;
 	}
 
-	const NLIAC::IBasicType* CContextDebug::clone() const
+	const NLAIC::IBasicType* CContextDebug::clone() const
 	{
-		NLIAC::IBasicType *x = new (CContextDebug);
+		NLAIC::IBasicType *x = new (CContextDebug);
 		x->incRef();
 		return x;
 	}
 
-	const NLIAC::IBasicType* CContextDebug::newInstance() const
+	const NLAIC::IBasicType* CContextDebug::newInstance() const
 	{
 		return clone();
 	}
@@ -84,14 +84,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	bool CContextDebug::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CContextDebug::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return true;
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CContextDebug::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CContextDebug::run()
 	{		
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 	void CContextDebug::setDebugMode (TDebugMode dm)
 	{
@@ -169,7 +169,7 @@ namespace NLIASCRIPT
 			return false;
 	}
 
-	void CContextDebug::callStackPrint(NLIAC::IIO *inputOutput) const
+	void CContextDebug::callStackPrint(NLAIC::IIO *inputOutput) const
 	{
 		CCodeBrancheRunDebug* pCbrd;
 		std::list<const CCodeBrancheRun*>::const_iterator itC = _CallStack.begin();
@@ -201,7 +201,7 @@ namespace NLIASCRIPT
 		}
 	}
 
-	void CContextDebug::printActiveBeaks(NLIAC::IIO *inputOutput) const
+	void CContextDebug::printActiveBeaks(NLAIC::IIO *inputOutput) const
 	{
 		std::map<mystring, uintSet>::const_iterator itu = _BreakPointSet.begin();
 		std::set<uint16>::iterator it;

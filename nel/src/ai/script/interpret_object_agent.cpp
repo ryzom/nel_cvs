@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,9 +262,9 @@ namespace NLIASCRIPT
 				if(classType != NULL) n -= classType->getStaticMemberSize();
 			}
 		}				
-		catch(NLIAE::IException &e)
+		catch(NLAIE::IException &e)
 		{
-			throw NLIAE::CExceptionContainer(e);
+			throw NLAIE::CExceptionContainer(e);
 		}
 				
 		return NULL;
@@ -317,7 +317,7 @@ namespace NLIASCRIPT
 
 	CMethodeName &CAgentClass::getBrancheCode() const
 	{
-		if(_lastRef < 0) throw NLIAE::CExceptionUnReference("you try to access to an unrefrence index");
+		if(_lastRef < 0) throw NLAIE::CExceptionUnReference("you try to access to an unrefrence index");
 		return *_Methode[_lastRef];
 	}
 	

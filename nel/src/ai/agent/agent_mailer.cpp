@@ -1,6 +1,6 @@
 /** \file agent_mailer.cpp
  *
- * $Id: agent_mailer.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: agent_mailer.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 
 #include "agent/agent_mailer.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	CLocalAgentMail::CLocalAgentMail(IBasicAgent *host):IBasicAgent(NULL)
 	{
@@ -66,7 +66,7 @@ namespace NLIAAGENT
 		}
 		else
 		{
-			const NLIAAGENT::IObjectIA *cl = (const NLIAAGENT::IObjectIA *)(IAgent::IdAgent.getFactory())->getClass();
+			const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(IAgent::IdAgent.getFactory())->getClass();
 			return cl->isMember(h,m,p);
 		}
 	}

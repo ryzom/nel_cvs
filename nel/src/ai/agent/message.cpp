@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: message.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: message.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "agent/agent.h"
 #include "logic/boolval.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	IObjectIA &IMessageBase::operator = (const IObjectIA &a)
@@ -60,9 +60,9 @@ namespace NLIAAGENT
 			bool t = false;
 			os.serial(t);
 		}				
-		os.serial( (NLIAC::CIdentType &) _MsgGroup->getType() );
+		os.serial( (NLAIC::CIdentType &) _MsgGroup->getType() );
 		os.serial( *_MsgGroup );
-		os.serial( (NLIAC::CIdentType &) _Message->getType() );
+		os.serial( (NLAIC::CIdentType &) _Message->getType() );
 		os.serial( *_Message );
 	}
 	
@@ -70,7 +70,7 @@ namespace NLIAAGENT
 	{			
 		bool t;
 		is.serial(t);
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		if(t)
 		{			
 			is.serial( id );
@@ -199,12 +199,12 @@ namespace NLIAAGENT
 		_Message->clear();
 	}
 
-	const NLIAC::CIdentType &CMessage::getType() const
+	const NLAIC::CIdentType &CMessage::getType() const
 	{
 		return IdMessage;
 	}
 
-	const NLIAC::CIdentType &CMessageVector::getType() const
+	const NLAIC::CIdentType &CMessageVector::getType() const
 	{
 		return IdMessageVector;
 	}

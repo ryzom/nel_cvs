@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,7 +131,7 @@ namespace NLIASCRIPT
 					return NULL;
 				}
 			}
-			catch(NLIAE::IException &)
+			catch(NLAIE::IException &)
 			{
 				while(classHName.size())
 				{
@@ -158,7 +158,7 @@ namespace NLIASCRIPT
 						baseClass = b;
 					}
 				}				
-				catch(NLIAE::IException &)
+				catch(NLAIE::IException &)
 				{
 					char text[4096*4];
 					sprintf(text,"you try to access to '%s' and this class is not define in the hierarchy of '%s' class",str.getString(),(const char *)baseClass->getType());

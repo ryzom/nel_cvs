@@ -1,6 +1,6 @@
 /** \file register_type.cpp
  *
- * $Id: registry_type.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: registry_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "c/registry_type.h"
 
 
-namespace NLIAC
+namespace NLAIC
 {
 	CIdentType CTypeOfObject::IdTypeOfObject("CTypeOfObject",CSelfClassCFactory(CTypeOfObject()),CTypeOfObject(0),CTypeOfOperator(0));
 	const CIdentType &CTypeOfObject::getType() const

@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: mailbox.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 #include "agent/agent.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 

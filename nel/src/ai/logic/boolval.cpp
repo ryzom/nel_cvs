@@ -19,9 +19,9 @@
 
 #include "logic/boolval.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 
 	IBaseBoolType::IBaseBoolType() 
@@ -51,14 +51,14 @@ namespace NLIALOGIC
 	{
 	}
 	
-	const NLIAC::IBasicType *CBoolType::clone() const
+	const NLAIC::IBasicType *CBoolType::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CBoolType( *this );
+		NLAIC::IBasicInterface *m = new CBoolType( *this );
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CBoolType::newInstance() const
+	const NLAIC::IBasicType *CBoolType::newInstance() const
 	{
 
 		return clone();
@@ -120,7 +120,7 @@ namespace NLIALOGIC
 		return NULL;
 	}
 
-	const NLIAC::CIdentType &CBoolType::getType() const
+	const NLAIC::CIdentType &CBoolType::getType() const
 	{
 		return IdBoolType;
 	}

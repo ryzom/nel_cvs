@@ -26,9 +26,9 @@
 #include "logic/valueset.h"
 #include "logic/fact.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	IBaseOperator::IBaseOperator()
 	{
@@ -95,7 +95,7 @@ namespace NLIALOGIC
 		os.serial( size );
 		for ( i = 0; i < (sint32) _Conds.size(); i++ )
 		{
-			os.serial( (NLIAC::CIdentType &) _Conds[i]->getType() );
+			os.serial( (NLAIC::CIdentType &) _Conds[i]->getType() );
 			_Conds[i]->save(os);
 		}
 
@@ -103,7 +103,7 @@ namespace NLIALOGIC
 		os.serial( size );
 		for ( i = 0; i < (sint32) _Concs.size(); i++ )
 		{
-			os.serial( (NLIAC::CIdentType &) _Concs[i]->getType() );
+			os.serial( (NLAIC::CIdentType &) _Concs[i]->getType() );
 			_Concs[i]->save(os);
 		}
 	}
@@ -116,7 +116,7 @@ namespace NLIALOGIC
 		is.serial( nb_vals );
 		for ( i = 0; i < nb_vals; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IBaseAssert *tmp_val = (IBaseAssert *) id.allocClass();
 			tmp_val->load( is );
@@ -127,7 +127,7 @@ namespace NLIALOGIC
 		is.serial( nb_vals );
 		for ( i = 0; i < nb_vals; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IBaseAssert *tmp_val = (IBaseAssert *) id.allocClass();
 			tmp_val->load( is );

@@ -22,9 +22,9 @@
 #include "logic/valueset.h"
 #include "logic/ia_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CVarSet::CVarSet()
 	{
@@ -56,15 +56,15 @@ namespace NLIALOGIC
 	}
 
 
-	const NLIAC::IBasicType *CVarSet::clone() const
+	const NLAIC::IBasicType *CVarSet::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CVarSet(*this);
+		NLAIC::IBasicInterface *m = new CVarSet(*this);
 		m->incRef();
 		return m;
 	}
 
 
-	const NLIAC::IBasicType *CVarSet::newInstance() const
+	const NLAIC::IBasicType *CVarSet::newInstance() const
 	{
 		return clone();
 	}
@@ -77,7 +77,7 @@ namespace NLIALOGIC
 		
 		for (sint32 i = 0; i < (sint32)_Vars.size() ; i++ )
 		{
-			os.serial( (NLIAC::CIdentType &) _Vars[ i ]->getType() );
+			os.serial( (NLAIC::CIdentType &) _Vars[ i ]->getType() );
 			_Vars[ i ]->save( os );
 		}
 	}
@@ -90,7 +90,7 @@ namespace NLIALOGIC
 
 		for (sint32 i = 0; i < nb_vars; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IBaseVar *tmp_var = (IBaseVar *)id.allocClass();
 			_Vars.push_back( tmp_var );
@@ -234,7 +234,7 @@ namespace NLIALOGIC
 	}
 
 
-	const NLIAC::CIdentType &CVarSet::getType() const
+	const NLAIC::CIdentType &CVarSet::getType() const
 	{
 		return IdVarSet;
 	}
@@ -382,19 +382,19 @@ namespace NLIALOGIC
 		}
 	}
 
-	const NLIAC::CIdentType &CFactPattern::getType() const
+	const NLAIC::CIdentType &CFactPattern::getType() const
 	{
 		return IdFactPattern;
 	}
 
-	const NLIAC::IBasicType *CFactPattern::clone() const
+	const NLAIC::IBasicType *CFactPattern::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CFactPattern(*this);
+		NLAIC::IBasicInterface *m = new CFactPattern(*this);
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CFactPattern::newInstance() const
+	const NLAIC::IBasicType *CFactPattern::newInstance() const
 	{
 		return clone();
 	}

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: compilateur.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ namespace NLIASCRIPT
 	}
 
 
-	NLIAAGENT::IObjectIA::CProcessResult CCompilateur::Compile()
+	NLAIAGENT::IObjectIA::CProcessResult CCompilateur::Compile()
 	{
 		NLIASCRIPT::InitDico();
 		int k = yywrap();
@@ -71,35 +71,35 @@ namespace NLIASCRIPT
 		
 		NLIASCRIPT::EraseDico();
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 		if(_Error)
 		{
-			r.ResultState = NLIAAGENT::processError;
+			r.ResultState = NLAIAGENT::processError;
 		}
-		else r.ResultState = NLIAAGENT::processIdle;
+		else r.ResultState = NLAIAGENT::processIdle;
 		r.Result = _ResultCompile;
 		return r;
 	}
 
-	NLIAAGENT::CIdMethod CCompilateur::findMethode(sint32 inheritance, const NLIAAGENT::IObjectIA *classType,const NLIAAGENT::IVarName &methodeName,const CParam &param)
+	NLAIAGENT::CIdMethod CCompilateur::findMethode(sint32 inheritance, const NLAIAGENT::IObjectIA *classType,const NLAIAGENT::IVarName &methodeName,const CParam &param)
 	{
-		NLIAAGENT::tQueue q = classType->isMember(NULL,&methodeName,param);
+		NLAIAGENT::tQueue q = classType->isMember(NULL,&methodeName,param);
 		if(q.size())
 		{
 			return q.top();			
 		}
 		else
 		{						
-			return NLIAAGENT::CIdMethod(-1,0.0,NULL,NULL);
+			return NLAIAGENT::CIdMethod(-1,0.0,NULL,NULL);
 		}
 	}
 
-	CFunctionTag CCompilateur::findMethode(NLIAAGENT::IBaseGroupType &listName,const CParam &param)
+	CFunctionTag CCompilateur::findMethode(NLAIAGENT::IBaseGroupType &listName,const CParam &param)
 	{
 		return findMethode((IClassInterpret *)_SelfClass.get(),listName,param);
 	}
 
-	CFunctionTag CCompilateur::findMethode(const NLIAAGENT::IObjectIA *classType,NLIAAGENT::IBaseGroupType &listName,const CParam &param)
+	CFunctionTag CCompilateur::findMethode(const NLAIAGENT::IObjectIA *classType,NLAIAGENT::IBaseGroupType &listName,const CParam &param)
 	{						
 		CFunctionTag method;
 		if(!listName.size())
@@ -112,12 +112,12 @@ namespace NLIASCRIPT
 
 		sint32 h = listName.size() - 1;
 
-		NLIAAGENT::CIdMethod r;
+		NLAIAGENT::CIdMethod r;
 		
 		if(!h)
 		{
 			method.Inheritance = 0;//classType->sizeVTable() - 1;
-			method.MethodName = &((const NLIAAGENT::CStringType *)listName.get())->getStr();
+			method.MethodName = &((const NLAIAGENT::CStringType *)listName.get())->getStr();
 
 			r = findMethode(method.Inheritance,classType, *method.MethodName,param);
 			if( r.Index <0)
@@ -142,7 +142,7 @@ namespace NLIASCRIPT
 			{							
 				if(method.Inheritance >= 0)
 				{			
-					method.MethodName = &((const NLIAAGENT::CStringType *)listName.get())->getStr();
+					method.MethodName = &((const NLAIAGENT::CStringType *)listName.get())->getStr();
 
 					r = findMethode(method.Inheritance,classType,*method.MethodName,param);
 					if(  r.Index < 0)
@@ -181,14 +181,14 @@ namespace NLIASCRIPT
 		return method;
 	}
 
-	const NLIAAGENT::IObjectIA *CCompilateur::validateHierarchyMethode(std::list<sint32> &listH,sint32 &h,const NLIAAGENT::IObjectIA *classType,NLIAAGENT::IBaseGroupType &listName)
+	const NLAIAGENT::IObjectIA *CCompilateur::validateHierarchyMethode(std::list<sint32> &listH,sint32 &h,const NLAIAGENT::IObjectIA *classType,NLAIAGENT::IBaseGroupType &listName)
 	{
 		std::list<NLIASCRIPT::CStringType> listClassName;		
-		NLIAAGENT::CIteratorContener it = listName.getIterator();
+		NLAIAGENT::CIteratorContener it = listName.getIterator();
 		listName.size();
 		while(!it.isInEnd())
 		{
-			NLIAAGENT::CStringType &name = *((NLIAAGENT::CStringType *)it++);
+			NLAIAGENT::CStringType &name = *((NLAIAGENT::CStringType *)it++);
 			listClassName.push_back(name.getStr().getString());			
 		}
 		listClassName.pop_back();		
@@ -386,7 +386,7 @@ namespace NLIASCRIPT
 		}
 	}
 
-	IConstraint *CCompilateur::getMethodConstraint(const NLIAAGENT::IBaseGroupType &g,const CParam &p) const
+	IConstraint *CCompilateur::getMethodConstraint(const NLAIAGENT::IBaseGroupType &g,const CParam &p) const
 	{
 		std::list<IConstraint *>::const_iterator i = _MethodConstraint.begin();
 		while(i != _MethodConstraint.end())

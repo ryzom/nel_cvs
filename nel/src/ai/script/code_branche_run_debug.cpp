@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,16 +78,16 @@ namespace NLIASCRIPT
 		delete []_LineInSourceCodeArray;
 	}
 
-	const NLIAC::IBasicType* CCodeBrancheRunDebug::clone() const 
+	const NLAIC::IBasicType* CCodeBrancheRunDebug::clone() const 
 	{
-		NLIAC::IBasicType *x = new CCodeBrancheRunDebug(*this);
+		NLAIC::IBasicType *x = new CCodeBrancheRunDebug(*this);
 		x->incRef();
 		return x;
 	}
 
-	const NLIAC::IBasicType *CCodeBrancheRunDebug::newInstance() const 
+	const NLAIC::IBasicType *CCodeBrancheRunDebug::newInstance() const 
 	{
-		NLIAC::IBasicType *x = new CCodeBrancheRunDebug(1,CHaltOpCode());
+		NLAIC::IBasicType *x = new CCodeBrancheRunDebug(1,CHaltOpCode());
 		x->incRef();
 		return x;
 	}
@@ -121,7 +121,7 @@ namespace NLIASCRIPT
 		is.serial(_SourceFileName );		
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult& CCodeBrancheRunDebug::run(NLIAAGENT::IObjectIA &self)
+	const NLAIAGENT::IObjectIA::CProcessResult& CCodeBrancheRunDebug::run(NLAIAGENT::IObjectIA &self)
 	{		
 		CStackPointer	stack,heap;
 		CCodeContext p(stack,heap,this,&self,InputOutput);
@@ -135,23 +135,23 @@ namespace NLIASCRIPT
 		return _RunState;
 	}	
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CCodeBrancheRunDebug::run(CCodeContext &p)
+	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRunDebug::run(CCodeContext &p)
 	{
-		NLIAAGENT::TProcessStatement i = NLIAAGENT::processIdle;
+		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;
 		
 		p.ContextDebug.Active = true; // We are in Debug mode.
 		p.ContextDebug.callStackPush(this);
 
 		_RunState.Result = NULL;
-		while(i != NLIAAGENT::processEnd)
+		while(i != NLAIAGENT::processEnd)
 		{	
 			i = runOpCode(p);
 		}
 		
-		_RunState.ResultState = NLIAAGENT::processIdle;
+		_RunState.ResultState = NLAIAGENT::processIdle;
 		return _RunState;
 	}
-	NLIAAGENT::TProcessStatement CCodeBrancheRunDebug::runOpCode(CCodeContext &p)
+	NLAIAGENT::TProcessStatement CCodeBrancheRunDebug::runOpCode(CCodeContext &p)
 	{
 		char* buf;
 		p.ContextDebug.Active = true; // We are in Debug mode.
@@ -190,7 +190,7 @@ namespace NLIASCRIPT
 
 		if (p.ContextDebug.getDebugMode() == stopMode)
 		{
-			return NLIAAGENT::processEnd;
+			return NLAIAGENT::processEnd;
 		}
 		else
 		{
@@ -203,7 +203,7 @@ namespace NLIASCRIPT
 		_TableCode[_Ip]->getDebugResult(str,p);
 	}
 	
-	const NLIAC::CIdentType& CCodeBrancheRunDebug::getType() const
+	const NLAIC::CIdentType& CCodeBrancheRunDebug::getType() const
 	{		
 		return IdCodeBrancheRunDebug;
 	}
@@ -358,10 +358,10 @@ namespace NLIASCRIPT
 	void CCodeBrancheRunDebug::printVariable (CCodeContext &P, const char* c) const
 	{
 		sint32 begin;
-		const NLIAAGENT::IObjectIA* base;
-		const NLIAAGENT::IVarName* ivn;
-		NLIAAGENT::CStringType* st;
-		NLIAAGENT::CStringVarName* svn;
+		const NLAIAGENT::IObjectIA* base;
+		const NLAIAGENT::IVarName* ivn;
+		NLAIAGENT::CStringType* st;
+		NLAIAGENT::CStringVarName* svn;
 		char* buf = new char[1024*8];
 		char* bufA = new char[1024*8];
 		char* bufX = new char[1024*8];
@@ -388,13 +388,13 @@ namespace NLIASCRIPT
 			base = P.ContextDebug.HeapDebug[i];
 			if (base)
 			{
-				if (base->getType() == NLIAAGENT::CStringType::IdStringType)
+				if (base->getType() == NLAIAGENT::CStringType::IdStringType)
 				{
-					st = (NLIAAGENT::CStringType*) base;
+					st = (NLAIAGENT::CStringType*) base;
 					ivn = &(st->getStr());
-					if (ivn->getType() == NLIAAGENT::CStringVarName::IdStringVarName)
+					if (ivn->getType() == NLAIAGENT::CStringVarName::IdStringVarName)
 					{
-						svn = (NLIAAGENT::CStringVarName*) ivn;
+						svn = (NLAIAGENT::CStringVarName*) ivn;
 						if (strcmp(svn->getString(), buf) == 0)
 						{
 							break;
@@ -412,7 +412,7 @@ namespace NLIASCRIPT
 		}
 		else
 		{
-			j = P.Self->getStaticMemberIndex(NLIAAGENT::CStringVarName(buf));
+			j = P.Self->getStaticMemberIndex(NLAIAGENT::CStringVarName(buf));
 			if (j >= 0)
 			{
 				// It's a static member.
@@ -439,14 +439,14 @@ namespace NLIASCRIPT
 					strcpy(bufX, dotPos+1);
 					strcpy(bufA,buf);
 					strchr(bufA,'.')[0]= '\0';
-					j = base->getStaticMemberIndex(NLIAAGENT::CStringVarName(bufA));
+					j = base->getStaticMemberIndex(NLAIAGENT::CStringVarName(bufA));
 					if (j >= 0)
 					{
 						base =  base->getStaticMember(j);
 					}
 					dotPos =  strchr(bufX,'.');
 				}
-				j = base->getStaticMemberIndex(NLIAAGENT::CStringVarName(bufX));
+				j = base->getStaticMemberIndex(NLAIAGENT::CStringVarName(bufX));
 				if (j >= 0)
 				{
 					base->getStaticMember(j)->getDebugString(buf);
@@ -463,13 +463,13 @@ namespace NLIASCRIPT
 	{
 		if (P.Param.size() >0 )
 		{
-			NLIAAGENT::CIteratorContener Ita = ((NLIAAGENT::CGroupType *) P.ContextDebug.Param.back())->getIterator();
-			NLIAAGENT::CIteratorContener Itb = ((NLIAAGENT::CGroupType *) P.Param.back())->getIterator();;
+			NLAIAGENT::CIteratorContener Ita = ((NLAIAGENT::CGroupType *) P.ContextDebug.Param.back())->getIterator();
+			NLAIAGENT::CIteratorContener Itb = ((NLAIAGENT::CGroupType *) P.Param.back())->getIterator();;
 			char buf[1024*8];
 			while(!Ita.isInEnd())
 			{			
-				NLIAAGENT::CStringType *o = (NLIAAGENT::CStringType *)Ita++;
-				NLIAAGENT::CStringType *p = (NLIAAGENT::CStringType *)Itb++;
+				NLAIAGENT::CStringType *o = (NLAIAGENT::CStringType *)Ita++;
+				NLAIAGENT::CStringType *p = (NLAIAGENT::CStringType *)Itb++;
 				p->getDebugString(buf);
 				InputOutput->Echo("%s = %s\n", o->getStr().getString(), buf);
 			}

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: interpret_object.h,v 1.3 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class CExceptionHaveNoType: public NLIAE::IException
+	class CExceptionHaveNoType: public NLAIE::IException
 	{
 	private:
 		char *_Text;
@@ -222,7 +222,7 @@ namespace NLIASCRIPT
 			return _Text;
 		}
 
-		virtual const NLIAE::IException *clone() const
+		virtual const NLAIE::IException *clone() const
 		{
 			return new CExceptionHaveNoType(_Text);
 		}

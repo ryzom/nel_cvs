@@ -22,9 +22,9 @@
 #include "logic/valueset.h"
 #include "logic/fo_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CRule::CRule()
 	{
@@ -85,14 +85,14 @@ namespace NLIALOGIC
 	{
 	}
 
-	const NLIAC::IBasicType *CRule::clone() const
+	const NLAIC::IBasicType *CRule::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CRule(*this);
+		NLAIC::IBasicInterface *m = new CRule(*this);
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CRule::newInstance() const
+	const NLAIC::IBasicType *CRule::newInstance() const
 	{
 		CRule *instance = new CRule();
 		instance->incRef();
@@ -230,7 +230,7 @@ namespace NLIALOGIC
 		concs->release();
 	}
 
-	const NLIAC::CIdentType &CRule::getType() const
+	const NLAIC::CIdentType &CRule::getType() const
 	{
 		return IdRule;
 	}

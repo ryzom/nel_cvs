@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: opcode.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,29 +31,29 @@
 namespace NLIASCRIPT
 {	
 
-	NLIAAGENT::TProcessStatement CAffMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CAffMemberiOpCode::runOpCode(CCodeContext &context)
 	{				
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Self);
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Self);
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{			
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		NLIAAGENT::IObjectIA *obj = ((NLIAAGENT::IObjectIA *)context.Stack);
+		NLAIAGENT::IObjectIA *obj = ((NLAIAGENT::IObjectIA *)context.Stack);
 		obj->incRef();
 		a->setStaticMember(*i,obj);
 		context.Stack --;
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
-	NLIAAGENT::TProcessStatement CAffMemberOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CAffMemberOpCode::runOpCode(CCodeContext &context)
 	{	
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Stack);
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);
 		a->incRef();
-		((NLIAAGENT::IObjectIA *)context.Self)->setStaticMember(_I,a);
+		((NLAIAGENT::IObjectIA *)context.Self)->setStaticMember(_I,a);
 		context.Stack --;
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}	
 
 	//*************************************
@@ -68,14 +68,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::TProcessStatement CLocAllocDebug::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLocAllocDebug::runOpCode(CCodeContext &context)
 	{				
-		/*NLIAAGENT::iObjectIA *i = (NLIAAGENT::iObjectIA *)NLIAC::getRegistry()->createInstance(_b);
+		/*NLAIAGENT::iObjectIA *i = (NLAIAGENT::iObjectIA *)NLAIC::getRegistry()->createInstance(_b);
 		context.Heap[(sint32)context.Heap] = NULL;*/
 		context.Heap ++;
 		context.ContextDebug.HeapDebug ++;
 		//context.ContextDebug->HeapDebug[context.ContextDebug->HeapDebug]
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CLocAllocDebug::getDebugResult(char *str,CCodeContext &context) const
@@ -83,18 +83,18 @@ namespace NLIASCRIPT
 		sprintf(str,"Reservation d'un espace memoir locale pour une variable à l'emplacement %d",(sint32)context.Heap);				
 	}
 
-	const NLIAC::IBasicType *CLocAllocDebug::clone() const
+	const NLAIC::IBasicType *CLocAllocDebug::clone() const
 	{
-		NLIAC::IBasicType *x = new CLocAllocDebug();
+		NLAIC::IBasicType *x = new CLocAllocDebug();
 		x->incRef();         
 		return x;            
 	}
-	const NLIAC::IBasicType *CLocAllocDebug::newInstance() const 
+	const NLAIC::IBasicType *CLocAllocDebug::newInstance() const 
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CLocAllocDebug::getType() const
+	const NLAIC::CIdentType &CLocAllocDebug::getType() const
 	{
 		return IdLocAllocDebug;
 	}		
@@ -126,30 +126,30 @@ namespace NLIASCRIPT
 	}
 	
 
-	NLIAAGENT::TProcessStatement CAffHeapMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CAffHeapMemberiOpCode::runOpCode(CCodeContext &context)
 	{	
 		
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Heap[(int)_N]);			
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);			
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}		
-		NLIAAGENT::IObjectIA *obj = ((NLIAAGENT::IObjectIA *)context.Stack);
+		NLAIAGENT::IObjectIA *obj = ((NLAIAGENT::IObjectIA *)context.Stack);
 		obj->incRef();
 		a->setStaticMember(*i,obj);			
 		context.Stack --;			
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CAffHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{	
 		char txt[1024*8];
 		char txtClass[1024*8];
-		((NLIAAGENT::IObjectIA *)context.Stack)->getDebugString(txt);
-		((NLIAAGENT::IObjectIA *)context.Heap[(int)_N])->getDebugString(txtClass);
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Heap[(int)_N]);			
+		((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(txt);
+		((NLAIAGENT::IObjectIA *)context.Heap[(int)_N])->getDebugString(txtClass);
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);			
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size();
 		sprintf(str,"Affecte le membre sur le heap : %s ",txtClass);
@@ -162,26 +162,26 @@ namespace NLIASCRIPT
 		strcat(str,txt);
 	}
 
-	NLIAAGENT::TProcessStatement CAffOpCodeDebug::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CAffOpCodeDebug::runOpCode(CCodeContext &context)
 	{	
-		/*NLIAAGENT::iObjectIA *i = (NLIAAGENT::iObjectIA *)NLIAC::getRegistry()->createInstance(_b);
+		/*NLAIAGENT::iObjectIA *i = (NLAIAGENT::iObjectIA *)NLAIC::getRegistry()->createInstance(_b);
 		context.Heap[(sint32)context.Heap] = i;
 		context.Heap ++;*/
 
-		NLIAAGENT::IObjectIA *i = (NLIAAGENT::IObjectIA *)context.Stack;
-		NLIAAGENT::CStringVarName vn(_VarName);
-		NLIAAGENT::IObjectIA *iD = (NLIAAGENT::IObjectIA *) new NLIAAGENT::CStringType(vn);
+		NLAIAGENT::IObjectIA *i = (NLAIAGENT::IObjectIA *)context.Stack;
+		NLAIAGENT::CStringVarName vn(_VarName);
+		NLAIAGENT::IObjectIA *iD = (NLAIAGENT::IObjectIA *) new NLAIAGENT::CStringType(vn);
 		i->incRef();
 		iD->incRef();
-		NLIAAGENT::IObjectIA *tmp = context.Heap[(int)_I];
-		NLIAAGENT::IObjectIA *tmpD = context.ContextDebug.HeapDebug[(int)_I];
+		NLAIAGENT::IObjectIA *tmp = context.Heap[(int)_I];
+		NLAIAGENT::IObjectIA *tmpD = context.ContextDebug.HeapDebug[(int)_I];
 		context.Heap[_I] = i;
 		context.ContextDebug.HeapDebug[_I] = iD;
 		if(tmp) tmp->release();
 		if(tmpD) tmpD->release();
 		//context.Heap ++;
 		context.Stack --;
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CAffOpCodeDebug::getDebugResult(char *str,CCodeContext &context) const
@@ -191,18 +191,18 @@ namespace NLIASCRIPT
 		sprintf(str,"Affectation<%d> a %s",_I,Y);	
 	}
 
-	const NLIAC::IBasicType *CAffOpCodeDebug::clone() const
+	const NLAIC::IBasicType *CAffOpCodeDebug::clone() const
 	{
-		NLIAC::IBasicType *x = new CAffOpCodeDebug(_I, _VarName);
+		NLAIC::IBasicType *x = new CAffOpCodeDebug(_I, _VarName);
 		x->incRef();         
 		return x;            
 	}
-	const NLIAC::IBasicType *CAffOpCodeDebug::newInstance() const 
+	const NLAIC::IBasicType *CAffOpCodeDebug::newInstance() const 
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CAffOpCodeDebug::getType() const
+	const NLAIC::CIdentType &CAffOpCodeDebug::getType() const
 	{
 		return IdAffOpCodeDebug;
 	}
@@ -241,7 +241,7 @@ namespace NLIASCRIPT
 	{
 	}
 	
-	NLIAAGENT::TProcessStatement CFreeAllocDebug::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CFreeAllocDebug::runOpCode(CCodeContext &context)
 	{				
 		sint32 i = (sint32)context.Heap;	
 		i -= context.Heap.popMark();
@@ -251,25 +251,25 @@ namespace NLIASCRIPT
 //		j -= context.ContextDebug.HeapDebug.popMark();
 		context.ContextDebug.HeapDebug -= j;
 
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 	void CFreeAllocDebug::getDebugResult(char *str,CCodeContext &context) const
 	{		
 		sprintf(str,"libere le bloc de memoire de %d à %d",(sint32)context.Heap.mark(),(sint32)context.Heap);	
 	}
 
-	const NLIAC::IBasicType *CFreeAllocDebug::clone() const
+	const NLAIC::IBasicType *CFreeAllocDebug::clone() const
 	{
-		NLIAC::IBasicType *x = new CFreeAllocDebug();
+		NLAIC::IBasicType *x = new CFreeAllocDebug();
 		x->incRef();         
 		return x;            
 	}
-	const NLIAC::IBasicType *CFreeAllocDebug::newInstance() const 
+	const NLAIC::IBasicType *CFreeAllocDebug::newInstance() const 
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CFreeAllocDebug::getType() const
+	const NLAIC::CIdentType &CFreeAllocDebug::getType() const
 	{
 		return IdFreeAllocDebug;
 	}
@@ -287,19 +287,19 @@ namespace NLIASCRIPT
 	//*************************************
 	// CMarkMsg
 	//*************************************
-	NLIAAGENT::TProcessStatement CMarkMsg::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CMarkMsg::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IBaseGroupType *param = (NLIAAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
-		NLIAAGENT::IMessageBase *msg = (NLIAAGENT::IMessageBase *)param->get();
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
+		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)param->get();
 		msg->setMethodIndex(_Heritance,_I);
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	//*************************************
 	// CFindRunMsg
 	//*************************************
 
-	CFindRunMsg::CFindRunMsg(NLIAAGENT::IBaseGroupType *methodName,CParam *param,IOpType *baseClass,ILoadObject *objectLoad)
+	CFindRunMsg::CFindRunMsg(NLAIAGENT::IBaseGroupType *methodName,CParam *param,IOpType *baseClass,ILoadObject *objectLoad)
 	{
 		_Param = param;
 		_MethodName = methodName;
@@ -307,10 +307,10 @@ namespace NLIASCRIPT
 		_ObjectLoad = objectLoad;
 	}
 
-	CFindRunMsg::CFindRunMsg(const NLIAAGENT::IBaseGroupType &methodName,const CParam &param,const IOpType &baseClass,const ILoadObject &objectLoad)
+	CFindRunMsg::CFindRunMsg(const NLAIAGENT::IBaseGroupType &methodName,const CParam &param,const IOpType &baseClass,const ILoadObject &objectLoad)
 	{
 		_Param = (CParam *)param.clone();
-		_MethodName = (NLIAAGENT::IBaseGroupType *)methodName.clone();
+		_MethodName = (NLAIAGENT::IBaseGroupType *)methodName.clone();
 		_BaseClass = (IOpType *)baseClass.clone();
 		_ObjectLoad = (ILoadObject *)objectLoad.clone();
 	}
@@ -322,23 +322,23 @@ namespace NLIASCRIPT
 		_BaseClass->release();
 		_ObjectLoad->release();
 	}
-	NLIAAGENT::TProcessStatement CFindRunMsg::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CFindRunMsg::runOpCode(CCodeContext &context)
 	{
-		const NLIAAGENT::IObjectIA *o = _ObjectLoad->getObject(context);
-		NLIAAGENT::IBaseGroupType *param = (NLIAAGENT::IBaseGroupType *)_ObjectLoad->getParam(context);
-		NLIAAGENT::IMessageBase *msg = (NLIAAGENT::IMessageBase *)param->get();
+		const NLAIAGENT::IObjectIA *o = _ObjectLoad->getObject(context);
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)_ObjectLoad->getParam(context);
+		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)param->get();
 
-		const NLIAAGENT::CStringType *name = (const NLIAAGENT::CStringType *)_MethodName->get();
+		const NLAIAGENT::CStringType *name = (const NLAIAGENT::CStringType *)_MethodName->get();
 
-		NLIAAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
+		NLAIAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
 
 		if(a.size())
 		{
-			NLIAAGENT::CIdMethod m = a.top();
+			NLAIAGENT::CIdMethod m = a.top();
 			msg->setMethodIndex(0,m.Index);
 		}
 
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 	void CFindRunMsg::getDebugResult(char *str,CCodeContext &context) const
 	{
@@ -349,31 +349,31 @@ namespace NLIASCRIPT
 		sprintf(str,"find '%s%s' for %s",m,p, (const char *)context.Self->getType());
 	}
 
-	const NLIAC::IBasicType *CFindRunMsg::clone() const
+	const NLAIC::IBasicType *CFindRunMsg::clone() const
 	{
 		_Param->incRef();
 		_MethodName->incRef();
 		_BaseClass->incRef();
 		_ObjectLoad->incRef();
-		NLIAC::IBasicType *clone = new CFindRunMsg(_MethodName,_Param,_BaseClass,_ObjectLoad);
+		NLAIC::IBasicType *clone = new CFindRunMsg(_MethodName,_Param,_BaseClass,_ObjectLoad);
 		clone->incRef();
 		return clone;
 	}
 
 	void CFindRunMsg::save(NLMISC::IStream &os)
 	{	
-		os.serial( (NLIAC::CIdentType &) _ObjectLoad->getType() );
+		os.serial( (NLAIC::CIdentType &) _ObjectLoad->getType() );
 		_ObjectLoad->save(os);
 		_BaseClass->serial(os);
-		os.serial( (NLIAC::CIdentType &) _Param->getType() );
+		os.serial( (NLAIC::CIdentType &) _Param->getType() );
 		_Param->save(os);
-		os.serial( (NLIAC::CIdentType &) _MethodName->getType() );
+		os.serial( (NLAIC::CIdentType &) _MethodName->getType() );
 		_MethodName->save(os);
 	}
 
 	void CFindRunMsg::load(NLMISC::IStream &is) 
 	{
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
 		_ObjectLoad->release();
 		_ObjectLoad = (ILoadObject *)id.allocClass();
@@ -387,7 +387,7 @@ namespace NLIASCRIPT
 		_Param = (CParam *)id.allocClass();
 		_Param->load(is);
 		is.serial( id );
-		_MethodName = (NLIAAGENT::IBaseGroupType *)id.allocClass();
+		_MethodName = (NLAIAGENT::IBaseGroupType *)id.allocClass();
 		_MethodName->load(is);
 	}		
 
@@ -395,9 +395,9 @@ namespace NLIASCRIPT
 	// CAddParamNameDebug
 	//*************************************
 
-	CAddParamNameDebug::CAddParamNameDebug(const NLIAAGENT::IBaseGroupType &debugAttrib)
+	CAddParamNameDebug::CAddParamNameDebug(const NLAIAGENT::IBaseGroupType &debugAttrib)
 	{
-		_DebugAttrib = (NLIAAGENT::IBaseGroupType *)debugAttrib.clone();
+		_DebugAttrib = (NLAIAGENT::IBaseGroupType *)debugAttrib.clone();
 	}
 	
 	CAddParamNameDebug::~CAddParamNameDebug()
@@ -405,11 +405,11 @@ namespace NLIASCRIPT
 		_DebugAttrib->release();
 	}
 	
-	NLIAAGENT::TProcessStatement CAddParamNameDebug::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CAddParamNameDebug::runOpCode(CCodeContext &context)
 	{
 		context.ContextDebug.Param.push_back(_DebugAttrib);
 		_DebugAttrib->incRef();
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 	
 	void CAddParamNameDebug::getDebugResult(char *str,CCodeContext &context) const
@@ -417,35 +417,35 @@ namespace NLIASCRIPT
 		sprintf(str,"Build a name liste that match the actual function parameters values.");
 	}
 
-	const NLIAC::IBasicType *CAddParamNameDebug::clone() const
+	const NLAIC::IBasicType *CAddParamNameDebug::clone() const
 	{
-		NLIAC::IBasicType *x = new CAddParamNameDebug(*_DebugAttrib);
+		NLAIC::IBasicType *x = new CAddParamNameDebug(*_DebugAttrib);
 		x->incRef();
 		return x;            
 	}
 	
-	const NLIAC::IBasicType *CAddParamNameDebug::newInstance() const 
+	const NLAIC::IBasicType *CAddParamNameDebug::newInstance() const 
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CAddParamNameDebug::getType() const
+	const NLAIC::CIdentType &CAddParamNameDebug::getType() const
 	{
 		return IdAddParamNameDebug;
 	}
 	
 	void CAddParamNameDebug::save(NLMISC::IStream &os)
 	{		
-		os.serial( (NLIAC::CIdentType &) _DebugAttrib->getType() );
+		os.serial( (NLAIC::CIdentType &) _DebugAttrib->getType() );
 		_DebugAttrib->save(os);
 	}
 
 	void CAddParamNameDebug::load(NLMISC::IStream &is) 
 	{				
 		_DebugAttrib->release();
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
-		_DebugAttrib =  (NLIAAGENT::IBaseGroupType *)id.allocClass();
+		_DebugAttrib =  (NLAIAGENT::IBaseGroupType *)id.allocClass();
 		_DebugAttrib->load(is);
 	}
 	

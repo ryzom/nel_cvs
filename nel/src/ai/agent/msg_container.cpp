@@ -1,6 +1,6 @@
 /** \file msg_contenair.cpp
  *
- * $Id: msg_container.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: msg_container.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
 #include "agent/agent.h"
 #include "agent/msg_container.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 
@@ -80,20 +80,20 @@ namespace NLIAAGENT
 		}
 	}
 
-	const NLIAC::IBasicType *CVectorMsgContainer::clone() const
+	const NLAIC::IBasicType *CVectorMsgContainer::clone() const
 	{
-		NLIAC::IBasicType *x = new CVectorMsgContainer( *this );
+		NLAIC::IBasicType *x = new CVectorMsgContainer( *this );
 		x->incRef();
 		return x;
 	}
 
-	const NLIAC::IBasicType *CVectorMsgContainer::newInstance() const
+	const NLAIC::IBasicType *CVectorMsgContainer::newInstance() const
 	{
-		NLIAC::IBasicType *x = new CVectorMsgContainer( *this );
+		NLAIC::IBasicType *x = new CVectorMsgContainer( *this );
 		x->incRef();
 		return x;
 	}	
-	const NLIAC::CIdentType &CVectorMsgContainer::getType() const	
+	const NLAIC::CIdentType &CVectorMsgContainer::getType() const	
 	{
 		
 		return IdVectorMsgContainer;
@@ -213,7 +213,7 @@ namespace NLIAAGENT
 				while ( it_msg != _Messages[index].end() )
 				{
 					IMessageBase *msg = (IMessageBase *)*it_msg;
-					os.serial( (NLIAC::CIdentType &) msg->getType() );
+					os.serial( (NLAIC::CIdentType &) msg->getType() );
 					msg->save(os);				
 					it_msg++;
 				}	
@@ -227,7 +227,7 @@ namespace NLIAAGENT
 		std::list<const IBasicMessageGroup *>::const_iterator it_grp = _MsgIndex.begin();
 		while ( it_grp != _MsgIndex.end() )
 		{
-			os .serial( (NLIAC::CIdentType &) (*it_grp)->getType() );
+			os .serial( (NLAIC::CIdentType &) (*it_grp)->getType() );
 			((IBasicMessageGroup *)(*it_grp))->save( os );
 			it_grp++;
 		}
@@ -237,7 +237,7 @@ namespace NLIAAGENT
 	{
 		
 		sint32 i;
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 
 		// Chargement des messages
 		is.serial( i );

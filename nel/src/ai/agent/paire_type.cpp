@@ -1,6 +1,6 @@
 /** \file paire_type.cpp
  *
- * $Id: paire_type.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: paire_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,11 +24,11 @@
 #include "agent/agent.h"
 #include "agent/agent_object.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	
 
-	/*const NLIAC::CIdentType &CPaireType::getType() const		
+	/*const NLAIC::CIdentType &CPaireType::getType() const		
 	{		
 		return IdPaireType;
 	}

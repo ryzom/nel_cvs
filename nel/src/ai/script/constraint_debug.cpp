@@ -1,6 +1,6 @@
 /** \file constraint_debug.cpp
  *
- * $Id: constraint_debug.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: constraint_debug.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLIASCRIPT
 	}
 
 	/// Not used.
-	const NLIAC::CIdentType *CConstraintDebug::getConstraintTypeOf()
+	const NLAIC::CIdentType *CConstraintDebug::getConstraintTypeOf()
 	{
 		return NULL;
 	}

@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: ident_type.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,13 +81,13 @@ namespace NLAIC
 			_Index = getRegistry()->registerClass(*this,classCFactory);
 			const CIdentType &id= getRegistry()->getIdent(_Index);			
 		}
-		catch (NLIAE::IException &err)
+		catch (NLAIE::IException &err)
 		{
 			delete _Ident;
 			_Ident = NULL;
 			_ObjType->release();
 			_OpSupport->release();
-			throw NLIAE::CExceptionContainer(err);
+			throw NLAIE::CExceptionContainer(err);
 		}		
 	}
 
@@ -106,13 +106,13 @@ namespace NLAIC
 			_OpSupport = (CTypeOfOperator *)&((const CTypeOfOperator &)id);
 			_OpSupport->incRef();
 		}
-		catch (NLIAE::IException &err)
+		catch (NLAIE::IException &err)
 		{
 			delete _Ident;
 			_Ident = NULL;
 			_ObjType = NULL;
 			_OpSupport = NULL;
-			throw NLIAE::CExceptionContainer(err);
+			throw NLAIE::CExceptionContainer(err);
 		}		
 	}
 
@@ -172,7 +172,7 @@ namespace NLAIC
 				_OpSupport = (CTypeOfOperator *)&((const CTypeOfOperator &)id);
 				_OpSupport->incRef();
 			}
-			catch (NLIAE::IException &)
+			catch (NLAIE::IException &)
 			{
 				throw NLMISC::EStream();
 			}

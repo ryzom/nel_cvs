@@ -1,6 +1,6 @@
 /** \file agent_object.cpp
  *
- * $Id: agent_object.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: agent_object.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #include "agent/agent_object.h"
 #include "logic/boolval.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {		
-	const NLIAC::CIdentType &CStringType::getType() const
+	const NLAIC::CIdentType &CStringType::getType() const
 	{		
 		return IdStringType;
 	}
@@ -51,7 +51,7 @@ namespace NLIAAGENT
 	IObjetOp *CStringType::operator < (IObjetOp &a) const
 	{		
 		const IVarName &b = (const IVarName &)a;
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(*_Str < b);
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(*_Str < b);
 		x->incRef();
 		return x;
 	}
@@ -59,7 +59,7 @@ namespace NLIAAGENT
 	IObjetOp *CStringType::operator > (IObjetOp &a) const
 	{		
 		const IVarName &b = (const IVarName &)a;		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(*_Str > b);
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(*_Str > b);
 		x->incRef();
 		return x;
 	}
@@ -67,7 +67,7 @@ namespace NLIAAGENT
 	IObjetOp *CStringType::operator <= (IObjetOp &a) const
 	{
 		const IVarName &b = (const IVarName &)a;		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(!(*_Str > b));
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str > b));
 		x->incRef();
 		return x;
 	}
@@ -75,7 +75,7 @@ namespace NLIAAGENT
 	IObjetOp *CStringType::operator >= (IObjetOp &a) const
 	{		
 		const IVarName &b = (const IVarName &)a;		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(!(*_Str < b));
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str < b));
 		x->incRef();
 		return x;
 	}
@@ -83,7 +83,7 @@ namespace NLIAAGENT
 	IObjetOp *CStringType::operator != (IObjetOp &a) const
 	{
 		const IVarName &b = (const IVarName &)a;		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(!(*_Str == b));
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str == b));
 		x->incRef();
 		return x;
 	}

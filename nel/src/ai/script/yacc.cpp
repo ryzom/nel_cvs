@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: yacc.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,13 +144,13 @@ namespace NLIASCRIPT
 				_LastAffectation = getVar(_LasAffectationVarStr.front().data());
 				if(_LastAffectation == NULL)
 				{
-					sint32 member = ((IClassInterpret *)_SelfClass.get())->getStaticMemberIndex(NLIAAGENT::CStringVarName(_LasAffectationVarStr.front().data()));
+					sint32 member = ((IClassInterpret *)_SelfClass.get())->getStaticMemberIndex(NLAIAGENT::CStringVarName(_LasAffectationVarStr.front().data()));
 					if(member < 0)
 					{
-						NLIAAGENT::IObjectIA *i;
+						NLAIAGENT::IObjectIA *i;
 						if(_ExpressionType->satisfied())
 						{
-							IOpType * c= new COperandSimple(new NLIAC::CIdentType(*_ExpressionType->getConstraintTypeOf()));
+							IOpType * c= new COperandSimple(new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf()));
 							c->incRef();
 							i = new CObjectUnknown(c);
 							i->incRef();
@@ -248,7 +248,7 @@ namespace NLIASCRIPT
 						COperationTypeGD *dg = new COperationTypeGD();
 						dg->setOperationD(constr);
 						dg->setOperationG(_ExpressionType);
-						dg->setOp(NLIAC::CTypeOfOperator::opAff);
+						dg->setOp(NLAIC::CTypeOfOperator::opAff);
 						dg->incRef();
 						_ConstraintType.push_back(dg);						
 						_ExpressionType = NULL;						
@@ -277,7 +277,7 @@ namespace NLIASCRIPT
 						COperationTypeGD *dg = new COperationTypeGD();
 						dg->setOperationD(c);
 						dg->setOperationG(_ExpressionType);
-						dg->setOp(NLIAC::CTypeOfOperator::opAff);
+						dg->setOp(NLAIC::CTypeOfOperator::opAff);
 						dg->incRef();
 						_ConstraintType.push_back(dg);						
 						_ExpressionType = NULL;						
@@ -305,12 +305,12 @@ namespace NLIASCRIPT
 		try
 		{															
 			_LastBloc->addCode(new CAffMemberOpCode(member));
-			COperandSimple *a = new COperandSimple(new NLIAC::CIdentType(base->getStaticMember(member)->getType()));
+			COperandSimple *a = new COperandSimple(new NLAIC::CIdentType(base->getStaticMember(member)->getType()));
 			a->incRef();
 			COperationTypeGD *gd = new COperationTypeGD();
 			gd->setOperationG(a);
 			gd->setOperationD(_ExpressionType);
-			gd->setOp(NLIAC::CTypeOfOperator::opAff);
+			gd->setOp(NLAIC::CTypeOfOperator::opAff);
 			gd->incRef();
 			if(gd->satisfied())
 			{
@@ -360,28 +360,28 @@ namespace NLIASCRIPT
 		return isValidateVarName(_SelfClass.get(),ref,listName,type);
 	}
 	
-	sint32 CCompilateur::isValidateVarName(const NLIAAGENT::IObjectIA *base,std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &listName,IOpType *&type)
+	sint32 CCompilateur::isValidateVarName(const NLAIAGENT::IObjectIA *base,std::list<sint32> &ref,std::list<NLIASCRIPT::CStringType> &listName,IOpType *&type)
 	{		
-		NLIAAGENT::CStringVarName varName(listName.back().data());
+		NLAIAGENT::CStringVarName varName(listName.back().data());
 		sint32 h;
 		listName.pop_back();
 		type = NULL;		
-		const NLIAAGENT::IObjectIA *baseClass = getValidateHierarchyBase(base,ref,h,listName);		
+		const NLAIAGENT::IObjectIA *baseClass = getValidateHierarchyBase(base,ref,h,listName);		
 
 		if(baseClass)
 		{		
 			sint32 i = baseClass->getStaticMemberIndex(varName);
 			if(i>=0)
 			{				
-				const NLIAAGENT::IObjectIA *c = baseClass->getStaticMember(i);
-				/*if((const NLIAC::CTypeOfObject &)baseClass->getType() & NLIAC::CTypeOfObject::tAgentInterpret) 
+				const NLAIAGENT::IObjectIA *c = baseClass->getStaticMember(i);
+				/*if((const NLAIC::CTypeOfObject &)baseClass->getType() & NLAIC::CTypeOfObject::tAgentInterpret) 
 				{
 					i += getCompementShift((IClassInterpret *)baseClass);
 				}*/
 				if(c != NULL)
 				{
 					ref.push_back(i);					
-					type = new COperandSimple(new NLIAC::CIdentType(c->getType()));
+					type = new COperandSimple(new NLAIC::CIdentType(c->getType()));
 					type->incRef();
 					return true;
 				}
@@ -417,13 +417,13 @@ namespace NLIASCRIPT
 			case varTypeLocal:
 				if(!_LastFact.IsUsed)
 				{												
-					if(((NLIAAGENT::IObjectIA	*)_LastFact.ValueVar)->getType() == CVarPStackParam::IdVarPStackParam)
+					if(((NLAIAGENT::IObjectIA	*)_LastFact.ValueVar)->getType() == CVarPStackParam::IdVarPStackParam)
 					{
-						_LastBloc->addCode(new CLdbRefOpCode ( ((CVarPStackParam *)((NLIAAGENT::IObjectIA *)_LastFact.ValueVar))->getIndex()));
+						_LastBloc->addCode(new CLdbRefOpCode ( ((CVarPStackParam *)((NLAIAGENT::IObjectIA *)_LastFact.ValueVar))->getIndex()));
 					}
 					else 
 					{
-						_LastBloc->addCode(new CLdbOpCode (*((NLIAAGENT::IObjectIA *)_LastFact.ValueVar)));
+						_LastBloc->addCode(new CLdbOpCode (*((NLAIAGENT::IObjectIA *)_LastFact.ValueVar)));
 					}											
 					_LastFact.IsUsed = true;
 				}
@@ -494,7 +494,7 @@ namespace NLIASCRIPT
 
 	void CCompilateur::nameMethodeProcessing()
 	{	
-		NLIAAGENT::IBaseGroupType *g = new NLIAAGENT::CGroupType;
+		NLAIAGENT::IBaseGroupType *g = new NLAIAGENT::CGroupType;
 		g->incRef();
 		_LastStringParam.push_back(g);		
 		
@@ -502,7 +502,7 @@ namespace NLIASCRIPT
 		while(i != _LasVarStr.end())
 		{
 			NLIASCRIPT::CStringType &s = *i++;
-			g->cpy(NLIAAGENT::CStringType(NLIAAGENT::CStringVarName(s.data())));
+			g->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(s.data())));
 		}
 	}
 
@@ -510,15 +510,15 @@ namespace NLIASCRIPT
 	{
 		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
 		//c->buildVTable();
-		const NLIAAGENT::IVarName &className = *c->getClassName();		
+		const NLAIAGENT::IVarName &className = *c->getClassName();		
 #ifdef _DEBUG
 	className.getString();
 	_ConstraintType.size();
 #endif
-		NLIAC::CIdentType id(className.getString(),(const NLIAC::IClassCFactory &)CClassInterpretFactory(c), 
-							NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tAgentInterpret), NLIAC::CTypeOfOperator(0));
+		NLAIC::CIdentType id(className.getString(),(const NLAIC::IClassCFactory &)CClassInterpretFactory(c), 
+							NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret), NLAIC::CTypeOfOperator(0));
 
-		c->setType(new NLIAC::CIdentType(id));
+		c->setType(new NLAIC::CIdentType(id));
 	}
 
 	bool CCompilateur::computContraint()
@@ -568,7 +568,7 @@ namespace NLIASCRIPT
 		if( isRun || isSend )
 		{
 			CParam p;			
-			COperandSimple *x = new COperandSimple(new NLIAC::CIdentType("Message"));
+			COperandSimple *x = new COperandSimple(new NLAIC::CIdentType("Message"));
 			x->incRef();
 			p.push(x);						
 			
@@ -614,11 +614,11 @@ namespace NLIASCRIPT
 		_Heap.setShift(_DecalageHeap);
 		CVarPStackParam::_Shift = _DecalageHeap;
 
-		NLIAAGENT::CStringType* debugStringAttrib;
-		NLIAAGENT::CGroupType* debugAttrib;
+		NLAIAGENT::CStringType* debugStringAttrib;
+		NLAIAGENT::CGroupType* debugAttrib;
 		if (_Debug)
 		{
-			debugAttrib = new NLIAAGENT::CGroupType();
+			debugAttrib = new NLAIAGENT::CGroupType();
 			debugAttrib->incRef();
 		}
 
@@ -648,7 +648,7 @@ namespace NLIASCRIPT
 			if (_Debug)
 			{
 				// We store the function var name;
-				debugStringAttrib = new NLIAAGENT::CStringType(*(_Attrib.back().first));
+				debugStringAttrib = new NLAIAGENT::CStringType(*(_Attrib.back().first));
 				debugStringAttrib->incRef();
 				debugAttrib->pushFront(debugStringAttrib);
 			}
@@ -723,7 +723,7 @@ namespace NLIASCRIPT
 	//sint32 i = _TypeList.size();
 #endif
 		CBagOfCode *sendOp = NULL;
-		NLIAAGENT::CStringType *s = (NLIAAGENT::CStringType *)_LastStringParam.back()->get();
+		NLAIAGENT::CStringType *s = (NLAIAGENT::CStringType *)_LastStringParam.back()->get();
 		if(	!strcmp(s->getStr().getString(),_SEND_) && _Param.back()->size() == 1)
 		{			
 			_LastBloc->addCode(new CNopOpCode());
@@ -751,11 +751,11 @@ namespace NLIASCRIPT
 		}
 		else
 		{
-			NLIAAGENT::CStringType *name = (NLIAAGENT::CStringType *)(_LastStringParam.back()->getFront());
-			NLIAAGENT::IObjectIA *var = getVar(name->getStr().getString());
+			NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *)(_LastStringParam.back()->getFront());
+			NLAIAGENT::IObjectIA *var = getVar(name->getStr().getString());
 			if(var)
 			{
-				((NLIAAGENT::IObjectIA *)_LastStringParam.back()->popFront())->release();
+				((NLAIAGENT::IObjectIA *)_LastStringParam.back()->popFront())->release();
 				_LastTypeCall = CConstraintMethode::heapCall;
 				_LastPosHeap = ((CVarPStackParam *)var)->getIndex();
 				_LastbaseClass = (IOpType *)((const CObjectUnknown *)((CVarPStackParam *)var)->getObject())->getBaseType();
@@ -785,9 +785,9 @@ namespace NLIASCRIPT
 		b->addConstraint(c);
 		if(sendOp != NULL)
 		{
-			NLIAAGENT::IBaseGroupType *nameRun = (NLIAAGENT::IBaseGroupType *)_LastStringParam.back()->clone();
-			((NLIAAGENT::IObjectIA *)nameRun->pop())->release();
-			nameRun->cpy(NLIAAGENT::CStringType ((NLIAAGENT::CStringVarName(_RUN_))));
+			NLAIAGENT::IBaseGroupType *nameRun = (NLAIAGENT::IBaseGroupType *)_LastStringParam.back()->clone();
+			((NLAIAGENT::IObjectIA *)nameRun->pop())->release();
+			nameRun->cpy(NLAIAGENT::CStringType ((NLAIAGENT::CStringVarName(_RUN_))));
 			nameRun->incRef();
 #ifdef _DEBUG	
 	nameRun->getDebugString(mName);
@@ -867,7 +867,7 @@ namespace NLIASCRIPT
 		setNewLine();
 		if (_Debug)
 		{
-			_LastBloc->addCode(new CAddParamNameDebug(NLIAAGENT::CGroupType()));			
+			_LastBloc->addCode(new CAddParamNameDebug(NLAIAGENT::CGroupType()));			
 		}
 	}
 
@@ -875,7 +875,7 @@ namespace NLIASCRIPT
 	{
 		_ResultCompile = getCode(true);
 		bool state = computContraint();
-		((NLIAAGENT::IObjectIA *)_SelfClass.pop())->release();
+		((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
 		return state;
 	}
 }

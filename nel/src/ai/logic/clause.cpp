@@ -23,9 +23,9 @@
 #include "logic/valueset.h"
 #include "logic/fo_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CClause::CClause()
 	{
@@ -95,14 +95,14 @@ namespace NLIALOGIC
 		}
 	}
 
-	const NLIAC::IBasicType *CClause::clone() const
+	const NLAIC::IBasicType *CClause::clone() const
 	{
 		CClause *clone = new CClause( *this );
 		clone->incRef();
 		return clone;
 	}	
 	
-	const NLIAC::IBasicType *CClause::newInstance() const
+	const NLAIC::IBasicType *CClause::newInstance() const
 	{
 		CClause *instance = new CClause();
 		instance->incRef();

@@ -1,7 +1,7 @@
 /** \file fuzzyrule.cpp
  * Fuzzy rules
  *
- * $Id: fuzzyrule.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzyrule.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "fuzzy/fuzzyvar.h"
 
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 
 	CFuzzyRule::CFuzzyRule(char *comment)
@@ -42,7 +42,7 @@ namespace NLIAFUZZY
 			_Comment = NULL;
 	}
 
-	CFuzzyRule::CFuzzyRule(std::list<NLIALOGIC::IBaseBoolType *> &conds, char *comment, float threshold) : NLIALOGIC::CondAnd( conds )
+	CFuzzyRule::CFuzzyRule(std::list<NLAILOGIC::IBaseBoolType *> &conds, char *comment, float threshold) : NLAILOGIC::CondAnd( conds )
 	{
 		_Threshold = threshold;
 
@@ -55,7 +55,7 @@ namespace NLIAFUZZY
 			_Comment = NULL;
 	}
 
-	CFuzzyRule::CFuzzyRule(const CFuzzyRule &cp) : NLIALOGIC::CondAnd(cp)
+	CFuzzyRule::CFuzzyRule(const CFuzzyRule &cp) : NLAILOGIC::CondAnd(cp)
 	{
 		_Threshold = cp._Threshold;
 
@@ -68,7 +68,7 @@ namespace NLIAFUZZY
 			_Comment = NULL;
 	}
 
-	CFuzzyRule::CFuzzyRule(const NLIALOGIC::CondAnd &cp) : NLIALOGIC::CondAnd(cp)
+	CFuzzyRule::CFuzzyRule(const NLAILOGIC::CondAnd &cp) : NLAILOGIC::CondAnd(cp)
 	{
 	}
 
@@ -155,13 +155,13 @@ namespace NLIAFUZZY
 		is.serial( nb_sets );
 		for (sint32 i = 0; i < nb_sets; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id_var;
+			NLAIC::CIdentTypeAlloc id_var;
 			is.serial( id_var );
 			CFuzzyVar *tmp_var = (CFuzzyVar *) id_var.allocClass();
 			tmp_var->load( is );
 			_Vars.push_back( tmp_var );
 
-			NLIAC::CIdentTypeAlloc id_set;
+			NLAIC::CIdentTypeAlloc id_set;
 			is.serial( id_set );
 			IFuzzySet *tmp_set = (IFuzzySet *) id_set.allocClass();
 			tmp_set->load( is );
@@ -169,21 +169,21 @@ namespace NLIAFUZZY
 		}
 	}
 
-	const NLIAC::IBasicType *CFuzzyRule::clone() const
+	const NLAIC::IBasicType *CFuzzyRule::clone() const
 	{
 		CFuzzyRule *tmp = new CFuzzyRule( *this );
 		tmp->incRef();
-		return (NLIAC::IBasicType *) tmp;
+		return (NLAIC::IBasicType *) tmp;
 	}
 
-	const NLIAC::IBasicType *CFuzzyRule::newInstance() const
+	const NLAIC::IBasicType *CFuzzyRule::newInstance() const
 	{
 		CFuzzyRule *tmp = new CFuzzyRule();
 		tmp->incRef();
-		return (NLIAC::IBasicType *) tmp;
+		return (NLAIC::IBasicType *) tmp;
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CFuzzyRule::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CFuzzyRule::run()
 	{
 		double cond_value;
 		if ( ( cond_value = truthValue() ) > 0 )
@@ -196,7 +196,7 @@ namespace NLIAFUZZY
 		return IObjectIA::ProcessRun;
 	}
 
-	bool CFuzzyRule::isEqual(const NLIAAGENT::IBasicObjectIA &) const
+	bool CFuzzyRule::isEqual(const NLAIAGENT::IBasicObjectIA &) const
 	{
 		// TODO
 		return false;
@@ -207,21 +207,21 @@ namespace NLIAFUZZY
 		return ( truthValue() > _Threshold );
 	}
 
-	const NLIAC::CIdentType &CFuzzyRule::getType() const
+	const NLAIC::CIdentType &CFuzzyRule::getType() const
 	{
 		return IdFuzzyRule;
 	}
 
-	NLIAAGENT::IObjetOp *CFuzzyRule::operator== (NLIAAGENT::IObjetOp &) const
+	NLAIAGENT::IObjetOp *CFuzzyRule::operator== (NLAIAGENT::IObjetOp &) const
 	{
-		NLIALOGIC::CBoolFalse *x = new NLIALOGIC::CBoolFalse;
+		NLAILOGIC::CBoolFalse *x = new NLAILOGIC::CBoolFalse;
 		x->incRef();
 		return x;
 	}
 
-	void CFuzzyRule::init(NLIAAGENT::IObjectIA *p)
+	void CFuzzyRule::init(NLAIAGENT::IObjectIA *p)
 	{		
-		NLIALOGIC::CondAnd *cond = (NLIALOGIC::CondAnd *) ((NLIAAGENT::IBaseGroupType *)p)->popFront();
+		NLAILOGIC::CondAnd *cond = (NLAILOGIC::CondAnd *) ((NLAIAGENT::IBaseGroupType *)p)->popFront();
 		cond->release();
 	}
 }

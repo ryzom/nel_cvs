@@ -28,9 +28,9 @@
 #include "logic/factbase.h"
 #include "logic/fo_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CFirstOrderOperator::CFirstOrderOperator()
 	{
@@ -471,14 +471,14 @@ namespace NLIALOGIC
 	}
 
 
-	const NLIAC::IBasicType *CFirstOrderOperator::clone() const
+	const NLAIC::IBasicType *CFirstOrderOperator::clone() const
 	{
 		CFirstOrderOperator *clone = new CFirstOrderOperator( *this );
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CFirstOrderOperator::newInstance() const
+	const NLAIC::IBasicType *CFirstOrderOperator::newInstance() const
 	{
 		CFirstOrderOperator *instance = new CFirstOrderOperator;
 		instance->incRef();
@@ -562,7 +562,7 @@ namespace NLIALOGIC
 		return false;
 	}
 
-	const NLIAC::CIdentType &CFirstOrderOperator::getType() const
+	const NLAIC::CIdentType &CFirstOrderOperator::getType() const
 	{
 		return IdCFirstOrderOperator;
 	}

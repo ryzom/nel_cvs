@@ -1,6 +1,6 @@
 /** \file constraint_type.cpp
  *
- * $Id: constraint_type.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: constraint_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLIASCRIPT
 		if(_Ident == NULL)
 		{
 			_Constraint->run(c);
-			_Ident = (NLIAC::CIdentType *)((CConstraintMethode *)_Constraint)->getConstraintTypeOf();
+			_Ident = (NLAIC::CIdentType *)((CConstraintMethode *)_Constraint)->getConstraintTypeOf();
 		}
 		runConnexcion();
 	}
@@ -61,7 +61,7 @@ namespace NLIASCRIPT
 		{
 			//_Constraint = NULL;
 			_RunIsDone = true;
-			_Ident = (NLIAC::CIdentType *)((CConstraintMethode *)c)->getConstraintTypeOf();
+			_Ident = (NLAIC::CIdentType *)((CConstraintMethode *)c)->getConstraintTypeOf();
 		}				
 	}
 

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: baseia.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,7 +160,7 @@ namespace NLAIAGENT
 	{
 		char text[2048*8];
 		sprintf(text,"operator <IObjectIA &operator = (const IObjectIA &a)> note implementaited for the '%s' interface",(const char *)getType());
-		throw NLIAE::CExceptionNotImplemented(text);
+		throw NLAIE::CExceptionNotImplemented(text);
 		return *this;	
 	}
 
@@ -169,7 +169,7 @@ namespace NLAIAGENT
 	{
 		char text[2048*8];
 		sprintf(text,"sint32 IObjectIA::getStaticMemberSize() note implementaited for the '%s' interface",(const char *)getType());
-		throw NLIAE::CExceptionNotImplemented(text);
+		throw NLAIE::CExceptionNotImplemented(text);
 		return 0;	
 	}
 
@@ -187,7 +187,7 @@ namespace NLAIAGENT
 	{
 		char text[2048*8];
 		sprintf(text,"Function void IObjectIA::setStaticMember(sint32,IObjectIA *) note implementaited for the '%s' interface",(const char *)getType());
-		throw NLIAE::CExceptionNotImplemented(text);
+		throw NLAIE::CExceptionNotImplemented(text);
 	}
 
 	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
@@ -221,7 +221,7 @@ namespace NLAIAGENT
 	{
 		/*char text[2048*8];
 		sprintf(text,"method  runMethodeMember(sint32 h, sint32 id,const IObjectIA &) not implemented for the '%s' interface",(const char *)getType());
-		throw NLIAE::CExceptionNotImplemented(text);
+		throw NLAIE::CExceptionNotImplemented(text);
 		return CProcessResult();*/
 		return IObjectIA::runMethodeMember(id,a);
 	}
@@ -246,7 +246,7 @@ namespace NLAIAGENT
 	{
 		char text[2048*8];
 		sprintf(text,"method 'sendMessage(const IObjectIA &)' '%s' interface", (const char *)getType());
-		throw NLIAE::CExceptionNotImplemented(text);
+		throw NLAIE::CExceptionNotImplemented(text);
 		return CProcessResult();
 	}
 

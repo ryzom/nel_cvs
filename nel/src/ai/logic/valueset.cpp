@@ -23,9 +23,9 @@
 #include "logic/clause.h"
 #include "logic/ia_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	const TProcessStatement CValueSet::state = processIdle;
 
@@ -337,19 +337,19 @@ namespace NLIALOGIC
 		return result;
 	}
 
-	const NLIAC::IBasicType *CValueSet::clone() const
+	const NLAIC::IBasicType *CValueSet::clone() const
 	{
-		NLIAC::IBasicType *tmp = new CValueSet( *this );
+		NLAIC::IBasicType *tmp = new CValueSet( *this );
 		tmp->incRef();
 		return tmp;
 	}
 
-	const NLIAC::IBasicType *CValueSet::newInstance() const
+	const NLAIC::IBasicType *CValueSet::newInstance() const
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CValueSet::getType() const
+	const NLAIC::CIdentType &CValueSet::getType() const
 	{
 		return IdValueSet;
 	}
@@ -377,7 +377,7 @@ namespace NLIALOGIC
 
 		while ( it_val != values.end() )
 		{
-			os.serial( (NLIAC::CIdentType &) ( *it_val )->getType() );
+			os.serial( (NLAIC::CIdentType &) ( *it_val )->getType() );
 			( *it_val )->save( os );
 			sint32 ip = (sint32) *it_pos;
 			os.serial( ip );
@@ -412,7 +412,7 @@ namespace NLIALOGIC
 
 		for ( i = 0; i < nbvals; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IObjetOp *tmp_val = (IObjetOp *) id.allocClass();
 			tmp_val->load( is );

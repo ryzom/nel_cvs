@@ -25,49 +25,49 @@
 
 namespace NLIASCRIPT
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 
-	COperatorClass::COperatorClass(const NLIAAGENT::IVarName &n) : CAgentClass(n)
+	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
-//		setBaseMethodCount(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());		
-//		setBaseObjectInstance(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+//		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());		
+//		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 	}
 	
-	COperatorClass::COperatorClass(const NLIAC::CIdentType &id): CAgentClass(id)
+	COperatorClass::COperatorClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
-//		setBaseMethodCount(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
-//		setBaseObjectInstance(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+//		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
+//		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 	}
 
-	COperatorClass::COperatorClass(const NLIAAGENT::IVarName &n, const NLIAAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
-//		setBaseMethodCount(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
-//		setBaseObjectInstance(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+//		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
+//		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 	}
 
 	COperatorClass::COperatorClass(const COperatorClass &c) : CAgentClass( c )
 	{
-//		setBaseMethodCount(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
-//		setBaseObjectInstance(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
+//		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
+//		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 	}	
 
 	COperatorClass::COperatorClass()
 	{
-//		setBaseMethodCount(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
-//		setBaseObjectInstance(((NLIAAGENT::COperatorScript *)(NLIAAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));
+//		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
+//		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));
 	}
 
-	const NLIAC::IBasicType *COperatorClass::clone() const
+	const NLAIC::IBasicType *COperatorClass::clone() const
 	{
-		NLIAC::IBasicType *clone = new COperatorClass(*this);
+		NLAIC::IBasicType *clone = new COperatorClass(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *COperatorClass::newInstance() const
+	const NLAIC::IBasicType *COperatorClass::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new COperatorClass();
+		NLAIC::IBasicType *instance = new COperatorClass();
 		instance->incRef();
 		return instance;
 	}
@@ -76,14 +76,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::IObjectIA *COperatorClass::buildNewInstance() const
+	NLAIAGENT::IObjectIA *COperatorClass::buildNewInstance() const
 	{
 		// Création des composants statiques
-		/*std::list<NLIAAGENT::IObjectIA *> components;
+		/*std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
 		// Création du message
-		NLIALOGIC::COperatorScript *instance;// = new NLIAAGENT::COperatorScript( components,  (COperatorClass *) this );
+		NLAILOGIC::COperatorScript *instance;// = new NLAIAGENT::COperatorScript( components,  (COperatorClass *) this );
 		instance->incRef();
 
 		return instance;*/

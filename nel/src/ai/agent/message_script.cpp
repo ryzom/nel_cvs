@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: message_script.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,12 +85,12 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 
 		if ( inheritance >= _MessageClass->sizeVTable())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return (NLIASCRIPT::IOpCode &)_MessageClass->getBrancheCode(inheritance,index).getCode();
@@ -101,7 +101,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= _MessageClass->getMethodIndexSize())
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return (NLIASCRIPT::IOpCode &)_MessageClass->getBrancheCode(index).getCode();
@@ -207,7 +207,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= size() )
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		CVectorGroupType *a = (CVectorGroupType *)getMessageGroup();
@@ -221,7 +221,7 @@ namespace NLAIAGENT
 #ifdef _DEBUG
 		if ( index >= size() )
 		{
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 #endif
 		return (*this)[ index ];		

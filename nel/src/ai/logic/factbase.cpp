@@ -25,9 +25,9 @@
 #include "logic/fact.h"
 #include "logic/valueset.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 	
 	CFactBase::CFactBase()
 	{
@@ -112,7 +112,7 @@ namespace NLIALOGIC
 			assert->removeFact( fp );
 	}
 
-	const NLIAC::IBasicType *CFactBase::clone() const
+	const NLAIC::IBasicType *CFactBase::clone() const
 	{
 		CFactBase *result = new CFactBase;
 		std::list<IBaseAssert *>::const_iterator it_a = _Asserts.begin();
@@ -124,14 +124,14 @@ namespace NLIALOGIC
 		result->incRef();
 		return result;
 	}
-	const NLIAC::IBasicType *CFactBase::newInstance() const
+	const NLAIC::IBasicType *CFactBase::newInstance() const
 	{
 		CFactBase *instance = new CFactBase();
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CFactBase::getType() const
+	const NLAIC::CIdentType &CFactBase::getType() const
 	{
 		return IdFactBase;
 	}
@@ -144,7 +144,7 @@ namespace NLIALOGIC
 		std::list<IBaseAssert *>::const_iterator it_a = _Asserts.begin();
 		while ( it_a != _Asserts.end() )
 		{
-			os.serial( (NLIAC::CIdentType &) (*it_a)->getType() );
+			os.serial( (NLAIC::CIdentType &) (*it_a)->getType() );
 			(*it_a)->save( os );
 			it_a++;
 		}
@@ -158,7 +158,7 @@ namespace NLIALOGIC
 		is.serial( nb_asserts );
 		for (sint32 i = 0; i < nb_asserts; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IBaseAssert *tmp_val = (IBaseAssert *) id.allocClass();
 			tmp_val->load( is );

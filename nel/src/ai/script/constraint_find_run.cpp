@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NLIASCRIPT
 {	
 
 	CConstraintFindRun::CConstraintFindRun(	CConstraintMethode::TCallTypeOpCode callType,
-											int posHeap,IConstraint *baseClass,	NLIAAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
+											int posHeap,IConstraint *baseClass,	NLAIAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
 											CConstraintMethode(searchCall,posHeap,baseClass,methodName,param,lin,col),_TypeOfCallType(callType)						
 	{		
 	}
@@ -52,8 +52,8 @@ namespace NLIASCRIPT
 			if(!_BaseClass->satisfied()) _BaseClass->run(c);
 			if(_BaseClass->satisfied())
 			{
-				const NLIAAGENT::IObjectIA *cl = (const NLIAAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
-				if(!(( (const NLIAC::CTypeOfObject &)cl->getType() ) & NLIAC::CTypeOfObject::tAgentInterpret))
+				const NLAIAGENT::IObjectIA *cl = (const NLAIAGENT::IObjectIA *)(_BaseClass->getConstraintTypeOf()->getFactory())->getClass();
+				if(!(( (const NLAIC::CTypeOfObject &)cl->getType() ) & NLAIC::CTypeOfObject::tAgentInterpret))
 				{
 					_Satisfied = true;
 					_MethodName->incRef();

@@ -26,9 +26,9 @@
 #include "logic/fo_operator.h"
 #include "logic/fact.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 	
 	
 	IBaseAssert::IBaseAssert(const IVarName &n )

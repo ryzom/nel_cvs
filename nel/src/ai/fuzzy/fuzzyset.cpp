@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzyset.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 #include "fuzzy/fuzzyset.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	
 	void IFuzzySet::addFact(double value)
@@ -86,17 +86,17 @@ namespace NLIAFUZZY
 		_Max = cp._Max;
 	}
 
-	void CFuzzyInterval::init(NLIAAGENT::IObjectIA *params)
+	void CFuzzyInterval::init(NLAIAGENT::IObjectIA *params)
 	{
-		if ( ((NLIAAGENT::IBaseGroupType *)params)->size() != 3 ) 
+		if ( ((NLAIAGENT::IBaseGroupType *)params)->size() != 3 ) 
 		{
 		//	throw Exc::
 		}
-		NLIAAGENT::IObjectIA  * arg = (NLIAAGENT::IObjectIA  *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_Min = (double) ((NLIAAGENT::DigitalType *) arg )->getValue();
+		NLAIAGENT::IObjectIA  * arg = (NLAIAGENT::IObjectIA  *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_Min = (double) ((NLAIAGENT::DigitalType *) arg )->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA  *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_Max = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA  *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_Max = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -127,20 +127,20 @@ namespace NLIAFUZZY
 	}
 
 
-	const NLIAC::IBasicType *CFuzzyInterval::clone() const 
+	const NLAIC::IBasicType *CFuzzyInterval::clone() const 
 	{
 		CFuzzyInterval *clone = new CFuzzyInterval( *this );
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CFuzzyInterval::newInstance() const	{
-		NLIAC::IBasicType *instance = new CFuzzyInterval( *this );
+	const NLAIC::IBasicType *CFuzzyInterval::newInstance() const	{
+		NLAIC::IBasicType *instance = new CFuzzyInterval( *this );
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CFuzzyInterval::getType() const
+	const NLAIC::CIdentType &CFuzzyInterval::getType() const
 	{
 		return IdFuzzyInterval;
 	}
@@ -161,14 +161,14 @@ namespace NLIAFUZZY
 		sprintf(txt,"%s [%f , %f]", _Name, _Min, _Max);
 	}
 
-	bool CFuzzyInterval::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CFuzzyInterval::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((CFuzzyInterval &)a)._Min == _Min && ((CFuzzyInterval &)a)._Max == _Max );
 	}
 	
-	const NLIAAGENT::IObjectIA::CProcessResult &CFuzzyInterval::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CFuzzyInterval::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,20 +189,20 @@ namespace NLIAFUZZY
 		_X3 = cp._X3;
 	}
 
-	void CRightFuzzySet::init(NLIAAGENT::IObjectIA *params)
+	void CRightFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
-		if ( ((NLIAAGENT::IBaseGroupType *)params)->size() != 3 ) 
+		if ( ((NLAIAGENT::IBaseGroupType *)params)->size() != 3 ) 
 		{
 		//	throw Exc::
 		}
-		NLIAAGENT::IObjectIA *arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -235,20 +235,20 @@ namespace NLIAFUZZY
 		return ( ( (_X1 + _X2) /4 + (_X2 + _X3) /2 ) /1.5);
 	}
 
-	const NLIAC::IBasicType *CRightFuzzySet::clone() const
+	const NLAIC::IBasicType *CRightFuzzySet::clone() const
 	{ 
 		CRightFuzzySet *clone = new CRightFuzzySet( *this );
 		clone->incRef();
 		return clone;
 	}
-	const NLIAC::IBasicType *CRightFuzzySet::newInstance() const
+	const NLAIC::IBasicType *CRightFuzzySet::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CRightFuzzySet( *this );
+		NLAIC::IBasicType *instance = new CRightFuzzySet( *this );
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CRightFuzzySet::getType() const
+	const NLAIC::CIdentType &CRightFuzzySet::getType() const
 	{
 		return IdRightFuzzySet;
 	}
@@ -270,25 +270,25 @@ namespace NLIAFUZZY
 		sprintf(txt,"CRightFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
-	bool CRightFuzzySet::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CRightFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((CRightFuzzySet &)a)._X1 == _X1 && 
 				 ((CRightFuzzySet &)a)._X2 == _X2 && 
 				 ((CRightFuzzySet &)a)._X3 == _X3 );
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CRightFuzzySet::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CRightFuzzySet::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 
 /*
-	const NLIAC::CIdentType CompositeiFuzzySet::idCompositeiFuzzySet = NLIAC::CIdentType("CompositeiFuzzySet",NLIAC::CSelfClassCFactory(CompositeiFuzzySet()),
-		NLIAC::CTypeOfObject::tObject,
-		NLIAC::CTypeOfOperator::opAdd |
-		NLIAC::CTypeOfOperator::opSub |
-		NLIAC::CTypeOfOperator::opEq );
+	const NLAIC::CIdentType CompositeiFuzzySet::idCompositeiFuzzySet = NLAIC::CIdentType("CompositeiFuzzySet",NLAIC::CSelfClassCFactory(CompositeiFuzzySet()),
+		NLAIC::CTypeOfObject::tObject,
+		NLAIC::CTypeOfOperator::opAdd |
+		NLAIC::CTypeOfOperator::opSub |
+		NLAIC::CTypeOfOperator::opEq );
 	
 	CompositeiFuzzySet::CompositeiFuzzySet()
 	{
@@ -339,22 +339,22 @@ namespace NLIAFUZZY
 		return 0.0;
 	}
 
-	bool CompositeiFuzzySet::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CompositeiFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return false;
 	}
 
-	const NLIAC::IBasicType *CompositeiFuzzySet::clone() const 
+	const NLAIC::IBasicType *CompositeiFuzzySet::clone() const 
 	{
 		return new CompositeiFuzzySet( *this );
 	}
 
-	const NLIAC::IBasicType *CompositeiFuzzySet::newInstance() const
+	const NLAIC::IBasicType *CompositeiFuzzySet::newInstance() const
 	{
 		return new CompositeiFuzzySet( *this ); 
 	}
 
-	const NLIAC::CIdentType &CompositeiFuzzySet::getType() const
+	const NLAIC::CIdentType &CompositeiFuzzySet::getType() const
 	{
 		return idCompositeiFuzzySet;
 	}
@@ -374,7 +374,7 @@ namespace NLIAFUZZY
 
 	const TProcessStatement &CompositeiFuzzySet::run()
 	{
-		return NLIAAGENT::IObjectIA::AgentIdle;
+		return NLAIAGENT::IObjectIA::AgentIdle;
 	}
 */
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -396,23 +396,23 @@ namespace NLIAFUZZY
 		_X3 = cp._X3;
 	}
 
-	void CTriangleFuzzySet::init(NLIAAGENT::IObjectIA *params)
+	void CTriangleFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
-		sint32 i = ((NLIAAGENT::IBaseGroupType *)params)->size();
+		sint32 i = ((NLAIAGENT::IBaseGroupType *)params)->size();
 		if ( i != 3 ) 
 		{
 		//	throw Exc::
 		}
-		NLIAAGENT::IObjectIA *arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -449,20 +449,20 @@ namespace NLIAFUZZY
 				 / (_X3 - _X1);
 	}
 
-	const NLIAC::IBasicType *CTriangleFuzzySet::clone() const
+	const NLAIC::IBasicType *CTriangleFuzzySet::clone() const
 	{
 		CTriangleFuzzySet *clone = new CTriangleFuzzySet( *this );
 		clone->incRef();
 		return clone;
 	}
-	const NLIAC::IBasicType *CTriangleFuzzySet::newInstance() const
+	const NLAIC::IBasicType *CTriangleFuzzySet::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CTriangleFuzzySet( *this );
+		NLAIC::IBasicType *instance = new CTriangleFuzzySet( *this );
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CTriangleFuzzySet::getType() const
+	const NLAIC::CIdentType &CTriangleFuzzySet::getType() const
 	{
 		return IdTriangleFuzzySet;
 	}
@@ -486,14 +486,14 @@ namespace NLIAFUZZY
 		sprintf(txt,"CTriangleFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
-	bool CTriangleFuzzySet::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CTriangleFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((CTriangleFuzzySet &)a)._X1 == _X1 && ((CTriangleFuzzySet &)a)._X2 == _X2 && ((CTriangleFuzzySet &)a)._X3 == _X3 );
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CTriangleFuzzySet::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CTriangleFuzzySet::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -514,23 +514,23 @@ namespace NLIAFUZZY
 		_X3 = cp._X3;
 	}
 
-	void CLeftFuzzySet::init(NLIAAGENT::IObjectIA *params)
+	void CLeftFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
-		if ( ((NLIAAGENT::IBaseGroupType *)params)->size() != 3 ) 
+		if ( ((NLAIAGENT::IBaseGroupType *)params)->size() != 3 ) 
 		{
 		//	throw Exc::
 		}
 		
-		NLIAAGENT::IObjectIA *arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
 	}
 
@@ -566,20 +566,20 @@ namespace NLIAFUZZY
 		return ( ( (_X1 + _X2) /2 + (_X2 + _X3) /4 ) /1.5);
 	}
 
-	const NLIAC::IBasicType *CLeftFuzzySet::clone() const
+	const NLAIC::IBasicType *CLeftFuzzySet::clone() const
 	{ 
 		CLeftFuzzySet *clone = new CLeftFuzzySet( *this );
 		clone->incRef();
 		return clone;
 	}
-	const NLIAC::IBasicType *CLeftFuzzySet::newInstance() const
+	const NLAIC::IBasicType *CLeftFuzzySet::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CLeftFuzzySet( *this );
+		NLAIC::IBasicType *instance = new CLeftFuzzySet( *this );
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CLeftFuzzySet::getType() const
+	const NLAIC::CIdentType &CLeftFuzzySet::getType() const
 	{
 		return IdLeftFuzzySet;
 	}
@@ -601,14 +601,14 @@ namespace NLIAFUZZY
 		sprintf(txt,"CLeftFuzzySet %s [%f , %f , %f]", _Name, _X1, _X2, _X3);
 	}
 	
-	bool CLeftFuzzySet::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CLeftFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((CLeftFuzzySet &)a)._X1 == _X1 && ((CLeftFuzzySet &)a)._X2 == _X2 && ((CLeftFuzzySet &)a)._X3 == _X3 );
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CLeftFuzzySet::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CLeftFuzzySet::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -632,23 +632,23 @@ namespace NLIAFUZZY
 		_X4 = cp._X4;
 	}
 
-	void CTrapezeFuzzySet::init(NLIAAGENT::IObjectIA *params)
+	void CTrapezeFuzzySet::init(NLAIAGENT::IObjectIA *params)
 	{
-		if ( ((NLIAAGENT::IBaseGroupType *)params)->size() != 3 ) 
+		if ( ((NLAIAGENT::IBaseGroupType *)params)->size() != 3 ) 
 		{
 		//	throw Exc::
 		}
-		NLIAAGENT::IObjectIA *arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X1 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		NLAIAGENT::IObjectIA *arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X1 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X2 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X2 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X3 = (double) ((NLIAAGENT::DigitalType *) arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X3 = (double) ((NLAIAGENT::DigitalType *) arg)->getValue();
 		arg->release();
-		arg = (NLIAAGENT::IObjectIA *) ((NLIAAGENT::IBaseGroupType *)params)->popFront();
-		_X4 = (double) ((NLIAAGENT::DigitalType *)arg)->getValue();
+		arg = (NLAIAGENT::IObjectIA *) ((NLAIAGENT::IBaseGroupType *)params)->popFront();
+		_X4 = (double) ((NLAIAGENT::DigitalType *)arg)->getValue();
 		arg->release();
 
 	}
@@ -691,20 +691,20 @@ namespace NLIAFUZZY
 		//return ( _X2 - _X1 ) /2 + ( _X3 - _X2 ) /4;
 	}
 
-	const NLIAC::IBasicType *CTrapezeFuzzySet::clone() const
+	const NLAIC::IBasicType *CTrapezeFuzzySet::clone() const
 	{ 
 		CTrapezeFuzzySet *clone = new CTrapezeFuzzySet( *this );
 		clone->incRef();
 		return clone;
 	}
-	const NLIAC::IBasicType *CTrapezeFuzzySet::newInstance() const
+	const NLAIC::IBasicType *CTrapezeFuzzySet::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CTrapezeFuzzySet( *this );
+		NLAIC::IBasicType *instance = new CTrapezeFuzzySet( *this );
 		instance->incRef();
 		return instance;
 	}
 
-	const NLIAC::CIdentType &CTrapezeFuzzySet::getType() const
+	const NLAIC::CIdentType &CTrapezeFuzzySet::getType() const
 	{
 		return IdTrapezeFuzzySet;
 	}
@@ -727,7 +727,7 @@ namespace NLIAFUZZY
 		sprintf(txt,"CTrapezeFuzzySet %s [%f , %f , %f , %f]", _Name, _X1, _X2, _X3, _X4);
 	}
 	
-	bool CTrapezeFuzzySet::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CTrapezeFuzzySet::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((CTrapezeFuzzySet &)a)._X1 == _X1 && 
 				 ((CTrapezeFuzzySet &)a)._X2 == _X2 && 
@@ -735,8 +735,8 @@ namespace NLIAFUZZY
 				 ((CTrapezeFuzzySet &)a)._X4 == _X4 );
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CTrapezeFuzzySet::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CTrapezeFuzzySet::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 }

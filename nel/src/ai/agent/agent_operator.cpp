@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: agent_operator.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include "agent/agentexport.h"
 #include "agent/agent_operator.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	tQueue IObjetOp::isMember(const IVarName *className, const IVarName *name, const IObjectIA &params) const
@@ -41,39 +41,39 @@ namespace NLIAAGENT
 		{
 			if ( *name == CStringVarName("operator+") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opAdd,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opAdd,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator-") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opSub,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSub,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator*") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opMul,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opMul,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator==") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opDiv,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiv,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator!") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opNeg,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opNeg,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator==") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opEq,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opEq,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator<=") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opInfEq,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opInfEq,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator>=") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opSupEq,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSupEq,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName("operator!=") )
 			{
-				result.push( CIdMethod(NLIAC::CTypeOfOperator::opDiff,0.0,NULL,NULL) );
+				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiff,0.0,NULL,NULL) );
 			}
 		}
 		
@@ -82,7 +82,7 @@ namespace NLIAAGENT
 
 	sint32 IObjetOp::getMethodIndexSize() const
 	{
-		return IObjectIA::getMethodIndexSize() + NLIAC::CTypeOfOperator::opAff;
+		return IObjectIA::getMethodIndexSize() + NLAIC::CTypeOfOperator::opAff;
 	}
 
 	// Executes a method from its index id and with its parameters
@@ -100,27 +100,27 @@ namespace NLIAAGENT
 
 		switch ( index ) 
 		{
-			case NLIAC::CTypeOfOperator::opAdd:
+			case NLAIC::CTypeOfOperator::opAdd:
 				r.Result = (IObjectIA *) &( (*this) += ( * (IObjetOp *) x) );
 				break;
 
-			case NLIAC::CTypeOfOperator::opSub:
+			case NLAIC::CTypeOfOperator::opSub:
 				r.Result = (IObjectIA *) &( (*this) -= ( * (IObjetOp *) x) );
 				break;
 
-			case NLIAC::CTypeOfOperator::opMul:
+			case NLAIC::CTypeOfOperator::opMul:
 				r.Result = (IObjectIA *) &( (*this) *= ( * (IObjetOp *) x) );
 				break;
 
-			case NLIAC::CTypeOfOperator::opDiv:
+			case NLAIC::CTypeOfOperator::opDiv:
 				r.Result = (IObjectIA *) &( (*this) /= ( * (IObjetOp *) x) );
 				break;
 
-			case NLIAC::CTypeOfOperator::opNot:
+			case NLAIC::CTypeOfOperator::opNot:
 				r.Result = (IObjectIA *) ( !(*this)  );
 				break;
 
-			case NLIAC::CTypeOfOperator::opEq:
+			case NLAIC::CTypeOfOperator::opEq:
 				r.Result = (IObjectIA *) ( (*this) == ( * (IObjetOp *) x ) );
 				break;
 		}

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: group_type.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "script/interpret_methodes.h"
 #include "agent/agent_method_def.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	const static sint32 _Const = 0;
@@ -81,7 +81,7 @@ namespace NLIAAGENT
 			{
 				if(*methodName == IBaseGroupType::_Method[i].MethodName)
 				{					
-					CObjectType *c = new CObjectType(new NLIAC::CIdentType(NLIAC::CIdentType::VoidType));
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 					c->incRef();					
 					a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));					
 					break;
@@ -220,7 +220,7 @@ namespace NLIAAGENT
 
 	IObjetOp *CGroupType::operator ! () const
 	{		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(!size());
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!size());
 		x->incRef();
 		return x;
 	}
@@ -228,7 +228,7 @@ namespace NLIAAGENT
 	IObjectIA &CGroupType::operator = (const IObjectIA &a)
 	{		
 		clear();
-		if((uint)(((const NLIAC::CTypeOfObject &)a.getType()) & NLIAC::CTypeOfObject::tList))
+		if((uint)(((const NLAIC::CTypeOfObject &)a.getType()) & NLAIC::CTypeOfObject::tList))
 		{
 			const CGroupType &g= (const CGroupType &)a;
 			tListType::const_iterator i = g._List.begin();
@@ -264,7 +264,7 @@ namespace NLIAAGENT
 		(*it_l) = o;
 	}
 
-	const NLIAC::CIdentType &CGroupType::getType() const		
+	const NLAIC::CIdentType &CGroupType::getType() const		
 	{		
 		return IdGroupType;
 	}
@@ -496,21 +496,21 @@ namespace NLIAAGENT
 		return true;
 	}
 
-	const NLIAC::IBasicType *CGroupType::clone() const
+	const NLAIC::IBasicType *CGroupType::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CGroupType(*this);
+		NLAIC::IBasicInterface *m = new CGroupType(*this);
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CGroupType::newInstance() const
+	const NLAIC::IBasicType *CGroupType::newInstance() const
 	{
-		NLIAC::IBasicInterface *m = new CGroupType();
+		NLAIC::IBasicInterface *m = new CGroupType();
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::CIdentType &CGroupType::getType() const;		
+	const NLAIC::CIdentType &CGroupType::getType() const;		
 
 	void CGroupType::save(NLMISC::IStream &os)
 	{	
@@ -520,7 +520,7 @@ namespace NLIAAGENT
 		while(i != _List.end())
 		{
 			IObjectIA *o= (IObjectIA *)*i++;
-			os.serial( (NLIAC::CIdentType &) o->getType() );
+			os.serial( (NLAIC::CIdentType &) o->getType() );
 			o->save(os);
 		}			
 	}
@@ -530,8 +530,8 @@ namespace NLIAAGENT
 		tListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
-			const NLIAC::CTypeOfOperator &op = (const NLIAC::CTypeOfOperator &)(*i)->getType();
-			if((uint32)(op & NLIAC::CTypeOfOperator::opNeg)) ((IObjetOp *)(*i))->neg();
+			const NLAIC::CTypeOfOperator &op = (const NLAIC::CTypeOfOperator &)(*i)->getType();
+			if((uint32)(op & NLAIC::CTypeOfOperator::opNeg)) ((IObjetOp *)(*i))->neg();
 			i++;
 		}
 		return *this;	
@@ -542,16 +542,16 @@ namespace NLIAAGENT
 		sint32 i;
 		while(_List.size())
 		{
-			NLIAC::IBasicInterface * o = (NLIAC::IBasicInterface *)_List.front();
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_List.front();
 			o->release();
 			_List.pop_front();
 		}
 		is.serial( i );
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		while(i--)
 		{				
 			is.serial( id );
-			NLIAC::IBasicInterface *o = (NLIAC::IBasicInterface *)id.allocClass();				
+			NLAIC::IBasicInterface *o = (NLAIC::IBasicInterface *)id.allocClass();				
 			o->load(is);
 			_List.push_back((const IObjectIA *)o);
 				
@@ -562,7 +562,7 @@ namespace NLIAAGENT
 	{
 		while(_List.size())
 		{
-			NLIAC::IBasicInterface * o = (NLIAC::IBasicInterface *)_List.front();
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_List.front();
 			o->release();
 			_List.pop_front();
 		}
@@ -590,7 +590,7 @@ namespace NLIAAGENT
 
 	IObjetOp *CVectorGroupType::operator ! () const
 	{		
-		NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(!size());
+		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!size());
 		x->incRef();
 		return x;
 	}
@@ -598,7 +598,7 @@ namespace NLIAAGENT
 	IObjectIA &CVectorGroupType::operator = (const IObjectIA &a)
 	{		
 		clear();
-		if((uint)(((const NLIAC::CTypeOfObject &)a.getType()) & NLIAC::CTypeOfObject::tList))
+		if((uint)(((const NLAIC::CTypeOfObject &)a.getType()) & NLAIC::CTypeOfObject::tList))
 		{
 			const CVectorGroupType &g= (const CVectorGroupType &)a;
 			tVectorType::const_iterator i = g._Vector.begin();
@@ -612,7 +612,7 @@ namespace NLIAAGENT
 		return *this;
 	}
 
-	const NLIAC::CIdentType &CVectorGroupType::getType() const		
+	const NLAIC::CIdentType &CVectorGroupType::getType() const		
 	{		
 		return IdVectorGroupType;
 	}
@@ -862,21 +862,21 @@ namespace NLIAAGENT
 		return true;
 	}
 
-	const NLIAC::IBasicType *CVectorGroupType::clone() const
+	const NLAIC::IBasicType *CVectorGroupType::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CVectorGroupType(*this);
+		NLAIC::IBasicInterface *m = new CVectorGroupType(*this);
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CVectorGroupType::newInstance() const
+	const NLAIC::IBasicType *CVectorGroupType::newInstance() const
 	{
-		NLIAC::IBasicInterface *m = new CVectorGroupType();
+		NLAIC::IBasicInterface *m = new CVectorGroupType();
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::CIdentType &CVectorGroupType::getType() const;		
+	const NLAIC::CIdentType &CVectorGroupType::getType() const;		
 
 	void CVectorGroupType::save(NLMISC::IStream &os)
 	{	
@@ -886,7 +886,7 @@ namespace NLIAAGENT
 		while(i != _Vector.end())
 		{
 			IObjectIA *o= (IObjectIA *)*i++;
-			os.serial( (NLIAC::CIdentType &) o->getType() );
+			os.serial( (NLAIC::CIdentType &) o->getType() );
 			o->save(os);
 		}			
 	}
@@ -896,8 +896,8 @@ namespace NLIAAGENT
 		tVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
-			const NLIAC::CTypeOfOperator &op = (const NLIAC::CTypeOfOperator &)(*i)->getType();
-			if((uint32)(op & NLIAC::CTypeOfOperator::opNeg)) ((IObjetOp *)(*i))->neg();
+			const NLAIC::CTypeOfOperator &op = (const NLAIC::CTypeOfOperator &)(*i)->getType();
+			if((uint32)(op & NLAIC::CTypeOfOperator::opNeg)) ((IObjetOp *)(*i))->neg();
 			i++;
 		}
 		return *this;	
@@ -908,16 +908,16 @@ namespace NLIAAGENT
 		sint32 i;
 		while(_Vector.size())
 		{
-			NLIAC::IBasicInterface * o = (NLIAC::IBasicInterface *)_Vector.front();
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();
 			o->release();
 			_Vector.erase( _Vector.begin() );
 		}
 		is.serial( i );
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		while(i--)
 		{				
 			is.serial( id );
-			NLIAC::IBasicInterface *o = (NLIAC::IBasicInterface *)id.allocClass();				
+			NLAIC::IBasicInterface *o = (NLAIC::IBasicInterface *)id.allocClass();				
 			o->load(is);
 			_Vector.push_back((const IObjectIA *)o);
 				
@@ -928,7 +928,7 @@ namespace NLIAAGENT
 	{
 		while(_Vector.size())
 		{
-			NLIAC::IBasicInterface * o = (NLIAC::IBasicInterface *)_Vector.front();
+			NLAIC::IBasicInterface * o = (NLAIC::IBasicInterface *)_Vector.front();
 			o->release();
 			_Vector.erase( _Vector.begin() );
 		}
@@ -947,7 +947,7 @@ namespace NLIAAGENT
 			if(*methodName == IBaseGroupType::_Method[0].MethodName)
 			{				
 				
-				CObjectType *c = new CObjectType(new NLIAC::CIdentType(NLIAC::CIdentType::VoidType));
+				CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 				c->incRef();					
 				a.push(CIdMethod(_Const + IBaseGroupType::getMethodIndexSize(),0.0,NULL,c));				
 			}

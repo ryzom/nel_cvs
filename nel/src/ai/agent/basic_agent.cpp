@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  */
 #include "agent/agent.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	
@@ -127,7 +127,7 @@ namespace NLIAAGENT
 		while(i != _AgentList.end())
 		{
 			IBasicAgent &a = *(*i++);
-			os.serial( (NLIAC::CIdentType &) a.getType() );
+			os.serial( (NLAIC::CIdentType &) a.getType() );
 			a.save(os);			
 		}
 	}
@@ -136,7 +136,7 @@ namespace NLIAAGENT
 	{			
 		deleteListe();
 		IBasicAgent::load(is);
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		sint32 i;			
 		
 		is.serial(i);

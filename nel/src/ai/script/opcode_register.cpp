@@ -1,6 +1,6 @@
 /** \file opcode_register.cpp
  *
- * $Id: opcode_register.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: opcode_register.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,229 +29,229 @@
 namespace NLIASCRIPT
 {
 
-const NLIAC::CIdentType CLdbOpCode::IdLdbOpCode = NLIAC::CIdentType("LdbOpCode",
-																NLIAC::CSelfClassCFactory(CLdbOpCode(NLIAAGENT::DigitalType(0.0))),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbOpCode::IdLdbOpCode = NLAIC::CIdentType("LdbOpCode",
+																NLAIC::CSelfClassCFactory(CLdbOpCode(NLAIAGENT::DigitalType(0.0))),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 std::list<sint32> l;
 
-const NLIAC::CIdentType CLdbMemberiOpCode::IdLdbMemberiOpCode = NLIAC::CIdentType("LdbMemberiOpCode",
-																NLIAC::CSelfClassCFactory(CLdbMemberiOpCode(l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbMemberiOpCode::IdLdbMemberiOpCode = NLAIC::CIdentType("LdbMemberiOpCode",
+																NLAIC::CSelfClassCFactory(CLdbMemberiOpCode(l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CLdbStackMemberiOpCode::IdLdbStackMemberiOpCode = NLIAC::CIdentType("LdbStackMemberiOpCode",
-																NLIAC::CSelfClassCFactory(CLdbStackMemberiOpCode(l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbStackMemberiOpCode::IdLdbStackMemberiOpCode = NLAIC::CIdentType("LdbStackMemberiOpCode",
+																NLAIC::CSelfClassCFactory(CLdbStackMemberiOpCode(l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CLdbHeapMemberiOpCode::IdLdbHeapMemberiOpCode = NLIAC::CIdentType("LdbHeapMemberiOpCode",
-																NLIAC::CSelfClassCFactory(CLdbHeapMemberiOpCode(l,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbHeapMemberiOpCode::IdLdbHeapMemberiOpCode = NLAIC::CIdentType("LdbHeapMemberiOpCode",
+																NLAIC::CSelfClassCFactory(CLdbHeapMemberiOpCode(l,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CLdbMemberOpCode::IdLdbMemberOpCode = NLIAC::CIdentType("LdbMemberOpCode",
-																NLIAC::CSelfClassCFactory(CLdbMemberOpCode(0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbMemberOpCode::IdLdbMemberOpCode = NLAIC::CIdentType("LdbMemberOpCode",
+																NLAIC::CSelfClassCFactory(CLdbMemberOpCode(0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 
-const NLIAC::CIdentType CLdbNewOpCode::IdLdbNewOpCode = NLIAC::CIdentType("LdbNewOpCode",
-																NLIAC::CSelfClassCFactory(CLdbNewOpCode(NLIAAGENT::DigitalType(0.0))),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbNewOpCode::IdLdbNewOpCode = NLAIC::CIdentType("LdbNewOpCode",
+																NLAIC::CSelfClassCFactory(CLdbNewOpCode(NLAIAGENT::DigitalType(0.0))),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 CLdbRefOpCode iLdbRefOpCode(0);
-const NLIAC::CIdentType CLdbRefOpCode::IdLdbRefOpCode = NLIAC::CIdentType("LdbRefOpCode",
-																	NLIAC::CSelfClassCFactory(iLdbRefOpCode),
-																	NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLdbRefOpCode::IdLdbRefOpCode = NLAIC::CIdentType("LdbRefOpCode",
+																	NLAIC::CSelfClassCFactory(iLdbRefOpCode),
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CNegOpCode::IdNegOpCode = NLIAC::CIdentType("NegOpCode",
-																NLIAC::CSelfClassCFactory(CNegOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CNegOpCode::IdNegOpCode = NLAIC::CIdentType("NegOpCode",
+																NLAIC::CSelfClassCFactory(CNegOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CAddOpCode::IdAddOpCode = NLIAC::CIdentType("AddOpCode",
-																NLIAC::CSelfClassCFactory(CAddOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CAddOpCode::IdAddOpCode = NLAIC::CIdentType("AddOpCode",
+																NLAIC::CSelfClassCFactory(CAddOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CSubOpCode::IdSubOpCode = NLIAC::CIdentType("SubOpCode",
-																NLIAC::CSelfClassCFactory(CSubOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CSubOpCode::IdSubOpCode = NLAIC::CIdentType("SubOpCode",
+																NLAIC::CSelfClassCFactory(CSubOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CDivOpCode::IdDivOpCode = NLIAC::CIdentType("DivOpCode",
-																NLIAC::CSelfClassCFactory(CDivOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CDivOpCode::IdDivOpCode = NLAIC::CIdentType("DivOpCode",
+																NLAIC::CSelfClassCFactory(CDivOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CMulOpCode::IdMulOpCode = NLIAC::CIdentType("MulOpCode",
-																NLIAC::CSelfClassCFactory(CMulOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CMulOpCode::IdMulOpCode = NLAIC::CIdentType("MulOpCode",
+																NLAIC::CSelfClassCFactory(CMulOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CSupOpCode::IdSupOpCode = NLIAC::CIdentType("SupOpCode",
-																NLIAC::CSelfClassCFactory(CSupOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CSupOpCode::IdSupOpCode = NLAIC::CIdentType("SupOpCode",
+																NLAIC::CSelfClassCFactory(CSupOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CInfOpCode::IdInfOpCode = NLIAC::CIdentType("InfOpCode",
-																NLIAC::CSelfClassCFactory(CInfOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CInfOpCode::IdInfOpCode = NLAIC::CIdentType("InfOpCode",
+																NLAIC::CSelfClassCFactory(CInfOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CEqOpCode::IdEqOpCode = NLIAC::CIdentType("EqOpCode",
-															NLIAC::CSelfClassCFactory(CEqOpCode()),
-															NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CEqOpCode::IdEqOpCode = NLAIC::CIdentType("EqOpCode",
+															NLAIC::CSelfClassCFactory(CEqOpCode()),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CSupEqOpCode::IdSupEqOpCode = NLIAC::CIdentType("SupEqOpCode",
-																	NLIAC::CSelfClassCFactory(CSupEqOpCode()),
-																	NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CSupEqOpCode::IdSupEqOpCode = NLAIC::CIdentType("SupEqOpCode",
+																	NLAIC::CSelfClassCFactory(CSupEqOpCode()),
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CInfEqOpCode::IdInfEqOpCode = NLIAC::CIdentType("InfEqOpCode",
-																	NLIAC::CSelfClassCFactory(CInfEqOpCode()),
-																	NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CInfEqOpCode::IdInfEqOpCode = NLAIC::CIdentType("InfEqOpCode",
+																	NLAIC::CSelfClassCFactory(CInfEqOpCode()),
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CDiffOpCode::IdDiffOpCode = NLIAC::CIdentType("DiffOpCode",
-																NLIAC::CSelfClassCFactory(CDiffOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CDiffOpCode::IdDiffOpCode = NLAIC::CIdentType("DiffOpCode",
+																NLAIC::CSelfClassCFactory(CDiffOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CNotOpCode::IdNotOpCode = NLIAC::CIdentType("NotOpCode",
-																NLIAC::CSelfClassCFactory(CNotOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CNotOpCode::IdNotOpCode = NLAIC::CIdentType("NotOpCode",
+																NLAIC::CSelfClassCFactory(CNotOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CJFalseOpCode::IdJFalseOpCode = NLIAC::CIdentType("JFalseOpCode",
-																	NLIAC::CSelfClassCFactory(CJFalseOpCode(-1)),
-																	NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CJFalseOpCode::IdJFalseOpCode = NLAIC::CIdentType("JFalseOpCode",
+																	NLAIC::CSelfClassCFactory(CJFalseOpCode(-1)),
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CJmpOpCode::IdJmpOpCode = NLIAC::CIdentType("JmpOpCode",
-																NLIAC::CSelfClassCFactory(CJmpOpCode(-1)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CJmpOpCode::IdJmpOpCode = NLAIC::CIdentType("JmpOpCode",
+																NLAIC::CSelfClassCFactory(CJmpOpCode(-1)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CAffOpCode::IdAffOpCode = NLIAC::CIdentType("AffOpCode",
-																NLIAC::CSelfClassCFactory(CAffOpCode(-1)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CAffOpCode::IdAffOpCode = NLAIC::CIdentType("AffOpCode",
+																NLAIC::CSelfClassCFactory(CAffOpCode(-1)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CAffOpCodeDebug::IdAffOpCodeDebug = NLIAC::CIdentType("AffOpCodeDebug",
-																NLIAC::CSelfClassCFactory(CAffOpCodeDebug(-1," ")),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CAffOpCodeDebug::IdAffOpCodeDebug = NLAIC::CIdentType("AffOpCodeDebug",
+																NLAIC::CSelfClassCFactory(CAffOpCodeDebug(-1," ")),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CAffMemberOpCode::IdAffMemberOpCode = NLIAC::CIdentType("AffMemberOpCode",
-																NLIAC::CSelfClassCFactory(CAffMemberOpCode(-1)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-
-const NLIAC::CIdentType CAffMemberiOpCode::IdAffMemberiOpCode = NLIAC::CIdentType("AffMemberiOpCode",
-																NLIAC::CSelfClassCFactory(CAffMemberiOpCode(l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CAffHeapMemberiOpCode::IdAffHeapMemberiOpCode = NLIAC::CIdentType("AffHeapMemberiOpCode",
-																NLIAC::CSelfClassCFactory(CAffHeapMemberiOpCode(l,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLocAlloc::IdLocAlloc = NLIAC::CIdentType("LocAlloc",
-															NLIAC::CSelfClassCFactory(CLocAlloc()),
-															NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLocAllocDebug::IdLocAllocDebug = NLIAC::CIdentType("LocAllocDebug",
-															NLIAC::CSelfClassCFactory(CLocAllocDebug()),
-															NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CMarkAlloc::IdMarkAlloc = NLIAC::CIdentType(	"MarkAlloc",
-																NLIAC::CSelfClassCFactory(CMarkAlloc()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CFreeAlloc::IdFreeAlloc = NLIAC::CIdentType(	"FreeAlloc",
-																NLIAC::CSelfClassCFactory(CFreeAlloc()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CFreeAllocDebug::IdFreeAllocDebug = NLIAC::CIdentType(	"FreeAllocDebug",
-																NLIAC::CSelfClassCFactory(CFreeAllocDebug()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CNopOpCode::IdNopOpCode = NLIAC::CIdentType(	"NopOpCode",
-																NLIAC::CSelfClassCFactory(CNopOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CHaltOpCode::IdHaltOpCode = NLIAC::CIdentType(	"HaltOpCode",
-																NLIAC::CSelfClassCFactory(CHaltOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CCallMethod::IdCallMethode = NLIAC::CIdentType("CallMethode",
-																NLIAC::CSelfClassCFactory(CCallMethod(new CMethodContext(),0,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CCallMethodi::IdCallMethodei = NLIAC::CIdentType("CallMethodei",
-																NLIAC::CSelfClassCFactory(CCallMethodi(new CMethodContext(),0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CCallHeapMethodi::IdCallHeapMethodei = NLIAC::CIdentType("CallHeapMethodei",
-																NLIAC::CSelfClassCFactory(CCallHeapMethodi(new CMethodContext(),0,0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CCallStackNewMethodi::IdCallStackNewMethodei = NLIAC::CIdentType("CallStackNewMethodei",																			 
-																NLIAC::CSelfClassCFactory(CCallStackNewMethodi(new CMethodContext(),0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CAffMemberOpCode::IdAffMemberOpCode = NLAIC::CIdentType("AffMemberOpCode",
+																NLAIC::CSelfClassCFactory(CAffMemberOpCode(-1)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 
-const NLIAC::CIdentType CCallStackMethodi::IdCallStackMethodei = NLIAC::CIdentType("CallStackMethodei",																			 
-																NLIAC::CSelfClassCFactory(CCallStackMethodi(new CMethodContext(),0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CAffMemberiOpCode::IdAffMemberiOpCode = NLAIC::CIdentType("AffMemberiOpCode",
+																NLAIC::CSelfClassCFactory(CAffMemberiOpCode(l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CAffHeapMemberiOpCode::IdAffHeapMemberiOpCode = NLAIC::CIdentType("AffHeapMemberiOpCode",
+																NLAIC::CSelfClassCFactory(CAffHeapMemberiOpCode(l,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLocAlloc::IdLocAlloc = NLAIC::CIdentType("LocAlloc",
+															NLAIC::CSelfClassCFactory(CLocAlloc()),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLocAllocDebug::IdLocAllocDebug = NLAIC::CIdentType("LocAllocDebug",
+															NLAIC::CSelfClassCFactory(CLocAllocDebug()),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CMarkAlloc::IdMarkAlloc = NLAIC::CIdentType(	"MarkAlloc",
+																NLAIC::CSelfClassCFactory(CMarkAlloc()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CFreeAlloc::IdFreeAlloc = NLAIC::CIdentType(	"FreeAlloc",
+																NLAIC::CSelfClassCFactory(CFreeAlloc()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CFreeAllocDebug::IdFreeAllocDebug = NLAIC::CIdentType(	"FreeAllocDebug",
+																NLAIC::CSelfClassCFactory(CFreeAllocDebug()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CNopOpCode::IdNopOpCode = NLAIC::CIdentType(	"NopOpCode",
+																NLAIC::CSelfClassCFactory(CNopOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CHaltOpCode::IdHaltOpCode = NLAIC::CIdentType(	"HaltOpCode",
+																NLAIC::CSelfClassCFactory(CHaltOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CCallMethod::IdCallMethode = NLAIC::CIdentType("CallMethode",
+																NLAIC::CSelfClassCFactory(CCallMethod(new CMethodContext(),0,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CCallMethodi::IdCallMethodei = NLAIC::CIdentType("CallMethodei",
+																NLAIC::CSelfClassCFactory(CCallMethodi(new CMethodContext(),0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CCallHeapMethodi::IdCallHeapMethodei = NLAIC::CIdentType("CallHeapMethodei",
+																NLAIC::CSelfClassCFactory(CCallHeapMethodi(new CMethodContext(),0,0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CCallStackNewMethodi::IdCallStackNewMethodei = NLAIC::CIdentType("CallStackNewMethodei",																			 
+																NLAIC::CSelfClassCFactory(CCallStackNewMethodi(new CMethodContext(),0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 
-const NLIAC::CIdentType CLibMemberMethod::IdLibMemberMethod = NLIAC::CIdentType("LibMemberMethod",
-																NLIAC::CSelfClassCFactory(CLibMemberMethod(0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibMemberInheritedMethod::IdLibMemberInheritedMethod = NLIAC::CIdentType("LibMemberInheritedMethod",
-																NLIAC::CSelfClassCFactory(CLibMemberInheritedMethod( 0,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibMemberMethodi::IdLibMemberMethodi = NLIAC::CIdentType("LibMemberMethodi",
-																NLIAC::CSelfClassCFactory(CLibMemberMethodi( 0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibCallMethod::IdLibCallMethod = NLIAC::CIdentType("LibCallMethod",
-																NLIAC::CSelfClassCFactory(CLibCallMethod(0,CCallPrint())),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibCallInheritedMethod::IdLibCallInheritedMethod = NLIAC::CIdentType("LibCallInheritedMethod",
-																NLIAC::CSelfClassCFactory(CLibCallInheritedMethod( 0,0,CCallPrint())),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibCallMethodi::IdLibCallMethodi = NLIAC::CIdentType("LibCallMethodi",
-																NLIAC::CSelfClassCFactory(CLibCallMethodi( 0,0,l,CCallPrint())),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibStackMemberMethod::IdLibStackMemberMethod = NLIAC::CIdentType("LibStackMemberMethod",
-																NLIAC::CSelfClassCFactory(CLibStackMemberMethod( 0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibStackNewMemberMethod::IdLibStackNewMemberMethod = NLIAC::CIdentType("LibStackNewMemberMethod",
-																NLIAC::CSelfClassCFactory(CLibStackNewMemberMethod( 0,0,l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-
-const NLIAC::CIdentType CLibHeapMemberMethod::IdLibHeapMemberMethod = NLIAC::CIdentType("LibHeapMemberMethod",
-																NLIAC::CSelfClassCFactory(CLibHeapMemberMethod( 0,0,l,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CCallStackMethodi::IdCallStackMethodei = NLAIC::CIdentType("CallStackMethodei",																			 
+																NLAIC::CSelfClassCFactory(CCallStackMethodi(new CMethodContext(),0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 
-const NLIAC::CIdentType CTellOpCode::IdTellOpCode = NLIAC::CIdentType("TellOpCode",
-																NLIAC::CSelfClassCFactory(CTellOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-const NLIAC::CIdentType CMakeArgOpCode::IdMakeArgOpCode = NLIAC::CIdentType("MakeArgOpCode",
-																NLIAC::CSelfClassCFactory(CMakeArgOpCode()),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-const NLIAC::CIdentType CMarkMsg::IdMarkMsg = NLIAC::CIdentType("MarkMsg",
-																NLIAC::CSelfClassCFactory(CMarkMsg(0,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLibMemberMethod::IdLibMemberMethod = NLAIC::CIdentType("LibMemberMethod",
+																NLAIC::CSelfClassCFactory(CLibMemberMethod(0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CFindRunMsg::IdFindRunMsg = NLIAC::CIdentType("FindRunMsg",
-																NLIAC::CSelfClassCFactory(CFindRunMsg(NLIAAGENT::CGroupType(),CParam(),COperandVoid(),CLoadSelfObject()) ),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLibMemberInheritedMethod::IdLibMemberInheritedMethod = NLAIC::CIdentType("LibMemberInheritedMethod",
+																NLAIC::CSelfClassCFactory(CLibMemberInheritedMethod( 0,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-const NLIAC::CIdentType CAddParamNameDebug::IdAddParamNameDebug = NLIAC::CIdentType("AddParamNameDebug",
-																NLIAC::CSelfClassCFactory(CAddParamNameDebug(NLIAAGENT::CGroupType())),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLibMemberMethodi::IdLibMemberMethodi = NLAIC::CIdentType("LibMemberMethodi",
+																NLAIC::CSelfClassCFactory(CLibMemberMethodi( 0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibCallMethod::IdLibCallMethod = NLAIC::CIdentType("LibCallMethod",
+																NLAIC::CSelfClassCFactory(CLibCallMethod(0,CCallPrint())),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibCallInheritedMethod::IdLibCallInheritedMethod = NLAIC::CIdentType("LibCallInheritedMethod",
+																NLAIC::CSelfClassCFactory(CLibCallInheritedMethod( 0,0,CCallPrint())),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibCallMethodi::IdLibCallMethodi = NLAIC::CIdentType("LibCallMethodi",
+																NLAIC::CSelfClassCFactory(CLibCallMethodi( 0,0,l,CCallPrint())),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibStackMemberMethod::IdLibStackMemberMethod = NLAIC::CIdentType("LibStackMemberMethod",
+																NLAIC::CSelfClassCFactory(CLibStackMemberMethod( 0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibStackNewMemberMethod::IdLibStackNewMemberMethod = NLAIC::CIdentType("LibStackNewMemberMethod",
+																NLAIC::CSelfClassCFactory(CLibStackNewMemberMethod( 0,0,l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CLibHeapMemberMethod::IdLibHeapMemberMethod = NLAIC::CIdentType("LibHeapMemberMethod",
+																NLAIC::CSelfClassCFactory(CLibHeapMemberMethod( 0,0,l,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 
-const NLIAC::CIdentType CLoadSelfObject::IdLoadSelfObject = NLIAC::CIdentType("LoadSelfObject",
-																NLIAC::CSelfClassCFactory(CLoadSelfObject(l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-const NLIAC::CIdentType CLoadStackObject::IdLoadSelfObject = NLIAC::CIdentType("LoadStackObject",
-																NLIAC::CSelfClassCFactory(CLoadStackObject(l)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
-const NLIAC::CIdentType CLoadHeapObject::IdLoadHeapObject = NLIAC::CIdentType("LoadHeapObject",
-																NLIAC::CSelfClassCFactory(CLoadHeapObject(l,0)),
-																NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+const NLAIC::CIdentType CTellOpCode::IdTellOpCode = NLAIC::CIdentType("TellOpCode",
+																NLAIC::CSelfClassCFactory(CTellOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+const NLAIC::CIdentType CMakeArgOpCode::IdMakeArgOpCode = NLAIC::CIdentType("MakeArgOpCode",
+																NLAIC::CSelfClassCFactory(CMakeArgOpCode()),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+const NLAIC::CIdentType CMarkMsg::IdMarkMsg = NLAIC::CIdentType("MarkMsg",
+																NLAIC::CSelfClassCFactory(CMarkMsg(0,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CFindRunMsg::IdFindRunMsg = NLAIC::CIdentType("FindRunMsg",
+																NLAIC::CSelfClassCFactory(CFindRunMsg(NLAIAGENT::CGroupType(),CParam(),COperandVoid(),CLoadSelfObject()) ),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+const NLAIC::CIdentType CAddParamNameDebug::IdAddParamNameDebug = NLAIC::CIdentType("AddParamNameDebug",
+																NLAIC::CSelfClassCFactory(CAddParamNameDebug(NLAIAGENT::CGroupType())),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+
+
+const NLAIC::CIdentType CLoadSelfObject::IdLoadSelfObject = NLAIC::CIdentType("LoadSelfObject",
+																NLAIC::CSelfClassCFactory(CLoadSelfObject(l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLoadStackObject::IdLoadSelfObject = NLAIC::CIdentType("LoadStackObject",
+																NLAIC::CSelfClassCFactory(CLoadStackObject(l)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+const NLAIC::CIdentType CLoadHeapObject::IdLoadHeapObject = NLAIC::CIdentType("LoadHeapObject",
+																NLAIC::CSelfClassCFactory(CLoadHeapObject(l,0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 }

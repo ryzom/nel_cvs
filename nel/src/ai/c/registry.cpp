@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: registry.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,7 @@ namespace NLAIC
 		{
 			i = getNumIdent(ident);
 		}
-		catch(NLIAE::IException &e)
+		catch(NLAIE::IException &e)
 		{				
 			throw e;
 		}
@@ -100,7 +100,7 @@ namespace NLAIC
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{
-			throw NLIAE::CExceptionUnRegisterClassError((char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError((char *)((const char *)ident));
 		}
 		return t->Index;			
 	}
@@ -113,7 +113,7 @@ namespace NLAIC
 			if ( !strcmp( (const char *)_TableRegistry[i]->NameClass, class_name ) )
 				return i;
 		}
-		throw NLIAE::CExceptionUnRegisterClassError((char *)class_name);
+		throw NLAIE::CExceptionUnRegisterClassError((char *)class_name);
 		return -1;
 	}
 
@@ -131,7 +131,7 @@ namespace NLAIC
 			if ( !strcmp( (const char *)_TableRegistry[i]->NameClass, class_name ) )
 				return _TableRegistry[ i ]->NameClass;
 		}
-		throw NLIAE::CExceptionUnRegisterClassError((char *)class_name );
+		throw NLAIE::CExceptionUnRegisterClassError((char *)class_name );
 	}
 
 	// Creates a new instance from a class using its identifier
@@ -162,7 +162,7 @@ namespace NLAIC
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{
-			throw NLIAE::CExceptionUnRegisterClassError((char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError((char *)((const char *)ident));
 		}
 		return t->FactoryClass;
 	}
@@ -175,9 +175,9 @@ namespace NLAIC
 			CIdentType id(class_name);
 			return id.getFactory();
 		}
-		catch (NLIAE::IException &err)
+		catch (NLAIE::IException &err)
 		{
-			throw NLIAE::CExceptionContainer(err);
+			throw NLAIE::CExceptionContainer(err);
 		}
 		return NULL;
 	}

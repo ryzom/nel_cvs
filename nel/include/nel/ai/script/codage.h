@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.4 2001/01/08 10:47:05 chafik Exp $
+ * $Id: codage.h,v 1.5 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ namespace NLIASCRIPT
 #ifdef _DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
-				throw NLIAE::CExceptionIndexError();
+				throw NLAIE::CExceptionIndexError();
 			}
 #endif			
 			return _Stack[_Sp + _Bp + _Sh];
@@ -193,7 +193,7 @@ namespace NLIASCRIPT
 #ifdef _DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
-				throw NLIAE::CExceptionIndexError();
+				throw NLAIE::CExceptionIndexError();
 			}
 #endif						
 			int i = _Sp + _Bp  + _Sh;
@@ -211,7 +211,7 @@ namespace NLIASCRIPT
 #ifdef _DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
 			{
-				throw NLIAE::CExceptionIndexError();
+				throw NLAIE::CExceptionIndexError();
 			}
 #endif						
 			int n = _Sp + _Bp + _Sh;

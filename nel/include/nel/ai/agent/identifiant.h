@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: identifiant.h,v 1.3 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,12 +65,12 @@ namespace NLAIAGENT
 		\param n The first index to increment.
 		*/		
 
-		void inc(int n) throw (NLIAE::CExceptionIndexError)
+		void inc(int n) throw (NLAIE::CExceptionIndexError)
 		{
 			if (n == getMaxIndex())
 			{
 				// The highest Number as been reach.
-				throw NLIAE::CExceptionIndexError();
+				throw NLAIE::CExceptionIndexError();
 			}
 
 			if (_Id[n] == (uint64)-1)
@@ -116,13 +116,13 @@ namespace NLAIAGENT
 		}
 
 		///increment the number.
-		const CIndexVariant &operator ++(int) throw (NLIAE::CExceptionIndexError)
+		const CIndexVariant &operator ++(int) throw (NLAIE::CExceptionIndexError)
 		{
 			try
 			{
 				inc(0);
 			}
-			catch(NLIAE::IException &e)
+			catch(NLAIE::IException &e)
 			{
 				throw e;
 			}
@@ -206,7 +206,7 @@ namespace NLAIAGENT
 			is.serial(max);
 			/*if(max != getMaxIndex()) 
 			{
-				throw(NLIAE::CExceptionIndexError());
+				throw(NLAIE::CExceptionIndexError());
 			}*/
 
 			for(i = 0; i < getMaxIndex(); i ++)
@@ -408,34 +408,34 @@ namespace NLAIAGENT
 
 		This constroctor allow to reload an IRefrence defined with the CNumericIndex &ref.
 		*/
-		CLocWordNumRef(const CNumericIndex &ref) throw (NLIAE::CExceptionIndexHandeledError):_Id(ref),_Stock(NULL)
+		CLocWordNumRef(const CNumericIndex &ref) throw (NLAIE::CExceptionIndexHandeledError):_Id(ref),_Stock(NULL)
 		{			
 			tMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
 			{				
 				_Stock.setRef((*Itr).second);
 			}
-			else throw NLIAE::CExceptionIndexHandeledError();
+			else throw NLAIE::CExceptionIndexHandeledError();
 		}
 
 		/**
 		Copy Constructor.
 		*/
-		CLocWordNumRef(const CLocWordNumRef &l) throw (NLIAE::CExceptionIndexHandeledError):_Id(l._Id),_Stock(NULL)
+		CLocWordNumRef(const CLocWordNumRef &l) throw (NLAIE::CExceptionIndexHandeledError):_Id(l._Id),_Stock(NULL)
 		{						
 			tMapRef::iterator itr = _LocRefence->find(_Id);
 			if(itr != _LocRefence->end())
 			{
 				_Stock.setRef((*itr).second);
 			}
-			else throw NLIAE::CExceptionIndexHandeledError();
+			else throw NLAIE::CExceptionIndexHandeledError();
 		}
 		
 		/**
 		Copy Constructor.
 		*/
 
-		CLocWordNumRef(NLMISC::IStream &is) throw (NLIAE::CExceptionIndexHandeledError) :_Stock(NULL)
+		CLocWordNumRef(NLMISC::IStream &is) throw (NLAIE::CExceptionIndexHandeledError) :_Stock(NULL)
 		{						
 			load(is);			
 		}
@@ -470,7 +470,7 @@ namespace NLAIAGENT
 		{
 			_Id.save(os);
 		}
-		virtual void load(NLMISC::IStream &is) throw (NLIAE::CExceptionIndexHandeledError)
+		virtual void load(NLMISC::IStream &is) throw (NLAIE::CExceptionIndexHandeledError)
 		{			
 			_Id.load(is);
 			tMapRef::iterator Itr = _LocRefence->find(_Id);
@@ -478,7 +478,7 @@ namespace NLAIAGENT
 			{
 				_Stock.setRef((*Itr).second);
 			}
-			else throw NLIAE::CExceptionIndexHandeledError();
+			else throw NLAIE::CExceptionIndexHandeledError();
 		}
 		//@}
 

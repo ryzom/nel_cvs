@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: identifiant.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: identifiant.cpp,v 1.3 2001/01/08 10:51:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,7 +174,7 @@ namespace NLAIAGENT
 		else
 		{
 			_Index = -1;
-			throw NLIAE::CExceptionIndexError();
+			throw NLAIE::CExceptionIndexError();
 		}
 		
 	}

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: registry_type.h,v 1.3 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,10 +186,10 @@ namespace NLAIC
 	public:
 		/// \name IBasicInterface method.
 		//@{
-		virtual const NLAIC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
+		virtual const NLAIC::CIdentType &getType() const throw (NLAIE::CExceptionUnReference)
 		{
 
-			throw NLIAE::CExceptionUnReference("const CIdentType & CBinaryType::getType()");
+			throw NLAIE::CExceptionUnReference("const CIdentType & CBinaryType::getType()");
 			return NLAIC::CIdentType::VoidType;
 		}
 

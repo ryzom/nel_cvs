@@ -25,9 +25,9 @@
 #include "script/type_def.h"
 
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 	
 
 	IBaseVar::IBaseVar(const IVarName &n)
@@ -158,14 +158,14 @@ namespace NLIALOGIC
 		return _Value;
 	}
 		
-	const NLIAC::IBasicType *CVar::clone() const
+	const NLAIC::IBasicType *CVar::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CVar( *this );
+		NLAIC::IBasicInterface *m = new CVar( *this );
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CVar::newInstance() const
+	const NLAIC::IBasicType *CVar::newInstance() const
 	{
 		return clone();
 	}
@@ -178,7 +178,7 @@ namespace NLIALOGIC
 		{
 			bool val = true;
 			os.serial( (bool &) val );
-			os.serial( (NLIAC::CIdentType &) _Value->getType() );
+			os.serial( (NLAIC::CIdentType &) _Value->getType() );
 			_Value->save(os);
 		}
 		else
@@ -194,7 +194,7 @@ namespace NLIALOGIC
 			_Value->release();
 		IObjetOp::load(is);
 		_Name->load(is);	
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
 		_Value = (CVar *)id.allocClass();
 		_Value->load(is);	
@@ -230,7 +230,7 @@ namespace NLIALOGIC
 		return ( (*(IObjectIA *)tmp._Value) == (*_Value) );
 	}
 
-	const NLIAC::CIdentType &CVar::getType() const
+	const NLAIC::CIdentType &CVar::getType() const
 	{
 		return IdVar;
 	}

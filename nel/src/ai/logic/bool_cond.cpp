@@ -19,9 +19,9 @@
 
 #include "logic/bool_cond.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 	
 	IBaseCond::IBaseCond()
 	{

@@ -1,6 +1,6 @@
 /** \file objects_load.cpp
  *
- * $Id: objects_load.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: objects_load.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,20 +33,20 @@ namespace NLIASCRIPT
 	//*************************************
 	// CLoadSelfObject
 	//*************************************
-	const NLIAAGENT::IBaseGroupType *CLoadSelfObject::getParam(CCodeContext &context) const
+	const NLAIAGENT::IBaseGroupType *CLoadSelfObject::getParam(CCodeContext &context) const
 	{
-		return (const NLIAAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];		
+		return (const NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];		
 	}
 
-	const NLIAAGENT::IObjectIA *CLoadSelfObject::getObject(CCodeContext &context) const
+	const NLAIAGENT::IObjectIA *CLoadSelfObject::getObject(CCodeContext &context) const
 	{
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Self);
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Self);
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())
 		{
 			j = *i++;
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(j);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(j);
 		}			
 		return a;
 	}
@@ -55,20 +55,20 @@ namespace NLIASCRIPT
 	// CLoadStackObject
 	//*************************************
 
-	const NLIAAGENT::IBaseGroupType *CLoadStackObject::getParam(CCodeContext &context) const
+	const NLAIAGENT::IBaseGroupType *CLoadStackObject::getParam(CCodeContext &context) const
 	{
-		return (const NLIAAGENT::IBaseGroupType *)context.Stack[(int)context.Stack - 1];		
+		return (const NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack - 1];		
 	}
 
-	const NLIAAGENT::IObjectIA *CLoadStackObject::getObject(CCodeContext &context) const
+	const NLAIAGENT::IObjectIA *CLoadStackObject::getObject(CCodeContext &context) const
 	{
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)context.Stack;
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Stack;
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())
 		{
 			j = *i++;
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(j);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(j);
 		}
 		return a;
 	}
@@ -76,20 +76,20 @@ namespace NLIASCRIPT
 	//*************************************
 	// CLoadHeapObject
 	//*************************************
-	const NLIAAGENT::IBaseGroupType *CLoadHeapObject::getParam(CCodeContext &context) const
+	const NLAIAGENT::IBaseGroupType *CLoadHeapObject::getParam(CCodeContext &context) const
 	{
-		return (const NLIAAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];		
+		return (const NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];		
 	}
 
-	const NLIAAGENT::IObjectIA *CLoadHeapObject::getObject(CCodeContext &context) const
+	const NLAIAGENT::IObjectIA *CLoadHeapObject::getObject(CCodeContext &context) const
 	{
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)context.Heap[(int)_N];
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())
 		{
 			j = *i++;
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(j);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(j);
 		}
 		return a;
 	}

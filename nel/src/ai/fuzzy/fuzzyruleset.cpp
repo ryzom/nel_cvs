@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.cpp
  *	A container for fuzzy rules
  *	
- * $Id: fuzzyruleset.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzyruleset.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include "fuzzy/fuzzyruleset.h"
 #include "fuzzy/fuzzyrule.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	CFuzzyRuleSet::CFuzzyRuleSet(char *comment)
 	{
@@ -41,21 +41,21 @@ namespace NLIAFUZZY
 		_Rules.push_back( rule );
 	}
 
-	const NLIAAGENT::IObjectIA ::CProcessResult &CFuzzyRuleSet::run()
+	const NLAIAGENT::IObjectIA ::CProcessResult &CFuzzyRuleSet::run()
 	{
 		std::list<CFuzzyRule *>::iterator it_r = _Rules.begin();
 		while ( it_r != _Rules.end() )
 		{
 			( *it_r )->run();
 		}
-		return NLIAAGENT::IObjectIA ::ProcessRun;
+		return NLAIAGENT::IObjectIA ::ProcessRun;
 	}
 
 
 
 	void CFuzzyRuleSet::save(NLMISC::IStream &os)
 	{		
-/*		NLIAAGENT::IObjetOp::save( os );
+/*		NLAIAGENT::IObjetOp::save( os );
 
 		if ( _Value ) 
 		{
@@ -72,7 +72,7 @@ namespace NLIAFUZZY
 	{
 /*		if ( _Value )
 			_Value->release();
-//		NLIAAGENT::IObjetOp::load(is);
+//		NLAIAGENT::IObjetOp::load(is);
 		Gen::CIdentTypeAlloc id;
 		is.serial( id );
 		_Value = (Var *)id.allocClass();
@@ -88,33 +88,33 @@ namespace NLIAFUZZY
 			sprintf(txt, "CFuzzyRuleSet \n (%d rule)", _Rules.size());
 	}
 
-	const NLIAC::CIdentType &CFuzzyRuleSet::getType() const
+	const NLAIC::CIdentType &CFuzzyRuleSet::getType() const
 	{
 		return idFuzzyRuleSet;
 	}
 
-	const NLIAC::IBasicType *CFuzzyRuleSet::clone() const
+	const NLAIC::IBasicType *CFuzzyRuleSet::clone() const
 	{
-		NLIAC::IBasicInterface *m = new CFuzzyRuleSet( *this );
+		NLAIC::IBasicInterface *m = new CFuzzyRuleSet( *this );
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *CFuzzyRuleSet::newInstance() const
+	const NLAIC::IBasicType *CFuzzyRuleSet::newInstance() const
 	{
 		CFuzzyRuleSet *instance = new CFuzzyRuleSet();
 		instance->incRef();
 		return instance;
 	}
 
-	bool CFuzzyRuleSet::isEqual(const NLIAAGENT::IBasicObjectIA &) const
+	bool CFuzzyRuleSet::isEqual(const NLAIAGENT::IBasicObjectIA &) const
 	{
 		return false;
 	}
 
-	void CFuzzyRuleSet::init(NLIAAGENT::IObjectIA  *p)
+	void CFuzzyRuleSet::init(NLAIAGENT::IObjectIA  *p)
 	{
-		NLIAAGENT::IBaseGroupType *params = ((NLIAAGENT::IBaseGroupType *)p);
+		NLAIAGENT::IBaseGroupType *params = ((NLAIAGENT::IBaseGroupType *)p);
 
 		sint32 x = params->size();
 

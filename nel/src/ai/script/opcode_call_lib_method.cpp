@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,14 +27,14 @@
 namespace NLIASCRIPT
 {
 
-	NLIAAGENT::TProcessStatement CLibMemberMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibMemberMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
 
 		context.Param.push_back(param);
 		param->incRef();
 
-		NLIAAGENT::IObjectIA::CProcessResult r = ((NLIAAGENT::IObjectIA *)context.Self)->runMethodeMember(_Id,param);
+		NLAIAGENT::IObjectIA::CProcessResult r = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Id,param);
 
 		if(r.Result != NULL)
 		{
@@ -51,10 +51,10 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibMemberInheritedMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibMemberInheritedMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
-		NLIAAGENT::IObjectIA::CProcessResult r = ((NLIAAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_Id,param);
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA::CProcessResult r = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_Id,param);
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -73,21 +73,21 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibMemberMethodi::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibMemberMethodi::runOpCode(CCodeContext &context)
 	{
 		std::list<sint32>::iterator it = _I.begin();
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
-		NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 
 		context.Param.push_back(param);
 		param->incRef();
 		
 		while(it != _I.end())
 		{
-			 obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 
 		if(_Inheritance )  r = obj->runMethodeMember(_Inheritance,_Id,param);
 		else r = obj->runMethodeMember(_Id,param);
@@ -106,10 +106,10 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibCallMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibCallMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
-		NLIAAGENT::IObjectIA::CProcessResult r = _Lib->runMethodeMember(_Id,param);
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA::CProcessResult r = _Lib->runMethodeMember(_Id,param);
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -128,10 +128,10 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibCallInheritedMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibCallInheritedMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
-		NLIAAGENT::IObjectIA::CProcessResult r = _Lib->runMethodeMember(_Inheritance,_Id,param);
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA::CProcessResult r = _Lib->runMethodeMember(_Inheritance,_Id,param);
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -150,17 +150,17 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibCallMethodi::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibCallMethodi::runOpCode(CCodeContext &context)
 	{
 		std::list<sint32>::iterator it = _I.begin();
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
-		NLIAAGENT::IObjectIA *obj = _Lib;
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *obj = _Lib;
 		while(it != _I.end())
 		{
-			 obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -182,21 +182,21 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibStackMemberMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibStackMemberMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *obj = context.Stack[(int)context.Stack - 1];
+		NLAIAGENT::IObjectIA *obj = context.Stack[(int)context.Stack - 1];
 		obj->incRef();
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
 		param->incRef();
 		context.Stack --;
 		context.Stack --;
 		std::list<sint32>::iterator it = _I.begin();
 		while(it != _I.end())
 		{
-			 obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -216,20 +216,20 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibStackNewMemberMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibStackNewMemberMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *obj = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *obj = context.Stack[(int)context.Stack];
 		obj->incRef();
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack - 1];		
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack - 1];		
 		context.Stack --;
 		context.Stack[(int)context.Stack] = obj;
 		std::list<sint32>::iterator it = _I.begin();
 		while(it != _I.end())
 		{
-			 obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -249,10 +249,10 @@ namespace NLIASCRIPT
 		return r.ResultState;
 	}
 
-	NLIAAGENT::TProcessStatement CLibHeapMemberMethod::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLibHeapMemberMethod::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *obj = context.Heap[(int)_Index];		
-		NLIAAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
+		NLAIAGENT::IObjectIA *obj = context.Heap[(int)_Index];		
+		NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
 
 		context.Param.push_back(param);
 		param->incRef();
@@ -260,10 +260,10 @@ namespace NLIASCRIPT
 		std::list<sint32>::iterator it = _I.begin();
 		while(it != _I.end())
 		{
-			 obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 
 		if(_H )  r = obj->runMethodeMember(_H,_Id,param);
 		else r = obj->runMethodeMember(_Id,param);

@@ -26,9 +26,9 @@
 #include "logic/clause.h"
 #include "agent/agent_digital.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CFirstOrderAssert::CFirstOrderAssert(const IVarName &n, sint32 nb_vars) : IBaseAssert( n )
 	{
@@ -129,14 +129,14 @@ namespace NLIALOGIC
 		}
 	}
 
-	const NLIAC::IBasicType *CFirstOrderAssert::clone() const
+	const NLAIC::IBasicType *CFirstOrderAssert::clone() const
 	{
 		CFirstOrderAssert *clone = new CFirstOrderAssert( *this );
 		clone->incRef();
-		return (NLIAC::IBasicInterface *) clone;
+		return (NLAIC::IBasicInterface *) clone;
 	}
 
-	const NLIAC::IBasicType *CFirstOrderAssert::newInstance() const
+	const NLAIC::IBasicType *CFirstOrderAssert::newInstance() const
 	{
 		return clone();
 	}
@@ -195,7 +195,7 @@ namespace NLIALOGIC
 		return _Clauses;
 	}
 
-	const NLIAC::CIdentType &CFirstOrderAssert::getType() const
+	const NLAIC::CIdentType &CFirstOrderAssert::getType() const
 	{
 		return IdFirstOrderAssert;
 	}

@@ -20,9 +20,9 @@
 #include "logic/bool_operator.h"
 #include "logic/fact.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CBoolOperator::CBoolOperator()
 	{
@@ -125,7 +125,7 @@ namespace NLIALOGIC
 		_ConcsVal.push_back( v );
 	}
 
-	const NLIAC::IBasicType *CBoolOperator::clone() const
+	const NLAIC::IBasicType *CBoolOperator::clone() const
 	{
 		CBoolOperator *clone = new CBoolOperator;
 		sint32 i;
@@ -142,7 +142,7 @@ namespace NLIALOGIC
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CBoolOperator::newInstance() const
+	const NLAIC::IBasicType *CBoolOperator::newInstance() const
 	{
 		CBoolOperator *instance = new CBoolOperator();
 		instance->incRef();
@@ -190,7 +190,7 @@ namespace NLIALOGIC
 		return false;
 	}
 
-	const NLIAC::CIdentType &CBoolOperator::getType() const
+	const NLAIC::CIdentType &CBoolOperator::getType() const
 	{
 		return IdBoolOperator;
 	}

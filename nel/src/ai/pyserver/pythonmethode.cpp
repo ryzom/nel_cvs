@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ namespace Py
 	}*/
 
 
-	static NLIAC::IIO *Interface;
+	static NLAIC::IIO *Interface;
 	static PyObject *print(PyObject *Self,PyObject *Arg)
 	{
 		char *Text = NULL;
@@ -167,7 +167,7 @@ namespace Py
 	}
 	
 
-	CPyExport *initPythonLib(NLIAC::IIO *P,char *pathWay)
+	CPyExport *initPythonLib(NLAIC::IIO *P,char *pathWay)
 	{
 		//char S[MAX_PATH + 1];
 		bool PyExiste = false;

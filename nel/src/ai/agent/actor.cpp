@@ -2,7 +2,7 @@
 #include "agent/agent_script.h"
 #include "agent/object_type.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 
@@ -89,7 +89,7 @@ namespace NLIAAGENT
 	}
 
 	/// Adds a transition, ie a condition and a list of newly activated agents
-	void CActor::addTransition(NLIALOGIC::IBaseCond *cond, std::vector<CActor *> &outputs, bool stay_alive)
+	void CActor::addTransition(NLAILOGIC::IBaseCond *cond, std::vector<CActor *> &outputs, bool stay_alive)
 	{
 //		CTransition *trans = new CTransition( cond, outputs, stay_alive );
 //		trans->incRef();
@@ -112,16 +112,16 @@ namespace NLIAAGENT
 		// default behaviour: do nothing
 	}
 
-	const NLIAC::IBasicType *CActor::clone() const
+	const NLAIC::IBasicType *CActor::clone() const
 	{		
 		CActor *m = new CActor(*this);
 		m->incRef();
 		return m;
 	}		
 
-	const NLIAC::IBasicType *CActor::newInstance() const
+	const NLAIC::IBasicType *CActor::newInstance() const
 	{	
-		NLIAC::IBasicInterface *m;
+		NLAIC::IBasicInterface *m;
 		if ( getParent() != NULL ) 
 			m = new	CActor((IAgent *)getParent());
 		else 
@@ -181,7 +181,7 @@ namespace NLIAAGENT
 		return IAgent::run( msg );
 	}
 
-	const NLIAC::CIdentType &CActor::getType() const
+	const NLAIC::CIdentType &CActor::getType() const
 	{		
 		return IdActor;
 	}
@@ -198,7 +198,7 @@ namespace NLIAAGENT
 		IAgent::load(is);
 	}
 
-	tQueue CActor::isMember(const IVarName *className,const NLIAAGENT::IVarName *name,const IObjectIA &param) const
+	tQueue CActor::isMember(const IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
 	{
 		tQueue result;
 
@@ -211,23 +211,23 @@ namespace NLIAAGENT
 //		{
 			if ( *name == CStringVarName("activate") )
 			{
-				CObjectType *r_type = new CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_activate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_activate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("unActivate") )
 			{
-				CObjectType *r_type = new CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_unActivate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_unActivate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("forwardActivity") )
 			{
-				CObjectType *r_type = new CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_forwardActivity + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_forwardActivity + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 //		}
 		return result;
@@ -250,7 +250,7 @@ namespace NLIAAGENT
 		{
 			activate();
 			IObjectIA::CProcessResult r;
-			r.ResultState =  NLIAAGENT::processIdle;
+			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
 
@@ -258,17 +258,17 @@ namespace NLIAAGENT
 		{
 			unActivate();
 			IObjectIA::CProcessResult r;
-			r.ResultState =  NLIAAGENT::processIdle;
+			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
 
 		if ( id == fid_forwardActivity )
 		{
 			std::vector<CActor *> forwarded;
-			if ( ( (NLIAAGENT::IBaseGroupType *) params)->size() )
+			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 			{
-				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLIAAGENT::IBaseGroupType *)params) )->getFront();
-				( ((NLIAAGENT::IBaseGroupType *)params))->popFront();
+				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
+				( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 				while ( fw->size() )
 				{
 					forwarded.push_back( (CActor *) fw->getFront() );
@@ -277,7 +277,7 @@ namespace NLIAAGENT
 				forwardActivity( forwarded, false );
 			}
 			IObjectIA::CProcessResult r;
-			r.ResultState =  NLIAAGENT::processIdle;
+			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
 		return r;

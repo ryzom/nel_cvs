@@ -1,6 +1,6 @@
 /** \file module.cpp
  *
- * $Id: module.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: module.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 namespace NLIASCRIPT
 {
-	const NLIAAGENT::IObjectIA::CProcessResult &IBlock::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &IBlock::run()
 	{
-		return NLIAAGENT::IObjectIA::ProcessRun;
+		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 }

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: agents.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #include "agent/object_type.h"
 #include "agent/agent_mailer.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	IAgent::IAgent(const IAgent &a) : IAgentComposite(a)
@@ -49,16 +49,16 @@ namespace NLIAAGENT
 		removeConnection(*a);
 	}
 
-	const NLIAC::IBasicType *IAgent::clone() const
+	const NLAIC::IBasicType *IAgent::clone() const
 	{		
-		NLIAC::IBasicInterface *m = new IAgent(*this);
+		NLAIC::IBasicInterface *m = new IAgent(*this);
 		m->incRef();
 		return m;
 	}		
 
-	const NLIAC::IBasicType *IAgent::newInstance() const
+	const NLAIC::IBasicType *IAgent::newInstance() const
 	{	
-		NLIAC::IBasicInterface *m;
+		NLAIC::IBasicInterface *m;
 		if(getParent() != NULL) m = new	IAgent((IBasicAgent *)getParent());
 		else m = new IAgent(NULL);
 		m->incRef();
@@ -75,7 +75,7 @@ namespace NLIAAGENT
 		return true;
 	}
 
-        /*const NLIAC::CIdentType &IAgent::getType() const;		
+        /*const NLAIC::CIdentType &IAgent::getType() const;		
 	void IAgent::save(NLMISC::IStream &os);
 	void IAgent::load(NLMISC::IStream &is);*/
 
@@ -145,7 +145,7 @@ namespace NLIAAGENT
 
 	}*/
 
-	const NLIAC::CIdentType &IAgent::getType() const
+	const NLAIC::CIdentType &IAgent::getType() const
 	{		
 		return IdAgent;
 	}
@@ -214,7 +214,7 @@ namespace NLIAAGENT
 	{			
 		IConnectIA::load(is);
 		_Mail->load(is);						
-		NLIAC::CIdentTypeAlloc id;			
+		NLAIC::CIdentTypeAlloc id;			
 	}
 
 	void IBasicAgent::addMsgGroup(IBasicMessageGroup &grp)
@@ -250,7 +250,7 @@ namespace NLIAAGENT
 			{
 				if(*methodName == IBasicAgent::_Method[i].MethodName)
 				{					
-					CObjectType *c = new CObjectType(new NLIAC::CIdentType(CLocalAgentMail::LocalAgentMail));
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
 					c->incRef();					
 					a.push(CIdMethod(IBasicAgent::_Method[i].Index + IObjectIA::getMethodIndexSize(),0.0,NULL,c));					
 					break;

@@ -1,6 +1,6 @@
 /** \file interpret_object_manager.cpp
  *
- * $Id: interpret_object_manager.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: interpret_object_manager.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,47 +30,47 @@
 
 namespace NLIASCRIPT
 {
-	CManagerClass::CManagerClass(const NLIAAGENT::IVarName &n) : CAgentClass(n)
+	CManagerClass::CManagerClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
-		setBaseMethodCount(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
 	}
 	
-	CManagerClass::CManagerClass(const NLIAC::CIdentType &id): CAgentClass(id)
+	CManagerClass::CManagerClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
-		setBaseMethodCount(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
 	}
 
-	CManagerClass::CManagerClass(const NLIAAGENT::IVarName &n, const NLIAAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	CManagerClass::CManagerClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
-		setBaseMethodCount(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
 	}
 
 	CManagerClass::CManagerClass(const CManagerClass &c) : CAgentClass( c )
 	{
-		setBaseMethodCount(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
 	}	
 
 	CManagerClass::CManagerClass()
 	{
-		setBaseMethodCount(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CMainAgentScript *)(NLIAAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CMainAgentScript *)(NLAIAGENT::CMainAgentScript::IdMainAgentScript.getFactory()->getClass())));
 	}
 
 
-	const NLIAC::IBasicType *CManagerClass::clone() const
+	const NLAIC::IBasicType *CManagerClass::clone() const
 	{
-		NLIAC::IBasicType *clone = new CManagerClass(*this);
+		NLAIC::IBasicType *clone = new CManagerClass(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CManagerClass::newInstance() const
+	const NLAIC::IBasicType *CManagerClass::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CManagerClass();
+		NLAIC::IBasicType *instance = new CManagerClass();
 		instance->incRef();
 		return instance;
 	}
@@ -79,11 +79,11 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::IObjectIA *CManagerClass::buildNewInstance() const
+	NLAIAGENT::IObjectIA *CManagerClass::buildNewInstance() const
 	{
 		// Création des composants statiques
 		// Création du message
-		NLIAAGENT::CMainAgentScript *instance = new NLIAAGENT::CMainAgentScript(NULL);
+		NLAIAGENT::CMainAgentScript *instance = new NLAIAGENT::CMainAgentScript(NULL);
 		instance->incRef();
 
 		return instance;

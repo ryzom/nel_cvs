@@ -1,8 +1,8 @@
 #include "logic/operator_script.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	COperatorScript::COperatorScript()
 	{

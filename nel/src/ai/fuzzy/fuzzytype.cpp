@@ -1,7 +1,7 @@
 /** \file interpret_fuzzytype.cpp
  * Base class for the integration of fuzzy facts in conditions
  *
- * $Id: fuzzytype.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzytype.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,18 +25,18 @@
 
 #include "fuzzy/fuzzytype.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {	
-	using namespace NLIALOGIC;
+	using namespace NLAILOGIC;
 
-	const NLIAC::IBasicType *FuzzyType::clone() const
+	const NLAIC::IBasicType *FuzzyType::clone() const
 	{
-		NLIAC::IBasicInterface *m = new FuzzyType(*this);
+		NLAIC::IBasicInterface *m = new FuzzyType(*this);
 		m->incRef();
 		return m;
 	}
 
-	const NLIAC::IBasicType *FuzzyType::newInstance() const
+	const NLAIC::IBasicType *FuzzyType::newInstance() const
 	{
 		return clone();
 	}
@@ -72,18 +72,18 @@ namespace NLIAFUZZY
 		return _Value;
 	}
 
-	const NLIAAGENT::IVarName * FuzzyType::getName() const
+	const NLAIAGENT::IVarName * FuzzyType::getName() const
 	{
 		return NULL;
 	}
 
-	void FuzzyType::setName(const NLIAAGENT::IVarName &n)
+	void FuzzyType::setName(const NLAIAGENT::IVarName &n)
 	{
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &FuzzyType::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &FuzzyType::run()
 	{
-		 return NLIAAGENT::IObjectIA::ProcessRun;
+		 return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
 	bool FuzzyType::isEqual(const FuzzyType &a) const
@@ -91,7 +91,7 @@ namespace NLIAFUZZY
 		return ( a._Value == _Value );
 	}
 
-	bool FuzzyType::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool FuzzyType::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return ( ((FuzzyType &)a)._Value == _Value );
 	}
@@ -101,60 +101,60 @@ namespace NLIAFUZZY
 		return new std::vector<IBaseVar *>;
 	}
 
-	const NLIAC::CIdentType &FuzzyType::getType() const
+	const NLAIC::CIdentType &FuzzyType::getType() const
 	{
 		return IdFuzzyType;
 	}
 
-	NLIAAGENT::IObjetOp &FuzzyType::operator += (const NLIAAGENT::IObjetOp &a)
+	NLAIAGENT::IObjetOp &FuzzyType::operator += (const NLAIAGENT::IObjetOp &a)
 	{
 		_Value += ((FuzzyType &)a)._Value;
 		return ( *this );
 	}
 
-	NLIAAGENT::IObjetOp &FuzzyType::operator -= (const NLIAAGENT::IObjetOp &a)
+	NLAIAGENT::IObjetOp &FuzzyType::operator -= (const NLAIAGENT::IObjetOp &a)
 	{
 		_Value -= ((FuzzyType &)a)._Value;
 		return ( *this );
 	}
 
-	NLIAAGENT::IObjetOp &FuzzyType::operator *= (const NLIAAGENT::IObjetOp &a)
+	NLAIAGENT::IObjetOp &FuzzyType::operator *= (const NLAIAGENT::IObjetOp &a)
 	{
 		_Value *= ((FuzzyType &)a)._Value;
 		return ( *this );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator < (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator < (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value < ((FuzzyType &)a)._Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator > (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator > (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value > ((FuzzyType &)a)._Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator <= (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator <= (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value <= ((FuzzyType &)a)._Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator >= (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator >= (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value >= ((FuzzyType &)a)._Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator ! () const
+	NLAIAGENT::IObjetOp *FuzzyType::operator ! () const
 	{
 		return new CBoolType( !_Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator != (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator != (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value != ((FuzzyType &)a)._Value );
 	}
 
-	NLIAAGENT::IObjetOp *FuzzyType::operator == (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *FuzzyType::operator == (NLAIAGENT::IObjetOp &a) const
 	{
 		return new CBoolType( _Value == ((FuzzyType &)a)._Value );
 	}

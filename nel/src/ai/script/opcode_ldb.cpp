@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,11 +27,11 @@
 namespace NLIASCRIPT
 {
 
-	NLIAAGENT::TProcessStatement CLdbOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)_B->clone();
-		return NLIAAGENT::IObjectIA::ProcessIdle;
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)_B->clone();
+		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
 	void CLdbOpCode::getDebugResult(char *str,CCodeContext &context) const
@@ -40,112 +40,112 @@ namespace NLIASCRIPT
 		_B->getDebugString(X);
 		sprintf(str,"ldb %s",X);		
 	}
-	NLIAAGENT::TProcessStatement CLdbMemberOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbMemberOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)(context.Self)->getStaticMember(_B)->clone();
-		return NLIAAGENT::IObjectIA::ProcessIdle;;
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B)->clone();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
 	void CLdbMemberOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{
 					
-		sprintf(str,"ldb le composant membre %d de la class '%s'",_B,(const char *)((NLIAAGENT::IObjectIA *)(context.Self))->getType());		
+		sprintf(str,"ldb le composant membre %d de la class '%s'",_B,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());		
 	}
 
 
-	NLIAAGENT::TProcessStatement CLdbStackMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbStackMemberiOpCode::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Stack);
-		NLIAAGENT::IObjectIA *obj = a; 
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);
+		NLAIAGENT::IObjectIA *obj = a; 
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
 		obj->release();
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CLdbStackMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{	
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Stack);		
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);		
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		char txt[1024*8];
 		a->getStaticMember(*i)->getDebugString(txt);
 		sprintf(str,"ldb %s le composan membre sur la pile de la class '%s'",txt,(const char *)a->getType());
 	}
 
-	NLIAAGENT::TProcessStatement CLdbHeapMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbHeapMemberiOpCode::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)context.Heap[(int)_N];
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
 		context.Stack ++;
 		context.Stack[(int)context.Stack] = a;
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CLdbHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{						
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)context.Heap[(int)_N];
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		char txt[1024*8];
 		a->getStaticMember(*i)->getDebugString(txt);
 		sprintf(str,"ldb %s le composant membre sur le heap de la class '%s'",txt,(const char *)a->getType());		
 	}
 
-	NLIAAGENT::TProcessStatement CLdbMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbMemberiOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::iterator i = _I.begin();
 		while(i != _I.end())
 		{
-			obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*i++);
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*i++);
 		}
 		//obj->incRef();
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)obj->clone();
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)obj->clone();
 		
-		return NLIAAGENT::IObjectIA::ProcessIdle;
+		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
 	void CLdbMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{			
-		NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())
 		{
 			j = *i++;
-			obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(j);
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(j);
 		}			
 					
 		sprintf(str,"ldb le composant membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
 	}
 
-	NLIAAGENT::TProcessStatement CLdbRefOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLdbRefOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)context.Heap[_B]->clone();
-		return NLIAAGENT::IObjectIA::ProcessIdle;;
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)context.Heap[_B]->clone();
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
 	void CLdbRefOpCode::getDebugResult(char *str,CCodeContext &context) const

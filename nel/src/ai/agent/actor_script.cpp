@@ -2,7 +2,7 @@
 #include "agent/agent_script.h"
 #include "agent/object_type.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	CActorScript::CActorScript(const CActorScript &m) : CAgentScript(m)
 	{
@@ -91,14 +91,14 @@ namespace NLIAAGENT
 		// default behaviour: do nothing
 	}
 
-	const NLIAC::IBasicType *CActorScript::clone() const
+	const NLAIC::IBasicType *CActorScript::clone() const
 	{		
 		CActorScript *m = new CActorScript(*this);
 		m->incRef();
 		return m;
 	}		
 
-	const NLIAC::IBasicType *CActorScript::newInstance() const
+	const NLAIC::IBasicType *CActorScript::newInstance() const
 	{	
 		CActorScript *instance;
 		if ( _AgentClass )
@@ -152,7 +152,7 @@ namespace NLIAAGENT
 		return IAgent::run( msg );
 	}
 
-	const NLIAC::CIdentType &CActorScript::getType() const
+	const NLAIC::CIdentType &CActorScript::getType() const
 	{		
 		return IdActorScript;
 	}
@@ -192,23 +192,23 @@ namespace NLIAAGENT
 //		{
 			if ( *name == CStringVarName("activate") )
 			{
-				NLIAAGENT::CObjectType *r_type = new NLIAAGENT::CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_activate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_activate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("unActivate") )
 			{
-				CObjectType *r_type = new CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_unActivate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_unActivate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("forwardActivity") )
 			{
-				CObjectType *r_type = new CObjectType( new NLIAC::CIdentType( NLIAC::CIdentType::VoidType ) );
+				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 				r_type->incRef();
-				result.push( NLIAAGENT::CIdMethod( fid_forwardActivity + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
+				result.push( NLAIAGENT::CIdMethod( fid_forwardActivity + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 //		}
 		

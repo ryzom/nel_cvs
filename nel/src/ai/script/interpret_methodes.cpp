@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,7 +315,7 @@ namespace NLIASCRIPT
 	const NLAIAGENT::IVarName &CMethodeName::getName() const
 	{
 		if(_MethodeName == NULL)
-			throw NLIAE::CExceptionUnReference("invalide reference for methodeName in class CMethodeName");
+			throw NLAIE::CExceptionUnReference("invalide reference for methodeName in class CMethodeName");
 
 		return *_MethodeName;
 	}

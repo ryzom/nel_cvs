@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,22 +29,22 @@ namespace NLIASCRIPT
 
 	void CComponent::save(NLMISC::IStream &os)
 	{
-		os.serial( (NLIAC::CIdentType &) RegisterName->getType() );
+		os.serial( (NLAIC::CIdentType &) RegisterName->getType() );
 		RegisterName->save( os );
-		os.serial( (NLIAC::CIdentType &) ObjectName->getType() );
+		os.serial( (NLAIC::CIdentType &) ObjectName->getType() );
 		ObjectName->save( os );
 	}
 
 	void CComponent::load(NLMISC::IStream &is)
 	{
-		NLIAC::CIdentTypeAlloc id;
+		NLAIC::CIdentTypeAlloc id;
 		is.serial( id );
-		RegisterName = (NLIAAGENT::IVarName *) id.allocClass();
+		RegisterName = (NLAIAGENT::IVarName *) id.allocClass();
 		RegisterName->load( is );
 		RegisterName->incRef();
 
 		is.serial( id );
-		ObjectName = (NLIAAGENT::IVarName *) id.allocClass();
+		ObjectName = (NLAIAGENT::IVarName *) id.allocClass();
 		ObjectName->load( is );
 		ObjectName->incRef();
 	}
@@ -53,13 +53,13 @@ namespace NLIASCRIPT
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 
-	IClassInterpret::IClassInterpret(const NLIAAGENT::IVarName &name, const IClassInterpret &a): IObjectIA(a), _Name( (NLIAAGENT::IVarName *) name.clone() )
+	IClassInterpret::IClassInterpret(const NLAIAGENT::IVarName &name, const IClassInterpret &a): IObjectIA(a), _Name( (NLAIAGENT::IVarName *) name.clone() )
 	{				
-		_IdType = new NLIAC::CIdentType( name.getString(), CClassInterpretFactory( this ) , NLIAC::CTypeOfObject::tAgent, 0);
+		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ) , NLAIC::CTypeOfObject::tAgent, 0);
 		_IdType->incRef();
 	}
 
-	IClassInterpret::IClassInterpret(NLIAC::CIdentType *idType):_IdType(idType),_Name(NULL)
+	IClassInterpret::IClassInterpret(NLAIC::CIdentType *idType):_IdType(idType),_Name(NULL)
 	{
 	}
 
@@ -76,35 +76,35 @@ namespace NLIASCRIPT
 	{
 	}
 
-	const NLIAC::CIdentType &IClassInterpret::getType() const
+	const NLAIC::CIdentType &IClassInterpret::getType() const
 	{
 		return *_IdType;
 	}		
 
-	void IClassInterpret::setType(NLIAC::CIdentType *idType)
+	void IClassInterpret::setType(NLAIC::CIdentType *idType)
 	{
 		_IdType = idType;
 		_IdType->incRef();
 	}
 
-	void IClassInterpret::setType(const NLIAAGENT::IVarName &name, const IClassInterpret &a)
+	void IClassInterpret::setType(const NLAIAGENT::IVarName &name, const IClassInterpret &a)
 	{
 		const char *txt = name.getString();
-		_IdType = new NLIAC::CIdentType( name.getString(), CClassInterpretFactory( this ), NLIAC::CTypeOfObject::tAgent, 0);
+		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ), NLAIC::CTypeOfObject::tAgent, 0);
 		_IdType->incRef();
 	}
 
-	void IClassInterpret::setClassName(const NLIAAGENT::IVarName &name)
+	void IClassInterpret::setClassName(const NLAIAGENT::IVarName &name)
 	{
 		if(_Name != NULL)
 		{
 			_Name->release();				
 		}
-		_Name = (NLIAAGENT::IVarName *)name.clone();
+		_Name = (NLAIAGENT::IVarName *)name.clone();
 
 	}
 
-	const NLIAAGENT::IVarName *IClassInterpret::getClassName() const
+	const NLAIAGENT::IVarName *IClassInterpret::getClassName() const
 	{
 		return _Name;
 	}
@@ -128,29 +128,29 @@ namespace NLIASCRIPT
 		sprintf(text,"class factory: CClassInterpretFactory fabrique des instances pour l'interface %s",(const char *)_inst->getType());
 	}
 
-	const NLIAC::IBasicType *CClassInterpretFactory::clone() const
+	const NLAIC::IBasicType *CClassInterpretFactory::clone() const
 	{
-		 NLIAC::IBasicType *x = new CClassInterpretFactory(_inst);
+		 NLAIC::IBasicType *x = new CClassInterpretFactory(_inst);
 		 x->incRef();
 		 return x;
 	}
 
-	const NLIAC::IBasicType *CClassInterpretFactory::newInstance() const
+	const NLAIC::IBasicType *CClassInterpretFactory::newInstance() const
 	{
 		return clone();
 	}
 
-	const NLIAC::CIdentType &CClassInterpretFactory::getType() const
+	const NLAIC::CIdentType &CClassInterpretFactory::getType() const
 	{
 		return _inst->getType();
 	}
 
-	const NLIAC::IBasicInterface *CClassInterpretFactory::createInstance() const 
+	const NLAIC::IBasicInterface *CClassInterpretFactory::createInstance() const 
 	{
-		return (const NLIAC::IBasicInterface *)_inst->buildNewInstance();
+		return (const NLAIC::IBasicInterface *)_inst->buildNewInstance();
 	}
 
-	const NLIAC::IBasicInterface *CClassInterpretFactory::getClass() const 
+	const NLAIC::IBasicInterface *CClassInterpretFactory::getClass() const 
 	{
 		return _inst;
 	}

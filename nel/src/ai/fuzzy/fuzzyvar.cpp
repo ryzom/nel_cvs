@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: fuzzyvar.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,14 +31,14 @@
 #include "agent/agent_digital.h"
 #include "fuzzy/fuzzycond.h"
 
-namespace NLIAFUZZY 
+namespace NLAIFUZZY 
 {	
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
-	CFuzzyVar::CFuzzyVar(const NLIAAGENT::IVarName &name, double min, double max, NLIAAGENT::IObjetOp *value) : IBaseVar(name)
+	CFuzzyVar::CFuzzyVar(const NLAIAGENT::IVarName &name, double min, double max, NLAIAGENT::IObjetOp *value) : IBaseVar(name)
 	{
 		if ( value )
-			_Value = ((NLIAAGENT::INombre<double> &)value).getValue();
+			_Value = ((NLAIAGENT::INombre<double> &)value).getValue();
 		else
 			_Value = 0;
 
@@ -46,7 +46,7 @@ namespace NLIAFUZZY
 		_Max = max;
 	}
 
-	CFuzzyVar::CFuzzyVar(const NLIAAGENT::IVarName &name, double min, double max, double value) : IBaseVar(name)
+	CFuzzyVar::CFuzzyVar(const NLAIAGENT::IVarName &name, double min, double max, double value) : IBaseVar(name)
 	{
 		_Value = value;
 		_Min = min;
@@ -77,7 +77,7 @@ namespace NLIAFUZZY
 			it_f++;
 		}
 
-		std::vector<NLIAAGENT::CStringVarName *>::const_iterator it_q = _qual.begin();
+		std::vector<NLAIAGENT::CStringVarName *>::const_iterator it_q = _qual.begin();
 		while ( it_q != _qual.end() )
 		{
 			( *it_q )->release();
@@ -89,7 +89,7 @@ namespace NLIAFUZZY
 	{
 		_sets.push_back(my_set);
 		my_set->incRef();
-		NLIAAGENT::CStringVarName *qual = new NLIAAGENT::CStringVarName( set_name );
+		NLAIAGENT::CStringVarName *qual = new NLAIAGENT::CStringVarName( set_name );
 		qual->incRef();
 		_qual.push_back( qual );
 	}
@@ -158,9 +158,9 @@ namespace NLIAFUZZY
 			_facts.push_back( new CFuzzyFact(set, membership) );
 	}
 
-	void CFuzzyVar::setValue(NLIAAGENT::IObjetOp *obj)
+	void CFuzzyVar::setValue(NLAIAGENT::IObjetOp *obj)
 	{
-		_Value = ((NLIAAGENT::INombre<double> *)obj)->getValue();
+		_Value = ((NLAIAGENT::INombre<double> *)obj)->getValue();
 	}
 
 	void CFuzzyVar::setValue(float value)
@@ -168,21 +168,21 @@ namespace NLIAFUZZY
 		_Value = value;
 	}
 
-	NLIAAGENT::IObjetOp *CFuzzyVar::getValue() const
+	NLAIAGENT::IObjetOp *CFuzzyVar::getValue() const
 	{
-		return new NLIAAGENT::DigitalType( (float) _Value );
+		return new NLAIAGENT::DigitalType( (float) _Value );
 	}
 
-	const NLIAC::IBasicType *CFuzzyVar::clone() const
+	const NLAIC::IBasicType *CFuzzyVar::clone() const
 	{
 		CFuzzyVar *clone = new CFuzzyVar(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CFuzzyVar::newInstance() const
+	const NLAIC::IBasicType *CFuzzyVar::newInstance() const
 	{      
-	  NLIAAGENT::CStringVarName x("Inst");
+	  NLAIAGENT::CStringVarName x("Inst");
 	  CFuzzyVar *instance = new CFuzzyVar(x,0,0);
 	  instance->incRef();
 	  return instance;
@@ -214,7 +214,7 @@ namespace NLIAFUZZY
 		is.serial( nb_sets );
 		for (sint32 i = 0; i < nb_sets; i++ )
 		{
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			IFuzzySet *tmp_val = (IFuzzySet *) id.allocClass();
 			tmp_val->load( is );
@@ -243,7 +243,7 @@ namespace NLIAFUZZY
 		return _Value == a._Value;
 	}
 
-	bool CFuzzyVar::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	bool CFuzzyVar::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
 		return _Value == ((CFuzzyVar &)a)._Value;
 	}
@@ -253,32 +253,32 @@ namespace NLIAFUZZY
 		return false;
 	}
 
-	const NLIAC::CIdentType &CFuzzyVar::getType() const
+	const NLAIC::CIdentType &CFuzzyVar::getType() const
 	{
 		return IdFuzzyVar;
 	}
 
-	bool CFuzzyVar::operator==(NLIALOGIC::IBaseVar *var)
+	bool CFuzzyVar::operator==(NLAILOGIC::IBaseVar *var)
 	{
 		return false;// _Value = var->getValue()
 	}
 
-	bool CFuzzyVar::unify(NLIALOGIC::IBaseVar *, bool assign)
+	bool CFuzzyVar::unify(NLAILOGIC::IBaseVar *, bool assign)
 	{
 		return false;
 	}
 
-	bool CFuzzyVar::unify(NLIAAGENT::IObjetOp *, bool assign)
+	bool CFuzzyVar::unify(NLAIAGENT::IObjetOp *, bool assign)
 	{
 		return false;
 	}
 
-	NLIAAGENT::IObjetOp *CFuzzyVar::operator == (NLIAAGENT::IObjetOp &a) const
+	NLAIAGENT::IObjetOp *CFuzzyVar::operator == (NLAIAGENT::IObjetOp &a) const
 	{
 		return NULL;
 	}
 
-	const NLIAAGENT::IObjectIA::CProcessResult &CFuzzyVar::run()
+	const NLAIAGENT::IObjectIA::CProcessResult &CFuzzyVar::run()
 	{
 		return IObjectIA::ProcessRun;
 	}
@@ -318,11 +318,11 @@ namespace NLIAFUZZY
 		IObjectIA::CProcessResult r;
 
 		char buf[1024];
-		NLIAAGENT::IObjetOp *x= NULL;
-		if ( ( (NLIAAGENT::IBaseGroupType *) params)->size() )
+		NLAIAGENT::IObjetOp *x= NULL;
+		if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 		{
-			NLIAAGENT::IObjetOp *x = (NLIAAGENT::IObjetOp *) ( ((NLIAAGENT::IBaseGroupType *)params) )->getFront();
-			( ((NLIAAGENT::IBaseGroupType *)params))->popFront();
+			NLAIAGENT::IObjetOp *x = (NLAIAGENT::IObjetOp *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
+			( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
 
 
 			x->getDebugString(buf);
@@ -337,7 +337,7 @@ namespace NLIAFUZZY
 		if ( id == op_add_subset )
 		{
 			addSet( (IFuzzySet *) x, ((IFuzzySet *)x)->getName());
-			r.ResultState =  NLIAAGENT::processIdle;
+			r.ResultState =  NLAIAGENT::processIdle;
 			r.Result = NULL;
 		}
 
@@ -346,8 +346,8 @@ namespace NLIAFUZZY
 		{
 			unfuzify();
 			IObjectIA::CProcessResult r;
-			r.ResultState =  NLIAAGENT::processIdle;
-			r.Result = new NLIAAGENT::DigitalType( (float) _Value);
+			r.ResultState =  NLAIAGENT::processIdle;
+			r.Result = new NLAIAGENT::DigitalType( (float) _Value);
 			r.Result->incRef();
 		}
 
@@ -363,7 +363,7 @@ namespace NLIAFUZZY
 
 	void CFuzzyVar::init(IObjectIA *p)
 	{
-		NLIAAGENT::IBaseGroupType *params = ((NLIAAGENT::IBaseGroupType *)p);
+		NLAIAGENT::IBaseGroupType *params = ((NLAIAGENT::IBaseGroupType *)p);
 
 		if ( params->size() < 2 ) 
 		{
@@ -374,7 +374,7 @@ namespace NLIAFUZZY
 
 		// Nom
 		IObjectIA * arg = (IObjectIA *) params->popFront();
-		strcpy(_Name, ((NLIAAGENT::IVarName *) arg)->getString() );
+		strcpy(_Name, ((NLAIAGENT::IVarName *) arg)->getString() );
 		
 		// Sous ensembles
 		while (	 params->size() )
@@ -386,7 +386,7 @@ namespace NLIAFUZZY
 	}
 
 
-	tQueue CFuzzyVar::isMember(const NLIAAGENT::IVarName *className,const NLIAAGENT::IVarName *name,const IObjectIA &param) const
+	tQueue CFuzzyVar::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
 	{
 		tQueue result;
 
@@ -401,13 +401,13 @@ namespace NLIAFUZZY
 			{
 				IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandVoid();
 				op_type->incRef();
-				result.push( NLIAAGENT::CIdMethod(1 + IObjetOp::getMethodIndexSize(), 0.0,NULL, op_type ) );
+				result.push( NLAIAGENT::CIdMethod(1 + IObjetOp::getMethodIndexSize(), 0.0,NULL, op_type ) );
 			}
 			if ( *name == CStringVarName("unfuzify") )
 			{
-				IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandSimple( new NLIAC::CIdentType( DigitalType::IdDigitalType) );
+				IObjectIA *op_type = (IObjectIA *) new NLIASCRIPT::COperandSimple( new NLAIC::CIdentType( DigitalType::IdDigitalType) );
 				op_type->incRef();
-				result.push( NLIAAGENT::CIdMethod(2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, op_type ) );
+				result.push( NLAIAGENT::CIdMethod(2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, op_type ) );
 			}
 		}
 		return result;

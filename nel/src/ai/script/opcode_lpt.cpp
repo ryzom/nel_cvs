@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: opcode_lpt.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: opcode_lpt.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,78 +26,78 @@
 
 namespace NLIASCRIPT
 {
-	NLIAAGENT::TProcessStatement CLptMemberOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLptMemberOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)(context.Self)->getStaticMember(_B);
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)(context.Self)->getStaticMember(_B);
 		context.Stack[(int)context.Stack] = a;
 		a->incRef();
-		return NLIAAGENT::IObjectIA::ProcessIdle;;
+		return NLAIAGENT::IObjectIA::ProcessIdle;;
 	}
 
 	void CLptMemberOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{				
 		char txt[1024*8];
-		((NLIAAGENT::IObjectIA *)(context.Self))->getStaticMember(_B)->getDebugString(txt);
-		sprintf(str,"ldb la reference du membre <%d> '%s' de la class '%s'",_B,txt,(const char *)((NLIAAGENT::IObjectIA *)(context.Self))->getType());		
+		((NLAIAGENT::IObjectIA *)(context.Self))->getStaticMember(_B)->getDebugString(txt);
+		sprintf(str,"ldb la reference du membre <%d> '%s' de la class '%s'",_B,txt,(const char *)((NLAIAGENT::IObjectIA *)(context.Self))->getType());		
 	}
 
 
-	NLIAAGENT::TProcessStatement CLptStackMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLptStackMemberiOpCode::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Stack);
-		NLIAAGENT::IObjectIA *obj = a; 
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);
+		NLAIAGENT::IObjectIA *obj = a; 
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i);
+		a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i);
 		context.Stack[(int)context.Stack] = a;
 		a->incRef();
 		obj->release();
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CLptStackMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{	
-		NLIAAGENT::IObjectIA *a = ((NLIAAGENT::IObjectIA *)context.Stack);		
+		NLAIAGENT::IObjectIA *a = ((NLAIAGENT::IObjectIA *)context.Stack);		
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		char txt[1024*8];
 		a->getStaticMember(*i)->getDebugString(txt);
 		sprintf(str,"Ldb la reference du composant membre '%s' sur le heap de la class '%s'",txt,(const char *)a->getType());
 	}
 
-	NLIAAGENT::TProcessStatement CLptHeapMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLptHeapMemberiOpCode::runOpCode(CCodeContext &context)
 	{
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::CAgentScript *)((NLIAAGENT::IObjectIA *)context.Heap[(int)_N]);			
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::CAgentScript *)((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);			
 		std::list<sint32>::iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
-		//a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
+		//a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i)->clone();
 		context.Stack ++;
 		context.Stack[(int)context.Stack] = a;
 		a->incRef();
-		return NLIAAGENT::processIdle;
+		return NLAIAGENT::processIdle;
 	}
 
 	void CLptHeapMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{						
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::CAgentScript *)((NLIAAGENT::IObjectIA *)context.Heap[(int)_N]);
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::CAgentScript *)((NLAIAGENT::IObjectIA *)context.Heap[(int)_N]);
 		std::list<sint32>::const_iterator i = _I.begin();
 		sint32 n = _I.size() - 1;
 		while(n --)
 		{
-			a = (NLIAAGENT::IObjectIA *)a->getStaticMember(*i++);
+			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
 		char txt[1024*8];
 		a->getStaticMember(*i)->getDebugString(txt);
@@ -105,42 +105,42 @@ namespace NLIASCRIPT
 	}
 
 
-	NLIAAGENT::TProcessStatement CLptMemberiOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLptMemberiOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::iterator i = _I.begin();
 		while(i != _I.end())
 		{
-			obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*i++);
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*i++);
 		}
 		obj->incRef();
-		context.Stack[(int)context.Stack] = (NLIAAGENT::IObjectIA *)obj;
+		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)obj;
 		
-		return NLIAAGENT::IObjectIA::ProcessIdle;
+		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
 	void CLptMemberiOpCode::getDebugResult(char *str,CCodeContext &context) const
 	{			
-		NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+		NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())
 		{
 			j = *i++;
-			obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(j);
+			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(j);
 		}			
 					
 		sprintf(str,"Lpt la referance du membre <%d> member de la class '%s'",j,(const char *)obj->getType());		
 	}
 
-	NLIAAGENT::TProcessStatement CLptRefOpCode::runOpCode(CCodeContext &context)
+	NLAIAGENT::TProcessStatement CLptRefOpCode::runOpCode(CCodeContext &context)
 	{
 		context.Stack ++;
-		NLIAAGENT::IObjectIA *a = (NLIAAGENT::IObjectIA *)context.Heap[_B]->clone();
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[_B]->clone();
 		context.Stack[(int)context.Stack] = a;
 		a->incRef();
-		return NLIAAGENT::IObjectIA::ProcessIdle;
+		return NLAIAGENT::IObjectIA::ProcessIdle;
 	}
 
 	void CLptRefOpCode::getDebugResult(char *str,CCodeContext &context) const

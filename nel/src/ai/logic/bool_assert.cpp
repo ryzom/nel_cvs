@@ -22,9 +22,9 @@
 #include "logic/fact.h"
 #include "logic/varset.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
-	using namespace NLIAAGENT;
+	using namespace NLAIAGENT;
 
 	CBoolAssert::CBoolAssert( IVarName &n, bool truth) : IBaseAssert( n )
 	{
@@ -66,21 +66,21 @@ namespace NLIALOGIC
 		return _Value;
 	}
 
-	const NLIAC::CIdentType &CBoolAssert::getType() const 
+	const NLAIC::CIdentType &CBoolAssert::getType() const 
 	{
 		return IdBoolAssert;
 	}
 
-	const NLIAC::IBasicType *CBoolAssert::clone() const
+	const NLAIC::IBasicType *CBoolAssert::clone() const
 	{
 		CBoolAssert *clone = new CBoolAssert( *this );
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CBoolAssert::newInstance() const
+	const NLAIC::IBasicType *CBoolAssert::newInstance() const
 	{
-	  NLIAAGENT::CStringVarName x("");
+	  NLAIAGENT::CStringVarName x("");
 		CBoolAssert *instance = new CBoolAssert(x);
 		instance->incRef();
 		return instance;

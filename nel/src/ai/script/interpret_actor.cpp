@@ -7,47 +7,47 @@
 
 namespace NLIASCRIPT
 {
-	CActorClass::CActorClass(const NLIAAGENT::IVarName &n) : CAgentClass(n)
+	CActorClass::CActorClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
-		setBaseMethodCount(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());		
-		setBaseObjectInstance(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());		
+		setBaseObjectInstance(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
 	}
 	
-	CActorClass::CActorClass(const NLIAC::CIdentType &id): CAgentClass(id)
+	CActorClass::CActorClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
-		setBaseMethodCount(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
 	}
 
-	CActorClass::CActorClass(const NLIAAGENT::IVarName &n, const NLIAAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	CActorClass::CActorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
 	{
-		setBaseMethodCount(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
 	}
 
 	CActorClass::CActorClass(const CActorClass &c) : CAgentClass( c )
 	{
-		setBaseMethodCount(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
+		setBaseMethodCount(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass())));		
 	}	
 
 	CActorClass::CActorClass()
 	{
-		setBaseMethodCount(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
-		setBaseObjectInstance(((NLIAAGENT::CActorScript *)(NLIAAGENT::CActorScript::IdActorScript.getFactory()->getClass())));
+		setBaseMethodCount(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLAIAGENT::CActorScript *)(NLAIAGENT::CActorScript::IdActorScript.getFactory()->getClass())));
 	}
 
 
-	const NLIAC::IBasicType *CActorClass::clone() const
+	const NLAIC::IBasicType *CActorClass::clone() const
 	{
-		NLIAC::IBasicType *clone = new CActorClass(*this);
+		NLAIC::IBasicType *clone = new CActorClass(*this);
 		clone->incRef();
 		return clone;
 	}
 
-	const NLIAC::IBasicType *CActorClass::newInstance() const
+	const NLAIC::IBasicType *CActorClass::newInstance() const
 	{
-		NLIAC::IBasicType *instance = new CActorClass();
+		NLAIC::IBasicType *instance = new CActorClass();
 		instance->incRef();
 		return instance;
 	}
@@ -56,14 +56,14 @@ namespace NLIASCRIPT
 	{
 	}
 
-	NLIAAGENT::IObjectIA *CActorClass::buildNewInstance() const
+	NLAIAGENT::IObjectIA *CActorClass::buildNewInstance() const
 	{
 		// Création des composants statiques
-		std::list<NLIAAGENT::IObjectIA *> components;
+		std::list<NLAIAGENT::IObjectIA *> components;
 		createBaseClassComponents( components );
 
 		// Création du message
-		NLIAAGENT::CActorScript *instance = new NLIAAGENT::CActorScript( NULL, NULL ,components,  (CActorClass *) this );
+		NLAIAGENT::CActorScript *instance = new NLAIAGENT::CActorScript( NULL, NULL ,components,  (CActorClass *) this );
 		instance->incRef();
 
 		return instance;

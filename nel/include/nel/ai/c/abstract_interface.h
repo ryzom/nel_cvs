@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
+ * $Id: abstract_interface.h,v 1.4 2001/01/08 10:50:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,14 +152,14 @@ namespace NLAIC //Gen pour general.
 		/**Construct object with a name. Object must be mounted in the class factory else an exception wil occur. 
 		CExceptionContainer share an CExceptionUnRegisterClassError exception object.
 		*/
-		CIdentType(const char *ident) throw (NLIAE::CExceptionContainer);
+		CIdentType(const char *ident) throw (NLAIE::CExceptionContainer);
 		/**
 		Construct object. Object must be mounted in the class factory else an exception wil occur. 
 		CExceptionContainer share an CExceptionUnRegisterClassError exception object.
 		*/
 		CIdentType(const char *ident,const IClassCFactory &classCFactory,
 									const CTypeOfObject &objType,
-									const CTypeOfOperator &opSupport) throw (NLIAE::CExceptionContainer);
+									const CTypeOfOperator &opSupport) throw (NLAIE::CExceptionContainer);
 		///Copy contructor
 		CIdentType(const CIdentType &i);
 		~CIdentType();

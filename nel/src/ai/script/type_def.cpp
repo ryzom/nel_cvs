@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: type_def.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,12 +36,12 @@ namespace NLIASCRIPT
 	{			
 		if(_OpG->satisfied() && _OpD->satisfied())
 		{				
-			if(_Op == NLIAC::CTypeOfOperator::opAff)
+			if(_Op == NLAIC::CTypeOfOperator::opAff)
 			{
 				if(*_OpG->getConstraintTypeOf() == *_OpD->getConstraintTypeOf()) return true;
 				else
 				{
-					if(((const NLIAC::CTypeOfObject &)*_OpD->getConstraintTypeOf()) & NLIAC::CTypeOfObject::tAgentInterpret)
+					if(((const NLAIC::CTypeOfObject &)*_OpD->getConstraintTypeOf()) & NLAIC::CTypeOfObject::tAgentInterpret)
 					{
 						const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)_OpD->getConstraintTypeOf()->getFactory())->getClass();
 						for(sint32 i = o->sizeVTable() - 1; i >= 1; i--)
@@ -54,10 +54,10 @@ namespace NLIASCRIPT
 			}
 			else
 			{				
-				const NLIAC::CIdentType *id = _OpG->getConstraintTypeOf();
-				if( (( uint32)(((const NLIAC::CTypeOfOperator &)*id) & _Op)) != (uint32)_Op) return false;
+				const NLAIC::CIdentType *id = _OpG->getConstraintTypeOf();
+				if( (( uint32)(((const NLAIC::CTypeOfOperator &)*id) & _Op)) != (uint32)_Op) return false;
 				id = _OpD->getConstraintTypeOf();
-				if( ((uint32)(((const NLIAC::CTypeOfOperator &)*id) & _Op)) != (uint32)_Op) return false;
+				if( ((uint32)(((const NLAIC::CTypeOfOperator &)*id) & _Op)) != (uint32)_Op) return false;
 			}
 			return true;
 		}

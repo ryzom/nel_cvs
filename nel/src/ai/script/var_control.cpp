@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: var_control.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NLIASCRIPT
 				o->setClassType(c);
 				return true;
 			}
-			catch(NLIAE::IException &)
+			catch(NLAIE::IException &)
 			{
 				char text[4096];
 				sprintf(text,"can't find %s object in the class factory",t.getString());
@@ -82,7 +82,7 @@ namespace NLIASCRIPT
 							_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType ((_SelfClass.get())->getStaticMember(i)->getType()));
 							_FlotingExpressionType->incRef();
 						}
-						catch(NLIAE::IException &a)
+						catch(NLAIE::IException &a)
 						{							
 							yyerror((char *)a.what());
 							return 0;
@@ -169,7 +169,7 @@ namespace NLIASCRIPT
 						{
 							_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(((CVarPStackParam *)var)->getVarType()));
 						}	
-						catch(NLIAE::CExceptionUnReference &)
+						catch(NLAIE::CExceptionUnReference &)
 						{
 							_FlotingExpressionType = (IOpType *)((const CObjectUnknown *)((CVarPStackParam *)var)->getObject())->getClassType();
 						}
@@ -511,7 +511,7 @@ namespace NLIASCRIPT
 				_Param.back()->release();
 				_Param.pop_back();		
 			}
-			catch(NLIAE::IException &)
+			catch(NLAIE::IException &)
 			{
 
 				return false;	

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ * $Id: libcode.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,18 +30,18 @@
 
 namespace NLIASCRIPT
 {
-	const NLIAC::CIdentType CCallPrint::IdCallPrint = NLIAC::CIdentType(	"Print",
-																	NLIAC::CSelfClassCFactory(CCallPrint()),																
-																	NLIAC::CTypeOfObject(NLIAC::CTypeOfObject::tObject),NLIAC::CTypeOfOperator(0));
+	const NLAIC::CIdentType CCallPrint::IdCallPrint = NLAIC::CIdentType(	"Print",
+																	NLAIC::CSelfClassCFactory(CCallPrint()),																
+																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
-	NLIAC::IIO *CCallPrint::inputOutput = NULL;
+	NLAIC::IIO *CCallPrint::inputOutput = NULL;
 
-	NLIAAGENT::tQueue CCallPrint::isMember(const NLIAAGENT::IVarName *className,const NLIAAGENT::IVarName *mathodName,const NLIAAGENT::IObjectIA &p) const	
+	NLAIAGENT::tQueue CCallPrint::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &p) const	
 	{
-		NLIAAGENT::CStringVarName print((const char *)IdCallPrint);
-		NLIAAGENT::CStringVarName format("Format");
-		NLIAAGENT::CStringVarName constructor(_CONSTRUCTOR_);
-		NLIAAGENT::tQueue m;
+		NLAIAGENT::CStringVarName print((const char *)IdCallPrint);
+		NLAIAGENT::CStringVarName format("Format");
+		NLAIAGENT::CStringVarName constructor(_CONSTRUCTOR_);
+		NLAIAGENT::tQueue m;
 		//const CParam &param = (const CParam &)p;
 		CParam param;
 		
@@ -52,10 +52,10 @@ namespace NLIASCRIPT
 			{
 				if(*mathodName == format)
 				{
-					NLIASCRIPT::COperandSimple typeR(new NLIAC::CIdentType(NLIAAGENT::CStringType::IdStringType));
+					NLIASCRIPT::COperandSimple typeR(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType));
 					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 					t->incRef();					
-					m.push(NLIAAGENT::CIdMethod(2,0.0,NULL,t));
+					m.push(NLAIAGENT::CIdMethod(2,0.0,NULL,t));
 				}
 				else
 				if(*mathodName == print)
@@ -63,7 +63,7 @@ namespace NLIASCRIPT
 					NLIASCRIPT::COperandVoid typeR;
 					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 					t->incRef();
-					m.push(NLIAAGENT::CIdMethod(0,0.0,NULL,t));
+					m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 				}				
 				else
 				if(*mathodName == constructor && p == param)
@@ -71,7 +71,7 @@ namespace NLIASCRIPT
 					NLIASCRIPT::COperandVoid typeR;
 					NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 					t->incRef();
-					m.push(NLIAAGENT::CIdMethod(1,0.0,NULL,t));
+					m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 				}
 			}
 		}		
@@ -82,7 +82,7 @@ namespace NLIASCRIPT
 				NLIASCRIPT::COperandVoid typeR;
 				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 				t->incRef();
-				m.push(NLIAAGENT::CIdMethod(0,0.0,NULL,t));
+				m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 			}
 			else
 			if(*mathodName == constructor && p == param)
@@ -90,35 +90,35 @@ namespace NLIASCRIPT
 				NLIASCRIPT::COperandVoid typeR;
 				NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
 				t->incRef();
-				m.push(NLIAAGENT::CIdMethod(1,0.0,NULL,t));
+				m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 			}
 		}
 		return m;
 	}	
 
-	NLIAAGENT::IObjectIA::CProcessResult CCallPrint::format(const NLIAAGENT::IBaseGroupType *g)
+	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::format(const NLAIAGENT::IBaseGroupType *g)
 	{
-		NLIAAGENT::CStringVarName str("");
-		NLIAAGENT::CIteratorContener i = g->getIterator();
+		NLAIAGENT::CStringVarName str("");
+		NLAIAGENT::CIteratorContener i = g->getIterator();
 		while(!i.isInEnd())
 		{
 			char temp[1024*8];
 			(i++)->getDebugString(temp);				
-			str += NLIAAGENT::CStringVarName(temp);
-			if(!i.isInEnd()) str += NLIAAGENT::CStringVarName(" ");
+			str += NLAIAGENT::CStringVarName(temp);
+			if(!i.isInEnd()) str += NLAIAGENT::CStringVarName(" ");
 		}
 
-		NLIAAGENT::CStringType s(str);		
-		NLIAAGENT::IObjectIA::CProcessResult r;
-		r.ResultState =  NLIAAGENT::processIdle;
-		r.Result =  (NLIAAGENT::IObjectIA *)s.clone();
+		NLAIAGENT::CStringType s(str);		
+		NLAIAGENT::IObjectIA::CProcessResult r;
+		r.ResultState =  NLAIAGENT::processIdle;
+		r.Result =  (NLAIAGENT::IObjectIA *)s.clone();
 		return r;
 	}
 
-	NLIAAGENT::IObjectIA::CProcessResult CCallPrint::printList(const NLIAAGENT::IBaseGroupType *g)
+	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::printList(const NLAIAGENT::IBaseGroupType *g)
 	{
 		char str[1024*32];		
-		NLIAAGENT::CIteratorContener i = g->getIterator();
+		NLAIAGENT::CIteratorContener i = g->getIterator();
 		strcpy(str,"");
 		while(!i.isInEnd())
 		{
@@ -128,14 +128,14 @@ namespace NLIASCRIPT
 			if(!i.isInEnd()) strcat(str," ");
 		}
 
-		NLIAAGENT::IObjectIA::CProcessResult r;
+		NLAIAGENT::IObjectIA::CProcessResult r;
 		inputOutput->Echo("%s\n",str);		
-		r.ResultState =  NLIAAGENT::processIdle;
+		r.ResultState =  NLAIAGENT::processIdle;
 		r.Result =  NULL;
 		return r;
 	}
 
-	NLIAAGENT::IObjectIA::CProcessResult CCallPrint::runMethodeMember(sint32 heritance, sint32 index, NLIAAGENT::IObjectIA *param)
+	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::runMethodeMember(sint32 heritance, sint32 index, NLAIAGENT::IObjectIA *param)
 	{
 		switch(heritance)
 		{
@@ -143,25 +143,25 @@ namespace NLIASCRIPT
 			return runMethodeMember(index,param);
 			break;
 		}
-		NLIAAGENT::IObjectIA::CProcessResult r;
-		r.ResultState =  NLIAAGENT::processIdle;
+		NLAIAGENT::IObjectIA::CProcessResult r;
+		r.ResultState =  NLAIAGENT::processIdle;
 		r.Result =  NULL;
 		return r;
 	}
 
-	NLIAAGENT::IObjectIA::CProcessResult CCallPrint::runMethodeMember(sint32 index,NLIAAGENT::IObjectIA *param)
+	NLAIAGENT::IObjectIA::CProcessResult CCallPrint::runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *param)
 	{
-		NLIAAGENT::IObjectIA::CProcessResult r;
-		r.ResultState =  NLIAAGENT::processIdle;
+		NLAIAGENT::IObjectIA::CProcessResult r;
+		r.ResultState =  NLAIAGENT::processIdle;
 		r.Result =  NULL;
 		switch(index)
 		{
 		case 0:
-			return printList((const NLIAAGENT::IBaseGroupType *)param);
+			return printList((const NLAIAGENT::IBaseGroupType *)param);
 		case 1:			
 			return r;
 		case 2:			
-			return format((const NLIAAGENT::IBaseGroupType *)param);
+			return format((const NLAIAGENT::IBaseGroupType *)param);
 		}
 		return r;
 	}
@@ -171,17 +171,17 @@ namespace NLIASCRIPT
 	{		
 		CCallPrint p;
 
-		NLIAC::CSelfClassCFactory &f = (NLIAC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
+		NLAIC::CSelfClassCFactory &f = (NLAIC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
 		f = NLIASCRIPT::CAgentClass(CAgentClass::IdAgentClass);
-		((CAgentClass *)f.getClass())->setClassName(NLIAAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
+		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
 
-		NLIAC::CSelfClassCFactory &fi = (NLIAC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());
+		NLAIC::CSelfClassCFactory &fi = (NLAIC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());
 		fi = CMessageClass(CMessageClass::IdMessageClass);
-		((CMessageClass *)fi.getClass())->setClassName(NLIAAGENT::CStringVarName((const char *)CMessageClass::IdMessageClass));
+		((CMessageClass *)fi.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMessageClass::IdMessageClass));
 
-		NLIAC::CSelfClassCFactory &fa = (NLIAC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
+		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
 		fa = CManagerClass(CManagerClass::IdManagerClass);
-		((CManagerClass *)fa.getClass())->setClassName(NLIAAGENT::CStringVarName((const char *)CManagerClass::IdManagerClass));
-		NLIAAGENT::DigitalType::NullOperator.incRef();
+		((CManagerClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CManagerClass::IdManagerClass));
+		NLAIAGENT::DigitalType::NullOperator.incRef();
 	}
 }

@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.2 2001/01/08 10:48:01 chafik Exp $
+ * $Id: constraint.cpp,v 1.3 2001/01/08 10:51:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ namespace NLIASCRIPT
 					_M = comp.findMethode((NLAIAGENT::IObjectIA *)id.getFactory()->getClass() ,*_MethodName,*_Param);
 
 				}
-				catch(NLIAE::IException &)
+				catch(NLAIE::IException &)
 				{
 					char txt[1024*8];
 					char param[1024*8];
@@ -253,7 +253,7 @@ namespace NLIASCRIPT
 						c->incRef();
 						setOpCode(comp,x,c,true);						
 					}
-					catch(NLIAE::IException &)
+					catch(NLAIE::IException &)
 					{	
 						c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
 						c->incRef();

@@ -16,6 +16,7 @@ namespace NLAILOGIC
 		{
 			_Goals.push_back( (CGoal *) g._Goals[i]->clone() );
 		}
+		_MaxGoals = g._MaxGoals;
 	}
 
 	CGoalStack::~CGoalStack()
@@ -60,7 +61,7 @@ namespace NLAILOGIC
 					_Goals[i]->select();
 					i++;
 				}
-
+ 
 				if ( !(*it_g)->isExclusive() )		// B&ackground operator
 					_Goals[i]->select();
 			}

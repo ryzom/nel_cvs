@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.5 2003/03/03 13:02:51 boucher Exp $
+ * $Id: ucstring.h,v 1.6 2003/04/24 13:57:52 boucher Exp $
  *
  */
 
@@ -199,6 +199,7 @@ public:
 					if (first == last)
 					{
 						nlwarning ("ucstring::fromUtf8(): Invalid UTF-8 character");
+						return;
 					}
 
 					uint8 ch;
@@ -207,6 +208,8 @@ public:
 					if ((ch & 0xC0) != 0x80)
 					{
 						nlwarning ("ucstring::fromUtf8(): Invalid UTF-8 character");
+						code = '?';
+						break;
 					}
 
 					code <<= 6;

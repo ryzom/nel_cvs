@@ -14,7 +14,7 @@
 #include "nel/ai/agent/agent_timer.h"
 #include "nel/ai/agent/volatil_memory.h"
 #include "nel/ai/agent/operation.h"
-
+#include "nel/net/service.h"
 
 using namespace NLAIAGENT;
 
@@ -71,14 +71,14 @@ namespace NLAILINK
 
 	void setLocalServerID(uint8 u)
 	{
-		NLAIAGENT::CAgentNumber::ServerId = u;
+		NLAIAGENT::CAgentNumber::setServiceId(u);
 		NLAIAGENT::CNumericIndex::_I.setCreatorId( u );
 		NLAIAGENT::CNumericIndex::_I.setDynamicId( u );
 	}
 
 	uint8 getLocalServerID()
 	{
-		return NLAIAGENT::CAgentNumber::ServerId;
+	  return NLNET::IService::getInstance()->getServiceId ();
 	}
 
 	void setMainManager(NLAIAGENT::IMainAgent *manager)

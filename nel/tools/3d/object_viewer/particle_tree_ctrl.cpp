@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.10 2001/06/26 11:59:37 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.11 2001/06/27 16:46:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ using NL3D::CPSLocatedBindable ;
 // CParticleTreeCtrl
 
 
-static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_PARTICLE, IDB_PARTICLE_SYSTEM, IDB_LOCATED, IDB_LOCATED_INSTANCE } ;
+static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_COLLISION_ZONE, IDB_PARTICLE_SYSTEM, IDB_LOCATED, IDB_LOCATED_INSTANCE } ;
 static const uint NumIconIDs = sizeof(IconIDs) / sizeof(uint) ;
 
 
@@ -160,7 +160,8 @@ void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
 			{
 				if (nt->LocatedInstanceIndex >= newSize)
 				{
-					DeleteItem(currLocElement) ;
+					_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;
+					DeleteItem(currLocElement) ;					
 				}
 			}
 			currLocElement = nextCurrLocElement ;
@@ -445,12 +446,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			toCreate = new NL3D::CPSTailDot ; 
 		break ;
 		case IDM_MESH:
-			toCreate = new NL3D::CPSMesh ;
-			((NL3D::CPSMesh *) toCreate)->setShape("dummy.shape") ;
+			toCreate = new NL3D::CPSMesh ;			
 		break ;
 		case IDM_CONSTRAINT_MESH:
-			toCreate = new NL3D::CPSConstraintMesh ;
-			((NL3D::CPSConstraintMesh *) toCreate)->setShape("dummy.shape") ;
+			toCreate = new NL3D::CPSConstraintMesh ;			
 		break ;
 		case IDM_FACE:
 			toCreate = new NL3D::CPSFace ;
@@ -568,9 +567,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_DELETE_LOCATED_INSTANCE:
 		{
 			nlassert(nt->Type == CNodeType::locatedInstance) ;
-			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;			
-			_ParticleDlg->setRightPane(NULL) ;			
 			suppressLocatedInstanceNbItem(0) ;
+			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;						
 			rebuildLocatedInstance() ;			
 		}
 		break; 

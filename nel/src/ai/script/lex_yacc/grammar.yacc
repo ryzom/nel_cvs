@@ -45,7 +45,7 @@ using  namespace NLAIFUZZY;
 %token	NEW 
 
 // Operator tokens
-%token	TRIGGER	PRECONDITION POSTCONDITION MESSAGE GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY
 
 // Logic tokens
 %token	LOGICVAR RULE IA_ASSERT OR AND
@@ -137,13 +137,20 @@ using  namespace NLAIFUZZY;
 
 	EnteteDeDefinition	:	DEFINE DefinitionDeGroup
 						|	DEFINE IDENT
-							{								
-								if(!definClass(LastyyText[1]))
+							{
+								try
 								{
-									std::string text;
-									text = NLAIC::stringGetBuild("class '%s' all ready exist",LastyyText[1]);
-									yyerror((char *)text.c_str());
+									NLAIC::CIdentType id(LastyyText[1]);
+									char text[1024*4];
+									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
+									yyerror(text);
 									return 0;
+								}
+								catch(NLAIE::IException &)
+								{
+									( (IClassInterpret *) _SelfClass.get() )->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
+									( (IClassInterpret *) _SelfClass.get() )->buildVTable();
+									RegisterClass();
 								}
 							}
 						;
@@ -501,9 +508,6 @@ using  namespace NLAIFUZZY;
 */				
 							}
 							ACCOL_D
-						|	MsgCond
-							{
-							}
 							;
 
 	BooleanCond			:	INTERROGATION IDENT
@@ -562,18 +566,6 @@ using  namespace NLAIFUZZY;
 							_LastLogicParams.back().push_back( new NLAIAGENT::CStringVarName( var_name ) );
 						}
 						;
-
-	MsgCond				:	MESSAGE PAR_G IDENT
-						{
-							char *msg_class_name = LastyyText[1];		// Message Class name
-						}
-						IDENT
-						{
-							char *msg_class_name = LastyyText[1];		// Message instance name
-						}
-						PAR_D
-						;
-						
 
 
 	BlocPourLesCode		:	BlocAvecCode

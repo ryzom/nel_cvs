@@ -718,6 +718,14 @@ SOURCE=.\3d\vertex_program.cpp
 
 SOURCE=.\3d\vertex_program.h
 # End Source File
+# Begin Source File
+
+SOURCE=C:\ryzom\code\nel\src\3d\vertex_program_parse.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=C:\ryzom\code\nel\src\3d\vertex_program_parse.h
+# End Source File
 # End Group
 # Begin Group "Font"
 

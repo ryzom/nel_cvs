@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.19 2003/02/24 10:31:49 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.20 2003/03/06 09:26:52 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,8 +38,9 @@ namespace NLMISC {
  */
 #define LOG_ALL_TRAFFIC
 
-
 #ifdef LOG_ALL_TRAFFIC
+
+extern bool VerboseAllTraffic;
 
 #define serialAndLog1( v ) \
 	_serialAndLog( #v, v );

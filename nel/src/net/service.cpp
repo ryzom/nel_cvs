@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.142 2002/08/29 11:39:53 coutelas Exp $
+ * $Id: service.cpp,v 1.143 2002/09/04 10:41:57 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -442,12 +442,15 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
-
-	setReportEmailFunction ((void*)sendEmail);
-	setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
 	
 	try
 	{
+		// Set the process name
+		CLog::setProcessName (_ShortName);
+
+		setReportEmailFunction ((void*)sendEmail);
+		setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
+
 		// get the path where to run the service if any in the command line
 		if (haveArg('A'))
 		{
@@ -684,11 +687,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		// Set the localhost name and service name to the logger
-		string processName = localhost;
-		processName += '/';
-		processName += _ShortName;
-		CLog::setProcessName (processName);
-
+		CLog::setProcessName (localhost+"/"+_ShortName);
 
 		//
 		// Initialize server parameters
@@ -931,6 +930,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		_NextEntityId.setServiceId(_SId);
+
+		// Set the localhost name and service name and the sid
+		CLog::setProcessName (localhost+"/"+_ShortName+"-"+toString(_SId));
 
 
 		//

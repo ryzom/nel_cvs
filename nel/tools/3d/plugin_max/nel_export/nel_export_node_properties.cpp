@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.44 2002/09/23 17:16:18 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.45 2003/01/08 15:48:57 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,52 @@ using namespace NLMISC;
 // Which dialog tab is the VerytexProgram one?
 #define TAB_VP_ID	5
 
+char *_EnvironmentNames[] =
+{
+	"",
+	"no fx",
+    "GENERIC",
+    "PADDEDCELL",
+    "ROOM",
+    "BATHROOM",
+    "LIVINGROOM",
+    "STONEROOM",
+    "AUDITORIUM",
+    "CONCERTHALL",
+    "CAVE",
+    "ARENA",
+    "HANGAR",
+    "CARPETEDHALLWAY",
+    "HALLWAY",
+    "STONECORRIDOR",
+    "ALLEY",
+    "FOREST",
+    "CITY",
+    "MOUNTAINS",
+    "QUARRY",
+    "PLAIN",
+    "PARKINGLOT",
+    "SEWERPIPE",
+    "UNDERWATER",
+    "DRUGGED",
+    "DIZZY",
+    "PSYCHOTIC",
+	NULL
+};
+char *_MaterialNames[] = 
+{
+	"",
+	"no occlusion",
+	"SINGLEWINDOW",
+	"DOUBLEWINDOW",
+	"THINDOOR",
+	"THICKDOOR",
+	"WOODWALL",
+	"BRICKWALL",
+	"STONEWALL",
+	"CURTAIN",
+	NULL
+};
 
 // ***************************************************************************
 
@@ -90,6 +136,7 @@ private:
 
 // ***************************************************************************
 
+
 class CLodDialogBoxParam
 {
 public:
@@ -133,6 +180,10 @@ public:
 	int						VisibleFromParent;
 	int						DynamicPortal;
 	int						Clusterized;
+	std::string				OcclusionModel;
+	std::string				OpenOcclusionModel;
+	std::string				SoundGroup;
+	std::string				EnvironmentFX;
 
 	// Instance Group
 	std::string				InstanceShape;
@@ -343,6 +394,13 @@ int CALLBACK AccelDialogCallback (
 			if (currentParam->SkinReduction!=-1)
 				CheckRadioButton (hwndDlg, IDC_SKIN_REDUCTION_MIN, IDC_SKIN_REDUCTION_BEST, IDC_SKIN_REDUCTION_MIN+currentParam->SkinReduction);
 
+			// Check accelerator check box
+			SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->ParentVisible, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->VisibleFromParent, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->DynamicPortal, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->Clusterized, 0);
+
+
 			// Enable / disable accelerator check box
 			if (currentParam->AcceleratorType != -1)
 			{
@@ -354,19 +412,29 @@ int CALLBACK AccelDialogCallback (
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), true);
 					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), true);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), true);
 				}
 				else
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
 					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
 				}
 				
 				if ((currentParam->AcceleratorType&3) == 1) // Portal ?
 				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), true);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), true);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), IsDlgButtonChecked(hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED);
 				}
 				else
+				{
 					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), false);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), false);
+				}
 
 				if ((currentParam->AcceleratorType&3) == 0) // Not an accelerator
 				{
@@ -385,14 +453,41 @@ int CALLBACK AccelDialogCallback (
 				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_OCC_MODEL), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), false);
 				EnableWindow (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
 			}
 
-			// Check accelerator check box
-			SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->ParentVisible, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->VisibleFromParent, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->DynamicPortal, 0);
-			SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_SETCHECK, currentParam->Clusterized, 0);
+			// fill the combo box
+			{
+				for (uint i=0; _MaterialNames[i] != 0; ++i)
+				{
+					SendMessage (GetDlgItem (hwndDlg, IDC_OCC_MODEL), CB_ADDSTRING, 0, (LONG)(_MaterialNames[i]));
+					SendMessage (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), CB_ADDSTRING, 0, (LONG)(_MaterialNames[i]));
+				}
+			}
+			{
+				for (uint i =0; _EnvironmentNames[i] != 0; ++i)
+				{
+					SendMessage (GetDlgItem (hwndDlg, IDC_ENV_FX), CB_ADDSTRING, 0, (LONG)(_EnvironmentNames[i]));
+				}
+			}
+			// set the combo and edit box
+			if (SendMessage (GetDlgItem (hwndDlg, IDC_OCC_MODEL), CB_SELECTSTRING, -1, (LONG)(currentParam->OcclusionModel.c_str())) == CB_ERR)
+			{
+//				nlassert(false);
+			}
+			if (SendMessage (GetDlgItem (hwndDlg, IDC_OPEN_OCC_MODEL), CB_SELECTSTRING, -1, (LONG)(currentParam->OpenOcclusionModel.c_str())) == CB_ERR)
+			{
+//				nlassert(false);
+			}
+			if (SendMessage (GetDlgItem (hwndDlg, IDC_ENV_FX), CB_SELECTSTRING, -1, (LONG)(currentParam->EnvironmentFX.c_str())) == CB_ERR)
+			{
+//				nlassert(false);
+			}
+			SendMessage(GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_SETTEXT, 0, (LONG)(currentParam->SoundGroup.c_str()));
 		}
 		break;
 
@@ -423,6 +518,17 @@ int CALLBACK AccelDialogCallback (
 							currentParam->DynamicPortal=SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_GETCHECK, 0, 0);
 							currentParam->Clusterized=SendMessage (GetDlgItem (hwndDlg, IDC_CLUSTERIZE), BM_GETCHECK, 0, 0);
 
+							// get the strings params
+							char tmp[256];
+							SendMessage (GetDlgItem(hwndDlg, IDC_OCC_MODEL), WM_GETTEXT, 256, (LONG)tmp);
+							currentParam->OcclusionModel = tmp;
+							SendMessage (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), WM_GETTEXT, 256, (LONG)tmp);
+							currentParam->OpenOcclusionModel = tmp;
+							SendMessage (GetDlgItem(hwndDlg, IDC_SOUND_GROUP), WM_GETTEXT, 256, (LONG)tmp);
+							currentParam->SoundGroup = tmp;
+							SendMessage (GetDlgItem(hwndDlg, IDC_ENV_FX), WM_GETTEXT, 256, (LONG)tmp);
+							currentParam->EnvironmentFX = tmp;
+
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -433,7 +539,11 @@ int CALLBACK AccelDialogCallback (
 							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), true);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
 						}
 						break;
 					case IDC_RADIOACCELPORTAL:
@@ -442,7 +552,11 @@ int CALLBACK AccelDialogCallback (
 							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), true);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), IsDlgButtonChecked(hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), false);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), false);
 						}
 						break;
 					case IDC_RADIOACCELCLUSTER:
@@ -451,16 +565,24 @@ int CALLBACK AccelDialogCallback (
 							EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OCC_MODEL), false);
+							EnableWindow (GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), false);
 							EnableWindow (GetDlgItem(hwndDlg, IDC_CLUSTERIZE), false);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_SOUND_GROUP), true);
+							EnableWindow (GetDlgItem (hwndDlg, IDC_ENV_FX), true);
 						}
 						break;
+					case IDC_DYNAMIC_PORTAL:
 					case IDC_FATHER_VISIBLE:
 					case IDC_VISIBLE_FROM_FATHER:
-					case IDC_DYNAMIC_PORTAL:
 					case IDC_CLUSTERIZE:
 						{
 							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
 								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+							if (LOWORD(wParam) == IDC_DYNAMIC_PORTAL)
+							{
+								EnableWindow(GetDlgItem(hwndDlg, IDC_OPEN_OCC_MODEL), SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_CHECKED);
+							}
 						}
 						break;
 				}
@@ -1964,6 +2086,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.VisibleFromParent = (accelFlag&8) ? BST_CHECKED : BST_UNCHECKED;
 		param.DynamicPortal = (accelFlag&16) ? BST_CHECKED : BST_UNCHECKED;
 		param.Clusterized = (accelFlag&32) ? BST_CHECKED : BST_UNCHECKED;
+		param.OcclusionModel = CExportNel::getScriptAppData(node, NEL3D_APPDATA_OCC_MODEL, "no occlusion");
+		param.OpenOcclusionModel = CExportNel::getScriptAppData(node, NEL3D_APPDATA_OPEN_OCC_MODEL, "no occlusion");
+		param.SoundGroup = CExportNel::getScriptAppData(node, NEL3D_APPDATA_SOUND_GROUP, "no sound");
+		param.EnvironmentFX = CExportNel::getScriptAppData(node, NEL3D_APPDATA_ENV_FX, "no fx");
 
 		param.InstanceShape=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "");
 		param.InstanceName=CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
@@ -2105,6 +2231,22 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DynamicPortal = BST_INDETERMINATE;
 			if ( ((accelFlag&32) ? BST_CHECKED : BST_UNCHECKED) != param.Clusterized)
 				param.Clusterized = BST_INDETERMINATE;
+
+			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_OCC_MODEL, "no occlusion") != param.OcclusionModel)
+			{
+				param.OcclusionModel = "";
+			}
+			if ( CExportNel::getScriptAppData(node, NEL3D_APPDATA_OPEN_OCC_MODEL, "no occlusion") != param.OpenOcclusionModel)
+			{
+				param.OpenOcclusionModel = "";
+			}
+			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_SOUND_GROUP, "no sound") != param.SoundGroup)
+				param.SoundGroup = "";
+			if (CExportNel::getScriptAppData(node, NEL3D_APPDATA_ENV_FX, "no fx") != param.EnvironmentFX)
+			{
+				param.EnvironmentFX = "";
+			}
+
 
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, "")!=param.InstanceShape)
 				param.InstanceShape = "...";
@@ -2336,6 +2478,21 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					accelType |= (param.Clusterized == BST_CHECKED) ? 32 : 0;
 				}
 				CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, accelType);
+
+				if (param.OcclusionModel != "")
+				{
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_OCC_MODEL, param.OcclusionModel);
+				}
+				if (param.OpenOcclusionModel != "")
+				{
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_OPEN_OCC_MODEL, param.OpenOcclusionModel);
+				}
+				if (param.SoundGroup != "")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_SOUND_GROUP, param.SoundGroup);
+				if (param.EnvironmentFX != "")
+				{
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ENV_FX, param.EnvironmentFX);
+				}
 
 				if ( (param.InstanceShape != "...") || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_SHAPE, param.InstanceShape);				

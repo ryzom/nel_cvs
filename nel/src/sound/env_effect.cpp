@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.7 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: env_effect.cpp,v 1.8 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ uint32			CEnvEffect::load( std::vector<CEnvEffect*>& container, NLMISC::IStream&
 	}
 }
 
-
+IKsPropertySet_QuerySupport
 /*
  * Set the environment type (EDIT)
  */

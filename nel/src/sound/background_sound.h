@@ -1,6 +1,6 @@
 /** \file background_sound.h
  *
- * $Id: background_sound.h,v 1.2 2002/11/25 14:11:40 boucher Exp $
+ * $Id: background_sound.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,46 +67,21 @@ public:
 
 	void				serial(NLMISC::IStream &s);
 
-
-
-	/** Container for background filter.
-	 *	If flag is not set, then the sound cannot be played when the environnement
-	 *	status is on.
-	 *	Ex : if Night is not set, then the sound is not played during the night.
-	 */
-/*	struct TBackgroundFilter
-	{
-		bool	Day;
-		bool	Night;
-		bool	Spring;
-		bool	Summer;
-		bool	Autumn;
-		bool	Winter;
-		bool	Sunny;
-		bool	Cloudy;
-		bool	Foggy;
-		bool	Rainy;
-		bool	Snow;
-		bool	Storm;
-		bool	BadAtmosphere;
-		bool	GoodAtmosphere;
-	};
-*/
 	/// Associtation clas for storage of sound / filter.
 	struct TSoundInfo
 	{
 		std::string			SoundName;
 		/// Fade in length (ms) after environnement filter end. 
-		uint32				FilterFadeIn;
+//		uint32				FilterFadeIn;
 		/// Fade out length (ms) after environnement filter start.
-		uint32				FilterFadeOut;
+//		uint32				FilterFadeOut;
 		UAudioMixer::TBackgroundFlags		Filter;
 
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(SoundName);
-			s.serial(FilterFadeIn);
-			s.serial(FilterFadeOut);
+//			s.serial(FilterFadeIn);
+//			s.serial(FilterFadeOut);
 			s.serial(Filter);
 		}
 	};
@@ -117,7 +92,7 @@ private:
 
 
 	/// The list of sound composing the background sound with there repective filter.
-	std::vector<TSoundInfo>	_Sounds;
+	std::vector<TSoundInfo>		_Sounds;
 	
 
 	// Duration of sound.

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.84 2002/11/26 15:18:04 boucher Exp $
+ * $Id: object_viewer.cpp,v 1.85 2003/01/08 15:48:57 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,10 +318,10 @@ CObjectViewer::CObjectViewer ()
 			string samplePath(var.asString());
 			CSoundSystem::setSamplePath(samplePath);
 
-			var = cf.getVar("samplebanks");
+/*			var = cf.getVar("samplebanks");
 			for (uint i=0; i<(uint)var.size(); i++)
 				CSoundSystem::addSampleBank(var.asString(i).c_str());
-		}
+*/		}
 		catch (EUnknownVar &)
 		{
 			//::MessageBox(NULL, "warning : 'sound_file' variable not defined", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);

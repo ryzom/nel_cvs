@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: listener_dsound.h,v 1.5 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,10 @@
 //#include <windows.h>
 #include <dsound.h>
 
+#ifdef EAX_AVAILABLE
+#include <eax.h>
+#endif
+
 
 namespace NLSOUND {
 
@@ -52,7 +56,7 @@ friend class CSoundDriverDSound;
 public:
 
 	/// Constructor
-	CListenerDSound(LPDIRECTSOUND3DLISTENER dsoundListener);
+	CListenerDSound(LPDIRECTSOUND3DLISTENER8 dsoundListener);
 
 	/// Deconstructor
 	virtual ~CListenerDSound();
@@ -127,10 +131,14 @@ private:
 	static CListenerDSound	*_Instance;
 
     /// The DirectSound listener interface
-    LPDIRECTSOUND3DLISTENER _Listener;
+    LPDIRECTSOUND3DLISTENER8	 _Listener;
 
 	// TMP : TEST
 	NLMISC::CVector			_Pos;
+
+#ifdef EAX_AVAILABLE
+	LPKSPROPERTYSET			_EAXListener;
+#endif
 };
 
 

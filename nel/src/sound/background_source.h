@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.h,v 1.2 2002/11/25 14:11:40 boucher Exp $
+ * $Id: background_source.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,11 +41,11 @@ class CBackgroundSound;
  * \author Boris Boucher.
  * \author Nevrax
  */
-class CBackgroundSource : public CSourceCommon, public CAudioMixerUser::IMixerEvent, public CAudioMixerUser::IMixerUpdate
+class CBackgroundSource : public CSourceCommon //, public CAudioMixerUser::IMixerEvent, public CAudioMixerUser::IMixerUpdate
 {
 public:
 	/// Constructor
-	CBackgroundSource	(CBackgroundSound *backgroundSource=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0);
+	CBackgroundSource	(CBackgroundSound *backgroundSource=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, NL3D::CCluster *cluster = 0);
 	/// Destructor
 	~CBackgroundSource	();
 
@@ -67,28 +67,19 @@ public:
 	void							setVelocity( const NLMISC::CVector& vel );
 	void							setDirection( const NLMISC::CVector& dir );
 
+	void							updateFilterValues(const float *filterValues);
+
+
 
 private:
-
-	/// Check the given filter agains current environnment status, return false is masking.
-	bool	checkFilter(const UAudioMixer::TBackgroundFlags &filter);
-
-	/// Mixer update implementation (for fade in/out).
-	void onUpdate();
-	/// Mixer event for env checking.
-	void onEvent();
 
 	/// Sub source possible status.
 	enum TSubSourceStatus
 	{
 		/// The sub source is playing.
 		SUB_STATUS_PLAY,
-		/// The sub source is stopped : it is mask by environnemt status.
+		/// The sub source is stopped : it is masked by environnemt status.
 		SUB_STATUS_STOP,
-		/// the sub source is being faded out then stop (masked by filter).
-		SUB_STATUS_FADEOUT,
-		/// The sub source is being faded in, then play (unmasked by filter).
-		SUB_STATUS_FADEIN
 	};
 
 	/// Sub source info.
@@ -98,12 +89,6 @@ private:
 		USource				*Source;
 		/// Sub source status.
 		TSubSourceStatus	Status;
-		/// Sub source fade factor (when fading).
-		NLMISC::TTime		FadeStart;
-		/// Fade in length (ms) after environnement filter end. 
-		uint32				FilterFadeIn;
-		/// Fade out length (ms) after environnement filter start.
-		uint32				FilterFadeOut;
 		/// Sub source filter.
 		UAudioMixer::TBackgroundFlags	Filter;
 	};
@@ -113,9 +98,6 @@ private:
 
 	/// The sub sources container.
 	std::vector<TSubSource>		_Sources;
-
-	/// Last time we check env variable.
-	NLMISC::TTime				_LastCheck;
 };
 
 

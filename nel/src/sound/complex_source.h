@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: complex_source.h,v 1.3 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ class CComplexSource : public CSourceCommon, public CAudioMixerUser::IMixerEvent
 {
 public:
 	/// Constructor
-	CComplexSource	(CComplexSound *soundPattern=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0);
+	CComplexSource	(CComplexSound *soundPattern=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, NL3D::CCluster *cluster = 0);
 	/// Destructor
 	~CComplexSource	();
 

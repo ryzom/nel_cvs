@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.4 2002/11/28 16:41:45 corvazier Exp $
+ * $Id: background_sound_manager.h,v 1.5 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <vector>
 #include <set>
 
+#include "audio_mixer_user.h"
 
 namespace NLLIGO
 {
@@ -43,6 +44,7 @@ namespace NLSOUND {
 class CListenerUser;
 class IPlayable;
 class IBoundingShape;
+class CSourceCommon;
 
 /// Number of background layer. Layer are identified in .prim by a letter starting from 'a' (for layer 0)
 const uint32	BACKGROUND_LAYER = 3;	// 3 layer
@@ -53,8 +55,10 @@ const uint32	BACKGROUND_LAYER = 3;	// 3 layer
  * - primitive positioned sound (point, path and patatoid supported)
  * - primitive positioned effect (patatoid only)
  * - primitive positioned sample bank (patatoid only)
- * - A set of 16 application definable flag that can be used in
+ * - A set of 32 application definable flag that can be used in
  *	background sound to filter the sub sounds of a background sound.
+ *  Each filter can be assigned at run time a fade in and fade out delay
+ *	that is used when sound are muted/unmuted according to filter status.
  *	
  *	 
  *
@@ -71,7 +75,7 @@ const uint32	BACKGROUND_LAYER = 3;	// 3 layer
  * \author Nevrax France
  * \date 2002
  */
-class CBackgroundSoundManager
+class CBackgroundSoundManager : CAudioMixerUser::IMixerUpdate
 {
 public:
 	/** Load the background sounds from a CPrimRegion class.
@@ -103,7 +107,7 @@ public:
 	/// Call this method when the listener position change
 	void		setListenerPosition (const NLMISC::CVector &listenerPosition);
 
-	/// Call this method to update the bacground sound (sub method od setListenerPosition)
+	/// Call this method to update the background sound (sub method of setListenerPosition)
 	void		updateBackgroundStatus();
 
 	// Call this function evenly to update the stuffs
@@ -115,12 +119,20 @@ public:
 	/// Return the position of the 3d source for a zone
 	NLMISC::CVector getZoneSourcePos(uint32 zone);
 
-	/// Set the background flags.
-	const UAudioMixer::TBackgroundFlags &getBackgroundFlags();
 	/// Get the background flags.
+	const UAudioMixer::TBackgroundFlags &getBackgroundFlags();
+	/// Set the background flags.
 	void		setBackgroundFlags(const UAudioMixer::TBackgroundFlags &backgroundFlags);
 
+	const UAudioMixer::TBackgroundFilterFades &getBackgroundFilterFades();
+	void		setBackgroundFilterFades(const UAudioMixer::TBackgroundFilterFades &backgroundFilterFades);
+
+	const float	*getFilterValues() { return _FilterFadeValues;}
+
 private:
+
+	// called by mixer when update registered.
+	void onUpdate();
 
 	// CAudioMixerUser will call private constructor and destructor, so, it is our friend ;)
 	friend class CAudioMixerUser;
@@ -161,8 +173,16 @@ private:
 	/// Flag for playing background sounds.
 	bool					_Playing;
 
-	/// Environnement flags.
-	UAudioMixer::TBackgroundFlags _BackgroundFlags;
+	/// Background flags.
+	UAudioMixer::TBackgroundFlags			_BackgroundFlags;
+	/// Background filters fades
+	UAudioMixer::TBackgroundFilterFades		_BackgroundFilterFades;
+	/// The date of last fade in or out started for each filter
+	NLMISC::TTime							_FilterFadesStart[UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS];
+	/// The filter fade values.
+	float									_FilterFadeValues[UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS];
+	/// Is some fade in/out running?
+	bool									_DoFade;
 
 	/// The last position of the listener.
 	NLMISC::CVector			_LastPosition;
@@ -199,7 +219,7 @@ private:
 		/// The reference to the sound.
 		CSound				*Sound;
 		/// A source instance of the sound (may be NULL).
-		USource				*Source;
+		CSourceCommon		*Source;
 
 		/// The min vector of the bounding box
 		NLMISC::CVector		MinBox;

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.28 2002/11/25 14:11:40 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.29 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,11 +31,12 @@
 #include "nel/misc/time_nl.h"
 #include "driver/source.h"
 #include "listener_user.h"
-#include "background_sound_manager.h"
+//#include "background_sound_manager.h"
 #include "mixing_track.h"
 #include "sound.h"
 #include <vector>
 #include <hash_set>
+#include <hash_map>
 #include <list>
 
 
@@ -47,6 +48,8 @@ class CEnvSoundUser;
 class CEnvEffect;
 class CSoundBank;
 class CSourceCommon;
+class CClusteredSound;
+class CBackgroundSoundManager;
 
 
 /*
@@ -114,7 +117,11 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void				init(/* uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD */);
+	virtual void		init(bool useEax, NLMISC::IProgressCallback *progressCallBack);
+
+	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate);
+	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate);
+
 	/** Set the priority channel reserve.
 	 *	Each priority channel can be assign a restrictive reserve value.
 	 *	This value is used when the number free track available for playing drop
@@ -177,9 +184,9 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource				*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
+	virtual USource				*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context = 0 );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
-	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
+	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context = 0 );
 	/// Add a source which was created by an EnvSound
 	void						addSource( CSourceCommon *source );
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
@@ -245,12 +252,18 @@ public:
 	/// Write profiling information about the mixer to the output stream.
 	virtual void				writeProfile(std::ostream& out);
 
+	virtual void				setBackgroundFlagName(uint flagIndex, const std::string &flagName);
+	virtual void				setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName);
+	virtual const std::string	&getBackgroundFlagName(uint flagIndex);
+	virtual const std::string	&getBackgroundFlagShortName(uint flagIndex);
 	virtual void				loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundEffectsFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundSamplesFromRegion (const NLLIGO::CPrimRegion &region);
 	virtual void				loadBackgroundSound (const std::string &continent);
 	virtual void				playBackgroundSound ();
 	virtual void				stopBackgroundSound ();
+
+	CClusteredSound				*getClusteredSound()	{ return _ClusteredSound; }
 
 //	virtual void				setBackgroundSoundDayNightRatio (float ratio) { CBackgroundSoundManager::setDayNightRatio(ratio); }
 
@@ -263,6 +276,10 @@ public:
 	void						bufferUnloaded(IBuffer *buffer);
 
 	void						setBackgroundFlags(const TBackgroundFlags &backgroundFlags);
+	void						setBackgroundFilterFades(const TBackgroundFilterFades &backgroundFilterFades);
+	const TBackgroundFlags		&getBackgroundFlags();
+	const TBackgroundFilterFades &getBackgroundFilterFades();
+
 
 //	bool						setPlaying(CSimpleSource *source);
 //	void						unsetPlaying(CSimpleSource *source);
@@ -302,6 +319,14 @@ public:
 	/// Add a source for play as possible (for non discadable sound)
 	void						addSourceWaitingForPlay(CSimpleSource *source);
 
+	//@{
+	//@name Name mapping
+	/// Give an unique Id in exchange of a string
+	uint				mapName(const std::string &name);
+	/// Return the string that belong to the unique id.
+	const std::string	&unmapName(uint id);
+	//@}
+
 private:
 
 	typedef std::hash_set<CSourceCommon*, THashPtr<CSourceCommon*> >					TSourceContainer;
@@ -315,32 +340,16 @@ protected:
 	TMixerUpdateContainer							_UpdateList;
 	/// List of update to add or remove (bool param of the pair).
 	std::vector<std::pair<IMixerUpdate*, bool> >	_UpdateEventList;
-	/// List of update to remove.
-//	std::vector<IMixerUpdate*>						_UpdateRemoveList;
 	/// List of event ordered by time.
 	TTimedEventContainer							_EventList;
 	/// List of event ordered by event ptr with there respective multimap iterator.
 	TEventContainer									_Events;
 	/// List of update for the event list.
 	std::vector<std::pair<NLMISC::TTime, IMixerEvent*> >	_EventListUpdate;
-	/// List of event to remove.
-//	std::vector<IMixerEvent*>						_EventRemoveList;
-
-	/// Redispatch the sources into tracks if needed
-//	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
-	/// Select the appropriate environmental effect
-//	void						computeEnvEffect( const NLMISC::CVector& listenerpos, bool force=false );
-	/// Return true if the number of user sources is higher than the number of tracks
-//	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
-	/// Redispatch the sources (call only if moreSourcesThanTracks() returns true)
-//	void						redispatchSourcesToTrack();
-	/// See removeSource(USource*) and removeMySource(USource*)
-//	void						removeSource( TSourceContainer::iterator ips);
-
+	/// Fill a vector of position and mute flag for all playing sound source.
 	virtual void				getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos);
-
 
 private:
 	/// The vector of curently free tracks.
@@ -364,12 +373,13 @@ private:
 
 	/// Intance of the background sound manager.
 	CBackgroundSoundManager		*_BackgroundSoundManager;
+	/// Array of filter name
+	std::string					_BackgroundFilterNames[TBackgroundFlags::NB_BACKGROUND_FLAGS];
+	/// Array of filter short names
+	std::string					_BackgroundFilterShortNames[TBackgroundFlags::NB_BACKGROUND_FLAGS];
 
-	/// Sound buffers and static properties
-	//TSoundMap					_Sounds;
-
-	/// Sound buffers used (and allocated but not deleted because shared) by ambiant sources
-//	TSoundSet					_AmbSounds;
+	/// Instance of the clustered sound system
+	CClusteredSound				*_ClusteredSound;
 
 	/// The listener instance
 	CListenerUser				_Listener;
@@ -377,19 +387,14 @@ private:
 	/// Listener position vector
 	NLMISC::CVector				_ListenPosition;
 
-	/** Environment sounds tree
-	 *	\deprecated
-	 */
-//	CEnvSoundUser				*_EnvSounds;
-
-	/// Auto-Balance period
-//	uint32						_BalancePeriod;
-
 	/// The path to the sample banks. This should be specified in the config file.
 	std::string					_SamplePath;
 
 	/// Assoc between buffer and source. Used when buffers are unloaded.
 	TBufferToSourceContainer	_BufferToSources;
+
+	/// A string mapper used for EAX env name and portal material name.
+	std::hash_map<std::string, uint>	_NameMapper;
 
 	/// The sound bank.
 //	CSoundBank					*_SoundBank;
@@ -398,31 +403,22 @@ public:
 
 	/// All Logical sources
 	TSourceContainer		_Sources;
-	/// The source that wanted to play
-//	TSourceContainer		_PlayingSources;
 
+	/// Number of source currently playing
 	uint32					_PlayingSources;
 
-
-	/// Environment effects
-//	std::vector<CEnvEffect*>	_EnvEffects;
-	
 private:
 
 	/// Current effect
 	CEnvEffect					*_CurEnvEffect;
 
 public: // Temp (EDIT)
-	
 	/// Physical sources array
 	CTrack						*_Tracks [MAX_TRACKS];
-
 	/// Size of the physical sources array (must be <= MAX_TRACKS)
 	uint						_NbTracks;
-
 	/// Max _NbTracks
 	uint						_MaxNbTracks;
-
 	/// Flag set in destructor
 	bool						_Leaving;
 

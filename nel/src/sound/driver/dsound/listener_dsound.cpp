@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
+ * $Id: listener_dsound.cpp,v 1.12 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,10 @@
 
 #include "stddsound.h"
 
+#ifdef EAX_AVAILABLE
+# include <eax.h>
+#endif
+
 #include "listener_dsound.h"
 #include "sound_driver_dsound.h"
 
@@ -42,15 +46,17 @@ CListenerDSound	*CListenerDSound::_Instance = NULL;
 /*
  * Constructor
  */
-CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER dsoundListener) //: IListener()
+CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER8 dsoundListener) //: IListener()
+:	_EAXListener(0),
+	_Pos(CVector::Null)
 {
-	_Pos = CVector::Null;
 	if ( _Instance == NULL )
 	{
 		_Instance = this;
         _Listener = dsoundListener;
-
+#if defined MANUAL_ROLLOFF
 		setRolloffFactor(DS3D_MINROLLOFFFACTOR);
+#endif
 	}
 	else
 	{
@@ -78,6 +84,11 @@ void CListenerDSound::release()
         _Listener->Release();
 		_Listener = NULL;
     }
+	if (_EAXListener != NULL)
+	{
+		_EAXListener->Release();
+		_EAXListener = NULL;
+	}
 }
 
 
@@ -269,6 +280,7 @@ void CListenerDSound::setDopplerFactor( float f )
  */
 void CListenerDSound::setRolloffFactor( float f )
 {
+#if defined(MANUAL_ROLLOFF)
     if (_Listener != NULL)
     {
 		//clamp(f, DS3D_MINROLLOFFFACTOR, DS3D_MAXROLLOFFFACTOR);
@@ -283,6 +295,7 @@ void CListenerDSound::setRolloffFactor( float f )
 			nlwarning("SetRolloffFactor failed");
 		}
     }
+#endif
 }
 
 
@@ -316,10 +329,18 @@ void CListenerDSound::commit3DChanges()
 void CListenerDSound::setEnvironment( uint env, float size )
 {
 #ifdef EAX_AVAILABLE
-	if ( EAXSetProp != NULL )
+	if (_EAXListener == NULL)
 	{
-		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENT, 0, &env, sizeof(unsigned long) );
-		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE, 0, &size, sizeof(float) );
+		_EAXListener = CSoundDriverDSound::instance()->createPropertySet(NULL);
+	}
+	if ( _EAXListener != NULL )
+	{
+		HRESULT res = _EAXListener->Set( DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENT, NULL, 0, &env, sizeof(unsigned long) );
+		if (res != S_OK)
+			nlwarning("Setting EAX environment #%u fail : %x", env, res);
+		res = _EAXListener->Set( DSPROPSETID_EAX_ListenerProperties, DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE, NULL, 0, &size, sizeof(float) );
+		if (res != S_OK)
+			nlwarning("Setting EAX environment size %f fail : %x", size, res);
 	}
 #endif
 }
@@ -331,9 +352,15 @@ void CListenerDSound::setEnvironment( uint env, float size )
 void CListenerDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 {
 #ifdef EAX_AVAILABLE
-	if ( EAXSetProp != NULL )
+	if (_EAXListener == NULL)
 	{
-		EAXSetProp( &DSPROPSETID_EAX_ListenerProperties, prop, 0, value, valuesize );
+		_EAXListener = CSoundDriverDSound::instance()->createPropertySet(NULL);
+	}
+	if ( _EAXListener != NULL )
+	{
+		HRESULT res = _EAXListener->Set(DSPROPSETID_EAX_ListenerProperties, prop, NULL, 0, value, valuesize );
+		if (res != S_OK)
+			nlwarning("Setting EAX listener prop #%d fail : %x", prop, res);
 	}
 #endif
 }

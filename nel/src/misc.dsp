@@ -861,6 +861,14 @@ SOURCE=..\include\nel\misc\string_id_array.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\string_mapper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\string_mapper.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\system_info.cpp
 # End Source File
 # Begin Source File

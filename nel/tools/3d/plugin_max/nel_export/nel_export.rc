@@ -186,17 +186,30 @@ BEGIN
     CONTROL         "Not an accelerator",IDC_RADIOACCELNO,"Button",
                     BS_AUTORADIOBUTTON,5,5,75,10
     CONTROL         "Portal",IDC_RADIOACCELPORTAL,"Button",
-                    BS_AUTORADIOBUTTON,5,17,34,10
+                    BS_AUTORADIOBUTTON,5,21,34,10
     CONTROL         "Cluster",IDC_RADIOACCELCLUSTER,"Button",
-                    BS_AUTORADIOBUTTON,5,39,37,10
+                    BS_AUTORADIOBUTTON,5,70,37,10
     CONTROL         "Father visible",IDC_FATHER_VISIBLE,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,27,50,57,10
+                    BS_AUTO3STATE | WS_TABSTOP,27,81,57,10
     CONTROL         "Visible from father",IDC_VISIBLE_FROM_FATHER,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,27,61,71,10
+                    BS_AUTO3STATE | WS_TABSTOP,27,92,71,10
     CONTROL         "Dynamic Portal",IDC_DYNAMIC_PORTAL,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,27,28,63,10
+                    BS_AUTO3STATE | WS_TABSTOP,27,44,63,10
     CONTROL         "Clusterize",IDC_CLUSTERIZE,"Button",BS_AUTO3STATE | 
                     WS_TABSTOP,93,5,46,10
+    COMBOBOX        IDC_OCC_MODEL,209,30,123,134,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Occlusion model",IDC_STATIC,134,30,68,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_OPEN_OCC_MODEL,209,44,123,116,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Open portal occlusion model",IDC_STATIC,112,44,89,10,
+                    SS_CENTERIMAGE
+    GROUPBOX        "Audio properties",IDC_STATIC,105,19,237,110
+    EDITTEXT        IDC_SOUND_GROUP,210,86,121,14,ES_AUTOHSCROLL
+    RTEXT           "Sound group",IDC_STATIC,111,86,90,14
+    COMBOBOX        IDC_ENV_FX,209,106,123,87,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Environment FX",IDC_STATIC,112,106,89,10,SS_CENTERIMAGE
 END
 
 IDD_LIGHTMAP DIALOG DISCARDABLE  0, 0, 360, 200

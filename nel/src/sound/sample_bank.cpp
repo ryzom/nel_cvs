@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.8 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.9 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "driver/buffer.h"
 #include "nel/misc/path.h"
 #include "async_file_manager_sound.h"
+#include "background_sound_manager.h"
 #include "sound_bank.h"
 
 //#include <crtdbg.h>

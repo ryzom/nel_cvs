@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: complex_source.cpp,v 1.3 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,8 +34,8 @@ using namespace NLMISC;
 namespace NLSOUND 
 {
 
-CComplexSource::CComplexSource	(CComplexSound *soundPattern, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
-:	CSourceCommon(soundPattern, spawn, cb, cbUserParam),
+CComplexSource::CComplexSource	(CComplexSound *soundPattern, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster)
+:	CSourceCommon(soundPattern, spawn, cb, cbUserParam, cluster),
 	_Source1(NULL),
 	_Source2(NULL)
 {
@@ -116,7 +116,7 @@ void CComplexSource::play()
 				else
 					_FadeLength = 0;
 
-				_Source2 = mixer->createSource(sound, false);
+				_Source2 = mixer->createSource(sound, false, 0, 0, _Cluster);
 				if (_Source2 == NULL)
 					return;
 				_Source2->setRelativeGain(0);
@@ -139,7 +139,7 @@ void CComplexSource::play()
 			{
 				CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
 
-				_Source1 = mixer->createSource(sound, false);
+				_Source1 = mixer->createSource(sound, false, 0, 0, _Cluster);
 				if (_Source1 == NULL)
 					return;
 				_Source1->setRelativeGain(_Gain);
@@ -179,7 +179,7 @@ void CComplexSource::play()
 					CSound *sound = mixer->getSoundId(*first);
 					if (sound != NULL)
 					{
-						USource *source = mixer->createSource(sound, false);
+						USource *source = mixer->createSource(sound, false, 0, 0, _Cluster);
 						source->setRelativeGain(_Gain);
 						source->setPos(_Position);
 						source->play();
@@ -440,7 +440,7 @@ void CComplexSource::onUpdate()
 
 				// determine the XFade lenght (if next sound is too short.
 				_FadeLength = minof<uint32>(uint32(_PatternSound->getFadeLenght()/_TickPerSecond), sound2->getDuration() / 2, _Source1->getSound()->getDuration()/2);
-				_Source2 = mixer->createSource(sound2, false);
+				_Source2 = mixer->createSource(sound2, false, 0, 0, _Cluster);
 				// there is a next sound, add event for xfade.
 				nldebug("Seting event for sound %s in %u millisec (XFade = %u).", _Source1->getSound()->getName().c_str(), _Source1->getSound()->getDuration(), _FadeLength);
 				mixer->addEvent(this, _StartTime1 + _Source1->getSound()->getDuration() - _FadeLength);
@@ -557,7 +557,7 @@ void CComplexSource::onEvent()
 
 				CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
 
-				_Source1 = mixer->createSource(sound, false);
+				_Source1 = mixer->createSource(sound, false, 0, 0, _Cluster);
 				if (_Source1 == NULL)
 				{
 					stop();

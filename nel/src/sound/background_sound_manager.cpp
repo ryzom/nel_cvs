@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.12 2002/11/28 16:41:45 corvazier Exp $
+ * $Id: background_sound_manager.cpp,v 1.13 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,9 +33,13 @@
 #include "nel/ligo/primitive.h"
 
 #include "nel/sound/u_source.h"
+#include "clustered_sound.h"
 
 #include "background_sound_manager.h"
+#include "source_common.h"
+#include "clustered_sound.h"
 #include <algorithm>
+#include "background_source.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -53,6 +57,12 @@ const float	INSIDE_FALLOF = 10.0f;
 CBackgroundSoundManager::CBackgroundSoundManager()
 : _LastPosition(0,0,0), _Playing(false)
 {
+	for (uint i=0; i<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+	{
+		_BackgroundFlags.Flags[i] = false;
+		_FilterFadesStart[i] = 0;
+		_FilterFadeValues[i] = 1.0f;
+	}
 }
 
 CBackgroundSoundManager::~CBackgroundSoundManager()
@@ -65,10 +75,17 @@ const UAudioMixer::TBackgroundFlags &CBackgroundSoundManager::getBackgroundFlags
 	return  _BackgroundFlags;
 }
 
-void CBackgroundSoundManager::setBackgroundFlags(const UAudioMixer::TBackgroundFlags &backgroundFlags)
+
+void CBackgroundSoundManager::setBackgroundFilterFades(const UAudioMixer::TBackgroundFilterFades &backgroundFilterFades)
 {
-	_BackgroundFlags = backgroundFlags;
+	_BackgroundFilterFades = backgroundFilterFades;
 }
+
+const UAudioMixer::TBackgroundFilterFades &CBackgroundSoundManager::getBackgroundFilterFades()
+{
+	return _BackgroundFilterFades;
+}
+
 
 void CBackgroundSoundManager::addSound(const std::string &soundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath)
 {
@@ -76,7 +93,7 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, const std::
 	uint layerId = 0;
 	uint n = 0;
 	string name;
-	// count the number of '-' in the sgtring.
+	// count the number of '-' in the string.
 	n = std::count(soundName.begin(), soundName.end(), '-');
 
 	if (n == 2)
@@ -373,7 +390,19 @@ void CBackgroundSoundManager::play ()
 
 	_Playing = true;
 
+	CAudioMixerUser::instance()->registerUpdate(this);
+
+	// init the filter value and filter start time
+	for (uint i =0; i<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+	{
+		_FilterFadesStart[i] = 0;
+		_FilterFadeValues[i] = 1.0f * !_BackgroundFlags.Flags[i];
+	}
+	// force an initial filtering 
+	_DoFade = true;
 	updateBackgroundStatus();
+
+	
 }
 
 
@@ -393,6 +422,8 @@ void CBackgroundSoundManager::stop ()
 				first->Source->stop();
 		}
 	}
+
+	CAudioMixerUser::instance()->unregisterUpdate(this);
 
 	_Playing = false;
 }
@@ -437,9 +468,24 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 
+
 	// it s on 2d so we don't have z
 	CVector listener = _LastPosition;
 	listener.z = 0.0f;
+
+	// special case for clustered sound management. If the listener is not
+	// in the global cluster, it's background listening place could be different
+	CClusteredSound *clusteredSound = mixer->getClusteredSound();
+	if (clusteredSound != 0)
+	{
+		const CClusteredSound::CClusterSoundStatus *css = clusteredSound->getClusterSoundStatus(clusteredSound->getRootCluster());
+		if (css != 0)
+		{
+			listener = css->Position;
+			listener.z = 0.0f;
+		}
+	}
+
 
 	// compute the list of load/unload banks.
 	{
@@ -492,6 +538,11 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			}
 		}
 	}
+
+	// retreive the root cluster...
+	NL3D::CCluster *rootCluster = 0;
+	if (mixer->getClusteredSound() != 0)
+		rootCluster = mixer->getClusteredSound()->getRootCluster();
 
 	// Apply the same algo for each sound layer.
 	for (uint i=0; i<BACKGROUND_LAYER; ++i)
@@ -550,7 +601,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 				{
 					TSoundData &sd = layer[*first];
 					CVector pos;
-					float	gain;
+					float	gain = 1.0f;
 					float	distance;
 
 					// inside the patat ?
@@ -566,7 +617,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 						if (distance < sd.MaxDist)
 						{
 							// compute the gain.
-							gain = (sd.MaxDist - distance) / sd.MaxDist;
+//							gain = (sd.MaxDist - distance) / sd.MaxDist;
 						}
 						else
 						{
@@ -599,7 +650,8 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 
 						ss.SoundData.Selected = true;
 
-						if (ss.Gain == 1)
+//						if (ss.Gain == 1)
+						if (ss.Distance == 0)
 						{
 							// inside a pattate, then decrease the mask factor will we are more inside the patate
 							maskFactor -= first->second.Distance / INSIDE_FALLOF;
@@ -611,7 +663,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 						if (ss.SoundData.Source == 0)
 						{
 							// try to create the source.
-							ss.SoundData.Source = mixer->createSource(ss.SoundData.Sound, false);
+							ss.SoundData.Source = static_cast<CSourceCommon*>(mixer->createSource(ss.SoundData.Sound, false, 0, 0, rootCluster));
 						}
 						if (ss.SoundData.Source != 0)
 						{
@@ -638,7 +690,120 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			} 
 		} // compute source mixing
 	} // for each layer
+
+	
+	// update the fade in / out
+	if (_DoFade)
+	{
+		TTime now = NLMISC::CTime::getLocalTime();
+		_DoFade = false;
+		uint i;
+
+		//for each filter
+		for (i=0; i< UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+		{
+			if (_FilterFadesStart[i] != 0)
+			{
+				// this filter is fading
+				if (_BackgroundFlags.Flags[i])
+				{
+					// fading out
+					TTime delta = now - _FilterFadesStart[i];
+					if (delta > _BackgroundFilterFades.FadeOuts[i])
+					{
+						// the fade is terminated
+						_FilterFadeValues[i] = 0;
+						// stop the fade for this filter
+						_FilterFadesStart[i] = 0;
+					}
+					else
+					{
+						_FilterFadeValues[i] = 1 - (float(delta) / _BackgroundFilterFades.FadeOuts[i]);
+						// continue to fade (at least for this filter.
+						_DoFade |= true;
+					}
+				}
+				else
+				{
+					// fading in
+					TTime delta = now - _FilterFadesStart[i];
+					if (delta > _BackgroundFilterFades.FadeIns[i])
+					{
+						// the fade is terminated
+						_FilterFadeValues[i] = 1;
+						// stop the fade for this filter
+						_FilterFadesStart[i] = 0;
+					}
+					else
+					{
+						_FilterFadeValues[i] = float(delta) / _BackgroundFilterFades.FadeIns[i];
+						// continue to fade (at least for this filter.
+						_DoFade |= true;
+					}
+				}
+			}
+		}
+
+		// update all playing background source that filter value has changed
+		// for each layer
+		for (i=0; i<BACKGROUND_LAYER; ++i)
+		{
+			// for each patat
+			std::vector<TSoundData>::iterator first(_Layers[i].begin()), last(_Layers[i].end());
+			for (; first != last; ++first)
+			{
+				if (first->Selected)
+				{
+					// update this playing sound
+					if (first->Source != 0 && first->Source->getType() == CSourceCommon::SOURCE_BACKGROUND)
+						static_cast<CBackgroundSource*>(first->Source)->updateFilterValues(_FilterFadeValues);
+				}
+			}
+
+		}
+
+		if (!_DoFade)
+		{
+			// we can remove the update.
+			mixer->unregisterUpdate(this);
+		}
+	}
 }
+
+void CBackgroundSoundManager::setBackgroundFlags(const UAudioMixer::TBackgroundFlags &backgroundFlags)
+{
+	for (uint i=0; i<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+	{
+		if (_BackgroundFlags.Flags[i] != backgroundFlags.Flags[i])
+		{
+			// the filter flags has changed ! 
+			if (backgroundFlags.Flags[i])
+			{
+				// the filter is activated, to a fade out
+				_FilterFadesStart[i] = uint64(NLMISC::CTime::getLocalTime() - (1-_FilterFadeValues[i]) * _BackgroundFilterFades.FadeOuts[i]);
+				_DoFade = true;
+			}
+			else
+			{
+				// the filter is cleared, do a fade in
+				_FilterFadesStart[i] = uint64(NLMISC::CTime::getLocalTime() - (_FilterFadeValues[i]) * _BackgroundFilterFades.FadeIns[i]);
+				_DoFade = true;
+			}
+		}
+
+		_BackgroundFlags.Flags[i] = backgroundFlags.Flags[i];
+	}
+
+	if (_DoFade)
+		CAudioMixerUser::instance()->registerUpdate(this);
+}
+
+
+void CBackgroundSoundManager::onUpdate()
+{
+	updateBackgroundStatus();
+}
+
 
 /*
 void CBackgroundSoundManager::update ()

@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.19 2002/11/29 16:43:53 coutelas Exp $
+ * $Id: load_form.h,v 1.20 2003/01/08 15:48:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,9 @@
  *
  * Classical use (copy/paste this in your code):
 
+	// For each sheet in the packed sheet, an instance of this class
+	// is created and stored into an stl container.
+	// This class must be default and copy constructable.
 	class CContainerEntry
 	{
 	public:
@@ -72,6 +75,14 @@
 		void serial (NLMISC::IStream &s)
 		{
 			s.serial (WalkSpeed, RunSpeed);
+		}
+
+		// Event to implement any action when the sheet is no longeur existent.
+		// This method is call when a sheet have been read from the packed sheet
+		// and the associated sheet file no more exist in the directories.
+		void removed()
+		{
+			// any action that is needed if the sheet no more exist.
 		}
 
 		// return the version of this class, increments this value when the content hof this class changed
@@ -260,6 +271,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 		if((*it2).second)
 		{
 			nlinfo ("the sheet '%s' is not in the directory, remove it from container", (*it2).first.toString().c_str());
+			container.find((*it2).first)->second.removed();
 			container.erase((*it2).first);
 			containerChanged = true;
 		}

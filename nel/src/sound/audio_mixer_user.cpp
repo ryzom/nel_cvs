@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.35 2002/11/26 10:15:55 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.36 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,15 +39,28 @@
 #include "simple_source.h"
 #include "complex_source.h"
 #include "background_source.h"
+#include "clustered_sound.h"
+#include "background_sound_manager.h"
+
+#include "nel/georges/u_form_loader.h"
+#include "nel/georges/u_form.h"
+#include "nel/georges/u_form_elm.h"
 
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/command.h"
+#include "nel/misc/progress_callback.h"
+#include "3d/scene_user.h"
 
 #include "context_sound.h"
 #include <iomanip.h>
+
+#if defined(EAX_AVAILABLE)
+# include <eax.h>
+#endif
+
 
 //#include <crtdbg.h>
 
@@ -107,7 +120,8 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _MaxNbTracks(0),
 									 _Leaving(false),
 									 _BackgroundSoundManager(0),
-									 _PlayingSources(0)
+									 _PlayingSources(0),
+									 _ClusteredSound(0)
 {
 	if ( _Instance == NULL )
 	{
@@ -125,6 +139,17 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 	{
 		nlerror( "Audio mixer singleton instanciated twice" );
 	}
+
+
+	// init the filter names and short names
+	for (uint i=0; i<TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+	{
+		char tmp[1024];
+		sprintf(tmp, "Filter%2u", i);
+		_BackgroundFilterNames[i] = tmp;
+		sprintf(tmp, "%u", i);
+		_BackgroundFilterShortNames[i] = tmp;
+	}
 }
 
 
@@ -133,6 +158,9 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 CAudioMixerUser::~CAudioMixerUser()
 {
 	nldebug( "AM: Releasing..." );
+
+	if (_ClusteredSound != 0)
+		delete _ClusteredSound;
 
 	if (_BackgroundSoundManager != 0)
 		delete _BackgroundSoundManager;
@@ -162,6 +190,24 @@ CAudioMixerUser::~CAudioMixerUser()
 	_Instance = NULL;
 
 	nldebug( "AM: Released" );
+}
+
+
+void CAudioMixerUser::initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate)
+{
+	NL3D::CScene *scene = 0;
+	if (uscene != 0)
+		scene = &(static_cast<NL3D::CSceneUser*>(uscene)->getScene());
+
+	initClusteredSound(scene, minGain, maxDistance, portalInterpolate);
+}
+
+void CAudioMixerUser::initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate = 20.0f)
+{
+	if (_ClusteredSound == 0)
+		_ClusteredSound = new CClusteredSound;
+
+	_ClusteredSound->init(scene, portalInterpolate, maxDistance, minGain);
 }
 
 
@@ -273,7 +319,7 @@ void				CAudioMixerUser::reset()
 
 // ******************************************************************
 
-void				CAudioMixerUser::init( /*uint32 balance_period */)
+void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 {
 	nldebug( "AM: Init..." );
 
@@ -283,7 +329,7 @@ void				CAudioMixerUser::init( /*uint32 balance_period */)
 	// Init sound driver
 	try
 	{
-		_SoundDriver = ISoundDriver::createDriver();
+		_SoundDriver = ISoundDriver::createDriver(useEax);
 	}
 	catch(...)
 	{
@@ -318,7 +364,8 @@ void				CAudioMixerUser::init( /*uint32 balance_period */)
 		{
 			_Tracks[i] = new CTrack();
 			_Tracks[i]->init( _SoundDriver );
-			_FreeTracks.push_back(_Tracks[i]);
+			// insert in front because the last inserted wan be sofware buffer...
+			_FreeTracks.insert(_FreeTracks.begin(), _Tracks[i]);
 		}
 	}
 	catch ( ESoundDriver & )
@@ -343,9 +390,151 @@ void				CAudioMixerUser::init( /*uint32 balance_period */)
 	// Create the background sound manager.
 	_BackgroundSoundManager = new CBackgroundSoundManager();
 
+	// create the clustered sound class.
+//	_ClusteredSound = new CClusteredSound();
+
 	// Load the sound bank singleton
 	CSoundBank::instance()->load();
 	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
+
+	// try to load default configuration from george sheet
+	
+	NLGEORGES::UFormLoader *formLoader = NULL;
+
+	try
+	{
+		std::string mixerConfigFile = NLMISC::CPath::lookup("default.mixer_config", false);
+		if (!mixerConfigFile.empty())
+		{
+			formLoader = NLGEORGES::UFormLoader::createLoader();
+
+			NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+			form = formLoader->loadForm(mixerConfigFile.c_str());
+
+			NLGEORGES::UFormElm &root = form->getRootNode();
+
+
+			// read track reserve
+			uint32 highestRes, highRes, midRes, lowRes;
+			root.getValueByName(highestRes, ".HighestPriorityReserve");
+			root.getValueByName(highRes, ".HighPriorityReserve");
+			root.getValueByName(midRes, ".MidPriorityReserve");
+			root.getValueByName(lowRes, ".LowPriorityReserve");
+
+			setPriorityReserve(HighestPri, highestRes);
+			setPriorityReserve(HighPri, highRes);
+			setPriorityReserve(MidPri, midRes);
+			setPriorityReserve(LowPri, lowRes);
+
+			uint32 lowWater;
+			root.getValueByName(lowWater, ".LowWaterMark");
+			setLowWaterMark(lowWater);
+
+			// preload sample bank
+			NLGEORGES::UFormElm *sampleBanks;
+			root.getNodeByName(&sampleBanks, ".SampleBanks");
+
+			if (sampleBanks != NULL)
+			{
+				uint size;
+				sampleBanks->getArraySize(size);
+				for (uint i=0; i<size; ++i)
+				{
+					std::string name;
+					sampleBanks->getArrayValue(name, i);
+					
+					if (!name.empty())
+						loadSampleBank(false, name);
+
+					if (progressCallBack != 0)
+						progressCallBack->progress(float(i) / size);
+				}
+			}
+
+			// configure background flags names, fades and state
+			NLGEORGES::UFormElm *bgFlags;
+			root.getNodeByName(&bgFlags, ".BackgroundFlags");
+			if (bgFlags != NULL)
+			{
+				TBackgroundFlags		flags;
+				TBackgroundFilterFades	fades;
+
+				uint size;
+				bgFlags->getArraySize(size);
+				uint i;
+				for (i=0; i<min(size, TBackgroundFlags::NB_BACKGROUND_FLAGS); ++i)
+				{
+					NLGEORGES::UFormElm *flag;
+					bgFlags->getArrayNode(&flag, i);
+
+					flag->getValueByName(flags.Flags[i], ".InitialState");
+
+					uint32 fadeIn, fadeOut;
+					flag->getValueByName(fadeIn, ".FadeIn");
+					flag->getValueByName(fadeOut, ".FadeOut");
+
+					fades.FadeIns[i] = fadeIn;
+					fades.FadeOuts[i] = fadeOut;
+
+					flag->getValueByName(_BackgroundFilterNames[i], ".Name");
+					flag->getValueByName(_BackgroundFilterShortNames[i], ".ShortName");
+				}
+				for (; i< TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
+				{
+					uint32 fadeIn, fadeOut;
+					NLGEORGES::UFormElm::TWhereIsValue where = NLGEORGES::UFormElm::ValueDefaultDfn;
+					root.getValueByName(fadeIn, ".BackgroundFlags[0].FadeIn", NLGEORGES::UFormElm::Eval, &where);
+					root.getValueByName(fadeOut, ".BackgroundFlags[0].FadeOut", NLGEORGES::UFormElm::Eval, &where);
+					root.getValueByName(flags.Flags[i], ".BackgroundFlags[0].InitialState", NLGEORGES::UFormElm::Eval, &where);
+
+					fades.FadeIns[i] = fadeIn;
+					fades.FadeOuts[i] = fadeOut;
+				}
+				setBackgroundFilterFades(fades);
+				setBackgroundFlags(flags);
+			}
+		}
+	}
+	catch(...)
+	{
+		delete formLoader;
+	}
+}
+
+void				CAudioMixerUser::setBackgroundFlagName(uint flagIndex, const std::string &flagName)
+{
+	if (flagIndex < TBackgroundFlags::NB_BACKGROUND_FLAGS)
+		_BackgroundFilterNames[flagIndex] = flagName;
+}
+void				CAudioMixerUser::setBackgroundFlagShortName(uint flagIndex, const std::string &flagShortName)
+{
+	if (flagIndex < TBackgroundFlags::NB_BACKGROUND_FLAGS)
+		_BackgroundFilterShortNames[flagIndex] = flagShortName;
+}
+const std::string	&CAudioMixerUser::getBackgroundFlagName(uint flagIndex)
+{
+	static std::string bad("");
+	if (flagIndex < TBackgroundFlags::NB_BACKGROUND_FLAGS)
+		return _BackgroundFilterNames[flagIndex];
+	else
+		return bad;
+}
+const std::string	&CAudioMixerUser::getBackgroundFlagShortName(uint flagIndex)
+{
+	static std::string bad("");
+	if (flagIndex < TBackgroundFlags::NB_BACKGROUND_FLAGS)
+		return _BackgroundFilterShortNames[flagIndex];
+	else
+		return bad;
+}
+
+const UAudioMixer::TBackgroundFlags		&CAudioMixerUser::getBackgroundFlags()
+{
+	return _BackgroundSoundManager->getBackgroundFlags();
+}
+const UAudioMixer::TBackgroundFilterFades &CAudioMixerUser::getBackgroundFilterFades()
+{
+	return _BackgroundSoundManager->getBackgroundFilterFades();
 }
 
 
@@ -457,6 +646,8 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 {
 	// Store position
 	_ListenPosition = listenerpos;
+
+	_BackgroundSoundManager->updateBackgroundStatus();
 
 	// Environmental effect
 //	computeEnvEffect( listenerpos );
@@ -677,10 +868,11 @@ void				CAudioMixerUser::update()
 	}
 
 	// update the background sound
-//	_BackgroundSoundManager->update();
+	_BackgroundSoundManager->updateBackgroundStatus();
 
+	uint i;
 	// Check all playing track and stop any terminated buffer.
-	for (uint i=0; i<_NbTracks; ++i)
+	for (i=0; i<_NbTracks; ++i)
 	{
 		if (!_Tracks[i]->isPlaying())
 		{
@@ -702,6 +894,54 @@ void				CAudioMixerUser::update()
 			}
 		}
 	}
+
+	if (_ClusteredSound)
+	{
+		// update the clustered sound...
+		CVector view, up;
+		_Listener.getOrientation(view, up);
+		_ClusteredSound->update(_ListenPosition, view, up);
+
+		// update all playng track according to there cluster status
+		for (i=0; i<_NbTracks; ++i)
+		{
+			if (_Tracks[i]->isPlaying())
+			{
+				if (_Tracks[i]->getSource() != 0)
+				{
+					CSimpleSource *source = _Tracks[i]->getSource();
+					if (source->getCluster() != 0)
+					{
+						// need to check the cluster status
+						const CClusteredSound::CClusterSoundStatus *css = _ClusteredSound->getClusterSoundStatus(source->getCluster());
+						if (css != 0)
+						{
+							// there is some data here, update the virtual position of the sound.
+							float dist = (css->Position - source->getPos()).norm();
+							CVector vpos(_ListenPosition + css->Direction * (css->Dist + dist));
+//							_Tracks[i]->DrvSource->setPos(source->getPos() * (1-css->PosAlpha) + css->Position*(css->PosAlpha));
+							_Tracks[i]->DrvSource->setPos(source->getPos() * (1-css->PosAlpha) + vpos*(css->PosAlpha));
+							// update the relative gain
+							_Tracks[i]->DrvSource->setGain(source->getRelativeGain()*source->getGain()*css->Gain);
+#if defined(EAX_AVAILABLE)
+							// update the occlusion parameters
+							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSION, (void*)&css->Occlusion, sizeof(css->Occlusion));
+							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONLFRATIO, (void*)&css->OcclusionLFFactor, sizeof(css->OcclusionLFFactor));
+//							if (lastRatio[i] != css->OcclusionRoomRatio)
+//							{
+								_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONROOMRATIO, (void*)&css->OcclusionRoomRatio, sizeof(css->OcclusionRoomRatio));
+//								lastRatio[i] = css->OcclusionRoomRatio;
+//								nldebug("Setting room ration.");
+//							}
+							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OBSTRUCTION, (void*)&css->Obstruction, sizeof(css->Obstruction));
+#endif
+						}
+					}
+				}
+			}
+		}
+	}
+
 
 	// Debug info
 	/*uint32 i;
@@ -772,7 +1012,7 @@ void				CAudioMixerUser::addSource( CSourceCommon *source )
 
 // ******************************************************************
 
-USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam, CSoundContext *context )
+USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context )
 {
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
@@ -802,7 +1042,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 		}
 
 		// Create source
-		CSimpleSource *source = new CSimpleSource( simpleSound, spawn, cb, userParam);
+		CSimpleSource *source = new CSimpleSource( simpleSound, spawn, cb, userParam, cluster);
 
 //		nldebug("Mixer : source %p created", source);
 
@@ -824,13 +1064,13 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	{
 		CComplexSound	*complexSound = static_cast<CComplexSound*>(id);
 		// This is a pattern sound.
-		ret =  new CComplexSource(complexSound, spawn, cb, userParam);
+		ret =  new CComplexSource(complexSound, spawn, cb, userParam, cluster);
 	}
 	else if (id->getSoundType() == CSound::SOUND_BACKGROUND)
 	{
 		// This is a background sound.
 		CBackgroundSound	*bgSound = static_cast<CBackgroundSound	*>(id);
-		ret = new CBackgroundSource(bgSound, spawn, cb, userParam);
+		ret = new CBackgroundSource(bgSound, spawn, cb, userParam, cluster);
 	}
 	else if (id->getSoundType() == CSound::SOUND_CONTEXT)
 	{
@@ -842,7 +1082,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 			CSound			*sound = ctxSound->getContextSound(*context);
 			if (sound != 0)
 			{
-				ret = createSource(sound, spawn, cb, userParam);
+				ret = createSource(sound, spawn, cb, userParam, cluster);
 				// Set the volume of the source according to the context volume
 				if (ret != 0)
 					ret->setGain(ret->getGain() * ctxSound->getGain());
@@ -871,9 +1111,9 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 
 // ******************************************************************
 
-USource				*CAudioMixerUser::createSource( const std::string &name, bool spawn, TSpawnEndCallback cb, void *userParam, CSoundContext *context)
+USource				*CAudioMixerUser::createSource( const std::string &name, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context)
 {
-	return createSource( getSoundId( name ), spawn, cb, userParam, context );
+	return createSource( getSoundId( name ), spawn, cb, userParam, cluster, context);
 }
 
 
@@ -1311,6 +1551,12 @@ void CAudioMixerUser::setBackgroundFlags(const TBackgroundFlags &backgroundFlags
 {
 	_BackgroundSoundManager->setBackgroundFlags(backgroundFlags);
 }
+
+void CAudioMixerUser::setBackgroundFilterFades(const TBackgroundFilterFades &backgroundFilterFades)
+{
+	_BackgroundSoundManager->setBackgroundFilterFades(backgroundFilterFades);
+}
+
 
 void CAudioMixerUser::loadBackgroundSoundFromRegion (const NLLIGO::CPrimRegion &region)
 {

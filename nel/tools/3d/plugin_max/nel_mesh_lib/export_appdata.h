@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.1 2002/08/27 12:40:46 corvazier Exp $
+ * $Id: export_appdata.h,v 1.2 2003/01/08 15:48:57 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,11 @@
 // Last APPDATA_LOD value is						1423062560
 
 #define NEL3D_APPDATA_ACCEL							(1423062561)
+#define NEL3D_APPDATA_OCC_MODEL						(84682540)
+#define NEL3D_APPDATA_OPEN_OCC_MODEL				(84682541)
+#define NEL3D_APPDATA_SOUND_GROUP					(84682542)
+#define NEL3D_APPDATA_ENV_FX						(84682543)
+
 #define NEL3D_APPDATA_INSTANCE_SHAPE				(1970)
 #define NEL3D_APPDATA_INSTANCE_NAME					(1423062562)
 #define NEL3D_APPDATA_DONT_ADD_TO_SCENE				(1423062563)

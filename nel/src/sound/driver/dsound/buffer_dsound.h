@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.4 2002/11/25 14:11:41 boucher Exp $
+ * $Id: buffer_dsound.h,v 1.5 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,8 +113,8 @@ private:
 
 
 #if USE_LOCDEFER
-    LPDIRECTSOUNDBUFFER _SecondaryBuffer;
-    LPDIRECTSOUND3DBUFFER _3DBuffer;
+    LPDIRECTSOUNDBUFFER	_SecondaryBuffer;
+    LPDIRECTSOUND3DBUFFER	_3DBuffer;
 #endif
 
 };

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.27 2002/10/10 13:00:40 vizerie Exp $
+ * $Id: export_scene.cpp,v 1.28 2003/01/08 15:48:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,6 +213,12 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 		if (CExportNel::isMesh(*pNode, tvTime))
 		{
 			CCluster clusterTemp;
+			std::string temp;
+
+			temp = CExportNel::getScriptAppData(pNode, NEL3D_APPDATA_SOUND_GROUP, "no sound");
+			clusterTemp.setSoundGroup(temp != "no sound" ? temp : "");
+			temp = CExportNel::getScriptAppData(pNode, NEL3D_APPDATA_ENV_FX, "no fx");
+			clusterTemp.setEnvironmentFx(temp != "no fx" ? temp : "");
 
 			CMesh::CMeshBuild *pMB;
 			CMeshBase::CMeshBaseBuild *pMBB;
@@ -258,6 +264,12 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 		if (CExportNel::isMesh(*pNode, tvTime))
 		{
 			CPortal portalTemp;
+			std::string temp;
+
+			temp = CExportNel::getScriptAppData(pNode, NEL3D_APPDATA_OCC_MODEL, "no occlusion");
+			portalTemp.setOcclusionModel(temp != "no occlusion" ? temp : "");
+			temp = CExportNel::getScriptAppData(pNode, NEL3D_APPDATA_OPEN_OCC_MODEL, "no occlusion");
+			portalTemp.setOpenOcclusionModel(temp != "no occlusion" ? temp : "");
 
 			CMesh::CMeshBuild *pMB;
 			CMeshBase::CMeshBaseBuild *pMBB;

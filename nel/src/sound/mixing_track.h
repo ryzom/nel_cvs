@@ -1,7 +1,7 @@
 /** \file mixing_track.h
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.h,v 1.3 2002/11/25 14:11:41 boucher Exp $
+ * $Id: mixing_track.h,v 1.4 2003/01/08 15:48:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_TRACK_H
-#define NL_TRACK_H
+#ifndef NL_MIXING_TRACK_H
+#define NL_MIXING_TRACK_H
 
 #include "nel/misc/types_nl.h"
 #include "driver/sound_driver.h"
@@ -81,6 +81,6 @@ private:
 } // NLSOUND
 
 
-#endif // NL_TRACK_H
+#endif // NL_MIXING_TRACK_H
 
 /* End of mixing_track.h */

@@ -84,6 +84,15 @@ CObjectViewer::CObjectViewer ()
 
 	// Setup animation set
 	_ChannelMixer.setAnimationSet (&_AnimationSet);
+
+	// Hotspot color
+	_HotSpotColor.R=255;
+	_HotSpotColor.G=255;
+	_HotSpotColor.B=0;
+	_HotSpotColor.A=255;
+
+	// Hotspot size
+	_HotSpotSize=10.f;
 }
 
 // ***************************************************************************
@@ -117,6 +126,12 @@ void CObjectViewer::initUI ()
 	CWnd driverWnd;
 	driverWnd.Attach((HWND)CNELU::Driver->getDisplay());
 	getRegisterWindowState (&driverWnd, REGKEY_OBJ_VIEW_OPENGL_WND, true);
+
+	// Camera
+	CFrustum frustrum;
+	frustrum.initPerspective( 75.f*(float)Pi/180.f, 1.33f, 0.1f, 1000.f);
+	CNELU::Camera->setFrustum (frustrum);
+		
 
 	// Hide the main window
 	//driverWnd.ShowWindow (SW_HIDE);
@@ -190,31 +205,19 @@ void CObjectViewer::go ()
 		// Setup the channel mixer
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
 
-		// Default Transform for all the models
-		for (uint i=0; i<_ListTransformShape.size(); i++)
-		{
-			// Set default position values
-			CAnimatedValueVector *pos=(CAnimatedValueVector*)&(((CMesh*)(IShape*)_ListTransformShape[i]->Shape)->getDefaultPos ()->getValue());
-			_ListTransformShape[i]->setPos (pos->Value);
-
-			CAnimatedValueVector *scale=(CAnimatedValueVector*)&(((CMesh*)(IShape*)_ListTransformShape[i]->Shape)->getDefaultScale ()->getValue());
-			_ListTransformShape[i]->setScale (scale->Value);
-
-			if (_SceneDlg->Euler)
-			{
-				CAnimatedValueVector *euler=(CAnimatedValueVector*)&(((CMesh*)(IShape*)_ListTransformShape[i]->Shape)->getDefaultRotEuler ()->getValue());
-				_ListTransformShape[i]->setRotEuler (euler->Value);
-			}
-			else
-			{
-				CAnimatedValueQuat *quat=(CAnimatedValueQuat*)&(((CMesh*)(IShape*)_ListTransformShape[i]->Shape)->getDefaultRotQuat ()->getValue());
-				_ListTransformShape[i]->setRotQuat (quat->Value);
-			}
-		}
-
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);
-		
+
+		// Mouse listener
+		_SceneDlg->UpdateData ();
+		if (_SceneDlg->ObjectMode)
+			_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+		else
+		{
+			_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
+			_MouseListener.setSpeed (_SceneDlg->MoveSpeed);
+		}
+
 		// New matrix from camera
 		CNELU::Camera->setTransformMode (ITransformable::DirectMatrix);
 		CNELU::Camera->setMatrix (_MouseListener.getViewMatrix());
@@ -224,6 +227,16 @@ void CObjectViewer::go ()
 
 		// Draw the scene
 		CNELU::Scene.render();
+
+		// Draw the hotSpot
+		if (_SceneDlg->ObjectMode)
+		{
+			float radius=_HotSpotSize/2.f;
+			CNELU::Driver->setupModelMatrix (CMatrix::Identity);
+			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (radius, 0, 0), _MouseListener.getHotSpot()+CVector (-radius, 0, 0), _HotSpotColor, *CNELU::Driver);
+			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, radius, 0), _MouseListener.getHotSpot()+CVector (0, -radius, 0), _HotSpotColor, *CNELU::Driver);
+			CDRU::drawLine (_MouseListener.getHotSpot()+CVector (0, 0, radius), _MouseListener.getHotSpot()+CVector (0, 0, -radius), _HotSpotColor, *CNELU::Driver);
+		}
 
 		// Swap the buffers
 		CNELU::swapBuffers();
@@ -251,14 +264,6 @@ void CObjectViewer::releaseUI ()
 	if (CNELU::Driver->isActive())
 	{
 		// register window position
-		if (_SceneDlg)
-			setRegisterWindowState (_SceneDlg, REGKEY_OBJ_VIEW_SCENE_DLG);
-		if (_AnimationDlg)
-			setRegisterWindowState (_AnimationDlg, REGKEY_OBJ_VIEW_ANIMATION_DLG);
-		if (_SlotDlg)
-			setRegisterWindowState (_SlotDlg, REGKEY_OBJ_VIEW_SLOT_DLG);
-		if (_AnimationSetDlg)
-			setRegisterWindowState (_AnimationSetDlg, REGKEY_OBJ_VIEW_ANIMATION_SET_DLG);
 		if (CNELU::Driver->getDisplay())
 		{
 			CWnd driverWnd;
@@ -346,7 +351,7 @@ void CObjectViewer::reinitChannels ()
 
 	// Add all the instance in the channel mixer
 	for (uint i=0; i<_ListTransformShape.size(); i++)
-		_ListTransformShape[i]->registerToChannelMixer (&_ChannelMixer, "");
+		_ListTransformShape[i]->registerToChannelMixer (&_ChannelMixer, _ListShapeBaseName[i]);
 }
 
 // ***************************************************************************
@@ -508,7 +513,7 @@ bool CObjectViewer::loadShape (const char* filename)
 			streamShape.serial (file);
 
 			// Add the shape
-			addShape (streamShape.getShapePointer(), filename);
+			addShape (streamShape.getShapePointer(), filename, "");
 
 			return true;
 		}
@@ -538,7 +543,7 @@ void CObjectViewer::resetCamera ()
 
 // ***************************************************************************
 
-void CObjectViewer::addShape (IShape* pShape, const char* name)
+CTransformShape	*CObjectViewer::addShape (IShape* pShape, const char* name, const char *animBaseName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -547,6 +552,7 @@ void CObjectViewer::addShape (IShape* pShape, const char* name)
 
 	// Store the name of the shape
 	_ListShape.push_back (name);
+	_ListShapeBaseName.push_back (animBaseName);
 
 	// Create a model and add it to the scene
 	CTransformShape	*pTrShape=CNELU::Scene.createInstance (name);
@@ -560,6 +566,9 @@ void CObjectViewer::addShape (IShape* pShape, const char* name)
 
 	// Store the transform shape pointer
 	_ListTransformShape.push_back (pTrShape);
+
+	// Return the instance
+	return pTrShape;
 }
 
 // ***************************************************************************

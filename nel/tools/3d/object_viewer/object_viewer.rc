@@ -228,7 +228,7 @@ BEGIN
                     190,0,35,10
 END
 
-IDD_SCENE DIALOGEX 0, 0, 61, 183
+IDD_SCENE DIALOGEX 0, 0, 61, 233
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Scene manager"
@@ -240,15 +240,19 @@ BEGIN
     PUSHBUTTON      "Save config",IDC_SAVE_PLAYLIST,5,85,50,15
     PUSHBUTTON      "Load scenes",IDC_LOAD_SCENE,5,45,50,15,WS_DISABLED
     CONTROL         "Animation",IDC_VIEW_ANIMATION,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,150,50,10
-    CONTROL         "AnimationSet",IDC_VIEW_ANIMATIONSET,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,5,160,55,10
-    CONTROL         "Mixer Slots",IDC_VIEW_SLOTS,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,5,170,50,10
-    LTEXT           "View tools:",IDC_STATIC,5,140,35,10
+    CONTROL         "AnimationSet",IDC_VIEW_ANIMATIONSET,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,180,55,10
+    CONTROL         "Mixer Slots",IDC_VIEW_SLOTS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,5,190,50,10
+    LTEXT           "View tools:",IDC_STATIC,5,161,35,10
     PUSHBUTTON      "Reset camera",IDC_RESET_CAMERA,5,105,50,15
     CONTROL         "Use euler",IDC_EULER,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,5,125,46,10
+                    WS_TABSTOP,5,145,46,10
+    CONTROL         "Object Mode",IDC_OBJECT_MODE,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,5,125,50,15
+    EDITTEXT        IDC_MOVE_SPEED,5,215,50,12,ES_AUTOHSCROLL
+    LTEXT           "Move speed:",IDC_STATIC,5,205,45,10
 END
 
 
@@ -305,7 +309,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 54
         TOPMARGIN, 7
-        BOTTOMMARGIN, 176
+        BOTTOMMARGIN, 226
     END
 END
 #endif    // APSTUDIO_INVOKED

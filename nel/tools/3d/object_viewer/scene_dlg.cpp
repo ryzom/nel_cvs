@@ -8,6 +8,8 @@
 #include <nel/3d/nelu.h>
 #include <nel/3d/mesh.h>
 #include <nel/3d/transform_shape.h>
+#include <nel/3d/mesh_instance.h>
+#include <nel/3d/skeleton_model.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,6 +32,8 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	ViewAnimationSet = FALSE;
 	ViewSlots = FALSE;
 	Euler = FALSE;
+	ObjectMode = TRUE;
+	MoveSpeed = 10.0f;
 	//}}AFX_DATA_INIT
 	ObjView=objView;
 
@@ -40,8 +44,14 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 		DWORD len=sizeof (BOOL);
 		DWORD type;
 		RegQueryValueEx (hKey, "ViewAnimation", 0, &type, (LPBYTE)&ViewAnimation, &len);
+		len=sizeof (BOOL);
 		RegQueryValueEx (hKey, "ViewAnimationSet", 0, &type, (LPBYTE)&ViewAnimationSet, &len);
+		len=sizeof (BOOL);
 		RegQueryValueEx (hKey, "ViewSlots", 0, &type, (LPBYTE)&ViewSlots, &len);
+		len=sizeof (float);
+		RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
+		len=sizeof (BOOL);
+		RegQueryValueEx (hKey, "ObjectMode", 0, &type, (LPBYTE)&ObjectMode, &len);
 	}
 }
 
@@ -53,6 +63,8 @@ CSceneDlg::~CSceneDlg()
 		RegSetValueEx(hKey, "ViewAnimation", 0, REG_BINARY, (LPBYTE)&ViewAnimation, sizeof(bool));
 		RegSetValueEx(hKey, "ViewAnimationSet", 0, REG_BINARY, (LPBYTE)&ViewAnimationSet, sizeof(bool));
 		RegSetValueEx(hKey, "ViewSlots", 0, REG_BINARY, (LPBYTE)&ViewSlots, sizeof(bool));
+		RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
+		RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&ObjectMode, sizeof(BOOL));
 	}
 }
 
@@ -60,10 +72,13 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSceneDlg)
+	DDX_Control(pDX, IDC_MOVE_SPEED, MoveSpeedCtrl);
 	DDX_Check(pDX, IDC_VIEW_ANIMATION, ViewAnimation);
 	DDX_Check(pDX, IDC_VIEW_ANIMATIONSET, ViewAnimationSet);
 	DDX_Check(pDX, IDC_VIEW_SLOTS, ViewSlots);
 	DDX_Check(pDX, IDC_EULER, Euler);
+	DDX_Check(pDX, IDC_OBJECT_MODE, ObjectMode);
+	DDX_Text(pDX, IDC_MOVE_SPEED, MoveSpeed);
 	//}}AFX_DATA_MAP
 }
 
@@ -79,6 +94,7 @@ BEGIN_MESSAGE_MAP(CSceneDlg, CDialog)
 	ON_BN_CLICKED(IDC_VIEW_ANIMATIONSET, OnViewAnimationset)
 	ON_BN_CLICKED(IDC_VIEW_SLOTS, OnViewSlots)
 	ON_BN_CLICKED(IDC_RESET_CAMERA, OnResetCamera)
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -236,78 +252,144 @@ BOOL CSceneDlg::OnInitDialog()
 
 void CSceneDlg::OnResetCamera() 
 {
-	if (ObjView->_ListTransformShape.size())
+	// One object found at least
+	bool found=false;
+	
+	// Pointer on the CMesh;
+	CVector hotSpot=CVector (0,0,0);
+
+	// Reset the radius
+	float radius=10.f;
+
+	// Look for a first mesh
+	uint m;
+	for (m=0; m<ObjView->_ListTransformShape.size(); m++)
+	{
+		CMeshInstance *pTransform=dynamic_cast<CMeshInstance*>(ObjView->_ListTransformShape[m]);
+		if (pTransform)
+		{
+			IShape *pShape=pTransform->Shape;
+			CMesh *pMesh=(CMesh*)pShape;
+			CSkeletonModel *pSkelModel=pTransform->getSkeletonModel ();
+
+			if (!pSkelModel)
+			{
+				// Reset the hotspot
+				hotSpot=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
+
+				// Reset the radius
+				radius=pMesh->getBoundingBox().getRadius();
+				radius=pTransform->getMatrix().mulVector (CVector (radius, 0, 0)).norm();
+				found=true;
+				m++;
+				break;
+			}
+			else
+			{
+				// Get first bone
+				if (pSkelModel->Bones.size())
+				{
+					// Ok, it is the root.
+					hotSpot=pSkelModel->Bones[0].getMatrix()*pMesh->getBoundingBox().getCenter();
+
+					// Reset the radius
+					radius=pMesh->getBoundingBox().getRadius();
+					radius=pSkelModel->Bones[0].getMatrix().mulVector (CVector (radius, 0, 0)).norm();
+					found=true;
+					m++;
+					break;
+				}
+			}
+		}
+	}
+
+	// For each model in the list
+	for (; m<ObjView->_ListTransformShape.size(); m++)
 	{
 		// Pointer on the CMesh;
-		CTransformShape		*pTransform=ObjView->_ListTransformShape[0];
-		IShape*				pShape=pTransform->Shape;
-		CMesh				*pMesh=(CMesh*)pShape;
-
-		// Reset the hotspot
-		CVector hotSpot=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
-
-		// Reset the radius
-		float radius=pMesh->getBoundingBox().getRadius();
-		radius=pTransform->getMatrix().mulVector (CVector (radius, 0, 0)).norm();
-
-		// For each model in the list
-		for (uint m=1; m<ObjView->_ListTransformShape.size(); m++)
+		CMeshInstance *pTransform=dynamic_cast<CMeshInstance*>(ObjView->_ListTransformShape[m]);
+		if (pTransform)
 		{
-			// Pointer on the CMesh;
-			pTransform=ObjView->_ListTransformShape[m];
-			pShape=pTransform->Shape;
-			pMesh=(CMesh*)pShape;
+			IShape *pShape=pTransform->Shape;
+			CMesh *pMesh=(CMesh*)pShape;
+			CSkeletonModel *pSkelModel=pTransform->getSkeletonModel ();
 
-			// Get the hotspot
-			CVector hotSpot2=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
+			// New radius and hotSpot
+			CVector hotSpot2;
+			float radius2;
+			bool setuped=false;
 
-			// Get the radius
-			float radius2=pMesh->getBoundingBox().getRadius();
-			radius2=pTransform->getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
+			if (!pSkelModel)
+			{
+				// Get the hotspot
+				hotSpot2=pTransform->getMatrix()*pMesh->getBoundingBox().getCenter();
 
-			// *** Merge with previous
+				// Get the radius
+				radius2=pMesh->getBoundingBox().getRadius();
+				radius2=pTransform->getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
 
-			// Get vector center to center
-			CVector vect=hotSpot-hotSpot2;
-			vect.normalize();
-			
-			// Get the right position
-			CVector right=hotSpot+vect*radius;
-			if ((right-hotSpot2).norm()<radius2)
-				right=hotSpot2+vect*radius2;
-			
-			// Get the left position
-			CVector left=hotSpot2-vect*radius2;
-			if ((left-hotSpot).norm()<radius)
-				left=hotSpot-vect*radius;
+				// Ok found it
+				setuped=true;
+			}
+			else
+			{
+				// Get first bone
+				if (pSkelModel->Bones.size())
+				{
+					// Get the hotspot
+					hotSpot2=pSkelModel->Bones[0].getMatrix()*pMesh->getBoundingBox().getCenter();
 
-			// Get new center
-			hotSpot=(left+right)/2.f;
+					// Get the radius
+					radius2=pMesh->getBoundingBox().getRadius();
+					radius2=pSkelModel->Bones[0].getMatrix().mulVector (CVector (radius2, 0, 0)).norm();
 
-			// Get new size
-			radius=(left-right).norm()/2.f;
+					// Ok found it
+					setuped=true;
+				}
+			}
+
+			if (setuped)
+			{
+				// *** Merge with previous
+
+				// Get vector center to center
+				CVector vect=hotSpot-hotSpot2;
+				vect.normalize();
+				
+				// Get the right position
+				CVector right=hotSpot+vect*radius;
+				if ((right-hotSpot2).norm()<radius2)
+					right=hotSpot2+vect*radius2;
+				
+				// Get the left position
+				CVector left=hotSpot2-vect*radius2;
+				if ((left-hotSpot).norm()<radius)
+					left=hotSpot-vect*radius;
+
+				// Get new center
+				hotSpot=(left+right)/2.f;
+
+				// Get new size
+				radius=(left-right).norm()/2.f;
+			}
 		}
-
-		// Setup camera
-		CNELU::Camera->lookAt (hotSpot+CVector(0.57735f,0.57735f,0.57735f)*radius, hotSpot);
-
-		// Setup mouse listener
-		ObjView->_MouseListener.setMatrix (CNELU::Camera->getMatrix());
-		ObjView->_MouseListener.setFrustrum (CNELU::Camera->getFrustum());
-		ObjView->_MouseListener.setViewport (CViewport());
-		ObjView->_MouseListener.setHotSpot (hotSpot);
-		ObjView->_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
 	}
-	else
-	{
-		// Setup camera
-		CNELU::Camera->lookAt (CVector(1,1,1), CVector(0,0,0));
 
-		// Setup mouse listener
-		ObjView->_MouseListener.setMatrix (CNELU::Camera->getMatrix());
-		ObjView->_MouseListener.setFrustrum (CNELU::Camera->getFrustum());
-		ObjView->_MouseListener.setViewport (CViewport());
-		ObjView->_MouseListener.setHotSpot (CVector(0,0,0));
-		ObjView->_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
-	}
+	// Setup camera
+	CNELU::Camera->lookAt (hotSpot+CVector(0.57735f,0.57735f,0.57735f)*radius, hotSpot);
+
+	// Setup mouse listener
+	ObjView->_MouseListener.setMatrix (CNELU::Camera->getMatrix());
+	ObjView->_MouseListener.setFrustrum (CNELU::Camera->getFrustum());
+	ObjView->_MouseListener.setViewport (CViewport());
+	ObjView->_MouseListener.setHotSpot (hotSpot);
+	ObjView->_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+}
+
+void CSceneDlg::OnDestroy() 
+{
+	// TODO: Add your message handler code here
+	setRegisterWindowState (this, REGKEY_OBJ_VIEW_SCENE_DLG);
+
+	CDialog::OnDestroy();
 }

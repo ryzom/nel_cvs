@@ -9,13 +9,14 @@
 #endif // OBJECT_VIEWER_EXPORT
 
 // Increment this version number each time you distribute a new version of the dll.
-#define OBJECT_VIEWER_VERSION 1
+#define OBJECT_VIEWER_VERSION 2
 
 namespace NL3D
 {
 	class IShape;
 	class CAnimation;
 	class CLight;
+	class CTransformShape;
 }
 
 namespace NLMISC
@@ -38,7 +39,7 @@ public:
 	virtual void releaseUI ()=0;
 
 	// Add a shape
-	virtual void addShape (NL3D::IShape*	pShape, const char* name)=0;
+	virtual NL3D::CTransformShape	*addShape (NL3D::IShape* pShape, const char* name, const char *animBaseName)=0;
 
 	// Load a shape
 	virtual bool loadShape (const char* filename)=0;

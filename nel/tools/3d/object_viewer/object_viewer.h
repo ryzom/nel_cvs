@@ -74,11 +74,11 @@ public:
 	// Release the UI
 	void releaseUI ();
 
-	// Add a shape
+	// Set single animtion.
 	void setSingleAnimation (NL3D::CAnimation*	pAnim, const char* name);
 
-	// Add a shape
-	void addShape (NL3D::IShape*	pShape, const char* name);
+	// Add a shape and return an instance of this shape
+	NL3D::CTransformShape	*addShape (NL3D::IShape* pShape, const char* name, const char *animBaseName);
 
 	// Load a shape
 	bool loadShape (const char* filename);
@@ -115,11 +115,14 @@ private:
 	CMainDlg									*_SlotDlg;
 	CAnimationSetDlg							*_AnimationSetDlg;
 	CSceneDlg									*_SceneDlg;
+	std::vector<std::string>					_ListShapeBaseName;
 	std::vector<std::string>					_ListShape;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
 	NL3D::CAnimationSet							_AnimationSet;
 	NL3D::CChannelMixer							_ChannelMixer;
 	NL3D::CEvent3dMouseListener					_MouseListener;
+	NLMISC::CRGBA								_HotSpotColor;
+	float										_HotSpotSize;
 };
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);

@@ -130,6 +130,7 @@ protected:
 	afx_msg void OnRepeat();
 	afx_msg void OnDisable();
 	afx_msg void OnAlignBlend();
+	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

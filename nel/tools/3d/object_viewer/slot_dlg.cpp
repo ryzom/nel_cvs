@@ -117,6 +117,7 @@ BEGIN_MESSAGE_MAP(CSlotDlg, CDialog)
 	ON_BN_CLICKED(IDC_REPEAT, OnRepeat)
 	ON_BN_CLICKED(IDC_DISABLE, OnDisable)
 	ON_BN_CLICKED(IDC_ALIGN_BLEND, OnAlignBlend)
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -756,3 +757,11 @@ void CSlotDlg::computeLength ()
 
 // ***************************************************************************
 
+
+void CSlotDlg::OnDestroy() 
+{
+	setRegisterWindowState (this, REGKEY_OBJ_VIEW_SLOT_DLG);
+
+	// TODO: Add your message handler code here
+	CDialog::OnDestroy();
+}

@@ -44,6 +44,7 @@ BEGIN_MESSAGE_MAP(CAnimationSetDlg, CDialog)
 	ON_BN_CLICKED(IDC_ADD_ANIMATION, OnAddAnimation)
 	ON_BN_CLICKED(IDC_RESET, OnReset)
 	ON_BN_CLICKED(IDC_ADD_SKEL_WT, OnAddSkelWt)
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -241,4 +242,13 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 	}
 
+}
+
+void CAnimationSetDlg::OnDestroy() 
+{
+	setRegisterWindowState (this, REGKEY_OBJ_VIEW_ANIMATION_SET_DLG);
+
+	CDialog::OnDestroy();
+	
+	// TODO: Add your message handler code here	
 }

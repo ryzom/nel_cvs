@@ -64,6 +64,8 @@
 #define IDC_LOOP                        1044
 #define IDC_RESET_CAMERA                1044
 #define IDC_EULER                       1045
+#define IDC_OBJECT_MODE                 1046
+#define IDC_MOVE_SPEED                  1047
 
 // Next default values for new objects
 // 
@@ -71,7 +73,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1006
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1045
+#define _APS_NEXT_CONTROL_VALUE         1048
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

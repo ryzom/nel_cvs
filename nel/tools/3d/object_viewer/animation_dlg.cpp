@@ -37,7 +37,6 @@ CAnimationDlg::CAnimationDlg(class CObjectViewer* main, CWnd* pParent /*=NULL*/)
 	Main=main;
 }
 
-
 void CAnimationDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -67,6 +66,7 @@ BEGIN_MESSAGE_MAP(CAnimationDlg, CDialog)
 	ON_BN_CLICKED(IDC_START, OnStart)
 	ON_EN_CHANGE(IDC_START_EDIT, OnChangeStartEdit)
 	ON_WM_HSCROLL()
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -331,4 +331,11 @@ NL3D::CAnimationTime CAnimationDlg::getTime ()
 {
 	// Return current time in second
 	return CurrentFrame/Speed;
+}
+
+void CAnimationDlg::OnDestroy() 
+{
+	setRegisterWindowState (this, REGKEY_OBJ_VIEW_ANIMATION_DLG);
+
+	CDialog::OnDestroy();
 }

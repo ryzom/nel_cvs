@@ -51,6 +51,7 @@ protected:
 	afx_msg void OnAddAnimation();
 	afx_msg void OnReset();
 	afx_msg void OnAddSkelWt();
+	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

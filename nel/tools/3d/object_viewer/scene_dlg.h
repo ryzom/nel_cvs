@@ -21,10 +21,13 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSceneDlg)
 	enum { IDD = IDD_SCENE };
+	CEdit	MoveSpeedCtrl;
 	BOOL	ViewAnimation;
 	BOOL	ViewAnimationSet;
 	BOOL	ViewSlots;
 	BOOL	Euler;
+	BOOL	ObjectMode;
+	float	MoveSpeed;
 	//}}AFX_DATA
 
 	class CObjectViewer	*ObjView;
@@ -51,6 +54,7 @@ protected:
 	afx_msg void OnViewSlots();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnResetCamera();
+	afx_msg void OnDestroy();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

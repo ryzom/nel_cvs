@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.27 2001/05/31 10:05:09 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.28 2001/06/01 11:56:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,14 +384,15 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 			if(text)
 			{
 				CMaterial::CTexEnv	env;
-				uint8	lmapFactor= mat._LightMaps[lmapId].Factor;
+				CRGBA	lmapFactor= mat._LightMaps[lmapId].Factor;
+				lmapFactor.A= 255;
 
 				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
 				if(stage==0)
 				{
 					// do not use consant color to blend lightmap, but incoming diffuse color, for stage0 only.
 					// (NB: lighting and vertexcolorArray are disabled here)
-					glColor4ub(lmapFactor,lmapFactor,lmapFactor, 255);
+					glColor4ub(lmapFactor.R, lmapFactor.G, lmapFactor.B, 255);
 
 					// Leave stage as default env (Modulate with previous)
 					if(_CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
@@ -405,7 +406,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					nlassert(_Extensions.NVTextureEnvCombine4);
 
 					// setup constant color with Lightmap factor.
-					env.ConstantColor.set(lmapFactor, lmapFactor, lmapFactor, 255);
+					env.ConstantColor=lmapFactor;
 					if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
 						activateTexEnvColor(stage, env);
 

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.18 2001/05/30 16:40:53 berenguier Exp $
+ * $Id: material.cpp,v 1.19 2001/06/01 11:56:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,7 +275,7 @@ ITexture				*CMaterial::getLightMap(uint lmapId) const
 }
 
 // ***************************************************************************
-void					CMaterial::setLightMapFactor(uint lmapId, uint8 factor)
+void					CMaterial::setLightMapFactor(uint lmapId, CRGBA factor)
 {
 	nlassert(_ShaderType==CMaterial::LightMap);
 	if(lmapId>=_LightMaps.size())

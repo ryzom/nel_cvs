@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.19 2002/10/24 08:46:35 lecroart Exp $
+ * $Id: login_server.cpp,v 1.20 2002/11/04 16:42:15 lecroart Exp $
  *
  */
 
@@ -288,6 +288,9 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 
 string CLoginServer::isValidCookie (const CLoginCookie &lc)
 {
+	if (!lc.isValid())
+		return "The cookie is invalid";
+
 	// verify that the user was pending
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)

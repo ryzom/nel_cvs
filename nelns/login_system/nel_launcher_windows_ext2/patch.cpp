@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.5 2004/03/30 17:33:28 lecroart Exp $
+ * $Id: patch.cpp,v 1.6 2004/05/05 10:19:29 distrib Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -294,8 +294,11 @@ private:
 						path = ClientPatchPath + filename;
 					}
 
+					nlinfo("'%s' local %u %uB server %u %uB dtime %d", filename.c_str(), NLMISC::CFile::getFileModificationDate (path), NLMISC::CFile::getFileSize (path), date, size, difftime(date, NLMISC::CFile::getFileModificationDate (path)));
+
 					if (NLMISC::CFile::getFileModificationDate (path) != date || NLMISC::CFile::getFileSize (path) != size)
 					{
+						nlinfo("file '%s' is not the same date/size than on server, need to get it", filename.c_str());
 						needToGetFilesList.push_back (CEntry(filename, size, date));
 						TotalFilesToGet++;
 						TotalBytesToGet += size;
@@ -647,10 +650,12 @@ private:
 			utb.actime = utb.modtime = date;
 			setRWAccess(dest);
 			if(VerboseLog) nlinfo("Calling _utime");
+			nlinfo("'%s' changing the mod date from %u into %u", dest.c_str(), NLMISC::CFile::getFileModificationDate (dest), date);
 			if (_utime (dest.c_str (), &utb) == -1)
 			{
 				nlwarning ("Can't change file time for '%s' : code=%d %s", dest.c_str (), errno, strerror(errno));
 			}
+			nlinfo("'%s' now the date is %u", dest.c_str(), NLMISC::CFile::getFileModificationDate (dest));
 		}
 		if(VerboseLog) nlinfo("Exiting the decompressing file");
 	}

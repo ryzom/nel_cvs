@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.64 2001/07/06 12:26:48 berenguier Exp $
+ * $Id: landscape.cpp,v 1.65 2001/07/09 08:23:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2234,14 +2234,15 @@ void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHa
 		// to avoid as possible reallocations, add a little security to the number of vertices we want.
 		vbHard= _Driver->createVertexBufferHard(format, numVertices + NL3D_VBHARD_VERTEX_SECURITY, IDriver::VBHardAGP);
 
-		/*if(vbHard!=NULL)
+		// TempYoyo.
+		if(vbHard!=NULL)
 		{
 			string	whatVB;
 			if(vbHard==_TileVBHard)	whatVB= "Tile";
 			else if(vbHard==_Far0VBHard)	whatVB= "Far0";
 			else if(vbHard==_Far1VBHard)	whatVB= "Far1";
 			nlinfo("Landscape: reallocate a %sVertexBufferHard of %d vertices", whatVB.c_str(), numVertices);
-		}*/
+		}
 	}
 
 }

@@ -29,6 +29,7 @@ CChooseFrameDelay::CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent)
 
 CChooseFrameDelay::~CChooseFrameDelay()
 {
+	lockToPS(false);
 	CObjectViewer *ov = _CFDWrapper.OV;
 	ov->removeMainLoopCallBack(this);
 	_ER->DestroyWindow();

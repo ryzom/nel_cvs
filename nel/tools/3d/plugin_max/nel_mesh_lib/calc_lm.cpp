@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.19 2001/08/28 08:39:45 besson Exp $
+ * $Id: calc_lm.cpp,v 1.20 2001/08/29 17:15:37 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3164,12 +3164,15 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			COFile f( sSaveName );
 			pLightMap->writeTGA( f, 32 );	
 
+			pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+			pLightMap->setAllowDegradation (false);
+			if (gOptions.bShowLumel)
+				pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
+
 			for( i = 0; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
-				if (gOptions.bShowLumel)
-					pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
-				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );				
+				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
 				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );				
 			}
 			++nLightMapNb;

@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.17 2001/05/23 08:40:11 cado Exp $
+ * $Id: message.cpp,v 1.18 2001/10/12 14:05:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,239 @@
 
 namespace NLNET
 {
+
+CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, uint32 defaultCapacity) :
+	USED_STREAM_FOR_MESSAGE (inputStream, defaultCapacity),
+	_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF)
+{
+	if (!name.empty())
+		setType (name);
+}
+
+CMessage::CMessage (const std::string &name, bool inputStream, uint32 defaultCapacity) :
+	USED_STREAM_FOR_MESSAGE (inputStream, defaultCapacity),
+	_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF)
+{
+	if (!name.empty())
+		setType (name);
+}
+
+CMessage::CMessage (USED_STREAM_FOR_MESSAGE &memstr) :
+	_HeaderSize(0xFFFFFFFF)
+{
+	fill (memstr.buffer (), memstr.length ());
+	uint8 LongFormat;
+	serial (LongFormat);
+
+	if (LongFormat)
+	{
+		std::string name;
+		serial (name);
+		setType (name);
+	}
+	else
+	{
+		NLMISC::CStringIdArray::TStringId id;
+		serial (id);
+		setType (id);
+	}
+}
+
+
+/// Copy constructor
+CMessage::CMessage (const CMessage &other)
+{
+	operator= (other);
+}
+
+/// Assignment operator
+CMessage &CMessage::operator= (const CMessage &other)
+{
+	CMemStream::operator= (other);
+	_TypeSet = other._TypeSet;
+	_SIDA = other._SIDA;
+	TypeHasAnId = other.TypeHasAnId;
+	TypeHasAName = other.TypeHasAName;
+	_Name = other._Name;
+	_Id = other._Id;
+	_HeaderSize = other._HeaderSize;
+	return *this;
+
+}
+
+/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
+void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
+{
+	// PATCH: the id system is not available
+	nlstop;
+
+	// check if we already do a setType ()
+	nlassert (!_TypeSet);
+	// don't accept negative value
+	nlassert (id >= 0 && id < pow(2, sizeof (NLMISC::CStringIdArray::TStringId)*8));
+
+	_Id = id;
+	TypeHasAnId = true;
+	TypeHasAName = false;
+
+	if (!isReading ())
+	{
+		// check if they don't already serial some stuffs
+		nlassert (length () == 0);
+
+		uint8 LongFormat = false;
+
+		// debug features, we number all packet to be sure that they are all sent and received
+		// \todo remove this debug feature when ok
+		// this value will be fill after in the callback function
+		uint32 zeroValue = 1234;
+		serial (zeroValue);
+
+		serial (LongFormat);
+		serial (id);
+		_HeaderSize = getPos ();
+	}
+	else
+	{
+		// we set the id, now, we try to set the name if available in the sida
+		if (_SIDA != NULL)
+		{
+			_Name = _SIDA->getString (id);
+			TypeHasAName = true;
+		}
+	}
+
+	_TypeSet = true;
+}
+
+/// Sets the message type as a string and put it in the buffer if we are in writing mode
+void CMessage::setType (const std::string &name)
+{
+	// check if we already do a setType ()
+	nlassert (!_TypeSet);
+	// don't accept empty string
+	nlassert (!name.empty ());
+
+	_Name = name;
+	TypeHasAnId = false;
+	TypeHasAName = true;
+
+	if (!isReading ())
+	{
+		// check if they don't already serial some stuffs
+		nlassert (length () == 0);
+
+		// if we can send the id instead of the string, "just do it" (c)nike!
+		//NLMISC::CStringIdArray::TStringId id = _SIDA->getId (name);
+
+		// PATCH: always send in full text
+		NLMISC::CStringIdArray::TStringId id = -1;
+
+		// debug features, we number all packet to be sure that they are all sent and received
+		// \todo remove this debug feature when ok
+		// this value will be fill after in the callback function
+		uint32 zeroValue = 1234;
+		serial (zeroValue);
+
+		if (id == -1)
+		{
+			uint8 LongFormat = true;
+			serial (LongFormat);
+			serial ((std::string&)name);
+		}
+		else
+		{
+			uint8 LongFormat = false;
+			serial (LongFormat);
+			serial (id);
+
+			_Id = id;
+			TypeHasAnId = true;
+		}
+		_HeaderSize = getPos ();
+	}
+
+	_TypeSet = true;
+}
+
+/// Returns the size, in byte of the header that contains the type name of the message or the type number
+uint32 CMessage::getHeaderSize ()
+{
+	nlassert (!isReading ());
+	nlassert (_HeaderSize != 0xFFFFFFFF);
+	return _HeaderSize;
+}
+
+// The message was filled with an CMemStream, Now, we'll get the message type on this buffer
+void CMessage::readType ()
+{
+	nlassert (isReading ());
+
+	// debug features, we number all packet to be sure that they are all sent and received
+	// \todo remove this debug feature when ok
+
+	// we remove the message from the message
+	seek (5, begin);
+
+//		uint32 zeroValue;
+//		serial (zeroValue);
+
+	uint8 LongFormat;
+	serial (LongFormat);
+	if (LongFormat)
+	{
+		std::string name;
+		serial (name);
+		setType (name);
+	}
+	else
+	{
+		NLMISC::CStringIdArray::TStringId id;
+		serial (id);
+		setType (id);
+	}
+}
+
+// Returns true if the message type was already set
+bool CMessage::typeIsSet () const
+{
+	return _TypeSet;
+}
+
+// Clear the message. With this function, you can reuse a message to create another message
+void CMessage::clear ()
+{
+	CMemStream::clear ();
+	_TypeSet = false;
+}
+
+/// Returns the type name in string if available. Be sure that the message have the name of the message type
+std::string CMessage::getName () const
+{
+	nlassert (_TypeSet && TypeHasAName);
+	return _Name;
+}
+
+/// Returns the type id of this message is available.
+NLMISC::CStringIdArray::TStringId CMessage::getId () const
+{
+	nlassert (_TypeSet && TypeHasAnId);
+	return _Id;
+}
+
+/** Returns a readable string to display it to the screen. It's only for debugging purpose!
+ * Don't use it for anything else than to debugging, the string format could change in the futur
+ */
+std::string CMessage::toString () const
+{
+	nlassert (_TypeSet);
+	std::stringstream s;
+	if (TypeHasAName && TypeHasAnId) s << "('" << _Name << "'," << _Id << ")";
+	else if (TypeHasAName) s << "('" << _Name << "'," << _SIDA->getId (_Name, true) << ")";
+	else if (TypeHasAnId) s << "('" << _SIDA->getString (_Id) << "'," << _Id << "')";
+	return s.str();
+}
+
 
 
 }

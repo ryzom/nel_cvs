@@ -413,10 +413,13 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 					const char *dbg_param_front_type = (const char *) child->getType();
 #endif
-					if ( _TopLevel )
-						((CActorScript *)child)->setTopLevel( _TopLevel );
-					else
-						((CActorScript *)child)->setTopLevel( this );
+					if ( child->isClassInheritedFrom( CStringVarName("ActorScript") ) != -1 )
+					{
+						if ( _TopLevel )
+							((CActorScript *)child)->setTopLevel( _TopLevel );
+						else
+							((CActorScript *)child)->setTopLevel( this );
+					}
 
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
 					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);

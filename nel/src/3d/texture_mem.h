@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.7 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture_mem.h,v 1.8 2002/10/25 16:22:02 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,7 @@ public:
 	 */	
 	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, CBitmap::TType texType = CBitmap::RGBA) 
 	{ 
+		_AllowDegradation=false;
 		_Data=NULL;
 		_Delete=false;		
 		setPointer(data, length, _delete, isFile, width, height, texType);		

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.39 2002/06/27 15:44:09 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.40 2002/07/26 09:49:32 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -973,7 +973,7 @@ void CInstanceGroup::setLightFactor( const string &LightName, CRGBA Factor )
 {
 	for( uint32 i = 0; i < _Instances.size(); ++i )
 	{
-		CMeshInstance *pMI = dynamic_cast<CMeshInstance*>(_Instances[i]);
+		CMeshBaseInstance *pMI = dynamic_cast<CMeshBaseInstance*>(_Instances[i]);
 		if( pMI != NULL )
 		{
 			pMI->setLightMapFactor( LightName, Factor );

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: bit_set.cpp,v 1.3 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: bit_set.cpp,v 1.4 2000/10/19 12:32:06 corvazier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -295,7 +295,7 @@ bool	CBitSet::allCleared()
 void	CBitSet::serial(IStream &f)
 {
 	sint	ver=f.serialVersion(0);
-	uint32	sz;
+	uint32	sz=0;
 	vector<uint32>	array32;
 
 	// Must support any size of uint.

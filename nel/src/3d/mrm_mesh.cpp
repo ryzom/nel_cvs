@@ -1,7 +1,7 @@
 /** \file mrm_mesh.cpp
  * <File description>
  *
- * $Id: mrm_mesh.cpp,v 1.1 2000/12/21 09:45:22 berenguier Exp $
+ * $Id: mrm_mesh.cpp,v 1.2 2001/06/14 13:37:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,10 +24,16 @@
  */
 
 #include "nel/3d/mrm_mesh.h"
+#include <algorithm>
 
+using namespace std;
 
 namespace NL3D
 {
+
+
+// ***************************************************************************
+uint CMRMMeshFinal::CWedge::NumAttributesToCompare= 0;
 
 
 // ***************************************************************************
@@ -35,6 +41,34 @@ CMRMMesh::CMRMMesh()
 {
 	NumAttributes= 0;
 }
+
+
+
+// ***************************************************************************
+sint	CMRMMeshFinal::findInsertWedge(const CWedge &w)
+{
+	sint	ret;
+	TWedgeMap::iterator		it;
+	it= _WedgeMap.find(w);
+
+	// if not found, must add it.
+	if(it==_WedgeMap.end())
+	{
+		ret= Wedges.size();
+		// insert into the map, with good id.
+		_WedgeMap.insert(make_pair(w, ret));
+		// add it to the array.
+		Wedges.push_back(w);
+	}
+	else
+	{
+		ret= it->second;
+	}
+
+	return ret;
+}
+
+
 
 
 } // NL3D

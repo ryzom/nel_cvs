@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * <File description>
  *
- * $Id: mrm_builder.cpp,v 1.4 2001/01/02 14:23:14 lecroart Exp $
+ * $Id: mrm_builder.cpp,v 1.5 2001/06/14 13:37:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,17 +243,23 @@ float	CMRMBuilder::computeEdgeCost(const CMRMEdge &edge)
 	sint	v1= edge.v0;
 	sint	v2= edge.v1;
 	// more expensive is the edge, later it will collapse.
+
+	// compute size of the edge.
 	float	cost=(TmpVertices[v1].Current-TmpVertices[v2].Current).norm();
 
+	// compute "curvature" of the edge.
 	float	faceCost= (getDeltaFaceNormals(v1)+getDeltaFaceNormals(v2));
-	// Must minimize.
+	// totally plane faces (faceCost==0) must be collapsed with respect to size (and not random if cost==0).
+	// else we may have Plane Mesh (like flags) that will collapse in a very ugly way.
 	faceCost= max(faceCost, 0.01f);
+
+	// modulate size with curvature.
 	cost*= faceCost;
 
-	// Like hope, add a weight on discontinuities..
+	// Like H.Hope, add a weight on discontinuities..
 	if( !vertexContinue(v1) && !vertexContinue(v2) )
 	{
-		// Nb: don't do this on discontinuities edges, unless the unique material face will collapse (fiou!!).
+		// Nb: don't do this on discontinuities edges, unless the unique material face will collapse (pffiou!!).
 		if( edgeContinue(edge) || edgeNearUniqueMatFace(edge) )
 			cost*=4;
 	}
@@ -331,14 +337,20 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	CMRMVertex	&Vertex1=TmpVertices[edgeV1], &Vertex2=TmpVertices[edgeV2];
 
 	// Interpolation choice.
+	// Default is to interpolate vertex 0 to the middle of the edge.
 	InterValue=0.5;
 	//InterValue=1;
+	// But on special cases, it is much more efficient to interpolate at start or at end of edge.
+	// If one vertex is "open", ie his shared faces do not represent a closed Fan, then interpolate to this one, 
+	// so the mesh has the same silhouette.
 	bool	vc1= vertexClosed(edgeV1);
 	bool	vc2= vertexClosed(edgeV2);
 	if(!vc1 && vc2) InterValue=0;
 	else if(vc1 && !vc2) InterValue=1;
 	else
 	{
+		// Do the same test but with vertex continue: it is preferable to not move the boundaries 
+		// of a material, or a mapping.
 		bool	vc1= vertexContinue(edgeV1);
 		bool	vc2= vertexContinue(edgeV2);
 		if(!vc1 && vc2) InterValue=0;
@@ -401,7 +413,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 	// For ALL Attributes.
 	for(sint attId=0;attId<NumAttributes;attId++)
 	{
-		// a/ Stock the wedge interpolation each destroyed face.
+		// a/ Stock the wedge interpolation in each destroyed face.
 		//------------------------------------------------------
 		for(i=0;i<(sint)deletedFaces.size();i++)
 		{
@@ -477,7 +489,7 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 			sint			numWedge= wedges[i];
 			CMRMAttribute	&wedge= TmpAttributes[attId][numWedge];
 
-			// si le wedge n'est pas partagé...
+			// if wedge not shared...
 			if(!wedge.Shared)
 			{
 				// We've got an "exterior wedge" which lost no corner => do not merge it nor delete it. 
@@ -554,6 +566,11 @@ sint	CMRMBuilder::collapseEdge(const CMRMEdge &edge)
 			newWedge= TmpAttributes[attId][ face.Corner[2].Attributes[attId] ].CollapsedTo;
 			if(newWedge>=2)	face.Corner[2].Attributes[attId]= newWedge;
 		}
+
+		// good edges.
+		/* Those ones are updated in collapseEdges(): they are removed from the edgeCollapseList, 
+			then they are re-inserted with good Vertex indices.
+		*/
 	}
 
 
@@ -715,7 +732,7 @@ void	CMRMBuilder::collapseEdges(sint nWantedFaces)
 		//======================================
 		CMRMVertex	&vert=TmpVertices[vertexCollapsed];
 		sint	i;
-		// On efface de la liste les edges modifies, et on les rajoute avec leur nouvelle valeur.
+		// we delete from list modified edges, and we re-add them with their new value.
 		for(i=0;i<(sint)vert.SharedFaces.size();i++)
 		{
 			CMRMFaceBuild		&f= TmpFaces[vert.SharedFaces[i]];
@@ -747,12 +764,12 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 		CMRMVertex	&vert=TmpVertices[i];
 		if(vert.CollapsedTo==-1)	// if exist yet.
 		{
-			vert.CollapsedTo=index;
+			vert.CoarserIndex=index;
 			coarserMesh.Vertices.push_back(vert.Current);
 			index++;
 		}
 		else
-			vert.CollapsedTo=-1;	// just for bug check. vertex no more exist.
+			vert.CoarserIndex=-1;	// indicate that this vertex no more exist and is to be geomorphed to an other.
 	}
 
 
@@ -761,17 +778,18 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 	// Here, CollpasedTo is used to store the new indexation.
 	for(attId=0;attId<NumAttributes;attId++)
 	{
+		index=0;
 		for(i=0;i<(sint)TmpAttributes[attId].size();i++)
 		{
 			CMRMAttribute	&wedge= TmpAttributes[attId][i];
 			if(wedge.CollapsedTo==-1)	// if exist yet.
 			{
-				wedge.CollapsedTo=index;
+				wedge.CoarserIndex=index;
 				coarserMesh.Attributes[attId].push_back(wedge.Current);
 				index++;
 			}
 			else
-				wedge.CollapsedTo=-1;	// just for bug check. wedge no more exist.
+				wedge.CoarserIndex=-1;	// indicate that this vertex no more exist and is to be geomorphed to an other.
 		}
 	}
 
@@ -788,17 +806,359 @@ void	CMRMBuilder::saveCoarserMesh(CMRMMesh &coarserMesh)
 			for(sint j=0;j<3;j++)
 			{
 				// Vertex.
-				newFace.Corner[j].Vertex= TmpVertices[face.Corner[i].Vertex].CollapsedTo;
+				newFace.Corner[j].Vertex= TmpVertices[face.Corner[j].Vertex].CoarserIndex;
+				nlassert(newFace.Corner[j].Vertex>=0);
 				// Attributes.
 				for(attId=0;attId<NumAttributes;attId++)
 				{
-					sint	oldidx= face.Corner[i].Attributes[attId];
-					newFace.Corner[j].Attributes[attId]= TmpAttributes[attId][oldidx].CollapsedTo;
+					sint	oldidx= face.Corner[j].Attributes[attId];
+					newFace.Corner[j].Attributes[attId]= TmpAttributes[attId][oldidx].CoarserIndex;
+					nlassert(newFace.Corner[j].Attributes[attId]>=0);
 				}
 
 			}
 
 			coarserMesh.Faces.push_back(newFace);
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void	CMRMBuilder::makeLODMesh(CMRMMeshGeom &lodMesh)
+{
+	sint	i,j,attId,index,coidx;
+
+	// for all faces of this mesh, find target in the coarser mesh.
+	for(i=0;i<(sint)lodMesh.CoarserFaces.size();i++)
+	{
+		CMRMFace	&face= lodMesh.CoarserFaces[i];
+
+		// For 3 corners.
+		for(j=0;j<3;j++)
+		{
+			// Vertex.
+			// The index is yet the index in the finer mesh.
+			index= face.Corner[j].Vertex;
+			// the index in the coarser mesh is vert.CoarserIndex.
+			coidx= TmpVertices[index].CoarserIndex;
+			// but if this vertex is collapsed, must find the good index (yet in the finer mesh)
+			if(coidx==-1)
+			{
+				// find to which we must collapse.
+				index= followVertex(index);
+				// and so we have the coarser index. this one must be valid.
+				coidx= TmpVertices[index].CoarserIndex;
+				nlassert(coidx>=0);
+			}
+			// update corner of CoarserFace.
+			face.Corner[j].Vertex= coidx;
+
+
+			// Do exactly same thing for all attributes.
+			for(attId=0;attId<NumAttributes;attId++)
+			{
+				index= face.Corner[j].Attributes[attId];
+				coidx= TmpAttributes[attId][index].CoarserIndex;
+				if(coidx==-1)
+				{
+					index= followWedge(attId, index);
+					coidx= TmpAttributes[attId][index].CoarserIndex;
+					nlassert(coidx>=0);
+				}
+				face.Corner[j].Attributes[attId]= coidx;
+			}
+		}
+	}
+
+}
+
+// ***************************************************************************
+void	CMRMBuilder::makeFromMesh(const CMRMMesh &baseMesh, CMRMMeshGeom &lodMesh, CMRMMesh &coarserMesh, sint nWantedFaces)
+{
+	// Init Tmp values in MRM builder.
+	init(baseMesh);
+
+	// compute MRM too next tgt face.
+	collapseEdges(nWantedFaces);
+
+	// save the coarser mesh.
+	saveCoarserMesh(coarserMesh);
+
+	// build the lodMesh (baseMesh, with vertex/Attributes collapse infos).
+	lodMesh= baseMesh;
+	makeLODMesh(lodMesh);
+
+	// end for this level.
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Global MRM Level method.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, uint nWantedLods, uint divisor)
+{
+	sint	nFaces= baseMesh.Faces.size();
+	sint	nBaseFaces;
+	sint	i;
+	CMRMMesh	srcMesh= baseMesh;
+
+
+	// coarsest LOD will have those number of faces.
+	nBaseFaces=nFaces/divisor;
+	nBaseFaces=max(nBaseFaces,4);
+
+	// must have at least 2 LOD.
+	nlassert(nWantedLods>1);
+	lodMeshs.resize(nWantedLods);
+
+	// must fill all LODs, from end to start. do not proces last lod since it will be the coarsest mesh.
+	for(i=nWantedLods-1;i>0;i--)
+	{
+		sint	nbWantedFaces;
+
+		// Linear.
+		nbWantedFaces= nBaseFaces + (nFaces-nBaseFaces) * (i-1)/(nWantedLods-1);
+		nbWantedFaces=max(nbWantedFaces,4);
+
+		// build this LOD.
+		CMRMMesh	csMesh;
+		makeFromMesh(srcMesh, lodMeshs[i], csMesh, nbWantedFaces);
+		// next mesh to process is csMesh.
+		srcMesh= csMesh;
+	}
+	// the first lodMedsh gets the coarsest mesh.
+	lodMeshs[0]= srcMesh;
+
+}
+
+
+// ***************************************************************************
+void	CMRMBuilder::buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFinal &finalMRM)
+{
+	sint	i,j;
+	sint	lodId, attId;
+	sint	nLods= lodMeshs.size();
+
+	// Init.
+	// ===============
+	finalMRM.reset();
+	finalMRM.NumAttributes= NumAttributes;
+	CMRMMeshFinal::CWedge::NumAttributesToCompare= NumAttributes;
+	finalMRM.Lods.resize(nLods);
+
+
+	// Build Wedges, and faces index.
+	// ===============
+	// for all lods.
+	for(lodId=0; lodId<nLods; lodId++)
+	{
+		CMRMMeshGeom	&lodMesh= lodMeshs[lodId];
+		CMRMMeshGeom	&lodMeshPrec= lodMeshs[lodId==0?0:lodId-1];
+		// for all face corner.
+		for(i=0; i<(sint)lodMesh.Faces.size();i++)
+		{
+			// The current face.
+			CMRMFace	&face= lodMesh.Faces[i];
+			// the current face, but which points to the prec LOD vertices/attributes.
+			CMRMFace	&faceCoarser= lodMesh.CoarserFaces[i];
+			// for 3 corners.
+			for(j=0;j<3;j++)
+			{
+				CMRMCorner	&corner= face.Corner[j];
+				CMRMCorner	&cornerCoarser= faceCoarser.Corner[j];
+				// start and end wedge (geomorph), maybe same.
+				CMRMMeshFinal::CWedge		wedgeStart;
+				CMRMMeshFinal::CWedge		wedgeEnd;
+
+				// fill wedgeStart with values from lodMesh.
+				wedgeStart.Vertex= lodMesh.Vertices[corner.Vertex];
+				for(attId=0; attId<NumAttributes; attId++)
+				{
+					wedgeStart.Attributes[attId]= lodMesh.Attributes[attId][corner.Attributes[attId]];
+				}
+
+				// if geomorph possible (ie not lod 0).
+				if(lodId>0)
+				{
+					// fill wedgeEnd with values from coarser lodMesh.
+					wedgeEnd.Vertex= lodMeshPrec.Vertices[cornerCoarser.Vertex];
+					for(attId=0; attId<NumAttributes; attId++)
+					{
+						wedgeEnd.Attributes[attId]= lodMeshPrec.Attributes[attId][cornerCoarser.Attributes[attId]];
+					}
+				}
+				else
+				{
+					// no geomorph.
+					wedgeEnd= wedgeStart;
+				}
+
+				// find/insert wedge, and get Ids. NB: if start/end same, same indices.
+				sint	wedgeStartId= finalMRM.findInsertWedge(wedgeStart);
+				sint	wedgeEndId= finalMRM.findInsertWedge(wedgeEnd);
+
+				// store in TmpCorner.
+				corner.WedgeStartId= wedgeStartId;
+				corner.WedgeEndId= wedgeEndId;
+			}
+		}
+
+		// Here, the number of wedge indicate the max number of wedge this LOD needs.
+		finalMRM.Lods[lodId].NWedges= finalMRM.Wedges.size();
+	}
+
+
+	// Count NBWedges necessary for geomorph, and compute Dest geomorph wedges ids.
+	// ===============
+	// the number of geomorph required for one LOD.
+	sint	sglmGeom;
+	// the number of geomorph required for all LOD (max of sglmGeom).
+	sint	sglmGeomMax= 0;
+
+	// Do not process lod 0, since no geomorph.
+	for(lodId=1; lodId<nLods; lodId++)
+	{
+		CMRMMeshGeom	&lodMesh= lodMeshs[lodId];
+
+		// reset the GeomSet, the one which indicate if we have already inserted a geomorph.
+		_GeomSet.clear();
+		sglmGeom= 0;
+
+		// for all face corner.
+		for(i=0; i<(sint)lodMesh.Faces.size();i++)
+		{
+			// The current face.
+			CMRMFace	&face= lodMesh.Faces[i];
+			// for 3 corners.
+			for(j=0;j<3;j++)
+			{
+				CMRMCorner	&corner= face.Corner[j];
+
+				// if not same wedge Ids, this is a geomorphed wedge.
+				if(corner.WedgeStartId != corner.WedgeEndId)
+				{
+					// search if it exist yet in the set.
+					CMRMWedgeGeom	geom;
+					geom.Start= corner.WedgeStartId;
+					geom.End= corner.WedgeEndId;
+					geom.Dest= sglmGeom;
+					// if don't find this geom in the set, then it is a new one.
+					TGeomSet::const_iterator	it= _GeomSet.find(geom);
+					if(it == _GeomSet.end())
+					{
+						_GeomSet.insert(geom);
+						sglmGeom++;
+					}
+					else
+						geom.Dest= it->Dest;
+
+					// store this Geom Id in the corner.
+					corner.WedgeGeomId= geom.Dest;
+				}
+			}
+		}
+
+		// take the max.
+		sglmGeomMax= max(sglmGeomMax, sglmGeom);
+	}
+
+
+	// decal all wedges/ face index.
+	// ===============
+	// insert an empty space for dest geomorph.
+	finalMRM.Wedges.insert(finalMRM.Wedges.begin(), sglmGeomMax, CMRMMeshFinal::CWedge());
+
+	// Parse all faces corner of All lods, and decal Start/End Wedge index.
+	for(lodId=0; lodId<nLods; lodId++)
+	{
+		CMRMMeshGeom	&lodMesh= lodMeshs[lodId];
+
+		// for all face corner.
+		for(i=0; i<(sint)lodMesh.Faces.size();i++)
+		{
+			// The current face.
+			CMRMFace	&face= lodMesh.Faces[i];
+			// for 3 corners.
+			for(j=0;j<3;j++)
+			{
+				CMRMCorner	&corner= face.Corner[j];
+
+				// decal indices.
+				corner.WedgeStartId+= sglmGeomMax;
+				corner.WedgeEndId+= sglmGeomMax;
+			}
+		}
+
+		// increment too the number of wedge required for this Lod.
+		finalMRM.Lods[lodId].NWedges+= sglmGeomMax;
+	}
+
+
+	// fill faces.
+	// ===============
+	// Parse all faces corner of All lods, and build Faces/Geomorphs..
+	for(lodId=0; lodId<nLods; lodId++)
+	{
+		CMRMMeshGeom			&lodMesh= lodMeshs[lodId];
+		CMRMMeshFinal::CLod		&lodDest= finalMRM.Lods[lodId];
+
+		// alloc final faces of this LOD.
+		lodDest.Faces.resize(lodMesh.Faces.size());
+
+		// reset the GeomSet, the one which indicate if we have already inserted a geomorph.
+		_GeomSet.clear();
+
+		// for all face corner.
+		for(i=0; i<(sint)lodMesh.Faces.size();i++)
+		{
+			// The current face.
+			CMRMFace	&face= lodMesh.Faces[i];
+			// The dest face.
+			CMRMMeshFinal::CFace		&faceDest= lodDest.Faces[i];
+			// fill good material.
+			faceDest.MaterialId= face.MaterialId;
+
+			// for 3 corners.
+			for(j=0;j<3;j++)
+			{
+				CMRMCorner	&corner= face.Corner[j];
+
+				// if not same wedge Ids, this is a geomorphed wedge.
+				if(corner.WedgeStartId != corner.WedgeEndId)
+				{
+					// geomorph, so point to geomorphed wedge.
+					faceDest.WedgeId[j]= corner.WedgeGeomId;
+
+					// Build the geomorph, add it to the list (if not yet inserted).
+					CMRMWedgeGeom	geom;
+					geom.Start= corner.WedgeStartId;
+					geom.End=	corner.WedgeEndId;
+					geom.Dest=	corner.WedgeGeomId;
+					// if don't find this geom in the set, then it is a new one.
+					TGeomSet::const_iterator	it= _GeomSet.find(geom);
+					if(it == _GeomSet.end())
+					{
+						// mark it as inserted.
+						_GeomSet.insert(geom);
+						// and we must insert this geom in the array.
+						nlassert( geom.Dest==lodDest.Geomorphs.size() );
+						lodDest.Geomorphs.push_back(geom);
+					}
+				}
+				else
+				{
+					// no geomorph, so just point to good wedge.
+					faceDest.WedgeId[j]= corner.WedgeStartId;
+				}
+			}
 		}
 	}
 

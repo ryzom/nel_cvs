@@ -1,7 +1,7 @@
 /** \file mrm_mesh.h
  * Internal header for CMRMBuilder.
  *
- * $Id: mrm_mesh.h,v 1.2 2001/01/02 10:21:43 berenguier Exp $
+ * $Id: mrm_mesh.h,v 1.3 2001/06/14 13:37:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,11 @@ struct	CMRMCorner
 	sint	Vertex;
 	// The ids of the wedges. Points on Attributes of the mesh.
 	sint	Attributes[NL3D_MRM_MAX_ATTRIB];
+
+	// For CMRMMeshFinal computing, wedge ids.
+	sint	WedgeStartId;
+	sint	WedgeEndId;
+	sint	WedgeGeomId;
 };
 
 
@@ -76,7 +81,6 @@ public:
 	// The id of the material. Used for material boundaries.
 	sint			MaterialId;
 };
-
 
 
 // ***************************************************************************
@@ -118,10 +122,135 @@ public:
 class CMRMMeshGeom : public CMRMMesh
 {
 public:
+	/// Same size than Faces, but points onto coarser Mesh verices. NB: MaterialId means nothing here.
+	std::vector<CMRMFace>		CoarserFaces;
+
+	CMRMMeshGeom	&operator=(const CMRMMesh &o)
+	{
+		(CMRMMesh&)(*this)= o;
+		// copy faces into CoarserFaces.
+		CoarserFaces= Faces;
+	}
 
 public:
 	/// Constructor
 	CMRMMeshGeom();
+};
+
+
+// ***************************************************************************
+/**
+ * A geomoprh information.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ * \see CMRMBuilder
+ */
+struct	CMRMWedgeGeom
+{
+	/// The start wedge index of the geomorph.
+	sint	Start;
+	/// The end wedge index of the geomorph.
+	sint	End;
+	/// where to store the result in the Wedge array. (NB: always in beginning of array).
+	sint	Dest;
+};
+
+
+// ***************************************************************************
+/**
+ * An internal MRM mesh representation for MRM, with All lods information. USER DO NOT USE IT.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ * \see CMRMBuilder
+ */
+class	CMRMMeshFinal
+{
+public:
+
+	// An wedge value (vertex + all attribs).
+	struct	CWedge
+	{
+		CVector		Vertex;
+		CVectorH	Attributes[NL3D_MRM_MAX_ATTRIB];
+		static		uint NumAttributesToCompare;
+
+		bool	operator<(const CWedge &o) const
+		{
+			if(Vertex!=o.Vertex)
+				return Vertex<o.Vertex;
+			else
+			{
+				nlassert(NumAttributesToCompare<=NL3D_MRM_MAX_ATTRIB);
+				for(uint i=0; i<NumAttributesToCompare; i++)
+				{
+					if(Attributes[i]!=o.Attributes[i])
+						return Attributes[i]<o.Attributes[i];
+				}
+			}
+			// they are equal.
+			return false;
+		}
+	};
+
+	// a face.
+	struct	CFace
+	{
+		/// Three index on the wedegs.
+		sint		WedgeId[3];
+		/// the material id.
+		sint		MaterialId;
+	};
+
+
+	// A LOD information for the final MRM representation.
+	struct	CLod
+	{
+		/// this tells how many wedges in the Wedges array this lod requires. this is usefull for partial loading.
+		sint						NWedges;
+		/// This is the face list for this LOD.
+		std::vector<CFace>			Faces;
+		/// List of geomorphs.
+		std::vector<CMRMWedgeGeom>	Geomorphs;
+	};
+
+
+public:
+	/** The wedges of the final mesh. Contains all Wedges for all lods, sorted from LOD0 to LODN, 
+	 * with additional empty wedges, for geomorph.
+	 */
+	std::vector<CWedge>			Wedges;
+	/// The number of used attributes of the MRMMesh.
+	sint						NumAttributes;
+	/// the finals Lods of the MRM.
+	std::vector<CLod>			Lods;
+
+
+	CMRMMeshFinal()
+	{
+		NumAttributes= 0;
+	}
+
+
+	/// add a wedge to this mesh, or return id if exist yet.
+	sint	findInsertWedge(const CWedge &w);
+
+
+	void	reset()
+	{
+		Wedges.clear();
+		_WedgeMap.clear();
+		Lods.clear();
+		NumAttributes= 0;
+	}
+
+
+private:
+	// The map of wedges to wedges index.
+	typedef std::map<CWedge, sint>		TWedgeMap;
+	TWedgeMap			_WedgeMap;
+
 };
 
 

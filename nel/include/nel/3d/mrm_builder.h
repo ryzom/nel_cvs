@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * <File description>
  *
- * $Id: mrm_builder.h,v 1.3 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: mrm_builder.h,v 1.4 2001/06/14 13:37:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ public:
 	CVector				Current,Original;
 	std::vector<sint>	SharedFaces;
 	sint				CollapsedTo;
+	// Final index in the coarser mesh.
+	sint				CoarserIndex;
 
 public:
 	CMRMVertex() {CollapsedTo=-1;}
@@ -66,6 +68,8 @@ struct	CMRMAttribute
 public:
 	CVectorH		Current,Original;
 	sint			CollapsedTo;		// -2 <=> "must interpolate from Current to Original".
+	// Final index in the coarser mesh.
+	sint			CoarserIndex;
 
 public:
 	// temporary data in construction:
@@ -278,6 +282,8 @@ public:
 // ****************************
 private:
 
+	/// \name Mesh Level Tmp Values.
+	// @{
 	// The vertices of the MRMMesh.
 	std::vector<CMRMVertex>		TmpVertices;
 	// The attributes of the MRMMesh.
@@ -288,6 +294,7 @@ private:
 	std::vector<CMRMFaceBuild>	TmpFaces;
 	// Ordered list of Edge collapse.
 	TEdgeMap					EdgeCollapses;
+	// @}
 
 
 	/// \name Edge Cost methods.
@@ -318,11 +325,52 @@ private:
 	// @{
 	void	init(const CMRMMesh &baseMesh);
 	void	collapseEdges(sint nWantedFaces);
-	//void	makeLODMesh(LSingleLODMesh &lodMesh);
+	void	makeLODMesh(CMRMMeshGeom &lodMesh);
 	void	saveCoarserMesh(CMRMMesh &coarserMesh);
-	//void	makeFromMesh(const CMRMMesh &baseMesh, LSingleLODMesh &lodMesh, CMRMMesh &coarserMesh, sint nWantedFaces);
+	/// this is the root call to compute a single lodMesh and the coarserMesh from a baseMesh.
+	void	makeFromMesh(const CMRMMesh &baseMesh, CMRMMeshGeom &lodMesh, CMRMMesh &coarserMesh, sint nWantedFaces);
 	// @}
 
+
+private:
+
+
+
+	/// \name MRM Level Variables.
+	// @{
+	// Our comparator of CMRMWedgeGeom.
+	struct	CGeomPred
+	{
+		bool	operator()(const CMRMWedgeGeom &a, const CMRMWedgeGeom &b) const
+		{
+			// compare just Start/End.
+			if(a.Start!=b.Start)
+				return a.Start<b.Start;
+			return a.End<b.End;
+		}
+	};
+
+	// The set of geomorph. for one LOD only;
+	typedef std::set<CMRMWedgeGeom, CGeomPred>		TGeomSet;
+	TGeomSet			_GeomSet;
+	// @}
+
+
+	/// \name MRM Level Methods.
+	// @{
+	/** build all LODs from a baseMesh. NB: the coarsestMesh is stored in lodMeshs[0], and has no geomorph info since it is
+	 * the coarsest mesh. nWantedLods are created (including the coarsestMesh).
+	 * \param lodMeshs array created by the function (size of nWantedlods).
+	 * \param nWantedLods number of LODs wanted.
+	 * \param divisor the coarsestMesh will have  baseMesh.Faces.size()/divisor  faces.
+	 */
+	void	buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeom> &lodMeshs, uint nWantedLods= 10, uint divisor= 50);
+
+	/** given a list of LODs, compress/reorganize data, and store in finalMRM mesh.
+	 *
+	 */
+	void	buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFinal &finalMRM);
+	// @}
 
 };
 

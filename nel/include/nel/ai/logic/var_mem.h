@@ -1,7 +1,7 @@
 /** \file var_mem.h
  *	Set of variables
  *
- * $Id: var_mem.h,v 1.1 2001/05/31 15:00:19 chafik Exp $
+ * $Id: var_mem.h,v 1.2 2001/05/31 15:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,15 @@ namespace NLAILOGIC
 		}
 		
 
-		virtual void sendUpdateMessage(NLAIAGENT::IObjectIA *);
+		virtual void sendUpdateMessage(NLAIAGENT::IObjectIA *o)
+		{
+			CVolatilMemmory::sendUpdateMessage(o);
+		}
+
+	public:
+		static void initClass();
+		static void releaseClass();
+
 
 	};
 }

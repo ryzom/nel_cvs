@@ -1,6 +1,6 @@
 /** \file volatil_memory.h
  *
- * $Id: volatil_memory.h,v 1.4 2001/05/31 14:59:46 chafik Exp $
+ * $Id: volatil_memory.h,v 1.5 2001/05/31 15:12:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_object.h"
 #include "nel/ai/agent/agent_timer.h"
+
+#ifndef NL_VOLATIL_MEMORY_H
+#define NL_VOLATIL_MEMORY_H
 
 namespace NLAIAGENT
 {	
@@ -216,3 +219,4 @@ namespace NLAIAGENT
 		static void releaseClass();
 	};
 }
+#endif

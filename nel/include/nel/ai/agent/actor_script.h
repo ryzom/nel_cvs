@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.23 2001/07/12 17:01:22 portier Exp $
+ * $Id: actor_script.h,v 1.24 2001/07/25 08:40:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,7 +150,7 @@ namespace NLAIAGENT
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
 //			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
-			tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+			virtual tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 //			virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 //			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;

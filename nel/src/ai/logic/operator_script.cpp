@@ -17,6 +17,7 @@ namespace NLAIAGENT
 		_CurrentGoal = a._CurrentGoal;
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
 		_IsActivable = a._IsActivable;
+		_Maintain = a._Maintain;
 	}
 
 	COperatorScript::COperatorScript(IAgentManager *manager, 
@@ -28,6 +29,7 @@ namespace NLAIAGENT
 		_CurrentGoal = NULL;
 		_CyclesBeforeUpdate = 0;
 		_IsActivable = false;
+		_Maintain = false;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -35,6 +37,7 @@ namespace NLAIAGENT
 		_CurrentGoal = NULL;
 		_CyclesBeforeUpdate = 0;
 		_IsActivable = false;
+		_Maintain = false;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -173,6 +176,9 @@ namespace NLAIAGENT
 
 	void COperatorScript::execOnActivate()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
 		if ( _OnActivateIndex != -1 ) 					// if found, runs the script's OnActivate() function declared in the operator class
 		{
 			if ( getAgentManager() != NULL )
@@ -190,6 +196,9 @@ namespace NLAIAGENT
 
 	void COperatorScript::checkPause()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
 		if ( (_CurrentGoal != NULL) )
 		{
 			if ( (_IsPaused == false) && !_CurrentGoal->isSelected() )
@@ -200,7 +209,7 @@ namespace NLAIAGENT
 	}
 
 	// This function selects a goals among the ones the operator can process
-	// At this times returns the first of the list (can be overriden to implement more complex mechanisms)
+	// Actualy returns the first of the list (can be overriden to implement more complex mechanisms)
 	NLAILOGIC::CGoal *COperatorScript::selectGoal()
 	{
 		if ( !_ActivatedGoals.empty() )
@@ -212,22 +221,33 @@ namespace NLAIAGENT
 	// Check if the owner of the operator has a goal the operator could process and if the preconditions are validated
 	bool COperatorScript::checkActivation()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
+
+		// If not in maintain mode and the operator has already been activated, keeps it activated.
+		if ( _IsActivated && _CurrentGoal != NULL && !_Maintain)
+			return true;
+
+
 		if ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL)
 		{
 			lookForGoals();
 
-			// If a goal is posted corresponding to this operator's one
+			// If no goal is posted corresponding to this operator's one, returns false
 			if ( _ActivatedGoals.empty() )
-				return false;	// Checks the boolean funcs conditions
+				return false;	
 		}
-	
-		// If the operator doesn't have a defined goal, acts like a simple trigger (which means only check the preconditions)
+		// Checks the boolean funcs conditions
 		return checkPreconditions();
 	}
 
 	// Looks for the goals the operator could process in the father's goal stack
 	void COperatorScript::lookForGoals()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
 		_ActivatedGoals.clear();
 		CAgentScript *father = (CAgentScript *) getParent();
 		const std::vector<NLAILOGIC::CGoal *> *goals = father->getGoalStack();
@@ -252,6 +272,9 @@ namespace NLAIAGENT
 	// Checks the boolean scripted funcs conditions
 	bool COperatorScript::checkPreconditions()
 	{
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+#endif
 		NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 		context->Self = this;
 		return ((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context );
@@ -469,5 +492,103 @@ namespace NLAIAGENT
 		_CurrentGoal->operatorFailure( this );
 		_CurrentGoal = NULL;
 		unActivate();
+	}
+
+	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,int heritance, IObjectIA *params)
+	{		
+		IObjectIA::CProcessResult r;
+
+		switch ( index )
+		{
+			case fid_modeachieve:
+				_Maintain = false;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
+
+			case fid_modemaintain:
+				_Maintain = true;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
+		}
+		return r;
+	}
+
+
+
+	IObjectIA::CProcessResult COperatorScript::runMethodBase(int index,IObjectIA *params)
+	{	
+		int i = index - CActorScript::getMethodIndexSize();
+
+
+		IObjectIA::CProcessResult r;
+		std::vector<CStringType *> handles;
+
+#ifndef NL_DEBUG 
+		/*
+		char buf[1024];
+		getDebugString(buf);
+		*/
+
+#endif
+
+		switch( i )
+		{
+			case fid_modemaintain:
+				_Maintain = true;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
+
+			case fid_modeachieve:
+				_Maintain = false;
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
+		}
+		return CActorScript::runMethodBase(index, params);
+	}
+
+	int COperatorScript::getBaseMethodCount() const
+	{
+		return CActorScript::getBaseMethodCount() + fid_last;
+	}
+
+	tQueue COperatorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
+	{		
+
+#ifdef NL_DEBUG
+		const char *dbg_func_name = name->getString();
+		std::string buffer;
+		param.getDebugString( buffer );
+#endif
+
+		tQueue result; 
+
+		static NLAIAGENT::CStringVarName modeachieve_name("setModeAchieve");
+		static NLAIAGENT::CStringVarName modemaintain_name("setModeMaintain");
+
+		if ( *name == modeachieve_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod(  CActorScript::getMethodIndexSize() + fid_modeachieve, 0.0,NULL, r_type ) );
+		}
+
+		if ( *name == modemaintain_name )
+		{
+			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CActorScript::getMethodIndexSize() + fid_modemaintain , 0.0,NULL, r_type ) );
+		}
+
+		if ( result.empty() )
+			return CActorScript::getPrivateMember(className, name, param);
+		else
+			return result;
+	}
+
+	sint32 COperatorScript::getMethodIndexSize() const
+	{
+		return CActorScript::getMethodIndexSize() + fid_last;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal_stack.h,v 1.2 2001/07/12 08:40:45 portier Exp $
+ * $Id: goal_stack.h,v 1.3 2001/07/25 08:40:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@ namespace NLAILOGIC
 	{
 		private:
 			std::vector<NLAILOGIC::CGoal *>	_Goals;
+			sint32							_MaxGoals;
 
 		public:
 			struct greater : public std::binary_function<CGoal *, CGoal *, bool> {
@@ -72,6 +73,14 @@ namespace NLAILOGIC
 			virtual const IObjectIA::CProcessResult &run();
 			virtual bool isEqual(const CGoal &a) const;
 			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+
+			void setMaxGoals(sint32);
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
+			sint32 getMethodIndexSize() const;
+
 	};
 } // NLAILOGIC
 

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.21 2001/07/18 09:50:45 portier Exp $
+ * $Id: operator_script.h,v 1.22 2001/07/25 08:40:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,13 +45,22 @@ namespace NLAIAGENT
 {
 	class COperatorScript  : public CActorScript
 	{
+		protected:
+			enum c_funcs_id 
+			{
+				fid_modeachieve,
+				fid_modemaintain,
+				fid_last
+			};
+
 		private:
-			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
-			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
+			std::vector<NLAIAGENT::IObjectIA *> _VarValues;				// Values of the vars for the instanciated operator
+			NLAILOGIC::CFactBase				*_FactBase;				// The father's factbase
 			NLAILOGIC::CGoal					*_CurrentGoal;
 			sint32								_CyclesBeforeUpdate;	// Number of cycles before the preconditions are checked
 			std::list<NLAILOGIC::CGoal *>		_ActivatedGoals;
 			bool								_IsActivable;
+			bool								_Maintain;
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -83,15 +92,16 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
-//			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
-//			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
+			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
+			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
 //			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
-//			virtual sint32 getMethodIndexSize() const;
+
+			tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+			virtual sint32 getMethodIndexSize() const;
+			virtual int getBaseMethodCount() const;
 
 			void getFatherComponent(IVarName &);
-
-//			virtual void setParent(const IWordNumRef *parent);
 
 			/// Binds the goal args to the variables of the operator (defined by the "Goal:" field in the script).
 			void linkGoalArgs(NLAILOGIC::CGoal *);

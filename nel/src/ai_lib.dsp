@@ -641,6 +641,10 @@ SOURCE=.\ai\logic\goal.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\goal_stack.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\logic\interpret_object_operator.cpp
 # End Source File
 # Begin Source File
@@ -726,6 +730,10 @@ SOURCE=..\include\nel\ai\logic\fsm_seq_script.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\logic\goal.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\goal_stack.h
 # End Source File
 # Begin Source File
 

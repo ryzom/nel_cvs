@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.37 2003/03/17 17:36:28 berenguier Exp $
+ * $Id: mesh.h,v 1.38 2003/04/01 15:36:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/driver.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/uv.h"
+#include "nel/misc/bit_set.h"
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
@@ -180,7 +181,7 @@ public:
 		uint8						UVRouting[CVertexBuffer::MaxStage]; // gives the uv routing table. Each final UV channel can be routed to any vertex uv
 
 		// Vertices array
-		std::vector<CVector>		Vertices;
+		std::vector<CVector>		Vertices;		
 
 		// Palette Skinning Vertices array (same size as Vertices). NULL if no skinning.
 		std::vector<CSkinWeight>	SkinWeights;
@@ -204,6 +205,8 @@ public:
 		std::vector<CInterface>		Interfaces;
 		// must be same size as Vertices, else Mesh Interface system disabled
 		std::vector<CInterfaceLink>	InterfaceLinks;
+
+		NLMISC::CBitSet             InterfaceVertexFlag; // each bit indicate if the vertex belongs to an interface
 
 
 		CMeshBuild();

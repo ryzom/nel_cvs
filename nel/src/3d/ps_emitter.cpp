@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.49 2003/08/19 12:52:51 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.50 2003/09/23 14:21:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1901,7 +1901,7 @@ void CPSEmitter::resize(uint32 size)
 void CPSEmitter::bounceOccured(uint32 index)
 {
 	// TODO : avoid duplication with deleteElement
-	if (_EmissionType == CPSEmitter::onBounce)
+	if (_EmittedType && _EmissionType == CPSEmitter::onBounce)
 	{
 		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
 		processEmit(index, nbToGenerate);

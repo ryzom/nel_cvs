@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.3 2001/09/03 08:37:23 legros Exp $
+ * $Id: edge_quad.cpp,v 1.4 2001/09/04 15:09:57 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,7 +179,7 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 			swap(gp0, gp1);
 		}
 		
-		TCollisionSurfaceDescVector	cd = global.testCylinderMove(gp0, p1-p0, 0.01f, cst);
+		TCollisionSurfaceDescVector	cd = *global.testCylinderMove(gp0, p1-p0, 0.01f, cst);
 
 		if (edges[i].Link != -1 && cd.size() > 0)
 		{

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.48 2001/08/31 08:26:10 legros Exp $
+ * $Id: global_retriever.cpp,v 1.49 2001/09/04 15:09:58 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1300,7 +1300,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 
 // ***************************************************************************
 const	NLPACS::TCollisionSurfaceDescVector	
-	&NLPACS::CGlobalRetriever::testCylinderMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
+	*NLPACS::CGlobalRetriever::testCylinderMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, float radius, CCollisionSurfaceTemp &cst) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
 
@@ -1315,7 +1315,8 @@ const	NLPACS::TCollisionSurfaceDescVector
 		// Warning this primitive is not on a surface
 		//nlassertonce (0);
 
-		return cst.CollisionDescs;
+		// Return NULL when lost
+		return NULL;
 	}
 	// store this request in cst.
 	cst.PrecStartSurface= startSurface;
@@ -1327,7 +1328,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 	//===========
 	// Abort if deltamove is 0,0,0.
 	if (delta.isNull())
-		return cst.CollisionDescs;
+		return &cst.CollisionDescs;
 
 	// 1. Choose a local basis.
 	//===========
@@ -1364,13 +1365,13 @@ const	NLPACS::TCollisionSurfaceDescVector
 	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, radius, obbDummy, CGlobalRetriever::Circle);
 
 	// result.
-	return cst.CollisionDescs;
+	return &cst.CollisionDescs;
 }
 
 
 // ***************************************************************************
 const	NLPACS::TCollisionSurfaceDescVector	
-	&NLPACS::CGlobalRetriever::testBBoxMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, 
+	*NLPACS::CGlobalRetriever::testBBoxMove(const UGlobalPosition &startPos, const NLMISC::CVector &delta, 
 	const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const
 {
 	CSurfaceIdent	startSurface(startPos.InstanceId, startPos.LocalPosition.Surface);
@@ -1386,7 +1387,8 @@ const	NLPACS::TCollisionSurfaceDescVector
 		// Warning this primitive is not on a surface
 		//nlassertonce (0);
 
-		return cst.CollisionDescs;
+		// Return NULL when lost
+		return NULL;
 	}
 	
 	// store this request in cst.
@@ -1399,7 +1401,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 	//===========
 	// Abort if deltamove is 0,0,0.
 	if (delta.isNull())
-		return cst.CollisionDescs;
+		return &cst.CollisionDescs;
 
 	// 1. Choose a local basis.
 	//===========
@@ -1451,7 +1453,7 @@ const	NLPACS::TCollisionSurfaceDescVector
 	testCollisionWithCollisionChains(cst, startCol, deltaCol, startSurface, 0, obbStart, CGlobalRetriever::BBox);
 
 	// result.
-	return cst.CollisionDescs;
+	return &cst.CollisionDescs;
 }
 
 

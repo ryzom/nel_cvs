@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.5 2001/06/27 15:15:34 corvazier Exp $
+ * $Id: move_container.h,v 1.6 2001/09/04 15:09:58 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,7 +211,8 @@ private:
 
 	// Eval one collision
 	bool						evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, 
-													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic);
+													uint8 primitiveWorldImage, bool testMove, bool secondIsStatic, 
+													bool &testMoveValid);
 
 	// Eval final step
 	bool						evalFinalCollision (double beginTime, CMovePrimitive *primitive, CMovePrimitive *otherPrimitive, 

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.13 2001/08/23 13:40:04 legros Exp $
+ * $Id: global_retriever.h,v 1.14 2001/09/04 15:09:58 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -265,7 +265,7 @@ public:
 	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
 	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
 	 */
-	const TCollisionSurfaceDescVector	&testCylinderMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
+	const TCollisionSurfaceDescVector	*testCylinderMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
 		float radius, CCollisionSurfaceTemp &cst) const;
 	/** Test a movement of a bbox against surface world.
 	 * \param start is the start position of the movement.
@@ -276,7 +276,7 @@ public:
 	 * \return list of collision against surface, ordered by increasing time. this is a synonym for
 	 * cst.CollisionDescs. NB: this array may be modified by CGlobalRetriever on any collision call.
 	 */
-	const TCollisionSurfaceDescVector	&testBBoxMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
+	const TCollisionSurfaceDescVector	*testBBoxMove(const UGlobalPosition &start, const NLMISC::CVector &delta, 
 		const NLMISC::CVector &locI, const NLMISC::CVector &locJ, CCollisionSurfaceTemp &cst) const;
 	/** apply a movement of a point against surface world. This should be called after test???Move().
 	 * NB: It's up to you to give good t, relative to result of test???Move(). Else, undefined results...

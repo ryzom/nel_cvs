@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.12 2001/08/13 07:15:54 corvazier Exp $
+ * $Id: move_container.cpp,v 1.13 2001/09/04 15:09:58 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -278,13 +278,15 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 	// Result
 	bool result=false;
+	bool testMoveValid;
 
 	// Eval first each static world images
 	std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 	while (ite!=_StaticWorldImage.end())
 	{
+
 		// Eval in this world image
-		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true, true);
+		result=evalOneCollision (0, prim, *ite, primitiveWorldImage, true, true, testMoveValid);
 
 		// If found, abort
 		if (result)
@@ -296,7 +298,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 	// Eval collisions if not found and not tested
 	if ((!result) && (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end()))
-		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true, false);
+		result=evalOneCollision (0, prim, worldImage, primitiveWorldImage, true, false, testMoveValid);
 
 	// Backup speed only if the primitive is inserted in the world image
 	if (prim->isInserted (primitiveWorldImage))
@@ -568,7 +570,7 @@ void CMoveContainer::checkSortedList ()
 // ***************************************************************************
 
 bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primitive, uint8 worldImage, uint8 primitiveWorldImage, 
-									   bool testMove, bool secondIsStatic)
+									   bool testMove, bool secondIsStatic, bool &testMoveValid)
 {
 	// Find its collisions
 	bool found=false;
@@ -591,6 +593,9 @@ bool CMoveContainer::evalOneCollision (double beginTime, CMovePrimitive *primiti
 		const TCollisionSurfaceDescVector *result=wI->evalCollision (*_Retriever, _SurfaceTemp, _TestTime, _MaxTestIteration, *primitive);
 		if (result)
 		{
+			// TEST MOVE MUST BE OK !!
+			testMoveValid=true;
+
 			// Size of the array
 			uint size=result->size();
 
@@ -810,28 +815,41 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 			primitiveWorldImage=worldImage;
 		}
 
+		CVectorD d0=wI->getDeltaPosition();
+		CVector f0=wI->getDeltaPosition();
+		CVector f0bis=_SurfaceTemp.PrecDeltaPos;
+
 		// Find a collision
 		bool found=false;
+		bool testMoveValid=false;
 
 		// Eval collision in each static world image
 		std::set<uint8>::iterator ite=_StaticWorldImage.begin();
 		while (ite!=_StaticWorldImage.end())
 		{
 			// Eval in this world image
-			found=evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true);
+			found|=evalOneCollision (beginTime, primitive, *ite, primitiveWorldImage, false, true, testMoveValid);
 
 			// Next world image
 			ite++;
 		}
 
+		CVectorD d1=wI->getDeltaPosition();
+		CVector f1=_SurfaceTemp.PrecDeltaPos;
+
 		// Eval collision in the world image if not already tested
 		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
-			found|=evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false);
+			found|=evalOneCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid);
+
+		CVectorD d2=wI->getDeltaPosition();
+		CVector f2=_SurfaceTemp.PrecDeltaPos;
 
 		// No collision ?
 		if (!found)
 		{
-			if (_Retriever)
+			nlassert ((d0==d1)&&(d0==d2));
+			nlassert (f1==f2);
+			if (_Retriever&&testMoveValid)
 			{
 				// Do move
 				wI->doMove (*_Retriever, _SurfaceTemp, _DeltaTime, _DeltaTime);

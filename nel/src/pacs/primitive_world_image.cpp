@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.7 2001/08/17 08:16:47 legros Exp $
+ * $Id: primitive_world_image.cpp,v 1.8 2001/09/04 15:09:58 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,7 +178,7 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 		CVector locJ ((float)(_OBData.EdgeDirectionX[1]*primitive.getLength(0)/2.0), (float)(_OBData.EdgeDirectionY[1]*primitive.getLength(1)/2.0), 0);
 
 		// Test
-		return &retriever.testBBoxMove (_Position.getGlobalPos (), _DeltaPosition, locI, locJ, surfaceTemp);
+		return retriever.testBBoxMove (_Position.getGlobalPos (), _DeltaPosition, locI, locJ, surfaceTemp);
 	}
 	else
 	{
@@ -186,7 +186,9 @@ const TCollisionSurfaceDescVector *CPrimitiveWorldImage::evalCollision (CGlobalR
 		nlassert (primitive.getPrimitiveTypeInternal()==UMovePrimitive::_2DOrientedCylinder);
 
 		// Test
-		return &retriever.testCylinderMove (_Position.getGlobalPos (), _DeltaPosition, primitive.getRadiusInternal(), surfaceTemp);
+		//nlinfo ("1) %f %f %f\n", _DeltaPosition.x, _DeltaPosition.y, _DeltaPosition.z);
+		
+		return retriever.testCylinderMove (_Position.getGlobalPos (), _DeltaPosition, primitive.getRadiusInternal(), surfaceTemp);
 	}
 }
 

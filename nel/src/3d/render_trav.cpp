@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.62 2005/01/18 15:11:05 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.63 2005/01/20 14:17:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1276,6 +1276,44 @@ void CRenderTrav::clearWaterModelList()
 	}
 }
 
+// ***************************************************************************
+void CRenderTrav::debugWaterModelMemory(const char *tag, bool dumpList)
+{
+	if(dumpList)
+		_DebugWaterModelList.clear();
+
+	CWaterModel		*curr= _FirstWaterModel;
+	while(curr)
+	{
+		// the model in the list Must have not empty clipped poly
+		CWaterModelDump		dmp;
+		dmp.Address= (void*)curr;
+		curr->debugDumpMem(dmp.ClippedPolyBegin, dmp.ClippedPolyEnd);
+		// if same ptr (begin==end), error!!
+		if(dmp.ClippedPolyBegin==dmp.ClippedPolyEnd)
+		{
+			// Before crash, do some log
+			nlwarning("******* WaterModelList crash after %s", tag);
+			nlwarning("Current: Ptr:%x. List:%x/%x", (uint32)dmp.Address, (uint32)dmp.ClippedPolyBegin, (uint32)dmp.ClippedPolyEnd);
+			// Log also the list bkuped (to do comparisons)
+			for(uint i=0;i<_DebugWaterModelList.size();i++)
+			{
+				CWaterModelDump		&bkup= _DebugWaterModelList[i];
+				nlwarning("List%02d: Ptr:%x. Array:%x/%x", i, (uint32)bkup.Address, (uint32)bkup.ClippedPolyBegin, (uint32)bkup.ClippedPolyEnd);
+			}
+
+			// crash (assert not stop for clearness)
+			nlassert(dmp.ClippedPolyBegin!=dmp.ClippedPolyEnd);
+		}
+		
+		// bkup infos for future log
+		if(dumpList)
+			_DebugWaterModelList.push_back(dmp);
+
+		// next
+		curr= curr->_Next;
+	}
+}
 
 }
 

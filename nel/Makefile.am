@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2000/11/23 15:34:39 valignat Exp $
+# $Id: Makefile.am,v 1.4 2000/11/23 16:50:07 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
@@ -11,5 +11,8 @@ MAINTAINERCLEANFILES = Makefile.in configure libtool config.guess \
 DISTCLEANFILES       = include/stamp-h include/stamp-h.in 
 
 SUBDIRS              = include src
+
+dist-hook:
+	cp -pr $(srcdir)/bootstrap $(distdir)
 
 # End of Makefile.am

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.10 2001/01/31 17:01:04 chafik Exp $
+ * $Id: baseai.cpp,v 1.11 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/agent/msg.h"
 #include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/agent/performative.h"
+#include "nel/ai/script/interpret_methodes.h"
 
 namespace NLAIAGENT
 {
@@ -195,12 +196,21 @@ namespace NLAIAGENT
 	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 		CStringVarName send(_SEND_);
+		CStringVarName constructor(_CONSTRUCTOR_);
 
 		if(*methodName == send)
 		{
 			tQueue r;			
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			r.push(CIdMethod(0,0.0,NULL,c));
+			return r;
+		}
+		else
+			if(*methodName == constructor && !((const NLAISCRIPT::CParam &)param).size())
+		{
+			tQueue r;			
+			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
+			r.push(CIdMethod(1,0.0,NULL,c));
 			return r;
 		}
 
@@ -214,7 +224,7 @@ namespace NLAIAGENT
 
 	sint32 IObjectIA::getMethodIndexSize() const
 	{
-		return 1;
+		return 2;
 	}
 
 	// Executes a method from its index i and with its parameters
@@ -255,7 +265,9 @@ namespace NLAIAGENT
 				}				
 				return sendMessage(msg);
 			}			
-			break;	
+			break;
+		case 1:
+			break;
 		}
 		return CProcessResult();
 	}	

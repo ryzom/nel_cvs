@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.10 2001/01/31 14:40:15 chafik Exp $
+ * $Id: ident.h,v 1.11 2001/02/01 17:15:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,8 +34,6 @@
 namespace NLAIAGENT
 {	
 	class IRefrence;
-
-	
 
 #ifndef _MAX__INDEX_DEFINED
 		const sint32 maxIndex = 2;
@@ -323,6 +321,131 @@ namespace NLAIAGENT
 		}
 	};
 
+	struct CAgentNumber
+	{
+		uint64	DynamicId   :  8;
+		uint64	CreatorId   :  8;
+		uint64	AgentNumber : 48;
+
+		CAgentNumber()
+		{
+			CreatorId = 0;
+			DynamicId = 0;
+			AgentNumber = 0;
+		}
+
+		CAgentNumber(const CAgentNumber &a)
+		{
+			CreatorId = a.CreatorId;			
+			DynamicId = a.DynamicId;
+			AgentNumber = a.AgentNumber;
+		}
+
+		///fill from read stream.
+		CAgentNumber(NLMISC::IStream &is)
+		{
+			load(is);
+		}
+
+		///\name comparison of two CIndexVariant.
+		//@{
+		bool operator == (const CAgentNumber &a) const
+		{			
+			return (AgentNumber == a.AgentNumber && CreatorId == a.CreatorId);			
+		}
+				
+		bool operator < (const CAgentNumber &a) const
+		{			
+			if(AgentNumber < a.AgentNumber) return true; 
+			else
+			if(AgentNumber == a.AgentNumber) return (CreatorId < a.CreatorId);
+
+			return false;
+		}
+
+		bool operator > (const CAgentNumber &a) const
+		{			
+			if(AgentNumber > a.AgentNumber) return true; 
+			else
+			if(AgentNumber == a.AgentNumber) return (CreatorId > a.CreatorId);
+
+			return false;
+		}
+		//@}
+
+		const CAgentNumber &operator ++(int)/// throw (NLAIE::CExceptionIndexError)
+		{
+			if(AgentNumber < maxResolutionNumer)
+			{
+				AgentNumber ++;
+			}
+			else
+			{
+				throw NLAIE::CExceptionIndexError();
+			}
+			return *this;
+		}
+
+		const CAgentNumber &operator = (const CAgentNumber &a)
+		{
+			CreatorId = a.CreatorId;			
+			DynamicId = a.DynamicId;
+			AgentNumber = a.AgentNumber;
+			return *this;
+		}
+
+		const CAgentNumber &operator = (uint64 a)
+		{			
+			AgentNumber = a;
+			return *this;
+		}
+
+		///saving the nomber in an output stream.
+		void save(NLMISC::IStream &os)
+		{			
+			uint8 p = (uint8)CreatorId;
+			os.serial(p);
+			p = (uint8)DynamicId;
+			os.serial(p);
+			uint64 x = AgentNumber;
+			os.serial(x);
+		}
+
+		///loading the nomber from an input stream.
+		void load(NLMISC::IStream &is)
+		{
+			uint8 p;
+			is.serial(p);
+			CreatorId = p;
+			is.serial(p);
+			DynamicId = p;
+			uint64 x;
+			is.serial(x);
+			AgentNumber = x;
+
+		}
+		///Have a debug string.
+		void getDebugString(char *str) const 
+		{									
+			str[0] = 0;
+			char b[49];
+			b[48] = 0;
+			memset(b,'0',48);
+			sint n = 48;
+			uint64 x = AgentNumber;
+			while(n --)
+			{												
+				if(x & 1)
+				{
+					b[n] = '1'; 
+				}
+				x >>= 1;													
+			}
+			strcat(str,b);
+		}
+
+	};
+
 	/**
 	Generator of unique ident for objects.
 	
@@ -332,28 +455,28 @@ namespace NLAIAGENT
 	*/
 	class CNumericIndex : public NLMISC::IStreamable
 	{
-	public:		
+	/*public:		
 		///_I is a static IndexVariant were he have 0 at the initial time.
 		static CIndexVariant<uint64,maxIndex,maxResolutionNumer> _I;
 		static CIndexVariant<uint64,maxIndex,maxResolutionNumer> LocalServerID;
 		static sint ShiftLocalServerMask;
 
 	private:
-		CIndexVariant<uint64,maxIndex,maxResolutionNumer> _Id;
-
+		CIndexVariant<uint64,maxIndex,maxResolutionNumer> _Id;*/
+	
+	public:
+		static CAgentNumber _I;		
+	private:
+		CAgentNumber _Id;
 	public:
 		///The constructor creat a new number by increment the _I numbre.
-		CNumericIndex():_Id (CIndexVariant<uint64,maxIndex,maxResolutionNumer>(_I++))
-		{
-			_Id <<= ShiftLocalServerMask;
-			_Id |= LocalServerID;
+		CNumericIndex():_Id (_I++)
+		{			
 		}
 
 		///copy constructor.
-		CNumericIndex(const CIndexVariant<uint64,maxIndex,maxResolutionNumer> &i):_Id (i)
-		{
-			_Id <<= ShiftLocalServerMask;
-			_Id |= LocalServerID;
+		CNumericIndex(const CAgentNumber &i):_Id (i)
+		{			
 		}
 
 		///construct from a stream.

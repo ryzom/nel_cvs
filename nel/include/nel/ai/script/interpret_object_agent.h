@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.12 2001/01/31 16:58:33 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.13 2001/02/01 17:15:20 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -219,6 +219,7 @@ namespace NLAISCRIPT
 		virtual CMethodeName &getBrancheCode(sint32, sint32) const;
 		virtual sint32 getBrancheCodeSize() const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;
+		virtual NLAIAGENT::tQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;		
 		virtual sint32 getRunMethod() const;
 		virtual void setRunMethod(sint32 index);

@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.8 2001/01/31 17:42:25 chafik Exp $
+ * $Id: interpret_object_message.cpp,v 1.9 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,8 +100,11 @@ namespace NLAISCRIPT
 //#########################################
 
 	CMsgNotifyParentClass::CMsgNotifyParentClass()
-	{
-		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CNotifyParentScript::IdNotifyParentScript.getFactory()->getClass());
+	{		
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CNotifyParentScript::IdNotifyParentScript.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
 	}
 	
 	const NLAIC::IBasicType *CMsgNotifyParentClass::clone() const
@@ -116,5 +119,11 @@ namespace NLAISCRIPT
 	NLAIAGENT::IObjectIA *CMsgNotifyParentClass::buildNewInstance() const
 	{
 		return new NLAIAGENT::CNotifyParentScript( (CMessageClass *) this );
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		return new NLAIAGENT::CNotifyParentScript( components,  (CMessageClass *) this );		
 	}	
+	
 }

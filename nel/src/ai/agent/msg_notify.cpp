@@ -1,6 +1,6 @@
 /** \file msg_group.cpp
  *
- * $Id: msg_notify.cpp,v 1.4 2001/01/31 17:29:35 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.5 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,9 +24,15 @@
 
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/agent_digital.h"
+#include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAIAGENT
 {
+	CNotifyParentScript::CNotifyParentScript( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
+	{
+		set(0,new DigitalType(0.0));
+		set(1,new CLocalAgentMail(NULL));
+	}
 	CNotifyParentScript::CNotifyParentScript(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		CVectorGroupType *x = new CVectorGroupType(2);		
@@ -36,7 +42,8 @@ namespace NLAIAGENT
 		set(1,new CLocalAgentMail(NULL));
 	}
 
-	CNotifyParentScript::CNotifyParentScript(IBasicAgent *agent,NLAISCRIPT::CMessageClass *b):CMessageScript(b)
+	CNotifyParentScript::CNotifyParentScript(IBasicAgent *agent):
+			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass.getFactory()->getClass())
 	{		
 		CVectorGroupType *x = new CVectorGroupType(2);
 		setMessageGroup(x);
@@ -50,6 +57,43 @@ namespace NLAIAGENT
 		{
 			set(0,new DigitalType(1.0));
 			set(1,new CLocalAgentMail(agent));
+		}
+ 	}
+
+	const NLAIC::IBasicType *CNotifyParentScript::clone() const
+	{
+		if(((const INombreDefine *)getFront())->getNumber() != 0.0)
+		{
+			CLocalAgentMail *g = (CLocalAgentMail *)get();
+			return new CNotifyParentScript((IBasicAgent *)g->getHost());
+		}
+		else
+		{
+			return new CNotifyParentScript();
+		}
+
+	}
+
+	const NLAIC::CIdentType &CNotifyParentScript::getType() const
+	{
+		if ( getCreatorClass() ) 
+			return getCreatorClass()->getType();
+		else
+			return IdNotifyParentScript;
+	}	
+
+	void CNotifyParentScript::getDebugString(char *t) const
+	{
+		double i = ((const INombreDefine *)getFront())->getNumber();
+		if(i != 0.0)
+		{
+			char txt[1024*4];
+			get()->getDebugString(txt);
+			sprintf(t,"CNotifyParentScript<true,%s>",txt);
+		}
+		else
+		{
+			sprintf(t,"CNotifyParentScript<false,NULL>");
 		}
 	}
 }

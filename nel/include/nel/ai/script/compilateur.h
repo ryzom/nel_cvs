@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.18 2001/01/31 14:02:06 chafik Exp $
+ * $Id: compilateur.h,v 1.19 2001/02/01 17:15:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -410,7 +410,7 @@ namespace NLAISCRIPT
 			return  _MethodConstraint.size();
 		}
 
-		NLAIAGENT::CIdMethod findMethode(sint32 inheritance,const NLAIAGENT::IObjectIA *className,const NLAIAGENT::IVarName &methodeName,const CParam &param);		
+		NLAIAGENT::CIdMethod findMethode(sint32 inheritance,NLAIAGENT::CStringType *baseName,const NLAIAGENT::IObjectIA *className,const NLAIAGENT::IVarName &methodeName,const CParam &param);		
 		//sint32 getInheritanceRange(const IClassInterpret *,NLAIAGENT::IBaseGroupType &) const;
 		const IClassInterpret *getInheritanceRange(sint32 &,const IClassInterpret *,NLAIAGENT::IBaseGroupType &) const;
 		const IClassInterpret *getInheritanceRange(sint32 &,const IClassInterpret *,const NLAIAGENT::IVarName &) const;

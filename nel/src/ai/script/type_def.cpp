@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.6 2001/01/18 17:53:52 chafik Exp $
+ * $Id: type_def.cpp,v 1.7 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLAISCRIPT
 			{
 				if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
 				{
-					const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
+					IClassInterpret *o = (IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
 					bool type = false;						
 					d = 0.0;
 					while(o != NULL)
@@ -53,7 +53,7 @@ namespace NLAISCRIPT
 							type = true;
 							break;
 						}
-						o = o->getBaseClass();						
+						o = (IClassInterpret *)o->getBaseClass();						
 					}
 					if(!type) return -1.0;
 					else return d;

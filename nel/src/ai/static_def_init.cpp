@@ -246,11 +246,7 @@
 
 	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassCFactory( CMessageScript() ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-		NLAIC::CTypeOfOperator::opEq );
-
-	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassCFactory( CNotifyParentScript() ),
-		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-		NLAIC::CTypeOfOperator::opEq );
+		NLAIC::CTypeOfOperator::opEq );	
 
 	const NLAIC::CIdentType CFuzzyInterval::IdFuzzyInterval = NLAIC::CIdentType("FuzzyInterval",NLAIC::CSelfClassCFactory(CFuzzyInterval("Inst",0,0)),
 		NLAIC::CTypeOfObject::tObject,
@@ -541,3 +537,6 @@ namespace NLAISCRIPT
 
 	const NLAIC::CIdentType CScriptDebugSourceMemory::IdScriptDebugSourceMemory("ScriptDebugSourceMemory",NLAIC::CSelfClassCFactory(CScriptDebugSourceMemory("","")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 }
+	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassCFactory( CNotifyParentScript(&NLAISCRIPT::msgNotifyParentClass) ),
+			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+			NLAIC::CTypeOfOperator::opEq );

@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.9 2001/01/31 14:01:54 chafik Exp $
+ * $Id: agent_method_def.h,v 1.10 2001/02/01 17:15:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #define _MAILER_		"GetMailer"
 #define _GETNAME_		"GetName"
 
-#define	_RUNTEL_		"RunTel"
+#define	_RUNTEL_		"RunTell"
 #define	_RUNASK_		"RunAsk"
 
 #define	_CONSTRUCTOR_	"Constructor"

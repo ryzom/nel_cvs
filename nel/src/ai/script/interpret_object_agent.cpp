@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.25 2001/01/26 10:17:51 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.26 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -617,6 +617,36 @@ namespace NLAISCRIPT
 		return _lastRef;
 	}
 
+	NLAIAGENT::tQueue CAgentClass::getPrivateMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	{
+		NLAIAGENT::tQueue q;
+		const IClassInterpret *classType = this;
+		NLAIAGENT::CIdMethod k;
+
+		for(sint32 i = 0; i < getMethodIndexSize() - getBaseMethodCount(); i ++)
+		{
+			CMethodeName &m = classType->getBrancheCode(i);
+			if(m.getName() == *methodName )
+			{
+				k.Weight = m.getParam().eval((const CParam &)param);
+				if(k.Weight < 0.0) continue;
+				k.Index = i + getBaseMethodCount();
+				k.Method = &m;					
+				IOpType *t = (IOpType *)m.getTypeOfMethode();
+				t->incRef();
+
+				if(k.ReturnType != NULL)
+				{
+					k.ReturnType->release();
+				}
+
+				k.ReturnType = new CObjectUnknown(t);					
+				q.push(k);					
+			}
+		}
+		return q;
+	}
+
 	NLAIAGENT::tQueue CAgentClass::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
 
@@ -644,30 +674,7 @@ namespace NLAISCRIPT
 
 		if( classType != NULL )
 		{		
-
-			for(sint32 i = 0; i < getMethodIndexSize() - getBaseMethodCount(); i ++)
-			{
-				CMethodeName &m = classType->getBrancheCode(i);
-				if(m.getName() == *methodName )
-				{
-					k.Weight = m.getParam().eval((const CParam &)param);
-					k.Index = i + getBaseMethodCount();
-					k.Method = &m;					
-					IOpType *t = (IOpType *)m.getTypeOfMethode();
-					t->incRef();
-
-					if(k.ReturnType != NULL)
-					{
-						k.ReturnType->release();
-					}
-
-					k.ReturnType = new CObjectUnknown(t);
-					if(k.Weight >= 0.0)
-					{
-						q.push(k);
-					}
-				}
-			}
+			q= getPrivateMember(className,methodName,param);			
 		}
 
 		if( !q.size() )

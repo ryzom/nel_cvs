@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.7 2001/01/31 14:44:12 chafik Exp $
+ * $Id: interpret_object.h,v 1.8 2001/02/01 17:15:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,6 +154,8 @@ namespace NLAISCRIPT
 		virtual const IClassInterpret *getBaseClass() const = 0;
 		///Return the name of the compoment given by an offset.
 		virtual const char *getComponentName(sint32 = 0) const = 0;
+
+		virtual NLAIAGENT::tQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &param) const = 0;
 
 		const NLAIAGENT::IVarName *getName() const
 		{

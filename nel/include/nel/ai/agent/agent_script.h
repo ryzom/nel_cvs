@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.11 2001/01/31 14:01:54 chafik Exp $
+ * $Id: agent_script.h,v 1.12 2001/02/01 17:15:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,8 @@ namespace NLAIAGENT
 			TFather, ///Get the father of the agent.
 			TSelf, ///Get The self pointer.
 			TGetName, ///Get the name of the agent in the manager child list.
+			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
+			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
 			TLastM ///The count of export method.
 		};
 
@@ -170,6 +172,16 @@ namespace NLAIAGENT
 		*/
 		virtual IObjectIA::CProcessResult removeDynamic(NLAIAGENT::IBaseGroupType *g);
 
+		/**		
+		This function process the message CNotifyParentScript for the runAsk.
+		*/
+		virtual IObjectIA::CProcessResult runAskParentNotify(IBaseGroupType *);
+
+		/**
+		This function process the message CNotifyParentScript for the runTell.
+		*/
+		virtual IObjectIA::CProcessResult runTellParentNotify(IBaseGroupType *);
+
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
 		NLAISCRIPT::IOpCode *getMethode(sint32 inheritance,sint32 index); 
 		///get the closure correspondent of the method indexed by index.
@@ -227,6 +239,7 @@ namespace NLAIAGENT
 		virtual const IObjectIA *getStaticMember(sint32) const;		
 		virtual void setStaticMember(sint32,IObjectIA *);
 
+		virtual tQueue getPrivateMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual tQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;			
 

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.17 2001/02/01 11:15:26 robert Exp $
+ * $Id: agents.cpp,v 1.18 2001/02/01 17:16:36 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -402,7 +402,7 @@ namespace NLAIAGENT
 			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
-		}
+		}		
 	}
 		
 	IMessageBase *IBasicAgent::runTell(const IMessageBase &m)
@@ -421,7 +421,7 @@ namespace NLAIAGENT
 			char debugString[1024*4];
 			char text[2048*8];
 			getDebugString(debugString);
-			sprintf(text,"runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}

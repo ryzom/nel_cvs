@@ -120,6 +120,10 @@ SOURCE=.\ai\agent\agent_script.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\agent_string.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\agents.cpp
 # End Source File
 # Begin Source File

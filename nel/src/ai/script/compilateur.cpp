@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.5 2001/01/11 16:38:22 chafik Exp $
+ * $Id: compilateur.cpp,v 1.6 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/constraint.h"
+#include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
 #include <queue>
@@ -101,10 +102,20 @@ namespace NLAISCRIPT
 		r.Result = _ResultCompile;
 		return r;
 	}
-
-	NLAIAGENT::CIdMethod CCompilateur::findMethode(sint32 inheritance, const NLAIAGENT::IObjectIA *classType,const NLAIAGENT::IVarName &methodeName,const CParam &param)
+	
+	NLAIAGENT::CIdMethod CCompilateur::findMethode(sint32 inheritance,NLAIAGENT::CStringType *baseName, const NLAIAGENT::IObjectIA *classType,const NLAIAGENT::IVarName &methodeName,const CParam &param)
 	{
-		NLAIAGENT::tQueue q = classType->isMember(NULL,&methodeName,param);
+
+		NLAIAGENT::tQueue q;
+		if(baseName != NULL && baseName->getStr() == NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass))
+		{
+			 q = classType->isMember(&baseName->getStr(),&methodeName,param);
+		}
+		else
+		{
+			q = classType->isMember(NULL,&methodeName,param);
+		}
+
 		if(q.size())
 		{
 			return q.top();			
@@ -140,7 +151,7 @@ namespace NLAISCRIPT
 			method.Inheritance = 0;//classType->sizeVTable() - 1;
 			method.MethodName = &((const NLAIAGENT::CStringType *)listName.get())->getStr();
 
-			r = findMethode(method.Inheritance,classType, *method.MethodName,param);
+			r = findMethode(method.Inheritance,NULL,classType, *method.MethodName,param);
 			if( r.Index <0)
 			{
 				method.MethodName = NULL;
@@ -158,14 +169,16 @@ namespace NLAISCRIPT
 			
 		}
 		else
-		{						
+		{	
+			NLAIAGENT::CStringType *baseName = (NLAIAGENT::CStringType *)listName.getFront()->clone();			
+
 			if((classType = validateHierarchyMethode(method.Member,method.Inheritance,classType,listName)) != NULL)
 			{							
 				if(method.Inheritance >= 0)
 				{			
 					method.MethodName = &((const NLAIAGENT::CStringType *)listName.get())->getStr();
 
-					r = findMethode(method.Inheritance,classType,*method.MethodName,param);
+					r = findMethode(method.Inheritance,baseName,classType,*method.MethodName,param);
 					if(  r.Index < 0)
 					{
 						method.MethodName = NULL;

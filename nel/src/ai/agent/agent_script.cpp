@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.24 2001/01/31 15:46:21 chafik Exp $
+ * $Id: agent_script.cpp,v 1.25 2001/02/01 17:16:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/agent_nombre.h"
 #include "nel/ai/agent/performative.h"
+#include "nel/ai/agent/msg_notify.h"
 
 namespace NLAIAGENT
 {	
@@ -54,10 +55,26 @@ namespace NLAIAGENT
 
 
 	static NLAISCRIPT::CParam SendParamMessageScript(2,msgPerf, msgType);
+	static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass));
+	static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent = new NLAISCRIPT::COperandSimpleListOr(2,
+															new NLAIC::CIdentType(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass),
+															new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
+	static NLAISCRIPT::CParam ParamRunParentNotify(1,IdMsgNotifyParent);
 
 
 	CAgentScript::CMethodCall CAgentScript::StaticMethod[] = 
 	{
+		CAgentScript::CMethodCall(	_RUNASK_, 
+									CAgentScript::TRunAskParentNotify, &ParamRunParentNotify,
+									CAgentScript::CheckAll,
+									1,
+									new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass)),
+
+		CAgentScript::CMethodCall(	_RUNTEL_, 
+									CAgentScript::TRunTellParentNotify, &ParamRunParentNotify,
+									CAgentScript::CheckAll,
+									1,
+									new NLAISCRIPT::CObjectUnknown(IdMsgNotifyParentClass)),
 
 		CAgentScript::CMethodCall(	_SEND_, 
 									CAgentScript::TSend, &SendParamMessageScript,
@@ -292,7 +309,10 @@ namespace NLAIAGENT
 
 	NLAISCRIPT::IOpCode *CAgentScript::getMethode(sint32 index)
 	{
-#ifdef NL_DEBUG
+#ifdef NL_DEBUG		
+		const char *dbg_class_name = (const char *) getType();
+		const char *dbg_base_class_name = (const char *) _AgentClass->getType();
+
 		if ( index >= _AgentClass->getMethodIndexSize())
 		{
 			throw NLAIE::CExceptionIndexError();
@@ -423,6 +443,44 @@ namespace NLAIAGENT
 		return r;
 	}
 
+	IObjectIA::CProcessResult CAgentScript::runAskParentNotify(IBaseGroupType *g)
+	{
+		CNotifyParentScript *m = new CNotifyParentScript((IBasicAgent *)getParent());
+		m->setPerformatif(IMessageBase::PTell);
+		m->setSender(this);
+		IObjectIA::CProcessResult r;
+		r.Result = m;
+		return r;
+	}
+
+	IObjectIA::CProcessResult CAgentScript::runTellParentNotify(IBaseGroupType *g)
+	{	
+		sint i;
+
+		CNotifyParentScript *m = new CNotifyParentScript(this);
+		m->setPerformatif(IMessageBase::PTell);
+		m->setSender(this);
+
+		for(i = 0; i < _NbComponents; i++)
+		{
+			if(_Components[i] != NULL)
+			{				
+				CNotifyParentScript *msg = (CNotifyParentScript *)m->clone();
+				try
+				{
+					_Components[i]->sendMessage(msg);					
+				}
+				catch(NLAIE::IException &)
+				{
+					msg->release();
+				}
+			}
+		}
+		IObjectIA::CProcessResult r;
+		r.Result = m;
+		return r;
+	}
+
 	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(IBaseGroupType *g)
 	{
 		CIteratorContener i = g->getIterator();
@@ -436,7 +494,12 @@ namespace NLAIAGENT
 		if(it == _DynamicAgentName.end())
 		{
 			o->setParent( (const IWordNumRef *) *this );
+			CNotifyParentScript *m = new CNotifyParentScript(this);
+			m->setSender(this);
+			m->setPerformatif(IMessageBase::PTell);
+			((IObjectIA *)o)->sendMessage(m);
 			_DynamicAgentName.insert(tPairName(s,addChild(o)));
+
 		}
 		r.Result = NULL;
 
@@ -567,7 +630,7 @@ namespace NLAIAGENT
 
 	void CAgentScript::processMessages()
 	{		
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
@@ -575,7 +638,7 @@ namespace NLAIAGENT
 		while(_ScriptMail->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)_ScriptMail->getMessage();
-#ifdef _DEBUG
+#ifdef _NLDEBUG
 		const char *dbg_msg_name = (const char *) msg.getType();		
 #endif
 			IBaseGroupType *param = new CGroupType();
@@ -726,7 +789,7 @@ namespace NLAIAGENT
 	{
 		setState(processBuzzy,NULL);
 
-#ifdef _DEBUG
+#ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
@@ -819,9 +882,19 @@ namespace NLAIAGENT
 			{
 				return removeDynamic((IBaseGroupType *)o);
 			}
-		
+
+		case TRunAskParentNotify:
+			{				
+				return runAskParentNotify((IBaseGroupType *)o);
+			}
+
+		case TRunTellParentNotify:
+			{				
+				return runTellParentNotify((IBaseGroupType *)o);
+			}
 		default:
-			return IAgent::runMethodeMember(heritance,index,o);
+			return IAgent::runMethodeMember(index,o);
+				
 		}
 		
 	}
@@ -866,6 +939,16 @@ namespace NLAIAGENT
 		case TGetName:
 			{				
 				return getDynamicName((IBaseGroupType *)o);
+			}
+
+		case TRunAskParentNotify:
+			{				
+				return runAskParentNotify((IBaseGroupType *)o);
+			}
+
+		case TRunTellParentNotify:
+			{				
+				return runTellParentNotify((IBaseGroupType *)o);
 			}
 		default:
 			return IAgent::runMethodeMember(index,o);
@@ -1000,74 +1083,120 @@ namespace NLAIAGENT
 		return r;
 	}
 
-	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
-	{			
+	tQueue CAgentScript::getPrivateMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	{		
+		sint i;
 		CAgentScript::TMethodNumDef index = CAgentScript::TLastM;
-
-		if(className == NULL || *className == CStringVarName((const char *)IdAgentScript))
+		for(i = 0; i < CAgentScript::TLastM; i ++)
 		{
-			sint i;
-			for(i = 0; i < CAgentScript::TLastM; i ++)
+			if(CAgentScript::StaticMethod[i].MethodName == *methodName)
 			{
-				if(CAgentScript::StaticMethod[i].MethodName == *methodName)
+				index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i].Index;
+				switch(CAgentScript::StaticMethod[i].CheckArgType)
 				{
-					index = (CAgentScript::TMethodNumDef)CAgentScript::StaticMethod[i].Index;
-					switch(CAgentScript::StaticMethod[i].CheckArgType)
+				case CAgentScript::CheckAll:
 					{
-					case CAgentScript::CheckAll:
-						{
-							double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i].ArgType).eval((NLAISCRIPT::CParam &)param);
-							if(d >= 0.0)
-							{								
-								tQueue r;
-								CAgentScript::StaticMethod[i].ReturnValue->incRef();
-								r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
-													0.0,
-													NULL,
-													CAgentScript::StaticMethod[i].ReturnValue));
-								return r;
-							}
-						}
-						break;
-					
-
-					case CAgentScript::CheckCount:
-						{
-							if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i].ArgCount)
-							{								
-								tQueue r;
-								CAgentScript::StaticMethod[i].ReturnValue->incRef();
-								r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
-													0.0,
-													NULL,
-													CAgentScript::StaticMethod[i].ReturnValue ));
-								return r;
-							}
-						}
-						break;
-
-					case CAgentScript::DoNotCheck:
-						{							
+						double d = ((NLAISCRIPT::CParam &)*CAgentScript::StaticMethod[i].ArgType).eval((NLAISCRIPT::CParam &)param);
+						if(d >= 0.0)
+						{								
 							tQueue r;
 							CAgentScript::StaticMethod[i].ReturnValue->incRef();
 							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
 												0.0,
 												NULL,
 												CAgentScript::StaticMethod[i].ReturnValue));
-							return r;						
+							return r;
 						}
-						break;
+					}	
+					index = CAgentScript::TLastM;
+					break;
+				
+
+				case CAgentScript::CheckCount:
+					{
+						if(((NLAISCRIPT::CParam &)param).size() == CAgentScript::StaticMethod[i].ArgCount)
+						{								
+							tQueue r;
+							CAgentScript::StaticMethod[i].ReturnValue->incRef();
+							r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+												0.0,
+												NULL,
+												CAgentScript::StaticMethod[i].ReturnValue ));
+							return r;
+						}
 					}
+					index = CAgentScript::TLastM;
+					break;
+
+				case CAgentScript::DoNotCheck:
+					{							
+						tQueue r;
+						CAgentScript::StaticMethod[i].ReturnValue->incRef();
+						r.push(CIdMethod(	(IAgent::getMethodIndexSize() + CAgentScript::StaticMethod[i].Index),
+											0.0,
+											NULL,
+											CAgentScript::StaticMethod[i].ReturnValue));
+						return r;						
+					}
+					index = CAgentScript::TLastM;
+					break;
+				}
+			}			
+		}
+		return tQueue();
+	}
+
+	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	{		
+#ifdef NL_DEBUG	
+	char nameM[1024*4];
+	char nameP[1024*4];
+	char name[1024*8];
+	methodName->getDebugString(nameM);
+	param.getDebugString(nameP);
+	sprintf(name,"%s%s",nameM,nameP);
+
+	const char *dbg_class_name = (const char *) getType();
+	const char *dbg_base_class_name = NULL;
+	if(_AgentClass) dbg_base_class_name = (const char *) _AgentClass->getType();
+#endif
+		
+
+		if(className == NULL)
+		{
+
+			tQueue r;
+			if(_AgentClass != NULL) r = _AgentClass->getPrivateMember(className,methodName,param);			
+
+			if(r.size()) return r;
+			else
+			{
+				r = getPrivateMember(className,methodName,param);
+				if(r.size()) return r;
+				else
+				{
+					return IAgent::isMember(className,methodName,param);
+				}
+			}
+		
+		}		
+		else 
+		if(*className == CStringVarName("Agent"))
+		{					
+			tQueue r;
+			r = getPrivateMember(className,methodName,param);
+			if(r.size()) return r;
+			else
+			{
+				r = _AgentClass->getPrivateMember(className,methodName,param);			
+
+				if(r.size()) return r;
+				else
+				{			
+					return IAgent::isMember(className,methodName,param);
 				}
 				
 			}
-		}
-		tQueue r;
-		if(index == CAgentScript::TLastM)
-		{
-			r = IAgent::isMember(className,methodName,param);
-			if(!r.size() && _AgentClass != NULL) return _AgentClass->isMember(className,methodName,param);
-			return r;
 			
 		}
 		return tQueue();

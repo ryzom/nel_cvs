@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.54 2001/10/16 14:57:06 corvazier Exp $
+ * $Id: scene.cpp,v 1.55 2001/10/26 08:19:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #include "3d/flare_model.h"
 #include "3d/skip_model.h"
 #include "3d/quad_grid_clip_cluster.h"
+#include "3d/water_model.h"
 
 
 #include "nel/misc/file.h"
@@ -92,6 +93,7 @@ void	CScene::registerBasics()
 	CFlareModel::registerBasic();
 	CSkipModel::registerBasic();
 	CQuadGridClipCluster::registerBasic();
+	CWaterModel::registerBasic();
 }
 
 	
@@ -311,7 +313,7 @@ void	CScene::render(bool	doHrcPass)
 
 
 	// Set the clipTrav for AnimDetailTrav and LoadBalancingTrav.
-	AnimDetailTrav->setClipTrav (ClipTrav);
+	AnimDetailTrav->setClipTrav (ClipTrav);	
 	LoadBalancingTrav->setClipTrav (ClipTrav);
 
 
@@ -415,7 +417,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	// Then create a reference to the shape
 	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
 #ifdef NL_DEBUG
-	pTShp->NameForDebug = shapeName; // \todo traptemp
+//	pTShp->NameForDebug = shapeName; // \todo traptemp
 #endif
 
 	// Look if this instance get lightmap information

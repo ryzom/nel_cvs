@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.4 2001/04/27 14:28:08 vizerie Exp $
+ * $Id: particle_system.h,v 1.5 2001/05/02 09:08:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,6 +127,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual void serial(NLMISC::IStream &f) ;
 		
 
+	
 		
 		
 	protected:
@@ -247,6 +248,11 @@ public:
 
 	/// retrieve the font Manager (const version). Edition purpose only
 	const CFontManager *getFontManager(void) const { return _FontManager ; }
+
+
+	/// used for benchs
+	static uint32 _NbParticlesDrawn ;
+
 
 protected:
 		

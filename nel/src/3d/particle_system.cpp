@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.3 2001/04/27 09:32:03 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.4 2001/05/02 09:06:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,11 @@
 namespace NL3D {
 
 
+
+
+uint32 CParticleSystem::_NbParticlesDrawn = 0 ;
+
+
 /////////////////////////////////////////////
 // CParticleSystemProcess implementation   //
 /////////////////////////////////////////////
@@ -69,7 +74,7 @@ const CFontManager *CParticleSystemProcess::getFontManager(void) const
 
 
 
-void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CParticleSystemProcess::serial(NLMISC::IStream &f) 
 {
 	f.serialCheck((uint32) 'PSPR') ;
 	f.serialVersion(1) ;

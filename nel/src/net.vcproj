@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="net"
+	ProjectGUID="{67AF56A4-A228-4BFB-BDA8-026CBEDE8BF9}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -889,6 +890,9 @@
 		</File>
 		<File
 			RelativePath="..\include\nel\net\email.h">
+		</File>
+		<File
+			RelativePath=".\net\login_client.cpp">
 		</File>
 		<File
 			RelativePath="..\include\nel\net\login_client.h">

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.5 2001/11/09 13:12:12 lecroart Exp $
+ * $Id: bit_mem_stream.h,v 1.6 2001/11/28 09:35:49 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -150,6 +150,37 @@ public:
 		serial( ub, sizeof(type)*8 ); \
 	}
 
+/*
+#define	serialAdapt64( b, type ) \
+	uint32 ubl=0, ubh=0; \
+	if ( isReading() ) \
+	{ \
+		serial( ubh, sizeof(uint32)*8 ); \
+		serial( ubl, sizeof(uint32)*8 ); \
+		b = (((type)ubh)<<32)+ubl; \
+	} \
+	else \
+	{ \
+		ubh = (uint32)(b>>32); \
+		ubl = (uint32)(b); \
+		serial( ubh, sizeof(uint32)*8 ); \
+		serial( ubl, sizeof(uint32)*8 ); \
+	}
+*/
+
+#ifdef NL_LITTLE_ENDIAN
+
+#define	serialAdapt64( b ) \
+	serial( *((uint32*)(&b)), 32); \
+	serial( *((uint32*)(&b)+1), 32);
+
+#else
+
+#define	serialAdapt64( b ) \
+	serial( *((uint32*)(&b)+1), 32);
+	serial( *((uint32*)(&b)), 32); \
+
+#endif
 	
 	virtual void	serial(uint8 &b) { serialAdapt( b, uint8 ); }
 	virtual void	serial(sint8 &b) { serialAdapt( b, sint8 ); }
@@ -157,8 +188,8 @@ public:
 	virtual void	serial(sint16 &b) { serialAdapt( b, sint16 ); }
 	virtual void	serial(uint32 &b) { serialAdapt( b, uint32 ); }
 	virtual void	serial(sint32 &b) { serialAdapt( b, sint32 ); }
-	//virtual void	serial(uint64 &b) ;
-	//virtual void	serial(sint64 &b) ;
+	virtual void	serial(uint64 &b) { serialAdapt64( b ); }
+	virtual void	serial(sint64 &b) { serialAdapt64( b ); }
 	virtual void	serial(float &b);
 	//virtual void	serial(double &b) ;
 	virtual void	serial(bool &b) { serialBit( b ); }

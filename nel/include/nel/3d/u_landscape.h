@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.8 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: u_landscape.h,v 1.9 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,6 +168,12 @@ public:
 	 *	(for very powerfull wind)
 	 */
 	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin) =0;
+
+	/** set the frequency of Vegetable lighting update. If freq==1, ALL lighted igs are updated each second.
+	 *	e.g: if 1/20, then every 20 seconds, all Igs are updated.
+	 *	If you set 0, no update will be done at all (this is the default setup!!).
+	 */
+	virtual	void		setVegetableUpdateLightingFrequency(float freq) =0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.8 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.9 2001/12/06 16:52:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,7 +193,7 @@ public:
 	/// setup a global texture used for all vegetables (smartPtr-ized).
 	void			loadTexture(ITexture *itex);
 	/// setup the directional light
-	void			setDirectionalLight(const CVector &light);
+	void			setDirectionalLight(const CRGBA &ambient, const CRGBA &diffuse, const CVector &light);
 	
 	/** lock any AGP vertex buffers. Do it wisely (just one time before refine as example).
 	 *	You MUST enclose calls to addInstance() (and so CVegetable::generateInstance())
@@ -225,9 +225,26 @@ public:
 	 */
 	void		setWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 
-	/** set the Wind animation Time (in seconds)
+	/** set the current Time (in seconds). For Wind animation, and for lighting update.
 	 */
-	void		setWindAnimationTime(double windTime);
+	void		setTime(double time);
+
+	// @}
+
+
+	/// \name UpdateLighting management
+	// @{
+
+	/** update the lighting of Igs, within a certain amount of time.
+	 *	You MUST enclose calls to updateLighting() with lockBuffers() / unlockBuffers().
+	 */
+	void		updateLighting();
+
+	/** set the frequency of lighting update. If freq==1, ALL lighted igs are updated each second.
+	 *	e.g: if 1/20, then every 20 seconds, all Igs are updated.
+	 *	If you set 0, no update will be done at all (this is the default setup!!).
+	 */
+	void		setUpdateLightingFrequency(float freq);
 
 	// @}
 
@@ -264,6 +281,9 @@ private:
 	CMaterial										_VegetableMaterial;
 	// Norm
 	CVector											_DirectionalLight;
+	NLMISC::CRGBA									_GlobalAmbient;
+	NLMISC::CRGBA									_GlobalDiffuse;
+
 
 	// return true if the ith rdrPass is 2Sided.
 	static	bool	doubleSidedRdrPass(uint rdrPass);
@@ -299,7 +319,8 @@ private:
 	float											_WindFrequency;
 	float											_WindPower;
 	float											_WindBendMin;
-	double											_WindTime;
+	// nb: used for wind animation and for lighting update.
+	double											_Time;
 	double											_WindPrecRenderTime;
 	// updated at each render().
 	double											_WindAnimTime;
@@ -340,6 +361,44 @@ private:
 	void					exitRenderStateForBlendLayerModel(IDriver *driver);
 
 	// @}
+
+
+	/// \name UpdateLighting management
+	/**
+	 *	NB: we update at the precision of a shape (a dozen of vertices).
+	 */
+	// @{
+
+	// Last update time.
+	double					_ULPrecTime;
+	bool					_ULPrecTimeInit;
+
+	/// Frequency of update.
+	float					_ULFrequency;
+	/// Current number of vertices to update. If negative, I have some advance.
+	float					_ULNVerticesToUpdate;
+	/// Sum of all ig vertices to update.
+	uint					_ULNTotalVertices;
+	/// the priority list of ig to update
+	CVegetableInstanceGroup	*_ULRootIg;
+	/// Current instance to render in the first ig to update: rdrpass/instanceId.
+	uint					_ULCurrentIgRdrPass;
+	uint					_ULCurrentIgInstance;
+
+	/** update part of the RootIg, according to _ULNVerticesToUpdate (while > 0)
+	 *	if all Ig is updated, return true and _ULCurrentIgRdrPass and _ULCurrentIgInstance is updated.
+	 */
+	bool		updateLightingIGPart();
+
+
+	/** update part of an ig. Do not use/modify _UL*
+	 *	return number of vertices processed (nb vertices of the shape)
+	 */
+	uint		updateInstanceLighting(CVegetableInstanceGroup *ig, uint rdrPassId, uint instanceId);
+
+
+	// @}
+
 
 };
 

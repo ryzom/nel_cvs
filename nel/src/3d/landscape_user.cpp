@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.13 2001/11/23 13:15:13 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.14 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -237,6 +237,12 @@ void		CLandscapeUser::setupVegetableLighting(const CRGBA &ambient, const CRGBA &
 void		CLandscapeUser::setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin)
 {
 	_Landscape->Landscape.setVegetableWind(windDir, windFreq, windPower, windBendMin);
+}
+
+//****************************************************************************
+void		CLandscapeUser::setVegetableUpdateLightingFrequency(float freq)
+{
+	_Landscape->Landscape.setVegetableUpdateLightingFrequency(freq);
 }
 
 

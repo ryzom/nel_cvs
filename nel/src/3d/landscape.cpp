@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.96 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: landscape.cpp,v 1.97 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,8 +218,6 @@ CLandscape::CLandscape() :
 	// Init vegetable  setup.
 	_VegetableManagerEnabled= false;
 	_DriverOkForVegetable= false;
-	_VegetableAmbient.set(64, 64, 64, 255);
-	_VegetableDiffuse.set(150, 150, 150, 255);
 	_NumVegetableFaceRendered= 0;
 
 }
@@ -587,6 +585,9 @@ void			CLandscape::refine(const CVector &refineCenter)
 	{
 		vegetBlock->update(refineCenter, _VegetableManager);
 	}
+
+	// update lighting for vegetables
+	_VegetableManager->updateLighting();
 
 	// Stop fastFloor optim.
 	OptFastFloorEnd();
@@ -2665,10 +2666,7 @@ void		CLandscape::loadVegetableTexture(const string &textureFileName)
 void		CLandscape::setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight)
 {
 	// set the directional light to the manager
-	_VegetableManager->setDirectionalLight(directionalLight);
-	// Setup ambient/Diffuse.
-	_VegetableAmbient= ambient;
-	_VegetableDiffuse= diffuse;
+	_VegetableManager->setDirectionalLight(ambient, diffuse, directionalLight);
 }
 
 // ***************************************************************************
@@ -2680,10 +2678,10 @@ void		CLandscape::setVegetableWind(const CVector &windDir, float windFreq, float
 
 
 // ***************************************************************************
-void		CLandscape::setVegetableWindAnimationTime(double windTime)
+void		CLandscape::setVegetableTime(double time)
 {
 	// setup vegetable manager
-	_VegetableManager->setWindAnimationTime(windTime);
+	_VegetableManager->setTime(time);
 }
 
 
@@ -2705,6 +2703,13 @@ const CTileVegetableDesc	&CLandscape::getTileVegetableDesc(uint16 tileId)
 void		CLandscape::createVegetableBlendLayersModels(CScene *scene)
 {
 	_VegetableManager->createVegetableBlendLayersModels(scene);
+}
+
+
+// ***************************************************************************
+void		CLandscape::setVegetableUpdateLightingFrequency(float freq)
+{
+	_VegetableManager->setUpdateLightingFrequency(freq);
 }
 
 

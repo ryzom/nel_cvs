@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.27 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: landscape.h,v 1.28 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -389,10 +389,10 @@ public:
 	 */
 	void		createVegetableBlendLayersModels(CScene *scene);
 
-	/** set the vegetable Wind animation Time (in seconds)
+	/** set the vegetable manager Time (in seconds)
 	 *	NB: MOT stuff (called by CLandscapeModel), don't use it.
 	 */
-	void		setVegetableWindAnimationTime(double windTime);
+	void		setVegetableTime(double time);
 
 
 
@@ -430,6 +430,13 @@ public:
 	 *	Out  CPrimitiveProfile::NTriangles displayed by vegetable part is returned.
 	 */
 	uint		getNumVegetableFaceRendered() const;
+
+
+	/** set the frequency of Vegetable lighting update. If freq==1, ALL lighted igs are updated each second.
+	 *	e.g: if 1/20, then every 20 seconds, all Igs are updated.
+	 *	If you set 0, no update will be done at all (this is the default setup!!).
+	 */
+	void		setVegetableUpdateLightingFrequency(float freq);
 
 	// @}
 
@@ -713,10 +720,6 @@ private:
 	bool						_VegetableManagerEnabled;
 	/// Tells if the current dirver support vegetable.
 	bool						_DriverOkForVegetable;
-
-	/// Vegetagble Lighting
-	CRGBA						_VegetableAmbient;
-	CRGBA						_VegetableDiffuse;
 
 	/// profile
 	uint						_NumVegetableFaceRendered;

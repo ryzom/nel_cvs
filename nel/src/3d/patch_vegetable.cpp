@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.10 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,10 +100,8 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 	// prepare color.
 
-	// say that ambient never change.
-	CRGBA	ambient= getLandscape()->_VegetableAmbient;
-	CRGBAF	ambientF= ambient;
-	CRGBA	diffuseMaterial= getLandscape()->_VegetableDiffuse;
+	// say that ambient never change. VegetableManager handle the ambient and diffuse itself (for precomputeLighting)
+	CRGBAF	ambientF= CRGBAF(1,1,1,1);
 
 	// Compute the tileLightmap (not modified by tileColor).
 	static	uint8	tileLumelmap[NL_LUMEL_BY_TILE * NL_LUMEL_BY_TILE];
@@ -115,15 +113,15 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	for(i= 0; i<NL_LUMEL_BY_TILE*NL_LUMEL_BY_TILE; i++)
 	{
 		// mul by 2, because shade is done twice here: by vertex, and by landscape.
-		sint	R= 2*tileLumelmap[i] * diffuseMaterial.R;
-		sint	G= 2*tileLumelmap[i] * diffuseMaterial.G;
-		sint	B= 2*tileLumelmap[i] * diffuseMaterial.B;
-		clamp(R, 0, 65025);
-		clamp(G, 0, 65025);
-		clamp(B, 0, 65025);
-		diffuseColorF[i].R= R / 65025.f;
-		diffuseColorF[i].G= G / 65025.f;
-		diffuseColorF[i].B= B / 65025.f;
+		sint	R= 2*tileLumelmap[i];
+		sint	G= 2*tileLumelmap[i];
+		sint	B= 2*tileLumelmap[i];
+		clamp(R, 0, 255);
+		clamp(G, 0, 255);
+		clamp(B, 0, 255);
+		diffuseColorF[i].R= R / 255.f;
+		diffuseColorF[i].G= G / 255.f;
+		diffuseColorF[i].B= B / 255.f;
 		diffuseColorF[i].A= 1;
 	}
 

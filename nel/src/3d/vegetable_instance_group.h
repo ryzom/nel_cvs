@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.6 2001/12/05 15:13:33 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.7 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
+#include "nel/misc/matrix.h"
+#include "nel/misc/rgba.h"
 #include "3d/tess_list.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_def.h"
@@ -41,6 +43,7 @@ namespace NL3D
 class	CVegetableManager;
 class	CVegetableClipBlock;
 class	CVegetableVBAllocator;
+class	CVegetableShape;
 
 
 // ***************************************************************************
@@ -57,6 +60,7 @@ public:
 
 	/// Constructor
 	CVegetableInstanceGroup();
+	~CVegetableInstanceGroup();
 
 	/// tells if the instanceGroup has no faces at all.
 	bool			isEmpty() const;
@@ -74,6 +78,24 @@ private:
 	CVegetableSortBlock		*_SortOwner;
 
 
+	/** a reference to an instance which is lighted (precomputed or not).
+	 *	Usefull for Lighting updates.
+	 */
+	struct	CVegetableLightedInstance
+	{
+		// The shape use to create the instance
+		CVegetableShape		*Shape;
+		// the matrix to multiply normal (usefull for precomputeLighting only)
+		NLMISC::CMatrix		NormalMat;
+		// The color (not modulated by global ambients/diffuses).
+		NLMISC::CRGBA		MatAmbient;
+		NLMISC::CRGBA		MatDiffuse;
+		// The index on the first index in CVegetableRdrPass::Vertices array.
+		uint				StartIdInRdrPass;
+	};
+
+
+	// a rdrPass to render pack of triangles in one time.
 	struct	CVegetableRdrPass
 	{
 		// vertices are in VBSoft or VBHard ??
@@ -84,16 +106,22 @@ private:
 		NLMISC::CObjectVector<uint32, false>	TriangleIndices;
 		// List of faces indices to render. They points to Vertices in this.
 		NLMISC::CObjectVector<uint32, false>	TriangleLocalIndices;
+		// List of faces indices to render. for lighting updates.
+		NLMISC::CObjectVector<CVegetableLightedInstance>	LightedInstances;
 		// the number of triangles currently setuped, ie _TriangleIndices.size()/3.
 		uint32					NTriangles;
 		// the number of vertices currently setuped.
 		uint32					NVertices;
+		// the number of Lighted instances currently setuped.
+		uint32					NLightedInstances;
+
 
 		CVegetableRdrPass()
 		{
 			HardMode= true;
 			NTriangles= 0;
 			NVertices= 0;
+			NLightedInstances= 0;
 		}
 	};
 
@@ -108,6 +136,24 @@ private:
 	float						*_TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
 	// If the Igs contains some instance in NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass, this flag is true.
 	bool						_HasZSortPassInstances;
+
+
+	/// \name UpdateLighting management
+	// @{
+
+	// Circular list. at ctor, init to this. At dtor, unlinkUL.
+	CVegetableInstanceGroup		*_ULPrec;
+	CVegetableInstanceGroup		*_ULNext;
+	// Sum of all lighted vertices in this IG.
+	uint						_ULNumVertices;
+
+	/// insert this before igNext.
+	void			linkBeforeUL(CVegetableInstanceGroup *igNext);
+	/// unlink
+	void			unlinkUL();
+
+	// @}
+
 
 };
 
@@ -136,13 +182,15 @@ private:
 	// For each rdrPass, the number of Vertices and Triangles to reserve.
 	struct	CVegetableRdrPass
 	{
-		uint		NVertices;
 		uint		NTriangles;
+		uint		NVertices;
+		uint		NLightedInstances;
 
 		CVegetableRdrPass()
 		{
 			NVertices= 0;
 			NTriangles= 0;
+			NLightedInstances= 0;
 		}
 	};
 

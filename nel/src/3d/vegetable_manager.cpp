@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.10 2001/12/05 15:13:33 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.11 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,13 +80,15 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 
 	// default light.
 	_DirectionalLight= (CVector(0,1, -1)).normed();
+	_GlobalAmbient.set(64, 64, 64, 255);
+	_GlobalDiffuse.set(150, 150, 150, 255);
 
 	// Wind.
 	_WindDirection.set(1,0,0);
 	_WindFrequency= 1;
 	_WindPower= 1;
 	_WindBendMin= 0;
-	_WindTime= 0;
+	_Time= 0;
 	_WindPrecRenderTime= 0;
 	_WindAnimTime= 0;
 
@@ -100,6 +102,16 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_NumZSortBlendLayers= max(1U, _NumZSortBlendLayers);
 	_ZSortModelLayers.resize(_NumZSortBlendLayers, NULL);
 
+
+	// UL
+	_ULFrequency= 0;
+	_ULNVerticesToUpdate=0;
+	_ULNTotalVertices= 0;
+	_ULRootIg= NULL;
+	_ULCurrentIgRdrPass= 0;
+	_ULCurrentIgInstance= 0;
+	_ULPrecTime= 0;
+	_ULPrecTimeInit= false;
 }
 
 
@@ -700,8 +712,28 @@ void						CVegetableManager::deleteIg(CVegetableInstanceGroup *ig)
 	if(!ig)
 		return;
 
+	// update lighting mgt: no more vertices.
+	// -----------
+	// If I delete the ig which is the current root
+	if(_ULRootIg == ig)
+	{
+		// switch to next
+		_ULRootIg= ig->_ULNext;
+		// if still the same, it means that the circular list is now empty
+		if(_ULRootIg == ig)
+			_ULRootIg= NULL;
+		// Reset UL instance info.
+		_ULCurrentIgRdrPass= 0;
+		_ULCurrentIgInstance= 0;
+	}
+	// remove UL vertex count of the deleted ig
+	_ULNTotalVertices-= ig->_ULNumVertices;
+	// unlink the ig for lighting update.
+	ig->unlinkUL();
+
 
 	// For all render pass of this instance, delete his vertices
+	// -----------
 	for(sint rdrPass=0; rdrPass < NL3D_VEGETABLE_NRDRPASS; rdrPass++)
 	{
 		// rdrPass
@@ -712,6 +744,8 @@ void						CVegetableManager::deleteIg(CVegetableInstanceGroup *ig)
 		// For all vertices of this rdrPass, delete it
 		sint	numVertices;
 		numVertices= vegetRdrPass.Vertices.size();
+		// all vertices must have been setuped.
+		nlassert((uint)numVertices == vegetRdrPass.NVertices);
 		for(sint i=0; i<numVertices;i++)
 		{
 			vbAllocator.deleteVertex(vegetRdrPass.Vertices[i]);
@@ -827,6 +861,9 @@ void			CVegetableManager::reserveIgAddInstances(CVegetableInstanceGroupReserve &
 	// Reserve space in the rdrPass.
 	vegetRdrPass.NVertices+= numInstances * shape->VB.getNumVertices();
 	vegetRdrPass.NTriangles+= numInstances * shape->TriangleIndices.size()/3;
+	// if the instances are lighted, reserve space for lighting updates
+	if(instanceLighted)
+		vegetRdrPass.NLightedInstances+= numInstances;
 }
 
 
@@ -845,6 +882,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 		nlassert(vegetRdrPass.TriangleIndices.size()==0);
 		nlassert(vegetRdrPass.TriangleLocalIndices.size()==0);
 		nlassert(vegetRdrPass.Vertices.size()==0);
+		nlassert(vegetRdrPass.LightedInstances.size()==0);
 	}
 	// Do the same for all quadrants of the zsort rdrPass.
 	nlassert(ig->_TriangleQuadrantOrderArray.size()==0);
@@ -859,10 +897,13 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
 		uint	numVertices= vegetIgReserve._RdrPass[rdrPass].NVertices;
 		uint	numTris= vegetIgReserve._RdrPass[rdrPass].NTriangles;
+		uint	numLightedInstances= vegetIgReserve._RdrPass[rdrPass].NLightedInstances;
 		// reserve triangles indices and vertices for this rdrPass.
 		vegetRdrPass.TriangleIndices.resize(numTris*3);
 		vegetRdrPass.TriangleLocalIndices.resize(numTris*3);
 		vegetRdrPass.Vertices.resize(numVertices);
+		// reserve ligthedinstances space.
+		vegetRdrPass.LightedInstances.resize(numLightedInstances);
 	}
 
 	// Reserve space for the zsort rdrPass sorting.
@@ -891,6 +932,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 {
 	sint	i;
 
+
 	// Some setup.
 	//--------------------
 	bool	instanceLighted;
@@ -910,18 +952,24 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// color.
 	// setup using OptFastFloor.
+	CRGBA		ambientRGBA, diffuseRGBA;
 	CRGBA		primaryRGBA, secondaryRGBA;
 	// diffuseColor
-	primaryRGBA.R= (uint8)OptFastFloor(diffuseColor.R*255);
-	primaryRGBA.G= (uint8)OptFastFloor(diffuseColor.G*255);
-	primaryRGBA.B= (uint8)OptFastFloor(diffuseColor.B*255);
-	primaryRGBA.A= 255;
+	diffuseRGBA.R= (uint8)OptFastFloor(diffuseColor.R*255);
+	diffuseRGBA.G= (uint8)OptFastFloor(diffuseColor.G*255);
+	diffuseRGBA.B= (uint8)OptFastFloor(diffuseColor.B*255);
+	diffuseRGBA.A= 255;
 	// ambientColor
-	secondaryRGBA.R= (uint8)OptFastFloor(ambientColor.R*255);
-	secondaryRGBA.G= (uint8)OptFastFloor(ambientColor.G*255);
-	secondaryRGBA.B= (uint8)OptFastFloor(ambientColor.B*255);
-	secondaryRGBA.A= 255;
+	ambientRGBA.R= (uint8)OptFastFloor(ambientColor.R*255);
+	ambientRGBA.G= (uint8)OptFastFloor(ambientColor.G*255);
+	ambientRGBA.B= (uint8)OptFastFloor(ambientColor.B*255);
+	ambientRGBA.A= 255;
 
+	// For Unlit and Lighted, modulate with global light.
+	primaryRGBA.modulateFromColorRGBOnly(diffuseRGBA, _GlobalDiffuse);
+	primaryRGBA.A= 255;
+	secondaryRGBA.modulateFromColorRGBOnly(ambientRGBA, _GlobalAmbient);
+	secondaryRGBA.A= 255;
 
 	// if the instance is not lighted, then suppose full lighting => add ambient and diffuse
 	if(!instanceLighted)
@@ -1272,6 +1320,40 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	// new triangle and vertex size.
 	vegetRdrPass.NTriangles+= numNewTris;
 	vegetRdrPass.NVertices+= numNewVertices;
+
+
+	// if lighted, must add a lightedInstance for lighting update.
+	//--------------------
+	if(instanceLighted)
+	{
+		// first, update Ig.
+		ig->_ULNumVertices+= numNewVertices;
+		// and update the vegetable manager.
+		_ULNTotalVertices+= numNewVertices;
+		// link at the end of the circular list: link before the current root.
+		if(_ULRootIg==NULL)
+			_ULRootIg= ig;
+		else
+			ig->linkBeforeUL(_ULRootIg);
+
+		// check good use of reserveIg.
+		nlassert(vegetRdrPass.NLightedInstances < vegetRdrPass.LightedInstances.size());
+
+		// Fill instance info
+		CVegetableInstanceGroup::CVegetableLightedInstance	&vli= 
+			vegetRdrPass.LightedInstances[vegetRdrPass.NLightedInstances];
+		vli.Shape= shape;
+		vli.NormalMat= normalMat;
+		// copy colors unmodulated by global light.
+		vli.MatAmbient= ambientRGBA;
+		vli.MatDiffuse= diffuseRGBA;
+		// where vertices of this instances are wrote in the VegetRdrPass
+		vli.StartIdInRdrPass= offVertex;
+
+		// Inc size setuped.
+		vegetRdrPass.NLightedInstances++;
+	}
+
 }
 
 
@@ -1291,7 +1373,10 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 
 	// for all vertices of the IG, change of VBAllocator
 	uint i;
-	for(i=0;i<vegetRdrPass.Vertices.size();i++)
+	// Do it only for current Vertices setuped!!! because a swapIgRdrPassHardMode awlays arise when the ig is 
+	// in construcion.
+	// Hence here, we may have vegetRdrPass.NVertices < vegetRdrPass.Vertices.size() !!!
+	for(i=0;i<vegetRdrPass.NVertices;i++)
 	{
 		// get idx in src allocator.
 		uint	srcId= vegetRdrPass.Vertices[i];
@@ -1314,7 +1399,8 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 
 	// For all triangles, bind correct triangles.
 	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
-	for(i=0;i<vegetRdrPass.TriangleIndices.size();i++)
+	// Do it only for current Triangles setuped!!! same reason as vertices
+	for(i=0;i<vegetRdrPass.NTriangles;i++)
 	{
 		// get the index in Vertices.
 		uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
@@ -1375,10 +1461,13 @@ void			CVegetableManager::loadTexture(ITexture *itex)
 }
 
 // ***************************************************************************
-void			CVegetableManager::setDirectionalLight(const CVector &light)
+void			CVegetableManager::setDirectionalLight(const CRGBA &ambient, const CRGBA &diffuse, const CVector &light)
 {
 	_DirectionalLight= light;
 	_DirectionalLight.normalize();
+	// Setup ambient/Diffuse.
+	_GlobalAmbient= ambient;
+	_GlobalDiffuse= diffuse;
 }
 
 // ***************************************************************************
@@ -1531,11 +1620,11 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 	// AnimFrequency factor.
 	// Doing it incrementaly allow change of of frequency each frame with good results.
-	_WindAnimTime+= (_WindTime - _WindPrecRenderTime)*_WindFrequency;
+	_WindAnimTime+= (_Time - _WindPrecRenderTime)*_WindFrequency;
 	_WindAnimTime= fmod(_WindAnimTime, 1.0f);
 	// NB: Leave timeBend (_WindAnimTime) as a time (ie [0..1]), because VP do a "EXP time".
 	// For incremental computing.
-	_WindPrecRenderTime= _WindTime;
+	_WindPrecRenderTime= _Time;
 
 
 	// compute the angleAxis corresponding to direction
@@ -1904,10 +1993,242 @@ void		CVegetableManager::setWind(const CVector &windDir, float windFreq, float w
 }
 
 // ***************************************************************************
-void		CVegetableManager::setWindAnimationTime(double windTime)
+void		CVegetableManager::setTime(double time)
 {
 	// copy time
-	_WindTime= windTime;
+	_Time= time;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Lighting part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CVegetableManager::updateLighting()
+{
+	// first time in this method??
+	if(!_ULPrecTimeInit)
+	{
+		_ULPrecTimeInit= true;
+		_ULPrecTime= _Time;
+	}
+	// compute delta time from last update.
+	float dt= float(_Time - _ULPrecTime);
+	_ULPrecTime= _Time;
+
+	// compute number of vertices to update.
+	_ULNVerticesToUpdate+= dt*_ULFrequency * _ULNTotalVertices;
+	// maximize, so at max, it computes all Igs, just one time.
+	_ULNVerticesToUpdate= min(_ULNVerticesToUpdate, (float)_ULNTotalVertices);
+
+
+	// while there is still some vertices to update.
+	while(_ULNVerticesToUpdate > 0 && _ULRootIg)
+	{
+		// update the current ig. if all updated, skip to next one.
+		if(updateLightingIGPart())
+		{
+			// next
+			_ULRootIg= _ULRootIg->_ULNext;
+		}
+	}
+
+	// Now, _ULNVerticesToUpdate should be <=0. (most of the time < 0)
+}
+
+
+// ***************************************************************************
+void		CVegetableManager::setUpdateLightingFrequency(float freq)
+{
+	freq= max(freq, 0.f);
+	_ULFrequency= freq;
+}
+
+
+// ***************************************************************************
+bool		CVegetableManager::updateLightingIGPart()
+{
+	nlassert(_ULRootIg);
+
+
+	// while there is some vertices to update
+	while(_ULNVerticesToUpdate>0)
+	{
+		// if all rdrPass of the ig are processed.
+		if(_ULCurrentIgRdrPass>= NL3D_VEGETABLE_NRDRPASS)
+		{
+			// All this Ig is updated.
+			_ULCurrentIgRdrPass= 0;
+			_ULCurrentIgInstance= 0;
+			// skip to next Ig.
+			return true;
+		}
+		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= _ULRootIg->_RdrPass[_ULCurrentIgRdrPass];
+
+		// if all instances are processed for this pass (especially if size()==0 !!)
+		if(_ULCurrentIgInstance>= vegetRdrPass.LightedInstances.size())
+		{
+			// skip to the next rdrPass.
+			_ULCurrentIgRdrPass++;
+			_ULCurrentIgInstance= 0;
+			continue;
+		}
+
+		// Process this instance.
+		_ULNVerticesToUpdate-= updateInstanceLighting(_ULRootIg, _ULCurrentIgRdrPass, _ULCurrentIgInstance);
+
+		// next instance.
+		_ULCurrentIgInstance++;
+
+		// if all instances are processed for this pass
+		if(_ULCurrentIgInstance>= vegetRdrPass.LightedInstances.size())
+		{
+			// skip to the next rdrPass.
+			_ULCurrentIgRdrPass++;
+			_ULCurrentIgInstance= 0;
+		}
+	}
+
+	// If all rdrPass of the ig are processed.
+	if(_ULCurrentIgRdrPass>= NL3D_VEGETABLE_NRDRPASS)
+	{
+		// All this Ig is updated.
+		_ULCurrentIgRdrPass= 0;
+		_ULCurrentIgInstance= 0;
+		// skip to next Ig.
+		return true;
+	}
+	else
+	{
+		// The Ig is not entirely updated.
+		return false;
+	}
+
+}
+
+
+// ***************************************************************************
+uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uint rdrPassId, uint instanceId)
+{
+	nlassert(ig);
+	// get the rdrPass.
+	nlassert(rdrPassId<NL3D_VEGETABLE_NRDRPASS);
+	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPassId];
+	// get the lighted instance.
+	nlassert(instanceId<vegetRdrPass.LightedInstances.size());
+	CVegetableInstanceGroup::CVegetableLightedInstance	&vegetLI= vegetRdrPass.LightedInstances[instanceId];
+
+	// get the shape
+	CVegetableShape		*shape= vegetLI.Shape;
+	// it must be lighted.
+	nlassert(shape->Lighted);
+	bool	instanceLighted= true;
+
+
+	// Recompute lighting
+	//===========
+	
+	// setup for this instance.
+	//---------
+	// 2Sided
+	bool	instanceDoubleSided= shape->DoubleSided;
+	// Precompute lighting or not??
+	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
+	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
+	// Diffuse and ambient, modulated by current GlobalAmbient and GlobalDiffuse.
+	CRGBA	primaryRGBA, secondaryRGBA;
+	primaryRGBA.modulateFromColorRGBOnly(vegetLI.MatDiffuse, _GlobalDiffuse);
+	primaryRGBA.A= 255;
+	secondaryRGBA.modulateFromColorRGBOnly(vegetLI.MatAmbient, _GlobalAmbient);
+	secondaryRGBA.A= 255;
+	// get normal matrix
+	CMatrix		&normalMat= vegetLI.NormalMat;
+	// array of vertex id to update
+	uint32		*ptrVid= vegetRdrPass.Vertices.getPtr() + vegetLI.StartIdInRdrPass;
+	uint		numVertices= shape->InstanceVertices.size();
+
+
+	// get VertexBuffer info.
+	CVegetableVBAllocator	*allocator;
+	allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPassId, vegetRdrPass.HardMode);
+	const CVertexBuffer	&dstVBInfo= allocator->getSoftwareVertexBuffer();
+
+	// src VBInfo (nb: usefull only if precomputeLighting => !destLighted)
+	uint	srcVertexSize= shape->VB.getVertexSize();
+	uint	srcNormalOff= (instanceLighted? shape->VB.getNormalOff() : 0);
+
+	// dst VBInfo
+	uint	dstVertexSize= dstVBInfo.getVertexSize();
+	// got 2nd color if really lighted (for ambient) or if 2Sided.
+	uint	dstColor1Off= ( (destLighted||instanceDoubleSided)? 
+		dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR1) : 0);
+	uint	dstColor0Off= dstVBInfo.getValueOffEx(NL3D_VEGETABLE_VPPOS_COLOR0);
+
+
+	// For all vertices, recompute lighting.
+	//---------
+	for(sint i=0; i<(sint)numVertices;i++)
+	{
+		// get the Vertex in the VB.
+		uint	vid= ptrVid[i];
+		// store in tmp shape.
+		shape->InstanceVertices[i]= vid;
+
+		// Fill this vertex.
+		uint8	*srcPtr= (uint8*)shape->VB.getVertexCoordPointer(i);
+		uint8	*dstPtr= (uint8*)allocator->getVertexPointer(vid);
+
+
+		// if !precomputeLighting (means destLighted...)
+		if(!precomputeLighting)
+		{
+			// just copy the primary and secondary color
+			*(CRGBA*)(dstPtr + dstColor0Off)= primaryRGBA;
+			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
+		}
+		else
+		{
+			nlassert(!destLighted);
+
+			// compute dot product.
+			CVector		rotNormal= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
+			// must normalize() because scale is possible.
+			rotNormal.normalize();
+			// compute dot product with current light
+			float	dp= rotNormal*_DirectionalLight;
+
+			// compute front-facing coloring.
+			float	f= max(0.f, -dp);
+			CRGBA	resColor;
+			resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+			resColor.addRGBOnly(resColor, secondaryRGBA);
+			// copy to dest
+			*(CRGBA*)(dstPtr + dstColor0Off)= resColor;
+
+			// If 2Sided
+			if(instanceDoubleSided)
+			{
+				// compute back-facing coloring.
+				float	f= max(0.f, dp);
+				CRGBA	resColor;
+				resColor.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
+				resColor.addRGBOnly(resColor, secondaryRGBA);
+				// copy to dest
+				*(CRGBA*)(dstPtr + dstColor1Off)= resColor;
+			}
+		}
+
+		// flust the vertex in AGP.
+		allocator->flushVertex(vid);
+	}
+
+
+	// numVertices vertices are updated
+	return numVertices;
 }
 
 

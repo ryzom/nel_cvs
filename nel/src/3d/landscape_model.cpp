@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.15 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.16 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	CScene		*scene= dynamic_cast<CScene*>(landModel->_OwnerMot);
 	if(scene)
 	{
-		landModel->Landscape.setVegetableWindAnimationTime(scene->getCurrentTime());
+		landModel->Landscape.setVegetableTime(scene->getCurrentTime());
 	}
 
 	// First, refine.

@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.cpp
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.5 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_instance_group.cpp,v 1.6 2001/12/06 16:52:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,44 @@ CVegetableInstanceGroup::CVegetableInstanceGroup()
 	_SortOwner= NULL;
 	_HasZSortPassInstances= false;
 	_TriangleQuadrantOrderNumTriangles= 0;
+	_ULPrec= this;
+	_ULNext= this;
+	_ULNumVertices= 0;
+}
+
+
+// ***************************************************************************
+CVegetableInstanceGroup::~CVegetableInstanceGroup()
+{
+	unlinkUL();
+}
+
+
+// ***************************************************************************
+void			CVegetableInstanceGroup::linkBeforeUL(CVegetableInstanceGroup *igNext)
+{
+	nlassert(igNext);
+
+	// first, unlink others from me. NB: works even if _ULPrec==_ULNext==this.
+	_ULNext->_ULPrec= _ULPrec;
+	_ULPrec->_ULNext= _ULNext;
+	// link to igNext.
+	_ULNext= igNext;
+	_ULPrec= igNext->_ULPrec;
+	// link others to me.
+	_ULNext->_ULPrec= this;
+	_ULPrec->_ULNext= this;
+}
+
+// ***************************************************************************
+void			CVegetableInstanceGroup::unlinkUL()
+{
+	// unlink others from me. NB: works even if _ULPrec==_ULNext==this.
+	_ULNext->_ULPrec= _ULPrec;
+	_ULPrec->_ULNext= _ULNext;
+	// reset
+	_ULPrec= this;
+	_ULNext= this;
 }
 
 

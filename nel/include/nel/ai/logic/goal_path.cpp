@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.2 2002/08/21 14:52:44 portier Exp $
+ * $Id: goal_path.cpp,v 1.3 2002/08/22 08:41:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,8 @@ namespace NLAILOGIC
 #ifdef NL_DEBUG
 					//const char *dbg_name = name->getStr().getString();
 #endif
+					_Father = (NLAIAGENT::CProxyAgentMail *) param->getFront();
+					param->popFront();
 					// If the constructor() function is explicitely called and the object has already been initialised
 					while ( param->size() )
 					{
@@ -197,6 +199,13 @@ namespace NLAILOGIC
 	int CGoalPath::getBaseMethodCount() const
 	{
 		return CActorScript::getBaseMethodCount() + 2;
+	}
+
+	void CGoalPath::onActivate()
+	{
+		if ( _Father != NULL )
+		{
+		}
 	}
 
 } // NLAILOGIC

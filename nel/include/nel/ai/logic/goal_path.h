@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: goal_path.h,v 1.2 2002/08/21 14:52:44 portier Exp $
+ * $Id: goal_path.h,v 1.3 2002/08/22 08:41:56 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/ai/agent/actor_script.h"
 #include "nel/ai/logic/goal_stack.h"
+#include "nel/ai/agent/agent_proxy_mailer.h"
 
 // A CGoalPath is a finite state machine wher each state corresponds to a goal.
 
@@ -43,6 +44,8 @@ class CGoalPath : public NLAIAGENT::CActorScript
 		std::vector<bool>			_JmpNext;
 		int							_CurrentState;
 		NLAILOGIC::CGoalStack		*_GoalStack;
+		NLAIAGENT::CProxyAgentMail	*_Father;
+		
 
 	public:
 		static const NLAIC::CIdentType IdGoalPath;
@@ -53,6 +56,9 @@ class CGoalPath : public NLAIAGENT::CActorScript
 
 		void setGoalStack(NLAILOGIC::CGoalStack * );
 		void addGoal(CGoal *, bool action = true, int on_succes = 0 , int on_failure = 0);
+
+		virtual void onActivate();
+
 
 		/// Own success and failure functions
 		/// These function tell other operators and goals that might be waiting for 

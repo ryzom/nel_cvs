@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.3 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: vegetable.h,v 1.4 2001/11/09 14:21:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,13 @@ public:
 	void	generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const;
 
 
+	/** same as generateGroup, but with smoother density effects on border with desnity==0
+	 *	\name posInWorldAround 4 position on 4 edges around the center in folowing order:
+	 *	(0,0.5), (1,0.5), (0.5,0), (0.5,1) (in instance UV coordinates space (as returned in "instances").
+	 */
+	void	generateGroupBiLinear(const CVector &posInWorld, const CVector posInWorldBorder[4], const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const;
+
+
 	/** posInWorld should be a matrix of position + rotation (typically for surface alignement). 
 	 *	FinalPos= posInWorld * noiseMatrix(scale/rot)
 	 *	FinalColor= modulateColor * randomColor. Both for Ambient and diffuse.
@@ -141,6 +148,22 @@ private:
 	CVegetableManager	*_Manager;
 	/// shape in the manager
 	CVegetableShape		*_VegetableShape;
+
+
+	/// Do the generateGroup, but take nbInst unmodulated by normal
+	void	generateGroupEx(float nbInst, const CVector &posInWorld, const CVector &surfaceNormal, uint vegetSeed, std::vector<CVector2f> &instances) const;
+
+
+	// easineasout
+	static inline float	easeInEaseOut(float x)
+	{
+		float	y;
+		// cubic such that f(0)=0, f'(0)=0, f(1)=1, f'(1)=0.
+		float	x2=x*x;
+		float	x3=x2*x;
+		y= -2*x3 + 3*x2;
+		return y;
+	}
 
 };
 

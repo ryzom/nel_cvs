@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.4 2001/11/08 09:51:21 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.5 2001/11/09 14:21:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,16 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	// don't take noise into account, but faster).
 	CVector		tileNormal= bpatch->evalNormal(tileU, tileV);
 
+	// Compute also position on middle of 4 edges of this tile, for generateGroupBiLinear().
+	CVector		tilePosBiLinear[4];
+	float		OOos= 1.0f / OrderS;
+	float		OOot= 1.0f / OrderT;
+	tilePosBiLinear[0]= bpatch->eval( (ts + 0.0f) * OOos, (tt + 0.5f) * OOot);
+	tilePosBiLinear[1]= bpatch->eval( (ts + 1.0f) * OOos, (tt + 0.5f) * OOot);
+	tilePosBiLinear[2]= bpatch->eval( (ts + 0.5f) * OOos, (tt + 0.0f) * OOot);
+	tilePosBiLinear[3]= bpatch->eval( (ts + 0.5f) * OOos, (tt + 1.0f) * OOot);
+
+
 	// compute a rotation matrix with the normal
 	CMatrix		matInstance;
 	matInstance.setRot(CVector::I, CVector::J, tileNormal);
@@ -131,7 +141,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 		// generate instance for this vegetable.
 		static	vector<CVector2f>	instanceUV;
-		veget.generateGroup(tilePos, tileNormal, NL3D_PATCH_TILE_AREA, i + distAddSeed, instanceUV);
+		veget.generateGroupBiLinear(tilePos, tilePosBiLinear, tileNormal, NL3D_PATCH_TILE_AREA, i + distAddSeed, instanceUV);
 
 		// For all instance, generate the real instances.
 		for(uint j=0; j<instanceUV.size(); j++)

@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.4 2001/11/07 16:41:53 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.5 2001/11/09 14:21:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,14 +108,11 @@ void	CVegetable::registerToManager(CVegetableManager *manager)
 
 
 // ***************************************************************************
-void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const
+void	CVegetable::generateGroupEx(float nbInst, const CVector &posInWorld, const CVector &surfaceNormal, uint vegetSeed, std::vector<CVector2f> &instances) const
 {
 
-	// Density evaluation.
+	// Density modulation.
 	//===================
-
-	// evaluate a density.
-	float	nbInst= area * Density.eval(posInWorld);
 
 	// compute cos of angle between surfaceNormal and K(0,0,1).
 	float	cosAngle= surfaceNormal.z;
@@ -151,6 +148,121 @@ void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surface
 		instances[i].y= RandomGenerator.evalOneLevelRandom(seed);
 		seed.y+= dSeed.y;
 	}
+}
+
+
+// ***************************************************************************
+void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const
+{
+	// number of instances to generate
+	float	nbInst= area * Density.eval(posInWorld);
+
+	// modulate by normal and generate them.
+	generateGroupEx(nbInst, posInWorld, surfaceNormal, vegetSeed, instances);
+}
+
+
+// ***************************************************************************
+void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector posInWorldBorder[4], const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const
+{
+	sint	i;
+	const	float evenDistribFact= 12.25f;		// an arbitrary value to have a higher frequency for random.
+
+	// compute how many instances to generate on borders of the patch
+	// ==================
+	float	edgeDensity[4];
+	for(i=0; i<4; i++)
+	{
+		// Get number of instances generated on edges
+		edgeDensity[i]= area * Density.eval(posInWorldBorder[i]);
+		edgeDensity[i]= max(0.f, edgeDensity[i]);
+	}
+	// Average on center of the patch for each direction.
+	float	edgeDensityCenterX;
+	float	edgeDensityCenterY;
+	edgeDensityCenterX= 0.5f * (edgeDensity[0] + edgeDensity[1]);
+	edgeDensityCenterY= 0.5f * (edgeDensity[2] + edgeDensity[3]);
+
+	
+	// Average for all the patch
+	float	nbInstAverage= 0.5f * (edgeDensityCenterX + edgeDensityCenterY);
+
+
+	// generate instances on the patch
+	// ==================
+	generateGroupEx(nbInstAverage, posInWorld, surfaceNormal, vegetSeed, instances);
+
+
+
+	// move instances x/y to follow edge repartition
+	// ==================
+	// If on a direction, both edges are 0 density, then must do a special formula
+	bool	middleX= edgeDensityCenterX<=1;
+	bool	middleY= edgeDensityCenterY<=1;
+	float	OOEdgeDCX;
+	float	OOEdgeDCY;
+	if(!middleX)	OOEdgeDCX= 1.0f / edgeDensityCenterX;
+	if(!middleY)	OOEdgeDCY= 1.0f / edgeDensityCenterY;
+	// for all instances
+	for(i=0; i<(sint)instances.size(); i++)
+	{
+		float		x= instances[i].x;
+		float		y= instances[i].y;
+		// a seed for random.
+		CVector		randSeed(x*evenDistribFact, y*evenDistribFact, 0);
+
+		// X change.
+		if(middleX)
+		{
+			// instances are grouped at middle. this is the bijection of easeInEaseOut
+			x= x+x - easeInEaseOut(x);
+			x= x+x - easeInEaseOut(x);
+			instances[i].x= x;
+		}
+		else
+		{
+			// Swap X, randomly. swap more on border
+			// evaluate the density in X direction we have at this point.
+			float	densX= edgeDensity[0]*(1-x) + edgeDensity[1]* x ;
+			// If on the side of the lowest density
+			if(densX < edgeDensityCenterX)
+			{
+				// may swap the position 
+				float	rdSwap= (densX * OOEdgeDCX );
+				// (densX * OOEdgeDCX) E [0..1[. The more it is near 0, the more is has chance to be swapped.
+				rdSwap+= RandomGenerator.evalOneLevelRandom( randSeed );
+				if(rdSwap<1)
+					instances[i].x= 1 - instances[i].x;
+			}
+		}
+
+		// Y change.
+		if(middleY)
+		{
+			// instances are grouped at middle. this is the bijection of easeInEaseOut
+			y= y+y - easeInEaseOut(y);
+			y= y+y - easeInEaseOut(y);
+			instances[i].y= y;
+		}
+		else
+		{
+			// Swap Y, randomly. swap more on border
+			// evaluate the density in Y direction we have at this point.
+			float	densY= edgeDensity[2]*(1-y) + edgeDensity[3]* y ;
+			// If on the side of the lowest density
+			if(densY < edgeDensityCenterY)
+			{
+				// may swap the position 
+				float	rdSwap= (densY * OOEdgeDCY);
+				// (densY * OOEdgeDCY) E [0..1[. The more it is near 0, the more is has chance to be swapped.
+				rdSwap+= RandomGenerator.evalOneLevelRandom( randSeed );
+				if(rdSwap<1)
+					instances[i].y= 1 - instances[i].y;
+			}
+		}
+
+	}
+
 }
 
 

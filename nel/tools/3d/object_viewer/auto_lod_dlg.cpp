@@ -1,7 +1,7 @@
 /** \file auto_lod_dlg.cpp
  * A dialog to tune auto-lod options of particle systems.
  *
- * $Id: auto_lod_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
+ * $Id: auto_lod_dlg.cpp,v 1.3 2003/04/07 12:41:11 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -88,17 +88,40 @@ BOOL CAutoLODDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	_DistRatioWrapper.PS = _PS;
-	
+	_MaxDistLODBiasWrapper.PS = _PS;
 
 	RECT r;
 	
+	// Edit the distance at which LOD starts
 	CEditableRangeFloat *erf = new CEditableRangeFloat("AUTO_LOD_DIST_RATIO", 0.f, 0.99f);
 	erf->enableUpperBound(1.f, true);	
+	erf->enableLowerBound(0.f, false);
 	erf->setWrapper(&_DistRatioWrapper);
 	GetDlgItem(IDC_START_PERCENT_DIST)->GetWindowRect(&r);
 	ScreenToClient(&r);
 	erf->init(r.left, r.top, this);
 	pushWnd(erf);
+
+	// For non-shared systems only : Set the LOD bias at the max distance, so that some particles are still displayed
+	erf = new CEditableRangeFloat("MAX_DIST_LOD_BIAS", 0.f, 1.0f);
+	erf->enableUpperBound(1.f, false);	
+	erf->enableLowerBound(0.f, false);
+	erf->setWrapper(&_MaxDistLODBiasWrapper);
+	GetDlgItem(IDC_MAX_DIST_LOD_BIAS)->GetWindowRect(&r);
+	ScreenToClient(&r);
+	erf->init(r.left, r.top, this);
+	pushWnd(erf);
+
+	if (_PS->isSharingEnabled())
+	{
+		erf->EnableWindow(FALSE);
+		GetDlgItem(IDC_MAX_DIST_BIAS_TEXT)->EnableWindow(FALSE);
+	}
+	else
+	{
+		GetDlgItem(IDC_SKIP_PARTICLES)->ShowWindow(FALSE);
+	}
+
 
 	((CComboBox *) GetDlgItem(IDC_DEGRADATION_EXPONENT))->SetCurSel(std::min(4, (sint) _PS->getAutoLODDegradationExponent()) - 1);	
 	((CButton *) GetDlgItem(IDC_SKIP_PARTICLES))->SetCheck(_PS->getAutoLODMode() ? 1 : 0);

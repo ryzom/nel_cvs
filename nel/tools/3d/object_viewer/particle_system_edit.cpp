@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.13 2002/11/18 18:00:40 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.14 2003/04/07 12:44:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -407,6 +407,7 @@ void CParticleSystemEdit::OnEditAutoLod()
 {
 	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(FALSE);
 	GetDlgItem(IDC_ENABLE_AUTO_LOD)->EnableWindow(FALSE);
+	GetDlgItem(IDC_SHARABLE)->EnableWindow(FALSE);	
 	nlassert(_AutoLODDlg == NULL);
 	CAutoLODDlg *autoLODDlg = new CAutoLODDlg(_PS, this, this);	
 	autoLODDlg->init(this);
@@ -420,6 +421,7 @@ void CParticleSystemEdit::childPopupClosed(CWnd *child)
 	{
 		GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(TRUE);
 		GetDlgItem(IDC_ENABLE_AUTO_LOD)->EnableWindow(TRUE);
+		GetDlgItem(IDC_SHARABLE)->EnableWindow(TRUE);
 		REMOVE_WND(_AutoLODDlg);
 	}
 	else

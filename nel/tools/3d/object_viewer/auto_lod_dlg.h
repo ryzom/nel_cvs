@@ -1,7 +1,7 @@
 /** \file auto_lod_dlg.h
  * A dialog to tune auto-lod options of particle systems.
  *
- * $Id: auto_lod_dlg.h,v 1.1 2002/02/15 17:16:57 vizerie Exp $
+ * $Id: auto_lod_dlg.h,v 1.2 2003/04/07 12:41:11 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -65,6 +65,7 @@ public:
 protected:
 	NL3D::CParticleSystem *_PS;
 	IPopupNotify		  *_PN;	
+	
 
 
 	struct CDistRatioWrapper : IPSWrapperFloat
@@ -73,6 +74,13 @@ protected:
 		virtual float get() const  { return PS->getAutoLODStartDistPercent(); }
 		virtual void  set(const float &v) { PS->setupAutoLOD(v, PS->getAutoLODDegradationExponent()); }
 	} _DistRatioWrapper;
+
+	struct CMaxDistLODBiasWrapper : IPSWrapperFloat
+	{
+		NL3D::CParticleSystem *PS;
+		virtual float get() const  { return PS->getMaxDistLODBias(); }
+		virtual void  set(const float &v) { PS->setMaxDistLODBias(v); }
+	} _MaxDistLODBiasWrapper;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAutoLODDlg)

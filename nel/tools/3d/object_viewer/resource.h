@@ -142,6 +142,7 @@
 #define IDC_DISPLAY_INTERPOLATION       1055
 #define IDC_BORDERS_ONLY                1055
 #define IDC_CHECK_VEGETABLE_MESH        1055
+#define IDC_BYPASS_AUTOLOD              1055
 #define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_CHECK_VEGETABLE_BENDPHASE   1056
 #define IDC_LIFE_MIN_VALUE              1057
@@ -528,6 +529,7 @@
 #define IDC_EDIT_AUTO_LOD               1327
 #define IDC_START_PERCENT_DIST          1328
 #define IDC_NO_AUTO_LOD                 1329
+#define IDC_MAX_DIST_LOD_BIAS           1329
 #define IDC_GLOBAL_COLOR                1330
 #define IDC_EDIT_GLOBAL_COLOR           1331
 #define IDC_COLOR_ATTRIB                1332
@@ -573,6 +575,7 @@
 #define IDC_GLOBAL_USER_PARAM_4         1364
 #define IDC_WIDTH                       1364
 #define IDC_HEIGHT                      1365
+#define IDC_MAX_DIST_BIAS_TEXT          1367
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002

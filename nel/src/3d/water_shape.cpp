@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.20 2002/07/25 17:38:34 corvazier Exp $
+ * $Id: water_shape.cpp,v 1.21 2002/07/29 08:43:18 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -457,10 +457,10 @@ void CWaterShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_WaveHeightFactor);
 
 	if (ver >= 1)
-		f.serial (_DistMax);
+		f.serial (_ComputeLightmap);
 
 	if (ver >= 2)
-		f.serial (_ComputeLightmap);
+		f.serial (_DistMax);
 }
 
 //============================================

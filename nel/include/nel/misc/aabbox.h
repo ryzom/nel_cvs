@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.9 2003/02/14 14:14:43 lecroart Exp $
+ * $Id: aabbox.h,v 1.10 2003/11/06 09:15:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,8 @@ public:
 	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const;
 	/// Does the bbox instersect the sphere s
 	bool			intersect(const CBSphere &s) const;
+	/// Does the bbox instersect the segment AB
+	bool			intersect(const CVector &a, const CVector &b) const;
 	// @}
 
 	/// \name Misc

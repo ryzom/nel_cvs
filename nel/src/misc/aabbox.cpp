@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.9 2003/08/07 08:54:39 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.10 2003/11/06 09:15:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,25 @@ bool			CAABBox::intersect(const CVector &a, const CVector &b, const CVector &c) 
 	poly.clip(planes, 6);
 	if(poly.getNumVertices()==0)
 		return false;
+	return true;
+}
+
+// ***************************************************************************
+bool			CAABBox::intersect(const CVector &a, const CVector &b) const
+{
+	// Trivial test.
+	if(include(a) || include(b))
+		return true;
+	// Else, must test if the segment intersect the pyamid.
+	CPlane		planes[6];
+	makePyramid(planes);
+	CVector		p0=a , p1=b;
+	// clip the segment against all planes
+	for(uint i=0;i<6;i++)
+	{
+		if(!planes[i].clipSegmentBack(p0, p1))
+			return false;
+	}
 	return true;
 }
 

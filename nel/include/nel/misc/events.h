@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.11 2000/11/21 18:18:00 valignat Exp $
+ * $Id: events.h,v 1.12 2000/12/01 10:09:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,13 +57,22 @@ protected:
 	}
 };
 
+// Key events
 const CClassId EventKeyDownId (0x3c2643da, 0x43f802a1);
 const CClassId EventKeyUpId (0x1e62e85, 0x68a35d46);
 const CClassId EventCharId (0x552255fe, 0x75a2373f);
-const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
-const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
+
+// Window events
 const CClassId EventActivateId (0x7da66b0a, 0x1ef74519);
 const CClassId EventSetFocusId (0x17650fac, 0x19f85dde);
+
+// Mouse events
+const CClassId EventMouseMoveId (0x3dd12fdb, 0x472f548b);
+const CClassId EventMouseDownId (0x35b7878, 0x5d4a0f86);
+const CClassId EventMouseUpId (0xcce1f7e, 0x7ed344d7);
+const CClassId EventMouseDblClkId (0x55a94cb3, 0x3e641517);
+const CClassId EventMouseWheelId (0x73ac4321, 0x4c273150);
+
 
 enum TKey 
 {
@@ -208,6 +217,17 @@ enum TKey
 	KeyCount          =0xFF
 };
 
+enum TMouseButton
+{
+	noButton		=0x0,
+	leftButton		=0x1,
+	middleButton	=0x2,
+	rightButton		=0x4,
+	ctrlButton		=0x8,
+	shiftButton		=0x10,
+	altButton		=0x20
+};
+
 /**
  * CEventKeyDown
  */
@@ -249,36 +269,93 @@ public:
 
 
 /**
- * CEventMouseDown
+ * CEventMouse.
+ * Base for mouse events.
  */
-class CEventMouseDown : public CEvent
+class CEventMouse : public CEvent
 {
 public:
-	uint X,Y;
+	float X,Y;
+	TMouseButton Button;
 
-	CEventMouseDown (uint x, uint y, IEventEmitter* emitter) : CEvent (emitter, EventMouseDownId)
+	CEventMouse (float x, float y, TMouseButton button, IEventEmitter* emitter, const CClassId& classId) : CEvent (emitter, classId)
 	{
 		X = x;
 		Y = y;
+		Button = button;
 	}
-	
+};
+
+
+/**
+ * CEventMouseDown
+ * Send when a single mouse button is pushed down. The Button value should have only ONE flag set.
+ * X and Y have the new mouse position in window coordinate system.
+ */
+class CEventMouseDown : public CEventMouse
+{
+public:
+	CEventMouseDown (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseDownId)
+	{}
 };
 
 
 /**
  * CEventMouseUp
+ * Send when a single mouse button is pushed down. The Button value should have only ONE flag set.
+ * X and Y have the new mouse position in window coordinate system.
  */
-class CEventMouseUp : public CEvent
+class CEventMouseUp : public CEventMouse
 {
 public:
-	uint X,Y;
-
-	CEventMouseUp (uint x, uint y, IEventEmitter* emitter) : CEvent (emitter, EventMouseUpId)
-	{
-		X = x;
-		Y = y;
-	}	
+	CEventMouseUp (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseUpId)
+	{}	
 };
+
+
+/**
+ * CEventMouseMove
+ * Button have the state of the three mouse and SHIFT CTRL and ALT system keys. When the flag is set, the button is pushed.
+ * X and Y have the new mouse position in window coordinate system.
+ */
+class CEventMouseMove : public CEventMouse
+{
+public:
+	CEventMouseMove (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseMoveId)
+	{}	
+};
+
+
+/**
+ * CEventMouseDblClk
+ * Send when a single mouse button is double clicked. The Button value should have only ONE flag set.
+ * X and Y have the new mouse position in window coordinate system.
+ */
+class CEventMouseDblClk : public CEventMouse
+{
+public:
+	CEventMouseDblClk (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseDblClkId)
+	{}	
+};
+
+
+/**
+ * CEventMouseWheel
+ * Send when the mouse wheel is actioned.
+ * Button have the state of the three mouse and SHIFT CTRL and ALT system keys. When the flag is set, the button is pushed.
+ * X and Y have the new mouse position in window coordinate system.
+ * If Direction is true, the wheel was moved forward and if it is false, backward.
+ */
+class CEventMouseWheel : public CEventMouse
+{
+public:
+	bool	Direction;
+	CEventMouseWheel (float x, float y, TMouseButton button, bool direction, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseWheelId)
+	{
+		Direction=direction;
+	}
+};
+
 
 /**
  * CEventActivate. Called when window is actived / disactived.

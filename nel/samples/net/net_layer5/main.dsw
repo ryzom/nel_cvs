@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "admin_executor_service"=..\..\..\nelns\admin_executor_service\admin_executor_service.dsp - Package Owner=<4>
+Project: "admin_executor_service"=..\..\..\..\nelns\admin_executor_service\admin_executor_service.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -75,7 +75,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "misc"=..\..\src\misc.dsp - Package Owner=<4>
+Project: "misc"=..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -87,7 +87,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "naming_service"=..\..\..\nelns\naming_service\naming_service.dsp - Package Owner=<4>
+Project: "naming_service"=..\..\..\..\nelns\naming_service\naming_service.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -105,7 +105,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "net"=..\..\src\net.dsp - Package Owner=<4>
+Project: "net"=..\..\..\src\net.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

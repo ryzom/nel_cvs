@@ -1,7 +1,7 @@
 /** \file net_layer5/frontend_service.cpp
  * Layer 5 and IService5 example
  *
- * $Id: frontend_service.cpp,v 1.5 2002/05/28 18:15:25 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.6 2002/11/29 10:15:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,7 +145,7 @@ void cbVision( CMessage& msgin, const string &name, uint16 sid )
 	TCPUCycle v2 = CTime::getPerformanceTime ();
 
 	nlinfo("%dms of lag, Received Vision with %d values in %.2fms", (uint32) t, NbValue, CTime::ticksToSecond (v2-v1)*1000.0f);
-	sendRequestVision();
+//	sendRequestVision();
 
 	//H_AFTER (Vision);
 }
@@ -215,6 +215,14 @@ public:
 		static TTime	lastGetPos = CTime::getLocalTime();
 
 		TTime	ctime = CTime::getLocalTime();
+
+		// check vision every 2 seconds
+		if (ctime - lastPing> 2000)
+		{
+			sendRequestVision();
+			lastPing = ctime;
+		}
+
 /*
 		// check ping every 15 seconds
 		if (ctime - lastPing> 15000)

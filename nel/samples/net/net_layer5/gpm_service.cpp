@@ -1,7 +1,7 @@
 /** \file net_layer5/gpm_service.cpp
  * Layer 5 and IService example
  *
- * $Id: gpm_service.cpp,v 1.2 2002/05/22 13:23:05 lecroart Exp $
+ * $Id: gpm_service.cpp,v 1.3 2002/11/29 10:15:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "nel/net/service.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/command.h"
 #include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
@@ -154,9 +155,26 @@ void cbDownPS( const std::string &serviceName, uint16 sid, void *arg )
 }
 
 //
+void cbUpFS( const std::string &serviceName, uint16 sid, void *arg )
+{
+	nlinfo("F Service connecting");
+	sendPing();
+}
+
+void cbDownFS( const std::string &serviceName, uint16 sid, void *arg )
+{
+	nlinfo("F Service disconnecting");
+}
+
+//
 void cbUpService( const std::string &serviceName, uint16 sid, void *arg )
 {
 	nlinfo("Service %s %d is up", serviceName.c_str(), sid);
+
+	CMessage msgout("TOTO");
+	uint32 i = 10;
+	msgout.serial(i);
+	CUnifiedNetwork::getInstance()->send(sid, msgout);
 }
 
 void cbDownService( const std::string &serviceName, uint16 sid, void *arg )
@@ -208,8 +226,12 @@ public:
 	 */
 	void init()
 	{
-		DebugLog->addNegativeFilter ("NETL");
-
+//		nlerror ("oups");
+/*		//nlassert(false);
+		char *p=0;
+		p[0]=0;
+		printf(p);
+*/
 		ConfigFile.setCallback ("NbId", cbVar);
 		cbVar (ConfigFile.getVar ("NbId"));
 
@@ -218,6 +240,9 @@ public:
 
 		instance->setServiceUpCallback("PS", cbUpPS, NULL);
 		instance->setServiceDownCallback("PS", cbDownPS, NULL);
+
+		instance->setServiceUpCallback("FS", cbUpFS, NULL);
+		instance->setServiceDownCallback("FS", cbDownFS, NULL);
 
 		instance->setServiceUpCallback("*", cbUpService, NULL);
 		instance->setServiceDownCallback("*", cbDownService, NULL);
@@ -230,3 +255,12 @@ public:
  * The port is automatically allocated (0) and the main callback array is CallbackArray.
  */
 NLNET_SERVICE_MAIN( CGPMService, "GPMS", "gpm_service", 0, CallbackArray, "", "" )
+
+NLMISC_COMMAND (wait, "", "<time>")
+{
+	if(args.size() != 1) return false;
+
+	nlSleep (atoi (args[0].c_str()));
+
+	return true;
+}

@@ -1,0 +1,72 @@
+#if !defined(AFX_ANIMATION_DLG_H__A9ECE123_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)
+#define AFX_ANIMATION_DLG_H__A9ECE123_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_
+
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
+// animation_dlg.h : header file
+//
+
+/////////////////////////////////////////////////////////////////////////////
+// CAnimationDlg dialog
+
+class CAnimationDlg : public CDialog
+{
+// Construction
+public:
+	CAnimationDlg(class CObjectViewer* main, CWnd* pParent = NULL);   // standard constructor
+
+// Dialog Data
+	//{{AFX_DATA(CAnimationDlg)
+	enum { IDD = IDD_ANIMATION };
+	CButton	FRWCtrl;
+	CButton	FFWCtrl;
+	CSliderCtrl	TimeLineCtrl;
+	CButton	PlayCtrl;
+	CButton	StopCtrl;
+	float	CurrentFrame;
+	float	End;
+	float	Speed;
+	float	Start;
+	BOOL	Loop;
+	//}}AFX_DATA
+
+	bool					Playing;
+	uint64					LastTime;
+	CObjectViewer*			Main;
+
+	void handle ();
+	void setAnimTime (float animStart, float animEnd);
+	void updateBar ();
+	NL3D::CAnimationTime getTime ();
+
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CAnimationDlg)
+	protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
+
+// Implementation
+protected:
+
+	// Generated message map functions
+	//{{AFX_MSG(CAnimationDlg)
+	afx_msg void OnEnd();
+	afx_msg void OnPlay();
+	afx_msg void OnStop();
+	afx_msg void OnChangeCurrentFrame();
+	afx_msg void OnChangeEndEdit();
+	afx_msg void OnChangeSpeed();
+	afx_msg void OnStart();
+	afx_msg void OnChangeStartEdit();
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	virtual BOOL OnInitDialog();
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
+};
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+
+#endif // !defined(AFX_ANIMATION_DLG_H__A9ECE123_1C51_11D5_9CD4_0050DAC3A412__INCLUDED_)

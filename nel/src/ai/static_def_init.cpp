@@ -25,8 +25,8 @@
 #include "nel/ai/agent/msg_notify.h"
 #include "nel/ai/agent/msg_goal.h"
 #include "nel/ai/agent/msg_fact.h"
-#include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_debug.h"
+#include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/agent/gd_agent_script.h"
 
@@ -45,36 +45,36 @@
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 
 
-	const NLAIC::CIdentType CObjectIdent::IdObjectIdent("ObjectIdent",NLAIC::CSelfClassCFactory(CObjectIdent("0:0:0")),
+	const NLAIC::CIdentType CObjectIdent::IdObjectIdent("ObjectIdent",NLAIC::CSelfClassFactory(CObjectIdent("0:0:0")),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	static CNumericIndex staticId;
 	static const IAgent staticAgent(NULL);
-	const NLAIC::CIdentType CLocWordNumRef::IdLocWordNumRef("LocWordNumRef",NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)staticAgent),
+	const NLAIC::CIdentType CLocWordNumRef::IdLocWordNumRef("LocWordNumRef",NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 																		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType IAgent::IdAgent("GenericAgent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)staticAgent), 
+	const NLAIC::CIdentType IAgent::IdAgent("GenericAgent", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)staticAgent), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 	const NLAIC::CIdentType CSimpleLocalMailBox::IdSimpleLocalMailBox("SimpleLocalMailBox",
-														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),
+														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CSimpleLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
 	const NLAIC::CIdentType CScriptMailBox::IdScriptMailBox("ScriptMailBox",
-														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CScriptMailBox(NULL)),
+														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CScriptMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
 
 	const NLAIC::CIdentType CLocalMailBox::IdLocalMailBox("LocalMailBox",
-														NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),
+														NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CLocalMailBox(NULL)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-	const NLAIC::CIdentType CStringType::IdStringType("String",	NLAIC::CSelfClassCFactory(CStringType(CStringVarName("XX"))),
+	const NLAIC::CIdentType CStringType::IdStringType("String",	NLAIC::CSelfClassFactory(CStringType(CStringVarName("XX"))),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																NLAIC::CTypeOfOperator::opSub | 																
@@ -85,7 +85,7 @@
 																NLAIC::CTypeOfOperator::opSupEq | 																
 																NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType DigitalType::IdDigitalType("Float",	NLAIC::CSelfClassCFactory(DigitalType(0)),
+	const NLAIC::CIdentType DigitalType::IdDigitalType("Float",	NLAIC::CSelfClassFactory(DigitalType(0)),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																NLAIC::CTypeOfOperator::opSub | 
@@ -99,7 +99,7 @@
 																NLAIC::CTypeOfOperator::opNot |
 																NLAIC::CTypeOfOperator::opDiff));	
 
-	const NLAIC::CIdentType BorneDigitalType::IdBorneDigitalType("BornedFloat",	NLAIC::CSelfClassCFactory(BorneDigitalType(-1,1)),
+	const NLAIC::CIdentType BorneDigitalType::IdBorneDigitalType("BornedFloat",	NLAIC::CSelfClassFactory(BorneDigitalType(-1,1)),
 																				NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																				NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																				NLAIC::CTypeOfOperator::opSub | 
@@ -113,7 +113,7 @@
 																				NLAIC::CTypeOfOperator::opNot |
 																				NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType DDigitalType::IdDDigitalType("Double",	NLAIC::CSelfClassCFactory(DDigitalType(0)),
+	const NLAIC::CIdentType DDigitalType::IdDDigitalType("Double",	NLAIC::CSelfClassFactory(DDigitalType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																	NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																	NLAIC::CTypeOfOperator::opSub | 
@@ -127,7 +127,7 @@
 																	NLAIC::CTypeOfOperator::opNot |
 																	NLAIC::CTypeOfOperator::opDiff));	
 
-	const NLAIC::CIdentType BorneDDigitalType::IdBorneDDigitalType("BornedDouble",	NLAIC::CSelfClassCFactory(BorneDDigitalType(-1,1)),
+	const NLAIC::CIdentType BorneDDigitalType::IdBorneDDigitalType("BornedDouble",	NLAIC::CSelfClassFactory(BorneDDigitalType(-1,1)),
 																					NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																					NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																					NLAIC::CTypeOfOperator::opSub | 
@@ -142,7 +142,7 @@
 																					NLAIC::CTypeOfOperator::opDiff));
 
 
-	const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassCFactory(IntegerType(0)),
+	const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassFactory(IntegerType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																	NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																	NLAIC::CTypeOfOperator::opSub | 
@@ -156,7 +156,7 @@
 																	NLAIC::CTypeOfOperator::opNot |
 																	NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType ShortIntegerType::IdShortIntegerType("Short",	NLAIC::CSelfClassCFactory(ShortIntegerType(0)),
+	const NLAIC::CIdentType ShortIntegerType::IdShortIntegerType("Short",	NLAIC::CSelfClassFactory(ShortIntegerType(0)),
 																			NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																			NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																			NLAIC::CTypeOfOperator::opSub | 
@@ -170,7 +170,7 @@
 																			NLAIC::CTypeOfOperator::opNot |
 																			NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType CharType::IdCharType("Char",	NLAIC::CSelfClassCFactory(CharType(0)),
+	const NLAIC::CIdentType CharType::IdCharType("Char",	NLAIC::CSelfClassFactory(CharType(0)),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
@@ -185,52 +185,52 @@
 															NLAIC::CTypeOfOperator::opDiff));
 
 
-	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassCFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
+	/*const NLAIC::CIdentType CPaireType::IdPaireType("Paire",NLAIC::CSelfClassFactory(CPaireType( CStringType(CStringVarName("XX")),BorneDigitalType(-1,1))),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 	
-	const NLAIC::CIdentType CVectorGroupManager::IdVectorGroupManager("VectorGroupManager",NLAIC::CSelfClassCFactory(CVectorGroupManager()),
+	const NLAIC::CIdentType CVectorGroupManager::IdVectorGroupManager("VectorGroupManager",NLAIC::CSelfClassFactory(CVectorGroupManager()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
 															NLAIC::CTypeOfOperator::opNot));
 
-	const NLAIC::CIdentType CVectorGroupType::IdVectorGroupType("Vector",NLAIC::CSelfClassCFactory(CVectorGroupType()),
+	const NLAIC::CIdentType CVectorGroupType::IdVectorGroupType("Vector",NLAIC::CSelfClassFactory(CVectorGroupType()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
 															NLAIC::CTypeOfOperator::opNot));
 
-	const NLAIC::CIdentType CGroupType::IdGroupType("List",NLAIC::CSelfClassCFactory(CGroupType()),
+	const NLAIC::CIdentType CListGroupManager::IdListGroupManager("ListGroupManager",NLAIC::CSelfClassFactory(CListGroupManager()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
 															NLAIC::CTypeOfOperator::opNot));
-	
-	const NLAIC::CIdentType CListGroupManager::IdListGroupManager("ListGroupManager",NLAIC::CSelfClassCFactory(CListGroupManager()),
+
+	const NLAIC::CIdentType CGroupType::IdGroupType("List",NLAIC::CSelfClassFactory(CGroupType()),
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 															
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 															NLAIC::CTypeOfOperator::opSub | 
 															NLAIC::CTypeOfOperator::opNot));
 
-	const NLAIC::CIdentType CIndexedVarName::IdIndexedVarName("IndexedVarName",NLAIC::CSelfClassCFactory(CIndexedVarName("Inst")),
+	const NLAIC::CIdentType CIndexedVarName::IdIndexedVarName("IndexedVarName",NLAIC::CSelfClassFactory(CIndexedVarName("Inst")),
 																  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-	const NLAIC::CIdentType CStringVarName::IdStringVarName("StringVarName",NLAIC::CSelfClassCFactory(CStringVarName("Inst")),
+	const NLAIC::CIdentType CStringVarName::IdStringVarName("StringVarName",NLAIC::CSelfClassFactory(CStringVarName("Inst")),
 																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CMessageGroup::IdMessageGroup(	"MessageGroup",NLAIC::CSelfClassCFactory(CMessageGroup(1)),
+	const NLAIC::CIdentType CMessageGroup::IdMessageGroup(	"MessageGroup",NLAIC::CSelfClassFactory(CMessageGroup(1)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CMessageList::IdMessage("MessageList",	NLAIC::CSelfClassCFactory(CMessageList()),
+	const NLAIC::CIdentType CMessageList::IdMessage("MessageList",	NLAIC::CSelfClassFactory(CMessageList()),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | NLAIC::CTypeOfOperator::opSub ));
-	const NLAIC::CIdentType CMessageVector::IdMessageVector("MessageVector",	NLAIC::CSelfClassCFactory(CMessageVector()),
+	const NLAIC::CIdentType CMessageVector::IdMessageVector("MessageVector",	NLAIC::CSelfClassFactory(CMessageVector()),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tList),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | NLAIC::CTypeOfOperator::opSub ));
 
 	
 
-	const NLAIC::CIdentType CBoolType::IdBoolType("BoolType",NLAIC::CSelfClassCFactory(CBoolType(false)),	NLAIC::CTypeOfObject::tLogic  | 
+	const NLAIC::CIdentType CBoolType::IdBoolType("BoolType",NLAIC::CSelfClassFactory(CBoolType(false)),	NLAIC::CTypeOfObject::tLogic  | 
 																									NLAIC::CTypeOfObject::tNombre,
 																									NLAIC::CTypeOfOperator::opAdd |
 																									NLAIC::CTypeOfOperator::opSub |
@@ -238,77 +238,78 @@
 																									NLAIC::CTypeOfOperator::opEq  |
 																									NLAIC::CTypeOfOperator::opNot );
 
-	const NLAIC::CIdentType CAgentScript::IdAgentScript("AgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CAgentScript(NULL) ),
+	const NLAIC::CIdentType CAgentScript::IdAgentScript("AgentScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CAgentScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
+	const NLAIC::CIdentType CGDAgentScript::IdGDAgentScript("GDAgentScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CGDAgentScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
 	static COperatorScript staticOperatorScript(NULL);
 	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", 
-		NLAIC::CSelfClassCFactory( (NLAIC::IBasicInterface &) staticOperatorScript ),
+		NLAIC::CSelfClassFactory( (NLAIC::IBasicInterface &) staticOperatorScript ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
-	const NLAIC::CIdentType CActor::IdActor("CActor", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CActor() ),
+	const NLAIC::CIdentType CActor::IdActor("CActor", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CActor() ),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CActorScript::IdActorScript("ActorScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CActorScript(NULL) ),
+	const NLAIC::CIdentType CActorScript::IdActorScript("ActorScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CActorScript(NULL) ),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CMainAgentScript::IdMainAgentScript("MainAgentScript", NLAIC::CSelfClassCFactory( (const NLAIC::IBasicInterface &)CMainAgentScript(NULL) ),
+	const NLAIC::CIdentType CMainAgentScript::IdMainAgentScript("MainAgentScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CMainAgentScript(NULL) ),
 													NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 													NLAIC::CTypeOfOperator::opEq );
 
 
 
-	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassCFactory( CMessageScript() ),
+	const NLAIC::CIdentType CMessageScript::IdMessageScript("MessageScript", NLAIC::CSelfClassFactory( CMessageScript() ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CFuzzyInterval::IdFuzzyInterval = NLAIC::CIdentType("FuzzyInterval",NLAIC::CSelfClassCFactory(CFuzzyInterval("Inst",0,0)),
+	const NLAIC::CIdentType CFuzzyInterval::IdFuzzyInterval = NLAIC::CIdentType("FuzzyInterval",NLAIC::CSelfClassFactory(CFuzzyInterval("Inst",0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
 	const NLAIC::CIdentType CTriangleFuzzySet::IdTriangleFuzzySet = NLAIC::CIdentType("TriangleFuzzySet",
-		NLAIC::CSelfClassCFactory(CTriangleFuzzySet("Inst",0,0,0)),
+		NLAIC::CSelfClassFactory(CTriangleFuzzySet("Inst",0,0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CLeftFuzzySet::IdLeftFuzzySet = NLAIC::CIdentType("LeftFuzzySet",NLAIC::CSelfClassCFactory(CLeftFuzzySet("Inst",0,0,0)),
+	const NLAIC::CIdentType CLeftFuzzySet::IdLeftFuzzySet = NLAIC::CIdentType("LeftFuzzySet",NLAIC::CSelfClassFactory(CLeftFuzzySet("Inst",0,0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CTrapezeFuzzySet::IdTrapezeFuzzySet = NLAIC::CIdentType("TrapezeFuzzySet",NLAIC::CSelfClassCFactory(CTrapezeFuzzySet("Inst",0,0,0,0)),
+	const NLAIC::CIdentType CTrapezeFuzzySet::IdTrapezeFuzzySet = NLAIC::CIdentType("TrapezeFuzzySet",NLAIC::CSelfClassFactory(CTrapezeFuzzySet("Inst",0,0,0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
 
-	const NLAIC::CIdentType CRightFuzzySet::IdRightFuzzySet = NLAIC::CIdentType("RightFuzzySet",NLAIC::CSelfClassCFactory(CRightFuzzySet("Inst",0,0,0)),
+	const NLAIC::CIdentType CRightFuzzySet::IdRightFuzzySet = NLAIC::CIdentType("RightFuzzySet",NLAIC::CSelfClassFactory(CRightFuzzySet("Inst",0,0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CFirstOrderAssert::IdFirstOrderAssert = NLAIC::CIdentType( "FirstOrderAssert", NLAIC::CSelfClassCFactory(CFirstOrderAssert( CStringVarName("Inst") )),
+	const NLAIC::CIdentType CFirstOrderAssert::IdFirstOrderAssert = NLAIC::CIdentType( "FirstOrderAssert", NLAIC::CSelfClassFactory(CFirstOrderAssert( CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
-	const NLAIC::CIdentType CGoal::IdGoal = NLAIC::CIdentType( "GoalObject", NLAIC::CSelfClassCFactory( CGoal( CStringVarName("Inst") )),
+
+	const NLAIC::CIdentType CGoal::IdGoal = NLAIC::CIdentType( "GoalObject", NLAIC::CSelfClassFactory( CGoal( CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 
@@ -316,41 +317,41 @@
 
 
 	const NLAIC::CIdentType CBoolAssert::IdBoolAssert = NLAIC::CIdentType( "BoolAssert", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CBoolAssert( (const NLAIAGENT::IVarName &) CStringVarName("Inst") )),
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CBoolAssert( (const NLAIAGENT::IVarName &) CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
-	const NLAIC::CIdentType CFactBase::IdFactBase = NLAIC::CIdentType( "FactBase", NLAIC::CSelfClassCFactory(CFactBase()), 
+	const NLAIC::CIdentType CFactBase::IdFactBase = NLAIC::CIdentType( "FactBase", NLAIC::CSelfClassFactory(CFactBase()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
-	const NLAIC::CIdentType CClause::IdClause = NLAIC::CIdentType( "Clause", NLAIC::CSelfClassCFactory(CClause()), 
+	const NLAIC::CIdentType CClause::IdClause = NLAIC::CIdentType( "Clause", NLAIC::CSelfClassFactory(CClause()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
-	const NLAIC::CIdentType CRule::IdRule = NLAIC::CIdentType( "Rule", NLAIC::CSelfClassCFactory(CRule()), 
+	const NLAIC::CIdentType CRule::IdRule = NLAIC::CIdentType( "Rule", NLAIC::CSelfClassFactory(CRule()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
-	const NLAIC::CIdentType CValueSet::IdValueSet = NLAIC::CIdentType( "ValueSet", NLAIC::CSelfClassCFactory( CValueSet(0) ),
+	const NLAIC::CIdentType CValueSet::IdValueSet = NLAIC::CIdentType( "ValueSet", NLAIC::CSelfClassFactory( CValueSet(0) ),
 		NLAIC::CTypeOfObject::tLogic |
 		NLAIC::CTypeOfObject::tList,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNot |
 		NLAIC::CTypeOfOperator::opDiff );
 
-	const NLAIC::CIdentType CVar::IdVar("Var",NLAIC::CSelfClassCFactory(CVar( CStringVarName("Inst") )),
+	const NLAIC::CIdentType CVar::IdVar("Var",NLAIC::CSelfClassFactory(CVar( CStringVarName("Inst") )),
 											NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CVarSet::IdVarSet("VarSet", NLAIC::CSelfClassCFactory( CVarSet() ),
+	const NLAIC::CIdentType CVarSet::IdVarSet("VarSet", NLAIC::CSelfClassFactory( CVarSet() ),
 		NLAIC::CTypeOfObject::tLogic |
 		NLAIC::CTypeOfObject::tList,
 		NLAIC::CTypeOfOperator::opEq |
 		NLAIC::CTypeOfOperator::opNot );
 
-	const NLAIC::CIdentType FuzzyType::IdFuzzyType("FuzzyType",NLAIC::CSelfClassCFactory(FuzzyType()),
+	const NLAIC::CIdentType FuzzyType::IdFuzzyType("FuzzyType",NLAIC::CSelfClassFactory(FuzzyType()),
 		NLAIC::CTypeOfObject::tNombre |
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd |
@@ -363,7 +364,7 @@
 		NLAIC::CTypeOfOperator::opNot 
 	);
 
-	const NLAIC::CIdentType CFuzzyVar::IdFuzzyVar = NLAIC::CIdentType("FuzzyVar",NLAIC::CSelfClassCFactory( CFuzzyVar(CStringVarName("Inst"),0,0) ),
+	const NLAIC::CIdentType CFuzzyVar::IdFuzzyVar = NLAIC::CIdentType("FuzzyVar",NLAIC::CSelfClassFactory( CFuzzyVar(CStringVarName("Inst"),0,0) ),
 		NLAIC::CTypeOfObject::tLogic  | 
 		NLAIC::CTypeOfObject::tNombre,
 		NLAIC::CTypeOfOperator::opAdd |
@@ -372,87 +373,87 @@
 		NLAIC::CTypeOfOperator::opEq  |
 		NLAIC::CTypeOfOperator::opNot );
 
-	const NLAIC::CIdentType CVectorMsgContainer::IdVectorMsgContainer("VectorMsgContainer",NLAIC::CSelfClassCFactory(CVectorMsgContainer()),
+	const NLAIC::CIdentType CVectorMsgContainer::IdVectorMsgContainer("VectorMsgContainer",NLAIC::CSelfClassFactory(CVectorMsgContainer()),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CFactPattern::IdFactPattern = NLAIC::CIdentType( "FactPattern", NLAIC::CSelfClassCFactory(CFactPattern()), 
+	const NLAIC::CIdentType CFactPattern::IdFactPattern = NLAIC::CIdentType( "FactPattern", NLAIC::CSelfClassFactory(CFactPattern()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opEq);
 
-	/*const NLAIC::CIdentType CFuzzyControlerScript::IdFuzzyControlerScript("FuzzyControlerScript", NLAIC::CSelfClassCFactory( CFuzzyControlerScript() ),
+	/*const NLAIC::CIdentType CFuzzyControlerScript::IdFuzzyControlerScript("FuzzyControlerScript", NLAIC::CSelfClassFactory( CFuzzyControlerScript() ),
 		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));*/
 
-	const NLAIC::CIdentType CFuzzyRuleSet::idFuzzyRuleSet("FuzzyRuleSet", NLAIC::CSelfClassCFactory( CFuzzyRuleSet() ),
+	const NLAIC::CIdentType CFuzzyRuleSet::idFuzzyRuleSet("FuzzyRuleSet", NLAIC::CSelfClassFactory( CFuzzyRuleSet() ),
 		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CFuzzyRule::IdFuzzyRule("FuzzyRule",NLAIC::CSelfClassCFactory( CFuzzyRule() ),
+	const NLAIC::CIdentType CFuzzyRule::IdFuzzyRule("FuzzyRule",NLAIC::CSelfClassFactory( CFuzzyRule() ),
 		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CFuzzyFact::IdFuzzyFact = NLAIC::CIdentType("FuzzyFact",NLAIC::CSelfClassCFactory( CFuzzyFact(NULL,0) ),
+	const NLAIC::CIdentType CFuzzyFact::IdFuzzyFact = NLAIC::CIdentType("FuzzyFact",NLAIC::CSelfClassFactory( CFuzzyFact(NULL,0) ),
 		NLAIC::CTypeOfObject::tLogic  | 
 		NLAIC::CTypeOfObject::tNombre,
 		NLAIC::CTypeOfOperator::opEq  |
 		NLAIC::CTypeOfOperator::opNot );
 
-	const NLAIC::CIdentType CFirstOrderOperator::IdCFirstOrderOperator = NLAIC::CIdentType( "FirstOrderOperator", NLAIC::CSelfClassCFactory(CFirstOrderOperator()), 
+	const NLAIC::CIdentType CFirstOrderOperator::IdCFirstOrderOperator = NLAIC::CIdentType( "FirstOrderOperator", NLAIC::CSelfClassFactory(CFirstOrderOperator()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
-	const NLAIC::CIdentType CBoolOperator::IdBoolOperator = NLAIC::CIdentType( "BoolOperator", NLAIC::CSelfClassCFactory(CBoolOperator()), 
+	const NLAIC::CIdentType CBoolOperator::IdBoolOperator = NLAIC::CIdentType( "BoolOperator", NLAIC::CSelfClassFactory(CBoolOperator()), 
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opAdd );
 
 	const NLAIC::CIdentType CLocalAgentMail::LocalAgentMail = NLAIC::CIdentType( "LocalAgentMail", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CLocalAgentMail((IBasicAgent *)&staticAgent)), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CLocalAgentMail((IBasicAgent *)&staticAgent)), 
 		NLAIC::CTypeOfObject::tAgent,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CProxyAgentMail::IdProxyAgentMail = NLAIC::CIdentType( "ProxyAgentMail", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CProxyAgentMail()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CProxyAgentMail()), 
 		NLAIC::CTypeOfObject::tAgent,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPExec::IdPExec = NLAIC::CIdentType( "Exec", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPExec()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPExec()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPAchieve::IdPAchieve = NLAIC::CIdentType( "Achieve", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPAchieve()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPAchieve()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPAsk::IdPAsk = NLAIC::CIdentType( "Ask", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPAsk()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPAsk()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPBreak::IdPBreak = NLAIC::CIdentType( "Break", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPBreak()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPBreak()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPTell::IdPTell = NLAIC::CIdentType( "Tell", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPTell()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPTell()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPKill::IdPKill = NLAIC::CIdentType( "Kill", 
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPKill()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPKill()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPError::IdPError = NLAIC::CIdentType( "Error",
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPError()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPError()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
 	const NLAIC::CIdentType CPEven::IdEven = NLAIC::CIdentType( "Even",
-		NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)CPEven()), 
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPEven()), 
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
@@ -460,18 +461,18 @@
 
 namespace NLAISCRIPT
 {
-	const NLAIC::CIdentType CMethodeName::IdMethodeName("MethodeName",NLAIC::CSelfClassCFactory( CMethodeName() ),
+	const NLAIC::CIdentType CMethodeName::IdMethodeName("MethodeName",NLAIC::CSelfClassFactory( CMethodeName() ),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opEq);
 
-	const NLAIC::CIdentType CParam::IdParam("Param",NLAIC::CSelfClassCFactory( CParam() ),
+	const NLAIC::CIdentType CParam::IdParam("Param",NLAIC::CSelfClassFactory( CParam() ),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opEq);
 
 
 	NLAIAGENT::IObjectIA **CVarPStack::_LocalTableRef = NULL;
 	#ifdef NL_DEBUG
-	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
+	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 														NLAIC::CTypeOfOperator::opSub | 
@@ -485,7 +486,7 @@ namespace NLAISCRIPT
 														NLAIC::CTypeOfOperator::opNot |
 														NLAIC::CTypeOfOperator::opDiff));	
 	#else
-	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassCFactory(CVarPStack(0)),
+	NLAIC::CIdentType CVarPStack::IdVarPStack ("VarPStack",	NLAIC::CSelfClassFactory(CVarPStack(0)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 														NLAIC::CTypeOfOperator::opSub | 
@@ -501,7 +502,7 @@ namespace NLAISCRIPT
 	#endif													
 
 	#ifdef NL_DEBUG
-	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassCFactory(CVarPStack(0,"Inst")),
+	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassFactory(CVarPStack(0,"Inst")),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 														NLAIC::CTypeOfOperator::opSub | 
@@ -515,7 +516,7 @@ namespace NLAISCRIPT
 														NLAIC::CTypeOfOperator::opNot |
 														NLAIC::CTypeOfOperator::opDiff));	
 	#else
-	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassCFactory(CVarPStack(0)),
+	NLAIC::CIdentType CVarPStackParam::IdVarPStackParam ("VarPStackParam",	NLAIC::CSelfClassFactory(CVarPStack(0)),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 														NLAIC::CTypeOfOperator::opSub | 
@@ -532,113 +533,119 @@ namespace NLAISCRIPT
 
 	sint32 CVarPStackParam::_Shift = 0;
 	
-	const NLAIC::CIdentType CCodeBrancheRun::IdCodeBrancheRun("CodeBrancheRun",NLAIC::CSelfClassCFactory(CCodeBrancheRun(1,CHaltOpCode())),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-	const NLAIC::CIdentType CCodeBrancheRunDebug::IdCodeBrancheRunDebug("CodeBrancheRunDebug",NLAIC::CSelfClassCFactory(CCodeBrancheRunDebug(1,CHaltOpCode())),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-	const NLAIC::CIdentType IBlock::IdBlock("IBlock",NLAIC::CSelfClassCFactory(IBlock(false)),NLAIC::CTypeOfObject(0),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	const NLAIC::CIdentType CCodeBrancheRun::IdCodeBrancheRun("CodeBrancheRun",NLAIC::CSelfClassFactory(CCodeBrancheRun(1,CHaltOpCode())),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	const NLAIC::CIdentType CCodeBrancheRunDebug::IdCodeBrancheRunDebug("CodeBrancheRunDebug",NLAIC::CSelfClassFactory(CCodeBrancheRunDebug(1,CHaltOpCode())),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	const NLAIC::CIdentType IBlock::IdBlock("IBlock",NLAIC::CSelfClassFactory(IBlock(false)),NLAIC::CTypeOfObject(0),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static CAgentClass agentClass;	
-	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)agentClass),
+	static CAgentClass agentClass(NLAIAGENT::CStringVarName("XXX_Agent"));
+	const NLAIC::CIdentType CAgentClass::IdAgentClass("Agent", CClassInterpretFactory((const IClassInterpret &)agentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-	static CGDAgentClass GDagentClass;	
-	const NLAIC::CIdentType CGDAgentClass::IdGDAgentClass("GDAgent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)GDagentClass),
+	static CGDAgentClass GDagentClass(NLAIAGENT::CStringVarName("XXX_GDAgent"));
+	const NLAIC::CIdentType CGDAgentClass::IdGDAgentClass("GDAgent",CClassInterpretFactory((const IClassInterpret &)GDagentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
 
-	static CActorClass actorClass;
-	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)actorClass),
+
+
+	static CActorClass actorClass(NLAIAGENT::CStringVarName("XXX_Actor"));
+	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", CClassInterpretFactory((const IClassInterpret &)actorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	
 
-	static CMessageClass messageClass;
-	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)messageClass),
+	static CMessageClass messageClass(NLAIAGENT::CStringVarName("XXX_Message"));
+	const NLAIC::CIdentType CMessageClass::IdMessageClass("Message", CClassInterpretFactory((const IClassInterpret &)messageClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-	static CMsgNotifyParentClass msgNotifyParentClass;
-	const NLAIC::CIdentType CMsgNotifyParentClass::IdMsgNotifyParentClass("MsgNotifyParent", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgNotifyParentClass),
+
+	static CMsgNotifyParentClass msgNotifyParentClass(NLAIAGENT::CStringVarName("XXX_MsgNotifyParent"));
+	const NLAIC::CIdentType CMsgNotifyParentClass::IdMsgNotifyParentClass("MsgNotifyParent", CClassInterpretFactory((const IClassInterpret &)msgNotifyParentClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	static CGoalMsgClass goalMsgClass;
-	const NLAIC::CIdentType CGoalMsgClass::IdGoalMsgClass("GoalMsgClass", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)goalMsgClass),
+	const NLAIC::CIdentType CGoalMsgClass::IdGoalMsgClass("GoalMsg", CClassInterpretFactory((const IClassInterpret &)goalMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static CFactMsgClass factMsgClass;
-	const NLAIC::CIdentType CFactMsgClass::IdFactMsgClass("FactMsgClass", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)factMsgClass),
+	static CFactMsgClass factMsgClass(NLAIAGENT::CStringVarName("XXX_FactMsgClass"));
+	const NLAIC::CIdentType CFactMsgClass::IdFactMsgClass("FactMsgClass", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)factMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static CDebugMsgClass msgDebugMsgClass;
-	const NLAIC::CIdentType CDebugMsgClass::IdDebugMsgClass("MsgDebug", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgDebugMsgClass),
+
+	static CDebugMsgClass msgDebugMsgClass(NLAIAGENT::CStringVarName("MsgDebug"));
+	const NLAIC::CIdentType CDebugMsgClass::IdDebugMsgClass("MsgDebug", CClassInterpretFactory((const IClassInterpret &)msgDebugMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
-	static CSuccessMsgClass msgSuccessClass;
-	const NLAIC::CIdentType CSuccessMsgClass::IdSuccessMsgClass("SuccessMsgClass", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgSuccessClass),
+
+	static CSuccessMsgClass msgSuccessClass(NLAIAGENT::CStringVarName("SuccessMsgClass"));
+	const NLAIC::CIdentType CSuccessMsgClass::IdSuccessMsgClass("SuccessMsgClass", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)msgSuccessClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),	
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
-	static CFailureMsgClass msgFailureClass;
-	const NLAIC::CIdentType CFailureMsgClass::IdFailureMsgClass("FailureMsgClass", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgFailureClass),
+
+	static CFailureMsgClass msgFailureClass(NLAIAGENT::CStringVarName("FailureMsgClass"));
+	const NLAIC::CIdentType CFailureMsgClass::IdFailureMsgClass("FailureMsgClass", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)msgFailureClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 
 	static COnChangeMsgClass onChangeMsgClass;
-	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)onChangeMsgClass),
+	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", CClassInterpretFactory((const IClassInterpret &)onChangeMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static COperatorClass operatorClass;
-	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)operatorClass),
+	static COperatorClass operatorClass(NLAIAGENT::CStringVarName("Operator"));
+	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", CClassInterpretFactory((const IClassInterpret &)operatorClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 
-	const NLAIC::CIdentType CContextDebug::IdContextDebug("ContextDebug", NLAIC::CSelfClassCFactory(CContextDebug()),
+	const NLAIC::CIdentType CContextDebug::IdContextDebug("ContextDebug", NLAIC::CSelfClassFactory(CContextDebug()),
 														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	static CAgentClass managerClass;	
-	const NLAIC::CIdentType CManagerClass::IdManagerClass("AgentManager", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)managerClass),
+	static CManagerClass managerClass(NLAIAGENT::CStringVarName("XXX_AgentManager"));
+	const NLAIC::CIdentType CManagerClass::IdManagerClass("AgentManager", CClassInterpretFactory((const IClassInterpret &)managerClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
 
 	static CStackPointer	staticStack(1),staticHeap(1);
 	const NLAIC::CIdentType CCodeContext::IdCodeContext = NLAIC::CIdentType("CodeContext",
-																		NLAIC::CSelfClassCFactory(CCodeContext(staticStack,staticHeap,NULL,NULL,NULL)),
+																		NLAIC::CSelfClassFactory(CCodeContext(staticStack,staticHeap,NULL,NULL,NULL)),
 																		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CScriptDebugSourceFile::IdScriptDebugSourceFile("ScriptDebugSourceFile",NLAIC::CSelfClassCFactory(CScriptDebugSourceFile("")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	const NLAIC::CIdentType CScriptDebugSourceFile::IdScriptDebugSourceFile("ScriptDebugSourceFile",NLAIC::CSelfClassFactory(CScriptDebugSourceFile("")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
-	const NLAIC::CIdentType CScriptDebugSourceMemory::IdScriptDebugSourceMemory("ScriptDebugSourceMemory",NLAIC::CSelfClassCFactory(CScriptDebugSourceMemory("","")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	const NLAIC::CIdentType CScriptDebugSourceMemory::IdScriptDebugSourceMemory("ScriptDebugSourceMemory",NLAIC::CSelfClassFactory(CScriptDebugSourceMemory("","")),NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 }
-
-	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassCFactory( CNotifyParentScript(&NLAISCRIPT::msgNotifyParentClass) ),
+	const NLAIC::CIdentType CNotifyParentScript::IdNotifyParentScript("NotifyParentScript", NLAIC::CSelfClassFactory( CNotifyParentScript(&NLAISCRIPT::msgNotifyParentClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CGoalMsg::IdGoalMsg("GoalMsg", NLAIC::CSelfClassCFactory( CGoalMsg(&NLAISCRIPT::goalMsgClass) ),
+	const NLAIC::CIdentType CGoalMsg::IdGoalMsg("GoalMsgScript", NLAIC::CSelfClassFactory( CGoalMsg(&NLAISCRIPT::goalMsgClass) ),
+																NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
+																NLAIC::CTypeOfOperator::opEq );
+
+	const NLAIC::CIdentType CFactMsg::IdFactMsg("FactMsg", NLAIC::CSelfClassFactory( CFactMsg(&NLAISCRIPT::factMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CFactMsg::IdFactMsg("FactMsg", NLAIC::CSelfClassCFactory( CFactMsg(&NLAISCRIPT::factMsgClass) ),
+	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassCFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
+
+	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CSuccessMsg::IdSuccessMsg("SuccessMsg", NLAIC::CSelfClassCFactory( CSuccessMsg(&NLAISCRIPT::msgSuccessClass) ),
+	const NLAIC::CIdentType CSuccessMsg::IdSuccessMsg("SuccessMsg", NLAIC::CSelfClassFactory( CSuccessMsg(&NLAISCRIPT::msgSuccessClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CFailureMsg::IdFailureMsg("FailureMsg", NLAIC::CSelfClassCFactory( CFailureMsg(&NLAISCRIPT::msgFailureClass) ),
+	const NLAIC::CIdentType CFailureMsg::IdFailureMsg("FailureMsg", NLAIC::CSelfClassFactory( CFailureMsg(&NLAISCRIPT::msgFailureClass) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-		NLAIC::CTypeOfOperator::opEq );
-
-	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassCFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
-			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
-			NLAIC::CTypeOfOperator::opEq );
-
+		NLAIC::CTypeOfOperator::opEq );	

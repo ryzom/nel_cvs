@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.29 2002/04/24 08:14:14 besson Exp $
+ * $Id: path.cpp,v 1.30 2002/04/30 10:13:23 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,11 +29,13 @@
 #include <fstream>
 
 #include "nel/misc/path.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
 #	include <sys/types.h>
 #	include <sys/stat.h>
+#	include <direct.h>
 #else
 #   include <sys/types.h>
 #   include <sys/stat.h>
@@ -261,6 +263,53 @@ string CPath::standardizePath (const string &path, bool addFinalSlash)
 	return newPath;
 }
 
+std::string CPath::getCurrentPath ()
+{
+	char buffer [10000];
+
+#ifdef NL_OS_WINDOWS
+	return _getcwd(buffer, 10000);
+#else
+	return getcwd(buffer, 10000);
+#endif
+}
+
+std::string CPath::getFullPath (const std::string &path, bool addFinalSlash)
+{
+	string currentPath = standardizePath (getCurrentPath ());
+	string sPath = standardizePath (path, addFinalSlash);
+
+	// current path
+	if (path.empty())
+	{
+		return currentPath;
+	}
+
+	// windows full path
+	if (path.size() > 2 && path[1] == ':')
+	{
+		return sPath;
+	}
+
+	// from root
+	if (path [0] == '/' || path[0] == '\\')
+	{
+		if (currentPath.size() > 2 && currentPath[1] == ':')
+		{
+			return currentPath.substr(0,3) + sPath.substr(1);
+		}
+		else
+		{
+			return sPath;
+		}
+	}
+
+	// default case
+	return currentPath + sPath;
+}
+
+
+
 #ifdef NL_OS_WINDOWS
 #	define dirent	WIN32_FIND_DATA
 #	define DIR		void
@@ -388,13 +437,22 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 			break;
 		}
 
+		string fn = getname (de);
+
 		// skip . and ..
-		if (getname (de) == "." || getname (de) == "..")
+		if (fn == "." || fn == "..")
 			continue;
 
 		if (isdirectory(de))
 		{
-			string stdName = standardizePath(path + '/' + getname(de));
+			// skip CVS directory
+			if (fn == "CVS")
+			{
+				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): skip CVS directory", path.c_str(), recurse, wantDir, wantFile);
+				continue;
+			}
+
+			string stdName = standardizePath(path + fn);
 			if (recurse)
 			{
 				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): need to recurse into '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
@@ -409,7 +467,13 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		}
 		if (wantFile && isfile(de))
 		{
-			int lastSep = CFile::getLastSeparator(path);
+			if (fn.find_last_of (".log") == fn.size()-1)
+			{
+				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): skip *.log files (%s)", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
+				continue;
+			}
+
+/*			int lastSep = CFile::getLastSeparator(path);
 			#ifdef NL_OS_WINDOWS
 				char sep = lastSep == std::string::npos ? '\\'
 													    : path[lastSep];
@@ -417,8 +481,8 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 				char sep = lastSep == std::string::npos ? '/'
 														: path[lastSep];
 			#endif
-			
-			string stdName = path + sep + getname(de);
+*/			
+			string stdName = standardizePath(path) + getname(de);
 			
 				
 			NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): adding file '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
@@ -445,8 +509,12 @@ void CPath::removeAllAlternativeSearchPath ()
 
 void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 {
+	H_AUTO_INST(addSearchPath);
+
 	CPath *inst = CPath::getInstance();
 	string newPath = standardizePath(path);
+
+	nlinfo ("CPath::addSearchPath(%s, %d, %d): adding the path '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
 	// check empty directory
 	if (newPath.empty())

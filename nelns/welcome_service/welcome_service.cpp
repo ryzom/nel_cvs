@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.3 2001/06/13 14:35:07 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.4 2001/09/05 17:19:29 lecroart Exp $
  *
  */
 
@@ -35,6 +35,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/command.h"
 #include "nel/misc/log.h"
 
 #include "nel/net/service.h"
@@ -193,9 +194,12 @@ void cbFESDisconnection (const string &serviceName, TSockId from, void *arg)
 	{
 		if ((*it).SockId == from)
 		{
+			map<uint32, TSockId>::iterator nitc;
 			// send a message to the LS to say that all players from this FES are offline
-			for (map<uint32, TSockId>::iterator itc = UserIdSockAssociations.begin(); itc != UserIdSockAssociations.end(); itc++)
+			for (map<uint32, TSockId>::iterator itc = UserIdSockAssociations.begin(); itc != UserIdSockAssociations.end();)
 			{
+				nitc = itc;
+				nitc++;
 				if ((*itc).second == from)
 				{
 					// bye bye little player
@@ -205,7 +209,10 @@ void cbFESDisconnection (const string &serviceName, TSockId from, void *arg)
 					uint8 con = 0;
 					msgout.serial (con);
 					CNetManager::send ("LS", msgout);
+
+					UserIdSockAssociations.erase (itc);
 				}
+				itc = nitc;
 			}
 
 			// remove the FES
@@ -260,7 +267,7 @@ void cbLSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	CMessage msgout (CNetManager::getNetBase ("WS")->getSIDA (), "CS");
 	msgout.serial (cookie);
 	CNetManager::send ("WS", msgout, best->SockId);
-	best->NbUser++;
+	best->NbEstimatedUser++;
 }
 
 
@@ -316,3 +323,37 @@ public:
 
 /// Welcome Service
 NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray);
+
+//
+// Commands
+//
+
+
+NLMISC_COMMAND (frontends, "displays the list of all registered front ends", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display the %d registered front end :", FESList.size());
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end (); it++)
+	{
+		log.displayNL ("> %s '%s' nb estimated users: %u nb users: %u", (*it).SockId->asString().c_str(), CNetManager::getNetBase ("WS")->hostAddress((*it).SockId).asString().c_str(), (*it).NbEstimatedUser, (*it).NbUser );
+	}
+	log.displayNL ("End ot the list");
+
+	return true;
+}
+
+NLMISC_COMMAND (users, "displays the list of all registered users", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display the %d registered users :", UserIdSockAssociations.size());
+	for (map<uint32, TSockId>::iterator it = UserIdSockAssociations.begin(); it != UserIdSockAssociations.end (); it++)
+	{
+		log.displayNL ("> %u %s '%s'", (*it).first, (*it).second->asString().c_str(), CNetManager::getNetBase ("WS")->hostAddress((*it).second).asString().c_str());
+	}
+	log.displayNL ("End ot the list");
+
+	return true;
+}
+

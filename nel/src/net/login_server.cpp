@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.4 2001/06/21 08:45:13 cado Exp $
+ * $Id: login_server.cpp,v 1.5 2001/09/05 17:19:48 lecroart Exp $
  *
  */
 
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/callback_client.h"
 #include "nel/net/net_manager.h"
@@ -37,6 +38,7 @@
 #include "nel/net/login_server.h"
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NLNET {
 
@@ -244,8 +246,40 @@ void CLoginServer::clientDisconnected (uint32 userId)
 	UserIdSockAssociations.erase (userId);
 }
 
+//
+// Commands
+//
+
+NLMISC_COMMAND (users, "displays the list of all connected users", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display the %d connected users :", UserIdSockAssociations.size());
+	for (map<uint32, TSockId>::iterator it = UserIdSockAssociations.begin(); it != UserIdSockAssociations.end (); it++)
+	{
+		log.displayNL ("> %u %s", (*it).first, (*it).second->asString().c_str());
+	}
+	log.displayNL ("End ot the list");
+
+	return true;
+}
+
+NLMISC_COMMAND (pending, "displays the list of all pending users", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display the %d pending users :", PendingUsers.size());
+	for (list<CPendingUser>::iterator it = PendingUsers.begin(); it != PendingUsers.end (); it++)
+	{
+		log.displayNL ("> %s", (*it).Cookie.toString().c_str());
+	}
+	log.displayNL ("End ot the list");
+
+	return true;
+}
 
 } // NLNET
+
 
 /////////////////////////////////////////////
 /////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.6 2001/08/28 08:39:45 besson Exp $
+ * $Id: export_scene.cpp,v 1.7 2001/08/28 15:59:02 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -373,42 +373,65 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 		int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
 
 		if ((nAccelType&3) == 0) // If not an accelerator
-		if (nAccelType&32) // Is the flag clusterize set ?
 		if (!RPO::isZone (*pNode, tvTime))
 		if (CExportNel::isMesh (*pNode, tvTime))
 		{
-			// Test against all clusters
-
-			CMesh::CMeshBuild *pMB;
-			CMeshBase::CMeshBaseBuild *pMBB;
-			pMB = CExportNel::createMeshBuild (*pNode, tvTime, false, pMBB);
-
-			convertToWorldCoordinate( pMB, pMBB );
-
-			for(k = 0; k < vClusters.size(); ++k)
+			if (nAccelType&32) // Is the flag clusterize set ?
 			{
-				bool bMeshInCluster = false;
+				// Test against all clusters
 
-				for(j = 0; j < pMB->Vertices.size(); ++j)
+				CMesh::CMeshBuild *pMB;
+				CMeshBase::CMeshBaseBuild *pMBB;
+				pMB = CExportNel::createMeshBuild (*pNode, tvTime, false, pMBB);
+
+				convertToWorldCoordinate( pMB, pMBB );
+
+				for(k = 0; k < vClusters.size(); ++k)
 				{
-					if (vClusters[k].isIn (pMB->Vertices[j]))
+					bool bMeshInCluster = false;
+
+					for(j = 0; j < pMB->Vertices.size(); ++j)
 					{
-						bMeshInCluster = true;
-						break;
+						if (vClusters[k].isIn (pMB->Vertices[j]))
+						{
+							bMeshInCluster = true;
+							break;
+						}
+					}
+
+					if (bMeshInCluster)
+					{
+						aIGArray[nNumIG].Clusters.push_back (k);
 					}
 				}
-
-				if (bMeshInCluster)
+				
+				// debug purpose : to remove
+				if (aIGArray[nNumIG].Clusters.size() == 0)
 				{
-					aIGArray[nNumIG].Clusters.push_back (k);
+					char tam[256];
+					sprintf(tam,"Object %s is not attached to any cluster\nbut his flag clusterize is set", pNode->GetName());
+					MessageBox(NULL, tam, "Warning", MB_OK);
 				}
+				// debug purpose : to remove
+
+				delete pMB;
+				delete pMBB;
 			}
-
-			delete pMB;
-			delete pMBB;
-
+			
 			++nNumIG;
 		}
+		// debug purpose : to remove
+		/*
+		if ((nAccelType&3) == 0) // If not an accelerator
+		if (!(nAccelType&32))
+		{
+			char tam[256];
+			sprintf(tam,"Object %s is not clusterized", pNode->GetName());
+			MessageBox(NULL, tam, "Info", MB_OK);
+		}
+		*/
+		// debug purpose : to remove
+
 	}
 
 

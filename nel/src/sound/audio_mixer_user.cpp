@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.54 2003/07/03 15:16:12 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.55 2003/07/22 13:30:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1548,6 +1548,11 @@ bool CAudioMixerUser::tryToLoadSoundBank(const std::string &sampleName)
 		loadSampleBank(false, rep.back());
 
 		return true;
+	}
+	else
+	{
+		nlwarning("tryToLoadSoundBank : can't find sample bank for '%s'", sampleName.c_str());
+		return false;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.4 2001/04/13 16:39:03 berenguier Exp $
+ * $Id: scene_user.h,v 1.5 2001/04/18 10:39:55 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -242,6 +242,15 @@ public:
 	}
 
 	//@}
+
+public:
+	/// \name Accessor for CSeneUser.
+	// @{
+	CScene		&getScene()
+	{
+		return _Scene;
+	}
+	// @}
 
 };
 

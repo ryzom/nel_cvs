@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.4 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: driver_user.h,v 1.5 2001/04/18 10:39:55 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "nel/3d/animation_set_user.h"
 #include "nel/3d/play_list_manager_user.h"
 #include "nel/3d/ptr_set.h"
+#include "nel/3d/shape_bank_user.h"
 
 
 namespace NL3D 
@@ -83,6 +84,7 @@ protected:
 	TMaterialSet		_Materials;
 	TTextContextSet		_TextContexts;
 	TSceneSet			_Scenes;
+	CShapeBankUser		_ShapeBank;
 	TAnimationSetSet	_AnimationSets;
 	TPlayListManagerSet	_PlayListManagers;
 
@@ -502,6 +504,14 @@ public:
 
 	// @}
 
+	/// \name Shape Bank
+	// @{
+	/// 
+	virtual	UShapeBank*		getShapeBank()
+	{
+		return &_ShapeBank;
+	}
+	// @}
 
 
 public:

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.2 2001/04/17 13:28:54 besson Exp $
+ * $Id: shape_bank.cpp,v 1.3 2001/04/18 10:40:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,6 +188,54 @@ void CShapeBank::addShapeCache(const string &shapeCacheName)
 		// Not found so add it		
 		ShapeCacheNameToShapeCache.insert(TShapeCacheMap::value_type(shapeCacheName,CShapeCache()));
 	}
+}
+
+// ***************************************************************************
+
+void CShapeBank::removeShapeCache(const std::string &shapeCacheName)
+{
+	if( shapeCacheName == "default" )
+		return;
+
+	// Free the shape cache
+	CShapeCache *pShpCache = getShapeCachePtrFromShapeCacheName( shapeCacheName );
+	if( pShpCache == NULL )
+		return;
+	pShpCache->MaxSize = 0;
+	checkShapeCache( pShpCache );
+
+	// Remove it
+	ShapeCacheNameToShapeCache.erase( shapeCacheName );
+
+	// All links are redirected to the default cache
+	TShapeCacheNameMap::iterator scnIt = ShapeNameToShapeCacheName.begin();
+	while( scnIt != ShapeNameToShapeCacheName.end() )	
+	{
+		if( scnIt->second == shapeCacheName )
+			scnIt->second = "default";
+		++scnIt;
+	}
+}
+
+// ***************************************************************************
+
+void CShapeBank::reset()
+{
+	// Parse la map ShapeCacheNameToShapeCache pour supprimer tout les caches
+	TShapeCacheMap::iterator scmIt = ShapeCacheNameToShapeCache.begin();
+	while( scmIt != ShapeCacheNameToShapeCache.end() )
+	{
+		CShapeCache *pShpCache = getShapeCachePtrFromShapeCacheName( scmIt->first );
+		if( pShpCache == NULL )
+			nlstop // Should never happen
+		pShpCache->MaxSize = 0;
+		checkShapeCache( pShpCache );
+
+		++scmIt;
+	}
+	ShapeNameToShapeCacheName.clear();
+	ShapeCacheNameToShapeCache.clear();	
+	addShapeCache( "default" );
 }
 
 // ***************************************************************************

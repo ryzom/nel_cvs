@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.8 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: u_driver.h,v 1.9 2001/04/18 10:39:55 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,7 @@ class UMaterial;
 class UTextContext;
 class UAnimationSet;
 class UPlayListManager;
+class UShapeBank;
 
 
 // ***************************************************************************
@@ -441,6 +442,14 @@ public:
 
 	// @}
 
+	/// \name Shape Bank
+	// @{
+	/**
+	  * Get the global shape bank. The shape bank handles all the shape caches.
+	  * \see UShapeBank
+	  */
+	virtual	UShapeBank*		getShapeBank() = 0;
+	// @}
 
 public:
 

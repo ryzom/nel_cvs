@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.2 2001/04/17 13:28:54 besson Exp $
+ * $Id: shape_bank.h,v 1.3 2001/04/18 10:39:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,9 +61,10 @@ public:
 	/// Add a reference to a shape and return the instance created.
 	IShape*			addRef(const std::string &shapeName);
 
-	/** Release a reference to a shape by its instance. If the shape has no more reference it is added to
-	 * its own shape cache. When the shape cache is full the last entry is deleted.
-	 */
+	/** 
+	  * Release a reference to a shape by its instance. If the shape has no more reference it is added to
+	  * its own shape cache. When the shape cache is full the last entry is deleted.
+	  */
 	void			release(IShape* pShp);
 
 	/// Return TRUE if the shape is present in the bank.
@@ -81,6 +82,17 @@ public:
 	/// Add a new ShapeCache. If already exist do nothing.
 	void			addShapeCache(const std::string &shapeCacheName);
 
+	/** 
+	  * Remove a ShapeCache. All shapes in the shape cache are deleted. All links are redirected to 
+	  * the default ShapeCache
+	  */
+	void			removeShapeCache(const std::string &shapeCacheName);
+
+	/**
+	  * Remove all ShapeCache and suppress all links (even the link to the default cache are removed)
+	  */
+	void reset();
+	
 	/// Set the shapeCache shapeCacheName the new size.(delete shapes if maxsize<shapeCacheSize).
 	void			setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize);
 

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.4 2001/03/29 09:54:04 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.5 2001/04/18 10:40:22 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,9 @@ namespace NL3D
 // ***************************************************************************
 UScene			*CDriverUser::createScene() 
 {
-	return _Scenes.insert(new CSceneUser(this));
+	CSceneUser *pSU = new CSceneUser(this);
+	pSU->getScene().setShapeBank( &_ShapeBank._ShapeBank );
+	return _Scenes.insert(pSU);
 }
 // ***************************************************************************
 void			CDriverUser::deleteScene(UScene	*scene) 

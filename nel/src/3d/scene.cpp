@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.25 2001/04/17 13:29:41 besson Exp $
+ * $Id: scene.cpp,v 1.26 2001/04/18 10:40:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -245,23 +245,22 @@ void CScene::setShapeBank(CShapeBank*pShapeBank)
 
 CTransformShape	*CScene::createInstance(const std::string &shapeName)
 {
-	// If there is no ShapeBank attached to the scene this is an error
-	if( _ShapeBank )
+	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
+	// the creation/deletion of the instances)
+	nlassert( _ShapeBank != NULL );
+	
+	// If the shape is not present in the bank
+	if( !_ShapeBank->isPresent( shapeName ) )
 	{
-		// If the shape is not present in the bank
+		// Load it from file
+		_ShapeBank->load( shapeName );
 		if( !_ShapeBank->isPresent( shapeName ) )
 		{
-			// Load it from file
-			_ShapeBank->load( shapeName );
-			if( !_ShapeBank->isPresent( shapeName ) )
-			{
-				return NULL;
-			}
+			return NULL;
 		}
-		// Then create a reference to the shape
-		return _ShapeBank->addRef( shapeName )->createInstance(*this);
 	}
-	return NULL;
+	// Then create a reference to the shape
+	return _ShapeBank->addRef( shapeName )->createInstance(*this);
 }
 
 // ***************************************************************************
@@ -273,14 +272,13 @@ void CScene::deleteInstance(CTransformShape *model)
 	if( pTrfmShp != NULL )
 	{
 		pShp = pTrfmShp->Shape;
-// lionel style ???		if(pTrfmShp->Shape->getRefCount()==1)
-// lionel style ???			pShp =NULL;
 	}
 	
 	deleteModel( model );
 
 	if(pShp)
 	{
+		// Even if model already deleted by smarptr the release function works
 		_ShapeBank->release( pShp );
 	}
 	

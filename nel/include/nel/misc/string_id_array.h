@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.8 2001/03/29 09:35:36 lecroart Exp $
+ * $Id: string_id_array.h,v 1.9 2001/04/04 14:43:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,22 +95,22 @@ public:
 			{
 				if (_AskedStringArray.find (str) == _AskedStringArray.end ())
 				{
-					nldebug ("String '%s' not found, add it to _NeedToAskStringArray", str.c_str ());	
+					//nldebug ("String '%s' not found, add it to _NeedToAskStringArray", str.c_str ());	
 					_NeedToAskStringArray.insert (str);
 				}
 				else
 				{
-					nldebug ("Found '%s' in the _AskedStringArray", str.c_str ());	
+					//nldebug ("Found '%s' in the _AskedStringArray", str.c_str ());	
 				}
 			}
 			else
 			{
-				nldebug ("Found '%s' in the _NeedToAskStringArray", str.c_str ());	
+				//nldebug ("Found '%s' in the _NeedToAskStringArray", str.c_str ());	
 			}
 		}
 		else
 		{
-			nldebug ("Ignoring unknown association ('%s')", str.c_str ());	
+			//nldebug ("Ignoring unknown association ('%s')", str.c_str ());	
 		}
 
 		return -1;

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.29 2001/12/04 12:53:21 chafik Exp $
+ * $Id: yacc.cpp,v 1.30 2001/12/04 16:54:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,7 +150,12 @@ namespace NLAISCRIPT
 						NLAIAGENT::IObjectIA *i;
 						if(_ExpressionType->satisfied())
 						{
-							IOpType * c= new COperandSimple(new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf()));							
+							NLAIC::CIdentType *id = new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf());
+							IOpType * c= new COperandSimple(id);
+#ifdef NL_DEBUG
+	static sint kaka = 0;
+	nlinfo ("UnTruc: %d at %0x %0x",kaka ++, id,c);
+#endif
 							i = new CObjectUnknown(c);
 							_ExpressionType->release();
 							_ExpressionType = NULL;
@@ -437,10 +442,6 @@ namespace NLAISCRIPT
 				if(!_LastFact.IsUsed)
 				{
 					CLdbOpCode *x = new CLdbOpCode (*_LastFact.Value);
-#ifdef NL_DEBUG
-					static sint kaka = 0;
-					nlinfo ("UnTruc: %d at %0x",kaka ++, x);
-#endif
 					_LastBloc->addCode(x);
 					_LastFact.IsUsed = true;
 				}
@@ -553,10 +554,6 @@ namespace NLAISCRIPT
 
 		NLAIC::CIdentType *x = new NLAIC::CIdentType(id);
 
-#ifdef NL_DEBUG
-		static sint kaka = 0;
-		nlinfo ("UnTruc: %d at %0x",kaka ++, x);
-#endif
 		c->setType(x);
 	}
 
@@ -865,7 +862,7 @@ namespace NLAISCRIPT
 				_Param.back()->incRef();
 				_LastbaseClass->incRef();
 				c = getMethodConstraint(CConstraintMethode((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,_LastPosHeap,_LastbaseClass,_LastStringParam.back(),_Param.back(),0,0));
-				_LastbaseClass->incRef();
+				if(c == NULL) _LastbaseClass->incRef();
 			}
 			else
 			{

@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.15 2001/12/04 12:53:21 chafik Exp $
+ * $Id: compilateur.cpp,v 1.16 2001/12/04 16:54:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,15 +474,15 @@ namespace NLAISCRIPT
 		}
 	}
 
-	void CCompilateur::newObject()
+	void CCompilateur::addOpCode(IOpCode *x)
 	{
 
-		CLdbOpCode *x = new CLdbOpCode (NLAIAGENT::CGroupType());
-#ifdef NL_DEBUG
-		static sint kaka = 0;
-		nlinfo ("UnTruc: %d at %0x",kaka ++, x);
-#endif
+		//CLdbOpCode *x = new CLdbOpCode (NLAIAGENT::CGroupType());
 
+#ifdef NL_DEBUG
+	static sint kaka = 0;
+	nlinfo ("UnTruc: %d at %0x",kaka ++, x);
+#endif
 		_LastBloc->addCode(x);
 	}
 }

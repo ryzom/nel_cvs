@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.8 2001/12/04 16:54:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,10 +35,7 @@ namespace NLAISCRIPT
 	private:
 		NLAIAGENT::IObjectIA *_B;
 	public:
-		CLdbOpCode(const NLAIAGENT::IObjectIA &b)
-		{
-		  _B = (NLAIAGENT::IObjectIA *)b.clone();
-		}
+		CLdbOpCode(const NLAIAGENT::IObjectIA &b);		
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 

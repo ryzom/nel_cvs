@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.11 2001/10/24 16:37:04 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.12 2001/12/04 16:54:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,11 @@
 
 namespace NLAISCRIPT
 {
+	CLdbOpCode::CLdbOpCode(const NLAIAGENT::IObjectIA &b)
+	{
+	  _B = (NLAIAGENT::IObjectIA *)b.clone();
+
+	}
 
 	NLAIAGENT::TProcessStatement CLdbOpCode::runOpCode(CCodeContext &context)
 	{

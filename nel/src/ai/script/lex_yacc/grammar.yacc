@@ -447,7 +447,7 @@ using  namespace NLAIFUZZY;
 								CVarPStack::_LocalTableRef = &_Heap[0];
 								_VarState.clear();								
 								_VarState.pushMark();
-								if(!_InLineParse) _LastBloc->addCode((new CMarkAlloc));
+								if(!_InLineParse) addOpCode((new CMarkAlloc));
 							}
 							DuCode
 							{
@@ -466,10 +466,9 @@ using  namespace NLAIFUZZY;
 										{
 											x = new CFreeAlloc();
 										}
-										_LastBloc->addCode(x);
-									}
-									x = new CHaltOpCode();									
-									_LastBloc->addCode(x);
+										addOpCode(x);
+									}									
+									addOpCode(new CHaltOpCode());
 
 									CCodeBrancheRun* listCode;
 									if (_Debug)
@@ -811,10 +810,10 @@ using  namespace NLAIFUZZY;
 										{
 											x = new CFreeAlloc();
 										}
-										_LastBloc->addCode(x);										
+										addOpCode(x);										
 									}
 								}								
-								_LastBloc->addCode((new CHaltOpCode));
+								addOpCode(new CHaltOpCode());
 
 
 							}
@@ -875,8 +874,8 @@ using  namespace NLAIFUZZY;
 							}
 							Prametre CallFunction
 						|	NonDeFonction PAR_G
-							{								
-								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
+							{				
+								addOpCode(new CLdbOpCode (NLAIAGENT::CGroupType()));								
 								_Param.push_back(new CParam);								
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
 								_ExpressionType = NULL;
@@ -1398,7 +1397,7 @@ using  namespace NLAIFUZZY;
 							}
 							NewObjectName PAR_G
 							{
-								newObject();
+								addOpCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 							}
 							PrametreNew
 						;

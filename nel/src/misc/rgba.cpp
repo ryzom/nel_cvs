@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.14 2002/02/13 09:10:58 vizerie Exp $
+ * $Id: rgba.cpp,v 1.15 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/rgba.h"
 #include "nel/misc/stream.h"
-#include "nel/misc/cpu_info.h"
+#include "nel/misc/system_info.h"
 #include "nel/misc/common.h"
 
 
@@ -80,7 +80,7 @@ void CRGBA::addColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint nu
 {
 	if (numColors == 0) return;
 	#if 	defined(NL_OS_WINDOWS) && !defined(DISABLE_MMX_OPTIM)
-	if (!CCpuInfo::hasMMX())
+	if (!CSystemInfo::hasMMX())
 	#endif
 	{   // unoptimized version
 		if (dup == 1)
@@ -239,7 +239,7 @@ void CRGBA::addColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint nu
 void CRGBA::modulateColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride, uint destStride, uint dup)
 {
 	#if 	defined(NL_OS_WINDOWS) && !defined(DISABLE_MMX_OPTIM)
-	if (!CCpuInfo::hasMMX())
+	if (!CSystemInfo::hasMMX())
 	#endif
 	{   // unoptimized version
 		if (dup == 1)
@@ -413,7 +413,7 @@ void CRGBA::subtractColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, ui
 {
 	if (numColors == 0) return;
 	#if 	defined(NL_OS_WINDOWS) && !defined(DISABLE_MMX_OPTIM)
-	if (!CCpuInfo::hasMMX())
+	if (!CSystemInfo::hasMMX())
 	#endif
 	{   // unoptimized version
 		if (dup == 1)

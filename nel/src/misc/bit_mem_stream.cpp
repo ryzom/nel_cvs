@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.13 2002/04/11 15:30:54 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.14 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,13 +126,19 @@ sint32 CBitMemStream::getPosInBit ()
 	}
 	else
 	{
-		if (_Buffer.empty())
+		if (_Buffer.getPtr() == _BufPos)
 			return 0;
 		else if (_FreeBits == 8)
 			return (getPos() + 1) * 8;
 		else
 			return getPos() * 8 + (8 - _FreeBits);
-	}
+/*		if (_Buffer.empty())
+			return 0;
+		else if (_FreeBits == 8)
+			return (getPos() + 1) * 8;
+		else
+			return getPos() * 8 + (8 - _FreeBits);
+*/	}
 }
 
 
@@ -229,8 +235,18 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		// Resize if necessary
 		if ( _FreeBits == 8 ) // _FreeBits is from 7 downto 1, then 8
 		{
-			_Buffer.push_back(0);
-			_BufPos = _Buffer.end() - 1;
+			if (_BufPos == _Buffer.getPtr()+_Buffer.size())
+			{
+				// need to resize
+				_Buffer.resize(_Buffer.size()*2+1);
+				_BufPos = _Buffer.getPtr() + (_Buffer.size()/2-1);
+			}
+			else
+			{
+				_BufPos++;
+			}
+//			_Buffer.push_back(0);
+//			_BufPos = _Buffer.end() - 1;
 			*_BufPos = 0;
 		}
 

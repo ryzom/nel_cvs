@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.8 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: i_xml.cpp,v 1.9 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ inline void CIXml::flushContentString ()
 
 // ***************************************************************************
 
-CIXml::CIXml () : IStream (true /* Input mode */, false /* No swap */)
+CIXml::CIXml () : IStream (true /* Input mode */)
 {
 	// Not initialized
 	_Parser = NULL;

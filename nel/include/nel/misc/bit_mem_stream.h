@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.10 2002/04/16 15:59:03 lecroart Exp $
+ * $Id: bit_mem_stream.h,v 1.11 2002/05/21 16:41:13 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 		}
 		else
 		{
-			if ( _Buffer.empty() )
+			if ( _Buffer.getPtr() == _BufPos )
 			{
 				return 0;
 			}

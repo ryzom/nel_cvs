@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.24 2002/04/12 16:36:39 vizerie Exp $
+ * $Id: stream.cpp,v 1.25 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,7 +100,6 @@ IStream::IStream( const IStream& other )
 IStream& IStream::operator=( const IStream& other )
 {
 	_InputStream = other._InputStream;
-	_NeedSwap = other._NeedSwap;
 	return *this;
 }
 

@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.10 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.11 2002/05/21 16:41:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "nel/misc/time_nl.h"
+#include "nel/misc/mem_stream.h"
 
 
 namespace NLMISC {
@@ -68,13 +69,26 @@ public:
 	~CBufFIFO ();
 
 	/// Push 'buffer' in the head of the FIFO
-	void	 push (const std::vector<uint8> &buffer);
+	void	 push (const std::vector<uint8> &buffer) { push (&buffer[0], buffer.size()); }
+
+	void	 push (const NLMISC::CMemStream &buffer) { push (buffer.buffer(), buffer.length()); }
+
+	void	 push (const uint8 *buffer, uint32 size);
 
 	/// Concate and push 'buffer1' and buffer2 in the head of the FIFO. The goal is to avoid a copy
 	void	 push (const std::vector<uint8> &buffer1, const std::vector<uint8> &buffer2);
 
 	/// Get the buffer in the tail of the FIFO and put it in 'buffer'
 	void	 front (std::vector<uint8> &buffer);
+
+	void	 front (NLMISC::CMemStream &buffer);
+
+	void	 front (uint8 *&buffer, uint32 &size);
+
+	/// This function returns the last byte of the front message
+	/// It is used by the network to know a value quickly without doing front()
+	uint8	 frontLast ();
+
 
 	/// Pop the buffer in the tail of the FIFO
 	void	 pop ();
@@ -83,7 +97,8 @@ public:
 	void	 resize (uint32 size);
 
 	/// Return true if the FIFO is empty
-	bool	 empty ();
+	bool	 empty () { return _Empty; }
+
 
 	/// Erase the FIFO
 	void	 clear ();

@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.6 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: o_xml.cpp,v 1.7 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ inline void COXml::flushContentString ()
 
 // ***************************************************************************
 
-COXml::COXml () : IStream (false /* Output mode */, false /* No swap */)
+COXml::COXml () : IStream (false /* Output mode */)
 {
 	// Set XML mode
 	setXMLMode (true);

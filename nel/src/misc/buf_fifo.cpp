@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.22 2002/04/09 12:26:49 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.23 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,26 +62,23 @@ CBufFIFO::~CBufFIFO()
 	}
 }
 
-void CBufFIFO::push(const std::vector<uint8> &buffer)
+void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
 {
 	// if the buffer is more than 1 meg, there s surely a problem, no?
 //	nlassert( buffer.size() < 1000000 ); // size check in debug mode
 
 	TTicks before = CTime::getPerformanceTime();
 
-	TFifoSize size = buffer.size();
-
 #if DEBUG_FIFO
 	nldebug("%p push(%d)", this, size);
 #endif
 
-	nlassert(buffer.size() > 0 && buffer.size() < pow(2, sizeof(TFifoSize)*8));
+	nlassert(size > 0 && size < pow(2, sizeof(TFifoSize)*8));
 
 	// stat code
 	if (size > _BiggestBlock) _BiggestBlock = size;
 	if (size < _SmallestBlock) _SmallestBlock = size;
 	_Pushed++;
-
 
 	while (!canFit (size + sizeof (TFifoSize)))
 	{
@@ -91,7 +88,7 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	*(TFifoSize *)_Head = size;
 	_Head += sizeof(TFifoSize);
 
-	memcpy(_Head, &(buffer[0]), size);
+	CFastMem::memcpy(_Head, buffer, size);
 
 	_Head += size;
 
@@ -142,8 +139,8 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	_Head += sizeof(TFifoSize);
 
 	// store the block itself
-	memcpy(_Head, &(buffer1[0]), buffer1.size ());
-	memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size ());
+	CFastMem::memcpy(_Head, &(buffer1[0]), buffer1.size ());
+	CFastMem::memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size ());
 	_Head += size;
 
 	_Empty = false;
@@ -195,10 +192,51 @@ void CBufFIFO::pop ()
 	display ();
 #endif
 }
+
+uint8 CBufFIFO::frontLast ()
+{
+	uint8	*tail = _Tail;
 	
+	if (empty ())
+	{
+		nlwarning("Try to get the front of an empty fifo!");
+		return 0;
+	}
+
+	if (_Rewinder != NULL && tail == _Rewinder)
+	{
+#if DEBUG_FIFO
+		nldebug("%p front rewind!", this);
+#endif
+
+		// need to rewind
+		tail = _Buffer;
+	}
+
+	TFifoSize size = *(TFifoSize *)tail;
+
+#if DEBUG_FIFO
+	nldebug("%p frontLast() returns %d ", this, size, *(tail+sizeof(TFifoSize)+size-1));
+#endif
+
+	return *(tail+sizeof(TFifoSize)+size-1);
+}
+
+
 void CBufFIFO::front (vector<uint8> &buffer)
 {
-	TTicks before = CTime::getPerformanceTime ();
+	uint8 *tmpbuffer;
+	uint32 size;
+
+	buffer.clear ();
+
+	front (tmpbuffer, size);
+	
+	buffer.resize (size);
+
+	CFastMem::memcpy (&(buffer[0]), tmpbuffer, size);
+
+/*	TTicks before = CTime::getPerformanceTime ();
 
 	uint8	*tail = _Tail;
 	
@@ -232,7 +270,7 @@ void CBufFIFO::front (vector<uint8> &buffer)
 
 	buffer.resize (size);
 
-	memcpy (&(buffer[0]), tail, size);
+	CFastMem::memcpy (&(buffer[0]), tail, size);
 
 	// stat code
 	TTicks after = CTime::getPerformanceTime ();
@@ -241,13 +279,111 @@ void CBufFIFO::front (vector<uint8> &buffer)
 #if DEBUG_FIFO
 	display ();
 #endif
-}
+*/}
 
 
-bool CBufFIFO::empty ()
+void CBufFIFO::front (NLMISC::CMemStream &buffer)
 {
-	return _Empty;
+	uint8 *tmpbuffer;
+	uint32 size;
+
+	buffer.clear ();
+
+	front (tmpbuffer, size);
+
+	buffer.fill (tmpbuffer, size);
+	
+	/*
+	TTicks before = CTime::getPerformanceTime ();
+
+	uint8	*tail = _Tail;
+	
+	buffer.clear ();
+
+	if (empty ())
+	{
+		nlwarning("Try to get the front of an empty fifo!");
+		return;
+	}
+
+	_Fronted++;
+	
+	if (_Rewinder != NULL && tail == _Rewinder)
+	{
+#if DEBUG_FIFO
+		nldebug("%p front rewind!", this);
+#endif
+
+		// need to rewind
+		tail = _Buffer;
+	}
+
+	TFifoSize size = *(TFifoSize *)tail;
+
+#if DEBUG_FIFO
+	nldebug("%p front(%d)", this, size);
+#endif
+
+	tail += sizeof (TFifoSize);
+
+	//buffer.resize (size);
+	//CFastMem::memcpy (&(buffer[0]), tail, size);
+
+	buffer.fill (tail, size);
+
+	// stat code
+	TTicks after = CTime::getPerformanceTime ();
+	_FrontedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif*/
 }
+
+void CBufFIFO::front (uint8 *&buffer, uint32 &size)
+{
+	TTicks before = CTime::getPerformanceTime ();
+
+	uint8	*tail = _Tail;
+
+	if (empty ())
+	{
+		nlwarning("Try to get the front of an empty fifo!");
+		return;
+	}
+
+	_Fronted++;
+	
+	if (_Rewinder != NULL && tail == _Rewinder)
+	{
+#if DEBUG_FIFO
+		nldebug("%p front rewind!", this);
+#endif
+
+		// need to rewind
+		tail = _Buffer;
+	}
+
+	size = *(TFifoSize *)tail;
+
+#if DEBUG_FIFO
+	nldebug("%p front(%d)", this, size);
+#endif
+
+	tail += sizeof (TFifoSize);
+
+	// stat code
+	TTicks after = CTime::getPerformanceTime ();
+	_FrontedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif
+
+	buffer = tail;
+}
+
+
 
 void CBufFIFO::clear ()
 {
@@ -313,7 +449,10 @@ void CBufFIFO::resize (uint32 size)
 	{
 		nlerror("Not enough memory to resize the FIFO to %u bytes", size);
 	}
+#ifdef NL_DEBUG
+	// clear the message to be sure user doesn't use it anymore
 	memset (NewBuffer, '-', size);
+#endif
 
 #if DEBUG_FIFO
 	nldebug("%p new %d bytes", this, size);
@@ -325,16 +464,16 @@ void CBufFIFO::resize (uint32 size)
 	{
 		if (_Tail < _Head)
 		{
-			memcpy (NewBuffer, _Tail, UsedSize);
+			CFastMem::memcpy (NewBuffer, _Tail, UsedSize);
 		}
 		else if (_Tail >= _Head)
 		{
 			nlassert (_Rewinder != NULL);
 
 			uint size1 = _Rewinder - _Tail;
-			memcpy (NewBuffer, _Tail, size1);
+			CFastMem::memcpy (NewBuffer, _Tail, size1);
 			uint size2 = _Head - _Buffer;
-			memcpy (NewBuffer + size1, _Buffer, size2);
+			CFastMem::memcpy (NewBuffer + size1, _Buffer, size2);
 
 			nlassert (size1+size2==UsedSize);
 		}

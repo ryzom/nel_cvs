@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.20 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: stream_inline.h,v 1.21 2002/05/21 16:41:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,14 +52,9 @@ namespace	NLMISC
 // ======================================================================================================
 
 // ======================================================================================================
-inline	IStream::IStream(bool inputStream, bool needSwap)
+inline	IStream::IStream(bool inputStream)
 {
 	_InputStream= inputStream;
-#ifdef NL_LITTLE_ENDIAN
-	_NeedSwap=false;
-#else
-	_NeedSwap= needSwap;
-#endif
 }
 
 
@@ -89,201 +84,177 @@ inline	void		IStream::serial(sint8 &b)
 // ======================================================================================================
 inline	void		IStream::serial(uint16 &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 2);
+#else // NL_LITTLE_ENDIAN
+	uint16	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 2);
+		serialBuffer((uint8 *)&v, 2);
+		NLMISC_BSWAP16(v);
+		b=v;
 	}
 	else
 	{
-		uint16	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 2);
-			NLMISC_BSWAP16(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP16(v);
-			serialBuffer((uint8 *)&v, 2);
-		}
+		v=b;
+		NLMISC_BSWAP16(v);
+		serialBuffer((uint8 *)&v, 2);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(sint16 &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 2);
+#else // NL_LITTLE_ENDIAN
+	uint16	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 2);
+		serialBuffer((uint8 *)&v, 2);
+		NLMISC_BSWAP16(v);
+		b=v;
 	}
 	else
 	{
-		uint16	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 2);
-			NLMISC_BSWAP16(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP16(v);
-			serialBuffer((uint8 *)&v, 2);
-		}
+		v=b;
+		NLMISC_BSWAP16(v);
+		serialBuffer((uint8 *)&v, 2);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(uint32 &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 4);
+#else // NL_LITTLE_ENDIAN
+	uint32	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&v, 4);
+		NLMISC_BSWAP32(v);
+		b=v;
 	}
 	else
 	{
-		uint32	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 4);
-			NLMISC_BSWAP32(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP32(v);
-			serialBuffer((uint8 *)&v, 4);
-		}
+		v=b;
+		NLMISC_BSWAP32(v);
+		serialBuffer((uint8 *)&v, 4);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(sint32 &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 4);
+#else // NL_LITTLE_ENDIAN
+	uint32	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&v, 4);
+		NLMISC_BSWAP32(v);
+		b=v;
 	}
 	else
 	{
-		uint32	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 4);
-			NLMISC_BSWAP32(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP32(v);
-			serialBuffer((uint8 *)&v, 4);
-		}
+		v=b;
+		NLMISC_BSWAP32(v);
+		serialBuffer((uint8 *)&v, 4);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(uint64 &b) 
 {
-	if(!_NeedSwap)
-	{
+#ifdef NL_LITTLE_ENDIAN
 		serialBuffer((uint8 *)&b, 8);
+#else // NL_LITTLE_ENDIAN
+	uint64	v;
+	if(isReading())
+	{
+		serialBuffer((uint8 *)&v, 8);
+		NLMISC_BSWAP64(v);
+		b=v;
 	}
 	else
 	{
-		uint64	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 8);
-			NLMISC_BSWAP64(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP64(v);
-			serialBuffer((uint8 *)&v, 8);
-		}
+		v=b;
+		NLMISC_BSWAP64(v);
+		serialBuffer((uint8 *)&v, 8);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(sint64 &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 8);
+#else // NL_LITTLE_ENDIAN
+	uint64	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 8);
+		serialBuffer((uint8 *)&v, 8);
+		NLMISC_BSWAP64(v);
+		b=v;
 	}
 	else
 	{
-		uint64	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 8);
-			NLMISC_BSWAP64(v);
-			b=v;
-		}
-		else
-		{
-			v=b;
-			NLMISC_BSWAP64(v);
-			serialBuffer((uint8 *)&v, 8);
-		}
+		v=b;
+		NLMISC_BSWAP64(v);
+		serialBuffer((uint8 *)&v, 8);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(float &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 4);
+#else // NL_LITTLE_ENDIAN
+	uint32	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 4);
+		serialBuffer((uint8 *)&v, 4);
+		NLMISC_BSWAP32(v);
+		b=*((float*)&v);
 	}
 	else
 	{
-		uint32	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 4);
-			NLMISC_BSWAP32(v);
-			b=*((float*)&v);
-		}
-		else
-		{
-			v=*((uint32*)&b);
-			NLMISC_BSWAP32(v);
-			serialBuffer((uint8 *)&v, 4);
-		}
+		v=*((uint32*)&b);
+		NLMISC_BSWAP32(v);
+		serialBuffer((uint8 *)&v, 4);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================
 inline	void		IStream::serial(double &b) 
 {
-	if(!_NeedSwap)
+#ifdef NL_LITTLE_ENDIAN
+	serialBuffer((uint8 *)&b, 8);
+#else // NL_LITTLE_ENDIAN
+	uint64	v;
+	if(isReading())
 	{
-		serialBuffer((uint8 *)&b, 8);
+		serialBuffer((uint8 *)&v, 8);
+		NLMISC_BSWAP64(v);
+		b=*((double*)&v);
 	}
 	else
 	{
-		uint64	v;
-		if(isReading())
-		{
-			serialBuffer((uint8 *)&v, 8);
-			NLMISC_BSWAP64(v);
-			b=*((double*)&v);
-		}
-		else
-		{
-			v=*((uint64*)&b);
-			NLMISC_BSWAP64(v);
-			serialBuffer((uint8 *)&v, 8);
-		}
+		v=*((uint64*)&b);
+		NLMISC_BSWAP64(v);
+		serialBuffer((uint8 *)&v, 8);
 	}
+#endif // NL_LITTLE_ENDIAN
 }
 
 // ======================================================================================================

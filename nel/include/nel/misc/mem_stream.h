@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.16 2002/01/30 10:09:01 lecroart Exp $
+ * $Id: mem_stream.h,v 1.17 2002/05/21 16:41:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
-#include <vector>
+#include "nel/misc/object_vector.h"
+#include "nel/misc/fast_mem.h"
 
 namespace NLMISC
 {
@@ -39,29 +40,19 @@ struct EMemStream : public NLMISC::EStream
 	EMemStream( const std::string& str ) : EStream( str ) {}
 };
 
-/*class EMemStreamTypeNbr : public EMemStream
-{
-	EMemStreamTypeNbr() : EMemStream( "Bad message type code" ) {}
-};
-
-class EMemStreamTypeStr : public EMemStream
-{
-	EMemStreamTypeStr() : EMemStream( "Bad message type name" ) {}
-};*/
-
 /// This exception is raised when someone tries to serialize in more than there is.
 struct EStreamOverflow : public EMemStream
 {
 	EStreamOverflow() : EMemStream( "Stream Overflow Error" ) {}
 };
 
-
+/*
 /// Vector of uint8
 typedef std::vector<uint8> CVector8;
 
 /// Iterator on CVector8
 typedef CVector8::iterator It8;
-
+*/
 
 
 /**
@@ -75,13 +66,29 @@ class CMemStream : public NLMISC::IStream
 public:
 
 	/// Initialization constructor
-	CMemStream( bool inputStream=false, bool stringmode=false, uint32 defaultcapacity=0 );
+	CMemStream( bool inputStream=false, bool stringmode=false, uint32 defaultcapacity=0 ) :
+		NLMISC::IStream( inputStream ), _StringMode( stringmode )
+	{
+		_Buffer.resize (std::max( defaultcapacity, (uint32)4 )); // prevent from no allocation
+		_BufPos = _Buffer.getPtr();
+	}
 
 	/// Copy constructor
-	CMemStream( const CMemStream& other );
+	CMemStream( const CMemStream& other ) :
+		IStream (other)
+	{
+		operator=( other );
+	}
 
 	/// Assignment operator
-	CMemStream&		operator=( const CMemStream& other );
+	CMemStream&		operator=( const CMemStream& other )
+	{
+		IStream::operator= (other);
+		_Buffer = other._Buffer;
+		_BufPos = _Buffer.getPtr() + other.lengthS();
+		_StringMode = other._StringMode;
+		return *this;
+	}
 
 	/// Set string mode
 	void			setStringMode( bool stringmode ) { _StringMode = stringmode; }
@@ -119,10 +126,18 @@ public:
 	 * \return the new offset regarding from the origin.
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
-	virtual sint32	getPos () throw(EStream);
+	virtual sint32	getPos () throw(EStream)
+	{
+		return _BufPos - _Buffer.getPtr();
+	}
 
 	/// Clears the message
-	virtual void	clear();
+	virtual void	clear()
+	{
+		resetPtrTable();
+		_Buffer.clear();
+		_BufPos = _Buffer.getPtr();
+	}
 
 	/** Returns the length (size) of the message, in bytes.
 	 * If isReading(), it is the number of bytes that can be read,
@@ -145,17 +160,18 @@ public:
 	 */
 	const uint8		*buffer() const
 	{
-		if ( _Buffer.empty() )
+		return _Buffer.getPtr();
+/*		if ( _Buffer.empty() )
 		{
 			return NULL;
 		}
 		else
 		{
 			return &(*_Buffer.begin());
-		}
+		}*/
 	}
 
-	/// Returns the message buffer (read only)
+/*	/// Returns the message buffer (read only)
 	const CVector8&	bufferAsVector() const
 	{
 		return _Buffer;
@@ -166,25 +182,98 @@ public:
 	{
 		return _Buffer;
 	}
-
+*/
 	// When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
-	void resetBufPos() { _BufPos = _Buffer.begin(); }
+	void resetBufPos() { _BufPos = _Buffer.getPtr(); }
 
 	/// Fills the message buffer, for reading
-	void			fill( const uint8 *srcbuf, uint32 len );
+	void			fill( const uint8 *srcbuf, uint32 len )
+	{
+		if (len == 0) return;
 
+		_Buffer.resize( len );
+		_BufPos = _Buffer.getPtr();
+		CFastMem::memcpy( _BufPos, srcbuf, len );
+	}
+
+	void resize (uint32 size);
 
 	/** EXPERIMENTAL: Returns a pointer to the message buffer for filling by an external function (use at your own risk,
 	 * you MUST fill the number of bytes you specify in "msgsize").
 	 * This method prevents from doing one useless buffer copy, using fill().
 	 */
-	uint8			*bufferToFill( uint32 msgsize );
+	uint8			*bufferToFill( uint32 msgsize )
+	{
+		if (msgsize == 0) return NULL;
+
+		// Same as fill() but the memcpy is done by an external function
+		_Buffer.resize( msgsize );
+		_BufPos = _Buffer.getPtr();
+		return _BufPos;
+	}
 
 	/// Transforms the message from input to output or from output to input
-	virtual void	invert();
+	virtual void	invert()
+	{
+		if ( isReading() )
+		{
+			// In->Out: We want to write (serialize out) what we have read (serialized in)
+			resetPtrTable();
+			setInOut( false );
+	//		_BufPos = _Buffer.end();
+		}
+		else
+		{
+			// Out->In: We want to read (serialize in) what we have written (serialized out)
+			resetPtrTable();
+			setInOut( true );
+			_BufPos = _Buffer.getPtr();
+		}
+	}
 
 	/// Force to reset the ptr table
 	void			resetPtrTable() { IStream::resetPtrTable() ; }
+
+	/// Increase the buffer size if 'len' can't enter, otherwise, do nothing
+#ifdef NL_OS_WINDOWS
+	__forceinline
+#endif
+	void			increaseBufferIfNecessary(uint32 len)
+	{
+		uint32 oldBufferSize = _Buffer.size();
+		if (_BufPos - _Buffer.getPtr() + len > oldBufferSize)
+		{
+			// need to increase the buffer size
+			uint32 pos = _BufPos - _Buffer.getPtr();
+			_Buffer.resize(oldBufferSize*2 + len);
+			_BufPos = _Buffer.getPtr() + pos;
+		}
+	}
+
+
+	template <class T> void fastWrite (T &val)
+	{
+#ifdef NL_LITTLE_ENDIAN
+		if(isReading())
+		{
+			// Check that we don't read more than there is to read
+			// TODO OPTIM we can remove the check if we want to be faster (50ms->43ms for 1 million serial)
+			if ( lengthS()+sizeof(T) > lengthR() )
+				throw EStreamOverflow();
+			// Serialize in
+			val = *(T*)_BufPos;
+		}
+		else
+		{
+			increaseBufferIfNecessary (sizeof(T));
+			*(T*)_BufPos = val;
+		}
+		_BufPos += sizeof (T);
+#else // NL_LITTLE_ENDIAN
+		IStream::serial( val );
+#endif // NL_LITTLE_ENDIAN
+	}
+
 
 	/// Template serialisation (should take the one from IStream)
     template<class T>
@@ -272,20 +361,441 @@ protected:
 	/// Returns the serialized length (number of bytes written or read)
 	uint32			lengthS() const
 	{
-		return _BufPos-_Buffer.begin();
+		return _BufPos-_Buffer.getPtr();
 	}
 
 	/// Returns the "read" message size (number of bytes to read)
 	uint32			lengthR() const
 	{
+//		return _BufPos-_Buffer.getPtr();
 		return _Buffer.size();
 	}
 
-	CVector8		_Buffer;
-	It8				_BufPos;
+	CObjectVector<uint8, false> _Buffer;
+	uint8 *_BufPos;
+	
+	//CVector8		_Buffer;
+	//It8				_BufPos;
 	bool			_StringMode;
 
 };
+
+// Input
+#define readnumber(dest,thetype,digits,convfunc) \
+	char number_as_cstring [digits+1]; \
+	uint realdigits = serialSeparatedBufferIn( (uint8*)&number_as_cstring, digits ); \
+	number_as_cstring[realdigits] = '\0'; \
+	dest = (thetype)convfunc( number_as_cstring );
+
+// Output
+#define writenumber(src,format,digits) \
+	char number_as_cstring [digits+1]; \
+	sprintf( number_as_cstring, format, src ); \
+	serialSeparatedBufferOut( (uint8*)&number_as_cstring, strlen(number_as_cstring) );
+
+/*
+ * atoihex
+ */
+inline int atoihex( const char* ident )
+{
+	int number;
+	sscanf( ident, "%x", &number );
+	return number;
+}
+
+inline uint32 atoui( const char *ident)
+{
+	return (uint32) strtoul (ident, NULL, 10);
+}
+
+const char SEPARATOR = ' ';
+const int SEP_SIZE = 1; // the code is easier to read with that
+
+//
+// inline serial functions
+//
+
+
+// ======================================================================================================
+inline	void		CMemStream::serial(uint8 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, uint8, 3, atoi ); // 255
+		}
+		else
+		{
+			writenumber( (uint16)b,"%hu", 3 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(sint8 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, sint8, 4, atoi ); // -128
+		}
+		else
+		{
+			writenumber( (sint16)b, "%hd", 4 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(uint16 &b) 
+{
+	if ( _StringMode )
+	{
+		// No byte swapping in text mode
+		if ( isReading() )
+		{
+			readnumber( b, uint16, 5, atoi ); // 65535
+		}
+		else
+		{
+			writenumber( b, "%hu", 5 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(sint16 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, sint16, 6, atoi ); // -32768
+		}
+		else
+		{
+			writenumber( b, "%hd", 6 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(uint32 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, uint32, 10, atoui ); // 4294967295
+		}
+		else
+		{
+			writenumber( b, "%u", 10 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+
+// ======================================================================================================
+inline	void		CMemStream::serial(sint32 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, sint32, 11, atoi ); // -2147483648
+		}
+		else
+		{
+			writenumber( b, "%d", 11 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(uint64 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, uint64, 20, atoiInt64 ); // 18446744073709551615
+		}
+		else
+		{
+			writenumber( b, "%"NL_I64"u", 20 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(sint64 &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, sint64, 20, atoiInt64 ); // -9223372036854775808
+		}
+		else
+		{
+			writenumber( b, "%"NL_I64"d", 20 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(float &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, float, 128, atof ); // ?
+		}
+		else
+		{
+			writenumber( (double)b, "%f", 128 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(double &b) 
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, double, 128, atof ); //
+		}
+		else
+		{
+			writenumber( b, "%f", 128 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+
+// ======================================================================================================
+inline	void		CMemStream::serial(bool &b) 
+{
+	if ( _StringMode )
+	{
+		serialBit(b);
+	}
+	else
+	{
+#ifdef NL_LITTLE_ENDIAN
+		if(isReading())
+		{
+			b = (*(uint8*)_BufPos) == 1;
+			_BufPos += sizeof(uint8);
+		}
+		else
+		{
+			*(uint8*)_BufPos = b;
+			_BufPos += sizeof(uint8);
+		}
+#else // NL_LITTLE_ENDIAN
+		IStream::serial( b );
+#endif // NL_LITTLE_ENDIAN
+	}
+}
+
+
+#ifndef NL_OS_CYGWIN
+// ======================================================================================================
+inline	void		CMemStream::serial(char &b) 
+{
+	if ( _StringMode )
+	{
+		char buff [2];
+		if ( isReading() )
+		{
+			serialBuffer( (uint8*)buff, 2 );
+			b = buff[0];
+		}
+		else
+		{
+			buff[0] = b;
+			buff[1] = SEPARATOR;
+			serialBuffer( (uint8*)buff, 2 );
+		}
+	}
+	else
+	{
+		fastWrite (b);
+	}
+}
+#endif
+
+// ======================================================================================================
+inline	void		CMemStream::serial(std::string &b) 
+{
+	if ( _StringMode )
+	{
+		sint32	len=0;
+		// Read/Write the length.
+		if(isReading())
+		{
+			serial(len);
+			nlassert( len<1000000 ); // limiting string size
+			b.resize(len);
+		}
+		else
+		{
+			len= b.size();
+			serial(len);
+		}
+		
+		// Read/Write the string.
+		for(sint i=0;i<len;i++)
+			serialBuffer( (uint8*)&(b[i]), sizeof(b[i]) );
+
+		char sep = SEPARATOR;
+		serialBuffer( (uint8*)&sep, 1 );
+	}
+	else
+	{
+		IStream::serial( b );
+	}
+}
+
+
+// ======================================================================================================
+inline	void		CMemStream::serial(ucstring &b) 
+{
+	if ( _StringMode )
+	{
+		sint32	len=0;
+		// Read/Write the length.
+		if(isReading())
+		{
+			serial(len);
+			b.resize(len);
+		}
+		else
+		{
+			len= b.size();
+			serial(len);
+		}
+		// Read/Write the string.
+		for(sint i=0;i<len;i++)
+			serialBuffer( (uint8*)&b[i], sizeof( sizeof(b[i]) ) );
+
+		char sep = SEPARATOR;
+		serialBuffer( (uint8*)&sep, 1 );
+	}
+	else
+	{
+		IStream::serial( b );
+	}
+}
+
+
+// Specialisation of serialCont() for vector<bool>
+/*inline	void	CMemStream::serialCont(std::vector<bool> &cont)
+{
+	sint32	len=0;
+	if(isReading())
+	{
+		serial(len);
+		// special version for vector: adjut good size.
+		contReset(cont);
+		cont.reserve(len);
+
+		for(sint i=0;i<len;i++)
+		{
+			bool	v;
+			serial(v);
+			cont.insert(cont.end(), v);
+		}
+	}
+	else
+	{
+		len= cont.size();
+		serial(len);
+
+		std::vector<bool>::iterator it= cont.begin();
+		for(sint i=0;i<len;i++, it++)
+		{
+			bool b = *it;
+			serial( b );
+		}
+	}
+}*/
+
+
+/*
+ * Serialisation in hexadecimal
+ */
+inline	void	CMemStream::serialHex(uint32 &b)
+{
+	if ( _StringMode )
+	{
+		if ( isReading() )
+		{
+			readnumber( b, uint32, 10, atoihex ); // 4294967295
+		}
+		else
+		{
+			writenumber( b, "%x", 10 );
+		}
+		}
+	else
+	{
+		IStream::serial( b );
+	}
+}
+
+
+
+
+
+
+
 
 }
 

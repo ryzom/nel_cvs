@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.51 2002/02/18 12:53:49 lecroart Exp $
+ * $Id: stream.h,v 1.52 2002/05/21 16:41:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,13 +192,10 @@ public:
 
 	/**
 	 * Constructor.
-	 * You must set needSwap only if your stream need it (a CMemoryStream may not need it).
-	 * IStream::IStream() force needSwap=false if \c NL_LITTLE_ENDIAN defined!
 	 * Notice that those behavior can be set at construction only.
 	 * \param inputStream is the stream an Input (read) stream?
-	 * \param needSwap is the stream need endian swapping?
 	 */
-	IStream(bool inputStream, bool needSwap);
+	explicit IStream(bool inputStream);
 
 	/// Destructor.
 	virtual ~IStream() {}
@@ -843,9 +840,16 @@ public:
 	virtual void		serialBit(bool &bit) =0;
 	//@}
 
+	/// This method first serializes the size of the buffer and after the buffer itself, it enables
+	/// the possibility to serial with a serialCont() on the other side.
+	virtual void		serialBufferWithSize(uint8 *buf, uint32 len)
+	{
+		serial (len);
+		serialBuffer (buf, len);
+	}
+
 private:
 	bool	_InputStream;
-	bool	_NeedSwap;
 	static	bool	_ThrowOnOlder;
 	static	bool	_ThrowOnNewer;
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.20 2002/05/13 07:47:49 besson Exp $
+ * $Id: file.cpp,v 1.21 2002/05/21 16:41:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLMISC
 uint32 CIFile::_NbBytesSerialized = 0;
 
 // ======================================================================================================
-CIFile::CIFile() : IStream(true, true)
+CIFile::CIFile() : IStream(true)
 {
 	_F = NULL;
 	_Cache = NULL;
@@ -50,7 +50,7 @@ CIFile::CIFile() : IStream(true, true)
 }
 
 // ======================================================================================================
-CIFile::CIFile(const std::string &path, bool text) : IStream(true, true)
+CIFile::CIFile(const std::string &path, bool text) : IStream(true)
 {
 	_F=NULL;
 	_Cache = NULL;
@@ -306,14 +306,14 @@ std::string	CIFile::getStreamName() const
 
 
 // ======================================================================================================
-COFile::COFile() : IStream(false, true)
+COFile::COFile() : IStream(false)
 {
 	_F=NULL;
 	_FileName = "";
 }
 
 // ======================================================================================================
-COFile::COFile(const std::string &path, bool append, bool text) : IStream(false, true)
+COFile::COFile(const std::string &path, bool append, bool text) : IStream(false)
 {
 	_F=NULL;
 	open(path, append, text);

@@ -1,8 +1,9 @@
 /** \file i18n/main.cpp
  * example of the NeL internationalisation features
  *
- * $Id: main.cpp,v 1.1 2002/06/20 16:38:26 lecroart Exp $
+ * $Id: main.cpp,v 1.2 2004/12/28 15:07:03 lecroart Exp $
  */
+
 
 /* Copyright, 2001 Nevrax Ltd.
  *

@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.35 2003/08/14 17:09:38 cado Exp $
+ * $Id: buf_sock.cpp,v 1.36 2003/08/20 10:30:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -357,7 +357,7 @@ CNonBlockingBufSock::CNonBlockingBufSock( CTcpSock *sock ) :
 	_NowReadingBuffer( false ),
 	_BytesRead( 0 ),
 	_Length( 0 ),
-	_MaxExpectedBlockSize( 1048576 )
+	_MaxExpectedBlockSize( 10485760 ) // 10M
 {
 	nlnettrace( "CNonBlockingBufSock::CNonBlockingBufSock" );
 }
@@ -404,8 +404,8 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 				// Test size limit
 				if ( _Length > _MaxExpectedBlockSize )
 				{
-					nlwarning( "LNETL1: Socket %s received length %u exceeding max expected, in block header... Disconnecting", asString().c_str(), _Length );
-					throw ESocket( "Received length exceeding max expected", false );
+					nlwarning( "LNETL1: Socket %s received header length %u exceeding max expected %u... Disconnecting", asString().c_str(), _Length, _MaxExpectedBlockSize );
+					throw ESocket( toString( "Received length %u exceeding max expected %u from %s", _Length, _MaxExpectedBlockSize, Sock->remoteAddr().asString().c_str() ).c_str(), false );
 				}
 
 				_NowReadingBuffer = true;

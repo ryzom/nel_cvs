@@ -41,8 +41,14 @@ for i in $clod_source_directories ; do
 	echo Try 1 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
 
+	# Idle
+	../../idle.bat
+
 	echo Try 2 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn
+
+	# Idle
+	../../idle.bat
 
 	echo Try 3 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript clod_export.ms -q -mi -vn

@@ -46,8 +46,14 @@ for i in $ig_land_source_directories ; do
 	echo Try 1 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
+	# Idle
+	../../idle.bat
+
 	echo Try 2 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Idle
+	../../idle.bat
 
 	echo Try 3 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
@@ -67,8 +73,14 @@ for i in $ig_other_source_directories ; do
 	echo Try 1 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
 
+	# Idle
+	../../idle.bat
+
 	echo Try 2 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
+
+	# Idle
+	../../idle.bat
 
 	echo Try 3 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn

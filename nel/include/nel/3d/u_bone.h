@@ -1,7 +1,7 @@
 /** \file u_bone.h
  * User interface for bones.
  *
- * $Id: u_bone.h,v 1.5 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_bone.h,v 1.6 2004/07/01 09:32:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,13 @@ public:
 	 *	
 	 */
 	const CMatrix	&getLastWorldMatrixComputed() const;
+
+	/** Additionally to the standard scale, you can multiply the effect on the skin with a special SkinScale
+	 *	This scale is applied only on the skin (even son bones positions won't be affected)
+	 *	Default to (1,1,1)
+	 */
+	void			setSkinScale(CVector &skinScale);
+	const CVector	&getSkinScale() const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.13 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: bone.cpp,v 1.14 2004/07/01 09:33:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,9 +41,12 @@ namespace NL3D
 // ***************************************************************************
 
 
+static	const CVector	UnitScale(1,1,1);
+
+
 // ***************************************************************************
 CBoneBase::CBoneBase() : DefaultPos(CVector(0,0,0)), DefaultRotEuler(CVector(0,0,0)), 
-	DefaultScale(CVector(1,1,1)), DefaultPivot(CVector(0,0,0))
+	DefaultScale(UnitScale), DefaultPivot(CVector(0,0,0)), SkinScale(UnitScale)
 {
 	FatherId= -1;
 	UnheritScale= true;
@@ -56,10 +59,12 @@ CBoneBase::CBoneBase() : DefaultPos(CVector(0,0,0)), DefaultRotEuler(CVector(0,0
 void			CBoneBase::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 2:
+		- SkinScale
 	Version 1:
 		- LodDisableDistance
 	*/
-	sint	ver= f.serialVersion(1);
+	sint	ver= f.serialVersion(2);
 
 	f.serial(Name);
 	f.serial(InvBindPos);
@@ -79,6 +84,9 @@ void			CBoneBase::serial(NLMISC::IStream &f)
 	f.serial(DefaultRotQuat);
 	f.serial(DefaultScale);
 	f.serial(DefaultPivot);
+
+	if(ver>=2)
+		f.serial(SkinScale);
 }
 
 
@@ -113,6 +121,9 @@ CBone::CBone(CBoneBase *boneBase)
 
 	// No animCtrl by default
 	_AnimCtrl= NULL;
+
+	// Get default BoneBase SkinScale
+	_SkinScale= _BoneBase->SkinScale;
 }
 
 // ***************************************************************************
@@ -220,8 +231,21 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *sk
 	// Compute WorldMatrix. Do: _WorldMatrix= rootMatrix * _LocalSkeletonMatrix
 	_WorldMatrix.setMulMatrixNoProj( rootMatrix, _LocalSkeletonMatrix );
 
-	// Compute BoneSkinMatrix. Do: _BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos
-	_BoneSkinMatrix.setMulMatrixNoProj( _LocalSkeletonMatrix, _BoneBase->InvBindPos );
+	// Compute BoneSkinMatrix. Easier of no SkinScale
+	if(_SkinScale==UnitScale)
+	{
+		// Do: _BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos
+		_BoneSkinMatrix.setMulMatrixNoProj( _LocalSkeletonMatrix, _BoneBase->InvBindPos );
+	}
+	else
+	{
+		// Do: _BoneSkinMatrix= _LocalSkeletonMatrix * SkinScale * _BoneBase->InvBindPos
+		CMatrix		tmp;
+		CMatrix		scaleMat;
+		scaleMat.setScale(_SkinScale);
+		tmp.setMulMatrixNoProj(_LocalSkeletonMatrix, scaleMat);
+		_BoneSkinMatrix.setMulMatrixNoProj( tmp, _BoneBase->InvBindPos );
+	}
 	
 	// When compute is done, do extra user ctrl?
 	if(_AnimCtrl && skeletonForAnimCtrl)
@@ -272,6 +296,12 @@ void	CBone::lodEnableChannels(CChannelMixer *chanMixer, bool enable)
 	if( _PivotChannelId>=0 )
 		chanMixer->lodEnableChannel(_PivotChannelId, enable);
 
+}
+
+// ***************************************************************************
+void	CBone::setSkinScale(CVector &skinScale)
+{
+	_SkinScale= skinScale;
 }
 
 

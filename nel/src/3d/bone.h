@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.9 2003/11/07 14:27:13 besson Exp $
+ * $Id: bone.h,v 1.10 2004/07/01 09:33:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,12 @@ public:
 
 	/// The distance at which the bone is disabled in the skeleton. If 0, never disable.
 	float					LodDisableDistance;
+
+	/** Additionally to the standard scale, you can multiply the effect on the skin with a special SkinScale
+	 *	This scale is applied only on the skin (even son bones positions won't be affected)
+	 *	Default to (1,1,1)
+	 */
+	CVector					SkinScale;
 
 public:
 
@@ -159,6 +165,14 @@ public:
 	  */
 	inline void			forceAnimate(CChannelMixer &chanMixer);
 
+
+	/** Additionally to the standard scale, you can multiply the effect on the skin with a special SkinScale
+	 *	This scale is applied only on the skin (even son bones positions won't be affected)
+	 *	Default to (1,1,1)
+	 */
+	void				setSkinScale(CVector &skinScale);
+	const CVector		&getSkinScale() const {return _SkinScale;}
+
 // *************************
 public:
 	// Private to SkeletonModel. You should not set this ptr directly. see CSkeletonModel::setBoneAnimCtrl()
@@ -185,6 +199,9 @@ private:
 	sint						_RotQuatChannelId;
 	sint						_ScaleChannelId;
 	sint						_PivotChannelId;
+
+	// see setSkinScale()
+	CVector						_SkinScale;
 };
 
 

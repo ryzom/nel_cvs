@@ -22,10 +22,10 @@ max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 # Log error
 echo ------- > log.log
-echo --- Export skeleton >> log.log
+echo --- Export skeleton from MAX>> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Export skeleton 
+echo --- Export skeleton from MAX
 echo ------- 
 date >> log.log
 date
@@ -51,6 +51,29 @@ for i in $skel_source_directories ; do
 
 	echo Try 3 >> log.log
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript skel_export.ms -q -mi -vn
+
+	# Idle
+	../../idle.bat
+done
+
+
+# *** Export skeleton files (.skel) directly from .skel version
+
+# Log error
+echo ------- >> log.log
+echo --- Copy skeleton from .skel>> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Copy skeleton from .skel
+echo ------- 
+date >> log.log
+date
+
+# For each directoy
+
+for i in $skel_source_directories ; do
+	# copy
+	cp -u -p $database_directory/$i/*.[sS][kK][eE][lL]  skel  2>> log.log
 
 	# Idle
 	../../idle.bat

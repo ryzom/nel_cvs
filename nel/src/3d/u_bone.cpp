@@ -1,7 +1,7 @@
 /** \file bone_user.cpp
  * User interface for bones.
  *
- * $Id: u_bone.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
+ * $Id: u_bone.cpp,v 1.3 2004/07/01 09:33:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,5 +40,18 @@ const CMatrix	&UBone::getLastWorldMatrixComputed() const
 	return object->getWorldMatrix();
 }
 
+void			UBone::setSkinScale(CVector &skinScale)
+{
+	NL3D_MEM_BONES
+	CBone *object = getObjectPtr();
+	object->setSkinScale(skinScale);
+}
+
+const CVector	&UBone::getSkinScale() const
+{
+	NL3D_MEM_BONES
+	CBone *object = getObjectPtr();
+	return object->getSkinScale();
+}
 
 } // NL3D

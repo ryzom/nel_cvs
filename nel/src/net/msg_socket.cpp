@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.40 2000/12/15 16:59:28 cado Exp $
+ * $Id: msg_socket.cpp,v 1.41 2000/12/18 13:44:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,19 +219,16 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, b
  */
 void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
-	// Reallocate array
-	if ( _Allocated )
-	{
-		delete [] _ClientCallbackArray;
-	}
-	const TCallbackItem *oldClientCallbackArray = _ClientCallbackArray;
+	// Allocate a new array
+	TCallbackItem *oldClientCallbackArray = _ClientCallbackArray;
 	TTypeNum oldClientCbaSize = _ClientCbaSize;
 	_ClientCbaSize += arraysize;
 	_ClientCallbackArray = new TCallbackItem [_ClientCbaSize];
-	_Allocated = true;
 
 	// Copy contents
-	TTypeNum i;
+	memcpy( _ClientCallbackArray, oldClientCallbackArray, oldClientCbaSize );
+	memcpy( _ClientCallbackArray+oldClientCbaSize, callbackarray, arraysize );
+	/*TTypeNum i;
 	for ( i=0; i!=oldClientCbaSize; i++ )
 	{
 		_ClientCallbackArray[i] = oldClientCallbackArray[i];
@@ -239,7 +236,14 @@ void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTy
 	for ( i=oldClientCbaSize; i!=_ClientCbaSize; i++ )
 	{
 		_ClientCallbackArray[i] = callbackarray[i-oldClientCbaSize];
+	}*/
+
+	// Delete previous array if not static
+	if ( _Allocated )
+	{
+		delete [] oldClientCallbackArray;
 	}
+	_Allocated = true;
 
 	// Setup search set
 	_ClientSearchSet.clear();

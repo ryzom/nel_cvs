@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.16 2000/12/15 17:48:08 cado Exp $
+ * $Id: local_entity.cpp,v 1.17 2000/12/18 13:44:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,6 @@
 #include "nel/misc/debug.h"
 
 using namespace NLMISC;
-
-extern NLNET::CMsgSocket *ClientSocket;
 
 
 namespace NLNET {
@@ -198,7 +196,7 @@ void CLocalEntity::computeVector()
 void CLocalEntity::propagateState()
 {
 	// Send
-	if ( (ClientSocket != NULL) && ClientSocket->connected() && (id() != 0) )
+	if ( (CLocalArea::Instance->ClientSocket != NULL) && CLocalArea::Instance->ClientSocket->connected() && (id() != 0) )
 	{
 		CMessage msgout;
 		if ( groundMode() )
@@ -210,7 +208,7 @@ void CLocalEntity::propagateState()
 			msgout.setType( "FES" ); // Full Entity State
 		}
 		msgout.serial( *this );
-		ClientSocket->send( msgout );
+		CLocalArea::Instance->ClientSocket->send( msgout );
 		nlinfo( "Entity State sent, with id %u", id() );
 		if ( ! groundMode() )
 		{
@@ -291,7 +289,7 @@ void CLocalEntity::yaw( TAngle delta )
 	{
 		nlerror( "Not implemented" );
 	}
-	setBodyHeading( m * bodyHeading() );
+	setBodyHeading( (m * bodyHeading()).normed() );
 	computeVector();
 }
 

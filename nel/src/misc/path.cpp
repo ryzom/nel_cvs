@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.1 2000/12/11 17:49:08 cado Exp $
+ * $Id: path.cpp,v 1.2 2000/12/18 13:44:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,8 @@
  */
 
 #include "nel/misc/path.h"
-#include <stdio.h>
+//#include <stdio.h>
+#include <fstream>
 
 using namespace std;
 
@@ -36,11 +37,12 @@ CStringVector CPath::_SearchPaths;
 
 
 /*
- * fileExists
+ * fileExists. Warning: this test will also tell that the file does not
+ * exist if you don't have the rights to read it (Unix).
  */
 bool fileExists( const string& filename )
 {
-	FILE *f;
+	/*FILE *f;
 	if ( (f = fopen( filename.c_str(), "r" )) == NULL )
 	{
 		return false;
@@ -49,7 +51,8 @@ bool fileExists( const string& filename )
 	{
 		fclose( f );
 		return true;
-	}
+	}*/
+	return ! ! fstream( filename.c_str(), ios::in ); // = ! fstream(...).fail()
 }
 
 

@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.16 2000/12/08 11:13:06 berenguier Exp $
+ * $Id: stream_inline.h,v 1.17 2000/12/18 13:44:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,9 @@
 
 #ifndef NL_STREAM_INLINE_H
 #define NL_STREAM_INLINE_H
+
+#include <nel/misc/debug.h>
+
 
 namespace	NLMISC
 {
@@ -303,6 +306,7 @@ inline	void		IStream::serial(std::string &b) throw(EStream)
 	if(isReading())
 	{
 		serial(len);
+		nlassert( len<1000000 ); // limiting string size
 		b.resize(len);
 	}
 	else

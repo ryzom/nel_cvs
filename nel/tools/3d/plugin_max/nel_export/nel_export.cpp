@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.3 2001/06/11 09:21:53 besson Exp $
+ * $Id: nel_export.cpp,v 1.4 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,15 +83,10 @@ int CALLBACK OptionsDialogCallback (
 			CenterWindow( hwndDlg, theCNelExport.ip->GetMAXHWnd() );
 			ShowWindow( hwndDlg, TRUE );
 			// Initialize from theExportSceneStruct
-			//if( theExportSceneStruct.bExportInstanceGroup )
-			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_SETCHECK, BST_CHECKED, 0 );
-			//else
-			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_SETCHECK, BST_UNCHECKED, 0 );
-			//if( theExportSceneStruct.bExportShapes )
-			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_SETCHECK, BST_CHECKED, 0 );
-			//else
-			//	SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_SETCHECK, BST_UNCHECKED, 0 );
-
+			if( theExportSceneStruct.bExcludeNonSelected )
+				SendMessage( GetDlgItem(hwndDlg,IDC_EXCLUDE), BM_SETCHECK, BST_CHECKED, 0 );
+			else
+				SendMessage( GetDlgItem(hwndDlg,IDC_EXCLUDE), BM_SETCHECK, BST_UNCHECKED, 0 );
 			if( theExportSceneStruct.bExportLighting )
 				SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
 			else
@@ -100,8 +95,6 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_SETCHECK, BST_CHECKED, 0 );
 			else
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_SETCHECK, BST_UNCHECKED, 0 );
-			//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportInstanceGroup.c_str() );
-			//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportShapes.c_str() );
 			SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportLighting.c_str() );
 			if( theExportSceneStruct.nExportLighting == 0 )
 				SendMessage( GetDlgItem(hwndDlg,IDC_RADIONORMALEXPORTLIGHTING), BM_SETCHECK, BST_CHECKED, 0 );
@@ -124,28 +117,6 @@ int CALLBACK OptionsDialogCallback (
 			if( HIWORD(wParam) == BN_CLICKED )
 			switch (LOWORD(wParam)) 
 			{
-				/*case IDC_BUTTONEXPORTINSTANCEGROUP:
-				{
-					char sTemp[1024];
-					strcpy(sTemp,theExportSceneStruct.sExportInstanceGroup.c_str());
-					if( theCNelExport.SelectFileForSave(hwndDlg, "Instance Group Directory", InstanceGroupFilter, sTemp ) )
-					{
-						theExportSceneStruct.sExportInstanceGroup = sTemp;
-						SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportInstanceGroup.c_str() );
-					}
-				}
-				break;
-				case IDC_BUTTONEXPORTSHAPES:
-				{
-					char sTemp[1024];
-					strcpy(sTemp,theExportSceneStruct.sExportShapes.c_str());
-					if( theCNelExport.SelectDir(hwndDlg, "Shapes Directory", sTemp ) )
-					{
-						theExportSceneStruct.sExportShapes = sTemp;
-						SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_SETTEXT, 0, (long)theExportSceneStruct.sExportShapes.c_str() );
-					}
-				}
-				break;*/
 				case IDC_BUTTONEXPORTLIGHTING:
 				{
 					char sTemp[1024];
@@ -164,14 +135,10 @@ int CALLBACK OptionsDialogCallback (
 				{
 					char tmp[1024];
 					// The result goes in theExportSceneStruct
-					//if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTINSTANCEGROUP), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
-					//	theExportSceneStruct.bExportInstanceGroup = true;
-					//else
-					//	theExportSceneStruct.bExportInstanceGroup = false;
-					//if( SendMessage( GetDlgItem(hwndDlg,IDC_CHECKEXPORTSHAPES), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
-					//	theExportSceneStruct.bExportShapes = true;
-					//else
-					//	theExportSceneStruct.bExportShapes = false;
+					if( SendMessage( GetDlgItem(hwndDlg,IDC_EXCLUDE), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
+						theExportSceneStruct.bExcludeNonSelected = true;
+					else
+						theExportSceneStruct.bExcludeNonSelected = false;
 					if( SendMessage( GetDlgItem(hwndDlg,IDC_SHADOW), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
 						theExportSceneStruct.bShadow = true;
 					else
@@ -180,10 +147,6 @@ int CALLBACK OptionsDialogCallback (
 						theExportSceneStruct.bExportLighting = true;
 					else
 						theExportSceneStruct.bExportLighting = false;
-					//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTINSTANCEGROUP), WM_GETTEXT, 1024, (long)tmp );
-					//theExportSceneStruct.sExportInstanceGroup = tmp;
-					//SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTSHAPES), WM_GETTEXT, 1024, (long)tmp );
-					//theExportSceneStruct.sExportShapes = tmp;
 					SendMessage( GetDlgItem(hwndDlg,IDC_EDITEXPORTLIGHTING), WM_GETTEXT, 1024, (long)tmp );
 					theExportSceneStruct.sExportLighting = tmp;
 					if( SendMessage( GetDlgItem(hwndDlg,IDC_RADIONORMALEXPORTLIGHTING), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
@@ -583,6 +546,8 @@ void CNelExport::initOptions()
 		}
 		catch(...)
 		{
+			MessageBox( theCNelExport.ip->GetMAXHWnd(), "NelExportScene.cfg corrupted or old version", 
+						"Error", MB_OK|MB_ICONEXCLAMATION );
 		}
 	}
 }

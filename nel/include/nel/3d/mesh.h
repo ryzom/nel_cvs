@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.17 2001/06/11 09:24:22 besson Exp $
+ * $Id: mesh.h,v 1.18 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,8 @@ public:
 	/// A mesh information.
 	struct	CMeshBuild
 	{
+		bool					bCastShadows;
+		bool					bRcvShadows;
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
 		 */

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
+ * $Id: export_mesh.cpp,v 1.3 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,6 +205,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;
 
+	buildMesh.bCastShadows = (node.CastShadows() != 0);
+	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
 	// Build normals.
 	// * "buildRenderNormals()" smooth faces that are not in the same material but at least in the same smoothing group.
 	// * "buildNormals()" smooth faces that are in the same material and at least in the same smoothing group.

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.3 2001/06/12 13:31:58 corvazier Exp $
+ * $Id: export_nel.h,v 1.4 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ struct CExportNelOptions
 	sint32 nExportLighting;
 	float rLumelSize;
 	sint32 nOverSampling;
+	bool bExcludeNonSelected;
 
 	CExportNelOptions::CExportNelOptions()
 	{
@@ -82,6 +83,7 @@ struct CExportNelOptions
 		nExportLighting = 0; // Normal lighting
 		rLumelSize = 0.25f;
 		nOverSampling = 1;
+		bExcludeNonSelected = false;
 	}
 
 	void serial(NLMISC::IStream& stream)
@@ -92,6 +94,7 @@ struct CExportNelOptions
 		stream.serial( nExportLighting );
 		stream.serial( rLumelSize );
 		stream.serial( nOverSampling );
+		stream.serial( bExcludeNonSelected );
 	}
 };
 // -----------------------------------------------

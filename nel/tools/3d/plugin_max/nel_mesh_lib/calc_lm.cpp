@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.2 2001/06/12 13:27:22 besson Exp $
+ * $Id: calc_lm.cpp,v 1.3 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2149,107 +2149,10 @@ CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild&
 	return Factor;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-class LightDescImp: public LightDesc 
-{
-	public:
-	Point3 pos;
-	Color col;
-    BOOL Illuminate(ShadeContext& sc, Point3& normal, Color& color, Point3 &dir, float &dot_nl) 
-	{
-		dir = Normalize(pos-sc.P());
-		dot_nl = DotProd(normal,dir);
-		color = col;
-		return 1;		
-	}
-};
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-class SCTex: public ShadeContext 
-{
-	public:
-	float tiling;
-	float scale;
-	Color ambientLight;
-	LightDescImp* lights[2];
-	Point3 uvw,duvw,norm,view,pt,dpt;
-	IPoint2 scrPos;
-	TimeValue curTime;
-	Renderer *GetRenderer() { return NULL; }
-	BOOL 	  InMtlEditor() { return TRUE; }
-	LightDesc* Light(int n) { return lights[n]; }
-	int ProjType() { return 1;} // returns: 0: perspective, 1: parallel
-	int FaceNumber() { return 0; }
-	TimeValue CurTime() { return curTime; }
-	Point3 Normal() { return norm; }  	// interpolated normal
-	void SetNormal(Point3 p) { norm = p;} 	// for perturbing normal
-	Point3 GNormal() { return norm;} 	// geometric (face) normal
-	Point3 ReflectVector() { return Point3(0,0,1); }
-	Point3 RefractVector(float ior) {return Point3(0,0,1);	}
-    Point3 CamPos() { return Point3(0,0,0); }			// camera position
-	Point3 V() { return view; }       	// Unit view vector: from camera towards P 
-	void SetView(Point3 v) { view =v; }
-	Point3 P() { return pt; }			// point to be shaded in camera space;
-	Point3 DP() { return dpt;	}   		// deriv of P, relative to pixel, for AA
-	Point3 PObj() { return pt; }					  	// point in obj coords
-	Point3 DPObj() { return dpt; }   	// deriv of PObj, rel to pixel, for AA
-	Box3 ObjectBox() { return Box3(Point3(0,0,0),Point3(scale,scale,scale)); } // Object extents box in obj coords
-	Point3 PObjRelBox() // Point rel to obj box [-1 .. +1 ] 
-	{
-		Point3 q;
-		Point3 p = PObj();
-		Box3 b = ObjectBox();
-		q.x = 2.0f*(p.x-b.pmin.x)/(b.pmax.x-b.pmin.x) - 1.0f;
-		q.y = 2.0f*(p.y-b.pmin.y)/(b.pmax.y-b.pmin.y) - 1.0f;
-		q.z = 2.0f*(p.z-b.pmin.z)/(b.pmax.z-b.pmin.z) - 1.0f;
-		return q;
-	}
-   				
-	Point3 DPObjRelBox() { return Point3(0,0,0); } // Point rel to obj box [-1 .. +1 ] 	
-	Point3 UVW(int chan) { return uvw;	}
-   	Point3 DUVW(int chan) {	return duvw;	}
-	void DPdUVW(Point3 dP[3],int chan) { dP[0] = dP[1] = dP[2] = Point3(0,0,0); } // Bump vectors for UVW: in Camera space
-	AColor EvalEnvironMap(Texmap *map, Point3 viewd) {
-		AColor rcol;
-        rcol.Black();
-		return rcol;
-		}
-
-	void ScreenUV(Point2& uv, Point2 &duv) // screen coordinate
-	{
-		uv.x = uvw.x;
-		uv.y = uvw.x;
-		duv.x = duvw.x;
-		duv.y = duvw.y;
-	}
-
-	IPoint2 SCTex::ScreenCoord() {return scrPos;}
-
-	Point3 PointTo(const Point3& p, RefFrame ito) { return p; }
-	Point3 PointFrom(const Point3& p, RefFrame ifrom) { return p; } 
-	Point3 VectorTo(const Point3& p, RefFrame ito) { return p; } 
-	Point3 VectorFrom(const Point3& p, RefFrame ifrom){ return p; } 
-	void GetBGColor(Color &bgcol, Color& transp, BOOL fogBG=TRUE) {	}
-	SCTex()
-	{
-		tiling = 1.0f;
-		mtlNum = 0; 
-		doMaps = TRUE;
-		filterMaps = TRUE;
-		shadow = FALSE;
-		backFace = FALSE;
-		curTime = 0;
-		norm = Point3(0,0,1);
-		view = Point3(0,0,-1);
-		ResetOutput();
-	}
-	void SetTiling(float t) { tiling = t; }
-};
-
 // -----------------------------------------------------------------------------------------------
 CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
-					SWorldRT &wrt, bool bDoubleSided )
+					SWorldRT &wrt, bool bDoubleSided, bool bRcvShadows )
 {
 	CRGBAF rgbafRet;
 					
@@ -2393,7 +2296,7 @@ CRGBAF LightAVertex( CVector &pRT, CVector &p, CVector &n,
 		}
 		if( light_intensity > 0.0f )
 		{
-			if( ( rLight.bCastShadow ) && ( gOptions.bShadow ) )
+			if( bRcvShadows && rLight.bCastShadow && gOptions.bShadow )
 				RTFactor = RayTraceAVertex( pRT, wrt, vLights[nLight], rLight );
 			else
 				RTFactor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
@@ -2491,7 +2394,7 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 			{
 				CVector p = g.getInterpolatedVertex( j+0.5, k+0.5);
 				CVector n = g.getInterpolatedNormal( j+0.5, k+0.5);
-				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided );
+				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].R = col.R;
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].G = col.G;
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].B = col.B;
@@ -2506,7 +2409,7 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 }
 
 // -----------------------------------------------------------------------------------------------
-void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
+void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
 					vector<CVector> &vVertices, CMatrix& ToWorldMat, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
 					uint32 nLayerNb, SWorldRT &wrt)
@@ -2622,7 +2525,7 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, u
 										CVector iv = g.getInterpolatedVertex( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 										CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);										
 										CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided );
+										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
 										//float f = 1.0f;
 										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].R += col.R;
 										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].G += col.G;
@@ -2644,7 +2547,7 @@ void SecondLight( CMesh::CMeshBuild*pMB, vector<SLMPlane*>::iterator ItPlanes, u
 						CVector iv = g.getInterpolatedVertex( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 						CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 						CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided );
+						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
 						//float f = 1.0f;
 						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].R += col.R;
 						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].G += col.G;
@@ -2840,6 +2743,41 @@ void getLightInteract( CMesh::CMeshBuild* pMB, vector<SLightBuild> &AllLights, v
 }
 
 // -----------------------------------------------------------------------------------------------
+void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vector<SLightBuild> &AllLights )
+{
+	// Get time
+	TimeValue tvTime = ip.GetTime();
+	// Get node count
+	int nNumSelNode = ip.GetSelNodeCount();
+	// Save all selected objects
+	for (int nNode=0; nNode<nNumSelNode; nNode++)
+	{
+		// Get the node
+		INode* pNode = ip.GetSelNode (nNode);
+
+		if (! RPO::isZone (*pNode, tvTime) )
+		if (CExportNel::isMesh (*pNode, tvTime))
+		{
+			CMesh::CMeshBuild *pMB;
+			pMB = CExportNel::createMeshBuild( *pNode, tvTime );
+			// If the mesh has no interaction with one of the light selected we do not need it
+			bool bInteract = false;
+			if( pMB->bCastShadows )
+			for( uint32 i = 0; i < AllLights.size(); ++i )
+			if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB ) )
+			{
+				bInteract = true;
+				break;
+			}
+			if( bInteract )
+				Meshes.push_back( pMB );
+			else
+				delete pMB; // No interaction so delete the mesh
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------------------------
 void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vector<SLightBuild> &AllLights, INode* pNode = NULL )
 {
 	if( pNode == NULL )
@@ -2855,6 +2793,7 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, Interface& ip, vec
 		pMB = CExportNel::createMeshBuild( *pNode, tvTime );
 		// If the mesh has no interaction with one of the light selected we do not need it
 		bool bInteract = false;
+		if( pMB->bCastShadows )
 		for( uint32 i = 0; i < AllLights.size(); ++i )
 		if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB ) )
 		{
@@ -2877,7 +2816,10 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip 
 	uint32 i, j, k;
 
 	// Get all the nodes in the scene
-	GetAllNodeInScene( wrt.vMB, ip, AllLights );
+	if( gOptions.bExcludeNonSelected )
+		GetAllSelectedNode( wrt.vMB, ip, AllLights );
+	else
+		GetAllNodeInScene( wrt.vMB, ip, AllLights );
 
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < wrt.vMB.size(); ++i )

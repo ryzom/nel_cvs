@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.2 2001/06/11 09:21:53 besson Exp $
+ * $Id: export_material.cpp,v 1.3 2001/06/13 08:53:21 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,11 +138,16 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, 0);
 	
+	
 	if (bLightMap)
+	{
 		material.setShader (CMaterial::LightMap);
+	}
 	else
+	{
 		material.setShader (CMaterial::Normal);
-
+	}
+	
 	// By default set blend to false
 	material.setBlend (false);
 
@@ -270,6 +275,16 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 		// Double sided
 		material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
+	}
+
+	if( ! bLightMap )
+	{
+		int bUnlighted = 0; // false
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bUnlighted", (ParamType2)TYPE_BOOL, &bUnlighted, 0);
+		if( bUnlighted )	
+		{
+			material.setLighting( false );
+		}
 	}
 
 	// Get material name

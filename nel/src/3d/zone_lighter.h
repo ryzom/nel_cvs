@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.7 2002/02/06 16:55:16 berenguier Exp $
+ * $Id: zone_lighter.h,v 1.8 2002/02/15 17:14:40 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -138,7 +138,6 @@ public:
 
 		/// Evaluation of the max height, in meters, of the vegetables. Needed when we compute wether a tile is below or above water.
 		float					VegetableHeight; 
-//		#error pas oublier de remplir ça
 
 		// Nombrer of CPU used
 		uint					NumCPU;

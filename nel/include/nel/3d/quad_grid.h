@@ -1,7 +1,7 @@
 /** \file quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.1 2001/01/03 15:25:14 berenguier Exp $
+ * $Id: quad_grid.h,v 1.2 2001/01/04 14:45:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -241,7 +241,7 @@ private:// Methods.
 	// Try to add each node of the quad node list.
 	void		addQuadNodeToSelection(CQuadNode	&quad)
 	{
-		list<CNode*>::iterator	itNode;
+		std::list<CNode*>::iterator	itNode;
 		for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 		{
 			addToSelection(*itNode);
@@ -399,7 +399,7 @@ template<class T>	CQuadGrid<T>::CIterator	CQuadGrid<T>::erase(CQuadGrid<T>::CIte
 		{
 			xe= x &(_Size-1);
 			CQuadNode	&quad= _Grid[(ye<<_SizePower)+xe];
-			list<CNode*>::iterator	itNode;
+			std::list<CNode*>::iterator	itNode;
 			for(itNode= quad.Nodes.begin();itNode!=quad.Nodes.end();itNode++)
 			{
 				if((*itNode)==ptr)

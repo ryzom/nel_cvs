@@ -1,6 +1,6 @@
 /** \file msg_contenair.cpp
  *
- * $Id: msg_container.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: msg_container.cpp,v 1.4 2001/01/11 15:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,11 +109,19 @@ namespace NLAIAGENT
 		if ( index < 0 )
 		{
 			index = _MsgIndex.size();
-			_MsgIndex.push_back( &msg->getGroup() );
+			_MsgIndex.push_back( (IBasicMessageGroup *)msg->getGroup().clone() );
 			_Messages.push_back( std::list<const IMessageBase *>() );
 		}
-
+#ifdef _DEBUG
+		sint dbg = _Messages.size();
+		dbg = _Messages[ index ].size();
+#endif
 		_Messages[ index ].push_back( msg );
+
+#ifdef _DEBUG	
+		dbg = _Messages[ index ].size();
+#endif
+
 		_Size++;
 	}
 

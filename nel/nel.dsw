@@ -18,18 +18,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "ai"=.\SRC\ai\ai.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "driver_opengl"=.\src\3d\driver\opengl\driver_opengl.dsp - Package Owner=<4>
 
 Package=<5>
@@ -41,6 +29,18 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name 3d
     End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "ia"=.\src\ia.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
 }}}
 
 ###############################################################################

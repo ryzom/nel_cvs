@@ -40,7 +40,63 @@ must be done after a checkout.
 
 \section components Components
 
-\subsection component3d 3D viewer/mapper
+\subsection component3d 3D library
+
+The purpose of the 3D Library is to provide a graphical view of a full 3D Universe. It
+is not based on a pre-existing high-level library because of specific constraints on the
+final environment to render, which is consists of large landscapes with smooth natural
+features and lots of objects.
+
+To achieve this objective, the library implements several techniques:
+
+- Geometry:
+  - The ROAHM algorithm, which provides an adaptative subdivision of the landscape base
+  - Use of Bezier Patches to create smooth-looking landscapes
+  - Multi-Resolution Meshes, to provide a smooth reduction in polygon count as objects
+    retreat further in distance
+  - Object Interfaces, which allows the correct assembly of multiple "parts" of objects
+    into a single mesh without leaving unconnected parts or holes
+- Rendering:
+  - Bump Mapping of surfaces for a more natural texture
+  - Environment Map
+  - Support of User Colors (specific areas in textures tagged for replacement with a
+    program-defined color upon rendering)
+  - Hardware T&L as now available in recent graphic cards
+  - Hardware Pixel Shaders and Vertex Shaders for the next generation graphic cards
+- Animation:
+  - Skinning, using a base skeleton for animations
+  - Blended Shapes, to provide lip-sync style animations
+  - Inverse cinematics
+  - Blend of animations to provide smooth transitions between various animations
+- Low level services:
+  - Object streaming, to provide a transparent load-on-demand, including the multi-
+    resolution meshes
+  - Object Picking in a scene
+
+The library works best with a set of 3DSMax plug-ins to generate data for use with the
+software.
+
+The library itself is organised in three successive layers:
+
+- Layer 1, or driver layers, which implements the effective 3D operations. This is
+  highly API and platform-dependent. Right now, an OpenGL driver is provided, but a
+  directX would not require much effort.
+- Layer 2, or object layer, which implements the various objects (landscapes, meshes
+  and so on), and rendering
+- Layer 3, or high level layer, which provide the spatial manipulation and the
+  necessary interfaces to create the whole scene, and modify it according to your model
+  of your universe.
+
+Modification of the layer 1 should be very rare, as it is the most stable part of the
+NeL 3D library. New extensions to OpenGL or new drivers will require intervention in
+that layer.
+
+Modification of the layer 2 occurs only if you create new object types, such as special
+smooth surfaces not based on Bezier Patches, different styles of animations, and so on.
+
+Modification of the layer 3 is reserved to changes in the whole predicate on which the
+NeL library is based, as it is where objects are created and removed, their properties
+altered, according to the necessities of the 3D universe.
 
 \subsection componentai Artificial Intelligence
 

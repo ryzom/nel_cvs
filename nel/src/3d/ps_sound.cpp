@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.25 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: ps_sound.cpp,v 1.26 2004/01/23 14:51:58 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ CPSSound::CPSSound() : _Gain(1.f),
 //***************************************************************************************************
 void	CPSSound::stopSound()
 {
-
+	_SoundReactivated = false;
 	if (_SoundStopped) return;
 	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
 												, endIt = _Sounds.end();
@@ -127,9 +127,10 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 			for (k = 0; k < (sint32) size; ++k)
 			{
 				newElement(NULL, 0);
-			}
-			
+			}			
 		}
+		// don't need to reupdate sound
+		return;
 	}
 	nlassert(_Owner);	
 	uint32 toProcess, leftToDo = size;
@@ -189,7 +190,7 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 					(*it)->setSoundParams(*currVol,
 						localToWorld * *posIt,
 						localToWorld.mulVector(*speedIt),
-						(*it)->getPitch());
+						(*it)->getPitch());					
 				}
 				currVol += GainPtInc;				
 				++posIt;
@@ -328,13 +329,7 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			f.serial(_Pitch);
 		}
-	}
-	
-	if (f.isReading())
-	{
-		_SoundStopped = false;
-	}
-	
+	}			
 
 	if (ver > 1)
 	{
@@ -343,11 +338,15 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}	
 
 	if (f.isReading())
-	{		
+	{				
+		_SoundStopped = true;
+		// insert blank sources
 		for (sint k = 0; k < nbSounds; ++k)
 		{
 			newElement(NULL, 0);			
-		}		
+		}
+		_SoundStopped = false;
+		_SoundReactivated = true;
 	}
 }
 	
@@ -380,11 +379,11 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 				{
 					pitch = _PitchScheme ? _PitchScheme->get(getOwner(), 0) : _Pitch;
 				}
-				_Sounds[index]->setSoundParams(_GainScheme ? _GainScheme->get(getOwner(), 0) : 0,
+				_Sounds[index]->setSoundParams(_GainScheme ? _GainScheme->get(getOwner(), 0) : _Gain,
 											   mat * _Owner->getPos()[index], 
 											   _Owner->getSpeed()[index], 
 											   pitch
-											  );		
+											  );
 				_Sounds[index]->play();
 			}
 		}

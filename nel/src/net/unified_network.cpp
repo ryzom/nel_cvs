@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.83 2004/06/14 15:04:42 cado Exp $
+ * $Id: unified_network.cpp,v 1.84 2004/06/23 14:59:55 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1119,7 +1119,7 @@ void CUnifiedNetwork::autoReconnect( CUnifiedConnection &uc, uint connectionInde
 	}
 	catch (ESocketConnectionFailed &e)
 	{
-#ifdef FINAL_VERSION
+#if FINAL_VERSION
 		nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());
 #else
 		nlwarning ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());

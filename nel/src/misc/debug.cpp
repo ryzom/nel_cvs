@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.94 2004/05/14 09:21:25 corvazier Exp $
+ * $Id: debug.cpp,v 1.95 2004/06/23 14:59:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -880,7 +880,7 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 {
 	if (pexp->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT)
 		return;
-#ifdef FINAL_VERSION
+#if FINAL_VERSION
 	// In final version, throw EDebug to display a smart dialog box with callstack & log when crashing
 #pragma message ( "Smart crash enabled" )
 	DumpMiniDump(pexp);
@@ -1030,7 +1030,7 @@ void createDebug (const char *logPath, bool logInFile)
 //				fn += "/";
 			}
 			fn += "log.log";
-#ifdef FINAL_VERSION
+#if FINAL_VERSION
 			fd = new CFileDisplayer (fn, true, "DEFAULT_FD");
 #else // FINAL_VERSION
 			fd = new CFileDisplayer (fn, false, "DEFAULT_FD");

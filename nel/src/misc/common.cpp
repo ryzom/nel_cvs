@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.59 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: common.cpp,v 1.60 2004/06/23 14:59:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,13 @@ using namespace std;
 #    define STL_STR_VER "Unknown"
 #  endif // __SGI_STL_PORT
 #  pragma message("Using STLport version "STL_STR_VER" in "STL_MODE" mode")
+
+#if FINAL_VERSION
+#  pragma message("Using **** FINAL_VERSION ****")
+#else
+#  pragma message("Not using FINAL_VERSION")
+#endif
+
 #endif // NL_OS_WINDOWS
 
 namespace	NLMISC

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.66 2004/05/21 14:29:12 ledorze Exp $
+ * $Id: debug.h,v 1.67 2004/06/23 14:59:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -500,10 +500,10 @@ void getCallStackAndLog (std::string &result, sint skipNFirst = 0);
 template<class T, class U>	inline T	safe_cast(U o)
 {
 	// NB: must check debug because assert may still be here in release
-#ifdef	NL_DEBUG
-	nlassert(dynamic_cast<T >(o));
+#ifdef NL_DEBUG
+	nlassert(dynamic_cast<T>(o));
 #endif
-	return static_cast<T >(o);
+	return static_cast<T>(o);
 }
 
 /**
@@ -514,21 +514,24 @@ template<class T, class U>	inline T	safe_cast(U o)
 template<class T, class U>	inline T	type_cast(U o)
 {
 	// NB: must check debug because assert may still be here in release
-#ifdef	NL_DEBUG
+#ifdef NL_DEBUG
 	if (o)
-		nlassert(dynamic_cast<T >(o));
+		nlassert(dynamic_cast<T>(o));
 #endif
-	//	optimization made to check pointeur validity before adresse translation. (hope it works on linux).
-	if ((size_t)(static_cast<T>((U)0x0400))==(size_t)((U)0x0400))
+	//	optimization made to check pointer validity before address translation. (hope it works on linux).
+	if ((size_t)(static_cast<T>((U)0x0400)) == (size_t)((U)0x0400))
 	{
-		return static_cast<T >(o);
+		return static_cast<T>(o);
 	}
 	else
 	{
-		return	(o==NULL)?NULL:static_cast<T >(o);
+		return (o==0)?0:static_cast<T>(o);
 	}
-
 }
+
+/** Compile time assertion
+  */
+#define nlctassert(cond) sizeof(uint[(cond) ? 1 : 0])
 
 /**
 *	Allow to verify an object was accessed before its destructor call.
@@ -536,10 +539,10 @@ template<class T, class U>	inline T	type_cast(U o)
 *	ex:
 *		CMustConsume<TErrorCode>	foo()
 *		{
-*			..
+*			...
 *			return	ErrorInvalidateType;		//	part of TErrorCode enum.
 *		}
-*	Exclusive implémentations samples:
+*	Exclusive implementation samples:
 *		TerrorCode code=foo().consumeValue();	//	Good!
 *		foo().consume();						//	Good!
 *		TerrorCode code=foo();					//	Mistake!
@@ -548,71 +551,60 @@ template<class T, class U>	inline T	type_cast(U o)
 *	(ask Stephane LE DORZE for more explanations).
 */
 
-template	<class T>
+template<class T>
 class CMustConsume
 {
 public:
-	CMustConsume(const T &value)
-		:
-#ifndef FINAL_VERSION
-	_consumed(false), 
+	CMustConsume(const T &val) : Value(val), 
+#if !FINAL_VERSION
+	Consumed(false)
 #endif
-		_Value(value)
-	{}
+	{
+	}
+
 	~CMustConsume()
 	{
-#ifndef FINAL_VERSION
-		nlassert(_consumed==true);
+#if !FINAL_VERSION
+		nlassert(Consumed == true);
 #endif
-	}
-	//	Get the value without validating the access.
-	const	T	&value()	const
-	{
-		return	_Value;
 	}
 
-	operator	const	T	&()	const
+	//	Get the value without validating the access.
+	const T &value() const
 	{
-#ifndef FINAL_VERSION
-		_consumed=true;
+		return Value;
+	}
+
+	operator const T &() const
+	{
+#if !FINAL_VERSION
+		Consumed = true;
 #endif
-		return	_Value;
+		return Value;
 	}
 	
-	//	Get the value and validat the access.
-	const	T	&consumeValue()	const
+	//	Get the value and validate the access.
+	const T &consumeValue() const
 	{
-#ifndef FINAL_VERSION
-		_consumed=true;
+#if !FINAL_VERSION
+		Consumed = true;
 #endif
-		return	_Value;
+		return Value;
 	}
 	//	Only consume the access.
-	void	consume		()	const
+	void consume() const
 	{
-#ifndef FINAL_VERSION
-		_consumed=true;
+#if !FINAL_VERSION
+		Consumed = true;
 #endif
 	}
-protected:
 	
 private:
-	T		_Value;
-#ifndef FINAL_VERSION
-	mutable	bool	_consumed;
+	T				Value;
+#if !FINAL_VERSION
+	mutable	bool	Consumed;
 #endif
 };
-
-/** Compile time assertion
-  */
-#define nlctassert(cond) sizeof(uint[(cond) ? 1 : 0]);
-
-
-
-
-
-
-
 
 
 //
@@ -634,10 +626,9 @@ void nlFatalError (const char *format, ...);
 /// Never use this function but call the nlerror macro (internal use only)
 void nlError (const char *format, ...);
 
+#define NL_CRASH_DUMP_FILE "nel_debug.dmp"
 
 } // NLMISC
-
-#define NL_CRASH_DUMP_FILE "nel_debug.dmp"
 
 #endif // NL_DEBUG_H
 

@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.10 2004/12/24 11:36:14 boucher Exp $
+ * $Id: words_dictionary.cpp,v 1.11 2005/01/19 10:37:26 brigand Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -194,7 +194,7 @@ bool CWordsDictionary::init( const string& configFileName )
  * - mystring$ returns mystring only if it is at the end of a key or word
  * All returned words are in UTF8.
  */
-void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultVec )
+void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultVec ) const
 {
 	// Prepare search string
 	if ( inputStr.empty() )
@@ -270,3 +270,7 @@ CSString CWordsDictionary::getWordsKey( const CSString& resultStr )
 }
 
 } // NLMISC
+
+
+
+

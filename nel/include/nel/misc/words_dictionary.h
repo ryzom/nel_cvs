@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.5 2004/12/24 11:36:15 boucher Exp $
+ * $Id: words_dictionary.h,v 1.6 2005/01/19 10:38:05 brigand Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	 * - mystring$ returns mystring only if it is at the end of a key or word
 	 * All returned words are in UTF8 string or ANSI string, depending of the config file.
 	 */
-	void			lookup( const CSString& inputStr, CVectorSString& resultVec );
+	void			lookup( const CSString& inputStr, CVectorSString& resultVec )const;
 
 	/// Set the result vector with the word(s) corresponding to the key
 	void			exactLookupByKey( const CSString& key, CVectorSString& resultVec );
@@ -87,7 +87,7 @@ public:
 protected:
 
 	/// Make a result string
-	CSString		makeResult( const CSString key, const CSString word );
+	static CSString		makeResult( const CSString key, const CSString word );
 
 private:
 

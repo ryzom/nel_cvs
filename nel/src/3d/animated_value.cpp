@@ -1,7 +1,7 @@
 /** \file animated_value.cpp
  * <File description>
  *
- * $Id: animated_value.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: animated_value.cpp,v 1.7 2003/12/05 13:47:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 namespace NL3D 
 {
 
+/*
+// Some compilation check: force Visual to compile to template
 CAnimatedValueBool	atoto1;
 CAnimatedValueInt	atoto2;
 CAnimatedValueFloat	atoto3;
@@ -38,5 +40,6 @@ CAnimatedValueVector	atoto4;
 CAnimatedValueString	atoto5;
 CAnimatedValueQuat	atoto6;
 CAnimatedValueRGBA	atoto7;
+*/
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animated_value.h,v 1.4 2003/12/05 13:47:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,8 +81,10 @@ public:
 	/// A default blend method. Doesn't work for all type.
 	virtual void blend (const IAnimatedValue& value, float blendFactor)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueBlendable<T>	*pValue=(CAnimatedValueBlendable<T>*)&value;
@@ -98,8 +100,10 @@ public:
 	  */
 	virtual void affect (const IAnimatedValue& value)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueBlendable<T>	*pValue=(CAnimatedValueBlendable<T>*)&value;
@@ -127,8 +131,10 @@ public:
 	/// A quat blend method.
 	virtual void blend (const IAnimatedValue& value, float blendFactor)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast.
 		CAnimatedValueBlendable<NLMISC::CQuat>	*pValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&value;
@@ -147,8 +153,10 @@ public:
 	  */
 	virtual void affect (const IAnimatedValue& value)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueBlendable<NLMISC::CQuat>	*pValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&value;
@@ -175,8 +183,10 @@ public:
 	/// A quat blend method.
 	virtual void blend (const IAnimatedValue& value, float blendFactor)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast.
 		CAnimatedValueBlendable<NLMISC::CRGBA>	*pValue=(CAnimatedValueBlendable<NLMISC::CRGBA>*)&value;
@@ -192,8 +202,10 @@ public:
 	  */
 	virtual void affect (const IAnimatedValue& value)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueBlendable<NLMISC::CRGBA>	*pValue=(CAnimatedValueBlendable<NLMISC::CRGBA>*)&value;
@@ -222,8 +234,10 @@ public:
 	/// A default blend method. Doesn't work for all type.
 	virtual void blend (const IAnimatedValue& value, float blendFactor)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueNotBlendable<T>	*pValue=(CAnimatedValueNotBlendable<T>*)&value;
@@ -240,8 +254,10 @@ public:
 	  */
 	virtual void affect (const IAnimatedValue& value)
 	{
-		// Check types of value
+		// Check types of value. typeid is slow, assert only in debug
+#ifdef NL_DEBUG
 		nlassert (typeid (value)==typeid(*this));
+#endif
 
 		// Cast
 		CAnimatedValueNotBlendable<T>	*pValue=(CAnimatedValueNotBlendable<T>*)&value;

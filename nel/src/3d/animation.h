@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.9 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: animation.h,v 1.10 2003/12/05 13:47:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ class ITrack;
 
 /**
  * This class describes animations for several tracks. Each track works
- * with a IChannel for the IAnimatable objects.
+ * with a IAnimatedValue for the IAnimatable objects.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France

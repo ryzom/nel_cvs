@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.11 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: bone.cpp,v 1.12 2003/12/05 13:52:21 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/bone.h"
 #include "nel/3d/anim_ctrl.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D
@@ -153,13 +154,19 @@ void	CBone::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &
 // ***************************************************************************
 void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *skeletonForAnimCtrl)
 {
+	// compute is called typically 800 time per frame.
+#ifdef NL_DEBUG
 	nlassert(_BoneBase);
+#endif
 
+	// get/compute our local matrix
+	const CMatrix	&localMatrix= getMatrix();
+	
 	// Compute LocalSkeletonMatrix.
 	// Root case?
 	if(!parent)
 	{
-		_LocalSkeletonMatrix= getMatrix();
+		_LocalSkeletonMatrix= localMatrix;
 	}
 	// Else, son case, take world matrix from parent.
 	else
@@ -171,11 +178,12 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *sk
 			CVector		fatherScale;
 			CVector		trans;
 
+			/* Optim note:
+				the scale is rarely ==1, so don't optimize case where it may be.
+			*/
+
 			// retrieve our translation
-			if( getTransformMode()==ITransformable::DirectMatrix )
-				getMatrix().getPos(trans);
-			else
-				getPos(trans);
+			localMatrix.getPos(trans);
 			// retrieve scale from our father.
 			parent->getScale(fatherScale);
 			// inverse this scale.
@@ -183,12 +191,11 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *sk
 			fatherScale.y= 1.0f / fatherScale.y;
 			fatherScale.z= 1.0f / fatherScale.z;
 
-
 			// Compute InverseScale compensation:
 			// with UnheritScale, formula per bone should be  T*Sf-1*P*R*S*P-1.
 			// But getMatrix() return T*P*R*S*P-1.
 			// So we must compute T*Sf-1*T-1, in order to get wanted result.
-			invScaleComp.scale(fatherScale);
+			invScaleComp.setScale(fatherScale);
 			// Faster compute of the translation part: just "trans + fatherScale MUL -trans" where MUL is comp mul
 			trans.x-= fatherScale.x * trans.x;
 			trans.y-= fatherScale.y * trans.y;
@@ -197,16 +204,16 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *sk
 
 
 			// And finally, we got ParentWM * T*Sf-1*P*R*S*P-1.
-			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * invScaleComp * getMatrix()
+			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * invScaleComp * localMatrix
 			static	CMatrix	tmp;
 			tmp.setMulMatrixNoProj( parent->_LocalSkeletonMatrix, invScaleComp );
-			_LocalSkeletonMatrix.setMulMatrixNoProj( tmp, getMatrix() );
+			_LocalSkeletonMatrix.setMulMatrixNoProj( tmp, localMatrix );
 		}
 		// Normal case.
 		else
 		{
-			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * getMatrix()
-			_LocalSkeletonMatrix.setMulMatrixNoProj( parent->_LocalSkeletonMatrix, getMatrix() );
+			// Do: _LocalSkeletonMatrix= parent->_LocalSkeletonMatrix * localMatrix
+			_LocalSkeletonMatrix.setMulMatrixNoProj( parent->_LocalSkeletonMatrix, localMatrix );
 		}
 	}
 
@@ -215,7 +222,7 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *sk
 
 	// Compute BoneSkinMatrix. Do: _BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos
 	_BoneSkinMatrix.setMulMatrixNoProj( _LocalSkeletonMatrix, _BoneBase->InvBindPos );
-
+	
 	// When compute is done, do extra user ctrl?
 	if(_AnimCtrl && skeletonForAnimCtrl)
 		_AnimCtrl->execute(skeletonForAnimCtrl, this);

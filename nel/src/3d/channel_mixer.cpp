@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.24 2003/11/06 14:49:12 vizerie Exp $
+ * $Id: channel_mixer.cpp,v 1.25 2003/12/05 13:49:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/skeleton_weight.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -142,7 +143,7 @@ void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activ
 
 		// NB: if all weights are 0, the AnimatedValue is not modified...
 	}
-
+	
 	// Touch the animated value and its owner to recompute them later.
 	chan._Object->touch (chan._ValueId, chan._OwnerValueId);
 }
@@ -152,12 +153,13 @@ void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activ
 
 void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 {
-	// Setup an array of animation that are not empty and stay
-	uint numActive=0;
-	uint activeSlot[NumAnimationSlot];
-
-	if(detail && (sint64)evalDetailDate== _LastEvalDetailDate)
-		return;
+	// eval the detail animation only one time per scene traversal.
+	if(detail)
+	{
+		if((sint64)evalDetailDate== _LastEvalDetailDate)
+			return;
+		_LastEvalDetailDate= evalDetailDate;
+	}
 
 	// clean list according to anim setup
 	if(_Dirt)
@@ -173,7 +175,29 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		nlassert(!_ListToEvalDirt);
 	}
 
-	// Setup it up
+	// If the number of channels to draw is 0, quick quit.
+	CChannel	**channelArrayPtr;
+	uint		numChans;
+	if(detail)
+	{
+		numChans= _DetailListToEval.size();
+		if(numChans)
+			channelArrayPtr= &_DetailListToEval[0];
+		else
+			return;
+	}
+	else
+	{
+		numChans= _GlobalListToEval.size();
+		if(numChans)
+			channelArrayPtr= &_GlobalListToEval[0];
+		else
+			return;
+	}
+	
+	// Setup an array of animation that are not empty and stay. HTimer: 0.0% (because CLod skeletons not parsed here)
+	uint numActive=0;
+	uint activeSlot[NumAnimationSlot];
 	for (uint s=0; s<NumAnimationSlot; s++)
 	{
 		// Dirt, not empty and has an influence? (add)
@@ -187,28 +211,42 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		return;
 
 	// For each selected channel
-	CChannel	**channelArrayPtr = 0;
-	uint		numChans;
-	if(detail)
+	// fast 'just one slot Activated' version
+	if(numActive==1)
 	{
-		numChans= _DetailListToEval.size();
-		if(numChans)
-			channelArrayPtr= &_DetailListToEval[0];
-		// eval the animation only one time per scene traversal.
-		_LastEvalDetailDate= evalDetailDate;
+		// Slot number
+		uint			slot=activeSlot[0];
+		// Slot time
+		TAnimationTime	slotTime= _SlotArray[slot]._Time;
+		
+		// For all channels
+		for(;numChans>0; numChans--, channelArrayPtr++)
+		{
+			CChannel	&chan= **channelArrayPtr;
+			
+			// if Current blend factor is not 0
+			if(chan._Weights[slot]!=0.0f)
+			{
+				// Eval the track at this time. HTimer: 0.7%
+				((ITrack*)chan._Tracks[slot])->eval (slotTime);
+				
+				// Copy the interpolated value. HTimer: 0.7%
+				chan._Value->affect (chan._Tracks[slot]->getValue());
+
+				// Touch the animated value and its owner to recompute them later. HTimer: 0.6%
+				chan._Object->touch (chan._ValueId, chan._OwnerValueId);
+			}
+		}
 	}
+	// little bit slower Blend version
 	else
 	{
-		numChans= _GlobalListToEval.size();
-		if(numChans)
-			channelArrayPtr= &_GlobalListToEval[0];
-	}
-
-
-	for(;numChans>0; numChans--, channelArrayPtr++)
-	{
-		CChannel	*pChannel= *channelArrayPtr;
-		evalSingleChannel(**channelArrayPtr, numActive, activeSlot);
+		// For all channels
+		for(;numChans>0; numChans--, channelArrayPtr++)
+		{
+			CChannel	*pChannel= *channelArrayPtr;
+			evalSingleChannel(**channelArrayPtr, numActive, activeSlot);
+		}
 	}
 }
 

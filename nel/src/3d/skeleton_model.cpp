@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.53 2003/11/26 13:44:00 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.54 2003/12/05 13:51:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -670,10 +670,13 @@ void	CSkeletonModel::traverseAnimDetail()
 		Avoid CLod!! To really compute the bones for this frame only.
 	*/
 	bool	tempAvoidCLod= false;
-	CSkeletonModel		*rootSM= _AncestorSkeletonModel;
-	if(!rootSM)	rootSM= this;
+	bool	genShadow;
+	if(_AncestorSkeletonModel)
+		genShadow= _AncestorSkeletonModel->isGeneratingShadowMap();
+	else
+		genShadow= isGeneratingShadowMap();
 	// do the test.
-	if(rootSM->isGeneratingShadowMap() && isDisplayedAsLodCharacter() && isHrcVisible() )
+	if(genShadow && isDisplayedAsLodCharacter() && isHrcVisible() )
 	{
 		tempAvoidCLod= true;
 		// Disable it just the time of this AnimDetail

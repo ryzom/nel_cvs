@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: animatable.h,v 1.4 2003/12/05 13:47:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CChannelMixer;
 /**
  * An animatable object. 
  *
- * This object can have a set of animated values.
+ * This object can have a set of animated values. At Max 32 animated values can be set (because of bit and touch mgt)
  * Animated values are animated by a CChannelMixer object.
  * Each value have a name and a default track.
  *
@@ -83,6 +83,7 @@ public:
 	IAnimatable ()
 	{
 		_Father= NULL;
+		_BitSet= 0;
 	}
 
 	virtual ~IAnimatable() {}
@@ -90,6 +91,7 @@ public:
 	// @{
 	/**
 	  * The enum of animated values. (same system in CMOT). Deriver should extend this enum, beginning with OwnerBit= BaseClass::AnimValueLast.
+	  *	The number of values MUST NOT EXCEED 32, for fast touch() system.
 	  * "OwnerBit" system: each deriver of IAnimatable should had an entry "OwnerBit" in this TAnimValues. This bit will be set when
 	  * an IAnimatedValue of this deriver part is touched, or if one of his IAnimatable sons is touched (see setFather()).
 	  */
@@ -166,42 +168,42 @@ public:
 	void touch (uint valueId, uint ownerValueId)
 	{
 		// Set the bit
-		bitSet.set (valueId);
+		setFlag(valueId);
 		// Set the owner bit
-		bitSet.set (ownerValueId);
+		setFlag(ownerValueId);
 
 		// propagate the touch to the fathers.
 		propagateTouch();
 	}
 
 	/**
-	  * Return true if the value as been touched else false.
+	  * Return non 0 int if the value as been touched else 0.
 	  *
 	  * \param valueId is the animated value ID in the object we want to test the touch flag. or it may be an OwnerBit.
 	  */
-	bool isTouched (uint valueId) const
+	uint32 isTouched (uint valueId) const
 	{
-		return bitSet[valueId];
+		return _BitSet&(1<<valueId);
 	}
 
 
 	/**
-	  * Change value count
+	  * Change value count, bit are set to 0
 	  *
 	  * \param count is the new value count.
 	  */
 	void resize (uint count)
 	{
-		// Bit are reseted after resize (doc), nothing invalidate
-		bitSet.resizeNoReset (count);
+		// with the "uint32 _BitSet" implementation, juste check the size is correct
+		nlassert(count<=32);
 	}
 	// @}
 
 
 private:
 
-	// Use a CBitSet to manage the flags
-	NLMISC::CBitSet bitSet;
+	// Use a uint32 to manage the flags
+	uint32			_BitSet;
 	// The owner of this IAnimatable.
 	IAnimatable		*_Father;
 	// What bit of father which must set when we are updated.
@@ -214,7 +216,7 @@ private:
 		while(pCur->_Father && !pCur->_Father->isTouched(_FatherOwnerBit))
 		{
 			// The Owner bit is the "something is touched" flag. touch it.
-			pCur->_Father->bitSet.set (pCur->_FatherOwnerBit);
+			pCur->_Father->setFlag(pCur->_FatherOwnerBit);
 			pCur= pCur->_Father;
 		}
 	}
@@ -230,9 +232,15 @@ protected:
 	/// This method clear a bit in the bitset.
 	void	clearFlag(uint valueId)
 	{
-		bitSet.clear(valueId);
+		_BitSet&= ~(1<<valueId);
 	}
-
+	
+	/// This method set a bit in the bitset.
+	void	setFlag(uint valueId)
+	{
+		_BitSet|= (1<<valueId);
+	}
+	
 };
 
 

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.24 2000/11/14 15:58:34 cado Exp $
+ * $Id: socket.cpp,v 1.25 2000/11/21 17:44:06 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,7 +390,7 @@ void CSocket::sendTo( CMessage& message, const CInetAddress& addr ) throw (ESock
 /*
  * Receives data (returns false if !dataAvailable()).
  */
-bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr ) throw (ESocket)
+bool CSocket::receivedFrom( CMessage& message, CInetAddress& addr )
 {
 	// Receive incoming message
 	uint32 msgtotalsize = CMessage::maxLength();

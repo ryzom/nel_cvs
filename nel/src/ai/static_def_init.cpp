@@ -362,6 +362,10 @@
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opEq);
 
+	const NLAIC::CIdentType CFuzzyRuleSet::idFuzzyRuleSet("FuzzyRuleSet", NLAIC::CSelfClassCFactory( CFuzzyRuleSet() ),
+		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 	const NLAIC::CIdentType CFuzzyRule::IdFuzzyRule("FuzzyRule",NLAIC::CSelfClassCFactory( CFuzzyRule() ),
 		NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));

@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.8 2001/01/17 10:47:15 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.9 2001/02/27 12:47:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,7 @@ namespace NLAIPYSERVER
 
 	static PyObject *read(PyObject *Self,PyObject *Arg)
 	{		
-		return Py_BuildValue("s",Interface->InPut());
+		return Py_BuildValue("s",Interface->InPut().data());
 	}
 
 /*	static PyObject *getUnicodeString(PyObject *Self,PyObject *Arg)

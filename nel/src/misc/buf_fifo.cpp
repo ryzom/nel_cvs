@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
- * <File description>
+ * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.2 2001/02/23 14:54:52 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.3 2001/02/23 15:13:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,32 +23,6 @@
  * MA 02111-1307, USA.
  */
 
-/*
-release
-_BiggestBlock: 998
-_SmallestBlock: 1
-_BiggestBuffer: 2097152
-_SmallestBuffer: 16
-_Pushed : 2657068
-_Poped: 2656608
-_Resized: 18
-_PushedTime: 10476272 3.942794
-_PopedTime: 45561095 17.150101
-_ResizedTime: 108373 6020.722222
---------------------------------------------
-debug
-_BiggestBlock: 998
-_SmallestBlock: 1
-_BiggestBuffer: 2097152
-_SmallestBuffer: 16
-_Pushed : 2657068
-_Poped: 2656608
-_Resized: 18
-_PushedTime: 14303341 5.383129
-_PopedTime: 1143916487 430.592879
-_ResizedTime: 178167 9898.166667
-*/
-
 #include <vector>
 
 #include "nel/misc/debug.h"
@@ -58,11 +32,10 @@ _ResizedTime: 178167 9898.166667
 
 using namespace std;
 
+#define DEBUG_FIFO 0
+
 namespace NLMISC {
 
-
-
-//todo: kan tail = head ca veut pas dire que c est vide (ca peut etre full aussi) => mettre un bool
 
 CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Head(NULL), _Tail(NULL), _Empty(true), _Rewinder(NULL)
 {
@@ -83,7 +56,9 @@ CBufFIFO::~CBufFIFO()
 	if (_Buffer != NULL)
 	{
 		delete _Buffer;
-		//nldebug("delete");
+#if DEBUG_FIFO
+		nldebug("delete");
+#endif
 	}
 }
 
@@ -91,7 +66,9 @@ void CBufFIFO::push(std::vector<uint8> &buffer)
 {
 	TTicks before = CTime::getPerformanceTime();
 
-	//nldebug("push(%d)", size);
+#if DEBUG_FIFO
+	nldebug("push(%d)", size);
+#endif
 
 	nlassert(buffer.size() > 0 && buffer.size() < 1000);
 
@@ -136,7 +113,9 @@ void CBufFIFO::pop (vector<uint8> &buffer)
 	
 	if (_Rewinder != NULL && _Tail == _Rewinder)
 	{
-		//nldebug("rewind!");
+#if DEBUG_FIFO
+		nldebug("rewind!");
+#endif
 
 		// need to rewind
 		_Tail = _Buffer;
@@ -147,7 +126,9 @@ void CBufFIFO::pop (vector<uint8> &buffer)
 
 	nlassert(size > 0 && size<1000);
 
-	//nldebug("pop(%d)", size);
+#if DEBUG_FIFO
+	nldebug("pop(%d)", size);
+#endif
 
 	_Tail += sizeof (uint32);
 
@@ -183,7 +164,9 @@ void CBufFIFO::resize (uint32 size)
 {
 	TTicks before = CTime::getPerformanceTime();
 
-	//nldebug("resize(%d)", size);
+#if DEBUG_FIFO
+	nldebug("resize(%d)", size);
+#endif
 
 	if (size > _BiggestBuffer) _BiggestBuffer = size;
 	if (size < _SmallestBuffer) _SmallestBuffer = size;
@@ -212,7 +195,9 @@ void CBufFIFO::resize (uint32 size)
 	uint8 *NewBuffer = new uint8[size];
 	memset (NewBuffer, '-', size);
 
-	//nldebug("new %d bytes", size);
+#if DEBUG_FIFO
+	nldebug("new %d bytes", size);
+#endif
 
 	// copy the old buffer to the new one
 	// if _Tail == _Head => empty fifo, don't copy anything
@@ -242,7 +227,9 @@ void CBufFIFO::resize (uint32 size)
 	if (_Buffer != NULL)
 	{
 		delete _Buffer;
-		//nldebug("delete");
+#if DEBUG_FIFO
+		nldebug("delete");
+#endif
 	}
 
 	// affect new buffer
@@ -332,21 +319,27 @@ bool CBufFIFO::canFit (uint32 size)
 			if (_BufferSize >= size)
 			{
 				// reset the pointer
-				//nldebug("reset tail and head");
+#if DEBUG_FIFO
+				nldebug("reset tail and head");
+#endif
 				_Head = _Tail = _Buffer;
 				return true;
 			}
 			else
 			{
 				// buffer not big enough
-				//nldebug("buffer full buffersize<size");
+#if DEBUG_FIFO
+				nldebug("buffer full buffersize<size");
+#endif
 				return false;
 			}
 		}
 		else
 		{
 			// buffer full
-			//nldebug("buffer full h=t");
+#if DEBUG_FIFO
+			nldebug("buffer full h=t");
+#endif
 			return false;
 		}
 	}
@@ -355,22 +348,30 @@ bool CBufFIFO::canFit (uint32 size)
 		if (_Buffer + _BufferSize - _Head >= (sint32) size)
 		{
 			// can fit after _Head
-			//nldebug("fit after");
+#if DEBUG_FIFO
+			nldebug("fit after");
+#endif
 			return true;
 		}
 		else if (_Tail - _Buffer >= (sint32) size)
 		{
 			// can fit at the beginning
-			//nldebug("fit at beginning");
+#if DEBUG_FIFO
+			nldebug("fit at beginning");
+#endif
 			_Rewinder = _Head;
-			//nldebug("set the rewinder");
+#if DEBUG_FIFO
+			nldebug("set the rewinder");
+#endif
 			_Head = _Buffer;
 			return true;
 		}
 		else
 		{
 			// can't fit
-			//nldebug("no room t<h");
+#if DEBUG_FIFO
+			nldebug("no room t<h");
+#endif
 			return false;
 		}
 	}
@@ -378,12 +379,16 @@ bool CBufFIFO::canFit (uint32 size)
 	{
 		if (_Tail - _Head >= (sint32) size)
 		{
-			//nldebug("fit t>h");
+#if DEBUG_FIFO
+			nldebug("fit t>h");
+#endif
 			return true;
 		}
 		else
 		{
-			//nldebug("no room t>h");
+#if DEBUG_FIFO
+			nldebug("no room t>h");
+#endif
 			return false;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
- * <File description>
+ * Interface for CBufFIFO
  *
- * $Id: buf_fifo.h,v 1.2 2001/02/23 14:54:52 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.3 2001/02/23 15:13:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,25 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * This class is a dynamic size FIFO that contains variable size uint8 buffer.
+ * It's used in the layer1 network for storing temporary messages.
+ * You can resize the internal FIFO buffer if you know the average size
+ * of data you'll put in it. It have the same behavior as STL so if the
+ * buffer is full the size will be automatically increase by 2.
+ * \code
+ 	CBufFIFO fifo;
+	fifo.resize(10000);
+	vector<uint8> vec;
+	vec.resize(rand()%256);
+	memset (&(vec[0]), '-', vec.size());
+	// push the vector
+	fifo.push(vec);
+	// display the fifo
+	fifo.display();
+	vector<uint8> vec2;
+	// get the vector
+	fifo.pop(vec2);
+ * \endcode
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
@@ -48,18 +66,25 @@ public:
 	CBufFIFO ();
 	~CBufFIFO ();
 
+	/// Push 'buffer' in the head of the FIFO
 	void	 push (std::vector<uint8> &buffer);
 
+	/// Pop the buffer in the tail of the FIFO and put it in 'buffer'
 	void	 pop (std::vector<uint8> &buffer);
 
+	/// Set the size of the FIFO buffer in byte
 	void	 resize (uint32 size);
 
+	/// Return true if the FIFO is empty
 	bool	 empty ();
 
+	/// Erase the FIFO
 	void	 clear ();
 
+	/// display the FIFO to stdout (used to debug the FIFO)
 	void	 display ();
 
+	/// display the FIFO statistics (speed, nbcall, etc...) to stdout
 	void	 displayStats ();
 
 private:
@@ -85,7 +110,7 @@ private:
 	bool	 canFit (uint32 size);
 
 
-	// statisics on the fifo
+	// statisics of the FIFO
 	uint32 _BiggestBlock;
 	uint32 _SmallestBlock;
 	uint32 _BiggestBuffer;

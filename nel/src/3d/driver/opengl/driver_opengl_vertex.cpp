@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.36 2003/03/17 17:32:02 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.37 2003/03/31 11:57:02 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -141,6 +141,7 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	if ( !setupMaterial(Mat) )
 		return false;
 
+	
 
 	// render primitives.
 	//==============================
@@ -1003,50 +1004,78 @@ void		CVertexBufferInfo::setupVertexBufferHard(IVertexBufferHardGL &vb)
 	// Not ATI VBHard by default
 	ATIVBHardMode= false;
 
+	
 	// Setup differs from ATI or NVidia VBHard.
-	if(vb.NVidiaVertexBufferHard)
+	switch(vb.VBType)
 	{
-		CVertexBufferHardGLNVidia	&vbHardNV= static_cast<CVertexBufferHardGLNVidia&>(vb);
-
-		// Get value pointer
-		for (i=0; i<CVertexBuffer::NumValue; i++)
+		case IVertexBufferHardGL::NVidiaVB:
 		{
-			// Value used ?
-			if (VertexFormat&(1<<i))
+			CVertexBufferHardGLNVidia	&vbHardNV= static_cast<CVertexBufferHardGLNVidia&>(vb);
+			// Get value pointer
+			for (i=0; i<CVertexBuffer::NumValue; i++)
 			{
-				// Get the pointer
-				ValuePtr[i]= vbHardNV.getNVidiaValueEx(i);
+				// Value used ?
+				if (VertexFormat&(1<<i))
+				{
+					// Get the pointer
+					ValuePtr[i]= vbHardNV.getNVidiaValueEx(i);
 
-				// Type of the value
-				Type[i]= vbHardNV.getValueType (i);
+					// Type of the value
+					Type[i]= vbHardNV.getValueType (i);
+				}
 			}
 		}
-	}
-	else
-	{
-		nlassert(vb.ATIVertexBufferHard);
-		CVertexBufferHardGLATI	&vbHardATI= static_cast<CVertexBufferHardGLATI&>(vb);
-
-		// special setup in setupGlArrays()...
-		ATIVBHardMode= true;
-
-		// store the VertexObject Id.
-		ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
-
-		// Get value offset
-		for (i=0; i<CVertexBuffer::NumValue; i++)
+		break;
+		case IVertexBufferHardGL::ATIVB:
 		{
-			// Value used ?
-			if (VertexFormat&(1<<i))
-			{
-				// Get the pointer
-				ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
+			CVertexBufferHardGLATI	&vbHardATI= static_cast<CVertexBufferHardGLATI &>(vb);
+			// special setup in setupGlArrays()...
+			ATIVBHardMode= true;
 
-				// Type of the value
-				Type[i]= vbHardATI.getValueType (i);
+			// store the VertexObject Id.
+			ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
+
+			// Get value offset
+			for (i=0; i<CVertexBuffer::NumValue; i++)
+			{
+				// Value used ?
+				if (VertexFormat&(1<<i))
+				{
+					// Get the pointer
+					ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
+
+					// Type of the value
+					Type[i]= vbHardATI.getValueType (i);
+				}
 			}
 		}
-	}
+		break;
+		case IVertexBufferHardGL::ATIMapObjectVB:
+		{
+			CVertexBufferHardGLMapObjectATI	&vbHardATI= static_cast<CVertexBufferHardGLMapObjectATI &>(vb);
+			// special setup in setupGlArrays()...
+			ATIVBHardMode= true;
+
+			// store the VertexObject Id.
+			ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
+
+			// Get value offset
+			for (i=0; i<CVertexBuffer::NumValue; i++)
+			{
+				// Value used ?
+				if (VertexFormat&(1<<i))
+				{
+					// Get the pointer
+					ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
+
+					// Type of the value
+					Type[i]= vbHardATI.getValueType (i);
+				}
+			}
+		}
+		break;
+	}	
+	
 
 	// Copy the UVRouting table
 	const uint8 *uvRouting = vb.getUVRouting ();
@@ -1085,7 +1114,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 {
 	if(!supportVertexBufferHard())
 		return false;
-
+	
 	// must be supported
 	if(!_AGPVertexArrayRange || !_VRAMVertexArrayRange)
 		return false;
@@ -1174,7 +1203,7 @@ uint32				CDriverGL::getAvailableVertexVRAMMemory ()
 void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 {
 	// If old is not a VBHard, or if not a NVidia VBHard, no-op.
-	if( _CurrentVertexBufferHard==NULL || !_CurrentVertexBufferHard->NVidiaVertexBufferHard )
+	if( _CurrentVertexBufferHard==NULL || !_CurrentVertexBufferHard->VBType == IVertexBufferHardGL::NVidiaVB)
 		return;
 
 	// if we do not activate the same (NB: newVBHard==NULL if not a VBHard).

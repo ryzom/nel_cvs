@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.h
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.h,v 1.4 2003/03/17 17:32:02 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.h,v 1.5 2003/03/31 11:57:02 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,6 +43,8 @@ class	IVertexBufferHardGL;
 // VBHard interface for both NVidia / ATI extension.
 // ***************************************************************************
 // ***************************************************************************
+
+
 
 
 // ***************************************************************************
@@ -90,10 +92,9 @@ public:
 	virtual	void			disable() =0;
 
 
+	enum TVBType { NVidiaVB, ATIVB, ATIMapObjectVB, UnknownVB };
 	// true if NVidia vertex buffer hard.
-	bool				NVidiaVertexBufferHard;
-	// true if ATI vertex buffer hard.
-	bool				ATIVertexBufferHard;
+	TVBType	 VBType;	
 	// For Fence access. Ignored for ATI.
 	bool				GPURenderingAfterFence;
 
@@ -298,6 +299,7 @@ private:
 
 
 
+
 // ***************************************************************************
 /// Work only if ARRAY_RANGE_NV is enabled.
 class CVertexBufferHardGLATI : public IVertexBufferHardGL
@@ -347,6 +349,95 @@ private:
 	uint						_RAMMirrorVertexSize;
 
 };
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/** TEMP nico : test if better with ATI_map_object_buffer
+  * We don't manage a heap there, we just allocate separate objects (can't get a pointer on a portion of the buffer only ..)
+  * todo : test if such maneer is still efficient (because of vb switching)
+  * NB : this is available only it GL_ATI_map_object_buffer is available
+  */
+class CVertexArrayRangeMapObjectATI : public IVertexArrayRange
+{
+public:
+	CVertexArrayRangeMapObjectATI(CDriverGL *drv);
+
+
+	/// \name Implementation
+	// @{	
+	/** Allocate a vertex array space. false if error. must free before re-allocate.
+	  * Will always succeed, because vb are not managed in a heap, but are rather kept as separate objects
+	  */
+	virtual	bool					allocate(uint32 size, IDriver::TVBHardType vbType);
+	/// free this space.
+	virtual	void					free();
+	/// create a IVertexBufferHardGL
+	virtual	IVertexBufferHardGL		*createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting);
+	/// return the size allocated. 0 if not allocated or failure
+	virtual	uint					sizeAllocated() const { return _SizeAllocated; }	
+	// @}
+
+
+	// Those methods read/write in _Driver->_CurrentVertexArrayRange.
+	/** active this VertexArrayRange as the current vertex array range used. no-op if already setup.
+	 *	NB: no-op for ATI, but ensure correct _Driver->_CurrentVertexArrayRange value.
+	 */
+	void			enable();
+	/** disable this VertexArrayRange. _Driver->_CurrentVertexArrayRange= NULL;
+	 *	NB: no-op for ATI, but ensure correct _Driver->_CurrentVertexArrayRange value.
+	 */
+	void			disable();	
+	
+// *************************
+private:
+	IDriver::TVBHardType _VBType;
+	uint32				 _SizeAllocated;	
+};
+
+
+/** vb hard using the ATI_map_object_buffer extension. Buffer are kept separate rather than managed in a heap
+  */
+class CVertexBufferHardGLMapObjectATI : public IVertexBufferHardGL
+{
+public:
+
+	CVertexBufferHardGLMapObjectATI(CDriverGL *drv);
+	virtual	~CVertexBufferHardGLMapObjectATI();
+
+
+	/// \name Implementation
+	// @{
+	virtual	void		*lock();
+	virtual	void		unlock();
+	virtual void		unlock(uint startVert, uint endVert);
+	virtual	void		enable();
+	virtual	void		disable();
+	virtual void		lockHintStatic(bool staticLock);
+	// @}
+
+   /**	setup ptrs allocated by createVBHard()
+	 */
+	void					initGL(CVertexArrayRangeMapObjectATI *var, uint vertexObjectID);
+
+	
+public:
+	uint					getATIValueOffset (uint value)
+	{				
+		return (uint) getValueOff (value);
+	}
+
+	/// get Handle of the ATI buffer.
+	uint					getATIVertexObjectId() const { return _VertexObjectId;}
+
+
+// *************************
+private:
+	uint						   _VertexObjectId;	
+	void						   *_VertexPtr; // pointer on current datas. Null if not locked
+	CVertexArrayRangeMapObjectATI  *_VertexArrayRange;
+};
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.8 2003/03/27 17:37:31 berenguier Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.9 2003/03/31 11:53:39 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -62,9 +62,8 @@ IVertexArrayRange::~IVertexArrayRange()
 IVertexBufferHardGL::IVertexBufferHardGL(CDriverGL *drv)
 {
 	_Driver= drv;
-	NVidiaVertexBufferHard= false;
-	ATIVertexBufferHard= false;
 	GPURenderingAfterFence= false;
+	VBType = UnknownVB;
 }
 // ***************************************************************************
 IVertexBufferHardGL::~IVertexBufferHardGL()
@@ -266,7 +265,7 @@ CVertexBufferHardGLNVidia::CVertexBufferHardGLNVidia(CDriverGL *drv) : IVertexBu
 	_FenceSet= false;
 
 	// Flag our type
-	NVidiaVertexBufferHard= true;
+	VBType = NVidiaVB;	
 
 	// default: dynamic Loick
 	_LockHintStatic= false;
@@ -564,7 +563,7 @@ CVertexBufferHardGLATI::CVertexBufferHardGLATI(CDriverGL *drv) : IVertexBufferHa
 	_RAMMirrorVertexSize= 0;
 
 	// Flag our type
-	ATIVertexBufferHard= true;
+	VBType = ATIVB;	
 }
 
 
@@ -684,6 +683,191 @@ void			CVertexBufferHardGLATI::lockHintStatic(bool staticLock)
 {
 	// no op.
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+//
+// ATI implementation, version 2 using the map object buffer extension
+//
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+// CVertexArrayRangeMapObjectATI
+// ***************************************************************************
+
+
+// ***************************************************************************
+CVertexArrayRangeMapObjectATI::CVertexArrayRangeMapObjectATI(CDriverGL *drv) : IVertexArrayRange(drv),
+																			   _VBType(IDriver::VBHardAGP),
+																			   _SizeAllocated(0)
+{
+}
+
+// ***************************************************************************
+bool CVertexArrayRangeMapObjectATI::allocate(uint32 size, IDriver::TVBHardType vbType)
+{
+	// We don't manage memory ourselves, but test if there's enough room anyway
+	GLuint vertexObjectId;
+	switch(vbType)
+	{	
+		case IDriver::VBHardAGP: 
+			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
+			break;
+		case IDriver::VBHardVRAM:
+			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+			break;
+	}
+	if (vertexObjectId)
+	{	
+		// free the object
+		nglDeleteObjectBufferATI(vertexObjectId);
+		//
+		_SizeAllocated = size;
+		_VBType = vbType;	
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+void CVertexArrayRangeMapObjectATI::free()
+{
+	_SizeAllocated = 0;
+}
+
+// ***************************************************************************
+IVertexBufferHardGL *CVertexArrayRangeMapObjectATI::createVBHardGL(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, const uint8 *uvRouting)
+{
+	// create a ATI VBHard
+	CVertexBufferHardGLMapObjectATI	*newVbHard= new CVertexBufferHardGLMapObjectATI(_Driver);
+
+	// Init the format of the VB.
+	newVbHard->initFormat(vertexFormat, typeArray, numVertices, uvRouting);
+
+	// compute size to allocate.
+	uint32	size= newVbHard->getVertexSize() * newVbHard->getNumVertices();
+
+	uint vertexObjectId;
+	// just allocate a new buffer..
+	switch(_VBType)
+	{
+		case IDriver::VBHardAGP: 
+			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
+			break;
+		case IDriver::VBHardVRAM:
+			vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_STATIC_ATI);
+			break;
+	};
+
+
+	// init the allocator, if success
+	if( nglIsObjectBufferATI(vertexObjectId) )
+	{
+		newVbHard->initGL(this, vertexObjectId);
+		return newVbHard;
+	}
+	else
+	{
+		delete newVbHard;
+		return false;
+	}
+}
+
+// ***************************************************************************
+void CVertexArrayRangeMapObjectATI::enable()
+{	
+}
+
+// ***************************************************************************
+void CVertexArrayRangeMapObjectATI::disable()
+{
+}
+
+
+
+// ***************************************************************************
+// CVertexBufferHardGLMapObjectATI
+// ***************************************************************************
+
+// ***************************************************************************
+CVertexBufferHardGLMapObjectATI::CVertexBufferHardGLMapObjectATI(CDriverGL *drv) :  IVertexBufferHardGL(drv),
+																					_VertexObjectId(0),
+																					_VertexPtr(NULL),
+																					_VertexArrayRange(NULL)
+{	
+	// Flag our type
+	VBType = ATIMapObjectVB;		
+}
+
+// ***************************************************************************
+CVertexBufferHardGLMapObjectATI::~CVertexBufferHardGLMapObjectATI()
+{
+	if (_VertexObjectId) nglDeleteObjectBufferATI(_VertexObjectId);
+}
+
+// ***************************************************************************
+void *CVertexBufferHardGLMapObjectATI::lock()
+{
+	if (_VertexPtr) return _VertexPtr; // already locked
+	if (!_VertexObjectId) return NULL;
+	_VertexPtr = nglMapObjectBufferATI(_VertexObjectId);
+	return _VertexPtr;
+}
+
+// ***************************************************************************
+void CVertexBufferHardGLMapObjectATI::unlock()
+{
+	if (!_VertexObjectId || !_VertexPtr) return;
+	nglUnmapObjectBufferATI(_VertexObjectId);
+	_VertexPtr = NULL;
+}
+
+// ***************************************************************************
+void CVertexBufferHardGLMapObjectATI::unlock(uint startVert,uint endVert)
+{
+	unlock(); // can't do a lock on a range of the vb..
+}
+
+// ***************************************************************************
+void CVertexBufferHardGLMapObjectATI::enable()
+{
+	if(_Driver->_CurrentVertexBufferHard != this)
+	{
+		/* nlassert(_VertexArrayRange);
+		_VertexArrayRange->enable(); */
+		_Driver->_CurrentVertexBufferHard= this;
+	}
+}
+
+// ***************************************************************************
+void CVertexBufferHardGLMapObjectATI::disable()
+{
+	if(_Driver->_CurrentVertexBufferHard != NULL)
+	{
+		/* nlassert(_VertexArrayRange);
+		_VertexArrayRange->disable(); */
+		_Driver->_CurrentVertexBufferHard= NULL;
+	}
+}
+
+// ***************************************************************************
+void CVertexBufferHardGLMapObjectATI::initGL(CVertexArrayRangeMapObjectATI *var, uint vertexObjectID)
+{
+	_VertexArrayRange = var;
+	_VertexObjectId = vertexObjectID;
+}
+
+// ***************************************************************************
+void			CVertexBufferHardGLMapObjectATI::lockHintStatic(bool staticLock)
+{
+	// no op.
+}
+
 
 
 }

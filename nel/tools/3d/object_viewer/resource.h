@@ -599,6 +599,20 @@
 #define IDC_DIFFUSE                     1373
 #define IDC_AUTO_DELAY                  1373
 #define IDC_AMBIENT                     1374
+#define IDC_DISPLAY_HELPERS             1374
+#define IDC_ALIGN_ON_MOTION             1375
+#define IDC_AUTO_BBOX                   1376
+#define IDC_RESET_BBOX                  1377
+#define IDC_ENABLE_AUTO_COUNT           1378
+#define IDC_RESET_COUNT                 1379
+#define IDC_NUM_PARTICLES               1380
+#define IDC_CURR_NUM_PARTS              1381
+#define IDC_SYSTEM_DATE                 1381
+#define IDC_ASSIGN_COUNT                1382
+#define IDC_TIME_THRESHOLD_PLACE_HOLDER 1383
+#define IDC_MAX_STEP_PLACE_HOLDER       1384
+#define IDC_LOCK_FRAME_DELAY            1385
+#define IDC_AUTOREPEAT                  1386
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -712,16 +726,27 @@
 #define ID_FILE_BINDSCENEANIMATION      32861
 #define IDS_ERROR                       32861
 #define IDM_SET_FRAME_DELAY             32862
+#define IDS_AUTO_COUNT_ERROR            32862
 #define IDM_REMOVE_ALL_INSTANCES_FROM_SCENE 32863
+#define IDS_WARNING                     32863
 #define IDM_MERGE_PS                    32864
+#define IDS_NUM_PARTICLES               32864
 #define IDM_RIBBON_LOOK_AT              32865
+#define IDS_SYSTEM_DATE                 32865
 #define IDM_RIBBON_LOOK_AT_LOC          32866
+#define IDS_UNLOCK_PS                   32866
 #define IDM_MAGNETIC_FORCE              32867
+#define IDS_LOCK_PS                     32867
 #define IDM_MAGNETIC_FORCE_LOC          32868
+#define IDS_FORCE_APPLIED_ON_OBJECT_THAT_LAST_FOREVER 32868
 #define IDM_RADIAL_EMITTER              32869
+#define IDS_PS_NO_FINITE_DURATION       32869
 #define IDM_RADIAL_EMITTER_LOC          32870
+#define IDS_HAS_FORCE_APPLIED           32870
 #define ID_WINDOW_DAYNIGHT              32871
+#define IDS_ENABLE_AUTOCOUNT            32871
 #define ID_WINDOW_VEGETABLE             32872
+#define IDS_PARTICLE_SYSTEM_EDITOR      32872
 #define ID_WINDOW_WATER_POOL            32873
 #define IDM_ACTIVATE_TEXTURE_SET_1      32875
 #define IDM_ACTIVATE_TEXTURE_SET_4      32876
@@ -782,7 +807,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1132
 #define _APS_NEXT_COMMAND_VALUE         32962
-#define _APS_NEXT_CONTROL_VALUE         1374
+#define _APS_NEXT_CONTROL_VALUE         1387
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * <File description>
  *
- * $Id: rgba.cpp,v 1.3 2000/10/20 16:15:59 corvazier Exp $
+ * $Id: rgba.cpp,v 1.4 2000/10/23 14:16:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,28 @@ void CRGBA::serial(class NLMISC::IStream &f)
 	f.serial (B);
 	f.serial (A);
 }
+
+
+void CRGBA::set(uint8 r, uint8 g, uint8 b, uint8 a)
+{
+	R = r;
+	G = g;
+	B = b;
+	A = a;
+}
+
+
+void CRGBA::blendFromui(CRGBA &c0, CRGBA &c1, uint coef) // coef must be in [0,256]
+{
+	int	a1 = coef;
+	int	a2 = 256-a1;
+	R = (c0.R*a2 + c1.R*a1) >>8;
+	G = (c0.G*a2 + c1.G*a1) >>8;
+	B = (c0.B*a2 + c1.B*a1) >>8;
+	A = (c0.A*a2 + c1.A*a1) >>8;
+}
+
+
 
 
 } // NLMISC

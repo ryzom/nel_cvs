@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.3 2000/10/20 16:16:08 corvazier Exp $
+ * $Id: rgba.h,v 1.4 2000/10/23 14:16:01 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,9 @@ public:
 	bool	operator==(const CRGBA &c) const  
 		{return R==c.R && G==c.G && B==c.B && A==c.A;}
 	void    serial(class NLMISC::IStream &f);
+	void blendFromui(CRGBA &c0, CRGBA &c1, uint coef); 
+	void set(uint8 r, uint8 g, uint8 b, uint8 a);
+
 
 	///
 	uint8	R,G,B,A;

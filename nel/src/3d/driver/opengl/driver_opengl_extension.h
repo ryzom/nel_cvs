@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.38 2004/05/14 15:46:18 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.39 2004/06/29 13:53:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,7 @@ struct	CGlExtensions
 	bool	NVVertexProgram;
 	bool    EXTVertexShader;
 	bool	NVTextureShader;
+	bool    NVOcclusionQuery;
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
 	bool	EXTSecondaryColor;
@@ -565,6 +566,16 @@ extern PFNGLGETVERTEXATTRIBFVARBPROC nglGetVertexAttribfvARB;
 extern PFNGLGETVERTEXATTRIBIVARBPROC nglGetVertexAttribivARB;
 extern PFNGLGETVERTEXATTRIBPOINTERVARBPROC nglGetVertexAttribPointervARB;
 extern PFNGLISPROGRAMARBPROC nglIsProgramARB;
+
+// GL_NV_occlusion_query
+//==================================
+extern NEL_PFNGLGENOCCLUSIONQUERIESNVPROC nglGenOcclusionQueriesNV;
+extern NEL_PFNGLDELETEOCCLUSIONQUERIESNVPROC nglDeleteOcclusionQueriesNV;
+extern NEL_PFNGLISOCCLUSIONQUERYNVPROC nglIsOcclusionQueryNV;
+extern NEL_PFNGLBEGINOCCLUSIONQUERYNVPROC nglBeginOcclusionQueryNV;
+extern NEL_PFNGLENDOCCLUSIONQUERYNVPROC nglEndOcclusionQueryNV;
+extern NEL_PFNGLGETOCCLUSIONQUERYIVNVPROC nglGetOcclusionQueryivNV;
+extern NEL_PFNGLGETOCCLUSIONQUERYUIVNVPROC nglGetOcclusionQueryuivNV;
 
 
 

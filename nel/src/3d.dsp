@@ -640,6 +640,10 @@ SOURCE=.\3d\material.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\3d\occlusion_query.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\shader.cpp
 # End Source File
 # Begin Source File

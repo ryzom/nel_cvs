@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.73 2004/06/22 10:06:38 berenguier Exp $
+ * $Id: driver.h,v 1.74 2004/06/29 13:57:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,7 @@ class CLight;
 class CScissor;
 class CViewport;
 struct CMonitorColorProperties;
+struct IOcclusionQuery;
 
 
 
@@ -221,6 +222,16 @@ public:
 
 	/// Set the color mask filter through where the operation done will pass
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)=0;
+
+	/** Set depth range. Depth range specify a linear mapping from device z coordinates (in the [-1, 1] range) to window coordinates (in the [0, 1] range)
+	  * This mapping occurs after clipping of primitives and division by w of vertices coordinates.
+	  * Default depth range is [0, 1].
+	  * NB : znear should be different from zfar or an assertion is raised	  	  
+	  */
+	virtual void			setDepthRange(float znear, float zfar) = 0;
+	// Get the current depth range
+	virtual	void			getDepthRange(float &znear, float &zfar) const = 0;
+
 
 	/** setup a texture, generate and upload if needed. same as setupTextureEx(tex, true, dummy);
 	 */
@@ -444,8 +455,8 @@ public:
 	 *  \param startVertex is the first vertex to use during this rendering.
 	 *  \param numPoints is the number of point to render.
 	 */
-	virtual bool			renderRawPoints(CMaterial& mat, uint32 startVertex, uint32 numPoints)=0;
-
+	virtual bool			renderRawPoints(CMaterial& mat, uint32 startVertex, uint32 numPoints)=0;	
+	
 	/** Render lines with previously setuped VertexBuffer / Matrixes.
 	 *  Lines are stored as a sequence in the vertex buffer.
 	 *  \param mat is the material to use during this rendering
@@ -1116,6 +1127,20 @@ public:
 
 	// @}
 
+	/// \name Occlusion query mechanism
+	// @{
+	// Test wether this device supports the occlusion query mecanism
+	virtual bool			supportOcclusionQuery() const = 0;
+	/** Create an occlusion query object.
+	  * \return NULL is not enough resources or if not supported
+	  */
+	virtual IOcclusionQuery *createOcclusionQuery() = 0;
+	// Delete an occlusion query object previously obtained by a call to createOcclusionQuery
+	virtual void			deleteOcclusionQuery(IOcclusionQuery *oq) = 0;
+	// @}
+
+	// get the number of call to swapBuffer since the driver was created
+	virtual uint64			getSwapBufferCounter() const = 0;
 protected:
 	friend	class	IVBDrvInfos;
 	friend	class	IIBDrvInfos;

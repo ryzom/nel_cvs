@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.23 2004/04/28 12:54:53 vizerie Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.24 2004/06/29 13:53:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1487,6 +1487,27 @@ typedef GLvoid (APIENTRY *NEL_PFNGLGETPROGRAMIVARBPROC)(GLenum target, GLenum pn
 typedef GLvoid (APIENTRY *NEL_PFNGLGETPROGRAMSTRINGARBPROC)(GLenum target, GLenum pname, GLvoid *string);
 typedef GLboolean (APIENTRY *NEL_PFNGLISPROGRAMARBPROC)(GLuint program);
 
+
+
+// GL_NV_occlusion_query
+//==================================
+#ifndef GL_NV_occlusion_query
+#define GL_NV_occlusion_query              1
+
+#define GL_PIXEL_COUNTER_BITS_NV           0x8864
+#define GL_CURRENT_OCCLUSION_QUERY_ID_NV   0x8865
+#define GL_PIXEL_COUNT_NV                  0x8866
+#define GL_PIXEL_COUNT_AVAILABLE_NV        0x8867
+
+typedef GLvoid    (APIENTRY * NEL_PFNGLGENOCCLUSIONQUERIESNVPROC) (GLsizei n, GLuint *ids);
+typedef GLvoid    (APIENTRY * NEL_PFNGLDELETEOCCLUSIONQUERIESNVPROC) (GLsizei n, const GLuint *ids);
+typedef GLboolean (APIENTRY * NEL_PFNGLISOCCLUSIONQUERYNVPROC) (GLuint id);
+typedef GLvoid    (APIENTRY * NEL_PFNGLBEGINOCCLUSIONQUERYNVPROC) (GLuint id);
+typedef GLvoid    (APIENTRY * NEL_PFNGLENDOCCLUSIONQUERYNVPROC) (GLvoid);
+typedef GLvoid    (APIENTRY * NEL_PFNGLGETOCCLUSIONQUERYIVNVPROC) (GLuint id, GLenum pname, GLint *params);
+typedef GLvoid    (APIENTRY * NEL_PFNGLGETOCCLUSIONQUERYUIVNVPROC) (GLuint id, GLenum pname, GLuint *params);
+
+#endif /* GL_NV_occlusion_query */
 
 
 #ifdef __cplusplus

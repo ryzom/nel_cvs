@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.175 2004/06/22 10:05:58 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.176 2004/06/29 13:53:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,6 +74,7 @@
 #include "nel/3d/scissor.h"
 #include "3d/light.h"
 #include "nel/misc/time_nl.h"
+#include "3d/occlusion_query.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -112,7 +113,25 @@ using NLMISC::CVector;
 class	CDriverGL;
 class	IVertexArrayRange;
 class	IVertexBufferHardGL;
+class   COcclusionQueryGL;
 
+typedef std::list<COcclusionQueryGL *> TOcclusionQueryList;
+
+// ***************************************************************************
+class COcclusionQueryGL : public IOcclusionQuery
+{
+public:
+	GLuint							ID;				// id of gl object
+	NLMISC::CRefPtr<CDriverGL>		Driver;			// owner driver
+	TOcclusionQueryList::iterator   Iterator;		// iterator in owner driver list of queries
+	TOcclusionType					OcclusionType;  // current type of occlusion
+	uint							VisibleCount;	// number of samples that passed the test
+	// From IOcclusionQuery
+	virtual void begin();	
+	virtual void end();	
+	virtual TOcclusionType getOcclusionType();	
+	virtual uint getVisibleCount();
+};
 
 // ***************************************************************************
 class CTextureDrvInfosGL : public ITextureDrvInfos
@@ -298,6 +317,8 @@ public:
 
 	virtual bool			clearZBuffer(float zval=1);
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
+	virtual void			setDepthRange(float znear, float zfar);
+	virtual	void			getDepthRange(float &znear, float &zfar) const;
 
 	virtual bool			setupTexture (ITexture& tex);
 
@@ -375,7 +396,7 @@ public:
 	virtual bool			renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines);
 	virtual bool			renderTriangles(CMaterial& Mat, uint32 firstIndex, uint32 ntris);
 	virtual bool			renderSimpleTriangles(uint32 firstTri, uint32 ntris);
-	virtual bool			renderRawPoints(CMaterial& Mat, uint32 startIndex, uint32 numPoints);
+	virtual bool			renderRawPoints(CMaterial& Mat, uint32 startIndex, uint32 numPoints);		
 	virtual bool			renderRawLines(CMaterial& Mat, uint32 startIndex, uint32 numLines);
 	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
 	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
@@ -557,6 +578,14 @@ public:
 	virtual void endBench ();
 	virtual void displayBench (class NLMISC::CLog *log);
 
+	virtual bool			supportOcclusionQuery() const;	
+	virtual IOcclusionQuery *createOcclusionQuery();	
+	virtual void			deleteOcclusionQuery(IOcclusionQuery *oq);
+
+	virtual uint64			getSwapBufferCounter() const { return _SwapBufferCounter; }	
+	
+
+
 private:
 	virtual class IVertexBufferHardGL	*createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb);
 	friend class					CTextureDrvInfosGL;
@@ -657,6 +686,8 @@ private:
 	bool					_FogEnabled;
 	float					_FogEnd, _FogStart;
 	GLfloat					_CurrentFogColor[4];
+
+
 
 	// current viewport and scissor
 	CViewport				_CurrViewport;
@@ -1171,14 +1202,17 @@ private:
 	uint32					_TextureTargetWidth;
 	uint32					_TextureTargetHeight;
 	bool					_TextureTargetUpdload;
-	// @}
-
+	// @}	
 	// misc
 public:
 	static CMaterial::CTexEnv	_TexEnvReplace;
+	// occlusion query
+	TOcclusionQueryList			_OcclusionQueryList;
+	COcclusionQueryGL			*_CurrentOcclusionQuery;
 protected:
 	// is the window active ,
 	bool					_WndActive;
+	uint64					_SwapBufferCounter;
 public:
 	void incrementResetCounter() { ++_ResetCounter; }
 	bool isWndActive() const { return _WndActive; }	

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.46 2004/06/02 16:32:39 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.47 2004/06/29 13:53:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -411,6 +411,15 @@ PFNGLGETVERTEXATTRIBIVARBPROC nglGetVertexAttribivARB;
 PFNGLGETVERTEXATTRIBPOINTERVARBPROC nglGetVertexAttribPointervARB;
 PFNGLISPROGRAMARBPROC nglIsProgramARB;
 
+// NV_occlusion_query
+//=====================
+NEL_PFNGLGENOCCLUSIONQUERIESNVPROC nglGenOcclusionQueriesNV;
+NEL_PFNGLDELETEOCCLUSIONQUERIESNVPROC nglDeleteOcclusionQueriesNV;
+NEL_PFNGLISOCCLUSIONQUERYNVPROC nglIsOcclusionQueryNV;
+NEL_PFNGLBEGINOCCLUSIONQUERYNVPROC nglBeginOcclusionQueryNV;
+NEL_PFNGLENDOCCLUSIONQUERYNVPROC nglEndOcclusionQueryNV;
+NEL_PFNGLGETOCCLUSIONQUERYIVNVPROC nglGetOcclusionQueryivNV;
+NEL_PFNGLGETOCCLUSIONQUERYUIVNVPROC nglGetOcclusionQueryuivNV;
 
 
 
@@ -1102,6 +1111,21 @@ static bool	setupARBVertexProgram(const char	*glext)
 }
 
 // ***************************************************************************
+static bool	setupNVOcclusionQuery(const char	*glext)
+{
+	if(strstr(glext, "GL_NV_occlusion_query")==NULL)
+		return false;	
+	if (!(nglGenOcclusionQueriesNV= (NEL_PFNGLGENOCCLUSIONQUERIESNVPROC)nelglGetProcAddress("glGenOcclusionQueriesNV"))) return false;
+	if (!(nglDeleteOcclusionQueriesNV= (NEL_PFNGLDELETEOCCLUSIONQUERIESNVPROC)nelglGetProcAddress("glDeleteOcclusionQueriesNV"))) return false;
+	if (!(nglIsOcclusionQueryNV= (NEL_PFNGLISOCCLUSIONQUERYNVPROC)nelglGetProcAddress("glIsOcclusionQueryNV"))) return false;
+	if (!(nglBeginOcclusionQueryNV= (NEL_PFNGLBEGINOCCLUSIONQUERYNVPROC)nelglGetProcAddress("glBeginOcclusionQueryNV"))) return false;
+	if (!(nglEndOcclusionQueryNV= (NEL_PFNGLENDOCCLUSIONQUERYNVPROC)nelglGetProcAddress("glEndOcclusionQueryNV"))) return false;
+	if (!(nglGetOcclusionQueryivNV= (NEL_PFNGLGETOCCLUSIONQUERYIVNVPROC)nelglGetProcAddress("glGetOcclusionQueryivNV"))) return false;
+	if (!(nglGetOcclusionQueryuivNV= (NEL_PFNGLGETOCCLUSIONQUERYUIVNVPROC)nelglGetProcAddress("glGetOcclusionQueryuivNV"))) return false;
+	return true;	
+}
+
+// ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
 {
@@ -1220,6 +1244,8 @@ void	registerGlExtensions(CGlExtensions &ext)
 		// VBHard with unusefull flush of the VAR.
 		ext.NVStateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_NV;
 
+	// Check NV_occlusion_query
+	ext.NVOcclusionQuery = setupNVOcclusionQuery(glext);
 
 	// ATI extensions
 	// -------------

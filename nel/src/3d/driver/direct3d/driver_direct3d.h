@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.14 2004/06/28 14:12:38 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.15 2004/06/29 13:56:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@
 #include "3d/vertex_buffer.h"
 #include "3d/ptr_set.h"
 #include "3d/texture_cube.h"
+#include "3d/occlusion_query.h"
 #include "3d/vertex_program_parse.h"
 #include "3d/light.h"
 
@@ -83,6 +84,27 @@ using NLMISC::CVector;
 
 class	CDriverD3D;
 class	CTextureDrvInfosD3D;
+
+class   COcclusionQueryD3D;
+
+typedef std::list<COcclusionQueryD3D *> TOcclusionQueryList;
+
+// ***************************************************************************
+class COcclusionQueryD3D : public IOcclusionQuery
+{
+public:
+	IDirect3DQuery9					*Query;
+	NLMISC::CRefPtr<CDriverD3D>		Driver;			// owner driver
+	TOcclusionQueryList::iterator   Iterator;		// iterator in owner driver list of queries
+	TOcclusionType					OcclusionType;  // current type of occlusion
+	uint							VisibleCount;	// number of samples that passed the test
+	// From IOcclusionQuery
+	virtual void begin();	
+	virtual void end();	
+	virtual TOcclusionType getOcclusionType();
+	virtual uint getVisibleCount();
+};
+
 
 // ***************************************************************************
 class CTextureDrvInfosD3D : public ITextureDrvInfos
@@ -450,6 +472,9 @@ public:
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 	virtual bool			swapBuffers();
 	virtual void			getBuffer (CBitmap &bitmap);	// Only 32 bits back buffer supported
+	virtual void			setDepthRange(float znear, float zfar);
+	virtual	void			getDepthRange(float &znear, float &zfar) const;
+	
 	// todo hulud d3d buffers
 	virtual void			getZBuffer (std::vector<float>  &zbuffer) {};
 	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect);	// Only 32 bits back buffer supported
@@ -497,7 +522,7 @@ public:
 	virtual bool			renderRawPoints(CMaterial& Mat, uint32 startIndex, uint32 numPoints);
 	virtual bool			renderRawLines(CMaterial& Mat, uint32 startIndex, uint32 numLines);
 	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
-	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);
+	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);		
 	virtual void			setPolygonMode (TPolygonMode mode);
 	virtual	void			finish();
 
@@ -514,6 +539,7 @@ public:
 
 	// Misc
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
+	virtual uint64			getSwapBufferCounter() const { return _SwapBufferCounter; }
 
 	// Inputs
 	virtual void			showCursor (bool b);
@@ -552,14 +578,10 @@ public:
 	// todo hulud d3d adressing mode
 	virtual void			setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) {};
 
-	// EMBM support
-	// todo hulud d3d EMBM
-	virtual bool			supportEMBM() const;
-	// todo hulud d3d EMBM
-	virtual bool			isEMBMSupportedAtStage(uint stage) const;
-	// todo hulud d3d EMBM
-	virtual void			setEMBMMatrix(const uint stage, const float mat[4]);
-	// todo hulud d3d EMBM
+	// EMBM support	
+	virtual bool			supportEMBM() const;	
+	virtual bool			isEMBMSupportedAtStage(uint stage) const;	
+	virtual void			setEMBMMatrix(const uint stage, const float mat[4]);	
 	virtual bool			supportPerPixelLighting(bool specular) const {return false;};
 
 	// Blend
@@ -593,6 +615,13 @@ public:
 	virtual void			setConstantFog (uint index);
 	virtual void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	virtual bool		    supportVertexProgramDoubleSidedColor() const;
+
+	// Occlusion query
+	virtual bool			supportOcclusionQuery() const;
+	virtual IOcclusionQuery *createOcclusionQuery();
+	virtual void			deleteOcclusionQuery(IOcclusionQuery *oq);
+
+
 
 	/** Shader implementation
 	  * 
@@ -1433,6 +1462,7 @@ private:
 	CMatrix					_UserModelMtx;
 	CMatrix					_UserViewMtx;
 	CViewport				_Viewport;
+	D3DVIEWPORT9			_D3DViewport;
 	CScissor				_Scissor;
 	float					_OODeltaZ;	// Backup znear and zfar
 	D3DXMATRIX				_D3DSpecularWorldTex;		// World (as in NeL) to model matrix.
@@ -1607,6 +1637,19 @@ private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
 
+	uint64 _SwapBufferCounter;
+
+	// occlusion query
+	bool						_OcclusionQuerySupported;
+	TOcclusionQueryList			_OcclusionQueryList;
+
+	// depth range
+	float						_DepthRangeNear;
+	float						_DepthRangeFar;
+public:
+	// private, for access by COcclusionQueryD3D
+	COcclusionQueryD3D			*_CurrentOcclusionQuery;
+
 	// *** Lightmap Dynamic Light
 	// For Lightmap Dynamic Lighting
 	CLight						_LightMapDynamicLight;
@@ -1622,6 +1665,7 @@ private:
 	// on/off Lights for LightMap mode: only the first light is enabled in lightmap mode
 	void			setupLightMapDynamicLighting(bool enable);
 	
+
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))

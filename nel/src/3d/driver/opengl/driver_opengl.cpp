@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.220 2004/06/22 10:05:58 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.221 2004/06/29 13:53:58 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -62,7 +62,6 @@
 
 using namespace std;
 using namespace NLMISC;
-
 
 
 
@@ -326,6 +325,9 @@ CDriverGL::CDriverGL()
 	_TexEnvReplace.Env.OpRGB = CMaterial::Previous;
 
 	_WndActive = false;
+	//
+	_CurrentOcclusionQuery = NULL;
+	_SwapBufferCounter = 0;
 
 	_LightMapDynamicLightEnabled = false;
 	_LightMapDynamicLightDirty= false;
@@ -1638,6 +1640,7 @@ void CDriverGL::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
 // --------------------------------------------------
 bool CDriverGL::swapBuffers()
 {
+	++ _SwapBufferCounter;
 	// Reset texture shaders
 	//resetTextureShaders();
 	activeVertexProgram(NULL);
@@ -1819,6 +1822,13 @@ bool CDriverGL::release()
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
 
+	_SwapBufferCounter = 0;
+
+	// delete querries
+	while (!_OcclusionQueryList.empty())
+	{
+		deleteOcclusionQuery(_OcclusionQueryList.front());
+	}	
 
 	deleteFragmentShaders();	
 
@@ -1827,6 +1837,8 @@ bool CDriverGL::release()
 
 	// Reset VertexArrayRange.
 	resetVertexArrayRange();
+
+	
 
 	// delete containers
 	delete _AGPVertexArrayRange;
@@ -3760,6 +3772,114 @@ void CDriverGL::checkTextureOn() const
 		}
 	}		
 	dgs.activeTextureARB(currTexStage);
+}
+
+// ***************************************************************************
+bool CDriverGL::supportOcclusionQuery() const
+{
+	return _Extensions.NVOcclusionQuery;
+}
+
+// ***************************************************************************
+IOcclusionQuery *CDriverGL::createOcclusionQuery()
+{
+	nlassert(_Extensions.NVOcclusionQuery);
+	GLuint id;
+	nglGenOcclusionQueriesNV(1, &id);
+	if (id == 0) return NULL;
+	COcclusionQueryGL *oqgl = new COcclusionQueryGL;
+	oqgl->Driver = this;
+	oqgl->ID = id;
+	oqgl->OcclusionType = IOcclusionQuery::NotAvailable;
+	_OcclusionQueryList.push_front(oqgl);
+	oqgl->Iterator = _OcclusionQueryList.begin();
+	oqgl->VisibleCount = 0;
+	return oqgl;
+}
+
+// ***************************************************************************
+void CDriverGL::deleteOcclusionQuery(IOcclusionQuery *oq)
+{
+	if (!oq) return;
+	COcclusionQueryGL *oqgl = NLMISC::safe_cast<COcclusionQueryGL *>(oq);
+	nlassert((CDriverGL *) oqgl->Driver == this); // should come from the same driver
+	oqgl->Driver = NULL;
+	nlassert(oqgl->ID != 0);
+	GLuint id = oqgl->ID;
+	nglDeleteOcclusionQueriesNV(1, &id);
+	_OcclusionQueryList.erase(oqgl->Iterator);
+	if (oqgl == _CurrentOcclusionQuery)
+	{
+		_CurrentOcclusionQuery = NULL;
+	}
+	delete oqgl;
+}
+
+// ***************************************************************************
+void COcclusionQueryGL::begin()
+{	
+	nlassert(Driver);
+	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time
+	nlassert(ID);
+	nglBeginOcclusionQueryNV(ID);
+	Driver->_CurrentOcclusionQuery = this;
+	OcclusionType = NotAvailable;
+	VisibleCount = 0;
+}
+
+// ***************************************************************************
+void COcclusionQueryGL::end()
+{
+	nlassert(Driver);	
+	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time
+	nlassert(ID);
+	nglEndOcclusionQueryNV();
+	Driver->_CurrentOcclusionQuery = NULL;
+}
+
+// ***************************************************************************
+IOcclusionQuery::TOcclusionType COcclusionQueryGL::getOcclusionType()
+{
+	nlassert(Driver);
+	nlassert(ID);
+	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
+	if (OcclusionType == NotAvailable)
+	{
+		GLuint result;
+		// retrieve result
+		nglGetOcclusionQueryuivNV(ID, GL_PIXEL_COUNT_AVAILABLE_NV, &result);
+		if (result != GL_FALSE)
+		{
+			nglGetOcclusionQueryuivNV(ID, GL_PIXEL_COUNT_NV, &result);
+			OcclusionType = result != 0 ? NotOccluded : Occluded; 
+			VisibleCount = (uint) result;
+			// Note : we could return the exact number of pixels that passed the z-test, but this value is not supported by all implementation (Direct3D ...)
+		}
+	}
+	return OcclusionType;
+}
+
+// ***************************************************************************
+uint COcclusionQueryGL::getVisibleCount()
+{
+	nlassert(Driver);
+	nlassert(ID);
+	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
+	if (getOcclusionType() == NotAvailable) return 0;
+	return VisibleCount;
+}
+
+
+// ***************************************************************************
+void CDriverGL::setDepthRange(float znear, float zfar)
+{
+	_DriverGLStates.setDepthRange(znear, zfar);
+}
+
+// ***************************************************************************
+void CDriverGL::getDepthRange(float &znear, float &zfar) const
+{
+	_DriverGLStates.getDepthRange(znear, zfar);
 }
 
 

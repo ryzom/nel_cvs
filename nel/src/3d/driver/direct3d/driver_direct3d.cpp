@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.11 2004/06/22 10:05:12 berenguier Exp $
+ * $Id: driver_direct3d.cpp,v 1.12 2004/06/29 13:56:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -41,6 +41,7 @@
 
 using namespace std;
 using namespace NLMISC;
+
 
 #define RASTERIZER D3DDEVTYPE_HAL
 //#define RASTERIZER D3DDEVTYPE_REF
@@ -96,7 +97,9 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 // ***************************************************************************
 
 CDriverD3D::CDriverD3D()
-{	
+{
+	_SwapBufferCounter = 0;
+	_CurrentOcclusionQuery = NULL;
 	_D3D = NULL;
 	_HWnd = NULL;
 	_DeviceInterface = NULL;
@@ -155,7 +158,8 @@ CDriverD3D::CDriverD3D()
 	{
 		nlwarning ("CDriverD3D::setDisplay: Can't create the direct 3d 9 object.");
 	}
-
+	_DepthRangeNear = 0.f;
+	_DepthRangeNear = 1.f;
 	// default for lightmap
 	_LightMapDynamicLightDirty= false;
 	_LightMapDynamicLightEnabled= false;
@@ -164,8 +168,7 @@ CDriverD3D::CDriverD3D()
 	_UserLight0.setupDirectional(CRGBA::Black, CRGBA::White, CRGBA::White, CVector::K);
 	// All User Light are disabled by Default
 	for(i=0;i<MaxLight;i++)
-		_UserLightEnable[i]= false;
-	
+		_UserLightEnable[i]= false;	
 }
 
 // ***************************************************************************
@@ -396,6 +399,10 @@ void CDriverD3D::initRenderVariables()
 	// Cull mode
 	_InvertCullMode = false;
 	_DoubleSided = false;
+
+	// Depth range
+	_DepthRangeNear = 0.f;
+	_DepthRangeFar = 1.f;
 
 	// Flush caches
 	updateRenderVariablesInternal();
@@ -979,7 +986,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_TextureCubeSupported = (caps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP) != 0;
 		_NbNeLTextureStages = (caps.MaxSimultaneousTextures<IDRV_MAT_MAXTEXTURES)?caps.MaxSimultaneousTextures:IDRV_MAT_MAXTEXTURES;
 		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
-		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
+		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;		
 	}
 	else
 	{
@@ -988,6 +995,19 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_MADOperatorSupported = false;
 		_EMBMSupported = false;
 	}
+	// test for occlusion query support
+	IDirect3DQuery9 *dummyQuery = NULL;
+	if (_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &dummyQuery) == D3DERR_NOTAVAILABLE)
+	{
+		_OcclusionQuerySupported = false;
+	}
+	else
+	{
+		_OcclusionQuerySupported = true;
+		if (dummyQuery) dummyQuery->Release();
+	}
+
+	
 #ifdef NL_FORCE_TEXTURE_STAGE_COUNT
 	_NbNeLTextureStages = min ((uint)NL_FORCE_TEXTURE_STAGE_COUNT, (uint)IDRV_MAT_MAXTEXTURES);
 #endif // NL_FORCE_TEXTURE_STAGE_COUNT
@@ -1086,6 +1106,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	_VolatileIndexBufferAGP[1].init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, this);
 	_VolatileIndexBufferAGP[1].reset ();
 
+	setupViewport (CViewport());
+
 	// Begin now
 	if (_DeviceInterface->BeginScene() != D3D_OK)
 		return false;
@@ -1102,6 +1124,14 @@ bool CDriverD3D::release()
 {
 	// Call IDriver::release() before, to destroy textures, shaders and VBs...
 	IDriver::release();
+
+	_SwapBufferCounter = 0;
+
+	// delete querries
+	while (!_OcclusionQueryList.empty())
+	{
+		deleteOcclusionQuery(_OcclusionQueryList.front());
+	}
 
 	// Back buffer ref
 	if (_BackBuffer)
@@ -1307,6 +1337,7 @@ bool CDriverD3D::swapBuffers()
 {
 	nlassert (_DeviceInterface);
 
+	++ _SwapBufferCounter;
 	// Swap & reset volatile buffers
 	_CurrentRenderPass++;
 	_VolatileVertexBufferRAM[_CurrentRenderPass&1].reset ();
@@ -2117,5 +2148,97 @@ void CDriverD3D::setEMBMMatrix(const uint stage, const float mat[4])
 	SetTextureStageState(stage, D3DTSS_BUMPENVMAT11, (DWORD &) mat[3]);
 }
 
+// ***************************************************************************
+bool CDriverD3D::supportOcclusionQuery() const
+{
+	return _OcclusionQuerySupported;
+}
+
+// ***************************************************************************
+IOcclusionQuery *CDriverD3D::createOcclusionQuery()
+{
+	nlassert(_OcclusionQuerySupported);
+	nlassert(_DeviceInterface);
+	IDirect3DQuery9 *query;
+	if (_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query) != D3D_OK) return false;	
+	COcclusionQueryD3D *oqd3d = new COcclusionQueryD3D;
+	oqd3d->Driver = this;
+	oqd3d->Query = query;
+	oqd3d->VisibleCount = 0;
+	oqd3d->OcclusionType = IOcclusionQuery::NotAvailable;
+	_OcclusionQueryList.push_front(oqd3d);
+	oqd3d->Iterator = _OcclusionQueryList.begin();
+	return oqd3d;
+}
+
+// ***************************************************************************
+void CDriverD3D::deleteOcclusionQuery(IOcclusionQuery *oq)
+{
+	if (!oq) return;
+	COcclusionQueryD3D *oqd3d = NLMISC::safe_cast<COcclusionQueryD3D *>(oq);
+	nlassert((CDriverD3D *) oqd3d->Driver == this); // should come from the same driver
+	oqd3d->Driver = NULL;
+	nlassert(oqd3d->Query);
+	oqd3d->Query->Release();	
+	_OcclusionQueryList.erase(oqd3d->Iterator);
+	if (oqd3d == _CurrentOcclusionQuery)
+	{
+		_CurrentOcclusionQuery = NULL;
+	}
+	delete oqd3d;
+}
+
+// ***************************************************************************
+void COcclusionQueryD3D::begin()
+{	
+	nlassert(Driver);
+	nlassert(Driver->_CurrentOcclusionQuery == NULL); // only one query at a time
+	nlassert(Query);
+	Query->Issue(D3DISSUE_BEGIN);
+	Driver->_CurrentOcclusionQuery = this;
+	OcclusionType = NotAvailable;
+}
+
+// ***************************************************************************
+void COcclusionQueryD3D::end()
+{
+	nlassert(Driver);	
+	nlassert(Driver->_CurrentOcclusionQuery == this); // only one query at a time
+	nlassert(Query);
+	Query->Issue(D3DISSUE_END);
+	Driver->_CurrentOcclusionQuery = NULL;
+}
+
+// ***************************************************************************
+IOcclusionQuery::TOcclusionType COcclusionQueryD3D::getOcclusionType()
+{
+	nlassert(Driver);
+	nlassert(Query);
+	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
+	if (OcclusionType == NotAvailable)
+	{
+		DWORD numPix;
+		if (Query->GetData(&numPix, sizeof(DWORD), 0) == S_OK)
+		{
+			OcclusionType = numPix != 0 ? NotOccluded : Occluded;
+			VisibleCount = (uint) numPix;
+		}		
+	}
+	return OcclusionType;
+}
+
+// ***************************************************************************
+uint COcclusionQueryD3D::getVisibleCount()
+{
+	nlassert(Driver);
+	nlassert(Query);
+	nlassert(Driver->_CurrentOcclusionQuery != this) // can't query result between a begin/end pair!
+	if (getOcclusionType() == NotAvailable) return 0;
+	return VisibleCount;
+}
+
+
+
 
 } // NL3D
+

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.50 2004/01/30 13:58:22 besson Exp $
+ * $Id: calc_lm.cpp,v 1.51 2004/02/04 11:17:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,8 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 	LightState ls;
 	if (maxLight->EvalLightState(tvTime, valid, &ls)!=REF_SUCCEED)
 		return;
+
+	this->Name = node->GetName();
 
 	// Retrieve the correct light Group Name
 	this->AnimatedLight = CExportNel::getAnimatedLight (node);
@@ -2567,17 +2569,32 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			if( !vvLights.empty() && !vvLights[j].empty() )
 			{
 				// Take the first light that is not an ambiant light
-				for (uint32 li = 0; li < vvLights[j].size(); ++li)
+				SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](0)];
+				uint32 li;
+				for (li = 0; li < vvLights[j].size(); ++li)
 				{
-					SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](li)];
+					rTmpLB = AllLights[vvLights[j].operator[](li)];
 					if ((rTmpLB.bAmbientOnly == false) && (rTmpLB.Type != SLightBuild::LightAmbient))
 					{
 						lightingColor = rTmpLB.Diffuse;
 						break;
 					}
 				}
-				if (InfoLog)
-					InfoLog->display("%s LightMap %d Color (%d,%d,%d)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B );
+				if (li == vvLights[j].size())
+				{
+					if (InfoLog)
+					{
+						InfoLog->display("%s LightMap %d No Light Found\n", ZeNode.GetName(), j);
+						for (uint32 zz =  0; zz < vvLights[j].size(); ++zz)
+							InfoLog->display("%s LightMap %d Light %d = %s\n", ZeNode.GetName(), j, zz, AllLights[vvLights[j].operator[](zz)].Name.c_str());
+						InfoLog->display("%s LightMap %d Color (%d,%d,%d)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B);
+					}
+				}
+				else
+				{
+					if (InfoLog)
+						InfoLog->display("%s LightMap %d Color (%d,%d,%d) (%s)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B, rTmpLB.Name.c_str());
+				}
 			}
 
 			// Setup all material of the object

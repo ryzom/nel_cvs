@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.6 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: calc_lm.h,v 1.7 2004/02/04 11:17:51 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ extern NLMISC::CMatrix getObjectToWorldMatrix	(NL3D::CMesh::CMeshBuild *pMB,
 // Light representation from max
 struct SLightBuild
 {
+	std::string		Name;
 	std::string		AnimatedLight;
 	uint			LightGroup;
 	enum EType { LightAmbient, LightPoint, LightDir, LightSpot };

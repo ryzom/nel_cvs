@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.14.4.1 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.14.4.2 2004/09/14 18:15:25 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -816,7 +816,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				/* If unlighted trick is needed, set the shader later */
 				//if (!pShader->NeedsConstantForDiffuse)
 				//	setPixelShader (pShader->PixelShader);
-				setPixelShader (pShader->NeedsConstantForDiffuse ? pShader->PixelShader : NULL);
+				setPixelShader (!pShader->NeedsConstantForDiffuse ? pShader->PixelShader : NULL);
 			}
 			break;
 		case CMaterial::LightMap:

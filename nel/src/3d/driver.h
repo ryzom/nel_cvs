@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.21 2001/10/26 08:14:16 vizerie Exp $
+ * $Id: driver.h,v 1.22 2001/10/31 10:11:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,20 +631,9 @@ public:
 
 	enum TMatrix
 	{
-		NoMatrix=0,
-		ModelView,
+		ModelView= 0,
 		Projection,
-		Texture,
-		Color,
 		ModelViewProjection,
-		Matrix0,
-		Matrix1,
-		Matrix2,
-		Matrix3,
-		Matrix4,
-		Matrix5,
-		Matrix6,
-		Matrix7,
 		NumMatrix
 	};
 
@@ -686,7 +675,10 @@ public:
 	virtual void			setConstant (uint index, const NLMISC::CVectorD* value) =0;
 
 	/**
-	  * Setup constants with current a matrix
+	  * Setup constants with a current matrix.
+	  *
+	  *	This call must be done after setFrustum(), setupViewMatrix() or setupModelMatrix() to get correct
+	  *	results.
 	  *
 	  * \param index is the base constant index where to store the matrix. This index must be a multiple of 4.
 	  * \param matrix is the matrix id to store in the constants
@@ -694,6 +686,13 @@ public:
 	  *
 	  */
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
+
+	/**
+	  * Activate VertexProgram 2Sided Color mode. In 2Sided mode, the BackFace (if material 2Sided enabled) read the 
+	  *	result from o[BFC0], and not o[COL0].
+	  *	default is false. you should reset to false after use.
+	  */
+	virtual	void			enableVertexProgramDoubleSidedColor(bool doubleSided) =0;
 
 	// @}
 

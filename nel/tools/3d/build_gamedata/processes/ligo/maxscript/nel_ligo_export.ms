@@ -735,6 +735,7 @@ catch
 
 
 
+resetMAXFile #noprompt
 quitMAX #noPrompt
 quitMAX () #noPrompt
 

@@ -105,6 +105,7 @@ catch
 
 -- Bye
 
+resetMAXFile #noprompt
 quitMAX #noPrompt
 quitMAX () #noPrompt
 

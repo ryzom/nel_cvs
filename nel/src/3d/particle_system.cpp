@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.30 2001/08/16 17:04:57 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.31 2001/08/24 12:51:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -452,7 +452,7 @@ void CParticleSystem::registerLocatedBindableExternID(uint32 id, CPSLocatedBinda
 	#ifdef NL_DEBUG		
 		// check that this lb hasn't been inserted yet
 		TLBMap::iterator lbd = _LBMap.lower_bound(id), ubd = _LBMap.upper_bound(id);
-		nlassert(std::find(lbd, ubd, TLBMap::value_type (id, lb), std::iterator_category(lbd)) == ubd);
+		nlassert(std::find(lbd, ubd, TLBMap::value_type (id, lb)) /*, std::iterator_category(lbd))*/ == ubd );
 	#endif
 		_LBMap.insert(TLBMap::value_type (id, lb) );
 }
@@ -464,7 +464,7 @@ void CParticleSystem::unregisterLocatedBindableExternID(CPSLocatedBindable *lb)
 	uint32 id = lb->getExternID();
 	if (!id) return;
 	TLBMap::iterator lbd = _LBMap.lower_bound(id), ubd = _LBMap.upper_bound(id);
-	TLBMap::iterator el = std::find(lbd, ubd, TLBMap::value_type (id, lb), std::iterator_category(lbd));
+	TLBMap::iterator el = std::find(lbd, ubd, TLBMap::value_type (id, lb) /*, std::iterator_category(lbd)*/ );
 	nlassert(el != ubd); 
 	_LBMap.erase(el);
 }

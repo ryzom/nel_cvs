@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.26 2002/02/04 10:56:25 vizerie Exp $
+ * $Id: export_material.cpp,v 1.27 2002/02/05 11:18:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1055,6 +1055,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 											 "bitmap2FileName",
 											 "bitmap3FileName",
 										     "bitmap4FileName" };
+		
 
 		if (isClassIdCompatible(texmap, Class_ID(NEL_BITMAP_TEXTURE_CLASS_ID_A, NEL_BITMAP_TEXTURE_CLASS_ID_B))) // is it a set of textures ?
 		{
@@ -1075,7 +1076,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 				&& fileName[3].empty())
 			{
 				srcTex = new CTextureFile;
-				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[k].c_str(), absolutePath));
+				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[0].c_str(), absolutePath));
 			}
 			else
 			{
@@ -1113,7 +1114,14 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			for (uint side=0; side<6; side++)
 			{				
 				// Set a copy of the source texture in the cube
-				pTextureCube->setTexture (tfNewOrder[side], new CTextureMultiFile(*static_cast<CTextureMultiFile *>(srcTex)));
+				if (dynamic_cast<CTextureMultiFile *>(srcTex))
+				{
+					pTextureCube->setTexture (tfNewOrder[side], new CTextureMultiFile(*static_cast<CTextureMultiFile *>(srcTex)));
+				}
+				else
+				{
+					pTextureCube->setTexture (tfNewOrder[side], new CTextureFile(*static_cast<CTextureFile *>(srcTex)));
+				}
 			}
 
 			// Ok, good texture

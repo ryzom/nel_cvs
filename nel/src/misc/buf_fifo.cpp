@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.24 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.25 2003/02/07 16:06:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,9 @@
 using namespace std;
 
 #define DEBUG_FIFO 0
+
+// if 0, don't stat the time of different function
+#define STAT_FIFO 1
 
 namespace NLMISC {
 
@@ -67,7 +70,9 @@ void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
 	// if the buffer is more than 1 meg, there s surely a problem, no?
 //	nlassert( buffer.size() < 1000000 ); // size check in debug mode
 
+#if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime();
+#endif
 
 #if DEBUG_FIFO
 	nldebug("%p push(%d)", this, size);
@@ -94,9 +99,11 @@ void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
 
 	_Empty = false;
 
+#if STAT_FIFO
 	// stat code
 	TTicks after = CTime::getPerformanceTime();
 	_PushedTime += after - before;
+#endif
 
 #if DEBUG_FIFO
 	display ();
@@ -105,7 +112,9 @@ void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
 
 void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> &buffer2)
 {
+#if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime();
+#endif
 
 	TFifoSize size = buffer1.size() + buffer2.size ();
 
@@ -145,9 +154,11 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 
 	_Empty = false;
 
+#if STAT_FIFO
 	// stat code
 	TTicks after = CTime::getPerformanceTime();
 	_PushedTime += after - before;
+#endif
 
 #if DEBUG_FIFO
 	display ();
@@ -342,7 +353,9 @@ void CBufFIFO::front (NLMISC::CMemStream &buffer)
 
 void CBufFIFO::front (uint8 *&buffer, uint32 &size)
 {
+#if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime ();
+#endif
 
 	uint8	*tail = _Tail;
 
@@ -372,9 +385,11 @@ void CBufFIFO::front (uint8 *&buffer, uint32 &size)
 
 	tail += sizeof (TFifoSize);
 
+#if STAT_FIFO
 	// stat code
 	TTicks after = CTime::getPerformanceTime ();
 	_FrontedTime += after - before;
+#endif
 
 #if DEBUG_FIFO
 	display ();
@@ -421,7 +436,9 @@ uint32 CBufFIFO::size ()
 
 void CBufFIFO::resize (uint32 size)
 {
+#if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime();
+#endif
 
 	if (size == 0) size = 100;
 
@@ -498,27 +515,26 @@ void CBufFIFO::resize (uint32 size)
 	_Buffer = NewBuffer;
 	_BufferSize = size;
 
+#if STAT_FIFO
 	TTicks after = CTime::getPerformanceTime();
-
 	_ResizedTime += after - before;
+#endif
 
 #if DEBUG_FIFO
 	display ();
 #endif
 }
 
-void CBufFIFO::displayStats ()
+void CBufFIFO::displayStats (CLog *log)
 {
-	nlinfo ("%p _BiggestBlock: %d", this, _BiggestBlock);
-	nlinfo ("%p _SmallestBlock: %d", this, _SmallestBlock);
-	nlinfo ("%p _BiggestBuffer: %d", this, _BiggestBuffer);
-	nlinfo ("%p _SmallestBuffer: %d", this, _SmallestBuffer);
-	nlinfo ("%p _Pushed : %d", this, _Pushed);
-	nlinfo ("%p _Fronted: %d", this, _Fronted);
-	nlinfo ("%p _Resized: %d", this, _Resized);
-	nlinfo ("%p _PushedTime: %"NL_I64"d %f", this, _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
-	nlinfo ("%p _FrontedTime: %"NL_I64"d %f", this, _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
-	nlinfo ("%p _ResizedTime: %"NL_I64"d %f", this, _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
+	log->displayNL ("%p CurrentQueueSize: %d, TotalQueueSize: %d", this, size(), _BufferSize);
+	log->displayNL ("%p InQueue: %d", this, _Pushed - _Fronted);
+
+	log->displayNL ("%p BiggestBlock: %d, SmallestBlock: %d", this, _BiggestBlock, _SmallestBlock);
+	log->displayNL ("%p BiggestBuffer: %d, SmallestBuffer: %d", this, _BiggestBuffer, _SmallestBuffer);
+	log->displayNL ("%p Pushed: %d, PushedTime: total %"NL_I64"d ticks, mean %f ticks", this, _Pushed, _PushedTime, (_Pushed>0?(double)(sint64)_PushedTime / (double)_Pushed:0.0));
+	log->displayNL ("%p Fronted: %d, FrontedTime: total %"NL_I64"d ticks, mean %f ticks", this, _Fronted, _FrontedTime, (_Fronted>0?(double)(sint64)_FrontedTime / (double)_Fronted:0.0));
+	log->displayNL ("%p Resized: %d, ResizedTime: total %"NL_I64"d ticks, mean %f ticks", this, _Resized, _ResizedTime, (_Resized>0?(double)(sint64)_ResizedTime / (double)_Resized:0.0));
 }
 
 void CBufFIFO::display ()

@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.11 2002/05/21 16:41:13 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.12 2003/02/07 16:06:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ public:
 	void	 display ();
 
 	/// display the FIFO statistics (speed, nbcall, etc...) to stdout
-	void	 displayStats ();
+	void	 displayStats (CLog *log = InfoLog);
 
 private:
 

@@ -1,12 +1,12 @@
 #
-# $Id: Makefile.am,v 1.2 2002/11/15 17:41:23 lecroart Exp $
+# $Id: Makefile.am,v 1.3 2002/11/15 17:41:56 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
 
 lib_LTLIBRARIES       = libnelmemory.la
 
-libnelmisc_la_SOURCES = heap_allocator.cpp          \
+libnelmemory_la_SOURCES = heap_allocator.cpp          \
 			memory.cpp                  \
 			memory_common.cpp           \
 			memory_manager.cpp          \

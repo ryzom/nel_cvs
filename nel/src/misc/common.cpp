@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.17 2002/02/28 15:17:39 lecroart Exp $
+ * $Id: common.cpp,v 1.18 2002/03/04 16:54:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ using namespace std;
 #  elif(__SGI_STL_PORT == 0x400)
 #    define STL_STR_VER "4.0"
 #  elif(__SGI_STL_PORT == 0x450)
-#    define STL_STR_VER "< 4.5"
+#    define STL_STR_VER "4.5"
 #  elif(__SGI_STL_PORT > 0x450)
 #    define STL_STR_VER "> 4.5"
 #  endif // __SGI_STL_PORT

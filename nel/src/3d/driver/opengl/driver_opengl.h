@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.101 2001/11/21 16:08:56 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.102 2001/11/21 18:10:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -831,8 +831,10 @@ private:
 	void			setConstant (uint index, float, float, float, float);
 	void			setConstant (uint index, double, double, double, double);
 	void			setConstant (uint indexStart, const NLMISC::CVector* value);
-	void			setConstant (uint indexStart, const NLMISC::CVectorD* value);
-	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);
+	void			setConstant (uint indexStart, const NLMISC::CVectorD* value);	
+	void			setConstant (uint index, uint num, const float *src);	
+	void			setConstant (uint index, uint num, const double *src);
+	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
 	
 	// @}

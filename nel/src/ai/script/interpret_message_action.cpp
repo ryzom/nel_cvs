@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_action.cpp,v 1.1 2001/03/07 11:23:49 chafik Exp $
+ * $Id: interpret_message_action.cpp,v 1.2 2001/03/07 13:51:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,4 +28,91 @@
 
 namespace NLAISCRIPT
 {
+
+//#########################################
+//		CMsgSuccessClass
+//#########################################
+
+	CMsgSuccessClass::CMsgSuccessClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		/*setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));*/
+	}
+
+	CMsgSuccessClass::CMsgSuccessClass() : CMessageClass()
+	{		
+		/*setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));*/
+	}
+	
+	const NLAIC::IBasicType *CMsgSuccessClass::clone() const
+	{
+		return new CMsgSuccessClass();
+	}
+
+	const NLAIC::IBasicType *CMsgSuccessClass::newInstance() const
+	{
+		return new CMsgSuccessClass();
+	}
+
+	NLAIAGENT::IObjectIA *CMsgSuccessClass::buildNewInstance() const
+	{
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		//NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
+		//return x;
+
+		//have to change.
+		throw;
+		return NULL;
+	}	
+
+//#########################################
+//		CMsgFailureClass
+//#########################################
+
+	CMsgFailureClass::CMsgFailureClass(const NLAIC::CIdentType &id):CMessageClass(id)
+	{
+		/*setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));*/
+	}
+
+	CMsgFailureClass::CMsgFailureClass() : CMessageClass()
+	{		
+		/*setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));*/
+	}
+	
+	const NLAIC::IBasicType *CMsgFailureClass::clone() const
+	{
+		return new CMsgFailureClass();
+	}
+
+	const NLAIC::IBasicType *CMsgFailureClass::newInstance() const
+	{
+		return new CMsgFailureClass();
+	}
+
+	NLAIAGENT::IObjectIA *CMsgFailureClass::buildNewInstance() const
+	{
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		//NLAIAGENT::IObjectIA *x = new NLAIAGENT::COnChangeMsg( components,  (CMessageClass *) this );		
+		//return x;
+		//have to change.
+		throw;
+		return NULL;
+	}	
 }

@@ -26,6 +26,7 @@
 #include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_on_change.h"
 #include "nel/ai/agent/gd_agent_script.h"
+#include "nel/ai/script/interpret_message_action.h"
 /*namespace NLAIC
 {
 	tRegistry *registry = new tRegistry;
@@ -575,10 +576,20 @@ namespace NLAISCRIPT
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
+	static CMsgSuccessClass msgSuccessClass;
+	const NLAIC::CIdentType CMsgSuccessClass::IdMsgSuccessClass("MsgSuccess", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgSuccessClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),	
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));	
+	static CMsgFailureClass msgFailureClass;
+	const NLAIC::CIdentType CMsgFailureClass::IdMsgFailureClass("MsgFailure", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)msgFailureClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
 	static COnChangeMsgClass onChangeMsgClass;
 	const NLAIC::CIdentType COnChangeMsgClass::IdOnChangeMsgClass("OnChangeMsg", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)onChangeMsgClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	
 
 	static COperatorClass operatorClass;
 	const NLAIC::CIdentType COperatorClass::IdOperatorClass("Operator", NLAIC::CSelfClassCFactory((const NLAIC::IBasicInterface &)operatorClass),
@@ -612,14 +623,12 @@ namespace NLAISCRIPT
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
-<<<<<<< static_def_init.cpp
 	const NLAIC::CIdentType CMsgDebug::IdMsgDebug("MsgDebugScript", NLAIC::CSelfClassCFactory( CMsgDebug(&NLAISCRIPT::msgDebugMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
 
 
-=======
 	const NLAIC::CIdentType COnChangeMsg::IdOnChangeMsg("OnChangeMsg", NLAIC::CSelfClassCFactory( COnChangeMsg(&NLAISCRIPT::onChangeMsgClass) ),
 			NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 			NLAIC::CTypeOfOperator::opEq );
->>>>>>> 1.44
+

@@ -1,7 +1,7 @@
 /** \file interpret_message_action.h
  * Class for define success and failure message in the interpreter.
  *
- * $Id: interpret_message_action.h,v 1.1 2001/03/07 11:26:12 chafik Exp $
+ * $Id: interpret_message_action.h,v 1.2 2001/03/07 13:51:47 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *

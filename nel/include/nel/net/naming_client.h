@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.35 2002/08/22 13:16:05 lecroart Exp $
+ * $Id: naming_client.h,v 1.36 2002/10/24 08:27:09 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,7 @@ public:
 		log->displayNL ("Display the %d registered services :", RegisteredServices.size());
 		for (std::list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
 		{
-			log->displayNL (" > %s-%hu", (*it).Name.c_str(), (uint16)(*it).SId);
+			log->displayNL (" > %s-%hu %d addr", (*it).Name.c_str(), (uint16)(*it).SId, (*it).Addr.size());
 			for(uint i = 0; i < (*it).Addr.size(); i++)
 				log->displayNL ("            '%s'", (*it).Addr[i].asString().c_str());
 		}

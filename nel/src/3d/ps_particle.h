@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.3 2001/06/25 13:39:39 vizerie Exp $
+ * $Id: ps_particle.h,v 1.4 2001/06/27 16:56:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -293,21 +293,37 @@ class CPSTexturedParticle
 		/** Set an attribute maker that produce a sint32
 		 *  It must have been allocated by new
 		 *  It will be deleted by this object		
+		 *  a texture group must have been set before this, an assertion occurs otherwise
 		 *  The integer is used as an index in a grouped texture. It tells which frame to use
 		 */
-		void setTextureScheme(CSmartPtr<CTextureGrouped> textureGroup, CPSAttribMaker<sint32> *animOrder) ;
+		void setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder) ;
+
+		/// get the texture scheme (null if none)
+		CPSAttribMaker<sint32> *getTextureIndexScheme(void) { return _TextureIndexScheme ; }
 
 		/// get the texture scheme (null if none) const version
-		CPSAttribMaker<sint32> *getTextureScheme(void) { return _TextureScheme ; }
+		const CPSAttribMaker<sint32> *getTextureIndexScheme(void) const { return _TextureIndexScheme ; }
 
-		/// get the texture scheme (null if none) const version
-		const CPSAttribMaker<sint32> *getTextureScheme(void) const { return _TextureScheme ; }
+		/// set a constant index for the current texture. not very useful, but available...
+		void setTextureIndex(sint32 index) ;
 
-		/// get the texture group used if there's a texture scheme
-		CTextureGrouped *getTextureGroup(void) { nlassert(getTextureScheme()) ; return _TexGroup ; }
+		/// get the animated texture index. MeaningFul only if a texture group was set
+		sint32 getTextureIndex(void) const { return _TextureIndex ; } 
 
-		/// get the texture group used if there's a texture scheme (const version)
-		const CTextureGrouped *getTextureGroup(void) const { nlassert(getTextureScheme()) ; return _TexGroup ; }
+
+		
+
+		/// set the texture group being used. It toggles animation on
+		void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup) ;
+
+		/// get the texture group used. it discard any previous single texture. (if null, there's no texture animation)
+		CTextureGrouped *getTextureGroup(void) {  return _TexGroup ; }
+
+		/// get the texture group used if there's a texture scheme, const version. (if null, there's no texture animation)
+		const CTextureGrouped *getTextureGroup(void) const { return _TexGroup ; }
+
+
+
 
 
 		/** Set a constant texture for the particle
@@ -337,9 +353,10 @@ class CPSTexturedParticle
 
 
 	protected:		
+
 		/// if this is false, constant size will be used instead of a scheme
 
-		bool _UseTextureScheme ;
+		bool _UseTextureIndexScheme ;
 
 		// a single texture
 		CSmartPtr<ITexture> _Tex ;
@@ -347,8 +364,10 @@ class CPSTexturedParticle
 		// a grouped texture
 		CSmartPtr<CTextureGrouped> _TexGroup ;		
 		
-		CPSAttribMaker<sint32> *_TextureScheme ; // used only if _UseSizeScheme is set to true							
+		CPSAttribMaker<sint32> *_TextureIndexScheme ; // used only if _UseSizeScheme is set to true							
 
+		// a texture index. Most of the time, a scheme of index will be used instead of that
+		sint32 _TextureIndex ;
 
 		/// Update the material so that it match the texture scheme
 		virtual void updateMatAndVbForTexture(void) = 0 ;
@@ -934,7 +953,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColored
 		 *  \see getNbVerticesInShape()
 		 */
 
-		void getShape(CVector *shape, uint32 nbPointsInShape) const ;
+		void getShape(CVector *shape) const ;
 
 
 		NLMISC_DECLARE_CLASS(CPSRibbon) ;
@@ -962,6 +981,12 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColored
 			updateMatAndVbForTexture() ;
 		}
 
+		// get the u-factor for texture mapping
+		float getUFactor(void) const { return _UFactor ; }
+
+		// get the v-factor for texture mapping
+		float getVFactor(void) const { return _VFactor ; }
+
 		/// get the texture used
 		ITexture *getTexture(void)
 		{
@@ -982,6 +1007,10 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle, public CPSColored
 		/// Predifined shape : pentagram
 		static const CVector Pentagram[] ;
 		static const uint32 NbVerticesInPentagram ;
+
+		/// Predifined shape : triangle
+		static const CVector Triangle[] ;
+		static const uint32 NbVerticesInTriangle ;
 
 		
 
@@ -1415,7 +1444,7 @@ class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 						, public CPSShapeParticle
 {
 public:	
-	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(false)
+	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(true)
 	{		
 		_Name = std::string("ConstraintMesh") ;
 	}
@@ -1425,6 +1454,7 @@ public:
 	/** construct the mesh by using the given mesh shape file	
 	 */
 	void setShape(const std::string &meshFileName) ;
+
 
 
 	/// get the shape used for those particles	
@@ -1581,9 +1611,6 @@ protected:
 
 
 } ; 
-
-
-
 
 
 } // NL3D

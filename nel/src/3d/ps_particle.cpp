@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.23 2001/06/25 16:09:53 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.24 2001/06/27 16:56:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "3d/scene.h"
 #include "3d/shape_bank.h"
 #include "3d/transform_shape.h"
-
+#include "3d/texture_mem.h"
 
 #include "nel/misc/common.h"
 #include "nel/misc/quat.h"
@@ -395,35 +395,57 @@ void CPSRotated2DParticle::initRotTable(void)
 // textured particle implementation //
 //////////////////////////////////////
 
-void CPSTexturedParticle::setTextureScheme(CSmartPtr<CTextureGrouped> textureGroup, CPSAttribMaker<sint32> *animOrder)
+void CPSTexturedParticle::setTextureIndexScheme(CPSAttribMaker<sint32> *animOrder)
 {
 	nlassert(animOrder) ;
-	if (_UseTextureScheme)
+	nlassert(_TexGroup) ; // setTextureGroup must have been called before this
+	if (_UseTextureIndexScheme)
 	{
-		delete _TextureScheme ;
+		delete _TextureIndexScheme ;
 	}
 	else
 	{
-		_UseTextureScheme = true ;
+		_UseTextureIndexScheme = true ;
 	}
 
-	_TextureScheme = animOrder ;
+	_TextureIndexScheme = animOrder ;
 
-	_TexGroup = textureGroup ;
-
-	_Tex = NULL ; // release any single texture if one was set before
 
 	updateMatAndVbForTexture() ;
-
 }
+
+
+/// set a constant index for the current texture. not very useful, but available...
+void CPSTexturedParticle::setTextureIndex(sint32 index)
+{
+	if (_UseTextureIndexScheme)
+	{
+		delete _TextureIndexScheme ;
+	}
+	_TextureIndexScheme = NULL ;
+	_UseTextureIndexScheme = false ;
+
+	_TextureIndex = index ;
+}
+
+void CPSTexturedParticle::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup)
+{
+	nlassert(texGroup) ;
+	if (_Tex)
+	{
+		_Tex = NULL ;
+	}
+	_TexGroup = texGroup ;
+}
+
 
 void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
 {
-	if (_UseTextureScheme)
+	if (_UseTextureIndexScheme)
 	{
-		delete _TextureScheme ;
-		_TextureScheme = NULL ;
-		_UseTextureScheme = false ;
+		delete _TextureIndexScheme ;
+		_TextureIndexScheme = NULL ;
+		_UseTextureIndexScheme = false ;
 	}
 	_Tex = tex ;
 	_TexGroup = NULL ; // release any grouped texture if one was set before
@@ -432,15 +454,16 @@ void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
 }
 
 		
-CPSTexturedParticle::CPSTexturedParticle() : _UseTextureScheme(false)
+CPSTexturedParticle::CPSTexturedParticle() : _UseTextureIndexScheme(false), _TextureIndex(0)
+											 ,_TexGroup(NULL), _TextureIndexScheme(NULL)
 {
 }
 
 CPSTexturedParticle::~CPSTexturedParticle()
 {
-	if (_UseTextureScheme)
+	if (_UseTextureIndexScheme)
 	{
-		delete _TextureScheme ;
+		delete _TextureIndexScheme ;
 	}
 }
 
@@ -450,14 +473,30 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 {
 	if (f.isReading())
 	{
-		if (_UseTextureScheme)
+		if (_UseTextureIndexScheme)
 		{
-			delete _TextureScheme ;
+			delete _TextureIndexScheme ;
+			_TextureIndexScheme = NULL ;
+			_UseTextureIndexScheme = false ;
+			_Tex = NULL ;
+			_TexGroup = NULL ;
 		}
 	}
 
-	f.serial(_UseTextureScheme) ;
-	if (_UseTextureScheme)
+	bool useAnimatedTexture ;
+	
+	if (!f.isReading())
+	{
+		useAnimatedTexture = (_TexGroup != NULL) ;
+	}
+
+	f.serial(useAnimatedTexture) ;
+
+	
+
+
+
+	if (useAnimatedTexture)
 	{
 		if (f.isReading())
 		{
@@ -470,7 +509,26 @@ void CPSTexturedParticle::serialTextureScheme(NLMISC::IStream &f) throw(NLMISC::
 			CTextureGrouped *ptTex = _TexGroup ;
 			f.serialPolyPtr(ptTex) ;
 		}
-		f.serialPolyPtr(_TextureScheme) ;
+		
+		bool useTextureIndexScheme ;
+
+		if (!f.isReading())
+		{
+			useTextureIndexScheme = _UseTextureIndexScheme ;
+		}
+
+		f.serial(useTextureIndexScheme) ;
+		if (useTextureIndexScheme)
+		{
+			f.serialPolyPtr(_TextureIndexScheme) ;
+			_TextureIndex = 0 ;
+			_UseTextureIndexScheme = true ;
+		}
+		else
+		{
+			_UseTextureIndexScheme = false ;
+			f.serial(_TextureIndex) ;
+		}
 	}
 	else
 	{
@@ -718,7 +776,7 @@ void CPSQuad::init(void)
 
 void CPSQuad::updateMatAndVbForTexture(void)
 {	
-	_Mat.setTexture(0, _UseTextureScheme ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
+	_Mat.setTexture(0, _TexGroup ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
 }
 
 bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const  
@@ -814,17 +872,29 @@ if (_UseColorScheme)
 }
 
 
-if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
+if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
 {	
 	sint32 textureIndex[quadBufSize] ;
 	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1 ;
 	uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer() ;				
 	
 
-	const sint32 *currIndex, *endIndex = &textureIndex[0] + size ;		
-	_TextureScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
-	
-	for (currIndex = &textureIndex[0] ; currIndex != endIndex ; ++currIndex)
+	const sint32 *currIndex ;		
+	uint32 currIndexIncr ; 
+
+	if (_UseTextureIndexScheme)
+	{
+		_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;	
+		 currIndex = &textureIndex[0] ;
+		 currIndexIncr = 1 ;
+	}
+	else
+	{
+		currIndex = &_TextureIndex ;
+		currIndexIncr  = 0 ;
+	}
+
+	while (size--)
 	{
 		// for now, we don't make texture index wrapping
 		const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
@@ -837,6 +907,7 @@ if (_UseTextureScheme) // if it has a constant texture we are sure it has been s
 
 		// point the next face
 		currUV += stride4 ;
+		currIndex += currIndexIncr ;
 	}		
 }
 }
@@ -2026,14 +2097,16 @@ void CPSTailDot::updateMatAndVbForColor(void)
 
 // predifined shapes
 
+const CVector CPSRibbon::Triangle[] = { CVector (0, 1, 0),
+								 CVector (1, -1, 0),
+								 CVector (-1, -1, 0),								 
+								} ;
+
 const CVector CPSRibbon::Losange[] = { CVector (0, 1.f, 0),
 								 CVector (1.f, 0, 0),
 								 CVector (0, -1.f, 0),
 								 CVector (-1.f, 0, 0)
 								} ;
-const uint32 CPSRibbon::NbVerticesInLosange = sizeof(Losange) / sizeof(CVector) ;
-
-
 
 const CVector  CPSRibbon::HeightSides[] = {  CVector(-0.5f, 1, 0)
 											,CVector(0.5f, 1, 0)
@@ -2045,16 +2118,21 @@ const CVector  CPSRibbon::HeightSides[] = {  CVector(-0.5f, 1, 0)
 											,CVector(-1, 0.5f, 0) } ;
 
 
+const CVector CPSRibbon::Pentagram[] = { CVector(0, 1, 0), CVector(1, -1, 0)
+										 , CVector(-1, 0, 0), CVector(1, 0, 0)
+										 , CVector(-1, -1, 0)
+										} ;
 
-const uint32 CPSRibbon::NbVerticesInHeightSide = sizeof(HeightSides) / sizeof(CVector) ;
+
+const uint32 CPSRibbon::NbVerticesInTriangle = sizeof(CPSRibbon::Triangle) / sizeof(CVector) ;
 
 
-const CVector CPSRibbon::Pentagram[] = { CVector(-1, 0.5f, 0), CVector(0.5f, -1.f, 0)
-							  ,CVector(1, 0.5f, 0), CVector(-0.5f, -1.f,0)
-							  ,CVector(0, 1.f, 0)
-							} ;
+const uint32 CPSRibbon::NbVerticesInLosange = sizeof(Losange) / sizeof(CVector) ;
 
-const uint32 CPSRibbon::NbVerticesInPentagram = sizeof(Pentagram) / sizeof(CVector) ;
+
+const uint32 CPSRibbon::NbVerticesInHeightSide = sizeof(CPSRibbon::HeightSides) / sizeof(CVector) ;
+
+const uint32 CPSRibbon::NbVerticesInPentagram = sizeof(CPSRibbon::Pentagram) / sizeof(CVector) ;
 
 
 
@@ -2152,22 +2230,27 @@ void CPSRibbon::setTailNbSeg(uint32 nbSeg)
 void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape)
 {
 	nlassert(nbPointsInShape >= 3) ;
+	
 	if (nbPointsInShape != _ShapeNbSeg)
 	{
+		_ShapeNbSeg = nbPointsInShape ;
+		_Shape.resize(nbPointsInShape) ;
+
+		std::copy(shape, shape + nbPointsInShape, _Shape.begin()) ;
 		resizeVb(_AliveRibbons) ;
 		if (_DyingRibbons)
 		{
 			resizeVb(*_DyingRibbons) ;
 		}
 	}
-
-	_ShapeNbSeg = nbPointsInShape ;
-	_Shape.resize(nbPointsInShape) ;
-	std::copy(shape, shape + nbPointsInShape, _Shape.begin()) ;
+	else
+	{
+		std::copy(shape, shape + nbPointsInShape, _Shape.begin()) ;
+	}
 	
 }
 
-void CPSRibbon::getShape(CVector *shape, uint32 nbPointsInShape) const
+void CPSRibbon::getShape(CVector *shape) const
 {
 	std::copy(_Shape.begin(), _Shape.end(), shape) ;
 }
@@ -3710,7 +3793,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 	}
 
 
-	if (_UseTextureScheme) // if it has a constant texture we are sure it has been setupped before...
+	if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
 	{	
 		sint32 textureIndex[shockWaveBufSize] ;
 		const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1 ;
@@ -3718,10 +3801,22 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 		uint k ;
 		
 
-		const sint32 *currIndex, *endIndex = &textureIndex[0] + size ;		
-		_TextureScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
+		uint32 currIndexIncr ;
+		const sint32 *currIndex ;		
+
+		if (_UseTextureIndexScheme)
+		{
+			_TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size) ;
+			currIndex = currIndex = &textureIndex[0] ; 
+			currIndexIncr = 1 ;
+		}
+		else
+		{	
+			currIndex = &_TextureIndex ;
+			currIndexIncr = 0 ;
+		}
 		
-		for (currIndex = &textureIndex[0] ; currIndex != endIndex ; ++currIndex)
+		while (--size)
 		{
 			// for now, we don't make texture index wrapping
 			const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex) ;
@@ -3738,7 +3833,7 @@ void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size)
 			}
 			while (--k) ;
 
-			
+			currIndex += currIndexIncr ;
 		}		
 	}	
 }
@@ -3767,7 +3862,7 @@ void CPSShockWave::updateMatAndVbForColor(void)
 
 void CPSShockWave::updateMatAndVbForTexture(void)
 {
-	_Mat.setTexture(0, _UseTextureScheme ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
+	_Mat.setTexture(0, _TexGroup ? (ITexture *) _TexGroup : (ITexture *) _Tex) ;	
 }
 
 
@@ -3820,6 +3915,82 @@ void CPSShockWave::resize(uint32 aSize)
 // CPSMesh implementation //
 ////////////////////////////
 
+
+
+/** a private function that create a dummy mesh :a cube with dummy textures
+ */ 
+
+CMesh *CreateDummyShape(void)
+{
+	CMesh::CMeshBuild mb ;
+	mb.VertexFlags = IDRV_VF_XYZ | IDRV_VF_UV[0] ;
+	mb.Vertices.push_back(CVector(-.5f, -.5f, -.5f)) ;
+	mb.Vertices.push_back(CVector(.5f, -.5f, -.5f)) ;
+	mb.Vertices.push_back(CVector(.5f, -.5f, .5f)) ;
+	mb.Vertices.push_back(CVector(-.5f, -.5f, .5f)) ;
+
+	mb.Vertices.push_back(CVector(-.5f, .5f, -.5f)) ;
+	mb.Vertices.push_back(CVector(.5f, .5f, -.5f)) ;
+	mb.Vertices.push_back(CVector(.5f, .5f, .5f)) ;
+	mb.Vertices.push_back(CVector(-.5f, .5f, .5f)) ;
+
+	// index for each face
+	uint32 tab[] = { 4, 1, 0
+					,4, 5, 1
+					, 5, 2, 1
+					, 5, 6, 2
+					, 6, 3, 2
+					, 6, 7, 3
+					, 7, 0, 3
+					, 7, 4, 0
+					, 7, 5, 4
+					, 7, 6, 5
+					, 2, 0, 1
+					, 2, 3, 0
+					} ;
+	for (uint k = 0 ; k < 6 ; ++k)
+	{
+		CMesh::CFace f ;
+		f.Corner[0].Vertex = tab[6 * k] ;
+		f.Corner[0].Uvs[0] = CUV(0, 0) ;
+
+		f.Corner[1].Vertex = tab[6 * k + 1] ;
+		f.Corner[1].Uvs[0] = CUV(1, 1) ;
+
+		f.Corner[2].Vertex = tab[6 * k + 2] ;
+		f.Corner[2].Uvs[0] = CUV(0, 1) ;
+
+		f.MaterialId = 0 ;
+
+		mb.Faces.push_back(f) ;
+
+		f.Corner[0].Vertex = tab[6 * k + 3] ;
+		f.Corner[0].Uvs[0] = CUV(0, 0) ;
+
+		f.Corner[1].Vertex = tab[6 * k + 4] ;
+		f.Corner[1].Uvs[0] = CUV(1, 0) ;
+
+		f.Corner[2].Vertex = tab[6 * k + 5] ;
+		f.Corner[2].Uvs[0] = CUV(1, 1) ;
+
+		f.MaterialId = 0 ;
+		mb.Faces.push_back(f) ;
+		
+	}
+
+	CMaterial mat ;
+	CTextureMem *tex = new CTextureMem ;
+	tex->makeDummy() ;
+	mat.setTexture(0, tex) ;
+	mat.setLighting(false) ;
+	mat.setColor(CRGBA::White) ;
+
+	mb.Materials.push_back(mat) ;
+	CMesh *m = new CMesh ;
+	m->build(mb) ;
+	return m ;
+} 
+
 void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSParticle::serial(f) ;
@@ -3848,6 +4019,17 @@ void CPSMesh::newElement(void)
 	//CTransformShape *instance = _Shape->createInstance(*scene) ;
 
 	CTransformShape *instance = scene->createInstance(_Shape) ;
+
+	if (!instance)
+	{
+		const std::string dummyShapeName("dummy mesh shape") ;
+		// mesh not found ...
+		IShape *is = CreateDummyShape() ;
+		scene->getShapeBank()->add(dummyShapeName, is) ;
+		instance = scene->createInstance(dummyShapeName) ;
+		nlassert(instance) ;
+	}
+
 
 	instance->setTransformMode(CTransform::DirectMatrix) ;
 
@@ -4152,12 +4334,17 @@ void CPSConstraintMesh::update(void)
 
 	sb->load(_MeshShapeFileName) ;
 
-	if (!sb->isPresent(_MeshShapeFileName))
-	{
-		throw NLMISC::EFileNotOpened(_MeshShapeFileName) ;
-	}
+	IShape *is ;
 
-	IShape *is = sb->addRef(_MeshShapeFileName) ;
+	if (!sb->isPresent(_MeshShapeFileName))
+	{	
+		is = CreateDummyShape() ;
+		sb->add(std::string("dummy constraint mesh shape"), is) ;
+	}
+	else
+	{
+		is = sb->addRef(_MeshShapeFileName) ;
+	}
 
 
 	nlassert(dynamic_cast<CMesh *>(is)) ;
@@ -4195,6 +4382,7 @@ void CPSConstraintMesh::update(void)
 	_ModelShape = is ;
 
 	_Touched = false ;
+
 	
 }
 
@@ -4377,15 +4565,8 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 	else
 	{	
-		f.serial(_MeshShapeFileName) ;
-		if (_MeshShapeFileName == emptyStr)
-		{
-			_Touched = false ;	
-		}
-		else
-		{
-				_Touched = true ;	
-		}
+		f.serial(_MeshShapeFileName) ;		
+		_Touched = true ;			
 	}
 
 }

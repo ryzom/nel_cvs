@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.37 2003/02/06 09:11:50 boucher Exp $
+ * $Id: dru.cpp,v 1.38 2003/08/07 08:28:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -458,6 +458,24 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	driver.render(pb, mat);
 }
 
+// ***************************************************************************
+void			CDRU::drawWiredBox(const CVector &corner, const CVector &vi, const CVector &vj, const CVector &vk, CRGBA color, IDriver& drv)
+{
+	CVector		p0= corner;
+	CVector		p1= p0 + vi + vj + vk;
+	drawLine(p0, p0+vi, color, drv);
+	drawLine(p0, p0+vj, color, drv);
+	drawLine(p0, p0+vk, color, drv);
+	drawLine(p1, p1-vi, color, drv);
+	drawLine(p1, p1-vj, color, drv);
+	drawLine(p1, p1-vk, color, drv);
+	drawLine(p0+vi, p0+vi+vj, color, drv);
+	drawLine(p0+vi, p0+vi+vk, color, drv);
+	drawLine(p0+vj, p0+vj+vi, color, drv);
+	drawLine(p0+vj, p0+vj+vk, color, drv);
+	drawLine(p0+vk, p0+vk+vi, color, drv);
+	drawLine(p0+vk, p0+vk+vj, color, drv);
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.6 2002/07/23 07:56:01 besson Exp $
+ * $Id: dru.h,v 1.7 2003/08/07 08:28:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,8 @@ public:
 	static void			drawLinesUnlit(const std::vector<NLMISC::CLine> &linelist, CMaterial &mat, IDriver& driver);
 	/// Draw one line in 3D only, with a specific color.
 	static void			drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& driver);
+	/// Draw a wired box in 3D, with a specific color.
+	static void			drawWiredBox(const CVector &corner, const CVector &vi, const CVector &vj, const CVector &vk, CRGBA color, IDriver& driver);
 	// @}
 
 };

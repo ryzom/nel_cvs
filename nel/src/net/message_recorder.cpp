@@ -1,7 +1,7 @@
 /** \file message_recorder.cpp
- * <File description>
+ * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.cpp,v 1.1 2001/06/18 09:02:01 cado Exp $
+ * $Id: message_recorder.cpp,v 1.2 2001/06/21 08:45:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

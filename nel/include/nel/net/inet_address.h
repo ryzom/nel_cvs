@@ -1,7 +1,7 @@
 /** \file inet_address.h
- * Implementation for CInetAddress.
+ * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.h,v 1.20 2001/06/18 09:01:14 cado Exp $
+ * $Id: inet_address.h,v 1.21 2001/06/21 08:44:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

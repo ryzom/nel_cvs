@@ -1,7 +1,7 @@
 /** \file dummy_tcp_sock.cpp
- * <File description>
+ * Dummy TCP socket, used ny the message recorder for playback
  *
- * $Id: dummy_tcp_sock.cpp,v 1.1 2001/06/18 09:02:01 cado Exp $
+ * $Id: dummy_tcp_sock.cpp,v 1.2 2001/06/21 08:45:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

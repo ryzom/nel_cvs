@@ -1,7 +1,7 @@
-/** \file sock.cpp
+/** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.7 2001/06/18 09:04:49 cado Exp $
+ * $Id: sock.h,v 1.8 2001/06/21 08:44:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

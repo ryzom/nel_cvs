@@ -1,7 +1,7 @@
 /** \file mutex.cpp
- * <File description>
+ * Class CMutex
  *
- * $Id: mutex.cpp,v 1.14 2001/05/29 07:56:25 lecroart Exp $
+ * $Id: mutex.cpp,v 1.15 2001/06/21 08:45:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

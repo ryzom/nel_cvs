@@ -1,8 +1,8 @@
 
 /** \file string_stream.h
- * <File description>
+ * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.h,v 1.3 2001/06/18 08:59:54 cado Exp $
+ * $Id: string_stream.h,v 1.4 2001/06/21 08:44:47 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

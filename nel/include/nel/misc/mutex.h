@@ -1,7 +1,7 @@
 /** \file mutex.h
- * class CMutex
+ * Classes CMutex, CSynchronized (using mutex) and CFairlySynchronized (using semaphore)
  *
- * $Id: mutex.h,v 1.6 2001/04/27 15:48:22 lecroart Exp $
+ * $Id: mutex.h,v 1.7 2001/06/21 08:44:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

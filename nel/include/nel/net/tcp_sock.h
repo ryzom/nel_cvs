@@ -1,7 +1,7 @@
-/** \file tcp_sock.cpp
+/** \file tcp_sock.h
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.h,v 1.2 2001/06/18 09:05:07 cado Exp $
+ * $Id: tcp_sock.h,v 1.3 2001/06/21 08:44:56 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
- * <File description>
+ * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.4 2001/06/18 09:00:04 cado Exp $
+ * $Id: string_stream.cpp,v 1.5 2001/06/21 08:45:03 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

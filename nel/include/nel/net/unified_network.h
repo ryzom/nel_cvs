@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.1 2001/10/16 09:23:10 legros Exp $
+ * $Id: unified_network.h,v 1.2 2001/10/25 12:15:47 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -213,7 +213,7 @@ private:
 	class CConnectionId
 	{
 	public:
-		string		SName;
+		std::string	SName;
 		uint16		SId;
 		TSockId		SHost;
 

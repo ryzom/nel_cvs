@@ -1,7 +1,7 @@
 /** \file sound_anim_player.cpp
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_player.cpp,v 1.1 2002/06/18 16:02:46 hanappe Exp $
+ * $Id: sound_anim_player.cpp,v 1.2 2002/06/20 08:37:14 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/sound/sound_animation.h"
 #include "nel/sound/u_audio_mixer.h"
 #include "nel/sound/u_source.h"
+#include "nel/misc/vector.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -38,7 +39,7 @@ namespace NLSOUND {
 
 // ********************************************************
 
-CSoundAnimPlayer::CSoundAnimPlayer(CSoundAnimation* anim, float time, NLMISC::CVector *position, NLSOUND::UAudioMixer* mixer, sint32 id) 
+CSoundAnimPlayer::CSoundAnimPlayer(CSoundAnimation* anim, float time, NLMISC::CVector *position, NLSOUND::UAudioMixer* mixer, TSoundAnimPlayId id) 
 {
 	nlassert(anim);
 	nlassert(position);

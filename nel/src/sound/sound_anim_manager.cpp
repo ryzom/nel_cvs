@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.1 2002/06/18 16:02:46 hanappe Exp $
+ * $Id: sound_anim_manager.cpp,v 1.2 2002/06/20 08:36:24 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 
 #include "stdsound.h"
 #include "nel/sound/sound_anim_manager.h"
+#include "nel/sound/sound_animation.h"
+#include "nel/sound/sound_anim_player.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
@@ -199,7 +201,7 @@ void CSoundAnimManager::saveAnimation(CSoundAnimation* anim, std::string& filena
 
 // ********************************************************
 
-sint32 CSoundAnimManager::playAnimation(TSoundAnimId id, float time, CVector* position)
+TSoundAnimPlayId CSoundAnimManager::playAnimation(TSoundAnimId id, float time, CVector* position)
 {
 	nlassert(id != CSoundAnimation::NoId);
 	nlassert((uint32) id < _Animations.size());
@@ -219,7 +221,7 @@ sint32 CSoundAnimManager::playAnimation(TSoundAnimId id, float time, CVector* po
 
 // ********************************************************
 
-sint32 CSoundAnimManager::playAnimation(string& name, float time, CVector* position)
+TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, CVector* position)
 {
 	nlassert(position);
 
@@ -229,7 +231,7 @@ sint32 CSoundAnimManager::playAnimation(string& name, float time, CVector* posit
 
 // ********************************************************
 
-void CSoundAnimManager::stopAnimation(sint32 playbackId)
+void CSoundAnimManager::stopAnimation(TSoundAnimPlayId playbackId)
 {
 	nlassert(playbackId >= 0);
 
@@ -247,18 +249,24 @@ void CSoundAnimManager::stopAnimation(sint32 playbackId)
 }
 
 // ********************************************************
-/*
-bool CSoundAnimManager::isPlaying(sint32 playbackId)
+
+bool CSoundAnimManager::isPlaying(TSoundAnimPlayId playbackId)
 {
 	nlassert(playbackId >= 0);
-	nlassert((uint32) playbackId < _Animations.size());
 
-	CSoundAnimation* anim = _Animations[playbackId];
-	nlassert(anim);
+	set<CSoundAnimPlayer*>::iterator iter;
 
-	return anim->isPlaying();
+	for (iter = _Players.begin(); iter != _Players.end(); )
+	{
+		CSoundAnimPlayer* player = *iter; 
+		if (player->getId() == playbackId)
+		{
+			return player->isPlaying();
+		}
+	}
+
+	return false;
 }
-*/
 
 // ********************************************************
 

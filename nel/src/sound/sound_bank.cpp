@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.1 2002/06/11 09:41:56 hanappe Exp $
+ * $Id: sound_bank.cpp,v 1.2 2002/06/20 08:37:54 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,6 @@ void				CSoundBank::load()
 	}
 
 	_Banks.insert(this);
-
 }
 
 

@@ -151,7 +151,7 @@ try
 						ig_array = #()
 
 						-- Scan all the ig in this project
-						for node in geometry do
+						for node in objects do
 						(
 							ig = getIg node
 							if ( (ig != undefined) and (ig != "") ) then
@@ -176,7 +176,7 @@ try
 								)
 							)
 						)
-			
+	
 						-- Have some ig ?
 						if (ig_array.count != 0) then
 						(
@@ -201,6 +201,13 @@ try
 									)
 									-- Select all lights in this ig
 									for node in lights do
+									(
+										-- Select it if in the ig
+										if ( (getIg node) == ig_array[ig]) then
+											selectmore node
+									)
+									-- Select all lights in this ig
+									for node in helpers do
 									(
 										-- Select it if in the ig
 										if ( (getIg node) == ig_array[ig]) then

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.19 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: stream.h,v 1.20 2000/10/09 14:38:16 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -259,7 +259,7 @@ public:
 	template<class T>
 	void			serialCont(T &cont) throw(EStream)
 	{
-		sint32	len;
+		sint32	len=0;
 		if(isReading())
 		{
 			cont.clear();

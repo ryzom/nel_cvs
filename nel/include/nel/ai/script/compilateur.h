@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.9 2001/01/12 13:01:47 portier Exp $
+ * $Id: compilateur.h,v 1.10 2001/01/17 16:53:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,7 @@ namespace NLAISCRIPT
 		IOpType							*_ExpressionType;		
 		IOpType							*_FlotingExpressionType;	
 		std::list<IOpType *>			_ExpressionTypeTmp;
+		std::list<IOpType *>			_ExpressionOp;
 		bool							_IsFacteurIsExpression;
 		bool							_FacteurEval;
 		bool							_IsVoid;

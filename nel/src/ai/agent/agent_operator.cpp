@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.5 2001/01/12 11:49:58 portier Exp $
+ * $Id: agent_operator.cpp,v 1.6 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,35 +42,45 @@ namespace NLAIAGENT
 		{
 			if ( *name == CStringVarName(_OPPLUS_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opAdd,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_add,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName(_OPMOINS_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSub,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_sub,0.0,NULL,NULL) );
 			}
 			if ( *name == CStringVarName(_OPMUL_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opMul,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_mul,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName(_OPEQ_) )
+
+			if ( *name == CStringVarName(_OPDIV_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiv,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_div,0.0,NULL,NULL) );
 			}
+
 			if ( *name == CStringVarName(_OPLESS_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opNeg,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_neg,0.0,NULL,NULL) );
 			}
+
+			if ( *name == CStringVarName(_OPEQ_) )
+			{
+				result.push( NLAIAGENT::CIdMethod(op_eq,0.0,NULL,NULL) );
+			}
+
 			if ( *name == CStringVarName(_OPINFEQ_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opInfEq,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_inf_eq,0.0,NULL,NULL) );
 			}
+
 			if ( *name == CStringVarName(_OPSUPEQ_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSupEq,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_sup_eq,0.0,NULL,NULL) );
 			}
+
 			if ( *name == CStringVarName(_OPDIFF_) )
 			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiff,0.0,NULL,NULL) );
+				result.push( NLAIAGENT::CIdMethod(op_diff,0.0,NULL,NULL) );
 			}
 		}
 		
@@ -97,27 +107,27 @@ namespace NLAIAGENT
 
 		switch ( index ) 
 		{
-			case NLAIC::CTypeOfOperator::opAdd:
+			case op_add:
 				r.Result = (IObjectIA *) &( (*this) += ( * (IObjetOp *) x) );
 				break;
 
-			case NLAIC::CTypeOfOperator::opSub:
+			case op_sub:
 				r.Result = (IObjectIA *) &( (*this) -= ( * (IObjetOp *) x) );
 				break;
 
-			case NLAIC::CTypeOfOperator::opMul:
+			case op_mul:
 				r.Result = (IObjectIA *) &( (*this) *= ( * (IObjetOp *) x) );
 				break;
 
-			case NLAIC::CTypeOfOperator::opDiv:
+			case op_div:
 				r.Result = (IObjectIA *) &( (*this) /= ( * (IObjetOp *) x) );
 				break;
 
-			case NLAIC::CTypeOfOperator::opNot:
+			case op_not:
 				r.Result = (IObjectIA *) ( !(*this)  );
 				break;
 
-			case NLAIC::CTypeOfOperator::opEq:
+			case op_eq:
 				r.Result = (IObjectIA *) ( (*this) == ( * (IObjetOp *) x ) );
 				break;
 		}

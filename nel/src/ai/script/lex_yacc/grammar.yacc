@@ -598,7 +598,8 @@ using  namespace NLAIFUZZY;
 									return 0;
 								}*/								
 								setTypeExpressionG();
-								allocExpression(NULL);								
+								allocExpression(NULL);
+								
 								
 							}	
 							PLUS Term
@@ -734,12 +735,12 @@ using  namespace NLAIFUZZY;
 									yyerror("erreur sémantique l'operateur * n'est pas supporté par cette expression");
 									return 0;
 								}*/
-								setTypeExpressionG();
+								setTypeExpressionG();								
 								allocExpression(NULL);
-								_FacteurEval = false;	
+								_FacteurEval = false;								
 							}
 							FOIS Facteur
-							{	
+							{									
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opMul,"+");
 								allocExpression(new CMulOpCode,false);
 								_FacteurEval = false;
@@ -754,10 +755,10 @@ using  namespace NLAIFUZZY;
 											
 								setTypeExpressionG();
 								allocExpression(NULL);
-								_FacteurEval = false;
+								_FacteurEval = false;								
 							}
 							DIV Facteur
-							{								
+							{																
 								allocExpression(new CDivOpCode,false);	
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opDiv,"/");
 								_FacteurEval = false;	

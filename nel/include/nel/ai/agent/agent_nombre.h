@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
+ * $Id: agent_nombre.h,v 1.6 2001/01/17 16:53:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,11 +25,58 @@
 #ifndef NL_AGENT_NOMBRE_H
 #define NL_AGENT_NOMBRE_H
 
+//#include "nel/ai/agent/agent_object.h"
 #include "nel/ai/logic/boolval.h"
 #include "nel/misc/vector.h"
 
 namespace NLAIAGENT
 {	
+
+
+	class INombreDefine: public IObjetOp
+	{
+
+	public:
+
+		enum  TMethodNumDef {
+			TConst,
+			TLastM
+		};
+
+		struct CMethodCall
+		{
+			CMethodCall(const char *name, int i): MethodName (name)
+			{				
+				Index = i;
+			}
+			CStringVarName MethodName;
+			sint32 Index;
+		};
+		static CMethodCall StaticMethod[];
+
+	public:
+		INombreDefine()
+		{
+		}
+
+		INombreDefine(const INombreDefine &value):IObjetOp(value)
+		{
+		}
+
+		///\name Some IObjectIA method definition.
+		//@{
+		virtual sint32 getMethodIndexSize() const;
+		virtual sint32 isClassInheritedFrom(const IVarName &) const;
+		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;		
+		//@}
+
+
+		virtual double getNumber() const = 0;
+		virtual ~INombreDefine()
+		{
+		}
+
+	};
 
 	/**
 	This define encapsulate a nomber and manage its manipulation.
@@ -40,8 +87,9 @@ namespace NLAIAGENT
 	* \date 2000
 	*/
 	template <class tNombre> 
-	class INombre: public IObjetOp
-	{
+	class INombre: public INombreDefine
+	{	
+
 	protected:
 		tNombre _Value;
 
@@ -49,7 +97,7 @@ namespace NLAIAGENT
 		INombre(tNombre value):_Value(value)
 		{
 		}
-		INombre(const INombre &value):IObjetOp(value),_Value((tNombre)value._Value)
+		INombre(const INombre &value):INombreDefine(value),_Value((tNombre)value._Value)
 		{
 		}
 		INombre()
@@ -63,6 +111,35 @@ namespace NLAIAGENT
 		virtual ~INombre()
 		{
 		}
+
+		virtual double getNumber() const
+		{
+			return (double)_Value;
+		}
+
+		///\name Some IObjectIA method definition.
+		//@{		
+		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *)
+		{
+			return IObjectIA::CProcessResult();
+		}
+		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *p)
+		{
+			IBaseGroupType *param = (IBaseGroupType *)p;
+
+			switch(index - IObjetOp::getMethodIndexSize())
+			{
+			case INombreDefine::TConst:
+				{					
+					INombre *o = (INombre *)param->get();
+					_Value = (tNombre )((INombreDefine *)param->get())->getNumber();
+					return IObjectIA::CProcessResult();		
+				}
+			}
+
+			return IObjectIA::CProcessResult();
+		}
+		//@}
 
 		virtual void save(NLMISC::IStream &os)
 		{	
@@ -98,8 +175,8 @@ namespace NLAIAGENT
 		}		
 
 		virtual IObjectIA &operator = (const IObjectIA &a)
-		{
-			tNombre v((tNombre)((const INombre &)a).getValue());
+		{			
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			_Value = v;
 			chekBorn();
 			return *this;
@@ -107,14 +184,14 @@ namespace NLAIAGENT
 
 		virtual IObjetOp &operator += (const IObjetOp &a)
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			addValue(v);
 			return *this;
 		}
 
 		virtual IObjetOp &operator -= (const IObjetOp &a)
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			subValue(v);
 			return *this;
 		}
@@ -128,14 +205,14 @@ namespace NLAIAGENT
 
 		virtual IObjetOp &operator *= (const IObjetOp &a)
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			mulValue(v);
 			return *this;
 		}
 
 		virtual IObjetOp &operator /= (const IObjetOp &a)
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			divValue(v);
 			return *this;
 		}
@@ -171,14 +248,14 @@ namespace NLAIAGENT
 
 		virtual IObjetOp *operator < (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value < v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator > (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value > v);			
 			return x;
 		}
@@ -205,14 +282,14 @@ namespace NLAIAGENT
 
 		virtual IObjetOp *operator != (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();			
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);
 			return x;
 		}
 
 		virtual IObjetOp *operator == (IObjetOp &a) const
 		{
-			tNombre v = (tNombre)((const INombre &)a).getValue();			
+			tNombre v = (tNombre)((const INombreDefine &)a).getNumber();
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);
 			return x;
 		}

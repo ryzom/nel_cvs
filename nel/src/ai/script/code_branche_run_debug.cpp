@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.7 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -268,12 +268,21 @@ namespace NLAISCRIPT
 		lineNumber = this->getCurrentSourceCodeLineNumber();
 		// Read the file
 		f = fopen(getSourceFileName(),"rb");
-		fseek(f,0,SEEK_END);
-		size = ftell(f);
-		rewind(f);
-		buf = new char [size + 3];
-		fread(buf+1, sizeof( char ), size, f);
-		fclose(f);
+		if(f)
+		{
+			fseek(f,0,SEEK_END);
+			size = ftell(f);
+			rewind(f);
+			buf = new char [size + 3];
+			fread(buf+1, sizeof( char ), size, f);
+			fclose(f);
+		}		
+		else
+		{
+			size = 1;
+			buf = new char [size + 3];
+		}
+
 		buf[0] = ' ';
 		buf[size] = '\n';
 		buf[size+1] = 0;

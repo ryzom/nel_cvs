@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.3 2001/01/12 11:54:27 portier Exp $
+ * $Id: agent_method_def.h,v 1.4 2001/01/17 16:53:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #define _OPPLUS_		"operator+"
 #define _OPMOINS_		"operator-"
 #define _OPMUL_			"operator*"
+#define _OPDIV_			"operator*"
 #define _OPEQ_			"operator=="
 #define _OPLESS_		"operator!"
 #define _OPINFEQ_		"operator<="

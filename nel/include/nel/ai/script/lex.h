@@ -1,7 +1,7 @@
 /** \file lex.h
  * 
  *
- * $Id: lex.h,v 1.3 2001/01/10 10:33:50 chafik Exp $
+ * $Id: lex.h,v 1.4 2001/01/17 16:53:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ namespace NLAISCRIPT
 
 		//this is a new define type for our operation
 		char LastyyText[2][1024*4];
-		float LastyyNum;		
+		double LastyyNum;		
 		int yyLine,yyColone;
 
 		virtual int	yywrap() = 0;

@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: lexsupport.cpp,v 1.6 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,10 +167,10 @@ namespace NLAISCRIPT
 		}*/
 	}
 
-	float GetNombre(char *CStringType,int Base)
+	double GetNombre(char *CStringType,int Base)
 	{
 		
-		double V = 0.0,n,B = (float)Base;
+		double V = 0.0,n,B = (double)Base;
 
 
 		if(!Base)
@@ -206,7 +206,7 @@ namespace NLAISCRIPT
 			}
 		}
 
-		return (float)V;
+		return V;
 	}
 	
 }

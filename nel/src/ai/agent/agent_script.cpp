@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.11 2001/01/17 10:30:40 chafik Exp $
+ * $Id: agent_script.cpp,v 1.12 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -445,6 +445,8 @@ namespace NLAIAGENT
 		_ScriptMail->run();
 		getMail()->run();
 		runChildren();
+		
+		processMessages();
 
 		if(_AgentClass->getRunMethod() >= 0) 
 		{
@@ -452,7 +454,6 @@ namespace NLAIAGENT
 			context->Self = this;
 			runMethodeMember(_AgentClass->getRunMethod(), context);
 		}
-		processMessages();
 
 		setState(processIdle,NULL);
 		return getState();

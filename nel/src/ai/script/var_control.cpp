@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
+ * $Id: var_control.cpp,v 1.9 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,7 +365,7 @@ namespace NLAISCRIPT
 	{
 		if(_LastFact.Value != NULL) 
 							_LastFact.Value->release();
-		_LastFact.Value = new NLAIAGENT::DigitalType(LastyyNum);
+		_LastFact.Value = new NLAIAGENT::DDigitalType(LastyyNum);
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;		
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
@@ -545,10 +545,17 @@ namespace NLAISCRIPT
 			((COperationTypeGD *)_ExpressionType)->setOperationG(_FlotingExpressionType);
 			_FlotingExpressionType = NULL;
 		}
+		_ExpressionOp.push_back(_ExpressionType);
+		_ExpressionType = NULL;
 	}
 
 	void CCompilateur::setTypeExpressionD(NLAIC::CTypeOfOperator::TTypeOp op,const char *txtOp)
 	{
+		if(_ExpressionType != NULL && _FlotingExpressionType == NULL) _FlotingExpressionType = _ExpressionType;
+		//else if(_ExpressionType == NULL && _FlotingExpressionType != NULL) _FlotingExpressionType = _ExpressionType;
+		_ExpressionType = _ExpressionOp.back();
+		_ExpressionOp.pop_back();
+
 		((COperationTypeGD *)_ExpressionType)->setOperationD(_FlotingExpressionType);
 		((COperationTypeGD *)_ExpressionType)->setOp(op);
 		_FlotingExpressionType = NULL;

@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.9 2001/01/17 16:53:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,16 +72,7 @@ namespace NLAISCRIPT
 					if(((const NLAIC::CTypeOfObject &)idD) & NLAIC::CTypeOfObject::tAgentInterpret)
 					{
 						const IClassInterpret *o = (const IClassInterpret *)((CClassInterpretFactory *)idD.getFactory())->getClass();						
-						bool type = false;
-						/*for(sint32 i = o->sizeVTable() - 1; i >= 1; i--)
-						{
-							if( o->getInheritance(i)->getType() == idG)
-							{
-								d = ((double)(o->sizeVTable() - i - 1))*k;
-								D += d*d;
-								type = true;
-							}							
-						}*/
+						bool type = false;						
 						sint32 i = 0;						
 						while(o != NULL)
 						{
@@ -96,7 +87,15 @@ namespace NLAISCRIPT
 						}
 						if(!type) return -1.0;
 					}
-					else return -1.0;
+					else
+					{
+						//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
+						if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
+						{
+							return 0.0;
+						}
+						else return -1.0;
+					}
 				}
 				k += 1.0;
 			}			

@@ -1,7 +1,7 @@
 /** \file lexsupport.h
  * Method and class for lex&yacc support.
  *
- * $Id: lexsupport.h,v 1.5 2001/01/12 13:28:56 chafik Exp $
+ * $Id: lexsupport.h,v 1.6 2001/01/17 16:53:18 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ namespace NLAISCRIPT
 	///Erase the dictionary.
 	void EraseDico();
 	///get a nomber forom a given numerical string.
-	float GetNombre(char *CStringType,int Base);
+	double GetNombre(char *CStringType,int Base);
 	
 }
 #endif

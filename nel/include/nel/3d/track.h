@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.13 2001/03/14 15:21:52 corvazier Exp $
+ * $Id: track.h,v 1.14 2001/03/16 16:42:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,8 +56,6 @@ class ITrack : public NLMISC::IStreamable
 public:
 	/**
 	  * Virtual destructor.
-	  *
-	  * \return the last value evaluated by ITrack::eval().
 	  */
 	virtual ~ITrack() {};
 
@@ -115,50 +113,36 @@ class ITrackKeyFramer : public ITrack
 {
 public:
 	// Some types
-	typedef std::map <CAnimationTime, CKeyT*>	TMapTimeCKeyPtr;
+	typedef std::map <CAnimationTime, CKeyT>	TMapTimeCKey;
+
+
+	/// ctor.
+	ITrackKeyFramer ()
+	{
+		_Dirty= false;
+	}
+
 
 	/// Destructor
 	~ITrackKeyFramer ()
 	{
-		// Erase all pointers in the map
-		TMapTimeCKeyPtr::iterator ite=_MapKey.begin ();
-		while (ite!=_MapKey.end())
-		{
-			// Erase it
-			delete ite->second;
-
-			// Next element
-			ite++;
-		}
 	}
-
-	/**
-	  * Evaluate the keyframe interpolation. 
-	  *
-	  * i is the keyframe with the bigger time value that is inferior or equal than date.
-	  *
-	  * \param pPrevious is the i-1 key in the keyframe. NULL if no key.
-	  * \param previous is the i key in the keyframe. NULL if no key.
-	  * \param next is the i+1 key in the keyframe. NULL if no key.
-	  * \param nNext is the i+2 key in the keyframe. NULL if no key.
-	  */
-	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext, 
-							CAnimationTime date ) =0;
 
 	/**
 	  * Add a key in the keyframer.
 	  *
-	  * The pointer pass to ITrackKeyFramer is then handled by the keyframer. You must allocate it
-	  * with the standard new operator.
+	  * The key passed is duplicated in the track.
 	  *
-	  * \param key is the pointer on the key to add in the keyframer.
+	  * \param key is the key value to add in the keyframer.
 	  * \param time is the time of the key to add in the keyframer.
 	  */
-	void addKey (CKeyT* key, CAnimationTime time)
+	void addKey (const CKeyT &key, CAnimationTime time)
 	{
 		// Insert the key in the map
-		_MapKey.insert (TMapTimeCKeyPtr::value_type (time, key));
+		_MapKey.insert (TMapTimeCKey::value_type (time, key));
+
+		// must precalc at next eval.
+		_Dirty= true;
 	}
 
 	/// From ITrack. 
@@ -169,14 +153,21 @@ public:
 		CAnimationTime datePrevious;
 		CAnimationTime dateNext;
 
+		// must precalc ??
+		if(_Dirty)
+		{
+			compile();
+			_Dirty= false;
+		}
+
 		// Return upper key
-		TMapTimeCKeyPtr::iterator ite=_MapKey.upper_bound (date);
+		TMapTimeCKey::iterator ite=_MapKey.upper_bound (date);
 
 		// First next ?
 		if (ite!=_MapKey.end())
 		{
 			// Next
-			next=ite->second;
+			next= &(ite->second);
 			dateNext=ite->first;
 		}
 
@@ -187,7 +178,7 @@ public:
 		if (ite!=_MapKey.end())
 		{
 			// Previous
-			previous=ite->second;
+			previous= &(ite->second);
 			datePrevious=ite->first;
 		}
 
@@ -197,7 +188,7 @@ public:
 	CAnimationTime getBeginTime () const
 	{
 		// Get first key
-		TMapTimeCKeyPtr::const_iterator ite=_MapKey.begin ();
+		TMapTimeCKey::const_iterator ite=_MapKey.begin ();
 		if (ite==_MapKey.end())
 			return 0.f;
 		else
@@ -206,7 +197,7 @@ public:
 	CAnimationTime getEndTime () const
 	{
 		// Get first key
-		TMapTimeCKeyPtr::const_iterator ite=_MapKey.end ();
+		TMapTimeCKey::const_iterator ite=_MapKey.end ();
 		ite--;
 		if (ite==_MapKey.end())
 			return 0.f;
@@ -220,54 +211,46 @@ public:
 		// Serial version
 		sint version=f.serialVersion (0);
 
-		// Is stream reading ?
-		if (f.isReading())
+		f.serialMap(_MapKey);
+	}
+
+private:
+	TMapTimeCKey		_MapKey;
+	bool				_Dirty;
+
+
+protected:
+	/**
+	  * Precalc keyframe runtime infos for interpolation (OODTime...). All keys should be processed.
+	  * This is called by evalKey when necessary. Deriver should call ITrackKeyFramer::compile(), to compile basic
+	  * Key runtime info.
+	  */
+	virtual void compile   ()
+	{
+		TMapTimeCKey::iterator	it= _MapKey.begin();
+		for(;it!=_MapKey.end();it++)
 		{
-			// Read the size
-			uint32 size;
-			f.serial (size);
-
-			// Reset the map
-			_MapKey.clear();
-
-			// Read element and insert in the map
-			for (uint e=0; e<(uint)size; e++)
-			{
-				CAnimationTime time;
-				CKeyT* keyPointer=NULL;
-
-				// Serial element of the map
-				f.serial (time);
-				f.serialPolyPtr (keyPointer);
-
-				// Insert in the map
-				_MapKey.insert (TMapTimeCKeyPtr::value_type ( time, keyPointer));
-			}
-		}
-		// Writing...
-		else
-		{
-			// Size of the map
-			uint32 size=(uint32)_MapKey.size();
-			f.serial (size);
-
-			// Write each element
-			TMapTimeCKeyPtr::iterator ite=_MapKey.begin();
-			while (ite!=_MapKey.end())
-			{
-				// Write the element
-				CAnimationTime time=ite->first;
-				CKeyT *keyPointer=ite->second;
-				f.serial (time);
-				f.serialPolyPtr (keyPointer);
-
-				// Next element
-				ite++;
-			}
+			TMapTimeCKey::iterator	next= it;
+			next++;
+			if(next!=_MapKey.end())
+				it->second.OODeltaTime= 1.0f/(next->first - it->first);
+			else
+				it->second.OODeltaTime= 0.0f;
 		}
 	}
-private:
-	TMapTimeCKeyPtr		_MapKey;
+
+	/**
+	  * Evaluate the keyframe interpolation. 
+	  *
+	  * i is the keyframe with the bigger time value that is inferior or equal than date.
+	  *
+	  * \param previous is the i key in the keyframe. NULL if no key.
+	  * \param next is the i+1 key in the keyframe. NULL if no key.
+	  */
+	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
+							CAnimationTime datePrevious, CAnimationTime dateNext, 
+							CAnimationTime date ) =0;
+
 };
 
 
@@ -825,6 +808,15 @@ template<class T>
 class CTrackDefaultBlendable : public ITrackDefault
 {
 public:
+
+	CTrackDefaultBlendable()
+	{
+	}
+	CTrackDefaultBlendable(const T &val)
+	{
+		_Value.Value= val;
+	}
+
 	/// From ITrack. Return a const value.
 	virtual const IAnimatedValue& getValue () const
 	{
@@ -860,6 +852,16 @@ template<class T>
 class CTrackDefaultNotBlendable : public ITrackDefault
 {
 public:
+
+	CTrackDefaultNotBlendable()
+	{
+	}
+	CTrackDefaultNotBlendable(const T &val)
+	{
+		_Value.Value= val;
+	}
+
+
 	/// From ITrack. Return a const value.
 	virtual const IAnimatedValue& getValue () const
 	{
@@ -881,41 +883,57 @@ private:
 	CAnimatedValueNotBlendable<T>	_Value;
 };
 
+
+#define	NL3D_TRACKDEF_CTOR(_Son, _Father, _T)	\
+	_Son() {}									\
+	_Son(const _T &v) : _Father<_T>(v) {}
+
+
 // Predefined types
 class CTrackDefaultFloat : public CTrackDefaultBlendable<float>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultFloat, CTrackDefaultBlendable, float);
 	NLMISC_DECLARE_CLASS (CTrackDefaultFloat);
 };
 class CTrackDefaultVector : public CTrackDefaultBlendable<NLMISC::CVector>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultVector, CTrackDefaultBlendable, NLMISC::CVector);
 	NLMISC_DECLARE_CLASS (CTrackDefaultVector);
 };
 class CTrackDefaultQuat : public CTrackDefaultBlendable<NLMISC::CQuat>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultQuat, CTrackDefaultBlendable, NLMISC::CQuat);
 	NLMISC_DECLARE_CLASS (CTrackDefaultQuat);
 };
 class CTrackDefaultInt : public CTrackDefaultBlendable<sint32>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultInt, CTrackDefaultBlendable, sint32);
 	NLMISC_DECLARE_CLASS (CTrackDefaultInt);
 };
+
+class CTrackDefaultRGBA : public CTrackDefaultBlendable<NLMISC::CRGBA>
+{
+public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultRGBA, CTrackDefaultBlendable, NLMISC::CRGBA);
+	NLMISC_DECLARE_CLASS (CTrackDefaultRGBA);
+};
+
+
 class CTrackDefaultString : public CTrackDefaultNotBlendable<std::string>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultString, CTrackDefaultNotBlendable, std::string);
 	NLMISC_DECLARE_CLASS (CTrackDefaultString);
 };
 class CTrackDefaultBool : public CTrackDefaultNotBlendable<bool>
 {
 public:
+	NL3D_TRACKDEF_CTOR(CTrackDefaultBool, CTrackDefaultNotBlendable, bool);
 	NLMISC_DECLARE_CLASS (CTrackDefaultBool);
-};
-class CTrackDefaultRGBA : public CTrackDefaultNotBlendable<NLMISC::CRGBA>
-{
-public:
-	NLMISC_DECLARE_CLASS (CTrackDefaultRGBA);
 };
 
 } // NL3D

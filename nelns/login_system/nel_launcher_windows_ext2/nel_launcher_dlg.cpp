@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.cpp
  *
- * $Id: nel_launcher_dlg.cpp,v 1.7 2004/05/05 17:18:54 lecroart Exp $
+ * $Id: nel_launcher_dlg.cpp,v 1.8 2004/06/10 14:42:35 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -441,19 +441,23 @@ void CNeLLauncherDlg::LaunchClient(const string &cookie, const string &addr)
 	string rapp = ConfigFile.getVar("Application").asString(1);
 	string dir = ConfigFile.getVar("Application").asString(2);
 
-	vector<string> vargs;
+//	vector<string> vargs;
 	const char *args[50];
 
-	vargs.push_back(cookie);
-	vargs.push_back(addr);
+//	vargs.push_back(cookie);
+//	vargs.push_back(addr);
 
-	uint i;
+//	uint i;
 	args[0] = rapp.c_str();
+/*
 	for(i = 0; i < vargs.size(); i++)
 	{
 		args[i+1] = vargs[i].c_str();
 	}
-	args[i+1] = NULL;
+*/
+	args[1] = NULL;
+
+	MessageBox("We have made changes to the way you gain access to the game:\r\n - this is the last time you are using the nel launcher\r\n - nel launcher is now merged with the game\r\n - next time you want to play SoR you need to click on this shortcut 'Play Ryzom' or click on 'client_ryzom_d.exe in your ryzom folder\r\n - You will now be taken to the new login area", "Please Read!", MB_ICONEXCLAMATION);
 
 	const char *SE_TRANSLATOR_IN_MAIN_MODULE = "NEL_SE_TRANS";
 	TCHAR envBuf [2];

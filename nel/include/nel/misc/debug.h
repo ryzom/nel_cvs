@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.48 2003/03/18 10:24:35 corvazier Exp $
+ * $Id: debug.h,v 1.49 2003/04/28 09:32:52 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -486,9 +486,9 @@ template<class T, class U>	inline T	safe_cast(U o)
 {
 	// NB: must check debug because assert may still be here in release
 #ifdef	NL_DEBUG
-	nlassert(dynamic_cast<T>(o));
+	nlassert(dynamic_cast<T >(o));
 #endif
-	return static_cast<T>(o);
+	return static_cast<T >(o);
 }
 
 /** Compile time assertion

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.13 2002/08/21 09:44:05 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.14 2003/04/28 09:32:52 ledorze Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,7 +79,7 @@ string typeToString (CTransportClass::TProp type)
 	string conv[] = {
 		"PropUInt8", "PropUInt16", "PropUInt32", "PropUInt64",
 		"PropSInt8", "PropSInt16", "PropSInt32", "PropSInt64",
-		"PropBool", "PropFloat", "PropDouble", "PropString", "PropEntityId", "PropSheetId", "PropUKN" };
+		"PropBool", "PropFloat", "PropDouble", "PropString", "PropDataSetRow", "PropEntityId", "PropSheetId", "PropUKN" };
 
 	if (type > CTransportClass::PropUKN)
 		return "<InvalidType>";

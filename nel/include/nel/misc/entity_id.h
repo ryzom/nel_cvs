@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.25 2003/04/22 14:21:00 ledorze Exp $
+ * $Id: entity_id.h,v 1.26 2003/04/28 09:32:52 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -442,6 +442,7 @@ public :
 		Id = (uint64)(p);
 		*/
 	}
+
 
 	void serial (NLMISC::IStream &f) throw (NLMISC::EStream)
 //	virtual void serial (NLMISC::IStream &f) throw (NLMISC::EStream)

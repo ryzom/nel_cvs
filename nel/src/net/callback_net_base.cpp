@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.34 2002/08/21 09:45:09 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.35 2002/08/22 14:21:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -232,7 +232,8 @@ void CCallbackNetBase::processOneMessage ()
 
 	_BytesReceived += msgin.length ();
 
-	nldebug ("LNETL3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
+	//ace
+	nlwarning ("LNETL3NB: Received a message %s from %s", msgin.toString().c_str(), tsid->asString().c_str());
 	
 	// now, we have to call the good callback
 	NLMISC::CStringIdArray::TStringId pos = -1;
@@ -284,7 +285,8 @@ void CCallbackNetBase::processOneMessage ()
 	}
 	else
 	{
-		nldebug ("LNETL3NB_CB: Calling callback (%s)%s", msgin.getName().c_str(), (cb==_DefaultCallback)?" DEFAULT_CB":"");
+		//ace
+		nlwarning ("LNETL3NB_CB: Calling callback (%s)%s", msgin.getName().c_str(), (cb==_DefaultCallback)?" DEFAULT_CB":"");
 		cb(msgin, realid, *this);
 	}
 	

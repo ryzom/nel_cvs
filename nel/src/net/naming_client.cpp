@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.50 2002/08/22 14:13:17 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.51 2002/08/22 14:19:01 lecroart Exp $
  *
  */
 
@@ -410,8 +410,11 @@ uint16 CNamingClient::queryServicePort ()
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
+	nlwarning ("********** querying port");
+	TTime before1 = CTime::getLocalTime ();
 	CMessage msgout (_Connection->getSIDA(), "QP");
 	_Connection->send (msgout);
+	nlwarning ("********** %f to send the message", (float)(CTime::getLocalTime ()-before1)/1000.0f);
 
 	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "QP"
@@ -419,6 +422,7 @@ uint16 CNamingClient::queryServicePort ()
 	while (!QueryPort)
 	{
 		_Connection->update (-1);
+		nlwarning ("********** %f to got one message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 		nlSleep (1);
 	}
 	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);

@@ -1,6 +1,6 @@
 /** \file random.cpp
  *
- * $Id: random.cpp,v 1.1 2002/11/14 17:38:55 vizerie Exp $
+ * $Id: random.cpp,v 1.2 2002/12/16 15:39:27 miller Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -25,6 +25,10 @@
 #include "stdmisc.h"
 #include "nel/misc/random.h"
 
+/*
+
+  THIS CODE MOVED TO H FILE BY SADGE AS INLINE
+
 namespace NLMISC
 {
 
@@ -41,17 +45,39 @@ sint32 CRandom::rand()
 }
 
 //===========================================================================
-void CRandom::srand(sint32 seed)
+sint32 CRandom::rand(uint16 mod)
 {
-	_Seed = seed;
+	sint32 m=mod;
+	return rand()*(m+1)/(sint32(RandMax)+1);
 }
 
 //===========================================================================
-float CRandom::frand(float mod)
+sint32 CRandom::randPlusMinus(uint16 mod)
+{
+	sint32 m=mod;
+	return m - rand()*(2*m+1)/(sint32(RandMax)+1);
+}
+
+//===========================================================================
+float CRandom::frand(double mod)
 {
 	double	r = (double) rand();
 	r /= (double) RandMax;
 	return (float)(r * mod);	
 }
 
+//===========================================================================
+float CRandom::frandPlusMinus(double mod)
+{
+	return frand(2*mod)-(float)mod;
 }
+
+//===========================================================================
+void CRandom::srand(sint32 seed)
+{
+	_Seed = seed;
+}
+
+}
+
+*/

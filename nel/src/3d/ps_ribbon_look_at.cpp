@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.17 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.18 2004/07/09 09:45:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		tangent.y = 0;
 
 		tgNorm = tangent.norm();
-		if (fabs(tgNorm > 10E-8))
+		if (fabs(tgNorm) > 10E-8)
 		{
 			invTgNorm = 1.f / tgNorm;			
 		}
@@ -297,7 +297,7 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		tangent = next->Proj - tInter;		
 		tangent.y = 0;
 		tgNorm = tangent.norm();
-		if (fabs(tgNorm > 10E-8))
+		if (fabs(tgNorm) > 10E-8)
 		{
 			invTgNorm = 1.f / tgNorm;			
 		}

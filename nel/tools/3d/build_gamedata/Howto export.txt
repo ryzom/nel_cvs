@@ -1,0 +1,139 @@
+<<< HOWTO export data for the client >>>
+
+-----------------------------------------------------------------------------------------------------
+
+DIRECTORIES
+
+There is 4 main directories:
+
+database/ is the root directory of the 3d database
+gamedata/ is the root directory of the current gamadata folder
+client/ is the root directory of the client
+build_gamedata/ is the root directory of the build data system
+
+-----------------------------------------------------------------------------------------------------
+
+SUMMARY
+
+* EXPORT DATA FOR THE LOCAL CLIENT
+* EXPORT DATA IN THE GAMEDATA DIRECTORY
+* EXPORT DSS FILES FROM PHOTOSHOP
+* EXPORT LANDSCAPE TEXTURES
+* EXPORT A SKELETON
+* EXPORT A SKELETON TEMPLATE WEIGHT
+* EXPORT AN ANIMATION
+* EXPORT A ZONE
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT DATA FOR THE LOCAL CLIENT
+
+The data for your local client are stored in the client/data directory.
+You can export here your data to test it with your client.
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT DATA IN THE GAMEDATA DIRECTORY
+
+You musn't export directly your data for the gamedata folder.
+An automatic process will update your modification directly from the graphic database (w:\) 
+and add them to the new gamedata folder.
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT DSS FILES FROM PHOTOSHOP
+
+Install the photoshop DDS plugin. (\\Server\code\tools\plugins photoshop)
+Load your TGA file. Save as *.DDS. Then come a big dialog box with a lot of options.
+In the left part of the dialog box select the format you want (DXT1 or DXT5).
+Select "Generate MIP maps".
+Select NO OTHER OPTION.
+Save.
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT LANDSCAPE TEXTURES
+
+Textures on the landscape are 24 bits TGA files.
+They can be 128x128 or 256x256.
+In the client, you have to export the texture for diffuse, additive and transition in DXT5 format 
+using the photoshop plugin. The displacement textures (noise textures) must be in TGA.
+The landscape texture are stored in the directories client/data/tiles.
+
+See * EXPORT DSS FILES FROM PHOTOSHOP
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT A SKELETON
+
+Manual process:
+---------------
+
+In max, load your skeleton project with a skeleton in figure mode. Select the root of the skeleton.
+Export it with the "NeL export" utility plugin, button "export skeleton".
+The file extension must be a "*.skel".
+The skeleton directory for the client is client/data/animations/skeletons.
+The name of the skel file is the name of the max project.
+
+Automatic process:
+------------------
+
+Clear:
+The clear process will delete build_gamedata/skel/skel/*.*
+
+Update: 
+Does nothing
+
+Build:
+The build process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/skeletons/.
+It will select "Bip01" in the project an export the skel. The root of the skeleton must have been named "Bip01".
+The skel files are exported in the build folder build_gamedata/skel/skel/.
+The name of the skel files are the name of the max projects.
+
+Install:
+The install process will copy build_gamedata/skel/skel/*.* in client/data/animations/skeletons
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT A SKELETON TEMPLATE WEIGHT
+
+Manual process:
+---------------
+
+In max, load your skeleton template weight project. Select ALL the bones of the skeleton.
+Export it with the "NelL export" utility plugin, button "export skeleton weights
+The skeleton directory for the client is client/data/animations/skeletons.
+The name of the swt file is the name of the max project.
+
+Automatic process:
+------------------
+
+Clear:
+The clear process will delete build_gamedata/swt/swt/*.*
+
+Update: 
+Does nothing
+
+Build:
+The build process will open each max projects placed in the folder database/Stuff/<race>/Agents/Actors/<sexe/bot>/animation/swt/.
+It will select all the objects in the project an export the swt. The swt files are exported in the build folder build_gamedata/swt/swt/.
+The name of the swt files are the name of the max projects.
+
+Install:
+The install process will copy build_gamedata/swt/swt/*.* in client/data/animations/skeletons
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT AN ANIMATION
+
+In max, load your animation project. 
+Select the animated objects. For the skeletons select only the root.
+Export it with the "NeL export" utility plugin, button "export model animation".
+The file extension must be a "*.anim".
+The animation directory for the client is client/data/animations/anim.
+
+-----------------------------------------------------------------------------------------------------
+
+* EXPORT A ZONE
+
+In order to export a zone in your local client, you must install the zone builder project.

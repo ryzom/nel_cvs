@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.61 2003/01/17 14:13:40 lecroart Exp $
+ * $Id: service.h,v 1.62 2003/06/10 10:11:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,9 +298,12 @@ public:
 	/// The window displayer instance
 	NLMISC::CWindowDisplayer			*WindowDisplayer;
 
-	/// Directory where to store files that the services will write (for example, packet_sheets)
+	/// Directory where to store files that the services will write but are the same for all shard instance (for example: packet_sheets)
 	std::string							WriteFilesDirectory;
 
+	/// Directory where to store files that the services will write during the exploitation of the game (for example: player backup, string cache)
+	std::string							SaveFilesDirectory;
+	
 	void								setVersion (const std::string &version) { _Version = version; }
 
 	uint32								getPort() { return _Port; }

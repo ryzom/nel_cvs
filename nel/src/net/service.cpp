@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.174 2003/05/14 10:03:22 lecroart Exp $
+ * $Id: service.cpp,v 1.175 2003/06/10 10:11:27 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1201,7 +1201,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WriteFilesDirectory = CPath::standardizePath(var->asString());
 		}
 
-
+		// if we can, try to setup where to save files
+		if ((var = ConfigFile.getVarPtr ("SaveFilesDirectory")) != NULL)
+		{
+			SaveFilesDirectory = CPath::standardizePath(var->asString());
+		}
+		
 		//
 		// Call the user service init
 		//

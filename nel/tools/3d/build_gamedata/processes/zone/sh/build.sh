@@ -29,19 +29,29 @@ then
 	date >> log.log
 	date
 
+	cp ../../cfg/properties.cfg zone_depencies_properties.cfg
+	#append the level design directory at the end of the config file
+	ld_dir=`cat ../../cfg/site.cfg | grep "level_design_directory" | sed -e 's/level_design_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+	ld_world_dir=`cat ../../cfg/site.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+	ld_dfn_dir=`cat ../../cfg/site.cfg | grep "level_design_dfn_directory" | sed -e 's/level_design_dfn_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+	continent_file_name=`cat ../../cfg/config.cfg | grep "continent_file" | sed -e 's/continent_file//g' | sed -e 's/ //g' | sed -e 's/=//g'`	
+	echo "level_design_directory = \"$ld_dir\";" >> zone_depencies_properties.cfg
+	echo "level_design_world_directory = \"$ld_world_dir\";" >> zone_depencies_properties.cfg
+	echo "level_design_dfn_directory = \"$ld_dfn_dir\";" >> zone_depencies_properties.cfg
+	echo "continent_name = \"$continent_file_name\";" >> zone_depencies_properties.cfg
+
+
 	# list all the dependencies regions
 	zone_regions=`cat ../../cfg/config.cfg | grep "zone_region" | sed -e 's/zone_region//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 	# For each dependencies region
 	for i in $zone_regions ; do
 		# Extract the name
-		arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`
-
+		arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`		
 		# Make the dependencies
-		$exec_timeout $depend_timeout $zone_dependencies ../../cfg/properties.cfg $arg.zone zone_depend/doomy.depend
+		$exec_timeout $depend_timeout $zone_dependencies zone_depencies_properties.cfg $arg.zone zone_depend/doomy.depend
 	done
-
-fi		# if ( test "$quality_flag" )
+fi	
 
 # **** Weld
 

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.18 2002/06/17 14:25:12 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.19 2002/06/18 15:29:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,12 @@
 #include "nel/misc/time_nl.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
+
+
+#include "nel/georges/u_form.h"
+#include "nel/georges/u_form_elm.h"
+#include "nel/georges/u_form_loader.h"
+
 
 #include "3d/zone.h"
 #include "3d/zone_lighter.h"
@@ -94,8 +100,169 @@ class CMyZoneLighter : public CZoneLighter
 };
 
 
+//=======================================================================================
+// load additionnal ig from a village (ryzom specific)
+static void loadIGFromVillage(const NLGEORGES::UFormElm *villageItem, const std::string &continentName,
+							  uint villageIndex, std::list<CInstanceGroup *> &instanceGroups)
+{	
+	const NLGEORGES::UFormElm *igNamesItem;
+	if (! (villageItem->getNodeByName (&igNamesItem, "IgList") && igNamesItem) )
+	{
+		nlwarning("No list of IGs was found in the continent form %s, village #%d", continentName.c_str(), villageIndex);
+		return;
+	}
+
+	// Get number of village
+	uint numIgs;
+	nlverify (igNamesItem->getArraySize (numIgs));
+	const NLGEORGES::UFormElm *currIg;
+	for(uint l = 0; l < numIgs; ++l)
+	{														
+		if (!(igNamesItem->getArrayNode (&currIg, l) && currIg))
+		{
+			nlwarning("Couldn't get ig #%d in the continent form %s, in village #%d", l, continentName.c_str(), villageIndex);
+			continue;
+		}			
+		const NLGEORGES::UFormElm *igNameItem;
+		currIg->getNodeByName (&igNameItem, "IgName");
+		std::string igName;
+		if (!igNameItem->getValue (igName))
+		{
+			nlwarning("Couldn't get ig name of ig #%d in the continent form %s, in village #%d", l, continentName.c_str(), villageIndex);
+			continue;
+		}
+		if (igName.empty())
+		{
+			nlwarning("Ig name of ig #%d in the continent form %s, in village #%d is an empty string", l, continentName.c_str(), villageIndex);
+			continue;
+		}
+
+		igName = CFile::getFilenameWithoutExtension(igName) + ".ig";
+		string nameLookup = CPath::lookup (igName, false, true);
+		if (!nameLookup.empty())
+		{		
+			CIFile inputFile;
+			// Try to open the file
+			if (inputFile.open (nameLookup))
+			{
+				// New ig
+				std::auto_ptr<CInstanceGroup> group(new CInstanceGroup);
+				try
+				{
+					group->serial (inputFile);
+				}
+				catch(NLMISC::Exception &)
+				{
+					nlwarning ("Error while loading instance group %s\n", igName.c_str());	
+					continue;
+				}								
+				inputFile.close();
+				// Add to the list
+				instanceGroups.push_back (group.release());
+			}
+			else
+			{
+				// Error
+				nlwarning ("Can't open instance group %s\n", igName.c_str());
+			}
+		}								
+	}	
+}
 
 
+//=======================================================================================
+// load additionnal ig from a continent (ryzom specific)
+static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInstanceGroup *> &instanceGroups,
+								const std::vector<std::string> &zoneNameArray
+							   )
+{
+		
+	try
+	{
+		CConfigFile::CVar &continent_name_var = parameter.getVar ("continent_name");
+		CConfigFile::CVar &level_design_directory = parameter.getVar ("level_design_directory");
+		CConfigFile::CVar &level_design_world_directory = parameter.getVar ("level_design_world_directory");						
+		CConfigFile::CVar &level_design_dfn_directory = parameter.getVar ("level_design_dfn_directory");
+		CPath::addSearchPath(level_design_dfn_directory.asString(), true, false);
+
+		std::string continentName = continent_name_var.asString();
+		if (CFile::getExtension(continentName).empty())
+			continentName += ".continent";
+		// Load the form
+		NLGEORGES::UFormLoader *loader = NLGEORGES::UFormLoader::createLoader();
+		//
+		std::string pathName = level_design_world_directory.asString() + "/" + continentName;
+		if (pathName.empty())
+		{		
+			nlwarning("Can't find continent form : %s", continentName.c_str());
+			return;
+		}		
+		NLGEORGES::UForm *villageForm;
+		villageForm = loader->loadForm(pathName.c_str());
+		if(villageForm != NULL)
+		{
+			NLGEORGES::UFormElm &rootItem = villageForm->getRootNode();
+			// try to get the village list
+			// Load the village list
+			NLGEORGES::UFormElm *villagesItem;
+			if(!rootItem.getNodeByName (&villagesItem, "Villages") && villagesItem)
+			{
+				nlwarning("No villages where found in %s", continentName.c_str());
+				return;
+			}
+
+			// Get number of village
+			uint numVillage;
+			nlverify (villagesItem->getArraySize (numVillage));
+
+			// For each village
+			for(uint k = 0; k < numVillage; ++k)
+			{				
+				NLGEORGES::UFormElm *currVillage;
+				if (!(villagesItem->getArrayNode (&currVillage, k) && currVillage))
+				{
+					nlwarning("Couldn't get village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+				// check that this village is in the dependency zones
+				NLGEORGES::UFormElm *zoneNameItem;
+				if (!currVillage->getNodeByName (&zoneNameItem, "Zone") && zoneNameItem)
+				{
+					nlwarning("Couldn't get zone item of village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+				std::string zoneName;
+				if (!zoneNameItem->getValue(zoneName))
+				{
+					nlwarning("Couldn't get zone name of village %d in continent %s", continentName.c_str(), k);
+					continue;
+				}
+
+				zoneName = CFile::getFilenameWithoutExtension(zoneName);
+				for(uint l = 0; l < zoneNameArray.size(); ++l)
+				{					
+					if (NLMISC::nlstricmp(CFile::getFilenameWithoutExtension(zoneNameArray[l]), zoneName) == 0)																  
+					{										
+						// ok, it is in the dependant zones
+						loadIGFromVillage(currVillage, continentName, k, instanceGroups);
+						break;
+					}
+				}					
+			}				
+		}
+		else 
+		{
+			nlwarning("Can't load continent form : %s", continentName.c_str());
+		}				
+	}	
+	catch (NLMISC::EUnknownVar &e)
+	{
+		nlinfo(e.what());
+	}
+}
+
+
+//=======================================================================================
 int main(int argc, char* argv[])
 {
 	// Register 3d
@@ -356,48 +523,57 @@ int main(int argc, char* argv[])
 				// Try to load additionnal instance group.
 
 				// Additionnal instance group
-				try
+				if (loadInstanceGroup)
 				{
-					for (uint add=0; add<(uint)additionnal_ig.size(); add++)
+					try
 					{
-						// Input file
-						CIFile inputFile;
-
-						// Name of the instance group
-						string name = additionnal_ig.asString(add);
-						string nameLookup = CPath::lookup (name, false, false);
-						if (!nameLookup.empty())
-							name = nameLookup;
-
-						// Try to open the file
-						if (inputFile.open (name))
+						for (uint add=0; add<(uint)additionnal_ig.size(); add++)
 						{
-							// New ig
-							CInstanceGroup *group=new CInstanceGroup;
+							// Input file
+							CIFile inputFile;
 
-							// Serial it
-							group->serial (inputFile);
-							inputFile.close();
+							// Name of the instance group
+							string name = additionnal_ig.asString(add);
+							string nameLookup = CPath::lookup (name, false, false);
+							if (!nameLookup.empty())
+								name = nameLookup;
 
-							// Add to the list
-							instanceGroup.push_back (group);
-						}
-						else
-						{
-							// Error
-							nlwarning ("ERROR can't load instance group %s\n", name.c_str());
+							// Try to open the file
+							if (inputFile.open (name))
+							{
+								// New ig
+								CInstanceGroup *group=new CInstanceGroup;
 
-							// Stop before build
-							continu=false;
+								// Serial it
+								group->serial (inputFile);
+								inputFile.close();
+
+								// Add to the list
+								instanceGroup.push_back (group);
+							}
+							else
+							{
+								// Error
+								nlwarning ("ERROR can't load instance group %s\n", name.c_str());
+
+								// Stop before build
+								continu=false;
+							}
 						}
 					}
-				}
-				catch (NLMISC::EUnknownVar &)
-				{
-					nlinfo("No additionnal ig's to load");
-				}
+					catch (NLMISC::EUnknownVar &)
+					{
+						nlinfo("No additionnal ig's to load");
+					}
+				}				
 				
 				// *** Scan dependency file
+
+				CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
+				std::vector<std::string> zoneNameArray;
+				zoneNameArray.reserve(1 + (uint)dependant_zones.size());
+				zoneNameArray.push_back(argv[1]);
+
 				if (lighterDesc.Shadow)
 				{
 					CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
@@ -454,6 +630,12 @@ int main(int argc, char* argv[])
 							}
 						}
 					}
+				}
+
+				if (loadInstanceGroup)
+				{
+					// Ryzom specific : additionnal villages from a continent form
+					loadIGFromContinent(parameter, instanceGroup, zoneNameArray);
 				}
 
 				// A vector of CZoneLighter::CTriangle

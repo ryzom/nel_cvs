@@ -22,6 +22,17 @@ echo -------
 date >> log.log
 date
 
+#append the level design directory at the end of the config file
+ld_dir=`cat ../../cfg/site.cfg | grep "level_design_directory" | sed -e 's/level_design_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+ld_world_dir=`cat ../../cfg/site.cfg | grep "level_design_world_directory" | sed -e 's/level_design_world_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+ld_dfn_dir=`cat ../../cfg/site.cfg | grep "level_design_dfn_directory" | sed -e 's/level_design_dfn_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+continent_file_name=`cat ../../cfg/config.cfg | grep "continent_file" | sed -e 's/continent_file//g' | sed -e 's/ //g' | sed -e 's/=//g'`
+cp ../../cfg/properties.cfg zone_lighter_properties.cfg
+echo "level_design_directory = \"$ld_dir\";" >> zone_lighter_properties.cfg
+echo "level_design_world_directory = \"$ld_world_dir\";" >> zone_lighter_properties.cfg
+echo "level_design_dfn_directory = \"$ld_dfn_dir\";" >> zone_lighter_properties.cfg
+echo "continent_name = \"$continent_file_name\";" >> zone_lighter_properties.cfg
+
 # List the zones to light
 list_zone_welded=`ls -1 ../zone/zone_welded/*.zonew`
 
@@ -32,8 +43,8 @@ for i in $list_zone_welded ; do
 	if ( ! test -e $dest ) || ( test $i -nt $dest )
 	then
 		echo LIGHT $i
-		echo LIGHT $i >> log.log
-		$exec_timeout $light_timeout $zone_lighter $i $dest ../../cfg/properties.cfg $depend
+		echo LIGHT $i >> log.log 	        
+		$exec_timeout $light_timeout $zone_lighter $i $dest zone_lighter_properties.cfg $depend
 		echo 
 		echo 
 	else

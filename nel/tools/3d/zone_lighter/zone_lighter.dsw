@@ -15,6 +15,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "georges"=..\..\..\src\georges.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "misc"=..\..\..\src\misc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -40,6 +52,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name georges
     End Project Dependency
 }}}
 

@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.4 2001/06/25 13:17:02 vizerie Exp $
+ * $Id: editable_range.h,v 1.5 2001/06/27 16:50:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,7 +343,7 @@ protected:
 		}
 		const char *mess = validateUpperBound(loT)
 					  ,*mess2 = validateLowerBound(loT) ;
-		if (!mess || ! mess2)
+		if (mess ||  mess2)
 		{
 			MessageBox(mess ? mess : mess2, "error") ;
 			return false ;
@@ -406,6 +406,12 @@ CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMi
 void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest) ;
 const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result) ;
 
+////////////////////////////////////////////////////////
+// sint32 specialization. Implementation is in the cpp //
+////////////////////////////////////////////////////////
+CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin = 0 , sint32 defaultMax = 10) ;
+void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest) ;
+const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result) ;
 
 
 
@@ -414,6 +420,7 @@ const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &
 
 typedef CEditableRangeT<float> CEditableRangeFloat ;
 typedef CEditableRangeT<uint32> CEditableRangeUInt ;
+typedef CEditableRangeT<sint32> CEditableRangeInt ;
 
 
 

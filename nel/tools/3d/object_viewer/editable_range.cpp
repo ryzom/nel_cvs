@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.4 2001/06/25 13:17:02 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.5 2001/06/27 16:50:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -236,6 +236,34 @@ CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin,
 				return "invalid value" ;
 			}	
 		}
+
+	///////////////////////////
+	// sint32 editable range //
+	///////////////////////////
+
+		CEditableRangeT<sint32>::CEditableRangeT(const std::string &id, sint32 defaultMin , sint32 defaultMax )
+		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+		{
+		}
+
+		void CEditableRangeT<sint32>::value2CString(sint32 value, CString &dest)
+		{
+			dest.Format("%d", value) ;
+		}
+		const char *CEditableRangeT<sint32>::string2value(const CString &value, sint32 &result)
+		{			
+			uint32 tmp ;
+			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
+			{				
+				result = tmp ;
+				return NULL ;				
+			}
+			else
+			{
+				return "invalid value" ;
+			}	
+		}
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.86 2001/09/13 10:26:02 lecroart Exp $
+ * $Id: service.cpp,v 1.87 2001/09/14 15:06:38 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -952,7 +952,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 	map<CFairMutex*,TMutexLocks>::iterator im;
 	for ( im=acquiretimes.begin(); im!=acquiretimes.end(); ++im )
 	{
-		nlinfo( "%d %p %s: %f %f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
+		nlinfo( "%d %p %s: %.0f %.0f, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
 			CTime::ticksToSecond((*im).second.TimeToEnter)*1000.0, CTime::ticksToSecond((*im).second.TimeInMutex)*1000.0,
 			(*im).second.Nb, (*im).second.ThreadHavingTheMutex, (*im).second.WaitingMutex,
 			(*im).second.Dead?" DEAD":"");

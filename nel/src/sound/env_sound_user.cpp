@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.5 2001/07/17 15:31:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,28 +201,29 @@ void CEnvSoundUser::getPos( NLMISC::CVector& pos ) const
 
 
 /*
- * Return the position
+ * Moves the envsound (and its transition envsound if it has one)
  */
 void CEnvSoundUser::setPos( const NLMISC::CVector& pos )
 {
 	if ( _BoundingShape != NULL )
 	{
 		// Get the vector between the pos of this envsound and the pos of its transition envsound
-		CVector dtrans;
+		CVector newpos;
 		if ( (_Parent != NULL) && ( _Parent->_Transition ) )
 		{
-			dtrans = _Parent->_BoundingShape->getCenter() - _BoundingShape->getCenter();
+			newpos = pos + _Parent->_BoundingShape->getCenter() - _BoundingShape->getCenter();
 		}
 		else
 		{
-			dtrans = CVector::Null;
+			newpos = pos;
 		}
 
 		// Set the new pos
 		_BoundingShape->setCenter( pos );
 		if ( (_Parent != NULL) && ( _Parent->_Transition ) )
 		{
-			_Parent->_BoundingShape->setCenter( pos + dtrans );
+			_Parent->_BoundingShape->setCenter( newpos );
+			_Parent->_Source->moveTo( newpos );
 		}
 
 		// Recompute the entire tree

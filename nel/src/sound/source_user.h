@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.4 2001/07/17 14:21:54 cado Exp $
+ * $Id: source_user.h,v 1.5 2001/07/17 15:31:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,8 @@ public:
 
 	/// Enable (play with high priority) or disable (stop and set low priority)
 	virtual void					enable( bool toplay, float gain );
+	/// Move (set position)
+	virtual void					moveTo( const NLMISC::CVector& pos )		{ setPos( pos ); }
 	/// Serial position, sound and looping state (warning: partial serial)
 	virtual void					serial( NLMISC::IStream& s );
 	NLMISC_DECLARE_CLASS(CSourceUser);

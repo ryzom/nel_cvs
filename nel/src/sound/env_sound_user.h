@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.3 2001/07/17 14:21:54 cado Exp $
+ * $Id: env_sound_user.h,v 1.4 2001/07/17 15:31:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,32 @@ class IBoundingShape;
 
 /**
  * Implementation of UEnvSound
+ *
+ * An envsound object is a node of an envsound tree, which root is
+ * returned by CAudioMixerUser::loadEnvSounds() and getEnvSounds()
+ * The root is the world envsound: it has no bounds. The areas of
+ * children envsounds have  * bounds and they must be totally
+ * included in the area of their parent envsound.
+ *
+ * Here is an example of envsound tree:
+ *
+ * \verbatim
+ *                       Root (world envsound)
+ *                       /                   \
+ *                Transition               Transition
+ *                    |                        |
+ *                  Cave1                    City
+ *                                           /  \
+ *                                 Transition    Transition
+ *                                     |             |
+ *                                  Building1     Building2
+ * \endverbatim
+ *
+ * In a transition, the _Source object is the center source
+ * played when the listener not in the child area (CSourceUser).
+ * In a non-transition envsound, the _Source object is the
+ * ambiant source (CAmbiantSource) which plays a stereo mix.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

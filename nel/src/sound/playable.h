@@ -1,7 +1,7 @@
 /** \file playable.h
- * <File description>
+ * IPlayable: Playable object interface, typically one sound source or a set of sound sources
  *
- * $Id: playable.h,v 1.1 2001/07/17 14:22:33 cado Exp $
+ * $Id: playable.h,v 1.2 2001/07/17 15:31:57 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,7 +35,11 @@ namespace NLSOUND {
 
 
 /**
- * <Class description>
+ * Playable object interface, typically one sound source or a set of sound sources
+ *
+ * This class is used by CEnvSound to handle in the same way center sources
+ * and ambiant sources.
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -50,6 +54,8 @@ public:
 	 * When reading from a stream, call init() *after* serial().
 	 */
 	virtual void		initPos( const NLMISC::CVector *posvector ) { /*method not required*/ }
+	/// Set the position
+	virtual void		moveTo( const NLMISC::CVector& pos ) { /*method not required*/ }
 	/// Enable (play with high priority) and set general gain, or disable (stop and set low priority).
 	virtual void		enable( bool toplay, float gain ) = 0;
 	/// Update

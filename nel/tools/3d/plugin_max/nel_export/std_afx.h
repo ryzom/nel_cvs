@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: std_afx.h,v 1.2 2001/08/09 08:08:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,3 +43,4 @@
 #include <parser.h>
 #include <stdmat.h>
 #include <definsfn.h>
+#include <animtbl.h>

@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.9 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.10 2002/09/04 09:32:57 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,8 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 				// get the mesh name
 				uint	meshId = rootMeshNames.size();
 				rootMeshNames.push_back(nodes[node]->GetName());
+				bool	collision = getScriptAppData (nodes[node], NEL3D_APPDATA_COLLISION, 0) != 0;
+				bool	exterior = getScriptAppData (nodes[node], NEL3D_APPDATA_COLLISION_EXTERIOR, 0) != 0;
 
 				// Note that the TriObject should only be deleted
 				// if the pointer to it is not equal to the object

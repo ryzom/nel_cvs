@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.8 2001/04/12 15:27:11 berenguier Exp $
+ * $Id: mot.h,v 1.9 2001/04/24 10:22:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,6 +293,10 @@ private:
 private:
 	// Create an observer, obeying the hierachy/observer system explained in createModel().
 	IObs	*createObs(const ITrav *trav, const NLMISC::CClassId &idModel) const;
+
+protected:
+	// For hertied class, to access observer result of a model.
+	IObs	*getModelObs(IModel *m, const NLMISC::CClassId &idTrav) const;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.11 2001/04/12 13:54:21 berenguier Exp $
+ * $Id: mot.cpp,v 1.12 2001/04/24 10:22:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,6 +261,14 @@ IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 	}
 }
 
+
+// ***************************************************************************
+IObs	*CMOT::getModelObs(IModel *m, const NLMISC::CClassId &idTrav) const
+{
+	if(!m)
+		return NULL;
+	return m->getObs(idTrav);
+}
 
 
 // ***************************************************************************

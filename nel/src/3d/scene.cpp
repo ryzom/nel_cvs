@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.27 2001/04/23 09:14:27 besson Exp $
+ * $Id: scene.cpp,v 1.28 2001/04/24 10:22:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,11 +187,10 @@ void	CScene::render(bool	doHrcPass)
 	float left, right, bottom, top, znear, zfar;
 	CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
 
+	// setup basic camera.
 	ClipTrav->setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-	ClipTrav->setCamMatrix(CurrentCamera->getMatrix());
 
 	RenderTrav->setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-	RenderTrav->setCamMatrix (CurrentCamera->getMatrix());
 	RenderTrav->setViewport (_Viewport);
 
 	// Set the renderTrav for cliptrav.
@@ -202,11 +201,18 @@ void	CScene::render(bool	doHrcPass)
 	for(it= RenderTraversals.begin(); it!= RenderTraversals.end(); it++)
 	{
 		ITravScene	*trav= (*it).second;
-		if(!doHrcPass && HrcTravId==trav->getClassId())
-			continue;
+		// maybe don't traverse HRC pass.
+		if(doHrcPass || HrcTravId!=trav->getClassId())
+			// Go!
+			trav->traverse();
 
-		// Go!
-		trav->traverse();
+		// if HrcTrav done, set World Camera matrix for Clip and Render.
+		if(HrcTravId==trav->getClassId())
+		{
+			CTransformHrcObs	*camObs= (CTransformHrcObs*)CMOT::getModelObs(CurrentCamera, HrcTravId);
+			ClipTrav->setCamMatrix(camObs->WorldMatrix);
+			RenderTrav->setCamMatrix (camObs->WorldMatrix);
+		}
 	}
 
 	// Instance handling

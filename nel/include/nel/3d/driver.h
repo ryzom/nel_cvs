@@ -2,9 +2,10 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
+ * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
+ * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.43 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: driver.h,v 1.44 2001/01/05 10:57:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

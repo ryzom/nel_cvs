@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.13 2000/12/22 13:24:48 berenguier Exp $
+ * $Id: texture.cpp,v 1.14 2001/01/05 10:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,15 +35,14 @@ namespace NL3D
 							ITEXTURE
 \*==================================================================*/
 
-ITexture &ITexture::operator=(const ITexture &tex)
+ITexture::ITexture()
 {
-	// The operator= do not copy drv info
-	// set touched=true. _Releasable is copied.
-	_Touched= true;
-	_Releasable= tex._Releasable;
-	_WrapS= tex._WrapS;
-	_WrapT= tex._WrapT;
-	return *this;
+	_Touched= false;
+	_Releasable= true;
+	_WrapS= _WrapT= Repeat;
+	_UploadFormat= Auto;
+	_MagFilter= Linear;
+	_MinFilter= LinearMipMapLinear;
 }
 
 
@@ -54,6 +53,46 @@ ITexture::~ITexture()
 }
 
 
+ITexture &ITexture::operator=(const ITexture &tex)
+{
+	// The operator= do not copy drv info
+	// set touched=true. _Releasable is copied.
+	_UploadFormat= tex._UploadFormat;
+	_Releasable= tex._Releasable;
+	_WrapS= tex._WrapS;
+	_WrapT= tex._WrapT;
+	_MagFilter= tex._MagFilter;
+	_MinFilter= tex._MinFilter; 
+	touch();
+	return *this;
+}
+
+
+void		ITexture::setUploadFormat(TUploadFormat pf)
+{
+	if(pf!=_UploadFormat)
+	{
+		_UploadFormat= pf;
+		// All the texture may be reloaded...
+		touch();
+	}
+}
+
+
+void		ITexture::setFilterMode(TMagFilter magf, TMinFilter minf)
+{
+	_MagFilter= magf;
+	// If the MipMap mode has siwtched Off/On, then must recompute...
+	bool	precOff= mipMapOff();
+	_MinFilter= minf;
+	bool	nowOff= mipMapOff();
+
+	if(precOff!=nowOff)
+	{
+		// Must recompute mipmaps!!
+		touch();
+	}
+}
 
 
 } // NL3D

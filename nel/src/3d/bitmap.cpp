@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.13 2000/12/18 09:44:30 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.14 2001/01/05 10:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1282,6 +1282,20 @@ void CBitmap::buildMipMaps()
 	}
 }
 
+
+/*-------------------------------------------------------------------*\
+							buildMipMaps
+\*-------------------------------------------------------------------*/
+void CBitmap::releaseMipMaps()
+{
+	if(_MipMapCount==0) return;
+
+	_MipMapCount=0;
+	for(sint i=0;i<MAX_MIPMAP;i++)
+	{
+		NLMISC::contReset(_Data[i]); 
+	}
+}
 
 
 /*-------------------------------------------------------------------*\

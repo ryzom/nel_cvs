@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.43 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.44 2001/01/05 11:00:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -366,6 +366,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
+	glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
 	return true;
 }
 

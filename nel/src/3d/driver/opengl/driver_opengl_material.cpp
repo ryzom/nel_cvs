@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.15 2000/12/21 09:44:53 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.16 2001/01/05 11:00:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,61 +28,43 @@
 
 namespace NL3D {
 
-static bool convBlend(CMaterial::TBlend blend, GLenum& glenum)
+static void convBlend(CMaterial::TBlend blend, GLenum& glenum)
 {
 	switch(blend)
 	{
-	case CMaterial::one:
-		glenum=GL_ONE;
-		return true;
-	case CMaterial::zero:
-		glenum=GL_ZERO;
-		return true;
-	case CMaterial::srcalpha:
-		glenum=GL_SRC_ALPHA;
-		return true;
-	case CMaterial::invsrcalpha:
-		glenum=GL_ONE_MINUS_SRC_ALPHA;
-		return true;
-	default:
-		break;
+		case CMaterial::one:		glenum=GL_ONE; break;
+		case CMaterial::zero:		glenum=GL_ZERO; break;
+		case CMaterial::srcalpha:	glenum=GL_SRC_ALPHA; break;
+		case CMaterial::invsrcalpha:glenum=GL_ONE_MINUS_SRC_ALPHA; break;
+		default: nlstop;
 	}
-	return false;
 }
 
-static bool convZFunction(CMaterial::ZFunc zfunc, GLenum& glenum)
+static void convZFunction(CMaterial::ZFunc zfunc, GLenum& glenum)
 {
 	switch(zfunc)
 	{
-	case CMaterial::always:
-		glenum=GL_ALWAYS;
-		return true;
-	case CMaterial::never:
-		glenum=GL_NEVER;
-		return true;
-	case CMaterial::equal:
-		glenum=GL_EQUAL;
-		return true;
-	case CMaterial::notequal:
-		glenum=GL_NOTEQUAL;
-		return true;
-	case CMaterial::less:
-		glenum=GL_LESS;
-		return true;
-	case CMaterial::lessequal:
-		glenum=GL_LEQUAL;
-		return true;
-	case CMaterial::greater:
-		glenum=GL_GREATER;
-		return true;
-	case CMaterial::greaterequal:
-		glenum=GL_GEQUAL;
-		return true;
-	default:
-		return false;
+		case CMaterial::lessequal:	glenum=GL_LEQUAL; break;
+		case CMaterial::less:		glenum=GL_LESS; break;
+		case CMaterial::always:		glenum=GL_ALWAYS; break;
+		case CMaterial::never:		glenum=GL_NEVER; break;
+		case CMaterial::equal:		glenum=GL_EQUAL; break;
+		case CMaterial::notequal:	glenum=GL_NOTEQUAL; break;
+		case CMaterial::greater:	glenum=GL_GREATER; break;
+		case CMaterial::greaterequal:	glenum=GL_GEQUAL; break;
+		default: nlstop;
 	}
-	return false;
 }
+
+static void	convColor(CRGBA col, GLfloat glcol[4])
+{
+	static	const float	OO255= 1.0f/255;
+	glcol[0]= col.R*OO255;
+	glcol[1]= col.G*OO255;
+	glcol[2]= col.B*OO255;
+	glcol[3]= col.A*OO255;
+}
+
 
 // --------------------------------------------------
 
@@ -137,6 +119,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			convZFunction( mat.getZFunc(),glenum);
 			pShader->ZComp= glenum;
 		}
+		if (touched & IDRV_TOUCHED_LIGHTING)
+		{
+			if(! (mat.getFlags()&IDRV_MAT_DEFMAT) )
+			{
+				convColor(mat.getEmissive(), pShader->Emissive);
+				convColor(mat.getAmbient(), pShader->Ambient);
+				convColor(mat.getDiffuse(), pShader->Diffuse);
+				convColor(mat.getSpecular(), pShader->Specular);
+			}
+		}
+
 
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
@@ -154,6 +147,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		// => must change the way it works with _CurrentMaterial.
 
 		// Bind Blend Part.
+		//=================
 		if(mat.getFlags()&IDRV_MAT_BLEND)
 		{
 			glEnable(GL_BLEND);
@@ -165,6 +159,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}
 
 		// Bind ZBuffer Part.
+		//===================
 		if(mat.getFlags()&IDRV_MAT_ZWRITE)
 			glDepthMask(GL_TRUE);
 		else
@@ -172,6 +167,8 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		glDepthFunc(pShader->ZComp);
 
 
+		// Color-Lighting Part.
+		//=====================
 		// Color unlit part.
 		CRGBA	col= mat.getColor();
 		glColor4ub(col.R, col.G, col.B, col.A);
@@ -182,12 +179,21 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			glEnable(GL_LIGHTING);
 			// Temp. Yoyo, defo light.
 			glEnable(GL_LIGHT0);
-			// Temp. Yoyo, suppose DEFMAT.
-			GLfloat		one[4]= {1,1,1,1};
-			GLfloat		zero[4]= {0,0,0,1};
-			glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, one);
-			glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
-			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+			if(mat.getFlags()&IDRV_MAT_DEFMAT)
+			{
+				GLfloat		one[4]= {1,1,1,1};
+				GLfloat		zero[4]= {0,0,0,1};
+				glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, one);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
+			}
+			else
+			{
+				glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, pShader->Emissive);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, pShader->Ambient);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, pShader->Diffuse);
+				glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, pShader->Specular);
+			}
 		}
 		else
 			glDisable(GL_LIGHTING);

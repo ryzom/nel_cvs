@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.2 2000/12/22 09:55:47 berenguier Exp $
+ * $Id: texture_file.h,v 1.3 2001/01/05 10:57:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile(std::string s) { _Touched=true; _FileName = s; } 
+	CTextureFile(std::string s) { touch(); _FileName = s; } 
 
 
 	/** 
@@ -69,7 +69,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void setFileName(std::string s) { _Touched=true; _FileName = s; }
+	void setFileName(std::string s) { touch(); _FileName = s; }
 
 
 	/** 
@@ -102,7 +102,7 @@ public:
 	{
 		f.serial(_FileName);
 		if(f.isReading())
-			_Touched= true;
+			touch();
 	}
 	NLMISC_DECLARE_CLASS(CTextureFile);
 

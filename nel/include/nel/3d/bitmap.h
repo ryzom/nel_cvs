@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.12 2000/12/11 15:50:44 berenguier Exp $
+ * $Id: bitmap.h,v 1.13 2001/01/05 10:57:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,6 @@ public:
 				 DXTC1Alpha,
 				 DXTC3 = NL_MAKEFOURCC('D','X', 'T', '3'), 
 				 DXTC5 = NL_MAKEFOURCC('D','X', 'T', '5'), 
-				 TGA,
 				 LUMINANCE,
 				 ALPHA,
 				 ALPHA_LUMINANCE 
@@ -301,7 +300,7 @@ public:
 
 	/** 
 	 * Return the number of mipmaps. Level0 is a mipmap...
-	 * \return number of mipmaps
+	 * \return number of mipmaps. 1 if no mipmap (for the base level).
 	 */	
 	uint32 getMipMapCount() const
 	{
@@ -311,9 +310,17 @@ public:
 
 	/** 
 	 * Build the mipmaps of the bitmap if they don't exist.
+	 * Work only in RGBA mode...
+	 * \see releaseMipMaps().
 	 */	
 	void buildMipMaps();
 
+	/** 
+	 * Release the mipmaps of the bitmap if they exist.
+	 * Work for any mode.
+	 * \see buildMipMaps().
+	 */	
+	void releaseMipMaps();
 
 	/** 
 	 * Reset the buffer. Mipmaps are deleted and bitmap is not valid anymore.

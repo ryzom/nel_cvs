@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.19 2001/01/04 11:01:49 corvazier Exp $
+ * $Id: texture.h,v 1.20 2001/01/05 10:57:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,8 +62,11 @@ public:
 //****************************************************************************
 /**
  * Interface for textures
+ *
  * Sharing System note: The deriver may implement sharing system by implement supportSharing() and getShareName().
  * Such a texture may return a Unique Name for sharing. If the driver already has this texture, it will reuse it.
+ * As a direct impact, you cannot invalidate part of the textures with shared texture. This is logic, since the Unique
+ * sharname of the texture must represent all of it.
  * 
  */
 /* *** IMPORTANT ********************
@@ -79,61 +82,93 @@ public:
 		Clamp
 	};
 
-private:
-	bool		_Releasable;
-	TWrapMode	_WrapS;
-	TWrapMode	_WrapT;
+	enum	TUploadFormat
+	{
+		Auto= 0,
+		RGBA8888,
+		RGBA4444,
+		RGBA5551,
+		RGB888,
+		RGB565,
+		DXTC1,
+		DXTC1Alpha,
+		DXTC3,
+		DXTC5,
+		LUMINANCE,
+		ALPHA,
+		ALPHA_LUMINANCE 
+	};
 
-protected:
-	// Derived texture should set it to true when they are updated.
-	bool				_Touched;
 
-	/**
-	 *  List of invalided rectangle. If the list is empty, generate() will rebuild all the texture.
-     *
-	 * \see isAllInvalidated(), generate(), touch(), touchRect(), touched()
+	/** Magnification mode.
+	 * Same behavior as OpenGL.
 	 */
-	std::list<NLMISC::CRect>	_ListInvalidRect;
+	enum	TMagFilter
+	{
+		Nearest=0,
+		Linear
+	};
+
+	/** Minifying mode.
+	 * Same behavior as OpenGL. If the bitmap has no mipmap, and mipmap is required, then mipmaps are computed.
+	 */
+	enum	TMinFilter
+	{
+		NearestMipMapOff=0,
+		NearestMipMapNearest,
+		NearestMipMapLinear,
+		LinearMipMapOff,
+		LinearMipMapNearest,
+		LinearMipMapLinear,
+	};
+
 
 public:
-	// Private. For Driver Only.
-	NLMISC::CRefPtr<CTextureDrvShare>	TextureDrvShare;
 
-public:
-
-	// Object.
-	/// By default, a texture is releasable, wrap= repeat.
-	ITexture() {_Touched= false; _Releasable= true; _WrapS= _WrapT= Repeat;}
+	/// Object.
+	// @{
+	/// By default, a texture is releasable.
+	ITexture();
 	/// see operator=.
-	ITexture(const ITexture &tex) {_Touched= false; _Releasable= true; _WrapS= _WrapT= Repeat; operator=(tex);}
+	ITexture(const ITexture &tex) {operator=(tex);}
 	/// Need a virtual dtor.
 	virtual ~ITexture();
-	/// The operator= do not copy drv info, and set touched=true. _Releasable is copied.
+	/// The operator= do not copy drv info, and set touched=true. _Releasable, WrapMode and UploadFormat are copied.
 	ITexture &operator=(const ITexture &tex);
+	// @}
 
 
 	/// \name Texture parameters.
 	/** By default, parameters are:
-		- WrapS==Repeat.
-		- WrapT==Repeat.
+		- WrapS==Repeat
+		- WrapT==Repeat
+		- UploadFormat== Auto
+		- MagFilter== Linear.
+		- MinFilter= LinearMipMapLinear.
+
+		NB: if multiple ITexture acces the same data via the sharing system (such as a CTextureFile), then:
+			- WrapS/WrapT is LOCAL for each ITexture (ie each ITexture will have his own Wrap mode) => no duplication
+				is made.
+			- UploadFormat may duplicate the texture in video memory. There is one texture per different UploadFormat.
+			- MinFilter may duplicate the texture in video memory in the same way, wether the texture has mipmap or not.
 	 */
 	// @{
-	void		setWrapS(TWrapMode mode) {_WrapS= mode;}
-	void		setWrapT(TWrapMode mode) {_WrapT= mode;}
-	TWrapMode	getWrapS() const {return _WrapS;}
-	TWrapMode	getWrapT() const {return _WrapT;}
+	void			setWrapS(TWrapMode mode) {_WrapS= mode;}
+	void			setWrapT(TWrapMode mode) {_WrapT= mode;}
+	TWrapMode		getWrapS() const {return _WrapS;}
+	TWrapMode		getWrapT() const {return _WrapT;}
+	/** Replace the uploaded format of the texture.
+	 * If "Auto", the driver use CBitmap::getPixelFormat() to find the best associated pixelFormat.
+	 */
+	void			setUploadFormat(TUploadFormat pf);
+	TUploadFormat	getUploadFormat() const {return _UploadFormat;}
+	void			setFilterMode(TMagFilter magf, TMinFilter minf);
+	TMagFilter		getMagFilter() const {return _MagFilter;}
+	TMinFilter		getMinFilter() const {return _MinFilter;}
+	bool			mipMapOff() const {return _MinFilter==NearestMipMapOff || _MinFilter==LinearMipMapOff;}
+	bool			mipMapOn() const {return !mipMapOff();}
 	// @}
 
-
-	/**
-	 *  This method return the touched flag. If it is true, the driver will call generate to rebuild the texture.
-     *
-	 * \see isAllInvalidated(), generate(), touch(), touchRect(), _ListInvalidRect
-	 */
-	bool	touched (void)
-	{
-		return _Touched;
-	}
 
 	/**
 	 *  This method invalidates all the texture surface. When the driver calls generate, the
@@ -141,7 +176,7 @@ public:
      *
 	 * \see isAllInvalidated(), generate(), touchRect(), touched(), _ListInvalidRect
 	 */
-	void	touch (NLMISC::CRect& rect) 
+	void	touch() 
 	{ 
 		_ListInvalidRect.clear (); 
 		_Touched=true; 
@@ -150,12 +185,16 @@ public:
 	/**
 	 *  This method invalidates a rectangle of the texture surface. When the driver calls generate, the
 	 *  texture could rebuild only this part of texture and the driver will update only those rectangles.
+	 *
+	 *  This method is incompatible with textures which support sharing (see class description).
      *
 	 * \see isAllInvalidated(), generate(), touch(), touched(), _ListInvalidRect
 	 */
 	void	touchRect(NLMISC::CRect& rect) 
 	{ 
-		// Don't invalidate the rectangle if the full texture is already invalidate
+		// The texture must not support sharing....
+		nlassert(!supportSharing());
+		// Don't invalidate the rectangle if the full texture is already invalidated.
 		if (!isAllInvalidated ())
 		{
 			// Add the region to invalidate list
@@ -163,17 +202,6 @@ public:
 			// Touch flag
 			_Touched=true; 
 		}
-	}
-
-	/*
-	 * Clear the touched flag and the invalid rectangle list
-	 *
-	 * \see isAllInvalidated(), generate(), touch(), touched(), touchRect(), _ListInvalidRect
-	 */
-	void	clearTouched(void) 
-	{ 
-		_Touched=false; 
-		_ListInvalidRect.clear();
 	}
 
 	
@@ -245,7 +273,34 @@ public:
 		return TextureDrvShare!=NULL;
 	}
 
+
+//****************************
+// Private part.
 protected:
+	// Derived texture should set it to true when they are updated.
+	bool		_Touched;
+
+private:
+	bool			_Releasable;
+	TUploadFormat	_UploadFormat;
+	TWrapMode		_WrapS;
+	TWrapMode		_WrapT;
+	TMinFilter		_MinFilter;
+	TMagFilter		_MagFilter;
+
+public:
+	// Private Part!!!. For Driver Only.
+	//==================================
+
+	NLMISC::CRefPtr<CTextureDrvShare>	TextureDrvShare;
+	/**
+	 *  List of invalided rectangle. If the list is empty, generate() will rebuild all the texture.
+     *
+	 * \see isAllInvalidated(), generate(), touch(), touchRect(), touched()
+	 */
+	std::list<NLMISC::CRect>	_ListInvalidRect;
+
+
 	/** 
 	 * Return true if ALL the texture is invalidate, else return false.
 	 */	
@@ -253,6 +308,30 @@ protected:
 	{
 		return  _Touched&&(_ListInvalidRect.begin()==_ListInvalidRect.end());
 	}
+
+	/**
+	 *  This method return the touched flag. If it is true, the driver will call generate to rebuild the texture.
+     *
+	 * \see isAllInvalidated(), generate(), touch(), touchRect(), _ListInvalidRect
+	 */
+	bool	touched (void)
+	{
+		return _Touched;
+	}
+
+	/*
+	 * Clear the touched flag and the invalid rectangle list
+	 *
+	 * \see isAllInvalidated(), generate(), touch(), touched(), touchRect(), _ListInvalidRect
+	 */
+	void	clearTouched(void) 
+	{ 
+		_Touched=false; 
+		_ListInvalidRect.clear();
+	}
+
+
+
 };
 
 

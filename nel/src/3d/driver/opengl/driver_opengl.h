@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.32 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.33 2001/01/05 11:00:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,8 @@ public:
 		// The current wrap modes assigned to the texture.
 		ITexture::TWrapMode		WrapS;
 		ITexture::TWrapMode		WrapT;
+		ITexture::TMagFilter	MagFilter;
+		ITexture::TMinFilter	MinFilter;
 
 		CTextureDrvInfosGL()
 		{
@@ -88,6 +90,11 @@ public:
 	GLenum		SrcBlend;
 	GLenum		DstBlend;
 	GLenum		ZComp;
+
+	GLfloat		Emissive[4];
+	GLfloat		Ambient[4];
+	GLfloat		Diffuse[4];
+	GLfloat		Specular[4];
 };
 
 // --------------------------------------------------

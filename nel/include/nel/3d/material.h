@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.3 2001/01/02 14:23:13 lecroart Exp $
+ * $Id: material.h,v 1.4 2001/01/05 10:57:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,39 +87,20 @@ public:
 	enum TBlend				{ one, zero, srcalpha, invsrcalpha };
 	enum TShader			{ normal, user_color, envmap, bump};
 
-private:
-
-	TShader					_ShaderType;
-	uint32					_Flags;
-	TBlend					_SrcBlend,_DstBlend;
-	ZFunc					_ZFunction;
-	float					_ZBias;
-	CRGBA			_Color;
-	CRGBA			_Emissive,_Ambient,_Diffuse,_Specular;
-	uint32					_Touched;
-
-	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
-
 public:
-	// Private. For Driver only.
-	CRefPtr<IShader>		pShader;
-
-	uint32					getFlags() const {return _Flags;}
-
-public:
-	// Object.
+	/// \name Object.
+	// @{
+	/// ctor.
 	CMaterial() {_Touched= 0;_Flags=0;}
-	// see operator=.
+	/// see operator=.
 	CMaterial(const CMaterial &mat) {_Touched= 0;_Flags=0; operator=(mat);}
+	/// dtor.
 	~CMaterial();
-	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
+	/// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
 	CMaterial				&operator=(const CMaterial &mat);
+	// @}
 
-
-	uint32					getTouched(void)  const { return(_Touched); }
-	void					clearTouched(uint32 flag) { _Touched&=~flag; }
-
-	
+	/// Set the shader for this material.
 	void					setShader(TShader val);
 
 	/// \name Texture.
@@ -158,6 +139,7 @@ public:
 
 	/// \name Color/Lighting..
 	// @{
+	/// The Color is used only if lighting is disabled. Also, color is replaced by per vertex color (if any).
 	void					setColor(CRGBA rgba);
 	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA emissive=CRGBA(0,0,0), 
@@ -165,23 +147,55 @@ public:
 											CRGBA diffuse=CRGBA(0,0,0), 
 											CRGBA specular=CRGBA(0,0,0) );
 
-	CRGBA					getColor(void) { return(_Color); }
+	CRGBA					getColor(void) const { return(_Color); }
+	CRGBA					getEmissive() const { return _Emissive;}
+	CRGBA					getAmbient() const { return _Ambient;}
+	CRGBA					getDiffuse() const { return _Diffuse;}
+	CRGBA					getSpecular() const { return _Specular;}
 	// @}
 
 
+	/// \name Tools..
+	// @{
 	/** Init the material as unlit. normal shader, no lighting ....
-	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, no blend.
+	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, ZWrite==true, no blend.
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
 	void					initUnlit();
 	/** Init the material as default white lighted material. normal shader, lighting ....
-	 * Default to: normal shader, lighting to default material, no texture, ZBias=0, ZFunc= lessequal, no blend.
+	 * Default to: normal shader, lighting to default material, no texture, ZBias=0, ZFunc= lessequal, ZWrite==true, no blend.
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
 	void					initLighted();
+	// @}
 
 
 	void		serial(NLMISC::IStream &f);
+
+
+// **********************************
+// Private part.
+private:
+
+	TShader					_ShaderType;
+	uint32					_Flags;
+	TBlend					_SrcBlend,_DstBlend;
+	ZFunc					_ZFunction;
+	float					_ZBias;
+	CRGBA					_Color;
+	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
+	uint32					_Touched;
+
+	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
+
+public:
+	// Private. For Driver only.
+	CRefPtr<IShader>		pShader;
+
+	uint32					getFlags() const {return _Flags;}
+	uint32					getTouched(void)  const { return(_Touched); }
+	void					clearTouched(uint32 flag) { _Touched&=~flag; }
+
 };
 
 } // NL3D

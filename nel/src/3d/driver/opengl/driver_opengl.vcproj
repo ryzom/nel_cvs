@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="driver_opengl"
-	ProjectGUID="{CD5168BE-99FE-4773-9B41-C83AD2A97F49}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -23,6 +22,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\.."
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;_DEBUG;NL_DEBUG_FAST"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -83,6 +83,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\.."
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;__STL_DEBUG;WIN32;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -142,6 +143,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\.."
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS;WIN32;NDEBUG;NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -202,6 +204,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DRIVER_OPENGL_EXPORTS"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"

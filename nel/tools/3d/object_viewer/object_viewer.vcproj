@@ -24,6 +24,7 @@
 				AdditionalOptions="/D /Zm500 "
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;NL_DEBUG_FAST"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -37,21 +38,20 @@
 				BrowseInformation="1"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
-				DebugInformationFormat="3"
-				ShowIncludes="FALSE"/>
+				DebugInformationFormat="3"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="freetype.lib version.lib libxml2.lib"
-				OutputFile="../../../lib7/object_viewer_df.dll"
+				AdditionalDependencies="mfcs70d.lib msvcrtd.lib libc.lib version.lib libxml2.lib freetype.lib"
+				OutputFile="../../../lib7/object_viewer_debug_fast.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\DebugFast/object_viewer_df.pdb"
+				ProgramDatabaseFile=".\DebugFast/object_viewer_debug_fast.pdb"
 				SubSystem="2"
-				ImportLibrary=".\DebugFast/object_viewer_df.lib"/>
+				ImportLibrary=".\DebugFast/object_viewer_debug_fast.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
@@ -86,6 +86,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -105,7 +106,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib"
+				AdditionalDependencies="mfcs70.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib"
 				OutputFile="../../../lib7/object_viewer_rd.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -147,6 +148,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D /Zm500 "
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..\src"
 				PreprocessorDefinitions="_WINDOWS;_USRDLL;__STL_DEBUG;WIN32;_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -166,14 +168,14 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="freetype.lib libxml2.lib msvcrtd.lib libc.lib version.lib"
-				OutputFile="../../../lib7/object_viewer_d.dll"
+				AdditionalDependencies="mfcs70d.lib msvcrtd.lib libc.lib version.lib  libxml2.lib freetype.lib"
+				OutputFile="../../../lib7/object_viewer_debug.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\Debug/object_viewer_d.pdb"
+				ProgramDatabaseFile=".\Debug/object_viewer_debug.pdb"
 				SubSystem="2"
-				ImportLibrary=".\Debug/object_viewer_d.lib"/>
+				ImportLibrary=".\Debug/object_viewer_debug.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
@@ -208,6 +210,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm400 "
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..\src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -226,10 +229,11 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="mfcs42.lib msvcrt.lib libc.lib version.lib libxml2.lib"
+				AdditionalDependencies="mfcs70.lib msvcrt.lib libc.lib version.lib libxml2.lib freetype.lib"
 				OutputFile="../../../lib7/object_viewer.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
+				IgnoreAllDefaultLibraries="FALSE"
 				ProgramDatabaseFile=".\Release/object_viewer.pdb"
 				SubSystem="2"
 				ImportLibrary=".\Release/object_viewer.lib"/>
@@ -295,9 +299,6 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				RelativePath=".\edit_ex.cpp">
 			</File>
 			<File
-				RelativePath="editable_range.cpp">
-			</File>
-			<File
 				RelativePath=".\fog_dlg.cpp">
 			</File>
 			<File
@@ -332,6 +333,9 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 			</File>
 			<File
 				RelativePath=".\object_viewer.rc">
+			</File>
+			<File
+				RelativePath=".\scene_rot_dlg.cpp">
 			</File>
 			<File
 				RelativePath=".\select_string.cpp">
@@ -413,9 +417,6 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				RelativePath=".\edit_ex.h">
 			</File>
 			<File
-				RelativePath="editable_range.h">
-			</File>
-			<File
 				RelativePath=".\fog_dlg.h">
 			</File>
 			<File
@@ -432,6 +433,9 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 			</File>
 			<File
 				RelativePath=".\object_viewer_interface.h">
+			</File>
+			<File
+				RelativePath=".\scene_rot_dlg.h">
 			</File>
 			<File
 				RelativePath=".\select_string.h">
@@ -679,6 +683,12 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				RelativePath=".\edit_user_param.h">
 			</File>
 			<File
+				RelativePath=".\editable_range.cpp">
+			</File>
+			<File
+				RelativePath=".\editable_range.h">
+			</File>
+			<File
 				RelativePath=".\emitter_dlg.cpp">
 			</File>
 			<File
@@ -872,10 +882,10 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				RelativePath=".\vegetable_dlg.h">
 			</File>
 			<File
-				RelativePath="vegetable_edit_tools.cpp">
+				RelativePath=".\vegetable_edit_tools.cpp">
 			</File>
 			<File
-				RelativePath="R:\code\nel\tools\3d\object_viewer\vegetable_edit_tools.h">
+				RelativePath=".\vegetable_edit_tools.h">
 			</File>
 			<File
 				RelativePath=".\vegetable_list_box.cpp">

@@ -3,7 +3,6 @@
 	ProjectType="Visual C++"
 	Version="7.00"
 	Name="sound_lowlevel"
-	ProjectGUID="{926593F6-77AE-4799-8CE2-36E89EB70555}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -22,6 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\.."
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,_AFXDLL,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -66,6 +66,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\.."
 				PreprocessorDefinitions="_LIB,_AFXDLL,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -110,6 +111,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\.."
 				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,_AFXDLL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -154,7 +156,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
+				AdditionalIncludeDirectories="..\.."
+				PreprocessorDefinitions="_LIB,_AFXDLL,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

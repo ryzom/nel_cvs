@@ -22,6 +22,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="."
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -69,6 +70,7 @@
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="."
 				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -116,6 +118,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				Optimization="0"
+				AdditionalIncludeDirectories="."
 				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -163,6 +166,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/Zm200 "
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="."
 				PreprocessorDefinitions="_LIB,WIN32,NDEBUG,NL_RELEASE_DEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -867,10 +871,10 @@
 				RelativePath=".\3d\particle_system_shape.h">
 			</File>
 			<File
-				RelativePath="3d\raw_skin.cpp">
+				RelativePath=".\3d\raw_skin.cpp">
 			</File>
 			<File
-				RelativePath="3d\raw_skin.h">
+				RelativePath=".\3d\raw_skin.h">
 			</File>
 			<File
 				RelativePath=".\3d\seg_remanence_shape.cpp">
@@ -889,6 +893,12 @@
 			</File>
 			<File
 				RelativePath=".\3d\shape_bank.h">
+			</File>
+			<File
+				RelativePath=".\3d\shifted_triangle_cache.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\shifted_triangle_cache.h">
 			</File>
 			<File
 				RelativePath=".\3d\skeleton_shape.cpp">
@@ -1780,6 +1790,28 @@
 			<File
 				RelativePath=".\3d\quad_grid_clip_manager.h">
 			</File>
+			<Filter
+				Name="Util"
+				Filter="">
+				<File
+					RelativePath=".\3d\fast_floor.cpp">
+				</File>
+				<File
+					RelativePath=".\3d\fast_floor.h">
+				</File>
+				<File
+					RelativePath=".\3d\matrix_3x4.cpp">
+				</File>
+				<File
+					RelativePath=".\3d\matrix_3x4.h">
+				</File>
+				<File
+					RelativePath=".\3d\radix_sort.cpp">
+				</File>
+				<File
+					RelativePath=".\3d\radix_sort.h">
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Water"
@@ -1887,28 +1919,6 @@
 			</File>
 			<File
 				RelativePath=".\3d\vegetablevb_allocator.h">
-			</File>
-		</Filter>
-		<Filter
-			Name="Util"
-			Filter="">
-			<File
-				RelativePath=".\3d\fast_floor.cpp">
-			</File>
-			<File
-				RelativePath=".\3d\fast_floor.h">
-			</File>
-			<File
-				RelativePath=".\3d\matrix_3x4.cpp">
-			</File>
-			<File
-				RelativePath=".\3d\matrix_3x4.h">
-			</File>
-			<File
-				RelativePath=".\3d\radix_sort.cpp">
-			</File>
-			<File
-				RelativePath=".\3d\radix_sort.h">
 			</File>
 		</Filter>
 		<Filter
@@ -2086,6 +2096,12 @@
 		</File>
 		<File
 			RelativePath=".\3d\std3d.h">
+		</File>
+		<File
+			RelativePath="3d\vertex_buffer_heap.cpp">
+		</File>
+		<File
+			RelativePath="3d\vertex_buffer_heap.h">
 		</File>
 	</Files>
 	<Globals>

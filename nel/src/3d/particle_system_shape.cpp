@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.17 2001/07/25 14:08:58 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.18 2001/07/26 17:16:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,8 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(scene.createModel(NL3D::ParticleSystemModelId) ) ;
 	psm->Shape = this ;
 	psm->_Scene = &scene ; // the model needs the scene to recreate the particle system he holds
-	psm->setParticleSystem(instanciatePS(scene)) ;
+	psm->setParticleSystem(instanciatePS(scene)) ;	
+	psm->_MaxViewDist = psm->getPS()->getMaxViewDist() ;
 	return psm ;
 }
 

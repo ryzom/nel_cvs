@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.10 2001/07/25 13:07:14 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.11 2001/07/26 17:16:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,6 +256,7 @@ class CParticleSystemModel : public CTransformShape
 		bool									_EditionMode ;
 		bool									_Invalidated ;
 		std::vector<IPSModelObserver *>			_Observers ;
+		float									_MaxViewDist ;
 } ;
 
 

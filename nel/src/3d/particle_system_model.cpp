@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.9 2001/07/25 14:09:30 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.10 2001/07/26 17:16:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NL3D {
 /// ctor
 CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL), _EllapsedTime(0.01f), _ToolDisplayEnabled(false)
 						, _AutoGetEllapsedTime(true), _TransparencyStateTouched(true), _Scene(NULL), _EditionMode(false)
-						, _Invalidated(false)
+						, _Invalidated(false), _MaxViewDist(0)
 {
 	setOpacity(false) ;
 	setTransparency(true) ;
@@ -90,6 +90,7 @@ CParticleSystemModel::~CParticleSystemModel()
 
 void CParticleSystemModel::invalidate(void)
 {
+	_MaxViewDist = _ParticleSystem->getMaxViewDist() ;
 	delete _ParticleSystem ;
 	_ParticleSystem = NULL ;
 	_Invalidated = true ;
@@ -176,6 +177,7 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 			nlassert(psm->_Scene) ;
 			nlassert(psm->Shape) ;
 			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene) ;		
+			psm->_MaxViewDist = ps->getMaxViewDist() ;
 		}
 
 		if (psm->isAutoGetEllapsedTimeEnabled())
@@ -246,7 +248,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 		for(sint i=0;i<(sint)pyramid.size();i++)
 		{					
-			if ( (pyramid[i] * mat) * pos < 0.f ) 
+			if ( (pyramid[i] * mat) * pos > 0.f ) 
 			{
 				Visible = false ;
 				return ;		
@@ -256,7 +258,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 		const CVector d = pos - trav->CamPos ;
 		// check wether system not too far		
-		if (d * d > ps->getMaxViewDist() * ps->getMaxViewDist()) 
+		if (d * d > m->_MaxViewDist * m->_MaxViewDist) 
 		{
 			Visible = false ;
 			return ;
@@ -326,9 +328,11 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 						return ;
 					}
 					else
-										
-					delete ps ;
-					m->_ParticleSystem = NULL ;					
+					{	
+						m->_MaxViewDist = ps->getMaxViewDist() ;
+						delete ps ;
+						m->_ParticleSystem = NULL ;					
+					}
 				}				
 			}
 
@@ -345,7 +349,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
        	
 		if (!m->_EditionMode)
 		{
-					
+			m->_MaxViewDist = ps->getMaxViewDist() ;
 			delete ps ;
 			m->_ParticleSystem = NULL ;			
 		}

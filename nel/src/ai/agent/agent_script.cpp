@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.126 2002/08/08 09:21:57 chafik Exp $
+ * $Id: agent_script.cpp,v 1.127 2002/08/13 13:21:49 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #include "nel/ai/agent/list_manager.h"
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/agent/msg_fact.h"
+#include "nel/ai/script/libcode.h"
 
 //#define PROFILE
 #ifdef PROFILE
@@ -2297,5 +2298,21 @@ namespace NLAIAGENT
 		}
 		else
 			_Components = NULL;
+	}
+
+	void CAgentScript::callConstructor()
+	{
+		NLAIAGENT::CStringVarName constructor_func_name("Constructor");
+		sint32 id_func = getClass()->findMethod( constructor_func_name, NLAISCRIPT::CParam() );
+		if ( id_func != -1 )
+		{	
+			NLAISCRIPT::CStackPointer stack;
+			NLAISCRIPT::CStackPointer heap;
+			NLAISCRIPT::CCodeContext codeContext(stack, heap, NULL, this, NLAISCRIPT::CCallPrint::inputOutput);
+			codeContext.Self = this;
+			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *) getClass()->getBrancheCode( id_func ).getCode();
+			codeContext.Code = o;
+			IObjectIA::CProcessResult r = o->run(codeContext);
+		}
 	}
 }

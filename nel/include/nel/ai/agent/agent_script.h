@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.55 2002/06/12 08:09:13 chafik Exp $
+ * $Id: agent_script.h,v 1.56 2002/08/13 13:21:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,7 @@ namespace NLAIAGENT
 			return NULL;
 		}
 
-
+		virtual void callConstructor();
 	};
 
 	

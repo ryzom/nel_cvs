@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.12 2003/12/10 10:27:53 berenguier Exp $
+ * $Id: main.cpp,v 1.13 2003/12/10 12:49:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,9 @@ void	displayGeom(FILE *logStream, const CMeshGeom &geom)
 	fprintf(logStream, "Standard Mesh %s\n", geom.isSkinned()?"Skinned":"" );
 	fprintf(logStream, "  NumFaces: %d\n", numFaces );
 	fprintf(logStream, "  NumVertices: %d\n", geom.getVertexBuffer().getNumVertices() );
+	uint	nbBS= geom.getNbBlendShapes();
+	if(nbBS)
+		fprintf(logStream, "  NumBlendShapes: %d\n", nbBS );
 }
 
 void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
@@ -81,6 +84,9 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 	fprintf(logStream, "  NumVertices(Sum all Lods): %d\n", geom.getVertexBuffer().getNumVertices() );
 	fprintf(logStream, "  NumShadowSkinVertices: %d\n", geom.getNumShadowSkinVertices() );
 	fprintf(logStream, "  Skinned: %s\n", geom.isSkinned()?"true":"false" );
+	uint	nbBS= geom.getNbBlendShapes();
+	if(nbBS)
+		fprintf(logStream, "  NumBlendShapes: %d\n", nbBS );
 }
 
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.1 2000/10/26 13:10:59 viau Exp $
+ * $Id: driver.h,v 1.2 2000/10/27 15:00:15 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ class IShader : public CRefCount
 protected:
 	uint32			_Touched;
 public:
-	bool			Touched(uint32 flag);
+	bool			Touch(uint32 flag);
 };
 
 // --------------------------------------------------
@@ -106,18 +106,17 @@ public:
 
 // --------------------------------------------------
 
-enum ZFunc { always, never,less,lessequal,greater,greaterequal };
+const uint32	IDRV_MAT_HIDE		= 0x00000001;
+const uint32	IDRV_MAT_TSP		= 0x00000002;
+const uint32	IDRV_MAT_ZWRITE		= 0x00000004;
+const uint32	IDRV_MAT_ZLIST		= 0x00000008;
+const uint32	IDRV_MAT_LIGHTING	= 0x00000010;
+const uint32	IDRV_MAT_SPECULAR	= 0x00000020;
+const uint32	IDRV_MAT_DEFMAT		= 0x00000040;
 
-const uint32				IDRV_MAT_HIDE		= 0x00000001;
-const uint32				IDRV_MAT_TSP		= 0x00000002;
-const uint32				IDRV_MAT_ZWRITE		= 0x00000004;
-const uint32				IDRV_MAT_ZLIST		= 0x00000008;
-const uint32				IDRV_MAT_LIGHTING	= 0x00000010;
-const uint32				IDRV_MAT_SPECULAR	= 0x00000020;
-const uint32				IDRV_MAT_DEFMAT		= 0x00000040;
-
-enum						TBlend { one, zero, srcalpha, invsrcalpha };
-enum						TShader{ normal, user_color, envmap, bump};
+enum ZFunc		{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
+enum TBlend		{ one, zero, srcalpha, invsrcalpha };
+enum TShader	{ normal, user_color, envmap, bump};
 
 class CMaterial : public CRefCount
 {
@@ -142,51 +141,51 @@ public:
 	void					setShader(TShader val)
 	{
 		_ShaderType=val;
-		pShader->Touched(IDRV_TOUCHED_SHADER);
+		pShader->Touch(IDRV_TOUCHED_SHADER);
 	}
 
 	void					setOpacity(float val)
 	{
 		_Opacity=val;
-		pShader->Touched(IDRV_TOUCHED_OPACITY);
+		pShader->Touch(IDRV_TOUCHED_OPACITY);
 	}
 
 	TBlend					getSrcBlend(void) { return(_SrcBlend); }
 	void					setSrcBlend(TBlend val)
 	{
 		_SrcBlend=val;
-		pShader->Touched(IDRV_TOUCHED_SRCBLEND);
+		pShader->Touch(IDRV_TOUCHED_SRCBLEND);
 	}
 
 	TBlend					getDstBlend(void) { return(_DstBlend); }
 	void					setDstBlend(TBlend val)
 	{
 		_DstBlend=val;
-		pShader->Touched(IDRV_TOUCHED_DSTBLEND);
+		pShader->Touch(IDRV_TOUCHED_DSTBLEND);
 	}
 
 	ZFunc					getZFunc(void) { return(_ZFunction); }		
 	void					setZFunction(ZFunc val)
 	{
 		_ZFunction=val;
-		pShader->Touched(IDRV_TOUCHED_ZFUNC);
+		pShader->Touch(IDRV_TOUCHED_ZFUNC);
 	}
 
 	float					getZBias(void) { return(_ZBias); }
 	void					setZBias(float val)
 	{
 		_ZBias=val;
-		pShader->Touched(IDRV_TOUCHED_ZBIAS);
+		pShader->Touch(IDRV_TOUCHED_ZBIAS);
 	}
 
 	CRGBA					getColor(void) { return(_Color); }
 	void					setColor(CRGBA& rgba)
 	{
 		_Color=rgba;
-		pShader->Touched(IDRV_TOUCHED_COLOR);
+		pShader->Touch(IDRV_TOUCHED_COLOR);
 	}
 
-	void					setLighting(	bool active, bool DefMat = true,
+	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA& emissive=CRGBA(0,0,0), 
 											CRGBA& ambient=CRGBA(0,0,0), 
 											CRGBA& diffuse=CRGBA(0,0,0), 
@@ -212,13 +211,13 @@ public:
 		_Ambient=ambient;
 		_Diffuse=diffuse;
 		_Specular=specular;
-		pShader->Touched(IDRV_TOUCHED_LIGHTING);
+		pShader->Touch(IDRV_TOUCHED_LIGHTING);
 	}
 
 	void					setAlpha(float val)
 	{
 		_Alpha=val;
-		pShader->Touched(IDRV_TOUCHED_ALPHA);
+		pShader->Touch(IDRV_TOUCHED_ALPHA);
 	}
 };
 
@@ -255,7 +254,6 @@ private:
 
 public:
 							CVertexBuffer(void);
-							~CVertexBuffer(void);
 
 	CRefPtr<IVBDrvInfos>	DrvInfos;
 	uint32					getFlags(void) { return(_Flags); };
@@ -267,6 +265,7 @@ public:
 	bool					setVertexCoord(uint idx, float x, float y, float z);
 	bool					setRGBA(uint idx, CRGBA& rgba);
 	bool					setTexCoord(uint idx, uint8 stage, float u, float v);
+							~CVertexBuffer(void);
 
 	uint8					getVertexSize(void)
 	{

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.1 2000/10/26 13:10:32 viau Exp $
+ * $Id: vertex_buffer.cpp,v 1.2 2000/10/27 15:00:24 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,11 +23,6 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-#include <gl.h>
 #include "nel/3d/driver.h"
 
 namespace NL3D

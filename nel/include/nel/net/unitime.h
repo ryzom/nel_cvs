@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.5 2000/12/19 14:35:30 lecroart Exp $
+ * $Id: unitime.h,v 1.6 2001/01/04 14:37:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 namespace NLNET
 {
 
-	class CInetAddress;
+class CInetAddress;
 
 /**
  * This class provide a independant universal time system.
@@ -50,6 +50,10 @@ public:
 
 	/// Return the time in a string format to be display
 	static const char		*getStringUniTime ();
+
+	/// Return the time in a string format to be display
+	static const char		*getStringUniTime (NLMISC::TTime ut);
+
 
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.

@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.16 2000/12/19 14:35:31 lecroart Exp $
+ * $Id: unitime.cpp,v 1.17 2001/01/04 14:37:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,9 +108,12 @@ void CUniTime::syncUniTimeFromService (CInetAddress *addr)
 
 const char *CUniTime::getStringUniTime ()
 {
-	static char str[512];
+	return getStringUniTime(CUniTime::getUniTime());
+}
 
-	TTime ut = CUniTime::getUniTime ();
+const char *CUniTime::getStringUniTime (TTime ut)
+{
+	static char str[512];
 
 	uint32 ms = (uint32) (ut % 1000); // time in ms 1000ms dans 1s
 	ut /= 1000;
@@ -124,7 +127,7 @@ const char *CUniTime::getStringUniTime ()
 	uint32 h = (uint32) (ut % 9); // time in hours 9h dans 1j
 	ut /= 9;
 
-	uint32 day = (uint32) (ut % 8); // time in days 8day dans 1week
+	uint32 day = (uint32) (ut % (8*4)); // time in days 8day dans 1month
 	ut /= 8;
 
 	uint32 week = (uint32) (ut % 4); // time in weeks 4week dans 1month
@@ -135,10 +138,9 @@ const char *CUniTime::getStringUniTime ()
 
 	uint  year =  (uint32) ut;	// time in years
 
-	smprintf (str, 512, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%03d", day+1, month+1, year, week, h, m, s, ms);
+	smprintf (str, 512, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%03d", day+1, month+1, year+1, week+1, h, m, s, ms);
 	return str;
 }
-
 
 
 } // NLNET

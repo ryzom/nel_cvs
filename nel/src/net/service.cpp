@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.206 2004/04/30 18:46:33 distrib Exp $
+ * $Id: service.cpp,v 1.207 2004/05/10 15:46:08 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -526,6 +526,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if (ConfigFile.exists ("Assert"))
 			setAssert (ConfigFile.getVar("Assert").asInt() == 1);
+
+		//
+		// Set the update timeout if found in the cfg
+		//
+		if ((var = ConfigFile.getVarPtr("UpdateTimeout")) != NULL)
+		{
+			_UpdateTimeout = var->asInt();
+		}
 
 		//
 		// Set the shard Id

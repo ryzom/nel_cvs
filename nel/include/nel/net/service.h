@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.73 2004/05/07 19:29:26 lecroart Exp $
+ * $Id: service.h,v 1.74 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,7 +260,7 @@ public:
 	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
 	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
 	 *
-	 * The default value is 100 (100ms)
+	 * The default value is 100 (100ms) or the value found in the config file (UpdateTimeout)
 	 */
 	void					setUpdateTimeout (NLMISC::TTime timeout) { /*if (timeout>1.0) nlerror ("IServer::setUpdateTimeout is now a double in SECOND and not ms");*/ _UpdateTimeout = timeout; } 
 

@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.19 2004/05/07 12:56:22 cado Exp $
+ * $Id: login_client.cpp,v 1.20 2004/05/10 15:46:08 distrib Exp $
  *
  */
 
@@ -71,8 +71,6 @@ string CLoginClient::connectToShard (CLoginCookie &lc, const std::string &addr, 
 		//
 		cnx.connect (CInetAddress(addr));
 		cnx.addCallbackArray (FESCallbackArray, sizeof(FESCallbackArray)/sizeof(FESCallbackArray[0]));
-
-		cnx.displayAllMyAssociations ();
 
 		// send the cookie
 		CMessage msgout2 ("SV");

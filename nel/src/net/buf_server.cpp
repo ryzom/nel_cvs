@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.45 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_server.cpp,v 1.46 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,7 @@ uint32 	NbServerReceiveTask = 0;
  */
 CBufServer::CBufServer( TThreadStategy strategy,
 	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
-	CBufNetBase(),
-	_NoDelay( nodelay ),
+	CBufNetBase( initPipeForDataAvailable ),
 	_ThreadStrategy( strategy ),
 	_MaxThreads( max_threads ),
 	_MaxSocketsPerThread( max_sockets_per_thread ),
@@ -72,6 +71,7 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	_PrevBytesPoppedIn( 0 ),
 	_PrevBytesPushedOut( 0 ),
 	_NbConnections (0),
+	_NoDelay( nodelay ),
 	_ReplayMode( replaymode )
 {
 	nlnettrace( "CBufServer::CBufServer" );
@@ -84,12 +84,6 @@ CBufServer::CBufServer( TThreadStategy strategy,
 		CSynchronized<uint32>::CAccessor syncbpi ( &_BytesPushedIn );
 		syncbpi.value() = 0;
 	}*/
-
-#ifdef NL_OS_UNIX
-	if ( initPipeForDataAvailable )
-		if ( ::pipe( _DataAvailablePipeHandle ) != 0 )
-			nlwarning( "Unable to create D.A. pipe" );
-#endif
 }
 
 
@@ -398,6 +392,13 @@ bool CBufServer::dataAvailable()
 			/*vector<uint8> buffer;
 			recvfifo.value().front( buffer );*/
 
+#ifdef NL_OS_UNIX
+			uint8 b;
+			if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
+				nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
+			//nldebug( "Pipe: 1 byte read (server %p)", this );
+#endif
+
 			// Test if it the next block is a system event
 			//switch ( buffer[buffer.size()-1] )
 			switch ( val )
@@ -406,11 +407,6 @@ bool CBufServer::dataAvailable()
 			// Normal message available
 			case CBufNetBase::User:
 			{
-#ifdef NL_OS_UNIX
-				uint8 b;
-				if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
-					nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
-#endif
 				return true; // return immediately, do not extract the message
 			}
 
@@ -482,7 +478,7 @@ bool CBufServer::dataAvailable()
 void	CBufServer::sleepUntilDataAvailable( uint usecMax )
 {
 	fd_set readers;
-	TIMEVAL tv;
+	timeval tv;
 	do
 	{
 		FD_ZERO( &readers );

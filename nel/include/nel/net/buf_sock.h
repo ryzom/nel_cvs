@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.19 2004/03/15 15:17:23 cado Exp $
+ * $Id: buf_sock.h,v 1.20 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,7 +84,9 @@ protected:
 	friend class CCallbackServer;
 	friend class CCallbackNetBase;
 
-	/// Constructor
+	/** Constructor
+	 * \param sock To provide an external socket. Set it to NULL to create it internally.
+	 */
 	CBufSock( CTcpSock *sock=NULL );
 
 	///@name Sending data
@@ -277,8 +279,11 @@ protected:
 	friend class CBufClient;
 	friend class CClientReceiveTask;
 
-	/// Constructor
-	CNonBlockingBufSock( CTcpSock *sock=NULL );
+	/** Constructor
+     * \param sock To provide an external socket. Set it to NULL to create it internally.
+     * \maxExpectedBlockSize Default value: receiving limited to 10 M per block)
+     */
+	CNonBlockingBufSock( CTcpSock *sock=NULL, uint32 maxExpectedBlockSize=10485760 );
 
 	/** Call this method after connecting (for a client connection) to set the non-blocking mode.
 	 * For a server connection, call it as soon as the object is constructed

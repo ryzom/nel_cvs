@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.27 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_client.cpp,v 1.28 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ uint32 	NbClientReceiveTask = 0;
  * Constructor
  */
 CBufClient::CBufClient( bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
-	CBufNetBase(),
+	CBufNetBase( initPipeForDataAvailable ),
 	_NoDelay( nodelay ),
 	_PrevBytesDownloaded( 0 ),
 	_PrevBytesUploaded( 0 ),
@@ -68,20 +68,13 @@ CBufClient::CBufClient( bool nodelay, bool replaymode, bool initPipeForDataAvail
 
 	if ( replaymode )
 	{
-		_BufSock = new CNonBlockingBufSock( new CDummyTcpSock() ); // CHANGED: non-blocking client connection
+		_BufSock = new CNonBlockingBufSock( new CDummyTcpSock(), CBufNetBase::DefaultMaxExpectedBlockSize ); // CHANGED: non-blocking client connection
 	}
 	else
 	{
-		_BufSock = new CNonBlockingBufSock(); // CHANGED: non-blocking client connection
+		_BufSock = new CNonBlockingBufSock( NULL, CBufNetBase::DefaultMaxExpectedBlockSize ); // CHANGED: non-blocking client connection
 		_RecvTask = new CClientReceiveTask( this, _BufSock );
 	}
-
-#ifdef NL_OS_UNIX
-	if ( initPipeForDataAvailable )
-		if ( ::pipe( _DataAvailablePipeHandle ) != 0 )
-			nlwarning( "Unable to create D.A. pipe" );
-#endif
-
 }
 
 
@@ -161,17 +154,19 @@ bool CBufClient::dataAvailable()
 				val = recvfifo.value().frontLast ();
 			}
 
+#ifdef NL_OS_UNIX
+			uint8 b;
+			if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
+				nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
+			//nldebug( "Pipe: 1 byte read (client %p)", this );
+#endif
+
 			// Test if it the next block is a system event
 			switch ( val )
 			{
 				
 			// Normal message available
 			case CBufNetBase::User:
-#ifdef NL_OS_UNIX
-				uint8 b;
-				if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
-					nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
-#endif
 				return true; // return immediatly, do not extract the message
 
 			// Process disconnection event
@@ -224,7 +219,7 @@ bool CBufClient::dataAvailable()
 void	CBufClient::sleepUntilDataAvailable( uint usecMax )
 {
 	fd_set readers;
-	TIMEVAL tv;
+	timeval tv;
 	do
 	{
 		FD_ZERO( &readers );

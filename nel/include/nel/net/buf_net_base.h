@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.13 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_net_base.h,v 1.14 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,12 @@ typedef uint32 TBlockSize;
 
 extern uint32 	NbNetworkTask;
 
+#ifdef NL_OS_UNIX
+/// Access to the wake-up pipe (Unix only)
+enum TPipeWay { PipeRead, PipeWrite };
+#endif
+
+
 /**
  * Layer 1
  *
@@ -79,7 +85,7 @@ public:
 	enum TEventType { User = 'U', Connection = 'C', Disconnection = 'D' };
 
 	/// Destructor
-	virtual ~CBufNetBase() {};
+	virtual ~CBufNetBase();
 
 #ifdef NL_OS_UNIX
 	/** Init the pipe for data available with an external pipe.
@@ -114,7 +120,7 @@ public:
 	 * Sets the max size of the received messages.
 	 * If receiving a message bigger than the limit, the connection will be dropped.
 	 *
-	 * Default value: 1 MegaByte
+	 * Default value: CBufNetBase::DefaultMaxExpectedBlockSize
 	 * If you put a negative number as limit, the max size is reset to the default value.
 	 * Warning: you can call this method only at initialization time, before connecting (for a client)
 	 * or calling init() (for a server) !
@@ -122,16 +128,16 @@ public:
 	void	setMaxExpectedBlockSize( sint32 limit )
 	{
 		if ( limit < 0 )
-			_MaxExpectedBlockSize = 1048576;
+			_MaxExpectedBlockSize = DefaultMaxExpectedBlockSize;
 		else
 			_MaxExpectedBlockSize = (uint32)limit;
 	}
 
 	/**
 	 * Sets the max size of the sent messages.
-	 * Note: Limiting of sending not implemented, currently
+	 * Any bigger sent block will produce an assertion failure, currently.
 	 *
-	 * Default value: 1 MegaByte
+	 * Default value: CBufNetBase::DefaultMaxSentBlockSize
 	 * If you put a negative number as limit, the max size is reset to the default value.
 	 * Warning: you can call this method only at initialization time, before connecting (for a client)
 	 * or calling init() (for a server) !
@@ -139,7 +145,7 @@ public:
 	void	setMaxSentBlockSize( sint32 limit )
 	{
 		if ( limit < 0 )
-			_MaxSentBlockSize = 1048576;
+			_MaxSentBlockSize = DefaultMaxSentBlockSize;
 		else
 			_MaxSentBlockSize = (uint32)limit;
 	}
@@ -164,12 +170,23 @@ public:
 	int		dataAvailablePipeReadHandle() const { return _DataAvailablePipeHandle[PipeRead]; }
 #endif
 
+	/// The value that will be used if setMaxExpectedBlockSize() is not called (or called with a negative argument)
+	static uint32 DefaultMaxExpectedBlockSize;
+
+	/// The value that will be used if setMaxSentBlockSize() is not called (or called with a negative argument)
+	static uint32 DefaultMaxSentBlockSize;
+
 protected:
 
 	friend class NLNET::CBufSock;
-	
+
+#ifdef NL_OS_UNIX
+	/// Constructor
+	CBufNetBase( bool isDataAvailablePipeSelfManaged );
+#else
 	/// Constructor
 	CBufNetBase();
+#endif
 
 	/// Access to the receive queue
 	CSynchronizedFIFO&	receiveQueue() { return _RecvFifo; }
@@ -193,18 +210,15 @@ protected:
 	/// Return _DataAvailable
 	volatile bool		dataAvailableFlag() const { return _DataAvailable; }
 
-private:
-
-	/// The receive queue, protected by a mutex-like device
-	CSynchronizedFIFO	_RecvFifo;
-
 #ifdef NL_OS_UNIX
 	/// Pipe to select() on data available
 	int					_DataAvailablePipeHandle [2];
 #endif
 
-	/// True if there is data available (avoids locking a mutex)
-	volatile bool		_DataAvailable;
+private:
+
+	/// The receive queue, protected by a mutex-like device
+	CSynchronizedFIFO	_RecvFifo;
 
 	/// Callback for disconnection
 	TNetCallback		_DisconnectionCallback;
@@ -217,6 +231,13 @@ private:
 
 	/// Max size of sent messages (limited by the user)
 	uint32				_MaxSentBlockSize;
+
+	/// True if there is data available (avoids locking a mutex)
+	volatile bool		_DataAvailable;
+
+#ifdef NL_OS_UNIX
+	bool _IsDataAvailablePipeSelfManaged;
+#endif
 };
 
 

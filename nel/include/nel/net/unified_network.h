@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.43 2004/05/07 12:56:21 cado Exp $
+ * $Id: unified_network.h,v 1.44 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -427,7 +427,7 @@ protected:
 
 #ifdef NL_OS_UNIX
 	/// Sleep (implemented by select())
-	void				sleepUntilDataAvailable( TTime msecMax );
+	void				sleepUntilDataAvailable( NLMISC::TTime msecMax );
 #endif
 
 private:

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.79 2004/05/07 12:56:22 cado Exp $
+ * $Id: unified_network.cpp,v 1.80 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -53,10 +53,17 @@ static uint32 TotalCallbackCalled = 0;
 CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=select 1=usleep 2=nanosleep 3=sched_yield 4=none", 0, 0, true );
 #endif
 
+/// Receiving size limit
+CVariablePtr<uint32> DefaultMaxExpectedBlockSize( "DefaultMaxExpectedBlockSize", "If receiving more than this value in bytes, the connection will be dropped", &CBufNetBase::DefaultMaxExpectedBlockSize, true );
+
+/// Sending size limit
+CVariablePtr<uint32> DefaultMaxSentBlockSize( "DefaultMaxSentBlockSize", "If sending more than this value in bytes, the program may be stopped", &CBufNetBase::DefaultMaxSentBlockSize, true );
+
+
 #define AUTOCHECK_DISPLAY nlwarning
 //#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
 
-// ace retirer ca
+// Small log to help debugging unified network connection events (TODO: remove)
 static string allstuffs;
 
 //
@@ -525,6 +532,7 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	/// Init the main pipe to select() on data available
 	if ( ::pipe( _MainDataAvailablePipe ) != 0 )
 		nlwarning( "Unable to create main D.A. pipe" );
+	//nldebug( "Pipe: created" );
 #endif
 
 	// setup the server callback only if server port != 0, otherwise there's no server callback
@@ -536,6 +544,7 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 		_CbServer = new CCallbackServer( CCallbackNetBase::Off, "", true, false ); // don't init one pipe per connection
 #ifdef NL_OS_UNIX
 		_CbServer->setExternalPipeForDataAvailable( _MainDataAvailablePipe ); // the main pipe is shared for all connections
+		//nldebug( "Pipe: set (server %p)", _CbServer );
 #endif
 		_CbServer->init(port);
 		_CbServer->addCallbackArray(unServerCbArray, 1);				// the service ident callback
@@ -659,6 +668,11 @@ void	CUnifiedNetwork::release()
 	// disconnect the connection with the naming service
 	if (CNamingClient::connected ())
 		CNamingClient::disconnect ();
+
+#ifdef NL_OS_UNIX
+	::close( _MainDataAvailablePipe[PipeRead] );
+	::close( _MainDataAvailablePipe[PipeWrite] );
+#endif
 }
 
 void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, bool sendId, bool external, uint16 sid, bool autoRetry, bool shouldBeAlreayInserted)
@@ -759,6 +773,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		CCallbackClient	*cbc = new CCallbackClient( CCallbackNetBase::Off, "", true, false ); // don't init one pipe per connection
 #ifdef NL_OS_UNIX
 		cbc->setExternalPipeForDataAvailable( _MainDataAvailablePipe ); // the main pipe is shared for all connections
+		//nldebug( "Pipe: set (client %p)", cbc );
 #endif
 		cbc->setDisconnectionCallback(uncbDisconnection, NULL);
 		cbc->setDefaultCallback(uncbMsgProcessing);
@@ -992,24 +1007,22 @@ void	CUnifiedNetwork::update(TTime timeout)
 		TTime remainingTime = t0 + timeout - CTime::getLocalTime();
 		if ( remainingTime <= 0 )
 			break;
-		
-#ifdef NL_OS_WINDOWS
-		// Enable windows multithreading before rescanning all connections
-		H_TIME(L5UpdateSleep, nlSleep(1);); // 0 (yield) would be too harmful to other applications
-#else
 
+#ifdef NL_OS_UNIX
 		// Sleep until the time expires or we receive a message
 		H_BEFORE(L5UpdateSleep);
 		switch ( UseYieldMethod.get() )
 		{
-		case 0: sleepUntilDataAvailable( remainingTime ); break; // accurate sleep
+		case 0: sleepUntilDataAvailable( remainingTime ); break; // accurate sleep with select()
 		case 1: ::usleep(1000); break; // 20 ms
-		case 2: nlSleep(1); break; // 10 ms (by nanosleep, but 20 ms measured)
-		case 3:	::sched_yield(); break; // makes all slow (kernel 2.4.20) !
+		case 2: nlSleep(1); break; // 10 ms (by nanosleep, but 20 ms measured on kernel 2.4.20)
+		case 3:	::sched_yield(); break; // makes all slow (at least on kernel 2.4.20) !
 		default: break; // don't sleep at all, makes all slow!
 		}
 		H_AFTER(L5UpdateSleep);
-
+#else
+		// Enable windows multithreading before rescanning all connections
+		H_TIME(L5UpdateSleep, nlSleep(1);); // 0 (yield) would be too harmful to other applications
 #endif
 	}
 	H_AFTER(UNUpdateCnx);
@@ -1091,8 +1104,7 @@ void CUnifiedNetwork::autoReconnect( CUnifiedConnection &uc, uint connectionInde
 void CUnifiedNetwork::sleepUntilDataAvailable( TTime msecMax )
 {
 	// Prepare for select()
-	TIMEVAL tv;
-	SOCKET descmax = 0;
+	//SOCKET descmax = 0;
 	fd_set readers;
 	FD_ZERO( &readers );
 	/*
@@ -1129,15 +1141,18 @@ void CUnifiedNetwork::sleepUntilDataAvailable( TTime msecMax )
 		}
 	}*/
 	FD_SET( _MainDataAvailablePipe[PipeRead], &readers );
-	descmax = _MainDataAvailablePipe[PipeRead] + 1;
+	SOCKET descmax = _MainDataAvailablePipe[PipeRead] + 1;
 
 	// Select
-	TIMEVAL tv;
+	timeval tv;
 	tv.tv_sec = 0;
 	tv.tv_usec = msecMax * 1000;
+	//nldebug( "Select %u ms", (uint)msecMax );
+	TTime before = CTime::getLocalTime();
 	int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
 	if ( res == -1 )
 		nlwarning( "HNETL5: Select failed in sleepUntilDataAvailable");
+	//nldebug( "Slept %u ms", (uint)(CTime::getLocalTime()-before) );
 }
 #endif
 

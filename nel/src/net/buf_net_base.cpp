@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.cpp,v 1.14 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_net_base.cpp,v 1.15 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,13 @@ namespace NLNET {
 
 uint32 	NbNetworkTask = 0;
 
+// The value that will be used if setMaxExpectedBlockSize() is not called (or called with a negative argument)
+uint32 CBufNetBase::DefaultMaxExpectedBlockSize = 1048576; // 10 M unless changed by a NeL variable
+
+// The value that will be used if setMaxSentBlockSize() is not called (or called with a negative argument)
+uint32 CBufNetBase::DefaultMaxSentBlockSize = 1048576; // 10 M unless changed by a NeL variable
+
+
 /***************************************************************************************************
  * User main thread 
  **************************************************************************************************/
@@ -43,18 +50,43 @@ uint32 	NbNetworkTask = 0;
 /*
  * Constructor
  */
+#ifdef NL_OS_UNIX
+CBufNetBase::CBufNetBase( bool isDataAvailablePipeSelfManaged ) :
+#else
 CBufNetBase::CBufNetBase() :
+#endif
 	_RecvFifo("CBufNetBase::_RecvFifo"),
 	_DataAvailable( false ),
 	_DisconnectionCallback( NULL ),
 	_DisconnectionCbArg( NULL ),
-	_MaxExpectedBlockSize( 10485760 ), // 10M
-	_MaxSentBlockSize( 10485760 )
+	_MaxExpectedBlockSize( DefaultMaxExpectedBlockSize ),
+	_MaxSentBlockSize( DefaultMaxSentBlockSize )
 {
 	// Debug info for mutexes
 #ifdef MUTEX_DEBUG
 	initAcquireTimeMap();
 #endif
+#ifdef NL_OS_UNIX
+	_IsDataAvailablePipeSelfManaged = isDataAvailablePipeSelfManaged;
+	if ( _IsDataAvailablePipeSelfManaged )
+	{
+		if ( ::pipe( _DataAvailablePipeHandle ) != 0 )
+			nlwarning( "Unable to create D.A. pipe" );
+	}
+#endif
+}
+
+
+/*
+ * Destructor
+ */
+CBufNetBase::~CBufNetBase()
+{
+	if ( _IsDataAvailablePipeSelfManaged )
+	{
+		::close( _DataAvailablePipeHandle[PipeRead] );
+		::close( _DataAvailablePipeHandle[PipeWrite] );
+	}
 }
 
 
@@ -83,6 +115,7 @@ void	CBufNetBase::pushMessageIntoReceiveQueue( const std::vector<uint8>& buffer 
 	{
 		nlwarning( "LNETL1: Write pipe failed in pushMessageIntoReceiveQueue" );
 	}
+	//nldebug( "Pipe: 1 byte written (%p)", this );
 #endif
 	//nldebug( "BNB: Released." );
 	//if ( mbsize > 1 )
@@ -112,6 +145,7 @@ void	CBufNetBase::pushMessageIntoReceiveQueue( const uint8 *buffer, uint32 size 
 		{
 			nlwarning( "LNETL1: Write pipe failed in pushMessageIntoReceiveQueue" );
 		}
+		nldebug( "Pipe: 1 byte written" );
 #endif
 	}
 	//nldebug( "BNB: Released." );

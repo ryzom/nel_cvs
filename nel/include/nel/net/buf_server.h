@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.16 2004/05/07 12:56:21 cado Exp $
+ * $Id: buf_server.h,v 1.17 2004/05/10 15:46:08 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,12 +401,6 @@ typedef TSockId								ItConnection;
 // Set of iterators to connections (set because we must not add an element twice) 
 typedef std::set<ItConnection>			CItConnections;
 */
-
-
-#ifdef NL_OS_UNIX
-/// Access to the wake-up pipe (Unix only)
-enum TPipeWay { PipeRead, PipeWrite };
-#endif
 
 
 // POLL2

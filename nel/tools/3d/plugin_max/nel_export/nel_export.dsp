@@ -62,6 +62,7 @@ PreLink_Desc=Change version number
 PreLink_Cmds=buildinc version.ver nel_export.rc	rc /l 0x40c /fo"Release/nel_export.res" /d "NDEBUG" nel_export.rc
 # End Special Build Tool
 
+
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
 
 # PROP BASE Use_MFC 0
@@ -90,7 +91,7 @@ LINK32=xilink6.exe
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Desc=copy dans max normal
-PostBuild_Cmds=copy "c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" "c:\3dsmax3_1\plugins"
+PostBuild_Cmds=copy "c:\3dsmax3_1 debug\exe\plugins\nelexport.dlu" "c:\3dsmax3_1\plugins"	echo copie dans max
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"

@@ -1271,7 +1271,7 @@ void CTView::ShadeRect( CDC *pDC, CRect& rect )
                       0x0055, 0x00aa, 0x0055, 0x00aa };
 
 	CBitmap bmBrush;
-	CBrush brush (GetSysColor(COLOR_3DFACE));
+	CBrush brush; // (GetSysColor(COLOR_3DFACE));
 
 	// Need a monochrome pattern bitmap
 	bmBrush.CreateBitmap( 8, 8, 1, 1, &Bits );

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.54 2003/04/09 12:18:18 corvazier Exp $
+ * $Id: displayer.cpp,v 1.55 2003/04/30 13:00:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,7 +330,8 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 
 	if (filename.empty())
 	{
-		nlwarning ("CFileDisplayer::setParam(): Can't create file with empty filename, don't log");
+		// can't do nlwarning or infinite recurs
+		printf ("CFileDisplayer::setParam(): Can't create file with empty filename\n");
 		return;
 	}
 
@@ -339,7 +340,8 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 		ofstream ofs (filename.c_str(), ios::out | ios::trunc);
 		if (!ofs.is_open())
 		{
-			nlwarning ("CFileDisplayer::setParam(): Can't open and clear the log file '%s', don't log", filename.c_str());
+			// can't do nlwarning or infinite recurs
+			printf ("CFileDisplayer::setParam(): Can't open and clear the log file '%s'\n", filename.c_str());
 		}
 	}
 }

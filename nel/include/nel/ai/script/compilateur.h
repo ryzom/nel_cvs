@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.16 2001/01/24 09:36:36 robert Exp $
+ * $Id: compilateur.h,v 1.17 2001/01/26 13:36:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -445,7 +445,7 @@ namespace NLAISCRIPT
 		IConstraint *getMethodConstraint(const NLAIAGENT::IBaseGroupType &g,const CParam &p) const;
 		IConstraint *getMethodConstraint(const IConstraint &c) const;
 		sint32 typeOfMethod();
-		void setParamVarName();
+		bool setParamVarName();
 		//void setParamVarName(NLAIC::CIdentType &id);
 		void pushParamExpression();
 		void setImediateVar();

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.11 2001/01/24 15:35:58 chafik Exp $
+ * $Id: agents.cpp,v 1.12 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,9 +109,17 @@ namespace NLAIAGENT
 	{
 		while(getMail()->getMessageCount())
 		{
-			const IMessageBase &msg = getMail()->getMessage();				
-			IObjectIA *o = IBasicAgent::run( msg );
-			getMail()->popMessage();
+			const IMessageBase &msg = getMail()->getMessage();
+			try
+			{
+				IObjectIA *o = IBasicAgent::run( msg );
+				getMail()->popMessage();
+			}
+			catch(NLAIE::IException &e)
+			{
+				getMail()->popMessage();
+				throw NLAIE::CExceptionContainer(e);
+			}		
 		}
 	}
 
@@ -238,6 +246,7 @@ namespace NLAIAGENT
 			}
 			break;		
 		case IMessageBase::PExec:
+		
 			returnMsg = runExec(msg);
 			if(msg.getContinuation() != NULL) 
 			{
@@ -264,8 +273,9 @@ namespace NLAIAGENT
 				((IObjectIA *)msg.getContinuation())->sendMessage(returnMsg);				
 			}			
 			break;
-		case IMessageBase::PTell:
+		case IMessageBase::PTell:			
 			returnMsg = runTell(msg);			
+			
 			break;
 		case IMessageBase::PBreak:
 			returnMsg = runBreak(msg);

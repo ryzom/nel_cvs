@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.9 2001/01/19 14:34:54 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.10 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "nel/ai/script/codage.h"
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/agent/main_agent_script.h"
+#include "nel/ai/e/ai_exception.h"
 
 namespace NLAIAGENT
 {
@@ -116,7 +117,14 @@ namespace NLAIAGENT
 				}			
 			}
 		}
-		IAgent::processMessages();
+		try
+		{
+			IAgent::processMessages();
+		}
+		catch(NLAIE::IException &e)
+		{			
+			_CodeContext->InputOutput->Echo("\n\n%s\n\n",(char *)e.what());
+		}
 	}
 
 	const IObjectIA::CProcessResult &CMainAgentScript::run()

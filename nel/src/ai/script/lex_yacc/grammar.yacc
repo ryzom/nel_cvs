@@ -402,7 +402,7 @@ using  namespace NLAIFUZZY;
 
 	NonDeVariable		:	IDENT
 							{
-								setParamVarName();
+								if(!setParamVarName()) return 0;
 							}
 						;
 

@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.9 2001/01/24 10:01:16 portier Exp $
+ * $Id: opcode.cpp,v 1.10 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -323,16 +323,18 @@ namespace NLAISCRIPT
 	{
 		const NLAIAGENT::IObjectIA *o = _ObjectLoad->getObject(context);
 		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)_ObjectLoad->getParam(context);
-		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)param->get();
+		NLAIAGENT::CIteratorContener it = param->getIterator();
+		it ++;
+		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)it++;
 
 		const NLAIAGENT::CStringType *name = (const NLAIAGENT::CStringType *)_MethodName->get();
 
 		NLAIAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
-
+		
 		if(a.size())
-		{
-			NLAIAGENT::CIdMethod m = a.top();
-			msg->setMethodIndex(0,m.Index);
+		{			
+			NLAIAGENT::CIdMethod m = a.top();				
+			msg->setMethodIndex(0,m.Index);			
 		}
 
 		return NLAIAGENT::processIdle;

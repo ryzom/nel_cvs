@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.7 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,7 @@ namespace NLAISCRIPT
 
 	void IClassInterpret::setType(NLAIC::CIdentType *idType)
 	{
+		if(_IdType != NULL) _IdType->release();
 		_IdType = idType;
 		//_IdType->incRef();
 	}
@@ -89,6 +90,7 @@ namespace NLAISCRIPT
 	void IClassInterpret::setType(const NLAIAGENT::IVarName &name, const IClassInterpret &a)
 	{
 		const char *txt = name.getString();
+		if(_IdType != NULL) _IdType->release();
 		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ), NLAIC::CTypeOfObject::tAgent, 0);
 	}
 

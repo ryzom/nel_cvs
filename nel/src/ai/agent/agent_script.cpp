@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.20 2001/01/24 15:35:58 chafik Exp $
+ * $Id: agent_script.cpp,v 1.21 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,11 +339,12 @@ namespace NLAIAGENT
 	}
 
 	void CAgentScript::getDebugString(char *t) const
-	{
+	{		
+		sprintf(t,"class type <%s> ",(const char *)getType());
 		if ( _AgentClass )
-			sprintf(t,"<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
+			sprintf(&t[strlen(t)],"<%s> (scripted)  -StaticComponents:\n",(const char *)_AgentClass->getType());
 		else
-			strcat(t,"<undefined_class> (scripted) -StaticComponents:\n");
+			sprintf(&t[strlen(t)],"<undefined_class> (scripted) -StaticComponents:\n");
 
 		char buf[1024*8];
 		for (int i = 0; i < _NbComponents; i++ )

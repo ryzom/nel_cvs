@@ -1407,7 +1407,7 @@ case 55:
 case 59:
 #line 404 "grammar.yacc"
 {
-								setParamVarName();
+								if(!setParamVarName()) return 0;
 							;
     break;}
 case 67:

@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: ident.cpp,v 1.3 2001/01/25 16:16:53 chafik Exp $
+ * $Id: ident.cpp,v 1.4 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,9 +24,7 @@
 #include "nel/ai/agent/agent.h"
 
 namespace NLAIAGENT
-{
-
-
+{	
 
 	const NLAIC::CIdentType &CLocWordNumRef::getType() const
 	{		

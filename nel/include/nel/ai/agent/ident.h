@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.5 2001/01/25 16:16:57 chafik Exp $
+ * $Id: ident.h,v 1.6 2001/01/26 13:36:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,10 @@ namespace NLAIAGENT
 #ifndef _MAX__INDEX_DEFINED
 		const sint32 maxIndex = 2;
 		#define _MAX__INDEX_DEFINED
+		const uint64 maxResolutionNumer = (2 << 48) - 1;
 #else
 		extern const sint32 maxIndex;
+		external const uint64 maxResolutionNumer;
 #endif
 
 	/**	
@@ -53,7 +55,7 @@ namespace NLAIAGENT
 	  * \author Nevrax France
 	  * \date 2000
 	*/
-	template<class T = sint64, sint32 indexMax = maxIndex>
+	template<class T = sint64, sint32 indexMax = maxIndex, T maxT = (T)-1>
 	class CIndexVariant
 	{		
 	protected:
@@ -63,6 +65,7 @@ namespace NLAIAGENT
 
 		/**
 		This fonction increment the _Id number by one. It's call from the ++ operator.
+		If the number id overflow the NLAIE::CExceptionIndexError is emited.
 		\param n The first index to increment.
 		*/		
 
@@ -74,7 +77,7 @@ namespace NLAIAGENT
 				throw NLAIE::CExceptionIndexError();
 			}
 
-			if (_Id[n] == (T)-1)
+			if (_Id[n] == maxT)
 			{
 				// If an index is max, we increment the next index.
 				inc(n+1);
@@ -165,7 +168,7 @@ namespace NLAIAGENT
 
 		///\name Binary method.
 		//@{
-		const CIndexVariant<T,indexMax> &operator |= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator |= (const CIndexVariant<T,indexMax> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -173,7 +176,7 @@ namespace NLAIAGENT
 			}		
 			return *this;
 		}
-		const CIndexVariant<T,indexMax> &operator &= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator &= (const CIndexVariant<T,indexMax> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -182,7 +185,7 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		const CIndexVariant<T,indexMax> &operator ^= (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator ^= (const CIndexVariant<T,indexMax> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -194,7 +197,7 @@ namespace NLAIAGENT
 
 		///\name Assignment method.
 		//@{
-		const CIndexVariant<T,indexMax> &operator = (const CIndexVariant<T,indexMax> &a)
+		const CIndexVariant<T,indexMax,maxT> &operator = (const CIndexVariant<T,indexMax> &a)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
@@ -203,14 +206,14 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		const CIndexVariant<T,indexMax> &operator = (T a)
+		const CIndexVariant<T,indexMax,maxT> &operator = (T a)
 		{
 			memset(_Id,0,getMaxIndex()*sizeof(T));
 			_Id[0] = a;
 			return *this;
 		}
 
-		const CIndexVariant<T,indexMax> &operator >>= (sint a)
+		const CIndexVariant<T,indexMax,maxT> &operator >>= (sint a)
 		{
 			T bits = 1;
 			T r;
@@ -231,7 +234,7 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		const CIndexVariant<T,indexMax> &operator <<= (sint a)
+		const CIndexVariant<T,indexMax,maxT> &operator <<= (sint a)
 		{
 			T bits = (1 << a) - 1;
 			T r;
@@ -330,18 +333,26 @@ namespace NLAIAGENT
 	{
 	public:		
 		///_I is a static IndexVariant were he have 0 at the initial time.
-		static CIndexVariant<sint64,maxIndex> _I;
+		static CIndexVariant<uint64,maxIndex,maxResolutionNumer> _I;
+		static CIndexVariant<uint64,maxIndex,maxResolutionNumer> LocalServerID;
+		static sint ShiftLocalServerMask;
+
 	private:
-		CIndexVariant<sint64,maxIndex> _Id;
+		CIndexVariant<uint64,maxIndex> _Id;
+
 	public:
 		///The constructor creat a new number by increment the _I numbre.
-		CNumericIndex():_Id (CIndexVariant<sint64,maxIndex>(_I++))
+		CNumericIndex():_Id (CIndexVariant<uint64,maxIndex,maxResolutionNumer>(_I++))
 		{
+			_Id <<= ShiftLocalServerMask;
+			_Id |= LocalServerID;
 		}
 
 		///copy constructor.
-		CNumericIndex(const CIndexVariant<sint64,maxIndex> &i):_Id (i)
+		CNumericIndex(const CIndexVariant<uint64,maxIndex,maxResolutionNumer> &i):_Id (i)
 		{
+			_Id <<= ShiftLocalServerMask;
+			_Id |= LocalServerID;
 		}
 
 		///construct from a stream.

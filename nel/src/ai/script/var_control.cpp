@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.13 2001/01/23 16:39:32 chafik Exp $
+ * $Id: var_control.cpp,v 1.14 2001/01/26 13:36:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,35 +334,45 @@ namespace NLAISCRIPT
 		return true;
 	}
 	
-	void CCompilateur::setParamVarName()
+	bool CCompilateur::setParamVarName()
 	{
-		
-		NLAIC::CIdentType idType = getTypeOfClass(_LastString);
-		NLAIAGENT::IObjectIA *i;
+		try
+		{
+			NLAIC::CIdentType idType = getTypeOfClass(_LastString);
+			NLAIAGENT::IObjectIA *i;
 
-		if(_BaseObjectDef)
-		{						
-			NLAIC::CIdentType idBase = getTypeOfClass(_LastBaseObjectDef);
-			COperandSimple *t = new COperandSimple(new NLAIC::CIdentType(idType));
-			COperandSimple *b = new COperandSimple(new NLAIC::CIdentType(idBase));			
-			_Param.back()->push(t);
-			t->incRef();			
-			i = new CObjectUnknown(t,b);
+			if(_BaseObjectDef)
+			{						
+				NLAIC::CIdentType idBase = getTypeOfClass(_LastBaseObjectDef);
+				COperandSimple *t = new COperandSimple(new NLAIC::CIdentType(idType));
+				COperandSimple *b = new COperandSimple(new NLAIC::CIdentType(idBase));			
+				_Param.back()->push(t);
+				t->incRef();			
+				i = new CObjectUnknown(t,b);
+			}
+			else
+			{			
+				COperandSimple *c = new COperandSimple(new NLAIC::CIdentType(idType));
+				_Param.back()->push(c);
+				c->incRef();
+				i = new CObjectUnknown(c);//(NLAIAGENT::IObjectIA *)NLAIC::createInstance(id);
+			}
+					
+			NLAIAGENT::IVarName *s = new NLAIAGENT::CStringVarName (LastyyText[1]);
+			_Attrib.push_back(pairType(s,i));
+					
+			i->incRef();
+			_Heap[(int)_Heap] = i;
+			_Heap ++;
 		}
-		else
-		{			
-			COperandSimple *c = new COperandSimple(new NLAIC::CIdentType(idType));
-			_Param.back()->push(c);
-			c->incRef();
-			i = new CObjectUnknown(c);//(NLAIAGENT::IObjectIA *)NLAIC::createInstance(id);
+		catch(NLAIE::IException &e)
+		{
+			char text[4096];
+			sprintf(text,"Bad reference or class reference undefined '%s'", e.what());
+			yyerror(text);
+			return 0;
 		}
-				
-		NLAIAGENT::IVarName *s = new NLAIAGENT::CStringVarName (LastyyText[1]);
-		_Attrib.push_back(pairType(s,i));
-				
-		i->incRef();
-		_Heap[(int)_Heap] = i;
-		_Heap ++;
+		return true;
 		
 	}
 	void CCompilateur::pushParamExpression()

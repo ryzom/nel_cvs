@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.8 2001/01/19 14:34:46 chafik Exp $
+ * $Id: agent.h,v 1.9 2001/01/26 13:36:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,10 +78,12 @@ namespace NLAIAGENT
 		/**
 		RunExec is to processing reltative to PExec Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
 		*/
-		virtual IMessageBase *runExec(const IMessageBase &)
+		virtual IMessageBase *runExec(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runExec(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"IMessageBase *runExec(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -89,10 +91,12 @@ namespace NLAIAGENT
 		/**
 		runAchieve ist to processing reltative to PAchieve Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
 		*/
-		virtual IMessageBase *runAchieve(const IMessageBase &)
+		virtual IMessageBase *runAchieve(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runAchieve(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"runAchieve(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -100,10 +104,12 @@ namespace NLAIAGENT
 		/**
 		runAsk is to processing reltative to PAsk Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runAsk(const IMessageBase &)
+		virtual IMessageBase *runAsk(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runAsk(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"runAsk(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -111,10 +117,12 @@ namespace NLAIAGENT
 		/**
 		runTell is to processing reltative to PTell Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runTell(const IMessageBase &)
+		virtual IMessageBase *runTell(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runTell(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"runTell(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -122,10 +130,12 @@ namespace NLAIAGENT
 		/**
 		runBreak is to processing reltative to PBreak Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runBreak(const IMessageBase &)
+		virtual IMessageBase *runBreak(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runBreak(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"runBreak(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
@@ -133,10 +143,12 @@ namespace NLAIAGENT
 		/**
 		runKill is to processing reltative to PKill Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
 		*/
-		virtual IMessageBase *runKill(const IMessageBase &)
+		virtual IMessageBase *runKill(const IMessageBase &m)
 		{
+			char debugString[1024*4];
 			char text[2048*8];
-			sprintf(text,"Function <const IMessageBase *runKill(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			getDebugString(debugString);
+			sprintf(text,"runKill(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}

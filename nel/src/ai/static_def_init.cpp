@@ -31,7 +31,9 @@
 	using namespace NLAIFUZZY;
 
 	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
-	CIndexVariant<sint64,maxIndex>	CNumericIndex::_I = CIndexVariant<sint64,maxIndex>((uint64)0);
+	CIndexVariant<uint64,maxIndex>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex>((uint64)0);
+	CIndexVariant<uint64,maxIndex,maxResolutionNumer> CNumericIndex::LocalServerID = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
+	sint CNumericIndex::ShiftLocalServerMask = 16;
 
 	CIndexedVarName::CNameStruc *CIndexedVarName::_TableName = NULL;
 	const sint32 CIndexedVarName::_Bank = 256;
@@ -250,7 +252,8 @@
 		NLAIC::CTypeOfOperator::opSub |
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType CTriangleFuzzySet::IdTriangleFuzzySet = NLAIC::CIdentType("TriangleFuzzySet",NLAIC::CSelfClassCFactory(CTriangleFuzzySet("Inst",0,0,0)),
+	const NLAIC::CIdentType CTriangleFuzzySet::IdTriangleFuzzySet = NLAIC::CIdentType("TriangleFuzzySet",
+		NLAIC::CSelfClassCFactory(CTriangleFuzzySet("Inst",0,0,0)),
 		NLAIC::CTypeOfObject::tObject,
 		NLAIC::CTypeOfOperator::opAdd |
 		NLAIC::CTypeOfOperator::opSub |

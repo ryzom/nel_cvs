@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.57 2004/09/17 15:18:01 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.58 2004/09/19 11:19:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,14 +98,15 @@ CRenderTrav::CRenderTrav()
 
 
 
+
+
 // ***************************************************************************
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
 	#ifdef NL_DEBUG_RENDER_TRAV
 		nlwarning("Render trave begin");
 	#endif
-	H_AUTO( NL3D_TravRender );			
-	if (getDriver()->isLost()) return; // device is lost so no need to render anything		
+	H_AUTO( NL3D_TravRender );				
 	CTravCameraScene::update();
 	// Bind to Driver.
 	setupDriverCamera();
@@ -232,7 +233,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			clodMngr->beginRender(getDriver(), CamPos);
 
 		// Render the opaque materials
-		_CurrentPassOpaque = true;
+		_CurrentPassOpaque = true;		
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
 		{						
@@ -250,7 +251,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			#endif
 			tr->traverseRender();			
 			OrderOpaqueList.next();			
-		}
+		}		
 
 		/* Render MeshBlock Manager. 
 			Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
@@ -287,13 +288,11 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 
 		// Generate ShadowMaps
 		_ShadowMapManager.renderGenerate(Scene);
-
-		// Render the Landscape
-		renderLandscapes();
-
+		
+		// Render the Landscape		
+		renderLandscapes();		
 		// Project ShadowMaps.
 		_ShadowMapManager.renderProject(Scene);
-
 
 		// Profile this frame?
 		if(Scene->isNextRenderProfile())
@@ -307,7 +306,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		}		
 	}
 
-
+	
 	if (renderPart & UScene::RenderTransparent)
 	{		
 		if (_FirstWaterModel) // avoid a lock if no water is to be rendered
@@ -479,8 +478,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 				}
 			}
 		}		
-	}
-
+	}	
 
 	// END!
 	// =============================

@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.7 2001/03/19 14:05:08 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.8 2001/03/27 17:35:03 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ private:
 		/// Is the slot empty ?
 		bool isEmpty ()
 		{
-			return _Animation!=NULL;
+			return _Animation==NULL;
 		}
 
 	private:

@@ -96,7 +96,9 @@
 #define IDC_EDIT_LUMELSIZEMUL           1060
 #define IDC_EDIT_SOFTSHADOW_RADIUS      1061
 #define IDC_EDIT_SOFTSHADOW_CONELENGTH  1062
+#define IDC_MISC_PROPERTIES             1063
 #define IDC_EDIT_UV_CHANNEL_FOR_ALPHA   1064
+#define IDC_FLOATING_OBJECT             1065
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -107,7 +109,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        116
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1063
+#define _APS_NEXT_CONTROL_VALUE         1065
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

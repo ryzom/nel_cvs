@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.19 2001/06/12 08:21:22 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.20 2001/06/12 08:23:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,7 +147,7 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 	}
 
 	// compute new capacity
-	_Capacity = floorf(_Capacity * (float(oldVertexSize) / _VertexSize)) ;
+	_Capacity = (uint32) floorf(_Capacity * (float(oldVertexSize) / _VertexSize)) ;
 
 	return(true);
 }

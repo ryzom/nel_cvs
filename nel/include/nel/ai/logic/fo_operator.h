@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: fo_operator.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: fo_operator.h,v 1.4 2001/01/25 10:09:48 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,11 @@ namespace NLAILOGIC
 			virtual float truthValue() const;
 			virtual bool isValid(CFactBase *);
 
+			virtual float priority() const;
+			virtual void success();
+			virtual void failure();
+			virtual void success(IBaseOperator *);
+			virtual void failure(IBaseOperator *);
 	};
 }
 #endif

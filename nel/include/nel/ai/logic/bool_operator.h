@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	0 order logic operators base class 
  *
- * $Id: bool_operator.h,v 1.4 2001/01/11 17:02:18 chafik Exp $
+ * $Id: bool_operator.h,v 1.5 2001/01/25 10:09:48 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,12 @@ namespace NLAILOGIC {
 			virtual std::list<CFact *> *backward(std::list<CFact *> &);
 			virtual std::list<CFact *> *forward(std::list<CFact *> &);
 			virtual std::list<CFact *> *propagate(std::list<CFact *> &);
+
+			virtual float priority() const;
+			virtual void success();
+			virtual void failure();
+			virtual void success(IBaseOperator *);
+			virtual void failure(IBaseOperator *);
 	};
 }
 #endif

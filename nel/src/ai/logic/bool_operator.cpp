@@ -252,4 +252,25 @@ namespace NLAILOGIC
 	{		
 		return IObjectIA::ProcessRun;
 	}
+
+	float CBoolOperator::priority() const
+	{
+		return 0.0;
+	}
+
+	void CBoolOperator::success()
+	{
+	}
+
+	void CBoolOperator::failure()
+	{
+	}
+
+	void CBoolOperator::success(IBaseOperator *)
+	{
+	}
+
+	void CBoolOperator::failure(IBaseOperator *)
+	{
+	}
 }

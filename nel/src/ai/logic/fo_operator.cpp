@@ -605,4 +605,26 @@ namespace NLAILOGIC
 
 		return is_valid;
 	}
+
+	float CFirstOrderOperator::priority() const
+	{
+		return 0.0;
+	}
+
+	void CFirstOrderOperator::success()
+	{
+	}
+
+	void CFirstOrderOperator::failure()
+	{
+	}
+
+	void CFirstOrderOperator::success(IBaseOperator *)
+	{
+	}
+
+	void CFirstOrderOperator::failure(IBaseOperator *)
+	{
+	}
+
 }

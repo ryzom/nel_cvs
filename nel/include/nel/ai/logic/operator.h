@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for operators
  *
- * $Id: operator.h,v 1.4 2001/01/24 09:08:36 portier Exp $
+ * $Id: operator.h,v 1.5 2001/01/25 10:09:48 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLAILOGIC
 			/// Preconditions asserts
 			std::vector<IBaseAssert *>		_Conds;				
 			/// Postconditions asserts			
-			std::vector<IBaseAssert *>		_Concs;				
+			std::vector<IBaseAssert *>		_Concs;	
 
 		public:
 
@@ -75,18 +75,18 @@ namespace NLAILOGIC
 			virtual bool isValid(CFactBase *) =0;
 
 			/// Priority of the operator
-//			virtual float priority() const = 0;
+			virtual float priority() const = 0;
 
 			/// Own success and failure functions
 			/// These function telle other operators and goals that might be waiting for
 			/// the execution of this one.
-//			virtual void success() = 0;
-//			virtual void failure() = 0;
+			virtual void success() = 0;
+			virtual void failure() = 0;
 
 			/// Dependencies failure and success notification
 			/// These functions are called by other operators or goals who failed or succeeded
-//			virtual void success( IBaseOperator *) = 0;
-//			virtual void failure( IBaseOperator *) = 0;
+			virtual void success( IBaseOperator *) = 0;
+			virtual void failure( IBaseOperator *) = 0;
 
 			const std::vector<IBaseAssert *> &getPrecondAsserts() const;
 			const std::vector<IBaseAssert *> &getPostCondAsserts() const;

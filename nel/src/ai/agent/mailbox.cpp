@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.9 2001/01/24 09:54:31 portier Exp $
+ * $Id: mailbox.cpp,v 1.10 2001/01/25 10:09:55 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -222,7 +222,7 @@
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator::opEq );
 
-	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", NLAIC::CSelfClassCFactory( COperatorScript() ),
+	const NLAIC::CIdentType COperatorScript::IdOperatorScript("OperatorScript", NLAIC::CSelfClassCFactory( COperatorScript(NULL) ),
 		NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 

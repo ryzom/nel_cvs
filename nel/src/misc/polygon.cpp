@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.4 2001/11/07 17:11:37 vizerie Exp $
+ * $Id: polygon.cpp,v 1.5 2001/11/14 15:51:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -385,7 +385,11 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 {
 	// an 'alias' to the vertices
 	const TVec2fVect &V = Vertices;
-	nlassert(Vertices.size() >= 3)
+	if (Vertices.size() < 3)
+	{
+		borders.clear();
+		return;
+	}
 	bool    ccw;  // set to true when it has a counter clock wise orientation
                    
 	// compute highest and lowest pos of the poly

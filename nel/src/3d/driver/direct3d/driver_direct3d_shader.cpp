@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.7.4.1 2004/09/14 15:33:43 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.7.4.2 2004/09/15 18:29:10 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -513,6 +513,32 @@ void CDriverD3D::disableHardwareTextureShader()
 	*/
 }
 
+// ***************************************************************************
+void CDriverD3D::notifyAllShaderDrvOfLostDevice()
+{
+	for(TShaderDrvInfoPtrList::iterator it = _ShaderDrvInfos.begin(); it != _ShaderDrvInfos.end(); ++it)
+	{
+		nlassert(*it);
+		CShaderDrvInfosD3D *drvInfo = NLMISC::safe_cast<CShaderDrvInfosD3D *>(*it);
+		if (drvInfo->Effect)
+		{
+			nlverify(drvInfo->Effect->OnLostDevice() == D3D_OK);
+		}
+	}
+}
+// ***************************************************************************
+void CDriverD3D::notifyAllShaderDrvOfResetDevice()
+{
+	for(TShaderDrvInfoPtrList::iterator it = _ShaderDrvInfos.begin(); it != _ShaderDrvInfos.end(); ++it)
+	{
+		nlassert(*it);
+		CShaderDrvInfosD3D *drvInfo = NLMISC::safe_cast<CShaderDrvInfosD3D *>(*it);
+		if (drvInfo->Effect)
+		{
+			nlverify(drvInfo->Effect->OnResetDevice() == D3D_OK);
+		}
+	}
+}
 // ***************************************************************************
 //
 /*

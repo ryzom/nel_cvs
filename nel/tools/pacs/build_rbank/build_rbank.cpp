@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.1 2001/11/28 15:54:46 corvazier Exp $
+ * $Id: build_rbank.cpp,v 1.2 2002/01/07 11:46:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@
 #include "3d/water_shape.h"
 #include "3d/quad_grid.h"
 
-#include "build_rbank.h"
+#include "moulinette.h"
 #include "build_surf.h"
 
 #include "pacs/global_retriever.h"

@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.1 2001/11/28 15:54:46 corvazier Exp $
+ * $Id: main.cpp,v 1.2 2002/01/07 11:46:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/register_3d.h"
 
 #include "build_surf.h"
-#include "build_rbank.h"
+#include "moulinette.h"
 
 #include "pacs/global_retriever.h"
 #include "pacs/retriever_bank.h"
@@ -110,7 +110,7 @@ void	initMoulinette()
 		CConfigFile cf;
 		int			i;
 	
-		cf.load("moulinette.cfg");
+		cf.load("build_rbank.cfg");
 	
 		OutputRootPath = getString(cf, "OutputRootPath");
 		ReduceSurfaces = getInt(cf, "ReduceSurfaces") ? true : false;

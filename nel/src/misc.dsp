@@ -259,6 +259,14 @@ SOURCE=..\include\nel\misc\vector.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\vector_2d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_2d.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\vector_2f.cpp
 # End Source File
 # Begin Source File

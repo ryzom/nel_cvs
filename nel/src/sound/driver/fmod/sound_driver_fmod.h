@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.8 2004/11/15 10:25:07 lecroart Exp $
+ * $Id: sound_driver_fmod.h,v 1.9 2004/12/13 17:52:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "sound/driver/sound_driver.h"
 #include "source_fmod.h"
 #include "buffer_fmod.h"
+#include "music_channel_fmod.h"
 #include "../sound_driver.h"
 #include <iostream>
 
@@ -117,28 +118,28 @@ public:
 	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
 
 	// play the music
-	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime, bool loop);
+	virtual bool	playMusic(uint channel, NLMISC::CIFile &file, uint xFadeTime, bool loop);
 	
 	// play the music async
-	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0, bool loop=true);
+	virtual bool	playMusicAsync(uint channel, const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize, bool loop);
 	
 	// stop the music
-	virtual void	stopMusic(uint xFadeTime=0);
+	virtual void	stopMusic(uint channel, uint xFadeTime);
 	
 	// pause the music
-	virtual void	pauseMusic();
+	virtual void	pauseMusic(uint channel);
 	
 	// resume the music
-	virtual void	resumeMusic();
+	virtual void	resumeMusic(uint channel);
 	
 	// is the music playing
-	virtual bool	isMusicEnded();
+	virtual bool	isMusicEnded(uint channel);
 
 	// music length
-	virtual float	getMusicLength();
+	virtual float	getMusicLength(uint channel);
 	
 	// set music volume
-	virtual void	setMusicVolume(float gain);
+	virtual void	setMusicVolume(uint channel, float gain);
 
 	// get a song title
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0);
@@ -149,6 +150,9 @@ public:
 	bool	fmodOk() const {return _FModOk;}
 
 	bool	forceSofwareBuffer() const {return _ForceSoftwareBuffer;}
+
+	// also check that the fader still exist (avoid any free problem)
+	void	markMusicFaderEnded(void *stream, void *fader);
 
 private:
 
@@ -186,39 +190,14 @@ private:
 	bool					_ForceSoftwareBuffer;
 
 	
-	/// Music
-	class CMusicChannel
-	{
-	public:
-		FSOUND_STREAM			*FModMusicStream;	// The FMod stream
-		uint8					*FModMusicBuffer;	// the RAM buffer (representation of a MP3 file, only for sync play)
-		sint					FModMusicChannel;	// channel played for music. CAN BE -1 while FModMusicStream!=NULL in case of Async Loading
-		float					XFadeVolume;		// 0--1
-		float					XFadeDVolume;		// dt
-
-	public:
-		CMusicChannel()
-		{
-			FModMusicStream= NULL;
-			FModMusicBuffer= NULL;
-			FModMusicChannel= -1;
-			XFadeVolume= 0.f;
-			XFadeDVolume= 0.f;
-		}
-	};
-	// 2 musics channels for XFade
-	enum	{MaxMusicChannel= 2};
-	CMusicChannel			_MusicChannel[MaxMusicChannel];
-	uint8					_ActiveMusicChannel;
+	/// \name Music
+	// @{
+	/// A music channel play one music // to other channels
+	enum	{NumMusicChannel= 2};
+	CMusicChannelFMod		_MusicChannel[NumMusicChannel];
 	sint64					_LastXFadeTime;
-	float					_FModMusicVolume;
-	std::list<FSOUND_STREAM*>	_FModMusicStreamWaitingForClose;	// see stopMusicChannel()
-	void	playMusicStartFade(uint xFadeTime);
-	void	playMusicStartChannel(uint musicChannel);
-	void	stopMusicChannel(uint musicChannel);
-	void	updateMusicVolumeChannel(uint musicChannel);
 	void	updateMusic();
-	void	updateMusicFModStreamWaitingForClose();
+	// @}
 	
 };
 

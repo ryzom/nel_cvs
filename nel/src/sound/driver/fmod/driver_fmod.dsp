@@ -174,6 +174,14 @@ SOURCE=.\listener_fmod.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\music_channel_fmod.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\music_channel_fmod.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound_driver_fmod.cpp
 # End Source File
 # Begin Source File

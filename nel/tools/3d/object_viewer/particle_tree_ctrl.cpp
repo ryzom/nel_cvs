@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.50 2003/11/18 13:59:52 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.51 2003/12/11 09:29:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -827,7 +827,11 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			
 				DeleteItem(TVI_ROOT);				
 			
-				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
+				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetPathName())));
+				if (!newModel)
+				{
+					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
+				}
 
 				if (newModel)
 				{		

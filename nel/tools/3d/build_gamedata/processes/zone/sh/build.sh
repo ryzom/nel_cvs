@@ -82,16 +82,33 @@ list_zone_welded=`ls -1 zone_welded/*.zonew`
 
 # Light zones
 for i in $list_zone_welded ; do
-  dest=`echo $i | sed -e 's/zone_welded/zone_lighted/g' | sed -e 's/.zonew/.zonel/g'`
-  depend=`echo $i | sed -e 's/zone_welded/zone_depend/g' | sed -e 's/.zonew/.depend/g'`
-  if ( ! test -e $dest ) || ( test $i -nt $dest )
-  then
-    echo -- Light $i
-    echo -- Light $i >> log.log
-    $exec_timeout $light_timeout $zone_lighter $i $dest ../../cfg/properties.cfg $depend
-	echo 
-	echo 
-  fi
+	dest=`echo $i | sed -e 's/zone_welded/zone_lighted/g' | sed -e 's/.zonew/.zonel/g'`
+	depend=`echo $i | sed -e 's/zone_welded/zone_depend/g' | sed -e 's/.zonew/.depend/g'`
+	if ( ! test -e $dest ) || ( test $i -nt $dest )
+	then
+		echo LIGHT $i
+		echo LIGHT $i >> log.log
+		$exec_timeout $light_timeout $zone_lighter $i $dest ../../cfg/properties.cfg $depend
+		echo 
+		echo 
+	else
+		echo SKIP $dest
+		echo SKIP $dest >> log.log
+	fi
+done
+
+# List the zones lighted
+list_zone_lighted_remove=`ls -1 zone_lighted/*.zonel`
+
+# Remove old lighted zones
+for i in $list_zone_lighted_remove ; do
+	source=`echo $i | sed -e 's/zone_lighted/zone_welded/g' | sed -e 's/.zonel/.zonew/g'`
+	if ( ! test -e $source )
+	then
+		echo REMOVE $i
+		echo REMOVE $i >> log.log
+		rm $i
+	fi
 done
 
 
@@ -107,7 +124,7 @@ echo -------
 date >> log.log
 date
 
-# List the zones to light their ig
+# List the zones lighted
 list_zone_lighted=`ls -1 zone_lighted/*.zonel`
 
 # Light zones

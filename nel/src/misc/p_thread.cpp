@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * <File description>
  *
- * $Id: p_thread.cpp,v 1.1 2001/02/13 17:41:20 cado Exp $
+ * $Id: p_thread.cpp,v 1.2 2001/02/13 18:25:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,8 @@
  * MA 02111-1307, USA.
  */
 
+
+#include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_UNIX
 

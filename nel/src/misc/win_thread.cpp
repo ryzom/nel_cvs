@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.2 2001/02/13 17:40:33 cado Exp $
+ * $Id: win_thread.cpp,v 1.3 2001/02/13 18:25:48 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,11 @@
  * MA 02111-1307, USA.
  */
 
-#ifdef NL_OS_WINDOWS
 
 #include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
+
 #include "nel/misc/win_thread.h"
 #include <windows.h>
 

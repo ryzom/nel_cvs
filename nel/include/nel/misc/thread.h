@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.10 2001/02/13 17:40:33 cado Exp $
+ * $Id: thread.h,v 1.11 2001/02/13 18:25:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,7 @@ public:
 
 struct EThread : public Exception
 {
+	EThread (const char* message) : Exception (message) {};
 };
 
 

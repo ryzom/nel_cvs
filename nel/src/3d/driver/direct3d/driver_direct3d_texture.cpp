@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.6 2004/06/22 09:44:46 berenguier Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.7 2004/06/22 09:57:59 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -247,7 +247,7 @@ uint getPixelFormatSize (D3DFORMAT destFormat)
 	case D3DFMT_A16B16G16R16: bits=64; break;
 	case D3DFMT_A8P8: bits=16; break;
 	case D3DFMT_P8: bits=8; break;
-	case D3DFMT_L8: bits=9; break;
+	case D3DFMT_L8: bits=8; break;
 	case D3DFMT_L16: bits=16; break;
 	case D3DFMT_A8L8: bits=16; break;
 	case D3DFMT_A4L4: bits=8; break;

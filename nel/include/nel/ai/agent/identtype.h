@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.3 2001/03/21 15:45:56 chafik Exp $
+ * $Id: identtype.h,v 1.4 2001/03/21 16:55:27 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 namespace NLAIAGENT
 {	
-	#ifndef _MAX__INDEX_DEFINED
+#ifndef _MAX__INDEX_DEFINED
 		const sint32 maxIndex = 2;
 		#define _MAX__INDEX_DEFINED
 

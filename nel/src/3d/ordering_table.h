@@ -1,7 +1,7 @@
 /** \file ordering_table.h
  * Generic Ordering Table
  *
- * $Id: ordering_table.h,v 1.5 2002/07/01 09:14:03 berenguier Exp $
+ * $Id: ordering_table.h,v 1.6 2004/03/23 10:17:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/smart_ptr.h"
 #include <vector>
 
 namespace NL3D 
@@ -61,9 +62,15 @@ public:
 
 	/**
 	 * Put the ordering table to empty
-	 *	\param maxElementToInsert prepare allocator for insert by setting maximum insert() that will arise.
+	 *	\param maxElementToInsert prepare allocator for insert by setting maximum insert() that will arise.	 
 	 */
 	void reset(uint maxElementToInsert);
+
+	/** Share allocator between 2 or more ordering tables. So that calling reset will give the max number of insert
+      * for both tables. This is useful if several table are used for sorting (example : sort by priority with one table per possible priority)
+	  * NB : the table of "source table" becomes the used allocator
+	  */
+	void shareAllocator(COrderingTable<T> &sourceTable) { _Allocator = sourceTable._Allocator; }	
 
 	/**
 	 * Insert an element in the ordering table
@@ -114,11 +121,18 @@ private:
 			val = NULL;
 			next = NULL;
 		}
-	};
+	};	
 
+	class CAllocator : public NLMISC::CRefCount
+	{
+	public:
+		std::vector<CNode> NodePool;
+		CNode			   *CurAllocatedNode;
+		CAllocator() : CurAllocatedNode(NULL) {}
+	};
 	// a raw allocator of node.
-	std::vector<CNode>	_Allocator;
-	CNode				*_CurAllocatedNode;
+	NLMISC::CSmartPtr<CAllocator>	_Allocator;
+	
 
 	uint32 _nNbElt;
 	CNode* _Array;
@@ -131,8 +145,8 @@ template<class T> COrderingTable<T>::COrderingTable()
 {
 	_nNbElt = 0;
 	_Array = NULL;
-	_SelNode = NULL;
-	_CurAllocatedNode= NULL;
+	_SelNode = NULL;	
+	_Allocator = new CAllocator;
 }
 
 // ***************************************************************************
@@ -166,8 +180,8 @@ template<class T> void COrderingTable<T>::reset(uint maxElementToInsert)
 {
 	// reset allocation
 	maxElementToInsert= max(1U, maxElementToInsert);
-	_Allocator.resize(maxElementToInsert);
-	_CurAllocatedNode= &_Allocator[0];
+	_Allocator->NodePool.resize(maxElementToInsert);
+	_Allocator->CurAllocatedNode= &_Allocator->NodePool[0];
 
 	// reset OT.
 	for( uint32 i = 0; i < _nNbElt-1; ++i )
@@ -184,14 +198,14 @@ template<class T> void COrderingTable<T>::insert( uint32 nEntryPos, T *pValue )
 {
 #ifdef NL_DEBUG
 	// check not so many calls to insert()
-	nlassert( !_Allocator.empty() && _CurAllocatedNode < (&_Allocator[0])+_Allocator.size() );
+	nlassert( !_Allocator->NodePool.empty() && _Allocator->CurAllocatedNode < (&_Allocator->NodePool[0])+_Allocator->NodePool.size() );
 	// check good entry size
 	nlassert( nEntryPos < _nNbElt );
 #endif
 	// get the head list node
 	CNode *headNode = &_Array[nEntryPos];
 	// alocate a new node
-	CNode *nextNode = _CurAllocatedNode++;
+	CNode *nextNode = _Allocator->CurAllocatedNode++;
 	// fill this new node with data of head node
 	nextNode->val= headNode->val;
 	nextNode->next= headNode->next;
@@ -221,7 +235,7 @@ template<class T> T* COrderingTable<T>::get()
 // ***************************************************************************
 template<class T> void COrderingTable<T>::next()
 {
-	_SelNode = _SelNode->next;
+	_SelNode = _SelNode->next;                                                                                            
 	while( ( _SelNode != NULL )&&( _SelNode->val == NULL ) )
 		_SelNode = _SelNode->next;
 }

@@ -397,6 +397,10 @@ SOURCE=.\bmp00013.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00014.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\object_viewer.rc2
 # End Source File
 # Begin Source File
@@ -429,6 +433,15 @@ SOURCE=.\attrib_dlg.h
 # Begin Source File
 
 SOURCE=.\attrib_list_box.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\attrib_list_box.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\basis_edit.cpp
+
 
 !IF  "$(CFG)" == "object_viewer - Win32 Release"
 
@@ -439,11 +452,10 @@ SOURCE=.\attrib_list_box.cpp
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
 
 !ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=.\attrib_list_box.h
+SOURCE=.\basis_edit.h
 # End Source File
 # Begin Source File
 

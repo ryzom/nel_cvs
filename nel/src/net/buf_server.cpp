@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.4 2001/05/17 15:37:05 cado Exp $
+ * $Id: buf_server.cpp,v 1.5 2001/05/18 14:32:23 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,12 +236,41 @@ CBufServer::~CBufServer()
 void CBufServer::disconnect( TSockId hostid, bool quick )
 {
 	nlnettrace( "CBufServer::disconnect" );
-	nlassert( hostid != NULL );
-	if ( ! quick )
+	if ( hostid != NULL )
 	{
-		hostid->flush();
+		if ( ! quick )
+		{
+			hostid->flush();
+		}
+		hostid->Sock->disconnect(); // the connection will be removed by the next call of update()
 	}
-	hostid->Sock->disconnect(); // the connection will be removed by the next call of update()
+	else
+	{
+		// Disconnect all
+		CThreadPool::iterator ipt;
+		{
+			CSynchronized<CThreadPool>::CAccessor poolsync( &_ThreadPool );
+			for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+			{
+				CServerReceiveTask *task = receiveTask(ipt);
+				CConnections::iterator ipb;
+				{
+					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
+					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
+					{
+						if ( (*ipb)->Sock->connected() )
+						{
+							if ( ! quick )
+							{
+								(*ipb)->flush();
+							}
+							(*ipb)->Sock->disconnect();
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 

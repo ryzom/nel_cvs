@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.41 2004/09/03 10:17:33 legros Exp $
+ * $Id: welcome_service.cpp,v 1.42 2004/09/03 14:50:27 legros Exp $
  *
  */
 
@@ -890,14 +890,14 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 		nlerror ("ShardId variable must be valid (>0)");
 	}
 
-	CMessage msgout ("WS_IDENT");
+	CMessage	msgout ("WS_IDENT");
 	msgout.serial (shardId);
 	CUnifiedNetwork::getInstance()->send (sid, msgout);
 
 	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName.c_str(), sid, shardId);
 
-	CMessage	msgout("REPORT_NO_PATCH");
-	CUnifiedNetwork::getInstance()->send("LS", msgout);
+	CMessage	msgrpn("REPORT_NO_PATCH");
+	CUnifiedNetwork::getInstance()->send("LS", msgrpn);
 
 	bool	reportPatching = false;
 	list<CFES>::iterator	itfs;

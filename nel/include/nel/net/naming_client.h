@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: naming_client.h,v 1.4 2000/10/11 16:25:25 cado Exp $
+ * $Id: naming_client.h,v 1.5 2000/10/12 16:15:31 cado Exp $
  *
  * Interface for CNamingClient
  */
@@ -53,8 +53,6 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * If you plan to call several times these methods in a block, set TransactionMode to false
  * and call open() at the beginning of the block and close() at the end.
  *
- * \todo cado/lecroart: Move service registration to IService (but not for the NS itself) and
- * ensure unregistration is called when stopping the service (Ctrl-C must call release())
  * \todo cado: Manage validity time: a new request must be done when the time is out and
  * the caller must disconnect from its service provider and connect to the new one.
  * \test Test program is /code/test/network/log_service/main.cpp

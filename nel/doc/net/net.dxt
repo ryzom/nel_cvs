@@ -1,6 +1,8 @@
 /**
 \page network Network
 
+\author Olivier Cado
+
 \subsection networkintro Introduction
 
 Conceptually, the network subsystem is divided into layers :

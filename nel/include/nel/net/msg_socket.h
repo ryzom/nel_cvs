@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.14 2000/10/11 16:25:25 cado Exp $
+ * $Id: msg_socket.h,v 1.15 2000/10/12 16:15:31 cado Exp $
  *
  * Interface for CMsgSocket
  */
@@ -73,7 +73,7 @@ public:
 	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
 	 * \param port Port on which the server must listen and accept connections
 	 */
-	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
+	CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port );
 
 	/** Constructs a client object, that connects to a service. The address of the server provider
 	 * the service is retrieved using a Naming Service.
@@ -81,14 +81,14 @@ public:
 	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
 	 * \param service Name of the service
 	 */
-	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service );
+	CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service );
 
 	/** Constructs a client object, that connects to servaddr. 
 	 * \param callbackarray Define this array statically.
 	 * \param arraysize Use sizeof(callbackarray)-sizeof(callbackarray[0])
 	 * \param servaddr Address of the server
 	 */
-	CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
+	CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr );
 
 	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
 	~CMsgSocket();
@@ -130,7 +130,7 @@ public:
 protected:
 
 	/// Part of constructor contents
-	void			init( TCallbackItem *callbackarray, TTypeNum arraysize );
+	void			init( const TCallbackItem *callbackarray, TTypeNum arraysize );
 
 	/// Prepares to receive connections on a specified port
 	void			listen( CSocket *listensock, uint16 port ) throw (ESocket);
@@ -182,7 +182,7 @@ private:
 	static long					_TimeoutS, _TimeoutM;
 
 
-	static TCallbackItem		*_CallbackArray;
+	static const TCallbackItem	*_CallbackArray;
 	static TTypeNum				_CbaSize;
 	static CSearchSet			_SearchSet;
 

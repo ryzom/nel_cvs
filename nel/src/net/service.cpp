@@ -1,25 +1,34 @@
-/* service.cpp
+/** \file service.cpp
+ * Base class for all network services
  *
- * Copyright (C) 2000 Nevrax. All rights reserved.
+ * $Id: service.cpp,v 1.18 2000/10/12 16:15:31 cado Exp $
  *
- * The redistribution, use and modification in source or binary forms of
- * this software is subject to the conditions set forth in the copyright
- * document ("Copyright") included with this distribution.
+ * \todo ACE: test the signal redirection on Unix
  */
 
-/*
- * $Id: service.cpp,v 1.17 2000/10/12 13:55:34 lecroart Exp $
+/* Copyright, 2000 Nevrax Ltd.
  *
- * implementation of all debug functions
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
  *
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
  */
 
-/// \todo ACE: test the signal redirection on unix
 
 #include "nel/misc/types_nl.h"
 
 #include <stdlib.h>
-#include <signal.h>
 #include <signal.h>
 
 #include "nel/misc/debug.h"
@@ -30,12 +39,24 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/naming_client.h"
 #include "nel/net/msg_socket.h"
+#include "nel/net/pt_callback_item.h"
+
+#include <sstream>
+
 
 using namespace std;
 using namespace NLMISC;
 
+
+extern NLNET::TCallbackItem CallbackArray [];
+extern sint16				CallbackArraySize;
+
+
 namespace NLNET
 {
+
+const uint32 IService::_DefaultTimeout = 1000;
+
 
 /* "Constants" */
 
@@ -106,14 +127,21 @@ static void ExitFunc ()
 	{
 		if (Service != NULL)
 		{
-			// release only one time
+			// Release only once
 			IService *is = Service;
 			Service = NULL;
 
+			// Unregister service
 			CNamingClient::finalize();
 
-			nldebug("** ExitFunc Release **");
+			// Close server
+			if ( is->_Server != NULL )
+			{
+				delete is->_Server;
+			}
+
 			is->release ();
+			nlinfo( "Service stopped" );
 		}
 	}
 	catch (Exception &e)
@@ -124,6 +152,36 @@ static void ExitFunc ()
 }
 
 
+/*
+ * Process command line arguments for port and timeout
+ */
+void IService::getCustomParams()
+{
+	// At the moment we don't have a processing system yet
+	if ( _Args.size() > 1 )
+	{
+		stringstream ss( _Args[1] );
+		uint port;
+		ss >> port;
+		_Port = (uint16)port; 
+		return;
+
+		if ( _Args.size() > 2 )
+		{
+			stringstream ss( _Args[2] );
+			uint timeout;
+			ss >> timeout;
+			_Timeout = timeout;
+			return;
+		}
+	}
+
+}
+
+
+/*
+ * main
+ */
 sint IService::main (int argc, char **argv)
 {
 	try
@@ -144,10 +202,10 @@ sint IService::main (int argc, char **argv)
 		string localhost;
 		try
 		{
-			// initialize WSAStartup and network stuffs
+			// Initialize WSAStartup and network stuffs
 			CBaseSocket::init();
 
-			// get the localhost name
+			// Get the localhost name
 			localhost = CInetAddress::localHost().hostName();
 		}
 		catch (NLNET::ESocket &)
@@ -155,13 +213,22 @@ sint IService::main (int argc, char **argv)
 			localhost = "<UnknownHost>";
 		}
 
-		// set the localhost name and service name to the logger
+		// Set the localhost name and service name to the logger
 		CLog::setLocalHostAndService ( localhost, _Name );
 
-		// initialize debug stuffs, create displayers for rk* functions
+		// Initialize debug stuffs, create displayers for rk* functions
 		InitDebug();
 
-		// user service init
+		// Initialize server parameters
+		_Port = IService::_DefaultPort;
+		_Timeout = IService::_DefaultTimeout;
+		getCustomParams();
+
+		// Server start-up
+		_Server = new CMsgSocket( CallbackArray, CallbackArraySize, _Port );
+		CMsgSocket::setTimeout( _Timeout );
+
+		// User service init
 		init ();
 
 		// Register the name to the NS (except for the NS itself)
@@ -169,7 +236,7 @@ sint IService::main (int argc, char **argv)
 		{
 			try
 			{
-//				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+				CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
 			}
 			catch ( ESocketConnectionFailed& )
 			{
@@ -181,10 +248,13 @@ sint IService::main (int argc, char **argv)
 			}
 		}
 
+		nlinfo( "Service ready" );
+
 		// user service update call each loop
 		while ( update() )
 		{
 			CConfigFile::checkConfigFiles ();
+			CMsgSocket::update();
 		}
 		ExitFunc ();
 	}

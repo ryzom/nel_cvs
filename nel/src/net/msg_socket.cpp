@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.cpp,v 1.16 2000/10/11 16:25:25 cado Exp $
+ * $Id: msg_socket.cpp,v 1.17 2000/10/12 16:15:31 cado Exp $
  *
  * Implementation of CMsgSocket.
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
@@ -63,7 +63,7 @@ TSenderId			CMsgSocket::_SenderIdNb;
 long				CMsgSocket::_TimeoutS = 0;
 long				CMsgSocket::_TimeoutM = 0;
 
-TCallbackItem		*CMsgSocket::_CallbackArray;
+const TCallbackItem	*CMsgSocket::_CallbackArray;
 TTypeNum			CMsgSocket::_CbaSize;
 CSearchSet			CMsgSocket::_SearchSet;
 
@@ -71,7 +71,7 @@ CSearchSet			CMsgSocket::_SearchSet;
 /*
  * Constructs a server object, listening on specified port
  */
-CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
+CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
 	_ClientSock( NULL )
 {
 	init( callbackarray, arraysize );
@@ -88,7 +88,7 @@ const char *service_not_found_cstr = "Service not found";
 /* Constructs a client object, that connects to a service. The address of the server provider
  * the service is retrieved using a Naming Service.
  */
-CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service )
+CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const std::string& service )
 {
 	init( callbackarray, arraysize );
 
@@ -131,7 +131,7 @@ CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const 
 /*
  * Constructs a client object, that connects to servaddr.
  */
-CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
+CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
 {
 	init( callbackarray, arraysize );
 	_ClientSock = new CSocket();
@@ -145,14 +145,14 @@ CMsgSocket::CMsgSocket( TCallbackItem *callbackarray, TTypeNum arraysize, const 
 /*
  * Part of constructor contents
  */
-void CMsgSocket::init( TCallbackItem *callbackarray, TTypeNum arraysize )
+void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
 	_Binded = false;
 	_SenderIdNb = 0;
 	_CallbackArray = callbackarray;
 	_CbaSize = arraysize;
 	
-	TCallbackItem *pt;
+	const TCallbackItem *pt;
 	for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
 	{
 		_SearchSet.insert( CPtCallbackItem(pt) );

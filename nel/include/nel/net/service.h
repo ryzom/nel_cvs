@@ -1,25 +1,36 @@
-/* service.h
+/** \file service.h
+ * Base class for all network services
  *
- * Copyright (C) 2000 Nevrax. All rights reserved.
- *
- * The redistribution, use and modification in source or binary forms of
- * this software is subject to the conditions set forth in the copyright
- * document ("Copyright") included with this distribution.
+ * $Id: service.h,v 1.11 2000/10/12 16:15:31 cado Exp $
  */
 
-/*
- * $Id: service.h,v 1.10 2000/10/12 10:13:52 cado Exp $
+/* Copyright, 2000 Nevrax Ltd.
  *
- * Base class for all network services
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
  */
+
 
 #ifndef NL_SERVICE_H
 #define NL_SERVICE_H
 
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <vector>
-
-#include "nel/misc/types_nl.h"
 
 namespace NLNET
 {
@@ -48,6 +59,7 @@ class CMsgSocket;
  */
 #define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName) \
 const char IService::_Name[] = ServiceName; \
+sint16 CallbackArraySize = sizeof(CallbackArray)/sizeof(TCallbackItem); \
 	int main(int argc, char **argv) { \
 	ServiceClassName *scn = new ServiceClassName; \
 	sint retval = scn->main (argc, argv); \
@@ -57,8 +69,16 @@ const char IService::_Name[] = ServiceName; \
 
 
 /**
- * Base class for all network services. You must inherite this class to create your own service. You must not
- * create ctor and dtor but use init() and release() functions.
+ * Base class for all network services.
+ * You must inherite from this class to create your own service. You must not
+ * create ctor and dtor but implement init() and release() methods.
+ * You have to create a global callback array called CallbackArray.
+ *
+ * \ref new_service_howto
+ *
+ * Temporary command line arguments :
+ * \li Arg 1 : port number for listening
+ * \li Arg 2 : (optional) timeout for select in millisecond
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -71,7 +91,7 @@ public:
 	virtual void		init () {}
 
 	/// This function is called every "frame" (you must call init() before). It returns false if the service is stopped.
-	virtual bool		update () { return false; }
+	virtual bool		update () { return true; }
 
 	/// Finalization. Release the service. For example, this founction free all allocation made in the init() function.
 	virtual void		release () {}
@@ -93,17 +113,39 @@ public:
 	/// User must just have to call this function in his main C function
 	sint				main (int argc, char **argv);
 
-protected:
+	friend void ExitFunc();
 
-	/// Current service name. Must be set by the deriver class
-	static const  char			_Name [];
+protected:
 
 	/// Array of arguments
 	std::vector<std::string>	_Args;
 
+	/// Port for listening
+	uint16						_Port;
+
+	/// Select timeout value in milliseconds
+	uint32						_Timeout;
+
 	/// Server socket
 	NLNET::CMsgSocket			*_Server;
 
+	/// Default select timeout value in milliseconds (common to all services)
+	static const uint32			_DefaultTimeout;
+
+	/// @name Static members that must be defined by the deriver class
+	//@{
+
+	/// Current service name. Must be set by the deriver class
+	static const char			_Name [];
+
+	/// Current service default port. Must be set by the deriver class
+	static const uint16			_DefaultPort;
+
+	//@}
+
+
+	/// Process command line arguments for port and timeout
+	void getCustomParams();
 
 private:
 

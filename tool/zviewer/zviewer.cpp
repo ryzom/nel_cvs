@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.7 2001/01/29 09:32:08 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.8 2001/02/20 11:22:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -730,7 +730,7 @@ void main()
 {
 	try
 	{
-		InitDebug();
+		initDebug();
 
 		ViewerCfg.TextContext.setFontGenerator("\\\\server\\code\\fonts\\arialuni.ttf");
 		

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.19 2002/06/17 08:41:47 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.20 2002/07/26 09:01:39 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -388,7 +388,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	{	
 		CNode *currNode = nodeLeft.back();
 		
-		nodeStats.push_back();
+		nodeStats.push_back(CNodeStat());
 		nodeStats.back().buildFromNode(currNode, _MsPerTick);
 		nodeStats.back().Node = currNode;
 

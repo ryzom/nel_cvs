@@ -257,10 +257,10 @@ int main(int nNbArg, char **ppArgs)
 		}
 		putIn (AllMaps[i], &GlobalTexture, x, y);
 		putIn (AllMaps[i], &GlobalMask, x, y, false);
-		UVMin[i].U = x+0.5f;
-		UVMin[i].V = y+0.5f;
-		UVMax[i].U = x+AllMaps[i]->getWidth()-0.5f;
-		UVMax[i].V = y+AllMaps[i]->getHeight()-0.5f;
+		UVMin[i].U = (float)x;
+		UVMin[i].V = (float)y;
+		UVMax[i].U = (float)x+AllMaps[i]->getWidth();
+		UVMax[i].V = (float)y+AllMaps[i]->getHeight();
 	}
 
 	// Convert UV from pixel to ratio

@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.21 2003/08/21 09:29:30 boucher Exp $
+ * $Id: cluster.cpp,v 1.22 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ CCluster::CCluster ()
 	FatherVisible = VisibleFromFather = false;
 	FatherAudible = AudibleFromFather = false;
 	Father = NULL;
+	Group = NULL;
 
 	// map a no fx string
 	_EnvironmentFxId = CStringMapper::map("no fx");
@@ -490,6 +491,71 @@ void CCluster::applyMatrix(const NLMISC::CMatrix &m)
 	// Transform the bounding boxes	
 	_BBox = NLMISC::CAABBox::transformAABBox(m, _BBox);
 	_LocalBBox = NLMISC::CAABBox::transformAABBox(m, _LocalBBox);	
+}
+
+
+// ***************************************************************************
+void CCluster::cameraRayClip(const CVector &start, const CVector &end, std::vector<CCluster*> &clusterVisited)
+{
+	uint	i;
+	if (_Visited)
+		return;
+	_Visited = true;
+
+	// The cluster is visible because we are in it. add it to the list of cluster (if not already inserted)
+	for(i=0;i<clusterVisited.size();i++)
+	{
+		if(clusterVisited[i]==this)
+			break;
+	}
+	if(i==clusterVisited.size())
+		clusterVisited.push_back(this);
+
+	// look through portals
+	for (i = 0; i < getNbPortals(); ++i)
+	{
+		CPortal*pPortal = getPortal (i);
+		CCluster *pOtherSideCluster;
+		if (pPortal->getCluster(0) == this)
+			pOtherSideCluster = pPortal->getCluster (1);
+		else
+			pOtherSideCluster = pPortal->getCluster (0);
+
+		/*
+		bool backfaceclipped = false;
+		if (Father != NULL)
+		if (caller == Father) // If the caller is the father
+		if (VisibleFromFather)
+			// Backface clipping
+			if( !pPortal->isInFront( clipTrav.CamPos ))
+				backfaceclipped = true;
+		if (!backfaceclipped && pOtherSideCluster)*/
+
+		if (pOtherSideCluster)
+		{
+			if (pPortal->clipRay (start, end))
+			{
+				pOtherSideCluster->cameraRayClip(start, end, clusterVisited);
+			}
+		}
+	}
+
+	// Link up in hierarchy
+	if ((FatherVisible)&&(Father != NULL))
+	{
+		Father->cameraRayClip(start, end, clusterVisited);
+	}
+
+	// Link down in hierarchy
+	for (i = 0; i < Children.size(); ++i)
+	{
+		if (Children[i]->VisibleFromFather)
+		{
+			Children[i]->cameraRayClip(start, end, clusterVisited);
+		}
+	}
+
+	_Visited = false;
 }
 
 

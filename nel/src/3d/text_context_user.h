@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.17 2004/02/05 20:24:56 berenguier Exp $
+ * $Id: text_context_user.h,v 1.18 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,7 +129,8 @@ public:
 	virtual void					deleteRenderBuffer(URenderStringBuffer *buffer);
 	virtual void					flushRenderBuffer(URenderStringBuffer *buffer);
 	virtual void					flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite);
-	
+
+	CTextContext	&getTextContext() {return _TextContext;}
 };
 
 

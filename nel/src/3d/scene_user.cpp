@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.55 2004/02/19 09:48:04 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.56 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -655,6 +655,25 @@ CViewport		CSceneUser::getViewport()
 	return _Scene.getViewport();
 }
 
+void			CSceneUser::findCameraClusterSystemFromRay(UCamera *cam, UInstanceGroup *startClusterSystem,
+													  const NLMISC::CVector &startPos, const NLMISC::CVector &endPos)
+{
+	NL3D_MEM_SCENE
+	NL3D_HAUTO_UI_SCENE;
+	
+	if(!cam)
+		return;
+
+	CCameraUser			*ucam= dynamic_cast<CCameraUser*>(cam);
+	CInstanceGroupUser	*uig= dynamic_cast<CInstanceGroupUser*>(startClusterSystem);
+	CCamera				*pCam= ucam->getCamera();
+	CInstanceGroup		*pIg= NULL;
+	if(uig)
+		pIg= &uig->_InstanceGroup;
+
+	_Scene.findCameraClusterSystemFromRay(pCam, pIg, startPos, endPos);
+}
+
 // ***************************************************************************
 UCamera			*CSceneUser::createCamera()
 {
@@ -903,7 +922,7 @@ void CSceneUser::setToGlobalInstanceGroup(UInstanceGroup *pIG)
 	NL3D_HAUTO_UI_SCENE;
 
 	CInstanceGroupUser *pIGU = (CInstanceGroupUser*)pIG;
-	pIGU->_InstanceGroup.setClusterSystem (_Scene.getGlobalInstanceGroup());
+	pIGU->_InstanceGroup.setClusterSystemForInstances(_Scene.getGlobalInstanceGroup());
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.27 2004/03/04 14:31:51 vizerie Exp $
+ * $Id: shape_bank.cpp,v 1.28 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -407,6 +407,19 @@ CShapeBank::TShapeState CShapeBank::isPresent (const string &shapeNameNotLwr)
 	if (wsmmIt != WaitingShapes.end())
 		return wsmmIt->second.State; // AsyncLoad_*
 	return NotPresent;
+}
+
+// ***************************************************************************
+IShape	*CShapeBank::getShape (const std::string &shapeNameNotLwr)
+{
+	string	shapeName= strlwr(shapeNameNotLwr);
+	
+	// Is the shape is found in the shape map so return Present
+	TShapeMap::iterator smIt = ShapeMap.find (shapeName);
+	if( smIt != ShapeMap.end() )
+		return smIt->second;
+
+	return NULL;
 }
 
 // ***************************************************************************

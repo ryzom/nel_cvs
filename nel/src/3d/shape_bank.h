@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.13 2004/02/19 09:47:41 vizerie Exp $
+ * $Id: shape_bank.h,v 1.14 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,12 @@ public:
 	/// Return TRUE if the shape is present in the bank. Process the waiting shapes.
 	TShapeState		isPresent (const std::string &shapeName);
 
+	/** Return the IShape from the bank. Unlike addRef, no reference is added. 
+	 *	Thus the returning shape sould be used temporarily
+	 *	\return NULL if shape not found or not loaded (if being async loaded still return NULL)
+	 */
+	IShape			*getShape (const std::string &shapeName);
+	
 	/// Load the corresponding file from disk and add it to the bank.
 	void			load (const std::string &shapeName);
 

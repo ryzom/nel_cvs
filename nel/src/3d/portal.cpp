@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.9 2003/04/29 16:30:29 berenguier Exp $
+ * $Id: portal.cpp,v 1.10 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/polygon.h"
+#include "nel/misc/triangle.h"
 #include "3d/scene.h"
 #include "3d/transform_shape.h"
 #include "3d/mesh_instance.h"
@@ -257,6 +258,66 @@ void CPortal::setWorldMatrix (const CMatrix &WM)
 		_Poly[i] = WM.mulPoint(_LocalPoly[i]);
 }
 
+// ***************************************************************************
+bool CPortal::clipRay(const NLMISC::CVector &startWorld, const NLMISC::CVector &endWorld)
+{
+	if(_Poly.size()<3)
+		return false;
+
+	// Avoid precision problem, make local to poly
+	const	CVector		&refVert= _Poly[0];
+	CVector		start= startWorld - refVert;
+	CVector		end= endWorld - refVert;
+	
+	// compute the plane of this poly, local to polygon 
+	CPlane	plane;
+	plane.make(CVector::Null, _Poly[1] - refVert, _Poly[2] - refVert);
+	CVector	normal = plane.getNormal();
+
+	float	np1 = normal*end;
+	float	np2 = np1-normal*start;
+	
+	if (np2 == 0.0f)
+		return false;
+	
+	float	lambda = (plane.d+np1)/np2;
+	
+	// Checks the intersection belongs to the segment
+	if (lambda < 0 || lambda > 1.0f)
+		return false;
+	
+	// The intersection on the plane
+	CVector	hit = start*lambda+end*(1.0f-lambda);
+	
+	// Do convex test on each border
+	sint	sign= 0;
+	uint	polySize= _Poly.size();
+	for(uint i=0;i<polySize;i++)
+	{
+		const	CVector	v0= _Poly[i] - refVert;
+		const	CVector	v1= _Poly[(i+1)%polySize] - refVert;
+		float	d = ((v1-v0)^normal)*(hit-v0);
+		if(d<0)
+		{
+			if(sign==1)
+				return false;
+			else
+				sign=-1;
+		}
+		else if(d>0)
+		{
+			if(sign==-1)
+				return false;
+			else
+				sign=1;
+		}
+		else
+			return false;
+	}
+
+	// all on same side, ok!
+	return true;
+}
 
 
 } // NL3D

@@ -1602,6 +1602,10 @@ SOURCE=.\3d\transformable_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\u_shape.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\viewport.cpp
 # End Source File
 # Begin Source File
@@ -1755,6 +1759,10 @@ SOURCE=..\include\nel\3d\u_ps_sound_interface.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_shape.h
 # End Source File
 # Begin Source File
 
@@ -2220,6 +2228,14 @@ SOURCE=.\3d\quad_effect.h
 # Begin Group "Collisions"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\camera_col.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\camera_col.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\landscape_collision_grid.cpp

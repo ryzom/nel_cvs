@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.4 2004/03/03 18:59:54 berenguier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.5 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/ptr_set.h"
 
 #define NL3D_MEM_VISUAL_COLLISION						NL_ALLOC_CONTEXT( 3dVsCol )
+#define NL3D_MEM_CAMERA_COLLISION						NL_ALLOC_CONTEXT( 3dCmCol )
 
 namespace NL3D {
 
@@ -81,10 +82,22 @@ public:
 
 	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
 	{
-		NL3D_MEM_VISUAL_COLLISION
+		NL3D_MEM_CAMERA_COLLISION
 		return _Manager.getCameraCollision (start, end, radius, cone);
 	}
 	
+	virtual uint					addMeshCollision(const std::vector<CVector> &vertices, const std::vector<uint16> &triangles)
+	{
+		NL3D_MEM_CAMERA_COLLISION
+		return _Manager.addMeshCollision(vertices, triangles);
+	}
+
+	virtual void					removeMeshCollision(uint id)
+	{
+		NL3D_MEM_CAMERA_COLLISION
+		_Manager.removeMeshCollision(id);
+	}
+
 protected:
 	CVisualCollisionManager		_Manager;
 	typedef	CPtrSet<CVisualCollisionEntityUser>		TVisualCollisionEntitySet;

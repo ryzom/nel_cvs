@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.33 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.34 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/instance_group_user.h"
 #include "3d/scene_user.h"
 #include "3d/mesh_multi_lod_instance.h"
+#include "3d/text_context_user.h"
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
@@ -91,6 +92,16 @@ CInstanceGroupUser::CInstanceGroupUser()
 {
 	NL3D_MEM_IG
 	_AddToSceneState = StateNotAdded;
+
+	// set user info for possible get
+	_InstanceGroup.setUserInterface(this);
+}
+
+// ***************************************************************************
+CInstanceGroupUser::~CInstanceGroupUser()
+{
+	// ensure all instances proxys are deleted
+	removeInstancesUser();
 }
 
 // ***************************************************************************
@@ -177,16 +188,20 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver, uint 
 	NL3D_MEM_IG
 	if (!_InstanceGroup.addToScene (scene, driver, selectedTexture))
 		return;
-	// Fill in the map accelerating search of instance by names
+	// Fill in the vector and the map accelerating search of instance by names
+	_Instances.resize(_InstanceGroup._Instances.size(), NULL);
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 	{
 		CInstanceUser *pIU = NULL;
 		string stmp;
 		if (_InstanceGroup._Instances[i] != NULL)
 		{
-			pIU = new CInstanceUser (&scene, _InstanceGroup._Instances[i], true);
+			// create but don't want to delete from scene, since added/removed with _InstanceGroup
+			pIU = new CInstanceUser (NULL, _InstanceGroup._Instances[i], false);
+			_Instances[i]= pIU;
+			// insert in map (may fail if double name)
 			stmp = _InstanceGroup.getInstanceName (i);
-			_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+			_InstanceMap.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
 		}
 	}
 }
@@ -217,16 +232,20 @@ UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 	UInstanceGroup::TState newState = (UInstanceGroup::TState)_InstanceGroup.getAddToSceneState ();
 	if ((_AddToSceneState == StateAdding) && (newState == StateAdded))
 	{
-		// Fill in the map accelerating search of instance by names
+		// Fill in the vector and the map accelerating search of instance by names
+		_Instances.resize(_InstanceGroup._Instances.size(), NULL);
 		for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 		{
 			CInstanceUser *pIU = NULL;
 			string stmp;
 			if (_InstanceGroup._Instances[i] != NULL)
 			{
-				pIU = new CInstanceUser (&((CSceneUser*)_AddToSceneTempScene)->getScene(), _InstanceGroup._Instances[i], true);
+				// create but don't want to delete from scene, since added/removed with _InstanceGroup
+				pIU = new CInstanceUser (NULL, _InstanceGroup._Instances[i], false);
+				_Instances[i]= pIU;
+				// insert in map (may fail if double name)
 				stmp = _InstanceGroup.getInstanceName (i);
-				_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+				_InstanceMap.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
 			}
 		}
 		_AddToSceneState = StateAdded;
@@ -239,14 +258,8 @@ void CInstanceGroupUser::removeFromScene (class UScene& scene)
 {
 	NL3D_MEM_IG
 	_InstanceGroup.removeFromScene (((CSceneUser*)&scene)->getScene());
-	// Remove all instance in the map
-	map<string,CInstanceUser*>::iterator it = _Instances.begin();
-	while (it != _Instances.end())
-	{
-		map<string,CInstanceUser*>::iterator itDel = it;
-		++it;
-		_Instances.erase (itDel);
-	}
+	// Remove all instance user object in the array/map
+	removeInstancesUser();
 }
 
 // ***************************************************************************
@@ -318,8 +331,8 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 UInstance *CInstanceGroupUser::getByName (std::string &name)
 {
 	NL3D_MEM_IG
-	map<string,CInstanceUser*>::iterator it = _Instances.find (name);
-	if (it != _Instances.end())
+	map<string,CInstanceUser*>::iterator it = _InstanceMap.find (name);
+	if (it != _InstanceMap.end())
 		return it->second;
 	else
 		return NULL;
@@ -330,8 +343,8 @@ UInstance *CInstanceGroupUser::getByName (std::string &name)
 const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 {
 	NL3D_MEM_IG
-	map<string,CInstanceUser*>::const_iterator it = _Instances.find (name);
-	if (it != _Instances.end())
+	map<string,CInstanceUser*>::const_iterator it = _InstanceMap.find (name);
+	if (it != _InstanceMap.end())
 		return it->second;
 	else
 		return NULL;
@@ -353,10 +366,10 @@ void CInstanceGroupUser::createRoot (UScene &scene)
 }
 
 // ***************************************************************************
-void CInstanceGroupUser::setClusterSystem (UInstanceGroup *pClusterSystem)
+void CInstanceGroupUser::setClusterSystemForInstances (UInstanceGroup *pClusterSystem)
 {
 	NL3D_MEM_IG
-	_InstanceGroup.setClusterSystem (&((CInstanceGroupUser*)pClusterSystem)->_InstanceGroup);
+	_InstanceGroup.setClusterSystemForInstances (&((CInstanceGroupUser*)pClusterSystem)->_InstanceGroup);
 }
 
 // ***************************************************************************
@@ -505,17 +518,59 @@ bool			CInstanceGroupUser::getStaticLightSetup(
 // ***************************************************************************
 const UInstance	*CInstanceGroupUser::getInstance (uint instanceNb) const
 {
-	return new CInstanceUser (NULL, _InstanceGroup.getTransformShape(instanceNb), false);
+	if(instanceNb<_Instances.size())
+		return _Instances[instanceNb];
+	else
+		return NULL;
 }
 
 // ***************************************************************************
 UInstance	*CInstanceGroupUser::getInstance (uint instanceNb)
 {
-	CTransformShape *transformShape = _InstanceGroup.getTransformShape(instanceNb);
-	if (transformShape)
-		return new CInstanceUser (NULL, transformShape, false);
+	if(instanceNb<_Instances.size())
+		return _Instances[instanceNb];
 	else
 		return NULL;
+}
+
+// ***************************************************************************
+void		CInstanceGroupUser::removeInstancesUser()
+{
+	// delete all instances in the instance array
+	for(uint i=0;i<_Instances.size();i++)
+	{
+		if(_Instances[i])
+			delete _Instances[i];
+	}
+
+	// clear the array and the map
+	_Instances.clear();
+	_InstanceMap.clear();
+}
+
+// ***************************************************************************
+UInstanceGroup *CInstanceGroupUser::getParentCluster() const
+{
+	CInstanceGroup	*parent= _InstanceGroup.getParentClusterSystem();
+	if(parent)
+		// NB: return NULL if this is the GlobalInstanceGroup.
+		return parent->getUserInterface();
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+void			CInstanceGroupUser::displayDebugClusters(UDriver *drv, UTextContext *txtCtx)
+{
+	if(!drv)
+		return;
+	CTextContext	*pTxtCtx= NULL;
+	if(txtCtx)
+		pTxtCtx= &((CTextContextUser*)txtCtx)->getTextContext();
+	_InstanceGroup.displayDebugClusters(((CDriverUser*)drv)->getDriver(), pTxtCtx);
+
+	// restore the matrix context cause of font rendering
+	((CDriverUser*)drv)->restoreMatrixContext();
 }
 
 

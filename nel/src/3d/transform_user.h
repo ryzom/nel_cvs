@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.23 2003/11/28 16:20:25 vizerie Exp $
+ * $Id: transform_user.h,v 1.24 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,6 @@ protected:
 	CScene				*_Scene;	// Can be NULL if deleteIt is false.
 	// The object.
 	CTransform			*_Transform;
-	UInstanceGroup		*_pIG;
 
 	// Must delete the transform shape ?, if false, scene can be NULL.
 	bool				_DeleteIt;
@@ -75,7 +74,6 @@ public:
 		_DeleteIt = deleteIt;
 		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
 		_Transform= NLMISC::safe_cast<CTransform*>(trans);
-		_pIG = NULL;
 		// Same enums!!
 		nlassert((uint)UTransform::VisibilityCount == (uint)CHrcTrav::VisibilityCount);
 	}
@@ -102,29 +100,7 @@ public:
 	/// \name Space manipulation
 	// @{
 	/// unlink this from oldparent, and make this be a son of newFather.
-	virtual	void			parent(UTransform *newFather)
-	{
-		NL3D_MEM_TRANSFORM
-		nlassert(_Transform) ; // object invalid now ...
-		if (_Transform->getForceClipRoot())
-		{
-			nlwarning("Transform has been flagged to be glued to the root, can't change parent. See UTransform::setForceClipRoot(bool).");
-			return;
-		}
-		if(newFather)
-		{
-			// link me to other.
-			CTransformUser	*other= dynamic_cast<CTransformUser*>(newFather);
-			if(other->_Scene!=_Scene)
-				nlerror("Try to parent 2 object from 2 differnet scenes!!");
-			other->_Transform->hrcLinkSon( _Transform );
-		}
-		else
-		{
-			// link me to Root.
-			_Scene->getRoot()->hrcLinkSon( _Transform );
-		}
-	}
+	virtual	void			parent(UTransform *newFather);
 
 	virtual void			setClusterSystem (UInstanceGroup *pIG);
 	virtual UInstanceGroup *getClusterSystem ();

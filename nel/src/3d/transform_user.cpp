@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.17 2003/11/28 16:20:25 vizerie Exp $
+ * $Id: transform_user.cpp,v 1.18 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,13 +57,19 @@ void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 	}
 	else
 		_Transform->setClusterSystem (&((CInstanceGroupUser*)pIG)->_InstanceGroup);
-	_pIG = pIG;
 }
 
 // ***************************************************************************
 UInstanceGroup *CTransformUser::getClusterSystem ()
 {
-	return _pIG;
+	nlassert(_Transform) ; // object invalid now ...
+	CInstanceGroup	*ig= _Transform->getClusterSystem();
+	if(ig==((CInstanceGroup*)-1))
+		return ((UInstanceGroup*)-1);
+	else if(ig==NULL)
+		return NULL;
+	else
+		return ig->getUserInterface();
 }
 
 // ***************************************************************************
@@ -160,6 +166,31 @@ void			CTransformUser::enableReceiveShadowMap(bool state)
 bool			CTransformUser::canReceiveShadowMap() const
 {
 	return _Transform->canReceiveShadowMap();
+}
+
+// ***************************************************************************
+void			CTransformUser::parent(UTransform *newFather)
+{
+	NL3D_MEM_TRANSFORM
+	nlassert(_Transform) ; // object invalid now ...
+	if (_Transform->getForceClipRoot())
+	{
+		nlwarning("Transform has been flagged to be glued to the root, can't change parent. See UTransform::setForceClipRoot(bool).");
+		return;
+	}
+	if(newFather)
+	{
+		// link me to other.
+		CTransformUser	*other= dynamic_cast<CTransformUser*>(newFather);
+		if(other->_Scene!=_Scene)
+			nlerror("Try to parent 2 object from 2 differnet scenes!!");
+		other->_Transform->hrcLinkSon( _Transform );
+	}
+	else
+	{
+		// link me to Root.
+		_Scene->getRoot()->hrcLinkSon( _Transform );
+	}
 }
 
 

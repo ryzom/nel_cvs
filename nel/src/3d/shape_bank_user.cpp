@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.7 2004/02/19 09:47:31 vizerie Exp $
+ * $Id: shape_bank_user.cpp,v 1.8 2004/03/12 16:27:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,16 @@ void CShapeBankUser::preLoadShapesFromBNP(const std::string &shapeCacheName,
 	// preLoad
 	if(!listFile.empty())
 		_ShapeBank.preLoadShapes(shapeCacheName, listFile, wildCardNotLwr, progress, flushTextures, _DriverUser->getDriver());
+}
+
+// ***************************************************************************
+UShape	CShapeBankUser::getShape(const std::string &shapeName)
+{
+	// get the IShape from the bank
+	UShape	ret;
+	ret.attach(_ShapeBank.getShape(shapeName));
+
+	return ret;
 }
 
 

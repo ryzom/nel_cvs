@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.27 2004/02/09 11:11:17 besson Exp $
+ * $Id: scene_group.h,v 1.28 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,6 +246,15 @@ public:
 	  */
 	void getShapeName (uint instanceIndex, std::string &shapeName) const;
 
+	/// User Interface related: yes it is ugly....
+	void					setUserInterface(class UInstanceGroup *uig) {_UserIg= uig;}
+	class UInstanceGroup	*getUserInterface() const {return _UserIg;}
+
+	/** For Debug Display of clusters. The view matrix and frustum should have been setuped
+	 *	NB: the ModelMatrix is modified by this method
+	 */
+	void					displayDebugClusters(IDriver *drv, class CTextContext *txtCtx);
+
 private:
 	bool addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driver, uint selectedTexture);
 
@@ -281,8 +290,8 @@ public:
 	/// To construct the cluster system by hand
 	void addCluster (CCluster *pCluster);
 
-	/// Set the cluster system to test for instances that are not in a cluster
-	void setClusterSystem (CInstanceGroup *pIG);
+	/// Set the cluster system to test for instances that are not in a cluster of this IG
+	void setClusterSystemForInstances (CInstanceGroup *pIG);
 
 	/// Get all dynamic portals of an instance group
 	void getDynamicPortals (std::vector<std::string> &names);
@@ -362,6 +371,10 @@ public:
 	  */
 	bool linkToParent (CInstanceGroup*pFather);
 
+	/** Get the parent ClusterSystem
+	 */
+	CInstanceGroup	*getParentClusterSystem() const {return _ParentClusterSystem;}
+
 public:
 
 	TInstanceArray					_InstancesInfos;
@@ -374,8 +387,11 @@ public:
 	CTransform		*_Root;
 
 	CClipTrav		*_ClipTrav;
-	CInstanceGroup	*_ClusterSystem;
-
+	// The cluster system used to link unclustered instances (setClusterSystemForInstances)
+	CInstanceGroup	*_ClusterSystemForInstances;
+	// The cluster system parent of us (linkToParent() call)
+	CInstanceGroup	*_ParentClusterSystem;
+	
 	NLMISC::CVector _GlobalPos;
 
 
@@ -410,6 +426,9 @@ private:
 	ITransformName       *_TransformName;
 	IAddRemoveInstance   *_AddRemoveInstance;
 	IIGAddBegin			 *_IGAddBeginCallback;
+
+	// Yes this is ugly, but impossible otherwise with the actual user interface system...
+	UInstanceGroup		 *_UserIg;
 };
 
 

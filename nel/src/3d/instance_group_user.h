@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.26 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: instance_group_user.h,v 1.27 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ class CInstanceGroupUser : public UInstanceGroup
 {
 public:
 	CInstanceGroupUser ();
+	virtual ~CInstanceGroupUser ();
 	// Init with a scene.
 	//bool load (const std::string &instanceGroup);
 
@@ -99,8 +100,9 @@ private:
 	void setBlendShapeFactor (const std::string &bsName, float rFactor);
 
 	void createRoot (UScene &scene);
-	void setClusterSystem (UInstanceGroup *pClusterSystem);
+	void setClusterSystemForInstances (UInstanceGroup *pClusterSystem);
 	bool linkToParentCluster(UInstanceGroup *father);
+	UInstanceGroup *getParentCluster() const;
 	void getDynamicPortals (std::vector<std::string> &names);
 	void setDynamicPortal (std::string& name, bool opened);
 	bool getDynamicPortal (std::string& name);
@@ -117,7 +119,9 @@ private:
 
 	// The real instance group
 	CInstanceGroup	_InstanceGroup;
-	std::map<std::string,CInstanceUser*> _Instances;
+	// For access through getInstance() and getByName()
+	std::vector<CInstanceUser*>				_Instances;
+	std::map<std::string,CInstanceUser*>	_InstanceMap;
 	// Async stuff
 	TState _AddToSceneState;
 	UScene *_AddToSceneTempScene;
@@ -126,9 +130,13 @@ private:
 	virtual void			freezeHRC();
 	virtual void			unfreezeHRC();
 
+	virtual void			displayDebugClusters(UDriver *drv, UTextContext *txtCtx);
+	
 	friend class CTransformUser;
 	friend class CSceneUser;
 
+	void		removeInstancesUser();
+	
 public:
 	// Debug purpose only.
 	CInstanceGroup	&getInternalIG() 

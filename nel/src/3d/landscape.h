@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.51 2004/03/03 18:59:54 berenguier Exp $
+ * $Id: landscape.h,v 1.52 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,12 +315,12 @@ public:
 	 */
 	void			getTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
 
-	/** Get the collision of a cylinder against the TileFaces (ie only under approx 50 m)
+	/** Get the camera 3rd person collision against the TileFaces (ie only under approx 50 m)
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param radius is the radius of the 'cylinder'
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
 	*/
-	float			getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone);
+	float			getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.117 2004/03/04 14:30:03 vizerie Exp $
+ * $Id: scene.cpp,v 1.118 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1264,6 +1264,105 @@ void			CScene::setShadowMapMaxCasterAround(uint num)
 	_ShadowMapMaxCasterAround= num;
 }
 
+// ***************************************************************************
+void			CScene::findCameraClusterSystemFromRay(CCamera *cam, CInstanceGroup *startClusterSystem,
+											   const NLMISC::CVector &startPos, const NLMISC::CVector &endPos)
+{
+	CClipTrav	&clipTrav= getClipTrav();
+
+	// **** Search all cluster where the startPos is in
+	static vector<CCluster*> vCluster;
+	vCluster.clear();
+
+	bool bInWorld = true;
+	clipTrav.Accel.select (startPos, startPos);
+	CQuadGrid<CCluster*>::CIterator itAcc = clipTrav.Accel.begin();
+	while (itAcc != clipTrav.Accel.end())
+	{
+		CCluster *pCluster = *itAcc;
+		if( pCluster->Group == startClusterSystem && 
+			pCluster->isIn (startPos) )
+		{
+			vCluster.push_back (pCluster);
+			bInWorld = false;
+		}
+		++itAcc;
+	}
+	if (bInWorld)
+	{
+		vCluster.push_back (RootCluster);
+	}
+
+	// **** Do a traverse starting from each start cluser, clipping the ray instead of the camera pyramid
+	uint	i;
+	static vector<CCluster*> vClusterVisited;
+	vClusterVisited.clear();
+	for(i=0;i<vCluster.size();i++)
+	{
+		vCluster[i]->cameraRayClip(startPos, endPos, vClusterVisited);
+	}
+
+	// **** From each cluster, select possible clusterSystem
+	static vector<CInstanceGroup*> possibleClusterSystem;
+	possibleClusterSystem.clear();
+	for(i=0;i<vClusterVisited.size();i++)
+	{
+		// select only cluster where the EndPos lies in. Important else in landscape, we'll always say
+		// that we are in a Son Cluster.
+		if(vClusterVisited[i]->isIn(endPos))
+		{
+			CInstanceGroup	*cs= vClusterVisited[i]->Group;
+			// insert if not exist (NB: 1,2 possible clusterSystem so O(N2) is OK)
+			uint	j;
+			for(j=0;j<possibleClusterSystem.size();j++)
+			{
+				if(possibleClusterSystem[j]==cs)
+					break;
+			}
+			if(j==possibleClusterSystem.size())
+				possibleClusterSystem.push_back(cs);
+		}
+	}
+
+	// **** From each possible clusterSystem, select the one that is the lower in hierarchy
+	// common case
+	if(possibleClusterSystem.empty())
+		cam->setClusterSystem(NULL);
+	else if(possibleClusterSystem.size()==1)
+	{
+		// if it is the rootCluster set NULL (should have the same behavior but do like standard case)
+		if(possibleClusterSystem[0]==RootCluster->getClusterSystem())
+			cam->setClusterSystem(NULL);
+		// set this cluster system
+		else
+			cam->setClusterSystem(possibleClusterSystem[0]);
+	}
+	// conflict case
+	else
+	{
+		// compute the hierarchy level of each cluster system, take the highest
+		CInstanceGroup	*highest= NULL;
+		uint			highestLevel= 0;
+		for(i=0;i<possibleClusterSystem.size();i++)
+		{
+			uint	level= 0;
+			CInstanceGroup	*ig= possibleClusterSystem[i];
+			while(ig)
+			{
+				ig= ig->getParentClusterSystem();
+				level++;
+			}
+			if(level>=highestLevel)
+			{
+				highestLevel= level;
+				highest= possibleClusterSystem[i];
+			}
+		}
+
+		// set the highest cluster system
+		cam->setClusterSystem(highest);
+	}
+}
 
 
 } // NL3D

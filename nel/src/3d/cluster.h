@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.13 2003/08/04 13:28:37 boucher Exp $
+ * $Id: cluster.h,v 1.14 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,6 +145,8 @@ public:
 	// clusters to clusters calls
 	void	recursTraverseClip(CTransform *caller);
 
+	// Cluster Graph parsing with a ray (for CScene::findCameraClusterSystemFromRay())
+	void	cameraRayClip(const CVector &start, const CVector &end, std::vector<CCluster*> &clusterVisited);
 
 private:
 

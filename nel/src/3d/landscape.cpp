@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.139 2004/03/03 18:59:54 berenguier Exp $
+ * $Id: landscape.cpp,v 1.140 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3711,9 +3711,9 @@ void CLandscape::invalidateAllTiles()
 }
 
 // ***************************************************************************
-float CLandscape::getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone)
+float CLandscape::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
 {
-	return _ShadowPolyReceiver.getCylinderCollision(start, end, radius, cone);
+	return _ShadowPolyReceiver.getCameraCollision(start, end, radius, cone);
 }
 
 

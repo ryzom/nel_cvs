@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.67 2003/11/12 16:54:13 lecroart Exp $
+ * $Id: scene_group.cpp,v 1.68 2004/03/12 16:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,11 @@
 #include "3d/mesh_instance.h"
 #include "3d/shape_bank.h"
 #include "nel/3d/u_instance_group.h"
+#include "3d/vertex_buffer.h"
+#include "3d/primitive_block.h"
+#include "3d/text_context.h"
+#include "nel/misc/polygon.h"
+
 
 using namespace NLMISC;
 using namespace std;
@@ -242,12 +247,14 @@ CInstanceGroup::CInstanceGroup()
 	_IGSurfaceLight.setOwner(this);
 	_GlobalPos = CVector(0,0,0);
 	_Root = NULL;
-	_ClusterSystem = NULL;
+	_ClusterSystemForInstances = NULL;
+	_ParentClusterSystem = NULL;
 	_RealTimeSunContribution= true;
 	_AddToSceneState = StateNotAdded;
 	_TransformName = NULL;
 	_AddRemoveInstance = NULL;
 	_IGAddBeginCallback = NULL;
+	_UserIg= NULL;
 }
 
 // ***************************************************************************
@@ -705,7 +712,7 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 		{
 			// These instances are not attached to a cluster at this level so we cannot freeze them
 			// Moreover we must set their clustersystem they will be tested against
-			_Instances[i]->setClusterSystem (_ClusterSystem);
+			_Instances[i]->setClusterSystem (_ClusterSystemForInstances);
 		}
 	}
 	_Root->freeze();
@@ -916,6 +923,11 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 			}
 		}
 	}
+
+	// store new parent
+	if(ret)
+		_ParentClusterSystem= pFather;
+
 	return ret;
 }
 
@@ -1041,12 +1053,12 @@ void CInstanceGroup::addCluster(CCluster *pCluster)
 }
 
 // ***************************************************************************
-void CInstanceGroup::setClusterSystem(CInstanceGroup *pIG)
+void CInstanceGroup::setClusterSystemForInstances(CInstanceGroup *pIG)
 {
-	_ClusterSystem = pIG;
+	_ClusterSystemForInstances = pIG;
 	for (uint32 i = 0; i < _Instances.size(); ++i)
 		if (_Instances[i] && _InstancesInfos[i].Clusters.size() == 0)
-			_Instances[i]->setClusterSystem (_ClusterSystem);
+			_Instances[i]->setClusterSystem (_ClusterSystemForInstances);
 }
 
 // ***************************************************************************
@@ -1200,6 +1212,243 @@ void			CInstanceGroup::setPointLightFactor(const CScene &scene)
 void			CInstanceGroup::enableRealTimeSunContribution(bool enable)
 {
 	_RealTimeSunContribution= enable;
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *txtCtx)
+{
+	uint	opacity= 50;
+	CRGBA	colorCluster(255, 128, 255, opacity);
+	// portals are drawn twice
+	CRGBA	colorPortal(128, 255, 128, opacity/2);
+
+	CMaterial		clusterMat;
+	CMaterial		portalMat;
+	CMaterial		lineMat;
+	clusterMat.initUnlit();
+	clusterMat.setBlend(true);
+	clusterMat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
+	clusterMat.setZWrite(false);
+	clusterMat.setDoubleSided(true);
+	clusterMat.setColor(colorCluster);
+	portalMat.initUnlit();
+	portalMat.setBlend(true);
+	portalMat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
+	portalMat.setZWrite(false);
+	portalMat.setDoubleSided(true);
+	portalMat.setColor(colorPortal);
+	lineMat.initUnlit();
+	lineMat.setBlend(true);
+	lineMat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
+	lineMat.setZWrite(false);
+	lineMat.setDoubleSided(true);
+	lineMat.setColor(CRGBA(0,0,0,opacity));
+	
+
+	// The geometry for each cluster
+	CVertexBuffer	vb;
+	// too big cluster won't be rendered
+	const uint	maxVertices= 10000;
+	vb.setVertexFormat(CVertexBuffer::PositionFlag);
+	vb.setNumVertices(maxVertices);
+	CPrimitiveBlock		clusterTriangles;
+	CPrimitiveBlock		clusterLines;
+	CPrimitiveBlock		portalTriangles;
+	CPrimitiveBlock		portalLines;
+	clusterTriangles.reserveTri(maxVertices);
+	clusterLines.reserveLine(maxVertices);
+	portalTriangles.reserveTri(maxVertices);
+	portalLines.reserveLine(maxVertices);
+	
+	// setup identity matrix
+	drv->setupModelMatrix(CMatrix::Identity);
+
+	// For all clusters
+	uint	i;
+	for(i=0;i<_ClusterInstances.size();i++)
+	{
+		CCluster	*cluster= _ClusterInstances[i];
+		if(cluster)
+		{
+			uint	numTotalVertices= 0;
+
+			// **** Build a set of polys representing the volume (slow but debug!)
+			static	std::vector<CPolygon>	polygons;
+			polygons.clear();
+			polygons.resize(cluster->_Volume.size());
+			// for each plane, build the associated polygon
+			uint	j;
+			for(j=0;j<polygons.size();j++)
+			{
+				// Start with a big quad centered on bbox center
+				CPlane	p= cluster->_Volume[j];
+				p.normalize();
+				CVector	quadCenter= p.project(cluster->_BBox.getCenter());
+
+				// choose a basis on this plane
+				CMatrix		mat;
+				if( fabs(p.getNormal().y)>0.9 )
+					mat.setRot(CVector::K, CVector::I, p.getNormal());
+				else
+					mat.setRot(CVector::I, CVector::J, p.getNormal());
+				mat.normalize(CMatrix::ZYX);
+				mat.setPos(quadCenter);
+
+				// Build the initial Big quad
+				CPolygon	&poly= polygons[j];
+				poly.Vertices.resize(4);
+				float	s= 10 * cluster->_BBox.getRadius();
+				poly.Vertices[0]= mat * CVector(-s,-s,0);
+				poly.Vertices[1]= mat * CVector(s,-s,0);
+				poly.Vertices[2]= mat * CVector(s,s,0);
+				poly.Vertices[3]= mat * CVector(-s,s,0);
+
+				// clip this poly against all the other (ie not me) planes
+				// This make this algo O(N2) but this is for debug....
+				for(uint k=0;k<cluster->_Volume.size();k++)
+				{
+					if(j!=k)
+					{
+						poly.clip(&cluster->_Volume[k], 1);
+					}
+				}
+
+				// count the number of vertices / triangles / lines to add
+				if(poly.Vertices.size()>=3)
+				{
+					numTotalVertices+= poly.Vertices.size();
+				}
+			}
+
+			// **** count the number of portals vertices
+			for(j=0;j<cluster->_Portals.size();j++)
+			{
+				numTotalVertices+= cluster->_Portals[j]->_Poly.size();
+			}
+
+			// **** Draw those cluster polygons, and portals
+			// too big clusters won't be rendered
+			if(numTotalVertices<=maxVertices)
+			{
+				uint	iVert= 0;
+				uint	j;
+
+				// build the cluster geometry
+				clusterTriangles.setNumTri(0);
+				clusterLines.setNumLine(0);
+				for(j=0;j<polygons.size();j++)
+				{
+					CPolygon	&poly= polygons[j];
+					if(poly.Vertices.size()>=3)
+					{
+						uint	k;
+						// add the vertices
+						for(k=0;k<poly.Vertices.size();k++)
+							vb.setVertexCoord(iVert+k, poly.Vertices[k]);
+
+						// add the triangles
+						for(k=0;k<poly.Vertices.size()-2;k++)
+							clusterTriangles.addTri(iVert+0, iVert+k+1, iVert+k+2);
+
+						// add the lines
+						for(k=0;k<poly.Vertices.size();k++)
+							clusterLines.addLine(iVert+k, iVert+ ((k+1)%poly.Vertices.size()) );
+
+						iVert+= poly.Vertices.size();
+					}
+				}
+
+				// build the portal geometry
+				portalTriangles.setNumTri(0);
+				portalLines.setNumLine(0);
+					for(j=0;j<cluster->_Portals.size();j++)
+				{
+					std::vector<CVector>	&portalVerts= cluster->_Portals[j]->_Poly;
+					if(portalVerts.size()>=3)
+					{
+						uint	k;
+						// add the vertices
+						for(k=0;k<portalVerts.size();k++)
+							vb.setVertexCoord(iVert+k, portalVerts[k]);
+						
+						// add the triangles
+						for(k=0;k<portalVerts.size()-2;k++)
+							portalTriangles.addTri(iVert+0, iVert+k+1, iVert+k+2);
+						
+						// add the lines
+						for(k=0;k<portalVerts.size();k++)
+							portalLines.addLine(iVert+k, iVert+ ((k+1)%portalVerts.size()) );
+						
+						iVert+= portalVerts.size();
+					}
+				}
+				
+				// render 2 pass with or without ZBuffer (for clearness)
+				for(uint pass=0;pass<2;pass++)
+				{
+					if(pass==0)
+					{
+						clusterMat.setZFunc(CMaterial::always);
+						portalMat.setZFunc(CMaterial::always);
+						lineMat.setZFunc(CMaterial::always);
+					}
+					else
+					{
+						clusterMat.setZFunc(CMaterial::lessequal);
+						portalMat.setZFunc(CMaterial::lessequal);
+						lineMat.setZFunc(CMaterial::lessequal);
+					}
+
+					drv->activeVertexBuffer(vb);
+					drv->render(clusterTriangles, clusterMat);
+					drv->render(clusterLines, lineMat);
+					drv->render(portalTriangles, portalMat);
+					drv->render(portalLines, lineMat);
+				}
+			}
+
+		}
+	}
+
+	// **** For all clusters, Draw the cluster name at center of the cluster
+	if(txtCtx)
+	{
+		CComputedString computedStr;
+
+		// bkup fontSize
+		uint		bkFontSize;
+		CMatrix		fontMatrix;
+		bkFontSize= txtCtx->getFontSize();
+		// to be readable
+		txtCtx->setFontSize(24);
+
+		// the font matrix
+		fontMatrix.setRot(drv->getViewMatrix().inverted());
+		fontMatrix.normalize(CMatrix::YZX);
+		fontMatrix.scale(10);
+
+		// parse all clusters
+		for(i=0;i<_ClusterInstances.size();i++)
+		{
+			CCluster	*cluster= _ClusterInstances[i];
+			if(cluster)
+			{
+				fontMatrix.setPos(cluster->_BBox.getCenter());
+				txtCtx->computeString(cluster->Name, computedStr);
+				computedStr.render3D(*drv, fontMatrix);
+			}
+		}
+
+		// restore fontsize
+		txtCtx->setFontSize(bkFontSize);
+	}
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.32 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: transform.cpp,v 1.33 2002/02/13 13:37:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -689,7 +689,8 @@ void			CTransform::freezeStaticLightSetup(CPointLight *pointLight[NL3D_MAX_LIGHT
 	_LightContribution.FrozenStaticLightSetup= true;
 	_LightContribution.NumFrozenStaticLight= numPointLights;
 	_LightContribution.SunContribution= sunContribution;
-	for(uint i=0;i<numPointLights;i++)
+	uint i;
+	for(i=0;i<numPointLights;i++)
 	{
 		// set the light
 		_LightContribution.PointLight[i]= pointLight[i];

@@ -2,7 +2,7 @@
  * utility class to build bit field from enum value vithout need
  * to do explicit cast by hands.
  *
- * $Id: enum_bitset.h,v 1.1 2005/02/22 11:17:43 guignot Exp $
+ * $Id: enum_bitset.h,v 1.2 2005/02/23 09:19:00 guignot Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

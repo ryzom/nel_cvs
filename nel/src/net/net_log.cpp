@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * <File description>
  *
- * $Id: net_log.cpp,v 1.2 2000/12/07 15:18:42 cado Exp $
+ * $Id: net_log.cpp,v 1.3 2000/12/13 10:04:40 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,10 +64,10 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
 /*
  * Log an input transfer (receive)
  */
-void CNetLog::input( const char *srchost, uint8 msgnum )
+void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 {
 	char line [1024]; // WARNING: buffer overflow hazard !
-	sprintf( line, "##%"NL_I64"d#%s#%hu#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0), srchost, msgnum, _LocalHostAndService.c_str() );
+	sprintf( line, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0), srchost, msgnum, _LocalHostAndService.c_str(), desthost );
 	displayRawNL( line );
 }
 

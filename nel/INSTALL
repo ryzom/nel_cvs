@@ -131,8 +131,25 @@ Compilation
       The option "--with-stlport" allow to override the default STL headers
 
       It is possible to compile and install only the needed part of NeL.
-      So you may, by using --disable-<net|3d|pacs> and --enable-<sound|ai>.
-      NeL Misc is mandatory and cannot be disabled.
+      So you may, by using --disable-<net|3d|pacs> and --enable-<sound|ai> :
+
+         - misc
+              default: Mandatory
+         - net
+              default: Enables
+              desativate with: --disable-net
+         - 3d
+              default: Enable
+              desativate with: --disable-3d 
+         - pacs
+              default: Enable
+              desativate with: --disable-pacs
+         - sound
+              default: Disable
+              ativate with: --enable-sound
+         - ai
+              default: Disable
+              ativate with: --enable-ai 
 
       To pass additional arguments to the C++ compiler, use the command line :
 

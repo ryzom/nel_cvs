@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.18 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_lighter.cpp,v 1.19 2002/03/13 14:25:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,10 +316,10 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 		IProcess *pProcess=IProcess::getCurrentProcess ();
 		_CPUMask = pProcess->getCPUMask();
 		_ProcessCount = 0;
-		uint i;
+		uint64 i;
 		for (i=0; i<64; i++)
 		{
-			if (_CPUMask&(1<<i))
+			if (_CPUMask&((uint64)1<<i))
 				_ProcessCount++;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.9 2004/06/02 16:33:59 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.10 2004/06/22 10:05:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -268,6 +268,22 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 
 	// Now we can get the supported shader from the cache.
 	CMaterial::TShader matShader = mat.getShader();
+
+	// if the shader has changed since last time
+	if(matShader != _CurrentMaterialSupportedShader)
+	{
+		// if old was lightmap, restore standard lighting
+		if(_CurrentMaterialSupportedShader==CMaterial::LightMap)
+			setupLightMapDynamicLighting(false);
+		
+		// if new is lightmap, setup dynamic lighting
+		if(matShader==CMaterial::LightMap)
+			setupLightMapDynamicLighting(true);
+	}
+	
+	// setup the global
+	_CurrentMaterialSupportedShader= matShader;
+	
 
 	// Something to setup ?
 	if (touched)
@@ -704,6 +720,11 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 				setPixelShader (NULL);				
 				static const uint32 RGBMaskPacked = CRGBA(255,255,255,0).getPacked();			
 
+				// if the dynamic lightmap light has changed since the last render (should not happen), resetup
+				// normal way is that setupLightMapDynamicLighting() is called at begin of setupMaterial() if shader different from prec
+				if(_LightMapDynamicLightDirty)
+					setupLightMapDynamicLighting(true);
+				
 				// Count the lightmaps
 				uint lightmap;
 				uint lightmapCount = 0;

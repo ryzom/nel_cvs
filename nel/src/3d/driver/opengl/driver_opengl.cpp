@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.219 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.220 2004/06/22 10:05:58 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -326,6 +326,14 @@ CDriverGL::CDriverGL()
 	_TexEnvReplace.Env.OpRGB = CMaterial::Previous;
 
 	_WndActive = false;
+
+	_LightMapDynamicLightEnabled = false;
+	_LightMapDynamicLightDirty= false;
+
+	_CurrentMaterialSupportedShader= CMaterial::Normal;
+
+	// to avoid any problem if light0 never setuped, and ligthmap rendered
+	_UserLight0.setupDirectional(CRGBA::Black, CRGBA::White, CRGBA::White, CVector::K);
 }
 
 
@@ -1106,8 +1114,20 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	}
 
 
+	// Get num of light for this driver
+	int numLight;
+	glGetIntegerv (GL_MAX_LIGHTS, &numLight);
+	_MaxDriverLight=(uint)numLight;
+	if (_MaxDriverLight>MaxLight)
+		_MaxDriverLight=MaxLight;
+	
+	// All User Light are disabled by Default
+	uint i;
+	for(i=0;i<MaxLight;i++)
+		_UserLightEnable[i]= false;
+
 	// init _DriverGLStates
-	_DriverGLStates.init(_Extensions.ARBTextureCubeMap);
+	_DriverGLStates.init(_Extensions.ARBTextureCubeMap, _MaxDriverLight);
 
 
 	// Init OpenGL/Driver defaults.
@@ -1275,19 +1295,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	}
 	resetTextureShaders();
 
-	// Get num of light for this driver
-	int numLight;
-	glGetIntegerv (GL_MAX_LIGHTS, &numLight);
-	
-		
-	_MaxDriverLight=(uint)numLight;
-	if (_MaxDriverLight>MaxLight)
-		_MaxDriverLight=MaxLight;
-
-	// Reset the lights position flags
-	for (uint i=0; i<MaxLight; i++)
-		_LightEnable[i]=false;
-
 
 	_PPLExponent = 1.f;
 	_PPLightDiffuseColor = NLMISC::CRGBA::White;
@@ -1296,8 +1303,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	// Backward compatibility: default lighting is Light0 default openGL
 	// meaning that light direction is always (0,1,0) in eye-space
 	// use enableLighting(0....), to get normal behaviour
-	glEnable(GL_LIGHT0);
-	
+	_DriverGLStates.enableLight(0, true);
 		
 
 	_Initialized = true;

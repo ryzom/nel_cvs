@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.23 2004/04/27 12:08:12 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.24 2004/06/22 10:05:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,13 +39,16 @@ CDriverGLStates::CDriverGLStates()
 {
 	_TextureCubeMapSupported= false;
 	_CurrARBVertexBuffer = 0;
+	_MaxDriverLight= 0;
 }
 
 
 // ***************************************************************************
-void			CDriverGLStates::init(bool supportTextureCubeMap)
+void			CDriverGLStates::init(bool supportTextureCubeMap, uint maxLight)
 {
 	_TextureCubeMapSupported= supportTextureCubeMap;
+	_MaxDriverLight= maxLight;
+	_MaxDriverLight= std::min(_MaxDriverLight, uint(MaxLight));
 
 	// By default all arrays are disabled.
 	_VertexArrayEnabled= false;
@@ -61,6 +64,12 @@ void			CDriverGLStates::init(bool supportTextureCubeMap)
 	for(i=0; i<CVertexBuffer::NumValue; i++)
 	{
 		_VertexAttribArrayEnabled[i]= false;
+	}
+
+	// by default all lights are disabled (not reseted in forceDefaults)
+	for(i=0; i<MaxLight; i++)
+	{
+		_CurLight[i]= false;
 	}
 }
 
@@ -250,6 +259,39 @@ void			CDriverGLStates::enableLighting(uint enable)
 			
 	}
 }
+
+// ***************************************************************************
+void			CDriverGLStates::enableLight(uint num, uint enable)
+{
+	if(num>=_MaxDriverLight)
+		return;
+
+	// If different from current setup, update.
+	bool	enabled= (enable!=0);
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if( enabled != _CurLight[num] )
+#endif
+	{
+		// new state.
+		_CurLight[num]= enabled;
+		// Setup GLState.
+		if(_CurLight[num])
+			glEnable ((GLenum)(GL_LIGHT0+num));
+		else
+			glDisable ((GLenum)(GL_LIGHT0+num));
+		
+	}
+}
+
+// ***************************************************************************
+bool			CDriverGLStates::isLightEnabled(uint num) const
+{
+	if(num>=_MaxDriverLight)
+		return false;
+	else
+		return _CurLight[num];
+}
+
 
 // ***************************************************************************
 void			CDriverGLStates::enableZWrite(uint enable)

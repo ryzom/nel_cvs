@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.16 2004/05/14 15:02:41 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.17 2004/06/22 10:05:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
 			- GL_CULL_FACE
 			- GL_ALPHA_TEST
 			- GL_LIGHTING
+			- GL_LIGHT0 + i .....
 			- GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP_ARB.
 			- GL_TEXTURE_GEN_S, GL_TEXTURE_GEN_T, GL_TEXTURE_GEN_R
 			- GL_COLOR_MATERIAL
@@ -81,9 +82,9 @@ public:
 	/// Constructor. no-op.
 	CDriverGLStates();
 	// init. Do it just after setDisplay()
-	void			init(bool supportTextureCubeMap);
+	void			init(bool supportTextureCubeMap, uint maxLight);
 
-	/// Reset all OpenGL states of interest to default, and update caching.
+	/// Reset all OpenGL states of interest to default, and update caching. This don't apply to light.
 	void			forceDefaults(uint nbTextureStages);	
 
 	/// \name enable if !0
@@ -93,9 +94,13 @@ public:
 	void			enableCullFace(uint enable);
 	/// enable and set good AlphaFunc.
 	void			enableAlphaTest(uint enable);
+	void			enableZWrite(uint enable);	
+	// overall lighting enabled
 	void			enableLighting(uint enable);
 	bool			isLightingEnabled() const { return _CurLighting; }
-	void			enableZWrite(uint enable);	
+	/// enable/disable specific light. num must be < "maxLight" param set in init()
+	void			enableLight(uint num, uint enable);
+	bool			isLightEnabled(uint num) const;
 	// @}
 
 	/// glBlendFunc.
@@ -209,6 +214,11 @@ private:
 	float			_CurZRangeDelta;
 
 	uint			_CurrARBVertexBuffer;	
+
+	// Mirror of glEnable() and GL_LIGHT0+i
+	enum	{MaxLight=8};
+	uint			_MaxDriverLight;
+	bool			_CurLight[MaxLight];
 };
 
 

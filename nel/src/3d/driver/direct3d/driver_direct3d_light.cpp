@@ -1,7 +1,7 @@
 /** \file driver_direct3d_light.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_light.cpp,v 1.3 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d_light.cpp,v 1.4 2004/06/22 10:05:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -46,7 +46,6 @@ namespace NL3D
 {
 
 // ***************************************************************************
-
 const D3DLIGHTTYPE  RemapLightTypeNeL2D3D[3]=
 {
 	D3DLIGHT_DIRECTIONAL,	// CLight::DirectionalLight
@@ -54,9 +53,41 @@ const D3DLIGHTTYPE  RemapLightTypeNeL2D3D[3]=
 	D3DLIGHT_SPOT,			// CLight::SpotLight 
 };
 
-// ***************************************************************************
 
+// ***************************************************************************
 void CDriverD3D::setLight (uint8 index, const CLight &light)
+{
+	// bkup real light, for lightmap dynamic lighting purpose
+	if(index==0)
+	{
+		_UserLight0= light;
+		// because the D3D setup change, must dirt lightmap rendering
+		_LightMapDynamicLightDirty= true;
+	}
+	
+	setLightInternal(index, light);
+}
+	
+
+// ***************************************************************************
+void CDriverD3D::enableLight (uint8 index, bool enable)
+{
+	// User call => set the User flag
+	if(index<MaxLight)
+	{
+		_UserLightEnable[index]= enable;
+	}
+	
+	// enable the light in D3D
+	enableLightInternal(index, enable);
+	
+	// because the D3D setup has changed, must dirt lightmap rendering
+	_LightMapDynamicLightDirty= true;
+}
+
+
+// ***************************************************************************
+void CDriverD3D::setLightInternal (uint8 index, const CLight &light)
 {
 	nlassert (_DeviceInterface);
 	if (index<MaxLight)
@@ -95,8 +126,7 @@ void CDriverD3D::setLight (uint8 index, const CLight &light)
 }
 
 // ***************************************************************************
-
-void CDriverD3D::enableLight (uint8 index, bool enable)
+void CDriverD3D::enableLightInternal (uint8 index, bool enable)
 {
 	nlassert (_DeviceInterface);
 	if (index<MaxLight)
@@ -111,19 +141,67 @@ void CDriverD3D::enableLight (uint8 index, bool enable)
 }
 
 // ***************************************************************************
-
 uint CDriverD3D::getMaxLight () const 
 {
 	return _MaxLight;
 }
 
 // ***************************************************************************
-
 void CDriverD3D::setAmbientColor (CRGBA color)
 {
 	setRenderState(D3DRS_AMBIENT, NL_D3DCOLOR_RGBA(color));
 }
 
+
 // ***************************************************************************
+void CDriverD3D::setLightMapDynamicLight (bool enable, const CLight& light)
+{
+	// just store, for future setup in lightmap material rendering
+	_LightMapDynamicLightEnabled= enable;
+	_LightMapDynamicLight= light;
+	_LightMapDynamicLightDirty= true;
+}
+
+
+// ***************************************************************************
+void			CDriverD3D::setupLightMapDynamicLighting(bool enable)
+{
+	// start lightmap dynamic lighting
+	if(enable)
+	{
+		// disable all lights but the 0th.
+		for(uint i=1;i<_MaxLight;i++)
+			enableLightInternal(i, false);
+		
+		// if the dynamic light is really enabled
+		if(_LightMapDynamicLightEnabled)
+		{
+			// then setup and enable
+			setLightInternal(0, _LightMapDynamicLight);
+			enableLightInternal(0, true);
+		}
+		// else just disable also the light 0
+		else
+		{
+			enableLightInternal(0, false);
+		}
+		
+		// ok it has been setup
+		_LightMapDynamicLightDirty= false;
+	}
+	// restore old lighting
+	else
+	{
+		// restore the light 0
+		setLightInternal(0, _UserLight0);
+		
+		// restore all standard light enable states
+		for(uint i=0;i<_MaxLight;i++)
+			enableLightInternal(i, _UserLightEnable[i]);
+	}
+}
+
+
 
 } // NL3D
+

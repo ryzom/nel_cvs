@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.11 2004/04/06 13:41:36 vizerie Exp $
+ * $Id: driver_opengl_light.cpp,v 1.12 2004/06/22 10:05:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,24 @@ uint	CDriverGL::getMaxLight () const
 	return _MaxDriverLight;
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
 void	CDriverGL::setLight (uint8 num, const CLight& light)
+{
+	// bkup real light, for lightmap dynamic lighting purpose
+	if(num==0)
+	{
+		_UserLight0= light;
+		// because the GL setup change, must dirt lightmap rendering
+		_LightMapDynamicLightDirty= true;
+	}
+
+	setLightInternal(num, light);
+}
+
+	
+// ***************************************************************************
+void	CDriverGL::setLightInternal(uint8 num, const CLight& light)
 {
 	// Check light count is good
 //	nlassert (num<_MaxDriverLight);
@@ -144,33 +159,42 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 }
 
 // ***************************************************************************
-
 void	CDriverGL::enableLight (uint8 num, bool enable)
 {
-	// Check light count is good
-//	nlassert (num<_MaxDriverLight);
+	// User call => set the User flag
+	if(num<_MaxDriverLight)
+	{
+		_UserLightEnable[num]= enable;
+	}
 
+	// enable the light in GL
+	enableLightInternal(num, enable);
+
+	// because the GL setup has changed, must dirt lightmap rendering
+	_LightMapDynamicLightDirty= true;
+}
+
+
+// ***************************************************************************
+void	CDriverGL::enableLightInternal(uint8 num, bool enable)
+{
+	// Check light count is good
+	//	nlassert (num<_MaxDriverLight);
+	
 	// Enable glLight
 	if (num<_MaxDriverLight)
 	{
-		// Enable the light
-		_LightEnable[num]=enable;
+		_DriverGLStates.enableLight(num, enable);
 
-		// Enable GL
-		if (enable)
+		// If this light is dirty, and reenabled, then it must be refresh at next render => set the global flag.
+		if (enable && _LightDirty[num])
 		{
-			glEnable ((GLenum)(GL_LIGHT0+num));
-			// If this light is dirty, and reenabled, then it must be refresh at next render => set the global flag.
-			if(_LightDirty[num])
-			{
-				_LightSetupDirty= true;
-				_RenderSetupDirty= true;
-			}
+			_LightSetupDirty= true;
+			_RenderSetupDirty= true;
 		}
-		else
-			glDisable ((GLenum)(GL_LIGHT0+num));
 	}
 }
+
 
 // ***************************************************************************
 
@@ -201,7 +225,7 @@ void				CDriverGL::cleanLightSetup ()
 	for (uint i=0; i<_MaxDriverLight; i++)
 	{
 		// Is this light enabled and dirty?
-		if (_LightEnable[i] && _LightDirty[i])
+		if (_DriverGLStates.isLightEnabled(i) && _LightDirty[i])
 		{
 			// If first light
 			if (first)
@@ -274,6 +298,58 @@ void				CDriverGL::cleanLightSetup ()
 
 	// Clean flag
 	_LightSetupDirty=false;
+}
+
+
+// ***************************************************************************
+void			CDriverGL::setLightMapDynamicLight (bool enable, const CLight& light)
+{
+	// just store, for future setup in lightmap material rendering
+	_LightMapDynamicLightEnabled= enable;
+	_LightMapDynamicLight= light;
+	_LightMapDynamicLightDirty= true;
+}
+
+
+// ***************************************************************************
+void			CDriverGL::setupLightMapDynamicLighting(bool enable)
+{
+	// start lightmap dynamic lighting
+	if(enable)
+	{
+		// disable all lights but the 0th.
+		for(uint i=1;i<_MaxDriverLight;i++)
+			enableLightInternal(i, false);
+
+		// if the dynamic light is really enabled
+		if(_LightMapDynamicLightEnabled)
+		{
+			// then setup and enable
+			setLightInternal(0, _LightMapDynamicLight);
+			enableLightInternal(0, true);
+		}
+		// else just disable also the light 0
+		else
+		{
+			enableLightInternal(0, false);
+		}
+
+		// ok it has been setup
+		_LightMapDynamicLightDirty= false;
+	}
+	// restore old lighting
+	else
+	{
+		// restore the light 0
+		setLightInternal(0, _UserLight0);
+
+		// restore all standard light enable states
+		for(uint i=0;i<_MaxDriverLight;i++)
+			enableLightInternal(i, _UserLightEnable[i]);
+	}
+
+	// in all case, must refresh render setup, cause lighting may be modified
+	refreshRenderSetup();
 }
 
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.72 2004/06/02 16:35:40 vizerie Exp $
+ * $Id: driver.h,v 1.73 2004/06/22 10:06:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -859,6 +859,13 @@ public:
 	  */
 	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess) = 0;
 
+	/** Setup the unique light used for Lightmap Shader.
+	  *	Lightmaped primitives are lit per vertex with this light (should be local attenuated for maximum efficiency)
+	  * This is only useful for material that have their shader set as 'LightMap'
+	  * \param the light used for per pixel lighting
+	  */
+	virtual void			setLightMapDynamicLight (bool enable, const CLight& light) = 0;
+	
 	/** Get the global polygon mode.
 	  *
 	  * \param polygon mode choose in this driver.

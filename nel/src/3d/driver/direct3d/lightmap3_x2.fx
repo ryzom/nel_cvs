@@ -14,6 +14,8 @@ float4 factor2;
 float4 factor3;
 
 float4 g_black = { 0.0f, 0.0f, 0.0f, 1.0f };
+// modulate the dyn light by 0.5, because of MODULATE2X
+float4 g_dyn_factor = { 0.5f, 0.5f, 0.5f, 1.0f };
 
 
 // **** 4 stages technique
@@ -24,8 +26,8 @@ pixelshader four_stages_ps = asm
 	tex t1;
 	tex t2;
 	tex t3;
-	// multiply lightmap with factor, and add with LMCAmbient term
-	mad r0, c1, t1, c0;
+	// multiply lightmap with factor, and add with LMCAmbient+DynamicLight term
+	mad r0, c1, t1, v0;
 	mad r0, c2, t2, r0;
 	mad r0, c3, t3, r0;
 	mul_x2 r0, r0, t0;
@@ -37,13 +39,19 @@ technique four_stages_4
 	{
 		TexCoordIndex[2] = 1;
 		TexCoordIndex[3] = 1;
-		Lighting = false;
+
+		// Use Emissive For LMCAmbient, and diffuse for per vertex dynamic lighting
+		Lighting = true;
+		MaterialEmissive= <factor0>;
+		MaterialAmbient= <g_black>;
+		MaterialDiffuse= <g_dyn_factor>;
+		MaterialSpecular= <g_black>;
 		AlphaBlendEnable = false;
+
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
 		Texture[3] = <texture3>;
-		PixelShaderConstant[0] = <factor0>;
 		PixelShaderConstant[1] = <factor1>;
 		PixelShaderConstant[2] = <factor2>;
 		PixelShaderConstant[3] = <factor3>;
@@ -58,8 +66,8 @@ pixelshader three_stages_0_ps = asm
 	tex t0;
 	tex t1;
 	tex t2;
-	// multiply lightmap with factor, and add with LMCAmbient term
-	mad r0, c1, t1, c0;
+	// multiply lightmap with factor, and add with LMCAmbient+DynamicLight term
+	mad r0, c1, t1, v0;
 	mad r0, c2, t2, r0;
 	mul_x2 r0, r0, t0;
 };
@@ -69,12 +77,18 @@ technique three_stages_3
 	pass p0
 	{
 		TexCoordIndex[2] = 1;
-		Lighting = false;
+
+		// Use Emissive For LMCAmbient, and diffuse for per vertex dynamic lighting
+		Lighting = true;
+		MaterialEmissive= <factor0>;
+		MaterialAmbient= <g_black>;
+		MaterialDiffuse= <g_dyn_factor>;
+		MaterialSpecular= <g_black>;
 		AlphaBlendEnable = false;
+
 		Texture[0] = <texture0>;
 		Texture[1] = <texture1>;
 		Texture[2] = <texture2>;
-		PixelShaderConstant[0] = <factor0>;
 		PixelShaderConstant[1] = <factor1>;
 		PixelShaderConstant[2] = <factor2>;
 		PixelShader = (three_stages_0_ps);
@@ -84,8 +98,9 @@ technique three_stages_3
 		AlphaBlendEnable = true;
 		SrcBlend = one;
 		DestBlend = one;
+		Lighting = false;
 
-		// the DiffuseTexture texture0 is in last stage
+		// the DiffuseTexture texture 0 is in last stage
 		TexCoordIndex[0] = 1;
 		TexCoordIndex[1] = 0;
 		Texture[0] = <texture3>;
@@ -107,15 +122,15 @@ technique two_stages_2
 {
 	pass p0
 	{
-		// For this special case, enable "tricky lighting": use a constant diffuse (with Emissive Material only)
+		// Use Emissive For LMCAmbient, and diffuse for per vertex dynamic lighting
 		Lighting = true;
 		MaterialEmissive= <factor0>;
 		MaterialAmbient= <g_black>;
-		MaterialDiffuse= <g_black>;
+		MaterialDiffuse= <g_dyn_factor>;
 		MaterialSpecular= <g_black>;
 		AlphaBlendEnable = false;
 
-		// the DiffuseTexture texture0 is in last stage
+		// the DiffuseTexture texture 0 is in last stage
 		TexCoordIndex[0] = 1;
 		TexCoordIndex[1] = 0;
 		Texture[0] = <texture1>;

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.10 2004/06/02 16:35:05 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.11 2004/06/22 10:05:12 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -156,6 +156,16 @@ CDriverD3D::CDriverD3D()
 		nlwarning ("CDriverD3D::setDisplay: Can't create the direct 3d 9 object.");
 	}
 
+	// default for lightmap
+	_LightMapDynamicLightDirty= false;
+	_LightMapDynamicLightEnabled= false;
+	_CurrentMaterialSupportedShader= CMaterial::Normal;
+	// to avoid any problem if light0 never setuped, and ligthmap rendered
+	_UserLight0.setupDirectional(CRGBA::Black, CRGBA::White, CRGBA::White, CVector::K);
+	// All User Light are disabled by Default
+	for(i=0;i<MaxLight;i++)
+		_UserLightEnable[i]= false;
+	
 }
 
 // ***************************************************************************

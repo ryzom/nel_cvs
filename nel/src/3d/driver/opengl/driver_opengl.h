@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.174 2004/06/07 17:29:48 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.175 2004/06/22 10:05:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@
 #include "3d/vertex_program_parse.h"
 #include "nel/3d/viewport.h"
 #include "nel/3d/scissor.h"
+#include "3d/light.h"
 #include "nel/misc/time_nl.h"
 
 
@@ -478,6 +479,8 @@ public:
 
 	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess);
 
+	virtual void			setLightMapDynamicLight (bool enable, const CLight& light);
+	
 	virtual void			setAmbientColor (CRGBA color);
 
 	/// \name Fog support.
@@ -662,12 +665,19 @@ private:
 
 	// Num lights return by GL_MAX_LIGHTS
 	uint						_MaxDriverLight;
-	bool						_LightEnable[MaxLight];				// Light enable.
+	// real mirror of GL state
 	uint						_LightMode[MaxLight];				// Light mode.
 	CVector						_WorldLightPos[MaxLight];			// World position of the lights.
 	CVector						_WorldLightDirection[MaxLight];		// World direction of the lights.
 	bool						_LightDirty[MaxLight];				// Light that need a View position setup in refreshRenderSetup().
-
+	// For Lightmap Dynamic Lighting
+	CLight						_LightMapDynamicLight;
+	bool						_LightMapDynamicLightEnabled;
+	bool						_LightMapDynamicLightDirty;
+	// this is the backup of standard lighting (cause GL states may be modified by Lightmap Dynamic Lighting)
+	CLight						_UserLight0;
+	bool						_UserLightEnable[MaxLight];
+	
 	//\name description of the per pixel light
 	// @{
 		void checkForPerPixelLightingSupport();
@@ -928,6 +938,10 @@ private:
 		}
 	}
 	void			doRefreshRenderSetup();
+
+	void			setLightInternal(uint8 num, const CLight& light);
+	void			enableLightInternal(uint8 num, bool enable);
+	void			setupLightMapDynamicLighting(bool enable);
 
 
 	/// \name VertexBufferHard 

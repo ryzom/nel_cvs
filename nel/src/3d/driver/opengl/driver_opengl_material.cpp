@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.90 2004/05/17 12:44:40 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.91 2004/06/22 10:05:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -357,9 +357,20 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	// Now we can get the supported shader from the cache.
 	CMaterial::TShader matShader = pShader->SupportedShader;
 
+	// if the shader has changed since last time
+	if(matShader != _CurrentMaterialSupportedShader)
+	{
+		// if old was lightmap, restore standard lighting
+		if(_CurrentMaterialSupportedShader==CMaterial::LightMap)
+			setupLightMapDynamicLighting(false);
+
+		// if new is lightmap, setup dynamic lighting
+		if(matShader==CMaterial::LightMap)
+			setupLightMapDynamicLighting(true);
+	}
+	
 	// setup the global
 	_CurrentMaterialSupportedShader= matShader;
-
 
 	// 2. Setup / Bind Textures.
 	//==========================
@@ -683,8 +694,21 @@ sint CDriverGL::beginLightMapMultiPass ()
 	// compute how many lightmap and pass we must process.
 	computeLightMapInfos (mat);
 
-	// Too be sure, disable vertex coloring / lightmap.
-	_DriverGLStates.enableLighting(false);
+	// always enable lighting for lightmap (because of dynamic light)
+	_DriverGLStates.enableLighting(true);
+	
+	// if the dynamic lightmap light has changed since the last render (should not happen), resetup
+	// normal way is that setupLightMapDynamicLighting() is called in setupMaterial() if shader different from prec
+	if(_LightMapDynamicLightDirty)
+		setupLightMapDynamicLighting(true);
+
+	// reset Ambient and specular lighting
+	static	uint32	packedColorBlack= CRGBA(0,0,0,255).getPacked();
+	static	GLfloat glcolBlack[4]= {0,0,0,1};
+	// lightmap get no specular/ambient. Emissive and Diffuse are setuped in setupLightMapPass()
+	_DriverGLStates.setAmbient(packedColorBlack, glcolBlack);
+	_DriverGLStates.setSpecular(packedColorBlack, glcolBlack);
+	
 	// reset VertexColor array if necessary.
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		_DriverGLStates.enableColorArray(false);
@@ -697,6 +721,16 @@ void			CDriverGL::setupLightMapPass(uint pass)
 {
 	const CMaterial &mat= *_CurrentMaterial;
 
+
+	// common colors
+	static	uint32	packedColorBlack= CRGBA(0,0,0,255).getPacked();
+	static	GLfloat glcolBlack[4]= {0,0,0,1};
+	static	uint32	packedColorWhite= CRGBA(255,255,255,255).getPacked();
+	static	GLfloat glcolWhite[4]= {1,1,1,1};
+	static	uint32	packedColorGrey= CRGBA(128,128,128,128).getPacked();
+	static	GLfloat glcolGrey[4]= {0.5f,0.5f,0.5f,1};
+	
+
 	// No lightmap or all blacks??, just setup "black texture" for stage 0.
 	if(_NLightMaps==0)
 	{
@@ -706,10 +740,10 @@ void			CDriverGL::setupLightMapPass(uint pass)
 		// setup std modulate env
 		CMaterial::CTexEnv	env;
 		activateTexEnvMode(0, env);
+
 		// Since Lighting is disabled, as well as colorArray, must setup alpha.
-		// setup color to 0 => blackness
-		glColor4ub(0, 0, 0, 255);
-		
+		// setup color to 0 => blackness. in emissive cause texture can still be lighted by dynamic light
+		_DriverGLStates.setEmissive(packedColorBlack, glcolBlack);
 			
 
 		// Setup gen tex off
@@ -759,8 +793,11 @@ void			CDriverGL::setupLightMapPass(uint pass)
 		g= std::min(g, (uint32)255);
 		b= std::min(b, (uint32)255);
 
-		// this will be added to the first lightmap
-		glColor4ub((uint8)r, (uint8)g, (uint8)b, 255);
+		// this color will be added to the first lightmap (with help of emissive)
+		CRGBA	col((uint8)r,(uint8)g,(uint8)b,255);
+		GLfloat	glcol[4];
+		convColor(col, glcol);
+		_DriverGLStates.setEmissive(col.getPacked(), glcol);
 	}
 					
 	// setup all stages.
@@ -798,8 +835,9 @@ void			CDriverGL::setupLightMapPass(uint pass)
 				if(_LightMapNoMulAddFallBack)
 				{
 					// do not use consant color to blend lightmap, but incoming diffuse color, for stage0 only.
-					// (NB: lighting and vertexcolorArray are disabled here)
-					glColor4ub(lmapFactor.R, lmapFactor.G, lmapFactor.B, 255);
+					GLfloat	glcol[4];
+					convColor(lmapFactor, glcol);
+					_DriverGLStates.setEmissive(lmapFactor.getPacked(), glcol);
 					
 					// Leave stage as default env (Modulate with previous)
 					activateTexEnvMode(stage, stdEnv);
@@ -985,6 +1023,21 @@ void			CDriverGL::setupLightMapPass(uint pass)
 		}
 	}
 
+
+	// Dynamic lighting: The influence of the dynamic light must be added only in the first pass (only one time)
+	if(pass==0)
+	{
+		// If the lightmap is in x2 mode, then must divide effect of the dynamic light too
+		if (mat._LightMapsMulx2)
+			_DriverGLStates.setDiffuse(packedColorGrey, glcolGrey);
+		else
+			_DriverGLStates.setDiffuse(packedColorWhite, glcolWhite);
+	}
+	// no need to reset for pass after 1, since same than prec pass (black)!
+	else if(pass==1)
+		_DriverGLStates.setDiffuse(packedColorBlack, glcolBlack);
+	
+
 }
 // ***************************************************************************
 void			CDriverGL::endLightMapMultiPass()
@@ -1002,7 +1055,7 @@ void			CDriverGL::endLightMapMultiPass()
 
 	// nothing to do with blending/lighting, since always setuped in activeMaterial().
 	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
-	// So no need to reset lighting/blending here.
+	// So no need to reset blending/lighting here.
 
 	// Clean up all stage for Multiply x 2
 	if (_CurrentMaterial->_LightMapsMulx2)

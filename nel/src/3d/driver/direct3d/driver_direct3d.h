@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.12 2004/06/02 16:35:05 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.13 2004/06/22 10:05:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@
 #include "3d/ptr_set.h"
 #include "3d/texture_cube.h"
 #include "3d/vertex_program_parse.h"
+#include "3d/light.h"
 
 // *** DEBUG MACRO
 
@@ -526,6 +527,7 @@ public:
 	virtual uint			getMaxLight () const;
 	virtual void			setLight (uint8 num, const CLight& light);
 	virtual void			enableLight (uint8 num, bool enable=true);
+	virtual void			setLightMapDynamicLight (bool enable, const CLight& light);
 	// todo hulud d3d light
 	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess) {};
 	virtual void			setAmbientColor (CRGBA color);
@@ -1603,6 +1605,22 @@ private:
 
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
+
+	// *** Lightmap Dynamic Light
+	// For Lightmap Dynamic Lighting
+	CLight						_LightMapDynamicLight;
+	bool						_LightMapDynamicLightEnabled;
+	bool						_LightMapDynamicLightDirty;
+	CMaterial::TShader			_CurrentMaterialSupportedShader;
+	// this is the backup of standard lighting (cause GL states may be modified by Lightmap Dynamic Lighting)
+	CLight						_UserLight0;
+	bool						_UserLightEnable[MaxLight];
+	// methods to enable / disable DX light, without affecting _LightMapDynamicLight*, or _UserLight0*
+	void			setLightInternal(uint8 num, const CLight& light);
+	void			enableLightInternal(uint8 num, bool enable);
+	// on/off Lights for LightMap mode: only the first light is enabled in lightmap mode
+	void			setupLightMapDynamicLighting(bool enable);
+	
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))

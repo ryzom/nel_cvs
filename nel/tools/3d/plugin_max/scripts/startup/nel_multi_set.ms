@@ -15,6 +15,10 @@ plugin textureMap NelBitmapTexture
 			bitmap2FileName type:#String default:"" ui:cBitmap2FileName
 			bitmap3FileName type:#String default:"" ui:cBitmap3FileName
 			bitmap4FileName type:#String default:"" ui:cBitmap4FileName
+			bitmap5FileName type:#String default:"" ui:cBitmap5FileName
+			bitmap6FileName type:#String default:"" ui:cBitmap6FileName
+			bitmap7FileName type:#String default:"" ui:cBitmap7FileName
+			bitmap8FileName type:#String default:"" ui:cBitmap8FileName
 	)
     rollout AdditionnalBitmaps "Additionnal bitmaps" rolledUp:false
     (
@@ -33,6 +37,24 @@ plugin textureMap NelBitmapTexture
 		edittext 	  cBitmap4FileName "ID 4:" width:230 across:3
 		button 		  browse4 "Get" align:left across:2 offset:[100, 0]
 		button        view4   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap5FileName "ID 5:" width:230 across:3
+		button 		  browse5 "Get" align:left across:2 offset:[100, 0]
+		button        view5   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap6FileName "ID 6:" width:230 across:3
+		button 		  browse6 "Get" align:left across:2 offset:[100, 0]
+		button        view6   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap7FileName "ID 7:" width:230 across:3
+		button 		  browse7 "Get" align:left across:2 offset:[100, 0]
+		button        view7   "View" offset:[40, 0]
+		
+		edittext 	  cBitmap8FileName "ID 8:" width:230 across:3
+		button 		  browse8 "Get" align:left across:2 offset:[100, 0]
+		button        view8   "View" offset:[40, 0]
+
+
 
 						
 		on browse1 pressed do
@@ -171,6 +193,145 @@ plugin textureMap NelBitmapTexture
 				messagebox "Unable to find / display bitmap"
 			)
 		)
+		
+		
+		on browse5 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap5FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == undefined or currSelectedTextureSet == 5 then
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap5FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view5 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap5FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse6 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap6FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == 6
+				then
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap6FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view6 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap6FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse7 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap7FileName = myNewBitmap.fileName				
+				if currSelectedTextureSet == 7
+				then 
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap7FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+			)			
+		)
+		
+		on view7 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap7FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+		
+		on browse8 pressed do
+		(
+			myNewBitmap = selectBitmap()
+			if myNewBitmap != undefined then
+			(
+				bitmap8FileName = myNewBitmap.fileName
+				if currSelectedTextureSet == 8
+				then 
+				(
+					try
+					(
+						delegate.bitmap = openBitmap bitmap8FileName
+					)
+					catch
+					(
+						-- well, no luck..
+					)
+				)
+
+
+			)			
+		)
+		
+		on view8 pressed do
+		(	
+			try
+			(	
+				local myBitmap = openBitMap cBitmap8FileName.text
+				display myBitmap
+			)
+			catch
+			(
+				messagebox "Unable to find / display bitmap"
+			)
+		)
+
 	)
 )
 
@@ -292,6 +453,11 @@ fn selectNelBitmap nelBitmap bitmapIndex =
 		if bitmapIndex == 2 then ( srcBitmapName = nelBitmap.bitmap2FileName )
 		if bitmapIndex == 3 then ( srcBitmapName = nelBitmap.bitmap3FileName )
 		if bitmapIndex == 4 then ( srcBitmapName = nelBitmap.bitmap4FileName )
+		if bitmapIndex == 5 then ( srcBitmapName = nelBitmap.bitmap5FileName )
+		if bitmapIndex == 6 then ( srcBitmapName = nelBitmap.bitmap6FileName )
+		if bitmapIndex == 7 then ( srcBitmapName = nelBitmap.bitmap7FileName )
+		if bitmapIndex == 8 then ( srcBitmapName = nelBitmap.bitmap8FileName )
+
 				
 		-- If not present takes the first bitmap
 		if srcBitmapName == "" then 
@@ -394,6 +560,26 @@ macroScript SelectNelBitmapSet3 category:"NEVRAX Tools" tooltip:"Select the thir
 macroScript SelectNelBitmapSet4 category:"NEVRAX Tools" tooltip:"Select the fourth set of bitmap for the selected meshs"
 (
 	selectNelBitmapInSelection 4
+)
+
+macroScript SelectNelBitmapSet5 category:"NEVRAX Tools" tooltip:"Select the fifth set of bitmap for the selected meshs"
+(
+	selectNelBitmapInSelection 5	
+) 
+
+macroScript SelectNelBitmapSet6 category:"NEVRAX Tools" tooltip:"Select the sixth set of bitmap for the selected meshs"
+(
+	selectNelBitmapInSelection 6
+)
+
+macroScript SelectNelBitmapSet7 category:"NEVRAX Tools" tooltip:"Select the seventh set of bitmap for the selected meshs"
+(
+	selectNelBitmapInSelection 7
+)
+
+macroScript SelectNelBitmapSet8 category:"NEVRAX Tools" tooltip:"Select the eigth set of bitmap for the selected meshs"
+(
+	selectNelBitmapInSelection 8
 )
 
 

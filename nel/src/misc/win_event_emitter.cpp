@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.9 2002/03/28 14:11:51 vizerie Exp $
+ * $Id: win_event_emitter.cpp,v 1.10 2002/05/16 16:29:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,8 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			_ShiftButton=true;
 
 		// Post the message
-		server->postEvent (new CEventKeyDown ((TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), (((int) wParam)&(1<<30))==0, this));
+		if (wParam < KeyCount)
+			server->postEvent (new CEventKeyDown ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), (((int) wParam)&(1<<30))==0, this));
 		break;
 
 	case WM_SYSKEYUP:
@@ -142,10 +143,12 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 			_ShiftButton=false;
 
 		// Post the message
-		server->postEvent (new CEventKeyUp ((TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		if (wParam < KeyCount)
+			server->postEvent (new CEventKeyUp ((NLMISC::TKey)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
 		break;
 	case WM_CHAR:
-		server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
+		if (wParam < KeyCount)
+			server->postEvent (new CEventChar ((ucchar)wParam, getKeyButton(_AltButton, _ShiftButton, _CtrlButton), this));
 		break;
 	case WM_ACTIVATE:
 		if (WA_INACTIVE==LOWORD(wParam))

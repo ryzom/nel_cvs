@@ -3883,6 +3883,7 @@ DWORD WINAPI myThread (LPVOID vData)
 			TheLand->Landscape.setupStaticLight (LightDiffuse, LightAmbiant, LightMultiply);
 
 			// *******************
+			CExportNel export (true, true, true, pData->eproc->ip, "NeL Patch Painter");
 
 			// Add meshes in the scene
 			if (pData->pobj->includeMeshes)
@@ -3911,7 +3912,8 @@ DWORD WINAPI myThread (LPVOID vData)
 						CExportNelOptions opt;
 						opt.bShadow=false;
 						opt.bExportLighting=false;
-						pShape=CExportNel::buildShape (*pNode, *pData->eproc->ip, pData->T, NULL, true, opt, true, true);
+						
+						pShape=export.buildShape (*pNode, pData->T, NULL, opt);
 
 						// Export successful ?
 						if (pShape)
@@ -3929,11 +3931,11 @@ DWORD WINAPI myThread (LPVOID vData)
 				}
 
 				// Setup ambient light
-				CNELU::Driver->setAmbientColor (CExportNel::getAmbientColor (*pData->eproc->ip, pData->T));
+				CNELU::Driver->setAmbientColor (export.getAmbientColor (pData->T));
 
 				// Build light vector
 				std::vector<CLight> vectLight;
-				CExportNel::getLights (vectLight, pData->T, *pData->eproc->ip);
+				export.getLights (vectLight, pData->T);
 
 				// Insert each lights
 				for (uint light=0; light<vectLight.size(); light++)

@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: aabbox.cpp,v 1.4 2002/01/07 14:34:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "nel/misc/aabbox.h"
 #include "nel/misc/polygon.h"
+#include "nel/misc/matrix.h"
+
 
 
 namespace NLMISC {
@@ -148,6 +150,52 @@ void	CAABBox::extend(const CVector &v)
 	bmax.maxof(bmax, v);
 	setMinMax(bmin, bmax);
 }
+
+
+//==========================================================================
+/**
+* Compute the union of 2 aabboxes, that is the  aabbox that contains the 2.
+* Should end up in NLMISC
+*/
+
+CAABBox CAABBox::computeAABBoxUnion(const CAABBox &b1, const CAABBox &b2)
+{	
+	CAABBox result;
+	CVector min, max;
+	CVector min1 = b1.getMin() 
+		    ,max1 = b1.getMax() 
+			,min2 = b2.getMin() 
+		    ,max2 = b2.getMax();
+	max.maxof(max1, max2);
+	min.minof(min1, min2);
+	result.setMinMax(min, max);
+	return result;
+}
+
+
+//==========================================================================
+CAABBox CAABBox::transformAABBox(const CMatrix &mat, const CAABBox &box)
+{
+	// TODO : optimize this a bit if possible...
+	CAABBox result;	
+
+	const CVector &m = mat * box.getCenter();
+	const CVector &h = mat.mulVector(box.getHalfSize());
+	CVector tmp, min, max;
+	min = max = m;
+	tmp = m + CVector(h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(-h.x, h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(-h.x, h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(-h.x, -h.y, h.z); min.minof(min, tmp); max.maxof(max, tmp);
+	tmp = m + CVector(-h.x, -h.y, -h.z); min.minof(min, tmp); max.maxof(max, tmp);
+
+	result.setMinMax(min, max);
+	
+	return result;	
+}
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.2 2001/04/20 07:31:34 legros Exp $
+ * $Id: aabbox.h,v 1.3 2002/01/07 14:34:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 namespace NLMISC
 {
 
+class CMatrix;
 
 using	NLMISC::CVector;
 using	NLMISC::CPlane;
@@ -112,6 +113,19 @@ public:
 	// @{
 	/// Build the equivalent polytope of planes.
 	void			makePyramid(CPlane	planes[6]) const;
+
+	/**
+	* Compute the union of 2 bboxs, that is the  aabbox that contains the 2 others.
+	* Should end up in NLMISC
+	*/
+
+	static CAABBox computeAABBoxUnion(const CAABBox &b1, const CAABBox &b2);
+
+	/** Apply a matrix on an aabbox
+	 *  \return an aabbox, bigger or equal to parameter, after the matrix multiplication
+	 */
+	static CAABBox transformAABBox(const CMatrix &mat, const CAABBox &box);
+
 	// @}
 
 	void			serial(NLMISC::IStream &f);

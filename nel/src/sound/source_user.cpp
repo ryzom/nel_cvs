@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.7 2001/07/23 10:08:02 cado Exp $
+ * $Id: source_user.cpp,v 1.8 2001/07/26 13:39:33 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,7 @@ void					CSourceUser::setSound( TSoundId id )
 			{
 				_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 				_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+				_Track->DrvSource->setDirection( _Direction );
 			}
 		}
 	}
@@ -228,7 +229,24 @@ void					CSourceUser::setDirection( const NLMISC::CVector& dir )
 	// Set the direction
 	if ( _Track != NULL )
 	{
-		_Track->DrvSource->setDirection( dir );
+		if ( ! _Sound->getBuffer()->isStereo() )
+		{
+			static bool coneset = false;
+			if ( dir.isNull() ) // workaround
+			{
+				_Track->DrvSource->setCone( 6.283185f, 6.283185f, 1.0f ); // because the direction with 0 is not enough for a non-directional source!
+				coneset = false;
+			}
+			else
+			{
+				if ( ! coneset )
+				{
+					_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+					coneset = true;
+				}
+			}
+			_Track->DrvSource->setDirection( dir );
+		}
 	}
 }
 
@@ -314,9 +332,8 @@ void					CSourceUser::copyToTrack()
 	if ( ! _Sound->getBuffer()->isStereo() )
 	{
 		_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
-		_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+		setDirection( _Direction ); // because there is a workaround inside
 		_Track->DrvSource->setVelocity( _Velocity );
-		_Track->DrvSource->setDirection( _Direction );
 	}
 	_Track->DrvSource->setGain( _Gain );
 	_Track->DrvSource->setSourceRelativeMode( _RelativeMode );

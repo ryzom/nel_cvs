@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.62 2001/06/05 15:53:29 lecroart Exp $
+ * $Id: service.cpp,v 1.63 2001/06/06 13:09:03 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -663,6 +663,8 @@ sint IService::main (int argc, char **argv)
 
 	try
 	{
+		nlinfo ("Service starts releasing");
+
 		//
 		// Call the user service release() if the init() was called
 		//
@@ -679,7 +681,7 @@ sint IService::main (int argc, char **argv)
 
 		CSock::releaseNetwork();
 
-		nlinfo ("Service stopped");
+		nlinfo ("Service released succesfuly");
 	}
 	catch (EFatalError &)
 	{
@@ -701,6 +703,8 @@ sint IService::main (int argc, char **argv)
 		nlinfo ("ERROR: Unknown external exception");
 	}
 #endif
+
+	nlinfo ("Service ends");
 
 	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
 }

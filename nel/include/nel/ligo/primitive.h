@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.31 2004/09/07 15:02:37 distrib Exp $
+ * $Id: primitive.h,v 1.32 2004/09/07 21:04:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -527,6 +527,9 @@ public:
 
 	/// Returns the smallest axis-aligned box containing the zone
 	void				getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax ) const;
+
+	/// Return the area of the axis-aligned box containing the zone
+	float				getAreaOfAABox() const;
 
 	// \name From IClassable
 	NLMISC_DECLARE_CLASS (CPrimZone);

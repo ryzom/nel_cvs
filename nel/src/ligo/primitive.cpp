@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.37 2004/09/07 15:02:18 distrib Exp $
+ * $Id: primitive.cpp,v 1.38 2004/09/07 21:04:27 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -897,6 +897,14 @@ void CPrimZone::getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax
 	}
 }
 
+
+// ***************************************************************************
+float CPrimZone::getAreaOfAABox() const
+{
+	CVector cornerMin, cornerMax;
+	getAABox( cornerMin, cornerMax );
+	return (cornerMax.x-cornerMin.x) * (cornerMax.y-cornerMin.y);
+}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.152 2003/11/03 18:08:54 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.153 2003/11/04 18:17:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1063,6 +1063,12 @@ private:
 
 
 	bool				_PolygonSmooth;
+
+	// driver version for ATI hardware (0 if unknown)
+	uint				_ATIDriverVersion;
+	bool                _ATIFogRangeFixed;
+
+	void		retrieveATIDriverVersion();
 };
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.195 2003/10/22 08:17:55 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.196 2003/11/04 18:17:05 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -283,6 +283,9 @@ CDriverGL::CDriverGL()
 	ATIWaterShaderHandleNoDiffuseMap = 0;
 	ATIWaterShaderHandle = 0;
 
+	_ATIDriverVersion = 0;
+	_ATIFogRangeFixed = true;
+
 	std::fill(ARBWaterShader, ARBWaterShader + 4, 0);
 
 ///	buildCausticCubeMapTex();
@@ -342,6 +345,9 @@ bool CDriverGL::init (uint windowIcon)
 	{
 		nlwarning ("(CDriverGL::init): can't create DC");
 	}
+
+	// ati specific : try to retrieve driver version
+	retrieveATIDriverVersion();
 
 #endif
 	return true;
@@ -1279,8 +1285,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 				// Skin palette
 				// This mean that they must have 4 components
 
-				// Allocate invariants. One assitionnal variant is needed for fog coordinate
-				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, _EVSNumConstant + 1);
+				// Allocate invariants. One assitionnal variant is needed for fog coordinate if fog bug is not fixed in driver version
+				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, _EVSNumConstant + (_ATIFogRangeFixed ? 0 : 1));
 
 				if (_EVSConstantHandle == 0)
 				{
@@ -2222,14 +2228,17 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	  */
 	if (_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram)
 	{
-		// register 96 is used to store fog informations
-		if (start != end)
+		if (!_ATIFogRangeFixed)
 		{		
-			setConstant(_EVSNumConstant, 1.f / (start - end), - end / (start - end), 0, 0);			
-		}
-		else
-		{
-			setConstant(_EVSNumConstant, 0.f, 0, 0, 0);
+			// last constant is used to store fog informations (fog must be rescaled to [0, 1], because of a driver bug)
+			if (start != end)
+			{		
+				setConstant(_EVSNumConstant, 1.f / (start - end), - end / (start - end), 0, 0);			
+			}
+			else
+			{
+				setConstant(_EVSNumConstant, 0.f, 0, 0, 0);
+			}
 		}
 	}
 	_FogStart = start;
@@ -3110,4 +3119,126 @@ void	CDriverGL::appendVBHardLockProfile(NLMISC::TTicks time, IVertexBufferHard *
 }
 
 
+// ***************************************************************************
+void CDriverGL::retrieveATIDriverVersion()
+{
+	_ATIDriverVersion = 0;
+	// we may need this driver version to fix flaws of previous ati drivers version (fog issue with V.P)
+	#ifdef NL_OS_WINDOWS
+		// get from the registry
+		HKEY parentKey;
+		// open key about current video card
+		LONG result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E968-E325-11CE-BFC1-08002BE10318}", 0, KEY_READ, &parentKey);
+		if (result == ERROR_SUCCESS)
+		{
+			// find last config
+			DWORD keyIndex = 0;			
+			uint latestConfigVersion = 0;
+			char subKeyName[256];
+			char latestSubKeyName[256] = "";
+			DWORD nameBufferSize = sizeof(subKeyName) / sizeof(subKeyName[0]);
+			FILETIME lastWriteTime;
+			bool configFound = false;
+			for(;;)
+			{			
+				nameBufferSize = sizeof(subKeyName) / sizeof(subKeyName[0]);
+				result = RegEnumKeyEx(parentKey, keyIndex, subKeyName, &nameBufferSize, NULL, NULL, NULL, &lastWriteTime);
+				if (result == ERROR_NO_MORE_ITEMS) break;
+				if (result == ERROR_SUCCESS)
+				{		
+					// see if the name is numerical.
+					bool isNumerical = true;
+					for(uint k = 0; k < nameBufferSize; ++k)
+					{
+						if (!isdigit(subKeyName[k]))
+						{
+							isNumerical = false;
+							break;
+						}
+					}
+					if (isNumerical)
+					{
+						uint configVersion = atoi(subKeyName);
+						if (configVersion >= latestConfigVersion)
+						{
+							configFound = true;
+							latestConfigVersion = configVersion;							
+							strcpy(latestSubKeyName, subKeyName);
+						}
+					}
+					++ keyIndex;
+				}
+				else
+				{		
+					RegCloseKey(parentKey);
+					return;
+				}
+			}
+			if (configFound)
+			{
+				HKEY subKey;
+				result = RegOpenKeyEx(parentKey, latestSubKeyName, 0, KEY_READ, &subKey);
+				if (result == ERROR_SUCCESS)
+				{
+					// see if it is a radeon card
+					DWORD valueType;
+					char driverDesc[256];
+					DWORD driverDescBufSize = sizeof(driverDesc) / sizeof(driverDesc[0]);
+					result = RegQueryValueEx(subKey, "DriverDesc", NULL, &valueType, (unsigned char *) driverDesc, &driverDescBufSize);
+					if (result == ERROR_SUCCESS && valueType == REG_SZ)
+					{						
+						NLMISC::strlwr(driverDesc);
+						if (strstr(driverDesc, "radeon")) // is it a radeon card ?
+						{
+							char driverVersion[256];
+							DWORD driverVersionBufSize = sizeof(driverVersion) / sizeof(driverVersion[0]);
+							result = RegQueryValueEx(subKey, "DriverVersion", NULL, &valueType, (unsigned char *) driverVersion, &driverVersionBufSize);
+							if (result == ERROR_SUCCESS && valueType == REG_SZ)
+							{
+								int subVersionNumber[4];
+								if (sscanf(driverVersion, "%d.%d.%d.%d", &subVersionNumber[0], &subVersionNumber[1], &subVersionNumber[2], &subVersionNumber[3]) == 4)
+								{
+									_ATIDriverVersion = (uint) subVersionNumber[3];
+									/** see if fog range for V.P is bad in that driver version (is so, do a fix during vertex program conversion to EXT_vertex_shader
+									  * In earlier versions of the driver, fog coordinates had to be output in the [0, 1] range
+									  * From the 6.14.10.6343 driver, fog output must be in world units
+									  */									
+									if (_ATIDriverVersion < 6343)
+									{
+										_ATIFogRangeFixed = false;
+									}
+								}
+							}
+						}
+					}
+				}
+				RegCloseKey(subKey);
+			}
+			RegCloseKey(parentKey);
+		}		
+	#endif			
+}
+
+
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

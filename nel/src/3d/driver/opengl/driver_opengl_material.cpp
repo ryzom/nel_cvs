@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.75 2003/10/13 09:42:27 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.76 2003/11/04 18:17:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1968,9 +1968,10 @@ void CDriverGL::setupWaterPassARB(const CMaterial &mat)
 		else
 		{
 			/** Unfortunately, the EXT_vertex_shader extension has to output the fog values in the [0, 1] range to work with the standard pipeline.
-			  * So we must add a special path for this case, where the fog coordinate is 'unscaled' again.			 
+			  * So we must add a special path for this case, where the fog coordinate is 'unscaled' again.
+			  * NB : this is fixed in later drivers (from 6.14.10.6343), so chek this
 			  */
-			if (_Extensions.EXTVertexShader)
+			if (_Extensions.EXTVertexShader && !_ATIFogRangeFixed)
 			{
 				nglProgramEnvParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 2, 1.f, 0.f, 0.f, 0.f);
 			}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.17 2003/03/31 11:58:27 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.18 2003/11/04 18:17:47 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -36,6 +36,7 @@
 using namespace std;
 using namespace NLMISC;
 
+//#define DEBUG_SETUP_EXT_VERTEX_SHADER
  
 namespace NL3D
 {
@@ -381,7 +382,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 	
 	#ifdef DEBUG_SETUP_EXT_VERTEX_SHADER
 		nlinfo("**********************************************************");
-	#endif
+	#endif	
 
 	// clear last error
 	GLenum glError = glGetError();
@@ -456,7 +457,11 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		}
 		
 		// allocate one temporary register for fog before conversion
-		GLuint fogTemp = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);
+		GLuint fogTemp;
+		if (!_ATIFogRangeFixed)
+		{
+			fogTemp = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);
+		}
 
 
 		// local constant : 0 and 1
@@ -614,13 +619,13 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					destValue = firstRegister + destOperand.Value.VariableValue; 
 				break;
 				case CVPOperand::OutputRegister:
-					if (destOperand.Value.OutputRegisterValue != CVPOperand::OFogCoord)
+					if (_ATIFogRangeFixed || destOperand.Value.OutputRegisterValue != CVPOperand::OFogCoord)
 					{					
 						destValue = convOutputRegisterToEXTVertexShader(destOperand.Value.OutputRegisterValue);
 					}
 					else
-					{
-						destValue = fogTemp;
+					{												
+						destValue = fogTemp;						
 					}
 				break;
 				case CVPOperand::AddressRegister:
@@ -650,7 +655,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 				/** Don't know why, but on some implementation of EXT_vertex_shader, can't write a single components to the fog coordinate..
 				 * So we force the mask to 0xf (only the x coordinate is used anyway).			  
 				 */			
-				if (!(destOperand.Type == CVPOperand::OutputRegister && destValue == fogTemp))
+				if (!(destOperand.Type == CVPOperand::OutputRegister && destOperand.Value.OutputRegisterValue == CVPOperand::OFogCoord))
 				{
 					// For instructions that write their output components by components, we don't need an intermediary register
 					if (opcode == CVPInstruction::LOG
@@ -923,7 +928,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 			// apply write mask if any
 			if (writeMask != 0x0f)
 			{									
-				if (destOperand.Type == CVPOperand::OutputRegister && destValue != fogTemp)
+				if ((destOperand.Type == CVPOperand::OutputRegister && destOperand.Value.OutputRegisterValue != CVPOperand::OFogCoord))
 				{
 					uint &outputMask = componentWritten[outputRegisterIndex];
 					// is a texture coordinate or a color being written ?
@@ -1076,18 +1081,18 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		}
 		nlassert(componentWritten[CVPOperand::OHPosition] == 0xf); // should have written all component of position	
 
-		glError = glGetError();
+		glError = glGetError(); 
 		nlassert(glError == GL_NO_ERROR);
 
-		// if fog has been written, perform conversion
-		if (componentWritten[CVPOperand::OFogCoord] == 0xf)
+		// if fog has been written, perform conversion (if there's no ATI driver fix)
+		if (!_ATIFogRangeFixed && componentWritten[CVPOperand::OFogCoord] == 0xf)
 		{
 			// Well this could be avoided, but we should make 2 cases for each vertex program.. :(
 			doSwizzle(firstTempRegister, _EVSConstantHandle + _EVSNumConstant, GL_X_EXT, GL_X_EXT, GL_X_EXT, GL_X_EXT);
 			doSwizzle(firstTempRegister + 1, _EVSConstantHandle + _EVSNumConstant, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT, GL_Y_EXT);			
 			nglShaderOp3EXT(GL_OP_MADD_EXT, firstTempRegister + 2, fogTemp, firstTempRegister, firstTempRegister + 1);
 			EVS_INFO("Use MAD for fog conversion");
-			nglExtractComponentEXT(GL_OUTPUT_FOG_EXT, firstTempRegister + 2, 0);
+			nglExtractComponentEXT(GL_OUTPUT_FOG_EXT, firstTempRegister + 2, 0);			
 			EVS_INFO("Extract component to fog");
 		}
 
@@ -1204,9 +1209,9 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 		_LastSetuppedVP = program;
 	}
 	else
-	{
+	{		
 		glDisable( GL_VERTEX_SHADER_EXT );
-		_VertexProgramEnabled = false;
+		_VertexProgramEnabled = false;		
 	}
 	return true;	
 }

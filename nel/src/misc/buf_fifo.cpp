@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.3 2001/02/23 15:13:57 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.4 2001/02/26 15:13:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ CBufFIFO::~CBufFIFO()
 	}
 }
 
-void CBufFIFO::push(std::vector<uint8> &buffer)
+void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
 	TTicks before = CTime::getPerformanceTime();
 

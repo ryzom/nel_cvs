@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: new_service.cpp,v 1.4 2001/02/23 13:53:30 lecroart Exp $
+ * $Id: new_service.cpp,v 1.5 2001/02/26 15:13:30 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -380,7 +380,7 @@ sint INewService::main (int argc, char **argv)
 
 						// Register service
 						nlassert( _Server->listenAddress() != NULL );
-						setServiceId( CNamingClient::registerService( INewService::_Name, *(_Server->listenAddress()) ) );
+						setServiceId( CNamingClient::registerService( INewService::_Name, _Server->listenAddress() ) );
 						registered = true;
 					}
 					catch ( ESocketConnectionFailed& )

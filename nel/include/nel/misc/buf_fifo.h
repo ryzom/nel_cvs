@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Interface for CBufFIFO
  *
- * $Id: buf_fifo.h,v 1.3 2001/02/23 15:13:57 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.4 2001/02/26 15:13:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 	~CBufFIFO ();
 
 	/// Push 'buffer' in the head of the FIFO
-	void	 push (std::vector<uint8> &buffer);
+	void	 push (const std::vector<uint8> &buffer);
 
 	/// Pop the buffer in the tail of the FIFO and put it in 'buffer'
 	void	 pop (std::vector<uint8> &buffer);

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 4, server
  *
- * $Id: callback_server.h,v 1.4 2001/02/23 15:44:30 cado Exp $
+ * $Id: callback_server.h,v 1.5 2001/02/26 15:13:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 	void	setConnectionCallback( TNetCallback cb ) { _ConnectionCallback = cb; }
 
 	/// Returns the internet address of the listening socket
-	const CInetAddress	*listenAddress();
+	const CInetAddress&	listenAddress();
 
 	// Internal use
 	friend void cbProcessConnectionCallback( CMessage& msg, TSockId id );

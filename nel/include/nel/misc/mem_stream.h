@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.6 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: mem_stream.h,v 1.7 2001/02/26 15:13:30 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,12 @@ public:
 	const uint8		*buffer() const
 	{
 		return &(*_Buffer.begin());
+	}
+
+	/// Returns the message buffer (read only)
+	const CVector8&	bufferAsVector() const
+	{
+		return _Buffer;
 	}
 
 	/// Fills the message buffer, for reading

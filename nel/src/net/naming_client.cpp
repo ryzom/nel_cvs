@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.46 2002/05/27 17:03:17 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.47 2002/06/13 09:42:26 lecroart Exp $
  *
  */
 
@@ -82,11 +82,6 @@ static void cbRegister (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	msgin.serial (RegisteredSuccess);
 	if (RegisteredSuccess) msgin.serial (RegisteredSID);
 	Registered = true;
-
-	if (RegisteredSuccess)
-		nlinfo("Received the answer of the registration (%hu)", (uint16)RegisteredSID);
-	else
-		nlinfo("Received the answer of the registration: can't register");
 }
 
 //
@@ -98,8 +93,6 @@ static void cbQueryPort (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 {
 	msgin.serial (QueryPortPort);
 	QueryPort = true;
-
-	nlinfo ("Received the answer of the query port (%hu)", QueryPortPort);
 }
 
 //
@@ -132,7 +125,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 			CNamingClient::RegisteredServices.push_back (CNamingClient::CServiceEntry (name, sid, addr));
 			CNamingClient::RegisteredServicesMutex.leave ();
 
-			nlinfo ("Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+			nlinfo ("NC: Registration Broadcast of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
 
 			if (_RegistrationBroadcastCallback != NULL)
 				_RegistrationBroadcastCallback (name, sid, addr);
@@ -150,7 +143,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 				}
 			}
 			CNamingClient::RegisteredServicesMutex.leave ();
-			nlinfo ("Registration Broadcast (update) of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
+			nlinfo ("NC: Registration Broadcast (update) of the service %s-%hu '%s'", name.c_str(), (uint16)sid, addr.asString().c_str());
 		}
 		else
 		{
@@ -160,7 +153,7 @@ void cbRegisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netba
 
 	FirstRegisteredBroadcast = true;
 
-	CNamingClient::displayRegisteredServices ();
+	//CNamingClient::displayRegisteredServices ();
 }
 	
 //
@@ -192,7 +185,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	}
 	CNamingClient::RegisteredServicesMutex.leave ();
 
-	nlinfo ("Unregistration Broadcast of the service %s-%hu", name.c_str(), (uint16)sid);
+	nlinfo ("NC: Unregistration Broadcast of the service %s-%hu", name.c_str(), (uint16)sid);
 
 	// send the ACK to the NS
 
@@ -203,7 +196,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	if (_UnregistrationBroadcastCallback != NULL)
 		_UnregistrationBroadcastCallback (name, sid, addr);
 
-	CNamingClient::displayRegisteredServices ();
+	//CNamingClient::displayRegisteredServices ();
 }
 
 //
@@ -401,7 +394,7 @@ uint16 CNamingClient::queryServicePort ()
 		nlSleep (1);
 	}
 
-	nldebug ("NC: Got port %hu", QueryPortPort);
+	nlinfo ("NC: Received the answer of the query port (%hu)", QueryPortPort);
 
 	return QueryPortPort;
 }

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.128 2002/06/12 16:50:05 lecroart Exp $
+ * $Id: service.cpp,v 1.129 2002/06/13 09:42:26 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -283,7 +283,7 @@ static void initSignal()
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
 	signal(Signal[3], sigHandler);
-	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
+	//nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
 #else
 	// in release, redirect all signals
 /* don't redirect now because to hard to debug...
@@ -428,6 +428,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
+	CConfigFile::CVar *var = NULL;
 
 	try
 	{
@@ -463,10 +464,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		if (haveArg('C'))
 			_ConfigDir = CPath::standardizePath(getArg('C'));
 
-		createDebug (_LogDir.c_str());
+		createDebug (_LogDir.c_str(), false);
 
 		DebugLog->addNegativeFilter ("NETL");
-
 
 		// we create the log with service name filename ("test_service.log" for example)
 		fd.setParam (_LogDir + _LongName + ".log", false);
@@ -495,30 +495,32 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Set the negatif filter from the config file
 		//
 
-		try
+		if ((var = ConfigFile.getVarPtr ("NegFiltersDebug")) != NULL)
 		{
 			ConfigFile.setCallback ("NegFiltersDebug", cbLogFilter);
-			CConfigFile::CVar &negdeb = ConfigFile.getVar ("NegFiltersDebug");
-			cbLogFilter (negdeb);
+			for (sint i = 0; i < var->size(); i++)
+			{
+				DebugLog->addNegativeFilter (var->asString(i).c_str());
+			}
 		}
-		catch (EConfigFile&) { }
 
-		try
+		if ((var = ConfigFile.getVarPtr ("NegFiltersInfo")) != NULL)
 		{
 			ConfigFile.setCallback ("NegFiltersInfo", cbLogFilter);
-			CConfigFile::CVar &neginf = ConfigFile.getVar ("NegFiltersInfo");
-			cbLogFilter (neginf);
+			for (sint i = 0; i < var->size(); i++)
+			{
+				InfoLog->addNegativeFilter (var->asString(i).c_str());
+			}
 		}
-		catch (EConfigFile&) { }
 
 
 		//
 		// Create the window if neeeded
 		//
 
-		try
+		if ((var = ConfigFile.getVarPtr ("WindowStyle")) != NULL)
 		{
-			string disp = ConfigFile.getVar ("WindowStyle").asString ();
+			string disp = var->asString ();
 #ifdef NL_USE_GTK
 			if (disp == "GTK")
 			{
@@ -538,10 +540,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				nlwarning ("Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
 			}
 		}
-		catch (EUnknownVar&)
-		{
-			// no WindowStyle variable, no displayer
-		}
 
 		vector <pair<string,uint> > displayedVariables;
 		//uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
@@ -554,12 +552,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			sint x=-1, y=-1, w=-1, h=-1;
 			bool iconified = false;
 
-			try { x = ConfigFile.getVar("XWinParam").asInt(); } catch (EUnknownVar&) { }
-			try { y = ConfigFile.getVar("YWinParam").asInt(); } catch (EUnknownVar&) { }
-			try { w = ConfigFile.getVar("WWinParam").asInt(); } catch (EUnknownVar&) { }
-			try { h = ConfigFile.getVar("HWinParam").asInt(); } catch (EUnknownVar&) { }
-
-			try { iconified = ConfigFile.getVar("IWinParam").asInt() == 1; } catch (EUnknownVar&) { }
+			if ((var = ConfigFile.getVarPtr("XWinParam")) != NULL) x = var->asInt();
+			if ((var = ConfigFile.getVarPtr("YWinParam")) != NULL) y = var->asInt();
+			if ((var = ConfigFile.getVarPtr("WWinParam")) != NULL) w = var->asInt();
+			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) h = var->asInt();
+			if ((var = ConfigFile.getVarPtr("HWinParam")) != NULL) iconified = var->asInt() == 1;
 
 			if (haveArg('I')) iconified = true;
 
@@ -583,29 +580,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 //			displayedVariables.push_back(make_pair(string("SndQ|SentQueueSize"), WindowDisplayer->createLabel ("SndQ")));
 			displayedVariables.push_back(make_pair(string("|Scroller"), WindowDisplayer->createLabel ("NeL Rulez")));
 			
-			try
+			CConfigFile::CVar *v = ConfigFile.getVarPtr("DisplayedVariables");
+			if (v != NULL)
 			{
-				CConfigFile::CVar &v = ConfigFile.getVar("DisplayedVariables");
-				for (sint i = 0; i < v.size(); i++)
+				for (sint i = 0; i < v->size(); i++)
 				{
-					displayedVariables.push_back(make_pair(v.asString(i), WindowDisplayer->createLabel (v.asString(i).c_str())));
+					displayedVariables.push_back(make_pair(v->asString(i), WindowDisplayer->createLabel (v->asString(i).c_str())));
 				}
 			}
-			catch (EUnknownVar&) { }
 		}
 
 		nlinfo ("Starting Service %d '%s' using NeL ("__DATE__" "__TIME__")", isService5()?5:4, _ShortName.c_str());
-		nlinfo ("Service running directory: '%s'", IService::getInstance()->_RunningPath.c_str());
-
-		//
-		// Display command line arguments
-		//
-
-		nlinfo ("nb args = %d", _Args.size ());
-		for (uint i = 0; i < _Args.size (); i++)
-		{
-			nlinfo ("argv[%d] = '%s'", i, _Args[i].c_str ());
-		}
 
 		setStatus (EXIT_SUCCESS);
 
@@ -620,12 +605,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// don't install signal is the application is started in debug mode
 		if (IsDebuggerPresent ())
 		{
-			nlinfo("Running with the debugger, don't redirect signals");
+			//nlinfo("Running with the debugger, don't redirect signals");
 			initSignal();
 		}
 		else
 		{
-			nlinfo("Running without the debugger, redirect SIGINT signal");
+			//nlinfo("Running without the debugger, redirect SIGINT signal");
 			initSignal();
 		}
 #endif
@@ -693,12 +678,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		// Get the port from config file or in the macro (overload the port set by the user init())
-		try
+		if ((var = ConfigFile.getVarPtr("Port")) != NULL)
 		{
 			// set the listen port with the value in the config file if any
-			_Port = ConfigFile.getVar("Port").asInt();
+			_Port = var->asInt();
 		}
-		catch (EUnknownVar &)
+		else
 		{
 			// set the listen port with the value in the NLNET_SERVICE_MAIN macro
 			_Port = servicePort;
@@ -717,9 +702,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		// Load the recording state from the config file
-		try
+		if ((var = ConfigFile.getVarPtr ("Rec")) != NULL)
 		{
-			string srecstate = ConfigFile.getVar("Rec").asString();
+			string srecstate = var->asString();
 			strupr( srecstate );
 			if ( srecstate == "RECORD" )
 			{
@@ -736,18 +721,18 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				_RecordingState = CCallbackNetBase::Off;
 			}
 		}
-		catch ( EUnknownVar& )
+		else
 		{
 			// Not found
 			_RecordingState = CCallbackNetBase::Off;
 		}
 
 		// Load the default stream format
-		try
+		if ((var = ConfigFile.getVarPtr ("StringMsgFormat")) != NULL)
 		{
-			CMessage::setDefaultStringMode( ConfigFile.getVar("StringMsgFormat").asInt() == 1 );
+			CMessage::setDefaultStringMode( var->asInt() == 1 );
 		}
-		catch ( EUnknownVar& )
+		else
 		{
 			// Not found => binary
 			CMessage::setDefaultStringMode( false );
@@ -788,9 +773,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		///
 
 		// get the sid
-		try
+		if ((var = ConfigFile.getVarPtr ("SId")) != NULL)
 		{
-			sint32 sid = ConfigFile.getVar("SId").asInt();
+			sint32 sid = var->asInt();
 			if (sid<0 || sid>255)
 			{
 				nlwarning("Bad SId value in the config file, %d is not in [0;255] range", sid);
@@ -801,7 +786,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				_SId = (uint8) sid;
 			}
 		}
-		catch(EUnknownVar&)
+		else
 		{
 			// ok, SId not found, use dynamic sid
 			_SId = 0;
@@ -809,12 +794,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 
 		// look if we don't want to use NS
-		try
+		if ((var = ConfigFile.getVarPtr ("DontUseNS")) != NULL)
 		{
 			// if we set the value in the config file, get it
-			_DontUseNS = ConfigFile.getVar("DontUseNS").asInt() == 1;
+			_DontUseNS = var->asInt() == 1;
 		}
-		catch ( EUnknownVar& )
+		else
 		{
 			// if not, we use ns only if service is not ns, ls, aes, as
 			_DontUseNS = (_ShortName == "NS" || _ShortName == "LS" || _ShortName == "AES" || _ShortName == "AS");
@@ -827,7 +812,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			while (!ok)
 			{
 				// read the naming service address from the config file
-				string LSAddr = ConfigFile.getVar("NSHost").asString();
+				string LSAddr = ConfigFile.getVar ("NSHost").asString();
 				
 				// if there's no port to the NS, use the default one 50000
 				if (LSAddr.find(":") == string::npos)
@@ -864,12 +849,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		// look if we don't want to use NS
-		try
+		if ((var = ConfigFile.getVarPtr ("DontUseAES")) != NULL)
 		{
 			// if we set the value in the config file, get it
-			_DontUseAES = ConfigFile.getVar("DontUseAES").asInt() == 1;
+			_DontUseAES = var->asInt() == 1;
 		}
-		catch ( EUnknownVar& )
+		else
 		{
 			// if not, we use aes only if service is not aes or as
 			_DontUseAES = (_ShortName == "AES" || _ShortName == "AS");
@@ -989,16 +974,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Call the user command from the config file if any
 		//
 
-		try
+		if ((var = ConfigFile.getVarPtr ("StartCommands")) != NULL)
 		{
-			CConfigFile::CVar &var = ConfigFile.getVar("StartCommands");
-			for (sint i = 0; i < var.size(); i++)
+			for (sint i = 0; i < var->size(); i++)
 			{
-				ICommand::execute (var.asString(i), *InfoLog);
+				ICommand::execute (var->asString(i), *InfoLog);
 			}
-		}
-		catch (EConfigFile &)
-		{
 		}
 
 		//
@@ -1385,6 +1366,12 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	string mode = "???";
 #endif
 	log.displayNL ("NeL is compiled in %s mode", mode.c_str());
+
+	nlinfo ("Services arguments: %d args", IService::getInstance()->_Args.size ());
+	for (uint i = 0; i < IService::getInstance()->_Args.size (); i++)
+	{
+		nlinfo ("  argv[%d] = '%s'", i, IService::getInstance()->_Args[i].c_str ());
+	}
 
 	log.displayNL ("Naming service info: %s", CNamingClient::info().c_str());
 

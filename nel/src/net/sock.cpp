@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.20 2002/05/22 14:29:42 lecroart Exp $
+ * $Id: sock.cpp,v 1.21 2002/06/13 09:42:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,8 +289,8 @@ void CSock::close()
  */
 CSock::~CSock()
 {
-	nlinfo( "Report for %s socket %s: Max send time: %u Max recv time: %u", _NonBlocking?"non-blocking":"blocking", remoteAddr().asString().c_str(), _MaxSendTime, _MaxReceiveTime );
-	nlinfo( "Max send time: %u", _MaxSendTime);
+	//nlinfo( "Report for %s socket %s: Max send time: %u Max recv time: %u", _NonBlocking?"non-blocking":"blocking", remoteAddr().asString().c_str(), _MaxSendTime, _MaxReceiveTime );
+	//nlinfo( "Max send time: %u", _MaxSendTime);
 	if ( _Sock != INVALID_SOCKET )
 	{
 		if ( _Logging )

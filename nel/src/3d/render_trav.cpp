@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.36 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: render_trav.cpp,v 1.37 2002/09/23 14:17:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,8 @@ CRenderTrav::CRenderTrav()
 	_StrongestLightTouched = true;
 
 	_MeshSkinManager= NULL;
+
+	_LayersRenderingOrder= true;
 }
 // ***************************************************************************
 IObs		*CRenderTrav::createDefaultObs() const

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.33 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system.h,v 1.34 2003/07/10 16:51:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -829,10 +829,7 @@ public:
 	///\name sound managment
 		// @{
 		/// register a Sound server to this system. All systems share the same sound server. 
-		static void					registerSoundServer(UPSSoundServer *soundServer)
-		{
-			_SoundServer = soundServer;
-		}
+		static void					registerSoundServer(UPSSoundServer *soundServer);		
 
 		/// get the current sound server used by this system. NULL if none
 		static UPSSoundServer *		getSoundServer(void)
@@ -843,7 +840,7 @@ public:
 		/// immediatly shut down all the sound in this system
 		void stopSound();
 
-		/// reactivate the sound in the system
+		// reactivate all sound in this system
 		void reactivateSound();
 
 		// @}

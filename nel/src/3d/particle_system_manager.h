@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_manager.h,v 1.4 2003/07/10 16:51:10 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -61,7 +61,10 @@ public:
 	enum { NumProcessToRefresh  = 3 }; // the number of systems that are refreshed at each call
 
 	/// default ctor
-	CParticleSystemManager();	
+	CParticleSystemManager();
+
+	// dtor
+	~CParticleSystemManager();
 
 	/// call this to refresh systems. (check those whose data should be released)
 	void	refreshModels(const std::vector<NLMISC::CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
@@ -69,10 +72,24 @@ public:
 	/// perform animation on systems that should be animated even if not parsed (temporary spells for example)
 	void	processAnimate(TAnimationTime deltaT);
 
+	// stop sound for all particle systems in this manager
+	void    stopSound();
+
+	// reactivate sound for all particle systems in this manager
+	void    reactivateSound();
+
+	// stop sound for all particle systems in all managers
+	static void    stopSoundForAllManagers();
+
+	// reactivate sound for all particle systems in all managers
+	static void    reactivateSoundForAllManagers();
+
 private:
 	friend class CParticleSystemModel;
 	
 	typedef std::list<CParticleSystemModel *> TModelList;
+	typedef std::list<CParticleSystemManager *> TManagerList;
+
 
 	struct TModelHandle
 	{
@@ -98,10 +115,14 @@ private:
 	
 private:
 
-	TModelList::iterator _CurrListIterator; /// the current element being processed
-	TModelList			 _ModelList;
-	TModelList			 _PermanentlyAnimatedModelList;
-	uint			     _NumModels;
+	TModelList::iterator	_CurrListIterator; /// the current element being processed
+	TModelList				_ModelList;
+	TModelList				_PermanentlyAnimatedModelList;
+	uint					_NumModels;
+	// list of currently all instanciated managers
+	static TManagerList		_ManagerList;
+	// link into the global manager list for that manager
+	TManagerList::iterator	_GlobalListHandle;
 };
 
 

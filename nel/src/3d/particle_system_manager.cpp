@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.8 2003/04/14 15:28:56 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.9 2003/07/10 16:51:10 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -32,10 +32,23 @@
 
 namespace NL3D {
 
+
+CParticleSystemManager::TManagerList CParticleSystemManager::_ManagerList;
+
+
 ///=========================================================	
 CParticleSystemManager::CParticleSystemManager() : _NumModels(0)
 {
 	_CurrListIterator = _ModelList.end();
+	_ManagerList.push_front(this);
+	_GlobalListHandle = _ManagerList.begin();
+}
+
+///=========================================================	
+CParticleSystemManager::~CParticleSystemManager()
+{
+	// remove from global list
+	_ManagerList.erase(_GlobalListHandle);
 }
 
 ///=========================================================	
@@ -170,5 +183,55 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 		}
 	}
 }
+
+///=========================================================	
+void CParticleSystemManager::stopSound()
+{
+	for(TModelList::iterator it = _ModelList.begin(); it != _ModelList.end(); ++it)
+	{
+		CParticleSystemModel &psm = *(*it);
+		CParticleSystem		 *ps  = psm.getPS();
+		if (ps)
+		{
+			ps->stopSound();
+		}
+	}
+}
+
+///=========================================================	
+void CParticleSystemManager::reactivateSound()
+{
+	for(TModelList::iterator it = _ModelList.begin(); it != _ModelList.end(); ++it)
+	{
+		CParticleSystemModel &psm = *(*it);
+		CParticleSystem		 *ps  = psm.getPS();
+		if (ps)
+		{
+			ps->reactivateSound();
+		}
+	}
+}
+
+///=========================================================	
+void CParticleSystemManager::stopSoundForAllManagers()
+{
+	for(TManagerList::iterator it = _ManagerList.begin(); it != _ManagerList.end(); ++it)
+	{
+		nlassert(*it);
+		(*it)->stopSound();
+	}
+}
+
+///=========================================================	
+void CParticleSystemManager::reactivateSoundForAllManagers()
+{
+	for(TManagerList::iterator it = _ManagerList.begin(); it != _ManagerList.end(); ++it)
+	{
+		nlassert(*it);
+		(*it)->reactivateSound();
+	}
+}
+
+
 
 } // NL3D

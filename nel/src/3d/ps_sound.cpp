@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.20 2003/04/14 15:25:17 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.21 2003/07/10 16:51:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,8 @@ void	CPSSound::stopSound()
 	{
 		if (*it)
 		{
-			(*it)->stop();
+			(*it)->release();
+			(*it) = NULL;
 		}
 		++it;
 	}

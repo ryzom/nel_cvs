@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.58 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.59 2003/07/10 16:51:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ void CParticleSystem::reactivateSound()
 		{
 			for (uint l = 0; l < psl->getNbBoundObjects(); ++l)
 			{
-				if (psl->getBoundObject(l)->getType() == NL3D::PSSound)
+				if (psl->getBoundObject(l)->getType() == PSSound)
 				{
 					static_cast<CPSSound *>(psl->getBoundObject(l))->reactivateSound();
 				}
@@ -1255,6 +1255,19 @@ void CParticleSystem::setSystemDate(float date)
 	}	
 }
 
+///=======================================================================================
+void CParticleSystem::registerSoundServer(UPSSoundServer *soundServer)
+{
+	if (!_SoundServer)
+	{
+		CParticleSystemManager::stopSoundForAllManagers();
+	}
+	else
+	{
+		CParticleSystemManager::reactivateSoundForAllManagers();
+	}
+	_SoundServer = soundServer;
+}
 
 
 

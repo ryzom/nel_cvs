@@ -1,7 +1,7 @@
 /** \file u_particle_system_sound.h
  * <File description>
  *
- * $Id: u_particle_system_sound.h,v 1.3 2001/09/10 09:30:49 vizerie Exp $
+ * $Id: u_particle_system_sound.h,v 1.4 2003/07/10 16:51:50 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,14 @@ public:
 	{
 		static CPSSoundServImpl soundServer;
 		soundServer.init(audioMixer);
-		assignSoundServerToPS(&soundServer);
+		if (audioMixer)
+		{		
+			assignSoundServerToPS(&soundServer);
+		}
+		else
+		{
+			assignSoundServerToPS(NULL);
+		}
 	}	
 };
 

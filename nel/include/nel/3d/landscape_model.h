@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.3 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: landscape_model.h,v 1.4 2000/12/13 14:59:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,16 +57,56 @@ public:
 public:
 	CLandscape		Landscape;
 
+	/** Set additive value
+	  * 
+	  * \param additive new additive value. [0, 1]
+	  */
+	void			setAdditive (float additive)
+	{
+		_Additive=additive;
+	}
+
+	/** Get additive value
+	  * 
+	  * \return the additive value. [0, 1]
+	  */
+	float			getAdditive () const
+	{
+		return _Additive;
+	}
+
+	/** Set additive set
+	  * 
+	  * \param enable is true to activbe additive, false to disactive it.
+	  */
+	void			enableAdditive (bool enable)
+	{
+		_ActiveAdditive=enable;
+	}
+
+	/** Get additive set
+	  * 
+	  * \return true to if additive is actived, else false.
+	  */
+	bool			isAdditive () const
+	{
+		return _ActiveAdditive;
+	}
 
 protected:
 	CLandscapeModel()
 	{
 		Landscape.init();
+		_ActiveAdditive=false;
+		_Additive=1.f;
 	}
 	virtual ~CLandscapeModel() {}
 
 private:
 	static IModel	*creator() {return new CLandscapeModel;}
+
+	bool	_ActiveAdditive;
+	float	_Additive;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.28 2003/06/30 09:49:04 lecroart Exp $
+ * $Id: entity_id.h,v 1.29 2003/07/09 15:18:05 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NLMISC {
 
 /**
- * TODO
+ * Entity identifier
  * \author Sameh Chafik, Vianney Lecroart
  * \author Nevrax France
  * \date 2001

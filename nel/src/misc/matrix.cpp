@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.18 2000/12/04 10:13:43 corvazier Exp $
+ * $Id: matrix.cpp,v 1.19 2000/12/05 14:05:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,13 +45,15 @@ namespace	NLMISC
 #define	MAT_SCALEUNI	4
 #define	MAT_SCALEANY	8
 #define	MAT_PROJ		16
-// Say if mat is valid.
-#define	MAT_MVALID		32
-// The identity is nothing but a valid matrix.
-#define	MAT_IDENTITY	32
+// Validity bits. These means that the part may be yet identity, but is valid in the floats.
+// eg: MAT_VALTRANS has no means if MAT_TRANS is set.
+#define	MAT_VALIDTRANS	32
+#define	MAT_VALIDROT	64
+#define	MAT_VALIDPROJ	128
+#define	MAT_VALIDALL	(MAT_VALIDTRANS | MAT_VALIDROT | MAT_VALIDPROJ)
+// The identity is nothing.
+#define	MAT_IDENTITY	0
 
-
-#define	CHECK_VALID() nlassert(StateBit & MAT_MVALID)
 
 
 // Matrix elements.
@@ -79,6 +81,63 @@ namespace	NLMISC
 // ======================================================================================================
 
 
+// ======================================================================================================
+inline bool	CMatrix::hasRot() const
+{
+	return (StateBit&(MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY))!=0;
+}
+inline bool	CMatrix::hasTrans() const
+{
+	return (StateBit&MAT_TRANS)!=0;
+}
+inline bool	CMatrix::hasProj() const
+{
+	return (StateBit&MAT_PROJ)!=0;
+}
+inline bool	CMatrix::hasAll() const
+{
+	return (hasRot() && hasTrans() && hasProj());
+}
+
+
+inline void CMatrix::testExpandRot() const
+{
+	if(hasRot())
+		return;
+	if(!(StateBit&MAT_VALIDROT))
+	{
+		CMatrix	*self= const_cast<CMatrix*>(this);
+		self->StateBit|=MAT_VALIDROT;
+		self->a11= 1; self->a12=0; self->a13=0;
+		self->a21= 0; self->a22=1; self->a23=0;
+		self->a31= 0; self->a32=0; self->a33=1;
+		self->Scale33= 1;
+	}
+}
+inline void CMatrix::testExpandTrans() const
+{
+	if(hasTrans())
+		return;
+	if(!(StateBit&MAT_VALIDTRANS))
+	{
+		CMatrix	*self= const_cast<CMatrix*>(this);
+		self->StateBit|=MAT_VALIDTRANS;
+		self->a14=0;
+		self->a24=0;
+		self->a34=0;
+	}
+}
+inline void CMatrix::testExpandProj() const
+{
+	if(hasProj())
+		return;
+	if(!(StateBit&MAT_VALIDPROJ))
+	{
+		CMatrix	*self= const_cast<CMatrix*>(this);
+		self->StateBit|=MAT_VALIDPROJ;
+		self->a41=0; self->a42=0; self->a43=0; self->a44=1; 
+	}
+}
 
 
 // ======================================================================================================
@@ -89,11 +148,33 @@ CMatrix::CMatrix(const CMatrix &m)
 // ======================================================================================================
 CMatrix		&CMatrix::operator=(const CMatrix &m)
 {
-	nlassert(m.StateBit & MAT_MVALID);
-
-	StateBit= m.StateBit;
-	Scale33= m.Scale33;
-	memcpy(M, m.M, 16*sizeof(float));
+	StateBit= m.StateBit & ~MAT_VALIDALL;
+	if(hasAll())
+	{
+		memcpy(M, m.M, 16*sizeof(float));
+		Scale33= m.Scale33;
+	}
+	else
+	{
+		if(hasRot())
+		{
+			memcpy(&a11, &m.a11, 3*sizeof(float));
+			memcpy(&a12, &m.a12, 3*sizeof(float));
+			memcpy(&a13, &m.a13, 3*sizeof(float));
+			Scale33= m.Scale33;
+		}
+		if(hasTrans())
+		{
+			memcpy(&a14, &m.a14, 3*sizeof(float));
+		}
+		if(hasProj())
+		{
+			a41= m.a41;
+			a42= m.a42;
+			a43= m.a43;
+			a44= m.a44;
+		}
+	}
 	return *this;
 }
 
@@ -102,33 +183,30 @@ CMatrix		&CMatrix::operator=(const CMatrix &m)
 void		CMatrix::identity()
 {
 	StateBit= MAT_IDENTITY;
-	Scale33=1;
-	a11=1; a12=0; a13=0; a14=0; 
-	a21=0; a22=1; a23=0; a24=0; 
-	a31=0; a32=0; a33=1; a34=0; 
-	a41=0; a42=0; a43=0; a44=1; 
+	// For optimisation it would be usefull to keep MAT_VALID states.
+	// But this slows identity(), and this may not be interesting...
 }
 // ======================================================================================================
 void		CMatrix::setRot(const CVector &i, const CVector &j, const CVector &k, bool hintNoScale)
 {
-	CHECK_VALID();
 	StateBit|= MAT_ROT | MAT_SCALEANY;
 	if(hintNoScale)
 		StateBit&= ~(MAT_SCALEANY|MAT_SCALEUNI);
 	a11= i.x; a12= j.x; a13= k.x; 
 	a21= i.y; a22= j.y; a23= k.y; 
 	a31= i.z; a32= j.z; a33= k.z; 
+	Scale33= 1.0f;
 }
 // ======================================================================================================
 void		CMatrix::setRot(const float m33[9], bool hintNoScale)
 {
-	CHECK_VALID();
 	StateBit|= MAT_ROT | MAT_SCALEANY;
 	if(hintNoScale)
 		StateBit&= ~(MAT_SCALEANY|MAT_SCALEUNI);
 	a11= m33[0]; a12= m33[3]; a13= m33[6]; 
 	a21= m33[1]; a22= m33[4]; a23= m33[7]; 
 	a31= m33[2]; a32= m33[5]; a33= m33[8]; 
+	Scale33= 1.0f;
 }
 // ======================================================================================================
 void		CMatrix::setRot(const CVector &v, TRotOrder ro)
@@ -144,31 +222,36 @@ void		CMatrix::setRot(const CVector &v, TRotOrder ro)
 // ======================================================================================================
 void		CMatrix::setPos(const CVector &v)
 {
-	CHECK_VALID();
 	a14= v.x;
 	a24= v.y;
 	a34= v.z;
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
+	{
+		// The trans is identity, and is correcly setup!
 		StateBit&= ~MAT_TRANS;
+		StateBit|= MAT_VALIDTRANS;
+	}
 }
 // ======================================================================================================
 void		CMatrix::movePos(const CVector &v)
 {
-	CHECK_VALID();
 	a14+= v.x;
 	a24+= v.y;
 	a34+= v.z;
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
+	{
+		// The trans is identity, and is correcly setup!
 		StateBit&= ~MAT_TRANS;
+		StateBit|= MAT_VALIDTRANS;
+	}
 }
 // ======================================================================================================
 void		CMatrix::setProj(const float proj[4])
 {
-	CHECK_VALID();
 	a41= proj[0];
 	a42= proj[1];
 	a43= proj[2];
@@ -178,38 +261,51 @@ void		CMatrix::setProj(const float proj[4])
 	if(a41!=0 || a42!=0 || a43!=0 || a44!=1)
 		StateBit|= MAT_PROJ;
 	else
+	{
+		// The proj is identity, and is correcly setup!
 		StateBit&= ~MAT_PROJ;
+		StateBit|= MAT_VALIDPROJ;
+	}
 }
 // ======================================================================================================
 void		CMatrix::resetProj()
 {
-	CHECK_VALID();
 	a41= 0;
 	a42= 0;
 	a43= 0;
 	a44= 1;
+	// The proj is identity, and is correcly setup!
 	StateBit&= ~MAT_PROJ;
+	StateBit|= MAT_VALIDPROJ;
 }
 // ======================================================================================================
 void		CMatrix::set(const float m44[16])
 {
-	// The matrix is now a valid matrix.
 	StateBit= MAT_IDENTITY;
 
 	StateBit|= MAT_ROT | MAT_SCALEANY;
 	memcpy(M, m44, 16*sizeof(float));
+	Scale33= 1.0f;
 
 	// Check Trans state.
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
+	{
+		// The trans is identity, and is correcly setup!
 		StateBit&= ~MAT_TRANS;
+		StateBit|= MAT_VALIDTRANS;
+	}
 
 	// Check Proj state.
 	if(a41!=0 || a42!=0 || a43!=0 || a44!=1)
 		StateBit|= MAT_PROJ;
 	else
+	{
+		// The proj is identity, and is correcly setup!
 		StateBit&= ~MAT_PROJ;
+		StateBit|= MAT_VALIDPROJ;
+	}
 }
 
 
@@ -221,80 +317,129 @@ void		CMatrix::set(const float m44[16])
 // ======================================================================================================
 void		CMatrix::getRot(CVector &i, CVector &j, CVector &k) const
 {
-	CHECK_VALID();
-	i.set(a11, a21, a31);
-	j.set(a12, a22, a32);
-	k.set(a13, a23, a33);
+	if(hasRot())
+	{
+		i.set(a11, a21, a31);
+		j.set(a12, a22, a32);
+		k.set(a13, a23, a33);
+	}
+	else
+	{
+		i.set(1, 0, 0);
+		j.set(0, 1, 0);
+		k.set(0, 0, 1);
+	}
 }
 // ======================================================================================================
 void		CMatrix::getRot(float m33[9]) const
 {
-	CHECK_VALID();
-	m33[0]= a11;
-	m33[1]= a21;
-	m33[2]= a31;
+	if(hasRot())
+	{
+		m33[0]= a11;
+		m33[1]= a21;
+		m33[2]= a31;
 
-	m33[3]= a12;
-	m33[4]= a22;
-	m33[5]= a32;
+		m33[3]= a12;
+		m33[4]= a22;
+		m33[5]= a32;
 
-	m33[6]= a13;
-	m33[7]= a23;
-	m33[8]= a33;
+		m33[6]= a13;
+		m33[7]= a23;
+		m33[8]= a33;
+	}
+	else
+	{
+		m33[0]= 1;
+		m33[1]= 0;
+		m33[2]= 0;
+
+		m33[3]= 0;
+		m33[4]= 1;
+		m33[5]= 0;
+
+		m33[6]= 0;
+		m33[7]= 0;
+		m33[8]= 1;
+	}
 }
 // ======================================================================================================
 void		CMatrix::getPos(CVector &v) const
 {
-	CHECK_VALID();
-	v.set(a14, a24, a34);
+	if(hasTrans())
+		v.set(a14, a24, a34);
+	else
+		v.set(0, 0, 0);
 }
 // ======================================================================================================
 CVector		CMatrix::getPos() const
 {
-	CHECK_VALID();
-	return CVector(a14, a24, a34);
+	if(hasTrans())
+		return CVector(a14, a24, a34);
+	else
+		return CVector(0, 0, 0);
 }
 // ======================================================================================================
 void		CMatrix::getProj(float proj[4]) const
 {
-	proj[0]= a41;
-	proj[1]= a42;
-	proj[2]= a43;
-	proj[3]= a44;
+	if(hasProj())
+	{
+		proj[0]= a41;
+		proj[1]= a42;
+		proj[2]= a43;
+		proj[3]= a44;
+	}
+	else
+	{
+		proj[0]= 0;
+		proj[1]= 0;
+		proj[2]= 0;
+		proj[3]= 1;
+	}
 }
 // ======================================================================================================
 CVector		CMatrix::getI() const
 {
-	CHECK_VALID();
-	return CVector(a11, a21, a31);
+	if(hasRot())
+		return CVector(a11, a21, a31);
+	else
+		return CVector(1, 0, 0);
 }
 // ======================================================================================================
 CVector		CMatrix::getJ() const
 {
-	CHECK_VALID();
-	return CVector(a12, a22, a32);
+	if(hasRot())
+		return CVector(a12, a22, a32);
+	else
+		return CVector(0, 1, 0);
 }
 // ======================================================================================================
 CVector		CMatrix::getK() const
 {
-	CHECK_VALID();
-	return CVector(a13, a23, a33);
+	if(hasRot())
+		return CVector(a13, a23, a33);
+	else
+		return CVector(0, 0, 1);
 }
 // ======================================================================================================
 void		CMatrix::get(float m44[16]) const
 {
-	CHECK_VALID();
+	// TODO_OPTIMIZE_it.
+	testExpandRot();
+	testExpandTrans();
+	testExpandProj();
 	memcpy(m44, M, 16*sizeof(float));
 }
 // ======================================================================================================
 const float *CMatrix::get() const
 {
+	testExpandRot();
+	testExpandTrans();
+	testExpandProj();
 	return M;
 }
 /*// ======================================================================================================
 CVector		CMatrix::toEuler(TRotOrder ro) const
 {
-	CHECK_VALID();
 
 }*/
 
@@ -307,10 +452,10 @@ CVector		CMatrix::toEuler(TRotOrder ro) const
 // ======================================================================================================
 void		CMatrix::translate(const CVector &v)
 {
-	CHECK_VALID();
+	testExpandTrans();
 
 	// SetTrans.
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
 		a14+= a11*v.x + a12*v.y + a13*v.z;
 		a24+= a21*v.x + a22*v.y + a23*v.z;
@@ -324,19 +469,22 @@ void		CMatrix::translate(const CVector &v)
 	}
 
 	// SetProj.
-	if( StateBit & MAT_PROJ)
+	if( hasProj() )
 		a44+= a41*v.x + a42*v.y + a43*v.z;
 
 	// Check Trans.
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
+	{
+		// The trans is identity, and is correcly setup!
 		StateBit&= ~MAT_TRANS;
+		StateBit|= MAT_VALIDTRANS;
+	}
 }
 // ======================================================================================================
 void		CMatrix::rotateX(float a)
 {
-	CHECK_VALID();
 
 	if(a==0)
 		return;
@@ -345,7 +493,7 @@ void		CMatrix::rotateX(float a)
 	sa=sin(a);
 
 	// SetRot.
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
 		float	b12=a12, b22=a22, b32=a32;
 		float	b13=a13, b23=a23, b33=a33;
@@ -358,12 +506,13 @@ void		CMatrix::rotateX(float a)
 	}
 	else
 	{
+		testExpandRot();
 		a12= 0.0f; a22= (float)ca; a32= (float)sa;
 		a13= 0.0f; a23= (float)-sa; a33= (float)ca;
 	}
 
 	// SetProj.
-	if( StateBit & MAT_PROJ)
+	if( hasProj() )
 	{
 		float	b42=a42, b43=a43;
 		a42= (float)(b42*ca + b43*sa);
@@ -376,7 +525,6 @@ void		CMatrix::rotateX(float a)
 // ======================================================================================================
 void		CMatrix::rotateY(float a)
 {
-	CHECK_VALID();
 
 	if(a==0)
 		return;
@@ -385,7 +533,7 @@ void		CMatrix::rotateY(float a)
 	sa=sin(a);
 
 	// SetRot.
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
 		float	b11=a11, b21=a21, b31=a31;
 		float	b13=a13, b23=a23, b33=a33;
@@ -398,12 +546,13 @@ void		CMatrix::rotateY(float a)
 	}
 	else
 	{
+		testExpandRot();
 		a11= (float)ca; a21=0.0f; a31= (float)-sa;
 		a13= (float)sa; a23=0.0f; a33= (float)ca;
 	}
 
 	// SetProj.
-	if( StateBit & MAT_PROJ)
+	if( hasProj() )
 	{
 		float	b41=a41, b43=a43;
 		a41= (float)(b41*ca - b43*sa);
@@ -416,7 +565,6 @@ void		CMatrix::rotateY(float a)
 // ======================================================================================================
 void		CMatrix::rotateZ(float a)
 {
-	CHECK_VALID();
 
 	if(a==0)
 		return;
@@ -438,12 +586,13 @@ void		CMatrix::rotateZ(float a)
 	}
 	else
 	{
+		testExpandRot();
 		a11= (float)ca; a21= (float)sa; a31=0.0f;
 		a12= (float)-sa; a22= (float)ca; a32=0.0f;
 	}
 
 	// SetProj.
-	if( StateBit & MAT_PROJ)
+	if( hasProj() )
 	{
 		float	b41=a41, b42=a42;
 		a41= (float)(b41*ca + b42*sa);
@@ -456,7 +605,6 @@ void		CMatrix::rotateZ(float a)
 // ======================================================================================================
 void		CMatrix::rotate(const CVector &v, TRotOrder ro)
 {
-	CHECK_VALID();
 	CMatrix		rot;
 	rot.identity();
 	switch(ro)
@@ -474,7 +622,6 @@ void		CMatrix::rotate(const CVector &v, TRotOrder ro)
 // ======================================================================================================
 void		CMatrix::scale(float f)
 {
-	CHECK_VALID();
 
 	if(f==1.0f) return;
 	if(StateBit & MAT_SCALEANY)
@@ -483,6 +630,7 @@ void		CMatrix::scale(float f)
 	}
 	else
 	{
+		testExpandRot();
 		StateBit|= MAT_SCALEUNI;
 		Scale33*=f;
 		a11*= f; a12*=f; a13*=f;
@@ -490,7 +638,7 @@ void		CMatrix::scale(float f)
 		a31*= f; a32*=f; a33*=f;
 
 		// SetProj.
-		if( StateBit & MAT_PROJ)
+		if( hasProj() )
 		{
 			a41*=f; a42*=f; a43*=f;
 		}
@@ -499,7 +647,6 @@ void		CMatrix::scale(float f)
 // ======================================================================================================
 void		CMatrix::scale(const CVector &v)
 {
-	CHECK_VALID();
 
 	if( v==CVector(1,1,1) ) return;
 	if( !(StateBit & MAT_SCALEANY) && v.x==v.y && v.x==v.z)
@@ -508,13 +655,14 @@ void		CMatrix::scale(const CVector &v)
 	}
 	else
 	{
+		testExpandRot();
 		StateBit|=MAT_SCALEANY;
 		a11*= v.x; a12*=v.y; a13*=v.z;
 		a21*= v.x; a22*=v.y; a23*=v.z;
 		a31*= v.x; a32*=v.y; a33*=v.z;
 
 		// SetProj.
-		if( StateBit & MAT_PROJ)
+		if( hasProj() )
 		{
 			a41*=v.x;
 			a42*=v.y;
@@ -532,25 +680,35 @@ void		CMatrix::scale(const CVector &v)
 // ======================================================================================================
 CMatrix		CMatrix::operator*(const CMatrix &m) const
 {
-	CHECK_VALID();
-	nlassert(m.StateBit & MAT_MVALID);
-
 	CMatrix		ret;
 	// Do ret= M1*M2, where M1=*this and M2=m.
+	ret.identity();
 	ret.StateBit= StateBit | m.StateBit;
+	ret.StateBit&= ~MAT_VALIDALL;
+
+	// TODO_OPTIMIZE it...
+	testExpandRot();
+	testExpandTrans();
+	testExpandProj();
+	m.testExpandRot();
+	m.testExpandTrans();
+	m.testExpandProj();
+	ret.testExpandRot();
+	ret.testExpandTrans();
+	ret.testExpandProj();
 
 
 	// Build Rot part.
 	//===============
-	bool	M1Identity= ! (StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY));
-	bool	M2Identity= ! (m.StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY));
+	bool	M1Identity= ! hasRot();
+	bool	M2Identity= ! (m.hasRot());
 	bool	M1ScaleOnly= ! (StateBit & MAT_ROT);
 	bool	M2ScaleOnly= ! (m.StateBit & MAT_ROT);
 
-	// If one or all of the 3x3 matrix is an identity, just do a copy
+	// If one of the 3x3 matrix is an identity, just do a copy
 	if( M1Identity || M2Identity )
 	{
-		// Copy the non identity matrix (if possible).
+		// Copy the non identity matrix.
 		const CMatrix	*c= M2Identity? this : &m;
 		ret.a11= c->a11; ret.a12= c->a12; ret.a13= c->a13;
 		ret.a21= c->a21; ret.a22= c->a22; ret.a23= c->a23;
@@ -594,7 +752,7 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 	}
 
 	// If M1 has translate and M2 has projective, rotation is modified.
-	if( (StateBit & MAT_TRANS) && (m.a41!=0 || m.a42!=0 || m.a43!=0))
+	if( hasTrans() && m.hasProj())
 	{
 		ret.StateBit|= MAT_ROT|MAT_SCALEANY;
 
@@ -662,6 +820,7 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 		ret.a14= 0;
 		ret.a24= 0;
 		ret.a34= 0;
+		ret.StateBit|= MAT_VALIDTRANS;
 	}
 
 
@@ -689,7 +848,6 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 // ======================================================================================================
 CMatrix		&CMatrix::operator*=(const CMatrix &m)
 {
-	CHECK_VALID();
 
 	*this= *this*m;
 
@@ -698,7 +856,6 @@ CMatrix		&CMatrix::operator*=(const CMatrix &m)
 // ======================================================================================================
 void		CMatrix::invert()
 {
-	CHECK_VALID();
 
 	*this= inverted();
 }
@@ -827,9 +984,13 @@ bool	CMatrix::slowInvert44(CMatrix &ret) const
 // ======================================================================================================
 CMatrix		CMatrix::inverted() const
 {
-	CHECK_VALID();
 
 	CMatrix	ret;
+
+	// TODO_OPTIMIZE it...
+	testExpandRot();
+	testExpandTrans();
+	testExpandProj();
 
 	// Do a conventionnal 44 inversion.
 	//=================================
@@ -842,7 +1003,7 @@ CMatrix		CMatrix::inverted() const
 		}
 
 		// Well, don't know what happens to matrix, so set all StateBit :).
-		ret.StateBit= MAT_TRANS|MAT_ROT|MAT_SCALEANY|MAT_PROJ|MAT_MVALID;
+		ret.StateBit= MAT_TRANS|MAT_ROT|MAT_SCALEANY|MAT_PROJ;
 
 		// Check Trans state.
 		if(ret.a14!=0 || ret.a24!=0 || ret.a34!=0)
@@ -904,12 +1065,14 @@ CMatrix		CMatrix::inverted() const
 // ======================================================================================================
 bool		CMatrix::normalize(TRotOrder ro)
 {
-	CHECK_VALID();
 
 	CVector	ti,tj,tk;
 	ti= getI();
 	tj= getJ();
 	tk= getK();
+
+	// TODO_OPTIMIZE it...
+	testExpandRot();
 
 	// Normalize with help of ro
 	switch(ro)
@@ -960,6 +1123,8 @@ bool		CMatrix::normalize(TRotOrder ro)
 	a31= ti.z; a32= tj.z; a33= tk.z; 
 	// Scale is reseted.
 	StateBit&= ~(MAT_SCALEUNI|MAT_SCALEANY);
+	// Rot is setup...
+	StateBit|= MAT_ROT;
 	Scale33=1;
 
 	return true;
@@ -974,11 +1139,10 @@ bool		CMatrix::normalize(TRotOrder ro)
 // ======================================================================================================
 CVector		CMatrix::mulVector(const CVector &v) const
 {
-	CHECK_VALID();
 
 	CVector	ret;
 
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
 		ret.x= a11*v.x + a12*v.y + a13*v.z;
 		ret.y= a21*v.x + a22*v.y + a23*v.z;
@@ -992,27 +1156,29 @@ CVector		CMatrix::mulVector(const CVector &v) const
 // ======================================================================================================
 CVector		CMatrix::mulPoint(const CVector &v) const
 {
-	CHECK_VALID();
 
 	CVector	ret;
 
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
-		// Compose with translation too.
-		ret.x= a11*v.x + a12*v.y + a13*v.z + a14;
-		ret.y= a21*v.x + a22*v.y + a23*v.z + a24;
-		ret.z= a31*v.x + a32*v.y + a33*v.z + a34;
-		return ret;
+		ret.x= a11*v.x + a12*v.y + a13*v.z;
+		ret.y= a21*v.x + a22*v.y + a23*v.z;
+		ret.z= a31*v.x + a32*v.y + a33*v.z;
 	}
-	else if( StateBit & MAT_TRANS )
+	else
 	{
-		ret.x= v.x + a14;
-		ret.y= v.y + a24;
-		ret.z= v.z + a34;
-		return ret;
+		ret.x=0;
+		ret.y=0;
+		ret.z=0;
 	}
-	else	// Identity!!
-		return v;
+	if( hasTrans() )
+	{
+		ret.x+= a14;
+		ret.y+= a24;
+		ret.z+= a34;
+	}
+
+	return ret;
 }
 
 
@@ -1021,9 +1187,14 @@ CVector		CMatrix::mulPoint(const CVector &v) const
  */
 CVectorH	CMatrix::operator*(const CVectorH& v) const
 {
-	CHECK_VALID();
 
 	CVectorH ret;
+
+	// TODO_OPTIMIZE it...
+	testExpandRot();
+	testExpandTrans();
+	testExpandProj();
+
 	ret.x= a11*v.x + a12*v.y + a13*v.z + a14*v.w;
 	ret.y= a21*v.x + a22*v.y + a23*v.z + a24*v.w;
 	ret.z= a31*v.x + a32*v.y + a33*v.z + a34*v.w;
@@ -1035,7 +1206,11 @@ CVectorH	CMatrix::operator*(const CVectorH& v) const
 // ======================================================================================================
 CPlane		operator*(const CPlane &p, const CMatrix &m)
 {
-	nlassert(m.StateBit & MAT_MVALID);
+	// TODO_OPTIMIZE it...
+	m.testExpandRot();
+	m.testExpandTrans();
+	m.testExpandProj();
+
 
 	CPlane	ret;
 
@@ -1071,9 +1246,6 @@ CPlane		operator*(const CPlane &p, const CMatrix &m)
 // ======================================================================================================
 void		CMatrix::serial(IStream &f)
 {
-	if(!f.isReading())
-		CHECK_VALID();
-
 	// Use versionning, maybe for futur improvement.
 	sint	ver= f.serialVersion(0);
 
@@ -1081,17 +1253,17 @@ void		CMatrix::serial(IStream &f)
 		identity();
 	f.serial(StateBit);
 	f.serial(Scale33);
-	if( StateBit & (MAT_ROT|MAT_SCALEUNI|MAT_SCALEANY) )
+	if( hasRot() )
 	{
 		f.serial(a11, a12, a13);
 		f.serial(a21, a22, a23);
 		f.serial(a31, a32, a33);
 	}
-	if( StateBit & (MAT_TRANS) )
+	if( hasTrans() )
 	{
 		f.serial(a14, a24, a34);
 	}
-	if( StateBit & (MAT_PROJ) )
+	if( hasProj() )
 	{
 		f.serial(a41, a42, a43, a44);
 	}

@@ -1,7 +1,8 @@
 /** \file matrix.h
- * <description>
+ * 
+ * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.10 2000/11/30 18:13:21 berenguier Exp $
+ * $Id: matrix.h,v 1.11 2000/12/05 14:04:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,8 +57,7 @@ class	CPlane;
  *
  * An example of improvement is that CMatrix::operator*(const CVector &v) return v if the matrix is identity.
  *
- * By default, a matrix is undefined. You must use copy ctor, operator=(), identity(), set(m44), or serial() with an 
- * input stream to fully define it. Any other operation on an undefined matrix will assert().
+ * By default, a matrix is identity. But for a performance view, this is just a StateBit=0...
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -81,8 +81,8 @@ public:
 
 	/// \name Object
 	//@{
-	/// Constructor which do nothing!!
-	CMatrix() {StateBit= 0; /* Not valid By default*/}
+	/// Constructor which init to identity().
+	CMatrix() {StateBit= 0;}
 	/// Copy Constructor.
 	CMatrix(const CMatrix &);
 	/// operator=.
@@ -301,6 +301,25 @@ private:
 			case 3: l1=0; l2=1; l3=2; break;
 		}
 	}
+
+	// true if MAT_ROT | MAT_SCALEUNI | MAT_SCALEANY.
+	// rot part is true means the 3x3 rot matrix AND Scale33 are revelant. 
+	// Else they are not initialised but are supposed to represent identity and Scale33==1.
+	bool	hasRot() const;
+	// true if MAT_TRANS.
+	// trans part is true means the right 3x1 translation part matrix is revelant.
+	// Else it is not initialised but is supposed to represent the column vector (0,0,0).
+	bool	hasTrans() const;
+	// true if MAT_PROJ.
+	// proj part is true means the bottom 1x4 projection part matrix is revelant.
+	// Else it is not initialised but is supposed to represent the line vector (0,0,0,1).
+	bool	hasProj() const;
+	bool	hasAll() const;
+
+	void	testExpandRot() const;
+	void	testExpandTrans() const;
+	void	testExpandProj() const;
+
 };
 
 

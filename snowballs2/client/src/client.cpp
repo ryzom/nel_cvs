@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.33 2001/07/18 11:45:45 lecroart Exp $
+ * $Id: client.cpp,v 1.34 2001/07/18 12:16:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,12 +85,11 @@ UDriver				*Driver = NULL;
 UScene				*Scene = NULL;
 UInstance			*Cube = NULL;
 
-//U3dMouseListener	*MouseListener = NULL;
 C3dMouseListener	*MouseListener = NULL;
-
 
 UTextContext		*TextContext = NULL;
 
+// The previous and current frame dates
 TTime				LastTime, 
 					NewTime;
 
@@ -99,7 +98,6 @@ TTime				LastTime,
 bool				NeedExit = false;
 
 bool				ShowCommands;
-bool				SnapSnowballs;
 
 bool				CaptureState = false;
 
@@ -203,8 +201,6 @@ int main(int argc, char **argv)
 
 	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
 
-	SnapSnowballs = false;
-
 	// Manage paths
 
 	string dataPath = ConfigFile.getVar("DataPath").asString ();
@@ -224,10 +220,12 @@ int main(int argc, char **argv)
 	Driver->setDisplay (UDriver::CMode(640, 480, 0));
 	Driver->setFontManagerMaxMemory (2000000);
 
+	// Init the mouse so it's trapped by the main window.
 	Driver->showCursor(false);
 	Driver->setCapture(true);
 	Driver->setMousePos(0.5f, 0.5f);
 
+	// Create a Text context for later text display
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
 
 	// Create a scene
@@ -252,7 +250,6 @@ int main(int argc, char **argv)
 	MouseListener->setHotSpot (CVectorD (0,0,0));
 	MouseListener->setFrustrum (Camera->getFrustum());
 	MouseListener->setMatrix (Camera->getMatrix());
-	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
 	MouseListener->setSpeed(PlayerSpeed);
 	initMouseListenerConfig();
 
@@ -318,6 +315,8 @@ int main(int argc, char **argv)
 		updateEntities();
 
 		// setup the camera
+		// -> first update camera position directly from the mouselistener
+		// -> then update stuffs linked to the camera (snow, sky, lens flare etc.)
 		MouseListener->updateCamera();
 		updateCamera();
 
@@ -362,14 +361,18 @@ int main(int argc, char **argv)
 		Driver->EventServer.pump();
 
 		// Manage the keyboard
+
+		// Shift Escape -> quit
 		if (Driver->AsyncListener.isKeyDown (KeySHIFT) && Driver->AsyncListener.isKeyDown (KeyESCAPE))
 		{
 			NeedExit = true;
 		}
+		// F3 -> radar zoom out
 		else if(Driver->AsyncListener.isKeyDown(KeyF3))
 		{
 			RadarDistance += 50;
 		}
+		// F4 -> radar zoom in
 		else if(Driver->AsyncListener.isKeyDown(KeyF4))
 		{
 			RadarDistance -= 50;
@@ -382,16 +385,11 @@ int main(int argc, char **argv)
 		{
 			RadarState = (RadarState+1)%3;
 		}
-/// \todo virer a la fin
-		else if (Driver->AsyncListener.isKeyPushed (KeyF7))
-		{
-			SnapSnowballs = !SnapSnowballs;
-		}
-/// \todo fin virer a la fin
 		else if (Driver->AsyncListener.isKeyPushed (KeyF8))
 		{
 			clearCommands ();
 		}
+		// F9 -> release/capture the mouse
 		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
 		{
 			if (!CaptureState)
@@ -408,11 +406,13 @@ int main(int argc, char **argv)
 			}
 			CaptureState = !CaptureState;
 		}
+		// F11 -> reset the PACS global position of the self entity (in case of a pacs failure :-\)
 		else if (Driver->AsyncListener.isKeyPushed (KeyF11))
 		{
 			if (Self != NULL)
 				resetEntityPosition(Self->Id);
 		}
+		// F12 -> take a screenshot
 		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
 		{
 			CBitmap btm;
@@ -421,17 +421,6 @@ int main(int argc, char **argv)
 			COFile fs (filename);
 			btm.writeTGA (fs,24,true);
 			nlinfo("Screenshot '%s' saved", filename.c_str());
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyCONTROL))
-		{
-			if (Self != NULL)
-			{
-				/// todo
-/*
-				CVector	Direction = CVector((float)cos(Self->Angle), (float)sin(Self->Angle), (2.0f-ViewHeight)/ViewLagBehind).normed();
-				shotSnowball(Self->Id, Self->Position+Direction*100.0f);
-*/
-			}
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF1))
 		{
@@ -452,9 +441,11 @@ int main(int argc, char **argv)
 		CConfigFile::checkConfigFiles ();
 	}
 
+	// release the mouse
 	Driver->setCapture(false);
 	Driver->showCursor(true);
 
+	// release all before quit
 	releaseLensFlare ();
 	releaseInterface ();
 	releaseNetwork ();

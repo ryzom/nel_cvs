@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.19 2001/07/18 11:45:46 lecroart Exp $
+ * $Id: entities.cpp,v 1.20 2001/07/18 12:16:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -370,9 +370,9 @@ void stateNormal (CEntity &entity)
 	if (entity.Type == CEntity::Other && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
 		float EntityMaxSpeed = 10.0f;
-		entity.Angle += frand(1.5f)-0.75f;
-		entity.ServerPosition += CVector((float)cos(entity.Angle),
-										 (float)sin(entity.Angle),
+		entity.AuxiliaryAngle += frand(1.5f)-0.75f;
+		entity.ServerPosition += CVector((float)cos(entity.AuxiliaryAngle),
+										 (float)sin(entity.AuxiliaryAngle),
 										 0.0f)*EntityMaxSpeed;
 
 		playAnimation (entity, WalkAnimId);
@@ -483,8 +483,28 @@ void stateNormal (CEntity &entity)
 		// go to the server position with linear interpolation
 		/// \todo compute the linear interpolation
 
+		// AuxiliaryAngle -> the server imposed angle
+		// InterpolatedAuxiliaryAngle -> the angle showed by the entity
+
+		float	sweepDistance = entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle;
+		if (sweepDistance > (float)Pi)
+		{
+			sweepDistance -= (float)Pi*2.0f;
+			entity.InterpolatedAuxiliaryAngle += (float)Pi*2.0f;
+		}
+		if (sweepDistance < -(float)Pi)
+		{
+			sweepDistance += (float)Pi*2.0f;
+			entity.InterpolatedAuxiliaryAngle -= (float)Pi*2.0f;
+		}
+		float	sweepAngle = 4.0f*sweepDistance;
+		entity.InterpolatedAuxiliaryAngle += (float)(sweepAngle*dt);
+		if ((entity.AuxiliaryAngle-entity.InterpolatedAuxiliaryAngle)*sweepAngle <= 0.0)
+			entity.InterpolatedAuxiliaryAngle = entity.AuxiliaryAngle;
+
+		entity.Angle = entity.InterpolatedAuxiliaryAngle;
+
 		pDelta.normalize();
-		entity.Angle = (float)atan2(pDelta.y, pDelta.x);
 		pDelta *= -entity.Speed;
 		entity.MovePrimitive->move(pDelta, 0);
 
@@ -544,19 +564,6 @@ void updateEntities ()
 		eit = nexteit;
 	}
 
-/*
-	if (Driver->AsyncListener.isKeyDown (KeyUP))
-	{
-		if (Self != NULL)
-			playAnimation (*Self, WalkAnimId);
-	}
-	else
-	{
-		if (Self != NULL)
-			playAnimation (*Self, IdleAnimId);
-	}
-*/	
-	
 	// evaluate collisions
 	MoveContainer->evalCollision(dt, 0);
 
@@ -591,19 +598,22 @@ void updateEntities ()
 			// snap to the ground
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
 		}
-/*
-		if (entity.Type == CEntity::Snowball && SnapSnowballs)
-		{
-			CVector	snapPos = entity.Position;
-			entity.VisualCollisionEntity->snapToGround(snapPos);
-			entity.Instance->setPos(snapPos);
-			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
-			entity.Instance->setRotQuat(jdir);
-		}
-		else */
+
 		if (entity.Instance != NULL)
 		{
-			CVector	jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
+			CVector	jdir;
+			switch (entity.Type)
+			{
+			case CEntity::Self:
+				jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
+				break;
+			case CEntity::Other:
+				jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
+				break;
+			case CEntity::Snowball:
+				jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
+				break;
+			}
 
 			if (entity.Skeleton != NULL)
 			{

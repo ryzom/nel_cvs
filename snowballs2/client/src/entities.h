@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.14 2001/07/18 11:45:46 lecroart Exp $
+ * $Id: entities.h,v 1.15 2001/07/18 12:16:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,8 @@ public:
 	
 	CEntity () :
 	  Id(0xffffffff), Name("<Unknown>"), AutoMove(false), Instance(NULL), Skeleton(NULL),
-	  Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff), NextEmptySlot(0), Source (NULL) { }
+	  Particule(NULL), PlayList(NULL), CurrentAnimId(0xffffffff), NextEmptySlot(0), Source (NULL),
+	  Angle(0.0f), AuxiliaryAngle(0.0f), InterpolatedAuxiliaryAngle(0.0f) { }
 
 	uint32							Id;
 

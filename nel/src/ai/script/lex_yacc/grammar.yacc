@@ -137,20 +137,13 @@ using  namespace NLAIFUZZY;
 
 	EnteteDeDefinition	:	DEFINE DefinitionDeGroup
 						|	DEFINE IDENT
-							{
-								try
+							{								
+								if(!definClass(LastyyText[1]))
 								{
-									NLAIC::CIdentType id(LastyyText[1]);
-									char text[1024*4];
-									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
-									yyerror(text);
+									std::string text;
+									text = NLAIC::stringGetBuild("class '%s' all ready exist",LastyyText[1]);
+									yyerror((char *)text.c_str());
 									return 0;
-								}
-								catch(NLAIE::IException &)
-								{
-									( (IClassInterpret *) _SelfClass.get() )->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
-									( (IClassInterpret *) _SelfClass.get() )->buildVTable();
-									RegisterClass();
 								}
 							}
 						;

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.43 2001/09/06 16:48:18 chafik Exp $
+ * $Id: agents.cpp,v 1.44 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -331,9 +331,9 @@ namespace NLAIAGENT
 		{
 		case IMessageBase::PUndefine:
 			{
-				char text[2048*8];
-				sprintf(text,"Function IObjectIA *IBasicAgent::run('%s') proccess an IMessageBase::PUndefine performatif",(const char *)msg.getType());
-				throw NLAIE::CExceptionNotImplemented(text);
+				std::string text;
+				text = NLAIC::stringGetBuild("Function IObjectIA *IBasicAgent::run('%s') proccess an IMessageBase::PUndefine performatif",(const char *)msg.getType());
+				throw NLAIE::CExceptionNotImplemented(text.c_str());
 			}
 			break;		
 		case IMessageBase::PExec:

@@ -1263,9 +1263,9 @@ case 14:
 {								
 								if(!definClass(LastyyText[1]))
 								{
-									char text[1024*4];
-									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
-									yyerror(text);
+									std::string text;
+									text = NLAIC::stringGetBuild("class '%s' all ready exist",LastyyText[1]);
+									yyerror((char *)text.c_str());
 									return 0;
 								}
 							;

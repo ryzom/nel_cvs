@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.20 2001/07/06 08:24:01 portier Exp $
+ * $Id: var_control.cpp,v 1.21 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLAISCRIPT
 		{
 			isRunMsg = false;
 			char text[4096];
-			sprintf(text,"run message methode must return an message value");
+			strcpy(text,"run message methode must return an message value");
 			yyerror(text);			
 			return false;
 		}
@@ -65,9 +65,9 @@ namespace NLAISCRIPT
 			}
 			catch(NLAIE::IException &)
 			{
-				char text[4096];
-				sprintf(text,"can't find %s object in the class factory",t.getString());
-				yyerror(text);
+				std::string text;
+				text = NLAIC::stringGetBuild("can't find %s object in the class factory",t.getString());
+				yyerror((char *)text.c_str());
 				return false;
 			}
 			
@@ -224,9 +224,9 @@ namespace NLAISCRIPT
 						if(!isValidateVarName(cl,_LastFact.Member,_LasVarStr,c))
 						{
 							if(c) c->release();
-							char txt[1024*8];
-							sprintf(txt,"var '%s' is not define",varName.getString());
-							yyerror(txt);
+							std::string text;
+							text = NLAIC::stringGetBuild("var '%s' is not define",varName.getString());
+							yyerror((char *)text.c_str());
 							return false;
 						}						
 						_FlotingExpressionType = c;
@@ -263,9 +263,9 @@ namespace NLAISCRIPT
 					if(!isValidateVarName(_LastFact.Member,_LasVarStr,c))
 					{
 						if(c) c->release();
-						char txt[1024*8];
-						sprintf(txt,"var '%s' is not define",varName.getString());
-						yyerror(txt);
+						std::string text;
+						text = NLAIC::stringGetBuild("var '%s' is not define",varName.getString());
+						yyerror((char *)text.c_str());
 						return false;
 					}
 					_LastFact.ValueVar = NULL;						
@@ -292,9 +292,9 @@ namespace NLAISCRIPT
 							if(c) c->release();
 							type->release();
 							cl->release();
-							char txt[1024*8];
-							sprintf(txt,"var '%s' is not define",varName.getString());
-							yyerror(txt);
+							std::string text;
+							text = NLAIC::stringGetBuild("var '%s' is not define",varName.getString());
+							yyerror((char *)text.c_str());
 							return false;
 						}						
 						_FlotingExpressionType = (IOpType *)c;
@@ -367,9 +367,9 @@ namespace NLAISCRIPT
 		}
 		catch(NLAIE::IException &e)
 		{
-			char text[4096];
-			sprintf(text,"Bad reference or class reference undefined '%s'", e.what());
-			yyerror(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("Bad reference or class reference undefined '%s'", e.what());
+			yyerror((char *)text.c_str());
 			return 0;
 		}
 		return true;
@@ -568,9 +568,9 @@ namespace NLAISCRIPT
 			}
 			catch(NLAIE::IException &)
 			{
-				char text[1024*8];
-				sprintf(text,"can't find '%s'",s->getStr().getString());
-				yyerror(text);	
+				std::string text;
+				text = NLAIC::stringGetBuild("can't find '%s'",s->getStr().getString());
+				yyerror((char *)text.c_str());	
 				return false;					
 			}
 			return true;

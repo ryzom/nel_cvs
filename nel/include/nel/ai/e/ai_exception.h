@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.11 2001/10/17 08:53:19 chafik Exp $
+ * $Id: ai_exception.h,v 1.12 2001/10/24 16:37:16 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -139,7 +139,7 @@ namespace NLAIE
 			_ClassName = new char [strlen(e._ClassName) + 1];
 			strcpy(_ClassName,e._ClassName);
 		}
-		CExceptionUnRegisterClassError(char *name)
+		CExceptionUnRegisterClassError(const char *name)
 		{
 			_ClassName = new char [strlen(name) + 1];
 			strcpy(_ClassName,name);
@@ -172,7 +172,7 @@ namespace NLAIE
 			_ClassName = new char [strlen(e._ClassName) + 1];
 			strcpy(_ClassName,e._ClassName);
 		}
-		CExceptionObjectNotFoundError(char *name)
+		CExceptionObjectNotFoundError(const char *name)
 		{
 			_ClassName = new char [strlen(name) + 1];
 			strcpy(_ClassName,name);
@@ -240,7 +240,7 @@ namespace NLAIE
 			strcpy(_Text,e._Text);
 		}
 		
-		CExceptionUnReference(char *text)
+		CExceptionUnReference(const char *text)
 		{
 			_Text = new char [strlen(text) + 1];
 			strcpy(_Text,text);
@@ -274,7 +274,7 @@ namespace NLAIE
 			strcpy(_Text,e._Text);
 		}
 		
-		CExceptionAllReadyExist(char *text)
+		CExceptionAllReadyExist(const char *text)
 		{
 			_Text = new char [strlen(text) + 1];
 			strcpy(_Text,text);

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.26 2001/10/02 14:53:41 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.27 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,9 @@ namespace NLAIAGENT
 		return new CAgentManagerTimer(NULL);
 	}
 
-	void CAgentManagerTimer::getDebugString(char *t) const
+	void CAgentManagerTimer::getDebugString(std::string &t) const
 	{
-		sprintf(t,"CAgentManagerTimer <%d>",_Time);
+		t += NLAIC::stringGetBuild("CAgentManagerTimer <%d>",_Time);
 	}
 
 	const NLAIC::CIdentType &CAgentManagerTimer::getType() const

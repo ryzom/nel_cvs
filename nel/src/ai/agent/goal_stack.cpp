@@ -115,9 +115,9 @@ namespace NLAILOGIC
 		for (int i = 0; i < (int) _Goals.size(); i++ )
 		{
 			t += _Goals[i]->getName().getString();
-			char buf[1024];
-			sprintf( buf, " %f ", _Goals[i]->priority() );
-			t += buf;
+			std::string text;
+			text = NLAIC::stringGetBuild(" %f ", _Goals[i]->priority() );
+			t += text;
 			if ( _Goals[i]->isSelected() )
 				t += "Selected";
 			else

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.36 2001/10/16 15:44:26 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.37 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -766,7 +766,7 @@ namespace NLAISCRIPT
 	{
 #ifdef NL_DEBUG
 	char txtClass[2048*8];
-	sprintf(txtClass,getClassName()->getString());
+	strcpy(txtClass,getClassName()->getString());
 #endif					
 		if(sizeVTable() > 1 )
 		{	

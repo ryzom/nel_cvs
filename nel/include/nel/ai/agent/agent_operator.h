@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.10 2001/06/01 14:48:32 portier Exp $
+ * $Id: agent_operator.h,v 1.11 2001/10/24 16:37:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,127 +79,127 @@ namespace NLAIAGENT
 		///throw (NLAIE::CExceptionNotImplemented)
 		virtual IObjetOp &operator += (const IObjetOp &)
 		{			
-			char text[2048*8];
-			sprintf(text,"opertor <IObjectIA &operator += (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <IObjectIA &operator += (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}
 
 		virtual IObjetOp &operator -= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <IObjectIA &operator -= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <IObjectIA &operator -= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}
 
 		virtual IObjetOp &neg()/// throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <IObjectIA &neg()> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <IObjectIA &neg()> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}
 
 		virtual IObjetOp &operator *= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <IObjectIA &operator *= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <IObjectIA &operator *= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}
 		virtual IObjetOp &operator /= (const IObjetOp &)/// throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <IObjectIA &operator /= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <IObjectIA &operator /= (const IObjectIA &a)> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return *this;
 		}	
 
 		virtual IObjetOp *operator + (const IObjetOp &) const/// throw (NLAIE::CExceptionNotImplemented) 
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator + (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator + (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
 		virtual IObjetOp *operator - (const IObjetOp &)  const/// throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator - (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator - (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
 		virtual const IObjetOp *operator * (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator * (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator * (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
 		virtual const IObjetOp *operator / (const IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator / (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator / (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 		
 
 		virtual IObjetOp *operator < (IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator < (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator < (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 		virtual IObjetOp *operator > (IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator > (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator > (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
 		virtual IObjetOp *operator <= (IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator <= (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator <= (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
 		virtual IObjetOp *operator >= (IObjetOp &)  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator >= (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator >= (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 		
 		virtual IObjetOp *operator ! ()  const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator ! ()  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator ! ()  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 		virtual IObjetOp *operator != (IObjetOp &) const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator != (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator != (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}		
 
 		virtual IObjetOp *operator == (IObjetOp &) const ///throw (NLAIE::CExceptionNotImplemented)
 		{
-			char text[2048*8];
-			sprintf(text,"opertor <virtual IObjetOp *operator == (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
-			throw NLAIE::CExceptionNotImplemented(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("opertor <virtual IObjetOp *operator == (const IObjetOp &a)  const> note implemented for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text.c_str());
 			return (IObjetOp *)this;
 		}
 
@@ -212,9 +212,9 @@ namespace NLAIAGENT
 
 	inline bool IObjetOp::isTrue() const ///throw (NLAIE::CExceptionNotImplemented)
 	{			
-		char text[2048*8];
-		sprintf(text,"'bool isTrue() const' note implemented for the '%s' interface",(const char *)getType());
-		throw NLAIE::CExceptionNotImplemented(text);
+		std::string text;
+		text = NLAIC::stringGetBuild("'bool isTrue() const' note implemented for the '%s' interface",(const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text.c_str());
 		return false;		
 	}
 }

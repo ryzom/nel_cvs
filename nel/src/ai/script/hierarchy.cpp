@@ -1,6 +1,6 @@
 /** \file hierarchy.cpp
  *
- * $Id: hierarchy.cpp,v 1.7 2001/01/29 11:11:42 chafik Exp $
+ * $Id: hierarchy.cpp,v 1.8 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,9 +160,9 @@ namespace NLAISCRIPT
 				}				
 				catch(NLAIE::IException &)
 				{
-					char text[4096*4];
-					sprintf(text,"you try to access to '%s' and this class is not define in the hierarchy of '%s' class",str.getString(),(const char *)baseClass->getType());
-					yyerror(text);
+					std::string text;
+					text = NLAIC::stringGetBuild("you try to access to '%s' and this class is not define in the hierarchy of '%s' class",str.getString(),(const char *)baseClass->getType());
+					yyerror((char *)text.c_str());
 					return NULL;
 				}
 			}	
@@ -197,9 +197,9 @@ namespace NLAISCRIPT
 					}
 					else
 					{
-						char text[4096*4];
-						sprintf(text,"you try to access to an indefined object in the '%s' class",(const char *)baseClass->getType());
-						yyerror(text);
+						std::string text;
+						text = NLAIC::stringGetBuild("you try to access to an indefined object in the '%s' class",(const char *)baseClass->getType());
+						yyerror((char *)text.c_str());
 						return NULL;
 
 					}
@@ -218,9 +218,9 @@ namespace NLAISCRIPT
 					
 					if(baseClass == NULL)
 					{
-						char text[4096*4];
-						sprintf(text,"you try to access to '%s' and this class is not define in the hierarchy of '%s' class",lastClassName.getString(),oldLastClassName.getString());
-						yyerror(text);
+						std::string text;
+						text = NLAIC::stringGetBuild("you try to access to '%s' and this class is not define in the hierarchy of '%s' class",lastClassName.getString(),oldLastClassName.getString());
+						yyerror((char *)text.c_str());
 						return NULL;
 					}					
 				}				

@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.10 2001/09/17 13:29:04 chafik Exp $
+ * $Id: agent_timer.h,v 1.11 2001/10/24 16:37:16 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -77,7 +77,7 @@ namespace NLAIAGENT
 		virtual void save(NLMISC::IStream &os);
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;
-		virtual void getDebugString(char *t) const;
+		virtual void getDebugString(std::string &t) const;
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 	public:

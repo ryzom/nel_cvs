@@ -86,9 +86,9 @@ namespace NLAIAGENT
 		else
 			t += "idle>";
 		t += " <P ";
-		char pri_buf[128];
-		sprintf(pri_buf, "%f", priority() );
-		t += pri_buf;
+		std::string text;
+		text = NLAIC::stringGetBuild("%f", priority() );
+		t += text;
 
 		CAgentScript::getDebugString(t);
 	}

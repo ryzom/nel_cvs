@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.10 2001/05/22 16:08:16 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.11 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,8 +89,8 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 
 #ifdef NL_DEBUG
-		char txt[1024*8];	
-		sprintf(txt,"ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
+		std::string text;
+		text = NLAIC::stringGetBuild("ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
 #endif
 		std::list<sint32>::iterator i = _I.begin();		
 		sint32 n = _I.size() - 1;
@@ -108,8 +108,8 @@ namespace NLAISCRIPT
 	{						
 		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Heap[(int)_N];
 #ifdef NL_DEBUG
-		char dbg_txt[1024*8];	
-		sprintf(dbg_txt,"ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
+		std::string text;
+		text = NLAIC::stringGetBuild("ldb le composant membre sur le heap de la class '%s'",(const char *)a->getType());		
 #endif
 		
 		std::list<sint32>::const_iterator i = _I.begin();
@@ -117,6 +117,7 @@ namespace NLAISCRIPT
 		{
 			a = (NLAIAGENT::IObjectIA *)a->getStaticMember(*i++);
 		}
+
 		std::string txt;
 		a->getDebugString(txt);
 		str += NLAIC::stringGetBuild("ldb %s le composant membre sur le heap de la class '%s'",txt.c_str(),(const char *)a->getType());		

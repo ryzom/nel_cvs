@@ -1,6 +1,6 @@
 /** \file constraint_type.cpp
  *
- * $Id: constraint_type.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
+ * $Id: constraint_type.cpp,v 1.6 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,10 +31,10 @@ namespace NLAISCRIPT
 	{
 		_Ident = NULL;
 		((CConstraintMethode *)constraint)->addConstraint(this);
-		char txt[1028*8];		
-		sprintf(txt,"constraint<CConstraintChkMethodeType> for %s",((IConstraint *)_Constraint)->getInfo());
-		_TxtInfo = new char [strlen(txt) + 1];
-		strcpy(_TxtInfo,txt);
+		std::string text;
+		text = NLAIC::stringGetBuild("constraint<CConstraintChkMethodeType> for %s",((IConstraint *)_Constraint)->getInfo());
+		_TxtInfo = new char [strlen(text.c_str()) + 1];
+		strcpy(_TxtInfo,text.c_str());
 		_RunIsDone = false;
 	}
 

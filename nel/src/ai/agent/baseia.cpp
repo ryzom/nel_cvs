@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.7 2001/01/12 11:49:58 portier Exp $
+ * $Id: baseia.cpp,v 1.8 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,18 +158,18 @@ namespace NLAIAGENT
 	
 	IObjectIA &IObjectIA::operator = (const IObjectIA &a)
 	{
-		char text[2048*8];
-		sprintf(text,"operator <IObjectIA &operator = (const IObjectIA &a)> note implementaited for the '%s' interface",(const char *)getType());
-		throw NLAIE::CExceptionNotImplemented(text);
+		std::string text;
+		text = NLAIC::stringGetBuild("operator <IObjectIA &operator = (const IObjectIA &a)> note implementaited for the '%s' interface",(const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text.c_str());
 		return *this;	
 	}
 
 
 	sint32 IObjectIA::getStaticMemberSize() const
 	{
-		char text[2048*8];
-		sprintf(text,"sint32 IObjectIA::getStaticMemberSize() note implementaited for the '%s' interface",(const char *)getType());
-		throw NLAIE::CExceptionNotImplemented(text);
+		std::string text;
+		text = NLAIC::stringGetBuild("sint32 IObjectIA::getStaticMemberSize() note implementaited for the '%s' interface",(const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text.c_str());
 		return 0;	
 	}
 
@@ -185,9 +185,9 @@ namespace NLAIAGENT
 
 	void IObjectIA::setStaticMember(sint32,IObjectIA *)
 	{
-		char text[2048*8];
-		sprintf(text,"Function void IObjectIA::setStaticMember(sint32,IObjectIA *) note implementaited for the '%s' interface",(const char *)getType());
-		throw NLAIE::CExceptionNotImplemented(text);
+		std::string text;
+		text = NLAIC::stringGetBuild("Function void IObjectIA::setStaticMember(sint32,IObjectIA *) note implementaited for the '%s' interface",(const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text.c_str());
 	}
 
 	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
@@ -244,9 +244,9 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult IObjectIA::sendMessage(IObjectIA *)
 	{
-		char text[2048*8];
-		sprintf(text,"method 'sendMessage(const IObjectIA &)' '%s' interface", (const char *)getType());
-		throw NLAIE::CExceptionNotImplemented(text);
+		std::string text;
+		text = NLAIC::stringGetBuild("method 'sendMessage(const IObjectIA &)' '%s' interface", (const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text.c_str());
 		return CProcessResult();
 	}
 

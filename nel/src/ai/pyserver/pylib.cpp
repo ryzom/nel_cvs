@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.5 2001/01/10 16:39:11 chafik Exp $
+ * $Id: pylib.cpp,v 1.6 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,11 +284,9 @@ namespace NLAIPYSERVER
 	PyObject *CPyExport::getRefVar(char *VarName)
 	{
 		PyObject *Objet;
-		char CodeExec[2048];
-
-		
-		sprintf(CodeExec,"%s",VarName);
-		runCode(CodeExec,NULL,Py_eval_input,"O",&Objet);
+		std::string text;
+		text = NLAIC::stringGetBuild("%s",VarName);
+		runCode(text.c_str(),NULL,Py_eval_input,"O",&Objet);
 		if(Objet)
 		{
 			Py_INCREF(Objet);

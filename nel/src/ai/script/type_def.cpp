@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.8 2001/03/28 12:15:14 portier Exp $
+ * $Id: type_def.cpp,v 1.9 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,10 +138,10 @@ namespace NLAISCRIPT
 			NLAIC::CIdentType *o = va_arg( marker, NLAIC::CIdentType *);
 			_TypeListe.push_back(o);
 		}
-		char txt[1028*8];		
-		sprintf(txt,"constraint<COperandSimpleListOr> for ...");
-		_TxtInfo = new char [strlen(txt) + 1];
-		strcpy(_TxtInfo,txt);
+		std::string text;
+		text = NLAIC::stringGetBuild("constraint<COperandSimpleListOr> for ...");
+		_TxtInfo = new char [strlen(text.c_str()) + 1];
+		strcpy(_TxtInfo,text.c_str());
 	}
 
 	double COperandSimpleListOr::eval (IOpType *e)

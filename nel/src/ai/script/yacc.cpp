@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.27 2001/10/24 13:40:16 chafik Exp $
+ * $Id: yacc.cpp,v 1.28 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -346,9 +346,9 @@ namespace NLAISCRIPT
 		}
 		catch(NLAIE::IException &)
 		{
-			char text[4096];
-			sprintf(text,"Bad reference or class reference undefined");
-			yyerror(text);
+			std::string text;
+			text = NLAIC::stringGetBuild("Bad reference or class reference undefined");
+			yyerror((char *)text.c_str());
 			return 0;
 		}
 		return true;
@@ -578,9 +578,9 @@ namespace NLAISCRIPT
 		}
 		catch(NLAIE::IException &e)
 		{
-			char text[1024*8];			
-			sprintf(text,"can't find '%s'",e.what());
-			yyerror(text);	
+			std::string text;
+			text = NLAIC::stringGetBuild("can't find '%s'",e.what());
+			yyerror((char *)text.c_str());	
 			return false;					
 		}
 		return true;
@@ -651,9 +651,9 @@ namespace NLAISCRIPT
 			
 			if( ( isRun && _Param.back()->size() > 1 )  ||  isSend)
 			{
-				char txt[1024*8];
-				sprintf(txt,"method %s have more than 1 parametre",_MethodName.back().getString());
-				yyerror(txt);
+				std::string text;
+				text = NLAIC::stringGetBuild("method %s have more than 1 parametre",_MethodName.back().getString());
+				yyerror((char *)text.c_str());
 				return false;
 			}
 			else
@@ -661,9 +661,9 @@ namespace NLAISCRIPT
 			{
 				if(p.eval(*_Param.back()) < 0.0)
 				{
-					char txt[1024*8];
-					sprintf(txt,"the method %s have a parametre not derived from Message class",_MethodName.back().getString());
-					yyerror(txt);
+					std::string text;
+					text = NLAIC::stringGetBuild("the method %s have a parametre not derived from Message class",_MethodName.back().getString());
+					yyerror((char *)text.c_str());
 					return false;
 				}
 			}
@@ -690,9 +690,9 @@ namespace NLAISCRIPT
 		{
 			if( ((IClassInterpret *)_SelfClass.get())->getRunMethod() >=0 )
 			{
-				char txt[1024*8];
-				sprintf(txt,"the method Run() have all ready defined");
-				yyerror(txt);
+				std::string text;
+				text = NLAIC::stringGetBuild("the method Run() have all ready defined");
+				yyerror((char *)text.c_str());
 				return false;
 			}
 			((IClassInterpret *)_SelfClass.get())->setRunMethod(indexMethod);
@@ -721,9 +721,9 @@ namespace NLAISCRIPT
 			// We put the functions atributs in the _LastBloc dico.
 			if(!_LastBloc->allocLocVar(_Attrib.back().first->getString(),_LastAffectation))
 			{
-				char txt[1024*8];
-				sprintf(txt,"variable '%s' already defined",_Attrib.back().first->getString());
-				yyerror(txt);
+				std::string text;
+				text = NLAIC::stringGetBuild("variable '%s' already defined",_Attrib.back().first->getString());
+				yyerror((char *)text.c_str());
 				_Heap -= (sint32)_Heap;
 				if(_Heap.restoreStackState()) _Heap.restoreStack();
 				if(_Heap.restoreShiftState()) _Heap.restoreShift();

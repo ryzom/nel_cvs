@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.10 2001/06/25 15:00:57 portier Exp $
+ * $Id: registry.cpp,v 1.11 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,9 +100,9 @@ namespace NLAIC
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{
-			char txt[1024*8];
-			sprintf(txt,"can't find '%s' in the registry",(char *)((const char *)ident));
-			throw NLAIE::CExceptionUnRegisterClassError(txt);
+			std::string text;
+			text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
 		}
 		return t->Index;			
 	}
@@ -116,9 +116,9 @@ namespace NLAIC
 				return i;
 		}
 
-		char txt[1024*8];
-		sprintf(txt,"can't find '%s' in the registry",(char *)class_name);
-		throw NLAIE::CExceptionUnRegisterClassError(txt);
+		std::string text;
+		text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)class_name);
+		throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
 		return -1;
 	}
 
@@ -136,9 +136,9 @@ namespace NLAIC
 			if ( !strcmp( (const char *)_TableRegistry[i]->NameClass, class_name ) )
 				return _TableRegistry[ i ]->NameClass;
 		}
-		char txt[1024*8];
-		sprintf(txt,"can't find '%s' in the registry",(char *)class_name);
-		throw NLAIE::CExceptionUnRegisterClassError(txt);
+		std::string text;
+		text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)class_name);
+		throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
 	}
 
 	// Creates a new instance from a class using its identifier
@@ -169,9 +169,9 @@ namespace NLAIC
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{			
-			char txt[1024*8];
-			sprintf(txt,"can't find '%s' in the registry",(char *)((const char *)ident));
-			throw NLAIE::CExceptionUnRegisterClassError(txt);
+			std::string text;
+			text = NLAIC::stringGetBuild("can't find '%s' in the registry",(char *)((const char *)ident));
+			throw NLAIE::CExceptionUnRegisterClassError(text.c_str());
 		}
 		return t->FactoryClass;
 	}

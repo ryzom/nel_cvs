@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.18 2001/06/28 15:47:54 chafik Exp $
+ * $Id: codage.cpp,v 1.19 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,8 +47,8 @@ namespace NLAISCRIPT
 			os.serial( count );
 			for(int i = 0 ;i < _Count; i ++)
 			{		
-				char text[1024*8];
-				sprintf(text,"Opcode '%s' No: %d",(const char *)_TableCode[i]->getType(),i);
+				std::string text;
+				text = NLAIC::stringGetBuild("Opcode '%s' No: %d",(const char *)_TableCode[i]->getType(),i);
 				count = i;
 				std::string x( text );
 				os.serial(x );

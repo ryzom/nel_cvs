@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.8 2001/07/11 16:25:08 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.9 2001/10/24 16:37:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,7 @@ namespace NLAISCRIPT
 
 	CConstraintStackComp::CConstraintStackComp(OpCodeType opCodeType,sint32 stackPos,const std::list<NLAISCRIPT::CStringType > &memberName,IOpType *typeStack,sint32 lign,sint32 col):
 	_MemberName(memberName),_TypeStack(typeStack),_Lin(lign),_Col(col)
-	{
-		char txt[1028*24];
+	{		
 		char m[1028*8];
 		std::list<NLAISCRIPT::CStringType >::const_iterator i = _MemberName.begin();
 		m[0] = 0;
@@ -43,9 +42,10 @@ namespace NLAISCRIPT
 			i ++;
 			if(i != _MemberName.end()) strcat(m,".");
 		}
-		sprintf(txt,"resolve constraint for the component '%s' at line %d",m,_Lin);
-		_TxtInfo = new char [strlen(txt) + 1];
-		strcpy(_TxtInfo,txt);		
+		std::string text;
+		text = NLAIC::stringGetBuild("resolve constraint for the component '%s' at line %d",m,_Lin);
+		_TxtInfo = new char [strlen(text.c_str()) + 1];
+		strcpy(_TxtInfo,text.c_str());		
 		_Satisfied = false;
 		_Id = NULL;
 		_OpCodeType = opCodeType;
@@ -172,7 +172,9 @@ namespace NLAISCRIPT
 
 	void CConstraintStackComp::getError(char *txt) const
 	{
-		sprintf(txt,"can't %s",_TxtInfo);
+		std::string text;
+		text = NLAIC::stringGetBuild("can't %s",_TxtInfo);
+		strcpy(txt, (char *)text.c_str());
 	}
 
 	const IConstraint *CConstraintStackComp::clone() const		

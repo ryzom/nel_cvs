@@ -1,7 +1,7 @@
 /** \file animated_value.h
  * Class IAnimatedValue
  *
- * $Id: animated_value.h,v 1.2 2001/02/06 10:17:05 lecroart Exp $
+ * $Id: animated_value.h,v 1.3 2001/02/06 10:18:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ public:
 		nlassert (typeid (value)==typeid(*this));
 
 		// TODO: Implemente a slerp here.. But CQuat is not good enought..
-		stop;
+		nlstop;
 	}
 
 	/// Access to the value

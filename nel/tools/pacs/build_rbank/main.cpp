@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.12 2003/11/18 15:17:29 legros Exp $
+ * $Id: main.cpp,v 1.13 2004/01/07 10:16:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,7 @@ string												ZoneExt;
 string												ZoneLookUpPath;
 bool												TessellateZones;
 bool												MoulineZones;
+bool												TessellateAndMoulineZones;
 bool												ProcessRetrievers;
 string												PreprocessDirectory;
 bool												UseZoneSquare;
@@ -138,6 +139,7 @@ void	initMoulinette()
 
 		TessellateZones = getBool(cf, "TessellateZones", false);
 		MoulineZones = getBool(cf, "MoulineZones", false);
+		TessellateAndMoulineZones = getBool(cf, "TessellateAndMoulineZones", false);
 		ProcessRetrievers = getBool(cf, "ProcessRetrievers", false);
 		ProcessGlobal = getBool(cf, "ProcessGlobal", false);
 
@@ -224,23 +226,36 @@ void	moulineZones(vector<string> &zoneNames)
 
 	NLPACS::StatsSurfaces.init();
 
-	if (TessellateZones)
-	{
-		for (i=0; i<zoneNames.size(); ++i)
-		{
-			nlinfo("Build .tessel for zone %s", zoneNames[i].c_str());
-			tessellateZone(zoneNames[i]);
-		}
-	}
-
-	if (MoulineZones)
+	if (TessellateAndMoulineZones)
 	{
 		PrimChecker.init(LevelDesignWorldPath);
 
 		for (i=0; i<zoneNames.size(); ++i)
 		{
-			nlinfo("Preprocess .lr for zone %s", zoneNames[i].c_str());
-			moulineZone(zoneNames[i]);
+			nlinfo("Tessellate/Preprocess .lr for zone %s", zoneNames[i].c_str());
+			tessellateAndMoulineZone(zoneNames[i]);
+		}
+	}
+	else
+	{
+		if (TessellateZones)
+		{
+			for (i=0; i<zoneNames.size(); ++i)
+			{
+				nlinfo("Build .tessel for zone %s", zoneNames[i].c_str());
+				tessellateZone(zoneNames[i]);
+			}
+		}
+
+		if (MoulineZones)
+		{
+			PrimChecker.init(LevelDesignWorldPath);
+
+			for (i=0; i<zoneNames.size(); ++i)
+			{
+				nlinfo("Preprocess .lr for zone %s", zoneNames[i].c_str());
+				moulineZone(zoneNames[i]);
+			}
 		}
 	}
 
@@ -261,16 +276,6 @@ void	moulineZones(vector<string> &zoneNames)
 
 //	updateRetrieverBank();
 
-/*
-	NLPACS::StatsSurfaces.XBBSpanList.dump("X Bounding Box Span List :");
-	NLPACS::StatsSurfaces.YBBSpanList.dump("Y Bounding Box Span List :");
-
-	NLPACS::StatsSurfaces.XBBSpan.dump("X Bounding Box Span :");
-	NLPACS::StatsSurfaces.YBBSpan.dump("Y Bounding Box Span :");
-*/
-//	nlinfo("Total Span : %d", NLPACS::StatsSurfaces.TotalSpan);
-//	nlinfo("Total SpanList : %d", NLPACS::StatsSurfaces.TotalSpanList);
-//	nlinfo("Span per SpanList : %g", (double)NLPACS::StatsSurfaces.TotalSpan/(double)NLPACS::StatsSurfaces.TotalSpanList);
 }
 
 /****************************************************************\

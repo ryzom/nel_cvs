@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.15 2003/11/18 15:17:29 legros Exp $
+ * $Id: build_surf.cpp,v 1.16 2004/01/07 10:16:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,6 +191,8 @@ static CAABBox	getSnappedBBox(CVector v0, CVector v1, CVector v2, const CAABBox 
 
 	return box;
 }
+
+/*
 bool	isInside(vector<CPlane> &top, NLPACS::CSurfElement &element)
 {
 	static CVector	t1[32], t2[32];
@@ -320,7 +322,7 @@ bool	cut(CPlane &plane, const vector<CVector> &source, vector<vector<CVector> > 
 
 	return cutFlag;
 }
-
+*/
 template<class A>
 class CHashPtr
 {
@@ -427,38 +429,6 @@ void NLPACS::CStats::init()
  *
  */
 
-void	NLPACS::CSurfElement::computeElevation(vector<CPlane> &elevation, float radius, float height, float floorThreshold)
-{
-	uint		i;
-	CVector		tri[3];
-	CVector		pos[6];
-	CVector		normals[6];
-
-	for (i=0; i<3; ++i)
-		tri[i] = (*Vertices)[Tri[i]];
-
-	for (i=0; i<3; ++i)
-		normals[i] = ((tri[(i+2)%3]-tri[(i+1)%3])^Normal).normed();
-
-	for (i=3; i<6; ++i)
-		normals[i] = (normals[(i+2)%3]+normals[(i+1)%3]).normed();
-
-	for (i=0; i<3; ++i)
-		pos[i] = tri[(i+1)%3]+normals[i]*radius;
-
-	for (i=3; i<6; ++i)
-		pos[i] = tri[i-3]+normals[i]*radius;
-
-	elevation.resize(8);
-	for (i=0; i<6; ++i)
-		elevation[i].make(normals[i], pos[i]);
-
-	elevation[i++].make(-Normal, tri[0]+Normal*floorThreshold);
-	elevation[i++].make(Normal, tri[0]+Normal*height);
-}
-
-
-
 
 void	NLPACS::CSurfElement::computeQuantas()
 {
@@ -472,49 +442,13 @@ void	NLPACS::CSurfElement::computeQuantas()
 	CAABBox		zbbox = Root->RootZoneTessellation->OriginalBBox;
 	zbbox.setHalfSize(zbbox.getHalfSize()-CVector(1.0e-2f, 1.0e-2f, 0.0f));
 
-//	bool	hasInside, hasOutside;
-//	hasInside = zbbox.include(v0) || zbbox.include(v1) || zbbox.include(v2);
-//	hasOutside = !zbbox.include(v0) || !zbbox.include(v1) || !zbbox.include(v2);
-//	IsMergable = hasInside && !hasOutside;
-
-	QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
+	double	hmin = std::min(v0.z, std::min(v1.z, v2.z));
+	//QuantHeight = ((uint8)(floor((v0.z+v1.z+v2.z)/6.0f)))%255;
+	QuantHeight = ((uint8)floor(hmin/2.0))%255;
 	
 	Area = 0.5f*n.norm();
 
-/*
-	uint	i;
-	for (i=0; i<NumCreatureModels-1; ++i)
-		if (Normal.z>=Models[i][ModelInclineThreshold] &&
-			Normal.z<Models[i+1][ModelInclineThreshold])
-			break;
-
-	NormalQuanta = NumCreatureModels-1-i;
-*/
-
-	NormalQuanta = (Normal.z > 0.707f ? 0 : 1);
-
-/*
-	if (NormalQuanta == 0 || NormalQuanta == NumNormalQuantas-1)
-	{
-		OrientationQuanta = 0;
-	}
-	else
-	{
-		float	r = (float)sqrt(Normal.x*Normal.x+Normal.y*Normal.y);
-		float	psi = (float)atan2(Normal.x/r, Normal.y/r);
-
-		OrientationQuanta = (int)(NumOrientationQuantas*psi/6.283186f);
-	}
-
-	if (NormalQuanta<0)							NormalQuanta = 0;
-	if (NormalQuanta>=NumNormalQuantas)			NormalQuanta = NumNormalQuantas-1;
-	if (OrientationQuanta<0)					OrientationQuanta = 0;
-	if (OrientationQuanta>=NumNormalQuantas)	OrientationQuanta = NumOrientationQuantas-1;
-*/
-
-	OrientationQuanta = 0;
-	IsHorizontal = (NormalQuanta == 0);
-	IsValid = IsHorizontal;
+	IsValid = (Normal.z > 0.707f);
 
 	uint8	bits = 0;
 	bits |= PrimChecker.get((uint)v0.x, (uint)v0.y);
@@ -524,69 +458,16 @@ void	NLPACS::CSurfElement::computeQuantas()
 	if (bits & CPrimChecker::Include)
 	{
 		IsValid = true;
-		IsHorizontal = true;
-		NormalQuanta = 0;
 	}
 
 	if (bits & CPrimChecker::Exclude)
 	{
 		IsValid = false;
-		IsHorizontal = false;
-		NormalQuanta = 1;
 	}
 
 	if (bits & CPrimChecker::ClusterHint && IsValid)
-		ClusterHint = true;
-
-	Material = 0;
-	Level = 0;
-	Character = 0;
-
-	if (ComputeElevation)
 	{
-		/* the maximal cosine of the angle between the normal of the element and the 
-		 * normal of the potential obstacle. Beyond that value, the obstacle isn't considered
-		 * as an obstacle.
-		 */
-		const float	normalThreshold = 0.5f;
-
-		if (Root->Selected.size() > 0)
-		{
-			vector<CPlane>	elevation;
-			sint			model;
-			uint			sel;
-			bool			found = false;
-
-			for (model=NumCreatureModels-1; model>=0; --model)
-			{
-				if (Normal.z < Models[model][ModelInclineThreshold])
-					continue;
-
-				computeElevation(elevation,
-								 Models[model][ModelRadius], 
-								 Models[model][ModelHeight],
-								 0.2f);
-
-				for (sel=0; sel<Root->Selected.size(); ++sel)
-				{
-					if (isInside(elevation, *(Root->Selected[sel])) &&
-						Normal*Root->Selected[sel]->Normal < normalThreshold)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (!found)
-					break;
-			}
-
-			Character = model;
-		}
-		else
-		{
-			Character = NumCreatureModels-1;
-		}
+		ClusterHint = true;
 	}
 
 	CVector	vmin;
@@ -624,143 +505,6 @@ CAABBox	NLPACS::CSurfElement::getBBox() const
 }
 
 
-void	NLPACS::CSurfElement::computeLevel(CQuadGrid<CSurfElement *> &grid)
-{
-	if (!IsHorizontal)
-	{
-		Level = 0;
-		return;
-	}
-
-	CPolygon		tri1;
-	CPolygon		tri2;
-
-	tri1.Vertices.push_back((*Vertices)[Tri[0]]);
-	tri1.Vertices.push_back((*Vertices)[Tri[1]]);
-	tri1.Vertices.push_back((*Vertices)[Tri[2]]);
-
-	vector<CPlane>	planes;
-	planes.resize(3);
-
-	CVector	norm;
-
-	norm = ((tri1.Vertices[1]-tri1.Vertices[0])^CVector::K).normed();
-	planes[0].make(norm, tri1.Vertices[0]+norm*0.05f);
-	norm = ((tri1.Vertices[2]-tri1.Vertices[1])^CVector::K).normed();
-	planes[1].make(norm, tri1.Vertices[1]+norm*0.05f);
-	norm = ((tri1.Vertices[0]-tri1.Vertices[2])^CVector::K).normed();
-	planes[2].make(norm, tri1.Vertices[2]+norm*0.05f);
-
-	uint			level = 0;
-	CVector			center = ((*Vertices)[Tri[0]]+(*Vertices)[Tri[1]]+(*Vertices)[Tri[2]])/3.0f;
-
-	CAABBox			centerBox = getBBox();
-	centerBox.setHalfSize(centerBox.getHalfSize()+CVector(0.1f, 0.1f, 0.40f));
-
-	grid.select(centerBox.getMin(), centerBox.getMax());
-	CQuadGrid<CSurfElement *>::CIterator	it;
-
-	CVector		emin = centerBox.getMin(),
-				emax = centerBox.getMax();
-	
-	vector<CAABBox>	checkedBoxes;
-	uint			i;
-
-	for (it=grid.begin(); it!=grid.end(); ++it)
-	{
-		CSurfElement	&el = *(*it);
-		if (&el == this)
-			continue;
-
-		const CVector	&V0 = (*(el.Vertices))[el.Tri[0]],
-						&V1 = (*(el.Vertices))[el.Tri[1]],
-						&V2 = (*(el.Vertices))[el.Tri[2]];
-
-		CAABBox			box = el.getBBox();
-
-		box.setHalfSize(box.getHalfSize()+CVector(0.1f, 0.1f, 0.1f));
-
-		CVector			bmin = box.getMin(),
-						bmax = box.getMax();
-
-		// only keep elements in surroundings
-		if (bmin.x > emax.x || bmin.y > emax.y || bmax.x < emin.x || bmax.y < emin.y)
-			continue;
-
-		// drop patch neighbors
-		if (centerBox.intersect(box))
-			continue;
-/*
-		// drop higher elements
-		if (bmin.z > centerBox.getCenter().z+centerBox.getHalfSize().z)
-			continue;
-*/
-		for (i=0; i<checkedBoxes.size(); ++i)
-			if (checkedBoxes[i].intersect(V0, V1, V2))
-				break;
-
-		if (i<checkedBoxes.size())
-		{
-			checkedBoxes[i].extend(V0);
-			checkedBoxes[i].extend(V1);
-			checkedBoxes[i].extend(V2);
-			continue;
-		}
-
-		// clip elemnts by elevation
-		tri2.Vertices.clear();
-		tri2.Vertices.push_back(V0);
-		tri2.Vertices.push_back(V1);
-		tri2.Vertices.push_back(V2);
-		tri2.clip(planes);
-
-		// if intersection not empty, keep box
-		if (!tri2.Vertices.empty())
-			checkedBoxes.push_back(box);
-	}
-
-	bool	merge;
-	do
-	{
-		merge = false;
-		vector<CAABBox>::iterator	it1, it2;
-		for (it1=checkedBoxes.begin(); it1!=checkedBoxes.end(); ++it1)
-		{
-			it2 = it1;
-			++it2;
-			for (; it2!=checkedBoxes.end(); )
-			{
-				if ((*it1).intersect(*it2))
-				{
-					(*it1).extend((*it2).getMin());
-					(*it1).extend((*it2).getMax());
-					it2 = checkedBoxes.erase(it2);
-					merge = true;
-				}
-				else
-				{
-					++it2;
-				}
-			}
-		}
-	}
-	while (merge);
-
-//	Level = level;
-	Level = checkedBoxes.size();
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -795,6 +539,19 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
 	uint						i;
 
 	uint						before, after;
+
+	// filtering passes
+	uint	numPass = 3;
+	for (; numPass>0; --numPass)
+	{
+		CVector	previous = Vertices[0];
+		for (i=1; i<Vertices.size()-1; ++i)
+		{
+			CVector	newVert = (Vertices[i]*2.0+previous+Vertices[i+1])/4.0f;
+			previous = Vertices[i];
+			Vertices[i] = newVert;
+		}
+	}
 
 	before = Vertices.size();
 	while (Vertices.size()>3)	// don't smooth blow 3 vertices to avoid degenrated surfaces
@@ -859,83 +616,6 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
  *
  *
  */
-
-void	NLPACS::CComputableSurface::floodFill(CSurfElement *first, sint32 surfId)
-{
-	nldebug("flood fill surface %d", surfId);
-	
-	vector<CSurfElement *>	stack;
-	sint					i;
-
-	stack.push_back(first);
-	first->SurfaceId = surfId;
-
-	SurfaceId = surfId;
-	Material = first->Material;
-	OrientationQuanta = first->OrientationQuanta;
-	NormalQuanta = first->NormalQuanta;
-	Character = first->Character;
-	Level = first->Level;
-	IsHorizontal = first->IsHorizontal;
-	ClusterHint = first->ClusterHint;
-	QuantHeight = first->QuantHeight;
-	uint	waterShape = first->WaterShape;
-
-	IsUnderWater = (first->WaterShape != 255);
-	WaterHeight = IsUnderWater ? first->Root->RootZoneTessellation->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
-
-
-	uint32	currentZoneId = first->Root->ZoneId;
-
-	Area = 0.0;
-
-	while (!stack.empty())
-	{
-		CSurfElement	*pop = stack.back();
-		stack.pop_back();
-		Elements.push_back(pop);
-		Area += pop->Area;
-
-		for (i=0; i<3; ++i)
-		{
-			if (pop->EdgeLinks[i] != NULL &&
-				pop->EdgeLinks[i]->IsValid &&
-				pop->EdgeLinks[i]->ClusterHint == ClusterHint &&
-				pop->EdgeLinks[i]->SurfaceId == UnaffectedSurfaceId &&
-				pop->EdgeLinks[i]->Material == Material &&
-				pop->EdgeLinks[i]->OrientationQuanta == OrientationQuanta &&
-				pop->EdgeLinks[i]->NormalQuanta == NormalQuanta &&
-				pop->EdgeLinks[i]->Character == Character &&
-				pop->EdgeLinks[i]->Level == Level &&
-				pop->EdgeLinks[i]->Root->ZoneId == currentZoneId &&
-				pop->EdgeLinks[i]->WaterShape == waterShape &&
-				pop->EdgeLinks[i]->QuantHeight == QuantHeight)
-			{
-				pop->EdgeLinks[i]->SurfaceId = SurfaceId;
-				stack.push_back(pop->EdgeLinks[i]);
-			}
-		}
-	}
-
-	if (Elements.size() == 1 &&
-		Elements[0]->EdgeLinks[0] != NULL && Elements[0]->EdgeLinks[0]->NoLevelSurfaceId == NoLevelSurfaceId &&
-		Elements[0]->EdgeLinks[1] != NULL && Elements[0]->EdgeLinks[1]->NoLevelSurfaceId == NoLevelSurfaceId &&
-		Elements[0]->EdgeLinks[2] != NULL && Elements[0]->EdgeLinks[2]->NoLevelSurfaceId == NoLevelSurfaceId)
-	{
-		nlwarning("1 seperated element surface found");
-	}
-
-	nldebug("%d elements added", Elements.size());
-
-	Center = CVector::Null;
-	for (i=0; i<(sint)Elements.size(); ++i)
-	{
-		vector<CVector>	&vertices = *Elements[i]->Vertices;
-		Center += (vertices[Elements[i]->Tri[0]]+vertices[Elements[i]->Tri[1]]+vertices[Elements[i]->Tri[2]]);
-	}
-	Center /= (float)(Elements.size()*3);
-}
-
 void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, uint sens, vector<CVector> &vstore, bool &loop)
 {
 	CSurfElement	*current = first;
@@ -962,7 +642,7 @@ void	NLPACS::CComputableSurface::followBorder(CSurfElement *first, uint edge, ui
 		++loopCount;
 
 		current->IsBorder = true;
-		
+
 		if ((oppositeSurfId != UnaffectedSurfaceId && (next == NULL || (next->SurfaceId != oppositeSurfId && next->SurfaceId != currentSurfId))) ||
 			(oppositeSurfId == UnaffectedSurfaceId && (next != NULL && next->SurfaceId != currentSurfId || next == NULL && current->ZoneLinks[nextEdge] != oppositeZid)) ||
 			(current->EdgeFlag[nextEdge] && !allowThis))
@@ -1018,6 +698,8 @@ void	NLPACS::CComputableSurface::buildBorders()
 		// for each element,
 		// scan for a edge that points to a different surface
 
+		nlassert(Elements[elem]->SurfaceId == SurfaceId);
+
 		for (edge=0; edge<3; ++edge)
 		{
 
@@ -1029,7 +711,8 @@ void	NLPACS::CComputableSurface::buildBorders()
 
 				border.Left = Elements[elem]->SurfaceId;
 
-				border.DontSmooth = (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->NoLevelSurfaceId == Elements[elem]->EdgeLinks[edge]->SurfaceId);
+				// ????
+				//border.DontSmooth = (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->NoLevelSurfaceId == Elements[elem]->EdgeLinks[edge]->SurfaceId);
 
 				if (Elements[elem]->EdgeLinks[edge] != NULL && Elements[elem]->EdgeLinks[edge]->Root->ZoneId != Elements[elem]->Root->ZoneId)
 				{
@@ -1078,6 +761,7 @@ void	NLPACS::CComputableSurface::buildBorders()
 	}
 }
 
+/*
 void	NLPACS::CComputableSurface::computeHeightQuad()
 {
 	nldebug("generate height quad for surface %d", SurfaceId);
@@ -1095,7 +779,7 @@ void	NLPACS::CComputableSurface::computeHeightQuad()
 
 	HeightQuad.compile();
 }
-
+*/
 
 
 
@@ -1147,92 +831,6 @@ void	NLPACS::CPatchTessellation::setup(const NL3D::CPatch *rootPatch,
 	BBox = OriginalBBox;
 	BBox.setCenter(BBox.getCenter()+rootZone->Translation);
 }
-
-
-// Selects triangle for later intersection with polytop's creature models
-void	NLPACS::CPatchTessellation::selectElevation(vector<CSurfElement *> &selection)
-{
-	vector<CPlane>	top = vector<CPlane>(6);
-
-	CVector			normal;
-	CVector			verts[5] = 
-	{
-		RootPatchInfo->Patch.eval(0.0f, 0.0f),
-		RootPatchInfo->Patch.eval(0.0f, 1.0f),
-		RootPatchInfo->Patch.eval(1.0f, 1.0f),
-		RootPatchInfo->Patch.eval(1.0f, 0.0f),
-		RootPatchInfo->Patch.eval(0.5f, 0.5f)
-	};
-
-	/* enlarge the selection box */
-	{
-		CVector		overts[4] = { verts[0], verts[1], verts[2], verts[3] };
-		CVector		directs[4];
-
-		directs[0] = (verts[1]-verts[0]).normed();
-		directs[1] = (verts[2]-verts[1]).normed();
-		directs[2] = (verts[3]-verts[2]).normed();
-		directs[3] = (verts[0]-verts[3]).normed();
-
-		float		largest = Models[NumCreatureModels-1][ModelRadius];
-
-		verts[0] = verts[0] + directs[3]*largest - directs[0]*largest;
-		verts[1] = verts[1] + directs[0]*largest - directs[1]*largest;
-		verts[2] = verts[2] + directs[1]*largest - directs[2]*largest;
-		verts[3] = verts[3] + directs[2]*largest - directs[3]*largest;
-	}
-
-	normal = (RootPatchInfo->Patch.evalNormal(0.0f, 0.0f)+
-			  RootPatchInfo->Patch.evalNormal(1.0f, 0.0f)+
-			  RootPatchInfo->Patch.evalNormal(1.0f, 1.0f)+
-			  RootPatchInfo->Patch.evalNormal(0.0f, 1.0f)+
-			  RootPatchInfo->Patch.evalNormal(0.5f, 0.5f)*2.0).normed();
-
-	/* use vertical normal for 'walk' landscape
-	 * the threshold value we consider to be quasi vertical.
-	 * it is actually the cosine of the angle between the normal and the vertical
-	 */
-	const float		normalThreshold = 0.707f;
-	CVector			useNormal = normal;
-	if (useNormal.z > normalThreshold)
-		useNormal = CVector(0.0f, 0.0f, 1.0f);
-
-	uint	i;
-
-	for (i=0; i<4; ++i)
-		top[i].make((verts[(i+1)%4]-verts[i])^useNormal, verts[i]);
-
-	CVector	minv = verts[0];
-
-	for (i=1; i<5; ++i)
-		if ((verts[i]-minv)*normal < 0.0)
-			minv = verts[i];
-
-	top[4].make(-normal, minv);
-	top[5].make(normal, minv+useNormal*20.0f);
-
-	selection.clear();
-
-	RootZoneTessellation->Container.select(top);
-
-	CQuadTree<CSurfElement *>::CIterator	it;
-	for (it=RootZoneTessellation->Container.begin(); it!=RootZoneTessellation->Container.end(); ++it)
-	{
-		CSurfElement	&t = **it;
-
-		/* The threshold value for a triangle to be considered as a possible obstacle
-		 * It is the cosine of the angle between the triangle normal and the whole patch normal
-		 */
-		const float		normalSkipThreshold = 0.5f;
-
-		if (t.Normal*normal < normalSkipThreshold && isInside(top, t))
-		{
-			selection.push_back(*it);
-		}
-	}
-}
-
-
 
 
 
@@ -1615,7 +1213,7 @@ void	NLPACS::CZoneTessellation::compile()
 		{
 			const CPatch	*patch = retriever.Zone->getPatch(p);
 			retriever.Patches[p].setup(patch, &retriever.PatchInfos[p], this, &retriever, p, retriever.ZoneId);
-			retriever.Patches[p].selectElevation(retriever.Patches[p].Selected);
+			//retriever.Patches[p].selectElevation(retriever.Patches[p].Selected);
 			retriever.Patches[p].Valid = true;
 		}
 	}
@@ -1680,6 +1278,7 @@ void	NLPACS::CZoneTessellation::compile()
 				CSurfElement	&e0 = *e.EdgeLinks[0],
 								&e1 = *e.EdgeLinks[1],
 								&e2 = *e.EdgeLinks[2];
+
 				if (e.IsMergable && &e0 != NULL && &e1 != NULL && &e2 != NULL &&
 					e.Root->ZoneId == e0.Root->ZoneId &&
 					e.Root->ZoneId == e1.Root->ZoneId &&
@@ -1688,25 +1287,9 @@ void	NLPACS::CZoneTessellation::compile()
 					// Strong optimization
 					// merge the element quantas to the neighbors' quantas which are the most numerous
 					// quantas are evaluated individually
-					if (e0.Material == e1.Material)						e.Material = e0.Material;
-					if (e1.Material == e2.Material)						e.Material = e1.Material;
-					if (e0.Material == e2.Material)						e.Material = e2.Material;
-
-					if (e0.NormalQuanta == e1.NormalQuanta)				e.NormalQuanta = e0.NormalQuanta;
-					if (e1.NormalQuanta == e2.NormalQuanta)				e.NormalQuanta = e1.NormalQuanta;
-					if (e0.NormalQuanta == e2.NormalQuanta)				e.NormalQuanta = e2.NormalQuanta;
-
-					if (e0.OrientationQuanta == e1.OrientationQuanta)	e.OrientationQuanta = e0.OrientationQuanta;
-					if (e1.OrientationQuanta == e2.OrientationQuanta)	e.OrientationQuanta = e1.OrientationQuanta;
-					if (e0.OrientationQuanta == e2.OrientationQuanta)	e.OrientationQuanta = e2.OrientationQuanta;
-
-					if (e0.Character == e1.Character)					e.Character = e0.Character;
-					if (e1.Character == e2.Character)					e.Character = e1.Character;
-					if (e0.Character == e2.Character)					e.Character = e2.Character;
-
-					if (e0.Level == e1.Level)							e.Level = e0.Level;
-					if (e1.Level == e2.Level)							e.Level = e1.Level;
-					if (e0.Level == e2.Level)							e.Level = e2.Level;
+					if (e0.IsValid && e1.IsValid)						e.IsValid = true;
+					if (e1.IsValid && e2.IsValid)						e.IsValid = true;
+					if (e0.IsValid && e2.IsValid)						e.IsValid = true;
 
 					if (e0.QuantHeight == e1.QuantHeight)				e.QuantHeight = e0.QuantHeight;
 					if (e1.QuantHeight == e2.QuantHeight)				e.QuantHeight = e1.QuantHeight;
@@ -1715,19 +1298,6 @@ void	NLPACS::CZoneTessellation::compile()
 			}
 		}
 	}
-
-	for (el=0; el<(sint)Elements.size(); ++el)
-	{
-		Elements[el]->IsHorizontal = (Elements[el]->NormalQuanta == 0);
-		Elements[el]->IsValid = Elements[el]->IsHorizontal;
-	}
-
-	vector<CSurfElement*>	elDup;
-	for (el=0; el<(sint)Elements.size(); ++el)
-		if (Elements[el]->IsValid)
-			elDup.push_back(Elements[el]);
-	Elements = elDup;
-	elDup.clear();
 
 	// translates vertices to the local axis
 	sint64	vx, vy, vz, tx, ty, tz;
@@ -1746,31 +1316,91 @@ void	NLPACS::CZoneTessellation::compile()
 
 	BestFittingBBox.setCenter(BestFittingBBox.getCenter()+Translation);
 
+
+	//
+	//if (false)
+	{
+		//
+		// first pass of flood fill
+		// allow detecting landscape irregularities
+		//
+
+		nldebug("build and flood fill surfaces -- pass 1");
+		uint32	surfId = 0; // + (ZoneId<<16);
+
+		for (p=0; p<(sint)Elements.size(); ++p)
+		{
+			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
+			{
+				Surfaces.push_back(CComputableSurface());
+				CComputableSurface	&surf = Surfaces.back();
+
+				surf.BorderKeeper = &Borders;
+				surf.floodFill(Elements[p], surfId++, CSurfElemCompareSimple());
+				surf.BBox = BestFittingBBox;
+
+				bool	force = false;
+
+				if (surf.Area < 30.0f && surf.Elements.size() > 0)
+				{
+					uint		i;
+					CAABBox		aabbox;
+
+					aabbox.setCenter((*surf.Elements[0]->Vertices)[surf.Elements[0]->Tri[0]]);
+
+					for (i=0; i<surf.Elements.size(); ++i)
+					{
+						aabbox.extend((*surf.Elements[i]->Vertices)[surf.Elements[i]->Tri[0]]);
+						aabbox.extend((*surf.Elements[i]->Vertices)[surf.Elements[i]->Tri[1]]);
+						aabbox.extend((*surf.Elements[i]->Vertices)[surf.Elements[i]->Tri[2]]);
+					}
+
+					// swap all suface elements validity
+					if (aabbox.getHalfSize().z < 1.5f)
+					{
+						for (i=0; i<surf.Elements.size(); ++i)
+						{
+							surf.Elements[i]->IsValid = !surf.Elements[i]->IsValid;
+						}
+						nlinfo("Reverted surface %d", surfId-1);
+					}
+				}
+			}
+		}
+
+		Surfaces.clear();
+		ExtSurfaces.clear();
+	}
+
+	vector<CSurfElement*>	elDup;
+	for (el=0; el<(sint)Elements.size(); ++el)
+		if (Elements[el]->IsValid)
+			elDup.push_back(Elements[el]);
+	Elements = elDup;
+	elDup.clear();
+
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
 		CSurfElement	&element = *(Elements[el]);
+		element.SurfaceId = UnaffectedSurfaceId;
 		uint	i;
 		for (i=0; i<3; ++i)
 			if (element.EdgeLinks[i] != NULL && !element.EdgeLinks[i]->IsValid)
 				element.EdgeLinks[i] = NULL;
 	}
 
-	// flood fills the tessellation to get surfaces
+	//
 	{
-		nldebug("build and flood fill surfaces -- pass 1");
+		nldebug("build and flood fill surfaces");
 		uint32	surfId = 0; // + (ZoneId<<16);
 		uint	totalSurf = 0;
 		sint32	extSurf = -1024;
-
-		CPlane	planes[6];
-		BBox.makePyramid(planes);
 
 		for (p=0; p<(sint)Elements.size(); ++p)
 		{
 			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
 			{
 				bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
-//				bool	elInCentral = true;
 
 				++totalSurf;
 				sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
@@ -1779,95 +1409,11 @@ void	NLPACS::CZoneTessellation::compile()
 				else
 					ExtSurfaces.push_back(CComputableSurface());
 
-			
-				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
-				surf.BorderKeeper = &Borders;
-				surf.floodFill(Elements[p], thisSurfId);
-				surf.BBox = BestFittingBBox;
-				if (surf.IsHorizontal && elInCentral)
-					surf.computeHeightQuad();
-			}
-		}
-	}
-
-	// compute elements level
-	if (ComputeLevels)
-	{
-		nldebug("compute elements levels");
-		// Insert all elements into a CQuadGrid
-
-		CQuadGrid<CSurfElement *>	quadGrid;
-		quadGrid.create(1024, 0.25f);
-
-		sint	s;
-		for (s=0; s<(sint)Surfaces.size(); ++s)
-		{
-			CComputableSurface	&surf = Surfaces[s];
-			if (!surf.IsHorizontal)
-				continue;
-
-			sint	i;			
-
-			for (i=0; i<(sint)surf.Elements.size(); ++i)
-			{
-				CAABBox	box = surf.Elements[i]->getBBox();
-				quadGrid.insert(box.getMin(), box.getMax(), surf.Elements[i]);
-			}
-
-			for (i=0; i<(sint)surf.Elements.size(); ++i)
-			{
-				surf.Elements[i]->computeLevel(quadGrid);
-			}
-
-			quadGrid.clear();
-		}
-	}
-
-	//
-	Surfaces.clear();
-	ExtSurfaces.clear();
-
-	//
-	for (i=0; i<(sint)Elements.size(); ++i)
-	{
-		Elements[i]->NoLevelSurfaceId = Elements[i]->SurfaceId;
-		Elements[i]->SurfaceId = UnaffectedSurfaceId;
-	}
-
-	//
-	{
-		nldebug("build and flood fill surfaces -- pass 2");
-		uint32	surfId = 0; // + (ZoneId<<16);
-		uint	totalSurf = 0;
-		sint32	extSurf = -1024;
-
-		CPlane	planes[6];
-		BBox.makePyramid(planes);
-
-		for (p=0; p<(sint)Elements.size(); ++p)
-		{
-			if (Elements[p]->SurfaceId == UnaffectedSurfaceId)
-			{
-				bool	elInCentral = (Elements[p]->Root->ZoneId == CentralZoneId);
-//				bool	elInCentral = true;
-
-				++totalSurf;
-				sint32	thisSurfId = (elInCentral) ? surfId++ : extSurf--;
-				if (elInCentral)
-					Surfaces.push_back(CComputableSurface());
-				else
-					ExtSurfaces.push_back(CComputableSurface());
-
-			
 				CComputableSurface	&surf = (elInCentral) ? Surfaces.back() : ExtSurfaces.back();
 
-				surf.NoLevelSurfaceId = Elements[p]->NoLevelSurfaceId;
-
 				surf.BorderKeeper = &Borders;
-				surf.floodFill(Elements[p], thisSurfId);
+				surf.floodFill(Elements[p], thisSurfId, CSurfElemCompareNormal());
 				surf.BBox = BestFittingBBox;
-				if (surf.IsHorizontal && elInCentral)
-					surf.computeHeightQuad();
 			}
 		}
 
@@ -1894,7 +1440,7 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 			totalAfter = 0;
 	for (border=0; border<(sint)Borders.size(); ++border)
 	{
-		float	smScale = (Borders[border].Right < 0) ? 0.5f : 1.0f;
+		float	smScale = (Borders[border].Right < 0) ? 0.2f : 1.0f;
 		uint	before = Borders[border].Vertices.size();
 		if (SmoothBorders && !Borders[border].DontSmooth)
 		{
@@ -1909,6 +1455,9 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 }
 
 
+
+
+/*
 void	NLPACS::CZoneTessellation::generateStats()
 {
 	uint	border, span;
@@ -1946,7 +1495,7 @@ void	NLPACS::CZoneTessellation::generateStats()
 
 	StatsSurfaces.TotalSpanList += Borders.size();
 }
-
+*/
 
 void	NLPACS::CZoneTessellation::saveTessellation(COFile &output)
 {

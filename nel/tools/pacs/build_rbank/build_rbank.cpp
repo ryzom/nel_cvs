@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.13 2003/11/18 15:17:29 legros Exp $
+ * $Id: build_rbank.cpp,v 1.14 2004/01/07 10:16:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,7 +283,6 @@ void moulineZone(string &zoneName)
 
 			tessellation.compile();
 			tessellation.generateBorders(1.0);
-			tessellation.generateStats();
 
 			NLPACS::CLocalRetriever	retriever;
 
@@ -296,11 +295,11 @@ void moulineZone(string &zoneName)
 
 			for (j=0; j<(sint)tessellation.Surfaces.size(); ++j)
 			{
-				retriever.addSurface(tessellation.Surfaces[j].NormalQuanta,
-									 tessellation.Surfaces[j].OrientationQuanta,
-									 tessellation.Surfaces[j].Material,
-									 tessellation.Surfaces[j].Character,
-									 tessellation.Surfaces[j].Level,
+				retriever.addSurface(0,
+									 0,
+									 0,
+									 0,
+									 0,
 									 tessellation.Surfaces[j].IsUnderWater,
 									 tessellation.Surfaces[j].WaterHeight,
 									 tessellation.Surfaces[j].ClusterHint,
@@ -350,6 +349,206 @@ void moulineZone(string &zoneName)
 		printf(e.what ());
 	}
 }
+
+
+
+
+void tessellateAndMoulineZone(string &zoneName)
+{
+	uint	i, j;
+
+	NLPACS::CZoneTessellation		tessellation;
+	vector<NLPACS::COrderedChain3f>	fullChains;
+	string							name;
+	string							filename;
+
+	try
+	{
+		uint16	zid = getZoneIdByName(zoneName);
+		CAABBox	box = getZoneBBoxById(zid);
+
+		CVector		translation = -box.getCenter();
+		if (tessellation.setup(zid, 4, translation))
+		{
+			tessellation.build();
+
+			COFile	tesselOutput;
+			name = changeExt(zoneName, string("tessel"));
+			filename = TessellationPath+name;
+			tesselOutput.open(filename);
+			tessellation.saveTessellation(tesselOutput);
+			tesselOutput.close();
+
+			CIFile	tesselInput;
+			name = changeExt(zoneName, string("tessel"));
+			filename = TessellationPath+name;
+			tesselInput.open(filename);
+			tessellation.loadTessellation(tesselInput);
+			tesselInput.close();
+
+			CAABBox	tbox = tessellation.computeBBox();
+
+			vector<CIGBox>				boxes;
+			try
+			{
+				if (CFile::fileExists (IGBoxes))
+				{
+					CIFile		binput(IGBoxes);
+					binput.serialCont(boxes);
+				}
+				else
+				{
+					nlinfo("WARNING: IG list no found");
+				}
+			}
+			catch (Exception &) { nlinfo("WARNING: IG list no found"); }
+
+			for (i=0; i<boxes.size(); ++i)
+			{
+				if (tbox.intersect(boxes[i].BBox))
+				{
+					try
+					{
+						// load ig associated to the zone
+						string	igname = boxes[i].Name;
+						CIFile			monStream(CPath::lookup(igname));
+						CInstanceGroup	ig;
+						monStream.serial(ig);
+
+						// search in group for water instance
+						for (j=0; j<ig._InstancesInfos.size(); ++j)
+						{
+							string	shapeName = ig._InstancesInfos[j].Name;
+							if (CFile::getExtension (shapeName) == "")
+								shapeName += ".shape";
+
+							string	shapeNameLookup = CPath::lookup (shapeName, false, false);
+							if (!shapeNameLookup.empty())
+							{
+								CIFile			f;
+								if (f.open (shapeNameLookup))
+								{
+									CShapeStream	shape;
+									shape.serial(f);
+
+									CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+									if (wshape == NULL)
+										continue;
+
+									CMatrix	matrix;
+									ig.getInstanceMatrix(j, matrix);
+
+									CPolygon			wpoly;
+									wshape->getShapeInWorldSpace(wpoly);
+
+									uint	k;
+									for (k=0; k<wpoly.Vertices.size(); ++k)
+									{
+										//wpoly.Vertices[k].z = 0.0f;
+										wpoly.Vertices[k] = matrix * wpoly.Vertices[k];
+									}
+
+									tessellation.addWaterShape(wpoly);
+								}
+								else
+								{
+									nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
+								}
+							}
+/*
+							// c'est degueulasse, mais c'est les coders a la 3D, y savent pas coder
+							CIFile			monfile(CPath::lookup(ig._InstancesInfos[j].Name+".shape"));
+							CShapeStream	shape;
+							shape.serial(monfile);
+
+							CWaterShape	*wshape = dynamic_cast<CWaterShape *>(shape.getShapePointer());
+							if (wshape == NULL)
+								continue;
+
+							CPolygon			wpoly;
+							wshape->getShapeInWorldSpace(wpoly);
+
+							tessellation.addWaterShape(wpoly);
+*/
+						}
+					}
+					catch (Exception &e)
+					{
+						nlwarning("%s", e.what());
+					}
+				}
+			}
+
+			tessellation.compile();
+			tessellation.generateBorders(1.0);
+
+			NLPACS::CLocalRetriever	retriever;
+
+			CAABBox	rbbox = tessellation.BestFittingBBox;
+			CVector hs = rbbox.getHalfSize();
+			hs.z = 10000.0f;
+			rbbox.setHalfSize(hs);
+			retriever.setBBox(rbbox);
+			retriever.setType(NLPACS::CLocalRetriever::Landscape);
+
+			for (j=0; j<(sint)tessellation.Surfaces.size(); ++j)
+			{
+				retriever.addSurface(0,
+									 0,
+									 0,
+									 0,
+									 0,
+									 tessellation.Surfaces[j].IsUnderWater,
+									 tessellation.Surfaces[j].WaterHeight,
+									 tessellation.Surfaces[j].ClusterHint,
+									 tessellation.Surfaces[j].Center,
+									 tessellation.Surfaces[j].HeightQuad,
+									 tessellation.Surfaces[j].QuantHeight);
+			}
+
+			for (j=0; j<(sint)tessellation.Borders.size(); ++j)
+			{
+				if (tessellation.Borders[j].Right < -1)
+				{
+					retriever.addChain(tessellation.Borders[j].Vertices,
+									   tessellation.Borders[j].Left,
+									   NLPACS::CChain::getDummyBorderChainId());
+
+				}
+				else
+				{
+					retriever.addChain(tessellation.Borders[j].Vertices,
+									   tessellation.Borders[j].Left,
+									   tessellation.Borders[j].Right);
+				}
+			}
+
+			fullChains = retriever.getFullOrderedChains();
+
+			// save raw retriever
+			COFile	outputRetriever;
+			name = changeExt(zoneName, string("lr"));
+			filename = OutputPath+PreprocessDirectory+name;
+			nldebug("save file %s", filename.c_str());
+			outputRetriever.open(filename);
+			retriever.serial(outputRetriever);
+
+			// save raw chains
+			COFile	outputChains;
+			name = changeExt(zoneName, string("ochain"));
+			filename = OutputPath+name;
+			nldebug("save file %s", filename.c_str());
+			outputChains.open(filename);
+			outputChains.serialCont(fullChains);
+		}
+	}
+	catch(Exception &e)
+	{
+		printf(e.what ());
+	}
+}
+
+
 
 
 void processRetriever(string &zoneName)

@@ -1,7 +1,7 @@
 /** \file surface_splitter.cpp
  * <File description>
  *
- * $Id: surface_splitter.cpp,v 1.2 2003/10/23 18:20:44 distrib Exp $
+ * $Id: surface_splitter.cpp,v 1.3 2004/01/07 10:16:07 legros Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -118,7 +118,7 @@ void	CSurfaceSplitter::buildSurface(CLocalRetriever &lr, uint surface)
 	for (i=0; i<pacsSurface.getLoops().size(); ++i)
 	{
 		const NLPACS::CRetrievableSurface::TLoop	&pacsLoop = pacsSurface.getLoop(i);
-		newSurface.Loops.push_back();
+		newSurface.Loops.push_back(CSurfaceSplitter::CLoop());
 		newSurface.Loops.back().Surface = newSurface.Id;
 
 		uint	j;

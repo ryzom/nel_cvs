@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.9 2003/08/27 09:23:07 legros Exp $
+ * $Id: build_surf.h,v 1.10 2004/01/07 10:16:06 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@ extern std::string				ZoneLookUpPath;
 
 extern bool						TessellateZones;
 extern bool						MoulineZones;
+extern bool						TessellateAndMoulineZones;
 extern bool						ProcessRetrievers;
 extern std::string				PreprocessDirectory;
 
@@ -223,18 +224,14 @@ public:
 
 	/* Here the surface criteria.
 	   Probably some normal quantization, material, flags ... */
-	uint8							NormalQuanta;
-	uint8							OrientationQuanta;
-	uint8							Material;
-	uint8							Character;
-	uint8							Level;
+//	uint8							NormalQuanta;
 	uint8							WaterShape;
 	uint8							QuantHeight;
 
 	uint32							ForceMerge;
 	
 	bool							IsBorder;
-	bool							IsHorizontal;
+//	bool							IsHorizontal;
 	bool							IsValid;
 	bool							IsMergable;
 	bool							ClusterHint;
@@ -267,16 +264,6 @@ public:
 	 */
 	sint32				SurfaceId;
 
-	/**
-	 * The Id of the no level surface container.
-	 */
-	sint32				NoLevelSurfaceId;
-
-	/**
-	 * Set if the element has already be cut on a border of the zone
-	 */
-	uint8				CutFlag;
-
 public:
 	/**
 	 * Constructor.
@@ -296,16 +283,10 @@ public:
 		EdgeFlag[1] = false;
 		EdgeFlag[2] = false;
 		SurfaceId = UnaffectedSurfaceId;
-		NoLevelSurfaceId = UnaffectedSurfaceId;
-		NormalQuanta = 0;
-		OrientationQuanta = 0;
-		Material = 0;
 		IsBorder = false;
-		IsHorizontal = false;
 		IsValid = false;
 		IsMergable = true;
 		ClusterHint = false;
-		CutFlag = 0;
 		WaterShape = 255;
 		QuantHeight = 0;
 		ForceMerge = 0;
@@ -319,21 +300,6 @@ public:
 	 * Computes the various criteria values (associated to quantas)
 	 */
 	void	computeQuantas();
-
-	/**
-	 * Computes the level number of the surface element
-	 */
-	void	computeLevel(NL3D::CQuadGrid<CSurfElement *> &grid);
-
-	/**
-	 * Returns true if both elements have the same topological properties.
-	 */
-	bool	checkProperties(CSurfElement &e)
-	{
-		return	Material == e.Material &&
-				OrientationQuanta == e.OrientationQuanta &&
-				NormalQuanta == e.NormalQuanta;
-	}
 
 	/**
 	 * Removes properly all links to the CSurfElement.
@@ -353,11 +319,8 @@ public:
 	}
 
 private:
-	void	computeElevation(std::vector<NLMISC::CPlane> &elevation, float radius, float height, float floorThreshold);
+	//void	computeElevation(std::vector<NLMISC::CPlane> &elevation, float radius, float height, float floorThreshold);
 };
-
-
-
 
 
 
@@ -430,23 +393,12 @@ public:
 	/// The Id of the surface
 	sint32									SurfaceId;
 
-	/// No level surf id
-	sint32									NoLevelSurfaceId;
-
 	/// The references on the elements that belong to the surface
 	std::vector<CSurfElement *>				Elements;
 
 	/// The object that stores all the borders used in the computed area
 	std::vector<CComputableSurfaceBorder>	*BorderKeeper;
 
-	/// The characteristics of the surface
-	uint8									NormalQuanta;
-	uint8									OrientationQuanta;
-	uint8									Material;
-	uint8									Character;
-	uint8									Level;
-
-	bool									IsHorizontal;
 	bool									IsUnderWater;
 	bool									ClusterHint;
 
@@ -468,20 +420,84 @@ public:
 	 * Constructor.
 	 * Builds an empty surface.
 	 */
-	CComputableSurface() : SurfaceId(UnaffectedSurfaceId), NormalQuanta(0), OrientationQuanta(0), Material(0), BorderKeeper(NULL), ClusterHint(false)	{}
+	CComputableSurface() : SurfaceId(UnaffectedSurfaceId), BorderKeeper(NULL), ClusterHint(false)	{}
 
 	/**
 	 * Flood fills the surface elements to find iso-criteria surfaces.
 	 * Every linked surface element which has the same quantas values and a surfaceid == -1
 	 * are marked and recursively called.
 	 */
-	void	floodFill(CSurfElement *first, sint32 surfId);
+	template<class A>
+	void	floodFill(CSurfElement *first, sint32 surfId, const A &cmp)
+	{
+		nldebug("flood fill surface %d", surfId);
+
+		std::vector<CSurfElement *>	stack;
+		sint					i;
+
+		stack.push_back(first);
+		first->SurfaceId = surfId;
+
+		SurfaceId = surfId;
+		ClusterHint = first->ClusterHint;
+		QuantHeight = first->QuantHeight;
+		uint	waterShape = first->WaterShape;
+
+		IsUnderWater = (first->WaterShape != 255);
+		WaterHeight = IsUnderWater ? first->Root->RootZoneTessellation->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
+
+
+		uint32	currentZoneId = first->Root->ZoneId;
+
+		Area = 0.0;
+
+		while (!stack.empty())
+		{
+			CSurfElement	*pop = stack.back();
+			stack.pop_back();
+			Elements.push_back(pop);
+			Area += pop->Area;
+
+			for (i=0; i<3; ++i)
+			{
+				if (pop->EdgeLinks[i] != NULL && pop->EdgeLinks[i]->SurfaceId == UnaffectedSurfaceId && cmp.equal(first, pop->EdgeLinks[i]))
+				{
+					pop->EdgeLinks[i]->SurfaceId = SurfaceId;
+					stack.push_back(pop->EdgeLinks[i]);
+				}
+/*
+				if (pop->EdgeLinks[i] != NULL && cmp.equal(first, pop->EdgeLinks[i]))
+					pop->EdgeLinks[i]->IsValid &&
+					pop->EdgeLinks[i]->ClusterHint == ClusterHint &&
+					pop->EdgeLinks[i]->SurfaceId == UnaffectedSurfaceId &&
+					pop->EdgeLinks[i]->Root->ZoneId == currentZoneId &&
+					pop->EdgeLinks[i]->WaterShape == waterShape &&
+					pop->EdgeLinks[i]->QuantHeight == QuantHeight)
+				{
+					pop->EdgeLinks[i]->SurfaceId = SurfaceId;
+					stack.push_back(pop->EdgeLinks[i]);
+				}
+*/
+			}
+		}
+
+		nldebug("%d elements added", Elements.size());
+
+		Center = CVector::Null;
+		for (i=0; i<(sint)Elements.size(); ++i)
+		{
+			vector<CVector>	&vertices = *Elements[i]->Vertices;
+			Center += (vertices[Elements[i]->Tri[0]]+vertices[Elements[i]->Tri[1]]+vertices[Elements[i]->Tri[2]]);
+		}
+		Center /= (float)(Elements.size()*3);
+	}
+
 
 	/// Builds the border of the CComputableSurface.
 	void	buildBorders();
 
 	///
-	void	computeHeightQuad();
+	//void	computeHeightQuad();
 
 private:
 	void	followBorder(CSurfElement *first, uint edge, uint sens, std::vector<NLMISC::CVector> &vstore, bool &loop);
@@ -577,18 +593,6 @@ public:
 				  CPatchRetriever *rootRetriever,
 				  uint16 patchId,
 				  uint16 zoneId);
-
-	/**
-	 * Selects faces inside the patch elevation.
-	 */
-/*
-	void	selectElevation(std::vector<CSelectTriangle *> &selection);
-	std::vector<CSelectTriangle *>		Selected;
-*/
-	void	selectElevation(std::vector<CSurfElement *> &selection);
-	std::vector<CSurfElement *>		Selected;
-
-
 };
 
 
@@ -742,7 +746,7 @@ public:
 	/**
 	 * Generates Stats...
 	 */
-	void	generateStats();
+	//void	generateStats();
 
 	/**
 	 * Save tessellation
@@ -754,6 +758,33 @@ public:
 	 */
 	void	loadTessellation(NLMISC::CIFile &input);
 };
+
+
+
+class CSurfElemCompareSimple
+{
+public:
+
+	bool	equal(const CSurfElement *a, const CSurfElement *b) const
+	{
+		return	a->IsValid == b->IsValid;
+	}
+};
+
+class CSurfElemCompareNormal
+{
+public:
+
+	bool	equal(const CSurfElement *a, const CSurfElement *b) const
+	{
+		return	b->IsValid &&
+				a->ClusterHint == b->ClusterHint &&
+				a->Root->ZoneId == b->Root->ZoneId &&
+				a->WaterShape == b->WaterShape &&
+				a->QuantHeight == b->QuantHeight;
+	}
+};
+
 
 }; // NLPACS
 

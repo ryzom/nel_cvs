@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.6 2001/01/30 10:33:20 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.7 2001/02/28 09:43:29 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ namespace NLAISCRIPT
 
 		/// Sets the goal the operator tries to achieve
 		virtual void setGoal(NLAILOGIC::CGoal *);
+		virtual void setGoal(NLAIAGENT::CStringVarName &);
 		virtual const NLAILOGIC::CGoal *getGoal();
 
 		/// Asks wether the operator's preconditions are validated,
@@ -104,6 +105,7 @@ public:
 		COperatorClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		COperatorClass(const COperatorClass &);
 		COperatorClass();
+		~COperatorClass();
 
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
@@ -111,7 +113,58 @@ public:
 
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 
-		virtual ~COperatorClass();
+
+		void addPrecondition(NLAILOGIC::CFactPattern *);
+		void addPostcondition(NLAILOGIC::CFactPattern *);
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/// Initialisation from the grammar
+
+	// Logique
+	std::list<const NLAIAGENT::IVarName *> _BooleanConds;
+	std::list<const NLAIAGENT::IVarName *> _BooleanConcs;
+	std::vector<const NLAIAGENT::IVarName *> _CondAsserts;
+	std::vector<const NLAIAGENT::IVarName *> _ConcAsserts;
+	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassCondVars;
+	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassConcVars;
+	std::vector< IOpCode *> _CondCode;
+	std::vector< IOpCode *> _ConcCode;
+
+	NLAILOGIC::CFactBase *fact_base;
+	NLAIAGENT::CStringVarName *_GoalName;
+	///////////////////////////////////////////////////
+
+/*
+		/// Adds a first order logic precondition to the operator
+		void addPrecondition(NLAILOGIC::CFactPattern   *);
+
+		/// Adds a first order logic postcondition to the operator
+		void addPostcondition(NLAILOGIC::CFactPattern   *);
+*/
+//		virtual ~COperatorClass();
+
+		/// Add first order patterns as preconditions or postconditions
+		void addFirstOrderCond(const NLAIAGENT::IVarName *, std::list<const NLAIAGENT::IVarName *> &);
+		void addFirstOrderConc(const NLAIAGENT::IVarName *, std::list<const NLAIAGENT::IVarName *> &);
+
+		/// Add first order patterns as preconditions or postconditions
+		void addBoolCond(const NLAIAGENT::IVarName *);
+		void addBoolConc(const NLAIAGENT::IVarName *);
+
+		/// Add first order patterns as preconditions or postconditions
+		/// PreConditions code must be any piece of code that returns an object that is true or false using the isTrue() function.
+		void addCodeCond(IOpCode *);
+		/// PostConditions code is code that will be executed upon completion of the execution of the operator
+		void addCodeConc(IOpCode *);
+
+		/// Initialises the tables
+		void buildLogicTables();
+
+		bool isValidFonc(NLAIAGENT::IObjectIA *);
+		void activatePostConditions(NLAIAGENT::IObjectIA *);
+
+		void initialiseFactBase(NLAILOGIC::CFactBase *);
 	};
 }
 #endif

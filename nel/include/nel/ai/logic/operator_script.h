@@ -1,8 +1,8 @@
 /** \file actor_script.h
  *	
- *	Scripted operators	
+ *	Instances of operators
  *
- * $Id: operator_script.h,v 1.5 2001/01/30 10:33:20 portier Exp $
+ * $Id: operator_script.h,v 1.6 2001/02/28 09:43:29 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,10 @@ namespace NLAIAGENT
 {
 	class COperatorScript  : public CAgentScript
 	{
+		private:
+			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
+			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
+
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -57,7 +61,7 @@ namespace NLAIAGENT
 			virtual void getDebugString(char *t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 //			virtual void processMessages();
-//			virtual const CProcessResult &run();
+			virtual const CProcessResult &run();
  
 //			virtual IObjectIA *run(const IMessageBase &msg);
 //			virtual	CProcessResult sendMessage(IObjectIA *);
@@ -75,6 +79,8 @@ namespace NLAIAGENT
 			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);
+
+			virtual void setParent(const IWordNumRef *parent);
 	};
 }
 #endif

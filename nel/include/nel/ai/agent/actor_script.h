@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.10 2001/01/24 13:42:40 portier Exp $
+ * $Id: actor_script.h,v 1.11 2001/02/28 09:42:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,86 +33,10 @@
 #include "nel/ai/logic/bool_cond.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/interpret_actor.h"
+#include "nel/ai/agent/comp_handle.h"
 
 namespace NLAIAGENT
 {
-
-	class CComponentHandle/* : public IObjectIA */{
-		private:
-			IVarName		*_CompName;
-			const IObjectIA	*_Comp;
-			IAgent			*_CompFather;
-
-		public:
-			CComponentHandle()
-			{
-				_Comp = NULL;
-				_CompFather = NULL;
-			}
-
-			~CComponentHandle()
-			{
-//				if ( _Comp )
-//					_Comp->release();
-			}
-
-
-			CComponentHandle(const IVarName &comp_name, IAgent *comp_father , bool get = false)
-			{
-				_CompName = (IVarName *) comp_name.clone();
-				_CompFather = comp_father;
-				if ( get )
-					getComponent();
-				else
-					_Comp = NULL;
-			}
-
-			void getComponent()
-			{
-				if ( _CompFather )
-				{
-
-#ifdef _DEBUG
-					const char *dbg_father_type = (const char *) _CompFather->getType();
-					const char *dbg_comp_name = (const char *) _CompName->getType();
-					char buffer[1024 * 8];
-					_CompName->getDebugString(buffer);
-#endif
-
-					// Looks in static components
-					sint32 comp_id = _CompFather->getStaticMemberIndex( *_CompName );
-					if ( comp_id >= 0)
-						_Comp = _CompFather->getStaticMember( comp_id );
-					else
-						_Comp = NULL;
-
-					if ( _Comp == NULL )
-					{
-						// Looks in dynamic component
-						CGroupType *param = new CGroupType();
-						param->push( (IObjectIA *) _CompName );
-						IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
-						param->pop();
-						delete param;
-						if ( comp.Result )
-							_Comp = comp.Result;
-						else
-							_Comp = NULL;
-					}
-				}
-			}
-
-			const IObjectIA *getValue()
-			{
-				if ( _Comp )
-					return _Comp;
-				
-				getComponent();
-				return _Comp;
-			}
-	};
-
-
 	/**
 	Class CActorScript
 	Scripted actors for the creations of FSMs and other controlers.

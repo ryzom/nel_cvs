@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.19 2001/02/01 17:15:20 chafik Exp $
+ * $Id: compilateur.h,v 1.20 2001/02/28 09:45:15 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,13 +175,22 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA			*_ResultCompile;
 
 		// Logique
-		std::list<const NLAIAGENT::CStringVarName *> _LastLogicParam;
-		NLAIAGENT::CStringVarName	_LastAssert;
-		NLAILOGIC::CFactBase _FactBase;
-		std::list<NLAILOGIC::CFactPattern  *> _LastPatterns;
+		std::list< std::list<const NLAIAGENT::IVarName *> > _LastLogicParams;
+		std::list<const NLAIAGENT::CStringVarName *> _LastBooleanConds;
+		std::list<const NLAIAGENT::CStringVarName *> _LastAsserts;
+		std::list<IOpCode *>	_LastCodeBranche;
+
+		NLAILOGIC::CFactBase *_FactBase;
+		NLAILOGIC::CFactPattern *_LastFactPattern;
+		NLAIAGENT::IVarName *_Goal;
+		
 		std::list<NLAIFUZZY::CFuzzyVar *> _FuzzVars;
 		sint32 _LastFVarIndex;
 		sint32 _NbLogicParams;
+		///////////////////////////////////////////////////
+
+	
+		
 		bool   _InLineParse;
 		std::list<bool>   _FromStack;
 		tDicoStr *_Dictionary;
@@ -201,7 +210,7 @@ namespace NLAISCRIPT
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_LastAssert("")
+			_Goal(NULL)
 		{
 			_SourceFileName = fileName;
 			_SourceFileName->incRef();
@@ -222,6 +231,7 @@ namespace NLAISCRIPT
 			_InLineParse = false;
 			isRunMsg = false;
 			haveReturn = false;
+			_LastFactPattern = NULL;
 		}
 
 		/**
@@ -235,7 +245,7 @@ namespace NLAISCRIPT
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_LastAssert("")
+			_Goal(NULL)
 		{					
 			_SourceFileName = fileName;
 			_SourceFileName->incRef();
@@ -253,6 +263,7 @@ namespace NLAISCRIPT
 			_InLineParse = false;
 			isRunMsg = false;
 			haveReturn = false;
+			_LastFactPattern = NULL;
 		}
 
 		///Initialize source code from file.
@@ -466,7 +477,12 @@ namespace NLAISCRIPT
 		void initMessageManager();
 		bool endMessageManager();
 		bool caseRunMsg();
+
+
+		/// Logic compilation
 		bool classIsAnOperator();
+		void CompileFactPattern();
+		void CompileOperator();
 	};
 }
 #endif

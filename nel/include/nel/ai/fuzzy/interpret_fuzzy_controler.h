@@ -1,7 +1,7 @@
 /** \file interpret_fuzzy_controler.h
  *	Scripted class for a fuzzy controler
  *
- * $Id: interpret_fuzzy_controler.h,v 1.5 2001/02/27 14:21:49 chafik Exp $
+ * $Id: interpret_fuzzy_controler.h,v 1.6 2001/02/28 09:43:07 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,6 @@
 #define NL_FUZZYCONTROLER_CLASS_H
 
 #include "nel/ai/script/interpret_object_agent.h"
-
 namespace NLAISCRIPT
 {
 	/*

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.30 2001/02/21 11:36:38 chafik Exp $
+ * $Id: agent_script.cpp,v 1.31 2001/02/28 09:46:14 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,10 @@
 #include "nel/ai/agent/agent_nombre.h"
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/msg_notify.h"
+#include "nel/ai/agent/msg_goal.h"
+#include "nel/ai/logic/factbase.h"
+#include "nel/ai/logic/goal.h"
+
 
 namespace NLAIAGENT
 {	
@@ -49,6 +53,12 @@ namespace NLAIAGENT
 	static NLAISCRIPT::CParam *ParamRunParentNotify;
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 
+/////////////////////////////////////////////////////////////////
+/// Temp. 
+	static NLAISCRIPT::COperandSimple *IdGoalMsgClass;
+	static NLAISCRIPT::COperandSimpleListOr *IdGoalMsg;
+	static NLAISCRIPT::CParam *ParamGoalMsg;
+/////////////////////////////////////////////////////////////////
 
 	void CAgentScript::initAgentScript()
 	{
@@ -83,6 +93,20 @@ namespace NLAIAGENT
 																new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
+
+///////////////////////////////////////////////////////////////////////////////////////
+/// Temp.
+
+		IdGoalMsgClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass));
+
+		IdGoalMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+														new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass),
+														new NLAIC::CIdentType(CGoalMsg::IdGoalMsg));
+
+		ParamGoalMsg = new NLAISCRIPT::CParam(1,IdGoalMsg);
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
 
@@ -133,6 +157,13 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
+
+		StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
+																			CAgentScript::TGoal, ParamGoalMsg,
+																			CAgentScript::CheckAll,
+																			1,
+																			new NLAISCRIPT::CObjectUnknown(IdGoalMsgClass) );
+
 
 		StaticMethod[CAgentScript::TSelf] = new CAgentScript::CMethodCall(	_SELF_, 
 																		CAgentScript::TSelf, 
@@ -1326,4 +1357,5 @@ namespace NLAIAGENT
 	{
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
+
 }

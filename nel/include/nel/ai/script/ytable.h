@@ -84,9 +84,10 @@
 #define	FUZZYVAR	338
 #define	FIS	339
 #define	OR	340
-#define	NEW	341
-#define	AND	342
-#define	LOCAL	343
+#define	COMMENT	341
+#define	NEW	342
+#define	AND	343
+#define	LOCAL	344
 
 
 extern YYSTYPE yylval;

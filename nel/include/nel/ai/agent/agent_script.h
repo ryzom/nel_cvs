@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.15 2001/02/21 11:07:39 chafik Exp $
+ * $Id: agent_script.h,v 1.16 2001/02/28 09:42:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,14 @@
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_manager.h"
 #include "nel/ai/logic/operator.h"
+
+////////////////////////////////////////
+// Temp to be transfered in CGDAgentScript
+#include "nel/ai/logic/factbase.h"
+#include "nel/ai/logic/goal.h"
+////////////////////////////////////////
+
+
 
 namespace NLAISCRIPT 
 {
@@ -63,6 +71,9 @@ namespace NLAIAGENT
 			TGetName, ///Get the name of the agent in the manager child list.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.
+			/////////////////////////////////////////////////////////////////////
+			TGoal,	// Message to receive goals
+			/////////////////////////////////////////////////////////////////////
 			TLastM ///The count of export method.
 		};
 
@@ -265,10 +276,23 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 
-
-
 		static void initAgentScript();
 		static void releaseAgentScript();
+
+
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+
+	protected:
+		NLAILOGIC::CFactBase			_FactBase;
+		std::vector<NLAILOGIC::CGoal *>	_GoalStack;
+
+	public:
+		virtual NLAILOGIC::CFactBase &getFactBase()
+		{
+			return _FactBase;
+		}
+
 	};
 }
 #endif

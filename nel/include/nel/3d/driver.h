@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.59 2001/04/03 15:20:47 berenguier Exp $
+ * $Id: driver.h,v 1.60 2001/04/04 16:22:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,8 +202,9 @@ public:
 
 	/** active a current VB, for future render().
 	 * This method suppose that all vertices in the VB will be used.
-	 * NB: software skinning (if any) will be done in this function call.
-	 * So if you call 5 times this method, you will get 5 times the time to perform a software skin.
+	 *
+	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
+	 * Vertex Skinning Flags are reseted in activeVertexBuffer().
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
@@ -211,9 +212,10 @@ public:
 	/** active a current VB, for future render().
 	 * This method suppose that only vertices in given range will be used in future render(). 
 	 * This could be usefull for DX or OpenGL driver, but it is usefull for software skinning too.
+	 * Undefined results if primitives in render() use vertices not in this range.
 	 *
-	 * NB: software skinning (if any) will be done in this function call, and ONLY on the given range!
-	 * So if you call 5 times this method, you will get 5 times the time to perform a software skin.
+	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
+	 * Vertex Skinning Flags are reseted in activeVertexBuffer(), but only for given range here!
 	 *
 	 * \param VB the vertexBuffer to activate.
 	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.54 2001/04/04 13:00:18 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.55 2001/04/04 16:22:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,8 @@ public:
 	// Software Skinning: post-rendered vertices/normales.
 	std::vector<CVector>	SoftSkinVertices;
 	std::vector<CVector>	SoftSkinNormals;
+	// Software Skinning: flags to know what vertex must be computed.
+	std::vector<uint8>		SoftSkinFlags;
 
 	CVBDrvInfosGL() {}
 };
@@ -289,6 +291,18 @@ private:
 	CMatrix					_ModelViewMatrixNormal[MaxModelMatrix];
 
 
+	// Sofware Skinning.
+	uint8					*_CurrentSoftSkinFlags;
+	uint8					*_CurrentSoftSkinSrc;
+	uint					_CurrentSoftSkinNormalOff;
+	uint					_CurrentSoftSkinPaletteSkinOff;
+	uint					_CurrentSoftSkinWeightOff;
+	uint					_CurrentSoftSkinSrcStride;
+	uint					_CurrentSoftSkinFirst;
+	uint					_CurrentSoftSkinEnd;
+	CVector					*_CurrentSoftSkinVectorDst;
+	CVector					*_CurrentSoftSkinNormalDst;
+
 	// Fog.
 	bool					_FogEnabled;
 
@@ -312,9 +326,10 @@ private:
 	bool					clipRect(NLMISC::CRect &rect);
 
 
-	// software skinning.
-	void			computeSoftwareVertexSkinning(uint8 *pSrc, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pVertexDst, uint size);
-	void			computeSoftwareNormalSkinning(uint8 *pSrc, uint normalOff, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pNormalDst, uint size);
+	// software skinning. Use _CurrentSoftSkin* global setup.
+	void			computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pVertexDst);
+	void			computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pNormalDst);
+	void			refreshSoftwareSkinning();
 
 };
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.84 2001/04/04 13:00:18 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.85 2001/04/04 16:22:30 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -56,6 +56,18 @@ using namespace NLMISC;
 
 
 
+// ***************************************************************************
+// Flags for software vertex skinning.
+#define	NL3D_DRV_SOFTSKIN_VNEEDCOMPUTE	3
+#define	NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE	1
+#define	NL3D_DRV_SOFTSKIN_VCOMPUTED		0
+// 3 means "vertex may need compute".
+// 1 means "Primitive say vertex must be computed".
+// 0 means "vertex is computed".
+
+
+
+// ***************************************************************************
 #ifdef NL_OS_WINDOWS
 // dllmain::
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
@@ -560,6 +572,8 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 		// Software and Skinning: must allocate PostRender Vertices and normals.
 		if(!_PaletteSkinHard && (VB.getVertexFormat() & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN )
 		{
+			// Must reallocate post-rendered vertices/normals Flags.
+			vbInf->SoftSkinFlags.resize(VB.getNumVertices());
 			// Must reallocate post-rendered vertices/normals.
 			vbInf->SoftSkinVertices.resize(VB.getNumVertices());
 			// Normals onli if nomal enabled.
@@ -606,6 +620,8 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	// Just to inform render*() that Matrix mode is OK.
 	_MatrixSetupDirty= false;
 
+	// General case: no software skinning.
+	_CurrentSoftSkinFlags= NULL;
 
 	// No Skinning at all??. 
 	//==============
@@ -657,21 +673,31 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 
 			// Compute vertices/normales.
-			// NB: in software, we must compute skinning at each activeVB(), since we can't know simply 
-			// if some or all of vertices has changed.
-			uint8	*srcStart;
-			uint	srcStride= VB.getVertexSize();
-			srcStart= ((uint8*)VB.getVertexCoordPointer()) + first*srcStride;
+			// NB: in software, skinning compute is done at render, since we don't know, at activeVB(), what
+			// vertex will be used.
 
+			// reset flags, only for given vertex range.
+			// NL3D_DRV_SOFTSKIN_VNEEDCOMPUTE==3.
+			memset(&vbInf->SoftSkinFlags[first], NL3D_DRV_SOFTSKIN_VNEEDCOMPUTE, end-first);
 
-			// compute skinning on vertices.
-			computeSoftwareVertexSkinning(srcStart, VB.getPaletteSkinOff(), VB.getWeightOff(0), 
-				srcStride, &(vbInf->SoftSkinVertices[first]), end-first);
-			// compute skinning on normals (if any).
+			// For render*() to know how they must skin...
+			_CurrentSoftSkinFlags= &vbInf->SoftSkinFlags[0];
+			_CurrentSoftSkinSrc= (uint8*) VB.getVertexCoordPointer();
+			_CurrentSoftSkinSrcStride= VB.getVertexSize();
+			_CurrentSoftSkinFirst= first;
+			_CurrentSoftSkinEnd= end;
+			_CurrentSoftSkinPaletteSkinOff= VB.getPaletteSkinOff();
+			_CurrentSoftSkinWeightOff= VB.getWeightOff(0);
+			_CurrentSoftSkinVectorDst= &(vbInf->SoftSkinVertices[0]);
+			// Normal ptr.
 			if(flags & IDRV_VF_NORMAL)
 			{
-				computeSoftwareNormalSkinning(srcStart, VB.getNormalOff(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
-					srcStride, &(vbInf->SoftSkinNormals[first]), end-first);
+				_CurrentSoftSkinNormalDst= &(vbInf->SoftSkinNormals[0]);
+				_CurrentSoftSkinNormalOff= VB.getNormalOff();
+			}
+			else
+			{
+				_CurrentSoftSkinNormalDst= NULL;
 			}
 		}
 	}
@@ -866,7 +892,45 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 
 	if ( !setupMaterial(Mat) )
 		return false;
-	
+
+
+	// test if VB software skinning.
+	//==============================
+	if(_CurrentSoftSkinFlags)
+	{
+		uint32	*pIndex;
+		uint	nIndex;
+
+		// This may be better to flags in 2 pass (first traverse primitives, then test vertices).
+		// Better sol for BTB..., because number of tests are divided by 6 (for triangles).
+
+		// First, for all prims, indicate which vertex we must compute.
+		// nothing if not already computed (ie 0), because 0&1==0.
+		// Lines.
+		pIndex= (uint32*)PB.getLinePointer();
+		nIndex= PB.getNumLine()*2;
+		for(;nIndex>0;nIndex--, pIndex++)
+			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
+		// Tris.
+		pIndex= (uint32*)PB.getTriPointer();
+		nIndex= PB.getNumTri()*3;
+		for(;nIndex>0;nIndex--, pIndex++)
+			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
+		// Quads.
+		pIndex= (uint32*)PB.getQuadPointer();
+		nIndex= PB.getNumQuad()*4;
+		for(;nIndex>0;nIndex--, pIndex++)
+			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
+
+
+		// Second, traverse All vertices in range, testing if we must compute those vertices.
+		refreshSoftwareSkinning();
+	}
+
+
+	// render primitives.
+	//==============================
+
 	if(PB.getNumTri()!=0)
 		glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	if(PB.getNumQuad()!=0)
@@ -886,6 +950,31 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 
 	if ( !setupMaterial(Mat) )
 		return;
+
+	
+	// test if VB software skinning.
+	//==============================
+	if(_CurrentSoftSkinFlags)
+	{
+		uint32	*pIndex;
+		uint	nIndex;
+
+		// see render() for explanation.
+		// First, for all prims, indicate which vertex we must compute.
+		// nothing if not already computed (ie 0), because 0&1==0.
+		// Tris.
+		pIndex= tri;
+		nIndex= ntris*3;
+		for(;nIndex>0;nIndex--, pIndex++)
+			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
+
+		// Second, traverse All vertices in range, testing if we must compute those vertices.
+		refreshSoftwareSkinning();
+	}
+
+
+	// render primitives.
+	//==============================
 	if(ntris!=0)
 		glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
 }
@@ -1307,87 +1396,110 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 
 
 // ***************************************************************************
-void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pDst, uint size)
+void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix		*pMat;
 
 	// TODO_OPTIMIZE: SSE verion...
 
-	for(;size>0;size--)
-	{
-		CVector			*srcVec= (CVector*)pSrc;
-		CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + paletteSkinOff);
-		float			*srcWgt= (float*)(pSrc + weightOff);
+	CVector			*srcVec= (CVector*)pSrc;
+	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);
+	float			*srcWgt= (float*)(pSrc + _CurrentSoftSkinWeightOff);
 
-		// checks indices.
-		nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
+	// checks indices.
+	nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
 
 
-		// Sum influences.
-		pDst->set(0,0,0);
+	// Sum influences.
+	pDst->set(0,0,0);
 
-		// 0th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[0];
-		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[0];
-		// 1th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[1];
-		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[1];
-		// 2th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[2];
-		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[2];
-		// 3th matrix influence.
-		pMat= _ModelViewMatrix + srcPal->MatrixId[3];
-		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[3];
+	// 0th matrix influence.
+	pMat= _ModelViewMatrix + srcPal->MatrixId[0];
+	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[0];
+	// 1th matrix influence.
+	pMat= _ModelViewMatrix + srcPal->MatrixId[1];
+	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[1];
+	// 2th matrix influence.
+	pMat= _ModelViewMatrix + srcPal->MatrixId[2];
+	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[2];
+	// 3th matrix influence.
+	pMat= _ModelViewMatrix + srcPal->MatrixId[3];
+	*pDst+= pMat->mulPoint(*srcVec) * srcWgt[3];
 
-		// Next vertex.
-		pSrc+= srcStride;
-		pDst++;
-	}
 }
 
 
 // ***************************************************************************
-void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, uint normalOff, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pDst, uint size)
+void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix		*pMat;
 
 	// TODO_OPTIMIZE: SSE verion...
 
+	CVector			*srcNormal= (CVector*)(pSrc + _CurrentSoftSkinNormalOff);
+	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);
+	float			*srcWgt= (float*)(pSrc + _CurrentSoftSkinWeightOff);
+
+	// checks indices.
+	nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
+	nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
+
+	
+	// Sum influences.
+	pDst->set(0,0,0);
+
+	// 0th matrix influence.
+	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[0];
+	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[0];
+	// 1th matrix influence.
+	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[1];
+	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[1];
+	// 2th matrix influence.
+	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[2];
+	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[2];
+	// 3th matrix influence.
+	pMat= _ModelViewMatrixNormal + srcPal->MatrixId[3];
+	*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
+
+}
+
+
+// ***************************************************************************
+void	CDriverGL::refreshSoftwareSkinning()
+{
+	// traverse All vertices in range, testing if we must compute those vertices.
+	uint8		*pSrc= _CurrentSoftSkinSrc + _CurrentSoftSkinFirst*_CurrentSoftSkinSrcStride;
+	uint8		*pFlag= _CurrentSoftSkinFlags + _CurrentSoftSkinFirst;
+	CVector		*pVectorDst= _CurrentSoftSkinVectorDst + _CurrentSoftSkinFirst;
+	CVector		*pNormalDst= _CurrentSoftSkinNormalDst + _CurrentSoftSkinFirst;
+	uint		size= _CurrentSoftSkinEnd - _CurrentSoftSkinFirst;
 	for(;size>0;size--)
 	{
-		CVector			*srcNormal= (CVector*)(pSrc + normalOff);
-		CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + paletteSkinOff);
-		float			*srcWgt= (float*)(pSrc + weightOff);
+		// If we must compute this vertex.
+		if(*pFlag==NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE)
+		{
+			// Flag this vertex as computed.
+			*pFlag=NL3D_DRV_SOFTSKIN_VCOMPUTED;
 
-		// checks indices.
-		nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
-		nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
+			// compute vertex part.
+			computeSoftwareVertexSkinning(pSrc, pVectorDst);
 
-		
-		// Sum influences.
-		pDst->set(0,0,0);
+			// compute normal part.
+			if(_CurrentSoftSkinNormalDst)
+			{
+				computeSoftwareNormalSkinning(pSrc, pNormalDst);
+			}
+		}
 
-		// 0th matrix influence.
-		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[0];
-		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[0];
-		// 1th matrix influence.
-		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[1];
-		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[1];
-		// 2th matrix influence.
-		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[2];
-		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[2];
-		// 3th matrix influence.
-		pMat= _ModelViewMatrixNormal + srcPal->MatrixId[3];
-		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
-
-		// Next vertex.
-		pSrc+= srcStride;
-		pDst++;
+		pSrc+= _CurrentSoftSkinSrcStride;
+		pFlag++;
+		pVectorDst++;
+		pNormalDst++;
 	}
 }
 

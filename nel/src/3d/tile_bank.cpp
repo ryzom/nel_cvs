@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.16 2001/01/02 14:23:14 lecroart Exp $
+ * $Id: tile_bank.cpp,v 1.17 2001/01/09 14:31:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,10 @@ void TroncFileName (char* sDest, const char* sSrc)
 	{
 		ptr++;
 		strcpy (sDest, ptr);
+	}
+	else
+	{
+		strcpy (sDest, sSrc);
 	}
 }
 // ***************************************************************************

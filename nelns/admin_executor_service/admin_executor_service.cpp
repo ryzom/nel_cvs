@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.71 2005/02/16 15:26:01 lancon Exp $
+ * $Id: admin_executor_service.cpp,v 1.72 2005/04/06 10:24:21 cado Exp $
  *
  */
 
@@ -1260,7 +1260,8 @@ static void cbRejected (CMessage &msgin, const std::string &serviceName, uint16 
 	// receive a message that mean that the AS doesn't want me
 	string res;
 	msgin.serial (res);
-	nlerror ("Can't connect to AS: %s", res.c_str());
+	nlwarning ("Can't connect to AS: %s", res.c_str());
+	IService::getInstance()->exit();
 }
 
 static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)

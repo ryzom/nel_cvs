@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.10 2001/08/28 15:34:24 chafik Exp $
+ * $Id: compilateur.cpp,v 1.11 2001/10/09 13:15:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,6 +421,7 @@ namespace NLAISCRIPT
 			_MethodConstraint.pop_back();
 		}
 	}
+
 	void CCompilateur::cleanTypeConstraint()
 	{
 		while(_ConstraintType.size())

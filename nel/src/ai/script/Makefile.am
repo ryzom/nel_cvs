@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.10 2001/10/04 09:56:10 chafik Exp $
+# $Id: Makefile.am,v 1.11 2001/10/09 13:15:44 portier Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -12,7 +12,6 @@ libscript_la_SOURCES    = constraint.cpp \
                           constraint_type.cpp \
                           context_debug.cpp \
                           factor_type.cpp \
-                          gd_agent_class.cpp \
                           hierarchy.cpp \
                           init.cpp \
                           interpret_actor.cpp \

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.11 2001/12/20 17:36:08 lecroart Exp $
+ * $Id: path.h,v 1.12 2001/12/20 17:42:49 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	static void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative);
 
 	/** Remove all search path contains in the alternative directories */
-	static void			removeAllAternativeSearchPath ();
+	static void			removeAllAlternativeSearchPath ();
 
 	/** Returns the long name (path + filename) for the specified file.
 	 * The directory separator is always '/'.

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.90 2004/01/14 09:40:42 legros Exp $
+ * $Id: global_retriever.cpp,v 1.91 2004/02/04 09:54:52 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -306,6 +306,22 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 			const CChain	&fchain = retriever.getChain(retriever.getOrderedChain(entry.OChainId).getParentId());
 			uint8			chainType = (fchain.getRight() >= 0 ? 1 : (fchain.isBorderChain() ? 2 : 0));
 
+			//
+			if (chainType == 1)
+			{
+				uint	left = fchain.getLeft();
+				uint	right = fchain.getRight();
+
+				const CRetrievableSurface	&lsurface = retriever.getSurface(left);
+				const CRetrievableSurface	&rsurface = retriever.getSurface(right);
+
+				bool	luw = (lsurface.getFlags() & (1 << CRetrievableSurface::IsUnderWaterBit)) != 0;
+				bool	ruw = (rsurface.getFlags() & (1 << CRetrievableSurface::IsUnderWaterBit)) != 0;
+
+				if (luw && !ruw || !luw && ruw)
+					chainType = 3;
+			}
+
 			if (retriever.getFullOrderedChains().size() > 0)
 			{
 				const COrderedChain3f	&ochain = retriever.getFullOrderedChain(entry.OChainId);
@@ -316,7 +332,7 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge] + origin;
 					edges.back().first.V1 = ochain[edge+1] + origin;
-
+/*
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge] + origin;
 					edges.back().first.V1 = ochain[edge] + origin +dz;
@@ -324,6 +340,7 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 					edges.push_back(make_pair(CLine(), chainType));
 					edges.back().first.V0 = ochain[edge+1] + origin;
 					edges.back().first.V1 = ochain[edge+1] + origin +dz;
+*/
 				}
 			}
 			else

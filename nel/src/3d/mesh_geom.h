@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.8 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.9 2002/06/19 12:15:11 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,8 @@ class IDriver;
 class CTransformShape;
 class CMeshBaseInstance;
 class CMeshBlockManager;
+class CScene;
+class CRenderTrav;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
 

@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.12 2001/02/28 14:30:39 berenguier Exp $
+ * $Id: matrix.h,v 1.13 2001/03/05 16:28:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/misc/vector.h"
 #include "nel/misc/vector_h.h"
+#include "nel/misc/quat.h"
 
 
 namespace	NLMISC
@@ -120,6 +121,10 @@ public:
 	 * \param ro the order of transformation applied. if ro==XYZ, then the transform is M=M*Rx*Ry*Rz
 	 */
 	void		setRot(const CVector &v, TRotOrder ro);
+	/** Explicit setup the Rotation matrix (base) as a Quaternion rotation matrix.
+	 * \param quat a UNIT qauternion
+	 */
+	void		setRot(const CQuat &quat);
 	/** Explicit setup the Translation component.
 	 * v==Null is tested to see if the matrix now have a translation component.
 	 * \param v the translation vector.
@@ -160,6 +165,14 @@ public:
 	 * \param m33 the matrix's 3*3 column rotation matrix. (3x3 matrix stored in column-major order as 9 consecutive values)
 	 */
 	void		getRot(float m33[9]) const;
+	/** Get the Rotation matrix (base).
+	 * \param quat the return quaternion.
+	 */
+	void		getRot(CQuat &quat) const;
+	/** Get the Rotation matrix (base).
+	 * \param quat the return quaternion.
+	 */
+	CQuat		getRot() const {CQuat	ret; getRot(ret); return ret;}
 	/** Get the Translation component.
 	 * \param v the matrix's translation vector.
 	 */
@@ -283,11 +296,12 @@ private:
 	void	fastInvert33(CMatrix &ret) const;
 	bool	slowInvert33(CMatrix &ret) const;
 	bool	slowInvert44(CMatrix &ret) const;
-	// access to M, in math conventions (mat(1,1) ... mat(4,4)).
+	// access to M, in math conventions (mat(1,1) ... mat(4,4)). Indices from 0 to 3.
 	float	&mat(sint i, sint j)
 	{
 		return M[ (j<<2) + i];
 	}
+	// access to M, in math conventions (mat(1,1) ... mat(4,4)). Indices from 0 to 3.
 	const float	&mat(sint i, sint j) const
 	{
 		return M[ (j<<2) + i];

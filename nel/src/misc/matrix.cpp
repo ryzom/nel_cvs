@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.21 2001/02/28 14:38:36 berenguier Exp $
+ * $Id: matrix.cpp,v 1.22 2001/03/05 16:28:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1238,6 +1238,118 @@ CPlane		operator*(const CPlane &p, const CMatrix &m)
 	}
 	else	// Identity!!
 		return p;
+}
+
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+void		CMatrix::setRot(const CQuat &quat)
+{
+	// A quaternion do not have scale.
+	StateBit&= ~(MAT_ROT | MAT_SCALEANY|MAT_SCALEUNI);
+	Scale33= 1.0f;
+	if(quat.isIdentity())
+	{
+		a11= 1; a12= 0; a13= 0; 
+		a21= 0; a22= 1; a23= 0; 
+		a31= 0; a32= 0; a33= 1; 
+	}
+	else
+	{
+		StateBit|= MAT_ROT;
+		float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+
+		// calculate coefficients
+		x2 = quat.x + quat.x; y2 = quat.y + quat.y; 
+		z2 = quat.z + quat.z;
+		xx = quat.x * x2;   xy = quat.x * y2;   xz = quat.x * z2;
+		yy = quat.y * y2;   yz = quat.y * z2;   zz = quat.z * z2;
+		wx = quat.w * x2;   wy = quat.w * y2;   wz = quat.w * z2;
+
+		a11 = 1.0f - (yy + zz);
+		a12 = xy - wz;
+		a13 = xz + wy;
+
+		a21 = xy + wz;
+		a22 = 1.0f - (xx + zz);
+		a23 = yz - wx;
+
+		a31 = xz - wy;
+		a32 = yz + wx;
+		a33 = 1.0f - (xx + yy);
+	}
+}
+
+
+// ======================================================================================================
+void		CMatrix::getRot(CQuat &quat) const
+{
+	const CMatrix	*pmat= this;
+	CMatrix			MatNormed;
+
+
+	// Rot Indentity?
+	if(! (StateBit & MAT_ROT))
+	{
+		quat= CQuat::Identity;
+		return;
+	}
+
+	// Must normalize the matrix??
+	if(StateBit & (MAT_SCALEUNI | MAT_SCALEANY) )
+	{
+		MatNormed= *this;
+		MatNormed.normalize(ZYX);
+		pmat= &MatNormed;
+	}
+
+	// Compute quaternion.
+	float  tr, s, q[4];
+
+	tr = pmat->a11 + pmat->a22 + pmat->a33;
+
+	// check the diagonal
+	if (tr > 0.0)
+	{
+		s = (float)sqrt (tr + 1.0f);
+		quat.w = s / 2.0f;
+		s = 0.5f / s;
+		quat.x = (pmat->a32 - pmat->a23) * s;
+		quat.y = (pmat->a13 - pmat->a31) * s;
+		quat.z = (pmat->a21 - pmat->a12) * s;
+	}
+	else
+	{		
+		sint    i, j, k;
+		sint	nxt[3] = {1, 2, 0};
+
+		// diagonal is negative
+		i = 0;
+		if (pmat->a22 > pmat->a11) i = 1;
+		if (pmat->a33 > pmat->mat(i,i) ) i = 2;
+		j = nxt[i];
+		k = nxt[j];
+
+		s = (float) sqrt (  (pmat->mat(i,i) - (pmat->mat(j,j) + pmat->mat(k,k)) )   + 1.0);
+
+		q[i] = s * 0.5f;
+
+		if (s != 0.0f) s = 0.5f / s;
+
+		q[j] = (pmat->mat(j,i) + pmat->mat(i,j)) * s;
+		q[k] = (pmat->mat(k,i) + pmat->mat(i,k)) * s;
+		q[3] =	 (pmat->mat(k,j) - pmat->mat(j,k)) * s;
+
+		quat.x = q[0];
+		quat.y = q[1];
+		quat.z = q[2];
+		quat.w = q[3];
+	}
+
 }
 
 

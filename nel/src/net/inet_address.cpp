@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.27 2001/03/15 18:02:15 cado Exp $
+ * $Id: inet_address.cpp,v 1.28 2001/03/28 09:35:47 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,9 +264,10 @@ const sockaddr_in *CInetAddress::sockAddr() const
  */
 string CInetAddress::ipAddress() const
 {
-	stringstream ss; // or use inet_ntoa
+	/*stringstream ss; // or use inet_ntoa
 	ss << inet_ntoa ( _SockAddr->sin_addr );
-	return ss.str();
+	return ss.str();*/
+	return string( inet_ntoa( _SockAddr->sin_addr ) );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.29 2001/08/27 10:46:51 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.30 2001/08/29 08:42:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -406,7 +406,9 @@ void CObjectViewer::go ()
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
 
 		// Animate the automatic animation in the scene
-		CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+		//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
+
+		CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
 
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);

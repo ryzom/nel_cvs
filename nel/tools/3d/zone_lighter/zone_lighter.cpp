@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.20 2002/06/18 16:22:52 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.21 2002/06/25 13:03:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,7 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 			// try to get the village list
 			// Load the village list
 			NLGEORGES::UFormElm *villagesItem;
-			if(!rootItem.getNodeByName (&villagesItem, "Villages") && villagesItem)
+			if(!(rootItem.getNodeByName (&villagesItem, "Villages") && villagesItem))
 			{
 				nlwarning("No villages where found in %s", continentName.c_str());
 				return;

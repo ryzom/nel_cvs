@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.118 2002/05/17 13:46:34 chafik Exp $
+ * $Id: agent_script.cpp,v 1.119 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -733,6 +733,14 @@ namespace NLAIAGENT
 		IBasicAgent *a = (IBasicAgent *)i++;
 		IBasicAgent *o = a;
 		sint n = 1;
+
+#ifdef NL_DEBUG
+		std::string name;
+		const char *type;
+		s.getDebugString(name);
+		type = (const char *)a->getType();
+
+#endif
 		if(!i.isInEnd())
 		{
 			n = (sint)((NLAIAGENT::INombreDefine *)i++)->getNumber();
@@ -1213,6 +1221,10 @@ namespace NLAIAGENT
 				case IMessageBase::PError:
 					runMsg = &sRunError;
 					break;
+
+				default:
+					throw;
+					break;
 				}
 
 				CStringVarName &tmp_name = *runMsg;
@@ -1441,8 +1453,9 @@ namespace NLAIAGENT
 		{
 			IMessageBase &msg = (IMessageBase &)mail->getMessage();
 #ifdef NL_DEBUG
-		const char *dbg_msg = (const char *) msg.getType();		
+		const char *dbg_msg = (const char *) msg.getType();
 #endif
+			
 			if(msg.getMethodIndex() >= 0 && c != NULL)
 			{
 				sint indexM = msg.getMethodIndex() - IAgent::getMethodIndexSize();

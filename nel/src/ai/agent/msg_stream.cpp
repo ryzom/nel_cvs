@@ -1,6 +1,6 @@
 /** \file msg_stream.cpp
  *
- * $Id: msg_stream.cpp,v 1.2 2002/03/25 15:21:55 chafik Exp $
+ * $Id: msg_stream.cpp,v 1.3 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,17 +129,16 @@ namespace NLAIAGENT
 	}
 
 	void CMsgIStream::serial(IObjectIA &b) throw(NLMISC::EStream)
-	{
-		b.load(*this);
+	{		
+		const IObjectIA *o= (const IObjectIA *)(_It++);
+		b = *o;		
 	}
 
 	void CMsgIStream::serial(IObjectIA* &b) throw(NLMISC::EStream)
-	{
-		NLAIC::CIdentTypeAlloc id( *this );
-		b = (IObjectIA *)id.allocClass();
-		b->load(*this);
+	{		
+		IObjectIA *o= (IObjectIA *)(_It++);
+		b = o;
 	}
-
 
 //####################
 //class CMsgIStream
@@ -217,13 +216,16 @@ namespace NLAIAGENT
 
 	void CMsgOStream::serial(IObjectIA &b) throw(NLMISC::EStream)
 	{
-		((NLAIC::CIdentType &)b.getType()).serial(*this);
-		b.serial(*this);
+		/*((NLAIC::CIdentType &)b.getType()).serial(*this);
+		b.serial(*this);*/
+		_List.push((IObjectIA*)b.clone());
 	}
 
 	void CMsgOStream::serial(IObjectIA* &b) throw(NLMISC::EStream)
 	{
-		((NLAIC::CIdentType &)b->getType()).serial(*this);
-		b->serial(*this);
+		/*((NLAIC::CIdentType &)b->getType()).serial(*this);
+		b->serial(*this);*/
+		_List.push(b);
+		b->incRef();
 	}
 }

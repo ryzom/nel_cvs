@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_setvalue.cpp,v 1.2 2002/04/17 09:56:21 portier Exp $
+ * $Id: msg_setvalue.cpp,v 1.3 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,27 +34,27 @@ namespace NLAIAGENT
 {
 	CSetValueMsg::CSetValueMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
 	{
-		CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);
+		/*CVectorGroupType *x = new CVectorGroupType(1);		
+		setMessageGroup(x);*/
 		setGroup(CMessageGroup::msgScriptingGroup);		
-		set(0, new DigitalType(0) );
+		//set(0, new DigitalType(0) );
 	}
 
 	CSetValueMsg::CSetValueMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
-		CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);
+		/*CVectorGroupType *x = new CVectorGroupType(1);		
+		setMessageGroup(x);*/
 		setGroup(CMessageGroup::msgScriptingGroup);		
-		set(0, new DigitalType(0) );
+		//set(0, new DigitalType(0) );
 	}
 
 	CSetValueMsg::CSetValueMsg(IBasicAgent *agent):
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CSetValueMsgClass::IdSetValueMsgClass.getFactory()->getClass())
 	{		
-		CVectorGroupType *x = new CVectorGroupType(1);
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
-		set(0, new DigitalType(0) );
+		/*CVectorGroupType *x = new CVectorGroupType(1);		
+		setMessageGroup(x);*/
+		setGroup(CMessageGroup::msgScriptingGroup);		
+		//set(0, new DigitalType(0) );
  	}
 
 	CSetValueMsg::CSetValueMsg(const CSetValueMsg &m): CMessageScript(m)

@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.5 2001/12/11 09:26:49 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.6 2002/06/06 09:12:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,8 +205,7 @@ namespace NLAIAGENT
 		virtual bool haveActivity() const
 		{
 			return false;
-		}
-
+		}	
 		//@}		
 
 	};

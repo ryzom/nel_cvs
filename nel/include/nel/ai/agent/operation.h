@@ -1,7 +1,7 @@
 /** \file operation.h
  * <File description>
  *
- * $Id: operation.h,v 1.2 2002/05/27 15:47:10 chafik Exp $
+ * $Id: operation.h,v 1.3 2002/06/06 09:12:02 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,8 @@ namespace NLAIAGENT
 			return true;
 		}
 
+		virtual IMessageBase *runTell(const IMessageBase &);
+
 		virtual void onKill(IConnectIA *A);
 		virtual const CProcessResult &run();
 		virtual bool isEqual(const IBasicObjectIA &a) const;
@@ -136,10 +138,7 @@ namespace NLAIAGENT
 			return _Change;
 		}		
 
-		virtual void connectOnChange(IConnectIA *ref)
-		{
-			_Connection.push_back(ref);
-		}
+		virtual void connectOnChange(IConnectIA *ref);		
 
 		virtual void changeIsDone()
 		{
@@ -151,6 +150,9 @@ namespace NLAIAGENT
 		virtual sint32 getMethodIndexSize() const;
 		virtual CProcessResult runMethodBase(int, int, IObjectIA *);
 		virtual CProcessResult runMethodBase(int, IObjectIA *);
+
+	protected:		
+		void update(IObjectIA *obj);
 
 	public:
 		static void initClass();

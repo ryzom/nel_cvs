@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.19 2001/12/11 09:27:05 chafik Exp $
+ * $Id: message_script.cpp,v 1.20 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,6 +297,7 @@ namespace NLAIAGENT
 
 	tQueue CMessageScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{	
+
 		tQueue result = IMessageBase::isMember(className, methodName, param);
 		
 		if ( result.size()  )

@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.15 2001/12/11 09:27:05 chafik Exp $
+ * $Id: constraint.cpp,v 1.16 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,11 @@ namespace NLAISCRIPT
 		std::string txt;
 		
 		_MethodName->getDebugString(mtxt);
+
+		/*if(mtxt == "[Get]")
+		{
+			throw;
+		}*/
 		_Param->getDebugString(ptxt);
 		txt = mtxt + ptxt;
 #endif	

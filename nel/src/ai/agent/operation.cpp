@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.2 2002/05/27 15:47:21 chafik Exp $
+ * $Id: operation.cpp,v 1.3 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 #include "nel/ai/agent/operation.h"
+#include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/script/object_unknown.h"
 #include "nel/ai/script/interpret_object_message.h"
 
@@ -33,16 +34,16 @@ namespace NLAIAGENT
 	const NLAIC::CIdentType *CAgentOperation::idMsgOnChangeMsg = NULL;
 	const NLAIAGENT::IMessageBase *CAgentOperation::MsgOnChangeMsg = NULL;
 
-	CAgentOperation::CAgentOperation():CAgentScript(NULL), _Op(NULL), _Name(NULL)
+	CAgentOperation::CAgentOperation():CAgentScript(NULL), _Op(NULL), _Name(NULL), _Change(true)
 	{
 	}
 
-	CAgentOperation::CAgentOperation(IObjetOp *o):CAgentScript(NULL), _Op(o), _Name(NULL)
+	CAgentOperation::CAgentOperation(IObjetOp *o):CAgentScript(NULL), _Op(o), _Name(NULL), _Change(true)
 	{
 
 	}
 
-	CAgentOperation::CAgentOperation(const CAgentOperation &a):CAgentScript(a), _Op(a._Op), _Connection(a._Connection), _Name(NULL)
+	CAgentOperation::CAgentOperation(const CAgentOperation &a):CAgentScript(a), _Op(a._Op), _Name(NULL), _Change(true)
 	{
 		if(_Op != NULL)
 				_Op->incRef();
@@ -50,25 +51,18 @@ namespace NLAIAGENT
 		if(a._Name != NULL) 
 				setName(*a._Name);
 
-		std::list <IConnectIA *>::iterator it = _Connection.begin();
+		/*std::list <IConnectIA *>::iterator it = _Connection.begin();
 		while(it != _Connection.end())
 		{			
 			(*it)->connect(this);
 			it ++;
-		}
+		}*/
 	}
 
 	CAgentOperation::~CAgentOperation()
 	{
 		if(_Op != NULL) 
-				_Op->release();
-
-		std::list <IConnectIA *>::iterator it = _Connection.begin();
-		while(it != _Connection.end())
-		{			
-			(*it)->removeConnection(this);
-			it ++;
-		}
+				_Op->release();		
 	}
 
 	void CAgentOperation::onKill(IConnectIA *A)
@@ -86,6 +80,29 @@ namespace NLAIAGENT
 		}
 	}
 
+	void CAgentOperation::update(IObjectIA *obj)
+	{
+		NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)CAgentOperation::MsgOnChangeMsg->clone();
+		msg->push(_Op);
+		msg->setPerformatif(IMessageBase::PTell);
+		msg->setSender((NLAIAGENT::IObjectIA *)((CAgentScript *)this));
+		_Op->incRef();
+		(obj)->sendMessage(((NLAIAGENT::IObjectIA *)msg));
+	}
+
+	void CAgentOperation::connectOnChange(IConnectIA *ref)
+	{
+		_Connection.push_back(ref);
+		IConnectIA *obj = ref;
+		if(CLocalAgentMail::LocalAgentMail == ref->getType())
+												obj = (IConnectIA *)((CLocalAgentMail *)ref)->getHost();
+		
+		obj->connect(this);
+
+		if(_Op != NULL)
+					update(ref);
+	}
+
 	IObjectIA::CProcessResult CAgentOperation::runActivity()
 	{
 		if(changed())
@@ -93,22 +110,47 @@ namespace NLAIAGENT
 			std::list < IConnectIA * >::iterator it = _Connection.begin();
 			while(it != _Connection.end())
 			{
-				NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)CAgentOperation::MsgOnChangeMsg->clone();
-				msg->push(_Name);
-				_Name->incRef();
+				/*NLAIAGENT::IMessageBase *msg = (NLAIAGENT::IMessageBase *)CAgentOperation::MsgOnChangeMsg->clone();				
 				msg->push(_Op);
+				msg->setPerformatif(IMessageBase::PTell);
+				msg->setSender((NLAIAGENT::IObjectIA *)((CAgentScript *)this));
 				_Op->incRef();
-				(*it)->sendMessage(msg);
+				(*it)->sendMessage(((NLAIAGENT::IObjectIA *)msg));*/
+				update(*it);
 				it ++;
 			}
 			changeIsDone();
 		}
-		return CAgentScript::runActivity();
+		if(CAgentScript::haveActivity()) return CAgentScript::runActivity();
+		else return CProcessResult();
 	}
 
 	const IObjectIA::CProcessResult &CAgentOperation::run()
 	{
 		return CAgentScript::run();
+	}
+
+	IMessageBase *CAgentOperation::runTell(const IMessageBase &msg)
+	{
+		if(msg.getType() == *CAgentOperation::idMsgOnChangeMsg)
+		{
+			CConstIteratorContener iter = msg.getConstIterator();				
+			((IObjectIA &)*_Op) = (const IObjectIA &)*(iter ++);
+			_Change = true;
+			return NULL;
+		}
+		else
+		{
+			static NLAIC::CIdentType idMsgSetValue("SetValueMsg");
+			if(msg.getType() == idMsgSetValue)
+			{			
+				CConstIteratorContener iter = msg.getConstIterator();
+				iter ++;
+				setValue((IObjetOp *)iter ++);
+				return NULL;
+			}
+		}
+		return CAgentScript::runTell(msg);
 	}
 
 	bool CAgentOperation::isEqual(const IBasicObjectIA &a) const
@@ -124,8 +166,13 @@ namespace NLAIAGENT
 	void CAgentOperation::getDebugString(std::string &t) const
 	{
 		t += "CAgentOperation";
+		if(_Op)
+		{
+			std::string s;
+			_Op->getDebugString(s);
+			t += "<" + s + ">";
+		}
 	}
-
 
 	const NLAIC::IBasicType *CAgentOperation::clone() const
 	{
@@ -137,7 +184,6 @@ namespace NLAIAGENT
 	{
 		return (const CAgentScript *)new CAgentOperation();
 	}
-
 
 	void CAgentOperation::load(NLMISC::IStream &is)
 	{
@@ -258,6 +304,7 @@ namespace NLAIAGENT
 			{
 				IConnectIA *c = (IConnectIA *)param->get();
 				connectOnChange(c);
+				c->incRef();
 			}
 			return r;
 		

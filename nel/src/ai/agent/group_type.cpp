@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.27 2002/03/12 13:45:28 chafik Exp $
+ * $Id: group_type.cpp,v 1.28 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,15 @@ namespace NLAIAGENT
 		{
 			for(int i = 0; i < _LastM; i++)
 			{
+
+#ifdef NL_DEBUG
+		std::string s;
+		methodName->getDebugString(s);
+		if(s == "Get")
+		{
+			s = s;
+		}
+#endif
 				if(*methodName == IBaseGroupType::_Method[i].MethodName)
 				{										
 					switch(_Method[i].Index)
@@ -128,7 +137,7 @@ namespace NLAIAGENT
 							CObjectType *c = new CObjectType(new NLAIC::CIdentType(*IAgent::IdAgent));
 							a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));
 						}
-						return a;
+						return a;					
 					}
 				}
 			}

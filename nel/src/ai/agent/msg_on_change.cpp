@@ -1,6 +1,6 @@
 /** \file msg_on_change.cpp
  *
- * $Id: msg_on_change.cpp,v 1.4 2002/05/27 09:23:04 chafik Exp $
+ * $Id: msg_on_change.cpp,v 1.5 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,22 +30,25 @@
 
 namespace NLAIAGENT
 {
-	COnChangeMsg::COnChangeMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(l,b)
+	COnChangeMsg::COnChangeMsg( std::list<IObjectIA *> &l, NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{
+		CGroupType *x = new CGroupType();		
+		setMessageGroup(x);
+		setGroup(CMessageGroup::msgScriptingGroup);
 	}
 
 	COnChangeMsg::COnChangeMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
-		/*CVectorGroupType *x = new CVectorGroupType();		
-		setMessageGroup(x);*/
+		CGroupType *x = new CGroupType();		
+		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);		
 	}
 
 	COnChangeMsg::COnChangeMsg(IBasicAgent *agent):
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::COnChangeMsgClass::IdOnChangeMsgClass.getFactory()->getClass())
 	{		
-		/*CVectorGroupType *x = new CVectorGroupType();		
-		setMessageGroup(x);*/
+		CGroupType *x = new CGroupType();		
+		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
  	}
 
@@ -55,17 +58,9 @@ namespace NLAIAGENT
 
 	const NLAIC::IBasicType *COnChangeMsg::clone() const
 	{
-		const NLAIC::IBasicType *x;
-		if(((const INombreDefine *)getFront())->getNumber() != 0.0)
-		{
-			//CLocalAgentMail *g = (CLocalAgentMail *)get();
-			x = new COnChangeMsg(*this);
-		}
-		else
-		{
-			x = new COnChangeMsg();
-		}
-
+				
+		const NLAIC::IBasicType *x = new COnChangeMsg(*this);
+		
 		return x;
 	}
 
@@ -90,36 +85,5 @@ namespace NLAIAGENT
 		{
 			t = "COnChangeMsg<false,NULL>";
 		}
-	}
-
-
-	tQueue COnChangeMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
-	{
-		tQueue r;
-		if(className == NULL)
-		{
-			if( (*funcName) == CStringVarName( "Constructor" ) )
-			{					
-				CObjectType *c = new CObjectType( new NLAIC::CIdentType( COnChangeMsg::IdOnChangeMsg) );
-				r.push( CIdMethod( IMessageBase::getMethodIndexSize(), 0.0, NULL, c) );			
-			}
-		}
-		return r;
-	}
-
-	NLAIAGENT::IObjectIA::CProcessResult COnChangeMsg::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
-	{
-		return IObjectIA::CProcessResult();
-	}
-
-	IObjectIA::CProcessResult COnChangeMsg::runMethodeMember(sint32 index, IObjectIA *p)
-	{
-		IBaseGroupType *param = (IBaseGroupType *)p;
-		return IObjectIA::CProcessResult();
-	}
-
-	sint32 COnChangeMsg::getBaseMethodCount() const
-	{
-		return CMessageScript::getBaseMethodCount() + 1;
-	}
+	}	
 }

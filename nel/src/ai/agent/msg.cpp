@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.20 2002/01/28 10:24:44 chafik Exp $
+ * $Id: msg.cpp,v 1.21 2002/06/06 09:12:14 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ namespace NLAIAGENT
 	const static sint32 _TSetContinuation = 4;
 	const static sint32 _TSetSender = 5;
 	const static sint32 _TInitProtocol = 6;	
-	const static sint32 _TProtcetSender = 7;	
+	const static sint32 _TProtcetSender = 7;		
 	const static sint32 _MLastM = 8;
 
 	IMessageBase::CMethodCall IMessageBase::_Method[] = 
@@ -68,7 +68,7 @@ namespace NLAIAGENT
 		IMessageBase::CMethodCall("XChangeReceiverSender",_TXchgReceiverIsSender),
 		IMessageBase::CMethodCall("ProtcetSender",_TProtcetSender),
 		IMessageBase::CMethodCall("InitProtocol",_TInitProtocol),
-		IMessageBase::CMethodCall("SetSender",_TSetSender)
+		IMessageBase::CMethodCall("SetSender",_TSetSender)		
 		
 	};
 
@@ -462,7 +462,7 @@ namespace NLAIAGENT
 						setSender((IObjectIA *)obj);
 
 					return IObjectIA::CProcessResult();
-				}
+				}			
 
 			case _TInitProtocol:
 				{

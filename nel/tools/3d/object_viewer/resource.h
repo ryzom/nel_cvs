@@ -177,6 +177,7 @@
 #define IDC_COMBO_DIST_TYPE             1070
 #define IDC_MAIN_OP                     1070
 #define IDC_CURRENT_STAGE               1070
+#define IDC_DEGRADATION_EXPONENT        1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071
@@ -248,10 +249,13 @@
 #define IDD_RIBBON_DLG                  1112
 #define IDC_ENABLE_Y                    1113
 #define IDC_XPOS                        1113
+#define IDD_AUTO_LOD                    1113
 #define IDC_ENABLE_Z                    1114
 #define IDC_YPOS                        1114
 #define IDC_ZPOS                        1115
+#define IDC_CURSOR1                     1115
 #define IDC_UPDATE_XPOS                 1116
+#define IDD_GLOBAL_COLOR                1116
 #define IDC_UPDATE_YPOS                 1117
 #define IDC_UPDATE_ZPOS                 1118
 #define IDC_SUB_COMPONENT               1119
@@ -284,6 +288,7 @@
 #define IDC_BG_COLOR                    1144
 #define IDC_EDIT_INPUT                  1147
 #define IDC_ENABLE_SLOW_DOWN            1148
+#define IDC_FORCE_LIFE_TIME_UPDATE      1149
 #define IDC_DISPLAY_BBOX                1152
 #define IDC_BB_X                        1153
 #define IDC_BB_Y                        1154
@@ -505,7 +510,19 @@
 #define IDC_ANIM_TYPE_CTRL              1323
 #define IDC_LIFE_MGT_PRESETS            1324
 #define IDC_SHARABLE                    1325
-#define IDC_CHECK3                      1326
+#define IDC_ENABLE_AUTO_LOD             1326
+#define IDC_EDIT_AUTO_LOD               1327
+#define IDC_START_PERCENT_DIST          1328
+#define IDC_NO_AUTO_LOD                 1329
+#define IDC_GLOBAL_COLOR                1330
+#define IDC_EDIT_GLOBAL_COLOR           1331
+#define IDC_COLOR_ATTRIB                1332
+#define IDC_INPUT_MULTIPLIER_TXT        1333
+#define IDC_SRC_INPUT_TXT               1334
+#define IDC_SKIP_PARTICLES              1335
+#define IDC_BUMP_FACTOR_TXT             1337
+#define IDC_BUMP_FACTOR                 1338
+#define IDC_CONSISTENT_EMISSION         1340
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -633,9 +650,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1113
+#define _APS_NEXT_RESOURCE_VALUE        1117
 #define _APS_NEXT_COMMAND_VALUE         32883
-#define _APS_NEXT_CONTROL_VALUE         1326
+#define _APS_NEXT_CONTROL_VALUE         1341
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

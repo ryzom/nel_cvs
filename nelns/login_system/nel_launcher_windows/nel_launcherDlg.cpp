@@ -83,6 +83,16 @@ BOOL CNel_launcherDlg::OnInitDialog()
 
 	ConfigFile.load ("nel_launcher.cfg");
 
+	// get the working path
+	string workingPath = CPath::standardizePath (ConfigFile.getVar ("Application").asString(2));
+	
+	if (!NLMISC::CFile::isExists (workingPath))
+	{
+		nlerror ("Working path '%s' doesn't exists", workingPath.c_str ());
+	}
+
+	_chdir (workingPath.c_str ());
+
 	// load the pleasewait html page if available
 	PleaseWaitFullPath = CPath::getFullPath (PleaseWaitFilename, false);
 	if (NLMISC::CFile::isExists (PleaseWaitFullPath))
@@ -353,7 +363,6 @@ string getValue (const string &str, const string &token)
 void CNel_launcherDlg::launch (const string &str)
 {
 	string exe = ConfigFile.getVar ("Application").asString(1);
-	string path = ConfigFile.getVar ("Application").asString(2);
 
 	string rawargs = getValue (str, "nelArgs");
 
@@ -400,7 +409,6 @@ void CNel_launcherDlg::launch (const string &str)
 
 	// execute, should better use CreateProcess()
 
-	_chdir (path.c_str());
 	_execvp (exe.c_str(), args);
 	exit(0);
 }

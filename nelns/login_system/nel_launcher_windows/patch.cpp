@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.1 2002/09/30 16:23:07 lecroart Exp $
+ * $Id: patch.cpp,v 1.2 2002/10/21 14:52:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,9 +58,7 @@ struct CEntry
 
 void setVersion(const std::string &version)
 {
-	string clientRootPath = CPath::standardizePath (ConfigFile.getVar ("Application").asString(2));
-
-	string fn = clientRootPath + "VERSION";
+	string fn = "VERSION";
 	FILE *fp = fopen (fn.c_str(), "wb");
 	if (fp == NULL)
 		throw ("Can't open file '%s'", fn.c_str ());
@@ -71,9 +69,7 @@ void setVersion(const std::string &version)
 
 string getVersion()
 {
-	string clientRootPath = CPath::standardizePath (ConfigFile.getVar ("Application").asString(2));
-
-	string fn = clientRootPath + "VERSION";
+	string fn = "VERSION";
 	FILE *fp = fopen (fn.c_str (), "rb");
 	if (fp!=NULL)
 	{
@@ -108,8 +104,6 @@ private:
 	{
 		try
 		{
-			setState(true, "Starting");
-
 			CurrentFilesToGet = 0;
 			CurrentBytesToGet = 0;
 			TotalFilesToGet = 0;
@@ -117,11 +111,18 @@ private:
 
 			bool needToExecuteAPatch = false;
 
-			string ClientRootPath = CPath::standardizePath (ConfigFile.getVar ("Application").asString(2));
-			string ClientPatchPath = ClientRootPath + "patch/";
+			string ClientRootPath = "./";
+			string ClientPatchPath = "./patch/";
 			string ServerRootPath = CPath::standardizePath (ServerPath);
 
-			nlinfo ("Patching from '%s' to '%s'", ServerRootPath.c_str(), ClientRootPath.c_str());
+			setState(true, "Patching from '%s'", ServerRootPath.c_str());
+
+			// create the patch directory if not exists
+			if (!NLMISC::CFile::isExists ("patch"))
+			{
+				setState(true, "Creating patch directory");
+				_mkdir ("patch");
+			}
 
 			// first, get the file that contains all files
 			_unlink (DirFilename.c_str());

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.4 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,12 @@ public:
 		_Manager.setSunContributionPower (power, maxThreshold);
 	}
 
+	virtual float					getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
+	{
+		NL3D_MEM_VISUAL_COLLISION
+		return _Manager.getCameraCollision (start, end, radius, cone);
+	}
+	
 protected:
 	CVisualCollisionManager		_Manager;
 	typedef	CPtrSet<CVisualCollisionEntityUser>		TVisualCollisionEntitySet;

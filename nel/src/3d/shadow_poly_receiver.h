@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * <File description>
  *
- * $Id: shadow_poly_receiver.h,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_poly_receiver.h,v 1.2 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -48,7 +48,8 @@ class	CShadowMap;
 
 // ***************************************************************************
 /**
- * <Class description>
+ *  A class used to append/remove triangles that will be rendered for ShadowMap
+ *	Additionally it can be used also for Camera collision for instance.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2003
@@ -69,6 +70,13 @@ public:
 	 *	\param vertDelta (for landscape). add this value from vertices before rendering.
 	 */
 	void			render(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta);
+
+	/** Use the triangles added for ray-cylinder collision
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 *	\param radius is the radius of the 'cylinder'
+	 *	\param cone if true, the object tested is a cone (radius goes to end)
+	*/
+	float			getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
 // ************
 private:

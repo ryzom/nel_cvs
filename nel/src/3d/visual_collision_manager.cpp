@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.6 2002/06/25 09:45:03 corvazier Exp $
+ * $Id: visual_collision_manager.cpp,v 1.7 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,18 @@ void					CVisualCollisionManager::setSunContributionPower(float power, float max
 
 }
 
-
+// ***************************************************************************
+float					CVisualCollisionManager::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
+{
+	if(_Landscape)
+	{
+		return _Landscape->getCylinderCollision(start, end, radius, cone);
+	}
+	else
+	{
+		return 1;
+	}
+}
 
 } // NL3D
+

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.138 2004/02/06 14:37:44 besson Exp $
+ * $Id: landscape.cpp,v 1.139 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3708,6 +3708,12 @@ void CLandscape::invalidateAllTiles()
 	}	
 	unlockBuffers();
 	updateTessBlocksFaceVector();	
+}
+
+// ***************************************************************************
+float CLandscape::getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone)
+{
+	return _ShadowPolyReceiver.getCylinderCollision(start, end, radius, cone);
 }
 
 

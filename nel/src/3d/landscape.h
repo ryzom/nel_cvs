@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.50 2004/01/26 10:34:38 vizerie Exp $
+ * $Id: landscape.h,v 1.51 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -314,6 +314,13 @@ public:
 	 *	Warning: ptrs are only valid between 2 tesselation (2 calls of Scene::render() or 2 calls of refine*() etc...)
 	 */
 	void			getTessellationLeaves(std::vector<const CTessFace*>  &leaves) const;
+
+	/** Get the collision of a cylinder against the TileFaces (ie only under approx 50 m)
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 *	\param radius is the radius of the 'cylinder'
+	 *	\param cone if true, the object tested is a cone (radius goes to end)
+	*/
+	float			getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
 	// @}
 

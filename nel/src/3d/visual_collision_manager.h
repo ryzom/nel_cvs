@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * <File description>
  *
- * $Id: visual_collision_manager.h,v 1.3 2002/06/25 09:45:03 corvazier Exp $
+ * $Id: visual_collision_manager.h,v 1.4 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,15 @@ public:
 	 *	Default is 0.5 (=> sqrt) for power and 0.5 for maxThreshold.
 	 */
 	void						setSunContributionPower(float power, float maxThreshold);
+
+
+	/** Get Camera Ray-Cylinder collision.
+	 *	For landscape, it is done only against TileFaces (ie only under approx 50 m)
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 *	\param radius is the radius of the 'cylinder'
+	 *	\param cone if true, the object tested is a cone (radius goes to end)
+	*/
+	float						getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
 
 // ***************************

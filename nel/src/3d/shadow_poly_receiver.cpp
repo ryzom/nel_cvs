@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.2 2004/01/15 17:33:18 lecroart Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.3 2004/03/03 18:59:54 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "std3d.h"
 
+#include "nel/misc/hierarchical_timer.h"
 #include "3d/shadow_poly_receiver.h"
 #include "3d/shadow_map.h"
 #include "3d/driver.h"
@@ -300,6 +301,119 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 	tam.setDoubleSided(true);
 	drv->renderTriangles(tam, &_RenderTriangles[0], currentTriIdx/3);*/
 }
+
+
+// ***************************************************************************
+float			CShadowPolyReceiver::getCylinderCollision(const CVector &start, const CVector &end, float radius, bool cone)
+{
+	H_AUTO( NL3D_getRayCollision )
+
+	// **** build the cylinder pyramid
+	// approximate with a box
+	CMatrix		mat;
+	mat.setRot(CVector::I, (start-end).normed(), CVector::K);
+	mat.normalize(CMatrix::YZX);
+	// build the start 4 points
+	CVector		ps[4];
+	uint		NPlanes;
+	// cone or cylinder?
+	if(cone)
+	{
+		NPlanes= 5;
+		ps[0]= start;
+		ps[1]= start;
+		ps[2]= start;
+		ps[3]= start;
+	}
+	else
+	{
+		NPlanes= 6;
+		mat.setPos(start);
+		ps[0]= mat * CVector(radius, 0, -radius);
+		ps[1]= mat * CVector(radius, 0, radius);
+		ps[2]= mat * CVector(-radius, 0, radius);
+		ps[3]= mat * CVector(-radius, 0, -radius);
+	}
+	// build the end 4 points
+	CVector		pe[4];
+	mat.setPos(end);
+	pe[0]= mat * CVector(radius, 0, -radius);
+	pe[1]= mat * CVector(radius, 0, radius);
+	pe[2]= mat * CVector(-radius, 0, radius);
+	pe[3]= mat * CVector(-radius, 0, -radius);
+	CPlane	pyramid[6];
+	// try to roder for optimisation
+	// left/right
+	pyramid[0].make(ps[3], pe[3], pe[2]);
+	pyramid[1].make(ps[1], pe[1], pe[0]);
+	// end
+	pyramid[2].make(pe[0], pe[1], pe[2]);
+	// top-bottom
+	pyramid[3].make(ps[2], pe[2], pe[1]);
+	pyramid[4].make(ps[0], pe[0], pe[3]);
+	// start if not cone
+	if(!cone)
+		pyramid[5].make(ps[0], ps[2], ps[1]);
+	
+	// **** select with quadGrid
+	CAABBox		worldBB;
+	worldBB.setCenter(start);
+	worldBB.extend(end);
+	_TriangleGrid.select(worldBB.getMin(), worldBB.getMax());
+	
+	// **** For all triangles, test if intersect the pyramid
+	TTriangleGrid::CIterator	it;
+	CVector		arrayIn[3+6];
+	CVector		arrayOut[3+6];
+	CVector		*pIn= arrayIn;
+	CVector		*pOut= arrayOut;
+	float		sqrShortDist= FLT_MAX;
+	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
+	{
+		CTriangleId		&triId= *it;
+		// build the triangle
+		pIn[0]= _Vertices[triId.Vertex[0]];
+		pIn[1]= _Vertices[triId.Vertex[1]];
+		pIn[2]= _Vertices[triId.Vertex[2]];
+		sint	nVert= 3;
+		// clip against the pyramid
+		for(uint i=0;i<NPlanes;i++)
+		{
+			nVert= pyramid[i].clipPolygonBack(pIn, pOut, nVert);
+			swap(pIn, pOut);
+			if(!nVert)
+				break;
+		}
+		// if clipped => collision
+		if(nVert)
+		{
+			// get the nearest distance
+			for(sint i=0;i<nVert;i++)
+			{
+				float	sqrDist= (pIn[i]-start).sqrnorm();
+				if(sqrDist<sqrShortDist)
+					sqrShortDist= sqrDist;
+			}
+		}
+	}
+			
+	// **** return the collision found, between [0,1]
+	if(sqrShortDist == FLT_MAX)
+		return 1;
+	else
+	{
+		float	f= 1;
+		float	d= (end-start).norm();
+		if(d>0)
+		{
+			f= sqrtf(sqrShortDist) / d;
+			f= min(f, 1.f);
+		}
+		return f;
+	}
+
+}
+
 
 
 } // NL3D

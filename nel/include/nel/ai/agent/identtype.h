@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.17 2001/05/16 12:22:32 saffray Exp $
+ * $Id: identtype.h,v 1.18 2001/05/17 14:38:54 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,17 +240,16 @@ namespace NLAIAGENT
 	*/
 	struct CIdent: public CAgentNumber
 	{
-		uint16 TypeName;
-
+		std::string TypeName;
 		CIdent()
 		{			
 		}		
 
-		CIdent(const uint16 typeName, uint64 id, uint64 creator = ServerID,uint64 dyn = ServerID):CAgentNumber(id,creator,dyn),TypeName(typeName)
+		CIdent(const std::string &typeName,uint64 id,uint64 creator = ServerID,uint64 dyn = ServerID):CAgentNumber(id,creator,dyn),TypeName(typeName)
 		{			
 		}
 
-		CIdent(const uint16 typeName,const CAgentNumber &a):CAgentNumber(a),TypeName(typeName)
+		CIdent(const std::string &typeName,const CAgentNumber &a):CAgentNumber(a),TypeName(typeName)
 		{			
 		}
 
@@ -261,7 +260,9 @@ namespace NLAIAGENT
 		///fill from read stream.
 		CIdent(NLMISC::IStream &is):CAgentNumber(is)
 		{			
-			is.serial(TypeName);
+			std::string s;
+			is.serial(s);
+			TypeName = s;
 		}
 
 		bool operator == (const CIdent &a) const
@@ -302,17 +303,19 @@ namespace NLAIAGENT
 		virtual void load(NLMISC::IStream &is)
 		{
 			CAgentNumber::load(is);
-			is.serial(TypeName);
+			std::string s;
+			is.serial(s);
+			TypeName = s;
 		}
 
 		///Have a debug string.
 		virtual void getDebugString(char *str) const
 		{
 			CAgentNumber::getDebugString(str);
-			//sprintf(&str[strlen(str)]," '%s'",TypeName.data());
+			sprintf(&str[strlen(str)]," '%s'",TypeName.data());
 		}
 
-		const uint16 &getTypeName() const
+		const std::string &getTypeName() const
 		{
 			return TypeName;
 		}

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.38.2.2 2003/06/05 11:43:15 legros Exp $
+ * $Id: move_container.cpp,v 1.38.2.3 2003/06/05 13:12:35 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,28 +45,6 @@ H_AUTO_DECL ( NLPACS_Eval_Collision )
 
 namespace NLPACS 
 {
-
-void	logPrimCollisionInfo(CMovePrimitive *mp, const CCollisionSurfaceDesc& desc, uint8 worldImage, double beginTime, double deltaTime)
-{
-	nlinfo("beginTime: %f", beginTime);
-	nlinfo("_DeltaTime: %f", deltaTime);
-
-	nlinfo("CCollisionSurfaceDesc desc:");
-	nlinfo("ContactNormal: x=%f, y=%f, z=%f", desc.ContactNormal.x, desc.ContactNormal.y, desc.ContactNormal.z);
-	nlinfo("ContactTime: %f", desc.ContactTime);
-	nlinfo("ContactSurface: RetrieverInstanceId=%d, SurfaceId=%d", desc.ContactSurface.RetrieverInstanceId, desc.ContactSurface.SurfaceId);
-
-	CPrimitiveWorldImage	*pwi = mp->getWorldImage(worldImage);
-	UGlobalPosition			gp;
-	mp->getGlobalPosition(gp, worldImage);
-
-	nlinfo("CMovePrimitive mp:");
-	nlinfo("getRadius(): %f", mp->getRadius());
-	nlinfo("getHeight(): %f", mp->getHeight());
-	nlinfo("getFinalPosition(): x=%f, y=%f, z=%f", mp->getFinalPosition(worldImage).x, mp->getFinalPosition(worldImage).y, mp->getFinalPosition(worldImage).z);
-	nlinfo("getGlobalPosition(): InstanceId=%d, LocalPosition.Surface=%d LocalPosition.Estimation.x=%f, LocalPosition.Estimation.y=%f, LocalPosition.Estimation.z=%f", gp.InstanceId, gp.LocalPosition.Surface, gp.LocalPosition.Estimation.x, gp.LocalPosition.Estimation.y, gp.LocalPosition.Estimation.z);
-	nlinfo("getSpeed(): x=%f, y=%f, z=%f", pwi->getSpeed().x, pwi->getSpeed().y, pwi->getSpeed().z);
-}
 
 // ***************************************************************************
 
@@ -695,43 +673,36 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 				// Set the container's time space contact time
 				desc.ContactTime = contactTime;
 
-				/*
-				 *	Check retriever collision is not to close to deltaTime
-				 * Thus, avoid bad float accuracy rounds...
-				 */
-				if (desc.ContactTime < _DeltaTime - 0.001)
+				// ptr on the surface
+				const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
+
+				// TODO: check surface flags  against primitive flags HERE:
+				// Is a wall ?
+				bool isWall;
+				if(!surf)
+					isWall= true;
+				else
+					isWall= !(surf->isFloor() || surf->isCeiling());
+
+				// stop on a wall.
+				if(isWall)
 				{
-					// ptr on the surface
-					const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
-
-					// TODO: check surface flags  against primitive flags HERE:
-					// Is a wall ?
-					bool isWall;
-					if(!surf)
-						isWall= true;
-					else
-						isWall= !(surf->isFloor() || surf->isCeiling());
-
-					// stop on a wall.
-					if(isWall)
+					// Test move ?
+					if (testMove)
 					{
-						// Test move ?
-						if (testMove)
-						{
-							// return contact normal only when testmove and vector provided
-							if (contactNormal)
-								*contactNormal = desc.ContactNormal;
-							return true;
-						}
-						else
-						{
-							// OK, collision if we are a collisionable primitive
-							newCollision (primitive, desc, primitiveWorldImage, beginTime, staticColInfo);
+						// return contact normal only when testmove and vector provided
+						if (contactNormal)
+							*contactNormal = desc.ContactNormal;
+						return true;
+					}
+					else
+					{
+						// OK, collision if we are a collisionable primitive
+						newCollision (primitive, desc, primitiveWorldImage, beginTime, staticColInfo);
 
-							// One collision found
-							found=true;
-							break;
-						}
+						// One collision found
+						found=true;
+						break;
 					}
 				}
 			}
@@ -832,15 +803,9 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
 								primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
 							{
-								/*
-								 *	Check collision occured not to close to deltaTime (in real time)
-								 */
-								if (dynamicColInfo->getCollisionDesc().ContactTime < _DeltaTime - 0.001)
-								{
-									if (testMove)
-										return true;
-									found=true;
-								}
+								if (testMove)
+									return true;
+								found=true;
 							}
 						}
 					}
@@ -870,15 +835,9 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 						if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
 							primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
 						{
-							/*
-							 *	Check collision occured not to close to deltaTime (in real time)
-							 */
-							if (dynamicColInfo->getCollisionDesc().ContactTime < _DeltaTime - 0.001)
-							{
-								if (testMove)
-									return true;
-								found=true;
-							}
+							if (testMove)
+								return true;
+							found=true;
 						}
 					}
 				}
@@ -1108,19 +1067,15 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 */
 
 	// Check time interval
-	if (beginTime>time)
-		logPrimCollisionInfo(first, desc, worldImage, beginTime, _DeltaTime);
 	nlassertex (beginTime<=time, ("beginTime=%f, time=%f", beginTime, time));
-	if (time>=_DeltaTime)
-		logPrimCollisionInfo(first, desc, worldImage, beginTime, _DeltaTime);
 	nlassertex (time<_DeltaTime, ("time=%f, _DeltaTime=%f", time, _DeltaTime));
 
 	// Time of the collision.
 	time-=NELPACS_DIST_BACK/wI->getSpeed().norm();
 	time=std::max(time, beginTime);
 	double ratio=(time-beginTime)/(_DeltaTime-beginTime);
-	nlassertex (ratio>=0, ("ratio=%f", ratio));
-	nlassertex (ratio<=1, ("ratio=%f", ratio));
+	nlassert (ratio>=0);
+	nlassert (ratio<=1);
 
 	if (staticColInfo)
 	{
@@ -1781,7 +1736,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 			nlassert (desc.Type == UMovePrimitive::_2DOrientedCylinder);
 			primitive->setRadius (desc.Length[0]*scale.x);
 		}
-		primitive->setHeight (desc.Height*scale.z/*+4.0*/);
+		primitive->setHeight (desc.Height*scale.z);
 
 		// Insert the primitives
 
@@ -1798,7 +1753,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 			CVector finalPos;
 			finalPos.x = cosa * desc.Position.x * scale.x - sina * desc.Position.y * scale.y + position.x;
 			finalPos.y = sina * desc.Position.x * scale.x + cosa * desc.Position.y * scale.y + position.y;
-			finalPos.z = desc.Position.z *scale.z + position.z /*- 2.0f*/;
+			finalPos.z = desc.Position.z *scale.z + position.z;
 
 			// Set the primtive orientation
 			if (desc.Type == UMovePrimitive::_2DOrientedBox)

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.21 2001/04/10 12:35:18 chafik Exp $
+ * $Id: baseai.cpp,v 1.22 2001/04/17 09:23:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,8 +195,9 @@ namespace NLAIAGENT
 
 	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
-		CStringVarName send(_SEND_);
-		CStringVarName constructor(_CONSTRUCTOR_);
+		static CStringVarName send(_SEND_);
+		static CStringVarName constructor(_CONSTRUCTOR_);
+		static CStringVarName run(_RUN_);
 
 		if(*methodName == send)
 		{
@@ -206,12 +207,20 @@ namespace NLAIAGENT
 			return r;
 		}
 		else
-			if(*methodName == constructor && !((const NLAISCRIPT::CParam &)param).size())
+		if(*methodName == constructor && !((const NLAISCRIPT::CParam &)param).size())
 		{
-			tQueue r;			
+			tQueue r;
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			r.push(CIdMethod(1,0.0,NULL,c));
 			return r;
+		}
+		else
+		if(*methodName == run && !((const NLAISCRIPT::CParam &)param).size())
+		{
+			tQueue r;
+			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
+			r.push(CIdMethod(2,0.0,NULL,c));
+			return r;			
 		}
 		return tQueue();
 	}
@@ -223,7 +232,7 @@ namespace NLAIAGENT
 
 	sint32 IObjectIA::getMethodIndexSize() const
 	{
-		return 2;
+		return 3;
 	}
 
 	// Executes a method from its index i and with its parameters
@@ -261,7 +270,10 @@ namespace NLAIAGENT
 				return sendMessage(msg);
 			}			
 			break;
-		case 1:
+		case 1:			
+			break;
+		case 2:
+			return run();
 			break;
 		}
 		return CProcessResult();

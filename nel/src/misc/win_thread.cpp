@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.4 2001/02/16 14:26:34 cado Exp $
+ * $Id: win_thread.cpp,v 1.5 2001/04/17 09:28:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,8 +71,12 @@ void CWinThread::start ()
 
 void CWinThread::terminate ()
 {
-	TerminateThread((HANDLE)ThreadHandle, 0);
-	CloseHandle((HANDLE)ThreadHandle);
+	BOOL i = TerminateThread((HANDLE)ThreadHandle, 0);
+	if(!i) 
+	{
+		DWORD e = GetLastError();		
+	}
+	i = CloseHandle((HANDLE)ThreadHandle);
 	ThreadHandle = NULL;
 }
 

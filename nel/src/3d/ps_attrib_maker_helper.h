@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.19 2004/06/17 08:06:25 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.20 2004/10/06 06:39:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						) const;*/
 
 
-		/// serialisation of the object
+		/// serialization of the object
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{
 			sint ver = f.serialVersion(2);
@@ -133,7 +133,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		  virtual ~CPSAttribMakerT() {}
 
 
-		/** tells wether one may choose one attribute from a CPSLocated to use as an input. If false, the input(s) is fixed
+		/** tells whether one may choose one attribute from a CPSLocated to use as an input. If false, the input(s) is fixed
 		 *  For this class, it is supported
 		 */
 		virtual bool hasCustomInput(void) { return true; } 
@@ -150,7 +150,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		virtual CPSInputType getInput(void) const { return _InputType; }
 
 
-		/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
+		/** tells whether clamping is supported for the input (value can't go above MaxInputValue)
 		 */
 		bool isClampingSupported(void) const { return true; }
 
@@ -261,7 +261,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			}
 			else
 			{
-				// the fastest case : it match the particle's life perfeclty
+				// the fastest case : it match the particle's life perfectly
 
 				if (_NbCycles == 1)
 				{
@@ -274,7 +274,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				}
 				else
 				{
-					// the particle won't cover the whole pattern durin his life
+					// the particle won't cover the whole pattern during his life
 					while (numAttrib --)
 					{
 						*(T *)pt = _F(_NbCycles  * (it.get())); 
@@ -397,7 +397,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			}
 			else
 			{
-				// the fastest case : it match the particle's life perfeclty
+				// the fastest case : it match the particle's life perfectly
 
 				if (_NbCycles == 1)
 				{
@@ -419,7 +419,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				}
 				else
 				{
-					// the particle won't cover the whole pattern durin his life
+					// the particle won't cover the whole pattern during his life
 
 					while (numAttrib --)
 					{		
@@ -549,7 +549,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				}
 				else
 				{
-					// the fastest case : it match the particle's life perfeclty
+					// the fastest case : it match the particle's life perfectly
 
 					if (_NbCycles == 1)
 					{
@@ -570,7 +570,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					}
 					else
 					{
-						// the particle won't cover the whole pattern durin his life
+						// the particle won't cover the whole pattern during his life
 
 						while (numAttrib --)
 						{		
@@ -1171,7 +1171,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				}	
 				else
 				{
-					return input == MaxInputValue ? _F(MaxInputValue) : _F(NLMISC::OptFastFractionnalPart(input));
+					return (input == MaxInputValue) ? _F(MaxInputValue) :  _F(NLMISC::OptFastFractionnalPart(input));
 				}
 			}
 };

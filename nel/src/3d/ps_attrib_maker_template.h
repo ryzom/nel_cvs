@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.25 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.26 2004/10/06 06:39:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,7 @@ public:
 			nlassert(time >= 0.f && time <= 1.f);
 		#endif
 		return PSValueBlend(_StartValue, _EndValue, time);	// a cast to T is necessary, because 
-														// the specialization couls be done with integer
+														// the specialization could be done with integer
 	}
 
 	/// \Name Values that are blended
@@ -310,7 +310,7 @@ public:
 		return _Tab[NLMISC::OptFastFloor(time * _NbValues)];
 	}
 
-	/// copie the keys values in the specified table
+	/// copy the keys values in the specified table
 	virtual void getValues(T *tab) const
 	{
 		nlassert(tab);

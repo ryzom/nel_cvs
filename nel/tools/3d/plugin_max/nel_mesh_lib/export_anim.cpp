@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.17 2001/09/18 14:41:24 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.18 2001/09/26 16:04:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,14 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 
 		// Add particle system tracks
 		addParticleSystemTracks(animation, node, sBaseName, ip);
+
+		// Add bones track
+		uint childrenCont=(uint)node.NumberOfChildren();
+		for (uint children=0; children<childrenCont; children++)
+		{
+			INode *child=node.GetChildNode(children);
+			addBoneTracks (animation, *child, sBaseName, ip, false, view);
+		}
 	}
 
 	// check for note track export (a string track used to create events)
@@ -509,7 +517,13 @@ void CExportNel::addBipedNodeTrack (CAnimation& animation, INode& node, const ch
 		}
 
 		// Create a track name
-		std::string name=parentName + getName (node) + ".";
+		std::string name;
+		
+		// Choose the good name for this track
+		if ((!root)||view)
+			name=parentName + getName (node) + ".";
+		else
+			name=parentName;
 
 		// Export keyframes
 		addNodeTracks (animation, node, name.c_str(), ip, &keys, &keysSampled, root, view);
@@ -636,7 +650,7 @@ void CExportNel::addObjTracks (CAnimation& animation, Object& obj, const char* p
 	desc.reset();
 
 	// Get the FOV controler
-	Control *c=getControlerByName (obj, "fov");
+	Control *c=getControlerByName (obj, "FOV");
 	if (c)
 	{
 		ITrack *pTrack=buildATrack (animation, *c, typeFloat, obj, desc, ip, NULL, NULL);

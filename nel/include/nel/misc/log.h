@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.13 2001/01/04 18:16:25 lecroart Exp $
+ * $Id: log.h,v 1.14 2001/01/23 17:35:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,9 @@ public:
 
 	/// Remove a displayer. If the displayer doesn't work, you could remove it.
 	void removeDisplayer (IDisplayer *displayer);
+
+	/// Returns true if the specified displayer is attached to the log object
+	bool attached(IDisplayer *displayer) const ;
 
 	/// Sets the local host name, with has to be determined outside
 	static void setLocalHostAndService( const std::string& hostname, const std::string& servicename );

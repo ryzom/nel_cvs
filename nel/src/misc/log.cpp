@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.20 2001/01/23 10:39:06 berenguier Exp $
+ * $Id: log.cpp,v 1.21 2001/01/23 17:35:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,15 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 	{
 		_Displayers.erase (idi);
 	}
+}
+
+
+/*
+ * Returns true if the specified displayer is attached to the log object
+ */
+bool CLog::attached(IDisplayer *displayer) const 
+{
+	return ( find( _Displayers.begin(), _Displayers.end(), displayer ) != _Displayers.end() );
 }
 
 

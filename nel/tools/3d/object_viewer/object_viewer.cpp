@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.111 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.112 2003/12/15 16:06:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -363,10 +363,10 @@ void CObjectViewer::loadConfigFile()
 				CSoundSystem::setPackedSheetPath(packedSheetPath);
 			}
 
-/*			var = cf.getVar("samplebanks");
+			/*CConfigFile::CVar var = cf.getVar("samplebanks");
 			for (uint i=0; i<(uint)var.size(); i++)
-				CSoundSystem::addSampleBank(var.asString(i).c_str());
-*/		}
+				CSoundSystem::addSampleBank(var.asString(i).c_str());*/
+		}
 		catch (EUnknownVar &)
 		{
 			::MessageBox(NULL, "warning : 'sample_path' or 'packed_sheet_path' variable not defined.\nSound will not work properly.", "Objectviewer.cfg", MB_OK|MB_ICONEXCLAMATION);
@@ -547,10 +547,7 @@ void CObjectViewer::initCamera ()
 
 void CObjectViewer::initUI (HWND parent)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-	// init sound	
-	CSoundSystem::initSoundSystem ();
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
 
 	// The fonts manager
 	_FontManager.setMaxMemory(2000000);
@@ -632,6 +629,9 @@ void CObjectViewer::initUI (HWND parent)
 
 	// load the config file
 	loadConfigFile();
+
+	// init sound	
+	CSoundSystem::initSoundSystem ();
 
 	// Create a root.
 	_SceneRoot= (CTransform*)CNELU::Scene->createModel(NL3D::TransformId);

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.3 2002/09/05 12:12:42 berenguier Exp $
+ * $Id: main.cpp,v 1.4 2003/05/22 14:14:27 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,13 +83,17 @@ void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)
 
 // ***************************************************************************
 /// Dispaly info for file in stdout
-void	displayInfoFileInStream(FILE *logStream, const char *fileName, const char *option)
+void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<string> &options)
 {
 	if(fileName==NULL)
 		return;
 
+	bool ms = options.find ("-ms") != options.end();
+	bool vi = options.find ("-vi") != options.end();
+	bool vl = options.find ("-vl") != options.end();
+
 	// Special option.
-	if( string(option)=="-ms" )
+	if( ms )
 	{
 		if(strstr(fileName, ".shape"))
 		{
@@ -136,6 +140,16 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const char *
 			// display Info on the zone:
 			fprintf(logStream, "  Num Patchs: %d\n", zone.getNumPatchs() );
 			fprintf(logStream, "  Num PointLights: %d\n", zoneInfo.PointLights.size() );
+			if (vl)
+			{
+				fprintf(logStream, "  Lights\n");
+				uint k;
+				for(k = 0; k < zoneInfo.PointLights.size(); ++k)
+				{
+					const CPointLightNamed &pl = zoneInfo.PointLights[k];
+					fprintf(logStream, "    light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x, pl.getPosition().y, pl.getPosition().z);
+				}
+			}
 		}
 		else if(strstr(fileName, ".ig"))
 		{
@@ -145,8 +159,30 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const char *
 			file.serial(ig);
 
 			// display Info on the ig:
+			CVector gpos = ig.getGlobalPos();
+			fprintf(logStream, "  Global pos : x = %.1f, y = %.1f, z =%.1f\n", gpos.x, gpos.y, gpos.z);
 			fprintf(logStream, "  Num Instances: %d\n", ig.getNumInstance() );
 			fprintf(logStream, "  Num PointLights: %d\n", ig.getPointLightList().size() );
+			fprintf(logStream, "  Realtime sun contribution = %s\n", ig.getRealTimeSunContribution() ? "on" : "off");
+			if (vi)
+			{
+				fprintf(logStream, "  Instances:\n");
+				uint k;
+				for(k = 0; k < ig._InstancesInfos.size(); ++k)
+				{
+					fprintf(logStream, "    Instance %s : x = %.1f, y = %.1f, z = %.1f, sx = %.1f, sy = %.1f, sz = %.1f\n", ig._InstancesInfos[k].Name.c_str(), ig._InstancesInfos[k].Pos.x + gpos.x, ig._InstancesInfos[k].Pos.y + gpos.y, ig._InstancesInfos[k].Pos.z + gpos.z, ig._InstancesInfos[k].Scale.x, ig._InstancesInfos[k].Scale.y, ig._InstancesInfos[k].Scale.z);
+				}
+			}
+			if (vl)
+			{
+				fprintf(logStream, "  Lights:\n");
+				uint k;
+				for(k = 0; k < ig.getNumPointLights(); ++k)
+				{
+					const CPointLightNamed &pl = ig.getPointLightNamed(k);
+					fprintf(logStream, "    Light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x + gpos.x, pl.getPosition().y + gpos.y, pl.getPosition().z + gpos.z);
+				}
+			}
 		}
 		else if(strstr(fileName, ".skel"))
 		{
@@ -254,13 +290,13 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const char *
 
 // ***************************************************************************
 // dispaly info for a file.
-void		displayInfoFile(FILE *logStream, const char *fileName, const char *option)
+void		displayInfoFile(FILE *logStream, const char *fileName, const set<string> &options)
 {
 	// Display on screen.
-	displayInfoFileInStream(stdout, fileName,option);
+	displayInfoFileInStream(stdout, fileName,options);
 	// Display in log
 	if(logStream)
-		displayInfoFileInStream(logStream, fileName,option);
+		displayInfoFileInStream(logStream, fileName,options);
 }
 
 
@@ -278,19 +314,18 @@ int		main(int argc, const char *argv[])
 		puts("    Results are displayed too in \"c:/temp/file_info.log\" ");
 		puts("    [opt] can get: ");
 		puts("    -ms display only a Warning if file is a .shape and is a Mesh, skinned, but without MRM");
+		puts("    -vi verbose instance informations");
+		puts("    -vl verbose light informations");
 		puts("Press any key");
 		_getch();
 		return -1;
 	}
 
-
-	// Parse option.
-	const	char	*option= "";
-	if(argc>=3)
-	{
-		option= argv[2];
-	}
-
+	// Parse options.
+	set<string> options;
+	int i;
+	for (i=2; i<argc; i++)
+		options.insert (argv[i]);
 
 	// Open log
 	FILE	*logStream;
@@ -308,12 +343,12 @@ int		main(int argc, const char *argv[])
 		// For all files.
 		for(uint i=0;i<listFile.size();i++)
 		{
-			displayInfoFile(logStream, listFile[i].c_str(), option);
+			displayInfoFile(logStream, listFile[i].c_str(), options);
 		}
 	}
 	else
 	{
-		displayInfoFile(logStream, fileName, option);
+		displayInfoFile(logStream, fileName, options);
 	}
 
 

@@ -611,6 +611,7 @@
 #define IDC_CURR_NUM_PARTS              1381
 #define IDC_SYSTEM_DATE                 1381
 #define IDC_ASSIGN_COUNT                1382
+#define IDC_NUM_ASKED_FACES             1382
 #define IDC_TIME_THRESHOLD_PLACE_HOLDER 1383
 #define IDC_MAX_STEP_PLACE_HOLDER       1384
 #define IDC_LOCK_FRAME_DELAY            1385
@@ -768,6 +769,7 @@
 #define IDM_ACTIVATE_TEXTURE_SET_3      32878
 #define IDS_FX_MATRIX                   32878
 #define IDM_ACTIVATE_TEXTURE_SET_5      32879
+#define IDS_NUM_WANTED_FACES            32879
 #define IDM_ACTIVATE_TEXTURE_SET_6      32880
 #define IDM_ACTIVATE_TEXTURE_SET_7      32881
 #define IDM_ACTIVATE_TEXTURE_SET_8      32882

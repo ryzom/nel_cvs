@@ -1,6 +1,6 @@
 /** \file background_sound.cpp
  *
- * $Id: background_sound.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_sound.cpp,v 1.2 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,16 @@ CBackgroundSound::CBackgroundSound()
 
 CBackgroundSound::~CBackgroundSound()
 {
+}
+
+void CBackgroundSound::serial(NLMISC::IStream &s)
+{
+	CSound::serial(s);
+
+	s.serialCont(_Sounds);
+
+	if (s.isReading())
+		_DurationValid = false;
 }
 
 void CBackgroundSound::importForm(const std::string& filename, NLGEORGES::UFormElm& formRoot)
@@ -109,7 +119,7 @@ void CBackgroundSound::importForm(const std::string& filename, NLGEORGES::UFormE
 	_DurationValid = false;
 }
 
-uint32 CBackgroundSound::getDuration(std::string *buffername)
+uint32 CBackgroundSound::getDuration()
 {
 	if (_DurationValid)
 		return _Duration;

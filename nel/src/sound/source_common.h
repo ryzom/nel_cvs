@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source_common.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,13 +44,15 @@ public:
 		SOURCE_BACKGROUND
 	};
 
-	CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context);
+	CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam);
+
+	~CSourceCommon();
 
 
 	/// Get the type the the source.
 	virtual TSOURCE_TYPE	getType() const = 0;
 
-	void					setPriority( TSoundPriority pr, bool redispatch = true);
+	void					setPriority( TSoundPriority pr);
 	/// Return the priority
 	TSoundPriority			getPriority() const								{ return _Priority; }
 	void					setLooping( bool loop );

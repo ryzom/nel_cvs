@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.h,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ * $Id: simple_sound.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,24 +52,24 @@ public:
 	/** Allow to load sound files when corresponding wave file is missing
 	 * (default: false, i.e. an input serial or a load throws an exception ESoundFileNotFound)
 	 */
-	static void			allowMissingWave( bool b )		{ _AllowMissingWave = b; }
+//	static void			allowMissingWave( bool b )			{ _AllowMissingWave = b; }
 	/// Serialize
-	void				serial( NLMISC::IStream& s );
+//	void				serial( NLMISC::IStream& s );
 	/// Load the sound parameters from georges' form
 	virtual void		importForm(const std::string& filename, NLGEORGES::UFormElm& formRoot);
 
 	/// Return the name of the buffer, can be depend of a context
-	void				getBuffername(std::string &buffername, CSoundContext *context);
+	const std::string	&getBuffername()					{ return _Buffername; }
 	/// Return the buffer and the buffername if not null
-	IBuffer*			getBuffer(std::string *buffername = NULL);
+	IBuffer*			getBuffer();
 	/// Return true if distance and cone are meaningful
-	bool				isDetailed() const				{ return _Detailed; }
+	bool				isDetailed() const					{ return _Detailed; }
 	/// Return the min distance (if detailed())
 	float				getMinDistance() const				{ return _MinDist; }
 	/// Return the alpha attenuation value.
 	float				getAlpha() const					{ return float(_Alpha); }
 	/// Return the length of the sound in ms
-	uint32				getDuration(std::string *buffername = NULL);
+	uint32				getDuration();
 	/// Return the filename
 	const std::string&	getFilename() const					{ return _Filename; }
 	/// Return the name of the buffer (must be unique)
@@ -83,12 +83,13 @@ public:
 
 	void				getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const;
 
+	void				serial(NLMISC::IStream &s);
 
 private:
 	TSOUND_TYPE getSoundType() {return SOUND_SIMPLE;};
 
 	// Allow to load sound files when corresponding wave file is missing ?
-	static bool			_AllowMissingWave;
+//	static bool			_AllowMissingWave;
 	// Registration flag for assoc between buffer and sound.
 	bool				_Registered;
 

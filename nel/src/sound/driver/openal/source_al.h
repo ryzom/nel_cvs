@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source_al.h,v 1.11 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 	/// Return the looping state
 	virtual bool			getLooping() const;
 	/// Play the static buffer (or stream in and play)
-	virtual void			play();
+	virtual bool			play();
 	/// Stop playing
 	virtual void			stop();
 	/// Pause. Call play() to resume.
@@ -106,7 +106,7 @@ public:
 	 */
 	virtual const NLMISC::CVector	&getPos() const;
 	/// Set the velocity vector (3D mode only) (default: (0,0,0))
-	virtual void			setVelocity( const NLMISC::CVector& vel );
+	virtual void			setVelocity( const NLMISC::CVector& vel, bool deferred );
 	/// Get the velocity vector
 	virtual void			getVelocity( NLMISC::CVector& vel ) const;
 	/// Set the direction vector (3D mode only) (default: (0,0,0) as non-directional)
@@ -133,7 +133,7 @@ public:
 	/// Get the source relative mode
 	virtual bool			getSourceRelativeMode() const;
 	/// Set the min and max distances (default: 1, MAX_FLOAT) (3D mode only)
-	virtual void			setMinMaxDistances( float mindist, float maxdist );
+	virtual void			setMinMaxDistances( float mindist, float maxdist, bool deferred );
 	/// Get the min and max distances
 	virtual void			getMinMaxDistances( float& mindist, float& maxdist ) const;
 	/// Set the cone angles (in radian) and gain (in [0 , 1]) (default: 2PI, 2PI, 0) (3D mode only)
@@ -152,6 +152,8 @@ private:
 
 	// Source name
 	ALuint					_SourceName;
+
+	NLMISC::CVector			_Pos;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
+ * $Id: env_sound_user.h,v 1.11 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_env_sound.h"
-#include "source_user.h"
+#include "simple_source.h"
 #include <vector>
 
 
@@ -71,7 +71,7 @@ class IBoundingShape;
  * \endverbatim
  *
  * In a transition, the _Source object is the center source
- * played when the listener not in the child area (CSourceUser).
+ * played when the listener not in the child area (CSimpleSource).
  * In a non-transition envsound, the _Source object is the
  * ambiant source (CAmbiantSource) which plays a stereo mix.
  *

@@ -17,7 +17,7 @@ bool CComplexSound::isDetailed() const
 	return false;
 }
 
-void CComplexSound::parseSequence(const std::string &str, std::vector<uint> &seq, uint scale)
+void CComplexSound::parseSequence(const std::string &str, std::vector<uint32> &seq, uint scale)
 {
 	seq.clear();
 
@@ -48,12 +48,12 @@ void CComplexSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> 
 	for (; first != last; ++first)
 	{
 		CSound *sound = mixer->getSoundId(*first);
-		subsounds.push_back(make_pair(*first, sound));
+		subsounds.push_back(make_pair((*first), sound));
 	}
 }
 
 
-uint32 CComplexSound::getDuration(std::string *buffername)
+uint32 CComplexSound::getDuration()
 {
 	// evaluate the duration of the sound...
 
@@ -83,7 +83,7 @@ uint32 CComplexSound::getDuration(std::string *buffername)
 	case MODE_CHAINED:
 		{
 			// sum the duration minus the xfade time (this is an aproximation if sample are shorter than 2 xfade time)
-			vector<uint>::iterator first(_SoundSeq.begin()), last(_SoundSeq.end()), prev;
+			vector<uint32>::iterator first(_SoundSeq.begin()), last(_SoundSeq.end()), prev;
 			for (; first != last; ++first)
 			{
 				if (first != _SoundSeq.begin())
@@ -107,7 +107,7 @@ uint32 CComplexSound::getDuration(std::string *buffername)
 				uint soundIndex = 0;
 				_Duration = durations[soundIndex++];
 
-				std::vector<uint>::iterator first(_DelaySeq.begin()), last(_DelaySeq.end());
+				std::vector<uint32>::iterator first(_DelaySeq.begin()), last(_DelaySeq.end());
 
 				for (; first != last; ++first)
 				{
@@ -191,6 +191,21 @@ float CComplexSound::getMaxDistance() const
 	return _MaxDist;
 }
 
+void	CComplexSound::serial(NLMISC::IStream &s)
+{
+	CSound::serial(s);
+	s.serialEnum(_PatternMode);
+	s.serialCont(_Sounds);
+	s.serial(_TicksPerSeconds);
+	s.serialCont(_SoundSeq);
+	s.serialCont(_DelaySeq);
+	s.serial(_XFadeLenght);
+	s.serial(_DoFadeIn);
+	s.serial(_DoFadeOut);
+
+	if (s.isReading())
+		_DurationValid = false;
+}
 
 
 /// Load the sound parameters from georges' form

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.13 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.14 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -587,13 +587,13 @@ bool CSourceDSound::update2()
 
 // ******************************************************************
 
-void CSourceDSound::setPos( const NLMISC::CVector& pos )
+void CSourceDSound::setPos( const NLMISC::CVector& pos, bool deferred )
 {
 	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
 	if (_3DBuffer != NULL)
 	{
-		if (_3DBuffer->SetPosition(pos.x, pos.z, pos.y, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetPosition(pos.x, pos.z, pos.y, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning ("SetPosition failed");
 		}
@@ -636,11 +636,11 @@ const NLMISC::CVector &CSourceDSound::getPos() const
 
 // ******************************************************************
 
-void CSourceDSound::setVelocity( const NLMISC::CVector& vel )
+void CSourceDSound::setVelocity( const NLMISC::CVector& vel, bool deferred )
 {
 	if (_3DBuffer != NULL)
 	{
-		if (_3DBuffer->SetVelocity(vel.x, vel.z, vel.y, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetVelocity(vel.x, vel.z, vel.y, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning ("SetVelocity failed");
 		}
@@ -808,11 +808,11 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
 
 		if (mode)
 		{
-			hr = _3DBuffer->SetMode(DS3DMODE_HEADRELATIVE, DS3D_DEFERRED);
+			hr = _3DBuffer->SetMode(DS3DMODE_HEADRELATIVE, DS3D_IMMEDIATE);
 		}
 		else
 		{
-			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_DEFERRED);
+			hr = _3DBuffer->SetMode(DS3DMODE_NORMAL, DS3D_IMMEDIATE);
 		}
 
 		if (hr != DS_OK)
@@ -853,15 +853,15 @@ bool CSourceDSound::getSourceRelativeMode() const
 
 // ******************************************************************
 
-void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
+void CSourceDSound::setMinMaxDistances( float mindist, float maxdist, bool deferred )
 {
 	if (_3DBuffer != 0)
 	{
-		if (_3DBuffer->SetMinDistance(mindist, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetMinDistance(mindist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMinDistance (%f) failed", mindist);
 		}
-		if (_3DBuffer->SetMaxDistance(maxdist, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetMaxDistance(maxdist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMaxDistance (%f) failed", maxdist);
 		}
@@ -1683,7 +1683,7 @@ void CSourceDSound::crossFade()
 	getFadeOutSize(writePos, xfadeSize, in1, writtenTooMuch);
 	xfadeByteSize = 2 * xfadeSize;
 
-#define MIX 0
+#define MIX 1
 
 
 #if MIX

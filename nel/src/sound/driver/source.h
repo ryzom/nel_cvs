@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.10 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source.h,v 1.11 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,13 +108,13 @@ public:
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
-	virtual void					setPos( const NLMISC::CVector& pos ) = 0;
+	virtual void					setPos( const NLMISC::CVector& pos, bool deffered = true ) = 0;
 	/** Get the position vector.
 	 * See setPos() for details.
 	 */
 	virtual const NLMISC::CVector	&getPos() const =0;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
-	virtual void					setVelocity( const NLMISC::CVector& vel ) = 0;
+	virtual void					setVelocity( const NLMISC::CVector& vel, bool deferred = true ) = 0;
 	/// Get the velocity vector
 	virtual void					getVelocity( NLMISC::CVector& vel ) const = 0;
 	/// Set the direction vector (3D mode only, ignored in stereo mode) (default: (0,0,0) as non-directional)
@@ -141,7 +141,7 @@ public:
 	/// Get the source relative mode
 	virtual bool					getSourceRelativeMode() const = 0;
 	/// Set the min and max distances (default: 1, MAX_FLOAT) (3D mode only)
-	virtual void					setMinMaxDistances( float mindist, float maxdist ) = 0;
+	virtual void					setMinMaxDistances( float mindist, float maxdist, bool deferred = true ) = 0;
 	/// Get the min and max distances
 	virtual void					getMinMaxDistances( float& mindist, float& maxdist ) const = 0;
 	/// Set the cone angles (in radian) and gain (in [0 , 1]) (default: 2PI, 2PI, 0)

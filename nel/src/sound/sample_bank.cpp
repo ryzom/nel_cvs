@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.8 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,12 +148,14 @@ void				CSampleBank::load(bool async)
 {
 	nldebug("Loading sample bank %s %", _Name.c_str(), async?"":"Asynchronously");
 
-//_CrtCheckMemory();
 	vector<string> filenames;
 	vector<string>::iterator iter;
-//	vector<IBuffer *>	buffers;
 
-	nlassert(!_Loaded);
+	if (_Loaded)
+	{
+		nlwarning("Trying to load an already loaded bank : %s", _Path);
+		return;
+	}
 
 	_LoadingDone = false;
 
@@ -173,19 +175,16 @@ void				CSampleBank::load(bool async)
 			{
 				buffer->presetName(sampleName);
 				nldebug("Preloading sample [%s]", sampleName.c_str());
-//				CAsyncFileManagerSound::getInstance().loadWavFile(buffer, *iter);
-//				_LoadList.push_back(make_pair(buffer, *iter));
 			}
 			else
 			{
 				_SoundDriver->loadWavFile(buffer, (*iter).c_str());
 				_ByteSize += buffer->getSize();
 			}
-//			_Samples.insert(make_pair(CFile::getFilenameWithoutExtension(*iter), buffer));
 			_Samples[sampleName] = buffer ;
 
 			// Warn the sound bank that the sample are available.
-			CSoundBank::bufferLoaded(sampleName, buffer);
+			CSoundBank::instance()->bufferLoaded(sampleName, buffer);
 		}
 		catch (ESoundDriver &e)
 		{
@@ -200,7 +199,11 @@ void				CSampleBank::load(bool async)
 	_Loaded = true;
 
 	if (!async)
+	{
 		_LoadingDone = true;
+		// compute the sample bank size.
+		_LoadedSize += _ByteSize;
+	}
 	else
 	{
 		// fill the loading list.
@@ -273,7 +276,10 @@ bool				CSampleBank::unload()
 	vector<IBuffer*> vec;
 	TSampleTable::iterator it;
 
-	nlassert(_Loaded);
+	if (!_Loaded)
+	{
+		nlwarning("Trying to unload an already unloaded bank : %s", _Path);
+	}
 
 	// need to wait end of load ?
 	if (!_LoadingDone)
@@ -291,7 +297,7 @@ bool				CSampleBank::unload()
 			// Warn the mixer to stop any track playing this buffer.
 			CAudioMixerUser::instance()->bufferUnloaded(buffer);
 			// Warn the sound banks abount this buffer.
-			CSoundBank::bufferUnloaded(bufferName);
+			CSoundBank::instance()->bufferUnloaded(bufferName);
 
 			// delete
 			it->second = NULL;
@@ -306,22 +312,6 @@ bool				CSampleBank::unload()
 	_ByteSize = 0;
 
 	return true;
-
-/*	for (map_iter = _Samples.begin(); map_iter != _Samples.end(); ++map_iter)
-	{
-		// We can't delete directly second because the map is based on second->getName()
-		vec.push_back( (*map_iter).second );
-	}
-	
-	_Samples.clear();
-
-	vector<IBuffer*>::iterator vec_iter;
-
-	for (vec_iter = vec.begin(); vec_iter != vec.end(); ++vec_iter)
-	{
-		delete (*vec_iter);
-	}
-*/
 }
 
 // ********************************************************
@@ -389,13 +379,6 @@ void				CSampleBank::releaseAll()
 {
 	nldebug( "SampleBanks: Releasing..." );
 
-/*	std::map<std::string, CSampleBank*>::iterator first(_Banks.begin()), last(_Banks.end());
-	for (; first != last; ++first)
-	{
-		delete first->second;
-	}
-	_Banks.clear();
-*/
 	while (!_Banks.empty())
 	{
 //_CrtCheckMemory();

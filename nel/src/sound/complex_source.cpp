@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ * $Id: complex_source.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,8 +34,8 @@ using namespace NLMISC;
 namespace NLSOUND 
 {
 
-CComplexSource::CComplexSource	(CComplexSound *soundPattern, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context)
-:	CSourceCommon(soundPattern, spawn, cb, cbUserParam, context),
+CComplexSource::CComplexSource	(CComplexSound *soundPattern, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
+:	CSourceCommon(soundPattern, spawn, cb, cbUserParam),
 	_Source1(NULL),
 	_Source2(NULL)
 {
@@ -55,12 +55,13 @@ CComplexSource::~CComplexSource()
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 	// security
 	CAudioMixerUser::instance()->unregisterUpdate(this);
-	CAudioMixerUser::instance()->removeEvent(this);
+	CAudioMixerUser::instance()->removeEvents(this);
 
 	std::vector<USource	*>::iterator first(_AllSources.begin()), last(_AllSources.end());
 	for (; first != last; ++first)
 	{
-		mixer->removeSource(*first);
+		//mixer->removeSource(*first);
+		delete *first;
 	}
 }
 
@@ -102,7 +103,7 @@ void CComplexSource::play()
 	case CComplexSound::MODE_CHAINED:
 		{
 			_SoundSeqIndex = 0;
-			const vector<uint>	&soundSeq = _PatternSound->getSoundSeq();
+			const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
 			if (!soundSeq.empty())
 			{
 				CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
@@ -133,7 +134,7 @@ void CComplexSource::play()
 			// use Source1, sound sequence, delay sequence and event.
 			_SoundSeqIndex = 0;
 			_DelaySeqIndex = 0;
-			const vector<uint>	&soundSeq = _PatternSound->getSoundSeq();
+			const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
 			if (!soundSeq.empty())
 			{
 				CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
@@ -147,7 +148,7 @@ void CComplexSource::play()
 				_StartTime1 = now;
 
 				// register event for next sound.
-				const std::vector<uint> &delaySeq = _PatternSound->getDelaySeq();
+				const std::vector<uint32> &delaySeq = _PatternSound->getDelaySeq();
 				if (!delaySeq.empty() && _DelaySeqIndex < delaySeq.size())
 				{
 					_LastSparseEvent = false;
@@ -214,15 +215,17 @@ void CComplexSource::stop()
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 	if (_Source1)
 	{
-		_Source1->stop();
-		mixer->removeSource(_Source1);
+//		_Source1->stop();
+//		mixer->removeSource(_Source1);
+		delete _Source1;
 
 		_Source1 = NULL;
 	}
 	if (_Source2)
 	{
-		_Source2->stop();
-		mixer->removeSource(_Source2);
+//		_Source2->stop();
+//		mixer->removeSource(_Source2);
+		delete _Source2;
 
 		_Source2 = NULL;
 	}
@@ -230,18 +233,19 @@ void CComplexSource::stop()
 	std::vector<USource	*>::iterator first(_AllSources.begin()), last(_AllSources.end());
 	for (; first != last; ++first)
 	{
-		(*first)->stop();
+		if ((*first)->isPlaying())
+			(*first)->stop();
 	}
 
 	switch (_PatternSound->getPatternMode())
 	{
 	case CComplexSound::MODE_CHAINED:
 		mixer->unregisterUpdate(this);
-		mixer->removeEvent(this);
+		mixer->removeEvents(this);
 		break;
 	case CComplexSound::MODE_SPARSE:
 	case CComplexSound::MODE_ALL_IN_ONE:
-		mixer->removeEvent(this);
+		mixer->removeEvents(this);
 		break;
 	}
 
@@ -400,8 +404,9 @@ void CComplexSource::onUpdate()
 		// fade end !
 		if (_Source1)
 		{
-			_Source1->stop();
-			mixer->removeSource(_Source1);
+//			_Source1->stop();
+//			mixer->removeSource(_Source1);
+			delete _Source1;
 			_Source1 = NULL;
 		}
 		if (_Source2)
@@ -415,7 +420,7 @@ void CComplexSource::onUpdate()
 			// if there is a next sound available, program an event for the next xfade.
 			CSound	*sound2 = NULL;
 //			_SoundSeqIndex++;
-			const vector<uint>	&soundSeq = _PatternSound->getSoundSeq();
+			const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
 			if (_SoundSeqIndex < soundSeq.size())
 			{
 				sound2 = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
@@ -517,8 +522,9 @@ void CComplexSource::onEvent()
 				else
 				{
 					// end the sound.
-					_Source1->stop();
-					mixer->removeSource(_Source1);
+//					_Source1->stop();
+//					mixer->removeSource(_Source1);
+					delete _Source1;
 					_Source1 = NULL;
 					_Playing = false;
 				}
@@ -529,13 +535,14 @@ void CComplexSource::onEvent()
 		{
 			if (_Source1 != NULL)
 			{
-				_Source1->stop();
-				mixer->removeSource(_Source1);
+//				_Source1->stop();
+//				mixer->removeSource(_Source1);
+				delete _Source1;
 				_Source1 = NULL;
 			}
 
-			const std::vector<uint> &delaySeq = _PatternSound->getDelaySeq();
-			const vector<uint>	&soundSeq = _PatternSound->getSoundSeq();
+			const std::vector<uint32> &delaySeq = _PatternSound->getDelaySeq();
+			const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
 
 			if (_Looping && _DelaySeqIndex >= delaySeq.size())
 			{

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.39 2002/11/04 16:42:43 lecroart Exp $
+ * $Id: config_file.cpp,v 1.40 2002/11/25 14:11:21 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,9 @@ void CConfigFile::reparse (const char *filename, bool callingCallback)
 
 	if (callingCallback)
 	{
-		if (_Callback != NULL) _Callback();
+		nlwarning("Callback ptr : %p", _Callback);
+		if (_Callback != NULL) 
+			_Callback();
 	}
 }
 
@@ -567,15 +569,11 @@ void CConfigFile::print (CLog *log) const
 
 void CConfigFile::setCallback (void (*cb)())
 {
-	if (cb == NULL) return;
-
 	_Callback = cb;
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
 {
-	if (cb == NULL) return;
-
 	for (vector<CVar>::iterator it = _Vars.begin (); it != _Vars.end (); it++)
 	{
 		if (VarName == (*it).Name)

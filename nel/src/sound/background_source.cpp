@@ -1,7 +1,7 @@
 /** \file source_user.cpp
- * CSourceUSer: implementation of USource
+ * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_source.cpp,v 1.2 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,8 +37,8 @@ namespace NLSOUND
 const TTime		ENV_CHK_INTERVAL = 3000;	
 
 
-CBackgroundSource::CBackgroundSource(CBackgroundSound *backgroundSource, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context)
-:	CSourceCommon(backgroundSource, spawn, cb, cbUserParam, context)
+CBackgroundSource::CBackgroundSource(CBackgroundSound *backgroundSource, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
+:	CSourceCommon(backgroundSource, spawn, cb, cbUserParam)
 {
 	_BackgroundSound = backgroundSource;
 }
@@ -167,15 +167,16 @@ void CBackgroundSource::stop()
 	{
 		CAudioMixerUser *mixer = CAudioMixerUser::instance();
 		mixer->unregisterUpdate(this);
-		mixer->removeEvent(this);
+		mixer->removeEvents(this);
 	
 		while (!_Sources.empty())
 		{
 			TSubSource &subSource = _Sources.back();
 			if (subSource.Source != NULL)
 			{
-				subSource.Source->stop();
-				mixer->removeSource(subSource.Source);
+//				subSource.Source->stop();
+				//mixer->removeSource(subSource.Source);
+				delete subSource.Source;
 
 			}
 			_Sources.pop_back();

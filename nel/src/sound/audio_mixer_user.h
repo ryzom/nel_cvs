@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.27 2002/11/04 15:40:43 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.28 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,14 +36,17 @@
 #include "sound.h"
 #include <vector>
 #include <hash_set>
+#include <list>
 
 
 namespace NLSOUND {
 
 
-class CSourceUser;
+class CSimpleSource;
 class CEnvSoundUser;
 class CEnvEffect;
+class CSoundBank;
+class CSourceCommon;
 
 
 /*
@@ -111,7 +114,35 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void				init( uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD );
+	virtual void				init(/* uint32 balance_period=AUTOBALANCE_DEFAULT_PERIOD */);
+	/** Set the priority channel reserve.
+	 *	Each priority channel can be assign a restrictive reserve value.
+	 *	This value is used when the number free track available for playing drop
+	 *	under the low water mark value (see setLowWaterMark).
+	 *	The mixer count the number of playing source in each priority channel. 
+	 *	A priority channel can orverflow it's reserve value only if the low water
+	 *	mark is not reach.
+	 *	In other word, when the number of played source increase, you can control
+	 *	a 'smooth' cut in priority layer. The idea is to try to keep some free track
+	 *	for the HighestPri source.
+	 *	By default, reserve are set for each channel to the number of available tracks.
+	 */
+	virtual void		setPriorityReserve(TSoundPriority priorityChannel, uint reserve);
+	/** Set the Low water mark.
+	 *	This value is use to mute sound source that try to play when there priority
+	 *	channel is full (see setPriorityReserve).
+	 *	Set a value 1 to 4 to keep some extra track available when a
+	 *	HighestPri source need to play.
+	 *	By default, the value is set to 0, witch mean no special treatment is done
+	 *	and the mixer will mute sound with no user control at all.
+	 *	Note also that the availability of a track is not guarantie if the sum of
+	 *	the priority reserve (see setPriorityReserve) is grater than the number od
+	 *	available tracks (witch is almos alwais the case). But this value will help
+	 *	the mixer make it's best.
+	 */
+	virtual void		setLowWaterMark(uint value);
+
+	
 	/// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void				reset();
 	/// Disables or reenables the sound
@@ -131,7 +162,7 @@ public:
 
 
 	/// Load sounds. Returns the number of sounds successfully loaded.
-	virtual void				loadSoundBank( const std::string &path );
+//	virtual void				loadSoundBank( const std::string &path );
 
 	
 	// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
@@ -150,16 +181,16 @@ public:
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, CSoundContext *context = 0 );
 	/// Add a source which was created by an EnvSound
-	void						addSource( CSourceUser *source );
+	void						addSource( CSourceCommon *source );
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */
-	virtual void				removeSource( USource *source );
+	virtual void				removeSource( CSourceCommon *source );
 
 	/// Put source into a track
-	void						giveTrack( CSourceUser *source );
+//	void						giveTrack( CSimpleSource *source );
 	/// Release track
-	void						releaseTrack( CSourceUser *source );
+//	void						releaseTrack( CSimpleSource *source );
 
 	/** Use this method to set the listener position instead of using getListener->setPos();
 	 * It's because we have to update the background sounds in this case.
@@ -200,7 +231,7 @@ public:
 	/** Same as removeSource() but does not delete the object (e.g. when not allocated by new,
 	 * as the CAmbiantSource channels)
 	 */
-	void						removeMySource( USource *source );
+//	void						removeMySource( USource *source );
 	/// Add ambiant sound pointer for later deletion
 //	void						addAmbiantSound( CSound *sound )		{ _AmbSounds.insert( sound ); }
 	// Allow to load sound files (nss) when the corresponding wave file is missing (see CSound)
@@ -233,8 +264,14 @@ public:
 
 	void						setBackgroundFlags(const TBackgroundFlags &backgroundFlags);
 
-	void						setPlaying(CSourceUser *source);
-	void						unsetPlaying(CSourceUser *source);
+//	bool						setPlaying(CSimpleSource *source);
+//	void						unsetPlaying(CSimpleSource *source);
+
+	CTrack						*getFreeTrack(CSimpleSource *source);
+	void						freeTrack(CTrack *track);
+
+	void						incPlayingSource()	{ ++_PlayingSources; };
+	void						decPlayingSource()	{ --_PlayingSources; };
 
 
 public:
@@ -260,39 +297,64 @@ public:
 	/// Add an event in the future.
 	void						addEvent(IMixerEvent *pmixerEvent, const NLMISC::TTime &date);
 	/// Remove any event programmed for this object.
-	void						removeEvent(IMixerEvent *pmixerEvent);
+	void						removeEvents(IMixerEvent *pmixerEvent);
+
+	/// Add a source for play as possible (for non discadable sound)
+	void						addSourceWaitingForPlay(CSimpleSource *source);
 
 private:
 
-	typedef std::hash_set<CSourceUser*, THashPtr<CSourceUser*> >						TSourceContainer;
-	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >					TMixerUpdateContainer;
+	typedef std::hash_set<CSourceCommon*, THashPtr<CSourceCommon*> >					TSourceContainer;
+	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >						TMixerUpdateContainer;
 	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
-
+	typedef std::multimap<NLMISC::TTime, IMixerEvent*>									TTimedEventContainer;
+	typedef std::multimap<IMixerEvent*, TTimedEventContainer::iterator>					TEventContainer;
 
 protected:
 	/// List of object to update.
 	TMixerUpdateContainer							_UpdateList;
-	/// List of update to add.
-	std::vector<IMixerUpdate*>						_UpdateAddList;
+	/// List of update to add or remove (bool param of the pair).
+	std::vector<std::pair<IMixerUpdate*, bool> >	_UpdateEventList;
 	/// List of update to remove.
-	std::vector<IMixerUpdate*>						_UpdateRemoveList;
-	/// List of event.
-	std::multimap<NLMISC::TTime, IMixerEvent*>		_EventList;
+//	std::vector<IMixerUpdate*>						_UpdateRemoveList;
+	/// List of event ordered by time.
+	TTimedEventContainer							_EventList;
+	/// List of event ordered by event ptr with there respective multimap iterator.
+	TEventContainer									_Events;
+	/// List of update for the event list.
+	std::vector<std::pair<NLMISC::TTime, IMixerEvent*> >	_EventListUpdate;
+	/// List of event to remove.
+//	std::vector<IMixerEvent*>						_EventRemoveList;
 
 	/// Redispatch the sources into tracks if needed
-	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
+//	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Select the appropriate environmental effect
 //	void						computeEnvEffect( const NLMISC::CVector& listenerpos, bool force=false );
 	/// Return true if the number of user sources is higher than the number of tracks
-	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
+//	bool						moreSourcesThanTracks() const			{ return _NbTracks < _Sources.size(); }
 	/// Redispatch the sources (call only if moreSourcesThanTracks() returns true)
-	void						redispatchSourcesToTrack();
+//	void						redispatchSourcesToTrack();
 	/// See removeSource(USource*) and removeMySource(USource*)
-	void						removeSource( TSourceContainer::iterator ips, bool deleteit );
+//	void						removeSource( TSourceContainer::iterator ips);
+
+	virtual void				getPlayingSoundsPos(std::vector<std::pair<bool, NLMISC::CVector> > &pos);
+
 
 private:
+	/// The vector of curently free tracks.
+	std::vector<CTrack*>		_FreeTracks;
+
+	/// The list of non discardable sound to play as soon as possible in order of arrival.
+	std::list<CSimpleSource*>	_SourceWaitingForPlay;
+
+	/// Table of track reserve for each priority
+	uint32						_PriorityReserve[NbSoundPriorities];
+	/// Table of current playing source for each priority
+	uint32						_ReserveUsage[NbSoundPriorities];
+	/// Low water mark. After this number of free voice is reach, reserve can't be overloaded.
+	uint32						_LowWaterMark;
 
 	/// The audio mixer singleton instance
 	static CAudioMixerUser		*_Instance;
@@ -321,7 +383,7 @@ private:
 //	CEnvSoundUser				*_EnvSounds;
 
 	/// Auto-Balance period
-	uint32						_BalancePeriod;
+//	uint32						_BalancePeriod;
 
 	/// The path to the sample banks. This should be specified in the config file.
 	std::string					_SamplePath;
@@ -329,12 +391,17 @@ private:
 	/// Assoc between buffer and source. Used when buffers are unloaded.
 	TBufferToSourceContainer	_BufferToSources;
 
+	/// The sound bank.
+//	CSoundBank					*_SoundBank;
+
 public: 
 
 	/// All Logical sources
 	TSourceContainer		_Sources;
 	/// The source that wanted to play
-	TSourceContainer		_PlayingSources;
+//	TSourceContainer		_PlayingSources;
+
+	uint32					_PlayingSources;
 
 
 	/// Environment effects

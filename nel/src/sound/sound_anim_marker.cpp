@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.cpp
  * A sound event marker on a sound track
  *
- * $Id: sound_anim_marker.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound_anim_marker.cpp,v 1.6 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ void CSoundAnimMarker::play(UAudioMixer* mixer, CSoundContext &context)
 		USource* source = mixer->createSource((*iter), true, NULL, NULL, &context);
 		if (source != NULL)
 		{
+			source->setRelativeGain(context.RelativeGain);
 			source->setPos(context.Position);
 			source->play();
 		}

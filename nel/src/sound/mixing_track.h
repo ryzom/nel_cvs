@@ -1,7 +1,7 @@
 /** \file mixing_track.h
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.h,v 1.2 2002/06/28 19:32:24 hanappe Exp $
+ * $Id: mixing_track.h,v 1.3 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NLSOUND {
 
 
-class CSourceUser;
+class CSimpleSource;
 
 
 /**
@@ -48,7 +48,7 @@ class CTrack
 public:
 
 	/// Constructor
-	CTrack() : DrvSource(NULL), _UserSource(NULL) {}
+	CTrack() : DrvSource(NULL), _SimpleSource(NULL) {}
 	/// Init
 	void			init( ISoundDriver *sd )			{ DrvSource = sd->createSource(); }
 	/// Destructor
@@ -57,14 +57,14 @@ public:
 
 	/// Return availability
 	// FIXME: SWAPTEST
-	//bool			isAvailable() const					{ return (_UserSource==NULL); }
-	bool			isAvailable() const					{ nlassert( DrvSource != NULL ); return (_UserSource==NULL) && DrvSource->isStopped(); }
+	//bool			isAvailable() const					{ return (_SimpleSource==NULL); }
+	bool			isAvailable() const					{ nlassert( DrvSource != NULL ); return (_SimpleSource==NULL) && DrvSource->isStopped(); }
 	/// Returns true if the track is physically playing (different from getUserSource()->isPlaying())
 	bool			isPlaying() const					{ nlassert( DrvSource != NULL ); return DrvSource->isPlaying(); }
 	/// Set logical source (if NULL, the track becomes available)
-	void			setUserSource( CSourceUser *src)	{ _UserSource = src; }
+	void			setSource( CSimpleSource *src)	{ _SimpleSource = src; }
 	/// Return the logical source
-	CSourceUser		*getUserSource()					{ return _UserSource; }
+	CSimpleSource		*getSource()				{ return _SimpleSource; }
 
 
 	/// Physical source played by the driver
@@ -73,7 +73,7 @@ public:
 private:
 	
 	/// The current logical source
-	CSourceUser		*_UserSource;
+	CSimpleSource		*_SimpleSource;
 
 };
 

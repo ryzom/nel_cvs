@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source_common.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@ using namespace NLMISC;
 namespace NLSOUND 
 {
 
-CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context)
+CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
 :	_Priority(MidPri),
 	_Playing(false),
 	_Looping(false),
@@ -50,12 +50,19 @@ CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void
 	_SpawnEndCb(cb),
 	_CbUserParam(cbUserParam)
 {
+	CAudioMixerUser::instance()->addSource(this);
 }
+
+CSourceCommon::~CSourceCommon()
+{
+	CAudioMixerUser::instance()->removeSource(this);
+}
+
 
 /*
  * Change the priority of the source
  */
-void CSourceCommon::setPriority( TSoundPriority pr, bool redispatch )
+void CSourceCommon::setPriority( TSoundPriority pr)
 {
 	_Priority = pr;
 

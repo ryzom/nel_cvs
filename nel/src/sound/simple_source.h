@@ -1,7 +1,7 @@
 /** \file source_user.h
- * CSourceUSer: implementation of USource
+ * CSimpleSource: implementation of USource
  *
- * $Id: source_user.h,v 1.16 2002/11/04 15:40:44 boucher Exp $
+ * $Id: simple_source.h,v 1.1 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_SOURCE_USER_H
-#define NL_SOURCE_USER_H
+#ifndef NL_SIMPLE_SOURCE_H
+#define NL_SIMPLE_SOURCE_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
@@ -48,39 +48,31 @@ class CSimpleSound;
  * \author Nevrax France
  * \date 2001
  */
-class CSourceUser : public CSourceCommon //, public IPlayable
+class CSimpleSource : public CSourceCommon, public CAudioMixerUser::IMixerEvent //, public IPlayable
 {
 public:
 
 	/// Constructor
-	CSourceUser( CSimpleSound *simpleSound=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0, const std::string &buffername = "" );
+	CSimpleSource( CSimpleSound *simpleSound=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0);
 	/// Destructor
-	virtual ~CSourceUser();
+	virtual ~CSimpleSource();
 
-	/// Static init (call at the very beginning)
+/*	/// Static init (call at the very beginning)
 	static void						init() 
 	{ 
-		//NLMISC_REGISTER_CLASS(CSourceUser); 
+		//NLMISC_REGISTER_CLASS(CSimpleSource); 
 	}
-
+*/
 	
-	/// Local specialized setSound.
-	void							setSound( CSimpleSound *simpleSound, CSoundContext *context = 0, const std::string &buffername = "");
-	/// Change the sound binded to the source
-	virtual void					setSound( TSoundId id, CSoundContext *context = 0);
 	/// Return the sound binded to the source (or NULL if there is no sound)
 	virtual TSoundId				getSound()									{ return _Sound; }
 	/// Return the simple sound bound to the source (or NULL). 
 	CSimpleSound					*getSimpleSound();
-	/// Change the priority of the source
-//	virtual void					setPriority( TSoundPriority pr, bool redispatch=true );
 
 	/// \name Playback control
 	//@{
 	/// Set looping on/off for future playbacks (default: off)
 	virtual void					setLooping( bool l );
-	/// Return the looping state
-//	virtual bool					getLooping() const;
 	/// Play
 	virtual void					play();
 	/// Stop playing
@@ -120,8 +112,6 @@ public:
 	 * (which is getSource()->getGain()). Does nothing if getSource() is null.
 	 */
 	virtual void					setRelativeGain( float gain );
-	/// Return the relative gain (see setRelativeGain()), or the absolute gain if getSource() is null.
-//	virtual float					getRelativeGain() const;
 	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
 	 * of one octave. 0 is not a legal value.
 	 */
@@ -130,67 +120,38 @@ public:
 	virtual void					setSourceRelativeMode( bool mode );
 
 
-	/// Return a pointer to the position vector (3D mode only)
-//	const NLMISC::CVector			*getPosition() const						{ return &_Position; }
-	/** Set the corresponding track	(NULL allowed, sets no track)
-	 * Don't set a non-null track if getSound() is null.
-	 */
-	void							enterTrack( CTrack *track );
-	/// Unset the corresponding track
-	void							leaveTrack();
 	/// Return the track
 	CTrack							*getTrack()									{ return _Track; }
-	/// Return true if playing is finished or stop() has been called.
-	bool							isStopped();
 	/// Return the spawn end callback
 	TSpawnEndCallback				getSpawnEndCallback() const					{ return _SpawnEndCb; }
 
-	// From IPlayable
-
-	/// Enable (play with high priority) or disable (stop and set low priority)
-	virtual void					enable( bool toplay, float gain );
-	/// Move (set position)
-	virtual void					moveTo( const NLMISC::CVector& pos )		{ setPos( pos ); }
-	/// Serial sound and looping state (warning: partial serial)
-	//virtual void					serial( NLMISC::IStream& s );
-
-	//NLMISC_DECLARE_CLASS(CSourceUser);
+	//NLMISC_DECLARE_CLASS(CSimpleSource);
 
 	virtual IBuffer					*getBuffer();
 	
-protected:
-
-	/// Copy the source data into the corresponding track (_Track must be not null)
-	void							copyToTrack();
-
 private:
+	// Mixer event call when doing muted play
+	virtual void onEvent();
 
 	TSOURCE_TYPE					getType() const								{return SOURCE_SIMPLE;}
 
-	// These data are copied to a track when the source selected is for playing
+	// The simple sound of this source.
 	CSimpleSound					*_Sound;
-	
-	float							_Alpha;
 
-	// name of a buffer get by getBuffer()
-	std::string						_Buffername;
+	// The volume falloff factor.
+	float							_Alpha;
 
 	// Corresponding track (if selected for playing)
 	CTrack							*_Track;
+	// True when the sound is played muted and until the mixer event notifying the end.
+	bool							_PlayMuted;
 
-/*
-	static void storeSource(CSourceUser *psourceUser, const std::string &buffername);
-	static void removeSource(CSourceUser *psourceUser, const std::string &buffername);
-
-	/// Container for all created sounds, remaind the buffer name assoc. used for sample banks
-	static std::map<std::string, std::set<CSourceUser *> >	_Sources;
-*/
 };
 
 
 } // NLSOUND
 
 
-#endif // NL_SOURCE_USER_H
+#endif // NL_SIMPLE_SOURCE_H
 
 /* End of source_user.h */

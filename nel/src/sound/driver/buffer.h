@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
+ * $Id: buffer.h,v 1.4 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:
 
 	/// Return the name of this buffer
 	virtual const std::string&	getName() = 0;
+
+	/// Return true if the buffer is loaded. Used for async load/unload.
+	virtual bool			isBufferLoaded() = 0;
 
 protected:
 

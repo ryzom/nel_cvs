@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound_bank.h,v 1.4 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,31 +60,28 @@ class CSoundBank
 {
 public:
 
-	static void registerBufferAssoc(CSimpleSound *sound, IBuffer *buffer);
-	static void unregisterBufferAssoc(CSimpleSound *sound, IBuffer *buffer);
+	void registerBufferAssoc(CSimpleSound *sound, IBuffer *buffer);
+	void unregisterBufferAssoc(CSimpleSound *sound, IBuffer *buffer);
 
 
 
 	/// Return the name corresponding to a name. The sample is searched
 	/// in all the loaded sound banks.
-	static CSound*		get(const std::string &name);
+//	CSound*		get(const std::string &name);
 
 	/// Return the names of the sounds. The names of all the loaded sound
 	/// banks are returned.
-	static void			getSoundNames( std::vector<std::string>& names );
+//	void			getSoundNames( std::vector<std::string>& names );
 
 	/** Called by CSampleBank when a sample(buffer) is unloaded.
 	 *	Remove link from CSound to unloaded IBuffer.
 	 */
-	static void			bufferUnloaded(const std::string bufferName);
+	void	bufferUnloaded(const std::string bufferName);
 	/** Called by CSampleBank when a sample(buffer) is loaded.
 	 *	Regenerate link between CSound and IBuffer.
 	 */
-	static void			bufferLoaded(const std::string bufferName, IBuffer *buffer);
+	void	bufferLoaded(const std::string bufferName, IBuffer *buffer);
 
-
-	/// Constructor
-	CSoundBank(const std::string& path) : _Path(path), _Loaded(false) {};
 
 	/// Destructor
 	virtual ~CSoundBank();
@@ -108,16 +105,29 @@ public:
 	uint				countSounds();
 
 	/// Release all the loaded sound banks.
-	static void			releaseAll();
+//	static void			releaseAll();
+
+	static CSoundBank	*instance();
+	static void			release();
+
+	void				addSound(CSound *sound);
+	void				removeSound(const std::string &name);
 
 
 private:
-	typedef std::hash_set<CSoundBank*, THashPtr<CSoundBank*> >				TSoundBankContainer;
+	/// Constructor
+//	CSoundBank(const std::string& path) : _Path(path), _Loaded(false) {};
+	CSoundBank() : _Loaded(false) {};
+
+	
+	static CSoundBank		*_Instance;
+
+//	typedef std::hash_set<CSoundBank*, THashPtr<CSoundBank*> >				TSoundBankContainer;
 	typedef std::hash_set<class CSimpleSound*, THashPtr<CSimpleSound*> >	TSimpleSoundContainer;
 	typedef std::hash_map<std::string, TSimpleSoundContainer >				TBufferAssocContainer;
 
 	// The vector off all loaded sound banks
-	static TSoundBankContainer		_Banks;
+//	static TSoundBankContainer		_Banks;
 
 /*	struct TBufferAssoc
 	{
@@ -131,14 +141,14 @@ private:
 */
 	/// Assoc from buffer to sound. Used for sound unloading.
 //	static std::map<std::string, std::vector<TBufferAssoc> >	_BufferAssoc;
-	static TBufferAssocContainer		_BufferAssoc;
+	TBufferAssocContainer		_BufferAssoc;
 
 
 	// Buffer
 	TSoundTable			_Sounds;
 
 	// Sound bank path 
-	std::string			_Path;
+//	std::string			_Path;
 
 	// Did we load the buffers.
 	bool				_Loaded;

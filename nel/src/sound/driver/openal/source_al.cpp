@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.12 2001/12/28 15:37:03 lecroart Exp $
+ * $Id: source_al.cpp,v 1.13 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ bool					CSourceAL::getLooping() const
 /*
  * Play the static buffer (or stream in and play)
  */
-void					CSourceAL::play()
+bool		CSourceAL::play()
 {
 	if ( _Buffer != NULL )
 	{
@@ -126,6 +126,9 @@ void					CSourceAL::play()
 		nlwarning( "AM: Cannot play null buffer; streaming not implemented" );
 		nlstop;
 	}
+
+	// TODO : return a correct value, depending on alSourcePlay result.
+	return true;
 }
 
 
@@ -209,6 +212,7 @@ void					CSourceAL::update()
  */
 void					CSourceAL::setPos( const NLMISC::CVector& pos )
 {
+	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
 	alSource3f( _SourceName, AL_POSITION, pos.x, pos.z, -pos.y );
 	TestALError();
@@ -218,20 +222,23 @@ void					CSourceAL::setPos( const NLMISC::CVector& pos )
 /* Get the position vector.
  * See setPos() for details.
  */
-void					CSourceAL::getPos( NLMISC::CVector& pos ) const
+const NLMISC::CVector &CSourceAL::getPos() const
 {
+	return _Pos;
+/*
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_POSITION, v );
 	TestALError();
 	// Coordsys conversion
 	pos.set( v[0], -v[2], v[1] );
+*/
 }
 
 
 /*
  * Set the velocity vector (3D mode only)
  */
-void					CSourceAL::setVelocity( const NLMISC::CVector& vel )
+void					CSourceAL::setVelocity( const NLMISC::CVector& vel, bool deferred )
 {
 	// Coordsys conversion
 	alSource3f( _SourceName, AL_VELOCITY, vel.x, vel.z, -vel.y );
@@ -350,7 +357,7 @@ bool					CSourceAL::getSourceRelativeMode() const
 /*
  * Set the min and max distances (3D mode only)
  */
-void					CSourceAL::setMinMaxDistances( float mindist, float maxdist )
+void					CSourceAL::setMinMaxDistances( float mindist, float maxdist, bool deferred )
 {
 	nlassert( (mindist >= 0.0f) && (maxdist >= 0.0f) );
 	alSourcef( _SourceName, AL_REFERENCE_DISTANCE, mindist );

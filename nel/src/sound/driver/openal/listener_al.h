@@ -1,7 +1,7 @@
 /** \file listener_al.h
  * OpenAL sound listener
  *
- * $Id: listener_al.h,v 1.5 2002/11/04 15:40:44 boucher Exp $
+ * $Id: listener_al.h,v 1.6 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,8 @@ private:
 
 	// The instance of the singleton
 	static CListenerAL		*_Instance;
+
+	NLMISC::CVector			_Pos;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.14 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound.h,v 1.15 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,8 @@ public:
 	{
 		SOUND_SIMPLE,
 		SOUND_COMPLEX,
-		SOUND_BACKGROUND
+		SOUND_BACKGROUND,
+		SOUND_CONTEXT
 	};
 
 
@@ -76,9 +77,6 @@ public:
 
 	/// Get the type of the sound.
 	virtual TSOUND_TYPE getSoundType() =0;
-
-	/// Serialize
-	void				serial( NLMISC::IStream& s );
 
 	/// Load the sound parameters from georges' form
 	virtual void		importForm(const std::string& filename, NLGEORGES::UFormElm& formRoot);
@@ -102,7 +100,7 @@ public:
 	/// Return the direction vector.
 	const NLMISC::CVector &getDirectionVector()const		{ return _Direction;}
 	/// Return the length of the sound in ms
-	virtual uint32		getDuration(std::string *buffername = NULL) = 0;
+	virtual uint32		getDuration() = 0;
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
 	/// Return the max distance (if detailed())
@@ -112,9 +110,10 @@ public:
 	void				setLooping( bool looping ) { _Looping = looping; }
 
 	/// Used by the george sound plugin to check sound recursion (ie sound 'toto' use sound 'titi' witch also use sound 'toto' ...).
-	virtual void				getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const =0;
+	virtual void		getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const =0;
 	 
 
+	virtual void		serial(NLMISC::IStream &s);
 
 	bool				operator<( const CSound& otherSound ) const
 	{

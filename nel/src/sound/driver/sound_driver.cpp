@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.7 2002/06/26 10:15:51 lecroart Exp $
+ * $Id: sound_driver.cpp,v 1.8 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NLSOUND
 
 
 // Interface version
-const uint32 ISoundDriver::InterfaceVersion = 0x03;
+const uint32 ISoundDriver::InterfaceVersion = 0x04;
 
 typedef ISoundDriver* (*ISDRV_CREATE_PROC)(void); 
 const char *IDRV_CREATE_PROC_NAME = "NLSOUND_createISoundDriverInstance";

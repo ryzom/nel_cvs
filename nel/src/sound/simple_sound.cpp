@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.cpp,v 1.1 2002/11/04 15:40:44 boucher Exp $
+ * $Id: simple_sound.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,7 @@ CSimpleSound::CSimpleSound() :
 CSimpleSound::~CSimpleSound()
 {
 	if (_Buffer != NULL)
-		CSoundBank::unregisterBufferAssoc(this, _Buffer);
+		CSoundBank::instance()->unregisterBufferAssoc(this, _Buffer);
 }
 
 void CSimpleSound::setBuffer(IBuffer *buffer)
@@ -66,94 +66,18 @@ void CSimpleSound::setBuffer(IBuffer *buffer)
 	if (_Buffer != NULL && buffer != NULL && _Buffer->getName() != buffer->getName())
 	{
 		// if buffer name change, update the registration/
-		CSoundBank::unregisterBufferAssoc(this, _Buffer);
-		CSoundBank::registerBufferAssoc(this, buffer);
+		CSoundBank::instance()->unregisterBufferAssoc(this, _Buffer);
+		CSoundBank::instance()->registerBufferAssoc(this, buffer);
 	}
 	else if (!_Registered && buffer != NULL)
 	{
 		// creater initial registration.
-		CSoundBank::registerBufferAssoc(this, buffer);
+		CSoundBank::instance()->registerBufferAssoc(this, buffer);
 		_Registered = true;
 	}
 	_Buffer = buffer;
 }
 
-
-void		CSimpleSound::getBuffername(string &buffername, CSoundContext *context)
-{
-	if(_NeedContext)
-	{
-		buffername = "";
-		if (context == 0)
-		{
-			nlwarning ("Can't find the buffer name without a context for '%s'", _Buffername.c_str());
-			return;
-		}
-		for (uint i = 0; i < _Buffername.size(); i++)
-		{
-			if (_Buffername[i] == '%')
-			{
-				i++;
-				if (i == _Buffername.size())
-				{
-					nlwarning ("Can't find the buffer name '%s' contains a %% at the end", _Buffername.c_str());
-					return;
-				}
-
-				if(isdigit(_Buffername[i]))
-				{
-					// arg 0 -> 9
-					sint32 value = context->Args[_Buffername[i]-'0'];
-					if (value == -1)
-					{
-						nlwarning ("Can't find the buffer name '%s' because argument %d is not in the context", _Buffername.c_str(), _Buffername[i]-'0');
-						buffername = "";
-						return;
-					}
-					buffername += toString(value);
-				}
-				else if(_Buffername[i] == 'r')
-				{
-					// random mode
-					i++;
-					if (i == _Buffername.size())
-					{
-						nlwarning ("Can't find the buffer name '%s' contains a %%r at the end without the number", _Buffername.c_str());
-						buffername = "";
-						return;
-					}
-					if(isdigit(_Buffername[i]))
-					{
-						uint32 value = _Buffername[i]-'0';
-						
-						uint32 randomIndex = rand()%value;
-						if( randomIndex == context->PreviousRandom )
-						{
-							randomIndex = (randomIndex+1)%value;
-						}
-						context->PreviousRandom = randomIndex;
-						buffername += toString(randomIndex);
-					}
-				}
-				else
-				{
-					nlwarning ("Can't find the buffer name '%s' contains an unknown code %%%c", _Buffername.c_str(), _Buffername[i]);
-					buffername = "";
-					return;
-				}
-			}
-			else
-			{
-				buffername += _Buffername[i];
-			}
-		}
-		//nlinfo ("sound getbuffer transform '%s' into '%s' with context", _Buffername.c_str(), buffername.c_str());
-	}
-	else
-	{
-		buffername = _Buffername;
-	}
-}
 
 void				CSimpleSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const
 {
@@ -167,29 +91,14 @@ void				CSimpleSound::getSubSoundList(std::vector<std::pair<std::string, CSound*
 /*
  * Return the sample buffer of this sound
  */
-IBuffer*			CSimpleSound::getBuffer(string *buffername)
+IBuffer*			CSimpleSound::getBuffer()
 { 
-	if(_NeedContext)
+	if (_Buffer == 0)
 	{
-		if (buffername && buffername->empty())
-		{
-			nlwarning ("Can't find the buffer name without a buffername for '%s'", _Buffername.c_str());
-			nlstop;	// temp debug
-			return 0;
-		}
-		// todo ace opti to now find everytime
-		return CSampleBank::get(*buffername);
-	}
-	else
-	{
-		if (_Buffer == 0)
-		{
-			_Buffer = CSampleBank::get(_Buffername); 
-			CSoundBank::registerBufferAssoc(this, _Buffer);
-			_Registered = true;
-		}
-		if (buffername != 0)
-			*buffername = _Buffername;
+		// try to find the sample buffer in the sample bank.
+		_Buffer = CSampleBank::get(_Buffername); 
+		CSoundBank::instance()->registerBufferAssoc(this, _Buffer);
+		_Registered = true;
 	}
 	return _Buffer;
 }
@@ -198,9 +107,9 @@ IBuffer*			CSimpleSound::getBuffer(string *buffername)
 /*
  * Return the length of the sound in ms
  */
-uint32				CSimpleSound::getDuration(string *buffername) 
+uint32				CSimpleSound::getDuration() 
 {
-	IBuffer* buffer = getBuffer(buffername);
+	IBuffer* buffer = getBuffer();
 
 	if ( buffer == NULL )
 	{
@@ -209,6 +118,27 @@ uint32				CSimpleSound::getDuration(string *buffername)
 	else
 	{
 		return (uint32)(buffer->getDuration());
+	}
+}
+
+
+void				CSimpleSound::serial(NLMISC::IStream &s)
+{
+	CSound::serial(s);
+	
+	s.serial(_MinDist);
+	s.serial(_Alpha);
+	s.serial(_Buffername);
+
+	if (s.isReading())
+	{
+		setBuffer(NULL);
+
+		// contain % so it need a context to play
+		if (_Buffername.find ("%") != string::npos)
+		{
+			_NeedContext = true;
+		}
 	}
 }
 

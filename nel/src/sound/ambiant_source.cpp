@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.9 2002/11/04 15:40:43 boucher Exp $
+ * $Id: ambiant_source.cpp,v 1.10 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ void CAmbiantSource::initPos( const CVector *posvector )
 		_StereoChannels[AMBIANT_CH1].set3DPositionVector( posvector );
 		_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
 		_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
-		_StereoChannels[AMBIANT_CH1].setPriority( LowPri, false );
+		_StereoChannels[AMBIANT_CH1].setPriority( LowPri);
 		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH1] );
 		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH1] );
 		
@@ -106,7 +106,7 @@ void CAmbiantSource::initPos( const CVector *posvector )
 			_StereoChannels[AMBIANT_CH2].set3DPositionVector( posvector );
 			_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
 			_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
-			_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
+			_StereoChannels[AMBIANT_CH2].setPriority( LowPri);
 			CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH2] );
 			CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH2] );
 		}

@@ -1,7 +1,7 @@
 /** \file ambiant_source.h
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.h,v 1.5 2002/11/04 15:40:43 boucher Exp $
+ * $Id: ambiant_source.h,v 1.6 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
-#include "source_user.h"
+#include "simple_source.h"
 #include "env_sound_user.h"
 #include "playable.h"
 
@@ -76,7 +76,7 @@ public:
 	//virtual void			serial( NLMISC::IStream& s );
 	//NLMISC_DECLARE_CLASS(CAmbiantSource);
 	/// Return the stereo channels (EDIT)
-	CSourceUser				*getChannels() { return _StereoChannels; }
+	CSimpleSource				*getChannels() { return _StereoChannels; }
 	/// Set properties (EDIT)
 	void					setProperties( std::vector<TSoundId>& ambiantsounds,
 										   std::vector<TSoundId>& sparsesounds,
@@ -98,7 +98,7 @@ private:
 	bool					_Play;
 
 	// Non-localized stereo sources
-	CSourceUser				_StereoChannels [MAX_ENV_CHANNELS];
+	CSimpleSource				_StereoChannels [MAX_ENV_CHANNELS];
 	float					_StereoGain;
 
 	// Sound banks

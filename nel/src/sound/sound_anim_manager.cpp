@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.9 2002/11/07 11:03:25 berenguier Exp $
+ * $Id: sound_anim_manager.cpp,v 1.10 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,32 @@ TSoundAnimPlayId CSoundAnimManager::playAnimation(TSoundAnimId id, float time, C
 	return _PlayerId;
 }
 */
+
+struct TFindId : std::unary_function<TSoundAnimMap::value_type, bool>
+{
+	TSoundAnimId	Id;
+
+	TFindId(TSoundAnimId id)
+		: Id(id)
+	{}
+
+	bool operator () (const TSoundAnimMap::value_type &value) const
+	{
+		return value.second == Id;
+	}
+};
+
+std::string	CSoundAnimManager::idToName(TSoundAnimId id)
+{
+	static string empty;
+	TSoundAnimMap::iterator it(std::find_if(_IdMap.begin(), _IdMap.end(), TFindId(id)));
+
+	if (it != _IdMap.end())
+		return it->first;
+	else
+		return empty;
+}
+
 
 void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float curTime, CSoundContext &context)
 {

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.63 2002/11/12 17:23:38 lecroart Exp $
+ * $Id: path.cpp,v 1.64 2002/11/25 14:10:51 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,6 +81,19 @@ CPath *CPath::_Instance = NULL;
 //
 // Functions
 //
+
+void CPath::getFileList(const std::string &extension, std::vector<std::string> &filenames)
+{
+	std::map<std::string, CFileEntry>::iterator first(getInstance()->_Files.begin()), last(getInstance()->_Files.end());
+
+	for (; first != last; ++ first)
+	{
+		if (first->second.Extension == extension)
+		{
+			filenames.push_back(first->first);
+		}
+	}
+}
 
 CPath *CPath::getInstance ()
 {

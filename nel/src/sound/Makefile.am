@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2002/11/04 15:40:43 boucher Exp $
+# $Id: Makefile.am,v 1.8 2002/11/25 14:11:41 boucher Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -24,6 +24,8 @@ libnelsnd_la_SOURCES = audio_mixer_user.cpp                \
 					   background_sound.h				   \            
 					   complex_sound.cpp                   \
 					   complex_sound.h                     \
+					   context_sound.cpp                   \
+					   context_sound.h                     \
 					   somple_sound.cpp                    \
 					   simple_sound.h                      \
                        sound.cpp                           \

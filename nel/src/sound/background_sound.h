@@ -1,6 +1,6 @@
 /** \file background_sound.h
  *
- * $Id: background_sound.h,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_sound.h,v 1.2 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// Return true if cone is meaningful
 	bool				isDetailed() const				{ return false;}
 	/// Return the length of the sound in ms
-	virtual uint32		getDuration(std::string *buffername = NULL);
+	virtual uint32		getDuration();
 	/// Return the name (must be unique)
 
 	/// Used by the george sound plugin to check sound recursion (ie sound 'toto' use sound 'titi' witch also use sound 'toto' ...).
@@ -65,6 +65,7 @@ public:
 
 	virtual float		getMaxDistance() const;
 
+	void				serial(NLMISC::IStream &s);
 
 
 
@@ -100,6 +101,14 @@ public:
 		/// Fade out length (ms) after environnement filter start.
 		uint32				FilterFadeOut;
 		UAudioMixer::TBackgroundFlags		Filter;
+
+		void serial(NLMISC::IStream &s)
+		{
+			s.serial(SoundName);
+			s.serial(FilterFadeIn);
+			s.serial(FilterFadeOut);
+			s.serial(Filter);
+		}
 	};
 
 	const std::vector<TSoundInfo> &getSounds() const			{ return _Sounds;}

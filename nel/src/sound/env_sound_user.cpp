@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.20 2002/06/20 08:35:45 hanappe Exp $
+ * $Id: env_sound_user.cpp,v 1.21 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,11 +59,11 @@ CEnvSoundUser::~CEnvSoundUser()
 	vector<IPlayable*>::iterator ipp;
 	for ( ipp=_SrcBank.begin(); ipp!=_SrcBank.end(); ++ipp )
 	{
-		// An IPlayable object can be a CAmbiantSource or a CSourceUser.
-		// A CAmbiantSource removes its source (channels) in destructor, but not a CSourceUser
-		if ( dynamic_cast<CSourceUser*>(*ipp) )
+		// An IPlayable object can be a CAmbiantSource or a CSimpleSource.
+		// A CAmbiantSource removes its source (channels) in destructor, but not a CSimpleSource
+		if ( dynamic_cast<CSimpleSource*>(*ipp) )
 		{
-			CAudioMixerUser::instance()->removeSource( static_cast<CSourceUser*>(*ipp) );
+			CAudioMixerUser::instance()->removeSource( static_cast<CSimpleSource*>(*ipp) );
 		}
 		else
 		{

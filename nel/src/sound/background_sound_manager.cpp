@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.10 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.11 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -400,7 +400,8 @@ void CBackgroundSoundManager::unload ()
 		for (; first != last; ++first)
 		{
 			if (first->Source)
-				mixer->removeSource(first->Source);
+//				mixer->removeSource(first->Source);
+				delete first->Source;
 		}
 
 		// and free the layer.
@@ -523,7 +524,8 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			{
 				TSoundData &sd = layer[*first];
 				sd.Selected = false;
-				sd.Source->stop();
+				if (sd.Source->isPlaying())
+					sd.Source->stop();
 			}
 		}
 		// Compute new source mixing in this layer

@@ -1,7 +1,7 @@
 /** \file source_user.h
- * CSourceUSer: implementation of USource
+ * CSimpleSource: implementation of USource
  *
- * $Id: background_source.h,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_source.h,v 1.2 2002/11/25 14:11:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CBackgroundSource : public CSourceCommon, public CAudioMixerUser::IMixerEv
 {
 public:
 	/// Constructor
-	CBackgroundSource	(CBackgroundSound *backgroundSource=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, CSoundContext *context=0);
+	CBackgroundSource	(CBackgroundSound *backgroundSource=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0);
 	/// Destructor
 	~CBackgroundSource	();
 

@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.8 2001/12/28 15:37:03 lecroart Exp $
+ * $Id: listener_al.cpp,v 1.9 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ CListenerAL::CListenerAL() : IListener()
  */
 void					CListenerAL::setPos( const NLMISC::CVector& pos )
 {
+	_Pos = pos;
 	// Coordinate system: conversion from NeL to OpenAL/GL:
 	alListener3f( AL_POSITION, pos.x, pos.z, -pos.y );
 	TestALError();
@@ -68,11 +69,13 @@ void					CListenerAL::setPos( const NLMISC::CVector& pos )
 /** Get the position vector.
  * See setPos() for details.
  */
-void					CListenerAL::getPos( NLMISC::CVector& pos ) const
+const NLMISC::CVector &CListenerAL::getPos() const
 {
+	return _Pos;
+
 // Currently, the OpenAL headers are different between Windows and Linux versions !
 // alGetListener3f() is part of the spec, though.
-
+/*
 #ifdef NL_OS_WINDOWS
 	// Coordsys conversion
 	float glposz;
@@ -85,6 +88,7 @@ void					CListenerAL::getPos( NLMISC::CVector& pos ) const
 	pos.set( posarray[0], -posarray[2], posarray[1] );
 #endif
 	TestALError();
+*/
 }
 
 

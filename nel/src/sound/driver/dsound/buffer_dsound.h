@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
+ * $Id: buffer_dsound.h,v 1.4 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,9 @@ public:
     virtual uint8*			getData() const				{ return _Data; }
 
 	/// Return the name of the buffer
-	virtual const std::string&	getName()					{ return _Name; }
+	virtual const std::string&	getName()				{ return _Name; }
+
+	virtual bool			isBufferLoaded()			{ return _Data != 0; }
 
 private:
 

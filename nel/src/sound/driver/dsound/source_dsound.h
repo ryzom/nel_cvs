@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.6 2002/11/04 15:40:44 boucher Exp $
+ * $Id: source_dsound.h,v 1.7 2002/11/25 14:11:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,8 +167,9 @@ public:
     /** Set the position vector (default: (0,0,0)).
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
+	 * \param deferred false to apply position immediatly
 	 */
-	virtual void			setPos( const NLMISC::CVector& pos );
+	virtual void			setPos( const NLMISC::CVector& pos, bool deferred );
 
     /** Get the position vector.
 	 * See setPos() for details.
@@ -176,7 +177,7 @@ public:
 	const NLMISC::CVector	&getPos() const;
 
     /// Set the velocity vector (3D mode only) (default: (0,0,0))
-	virtual void			setVelocity( const NLMISC::CVector& vel );
+	virtual void			setVelocity( const NLMISC::CVector& vel, bool deferred);
 
     /// Get the velocity vector
 	virtual void			getVelocity( NLMISC::CVector& vel ) const;
@@ -213,7 +214,7 @@ public:
 	virtual bool			getSourceRelativeMode() const;
 
     /// Set the min and max distances (default: 1, MAX_FLOAT) (3D mode only)
-	virtual void			setMinMaxDistances( float mindist, float maxdist );
+	virtual void			setMinMaxDistances( float mindist, float maxdist, bool deferred );
 
     /// Get the min and max distances
 	virtual void			getMinMaxDistances( float& mindist, float& maxdist ) const;

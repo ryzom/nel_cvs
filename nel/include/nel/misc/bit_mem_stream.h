@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.7 2002/01/30 10:09:01 lecroart Exp $
+ * $Id: bit_mem_stream.h,v 1.8 2002/03/04 17:36:22 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -90,10 +90,35 @@ public:
 	/// Serialize one bit
 	virtual void	serialBit( bool& bit );
 
-	/** Serialize only the nbits lower bits of value
-	 * When using this method, always leave resetvalue to true
+	/** Serialize only the nbits lower bits of value (nbits range: [1..32])
+	 * When using this method, always leave resetvalue to true.
 	 */
-	virtual void	serial( uint32& value, uint nbits, bool resetvalue=true );
+	void			serial( uint32& value, uint nbits, bool resetvalue=true );
+
+	/// Serialize only the nbits lower bits of 64-bit value (nbits range: [1..64])
+	void			serial( uint64& value, uint nbits )
+	{
+		if ( nbits > 32 )
+		{
+			if ( isReading() )
+			{
+				uint32 dw = 0;
+				serial( dw, nbits-32 );
+				value = (uint64)dw << 32;
+				serial( (uint32&)value, 32 );
+			}
+			else
+			{
+				uint32 msd = (uint32)(value >> 32);
+				serial( msd, nbits-32 );
+				serial( (uint32&)value, 32 );
+			}
+		}
+		else
+		{
+			serial( (uint32&)value, nbits );
+		}
+	}
 
 	/// Template serialisation (should take the one from IStream)
     template<class T>

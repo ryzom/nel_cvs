@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.29 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: scene.h,v 1.30 2002/07/08 12:59:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,6 +172,7 @@ public:
 	/// \name Render
 	//@{
 	/** Render the scene, via the registered ITravScene, from the CurrentCamera view.
+	 *  This also update waiting instance that are loaded asynchronously (by calling updateWaitingInstances)
 	 * NB: no Driver clear buffers (color or ZBuffer) are done....
 	 * This call t->traverse() function to registered render traversal following their order given.
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
@@ -179,6 +180,11 @@ public:
 	 */
 	void			render(bool	doHrcPass=true);
 	//@}
+
+	/** Update instances that are loaded asynchronously
+	  * \param systemTimeEllapsed : the time between 2 calls to updateWaitingInstances, in seconds
+	  */
+	void			updateWaitingInstances(double systemTimeEllapsed);
 
 
 	/// \name Camera/Viewport.

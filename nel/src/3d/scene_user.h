@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.28 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: scene_user.h,v 1.29 2002/07/08 12:59:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,9 @@ namespace NL3D {
  */
 class CSceneUser : public UScene
 {
+private:
+	/// update async loading during a call to render	  
+	virtual void			updateWaitingInstances();
 protected:
 	/// The driver which owns this scene.
 	CDriverUser			*_DriverUser;
@@ -135,7 +138,9 @@ public:
 	/// \name Render
 	//@{
 	virtual	void			render();
-	virtual	void			animate(TGlobalAnimationTime time);
+	// update async loading whithout a call to render
+	virtual void			updateWaitingInstances(double ellapsedTime);
+	virtual	void			animate(TGlobalAnimationTime time);	
 	//@}
 
 

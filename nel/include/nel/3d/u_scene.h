@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.22 2002/06/10 09:30:51 berenguier Exp $
+ * $Id: u_scene.h,v 1.23 2002/07/08 13:00:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,13 @@ public:
 	 *	At the exit of render(), all UDriver lights are disabled.
 	 */
 	virtual	void			render()=0;
+
+	/** Update waiting instances and igs that are loaded asynchronously
+	  * NB: this is called by render()
+	  * \param systemTimeEllapsed : the time between 2 calls to updateWaitingInstances, in seconds
+	  */
+	virtual void			updateWaitingInstances(double systemTimeEllapsed) = 0;	  
+
 
 	/**
 	 *	Set the animation time for lightmap and Particle System animation.

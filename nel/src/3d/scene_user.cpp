@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.21 2002/06/27 15:44:46 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.22 2002/07/08 12:59:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -509,6 +509,24 @@ void			CSceneUser::render()
 		_Scene.render();
 	}
 
+	updateWaitingInstances();
+
+	// Must restore the matrix context, so 2D/3D interface not disturbed.
+	_DriverUser->restoreMatrixContext();
+}
+
+
+// ***************************************************************************
+/*virtual*/ void CSceneUser::updateWaitingInstances(double ellapsedTime)
+{
+	_Scene.updateWaitingInstances(ellapsedTime);
+	updateWaitingInstances();
+}
+
+
+// ***************************************************************************
+void CSceneUser::updateWaitingInstances()
+{
 	// Update waiting instances
 	{
 		NL3D_HAUTO_ASYNC_IG
@@ -537,10 +555,8 @@ void			CSceneUser::render()
 
 		updateWaitingIG();
 	}	
-
-	// Must restore the matrix context, so 2D/3D interface not disturbed.
-	_DriverUser->restoreMatrixContext();
 }
+
 
 void			CSceneUser::animate(TGlobalAnimationTime time)
 {

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.82 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: scene.cpp,v 1.83 2002/07/08 12:59:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,13 +431,19 @@ void	CScene::render(bool	doHrcPass)
       * Not that only a few of them are tested at each call
 	  */
 	_ParticleSystemManager.refreshModels(ClipTrav->WorldFrustumPyramid, ClipTrav->CamPos);
-
-
+	
 	// Wainting Instance handling
+	double deltaT = _DeltaSystemTimeBetweenRender;
+	clamp (deltaT, 0.01, 0.1);
+	updateWaitingInstances(deltaT);
+
+}
+
+// ***************************************************************************
+void CScene::updateWaitingInstances(double systemTimeEllapsed)
+{	
 	// First set up max AGP upload
-	double fMaxBytesToUp = _DeltaSystemTimeBetweenRender;
-	clamp (fMaxBytesToUp, 0.01, 0.1);
-	fMaxBytesToUp *= 100*256*256;
+	double fMaxBytesToUp = 100 * 256 * 256 * systemTimeEllapsed;	
 	_ShapeBank->setMaxBytesToUpload ((uint32)fMaxBytesToUp);
 	// Parse all the waiting instance
 	_ShapeBank->processWaitingShapes ();	// Process waiting shapes load shape, texture, and lightmaps
@@ -467,9 +473,7 @@ void	CScene::render(bool	doHrcPass)
 			++wimmIt;
 		}
 	}
-
 }
-
 
 // ***************************************************************************
 void	CScene::setDriver(IDriver *drv)

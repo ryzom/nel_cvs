@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.3 2002/05/17 20:18:44 saffray Exp $
+ * $Id: form_elm.cpp,v 1.4 2002/05/21 08:59:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1507,7 +1507,7 @@ bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1527,7 +1527,7 @@ bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1547,7 +1547,7 @@ bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, bool evaluat
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1567,7 +1567,7 @@ bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, bool evaluat
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1587,7 +1587,7 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluat
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1608,7 +1608,7 @@ bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluat
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1628,7 +1628,7 @@ bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, bool evaluate
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1648,7 +1648,7 @@ bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, bool evaluat
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1668,7 +1668,7 @@ bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, bool evaluate,
 		string str;
 		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
-			convertValue (result, str.c_str ());
+			return convertValue (result, str.c_str ());
 		}
 	}
 	else
@@ -1851,7 +1851,7 @@ bool CFormElmAtom::getValue (sint8 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1865,7 +1865,7 @@ bool CFormElmAtom::getValue (uint8 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1879,7 +1879,7 @@ bool CFormElmAtom::getValue (sint16 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1893,7 +1893,7 @@ bool CFormElmAtom::getValue (uint16 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1907,7 +1907,7 @@ bool CFormElmAtom::getValue (sint32 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1921,7 +1921,7 @@ bool CFormElmAtom::getValue (uint32 &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1935,7 +1935,7 @@ bool CFormElmAtom::getValue (float &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1949,7 +1949,7 @@ bool CFormElmAtom::getValue (double &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;
@@ -1963,7 +1963,7 @@ bool CFormElmAtom::getValue (bool &result, bool evaluate) const
 	string value;
 	if (getValue (value, evaluate))
 	{
-		convertValue (result, value.c_str ());
+		return convertValue (result, value.c_str ());
 	}
 
 	return false;

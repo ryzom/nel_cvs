@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.2 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: form.h,v 1.3 2002/05/21 08:59:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include	"form_elm.h"
 #include	"header.h"
 
+extern bool convertFormFile (const char *oldFileName, const char *newFileName);
+
 namespace NLGEORGES
 {
 
@@ -42,6 +44,7 @@ class UFormElm;
 class CForm : public UForm
 {
 	friend class CFormLoader;
+	friend bool ::convertFormFile (const char *oldFileName, const char *newFileName);
 public:
 
 	// From UForm

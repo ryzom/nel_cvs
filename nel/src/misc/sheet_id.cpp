@@ -1,6 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
+ * $Id: sheet_id.cpp,v 1.2 2002/06/04 08:41:37 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -278,7 +279,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 	map<uint32,string>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
-		result.push_back( (*itStr).first );
+		result.push_back( (CSheetId)(*itStr).first );
 	}
 
 } // buildIdVector //
@@ -302,7 +303,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
 		// decide whether or not to use the entry
 		if (type==sheetId.IdInfos.Type)
 		{
-			result.push_back( sheetId.Id );
+			result.push_back( (CSheetId)sheetId.Id );
 		}
 	}
 
@@ -326,7 +327,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 		// decide whether or not to use the entry
 		if (type==sheetId.IdInfos.Type)
 		{
-			result.push_back( sheetId.Id );
+			result.push_back( (CSheetId)sheetId.Id );
 			resultFilenames.push_back( (*itStr).second );
 		}
 	}

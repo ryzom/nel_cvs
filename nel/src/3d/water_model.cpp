@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.2 2001/10/26 09:05:16 vizerie Exp $
+ * $Id: water_model.cpp,v 1.3 2001/10/26 10:00:48 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		waterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
 		waterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
 		waterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
-		waterMat.setTexAddressingMode(3, CMaterial::None);
+		waterMat.setTexAddressingMode(3, CMaterial::TextureOff);
 		drv->setupMaterial(waterMat);
 
 

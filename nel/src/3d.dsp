@@ -183,6 +183,14 @@ SOURCE=..\include\nel\3d\mesh_instance.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\skeleton_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\skeleton_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\transform.cpp
 # End Source File
 # Begin Source File
@@ -521,6 +529,14 @@ SOURCE=.\3d\shape.cpp
 
 SOURCE=..\include\nel\3d\shape.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\skeleton_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\skeleton_shape.h
+# End Source File
 # End Group
 # Begin Group "Textures"
 
@@ -624,6 +640,14 @@ SOURCE=..\include\nel\3d\animation_set.h
 # Begin Source File
 
 SOURCE=.\3d\animation_time.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\bone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\bone.h
 # End Source File
 # Begin Source File
 

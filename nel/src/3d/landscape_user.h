@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.27 2004/03/22 17:40:38 berenguier Exp $
+ * $Id: landscape_user.h,v 1.28 2004/05/26 16:47:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,12 +66,7 @@ public:
 		_Scene= scene;
 		_Landscape= (CLandscapeModel*)_Scene->createModel(LandscapeModelId);
 	}
-	virtual	~CLandscapeUser()
-	{
-		NL3D_MEM_LANDSCAPE
-		_Scene->deleteModel(_Landscape);
-		_Landscape= NULL;
-	}
+	virtual	~CLandscapeUser();
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.11 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: task_manager.cpp,v 1.12 2004/05/26 16:51:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,10 @@ CTaskManager::~CTaskManager()
 	_ThreadRunning = false;
 	while(!_ThreadRunning)
 		nlSleep(10);
+
+	// There should be no remaining Tasks
+	CSynchronized<std::list<CWaitingTask> >::CAccessor acces(&_TaskQueue);
+	nlassert(acces.value().empty());
 }
 
 // Manage TaskQueue

@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager.h,v 1.2 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: async_file_manager.h,v 1.3 2004/05/26 16:50:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,8 +43,11 @@ class CAsyncFileManager : public CTaskManager
 
 public:
 
-	static CAsyncFileManager &getInstance (); // Must be called instead of constructing the object
-	static void terminate (); // End all tasks and terminate if any tasks
+	// Must be called instead of constructing the object
+	static CAsyncFileManager &getInstance ();
+	// NB: release the singleton, but assert it there is any pending loading tasks. 
+	// Each systems that use the async file manager should ensure it has no more pending task in it
+	static void terminate ();
 
 	// Do not use these methods with the bigfile manager
 	void loadFile (const std::string &fileName, uint8 **pPtr);

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.44 2004/05/26 16:04:24 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.45 2004/05/26 16:47:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,19 @@ H_AUTO_DECL( NL3D_Load_Landscape )
 #define	NL3D_HAUTO_UI_LANDSCAPE						H_AUTO_USE( NL3D_UI_Landscape )
 #define	NL3D_HAUTO_LANDSCAPE_UPDATE_LIGHTING_ALL	H_AUTO_USE( NL3D_Render_Landscape_updateLightingAll )
 #define	NL3D_HAUTO_LOAD_LANDSCAPE					H_AUTO_USE( NL3D_Load_Landscape )
+
+// ***************************************************************************
+CLandscapeUser::~CLandscapeUser()
+{
+	NL3D_MEM_LANDSCAPE
+
+	// must ensure all loading is ended
+	removeAllZones();
+
+	// then delete
+	_Scene->deleteModel(_Landscape);
+	_Landscape= NULL;
+}
 
 
 //****************************************************************************

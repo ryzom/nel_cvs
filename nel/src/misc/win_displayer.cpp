@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.2 2001/06/27 08:23:14 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.3 2001/06/29 08:46:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,13 +35,24 @@
 
 using namespace std;
 
+#include <windows.h>
 #include <windowsx.h>
+#include <winuser.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <richedit.h>
+#include <commctrl.h>
+#include <time.h>
 
+#include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
+#include "nel/misc/command.h"
 #include "nel/misc/win_displayer.h"
 
 namespace NLMISC {
+
 
 CWinDisplayer::~CWinDisplayer ()
 {
@@ -50,12 +61,14 @@ CWinDisplayer::~CWinDisplayer ()
 		DeleteObject (_HFont);
 		DestroyWindow (_HWnd);
 		DestroyWindow (_HEdit);
+		FreeLibrary (_HLibModule);
 	}
 }
 
 
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	static MSGFILTER *pmf;
 	switch (message) 
 	{
 	case WM_SIZE:
@@ -65,7 +78,8 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				int w = lParam & 0xFFFF;
 				int h = (lParam >> 16) & 0xFFFF;
-				SetWindowPos (cwd->_HEdit, NULL, 0, 0, w, h-cwd->_ToolBarHeight, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+				SetWindowPos (cwd->_HEdit, NULL, 0, cwd->_ToolBarHeight, w, h-cwd->_ToolBarHeight-cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+				SetWindowPos (cwd->_HInputEdit, NULL, 0, h-cwd->_InputEditHeight, w, cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				cwd->resizeLabel ();
 			}
 		}
@@ -82,6 +96,42 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
+	case WM_NOTIFY:
+		switch (((NMHDR*)lParam)->code)
+		{
+		case EN_MSGFILTER:
+			pmf = (MSGFILTER *)lParam;
+			if (pmf->msg == WM_CHAR)
+			{
+				if (pmf->wParam == VK_RETURN)
+				{
+					char TextSend[20000];
+					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+					TextSend[0] = TextSend[1] = (char)0xFF;
+					SendMessage (cwd->_HInputEdit, WM_GETTEXT, (WPARAM)20000-1, (LPARAM)TextSend);
+					SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)"");
+					char *pos1 = TextSend, *pos2 = TextSend;
+					string str;
+					while (*pos2 != '\0')
+					{
+						str = "";
+						while (*pos2 != '\0' && *pos2 != 13)
+						{
+							if (*pos2 != 10)
+							{
+								str += *pos2;
+							}
+							*pos2++;
+						}
+						if (!str.empty())
+						{
+							ICommand::execute (str, *InfoLog);
+							*pos2++;
+						}
+					}
+				}
+			}
+		}
    }
    return DefWindowProc (hWnd, message, wParam, lParam);
 }
@@ -158,7 +208,6 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	}
 
 	// create the window
-
 	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
 	
@@ -174,10 +223,10 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	_HFont = CreateFont (-13, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "Arial");
 
 	// create the edit control
-	_HEdit = CreateWindow ("EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, _ToolBarHeight, w, h-_ToolBarHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	_HEdit = CreateWindow ("EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL, 0, _ToolBarHeight, w, h-_ToolBarHeight-_InputEditHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
 	SendMessage (_HEdit, WM_SETFONT, (LONG) _HFont, TRUE);
 
-	// create the edit control
+	// create the clear buttton control
 	_HClearBtn = CreateWindow ("BUTTON", "Clear", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON, 0, 0, 100, _ToolBarHeight, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
 	SendMessage (_HClearBtn, WM_SETFONT, (LONG) _HFont, TRUE);
 	
@@ -187,7 +236,24 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	// set the edit text limit to lot of :)
 	SendMessage (_HEdit, EM_LIMITTEXT, -1, 0);
 
+	// create the input edit control
+	_HLibModule = LoadLibrary("RICHED20.DLL");
+	if (_HLibModule == NULL)
+	{
+		nlerror ("RichEdit 2.0 library not found!");
+	}
 
+	_HInputEdit = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, RICHEDIT_CLASS, "", WS_CHILD | WS_VISIBLE
+		| ES_MULTILINE | ES_WANTRETURN | ES_NOHIDESEL | ES_AUTOHSCROLL, 0, h-_InputEditHeight, w, _InputEditHeight,
+		_HWnd, NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+	SendMessage (_HInputEdit, WM_SETFONT, (LONG) _HFont, TRUE);
+
+	DWORD dwEvent = SendMessage(_HInputEdit, EM_GETEVENTMASK, (WPARAM)0, (LPARAM)0);
+	dwEvent |= ENM_MOUSEEVENTS | ENM_KEYEVENTS | ENM_CHANGE;
+	SendMessage(_HInputEdit, EM_SETEVENTMASK, (WPARAM)0, (LPARAM)dwEvent);
+
+	SetFocus(_HInputEdit);
+	
 	_Thread = getThreadId ();
 	update ();
 }

@@ -1,7 +1,7 @@
 /** \file loader.cpp
  * Georges system files
  *
- * $Id: georges_loader.cpp,v 1.1 2002/02/21 16:54:42 besson Exp $
+ * $Id: georges_loader.cpp,v 1.2 2002/03/11 09:29:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,43 @@ namespace NLGEORGES
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+bool CLoader::_Initialized = false;
+
 CLoader::CLoader()
 {
 	ml.SetLoader( this );
+	if (!CLoader::_Initialized)
+	{
+		NLMISC::IClassable *p = NLMISC::CClassRegistry::create("CFormBodyElt");
+		if(p == NULL) 
+		{
+			NLMISC_REGISTER_CLASS (CFormBodyElt);
+		}
+		else 
+			delete p;
+		p = NLMISC::CClassRegistry::create("CFormBodyEltAtom");
+		if(p == NULL) 
+		{
+			NLMISC_REGISTER_CLASS (CFormBodyEltAtom);
+		}
+		else 
+			delete p;
+		p = NLMISC::CClassRegistry::create("CFormBodyEltList");
+		if(p == NULL)
+		{
+			NLMISC_REGISTER_CLASS (CFormBodyEltList);
+		}
+		else 
+			delete p;
+		p = NLMISC::CClassRegistry::create("CFormBodyEltStruct");
+		if(p == NULL) 
+		{
+			NLMISC_REGISTER_CLASS (CFormBodyEltStruct);
+		}
+		else 
+			delete p;
+		CLoader::_Initialized = true;
+	}
 }
 
 CLoader::~CLoader()

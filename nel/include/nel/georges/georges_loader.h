@@ -1,7 +1,7 @@
 /** \file loader.h
  * Georges system files
  *
- * $Id: georges_loader.h,v 1.1 2002/02/21 16:34:04 besson Exp $
+ * $Id: georges_loader.h,v 1.2 2002/03/11 09:29:41 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@ namespace NLGEORGES
 
 class CLoader  
 {
+	static bool _Initialized;
 protected:
 	CFormLoader fl;
 	CMoldLoader ml;

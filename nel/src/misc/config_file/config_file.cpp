@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.62 2004/11/04 12:26:50 berenguier Exp $
+ * $Id: config_file.cpp,v 1.63 2004/11/05 15:10:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -546,8 +546,8 @@ bool CConfigFile::exists (const std::string &varName)
 
 void CConfigFile::save () const
 {
-	// Avoid any problem, Force Locale to English
-	setlocale(LC_ALL, "English");
+	// Avoid any problem, Force Locale to default
+	setlocale(LC_ALL, "C");
 
 	FILE *fp = fopen (getFilename().c_str (), "w");
 	if (fp == NULL)

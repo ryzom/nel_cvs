@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="bin2c"
+	ProjectGUID="{AFFCAC16-51FA-4137-861E-2E68483AB060}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -109,7 +110,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile=".\Debug/bin2c.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/bin2c.pdb"

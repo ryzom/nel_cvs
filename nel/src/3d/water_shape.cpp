@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.3 2001/11/08 10:38:43 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.4 2001/11/09 14:43:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -164,10 +164,12 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 
 uint32									CWaterShape::_XScreenGridSize = 55;
 uint32									CWaterShape::_YScreenGridSize = 55;
+uint32									CWaterShape::_XGridBorder = 5;
+uint32									CWaterShape::_YGridBorder = 5;
 CVertexBuffer							CWaterShape::_VB;
 std::vector<uint32>						CWaterShape::_IBUpDown;
 std::vector<uint32>						CWaterShape::_IBDownUp;
-NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
+//NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramAlpha;
@@ -211,17 +213,22 @@ CWaterShape::~CWaterShape()
 
 void CWaterShape::initVertexProgram()
 {	
-	_VertexProgram		= std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
-	_VertexProgramAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterPlusAlphaVpCode));	
-	_VertexProgram2Stages = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2Stages));
-	_VertexProgram2StagesAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2StagesAlpha));	
+	static bool created = false;
+	if (!created)
+	{
+		_VertexProgram		= std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
+		_VertexProgramAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterPlusAlphaVpCode));	
+		_VertexProgram2Stages = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2Stages));
+		_VertexProgram2StagesAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2StagesAlpha));
+		created = true;
+	}
 }
 
 
 
 void CWaterShape::setupVertexBuffer()
 {
-	const uint w = _XScreenGridSize;
+	const uint w = _XScreenGridSize + 2 * _XGridBorder;
 
 	_VB.clearValueEx();
 	_VB.addValueEx (WATER_VB_POS, CVertexBuffer::Float3);
@@ -264,7 +271,6 @@ void CWaterShape::setupVertexBuffer()
 
 	}
 
-
 	_GridSizeTouched = false;
 }
 
@@ -302,6 +308,14 @@ void	CWaterShape::setScreenGridSize(uint32 x, uint32 y)
 	nlassert(x > 0 && y > 0);
 	_XScreenGridSize = x;	
 	_YScreenGridSize = y;
+	_GridSizeTouched = true;
+}
+
+void		CWaterShape::setGridBorderSize(uint32 x, uint32 y)
+{
+	_XGridBorder = x;
+	_YGridBorder = y;
+	_GridSizeTouched = true;
 }
 
 

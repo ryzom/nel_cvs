@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.3 2001/11/08 10:38:43 vizerie Exp $
+ * $Id: water_shape.h,v 1.4 2001/11/09 14:43:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -67,6 +67,7 @@ const NLMISC::CClassId WaterModelClassId =  NLMISC::CClassId(0x41a0732e, 0x6c664
  * These maps can be scaled, but not rotated. The bump maps can scroll at regular speed over time
  * The envmap, when set to a CTextureBlend, will automatically blend for all shape when CWaterPoolManager::setBlend is called.
  * This may be used to simulate a night / day transition.
+ * The color / alpha map may have arbritrary orientation over the surface
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001
@@ -115,9 +116,13 @@ public:
 		void			setWaterPoolID(uint32 id) { _WaterPoolID = id; }		
 		uint32			getWaterPoolID() const    { return _WaterPoolID; }
 		/// set the resolution for the grid that is used for tesselation
-		static void		setScreenGridSize(uint32 x, uint32 y);		
+		static void		setScreenGridSize(uint32 x, uint32 y);
+		/// set the size of borders. This is needed when water move is high, to avoid hole on the border of the screen
+		static void		setGridBorderSize(uint32 x, uint32 y);		
 		static uint32	getScreenXGridSize()  { return _XScreenGridSize; }
 		static uint32	getScreenYGridSize()  { return _YScreenGridSize; }
+		static uint32	getXGridBorder()  { return _XGridBorder; }
+		static uint32	getYGridBorder()  { return _YGridBorder; }
 
 	
 		// set a polygon that represent this shape. It must be a 2d polygon, with z kzpt to 0 everywhere
@@ -198,10 +203,11 @@ private:
 	static void		setupVertexBuffer();	
 	static uint32							_XScreenGridSize;
 	static uint32							_YScreenGridSize;
+	static uint32							_XGridBorder;
+	static uint32							_YGridBorder;
 	static CVertexBuffer					_VB;
 	static std::vector<uint32>				_IBUpDown;
-	static std::vector<uint32>				_IBDownUp;
-	static NLMISC::CSmartPtr<IDriver>		_Driver;
+	static std::vector<uint32>				_IBDownUp;	
 	static bool								_GridSizeTouched;
 	static std::auto_ptr<CVertexProgram>	_VertexProgram;
 	static std::auto_ptr<CVertexProgram>	_VertexProgramAlpha;

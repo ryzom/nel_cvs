@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.1 2000/11/30 10:55:25 berenguier Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.2 2000/12/01 16:57:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,8 @@ std::vector<uint32>	CPatchRdrPass::GlobalTriList;
 CPatchRdrPass::CPatchRdrPass()
 {
 	resetTriList();
+	RefCount= 0;
+	BlendType= Alpha;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.1 2000/11/30 10:57:28 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.2 2000/12/01 16:57:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,8 +50,16 @@ namespace NL3D
 class	CPatchRdrPass
 {
 public:
-	// The material for this pass.
-	CMaterial		Mat;
+	enum	TBlendType {Alpha=0, NegativeAlpha, Additive};
+
+	// The Tiny material for this pass.
+	NLMISC::CSmartPtr<ITexture>		TextureDiffuse;
+	NLMISC::CSmartPtr<ITexture>		TextureBump;
+	TBlendType						BlendType;
+
+	// The refcount to know how many tiles use it (init at 0).
+	sint			RefCount;
+	
 	// The current number of tris for this rdrpass.
 	sint			NTris;
 	// Where this RdrPass begin, in the GlobalTriList.
@@ -70,9 +78,25 @@ public:
 	void			resetTriList();
 	void			buildPBlock(CPrimitiveBlock &pb);
 
+	// The operator which compare the material.
+	bool			operator<(const CPatchRdrPass &o) const
+	{
+		// Compare first the BlendType, so minmum changes are made during render...
+		if(BlendType!=o.BlendType)
+		{
+			return BlendType<o.BlendType;
+		}
+		else
+		{
+			if(TextureBump!=o.TextureBump)
+				return (void*)TextureBump<(void*)o.TextureBump;
+			else
+				return (void*)TextureDiffuse<(void*)o.TextureDiffuse;
+		}
+	}
 
 public:
-	// Must resetTriList() of all material using the GlobalTriList, before calling resetGlobalTriList.
+	// Must resetTriList() of all material using the GlobalTriList, in parrallel of calling resetGlobalTriList.
 	static void		resetGlobalTriList();
 
 private:

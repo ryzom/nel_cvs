@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
- * <File description>
+ * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.1 2000/10/23 14:16:01 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.2 2000/11/07 16:21:00 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,364 +23,1014 @@
  * MA 02111-1307, USA.
  */
 
+#include <math.h>
+#include "nel/misc/debug.h"
 #include "nel/3d/bitmap.h"
-
+#include "nel/misc/stream.h"
+#include "nel/misc/common.h"
 
 namespace NL3D {
 
 
-void blendFromui(NLMISC::CRGBA &c0, NLMISC::CRGBA &c1, uint coef);
-
-
-/*
- * Constructor
- */
-CBitmap::CBitmap()
+struct EDDSBadHeader : public NLMISC::EStream
 {
+	virtual const char	*what() const throw() {return "bad or unrecognized DDS file header";}
+};
+
+struct ESeekFailed : public NLMISC::EStream
+{
+	virtual const char	*what() const throw() {return "seek failed";}
+};
+
+struct EAllocationFailure : public Exception
+{
+	virtual const char	*what() const throw() {return "Can't allocate memory";}
+};
+
+void blendFromui(NLMISC::CRGBA &c0, NLMISC::CRGBA &c1, uint coef);
+uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
+
+
+
+
+/*-------------------------------------------------------------------*\
+							isPowerOf2
+\*-------------------------------------------------------------------*/
+bool CBitmap::isPowerOf2(sint32 v)
+{
+	while(v)
+	{
+		if(v&1)
+		{
+			v>>=1;
+			if(v)
+				return false;
+		}
+		else
+			v>>=1;
+	}
+
+	return true;
+}
+
+
+
+
+/*-------------------------------------------------------------------*\
+								load		
+\*-------------------------------------------------------------------*/
+uint8 CBitmap::load(NLMISC::IStream &f) 
+{
+	nlassert(f.isReading()); 
+	
+	// testing if DDS
+	uint32 fileType;
+	f.serial(fileType);
+	if(fileType == DDS)
+	{
+		return readDDS(f);
+	}
+	// assuming it's TGA
+	else 
+	{
+		NLMISC::IStream::TSeekOrigin origin= f.begin;
+		if(!f.seek (0, origin))
+		{
+			throw ESeekFailed();
+		}
+
+		// Reading header, 
+		// there's not really a sure way to make certain that the bitmap is TGA,
+		// here we check imageType and imageDepth.
+		
+		uint8	lengthID;
+		uint8	cMapType;
+		uint8	imageType;
+		uint16	tgaOrigin;
+		uint16	length;
+		uint8	depth;
+		uint16	xOrg;
+		uint16	yOrg;
+		uint16	width;
+		uint16	height;
+		uint8	imageDepth;
+		uint8	desc;
+		
+		f.serial(lengthID);
+		f.serial(cMapType);
+		f.serial(imageType);
+		if(imageType!=2 && imageType!=10) return 0;
+		f.serial(tgaOrigin);
+		f.serial(length);
+		f.serial(depth);
+		f.serial(xOrg);
+		f.serial(yOrg);
+		f.serial(width);
+		f.serial(height);
+		f.serial(imageDepth);
+		if(imageDepth!=24 && imageDepth!=32) return 0;
+		f.serial(desc);
+
+		if(!f.seek (0, origin))
+		{
+			throw ESeekFailed();
+		}
+		return readTGA(f);
+	}
 	
 }
 
-void CBitmap::load(NLMISC::IStream &f) 
+
+
+
+/*-------------------------------------------------------------------*\
+								readDDS		
+\*-------------------------------------------------------------------*/
+uint8 CBitmap::readDDS(NLMISC::IStream &f)
 {
-	if(f.isReading()) 
-	{
-		uint32 fileType;
-		
-		f.serial(fileType);
-		if(fileType == DDS_HEADER)
-		{
-			loadDDS(f);
-			int z;
-			z=0;
-		}
-		else
-		{
-			NLMISC::IStream::TSeekOrigin origin= f.begin;
-			if(!f.seek (0, origin))
-			{
-				//error
-			}
-		}
-	}
-	else
-	{
-		//error
-	}
+	uint32 i;
 
-}
-
-
-void CBitmap::loadDDS(NLMISC::IStream &f)
-{
-		
 	//------------------ Reading Header ------------------------
 
 	//-------------- reading entire header
 	
 	uint32 size;
 	f.serial(size); // size in Bytes of header(without "DDS")
-	uint32 *_DDSSurfaceDesc = (uint32*) malloc(size); 
+	 uint32 * _DDSSurfaceDesc = new uint32[size]; 
+	 std::auto_ptr<uint32> _DDSSurfaceDescAuto(_DDSSurfaceDesc);
 	_DDSSurfaceDesc[0]= size;
 
-	for(uint32 i= 0; i<size/4 - 1; i++)
+	for(i= 0; i<size/4 - 1; i++)
 	{
 		f.serial(_DDSSurfaceDesc[i+1]);
 	}
 	
+	// flags determines which members of the header structure contain valid data
+	uint32 flags = _DDSSurfaceDesc[1];
+
+	//verify if file have linearsize set
+	if(!(flags & DDSD_LINEARSIZE)) 
+    {
+		throw EDDSBadHeader();
+	}
 	
-	//-------------- extracting useful info
+	//-------------- extracting and testing useful info
 
 	_Height = _DDSSurfaceDesc[2];
 	_Width  = _DDSSurfaceDesc[3];
-	_MipMapCount= _DDSSurfaceDesc[6];
+	_MipMapCount= (uint8) _DDSSurfaceDesc[6];
+	PixelFormat= static_cast<TType>(_DDSSurfaceDesc[20]);
+	
+	flags = _DDSSurfaceDesc[19]; //PixelFormat flags
+	
+	if(_DDSSurfaceDesc[21]>0) //AlphaBitDepth
+	{
+		PixelFormat = DXTC1Alpha;
+	}
+	
+	if(PixelFormat!= DXTC1 && PixelFormat!= DXTC1Alpha && PixelFormat!= DXTC3 && PixelFormat!= DXTC5)
+	{
+		throw EDDSBadHeader();
+	}
+	
+	if((_Width%4!=0) || (_Height%4!=0)) return 0;
 	
 
-	//------------- looking for pixel format
-
-	_PixelFormat= _DDSSurfaceDesc[20];
-
-
-	//------------- extracting mip levels compressed data
-
-	// flags determines which members of the header structure contain valid data
-	uint32 flags = _DDSSurfaceDesc[1];
+	//------------- reading mipmap levels compressed data
+	
 	uint32 linearSize = _DDSSurfaceDesc[4];
-	uint32 lPitch = _DDSSurfaceDesc[4];
-	uint32 RGBBitCount = _DDSSurfaceDesc[21];
-	
-	/*
-	if(flags & DDSD_LINEARSIZE ) //file have linearsize set
-    {
-		for(uint8 i = 0; i<linearSize; i++)
-		{
-			f.serial(_Data[i]);
-		}
-	}
-	else // file doesn't have linearsize set
+
+	uint32 w = _Width;
+	uint32 h = _Height;
+
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
 	{
-	    uint32 bytesPerRow = _Width * RGBBitCount / 8;
-
-		uint8* dataTmp;
-		for(uint8 i = 0; i < _Height; i++ )
-        {
-			for(uint8 j = 0; j < bytesPerRow; j++ )
-			{
-				f.serial(dataTmp[j]); 
-			}
-			dataTmp+= lPitch;
-        }
-	}
-	*/
-
-	uint32 wBlocks= _Width/4;
-	uint32 hBlocks= _Height/4;
-	DXTBlock block;
-
-	
-	for(uint32 j=0; j < hBlocks; j++)
-	{
-		for(uint32 i=0; i < wBlocks; i++)
+		uint32 wtmp, htmp;
+		if(w<4)
+			wtmp = 4;
+		else
+			wtmp = w;
+		if(h < 4)
+			htmp = 4;
+		else
+			htmp = h;
+		
+		uint32 mipMapSz;
+		if(PixelFormat==DXTC1 || PixelFormat==DXTC1Alpha)
+			mipMapSz = wtmp*htmp/2;
+		else
+			mipMapSz = wtmp*htmp;
+		_Data[m].reserve(mipMapSz);
+		
+		for(i=0; i<mipMapSz; i++)
 		{
-			block.Alpha= 0;
-			block.Bits= 0;
-			block.Color0= 0;
-			block.Color0= 0;
-
-			if(_PixelFormat== DXT1)
-			{
-				try 
-				{
-					f.serial(block.Color0);
-					f.serial(block.Color1);
-					f.serial(block.Bits);
-					_DataComp.push_back(block);
-				}
-				catch (NLMISC::EStream stream)
-				{
-					
-				}
-			}
-			else
-			if(_PixelFormat== DXT3)
-			{
-				f.serial(block.Alpha);
-				f.serial(block.Color0);
-				f.serial(block.Color1);
-				f.serial(block.Bits);
-				_DataComp.push_back(block);
-			}
-			else
-			if(_PixelFormat== DXT5)
-			{
-				f.serial(block.Alpha);
-				f.serial(block.Color0);
-				f.serial(block.Color1);
-				f.serial(block.Bits);
-				_DataComp.push_back(block);
-			}
-			else
-			{
-				// unhandled format
-				
-			}
+			uint8 tmp;
+			f.serial(tmp);
+			_Data[m].push_back(tmp);
 		}
+	  	w = (w+1)/2;
+		h = (h+1)/2;
 	}
+
+	switch(PixelFormat)
+	{
+		case DXTC1  : return 24;
+		case DXTC1Alpha : return 32;
+		case DXTC3  : return 32;
+		case DXTC5  : return 32;
+	}
+
+	return 0;
 }
 
 
-void CBitmap::convertToRGBA()
+
+
+/*-------------------------------------------------------------------*\
+							convertToDXTC5
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToDXTC5()
 {
-	switch(_PixelFormat)
+	uint32 i,j;
+
+	if(PixelFormat!=DXTC1) return false;
+
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
 	{
-		case DXT1 :
-			decompressDXT1();
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(2*_Data[m].size());
+
+		for(i=0; i<_Data[m].size(); i+=8)
+		{
+			//64 bits alpha
+			for(j=0; j<8; j++)
+			{
+				dataTmp.push_back(255);
+			}
+
+			//64 bits RGB
+			for(j=0; j<8; j++)
+			{
+				dataTmp.push_back(_Data[m][i+j]);
+			}
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = DXTC5;
+	return true;
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							luminanceToRGBA()
+\*-------------------------------------------------------------------*/
+bool CBitmap::luminanceToRGBA()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+	
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()*4);
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(255);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = RGBA;
+	return true;
+}
+
+/*-------------------------------------------------------------------*\
+							alphaToRGBA()
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaToRGBA()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+	
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()*4);
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(_Data[m][i]);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = RGBA;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							alphaLuminanceToRGBA()
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaLuminanceToRGBA()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+	
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()*2);
+
+		for(i=0; i<_Data[m].size(); i+=2)
+		{
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(_Data[m][i+1]);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = RGBA;
+	return true;
+}
+
+
+
+
+/*-------------------------------------------------------------------*\
+							rgbaToAlphaLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::rgbaToAlphaLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+	
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()/2);
+
+		for(i=0; i<_Data[m].size(); i+=4)
+		{
+			dataTmp.push_back((_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255);
+			dataTmp.push_back(_Data[m][i+3]);
+		}
+		NLMISC::contReset(_Data[m]); 
+		_Data[m].resize(0);
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA_LUMINANCE;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							luminanceToAlphaLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::luminanceToAlphaLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()*2);
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(_Data[m][i]);
+			dataTmp.push_back(255);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA_LUMINANCE;
+	return true;
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							alphaToAlphaLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaToAlphaLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()*2);
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(0);
+			dataTmp.push_back(_Data[m][i]);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA_LUMINANCE;
+	return true;
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							rgbaToLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::rgbaToLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()/4);
+
+		for(i=0; i<_Data[m].size(); i+=4)
+		{
+			dataTmp.push_back((_Data[m][i]*77 + _Data[m][i+1]*150 + _Data[m][i+2]*28)/255);
+		}
+		NLMISC::contReset(_Data[m]); 
+		_Data[m].resize(0);
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = LUMINANCE;
+	return true;
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							alphaToLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaToLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size());
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(_Data[m][i]);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = LUMINANCE;
+	return true;
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							alphaLuminanceToLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaLuminanceToLuminance()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()/2);
+
+		for(i=0; i<_Data[m].size(); i+=2)
+		{
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(_Data[m][i]);
+		}
+		NLMISC::contReset(_Data[m]); 
+		_Data[m].resize(0);
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = LUMINANCE;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							rgbaToAlpha
+\*-------------------------------------------------------------------*/
+bool CBitmap::rgbaToAlpha()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()/4);
+
+		for(i=0; i<_Data[m].size(); i+=4)
+		{
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(0);
+			dataTmp.push_back(_Data[m][i+3]);
+		}
+		NLMISC::contReset(_Data[m]); 
+		_Data[m].resize(0);
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							luminanceToAlpha
+\*-------------------------------------------------------------------*/
+bool CBitmap::luminanceToAlpha()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size());
+
+		for(i=0; i<_Data[m].size(); i++)
+		{
+			dataTmp.push_back(_Data[m][i]);
+		}
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							alphaLuminanceToAlpha
+\*-------------------------------------------------------------------*/
+bool CBitmap::alphaLuminanceToAlpha()
+{
+	uint32 i;
+
+	if(_Width*_Height == 0)  return false;
+		
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		std::vector<uint8> dataTmp;
+		dataTmp.reserve(_Data[m].size()/2);
+
+		for(i=0; i<_Data[m].size(); i+=2)
+		{
+			dataTmp.push_back(_Data[m][i+1]);
+		}
+		NLMISC::contReset(_Data[m]); 
+		_Data[m].resize(0);
+		_Data[m] = dataTmp;
+	}
+	PixelFormat = ALPHA;
+	return true;
+}
+
+
+/*-------------------------------------------------------------------*\
+							convertToLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToLuminance()
+{
+	switch(PixelFormat)
+	{
+		case RGBA :
+			return rgbaToLuminance();
 			break;
 
-		case DXT3 :
-			decompressDXT3();	
+		case LUMINANCE :
+			return true;
 			break;
 
-		case DXT5 :
-			decompressDXT5();		
+		case ALPHA :
+			return alphaToLuminance();
+			break;
+
+		case ALPHA_LUMINANCE :
+			return alphaLuminanceToLuminance();
 			break;
 
 		default:
 			break;
 	}
+	return false;
 }
 
-/* old version (uint8*)
-void CBitmap::decompressDXT1()
+
+
+/*-------------------------------------------------------------------*\
+							convertToAlpha
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToAlpha()
 {
-	uint32	wBlocks;
-	uint32	hBlocks;
-	NLMISC::CRGBA	c[4];
-	std::vector<NLMISC::CRGBA>	bitmap;
-	
-	wBlocks= _Width/4;
-	hBlocks= _Height/4;
-
-	for(uint32 j=0; j < hBlocks; j++)
+	switch(PixelFormat)
 	{
-		for(uint32 i=0; i < wBlocks; i++)
-		{
-			uint32 k = j*8*wBlocks + i*8; // begining of current block
-			uint16	color0 = ((uint16)_Data[k])<<8 | (uint16)_Data[k + 1];
-			uint16	color1 = ((uint16)_Data[k + 2])<<8 | (uint16)_Data[k + 3];
-			
-			uncompress(color0, c[0]);	c[0].A= 1;
-			uncompress(color1, c[1]);	c[1].A= 1;
-			
-			if(color0>color1)
-			{
-				c[2].blendFromui(c[0], c[1], 85);	c[2].A= 1;
-				c[3].blendFromui(c[0], c[1], 171);	c[3].A= 1;
-			}
-			else
-			{
-				c[2].blendFromui(c[0], c[1], 128);	c[2].A= 1;
-				c[3].set(0,0,0,1);
-			}
+		case RGBA :
+			return rgbaToAlpha();
+			break;
 
-			// computing the 16 texels of the block
-			for(uint8 l=0; l<4; l++)
-			{
-				uint8 tmp= _Data[k+l];
-				for(uint8 m=0; m<4; m++)
-				{
-					bitmap[k + 4*l+m]= c[tmp&3]; // using the 2 LSB
-					tmp>>=2;
-				}
-			}
-		}
+		case LUMINANCE :
+			return luminanceToAlpha();
+			break;
+
+		case ALPHA :
+			return true;
+			break;
+
+		case ALPHA_LUMINANCE :
+			return alphaLuminanceToAlpha();
+			break;
+
+		default:
+			break;
 	}
+	return false;
 }
-*/
 
 
-void CBitmap::decompressDXT1()
+
+/*-------------------------------------------------------------------*\
+							convertToAlphaLuminance
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToAlphaLuminance()
 {
-	NLMISC::CRGBA	c[4];
-	uint32	wBlocks= _Width/4;
-	uint32	hBlocks= _Height/4;
-
-	for(uint32 j=0; j < hBlocks; j++)
+	switch(PixelFormat)
 	{
-		for(uint32 i=0; i < wBlocks; i++)
+		case RGBA :
+			return rgbaToAlphaLuminance();
+			break;
+
+		case LUMINANCE :
+			return luminanceToAlphaLuminance();
+			break;
+
+		case ALPHA :
+			return alphaToAlphaLuminance();
+			break;
+
+		case ALPHA_LUMINANCE :
+			return true;
+			break;
+
+		default:
+			break;
+	}
+	return false;
+}
+
+
+/*-------------------------------------------------------------------*\
+							convertToRGBA
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToRGBA()
+{
+	switch(PixelFormat)
+	{
+		case DXTC1 :
+			return decompressDXT1(false);
+			break;
+
+		case DXTC1Alpha :
+			return decompressDXT1(true);
+			break;
+
+		case DXTC3 :
+			return decompressDXT3();	
+			break;
+
+		case DXTC5 :
+			return decompressDXT5();		
+			break;
+
+		case LUMINANCE :
+			return luminanceToRGBA();
+			break;
+
+		case ALPHA :
+			return alphaToRGBA();
+			break;
+
+		case ALPHA_LUMINANCE :
+			return alphaLuminanceToRGBA();
+			break;
+
+		default:
+			break;
+	}
+	return false;
+}
+
+
+/*-------------------------------------------------------------------*\
+							convertToType
+\*-------------------------------------------------------------------*/
+bool CBitmap::convertToType(CBitmap::TType type)
+{
+	if(PixelFormat==type) return true;
+
+	switch(type)
+	{
+		case RGBA :
+			return convertToRGBA();
+			break;
+
+		case DXTC5 :
+			return convertToDXTC5();		
+			break;
+
+		case LUMINANCE :
+			return convertToLuminance();
+			break;
+
+		case ALPHA :
+			return convertToAlpha();
+			break;
+
+		case ALPHA_LUMINANCE :
+			return convertToAlphaLuminance();
+			break;
+
+		default:
+			break;
+	}
+	
+	return false;
+}
+
+
+
+
+/*-------------------------------------------------------------------*\
+							decompressDXT1
+\*-------------------------------------------------------------------*/
+bool CBitmap::decompressDXT1(bool alpha)
+{
+	uint32 i,j,k;
+	NLMISC::CRGBA	c[4];
+	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	
+	uint32 width= _Width;
+	uint32 height= _Height;
+
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		uint32 wtmp, htmp;
+		if(width<4)
+			wtmp = 4;
+		else
+			wtmp = width;
+		if(height < 4)
+			htmp = 4;
+		else
+			htmp = height;
+		uint32 mipMapSz = wtmp*htmp*4;
+		dataTmp[m].resize(mipMapSz); 
+		if(dataTmp[m].capacity()<mipMapSz)
 		{
-			uint16 color0= _DataComp[j*wBlocks+i].Color0;
-			uint16 color1= _DataComp[j*wBlocks+i].Color1;
-			uint32 bits= _DataComp[j*wBlocks+i].Bits;
+			throw EAllocationFailure();
+		}
+		uint32 wBlockCount= wtmp/4;
+		
+
+
+		for(i=0; i < _Data[m].size(); i+=8)
+		{
+			uint16 color0;
+			uint16 color1;
+			uint32 bits;
+			memcpy(&color0,&_Data[m][i],2);
+			memcpy(&color1,&_Data[m][i+2],2);
+			memcpy(&bits,&_Data[m][i+4],4);
+
+			uncompress(color0,c[0]);
+			uncompress(color1,c[1]);	
 			
-			uncompress(color0, c[0]);	c[0].A= 1;
-			uncompress(color1, c[1]);	c[1].A= 1;
+			c[0].A= 0;
+			c[1].A= 0;
+			c[2].A= 0;
+			c[3].A= 0;
 			
 			if(color0>color1)
 			{
-				c[2].blendFromui(c[0], c[1], 85);	c[2].A= 1;
-				c[3].blendFromui(c[0], c[1], 171);	c[3].A= 1;
+				c[2].blendFromui(c[0],c[1],85);
+				if(alpha) c[2].A= 255;
+
+				c[3].blendFromui(c[0],c[1],171);	
+				if(alpha) c[3].A= 255;
 			}
 			else
 			{
-				c[2].blendFromui(c[0], c[1], 128);	c[2].A= 1;
-				c[3].set(0,0,0,1);
+				c[2].blendFromui(c[0],c[1],128);
+				if(alpha) c[2].A= 255;
+
+				c[3].set(0,0,0,0);
 			}
 
 			// computing the 16 RGBA of the block
-			for(uint8 l=0; l<16; l++)
-			{
-				_DataDecomp[0].push_back(c[bits&3]); // using the 2 LSB
-				bits>>=2;
-			}
-		}
-	}
-}
-
-void CBitmap::decompressDXT3()
-{
-	uint32	wBlocks;
-	uint32	hBlocks;
-	NLMISC::CRGBA	c[4];
-	uint8 alpha[16];
-	std::vector<NLMISC::CRGBA>	bitmap;
-	
-	wBlocks= _Width/4;
-	hBlocks= _Height/4;
-
-	for(uint32 j=0; j < hBlocks; j++)
-	{
-		for(uint32 i=0; i < wBlocks; i++)
-		{
-			uint32 k = j*16*wBlocks + i*16; // begining of current block
 			
-			// computing the 16 alpha values 
-			for(uint8 l=0; l<8; l++)
+			uint32 blockNum= i/8; //(64 bits)
+			// <previous blocks in above lines> * 4 (rows) * _Width (columns) + 4pix*4rgba*<same line previous blocks>
+			uint32 pixelsCount= 4*(blockNum/wBlockCount)*wtmp*4 + 4*4*(blockNum%wBlockCount);
+			for(j=0; j<4; j++)
 			{
-				uint8 tmp= _Data[k+l];
-				for(uint8 m=0; m<2; m++)
+				for(k=0; k<4; k++)
 				{
-					alpha[l+k]= (tmp&3) / 15; 
-					tmp>>=2;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k]= c[bits&3].R;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+1]= c[bits&3].G;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+2]= c[bits&3].B;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+3]= c[bits&3].A;
+					bits>>=2;
 				}
 			}
-			k+=8; // begining of RGB part
+		}
+		_Data[m]= dataTmp[m];
+		width = (width+1)/2;
+		height = (height+1)/2;
+	}
+	PixelFormat = RGBA;
+	return true;
+}
 
-			uint16	color0 = ((uint16)_Data[k])<<8 | (uint16)_Data[k + 1];
-			uint16	color1 = ((uint16)_Data[k + 2])<<8 | (uint16)_Data[k + 3];
-			
-			uncompress(color0, c[0]);	c[0].A= 1;
-			uncompress(color1, c[1]);	c[1].A= 1;
-			
+
+
+
+/*-------------------------------------------------------------------*\
+							decompressDXT3
+\*-------------------------------------------------------------------*/
+bool CBitmap::decompressDXT3()
+{
+	uint32 i,j,k;
+	NLMISC::CRGBA	c[4];
+	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	
+	uint32 width= _Width;
+	uint32 height= _Height;
+
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
+	{
+		uint32 wtmp, htmp;
+		if(width<4)
+			wtmp = 4;
+		else
+			wtmp = width;
+		if(height < 4)
+			htmp = 4;
+		else
+			htmp = height;
+		uint32 mipMapSz = wtmp*htmp*4;
+		dataTmp[m].resize(mipMapSz); 
+		if(dataTmp[m].capacity()<mipMapSz)
+		{
+			throw EAllocationFailure();
+		}
+		uint32 wBlockCount= wtmp/4;
+		
+
+		for(i=0; i < _Data[m].size(); i+=16)
+		{
+			uint8 alpha[16];
+			sint64 alphatmp;
+			memcpy(&alphatmp,&_Data[m][i],8);
+
+			for(j=0; j<16; j++)
+			{
+				alpha[j]= (uint8)(((float)(alphatmp&15) / 15)*256); 
+				alphatmp>>=4;
+			}
+
+
+			uint16 color0;
+			uint16 color1;
+			uint32 bits;
+			memcpy(&color0,&_Data[m][i+8],2);
+			memcpy(&color1,&_Data[m][i+10],2);
+			memcpy(&bits,&_Data[m][i+12],4);
+
+			uncompress(color0,c[0]);
+			uncompress(color1,c[1]);	
+						
 			if(color0>color1)
 			{
-				c[2].blendFromui(c[0], c[1], 85);	c[2].A= 1;
-				c[3].blendFromui(c[0], c[1], 171);	c[3].A= 1;
+				c[2].blendFromui(c[0],c[1],85);
+				c[3].blendFromui(c[0],c[1],171);	
 			}
 			else
 			{
-				c[2].blendFromui(c[0], c[1], 128);	c[2].A= 1;
-				c[3].set(0,0,0,1);
+				c[2].blendFromui(c[0],c[1],128);
+				c[3].set(0,0,0,255);
 			}
 
-			// computing the 16 texels of the block
-			for(uint8 m=0; m<4; m++)
+			// computing the 16 RGBA of the block
+			
+			uint32 blockNum= i/16; //(128 bits)
+			// <previous blocks in above lines> * 4 (rows) * wtmp (columns) + 4pix*4rgba*<same line previous blocks>
+			uint32 pixelsCount= 4*(blockNum/wBlockCount)*wtmp*4 + 4*4*(blockNum%wBlockCount);
+			for(j=0; j<4; j++)
 			{
-				uint8 tmp= _Data[k+m];
-				for(uint8 n=0; n<4; n++)
+				for(k=0; k<4; k++)
 				{
-					tmp>>=2;
-					bitmap[j*16*wBlocks + i*16 + 4*m+n]= c[tmp&3]; // using the 2 LSB
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k]= c[bits&3].R;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+1]= c[bits&3].G;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+2]= c[bits&3].B;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+3]= alpha[4*j+k];
+					bits>>=2;
 				}
 			}
 		}
+		_Data[m]= dataTmp[m];
+		width = (width+1)/2;
+		height = (height+1)/2;
 	}
+	PixelFormat = RGBA;
+	return true;
 }
 
 
-uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0) // coef must be in [0,256]
-{
-	int	a0 = coef0;
-	int	a1 = 256-a0;
-	return ((n0*a0 + n1*a1) >>8);
-}
 
 
-void CBitmap::decompressDXT5()
+/*-------------------------------------------------------------------*\
+							decompressDXT5
+\*-------------------------------------------------------------------*/
+bool CBitmap::decompressDXT5()
 {
+	uint32 i,j,k;
 	NLMISC::CRGBA	c[4];
-	uint32	wBlocks= _Width/4;
-	uint32	hBlocks= _Height/4;
+	std::vector<uint8> dataTmp[MAX_MIPMAP];
+	
+	uint32 width= _Width;
+	uint32 height= _Height;
 
-	for(uint32 j=0; j < hBlocks; j++)
+	uint8 mpmp = (_MipMapCount>0)?_MipMapCount:1; 
+	for(uint8 m= 0; m<mpmp; m++)
 	{
-		for(uint32 i=0; i < wBlocks; i++)
+		uint32 wtmp, htmp;
+		if(width<4)
+			wtmp = 4;
+		else
+			wtmp = width;
+		if(height < 4)
+			htmp = 4;
+		else
+			htmp = height;
+		uint32 mipMapSz = wtmp*htmp*4;
+		dataTmp[m].resize(mipMapSz); 
+		if(dataTmp[m].capacity()<mipMapSz)
 		{
-			uint64 bitsAlpha= _DataComp[j*wBlocks+i].Alpha;
-			uint16 color0= _DataComp[j*wBlocks+i].Color0;
-			uint16 color1= _DataComp[j*wBlocks+i].Color1;
-			uint32 bits= _DataComp[j*wBlocks+i].Bits;
-			
-			
+			throw EAllocationFailure();
+		}
+		uint32 wBlockCount= wtmp/4;
+		
+
+
+		for(i=0; i < _Data[m].size(); i+=16)
+		{
+			uint64 bitsAlpha;
+			memcpy(&bitsAlpha,&_Data[m][i],8);
+
 			uint32 alpha[8];
 			alpha[0]= (uint8)((bitsAlpha>>48)&255);	alpha[0]/=255;
 			alpha[1]= (uint8)((bitsAlpha>>56)&255);	alpha[1]/=255;
@@ -403,27 +1053,79 @@ void CBitmap::decompressDXT5()
 				alpha[6]= 0;
 				alpha[7]= 255;
 			}
-				
-			uncompress(color0,c[0]);	c[0].A= 1;
-			uncompress(color1,c[1]);	c[1].A= 1;
+
+			uint8 codeAlpha[16];
+			for(j=0; j<16; j++)
+			{
+				codeAlpha[j] = ((uint8)(bitsAlpha>>(48-3*(j+1)))) & 7;
+			}
+
+
+			uint16 color0;
+			uint16 color1;
+			uint32 bits;
+			memcpy(&color0,&_Data[m][i+8],2);
+			memcpy(&color1,&_Data[m][i+10],2);
+			memcpy(&bits,&_Data[m][i+12],4);
+
+			uncompress(color0,c[0]);
+			uncompress(color1,c[1]);	
 			
 			if(color0>color1)
 			{
-				c[2].blendFromui(c[0],c[1], 85);	c[2].A= 1;
-				c[3].blendFromui(c[0],c[1], 171);	c[3].A= 1;
+				c[2].blendFromui(c[0],c[1],85);
+				c[3].blendFromui(c[0],c[1],171);	
+			}
+			else
+			{
+				c[2].blendFromui(c[0],c[1],128);
+				c[3].set(0,0,0,255);
 			}
 
 			// computing the 16 RGBA of the block
-			for(uint8 l=0; l<16; l++)
+			
+			uint32 blockNum= i/16; //(128 bits)
+			// <previous blocks in above lines> * 4 (rows) * wtmp (columns) + 4pix*4rgba*<same line previous blocks>
+			uint32 pixelsCount= 4*(blockNum/wBlockCount)*wtmp*4 + 4*4*(blockNum%wBlockCount);
+			for(j=0; j<4; j++)
 			{
-				_DataDecomp[0].push_back(c[bits&3]); // using the 2 LSB
-				bits>>=2;
+				for(k=0; k<4; k++)
+				{
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k]= c[bits&3].R;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+1]= c[bits&3].G;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+2]= c[bits&3].B;
+					dataTmp[m][pixelsCount + j*wtmp*4 + 4*k+3]= (uint8) alpha[codeAlpha[4*j+k]];
+					bits>>=2;
+				}
 			}
 		}
+		_Data[m]= dataTmp[m];
+		width = (width+1)/2;
+		height = (height+1)/2;
 	}
+	PixelFormat = RGBA;
+	return true;
+
 }
 
 
+
+
+/*-------------------------------------------------------------------*\
+							blend
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::blend(uint32 &n0, uint32 &n1, uint32 coef0) 
+{
+	int	a0 = coef0;
+	int	a1 = 256-a0;
+	return ((n0*a0 + n1*a1) >>8);
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							uncompress
+\*-------------------------------------------------------------------*/
 inline void CBitmap::uncompress(uint16 color, NLMISC::CRGBA &r)
 {
 	r.A= 0;
@@ -432,31 +1134,689 @@ inline void CBitmap::uncompress(uint16 color, NLMISC::CRGBA &r)
 	r.B= ((color)&31) << 3;     r.B+= r.B>>5;
 }
 
+
+
+/*-------------------------------------------------------------------*\
+							getWidth
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::getWidth(uint32 mipMap) const
+{
+	if(mipMap==0) return _Width;
 	
-inline uint32 CBitmap::getPixelFormat() const
-{
-	return _PixelFormat; 
+	uint32 w = _Width;
+	uint32 h = _Height;
+	uint32 m = 0;
+	
+	do
+	{
+		m++;
+		w = (w+1)/2;
+		h = (h+1)/2;
+		if(m==mipMap) return w;
+	}
+	while(w!=1 && h!=1);
+
+	return 0;
 }
 
-inline  std::vector<NLMISC::CRGBA> CBitmap::getPixels(uint32 numMipMap) const
+
+
+/*-------------------------------------------------------------------*\
+							getHeight
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::getHeight(uint32 mipMap) const
 {
-	return _DataDecomp[numMipMap]; 
+	if(mipMap==0) return _Height;
+	
+	uint32 w = _Width;
+	uint32 h = _Height;
+	uint32 m = 0;
+
+	do
+	{
+		m++;
+		w = (w+1)/2;
+		h = (h+1)/2;
+		if(m==mipMap) return h;
+	}
+	while(w!=1 && h!=1);
+
+	return 0;
 }
 
-inline uint32 CBitmap::getWidth() const
+
+
+/*-------------------------------------------------------------------*\
+							buildMiMaps
+\*-------------------------------------------------------------------*/
+void CBitmap::buildMiMaps()
 {
-	return _Width;
+	uint32 i,j;
+
+	if(PixelFormat!=RGBA) return;
+	if(_MipMapCount>0) return;
+	
+	uint32 w = _Width;
+	uint32 h = _Height;
+
+	while(w>1 && h>1)
+	{
+		uint32 prevw = w;
+		uint32 prevh = h;
+		w = (w+1)/2;
+		h = (h+1)/2;
+
+		_MipMapCount++;
+		_Data[_MipMapCount].resize(w*h*4);
+		
+	
+		NLMISC::CRGBA *pRgba = (NLMISC::CRGBA*)&_Data[_MipMapCount][0];
+		NLMISC::CRGBA *pRgbaPrev = (NLMISC::CRGBA*)&_Data[_MipMapCount-1][0];
+		for(i=0; i<h; i++)
+		{
+			for(j=0; j<w; j++)
+			{	
+				pRgba[i*w + j].R = (pRgbaPrev[2*i*2*w+2*j].R +
+									pRgbaPrev[2*i*2*w+2*j+1].R +
+									pRgbaPrev[(2*i+1)*2*w+2*j].R +
+									pRgbaPrev[(2*i+1)*2*w+2*j+1].R + 2 ) /4;
+				pRgba[i*w + j].G = (pRgbaPrev[2*i*2*w+2*j].G +
+									pRgbaPrev[2*i*2*w+2*j+1].G +
+									pRgbaPrev[(2*i+1)*2*w+2*j].G +
+									pRgbaPrev[(2*i+1)*2*w+2*j+1].G + 2 ) /4;
+				pRgba[i*w + j].B = (pRgbaPrev[2*i*2*w+2*j].B +
+									pRgbaPrev[2*i*2*w+2*j+1].B +
+									pRgbaPrev[(2*i+1)*2*w+2*j].B +
+									pRgbaPrev[(2*i+1)*2*w+2*j+1].B + 2 ) /4;
+				pRgba[i*w + j].A = (pRgbaPrev[2*i*2*w+2*j].A +
+									pRgbaPrev[2*i*2*w+2*j+1].A +
+									pRgbaPrev[(2*i+1)*2*w+2*j].A +
+									pRgbaPrev[(2*i+1)*2*w+2*j+1].A + 2 ) /4;
+			}
+		}
+	}
 }
 
-inline uint32 CBitmap::getHeight() const
+
+
+/*-------------------------------------------------------------------*\
+							resample
+\*-------------------------------------------------------------------*/
+void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 {
-	return _Height;
+	bool needRebuild = false;
+
+	// Deleting mipmaps
+	if(_MipMapCount!=0)
+	{
+		for(uint32 i=1; i<_MipMapCount; i++)
+		{
+			NLMISC::contReset(_Data[i]); // free memory
+			_Data[i].resize(1);
+		}
+		_MipMapCount = 0;
+		needRebuild = true;
+	}
+
+	if(nNewWidth==0 || nNewHeight==0)
+	{
+		_Width = _Height = 0;
+		return;
+	}
+	
+	nlassert(isPowerOf2(nNewWidth));
+	nlassert(isPowerOf2(nNewHeight));
+
+	std::vector<uint8> pDestui;
+	pDestui.resize(nNewWidth*nNewHeight*4);
+	NLMISC::CRGBA *pDestRgba = (NLMISC::CRGBA*)&pDestui[0];
+
+	resamplePicture32 ((NLMISC::CRGBA*)&_Data[0][0], pDestRgba, _Width, _Height, nNewWidth, nNewHeight);
+	_Data[0] =  pDestui;
+
+	// Rebuilding mipmaps
+	if(needRebuild)
+	{
+		buildMiMaps();
+	}
 }
 
-inline uint32 CBitmap::getNumMipMap() const
+
+
+/*-------------------------------------------------------------------*\
+							resize
+\*-------------------------------------------------------------------*/
+void CBitmap::resize(uint32 size)
 {
-	return _MipMapCount; 
+	if(size<_Width*_Height)
+	{
+		NLMISC::contReset(_Data[0]);
+	}
+	_Data[0].resize(0);
+
+	if(_MipMapCount!=0)
+	{
+		for(uint i=1; i<_MipMapCount; i++)
+		{
+			NLMISC::contReset(_Data[i]);
+			_Data[i].resize(0);
+		}
+	}
+	_Width = _Height = _MipMapCount = 0;
+	
 }
+
+
+
+/*-------------------------------------------------------------------*\
+							resamplePicture32
+\*-------------------------------------------------------------------*/
+void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest, 
+								 sint32 nSrcWidth, sint32 nSrcHeight, 
+								 sint32 nDestWidth, sint32 nDestHeight)
+{
+	if ((nSrcWidth<=0)||(nSrcHeight<=0)||(nDestHeight<=0)||(nDestHeight<=0))
+		return;
+	bool bXMag=(nDestWidth>=nSrcWidth);
+	bool bYMag=(nDestHeight>=nSrcHeight);
+	bool bXEq=(nDestWidth==nSrcWidth);
+	bool bYEq=(nDestHeight==nSrcHeight);
+	std::vector<NLMISC::CRGBAF> pIterm (nDestWidth*nSrcHeight);
+	
+	if (bXMag)
+	{
+		float fXdelta=(float)(nSrcWidth)/(float)(nDestWidth);
+		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
+		sint32 nY;
+		for (nY=0; nY<nSrcHeight; nY++)
+		{
+			const NLMISC::CRGBA *pSrcLine=pSrc;
+			float fX=0.f;
+			sint32 nX;
+			for (nX=0; nX<nDestWidth; nX++)
+			{
+				float fVirgule=fX-(float)floor(fX);
+				nlassert (fVirgule>=0.f);
+				NLMISC::CRGBAF vColor;
+				if (fVirgule>=0.5f)
+				{
+					if (fX<(float)(nSrcWidth-1))
+					{
+						NLMISC::CRGBAF vColor1 (pSrcLine[(sint32)floor(fX)]);
+						NLMISC::CRGBAF vColor2 (pSrcLine[(sint32)floor(fX)+1]);
+						vColor=vColor1*(1.5f-fVirgule)+vColor2*(fVirgule-0.5f);
+					}
+					else
+						vColor=NLMISC::CRGBAF (pSrcLine[(sint32)floor(fX)]);
+				}
+				else
+				{
+					if (fX>=1.f)
+					{
+						NLMISC::CRGBAF vColor1 (pSrcLine[(sint32)floor(fX)]);
+						NLMISC::CRGBAF vColor2 (pSrcLine[(sint32)floor(fX)-1]);
+						vColor=vColor1*(0.5f+fVirgule)+vColor2*(0.5f-fVirgule);
+					}
+					else
+						vColor=NLMISC::CRGBAF (pSrcLine[(sint32)floor(fX)]);
+				}
+				*(pItermPtr++)=vColor;
+				fX+=fXdelta;
+			}
+			pSrc+=nSrcWidth;
+		}
+	}
+	else if (bXEq)
+	{
+		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
+		for (sint32 nY=0; nY<nSrcHeight; nY++)
+		{
+			const NLMISC::CRGBA *pSrcLine=pSrc;
+			sint32 nX;
+			for (nX=0; nX<nDestWidth; nX++)
+				*(pItermPtr++)=NLMISC::CRGBAF (pSrcLine[nX]);
+			pSrc+=nSrcWidth;
+		}
+	}
+	else
+	{
+		double fXdelta=(double)(nSrcWidth)/(double)(nDestWidth);
+		nlassert (fXdelta>1.f);
+		NLMISC::CRGBAF *pItermPtr=&*pIterm.begin();
+		sint32 nY;
+		for (nY=0; nY<nSrcHeight; nY++)
+		{
+			const NLMISC::CRGBA *pSrcLine=pSrc;
+			double fX=0.f;
+			sint32 nX;
+			for (nX=0; nX<nDestWidth; nX++)
+			{
+				NLMISC::CRGBAF vColor (0.f, 0.f, 0.f);
+				double fFinal=fX+fXdelta;
+				while (fX<fFinal)
+				{
+					double fNext=(double)floor (fX)+1.f;
+					if (fNext>fFinal)
+						fNext=fFinal;
+					vColor+=((float)(fNext-fX))*NLMISC::CRGBAF (pSrcLine[(sint32)floor(fX)]);
+					fX=fNext;
+				}
+				nlassert (fX==fFinal);
+				vColor/=(float)fXdelta;
+				*(pItermPtr++)=vColor;
+			}
+			pSrc+=nSrcWidth;
+		}
+	}
+				
+	if (bYMag)
+	{
+		double fYdelta=(double)(nSrcHeight)/(double)(nDestHeight);
+		sint32 nX;
+		for (nX=0; nX<nDestWidth; nX++)
+		{
+			double fY=0.f;
+			sint32 nY;
+			for (nY=0; nY<nDestHeight; nY++)
+			{
+				double fVirgule=fY-(double)floor(fY);
+				nlassert (fVirgule>=0.f);
+				NLMISC::CRGBAF vColor;
+				if (fVirgule>=0.5f)
+				{
+					if (fY<(double)(nSrcHeight-1))
+					{
+						NLMISC::CRGBAF vColor1=pIterm[((sint32)floor(fY))*nDestWidth+nX];
+						NLMISC::CRGBAF vColor2=pIterm[(((sint32)floor(fY))+1)*nDestWidth+nX];
+						vColor=vColor1*(1.5f-(float)fVirgule)+vColor2*((float)fVirgule-0.5f);
+					}
+					else
+						vColor=pIterm[((sint32)floor(fY))*nDestWidth+nX];
+				}
+				else
+				{
+					if (fY>=1.f)
+					{
+						NLMISC::CRGBAF vColor1=pIterm[((sint32)floor(fY))*nDestWidth+nX];
+						NLMISC::CRGBAF vColor2=pIterm[(((sint32)floor(fY))-1)*nDestWidth+nX];
+						vColor=vColor1*(0.5f+(float)fVirgule)+vColor2*(0.5f-(float)fVirgule);
+					}
+					else
+						vColor=pIterm[((sint32)floor(fY))*nDestWidth+nX];
+				}
+				pDest[nX+nY*nDestWidth]=vColor;
+				fY+=fYdelta;
+			}
+		}
+	}
+	else if (bYEq)
+	{
+		for (sint32 nX=0; nX<nDestWidth; nX++)
+		{
+			sint32 nY;
+			for (nY=0; nY<nDestHeight; nY++)
+			{
+				pDest[nX+nY*nDestWidth]=pIterm[nY*nDestWidth+nX];
+			}
+		}
+	}
+	else
+	{
+		double fYdelta=(double)(nSrcHeight)/(double)(nDestHeight);
+		nlassert (fYdelta>1.f);
+		sint32 nX;
+		for (nX=0; nX<nDestWidth; nX++)
+		{
+			double fY=0.f;
+			sint32 nY;
+			for (nY=0; nY<nDestHeight; nY++)
+			{
+				NLMISC::CRGBAF vColor (0.f, 0.f, 0.f);
+				double fFinal=fY+fYdelta;
+				while ((fY<fFinal)&&((sint32)fY!=nSrcHeight))
+				{
+					double fNext=(double)floor (fY)+1.f;
+					if (fNext>fFinal)
+						fNext=fFinal;
+					vColor+=((float)(fNext-fY))*pIterm[((sint32)floor(fY))*nDestWidth+nX];
+					fY=fNext;
+				}
+				vColor/=(float)fYdelta;
+				pDest[nX+nY*nDestWidth]=vColor;
+			}
+		}
+	}
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							readTGA
+\*-------------------------------------------------------------------*/
+uint8 CBitmap::readTGA( NLMISC::IStream &f)
+{
+	if(!f.isReading()) return 0;
+
+	uint32			size;
+	uint32			x,y;
+	sint32			slsize;
+	uint8			*scanline;
+	uint8			r,g,b;
+	sint32			i,j,k;
+
+	// TGA file header fields
+	uint8	lengthID;
+	uint8	cMapType;
+	uint8	imageType;
+	uint16	origin;
+	uint16	length;
+	uint8	depth;
+	uint16	xOrg;
+	uint16	yOrg;
+	uint16	width;
+	uint16	height;
+	uint8	imageDepth;
+	uint8	desc;
+
+	// Image/Color map data
+	uint8 *imageID;
+	
+	
+	
+	// Determining whether file is in Original or New TGA format
+	
+	bool newTgaFormat;
+	uint32 extAreaOffset;
+	uint32 devDirectoryOffset;
+	char signature[16];
+
+	f.seek (-26, f.end);
+	f.serial(extAreaOffset);
+	f.serial(devDirectoryOffset);
+	for(i=0; i<16; i++)
+	{
+		f.serial(signature[i]);
+	}
+	if(strncmp(signature,"TRUEVISION-XFILE",16)==0)
+		newTgaFormat = true;
+	else
+		newTgaFormat = false;
+
+
+
+	// Reading TGA file header
+	f.seek (0, f.begin);
+		
+	f.serial(lengthID);
+	f.serial(cMapType);
+	f.serial(imageType);
+	f.serial(origin);
+	f.serial(length);
+	f.serial(depth);
+	f.serial(xOrg);
+	f.serial(yOrg);
+	f.serial(width);
+	f.serial(height);
+	f.serial(imageDepth);
+	f.serial(desc);
+
+	if(cMapType!=0)
+	{
+		nlinfo("readTga : color-map not supported");
+	}
+
+	if(lengthID>0)
+	{
+		imageID = new uint8[lengthID];
+		for(i=0; i<lengthID; i++)
+			f.serial(imageID[i]);
+	}
+
+
+
+	// Reading TGA image data
+	
+	_Width = width;
+	_Height = height;
+	size = _Width * _Height * (imageDepth/8);
+	
+	switch(imageType)
+	{
+		case 10:
+		{
+			uint8 packet;
+			uint8 pixel[4];
+			uint32 imageSize = width*height;
+			uint32 readSize = 0;
+			_Data[0].reserve(_Width*_Height*4);
+
+			while(readSize < imageSize)
+			{
+				f.serial(packet);
+				if((packet & 0x80) > 0) // packet RLE 
+				{ 
+					for(i=0; i<imageDepth/8; i++)
+					{
+						f.serial(pixel[i]);
+					}
+					for (i=0; i < (packet & 0x7F) + 1; i++)
+					{
+						for(j=0; j<imageDepth/8; j++)
+						{
+							_Data[0].push_back(pixel[j]);
+						}
+						if(imageDepth==24)
+						{
+							_Data[0].push_back(0);
+						}
+					}
+				}
+				else	// packet Raw 
+				{ 
+					for(i=0; i<((packet & 0x7F) + 1); i++)
+					{
+						for(j=0; j<imageDepth/8; j++)
+						{
+							f.serial(pixel[j]);
+						}
+						if(imageDepth==32)
+						{
+							_Data[0].push_back(pixel[2]);
+							_Data[0].push_back(pixel[1]);
+							_Data[0].push_back(pixel[0]);
+							_Data[0].push_back(pixel[3]);
+						}
+						if(imageDepth==24)
+						{
+							_Data[0].push_back(pixel[2]);
+							_Data[0].push_back(pixel[1]);
+							_Data[0].push_back(pixel[0]);
+							_Data[0].push_back(0);
+						}
+					}
+  				}
+				readSize += (packet & 0x7F) + 1;
+			}
+		};
+		break;
+
+		case 2:
+		{
+			_Data[0].resize(_Width*_Height*4);
+			uint8 upSideDown = ((desc & (1 << 5))==0);
+			slsize = _Width * imageDepth / 8;
+
+			scanline = new uint8[slsize];
+			if(!scanline)
+			{
+				throw(EAllocationFailure());
+			}
+
+			for(y=0; y<_Height ;y++)
+			{
+				for(i=0; i<slsize; i++)
+				{
+					f.serial(scanline[i]);
+				}
+				if(imageDepth==24 || imageDepth==32)
+				{
+					sint32 mult = 3;
+					if(imageDepth==32)  
+					{
+						mult = 4;
+					}
+					for(x=0; x<_Width; x++)
+					{
+						// RGB(A)
+						r = scanline[x*mult+0];
+						g = scanline[x*mult+1];
+						b = scanline[x*mult+2];
+						// Switching to BGR(A)
+						scanline[x*mult+0] = b;
+						scanline[x*mult+1] = g;
+						scanline[x*mult+2] = r;
+					}
+				}
+				
+				k=0;
+				for(i=0; i<width; i++) 
+				{
+					if(upSideDown)
+					{
+						_Data[0][(height-y-1)*width*4 + 4*i] = scanline[k++];
+						_Data[0][(height-y-1)*width*4 + 4*i + 1] = scanline[k++];
+						_Data[0][(height-y-1)*width*4 + 4*i + 2] = scanline[k++];
+						if(imageDepth==32)
+							_Data[0][(height-y-1)*width*4 + 4*i + 3] = scanline[k++];
+						else
+							_Data[0][(height-y-1)*width*4 + 4*i + 3] = 0;
+					}
+					else
+					{
+						_Data[0][y*width*4 + 4*i] = scanline[k++];
+						_Data[0][y*width*4 + 4*i + 1] = scanline[k++];
+						_Data[0][y*width*4 + 4*i + 2] = scanline[k++];
+						if(imageDepth==32)
+							_Data[0][y*width*4 + 4*i + 3] = scanline[k++];
+						else
+							_Data[0][y*width*4 + 4*i + 3] = 0;
+					}	
+				}
+			}
+
+			delete scanline;
+		};
+		break;
+
+		default:
+			return 0;
+	}
+
+	PixelFormat = RGBA;
+	_MipMapCount = 0;
+	return(imageDepth);
+
+}
+
+
+
+/*-------------------------------------------------------------------*\
+							writeTGA
+\*-------------------------------------------------------------------*/
+uint32 CBitmap::writeTGA( NLMISC::IStream &f, uint32 d)
+{
+	if(f.isReading()) return 0;
+	if(d!=24 && d!=32) return 0;
+	if(PixelFormat != RGBA) return 0;
+
+	sint32	i,j,x,y;
+	sint32	slsize;
+	uint8	* scanline;
+	uint8	r,g,b,a;
+
+	uint8	lengthID = 0;
+	uint8	cMapType = 0;
+	uint8	imageType = 2;
+	uint16	origin = 0;
+	uint16	length = 0;
+	uint8	depth = 0;
+	uint16	xOrg = 0;
+	uint16	yOrg = 0;
+	uint16	width = (uint16)_Width;
+	uint16	height = (uint16)_Height;
+	uint8	imageDepth = (uint8)d;
+	uint8	desc = 0;
+		
+	f.serial(lengthID);
+	f.serial(cMapType);
+	f.serial(imageType);
+	f.serial(origin);
+	f.serial(length);
+	f.serial(depth);
+	f.serial(xOrg);
+	f.serial(yOrg);
+	f.serial(width);
+	f.serial(height);
+	f.serial(imageDepth);
+	f.serial(desc);
+
+	
+	slsize = width*d/8;
+	scanline = new uint8[slsize];
+	if(!scanline)
+	{
+		throw(EAllocationFailure());
+	}
+
+	for(y=0; y<(sint32)height; y++)
+	{
+		
+		uint32 k=0;
+		for(i=0; i<width*4; i+=4) // 4:RGBA
+		{
+			for(j=0; j<(sint32)d/8; j++)
+			{
+				scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+			}
+		}
+		
+		if(d==24)
+		{
+			for(x=0; x<(sint32)width; x++)
+			{
+				r = scanline[x*3+0];
+				g = scanline[x*3+1];
+				b = scanline[x*3+2];
+				scanline[x*3+0] = b;
+				scanline[x*3+1] = g;
+				scanline[x*3+2] = r;				
+			}
+		}
+		if(d==32)
+		{
+			for(x=0; x<(sint32)width; x++)
+			{
+				r = scanline[x*4+0];
+				g = scanline[x*4+1];
+				b = scanline[x*4+2];
+				a= scanline[x*4+3];
+				scanline[x*4+0] = b;
+				scanline[x*4+1] = g;
+				scanline[x*4+2] = r;				
+				scanline[x*4+3] = a;
+			}
+		}
+		
+		for(i=0; i<slsize; i++)
+		{
+			f.serial(scanline[i]);
+		}		
+	}
+
+	delete(scanline);
+	return(1);
+}
+
 
 
 

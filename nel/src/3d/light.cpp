@@ -1,7 +1,7 @@
 /** \file light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: light.cpp,v 1.3 2001/09/13 12:43:46 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,8 +111,11 @@ void CLight::setupAttenuation (float farAttenuationBegin, float farAttenuationEn
 	_LinearAttenuation=(float)(0.1/(0.9*farAttenuationBegin));
 
 	// blend factor
-	float factor=(0.9f-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd)/
-		(0.1f*_LinearAttenuation*farAttenuationEnd-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd);
+	float factor = (0.1f*_LinearAttenuation*farAttenuationEnd-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd);
+
+	if (factor == 0.0f)
+		factor = 0.0001f;
+	factor = (0.9f-0.1f*_QuadraticAttenuation*farAttenuationEnd*farAttenuationEnd)/factor;
 
 	if ((factor<0.f)||(factor>1.f))
 	{

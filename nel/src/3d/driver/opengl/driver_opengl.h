@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.104 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.105 2001/12/05 10:05:21 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -560,6 +560,7 @@ private:
 	static const uint32		ReleaseVersion;
 
 	bool					_FullScreen;
+	bool						_OffScreen;
 
 #ifdef NL_OS_WINDOWS
 
@@ -575,11 +576,7 @@ private:
 	bool						_DestroyWindow;
 
 	// Off-screen rendering in Dib section
-	bool						_OffScreen;
-#ifdef NL_OS_WINDOWS
 	HPBUFFERARB					_PBuffer;
-#endif // NL_OS_WINDOWS
-
 
 #elif defined (NL_OS_UNIX)
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.130 2001/12/05 09:54:38 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.131 2001/12/05 10:05:21 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -749,7 +749,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	//=============
 	// Retrieve the extensions for the current context.
 	NL3D::registerGlExtensions (_Extensions);
+#ifdef NL_OS_WINDOWS
 	NL3D::registerWGlExtensions (_Extensions, _hDC);
+#endif // ifdef NL_OS_WINDOWS
 
 	// Check required extensions!!
 	// ARBMultiTexture is a opengl 1.2 required extension.

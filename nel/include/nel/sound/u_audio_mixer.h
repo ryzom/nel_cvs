@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.31 2003/12/08 13:17:23 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.32 2004/03/25 16:59:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,7 +182,11 @@ public:
 	 *	the mixer make it's best.
 	 */
 	virtual void		setLowWaterMark(uint value) = 0;
-
+	/** Change The number of tracks in RealTime. If the number is lowered, random tracks are deleted.
+	 *	Any playing sources of such deleted track will be stoped
+	 */
+	virtual	void		changeMaxTrack(uint maxTrack) = 0;
+	
 	//@}
 
 

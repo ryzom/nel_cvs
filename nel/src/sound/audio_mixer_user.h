@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.43 2003/12/31 16:11:54 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.44 2004/03/25 16:59:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,6 +165,7 @@ public:
 	 */
 	virtual void		setLowWaterMark(uint value);
 
+	virtual	void		changeMaxTrack(uint maxTrack);
 	
 	/// Resets the audio system (deletes all the sources, include envsounds)
 	virtual void				reset();
@@ -555,8 +556,6 @@ public: // Temp (EDIT)
 	CTrack						*_Tracks [MAX_TRACKS];
 	/// Size of the physical sources array (must be <= MAX_TRACKS)
 	uint						_NbTracks;
-	/// Max _NbTracks
-	uint						_MaxNbTracks;
 	/// Flag set in destructor
 	bool						_Leaving;
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.63 2003/12/31 16:11:54 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.64 2004/03/25 16:59:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,6 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
 CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _ListenPosition(CVector::Null),
 									 _NbTracks(0),
-									 _MaxNbTracks(0),
 									 _Leaving(false),
 									 _BackgroundSoundManager(0),
 									 _PlayingSources(0),
@@ -417,8 +416,6 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 		// If the source generation failed, keep only the generated number of sources
 		_NbTracks = i;
 	}
-
-	_MaxNbTracks = _NbTracks;
 
 	// Init the reserve stuff.
 	_LowWaterMark = 0;
@@ -2150,6 +2147,73 @@ void CAudioMixerUser::displayDriverBench(CLog *log)
 	if (_SoundDriver)
 		_SoundDriver->displayBench(log);
 }
+
+// ***************************************************************************
+void		CAudioMixerUser::changeMaxTrack(uint maxTrack)
+{
+	maxTrack = min(maxTrack, MAX_TRACKS);
+	
+	// if same, no op
+	if(maxTrack==_NbTracks)
+		return;
+
+	// **** if try to add new tracks, easy
+	if(maxTrack>_NbTracks)
+	{
+		uint	i;
+		for (i=_NbTracks; i<maxTrack; i++ )
+		{
+			_Tracks[i] = NULL;
+		}
+		try
+		{
+			for (i=_NbTracks; i!=maxTrack; i++ )
+			{
+				_Tracks[i] = new CTrack();
+				_Tracks[i]->init( _SoundDriver );
+				// insert in front because the last inserted wan be sofware buffer...
+				_FreeTracks.insert(_FreeTracks.begin(), _Tracks[i]);
+			}
+		}
+		catch ( ESoundDriver & )
+		{
+			delete _Tracks[i];
+			_Tracks[i] = NULL;
+			// If the source generation failed, keep only the generated number of sources
+			maxTrack= i;
+		}
+	}
+	// **** else must delete some tracks
+	else
+	{
+		sint	i;
+		for (i=_NbTracks-1; i>=(sint)maxTrack; i-- )
+		{
+			nlassert(_Tracks[i]);
+
+			// stop the track playing source if needed!
+			CSimpleSource	*source= _Tracks[i]->getSource();
+			if(source)
+				source->stop();
+			// if fails (don't know why), abort reducing
+			if(_Tracks[i]->getSource())
+			{
+				maxTrack= i+1;
+				nlwarning("AM: Abort ChangeTrack, cant stop a track");
+				break;
+			}
+
+			// remove from freeTracks, and delete the track
+			_FreeTracks.erase(find(_FreeTracks.begin(), _FreeTracks.end(), _Tracks[i]));
+			delete _Tracks[i];
+			_Tracks[i] = NULL;
+		}
+	}
+
+	// Modified
+	_NbTracks = maxTrack;
+}
+
 
 } // NLSOUND
 

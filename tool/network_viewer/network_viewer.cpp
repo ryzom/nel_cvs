@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.5 2000/12/19 14:34:51 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.6 2000/12/19 16:06:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -664,6 +664,29 @@ class CKCallback : public IEventListener
 		else if (ec.Key == KeySUBTRACT)
 		{
 			ZoomY /= 1.5;
+		}
+		else if (ec.Key == KeyF || ec.Key == KeyG)
+		{
+		  if (ec.Key==KeyF)
+		    {
+		      ZoomX += 0.1;
+		      ZoomY *= 1.5;
+		      FontZoom = ZoomX;
+		      if (FontZoom > 1.0) FontZoom = 1.0;
+		      else if (FontZoom < 0.1) FontZoom = 0.1;
+		    }
+		  else
+		    {
+		      if (ZoomX > 0.15)
+			{
+			  ZoomX -= 0.1;
+			  ZoomY /= 1.5;
+			  FontZoom = ZoomX;
+			  if (FontZoom > 1.0) FontZoom = 1.0;
+			  else if (FontZoom < 0.1) FontZoom = 0.1;
+			}
+		    }
+		  RecomputeFont ();
 		}
 	}
 };

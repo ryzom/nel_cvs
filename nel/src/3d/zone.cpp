@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.39 2001/07/06 12:26:49 berenguier Exp $
+ * $Id: zone.cpp,v 1.40 2001/07/09 13:28:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -940,7 +940,9 @@ void			CZone::renderTile(sint pass)
 // ***************************************************************************
 void			CZone::resetRenderFar()
 {
-	CPatch		*pPatch= &(*Patchs.begin());
+	CPatch		*pPatch;
+	if(Patchs.size()>0)
+		pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->resetRenderFar();
@@ -951,7 +953,9 @@ void			CZone::resetRenderFar()
 // ***************************************************************************
 void			CZone::forceMergeAtTileLevel()
 {
-	CPatch		*pPatch= &(*Patchs.begin());
+	CPatch		*pPatch;
+	if(Patchs.size()>0)
+		pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		pPatch->forceMergeAtTileLevel();

@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.6 2001/06/27 08:31:19 lecroart Exp $
+ * $Id: string_stream.cpp,v 1.7 2001/07/04 08:34:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,6 +106,10 @@ inline int atoihex( const char* ident )
 	return number;
 }
 
+inline uint32 atoui( const char *ident)
+{
+	return (uint32) strtoul (ident, NULL, 10);
+}
 
 // ======================================================================================================
 void		CStringStream::serial(uint8 &b) 
@@ -165,7 +169,7 @@ void		CStringStream::serial(uint32 &b)
 {
 	if ( isReading() )
 	{
-		readnumber( b, uint32, 10, atoi ); // 4294967295
+		readnumber( b, uint32, 10, atoui ); // 4294967295
 	}
 	else
 	{

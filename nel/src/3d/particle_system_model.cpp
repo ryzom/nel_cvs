@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.5 2001/07/17 15:56:23 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.6 2001/07/18 09:07:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 
 	const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
 	CMatrix		&mat= HrcObs->WorldMatrix;
+
+	
+
 
 
 	/** traverse the sons

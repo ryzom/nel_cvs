@@ -41,6 +41,9 @@ for i in $clod_source_directories ; do
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
+
+	# Idle
+	../../idle.bat
 done
 
 

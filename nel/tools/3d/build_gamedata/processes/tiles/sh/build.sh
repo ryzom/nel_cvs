@@ -36,4 +36,7 @@ for i in maps_tga/*.tga ; do
 			echo SKIPPED $dest >> log.log
 		fi
 	fi
+
+	# Idle
+	../../idle.bat
 done

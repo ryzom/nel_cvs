@@ -43,6 +43,9 @@ for i in $pacs_prim_source_directories ; do
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
+
+	# Idle
+	../../idle.bat
 done
 
 rm $scratch_path/landscape_col_prim_pacs_list.txt

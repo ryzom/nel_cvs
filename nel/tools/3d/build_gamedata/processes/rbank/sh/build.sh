@@ -104,6 +104,9 @@ for i in $rbank_ig_pathes ; do
 		n=`echo $j | sed -e 's/.ig//'`
 		echo \"$n\"\, >> build_ig_boxes.cfg
 	done
+
+	# Idle
+	../../idle.bat
 done
 echo \}\; >> build_ig_boxes.cfg
 echo Output = \"bbox/temp.bbox\"\; >> build_ig_boxes.cfg
@@ -209,6 +212,9 @@ for i in $list_zone ; do
 		echo SKIPPED $dest >> log.log
 		echo >> log.log
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # ******* PASS 2
@@ -252,6 +258,9 @@ for i in $list_zone ; do
 	fi
 	echo
 	echo >> log.log
+
+	# Idle
+	../../idle.bat
 done
 
 # Log error
@@ -290,6 +299,9 @@ for i in $list_zone ; do
 	fi
 	echo
 	echo >> log.log
+
+	# Idle
+	../../idle.bat
 done
 
 # Log error
@@ -333,6 +345,9 @@ cd ..
 for i in $list_cmb ; do
 	n=`echo $i | sed -e 's/.cmb//'`
 	echo \"$n\", >> build_indoor_rbank.cfg
+
+	# Idle
+	../../idle.bat
 done
 
 echo "};" >> build_indoor_rbank.cfg

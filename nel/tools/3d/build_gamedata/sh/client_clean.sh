@@ -20,4 +20,7 @@ echo \*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*
 for i in $client_setup_directories ; do
 	# Create the directory
 	rm $client_directory/$i/*
+
+	# Idle
+	idle.bat
 done

@@ -170,6 +170,9 @@ for filename in $list_zone ; do
 		echo "   Updating"
 		cp -u -p $filename ../../zone/zone_exported/$filename ;
 	fi
+
+	# Idle
+	../../../idle.bat
 done
 cd $dir_current
 
@@ -186,6 +189,9 @@ then
 			echo "Removing $filename"
 			rm $filename ;
 		fi
+
+		# Idle
+		../../../idle.bat
 	done
 	cd ..
 fi

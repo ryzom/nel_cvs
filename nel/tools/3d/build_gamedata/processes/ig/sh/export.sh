@@ -46,6 +46,9 @@ for i in $ig_land_source_directories ; do
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
+
+	# Idle
+	../../idle.bat
 done
 
 
@@ -60,4 +63,7 @@ for i in $ig_other_source_directories ; do
 
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
+
+	# Idle
+	../../idle.bat
 done

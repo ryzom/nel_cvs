@@ -26,4 +26,7 @@ for i in $tile_source_directories ; do
 	for j in $list_textures ; do
 		cp -u -p $j maps_tga/ 2>> log.log
 	done
+
+	# Idle
+	../../idle.bat
 done

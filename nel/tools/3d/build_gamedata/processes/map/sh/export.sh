@@ -39,6 +39,8 @@ for i in $map_source_directories; do
 			fi
 		fi
 	done
+	# Idle
+	../../idle.bat
 done
 
 
@@ -57,6 +59,8 @@ for i in $map_panoply_source_directories; do
 			fi
 		fi
 	done
+	# Idle
+	../../idle.bat
 done
 
 

@@ -22,4 +22,7 @@ date
 for i in $ps_source_directories ; do
 	# Copy
 	cp -u -p $database_directory/$i/*.ps ps 2>> log.log
+
+	# Idle
+	../../idle.bat
 done

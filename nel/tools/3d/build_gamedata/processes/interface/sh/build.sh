@@ -26,6 +26,9 @@ for i in $interface_source_directories ; do
 	rm tga_tmp/*.tga
 	cp -u -p $database_directory/$i/*.tga tga_tmp 2>> log.log
 	../../bin/build_interface tga_tmp tga/texture_$niouname.tga
+
+	# Idle
+	../../idle.bat
 done
 
 

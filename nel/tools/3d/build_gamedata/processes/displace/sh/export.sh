@@ -22,4 +22,7 @@ date
 for i in $displace_source_directories ; do
 	# Copy
 	cp -u -p $database_directory/$i/*.tga tga 2>> log.log
+
+	# Idle
+	../../idle.bat
 done

@@ -151,6 +151,9 @@ for filename in $list_ig ; do
 		# No, only copy it
 		cp ig_land_ld/$filename ig_merge_tmp/$filename ;
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # Merge ig in ig_land_max_elev with ig_land_ld in ig_merge_tmp
@@ -164,6 +167,9 @@ for filename in $list_ig ; do
 		# No, only copy it
 		cp ig_land_max_elev/$filename ig_merge_tmp/$filename ;
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # Merge ig in ig_merge_tmp with ig_land_ligo_elev in ig_land
@@ -180,6 +186,9 @@ for filename in $list_ig ; do
 		# No, only copy it
 		cp ig_merge_tmp/$filename ig_land/$filename ;
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # Merge ig in ig_land_ligo_elev with ig_merge_tmp in ig_land
@@ -193,6 +202,9 @@ for filename in $list_ig ; do
 		# No, only copy it
 		cp ig_land_ligo_elev/$filename ig_land/$filename ;
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 
@@ -223,6 +235,9 @@ then
 		fi
 	done
 	cd ..
+
+	# Idle
+	../../idle.bat
 fi
 
 

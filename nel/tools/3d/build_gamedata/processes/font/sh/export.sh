@@ -25,4 +25,7 @@ for i in $font_source_directories ; do
 	cp -u -p $database_directory/$i/*.afm fonts 2>> log.log
 	cp -u -p $database_directory/$i/*.pfb fonts 2>> log.log
 	cp -u -p $database_directory/$i/*.pfm fonts 2>> log.log
+
+	# Idle
+	../../idle.bat
 done

@@ -43,6 +43,9 @@ if test "$panoply_file_list" ; then
 		cp $database_directory/$psource current_panoply.cfg
 		echo "output_path=\"panoply\";" >> current_panoply.cfg
 		../../bin/panoply_maker current_panoply.cfg
+
+		# Idle
+		../../idle.bat
 	done
 	ls panoply >> $panoply_file_list
 fi
@@ -69,6 +72,9 @@ for i in tga/*.tga ; do
 		# Convert
 		$tga_2_dds $i -o $dest -m 2>> log.log
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 for i in panoply/*.tga ; do
@@ -89,4 +95,7 @@ for i in panoply/*.tga ; do
 		# Convert
 		$tga_2_dds $i -o $dest -m 2>> log.log
 	fi
+
+	# Idle
+	../../idle.bat
 done

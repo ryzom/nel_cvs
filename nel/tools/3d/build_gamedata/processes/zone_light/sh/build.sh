@@ -51,6 +51,9 @@ for i in $list_zone_welded ; do
 		echo SKIP $dest
 		echo SKIP $dest >> log.log
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # List the zones lighted
@@ -65,6 +68,9 @@ for i in $list_zone_lighted_remove ; do
 		echo REMOVE $i >> log.log
 		rm $i
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 
@@ -114,5 +120,8 @@ for i in $list_zone_lighted ; do
 			rm $dest
 		fi
 	fi
+
+	# Idle
+	../../idle.bat
 done
 

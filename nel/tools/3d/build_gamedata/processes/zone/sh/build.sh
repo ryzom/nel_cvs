@@ -50,6 +50,9 @@ then
 		arg=`echo zone_exported/$zone_regions | sed -e 's&,&.zone zone_exported/&g'`		
 		# Make the dependencies
 		$exec_timeout $depend_timeout $zone_dependencies zone_depencies_properties.cfg $arg.zone zone_depend/doomy.depend
+
+		# Idle
+		../../idle.bat
 	done
 fi	
 
@@ -77,6 +80,9 @@ for i in $list_zone ; do
   then
 	echo $i >> zone_to_weld.txt
   fi
+
+	# Idle
+	../../idle.bat
 done
 
 # Weld the zone
@@ -88,6 +94,9 @@ then
 		echo -- Weld $i >> log.log
 	    $exec_timeout $weld_timeout $zone_welder $i $dest
 		echo 
+
+		# Idle
+		../../idle.bat
 	done
 fi
 

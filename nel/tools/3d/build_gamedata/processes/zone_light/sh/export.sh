@@ -21,4 +21,7 @@ date
 #copy each water map before lightmapping
 for i in $water_map_directories ; do
 	cp -u -p $database_directory/$i/*.tga water_shapes_lighted 2>> log.log
+
+	# Idle
+	../../idle.bat
 done

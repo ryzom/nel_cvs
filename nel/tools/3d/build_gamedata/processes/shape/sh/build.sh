@@ -48,6 +48,9 @@ for i in lightmap/*.tga ; do
 			$tga_2_dds $i -o $dest -a tga16 2>> log.log
 		fi
 	fi
+
+	# Idle
+	../../idle.bat
 done
 
 # Log error
@@ -87,6 +90,8 @@ for i in $map_source_directories ; do
 	# Add the path
 	echo '	"'$database_directory/$i'"', >> cfg/config_generated.cfg
 
+	# Idle
+	../../idle.bat
 done
 
 # Add the shape list header
@@ -111,6 +116,8 @@ for i in shape_with_coarse_mesh/*.shape; do
 		dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
 	fi
 
+	# Idle
+	../../idle.bat
 done
 
 # Close the config file

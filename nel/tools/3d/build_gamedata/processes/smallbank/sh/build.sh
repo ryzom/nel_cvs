@@ -45,5 +45,8 @@ for i in $bank_list ; do
 	else
 		echo SKIPPED $dest >> log.log
 	fi
+
+	# Idle
+	../../idle.bat
 done
 

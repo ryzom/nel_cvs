@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.89 2003/11/21 11:01:17 corvazier Exp $
+ * $Id: path.cpp,v 1.90 2003/11/21 16:28:46 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,26 +86,54 @@ CPath *CPath::_Instance = NULL;
 void CPath::getFileList(const std::string &extension, std::vector<std::string> &filenames)
 {
 	CPath *inst = getInstance();
-	nlassert(!inst->_MemoryCompressed);
-	std::map<std::string, CFileEntry>::iterator first(inst->_Files.begin()), last(inst->_Files.end());
 
-	if( !extension.empty() )
+	if (!inst->_MemoryCompressed)
 	{
-		for (; first != last; ++ first)
+		std::map<std::string, CFileEntry>::iterator first(inst->_Files.begin()), last(inst->_Files.end());
+
+		if( !extension.empty() )
 		{
-			string ext = inst->SSMext.get(first->second.idExt);
-			if (ext == extension)
+			for (; first != last; ++ first)
+			{
+				string ext = inst->SSMext.get(first->second.idExt);
+				if (ext == extension)
+				{
+					filenames.push_back(first->first);
+				}
+			}
+		}
+		// if extension is empty we keep all files
+		else
+		{
+			for (; first != last; ++ first)
 			{
 				filenames.push_back(first->first);
 			}
 		}
 	}
-	// if extension is empty we keep all files
 	else
 	{
-		for (; first != last; ++ first)
+		// compressed memory version
+		std::vector<CPath::CMCFileEntry>::iterator first(inst->_MCFiles.begin()), last(inst->_MCFiles.end());
+
+		if( !extension.empty() )
 		{
-			filenames.push_back(first->first);
+			for (; first != last; ++ first)
+			{
+				string ext = inst->SSMext.get(first->idExt);
+				if (ext == extension)
+				{
+					filenames.push_back(first->Name);
+				}
+			}
+		}
+		// if extension is empty we keep all files
+		else
+		{
+			for (; first != last; ++ first)
+			{
+				filenames.push_back(first->Name);
+			}
 		}
 	}
 }

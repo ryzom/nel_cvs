@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.32 2004/03/08 11:20:40 vizerie Exp $
+ * $Id: ps_located.h,v 1.33 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -401,22 +401,22 @@ public:
 	NLMISC_DECLARE_CLASS(CPSLocated); 
 
 	/// Setup the driver model matrix. It is set accrodingly to the basis of the located
-	void setupDriverModelMatrix(void) ;
+	void setupDriverModelMatrix(void);
 
 	/** Compute a vector that will map to (1 0 0) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	NLMISC::CVector computeI(void) const ;
+	NLMISC::CVector computeI(void) const;
 
 	/** Compute a vector that will map to (0 1 0) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	NLMISC::CVector computeJ(void) const ;
+	NLMISC::CVector computeJ(void) const;
 
 	/** Compute a vector that will map to (0 0 1) after view and model transform.
 	*  This allow to  have object that always faces the user, whatever basis they are in
 	*/
-	NLMISC::CVector computeK(void) const ;
+	NLMISC::CVector computeK(void) const;
 
 	/** call this if you need collision infos.
 	*  The collide info attribute is not included by default to save memory.
@@ -618,10 +618,10 @@ protected:
 
 	// a container of masses. the inverse for mass are used in order to speed up forces computation
 	TPSAttribFloat		_InvMass; 
-	TPSAttribVector		_Pos ;
+	TPSAttribVector		_Pos;
 	TPSAttribVector		_Speed;
-	TPSAttribTime		_Time ;
-	TPSAttribTime		_TimeIncrement ;
+	TPSAttribTime		_Time;
+	TPSAttribTime		_TimeIncrement;
 
 
 	public:;
@@ -802,7 +802,7 @@ inline void CPSLocated::collisionUpdate(const CPSCollisionInfo &ci, uint32 index
 
 // kind of bindable objects
 
-const uint32 PSForce = 0   ;
+const uint32 PSForce = 0;
 const uint32 PSParticle = 1;
 const uint32 PSEmitter = 2;
 const uint32 PSLight = 3;
@@ -881,7 +881,7 @@ public:
 	* The default behaviour does nothing
 	* \return true if you modified the bbox
 	*/	
-	virtual bool			completeBBox(NLMISC::CAABBox &box) const  { return false ;}
+	virtual bool			completeBBox(NLMISC::CAABBox &box) const  { return false;}
 	/***
 	 * Override the following to say that you don't want to be part of a bbox computation
 	 */

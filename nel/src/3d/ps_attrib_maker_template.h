@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.21 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.22 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,12 +298,12 @@ public:
 		__forceinline
 	#endif
 	T operator()(TAnimationTime time) const
-	{		
+		{		 
 		return _Tab[NLMISC::OptFastFloor(time * _NbValues)];
 	}
 
 	/// copie the keys values in the specified table
-	void getValues(T *tab) const
+	virtual void getValues(T *tab) const
 	{
 		nlassert(tab);
 		T *pt = tab;
@@ -315,7 +315,7 @@ public:
 	}
 
 	/// get one value
-	T getValue(uint index)	const
+	virtual T getValue(uint index)	const
 	{		
 		nlassert(index < getNumValues());		
 		return _Tab[index * _NbStages];
@@ -334,10 +334,10 @@ public:
 	 */
 
 
-	inline void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages);
+	virtual void setValues(const T *ValueTab, uint32 numValues, uint32 nbStages);
 
 	// the same, but value gradient has already been computed, so ValueTab must contains numValues * nbStages + 1 values
-	inline void setValuesUnpacked(const T *ValueTab, uint32 numValues, uint32 nbStages);
+	virtual void setValuesUnpacked(const T *ValueTab, uint32 numValues, uint32 nbStages);
 	
 	/// get the number of stages between each value
 	uint32 getNumStages(void) const { return _NbStages; }
@@ -458,7 +458,7 @@ void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbS
 
 	
 template <typename T> 
-inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValues, uint32 nbStages)
+void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValues, uint32 nbStages)
 {	
 	nlassert(numValues > 1);
 	nlassert(nbStages > 0);
@@ -474,7 +474,7 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 
 
 template <typename T> 
-inline void CPSValueGradientFunc<T>::setValuesUnpacked(const T *valueTab, uint32 numValues, uint32 nbStages)
+void CPSValueGradientFunc<T>::setValuesUnpacked(const T *valueTab, uint32 numValues, uint32 nbStages)
 {
 	_NbStages = nbStages;
 	_MaxValue = _MinValue = valueTab[0];

@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.14 2004/04/09 14:25:29 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.15 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -394,10 +394,12 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	
 	
 	uint toProcess;
-	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed
-	
+	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed	
 	uint32 fpRibbonIndex = 0;
-
+	if (_ColorScheme)
+	{
+		_ColorScheme->setColorType(drv->getVertexColorFormat());
+	}
 	do
 	{
 		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);

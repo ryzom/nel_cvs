@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.17 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_mesh.h,v 1.18 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -414,7 +414,7 @@ protected:
 	  * \param startIndex   Index of the mesh being processed
 	  * \param toProcess    Number of meshs to process
 	  */
-	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep);
+	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv);
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead

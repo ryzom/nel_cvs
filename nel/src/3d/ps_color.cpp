@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * <File description>
  *
- * $Id: ps_color.cpp,v 1.10 2004/02/19 09:49:44 vizerie Exp $
+ * $Id: ps_color.cpp,v 1.11 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,16 +42,130 @@ CRGBA CPSColorGradient::_DefaultGradient[] =
 
 
 
-CPSColorGradient::CPSColorGradient()  : CPSValueGradient<CRGBA>(1.f)
+CPSColorGradient::CPSColorGradient()  : CPSAttribMakerRGBA<CPSValueGradientFuncRGBA>(1.f)
 {	
 }
 
 
 ///======================================================================================
 CPSColorGradient::CPSColorGradient(const CRGBA *colorTab, uint32 nbValues, uint32 nbStages, float nbCycles) 
-				: CPSValueGradient<CRGBA>(nbCycles)
+				: CPSAttribMakerRGBA<CPSValueGradientFuncRGBA>(nbCycles)
 {
 	_F.setValues(colorTab, nbValues, nbStages) ;
+}
+
+///======================================================================================
+void CPSColorMemory::setColorType(CVertexBuffer::TVertexColorType colorType)
+{
+	if (colorType != _ColorType)
+	{
+		if (_T.getSize())
+		{		
+			convertVBColor(&_T[0], _T.getSize(), CVertexBuffer::TBGRA);
+		}
+		_DefaultValue = convertVBColor(_DefaultValue, CVertexBuffer::TBGRA);		
+		_ColorType = colorType;
+	}
+	if (_Scheme) _Scheme->setColorType(colorType);
+}
+
+///======================================================================================
+void CPSColorMemory::setDefaultValue(NLMISC::CRGBA defaultValue)
+{
+	CPSAttribMakerMemory<NLMISC::CRGBA>::setDefaultValue(convertVBColor(defaultValue, _ColorType));
+}
+
+///======================================================================================
+NLMISC::CRGBA CPSColorMemory::getDefaultValue(void) const
+{
+	return convertVBColor(CPSAttribMakerMemory<NLMISC::CRGBA>::getDefaultValue(), _ColorType);
+}
+
+///======================================================================================
+void CPSColorMemory::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	setColorType(CVertexBuffer::TRGBA);
+	CPSAttribMakerMemory<NLMISC::CRGBA>::serial(f);
+}
+
+///======================================================================================
+void CPSColorBinOp::setColorType(CVertexBuffer::TVertexColorType colorType)
+{
+	if (_Arg[0]) _Arg[0]->setColorType(colorType);
+	if (_Arg[1]) _Arg[1]->setColorType(colorType);	
+}
+
+///======================================================================================
+void CPSColorBinOp::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	setColorType(CVertexBuffer::TRGBA);
+	CPSAttribMakerBinOp<NLMISC::CRGBA>::serial(f);
+}
+
+///======================================================================================
+void CPSValueBlendFuncRGBA::setColorType(CVertexBuffer::TVertexColorType colorType)
+{
+	if (colorType == _ColorType) return;
+	_StartValue = convertVBColor(_StartValue, CVertexBuffer::TBGRA);
+	_EndValue = convertVBColor(_EndValue, CVertexBuffer::TBGRA);
+	_ColorType = colorType;
+}
+
+///======================================================================================
+void CPSValueBlendSampleFuncRGBA::setColorType(CVertexBuffer::TVertexColorType colorType)
+{
+	if (colorType == _ColorType) return;
+	convertVBColor(_Values, RGBA_BLENDER_NUM_VALUES + 1, CVertexBuffer::TBGRA);
+	_ColorType = colorType;
+}
+
+///======================================================================================
+void CPSValueGradientFuncRGBA::setColorType(CVertexBuffer::TVertexColorType colorType)
+{
+	if (colorType == _ColorType) return;
+	convertVBColor(&_Tab.front(), _Tab.size(), CVertexBuffer::TBGRA);
+	_ColorType = colorType;
+}
+
+void convertVBColor(NLMISC::CRGBA *array,uint numColor,CVertexBuffer::TVertexColorType format)
+{
+	if (!array || format == CVertexBuffer::TRGBA) return;
+	for(uint k = 0; k < numColor; ++k)
+	{
+		std::swap(array[k].B, array[k].R);
+	}
+}
+
+
+
+///======================================================================================
+void CPSValueGradientFuncRGBA::getValues(NLMISC::CRGBA *tab) const
+{
+	if (!tab) return;
+	CPSValueGradientFunc<NLMISC::CRGBA>::getValues(tab);
+	convertVBColor(tab, getNumValues(), _ColorType);
+}
+
+///======================================================================================
+NLMISC::CRGBA CPSValueGradientFuncRGBA::getValue(uint index)	const
+{
+	return convertVBColor(CPSValueGradientFunc<NLMISC::CRGBA>::getValue(index), _ColorType);
+}
+
+///======================================================================================
+void CPSValueGradientFuncRGBA::setValues(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages)
+{
+	std::vector<NLMISC::CRGBA> convert(valueTab, valueTab + numValues);
+	convertVBColor(&convert[0], numValues, _ColorType);
+	CPSValueGradientFunc<NLMISC::CRGBA>::setValues(&convert[0], numValues, nbStages);
+}
+
+///======================================================================================
+void CPSValueGradientFuncRGBA::setValuesUnpacked(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbStages)
+{
+	std::vector<NLMISC::CRGBA> convert(valueTab, valueTab + (numValues * nbStages + 1)) ;
+	convertVBColor(&convert[0], (numValues * nbStages + 1), _ColorType);
+	CPSValueGradientFunc<NLMISC::CRGBA>::setValuesUnpacked(&convert[0], numValues, nbStages);
 }
 
 ///======================================================================================

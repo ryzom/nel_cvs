@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.9 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_face_look_at.cpp,v 1.10 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,14 @@ public:
 		nlassert(la._Owner);			
 		IDriver *driver = la.getDriver();
 
-		la.updateMatBeforeRendering(driver);
+		if (la._ColorScheme)
+		{		
+			la._ColorScheme->setColorType(driver->getVertexColorFormat());
+		}
+
+		CVertexBuffer &vb = la.getNeededVB();		
+		la.updateMatBeforeRendering(driver, vb);
 		
-		CVertexBuffer &vb = la.getNeededVB();
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		la.setupDriverModelMatrix();
 		driver->activeVertexBuffer(vb);	
@@ -137,7 +142,7 @@ public:
 				speedIt = speedIt + toProcess;
 				const CLookAtAlign *currAlign = laAlign;
 
-				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep, *driver);		
 				T endIt = it + toProcess;				
 				if (!la._IndependantSizes)
 				{						
@@ -261,7 +266,7 @@ public:
 				speedIt = speedIt + toProcess;
 				const CLookAtAlign *currAlign = laAlign;
 				currentAngle = (float *) la._Angle2DScheme->make(la._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep);
-				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep, *driver);
 				T endIt = it + toProcess;
 				CVector v1, v2;
 				NLMISC::OptFastFloorBegin();
@@ -389,9 +394,14 @@ public:
 		nlassert(la._Owner);			
 		IDriver *driver = la.getDriver();
 
-		la.updateMatBeforeRendering(driver);
+		if (la._ColorScheme)
+		{		
+			la._ColorScheme->setColorType(driver->getVertexColorFormat());
+		}
+
+		CVertexBuffer &vb = la.getNeededVB();		
+		la.updateMatBeforeRendering(driver, vb);
 		
-		CVertexBuffer &vb = la.getNeededVB();
 		la._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		la.setupDriverModelMatrix();
 		driver->activeVertexBuffer(vb);	
@@ -431,7 +441,7 @@ public:
 					currentSize = &la._ParticleSize;
 				}
 				
-				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep, *driver);	
 				T endIt = it + toProcess;
 				if (la._MotionBlurCoeff == 0.f)
 				{
@@ -730,7 +740,7 @@ public:
 					currentSize = &la._ParticleSize;
 				}
 				currentAngle = (float *) la._Angle2DScheme->make(la._Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true, srcStep);
-				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
+				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep, *driver);	
 				T endIt = it + toProcess;
 				CVector v1, v2;
 				NLMISC::OptFastFloorBegin();

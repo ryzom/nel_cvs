@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.14 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.15 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -433,7 +433,7 @@ class CPSTexturedParticle
 		sint32 getTextureIndex(void) const { return _TextureIndex; } 		
 
 		/// set the texture group being used. It toggles animation on
-		void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
+		virtual void setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
 
 		/// get the texture group used. it discard any previous single texture. (if null, there's no texture animation)
 		CTextureGrouped *getTextureGroup(void) {  return _TexGroup; }
@@ -445,7 +445,7 @@ class CPSTexturedParticle
 		 *	This discard any previous scheme
 		 * \see setTextureScheme()
 		 */
-		void setTexture(CSmartPtr<ITexture> tex);
+		virtual void setTexture(CSmartPtr<ITexture> tex);
 
 		/// get the constant texture
 		ITexture *getTexture(void) { return _Tex; }
@@ -586,8 +586,9 @@ public:
 	/** setup a material from this object and a primary texture
 	  * drv is used to check the device caps.
 	  * Must be called before display when multitextureing is used
+	  * vb is needed because uv routing may be changed because of embm
 	  */
-	void setupMaterial(ITexture *primary, IDriver *drv, CMaterial &mat);
+	void setupMaterial(ITexture *primary, IDriver *drv, CMaterial &mat, CVertexBuffer &vb);
 
 	/** this act as if the system had the most basic caps supported (no EMBM for example...)
 	  * Should be used only in edition mode for test
@@ -613,7 +614,7 @@ public:
 	
 
 protected:	
-	void						setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat);	
+	void						setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat, IDriver &drv);	
 	TOperator					_MainOp, _AlternateOp;
 	NLMISC::CSmartPtr<ITexture> _Texture2;
 	NLMISC::CSmartPtr<ITexture> _AlternateTexture2;	

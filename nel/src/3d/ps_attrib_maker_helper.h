@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.16 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.17 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NL3D
  *  \param F : a class that override the () operator, the input is chosen by the user (age, speed ...) 
  *             , and the output is the same type as T.
  *             Inline is preferable, as it will be called a lot 
- *             It can stores info that indicate how to build it
+ *             It can stores info that indicate how to build it 
  */
 
 template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
@@ -125,8 +125,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		/** construct the attrib maker specifying the number of cycles to do.
 		 *  \see setNbCycles()
 		 */	 
-		CPSAttribMakerT(float nbCycles) : CPSAttribMaker<T>(nbCycles)
-										  , _Clamp(false)
+		CPSAttribMakerT(float nbCycles) :  CPSAttribMaker<T>(nbCycles), _Clamp(false)
 		{}
 
 		/// dtor
@@ -1350,10 +1349,10 @@ public:
 	  *        
 	  */
 
-    void setDefaultValue(T defaultValue) { _DefaultValue = defaultValue;}
+    virtual void setDefaultValue(T defaultValue) { _DefaultValue = defaultValue;}
 
 	/// get the default value :
-	T getDefaultValue(void) const { return _DefaultValue; }
+	virtual T getDefaultValue(void) const { return _DefaultValue; }
 
 
 

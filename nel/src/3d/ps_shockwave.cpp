@@ -1,7 +1,7 @@
 /** \file ps_shockwave.cpp
  * Shockwaves particles.
  *
- * $Id: ps_shockwave.cpp,v 1.9 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: ps_shockwave.cpp,v 1.10 2004/04/27 11:57:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,10 @@ public:
 
 		const uint32 vSize = vb->getVertexSize();
 		IDriver *driver = s.getDriver();
+		if (s._ColorScheme)
+		{		
+			s._ColorScheme->setColorType(driver->getVertexColorFormat());
+		}
 		s._Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 		s.setupDriverModelMatrix();
 		const uint numShockWaveToDealWith = std::min(ShockWaveBufSize, s.getNumShockWavesInVB());
@@ -106,6 +110,7 @@ public:
 
 		CVector radVect, innerVect;
 		float radiusRatio;
+
 
 		do
 		{
@@ -144,7 +149,7 @@ public:
 				}
 				
 
-				s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep, *vb);
+				s.updateVbColNUVForRender(size - leftToDo, toProcess, srcStep, *vb, *driver);
 				do
 				{			
 					currAngle = *ptCurrAngle;
@@ -385,16 +390,15 @@ void CPSShockWave::init(void)
 }
 
 ///=================================================================================
-void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb)
+void CPSShockWave::updateVbColNUVForRender(uint32 startIndex, uint32 size, uint32 srcStep, CVertexBuffer &vb, IDriver &drv)
 {
 	nlassert(_Owner);
 	CVertexBufferReadWrite vba;
 	vb.lock (vba);
 	if (!size) return;
 	if (_ColorScheme)
-	{
-		// compute the colors, each color is replicated n times...
-		// todo hulud d3d vertex color RGBA / BGRA
+	{				
+		// compute the colors, each color is replicated n times...	
 		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), vb.getVertexSize(), size, (_NbSeg + 1) << 1, srcStep);
 	}
 
@@ -522,9 +526,9 @@ void CPSShockWave::getVBnPB(CVertexBuffer *&retVb, CIndexBuffer *&retPb)
 			for (uint32 l = 0; l < _NbSeg; ++l)
 			{	
 				const uint32 index = ((k * (_NbSeg + 1)) + l) << 1;						
-				ibaWrite.setTri(finalIndex, index , index + 2, index + 3);
+				ibaWrite.setTri(finalIndex, index + 1 , index + 3, index + 2);
 				finalIndex+=3;
-				ibaWrite.setTri(finalIndex, index + 2, index + 3, index + 1);
+				ibaWrite.setTri(finalIndex, index + 1, index + 2, index + 0);
 				finalIndex+=3;
 				vba.setTexCoord(index, 0, CUV((float) l, 0));
 				vba.setTexCoord(index + 1, 0, CUV((float) l, 1));			

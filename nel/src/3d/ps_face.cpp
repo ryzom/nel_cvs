@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.8 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_face.cpp,v 1.9 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,26 +58,27 @@ public:
 		nlassert(f._Owner);		
 		IDriver *driver = f.getDriver();
 
-		f.updateMatBeforeRendering(driver);
+		CVertexBuffer &vb = f.getNeededVB();		
+		f.updateMatBeforeRendering(driver, vb);
 
-		CVertexBuffer &vb = f.getNeededVB();
 		uint8 *currVertex; 	
 
 		// number of left faces to draw, number of faces to process at once
 		uint32 leftFaces = size, toProcess;
 		f._Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
 		f.setupDriverModelMatrix();
-		driver->activeVertexBuffer(vb);
-		if (f.isMultiTextureEnabled())
-		{
-			f.setupMaterial(f._Tex, driver, f._Mat);
-		}
+		driver->activeVertexBuffer(vb);		
 		float sizeBuf[CPSQuad::quadBufSize];
 		float *ptSize;		
 		T endPosIt;
 
 		// if constant size is used, the pointer points always the same float 
 		uint32 ptSizeIncrement = f._SizeScheme ? 1 : 0;
+
+		if (f._ColorScheme)
+		{		
+			f._ColorScheme->setColorType(driver->getVertexColorFormat());
+		}
 
 		if (f._PrecompBasis.size()) // do we use precomputed basis ?
 		{					
@@ -96,7 +97,7 @@ public:
 					{	
 						ptSize = &f._ParticleSize;			
 					}					
-					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);			
+					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep, *driver);
 					const uint32 stride = vb.getVertexSize();
 					endPosIt = posIt + toProcess;							
 					do		
@@ -168,7 +169,7 @@ public:
 					{
 						currBasis = &f._PlaneBasis;
 					}						
-					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep);						
+					f.updateVbColNUVForRender(vb, size - leftFaces, toProcess, srcStep, *driver);		
 					endPosIt = posIt + toProcess;					
 					do		
 					{			

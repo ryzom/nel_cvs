@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.15 2004/03/08 11:21:01 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.16 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/object_arena_allocator.h"
 #include "3d/ps_attrib.h"
 #include "3d/ps_located.h"
+#include "3d/vertex_buffer.h"
 #include "nel/misc/stream.h"
 
 
@@ -296,6 +297,10 @@ public:
 		virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false) ; }
 	//@}
 
+	// misc
+
+	// used by colors only : set the internal color format. useful to write in vertex buffer (format differs between D3D & OpenGL)
+	virtual void setColorType(CVertexBuffer::TVertexColorType type) {}
 protected:	
 
 	float _NbCycles ;

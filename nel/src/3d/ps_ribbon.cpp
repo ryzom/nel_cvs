@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.14 2004/04/09 14:25:45 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.15 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -530,6 +530,10 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 		uint toProcess;
 		uint ribbonIndex = 0; // index of the first ribbon in the batch being processed	
 		uint32 fpRibbonIndex = 0; // fixed point index in source
+		if (_ColorScheme)
+		{
+			_ColorScheme->setColorType(drv->getVertexColorFormat());
+		}
 		do
 		{
 			{

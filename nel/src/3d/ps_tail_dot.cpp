@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.11 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: ps_tail_dot.cpp,v 1.12 2004/04/27 11:56:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,6 +295,10 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint toProcess;
 	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed	
 	uint32 fpRibbonIndex = 0; // fixed point index in source
+	if (_ColorScheme)
+	{
+		_ColorScheme->setColorType(drv->getVertexColorFormat());
+	}			
 	do
 	{
 		{

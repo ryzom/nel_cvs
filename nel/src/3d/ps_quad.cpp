@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.11 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_quad.cpp,v 1.12 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -310,6 +310,10 @@ void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		CPSMultiTexturedParticle::serialMultiTex(f);
 	}
+	if (f.isReading())
+	{
+		updateTexWrapMode();
+	}
 }
 
 //==============================================================
@@ -385,7 +389,7 @@ static void FillQuadCoordsLocalTime(uint8 *dest, uint stride, const NLMISC::CVec
 }
 
 //==============================================================
-void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 size, uint32 srcStep)
+void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 size, uint32 srcStep, IDriver &drv)
 {
 	nlassert(_Owner);
 
@@ -397,7 +401,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 	if (_ColorScheme)
 	{
 		// compute the colors, each color is replicated 4 times
-		// todo hulud d3d vertex color RGBA / BGRA
+		// todo hulud d3d vertex color RGBA / BGRA		
 		_ColorScheme->make4(_Owner, startIndex, vba.getColorPointer(), vb.getVertexSize(), size, srcStep);
 	}
 
@@ -523,13 +527,15 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 
 
 ///==================================================================================
-void CPSQuad::updateMatBeforeRendering(IDriver *drv)
+void CPSQuad::updateMatBeforeRendering(IDriver *drv, CVertexBuffer &vb)
 {
 	nlassert(_Owner && _Owner->getOwner());
 	CParticleSystem &ps = *(_Owner->getOwner());
+	vb.setUVRouting(0, 0);
+	vb.setUVRouting(1, 1); // default uv routing
 	if (isMultiTextureEnabled())
 	{			
-		setupMaterial(_Tex, drv, _Mat);			
+		setupMaterial(_Tex, drv, _Mat, vb);			
 		if (ps.getForceGlobalColorLightingFlag() || usesGlobalColorLighting())
 		{				
 			_Mat.setColor(ps.getGlobalColorLighted());
@@ -576,7 +582,7 @@ void CPSQuad::updateMatBeforeRendering(IDriver *drv)
 				col = _Color;
 			}			
 			_Mat.setColor(col);			
-		}
+		}		
 	}
 }
 
@@ -592,6 +598,63 @@ void CPSQuad::setZBias(float value)
 {
 	CPSMaterial::setZBias(value);
 }
+
+//*****************************************************************************************************
+void CPSQuad::updateTexWrapMode()
+{	
+	if (isMultiTextureEnabled())
+	{
+		if (_Tex)
+		{
+			_Tex->setWrapS(_TexScroll[0].x == 0 ? ITexture::Clamp : ITexture::Repeat);
+			_Tex->setWrapT(_TexScroll[0].y == 0 ? ITexture::Clamp : ITexture::Repeat);
+		}
+		ITexture *tex2 = isAlternateTextureUsed() ? getTexture2Alternate() : getTexture2();
+		if (tex2)
+		{
+			tex2->setWrapS(_TexScroll[1].x == 0 ? ITexture::Clamp : ITexture::Repeat);
+			tex2->setWrapT(_TexScroll[1].y == 0 ? ITexture::Clamp : ITexture::Repeat);
+		}		
+	}
+	else
+	{		
+		if (_Tex)
+		{
+			_Tex->setWrapS(ITexture::Clamp);
+			_Tex->setWrapT(ITexture::Clamp);
+		}
+		// nb for grouped texture we assume that no mipmapping is used, and that the border is black (or white for modulate material mode)
+	}	
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTexture(CSmartPtr<ITexture> tex)
+{
+	CPSTexturedParticle::setTexture(tex);
+	updateTexWrapMode();
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup)
+{
+	CPSTexturedParticle::setTextureGroup(texGroup);
+	updateTexWrapMode();
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTexture2(ITexture *tex)
+{
+	CPSMultiTexturedParticle::setTexture2(tex);
+	updateTexWrapMode();
+}
+
+//*****************************************************************************************************
+void CPSQuad::setTexture2Alternate(ITexture *tex)
+{
+	CPSMultiTexturedParticle::setTexture2Alternate(tex);
+	updateTexWrapMode();
+}
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_dot.cpp
  * Dot particles
  *
- * $Id: ps_dot.cpp,v 1.6 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_dot.cpp,v 1.7 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ CVertexBuffer CPSDot::_DotVbColor;
 template <class T>
 inline void DrawDot(T it,
 					CVertexBuffer &vb,
-					const CPSAttribMaker<NLMISC::CRGBA> *colorScheme,
+					CPSAttribMaker<NLMISC::CRGBA> *colorScheme,
 					uint leftToDo,
 					CPSLocated *owner,
 					CMaterial &mat,
@@ -65,14 +65,18 @@ inline void DrawDot(T it,
 	nlassert(leftToDo != 0);
 	const uint total = leftToDo;
 	T itEnd;
+	if (colorScheme)
+	{	
+		// compute the colors
+		colorScheme->setColorType(driver->getVertexColorFormat());
+	}
 	do
 	{		
 		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;
 
 		if (colorScheme)
-		{
-			// todo hulud d3d vertex color RGBA / BGRA
-			// compute the colors
+		{			
+			// compute the colors			
 			colorScheme->make(owner,
 							  total - leftToDo,
 							  vba.getColorPointer(),

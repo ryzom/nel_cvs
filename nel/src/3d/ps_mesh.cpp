@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.35 2004/03/22 18:21:05 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.36 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -522,8 +522,7 @@ public:
 	{
 		CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) m._Meshes[0]);	
 		const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
-		CVertexBufferRead vba;
-		modelVb.lock (vba);
+		
 
 		// size for model vertices
 		const uint inVSize	  = modelVb.getVertexSize(); // vertex size				
@@ -566,7 +565,15 @@ public:
 			inNormalOff  =  modelVb.getNormalOff();
 			outNormalOff =  outVb.getNormalOff();	
 		}
-		
+		if (m._ColorScheme)
+		{
+			CVertexBuffer::TVertexColorType vtc = driver->getVertexColorFormat();
+			m._ColorScheme->setColorType(vtc);
+			if (modelVb.getVertexFormat() & CVertexBuffer::PrimaryColorFlag)
+			{
+				const_cast<CVertexBuffer &>(modelVb).setVertexColorFormat(vtc);
+			}
+		}		
 		do
 		{
 			{
@@ -787,7 +794,7 @@ public:
 				// compute colors if needed
 				if (m._ColorScheme)
 				{
-					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver);
 				}
 			}
 			
@@ -811,7 +818,7 @@ public:
 	{
 		// get the vb from the original mesh
 		CMesh				  &mesh	= *m._Meshes[0];	
-		const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
+		const CVertexBuffer	  &modelVb = mesh.getVertexBuffer();
 
 		/// precompute rotation in a VB from the src mesh
 		CVertexBuffer &prerotVb  = m.makePrerotatedVb(modelVb, ellapsedTime);	
@@ -864,6 +871,16 @@ public:
 		{
 			normalOff  =  outVb.getNormalOff();
 			pNormalOff =  prerotVb.getNormalOff();			
+		}
+
+		if (m._ColorScheme)
+		{
+			CVertexBuffer::TVertexColorType vtc = driver->getVertexColorFormat();
+			m._ColorScheme->setColorType(vtc);
+			if (modelVb.getVertexFormat() & CVertexBuffer::PrimaryColorFlag)
+			{
+				const_cast<CVertexBuffer &>(modelVb).setVertexColorFormat(vtc);
+			}
 		}
 					
 		do
@@ -937,7 +954,7 @@ public:
 				// compute colors if needed
 				if (m._ColorScheme)
 				{
-					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep);
+					m.computeColors(outVb, modelVb, size - leftToDo, toProcess, srcStep, *driver);
 				}
 			}
 
@@ -1849,7 +1866,7 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 
 
 //====================================================================================
-void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep)
+void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep, IDriver &drv)
 {	
 	nlassert(_ColorScheme);
 	// there are 2 case : 1 - the source mesh has colors, which are modulated with the current color
@@ -1858,17 +1875,14 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 	CVertexBufferReadWrite vba;
 	outVB.lock (vba);
 	CVertexBufferRead vbaIn;
-	inVB.lock (vbaIn);
-
+	inVB.lock (vbaIn);	
 	if (inVB.getVertexFormat() & CVertexBuffer::PrimaryColorFlag) // case 1
 	{
-		// TODO: optimisation : avoid to duplicate colors...
-		// todo hulud d3d vertex color RGBA / BGRA
+		// TODO: optimisation : avoid to duplicate colors...		
 		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
 		// modulate from the source mesh
-		// todo hulud d3d vertex color RGBA / BGRA
-		uint8 *vDest  = (uint8 *) vba.getColorPointer();
-		// todo hulud d3d vertex color RGBA / BGRA
+		// todo hulud d3d vertex color RGBA / BGRA		
+		uint8 *vDest  = (uint8 *) vba.getColorPointer();		
 		uint8 *vSrc   = (uint8 *) vbaIn.getColorPointer();
 		const uint vSize = outVB.getVertexSize();
 		const uint numVerts = inVB.getNumVertices();
@@ -1880,8 +1894,7 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 		}
 	}
 	else // case 2
-	{
-		// todo hulud d3d vertex color RGBA / BGRA
+	{		
 		_ColorScheme->makeN(_Owner, startIndex, vba.getColorPointer(), outVB.getVertexSize(), toProcess, inVB.getNumVertices(), srcStep);
 	}
 }

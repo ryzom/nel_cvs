@@ -1,7 +1,7 @@
 /** \file ps_fan_light.cpp
  * FanLight particles
  *
- * $Id: ps_fan_light.cpp,v 1.10 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: ps_fan_light.cpp,v 1.11 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,11 @@ public:
 				
 
 		uint leftToDo = size;
+		if (f._ColorScheme)
+		{
+			// we change the color at each fan light center					
+			f._ColorScheme->setColorType(driver->getVertexColorFormat());
+		}
 		do
 		{				
 			uint toProcess = std::min(leftToDo, maxNumFanLightToDealWith);
@@ -121,8 +126,7 @@ public:
 				// compute individual colors if needed
 				if (f._ColorScheme)
 				{
-					// we change the color at each fan light center
-					// todo hulud d3d vertex color RGBA / BGRA
+					// we change the color at each fan light center					
 					f._ColorScheme->make(f._Owner, size - leftToDo, vba.getColorPointer(), vb->getVertexSize() * (f._NbFans + 2), toProcess, false, srcStep);
 				}
 				if (f._SizeScheme)

@@ -1,7 +1,7 @@
 /** \file ps_quad.h
  * Base quads particles.
  *
- * $Id: ps_quad.h,v 1.6 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_quad.h,v 1.7 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,8 +90,10 @@ protected:
 	/// update the material and the vb so that they match the texture scheme.
 	virtual void updateMatAndVbForTexture(void);
 
-	/// update mat before rendering
-	void updateMatBeforeRendering(IDriver *drv);
+	/** update material before rendering
+	  * This may also change the vb uv routing (if embm is used)
+	  */
+	void updateMatBeforeRendering(IDriver *drv, CVertexBuffer &vb);
 
 	/// this is inlined to save cost of call by derived class
 	void newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
@@ -117,7 +119,7 @@ protected:
 	/** calculate current color and texture coordinate before any rendering
 	 *  size can't be higher that quadBufSize ...
 	 */
-	void updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 numQuad, uint32 srcStep);
+	void updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 numQuad, uint32 srcStep, IDriver &drv);
 
 	/// DERIVERS MUST CALL this		 
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
@@ -159,6 +161,15 @@ protected:
 
 	/// used to get a pointer on the right vb dependant on its type (cf. values of VBType)
 	static CVertexBuffer    * const CPSQuad::_VbTab[];
+
+	// update wrap mode for all textures
+	void updateTexWrapMode();
+
+	// from CPSTexturedParticle / CPSMultiTexturedParticle  : gives us the opportunity to update wrap mode for quad particles
+	virtual void		 setTexture(CSmartPtr<ITexture> tex);
+	virtual void		 setTextureGroup(NLMISC::CSmartPtr<CTextureGrouped> texGroup);
+	virtual void		 setTexture2(ITexture *tex);	
+	virtual void		 setTexture2Alternate(ITexture *tex);		
 
 public:
 	/// The number of quad to batche for each driver call.

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.10 2004/02/20 16:28:47 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.11 2004/04/27 11:57:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -730,24 +730,62 @@ void	CPSMultiTexturedParticle::serialMultiTex(NLMISC::IStream &f) throw(NLMISC::
 }
 
 //=======================================
-void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver, CMaterial &mat)
+void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver, CMaterial &mat, CVertexBuffer &vb)
 {
 	/// if bump is used, the matrix must be setupped each time (not a material field)
-	if (isMultiTextureEnabled() && _MainOp  == EnvBumpMap && driver->isTextureAddrModeSupported(CMaterial::OffsetTexture))
+	if (isMultiTextureEnabled() && _MainOp  == EnvBumpMap)
 	{
-		CTextureBump *tb = dynamic_cast<CTextureBump *>((ITexture *) _Texture2);
-		if (tb != NULL)
-		{					
-			float normFactor = tb->getNormalizationFactor();
-			if (normFactor == 0.f) // have we computed the normalization factor ?
-			{
-				/// todo : caching of this value
-				tb->generate();
-				normFactor = tb->getNormalizationFactor();
-				tb->release();
+		if (driver->isTextureAddrModeSupported(CMaterial::OffsetTexture))
+		{		
+			CTextureBump *tb = dynamic_cast<CTextureBump *>((ITexture *) _Texture2);
+			if (tb != NULL)
+			{					
+				float normFactor = tb->getNormalizationFactor();
+				if (normFactor == 0.f) // have we computed the normalization factor ?
+				{
+					/// todo : caching of this value
+					tb->generate();
+					normFactor = tb->getNormalizationFactor();
+					tb->release();
+				}
+				const float bMat[] = { _BumpFactor * normFactor, 0.f, 0.f, _BumpFactor * normFactor};	
+				driver->setMatrix2DForTextureOffsetAddrMode(1, bMat);
 			}
-			const float bMat[] = { _BumpFactor * normFactor, 0.f, 0.f, _BumpFactor * normFactor};	
-			driver->setMatrix2DForTextureOffsetAddrMode(1, bMat);
+			vb.setUVRouting(0, 1);
+			vb.setUVRouting(1, 0);
+		}
+		else if (driver->supportEMBM())
+		{
+			uint embmTex;
+			const uint numTexStages = driver->getNbTextureStages();
+			for(uint k = 0; k < numTexStages; ++k)
+			{
+				vb.setUVRouting(k, 0);
+				if (driver->isEMBMSupportedAtStage(k))
+				{
+					vb.setUVRouting(k, 1);
+					if (k != (numTexStages - 1))
+					{
+						vb.setUVRouting(k + 1, 0);
+					}
+					embmTex = k;
+					break;
+				}
+			}
+			CTextureBump *tb = dynamic_cast<CTextureBump *>((ITexture *) _Texture2);
+			if (tb != NULL)
+			{					
+				float normFactor = tb->getNormalizationFactor();
+				if (normFactor == 0.f) // have we computed the normalization factor ?
+				{
+					/// todo : caching of this value
+					tb->generate();
+					normFactor = tb->getNormalizationFactor();
+					tb->release();
+				}
+				const float bMat[] = { _BumpFactor * normFactor, 0.f, 0.f, _BumpFactor * normFactor};	
+				driver->setEMBMMatrix(embmTex, bMat);
+			}						
 		}		
 	}
 
@@ -762,13 +800,13 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 	{				
 		if (_MainOp  != EnvBumpMap)
 		{			
-			setupMultiTexEnv(_MainOp, primary, _Texture2, mat);
+			setupMultiTexEnv(_MainOp, primary, _Texture2, mat, *driver);
 			_MultiTexState &= ~(uint8) EnvBumpMapUsed;
 			_MultiTexState &= ~(uint8) AlternateTextureUsed;
 		}
 		else
 		{
-			if (!_ForceBasicCaps && driver->isTextureAddrModeSupported(CMaterial::OffsetTexture)) // envbumpmap supported ?
+			if (!_ForceBasicCaps && (driver->isTextureAddrModeSupported(CMaterial::OffsetTexture) || driver->supportEMBM())) // envbumpmap supported ?
 			{
 				CTextureBump *tb = dynamic_cast<CTextureBump *>((ITexture *) _Texture2);
 				if (tb != NULL)
@@ -781,7 +819,7 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 						normFactor = tb->getNormalizationFactor();
 						tb->release();
 					}					
-					setupMultiTexEnv(_MainOp, primary, _Texture2, mat);	
+					setupMultiTexEnv(_MainOp, primary, _Texture2, mat, *driver);	
 				}
 				_MultiTexState &= ~(uint8) AlternateTextureUsed;
 				_MultiTexState |= (uint8) EnvBumpMapUsed;				
@@ -791,25 +829,23 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 				if (isAlternateTexEnabled())
 				{
 					_MultiTexState |= (uint8) AlternateTextureUsed;
-					setupMultiTexEnv(_AlternateOp, primary, _AlternateTexture2, mat);
+					setupMultiTexEnv(_AlternateOp, primary, _AlternateTexture2, mat, *driver);
 					_MultiTexState &= ~(uint8) EnvBumpMapUsed;
 				}
 				else // display the texture as it
 				{
-					setupMultiTexEnv(Decal, primary, NULL, mat);
+					setupMultiTexEnv(Decal, primary, NULL, mat, *driver);
 					_MultiTexState &= ~(uint8) AlternateTextureUsed;
 					_MultiTexState &= ~(uint8) EnvBumpMapUsed;
 				}
 			}
 		}
-	}
-	
-	(areBasicCapsForced());
+	}		
 	unTouch();
 }
 
 //=======================================
-void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat)
+void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, ITexture *tex2, CMaterial &mat, IDriver &drv)
 {
 	switch (op)
 	{
@@ -827,15 +863,51 @@ void	CPSMultiTexturedParticle::setupMultiTexEnv(TOperator op, ITexture *tex1, IT
 			mat.texEnvOpRGB(1, CMaterial::Modulate);
 			mat.enableTexAddrMode(false);
 			break;
-		case EnvBumpMap:
-			mat.setTexture(0, tex2);
-			mat.setTexture(1, tex1);
-			mat.texEnvOpRGB(0, CMaterial::Replace);
-			mat.texEnvOpRGB(1, CMaterial::Modulate);
-			mat.enableTexAddrMode(true);
-			mat.setTexAddressingMode(0, CMaterial::FetchTexture);		
-			mat.setTexAddressingMode(1, CMaterial::OffsetTexture);
-			break;
+		case EnvBumpMap:			
+			if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture))
+			{			
+				mat.setTexture(0, tex2);
+				mat.setTexture(1, tex1);
+				mat.texEnvOpRGB(0, CMaterial::Replace);
+				mat.texEnvOpRGB(1, CMaterial::Modulate);
+				mat.enableTexAddrMode(true);			
+				mat.setTexAddressingMode(0, CMaterial::FetchTexture);		
+				mat.setTexAddressingMode(1, CMaterial::OffsetTexture);
+			}
+			else if (drv.supportEMBM())
+			{
+				const uint numTexStages = drv.getNbTextureStages();
+				// if embm unit is at last stage, it operates on texture at previous stage
+				// otherwise it operates on texture at next stage
+				for(uint k = 0; k < numTexStages; ++k)
+				{					
+					if (drv.isEMBMSupportedAtStage(k))
+					{
+						if (k == (numTexStages - 1))
+						{
+							mat.setTexture(k, tex2);
+							mat.texEnvOpRGB(k, CMaterial::EMBM);
+							mat.setTexture(0, tex1);
+							mat.texEnvOpRGB(0, CMaterial::Modulate);
+						}
+						else
+						{
+							// stage before the bump map must not be empty so fill them
+							for(uint l = 0; l < k; ++l)
+							{
+								mat.setTexture(l, tex1);
+								mat.texEnvOpRGB(l, CMaterial::Modulate);
+							}
+							mat.setTexture(k, tex2);
+							mat.texEnvOpRGB(k, CMaterial::EMBM);
+							mat.setTexture(k + 1, tex1);
+							mat.texEnvOpRGB(k + 1, CMaterial::Modulate);
+						}
+						break;
+					}					
+				}				
+			}
+		break;
 		case Decal:
 			mat.setTexture(0, tex1);
 			mat.texEnvOpRGB(0, CMaterial::Replace);
@@ -969,7 +1041,7 @@ void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> 
 {	
 	if (_MainOp  == EnvBumpMap)
 	{
-		if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture))
+		if (drv.isTextureAddrModeSupported(CMaterial::OffsetTexture) || drv.supportEMBM())
 		{
 			if (_Texture2) dest.push_back(_Texture2);
 		}
@@ -985,6 +1057,27 @@ void CPSMultiTexturedParticle::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> 
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

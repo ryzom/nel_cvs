@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.33 2001/09/14 14:54:48 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.34 2001/09/14 15:07:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -635,7 +635,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 // integrate speed of particles. Makes eventually use of SSE instructions when present
 static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ellapsedTime)
-{
+{	
 	#if 0 // this works, but is not enabled for now..
 		#ifdef NL_OS_WINDOWS
 
@@ -750,8 +750,10 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
 	if (!_Size) return;	
 
+
 	if (pass == PSMotion)
 	{		
+
 		
 		// check wether we must perform LOD degradation
 		if (_LODDegradation)
@@ -765,7 +767,6 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 				{
 					// choose a random element to start at, and a random step
 					// this will avoid a pulse effect when the system is far away
-
 					
 					uint pos = maxToHave ? rand() % maxToHave : 0;
 					uint step  = maxToHave ? rand() % maxToHave : 0;
@@ -781,6 +782,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			}
 		}
 
+
 		// check if we must skip frames
 		if (!_NbFramesToSkip || !( (uint32) _Owner->getDate() % (_NbFramesToSkip + 1)))
 		{
@@ -788,13 +790,12 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			// update the located creation requests that may have been posted
 			updateNewElementRequestStack();
 
-		
 
 			// there are 2 integration steps : with and without collisions
 
 			if (!_CollisionInfo) // no collisionner are used
-			{	
-				if (_Size != 0)
+			{
+				if (_Size != 0) // avoid referencing _Pos[0] if there's no size, causes STL vectors to assert...
 					IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime);
 			}
 			else

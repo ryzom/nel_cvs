@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.77 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh.cpp,v 1.78 2003/03/31 10:27:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1070,9 +1070,13 @@ void	CMeshGeom::compileRunTime()
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
 	bool	supportMeshBlockRendering= !_Skinned && _MeshMorpher->BlendShapes.size()==0;
-
+	
 	// true only if one matrix block, and at least one rdrPass.
 	supportMeshBlockRendering= supportMeshBlockRendering && _MatrixBlocks.size()==1 && _MatrixBlocks[0].RdrPass.size()>0;
+	if (supportMeshBlockRendering && _MeshVertexProgram) 
+	{
+		supportMeshBlockRendering = supportMeshBlockRendering && _MeshVertexProgram->supportMeshBlockRendering();
+	}
 
 	// TestYoyo
 	//supportMeshBlockRendering= false;
@@ -2356,7 +2360,6 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 	//===============================================
 	CMeshInstance		*mi= (CMeshInstance*)scene.createModel(NL3D::MeshInstanceId);
 	mi->Shape= this;
-
 
 	// instanciate the material part of the Mesh, ie the CMeshBase.
 	CMeshBase::instanciateMeshBase(mi, &scene);

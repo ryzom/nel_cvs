@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.12 2002/02/28 12:59:51 besson Exp $
+ * $Id: scene_user.cpp,v 1.13 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,26 +81,39 @@ CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 	return (CSceneUser::TPolygonBalancingMode)(uint)_Scene.getPolygonBalancingMode();
 }
 
-// ***************************************************************************
 
-void				CSceneUser::setLoadMaxPolygon(uint nFaces)
+// ***************************************************************************
+void			CSceneUser::setLoadMaxPolygon(uint nFaces)
 {
 	_Scene.setLoadMaxPolygon(nFaces);
 }
-
 // ***************************************************************************
-
-uint				CSceneUser::getLoadMaxPolygon() const
+uint			CSceneUser::getLoadMaxPolygon()
 {
 	return _Scene.getLoadMaxPolygon();
 }
-
 // ***************************************************************************
-
-float				CSceneUser::getNbFaceAsked () const
+float			CSceneUser::getNbFaceAsked () const
 {
 	return _Scene.getNbFaceAsked ();
 }
+
+// ***************************************************************************
+void			CSceneUser::setGroupLoadMaxPolygon(const std::string &group, uint nFaces)
+{
+	_Scene.setGroupLoadMaxPolygon(group, nFaces);
+}
+// ***************************************************************************
+uint			CSceneUser::getGroupLoadMaxPolygon(const std::string &group)
+{
+	return _Scene.getGroupLoadMaxPolygon(group);
+}
+// ***************************************************************************
+float			CSceneUser::getGroupNbFaceAsked (const std::string &group) const
+{
+	return _Scene.getGroupNbFaceAsked (group);
+}
+
 
 // ***************************************************************************
 

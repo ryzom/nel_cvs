@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.7 2002/02/06 16:53:24 berenguier Exp $
+ * $Id: u_transform.h,v 1.8 2002/03/29 13:13:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,10 +145,10 @@ public:
 	  * Layer 1 is for water surfaces
 	  * Layer 2 is for object above water
 	  */
-	virtual void  setOrderingLayer(uint layer) = 0;
+	virtual void			setOrderingLayer(uint layer) = 0;
 
 	/// Get the ordering layer
-	virtual uint getOrderingLayer() const = 0;
+	virtual uint			getOrderingLayer() const = 0;
 
 
 	/** Set the LogicInfo for this transfrom, eg to retrieve statc light information, see ILogicInfo.
@@ -158,7 +158,27 @@ public:
 
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
-	virtual bool	getLastClippedState() const = 0;
+	virtual bool			getLastClippedState() const = 0;
+
+
+	/// name Load Balancing Behavior.
+	// @{
+
+	/** Change the load Balancing group of a model. Every models are in a special LoadBalancingGroup.
+	 *	NB: the group is  created if did not exist.
+	 *
+	 *	By default, models lies in the "Default" group, but MRM with skinning and ParticlesSystems which
+	 *	are in "Global" group (for backward compatibility).
+	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
+	 *	their distance to camera)
+	 */
+	virtual void			setLoadBalancingGroup(const std::string &group) =0;
+
+	/** Get the load Balancing group of a model. see setLoadBalancingGroup().
+	 */
+	virtual const std::string	&getLoadBalancingGroup() const =0;
+
+	// @}
 
 };
 

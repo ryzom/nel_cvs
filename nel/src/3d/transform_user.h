@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.9 2002/02/06 16:55:16 berenguier Exp $
+ * $Id: transform_user.h,v 1.10 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,11 @@ public:
 
 	virtual bool	getLastClippedState() const {return _Transform->getLastClippedState();}
 
+	/// name Load Balancing Behavior.
+	// @{
+	virtual void			setLoadBalancingGroup(const std::string &group);
+	virtual const std::string	&getLoadBalancingGroup() const;
+	// @}
 
 public:
 	/// \name Accessor for CSeneUser / Other.

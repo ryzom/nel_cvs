@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.67 2002/03/04 16:26:08 berenguier Exp $
+ * $Id: scene.cpp,v 1.68 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -678,6 +678,14 @@ void	CScene::setLoadMaxPolygon(uint nFaces)
 
 
 // ***************************************************************************
+uint	CScene::getLoadMaxPolygon()
+{
+	nlassert(LoadBalancingTrav);
+	return LoadBalancingTrav->getNbFaceWanted();
+}
+
+
+// ***************************************************************************
 float	CScene::getNbFaceAsked () const
 {
 	nlassert(LoadBalancingTrav);
@@ -686,18 +694,32 @@ float	CScene::getNbFaceAsked () const
 
 
 // ***************************************************************************
-uint	CScene::getLoadMaxPolygon() const
+void	CScene::setGroupLoadMaxPolygon(const std::string &group, uint nFaces)
 {
 	nlassert(LoadBalancingTrav);
-	return LoadBalancingTrav->getNbFaceWanted();
+	nFaces= max(nFaces, (uint)1);
+	LoadBalancingTrav->setGroupNbFaceWanted(group, nFaces);
 }
+// ***************************************************************************
+uint	CScene::getGroupLoadMaxPolygon(const std::string &group)
+{
+	nlassert(LoadBalancingTrav);
+	return LoadBalancingTrav->getGroupNbFaceWanted(group);
+}
+// ***************************************************************************
+float	CScene::getGroupNbFaceAsked (const std::string &group) const
+{
+	nlassert(LoadBalancingTrav);
+	return LoadBalancingTrav->getGroupNbFaceAsked(group);
+}
+
 
 
 // ***************************************************************************
 void	CScene::setPolygonBalancingMode(TPolygonBalancingMode polBalMode)
 {
 	nlassert(LoadBalancingTrav);
-	LoadBalancingTrav->PolygonBalancingMode= (CLoadBalancingTrav::TPolygonBalancingMode)(uint)polBalMode;
+	LoadBalancingTrav->PolygonBalancingMode= (CLoadBalancingGroup::TPolygonBalancingMode)(uint)polBalMode;
 }
 
 

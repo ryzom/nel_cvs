@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.30 2002/03/28 13:18:56 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.31 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2021,6 +2021,13 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 	// do some instance init for MeshGeom
 	_MeshMRMGeom.initInstance(mi);
 
+
+	// LoadBalancing backward compatibility: if the mesh is skinned, add it to the 
+	// "Global" Load Balancing Group.
+	if(_MeshMRMGeom.isSkinned())
+	{
+		mi->setLoadBalancingGroup("Global");
+	}
 
 	return mi;
 }

@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: transform_user.cpp,v 1.8 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,16 @@ void			CTransformUser::unfreezeHRC()
 }
 
 
+// ***************************************************************************
+void			CTransformUser::setLoadBalancingGroup(const std::string &group)
+{
+	_Transform->setLoadBalancingGroup(group);
+}
+// ***************************************************************************
+const std::string	&CTransformUser::getLoadBalancingGroup() const
+{
+	return _Transform->getLoadBalancingGroup();
+}
 
 
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.10 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: transform_shape.h,v 1.11 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,9 +205,6 @@ public:
 
 
 protected:
-
-	// The position of the model computed in Pass0.
-	CVector		_ModelPos;
 
 	// The distance of the model to the camera computed in Pass0.
 	float		_ModelDist;

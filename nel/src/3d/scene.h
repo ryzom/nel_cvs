@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.21 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: scene.h,v 1.22 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,12 +248,33 @@ public:
 	/// \name LoadBalancing mgt.
 	//@{
 
-	/// Setup the number of faces max you want, (for Shapes only, not landscape)
-	void			setLoadMaxPolygon(uint nFaces);
-	uint			getLoadMaxPolygon() const;
+	/** Setup the number of faces max you want. For backward compatibility only, this is same as
+	 *	setGroupLoadMaxPolygon("Global", nFaces);
+	 */
+	void					setLoadMaxPolygon(uint nFaces);
+	/** Get the number of faces max you asked. For backward compatibility only, this is same as
+	 *	getGroupLoadMaxPolygon("Global", nFaces);
+	 */
+	uint					getLoadMaxPolygon();
+	/** Get the last face count asked from the instances before reduction.
+	 *	It gets the sum of All groups.
+	 */
+	float					getNbFaceAsked () const;
 
-	/// Get the last face count asked from the instances before reduction.
-	float			getNbFaceAsked () const;
+
+	/** Set the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	void					setGroupLoadMaxPolygon(const std::string &group, uint nFaces);
+	/** Get the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	uint					getGroupLoadMaxPolygon(const std::string &group);
+	/** Get the last face count asked from the instances before reduction. only for the given group
+	 *	return 0 if the Group does not exist.
+	 */
+	float					getGroupNbFaceAsked (const std::string &group) const;
+
 
 	/** The mode of polygon balancing.
 	 * PolygonBalancingOff => Models will be rendered with the number of faces they want to render.

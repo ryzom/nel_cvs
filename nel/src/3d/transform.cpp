@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.38 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: transform.cpp,v 1.39 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -372,6 +372,33 @@ void	CTransform::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	bbox.setCenter(CVector::Null);
 	bbox.setHalfSize(CVector::Null);
+}
+
+
+// ***************************************************************************
+void	CTransform::setLoadBalancingGroup(const std::string &group)
+{
+	// get the LoadBalancing observer
+	IBaseLoadBalancingObs	*obs= (IBaseLoadBalancingObs*)getObs(LoadBalancingTravId);
+	nlassert(obs);
+
+	// Get the traversal.
+	CLoadBalancingTrav	*trav= (CLoadBalancingTrav*)obs->Trav;
+	nlassert(trav);
+	// get the group from trav (create if needed), and set it.
+	obs->LoadBalancingGroup= trav->getOrCreateGroup(group);
+}
+
+
+// ***************************************************************************
+const std::string &CTransform::getLoadBalancingGroup() const
+{
+	// get the LoadBalancing observer
+	IBaseLoadBalancingObs	*obs= (IBaseLoadBalancingObs*)getObs(LoadBalancingTravId);
+	nlassert(obs);
+
+	// get the group name
+	return obs->LoadBalancingGroup->Name;
 }
 
 

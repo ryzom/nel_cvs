@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.17 2002/03/21 10:44:55 berenguier Exp $
+ * $Id: transform.h,v 1.18 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,8 +180,8 @@ public:
 
 
 
-	void					setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }
-	CInstanceGroup*			getClusterSystem () { return _ClusterSystem; }
+	void				setClusterSystem (CInstanceGroup *pIG) { _ClusterSystem = pIG; }
+	CInstanceGroup*		getClusterSystem () { return _ClusterSystem; }
 
 
 	/// name Lighting Behavior.
@@ -238,8 +238,27 @@ public:
 
 	/** Get the untransformed AABBox of the transform. NULL (gtCenter()= 0, gtSize()==0) by default.
 	 */
-	virtual void					getAABBox(NLMISC::CAABBox &bbox) const;
+	virtual void		getAABBox(NLMISC::CAABBox &bbox) const;
 
+
+	/// name Load Balancing Behavior.
+	// @{
+
+	/** Change the load Balancing group of a model. Every models are in a special LoadBalancingGroup.
+	 *	NB: the group is  created if did not exist.
+	 *
+	 *	By default, models lies in the "Default" group, but MRM with skinning and ParticlesSystems which
+	 *	are in "Global" group (for backward compatibility).
+	 *	The "Default" group is special because it is not balanced (ie models are only degraded from 
+	 *	their distance to camera)
+	 */
+	void				setLoadBalancingGroup(const std::string &group);
+
+	/** Get the load Balancing group of a model. see setLoadBalancingGroup().
+	 */
+	const std::string	&getLoadBalancingGroup() const;
+
+	// @}
 
 // ********
 private:

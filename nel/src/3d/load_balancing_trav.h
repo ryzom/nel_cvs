@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.4 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: load_balancing_trav.h,v 1.5 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,11 +46,74 @@ class IBaseLoadBalancingObs;
 class IBaseHrcObs;
 class IBaseClipObs;
 class CClipTrav;
+class CLoadBalancingTrav;
 
 
 // ***************************************************************************
 // ClassIds.
 const NLMISC::CClassId		LoadBalancingTravId=NLMISC::CClassId(0x7181548, 0x36ad3c10);
+
+
+// ***************************************************************************
+/**
+ * A LoadBalancing Group. Models are owned by a group (through ILoadBalancingObs).
+ *	Groups are created in CLoadBalancingTrav.
+ *
+ * \sa CScene CLoadBalancingTrav
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2002
+ */
+class CLoadBalancingGroup
+{
+public:
+	// see CScene.
+	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing };
+
+public:
+	// Name of the group.
+	std::string		Name;
+
+public:
+	CLoadBalancingGroup();
+
+	void				setNbFaceWanted(uint nFaces) {_NbFaceWanted= nFaces;}
+	uint				getNbFaceWanted() const {return _NbFaceWanted;}
+
+	float				getNbFaceAsked () const {return _NbFacePass0;}
+
+public:
+	// ONLY FOR OBSERVERS
+	void				addNbFacesPass0(float v) {_NbFacePass0+= v;}
+
+	/** Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
+	 * and to his distance from camera.
+	 */
+	float				computeModelNbFace(float faceIn, float camDist);
+
+private:
+	friend class	CLoadBalancingTrav;
+
+	// DefaultGroup means LoadBalancing disabled.
+	bool				_DefaultGroup;
+
+	// The number of faces count in Pass0.
+	float				_NbFacePass0;
+
+	// The number of face the user want
+	uint				_NbFaceWanted;
+
+	// use this ratio into Pass 1 to reduce faces.
+	float				_FaceRatio;
+
+	// To smooth the faceRatio
+	NLMISC::CValueSmoother		_ValueSmoother;
+	// Balancing Mode
+	TPolygonBalancingMode		_PrecPolygonBalancingMode;
+
+	// as it sounds..
+	void				computeRatioAndSmooth(TPolygonBalancingMode polMode);
+};
 
 
 
@@ -91,51 +154,65 @@ public:
 	/// \name LoadBalancing mgt.
 	//@{
 
-	// see CScene.
-	enum			TPolygonBalancingMode {PolygonBalancingOff=0, PolygonBalancingOn, PolygonBalancingClamp, CountPolygonBalancing };
 	// The PolygonBalancingMode
+	typedef CLoadBalancingGroup::TPolygonBalancingMode	TPolygonBalancingMode;
 	TPolygonBalancingMode	PolygonBalancingMode;
 
 
-	void				setNbFaceWanted(uint nFaces) {_NbFaceWanted= nFaces;}
-	uint				getNbFaceWanted() {return _NbFaceWanted;}
+	/// Set the number of faces wanted for the "Global" LoadBlancingGroup. Backward compatibility method.
+	void				setNbFaceWanted(uint nFaces);
 
-	// Get the last face count asked from the instances before reduction.
+	/// Get the number of faces wanted for the "Global" LoadBlancingGroup. Backward compatibility method.
+	uint				getNbFaceWanted();
+
+	/** Set the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	void				setGroupNbFaceWanted(const std::string &group, uint nFaces);
+
+	/** Get the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	uint				getGroupNbFaceWanted(const std::string &group);
+
+
+	/** Get the last face count asked from the instances before reduction. only for the given group
+	 *	return 0 if the Group does not exist.
+	 */
+	float				getGroupNbFaceAsked (const std::string &group) const;
+
+	/// Get the last face count asked from the instances before reduction. Sum of all groups
 	float				getNbFaceAsked () const;
 
 	//@}
 
 
 public:
-	// ONLY FOR OBSERVERS.
-	// The number of faces count in Pass0.
-	float				NbFacePass0;
-
+	// ONLY FOR OBSERVERS
 	uint				getLoadPass() {return _LoadPass;}
 
-	/** Compute the number of face to be rendered for thismodel, according to the number of faces he want to draw
-	 * and to his distance from camera.
-	 */
-	float				computeModelNbFace(float faceIn, float camDist);
+	CLoadBalancingGroup	*getDefaultGroup() {return _DefaultGroup;}
 
+	// Get a group by name, create if needed.
+	CLoadBalancingGroup	*getOrCreateGroup(const std::string &group);
 
 private:
-	// The number of face the user want
-	uint				_NbFaceWanted;
-
 	// Pass: 0 (compute faceCount from all models) or 1 (setup wanted faceCount).
 	uint				_LoadPass;
 
-	// use this ratio into Pass 1 to reduce faces.
-	float				_FaceRatio;
+	// The sum of all Pass0 groups.
+	float				_SumNbFacePass0;
 
 	// The loadBalancing balance only visible objects.
 	CClipTrav			*_ClipTrav;
 	void				traverseVisibilityList();
 
-	// To smooth the faceRatio
-	NLMISC::CValueSmoother		_ValueSmoother;
-	TPolygonBalancingMode		_PrecPolygonBalancingMode;
+
+	// The groups.
+	CLoadBalancingGroup	*_DefaultGroup;
+	typedef	std::map<std::string, CLoadBalancingGroup>	TGroupMap;
+	typedef	TGroupMap::iterator							ItGroupMap;
+	TGroupMap			_GroupMap;
 
 };
 
@@ -163,6 +240,9 @@ public:
 	/// Shortcut to observers.
 	IBaseHrcObs		*HrcObs;
 	IBaseClipObs	*ClipObs;
+
+	// Which group owns this model
+	CLoadBalancingGroup		*LoadBalancingGroup;
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.28 2002/02/28 12:59:50 besson Exp $
+ * $Id: particle_system_shape.cpp,v 1.29 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,6 +201,10 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
 	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
+
+	// LoadBalancing backward compatibility: ParticleSystems are added to the "Global" Load Balancing Group.
+	psm->setLoadBalancingGroup("Global");
+
 	return psm;
 }
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.22 2002/03/14 18:35:35 vizerie Exp $
+ * $Id: transform_shape.cpp,v 1.23 2002/03/29 13:13:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,40 +172,42 @@ void	CTransformShapeLoadBalancingObs::traversePass0()
 	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
 	CSkeletonModel			*skeleton= trans->getSkeletonModel();
 
+	// World Model position
+	CVector	modelPos;
+
 	// If this isntance is binded or skinned to a skeleton, take the world matrix of this one as
 	// center for LoadBalancing Resolution.
 	if(skeleton)
 	{
 		// Take the root bone of the skeleton as reference (bone 0)
 		// And so get our position.
-		_ModelPos= skeleton->Bones[0].getWorldMatrix().getPos();
+		modelPos= skeleton->Bones[0].getWorldMatrix().getPos();
 	}
 	else
 	{
 		// get our position from 
-		_ModelPos= HrcObs->WorldMatrix.getPos();
+		modelPos= HrcObs->WorldMatrix.getPos();
 	}
 
 
 	// Then compute distance from camera.
-	_ModelDist= ( loadTrav->CamPos - _ModelPos).norm();
+	_ModelDist= ( loadTrav->CamPos - modelPos).norm();
 
 
 	// Get the number of triangles this model use now.
 	_FaceCount= trans->getNumTriangles(_ModelDist);	
-	loadTrav->NbFacePass0+= _FaceCount;
+	LoadBalancingGroup->addNbFacesPass0(_FaceCount);
 }
 
 
 // ***************************************************************************
 void	CTransformShapeLoadBalancingObs::traversePass1()
 {
-	CLoadBalancingTrav		*loadTrav= (CLoadBalancingTrav*)Trav;
 	CTransformShape			*trans= static_cast<CTransformShape*>(Model);
 
 
 	// Set the result into the isntance.
-	trans->_NumTrianglesAfterLoadBalancing= loadTrav->computeModelNbFace(_FaceCount, _ModelDist);
+	trans->_NumTrianglesAfterLoadBalancing= LoadBalancingGroup->computeModelNbFace(_FaceCount, _ModelDist);
 
 }
 

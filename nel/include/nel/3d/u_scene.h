@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.15 2002/02/26 14:18:21 berenguier Exp $
+ * $Id: u_scene.h,v 1.16 2002/03/29 13:13:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,7 +190,8 @@ public:
 	/// \name LoadBalancing mgt.
 	//@{
 
-	/** The mode of polygon balancing.
+	/** The mode of polygon balancing. NB: this apply to All LoadBalancingGroups, but the "Default" group
+	 *	which is always considered as PolygonBalancingOff
 	 * PolygonBalancingOff => Models will be rendered with the number of faces they want to render.
 	 * PolygonBalancingOn  => Models will be rendered with the number of faces the LoadBalancing want.
 	 * PolygonBalancingClamp => Same as PolygonBalancingOn, but factor <= 1, ie models won't be rendered
@@ -204,12 +205,32 @@ public:
 	virtual	TPolygonBalancingMode	getPolygonBalancingMode() const =0;
 
 
-	/// Setup the number of faces max you want, (for Shapes only, not landscape)
+	/** Setup the number of faces max you want. For backward compatibility only, this is same as
+	 *	setGroupLoadMaxPolygon("Global", nFaces);
+	 */
 	virtual	void				setLoadMaxPolygon(uint nFaces) =0;
-	virtual	uint				getLoadMaxPolygon() const =0;
-
-	/// Get the last face count asked from the instances before reduction.
+	/** Get the number of faces max you asked. For backward compatibility only, this is same as
+	 *	getGroupLoadMaxPolygon("Global", nFaces);
+	 */
+	virtual	uint				getLoadMaxPolygon() =0;
+	/** Get the last face count asked from the instances before reduction.
+	 *	It gets the sum of All groups.
+	 */
 	virtual float				getNbFaceAsked () const =0;
+
+
+	/** Set the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	virtual	void				setGroupLoadMaxPolygon(const std::string &group, uint nFaces) =0;
+	/** Get the number of faces wanted for a LoadBlancingGroup.
+	 *	The Group is created if did not exist.
+	 */
+	virtual	uint				getGroupLoadMaxPolygon(const std::string &group) =0;
+	/** Get the last face count asked from the instances before reduction. only for the given group
+	 *	return 0 if the Group does not exist.
+	 */
+	virtual float				getGroupNbFaceAsked (const std::string &group) const =0;
 
 	//@}
 

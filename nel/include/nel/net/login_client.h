@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.h,v 1.6 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: login_client.h,v 1.7 2002/09/16 14:58:36 lecroart Exp $
  * 
  */
 
@@ -43,64 +43,20 @@ class CUdpSock;
 class IDisplayer;
 
 /**
- * Example:
- * \code
-	CLoginClient::connect ("itsalive.nevrax.org:49999");
-	string res = CLoginClient::authenticate ("login", "password");
-	if (!res.empty ()) nlerror ("Authentification failed: %s", res.c_str());
-
-	string res2 = CLoginClient::connectToShard (0, Connection);
-	if (!res2.empty ()) nlerror ("Connection failed: %s", res2.c_str());
- * \endcode
  * \author Vianney Lecroart
  * \author Nevrax France
- * \date 2001
+ * \date 2002
  */
 class CLoginClient {
 public:
 
-	struct CShardEntry
-	{
-		std::string ShardName;
-		std::string WSAddr;
-	};
-
-	typedef std::vector<CShardEntry> TShardList;
-
-
-	/** Set the graphics informations (card name, etc...) that will be send to the Login Service
-	 *	ex: CLoginClient::setInformations (CNELU::Driver->getVideocardInformation ());
-	 */
-	static void setInformations (std::string gfxInfos) { _GfxInfos = gfxInfos; }
-
-
-	/** Tries to connect to the authentification server.
-	 * Generates a ESocketConnectionFailed if it can't establish the connection.
-	 */
-	/** Tries to login with login and password.
-	 * If the authentification is ok, the function return an empty string else it returns the reason of the failure.
-	 */
-	static std::string authenticate (const std::string &loginServiceAddr, const std::string &login, const std::string &password, uint32 clientVersion);
-
-
 	/** Try to connect to the shard and return a TCP connection to the shard.
 	 */
-	static std::string connectToShard (uint32 shardListIndex, CCallbackClient &cnx);
+	static std::string connectToShard (CLoginCookie &lc, const std::string &addr, CCallbackClient &cnx);
 
 	/** Try to connect to the shard and return an UDP connection to the shard.
 	 */
-	static std::string connectToShard (uint32 shardListIndex, CUdpSock &cnx, CLoginCookie &cookie);
-
-	static TShardList ShardList;
-
-private:
-
-	static std::string confirmConnection (uint32 shardListIndex);
-
-	static std::string _GfxInfos;
-
-	static CCallbackClient *_CallbackClient;
-
+	static std::string connectToShard (const std::string &addr, CUdpSock &cnx);
 };
 
 

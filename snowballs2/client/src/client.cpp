@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.54 2002/03/19 17:42:49 valignat Exp $
+ * $Id: client.cpp,v 1.55 2002/09/16 14:55:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,8 +130,8 @@ static bool			 CaptureState = false;
 // Prototypes
 //
 
-void startLoginInterface ();
-void updateLoginInterface ();
+//void startLoginInterface ();
+//void updateLoginInterface ();
 
 void initLoadingState ();
 void displayLoadingState (char *state);
@@ -152,23 +152,61 @@ int main(int argc, char **argv)
 {
 	nlinfo ("Starting Snowballs !");
 
+	// Look the command line to see if we have a cookie and a addr
+	
+	string cookie, fsaddr;
+
+#if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
+
+	// extract the 2 first param (argv[1] and argv[2]) it must be cookie and addr
+
+	string cmd = cmdline;
+	int pos1 = cmd.find_first_not_of (' ');
+	int pos2;
+	if (pos1 != string::npos)
+	{
+		pos2 = cmd.find (' ', pos1);
+		if(pos2 != string::npos)
+		{
+			cookie = cmd.substr (pos1, pos2-pos1);
+
+			pos1 = cmd.find_first_not_of (' ', pos2);
+			if (pos1 != string::npos)
+			{
+				pos2 = cmd.find (' ', pos1);
+				if(pos2 == string::npos)
+				{
+					fsaddr = cmd.substr (pos1);
+				}
+				else if (pos1 != pos2)
+				{
+					fsaddr = cmd.substr (pos1, pos2-pos1);
+				}
+			}
+		}
+	}
+
+#else
+
+	if (argc>=3)
+	{
+		cookie = argv[1];
+		fsaddr = argv[2];
+	}
+
+#endif
+
+	nlinfo ("cookie '%s' addr '%s'", cookie.c_str (), fsaddr.c_str());
+
 	// Load config file
 	ConfigFile.load (SNOWBALLS_CONFIG "client.cfg");
 
-	// Set the ShowCommands with the value set in the clietn config file
+	// Set the ShowCommands with the value set in the client config file
 	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
 
 	// Add different path for automatic file lookup
-	string dataPath = ConfigFile.getVar("DataPath").asString ();
-//	if (dataPath[dataPath.size()-1] != '/') dataPath += '/';
-	CPath::addSearchPath (dataPath, true, false);
-/*	CPath::addSearchPath (dataPath + "zones/");
-	CPath::addSearchPath (dataPath + "tiles/");
-	CPath::addSearchPath (dataPath + "shapes/");
-	CPath::addSearchPath (dataPath + "maps/");
-	CPath::addSearchPath (dataPath + "pacs/");
-	CPath::addSearchPath (dataPath + "anims/");
-*/
+	CPath::addSearchPath (ConfigFile.getVar("DataPath").asString (), true, false);
+
 	// Create a driver
 	Driver = UDriver::createDriver();
 
@@ -185,8 +223,6 @@ int main(int argc, char **argv)
 	Driver->showCursor(false);
 	Driver->setCapture(true);
 	Driver->setMousePos(0.5f, 0.5f);
-
-	CLoginClient::setInformations (Driver->getVideocardInformation ());
 
 	// Create a Text context for later text rendering
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
@@ -275,7 +311,7 @@ int main(int argc, char **argv)
 
 	// Init the network structure
 	displayLoadingState ("Initialize Network");
-	initNetwork();
+	initNetwork(cookie, fsaddr);
 
 	displayLoadingState ("Ready !!!");
 
@@ -283,19 +319,18 @@ int main(int argc, char **argv)
 	nlinfo ("Welcome to Snowballs !");
 	nlinfo ("");
 	nlinfo ("Press SHIFT-ESC to exit the game");
-	nlinfo ("Press F1 to go online");
 
 	// Get the current time
 	NewTime = CTime::getLocalTime();
 
 	// If auto login, we launch the login request interface
-	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
-		startLoginInterface ();
+//	if (ConfigFile.getVar("AutoLogin").asInt() == 1)
+//		startLoginInterface ();
 
 	while ((!NeedExit) && Driver->isActive())
 	{
 		// Update the login request interface
-		updateLoginInterface ();
+//		updateLoginInterface ();
 		
 		// Clear all buffers
 		Driver->clearBuffers (CRGBA (0, 0, 0));
@@ -393,18 +428,6 @@ int main(int argc, char **argv)
 			// Shift Escape -> quit
 			NeedExit = true;
 		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF1))
-		{
-			// F1 -> Display the login request interface (to go online)
-			if (!isOnline())
-				startLoginInterface ();
-		}
-		else if (Driver->AsyncListener.isKeyPushed (KeyF2))
-		{
-			// F2 -> disconnect if online (to go offline)
-			if (isOnline())
-				Connection->disconnect ();
-		}
 		else if(Driver->AsyncListener.isKeyPushed (KeyF3))
 		{
 			// F3 -> toggle wireframe/solid
@@ -470,18 +493,6 @@ int main(int argc, char **argv)
 			btm.writeTGA (fs,24,true);
 			nlinfo("Screenshot '%s' saved", filename.c_str());
 		}
-/*		else if (Driver->AsyncListener.isKeyPushed (KeyH))
-		{
-			playAnimation (*Self, HitAnim, true);
-
-			// todo get isWalking in the entity
-			if (Driver->AsyncListener.isKeyDown (KeyUP) || Driver->AsyncListener.isKeyDown (KeyDOWN) ||
-				Driver->AsyncListener.isKeyDown (KeyLEFT) || Driver->AsyncListener.isKeyDown (KeyRIGHT))
-				playAnimation (*Self, WalkAnim);
-			else
-				playAnimation (*Self, IdleAnim);
-		}
-*/
 		// Check if the config file was modified by another program
 		CConfigFile::checkConfigFiles ();
 	}
@@ -563,96 +574,6 @@ void displayLoadingState (char *state)
 	Driver->swapBuffers ();
 }
 
-
-//
-// Login procedure
-//
-static uint loginState = 0;
-static string login;
-
-void startLoginInterface ()
-{
-	loginState = 1;
-	askString ("Please enter your login:", ConfigFile.getVar("Login").asString ());
-	login = "";
-}
-
-void updateLoginInterface ()
-{
-	string str;
-	if (haveAnswer (str))
-	{
-//		nlinfo ("result %s", str.c_str());
-
-		// esc pressed, stop all only before the shard selection
-		if (str.empty () && loginState < 3)
-		{
-			loginState = 0;
-			return;
-		}
-
-		switch (loginState)
-		{
-		case 1:
-//			nlinfo ("login entered");
-			login = str;
-			Self->Name = login;
-			askString ("Please enter your password:", ConfigFile.getVar("Password").asString (), 1);
-			loginState++;
-			break;
-		case 2:
-			{
-//				nlinfo ("password entered");
-				string password = str;
-
-				string LoginSystemAddress = ConfigFile.getVar("LoginSystemAddress").asString ();
-				string res = CLoginClient::authenticate (LoginSystemAddress+":49999", login, password, 1);
-
-				if (!res.empty ())
-				{
-					string err = string ("Authentification failed: ") + res;
-					askString (err, "", 2, CRGBA(64,0,0,128));
-					loginState = 0;
-				}
-				else
-				{
-					string list = "Please enter the shard number you want to connected to\n\n";
-					for (uint32 i = 0; i < CLoginClient::ShardList.size (); i++)
-					{
-						list += "Shard "+toString (i)+": "+CLoginClient::ShardList[i].ShardName+" ("+CLoginClient::ShardList[i].WSAddr+")\n";
-					}
-					askString (list, toString(ConfigFile.getVar("ShardNumber").asInt()));
-					loginState++;
-				}
-			}
-			break;
-		case 3:
-			{
-//				nlinfo ("shard selected");
-				uint32 shardNum = atoi (str.c_str());
-
-				string res = CLoginClient::connectToShard (shardNum, *Connection);
-				if (!res.empty ())
-				{
-					string err = string ("Connection to shard failed: ") + res;
-					askString (err, "", 2, CRGBA(64,0,0,128));
-					loginState = 0;
-				}
-				else
-				{
-					// we remove all offline entities
-					removeAllEntitiesExceptUs ();
-					
-					askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
-					loginState = 0;
-
-					// now we have to wait the identification message to know my id
-				}
-			}
-			break;
-		}
-	}
-}
 
 
 // Command to quit the client

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.18 2002/01/15 13:34:06 lecroart Exp $
+ * $Id: network.cpp,v 1.19 2002/09/16 14:55:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include <nel/misc/displayer.h>
 
 #include <nel/net/login_client.h>
+#include <nel/net/login_cookie.h>
 
 #include <nel/3d/u_text_context.h>
 
@@ -309,11 +310,39 @@ void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CV
 
 TTime LastPosSended;
 
-void	initNetwork()
+void	initNetwork(const std::string &lc, const std::string &addr)
 {
+	// if lc and addr is valid, directly connect to the fs
 	Connection = new CCallbackClient;
 	Connection->addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
 	Connection->setDisconnectionCallback (cbClientDisconnected, NULL);
+
+	string fsaddr;
+	if (addr.empty())
+		fsaddr = ConfigFile.getVar("FrontendServiceAddress").asString ();
+	else
+		fsaddr = addr;
+
+	CLoginCookie loginCookie;
+	if (!lc.empty ())
+	{
+		loginCookie.setFromString (lc);
+	}
+
+	string res = CLoginClient::connectToShard (loginCookie, fsaddr, *Connection);
+	if (!res.empty ())
+	{
+		string err = string ("Connection to shard failed: ") + res;
+		askString (err, "", 2, CRGBA(64,0,0,128));
+	}
+	else
+	{
+		// we remove all offline entities
+		removeAllEntitiesExceptUs ();
+		
+		askString ("You are online!!!", "", 2, CRGBA(0,64,0,128));
+		// now we have to wait the identification message to know my id
+	}
 
 	LastPosSended = 0;
 }
@@ -364,51 +393,4 @@ void	releaseNetwork()
 		delete Connection;
 		Connection = NULL;
 	}
-}
-
-
-NLMISC_COMMAND(connect,"connect to the login system","<login> <password>")
-{
-	// check args, if there s not the right number of parameter, return bad
-	if (args.size() != 2) return false;
-
-	string LoginSystemAddress = ConfigFile.getVar("LoginSystemAddress").asString ();
-
-	string res = CLoginClient::authenticate (LoginSystemAddress+":49999", args[0], args[1], 1);
-	if (!res.empty ()) log.displayNL ("Authentification failed: %s", res.c_str());
-
-	log.displayNL ("Please select a shard in the list using \"/select <num>\" where <num> is the shard number");
-	for (uint32 i = 0; i < CLoginClient::ShardList.size (); i++)
-	{
-		log.displayNL ("Shard %d: %s (%s)", i, CLoginClient::ShardList[i].ShardName.c_str(), CLoginClient::ShardList[i].WSAddr.c_str());
-	}
-
-	return true;
-}
-
-NLMISC_COMMAND(disconnect,"disconnect from the shard","")
-{
-	// check args, if there s not the right number of parameter, return bad
-	if (args.size() != 0) return false;
-
-	if (!isOnline()) log.displayNL ("You already are offline");
-
-	Connection->disconnect ();
-
-	return true;
-}
-
-NLMISC_COMMAND(select,"select a shard using his number","<shard_number>")
-{
-	// check args, if there s not the right number of parameter, return bad
-	if (args.size() != 1) return false;
-
-	uint32 num = (uint32) atoi (args[0].c_str());
-
-	string res = CLoginClient::connectToShard (num, *Connection);
-	if (!res.empty ()) log.displayNL ("Connection failed: %s", res.c_str());
-
-	log.displayNL ("You are online!!!");
-
-	return true;
 }

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.16 2002/03/26 09:44:47 lecroart Exp $
+ * $Id: login_server.cpp,v 1.17 2002/09/16 14:58:42 lecroart Exp $
  *
  */
 
@@ -49,6 +49,8 @@ static list<CPendingUser> PendingUsers;
 
 static CCallbackServer *Server;
 static string ListenAddr;
+
+static bool AcceptInvalidCookie = false;
 
 static TDisconnectClientCallback DisconnectClientCallback = NULL;
 
@@ -201,6 +203,13 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	// verify that the user was pending
 	reason = CLoginServer::isValidCookie (cookie);
 
+	// if the cookie is not valid and we accept them, clear the error
+	if(AcceptInvalidCookie && !reason.empty())
+	{
+		reason = "";
+		cookie.set (rand(), rand(), rand());
+	}
+
 	CMessage msgout2 (netbase.getSIDA (), "SV");
 	msgout2.serial (reason);
 	netbase.send (msgout2, from);
@@ -254,6 +263,13 @@ void cfcbListenAddress (CConfigFile::CVar &var)
 	nlinfo("Listen Address trapped '%s'", ListenAddr.c_str());
 }
 
+void cfcbAcceptInvalidCookie(CConfigFile::CVar &var)
+{
+	// set the new ListenAddr
+	AcceptInvalidCookie = var.asInt() == 1;
+	
+	nlinfo("This service %saccept invalid cookie", AcceptInvalidCookie?"":"doesn't ");
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -270,14 +286,16 @@ void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
 	server.setConnectionCallback (ClientConnection, NULL);
 
-	try
-	{
+	try {
 		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
 		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
-	}
-	catch(Exception &)
-	{
-	}
+
+	} catch(Exception &) { }
+	
+	try {
+		cfcbAcceptInvalidCookie (IService::getInstance()->ConfigFile.getVar("AcceptInvalidCookie"));
+		IService::getInstance()->ConfigFile.setCallback("AcceptInvalidCookie", cfcbAcceptInvalidCookie);
+	} catch(Exception &) { }
 
 	// if the listen addr is not in the config file, try to find it dynamically
 	if (ListenAddr.empty())
@@ -296,14 +314,15 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 	// connect to the welcome service
 	connectToWS ();
 
-	try
-	{
+	try {
 		cfcbListenAddress (IService::getInstance()->ConfigFile.getVar("ListenAddress"));
 		IService::getInstance()->ConfigFile.setCallback("ListenAddress", cfcbListenAddress);
-	}
-	catch(Exception &)
-	{
-	}
+	} catch(Exception &) { }
+
+	try {
+		cfcbAcceptInvalidCookie (IService::getInstance()->ConfigFile.getVar("AcceptInvalidCookie"));
+		IService::getInstance()->ConfigFile.setCallback("AcceptInvalidCookie", cfcbAcceptInvalidCookie);
+	} catch(Exception &) { }
 	
 	// if the listen addr is not in the config file, try to find it dynamically
 	if (ListenAddr.empty())
@@ -346,6 +365,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc)
 			return "";
 		}
 	}
+
 	return "I didn't receive the cookie from WS";
 }
 
@@ -366,6 +386,8 @@ void CLoginServer::connectToWS ()
 		string name = IService::getInstance()->getServiceShortName();
 		msg.serial(name);
 		msg.serial(ssid);	// serializes a 16 bits service id
+		uint8 pos = 0;
+		msg.serial(pos);	// pos
 		CNetManager::send("WS", msg);
 	}
 }

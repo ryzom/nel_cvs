@@ -1,7 +1,7 @@
 /** \file login_cookie.h
  * container used by the login process to identify a user
  *
- * $Id: login_cookie.h,v 1.3 2002/01/02 14:52:58 lecroart Exp $
+ * $Id: login_cookie.h,v 1.4 2002/09/16 14:58:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,13 +56,40 @@ public:
 	void serial (NLMISC::IStream &s)
 	{
 		// verify that we initialized the cookie before writing it
-		if (!s.isReading()) nlassert (_Valid);
+		if (!s.isReading() && !_Valid) nlwarning ("serialize a non valid cookie");
 
 		s.serial (_UserAddr);
 		s.serial (_UserKey);
 		s.serial (_UserId);
 
 		if (s.isReading()) _Valid = true;
+	}
+
+	std::string setToString ()
+	{
+		if (_Valid)
+		{
+			char cstr[8*3+2+1];
+			NLMISC::smprintf(cstr, 8*3+2+1, "%08X|%08X|%08X", _UserAddr, _UserKey, _UserId);
+			nlinfo ("setToString %s -> %s", toString().c_str (), cstr);
+			return cstr;
+		}
+		else
+		{
+			return "0|0|0";
+		}
+	}
+
+	void setFromString (const std::string &str)
+	{
+		sscanf(str.c_str(), "%08X|%08X|%08X", &_UserAddr, &_UserKey, &_UserId);
+
+		if(str.empty () || (_UserAddr==0 && _UserKey==0 && _UserId==0))
+			_Valid = 0;
+		else
+			_Valid = 1;
+
+		nlinfo ("setFromString %s -> %s, isValid: %d", str.c_str (), toString().c_str (), _Valid);
 	}
 
 	std::string toString () const

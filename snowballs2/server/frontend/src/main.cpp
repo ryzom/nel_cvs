@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.12 2002/03/26 10:33:29 lecroart Exp $
+ * $Id: main.cpp,v 1.13 2002/09/16 14:54:57 lecroart Exp $
  */
 
 /*
@@ -113,11 +113,11 @@ void cbChatService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( message );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "CHAT" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "CHAT" );
 	msgout.serial( message );
 
 	// Send the message to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	CNetManager::send( "CLIENT", msgout, 0 );
 
 	nldebug( "SB: Sent chat message \"%s\" to all clients", message.c_str());
 }
@@ -178,14 +178,14 @@ void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( state );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "ENTITY_POS" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "ENTITY_POS" );
 	msgout.serial( id );
 	msgout.serial( pos );
 	msgout.serial( angle );
 	msgout.serial( state );
 
 	// Send the message to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	CNetManager::send( "CLIENT", msgout, 0 );
 
 	//nldebug( "SB: Sent ENTITY_POS message to all the connected clients");
 }
@@ -251,7 +251,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( start );
 
 	// Output: prepare the reply to the clients
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "ADD_ENTITY" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "ADD_ENTITY" );
 	msgout.serial( id );
 	msgout.serial( name );
 	msgout.serial( race );
@@ -260,7 +260,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	if ( all == true )
 	{
 		// Send the message to all connected clients
-		CNetManager::send( "FS", msgout, 0 );
+		CNetManager::send( "CLIENT", msgout, 0 );
 
 		nldebug( "SB: Sent ADD_ENTITY message to all the connected clients");
 	}
@@ -276,7 +276,7 @@ void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 		else
 		{
 			TSockId conToClient = ((*ItPlayer).second).con;
-			CNetManager::send( "FS", msgout, conToClient );
+			CNetManager::send( "CLIENT", msgout, conToClient );
 
 			nldebug( "SB: Sent ADD_ENTITY about all the connected clients to the new client.");
 		}
@@ -326,11 +326,11 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
 	msgin.serial( id );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "REMOVE_ENTITY" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "REMOVE_ENTITY" );
 	msgout.serial( id );
 
 	// Send the message to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	CNetManager::send( "CLIENT", msgout, 0 );
 
 	nldebug( "SB: Sent REMOVE_ENTITY message to all the connected clients");
 }
@@ -360,7 +360,7 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
 	msgin.serial( explosionRadius );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "SNOWBALL" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "SNOWBALL" );
 	msgout.serial( id );
 	msgout.serial( playerId );
 	msgout.serial( start );
@@ -369,7 +369,7 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
 	msgout.serial( explosionRadius );
 
 	// Send the message to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	CNetManager::send( "CLIENT", msgout, 0 );
 
 	nldebug( "SB: Sent SNOWBALL message to all the connected clients");
 }
@@ -432,13 +432,13 @@ void cbHitService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgin.serial( direct );
 
 	// Output: send the reply to the client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "HIT" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "HIT" );
 	msgout.serial( snowballId );
 	msgout.serial( victimId );
 	msgout.serial( direct );
 
 	// Send the message to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	CNetManager::send( "CLIENT", msgout, 0 );
 
 	nldebug( "SB: Sent HIT message to all the connected clients");
 }
@@ -562,11 +562,11 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 	from->setAppId((uint64)(uint)p);
 
 	// Output: send the IDENTIFICATION number to the new connected client
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "IDENTIFICATION" );
+	CMessage msgout( CNetManager::getSIDA( "CLIENT" ), "IDENTIFICATION" );
 	msgout.serial( id );
 
 	// Send the message to connected client "from"
-	CNetManager::send( "FS", msgout, from );
+	CNetManager::send( "CLIENT", msgout, from );
 
 	nldebug( "SB: Sent IDENTIFICATION message to the new client");
 }
@@ -580,6 +580,9 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 	uint32 id;
 
 	uint64 i = from->appId();
+	if(i == 0)
+		return;
+
 	_player *p = (_player *)(uint)i;
 	id = p->id;
 
@@ -615,21 +618,30 @@ public:
 		DebugLog->addNegativeFilter ("NETL");
 		DebugLog->addNegativeFilter ("SB:");
 
+
+		NLNET::TServiceId sid;
+		CNetManager::addServer ("CLIENT", 37000, sid, true);
+
 		// Connect the frontend to the login system
-		CLoginServer::init( *getServer(), onConnectionClient);
+		CLoginServer::init( *(CCallbackServer*)CNetManager::getNetBase("CLIENT"), onConnectionClient);
+
+		// Set the callbacks for that connection (comming from the Chat service)
+		CNetManager::addCallbackArray( "CHAT",
+									   ClientCallbackArray,
+									   sizeof(ClientCallbackArray)/sizeof(ClientCallbackArray[0]) );
 
 		/********************************************************************
 		 * Client connection management
 		 */
 
 		// Set the callbacks for the client disconnection of the Frontend
-		CNetManager::setDisconnectionCallback( "FS", onDisconnectClient, NULL );
+		CNetManager::setDisconnectionCallback( "CLIENT", onDisconnectClient, NULL );
 
 		/********************************************************************
 		 * Chat Service connection management
 		 */
 
-		 // Connect (as a client) to the Chat Service (as a server)
+		// Connect (as a client) to the Chat Service (as a server)
 		CNetManager::addClient( "CHAT" );
 
 		// Set the callbacks for that connection (comming from the Chat service)
@@ -695,8 +707,8 @@ public:
 NLNET_OLD_SERVICE_MAIN( CFrontEndService,
 					"FS",
 					"frontend_service",
-					37000,
-					ClientCallbackArray,
+					0,
+					EmptyCallbackArray,
 					SNOWBALLS_CONFIG,
 					SNOWBALLS_LOGS )
 

@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.2 2002/06/11 09:40:54 hanappe Exp $
+ * $Id: sample_bank.cpp,v 1.3 2002/06/19 15:51:36 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,9 +40,8 @@ namespace NLSOUND {
 set<CSampleBank*> CSampleBank::_Banks;
 
 
-/** Return the name corresponding to a name. The sample is searched
- * in all the loaded sample banks.
- */
+// ********************************************************
+
 IBuffer*		CSampleBank::get(const char* name)
 {
 	IBuffer* buffer;
@@ -61,11 +60,8 @@ IBuffer*		CSampleBank::get(const char* name)
 }
 
 
-/**
- *  Constructor
- *
- * The path should be absolute
- */
+// ********************************************************
+
 CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _Loaded(false), _SoundDriver(sd), _Path(path) 
 {
 	_Name = CFile::getFilenameWithoutExtension(_Path);
@@ -73,9 +69,8 @@ CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _Loaded(fa
 }
 
 
-/**
- *  Destructor
- */
+// ********************************************************
+
 CSampleBank::~CSampleBank()
 {
 	// remove the bank from the list of known banks
@@ -93,10 +88,8 @@ CSampleBank::~CSampleBank()
 }
 
 
-/** Load all the sound samples.
- *
- * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
- */
+// ********************************************************
+
 void				CSampleBank::load()
 {
 	vector<string> filenames;
@@ -130,9 +123,8 @@ void				CSampleBank::load()
 }
 
 
-/*
- * Unload all the sound samples in this bank.
- */
+// ********************************************************
+
 void				CSampleBank::unload()
 {
 	vector<IBuffer*> vec;
@@ -154,17 +146,15 @@ void				CSampleBank::unload()
 	}
 }
 
-/*
- * Returns true if the samples in this bank have been loaded.
- */
+// ********************************************************
+
 bool				CSampleBank::isLoaded()
 {
 	return _Loaded;
 }
 
-/*
- * Return a sound sample corresponding to a name.
- */
+// ********************************************************
+
 IBuffer*			CSampleBank::getSample(const char* name)
 {
 	// Find sound
@@ -179,18 +169,15 @@ IBuffer*			CSampleBank::getSample(const char* name)
 	}
 }
 
+// ********************************************************
 
-/*
- * Return the number of buffers in this bank.
- */
 uint				CSampleBank::countSamples()
 {
 	return _Samples.size();
 }
 
-/*
- * Return the size of this bank in bytes.
- */
+// ********************************************************
+
 uint				CSampleBank::getSize()
 {
 	uint size = 0;

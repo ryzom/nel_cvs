@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for Snowballs 2
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.15 2002/04/16 12:01:39 valignat Exp $
+dnl $Id: configure.in,v 1.16 2002/07/08 15:10:16 lecroart Exp $
 dnl 
 
 
@@ -136,8 +136,8 @@ AM_PATH_OPENAL($enable_client)
 dnl ====================================================================
 dnl NeL
 
-dnl         misc   net    3d              pacs            sound           ai    georges
-AM_PATH_NEL("yes", "yes", $enable_client, $enable_client, $enable_client, "no", "no")
+dnl         misc   net    3d              pacs            sound ai    georges
+AM_PATH_NEL("yes", "yes", $enable_client, $enable_client, "no", "no", "no")
 
 dnl ====================================================================
 dnl FreeType 2

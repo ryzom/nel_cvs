@@ -87,19 +87,20 @@ namespace NLAILOGIC
 
 	void CGoal::operatorSuccess(NLAIAGENT::IBasicAgent *op)
 	{
-		switch ( _Mode )
-		{
-			case achieveOnce:
-				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
-				break;
 
-			case achieveForever:
-				break;
-		}
+#ifdef NL_DEBUG
+		std::string buffer;
+		op->getDebugString(buffer);
+#endif
+
 		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
 		{			
+			if ( op != *it_s )
+			{
+				nlinfo("Problème!!!");
+			}
 			nlinfo("\t0x%0x",*it_s);
 			nlinfo("\t\t%s", (const char *)(*it_s)->getType());
 			if ( (**it_s) == *op )
@@ -109,6 +110,16 @@ namespace NLAILOGIC
 				return;
 			}
 			it_s++;
+		}
+
+		switch ( _Mode )
+		{
+			case achieveOnce:
+				( (NLAIAGENT::CAgentScript *) _Receiver)->removeGoal( this );
+				break;
+
+			case achieveForever:
+				break;
 		}
 	}
 

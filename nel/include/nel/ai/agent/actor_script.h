@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.5 2001/01/10 10:09:45 chafik Exp $
+ * $Id: actor_script.h,v 1.6 2001/01/12 16:17:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_script.h"
+#include "nel/ai/agent/agent_manager.h"
 #include "nel/ai/logic/bool_cond.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/interpret_actor.h"
@@ -36,11 +37,11 @@
 namespace NLAIAGENT
 {
 
-	class CComponentHandle : public IObjectIA {
+	class CComponentHandle/* : public IObjectIA */{
 		private:
 			CStringVarName	*_CompName;
 			const IObjectIA	*_Comp;
-			CAgentScript	*_CompFather;
+			IAgent			*_CompFather;
 
 		public:
 			CComponentHandle()
@@ -56,31 +57,42 @@ namespace NLAIAGENT
 			}
 
 
-			CComponentHandle(CStringVarName &comp_name, CAgentScript *comp_father, bool get = false)
+			CComponentHandle(CStringVarName &comp_name, IAgent *comp_father , bool get = false)
 			{
 				_CompName = (CStringVarName *) comp_name.clone();
 				_CompFather = comp_father;
 				if ( get )
 					getComponent();
+				else
+					_Comp = NULL;
 			}
 
 			void getComponent()
 			{
-				// Looks in static components
-				sint32 comp_id = _CompFather->getStaticMemberIndex( *_CompName );
-				if ( comp_id >= 0)
-					_Comp = _CompFather->getStaticMember( comp_id );
-				else
-					_Comp = NULL;
+				if ( _CompFather )
+				{
 
-				// Looks in dynamic component
-				CGroupType *param = new CGroupType();
-				param->push( (IObjectIA *) _CompName );
-				IObjectIA::CProcessResult comp = _CompFather->getDynamicAgent(param);
-				param->pop();
-				delete param;
-				if ( comp.Result )
-					_Comp = comp.Result;
+#ifdef _DEBUG
+					const char *dbg_father_type = (const char *) _CompFather->getType();
+					const char *dbg_comp_name = (const char *) _CompName->getType();
+#endif
+
+					// Looks in static components
+					sint32 comp_id = _CompFather->getStaticMemberIndex( *_CompName );
+					if ( comp_id >= 0)
+						_Comp = _CompFather->getStaticMember( comp_id );
+					else
+						_Comp = NULL;
+
+					// Looks in dynamic component
+					CGroupType *param = new CGroupType();
+					param->push( (IObjectIA *) _CompName );
+					IObjectIA::CProcessResult comp = ( (CAgentScript *) _CompFather)->getDynamicAgent(param);
+					param->pop();
+					delete param;
+					if ( comp.Result )
+						_Comp = comp.Result;
+				}
 			}
 
 			const IObjectIA *getValue()
@@ -110,8 +122,10 @@ namespace NLAIAGENT
 			enum c_funcs_id 
 			{
 				fid_activate,
+				fid_onActivate,
 				fid_unActivate,
-				fid_forwardActivity
+				fid_onUnActivate,
+				fid_switch
 			};
 
 			bool _IsActivated;
@@ -125,6 +139,11 @@ namespace NLAIAGENT
 				The second arg bool must be set to true for this agent to stay active, false otherwise.
 			**/
 			virtual void forwardActivity(std::vector<CActorScript *> &, bool stay_active = false);
+			/** Transfers activity to another actor.
+				The second arg bool must be set to true for this agent to stay active, false otherwise.
+			**/
+			virtual void forwardActivity(std::vector<CComponentHandle *> &, bool stay_active = false);
+
 
 		public:
 			// Builds and actor with its father
@@ -148,7 +167,7 @@ namespace NLAIAGENT
 			/// Callback called when the agent is unactivated
 			virtual void onUnActivate();
 			
-
+			virtual int getBaseMethodCount() const;
 
 			/// Inherited functions
 			virtual const NLAIC::IBasicType *clone() const;
@@ -157,7 +176,8 @@ namespace NLAIAGENT
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			virtual void processMessages();
 			virtual const CProcessResult &run();
-			virtual IObjectIA *run(const IMessageBase &msg);
+
+//			virtual IObjectIA *run(const IMessageBase &msg);
 			virtual	CProcessResult sendMessage(IObjectIA *);
 			virtual const NLAIC::CIdentType &getType() const;
 
@@ -166,8 +186,12 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
+			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
+			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
+
 			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
-			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
+//			virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
+//			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);

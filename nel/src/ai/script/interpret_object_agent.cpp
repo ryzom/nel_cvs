@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.9 2001/01/12 13:06:30 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.10 2001/01/12 16:17:49 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,6 @@ namespace NLAISCRIPT
 
 	}
 
-
 	void CAgentClass::clearIndirectMsgTable()
 	{
 		if ( _MsgIndirectTable != NULL )
@@ -168,12 +167,11 @@ namespace NLAISCRIPT
 		return false;
 	}
 
-
 	/// Build the table that translates an agent's message processing function index into
 	/// it's child equivalent message processing function index.
 	void CAgentClass::buildChildsMessageMap()
 	{
-		{
+/*		{
 			sint32 i, child_index, father_index;
 
 			std::vector< std::vector<sint32> > l_index;
@@ -248,6 +246,7 @@ namespace NLAISCRIPT
 				}
 			}
 		}
+		*/
 	}
 
 	sint32 CAgentClass::getChildMessageIndex(const NLAIAGENT::IMessageBase *msg, sint32 child_index )
@@ -256,7 +255,7 @@ namespace NLAISCRIPT
 	}
 
 	
-	// Adds a property to an agent
+	/// Adds a static component to an agent
 	sint32 CAgentClass::registerComponent(const NLAIAGENT::IVarName &type_name)
 	{			
 		CComponent *c = new CComponent();
@@ -266,7 +265,7 @@ namespace NLAISCRIPT
 		return _Components.size() - 1;
 	}
 	
-	// Adds a property to an agent
+	/// Adds a static component to an agent
 	sint32 CAgentClass::registerComponent(const NLAIAGENT::IVarName &type_name, NLAIAGENT::CStringVarName &field_name)
 	{			
 		CComponent *c = new CComponent();
@@ -276,6 +275,7 @@ namespace NLAISCRIPT
 		return _Components.size() - 1;
 	}
 	
+
 	sint32 CAgentClass::getComponentIndex(const NLAIAGENT::IVarName &name) const
 	{
 		for(sint32 i = _Components.size() - 1; i >= 0; i --)
@@ -325,6 +325,12 @@ namespace NLAISCRIPT
 
 	sint32 CAgentClass::getInheritedStaticMemberIndex(const NLAIAGENT::IVarName &name) const
 	{
+
+#ifdef _DEBUG
+		const char *dbg_this_type = (const char *) getType();
+#endif
+
+
 		sint32 nb_components = 0;
 		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
 		sint32 index;
@@ -820,7 +826,7 @@ namespace NLAISCRIPT
 		return base_class;
 	}
 
-	// Builds a vector with the path from the super class to this class
+	/// Builds a vector with the path from the super class to this class
 	const void CAgentClass::getClassPath(std::vector<const CAgentClass *> &path) const
 	{
 		const CAgentClass *base_class = (CAgentClass *) getBaseClass();
@@ -836,7 +842,7 @@ namespace NLAISCRIPT
 		path.push_back( this );
 	}
 
-	// Returns the number of base classes (the distance to the super class)
+	/// Returns the number of base classes (the distance to the super class)
 	sint32 CAgentClass::getNbBaseClass() const
 	{
 		sint32 dist = 0;

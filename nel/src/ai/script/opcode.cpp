@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.4 2001/01/08 14:42:12 valignat Exp $
+ * $Id: opcode.cpp,v 1.5 2001/01/12 16:17:49 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -322,6 +322,7 @@ namespace NLAISCRIPT
 		_BaseClass->release();
 		_ObjectLoad->release();
 	}
+
 	NLAIAGENT::TProcessStatement CFindRunMsg::runOpCode(CCodeContext &context)
 	{
 		const NLAIAGENT::IObjectIA *o = _ObjectLoad->getObject(context);
@@ -340,6 +341,7 @@ namespace NLAISCRIPT
 
 		return NLAIAGENT::processIdle;
 	}
+
 	void CFindRunMsg::getDebugResult(char *str,CCodeContext &context) const
 	{
 		char m[1024*4];

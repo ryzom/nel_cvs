@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.31 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: export_material.cpp,v 1.32 2002/07/03 09:45:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,11 +264,23 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 	// It is a NeL material ?
 	if (isClassIdCompatible (mtl, Class_ID(NEL_MTL_A,NEL_MTL_B)))
 	{
+
+		// Get the shader value now
+		int iShaderType = 0;
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iShaderType", (ParamType2)TYPE_INT, &iShaderType, time);
+		// Water or lightmap ??
+		bool	isWaterOrLightmap= iShaderType==SHADER_WATER || iShaderType==SHADER_LIGHTMAP;
+		bool	isLightmap= iShaderType==SHADER_LIGHTMAP;
+
 		// *** Init lighted or unlighted ?
 
 		// Get unlighted flag
 		int bUnlighted = 0;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bUnlighted", (ParamType2)TYPE_BOOL, &bUnlighted, 0);
+
+		// force unlighted in case of lightmap.
+		if(isLightmap)
+			bUnlighted= 1;
 
 		// Init the material
 		if( bUnlighted )
@@ -277,10 +289,6 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			material.initLighted ();
 
 		// *** Choose a shader
-
-		// Get the shader value
-		int iShaderType = 0;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iShaderType", (ParamType2)TYPE_INT, &iShaderType, time);
 		switch (iShaderType)
 		{
 		case SHADER_NORMAL:
@@ -320,6 +328,9 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		material.setSrcBlend ((CMaterial::TBlend)(blendFunc-1));
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "iBlendDestFunc", (ParamType2)TYPE_INT, &blendFunc, time);
 		material.setDstBlend ((CMaterial::TBlend)(blendFunc-1));
+		// if water or lightMap, force std blend.
+		if(isWaterOrLightmap)
+			material.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
 
 		// Set the alpha test flag
 		int bAlphaTest = 0;
@@ -329,6 +340,9 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		// Vertex alpha
 		int bAlphaVertex = 0;
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaVertex", (ParamType2)TYPE_BOOL, &bAlphaVertex, time);
+		// if water or lightMap, disable alphaVertex
+		if(isWaterOrLightmap)
+			bAlphaVertex= 0;
 
 		// Active vertex alpha if in alpha test or alpha blend mode
 		materialInfo.AlphaVertex = (bAlphaBlend || bAlphaTest) && (bAlphaVertex != 0);

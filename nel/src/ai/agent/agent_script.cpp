@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.116 2002/05/07 14:41:46 portier Exp $
+ * $Id: agent_script.cpp,v 1.117 2002/05/13 13:47:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1571,6 +1571,7 @@ namespace NLAIAGENT
 				a.Result = new CLocalAgentMail(this);
 				return a;
 			}
+
 		case TGetName:
 			{		
 				IObjectIA::CProcessResult r;
@@ -1589,6 +1590,8 @@ namespace NLAIAGENT
 					i ++;
 				}
 				r.Result = new CStringType(CStringVarName("Unknown"));
+
+				r.Result->incRef();
 				return r;
 			}
 
@@ -1602,6 +1605,8 @@ namespace NLAIAGENT
 				}
 				else
 					r.Result = new CStringType( CStringVarName("<unknown>"));
+
+				r.Result->incRef();
 				return r;
 			}
 
@@ -1616,11 +1621,11 @@ namespace NLAIAGENT
 						r.Result = new NLAILOGIC::CBoolType( true );
 					else
 						r.Result = new NLAILOGIC::CBoolType( false );
-					
 				}
 				else
 					r.Result = new NLAILOGIC::CBoolType( false );
 
+				r.Result->incRef();
 				return r;
 			}
 
@@ -1743,6 +1748,7 @@ namespace NLAIAGENT
 				const NLAIAGENT::IVarName *classname = getClassName();
 				r.Result = new CStringType( *classname );
 
+				r.Result->incRef();
 				return r;
 			}
 
@@ -1762,6 +1768,7 @@ namespace NLAIAGENT
 				else
 					r.Result = new NLAILOGIC::CBoolType( false );
 
+				r.Result->incRef();
 				return r;
 			}
 

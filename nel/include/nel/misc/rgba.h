@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.12 2001/02/23 09:08:37 corvazier Exp $
+ * $Id: rgba.h,v 1.13 2001/05/09 10:10:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,22 +88,44 @@ public:
 	 * \param c0 Color 0.
 	 * \param c1 Color 1.
 	 * \param coef Blend factor. 0~255. 0 return c0 and 255 return c1.
-	 */
-	void	blendFromui (const CRGBA &c0, const CRGBA &c1, uint coef); 
+	 */	
+	void blendFromui(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
+	{
+		sint	a1 = coef;
+		sint	a2 = 256-a1;
+		R = (c0.R*a2 + c1.R*a1) >>8;
+		G = (c0.G*a2 + c1.G*a1) >>8;
+		B = (c0.B*a2 + c1.B*a1) >>8;
+		A = (c0.A*a2 + c1.A*a1) >>8;
+	}
 
 	/** 
 	 * Modulate colors with a constant.
 	 * \param c0 Color 0.
 	 * \param a E [0,255]. c0*a returned into this.
 	 */
-	void	modulateFromui (CRGBA &c0, uint a); 
+	void	modulateFromui (CRGBA &c0, uint a)
+	{
+		R = (c0.R*a) >>8;
+		G = (c0.G*a) >>8;
+		B = (c0.B*a) >>8;
+		A = (c0.A*a) >>8;
+	}
+
 
 	/** 
 	 * Modulate colors with another color.
 	 * \param c0 Color 0.
 	 * \param c1 Color 1. c0*c1 returned into this.
 	 */
-	void	modulateFromColor (const CRGBA &c0, const CRGBA &c1);
+	void	modulateFromColor (const CRGBA &c0, const CRGBA &c1)
+	{
+		R = (c0.R*c1.R) >>8;
+		G = (c0.G*c1.G) >>8;
+		B = (c0.B*c1.B) >>8;
+		A = (c0.A*c1.A) >>8;
+	}
+
 
 	/** 
 	 * Set colors.

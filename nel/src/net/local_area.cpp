@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.16 2000/12/08 17:20:27 cado Exp $
+ * $Id: local_area.cpp,v 1.17 2000/12/11 14:05:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/debug.h"
 #include "nel/net/remote_entity.h"
-#include "nel/net/unitime.h"
+#include "nel/misc/time_nl.h"
 
 using namespace NLMISC;
 using namespace NLNET;
@@ -253,7 +253,7 @@ CLocalArea::~CLocalArea()
  */
 void CLocalArea::init()
 {
-	_PreviousTime = CUniTime::getUniTime();
+	_PreviousTime = CTime::getLocalTime();
 }
 
 
@@ -268,7 +268,7 @@ void CLocalArea::update()
 	}
 
 	// Compute time difference
-	TTime actualtime = CUniTime::getUniTime();
+	TTime actualtime = CTime::getLocalTime();
 	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0f;
 	_PreviousTime = actualtime;
 

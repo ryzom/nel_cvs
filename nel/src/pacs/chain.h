@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.6 2001/08/23 13:40:04 legros Exp $
+ * $Id: chain.h,v 1.7 2001/08/29 12:49:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -303,8 +303,6 @@ public:
 	void								serial(NLMISC::IStream &f);
 
 protected:
-	friend class CLocalRetriever;
-
 	///
 	void								unify(std::vector<COrderedChain> &ochains);
 

@@ -119,5 +119,13 @@ LINK32=link.exe
 
 SOURCE=.\src\main.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\physics.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\physics.h
+# End Source File
 # End Target
 # End Project

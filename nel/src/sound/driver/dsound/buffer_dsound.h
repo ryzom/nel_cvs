@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.7 2003/03/05 15:14:52 boucher Exp $
+ * $Id: buffer_dsound.h,v 1.8 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,12 @@ public:
 //	virtual bool			loadWavFile(const char* filename);
 
 	virtual bool			readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize);
+
+	virtual bool			readRawBuffer(const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency);
+
+	virtual uint32			getBufferADPCMEncoded(std::vector<uint8> &result);
+	virtual uint32			getBufferMono16(std::vector<sint16> &result);
+
 
 	/// Return a pointer to the sample data
     virtual uint8*			getData() const				{ return _Data; }

@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.5 2003/03/03 12:58:09 boucher Exp $
+ * $Id: buffer.h,v 1.6 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,11 +33,6 @@
 
 namespace NLSOUND {
 
-
-/*
- * Sound sample format
- */
-enum TSampleFormat { Mono8, Mono16, Stereo8, Stereo16 };
 
 
 /**
@@ -88,6 +83,35 @@ public:
 
 	/// Return true if the buffer is loaded. Used for async load/unload.
 	virtual bool			isBufferLoaded() = 0;
+
+	//@{
+	//\name ADPCM utility methods
+	struct TADPCMState
+	{
+		/// Previous output sample
+		sint16	PreviousSample;
+		/// Stepsize table index
+		uint8	StepIndex;
+		
+	};
+
+	// Encode 16 wav buffer into ADPCM
+	static void				encodeADPCM(sint16 *indata, uint8 *outdata, uint nbSample, TADPCMState &state);
+	static void				decodeADPCM(uint8 *indata, sint16 *outdata, uint nbSample, TADPCMState &state);
+
+	/** Unoptimized utility function designed to build ADPCM encoded sample bank file.
+	 *	Return the number of sample in the buffer.
+	 */
+	virtual uint32			getBufferADPCMEncoded(std::vector<uint8> &result) =0;
+	/** Unoptimized utility function designed to build Mono 16 bits encoded sample bank file.
+	 *	Return the number of sample in the buffer.
+	 */
+	virtual uint32			getBufferMono16(std::vector<sint16> &result) =0;
+
+private:
+	const static sint _IndexTable[16];
+	const static uint _StepsizeTable[89];
+	//@}
 
 protected:
 

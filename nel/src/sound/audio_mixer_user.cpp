@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.50 2003/04/11 16:58:35 vizerie Exp $
+ * $Id: audio_mixer_user.cpp,v 1.51 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,8 +92,6 @@ CAudioMixerUser		*CAudioMixerUser::_Instance = NULL;
 // Return the priority cstring (debug info)
 const char *PriToCStr [NbSoundPriorities] = { "XH", "HI", "MD", "LO" };
 
-const std::string	CAudioMixerUser::SampleBankListExt(".sample_bank_list");
-
 
 
 // ******************************************************************
@@ -123,7 +121,8 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _BackgroundSoundManager(0),
 									 _PlayingSources(0),
 									 _ClusteredSound(0),
-									_PackedSheetPath("")
+									_PackedSheetPath(""),
+									_UseADPCM(true)
 {
 	if ( _Instance == NULL )
 	{
@@ -355,12 +354,14 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 // ******************************************************************
 
-void				CAudioMixerUser::init(uint maxTrack, bool useEax, IProgressCallback *progressCallBack)
+void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack)
 {
 	nldebug( "AM: Init..." );
 
 	_profile(( "AM: ---------------------------------------------------------------" ));
 	_profile(( "AM: DRIVER: %s", NLSOUND_DLL_NAME ));
+
+	_UseADPCM = useADPCM;
 	
 	// Init sound driver
 	try
@@ -426,37 +427,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, IProgressCallback *pro
 	// if needed (update == true), build the sample bank list
 	if (_UpdatePackedSheet)
 	{
-		// regenerate the sample banks list
-		const std::string &sp = _SamplePath;
-
-		std::vector <std::string> dirList;
-		if(!sp.empty())
-			CPath::getPathContent(sp, false, true, false, dirList);
-
-		while (!dirList.empty())
-		{
-			nldebug("Generating sample bank list for %s", dirList.back().c_str());
-			std::vector<std::string> sampleList;
-			CPath::getPathContent(dirList.back(), true, false, true, sampleList);
-
-			for (uint i=0; i< sampleList.size(); ++i)
-			{
-				sampleList[i] = CFile::getFilename(sampleList[i]);
-				nldebug("+- Adding sample %s to bank", sampleList[i].c_str());
-			}
-
-			std::vector<std::string> temp;
-			NLMISC::explode(dirList.back(), "/", temp, true);
-			nlassert(!temp.empty());
-			std::string listName(temp.back());
-
-			COFile file(_SamplePath+listName+SampleBankListExt);
-			file.serialCont(sampleList);
-			dirList.pop_back();
-		}
-
-		// update the searh path content
-		CPath::addSearchPath(_SamplePath);
+		buildSampleBankList();
 	}
 
 
@@ -466,7 +437,10 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, IProgressCallback *pro
 
 	// Load the sound bank singleton
 	CSoundBank::instance()->load();
-	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
+	nlinfo( "Initialized audio mixer with %u voices, %s and %s.",
+		_NbTracks,
+		useEax ? "with EAX support" : "WITHOUT EAX",
+		useADPCM ? "with ADPCM sample source" : "with 16 bits PCM sample source");
 
 	// try to load default configuration from george sheet
 	
@@ -574,6 +548,235 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, IProgressCallback *pro
 	// init the user var bindings
 	initUserVar();
 }
+
+void	CAudioMixerUser::buildSampleBankList()
+{
+	uint i;
+	// regenerate the sample banks list
+	const std::string &sp = _SamplePath;
+
+	// build the list of available sample bank directory
+	vector<string>	bankDir;
+	CPath::getPathContent(sp, false, true, false, bankDir);
+	sort(bankDir.begin(), bankDir.end());
+	for (i=0; i<bankDir.size(); ++i)
+	{
+		if (bankDir[i].empty())
+		{
+			bankDir.erase(bankDir.begin()+i);
+			--i;
+		}
+	}
+	for (i=0; i<bankDir.size(); ++i)
+	{
+		nldebug("Found sample bank dir [%s]", bankDir[i].c_str());
+	}
+
+	// build the list of available sample bank file
+	vector<string>	bankFile;
+	CPath::getPathContent(sp, false, false, true, bankFile);
+	// filter ou any non sample bank file
+	for (i=0; i<bankFile.size(); ++i)
+	{
+		if (bankFile[i].find(".sample_bank") != bankFile[i].size() - 12)
+		{
+			bankFile.erase(bankFile.begin()+i);
+			--i;
+		}
+	}
+	sort(bankFile.begin(), bankFile.end());
+	for (i=0; i<bankFile.size(); ++i)
+	{
+		nldebug("Found sample bank file [%s]", bankFile[i].c_str());
+	}
+
+	// now, do a one to one comparison on bank file and sample file date
+	for (i=0; i<bankDir.size(); ++i)
+	{
+		string	bankname = bankDir[i];
+		if (bankname[bankname.size()-1] == '/')
+			bankname = bankname.substr(0, bankname.size()-1);
+
+		bankname = bankname.substr(bankname.rfind('/')+1);
+
+		if (i >= bankFile.size() || CFile::getFilenameWithoutExtension(bankFile[i]) > bankname)
+		{
+			nlinfo("Compiling sample bank [%s]", bankname.c_str());
+			// need to create a new bank file !
+			TSampleBankHeader	hdr;
+
+			vector<string>	sampleList;
+			CPath::getPathContent(bankDir[i], false, false, true, sampleList);
+			// remove any non wav file
+			uint j;
+			for (j=0; j<sampleList.size(); ++j)
+			{
+				if (sampleList[j].find(".wav") != sampleList[j].size()-4)
+				{
+					sampleList.erase(sampleList.begin()+j);
+					--j;
+				}
+			}
+			sort(sampleList.begin(), sampleList.end());
+
+			vector<vector<uint8> >	adpcmBuffers(sampleList.size());
+			vector<vector<sint16> >	mono16Buffers(sampleList.size());
+
+			for (j=0; j<sampleList.size(); ++j)
+			{
+				nldebug("  Adding sample [%s] into bank", CFile::getFilename(sampleList[j]).c_str());
+				CIFile sample (sampleList[j]);
+				uint8 *data = new uint8[sample.getFileSize()];
+				sample.serialBuffer(data, sample.getFileSize());
+				IBuffer *buffer = _SoundDriver->createBuffer();
+				buffer->presetName(CStringMapper::map(CFile::getFilenameWithoutExtension(sampleList[j])));
+				_SoundDriver->readWavBuffer(buffer, CFile::getFilenameWithoutExtension(sampleList[j]), data, sample.getFileSize());
+				vector<uint8>	adpcmData;
+				uint32 nbSample = buffer->getBufferADPCMEncoded(adpcmData);
+				vector<sint16>	mono16Data;
+				buffer->getBufferMono16(mono16Data);
+				// Sample number MUST be even
+				nlassert(nbSample == (nbSample & 0xfffffffe));
+				nlassert(adpcmData.size() == nbSample/2);
+				adpcmBuffers[j].swap(adpcmData);
+				mono16Buffers[j].swap(mono16Data);
+
+				TSampleFormat sf;
+				uint		freq;
+				buffer->getFormat(sf, freq);
+
+//			hdrAdpcm.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, );
+				hdr.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, mono16Buffers[j].size()*2, adpcmBuffers[j].size());
+			}
+
+			// write the sample bank
+			{
+				string filename = sp+bankname+".sample_bank";
+				COFile sbf(filename);
+				sbf.serial(hdr);
+//				nldebug("Header seeking = %i", sbf.getPos());
+				nlassert(mono16Buffers.size() == adpcmBuffers.size());
+				for (j=0; j<mono16Buffers.size(); ++j)
+				{
+					sbf.serialBuffer((uint8*)(&mono16Buffers[j][0]), mono16Buffers[j].size()*2);
+					sbf.serialBuffer((uint8*)(&adpcmBuffers[j][0]), adpcmBuffers[j].size());
+//					sbf.serialCont(mono16Buffers[j]);
+//					sbf.serialCont(adpcmBuffers[j]);
+				}
+				bankFile.insert(bankFile.begin()+i, filename);
+			}
+		}
+		else if (bankname < CFile::getFilenameWithoutExtension(bankDir[i]))
+		{
+			nlinfo("Removing sample bank file [%s]", bankname.c_str());
+			// remove an out of date bank file
+			CFile::deleteFile(bankFile[i]);
+			bankFile.erase(bankFile.begin()+i);
+			// recheck on this index
+			--i;
+		}
+		else
+		{
+			bool	upToDate = true;
+			// check file list and date
+			nlassert(bankname == CFile::getFilenameWithoutExtension(bankFile[i]));
+
+			// read the sample bank file header.
+			try
+			{
+				CIFile	sbf(bankFile[i]);
+				TSampleBankHeader	hdr;
+				sbf.serial(hdr);
+
+				vector<string>	sampleList;
+				CPath::getPathContent(bankDir[i], false, false, true, sampleList);
+				sort(sampleList.begin(), sampleList.end());
+				if (sampleList.size() == hdr.Name.size())
+				{
+					for (uint j=0; j<sampleList.size(); ++j)
+					{
+						// check same filename
+						if (CFile::getFilename(sampleList[j]) != hdr.Name[j])
+						{
+							upToDate = false;
+							break;
+						}
+						// check modification date
+						if (CFile::getFileModificationDate(sampleList[j]) >= CFile::getFileModificationDate(bankFile[i]))
+						{
+							upToDate = false;
+							break;
+						}
+					}
+				}
+			}
+			catch(Exception e)
+			{
+				upToDate = false;
+			}
+
+			if (!upToDate)
+			{
+				nlinfo("Need to update bank file [%s]", bankname.c_str());
+				CFile::deleteFile(bankFile[i]);
+				bankFile.erase(bankFile.begin()+i);
+				// recheck on this index
+				--i;
+			}
+		}
+	}
+	// clear any out of date bank file 
+	for (; i<bankFile.size(); ++i)
+	{
+		CFile::deleteFile(bankFile[i]);
+	}
+
+
+/*
+	// clear the exisiting list file
+	{
+		vector<string>	fileList;
+		CPath::getPathContent(sp, false, false, true, fileList);
+
+		for (uint i=0; i<fileList.size(); ++i)
+		{
+			if (fileList[i].find(".sample_bank_list") == fileList[i].size() - 17)
+			{
+				CFile::deleteFile(fileList[i]);
+			}
+		}
+	}
+
+	std::vector <std::string> dirList;
+	if(!sp.empty())
+		CPath::getPathContent(sp, false, true, false, dirList);
+
+	while (!dirList.empty())
+	{
+		nldebug("Generating sample bank list for %s", dirList.back().c_str());
+		std::vector<std::string> sampleList;
+		CPath::getPathContent(dirList.back(), true, false, true, sampleList);
+
+		for (uint i=0; i< sampleList.size(); ++i)
+		{
+			sampleList[i] = CFile::getFilename(sampleList[i]);
+			nldebug("+- Adding sample %s to bank", sampleList[i].c_str());
+		}
+
+		std::vector<std::string> temp;
+		NLMISC::explode(dirList.back(), "/", temp, true);
+		nlassert(!temp.empty());
+		std::string listName(temp.back());
+
+		COFile file(_SamplePath+listName+SampleBankListExt);
+		file.serialCont(sampleList);
+		dirList.pop_back();
+	}
+*/
+	// update the searh path content
+	CPath::addSearchPath(_SamplePath);
+}
+
 
 void				CAudioMixerUser::setBackgroundFlagName(uint flagIndex, const std::string &flagName)
 {
@@ -920,6 +1123,9 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 
 void				CAudioMixerUser::reloadSampleBanks(bool async)
 {
+	CPath::addSearchPath(_SamplePath, true, false);
+	if (_UpdatePackedSheet)
+		buildSampleBankList();
 	CSampleBank::reload(async);
 }
 
@@ -1062,7 +1268,7 @@ void				CAudioMixerUser::update()
 			{
 				if (first->second)
 				{
-					nldebug("Inserting update %p", first->first);
+//					nldebug("Inserting update %p", first->first);
 					_UpdateList.insert(first->first);
 				}
 				else
@@ -1355,23 +1561,21 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	}
 	else if (id->getSoundType() == CSound::SOUND_CONTEXT)
 	{
+		static CSoundContext	defaultContext;
 		// This is a context sound.
-		if (context != 0)
+		if (context == 0)
+			context = &defaultContext;
+
+		CContextSound	*ctxSound = static_cast<CContextSound	*>(id);
+		CSound			*sound = ctxSound->getContextSound(*context);
+		if (sound != 0)
 		{
-			CContextSound	*ctxSound = static_cast<CContextSound	*>(id);
-	//		nlassert(context != 0);
-			CSound			*sound = ctxSound->getContextSound(*context);
-			if (sound != 0)
-			{
-				ret = createSource(sound, spawn, cb, userParam, cluster);
-				// Set the volume of the source according to the context volume
-				if (ret != 0)
-					ret->setGain(ret->getGain() * ctxSound->getGain());
-			}
-			else 
-				ret = 0;
+			ret = createSource(sound, spawn, cb, userParam, cluster);
+			// Set the volume of the source according to the context volume
+			if (ret != 0)
+				ret->setGain(ret->getGain() * ctxSound->getGain());
 		}
-		else
+		else 
 			ret = 0;
 	}
 	else
@@ -1810,7 +2014,7 @@ void CAudioMixerUser::unregisterBufferAssoc(CSound *sound, IBuffer *buffer)
 /// Register an object in the update list.
 void CAudioMixerUser::registerUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpdate)
 {
-	nldebug("Registering update %p", pmixerUpdate);
+//	nldebug("Registering update %p", pmixerUpdate);
 	nlassert(pmixerUpdate != 0);
 	_UpdateEventList.push_back(make_pair(pmixerUpdate, true));
 }

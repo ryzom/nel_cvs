@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.4 2003/03/03 12:58:09 boucher Exp $
+ * $Id: source_common.cpp,v 1.5 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdsound.h"
 
 #include "source_common.h"
+#include "audio_mixer_user.h"
 
 
 using namespace NLMISC;
@@ -218,6 +219,8 @@ void					CSourceCommon::setSourceRelativeMode( bool mode )
 
 uint32					CSourceCommon::getTime()
 {
+	if (!_Playing)
+		return 0;
 	// default implementation
 	return uint32(CTime::getLocalTime() - _PlayStart);
 }

@@ -1,6 +1,6 @@
 /** \file context_sound.cpp
  *
- * $Id: context_sound.cpp,v 1.2 2003/03/03 12:58:08 boucher Exp $
+ * $Id: context_sound.cpp,v 1.3 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,11 @@ float		CContextSound::getMaxDistance() const
 	if (_ContextSounds == 0)
 	{
 		const_cast<CContextSound*>(this)->init();
+		if (_ContextSounds == 0)
+		{
+			// invalid state
+			return 0;
+		}
 	}
 	return _ContextSounds->getMaxDistance();;
 }
@@ -238,6 +243,7 @@ void CContextSound::init()
 	// ok, now instantiate the correct container
 	switch (nbJoker)
 	{
+		LM_CASE_CONTAINER_CREATOR(0)
 		LM_CASE_CONTAINER_CREATOR(1)
 		LM_CASE_CONTAINER_CREATOR(2)
 		LM_CASE_CONTAINER_CREATOR(3)

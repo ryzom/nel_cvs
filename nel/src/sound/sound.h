@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.16 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound.h,v 1.17 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/sound/u_source.h"
 #include "nel/georges/u_form_elm.h"
 #include <string>

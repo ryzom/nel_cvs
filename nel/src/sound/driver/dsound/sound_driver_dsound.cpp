@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.19 2003/03/25 13:28:42 vizerie Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.20 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -647,7 +647,11 @@ void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUse
 
 	if (now - lastUpdate > _TimerPeriod * 2)
 	{
-		nlwarning("CSoundDriverDSound::TimerCallback : no update since %u millisec (nominal update = %u", uint32(now-lastUpdate), uint32(_TimerPeriod));
+//		nlwarning("CSoundDriverDSound::TimerCallback : no update since %u millisec (nominal update = %u", uint32(now-lastUpdate), uint32(_TimerPeriod));
+	}
+	else
+	{
+//		nldebug("Callback delay = %u ms", uint32(now-lastUpdate));
 	}
 
 	lastUpdate = now;
@@ -667,15 +671,33 @@ void CSoundDriverDSound::update()
 
 	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
 
+	set<CSourceDSound*>::iterator first(_Sources.begin()), last(_Sources.end());
+	for (;first != last; ++first)
+	{
+		if ((*first)->needsUpdate())
+		{
+			if ((*first)->update()) 
+			{
+#if NLSOUND_PROFILE
+				_UpdateSources++;
+#endif
+			}
+		}
+	}
+
+/*
 	set<CSourceDSound*>::iterator iter;
 
 	iter = _Sources.begin();
+
 
 	if ((iter != _Sources.end()) && (*iter)->needsUpdate())
 	{
 		while (iter != _Sources.end())
 		{
-			if ((*iter)->update2()) {
+//			if ((*iter)->update2()) {
+			if ((*iter)->update()) 
+			{
 #if NLSOUND_PROFILE
 				_UpdateSources++;
 #endif
@@ -684,11 +706,13 @@ void CSoundDriverDSound::update()
 		}
 	}
 
-
-	NLMISC::TTime	last = CTime::getLocalTime() - now;
-	if (last > _TimerPeriod / 2)
+*/
 	{
-		nlwarning("CSoundDriverDSound::TimerCallback : update took %u millisec", (uint32)last);
+		NLMISC::TTime	last = CTime::getLocalTime() - now;
+		if (last > _TimerPeriod / 2)
+		{
+			nlwarning("CSoundDriverDSound::TimerCallback : update took %u millisec", (uint32)last);
+		}
 	}
 
 #if NLSOUND_PROFILE
@@ -783,6 +807,11 @@ bool CSoundDriverDSound::loadWavFile(IBuffer *destbuffer, const char *filename)
 bool CSoundDriverDSound::readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize)
 {
 	return ((CBufferDSound*) destbuffer)->readWavBuffer(name, wavData, dataSize);
+}
+
+bool CSoundDriverDSound::readRawBuffer( IBuffer *destbuffer, const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency)
+{
+	return ((CBufferDSound*) destbuffer)->readRawBuffer(name, rawData, dataSize, format, frequency);
 }
 
 

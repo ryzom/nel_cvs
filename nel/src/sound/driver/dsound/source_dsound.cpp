@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.21 2003/03/04 17:47:34 lecroart Exp $
+ * $Id: source_dsound.cpp,v 1.22 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,9 +37,11 @@
 #undef max
 #endif
 
+#include <algorithm>
 
 
 using namespace NLMISC;
+using namespace std;
 
 
 namespace NLSOUND {
@@ -64,13 +66,14 @@ namespace NLSOUND {
 
 
 
-uint32 CSourceDSound::_SecondaryBufferSize = 65536;
-uint32 CSourceDSound::_SwapCopySize = 32768;
-uint32 CSourceDSound::_UpdateCopySize = 16384;
-uint32 CSourceDSound::_XFadeSize = 64;
-uint CSourceDSound::_DefaultChannels = 1;
-uint CSourceDSound::_DefaultSampleRate = 22050;
-uint CSourceDSound::_DefaultSampleSize = 16;
+const uint32 CSourceDSound::_SecondaryBufferSize = 0x10000;
+const uint32 CSourceDSound::_SizeMask = 0xffff;
+const uint32 CSourceDSound::_SwapCopySize = 0x8000;
+const uint32 CSourceDSound::_UpdateCopySize = 0x4000;
+const uint32 CSourceDSound::_XFadeSize = 64;
+const uint CSourceDSound::_DefaultChannels = 1;
+const uint CSourceDSound::_DefaultSampleRate = 22050;
+const uint CSourceDSound::_DefaultSampleSize = 16;
 
 
 
@@ -111,22 +114,31 @@ CSourceDSound::CSourceDSound( uint sourcename )
 #if EAX_AVAILABLE == 1
 	_EAXSource = 0;
 #endif
+	_Sample = 0;
+	_SampleSize = 0;
+	_SampleOffset = 0;
+	_Format = Mono8;
+	_SampleFreq = _DefaultSampleRate;
+	_FillOffset = 0;
+	_State = source_stoped;
+	_PlayOffset = 0;
+	_LastPlayPos = 0;
 
-	_BufferSize = 0;
-	_SwapBuffer = 0;
+//	_BufferSize = 0;
+//	_SwapBuffer = 0;
 	_SecondaryBuffer = 0;
-	_SecondaryBufferState = NL_DSOUND_SILENCED;
+//	_SecondaryBufferState = NL_DSOUND_SILENCED;
 	_3DBuffer = 0;
-	_NextWritePos = 0;
-	_BytesWritten = 0;
-	_SilenceWritten = 0;
+//	_NextWritePos = 0;
+//	_BytesWritten = 0;
+//	_SilenceWritten = 0;
 	_Loop = false;
-	_EndPosition = 0;
-	_EndState = NL_DSOUND_TAIL1;
-	_UserState = NL_DSOUND_STOPPED;
+//	_EndPosition = 0;
+//	_EndState = NL_DSOUND_TAIL1;
+//	_UserState = NL_DSOUND_STOPPED;
 	_Freq = 1.0f;
 	_SampleRate = _DefaultSampleRate;
-	_IsUsed = false;
+//	_IsUsed = false;
 	_Gain = 1.0f;
 	_Volume = 0;
 	_Alpha = 0.0;
@@ -157,7 +169,7 @@ CSourceDSound::~CSourceDSound()
 
 void CSourceDSound::release()
 {
-	_Buffer = 0;
+//	_Buffer = 0;
 
 #if EAX_AVAILABLE == 1
 	if (_EAXSource != 0)
@@ -184,6 +196,20 @@ void CSourceDSound::release()
 		_SecondaryBuffer = 0;
 	}
 
+}
+
+
+uint32	CSourceDSound::getTime() 
+{ 
+	if (_Sample == 0)
+		return 0;
+
+	TSampleFormat format;
+	uint freq;
+
+	_Sample->getFormat(format, freq);
+
+	return 1000.0f * (_PlayOffset+1) / (float)freq;
 }
 
 // ******************************************************************
@@ -270,6 +296,8 @@ void CSourceDSound::init(LPDIRECTSOUND8 directSound, bool useEax)
 	}
 
 
+	nldebug("Created DirectX secondary buffer @ %p", _SecondaryBuffer);
+
 	// Fill the buffer with silence
 
 	LPVOID ptr;
@@ -315,6 +343,48 @@ void CSourceDSound::setStaticBuffer( IBuffer *buffer )
 {
 	EnterCriticalSection(&_CriticalSection); 
 
+	if (_State == source_playing)
+	{
+		_State = source_swap_pending;
+		_Sample = 0;
+		_NextSample = buffer;
+		_SampleOffset = 0;
+		_PlayOffset = 0;
+	}
+	else
+	{
+		_Sample = buffer;
+		_NextSample = 0;
+		_SampleOffset = 0;
+		_PlayOffset = 0;
+		_ADPCMState.PreviousSample = 0;
+		_ADPCMState.StepIndex = 0;
+		if (buffer)
+		{
+//			_SampleSize = buffer->getSize();
+			buffer->getFormat(_Format, _SampleFreq);
+			switch(_Format)
+			{
+			case Mono8:
+				_SampleSize = buffer->getSize();
+				break;
+			case Mono16:
+				_SampleSize = buffer->getSize() / 2;
+				break;
+			case Mono16ADPCM:
+				_SampleSize = buffer->getSize() * 2;
+				break;
+			case Stereo8:
+				_SampleSize = buffer->getSize() / 2;
+				break;
+			case Stereo16:
+				_SampleSize = buffer->getSize() / 4; 
+				break;
+			}
+		}
+	}
+	
+/*
 	// If the user calls setStaticBuffer with a null buffer,
 	// stop the currently playing buffer and set it to null.
 	// Otherwise, store the buffer in the swap buffer variable.
@@ -329,6 +399,452 @@ void CSourceDSound::setStaticBuffer( IBuffer *buffer )
 	}
 
 	_SwapBuffer = _Buffer = buffer;
+
+	_ADPCMState.PreviousSample = 0;
+	_ADPCMState.StepIndex = 0;
+*/	
+	LeaveCriticalSection(&_CriticalSection); 
+}
+
+IBuffer *CSourceDSound::getStaticBuffer()
+{
+	if (_State == source_swap_pending)
+		return _NextSample;
+	else
+		return _Sample;
+
+}
+
+
+void CSourceDSound::getCursors(TCursors &cursors)
+{
+	_SecondaryBuffer->GetCurrentPosition((DWORD*)&cursors.PlayCursor, (DWORD*)&cursors.WriteCursor);
+	// add a security margin to the write cursor
+/*	cursors.WriteCursor += _UpdateCopySize;
+	if (cursors.WriteCursor > _SecondaryBufferSize)
+		cursors.WriteCursor -= _SecondaryBufferSize;
+*/
+	// compute the available write size
+//	cursors.WriteSize = std::min(_UpdateCopySize, cursors.PlayCursor + _SecondaryBufferSize - cursors.WriteCursor);
+	cursors.WriteSize = std::min(_UpdateCopySize, (cursors.PlayCursor - cursors.WriteCursor) & _SizeMask);
+}
+
+void CSourceDSound::fillData(sint16 *dst, uint nbSample)
+{
+	nlassert((nbSample & 0xfffffffe) == nbSample);
+	if (_Sample != 0)
+	{
+		void	*data = ((CBufferDSound*) _Sample)->getData();
+		sint8	*data8;
+		uint8	*dataAdpcm;
+		sint16	*data16;
+		uint	i;
+
+//nldebug("Filling from %p to %p (%p sample, %p bytes)", dst, dst+nbSample, nbSample, nbSample*2);
+
+		
+		switch(_Format)
+		{
+		case Mono8:
+			data8 = (sint8*) data;
+			data8 += _SampleOffset;
+//	nldebug(" with data (Mono8) from %p to %p (sample : base = %p, size = %p)", data8, data8+nbSample, data, _SampleSize);
+			for (i=0; i<nbSample; ++i)
+			{
+				dst[i] = sint16(data8[i])*256;
+			}
+			_SampleOffset += nbSample;
+			break;
+		case Mono16ADPCM:
+			dataAdpcm = (uint8*) data;
+			dataAdpcm += _SampleOffset/2;
+//nldebug("Filling ADPCM : %p => %p with %p to %p", dst, dst+nbSample, dataAdpcm - (uint8*)data, dataAdpcm + (nbSample/2)-(uint8*)data);
+//nldebug(" with data (Mono16ADPCM) from %p to %p (sample : base = %p, size = %p)", dataAdpcm, dataAdpcm+(nbSample/2), data, _SampleSize*2);
+			IBuffer::decodeADPCM(dataAdpcm, dst, nbSample, _ADPCMState);
+			_SampleOffset += nbSample;
+			break;
+		case Mono16:
+			data16 = (sint16*)data;
+			data16 += _SampleOffset;
+//nldebug("Filling Mono16 : %p => %p with %p to %p", dst, dst+nbSample, data16 - (sint16*)data, data16 + (nbSample)-(sint16*)data);
+//	nldebug(" with data (Mono16) from %p to %p (sample : base = %p, size = %p)", data16, data16+nbSample, data, _SampleSize/2);
+			CFastMem::memcpy(dst, data16, nbSample*2);
+			_SampleOffset += nbSample;
+			break;
+		case Stereo8:
+			data8 = (sint8*) data;
+			data8 += _SampleOffset*2;
+			for (i=0; i<nbSample; ++i)
+			{
+				dst[i] = (sint16(data8[i*2])*128) + (sint16(data8[i*2+1])*128);
+			}
+			_SampleOffset += nbSample*2;
+			break;
+		case Stereo16:
+			data16 = (sint16*) data;
+			data16 += _SampleOffset*2;
+			for (i=0; i<nbSample; ++i)
+			{
+				dst[i] = (data16[i*2]>>1) + (data16[i*2+1]>>1);
+			}
+			_SampleOffset += nbSample*2;
+			break;
+		}
+
+/*		if (_SampleOffset == _SampleSize)
+		{
+			_SampleOffset = 0;
+			_ADPCMState.PreviousSample = 0;
+			_ADPCMState.StepIndex = 0;
+		}
+*/
+
+		nlassert(_SampleOffset <= _SampleSize);
+	}
+	else
+	{
+	nldebug("Filling : NO DATA from %p to %p (%p sample, %p bytes)", dst, dst+nbSample, nbSample, nbSample*2);
+
+		// write silence in the dst.
+		while (nbSample)
+		{
+			*dst++ = 0;
+			--nbSample;
+		}
+	}
+}
+
+void CSourceDSound::fillData(const TLockedBufferInfo &lbi, int nbSample)
+{
+	uint size = std::min(uint32(nbSample), lbi.Size1>>1);
+	fillData(lbi.Ptr1, size);
+	nbSample -= size;
+
+	if (nbSample)
+	{
+		size = min(uint32(nbSample), lbi.Size2>>1);
+		fillData(lbi.Ptr2, size);
+		nbSample -= size;
+	}
+	nlassert(nbSample == 0);
+}
+
+void CSourceDSound::fillSilence(const TLockedBufferInfo &lbi, int nbSample)
+{
+	uint size = min(uint32(nbSample), lbi.Size1>>1);
+	uint tmp = size;
+	sint16	*ptr = lbi.Ptr1;
+//	nldebug("Silencing from %p to %p (%p sample, %p bytes)", ptr, ptr+size, size, size*2);
+
+	for (; size != 0; --size)
+		*ptr++ = 0;
+	nbSample -= tmp;
+
+	if (nbSample)
+	{
+		size = std::min(uint32(nbSample), lbi.Size2>>1);
+		tmp = size;
+		ptr = lbi.Ptr2;
+//	nldebug("Silencing from %p to %p (%p sample, %p bytes)", ptr, ptr+size, size, size*2);
+		for (; size != 0; --size)
+			*ptr++ = 0;
+		nbSample -= tmp;
+	}
+	nlassert(nbSample == 0);
+
+}
+
+void CSourceDSound::xfade(const TLockedBufferInfo &lbi, sint16 *src)
+{
+	// do the XFade in integer fixed point arithmetic
+
+	nlassert((_XFadeSize & 0x1) == 0)
+	uint	fade = _XFadeSize;
+	sint16	*ptr = lbi.Ptr1;
+	uint	count = lbi.Size1 /2;
+	sint	alpha, invAlpha;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		invAlpha = 0x10000 - alpha;
+		*ptr = (sint(*ptr)*alpha + sint(*src) * invAlpha) >> 16;
+		++src;
+		++ptr;
+		--count;
+		--fade;
+	}
+
+	ptr = lbi.Ptr2;
+	count = lbi.Size2 /2;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		invAlpha = 0x10000 - alpha;
+		*ptr = (sint(*ptr)*alpha + sint(*src) * invAlpha) >> 16;
+		++src;
+		++ptr;
+		--count;
+		--fade;
+	}
+}
+
+void CSourceDSound::fadeOut(const TLockedBufferInfo &lbi)
+{
+	nlassert((_XFadeSize & 0x1) == 0)
+	uint	fade = _XFadeSize;
+	sint16	*ptr = lbi.Ptr1;
+	uint	count = lbi.Size1/2;
+	sint	alpha;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		*ptr = (*ptr*alpha) >> 16;
+		++ptr;
+		--count;
+		--fade;
+	}
+
+	ptr = lbi.Ptr2;
+	count = lbi.Size2/2;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		*ptr = (*ptr*alpha) >> 16;
+		++ptr;
+		--count;
+		--fade;
+	}
+}
+void CSourceDSound::fadeIn(const TLockedBufferInfo &lbi)
+{
+	// do the XFade in integer fixed point arithmetic
+
+	nlassert((_XFadeSize & 0x1) == 0)
+	uint	fade = _XFadeSize;
+	sint16	*ptr = lbi.Ptr1;
+	uint	count = lbi.Size1 /2;
+	sint	alpha, invAlpha;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		invAlpha = 0x10000 - alpha;
+		*ptr = (*ptr*invAlpha) >> 16;
+		++ptr;
+		--count;
+		--fade;
+	}
+
+	ptr = lbi.Ptr2;
+	count = lbi.Size2 /2;
+
+	while (fade && count)
+	{
+		alpha = (fade<<16) / _XFadeSize;
+		invAlpha = 0x10000 - alpha;
+		*ptr = (*ptr*invAlpha) >> 16;
+		++ptr;
+		--count;
+		--fade;
+	}
+}
+
+
+void CSourceDSound::advanceFill(TLockedBufferInfo &lbi, uint nbSample)
+{
+	uint32 size = nbSample * 2;
+	if (lbi.Size1 < size)
+	{
+		size -= lbi.Size1;
+		lbi.Size1 = lbi.Size2;
+		lbi.Size2 = 0;
+		lbi.Ptr1 = lbi.Ptr2;
+		lbi.Ptr2 = 0;
+	}
+
+	nlassert(lbi.Size1 >= size);
+	lbi.Size1 -= size;
+	lbi.Ptr1 += size/2;
+
+	_FillOffset += nbSample*2;
+	nlassert(_FillOffset == (_FillOffset & 0xfffffffC));
+	_FillOffset &= _SizeMask;
+//	if (_FillOffset >= _SecondaryBufferSize)
+//		_FillOffset -= _SecondaryBufferSize;
+	nlassert(_FillOffset < _SecondaryBufferSize);
+}
+
+
+
+bool CSourceDSound::play()
+{
+//	nldebug("Play");
+	EnterCriticalSection(&_CriticalSection); 
+
+	_SilenceWriten = 0;
+
+//	uint32 writeSize = checkFillCursor();
+	TCursors cursors;
+	getCursors(cursors);
+
+	// set a new filling point
+	_FillOffset = cursors.WriteCursor;
+	_FillOffset = (_FillOffset+3) & 0xfffffffC;
+	cursors.WriteCursor = _FillOffset;
+
+	TLockedBufferInfo lbi;
+	if (lock(_FillOffset, cursors.WriteSize, lbi))
+	{
+		TLockedBufferInfo unlockInfo(lbi);
+		// ok, the buffer is locked, write data
+		if (_State == source_swap_pending)
+		{
+			// we swap the buffer.
+			_Sample = _NextSample;
+			_NextSample = 0;
+			if (_Sample != 0)
+			{
+				_Sample->getFormat(_Format, _SampleFreq);
+				switch(_Format)
+				{
+				case Mono8:
+					_SampleSize = _Sample->getSize();
+					break;
+				case Mono16:
+					_SampleSize = _Sample->getSize() / 2;
+					break;
+				case Mono16ADPCM:
+					_SampleSize = _Sample->getSize() * 2;
+					break;
+				case Stereo8:
+					_SampleSize = _Sample->getSize() / 2;
+					break;
+				case Stereo16:
+					_SampleSize = _Sample->getSize() / 4; 
+					break;
+				}
+				_State = source_playing;
+			}
+			else
+			{
+				_SampleSize = 0;
+				_State = source_silencing;
+			}
+		}
+		_LastPlayPos = cursors.PlayCursor;
+		_SampleOffset = 0;
+		_PlayOffset = 0;
+		_ADPCMState.PreviousSample = 0;
+		_ADPCMState.StepIndex = 0;
+		// Compute the size of data to write.
+		uint dataToFill = std::min(uint(cursors.WriteSize / 2), _SampleSize - _SampleOffset);
+		dataToFill &= 0xfffffffe;
+		// ok, the buffer is locked, write data
+		if (_State == source_playing || _State == source_silencing)
+		{
+			// we need a little XFade
+			sint16	fadeBuffer[_XFadeSize];
+			fillData(fadeBuffer, _XFadeSize);
+			xfade(lbi, fadeBuffer);
+			advanceFill(lbi, _XFadeSize);
+			cursors.WriteSize -= _XFadeSize*2;
+			dataToFill -= _XFadeSize;
+		}
+		else
+		{
+			// we need a little FadeIn
+			fillData(lbi, _XFadeSize);
+			fadeIn(lbi);
+			advanceFill(lbi, _XFadeSize);
+			cursors.WriteSize -= _XFadeSize*2;
+			dataToFill -= _XFadeSize;
+		}
+		fillData(lbi, dataToFill);
+		cursors.WriteSize -= dataToFill * 2;
+		advanceFill(lbi, dataToFill);
+		_State = source_playing;
+		if (_Loop)
+		{
+			while (cursors.WriteSize >= 4)
+			{
+				if (_SampleOffset == _SampleSize)
+				{
+					// rewind the sample
+					_SampleOffset = 0;
+					_ADPCMState.PreviousSample = 0;
+					_ADPCMState.StepIndex = 0;
+				}
+		nlassert(_SampleOffset < _SampleSize);
+				dataToFill = std::min(uint(cursors.WriteSize / 2), _SampleSize - _SampleOffset);
+				dataToFill &= 0xfffffffe;
+				fillData(lbi, dataToFill);
+				advanceFill(lbi, dataToFill);
+				cursors.WriteSize -= dataToFill*2;
+			}
+		}
+		else
+		{
+			if (_SampleOffset == _SampleSize)
+			{
+				// begin to write silence, but stil in play state until all sample are played
+//				_State = source_silencing;
+				fillSilence(lbi, cursors.WriteSize/2);
+				advanceFill(lbi, cursors.WriteSize/2);
+				_SilenceWriten = cursors.WriteSize;
+				cursors.WriteSize = 0;
+			}
+//			else
+//				_State = source_playing;
+		}
+
+
+		unlock(unlockInfo);
+	}
+	else
+	{
+		nlwarning("Couldn't lock the sound buffer for %u bytes", cursors.WriteSize);
+	}
+
+	LeaveCriticalSection(&_CriticalSection); 
+
+	return true;
+}
+
+void CSourceDSound::stop()
+{
+//	nldebug("Stop");
+	EnterCriticalSection(&_CriticalSection); 
+	
+	if (_State != source_stoped && _State != source_silencing)
+	{
+		// retreive the cursors;
+		TCursors	cursors;
+		getCursors(cursors);
+
+		_FillOffset = cursors.WriteCursor;
+		_FillOffset = (_FillOffset+3) & 0xfffffffC;
+
+		TLockedBufferInfo lbi;
+		if (lock(_FillOffset, cursors.WriteSize, lbi))
+		{
+			TLockedBufferInfo unlockInfo(lbi);
+
+ 			fadeOut(lbi);
+			advanceFill(lbi, _XFadeSize);
+			cursors.WriteSize -= _XFadeSize*2;
+			fillSilence(lbi, cursors.WriteSize/2);
+			advanceFill(lbi, cursors.WriteSize/2);
+			_SilenceWriten = cursors.WriteSize;
+
+			_State = source_silencing;
+
+			unlock(unlockInfo);
+		}
+	}
 
 	LeaveCriticalSection(&_CriticalSection); 
 }
@@ -352,7 +868,7 @@ bool CSourceDSound::getLooping() const
 
 
 // ******************************************************************
-
+/*
 void CSourceDSound::swap()
 {
 	_Buffer = _SwapBuffer;
@@ -360,9 +876,9 @@ void CSourceDSound::swap()
 	_BytesWritten = 0;
 	_SwapBuffer = 0;
 }
-
+*/
 // ******************************************************************
-
+/*
 bool CSourceDSound::play()
 {
 	EnterCriticalSection(&_CriticalSection); 
@@ -441,10 +957,10 @@ bool CSourceDSound::play()
 
 	return true;
 }
-
+*/
 
 // ******************************************************************
-
+/*
 void CSourceDSound::stop()
 {
 	EnterCriticalSection(&_CriticalSection); 
@@ -465,12 +981,14 @@ void CSourceDSound::stop()
 
 	LeaveCriticalSection(&_CriticalSection); 
 }
-
+*/
 // ******************************************************************
 
 void CSourceDSound::pause()
 {
-	EnterCriticalSection(&_CriticalSection); 
+	// TODO : recode this !
+	nlassert(false);
+/*	EnterCriticalSection(&_CriticalSection); 
 
 	TSourceDSoundUserState old = _UserState;
 
@@ -485,13 +1003,15 @@ void CSourceDSound::pause()
 	}
 
 	LeaveCriticalSection(&_CriticalSection); 
+*/
 }
 
 // ******************************************************************
 
 bool CSourceDSound::isPlaying() const
 {
-	return (_UserState == NL_DSOUND_PLAYING);
+//	return (_UserState == NL_DSOUND_PLAYING);
+	return _State == source_playing || _State == source_swap_pending;
 }
 
 
@@ -499,7 +1019,10 @@ bool CSourceDSound::isPlaying() const
 
 bool CSourceDSound::isPaused() const
 {
-	return (_UserState == NL_DSOUND_PAUSED);
+	// TODO
+	nlassert(false);
+	return false;
+//	return (_UserState == NL_DSOUND_PAUSED);
 }
 
 
@@ -507,7 +1030,8 @@ bool CSourceDSound::isPaused() const
 
 bool CSourceDSound::isStopped() const
 {
-	return (_UserState == NL_DSOUND_STOPPED);
+	return _State == source_silencing || _State == source_stoped;
+//	return (_UserState == NL_DSOUND_STOPPED);
 }
 
 
@@ -515,45 +1039,184 @@ bool CSourceDSound::isStopped() const
 
 bool CSourceDSound::needsUpdate()
 {
-	DWORD playPos, writePos;
-	uint32 space;
-	
-	if (_SecondaryBuffer == 0)
-	{
-		return true;
-	}
-
-	_SecondaryBuffer->GetCurrentPosition(&playPos, &writePos);
-
-		
-	if (playPos == _NextWritePos)
-	{
-		return false;
-	}
-	else if (playPos > _NextWritePos) 
-	{
-		space = playPos - _NextWritePos;
-	}
-	else
-	{
-		space = _SecondaryBufferSize + playPos - _NextWritePos;
-	}
-	
-	// Don't bother if the number of samples is smaller than the copy size.
-	return (space > _UpdateCopySize);
+	return _State == source_silencing || _State == source_playing || _State == source_swap_pending;
 }
 
 
 
 // ******************************************************************
 
-void CSourceDSound::update()
+bool CSourceDSound::update()
 {
-	update2();
+	bool updateDone = false;
+
+	EnterCriticalSection(&_CriticalSection);
+
+	// fill some data into the buffer
+	TCursors cursors;
+	getCursors(cursors);
+	uint32	writeSize;
+
+	// The total size available for fill (between fillOffset and play cusors)
+	uint32 fillSize = (cursors.PlayCursor - _FillOffset) & _SizeMask;
+	// The play margin (between play and write cursor)
+	uint32 margin = (cursors.WriteCursor - cursors.PlayCursor) & _SizeMask;
+	// The number of sample played since previous update
+	uint32 samplePlayed = ((cursors.PlayCursor - _LastPlayPos) & _SizeMask) / 2;
+	_LastPlayPos = cursors.PlayCursor;
+
+
+//	if (_FillOffset < cursors.WriteCursor && _FillOffset >cursors.PlayCursor)
+	if (fillSize + margin > _SecondaryBufferSize)
+	{
+		// arg ! 
+		nlwarning("FillOffset is between play and write cursor (P = %p F = %p W = %p!", cursors.PlayCursor, _FillOffset, cursors.WriteCursor);
+		_FillOffset = cursors.WriteCursor;
+		_FillOffset = (_FillOffset+3) & 0xfffffffC;
+		_SilenceWriten = 0;
+	nlassert(_FillOffset < _SecondaryBufferSize);
+	}
+
+	// advance of the fill offset over the write cursor
+	uint32 advance = (_FillOffset - cursors.WriteCursor) & _SizeMask;
+
+/*	nldebug("Play = %p, Write = %p, Fill = %p, FillSize = %p, Margin = %p, Advance = %p",
+		cursors.PlayCursor, cursors.WriteCursor, _FillOffset, fillSize, margin, advance);
+*/
+	if (advance > _UpdateCopySize)
+	{
+		// enougth data wrote, wait until next update
+		cursors.WriteSize = 0;
+	}
+/*	if (cursors.WriteSize)
+	{
+		if (_FillOffset < cursors.WriteCursor)
+		{
+			if (_FillOffset > cursors.WriteCursor + _UpdateCopySize - _SecondaryBufferSize )
+			{
+//				nlwarning("Enougth data wrote");
+				// already fill enough data
+				cursors.WriteSize = 0;
+			}
+		}
+		else
+		{
+			if (_FillOffset > cursors.WriteCursor + _UpdateCopySize)
+			{
+//				nlwarning("Enougth data wrote");
+				// already fill enough data
+				cursors.WriteSize = 0;
+			}
+		}
+	}
+*/
+//	nldebug("Cursors : Play = %p, Write = %p, Fill = %p", cursors.PlayCursor, cursors.WriteCursor, _FillOffset);
+
+	cursors.WriteCursor = _FillOffset;
+	writeSize = cursors.WriteSize;	// compute the real played sample offset
+
+	// update the real number of played sample
+	if (_State == source_playing)
+		_PlayOffset += samplePlayed;
+
+	if (writeSize >= _UpdateCopySize)
+	{
+//		nldebug("Update %p bytes", _UpdateCopySize);
+		writeSize = _UpdateCopySize;
+		updateDone = true;
+		TLockedBufferInfo lbi;
+		if (lock(_FillOffset, writeSize, lbi))
+		{
+			TLockedBufferInfo unlockInfo(lbi);
+			if (_State == source_playing)
+			{
+		nlassert(_SampleOffset <= _SampleSize);
+				uint32	updateSize = min(_SampleSize - _SampleOffset, uint(writeSize/2));
+				updateSize &= 0xfffffffe;
+				fillData(lbi, updateSize);
+				advanceFill(lbi, updateSize);
+				writeSize -= updateSize*2;
+
+				if (_Loop)
+				{
+					while (_PlayOffset >= _SampleSize)
+						_PlayOffset -= _SampleSize;
+
+					// repeat until we have at least 2 sample to write
+					while (writeSize >= 4)
+					{
+						if (_SampleOffset == _SampleSize)
+						{
+							// rewind the sample
+							_SampleOffset = 0;
+							_ADPCMState.PreviousSample = 0;
+							_ADPCMState.StepIndex = 0;
+						}
+
+						updateSize = min(_SampleSize - _SampleOffset, uint(writeSize/2));
+						updateSize &= 0xfffffffe;
+						fillData(lbi, updateSize);
+						advanceFill(lbi, updateSize);
+						writeSize -= updateSize*2;
+					}
+				}
+				else
+				{
+					if (_SampleOffset == _SampleSize)
+					{
+						fillSilence(lbi, writeSize/2);
+						advanceFill(lbi, writeSize/2);
+						_SilenceWriten += writeSize;
+					}
+					if (_PlayOffset >= _SampleSize)
+					{
+						// all the sample is played, no we are in silencing state !
+						_PlayOffset = _SampleSize;
+						_State = source_silencing;
+					}
+				}
+
+			}
+			else if (_State == source_swap_pending)
+			{
+				// the sample has been changed but not replayed yet ? so we 'stop' the old buffer
+
+				fadeOut(lbi);
+				advanceFill(lbi, _XFadeSize);
+				writeSize -= _XFadeSize*2;
+				fillSilence(lbi, writeSize/2);
+				advanceFill(lbi, writeSize/2);
+				_SilenceWriten = writeSize;
+				_State = source_silencing;
+			}
+			else if (_State == source_silencing)
+			{
+				// write silence into the buffer.
+				uint32 updateSize = min(writeSize, _SecondaryBufferSize - _SilenceWriten);
+				updateSize &= 0xfffffffC;
+				fillSilence(lbi, updateSize/2);
+				advanceFill(lbi, updateSize/2);
+				_SilenceWriten += updateSize;
+
+				if (_SilenceWriten == _SecondaryBufferSize)
+					_State = source_stoped;
+			}
+			else
+			{
+				nlwarning("Update not needed !");
+			}
+
+			unlock(unlockInfo);
+		}
+	}
+
+	LeaveCriticalSection(&_CriticalSection);
+
+	return updateDone;
 }
 
 // ******************************************************************
-
+/*
 bool CSourceDSound::update2()
 {
 	bool res = false;
@@ -631,7 +1294,7 @@ bool CSourceDSound::update2()
 
 	return res;
 }
-
+*/
 
 
 // ******************************************************************
@@ -659,27 +1322,6 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos, bool deferred )
 const NLMISC::CVector &CSourceDSound::getPos() const
 {
 	return _Pos;
-	// Coordinate system: conversion from NeL to OpenAL/GL:
-/*	if (_3DBuffer != NULL)
-	{
-		D3DVECTOR v;
-		HRESULT hr = _3DBuffer->GetPosition(&v);
-
-		if (hr != DS_OK)
-		{
-			nlwarning ("GetPosition failed");
-			pos.set(0, 0, 0);	
-		}
-		else
-		{
-			pos.set(v.x, v.z, v.y);
-		}
-	}
-	else
-	{
-		pos.set(0, 0, 0);	
-	}
-*/
 }
 
 
@@ -802,12 +1444,12 @@ void CSourceDSound::setPitch( float coeff )
 {
 //	_Freq = coeff;
 
-	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
+	if ((_Sample != 0) && (_SecondaryBuffer != 0))
 	{
 		TSampleFormat format;
 		uint freq;
 
-		_Buffer->getFormat(format, freq);
+		_Sample->getFormat(format, freq);
 
 		_SampleRate = (uint32) (coeff * (float) freq);
 
@@ -826,13 +1468,13 @@ void CSourceDSound::setPitch( float coeff )
 
 float CSourceDSound::getPitch() const
 {
-	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
+	if ((_Sample != 0) && (_SecondaryBuffer != 0))
 	{
 		TSampleFormat format;
 		uint freq0;
 		DWORD freq;
 
-		_Buffer->getFormat(format, freq0);
+		_Sample->getFormat(format, freq0);
 
 		if (_SecondaryBuffer->GetFrequency(&freq) != DS_OK)
 		{
@@ -1134,7 +1776,7 @@ void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 	}
 	if ( _EAXSource != NULL )
 	{
-		HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
+			HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
 		if (res != S_OK)
 		{
 //			nlwarning("Setting EAX Param #%u fail : %x", prop, res);
@@ -1148,11 +1790,39 @@ void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 
 IBuffer *CSourceDSound::getBuffer()
 {	
-	return _Buffer;
+	return _Sample;
 }
 
 
 // ******************************************************************
+
+bool CSourceDSound::lock(uint32 offset, uint32 size, TLockedBufferInfo &lbi)
+{
+	HRESULT hr = _SecondaryBuffer->Lock(offset, size, (LPVOID*) &lbi.Ptr1, (DWORD*) &lbi.Size1, (LPVOID*) &lbi.Ptr2, (DWORD*) &lbi.Size2, 0);
+
+	if (hr == DSERR_BUFFERLOST)
+	{
+		// If the buffer got lost somehow, try to restore it.
+		if (FAILED(_SecondaryBuffer->Restore()))
+		{
+			nlwarning("Lock failed (1)");
+			return false;
+		}
+		if (FAILED(_SecondaryBuffer->Lock(offset, size, (LPVOID*) &lbi.Ptr1, (DWORD*)&lbi.Size1, (LPVOID*) &lbi.Ptr2, (DWORD*)&lbi.Size2, 0)))
+		{
+			nlwarning("Lock failed (2)");
+			return false;
+		}
+	} 
+	else if (hr != DS_OK)
+	{
+		nlwarning("Lock failed (3)");
+		return false;
+	}
+
+	return true;
+}
+/*
 
 bool CSourceDSound::lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2)
 {
@@ -1180,17 +1850,25 @@ bool CSourceDSound::lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &byte
 
 	return true;
 }
-
+*/
 // ******************************************************************
 
+bool CSourceDSound::unlock(const TLockedBufferInfo &lbi)
+{
+ 	_SecondaryBuffer->Unlock(lbi.Ptr1, lbi.Size1, lbi.Ptr2, lbi.Size2);
+	return true;
+}
+
+
+/*
 bool CSourceDSound::unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2)
 {
 	_SecondaryBuffer->Unlock(ptr1, bytes1, ptr2, bytes2);
 	return true;
 }
-
-
-void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat sourceFormat)
+*/
+/*
+void CSourceDSound::copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat sourceFormat)
 {
 	if (sourceFormat == Mono8 || sourceFormat == Stereo8)
 	{
@@ -1207,13 +1885,19 @@ void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat 
 			*pdst++ = sint16(*psrc++) * 256;
 		}
 	}
+	if (sourceFormat == Mono16ADPCM)
+	{
+		// unpack ADPCM data
+		nldebug("Mixing %u samples in ADPCM", nbSample);
+		IBuffer::decodeADPCM((uint8*)src, (sint16*)dst, nbSample, _ADPCMState);
+	}
 	else
 	{
 		// use the fastmem copy buffer
 		CFastMem::memcpy(dst, src, nbSample*2);
 	}
 }
-
+*/
 /***************************************************************************
  
 
@@ -1266,7 +1950,7 @@ void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat 
 
 
 ************************************************************************/
-
+/*
 uint32 getWritePosAndSpace(uint32 &nextWritePos, uint32 playPos, uint32 writePos, uint32 bufferSize)
 {
 	uint32 space;
@@ -1305,7 +1989,8 @@ uint32 getWritePosAndSpace(uint32 &nextWritePos, uint32 playPos, uint32 writePos
 
 	return space;
 }
-
+*/
+/*
 bool CSourceDSound::fill()
 {
 	bool res = false;
@@ -1515,12 +2200,12 @@ bool CSourceDSound::fill()
 
 	return true;
 }
-
+*/
 
 
 
 // ******************************************************************
-
+/*
 bool CSourceDSound::silence()
 {
 	uint8 *ptr1, *ptr2;
@@ -1543,7 +2228,7 @@ bool CSourceDSound::silence()
 	}
 
 	space = getWritePosAndSpace(_NextWritePos, playPos, writePos, _SecondaryBufferSize);
-
+*/
 /*	else if (playPos > _NextWritePos) 
 	{
 		space = playPos - _NextWritePos;
@@ -1553,7 +2238,7 @@ bool CSourceDSound::silence()
 		space = _SecondaryBufferSize + playPos - _NextWritePos;
 	}
 */
-	// Don't bother if the number of samples that can be written is too small.
+/*	// Don't bother if the number of samples that can be written is too small.
 	if (space < _UpdateCopySize)
 	{
 		return false;
@@ -1642,7 +2327,7 @@ bool CSourceDSound::silence()
 
 	return true;
 }
-
+*/
 
 // ******************************************************************
 
@@ -1653,8 +2338,8 @@ bool CSourceDSound::silence()
  *	the write cursor.
  *
  */
-
- void CSourceDSound::getFadeOutSize(uint32 writePos, uint32 &xfadeSize, sint16* &in1, uint32 &writtenTooMuch)
+/*
+void CSourceDSound::getFadeOutSize(uint32 writePos, uint32 &xfadeSize, sint16* &in1, uint32 &writtenTooMuch)
 {
 	// The number of samples over which we will do the crossfade
 	xfadeSize = _XFadeSize;
@@ -1743,11 +2428,11 @@ bool CSourceDSound::silence()
 		DBGPOS(("[%p] FADE: STD, TOO=%d, F=%d", this, writtenTooMuch, xfadeSize));
 	}
 }
-
+*/
 
 
 // ******************************************************************
-
+/*
 void CSourceDSound::crossFade()
 {
 	uint8 *ptr1, *ptr2;
@@ -2015,11 +2700,11 @@ void CSourceDSound::crossFade()
 #endif
 
 }
-
+*/
 
 
 // ******************************************************************
-
+/*
 void CSourceDSound::fadeOut()
 {
 	uint8 *ptr1, *ptr2;
@@ -2201,9 +2886,9 @@ void CSourceDSound::fadeOut()
 #endif
 
 }
-
+*/
 // ******************************************************************
-
+/*
 void CSourceDSound::fadeIn()
 {
 	bool res = false;
@@ -2402,6 +3087,6 @@ void CSourceDSound::fadeIn()
 
 }
 
-
+*/
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_marker.h,v 1.5 2003/03/03 13:04:02 boucher Exp $
+ * $Id: sound_anim_marker.h,v 1.6 2003/04/24 13:45:36 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,15 @@
 #define NL_SOUND_ANIM_MARKER_H
 
 #include "nel/misc/string_mapper.h"
+#include "3d/cluster.h"
+#include "nel/sound/u_source.h"
 
 
 namespace NLMISC
 {
 	class IStream;
 }
+
 
 namespace NLSOUND {
 

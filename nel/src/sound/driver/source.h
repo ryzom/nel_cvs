@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.11 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source.h,v 1.12 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,9 +66,9 @@ public:
 	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
 	 * otherwise the source is considered as a 3D source.
 	 */
-	virtual void					setStaticBuffer( IBuffer *buffer )	{ _Buffer = buffer; }
+	virtual void					setStaticBuffer( IBuffer *buffer )	= 0; //{ _Buffer = buffer; }
 	/// Return the buffer, or NULL if streaming is used.
-	virtual IBuffer					*getStaticBuffer()					{ return _Buffer; }
+	virtual IBuffer					*getStaticBuffer() = 0; //					{ return _Buffer; }
 	/** Set the sound loader that will be used to stream in the data to play
 	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
 	 * otherwise the source is considered as a 3D source.
@@ -96,7 +96,7 @@ public:
 	/// Return true if playing is finished or stop() has been called.
 	virtual bool					isStopped() const = 0;
 	/// Update the source (e.g. continue to stream the data in)
-	virtual void					update() = 0;
+	virtual bool					update() = 0;
 	/// Returns the number of milliseconds the source has been playing
 	virtual uint32					getTime() { return 0; }
 	//@}
@@ -156,15 +156,15 @@ public:
 
 	
 	/// Constructor
-	ISource() : _Buffer(NULL), _Loader(NULL) {}
+	ISource() : /*_Buffer(NULL),*/ _Loader(NULL) {}
 	
 	/// Destructor
-	virtual							~ISource() { _Buffer=NULL; _Loader=NULL; }
+	virtual							~ISource() { /*_Buffer=NULL;*/ _Loader=NULL; }
 
 protected:
 
 	// Buffer (static mode)
-	IBuffer							*_Buffer;
+//	IBuffer							*_Buffer;
 
 	// Sound loader (streaming mode, if _Buffer==NULL)
 	ILoader							*_Loader;

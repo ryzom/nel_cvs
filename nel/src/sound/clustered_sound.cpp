@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.10 2003/03/26 10:23:18 berenguier Exp $
+ * $Id: clustered_sound.cpp,v 1.11 2003/04/24 13:45:37 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/cluster.h"
 #include "3d/portal.h"
 #include "sound/driver/listener.h"
+#include "audio_mixer_user.h"
 #include "driver/sound_driver.h"
 #if EAX_AVAILABLE == 1
 # include <eax.h>
@@ -348,7 +349,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 			{
 				// create a new source
 
-				nldebug("Searching sound assoc for group [%s]", CStringMapper::unmap(soundGroup).c_str());
+//				nldebug("Searching sound assoc for group [%s]", CStringMapper::unmap(soundGroup).c_str());
 
 				std::hash_map<NLMISC::TStringId, NLMISC::TStringId>::iterator it2(_SoundGroupToSound.find(soundGroup));
 				if (it2 != _SoundGroupToSound.end())

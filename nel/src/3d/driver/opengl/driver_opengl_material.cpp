@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.36 2001/09/06 07:25:38 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.37 2001/09/10 13:32:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,38 +326,43 @@ void			CDriverGL::endMultiPass(const CMaterial &mat)
 	// All others materials do not require multi pass.
 	default: return;
 	}
-
 }
 
 
 // ***************************************************************************
-void			CDriverGL::computeLightMapInfos(const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const
+void CDriverGL::computeLightMapInfos (const CMaterial &mat, uint &nLMaps, uint &nLMapPerPass, uint &nPass) const
 {
-	nLMaps= mat._LightMaps.size();
-	nLMapPerPass= getNbTextureStages()-1;
-	if(!_Extensions.NVTextureEnvCombine4)
-		nLMapPerPass= 1;
-	nPass= (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
+	// beg modif
+	nLMaps = 0;
+	for (uint i = 0; i < mat._LightMaps.size(); ++i)
+	if (mat._LightMaps[i].Factor != CRGBA(0,0,0,0))
+		++nLMaps;
+	// end
+	// sup nLMaps= mat._LightMaps.size();
+	nLMapPerPass = getNbTextureStages()-1;
+	if (!_Extensions.NVTextureEnvCombine4)
+		nLMapPerPass = 1;
+	nPass = (nLMaps+nLMapPerPass-1)/(nLMapPerPass);
 }
 
 
 // ***************************************************************************
-sint			CDriverGL::beginLightMapMultiPass(const CMaterial &mat)
+sint CDriverGL::beginLightMapMultiPass (const CMaterial &mat)
 {
 	// One texture stage hardware not supported.
-	if(getNbTextureStages()<2)
+	if (getNbTextureStages()<2)
 		return 1;
 	uint	nLMaps, nLMapPerPass, nPass;
-	computeLightMapInfos(mat, nLMaps, nLMapPerPass, nPass);
+	computeLightMapInfos (mat, nLMaps, nLMapPerPass, nPass);
 
 	// Too be sure, disable vertex coloring / lightmap.
-	glDisable(GL_LIGHTING);
+	glDisable (GL_LIGHTING);
 	// reset VertexColor array if necessary.
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		glDisableClientState(GL_COLOR_ARRAY);
+		glDisableClientState (GL_COLOR_ARRAY);
 
 	// Manage too if no lightmaps.
-	nPass= std::max(nPass, (uint)1);
+	nPass= std::max (nPass, (uint)1);
 	return	nPass;
 }
 // ***************************************************************************
@@ -394,17 +399,27 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 	//=========================
 	uint	lmapId;
 	uint	nstages;
-	lmapId= pass*nLMapPerPass;
+	lmapId= pass*nLMapPerPass; // Nb lightmaps already processed
 	// N lightmaps for this pass, plus the texture.
 	nstages= std::min(nLMapPerPass, nLMaps-lmapId) + 1;
 	// setup all stages.
-	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++, lmapId++)
+	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
 	{
 		// if must setup a lightmap stage.
 		if(stage<nstages-1)
 		{
 			// setup lightMap.
-			ITexture	*text= mat._LightMaps[lmapId].Texture;
+			// beg modif
+			ITexture *text = NULL;
+			CRGBA lmapFactor = CRGBA(0,0,0,0);
+			while ((text == NULL)||(lmapFactor == CRGBA(0,0,0,0)))
+			{
+				text = mat._LightMaps[lmapId].Texture;
+				lmapFactor = mat._LightMaps[lmapId].Factor;
+				lmapId++;
+			}
+			// end
+			// sup ITexture	*text= mat._LightMaps[lmapId].Texture;
 			activateTexture(stage,text);
 
 			// If texture not NULL, Change texture env fonction.
@@ -412,11 +427,11 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 			if(text)
 			{
 				CMaterial::CTexEnv	env;
-				CRGBA	lmapFactor= mat._LightMaps[lmapId].Factor;
+				// sup CRGBA	lmapFactor= mat._LightMaps[lmapId].Factor;
 				lmapFactor.A= 255;
 
 				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
-				if(stage==0)
+				if (stage==0)
 				{
 					// do not use consant color to blend lightmap, but incoming diffuse color, for stage0 only.
 					// (NB: lighting and vertexcolorArray are disabled here)

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.26 2001/11/07 17:06:46 vizerie Exp $
+ * $Id: material.cpp,v 1.27 2001/11/21 15:56:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,6 +380,7 @@ bool			    CMaterial::texAddrEnabled() const
 
 void				CMaterial::setTexAddressingMode(uint8 stage, TTexAddressingMode mode)
 {
+	nlassert(_Flags & IDRV_MAT_TEX_ADDR);
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	nlassert(mode < TexAddrCount);
 	_TexAddrMode[stage] = (uint8) mode;	
@@ -388,6 +389,7 @@ void				CMaterial::setTexAddressingMode(uint8 stage, TTexAddressingMode mode)
 
 CMaterial::TTexAddressingMode	CMaterial::getTexAddressingMode(uint8 stage)
 {
+	nlassert(_Flags & IDRV_MAT_TEX_ADDR);
 	nlassert(stage < IDRV_MAT_MAXTEXTURES);
 	return (TTexAddressingMode) _TexAddrMode[stage];
 }

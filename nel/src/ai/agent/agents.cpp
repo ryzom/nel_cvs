@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.25 2001/03/26 14:50:01 chafik Exp $
+ * $Id: agents.cpp,v 1.26 2001/03/30 15:55:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -422,7 +422,9 @@ namespace NLAIAGENT
 		case _GetNumId:		
 			{				
 				IObjectIA::CProcessResult a;				
-				a.Result = new CObjectIdent(((const IWordNumRef &)*this).getNumIdent());
+				char t[256*4];
+				((const IWordNumRef &)*this).getNumIdent().getDebugString(t);
+				a.Result = new CStringType(CStringVarName(t));//((const IWordNumRef &)*this).getNumIdent();
 				return a;
 			}
 			break;

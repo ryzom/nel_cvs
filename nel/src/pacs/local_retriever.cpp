@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.70 2004/07/09 09:44:33 lecroart Exp $
+ * $Id: local_retriever.cpp,v 1.70.8.1 2004/10/15 13:35:53 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -660,7 +660,7 @@ void	NLPACS::CLocalRetriever::buildSurfacePolygons(uint32 surface, list<CPolygon
 
 	for (i=0; i<surf._Loops.size(); ++i)
 	{
-		polygons.push_back();
+		polygons.push_back(CPolygon());
 		CPolygon	&poly = polygons.back();
 
 		for (j=0; j<surf._Loops[i].size(); ++j)
@@ -719,7 +719,7 @@ void	NLPACS::CLocalRetriever::build3dSurfacePolygons(uint32 surface, list<CPolyg
 
 	for (i=0; i<surf._Loops.size(); ++i)
 	{
-		polygons.push_back();
+		polygons.push_back(CPolygon());
 		CPolygon	&poly = polygons.back();
 
 		for (j=0; j<surf._Loops[i].size(); ++j)
@@ -1559,6 +1559,10 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 				float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
 				return meanHeight;
 			}
+		}
+		else if (_Surfaces[position.Surface].isUnderWater())
+		{
+			return _Surfaces[position.Surface].getWaterHeight();
 		}
 		else
 		{

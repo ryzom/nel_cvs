@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.9 2000/11/21 10:57:50 cado Exp $
+ * $Id: local_area.cpp,v 1.10 2000/11/23 14:11:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,7 +215,7 @@ void CLocalArea::update()
 
 	// Compute time difference
 	TTime actualtime = CUniTime::getUniTime();
-	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0;
+	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0f;
 	_PreviousTime = actualtime;
 
 	// Update all entities

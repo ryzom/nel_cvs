@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.8 2000/11/23 13:09:50 cado Exp $
+ * $Id: naming_client.cpp,v 1.9 2000/11/23 14:11:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,20 +36,20 @@ namespace NLNET {
 CSocket *CNamingClient::_ClientSock;
 
 
-/// Config file name is "ns.cfg"
+/// Config file name
 const char		*CNamingClient::NamingServiceAddrFile = "ns.cfg";
 
-/// Default NS host name is "olivier"
+/// Default NS host name
 const char		*CNamingClient::NamingServiceDefHost = "olivierc";
 
-/// Default NS port is 50000
+/// Default NS port
 const uint16	CNamingClient::NamingServiceDefPort = 50000;
 
 
 CConfigFile		*CNamingClient::_ConfigFile = NULL;
 CInetAddress	CNamingClient::NamingServiceAddress;
 CRegServices	CNamingClient::_RegisteredServices;
-bool			CNamingClient::TransactionMode = true;
+bool			CNamingClient::_TransactionMode = true;
 
 
 /* These values must correspond to CallbackArray in the Naming Service.
@@ -61,15 +61,6 @@ const sint16 LA_CBINDEX = 1;
 const sint16 RG_CBINDEX = 2;
 const sint16 UN_CBINDEX = 3;
 const sint16 QP_CBINDEX = 4;
-
-
-/*
- * Constructor. Calls init().
- */
-CNamingClient::CNamingClient( bool transactionmode )
-{
-	CNamingClient::TransactionMode = transactionmode;
-}
 
 
 /*
@@ -107,11 +98,9 @@ void CNamingClient::finalize()
  */
 void CNamingClient::open()
 {
-	if ( ! CNamingClient::TransactionMode )
-	{
-		doOpen();
-		nldebug( "Connected to the naming service" );
-	}
+	CNamingClient::_TransactionMode = false;
+	doOpen();
+	nldebug( "Connected to the naming service" );
 }
 
 
@@ -120,20 +109,18 @@ void CNamingClient::open()
  */
 void CNamingClient::close()
 {
-	if ( ! CNamingClient::TransactionMode )
-	{
-		doClose();
-		nldebug( "Disconnected from the naming service" );
-	}
+	doClose();
+	nldebug( "Disconnected from the naming service" );
+	CNamingClient::_TransactionMode = true;
 }
 
 
 /*
- * Call open is TransactionMode is true
+ * Call open is _TransactionMode is true
  */
 void CNamingClient::openT()
 {
-	if ( CNamingClient::TransactionMode )
+	if ( CNamingClient::_TransactionMode )
 	{
 		CNamingClient::doOpen();
 	}
@@ -141,11 +128,11 @@ void CNamingClient::openT()
 
 
 /*
- * Call close if TransactionMode is true
+ * Call close if _TransactionMode is true
  */
 void CNamingClient::closeT()
 {
-	if ( CNamingClient::TransactionMode )
+	if ( CNamingClient::_TransactionMode )
 	{
 		CNamingClient::doClose();
 	}

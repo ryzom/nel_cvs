@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.5 2000/11/07 16:44:44 cado Exp $
+ * $Id: moving_entity.cpp,v 1.6 2000/11/23 14:11:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ IMovingEntity::IMovingEntity( const IMovingEntity& other )
  */
 TAngle IMovingEntity::angleAroundZ()
 {
-	return atan2( _BodyHdg.y, _BodyHdg.x );
+	return (TAngle)atan2( _BodyHdg.y, _BodyHdg.x );
 }
 
 
@@ -95,7 +95,7 @@ TAngle IMovingEntity::angleAroundZ()
  */
 TAngle IMovingEntity::angleAroundX()
 {
-	return atan2( _BodyHdg.z, _BodyHdg.y );
+	return (TAngle)atan2( _BodyHdg.z, _BodyHdg.y );
 }
 
 
@@ -105,7 +105,7 @@ TAngle IMovingEntity::angleAroundX()
  */
 TAngle IMovingEntity::angleAroundY()
 {
-	return atan2( _BodyHdg.x, _BodyHdg.z );
+	return (TAngle)atan2( _BodyHdg.x, _BodyHdg.z );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.10 2000/11/20 15:51:49 cado Exp $
+ * $Id: local_entity.cpp,v 1.11 2000/11/23 14:11:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,11 +49,11 @@ CLocalEntity::CLocalEntity() :
 	_VertVel( 0.0 ),
 	_PrevPos( 0,0,0 ),
 	_DeltaTime( 0 ),
-	_DRReplica( *this ),
 	_DRThresholdPos( 0.5 ),
 	_DRTestBodyHeading( true ),
 	_DRThresholdHeading( 0.5 )
 {
+	_DRReplica = *this;
 }
 
 
@@ -84,7 +84,7 @@ TPosUnit distanceXY( const CVector& p1, const CVector& p2 )
 {
 	TPosUnit x = p2.x - p1.x;
 	TPosUnit y = p2.y - p1.y;
-	return sqrt( x*x + y*y );
+	return (TPosUnit)sqrt( x*x + y*y );
 }
 
 
@@ -134,7 +134,7 @@ bool CLocalEntity::drDivergeTest()
  */
 void CLocalEntity::setThresholdForHeading( TAngle a )
 {
-	_DRThresholdHeading = a * 3.0 / Pi; // see drDivergenceTest()
+	_DRThresholdHeading = a * 3.0f / (float)Pi; // see drDivergenceTest()
 }
 
 
@@ -157,7 +157,7 @@ void CLocalEntity::computeVector()
 		if ( groundMode() )
 		{
 			m.identity();
-			m.rotateZ( SQUARE_ANGLE ); // Strafe: rotate around the vertical axis
+			m.rotateZ( (float)SQUARE_ANGLE ); // Strafe: rotate around the vertical axis
 			strafevect = (m * bodyHeading()) * _StrafeVel;
 		}
 		else

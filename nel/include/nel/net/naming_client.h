@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.9 2000/11/23 13:09:50 cado Exp $
+ * $Id: naming_client.h,v 1.10 2000/11/23 14:11:51 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,10 +49,10 @@ typedef std::map<std::string,CInetAddress> CRegServices;
  * This static method will be called at the object's destruction (determined by its scope).
  * Thus, if an exception is raised within the scope, finalize() will be called automatically.
  *
- * By default, TransactionMode is true, i.e. you don't need to call open() and close(), they
+ * By default, "transaction mode" is on, i.e. you don't need to call open() and close(), they
  * are called each time you call lookup(), queryServicePort(), registerService(), and unregisterService().
- * If you plan to call several times these methods in a block, set TransactionMode to false
- * and call open() at the beginning of the block and close() at the end.
+ * If you plan to call several times these methods in a block, call open() at the beginning of the block
+ * and close() at the end.
  *
  * The naming service (NS) address is read in a config file called ("ns.cfg" at the moment).
  * If no such file is provided, the default values are used (see NamingServiceDefHost
@@ -67,10 +67,8 @@ class CNamingClient
 {
 public:
 
-	/** Constructor.
-	 * \param transactionmode See "Requests to the Naming Service" in the static public methods.
-	 */
-	CNamingClient( bool transactionmode = true );
+	/// Constructor
+	CNamingClient() {};
 
 	/// Destructor. Calls finalize().
 	~CNamingClient();
@@ -78,10 +76,10 @@ public:
 	/// Finalization. Unregisters all services registered by registerService() and not unregistered yet.
 	static void			finalize();
 
-	/// Connection to the naming service
+	/// Connection to the naming service (exits from transaction mode)
 	static void			open();
 
-	/// Disconnection from the naming service
+	/// Disconnection from the naming service (reenters transaction mode)
 	static void			close();
 
 	/** \name Requests to the Naming Service. 
@@ -124,9 +122,6 @@ public:
 	/// Address of naming service
 	static CInetAddress NamingServiceAddress;
 
-	/// Transaction mode
-	static bool			TransactionMode;
-
 	/// Config file name
 	static const char	*NamingServiceAddrFile;
 
@@ -136,15 +131,18 @@ public:
 	/// Default NS port
 	static const uint16	NamingServiceDefPort;
 
+	/// Returns transaction mode
+	static bool	transactionMode() { return CNamingClient::_TransactionMode; }
+
 	/// Callback for dynamic config file change
 	friend void cbNamingServiceAddrChanged();
 
 protected:
 
-	/// Call doOpen() is TransactionMode is true
+	/// Call doOpen() is _TransactionMode is true
 	static void			openT();
 
-	/// Call doClose() if TransactionMode is true
+	/// Call doClose() if _TransactionMode is true
 	static void			closeT();
 
 	/// Performs a socket connection
@@ -158,6 +156,8 @@ private:
 	static CSocket		*_ClientSock;
 	static CRegServices	_RegisteredServices;
 	static NLMISC::CConfigFile	*_ConfigFile;
+
+	static bool			_TransactionMode;
 
 };
 

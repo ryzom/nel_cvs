@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.14 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: material.h,v 1.15 2002/03/14 18:07:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,10 +135,23 @@ public:
 	 * Specular:
 	 *  - Texture of stage 0 is added to the multiplication of Texture Alpha of stage 0 and Texture of stage 1
 	 *  - This is done in 2 passes
+	 * PerPixelLighting :
+	 *  - When not supported by the driver, this is equivalent to the normal shader. This can be querried from the driver
+	 *  - When supported by the driver, the strongest light is rendered using per pixel lighting. The last tex coordinate must be the S vector
+	 *    of the tangent space basis (oriented in the direction where the s texture coords grows). Other lights are rendered using gouraud shaing. The light setup is done in the driver.
+	 * PerPixelLighting : The same as PerPixelLighting but with no specular
 	 * Caustics: NOT IMPLEMENTED	 
 	 *    
 	 */
-	enum TShader			{ Normal=0, Bump, UserColor, LightMap, Specular, Caustics, shaderCount};
+	enum TShader			{ Normal=0,
+							  Bump,
+							  UserColor,
+							  LightMap,
+							  Specular,
+							  Caustics,
+							  PerPixelLighting,
+							  PerPixelLightingNoSpec,
+							  shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{

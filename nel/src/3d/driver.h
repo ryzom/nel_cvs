@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.28 2002/01/18 10:05:20 berenguier Exp $
+ * $Id: driver.h,v 1.29 2002/03/14 18:06:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -648,6 +648,12 @@ public:
 	  */
 	virtual void			setAmbientColor (CRGBA color) = 0;
 
+	/** Setup the light used for per pixel lighting. The given values should have been modulated by the material diffuse and specular.
+	  * This is only useful for material that have their shader set as 'PerPixelLighting'
+	  * \param the light used for per pixel lighting
+	  */
+	virtual void			setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float shininess) = 0;
+
 	/** Get the global polygon mode.
 	  *
 	  * \param polygon mode choose in this driver.
@@ -687,6 +693,7 @@ public:
 	  * Does the driver supports vertex program, but emulated by CPU ?
 	  */
 	virtual bool			isVertexProgramEmulated () const =0;
+
 
 
 	/**
@@ -746,6 +753,9 @@ public:
 		  */
 		virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) = 0;		  	
 	//@}
+
+		// Does the driver support the per-pixel lighting shader ?
+		virtual bool supportPerPixelLighting(bool specular) const = 0;
 
 protected:
 	friend	class	IVBDrvInfos;

@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.3 2001/07/04 12:29:08 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.4 2001/07/12 15:41:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "3d/ps_attrib_maker_template.h"
+#include "3d/ps_attrib_maker_bin_op.h"
 #include "3d/ps_plane_basis.h"
 
 
@@ -45,7 +46,7 @@ class CPSPlaneBasisBlender : public CPSValueBlender<CPlaneBasis>
 public:
 	NLMISC_DECLARE_CLASS(CPSPlaneBasisBlender) ;
 
-	CPSPlaneBasisBlender(const CPlaneBasis &startBasis = CPlaneBasis(CVector::I), const CPlaneBasis &endBasis = CPlaneBasis(CVector::J), float nbCycles = 1.0f) : CPSValueBlender<CPlaneBasis>(nbCycles)
+	CPSPlaneBasisBlender(const CPlaneBasis &startBasis = CPlaneBasis(NLMISC::CVector::I), const CPlaneBasis &endBasis = CPlaneBasis(NLMISC::CVector::J), float nbCycles = 1.0f) : CPSValueBlender<CPlaneBasis>(nbCycles)
 	{
 		_F.setValues(startBasis, endBasis) ;
 	}
@@ -132,8 +133,18 @@ class CPSPlaneBasisFollowSpeed : public CPSAttribMaker<CPlaneBasis>
 class CPSPlaneBasisMemory : public CPSAttribMakerMemory<CPlaneBasis>
 {
 public:
-	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(CVector::K)) ; }
+	CPSPlaneBasisMemory() { setDefaultValue(CPlaneBasis(NLMISC::CVector::K)) ; }
 	NLMISC_DECLARE_CLASS(CPSPlaneBasisMemory) ;
+} ;
+
+
+/** An attribute maker whose output if the result of a binary op on plkane basis
+  *
+  */
+class CPSPlaneBasisBinOp : public CPSAttribMakerBinOp<CPlaneBasis>
+{
+public:
+	NLMISC_DECLARE_CLASS(CPSPlaneBasisBinOp) ;
 } ;
 
 

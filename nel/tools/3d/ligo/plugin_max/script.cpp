@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.23 2003/07/03 09:44:32 distrib Exp $
+ * $Id: script.cpp,v 1.24 2003/07/10 09:33:18 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,11 +47,6 @@
 #include <nel/misc/i_xml.h>
 #include <nel/misc/config_file.h>
 
-
-
-#ifdef NL_NEW
-#undef new
-#endif
 
 
 // Various MAX and MXS includes

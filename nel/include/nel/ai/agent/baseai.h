@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.19 2001/06/29 08:17:58 chafik Exp $
+ * $Id: baseai.h,v 1.20 2001/07/02 10:07:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -374,7 +374,7 @@ namespace NLAIAGENT
 		IRefrence *getParent() const;
 
 		/// to set the parent of the agents.
-		void setParent(const IWordNumRef *parent);
+		virtual void setParent(const IWordNumRef *parent);
 		/// To get the top level parent of this agent.
 		virtual const IRefrence *getOwner() const;
 		
@@ -424,7 +424,7 @@ namespace NLAIAGENT
 		IConnectIA *getParent() const;
 				
 		///When agent die and when he is in the Connectioned lis, he call this method to inform this state to the objects.
-		virtual void onKill(IConnectIA *) = 0;	
+		virtual void onKill(IConnectIA *);	
 		///\name State of agent.
 		///State is a CProcessResult objects it define the state of agent after the run method.
 		//@{
@@ -454,6 +454,8 @@ namespace NLAIAGENT
 		void connect(IConnectIA *b);
 		///To release a connection.
 		void removeConnection(IConnectIA *Agent);
+
+		virtual void setParent(const IWordNumRef *parent);
 
 		///this method define wat agent have to whene he die.
 		virtual void Kill(); 

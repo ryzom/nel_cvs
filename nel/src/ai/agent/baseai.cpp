@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.27 2001/06/28 15:47:54 chafik Exp $
+ * $Id: baseai.cpp,v 1.28 2001/07/02 10:06:58 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,7 +325,7 @@ namespace NLAIAGENT
 
 	IRefrence::IRefrence(const IWordNumRef *parent):_Parent((IWordNumRef *)parent)
 	{
-		if(_Parent != NULL) _Parent->incRef();
+		//if(_Parent != NULL) _Parent->incRef();
 		_NumRef = new CLocWordNumRef(this);
 	}
 
@@ -351,9 +351,9 @@ namespace NLAIAGENT
 
 	void IRefrence::setParent(const IWordNumRef *parent)
 	{
-		if(_Parent != NULL) _Parent->release();
+		//if(_Parent != NULL) _Parent->release();
 		_Parent = (IWordNumRef *)parent;
-		if(_Parent != NULL) _Parent->incRef();
+		//if(_Parent != NULL) _Parent->incRef();		
 	}
 
 	const IRefrence *IRefrence::getOwner() const
@@ -423,13 +423,13 @@ namespace NLAIAGENT
 
 	IRefrence::~IRefrence()
 	{
-		if(_Parent != NULL) _Parent->release();
+		//if(_Parent != NULL) _Parent->release();
 		_NumRef->release();
 	}
 
 	IRefrence::IRefrence(const IRefrence &A):IObjectIA(A),_Parent(A._Parent)//,_NumRef(A._NumRef)
 	{			
-		if(_Parent != NULL) _Parent->incRef();
+		//if(_Parent != NULL) _Parent->incRef();
 		_NumRef = new CLocWordNumRef(this);
 	}		
 
@@ -615,5 +615,23 @@ namespace NLAIAGENT
 				a->removeInConnectionList(this);
 			}
 		}
+	}
+
+	void IConnectIA::onKill(IConnectIA *a)
+	{
+		IConnectIA *parent = getParent();
+		if ( parent == a )
+		{
+			//parent->release();
+			setParent(NULL);
+		}
+	}
+
+	void IConnectIA::setParent(const IWordNumRef *parent)
+	{		
+		IRefrence::setParent(parent);
+		IConnectIA *p = (IConnectIA *)getParent();
+
+		if(p != NULL) connect(p);
 	}
 }

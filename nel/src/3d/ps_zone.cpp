@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.20 2002/02/20 11:20:51 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.21 2002/02/27 15:27:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ CMatrix CPSZonePlane::buildBasis(uint32 index) const
 {
 	CMatrix m;
 	m.setPos(_Owner->getPos()[index]);	
-	m.setRot(CPSUtil::buildSchmidtBasis(_Normal[index]));
+	CPSUtil::buildSchmidtBasis(_Normal[index], m);
 	return m;
 }
 
@@ -635,7 +635,7 @@ void CPSZoneDisc::show(TAnimationTime ellapsedTime)
 	for (uint k = 0; posIt != endPosIt; ++posIt, ++radiusIt, ++normalIt, ++k) 
 	{	
 		const CRGBA col = ((lb == NULL || this == lb) && loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127));
-		mat = CPSUtil::buildSchmidtBasis(*normalIt);
+		CPSUtil::buildSchmidtBasis(*normalIt, mat);
 		CPSUtil::displayDisc(*getDriver(), radiusIt->R, *posIt, mat, 32, col);
 
 		mat.setPos(*posIt);
@@ -660,9 +660,10 @@ void CPSZoneDisc::setMatrix(uint32 index, const CMatrix &m)
 
 CMatrix CPSZoneDisc::getMatrix(uint32 index) const
 {
-	CMatrix m;
-	m.translate(_Owner->getPos()[index]);		
-	m = m * CPSUtil::buildSchmidtBasis(_Normal[index]);
+	CMatrix m, b;
+	m.translate(_Owner->getPos()[index]);
+	CPSUtil::buildSchmidtBasis(_Normal[index], b);
+	m = m * b;
 	return m;	
 }
 

@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.12 2001/06/21 12:33:00 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.13 2001/07/11 15:15:10 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 	nlassertex( pos+len <= v.size(), ("pos=%u len=%u size=%u", pos, len, v.size()) );
 
 	string s;
-	if ( ! v.empty() )
+	if ( (! v.empty()) && (len!=0) )
 	{
 		// Copy contents
 		s.resize( len );

@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log.log 2> /dev/null
 
 tga_2_dds='../../bin/tga2dds.exe'
 exec_timeout='../../bin/exec_timeout.exe'

@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log.log 2> /dev/null
 
 # *** Export skeleton files (.skel) from Max
 

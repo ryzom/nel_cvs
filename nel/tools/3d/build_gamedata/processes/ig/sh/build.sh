@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log.log 2> /dev/null
 
 # ig_land_max:			landscape IG eported from 3dsmax not elevated by the heightmap
 # ig_land_max_elev:		landscape IG eported from 3dsmax elevated by the heightmap
@@ -8,6 +9,16 @@
 
 # ig_land:				final IG directory for landscape IGs
 # ig_other:				final IG directory for village or construction IGs
+
+# Log error
+echo ------- >> log.log
+echo --- Build ig >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build ig
+echo ------- 
+date >> log.log
+date
 
 # ************************************************
 # Build the IG_LAND made with the LevelDesign Tool

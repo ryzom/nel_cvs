@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log.log 2> /dev/null
 
 # Build zone
 
@@ -34,10 +35,8 @@ echo
 date >> log.log
 date
 
-
 # Get arguments
 rbank_bank_name=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g'  | sed -e 's/;//g'`
-rbank_scratch_path=`cat ../../cfg/site.cfg | grep "scratch_directory" | sed -e 's/scratch_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`/
 rbank_reduce_surfaces=`cat ../../cfg/config.cfg | grep "rbank_reduce_surfaces" | sed -e 's/rbank_reduce_surfaces//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_smooth_borders=`cat ../../cfg/config.cfg | grep "rbank_smooth_borders" | sed -e 's/rbank_smooth_borders//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_compute_elevation=`cat ../../cfg/config.cfg | grep "rbank_compute_elevation" | sed -e 's/rbank_compute_elevation//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -50,17 +49,6 @@ rbank_zone_dr=`cat ../../cfg/config.cfg | grep "rbank_zone_dr" | sed -e 's/rbank
 rbank_rbank_name=`cat ../../cfg/config.cfg | grep "rbank_rbank_name" | sed -e 's/rbank_rbank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_ig_pathes=`cat ../../cfg/config.cfg | grep "rbank_ig_path" | sed -e 's/rbank_ig_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
 rbank_shape_pathes=`cat ../../cfg/config.cfg | grep "rbank_shape_path" | sed -e 's/rbank_shape_path//' | sed -e 's/ //g' | sed -e 's/=//g'`
-rbank_temp_path=`echo $rbank_scratch_path$rbank_rbank_name`/
-
-# Make some directories
-mkdir $rbank_scratch_path 2> /dev/null
-mkdir $rbank_temp_path 2> /dev/null
-mkdir $rbank_temp_path"retrievers" 2> /dev/null
-mkdir $rbank_temp_path"tesselation" 2> /dev/null
-mkdir $rbank_temp_path"smooth" 2> /dev/null
-mkdir $rbank_temp_path"smooth/preproc" 2> /dev/null
-mkdir $rbank_temp_path"raw" 2> /dev/null
-mkdir $rbank_temp_path"raw/preproc" 2> /dev/null
 
 # Global options
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -119,10 +107,10 @@ $build_ig_boxes
 if ( test "$quality_flag" )
 then
 	# We are in BEST mode
-	`cat cfg/template_final.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+	`cat cfg/template_final.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
 else
 	# We are in DRAFT mode
-	`cat cfg/template_draft.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_scratch_path&$rbank_temp_path&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
+	`cat cfg/template_draft.cfg | sed -e "s&rbank_bank_name&$rbank_bank_name&g" | sed -e "s&rbank_reduce_surfaces&$rbank_reduce_surfaces&g" | sed -e "s&rbank_smooth_borders&$rbank_smooth_borders&g" | sed -e "s&rbank_compute_elevation&$rbank_compute_elevation&g" | sed -e "s&rbank_compute_levels&$rbank_compute_levels&g" | sed -e "s&rbank_link_elements&$rbank_link_elements&g" | sed -e "s&rbank_cut_edges&$rbank_cut_edges&g" | sed -e "s&rbank_use_zone_square&$rbank_use_zone_square&g" | sed -e "s&rbank_zone_ul&$rbank_zone_ul&g" | sed -e "s&rbank_zone_dr&$rbank_zone_dr&g" > build_rbank.cfg`
 fi
 
 # List the zones to add
@@ -152,7 +140,7 @@ echo \}\; >> build_rbank.cfg
 echo " " >> build_rbank.cfg
 
 
-# ******* PASS 1
+# ******* PASS 1 Generate smooth lr
 
 # For each ../zone/zone_welded/*.[zZ][oO][nN][eE][wW] files, checks if the associated scratch/tesselation/*.[tT][eE][sS][sS][eE][lL] file
 # are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
@@ -160,25 +148,24 @@ echo " " >> build_rbank.cfg
 # Log error
 echo >> log.log
 echo ------- >> log.log
-echo --- Build RBank : Tesselate >> log.log
+echo --- Build RBank : Generate lr >> log.log
 echo ------- >> log.log
 echo >> log.log
 echo 
 echo ------- 
-echo --- Build RBank : Tesselate
+echo --- Build RBank : Generate lr 
 echo ------- 
 echo 
 date >> log.log
 date
 
-# Tesselate
 for i in $list_zone ; do
 
 	# Get destination file
 	zone=`echo $i | sed -e 's/.zonew//'`
 
-	# Destination file
-	dest=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
+	# Lr final
+	lr1=`echo "smooth/"$zone".lr"`
 
 	# Get the 9 zones list
 	near_zone=`$get_neighbors $zone`
@@ -187,12 +174,12 @@ for i in $list_zone ; do
 	zone_to_build=`echo ""`
 
 	# For each zone near
-	if ( ! test -e $dest )
+	if ( ! test -e $lr1 )
 	then
 		zone_to_build=`echo "../zone/zone_welded/"$i`
 	else
 		for j in $near_zone ; do
-			  if ( test "../zone/zone_welded/"$j.zonew -nt $dest )
+			  if ( test "../zone/zone_welded/"$j.zonew -nt $lr1 )
 			  then
 				zone_to_build=`echo "../zone/zone_welded/"$i`
 			  fi
@@ -200,109 +187,44 @@ for i in $list_zone ; do
 	fi
 
 	# Build it only if the file exist
-	# if ( test -f $zone_to_build )
 	if ( test "$zone_to_build" )
 	then
-		$build_rbank -T -m -l -g $i
+		# Tesselation filename
+		tessel=`echo "tesselation/"$zone".tessel"`
+
+		# Lr filename
+		lr0=`echo "smooth/preproc/"$zone".lr"`
+
+		# Tesselate
+		$exec_timeout $tessel_timeout $build_rbank -T -m -l -g $i
+
+		# Build lr0
+		$exec_timeout $smooth_timeout $build_rbank -t -M -l -g $i
+
+		# Remove tessel
+		rm $tessel
+
+		# Remove lr0
+		rm lr0
+
+		# Build lr1
+		$exec_timeout $proclocal_timeout $build_rbank -t -m -L -g $i
+
 		echo
 		echo >> log.log
 	else
 		echo SKIPPED $dest 
 		echo
-		echo SKIPPED $dest >> log.log
+		echo SKIPPED $lr1 >> log.log
 		echo >> log.log
 	fi
 
-	# Idle
-	../../idle.bat
-done
-
-# ******* PASS 2
-
-# For each ../zone/zone_welded/*.[zZ][oO][nN][eE][wW] files, checks if the associated scratch/tesselation/*.[tT][eE][sS][sS][eE][lL] file
-# are up to date with the .zonew and the 8 neighbor .zonew file. If note, tesselate it.
-
-# Log error
-echo >> log.log
-echo ------- >> log.log
-echo --- Build RBank : Compute >> log.log
-echo ------- >> log.log
-echo >> log.log
-echo 
-echo ------- 
-echo --- Build RBank : Compute
-echo ------- 
-echo 
-date >> log.log
-date
-
-# Compute
-for i in $list_zone ; do
-
-	# Get destination file
-	zone=`echo $i | sed -e 's/.zonew//'`
-
-	# Source file
-	src=`echo $rbank_temp_path"tesselation/"$zone".tessel"`
-
-	# Destination file
-	dest=`echo $rbank_temp_path"smooth/preproc/"$zone".lr"`
-
-	# Check dates
-	if ( ! test -e $dest ) || ( test $src -nt $dest )
-	then
-		$exec_timeout $smooth_timeout $build_rbank -t -M -l -g $i
-	else
-		echo SKIPPED $dest
-		echo SKIPPED $dest >> log.log
-	fi
-	echo
-	echo >> log.log
 
 	# Idle
 	../../idle.bat
 done
 
-# Log error
-echo >> log.log
-echo ------- >> log.log
-echo --- Build RBank : Proclocal >> log.log
-echo ------- >> log.log
-echo >> log.log
-echo 
-echo ------- 
-echo --- Build RBank : Proclocal
-echo ------- 
-echo 
-date >> log.log
-date
 
-# Proclocal
-for i in $list_zone ; do
-
-	# Get destination file
-	zone=`echo $i | sed -e 's/.zonew//'`
-
-	# Source file
-	src=`echo $rbank_temp_path"smooth/preproc/"$zone".lr"`
-
-	# Destination file
-	dest=`echo $rbank_temp_path"smooth/"$zone".lr"`
-
-	# Check dates
-	if ( ! test -e $dest ) || ( test $src -nt $dest )
-	then
-		$exec_timeout $proclocal_timeout $build_rbank -t -m -L -g $i
-	else
-		echo SKIPPED $dest
-		echo SKIPPED $dest >> log.log
-	fi
-	echo
-	echo >> log.log
-
-	# Idle
-	../../idle.bat
-done
 
 # Log error
 echo >> log.log
@@ -351,10 +273,10 @@ for i in $list_cmb ; do
 done
 
 echo "};" >> build_indoor_rbank.cfg
-echo OutputPath = \"$rbank_temp_path"retrievers/"\"\; >> build_indoor_rbank.cfg
+echo OutputPath = \""retrievers/"\"\; >> build_indoor_rbank.cfg
 echo OutputPrefix = "unused"\; >> build_indoor_rbank.cfg
 echo Merge = 1\; >> build_indoor_rbank.cfg 
-echo MergePath = \"$rbank_temp_path"smooth/"\"\; >> build_indoor_rbank.cfg
+echo MergePath = \""smooth/"\"\; >> build_indoor_rbank.cfg
 echo MergeInputPrefix  = \"temp\"\; >> build_indoor_rbank.cfg
 echo MergeOutputPrefix  = \"tempMerged\"\; >> build_indoor_rbank.cfg
 echo AddToRetriever = \"1\"\; >> build_indoor_rbank.cfg
@@ -397,6 +319,6 @@ date
 
 
 # Copy the files
-cp $rbank_temp_path"retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
-cp $rbank_temp_path"retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
+mv "retrievers"/tempMerged.rbank output/$rbank_rbank_name".rbank" 2>> log.log
+mv "retrievers"/tempMerged.gr output/$rbank_rbank_name".gr" 2>> log.log
 

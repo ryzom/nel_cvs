@@ -1,4 +1,5 @@
 #!/bin/bash
+rm log.log 2> /dev/null
 
 # Install clodbank in the client data, in the "shapes/" directory
 

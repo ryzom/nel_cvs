@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.3 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: landscape.h,v 1.4 2001/07/05 11:37:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,8 @@
 #include "3d/tile_far_bank.h"
 #include "3d/texture_near.h"
 #include "3d/quad_grid.h"
+#include "nel/misc/block_memory.h"
+
 #include <map>
 
 #define NL_MAX_SIZE_OF_TEXTURE_EDGE_SHIFT (NL_MAX_TILES_BY_PATCH_EDGE_SHIFT+NL_NUM_PIXELS_ON_FAR_TILE_EDGE_SHIFT)
@@ -324,9 +326,38 @@ public:
 
 // ********************************
 private:
-	// Private part used by CPatch.
+	// Private part used by CTessFace / CPatch / CZone.
+	friend class	CTessFace;
 	friend class	CPatch;
 	friend class	CZone;
+
+
+	/// \name Allocators.
+	// @{
+
+	CBlockMemory<CTessFace>			TessFaceAllocator;
+	CBlockMemory<CTessVertex>		TessVertexAllocator;
+	CBlockMemory<CTessNearVertex>	TessNearVertexAllocator;
+	CBlockMemory<CTessFarVertex>	TessFarVertexAllocator;
+	CBlockMemory<CTileMaterial>		TileMaterialAllocator;
+	CBlockMemory<CTileFace>			TileFaceAllocator;
+
+	CTessFace			*newTessFace();
+	CTessVertex			*newTessVertex();
+	CTessNearVertex		*newTessNearVertex();
+	CTessFarVertex		*newTessFarVertex();
+	CTileMaterial		*newTileMaterial();
+	CTileFace			*newTileFace();
+
+	void				deleteTessFace(CTessFace *f);
+	void				deleteTessVertex(CTessVertex *v);
+	void				deleteTessNearVertex(CTessNearVertex *v);
+	void				deleteTessFarVertex(CTessFarVertex *v);
+	void				deleteTileMaterial(CTileMaterial *tm);
+	void				deleteTileFace(CTileFace *tf);
+
+	// @}
+
 
 	// Return the render pass for a far texture here.
 	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UScale, float& far1VScale, float& far1UBias, float& far1VBias, bool& bRot);

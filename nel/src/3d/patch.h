@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.3 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: patch.h,v 1.4 2001/07/05 11:37:48 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -63,6 +63,7 @@ namespace NL3D {
 using NLMISC::CVector;
 
 
+class	CLandscape;
 class	CZone;
 class	CBezierPatch;
 class	ITexture;
@@ -325,6 +326,8 @@ public:
 	void			release();
 
 
+	///  Get the landscape in which is placed this patch.
+	CLandscape		*getLandscape () const;
 	CZone			*getZone() const {return Zone;}
 	uint8			getOrderS() const {return OrderS;}
 	uint8			getOrderT() const {return OrderT;}

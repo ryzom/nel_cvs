@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.62 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: landscape.cpp,v 1.63 2001/07/05 11:37:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,21 @@ using namespace std;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+/* 
+	Target is 20K faces  in frustum.
+	So 80K faces at same time
+	So 160K elements (bin tree).
+	A good BlockSize (in my opinion) is EstimatedMaxSize / 10, to have less memory leak as possible,
+	and to make not so many system allocation.
+
+	NL3D_TESSRDR_ALLOC_BLOCKSIZE is 2 times less, because elements are in Far zone or in Near zone only
+	(approx same size...)
+*/
+#define	NL3D_TESS_ALLOC_BLOCKSIZE		16000
+#define	NL3D_TESSRDR_ALLOC_BLOCKSIZE	8000
 
 
 // ***************************************************************************
@@ -120,7 +135,14 @@ const char	*EBadBind::what() const throw()
 
 
 // ***************************************************************************
-CLandscape::CLandscape()
+// Init BlockAllcoator with standard BlockMemory.
+CLandscape::CLandscape() : 
+	TessFaceAllocator(NL3D_TESS_ALLOC_BLOCKSIZE), 
+	TessVertexAllocator(NL3D_TESS_ALLOC_BLOCKSIZE), 
+	TessFarVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
+	TessNearVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
+	TileMaterialAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
+	TileFaceAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE)
 {
 	TileInfos.resize(NL3D::NbTilesMax);
 
@@ -1529,7 +1551,8 @@ void			CLandscape::buildCollideFaces(sint zoneId, sint patch, std::vector<CTrian
 // ***************************************************************************
 CVector			CLandscape::getTesselatedPos(const CPatchIdent &patchId, const CUV &uv) const
 {
-	std::map<uint16, CZone*>::const_iterator	it= Zones.find(patchId.ZoneId);
+	// \todo yoyo: TODO_ZONEID: change ZoneId in 32 bits...
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find((uint16)patchId.ZoneId);
 	if(it!=Zones.end())
 	{
 		sint	N= (*it).second->getNumPatchs();
@@ -1925,6 +1948,88 @@ void		CLandscape::getTessellationLeaves(std::vector<const CTessFace*>  &leaves) 
 	}
 
 }
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Allocators.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CTessFace			*CLandscape::newTessFace()
+{
+	return TessFaceAllocator.allocate();
+}
+
+// ***************************************************************************
+CTessVertex			*CLandscape::newTessVertex()
+{
+	return TessVertexAllocator.allocate();
+}
+
+// ***************************************************************************
+CTessNearVertex		*CLandscape::newTessNearVertex()
+{
+	return TessNearVertexAllocator.allocate();
+}
+
+// ***************************************************************************
+CTessFarVertex		*CLandscape::newTessFarVertex()
+{
+	return TessFarVertexAllocator.allocate();
+}
+
+// ***************************************************************************
+CTileMaterial		*CLandscape::newTileMaterial()
+{
+	return TileMaterialAllocator.allocate();
+}
+
+// ***************************************************************************
+CTileFace			*CLandscape::newTileFace()
+{
+	return TileFaceAllocator.allocate();
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTessFace(CTessFace *f)
+{
+	TessFaceAllocator.free(f);
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTessVertex(CTessVertex *v)
+{
+	TessVertexAllocator.free(v);
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTessNearVertex(CTessNearVertex *v)
+{
+	TessNearVertexAllocator.free(v);
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTessFarVertex(CTessFarVertex *v)
+{
+	TessFarVertexAllocator.free(v);
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTileMaterial(CTileMaterial *tm)
+{
+	TileMaterialAllocator.free(tm);
+}
+
+// ***************************************************************************
+void				CLandscape::deleteTileFace(CTileFace *tf)
+{
+	TileFaceAllocator.free(tf);
+}
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.43 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.44 2001/07/05 11:37:48 berenguier Exp $
  *
  */
 
@@ -29,6 +29,7 @@
 #include "3d/zone.h"
 #include "nel/misc/common.h"
 #include "3d/landscape_profile.h"
+#include "3d/landscape.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -147,8 +148,8 @@ CTessFace::~CTessFace()
 	// Old Code. This is not sufficient to clear the CTessFace.
 	// Vertices and Uvs must be correctly cleared too (but difficult because of sharing).
 	/*
-	delete SonLeft;
-	delete SonRight;
+	Patch->getLandscape()->deleteTessFace(SonLeft);
+	Patch->getLandscape()->deleteTessFace(SonRight);
 
 	// update neighbors.
 	if(FBase)	FBase->changeNeighbor(this, NULL);
@@ -272,7 +273,7 @@ void	CTessFace::allocTileUv(TTileUvId id)
 	{
 		if(TileFaces[i])
 		{
-			CTessNearVertex		*newNear= new CTessNearVertex;
+			CTessNearVertex		*newNear= Patch->getLandscape()->newTessNearVertex();
 			switch(id)
 			{
 				case IdUvBase: newNear->Src= VBase; TileFaces[i]->VBase= newNear; break;
@@ -303,7 +304,7 @@ void	CTessFace::deleteTileUv(TTileUvId id)
 				default: nlstop;
 			};
 			Patch->removeNearVertexFromRenderList(TileMaterial, oldNear);
-			delete oldNear;
+			Patch->getLandscape()->deleteTessNearVertex(oldNear);
 		}
 	}
 }
@@ -373,7 +374,7 @@ void		CTessFace::buildTileFaces()
 	{
 		if(TileMaterial->Pass[i])
 		{
-			TileFaces[i]= new CTileFace;
+			TileFaces[i]= Patch->getLandscape()->newTileFace();
 			TileFaces[i]->VBase= NULL;
 			TileFaces[i]->VLeft= NULL;
 			TileFaces[i]->VRight= NULL;
@@ -391,7 +392,7 @@ void		CTessFace::deleteTileFaces()
 		if(TileMaterial->Pass[i])
 		{
 			nlassert(TileFaces[i]);
-			delete TileFaces[i];
+			Patch->getLandscape()->deleteTileFace(TileFaces[i]);
 			TileFaces[i]= NULL;
 		}
 		else
@@ -548,7 +549,7 @@ void		CTessFace::computeTileMaterial()
 	else
 	{
 		sint	i;
-		TileMaterial= new CTileMaterial;
+		TileMaterial= Patch->getLandscape()->newTileMaterial();
 		TileMaterial->TileS= ts;
 		TileMaterial->TileT= tt;
 
@@ -673,7 +674,7 @@ void	CTessFace::releaseTileMaterial()
 		// NB: TileS/TileT still valid.
 		Patch->removeTileMaterialFromRenderList(TileMaterial);
 
-		delete TileMaterial;
+		Patch->getLandscape()->deleteTileMaterial(TileMaterial);
 		TileMaterial= NULL;
 	}
 }
@@ -762,7 +763,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	if(f1->FLeft==NULL || f1->FLeft->isLeaf())
 	{
 		// The base neighbor is a leaf or NULL. So must create the new vertex.
-		vtop= new CTessVertex;
+		vtop= Patch->getLandscape()->newTessVertex();
 
 		// Compute pos.
 		vtop->StartPos= (f1->VLeft->EndPos + f1->VBase->EndPos)/2;
@@ -781,7 +782,7 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	if(f0->FLeft==NULL || f0->FLeft->isLeaf())
 	{
 		// The base neighbor is a leaf or NULL. So must create the new vertex.
-		vbot= new CTessVertex;
+		vbot= Patch->getLandscape()->newTessVertex();
 
 		// Compute pos.
 		vbot->StartPos= (f0->VLeft->EndPos + f0->VBase->EndPos)/2;
@@ -798,8 +799,8 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	}
 
 	// In all case, must create new FarVertices, since rect split occurs on border!!
-	CTessFarVertex	*farvtop= new CTessFarVertex;
-	CTessFarVertex	*farvbot= new CTessFarVertex;
+	CTessFarVertex	*farvtop= Patch->getLandscape()->newTessFarVertex();
+	CTessFarVertex	*farvbot= Patch->getLandscape()->newTessFarVertex();
 	farvtop->Src= vtop;
 	farvbot->Src= vbot;
 	farvtop->PCoord= pctop;
@@ -815,10 +816,10 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	CTessFace	*f1l, *f1r;
 
 	// create and bind Sons.
-	f0l= f0->SonLeft= new CTessFace;
-	f0r= f0->SonRight= new CTessFace;
-	f1l= f1->SonLeft= new CTessFace;
-	f1r= f1->SonRight= new CTessFace;
+	f0l= f0->SonLeft= Patch->getLandscape()->newTessFace();
+	f0r= f0->SonRight= Patch->getLandscape()->newTessFace();
+	f1l= f1->SonLeft= Patch->getLandscape()->newTessFace();
+	f1r= f1->SonRight= Patch->getLandscape()->newTessFace();
 
 	// subdivision left.
 	f0l->Patch= f0->Patch;
@@ -1032,8 +1033,8 @@ void		CTessFace::split(bool propagateSplit)
 	//----------------------------------
 
 	// create and bind Sons.
-	SonLeft= new CTessFace;
-	SonRight= new CTessFace;
+	SonLeft= Patch->getLandscape()->newTessFace();
+	SonRight= Patch->getLandscape()->newTessFace();
 
 	// subdivision left.
 	SonLeft->Patch= Patch;
@@ -1092,7 +1093,7 @@ void		CTessFace::split(bool propagateSplit)
 	if(FBase==NULL || FBase->isLeaf())
 	{
 		// The base neighbor is a leaf or NULL. So must create the new vertex.
-		CTessVertex	*newVertex= new CTessVertex;
+		CTessVertex	*newVertex= Patch->getLandscape()->newTessVertex();
 		SonRight->VBase= newVertex;
 		SonLeft->VBase= newVertex;
 
@@ -1118,7 +1119,7 @@ void		CTessFace::split(bool propagateSplit)
 	if(FBase==NULL || FBase->isLeaf() || FBase->Patch!=Patch)
 	{
 		// The base neighbor is a leaf or NULL. So must create the new far vertex.
-		CTessFarVertex	*newFar= new CTessFarVertex;
+		CTessFarVertex	*newFar= Patch->getLandscape()->newTessFarVertex();
 		SonRight->FVBase= newFar;
 		SonLeft->FVBase= newFar;
 
@@ -1292,13 +1293,13 @@ void		CTessFace::doMerge()
 		// Delete vertex, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
 		// NB: this work even if neigbor is rectnagular.
 		if(!FBase || !FBase->isLeaf())
-			delete SonLeft->VBase;
+			Patch->getLandscape()->deleteTessVertex(SonLeft->VBase);
 
 		// Delete Far Vertex. Idem, but test too if != patch...
 		if(!FBase || !FBase->isLeaf() || FBase->Patch!=Patch)
 		{
 			Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
-			delete SonLeft->FVBase;
+			Patch->getLandscape()->deleteTessFarVertex(SonLeft->FVBase);
 		}
 
 
@@ -1346,8 +1347,8 @@ void		CTessFace::doMerge()
 		FRight= SonRight->FBase;
 		if(FRight)	FRight->changeNeighbor(SonRight, this);
 		// delete sons.
-		delete SonLeft;
-		delete SonRight;
+		Patch->getLandscape()->deleteTessFace(SonLeft);
+		Patch->getLandscape()->deleteTessFace(SonRight);
 		SonLeft=NULL;
 		SonRight=NULL;
 
@@ -1370,12 +1371,12 @@ void		CTessFace::doMerge()
 		// Delete vertex, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
 		// NB: this work even if neigbor is rectangular (see tesselation rules in splitRectangular()).
 		if(!FLeft || !FLeft->isLeaf())
-			delete SonLeft->VBase;
+			Patch->getLandscape()->deleteTessVertex(SonLeft->VBase);
 
 		// Delete Far Vertex. Rect patch: neightb must be of a != pathc as me => must delete FarVertex.
 		nlassert(!FLeft || FLeft->Patch!=Patch);
 		Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
-		delete SonLeft->FVBase;
+		Patch->getLandscape()->deleteTessFarVertex(SonLeft->FVBase);
 
 
 		// 2. Must remove sons from rdr list, and insert father.
@@ -1392,8 +1393,8 @@ void		CTessFace::doMerge()
 		FRight= SonRight->FRight;
 		if(FRight)	FRight->changeNeighbor(SonRight, this);
 		// delete sons.
-		delete SonLeft;
-		delete SonRight;
+		Patch->getLandscape()->deleteTessFace(SonLeft);
+		Patch->getLandscape()->deleteTessFace(SonRight);
 		SonLeft=NULL;
 		SonRight=NULL;
 
@@ -1665,7 +1666,8 @@ void		CTessFace::unbind(CPatch *except[4])
 				{
 					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
 					CTessVertex	*old= SonLeft->VBase;
-					SonLeft->VBase= new CTessVertex(*old);
+					SonLeft->VBase= Patch->getLandscape()->newTessVertex();
+					*(SonLeft->VBase)= *old;
 					SonRight->VBase= SonLeft->VBase;
 				}
 			}
@@ -1688,7 +1690,8 @@ void		CTessFace::unbind(CPatch *except[4])
 					// Duplicate the VBase of sons, so the unbind is correct and no vertices are shared.
 					// NB: this code is a bit different from square case.
 					CTessVertex	*old= SonLeft->VBase;
-					SonLeft->VBase= new CTessVertex(*old);
+					SonLeft->VBase= Patch->getLandscape()->newTessVertex();
+					*(SonLeft->VBase)= *old;
 					// This is the difference:  (see rectangle tesselation rules).
 					SonRight->VLeft= SonLeft->VBase;
 					// Yoyo_patch_himself (12/02/2001): I forgot this one!!
@@ -2023,7 +2026,7 @@ void		CTessFace::updateBindAndSplit()
 		// Copy the good coordinate: those splitted (because of noise).
 		vert->Pos= vert->StartPos= vert->EndPos= SonLeft->VBase->EndPos;
 		// But delete the pointer.
-		delete SonLeft->VBase;
+		Patch->getLandscape()->deleteTessVertex(SonLeft->VBase);
 		// And update sons pointers, to good vertex.
 		SonLeft->VBase= vert;
 		SonRight->VBase= vert;
@@ -2086,7 +2089,7 @@ void		CTessFace::updateBindAndSplit()
 				// NB: this work too with rectangular patch (see tesselation rules).
 				vert->Pos= vert->StartPos= vert->EndPos= fl->VBase->EndPos;
 				// But delete the pointer.
-				delete fl->VBase;
+				Patch->getLandscape()->deleteTessVertex(fl->VBase);
 				// And update sons pointers, to good vertex (rectangular case, see tesselation rules).
 				fl->VBase= vert;
 				fr->VLeft= vert;

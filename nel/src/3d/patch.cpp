@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.53 2001/07/02 14:43:17 berenguier Exp $
+ * $Id: patch.cpp,v 1.54 2001/07/05 11:37:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,8 +84,8 @@ void			CPatch::release()
 		// Must do it here, before deletion of Zone, OrderS/T etc...
 		resetRenderFar();
 
-		delete Son0;
-		delete Son1;
+		getLandscape()->deleteTessFace(Son0);
+		getLandscape()->deleteTessFace(Son1);
 		// Vertices are smartptr/deleted in zone.
 		Zone= NULL;
 	}
@@ -876,8 +876,8 @@ void			CPatch::makeRoots()
 	*/
 	nlassert(Son0==NULL);
 	nlassert(Son1==NULL);
-	Son0= new CTessFace;
-	Son1= new CTessFace;
+	Son0= getLandscape()->newTessFace();
+	Son1= getLandscape()->newTessFace();
 
 	// Son0.
 	Son0->Patch= this;
@@ -2500,6 +2500,12 @@ void		CPatch::appendTessellationLeaves(std::vector<const CTessFace*>  &leaves) c
 	nlassert(Son0);
 	nlassert(Son1);
 	Son0->appendTessellationLeaves(leaves);
+	Son1->appendTessellationLeaves(leaves);
+}
+
+
+// ***************************************************************************
+		neighborEdge.NPatchs= 0;
 		neighborEdge.MultipleBindNum= 0;
 	}
 }

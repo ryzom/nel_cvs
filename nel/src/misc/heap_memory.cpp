@@ -1,7 +1,7 @@
 /** \file heap_memory.cpp
  * A Heap manager
  *
- * $Id: heap_memory.cpp,v 1.2 2001/07/11 15:20:47 berenguier Exp $
+ * $Id: heap_memory.cpp,v 1.3 2001/07/13 08:10:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ void			CHeapMemory::reset()
 void			CHeapMemory::initHeap(void *heap, uint size, uint align)
 {
 	// setup alignement.
-	if(align!=4 || align!=8 || align!=16 || align!=32)
+	if(align!=4 && align!=8 && align!=16 && align!=32)
 	{
 		nlstop;
 		align= 4;

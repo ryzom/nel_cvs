@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.110 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: landscape.cpp,v 1.111 2002/04/18 15:32:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -397,15 +397,24 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	// compile the zone for this landscape.
 	zone->compile(this, Zones);
 
+	// For test of _PatchQuadGrid erase.
+	CAABBox	zoneBBForErase=	zone->getZoneBB().getAABBox();
+	// Avoid precision problems by enlarging a little bbox size of zone for erase
+	zoneBBForErase.setHalfSize( zoneBBForErase.getHalfSize() * 1.1f);
+
 	// add patchs of this zone to the quadgrid.
 	for(sint i= 0; i<zone->getNumPatchs(); i++)
 	{
 		const CPatch *pa= ((const CZone*)zone)->getPatch(i);
-		CPatchIdent	paId;
+		CPatchIdentEx	paId;
 		paId.ZoneId= zoneId;
 		paId.PatchId= i;
+		paId.Patch= pa;
 		CAABBox		bb= pa->buildBBox();
 		_PatchQuadGrid.insert(bb.getMin(), bb.getMax(), paId);
+		// NB: the bbox of zone is used to remove patch. Hence it is VERY important that zoneBBox includes
+		// all patchs bbox (else some patchs entries may not be deleted in removeZone()).
+		nlassert(zoneBBForErase.include(bb));
 	}
 
 	// Must realase VB Buffers
@@ -435,23 +444,29 @@ bool			CLandscape::removeZone(uint16 zoneId)
 
 	// delete patchs from this zone to the quadgrid.
 	// use the quadgrid itself to find where patch are. do this using bbox of zone.
-	CAABBoxExt		bb= zone->getZoneBB();
-	// for security, expand a little the bbox of the zone.
-	bb.setSize(bb.getSize()*1.1f);
+	CAABBox	zoneBBForErase=	zone->getZoneBB().getAABBox();
+	// Avoid precision problems by enlarging a little bbox size of zone for erase
+	zoneBBForErase.setHalfSize( zoneBBForErase.getHalfSize() * 1.1f);
 	// select iterators in the area of this zone.
 	_PatchQuadGrid.clearSelection();
-	_PatchQuadGrid.select(bb.getMin(), bb.getMax());
+	_PatchQuadGrid.select(zoneBBForErase.getMin(), zoneBBForErase.getMax());
 	// for each patch, remove it if from deleted zone.
-	CQuadGrid<CPatchIdent>::CIterator	it;
+	CQuadGrid<CPatchIdentEx>::CIterator	it;
+	sint	nPatchRemoved= 0;
 	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end();)
 	{
+		// if the patch belong to the zone to remove
 		if( (*it).ZoneId== zone->getZoneId() )
 		{
+			// remove from the quadgrid.
 			it= _PatchQuadGrid.erase(it);
+			nPatchRemoved++;
 		}
 		else
 			it++;
 	}
+	// verify we have removed all patch in the quadGrid for this zone
+	nlassert(nPatchRemoved==zone->getNumPatchs());
 
 
 	// remove the zone.
@@ -2099,23 +2114,15 @@ void			CLandscape::checkBinds(uint16 zoneId) throw(EBadBind)
 
 
 // ***************************************************************************
-void			CLandscape::addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const
+void			CLandscape::addTrianglesInBBox(const CPatchIdentEx &paIdEx, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const
 {
 	// No clear here, just add triangles to the array.
-	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
-	if(it!=Zones.end())
-	{
-		sint	N= (*it).second->getNumPatchs();
-		// patch must exist in the zone.
-		nlassert(patchId>=0);
-		nlassert(patchId<N);
-		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId);
+	const CPatch	*pa= paIdEx.Patch;
 
-		CPatchIdent		paId;
-		paId.ZoneId= zoneId;
-		paId.PatchId= patchId;
-		pa->addTrianglesInBBox(paId, bbox, triangles, tileTessLevel);
-	}
+	CPatchIdent		paId;
+	paId.ZoneId= paIdEx.ZoneId;
+	paId.PatchId= paIdEx.PatchId;
+	pa->addTrianglesInBBox(paId, bbox, triangles, tileTessLevel);
 }
 
 
@@ -2128,35 +2135,27 @@ void			CLandscape::buildTrianglesInBBox(const CAABBox &bbox, std::vector<CTriang
 	// search path of interest.
 	_PatchQuadGrid.clearSelection();
 	_PatchQuadGrid.select(bbox.getMin(), bbox.getMax());
-	CQuadGrid<CPatchIdent>::CIterator	it;
+	CQuadGrid<CPatchIdentEx>::CIterator	it;
 
 	// for each patch, add triangles to the array.
 	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
 	{
-		addTrianglesInBBox((*it).ZoneId, (*it).PatchId, bbox, triangles, tileTessLevel);
+		addTrianglesInBBox((*it), bbox, triangles, tileTessLevel);
 	}
 }
 
 
 
 // ***************************************************************************
-void			CLandscape::addPatchBlocksInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds)
+void			CLandscape::addPatchBlocksInBBox(const CPatchIdentEx &paIdEx, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds)
 {
 	// No clear here, just add blocks to the array.
-	std::map<uint16, CZone*>::const_iterator	it= Zones.find(zoneId);
-	if(it!=Zones.end())
-	{
-		sint	N= (*it).second->getNumPatchs();
-		// patch must exist in the zone.
-		nlassert(patchId>=0);
-		nlassert(patchId<N);
-		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId);
+	const CPatch	*pa= paIdEx.Patch;
 
-		CPatchIdent		paId;
-		paId.ZoneId= zoneId;
-		paId.PatchId= patchId;
-		pa->addPatchBlocksInBBox(paId, bbox, paBlockIds);
-	}
+	CPatchIdent		paId;
+	paId.ZoneId= paIdEx.ZoneId;
+	paId.PatchId= paIdEx.PatchId;
+	pa->addPatchBlocksInBBox(paId, bbox, paBlockIds);
 }
 
 
@@ -2169,12 +2168,12 @@ void			CLandscape::buildPatchBlocksInBBox(const CAABBox &bbox, std::vector<CPatc
 	// search path of interest.
 	_PatchQuadGrid.clearSelection();
 	_PatchQuadGrid.select(bbox.getMin(), bbox.getMax());
-	CQuadGrid<CPatchIdent>::CIterator	it;
+	CQuadGrid<CPatchIdentEx>::CIterator	it;
 
 	// for each patch, add blocks to the array.
 	for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
 	{
-		addPatchBlocksInBBox((*it).ZoneId, (*it).PatchId, bbox, paBlockIds);
+		addPatchBlocksInBBox((*it), bbox, paBlockIds);
 	}
 }
 
@@ -3272,52 +3271,19 @@ void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
 		// search patchs of interest: those which interssect the pointLight
 		_PatchQuadGrid.clearSelection();
 		_PatchQuadGrid.select(pl.BBox.getMin(), pl.BBox.getMax());
-		CQuadGrid<CPatchIdent>::CIterator	it;
+		CQuadGrid<CPatchIdentEx>::CIterator	it;
 
 		// for each patch, light it with the light.
-		CZone	*lastZone= NULL;
-		sint	lastZoneId= -1;
 		for(it= _PatchQuadGrid.begin(); it!= _PatchQuadGrid.end(); it++)
 		{
-			uint	zoneId= (*it).ZoneId;
-			uint	patchId= (*it).PatchId;
+			// get the patch
+			const CPatch	*pa= (*it).Patch;
 
-			// find zone, possibly look in lastZone cache
-			CZone	*zone;
-			if((sint)zoneId==lastZoneId)
+			// More precise clipping: 
+			if( pa->getBSphere().intersect( pl.BSphere ) )
 			{
-				// just get cache.
-				zone= lastZone;
-			}
-			else
-			{
-				// search in map
-				std::map<uint16, CZone*>::const_iterator	zoneit= Zones.find(zoneId);
-				if(zoneit!=Zones.end())
-					zone= (*zoneit).second;
-				else
-					zone= NULL;
-				// bkup cahche
-				lastZone= zone;
-				lastZoneId= zoneId;
-			}
-
-			// if the zone exist.
-			if(zone)
-			{
-				uint	N= zone->getNumPatchs();
-				// patch must exist in the zone.
-				nlassert(patchId>=0);
-				nlassert(patchId<N);
-				// get the patch
-				const CPatch	*pa= const_cast<const CZone*>(zone)->getPatch(patchId);
-
-				// More precise clipping: 
-				if( pa->getBSphere().intersect( pl.BSphere ) )
-				{
-					// Ok, light the patch with this spotLight
-					const_cast<CPatch*>(pa)->processDLMLight(pl);
-				}
+				// Ok, light the patch with this spotLight
+				const_cast<CPatch*>(pa)->processDLMLight(pl);
 			}
 		}
 

@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.6 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.7 2002/04/18 15:32:15 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -799,10 +799,16 @@ void			CPatchDLMContext::compileLighting(TCompileType compType)
 // ***************************************************************************
 uint			CPatchDLMContext::getMemorySize() const
 {
-	return sizeof(CPatchDLMContext) + 
-		_Vertices.size() * sizeof(CVertex) +
-		_LightMap.size() * sizeof(CRGBA) +
-		_Clusters.size() * sizeof(CCluster);
+	uint	size= sizeof(CPatchDLMContext);
+	size+= _Vertices.size() * sizeof(CVertex);
+	size+= _LightMap.size() * sizeof(CRGBA);
+	size+= _Clusters.size() * sizeof(CCluster);
+	size+= _TextureFar.size() * sizeof(CRGBA);
+#ifndef NL_DLM_TILE_RES
+	size+= _LowResTileColors.size() * sizeof(uint16);
+#endif
+
+	return size;
 }
 
 

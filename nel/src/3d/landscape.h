@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.36 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: landscape.h,v 1.37 2002/04/18 15:32:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -791,8 +791,14 @@ private:
 	/// \name Visual Collision system.
 	// @{
 
+	// A CPatchIdent, with a ptr to the compiled CPatch 
+	struct	CPatchIdentEx : public CPatchIdent
+	{
+		const CPatch	*Patch;
+	};
+
 	/// The QuadGrid of patch.
-	CQuadGrid<CPatchIdent>		_PatchQuadGrid;
+	CQuadGrid<CPatchIdentEx>	_PatchQuadGrid;
 	static	const uint			_PatchQuadGridSize;
 	static	const float			_PatchQuadGridEltSize;
 
@@ -802,11 +808,11 @@ private:
 	 * \param triangles array to be filled (no clear performed, elements added).
 	 * \param tileTessLevel 0,1 or 2  size of the triangles (2*2m, 1*1m or 0.5*0.5m). Level of subdivision of a tile.
 	 */ 
-	void			addTrianglesInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
+	void			addTrianglesInBBox(const CPatchIdentEx &paIdEx, const CAABBox &bbox, std::vector<CTrianglePatch> &triangles, uint8 tileTessLevel) const;
 
 	/** private version of buildPatchBlocksInBBox, searching only for one patch.
 	 */
-	void			addPatchBlocksInBBox(sint zoneId, sint patchId, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds);
+	void			addPatchBlocksInBBox(const CPatchIdentEx &paIdEx, const CAABBox &bbox, std::vector<CPatchBlockIdent> &paBlockIds);
 	// @}
 
 

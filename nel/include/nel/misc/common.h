@@ -1,7 +1,7 @@
 /** \file common.h
  * <File description>
  *
- * $Id: common.h,v 1.9 2000/11/10 09:33:39 berenguier Exp $
+ * $Id: common.h,v 1.10 2000/11/10 11:05:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,11 @@ template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T&
 	{return std::max(maxof(a,b,c,d),e);}
 
 // ============================================================================================
-
+/** 
+  * contReset take a container like std::vector or std::deque and put his size to 0 like clear but free all buffers.
+  * This function is usefull because resize, clear, erase or reserve methods never realloc when the array size come down.
+  * \param a is the container to reset.
+  */
 template<class T>	inline contReset (T& a)
 {
 	a.~T();

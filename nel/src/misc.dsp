@@ -348,6 +348,10 @@ SOURCE=.\misc\config_file\cf_lexical.lxx
 SOURCE=.\misc\config_file\config_file.cpp
 # ADD CPP /Yu"..\stdmisc.h"
 # End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\config_file.h
+# End Source File
 # End Group
 # Begin Group "Events"
 

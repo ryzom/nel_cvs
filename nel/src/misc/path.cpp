@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.61 2002/10/29 17:21:45 lecroart Exp $
+ * $Id: path.cpp,v 1.62 2002/11/12 15:57:28 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -315,13 +315,14 @@ std::string	CPath::standardizeDosPath (const std::string &path)
 	{
 		if (path[i] == '/')
 			newPath += '\\';
-		else if (isupper(path[i]))
-			newPath += tolower(path[i]);
+		// Yoyo: supress toLower. Not usefull!?!
+		/*else if (isupper(path[i]))
+			newPath += tolower(path[i]);*/
 		else
 			newPath += path[i];
 	}
 
-	if (CFile::isDirectory(path) && newPath[newPath.size()-1] != '\\')
+	if (CFile::isExists(path) && CFile::isDirectory(path) && newPath[newPath.size()-1] != '\\')
 		newPath += '\\';
 
 	return newPath;

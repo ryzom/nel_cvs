@@ -1,6 +1,6 @@
 -- plugin to edit a nel flare
 plugin Geometry nel_flare
-name:"Nel flare"
+name:"Flare"
 category:"Nel Tools"
 classID:#(0x4e913532, 0x3c2f2307)
 extends:Sphere

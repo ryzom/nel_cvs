@@ -1,6 +1,6 @@
 -- plugin to put a nel particle system in a scene
 plugin Geometry nel_ps
-name:"Nel particle system"
+name:"Particle Sys"
 category:"Nel Tools"
 classID:#(0x58ce2893, 0xbd2b74ef)
 extends:Box

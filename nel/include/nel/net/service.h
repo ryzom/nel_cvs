@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.57 2002/09/09 12:01:40 coutelas Exp $
+ * $Id: service.h,v 1.58 2002/10/24 08:39:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,6 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/entity_id.h"
 
-#include "nel/net/net_manager.h"
 #include "nel/net/unified_network.h"
 
 #include <string>
@@ -91,8 +90,6 @@ class CCallbackServer;
  *
  * If you want the port to not be auto-assigned by the naming service, set the port to a number different than 0.
  *
- * the NLNET_OLD_SERVICE_MAIN macro is the same but using layer4 instead of layer5. It used for old services.
- *
  * Args used by service are always in lower case:
  *
  * -C followed by the directory where we can find the config file
@@ -106,19 +103,6 @@ class CCallbackServer;
 
 
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
-
-#define NLNET_OLD_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
- \
-int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
-{ \
-	__ServiceClassName *scn = new __ServiceClassName; \
-	scn->setArgs (lpCmdLine); \
-	scn->setOldCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
-	delete scn; \
-	return retval; \
-}
-
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
@@ -132,19 +116,6 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 }
 
 #else
-
-#define NLNET_OLD_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
- \
-int main(int argc, const char **argv) \
-{ \
-	__ServiceClassName *scn = new __ServiceClassName; \
-	scn->setArgs (argc, argv); \
-	scn->setOldCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir); \
-	delete scn; \
-	return retval; \
-}
-
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray, __ConfigDir, __LogDir) \
  \
 int main(int argc, const char **argv) \
@@ -173,8 +144,6 @@ typedef uint8 TServiceId;
 
 static TUnifiedCallbackItem EmptyCallbackArray[] = { { "", NULL } };
 
-// for old services
-static TCallbackItem OldEmptyCallbackArray[] = { { "", NULL } };
 
 //
 // Classes
@@ -255,12 +224,8 @@ public:
 	/// Returns a pointer to the CCallbackServer object
 	CCallbackServer					*getServer();
 
-	/// Returns the recording state (don't needed if you use layer4 or 5)
+	/// Returns the recording state (don't needed if you use layer5)
 	CCallbackNetBase::TRecordingState	getRecordingState() const { return _RecordingState; }
-
-
-	/// Returns true if this service use layer5
-	bool							isService5 () { return _IsService5; }
 
 
 	//@}
@@ -310,8 +275,7 @@ public:
 	void setArgs (const char *args);
 
 	/// Sets the default callback array given from the macro
-	void setOldCallbackArray (TCallbackItem *array, uint nbelem) { _IsService5 = false; _CallbackArray = array; _CallbackArraySize = nbelem; }
-	void setCallbackArray (TUnifiedCallbackItem *array, uint nbelem) { _IsService5 = true; _CallbackArray5 = array; _CallbackArraySize = nbelem; }
+	void setCallbackArray (TUnifiedCallbackItem *array, uint nbelem) { _CallbackArray = array; _CallbackArraySize = nbelem; }
 
 	/// Require to reset the hierarchical timer
 	void requireResetMeasures();
@@ -387,13 +351,9 @@ private:
 	/// The directory where the service is running
 	std::string							_RunningPath;
 
-	/// true if the service use layer5
-	bool								_IsService5;
-
 	std::string							_Version;
 
-	TUnifiedCallbackItem				*_CallbackArray5;
-	TCallbackItem						*_CallbackArray;
+	TUnifiedCallbackItem				*_CallbackArray;
 	uint								_CallbackArraySize;
 
 	/// true if the service don't use the naming service
@@ -406,8 +366,8 @@ private:
 
 	//@}
 
-	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
-	friend void AESConnection5 (const std::string &serviceName, uint16 sid, void *arg);
+	friend void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid);
+	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;
 };

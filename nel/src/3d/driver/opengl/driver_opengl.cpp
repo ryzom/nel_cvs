@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.206 2004/03/23 10:25:16 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.207 2004/03/29 11:34:45 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1419,6 +1419,7 @@ bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 // --------------------------------------------------
 bool CDriverGL::getCurrentScreenMode(GfxMode &mode)
 {
+#ifdef NL_OS_WINDOWS
 	DEVMODE	devmode;
 	devmode.dmSize= sizeof(DEVMODE);
 	devmode.dmDriverExtra= 0;
@@ -1430,7 +1431,9 @@ bool CDriverGL::getCurrentScreenMode(GfxMode &mode)
 	mode.Frequency= devmode.dmDisplayFrequency,
 	mode.Width= (uint16)devmode.dmPelsWidth;
 	mode.Height= (uint16)devmode.dmPelsHeight;
-
+#else
+	nlwarning("LINUXTODO: enumerate all available modes. now returns empty array");
+#endif
 	return true;
 }
 

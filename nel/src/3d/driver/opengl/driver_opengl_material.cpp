@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.77 2003/11/06 09:39:12 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.78 2003/11/13 13:20:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -639,7 +639,7 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 	// Compute how many pass, according to driver caps.
 	_NLightMapPerPass = inlGetNumTextStages()-1;
 	// Can do more than 2 texture stages only if NVTextureEnvCombine4 or ATIXTextureEnvCombine3
-	if (!_Extensions.NVTextureEnvCombine4 || !_Extensions.ATIXTextureEnvCombine3)
+	if (!_Extensions.NVTextureEnvCombine4 && !_Extensions.ATIXTextureEnvCombine3)
 		_NLightMapPerPass = 1;
 
 	// Number of pass.

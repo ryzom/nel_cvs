@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.71 2004/10/08 14:05:50 legros Exp $
+ * $Id: local_retriever.cpp,v 1.72 2004/10/15 13:34:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1559,6 +1559,10 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 				float	meanHeight = (leaf->getMinHeight()+leaf->getMaxHeight())*0.5f;
 				return meanHeight;
 			}
+		}
+		else if (_Surfaces[position.Surface].isUnderWater())
+		{
+			return _Surfaces[position.Surface].getWaterHeight();
 		}
 		else
 		{

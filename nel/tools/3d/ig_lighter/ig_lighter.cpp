@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.3 2002/02/07 13:46:01 berenguier Exp $
+ * $Id: ig_lighter.cpp,v 1.4 2002/02/15 15:22:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,11 +253,14 @@ void	lightIg(const CInstanceGroup &igIn, CInstanceGroup &igOut, CInstanceLighter
 				continue;
 
 			// Get the instance shape name
-			string name= lightDesc.ShapePath + igIn.getShapeName(i);
+			string name = igIn.getShapeName(i);
 
 			// Add a .shape at the end ?
 			if (name.find('.') == std::string::npos)
 				name += ".shape";
+
+			// Lookup the file
+			name = CPath::lookup (name);
 
 			// Find the shape in the bank
 			std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);
@@ -543,10 +546,14 @@ int main(int argc, char* argv[])
 			// Load and parse the param file
 			parameter.load (paramFile);
 
-			// shapes_path
-			string shapes_path = parameter.getVar ("shapes_path").asString();
-			shapes_path= CPath::standardizePath(shapes_path);
-			lighterDesc.ShapePath= shapes_path;
+			// Get the search pathes
+			CConfigFile::CVar &search_pathes = parameter.getVar ("search_pathes");
+			uint path;
+			for (path = 0; path < (uint)search_pathes.size(); path++)
+			{
+				// Add to search path
+				CPath::addSearchPath (search_pathes.asString(path));
+			}
 
 			// Light direction
 			CConfigFile::CVar &sun_direction = parameter.getVar ("sun_direction");

@@ -167,6 +167,10 @@ SOURCE=..\zone_welder\zone_utility.h
 # End Group
 # Begin Source File
 
+SOURCE=..\build_gamedata\cfg\properties.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\ReadMe.txt
 # End Source File
 # End Target

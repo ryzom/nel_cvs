@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.14 2002/02/06 16:58:30 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.15 2002/02/15 15:22:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,24 +134,14 @@ int main(int argc, char* argv[])
 				// Load and parse the dependency file
 				dependency.load (argv[4]);
 
-				// Fill the pathes
-				string ig_path = parameter.getVar ("ig_path").asString();
-				if ((ig_path[ig_path.length()-1]!='\\')&&(ig_path[ig_path.length()-1]!='/'))
-					ig_path+="/";
-				string shapes_path = parameter.getVar ("shapes_path").asString();
-				if ((shapes_path[shapes_path.length()-1]!='\\')&&(shapes_path[shapes_path.length()-1]!='/'))
-					shapes_path+="/";
-
-				// Get the maps path
-				string maps_path = parameter.getVar ("maps_path").asString();
-
-				// Add it to the current path
-				CPath::addSearchPath (maps_path);
-
-				// Get the water path
-				string water_map_path = parameter.getVar ("water_map_path").asString();
-				CPath::addSearchPath(water_map_path);
-
+				// Get the search pathes
+				CConfigFile::CVar &search_pathes = parameter.getVar ("search_pathes");
+				uint path;
+				for (path = 0; path < (uint)search_pathes.size(); path++)
+				{
+					// Add to search path
+					CPath::addSearchPath (search_pathes.asString(path));
+				}
 
 				// A landscape allocated with new: it is not delete because destruction take 3 secondes more!
 				CLandscape *landscape=new CLandscape;
@@ -175,7 +165,7 @@ int main(int argc, char* argv[])
 				inputFile.close();
 
 				// Load ig of the zone
-				string igName=ig_path+getName (argv[1])+".ig";
+				string igName=CPath::lookup (getName (argv[1])+".ig", false, false);
 
 				bool zoneIgLoaded;
 
@@ -200,11 +190,11 @@ int main(int argc, char* argv[])
 					zoneIgLoaded = false;
 				}
 
-				// Get bank path
-				CConfigFile::CVar &bank_path = parameter.getVar ("bank_path");
+				// Get bank name
+				CConfigFile::CVar &bank_name = parameter.getVar ("bank_name");
 
 				// Load the bank
-				if (inputFile.open (bank_path.asString()))
+				if (inputFile.open (CPath::lookup (bank_name.asString(), false, false)))
 				{
 					try
 					{
@@ -215,13 +205,13 @@ int main(int argc, char* argv[])
 					catch (Exception &e)
 					{
 						// Error
-						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_path.asString().c_str(), e.what());
+						nlwarning ("ERROR error loading tile bank %s\n%s\n", bank_name.asString().c_str(), e.what());
 					}
 				}
 				else
 				{
 					// Error
-					nlwarning ("ERROR can't load tile bank %s\n", bank_path.asString().c_str());
+					nlwarning ("ERROR can't load tile bank %s\n", bank_name.asString().c_str());
 				}
 
 				// Add the zone
@@ -248,7 +238,7 @@ int main(int argc, char* argv[])
 							CIFile inputFile;
 
 							// Name of the instance group
-							string name=ig_path+additionnal_ig.asString(add);
+							string name=CPath::lookup (additionnal_ig.asString(add), false, false);
 
 							// Try to open the file
 							if (inputFile.open (name))
@@ -309,7 +299,7 @@ int main(int argc, char* argv[])
 					// Try to load an instance group.
 					if (loadInstanceGroup)
 					{
-						string name=ig_path+zoneName+".ig";
+						string name = CPath::lookup (zoneName+".ig", false, false);
 
 						// Name of the instance group
 						if (inputFile.open (name))
@@ -478,16 +468,18 @@ int main(int argc, char* argv[])
 					for (uint instance=0; instance<group->getNumInstance(); instance++)
 					{
 						// Get the instance shape name
-						string name=shapes_path+group->getShapeName (instance);
+						string name=group->getShapeName (instance);
 
 						// Skip it??
 						if(group->getInstance(instance).DontCastShadow)
 							continue;
 
-
 						// Add a .shape at the end ?
 						if (name.find('.') == std::string::npos)
 							name += ".shape";
+
+						// Add path
+						name = CPath::lookup (name, false, false);
 
 						// Find the shape in the bank
 						std::map<string, IShape*>::iterator iteMap=shapeMap.find (name);

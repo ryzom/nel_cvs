@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.8 2001/01/31 14:01:54 chafik Exp $
+ * $Id: ident.h,v 1.9 2001/01/31 14:36:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,7 +339,7 @@ namespace NLAIAGENT
 		static sint ShiftLocalServerMask;
 
 	private:
-		CIndexVariant<uint64,maxIndex> _Id;
+		CIndexVariant<uint64,maxIndex,maxResolutionNumer> _Id;
 
 	public:
 		///The constructor creat a new number by increment the _I numbre.

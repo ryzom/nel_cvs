@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.8 2003/09/30 10:08:05 lecroart Exp $
+ * $Id: report.cpp,v 1.9 2003/12/30 11:14:35 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -34,18 +34,20 @@
 #include "nel/misc/report.h"
 
 #ifdef NL_OS_WINDOWS
+
 #include <windows.h>
 #include <windowsx.h>
 #include <winuser.h>
 
 #ifdef min
-#undef min
-#endif
+#	undef min
+#endif // min
 
 #ifdef max
-#undef max
-#endif
-#endif
+#	undef max
+#endif // max
+
+#endif // NL_OS_WINDOWS
 
 using namespace std;
 
@@ -74,7 +76,7 @@ void setReportEmailFunction (void *emailFunction)
 
 #ifndef NL_OS_WINDOWS
 
-// Linux, do nothing
+// GNU/Linux, do nothing
 
 void report ()
 {
@@ -203,21 +205,10 @@ TReportResult report (const std::string &title, const std::string &header, const
 	// set the edit text limit to lot of :)
 	SendMessage (edit, EM_LIMITTEXT, ~0U, 0);
 
-	string formatedBody;
-	// replace \n with \r\n
-	for (uint i = 0; i < body.size(); i++)
-	{
-		if (body[i] == '\n' && i > 0 && body[i-1] != '\r')
-		{
-			formatedBody += '\r';
-		}
-		formatedBody += body[i];
-	}
-
-	Body = formatedBody;
+	Body = addSlashR (body);
 
 	// set the message in the edit text
-	SendMessage (edit, WM_SETTEXT, (WPARAM)0, (LPARAM)formatedBody.c_str());
+	SendMessage (edit, WM_SETTEXT, (WPARAM)0, (LPARAM)Body.c_str());
 
 	if (enableCheckIgnore)
 	{
@@ -271,7 +262,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 	bool canSendReport  = sendReportButton && EmailFunction != NULL;
 
 	if (canSendReport)
-		formatedHeader += " Send report will only email the contents of the box below. Please, send it to help us.";
+		formatedHeader += " Send report will only email the contents of the box below. Please, send it to help us (it could take few minutes to send the email, be patient).";
 	else
 		EnableWindow(sendReport, FALSE);
 

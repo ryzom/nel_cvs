@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.8 2001/07/17 15:52:22 vizerie Exp $
+ * $Id: ps_particle.h,v 1.9 2001/07/24 08:38:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,12 @@ public:
 
 	/// draw the particles for edition mode. The default behaviour just draw a wireframe model 	 
 	virtual void showTool() ;
+
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const = 0 ;
+
+
+
 	
 	/// serialisation. Derivers must override this, and call their parent version
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -113,7 +119,20 @@ public:
 		CPSLocatedBindable::serial(f) ; 
 	}
 protected:
-		/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
+
+	/** Shortcut to notify that the max number of faces has changed
+	  * This must be called when a geometric property of the particle has been modified
+	  * This needn't to be called during CPSParticle::resize overrides
+	  */
+	void notifyOwnerMaxNumFacesChanged(void) const
+	{
+		if (_Owner)
+		{
+			_Owner->notifyMaxNumFacesChanged() ;
+		}
+	}
+
+	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
 	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) = 0 ;
 	
@@ -661,6 +680,9 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		/// return true if there are Opaque faces in the object
 		virtual bool hasOpaqueFaces(void) ;
 
+		/// return the max number of faces needed for display. This is needed for LOD balancing
+		virtual uint32 getMaxNumFaces(void) const ;
+
 	protected:
 		
 		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
@@ -715,6 +737,10 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		/// return true if there are Opaque faces in the object
 		virtual bool hasOpaqueFaces(void) ;
 
+
+		/// return the max number of faces needed for display. This is needed for LOD balancing
+		virtual uint32 getMaxNumFaces(void) const ;
+
 	protected:		
 
 		// dtor
@@ -758,8 +784,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		
 		CVertexBuffer _Vb ;
 
-		/// an index buffer used for drawing the quads
-		CPrimitiveBlock _Pb ;
+
 
 		/// DERIVER MUST CALL this		 
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;	
@@ -905,6 +930,10 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void) ;
 
+
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const ;
+
 protected:
 	/// initialisations
 	virtual void init(void) ;
@@ -997,6 +1026,9 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 
 		/// return true if there are Opaque faces in the object
 		virtual bool hasOpaqueFaces(void) ;
+
+		/// return the max number of faces needed for display. This is needed for LOD balancing
+		virtual uint32 getMaxNumFaces(void) const ;
 
 	protected:
 		
@@ -1196,6 +1228,9 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		static const CVector Triangle[] ;
 		static const uint32 NbVerticesInTriangle ;				
 
+
+		/// return the max number of faces needed for display. This is needed for LOD balancing
+		virtual uint32 getMaxNumFaces(void) const ;
 
 	protected:
 		
@@ -1498,7 +1533,9 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void) ;
 	
-	
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const ;
+
 protected:
 	/// initialisations
 	virtual void init(void) ;	
@@ -1605,6 +1642,9 @@ public:
 
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void) ;
+
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const ;
 
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
@@ -1718,6 +1758,9 @@ public:
 	/// return true if there are Opaque faces in the object
 	virtual bool hasOpaqueFaces(void) ;
 
+	/// return the max number of faces needed for display. This is needed for LOD balancing
+	virtual uint32 getMaxNumFaces(void) const ;
+
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
@@ -1752,6 +1795,9 @@ protected:
 		CPrimitiveBlock Pb ;
 		
 	} ;
+
+	// cache the number of faces in the source shape
+	uint32 _NumFaces ;
 
 	// name of the mesh shape  it was generated from
 	std::string _MeshShapeFileName ;

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.27 2004/05/27 17:33:12 boucher Exp $
+ * $Id: primitive.cpp,v 1.28 2004/06/03 08:43:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,6 +198,11 @@ bool GetContentString (string &result, const char *filename, xmlNodePtr xmlNode)
 // ***************************************************************************
 
 CPropertyString::CPropertyString (const char *str)
+{
+	String = str;
+}
+
+CPropertyString::CPropertyString (const std::string &str)
 {
 	String = str;
 }
@@ -1344,6 +1349,22 @@ bool IPrimitive::getChild (IPrimitive *&result, uint childId)
 
 // ***************************************************************************
 
+bool IPrimitive::removeChild (IPrimitive *child)
+{
+	uint childId;
+	if (getChildId(childId, child))
+	{
+		return removeChild(childId);
+	}
+	else
+	{
+		nlwarning("NLLIGO::IPrimitive::removeChild : invalid child, can't remove (child : %p)", child);
+	}
+	return false;
+}
+
+// ***************************************************************************
+
 bool IPrimitive::removeChild (uint childId)
 {
 	if (childId < _Children.size ())
@@ -1405,6 +1426,14 @@ IPrimitive::~IPrimitive ()
 
 	// Erase properties
 	removeProperties ();
+}
+
+// ***************************************************************************
+bool IPrimitive::checkProperty(const std::string &property_name) const
+{
+	if (_Properties.find(property_name) == _Properties.end())
+		return false;
+	return true;
 }
 
 // ***************************************************************************

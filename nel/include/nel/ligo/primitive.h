@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.24 2004/04/28 18:48:41 boucher Exp $
+ * $Id: primitive.h,v 1.25 2004/06/03 08:41:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,7 @@ class CPropertyString : public IProperty
 public:
 	CPropertyString () {};
 	CPropertyString (const char *str);
+	CPropertyString (const std::string &str);
 	CPropertyString (const char *str, bool _default);
 	virtual ~CPropertyString () {};
 	std::string			String;
@@ -219,7 +220,7 @@ public:
 	/** Get a child primitive */
 	bool				getChild (IPrimitive *&result, uint childId);
 
-	/** Get the parent primtive */
+	/** Get the parent primitive */
 	IPrimitive			*getParent ()
 	{
 		return _Parent;
@@ -231,6 +232,9 @@ public:
 
 	/** Get the id of the child, return 0xffffffff if not found */
 	bool				getChildId (uint &childId, const IPrimitive *child) const;
+
+	/** Remove a child primitive */
+	bool				removeChild (IPrimitive *child);
 
 	/** Remove a child primitive */
 	bool				removeChild (uint childId);
@@ -263,6 +267,9 @@ public:
 	  * This is method (iterate a list) is slower than getPropertyByName (look up in a map).
 	  **/
 	bool				getProperty (uint index, std::string &property_name, IProperty *&result);
+
+	/** Check the existence of a named property */
+	bool				checkProperty(const std::string &property_name) const;
 
 	/** 
 	  * Add a property 

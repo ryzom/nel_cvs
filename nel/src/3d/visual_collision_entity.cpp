@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.16 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.17 2003/11/17 16:33:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/dru.h"
 #include "3d/driver.h"
 #include "3d/tile_bank.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -553,6 +554,7 @@ bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos,
 // ***************************************************************************
 bool		CVisualCollisionEntity::getSurfaceInfo(const CVector &pos, CSurfaceInfo &surfaceInfo)
 {
+	H_AUTO( NL3D_CVisualCollisionEntity_getSurfaceInfo )
 	// Get Patch Triangle Under Us
 	CVector		res;
 	CTrianglePatch	*tri= getPatchTriangleUnderUs(pos, res);

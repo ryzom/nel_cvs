@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.3 2002/08/29 11:59:28 cado Exp $
+ * $Id: report.cpp,v 1.4 2002/09/04 10:12:16 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -285,6 +285,8 @@ TReportResult report (const std::string &title, const std::string &header, const
 	QuitDefaultBehavior = quitButton==1;
 
 	IgnoreNextTime = ignoreNextTime;
+
+	ShowCursor (TRUE);
 
 	SetWindowPos (dialog, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.25 2002/10/18 15:17:12 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.26 2002/11/08 13:29:26 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,17 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	switch (message)
 	{
+	case WM_ACTIVATE:
+		{
+			if (LOWORD(wParam) != WA_INACTIVE)
+			{
+				CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+				if (cwd != NULL)
+					SetFocus(cwd->_HInputEdit);
+				return 0;
+			}
+		}
+		break;
 	case WM_SIZE:
 		{
 			CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
@@ -393,7 +404,7 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 	}
 
 	_HInputEdit = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, RICHEDIT_CLASS, "", WS_CHILD | WS_VISIBLE
-		| ES_MULTILINE | ES_WANTRETURN | ES_NOHIDESEL | ES_AUTOHSCROLL, 0, h-_InputEditHeight, w, _InputEditHeight,
+		/*| ES_MULTILINE*/ | ES_WANTRETURN | ES_NOHIDESEL | ES_AUTOHSCROLL, 0, h-_InputEditHeight, w, _InputEditHeight,
 		_HWnd, NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
 	SendMessage (_HInputEdit, WM_SETFONT, (LONG) _HFont, TRUE);
 

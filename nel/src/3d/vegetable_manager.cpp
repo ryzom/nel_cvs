@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.7 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.8 2001/12/03 16:34:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/vegetable_quadrant.h"
 #include "3d/dru.h"
 #include "3d/radix_sort.h"
+#include "3d/scene.h"
+#include "3d/vegetable_blend_layer_model.h"
 
 
 using namespace std;
@@ -47,10 +49,13 @@ namespace NL3D
 
 
 // ***************************************************************************
-CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted) : 
+CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted,
+	uint nbBlendLayers, float blendLayerDistMax) : 
 	_ClipBlockMemory(NL3D_VEGETABLE_CLIP_BLOCK_BLOCKSIZE),
 	_SortBlockMemory(NL3D_VEGETABLE_SORT_BLOCK_BLOCKSIZE),
-	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE)
+	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE),
+	_NumZSortBlendLayers(nbBlendLayers), _ZSortLayerDistMax(blendLayerDistMax),
+	_ZSortScene(NULL)
 {
 	uint	i;
 
@@ -90,6 +95,11 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	{
 		_CosTable[i]= (float)cos( i*2*Pi / NL3D_VEGETABLE_VP_LUT_SIZE );
 	}
+
+	// init to NULL _ZSortModelLayers.
+	_NumZSortBlendLayers= max(1U, _NumZSortBlendLayers);
+	_ZSortModelLayers.resize(_NumZSortBlendLayers, NULL);
+
 }
 
 
@@ -101,6 +111,39 @@ CVegetableManager::~CVegetableManager()
 	{
 		delete	_VertexProgram[i];
 		_VertexProgram[i]= NULL;
+	}
+
+	// delete ZSort models.
+	if(_ZSortScene)
+	{
+		// remove models from scene.
+		for(uint i= 0; i<_NumZSortBlendLayers; i++)
+		{
+			_ZSortScene->deleteModel(_ZSortModelLayers[i]);
+			_ZSortModelLayers[i]= NULL;
+		}
+
+		_ZSortScene= NULL;
+	}
+}
+
+
+// ***************************************************************************
+void		CVegetableManager::createVegetableBlendLayersModels(CScene *scene)
+{
+	// setup scene
+	nlassert(scene);
+	_ZSortScene= scene;
+
+	// create the layers models.
+	for(uint i=0;i<_NumZSortBlendLayers; i++)
+	{
+		// assert not already done.
+		nlassert(_ZSortModelLayers[i]==NULL);
+
+		_ZSortModelLayers[i]= (CVegetableBlendLayerModel*)scene->createModel(VegetableBlendLayerModelId);
+		// init owner.
+		_ZSortModelLayers[i]->VegetableManager= this;
 	}
 }
 
@@ -1255,6 +1298,55 @@ public:
 
 
 // ***************************************************************************
+void			CVegetableManager::setupVertexProgramConstants(IDriver *driver)
+{
+	// Standard
+	// setup VertexProgram constants.
+	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
+	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
+	// c[4..7] take the ModelView Matrix. After setupModelMatrix();
+	driver->setConstantMatrix(4, IDriver::ModelView, IDriver::Identity);
+	// c[8] take usefull constants.
+	driver->setConstant(8, 0, 1, 0.5f, 2);
+	// c[9] take normalized directional light
+	driver->setConstant(9, &_DirectionalLight);
+	// c[10] take pos of camera
+	driver->setConstant(10, &_ViewCenter);
+	// c[11] take factor for Blend formula
+	driver->setConstant(11, -1.f/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST, 0, 0, 0);
+
+
+
+	// Bend.
+	// c[16]= quaternion axis. w==1, and z must be 0
+	driver->setConstant( 16, _AngleAxis.x, _AngleAxis.y, _AngleAxis.z, 1);
+	// c[17]=	{timeAnim, WindPower, WindPower*(1-WindBendMin)/2, 0)}
+	driver->setConstant( 17, (float)_WindAnimTime, _WindPower, _WindPower*(1-_WindBendMin)/2, 0 );
+	// c[18]=	High order Taylor cos coefficient: { -1/2, 1/24, -1/720, 1/40320 }
+	driver->setConstant( 18, -1/2.f, 1/24.f, -1/720.f, 1/40320.f );
+	// c[19]=	Low order Taylor cos coefficient: { 1, -1/2, 1/24, -1/720 }
+	driver->setConstant( 19, 1, -1/2.f, 1/24.f, -1/720.f );
+	// c[20]=	Low order Taylor sin coefficient: { 1, -1/6, 1/120, -1/5040 }
+	driver->setConstant( 20, 1, -1/6.f, 1/120.f, -1/5040.f );
+	// c[21]=	Special constant vector for quatToMatrix: { 0, 1, -1, 0 }
+	driver->setConstant( 21, 0.f, 1.f, -1.f, 0.f);
+	// c[22]=	{0.5f, Pi, 2*Pi, 1/(2*Pi)}
+	driver->setConstant( 22, 0.5f, (float)Pi, (float)(2*Pi), (float)(1/(2*Pi)) );
+	// c[23]=	{NL3D_VEGETABLE_VP_LUT_SIZE, 0, 0, 0}. NL3D_VEGETABLE_VP_LUT_SIZE==64.
+	driver->setConstant( 23, NL3D_VEGETABLE_VP_LUT_SIZE, 0.f, 0.f, 0.f );
+
+
+	// Fill constant. Start at 32.
+	for(uint i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
+	{
+		CVector2f		cur= _WindTable[i];
+		CVector2f		delta= _WindDeltaTable[i];
+		driver->setConstant( 32+i, cur.x, cur.y, delta.x, delta.y );
+	}
+}
+
+
+// ***************************************************************************
 void			CVegetableManager::render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, IDriver *driver)
 {
 	CVegetableClipBlock		*rootToRender= NULL;
@@ -1310,58 +1402,22 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 
 	// Compute Bend Anim.
-	double	timeBend;
 
 	// AnimFrequency factor.
 	// Doing it incrementaly allow change of of frequency each frame with good results.
 	_WindAnimTime+= (_WindTime - _WindPrecRenderTime)*_WindFrequency;
 	_WindAnimTime= fmod(_WindAnimTime, 1.0f);
-	// NB: Leave timeBend as a time (ie [0..1]), because VP do a "EXP time".
-	timeBend= _WindAnimTime;
+	// NB: Leave timeBend (_WindAnimTime) as a time (ie [0..1]), because VP do a "EXP time".
 	// For incremental computing.
 	_WindPrecRenderTime= _WindTime;
 
 
 	// compute the angleAxis corresponding to direction
-	CVector	angleAxis;
 	// perform a 90° rotation to get correct angleAxis
-	angleAxis.set(-_WindDirection.y,_WindDirection.x,0);
+	_AngleAxis.set(-_WindDirection.y,_WindDirection.x,0);
 
-
-	// Standard
-	// setup VertexProgram constants.
-	// c[0..3] take the ModelViewProjection Matrix. After setupModelMatrix();
-	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
-	// c[4..7] take the ModelView Matrix. After setupModelMatrix();
-	driver->setConstantMatrix(4, IDriver::ModelView, IDriver::Identity);
-	// c[8] take usefull constants.
-	driver->setConstant(8, 0, 1, 0.5f, 2);
-	// c[9] take normalized directional light
-	driver->setConstant(9, &_DirectionalLight);
-	// c[10] take pos of camera
-	driver->setConstant(10, &viewCenter);
-	// c[11] take factor for Blend formula
-	driver->setConstant(11, -1.f/NL3D_VEGETABLE_BLOCK_BLEND_TRANSITION_DIST, 0, 0, 0);
-
-
-
-	// Bend.
-	// c[16]= quaternion axis. w==1, and z must be 0
-	driver->setConstant( 16, angleAxis.x, angleAxis.y, angleAxis.z, 1);
-	// c[17]=	{timeAnim (angle), WindPower, WindPower*(1-WindBendMin)/2, 0)}
-	driver->setConstant( 17, (float)timeBend, _WindPower, _WindPower*(1-_WindBendMin)/2, 0 );
-	// c[18]=	High order Taylor cos coefficient: { -1/2, 1/24, -1/720, 1/40320 }
-	driver->setConstant( 18, -1/2.f, 1/24.f, -1/720.f, 1/40320.f );
-	// c[19]=	Low order Taylor cos coefficient: { 1, -1/2, 1/24, -1/720 }
-	driver->setConstant( 19, 1, -1/2.f, 1/24.f, -1/720.f );
-	// c[20]=	Low order Taylor sin coefficient: { 1, -1/6, 1/120, -1/5040 }
-	driver->setConstant( 20, 1, -1/6.f, 1/120.f, -1/5040.f );
-	// c[21]=	Special constant vector for quatToMatrix: { 0, 1, -1, 0 }
-	driver->setConstant( 21, 0.f, 1.f, -1.f, 0.f);
-	// c[22]=	{0.5f, Pi, 2*Pi, 1/(2*Pi)}
-	driver->setConstant( 22, 0.5f, (float)Pi, (float)(2*Pi), (float)(1/(2*Pi)) );
-	// c[23]=	{NL3D_VEGETABLE_VP_LUT_SIZE, 0, 0, 0}. NL3D_VEGETABLE_VP_LUT_SIZE==64.
-	driver->setConstant( 23, NL3D_VEGETABLE_VP_LUT_SIZE, 0.f, 0.f, 0.f );
+	// Some setup for setupRenderStateForBlendLayerModel()
+	_ViewCenter= viewCenter;
 
 
 	// Fill LUT WindTable.
@@ -1381,13 +1437,17 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 		// Compute direction of the wind, and multiply by windForce.
 		_WindTable[i]= CVector2f(_WindDirection.x, _WindDirection.y) * windForce;
 	}
-	// Fill constant. Start at 32.
+	// compute delta
 	for(i=0; i<NL3D_VEGETABLE_VP_LUT_SIZE; i++)
 	{
 		CVector2f		cur= _WindTable[i];
 		CVector2f		delta= _WindTable[ (i+1)%NL3D_VEGETABLE_VP_LUT_SIZE ] - cur;
-		driver->setConstant( 32+i, cur.x, cur.y, delta.x, delta.y );
+		_WindDeltaTable[i]= delta;
 	}
+
+
+	// setup VP constants.
+	setupVertexProgramConstants(driver);
 
 
 	// Render !ZSORT pass
@@ -1489,32 +1549,30 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 	p0DebugLines.clear();
 	p1DebugLines.clear();*/
 
+	// For all Blend model Layers, clear Sort Block list and setup.
+	for(i=0; i<_NumZSortBlendLayers;i++)
+	{
+		// must have been created.
+		nlassert(_ZSortModelLayers[i]);
+		// NB: don't refresh list, it is done in CVegetableBlendLayerModel.
+		// We must do it here, because if vegetableManger::render() is no more called (eg: disabled),
+		// then the models must do nothing.
+
+		// To get layers correclty sorted from fornt to back, must init their pos
+		// because it is the renderTraversal which sort them.
+		// compute distance to camera of this layer.
+		float	layerZ= i * _ZSortLayerDistMax / _NumZSortBlendLayers;
+		// compute position of this layer.
+		CVector		pos= viewCenter + frontVector * layerZ;
+		// special setup in the layer.
+		_ZSortModelLayers[i]->setWorldPos(pos);
+	}
+
 	// If some vertices in arrays for ZSort rdrPass
 	if( getVBAllocatorForRdrPassAndVBHardMode(NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT, 0).getNumUserVerticesAllocated()>0 ||
 		getVBAllocatorForRdrPassAndVBHardMode(NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT, 1).getNumUserVerticesAllocated()>0 )
 	{
 		uint	rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT;
-
-		// setup material for this rdrPass.
-		//-------------
-		bool	doubleSided= doubleSidedRdrPass(rdrPass);
-		// set the 2Sided flag in the material
-		_VegetableMaterial.setDoubleSided( doubleSided );
-		// must enable VP DoubleSided coloring
-		driver->enableVertexProgramDoubleSidedColor(doubleSided);
-
-		// setup and Activate the unique material.
-		_VegetableMaterial.setBlend(true);
-		_VegetableMaterial.setZWrite(false);
-		// leave AlphaTest but still kick low alpha values (for fillRate performance)
-		_VegetableMaterial.setAlphaTestThreshold(0.1f);
-		driver->setupMaterial(_VegetableMaterial);
-
-
-		// activate Vertex program first.
-		//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
-		nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
-
 
 		// sort
 		//-------------
@@ -1591,36 +1649,42 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 		}
 
 		// sort!
-		// QSort.
+		// QSort. (I tried, better than radix sort, guckk!!)
 		sort(sortVegetSbs.begin(), sortVegetSbs.end());
 
 
-		// render
+		// setup material for this rdrPass. NB: rendered after (in LayerModels).
+		//-------------
+		bool	doubleSided= doubleSidedRdrPass(rdrPass);
+		// set the 2Sided flag in the material
+		_VegetableMaterial.setDoubleSided( doubleSided );
+
+		// setup the unique material.
+		_VegetableMaterial.setBlend(true);
+		_VegetableMaterial.setZWrite(false);
+		// leave AlphaTest but still kick low alpha values (for fillRate performance)
+		_VegetableMaterial.setAlphaTestThreshold(0.1f);
+
+
+
+		// order them in Layers.
 		//-------------
 
-		// first time, activate the hard VB.
-		bool	precVBHardMode= true;
-		CVegetableVBAllocator	*vbAllocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
-		vbAllocator->activate();
-
-		// render from back to front
+		// render from back to front, to keep correct Z order in a single layer.
 		for(uint i=0; i<sortVegetSbs.size();i++)
 		{
 			CVegetableSortBlock	*ptrSortBlock= sortVegetSbs[i].Sb;
 
-			// change of VertexBuffer (soft / hard) if needed.
-			if(ptrSortBlock->ZSortHardMode != precVBHardMode)
-			{
-				// setup new VB for hardMode.
-				CVegetableVBAllocator	*vbAllocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, ptrSortBlock->ZSortHardMode);
-				vbAllocator->activate();
-				// prec.
-				precVBHardMode= ptrSortBlock->ZSortHardMode;
-			}
+			float	z= ptrSortBlock->_SortKey;
+			// compute in which layer must store this SB.
+			z= z*_NumZSortBlendLayers / _ZSortLayerDistMax;
+			// Avoid a floor(), using an OptFastFloor, but without the OptFastFloorBegin() End() group.
+			// => avoid the imprecision with such a trick; *256, then divide the integer by 256.
+			sint	layer= OptFastFloor(z*256) >> 8;
+			clamp(layer, 0, (sint)_NumZSortBlendLayers-1);
 
-			// render him. we are sure that size > 0, because tested before.
-			driver->renderSimpleTriangles(&ptrSortBlock->SortedTriangleIndices[ptrSortBlock->_QuadrantId][0], 
-				ptrSortBlock->_NTriangles);
+			// range in the correct model (NB: keep the same layer internal order).
+			_ZSortModelLayers[layer]->SortBlocks.push_back(ptrSortBlock);
 		}
 		
 	}
@@ -1649,6 +1713,53 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 }
 
+
+// ***************************************************************************
+void		CVegetableManager::setupRenderStateForBlendLayerModel(IDriver *driver)
+{
+	// Setup Global.
+	//=============
+	// disable fog, for faster VP.
+	_BkupFog= driver->fogEnabled();
+	driver->enableFog(false);
+
+	// set model matrix to identity.
+	driver->setupModelMatrix(CMatrix::Identity);
+
+	// setup VP constants.
+	setupVertexProgramConstants(driver);
+
+	// Setup RdrPass.
+	//=============
+	uint	rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT;
+
+	// setup doubleSidedmaterial for this rdrPass.
+	bool	doubleSided= doubleSidedRdrPass(rdrPass);
+	// must enable VP DoubleSided coloring
+	driver->enableVertexProgramDoubleSidedColor(doubleSided);
+
+	// Activate the unique material (correclty setuped for AlphaBlend in render()).
+	driver->setupMaterial(_VegetableMaterial);
+
+	// activate Vertex program first.
+	//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
+	nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
+
+}
+
+	
+// ***************************************************************************
+void		CVegetableManager::exitRenderStateForBlendLayerModel(IDriver *driver)
+{
+	// disable VertexProgram.
+	driver->activeVertexProgram(NULL);
+
+	// reset state to default.
+	driver->enableVertexProgramDoubleSidedColor(false);
+
+	// restore Fog.
+	driver->enableFog(_BkupFog);
+}
 
 
 

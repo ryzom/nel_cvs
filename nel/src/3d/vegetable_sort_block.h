@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.h
  * <File description>
  *
- * $Id: vegetable_sort_block.h,v 1.1 2001/11/30 13:17:54 berenguier Exp $
+ * $Id: vegetable_sort_block.h,v 1.2 2001/12/03 16:34:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@ namespace NL3D
 using NLMISC::CVector;
 
 class	CSortVSB;
+class	CVegetableBlendLayerModel;
 
 // ***************************************************************************
 /**
@@ -72,6 +73,7 @@ private:
 	friend class	CVegetableManager;
 	friend class	CSortVSB;
 	friend class	CVegetableClipBlock;
+	friend class	CVegetableBlendLayerModel;
 
 
 	// Who owns us.

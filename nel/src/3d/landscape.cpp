@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.95 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: landscape.cpp,v 1.96 2001/12/03 16:34:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2698,6 +2698,13 @@ uint		CLandscape::getNumVegetableFaceRendered() const
 const CTileVegetableDesc	&CLandscape::getTileVegetableDesc(uint16 tileId)
 {
 	return TileBank.getTileVegetableDesc(tileId);
+}
+
+
+// ***************************************************************************
+void		CLandscape::createVegetableBlendLayersModels(CScene *scene)
+{
+	_VegetableManager->createVegetableBlendLayersModels(scene);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.14 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.15 2001/12/03 16:34:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,16 @@ void	CLandscapeModel::registerBasic()
 	CMOT::registerObs(ClipTravId, LandscapeModelId, CLandscapeClipObs::creator);
 	CMOT::registerObs(RenderTravId, LandscapeModelId, CLandscapeRenderObs::creator);
 }
+
+
+// ***************************************************************************
+void	CLandscapeModel::initModel()
+{
+	// After creating the landscape (and so the VegetableManager in the ctor).
+	// we must init correclty the VegetableManager.
+	Landscape.createVegetableBlendLayersModels(safe_cast<CScene*>(_OwnerMot));
+}
+
 
 // ***************************************************************************
 void	CLandscapeClipObs::init()

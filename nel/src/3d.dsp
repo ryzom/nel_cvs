@@ -1802,6 +1802,14 @@ SOURCE=.\3d\vegetable.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\vegetable_blend_layer_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_blend_layer_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vegetable_clip_block.cpp
 # End Source File
 # Begin Source File

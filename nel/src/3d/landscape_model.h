@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.4 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: landscape_model.h,v 1.5 2001/12/03 16:34:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,13 @@ public:
 	{
 		return _ActiveAdditive;
 	}
+
+
+	/** Override IModel::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
+	 *
+	 */
+	virtual void	initModel();
+
 
 protected:
 	CLandscapeModel()

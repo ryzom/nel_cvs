@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.26 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: landscape.h,v 1.27 2001/12/03 16:34:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ class	CTileNoiseMap;
 class	CVegetableManager;
 class	CVegetable;
 class	CTileVegetableDesc;
+class	CScene;
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -383,6 +384,18 @@ public:
 	/// Micro-Vegetation.
 	// @{
 
+	/** init the vegetable layer models in the CScene (see CVegetableManager).
+	 *	NB: MOT stuff (called by CLandscapeModel), don't use it.
+	 */
+	void		createVegetableBlendLayersModels(CScene *scene);
+
+	/** set the vegetable Wind animation Time (in seconds)
+	 *	NB: MOT stuff (called by CLandscapeModel), don't use it.
+	 */
+	void		setVegetableWindAnimationTime(double windTime);
+
+
+
 	/** enable the vegetable management in landscape. Valid only if VertexShader is OK.
 	 *	if true, register TileBank vegetables Shape to manager.
 	 */
@@ -412,10 +425,6 @@ public:
 	 */
 	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 
-
-	/** set the vegetable Wind animation Time (in seconds) (NB: setuped in MOT)
-	 */
-	void		setVegetableWindAnimationTime(double windTime);
 
 	/** return the number of faces displayed in Driver with the vegetable manager.
 	 *	Out  CPrimitiveProfile::NTriangles displayed by vegetable part is returned.

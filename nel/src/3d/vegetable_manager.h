@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.6 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.7 2001/12/03 16:34:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,11 +44,27 @@ namespace NL3D
 
 
 class	IDriver;
+class	CVegetableBlendLayerModel;
+class	CScene;
+
+
+// ***************************************************************************
+// By default there is 20 layers.
+#define	NL3D_VEGETABLE_DEFAULT_NUM_BLEND_LAYER	20
+// default distance is 60 meters.
+#define	NL3D_VEGETABLE_DEFAULT_DIST_MAX			60.f
 
 
 // ***************************************************************************
 /**
  * Manager of vegetable. Instance Factory and rendering.
+ *	A VegetableManager should be put into a CScene model which is Opaque (ie rendered in Opaque pass), and call 
+ *	vegetableManager::render() at this time. a good example is CLandscape.
+ *
+ *	Because during render(), it uses and setup special "Vegetable Blend Layer models" to render transparents 
+ *	alpha blended vegetables. Toses models are transparent so they are drawn during the transparent pass of
+ *	the renderTrav's CScene (so after the Opaque pass).
+ *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -60,9 +76,18 @@ public:
 	/**	
 	 * \param maxVertexVbHardUnlit maximum VertexCount in VBHard for Unlit (or precomputed lighted) vegetables
 	 * \param maxVertexVbHardLighted maximum VertexCount in VBHard for Lighted vegetables
+	 * \param nbBlendLayers for ZSort/AlphaBlend rdrPass: number of layers of vegetables rendered independently.
+	 * \param blendLayerDistMax for ZSort/AlphaBlend rdrPass: distance of the farest layer.
 	 */
-	CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted);
+	CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted, 
+		uint nbBlendLayers= NL3D_VEGETABLE_DEFAULT_NUM_BLEND_LAYER, 
+		float blendLayerDistMax= NL3D_VEGETABLE_DEFAULT_DIST_MAX);
 	~CVegetableManager();
+
+	/** Before any render(), you must call this method (else nlassert). It creates the necessary models in the scene,
+	 *	to manage AlphaBlending correctly. Those models are deleted in the object dtor.
+	 */
+	void						createVegetableBlendLayersModels(CScene *scene);
 
 
 	/// \name Shape management
@@ -170,6 +195,8 @@ public:
 
 // *********************
 private:
+	friend class	CVegetableBlendLayerModel;
+
 	NLMISC::CBlockMemory<CVegetableClipBlock>		_ClipBlockMemory;
 	NLMISC::CBlockMemory<CVegetableSortBlock>		_SortBlockMemory;
 	NLMISC::CBlockMemory<CVegetableInstanceGroup>	_InstanceGroupMemory;
@@ -211,6 +238,10 @@ private:
 	void					initVertexProgram(uint vpType);
 
 
+	/// setup the vertexProgram constants.
+	void					setupVertexProgramConstants(IDriver *driver);
+
+
 	/** swap the RdrPass type (hard or soft) of the rdrPass of an instance group.
 	 *	vertices are allocated in other VBallocator, copied and freed in the old VBallocator.
 	 */
@@ -232,7 +263,36 @@ private:
 	float											_CosTable[NL3D_VEGETABLE_VP_LUT_SIZE];
 	// computed at each render().
 	NLMISC::CVector2f								_WindTable[NL3D_VEGETABLE_VP_LUT_SIZE];
+	NLMISC::CVector2f								_WindDeltaTable[NL3D_VEGETABLE_VP_LUT_SIZE];
 
+
+	// @}
+
+
+	/// \name Misc data to setup renderState (computed at each render())
+	// @{
+
+	CVector					_AngleAxis;
+	CVector					_ViewCenter;
+	bool					_BkupFog;
+
+	// @}
+
+
+	/// \name CVegetableBlendLayerModel mgt.
+	// @{
+
+
+	/// For Alpha Blend rdrPass, ordering into layers.
+	uint					_NumZSortBlendLayers;
+	float					_ZSortLayerDistMax;
+	CScene					*_ZSortScene;
+	std::vector<CVegetableBlendLayerModel*>		_ZSortModelLayers;
+
+
+	/// called by CVegetableBlendLayerModel.
+	void					setupRenderStateForBlendLayerModel(IDriver *driver);
+	void					exitRenderStateForBlendLayerModel(IDriver *driver);
 
 	// @}
 

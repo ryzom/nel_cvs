@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.6 2001/01/12 13:21:16 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.7 2001/01/15 15:45:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -380,123 +380,127 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 					// Get the read only pointer on the far tile
 					const CTileFarBank::CTileFar*	pTile=_Bank->getTile (tile);
 
-					// This pointer must not be null
-					nlassert (pTile);
+					// This pointer must not be null, else the farBank is not valid!
+					nlassertonce (pTile);	// farBank is not valid!
 
-					// Tile exist ?
-					if (pTile->isFill (CTileFarBank::diffuse))
+					// If the tile exist
+					if (pTile)
 					{
-						// Get rotation of the tile in this layer
-						sint nRot=tileElm.getTileOrient(l);
-
-						// Source pointer
-						const CRGBA*	pSrcDiffusePixels=pTile->getPixels (CTileFarBank::diffuse, orderX);
-						const CRGBA*	pSrcAdditivePixels=NULL;
-
-						// Additive ?
-						if (pTile->isFill (CTileFarBank::additive))
+						// Tile exist ?
+						if (pTile->isFill (CTileFarBank::diffuse))
 						{
-							// Use it
-							bAdditive=true;
+							// Get rotation of the tile in this layer
+							sint nRot=tileElm.getTileOrient(l);
 
-							// Get additive pointer
-							pSrcAdditivePixels=pTile->getPixels (CTileFarBank::additive, orderX);
-						}
+							// Source pointer
+							const CRGBA*	pSrcDiffusePixels=pTile->getPixels (CTileFarBank::diffuse, orderX);
+							const CRGBA*	pSrcAdditivePixels=NULL;
 
-						// Source size
-						sint sourceSize;
-
-						// Source offset (for 256)
-						uint sourceOffset=0;
-
-						// 256 ?
-						if (is256x256)
-						{
-							// On the left ?
-							if (uvOff&0x02)
-								sourceOffset+=tileSize;
-
-							// On the bottom ?
-							if ((uvOff==1)||(uvOff==2))
-								sourceOffset+=2*tileSize*tileSize;
-
-							// Yes, 256
-							sourceSize=tileSize<<1;
-						}
-						else
-						{
-							// No, 128
-							sourceSize=tileSize;
-						}
-
-						// Compute offset and deltas
-						switch (nRot)
-						{
-						case 0:
-							// Source pointers
-							TileFar.SrcDiffusePixels=pSrcDiffusePixels+sourceOffset;
-							TileFar.SrcAdditivePixels=pSrcAdditivePixels+sourceOffset;
-
-							// Source delta
-							TileFar.SrcDeltaX=1;
-							TileFar.SrcDeltaY=sourceSize;
-							break;
-						case 1:
+							// Additive ?
+							if (pTile->isFill (CTileFarBank::additive))
 							{
+								// Use it
+								bAdditive=true;
+
+								// Get additive pointer
+								pSrcAdditivePixels=pTile->getPixels (CTileFarBank::additive, orderX);
+							}
+
+							// Source size
+							sint sourceSize;
+
+							// Source offset (for 256)
+							uint sourceOffset=0;
+
+							// 256 ?
+							if (is256x256)
+							{
+								// On the left ?
+								if (uvOff&0x02)
+									sourceOffset+=tileSize;
+
+								// On the bottom ?
+								if ((uvOff==1)||(uvOff==2))
+									sourceOffset+=2*tileSize*tileSize;
+
+								// Yes, 256
+								sourceSize=tileSize<<1;
+							}
+							else
+							{
+								// No, 128
+								sourceSize=tileSize;
+							}
+
+							// Compute offset and deltas
+							switch (nRot)
+							{
+							case 0:
 								// Source pointers
-								uint newOffset=sourceOffset+(tileSize-1);
-								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
-								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
+								TileFar.SrcDiffusePixels=pSrcDiffusePixels+sourceOffset;
+								TileFar.SrcAdditivePixels=pSrcAdditivePixels+sourceOffset;
 
 								// Source delta
-								TileFar.SrcDeltaX=sourceSize;
-								TileFar.SrcDeltaY=-1;
+								TileFar.SrcDeltaX=1;
+								TileFar.SrcDeltaY=sourceSize;
+								break;
+							case 1:
+								{
+									// Source pointers
+									uint newOffset=sourceOffset+(tileSize-1);
+									TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+									TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
+
+									// Source delta
+									TileFar.SrcDeltaX=sourceSize;
+									TileFar.SrcDeltaY=-1;
+								}
+								break;
+							case 2:
+								{
+									// Destination pointer
+									uint newOffset=sourceOffset+(tileSize-1)*sourceSize+tileSize-1;
+									TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+									TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
+
+									// Source delta
+									TileFar.SrcDeltaX=-1;
+									TileFar.SrcDeltaY=-sourceSize;
+								}
+								break;
+							case 3:
+								{
+									// Destination pointer
+									uint newOffset=sourceOffset+(tileSize-1)*sourceSize;
+									TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
+									TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
+
+									// Source delta
+									TileFar.SrcDeltaX=-sourceSize;
+									TileFar.SrcDeltaY=1;
+								}
+								break;
 							}
-							break;
-						case 2:
+
+							// *** Draw the layer
+
+							// Alpha layer ?
+							if (l>0)
 							{
-								// Destination pointer
-								uint newOffset=sourceOffset+(tileSize-1)*sourceSize+tileSize-1;
-								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
-								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
-
-								// Source delta
-								TileFar.SrcDeltaX=-1;
-								TileFar.SrcDeltaY=-sourceSize;
+								// Additive layer ?
+								if (bAdditive)
+									;//NL3D_drawFarTileInFarTextureAdditiveAlpha (&TileFar);
+								else	// No additive layer
+									NL3D_drawFarTileInFarTextureAlpha (&TileFar);
 							}
-							break;
-						case 3:
+							else	// no alpha
 							{
-								// Destination pointer
-								uint newOffset=sourceOffset+(tileSize-1)*sourceSize;
-								TileFar.SrcDiffusePixels=pSrcDiffusePixels+newOffset;
-								TileFar.SrcAdditivePixels=pSrcAdditivePixels+newOffset;
-
-								// Source delta
-								TileFar.SrcDeltaX=-sourceSize;
-								TileFar.SrcDeltaY=1;
+								// Additive layer ?
+								if (bAdditive)
+									;//NL3D_drawFarTileInFarTextureAdditive (&TileFar);
+								else	// No additive layer
+									NL3D_drawFarTileInFarTexture (&TileFar);
 							}
-							break;
-						}
-
-						// *** Draw the layer
-
-						// Alpha layer ?
-						if (l>0)
-						{
-							// Additive layer ?
-							if (bAdditive)
-								NL3D_drawFarTileInFarTextureAdditiveAlpha (&TileFar);
-							else	// No additive layer
-								NL3D_drawFarTileInFarTextureAlpha (&TileFar);
-						}
-						else	// no alpha
-						{
-							// Additive layer ?
-							if (bAdditive)
-								NL3D_drawFarTileInFarTextureAdditive (&TileFar);
-							else	// No additive layer
-								NL3D_drawFarTileInFarTexture (&TileFar);
 						}
 					}
 				}

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.26 2001/01/11 16:01:33 corvazier Exp $
+ * $Id: patch.h,v 1.27 2001/01/15 15:45:23 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -86,7 +86,6 @@ public:
 	}
 };
 
-
 // ***************************************************************************
 /**
  * A landscape patch.
@@ -141,13 +140,37 @@ public:
 		TODO_UVCORRECT: - "UV correction" infos.
 		
 	*/
+
+	class CStreamBit
+	{
+	public:
+		// Init the pointer of the stream
+		void setPtr (const std::vector<uint8>& buffer);
+
+		// Push a bool
+		void pushBackBool (bool bBoolean);
+
+		// Push 4 bits
+		void pushBack4bits (uint8 fourBits);
+
+		// Pop a bool
+		bool popBackBool ();
+
+		// Pop 4 bits
+		uint8 popBack4bits ();
+	private:
+		const std::vector<uint8>		*_Vector;
+		uint							_Offset;
+	};
+
+	// Shadow array. Use CPatch::CStreamBit to read inside.
+	std::vector<uint8>	Shadows;
+
 	// There is OrderS*OrderT tiles. CZone build it at build() time.
 	std::vector<CTileElement>	Tiles;
 
 	// There is OrderS*OrderT tiles color. CZone build it at build() time.
 	std::vector<CTileColor>		TileColors;
-
-
 
 public:
 
@@ -347,6 +370,68 @@ private:
 	CBezierPatch	*unpackIntoCache() const;
 
 };
+
+// inline CPatch::CStreamBit **********************************************************************
+
+// Init the pointer of the stream
+/*void CPatch::CStreamBit::setPtr (const std::vector<uint8>& buffer)
+{
+	_Vector=&buffer;
+	_Offset=0;
+}
+
+// Push a bool
+void CPatch::CStreamBit::pushBackBool (bool bBoolean)
+{
+	// Size
+	if ((_Offset>>5)>=_Vector.size())
+		_Vector.resize ((_Offset>>5)+1);
+
+	uint off=_Offset>>5;
+	_Vector[off]&=~(1<<(_Offset&0x1f));
+	_Vector[off]|=(((uint)bBoolean)<<(_Offset&0x1f));
+	_Offset++;
+}
+
+// Push 4 bits
+void CPatch::CStreamBit::pushBack4bits (uint8 fourBits)
+{
+	nlassert ((fourBits>=0)&&(fourBits<4));
+
+	if (((_Offset+3)>>5)>=_Vector.size())
+		_Vector.resize (((_Offset+3)>>5)+1);
+
+	uint off0=_Offset>>5;
+	uint off1=off0+1;
+	_Vector[off0]&=~(0xf<<(_Offset&0x1f));
+	_Vector[off0]|=((uint)fourBits)<<(_Offset&0x1f));
+	_Vector[off1]&=~(0xf>>(32-(_Offset&0x1f)));
+	_Vector[off1]|=(((uint)fourBits)>>(32-(_Offset&0x1f)));
+	_Offset+=4;
+}
+
+// Pop a bool
+bool CPatch::CStreamBit::popBackBool ()
+{
+	// Size
+	nlassert ((_Offset>>5)<_Vector.size())
+
+	uint off=_Offset>>5;
+	_Offset++;
+	return (_Vector[off]&(1<<(_Offset&0x1f)))!=0;
+}
+
+// Pop 4 bits
+uint8 CPatch::CStreamBit::popBack4bits ()
+{
+	nlassert (((_Offset+3)>>5)<_Vector.size());
+
+	uint off0=_Offset>>5;
+	uint off1=off0+1;
+	_Offset+=4;
+	return 	((_Vector[off0]&(0xf<<(  _Offset&0x1f   )))>>(_Offset&0x1f))|
+			((_Vector[off1]&(0xf>>(32-(_Offset&0x1f))))<<(32-(_Offset&0x1f)));
+}*/
 
 
 } // NL3D

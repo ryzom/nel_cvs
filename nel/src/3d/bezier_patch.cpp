@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.5 2001/01/11 10:09:57 berenguier Exp $
+ * $Id: bezier_patch.cpp,v 1.6 2001/01/15 15:45:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,7 @@ void		CBezierPatch::applyMatrix(const CMatrix &m)
 
 
 // ***************************************************************************
-CVector		CBezierPatch::eval(float ps, float pt)
+CVector		CBezierPatch::eval(float ps, float pt) const
 {
 	CVector	p;
 
@@ -122,7 +122,7 @@ CVector		CBezierPatch::eval(float ps, float pt)
 	return p;
 }
 // ***************************************************************************
-CVectorD	CBezierPatch::evalDouble(double ps, double pt)
+CVectorD	CBezierPatch::evalDouble(double ps, double pt) const
 {
 	CVectorD	p;
 
@@ -163,7 +163,7 @@ CVectorD	CBezierPatch::evalDouble(double ps, double pt)
 
 
 // ***************************************************************************
-CVector		CBezierPatch::evalNormal(float ps, float pt)
+CVector		CBezierPatch::evalNormal(float ps, float pt) const
 {
 	CVector	tgtS, tgtT;
 

@@ -1,7 +1,7 @@
 /** \file bezier_patch.h
  * <File description>
  *
- * $Id: bezier_patch.h,v 1.6 2001/01/11 10:09:46 berenguier Exp $
+ * $Id: bezier_patch.h,v 1.7 2001/01/15 15:45:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,11 +89,11 @@ public:
 	void		applyMatrix(const CMatrix &m);
 
 	/// Evaluate.
-	CVector		eval(float s, float t);			// s,t coordinates for quad.
+	CVector		eval(float s, float t) const;			// s,t coordinates for quad.
 	/// Evaluate, but return a vector double.
-	CVectorD	evalDouble(double s, double t);	// s,t coordinates for quad.
+	CVectorD	evalDouble(double s, double t) const;	// s,t coordinates for quad.
 	/// Evaluate the normal at (s,t). returned vector is normalized.
-	CVector		evalNormal(float s, float t);			// s,t coordinates for quad.
+	CVector		evalNormal(float s, float t) const;		// s,t coordinates for quad.
 
 };
 

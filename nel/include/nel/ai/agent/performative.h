@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.3 2001/01/30 10:33:20 portier Exp $
+ * $Id: performative.h,v 1.4 2001/01/31 17:00:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_PERFORMATIVE_H
 #define NL_PERFORMATIVE_H
 
-#include "messagerie.h"
+#include "nel/ai/agent/msg.h"
 #include "nel/ai/agent/agent_digital.h"
 
 namespace NLAIAGENT

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.9 2001/01/31 15:46:21 chafik Exp $
+ * $Id: baseai.cpp,v 1.10 2001/01/31 17:01:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "nel/ai/agent/baseai.h"
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/object_type.h"
-#include "nel/ai/agent/messagerie.h"
+#include "nel/ai/agent/msg.h"
 #include "nel/ai/agent/agent_local_mailer.h"
 #include "nel/ai/agent/performative.h"
 

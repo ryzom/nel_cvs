@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.11 2001/01/31 14:01:09 chafik Exp $
+ * $Id: message_script.cpp,v 1.12 2001/01/31 17:01:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "nel/ai/script/codage.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
-#include "nel/ai/agent/messagerie.h"
+#include "nel/ai/agent/msg.h"
 #include "nel/ai/e/ai_exception.h"
 
 namespace NLAIAGENT

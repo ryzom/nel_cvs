@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.6 2002/04/04 13:18:15 berenguier Exp $
+ * $Id: vegetable_shape.h,v 1.7 2002/04/04 14:45:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,7 +76,7 @@ public:
 	*	during ligthing compute
 	 *	NB: valid ONLY if (PreComputeLighting)
 	 */
-	bool				OneSidedPreComputeLighting;
+	bool				BestSidedPreComputeLighting;
 	/// The maximum BendWeight to apply.
 	float				MaxBendWeight;
 	/// The BendCenter mode
@@ -89,7 +89,7 @@ public:
 		DoubleSided= false;
 		PreComputeLighting= false;
 		AlphaBlend= false;
-		OneSidedPreComputeLighting= false;
+		BestSidedPreComputeLighting= false;
 		MaxBendWeight= 0;
 		BendCenterMode= BendCenterNull;
 	}
@@ -130,7 +130,7 @@ public:
 	bool					DoubleSided;
 	bool					PreComputeLighting;
 	bool					AlphaBlend;
-	bool					OneSidedPreComputeLighting;
+	bool					BestSidedPreComputeLighting;
 	CVegetableShapeBuild::TBendCenterMode			BendCenterMode;
 	/** VertexBuffer of this Shape, ready to be transformed and copied into vegetable manager
 	 *	Format is Pos/Normal/Tex0/Tex1 (no Normal if !Lighted). where Tex1.U==BendWeigth 

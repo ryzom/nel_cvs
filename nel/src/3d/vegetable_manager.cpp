@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.19 2002/04/04 13:18:15 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.20 2002/04/04 14:45:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1019,7 +1019,7 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 
 
 // ***************************************************************************
-inline void		computeVegetVertexLightingForceOneSided(const CVector &rotNormal, bool instanceDoubleSided,
+inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, bool instanceDoubleSided,
 	const CVector &sunDir, CRGBA primaryRGBA, CRGBA secondaryRGBA,
 	CVegetableLightEx &vegetLex, CRGBA diffusePL[2],
 	CRGBA *dstFront, CRGBA *dstBack)
@@ -1034,7 +1034,7 @@ inline void		computeVegetVertexLightingForceOneSided(const CVector &rotNormal, b
 	{
 		// Compute Sun Light.
 		dpSun= rotNormal*sunDir;
-		// ForceOneSided: take the absolute value (max of -val,val)
+		// ForceBestSided: take the absolute value (max of -val,val)
 		float	f= (float)fabs(dpSun);
 		col.modulateFromuiRGBOnly(primaryRGBA, OptFastFloor(f*256));
 		// Add it with ambient
@@ -1045,7 +1045,7 @@ inline void		computeVegetVertexLightingForceOneSided(const CVector &rotNormal, b
 		if(vegetLex.NumLights>=1)
 		{
 			dpPL[0]= rotNormal*vegetLex.Direction[0];
-			// ForceOneSided: take the absolute value (max of -val,val)
+			// ForceBestSided: take the absolute value (max of -val,val)
 			f= (float)fabs(dpPL[0]);
 			col.modulateFromuiRGBOnly(diffusePL[0], OptFastFloor(f*256));
 			resColor.addRGBOnly(col, resColor);
@@ -1066,7 +1066,7 @@ inline void		computeVegetVertexLightingForceOneSided(const CVector &rotNormal, b
 	// If 2Sided
 	if(instanceDoubleSided)
 	{
-		// Since forceOneSided, same color as front_facing
+		// Since forceBestSided, same color as front_facing
 
 		// copy to dest
 		*dstBack= resColor;
@@ -1096,8 +1096,8 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	uint	rdrPass;
 	rdrPass= getRdrPassInfoForShape(shape, vegetWaterState, instanceLighted, instanceDoubleSided, 
 		instanceZSort, destLighted, precomputeLighting);
-	// oneSided Precompute lighting or not??
-	bool	oneSidedPrecomputeLighting= precomputeLighting && shape->OneSidedPreComputeLighting;
+	// bestSided Precompute lighting or not??
+	bool	bestSidedPrecomputeLighting= precomputeLighting && shape->BestSidedPreComputeLighting;
 
 
 	// veget rdrPass
@@ -1341,7 +1341,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			rotNormal.normalize();
 
 			// Do the compute.
-			if(!oneSidedPrecomputeLighting)
+			if(!bestSidedPrecomputeLighting)
 			{
 				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
@@ -1350,7 +1350,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			}
 			else
 			{
-				computeVegetVertexLightingForceOneSided(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLightingForceBestSided(rotNormal, instanceDoubleSided, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
 					vegetLex, diffusePL, 
 					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );
@@ -2359,8 +2359,8 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	bool	instanceDoubleSided= shape->DoubleSided;
 	// Precompute lighting or not??
 	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
-	// oneSided Precompute lighting or not??
-	bool	oneSidedPrecomputeLighting= precomputeLighting && shape->OneSidedPreComputeLighting;
+	// bestSided Precompute lighting or not??
+	bool	bestSidedPrecomputeLighting= precomputeLighting && shape->BestSidedPreComputeLighting;
 	// destLighted?
 	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
 	// Diffuse and ambient, modulated by current GlobalAmbient and GlobalDiffuse.
@@ -2425,7 +2425,7 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 			rotNormal.normalize();
 
 			// Do the compute.
-			if(!oneSidedPrecomputeLighting)
+			if(!bestSidedPrecomputeLighting)
 			{
 				computeVegetVertexLighting(rotNormal, instanceDoubleSided, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
@@ -2434,7 +2434,7 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 			}
 			else
 			{
-				computeVegetVertexLightingForceOneSided(rotNormal, instanceDoubleSided, 
+				computeVegetVertexLightingForceBestSided(rotNormal, instanceDoubleSided, 
 					_DirectionalLight, primaryRGBA, secondaryRGBA, 
 					vegetLex, diffusePL, 
 					(CRGBA*)(dstPtr + dstColor0Off), (CRGBA*)(dstPtr + dstColor1Off) );

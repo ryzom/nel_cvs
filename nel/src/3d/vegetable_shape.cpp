@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.7 2002/04/04 13:18:15 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.8 2002/04/04 14:45:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ CVegetableShape::CVegetableShape()
 	DoubleSided= false;
 	PreComputeLighting= false;
 	AlphaBlend= false;
-	OneSidedPreComputeLighting= false;
+	BestSidedPreComputeLighting= false;
 }
 
 // ***************************************************************************
@@ -72,8 +72,8 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 	// AlphaBlend: valid only for 2Sided and Unlit (or similar PreComputeLighting) mode
 	AlphaBlend= vbuild.AlphaBlend && DoubleSided && (!Lighted || PreComputeLighting);
 
-	// OneSidedPreComputeLighting
-	OneSidedPreComputeLighting= PreComputeLighting && vbuild.OneSidedPreComputeLighting;
+	// BestSidedPreComputeLighting
+	BestSidedPreComputeLighting= PreComputeLighting && vbuild.BestSidedPreComputeLighting;
 
 	// BendCenterMode
 	BendCenterMode= vbuild.BendCenterMode;
@@ -187,7 +187,7 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 {
 	/*
 	Version 1: 
-		- OneSidedPreComputeLighting
+		- BestSidedPreComputeLighting
 	*/
 	sint	ver= f.serialVersion(1);
 	f.serialCheck((uint32)'_LEN');
@@ -204,9 +204,9 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 	f.serialCont(TriangleIndices);
 
 	if(ver>=1)
-		f.serial(OneSidedPreComputeLighting);
+		f.serial(BestSidedPreComputeLighting);
 	else if(f.isReading())
-		OneSidedPreComputeLighting= false;
+		BestSidedPreComputeLighting= false;
 
 	// if reading
 	if(f.isReading())

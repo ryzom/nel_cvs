@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.13 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.14 2004/07/21 10:14:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,9 +276,8 @@ void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uin
 }
 
 //=======================================================	
-void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
-{
-	/// well we could avoid code duplication with computeHermitteRibbon, but this is simply easier than using templates for now...
+void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint stride)
+{	
 	nlassert(!_Parametric);	
 	NLMISC::CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
 	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
@@ -339,6 +338,82 @@ void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint 
 	}
 }
 
+/*
+void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint stride)
+{	
+	nlassert(!_Parametric);	
+	NLMISC::CVector *startIt = &_Ribbons[(_NbSegs + 1 + EndRibbonStorage) * index];
+	NLMISC::CVector *endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	NLMISC::CVector *currIt  = startIt + _RibbonIndex;	
+	NLMISC::CVector *nextIt  = currIt + 1;
+	if (nextIt == endIt) nextIt = startIt;
+	NLMISC::CVector *nextNextIt = nextIt + 1;	
+	if (nextNextIt == endIt) nextNextIt = startIt;	
+	float *date = &_SamplingDate[0];				
+	
+	uint leftToDo = _UsedNbSegs + 1;
+	
+	float lambda = 0.f;	
+	
+
+	float dt = date[0] - date[1];		
+	if (dt < 10E-6f) // we reached the start of ribbon
+	{
+		do
+		{
+			*dest = *currIt;
+			dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+		}
+		while (--leftToDo);			
+		return;
+	}
+	float lambdaStep = _UsedSegDuration / dt;
+	BuildLinearVector(*currIt, *nextIt, *dest, 0.f, 1.f);
+	dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+	-- leftToDo;
+	// snap lambda to nearest time step	
+	lambda = lambdaStep * fmodf(date[0], _UsedSegDuration) / _UsedSegDuration;
+	for (;;)
+	{														
+		float oneMinusLambda = 1.f - lambda;
+		for(;;)
+		{
+			if (lambda >= 1.f) break;
+			/// compute a location
+			BuildLinearVector(*currIt, *nextIt, *dest, lambda, oneMinusLambda);
+			dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			-- leftToDo;
+			if (!leftToDo) return;												
+			lambda += lambdaStep;
+			oneMinusLambda -= lambdaStep;
+		}
+		
+		++date;
+		lambda -= 1.f;
+		
+		currIt = nextIt;
+		nextIt = nextNextIt;
+		++nextNextIt;
+		if (nextNextIt == endIt) nextNextIt = startIt;		
+		float dt = date[0] - date[1];		
+		if (dt < 10E-6f) // we reached the start of ribbon
+		{
+			do
+			{
+				*dest = *currIt;
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			}
+			while (--leftToDo);			
+			return;
+		}
+		float newLambdaStep = _UsedSegDuration / dt;
+		// readapt lambda
+		lambda *= newLambdaStep / lambdaStep;
+		lambdaStep = newLambdaStep;
+	}
+	
+}
+*/
 
 
 //=======================================================	
@@ -558,8 +633,18 @@ void	CPSRibbonBase::resize(uint32 size)
 void CPSRibbonBase::resetSingleRibbon(uint index, const NLMISC::CVector &pos)
 {
 	nlassert(!_Parametric);
-	NLMISC::CVector *it = &_Ribbons[(index * (_NbSegs + 1 + EndRibbonStorage))];
-	std::fill(it, it + (_NbSegs + 1 + EndRibbonStorage), pos);
+	TPSMatrixMode mm = convertMatrixMode();
+	NLMISC::CVector *it = &_Ribbons[(index * (_NbSegs + 1 + EndRibbonStorage))];	
+	if (mm == _Owner->getMatrixMode())
+	{
+		std::fill(it, it + (_NbSegs + 1 + EndRibbonStorage), pos);		
+	}
+	else
+	{		
+		nlassert(_Owner->getOwner());
+		const CMatrix &mat = CPSLocated::getConversionMatrix(*_Owner->getOwner(), mm, _Owner->getMatrixMode());
+		std::fill(it, it + (_NbSegs + 1 + EndRibbonStorage), mat * pos);
+	}	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.10 2004/02/18 19:23:14 brigand Exp $
+ * $Id: eid_translator.h,v 1.11 2004/02/27 17:41:06 fleury Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -60,8 +60,13 @@ public:
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	void				unregisterEntity (const CEntityId &eid);
 
+	// set an association entityName / entityStringId
+	void				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
+	// get string id for entityId
+	uint32				getEntityNameStringId(const CEntityId &eid);
+	
 	// set an eid to online or not
-	void				setEntityOnline (const CEntityId &eid, bool online);
+	void				setEntityOnline (const CEntityId &eid, bool online);	
 
 	// is an entity in online
 	bool				isEntityOnline (const CEntityId &eid);
@@ -85,20 +90,21 @@ public:
 	struct CEntity
 	{
 		CEntity () :
-		EntitySlot(-1), UId(~0), Online(false)
+		EntitySlot(-1), UId(~0), Online(false), EntityNameStringId(0)
 		{ }
 		
 		CEntity (const ucstring &entityName, uint32 uid, const std::string &userName, sint8 entitySlot) :
-		EntityName(entityName), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false)
+		EntityName(entityName), EntitySlot(entitySlot), UId(uid), UserName(userName), Online(false), EntityNameStringId(0)
 		{ }
 		
-		ucstring EntityName;
-		sint8 EntitySlot;
+		ucstring	EntityName;
+		uint32		EntityNameStringId;
+		sint8		EntitySlot;
 		
-		uint32 UId;
+		uint32		UId;
 		std::string UserName;
 
-		bool Online;
+		bool		Online;
 
 		void serial (NLMISC::IStream &s);
 	};

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.12 2004/09/13 16:54:50 boucher Exp $
+ * $Id: ligo_config.cpp,v 1.13 2004/09/15 13:27:03 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -247,7 +247,8 @@ bool CLigoConfig::reloadIndexFile(const std::string &indexFileName)
 
 	// load the configuration file
 	CConfigFile cf;
-	cf.load(_IndexFileName);
+	string pathName = CPath::lookup(_IndexFileName);
+	cf.load(pathName);
 
 	// get the variable
 	CConfigFile::CVar *files = cf.getVarPtr("Files");

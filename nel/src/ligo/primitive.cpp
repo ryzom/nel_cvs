@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.39 2004/09/13 16:54:50 boucher Exp $
+ * $Id: primitive.cpp,v 1.40 2004/09/15 13:27:03 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2135,17 +2135,18 @@ CPrimitives::CPrimitives () :
 
 CPrimitives::CPrimitives (const CPrimitives &other)
 {
-	_LastGeneratedAlias = other._LastGeneratedAlias;
-	// get the current ligo context (if any)
-	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
-
-	CPrimitives *temp = CPrimitiveContext::instance().CurrentPrimitive;
-	CPrimitiveContext::instance().CurrentPrimitive = this;
-	// copy the nodes
-	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
-	RootNode->branchLink();
-
-	CPrimitiveContext::instance().CurrentPrimitive = temp;
+	operator =(other);
+//	_LastGeneratedAlias = other._LastGeneratedAlias;
+//	// get the current ligo context (if any)
+//	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
+//
+//	CPrimitives *temp = CPrimitiveContext::instance().CurrentPrimitive;
+//	CPrimitiveContext::instance().CurrentPrimitive = this;
+//	// copy the nodes
+//	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+//	RootNode->branchLink();
+//
+//	CPrimitiveContext::instance().CurrentPrimitive = temp;
 }
 
 // ***************************************************************************
@@ -2285,7 +2286,22 @@ void CPrimitives::releaseAlias(const IPrimitive *prim, uint32 alias)
 
 CPrimitives& CPrimitives::operator= (const CPrimitives &other)
 {
+//	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+//	return *this;
+
+
+	_LastGeneratedAlias = other._LastGeneratedAlias;
+	// get the current ligo context (if any)
+	_LigoConfig = CPrimitiveContext::instance().CurrentLigoConfig;
+
+	CPrimitives *temp = CPrimitiveContext::instance().CurrentPrimitive;
+	CPrimitiveContext::instance().CurrentPrimitive = this;
+	// copy the nodes
 	RootNode = static_cast<CPrimNode *> (((IPrimitive*)other.RootNode)->copy ());
+	RootNode->branchLink();
+
+	CPrimitiveContext::instance().CurrentPrimitive = temp;
+
 	return *this;
 }
 

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.8 2004/09/14 09:28:40 distrib Exp $
+ * $Id: primitive_utils.h,v 1.9 2004/09/15 13:27:02 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -360,7 +360,7 @@ IPrimitive *getPrimitiveChild(IPrimitive *parent, Pred &predicate)
  *	Return NULL if none of the parent match the predicate.
  */
 template <class Pred>
-IPrimitive *getPrimitiveParent(const IPrimitive *prim, Pred &predicate)
+IPrimitive *getPrimitiveParent(IPrimitive *prim, Pred &predicate)
 {
 	IPrimitive *parent = prim->getParent();
 	while (parent)

@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.1 2001/10/24 14:38:25 besson Exp $
+ * $Id: zone_bank.h,v 1.2 2001/11/05 11:20:57 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_ZONE_BANK_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
 #include <string>
 #include <vector>
 
@@ -36,6 +37,8 @@ namespace NLLIGO
 
 // ***************************************************************************
 
+/// No category of the type given found
+#define STRING_NO_CAT_TYPE	"< NOCATTYPE >"
 
 // ***************************************************************************
 
@@ -45,18 +48,37 @@ class CZoneBankElement
 	{
 		std::string		Type;		// Ex: "Material", "Size", ...
 		std::string		Value;		// Ex: "Grass", "2x2", ...
+
+		void serial (NLMISC::IStream &f);
 	};
 
 	// Category stuff
 	std::vector<SCategory>	_Categories;
-	// In this list the category type and value must be unique and 2 categories must 
+	// In this list the category type and value must be unique and 2 categories MUST
 	// appears : "Zone" (The zone name) and "Size" (*x* (ex:4x4 3x1 etc...))
+	// Some categories used in WorldEditor : "Material", "Transition"
+	uint32					_SizeX, _SizeY;
+	std::vector<bool>		_Mask;
+
+	static std::string		_NoCatTypeFound; // = STRING_NO_CAT_TYPE
 
 public:
 
+	CZoneBankElement ();
+
 	void addCategory (const std::string &CatType, const std::string &CatValue);
-	const std::string& getName ();
-	const std::string& getSize ();
+	const std::string &getName ();
+	const std::string &getSize ();
+	uint32 getSizeX () { return _SizeX; }
+	uint32 getSizeY () { return _SizeY; }
+	const std::vector<bool> &getMask () { return _Mask; }
+
+	/// Return the CatValue or STRING_NO_CAT_TYPE if no category of that type found
+	const std::string &getCategory(const std::string &CatType);
+
+	/// Convert size in the categories to _SizeX, _SizeY
+	void convertSize ();
+	void serial (NLMISC::IStream &f);
 
 	friend class CZoneBank;
 };
@@ -72,10 +94,19 @@ class CZoneBank
 
 public:
 
+	// Debug stuff beg
 	void debugInit(); // \todo trap see with hulud how we initialize this structure
+	void debugSaveInit(CZoneBankElement &zbeTmp, const std::string &fileName);
+	// Debug stuff end
+
+	/// Initialize the zone bank with all files present in the path given (note pathName must not end with '\\')
+	void initFromPath (const std::string &pathName);
+	/// Load an element in the current directory
+	void addElement (const std::string &elementName);
 
 	void getCategoriesType (std::vector<std::string> &CategoriesType);
 	void getCategoryValues (const std::string &CategoryType, std::vector<std::string> &CategoryValues);
+	CZoneBankElement *getElementByZoneName (const std::string &ZoneName);
 
 	// Selection
 	void resetSelection ();

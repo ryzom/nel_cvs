@@ -9,14 +9,191 @@ using namespace std;
 
 // ---------------------------------------------------------------------------
 
+#define IDC_LIST			0x10000
+
+
+// ***************************************************************************
+// CToolsZoneList
+// ***************************************************************************
+
+// ---------------------------------------------------------------------------
+
+BEGIN_MESSAGE_MAP (CToolsZoneList, CListBox)
+	ON_WM_LBUTTONDOWN ()
+	ON_WM_LBUTTONUP ()
+	ON_WM_MOUSEMOVE ()
+END_MESSAGE_MAP()
+
+// ---------------------------------------------------------------------------
+CToolsZoneList::CToolsZoneList()
+{
+	_MouseLDown = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::OnLButtonDown	(UINT nFlags, CPoint point)
+{
+	CListBox::OnLButtonDown (nFlags, point);
+	_MouseLDown = true;
+	notifyParent();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::OnLButtonUp	(UINT nFlags, CPoint point)
+{
+	CListBox::OnLButtonUp (nFlags, point);
+	_MouseLDown = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::OnMouseMove	(UINT nFlags, CPoint point)
+{
+	CListBox::OnMouseMove (nFlags, point);
+	if (_MouseLDown)
+		notifyParent();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::setTool (CToolsZone *pTool)
+{
+	_Tools = pTool;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::notifyParent()
+{
+	int nIndex = GetCurSel();
+	_Tools->OnSelChange();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::setImages (std::vector<CBitmap*> &vBitmaps)
+{
+	_BitmapList = vBitmaps;
+	for (uint32 i = 0; i < _BitmapList.size(); ++i)
+	{
+		BITMAP bitmap;
+		_BitmapList[i]->GetBitmap (&bitmap);
+		SetItemHeight (i, bitmap.bmHeight);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::reset()
+{
+	ResetContent();
+	_ItemNames.clear();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::addItem (const string &itemName)
+{
+	_ItemNames.push_back (itemName);
+	InsertString (-1, itemName.c_str());
+}
+
+// ---------------------------------------------------------------------------
+const string &CToolsZoneList::getItem (uint32 nIndex)
+{
+	return _ItemNames[nIndex];
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::DrawItem (LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	ASSERT(lpDrawItemStruct->CtlType == ODT_LISTBOX);
+	LPCTSTR lpszText = (LPCTSTR) lpDrawItemStruct->itemData;
+	if (lpszText == NULL)
+		return;
+	CDC dc;
+
+	if (lpDrawItemStruct->itemID >= _BitmapList.size())
+		return;
+
+	dc.Attach (lpDrawItemStruct->hDC);
+
+	// Draw the image
+	CBitmap *p = _BitmapList[lpDrawItemStruct->itemID];
+	BITMAP bitmap;
+	p->GetBitmap (&bitmap);
+	dc.DrawState (CPoint(lpDrawItemStruct->rcItem.left,lpDrawItemStruct->rcItem.top),
+					CSize(bitmap.bmWidth, bitmap.bmHeight) , p, DSS_NORMAL);
+
+	// Reduce the rectangle to display selection box and item text
+	CRect rectLeft = lpDrawItemStruct->rcItem;
+	rectLeft.left += bitmap.bmWidth;
+
+	// Save these value to restore them when done drawing.
+	COLORREF crOldTextColor = dc.GetTextColor();
+	COLORREF crOldBkColor = dc.GetBkColor();
+
+	// If this item is selected, set the background color 
+	// and the text color to appropriate values. Also, erase
+	// rect by filling it with the background color.
+	if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+		(lpDrawItemStruct->itemState & ODS_SELECTED))
+	{
+		dc.SetTextColor (::GetSysColor(COLOR_HIGHLIGHTTEXT));
+		dc.SetBkColor (::GetSysColor(COLOR_HIGHLIGHT));
+		dc.FillSolidRect (&rectLeft, ::GetSysColor(COLOR_HIGHLIGHT));
+	}
+	else
+	{
+		dc.FillSolidRect (&rectLeft, crOldBkColor);
+	}
+
+	// If this item has the focus, draw a red frame around the
+	// item's rect.
+	if ((lpDrawItemStruct->itemAction | ODA_FOCUS) &&
+		(lpDrawItemStruct->itemState & ODS_FOCUS))
+	{
+		CBrush br(RGB(255, 0, 0));
+		dc.FrameRect (&rectLeft, &br);
+	}
+
+	// Draw the text.
+	dc.DrawText (lpszText, strlen(lpszText), &rectLeft, DT_CENTER|DT_SINGLELINE|DT_VCENTER);
+
+	// Reset the background color and the text color back to their original values.
+	dc.SetTextColor (crOldTextColor);
+	dc.SetBkColor (crOldBkColor);
+
+	dc.Detach ();
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZoneList::MeasureItem (LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	if (lpMeasureItemStruct->itemID >= 0)
+	{
+		if (lpMeasureItemStruct->itemID < _BitmapList.size())
+		{
+			CBitmap *p = _BitmapList[lpMeasureItemStruct->itemID];
+			BITMAP b;
+			p->GetBitmap (&b);
+			lpMeasureItemStruct->itemHeight = b.bmHeight;
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+int	 CToolsZoneList::CompareItem (LPCOMPAREITEMSTRUCT)
+{
+	return 0;
+}
+
+// ***************************************************************************
+// CToolsZone
+// ***************************************************************************
+
+// ---------------------------------------------------------------------------
+
 IMPLEMENT_DYNCREATE (CToolsZone, CFormView)
 
 // ---------------------------------------------------------------------------
 
 BEGIN_MESSAGE_MAP (CToolsZone, CFormView)
-	//{{AFX_MSG_MAP(CMainFrame)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
+	ON_WM_CREATE()
 	ON_WM_SIZE ()
 	ON_CBN_SELCHANGE (IDC_CATTYPE1, OnSelectCatType1)
 	ON_CBN_SELCHANGE (IDC_CATTYPE2, OnSelectCatType2)
@@ -32,21 +209,29 @@ BEGIN_MESSAGE_MAP (CToolsZone, CFormView)
 	ON_BN_CLICKED (IDC_OR3, OnSelectOr3)
 	ON_BN_CLICKED (IDC_AND4, OnSelectAnd4)
 	ON_BN_CLICKED (IDC_OR4, OnSelectOr4)
-	ON_BN_CLICKED (IDC_RANDOM, OnSelectRandom)	
-	ON_NOTIFY (TVN_SELCHANGED, IDC_TREE, OnSelChanged)
-	//}}AFX_MSG_MAP
+	ON_BN_CLICKED (IDC_RANDOM, OnSelectRandom)
+
+	ON_BN_CLICKED (IDC_ROT0, OnSelectRot0)
+	ON_BN_CLICKED (IDC_ROT90, OnSelectRot90)
+	ON_BN_CLICKED (IDC_ROT180, OnSelectRot180)
+	ON_BN_CLICKED (IDC_ROT270, OnSelectRot270)
+	ON_BN_CLICKED (IDC_ROTRANDOM, OnSelectRotRan)
+	ON_BN_CLICKED (IDC_FLIPNO, OnSelectFlipNo)
+	ON_BN_CLICKED (IDC_FLIPYES, OnSelectFlipYes)
+	ON_BN_CLICKED (IDC_FLIPRANDOM, OnSelectFlipRan)
+
 END_MESSAGE_MAP()
 
 // ---------------------------------------------------------------------------
 CToolsZone::CToolsZone() : CFormView(IDD_TOOLS_ZONE)
 {
-	_TreeCreated = false;
+	_ListCreated = false;
 }
 
 // ---------------------------------------------------------------------------
-CTreeCtrl *CToolsZone::getTreeCtrl()
+CToolsZoneList *CToolsZone::getListCtrl()
 {
-	return (CTreeCtrl*)GetDlgItem (IDC_TREE);
+	return &_List;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,14 +307,64 @@ void CToolsZone::init (CMainFrame *pMF)
 	else
 		pButOr->SetCheck (1);
 
-	CButton *pButRan = (CButton*)GetDlgItem(IDC_RANDOM); 
+	CButton *pButRan = (CButton*)GetDlgItem(IDC_RANDOM);
 	if (_MainFrame->_ZoneBuilder._RandomSelection)
 		pButRan->SetCheck (1);
 	else
 		pButRan->SetCheck (0);
-	
-	_TreeCreated = true;
+
+	CButton *pButton;
+	if (_MainFrame->_ZoneBuilder._ApplyRotRan)
+	{
+		pButton = (CButton*)GetDlgItem(IDC_ROTRANDOM);
+		pButton->SetCheck (1);
+	}
+	else
+	{
+		switch (_MainFrame->_ZoneBuilder._ApplyRot)
+		{
+			case 0: pButton = (CButton*)GetDlgItem(IDC_ROT0); break;
+			case 1: pButton = (CButton*)GetDlgItem(IDC_ROT90); break;
+			case 2: pButton = (CButton*)GetDlgItem(IDC_ROT180); break;
+			case 3: pButton = (CButton*)GetDlgItem(IDC_ROT270); break;
+		}
+		pButton->SetCheck (1);
+	}
+
+	if (_MainFrame->_ZoneBuilder._ApplyFlipRan)
+	{
+		pButton = (CButton*)GetDlgItem(IDC_FLIPRANDOM);
+		pButton->SetCheck (1);
+	}
+	else
+	{
+		switch (_MainFrame->_ZoneBuilder._ApplyFlip)
+		{
+			case 0: pButton = (CButton*)GetDlgItem(IDC_FLIPNO); break;
+			case 1: pButton = (CButton*)GetDlgItem(IDC_FLIPYES); break;
+		}
+		pButton->SetCheck (1);
+	}
+
 	_MainFrame->_ZoneBuilder.updateToolsZone ();
+}
+
+#define LIST_TOP 170
+
+// ---------------------------------------------------------------------------
+int CToolsZone::OnCreate (LPCREATESTRUCT lpCreateStruct)
+{
+	if (CFormView::OnCreate (lpCreateStruct) == -1)
+		return -1;
+	CRect iniRect;
+	GetClientRect(&iniRect);
+	iniRect.top = LIST_TOP; iniRect.left = 10;
+	iniRect.right -= 20; iniRect.bottom -= 20;
+	_List.Create (WS_CHILD|WS_VISIBLE|WS_BORDER|WS_HSCROLL|WS_VSCROLL|LBS_OWNERDRAWVARIABLE|LBS_NOTIFY,
+				iniRect, this, IDC_LIST);
+	_List.setTool (this);
+	_ListCreated = true;
+	return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,9 +376,9 @@ void CToolsZone::uninit()
 void CToolsZone::OnSize (UINT nType, int cx, int cy)
 {
 	CFormView::OnSize (nType, cx, cy);
-	// Resize tree ctrl to fill the whole view.
-	if (_TreeCreated)
-		getTreeCtrl()->MoveWindow (10, 140, cx-20, cy-150);
+	// Resize list ctrl to fill the whole view.
+	if (_ListCreated)
+		getListCtrl()->MoveWindow (10, LIST_TOP, cx-20, cy-(LIST_TOP+10));
 }
 
 // ---------------------------------------------------------------------------
@@ -295,16 +530,71 @@ void CToolsZone::OnSelectRandom()
 }
 
 // ---------------------------------------------------------------------------
-void CToolsZone::OnSelChanged (LPNMHDR pnmhdr, LRESULT *pLResult)
+void CToolsZone::OnSelChange ()
 {
-	HTREEITEM hItem = getTreeCtrl()->GetSelectedItem();
-
-	if (hItem != NULL)
+	// Select the next item of the currently selected one.
+	int nIndex = _List.GetCurSel();
+	if (nIndex != LB_ERR)
 	{
-		// Select the item
-		getTreeCtrl()->Select(hItem, TVGN_CARET);
-		_MainFrame->_ZoneBuilder._CurSelectedZone = (LPCTSTR)getTreeCtrl()->GetItemText(hItem);
+		// Here for some reason we cant use the GetText(nIndex, str) function...
+		_MainFrame->_ZoneBuilder._CurSelectedZone = nIndex;//_List.getItem (nIndex);
 	}
 	else
-		_MainFrame->_ZoneBuilder._CurSelectedZone = STRING_UNUSED;
+	{
+		_MainFrame->_ZoneBuilder._CurSelectedZone = -1;//STRING_UNUSED;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRot0 ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRot = 0;
+	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRot90 ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRot = 1;
+	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRot180 ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRot = 2;
+	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRot270 ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRot = 3;
+	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRotRan ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRotRan = true;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectFlipNo ()
+{
+	_MainFrame->_ZoneBuilder._ApplyFlip = 0;
+	_MainFrame->_ZoneBuilder._ApplyFlipRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectFlipYes ()
+{
+	_MainFrame->_ZoneBuilder._ApplyFlip = 1;
+	_MainFrame->_ZoneBuilder._ApplyFlipRan = false;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectFlipRan ()
+{
+	_MainFrame->_ZoneBuilder._ApplyFlipRan = true;
 }

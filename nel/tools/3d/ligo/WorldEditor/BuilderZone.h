@@ -6,15 +6,12 @@
 
 // ***************************************************************************
 
-#define STRING_UNUSED		"< UNUSED >"
-#define STRING_OUT_OF_BOUND "< OOB >"
-
-// ***************************************************************************
-
 #include "nel/misc/vector.h"
 #include "nel/misc/smart_ptr.h"
 
 #include "../lib/zone_bank.h"
+
+#include "builderZoneRegion.h"
 
 #include <string>
 #include <vector>
@@ -32,7 +29,7 @@ namespace NL3D
 }
 
 // ***************************************************************************
-
+// CDataBase contains the image database for Nel and Windows
 class CDataBase
 {
 	struct SElement
@@ -65,37 +62,14 @@ public:
 };
 
 // ***************************************************************************
-
-class CZoneRegion
-{
-
-	std::vector<std::string>	_Zones;
-	sint32						_MinX, _MinY;
-	sint32						_MaxX, _MaxY;
-
-	static std::string			_StringOutOfBound;
-
-	void				resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY);
-
-public:
-
-	CZoneRegion();
-
-	void				set (sint32 x, sint32 y, const std::string &ZoneName);
-	const std::string	&get (sint32 x, sint32 y);
-	void				reduceMin ();
-};
-
-// ***************************************************************************
-
+// CBuilderZone contains all the shared data between the tools and the motor
 class CBuilderZone
 {
 	NLLIGO::CZoneBank			_ZoneBank;
 
-	CImageList					*_ImageList;
 	CDataBase					_DataBase;
 
-	CZoneRegion					_ZoneRegion;
+	CBuilderZoneRegion			_ZoneRegion;
 
 	CDisplay					*_Display;
 	CToolsZone					*_ToolsZone;
@@ -111,7 +85,16 @@ public:
 	uint8		_FilterOperator4;				// 0 -> AND, 1 -> OR
 
 	bool		_RandomSelection;
-	std::string _CurSelectedZone;
+	sint32		_CurSelectedZone;
+
+	uint8		_ApplyRot;
+	bool		_ApplyRotRan;
+
+	uint8		_ApplyFlip;
+	bool		_ApplyFlipRan;
+
+
+	std::vector<NLLIGO::CZoneBankElement*> _CurrentSelection;
 
 public:
 
@@ -119,14 +102,21 @@ public:
 	void				setDisplay (CDisplay *pDisp);
 	void				setToolsZone (CToolsZone *pTool);
 	void				updateToolsZone ();
-	bool				load(const char *fileName);
-	bool				save(const char *fileName);
+	bool				load (const char *fileName);
+	bool				save (const char *fileName);
 
 	void				add (NLMISC::CVector &worldPos);
 	void				del (NLMISC::CVector &worldPos);
+	/*
+	void				putAndSolve (sint32 x, sint32 y, NLLIGO::CZoneBankElement *pZBE);
+	void				removeAndSolve (sint32 x, sint32 y);
+	void				placeRandomTrans (sint32 x, sint32 y, std::string TransNameVal);
+	void				setTrans (sint32 x, sint32 y, NLLIGO::CZoneBankElement *pZBE);
+	*/
+	bool				initZoneBank (const std::string &Path);
 
 	// Accessors
-	NLLIGO::CZoneBank	&getZoneBank() { return _ZoneBank; }
+	NLLIGO::CZoneBank	&getZoneBank () { return _ZoneBank; }
 
 	void				render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
 

@@ -23,8 +23,15 @@
 #define IDC_OR3                         1013
 #define IDC_AND4                        1014
 #define IDC_OR4                         1015
-#define IDC_TREE                        1016
 #define IDC_RANDOM                      1018
+#define IDC_ROT0                        1020
+#define IDC_ROT90                       1021
+#define IDC_ROT180                      1022
+#define IDC_ROT270                      1023
+#define IDC_ROTRANDOM                   1024
+#define IDC_FLIPNO                      1025
+#define IDC_FLIPYES                     1026
+#define IDC_FLIPRANDOM                  1027
 #define ID_VIEW_GRID                    32771
 #define ID_FILE_EXIT                    32772
 #define ID_MODE_LOGIC                   32773
@@ -39,7 +46,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1019
+#define _APS_NEXT_CONTROL_VALUE         1028
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

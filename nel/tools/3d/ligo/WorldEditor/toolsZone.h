@@ -13,17 +13,55 @@
 // ***************************************************************************
 
 class CMainFrame;
+class CToolsZone;
+
+// ***************************************************************************
+
+class CToolsZoneList : public CListBox
+{
+	bool						_MouseLDown;
+	CToolsZone					*_Tools;
+	std::vector<std::string>	_ItemNames;
+	std::vector<CBitmap*>		_BitmapList;
+
+public:
+
+	CToolsZoneList ();
+
+	void setTool (CToolsZone *pTool);
+	void setImages (std::vector<CBitmap*> &vBitmaps);
+	void addItem (const std::string &itemName);
+	const std::string &getItem (uint32 nIndex);
+	void reset ();
+
+	void DrawItem (LPDRAWITEMSTRUCT);
+	void MeasureItem (LPMEASUREITEMSTRUCT);
+	int	 CompareItem (LPCOMPAREITEMSTRUCT);
+
+	// For some obscur reason on subclassing windows system we cant use the message map
+	// mechanism so we have to notify the parent by hand
+
+	void notifyParent();
+
+	afx_msg void OnLButtonDown	(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp	(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove	(UINT nFlags, CPoint point);
+	
+
+	DECLARE_MESSAGE_MAP()
+
+};
 
 // ***************************************************************************
 
 class CToolsZone : public CFormView
 {
 	DECLARE_DYNCREATE(CToolsZone)
-		
-	CMainFrame *_MainFrame;
-	HTREEITEM _PointItem, _PathItem, _ZoneItem;
 
-	bool _TreeCreated;
+	CToolsZoneList	_List;
+	bool			_ListCreated;
+
+	CMainFrame		*_MainFrame;
 	
 private:
 
@@ -34,12 +72,13 @@ public:
 	
 	CToolsZone();
 
-	CTreeCtrl *getTreeCtrl();
+	CToolsZoneList *getListCtrl();
 	
 	void init (CMainFrame *pMF);
 	void uninit ();
 
 	// Event handlers
+	afx_msg int OnCreate (LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnSize (UINT nType, int cx, int cy);
 	afx_msg void OnSelectCatType1 ();
 	afx_msg void OnSelectCatType2 ();
@@ -56,7 +95,17 @@ public:
 	afx_msg void OnSelectAnd4 ();
 	afx_msg void OnSelectOr4 ();
 	afx_msg void OnSelectRandom ();
-	afx_msg void OnSelChanged (LPNMHDR pnmhdr, LRESULT *pLResult);
+
+	afx_msg void OnSelectRot0 ();
+	afx_msg void OnSelectRot90 ();
+	afx_msg void OnSelectRot180 ();
+	afx_msg void OnSelectRot270 ();
+	afx_msg void OnSelectRotRan ();
+	afx_msg void OnSelectFlipNo ();
+	afx_msg void OnSelectFlipYes ();
+	afx_msg void OnSelectFlipRan ();
+	
+	void OnSelChange (); // Notified by hand
 
 	DECLARE_MESSAGE_MAP()
 };

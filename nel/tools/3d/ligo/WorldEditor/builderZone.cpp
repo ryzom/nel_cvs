@@ -97,6 +97,8 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 	strcat (sDirNew, Path.c_str());
 	SetCurrentDirectory (sDirNew);
 
+
+
 	vector<string> ZoneNames;
 	zb.getCategoryValues ("Zone", ZoneNames);
 	for (uint32 i = 0; i < ZoneNames.size(); ++i)
@@ -153,7 +155,7 @@ CBitmap *CDataBase::convertToWin (CTextureFile *pTF)
 		pNewPixel[i*4+2] = rPixel[i*4+0];
 		pNewPixel[i*4+3] = rPixel[i*4+3];
 	}
-	pWinBitmap->CreateBitmap (64, 64, 1, 32, pNewPixel);
+	pWinBitmap->CreateBitmap (pTF->getWidth(), pTF->getHeight(), 1, 32, pNewPixel);
 	return pWinBitmap;
 }
 
@@ -168,170 +170,16 @@ CTextureFile *CDataBase::loadTexture (const std::string &fileName)
 }
 
 // ***************************************************************************
-// CZoneRegion
-// ***************************************************************************
-
-std::string CZoneRegion::_StringOutOfBound;
-
-// ---------------------------------------------------------------------------
-CZoneRegion::CZoneRegion ()
-{
-	_StringOutOfBound = STRING_OUT_OF_BOUND;
-	_MinX = _MinY = 0;
-	_MaxX = _MaxY = 0;
-	_Zones.push_back (STRING_UNUSED);
-}
-
-// ---------------------------------------------------------------------------
-void CZoneRegion::resize (sint32 newMinX, sint32 newMaxX, sint32 newMinY, sint32 newMaxY)
-{
-	sint32 i, j;
-	vector<string> newZones;
-
-	newZones.resize ((1+newMaxX-newMinX)*(1+newMaxY-newMinY));
-	sint32 newStride = 1+newMaxX-newMinX;
-	sint32 Stride = 1+_MaxX-_MinX;
-	for (j = newMinY; j <= newMaxY; ++j)
-	for (i = newMinX; i <= newMaxX; ++i)
-	{
-		if ((i >= _MinX)&&(i <= _MaxX)&&(j >= _MinY)&&(j <= _MaxY))
-			newZones[(i-newMinX)+(j-newMinY)*newStride] = _Zones[(i-_MinX)+(j-_MinY)*Stride];
-		else
-			newZones[(i-newMinX)+(j-newMinY)*newStride] = STRING_UNUSED;
-	}
-	_MinX = newMinX; _MaxX = newMaxX;
-	_MinY = newMinY; _MaxY = newMaxY;
-	_Zones = newZones;
-}
-
-// ---------------------------------------------------------------------------
-void CZoneRegion::set (sint32 x, sint32 y, const std::string &ZoneName)
-{
-	// Do we need to resize ?
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		sint32 newMinX = (x<_MinX?x:_MinX), newMinY = (y<_MinY?y:_MinY);
-		sint32 newMaxX = (x>_MaxX?x:_MaxX), newMaxY = (y>_MaxY?y:_MaxY);
-
-		resize (newMinX, newMaxX, newMinY, newMaxY);
-	}
-
-	_Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)] = ZoneName;
-}
-
-// ---------------------------------------------------------------------------
-void CZoneRegion::reduceMin ()
-{
-	sint32 i, j;
-	sint32 Stride = 1+_MaxX-_MinX;
-	sint32 newMinX = _MinX, newMinY = _MinY;
-	sint32 newMaxX = _MaxX, newMaxY = _MaxY;
-	bool bCanSuppr;
-
-	// Reduce the MinY
-	while (true)
-	{
-		if (newMinY == newMaxY)
-			break;
-		j = newMinY;
-		bCanSuppr = true;
-		for (i = newMinX; i <= newMaxX; ++i)
-			if (_Zones[(i-_MinX)+(j-_MinY)*(1+_MaxX-_MinX)] != STRING_UNUSED)
-			{
-				bCanSuppr = false;
-				break;
-			}
-		if (bCanSuppr)
-			++newMinY;
-		else
-			break;
-	}
-
-	// Reduce the MaxY
-	while (true)
-	{
-		if (newMinY == newMaxY)
-			break;
-		j = newMaxY;
-		bCanSuppr = true;
-		for (i = newMinX; i <= newMaxX; ++i)
-			if (_Zones[(i-_MinX)+(j-_MinY)*(1+_MaxX-_MinX)] != STRING_UNUSED)
-			{
-				bCanSuppr = false;
-				break;
-			}
-		if (bCanSuppr)
-			--newMaxY;
-		else
-			break;
-	}
-
-	// Reduce the MinX
-	while (true)
-	{
-		if (newMinX == newMaxX)
-			break;
-		i = newMinX;
-		bCanSuppr = true;
-		for (j = newMinY; j <= newMaxY; ++j)
-			if (_Zones[(i-_MinX)+(j-_MinY)*(1+_MaxX-_MinX)] != STRING_UNUSED)
-			{
-				bCanSuppr = false;
-				break;
-			}
-		if (bCanSuppr)
-			++newMinX;
-		else
-			break;
-	}
-
-	// Reduce the MaxX
-	while (true)
-	{
-		if (newMinX == newMaxX)
-			break;
-		i = newMaxX;
-		bCanSuppr = true;
-		for (j = newMinY; j <= newMaxY; ++j)
-			if (_Zones[(i-_MinX)+(j-_MinY)*(1+_MaxX-_MinX)] != STRING_UNUSED)
-			{
-				bCanSuppr = false;
-				break;
-			}
-		if (bCanSuppr)
-			--newMaxX;
-		else
-			break;
-	}
-	resize (newMinX, newMaxX, newMinY, newMaxY);
-}
-
-// ---------------------------------------------------------------------------
-const string &CZoneRegion::get (sint32 x, sint32 y)
-{
-	if ((x < _MinX) || (x > _MaxX) ||
-		(y < _MinY) || (y > _MaxY))
-	{
-		return _StringOutOfBound;
-	}
-	else
-	{
-		return _Zones[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)];
-	}
-}
-
-// ***************************************************************************
 // CBuilderZone
 // ***************************************************************************
 
 // ---------------------------------------------------------------------------
 CBuilderZone::CBuilderZone ()
 {
-	_ImageList = NULL;
-
 	// Init the ZoneBank
 	_ZoneBank.debugInit ();
+	initZoneBank ("ZoneLigos");
+
 
 	// Construct the DataBase (Parse the ZoneBitmaps directory)
 	//_DataBase.initFromPath ("ZoneBitmaps");
@@ -348,7 +196,11 @@ CBuilderZone::CBuilderZone ()
 	_FilterOperator3 = 0;
 	_FilterOperator4 = 0;
 	_RandomSelection = false;
-	_CurSelectedZone = STRING_UNUSED;
+	_CurSelectedZone = -1;
+	_ApplyRot = 0;
+	_ApplyRotRan = false;
+	_ApplyFlip = 0;
+	_ApplyFlipRan = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -400,31 +252,28 @@ void CBuilderZone::updateToolsZone ()
 			_ZoneBank.addOrSwitch (_FilterType4, _FilterValue4);
 	}
 
-	vector<CZoneBankElement*> vZBE;
-	_ZoneBank.getSelection (vZBE);
+	_ZoneBank.getSelection (_CurrentSelection);
 
 	// Create the corresponding image list from selected item using DataBase
-	if (_ImageList != NULL)
-		delete _ImageList;
 
-	_ImageList = new CImageList;
-	_ImageList->Create (64, 64, ILC_COLOR32, 0, 5);
-
-	for (i = 0; i < vZBE.size(); ++i)
+	vector<CBitmap*> vIL;
+	vIL.resize (_CurrentSelection.size());
+	for (i = 0; i < _CurrentSelection.size(); ++i)
 	{
-		CZoneBankElement *pElt = vZBE[i];
+		CZoneBankElement *pElt = _CurrentSelection[i];
 		// Get bitmap from DataBase
-		_ImageList->Add (_DataBase.getBitmap(pElt->getName()) , RGB(0, 0, 0));
+		vIL[i] = _DataBase.getBitmap (pElt->getName());
 	}
 
-	// Construct the tree
-	_ToolsZone->getTreeCtrl()->DeleteAllItems ();
-	_ToolsZone->getTreeCtrl()->SetImageList (_ImageList, TVSIL_NORMAL);
-	for (i = 0; i < vZBE.size(); ++i)
+	// Construct the tree add first items then the images!
+	_ToolsZone->getListCtrl()->reset ();
+	for (i = 0; i < _CurrentSelection.size(); ++i)
 	{
-		CZoneBankElement *pElt = vZBE[i];
-		_ToolsZone->getTreeCtrl()->InsertItem( pElt->getName().c_str(), i, i);
+		CZoneBankElement *pElt = _CurrentSelection[i];
+		_ToolsZone->getListCtrl()->addItem (pElt->getName());
 	}
+	_ToolsZone->getListCtrl()->setImages (vIL);
+	_CurSelectedZone = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -484,10 +333,6 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 			VB.setVertexCoord (1, pos2);
 			VB.setVertexCoord (2, pos3);
 			VB.setVertexCoord (3, pos4);
-			VB.setTexCoord (0, 0, CUV(0,1));
-			VB.setTexCoord (1, 0, CUV(1,1));
-			VB.setTexCoord (2, 0, CUV(1,0));
-			VB.setTexCoord (3, 0, CUV(0,0));
 
 			PB.setNumTri (2);
 			PB.setTri (0, 0, 1, 2);
@@ -496,9 +341,42 @@ void CBuilderZone::render (NLMISC::CVector &viewMin, NLMISC::CVector &viewMax)
 			sint32 x = (sint32)floor(minx / _Display->_CellSize);
 			sint32 y = (sint32)floor(miny / _Display->_CellSize);
 
-			const string &rSZone = _ZoneRegion.get (x, y);
-			Mat.setTexture (0, _DataBase.getTexture (rSZone));
+			const string &rSZone = _ZoneRegion.getName (x, y);
+			CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (rSZone);
+			float uMin, vMin, uMax, vMax;
+			if (pZBE == NULL)
+			{
+				Mat.setTexture (0, _DataBase.getTexture (rSZone));
+				uMin = 0.0f;
+				vMin = 1.0f - 0.0f;
+				uMax = 1.0f;
+				vMax = 1.0f - 1.0f;
+				VB.setTexCoord (0, 0, CUV(uMin, vMin));
+				VB.setTexCoord (1, 0, CUV(uMax, vMin));
+				VB.setTexCoord (2, 0, CUV(uMax, vMax));
+				VB.setTexCoord (3, 0, CUV(uMin, vMax));
+			}
+			else
+			{
+				Mat.setTexture (0, _DataBase.getTexture (rSZone));
+				uMin = ((float)_ZoneRegion.getPosX (x, y)) / pZBE->getSizeX();
+				vMin = 1.0f - ((float)_ZoneRegion.getPosY (x, y)) / pZBE->getSizeY();
+				uMax = ((float)_ZoneRegion.getPosX (x, y)+1.0f) / pZBE->getSizeX();
+				vMax = 1.0f - ((float)_ZoneRegion.getPosY (x, y)+1.0f) / pZBE->getSizeY();
 
+				if (_ZoneRegion.getFlip (x, y) == 1)
+				{
+					float rTmp = uMin;
+					uMin = uMax;
+					uMax = rTmp;
+				}
+
+				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+0)%4, 0, CUV(uMin, vMin));
+				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+1)%4, 0, CUV(uMax, vMin));
+				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+2)%4, 0, CUV(uMax, vMax));
+				VB.setTexCoord ((_ZoneRegion.getRot (x, y)+3)%4, 0, CUV(uMin, vMax));
+			}
+			
 			CMatrix mtx;
 			mtx.identity();
 			CNELU::Driver->setupViewport (CViewport());
@@ -519,20 +397,46 @@ void CBuilderZone::add (CVector &worldPos)
 {
 	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
+	uint8 rot, flip;
 
 	if (_RandomSelection)
 	{
-		vector<CZoneBankElement*> vZBE;
-		_ZoneBank.getSelection (vZBE);
-		if (vZBE.size() > 0)
+		if (_CurrentSelection.size() > 0)
 		{
-			uint32 nSel = (uint32)(NLMISC::frand (1.0) * vZBE.size());
-			NLMISC::clamp (nSel, (uint32)0, (uint32)(vZBE.size()-1));
-			_CurSelectedZone = vZBE[nSel]->getName();
+			uint32 nSel = (uint32)(NLMISC::frand (1.0) * _CurrentSelection.size());
+			NLMISC::clamp (nSel, (uint32)0, (uint32)(_CurrentSelection.size()-1));
+			_CurSelectedZone = nSel;
 		}
 	}
 
-	_ZoneRegion.set (x, y, _CurSelectedZone);
+	if (_ApplyRotRan)
+	{
+		uint32 nSel = (uint32)(NLMISC::frand (1.0) * 4);
+		NLMISC::clamp (nSel, (uint32)0, (uint32)3);
+		rot = (uint8)nSel;
+	}
+	else
+	{
+		rot = _ApplyRot;
+	}
+
+	if (_ApplyFlipRan)
+	{
+		uint32 nSel = (uint32)(NLMISC::frand (1.0) * 2);
+		NLMISC::clamp (nSel, (uint32)0, (uint32)1);
+		flip = (uint8)nSel;
+	}
+	else
+	{
+		flip = _ApplyFlip;
+	}
+
+	if ((_CurSelectedZone >= 0)&&(_CurSelectedZone <= ((sint32)_CurrentSelection.size()-1)))
+	{
+		CZoneBankElement *pZBE = _CurrentSelection[_CurSelectedZone];
+		_ZoneRegion.init (&_ZoneBank);
+		_ZoneRegion.add (x, y, rot, flip, pZBE);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -540,6 +444,236 @@ void CBuilderZone::del (CVector &worldPos)
 {
 	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
-	_ZoneRegion.set (x, y, STRING_UNUSED);
-	_ZoneRegion.reduceMin ();
+	_ZoneRegion.init (&_ZoneBank);
+	_ZoneRegion.del (x, y);
 }
+
+// ---------------------------------------------------------------------------
+bool CBuilderZone::initZoneBank (const string &pathName)
+{
+	char sDirBackup[512];
+	char sDirNew[512];
+	GetCurrentDirectory (512, sDirBackup);
+	strcpy (sDirNew, sDirBackup);
+	strcat (sDirNew, "\\");
+	strcat (sDirNew, pathName.c_str());
+	SetCurrentDirectory (sDirNew);
+	WIN32_FIND_DATA findData;
+	HANDLE hFind;
+	hFind = FindFirstFile ("*.ligozone", &findData);
+	
+	while (hFind != INVALID_HANDLE_VALUE)
+	{
+		// If the name of the file is not . or .. then its a valid entry in the DataBase
+		if (!((strcmp (findData.cFileName, ".") == 0) || (strcmp (findData.cFileName, "..") == 0)))
+		{
+			_ZoneBank.addElement (findData.cFileName);
+		}
+		if (FindNextFile (hFind, &findData) == 0)
+			break;
+	}
+	SetCurrentDirectory (sDirBackup);
+	return true;
+}
+
+
+
+/*
+// ---------------------------------------------------------------------------
+void CBuilderZone::setTrans (sint32 x, sint32 y, CZoneBankElement *pZBE)
+{
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::placeRandomTrans (sint32 x, sint32 y, string TransNameVal)
+{	
+	vector<CZoneBankElement*> Selection;
+	_ZoneBank.getSelection (Selection);
+	if (Selection.size() == 0)
+		return;
+
+	string MatA, MatB;
+	sint32 m, n;
+
+	for (m = 0; m < (sint32)TransNameVal.size(); ++m)
+	{
+		if (TransNameVal[m] == '_')
+			break;
+		MatA += TransNameVal[m];
+	}
+	++m;
+	for (; m < (sint32)TransNameVal.size(); ++m)
+		MatB += TransNameVal[m];
+
+	CZoneBankElement* localMap[9];
+	for (m = -1; m <= 1; ++m)
+	for (n = -1; n <= 1; ++n)
+	{
+		const string &rSZone = _ZoneRegion.getName (x+n, y+m);
+		CZoneBankElement *pElt = _ZoneBank.getElementByZoneName (rSZone);
+		localMap[n+1+(m+1)*3] = pElt;
+	}
+
+	// If we have a material different up and down
+	if ((((localMap[1] != NULL)&&(localMap[7] != NULL)) &&
+		(((localMap[1]->getCategory("Material") == MatA) && (localMap[7]->getCategory("Material") == MatB)) ||
+		((localMap[1]->getCategory("Material") == MatB) && (localMap[7]->getCategory("Material") == MatA)))) ||
+		(((localMap[3] != NULL)&&(localMap[5] != NULL)) &&
+		(((localMap[3]->getCategory("Material") == MatA) && (localMap[5]->getCategory("Material") == MatB)) ||
+		((localMap[3]->getCategory("Material") == MatB) && (localMap[5]->getCategory("Material") == MatA)))))
+	{
+		_ZoneBank.addAndSwitch ("TransType", "Flat");
+		_ZoneBank.getSelection (Selection);
+		if (Selection.size() == 0)
+			return;
+
+		// Select the tile
+		uint32 nSel = (uint32)(NLMISC::frand (1.0) * Selection.size());
+		NLMISC::clamp (nSel, (uint32)0, (uint32)(Selection.size()-1));
+		
+		CZoneBankElement *pZBE = Selection[nSel];
+
+		_ZoneRegion.set (x, y, 0, 0, pZBE->getName());
+		nSel = (uint32)(NLMISC::frand (1.0) * 2);
+		NLMISC::clamp (nSel, (uint32)0, (uint32)1);
+		if (nSel)
+			_ZoneRegion.setFlip (x, y, 1);
+		if ((localMap[1] != NULL)&&(localMap[1]->getCategory("Material") != STRING_NO_CAT_TYPE))
+		{
+			if (localMap[1]->getCategory("Material") == MatA)
+			{
+				_ZoneRegion.setRot (x, y, 2);
+			}
+			else
+			{
+				_ZoneRegion.setRot (x, y, 0);
+			}
+
+			// Update Left and Right transition if any
+			//if ((localMap[3] != NULL)&&(localMap[3]->getCategory("TransName") != STRING_NO_CAT_TYPE))
+			//{
+			//	const string &rNum = pZBE->getCategory("TransNum");
+			//	if (rNum == "11")
+			//	{
+			//		if (_ZoneRegion.getRot(x,y) == 0)
+			//			updateTrans (x-1, y, 1, ); // (x,y,RIGHT,
+			//	}
+			//	localMap[3]->getCategory ("")
+			//}
+		}
+		else
+		{
+			if (localMap[3]->getCategory("Material") == MatA)
+				_ZoneRegion.setRot (x, y, 1);
+			else
+				_ZoneRegion.setRot (x, y, 3);
+		}
+
+
+
+		return;
+	}
+	
+}*/
+
+
+// ---------------------------------------------------------------------------
+/*
+void CBuilderZone::putAndSolve (sint32 x, sint32 y, CZoneBankElement *pZBE)
+{
+	uint32 i, j;
+	sint32 k, l;
+	sint32 m, n;
+
+	// 1st - Suppress already present tiles
+	for (j = 0; j < pZBE->getSizeY(); ++j)
+	for (i = 0; i < pZBE->getSizeX(); ++i)
+	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
+	{
+		removeAndSolve (x+i, y+j);
+	}
+
+	// 2nd - Suppress all stuff around that is not from the same material
+	const string &CurMat = pZBE->getCategory ("Material");
+	for (j = 0; j < pZBE->getSizeY(); ++j)
+	for (i = 0; i < pZBE->getSizeX(); ++i)
+	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
+	{
+		for (k = -1; k <= 1; ++k)
+		for (l = -1; l <= 1; ++l)
+		{
+			const string &rSZone = _ZoneRegion.getName (x+i+l, y+j+k);
+			CZoneBankElement *pZBE2 = _ZoneBank.getElementByZoneName (rSZone);
+
+			if (pZBE2 != NULL)
+			{
+				const string &Mat = pZBE2->getCategory ("Material");
+				if (Mat != CurMat)
+				{
+					removeAndSolve (x+i+l, y+j+k);
+				}
+			}
+		}
+	}
+
+	// 3rd - Put the new tile
+	for (j = 0; j < pZBE->getSizeY(); ++j)
+	for (i = 0; i < pZBE->getSizeX(); ++i)
+	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
+	{
+		_ZoneRegion.set (x+i, y+j, i, j, pZBE->getName());
+		_ZoneRegion.setRot (x+i, y+j, 0);
+		_ZoneRegion.setFlip (x+i, y+j, 0);
+	}
+
+	// 4th - Put direct transition
+	for (j = 0; j < pZBE->getSizeY(); ++j)
+	for (i = 0; i < pZBE->getSizeX(); ++i)
+	if (pZBE->getMask()[i+j*pZBE->getSizeX()])
+	{
+		for (k = -1; k <= 1; ++k)
+		for (l = -1; l <= 1; ++l)
+		{
+			const string &rSZone = _ZoneRegion.getName (x+i+l, y+j+k);
+			if (rSZone == STRING_UNUSED)
+			{
+				// Calculate the number of material around
+				set<string> matNameSet;
+				for (m = -1; m <= 1; ++m)
+				for (n = -1; n <= 1; ++n)
+				{
+					const string &rSZone2 = _ZoneRegion.getName (x+i+l+n, y+j+k+m);
+					CZoneBankElement *pElt = _ZoneBank.getElementByZoneName (rSZone2);
+					if (pElt != NULL)
+					{
+						const string &rMatName = pElt->getCategory ("Material");
+						if (rMatName != STRING_NO_CAT_TYPE)
+						{
+							matNameSet.insert (rMatName);
+						}
+					}
+				}
+				if (matNameSet.size() == 2)
+				{
+					set<string>::iterator it = matNameSet.begin();
+					string sTmp = *it;
+					++it;
+					sTmp += "_" + *it;
+					_ZoneBank.resetSelection ();
+					_ZoneBank.addOrSwitch ("TransName", sTmp);
+					placeRandomTrans (x+i+l, y+j+k, sTmp);
+					it = matNameSet.begin();
+					sTmp = *it;
+					++it;
+					sTmp = *it + "_" + sTmp;
+					_ZoneBank.resetSelection ();
+					_ZoneBank.addOrSwitch ("TransName", sTmp);
+					placeRandomTrans (x+i+l, y+j+k, sTmp);
+				}
+			}
+		}
+	}
+
+	// 5th - Put corner transition
+}
+*/

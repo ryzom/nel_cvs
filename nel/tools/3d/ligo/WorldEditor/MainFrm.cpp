@@ -379,12 +379,14 @@ void CMainFrame::adjustSplitter ()
 	{
 		RECT r;
 		GetClientRect (&r);
-		if (_Mode == 0) // Mode Zone
-			m_wndSplitter.SetColumnInfo (0, r.right-r.left-380, 100); // 380 really experimental value
-
-		if (_Mode == 1) // Mode Logic
-			m_wndSplitter.SetColumnInfo (0, r.right-r.left-300, 10);
-
+		if (r.right-r.left > 380)
+		{
+			if (_Mode == 0) // Mode Zone
+				m_wndSplitter.SetColumnInfo (0, r.right-r.left-380, 100); // 380 really experimental value
+			
+			if (_Mode == 1) // Mode Logic
+				m_wndSplitter.SetColumnInfo (0, r.right-r.left-300, 10);
+		}
 		m_wndSplitter.RecalcLayout ();
 	}
 }

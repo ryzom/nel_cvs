@@ -67,9 +67,10 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
@@ -79,7 +80,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 freetype.lib libxml2.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../../lib/WorldEditor_debug.dll" /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "WorldEditor - Win32 DebugFast"
 
@@ -118,6 +119,7 @@ LINK32=link.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "ReleaseDebug"
 # PROP Intermediate_Dir "ReleaseDebug"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
@@ -130,7 +132,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 freetype.lib libxml2.lib /nologo /subsystem:windows /dll /machine:I386
 
 !ENDIF 
 
@@ -150,6 +152,10 @@ SOURCE=.\builderLogic.cpp
 # Begin Source File
 
 SOURCE=.\builderZone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\builderZoneRegion.cpp
 # End Source File
 # Begin Source File
 
@@ -187,6 +193,10 @@ SOURCE=.\builderLogic.h
 # Begin Source File
 
 SOURCE=.\BuilderZone.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\builderZoneRegion.h
 # End Source File
 # Begin Source File
 
@@ -230,15 +240,49 @@ SOURCE=.\res\Toolbar.bmp
 # End Source File
 # Begin Source File
 
-SOURCE=.\WorldEditor.def
-# End Source File
-# Begin Source File
-
 SOURCE=.\res\WorldEditor.ico
 # End Source File
 # Begin Source File
 
 SOURCE=.\WorldEditor.rc
+# End Source File
+# Begin Source File
+
+SOURCE=.\WorldEditor_debug.def
+
+!IF  "$(CFG)" == "WorldEditor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\WorldEditor_debug_fast.def
+
+!IF  "$(CFG)" == "WorldEditor - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "WorldEditor - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Source File

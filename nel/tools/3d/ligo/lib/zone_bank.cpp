@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.1 2001/10/24 14:38:25 besson Exp $
+ * $Id: zone_bank.cpp,v 1.2 2001/11/05 11:20:57 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,8 +25,12 @@
 
 #include "zone_bank.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/file.h"
+#include "nel/misc/i_xml.h"
+#include "nel/misc/o_xml.h"
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NLLIGO
 {
@@ -34,6 +38,13 @@ namespace NLLIGO
 // ***************************************************************************
 // CZoneBankElement
 // ***************************************************************************
+string CZoneBankElement::_NoCatTypeFound = STRING_NO_CAT_TYPE;
+
+// ---------------------------------------------------------------------------
+CZoneBankElement::CZoneBankElement()
+{
+	_SizeX = _SizeY = 0;
+}
 
 // ---------------------------------------------------------------------------
 void CZoneBankElement::addCategory (const std::string &CatType, const std::string &CatValue)
@@ -55,21 +66,76 @@ void CZoneBankElement::addCategory (const std::string &CatType, const std::strin
 // ---------------------------------------------------------------------------
 const string& CZoneBankElement::getName ()
 {
-	for (uint32 i = 0; i < _Categories.size(); ++i)
-		if (_Categories[i].Type == "Zone")
-			return _Categories[i].Value;
-	nlstop;
-	return "";
+	return getCategory ("Zone");
 }
 
 // ---------------------------------------------------------------------------
 const string& CZoneBankElement::getSize ()
 {
+	return getCategory ("Size");
+}
+
+// ---------------------------------------------------------------------------
+const string& CZoneBankElement::getCategory (const string &CatType)
+{
 	for (uint32 i = 0; i < _Categories.size(); ++i)
-		if (_Categories[i].Type == "Size")
+		if (_Categories[i].Type == CatType)
 			return _Categories[i].Value;
-	nlstop;
-	return "";
+	return _NoCatTypeFound;
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBankElement::convertSize()
+{
+	const string &sizeString =  getSize();
+	string sTmp;
+	uint32 i;
+
+	for (i = 0; i < sizeString.size(); ++i)
+	{
+		if (sizeString[i] == 'x')
+			break;
+		else
+			sTmp += sizeString[i];
+	}
+	_SizeX = atoi (sTmp.c_str());
+
+	++i; sTmp = "";
+	for (; i < sizeString.size(); ++i)
+	{
+		sTmp += sizeString[i];
+	}
+	_SizeY = atoi (sTmp.c_str());
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBankElement::SCategory::serial (IStream &f)
+{
+	f.serial (Type);
+	f.serial (Value);
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBankElement::serial (IStream &f)
+{
+	f.xmlPush ("LIGOZONE");
+	
+	sint version = 1;
+	f.serialVersion (version);
+	string check = "LIGOZONE";
+	f.serialCheck (check);
+
+	f.xmlPush ("CATEGORIES");
+		f.serialCont (_Categories);
+	f.xmlPop ();
+	
+	f.xmlPush ("MASK");
+		f.serialCont (_Mask);
+	f.xmlPop ();
+
+	f.xmlPop ();
+
+	convertSize();
 }
 
 
@@ -77,6 +143,21 @@ const string& CZoneBankElement::getSize ()
 // CZoneBank
 // ***************************************************************************
 
+void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
+{
+	try
+	{
+		COFile fileOut;
+		fileOut.open (fileName);
+		COXml output;
+		output.init (&fileOut);
+		zbeTmp.serial (output);
+	}
+	catch (Exception& e)
+	{
+	}
+
+}
 
 void CZoneBank::debugInit() // \ todo trap remove this
 {
@@ -84,38 +165,208 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp.addCategory ("Zone", "Zone001");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone001.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	
 
 	zbeTmp.addCategory ("Zone", "Zone002");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone002.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone003");
 	zbeTmp.addCategory ("Size", "2x2");
 	zbeTmp.addCategory ("Material", "titFleur");
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (false);
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone003.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone004");
 	zbeTmp.addCategory ("Size", "2x2");
 	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp._Mask.push_back (false);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone004.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone005");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone005.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
 
 	zbeTmp.addCategory ("Zone", "Zone006");
+	zbeTmp.addCategory ("Size", "4x2");
+	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (false);
+	zbeTmp._Mask.push_back (false);
+	zbeTmp._Mask.push_back (false);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (false);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone006.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "Zone007");
 	zbeTmp.addCategory ("Size", "1x1");
 	zbeTmp.addCategory ("Material", "grozFleur");
+	zbeTmp._Mask.push_back (true);
 	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone007.ligozone");
 	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT0");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "0");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT0.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT1");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "1");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT1.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT2");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "2");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT2.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT3");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "3");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT3.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT4");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "4");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT4.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT5");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "5");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT5.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT6");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "6");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT6.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT7");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "7");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT7.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+	zbeTmp.addCategory ("Zone", "ZT8");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "8");
+	zbeTmp._Mask.push_back (true);
+	_Elements.push_back (zbeTmp);
+	debugSaveInit (zbeTmp, "ZoneLigos\\ZT8.ligozone");
+	zbeTmp._Categories.clear ();
+	zbeTmp._Mask.clear ();
+	_Elements.clear ();
+
+}
+
+// ---------------------------------------------------------------------------
+void CZoneBank::addElement (const std::string &elementName)
+{
+	try
+	{
+		CZoneBankElement zbeTmp;
+		CIFile fileIn;
+		fileIn.open (elementName);
+		CIXml input;
+		input.init (fileIn);
+		zbeTmp.serial (input);
+		_Elements.push_back (zbeTmp);
+	}
+	catch (Exception& e)
+	{
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -164,6 +415,20 @@ void CZoneBank::getCategoryValues (const std::string &CategoryType, std::vector<
 			}
 		}
 	}
+}
+
+// ---------------------------------------------------------------------------
+CZoneBankElement *CZoneBank::getElementByZoneName (const std::string &ZoneName)
+{
+	for (uint32 i = 0; i < _Elements.size(); ++i)
+	{
+		CZoneBankElement *pZBE = &_Elements[i];
+		if (pZBE->getName () == ZoneName)
+		{
+			return pZBE;
+		}
+	}
+	return NULL;
 }
 
 // ---------------------------------------------------------------------------

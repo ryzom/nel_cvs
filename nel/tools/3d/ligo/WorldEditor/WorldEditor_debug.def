@@ -1,0 +1,7 @@
+; WorldEditor.def : Declares the module parameters for the DLL.
+
+LIBRARY      "WorldEditor_Debug"
+DESCRIPTION  'WorldEditor Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here

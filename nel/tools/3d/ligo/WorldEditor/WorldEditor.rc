@@ -197,7 +197,8 @@ BEGIN
                     WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_CATVALUE4,94,66,83,66,CBS_DROPDOWNLIST | CBS_SORT | 
                     WS_VSCROLL | WS_TABSTOP
-    CONTROL         "AND",IDC_AND2,"Button",BS_AUTORADIOBUTTON,183,28,31,10
+    CONTROL         "AND",IDC_AND2,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    183,28,31,10
     CONTROL         "OR",IDC_OR2,"Button",BS_AUTORADIOBUTTON,213,28,29,10
     CONTROL         "AND",IDC_AND3,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
                     183,47,31,10
@@ -205,13 +206,26 @@ BEGIN
     CONTROL         "AND",IDC_AND4,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
                     183,66,31,10
     CONTROL         "OR",IDC_OR4,"Button",BS_AUTORADIOBUTTON,213,66,29,10
-    CONTROL         "Tree1",IDC_TREE,"SysTreeView32",WS_BORDER | WS_TABSTOP,
-                    7,91,232,180
     GROUPBOX        "",IDC_STATIC,180,22,59,18,WS_GROUP
     GROUPBOX        "",IDC_STATIC,180,41,59,18,WS_GROUP
     GROUPBOX        "",IDC_STATIC,180,60,59,18,WS_GROUP
     CONTROL         "Random",IDC_RANDOM,"Button",BS_AUTOCHECKBOX | 
                     WS_TABSTOP,196,7,43,10
+    CONTROL         "0°",IDC_ROT0,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,
+                    83,23,10
+    CONTROL         "90°",IDC_ROT90,"Button",BS_AUTORADIOBUTTON,31,83,27,10
+    CONTROL         "180°",IDC_ROT180,"Button",BS_AUTORADIOBUTTON,59,83,31,
+                    10
+    CONTROL         "270°",IDC_ROT270,"Button",BS_AUTORADIOBUTTON,91,83,31,
+                    10
+    CONTROL         "Ran",IDC_ROTRANDOM,"Button",BS_AUTORADIOBUTTON,123,83,
+                    29,10
+    CONTROL         "NoFlip",IDC_FLIPNO,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,7,94,36,10
+    CONTROL         "Flip",IDC_FLIPYES,"Button",BS_AUTORADIOBUTTON,45,94,27,
+                    10
+    CONTROL         "Ran",IDC_FLIPRANDOM,"Button",BS_AUTORADIOBUTTON,74,94,
+                    29,10
 END
 
 

@@ -114,11 +114,19 @@ LINK32=link.exe
 # Name "client - Win32 ReleaseDebug"
 # Begin Source File
 
-SOURCE=.\client.cfg
+SOURCE=.\src\client.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\src\client.cpp
+SOURCE=.\src\client.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\landscape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\landscape.h
 # End Source File
 # End Target
 # End Project

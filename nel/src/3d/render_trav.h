@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.9 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: render_trav.h,v 1.10 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/3d/viewport.h"
 #include "3d/light_contribution.h"
 #include "3d/light.h"
+#include "3d/mesh_block_manager.h"
 #include <vector>
 
 
@@ -253,6 +254,15 @@ public:
 	 *	Value correct after beginVPLightSetup() only
 	 */
 	uint		getNumVPLights() const {return _VPNumLights;}
+
+	// @}
+
+
+	/// \name MeshBlock Manager. FOR OBSERVERS AND MESHS ONLY.
+	// @{
+	/// The manager of meshBlock. Used to add instances.
+	CMeshBlockManager		MeshBlockManager;
+	// @}
 
 private:
 	

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.26 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: mesh.h,v 1.27 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,12 @@ public:
 
 	// @}
 
+
+	/// \name Mesh Block Render Interface
+	// @{
+	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const;
+	// @}
+
 private:
 
 	// The geometry.
@@ -387,6 +393,26 @@ public:
 	 *		- .....
 	 */
 	void			renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatrix, CMaterial &mat);
+
+
+
+	/// \name Mesh Block Render Implementation
+	// @{
+
+	/** true if this meshGeom support meshBlock rendering.
+	 *	return false if skinned/meshMorphed.
+	 */
+	virtual bool	supportMeshBlockRendering () const;
+
+	virtual bool	sortPerMaterial() const;
+	virtual uint	getNumRdrPasses() const ;
+	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) ;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) ;
+	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
+	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
+
+	// @}
+
 
 // ************************
 private:
@@ -583,14 +609,22 @@ private:
 	// @{
 	/// The only one VBufferHard of the mesh. NULL by default. 
 	CRefPtr<IVertexBufferHard>		_VertexBufferHard;
-	/// This tells if the VBuffer has changed since the last time or not.
-	bool							_VertexBufferHardDirty;
 	/// This is the driver used to setup the vbuffer hard. error if a mesh has not the same driver in his life.
 	CRefPtr<IDriver>				_Driver;
+	/// This tells if the VBuffer has changed since the last time or not.
+	bool							_VertexBufferHardDirty;
 
 	/// update the VertexBufferHard if NULL (ie not created or deleted by driver) or if VertexBufferDirty.
 	void							updateVertexBufferHard(IDriver *drv);
 	// @}
+
+
+	/// \name Mesh Block Render Implementation
+	// @{
+	/// setuped at compileRunTime.
+	bool							_SupportMeshBlockRendering;
+	// @}
+
 
 	// The Mesh Morpher
 	CMeshMorpher	*_MeshMorpher; 

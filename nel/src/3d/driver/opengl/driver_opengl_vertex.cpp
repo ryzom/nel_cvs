@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.24 2002/04/12 16:05:10 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.25 2002/06/19 08:43:06 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -297,6 +297,24 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
+	// TODODO: clean driver with multiMatrix (erase this feature, erase skinning in driver)
+	// Check if view matrix has been modified
+	if (_ViewMatrixSetupDirty)
+		// Recompute stuff touched by the view matrix
+		cleanViewMatrix ();
+
+	// TODODO: clean driver with multiMatrix (erase this feature, erase skinning in driver)
+	// The matrix 0 may still be dirty if we are not in vertexMode
+	if( _ModelViewMatrixDirty[0] && (_VertexMode&NL3D_VERTEX_MODE_SKINNING)==0 )
+	{
+		_ModelViewMatrixDirty.clear(0);
+		// By default, the first model matrix is active
+		glLoadMatrixf( _ModelViewMatrix[0].get() );
+		enableGlNormalize( _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
+		_MatrixSetupDirty= false;
+	}
+
+
 	// Check user code :)
 	nlassert(!_MatrixSetupDirty);
 

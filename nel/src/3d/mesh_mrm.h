@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.30 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.31 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,6 +212,25 @@ public:
 	const std::vector<sint32>	&getSkinBoneUsage() const {return _BonesId;}
 
 	// @}
+
+
+	/// \name Mesh Block Render Implementation
+	// @{
+
+	/** true if this meshGeom support meshBlock rendering.
+	 *	return false if skinned/meshMorphed.
+	 */
+	virtual bool	supportMeshBlockRendering () const;
+
+	virtual bool	sortPerMaterial() const;
+	virtual uint	getNumRdrPasses() const ;
+	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) ;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) ;
+	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
+	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
+
+	// @}
+
 
 // ************************
 private:

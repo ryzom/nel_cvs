@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.23 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.24 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -630,6 +630,37 @@ void			CMeshMultiLod::changeMRMDistanceSetup(float distanceFinest, float distanc
 	
 	// ok, setup.
 	mgeom->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
+}
+
+
+// ***************************************************************************
+IMeshGeom		*CMeshMultiLod::supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const
+{
+	IMeshGeom	*ret= NULL;
+
+	// get the instance
+	CMeshMultiLodInstance *instance=safe_cast<CMeshMultiLodInstance*>(trans);
+
+	// Must not be in blend transition.
+	if ( (instance->Flags&CMeshMultiLodInstance::Lod0Blend) == 0)
+	{
+		uint	slot= instance->Lod0;
+		// The slot must not be a CoarseMesh
+		if ( (_MeshVector[slot].Flags&CMeshSlot::CoarseMesh)==0 )
+		{
+			// MeshGeom exist?
+			ret= _MeshVector[slot].MeshGeom;
+		}
+	}
+
+	// Ok if meshGeom is ok.
+	if( ret && ret->supportMeshBlockRendering() )
+	{
+		polygonCount= instance->PolygonCountLod0;
+		return ret;
+	}
+	else
+		return NULL;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.40 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.41 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2025,10 +2025,51 @@ void	CMeshMRMGeom::compileRunTime()
 
 // ***************************************************************************
 // ***************************************************************************
-// CMeshMRM.
+// Mesh Block Render Interface
 // ***************************************************************************
 // ***************************************************************************
 
+
+// ***************************************************************************
+bool	CMeshMRMGeom::supportMeshBlockRendering () const
+{
+	// TODODO
+	return false;
+}
+
+// ***************************************************************************
+bool	CMeshMRMGeom::sortPerMaterial() const
+{
+	return false;
+}
+// ***************************************************************************
+uint	CMeshMRMGeom::getNumRdrPasses() const 
+{
+	return 0;
+}
+// ***************************************************************************
+void	CMeshMRMGeom::beginMesh(CMeshGeomRenderContext &rdrCtx) 
+{
+}
+// ***************************************************************************
+void	CMeshMRMGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) 
+{
+}
+// ***************************************************************************
+void	CMeshMRMGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
+{
+}
+// ***************************************************************************
+void	CMeshMRMGeom::endMesh(CMeshGeomRenderContext &rdrCtx) 
+{
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshMRM.
+// ***************************************************************************
+// ***************************************************************************
 
 
 

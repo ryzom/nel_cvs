@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.10 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: shape.h,v 1.11 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ using NLMISC::CMatrix;
 class	CTransformShape;
 class	IDriver;
 class	CScene;
+class	IMeshGeom;
 
 // ***************************************************************************
 /**
@@ -132,6 +133,22 @@ public:
 	/** tells if the shape wants LocalAttenuation for RealTime lighting.  Default is false
 	 */
 	virtual bool				useLightingLocalAttenuation () const {return false;}
+
+	// @}
+
+
+	/// \name Mesh Block Render Interface
+	// @{
+
+	/** return !NULL if this shape can support MeshBlock rendering for a special instance.
+	 *	NB: Mesh Block render cannot occurs if the Mesh is Skinned/MeshMorphed.
+	 *	NB: Mesh Block render can occurs only in Opaque pass
+	 *	NB: Mesh block render can occurs only for CMeshBase meshes.
+	 *	\param trans the instance to take into account (meshMultiLod may return NULL in blend transition).
+	 *	\param polygonCount the number of polygons to render for the meshGeom returned
+	 *	\return the meshgeom to render per block if OK, else NULL (default)
+	 */
+	virtual IMeshGeom			*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const {return NULL;}
 
 	// @}
 

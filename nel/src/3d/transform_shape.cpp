@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.26 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.27 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,12 @@
 #include "3d/driver.h"
 #include "3d/skeleton_model.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/render_trav.h"
+#include "3d/mesh_base_instance.h"
+#include "nel/misc/debug.h"
+
+
+using namespace NLMISC;
 
 
 namespace NL3D 
@@ -42,6 +48,15 @@ void		CTransformShape::registerBasic()
 	CMOT::registerObs(ClipTravId, TransformShapeId, CTransformShapeClipObs::creator);
 	CMOT::registerObs(RenderTravId, TransformShapeId, CTransformShapeRenderObs::creator);
 	CMOT::registerObs(LoadBalancingTravId, TransformShapeId, CTransformShapeLoadBalancingObs::creator);
+}
+
+
+// ***************************************************************************
+CTransformShape::CTransformShape()
+{
+	_NumTrianglesAfterLoadBalancing= 100;
+	_CurrentLightContribution= NULL;
+	_CurrentUseLocalAttenuation= false;
 }
 
 
@@ -76,6 +91,14 @@ bool		CTransformShape::isBigLightable() const
 		return Shape->useLightingLocalAttenuation ();
 	else
 		return false;
+}
+
+
+// ***************************************************************************
+void		CTransformShape::changeLightSetup(CRenderTrav *rdrTrav)
+{
+	// setup the instance lighting.
+	rdrTrav->changeLightSetup(_CurrentLightContribution, _CurrentUseLocalAttenuation);
 }
 
 
@@ -125,42 +148,71 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 {
 	H_AUTO( NL3D_TrShape_Render );
 
-	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
-	IDriver				*drv= trav->getDriver();
 
+
+	// Compute the current lighting setup for this instance
+	//===================
 
 	// if the transform is lightable (ie not a fully lightmaped model), setup lighting
 	if(m->isLightable())
 	{
 		// useLocalAttenuation for this shape ??
-		bool				useLocalAttenuation;
 		if(m->Shape)
-			useLocalAttenuation= m->Shape->useLightingLocalAttenuation ();
+			m->_CurrentUseLocalAttenuation= m->Shape->useLightingLocalAttenuation ();
 		else
-			useLocalAttenuation= false;
+			m->_CurrentUseLocalAttenuation= false;
 
 		// Get HrcObs.
 		CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
 
 		// the std case is to take my model lightContribution
 		if(hrcObs->_AncestorSkeletonModel==NULL)
-			trav->changeLightSetup(&m->getLightContribution(), useLocalAttenuation);
+			m->_CurrentLightContribution= &m->getLightContribution();
 		// but if skinned/sticked (directly or not) to a skeleton, take its.
 		else
-			trav->changeLightSetup(&hrcObs->_AncestorSkeletonModel->getLightContribution(), useLocalAttenuation);
+			m->_CurrentLightContribution= &hrcObs->_AncestorSkeletonModel->getLightContribution();
 	}
 	// else must disable the lightSetup
 	else
 	{
 		// setting NULL will disable all lights
-		trav->changeLightSetup(NULL, false);
+		m->_CurrentLightContribution= NULL;
+		m->_CurrentUseLocalAttenuation= false;
 	}
 
 
 	// render the shape.
+	//=================
 	if(m->Shape)
-		m->Shape->render( drv, m, trav->isCurrentPassOpaque() );
+	{
+		CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+		bool				currentPassOpaque= rdrTrav->isCurrentPassOpaque();
+
+		// shape must be rendered in a CMeshBlockManager ??
+		float polygonCount;
+		IMeshGeom	*meshGeom= NULL;
+		// true only if in pass opaque
+		if( currentPassOpaque )
+			meshGeom= m->Shape->supportMeshBlockRendering(m, polygonCount);
+
+		// if ok, add the meshgeom to the block manager.
+		if(meshGeom)
+		{
+			CMeshBaseInstance	*inst= safe_cast<CMeshBaseInstance*>(m);
+			rdrTrav->MeshBlockManager.addInstance(meshGeom, inst, polygonCount);
+		}
+		// else render it.
+		else
+		{
+			// setup the lighting
+			m->changeLightSetup( rdrTrav );
+
+			// render the shape.
+			IDriver				*drv= rdrTrav->getDriver();
+			m->Shape->render( drv, m, currentPassOpaque );
+		}
+	}
 }
 
 

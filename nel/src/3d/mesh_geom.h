@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.7 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.8 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,8 +45,22 @@ namespace NL3D
 class IDriver;
 class CTransformShape;
 class CMeshBaseInstance;
+class CMeshBlockManager;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
+
+
+// ***************************************************************************
+/**
+ * A render Context used to render MeshGeom. Contains any usefull information
+ */
+class CMeshGeomRenderContext
+{
+public:
+	IDriver			*Driver;
+	CScene			*Scene;
+	CRenderTrav		*RenderTrav;
+};
 
 
 // ***************************************************************************
@@ -61,7 +75,7 @@ class IMeshGeom : public NLMISC::IStreamable
 public:
 
 	/// Constructor
-	IMeshGeom() {}
+	IMeshGeom();
 	/// dtor
 	virtual ~IMeshGeom() {}
 
@@ -101,6 +115,66 @@ public:
 	virtual const NLMISC::CAABBoxExt& getBoundingBox() const =0;
 
 	// @}
+
+
+	/// \name Mesh Block Render Interface
+	/**
+	 *	NB: Mesh Block render cannot occurs if the Mesh is Skinned/MeshMorphed.
+	 *	NB: Mesh Block render can occurs only in Opaque pass => globalAlpha is not used.
+	 */
+	// @{
+
+	/** true if this meshGeom support meshBlock rendering.
+	 *	eg: return false if skinned/meshMorphed.
+	 */
+	virtual bool	supportMeshBlockRendering () const =0;
+
+	/** true if the sort criterion must be by material. Else, sort per instance.
+	 *
+	 */
+	virtual bool	sortPerMaterial() const =0;
+
+	/** return the number of renderPasses for this mesh.
+	 *
+	 */
+	virtual uint	getNumRdrPasses() const =0;
+
+	/** The framework call this method when he will render instances of this meshGeom soon.
+	 *
+	 */
+	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) =0;
+
+	/** The framework call this method any time a change of instance occurs.
+	 *
+	 */
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) =0;
+
+	/** The framework call this method to render the current renderPass, with the current instance
+	 *	NB: if the material is blended, DON'T render it!!
+	 */
+	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) =0;
+
+	/** The framework call this method when it has done with this meshGeom
+	 *
+	 */
+	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) =0;
+
+	// @}
+
+
+// *****************
+protected:
+
+	/// \name Mesh Block Render methods.
+	// @{
+	friend class CMeshBlockManager;
+
+	/// This is the head of the list of instances to render in the CMeshBlockManager. -1 if NULL
+	sint32			_RootInstanceId;
+
+	// @}
+
+
 };
 
 

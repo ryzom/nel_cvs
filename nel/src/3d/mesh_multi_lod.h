@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.16 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh_multi_lod.h,v 1.17 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,6 +171,12 @@ public:
 	 *	\param distanceCoarsest The MRM has faces/Divisor (ie near 0) when dist>=distanceCoarsest.
 	 */
 	void			changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
+
+
+	/// \name Mesh Block Render Interface
+	// @{
+	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const;
+	// @}
 
 private:
 

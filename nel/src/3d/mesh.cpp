@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.59 2002/06/17 13:08:16 berenguier Exp $
+ * $Id: mesh.cpp,v 1.60 2002/06/19 08:42:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -377,9 +377,6 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// SmartPtr Copy VertexProgram effect.
 	this->_MeshVertexProgram= m.MeshVertexProgram;
 
-	// Some runtime not serialized compilation
-	compileRunTime();
-
 	/// 7. Compact bones id and build bones name array.
 	//=================================================	
 
@@ -439,6 +436,8 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 
 	// End!!
+	// Some runtime not serialized compilation
+	compileRunTime();
 }
 
 // ***************************************************************************
@@ -861,6 +860,17 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver < 4)
 		buildBoneUsageVer3();
 
+	// TempYoyo
+	//_MeshVertexProgram= NULL;
+	/*{
+		uint numTris= 0;
+		for(uint i=0;i<_MatrixBlocks.size();i++)
+		{
+			for(uint j=0;j<_MatrixBlocks[i].RdrPass.size();j++)
+				numTris+= _MatrixBlocks[i].RdrPass[j].PBlock.getNumTri();
+		}
+		nlinfo("YOYO: %d Vertices. %d Triangles.", _VBuffer.getNumVertices(), numTris);
+	}*/
 
 	// Some runtime not serialized compilation
 	if(f.isReading())
@@ -872,6 +882,18 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshGeom::compileRunTime()
 {
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
+
+	// Support MeshBlockRendering only if not skinned/meshMorphed.
+	_SupportMeshBlockRendering= !_Skinned && _MeshMorpher->BlendShapes.size()==0;
+
+	// true only if one matrix block, and at least one rdrPass.
+	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MatrixBlocks.size()==1 && _MatrixBlocks[0].RdrPass.size()>0;
+
+	// TODODO: support later MeshVertexProgram 
+	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MeshVertexProgram==NULL;
+
+	// TempYoyo
+	//_SupportMeshBlockRendering= false;
 }
 
 
@@ -1388,6 +1410,81 @@ void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 }
 
 
+// ***************************************************************************
+// ***************************************************************************
+// Mesh Block Render Interface
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+bool	CMeshGeom::supportMeshBlockRendering () const
+{
+	return _SupportMeshBlockRendering;
+}
+
+// ***************************************************************************
+bool	CMeshGeom::sortPerMaterial() const
+{
+	return true;
+}
+// ***************************************************************************
+uint	CMeshGeom::getNumRdrPasses() const 
+{
+	return _MatrixBlocks[0].RdrPass.size();
+}
+// ***************************************************************************
+void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx) 
+{
+	// update the VBufferHard (create/delete), to maybe render in AGP memory.
+	updateVertexBufferHard ( rdrCtx.Driver );
+
+
+	// if VB Hard is here, use it.
+	if(_VertexBufferHard != NULL)
+	{
+		// active VB Hard.
+		rdrCtx.Driver->activeVertexBufferHard(_VertexBufferHard);
+	}
+	else
+	{
+		// active VB. SoftwareSkinning: reset flags for skinning.
+		rdrCtx.Driver->activeVertexBuffer(_VBuffer);
+	}
+}
+// ***************************************************************************
+void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) 
+{
+	// setup instance matrix
+	rdrCtx.Driver->setupModelMatrix(inst->getWorldMatrix());
+
+	// setupLighting.
+	inst->changeLightSetup(rdrCtx.RenderTrav);
+
+	// TODODO: MeshVertexProgram.
+}
+// ***************************************************************************
+void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
+{
+	CMatrixBlock	&mBlock= _MatrixBlocks[0];
+
+	CRdrPass		&rdrPass= mBlock.RdrPass[rdrPassId];
+	// Render with the Materials of the MeshInstance, only if not blended.
+	if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) ) )
+	{
+		// TODODO: MeshVertexProgram.
+		// render primitives
+		rdrCtx.Driver->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+	}
+}
+// ***************************************************************************
+void	CMeshGeom::endMesh(CMeshGeomRenderContext &rdrCtx) 
+{
+	// nop.
+	// TODODO: MeshVertexProgram.
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1658,6 +1755,19 @@ void	CMesh::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 {
 	nlassert (_MeshGeom);
 	_MeshGeom->updateSkeletonUsage(sm, increment);
+}
+
+// ***************************************************************************
+IMeshGeom	*CMesh::supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const
+{
+	// Ok if meshGeom is ok.
+	if(_MeshGeom->supportMeshBlockRendering())
+	{
+		polygonCount= 0;
+		return _MeshGeom;
+	}
+	else
+		return NULL;
 }
 
 

@@ -2440,6 +2440,14 @@ SOURCE=.\3d\init_3d.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_block_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_block_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mini_col.cpp
 # End Source File
 # Begin Source File

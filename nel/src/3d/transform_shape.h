@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.12 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: transform_shape.h,v 1.13 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include "nel/misc/matrix.h"
 #include "3d/transform.h"
 #include "3d/shape.h"
-#include "3d/render_trav.h"
 #include "3d/load_balancing_trav.h"
 #include <vector>
 
@@ -46,6 +45,7 @@ using NLMISC::CPlane;
 class	CTransformShapeClipObs;
 class	CTransformShapeRenderObs;
 class	CTransformShapeLoadBalancingObs;
+class	CRenderTrav;
 
 
 // ***************************************************************************
@@ -77,7 +77,7 @@ public:
 
 	/** Get the untransformed AABBox of the mesh. NULL (gtSize()==0) if no mesh.	 
 	 */
-	virtual void					getAABBox(NLMISC::CAABBox &bbox) const;
+	virtual void		getAABBox(NLMISC::CAABBox &bbox) const;
 
 
 	/// \name Load balancing methods
@@ -90,13 +90,13 @@ public:
 	  * number can be a float. The function MUST be decreasing or constant with the distance but don't 
 	  * have to be continus.
 	  */
-	virtual float			getNumTriangles (float distance);
+	virtual float		getNumTriangles (float distance);
 
 	/** get an approximation of the number of triangles this instance should render.
 	 * This method is valid only for IShape classes (in render()), after LoadBalancing traversal is performed.
 	 * NB: It is not guaranted that this instance will render those number of triangles.
 	 */
-	float					getNumTrianglesAfterLoadBalancing() {return _NumTrianglesAfterLoadBalancing;}
+	float				getNumTrianglesAfterLoadBalancing() {return _NumTrianglesAfterLoadBalancing;}
 
 	// @}
 
@@ -105,9 +105,16 @@ public:
 	virtual bool		isBigLightable() const;
 
 
+	/// \name Mesh Block Render Tools
+	// @{
+	/// setup lighting for this instance into driver. The render observer must have been called before.
+	void				changeLightSetup(CRenderTrav *rdrTrav);
+	// @}
+
+
 protected:
 	/// Constructor
-	CTransformShape() {_NumTrianglesAfterLoadBalancing= 100;}
+	CTransformShape();
 	/// Destructor
 	virtual ~CTransformShape() {}
 
@@ -122,6 +129,14 @@ private:
 
 	// return the contribution of lights (for redner Observer).
 	CLightContribution	&getLightContribution() {return _LightContribution;}
+
+private:
+	/* The Activated lightContribution, and localAttenuation setup for this instance.
+		This may be our lightContribution, or our ancestore skeleton contribution.
+	*/
+	CLightContribution		*_CurrentLightContribution;
+	// true If this instance use localAttenuation.
+	bool					_CurrentUseLocalAttenuation;
 
 };
 

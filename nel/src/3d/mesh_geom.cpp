@@ -1,7 +1,7 @@
 /** \file mesh_geom.cpp
  * <File description>
  *
- * $Id: mesh_geom.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_geom.cpp,v 1.4 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,5 +30,13 @@
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+IMeshGeom::IMeshGeom()
+{
+	_RootInstanceId= -1;
+}
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.25 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.26 2002/06/19 08:42:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,10 @@ void		CRenderTrav::traverse()
 	// reset the light setup, and set global ambient.
 	resetLightSetup();
 
+
+	// Fill OT with observers, for both Opaque and transparent pass
+	// =============================
+
 	// Sort the observers by distance from camera
 	// This is done here and not in the addRenderObs because of the LoadBalancing traversal which can modify
 	// the transparency flag (multi lod for instance)
@@ -148,14 +152,17 @@ void		CRenderTrav::traverse()
 	}
 
 
-
-	// Don't Clear screen, leave it to caller.
+	// Standard traverse (maybe not used)
+	// =============================
 
 	// First traverse the root.
 	if(Root)
 		Root->traverse(NULL);
 
-	// Then traverse the render list.
+
+
+	// Render Opaque stuff.
+	// =============================
 
 	// Start LodCharacter Manager render.
 	Scene->getLodCharacterManager()->beginRender(getDriver(), CamPos);
@@ -174,6 +181,7 @@ void		CRenderTrav::traverse()
 	// End LodCharacter Manager render.
 	Scene->getLodCharacterManager()->endRender();
 
+
 	/* Render Scene CoarseMeshManager. 
 		Important to render them at end of Opaque rendering, because coarses instances are created/removed during
 		this model opaque rendering pass.
@@ -183,6 +191,16 @@ void		CRenderTrav::traverse()
 	// Render static one.
 	Scene->getStaticCoarseMeshManager()->render(Driver);
 
+
+	/* Render MeshBlock Manager. 
+		Some Meshs may be render per block. Interesting to remove VertexBuffer and Material setup overhead.
+	*/
+	MeshBlockManager.flush(Driver, Scene, this);
+
+
+
+	// Render Transparent stuff.
+	// =============================
 
 	 // Render transparent materials
 	_CurrentPassOpaque = false;
@@ -196,6 +214,8 @@ void		CRenderTrav::traverse()
 
 
 	// END!
+	// =============================
+
 	// clean: reset the light setup
 	resetLightSetup();
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.42 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.43 2004/05/07 19:29:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1066,7 +1066,7 @@ void CVertexBuffer::fillBuffer ()
 	if (DrvInfos && _KeepLocalMemory)
 	{
 		// Copy the local memory in local memory
-		const size = _NbVerts*_VertexSize;
+		const uint size = _NbVerts*_VertexSize;
 		nlassert (size<=_NonResidentVertices.size());
 		uint8 *dest = DrvInfos->lock (0, size, false);
 		memcpy (dest, &(_NonResidentVertices[0]), size);

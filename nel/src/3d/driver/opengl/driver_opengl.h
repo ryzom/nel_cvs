@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.170 2004/04/27 12:12:00 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.171 2004/05/07 19:29:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -565,6 +565,7 @@ private:
 
 	bool						_FullScreen;
 	bool						_OffScreen;
+	uint						_Interval;
 
 #ifdef NL_OS_WINDOWS
 
@@ -579,7 +580,6 @@ private:
 	DEVMODE						_OldScreenMode;
 	NLMISC::CEventEmitterMulti	_EventEmitter; // this can contains a win emitter and eventually a direct input emitter	
 	bool						_DestroyWindow;
-	uint						_Interval;
 
 	// Off-screen rendering in Dib section
 	HPBUFFERARB					_PBuffer;

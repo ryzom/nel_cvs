@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.23 2001/07/18 16:12:10 lecroart Exp $
+ * $Id: entities.cpp,v 1.24 2001/07/18 17:14:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -745,18 +745,15 @@ void	resetEntityPosition(uint32 eid)
 }
 
 
-void	shotSnowball(uint32 eid, const CVector &target)
+void	shotSnowball(uint32 eid, const CVector &start, const CVector &target)
 {
 	uint32 sbid = NextEID++;
 	EIT eit = findEntity (eid);
 
 	CEntity	&launcher = (*eit).second;
-	// get the start point of the snowball
-	CVector	start = launcher.Position;
-	start.z += 1.3f;
-	// and its direction
+
+	// get direction
 	CVector direction = (target-start).normed();
-	start += direction*1.0f;
 
 	// create a new snowball entity
 	addEntity(sbid, CEntity::Snowball, start, target);

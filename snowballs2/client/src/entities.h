@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.16 2001/07/18 15:24:26 legros Exp $
+ * $Id: entities.h,v 1.17 2001/07/18 17:14:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ void	updateEntities ();
 // Reset the pacs position of an entity (in case pacs went wrong)
 void	resetEntityPosition(uint32 eid);
 // Process the event when an entity shoots a snowball
-void	shotSnowball(uint32 eid, const NLMISC::CVector &target);
+void	shotSnowball(uint32 eid, const NLMISC::CVector &startPos, const NLMISC::CVector &target);
 
 void	renderEntitiesNames ();
 

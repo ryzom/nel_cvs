@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: mouse_listener.cpp,v 1.4 2001/07/18 11:45:46 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.5 2001/07/18 17:14:21 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,8 +198,9 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	{
 		// throw snowball
 		_AimingState = false;
-		CVector	Direction = getViewDirection();
-		shotSnowball(Self->Id, Self->Position+Direction*100.0f);
+		CVector start = getPosition()+CVector(0.0f, 0.0f, 1.3f);
+		CVector direction = getViewDirection().normed();
+		shotSnowball(Self->Id, start, start+direction*100.0f);
 	}
 	else if (event==EventMouseWheelId)
 	{

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.6 2000/12/01 10:08:20 corvazier Exp $
+ * $Id: scene.h,v 1.7 2000/12/05 17:26:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,10 @@ public:
 	{
 		return _Viewport;
 	}
+
+	/// Release all relative to the scene...
+	void	release();
+
 
 private:
 	typedef		std::map<sint, ITravScene*>	TravMap;

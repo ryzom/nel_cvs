@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.7 2000/12/04 14:29:05 berenguier Exp $
+ * $Id: nelu.cpp,v 1.8 2000/12/05 17:30:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,8 @@ void			CNELU::releaseScene()
 
 	// "Release" the Scene.
 	CNELU::Scene.setDriver(NULL);
+
+	CNELU::Scene.release();
 }
 
 

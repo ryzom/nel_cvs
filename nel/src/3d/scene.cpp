@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.8 2000/12/01 10:10:43 corvazier Exp $
+ * $Id: scene.cpp,v 1.9 2000/12/05 17:26:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ CScene::CScene()
 	// TODO: init NULL ligthgroup root.
 }
 // ***************************************************************************
-CScene::~CScene()
+void	CScene::release()
 {
 	RenderTraversals.clear();
 
@@ -80,6 +80,17 @@ CScene::~CScene()
 
 	delete Root;
 	// TODO: delete the ligthgroup root.
+
+	HrcTrav= NULL;
+	ClipTrav= NULL;
+	LightTrav= NULL;
+	RenderTrav= NULL;
+	Root= NULL;
+}
+// ***************************************************************************
+CScene::~CScene()
+{
+	release();
 }
 // ***************************************************************************
 void	CScene::initDefaultTravs()

@@ -1,6 +1,6 @@
 /** \file export_flare.cpp
  *
- * $Id: export_flare.cpp,v 1.4 2004/06/29 13:43:07 vizerie Exp $
+ * $Id: export_flare.cpp,v 1.5 2004/07/05 08:01:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -118,7 +118,7 @@ IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 	std::string occlusionTestMesh;
 	if (CExportNel::getValueByNameUsingParamBlock2(node, "occlusionTestMesh", (ParamType2) TYPE_STRING, &occlusionTestMesh, 0))
 	{	
-		fshape->setOcclusionTestMeshName(occlusionTestMesh);
+		fshape->setOcclusionTestMeshName(NLMISC::CFile::getFilename(occlusionTestMesh));
 	}
 	//
 	bool occlusionTestMeshInheritScaleRot;

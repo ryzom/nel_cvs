@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.19 2001/11/27 15:01:52 legros Exp $
+ * $Id: unified_network.cpp,v 1.20 2001/11/27 17:33:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,11 +294,14 @@ void	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 
 	// setup the server callback
 	_ServerPort = port;
-	_CbServer.init(port);
-	_CbServer.addCallbackArray(ServerCbArray, 1);				// the service ident callback
-	_CbServer.setDefaultCallback(cbMsgProcessing);				// the default callback wrapper
-	_CbServer.setConnectionCallback(cbConnection, NULL);
-	_CbServer.setDisconnectionCallback(cbDisconnection, NULL);
+
+	nlassert (_CbServer == NULL);
+	_CbServer = new CCallbackServer;
+	_CbServer->init(port);
+	_CbServer->addCallbackArray(ServerCbArray, 1);				// the service ident callback
+	_CbServer->setDefaultCallback(cbMsgProcessing);				// the default callback wrapper
+	_CbServer->setConnectionCallback(cbConnection, NULL);
+	_CbServer->setDisconnectionCallback(cbDisconnection, NULL);
 
 	if (CNamingClient::connected())
 	{
@@ -353,13 +356,25 @@ void	CUnifiedNetwork::release()
 
 	uint	i;
 
+	// disconnect the connection with the naming service
+	CNamingClient::disconnect ();
+
+
 	// disconnect all clients
-	_CbServer.disconnect(NULL);
+	_CbServer->disconnect(NULL);
+	delete _CbServer;
+	_CbServer = NULL;
 
 	// disconnect all connections to servers
 	for (i=0; i<idAccess.value().size(); ++i)
+	{
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
+		{
 			idAccess.value()[i].Connection.CbClient->disconnect();
+			delete idAccess.value()[i].Connection.CbClient;
+			idAccess.value()[i].Connection.CbClient = NULL;
+		}
+	}
 
 	// clear all other data
 	idAccess.value().clear();
@@ -479,7 +494,7 @@ void	CUnifiedNetwork::update(sint32 timeout)
 		{
 
 			// update all connections
-			_CbServer.update(0);
+			_CbServer->update(0);
 
 			uint	i;
 			for (i=0; i<connections.size(); ++i)
@@ -706,7 +721,7 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 
 
 				if (connection.IsServerConnection)
-					_CbServer.send(msgout, connection.Connection.HostId);
+					_CbServer->send(msgout, connection.Connection.HostId);
 				else
 					connection.Connection.CbClient->send(msgout);
 
@@ -721,7 +736,7 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout)
 			if (_ConnectionStack[i].SName == serviceName && !_TempDisconnectionTable[sid])
 			{
 				found = true;
-				_CbServer.send(msgout, _ConnectionStack[i].SHost);
+				_CbServer->send(msgout, _ConnectionStack[i].SHost);
 			}
 		}
 
@@ -750,7 +765,7 @@ void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
 			{
 				if (_ConnectionStack[i].SId == sid)
 				{
-					_CbServer.send(msgout, _ConnectionStack[i].SHost);
+					_CbServer->send(msgout, _ConnectionStack[i].SHost);
 					goto SendCSLeave;
 				}
 			}
@@ -761,7 +776,7 @@ void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout)
 			const CUnifiedConnection	&connection = idAccess.value()[sid];
 
 			if (connection.IsServerConnection)
-				_CbServer.send(msgout, connection.Connection.HostId);
+				_CbServer->send(msgout, connection.Connection.HostId);
 			else
 				connection.Connection.CbClient->send(msgout);
 		}
@@ -781,12 +796,12 @@ void	CUnifiedNetwork::send(const CMessage &msgout)
 		for (i=0; i<connections.size(); ++i)
 			if (connections[i].EntryUsed && connections[i].IsConnected)
 				if (connections[i].IsServerConnection)
-					_CbServer.send(msgout, connections[i].Connection.HostId);
+					_CbServer->send(msgout, connections[i].Connection.HostId);
 				else
 					connections[i].Connection.CbClient->send(msgout);
 
 		for (i=0; i<_ConnectionStack.size(); ++i)
-			_CbServer.send(msgout, _ConnectionStack[i].SHost);
+			_CbServer->send(msgout, _ConnectionStack[i].SHost);
 	}
 	leaveReentrant();
 }
@@ -860,7 +875,7 @@ uint64 CUnifiedNetwork::getBytesSent ()
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
 			sent += idAccess.value()[i].Connection.CbClient->getBytesSent();
 
-	sent += _CbServer.getBytesSent();
+	sent += _CbServer->getBytesSent();
 	return sent;
 }
 
@@ -873,7 +888,7 @@ uint64 CUnifiedNetwork::getBytesReceived ()
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
 			received += idAccess.value()[i].Connection.CbClient->getBytesReceived();
 
-	received += _CbServer.getBytesReceived();
+	received += _CbServer->getBytesReceived();
 	return received;
 }
 
@@ -886,7 +901,7 @@ uint64 CUnifiedNetwork::getSendQueueSize ()
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
 			sent += idAccess.value()[i].Connection.CbClient->getSendQueueSize();
 
-	sent += _CbServer.getSendQueueSize();
+	sent += _CbServer->getSendQueueSize();
 	return sent;
 }
 
@@ -899,7 +914,7 @@ uint64 CUnifiedNetwork::getReceiveQueueSize ()
 		if (idAccess.value()[i].EntryUsed && !idAccess.value()[i].IsServerConnection)
 			received += idAccess.value()[i].Connection.CbClient->getReceiveQueueSize();
 
-	received += _CbServer.getReceiveQueueSize();
+	received += _CbServer->getReceiveQueueSize();
 	return received;
 }
 
@@ -926,7 +941,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &
 	if (cnx.IsServerConnection)
 	{
 		host = cnx.Connection.HostId;
-		return &_CbServer;
+		return _CbServer;
 	}
 	else
 	{
@@ -948,7 +963,7 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 	if (cnx.IsServerConnection)
 	{
 		host = cnx.Connection.HostId;
-		return &_CbServer;
+		return _CbServer;
 	}
 	else
 	{

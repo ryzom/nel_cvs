@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.10 2001/11/27 15:01:34 legros Exp $
+ * $Id: unified_network.h,v 1.11 2001/11/27 17:33:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,7 +254,7 @@ private:
 	NLMISC::CRWSynchronized<TNameMappedConnection>				_NamedCnx;
 
 	/// The callback server
-	CCallbackServer												_CbServer;
+	CCallbackServer												*_CbServer;
 
 	/// The server port
 	uint16														_ServerPort;
@@ -309,6 +309,7 @@ private:
 		_DownUniCallback.second = NULL;
 		_MThreadId = 0xFFFFFFFF;
 		_MutexCount = 0;
+		_CbServer = NULL;
 	}
 	~CUnifiedNetwork() { }
 

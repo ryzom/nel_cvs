@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.38 2001/11/13 12:00:44 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.39 2001/11/27 17:34:09 lecroart Exp $
  *
  */
 
@@ -205,11 +205,16 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 void CNamingClient::disconnect ()
 {
 	checkThreadId ();
-	nlassert (_Connection != NULL && _Connection->connected ());
 	
-	_Connection->disconnect ();
-	delete _Connection;
-	_Connection = NULL;
+	if (_Connection != NULL)
+	{
+		if (_Connection->connected ())
+		{
+			_Connection->disconnect ();
+		}
+		delete _Connection;
+		_Connection = NULL;
+	}
 
 	_RegisteredServices.clear ();
 

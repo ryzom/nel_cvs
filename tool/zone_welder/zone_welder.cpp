@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.1 2000/12/14 16:34:30 coutelas Exp $
+ * $Id: zone_welder.cpp,v 1.2 2000/12/14 16:49:19 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,8 +235,9 @@ void getAdjacentZonesName(const std::string& zoneName,
 						  std::vector<std::string>& names)
 {
 	uint16 x,y;
-	uint16 xtmp,ytmp;
+	int xtmp,ytmp;
 	std::string nametmp;
+	std::string empty("empty");
 
 	names.reserve(8);
 	
@@ -245,25 +246,37 @@ void getAdjacentZonesName(const std::string& zoneName,
 	// top left
 	xtmp = x-1;
 	ytmp = y-1;
-	getZoneNameByCoord(xtmp, ytmp, nametmp);
+	if(xtmp<0||ytmp<0)
+		nametmp = empty;
+	else
+		getZoneNameByCoord(xtmp, ytmp, nametmp);
 	names.push_back(nametmp);
 
 	// top
 	xtmp = x;
 	ytmp = y-1;
-	getZoneNameByCoord(xtmp, ytmp, nametmp);
+	if(ytmp<0)
+		nametmp = empty;
+	else
+		getZoneNameByCoord(xtmp, ytmp, nametmp);
 	names.push_back(nametmp);
 
 	// top right
 	xtmp = x+1;
 	ytmp = y-1;
-	getZoneNameByCoord(xtmp, ytmp, nametmp);
+	if(ytmp<0)
+		nametmp = empty;
+	else
+		getZoneNameByCoord(xtmp, ytmp, nametmp);
 	names.push_back(nametmp);
 
 	// left
 	xtmp = x-1;
 	ytmp = y;
-	getZoneNameByCoord(xtmp, ytmp, nametmp);
+	if(xtmp<0)
+		nametmp = empty;
+	else
+		getZoneNameByCoord(xtmp, ytmp, nametmp);
 	names.push_back(nametmp);
 
 	// right
@@ -275,7 +288,10 @@ void getAdjacentZonesName(const std::string& zoneName,
 	// bottom left
 	xtmp = x-1;
 	ytmp = y+1;
-	getZoneNameByCoord(xtmp, ytmp, nametmp);
+	if(xtmp<0)
+		nametmp = empty;
+	else
+		getZoneNameByCoord(xtmp, ytmp, nametmp);
 	names.push_back(nametmp);
 
 	// bottom
@@ -363,6 +379,8 @@ void weldZones(char * centerZoneFileName)
 	getAdjacentZonesName(centerZoneFileName, adjZonesName);
 	for(i=0; i<8; i++)
 	{
+		if(adjZonesName[i]=="empty") continue;
+		
 		CIFile f;
 		try
 		{
@@ -395,6 +413,8 @@ void weldZones(char * centerZoneFileName)
 
 	for(i=0; i<8; i++)
 	{
+		if(adjZonesName[i]=="empty") continue;
+
 		// setting quad tree
 		uint qTreeDepth = 5;
 		CAABBoxExt bb = adjZones[i].getZoneBB();

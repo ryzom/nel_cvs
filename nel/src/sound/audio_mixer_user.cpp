@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.78 2004/10/08 13:34:30 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.79 2004/10/14 10:39:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -523,7 +523,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 				uint size;
 				bgFlags->getArraySize(size);
 				uint i;
-				for (i=0; i<min(size, uint(TBackgroundFlags::NB_BACKGROUND_FLAGS)); ++i)
+				for (i=0; i<min(size, (uint)(TBackgroundFlags::NB_BACKGROUND_FLAGS)); ++i)
 				{
 					NLGEORGES::UFormElm *flag;
 					bgFlags->getArrayNode(&flag, i);

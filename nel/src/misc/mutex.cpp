@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.5 2001/03/09 14:57:00 cado Exp $
+ * $Id: mutex.cpp,v 1.6 2001/04/06 16:05:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,12 @@
 #elif defined NL_OS_UNIX
 
 #include <pthread.h>
-
-#endif // NL_OS_WINDOWS
+#include <errno.h>
+//TEST
+#include <unistd.h>
+#include <iostream>
+using namespace std;
+#endif // NL_OS_WINDOWS/NL_OS_UNIX
 
 
 namespace NLMISC {
@@ -62,7 +66,7 @@ extern "C"
 /*
  * Constructor
  */
-CMutex::CMutex()
+  CMutex::CMutex()
 {
 #ifdef NL_OS_WINDOWS
 
@@ -74,7 +78,7 @@ CMutex::CMutex()
 
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
-	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_RECURSIVE_NP );
+	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_FAST_NP ); //PTHREAD_MUTEX_ERRORCHECK_NP );//PTHREAD_MUTEX_ADAPTIVE_NP );//PTHREAD_MUTEX_RECURSIVE_NP );
 	pthread_mutex_init( &mutex, &attr );
 	pthread_mutexattr_destroy( &attr );
 
@@ -125,10 +129,16 @@ void CMutex::enter ()
 
 #elif defined NL_OS_UNIX
 
+	//cout << getpid() << ": Locking " << &mutex << endl;
 	if ( pthread_mutex_lock( &mutex ) != 0 )
 	{
+	  cout << "Error locking a mutex " << endl;
 		nlerror( "Error locking a mutex" );
 	}
+	/*else
+	{
+	  cout << getpid() << ": Owning " << &mutex << endl;
+	}*/
 
 #endif // NL_OS_WINDOWS
 }
@@ -145,10 +155,25 @@ void CMutex::leave ()
 
 #elif defined NL_OS_UNIX
 
-	if ( pthread_mutex_unlock( &mutex ) != 0 )
+	//int errcode;
+	//cout << getpid() << ": Unlocking " << &mutex << endl;
+	if ( (/*errcode=*/pthread_mutex_unlock( &mutex )) != 0 )
 	{
+	 /* switch ( errcode )
+	    {
+	    case EINVAL: cout << "INVAL" << endl; break;
+	    case EPERM: cout << "PERM" << endl; break;
+	    default: cout << "OTHER" << endl;
+	    }
+	  */
+	  cout << "Error unlocking a mutex " /*<< &mutex*/ << endl;
 		nlerror( "Error unlocking a mutex" );
 	}
+	/*else
+	{
+	  cout << getpid() << ": Released " << &mutex << endl;
+	}*/
+
 
 #endif // NL_OS_WINDOWS
 }

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.8 2001/11/14 09:45:05 legros Exp $
+ * $Id: unified_network.cpp,v 1.9 2001/11/14 10:02:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,8 @@ void	cbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		else
 		{
 			// call the callback
-			(*itcb).second (msgin, msgin.getName().c_str(), sid);
+			CRWSynchronized< std::vector<CUnifiedNetwork::CUnifiedConnection> >::CWriteAccessor	idAccess(&(inst->_IdCnx));
+			(*itcb).second (msgin, idAccess.value()[sid].ServiceName.c_str(), sid);
 		}
 	}
 	else

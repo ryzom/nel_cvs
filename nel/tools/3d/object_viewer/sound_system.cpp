@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.5 2001/09/04 14:02:35 vizerie Exp $
+ * $Id: sound_system.cpp,v 1.6 2001/09/04 14:04:35 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,9 +104,12 @@ void CSoundSystem::play(const std::string &soundName)
 	if (_AudioMixer)
 	{
 		NLSOUND::USource *src =  _AudioMixer->createSource(soundName.c_str(), true);
-		src->setLooping(false);
-		src->setPos(SoundListenerPos);
-		src->play();
+		if (src)
+		{
+			src->setLooping(false);
+			src->setPos(SoundListenerPos);
+			src->play();
+		}
 	}
 }
 

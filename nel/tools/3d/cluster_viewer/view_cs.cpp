@@ -1,7 +1,7 @@
 /** \file view_cs.cpp
  * viewer of cluster system
  *
- * $Id: view_cs.cpp,v 1.5 2004/05/19 08:41:49 berenguier Exp $
+ * $Id: view_cs.cpp,v 1.6 2004/10/26 13:49:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,6 +256,7 @@ int CALLBACK WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 
 	LoadSceneScript ("view_cs.txt", CNELU::Scene, DispCS, CameraStart);
 
+	CNELU::Scene->enableLightingSystem(true);
 	CMatrix m = MouseListener.getViewMatrix();
 	m.setPos (CameraStart);
 	MouseListener.setMatrix (m);

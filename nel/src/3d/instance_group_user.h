@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.16 2002/05/23 09:29:20 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.17 2002/05/24 12:37:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,7 @@ private:
 	uint getNumInstance () const;
 	const std::string& getShapeName (uint instanceNb) const;
 	const std::string& getInstanceName (uint instanceNb) const;
+	virtual void				getInstanceMatrix(uint instanceNb, NLMISC::CMatrix &dest) const;
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;

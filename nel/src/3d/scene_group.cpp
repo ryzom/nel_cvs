@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.33 2002/05/23 09:30:18 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.34 2002/05/24 12:37:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/scene_group.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/matrix.h"
 #include "3d/scene.h"
 #include "3d/transform_shape.h"
 #include "3d/mesh_instance.h"
@@ -175,6 +176,18 @@ const CVector& CInstanceGroup::getInstanceScale (uint instanceNb) const
 	// Return the scale vector of the n-th instance
 	return _InstancesInfos[instanceNb].Scale;
 }
+
+// ***************************************************************************
+
+void CInstanceGroup::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest) const
+{
+	dest.identity();	
+	dest.translate(getInstancePos(instanceNb));
+	dest.rotate(getInstanceRot(instanceNb));
+	dest.scale(getInstanceScale(instanceNb));	
+}
+
+	
 
 // ***************************************************************************
 

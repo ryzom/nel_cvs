@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.15 2002/05/23 09:30:18 vizerie Exp $
+ * $Id: scene_group.h,v 1.16 2002/05/24 12:37:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NLMISC
 class CRGBA;
 class IStream;
 struct EStream;
+class CMatrix;
 }
 
 namespace NL3D {
@@ -146,6 +147,9 @@ public:
 
 	// Get an instance scale
 	const NLMISC::CVector&	getInstanceScale (uint instanceNb) const;
+
+	// Get instance matrix (no pivot added)
+	void					getInstanceMatrix(uint instanceNb, NLMISC::CMatrix &dest) const;
 
 	// Get the instance father (-1 if this is a root)
 	const sint32			getInstanceParent (uint instanceNb) const;

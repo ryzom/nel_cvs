@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.17 2002/05/23 09:30:56 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.18 2002/05/24 12:38:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLMISC
 {
 	class CVector;
 	class CQuat;
+	class CMatrix;
 }
 
 namespace NL3D 
@@ -156,6 +157,12 @@ public:
 	 * \return the name of the instance.
 	 */
 	virtual const std::string& getInstanceName (uint instanceNb) const=0;
+
+
+	/** Return the transformation matrix of an instance in the group
+	  * NB no pivot is added
+	  */
+	virtual void			   getInstanceMatrix(uint instanceNb, NLMISC::CMatrix &dest) const = 0;
 
 	/**
 	 * Return the position of an instance of the group.

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.21 2002/05/23 09:29:07 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.22 2002/05/24 12:37:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,13 @@ void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
 	// Add to the scene
 	addToScene (((CSceneUser*)&scene)->getScene(), cDriver);
 }
+
+// ***************************************************************************
+void CInstanceGroupUser::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest) const
+{
+	_InstanceGroup.getInstanceMatrix(instanceNb, dest);	
+}
+
 
 // ***************************************************************************
 void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)

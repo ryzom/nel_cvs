@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.23 2001/05/29 11:51:34 lecroart Exp $
+ * $Id: unitime.cpp,v 1.24 2001/05/31 15:26:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 
 	if (abs((sint32)((TTime)nextsecond - (TTime)GetUniversalTimeSecondsSince1970)) > 10)
 	{
-		nlwarning ("delta is too big (more than 10s) servers aren't NTP synchronized");
+		nlerror ("the time delta (between me and the Time Service) is too big (more than 10s), servers aren't NTP synchronized");
 		goto error;
 	}
 	
@@ -216,8 +216,9 @@ void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 
 	server.disconnect ();
 	return;
+
 error:
-	nlwarning ("TS not found, lost or can't synchronize universal time");
+	nlerror ("Time Service is not found, lost or can't synchronize universal time");
 }
 
 

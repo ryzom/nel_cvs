@@ -1,7 +1,7 @@
 /** \file height_map.h
  * <File description>
  *
- * $Id: height_map.h,v 1.1 2001/04/23 16:34:08 berenguier Exp $
+ * $Id: height_map.h,v 1.1 2001/04/24 09:25:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

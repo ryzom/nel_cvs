@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.35 2004/07/12 13:57:45 miller Exp $
+ * $Id: login_server.cpp,v 1.36 2004/08/25 16:50:33 guignot Exp $
  *
  */
 
@@ -41,11 +41,17 @@ namespace NLNET {
 
 struct CPendingUser
 {
-	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up) : Cookie (cookie), UserName(un), UserPriv(up) { Time = CTime::getSecondsSince1970(); }
+	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up, const string &ux)
+		: Cookie (cookie), UserName(un), UserPriv(up), UserExtended(ux)
+	{
+		Time = CTime::getSecondsSince1970();
+	}
+
 	CLoginCookie Cookie;
 	string UserName;
-	string UserPriv;	// privilege for executing commands from the clients
-	uint32 Time;		// when the cookie is inserted in pending list
+	string UserPriv;		// privilege for executing commands from the clients
+	string UserExtended;	// extended data (for free use)
+	uint32 Time;			// when the cookie is inserted in pending list
 };
 
 static list<CPendingUser> PendingUsers;
@@ -100,7 +106,7 @@ void refreshPendingList ()
 void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS call me that a new client want to come in my shard
-	string reason, userName, userPriv;
+	string reason, userName, userPriv, userExtended;
 	CLoginCookie cookie;
 
 	refreshPendingList ();
@@ -110,8 +116,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	//
 
 	msgin.serial (cookie);
-	msgin.serial (userName, userPriv);
-	
+	msgin.serial (userName, userPriv, userExtended);
+
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
 	{
@@ -127,8 +133,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
-		nlinfo ("LS: New cookie %s (name '%s' priv '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str());
-		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv));
+		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str());
+		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended));
 		reason = "";
 	}
 
@@ -189,9 +195,9 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	string reason;
 	msgin.serial (cookie);
 
-	string userName, userPriv;
+	string userName, userPriv, userExtended;
 	// verify that the user was pending
-	reason = CLoginServer::isValidCookie (cookie, userName, userPriv);
+	reason = CLoginServer::isValidCookie (cookie, userName, userPriv, userExtended);
 
 	// if the cookie is not valid and we accept them, clear the error
 	if(AcceptInvalidCookie && !reason.empty())
@@ -359,7 +365,7 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 	ModeTcp = false;
 }
 
-string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv)
+string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended)
 {
 	userName = userPriv = "";
 
@@ -385,7 +391,8 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 
 			userName = (*it).UserName;
 			userPriv = (*it).UserPriv;
-			
+			userExtended = (*it).UserExtended;
+
 			// ok, it was validate, remove it
 			PendingUsers.erase (it);
 			

@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.2 2000/11/07 16:21:00 coutelas Exp $
+ * $Id: bitmap.cpp,v 1.3 2000/11/09 16:17:16 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,9 +100,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 		}
 
 		// Reading header, 
-		// there's not really a sure way to make certain that the bitmap is TGA,
-		// here we check imageType and imageDepth.
-		
+		// To make sure that the bitmap is TGA, we check imageType and imageDepth.
 		uint8	lengthID;
 		uint8	cMapType;
 		uint8	imageType;
@@ -136,8 +134,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 			throw ESeekFailed();
 		}
 		return readTGA(f);
-	}
-	
+	}	
 }
 
 

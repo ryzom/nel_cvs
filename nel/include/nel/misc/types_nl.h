@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.11 2000/11/08 15:06:47 lecroart Exp $
+ * $Id: types_nl.h,v 1.12 2000/11/09 16:17:03 coutelas Exp $
  *
  * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
  *
@@ -59,7 +59,8 @@
 // Stupid Visual C++ warning
 
 #ifdef NL_OS_WINDOWS
-#  pragma warning (disable : 4786)			// STL too long indentifier
+#  pragma warning (disable : 4503)			// STL: Decorated name length exceeded, name was truncated
+#  pragma warning (disable : 4786)			// STL: too long indentifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
 #endif // NL_OS_WINDOWS
 

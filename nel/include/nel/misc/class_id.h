@@ -1,7 +1,7 @@
 /** \file class_id.h
  * CClassId class
  *
- * $Id: class_id.h,v 1.3 2000/10/25 13:39:13 lecroart Exp $
+ * $Id: class_id.h,v 1.4 2000/11/09 16:16:49 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@ public:
 	bool	operator>=(const CClassId &o) const {return Uid>=o.Uid;}
 	bool	operator<(const CClassId &o) const {return Uid<o.Uid;}
 	bool	operator>(const CClassId &o) const {return Uid>o.Uid;}
+	//CClassId& operator=(const CClassId &o) { Uid = o.Uid; return *this;}
 	operator uint64() const {return Uid;}
 
 };

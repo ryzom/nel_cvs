@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.1 2000/11/07 16:20:43 coutelas Exp $
+ * $Id: texture.h,v 1.2 2000/11/09 16:16:42 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_TEXTURE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
 #include "nel/3d/bitmap.h"
 #include <string>
 
@@ -151,7 +152,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class CTextureFont : public ITexture
+class CTextureFont : public ITexture, public NLMISC::CRefCount
 {
 	uint32 _TrueWidth, _TrueHeight;
 

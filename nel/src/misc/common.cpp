@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.25 2002/10/02 15:52:16 lecroart Exp $
+ * $Id: common.cpp,v 1.26 2002/11/08 13:28:51 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,6 +498,71 @@ const char	*Exception::what() const throw()
 	return _Reason.c_str();
 }
 
+bool launchProgram (const std::string &programName, const std::string &arguments)
+{
+
+#ifdef NL_OS_WINDOWS
+
+	SECURITY_ATTRIBUTES sa;
+	sa.nLength = sizeof (sa);
+	sa.lpSecurityDescriptor = NULL;
+	sa.bInheritHandle = FALSE;
+
+	STARTUPINFO si;
+	si.cb = sizeof (si);
+	si.lpReserved = NULL;
+	si.lpDesktop = NULL;
+	si.lpTitle = NULL;
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.cbReserved2 = 0;
+	si.wShowWindow = SW_MINIMIZE;
+	si.lpReserved2 = NULL;
+
+	PROCESS_INFORMATION pi;
+
+	BOOL res = CreateProcess(programName.c_str(), (char*)arguments.c_str(), &sa, &sa, FALSE, 0, NULL, NULL, &si, &pi);
+
+	if (res)
+	{
+		nldebug("Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
+		return true;
+	}
+	else
+	{
+		LPVOID lpMsgBuf;
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
+		nlwarning("Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), GetLastError (), lpMsgBuf);
+		LocalFree(lpMsgBuf);
+	}
+
+#elif defined(NL_OS_LINUX)
+
+	int status = vfork ();
+	if (status == -1)
+	{
+		char *err = strerror (errno);
+		nlwarning("Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), errno, err);
+	}
+	else if (status == 0)
+    {
+		status = execlp(programName.c_str(), programName.c_str(), arguments.c_str(), 0);
+		if (status == -1)
+		{
+			perror("Failed launched");
+			_exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
+		nldebug("Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
+		return true;
+	}
+#else
+	nlwarning ("launchProgram() not implemented");
+#endif
+
+	return false;
+
+}
 
 } // NLMISC
-

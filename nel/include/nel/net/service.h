@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.58 2002/10/24 08:39:46 lecroart Exp $
+ * $Id: service.h,v 1.59 2002/11/08 13:28:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,6 +196,12 @@ public:
 	/// Returns the current service long name (ie: test_serivce)
 	const std::string				&getServiceLongName () const { return _LongName; };
 
+	/// Returns the current service alias name setted by AES
+	const std::string				&getServiceAliasName () const { return _AliasName; };
+
+	/// Returns the current service unified name that is   alias/short-id or short-id if alias is empty
+	std::string						getServiceUnifiedName () const;
+
 	/// Returns the service identifier
 	TServiceId						getServiceId () const { return _SId; }
 
@@ -366,7 +372,7 @@ private:
 
 	//@}
 
-	friend void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid);
+	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
 	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;

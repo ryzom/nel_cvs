@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.1 2002/10/24 08:39:29 lecroart Exp $
+ * $Id: varpath.cpp,v 1.2 2002/11/08 13:28:21 lecroart Exp $
  *
  */
 
@@ -85,15 +85,15 @@ string CVarPath::getToken ()
 
 	switch (RawVarPath[TokenPos++])
 	{
-		case '.': case '*': case '[': case ']': case ',': break;
-		default :
+	case '.': case '*': case '[': case ']': case ',': case '=': break;
+	default :
+		{
+			while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '*' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',' && RawVarPath[TokenPos] != '=')
 			{
-				while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '*' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',')
-				{
-					res += RawVarPath[TokenPos++];
-				}
-				break;
+				res += RawVarPath[TokenPos++];
 			}
+			break;
+		}
 	}
 	return res;
 }
@@ -146,7 +146,7 @@ void CVarPath::decode ()
 
 	// must the a . or end of string
 	val = getToken ();
-	if (val != "." && val != "")
+	if (val != "." && val != "" && val != "=")
 	{
 		nlwarning ("Malformated VarPath '%s' before position %d", RawVarPath.c_str (), TokenPos);
 		return;
@@ -156,17 +156,24 @@ void CVarPath::decode ()
 	{
 		string srv, var;
 		uint pos;
+		
 		if ((pos = dest[i].find ('.')) != string::npos)
 		{
 			srv = dest[i].substr(0, pos);
 			var = dest[i].substr(pos+1);
 			if (TokenPos < RawVarPath.size())
-				var += "." + RawVarPath.substr (TokenPos);
+				var += val + RawVarPath.substr (TokenPos);
 		}
 		else
 		{
 			srv = dest[i];
-			var = RawVarPath.substr (TokenPos);
+			if (val == "=")
+			{
+				srv += val + RawVarPath.substr (TokenPos);
+				var = "";
+			}
+			else
+				var = RawVarPath.substr (TokenPos);
 		}
 
 		Destination.push_back (make_pair(srv, var));

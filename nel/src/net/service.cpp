@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.148 2002/10/24 14:37:37 lecroart Exp $
+ * $Id: service.cpp,v 1.149 2002/11/08 13:28:17 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -122,49 +122,43 @@ static CLog commandLog;
 // Callback managing
 //
 
-void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void serviceGetView (uint32 rid, const string &rawvarpath, vector<string> &vara, vector<string> &vala)
 {
-	uint32 rid;
-	string rawvarpath;
-
-	msgin.serial (rid);
-	msgin.serial (rawvarpath);
-
-	// special case, the service is me!
-
 	string str;
 	CLog logDisplayVars;
 	CMemDisplayer mdDisplayVars;
 	logDisplayVars.addDisplayer (&mdDisplayVars);
-
+	
 	CVarPath varpath(rawvarpath);
-
-	CMessage msgout("VIEW");
-	msgout.serial(rid);
-
-	vector<string> vara;
-	vector<string> vala;
-
+	
 	// add default row
 	vara.push_back ("service");
-	vala.push_back (IService::getInstance ()->_ShortName);
 
+	vala.push_back (IService::getInstance ()->getServiceUnifiedName());
+	
 	for (uint j = 0; j < varpath.Destination.size (); j++)
 	{
+		string cmd = varpath.Destination[j].first;
+
+		// replace = with space to execute the command
+		uint pos = cmd.find("=");
+		if (pos != string::npos)
+			cmd[pos] = ' ';
+
 		mdDisplayVars.clear ();
-		ICommand::execute(varpath.Destination[j].first, logDisplayVars, true);
+		ICommand::execute(cmd, logDisplayVars, true);
 		const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 		if (strs.size()>0)
 		{
 			string s_ = strs[0];
-
+			
 			uint32 pos = strs[0].find("=");
 			if(pos != string::npos && pos + 2 < strs[0].size())
 			{
 				uint32 pos2 = string::npos;
 				if(strs[0][strs[0].size()-1] == '\n')
 					pos2 = strs[0].size() - pos - 2 - 1;
-
+				
 				str = strs[0].substr (pos+2, pos2);
 			}
 			else
@@ -177,12 +171,34 @@ void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 			str = "???";
 		}
 		mdDisplayVars.unlockStrings();
+		
+		if (pos != string::npos)
+			vara.push_back(cmd.substr(0, pos));
+		else
+			vara.push_back(cmd);
 
-		vara.push_back(varpath.Destination[j].first);
 		vala.push_back (str);
 		nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
 	}
+	
+}
 
+void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 rid;
+	string rawvarpath;
+
+	msgin.serial (rid);
+	msgin.serial (rawvarpath);
+
+	vector<string> vara;
+	vector<string> vala;
+
+	serviceGetView (rid, rawvarpath, vara, vala);
+
+	CMessage msgout("VIEW");
+	msgout.serial(rid);
+	
 	msgout.serialCont (vara);
 	msgout.serialCont (vala);
 
@@ -199,7 +215,7 @@ void AESConnection (const string &serviceName, uint16 sid, void *arg)
 	//
 
 	CMessage msgout ("SID");
-	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_ShortName, IService::getInstance()->_LongName);
+	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName);
 	ICommand::serialCommands (msgout);
 	CUnifiedNetwork::getInstance()->send("AES", msgout);
 
@@ -459,6 +475,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
 	
+	// a short name service can't be a number
+	nlassert (atoi(serviceShortName) == 0);
+
 	try
 	{
 		// Set the process name
@@ -1292,6 +1311,22 @@ void IService::requireResetMeasures()
 }
 
 
+std::string IService::getServiceUnifiedName () const
+{
+	nlassert (!_ShortName.empty())
+		string res;
+	if (!_AliasName.empty())
+	{
+		res = _AliasName+"/";
+	}
+	res += _ShortName;
+	res += "-";
+	res += toString (_SId);
+	return res;
+}
+
+
+
 //
 // Commands and Variables for controling all services
 //
@@ -1353,7 +1388,7 @@ NLMISC_COMMAND (brutalQuit, "exit the service brutally", "")
 {
 	if(args.size() != 0) return false;
 
-	exit (0xFFFFFFFF);
+	::exit (0xFFFFFFFF);
 
 	return true;
 }
@@ -1383,7 +1418,7 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 {
 	if(args.size() != 0) return false;
 
-	log.displayNL ("Service '%s' '%s' '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->_ShortName.c_str(), IService::getInstance()->_LongName.c_str(), IService::getInstance()->_AliasName.c_str());
+	log.displayNL ("Service %s '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->getServiceLongName().c_str(), IService::getInstance()->getServiceUnifiedName().c_str());
 	log.displayNL ("Service listening port: %d", IService::getInstance()->_Port);
 	log.displayNL ("Service running directory: '%s'", IService::getInstance()->_RunningPath.c_str());
 	log.displayNL ("Service log directory: '%s'", IService::getInstance()->_LogDir.c_str());
@@ -1471,6 +1506,38 @@ uint32 foo = 7777, bar = 6666;
 
 NLMISC_VARIABLE(uint32, foo, "test the get view system");
 NLMISC_VARIABLE(uint32, bar, "test the get view system");
+
+
+// -1 = service is quitting
+// 0 = service is not connected
+// 1 = service is running
+// 2 = service is launching
+// 3 = service failed launching
+
+NLMISC_DYNVARIABLE(sint8, Running, "set this value to 0 to shutdown the service")
+{
+	static sint8 running = true;
+
+	// read or write the variable
+	if (get)
+	{
+		*pointer = running;
+	}
+	else
+	{
+		if (IService::getInstance()->getServiceShortName() == "AES" || IService::getInstance()->getServiceShortName() == "AS")
+		{
+			nlinfo ("I can't set Running=0 because I'm the admin and I should never quit");
+		}
+		else if (!*pointer)
+		{
+			// ok, we want to set the value to false, just quit
+			nlinfo ("User ask me with a command to quit using the Running variable");
+			ExitSignalAsked = 0xFFFE;
+			running = -1;
+		}
+	}
+}
 
 
 } //NLNET

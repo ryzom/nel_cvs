@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.46 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: common.h,v 1.47 2002/11/08 13:28:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,6 +301,10 @@ void itoaInt64 (sint64 number, char *str, sint64 base = 10);
 
 
 
+
+/// This function execute a program in the background and returns instantly (used for example to launch services in AES).
+/// The program will be launch in the current directory
+bool launchProgram (const std::string &programName, const std::string &arguments);
 
 
 

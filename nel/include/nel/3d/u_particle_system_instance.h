@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.11 2003/11/25 14:34:00 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.12 2003/11/25 16:56:35 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -196,10 +196,9 @@ public:
 	   * - in world (identity matrix)
 	   * - local to the particle system (matrix of the particle system)
 	   * - local to the coord. sys. defined by the user matrix
-	   *	   
-	   * NB : the pointer should remains valid as long as this instance is!! no copy of the matrix is kept
+	   *	   	   
 	   */
-	 virtual void	setUserMatrix(const NLMISC::CMatrix *userMat) = 0;
+	 virtual void	setUserMatrix(const NLMISC::CMatrix &userMat) = 0;
 
 };
 

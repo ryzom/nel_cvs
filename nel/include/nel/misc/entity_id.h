@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.18 2002/03/06 17:47:46 chafik Exp $
+ * $Id: entity_id.h,v 1.19 2002/06/03 11:47:15 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ struct CEntityId
 	{
 		DynamicId = 0;
 		CreatorId = 0;
-		Type = 0;
+		Type = 127;
 		Id = 0;
 	}
 

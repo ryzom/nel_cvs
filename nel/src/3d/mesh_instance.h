@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.7 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.8 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,11 +69,17 @@ protected:
 	/// Destructor
 	virtual ~CMeshInstance();
 
+	/// \name Skinning Behavior.
+	// @{
+	/// I can be skinned if the mesh is.
+	virtual	bool	isSkinnable() const;
+
 	/// Call when the skin is applied on the skeleton
 	virtual	void	setApplySkin(bool state);
 
 	/// Called for lod character coloring.
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
+	// @}
 
 
 private:

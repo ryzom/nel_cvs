@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.15 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.16 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,12 +87,12 @@ public:
 	// @{
 	/** bind a skin to the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
-	 * NB: nlassert(mi->isSkinnable());
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
 	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
+	 * \return false if mi is not skinnable, true otherwise
 	 */
-	void		bindSkin(CTransform *mi);
+	bool		bindSkin(CTransform *mi);
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
 	 * NB: an object can't be skinned and sticked at same time :)

@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.8 2002/06/10 09:30:08 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.9 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,17 +88,23 @@ float		CSkeletonUser::getShapeDistMax() const
 
 
 // ***************************************************************************
-void		CSkeletonUser::bindSkin(UInstance *mi)
+bool		CSkeletonUser::bindSkin(UInstance *mi)
 {
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(mi==NULL)
+	{
 		nlerror("USkeleton::bindSkin(): mi is NULL");
+		return false;
+	}
 	CTransform			*trans= dynamic_cast<CTransformUser*>(mi)->getTransform();
 	CMeshBaseInstance	*meshi= dynamic_cast<CMeshBaseInstance*>(trans);
 	if(meshi==NULL)
+	{
 		nlerror("USkeleton::bindSkin(): mi is not a MeshInstance or MeshMRMInstance");
-	_Skeleton->bindSkin(meshi);
+		return false;
+	}
+	return _Skeleton->bindSkin(meshi);
 }
 
 // ***************************************************************************

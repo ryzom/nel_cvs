@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.7 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.8 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 
 	/// \name Skin operation.
 	// @{
-	virtual	void		bindSkin(UInstance *mi);
+	virtual	bool		bindSkin(UInstance *mi);
 	virtual	void		stickObject(UTransform *mi, uint boneId);
 	virtual	void		stickObjectEx(UTransform *mi, uint boneId, bool forceCLod);
 	virtual	void		detachSkeletonSon(UTransform *mi);

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.6 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.7 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,20 @@ const std::vector<sint32>	*CMeshMRMInstance::getSkinBoneUsage() const
 
 	// get ids.
 	return &pMesh->getMeshGeom().getSkinBoneUsage();
+}
+
+
+// ***************************************************************************
+bool	CMeshMRMInstance::isSkinnable() const
+{
+	if(Shape==NULL)
+		return false;
+
+	// Get a pointer on the shape
+	CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
+	// true if the mesh is skinned
+	return pMesh->getMeshGeom().isSkinned();
 }
 
 

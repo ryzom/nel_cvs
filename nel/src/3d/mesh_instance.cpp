@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.11 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.12 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,20 @@ const std::vector<sint32>	*CMeshInstance::getSkinBoneUsage() const
 
 	// get ids.
 	return &pMesh->getMeshGeom().getSkinBoneUsage();
+}
+
+
+// ***************************************************************************
+bool	CMeshInstance::isSkinnable() const
+{
+	if(Shape==NULL)
+		return false;
+
+	// Get a pointer on the shape
+	CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
+	// true if the mesh is skinned
+	return pMesh->getMeshGeom().isSkinned();
 }
 
 

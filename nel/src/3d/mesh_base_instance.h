@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.11 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.12 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,8 +164,6 @@ protected:
 
 	/// \name Skinning Behavior.
 	// @{
-	/// I can be skinned
-	virtual	bool			isSkinnable() const {return true;}
 	/// Am I skinned ??
 	virtual	bool			isSkinned() const {return _ApplySkinOk;}
 	/// change my state.

@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.6 2002/05/14 11:51:12 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.7 2002/06/10 14:03:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,8 +63,9 @@ public:
 	 * NB: nlerror() if mi is not a UInstance. (ie a mesh instance).
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
+	 * \return false if mi is NULL or not skinnable, true otherwise
 	 */
-	virtual	void		bindSkin(UInstance *mi) =0;
+	virtual	bool		bindSkin(UInstance *mi) =0;
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * This object will be visible only when the Skeleton is not clipped.
 	 * NB: an object can't be skinned and sticked at same time :)

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.18 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.19 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -296,10 +296,11 @@ const NLMISC::CMatrix	&CSkeletonModel::getActiveBoneSkinMatrix(uint boneId) cons
 
 
 // ***************************************************************************
-void		CSkeletonModel::bindSkin(CTransform *mi)
+bool		CSkeletonModel::bindSkin(CTransform *mi)
 {
 	nlassert(mi);
-	nlassert(mi->isSkinnable());
+	if( !mi->isSkinnable() )
+		return false;
 
 	// try to detach this object from me first.
 	detachSkeletonSon(mi);
@@ -318,6 +319,9 @@ void		CSkeletonModel::bindSkin(CTransform *mi)
 
 	// must recompute lod vertex color when LodCharacter used
 	dirtLodVertexColor();
+
+	// Ok, skinned
+	return true;
 }
 // ***************************************************************************
 void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)

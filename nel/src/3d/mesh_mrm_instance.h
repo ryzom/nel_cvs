@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.6 2002/05/15 16:55:56 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.7 2002/06/10 14:02:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,11 +66,19 @@ protected:
 	/// Destructor
 	virtual ~CMeshMRMInstance();
 
+
+	/// \name Skinning Behavior.
+	// @{
+	/// I can be skinned if the mesh is.
+	virtual	bool	isSkinnable() const;
+
 	/// Called when the skin is applied on the skeleton
 	virtual	void	setApplySkin(bool state);
 
 	/// Called for lod character coloring.
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
+	// @}
+
 
 	/** Change MRM Distance setup. See CMeshBaseInstance::changeMRMDistanceSetup()
 	 */

@@ -147,6 +147,9 @@ plugin material NelMaterial
 		
 		-- New in version 5		
 		bExportTextureMatrix    type:#boolean default:false	ui:cbExportTextureMatrix
+		
+		-- New in version 7
+		bCalcWaterLightmap		type:#boolean default:false	ui:cbCalcWaterLightmap
 	)
 
     parameters textures rollout:NelTexture

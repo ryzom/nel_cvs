@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.3 2001/07/09 17:17:06 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.4 2001/07/31 09:21:44 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,11 @@ public:
 	std::string				DistanceCoarsest;
 
 	const std::set<INode*> *ListNode;
+
+	int						AccelType; // -1->undeterminate   0->Not  1->Portal  2->Cluster
+										// 3rd bit -> Father visible
+										// 4th bit -> Visible from father
+										// 5th bit -> Dynamic Portal
 };
 
 // ***************************************************************************
@@ -192,6 +197,44 @@ int CALLBACK LodDialogCallback (
 				ite++;
 			}
 
+			if (currentParam->AccelType != -1)
+			{
+				CheckRadioButton (hwndDlg, IDC_RADIOACCELNO, IDC_RADIOACCELCLUSTER, IDC_RADIOACCELNO+(currentParam->AccelType&3));
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), true);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), true);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), true);
+				if ((currentParam->AccelType&3) == 2) // Cluster ?
+				{
+					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), true);
+					SendMessage (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), BM_SETCHECK, currentParam->AccelType&4, 0);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
+					SendMessage (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), BM_SETCHECK, currentParam->AccelType&8, 0);
+				}
+				else
+				{
+					EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
+					EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+				}
+				
+				if ((currentParam->AccelType&3) == 1) // Portal ?
+				{
+					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), true);
+					SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), BM_SETCHECK, currentParam->AccelType&16, 0);
+				}
+				else
+					EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
+
+			}
+			else
+			{
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELNO), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELPORTAL), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_RADIOACCELCLUSTER), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_FATHER_VISIBLE), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+				EnableWindow (GetDlgItem (hwndDlg, IDC_DYNAMIC_PORTAL), false);
+			}
+
 			// Move dialog
 			RECT windowRect, desktopRect;
 			GetWindowRect (hwndDlg, &windowRect);
@@ -261,6 +304,20 @@ int CALLBACK LodDialogCallback (
 								currentParam->ListLodName.push_back (tmp);
 							}
 
+							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELNO) == BST_CHECKED)
+								currentParam->AccelType = 0;
+							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELPORTAL) == BST_CHECKED)
+								currentParam->AccelType = 1;
+							if (IsDlgButtonChecked (hwndDlg, IDC_RADIOACCELCLUSTER) == BST_CHECKED)
+								currentParam->AccelType = 2;
+
+							if (IsDlgButtonChecked (hwndDlg, IDC_FATHER_VISIBLE) == BST_CHECKED)
+								currentParam->AccelType |= 4;
+							if (IsDlgButtonChecked (hwndDlg, IDC_VISIBLE_FROM_FATHER) == BST_CHECKED)
+								currentParam->AccelType |= 8;
+							if (IsDlgButtonChecked (hwndDlg, IDC_DYNAMIC_PORTAL) == BST_CHECKED)
+								currentParam->AccelType |= 16;
+							
 							// Quit
 							EndDialog(hwndDlg, IDOK);
 						}
@@ -365,6 +422,21 @@ int CALLBACK LodDialogCallback (
 								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 						}
 						break;
+					case IDC_RADIOACCELNO:
+						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+						break;
+					case IDC_RADIOACCELPORTAL:
+						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), false);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), true);
+						break;
+					case IDC_RADIOACCELCLUSTER:
+						EnableWindow (GetDlgItem(hwndDlg, IDC_FATHER_VISIBLE), true);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_VISIBLE_FROM_FATHER), true);
+						EnableWindow (GetDlgItem(hwndDlg, IDC_DYNAMIC_PORTAL), false);
+						break;
 				}
 			}
 			else if (HIWORD(wParam)==LBN_DBLCLK)
@@ -457,6 +529,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ListLodName.push_back (nameLod);
 			}
 		}
+		param.AccelType = CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0);
 
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
@@ -494,6 +567,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.DistanceMiddle="";
 			if (toString(CExportNel::getScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, NEL3D_APPDATA_LOD_DISTANCE_COARSEST_DEFAULT))!=param.DistanceCoarsest)
 				param.DistanceCoarsest="";
+
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_ACCEL, 0)!=param.AccelType)
+				param.AccelType = -1;
 
 			// Get name count for this node
 			std::list<std::string> tmplist;
@@ -557,7 +633,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_MIDDLE, param.DistanceMiddle);
 				if (param.DistanceCoarsest!="")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LOD_DISTANCE_COARSEST, param.DistanceCoarsest);
-				
+
+				if (param.AccelType != -1)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_ACCEL, param.AccelType);
+
 				if (param.ListActived)
 				{
 					// Write size of the list

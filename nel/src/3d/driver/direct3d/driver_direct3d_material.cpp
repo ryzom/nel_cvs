@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.6 2004/05/18 16:34:27 berenguier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.7 2004/05/26 08:36:30 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -89,6 +89,7 @@ const D3DTEXTUREOP RemapTexOpType0NeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTOP_BLENDDIFFUSEALPHA,	// InterpolateDiffuse
 	D3DTOP_LERP,				// InterpolateConstant
 	D3DTOP_BUMPENVMAP,			// EMBM
+	D3DTOP_MULTIPLYADD			// MAD
 };
 
 // ***************************************************************************
@@ -104,7 +105,7 @@ const D3DTEXTUREOP RemapTexOpTypeNeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTOP_BLENDDIFFUSEALPHA,	// InterpolateDiffuse
 	D3DTOP_LERP,				// InterpolateConstant
 	D3DTOP_BUMPENVMAP,			// EMBM
-	D3DTOP_MULTIPLYADD
+	D3DTOP_MULTIPLYADD			// MAD
 };
 
 // ***************************************************************************
@@ -151,7 +152,7 @@ const DWORD RemapTexArg0TypeNeL2D3D[CMaterial::TexOperatorCount]=
 	D3DTA_TFACTOR, // todo hulud constant color D3DTA_CONSTANT,							// InterpolateDiffuse not used
 	D3DTA_TFACTOR|D3DTA_ALPHAREPLICATE, // todo hulud constant color D3DTA_CONSTANT|D3DTA_ALPHAREPLICATE,	// InterpolateConstant
 	D3DTA_TFACTOR, // todo hulud constant color D3DTA_CONSTANT,							// EMBM not used
-	D3DTOP_MULTIPLYADD
+	D3DTA_TFACTOR // todo hulud constant color D3DTA_CONSTANT // MAD
 };
 
 // ***************************************************************************
@@ -181,28 +182,44 @@ void CMaterialDrvInfosD3D::buildTexEnv (uint stage, const CMaterial::CTexEnv &en
 		// The source operator pointer
 		const DWORD *srcOp = (stage==0)?RemapTexArg0NeL2D3D:RemapTexArgNeL2D3D;
 
-		ColorOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpRGB];
-		// Only used for InterpolateConstant
-		ColorArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpRGB];
+		ColorOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpRGB];		
 		if (env.Env.OpRGB == CMaterial::Mad)
-		{
+		{						
+			ColorArg2[stage] = srcOp[env.Env.SrcArg0RGB];
+			ColorArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0RGB];
+			ColorArg1[stage] = srcOp[env.Env.SrcArg1RGB];
+			ColorArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1RGB];
+			ColorArg0[stage] = srcOp[env.Env.SrcArg2RGB];
 			ColorArg0[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg2RGB];
 		}
-		ColorArg1[stage] = srcOp[env.Env.SrcArg0RGB];
-		ColorArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0RGB];
-		ColorArg2[stage] = srcOp[env.Env.SrcArg1RGB];
-		ColorArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1RGB];
-		AlphaOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpAlpha];
-		// Only used for InterpolateConstant
-		AlphaArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpAlpha];
+		else
+		{		
+			// Only used for InterpolateConstant
+			ColorArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpRGB];
+			ColorArg1[stage] = srcOp[env.Env.SrcArg0RGB];
+			ColorArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0RGB];
+			ColorArg2[stage] = srcOp[env.Env.SrcArg1RGB];
+			ColorArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1RGB];
+		}
+		AlphaOp[stage] = ((stage==0)?RemapTexOpType0NeL2D3D:RemapTexOpTypeNeL2D3D)[env.Env.OpAlpha];		
 		if (env.Env.OpAlpha == CMaterial::Mad)
 		{
-			AlphaArg0[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg2Alpha];	
+			AlphaArg2[stage] = srcOp[env.Env.SrcArg0Alpha];
+			AlphaArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0Alpha];
+			AlphaArg1[stage] = srcOp[env.Env.SrcArg1Alpha];
+			AlphaArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1Alpha];
+			AlphaArg0[stage] = srcOp[env.Env.SrcArg2Alpha];
+			AlphaArg0[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg2Alpha];
 		}
-		AlphaArg1[stage] = srcOp[env.Env.SrcArg0Alpha];
-		AlphaArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0Alpha];
-		AlphaArg2[stage] = srcOp[env.Env.SrcArg1Alpha];
-		AlphaArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1Alpha];
+		else
+		{		
+			// Only used for InterpolateConstant
+			AlphaArg1[stage] = srcOp[env.Env.SrcArg0Alpha];
+			AlphaArg1[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg0Alpha];
+			AlphaArg0[stage] = RemapTexArg0TypeNeL2D3D[env.Env.OpAlpha];			
+			AlphaArg2[stage] = srcOp[env.Env.SrcArg1Alpha];
+			AlphaArg2[stage] |= RemapTexOpArgTypeNeL2D3D[env.Env.OpArg1Alpha];
+		}
 		ConstantColor[stage] = NL_D3DCOLOR_RGBA(env.ConstantColor);				
 	}
 	else
@@ -390,7 +407,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 					pShader->ConstantIndex = (uint8)((firstConstant==0xffffffff)?0:firstConstant);
 
 					// Need a constant color for the diffuse component ?
-					pShader->NeedsConstantForDiffuse = needsConstantForDiffuse (mat, _needsAlpha);
+					pShader->NeedsConstantForDiffuse = needsConstantForDiffuse (mat, _needsAlpha);					
 
 					// Need pixel shader ?
 #ifndef NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
@@ -398,7 +415,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 #else // NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
 					_needPixelShader = true;
 #endif // NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
-					if (_needPixelShader)
+					if (_needPixelShader)					
 					{
 #ifdef NL_DEBUG_D3D
 						// Check, should not occured
@@ -912,8 +929,10 @@ bool CDriverD3D::needsConstants (uint &numConstant, uint &firstConstant, CMateri
 			// Does this stage use a constant color ?
 			if ((texEnv.Env.SrcArg0RGB == CMaterial::Constant) ||
 				((texEnv.Env.SrcArg1RGB == CMaterial::Constant) && (texEnv.Env.OpRGB != CMaterial::Replace)) ||
+				((texEnv.Env.SrcArg2RGB == CMaterial::Constant) && (texEnv.Env.OpRGB == CMaterial::Mad)) ||
 				((texEnv.Env.SrcArg0Alpha == CMaterial::Constant) && needAlpha) ||
-				((texEnv.Env.SrcArg1Alpha == CMaterial::Constant) && (texEnv.Env.OpRGB != CMaterial::Replace) && needAlpha) ||
+				((texEnv.Env.SrcArg1Alpha == CMaterial::Constant) && (texEnv.Env.OpAlpha != CMaterial::Replace) && needAlpha) ||
+				((texEnv.Env.SrcArg2Alpha == CMaterial::Constant) && (texEnv.Env.OpAlpha == CMaterial::Mad) && needAlpha) ||
 				(texEnv.Env.OpRGB == CMaterial::InterpolateConstant) )
 			{
 				if (firstConstant == 0xffffffff)
@@ -947,8 +966,10 @@ bool CDriverD3D::needsConstantForDiffuse (CMaterial &mat, bool needAlpha)
 			// Does this stage use a constant color ?
 			if ((texEnv.Env.SrcArg0RGB == CMaterial::Diffuse) ||
 				((texEnv.Env.SrcArg1RGB == CMaterial::Diffuse) && (texEnv.Env.OpRGB != CMaterial::Replace)) ||
+				((texEnv.Env.SrcArg2RGB == CMaterial::Diffuse) && (texEnv.Env.OpRGB == CMaterial::Mad)) ||
 				((texEnv.Env.SrcArg0Alpha == CMaterial::Diffuse) && needAlpha) ||
-				((texEnv.Env.SrcArg1Alpha == CMaterial::Diffuse) && (texEnv.Env.OpRGB != CMaterial::Replace) && needAlpha) ||
+				((texEnv.Env.SrcArg1Alpha == CMaterial::Diffuse) && (texEnv.Env.OpAlpha != CMaterial::Replace) && needAlpha) ||
+				((texEnv.Env.SrcArg2Alpha == CMaterial::Diffuse) && (texEnv.Env.OpAlpha == CMaterial::Mad) && needAlpha) ||
 				(texEnv.Env.OpRGB == CMaterial::InterpolateDiffuse) )
 				return true;
 		}
@@ -994,6 +1015,12 @@ bool CDriverD3D::needsAlpha (CMaterial &mat)
 						(texEnv.Env.OpArg1RGB == CMaterial::InvSrcAlpha))
 						return true;
 				}
+				if ((texEnv.Env.SrcArg2RGB == CMaterial::Previous) && (texEnv.Env.OpRGB == CMaterial::Mad))
+				{
+					if ((texEnv.Env.OpArg2RGB == CMaterial::SrcAlpha) || 
+						(texEnv.Env.OpArg2RGB == CMaterial::InvSrcAlpha))
+						return true;
+				}
 				if ((texEnv.Env.OpRGB == CMaterial::InterpolatePrevious) || (texEnv.Env.OpRGB == CMaterial::InterpolateConstant))
 				{
 					return true;
@@ -1019,6 +1046,7 @@ const char *RemapPSInstructions[CMaterial::TexOperatorCount]=
 	"lrp",	// InterpolateDiffuse
 	"lrp",	// InterpolateConstant
 	"bem",	// EMBM
+	"mad"	// MAD
 };
 
 // ***************************************************************************
@@ -1033,7 +1061,8 @@ const char *RemapPSThirdArguments[CMaterial::TexOperatorCount][2]=
 	{"r0", "r0"},	// InterpolatePrevious
 	{"v0", "c5"},	// InterpolateDiffuse
 	{"c", "c"},		// InterpolateConstant
-	{"", ""},		// EMBM
+	{"", ""},		// EMBM	
+	{"", ""}		// MAD (not used)
 };
 
 // ***************************************************************************
@@ -1050,6 +1079,7 @@ const char *RemapPSThirdArguments0[CMaterial::TexOperatorCount][2]=
 	{"v0", "c5"},	// InterpolateDiffuse
 	{"c", "c"},		// InterpolateConstant
 	{"", ""},		// EMBM
+	{"", ""}		// MAD (not used)
 };
 
 // ***************************************************************************
@@ -1065,6 +1095,7 @@ const char *RemapPSSecondRegisterModificator[CMaterial::TexOperatorCount]=
 	"",		// InterpolateDiffuse
 	"",		// InterpolateConstant
 	"",		// EMBM
+	""		// MAD
 };
 
 // ***************************************************************************
@@ -1090,7 +1121,7 @@ const char *RemapPSArguments0[CMaterial::TexOperatorCount][2]=
 
 // ***************************************************************************
 
-void buildColorOperation (string &dest, const char *prefix, const char *destSizzle, uint stage, CMaterial::TTexOperator &op, CMaterial::TTexSource src0, CMaterial::TTexSource src1, CMaterial::TTexOperand &op0, CMaterial::TTexOperand &op1, bool unlightedNoVertexColor)
+void buildColorOperation (string &dest, const char *prefix, const char *destSizzle, uint stage, CMaterial::TTexOperator &op, CMaterial::TTexSource src0, CMaterial::TTexSource src1, CMaterial::TTexSource src2, CMaterial::TTexOperand &op0, CMaterial::TTexOperand &op1, CMaterial::TTexOperand &op2, bool unlightedNoVertexColor)
 {
 	// Refix
 	dest += prefix;
@@ -1103,18 +1134,21 @@ void buildColorOperation (string &dest, const char *prefix, const char *destSizz
 	dest += destSizzle;
 
 	// Need a third argument ?
-	const char *remapPSThirdArguments = ((stage==0)?RemapPSThirdArguments0:RemapPSThirdArguments)[op][(uint)unlightedNoVertexColor];
-	if (remapPSThirdArguments[0] != 0)
+	if (op != CMaterial::Mad)
 	{
-		dest += ", ";
-		dest += remapPSThirdArguments;
+		const char *remapPSThirdArguments = ((stage==0)?RemapPSThirdArguments0:RemapPSThirdArguments)[op][(uint)unlightedNoVertexColor];
+		if (remapPSThirdArguments[0] != 0)
+		{
+			dest += ", ";
+			dest += remapPSThirdArguments;
 
-		// Need stage postfix ?
-		if ((op == CMaterial::InterpolateTexture) || (op == CMaterial::InterpolateConstant))
-			dest += toString (stage);
+			// Need stage postfix ?
+			if ((op == CMaterial::InterpolateTexture) || (op == CMaterial::InterpolateConstant))
+				dest += toString (stage);
 
-		// Add alpha swizzle
-		dest += ".w";
+			// Add alpha swizzle
+			dest += ".w";
+		}
 	}
 
 	// First argument
@@ -1154,6 +1188,28 @@ void buildColorOperation (string &dest, const char *prefix, const char *destSizz
 
 		// Need alpha ?
 		if ((op1 == CMaterial::SrcAlpha) || (op1 == CMaterial::InvSrcAlpha))
+			dest += ".w";
+	}
+
+	if (op == CMaterial::Mad)
+	{
+		dest += ", ";
+		
+		// Inverted ?
+		if ((op2 == CMaterial::InvSrcColor) || (op2 == CMaterial::InvSrcAlpha))
+			dest += "1-";
+		
+		dest += ((stage==0)?RemapPSArguments0:RemapPSArguments)[src2][(uint)unlightedNoVertexColor];
+		
+		// Second register modifier
+		dest += RemapPSSecondRegisterModificator[op];
+		
+		// Need stage postfix ?
+		if ((src2 == CMaterial::Texture) || (src2 == CMaterial::Constant))
+			dest += toString (stage);
+		
+		// Need alpha ?
+		if ((op2 == CMaterial::SrcAlpha) || (op2 == CMaterial::InvSrcAlpha))
 			dest += ".w";
 	}
 
@@ -1204,17 +1260,21 @@ IDirect3DPixelShader9	*CDriverD3D::buildPixelShader (const CNormalShaderDesc &no
 			CMaterial::TTexOperator texOp = (CMaterial::TTexOperator)texEnv.Env.OpRGB;
 			CMaterial::TTexSource src0 = (CMaterial::TTexSource)texEnv.Env.SrcArg0RGB;
 			CMaterial::TTexSource src1 = (CMaterial::TTexSource)texEnv.Env.SrcArg1RGB;
+			CMaterial::TTexSource src2 = (CMaterial::TTexSource)texEnv.Env.SrcArg2RGB;
 			CMaterial::TTexOperand op0 = (CMaterial::TTexOperand)texEnv.Env.OpArg0RGB;
 			CMaterial::TTexOperand op1 = (CMaterial::TTexOperand)texEnv.Env.OpArg1RGB;
-			buildColorOperation (shaderText, "", ".xyz", i, texOp, src0, src1, op0, op1, unlightedNoVertexColor);
+			CMaterial::TTexOperand op2 = (CMaterial::TTexOperand)texEnv.Env.OpArg2RGB;
+			buildColorOperation (shaderText, "", ".xyz", i, texOp, src0, src1, src2, op0, op1, op2, unlightedNoVertexColor);
 
 			// Alpha
 			texOp = (CMaterial::TTexOperator)texEnv.Env.OpAlpha;
 			src0 = (CMaterial::TTexSource)texEnv.Env.SrcArg0Alpha;
 			src1 = (CMaterial::TTexSource)texEnv.Env.SrcArg1Alpha;
+			src2 = (CMaterial::TTexSource)texEnv.Env.SrcArg2Alpha;
 			op0 = (CMaterial::TTexOperand)texEnv.Env.OpArg0Alpha;
 			op1 = (CMaterial::TTexOperand)texEnv.Env.OpArg1Alpha;
-			buildColorOperation (shaderText, "+", ".w", i, texOp, src0, src1, op0, op1, unlightedNoVertexColor);
+			op2 = (CMaterial::TTexOperand)texEnv.Env.OpArg2Alpha;
+			buildColorOperation (shaderText, "+", ".w", i, texOp, src0, src1, src2, op0, op1, op2, unlightedNoVertexColor);
 		}
 		// No texture shader ?
 		else if (i == 0)
@@ -1223,13 +1283,13 @@ IDirect3DPixelShader9	*CDriverD3D::buildPixelShader (const CNormalShaderDesc &no
 			CMaterial::TTexOperator texOp = CMaterial::Replace;
 			CMaterial::TTexSource src0 = CMaterial::Diffuse;
 			CMaterial::TTexOperand op0 = CMaterial::SrcColor;
-			buildColorOperation (shaderText, "", ".xyz", i, texOp, src0, src0, op0, op0, unlightedNoVertexColor);
+			buildColorOperation (shaderText, "", ".xyz", i, texOp, src0, src0, src0, op0, op0, op0, unlightedNoVertexColor);
 
 			// Alpha
 			texOp = CMaterial::Replace;
 			src0 = CMaterial::Diffuse;
 			op0 = CMaterial::SrcAlpha;
-			buildColorOperation (shaderText, "+", ".w", i, texOp, src0, src0, op0, op0, unlightedNoVertexColor);
+			buildColorOperation (shaderText, "+", ".w", i, texOp, src0, src0, src0, op0, op0, op0, unlightedNoVertexColor);
 		}
 	}
 

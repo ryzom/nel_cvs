@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.2 2001/10/16 12:28:05 lecroart Exp $
+ * $Id: service_5.cpp,v 1.3 2001/10/19 15:16:31 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -93,16 +93,17 @@ static CStdDisplayer sd;
 // services stat
 static sint32 NetSpeedLoop, UserSpeedLoop;
 
-string IService5::_ShortName = "";
-string IService5::_LongName = "";
-string IService5::_AliasName= "";
-uint16 IService5::_DefaultPort = 0;
+// class static member
 
-sint32 IService5::_UpdateTimeout = 10;
+string				 IService5::_ShortName		= "";
+string				 IService5::_LongName		= "";
+string				 IService5::_AliasName		= "";
+uint16				 IService5::_DefaultPort	= 0;
+sint32				 IService5::_UpdateTimeout	= 10;
+NLMISC::CEntityId	 IService5::_NextEntityId;
 
-CConfigFile IService5::ConfigFile;
-
-IService5	 *IService5::Instance = NULL;
+IService5			*IService5::Instance		= NULL;
+CConfigFile			 IService5::ConfigFile;
 
 //
 // Prototypes
@@ -605,6 +606,13 @@ sint IService5::main (void *wd)
 			instance->addService ("AES", CInetAddress("localhost:49997"), false);
 			instance->addCallbackArray (AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
 		}
+
+
+		//
+		// Now we have the service id, we can set the entites id generator
+		//
+
+		_NextEntityId.setServiceId(_SId);
 
 
 		//

@@ -554,6 +554,14 @@ SOURCE=..\include\nel\misc\displayer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\entity_id.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\entity_id.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\i18n.cpp
 # End Source File
 # Begin Source File

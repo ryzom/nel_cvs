@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.32 2001/08/30 17:07:57 lecroart Exp $
+ * $Id: service.h,v 1.33 2001/10/19 15:16:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/entity_id.h"
 
 #include "nel/net/callback_net_base.h"
 
@@ -180,10 +181,18 @@ public:
 	/// Returns the recording state
 	static CCallbackNetBase::TRecordingState recordingState() { return Instance->_RecordingState; }
 
-	static NLMISC::CConfigFile	ConfigFile;
-
 	/// Returns a pointer to the CCallbackServer object
 	static CCallbackServer *getServer();
+
+	/// Returns an uniq id for an entities on this service.
+	static uint64 getEntityId (uint8 Type)
+	{
+		NLMISC::CEntityId id = _NextEntityId++;
+		id.Type = Type;
+		return id;
+	}
+
+	static NLMISC::CConfigFile	ConfigFile;
 
 protected:
 
@@ -223,7 +232,7 @@ protected:
 
 private:
 
-	// this main is called by other main, the command line must be processing before calling this function
+	/// This main is called by other main, the command line must be processing before calling this function
 	sint				main (void *wd = NULL);
 
 	/// Select timeout value in milliseconds
@@ -237,6 +246,10 @@ private:
 
 	TCallbackItem				*_CallbackArray;
 	uint16						_CallbackArraySize;
+
+	/// This variable is used to generate uniq id for entities on this service.
+	static NLMISC::CEntityId	_NextEntityId;
+
 };
 
 }; // NLNET

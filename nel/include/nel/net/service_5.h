@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.1 2001/10/16 09:23:10 legros Exp $
+ * $Id: service_5.h,v 1.2 2001/10/19 15:16:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/entity_id.h"
 
 #include "nel/net/unified_network.h"
 
@@ -175,6 +176,14 @@ public:
 	/// Changes the recording state (use if you know what you are doing)
 	void				setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
 
+	/// Returns an uniq id for an entities on this service.
+	static uint64 getEntityId (uint8 Type)
+	{
+		NLMISC::CEntityId id = _NextEntityId++;
+		id.Type = Type;
+		return id;
+	}
+
 	/// Returns the recording state
 	static CCallbackNetBase::TRecordingState recordingState() { return Instance->_RecordingState; }
 
@@ -229,6 +238,10 @@ private:
 	sint						_Status;
 
 	bool						_Initialized;	// true if the init part of the service is passed
+
+	/// This variable is used to generate uniq id for entities on this service.
+	static NLMISC::CEntityId	_NextEntityId;
+
 };
 
 }; // NLNET

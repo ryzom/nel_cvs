@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.92 2001/10/16 12:28:05 lecroart Exp $
+ * $Id: service.cpp,v 1.93 2001/10/19 15:16:31 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -104,6 +104,9 @@ sint32 IService::_UpdateTimeout = 10;
 CConfigFile IService::ConfigFile;
 
 IService	 *IService::Instance = NULL;
+
+NLMISC::CEntityId	IService::_NextEntityId;
+
 
 //
 // Prototypes
@@ -583,6 +586,12 @@ sint IService::main (void *wd)
 
 		CNetManager::addServer (_ShortName, _Port, _SId);
 		CNetManager::addCallbackArray (_ShortName, _CallbackArray, _CallbackArraySize);
+
+		//
+		// Now we have the service id, we can set the entites id generator
+		//
+
+		_NextEntityId.setServiceId(_SId);
 
 		//
 		// Call the user service init

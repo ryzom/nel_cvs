@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.2 2001/07/12 13:51:37 legros Exp $
+ * $Id: camera.cpp,v 1.3 2001/07/12 14:36:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include <nel/3d/u_camera.h>
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_3d_mouse_listener.h>
+#include <nel/3d/u_instance.h>
 
 #include "client.h"
 
@@ -40,6 +41,8 @@ UCamera				*Camera = NULL;
 float				ViewLagBehind = 3.0f;
 float				ViewHeight = 2.0f;
 
+UInstance			*Snow = NULL;
+
 void	initCamera()
 {
 	Camera = Scene->getCam();
@@ -48,7 +51,14 @@ void	initCamera()
 	Camera->lookAt (CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 							ConfigFile.getVar("StartPoint").asFloat(1),
 							ConfigFile.getVar("StartPoint").asFloat(2)),
-					CVectorD (0,0,0));
+							CVectorD (0,0,0));
+
+
+	Snow = Scene->createInstance("snow.ps");
+	Snow->setScale(1.0f, 1.0f, 1.0f);
+	Snow->setPivot(0.0f, 0.0f, 0.0f);
+	Snow->show();
+
 }
 
 void	updateCamera()
@@ -58,6 +68,8 @@ void	updateCamera()
 	float	alpha = (float)atan(ViewHeight/ViewLagBehind);
 	mat.rotateX(-alpha);
 	Camera->setMatrix(mat);
+
+	Snow->setMatrix (mat);
 }
 
 void	releaseCamera()

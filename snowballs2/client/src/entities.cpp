@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.4 2001/07/12 14:35:11 legros Exp $
+ * $Id: entities.cpp,v 1.5 2001/07/12 14:36:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ EIT findEntity (uint32 eid, bool needAssert = true)
 	EIT entity = Entities.find (eid);
 	if (entity == Entities.end () && needAssert)
 	{
-		nlerror ("Entity %d not found", eid);
+		nlerror ("Entity %u not found", eid);
 	}
 	return entity;
 }
@@ -87,7 +87,7 @@ EIT findEntity (uint32 eid, bool needAssert = true)
 
 void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 {
-	nlinfo ("adding entity %d", eid);
+	nlinfo ("adding entity %u", eid);
 
 	EIT eit = findEntity (eid, false);
 	if (eit != Entities.end ())
@@ -155,7 +155,7 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 
 void removeEntity (uint32 eid)
 {
-	nlinfo ("removing entity %d", eid);
+	nlinfo ("removing entity %u", eid);
 
 	EIT eit = findEntity (eid);
 
@@ -173,7 +173,15 @@ void removeEntity (uint32 eid)
 
 void updateEntities ()
 {
-	/// \todo
+	// move auto move entity
+	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
+	{
+		if ((*eit).second.AutoMove)
+		{
+			(*eit).second.Position.x += frand (0.01f);
+			(*eit).second.Position.y += frand (0.01f);
+		}
+	}
 
 	// compute the collision for the primitives inserted in the move container	
 	double	dt = (double)(NewTime-LastTime) / 1000.0;
@@ -252,14 +260,15 @@ NLMISC_COMMAND(remove_entity,"remove a local entity","<eid>")
 
 	uint32 eid = (uint32)atoi(args[0].c_str());
 	removeEntity (eid);
+
 	return true;
 }
 
 
-NLMISC_COMMAND(add_entity,"add a local entity","<x> <y>")
+NLMISC_COMMAND(add_entity,"add a local entity","<x> <y> <auto_update>")
 {
 	// check args, if there s not the right number of parameter, return bad
-	if(args.size() != 2) return false;
+	if(args.size() != 3) return false;
 
 	float x = (float)atof(args[0].c_str());
 	float y = (float)atof(args[1].c_str());
@@ -268,5 +277,10 @@ NLMISC_COMMAND(add_entity,"add a local entity","<x> <y>")
 	uint32 eid = nextEID++;
 	addEntity (eid, CEntity::Other, CVector(x, y, 0.0f));
 	EIT eit = findEntity (eid);
+
+	(*eit).second.Position.x = x;
+	(*eit).second.Position.y = y;
+	(*eit).second.AutoMove = atoi(args[2].c_str()) == 1;
+
 	return true;
 }

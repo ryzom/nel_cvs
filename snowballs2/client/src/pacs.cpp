@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.1 2001/07/12 13:51:37 legros Exp $
+ * $Id: pacs.cpp,v 1.2 2001/07/12 14:36:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,12 +24,12 @@
  */
 
 
-#include "client.h"
-#include "pacs.h"
-
 #include <nel/pacs/u_retriever_bank.h>
 #include <nel/pacs/u_global_retriever.h>
 #include <nel/pacs/u_move_container.h>
+
+#include "client.h"
+#include "pacs.h"
 
 using namespace std;
 using namespace NLMISC;

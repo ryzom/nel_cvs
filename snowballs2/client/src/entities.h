@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.4 2001/07/12 14:35:11 legros Exp $
+ * $Id: entities.h,v 1.5 2001/07/12 14:36:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,8 @@ namespace NL3D
 class CEntity
 {
 public:
+	
+	CEntity () : Id(0xffffffff), Name("<Unknown>"), AutoMove(false) { }
 
 	uint32						Id;
 
@@ -56,14 +58,15 @@ public:
 	
 	TType						Type;
 
+	bool						AutoMove;
+
 	NLPACS::UMovePrimitive		*MovePrimitive;
 	NL3D::UInstance				*Instance;
 };
 
-
 extern CEntity	*Self;
 
-void addEntity (uint32 eid);
+void addEntity (uint32 eid, CEntity::TType type, NLMISC::CVector startPosition);
 void removeEntity (uint32 eid);
 
 void updateEntities ();

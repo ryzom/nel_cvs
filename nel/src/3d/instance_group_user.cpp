@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.22 2002/05/24 12:37:38 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.23 2002/06/13 13:48:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -327,6 +327,18 @@ void CInstanceGroupUser::createRoot (UScene &scene)
 void CInstanceGroupUser::setClusterSystem (UInstanceGroup *pClusterSystem)
 {
 	_InstanceGroup.setClusterSystem (&((CInstanceGroupUser*)pClusterSystem)->_InstanceGroup);
+}
+
+// ***************************************************************************
+bool CInstanceGroupUser::linkToParentCluster(UInstanceGroup *father)
+{
+	if (father)
+		return _InstanceGroup.linkToParent(&(NLMISC::safe_cast<CInstanceGroupUser *>(father)->_InstanceGroup));
+	else
+	{
+		nlwarning("Trying to link a cluster system to a NULL parent cluster");
+		return false;
+	}
 }
 
 // ***************************************************************************

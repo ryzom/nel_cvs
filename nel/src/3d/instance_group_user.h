@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.17 2002/05/24 12:37:38 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.18 2002/06/13 13:48:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,7 @@ private:
 
 	void createRoot (UScene &scene);
 	void setClusterSystem (UInstanceGroup *pClusterSystem);
+	bool linkToParentCluster(UInstanceGroup *father);
 	void getDynamicPortals (std::vector<std::string> &names);
 	void setDynamicPortal (std::string& name, bool opened);
 	bool getDynamicPortal (std::string& name);

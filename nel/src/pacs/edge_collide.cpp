@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.5 2001/05/21 17:09:15 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.6 2001/05/22 07:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ void		CEdgeCollide::make(const CVector2f &p0, const CVector2f &p1)
 
 
 // ***************************************************************************
-float		CEdgeCollide::testPoint(const CVector2f &start, const CVector2f &delta, float borderEpsilon)
+float		CEdgeCollide::testPointMove(const CVector2f &start, const CVector2f &delta, float borderEpsilon)
 {
 	// distance from point to line.
 	float	dist= start*Norm + C;
@@ -153,7 +153,7 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 
 
 // ***************************************************************************
-float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
+float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
 {
 	// distance from point to line.
 	float	dist= start*Norm + C;
@@ -248,7 +248,7 @@ float		CEdgeCollide::testCircle(const CVector2f &start, const CVector2f &delta, 
 
 
 // ***************************************************************************
-float		CEdgeCollide::testEdge(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta)
+float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta)
 {
 	float	a,b,cv,cc,  d,e,f;
 	CVector2f	tmp;
@@ -391,7 +391,7 @@ float		CEdgeCollide::testEdge(const CVector2f &q0, const CVector2f &q1, const CV
 
 
 // ***************************************************************************
-float		CEdgeCollide::testBBox(const CVector2f &start, const CVector2f &delta, const CVector2f bbox[4], CVector2f &normal)
+float		CEdgeCollide::testBBoxMove(const CVector2f &start, const CVector2f &delta, const CVector2f bbox[4], CVector2f &normal)
 {
 	// distance from center to line.
 	float	dist= start*Norm + C;
@@ -410,7 +410,7 @@ float		CEdgeCollide::testBBox(const CVector2f &start, const CVector2f &delta, co
 	for(sint i=0;i<4;i++)
 	{
 		float	t;
-		t= testEdge(bbox[i], bbox[(i+1)&3], delta);
+		t= testEdgeMove(bbox[i], bbox[(i+1)&3], delta);
 		tMin= min(t, tMin);
 	}
 

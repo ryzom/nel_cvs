@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.10 2001/05/21 17:09:15 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.11 2001/05/22 07:36:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -594,11 +594,11 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 
 					// test collision with this edge.
 					if(colType==CGlobalRetriever::Circle)
-						t= colEdge.testCircle(startCol, deltaCol, radius, normal);
+						t= colEdge.testCircleMove(startCol, deltaCol, radius, normal);
 					else if(colType==CGlobalRetriever::BBox)
-						t= colEdge.testBBox(startCol, deltaCol, bboxStart, normal);
+						t= colEdge.testBBoxMove(startCol, deltaCol, bboxStart, normal);
 					else if(colType==CGlobalRetriever::Point)
-						t= colEdge.testPoint(startCol, deltaCol);
+						t= colEdge.testPointMove(startCol, deltaCol);
 
 					// earlier collision??
 					if(t<tMin)

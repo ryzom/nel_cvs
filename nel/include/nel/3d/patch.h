@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.30 2001/01/30 13:44:12 berenguier Exp $
+ * $Id: patch.h,v 1.31 2001/02/20 11:03:39 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -38,6 +38,7 @@
 #include "nel/3d/tile_element.h"
 #include "nel/3d/tile_color.h"
 #include "nel/3d/tile_lumel.h"
+#include "nel/3d/tess_block.h"
 
 
 namespace NL3D {
@@ -222,7 +223,7 @@ public:
 	/// Refine / geomorph this patch. Even if clipped.
 	void			refine();
 	/// preRender this patch, if not clipped. Build RdrFace List ....
-	void			preRender();
+	void			preRender(const std::vector<CPlane>	&pyramid);
 	/// Render this patch, if not clipped (append to VertexBuffers / materials primitive block).
 	void			renderFar0();
 	void			renderFar1();
@@ -303,6 +304,8 @@ private:
 	CZone			*Zone;
 	// Tile Order for the patch.
 	uint8			OrderS, OrderT;
+	// For this patch, which level is required for a face to be inserted in the secondary TessBlocks (and not the masterblock)??
+	sint			TessBlockLimitLevel;
 	// For this patch, which level is required for a face to be a valid Tile??
 	sint			TileLimitLevel;
 	// For this patch, which level is required for a face to be a "square" face (not rectangular)??
@@ -313,6 +316,8 @@ private:
 	CTessFace		*Son0, *Son1;
 	// The base vertices.
 	CTessVertex		*BaseVertices[4];
+	// The base Far vertices (always here!!).
+	CTessFarVertex	BaseFarVertices[4];
 	// BSphere.
 	CBSphere		BSphere;
 
@@ -342,11 +347,18 @@ private:
 	// Info for alpha transition with Far1.
 	float			TransitionSqrMin;
 	float			OOTransitionSqrDelta;
-	// The root for render.
-	CTessFace		*RdrRoot;
-	CTessFace		*RdrTileRoot[NL3D_MAX_TILE_PASS];
-	// The N tess faces for this patch.
-	sint			NCurrentFaces;
+
+	/// \name Block renders.
+	// @{
+	// The block render of far only. Only Far faces bigger than a block are inserted here.
+	CTessBlock					MasterBlock;
+	// The 2*2 block render. For memory optimisation, none is allocated when no faces need it.
+	// There is (OrderT/2)*(OrderS/2) TessBlocks.
+	std::vector<CTessBlock>		TessBlocks;
+	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
+	sint						TessBlockRefCount;
+	// @}
+
 
 	/**
 	  *  Static buffer used to expand shading in expandShading. Its size is 
@@ -370,12 +382,56 @@ private:
 	CTessVertex		*getRootVertexForEdge(sint edge) const;
 	void			changeEdgeNeighbor(sint edge, CTessFace *to);
 
-	// For rdr.
-	void			appendFaceToRenderList(CTessFace *face);
-	void			appendFaceToTileRdrList(CTessFace *face);
-	void			removeFaceFromRenderList(CTessFace *face);
 
-	/// Texture mgt.
+	/// \name RenderList mgt.
+	// @{
+
+	// reset all list of MasterBlock.
+	void			resetMasterBlock();
+	// simply clear the tessnbloc array and reset cout to 0.
+	void			clearTessBlocks();
+	// add a ref to tess blocks, allocate them if necessary.
+	void			addRefTessBlocks();
+	// dec a ref to tess blocks, destroy them if necessary.
+	void			decRefTessBlocks();
+	// UGLY SIDE EFFECT: when refcount TessBlocks RefCount reach 0, tessblockas are deleted. think of it in tesselation.cpp.
+
+
+	// Retrieve the tessblockId, depending on face info.
+	uint			getNumTessBlock(CTessFace *face);
+	// FarVertType.
+	enum			TFarVertType {FVMasterBlock=0, FVTessBlock, FVTessBlockEdge};
+	// Retrieve the tessblockId, depending on a ParamCoord.
+	void			getNumTessBlock(CParamCoord pc, TFarVertType &type, uint &numtb);
+
+
+	// For rdr. Insert in the GOOD TessBlock the face (depending on level, patchcoordinates etc...)
+	// call appendFaceToTileRenderList() to insert his TileFaces into the good renderList.
+	void			appendFaceToRenderList(CTessFace *face);
+	// Remove a face and his tileface from the patch renderlist.
+	// call removeFaceFromTileRenderList() to insert his TileFaces into the good renderList.
+	void			removeFaceFromRenderList(CTessFace *face);
+	// for changePatchTexture, insert just the TileFace into the good render List.
+	void			appendFaceToTileRenderList(CTessFace *face);
+	void			removeFaceFromTileRenderList(CTessFace *face);
+
+	// Set/Unset (to NULL) a TileMaterial from the TessBlocks. Material must exist for both functions.
+	// And TileS/TileT must be OK.
+	void			appendTileMaterialToRenderList(CTileMaterial *tm);
+	void			removeTileMaterialFromRenderList(CTileMaterial *tm);
+
+	// Add/Remove FarVertices. Use fv->PCoord to know where.
+	void			appendFarVertexToRenderList(CTessFarVertex *fv);
+	void			removeFarVertexFromRenderList(CTessFarVertex *fv);
+	// Add/Remove NearVertices. Use tileMat to know where.
+	void			appendNearVertexToRenderList(CTileMaterial *tileMat, CTessNearVertex *nv);
+	void			removeNearVertexFromRenderList(CTileMaterial *tileMat, CTessNearVertex *nv);
+
+	// @}
+
+
+
+	/// \name Texture mgt.
 	// @{
 	// For CTessFace::computeMaterial(). Return the render pass for this material, given the number of the tile, and the
 	// desired pass. NULL may be returned if the pass is not present (eg: no additive for this tile...).
@@ -396,12 +452,14 @@ private:
 	void		releaseTileLightMap(uint tileLightMapId);
 	// @}
 
-	// For Render. Those methods compute the vertices for Driver (in CTessFace::CurrentVB).
-	sint			getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc);
-	sint			getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc);
-	void			computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv);
-
-	static void		resetFarIndices(CTessFace *rdrRoot);
+	// For Render. Those methods compute the vertices for Driver (in CTessFace::Current*VB).
+	void		fillFar0VB(CTessList<CTessFarVertex>  &vertList);
+	void		fillFar1VB(CTessList<CTessFarVertex>  &vertList);
+	void		fillTileVB(CTessList<CTessNearVertex> &vertList);
+	// For Render. Those methods compute the primitives for Driver (in pass).
+	void		addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
+	void		addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist);
+	void		addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist);
 
 
 private:

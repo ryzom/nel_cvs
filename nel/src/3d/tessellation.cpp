@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.34 2001/02/01 16:32:23 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.35 2001/02/20 11:05:06 berenguier Exp $
  *
  */
 
@@ -52,7 +52,6 @@ const	uint8	TileUvFmtNormal5= 4;
 const	float TileSize= 128;
 
 
-
 // ***************************************************************************
 // ***************************************************************************
 // CTileMaterial
@@ -71,17 +70,6 @@ CTileMaterial::CTileMaterial()
 
 
 // ***************************************************************************
-CTileRenderPtrs::CTileRenderPtrs()
-{
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
-	{
-		RenderPrec[i]=NULL;
-		RenderNext[i]=NULL;
-	}
-}
-
-
-// ***************************************************************************
 // ***************************************************************************
 // CTessFace
 // ***************************************************************************
@@ -89,7 +77,6 @@ CTileRenderPtrs::CTileRenderPtrs()
 
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
-uint32		CTessFace::CurrentRenderDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
 float		CTessFace::RefineThreshold= 0.001f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
@@ -111,31 +98,16 @@ float		CTessFace::TilePixelSize= 128;
 float		CTessFace::Far0Dist= 200;		// 200m.
 float		CTessFace::Far1Dist= 400;		// 400m.
 float		CTessFace::FarTransition= 10;	// Alpha transition= 10m.
-CVertexBuffer	*CTessFace::CurrentVB=NULL;
-sint		CTessFace::CurrentVertexIndex=1;
+CVertexBuffer	*CTessFace::CurrentFarVB=NULL;
+sint		CTessFace::CurrentFarIndex=1;
+CVertexBuffer	*CTessFace::CurrentTileVB=NULL;
+sint		CTessFace::CurrentTileIndex=1;
 
 
 CTessFace	CTessFace::CantMergeFace;
 CTessFace	CTessFace::MultipleBindFace;
 
 
-// ***************************************************************************
-ITileUv		*CTessFace::allocTileUv(uint8 fmt)
-{
-	switch (fmt)
-	{
-		case TileUvFmtNormal1: return new CTileUvNormal1; break;
-		case TileUvFmtNormal2: return new CTileUvNormal2; break;
-		case TileUvFmtNormal3: return new CTileUvNormal3; break;
-		case TileUvFmtNormal4: return new CTileUvNormal4; break;
-		default: 
-			nlstop;
-			return NULL;
-			break;
-	}
-}
-
-	
 // ***************************************************************************
 CTessFace::CTessFace()
 {
@@ -155,12 +127,15 @@ CTessFace::CTessFace()
 	NeedCompute= false;	
 
 	TileMaterial= NULL;
-	TileRdrPtr= NULL;
-	TileUvBase= TileUvLeft= TileUvRight= NULL;
-	// TileId and TileType undefined.
+	// Very important (for split reasons). Init Tilefaces to NULL.
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		TileFaces[i]=NULL;
+	}
 
 	RecursMarkCanMerge=false;
 	RecursMarkForceMerge=false;
+
 
 	NL3D_PROFILE_LAND_ADD(ProfNTessFace, 1);
 }
@@ -288,6 +263,147 @@ void		CTessFace::updateErrorMetric()
 
 
 // ***************************************************************************
+void	CTessFace::allocTileUv(TTileUvId id)
+{
+	// TileFaces must have been build.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			CTessNearVertex		*newNear= new CTessNearVertex;
+			switch(id)
+			{
+				case IdUvBase: newNear->Src= VBase; TileFaces[i]->VBase= newNear; break;
+				case IdUvLeft: newNear->Src= VLeft; TileFaces[i]->VLeft= newNear; break;
+				case IdUvRight: newNear->Src= VRight; TileFaces[i]->VRight= newNear; break;
+				default: nlstop;
+			};
+			Patch->appendNearVertexToRenderList(TileMaterial, newNear);
+		}
+	}
+}
+// ***************************************************************************
+void	CTessFace::deleteTileUv(TTileUvId id)
+{
+	// TileFaces must still exist.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			CTessNearVertex		*oldNear;
+			switch(id)
+			{
+				case IdUvBase : oldNear= TileFaces[i]->VBase;  TileFaces[i]->VBase=NULL; break;
+				case IdUvLeft : oldNear= TileFaces[i]->VLeft;  TileFaces[i]->VLeft=NULL; break;
+				case IdUvRight: oldNear= TileFaces[i]->VRight; TileFaces[i]->VRight=NULL; break;
+				default: nlstop;
+			};
+			Patch->removeNearVertexFromRenderList(TileMaterial, oldNear);
+			delete oldNear;
+		}
+	}
+}
+// ***************************************************************************
+void	CTessFace::copyTileUv(TTileUvId dstId, CTessFace *srcFace, TTileUvId srcId)
+{
+	// TileFaces must have been build.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	// Since this a ptr-copy, no need to add/remove the renderlist of near vertices.
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			// The srcface should have the same tileFaces enabled.
+			nlassert(srcFace->TileFaces[i]);
+
+			// copy from src.
+			CTessNearVertex		*copyNear;
+			switch(srcId)
+			{
+				case IdUvBase : copyNear= srcFace->TileFaces[i]->VBase; break;
+				case IdUvLeft : copyNear= srcFace->TileFaces[i]->VLeft; break;
+				case IdUvRight: copyNear= srcFace->TileFaces[i]->VRight; break;
+				default: nlstop;
+			};
+
+			// copy to dst.
+			switch(dstId)
+			{
+				case IdUvBase : TileFaces[i]->VBase=  copyNear; break;
+				case IdUvLeft : TileFaces[i]->VLeft=  copyNear; break;
+				case IdUvRight: TileFaces[i]->VRight= copyNear; break;
+				default: nlstop;
+			};
+		}
+	}
+}
+// ***************************************************************************
+void	CTessFace::heritTileUv(CTessFace *baseFace)
+{
+	// TileFaces must have been build.
+	nlassert(TileFaces[NL3D_TILE_PASS_RGB0]);
+
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileFaces[i])
+		{
+			// The baseface should have the same tileFaces enabled.
+			nlassert(baseFace->TileFaces[i]);
+			// VBase should be allocated.
+			nlassert(TileFaces[i]->VBase);
+			TileFaces[i]->VBase->initMiddleUv(*baseFace->TileFaces[i]->VLeft, *baseFace->TileFaces[i]->VRight);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CTessFace::buildTileFaces()
+{
+	nlassert(TileMaterial);
+
+	// Do nothgin for lightmap pass, of course.
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileMaterial->Pass[i])
+		{
+			TileFaces[i]= new CTileFace;
+			TileFaces[i]->VBase= NULL;
+			TileFaces[i]->VLeft= NULL;
+			TileFaces[i]->VRight= NULL;
+		}
+	}
+}
+// ***************************************************************************
+void		CTessFace::deleteTileFaces()
+{
+	nlassert(TileMaterial);
+
+	// Do nothgin for lightmap pass, of course.
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
+	{
+		if(TileMaterial->Pass[i])
+		{
+			nlassert(TileFaces[i]);
+			delete TileFaces[i];
+			TileFaces[i]= NULL;
+		}
+		else
+		{
+			nlassert(TileFaces[i]==NULL);
+		}
+	}
+}
+
+
+
+// ***************************************************************************
 void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, CParamCoord middle, CUV &uv)
 {
 	// Get good coordinate according to patch orientation.
@@ -299,7 +415,7 @@ void		CTessFace::initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, C
 	CVector		uvScaleBias;
 	bool		is256;
 	uint8		uvOff;
-	Patch->getTileUvInfo(TileId, pass, alpha, orient, uvScaleBias, is256, uvOff);
+	Patch->getTileUvInfo(TileMaterial->TileId, pass, alpha, orient, uvScaleBias, is256, uvOff);
 
 	// Orient the UV.
 	float	u= uv.U;
@@ -399,7 +515,7 @@ void		CTessFace::computeTileMaterial()
 	CParamCoord	middle(PVLeft,PVRight);
 	sint ts= ((sint)middle.S * (sint)Patch->OrderS) / 0x8000;
 	sint tt= ((sint)middle.T * (sint)Patch->OrderT) / 0x8000;
-	TileId= tt*Patch->OrderS + ts;
+	sint tileId= tt*Patch->OrderS + ts;
 
 
 	// 1. Compute Tile Material.
@@ -408,15 +524,23 @@ void		CTessFace::computeTileMaterial()
 	nlassert(!FBase || FBase->Patch!=Patch || FBase->Level<=Patch->TileLimitLevel);
 	bool	copyFromBase;
 	copyFromBase= (FBase && FBase->Patch==Patch);
-	copyFromBase= copyFromBase && (FBase->Level==Patch->TileLimitLevel && FBase->TileUvLeft!=NULL);
+	copyFromBase= copyFromBase && (FBase->Level==Patch->TileLimitLevel && FBase->TileMaterial!=NULL);
+	// NB: because of delete/recreateTileUvs(), FBase->TileMaterial may be NULL, even if face is at good TileLimitLevel.
 	if(copyFromBase)
 	{
 		TileMaterial= FBase->TileMaterial;
+		nlassert(TileMaterial->TileId== tileId);
 	}
 	else
 	{
 		sint	i;
 		TileMaterial= new CTileMaterial;
+		TileMaterial->TileId= tileId;
+		TileMaterial->TileS= ts;
+		TileMaterial->TileT= tt;
+
+		// Add this new material to the render list.
+		Patch->appendTileMaterialToRenderList(TileMaterial);
 
 		// First, build a lightmap for this tile, and get his id.
 		TileMaterial->LightMapId= Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP]);
@@ -426,50 +550,39 @@ void		CTessFace::computeTileMaterial()
 		{
 			// Get the correct render pass, according to the tile number, and the pass.
 			if(i!=NL3D_TILE_PASS_LIGHTMAP)
-				TileMaterial->Pass[i]= Patch->getTileRenderPass(TileId, i);
+				TileMaterial->Pass[i]= Patch->getTileRenderPass(tileId, i);
 		}
-
-		// There is always 1 UV: for RGB0/LIGHTMAP.
-		sint	uvcount=1;
-		TileMaterial->PassToUv[NL3D_TILE_PASS_RGB0]= 0;
-		TileMaterial->PassToUv[NL3D_TILE_PASS_LIGHTMAP]= 0;
-
-		// Use NULL in RGB1/RGB2/ADD TileMaterial->TilePass to know the format and bind PassToUv.
-		for(i=1;i<NL3D_MAX_TILE_PASS;i++)
-		{
-			// Do not count lightmap.
-			if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
-			{
-				TileMaterial->PassToUv[i]= uvcount;
-				uvcount++;
-			}
-		}
-		TileMaterial->TileUvFmt= TileUvFmtNormal1+(uvcount-1);
 	}
 
 
 	// 2. Compute Uvs.
 	//----------------
-	// NB: TileMaterial and TileId are already setup. Usefull for initTileUvLightmap() and initTileUvRGBA().
+	// NB: TileMaterial is already setup. Usefull for initTileUvLightmap() and initTileUvRGBA().
 
-	// Must allocate the base uv.
-	TileUvBase= allocTileUv(TileMaterial->TileUvFmt);
+	// First, must create The TileFaces, according to the TileMaterial passes.
+	buildTileFaces();
 
-	// Init LightMap UV, in UvPass 0, UV1..
-	initTileUvLightmap(PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[0].PUv1);
+	// Must allocate the Base, and insert into list.
+	allocTileUv(IdUvBase);
 
-	// Init UV RGBA, for all pass.
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+
+	// Init LightMap UV, in RGB0 pass, UV1..
+	initTileUvLightmap(PVBase, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VBase->PUv1);
+
+	// Init UV RGBA, for all pass (but lightmap).
+	for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 	{
-		// If pass is valid, and not lightmap pass.
-		if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
+		nlassert(i!=NL3D_TILE_PASS_LIGHTMAP);
+		// If pass is valid
+		if( TileMaterial->Pass[i])
 		{
-			sint	uvpass= TileMaterial->PassToUv[i];
+			// Face must exist.
+			nlassert(TileFaces[i]);
 			// Compute RGB UV in UV0.
-			initTileUvRGBA(i, false, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv0);
+			initTileUvRGBA(i, false, PVBase, middle, TileFaces[i]->VBase->PUv0);
 			// If transition tile, compute alpha UV in UV1.
 			if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
-				initTileUvRGBA(i, true, PVBase, middle, ((ITileUvNormal*)TileUvBase)->UvPasses[uvpass].PUv1);
+				initTileUvRGBA(i, true, PVBase, middle, TileFaces[i]->VBase->PUv1);
 		}
 	}
 
@@ -477,33 +590,39 @@ void		CTessFace::computeTileMaterial()
 	if(copyFromBase)
 	{
 		// Just cross-copy the pointers.
-		TileUvLeft= FBase->TileUvRight;
-		TileUvRight= FBase->TileUvLeft;
+		// Make Left near vertices be the Right vertices of FBase
+		copyTileUv(IdUvLeft, FBase, IdUvRight);
+		// Make Right near vertices be the Left vertices of FBase
+		copyTileUv(IdUvRight, FBase, IdUvLeft);
 	}
 	else
 	{
-		// Must allocate the left/right uv.
-		TileUvLeft= allocTileUv(TileMaterial->TileUvFmt);
-		TileUvRight= allocTileUv(TileMaterial->TileUvFmt);
+		// Must allocate the left/right uv (and insert into list).
+		allocTileUv(IdUvLeft);
+		allocTileUv(IdUvRight);
+
 
 		// Init LightMap UV, in UvPass 0, UV1..
-		initTileUvLightmap(PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[0].PUv1);
-		initTileUvLightmap(PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[0].PUv1);
+		initTileUvLightmap(PVLeft, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VLeft->PUv1);
+		initTileUvLightmap(PVRight, middle, TileFaces[NL3D_TILE_PASS_RGB0]->VRight->PUv1);
 
 		// Init UV RGBA!
-		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 		{
-			// If pass is valid, and not lightmap pass.
-			if(i!=NL3D_TILE_PASS_LIGHTMAP && TileMaterial->Pass[i])
+			nlassert(i!=NL3D_TILE_PASS_LIGHTMAP);
+			// If pass is valid
+			if(TileMaterial->Pass[i])
 			{
-				sint	uvpass= TileMaterial->PassToUv[i];
-				initTileUvRGBA(i, false, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv0);
-				initTileUvRGBA(i, false, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv0);
+				// Face must exist.
+				nlassert(TileFaces[i]);
+				// Compute RGB UV in UV0.
+				initTileUvRGBA(i, false, PVLeft, middle, TileFaces[i]->VLeft->PUv0);
+				initTileUvRGBA(i, false, PVRight, middle, TileFaces[i]->VRight->PUv0);
 				// If transition tile, compute alpha UV in UV1.
 				if(i== NL3D_TILE_PASS_RGB1 || i==NL3D_TILE_PASS_RGB2)
 				{
-					initTileUvRGBA(i, true, PVLeft, middle, ((ITileUvNormal*)TileUvLeft)->UvPasses[uvpass].PUv1);
-					initTileUvRGBA(i, true, PVRight, middle, ((ITileUvNormal*)TileUvRight)->UvPasses[uvpass].PUv1);
+					initTileUvRGBA(i, true, PVLeft, middle, TileFaces[i]->VLeft->PUv1);
+					initTileUvRGBA(i, true, PVRight, middle, TileFaces[i]->VRight->PUv1);
 				}
 			}
 		}
@@ -514,31 +633,66 @@ void		CTessFace::computeTileMaterial()
 void	CTessFace::releaseTileMaterial()
 {
 	// Hence, must release the tile. TileUvBase is differnet for each of leaves.
-	delete TileUvBase;
-	TileUvBase= NULL;
+	deleteTileUv(IdUvBase);
 
 	nlassert(!FBase || FBase->Level<=Patch->TileLimitLevel);
-	if(FBase && FBase->Level==Patch->TileLimitLevel && FBase->TileUvLeft!=NULL)
+	if(FBase && FBase->Level==Patch->TileLimitLevel && FBase->TileMaterial!=NULL)
 	{
 		// Do not release Uvs, since neighbor need it...
-		TileUvLeft= NULL;
-		TileUvRight= NULL;
-		// idem for TileMaterial.
+		// But release faces.
+		deleteTileFaces();
+		// Do not release TileMaterial, since neighbor need it...
 		TileMaterial= NULL;
 	}
 	else
 	{
-		delete TileUvLeft;
-		delete TileUvRight;
-		TileUvLeft= NULL;
-		TileUvRight= NULL;
+		// release Uvs.
+		deleteTileUv(IdUvLeft);
+		deleteTileUv(IdUvRight);
+
+		// After, release Tile faces.
+		deleteTileFaces();
+
 		// Release the tile lightmap part.
 		Patch->releaseTileLightMap(TileMaterial->LightMapId);
+
+		// Remove this material from the render list. DO it before deletion of course :).
+		// NB: TileS/TileT still valid.
+		Patch->removeTileMaterialFromRenderList(TileMaterial);
+
 		delete TileMaterial;
 		TileMaterial= NULL;
 	}
 }
 
+
+
+// ***************************************************************************
+void		CTessFace::updateNearFarVertices()
+{
+	nlassert(VBase && FVBase);
+	nlassert(VLeft && FVLeft);
+	nlassert(VRight && FVRight);
+
+	FVBase->Src= VBase;
+	FVLeft->Src= VLeft;
+	FVRight->Src= VRight;
+	FVBase->PCoord= PVBase;
+	FVLeft->PCoord= PVLeft;
+	FVRight->PCoord= PVRight;
+
+
+	// Near Vertices update (Src only).
+	for(sint i=0; i<NL3D_MAX_TILE_FACE; i++)
+	{
+		if(TileFaces[i])
+		{
+			TileFaces[i]->VBase->Src= VBase;
+			TileFaces[i]->VLeft->Src= VLeft;
+			TileFaces[i]->VRight->Src= VRight;
+		}
+	}
+}
 
 
 // ***************************************************************************
@@ -576,6 +730,11 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	CTessVertex		*vlb= f0->VBase;
 	CTessVertex		*vrt= f1->VBase;
 	CTessVertex		*vrb= f1->VRight;
+
+	CTessFarVertex	*farvlt= f1->FVLeft;
+	CTessFarVertex	*farvlb= f0->FVBase;
+	CTessFarVertex	*farvrt= f1->FVBase;
+	CTessFarVertex	*farvrb= f1->FVRight;
 
 
 	// 1. create new vertices.
@@ -624,6 +783,16 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		// NB: this work with both rectangular and square triangles.
 		vbot= f0->FLeft->SonLeft->VBase;
 	}
+
+	// In all case, must create new FarVertices, since rect split occurs on border!!
+	CTessFarVertex	*farvtop= new CTessFarVertex;
+	CTessFarVertex	*farvbot= new CTessFarVertex;
+	farvtop->Src= vtop;
+	farvbot->Src= vbot;
+	farvtop->PCoord= pctop;
+	farvbot->PCoord= pcbot;
+	Patch->appendFarVertexToRenderList(farvtop);
+	Patch->appendFarVertexToRenderList(farvbot);
 
 	
 	// 2. Create sons, and update links.
@@ -688,6 +857,21 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	f1r->VBase= vrt;
 	f1r->VLeft= f0l->VRight;
 	f1r->VRight= f0l->VLeft;
+
+	// link Far vertices.
+	f0r->FVRight= farvlt;
+	f0r->FVBase= farvlb;
+	f0r->FVLeft= farvbot;
+	f1l->FVBase= farvtop;
+	f1l->FVLeft= f0r->FVRight;
+	f1l->FVRight= f0r->FVLeft;
+
+	f0l->FVRight= farvtop;
+	f0l->FVBase= farvbot;
+	f0l->FVLeft= farvrb;
+	f1r->FVBase= farvrt;
+	f1r->FVLeft= f0l->FVRight;
+	f1r->FVRight= f0l->FVLeft;
 
 	// link neigbhor faces.
 	f0r->FBase= f1l;
@@ -796,12 +980,13 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	
 	// 7. Must remove father from rdr list, and insert sons.
 	//------------------------------------------------------
-	Patch->removeFaceFromRenderList(f0);
-	Patch->removeFaceFromRenderList(f1);
+	// UGLY REFCOUNT SIDE EFFECT: do the append first.
 	Patch->appendFaceToRenderList(f0l);
 	Patch->appendFaceToRenderList(f0r);
 	Patch->appendFaceToRenderList(f1l);
 	Patch->appendFaceToRenderList(f1r);
+	Patch->removeFaceFromRenderList(f0);
+	Patch->removeFaceFromRenderList(f1);
 
 }
 
@@ -819,6 +1004,8 @@ void		CTessFace::split(bool propagateSplit)
 	//if(Level>=LS_MAXLEVEL)
 	//	return;
 	// since split() may reach LS_MAXLEVEL, but enforce splits which outpass this stage!!
+
+	NL3D_PROFILE_LAND_ADD(ProfNSplits, 1);
 
 
 	// Special Rectangular case.
@@ -856,6 +1043,9 @@ void		CTessFace::split(bool propagateSplit)
 	// link neighbor vertex.
 	SonLeft->VLeft= VBase;
 	SonLeft->VRight= VLeft;
+	// link neighbor Far vertex.
+	SonLeft->FVLeft= FVBase;
+	SonLeft->FVRight= FVLeft;
 	// Patch coordinates.
 	SonLeft->PVBase= CParamCoord(PVLeft, PVRight);
 	SonLeft->PVLeft= PVBase;
@@ -870,6 +1060,9 @@ void		CTessFace::split(bool propagateSplit)
 	// link neighbor vertex.
 	SonRight->VLeft= VRight;
 	SonRight->VRight= VBase;
+	// link neighbor Far vertex.
+	SonRight->FVLeft= FVRight;
+	SonRight->FVRight= FVBase;
 	// Patch coordinates.
 	SonRight->PVBase= CParamCoord(PVLeft, PVRight);
 	SonRight->PVLeft= PVRight;
@@ -878,27 +1071,8 @@ void		CTessFace::split(bool propagateSplit)
 
 	// FBase->FBase==this. Must Doesn't change this. Used and Updated in section 5. ...
 
-	// 2. Update Tile infos.
-	//----------------------
-	// There is no problem with rectangular patch, since tiles are always squares.
-	// If new tile ....
-	if(SonLeft->Level==Patch->TileLimitLevel)
-	{
-		SonLeft->computeTileMaterial();
-		SonRight->computeTileMaterial();
-	}
-	// else Tile herit.
-	else if(SonLeft->Level > Patch->TileLimitLevel)
-	{
-		heritTileMaterial();
-	}
-	if(SonLeft->Level >= Patch->TileLimitLevel)
-	{
-		SonLeft->TileRdrPtr= new CTileRenderPtrs;
-		SonRight->TileRdrPtr= new CTileRenderPtrs;
-	}
 
-	// 3. Update/Create Vertex infos.
+	// 2. Update/Create Vertex infos.
 	//-------------------------------
 
 	// Must create/link *->VBase.
@@ -925,6 +1099,48 @@ void		CTessFace::split(bool propagateSplit)
 		SonLeft->VBase= FBase->SonLeft->VBase;
 	}
 
+
+	// Must create/link *->FVBase.
+	// HERE, we must create a FarVertex too if the neighbor is not of the same patch as me.
+	if(FBase==NULL || FBase->isLeaf() || FBase->Patch!=Patch)
+	{
+		// The base neighbor is a leaf or NULL. So must create the new far vertex.
+		CTessFarVertex	*newFar= new CTessFarVertex;
+		SonRight->FVBase= newFar;
+		SonLeft->FVBase= newFar;
+
+		// Compute.
+		newFar->Src= SonLeft->VBase;
+		newFar->PCoord= SonLeft->PVBase;
+
+		// Append.
+		Patch->appendFarVertexToRenderList(newFar);
+	}
+	else
+	{
+		// Else, get from neighbor.
+		// NB: since *FBase is not a leaf, FBase->SonLeft!=NULL...
+		// NB: this work with both rectangular and square triangles (see splitRectangular()).
+		SonRight->FVBase= FBase->SonLeft->FVBase;
+		SonLeft->FVBase= FBase->SonLeft->FVBase;
+	}
+
+
+	// 3. Update Tile infos.
+	//----------------------
+	// NB: must do it before appendFaceToRenderList().
+	// There is no problem with rectangular patch, since tiles are always squares.
+	// If new tile ....
+	if(SonLeft->Level==Patch->TileLimitLevel)
+	{
+		SonLeft->computeTileMaterial();
+		SonRight->computeTileMaterial();
+	}
+	// else Tile herit.
+	else if(SonLeft->Level > Patch->TileLimitLevel)
+	{
+		heritTileMaterial();
+	}
 
 
 	// 4. Compute centers.
@@ -987,9 +1203,10 @@ void		CTessFace::split(bool propagateSplit)
 
 	// 7. Must remove father from rdr list, and insert sons.
 	//------------------------------------------------------
-	Patch->removeFaceFromRenderList(this);
+	// UGLY REFCOUNT SIDE EFFECT: do the append first.
 	Patch->appendFaceToRenderList(SonLeft);
 	Patch->appendFaceToRenderList(SonRight);
+	Patch->removeFaceFromRenderList(this);
 
 }
 
@@ -1064,25 +1281,32 @@ void		CTessFace::doMerge()
 		if(!FBase || !FBase->isLeaf())
 			delete SonLeft->VBase;
 
+		// Delete Far Vertex. Idem, but test too if != patch...
+		if(!FBase || !FBase->isLeaf() || FBase->Patch!=Patch)
+		{
+			Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
+			delete SonLeft->FVBase;
+		}
+
 
 		// 2. Must remove sons from rdr list, and insert father.
 		//------------------------------------------------------
-		// Must do it before the TileRdrPtr is released.
+		// Must do it BEFORE the TileFaces are released.
+		// UGLY REFCOUNT SIDE EFFECT: do the append first.
+		Patch->appendFaceToRenderList(this);
 		Patch->removeFaceFromRenderList(SonLeft);
 		Patch->removeFaceFromRenderList(SonRight);
-		Patch->appendFaceToRenderList(this);
 
 		
 		// 3. Let's merge Uv.
 		//-------------------
 		// Delete Uv.
-		// Must do it for face1 and face2 separately, since they may not have same tile level (if != patch).
-		// Delete Tile for face1.
+		// Must do it for this and FBase separately, since they may not have same tile level (if != patch).
 		if(SonLeft->Level== Patch->TileLimitLevel)
 		{
 			// Square patch assumption: the sons are not of the same TileId/Patch.
 			nlassert(!sameTile(SonLeft, SonRight));
-			// release tiles.
+			// release tiles: NearVertices, TileFaces, and TileMaterial.
 			SonLeft->releaseTileMaterial();
 			SonRight->releaseTileMaterial();
 		}
@@ -1092,12 +1316,12 @@ void		CTessFace::doMerge()
 			// But Always delete if neighbor exist and has not same tile as me.
 			// NB: this work with rectangular neigbor patch, since sameTile() will return false if different patch.
 			if(!FBase || !FBase->isLeaf() || !sameTile(this, FBase))
-				delete SonLeft->TileUvBase;
-		}
-		if(SonLeft->Level >= Patch->TileLimitLevel)
-		{
-			delete SonLeft->TileRdrPtr;
-			delete SonRight->TileRdrPtr;
+			{
+				SonLeft->deleteTileUv(IdUvBase);
+			}
+			// In all case, must delete the tilefaces of those face.
+			SonLeft->deleteTileFaces();
+			SonRight->deleteTileFaces();
 		}
 
 
@@ -1135,12 +1359,18 @@ void		CTessFace::doMerge()
 		if(!FLeft || !FLeft->isLeaf())
 			delete SonLeft->VBase;
 
+		// Delete Far Vertex. Rect patch: neightb must be of a != pathc as me => must delete FarVertex.
+		nlassert(!FLeft || FLeft->Patch!=Patch);
+		Patch->removeFarVertexFromRenderList(SonLeft->FVBase);
+		delete SonLeft->FVBase;
+
 
 		// 2. Must remove sons from rdr list, and insert father.
 		//------------------------------------------------------
+		// UGLY REFCOUNT SIDE EFFECT: do the append first.
+		Patch->appendFaceToRenderList(this);
 		Patch->removeFaceFromRenderList(SonLeft);
 		Patch->removeFaceFromRenderList(SonRight);
-		Patch->appendFaceToRenderList(this);
 
 
 		// 3. Let's merge Face.
@@ -1182,6 +1412,8 @@ bool		CTessFace::merge()
 	if(!canMerge(false))
 		return false;
 
+	NL3D_PROFILE_LAND_ADD(ProfNMerges, 1);
+
 	// 1. Let's merge the face.
 	//-----------------------
 	// Propagation is done in doMerge().
@@ -1193,6 +1425,9 @@ bool		CTessFace::merge()
 // ***************************************************************************
 void		CTessFace::refine()
 {
+	NL3D_PROFILE_LAND_ADD(ProfNRefineFaces, 1);
+	NL3D_PROFILE_LAND_ADD(ProfNRefineLeaves, isLeaf()?1:0);
+
 	/*
 		if(ps<RefineThreshold), the face must be merged (ie have no leaves).
 		if(ps E [RefineThreshold, RefineTreshold*2]), the face must be splitted (ave leaves), and is geomorphed.
@@ -1210,6 +1445,8 @@ void		CTessFace::refine()
 
 	if(NeedCompute)
 	{
+		NL3D_PROFILE_LAND_ADD(ProfNRefineComputeFaces, 1);
+
 		updateErrorMetric();
 		float	ps=ErrorMetric;
 		ps*= OORefineThreshold;
@@ -1441,6 +1678,10 @@ void		CTessFace::unbind(CPatch *except[4])
 					SonLeft->VBase= new CTessVertex(*old);
 					// This is the difference:  (see rectangle tesselation rules).
 					SonRight->VLeft= SonLeft->VBase;
+					// Yoyo_patch_himself (12/02/2001): I forgot this one!!
+					nlassert(FBase && FBase->SonLeft);
+					FBase->SonLeft->VRight= SonLeft->VBase;
+
 				}
 			}
 		}
@@ -1476,6 +1717,17 @@ void		CTessFace::unbind(CPatch *except[4])
 			SonLeft->VLeft= VLeft;
 			SonRight->VBase= VBase;
 			SonRight->VRight= VRight;
+		}
+
+		// Must re-create good Vertex links for Far and Near Vertices!!!
+		SonLeft->updateNearFarVertices();
+		SonRight->updateNearFarVertices();
+		if(isRectangular())
+		{
+			//NB: must do this for Base neighbor (see unbind() rectangular case...).
+			nlassert(FBase && FBase->SonLeft && FBase->SonRight);
+			FBase->SonLeft->updateNearFarVertices();
+			FBase->SonRight->updateNearFarVertices();
 		}
 
 		// unbind the sons.
@@ -1657,6 +1909,7 @@ void		CTessFace::updateBindAndSplit()
 	//=========================
 	if(!isRectangular())
 	{
+		// multipatch face case are detected when face->Patch==NULL !!!
 		if(FBase && FBase->Patch==NULL)
 		{
 			fmult= FBase;
@@ -1666,12 +1919,14 @@ void		CTessFace::updateBindAndSplit()
 	}
 	else
 	{
+		// multipatch face case are detected when face->Patch==NULL !!!
 		if(f0->FLeft && f0->FLeft->Patch==NULL)
 		{
 			fmult0= f0->FLeft;
 			// First, trick: neighbor is NULL, so during the split. => no ptr problem.
 			f0->FLeft= NULL;
 		}
+		// multipatch face case are detected when face->Patch==NULL !!!
 		if(f1->FLeft && f1->FLeft->Patch==NULL)
 		{
 			fmult1= f1->FLeft;
@@ -1744,6 +1999,17 @@ void		CTessFace::updateBindAndSplit()
 		SonLeft->Center= (SonLeft->VBase->EndPos + SonLeft->VLeft->EndPos + SonLeft->VRight->EndPos)/3;
 
 
+		// Update good Far vertex pointer.
+		//================================
+		// Because *->VBase may have been merged to the multiple bind face, Near/FarVertices which pointed on it must
+		// be setup.
+		// We do not have to propagate this vertex ptr change since sons are leaves!!
+		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
+		// update pointers on vertex.
+		SonLeft->updateNearFarVertices();
+		SonRight->updateNearFarVertices();
+
+
 		// Bind FBase to a false face which indicate a bind 1/N.
 		// This face prevent for "this" face to be merged...
 		FBase= &CantMergeFace;
@@ -1797,7 +2063,7 @@ void		CTessFace::updateBindAndSplit()
 				f->FLeft= &CantMergeFace;
 			}
 		}
-		// After all updates done. recompute centers of both sons 's faces.
+		// After all updates done. recompute centers of both sons 's faces, and update far vertices pointers.
 		for(i=0;i<2;i++)
 		{
 			if(i==0)
@@ -1807,6 +2073,16 @@ void		CTessFace::updateBindAndSplit()
 			// Compute correct centers.
 			f->SonRight->Center= (f->SonRight->VBase->EndPos + f->SonRight->VLeft->EndPos + f->SonRight->VRight->EndPos)/3;
 			f->SonLeft->Center= (f->SonLeft->VBase->EndPos + f->SonLeft->VLeft->EndPos + f->SonLeft->VRight->EndPos)/3;
+
+			// Update good Far vertex pointer.
+			//================================
+			// Because *->VBase may have been merged to the multiple bind face, Near/FarVertices which pointed on it must
+			// be setup.
+			// We do not have to propagate this vertex ptr change, since sons are leaves!!
+			nlassert(f->SonLeft->isLeaf() && f->SonRight->isLeaf());
+			// update pointers on vertex.
+			f->SonLeft->updateNearFarVertices();
+			f->SonRight->updateNearFarVertices();
 		}
 	}
 }
@@ -1865,7 +2141,8 @@ bool		CTessFace::isRectangular() const
 // ***************************************************************************
 void		CTessFace::deleteTileUvs()
 {
-	if(!isLeaf())
+	// TODODO.
+/*	if(!isLeaf())
 	{
 		// Must delete the materials of leaves first.
 		SonLeft->deleteTileUvs();
@@ -1889,14 +2166,15 @@ void		CTessFace::deleteTileUvs()
 			SonLeft->TileUvBase= NULL;
 			SonRight->TileUvBase= NULL;
 		}
-	}
+	}*/
 }
 
 
 // ***************************************************************************
 void		CTessFace::recreateTileUvs()
 {
-	if(!isLeaf())
+	// TODODO.
+/*	if(!isLeaf())
 	{
 		// Must recreate the materials of parent first.
 
@@ -1920,8 +2198,8 @@ void		CTessFace::recreateTileUvs()
 	{
 		// Do this only for tiles.
 		if(TileMaterial)
-			Patch->appendFaceToTileRdrList(this);
-	}
+			Patch->appendFaceToTileRenderList(this);
+	}*/
 }
 
 
@@ -1929,41 +2207,36 @@ void		CTessFace::recreateTileUvs()
 // ***************************************************************************
 void		CTessFace::heritTileMaterial()
 {
-	SonLeft->TileId= TileId;
 	SonLeft->TileMaterial= TileMaterial;
-	SonLeft->TileUvLeft= TileUvBase;
-	SonLeft->TileUvRight= TileUvLeft;
+	SonLeft->buildTileFaces();
+	SonLeft->copyTileUv(IdUvLeft, this, IdUvBase);
+	SonLeft->copyTileUv(IdUvRight, this, IdUvLeft);
 
-	SonRight->TileId= TileId;
 	SonRight->TileMaterial= TileMaterial;
-	SonRight->TileUvLeft= TileUvRight;
-	SonRight->TileUvRight= TileUvBase;
+	SonRight->buildTileFaces();
+	SonRight->copyTileUv(IdUvLeft, this, IdUvRight);
+	SonRight->copyTileUv(IdUvRight, this, IdUvBase);
 
 	// Create, or link to the tileUv.
-	ITileUv		*tuv;
 	// Try to link to a neighbor TileUv.
 	// Can only work iff exist, and iff FBase is same patch, and same TileId.
-	if(FBase!=NULL && !FBase->isLeaf() && FBase->SonLeft->TileUvBase!=NULL && sameTile(this, FBase) )
+	if(FBase!=NULL && !FBase->isLeaf() && FBase->SonLeft->TileMaterial!=NULL && sameTile(this, FBase) )
 	{
 		// Ok!! link to the (existing) TileUv.
-		// SonLeft!=NULL since FBase->isLeaf()==false.
-		tuv= FBase->SonLeft->TileUvBase;
+		// FBase->SonLeft!=NULL since FBase->isLeaf()==false.
+		SonLeft->copyTileUv(IdUvBase, FBase->SonLeft, IdUvBase);
+		SonRight->copyTileUv(IdUvBase, FBase->SonLeft, IdUvBase);
 	}
 	else
 	{
-		switch (TileMaterial->TileUvFmt)
-		{
-			// Create at middle: (TileUvLeft+TileUvRight) /2
-			case TileUvFmtNormal1: tuv= new CTileUvNormal1((CTileUvNormal1*)TileUvLeft, (CTileUvNormal1*)TileUvRight); break;
-			case TileUvFmtNormal2: tuv= new CTileUvNormal2((CTileUvNormal2*)TileUvLeft, (CTileUvNormal2*)TileUvRight); break;
-			case TileUvFmtNormal3: tuv= new CTileUvNormal3((CTileUvNormal3*)TileUvLeft, (CTileUvNormal3*)TileUvRight); break;
-			case TileUvFmtNormal4: tuv= new CTileUvNormal4((CTileUvNormal4*)TileUvLeft, (CTileUvNormal4*)TileUvRight); break;
-			default: nlstop;
-		};
+		// Allocate a new vertex, and copy it to SonLeft and SonRight.
+		SonLeft->allocTileUv(IdUvBase);
+		SonRight->copyTileUv(IdUvBase, SonLeft, IdUvBase);
+
+		// Fill the new near vertex, with middle of Left/Right father.
+		SonLeft->heritTileUv(this);
 	}
-	
-	SonLeft->TileUvBase= tuv;
-	SonRight->TileUvBase= tuv;
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.1 2001/02/01 16:32:10 berenguier Exp $
+ * $Id: landscape_profile.h,v 1.2 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,11 @@ extern	sint		ProfNTessFace;
 extern	sint		ProfNRdrFar0;
 extern	sint		ProfNRdrFar1;
 extern	sint		ProfNRdrTile[NL3D_MAX_TILE_PASS];
-
+extern	sint		ProfNRefineFaces;
+extern	sint		ProfNRefineComputeFaces;
+extern	sint		ProfNRefineLeaves;
+extern	sint		ProfNSplits;
+extern	sint		ProfNMerges;
 
 } // NL3D
 

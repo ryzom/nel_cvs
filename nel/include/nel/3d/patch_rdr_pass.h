@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.5 2001/01/30 13:44:12 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.6 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ namespace NL3D
 class	CPatchRdrPass : public CRefCount
 {
 public:
+	// The refcount to know how many tiles use it (init at 0).
+	sint			RefCount;
 
 	/// \name The Tiny material for this pass.
 	// @{
@@ -61,29 +63,44 @@ public:
 
 
 	/// \name The "Primitive List" for this pass..
-	/** Format of a single block:
-	 * |LEN|ID0|ID1|ID2|ID0|ID1|ID2....|JMP|
-	 */
 	// @{
-	// The refcount to know how many tiles use it (init at 0).
-	sint			RefCount;
-	
-	// The current number of tris for this rdrpass.
-	sint			NTris;
+	// in preRender() pass, count how max primitive this pass will use.
+	sint			NMaxTris;
 	// Where this RdrPass begin, in the GlobalTriList.
 	sint			StartIndex;
-	// The current/end index for this RdrPass GlobalTriList.
+	// The current number of tris for this rdrpass.
+	sint			NTris;
+	// The current index .
 	sint			CurIndex;
-	// The BlockLen index, to know what is the length of a block (in Triangles).
-	sint			BlockLenIndex;
 	// @}
 
 
 public:
 	CPatchRdrPass();
+
+	/* BEFORE LANDSCAPE RENDER, MUST CALL IN ORDER:
+		- resetGlobalTriList.
+		- prePass, to compute MaxTris of ALL renderPass. (=> call before resetMaxTriList()).
+		- resetGlobalTriList.
+		- prePassBis, to compute StartIndex of ALL pass.
+		- N* 
+			- Fill Pass, with resetTriList each time.
+			- render.
+	*/
+
+	// PrePass: count tris max wanted.
+	void			resetMaxTriList();			// Reset MaxTris and StartIndex.
+	void			addMaxTris(sint ntris);		// may allocate GlobalTriList.
+
+	// PrePassBis: compute StartIndex.
+	void			computeStartIndex();
+
+	// FillPass: fill the "primitive block".
+	void			resetTriList();			// Reset NTris=0, and CurrentIndex= StartIndex.
 	void			addTri(uint32 idx0, uint32 idx1, uint32 idx2);
-	void			resetTriList();
-	void			buildPBlock(CPrimitiveBlock &pb) const;
+
+	// Render Pass: with the pointer and Ntrsi, render!!
+	uint32			*getStartPointer() {return (uint32*)&(*GlobalTriList.begin()) + StartIndex;}
 
 	// The operator which compare the material.
 	bool			operator<(const CPatchRdrPass &o) const
@@ -96,15 +113,28 @@ public:
 	}
 
 public:
-	// Must resetTriList() of all material using the GlobalTriList, in parrallel of calling resetGlobalTriList.
-	static void		resetGlobalTriList();
+	static	void	resetGlobalIndex();
 
 private:
-	static sint					CurGlobalIndex;
+	static sint		MaxGlobalIndex;
 	static std::vector<uint32>	GlobalTriList;
 
 };
 
+
+
+// ***************************************************************************
+inline void			CPatchRdrPass::addTri(uint32 idx0, uint32 idx1, uint32 idx2)
+{
+	// An error may occurs if resetGlobalTriList() called, but not resetTriList().
+	nlassert(CurIndex<MaxGlobalIndex);
+	nlassert(NTris<NMaxTris);
+
+	GlobalTriList[CurIndex++]= idx0;
+	GlobalTriList[CurIndex++]= idx1;
+	GlobalTriList[CurIndex++]= idx2;
+	NTris++;
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.25 2001/02/06 17:09:48 berenguier Exp $
+ * $Id: tessellation.h,v 1.26 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/3d/uv.h"
 #include "nel/3d/bsphere.h"
+#include "nel/3d/tess_list.h"
 
 
 namespace	NL3D
@@ -48,132 +49,50 @@ class	CTessFace;
 
 
 // ***************************************************************************
-// 3th pass is always the Lightmapped one (Lightmap*clouds).
+// 4th pass is always the Lightmapped one (Lightmap*clouds).
 #define	NL3D_MAX_TILE_PASS 5
+// There is no Face for lightmap, since lightmap pass share the RGB0 face.
+#define	NL3D_MAX_TILE_FACE	NL3D_MAX_TILE_PASS-1
 
 #define	NL3D_TILE_PASS_RGB0		0
 #define	NL3D_TILE_PASS_RGB1		1
 #define	NL3D_TILE_PASS_RGB2		2
-#define	NL3D_TILE_PASS_LIGHTMAP	3
-#define	NL3D_TILE_PASS_ADD		4
+#define	NL3D_TILE_PASS_ADD		3
+#define	NL3D_TILE_PASS_LIGHTMAP	4
+// NB: RENDER ORDER: CLOUD*LIGHTMAP is done BEFORE ADDITIVE.
 
 
 // ***************************************************************************
 const	float	OO32768= 1.0f/0x8000;
 
 
-// ***************************************************************************
-struct	CTileMaterial
-{
-	// The type of the tile.
-	uint8			TileUvFmt;		// 4 first bits to know the number of Uv needed.
-	// The LUT to know which Uv to be used, for which pass.
-	uint8			PassToUv[NL3D_MAX_TILE_PASS];
-	// The rendering passes materials.
-	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
-	// Pass are:
-	//  0: RGB general Tile.
-	//  1: 1st alpha tile. 0: RGB.  1: Alpha.
-	//  2: 2nd alpha tile. 0: RGB.  1: Alpha.
-	//	3: Cloud*Lightmap.
-	//  4: additive pass.
-	// NB: BIG TRICK: the pass 0 has 2 Uvs: Uv0: RGB, and Uv1: Lightmap!!!! even, if they are not used at the same pass :o).
-	// This simplifies, save memory, and save from copies of v3f.
-
-	// The global id of the little lightmap part for this tile.
-	uint			LightMapId;
-
-	// ptrs are Null by default.
-	CTileMaterial();
-};
-
-
-// ***************************************************************************
-struct	CTileRenderPtrs
-{
-	// The linked list.
-	CTessFace		*RenderPrec[NL3D_MAX_TILE_PASS];
-	CTessFace		*RenderNext[NL3D_MAX_TILE_PASS];
-
-	// ptrs are Null by default.
-	CTileRenderPtrs();
-};
-
 
 // ***************************************************************************
 /**
- * A Landscape Base TileUv.
- * virtual inheritance would have be usefull, for automatic clone(), middle() etc... but too heavy (a vftable...).
- *
- * NB: why don't use a "UvPasses" ptr in the CTessFace, and aloc it on demand with the number of UV wanted??? 
- * For future allocation improvement, where we need to allocate fixed size element...
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2000
+ * The parametric coordinates of the patch. 0x0000<=>0.0f. 0x8000<=> 1.0f.
  */
-class	ITileUv
+class	CParamCoord
 {
 public:
-	// The dtor should be virtual (if any), but since dtor is a no-op, don't add it.
+	uint16	S,T;
 
-	// The vertex index for the tile.
-	uint32			TileIndex;
-
-	// The date of vertex getTileIndex() for the tile.
-	// This system doesn't work on FarVertex, since FarVertices are shared through patch.
-	uint32			TileDate;
-
-	ITileUv()
+public:
+	CParamCoord() {}
+	CParamCoord(uint16 s, uint16 t) {S=s; T=t;}
+	// Create at middle.
+	CParamCoord(CParamCoord a, CParamCoord b) 
 	{
-		TileDate= 0;
+		S= (uint16) (((sint)a.S + (sint)b.S)>>1);
+		T= (uint16) (((sint)a.T + (sint)b.T)>>1);
 	}
+	// Get s,t as floats. returned s,t E [0,1].
+	float	getS() const {return S*OO32768;}
+	float	getT() const {return T*OO32768;}
+	// Set s,t as float. s,t E [0,1].
+	void	setST(float s, float t) {S= (sint16)(s*32768);T= (sint16)(t*32768);}
+	// vertex on the border?
+	bool	onBorder() const {return (S==0 || S==0x8000 || T==0 || T==0x8000);}
 };
-
-
-
-// Uv Passes.
-// **************************************
-struct	CPassUvNormal
-{
-	CUV		PUv0, PUv1;
-
-	void	makeMiddle(const CPassUvNormal &uv0, const CPassUvNormal &uv1)
-	{
-		PUv0= (uv0.PUv0 + uv1.PUv0)*0.5;
-		PUv1= (uv0.PUv1 + uv1.PUv1)*0.5;
-	}
-};
-
-
-// TileUv format.
-// **************************************
-class	ITileUvNormal : public ITileUv
-{
-public:
-	CPassUvNormal	*UvPasses;
-};
-// ******
-template<sint NPass>
-class	CTileUvNormalT : public ITileUvNormal
-{
-public:
-	CPassUvNormal	MyUvPasses[NPass];
-public:
-	CTileUvNormalT() {UvPasses= MyUvPasses;}
-	// Create as the middle.
-	CTileUvNormalT(const CTileUvNormalT *uva, const CTileUvNormalT *uvb)
-	{
-		UvPasses= MyUvPasses;
-		for(sint i=0;i<NPass;i++)
-			UvPasses[i].makeMiddle(uva->UvPasses[i], uvb->UvPasses[i]);
-	}
-};
-
-
-typedef	CTileUvNormalT<1>	CTileUvNormal1;
-typedef	CTileUvNormalT<2>	CTileUvNormal2;
-typedef	CTileUvNormalT<3>	CTileUvNormal3;
-typedef	CTileUvNormalT<4>	CTileUvNormal4;
 
 
 
@@ -190,19 +109,85 @@ public:
 	// The current position, + geomorph.
 	CVector			Pos;
 	CVector			StartPos, EndPos;
-	// The index of current far vertex.
-	uint32			FarIndex;
 	// The swap, for geomorph "optim"
 	bool			GeomDone;
 
 	CTessVertex()
 	{
 		// Must init to 0.
-		FarIndex= 0;
 		GeomDone= false;
 	}
 };
 
+
+// ***************************************************************************
+struct	CTessFarVertex : public CTessNodeList
+{
+	sint32			Index0;		// The index of Far0 in the Far VB.
+	sint32			Index1;		// The index of Far1 in the Far VB.
+	CTessVertex		*Src;		// The src vertex to copy Pos, and compute alpha.
+	CParamCoord		PCoord;		// The patch coord, to compute far UV.
+};
+
+
+// ***************************************************************************
+struct	CTessNearVertex : public CTessNodeList
+{
+	sint32			Index;		// The index in the Tile VB.
+	CTessVertex		*Src;		// The src vertex to copy Pos.
+	CUV				PUv0;
+	CUV				PUv1;
+
+public:
+	// Init this near vertex UVs, at middle of a and b.
+	void		initMiddleUv(CTessNearVertex &a, CTessNearVertex &b)
+	{
+		PUv0= (a.PUv0+b.PUv0)*0.5;
+		PUv1= (a.PUv1+b.PUv1)*0.5;
+	}
+};
+
+
+// ***************************************************************************
+/** A tileface. There is one TileFace per pass (BUT Lightmap PASS!! same used for RGB0 and LIGHTMAP).
+ *
+ */
+struct	CTileFace : public CTessNodeList
+{
+	CTessNearVertex		*VBase, *VLeft, *VRight;
+};
+
+
+// ***************************************************************************
+struct	CTileMaterial
+{
+	// The coordinates of the tile in the patch.
+	uint8			TileS, TileT;
+	// The number of the tile relatively to the patch TileMap.
+	uint8			TileId;
+	// The rendering passes materials.
+	CPatchRdrPass	*Pass[NL3D_MAX_TILE_PASS];
+	// Pass are:
+	//  0: RGB general Tile.
+	//  1: 1st alpha tile. 0: RGB.  1: Alpha.
+	//  2: 2nd alpha tile. 0: RGB.  1: Alpha.
+	//  3: additive pass.
+	//	4: Cloud*Lightmap.
+	// NB: BIG TRICK: the pass 0 has 2 Uvs: Uv0: RGB, and Uv1: Lightmap!!!! even, if they are not used at the same pass :o).
+	// This simplifies, save memory, and save from copies of v3f.
+	// NB: RENDER ORDER: CLOUD*LIGHTMAP is done BEFORE ADDITIVE.
+
+	// The list of faces, for each pass. NB: no faces for lightmaps!! since share same face/vertices from RGB0.
+	// The only thing not shared is the renderpass (Pass[0] and Pass[3] are different).
+	CTessList<CTileFace>	TileFaceList[NL3D_MAX_TILE_FACE];
+
+
+	// The global id of the little lightmap part for this tile.
+	uint			LightMapId;
+
+	// ptrs are Null by default.
+	CTileMaterial();
+};
 
 
 // ***************************************************************************
@@ -212,33 +197,8 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class	CTessFace
+class	CTessFace : public CTessNodeList
 {
-public:
-	class	CParamCoord
-	{
-	public:
-		// The parametric coordinates of the patch. 0x0000<=>0.0f. 0x8000<=> 1.0f.
-		uint16	S,T;
-
-	public:
-		CParamCoord() {}
-		CParamCoord(uint16 s, uint16 t) {S=s; T=t;}
-		// Create at middle.
-		CParamCoord(CParamCoord a, CParamCoord b) 
-		{
-			S= (uint16) (((sint)a.S + (sint)b.S)>>1);
-			T= (uint16) (((sint)a.T + (sint)b.T)>>1);
-		}
-		// Get s,t as floats. returned s,t E [0,1].
-		float	getS() const {return S*OO32768;}
-		float	getT() const {return T*OO32768;}
-		// Set s,t as float. s,t E [0,1].
-		void	setST(float s, float t) {S= (sint16)(s*32768);T= (sint16)(t*32768);}
-		// vertex on the border?
-		bool	onBorder() const {return (S==0 || S==0x8000 || T==0 || T==0x8000);}
-	};
-
 public:
 
 	/// \name geometric tesselation.
@@ -261,13 +221,10 @@ public:
 
 	/// \name Tile Material Infos (uvs...).
 	// @{
-	// The number of the tile relatively to the patch TileMap.
-	uint8			TileId;
 	// The multi-pass tile Material.
 	CTileMaterial	*TileMaterial;
-	// Uv for tiles. ITileUv is 2 to 5 t2f0/t2f1.
-	// color4ub are computed each frame (alpha= global night alpha, RGB= clouds color).
-	ITileUv			*TileUvBase, *TileUvLeft, *TileUvRight;
+	// The Tile Faces. There is no Face for lightmap, since use the one from RGB0.
+	CTileFace		*TileFaces[NL3D_MAX_TILE_FACE];
 	// @}
 
 
@@ -284,9 +241,9 @@ public:
 
 
 	// For Render.
-	CTessFace		*RenderPrec;
-	CTessFace		*RenderNext;
-	CTileRenderPtrs	*TileRdrPtr;
+	CTessFarVertex	*FVBase, *FVLeft, *FVRight;
+	// NB: herit from CTessNodeList to use Prec and Next ptrs.
+
 
 public:
 	CTessFace();
@@ -339,8 +296,6 @@ public:
 	// LANDSCAPE RENDERING CONTEXT.  Landscape must setup it at the begining at refine()/render().
 	// The current date of LandScape for refine only.
 	static	sint	CurrentDate;
-	// The current date of LandScape for render only.
-	static	uint32	CurrentRenderDate;
 	// The center view for refinement.
 	static	CVector RefineCenter;
 	// What is the treshold for tessellation.
@@ -374,10 +329,14 @@ public:
 	static	float	Far0Dist, Far1Dist;
 	// Distance for Alpha blend transition
 	static	float	FarTransition;
-	// The current VertexBuffer.
-	static	CVertexBuffer	*CurrentVB;
-	// The current Vertex Index for each pass of landscape render. Start at 1.
-	static	sint	CurrentVertexIndex;
+	// The current VertexBuffer for Far.
+	static	CVertexBuffer	*CurrentFarVB;
+	// The current VertexBuffer for Tile.
+	static	CVertexBuffer	*CurrentTileVB;
+	// The current Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	CurrentFarIndex;
+	// The current Vertex Index for each pass of landscape render. Start at 0.
+	static	sint	CurrentTileIndex;
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().
 	// NO!!! REMIND: can't have any patch global, since a propagated split()/updateErrorMetric()
@@ -387,9 +346,32 @@ public:
 private:
 	// Faces have the same tile???
 	static bool		sameTile(const CTessFace *a, const CTessFace *b) 
-		{return (a->Patch==b->Patch && a->TileId==b->TileId);}
-	// Alloc a tile.
-	static ITileUv	*allocTileUv(uint8 fmt);
+		{return (a->Patch==b->Patch && a->TileMaterial==b->TileMaterial);}
+
+	/// \name UV mgt.
+	// @{
+	enum	TTileUvId {IdUvBase=0, IdUvLeft, IdUvRight};
+	// Allocate a CTessNearVertex "id" (base, left or right) for each not NULL TileFace of "this" face.
+	// Init with good CTessVertex::Src, and then, insert it into Patch RenderList.
+	void	allocTileUv(TTileUvId id);
+	// delete a CTessNearVertex "id", removing it from Patch RenderList, for each not NULL TileFace of "this" face.
+	void	deleteTileUv(TTileUvId id);
+	// Just ptr-copy a CTessNearVertex "id" from an other face/vertex id. Do this for each not NULL TileFace.
+	void	copyTileUv(TTileUvId id, CTessFace *srcFace, TTileUvId srcId);
+
+	// The Base NearVertex must be allocated before.
+	// for each not NULL TileFace of "this" face, make the Base NearVertex the middle of baseFace TileUvLeft, and
+	// baseFace TileUvRight.
+	void	heritTileUv(CTessFace *baseFace);
+
+
+	// create The TileFaces, according to the TileMaterial passes. NO INSERTION IN RENDERLIST!!
+	void	buildTileFaces();
+	// delete The TileFaces, according to the TileMaterial passes. NO REMOVAL FROM RENDERLIST!!
+	void	deleteTileFaces();
+
+	// @}
+
 
 	// Usefull for unbind.
 	static bool	exceptPatch(CPatch *p, CPatch *except[4]);
@@ -410,6 +392,9 @@ private:
 	void	initTileUvRGBA(sint pass, bool alpha, CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
 	// The same, but for the lightmap pass.
 	void	initTileUvLightmap(CParamCoord pointCoord, CParamCoord middleCoord, CUV &uv);
+
+	// Far Vertices: update info (ptr, and PCoord).
+	void			updateNearFarVertices();
 
 private:
 	// Fake face are the only ones which have a NULL patch ptr (with mult face).

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.21 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: zone.h,v 1.22 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,7 +320,7 @@ public:
 	/// Refine a zone (if needed).
 	void			refine();
 	/// PreRender a zone (if needed).
-	void			preRender();
+	void			preRender(const std::vector<CPlane>	&pyramid);
 	/// Render pass (if needed).
 	void			renderFar0();
 	void			renderFar1();

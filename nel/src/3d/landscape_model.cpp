@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.5 2000/12/13 15:01:46 corvazier Exp $
+ * $Id: landscape_model.cpp,v 1.6 2001/02/20 11:05:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,10 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
 	// We are sure that pyramid has normalized plane normals.
 	landModel->Landscape.clip(trav->CamPos, pyramid);
 
+	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
+	// This saves an other Landscape patch traversal, so this is faster...
+	landModel->CurrentPyramid= trav->WorldPyramid;
+
 	// Well, always visible....
 	return true;
 }
@@ -75,7 +79,7 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	// First, refine.
 	landModel->Landscape.refine(trav->CamPos);
 	// then render.
-	landModel->Landscape.render(trav->getDriver(), trav->CamPos, landModel->isAdditive ());
+	landModel->Landscape.render(trav->getDriver(), trav->CamPos, landModel->CurrentPyramid, landModel->isAdditive ());
 }
 
 

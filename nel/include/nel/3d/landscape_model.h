@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.4 2000/12/13 14:59:06 corvazier Exp $
+ * $Id: landscape_model.h,v 1.5 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,6 +107,11 @@ private:
 
 	bool	_ActiveAdditive;
 	float	_Additive;
+
+	friend class CLandscapeClipObs;
+	friend class CLandscapeRenderObs;
+
+	std::vector<CPlane>		CurrentPyramid;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.34 2001/01/30 13:44:12 berenguier Exp $
+ * $Id: landscape.h,v 1.35 2001/02/20 11:03:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,39 @@ const	sint	NbTilesMax= 65536;
 const	sint	TextureNearSize= 256;
 const	sint	NbTilesByLine= TextureNearSize/NL_TILE_LIGHTMAP_SIZE;
 const	sint	NbTilesByTexture= NbTilesByLine*NbTilesByLine;
+
+
+
+// ***************************************************************************
+/**
+ * A landscape bind exception.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+struct EBadBind : public Exception
+{
+private:
+	mutable	std::string		_Output;
+
+public:
+	struct	CBindError
+	{
+		CBindError(sint z, sint p) {ZoneId= z; PatchId= p;}
+		sint	ZoneId;
+		sint	PatchId;
+	};
+
+
+	// The result list of bind errors.
+	std::list<CBindError>	BindErrors;
+
+public:
+	EBadBind() { _Reason = "Landscape Bind Error in (3DSMax indices!! (+1) ): "; }
+	virtual const char	*what() const throw();
+
+};
+
 
 
 // ***************************************************************************
@@ -116,8 +149,10 @@ public:
 	/// Disconnect, and Delete all zones.
 	void			clear();
 
-	/// Verify the binding of patchs zones. assert if error.
-	void			checkBinds();
+	/// Verify the binding of patchs of all zones. throw EBadBind if error.
+	void			checkBinds() throw(EBadBind);
+	/// Verify the binding of patchs of one zone. throw EBadBind if error. nop if zone not loaded.
+	void			checkBinds(uint16 zoneId) throw(EBadBind);
 
 	/**
 	  *  Build tileBank. Call this after loading the near and far tile banks.
@@ -153,8 +188,8 @@ public:
 	void			clip(const CVector &refineCenter, const std::vector<CPlane>	&pyramid);
 	/// Refine/Geomorph the tesselation of the landscape.
 	void			refine(const CVector &refineCenter);
-	/// Render the landscape.
-	void			render(IDriver *drv, const CVector &refineCenter, bool doTileAddPass=false);
+	/// Render the landscape. A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
+	void			render(IDriver *drv, const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass=false);
 	// @}
 
 
@@ -260,8 +295,6 @@ private:
 	// The temp VB for tiles and far passes.
 	CVertexBuffer	FarVB;
 	CVertexBuffer	TileVB;
-	// The temp prim block, for each rdrpass. re-allocation rarely occurs.
-	CPrimitiveBlock	PBlock;
 
 
 	// Tiles Types.
@@ -358,6 +391,9 @@ private:
 	void		releaseTileLightMap(uint tileLightMapId);
 	// @}
 
+
+	// check a zone, adding error to exception.
+	void			checkZoneBinds(CZone &curZone, EBadBind &bindError);
 
 };
 

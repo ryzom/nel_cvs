@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.45 2001/02/16 11:07:47 corvazier Exp $
+ * $Id: landscape.cpp,v 1.46 2001/02/20 11:05:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,29 @@ public:
 	virtual void	serial(NLMISC::IStream &f)  throw(NLMISC::EStream) {nlstop;}
 	NLMISC_DECLARE_CLASS(CTextureCross);
 };
+
+
+// ***************************************************************************
+const char	*EBadBind::what() const throw()
+{
+	sint			numErr= 0;
+	const	sint	NErrByLines= 4;
+
+	_Output= _Reason;
+
+	std::list<CBindError>::const_iterator		it;
+	for(it= BindErrors.begin();it!=BindErrors.end(); it++, numErr++)
+	{
+		char	tmp[256];
+		sint	x= it->ZoneId & 255;
+		sint	y= it->ZoneId >> 8;
+		sprintf(tmp, "zone%3d_%c%c.patch%3d;   ", y+1, (char)('A'+(x/26)), (char)('A'+(x%26)), it->PatchId+1);
+		if( (numErr%NErrByLines) == 0)
+			_Output+= "\n";
+		_Output+= tmp;
+	}
+	return _Output.c_str(); 
+}
 
 
 // ***************************************************************************
@@ -228,6 +251,13 @@ void			CLandscape::clip(const CVector &refineCenter, const std::vector<CPlane>	&
 // ***************************************************************************
 void			CLandscape::refine(const CVector &refineCenter)
 {
+	NL3D_PROFILE_LAND_SET(ProfNRefineFaces, 0);
+	NL3D_PROFILE_LAND_SET(ProfNRefineComputeFaces, 0);
+	NL3D_PROFILE_LAND_SET(ProfNRefineLeaves, 0);
+	NL3D_PROFILE_LAND_SET(ProfNSplits, 0);
+	NL3D_PROFILE_LAND_SET(ProfNMerges, 0);
+
+
 	if(!_RefineMode)
 		return;
 
@@ -273,11 +303,13 @@ void			CLandscape::updateGlobals (const CVector &refineCenter) const
 	CTessFace::TileNearSphere.Radius= CTessFace::TileDistNear;
 }
 // ***************************************************************************
-void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doTileAddPass)
+void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const std::vector<CPlane>	&pyramid, bool doTileAddPass)
 {
 	CTessFace::RefineCenter= refineCenter;
 	ItZoneMap	it;
 	sint		i;
+	ItTileRdrPassSet	itTile;
+	ItSPRenderPassSet	itFar;
 
 	// Yoyo: profile.
 	NL3D_PROFILE_LAND_SET(ProfNRdrFar0, 0);
@@ -289,41 +321,105 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 
 	// -1. Update globals
+	//====================
 	updateGlobals (refineCenter);
+	// Render.
+	CTessFace::CurrentTileVB= &TileVB;
+	CTessFace::CurrentTileIndex= 0;
+	CTessFace::CurrentFarVB= &FarVB;
+	CTessFace::CurrentFarIndex= 0;
+
 
 	// 0. preRender pass.
 	//===================
+	// Reset MaxTris info.
+	CPatchRdrPass::resetGlobalIndex();
+	for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
+	{
+		CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
+		pass.resetMaxTriList();
+	}
+	for(itFar=_FarRdrPassSet.begin(); itFar!=_FarRdrPassSet.end(); itFar++)
+	{
+		CPatchRdrPass	&pass= **itFar;
+		pass.resetMaxTriList();
+	}
+	for(i=0; i<(sint)_TextureNears.size(); i++)
+	{
+		CPatchRdrPass	&pass= *_TextureNears[i];
+		pass.resetMaxTriList();
+	}
+
+	// preRender.
+	// Clip TessBlocks against pyramid and Far Limit.
+	// Compute MaxTris of each RenderPass (tile and far).
+	// Compute Vertices in VBuffers.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
-		(*it).second->preRender();
+		(*it).second->preRender(pyramid);
 	}
+	CTessFace::CurrentFarVB->setNumVertices(CTessFace::CurrentFarIndex);
+	CTessFace::CurrentTileVB->setNumVertices(CTessFace::CurrentTileIndex);
+
+
+
+	// 0.a for each RenderPass, compute his starting ptr.
+	//===================================================
+	CPatchRdrPass::resetGlobalIndex();
+	for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
+	{
+		CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
+		pass.computeStartIndex();
+		// Must reset the list, so that CurIndex begin at StartIndex!!
+		pass.resetTriList();
+	}
+	for(itFar=_FarRdrPassSet.begin(); itFar!=_FarRdrPassSet.end(); itFar++)
+	{
+		CPatchRdrPass	&pass= **itFar;
+		pass.computeStartIndex();
+		// Must reset the list, so that CurIndex begin at StartIndex!!
+		pass.resetTriList();
+	}
+	for(i=0; i<(sint)_TextureNears.size(); i++)
+	{
+		CPatchRdrPass	&pass= *_TextureNears[i];
+		pass.computeStartIndex();
+		// Must reset the list, so that CurIndex begin at StartIndex!!
+		pass.resetTriList();
+	}
+
 
 	// 1. TileRender pass.
 	//====================
+	// Active VB.
+	driver->activeVertexBuffer(*CTessFace::CurrentTileVB);
+
+	// Render Order. Must "invert", since initial order is NOT the render order. This is done because the lightmap pass
+	// DO NOT have to do any renderTil(), since it is computed in RGB0 pass.
+	nlassert(NL3D_MAX_TILE_PASS==5);
+	static	sint	RenderOrder[NL3D_MAX_TILE_PASS]= {NL3D_TILE_PASS_RGB0, NL3D_TILE_PASS_RGB1, NL3D_TILE_PASS_RGB2,
+		NL3D_TILE_PASS_LIGHTMAP, NL3D_TILE_PASS_ADD};
+	// For ALL pass..
 	for(i=0; i<NL3D_MAX_TILE_PASS; i++)
 	{
-		// Do add pass???
-		if((i==NL3D_TILE_PASS_ADD) && !doTileAddPass)
-			continue;
+		sint	passOrder= RenderOrder[i];
 
-		// Reset VB inbfos.
-		CTessFace::CurrentVB= &TileVB;
-		CTessFace::CurrentVertexIndex= 1;
-		CPatchRdrPass::resetGlobalTriList();
+		// Do add pass???
+		if((passOrder==NL3D_TILE_PASS_ADD) && !doTileAddPass)
+			continue;
 
 		// Process all zones.
 		//=============================
-		// Inc at each pass!!
-		CTessFace::CurrentRenderDate++;
-		for(it= Zones.begin();it!=Zones.end();it++)
+		if(passOrder!= NL3D_TILE_PASS_LIGHTMAP)
 		{
-			(*it).second->renderTile(i);
+			for(it= Zones.begin();it!=Zones.end();it++)
+			{
+				(*it).second->renderTile(passOrder);
+			}
 		}
+		// NB: if passOrder is RGB0, primitives will be added to to the RGB0 pass AND the LIGHTMAP pass.
+		// So there is nothing to do here if LIGHTMAP PASS.
 
-		// Active VB.
-		//=============================
-		CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-		driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 		// Setup common material for this pass.
 		//=============================
@@ -339,7 +435,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		TileMaterial.setTexEnvMode(1, TileMaterial.getTexEnvMode(0));
 
 		// setup multitex / blending.
-		if(i==NL3D_TILE_PASS_RGB0)
+		if(passOrder==NL3D_TILE_PASS_RGB0)
 		{
 			// first pass, no blend.
 			TileMaterial.setBlend(false);
@@ -347,7 +443,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		else
 		{
 			TileMaterial.setBlend(true);
-			switch(i)
+			switch(passOrder)
 			{
 				case NL3D_TILE_PASS_RGB1: 
 				case NL3D_TILE_PASS_RGB2: 
@@ -382,10 +478,10 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 		// Render All material RdrPass.
 		//=============================
-		if(i!=NL3D_TILE_PASS_LIGHTMAP)
+		if(passOrder!=NL3D_TILE_PASS_LIGHTMAP)
 		{
 			// Render Base, Transitions or Additives.
-			bool	alphaStage= (i==NL3D_TILE_PASS_RGB1) || (i==NL3D_TILE_PASS_RGB2);
+			bool	alphaStage= (passOrder==NL3D_TILE_PASS_RGB1) || (passOrder==NL3D_TILE_PASS_RGB2);
 
 			ItTileRdrPassSet	itTile;
 			for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
@@ -396,11 +492,6 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 				if(pass.NTris==0)
 					continue;
 
-				// Build the PBlock.
-				pass.buildPBlock(PBlock);
-				// must resetTriList at each end of each material process.
-				pass.resetTriList();
-
 				// Setup material.
 				// Setup Diffuse texture of the tile.
 				TileMaterial.setTexture(0, pass.TextureDiffuse);
@@ -408,12 +499,15 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 				if(alphaStage)
 					TileMaterial.setTexture(1, pass.TextureAlpha);
 
-
 				// Render!
-				driver->render(PBlock, TileMaterial);
+				driver->renderTriangles(TileMaterial, pass.getStartPointer(), pass.NTris);
 
 				// Yoyo: profile.
-				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[i], PBlock.getNumTri());
+				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[passOrder], pass.NTris);
+
+
+				// must resetTriList at each end of each material process.
+				pass.resetTriList();
 			}
 		}
 		else
@@ -427,20 +521,19 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 				if(pass.NTris==0)
 					continue;
 
-				// Build the PBlock.
-				pass.buildPBlock(PBlock);
-				// must resetTriList at each end of each material process.
-				pass.resetTriList();
-
 				// Setup Lightmap into stage1. Because we share UV with RGB0. So we use UV1.
 				// Cloud will be placed into stage0, and texture coordinate will be generated by T&L.
 				TileMaterial.setTexture(1, pass.TextureDiffuse);
 
 				// Render!
-				driver->render(PBlock, TileMaterial);
+				driver->renderTriangles(TileMaterial, pass.getStartPointer(), pass.NTris);
 
 				// Yoyo: profile.
-				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[i], PBlock.getNumTri());
+				NL3D_PROFILE_LAND_ADD(ProfNRdrTile[passOrder], pass.NTris);
+
+				
+				// must resetTriList at each end of each material process.
+				pass.resetTriList();
 			}
 		}
 	}
@@ -448,11 +541,6 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 	// 2. Far0Render pass.
 	//====================
-	// Reset VB inbfos.
-	CTessFace::CurrentVB= &FarVB;
-	CTessFace::CurrentVertexIndex= 1;
-	CPatchRdrPass::resetGlobalTriList();
-
 	// Process all zones.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -460,40 +548,32 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	}
 
 	// Active VB.
-	CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-	driver->activeVertexBuffer(*CTessFace::CurrentVB);
+	driver->activeVertexBuffer(*CTessFace::CurrentFarVB);
 
 	// Setup common material.
 	FarMaterial.setBlend(false);
 
 	// Render All material RdrPass0.
-	ItSPRenderPassSet		itTile=_FarRdrPassSet.begin();
-	while (itTile!=_FarRdrPassSet.end())
+	itFar=_FarRdrPassSet.begin();
+	while (itFar!=_FarRdrPassSet.end())
 	{
-		CPatchRdrPass	&pass= **itTile;
+		CPatchRdrPass	&pass= **itFar;
 
-		// Build the pblock of this render pass
-		pass.buildPBlock(PBlock);
-		
-		// must resetTriList at each end of each material process.
-		pass.resetTriList();
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		driver->render(PBlock, FarMaterial);
-
-		// Next render pass
-		itTile++;
+		driver->renderTriangles(FarMaterial, pass.getStartPointer(), pass.NTris);
 
 		// Yoyo: profile.
-		NL3D_PROFILE_LAND_ADD(ProfNRdrFar0, PBlock.getNumTri());
+		NL3D_PROFILE_LAND_ADD(ProfNRdrFar0, pass.NTris);
+
+		// must resetTriList at each end of each material process. (because Far1 and Far0 are blended into same rdrpass).
+		pass.resetTriList();
+
+		// Next render pass
+		itFar++;
 	}
 
 	// 3. Far1Render pass.
 	//====================
-	// Reset VB inbfos.
-	CTessFace::CurrentVB= &FarVB;
-	CTessFace::CurrentVertexIndex= 1;
-	CPatchRdrPass::resetGlobalTriList();
-
 	// Process all zones.
 	for(it= Zones.begin();it!=Zones.end();it++)
 	{
@@ -501,34 +581,30 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 	}
 
 	// Active VB.
-	CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
-	driver->activeVertexBuffer(*CTessFace::CurrentVB);
+	driver->activeVertexBuffer(*CTessFace::CurrentFarVB);
 
 	// Setup common material.
 	FarMaterial.setBlend(true);
 
 
 	// Render All material RdrPass1.
-	itTile=_FarRdrPassSet.begin();
-	while (itTile!=_FarRdrPassSet.end())
+	itFar=_FarRdrPassSet.begin();
+	while (itFar!=_FarRdrPassSet.end())
 	{
-		CPatchRdrPass	&pass= **itTile;
+		CPatchRdrPass	&pass= **itFar;
 
-		// Build the pblock of this render pass
-		pass.buildPBlock(PBlock);
-		
-		// must resetTriList at each end of each material process.
-		pass.resetTriList();
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
-		driver->render(PBlock, FarMaterial);
-
-		// Next render pass
-		itTile++;
+		driver->renderTriangles(FarMaterial, pass.getStartPointer(), pass.NTris);
 
 		// Yoyo: profile.
-		NL3D_PROFILE_LAND_ADD(ProfNRdrFar1, PBlock.getNumTri());
-	}
+		NL3D_PROFILE_LAND_ADD(ProfNRdrFar1, pass.NTris);
 
+		// must resetTriList at each end of each material process.
+		pass.resetTriList();
+
+		// Next render pass
+		itFar++;
+	}
 
 	// 4. "Release" texture materials.
 	//================================
@@ -638,7 +714,7 @@ void			CLandscape::loadTile(uint16 tileId)
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)
 	{
-		textName= tile->getRelativeFileName (CTile::alpha);
+		textName= tile->getRelativeFileName (CTile::diffuse);
 		if(textName!="")
 			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
 	}
@@ -655,9 +731,10 @@ void			CLandscape::loadTile(uint16 tileId)
 	tileInfo->AlphaUvScaleBias.y= 0;
 	tileInfo->AlphaUvScaleBias.z= 1;
 	// Retrieve the good rot alpha decal.
-
-	if (tile)
+	if(tile)
 		tileInfo->RotAlpha= tile->getRotAlpha();
+	else
+		tileInfo->RotAlpha= 0;
 
 
 	// Increment RefCount of RenderPart.
@@ -1052,38 +1129,67 @@ const CZone*	CLandscape::getZone (sint zoneId) const
 }
 
 
-// ***************************************************************************
-void			CLandscape::checkBinds()
-{
-	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
-	{
-		CZone	&curZone= *(*it).second;
-		for(sint i=0;i<curZone.getNumPatchs();i++)
-		{
-			const CZone::CPatchConnect	&pa= *curZone.getPatchConnect(i);
 
-			// Check the bindInfos.
-			for(sint j=0;j<4;j++)
+// ***************************************************************************
+void			CLandscape::checkZoneBinds(CZone &curZone, EBadBind &bindError)
+{
+	for(sint i=0;i<curZone.getNumPatchs();i++)
+	{
+		const CZone::CPatchConnect	&pa= *curZone.getPatchConnect(i);
+
+		// Check the bindInfos.
+		for(sint j=0;j<4;j++)
+		{
+			const CPatchInfo::CBindInfo	&bd=pa.BindEdges[j];
+			// Just 1/1 for now.
+			if(bd.NPatchs==1)
 			{
-				const CPatchInfo::CBindInfo	&bd=pa.BindEdges[j];
-				// Just 1/1 for now.
-				if(bd.NPatchs==1)
+				CZone	*oZone= getZone(bd.ZoneId);
+				// If loaded zone.
+				if(oZone)
 				{
-					CZone	*oZone= getZone(bd.ZoneId);
-					// If loaded zone.
-					if(oZone)
-					{
-						const CZone::CPatchConnect	&po= *(oZone->getPatchConnect(bd.Next[0]));
-						const CPatchInfo::CBindInfo	&bo= po.BindEdges[bd.Edge[0]];
-						nlassert(bo.NPatchs==1);
-						nlassert(bo.Next[0]==i);
-						nlassert(bo.Edge[0]==j);
-					}
+					const CZone::CPatchConnect	&po= *(oZone->getPatchConnect(bd.Next[0]));
+					const CPatchInfo::CBindInfo	&bo= po.BindEdges[bd.Edge[0]];
+					if(bo.NPatchs!=1 || bo.Next[0]!=i || bo.Edge[0]!=j)
+						bindError.BindErrors.push_back( EBadBind::CBindError(curZone.getZoneId(), i));
 				}
 			}
 		}
 	}
 }
+
+
+// ***************************************************************************
+void			CLandscape::checkBinds() throw(EBadBind)
+{
+	EBadBind	bindError;
+
+	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	{
+		CZone	&curZone= *(*it).second;
+		checkZoneBinds(curZone, bindError);
+	}
+
+	if(!bindError.BindErrors.empty())
+		throw bindError;
+}
+
+
+// ***************************************************************************
+void			CLandscape::checkBinds(uint16 zoneId) throw(EBadBind)
+{
+	EBadBind	bindError;
+
+	ItZoneMap it= Zones.find(zoneId);
+	if(it!= Zones.end())
+	{
+		CZone	&curZone= *(*it).second;
+		checkZoneBinds(curZone, bindError);
+		if(!bindError.BindErrors.empty())
+			throw bindError;
+	}
+}
+
 
 
 // ***************************************************************************

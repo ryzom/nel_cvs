@@ -1,7 +1,7 @@
-/** \file landscape_profile.cpp
+/** \file tess_list.cpp
  * <File description>
  *
- * $Id: landscape_profile.cpp,v 1.2 2001/02/20 11:05:05 berenguier Exp $
+ * $Id: tess_list.cpp,v 1.1 2001/02/20 11:05:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,23 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/landscape_profile.h"
+#include "nel/3d/tess_list.h"
 
 
 namespace NL3D 
 {
 
-// ***************************************************************************
-// Yoyo: for profile only.
-sint		ProfNTessFace= 0;
-sint		ProfNRdrFar0= 0;
-sint		ProfNRdrFar1= 0;
-sint		ProfNRdrTile[NL3D_MAX_TILE_PASS];
-sint		ProfNRefineFaces;
-sint		ProfNRefineComputeFaces;
-sint		ProfNRefineLeaves;
-sint		ProfNSplits;
-sint		ProfNMerges;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.43 2001/02/14 15:12:37 corvazier Exp $
+ * $Id: patch.cpp,v 1.44 2001/02/20 11:05:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,10 +53,7 @@ CPatch::CPatch()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
-	RdrRoot= NULL;
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
-		RdrTileRoot[i]=NULL;
-	NCurrentFaces= 0;
+	TessBlockRefCount=0;
 	Clipped=false;
 
 	// To force computation of texture info on next preRender().
@@ -97,10 +94,8 @@ void			CPatch::release()
 	OrderT=0;
 	Son0=NULL;
 	Son1=NULL;
-	RdrRoot= NULL;
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
-		RdrTileRoot[i]=NULL;
-	NCurrentFaces= 0;
+	clearTessBlocks();
+	resetMasterBlock();
 	Clipped=false;
 
 }
@@ -168,108 +163,318 @@ CAABBox			CPatch::buildBBox() const
 }
 
 
+
 // ***************************************************************************
-void			CPatch::appendFaceToRenderList(CTessFace *face)
+// ***************************************************************************
+// RENDER LIST.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CPatch::addRefTessBlocks()
 {
-	NCurrentFaces++;
+	TessBlockRefCount++;
+	if(TessBlocks.size()==0)
+	{
+		// Allocate the tessblocks.
+		nlassert(NL3D_TESSBLOCK_TILESIZE==4);
+		// A tessblock is 2*2 tiles.
+		sint os= OrderS>>1;
+		sint ot= OrderT>>1;
+		nlassert(os>0);
+		nlassert(ot>0);
+		TessBlocks.resize(os*ot);
+	}
+}
 
-	// Update Gnal render.
-	//====================
-	// update Next.
-	face->RenderNext= RdrRoot;
-	if(RdrRoot)
-		RdrRoot->RenderPrec= face;
-	// update Prec.
-	face->RenderPrec= NULL;
-	RdrRoot= face;
-
-	// Update Tile render.
-	//====================
-	appendFaceToTileRdrList(face);
+// ***************************************************************************
+void			CPatch::decRefTessBlocks()
+{
+	TessBlockRefCount--;
+	// If no loinger need the tessblocks, delete them.
+	if(TessBlockRefCount==0)
+		clearTessBlocks();
+	nlassert(TessBlockRefCount>=0);
 }
 
 
 // ***************************************************************************
-void			CPatch::appendFaceToTileRdrList(CTessFace *face)
+void			CPatch::clearTessBlocks()
 {
-	// Update Tile render.
+	TessBlockRefCount=0;
+	contReset(TessBlocks);
+}
+
+
+// ***************************************************************************
+void			CPatch::resetMasterBlock()
+{
+	MasterBlock.FarVertexList.clear();
+	MasterBlock.FarFaceList.clear();
+	// no tiles should be here!!
+	nlassert(MasterBlock.NearVertexList.size()==0);
+}
+
+// ***************************************************************************
+uint			CPatch::getNumTessBlock(CTessFace *face)
+{
+	// To which tessBlocks link the face?
+	// compute an approx middle of the face.
+	CParamCoord	edgeMid(face->PVLeft, face->PVRight);
+	CParamCoord	middle(edgeMid, face->PVBase);
+	// Coordinate of the tessblock (2*2 a tile!! so the >>1).
+	uint ts= ((uint)middle.S * (uint)(OrderS>>1)) / 0x8000;
+	uint tt= ((uint)middle.T * (uint)(OrderT>>1)) / 0x8000;
+	uint numtb= tt*(uint)(OrderS>>1) + ts;
+
+	return numtb;
+}
+
+
+// ***************************************************************************
+void			CPatch::getNumTessBlock(CParamCoord pc, TFarVertType &type, uint &numtb)
+{
+	uint	tboS= (uint)(OrderS>>1);
+	uint	tboT= (uint)(OrderT>>1);
+
+	// Coordinate of the tessblock (2*2 a tile!! so the >>1).
+	uint ts= ((uint)pc.S * tboS) / 0x8000;
+	uint tt= ((uint)pc.T * tboT) / 0x8000;
+	numtb= tt*tboS + ts;
+
+	bool	edgeS= (ts*0x8000) == ((uint)pc.S * tboS);
+	bool	edgeT= (tt*0x8000) == ((uint)pc.T * tboT);
+
+	// Does this vertex lies on a corner of a TessBlock?
+	if(edgeS && edgeT)
+		type= FVMasterBlock;
+	// Does this vertex lies on a edge of a TessBlock?
+	else if(edgeS || edgeT)
+		type= FVTessBlockEdge;
+	// Else it lies exclusively IN a TessBlock.
+	else
+		type= FVTessBlock;
+
+}
+
+
+// ***************************************************************************
+void			CPatch::appendFaceToRenderList(CTessFace *face)
+{
+	// Update Gnal render.
 	//====================
-	if(face->TileRdrPtr)
+	if(face->Level<TessBlockLimitLevel)
+		MasterBlock.FarFaceList.append(face);
+	else
 	{
-		// For all valid pass, update their links.
-		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		// Alloc if necessary the TessBlocks.
+		addRefTessBlocks();
+
+		// link the face to the good tessblock.
+		uint	numtb= getNumTessBlock(face);
+		TessBlocks[numtb].FarFaceList.append(face);
+
+		// Must enlarge the BSphere of the tesblock!!
+		// We must do it on a per-face approach, because of tessblocks 's corners which are outside of tessblocks.
+		TessBlocks[numtb].extendSphere(face->VBase->EndPos);
+		TessBlocks[numtb].extendSphere(face->VLeft->EndPos);
+		TessBlocks[numtb].extendSphere(face->VRight->EndPos);
+		// I think this should be done too on StartPos, for geomorph (rare??...) problems.
+		// TODO: is this necessary???
+		TessBlocks[numtb].extendSphere(face->VBase->StartPos);
+		TessBlocks[numtb].extendSphere(face->VLeft->StartPos);
+		TessBlocks[numtb].extendSphere(face->VRight->StartPos);
+
+
+		// Update Tile render (no need to do it if face not at least at tessblock level).
+		appendFaceToTileRenderList(face);
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::removeFaceFromRenderList(CTessFace *face)
+{
+	// Update Gnal render.
+	//====================
+	if(face->Level<TessBlockLimitLevel)
+		MasterBlock.FarFaceList.remove(face);
+	else
+	{
+		// link the face to the good tessblock.
+		TessBlocks[getNumTessBlock(face)].FarFaceList.remove(face);
+
+		// Update Tile render (no need to do it if face not at least at tessblock level).
+		removeFaceFromTileRenderList(face);
+
+		// Destroy if necessary the TessBlocks.
+		decRefTessBlocks();
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::appendFaceToTileRenderList(CTessFace *face)
+{
+	if(face->TileMaterial)
+	{
+		// For all valid faces, update their links.
+		// Do not do this for lightmap, since it use same face from RGB0 pass.
+		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 		{
 			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
 			// If tile i enabled.
 			if(tilePass)
 			{
-				// Yes, it is hard to understand.... :)
-				// update Next.
-				face->TileRdrPtr->RenderNext[i]= RdrTileRoot[i];
-				if(RdrTileRoot[i])
-					RdrTileRoot[i]->TileRdrPtr->RenderPrec[i]= face;
-				// update Prec.
-				face->TileRdrPtr->RenderPrec[i]= NULL;
-				RdrTileRoot[i]= face;
+				// a face should have created for this pass.
+				nlassert(face->TileFaces[i]);
+				face->TileMaterial->TileFaceList[i].append(face->TileFaces[i]);
 			}
 		}
 	}
 }
+
 
 // ***************************************************************************
-void			CPatch::removeFaceFromRenderList(CTessFace *face)
+void			CPatch::removeFaceFromTileRenderList(CTessFace *face)
 {
-	NCurrentFaces--;
-
-	// Update Gnal render.
-	//====================
-	// update Prec.
-	if(!face->RenderPrec)
-	{
-		nlassert(RdrRoot==face);
-		RdrRoot= face->RenderNext;
-	}
-	else
-	{
-		face->RenderPrec->RenderNext= face->RenderNext;
-	}
-	// update Next.
-	if(face->RenderNext)
-		face->RenderNext->RenderPrec= face->RenderPrec;
-	face->RenderNext= NULL;
-	face->RenderPrec= NULL;
-
-
-	// Update Tile render.
-	//====================
 	if(face->TileMaterial)
 	{
-		for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
+		// For all valid faces, update their links.
+		// Do not do this for lightmap, since it use same face from RGB0 pass.
+		for(sint i=0;i<NL3D_MAX_TILE_FACE;i++)
 		{
 			CPatchRdrPass	*tilePass= face->TileMaterial->Pass[i];
-			// If tile pass enabled.
+			// If tile i enabled.
 			if(tilePass)
 			{
-				// Yes, it is hard to understand.... :)
-				// update Prec.
-				if(!face->TileRdrPtr->RenderPrec[i])
-				{
-					nlassert(RdrTileRoot[i]==face);
-					RdrTileRoot[i]= face->TileRdrPtr->RenderNext[i];
-				}
-				else
-				{
-					face->TileRdrPtr->RenderPrec[i]->TileRdrPtr->RenderNext[i]= face->TileRdrPtr->RenderNext[i];
-				}
-				// update Next.
-				if(face->TileRdrPtr->RenderNext[i])
-					face->TileRdrPtr->RenderNext[i]->TileRdrPtr->RenderPrec[i]= face->TileRdrPtr->RenderPrec[i];
-				face->TileRdrPtr->RenderNext[i]= NULL;
-				face->TileRdrPtr->RenderPrec[i]= NULL;
+				// a face should have created for this pass.
+				nlassert(face->TileFaces[i]);
+				face->TileMaterial->TileFaceList[i].remove(face->TileFaces[i]);
 			}
 		}
 	}
 }
+
+
+// ***************************************************************************
+static void computeTbTm(uint &numtb, uint &numtm, uint ts, uint tt, uint orderS)
+{
+	sint	is= ts&1;
+	sint	it= tt&1;
+	ts>>=1;
+	tt>>=1;
+	
+	numtb= tt*(uint)(orderS>>1) + ts;
+	numtm= it*2+is;
+}
+
+
+// ***************************************************************************
+void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
+{
+	nlassert(tm);
+
+	// Alloc if necessary the TessBlocks.
+	addRefTessBlocks();
+
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, tm->TileS, tm->TileT, OrderS);
+	TessBlocks[numtb].RdrTileRoot[numtm]= tm;
+}
+// ***************************************************************************
+void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
+{
+	nlassert(tm);
+
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, tm->TileS, tm->TileT, OrderS);
+	TessBlocks[numtb].RdrTileRoot[numtm]= NULL;
+
+	// Destroy if necessary the TessBlocks.
+	decRefTessBlocks();
+}
+
+
+// ***************************************************************************
+void			CPatch::appendFarVertexToRenderList(CTessFarVertex *fv)
+{
+	TFarVertType	type;
+	uint			numtb;
+	getNumTessBlock(fv->PCoord, type, numtb);
+	
+	
+	// TODODO: mgt TessEdgeBlock. For now, insert them in MasterBlock...
+	if(type==FVMasterBlock || type==FVTessBlockEdge)
+	{
+		MasterBlock.FarVertexList.append(fv);
+	}
+	else 
+	{
+		// Alloc if necessary the TessBlocks.
+		addRefTessBlocks();
+
+		TessBlocks[numtb].FarVertexList.append(fv);
+	}
+}
+// ***************************************************************************
+void			CPatch::removeFarVertexFromRenderList(CTessFarVertex *fv)
+{
+	TFarVertType	type;
+	uint			numtb;
+	getNumTessBlock(fv->PCoord, type, numtb);
+	
+	
+	// TODODO: mgt TessEdgeBlock. For now, remove them in MasterBlock...
+	if(type==FVMasterBlock || type==FVTessBlockEdge)
+	{
+		MasterBlock.FarVertexList.remove(fv);
+	}
+	else 
+	{
+		TessBlocks[numtb].FarVertexList.remove(fv);
+
+		// Destroy if necessary the TessBlocks.
+		decRefTessBlocks();
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::appendNearVertexToRenderList(CTileMaterial *tileMat, CTessNearVertex *nv)
+{
+	nlassert(tileMat);
+
+	// Alloc if necessary the TessBlocks.
+	addRefTessBlocks();
+
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT, OrderS);
+	TessBlocks[numtb].NearVertexList.append(nv);
+}
+// ***************************************************************************
+void			CPatch::removeNearVertexFromRenderList(CTileMaterial *tileMat, CTessNearVertex *nv)
+{
+	nlassert(tileMat);
+
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, tileMat->TileS, tileMat->TileT, OrderS);
+	TessBlocks[numtb].NearVertexList.remove(nv);
+
+	// Destroy if necessary the TessBlocks.
+	decRefTessBlocks();
+}
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// BASIC BUILD.
+// ***************************************************************************
+// ***************************************************************************
+
+
 
 
 // ***************************************************************************
@@ -285,7 +490,21 @@ void			CPatch::makeRoots()
 	b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
 	c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
 	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
-	
+
+	// Init Far vetices.
+	CTessFarVertex *fa= &BaseFarVertices[0];
+	CTessFarVertex *fb= &BaseFarVertices[1];
+	CTessFarVertex *fc= &BaseFarVertices[2];
+	CTessFarVertex *fd= &BaseFarVertices[3];
+	fa->Src= a;
+	fa->PCoord.setST(0,0);
+	fb->Src= b;
+	fb->PCoord.setST(0,1);
+	fc->Src= c;
+	fc->PCoord.setST(1,1);
+	fd->Src= d;
+	fd->PCoord.setST(1,0);
+
 
 	// Make Roots.
 	/*
@@ -323,6 +542,9 @@ void			CPatch::makeRoots()
 		Son0->VBase= b;
 		Son0->VLeft= c;
 		Son0->VRight= a;
+		Son0->FVBase= fb;
+		Son0->FVLeft= fc;
+		Son0->FVRight= fa;
 		Son0->PVBase.setST(0, 1);
 		Son0->PVLeft.setST(1, 1);
 		Son0->PVRight.setST(0, 0);
@@ -332,6 +554,9 @@ void			CPatch::makeRoots()
 		Son0->VBase= a;
 		Son0->VLeft= b;
 		Son0->VRight= d;
+		Son0->FVBase= fa;
+		Son0->FVLeft= fb;
+		Son0->FVRight= fd;
 		Son0->PVBase.setST(0, 0);
 		Son0->PVLeft.setST(0, 1);
 		Son0->PVRight.setST(1, 0);
@@ -353,6 +578,9 @@ void			CPatch::makeRoots()
 		Son1->VBase= d;
 		Son1->VLeft= a;
 		Son1->VRight= c;
+		Son1->FVBase= fd;
+		Son1->FVLeft= fa;
+		Son1->FVRight= fc;
 		Son1->PVBase.setST(1, 0);
 		Son1->PVLeft.setST(0, 0);
 		Son1->PVRight.setST(1, 1);
@@ -362,6 +590,9 @@ void			CPatch::makeRoots()
 		Son1->VBase= c;
 		Son1->VLeft= d;
 		Son1->VRight= b;
+		Son1->FVBase= fc;
+		Son1->FVLeft= fd;
+		Son1->FVRight= fb;
 		Son1->PVBase.setST(1, 1);
 		Son1->PVLeft.setST(1, 0);
 		Son1->PVRight.setST(0, 1);
@@ -375,10 +606,12 @@ void			CPatch::makeRoots()
 
 
 	// Prepare the render list...
-	RdrRoot= NULL;
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
-		RdrTileRoot[i]=NULL;
-	NCurrentFaces= 0;
+	clearTessBlocks();
+	resetMasterBlock();
+	appendFarVertexToRenderList(fa);
+	appendFarVertexToRenderList(fb);
+	appendFarVertexToRenderList(fc);
+	appendFarVertexToRenderList(fd);
 	appendFaceToRenderList(Son0);
 	appendFaceToRenderList(Son1);
 
@@ -410,6 +643,8 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 	// the rectangular patch is said "un-rectangular-ed" (tesselation looks like square). Hence, there is no problem
 	// with rectangular UV geomorph (well don't bother me, make a draw :) ).
 	TileLimitLevel= pmin*2 + pmax-pmin;
+	// A TessBlock is a 2*2 tile. This simple formula works because patch 1xX are illegal.
+	TessBlockLimitLevel= TileLimitLevel-2;
 	// This tell us when the tess face is "un-rectangular-ed" (to say a square). Before, it is a "rectangular" face, 
 	// which has a strange fxxxxxg split.
 	// If patch is square, then SquareLimitLevel=0 (ok!!).
@@ -485,18 +720,6 @@ void			CPatch::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-void			CPatch::resetFarIndices(CTessFace *pFace)
-{
-	for(;pFace; pFace=pFace->RenderNext)
-	{
-		pFace->VBase->FarIndex= 0;
-		pFace->VLeft->FarIndex= 0;
-		pFace->VRight->FarIndex= 0;
-	}
-}
-
-
-// ***************************************************************************
 void			CPatch::resetRenderFar()
 {
 	if (Pass0)
@@ -512,14 +735,21 @@ void			CPatch::resetRenderFar()
 
 
 // ***************************************************************************
-void			CPatch::preRender()
+// Local for computeTileVertex only. Setuped in CPatch::preRender().
+static	sint	CurVertexSize;
+static	sint	CurUV0Off;
+static	sint	CurUV1Off;
+
+
+// ***************************************************************************
+void			CPatch::preRender(const std::vector<CPlane>	&pyramid)
 {
 	// Don't do anything if clipped.
 	if(Clipped)
 		return;
 
-	// Classify the patch.
-	//====================
+	// 0. Classify the patch.
+	//=======================
 	sint	newFar0,newFar1;
 	float	r= (CTessFace::RefineCenter-BSphere.Center).norm() - BSphere.Radius;
 	float	rr;
@@ -539,8 +769,8 @@ void			CPatch::preRender()
 	}
 
 
-	// Update Texture Info.
-	//=====================
+	// 1. Update Texture Info.
+	//========================
 	if(newFar0!=Far0 || newFar1!=Far1)
 	{
 		// Backup old pass0
@@ -675,22 +905,143 @@ void			CPatch::preRender()
 	// Set new far values
 	Far0= newFar0;
 	Far1= newFar1;
+
+	// 2. Clip tess blocks.
+	//=====================
+	// MasterBlock never clipped.
+	MasterBlock.resetClip();
+	// If we are in Tile/FarTransition
+	bool	doClipFar= Far0==0 && Far1==1;
+	for(sint i=0; i<(sint)TessBlocks.size(); i++)
+	{
+		TessBlocks[i].resetClip();
+		TessBlocks[i].clip(pyramid);
+		// If we are in Tile/FarTransition
+		if(doClipFar)
+			TessBlocks[i].clipFar(CTessFace::RefineCenter, CTessFace::TileDistNear, CTessFace::FarTransition);
+	}
+	// TODODO: CTessBlockEdge gestion.
+
+
+
+	// 3. Fill Vertex Buffers, add Max tris.
+	//======================================
+
+	// FAR0.
+	//=======
+	if(Pass0)
+	{
+		// Fill VB.
+		fillFar0VB(MasterBlock.FarVertexList);
+		Pass0->addMaxTris(MasterBlock.FarFaceList.size());
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			if(!tblock.Clipped && !tblock.FullFar1)
+			{
+				fillFar0VB(tblock.FarVertexList);
+				Pass0->addMaxTris(tblock.FarFaceList.size());
+			}
+		}
+	}
+	// TODODO: CTessBlockEdge gestion (add new vertices).
+
+	// FAR1.
+	//=======
+	if(Pass1)
+	{
+		// Fill VB.
+		fillFar1VB(MasterBlock.FarVertexList);
+		Pass1->addMaxTris(MasterBlock.FarFaceList.size());
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			if(!tblock.Clipped && !tblock.EmptyFar1)
+			{
+				fillFar1VB(tblock.FarVertexList);
+				Pass1->addMaxTris(tblock.FarFaceList.size());
+			}
+		}
+	}
+	// TODODO: CTessBlockEdge gestion (add new vertices).
+
+
+	// TILE.
+	//=======
+	if(Far0==0)
+	{
+		// Compute Vertex VB info.
+		CurVertexSize= CTessFace::CurrentTileVB->getVertexSize();
+		CurUV0Off= CTessFace::CurrentTileVB->getTexCoordOff(0);
+		CurUV1Off= CTessFace::CurrentTileVB->getTexCoordOff(1);
+
+		// No Tiles in MasterBlock!!
+
+		// Traverse the TessBlocks to add vertices, and each TileMaterial, to addMaxTris to pass.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
+		{
+			CTessBlock	&tblock= TessBlocks[i];
+			if(!tblock.Clipped && !tblock.FullFar1)
+			{
+				// Add the vertices.
+				fillTileVB(tblock.NearVertexList);
+				// Add the faces.
+				for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
+				{
+					CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
+					if(tileMat)
+					{
+						nlassert(NL3D_MAX_TILE_PASS==5);
+						nlassert(NL3D_TILE_PASS_LIGHTMAP==4);
+						// We must always have a RGB0 pass, and a lightmap pass.
+						nlassert(tileMat->Pass[NL3D_TILE_PASS_RGB0]);
+						nlassert(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]);
+
+						// Add the max faces for RGB0 and LIGHTMAP. NB: lightmap pass use RGB0 faces...
+						// Because of sharing of vertices.
+						tileMat->Pass[NL3D_TILE_PASS_RGB0]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB0].size());
+						tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB0].size());
+
+						// Add the optionnal faces for each Mat Pass.
+						if(tileMat->Pass[NL3D_TILE_PASS_RGB1])
+							tileMat->Pass[NL3D_TILE_PASS_RGB1]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB1].size());
+						if(tileMat->Pass[NL3D_TILE_PASS_RGB2])
+							tileMat->Pass[NL3D_TILE_PASS_RGB2]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_RGB2].size());
+						if(tileMat->Pass[NL3D_TILE_PASS_ADD])
+							tileMat->Pass[NL3D_TILE_PASS_ADD]->addMaxTris(tileMat->TileFaceList[NL3D_TILE_PASS_ADD].size());
+					}
+				}
+			}
+		}
+	}
 }
 
 
+
 // ***************************************************************************
-sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
+void		CPatch::fillFar0VB(CTessList<CTessFarVertex>  &vertList)
 {
-	if(vert->FarIndex==0)
+	// Realloc if necessary the VertexBuffer.
+	uint	curSize= CTessFace::CurrentFarIndex + vertList.size();
+	if(CTessFace::CurrentFarVB->capacity() < curSize)
+		CTessFace::CurrentFarVB->reserve(curSize);
+
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
 	{
+		static sint	vidx;
+
 		// Compute/build the new vertex.
-		vert->FarIndex= CTessFace::CurrentVertexIndex++;
+		vidx= CTessFace::CurrentFarIndex++;
+		pVert->Index0= vidx;
 
 		// Set Pos.
-		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos);
+		CTessFace::CurrentFarVB->setVertexCoord(vidx, pVert->Src->Pos);
 
 		// Set Uvs.
-		static CUV		uv;
+		static CUV	uv;
+		CParamCoord	&pc= pVert->PCoord;
 		if (FarRotated&NL_PATCH_FAR0_ROTATED)
 		{
 			uv.U= pc.getT()* Far0UScale + Far0UBias;
@@ -701,30 +1052,41 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 			uv.U= pc.getS()* Far0UScale + Far0UBias;
 			uv.V= pc.getT()* Far0VScale + Far0VBias;
 		}
-		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
+		CTessFace::CurrentFarVB->setTexCoord(vidx, 0, uv);
 
 		// Compute color.
 		static CRGBA	col(255,255,255,255);
 		// For Far0, alpha is un-usefull.
-		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
+		CTessFace::CurrentFarVB->setColor(vidx, col);
 		// END!!
 	}
-	
-	return vert->FarIndex;
 }
+
+
 // ***************************************************************************
-sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
+void		CPatch::fillFar1VB(CTessList<CTessFarVertex>  &vertList)
 {
-	if(vert->FarIndex==0)
+	// Realloc if necessary the VertexBuffer.
+	uint	curSize= CTessFace::CurrentFarIndex + vertList.size();
+	if(CTessFace::CurrentFarVB->capacity() < curSize)
+		CTessFace::CurrentFarVB->reserve(curSize);
+
+	// Traverse the vertList.
+	CTessFarVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessFarVertex*)pVert->Next)
 	{
+		static sint	vidx;
+
 		// Compute/build the new vertex.
-		vert->FarIndex= CTessFace::CurrentVertexIndex++;
+		vidx= CTessFace::CurrentFarIndex++;
+		pVert->Index1= vidx;
 
 		// Set Pos.
-		CTessFace::CurrentVB->setVertexCoord(vert->FarIndex, vert->Pos);
+		CTessFace::CurrentFarVB->setVertexCoord(vidx, pVert->Src->Pos);
 
 		// Set Uvs.
 		static CUV		uv;
+		CParamCoord	&pc= pVert->PCoord;
 		if (FarRotated&NL_PATCH_FAR1_ROTATED)
 		{
 			uv.U= pc.getT()* Far1UScale + Far1UBias;
@@ -735,50 +1097,86 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 			uv.U= pc.getS()* Far1UScale + Far1UBias;
 			uv.V= pc.getT()* Far1VScale + Far1VBias;
 		}
-		CTessFace::CurrentVB->setTexCoord(vert->FarIndex, 0, uv);
+		CTessFace::CurrentFarVB->setTexCoord(vidx, 0, uv);
 
 		// Compute color.
 		static CRGBA	col(255,255,255,255);
 		// For Far1, use alpha fro transition.
-		float	f= (vert->Pos - CTessFace::RefineCenter).sqrnorm();
+		float	f= (pVert->Src->Pos - CTessFace::RefineCenter).sqrnorm();
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
 
-		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
+		CTessFace::CurrentFarVB->setColor(vidx, col);
 		// END!!
 	}
-	
-	return vert->FarIndex;
 }
 
 
 // ***************************************************************************
-// Local for computeTileVertex only. Setuped in CPatch::renderTiles().
-static	uint8	*CurVBPtr;
-static	sint	CurVertexSize;
-static	sint	CurUV0Off;
-static	sint	CurUV1Off;
-void			CPatch::computeTileVertex(CTessVertex *vert, ITileUv *uv, sint idUv)
+void		CPatch::fillTileVB(CTessList<CTessNearVertex>  &vertList)
 {
-	// Compute/build the new vertex.
-	uv->TileDate=CTessFace::CurrentRenderDate;
-	uv->TileIndex= CTessFace::CurrentVertexIndex++;
+	// Realloc if necessary the VertexBuffer.
+	uint	curSize= CTessFace::CurrentTileIndex + vertList.size();
+	if(CTessFace::CurrentTileVB->capacity() < curSize)
+		CTessFace::CurrentTileVB->reserve(curSize);
 
-	// Set Pos.
-	//CTessFace::CurrentVB->setVertexCoord(uv->TileIndex, vert->Pos);
-	*(CVector*)CurVBPtr= vert->Pos;
+	// Traverse the vertList.
+	static	uint8	*CurVBPtr;
+	CurVBPtr= (uint8*)(CTessFace::CurrentTileVB->getVertexCoordPointer(CTessFace::CurrentTileIndex));
 
-	// Set Uvs.
-	ITileUvNormal	*uvn= (ITileUvNormal*)uv;
-	CPassUvNormal	&uvpass= uvn->UvPasses[idUv];
-	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 0, uvpass.PUv0);
-	//CTessFace::CurrentVB->setTexCoord(uv->TileIndex, 1, uvpass.PUv1);
-	*(CUV*)(CurVBPtr+CurUV0Off)= uvpass.PUv0;
-	*(CUV*)(CurVBPtr+CurUV1Off)= uvpass.PUv1;
+	CTessNearVertex	*pVert;
+	for(pVert= vertList.begin(); pVert; pVert= (CTessNearVertex*)pVert->Next)
+	{
+		static sint	vidx;
 
-	// Inc the ptr.
-	CurVBPtr+= CurVertexSize;
+		// Compute/build the new vertex.
+		vidx= CTessFace::CurrentTileIndex++;
+		pVert->Index= vidx;
+
+		// Set Pos.
+		*(CVector*)CurVBPtr= pVert->Src->Pos;
+
+		// Set Uvs.
+		*(CUV*)(CurVBPtr+CurUV0Off)= pVert->PUv0;
+		*(CUV*)(CurVBPtr+CurUV1Off)= pVert->PUv1;
+
+		// Inc the ptr.
+		CurVBPtr+= CurVertexSize;
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::addFar0TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist)
+{
+	CTessFace	*pFace;
+	for(pFace= flist.begin(); pFace; pFace= (CTessFace*)pFace->Next)
+	{
+		pass->addTri(pFace->FVBase->Index0, pFace->FVLeft->Index0, pFace->FVRight->Index0);
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::addFar1TriList(CPatchRdrPass *pass, CTessList<CTessFace> &flist)
+{
+	CTessFace	*pFace;
+	for(pFace= flist.begin(); pFace; pFace= (CTessFace*)pFace->Next)
+	{
+		pass->addTri(pFace->FVBase->Index1, pFace->FVLeft->Index1, pFace->FVRight->Index1);
+	}
+}
+
+
+// ***************************************************************************
+void			CPatch::addTileTriList(CPatchRdrPass *pass, CTessList<CTileFace> &flist)
+{
+	CTileFace	*pFace;
+	for(pFace= flist.begin(); pFace; pFace= (CTileFace*)pFace->Next)
+	{
+		pass->addTri(pFace->VBase->Index, pFace->VLeft->Index, pFace->VRight->Index);
+	}
 }
 
 
@@ -787,17 +1185,14 @@ void			CPatch::renderFar0()
 {
 	if(Pass0 && !Clipped)
 	{
-		resetFarIndices(RdrRoot);
-		// Realloc if necessary the VertexBuffer.
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
-		// Add tris.
-		CTessFace	*pFace= RdrRoot;
-		for(;pFace; pFace=pFace->RenderNext)
+		// Add tris of MasterBlock.
+		addFar0TriList(Pass0, MasterBlock.FarFaceList);
+		// Add tris of TessBlocks.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
-			Pass0->addTri(getFarIndex0(pFace->VBase, pFace->PVBase),
-						getFarIndex0(pFace->VLeft, pFace->PVLeft),
-						getFarIndex0(pFace->VRight, pFace->PVRight));
+			CTessBlock	&tblock= TessBlocks[i];
+			if(!tblock.Clipped && !tblock.FullFar1)
+				addFar0TriList(Pass0, tblock.FarFaceList);
 		}
 
 		// Check the pass is in the set
@@ -831,17 +1226,14 @@ void			CPatch::renderFar1()
 {
 	if(Pass1 && !Clipped)
 	{
-		resetFarIndices(RdrRoot);
-		// Realloc if necessary the VertexBuffer.
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
-		// Add tris.
-		CTessFace	*pFace= RdrRoot;
-		for(;pFace; pFace=pFace->RenderNext)
+		// Add tris of MasterBlock.
+		addFar1TriList(Pass1, MasterBlock.FarFaceList);
+		// Add tris of TessBlocks.
+		for(sint i=0; i<(sint)TessBlocks.size(); i++)
 		{
-			Pass1->addTri(getFarIndex1(pFace->VBase, pFace->PVBase),
-						getFarIndex1(pFace->VLeft, pFace->PVLeft),
-						getFarIndex1(pFace->VRight, pFace->PVRight));
+			CTessBlock	&tblock= TessBlocks[i];
+			if(!tblock.Clipped && !tblock.EmptyFar1)
+				addFar1TriList(Pass1, tblock.FarFaceList);
 		}
 
 		// Check the pass is in the set
@@ -874,39 +1266,57 @@ void			CPatch::renderTile(sint pass)
 	// If tile mode.
 	if(Far0==0 && !Clipped)
 	{
-		// Realloc if necessary the VertexBuffer (at max possible).
-		if((sint)CTessFace::CurrentVB->capacity() < CTessFace::CurrentVertexIndex+3*NCurrentFaces)
-			CTessFace::CurrentVB->reserve(CTessFace::CurrentVertexIndex+3*NCurrentFaces);
+		// LIGHTMAP should not be rendered directly.
+		nlassert(pass==NL3D_TILE_PASS_RGB0 || pass==NL3D_TILE_PASS_RGB1 || pass==NL3D_TILE_PASS_RGB2 || pass==NL3D_TILE_PASS_ADD);
 
-		// Setup local VB infos, for getTileIndex().
-		CurVBPtr= (uint8*)(CTessFace::CurrentVB->getVertexCoordPointer(CTessFace::CurrentVertexIndex));
-		CurVertexSize= CTessFace::CurrentVB->getVertexSize();
-		CurUV0Off= CTessFace::CurrentVB->getTexCoordOff(0);
-		CurUV1Off= CTessFace::CurrentVB->getTexCoordOff(1);
+		// No Tiles in MasterBlock!!!!
 
-		// Add tris.
-		CTessFace	*pFace= RdrTileRoot[pass];
-		for(;pFace; pFace=pFace->TileRdrPtr->RenderNext[pass])
+		// General Case: RGB0 + lightmap.
+		if(pass==NL3D_TILE_PASS_RGB0)
 		{
-			CPatchRdrPass	*tilePass= pFace->TileMaterial->Pass[pass];
-			nlassert(tilePass);
-			sint	idUv=pFace->TileMaterial->PassToUv[pass];
-
-			// The 3 vertices.
-			ITileUv	*tileUvBase=pFace->TileUvBase;
-			ITileUv	*tileUvLeft=pFace->TileUvLeft;
-			ITileUv	*tileUvRight=pFace->TileUvRight;
-
-			// If not computed, compute them.
-			if(tileUvBase->TileDate!=CTessFace::CurrentRenderDate)
-				computeTileVertex(pFace->VBase, tileUvBase, idUv);
-			if(tileUvLeft->TileDate!=CTessFace::CurrentRenderDate)
-				computeTileVertex(pFace->VLeft, tileUvLeft, idUv);
-			if(tileUvRight->TileDate!=CTessFace::CurrentRenderDate)
-				computeTileVertex(pFace->VRight, tileUvRight, idUv);
-
-			// addTri to render pass.
-			tilePass->addTri(tileUvBase->TileIndex, tileUvLeft->TileIndex, tileUvRight->TileIndex);
+			// Traverse the TessBlocks to add faces to each TileMaterial.
+			for(sint i=0; i<(sint)TessBlocks.size(); i++)
+			{
+				CTessBlock	&tblock= TessBlocks[i];
+				if(!tblock.Clipped && !tblock.FullFar1)
+				{
+					// Add the faces.
+					for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
+					{
+						CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
+						if(tileMat)
+						{
+							nlassert(tileMat->Pass[NL3D_TILE_PASS_RGB0]);
+							nlassert(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP]);
+							// Add the trilist of RGB0 both to RGB0 and LIGHTMAP.
+							addTileTriList(tileMat->Pass[NL3D_TILE_PASS_RGB0], tileMat->TileFaceList[NL3D_TILE_PASS_RGB0]);
+							addTileTriList(tileMat->Pass[NL3D_TILE_PASS_LIGHTMAP], tileMat->TileFaceList[NL3D_TILE_PASS_RGB0]);
+						}
+					}
+				}
+			}
+		}
+		// Else: RGB1, RGB2, ADD.
+		else
+		{
+			// Traverse the TessBlocks to add faces to each TileMaterial.
+			for(sint i=0; i<(sint)TessBlocks.size(); i++)
+			{
+				CTessBlock	&tblock= TessBlocks[i];
+				if(!tblock.Clipped && !tblock.FullFar1)
+				{
+					// Add the faces.
+					for(sint j=0; j<NL3D_TESSBLOCK_TILESIZE; j++)
+					{
+						CTileMaterial	*tileMat= tblock.RdrTileRoot[j];
+						if(tileMat)
+						{
+							if(tileMat->Pass[pass])
+								addTileTriList(tileMat->Pass[pass], tileMat->TileFaceList[pass]);
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -1225,8 +1635,23 @@ void			CPatch::deleteTileUvs()
 void			CPatch::recreateTileUvs()
 {
 	// Reset the Tile rdr list.
-	for(sint i=0;i<NL3D_MAX_TILE_PASS;i++)
-		RdrTileRoot[i]=NULL;
+	for(sint tb=0; tb<(sint)TessBlocks.size();tb++)
+	{
+		// Vertices must all be reseted.
+		TessBlocks[tb].NearVertexList.clear();
+		for(sint i=0;i<NL3D_TESSBLOCK_TILESIZE;i++)
+		{
+			CTileMaterial	*tm= TessBlocks[tb].RdrTileRoot[i];
+			if(tm)
+			{
+				for(sint pass=0;pass<NL3D_MAX_TILE_FACE;pass++)
+				{
+					tm->TileFaceList[pass].clear();
+				}
+			}
+		}
+	}
+
 	Son0->recreateTileUvs();
 	Son1->recreateTileUvs();
 }

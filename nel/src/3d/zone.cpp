@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.30 2001/02/14 15:12:37 corvazier Exp $
+ * $Id: zone.cpp,v 1.31 2001/02/20 11:05:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -819,7 +819,7 @@ void			CZone::refine()
 
 }
 // ***************************************************************************
-void			CZone::preRender()
+void			CZone::preRender(const std::vector<CPlane>	&pyramid)
 {
 	nlassert(Compiled);
 	if(ClipResult==ClipOut)
@@ -829,7 +829,7 @@ void			CZone::preRender()
 	CPatch		*pPatch= &(*Patchs.begin());
 	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
-		pPatch->preRender();
+		pPatch->preRender(pyramid);
 	}
 }
 // ***************************************************************************

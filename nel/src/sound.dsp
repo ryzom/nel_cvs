@@ -241,11 +241,27 @@ SOURCE=.\sound\playable.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\sample_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sample_bank.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\sound.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\sound\sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_bank.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_bank.h
 # End Source File
 # Begin Source File
 

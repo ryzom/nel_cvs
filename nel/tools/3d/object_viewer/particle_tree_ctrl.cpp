@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.7 2001/06/25 13:30:44 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.8 2001/06/25 16:14:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -834,13 +834,10 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 			if (nt && nt->Type == CNodeType::locatedInstance)
 			{				
 
-				if (nt->LocMover)
-				{	
-					if (!nt->LocMover->onlyStoreNormal())
-					{
-						nlassert(dynamic_cast<NL3D::IPSMover *>(nt->LocMover)) ;
-						nt->LocMover->setMatrix(nt->LocatedInstanceIndex, mat) ;					
-					}
+				if (nt->LocMover && !nt->LocMover->onlyStoreNormal())
+				{					
+					nlassert(dynamic_cast<NL3D::IPSMover *>(nt->LocMover)) ;
+					nt->LocMover->setMatrix(nt->LocatedInstanceIndex, mat) ;										
 				}
 				else
 				{

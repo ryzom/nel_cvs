@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.6 2001/06/25 13:30:44 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.7 2001/06/25 16:14:12 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,6 +140,8 @@ public:
 			Loc = loc ; 
 			Type = locatedInstance ; 
 			LocatedInstanceIndex = index ; 
+
+			LocMover = NULL ;
 
 			for (uint k  = 0 ; k < Loc->getNbBoundObjects() ; ++k)
 			{

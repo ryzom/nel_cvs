@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * CTaskManager class
  *
- * $Id: task_manager.h,v 1.1 2000/12/18 18:14:45 saffray Exp $
+ * $Id: task_manager.h,v 1.2 2001/01/02 09:47:37 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,9 @@ public:
 	/// Constructor
 	CTaskManager();
 
+	/// Destructeur
+	~CTaskManager();
+
 	/// Manage TaskQueue
 	void run(void);
 
@@ -65,6 +68,9 @@ private:
 
 	//thread pointer
 	IThread *_Thread;
+
+	//flag indicate thread loop, if false cause thread exit
+	bool _TreadRunning;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.3 2001/07/12 14:18:54 legros Exp $
+ * $Id: entities.cpp,v 1.4 2001/07/12 14:35:11 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,9 @@ float RadarPosX, RadarPosY, RadarWidth, RadarHeight, RadarBorder;
 CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor;
 float RadarEntitySize;
 
+CEntity		*Self = NULL;
+
+
 EIT findEntity (uint32 eid, bool needAssert = true)
 {
 	EIT entity = Entities.find (eid);
@@ -94,6 +97,14 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 
 	eit = (Entities.insert (make_pair (eid, CEntity()))).first;
 	CEntity	&entity = (*eit).second;
+
+	if (type == CEntity::Self)
+	{
+		if (Self != NULL)
+			nlerror("Self entity already created");
+
+		Self = &entity;
+	}
 
 	entity.Id = eid;
 	entity.Type = type;
@@ -148,8 +159,15 @@ void removeEntity (uint32 eid)
 
 	EIT eit = findEntity (eid);
 
+	if ((*eit).second.Type == CEntity::Self)
+	{
+		if (Self == NULL)
+			nlerror("Self entity doesn't exist");
+		Self = NULL;
+	}
+
 	MoveContainer->removePrimitive((*eit).second.MovePrimitive);
-	
+
 	Entities.erase (eit);
 }
 
@@ -232,8 +250,9 @@ NLMISC_COMMAND(remove_entity,"remove a local entity","<eid>")
 	// check args, if there s not the right number of parameter, return bad
 	if(args.size() != 1) return false;
 
-	uint32 eid = (float)atoi(args[0].c_str());
+	uint32 eid = (uint32)atoi(args[0].c_str());
 	removeEntity (eid);
+	return true;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.3 2001/07/12 14:18:54 legros Exp $
+ * $Id: entities.h,v 1.4 2001/07/12 14:35:11 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,13 +54,14 @@ public:
 
 	enum TType { Self, Other, Snowball };
 	
-	TType Type;
+	TType						Type;
 
 	NLPACS::UMovePrimitive		*MovePrimitive;
 	NL3D::UInstance				*Instance;
 };
 
 
+extern CEntity	*Self;
 
 void addEntity (uint32 eid);
 void removeEntity (uint32 eid);

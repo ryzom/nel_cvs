@@ -118,17 +118,14 @@ bool putIn (NLMISC::CBitmap *pSrc, NLMISC::CBitmap *pDst, sint32 x, sint32 y, bo
 	for (b = 0; b < pSrc->getHeight(); ++b)
 	for (a = 0; a < pSrc->getWidth(); ++a)
 	{
-		if (rSrcPix[4*(a+b*pSrc->getWidth())+3] != 0)
-		{
-			if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0)
-				return false;
-			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+0] = rSrcPix[4*(a+b*pSrc->getWidth())+0];
-			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+1] = rSrcPix[4*(a+b*pSrc->getWidth())+1];
-			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+2] = rSrcPix[4*(a+b*pSrc->getWidth())+2];
-			if (alphaTransfert)
-				rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = rSrcPix[4*(a+b*pSrc->getWidth())+3];
-		}
-		if (!alphaTransfert)
+		if (rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] != 0)
+			return false;
+		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+0] = rSrcPix[4*(a+b*pSrc->getWidth())+0];
+		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+1] = rSrcPix[4*(a+b*pSrc->getWidth())+1];
+		rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+2] = rSrcPix[4*(a+b*pSrc->getWidth())+2];
+		if (alphaTransfert)
+			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = rSrcPix[4*(a+b*pSrc->getWidth())+3];
+		else
 			rDstPix[4*((x+a)+(y+b)*pDst->getWidth())+3] = 255;
 	}
 	return true;

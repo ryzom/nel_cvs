@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.17 2001/07/03 08:36:50 corvazier Exp $
+ * $Id: quad_tree.h,v 1.18 2004/10/06 06:36:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -733,7 +733,7 @@ template<class T>	void		CQuadTree<T>::erase(CIterator it)
 	}
 }
 // ============================================================================================
-template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val)
+template<class T>	typename CQuadTree<T>::CIterator	CQuadTree<T>::insert(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax, const T &val)
 {
 	NLMISC::CVector myboxmin2=_ChangeBasis*bboxmin;
 	NLMISC::CVector myboxmax2=_ChangeBasis*bboxmax;
@@ -881,12 +881,12 @@ template<class T>	void		CQuadTree<T>::selectSegment(const NLMISC::CVector& sourc
 	select (BVolume);
 }
 // ============================================================================================
-template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::begin()
+template<class T>	typename CQuadTree<T>::CIterator	CQuadTree<T>::begin()
 {
 	return (CNode*)(_Selection.Next);
 }
 // ============================================================================================
-template<class T>	CQuadTree<T>::CIterator	CQuadTree<T>::end()
+template<class T>	typename CQuadTree<T>::CIterator	CQuadTree<T>::end()
 {
 	return CIterator(NULL);
 }

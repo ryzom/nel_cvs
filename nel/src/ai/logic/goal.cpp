@@ -348,7 +348,7 @@ namespace NLAILOGIC
 
 	void CGoal::addSuccessor(NLAIAGENT::IBasicAgent *s)
 	{		
-		nlinfo("addSuccessor: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),s,(const char *)s->getType());
+//nlinfo("addSuccessor: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),s,(const char *)s->getType());
 		_Successors.push_back(s);
 		s->incRef();
 	}

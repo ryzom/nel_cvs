@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.42 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: i18n.cpp,v 1.43 2003/10/22 16:36:54 berenguier Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -384,18 +384,12 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 
 	NLMISC::CIFile	file(fullName);
 
+	// Fast read all the text in binary mode.
 	std::string text;
+	text.resize(file.getFileSize());
+	file.serialBuffer((uint8*)(&text[0]), text.size());
 
-	text.reserve(file.getFileSize());
-
-	//while (!file.eof())
-	for (uint i=0; i<file.getFileSize(); ++i)
-	{
-		uint8 c;
-		file.serial(c);
-		text.push_back(c);
-	}
-
+	// Transform the string in ucstring according to format header
 	if (!text.empty())
 		readTextBuffer((uint8*)&text[0], text.size(), result, forceUtf8);
 
@@ -467,56 +461,71 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 
 void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forceUtf8)
 {
-	std::string text;
-
-	text.append((char*)buffer, size);
-
-	static char utf16Header[] = {char(0xff), char(0xfe), 0};
-	static char utf16RevHeader[] = {char(0xfe), char(0xff), 0};
-	static char utf8Header[] = {char(0xef), char(0xbb), char(0xbf), 0};
+	static uint8 utf16Header[] = {char(0xff), char(0xfe)};
+	static uint8 utf16RevHeader[] = {char(0xfe), char(0xff)};
+	static uint8 utf8Header[] = {char(0xef), char(0xbb), char(0xbf)};
 
 	if (forceUtf8)
 	{
-		if (text.find(utf8Header) == 0)
+		if (size>=3 &&
+			buffer[0]==utf8Header[0] && 
+			buffer[1]==utf8Header[1] && 
+			buffer[2]==utf8Header[2]
+			)
+		{
 			// remove utf8 header
-			text = std::string(text, 3);
+			buffer+= 3;
+			size-=3;
+		}
+		std::string text((char*)buffer, size);
 		result.fromUtf8(text);
 	}
-	else if (text.find(utf8Header) == 0)
+	else if (size>=3 &&
+			 buffer[0]==utf8Header[0] && 
+			 buffer[1]==utf8Header[1] && 
+			 buffer[2]==utf8Header[2]
+			)
 	{
 		// remove utf8 header
-//		text = std::string(&(*(text.begin()+3)), text.size()-3);
-		text = text.substr(3);
+		buffer+= 3;
+		size-=3;
+		std::string text((char*)buffer, size);
 		result.fromUtf8(text);
 	}
-	else if (text.find(utf16Header) == 0)
+	else if (size>=2 &&
+			 buffer[0]==utf16Header[0] && 
+			 buffer[1]==utf16Header[1]
+			)
 	{
 		// remove utf16 header
-		text = std::string(text, 2);
-//		uint32 size = text.size();
+		buffer+= 2;
+		size-= 2;
 		// check pair number of bytes
-		nlassert((text.size() & 1) == 0);
+		nlassert((size & 1) == 0);
 		// and do manual conversion
-		uint16 *src = (uint16*)(text.c_str());
-
-		for (uint j=0; j<text.size()/2; j++)
-			result.push_back(*src++);
+		uint16 *src = (uint16*)(buffer);
+		result.resize(size/2);
+		for (uint j=0; j<result.size(); j++)
+			result[j]= *src++;
 	}
-	else if (text.find(utf16RevHeader) == 0)
+	else if (size>=2 &&
+			 buffer[0]==utf16RevHeader[0] && 
+			 buffer[1]==utf16RevHeader[1]
+			)
 	{
 		// remove utf16 header
-		text = std::string(text, 2);
-//		uint32 size = text.size();
+		buffer+= 2;
+		size-= 2;
 		// check pair number of bytes
-		nlassert((text.size() & 1) == 0);
+		nlassert((size & 1) == 0);
 		// and do manual conversion
-		uint16 *src = (uint16*)(text.c_str());
-		
+		uint16 *src = (uint16*)(buffer);
+		result.resize(size/2);
 		uint j;
-		for (j=0; j<text.size()/2; j++)
-			result.push_back(*src++);
+		for (j=0; j<result.size(); j++)
+			result[j]= *src++;
 		//  Reverse byte order
-		for (j=0; j<text.size()/2; j++)
+		for (j=0; j<result.size(); j++)
 		{
 			uint8 *pc = (uint8*) &result[j];
 			std::swap(pc[0], pc[1]);
@@ -526,6 +535,7 @@ void CI18N::readTextBuffer(uint8 *buffer, uint size, ucstring &result, bool forc
 	{
 		// hum.. ascii read ?
 		// so, just to a direct conversion
+		std::string text((char*)buffer, size);
 		result = text;
 	}
 }
@@ -687,6 +697,20 @@ string CI18N::hashToString(uint64 hash)
 	sprintf(temp, "%08X%08X", ph[0], ph[1]);
 
 	return string(temp);
+}
+
+// fast convert a hash value to a ucstring
+void	CI18N::hashToUCString(uint64 hash, ucstring &dst)
+{
+	static ucchar	cvtTable[]= {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+	dst.resize(16);
+	for(sint i=15;i>=0;i--)
+	{
+		// Must decal dest of 8, cause of hashToString code (Little Endian)
+		dst[(i+8)&15]= cvtTable[hash&15];
+		hash>>=4;
+	}
 }
 
 // convert a readable string into a hash value.

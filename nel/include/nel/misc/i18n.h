@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.15 2003/10/10 12:05:05 boucher Exp $
+ * $Id: i18n.h,v 1.16 2003/10/22 16:36:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,6 +176,8 @@ public:
 	static std::string hashToString(uint64 hash);
 	// convert a readable string into a hash value.
 	static uint64 stringToHash(const std::string &str);
+	// fast convert a hash value to a ucstring
+	static void	hashToUCString(uint64 hash, ucstring &dst);
 	//@}
 
 private:

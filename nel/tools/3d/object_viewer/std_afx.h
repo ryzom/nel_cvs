@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.7 2001/07/24 09:01:10 vizerie Exp $
+ * $Id: std_afx.h,v 1.8 2001/09/26 17:53:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,13 +67,6 @@
 #include <nel/misc/path.h>
 #include <nel/misc/time_nl.h>
 #include <nel/misc/config_file.h>
-
-#include "3d/particle_system_process.h"
-#include "3d/ps_particle.h"
-#include "3d/ps_force.h"
-#include "3d/ps_emitter.h"
-#include "3d/ps_zone.h"
-
 
 #include <vector>
 #include <map>

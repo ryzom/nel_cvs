@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.2 2000/11/09 17:51:16 coutelas Exp $
+ * $Id: events.h,v 1.3 2000/11/09 17:53:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,22 +179,22 @@ const uint KeyF23            =0x86;
 const uint KeyF24            =0x87;
 const uint KeyNUMLOCK        =0x90;
 const uint KeySCROLL         =0x91;
-const uint VK_LSHIFT         =0xA0;
-const uint VK_RSHIFT         =0xA1;
-const uint VK_LCONTROL       =0xA2;
-const uint VK_RCONTROL       =0xA3;
-const uint VK_LMENU          =0xA4;
-const uint VK_RMENU          =0xA5;
-const uint VK_PROCESSKEY     =0xE5;
-const uint VK_ATTN           =0xF6;
-const uint VK_CRSEL          =0xF7;
-const uint VK_EXSEL          =0xF8;
-const uint VK_EREOF          =0xF9;
-const uint VK_PLAY           =0xFA;
-const uint VK_ZOOM           =0xFB;
-const uint VK_NONAME         =0xFC;
-const uint VK_PA1            =0xFD;
-const uint VK_OEM_CLEAR      =0xFE;
+const uint KeyLSHIFT         =0xA0;
+const uint KeyRSHIFT         =0xA1;
+const uint KeyLCONTROL       =0xA2;
+const uint KeyRCONTROL       =0xA3;
+const uint KeyLMENU          =0xA4;
+const uint KeyRMENU          =0xA5;
+const uint KeyPROCESSKEY     =0xE5;
+const uint KeyATTN           =0xF6;
+const uint KeyCRSEL          =0xF7;
+const uint KeyEXSEL          =0xF8;
+const uint KeyEREOF          =0xF9;
+const uint KeyPLAY           =0xFA;
+const uint KeyZOOM           =0xFB;
+const uint KeyNONAME         =0xFC;
+const uint KeyPA1            =0xFD;
+const uint KeyOEM_CLEAR      =0xFE;
 
 /**
  * CEventKeyDown

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.14 2000/11/08 15:07:00 lecroart Exp $
+ * $Id: debug.h,v 1.15 2000/11/09 17:53:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,9 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.displayNL
  * \def nlerror(exp)
  * Same as nlinfo but you have to call it when you have a fatal error, this macro display the text and \b exit the application
  * automatically.
+ *
+ * \bug this macro have 2 instructions, it causes a problem if you call nlerror in a if() without braces.
+ *      don't do \c if(var) \c nlerror("err"); but do \c if(var) \c {nlerror("err");}
  *
  *\code
 	void function(char *filename)

@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.4 2003/11/20 14:03:12 besson Exp $
+ * $Id: big_file.h,v 1.5 2004/10/07 14:49:10 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -70,6 +70,9 @@ public:
 	FILE* getFile (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset, 
 					bool &rCacheFileOnOpen, bool &rAlwaysOpened);
 
+	// Used by Sound to get information for async loading of mp3 in .bnp. return false if file not found in registered bnps
+	bool getFileInfo (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset);
+	
 	// Used for CPath only for the moment !
 	char *getFileNamePtr(const std::string &sFileName, const std::string &sBigFileName);
 	
@@ -151,6 +154,9 @@ private:
 	CThreadFileArray			_ThreadFileArray;
 
 	std::map<std::string, BNP> _BNPs;
+
+	// common for getFile and getFileInfo
+	bool getFileInternal (const std::string &sFileName, BNP *&zeBnp, BNPFile *&zeBnpFile);
 };
 
 } // NLMISC

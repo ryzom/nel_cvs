@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.38 2004/09/23 15:05:46 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.39 2004/10/07 14:50:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,15 +343,19 @@ public:
 	//@{
 	//@name Sound Music
 	/** Play some music (.mp3 etc...) (implemented in fmod only)
-	 *	FMOD: The File is loaded in memory, but decompressed by FMod in a thread
-	 *	Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
 	 *	NB: if an old music was played, it is first stop with stopMusic()
-	 *	\param fileName a CPath::lookup is done
+	 *
+	 *	\param fileName a CPath::lookup is done (the file can be in a BNP)
+	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
+	 *	\param async if false, the music is entirely loaded in memory. Interesting for instance for music played 
+	 *		during loading (to not overload HardDrive). NB: The File is loaded in memory, but decompressed by FMod in a thread
+	 *		Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
 	 */
-	virtual bool	playMusic(const std::string &fileName) =0;
+	virtual bool	playMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true) =0;
 	/** Stop the music previously loaded and played (the Memory is also freed)
+	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a fade out of xFadeTime (in ms) is made
 	 */
-	virtual void	stopMusic() =0;
+	virtual void	stopMusic(uint xFadeTime= 0) =0;
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()
 	 */

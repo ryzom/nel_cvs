@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.16 2004/07/28 07:54:58 besson Exp $
+ * $Id: big_file.cpp,v 1.17 2004/10/07 14:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -306,71 +306,103 @@ void CBigFile::removeAll ()
 }
 
 // ***************************************************************************
-FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize, 
-						 uint32 &rBigFileOffset, bool &rCacheFileOnOpen, bool &rAlwaysOpened)
+bool CBigFile::getFileInternal (const std::string &sFileName, BNP *&zeBnp, BNPFile *&zeBnpFile)
 {
 	string zeFileName, zeBigFileName, lwrFileName = toLower(sFileName);
 	uint32 i, nPos = sFileName.find ('@');
 	if (nPos == string::npos)
 	{
-		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
-		return NULL;
+		return false;
 	}
-
+	
 	for (i = 0; i < nPos; ++i)
 		zeBigFileName += lwrFileName[i];
 	++i; // Skip @
 	for (; i < lwrFileName.size(); ++i)
 		zeFileName += lwrFileName[i];
-
+	
 	if (_BNPs.find (zeBigFileName) == _BNPs.end())
 	{
-		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
-		return NULL;
+		return false;
 	}
-
+	
 	BNP &rbnp = _BNPs.find (zeBigFileName)->second;
 	if (rbnp.Files.size() == 0)
 	{
-		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
-		return NULL;
+		return false;
 	}
-
+	
 	vector<BNPFile>::iterator itNBPFile;
 	itNBPFile = lower_bound(rbnp.Files.begin(), rbnp.Files.end(), zeFileName.c_str(), CBNPFileComp());
 	if (itNBPFile != rbnp.Files.end())
 	{
 		if (strcmp(itNBPFile->Name, zeFileName.c_str()) != 0)
 		{
-			nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
-			return NULL;
+			return false;
 		}
 	}
 	else
 	{
+		return false;
+	}
+	
+	BNPFile &rbnpfile = *itNBPFile;
+	
+	// set ptr on found bnp/bnpFile
+	zeBnp= &rbnp;
+	zeBnpFile= &rbnpfile;
+	
+	return true;
+}
+
+// ***************************************************************************
+FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize, 
+						 uint32 &rBigFileOffset, bool &rCacheFileOnOpen, bool &rAlwaysOpened)
+{
+	BNP		*bnp= NULL;
+	BNPFile	*bnpFile= NULL;
+	if(!getFileInternal(sFileName, bnp, bnpFile))
+	{
 		nlwarning ("BF: Couldn't load '%s'", sFileName.c_str());
 		return NULL;
 	}
-
-	BNPFile &rbnpfile = *itNBPFile;
-
+	nlassert(bnp && bnpFile);
+	
 	// Get a ThreadSafe handle on the file
-	CHandleFile		&handle= _ThreadFileArray.get(rbnp.ThreadFileId);
+	CHandleFile		&handle= _ThreadFileArray.get(bnp->ThreadFileId);
 	/* If not opened, open it now. There is 2 reason for it to be not opened: 
 		rbnp.AlwaysOpened==false, or it is a new thread which use it for the first time.
 	*/
 	if(handle.File== NULL)
 	{
-		handle.File = fopen (rbnp.BigFileName.c_str(), "rb");
+		handle.File = fopen (bnp->BigFileName.c_str(), "rb");
 		if (handle.File == NULL)
 			return NULL;
 	}
 
-	rCacheFileOnOpen = rbnp.CacheFileOnOpen;
-	rAlwaysOpened = rbnp.AlwaysOpened;
-	rBigFileOffset = rbnpfile.Pos;
-	rFileSize = rbnpfile.Size;
+	rCacheFileOnOpen = bnp->CacheFileOnOpen;
+	rAlwaysOpened = bnp->AlwaysOpened;
+	rBigFileOffset = bnpFile->Pos;
+	rFileSize = bnpFile->Size;
 	return handle.File;
+}
+
+// ***************************************************************************
+bool CBigFile::getFileInfo (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset)
+{
+	BNP		*bnp= NULL;
+	BNPFile	*bnpFile= NULL;
+	if(!getFileInternal(sFileName, bnp, bnpFile))
+	{
+		nlwarning ("BF: Couldn't find '%s' for info", sFileName.c_str());
+		return false;
+	}
+	nlassert(bnp && bnpFile);
+	
+	// get infos
+	rBigFileOffset = bnpFile->Pos;
+	rFileSize = bnpFile->Size;
+	return true;
 }
 
 // ***************************************************************************

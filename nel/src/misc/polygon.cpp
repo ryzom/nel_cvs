@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.28 2004/08/20 14:35:28 vizerie Exp $
+ * $Id: polygon.cpp,v 1.29 2004/10/07 14:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -969,8 +969,8 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 	{		
 		bestCP = 1.1f;		
 		CVector2f seg2 = (prev - curr).normed();
-		TIndexSet::const_iterator bestIt = leftIndex.end();
-		for (TIndexSet::const_iterator it =  leftIndex.begin(); it != leftIndex.end(); ++it)
+		TIndexSet::iterator bestIt = leftIndex.end();
+		for (TIndexSet::iterator it =  leftIndex.begin(); it != leftIndex.end(); ++it)
 		{	
 			if (step == 0 && *it == p1Index) continue;
 			CVector2f seg1 = (Vertices[*it] - curr).normed();							

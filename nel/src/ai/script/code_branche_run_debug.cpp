@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.13 2001/02/14 17:00:29 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.14 2001/02/26 11:12:54 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,7 +159,7 @@ namespace NLAISCRIPT
 	extern bool DEBUG_SERVER;
 	NLAIAGENT::TProcessStatement CCodeBrancheRunDebug::runOpCode(CCodeContext &p)
 	{
-		char* buf;
+		std::string buf;
 		p.ContextDebug.Active = true; // We are in Debug mode.
 
 		IOpCode &op = nextCode();
@@ -191,8 +191,8 @@ namespace NLAISCRIPT
 					// Wait command
 					InputOutput->Echo("(db) ");
 					buf = InputOutput->InPut();
-					executOpcode = readCommandLine(p, buf);
-					if (0 != buf[0])	p.ContextDebug.setLastCommandLine(buf);
+					executOpcode = readCommandLine(p, buf.c_str());
+					if (0 != buf.c_str()[0]) p.ContextDebug.setLastCommandLine(buf.c_str());
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.13 2001/02/08 17:27:45 chafik Exp $
+ * $Id: abstract_interface.h,v 1.14 2001/02/26 11:12:04 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -445,7 +445,7 @@ namespace NLAIC //Gen pour general.
 		{
 		}
 		virtual void Echo(char *CStringType, ...) = 0;
-		virtual char *InPut() = 0;
+		virtual const std::string InPut() = 0;
 		virtual ~IIO()
 		{
 		}

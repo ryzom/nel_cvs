@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.8 2002/07/10 17:08:43 lecroart Exp $
+ * $Id: listener_dsound.cpp,v 1.9 2002/07/16 14:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
 		}
 		else
 		{
-			nldebug ("NLSOUND: set listener NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
+			//nldebug ("NLSOUND: set listener NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
     }
 }
@@ -180,7 +180,7 @@ void CListenerDSound::setOrientation( const NLMISC::CVector& front, const NLMISC
 		}
 		else
 		{
-			nldebug ("NLSOUND: set listener orientation NEL(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f) DS(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f)", front.x, front.y, front.z, up.x, up.y, up.z, front.x, front.z, front.y, up.x, up.z, up.y);
+			//nldebug ("NLSOUND: set listener orientation NEL(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f) DS(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f)", front.x, front.y, front.z, up.x, up.y, up.z, front.x, front.z, front.y, up.x, up.z, up.y);
 		}
     }
 }

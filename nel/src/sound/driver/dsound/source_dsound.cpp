@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.10 2002/07/10 17:08:43 lecroart Exp $
+ * $Id: source_dsound.cpp,v 1.11 2002/07/16 14:30:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -572,7 +572,7 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
 		}
 		else
 		{
-			nldebug ("NLSOUND: %p set source NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
+			//nldebug ("NLSOUND: %p set source NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
 	}
 }
@@ -656,7 +656,7 @@ void CSourceDSound::setDirection( const NLMISC::CVector& dir )
 		}
 		else
 		{
-			nldebug ("NLSOUND: %p set source direction NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, dir.x, dir.y, dir.z, dir.x, dir.z, dir.y);
+			//nldebug ("NLSOUND: %p set source direction NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, dir.x, dir.y, dir.z, dir.x, dir.z, dir.y);
 		}
 	}
 }

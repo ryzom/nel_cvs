@@ -1,7 +1,7 @@
 /** \file s3tc_compressor.cpp
  * <File description>
  *
- * $Id: s3tc_compressor.cpp,v 1.3 2003/04/25 13:48:28 berenguier Exp $
+ * $Id: s3tc_compressor.cpp,v 1.4 2004/09/07 13:25:27 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,33 +108,56 @@ static void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8
 			break;
 	}
 
-	// TestYoyo
-	/*if( algo==DXT5 )
+	/* S3TC is a very good compressor, but make BIG mistakes in some case with  DXTC5 and DXTC3
+	*/
+	if( algo==DXT5 || algo==DXT3 )
 	{
+		sint	wBlock= max(1, width/4);
+		sint	hBlock= max(1, height/4);
+		uint	numTotalBlock= wBlock*hBlock;
+		uint	numFixedBlock= 0;
+		
 		NLMISC::CRGBA	*rgbaSrc= (NLMISC::CRGBA*)pixSrc;
-		for(uint y=0;y<height/4;y++)
+		for(sint y=0;y<hBlock;y++)
 		{
-			for(uint x=0;x<width/4;x++)
+			for(sint x=0;x<wBlock;x++)
 			{
-				// copy color block
-				NLMISC::CRGBA	col[16];
-				uint	x0, y0;
-				for(y0=0;y0<4;y0++)
-				{
-					for(x0=0;x0<4;x0++)
-					{
-						col[y0*4+x0]= rgbaSrc[(y*4+y0)*width + x*4+x0];
-					}
-				}
-
 				// get comp dest
-				uint8	*pixDst= compdata.begin() + (y*(width/4) + x) * 16;
+				uint8	*pixDst= compdata.begin() + (y*wBlock + x) * 16;
 				uint16	rgb0= *(uint16*)(pixDst+8);
 				uint16	rgb1= *(uint16*)(pixDst+10);
+				/* If S3TC decided to use "50% decode table" (case rgb0<=rgb1), this is an error
+					compress this block with our own compressor
+				*/
 				if(rgb0<=rgb1)
 				{
+					numFixedBlock++;
+
+					// copy color block
+					NLMISC::CRGBA	col[16];
+					sint	x0, y0;
+					NLMISC::CRGBA	precColor= NLMISC::CRGBA::Black;
+					for(y0=0;y0<4;y0++)
+					{
+						for(x0=0;x0<4;x0++)
+						{
+							// manage case where height or width are <4
+							if(y*4+y0<height && x*4+x0<width)
+							{
+								precColor= rgbaSrc[(y*4+y0)*width + x*4+x0];
+								col[y0*4+x0]= precColor;
+							}
+							else
+							{
+								// copy preceding color, to allow correct compression 
+								col[y0*4+x0]= precColor;
+							}
+						}
+					}
+					
+					// compress
 					NL3D::CHLSColorTexture::compressBlockRGB(col, pixDst);
-					// get correct image under photoshop
+					// get correct image under photoshop (swap color if our compressor invert them)
 					rgb0= *(uint16*)(pixDst+8);
 					rgb1= *(uint16*)(pixDst+10);
 					if(rgb0<=rgb1)
@@ -153,7 +176,7 @@ static void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8
 					}
 
 					// Test: 05 to 1323
-					/--
+					/*
 					uint32	&bits= *(uint32*)(pixDst+12);
 					for(uint i=0;i<16; i++)
 					{
@@ -165,12 +188,17 @@ static void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8
 							bits&= ~(3<<(i*2));
 							bits|= (pixVal<<(i*2));
 						}
-					}--/
+					}*/
 				}
 			}
 		}
-	}*/
 
+		if(numFixedBlock && numTotalBlock)
+		{
+			nlinfo("Fix %d blocks on %d total ", numFixedBlock, numTotalBlock);
+		}
+	}
+	
 }
 
 

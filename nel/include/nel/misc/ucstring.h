@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.4 2003/02/14 14:15:11 lecroart Exp $
+ * $Id: ucstring.h,v 1.5 2003/03/03 13:02:51 boucher Exp $
  *
  */
 
@@ -28,6 +28,7 @@
 #define NL_UCSTRING_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 
 #include <string>
 
@@ -140,6 +141,81 @@ public:
 		return str;
 	}
 
+	/// Convert the utf8 string into this 16 bits string
+	void fromUtf8(const std::string &stringUtf8)
+	{
+		// clear the string
+		erase();
+
+		uint8 c;
+		ucchar code;
+		sint iterations = 0;
+
+		std::string::const_iterator first(stringUtf8.begin()), last(stringUtf8.end());
+		for (; first != last; )
+		{
+			c = *first++;
+			code = c;
+
+			if ((code & 0xFE) == 0xFC)
+			{
+				code &= 0x01;
+				iterations = 5;
+			}
+			else if ((code & 0xFC) == 0xF8)
+			{
+				code &= 0x03;
+				iterations = 4;
+			}
+			else if ((code & 0xF8) == 0xF0)
+			{
+				code &= 0x07;
+				iterations = 3;
+			}
+			else if ((code & 0xF0) == 0xE0)
+			{
+				code &= 0x0F;
+				iterations = 2;
+			}
+			else if ((code & 0xE0) == 0xC0)
+			{
+				code &= 0x1F;
+				iterations = 1;
+			}
+			else if ((code & 0x80) == 0x80)
+			{
+				nlwarning ("ucstring::fromUtf8(): Invalid UTF-8 character");
+			}
+			else
+			{
+				push_back(code);
+				iterations = 0;
+			}
+
+			if (iterations)
+			{
+				for (sint i = 0; i < iterations; i++)
+				{
+					if (first == last)
+					{
+						nlwarning ("ucstring::fromUtf8(): Invalid UTF-8 character");
+					}
+
+					uint8 ch;
+					ch = *first ++;
+
+					if ((ch & 0xC0) != 0x80)
+					{
+						nlwarning ("ucstring::fromUtf8(): Invalid UTF-8 character");
+					}
+
+					code <<= 6;
+					code |= (ucchar)(ch & 0x3F);
+				}
+				push_back(code);
+			}
+		}
+	}
 };
 
 inline ucstring operator+(const ucstringbase &ucstr, ucchar c)

@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.7 2004/10/20 16:42:25 berenguier Exp $
+ * $Id: quad_grid.h,v 1.8 2004/10/20 17:00:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,17 @@ public:
 
 	/// dtor.
 	~CQuadGrid();
+
+	// Copy ctor and operator= are not possible
+	CQuadGrid<T>	&operator=(const CQuadGrid<T> &o)
+	{
+		nlstop;
+		return *this;
+	}
+	CQuadGrid(const CQuadGrid<T> &o)
+	{
+		nlstop;
+	}
 
 	/// \name Initialization
 	//@{

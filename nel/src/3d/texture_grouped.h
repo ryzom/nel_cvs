@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.5 2002/05/28 16:57:01 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.6 2002/11/20 11:13:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,14 @@ public:
 		}
 		else
 		{
-			return _TexUVs[texIndex % _NbTex];
+			if (sint(texIndex) > 0)
+			{			
+				return _TexUVs[texIndex % _NbTex];
+			}
+			else
+			{
+				return _TexUVs[_NbTex - 1 - (~texIndex % _NbTex)];
+			}
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.6 2003/04/24 13:45:37 boucher Exp $
+ * $Id: buffer.h,v 1.7 2003/07/03 15:16:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

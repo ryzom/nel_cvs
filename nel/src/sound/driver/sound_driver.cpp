@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.15 2003/04/24 13:45:37 boucher Exp $
+ * $Id: sound_driver.cpp,v 1.16 2003/07/03 15:16:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.47 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.48 2001/07/11 13:08:08 berenguier Exp $
  *
  */
 
@@ -69,6 +69,15 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
+
+	if(NumVertices==0)
+	{
+		VertexCoordPointer= NULL;
+		TexCoordPointer0= NULL;
+		ColorPointer= NULL;
+		return;
+	}
+
 	VertexCoordPointer= vb.getVertexCoordPointer();
 
 	TexCoordOff0= vb.getTexCoordOff(0);
@@ -92,6 +101,15 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
+
+	if(NumVertices==0)
+	{
+		VertexCoordPointer= NULL;
+		TexCoordPointer0= NULL;
+		ColorPointer= NULL;
+		return;
+	}
+
 	VertexCoordPointer= vcoord;
 
 	TexCoordOff0= vb.getTexCoordOff(0);
@@ -118,6 +136,14 @@ void		CNearVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
 
+	if(NumVertices==0)
+	{
+		VertexCoordPointer= NULL;
+		TexCoordPointer0= NULL;
+		TexCoordPointer1= NULL;
+		return;
+	}
+
 	VertexCoordPointer= vb.getVertexCoordPointer();
 	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
 	TexCoordPointer1= vb.getTexCoordPointer(0, 1);
@@ -131,6 +157,14 @@ void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *
 	VertexFormat= vb.getVertexFormat();
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
+
+	if(NumVertices==0)
+	{
+		VertexCoordPointer= NULL;
+		TexCoordPointer0= NULL;
+		TexCoordPointer1= NULL;
+		return;
+	}
 
 	VertexCoordPointer= vcoord;
 	TexCoordPointer0= (uint8*)vcoord + vb.getTexCoordOff(0);

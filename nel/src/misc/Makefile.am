@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.51 2002/04/30 12:20:52 cado Exp $
+# $Id: Makefile.am,v 1.52 2002/05/22 13:42:21 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -9,7 +9,7 @@ SUBDIRS               = config_file
 lib_LTLIBRARIES       = libnelmisc.la
 
 libnelmisc_la_SOURCES = aabbox.cpp                         \
-						big_file.cpp                       \
+			big_file.cpp                       \
                         bit_mem_stream.cpp                 \
                         bit_set.cpp                        \
                         bitmap.cpp                         \
@@ -72,7 +72,8 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         mem_displayer.cpp                  \
                         game_device_events.cpp             \
                         input_device.cpp                   \
-                        input_device_server.cpp
+                        input_device_server.cpp            \
+                        fast_mem.cpp
 
 noinst_HEADERS        = di_game_device.h                   \
                         di_keyboard_device.h               \

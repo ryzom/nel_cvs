@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.8 2001/03/29 08:26:55 chafik Exp $
+ * $Id: identtype.h,v 1.9 2001/03/30 14:47:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,14 +78,14 @@ namespace NLAIAGENT
 		///fill from read stream.
 		CAgentNumber(NLMISC::IStream &is)
 		{
-			uint8 p;
+			uint64 p;
 			is.serial(p);
-			CreatorId = (uint64)p;
-			is.serial(p);
-			DynamicId = (uint64)p;
-			uint64 x;
-			is.serial(x);
-			AgentNumber = x;
+
+			DynamicId = (uint64)(p & 0xff);
+			p >>= 8;
+			CreatorId = (uint64)(p & 0xff);
+			p >>= 8;
+			AgentNumber = (uint64)(p & ((uint64)1<<(uint64)48));			
 		}
 
 		CAgentNumber(const char *id);

@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.4 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.5 2000/12/18 09:31:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,12 +67,7 @@ bool	CBSphere::intersect(const CBSphere &s) const
 {
 	float	r2= (s.Center-Center).sqrnorm();
 
-	if(r2<=sqr(Radius))
-		return true;
-	if(r2<=sqr(s.Radius))
-		return true;
-	// else std method.
-	return sqrt(r2)<=(Radius+s.Radius);
+	return r2<=sqr(Radius+s.Radius);
 
 }
 

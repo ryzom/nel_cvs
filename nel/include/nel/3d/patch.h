@@ -1,11 +1,10 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.20 2000/12/15 15:10:35 berenguier Exp $
+ * $Id: patch.h,v 1.21 2000/12/18 09:31:33 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
-		- rectangular subdivsion.
  *
  */
 

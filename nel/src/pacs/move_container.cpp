@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.28 2002/06/13 16:37:01 legros Exp $
+ * $Id: move_container.cpp,v 1.29 2002/06/14 12:22:00 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -834,47 +834,45 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 		// Enter or exit
 		bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
 		bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
+		bool overlap = (firstTime<=beginTime) && (lastTime>_DeltaTime);
 		bool collision = ( beginTime<=((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
 
-		// Test move ?
-		if (collision)
+		// Return collision time
+
+		if (testMove && collision)
+			return true;
+		else
 		{
-			// Return collision time
+			// TODO: make new collision when collision==false to raise triggers
 
-			if (testMove) 
-				return true;
-			else
+			/** 
+			  * Raise Trigger !
+			  * For collisionnable primitives, trigger are raised here (in reaction) because
+			  * this is the moment we are sure the collision happened.
+			  *
+			  * For non collisionable primitves, the trigger is raised at collision time because without OT,
+			  * we can't stop evaluating collision on triggers.
+			  */
+			if (primitive->isNonCollisionable () && (enter || exit || overlap))
 			{
-				// TODO: make new collision when collision==false to raise triggers
-
-				/** 
-				  * Raise Trigger !
-				  * For collisionnable primitives, trigger are raised here (in reaction) because
-				  * this is the moment we are sure the collision happened.
-				  *
-				  * For non collisionable primitves, the trigger is raised at collision time because without OT,
-				  * we can't stop evaluating collision on triggers.
-				  */
-				if (primitive->isNonCollisionable ())
+				if (primitive->isTriggered (*otherPrimitive, enter, exit))
 				{
-					if (primitive->isTriggered (*otherPrimitive, enter, exit))
-					{
-						// Add a trigger
-						newTrigger (primitive, otherPrimitive, desc, enter ? UTriggerInfo::In : exit ? UTriggerInfo::Out : UTriggerInfo::Inside);
-					}
-
-					// If the other primitive is not an obstacle, skip it because it will re-generate collisions.
-					if (!otherPrimitive->isObstacle ())
-						return false;
+					// Add a trigger
+					newTrigger (primitive, otherPrimitive, desc, enter ? UTriggerInfo::In : exit ? UTriggerInfo::Out : UTriggerInfo::Inside);
 				}
 
-				// OK, collision
+				// If the other primitive is not an obstacle, skip it because it will re-generate collisions.
+				if (!otherPrimitive->isObstacle ())
+					return false;
+			}
+
+			// OK, collision
+			if (collision)
 				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic,
 								dynamicColInfo);
 
-				// Collision
-				return true;
-			}
+			// Collision
+			return true;
 		}
 	}
 	return false;

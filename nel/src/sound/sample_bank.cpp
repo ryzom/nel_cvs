@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.3 2002/06/19 15:51:36 hanappe Exp $
+ * $Id: sample_bank.cpp,v 1.4 2002/07/16 13:16:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,6 +56,7 @@ IBuffer*		CSampleBank::get(const char* name)
 		}
 	}
 	
+	//nlwarning ("Try to get an unknown sample '%s'", name);
 	return 0;
 }
 
@@ -99,7 +100,7 @@ void				CSampleBank::load()
 
 	for (iter = filenames.begin(); iter != filenames.end(); iter++)
 	{
-		IBuffer* buffer = 0;
+		IBuffer* buffer = NULL;
 		try
 		{
 			buffer = _SoundDriver->createBuffer();
@@ -107,17 +108,16 @@ void				CSampleBank::load()
 			_SoundDriver->loadWavFile(buffer, (*iter).c_str());
 			_Samples.insert(make_pair(buffer->getName().c_str(), buffer));
 
-			//nldebug("AM: SampleBank %s: loading sample %s", _Name.c_str(), buffer->getName().c_str());
+			nldebug("AM: SampleBank %s: loading sample %s", _Name.c_str(), buffer->getName().c_str());
 
 		}
-		catch (ESoundDriver& e2)
+		catch (ESoundDriver &e)
 		{
-			if (buffer) {
+			if (buffer != NULL) {
 				delete buffer;
+				buffer = NULL;
 			}
-			string what2 = e2.what();
-			nlwarning(what2.c_str());
-			throw;
+			nlwarning("Problem with file '%s': %s", (*iter).c_str(), e.what());
 		}
 	}
 }

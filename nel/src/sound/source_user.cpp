@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.24 2002/07/10 17:08:56 lecroart Exp $
+ * $Id: source_user.cpp,v 1.25 2002/07/16 13:16:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -393,14 +393,23 @@ void					CSourceUser::enterTrack( CTrack *track )
 	if ( _Track != NULL )
 	{
 		nlassert( _Sound != NULL );
-		copyToTrack(); // must always be synchronized, because the tracks may not have the default settings
-		_Track->setUserSource( this );
-		if ( _Playing )
+
+		if (_Sound->getBuffer() != NULL)
 		{
-			// Play physically
-			_Track->DrvSource->play();
+			copyToTrack(); // must always be synchronized, because the tracks may not have the default settings
+			_Track->setUserSource( this );
+			if ( _Playing )
+			{
+				// Play physically
+				_Track->DrvSource->play();
+			}
+			//nldebug( "AM: Source %s selected for playing", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
 		}
-		//nldebug( "AM: Source %s selected for playing", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+		else
+		{
+			// it means that the sample is not loaded (not found?) so don't play
+			//nldebug( "AM: Source %s selected for playing but sample is not loaded", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+		}
 	}
 	else
 	{

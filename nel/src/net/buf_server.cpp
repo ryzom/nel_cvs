@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.12 2001/06/27 08:29:16 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.13 2001/06/29 08:33:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -582,8 +582,6 @@ void CListenTask::run()
 	SOCKET descmax;
 	fd_set readers;
 	timeval tv;
-	tv.tv_sec = 600;
-	tv.tv_usec = 0;
 	descmax = _ListenSock.descriptor()>_WakeUpPipeHandle[PipeRead]?_ListenSock.descriptor():_WakeUpPipeHandle[PipeRead];
 #endif
 
@@ -597,13 +595,23 @@ void CListenTask::run()
 			FD_ZERO( &readers );
 			FD_SET( _ListenSock.descriptor(), &readers );
 			FD_SET( _WakeUpPipeHandle[PipeRead], &readers );
-
+			nlinfo("entering listen select");
+			tv.tv_sec = 60; /// \todo ace: we perhaps could put NULL to never wake up the select (look at the select man page)
+			tv.tv_usec = 0;
 			int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
+			nlinfo("leaving listen select");
 
 			switch ( res )
 			{
 			case  0 : continue; // time-out expired, no results
-			case -1 : nlerror( "L1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+			case -1 :
+			  // we'll ignore message (Interrupted system call) caused by a CTRL-C
+			  if (CSock::getLastError() == 4)
+			    {
+			      nldebug ("L1: Select failed (in listen thread): %s (code %u) but IGNORED", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError());
+			      continue;
+			    }
+			  nlerror( "L1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
 			}
 
 			if ( FD_ISSET( _WakeUpPipeHandle[PipeRead], &readers ) )
@@ -777,15 +785,10 @@ void CServerReceiveTask::run()
 
 	// Time-out value for select (it can be long because we do not do any thing else in this thread)
 	timeval tv;
-#ifdef NL_OS_WINDOWS
-	tv.tv_sec = 0; // short time because the newly added connections can't be added to the select fd_set
-	tv.tv_usec = 500000; // NEW: set to 500ms because otherwise new connections handling are too slow
-#elif defined NL_OS_UNIX
+#if defined NL_OS_UNIX
 	// POLL7
-	tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)
-	tv.tv_usec = 0;
 	nice( 2 );
-#endif // NL_OS_WINDOWS
+#endif // NL_OS_UNIX
 	
 	// Copy of _Connections
 	vector<TSockId>	connections_copy;	
@@ -853,6 +856,15 @@ void CServerReceiveTask::run()
 			continue;
 		}
 #endif
+
+#ifdef NL_OS_WINDOWS
+		tv.tv_sec = 0; // short time because the newly added connections can't be added to the select fd_set
+		tv.tv_usec = 500000; // NEW: set to 500ms because otherwise new connections handling are too slow
+#elif defined NL_OS_UNIX
+		// POLL7
+		tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)
+		tv.tv_usec = 0;
+#endif // NL_OS_WINDOWS
 
 		// Call select
 		int res = ::select( descmax+1, &readers, NULL, NULL, &tv );

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.73 2001/06/28 12:21:18 lecroart Exp $
+ * $Id: service.cpp,v 1.74 2001/06/29 08:33:15 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -26,12 +26,7 @@
  * MA 02111-1307, USA.
  */
 
-
 #include "nel/misc/types_nl.h"
-#include "nel/net/unitime.h"
-
-#include <stdlib.h>
-#include <signal.h>
 
 #ifdef NL_OS_WINDOWS
 
@@ -64,6 +59,9 @@
 #include "nel/net/callback_server.h"
 #include "nel/net/net_manager.h"
 
+#include <stdlib.h>
+#include <signal.h>
+
 #include <sstream>
 
 using namespace std;
@@ -72,6 +70,18 @@ using namespace NLMISC;
 
 namespace NLNET
 {
+
+string IService::_ShortName = "";
+string IService::_LongName = "";
+string IService::_AliasName= "";
+uint16 IService::_DefaultPort = 0;
+
+sint32 IService::_UpdateTimeout = 0;
+
+
+CConfigFile IService::ConfigFile;
+
+IService	 *IService::Instance = NULL;
 
 //
 // Constants
@@ -117,9 +127,13 @@ static void sigHandler (int Sig);
 // Functions
 //
 
+  // this is the thread that initialized the signal redirection
+  // we ll ignore other thread signals
+static uint SignalisedThread;
+
 static void initSignal()
 {
-
+  SignalisedThread = getThreadId ();
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
 	signal(Signal[3], sigHandler);
@@ -127,13 +141,13 @@ static void initSignal()
 #else
 	// in release, redirect all signals
 /* don't redirect now because to hard to debug...
-
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 	{
 		signal(Signal[i], sigHandler);
 		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
 	}
-*/#endif
+*/
+#endif
 }
 
 // This function is called when a signal comes
@@ -147,6 +161,13 @@ static void sigHandler(int Sig)
 	{
 		if (Sig == Signal[i])
 		{
+		  if (getThreadId () != SignalisedThread)
+		    {
+		      nldebug ("Not the main thread send me the signal (%s, %d), ignore it", SignalName[i],Sig);
+		      return;
+		    }
+		  else
+		    {
 			nlinfo ("Signal %s (%d) received", SignalName[i], Sig);
 			switch (Sig)
 			{
@@ -165,11 +186,11 @@ static void sigHandler(int Sig)
 				else
 				{
 					nlinfo ("Signal already received, launch the brutal exit");
-					exit (EXIT_FAILURE);
+					//exit (EXIT_FAILURE);
 				}
 				break;
 			}
-		}
+		    }}
 	}
 	nlinfo ("Unknown signal received (%d)", Sig);
 }
@@ -361,7 +382,7 @@ sint IService::main (void *wd)
 		nlinfo ("args = %d", _Args.size ());
 		for (uint i = 0; i < _Args.size (); i++)
 		{
-			nlinfo ("argv[%d] = '%s'", i, _Args[i]);
+			nlinfo ("argv[%d] = '%s'", i, _Args[i].c_str ());
 		}
 
 		setStatus (EXIT_SUCCESS);
@@ -381,7 +402,7 @@ sint IService::main (void *wd)
 			localhost = CInetAddress::localHost().hostName();
 		}
 		catch (NLNET::ESocket &)
-		{
+	{
 			localhost = "<UnknownHost>";
 		}
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.167 2003/02/14 14:13:39 lecroart Exp $
+ * $Id: service.cpp,v 1.168 2003/02/17 10:52:52 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1674,13 +1674,6 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 NLMISC_COMMAND(resetMeasures, "reset hierarchical timer", "")
 {
 	IService::getInstance()->requireResetMeasures();
-	return true;
-}
-
-NLMISC_COMMAND(displayMeasures, "display hierarchical timer", "")
-{
-	CHTimer::display();
-	CHTimer::displayHierarchicalByExecutionPathSorted (InfoLog, CHTimer::TotalTime, true, 64);
 	return true;
 }
 

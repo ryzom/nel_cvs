@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.1 2001/01/22 08:54:05 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.2 2001/01/23 09:08:26 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,9 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLNET;
+
+
+//#define BANK_PAH_RELATIVE
 
 
 /**
@@ -278,7 +281,9 @@ void displayZones()
 	{
 		printf(e.what ());
 	}
+#ifdef BANK_PAH_RELATIVE
 	Landscape->Landscape.TileBank.makeAllPathRelative();
+#endif
 	sint idx = ViewerCfg.Bank.find(".");
 	string farBank = ViewerCfg.Bank.substr(0,idx);
 	farBank += ".farbank";

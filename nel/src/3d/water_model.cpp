@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.39 2004/02/13 10:10:03 lecroart Exp $
+ * $Id: water_model.cpp,v 1.40 2004/02/20 14:38:34 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@
 
 
 
+//#define NO_WATER_TESSEL
 
 // to force the rendering of water with the simplest shader on all cards
 //#define FORCE_SIMPLE_WATER_RENDER
@@ -232,11 +233,13 @@ static void SetupWaterVertex(  sint  qLeft,
 			float deltaU = wXf - wx;
 			float deltaV = wYf - wy;
 			//nlassert(deltaU >= 0.f && deltaU <= 1.f  && deltaV >= 0.f && deltaV <= 1.f);
+			/*
 			if (deltaU <= 0.f || deltaU >= 1.f  || deltaV <= 0.f || deltaV >= 1.f)
 			{
 				nlwarning ("water problem, deltaU %f deltaV %f", deltaU, deltaV);
 				return;
 			}
+			*/
 			const float			  *ptWaterPrev = whm.getPrevPointer()  + offset;
 
 
@@ -488,7 +491,11 @@ void	CWaterModel::traverseRender()
 	const sint isAbove = obsPos.z > zHeight ? 1 : 0;	
 			
 
-	const float transitionDist	= shape->_TransitionRatio   * renderTrav.Far;
+	#ifdef NO_WATER_TESSEL
+		const float transitionDist	= renderTrav.Near * 0.99f;
+	#else
+		const float transitionDist	= shape->_TransitionRatio   * renderTrav.Far;
+	#endif
 	
 	
 	NLMISC::CMatrix modelMat;
@@ -1077,7 +1084,12 @@ void CWaterModel::computeClippedPoly()
 	// build pyramid corners
 	const float nearDist	    = clipTrav.Near;
 	const float farDist			= clipTrav.Far;	
-	const float transitionDist	= shape->_TransitionRatio   * farDist;
+	#ifdef NO_WATER_TESSEL
+		const float transitionDist	= nearDist * 0.99f;
+	#else
+		const float transitionDist	= shape->_TransitionRatio   * farDist;
+	#endif
+	
 
 	const NLMISC::CVector		pfoc(0,0,0);
 	const NLMISC::CVector		lb(-fRight,  nearDist, - fTop );

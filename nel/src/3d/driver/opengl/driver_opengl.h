@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.27 2000/12/20 19:02:54 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.28 2000/12/21 09:44:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,7 @@ class CShaderGL : public IShader
 public:
 	GLenum		SrcBlend;
 	GLenum		DstBlend;
+	GLenum		ZComp;
 };
 
 // --------------------------------------------------

@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.7 2000/12/12 10:04:27 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.8 2000/12/21 09:42:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,13 @@ inline void CMaterial::setDstBlend(TBlend val)
 	_Touched|=IDRV_TOUCHED_BLENDFUNC;
 }
 
+inline void CMaterial::setBlend(bool active)
+{
+	if (active)	_Flags|=IDRV_MAT_BLEND;
+	else		_Flags&=~IDRV_MAT_BLEND;
+	_Touched|=IDRV_TOUCHED_BLEND;
+}
+
 inline void	CMaterial::setBlendFunc(TBlend src, TBlend dst)
 {
 	_SrcBlend=src;
@@ -81,10 +88,17 @@ inline void	CMaterial::setBlendFunc(TBlend src, TBlend dst)
 }
 
 
-inline void CMaterial::setZFunction(ZFunc val)
+inline void CMaterial::setZFunc(ZFunc val)
 {
 	_ZFunction=val;
 	_Touched|=IDRV_TOUCHED_ZFUNC;
+}
+
+inline void	CMaterial::setZWrite(bool active)
+{
+	if (active)	_Flags|=IDRV_MAT_ZWRITE;
+	else		_Flags&=~IDRV_MAT_ZWRITE;
+	_Touched|=IDRV_TOUCHED_ZWRITE;
 }
 
 inline void CMaterial::setZBias(float val)
@@ -97,13 +111,6 @@ inline void CMaterial::setColor(CRGBA rgba)
 {
 	_Color=rgba;
 	_Touched|=IDRV_TOUCHED_COLOR;
-}
-
-inline void CMaterial::setBlend(bool active)
-{
-	if (active)	_Flags|=IDRV_MAT_BLEND;
-	else		_Flags&=~IDRV_MAT_BLEND;
-	_Touched|=IDRV_TOUCHED_BLEND;
 }
 
 inline void CMaterial::setLighting(	bool active, bool DefMat,

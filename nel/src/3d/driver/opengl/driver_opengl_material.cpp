@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.14 2000/12/18 08:57:17 lecroart Exp $
+ * $Id: driver_opengl_material.cpp,v 1.15 2000/12/21 09:44:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,11 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			convBlend( mat.getDstBlend(),glenum );
 			pShader->DstBlend=glenum;
 		}
+		if (touched & IDRV_TOUCHED_ZFUNC)
+		{
+			convZFunction( mat.getZFunc(),glenum);
+			pShader->ZComp= glenum;
+		}
 
 		// Optimize: reset all flags at the end.
 		mat.clearTouched(0xFFFFFFFF);
@@ -158,6 +163,14 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			glDisable(GL_BLEND);
 		}
+
+		// Bind ZBuffer Part.
+		if(mat.getFlags()&IDRV_MAT_ZWRITE)
+			glDepthMask(GL_TRUE);
+		else
+			glDepthMask(GL_FALSE);
+		glDepthFunc(pShader->ZComp);
+
 
 		// Color unlit part.
 		CRGBA	col= mat.getColor();
@@ -187,6 +200,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 	// TempYoyo.
     //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+	//glDisable(GL_CULL_FACE);
 	
 	return true;
 }

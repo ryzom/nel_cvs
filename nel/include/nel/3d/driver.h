@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.39 2000/12/18 15:12:38 corvazier Exp $
+ * $Id: driver.h,v 1.40 2000/12/21 09:42:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,8 @@ const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000010;
 const uint32 IDRV_TOUCHED_COLOR		=	0x00000020;
 const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000040;
 const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000080;
+const uint32 IDRV_TOUCHED_ZWRITE	=	0x00000100;
+
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -130,39 +132,58 @@ public:
 	// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.
 	CMaterial				&operator=(const CMaterial &mat);
 
-	uint32					getTouched(void) { return(_Touched); }
+
+	uint32					getTouched(void)  const { return(_Touched); }
 	void					clearTouched(uint32 flag) { _Touched&=~flag; }
 
-	bool					texturePresent(uint8 n);
-	ITexture*				getTexture(uint8 n);
-	void 					setTexture(ITexture* ptex, uint8 n=0);
-
+	
 	void					setShader(TShader val);
 
-	TBlend					getSrcBlend(void) { return(_SrcBlend); }
-	void					setSrcBlend(TBlend val);
+	/// \name Texture.
+	// @{
+	void 					setTexture(ITexture* ptex, uint8 n=0);
 
-	TBlend					getDstBlend(void) { return(_DstBlend); }
-	void					setDstBlend(TBlend val);
+	ITexture*				getTexture(uint8 n);
+	bool					texturePresent(uint8 n);
+	// @}
+
+
+	/// \name Blending.
+	// @{
+	void					setBlend(bool active);
 	void					setBlendFunc(TBlend src, TBlend dst);
+	void					setSrcBlend(TBlend val);
+	void					setDstBlend(TBlend val);
+
+	bool					getBlend() const { return (_Flags&IDRV_MAT_BLEND)!=0; }
+	TBlend					getSrcBlend(void)  const { return(_SrcBlend); }
+	TBlend					getDstBlend(void)  const { return(_DstBlend); }
+	// @}
 
 
-	ZFunc					getZFunc(void) { return(_ZFunction); }		
-	void					setZFunction(ZFunc val);
-
-	float					getZBias(void) { return(_ZBias); }
+	/// \name ZBuffer.
+	// @{
+	void					setZFunc(ZFunc val);
+	void					setZWrite(bool active);
 	void					setZBias(float val);
 
-	CRGBA					getColor(void) { return(_Color); }
+	ZFunc					getZFunc(void)  const { return(_ZFunction); }		
+	bool					getZWrite(void)  const{ return (_Flags&IDRV_MAT_ZWRITE)!=0; }
+	float					getZBias(void)  const { return(_ZBias); }
+	// @}
+
+
+	/// \name Color/Lighting..
+	// @{
 	void					setColor(CRGBA rgba);
-
-	void					setBlend(bool active);
-
 	void					setLighting(	bool active, bool DefMat=true,
 											CRGBA emissive=CRGBA(0,0,0), 
 											CRGBA ambient=CRGBA(0,0,0), 
 											CRGBA diffuse=CRGBA(0,0,0), 
 											CRGBA specular=CRGBA(0,0,0) );
+
+	CRGBA					getColor(void) { return(_Color); }
+	// @}
 
 
 	/** Init the material as unlit. normal shader, no lighting ....

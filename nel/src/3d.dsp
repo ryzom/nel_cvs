@@ -290,30 +290,6 @@ SOURCE=..\include\nel\3d\texture.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\texture_file.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\texture_file.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\texture_font.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\texture_font.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\texture_mem.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\texture_mem.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
 # Begin Source File
@@ -461,6 +437,9 @@ SOURCE=.\3d\shape.cpp
 SOURCE=..\include\nel\3d\shape.h
 # End Source File
 # End Group
+# Begin Group "Textures"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=.\3d\bitmap.cpp
@@ -469,6 +448,51 @@ SOURCE=.\3d\bitmap.cpp
 
 SOURCE=..\include\nel\3d\bitmap.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_file.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_font.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_font.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_mem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_mem.h
+# End Source File
+# End Group
+# Begin Group "Mrm"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\mrm_builder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mrm_builder.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mrm_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\mrm_mesh.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.cpp

@@ -17,6 +17,9 @@ The following max map are used to create the water (their name may be misleading
 - Diffuse map [optionnal] : its alpha and colors are used to modulate the final color and alpha of the water
 - Refraction map [optionnal] : May be used to set an alternate texture for the env map. 
   It is then possible to blend between these 2 map for night / day transition (with the night / day dialog in the object viewer)
+- Opacity map [optionnal] : the same than diffuse map, but for underwater
+- Filter color map [optionnal] : the same than refraction map, but for underwater
+
 
 Texture coordinates apply only to the diffuse map. This texture may have any orientation provided this orientation is the same over the whole polygon
 

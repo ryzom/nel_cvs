@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.24 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.25 2002/07/01 10:05:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -537,8 +537,7 @@ void CMeshMultiLod::renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInst
 	uint maskFlag = CMeshMultiLodInstance::Coarse0Loaded<<coarseId;
 
 	// Get a pointer on the geom mesh
-	nlassert (dynamic_cast<CMeshGeom*>(slotRef.MeshGeom));
-	CMeshGeom *meshGeom=(CMeshGeom*)slotRef.MeshGeom;
+	CMeshGeom *meshGeom= safe_cast<CMeshGeom*>(slotRef.MeshGeom);
 
 	// Added in the manager ?
 	if ( (trans->Flags&maskFlag) == 0)

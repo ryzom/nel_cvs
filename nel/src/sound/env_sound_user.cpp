@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.13 2001/09/03 16:00:05 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.14 2001/09/04 16:53:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -391,6 +391,7 @@ void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain 
 		nlassert( (_Children.size() == 1) && (_Children[0] != NULL) && (_Parent != NULL) );
 		nlassert( _BoundingShape && _Children[0]->_BoundingShape );
 		float ratio = _BoundingShape->getRatio( listenerpos, _Children[0]->_BoundingShape );
+		nlassert( ratio >= 0.0f && ratio <= 1.0f );
 
 		// The child env plays at gain*ratio
 		// The recursion stops because the child env is not a transition area

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.14 2001/09/04 13:45:41 vizerie Exp $
+ * $Id: audio_mixer_user.h,v 1.15 2001/09/04 16:53:29 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ class CEnvEffect;
 
 
 // Max number of tracks (physical sources)
-#define MAX_TRACKS 5
+#define MAX_TRACKS 32
 
 
 /**

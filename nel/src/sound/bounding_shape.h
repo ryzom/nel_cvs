@@ -1,7 +1,7 @@
 /** \file bounding_shape.h
  * IBoundingShape: interface for bounding shapes
  *
- * $Id: bounding_shape.h,v 1.4 2001/07/25 08:40:58 cado Exp $
+ * $Id: bounding_shape.h,v 1.5 2001/09/04 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ public:
 	/// Return the approximate diameter
 	virtual float	getDiameter() const = 0;
 	/// Return the radius at the intersection of the shape and the line between the specified position and the center of the shape
-	virtual float	getRadiusAtIntersect( const NLMISC::CVector& pos ) { return 0.0f; /* method not required*/ }
+	virtual float	getRadiusAtIntersect( const NLMISC::CVector& pos ) const = 0;/* { return 0.0f; } */
 	/// Return a reference to the center of the shape
 	virtual const NLMISC::CVector& getCenter() const = 0;
 	/// Move the shape
@@ -64,9 +64,11 @@ public:
 	 * If the point is near this shape, the ratio is near 0.
 	 * If the point is near the inner shape, the ratio is near 1.
 	 */
-	virtual float	getRatio( const NLMISC::CVector& pos, IBoundingShape *inner ) const { return 0.0f; /*method not required*/ };
+	virtual float	getRatio( const NLMISC::CVector& pos, IBoundingShape *inner ) const = 0; /* { return 0.0f; } */
 	/// Serialize
 	virtual void	serial( NLMISC::IStream& s ) = 0;
+
+	virtual NLMISC::CVector	getIntersectWithLine( const NLMISC::CVector& c, const NLMISC::CVector& p ) const { return NLMISC::CVector::Null; } // not required
 
 
 	/// Destructor

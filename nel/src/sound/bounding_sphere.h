@@ -1,7 +1,7 @@
 /** \file bounding_sphere.h
  * CBoundingSphere: Bounding sphere (different from the NL3D ones)
  *
- * $Id: bounding_sphere.h,v 1.4 2001/08/28 16:59:34 cado Exp $
+ * $Id: bounding_sphere.h,v 1.5 2001/09/04 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// Return the approximate diameter
 	virtual float					getDiameter() const						{ return _BSphere.Radius*2.0f; }
 	/// Return the radius at the intersection of the shape and the line between the specified position and the center of the shape
-	virtual float					getRadiusAtIntersect( const NLMISC::CVector& ) { return _BSphere.Radius; }
+	virtual float					getRadiusAtIntersect( const NLMISC::CVector& ) const { return _BSphere.Radius; }
 	/// Return a reference to the center of the shape
 	virtual const NLMISC::CVector&	getCenter() const						{ return _BSphere.Center; }
 	/// Move the shape

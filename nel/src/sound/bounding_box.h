@@ -1,7 +1,7 @@
 /** \file bounding_box.h
  * CBoundingBox: Bounding box (different from the NL3D ones)
  *
- * $Id: bounding_box.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
+ * $Id: bounding_box.h,v 1.4 2001/09/04 16:53:29 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -58,13 +58,26 @@ public:
 	virtual bool					include( const NLMISC::CVector& pos ) const;
 	/// Return the approximate diameter
 	virtual float					getDiameter() const;
+	/// Return the radius at the intersection of the shape and the line between the specified position and the center of the shape
+	virtual float					getRadiusAtIntersect( const NLMISC::CVector& pos ) const;
 	/// Return a reference to the center of the shape
 	virtual const NLMISC::CVector&	getCenter() const				{ return _Center; }
 	/// Move the shape
 	virtual void					setCenter( const NLMISC::CVector& pos )	{ _Center = pos; }
 	/// Serialize (if you change this, change the version in CEnvEffect::serialFileHeader() !)
 	virtual void					serial( NLMISC::IStream& s )	{ s.serial( _Center ); s.serial( _Rx ); s.serial( _Ry ); s.serial( _Rz ); }
+	/** Return the ratio of a point between this shape and another inner shape.
+	 * The point must be included in this shape (the outer one) and not
+	 * in the inner shape.
+	 * If the point is near this shape, the ratio is near 0.
+	 * If the point is near the inner shape, the ratio is near 1.
+	 */
+	virtual float					getRatio( const NLMISC::CVector& pos, IBoundingShape *inner ) const;
 	NLMISC_DECLARE_CLASS(CBoundingBox);
+
+
+	virtual NLMISC::CVector			getIntersectWithLine( const NLMISC::CVector& c, const NLMISC::CVector& p ) const;
+
 
 
 	/// Return the corners (EDIT)

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.h,v 1.4 2000/09/25 15:01:47 cado Exp $
+ * $Id: base_socket.h,v 1.5 2000/09/25 16:07:27 cado Exp $
  *
  * Interface of CBaseSocket
  */
@@ -81,6 +81,7 @@ private:
 
 /**
  * Base class for CSocket (TCP) and CDatagramSocket (UDP).
+ * Not made to be instanciated.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000
@@ -94,8 +95,8 @@ public:
 	 */
 	static void init() throw (ESocket);
 
-	/// Constructor
-	CBaseSocket();
+	/// Constructor. Disable logging if the server socket object is used by the logging system.
+	CBaseSocket( bool logging = true );
 
 	/// Construct a CSocket object using an already connected socket descriptor 
 	CBaseSocket( SOCKET sock ) throw (ESocket);
@@ -128,6 +129,8 @@ protected:
 
 	SOCKET			_Sock;
 	CInetAddress	_LocalAddr;
+	bool			_Logging;
+
 
 private:
 

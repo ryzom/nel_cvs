@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: socket.cpp,v 1.9 2000/09/25 15:01:47 cado Exp $
+ * $Id: socket.cpp,v 1.10 2000/09/25 16:07:27 cado Exp $
  *
  * Implementation for CSocket.
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
@@ -58,9 +58,8 @@ namespace NLNET
  * Constructor
  */
 CSocket::CSocket( bool logging ) :
-	CBaseSocket(),
-	_Connected( false ),
-	_Logging( logging )
+	CBaseSocket( logging ),
+	_Connected( false )
 {
 }
 

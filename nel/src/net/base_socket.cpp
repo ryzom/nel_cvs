@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: base_socket.cpp,v 1.4 2000/09/25 15:01:47 cado Exp $
+ * $Id: base_socket.cpp,v 1.5 2000/09/25 16:07:27 cado Exp $
  *
  * Implementation of CBaseSocket
  */
@@ -77,8 +77,9 @@ void CBaseSocket::init() throw (ESocket)
 /*
  * Constructor
  */
-CBaseSocket::CBaseSocket() :
-	_Sock( INVALID_SOCKET )
+CBaseSocket::CBaseSocket( bool logging ) :
+	_Sock( INVALID_SOCKET ),
+	_Logging( logging )
 {
 	CBaseSocket::init();
 }
@@ -117,7 +118,10 @@ void CBaseSocket::close()
 		#elif defined NL_OS_LINUX
 			::close( _Sock );
 		#endif
-	Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	if ( _Logging )
+	{
+		Log.display( "Socket %d closed at %s/%hu\n", _Sock, _LocalAddr.ipAddress().c_str(), _LocalAddr.port() );
+	}
 	_Sock = INVALID_SOCKET;
 	}
 }

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: msg_socket.h,v 1.6 2000/09/25 15:01:47 cado Exp $
+ * $Id: msg_socket.h,v 1.7 2000/09/25 16:07:27 cado Exp $
  *
  * Interface for CServerSocket
  */
@@ -56,7 +56,7 @@ typedef void (*TCbProcessReceivedMsg)( void*, CSocket&, CMessage*);
 /**
  * A server socket object allows to listen on a port and to accept incoming connections. It returns
  * then a CSocket object.
- * \test /code/test/test_rknet/main1.cpp
+ * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: datagram_socket.h,v 1.3 2000/09/25 15:01:47 cado Exp $
+ * $Id: datagram_socket.h,v 1.4 2000/09/25 16:07:27 cado Exp $
  *
  * Interface for CDatagramSocket
  */
@@ -54,7 +54,7 @@ class CMessage;
 
 /**
  * Socket for UDP unconnected transfers
- * \test /code/test/test_rknet/main1.cpp
+ * \test Test program is /code/test/test_rknet/main1.cpp
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2000

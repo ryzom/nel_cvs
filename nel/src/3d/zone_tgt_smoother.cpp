@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.1 2001/01/16 08:34:57 berenguier Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.2 2001/01/16 11:00:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,15 +131,135 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 		std::list<CPatchId>::iterator	itPatch;
 		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
 		{
-			// Tests the two edges around the vertex.
-			sint	e0= itPatch->IdVert;
-			sint	e1= (itPatch->IdVert+4-1)%4;
+			// Tests the two edges around the vertex (before: e0, and after: e1).
+			sint	e0= (itPatch->IdVert+4-1)%4;
+			sint	e1= itPatch->IdVert;
 
 			if(itPatch->Patch->BindEdges[e0].NPatchs!= 1)
 				continue;
 			if(itPatch->Patch->BindEdges[e1].NPatchs!= 1)
 				continue;
 		}
+
+
+
+		// b. maps patchs on tangents.
+		//=========================
+		vector<CTangentId>	tangents;
+		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
+		{
+			CPatchInfo		&pa= *(itPatch->Patch);
+			// The edges, before and after the veterx.
+			sint	edgeNum[2]= {(itPatch->IdVert+4-1)%4, itPatch->IdVert };
+			// The tangents, before and after the veterx.
+			sint	tgtNum[2]=  {(itPatch->IdVert*2+8-1)%8, itPatch->IdVert*2 };
+
+			// For the 2 edges around this vertex.
+			for(sint ed= 0; ed<2;ed++)
+			{
+				sint	patchId, zoneId, edgeId;
+
+				// get neighbor edge id.
+				zoneId= pa.BindEdges[ edgeNum[ed] ].ZoneId;
+				patchId= pa.BindEdges[ edgeNum[ed] ].Next[0];
+				edgeId= pa.BindEdges[ edgeNum[ed] ].Edge[0];
+				// Search if tangent already inserted, mapped to this "neighbor edge".
+				for(sint tgt= 0; tgt<(sint)tangents.size();tgt++)
+				{
+					if(tangents[tgt].ZoneId==zoneId && tangents[tgt].PatchId==patchId && tangents[tgt].EdgeId==edgeId)
+						break;
+				}
+				// If not found, add the tangent, and map ME to it.
+				if(tgt==(sint)tangents.size())
+				{
+					CTangentId	tangent;
+					// Set OUR edge Id.
+					tangent.ZoneId= itPatch->ZoneId;
+					tangent.PatchId= itPatch->PatchId;
+					tangent.EdgeId= edgeNum[ed];
+					// Get the tangent, before or after the vertex.
+					tangent.Tangent= pa.Patch.Tangents[ tgtNum[ed] ];
+					// Which patchs this edge share. (0 is those which insert this tgt)
+					tangent.Patchs[0]= &pa;
+					tangents.push_back(tangent);
+				}
+				else
+				{
+					// Which patchs this edge share. (0 is those which access this tgt)
+					tangents[tgt].Patchs[1]= &pa;
+				}
+				// Map the patch to this tangent.
+				itPatch->Tangents[ed]= tgt;
+
+			}
+		}
+
+		// There should be 4 tangents.
+		nlassert(tangents.size()==4);
+
+
+		// c. get the vertex.
+		//===================
+		CVector		vertexValue;
+		itPatch= vert.Patchs.begin();
+		vertexValue= itPatch->Patch->Patch.Vertices[itPatch->IdVert];
+
+
+		// d. project the tangents.
+		//=========================
+		// better coplanar than Max... (with orthogonal angles: use p0/p1).
+		for(i=0;i<(sint)tangents.size();i++)
+		{
+			// For following tangents, search the opposite.
+			// Begin at i+1 so we are sure to do this only one time.
+			for(j=i+1;j<(sint)tangents.size();j++)
+			{
+				if(tangents[i].isOppositeOf(tangents[j]))
+				{
+					CVector		&tgt0= tangents[i].Tangent;
+					CVector		&tgt1= tangents[j].Tangent;
+					// Colinear the tangents. Must keep the length of vectors.
+					float		l0= (tgt0-vertexValue).norm();
+					float		l1= (tgt1-vertexValue).norm();
+					// Average the tangents. Normalize them before, to keep much as possible the orientation.
+					CVector		d0= (vertexValue-tgt0).normed();
+					CVector		d1= (tgt1-vertexValue).normed();
+					CVector		dir= (d0+d1).normed();
+
+					// Copy to tangents.
+					tgt0= vertexValue-dir*l0;
+					tgt1= vertexValue+dir*l1;
+				}
+			}
+		}
+
+
+		// e. assign tangents to patchs, rebuild interior.
+		//==============================
+		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
+		{
+			CPatchInfo		&pa= *(itPatch->Patch);
+			// The tangents, before and after the vertex.
+			sint	tgtNum[2]=  {(itPatch->IdVert*2+8-1)%8, itPatch->IdVert*2 };
+			sint	t0= tgtNum[0];
+			sint	t1= tgtNum[1];
+			pa.Patch.Tangents[t0]= tangents[itPatch->Tangents[0]].Tangent;
+			pa.Patch.Tangents[t1]= tangents[itPatch->Tangents[1]].Tangent;
+
+			// Setup the coplanared interior. just the sum of 2 vector tangents.
+			pa.Patch.Interiors[itPatch->IdVert]= pa.Patch.Tangents[t0] + pa.Patch.Tangents[t1] - vertexValue;
+		}
+
+
+
+	}
+
+}
+
+
+/*
+	// OLD CODE FOR 3DS MAX LIKE COPLANAR.
+	// WORKS, BUT NOT AS GOOD AS REAL COPLANAR.
 
 		// b. build the plane.
 		//====================
@@ -177,137 +297,6 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 			sint			t1= itPatch->IdVert*2;
 			pa.Patch.Tangents[t0]= plane.project(pa.Patch.Tangents[t0]);
 			pa.Patch.Tangents[t1]= plane.project(pa.Patch.Tangents[t1]);
-
-			// Setup the coplanared interior. just the sum of 2 vector tangents.
-			pa.Patch.Interiors[itPatch->IdVert]= pa.Patch.Tangents[t0] + pa.Patch.Tangents[t1] - planeCenter;
-		}
-
-	}
-
-}
-
-
-/*
-		// CODE TEST TO DO BETTER COPLANAR THAN MAX. BUG!!!  (maybe in part b...)
-
-		// b. maps patchs on tangents.
-		//=========================
-		vector<CTangentId>	tangents;
-		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
-		{
-			CPatchInfo		&pa= *(itPatch->Patch);
-			sint	e0= itPatch->IdVert;
-			sint	e1= (itPatch->IdVert+4-1)%4;
-			sint	tgt, patchId, zoneId;
-
-			// Edge0.
-			//=======
-			// get neighbor patch id.
-			zoneId= pa.BindEdges[e0].ZoneId;
-			patchId= pa.BindEdges[e0].Next[0];
-			// If tangent already inserted, mapped to this neighbor, just map ME to it...
-			for(tgt= 0; tgt<(sint)tangents.size();tgt++)
-			{
-				if(tangents[tgt].ZoneId==zoneId && tangents[tgt].PatchId==patchId)
-					break;
-			}
-			// If not found, add the tangent.
-			if(tgt==(sint)tangents.size())
-			{
-				CTangentId	tangent;
-				// Set OUR patch Id.
-				tangent.ZoneId= itPatch->ZoneId;
-				tangent.PatchId= itPatch->PatchId;
-				// Get the tangent, just after the vertex.
-				tangent.Tangent= pa.Patch.Tangents[itPatch->IdVert*2];
-				tangent.p0= &pa;
-				tangents.push_back(tangent);
-			}
-			else
-			{
-				tangents[tgt].p1= &pa;
-			}
-			// Map the patch to this tangent.
-			itPatch->tgt0= tgt;
-
-
-			// Edge1.
-			//=======
-			zoneId= pa.BindEdges[e1].ZoneId;
-			patchId= pa.BindEdges[e1].Next[0];
-			// If tangent already inserted, mapped to a neighbor, just map to it...
-			for(tgt= 0; tgt<(sint)tangents.size();tgt++)
-			{
-				if(tangents[tgt].ZoneId==zoneId && tangents[tgt].PatchId==patchId)
-					break;
-			}
-			// If not found, add the tangent.
-			if(tgt==(sint)tangents.size())
-			{
-				CTangentId	tangent;
-				// Set OUR patch Id.
-				tangent.ZoneId= itPatch->ZoneId;
-				tangent.PatchId= itPatch->PatchId;
-				// Get the tangent, just before the vertex.
-				tangent.Tangent= pa.Patch.Tangents[(itPatch->IdVert*2+8-1)%8];
-				tangent.p0= &pa;
-				tangents.push_back(tangent);
-			}
-			else
-			{
-				tangents[tgt].p1= &pa;
-			}
-			// Map the patch to this tangent.
-			itPatch->tgt1= tgt;
-
-		}
-
-		// There should be 4 tangents.
-		//nlassert(tangents.size()==4);
-
-
-		// c. build the plane.
-		//====================
-		CVector		planeNormal(0,0,0);
-		CVector		planeCenter;
-		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
-		{
-			CPatchInfo		&pa= *(itPatch->Patch);
-			CVector			a,b,c, pvect;
-
-			// CCW order.
-			a= tangents[itPatch->tgt1].Tangent;
-			b= pa.Patch.Vertices[itPatch->IdVert];
-			c= tangents[itPatch->tgt0].Tangent;
-			pvect= (b-a)^(c-b);
-			planeNormal+= pvect.normed();
-
-			// yes, done 4 times... :(
-			planeCenter= b;
-		}
-		planeNormal.normalize();
-		CPlane		plane;
-		plane.make(planeNormal, planeCenter);
-
-
-		// d. project the tangents.
-		//=========================
-		// TODO: better coplanar than Max... (with orthogonal angles: use p0/p1).
-		for(i=0;i<(sint)tangents.size();i++)
-		{
-			//tangents[i].Tangent= plane.project(tangents[i].Tangent);
-		}
-
-
-		// e. assign tangents to patchs, rebuild interior.
-		//==============================
-		for(itPatch= vert.Patchs.begin(); itPatch!= vert.Patchs.end(); itPatch++)
-		{
-			CPatchInfo		&pa= *(itPatch->Patch);
-			sint			t0= itPatch->IdVert*2;
-			sint			t1= (itPatch->IdVert*2+8-1)%8;
-			pa.Patch.Tangents[t0]= tangents[itPatch->tgt0].Tangent;
-			pa.Patch.Tangents[t1]= tangents[itPatch->tgt1].Tangent;
 
 			// Setup the coplanared interior. just the sum of 2 vector tangents.
 			pa.Patch.Interiors[itPatch->IdVert]= pa.Patch.Tangents[t0] + pa.Patch.Tangents[t1] - planeCenter;

@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.h
  * <File description>
  *
- * $Id: zone_tgt_smoother.h,v 1.1 2001/01/16 08:35:14 berenguier Exp $
+ * $Id: zone_tgt_smoother.h,v 1.2 2001/01/16 11:00:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,16 +68,29 @@ private:
 		// [0,3]. which vertex of this patch points on the vertex.
 		sint			IdVert;
 
-		// local index on tangentes.
-		sint			tgt0;
-		sint			tgt1;
+		// local index on tangentes, around the vertex.
+		sint			Tangents[2];
 	};
 	struct	CTangentId
 	{
 		uint16			ZoneId;
 		uint16			PatchId;
-		CPatchInfo		*p0, *p1;
+		sint			EdgeId;
+		// The two patchs which share the tangent.
+		CPatchInfo		*Patchs[2];
+		// The value of this tangent.
 		CVector			Tangent;
+
+		bool			isOppositeOf(const CTangentId &tgt)
+		{
+			// 4x4 configuartion only.
+			// The opposite tangent do not have the same patchs which share this tangent.
+			if(Patchs[0]==tgt.Patchs[0])	return false;
+			if(Patchs[0]==tgt.Patchs[1])	return false;
+			if(Patchs[1]==tgt.Patchs[0])	return false;
+			if(Patchs[1]==tgt.Patchs[1])	return false;
+			return true;
+		}
 	};
 
 	struct	CVertexInfo

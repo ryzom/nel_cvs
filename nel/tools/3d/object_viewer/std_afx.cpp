@@ -1,7 +1,7 @@
 /** \file std_afx.cpp
  * <File description>
  *
- * $Id: std_afx.cpp,v 1.2 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: std_afx.cpp,v 1.3 2001/06/15 09:56:32 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,3 +25,4 @@
 
 #include "std_afx.h"
 
+ 

@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.14 2001/02/21 11:36:39 chafik Exp $
+ * $Id: baseai.cpp,v 1.15 2001/03/01 15:18:23 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,7 +213,6 @@ namespace NLAIAGENT
 			r.push(CIdMethod(1,0.0,NULL,c));
 			return r;
 		}
-
 		return tQueue();
 	}
 

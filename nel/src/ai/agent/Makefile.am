@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.8 2001/03/01 13:44:00 chafik Exp $
+# $Id: Makefile.am,v 1.9 2001/03/01 15:18:23 portier Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -13,7 +13,8 @@ libagent_la_SOURCES     = actor.cpp actor_script.cpp agent_local_mailer.cpp agen
                           ident.cpp init_agent.cpp mailbox.cpp \
                           main_agent_script.cpp msg.cpp lis_manager.cpp \
                           message_script.cpp msg_container.cpp \
-                          msg_group.cpp paire_type.cpp msg_notify.cpp
+                          msg_group.cpp paire_type.cpp msg_notify.cpp \
+			  msg_goal.cpp gd_agent_script.cpp
 
 
 # End of Makefile.am

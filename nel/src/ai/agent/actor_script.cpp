@@ -195,7 +195,6 @@ namespace NLAIAGENT
 
 	sint32 CActorScript::getMethodIndexSize() const
 	{
-
 		return CAgentScript::getBaseMethodCount() + fid_switch;
 	}
 

@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.7 2001/02/01 17:15:20 chafik Exp $
+ * $Id: message_script.h,v 1.8 2001/03/01 15:16:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLAIAGENT
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *t) const;			
-			const NLAIC::CIdentType &getType() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			//@}			
 
 		public:
@@ -96,7 +96,7 @@ namespace NLAIAGENT
 			NLAISCRIPT::IOpCode *getMethode(sint32 index);
 
 			/// Return the nomber of internal C++ hard coded method that the class can process.
-			sint32 getBaseMethodCount() const;
+			virtual sint32 getBaseMethodCount() const;
 
 			const NLAISCRIPT::CMessageClass *getCreatorClass() const
 			{

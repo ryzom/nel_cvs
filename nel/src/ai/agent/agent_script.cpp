@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.33 2001/03/01 13:44:00 chafik Exp $
+ * $Id: agent_script.cpp,v 1.34 2001/03/01 15:18:23 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,8 +97,8 @@ namespace NLAIAGENT
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
 
-///////////////////////////////////////////////////////////////////////////////////////
-/// Temp.
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
 
 		IdGoalMsgClass = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass));
 
@@ -107,8 +107,8 @@ namespace NLAIAGENT
 														new NLAIC::CIdentType(CGoalMsg::IdGoalMsg));
 
 		ParamGoalMsg = new NLAISCRIPT::CParam(1,IdGoalMsg);
+	////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////////////
 
 
 		StaticMethod = new CAgentScript::CMethodCall *[CAgentScript::TLastM];
@@ -162,11 +162,16 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CAgentScript::IdAgentScript))));
 
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+
 		StaticMethod[CAgentScript::TGoal] = new CAgentScript::CMethodCall(	_RUNACHIEVE_, 
 																			CAgentScript::TGoal, ParamGoalMsg,
 																			CAgentScript::CheckAll,
 																			1,
 																			new NLAISCRIPT::CObjectUnknown(IdGoalMsgClass) );
+	////////////////////////////////////////////////////////////////////////
+
 
 
 		StaticMethod[CAgentScript::TSelf] = new CAgentScript::CMethodCall(	_SELF_, 
@@ -199,9 +204,13 @@ namespace NLAIAGENT
 	{		
 		SendParamMessageScript->release();
 		//IdMsgNotifyParentClass->release();		
-		IdGoalMsgClass->release();
-		IdGoalMsg->release();
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+//		IdGoalMsgClass->release();
+//		IdGoalMsg->release();
 		ParamGoalMsg->release();
+	////////////////////////////////////////////////////////////////////////
+
 		ParamRunParentNotify->release();
 		SendCompParamMessageScript->release();
 		sint i;
@@ -1055,6 +1064,16 @@ namespace NLAIAGENT
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+
+		case TGoal:
+			{				
+				return runGoalMsg((IBaseGroupType *)o);
+			}
+	////////////////////////////////////////////////////////////////////////
+
+
 		default:
 			return IAgent::runMethodeMember(index,o);
 				
@@ -1113,6 +1132,16 @@ namespace NLAIAGENT
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
+
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+
+		case TGoal:
+			{				
+				return runGoalMsg((IBaseGroupType *)o);
+			}
+	////////////////////////////////////////////////////////////////////////
+
 		default:
 			return IAgent::runMethodeMember(index,o);
 		}
@@ -1374,4 +1403,22 @@ namespace NLAIAGENT
 	{
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
+
+	////////////////////////////////////////////////////////////////////////
+	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
+
+	IObjectIA::CProcessResult CAgentScript::runGoalMsg(IBaseGroupType *g)
+	{
+		NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) g->get();
+#ifdef NL_DEBUG
+				char buffer[1024 * 2];
+				goal->getDebugString( buffer );
+#endif
+		_GoalStack.push_back( goal );
+
+		IObjectIA::CProcessResult r;
+		r.Result = NULL;
+		return r;
+	}
+	////////////////////////////////////////////////////////////////////////
 }

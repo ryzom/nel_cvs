@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base variable class for first order and fuzzy logic
  *
- * $Id: var.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: var.h,v 1.4 2001/03/01 15:16:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,6 @@ namespace NLAILOGIC {
 			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 , NLAIAGENT::IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
-
 	};
 
 	class CVar : public IBaseVar 
@@ -70,7 +69,7 @@ namespace NLAILOGIC {
 			CVar(const CVar &cp);
 			virtual ~CVar();
 			virtual void setValue(NLAIAGENT::IObjetOp*obj);
-			virtual NLAIAGENT::IObjetOp*getValue() const;
+			virtual NLAIAGENT::IObjetOp *getValue() const;
 			virtual const NLAIC::IBasicType *clone() const;
 			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
@@ -85,7 +84,7 @@ namespace NLAILOGIC {
 			bool unify(IBaseVar *, bool assign = false);
 			bool unify(NLAIAGENT::IObjetOp*, bool assign = false);
 
-			virtual NLAIAGENT::IObjetOp*operator == (NLAIAGENT::IObjetOp&a) const;
+			virtual NLAIAGENT::IObjetOp*operator == (NLAIAGENT::IObjetOp &a) const;
 	};
 }
 #endif

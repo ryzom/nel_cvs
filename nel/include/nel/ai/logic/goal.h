@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.5 2001/02/28 17:01:14 portier Exp $
+ * $Id: goal.h,v 1.6 2001/03/01 15:16:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,13 +37,14 @@ namespace NLAILOGIC
 	{
 		private:
 			NLAIAGENT::IVarName *_Name;
-			std::vector<NLAILOGIC::IBaseVar *>	_Vars;
+			std::vector<NLAIAGENT::IObjectIA *>	_Args;
 			std::vector<IBaseOperator *>		_Successors;
 			std::vector<IBaseOperator *>		_Predecessors;
 		public:
 
 			CGoal();
 			CGoal(const NLAIAGENT::IVarName &);
+			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &);
 			CGoal(const CGoal &);
 			~CGoal();
 
@@ -71,6 +72,11 @@ namespace NLAILOGIC
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			std::vector<IBaseVar *> *getVars();
 			const NLAIC::CIdentType &getType() const;
+
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
+			sint32 getMethodIndexSize() const;
 	};
 }
 

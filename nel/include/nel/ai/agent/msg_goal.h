@@ -1,6 +1,6 @@
 /** \file msg_goal.h
  *
- * $Id: msg_goal.h,v 1.2 2001/02/28 17:01:14 portier Exp $
+ * $Id: msg_goal.h,v 1.3 2001/03/01 15:16:47 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,14 @@ namespace NLAIAGENT
 		}
 		const NLAIC::CIdentType &getType() const;
 		void getDebugString(char *t) const;
+
+
+		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
+		IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
+
+		virtual sint32 getBaseMethodCount() const;
+
 		//@}			
 
 	};

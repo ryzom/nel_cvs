@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.2 2001/02/28 17:01:30 portier Exp $
+ * $Id: msg_goal.cpp,v 1.3 2001/03/01 15:18:23 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/ai/agent/agent_digital.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/logic/goal.h"
+#include "nel/ai/agent/object_type.h"
 
 namespace NLAIAGENT
 {
@@ -99,5 +100,51 @@ namespace NLAIAGENT
 		{
 			sprintf(t,"CGoalMsg<false,NULL>");
 		}
+	}
+
+
+	tQueue CGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	{
+		tQueue r;
+		if(className == NULL)
+		{
+			if( (*funcName) == CStringVarName( "Constructor" ) )
+			{					
+				CObjectType *c = new CObjectType( new NLAIC::CIdentType( CGoalMsg::IdGoalMsg ) );					
+				r.push( CIdMethod( IMessageBase::getMethodIndexSize(), 0.0, NULL, c) );			
+			}
+		}
+		return r;
+	}
+
+	NLAIAGENT::IObjectIA::CProcessResult CGoalMsg::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
+	{
+		return IObjectIA::CProcessResult();
+	}
+
+	IObjectIA::CProcessResult CGoalMsg::runMethodeMember(sint32 index, IObjectIA *p)
+	{
+		IBaseGroupType *param = (IBaseGroupType *)p;
+
+		switch(index - CMessageScript::getMethodIndexSize())
+		{
+		case 0:
+			{					
+				NLAILOGIC::CGoal *goal = (NLAILOGIC::CGoal *) param->get();
+				param->popFront();
+#ifdef NL_DEBUG
+				char buffer[1024 * 2];
+				goal->getDebugString( buffer );
+#endif
+				set(0, goal);
+			}
+			break;
+		}
+		return IObjectIA::CProcessResult();
+	}
+
+	sint32 CGoalMsg::getBaseMethodCount() const
+	{
+		return CMessageScript::getBaseMethodCount() + 1;
 	}
 }

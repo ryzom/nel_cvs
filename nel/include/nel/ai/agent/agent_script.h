@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.18 2001/03/01 13:44:05 chafik Exp $
+ * $Id: agent_script.h,v 1.19 2001/03/01 15:16:47 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,6 +293,8 @@ namespace NLAIAGENT
 		{
 			return _FactBase;
 		}
+
+		IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *);
 	////////////////////////////////////////////////////////////////////////
 	};
 }

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.17 2004/08/19 12:43:51 besson Exp $
+ * $Id: driver_direct3d.cpp,v 1.18 2004/08/19 16:29:04 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1833,7 +1833,7 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	D3DDISPLAYMODE adapterMode;
 	if (_D3D->GetAdapterDisplayMode (adapter, &adapterMode) != D3D_OK)
 	{
-		nlwarning ("CDriverD3D::setDisplay: GetAdapterDisplayMode failed");
+		nlwarning ("CDriverD3D::reset: GetAdapterDisplayMode failed");
 		release();
 		return false;
 	}
@@ -1852,7 +1852,10 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	{
 		_ResetCounter++;
 		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+		{
+			nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
 			return false;
+		}
 
 		// BeginScene now
 		_DeviceInterface->BeginScene();
@@ -1954,7 +1957,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 	// Not found ?
 	if (!found)
 	{
-		nlwarning ("CDriverD3D::setDisplay: Can't create backbuffer");
+		nlwarning ("CDriverD3D::fillPresentParameter: Can't create backbuffer");
 		return false;
 	}
 
@@ -1978,7 +1981,7 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 
 	if (i>=zbufferFormatCount)
 	{
-		nlwarning ("CDriverD3D::setDisplay: Can't create zbuffer");
+		nlwarning ("CDriverD3D::fillPresentParameter: Can't create zbuffer");
 		return false;
 	}
 

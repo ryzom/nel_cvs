@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.46 2003/11/06 09:28:15 besson Exp $
+ * $Id: transform.h,v 1.47 2003/11/06 14:53:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,7 +203,8 @@ public:
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
 	/// Get the skeleton model. Returnr NULL in normal mode.
 	CSkeletonModel*			getSkeletonModel () const {return _FatherSkeletonModel;}
-
+	// Get the ancestor skeleton, (father skeleton that has the least depth in the model tree), or NULL if none	
+	CSkeletonModel			*getAncestorSkeletonModel() const { return _AncestorSkeletonModel; }
 
 	/// \name Hierarchy linking
 	// @{
@@ -297,6 +298,8 @@ public:
 	 */
 	const CMatrix&	getWorldMatrix() const {return _WorldMatrix;}
 
+	// force the world matrix (could be modified next frame after hrc traversal
+	void			setWorldMatrix(const CMatrix &mat) { _WorldMatrix = mat;}
 
 	/** tells if the transform has been determined as visible in the hrc traversal
 	 */
@@ -525,6 +528,8 @@ public:
 
 	// @}
 
+	
+
 
 // ********
 private:
@@ -667,6 +672,8 @@ protected:
 	/// Test if obj must be displayed when sticked to an object displayed as a LOD (example: sword in hand of a character displayed as a LOD state)
 	bool				getShowWhenLODSticked() const { return _ForceCLodSticked; }
 
+	// force to compute that transform matrix (useful if matrix needed but clipped because sticked to a clipped skeleton for example)
+	void				forceCompute();
 
 private:
 	static CTransform	*creator() {return new CTransform;}

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.66 2003/11/06 09:28:15 besson Exp $
+ * $Id: transform.cpp,v 1.67 2003/11/06 14:53:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1353,6 +1353,27 @@ void			CTransform::enableCastShadowMap(bool state)
 	{
 		deleteShadowMap();
 	}
+}
+
+// ***************************************************************************
+void CTransform::forceCompute()
+{
+	// if father is a skeleton, force to compute the bone we are sticked to
+	if (_FatherSkeletonModel)
+	{
+		_FatherSkeletonModel->forceComputeBone(_FatherBoneId);
+	}
+	else
+	{
+		// force to compûte the father
+		if (_HrcParent)
+		{
+			_HrcParent->forceCompute();
+		}
+	}
+	// compute
+	update();
+	updateWorldMatrixFromFather();
 }
 
 

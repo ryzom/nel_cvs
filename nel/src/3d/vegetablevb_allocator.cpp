@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -390,7 +390,7 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 	Bend start program:
 		Result: bend pos into R5, and R7,R8,R9 is the rotation matrix for possible normal lighting.
 
-	TODO_VEGET: lot of ways to optimize this. And may not need rotation scheme if vegetables are not lighted...
+	TODO_VEGET_OPTIM: lot of ways to optimize this. And may not need rotation scheme if vegetables are not lighted...
 */
 // ***********************
 // Splitted in 2 parts because of the 2048 char limit

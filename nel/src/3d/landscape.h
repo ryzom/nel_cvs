@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.19 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: landscape.h,v 1.20 2001/11/05 16:26:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -698,10 +698,14 @@ private:
 	CRGBA						_VegetableDiffuse;
 
 
+	/// List of VegetableBlock, to be tested for creation each frame.
+	CTessList<CLandscapeVegetableBlock>		_VegetableBlockList;
+
 	/** For a given tile Id, look into tileSet, and get the list of vegetable for this tile.
 	 *	\param tileId the tile [0..65535] to get the list of vegetable to create.
+	 *	\param distType the distanceType which intereset in creation.
 	 */
-	const std::vector<CVegetable*>	&getTileVegetableList(uint16 tileId);
+	const std::vector<CVegetable*>	&getTileVegetableList(uint16 tileId, uint distType);
 
 	// @}
 

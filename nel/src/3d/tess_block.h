@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.6 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: tess_block.h,v 1.7 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ namespace NL3D
 
 class	CPatchRdrPass;
 class	CLandscapeFaceVectorManager;
-class	CVegetableInstanceGroup;
+class	CLandscapeVegetableBlock;
 
 // ***************************************************************************
 /**
@@ -96,7 +96,7 @@ public:
 
 
 	// For micro-vegetation, little tessBlocks got InstanceGroups
-	CVegetableInstanceGroup		*VegetableInstanceGroup;
+	CLandscapeVegetableBlock	*VegetableBlock;
 
 
 public:

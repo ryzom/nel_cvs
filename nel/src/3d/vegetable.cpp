@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "3d/vegetable.h"
 #include "nel/misc/common.h"
 #include "3d/vegetable_manager.h"
+#include "3d/fast_floor.h"
 
 
 using namespace std;
@@ -129,7 +130,7 @@ void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surface
 	nbInst+= RandomGenerator.evalOneLevelRandom(posInWorld);
 
 	// and then get only the integral part.
-	sint	nbInstances= (sint)floor(nbInst);
+	sint	nbInstances= OptFastFloor(nbInst);
 	nbInstances= max(0, nbInstances);
 
 	// resize the instances

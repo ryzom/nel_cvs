@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -294,8 +294,19 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		//-------
 		// Separate Center and relative pos.
 		CVector	relPos= mat.mulVector(*(CVector*)srcPtr);	// mulVector, because translation in v[center]
-		*(CVector*)dstPtr= relPos;
-		*(CVector*)(dstPtr + dstCenterOff)= instancePos;
+		// compute bendCenterPos
+		CVector	bendCenterPos;
+		if(shape->BendCenterMode == CVegetableShapeBuild::BendCenterNull)
+			bendCenterPos= CVector::Null;
+		else
+		{
+			CVector	v= *(CVector*)srcPtr;
+			v.z= 0;
+			bendCenterPos= mat.mulVector(v);				// mulVector, because translation in v[center]
+		}
+		// copy
+		*(CVector*)dstPtr= relPos-bendCenterPos;
+		*(CVector*)(dstPtr + dstCenterOff)= instancePos + bendCenterPos;
 
 		// Enlarge the clipBlock of the IG.
 		// Since small shape, enlarge with each vertices. simpler and maybe faster.

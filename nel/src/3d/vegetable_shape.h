@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_shape.h,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,13 @@ namespace NL3D
 class CVegetableShapeBuild
 {
 public:
+
+	/** Bend center controls how each vertex is bended.
+	 *	BendCenterNull: For each Center of bend is made on (0,0,0).
+	 *	BendCenterZ: Center of bend is made on (vertx, verty, 0), perfect for "comb-like" vegetation.
+	 */
+	enum	TBendCenterMode	{BendCenterNull=0, BendCenterZ, BendCenterModeCount};
+
 	/** The standard input vertexBuffer
 	 *	If it has vertexColor, then BendWeight is read from color.R, and scale to take MaxBendWeight at max.
 	 *		else, BendWeight is read from pos.z (clamped to (0, maxZ), and scaled to take MaxBendWeight at max.
@@ -61,7 +68,8 @@ public:
 	bool				DoubleSided;
 	/// The maximum BendWeight to apply.
 	float				MaxBendWeight;
-
+	/// The BendCenter mode
+	TBendCenterMode		BendCenterMode;
 
 public:
 	CVegetableShapeBuild()
@@ -69,6 +77,7 @@ public:
 		Lighted= false;
 		DoubleSided= false;
 		MaxBendWeight= 0;
+		BendCenterMode= BendCenterNull;
 	}
 
 };
@@ -105,6 +114,7 @@ public:
 	/// Type of this shape.
 	bool					Lighted;
 	bool					DoubleSided;
+	CVegetableShapeBuild::TBendCenterMode			BendCenterMode;
 	/** VertexBuffer of this Shape, ready to be transformed and copied into vegetable manager
 	 *	Format is Pos/Normal/Tex0/Tex1 (no Normal if !Lighted). where Tex1.U==BendWeigth 
 	 */

@@ -1,7 +1,7 @@
 /** \file noise_value.h
  * <File description>
  *
- * $Id: noise_value.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: noise_value.h,v 1.2 2001/11/05 16:26:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,10 +58,14 @@ public:
 	CNoiseValue();
 	CNoiseValue(float abs, float rand, float freq);
 
-	/// return Abs + Rand* noise(Pos*Frequency).  with noise() E [0..1]
+	/** return Abs + Rand* noise(Pos*Frequency).  with noise() E [0..1]. 
+	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
+	 */
 	float	eval(const CVector &posInWorld) const;
 
-	/// same as eval, but eval just one random level for noise() => act much more like a random.
+	/** same as eval, but eval just one random level for noise() => act much more like a random.
+	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
+	 */
 	float	evalOneLevelRandom(const CVector &posInWorld) const;
 
 
@@ -116,6 +120,7 @@ public:
 public:
 	/** Use NoiseValue to compute a PerlinNoise E [0..1], and peek in Gradients, with linear interpolation.
 	 *	result unmodified if no gradients.
+	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 */
 	void	eval(const CVector &posInWorld, NLMISC::CRGBAF &result) const;
 

@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable.h,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,9 @@ public:
 	 *	result is a list of instance to create, with random 2d position. 2d position are in range [0..1].
 	 *	caller should scale, or use it to compute real world position, and then use generateInstance() to really
 	 *	compute the instances.
+	 *
+	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
+	 *
 	 *	\param posInWorld center (approx) of the surface which generate group of vegetable
 	 *	\param surfaceNormal UNIT up vector of the surface to compare with (0,0,1), to modulate density
 	 *	\param area area of the surface, to know number of elements to generate for this surface

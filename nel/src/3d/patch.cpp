@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.70 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: patch.cpp,v 1.71 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -883,45 +883,12 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	TessBlocks[numtb].FaceTileMaterialRefCount++;
 	TessBlocks[numtb].TileMaterialRefCount++;
 
-	// TODODO: if was no tiles before in this tessBlock, create and fill the vegetable IG
+	// if was no tiles before in this tessBlock, create a Vegetable block.
 	//==========
 	// one Tile <=> was 0 before
 	if( TessBlocks[numtb].TileMaterialRefCount == 1 && getLandscape()->isVegetableActive() )
 	{
-		// TessBlock width
-		uint	tbWidth= OrderS >> 1;
-		// clipBlock width
-		uint	nTbPerCb= NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK;
-		uint	cbWidth= (tbWidth + nTbPerCb-1) >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
-
-		// compute tessBlock coordinate.
-		sint	tbs ,tbt;
-		tbs= tm->TileS >> 1;
-		tbt= tm->TileT >> 1;
-		// compute clipBlock coordinate.
-		sint	cbs,cbt;
-		cbs= tbs >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
-		cbt= tbt >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
-
-		// create the instance group
-		CVegetableInstanceGroup		*vegetIg=
-			getLandscape()->_VegetableManager->createIg(VegetableClipBlocks[cbt *cbWidth + cbs]);
-
-		// set in the tessBlock
-		TessBlocks[numtb].VegetableInstanceGroup= vegetIg;
-		
-		// Create vegetables instances per tile_material for the tessBlock.
-		sint	tms,tmt;
-		// for all tiles
-		for(tmt= tbt*2; tmt<tbt*2+2; tmt++)
-		{
-			for(tms= tbs*2; tms<tbs*2+2; tms++)
-			{
-				// generate 
-				generateTileVegetable(tms, tmt);
-			}
-		}
-
+		createVegetableBlock(numtb, tm->TileS, tm->TileT);
 	}
 }
 // ***************************************************************************
@@ -935,14 +902,13 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	TessBlocks[numtb].FaceTileMaterialRefCount--;
 	TessBlocks[numtb].TileMaterialRefCount--;
 
-	// TODODO: if no more tiles in this tessBlock, delete the vegetable IG
+	// if no more tiles in this tessBlock, delete the vegetable Block.
 	//==========
 	// if no more tiles in this tessBlock
 	if( TessBlocks[numtb].TileMaterialRefCount==0 )
 	{
-		// delete the IG.
-		getLandscape()->_VegetableManager->deleteIg(TessBlocks[numtb].VegetableInstanceGroup);
-		TessBlocks[numtb].VegetableInstanceGroup= NULL;
+		// release the vegetableBlock (if any)
+		releaseVegetableBlock(numtb);
 	}
 
 	// Destroy if necessary the TessBlocks.
@@ -2037,8 +2003,6 @@ void		CPatch::packLumelBlock (uint8 *dest, const uint8 *source, uint8 alpha0, ui
 				value[i]=0;
 			else
 				value[i]=255;
-			else
-				value[i]=255;
 		}
 	}
 
@@ -2226,8 +2190,7 @@ void		CPatch::modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, 
 {
 	// Get the tileColors around this tile
 	CRGBA	corners[4];
-	// compute this pixel, and modulate
-	bilinearTileColorAndModulate(corners, s, t, *dest);
+	getTileTileColors(ts, tt, corners);
 
 	// compute this pixel, and modulate
 	bilinearTileColorAndModulate(corners, s, t, *dest);
@@ -3307,30 +3270,6 @@ void	CPatch::getBindNeighbor(uint edge, CBindInfo &neighborEdge) const
 	else
 	{
 		neighborEdge.Zone= NULL;
-}
-
-
-// ***************************************************************************
-// ***************************************************************************
-// MicroVegetation
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void	CPatch::deleteAllVegetableIgs(CVegetableManager	*vegetableManager)
-{
-	// For all TessBlocks expanded
-	for(uint i=0; i<TessBlocks.size(); i++)
-	{
-		// if exist, must delete the ig.
-		if(TessBlocks[i].VegetableInstanceGroup)
-		{
-			vegetableManager->deleteIg(TessBlocks[i].VegetableInstanceGroup);
-			TessBlocks[i].VegetableInstanceGroup= NULL;
-		}
-	}
-
 		neighborEdge.NPatchs= 0;
 		neighborEdge.MultipleBindNum= 0;
 	}

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.16 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: patch.h,v 1.17 2001/11/05 16:26:45 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -73,6 +73,9 @@ class	CBezierPatch;
 class	ITexture;
 class	CVegetableClipBlock;
 class	CVegetableManager;
+class	CVegetableInstanceGroup;
+class	CLandscapeVegetableBlock;
+class	CLandscapeVegetableBlockCreateContext;
 
 
 // ***************************************************************************
@@ -675,6 +678,7 @@ private:
 
 	friend	class CTessFace;
 	friend	class CZone;
+	friend	class CLandscapeVegetableBlock;
 
 	CZone			*Zone;
 
@@ -1018,11 +1022,18 @@ private:
 	/// Micro-Vegetation.
 	// @{
 
+	/// Create / init the vegetableBlock in the corresponding TessBlock. TessBlocks must exist
+	void		createVegetableBlock(uint numTb, uint ts, uint tt);
+	/// release the vegetableBlock in the corresponding TessBlock. TessBlocks must exist
+	void		releaseVegetableBlock(uint numTb);
+
 	/*
 		generate the vegetables for a given tile in the vegetable manager.
-		TessBlocks, CB and associated IG must exist yet.
+		instances are added to vegetIg.
+		Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	*/
-	void		generateTileVegetable(uint ts, uint tt);
+	void		generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distType, uint ts, uint tt,
+		CLandscapeVegetableBlockCreateContext &vbCreateCtx);
 
 	// same as computeTileLightmapPrecomputed(), but brut result, not modified by colorTable.
 	void		getTileLumelmapPrecomputed(uint ts, uint tt, uint8 *dest, uint stride);

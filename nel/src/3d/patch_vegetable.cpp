@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,11 @@
 #include "3d/patch.h"
 #include "3d/vegetable.h"
 #include "3d/vegetable_manager.h"
+#include "3d/landscape_vegetable_block.h"
 #include "3d/landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
+#include "3d/fast_floor.h"
 
 
 using namespace std;
@@ -44,7 +46,8 @@ namespace NL3D
 
 
 // ***************************************************************************
-void		CPatch::generateTileVegetable(uint ts, uint tt)
+void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distType, uint ts, uint tt,
+	CLandscapeVegetableBlockCreateContext &vbCreateCtx)
 {
 	uint	i;
 
@@ -54,27 +57,21 @@ void		CPatch::generateTileVegetable(uint ts, uint tt)
 	// Get tile infos for vegetable
 	// =========================
 
-	// compute tessBlock coordinate.
-	uint	tbs= ts >> 1;
-	uint	tbt= tt >> 1;
-	// get the vegetable IG in TessBlocks, to store the vegetable.
-	nlassert(NL3D_TESSBLOCK_TILESIZE==4);
-	CVegetableInstanceGroup		*vegetIg= TessBlocks[tbt * (OrderS>>1) + tbs].VegetableInstanceGroup;
-
 	// get the tileId under this tile (<=> the tile material)
 	uint	tileId= Tiles[tt * OrderS + ts].Tile[0];
 
-	// get list of vegetable for this tile.
-	const vector<CVegetable*>	&vegetableList= getLandscape()->getTileVegetableList(tileId);
+	// get list of vegetable for this tile, and for hist distanceType category.
+	const vector<CVegetable*>	&vegetableList= getLandscape()->getTileVegetableList(tileId, distType);
 	
 
 	// compute approximate tile position and normal: get the middle
 	float	tileU= (ts + 0.5f) / (float)OrderS;
 	float	tileV= (tt + 0.5f) / (float)OrderT;
-	// TODO_VEGET_OPTIM: too slow, get coordinate from CTessVertex around the tile
-	// NB: because temp, incorect here: don't take noise into account.
 	CBezierPatch	*bpatch= unpackIntoCache();
+	// Get approximate position for the tile (usefull for noise). NB: eval() is faster than computeVertex().
 	CVector		tilePos= bpatch->eval(tileU, tileV);
+	// Get also the normal used for all instances on this tile (not precise, 
+	// don't take noise into account, but faster).
 	CVector		tileNormal= bpatch->evalNormal(tileU, tileV);
 
 	// compute a rotation matrix with the normal
@@ -131,19 +128,18 @@ void		CPatch::generateTileVegetable(uint ts, uint tt)
 		veget->generateGroup(tilePos, tileNormal, NL3D_PATCH_TILE_AREA, instanceUV);
 
 		// For all instance, generate the real instances.
-		// TODO_VEGET_OPTIM: too slow here too...
 		for(uint j=0; j<instanceUV.size(); j++)
 		{
 			// generate the position in world Space.
-			// instancePos is in [0..1] interval, which maps to a tile, so explode to the patch
-			tileU= (ts + instanceUV[j].x) / (float)OrderS;
-			tileV= (tt + instanceUV[j].y) / (float)OrderT;
-			// eval the position in 3d space. use same normal for rotation.
-			matInstance.setPos( bpatch->eval(tileU, tileV) );
+			// instanceUV is in [0..1] interval, which maps to a tile, so explode to the patch
+			CVector		instancePos;
+			vbCreateCtx.eval(ts, tt, instanceUV[j].x, instanceUV[j].y, instancePos);
+			// NB: use same normal for rotation for all instances in a same tile.
+			matInstance.setPos( instancePos );
 
 			// peek color into the lightmap.
-			sint	lumelS= (sint)floor(instanceUV[j].x * NL_LUMEL_BY_TILE);
-			sint	lumelT= (sint)floor(instanceUV[j].y * NL_LUMEL_BY_TILE);
+			sint	lumelS= OptFastFloor(instanceUV[j].x * NL_LUMEL_BY_TILE);
+			sint	lumelT= OptFastFloor(instanceUV[j].y * NL_LUMEL_BY_TILE);
 			clamp(lumelS, 0, NL_LUMEL_BY_TILE-1);
 			clamp(lumelT, 0, NL_LUMEL_BY_TILE-1);
 
@@ -153,6 +149,66 @@ void		CPatch::generateTileVegetable(uint ts, uint tt)
 		}
 	}
 }
+
+
+// ***************************************************************************
+void	CPatch::deleteAllVegetableIgs(CVegetableManager	*vegetableManager)
+{
+	// For all TessBlocks, try to release their VegetableBlock
+	for(uint i=0; i<TessBlocks.size(); i++)
+	{
+		releaseVegetableBlock(i);
+	}
+
+}
+
+
+// ***************************************************************************
+void		CPatch::createVegetableBlock(uint numTb, uint ts, uint tt)
+{
+	// TessBlock width
+	uint	tbWidth= OrderS >> 1;
+	// clipBlock width
+	uint	nTbPerCb= NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK;
+	uint	cbWidth= (tbWidth + nTbPerCb-1) >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+
+	// compute tessBlock coordinate.
+	uint	tbs ,tbt;
+	tbs= ts >> 1;
+	tbt= tt >> 1;
+	// compute clipBlock coordinate.
+	uint	cbs,cbt;
+	cbs= tbs >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+	cbt= tbt >> NL3D_PATCH_VEGETABLE_NUM_TESSBLOCK_PER_CLIPBLOCK_SHIFT;
+
+	// create the vegetable block.
+	CLandscapeVegetableBlock		*vegetBlock= new CLandscapeVegetableBlock;
+	// Init / append to list.
+	// compute center of the vegetableBlock (approx).
+	CBezierPatch	*bpatch= unpackIntoCache();
+	CVector		center= bpatch->eval( (float)(tbs*2+1)/OrderS, (float)(tbt*2+1)/OrderT );
+	// Lower-Left tile is (tbs*2, tbt*2)
+	vegetBlock->init(center, VegetableClipBlocks[cbt *cbWidth + cbs], this, tbs*2, tbt*2, getLandscape()->_VegetableBlockList);
+
+	// set in the tessBlock
+	TessBlocks[numTb].VegetableBlock= vegetBlock;
+}
+
+
+// ***************************************************************************
+void		CPatch::releaseVegetableBlock(uint numTb)
+{
+	// if exist, must delete the VegetableBlock.
+	if(TessBlocks[numTb].VegetableBlock)
+	{
+		// delete Igs, and remove from list.
+		TessBlocks[numTb].VegetableBlock->release(getLandscape()->_VegetableManager, getLandscape()->_VegetableBlockList);
+		// delete.
+		delete TessBlocks[numTb].VegetableBlock;
+		TessBlocks[numTb].VegetableBlock= NULL;
+	}
+}
+
 
 
 

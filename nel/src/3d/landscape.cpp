@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.87 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: landscape.cpp,v 1.88 2001/11/05 16:26:44 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "3d/tile_noise_map.h"
 #include "3d/vegetable_manager.h"
 #include "3d/vegetable.h"
+#include "3d/landscape_vegetable_block.h"
+#include "3d/fast_floor.h"
 
 
 #include "3d/vertex_program.h"
@@ -564,6 +566,21 @@ void			CLandscape::refine(const CVector &refineCenter)
 	}
 	// do it until we are sure no more split is needed, ie no more faces are created
 	while( _RootNewLeaves.nextInPList() );
+
+
+	// Before unlockBuffers, test for vegetable IG creation.
+	// Because CLandscapeVegetableBlock::update() use OptFastFloor..
+	OptFastFloorBegin();
+
+	// For each vegetableBlock, test IG creation
+	CLandscapeVegetableBlock	*vegetBlock= _VegetableBlockList.begin();
+	for(;vegetBlock!=NULL; vegetBlock= (CLandscapeVegetableBlock*)vegetBlock->Next)
+	{
+		vegetBlock->update(refineCenter, _VegetableManager);
+	}
+
+	// Stop fastFloor optim.
+	OptFastFloorEnd();
 
 
 	// Must realase VB Buffers
@@ -2569,19 +2586,22 @@ void		CLandscape::enableVegetable(bool enable)
 	_VegetableManagerEnabled= enable;
 
 	// if false, delete all Vegetable IGs.
-	// Landscape always create ClipBlokcs, but IGs/addInstances() are created only if isVegetableActive().
-	// For all zones.
-	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	if(!_VegetableManagerEnabled)
 	{
-		// for all patch.
-		sint	N= (*it).second->getNumPatchs();
-		for(sint i=0;i<N;i++)
+		// Landscape always create ClipBlokcs, but IGs/addInstances() are created only if isVegetableActive().
+		// For all zones.
+		for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
 		{
-			// delete vegetable Igs of this patch
-			CPatch	*pa= ((*it).second)->getPatch(i);
-			pa->deleteAllVegetableIgs(_VegetableManager);
-		}
+			// for all patch.
+			sint	N= (*it).second->getNumPatchs();
+			for(sint i=0;i<N;i++)
+			{
+				// delete vegetable Igs of this patch
+				CPatch	*pa= ((*it).second)->getPatch(i);
+				pa->deleteAllVegetableIgs(_VegetableManager);
+			}
 
+		}
 	}
 
 }
@@ -2626,11 +2646,14 @@ void		CLandscape::setVegetableWindAnimationTime(double windTime)
 
 
 // ***************************************************************************
-const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId)
+const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, uint distType)
 {
 	// TODO_VEGET: manage landscape tileSet.
-	static std::vector<CVegetable*>		grassArray;
-	static CVegetable					grass;
+	static std::vector<CVegetable*>		grassArray0;
+	static std::vector<CVegetable*>		grassArray1;
+	static std::vector<CVegetable*>		grassArrayEmpty;
+	static CVegetable					grass0;
+	static CVegetable					grass1;
 	static bool							init= false;
 
 	if(!init)
@@ -2639,57 +2662,73 @@ const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId)
 
 
 		// init the grass vegetable.
-		grass.ShapeName= "grass.veget";
-		grass.Density.Abs= -10;
-		grass.Density.Rand= 20;
-		grass.Density.Frequency= 0.08f;
-		grass.setAngleGround(0.7f);
+		grass0.ShapeName= "grass.veget";
+		grass0.Density.Abs= -3;
+		grass0.Density.Rand= 5;
+		grass0.Density.Frequency= 0.08f;
+		grass0.setAngleGround(0.7f);
 
-		grass.Sxy.Abs= 0.5;
-		grass.Sxy.Rand= 1;
-		grass.Sxy.Frequency= 1;
-		grass.Sz.Abs= 0.5;
-		grass.Sz.Rand= 0.5;
-		grass.Sz.Frequency= 10;
+		grass0.Sxy.Abs= 0.5;
+		grass0.Sxy.Rand= 1;
+		grass0.Sxy.Frequency= 1;
+		grass0.Sz.Abs= 0.5;
+		grass0.Sz.Rand= 0.5;
+		grass0.Sz.Frequency= 10;
 
-		grass.Rz.Abs=0;
-		grass.Rz.Rand= 20*(float)Pi;
-		grass.Rz.Frequency= 10;
+		grass0.Rz.Abs=0;
+		grass0.Rz.Rand= 20*(float)Pi;
+		grass0.Rz.Frequency= 10;
 
-		grass.Rx.Abs=-(float)Pi/4;
-		grass.Rx.Rand= (float)Pi/2;
-		grass.Rx.Frequency= 1;
+		grass0.Rx.Abs=-(float)Pi/4;
+		grass0.Rx.Rand= (float)Pi/2;
+		grass0.Rx.Frequency= 1;
 
-		grass.Color.NoiseValue.Frequency= 0.1f;
-		grass.Color.NoiseValue.Abs= -1;
-		grass.Color.NoiseValue.Rand= 3;
+		grass0.Color.NoiseValue.Frequency= 0.1f;
+		grass0.Color.NoiseValue.Abs= -1;
+		grass0.Color.NoiseValue.Rand= 3;
 		CRGBAF	col0, col1, col2;
 		float	diff= 0.8f;
 		col0= CRGBAF(1.0f,1.0f,0.2f) * diff;
 		col1= CRGBAF(0.2f,1.0f,0.0f) * diff;
 		col2= CRGBAF(0.7f,0.6f,0.3f) * diff;
-		grass.Color.Gradients.push_back( CColorGradient( col0, col1) );
-		grass.Color.Gradients.push_back( CColorGradient( col1, col2) );
+		grass0.Color.Gradients.push_back( CColorGradient( col0, col1) );
+		grass0.Color.Gradients.push_back( CColorGradient( col1, col2) );
 
 
-		grass.BendPhase.Abs= 0;
-		grass.BendPhase.Rand= (float)(4*Pi);
-		grass.BendPhase.Frequency= 0.1f;
-		grass.BendFactor.Abs= (float)( Pi/10 );
-		grass.BendFactor.Rand= (float)( Pi/10 );
-		grass.BendPhase.Frequency= 0.1f;
+		grass0.BendPhase.Abs= 0;
+		grass0.BendPhase.Rand= (float)(4*Pi);
+		grass0.BendPhase.Frequency= 0.1f;
+		grass0.BendPhase.Frequency= 0.1f;
+		grass0.BendFactor.Abs= 0.5;
+		grass0.BendFactor.Rand= 0.5;
 
-		grass.BendFactor.Abs/= 2;
-		grass.BendFactor.Rand/= 2;
 
 		// load the shape.
-		grass.registerToManager(_VegetableManager);
+		grass0.registerToManager(_VegetableManager);
 
 		// init the array
-		grassArray.push_back(&grass);
+		grassArray0.push_back(&grass0);
+
+
+		// Copy.
+		grass1= grass0;
+		grass1.Sxy.Abs*= 0.2f;
+		grass1.Sxy.Rand*= 0.2f;
+		grass1.Sz.Abs*= 0.2f;
+		grass1.Sz.Rand*= 0.2f;
+		grass1.Density.Abs*= 10;
+		grass1.Density.Rand*= 10;
+		grass1.registerToManager(_VegetableManager);
+		grassArray1.push_back(&grass1);
+
 	}
 
-	return	grassArray;
+	if(distType==0)
+		return	grassArray1;
+	else if(distType==4)
+		return	grassArray0;
+	else
+		return	grassArrayEmpty;
 }
 
 

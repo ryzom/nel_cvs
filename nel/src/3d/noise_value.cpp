@@ -1,7 +1,7 @@
 /** \file noise_value.cpp
  * <File description>
  *
- * $Id: noise_value.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: noise_value.cpp,v 1.2 2001/11/05 16:26:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/noise_value.h"
+#include "3d/fast_floor.h"
 
 using namespace NLMISC;
 
@@ -98,9 +99,9 @@ public:
 	static inline float	evalNearest(const CVector &pos)
 	{
 		// compute integer part.
-		sint	x= (sint)floor(pos.x);
-		sint	y= (sint)floor(pos.y);
-		sint	z= (sint)floor(pos.z);
+		sint	x= OptFastFloor(pos.x);
+		sint	y= OptFastFloor(pos.y);
+		sint	z= OptFastFloor(pos.z);
 		// index in texture.
 		uint	ux= x& (NL3D_NOISE_GRID_SIZE-1);
 		uint	uy= y& (NL3D_NOISE_GRID_SIZE-1);
@@ -116,9 +117,9 @@ public:
 	static inline float	evalBiLinear(const CVector &pos)
 	{
 		// compute integer part.
-		sint	x= (sint)floor(pos.x);
-		sint	y= (sint)floor(pos.y);
-		sint	z= (sint)floor(pos.z);
+		sint	x= OptFastFloor(pos.x);
+		sint	y= OptFastFloor(pos.y);
+		sint	z= OptFastFloor(pos.z);
 		// index in texture.
 		uint	ux= x& (NL3D_NOISE_GRID_SIZE-1);
 		uint	uy= y& (NL3D_NOISE_GRID_SIZE-1);
@@ -326,7 +327,7 @@ void	CNoiseColorGradient::eval(const CVector &posInWorld, CRGBAF &result) const
 	// eval noise
 	float	f= NoiseValue.eval(posInWorld) * nGrads;
 	// look up in table of gradients.
-	uint	id= (uint)floor(f);
+	uint	id= OptFastFloor(f);
 	clamp(id, 0U, nGrads-1);
 	// fractionnal part.
 	f= f-id;

@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,9 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 
 	// DoubleSided
 	DoubleSided= vbuild.DoubleSided;
+
+	// BendCenterMode
+	BendCenterMode= vbuild.BendCenterMode;
 
 	// Format of the VB.
 	uint32	format;
@@ -177,6 +180,7 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 
 	f.serial(Lighted);
 	f.serial(DoubleSided);
+	f.serialEnum(BendCenterMode);
 	f.serial(VB);
 	f.serialCont(TriangleIndices);
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.113 2003/11/07 14:27:14 besson Exp $
+ * $Id: scene.cpp,v 1.114 2003/11/27 18:11:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,10 +336,10 @@ void	CScene::render(bool	doHrcPass)
 	ClipTrav.traverse();
 	// animDetail
 	AnimDetailTrav.traverse();
-	//
-	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
 	// loadBalance
 	LoadBalancingTrav.traverse();
+	//
+	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
 	// Light
 	LightTrav.traverse();
 	// render

@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.12 2004/08/13 15:40:43 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.13 2004/08/13 16:27:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,8 +66,7 @@ public:
 		// number of left faces to draw, number of faces to process at once
 		uint32 leftFaces = size, toProcess;
 		f._Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
-		f.setupDriverModelMatrix();
-		driver->activeVertexBuffer(vb);		
+		f.setupDriverModelMatrix();		
 		float sizeBuf[CPSQuad::quadBufSize];
 		float *ptSize;		
 		T endPosIt;
@@ -132,8 +131,8 @@ public:
 						++posIt;
 					}
 					while (posIt != endPosIt);
-				}
-				while (posIt != endPosIt);
+				}				
+				driver->activeVertexBuffer(vb),
 				driver->renderRawQuads(f._Mat, 0, toProcess);
 				leftFaces -= toProcess;
 			}
@@ -205,7 +204,7 @@ public:
 					}
 					while (posIt != endPosIt);
 				}
-				while (posIt != endPosIt);
+				driver->activeVertexBuffer(vb);
 				driver->renderRawQuads(f._Mat, 0, toProcess);
 				leftFaces -= toProcess;
 			}

@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.8 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_client.h,v 1.9 2001/07/18 16:13:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,9 +52,6 @@ public:
 
 	/// Sends a message to the remote host (the second parameter isn't used
 	void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true);
-
-	/// Total bytes sended to this connection
-	uint64	getBytesSended ();
 
 	/// Force to send all data pending in the send queue.
 	bool	flush (TSockId hostid = 0);

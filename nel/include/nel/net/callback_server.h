@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.10 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_server.h,v 1.11 2001/07/18 16:13:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,9 +50,6 @@ public:
 
 	/// Sends a message to the specified host
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
-
-	/// Total bytes sended to this connection
-	uint64	getBytesSended ();
 
 	/// Force to send all data pending in the send queue.
 	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != NULL ); return CStreamServer::flush(destid); }

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.21 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.22 2001/07/18 16:13:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ void CCallbackNetBase::processOneMessage ()
 
 	if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
 	{
-		nlerror ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
+		nlwarning ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.6 2001/01/08 11:16:29 chafik Exp $
+ * $Id: codage.h,v 1.7 2001/01/08 14:17:22 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,10 @@
 
 #ifndef NL_CODAGE_H
 #define NL_CODAGE_H
+#ifdef NL_OS_WINDOWS
 #pragma warning (disable: 4620)
 #pragma warning (disable: 4621)
+endif
 
 #include "script/virtual_op_code.h"
 #include "script/context_debug.h"

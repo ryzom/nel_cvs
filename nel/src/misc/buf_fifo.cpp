@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.7 2001/03/06 16:49:59 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.8 2001/03/07 15:37:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -319,7 +319,7 @@ void CBufFIFO::resize (uint32 size)
 	{
 		delete _Buffer;
 #if DEBUG_FIFO
-		nldebug("delete");
+		nldebug ("delete");
 #endif
 	}
 
@@ -334,16 +334,16 @@ void CBufFIFO::resize (uint32 size)
 
 void CBufFIFO::displayStats ()
 {
-	printf ("_BiggestBlock: %d\n", _BiggestBlock);
-	printf ("_SmallestBlock: %d\n", _SmallestBlock);
-	printf ("_BiggestBuffer: %d\n", _BiggestBuffer);
-	printf ("_SmallestBuffer: %d\n", _SmallestBuffer);
-	printf ("_Pushed : %d\n", _Pushed );
-	printf ("_Fronted: %d\n", _Fronted);
-	printf ("_Resized: %d\n", _Resized);
-	printf ("_PushedTime: %"NL_I64"d %f\n", _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
-	printf ("_FrontedTime: %"NL_I64"d %f\n", _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
-	printf ("_ResizedTime: %"NL_I64"d %f\n", _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
+	nldebug ("_BiggestBlock: %d\n", _BiggestBlock);
+	nldebug ("_SmallestBlock: %d\n", _SmallestBlock);
+	nldebug ("_BiggestBuffer: %d\n", _BiggestBuffer);
+	nldebug ("_SmallestBuffer: %d\n", _SmallestBuffer);
+	nldebug ("_Pushed : %d\n", _Pushed );
+	nldebug ("_Fronted: %d\n", _Fronted);
+	nldebug ("_Resized: %d\n", _Resized);
+	nldebug ("_PushedTime: %"NL_I64"d %f\n", _PushedTime, (double)(sint64)_PushedTime / (double)_Pushed);
+	nldebug ("_FrontedTime: %"NL_I64"d %f\n", _FrontedTime, (double)(sint64)_FrontedTime / (double)_Fronted);
+	nldebug ("_ResizedTime: %"NL_I64"d %f\n", _ResizedTime, (double)(sint64)_ResizedTime / (double)_Resized);
 }
 
 void CBufFIFO::display ()
@@ -351,7 +351,7 @@ void CBufFIFO::display ()
 	int size = 5000;
 	int gran = size/30;
 
-	printf("%p (%5d) %p %p %p ", _Buffer, _BufferSize, _Rewinder, _Tail, _Head);
+	DebugLog.display("%p (%5d) %p %p %p ", _Buffer, _BufferSize, _Rewinder, _Tail, _Head);
 
 	int i;
 	for (i = 0; i < (sint32) _BufferSize; i+= gran)
@@ -363,40 +363,40 @@ void CBufFIFO::display ()
 			{
 				if (_Rewinder != NULL && _Rewinder >= pos && _Rewinder < pos + gran)
 				{
-					printf("*");
+					DebugLog.displayRaw("*");
 				}
 				else
 				{
-					printf("@");
+					DebugLog.displayRaw("@");
 				}
 			}
 			else
 			{
-				printf("T");
+				DebugLog.displayRaw("T");
 			}
 		}
 		else if (_Head >= pos && _Head < pos + gran)
 		{
-			printf("H");
+			DebugLog.displayRaw("H");
 		}
 		else if (_Rewinder != NULL && _Rewinder >= pos && _Rewinder < pos + gran)
 		{
-			printf("R");
+			DebugLog.displayRaw("R");
 		}
 		else
 		{
-			printf("%c", *pos);
+			DebugLog.displayRaw("%c", *pos);
 		}
 	}
 
 	for (; i < size; i+= gran)
 	{
-		printf(" ");
+		DebugLog.displayRaw(" ");
 	}
 #ifdef NL_DEBUG
-	printf("\n");
+	DebugLog.displayRaw("\n");
 #else
-	printf("\r");
+	DebugLog.displayRaw("\r");
 #endif
 }
 

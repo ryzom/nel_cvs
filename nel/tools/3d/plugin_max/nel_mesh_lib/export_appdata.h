@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.2 2003/01/08 15:48:57 boucher Exp $
+ * $Id: export_appdata.h,v 1.3 2003/05/26 09:07:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,9 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_REMANENCE_SAMPLING_PERIOD     (1423062633)
 #define NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO        (1423062635)
 #define NEL3D_APPDATA_REMANENCE_SHIFTING_TEXTURE    (1423062634)
+
+// UseLightingLocalAttenuation
+#define NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_IG		(1423062636)
 
 
 

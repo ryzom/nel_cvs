@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.38 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.39 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,27 @@ void	CTransformShape::traverseLoadBalancingPass1()
 	// Set the result into the isntance.
 	_NumTrianglesAfterLoadBalancing= _LoadBalancingGroup->computeModelNbFace(_FaceCount);
 
+}
+
+// ***************************************************************************
+void	CTransformShape::getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const
+{
+	// get the untransformed bbox from the model.
+	CAABBox		bbox;
+	getAABBox(bbox);
+	// get transformed center pos of bbox
+	modelPos= getWorldMatrix() * bbox.getCenter();
+	// If the model is a big lightable, must take radius from aabbox, else suppose 0 radius.
+	if(isBigLightable())
+	{
+		// get size of the bbox (bounding sphere)
+		modelRadius= bbox.getRadius();
+	}
+	else
+	{
+		// Assume 0 radius => faster computeLinearAttenuation()
+		modelRadius= 0;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.31 2003/05/23 21:22:52 puzin Exp $
+ * $Id: skeleton_model.h,v 1.32 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,6 +312,9 @@ public:
 	 */
 	virtual	void	traverseRender();
 	// @}
+
+	// Lighting: get the Root world position!
+	virtual	void		getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const;
 
 // ***********************
 protected:

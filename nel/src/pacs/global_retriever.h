@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.28 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: global_retriever.h,v 1.29 2003/05/26 09:05:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -308,6 +308,9 @@ public:
 
 	/// Get the identifier of the global position.
 	const std::string				&getIdentifier(const UGlobalPosition &position) const;
+
+	/// Get the LocalRetrieverId of the global position.
+	sint32							getLocalRetrieverId(const UGlobalPosition &position) const;
 
 	/**
 	  * Builds a instance of retriever, and link it on the ground (or wherever)

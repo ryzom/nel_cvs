@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.24 2003/03/31 14:36:29 berenguier Exp $
+ * $Id: transform_shape.h,v 1.25 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,9 @@ public:
 	virtual void	traverseRender();
 	virtual	void	profileRender();
 	// @}
+
+	// Lighting: get the center of the AABBox of the model by default
+	virtual	void		getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const;
 
 protected:
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.95 2003/05/13 09:57:01 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.96 2003/05/26 09:04:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2597,7 +2597,7 @@ void CObjectViewer::enableDynamicObjectLightingTest(NLPACS::CGlobalRetriever *gl
 // ***************************************************************************
 void	CObjectViewer::COVLogicInfo::getStaticLightSetup(std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, CRGBA &ambient)
 {
-	Ig->getStaticLightSetup(GlobalRetriever->getIdentifier(GPos), 
+	Ig->getStaticLightSetup(GlobalRetriever->getLocalRetrieverId(GPos), 
 		GPos.LocalPosition.Surface,
 		GPos.LocalPosition.Estimation, 
 		pointLightList, sunContribution, ambient);

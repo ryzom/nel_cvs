@@ -1,7 +1,7 @@
 /** \file ig_lighter.cpp
  * ig_lighter.cpp : Instance lighter
  *
- * $Id: ig_lighter.cpp,v 1.11 2003/04/22 16:17:37 corvazier Exp $
+ * $Id: ig_lighter.cpp,v 1.12 2003/05/26 09:06:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,6 +326,8 @@ int main(int argc, char* argv[])
 				// Export a debugSun Name.
 				string	debugSunName;
 				debugSunName= pathOut + "/" + CFile::getFilenameWithoutExtension(fileNameIn) + "_debug_sun_.shape";
+				string	debugPLName;
+				debugPLName= pathOut + "/" + CFile::getFilenameWithoutExtension(fileNameIn) + "_debug_pl_.shape";
 
 				// light the ig.
 				CIgLighterLib::CSurfaceLightingInfo	slInfo;
@@ -338,6 +340,7 @@ int main(int argc, char* argv[])
 				slInfo.ColIdentifierSuffix= colIdentifierSuffix;
 				slInfo.BuildDebugSurfaceShape= buildDebugSurfaceShape;
 				slInfo.DebugSunName= debugSunName;
+				slInfo.DebugPLName= debugPLName;
 				lightIg(*listIg[iIg], igOut, lighterDesc, slInfo, fileNameIn.c_str ());
 
 				// Save this ig.

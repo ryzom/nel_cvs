@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.h
  * <File description>
  *
- * $Id: ig_lighter_lib.h,v 1.2 2003/04/22 16:17:37 corvazier Exp $
+ * $Id: ig_lighter_lib.h,v 1.3 2003/05/26 09:06:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -63,6 +63,7 @@ public:
 		// Debug.
 		bool					BuildDebugSurfaceShape;
 		std::string				DebugSunName;
+		std::string				DebugPLName;
 
 		CSurfaceLightingInfo()
 		{

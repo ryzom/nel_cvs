@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.cpp
  * <File description>
  *
- * $Id: ig_lighter_lib.cpp,v 1.3 2003/05/19 13:25:02 berenguier Exp $
+ * $Id: ig_lighter_lib.cpp,v 1.4 2003/05/26 09:06:43 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -168,8 +168,8 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 			// progress
 			instanceLighter.progress("Loading Shapes obstacles", float(i)/igIn.getNumInstance());
 
-			// Skip it??
-			if(igIn.getInstance(i).DontCastShadow)
+			// Skip it?? IgLighterLib use the DontCastShadowForIgLighter flag. See doc of this flag
+			if(igIn.getInstance(i).DontCastShadow || igIn.getInstance(i).DontCastShadowForIgLighter)
 				continue;
 
 			// Get the instance shape name
@@ -282,7 +282,7 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 				{
 					// check CRetrieverLightGrid not already present
 					CIGSurfaceLightBuild::ItRetrieverGridMap	itRgm;
-					itRgm= igSurfaceLightBuild->RetrieverGridMap.find(retIdent);
+					itRgm= igSurfaceLightBuild->RetrieverGridMap.find(localRetrieverId);
 					if( itRgm != igSurfaceLightBuild->RetrieverGridMap.end() )
 					{
 						nlwarning ("ERROR Found 2 different collision retriever with same identifier: '%s'. The 2nd is discared\n", retIdent.c_str());
@@ -291,7 +291,7 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 					{
 						// Append CRetrieverLightGrid.
 						itRgm= igSurfaceLightBuild->RetrieverGridMap.insert(
-							make_pair(retIdent, CIGSurfaceLightBuild::CRetrieverLightGrid() ) ).first;
+							make_pair(localRetrieverId, CIGSurfaceLightBuild::CRetrieverLightGrid() ) ).first;
 						CIGSurfaceLightBuild::CRetrieverLightGrid	&rlg= itRgm->second;
 
 						// Resize Grids.
@@ -412,22 +412,34 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 	// Output a debug mesh??
 	if(igSurfaceLightBuild && slInfo.BuildDebugSurfaceShape && !igSurfaceLightBuild->RetrieverGridMap.empty() )
 	{
-		// compute
-		CMesh::CMeshBuild			meshBuild;
-		CMeshBase::CMeshBaseBuild	meshBaseBuild;
-		CVector	deltaPos= CVector::Null;
-		deltaPos.z= - slInfo.CellRaytraceDeltaZ + 0.1f;
-		igSurfaceLightBuild->buildSunDebugMesh(meshBuild, meshBaseBuild, deltaPos);
+		// Do it for the sun and point lights.
+		for(uint i=0;i<2;i++)
+		{
+			// compute
+			CMesh::CMeshBuild			meshBuild;
+			CMeshBase::CMeshBaseBuild	meshBaseBuild;
+			CVector	deltaPos= CVector::Null;
+			deltaPos.z= - slInfo.CellRaytraceDeltaZ + 0.1f;
+			// What kind of debug?
+			if( i==0 )
+				igSurfaceLightBuild->buildSunDebugMesh(meshBuild, meshBaseBuild, deltaPos);
+			else
+				igSurfaceLightBuild->buildPLDebugMesh(meshBuild, meshBaseBuild, deltaPos, igOut);
 
-		// build
-		CMesh	mesh;
-		mesh.build(meshBaseBuild, meshBuild);
+			// build
+			CMesh	mesh;
+			mesh.build(meshBaseBuild, meshBuild);
 
-		// Save.
-		CShapeStream	shapeStream;
-		shapeStream.setShapePointer(&mesh);
-		COFile		file(slInfo.DebugSunName);
-		shapeStream.serial(file);
+			// Save.
+			CShapeStream	shapeStream;
+			shapeStream.setShapePointer(&mesh);
+			COFile		file;
+			if( i==0 )
+				file.open(slInfo.DebugSunName);
+			else
+				file.open(slInfo.DebugPLName);
+			shapeStream.serial(file);
+		}
 	}
 
 

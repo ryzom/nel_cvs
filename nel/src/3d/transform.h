@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.38 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: transform.h,v 1.39 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,6 +353,13 @@ public:
 	/** return true if the current light contribution of this model use a MergedPointLight
 	 */
 	bool				useMergedPointLight() const {return _LightContribution.UseMergedPointLight;}
+
+	/** get the HotSpot of the model for Light computation. For models with global attenuation, this is
+	 *	the point taken for attenuation computes. NB: should return the current world position.
+	 *	NB: return also the modelRadius (only for bigLightable)
+	 *	Default to NULL.
+	 */
+	virtual	void		getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const {modelPos= CVector::Null; modelRadius=0;}
 
 	// @}
 

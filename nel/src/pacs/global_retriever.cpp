@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.81 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.82 2003/05/26 09:05:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -799,6 +799,14 @@ const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosit
 		return nullString;
 
 	return getRetriever(_Instances[position.InstanceId].getRetrieverId()).getIdentifier();
+}
+
+sint32	NLPACS::CGlobalRetriever::getLocalRetrieverId(const NLPACS::UGlobalPosition &position) const
+{
+	if (position.InstanceId == -1)
+		return -1;
+
+	return _Instances[position.InstanceId].getRetrieverId();
 }
 
 //

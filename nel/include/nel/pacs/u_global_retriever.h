@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.18 2003/04/18 09:37:00 legros Exp $
+ * $Id: u_global_retriever.h,v 1.19 2003/05/26 09:05:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,9 @@ public:
 	  * Returns a human readable identifier of the global position
 	  */
 	virtual const std::string		&getIdentifier(const UGlobalPosition &pos) const =0;
+
+	/// Get the LocalRetrieverId of the global position.
+	virtual sint32					getLocalRetrieverId(const UGlobalPosition &position) const =0;
 
 	/**
 	  * Builds an instance of retriever, and link it on the ground (or wherever)

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.43 2003/05/23 21:22:52 puzin Exp $
+ * $Id: skeleton_model.cpp,v 1.44 2003/05/26 09:04:01 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1537,6 +1537,29 @@ bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompu
 	}
 	else
 		return false;
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::getLightHotSpotInWorld(CVector &modelPos, float &modelRadius) const
+{
+	// If the bone 0 is computed (pelvis), then return its worldMatrix
+	if(isBoneComputed(0))
+	{
+		modelPos= Bones[0].getWorldMatrix().getPos();
+	}
+	else
+	{
+		/* Else return the skeleton pos. NB: this seems unusefull since bone 0 not computed means no Skins.
+			But lighting computation is still done and may use a VisualCollisionEntity.
+			This system cache some infos according to position. This is why we must return a position 
+			near the skeleton (else cache crash each frame => slowdown...)
+		*/
+		modelPos= _WorldMatrix.getPos();
+	}
+
+	// Consider Skeletons as not big lightable
+	modelRadius= 0;
 }
 
 

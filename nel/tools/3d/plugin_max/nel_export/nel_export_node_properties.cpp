@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.48 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.49 2003/05/26 09:07:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ public:
 	int						UseLightingLocalAttenuation;
 	int						ExportLightMapAnimated;
 	std::string				ExportLightMapName;
+	int						LightDontCastShadowIg;
 
 	// Misc
 	int						FloatingObject;
@@ -1016,6 +1017,7 @@ int CALLBACK LightmapDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_SETCHECK, currentParam->ExportLightMapAnimated, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_SETCHECK, currentParam->ExportAsSunLight, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_SETCHECK, currentParam->UseLightingLocalAttenuation, 0);
+			SendMessage (GetDlgItem (hwndDlg, IDC_LIGHT_DONT_CAST_SHADOW_IG), BM_SETCHECK, currentParam->LightDontCastShadowIg, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), currentParam->ExportLightMapName.c_str());
 
 			// Set enable disable
@@ -1053,6 +1055,7 @@ int CALLBACK LightmapDialogCallback (
 							currentParam->ExportLightMapLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_LIGHT), BM_GETCHECK, 0, 0);
 							currentParam->ExportAsSunLight = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_AS_SUN_LIGHT), BM_GETCHECK, 0, 0);
 							currentParam->UseLightingLocalAttenuation = SendMessage (GetDlgItem (hwndDlg, IDC_USE_LIGHT_LOCAL_ATTENUATION), BM_GETCHECK, 0, 0);
+							currentParam->LightDontCastShadowIg = SendMessage (GetDlgItem (hwndDlg, IDC_LIGHT_DONT_CAST_SHADOW_IG), BM_GETCHECK, 0, 0);
 							currentParam->ExportLightMapAnimated = SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_ANIMATED), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EXPORT_LIGHTMAP_NAME), tmp, 512);
 							currentParam->ExportLightMapName = tmp;
@@ -1073,6 +1076,7 @@ int CALLBACK LightmapDialogCallback (
 					case IDC_EXPORT_LIGHTMAP_LIGHT:
 					case IDC_EXPORT_LIGHTMAP_ANIMATED:
 					case IDC_EXPORT_AS_SUN_LIGHT:
+					case IDC_LIGHT_DONT_CAST_SHADOW_IG:
 						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
 							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
 
@@ -2207,6 +2211,9 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// UseLightingLocalAttenuation
 		param.UseLightingLocalAttenuation= CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED);
 
+		// LightDontCastShadowIg
+		param.LightDontCastShadowIg= CExportNel::getScriptAppData (node, NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_IG, BST_UNCHECKED);
+
 		// VertexProgram
 		param.VertexProgramId= CExportNel::getScriptAppData (node, NEL3D_APPDATA_VERTEXPROGRAM_ID, 0);
 
@@ -2435,6 +2442,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			// UseLightingLocalAttenuation
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, BST_UNCHECKED) != param.UseLightingLocalAttenuation)
 				param.UseLightingLocalAttenuation= BST_INDETERMINATE;
+
+			// LightDontCastShadowIg
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_IG, BST_UNCHECKED) != param.LightDontCastShadowIg)
+				param.LightDontCastShadowIg= BST_INDETERMINATE;
 
 			
 			// VertexProgram
@@ -2671,6 +2682,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				// UseLightingLocalAttenuation
 				if (param.UseLightingLocalAttenuation != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_USE_LIGHT_LOCAL_ATTENUATION, param.UseLightingLocalAttenuation);
+
+				// LightDontCastShadowIg
+				if (param.LightDontCastShadowIg != BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_IG, param.LightDontCastShadowIg);
 
 				// VertexProgram
 				if (param.VertexProgramId!=-1)

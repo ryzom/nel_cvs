@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.33 2003/05/15 09:29:01 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.34 2003/05/26 09:07:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,6 +109,9 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 			// Set the DontCastShadow flag.
 			aIGArray[nNumIG].DontCastShadow= pNode->CastShadows()==0;
+
+			// Set the DontCastShadowForIG flag.
+			aIGArray[nNumIG].DontCastShadowForIgLighter= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_IG, BST_UNCHECKED)?true:false;
 
 			// Is the pNode has the root node for parent ?
 			if( pParent->IsRootNode() == 0 )

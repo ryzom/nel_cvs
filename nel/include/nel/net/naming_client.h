@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.30 2002/01/30 10:07:57 lecroart Exp $
+ * $Id: naming_client.h,v 1.31 2002/04/16 15:42:00 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,8 @@ public:
 	/// Close the connection to the naming service.
 	static void			disconnect ();
 
+	/// Returns information about the naming connection (connected or not, which naming service and so on)
+	static std::string	info ();
 
 	/** Register a service within the naming service.
 	 * Returns the service identifier assigned by the NS (or 0 if it failed)

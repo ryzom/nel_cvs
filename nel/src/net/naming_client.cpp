@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.42 2001/12/31 13:32:39 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.43 2002/04/16 15:41:53 lecroart Exp $
  *
  */
 
@@ -233,6 +233,23 @@ void CNamingClient::disconnect ()
 
 	// we don't call unregisterAllServices because when the naming service will see the disconnection,
 	// it'll automatically unregister all services registered by this client.
+}
+
+string CNamingClient::info ()
+{
+	string res;
+
+	if (connected ())
+	{
+		res = "connected to ";
+		res += _Connection->remoteAddress().asString();
+	}
+	else
+	{
+		res = "Not connected";
+	}
+
+	return res;
 }
 
 TServiceId CNamingClient::registerService (const std::string &name, const CInetAddress &addr)

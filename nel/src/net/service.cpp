@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.114 2002/04/09 12:21:49 lecroart Exp $
+ * $Id: service.cpp,v 1.115 2002/04/16 15:41:53 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1305,6 +1305,10 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 	string mode = "???";
 #endif
 	log.displayNL ("NeL is compiled in %s mode", mode.c_str());
+
+	log.displayNL ("Naming service info: %s", CNamingClient::info().c_str());
+
+	ICommand::execute ("services", log);
 
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.16 2000/12/08 10:33:59 berenguier Exp $
+ * $Id: landscape.cpp,v 1.17 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,11 +100,11 @@ CLandscape::~CLandscape()
 void			CLandscape::init(bool bumpTiles)
 {
 	// v3f/t2f/c4ub
-	FarVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_RGBA );
+	FarVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_COLOR );
 	FarVB.reserve(1024);
 
 	// v3f/t2f0/t2f1/c4ub
-	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1] | IDRV_VF_RGBA );
+	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1] | IDRV_VF_COLOR );
 	TileVB.reserve(1024);
 
 	// TODO_BUMP: Need t3f in IDriver.
@@ -211,7 +211,7 @@ void			CLandscape::updateGlobals () const
 {
 	// Setup CTessFace static members...
 	CTessFace::TileDistNear = _TileDistNear;
-	CTessFace::TileDistFar = CTessFace::TileDistNear+40;
+	CTessFace::TileDistFar = CTessFace::TileDistNear+20;
 	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);
 	CTessFace::TileDistFarSqr = sqr(CTessFace::TileDistFar);
 	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.11 2000/12/06 14:32:39 berenguier Exp $
+ * $Id: scene.cpp,v 1.12 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/camera.h"
 #include "nel/3d/landscape_model.h"
 #include "nel/3d/driver.h"
+#include "nel/3d/transform_shape.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -132,7 +133,7 @@ void	CScene::addTrav(ITrav *v)
 	// If ok, add it to the render traversal list.
 	if(order)
 	{
-		RenderTraversals.insert( TravMap::value_type(order, sv) );
+		RenderTraversals.insert( TTravMap::value_type(order, sv) );
 	}
 
 	// And register it normally.
@@ -158,7 +159,7 @@ void	CScene::render(bool	doHrcPass)
 	ClipTrav->setRenderTrav(RenderTrav);
 
 	// For all render traversals, traverse them (except the Hrc one), in ascending order.
-	TravMap::iterator	it;
+	TTravMap::iterator	it;
 	for(it= RenderTraversals.begin(); it!= RenderTraversals.end(); it++)
 	{
 		ITravScene	*trav= (*it).second;
@@ -197,6 +198,36 @@ IDriver	*CScene::getDriver() const
 	return RenderTrav->getDriver();
 }
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Shape mgt.
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void	CScene::addShape(const std::string &shapeName, CSmartPtr<IShape> shape)
+{
+	ShapeMap[shapeName]= shape;
+}
+// ***************************************************************************
+void	CScene::delShape(const std::string &shapeName)
+{
+	ShapeMap.erase(shapeName);
+}
+// ***************************************************************************
+CTransformShape	*CScene::createInstance(const std::string &shapeName)
+{
+	TShapeMap::iterator		it;
+	it= ShapeMap.find(shapeName);
+	if(it!=ShapeMap.end())
+	{
+		// TODO: shapeserver search...
+		return NULL;
+	}
+
+	return (*it).second->createInstance(*this);
+}
 
 
 }

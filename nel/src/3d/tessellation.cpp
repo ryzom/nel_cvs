@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.23 2000/12/08 10:36:19 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.24 2000/12/11 15:52:33 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -90,7 +90,7 @@ float		CTessFace::ChildrenStartComputeLimit= 1.9f;
 float		CTessFace::SelfEndCompute= 2.1f;
 
 float		CTessFace::TileDistNear= 50;
-float		CTessFace::TileDistFar= CTessFace::TileDistNear+40;
+float		CTessFace::TileDistFar= CTessFace::TileDistNear+20;
 float		CTessFace::TileDistNearSqr= sqr(CTessFace::TileDistNear);
 float		CTessFace::TileDistFarSqr= sqr(CTessFace::TileDistFar);
 float		CTessFace::OOTileDistDeltaSqr= 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
@@ -179,11 +179,58 @@ CTessFace::~CTessFace()
 
 
 // ***************************************************************************
-float		CTessFace::updateErrorMetric()
+void			CTessFace::computeTileErrorMetric()
+{
+	// We msut take a more correct errometric here: We must have sons face which have
+	// lower projectedsize than father. This is not the case if Center of face is taken (but when not in
+	// tile mode this is nearly the case). So take the min dist from 3 points.
+	float	s0= (VBase->EndPos-RefineCenter).sqrnorm();
+	float	s1= (VLeft->EndPos-RefineCenter).sqrnorm();
+	float	s2= (VRight->EndPos-RefineCenter).sqrnorm();
+	float	sqrdist= minof(s0, s1, s2);
+	// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
+	// to blend (see Patch::renderFar1() render).
+
+	if(sqrdist< TileDistFarSqr)
+	{
+		// General formula for Level, function of Size, treshold etc...:
+		// Level= log2(BaseSize / sqrdist / threshold);
+		// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
+		// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
+		float	nearLimit;
+		// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) * RefineThreshold / (1<<Level);
+		nearLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
+		nlassert(Level<14);
+		// If we are not so subdivided.
+		if(ProjectedSize<nearLimit)
+		{
+			if(sqrdist< TileDistNearSqr)
+			{
+				ProjectedSize=nearLimit;
+			}
+			else
+			{
+				// Smooth transition to the nearLimit of tesselation.
+				float	f= (sqrdist- TileDistNearSqr) * OOTileDistDeltaSqr;
+				// sqr gives better result, by smoothing more the start of transition.
+				f= sqr((1-f));
+				f= sqr(f);
+				ProjectedSize= nearLimit*f + ProjectedSize*(1-f);
+
+				// If threshold is big like 0.5, transition is still hard, and pops occurs. But The goal is 
+				// 0.005 and less, so don't bother. 
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+inline void		CTessFace::updateErrorMetric()
 {
 	// If already updated for this pass...
 	if(ProjectedSizeDate>= CurrentDate)
-		return ProjectedSize;
+		return;
 
 	CVector	viewdir= Center-RefineCenter;
 	float	sqrdist= viewdir.sqrnorm();
@@ -221,58 +268,13 @@ float		CTessFace::updateErrorMetric()
 
 	// TileMode Impact.
 	//-----------------
-	if(Patch->Zone->ComputeTileErrorMetric)
+	// TileMode Impact. We must split at least at TileLimitLevel.
+	if(Patch->Zone->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
 	{
-		// TileMode Impact. We must split at least at TileLimitLevel.
-		if(Level<Patch->TileLimitLevel)
-		{
-			// We msut take a more correct errometric here: We must have sons face which have
-			// lower projectedsize than father. This is not the case if Center of face is taken (but when not in
-			// tile mode this is nearly the case). So take the min dist from 3 points.
-			float	s0= (VBase->EndPos-RefineCenter).sqrnorm();
-			float	s1= (VLeft->EndPos-RefineCenter).sqrnorm();
-			float	s2= (VRight->EndPos-RefineCenter).sqrnorm();
-			sqrdist= minof(s0, s1, s2);
-			// It is also VERY important to take the min of 3, to ensure the split in TileMode when Far1 vertex begin
-			// to blend (see Patch::renderFar1() render).
-
-			if(sqrdist< TileDistFarSqr)
-			{
-				// General formula for Level, function of Size, treshold etc...:
-				// Level= log2(BaseSize / sqrdist / threshold);
-				// <=> Level= log2( CurSize*2^CurLevel / sqrdist / threshold).
-				// <=> Level= log2( ProjectedSize* 2^CurLevel / threshold).
-				float	nearLimit;
-				// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) * RefineThreshold / (1<<Level);
-				nearLimit= (1<<Patch->TileLimitLevel) * RefineThreshold * (OO32768*(32768>>Level));
-				nlassert(Level<14);
-				// If we are not so subdivided.
-				if(ProjectedSize<nearLimit)
-				{
-					if(sqrdist< TileDistNearSqr)
-					{
-						ProjectedSize=nearLimit;
-					}
-					else
-					{
-						// Smooth transition to the nearLimit of tesselation.
-						float	f= (sqrdist- TileDistNearSqr) * OOTileDistDeltaSqr;
-						// sqr gives better result, by smoothing more the start of transition.
-						f= sqr((1-f));
-						f= sqr(f);
-						ProjectedSize= nearLimit*f + ProjectedSize*(1-f);
-
-						// If threshold is big like 0.5, transition is still hard, and pops occurs. But The goal is 
-						// 0.005 and less, so don't bother. 
-					}
-				}
-			}
-		}
+		computeTileErrorMetric();
 	}
 
 	ProjectedSizeDate= CurrentDate;
-	
-	return ProjectedSize;
 }
 
 
@@ -803,49 +805,7 @@ void		CTessFace::split(bool propagateSplit)
 	// else Tile herit.
 	else if(SonLeft->Level > Patch->TileLimitLevel)
 	{
-		SonLeft->TileId= TileId;
-		SonLeft->TileMaterial= TileMaterial;
-		SonLeft->TileUvLeft= TileUvBase;
-		SonLeft->TileUvRight= TileUvLeft;
-
-		SonRight->TileId= TileId;
-		SonRight->TileMaterial= TileMaterial;
-		SonRight->TileUvLeft= TileUvRight;
-		SonRight->TileUvRight= TileUvBase;
-
-		// Create, or link to the tileUv.
-		ITileUv		*tuv;
-		// Try to link to a neighbor TileUv.
-		// Can only work iff exist, and iff FBase is same patch, and same TileId.
-		if(FBase!=NULL && !FBase->isLeaf() && sameTile(this, FBase) )
-		{
-			// Ok!! link to the (existing) TileUv.
-			// SonLeft!=NULL since FBase->isLeaf()==false.
-			tuv= FBase->SonLeft->TileUvBase;
-		}
-		else
-		{
-			switch (TileMaterial->TileUvFmt)
-			{
-				// Create at middle: (TileUvLeft+TileUvRight) /2
-				case TileUvFmtNormal1: tuv= new CTileUvNormal1((CTileUvNormal1*)TileUvLeft, (CTileUvNormal1*)TileUvRight); break;
-				case TileUvFmtNormal2: tuv= new CTileUvNormal2((CTileUvNormal2*)TileUvLeft, (CTileUvNormal2*)TileUvRight); break;
-				case TileUvFmtNormal3: tuv= new CTileUvNormal3((CTileUvNormal3*)TileUvLeft, (CTileUvNormal3*)TileUvRight); break;
-				case TileUvFmtNormal4: tuv= new CTileUvNormal4((CTileUvNormal4*)TileUvLeft, (CTileUvNormal4*)TileUvRight); break;
-				case TileUvFmtNormal5: tuv= new CTileUvNormal5((CTileUvNormal5*)TileUvLeft, (CTileUvNormal5*)TileUvRight); break;
-				case TileUvFmtNormal6: tuv= new CTileUvNormal6((CTileUvNormal6*)TileUvLeft, (CTileUvNormal6*)TileUvRight); break;
-				case TileUvFmtBump1: tuv= new CTileUvBump1((CTileUvBump1*)TileUvLeft, (CTileUvBump1*)TileUvRight); break;
-				case TileUvFmtBump2: tuv= new CTileUvBump2((CTileUvBump2*)TileUvLeft, (CTileUvBump2*)TileUvRight); break;
-				case TileUvFmtBump3: tuv= new CTileUvBump3((CTileUvBump3*)TileUvLeft, (CTileUvBump3*)TileUvRight); break;
-				case TileUvFmtBump4: tuv= new CTileUvBump4((CTileUvBump4*)TileUvLeft, (CTileUvBump4*)TileUvRight); break;
-				case TileUvFmtBump5: tuv= new CTileUvBump5((CTileUvBump5*)TileUvLeft, (CTileUvBump5*)TileUvRight); break;
-				case TileUvFmtBump6: tuv= new CTileUvBump6((CTileUvBump6*)TileUvLeft, (CTileUvBump6*)TileUvRight); break;
-				default: nlstop;
-			};
-		}
-		
-		SonLeft->TileUvBase= tuv;
-		SonRight->TileUvBase= tuv;
+		heritTileMaterial();
 	}
 
 	// 3. Update/Create Vertex infos.
@@ -950,7 +910,8 @@ bool		CTessFace::canMerge(bool testEm)
 	// If Errormetric must be considered for this test.
 	if(testEm)
 	{
-		float	ps2= updateErrorMetric();
+		updateErrorMetric();
+		float	ps2= ProjectedSize;
 		ps2*= OORefineThreshold;
 		if(ps2>=1.0f)
 			return false;
@@ -1126,7 +1087,8 @@ void		CTessFace::refine()
 
 	if(NeedCompute)
 	{
-		float	ps=updateErrorMetric();
+		updateErrorMetric();
+		float	ps=ProjectedSize;
 		ps*= OORefineThreshold;
 		// 1.0f is the point of split().
 		// 2.0f is the end of geomorph.
@@ -1171,7 +1133,8 @@ void		CTessFace::refine()
 				nbor= FLeft;	// Rectangular subdivision...
 			if(nbor && nbor!=&CantMergeFace)
 			{
-				float	ps2= nbor->updateErrorMetric();
+				nbor->updateErrorMetric();
+				float	ps2= nbor->ProjectedSize;
 				ps2*= OORefineThreshold;
 				pgeom= max(pgeom, ps2);
 			}
@@ -1727,6 +1690,117 @@ bool		CTessFace::isRectangular() const
 	return Level<Patch->SquareLimitLevel;
 }
 
+
+
+// ***************************************************************************
+// ***************************************************************************
+// For changePatchTexture.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CTessFace::deleteTileUvs()
+{
+	if(!isLeaf())
+	{
+		SonLeft->deleteTileUvs();
+		SonRight->deleteTileUvs();
+		if(SonLeft->Level== Patch->TileLimitLevel)
+		{
+			// Square patch assumption: the sons are not of the same TileId/Patch.
+			nlassert(!sameTile(SonLeft, SonRight));
+			// release tiles.
+			SonLeft->releaseTileMaterial();
+			SonRight->releaseTileMaterial();
+		}
+		else if(SonLeft->Level > Patch->TileLimitLevel)
+		{
+			nlassert(!FBase->isLeaf());
+			// Delete Uv, only if not already done by the neighbor (ie neighbor not already merged to a leaf).
+			// But Always delete if neighbor exist and has not same tile as me.
+			// NB: this work with rectangular neigbor patch, since sameTile() will return false if different patch.
+			if(!FBase || FBase->SonLeft->TileUvBase==NULL || !sameTile(this, FBase))
+				delete SonLeft->TileUvBase;
+			SonLeft->TileUvBase= NULL;
+			SonRight->TileUvBase= NULL;
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CTessFace::recreateTileUvs()
+{
+	if(!isLeaf())
+	{
+		SonLeft->recreateTileUvs();
+		SonRight->recreateTileUvs();
+
+		// There is no problem with rectangular patch, since tiles are always squares.
+		// If new tile ....
+		if(SonLeft->Level==Patch->TileLimitLevel)
+		{
+			SonLeft->computeTileMaterial();
+			SonRight->computeTileMaterial();
+		}
+		// else Tile herit.
+		else if(SonLeft->Level > Patch->TileLimitLevel)
+		{
+			heritTileMaterial();
+		}
+	}
+}
+
+
+
+// ***************************************************************************
+void		CTessFace::heritTileMaterial()
+{
+	SonLeft->TileId= TileId;
+	SonLeft->TileMaterial= TileMaterial;
+	SonLeft->TileUvLeft= TileUvBase;
+	SonLeft->TileUvRight= TileUvLeft;
+
+	SonRight->TileId= TileId;
+	SonRight->TileMaterial= TileMaterial;
+	SonRight->TileUvLeft= TileUvRight;
+	SonRight->TileUvRight= TileUvBase;
+
+	// Create, or link to the tileUv.
+	ITileUv		*tuv;
+	// Try to link to a neighbor TileUv.
+	// Can only work iff exist, and iff FBase is same patch, and same TileId.
+	if(FBase!=NULL && !FBase->isLeaf() && FBase->SonLeft->TileUvBase!=NULL && sameTile(this, FBase) )
+	{
+		// Ok!! link to the (existing) TileUv.
+		// SonLeft!=NULL since FBase->isLeaf()==false.
+		tuv= FBase->SonLeft->TileUvBase;
+	}
+	else
+	{
+		switch (TileMaterial->TileUvFmt)
+		{
+			// Create at middle: (TileUvLeft+TileUvRight) /2
+			case TileUvFmtNormal1: tuv= new CTileUvNormal1((CTileUvNormal1*)TileUvLeft, (CTileUvNormal1*)TileUvRight); break;
+			case TileUvFmtNormal2: tuv= new CTileUvNormal2((CTileUvNormal2*)TileUvLeft, (CTileUvNormal2*)TileUvRight); break;
+			case TileUvFmtNormal3: tuv= new CTileUvNormal3((CTileUvNormal3*)TileUvLeft, (CTileUvNormal3*)TileUvRight); break;
+			case TileUvFmtNormal4: tuv= new CTileUvNormal4((CTileUvNormal4*)TileUvLeft, (CTileUvNormal4*)TileUvRight); break;
+			case TileUvFmtNormal5: tuv= new CTileUvNormal5((CTileUvNormal5*)TileUvLeft, (CTileUvNormal5*)TileUvRight); break;
+			case TileUvFmtNormal6: tuv= new CTileUvNormal6((CTileUvNormal6*)TileUvLeft, (CTileUvNormal6*)TileUvRight); break;
+			case TileUvFmtBump1: tuv= new CTileUvBump1((CTileUvBump1*)TileUvLeft, (CTileUvBump1*)TileUvRight); break;
+			case TileUvFmtBump2: tuv= new CTileUvBump2((CTileUvBump2*)TileUvLeft, (CTileUvBump2*)TileUvRight); break;
+			case TileUvFmtBump3: tuv= new CTileUvBump3((CTileUvBump3*)TileUvLeft, (CTileUvBump3*)TileUvRight); break;
+			case TileUvFmtBump4: tuv= new CTileUvBump4((CTileUvBump4*)TileUvLeft, (CTileUvBump4*)TileUvRight); break;
+			case TileUvFmtBump5: tuv= new CTileUvBump5((CTileUvBump5*)TileUvLeft, (CTileUvBump5*)TileUvRight); break;
+			case TileUvFmtBump6: tuv= new CTileUvBump6((CTileUvBump6*)TileUvLeft, (CTileUvBump6*)TileUvRight); break;
+			default: nlstop;
+		};
+	}
+	
+	SonLeft->TileUvBase= tuv;
+	SonRight->TileUvBase= tuv;
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.7 2000/12/04 17:07:50 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.8 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,9 +110,9 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 		_NormalOff=_VertexSize;
 		_VertexSize+=3*sizeof(float);
 	}
-	if (flags & IDRV_VF_RGBA)
+	if (flags & IDRV_VF_COLOR)
 	{
-		_Flags|=IDRV_VF_RGBA;
+		_Flags|=IDRV_VF_COLOR;
 		_RGBAOff=_VertexSize;
 		_VertexSize+=4*sizeof(uint8);
 	}
@@ -180,12 +180,26 @@ void* CVertexBuffer::getColorPointer(uint idx)
 {
 	uint8*	ptr;
 
-	if ( !(_Flags & IDRV_VF_RGBA) )
+	if ( !(_Flags & IDRV_VF_COLOR) )
 	{
 		return(NULL);
 	}
 	ptr=&(*_Verts.begin());
 	ptr+=_RGBAOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
+void* CVertexBuffer::getSpecularPointer(uint idx)
+{
+	uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_SPECULAR) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_SpecularOff;
 	ptr+=idx*_VertexSize;
 	return((void*)ptr);
 }
@@ -203,6 +217,22 @@ void* CVertexBuffer::getTexCoordPointer(uint idx, uint8 stage)
 	ptr+=idx*_VertexSize;
 	return((void*)ptr);
 }
+
+
+void* CVertexBuffer::getWeightPointer(uint idx, uint8 wgt)
+{
+	uint8*	ptr;
+
+	nlassert(wgt<IDRV_VF_MAXW);
+	if( !(_Flags & IDRV_VF_W[wgt]))
+		return NULL;
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_WOff[wgt];
+
+	return ptr;
+}
+
 
 // --------------------------------------------------
 
@@ -246,14 +276,33 @@ void CVertexBuffer::setNormalCoord(uint idx, const CVector &v)
 
 // --------------------------------------------------
 
-void CVertexBuffer::setRGBA(uint idx, CRGBA rgba)
+void CVertexBuffer::setColor(uint idx, CRGBA rgba)
 {
 	uint8*	ptr;
 
-	nlassert(_Flags & IDRV_VF_RGBA);
+	nlassert(_Flags & IDRV_VF_COLOR);
 
 	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
 	ptr+=_RGBAOff;
+	*ptr=rgba.R;
+	ptr++;
+	*ptr=rgba.G;
+	ptr++;
+	*ptr=rgba.B;
+	ptr++;
+	*ptr=rgba.A;
+}
+
+// --------------------------------------------------
+
+void CVertexBuffer::setSpecular(uint idx, CRGBA rgba)
+{
+	uint8*	ptr;
+
+	nlassert(_Flags & IDRV_VF_SPECULAR);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_SpecularOff;
 	*ptr=rgba.R;
 	ptr++;
 	*ptr=rgba.G;
@@ -280,6 +329,23 @@ void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
 	ptrf++;
 	*ptrf=v;
 }
+
+// --------------------------------------------------
+
+void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
+{
+	uint8*	ptr;
+	float*	ptrf;
+
+	nlassert(wgt<IDRV_VF_MAXW);
+	nlassert(_Flags & IDRV_VF_W[wgt]);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_WOff[wgt];
+	ptrf=(float*)ptr;
+	*ptrf=w;
+}
+
 
 // --------------------------------------------------
 

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.21 2000/12/06 10:17:31 berenguier Exp $
+ * $Id: patch.cpp,v 1.22 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -327,7 +327,7 @@ void			CPatch::clip(const std::vector<CPlane>	&pyramid)
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
 		// If entirely out.
-		if(!BSphere.clipBackUnitPlane(pyramid[i]))
+		if(!BSphere.clipBack(pyramid[i]))
 		{
 			Clipped= true;
 			break;
@@ -457,7 +457,7 @@ sint			CPatch::getFarIndex0(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		CRGBA	col(255,255,255,255);
 		// TODO_CLOUD: use normal information, for cloud attenuation, in RGB fields.
 		// For Far0, alpha is un-usefull.
-		CTessFace::CurrentVB->setRGBA(vert->FarIndex, col);
+		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
 		// END!!
 	}
 	
@@ -488,7 +488,7 @@ sint			CPatch::getFarIndex1(CTessVertex *vert, CTessFace::CParamCoord  pc)
 		f= (f-TransitionSqrMin) * OOTransitionSqrDelta;
 		clamp(f,0,1);
 		col.A= (uint8)(f*255);
-		CTessFace::CurrentVB->setRGBA(vert->FarIndex, col);
+		CTessFace::CurrentVB->setColor(vert->FarIndex, col);
 		// END!!
 	}
 	
@@ -518,7 +518,7 @@ sint			CPatch::getTileIndex(CTessVertex *vert, ITileUv *uv, sint idUv)
 		CRGBA	col(255,255,255,255);
 		// TODO_CLOUD/TODO_ADDITIVE: use cloud color information for RGB. And use alpha global for global apparition of 
 		// additives tiles only.
-		CTessFace::CurrentVB->setRGBA(uv->TileIndex, col);
+		CTessFace::CurrentVB->setColor(uv->TileIndex, col);
 		// END!!
 	}
 

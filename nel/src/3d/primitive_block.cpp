@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.5 2000/12/05 17:04:56 berenguier Exp $
+ * $Id: primitive_block.cpp,v 1.6 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,13 @@ void				CPrimitiveBlock::setLine(uint lineIdx, uint32 vidx0, uint32 vidx1)
 }
 
 
+void				CPrimitiveBlock::addLine(uint32 vidx0, uint32 vidx1)
+{
+	setNumLine(getNumLine()+1);
+	setLine(getNumLine()-1, vidx0, vidx1);
+}
+
+
 	
 // --------------------------------------------------
 
@@ -101,6 +108,13 @@ void				CPrimitiveBlock::setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 
 	*ptr=vidx1;
 	ptr++;
 	*ptr=vidx2;
+}
+
+
+void				CPrimitiveBlock::addTri(uint32 vidx0, uint32 vidx1, uint32 vidx2)
+{
+	setNumTri(getNumTri()+1);
+	setTri(getNumTri()-1, vidx0, vidx1, vidx2);
 }
 
 
@@ -155,6 +169,16 @@ void CPrimitiveBlock::setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 v
 	*ptr = vidx2;
 	ptr++;
 	*ptr = vidx3;
+}
+
+
+/*---------------------------------------------------------------------------*\
+							addQuad()
+\*---------------------------------------------------------------------------*/
+void CPrimitiveBlock::addQuad(uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3)
+{
+	setNumQuad(getNumQuad()+1);
+	setQuad(getNumQuad()-1, vidx0, vidx1, vidx2, vidx3);
 }
 
 

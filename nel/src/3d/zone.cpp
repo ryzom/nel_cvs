@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.18 2000/12/07 16:10:10 berenguier Exp $
+ * $Id: zone.cpp,v 1.19 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -563,14 +563,14 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
 		// If entirely out.
-		if(!ZoneBB.clipBackUnitPlane(pyramid[i]))
+		if(!ZoneBB.clipBack(pyramid[i]))
 		{
 			ClipResult= ClipOut;
 			// If out of only one plane, out of all.
 			break;
 		}
 		// If partially IN (ie not entirely out, and not entirely IN)
-		else if(ZoneBB.clipFrontUnitPlane(pyramid[i]))
+		else if(ZoneBB.clipFront(pyramid[i]))
 		{
 			// Force ClipResult to be ClipSide, and not ClipIn.
 			ClipResult=ClipSide;
@@ -776,17 +776,16 @@ void			CZone::changePatchTexture(sint numPatch, const std::vector<CTileElement> 
 	nlassert(numPatch>=0);
 	nlassert(numPatch<getNumPatchs());
 	
-	// unbind => forceMerge() the patch. Hence, tiles are reseted.
-	if (Compiled)
-		unbindPatch(Landscape->Zones, Patchs[numPatch], PatchConnects[numPatch]);
 
 	// Update the patch texture.
 	nlassert(Patchs[numPatch].Tiles.size() ==tiles.size() );
 	Patchs[numPatch].Tiles= tiles;
 
-	// rebind. At next refine(), tesselation will be updated and tiles created.
 	if (Compiled)
-		bindPatch(Landscape->Zones, Patchs[numPatch], PatchConnects[numPatch]);
+	{
+		Patchs[numPatch].deleteTileUvs();
+		Patchs[numPatch].recreateTileUvs();
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.2 2000/11/03 18:07:15 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.3 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,24 +83,6 @@ void			CAABBox::serial(NLMISC::IStream &f)
 // ***************************************************************************
 bool	CAABBoxExt::clipFront(const CPlane &p) const
 {
-	// don't assume normalized planes.
-	float	norm= p.getNormal().norm();
-	// This is faster than normalize p.
-
-	// if( SpherMax OUT )	return false.
-	float	d= p*Center;
-	if(d<-RadiusMax*norm)
-		return false;
-	// if( SphereMin IN )	return true;
-	if(d>-RadiusMin*norm)
-		return true;
-
-	// else, standard clip box.
-	return CAABBox::clipFront(p);
-}
-// ***************************************************************************
-bool	CAABBoxExt::clipFrontUnitPlane(const CPlane &p) const
-{
 	// Assume normalized planes.
 
 	// if( SpherMax OUT )	return false.
@@ -118,24 +100,6 @@ bool	CAABBoxExt::clipFrontUnitPlane(const CPlane &p) const
 
 // ***************************************************************************
 bool	CAABBoxExt::clipBack(const CPlane &p) const
-{
-	// don't assume normalized planes.
-	float	norm= p.getNormal().norm();
-	// This is faster than normalize p.
-
-	// if( SpherMax OUT )	return false.
-	float	d= p*Center;
-	if(d>RadiusMax*norm)
-		return false;
-	// if( SphereMin IN )	return true;
-	if(d<RadiusMin*norm)
-		return true;
-
-	// else, standard clip box.
-	return CAABBox::clipBack(p);
-}
-// ***************************************************************************
-bool	CAABBoxExt::clipBackUnitPlane(const CPlane &p) const
 {
 	// Assume normalized planes.
 

@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.11 2000/12/01 16:35:34 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.12 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/3d/bitmap.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
+using namespace NLMISC;
 
 
 namespace NL3D {
@@ -1171,7 +1172,7 @@ uint32 CBitmap::getWidth(uint32 mipMap) const
 		h = (h+1)/2;
 		if(m==mipMap) return w;
 	}
-	while(w!=1 && h!=1);
+	while(w!=1 || h!=1);
 
 	return 0;
 }
@@ -1196,7 +1197,7 @@ uint32 CBitmap::getHeight(uint32 mipMap) const
 		h = (h+1)/2;
 		if(m==mipMap) return h;
 	}
-	while(w!=1 && h!=1);
+	while(w!=1 || h!=1);
 
 	return 0;
 }
@@ -1213,9 +1214,9 @@ uint32 CBitmap::getSize(uint32 numMipMap) const
 
 
 /*-------------------------------------------------------------------*\
-							buildMiMaps
+							buildMipMaps
 \*-------------------------------------------------------------------*/
-void CBitmap::buildMiMaps()
+void CBitmap::buildMipMaps()
 {
 	uint32 i,j;
 
@@ -1227,12 +1228,14 @@ void CBitmap::buildMiMaps()
 	uint32 w = _Width;
 	uint32 h = _Height;
 
-	while(w>1 && h>1)
+	while(w>1 || h>1)
 	{
-		uint32 prevw = w;
-		uint32 prevh = h;
+		uint32 precw = w;
+		uint32 prech = h;
 		w = (w+1)/2;
 		h = (h+1)/2;
+		uint32	mulw= precw/w;
+		uint32	mulh= prech/h;
 
 		_MipMapCount++;
 		_Data[_MipMapCount].resize(w*h*4);
@@ -1242,24 +1245,38 @@ void CBitmap::buildMiMaps()
 		NLMISC::CRGBA *pRgbaPrev = (NLMISC::CRGBA*)&_Data[_MipMapCount-1][0];
 		for(i=0; i<h; i++)
 		{
+			sint	i0= mulh*i;
+			sint	i1= mulh*i+1;
+			if(mulh==1)
+				i1=i0;
+			i0*=precw;
+			i1*=precw;
 			for(j=0; j<w; j++)
-			{	
-				pRgba[i*w + j].R = (pRgbaPrev[2*i*2*w+2*j].R +
-									pRgbaPrev[2*i*2*w+2*j+1].R +
-									pRgbaPrev[(2*i+1)*2*w+2*j].R +
-									pRgbaPrev[(2*i+1)*2*w+2*j+1].R + 2 ) /4;
-				pRgba[i*w + j].G = (pRgbaPrev[2*i*2*w+2*j].G +
-									pRgbaPrev[2*i*2*w+2*j+1].G +
-									pRgbaPrev[(2*i+1)*2*w+2*j].G +
-									pRgbaPrev[(2*i+1)*2*w+2*j+1].G + 2 ) /4;
-				pRgba[i*w + j].B = (pRgbaPrev[2*i*2*w+2*j].B +
-									pRgbaPrev[2*i*2*w+2*j+1].B +
-									pRgbaPrev[(2*i+1)*2*w+2*j].B +
-									pRgbaPrev[(2*i+1)*2*w+2*j+1].B + 2 ) /4;
-				pRgba[i*w + j].A = (pRgbaPrev[2*i*2*w+2*j].A +
-									pRgbaPrev[2*i*2*w+2*j+1].A +
-									pRgbaPrev[(2*i+1)*2*w+2*j].A +
-									pRgbaPrev[(2*i+1)*2*w+2*j+1].A + 2 ) /4;
+			{
+				sint	j0= mulw*j;
+				sint	j1= mulw*j+1;
+				if(mulh==1)
+					j1=j0;
+				CRGBA	&c0= pRgbaPrev[i0+j0];
+				CRGBA	&c1= pRgbaPrev[i0+j1];
+				CRGBA	&c2= pRgbaPrev[i1+j0];
+				CRGBA	&c3= pRgbaPrev[i1+j1];
+				pRgba[i*w + j].R = (c0.R +
+									c1.R +
+									c2.R +
+									c3.R + 2 ) /4;
+				pRgba[i*w + j].G = (c0.G +
+									c1.G +
+									c2.G +
+									c3.G + 2 ) /4;
+				pRgba[i*w + j].B = (c0.B +
+									c1.B +
+									c2.B +
+									c3.B + 2 ) /4;
+				pRgba[i*w + j].A = (c0.A +
+									c1.A +
+									c2.A +
+									c3.A + 2 ) /4;
 			}
 		}
 	}
@@ -1303,7 +1320,7 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 	// Rebuilding mipmaps
 	if(needRebuild)
 	{
-		buildMiMaps();
+		buildMipMaps();
 	}
 }
 

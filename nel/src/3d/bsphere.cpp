@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.3 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.4 2000/12/11 15:52:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,20 +33,8 @@ namespace NL3D {
 
 bool	CBSphere::clipFront(const CPlane &p) const
 {
-	// don't assume normalized planes.
-	float	norm= p.getNormal().norm();
-	// This is faster than normalize p.
+	// assume normalized planes.
 
-	// if( SpherMax OUT )	return false.
-	float	d= p*Center;
-	if(d<-Radius*norm)
-		return false;
-
-	return true;
-}
-
-bool	CBSphere::clipFrontUnitPlane(const CPlane &p) const
-{
 	// if( SpherMax OUT )	return false.
 	float	d= p*Center;
 	if(d<-Radius)
@@ -58,20 +46,8 @@ bool	CBSphere::clipFrontUnitPlane(const CPlane &p) const
 
 bool	CBSphere::clipBack(const CPlane &p) const
 {
-	// don't assume normalized planes.
-	float	norm= p.getNormal().norm();
-	// This is faster than normalize p.
+	// assume normalized planes.
 
-	// if( SpherMax OUT )	return false.
-	float	d= p*Center;
-	if(d>Radius*norm)
-		return false;
-
-	return true;
-}
-
-bool	CBSphere::clipBackUnitPlane(const CPlane &p) const
-{
 	// if( SpherMax OUT )	return false.
 	float	d= p*Center;
 	if(d>Radius)

@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.10 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.11 2002/07/11 09:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,12 @@ sint		CSkeletonUser::getBoneIdByName(const std::string &boneName) const
 
 	return _Skeleton->getBoneIdByName(boneName);
 }
+bool		CSkeletonUser::isBoneComputed(uint boneId) const
+{
+	NL3D_HAUTO_UI_SKELETON;
 
+	return _Skeleton->isBoneComputed(boneId);
+}
 
 // ***************************************************************************
 void		CSkeletonUser::setLodCharacterShape(sint shapeId)

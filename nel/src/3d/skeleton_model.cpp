@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.26 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.27 2002/07/11 09:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -351,6 +351,16 @@ void		CSkeletonModel::updateBoneToCompute()
 
 	// computed
 	_BoneToComputeDirty= false;
+}
+
+
+// ***************************************************************************
+bool		CSkeletonModel::isBoneComputed(uint boneId) const
+{
+	if(boneId>=_BoneUsage.size())
+		return false;
+	else
+		return _BoneUsage[boneId].MustCompute!=0;
 }
 
 

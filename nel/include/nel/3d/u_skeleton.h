@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.9 2002/07/11 08:19:51 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.10 2002/07/11 09:27:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,8 @@ public:
 	virtual	UBone		&getBone(uint boneId) =0;
 	/// retrieve the bone Id, by his name. -1 if not found.
 	virtual	sint		getBoneIdByName(const std::string &boneName) const=0;
+	/// Tell if a bone has been computed in the last frame or not. false if boneId is invalid
+	virtual	bool		isBoneComputed(uint boneId) const=0;
 	// @}
 
 

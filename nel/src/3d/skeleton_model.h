@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.20 2002/07/11 08:19:29 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.21 2002/07/11 09:26:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,6 +150,9 @@ public:
 	// @{
 	/// return, from skeleton shape, the BoneIdByName. -1 if not here.
 	sint32		getBoneIdByName(const std::string &name) const;
+
+	/// Tell if a bone has been computed in the last frame or not. false if boneId is invalid
+	bool		isBoneComputed(uint boneId) const;
 
 	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject() / Lod system).
 	uint		getNumBoneComputed() const {return _BoneToCompute.size();}

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.24 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: attrib_dlg.cpp,v 1.25 2004/02/19 09:58:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1389,7 +1389,7 @@ END_MESSAGE_MAP()
 				scheme = new NL3D::CPSColorBlender;
 			break;
 			case 1 :
-				scheme = new NL3D::CPSColorGradient;
+				scheme = new NL3D::CPSColorGradient(NL3D::CPSColorGradient::_DefaultGradient, 2, 16, 1.f);
 			break;
 			case 2 :
 				scheme = new NL3D::CPSColorBlenderExact;
@@ -1568,6 +1568,7 @@ END_MESSAGE_MAP()
 			break;
 			case 2:
 				scheme = new NL3D::CPSBasisSpinner;
+				static_cast<NL3D::CPSBasisSpinner *>(scheme)->_F.setNumSamples(16);
 			break;
 			case 3:	
 				scheme = new NL3D::CPSPlaneBasisMemory;

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.14 2003/04/28 09:32:52 ledorze Exp $
+ * $Id: transport_class.cpp,v 1.15 2003/04/28 10:23:12 ledorze Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,8 +79,9 @@ string typeToString (CTransportClass::TProp type)
 	string conv[] = {
 		"PropUInt8", "PropUInt16", "PropUInt32", "PropUInt64",
 		"PropSInt8", "PropSInt16", "PropSInt32", "PropSInt64",
-		"PropBool", "PropFloat", "PropDouble", "PropString", "PropDataSetRow", "PropEntityId", "PropSheetId", "PropUKN" };
-
+		"PropBool", "PropFloat", "PropDouble", "PropString", "PropDataSetRow", "PropSheetId", "PropUKN" };
+//		"PropBool", "PropFloat", "PropDouble", "PropString", "PropDataSetRow", "PropEntityId", "PropSheetId", "PropUKN" };
+		
 	if (type > CTransportClass::PropUKN)
 		return "<InvalidType>";
 	return conv[type];
@@ -348,7 +349,8 @@ void CTransportClass::init ()
 	nlassert (PropFloat < PropUKN); DummyProp[PropFloat] = new CTransportClass::CRegisteredProp<float>;
 	nlassert (PropDouble < PropUKN); DummyProp[PropDouble] = new CTransportClass::CRegisteredProp<double>;
 	nlassert (PropString < PropUKN); DummyProp[PropString] = new CTransportClass::CRegisteredProp<string>;
-	nlassert (PropEntityId < PropUKN); DummyProp[PropEntityId] = new CTransportClass::CRegisteredProp<CEntityId>;
+//	nlassert (PropDataSetRow < PropUKN); DummyProp[PropDataSetRow] = new CTransportClass::CRegisteredProp<TDataSetRow>;
+//	nlassert (PropEntityId < PropUKN); DummyProp[PropEntityId] = new CTransportClass::CRegisteredProp<CEntityId>;
 	nlassert (PropSheetId < PropUKN); DummyProp[PropSheetId] = new CTransportClass::CRegisteredProp<CSheetId>;
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)

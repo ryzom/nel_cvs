@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.21 2002/10/25 15:59:38 berenguier Exp $
+ * $Id: texture.cpp,v 1.22 2004/01/30 13:48:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,13 +132,22 @@ ITextureDrvInfos::~ITextureDrvInfos()
 // ***************************************************************************
 void	ITexture::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	(void)f.serialVersion(0);
+	/*
+	Version 1:
+		- _LoadGrayscaleAsAlpha
+	Version 0:
+		- base version.
+	*/
+
+	sint	ver= f.serialVersion(1);
 
 	f.serialEnum(_UploadFormat);
 	f.serialEnum(_WrapS);
 	f.serialEnum(_WrapT);
 	f.serialEnum(_MinFilter);
 	f.serialEnum(_MagFilter);
+	if(ver>=1)
+		f.serial(_LoadGrayscaleAsAlpha);
 }
 
 

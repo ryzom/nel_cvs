@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.41 2002/09/04 10:42:13 lecroart Exp $
+ * $Id: displayer.cpp,v 1.42 2002/10/18 15:16:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,11 @@ const char *IDisplayer::dateToHumanString ()
 const char *IDisplayer::dateToHumanString (time_t date)
 {
 	static char cstime[25];
-	strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", localtime(&date));
+	struct tm *tms = localtime(&date);
+	if (tms)
+		strftime (cstime, 25, "%Y/%m/%d %H:%M:%S", tms);
+	else
+		sprintf(cstime, "bad date %d", date);
 	return cstime;
 }
 

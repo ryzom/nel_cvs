@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.49 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: interpret_object_agent.cpp,v 1.50 2002/08/27 09:25:38 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -575,7 +575,7 @@ namespace NLAISCRIPT
 		{			
 #ifdef NL_DEBUG
 			const char *dbg_method_name = _Methode[i].Method->getName().getString();	
-#endif
+#endif²
 			CMethodeName *m = _Methode[i].Method;
 			const CParam &p = (const CParam &)m->getParam();
 			if( m->getName() == name && p == param ) 

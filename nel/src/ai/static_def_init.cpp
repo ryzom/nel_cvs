@@ -39,6 +39,8 @@
 #include "nel/ai/agent/msg_connect.h"
 #include "nel/ai/agent/msg_setvalue.h"
 #include "nel/ai/script/param_container.h"
+#include "nel/ai/logic/goal_path.h"
+#include "nel/ai/script/goal_path_class.h"
 
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
@@ -407,6 +409,12 @@
 		NLAIC::CTypeOfOperator::opNeg | 
 		NLAIC::CTypeOfOperator::opNot ); 
 
+	const NLAIC::CIdentType CGoalPath::IdGoalPath = NLAIC::CIdentType( "GoalPathScript", NLAIC::CSelfClassFactory( CGoalPath( NULL )),
+		NLAIC::CTypeOfObject::tLogic,
+		NLAIC::CTypeOfOperator::opEq |
+		NLAIC::CTypeOfOperator::opNeg | 
+		NLAIC::CTypeOfOperator::opNot ); 
+
 	const NLAIC::CIdentType CInternalGoal::IdInternalGoal = NLAIC::CIdentType( "InternalGoalObject", NLAIC::CSelfClassFactory( CInternalGoal( CStringVarName("Inst") )),
 		NLAIC::CTypeOfObject::tLogic,
 		NLAIC::CTypeOfOperator::opEq |
@@ -669,6 +677,11 @@ namespace NLAISCRIPT
 
 	static CActorClass actorClass(NLAIAGENT::CStringVarName("XXX_Actor"));
 	const NLAIC::CIdentType CActorClass::IdActorClass("Actor", CClassInterpretFactory((const IClassInterpret &)actorClass),
+													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret),
+													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+	static CGoalPathClass goalpathClass(NLAIAGENT::CStringVarName("XXX_GoalPath"));
+	const NLAIC::CIdentType CGoalPathClass::IdGoalPathClass("GoalPath", CClassInterpretFactory((const IClassInterpret &)goalpathClass),
 													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret),
 													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.36 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: local_retriever.cpp,v 1.37 2002/01/07 11:03:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -512,9 +512,9 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 	for (i=0; i<_Chains.size(); ++i)
 	{
-		if (i == 431)
+/*		if (i == 431)
 			nlstop;
-
+*/
 		uint	whichTip;
 		// for both tips (start and stop)
 		for (whichTip=0; whichTip<=1; ++whichTip)
@@ -533,10 +533,10 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			{
 				uint	turn;
 				uint	tipId = _Tips.size();
-
+/*
 				if (tipId == 310)
 					nlstop;
-
+*/
 				_Tips.resize(tipId+1);
 				CTip	&tip = _Tips[tipId];
 				tip.Point = (whichTip) ? getStopVector(i) : getStartVector(i);

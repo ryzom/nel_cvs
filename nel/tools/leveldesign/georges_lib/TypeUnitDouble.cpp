@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "TypeUnitDouble.h"
+#include <math.h>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -49,6 +50,7 @@ CStringEx CTypeUnitDouble::FormatDouble( const double dvalue ) const
 	return sx;
 }
 
+/*
 CStringEx CTypeUnitDouble::Format( const CStringEx _sxvalue ) const
 {
 	if( _sxvalue.empty() )
@@ -61,12 +63,108 @@ CStringEx CTypeUnitDouble::Format( const CStringEx _sxvalue ) const
 		dvalue = dhighlimit;
 	return( FormatDouble( dvalue ) );
 }
-									
+*/
+CStringEx CTypeUnitDouble::Format( const CStringEx _sxvalue ) const
+{
+	if( _sxvalue.empty() )
+		return( sxdefaultvalue );
+
+	std::vector< std::pair< CStringEx, CStringEx > > modificationValues;
+	CStringEx value( _sxvalue );
+	value.purge();
+	while( value[0] == '<' )
+	{
+		unsigned int pos = value.find( '>' );
+		if( pos == -1 )
+			break;
+		CStringEx sxoperateur = value.get_mid( 1, 1 );
+		CStringEx sxoperande = value.get_mid( 2, pos-2);
+		value.right( value.size()-pos-1 );
+		modificationValues.push_back( std::make_pair( sxoperateur, sxoperande ) );
+	}
+	if( modificationValues.size() )
+	{
+		CStringEx sxr;
+		for( std::vector< std::pair< CStringEx, CStringEx > >::iterator it = modificationValues.begin(); it != modificationValues.end(); ++it )
+		{
+			sxr += CStringEx( "<" );
+			sxr += it->first;
+			sxr += it->second;
+			sxr += CStringEx( ">" );
+		}
+		return( sxr );
+	}
+	else
+	{
+		double dvalue = atof( _sxvalue.c_str() );
+		if( dvalue < dlowlimit )
+			dvalue = dlowlimit;
+		if( dvalue > dhighlimit )
+			dvalue = dhighlimit;
+		return( FormatDouble( dvalue ) );
+	}
+}
+/*									
 CStringEx CTypeUnitDouble::CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const	
 {
 	nlassert( !_sxbasevalue.empty() );
 	if( _sxvalue.empty() )
 		return( _sxbasevalue );
+	return( Format( _sxvalue ) );
+}
+*/
+CStringEx CTypeUnitDouble::CalculateResult( const CStringEx _sxbasevalue, const CStringEx _sxvalue ) const	
+{
+	nlassert( !_sxbasevalue.empty() );
+	if( _sxvalue.empty() )
+		return( _sxbasevalue );
+
+	std::vector< std::pair< CStringEx, CStringEx > > modificationValues;
+	CStringEx value( _sxvalue );
+	value.purge();
+	while( value[0] == '<' )
+	{
+		unsigned int pos = value.find( '>' );
+		if( pos == -1 )
+			break;
+		CStringEx sxoperateur = value.get_mid( 1, 1 );
+		CStringEx sxoperande = value.get_mid( 2, pos-2);
+		value.right( value.size()-pos-1 );
+		modificationValues.push_back( std::make_pair( sxoperateur, sxoperande ) );
+	}
+	if( modificationValues.size() )
+	{
+		double dr = atof( _sxbasevalue.c_str() );
+		for( std::vector< std::pair< CStringEx, CStringEx > >::iterator it = modificationValues.begin(); it != modificationValues.end(); ++it )
+		{
+			double dvalue = atof( it->second.c_str() );
+			if( it->first == "+" )
+				dr += dvalue;
+			else if( it->first == "*" )
+					dr *= dvalue;
+				else if( it->first == "-" )
+						dr -= dvalue;
+					else if( it->first == "/" )
+							dr /= dvalue;   
+						else if( it->first == "^" )
+								dr = pow( dr, dvalue );   
+		}
+		if( dr < dlowlimit )
+			dr = dlowlimit;
+		if( dr > dhighlimit )
+			dr = dhighlimit;
+		return( FormatDouble( dr ) );
+	}
+	else
+	{
+		double dvalue = atof( _sxvalue.c_str() );
+		if( dvalue < dlowlimit )
+			dvalue = dlowlimit;
+		if( dvalue > dhighlimit )
+			dvalue = dhighlimit;
+		return( FormatDouble( dvalue ) );
+	}
+
 	return( Format( _sxvalue ) );
 }
 

@@ -362,6 +362,7 @@ void CGeorgesDoc::SetItemParent( const unsigned int _index, const CString _s )
 	item.SetParent( _index, CStringEx( LPCTSTR( _s ) ) );
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	SetModifiedFlag( TRUE );
 	Push();
 }
 
@@ -370,6 +371,7 @@ void CGeorgesDoc::SetItemActivity( const unsigned int _index, const CString _s )
 	item.SetActivity( _index, CStringEx( LPCTSTR( _s ) ) );
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	SetModifiedFlag( TRUE );
 	Push();
 }
 
@@ -438,6 +440,7 @@ void CGeorgesDoc::AddListChild( const unsigned int _index ) const
 void CGeorgesDoc::DelListChild( const unsigned int _index )
 {
 	item.DelListChild( _index ); 
+	SetModifiedFlag( TRUE );
 	Push();
 }
 
@@ -447,6 +450,7 @@ void CGeorgesDoc::AddParent( const unsigned int _index )
 	item.AddParent( _index ); 
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	SetModifiedFlag( TRUE );
 	Push();
 }
 
@@ -455,6 +459,7 @@ void CGeorgesDoc::DelParent( const unsigned int _index )
 	item.DelParent( _index ); 
 	item.VirtualSaveLoad();
 	UpdateAllViews( 0 );
+	SetModifiedFlag( TRUE );
 	Push();
 }
 

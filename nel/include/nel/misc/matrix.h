@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.18 2001/08/01 15:42:41 berenguier Exp $
+ * $Id: matrix.h,v 1.19 2002/06/27 16:26:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,12 @@ public:
 	/// \name Object
 	//@{
 	/// Constructor which init to identity().
-	CMatrix() {StateBit= 0;}
+	CMatrix()
+	{
+		StateBit= 0;
+		// Init just Pos because must always be valid for faster getPos()
+		M[12]= M[13]= M[14]= 0;
+	}
 	/// Copy Constructor.
 	CMatrix(const CMatrix &);
 	/// operator=.
@@ -180,11 +185,12 @@ public:
 	/** Get the Translation component.
 	 * \param v the matrix's translation vector.
 	 */
-	void		getPos(CVector &v) const;
+	void			getPos(CVector &v) const	{v.x= M[12]; v.y= M[13]; v.z= M[14];}
 	/** Get the Translation component.
+	 *	NB: a const & works because it is a column vector
 	 * \return the matrix's translation vector.
 	 */
-	CVector		getPos() const;
+	const CVector	&getPos() const				{return *(CVector*)(M+12);}
 	/** Get the Projection component.
 	 * \param proj the matrix's projection vector.
 	 */
@@ -340,14 +346,14 @@ private:
 		}
 	}
 
+	// true if MAT_TRANS.
+	// trans part is true means the right 3x1 translation part matrix is revelant.
+	// Else it IS initialised to (0,0,0) (exception!!!)
+	bool	hasTrans() const;
 	// true if MAT_ROT | MAT_SCALEUNI | MAT_SCALEANY.
 	// rot part is true means the 3x3 rot matrix AND Scale33 are revelant. 
 	// Else they are not initialised but are supposed to represent identity and Scale33==1.
 	bool	hasRot() const;
-	// true if MAT_TRANS.
-	// trans part is true means the right 3x1 translation part matrix is revelant.
-	// Else it is not initialised but is supposed to represent the column vector (0,0,0).
-	bool	hasTrans() const;
 	// true if MAT_PROJ.
 	// proj part is true means the bottom 1x4 projection part matrix is revelant.
 	// Else it is not initialised but is supposed to represent the line vector (0,0,0,1).
@@ -355,7 +361,6 @@ private:
 	bool	hasAll() const;
 
 	void	testExpandRot() const;
-	void	testExpandTrans() const;
 	void	testExpandProj() const;
 
 };

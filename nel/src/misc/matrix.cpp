@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.29 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: matrix.cpp,v 1.30 2002/06/27 16:26:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,11 +53,10 @@ const CMatrix	CMatrix::Identity;
 #define	MAT_SCALEANY	8
 #define	MAT_PROJ		16
 // Validity bits. These means that the part may be yet identity, but is valid in the floats.
-// eg: MAT_VALTRANS has no means if MAT_TRANS is set.
-#define	MAT_VALIDTRANS	32
+// NB: MAT_VALIDTRANS no more used for faster Pos access
 #define	MAT_VALIDROT	64
 #define	MAT_VALIDPROJ	128
-#define	MAT_VALIDALL	(MAT_VALIDTRANS | MAT_VALIDROT | MAT_VALIDPROJ)
+#define	MAT_VALIDALL	(MAT_VALIDROT | MAT_VALIDPROJ)
 // The identity is nothing.
 #define	MAT_IDENTITY	0
 
@@ -147,19 +146,6 @@ inline void CMatrix::testExpandRot() const
 		self->Scale33= 1;
 	}
 }
-inline void CMatrix::testExpandTrans() const
-{
-	if(hasTrans())
-		return;
-	if(!(StateBit&MAT_VALIDTRANS))
-	{
-		CMatrix	*self= const_cast<CMatrix*>(this);
-		self->StateBit|=MAT_VALIDTRANS;
-		self->a14=0;
-		self->a24=0;
-		self->a34=0;
-	}
-}
 inline void CMatrix::testExpandProj() const
 {
 	if(hasProj())
@@ -196,10 +182,6 @@ CMatrix		&CMatrix::operator=(const CMatrix &m)
 			memcpy(&a13, &m.a13, 3*sizeof(float));
 			Scale33= m.Scale33;
 		}
-		if(hasTrans())
-		{
-			memcpy(&a14, &m.a14, 3*sizeof(float));
-		}
 		if(hasProj())
 		{
 			a41= m.a41;
@@ -207,6 +189,8 @@ CMatrix		&CMatrix::operator=(const CMatrix &m)
 			a43= m.a43;
 			a44= m.a44;
 		}
+		// Must always copy Trans part.
+		memcpy(&a14, &m.a14, 3*sizeof(float));
 	}
 	return *this;
 }
@@ -216,6 +200,8 @@ CMatrix		&CMatrix::operator=(const CMatrix &m)
 void		CMatrix::identity()
 {
 	StateBit= MAT_IDENTITY;
+	// Reset just Pos because must always be valid for faster getPos()
+	a14= a24= a34= 0;
 	// For optimisation it would be usefull to keep MAT_VALID states.
 	// But this slows identity(), and this may not be interesting...
 }
@@ -286,11 +272,8 @@ void		CMatrix::setPos(const CVector &v)
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
-	{
-		// The trans is identity, and is correcly setup!
+		// The trans is identity
 		StateBit&= ~MAT_TRANS;
-		StateBit|= MAT_VALIDTRANS;
-	}
 }
 // ======================================================================================================
 void		CMatrix::movePos(const CVector &v)
@@ -301,11 +284,8 @@ void		CMatrix::movePos(const CVector &v)
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
-	{
-		// The trans is identity, and is correcly setup!
+		// The trans is identity
 		StateBit&= ~MAT_TRANS;
-		StateBit|= MAT_VALIDTRANS;
-	}
 }
 // ======================================================================================================
 void		CMatrix::setProj(const float proj[4])
@@ -349,11 +329,8 @@ void		CMatrix::set(const float m44[16])
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
-	{
-		// The trans is identity, and is correcly setup!
+		// The trans is identity
 		StateBit&= ~MAT_TRANS;
-		StateBit|= MAT_VALIDTRANS;
-	}
 
 	// Check Proj state.
 	if(a41!=0 || a42!=0 || a43!=0 || a44!=1)
@@ -421,22 +398,6 @@ void		CMatrix::getRot(float m33[9]) const
 	}
 }
 // ======================================================================================================
-void		CMatrix::getPos(CVector &v) const
-{
-	if(hasTrans())
-		v.set(a14, a24, a34);
-	else
-		v.set(0, 0, 0);
-}
-// ======================================================================================================
-CVector		CMatrix::getPos() const
-{
-	if(hasTrans())
-		return CVector(a14, a24, a34);
-	else
-		return CVector(0, 0, 0);
-}
-// ======================================================================================================
 void		CMatrix::getProj(float proj[4]) const
 {
 	if(hasProj())
@@ -483,7 +444,6 @@ void		CMatrix::get(float m44[16]) const
 {
 	// \todo yoyo: TODO_OPTIMIZE_it.
 	testExpandRot();
-	testExpandTrans();
 	testExpandProj();
 	memcpy(m44, M, 16*sizeof(float));
 }
@@ -491,7 +451,6 @@ void		CMatrix::get(float m44[16]) const
 const float *CMatrix::get() const
 {
 	testExpandRot();
-	testExpandTrans();
 	testExpandProj();
 	return M;
 }
@@ -510,8 +469,6 @@ CVector		CMatrix::toEuler(TRotOrder ro) const
 // ======================================================================================================
 void		CMatrix::translate(const CVector &v)
 {
-	testExpandTrans();
-
 	// SetTrans.
 	if( hasRot() )
 	{
@@ -534,11 +491,8 @@ void		CMatrix::translate(const CVector &v)
 	if(a14!=0 || a24!=0 || a34!=0)
 		StateBit|= MAT_TRANS;
 	else
-	{
 		// The trans is identity, and is correcly setup!
 		StateBit&= ~MAT_TRANS;
-		StateBit|= MAT_VALIDTRANS;
-	}
 }
 // ======================================================================================================
 void		CMatrix::rotateX(float a)
@@ -755,13 +709,10 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 
 	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
-	testExpandTrans();
 	testExpandProj();
 	m.testExpandRot();
-	m.testExpandTrans();
 	m.testExpandProj();
 	ret.testExpandRot();
-	ret.testExpandTrans();
 	ret.testExpandProj();
 
 
@@ -882,13 +833,6 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 			}
 		}
 	}
-	else
-	{
-		ret.a14= 0;
-		ret.a24= 0;
-		ret.a34= 0;
-		ret.StateBit|= MAT_VALIDTRANS;
-	}
 
 
 	// Build Proj part.
@@ -947,8 +891,7 @@ void		CMatrix::transpose()
 	transpose3x3();
 	if(hasTrans() || hasProj())
 	{
-		// if necessary, Get valid 0 on trans or proj part.
-		testExpandTrans();
+		// if necessary, Get valid 0 on proj part.
 		testExpandProj();
 		// swap values
 		swap(a41, a14);
@@ -970,7 +913,7 @@ void		CMatrix::transpose()
 			}
 		}
 		// reset validity. NB, maybe not usefull, but simpler, and bugfree.
-		StateBit&= ~(MAT_VALIDTRANS | MAT_VALIDPROJ);
+		StateBit&= ~(MAT_VALIDPROJ);
 	}
 	// NB: if no Trans or no Proj, do nothing, so don't need to modify VALIDTRANS and VALIDPROJ too.
 }
@@ -1105,7 +1048,6 @@ CMatrix		CMatrix::inverted() const
 
 	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
-	testExpandTrans();
 	testExpandProj();
 
 	// Do a conventionnal 44 inversion.
@@ -1306,7 +1248,6 @@ CVectorH	CMatrix::operator*(const CVectorH& v) const
 
 	// \todo yoyo: TODO_OPTIMIZE it...
 	testExpandRot();
-	testExpandTrans();
 	testExpandProj();
 
 	ret.x= a11*v.x + a12*v.y + a13*v.z + a14*v.w;
@@ -1322,7 +1263,6 @@ CPlane		operator*(const CPlane &p, const CMatrix &m)
 {
 	// \todo yoyo: TODO_OPTIMIZE it...
 	m.testExpandRot();
-	m.testExpandTrans();
 	m.testExpandProj();
 
 
@@ -1488,6 +1428,11 @@ void		CMatrix::serial(IStream &f)
 	if( hasTrans() )
 	{
 		f.serial(a14, a24, a34);
+	}
+	else if(f.isReading())
+	{
+		// must reset because Pos must always be valid
+		a14= a24= a34= 0;
 	}
 	if( hasProj() )
 	{

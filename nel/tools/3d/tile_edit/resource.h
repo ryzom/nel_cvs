@@ -100,6 +100,7 @@
 #define IDC_SUBGROUP3                   1085
 #define IDC_BROWSE                      1085
 #define IDC_SUBGROUP4                   1086
+#define IDC_SURFACE_DATA                1086
 #define IDC_SUBGROUP5                   1087
 #define IDC_SUBGROUP6                   1088
 #define IDC_SUBGROUP7                   1089
@@ -121,7 +122,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1086
+#define _APS_NEXT_CONTROL_VALUE         1087
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

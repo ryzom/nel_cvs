@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.15 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.16 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,13 @@
 
 #include "std3d.h"
 
+#include "nel/3d/u_visual_collision_entity.h"
+
 #include "3d/visual_collision_entity.h"
 #include "3d/landscape.h"
 #include "3d/dru.h"
 #include "3d/driver.h"
+#include "3d/tile_bank.h"
 
 
 using namespace std;
@@ -544,6 +547,52 @@ bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos,
 
 		return false;
 	}
+}
+
+
+// ***************************************************************************
+bool		CVisualCollisionEntity::getSurfaceInfo(const CVector &pos, CSurfaceInfo &surfaceInfo)
+{
+	// Get Patch Triangle Under Us
+	CVector		res;
+	CTrianglePatch	*tri= getPatchTriangleUnderUs(pos, res);
+
+	// result. NB: if not found, dot not modify.
+	if( tri )
+	{
+		// compute UV for position.
+		CUV		uv;
+		computeUvForPos(*tri, pos, uv);
+
+		// get the tileelement
+		CTileElement *tileElm = _Owner->_Landscape->getTileElement(tri->PatchId, uv);
+		if (tileElm)
+		{
+			// Valid tile ?
+			uint16 tileId = tileElm->Tile[0];
+			if (tileId != NL_TILE_ELM_LAYER_EMPTY)
+			{
+				// The tilebank
+				CTileBank &tileBank = _Owner->_Landscape->TileBank;
+
+				// Get xref info for this tile
+				int tileSet;
+				int number;
+				CTileBank::TTileType type;
+				tileBank.getTileXRef ((int)tileId, tileSet, number, type);
+
+				// Get the tileset from layer 0
+				const CTileSet* tileSetPtr = tileBank.getTileSet (tileSet);
+
+				// Fill the surface
+				surfaceInfo.UserSurfaceData = tileSetPtr->SurfaceData;
+
+				// Ok
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.40 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: landscape.h,v 1.41 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,6 +330,9 @@ public:
 
 	/// Return the texture for a tile Id. UseFull for Tile edition.
 	NLMISC::CSmartPtr<ITexture>		getTileTexture(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
+
+	/// Return the tile element for a patch at specific UV. UseFull for getting surface data. Return NULL if not found.
+	CTileElement					*getTileElement(const CPatchIdent &patchId, const CUV &uv);
 	// @}
 
 	/// \name Lighting.

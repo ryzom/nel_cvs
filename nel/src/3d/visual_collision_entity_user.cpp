@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.cpp
  * <File description>
  *
- * $Id: visual_collision_entity_user.cpp,v 1.5 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: visual_collision_entity_user.cpp,v 1.6 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,10 @@ void	CVisualCollisionEntityUser::displayDebugGrid(UDriver &drv) const
 	_Entity->displayDebugGrid(*drvUser.getDriver());
 }
 
+bool	CVisualCollisionEntityUser::getSurfaceInfo(const CVector &pos, CSurfaceInfo &surfaceInfo)
+{
+	return _Entity->getSurfaceInfo (pos, surfaceInfo);
+}
 
 
 } // NL3D

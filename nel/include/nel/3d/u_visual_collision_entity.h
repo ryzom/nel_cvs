@@ -1,7 +1,7 @@
 /** \file u_visual_collision_entity.h
  * <File description>
  *
- * $Id: u_visual_collision_entity.h,v 1.8 2002/05/23 14:40:58 berenguier Exp $
+ * $Id: u_visual_collision_entity.h,v 1.9 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,18 @@ class	UDriver;
 
 using	NLMISC::CVector;
 
+
+/**
+ * Surface data information structure
+ */
+struct CSurfaceInfo
+{
+	/**
+	  * This user surface data is the user value setuped for this surface in the surface data.
+	  * Default value is 0.
+	  */
+	uint	UserSurfaceData;
+};
 
 /**
  * Interface to visual collision entity.
@@ -95,6 +107,15 @@ public:
 	 */
 	virtual void	setSnapToRenderedTesselation(bool snapMode) =0;
 	virtual bool	getSnapToRenderedTesselation() const =0;
+
+	/// \name Surface Informations
+
+	/** Get surface informations.
+	 * pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
+	 * \param info will be filled with surface informations if the method returns true.
+	 * \return true if the surface has been found and informations has been filled.
+	 */
+	virtual bool	getSurfaceInfo(const CVector &pos, CSurfaceInfo &info) =0;
 
 
 	/// \name Static Lighting

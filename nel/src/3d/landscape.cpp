@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.117 2002/07/04 07:16:14 corvazier Exp $
+ * $Id: landscape.cpp,v 1.118 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1750,6 +1750,25 @@ NLMISC::CSmartPtr<ITexture>		CLandscape::getTileTexture(uint16 tileId, CTile::TB
 		return pass->TextureDiffuse;
 	else
 		return pass->TextureAlpha;
+}
+
+
+// ***************************************************************************
+CTileElement *CLandscape::getTileElement(const CPatchIdent &patchId, const CUV &uv)
+{
+	// \todo yoyo: TODO_ZONEID: change ZoneId in 32 bits...
+	std::map<uint16, CZone*>::const_iterator	it= Zones.find((uint16)patchId.ZoneId);
+	if(it!=Zones.end())
+	{
+		sint	N= (*it).second->getNumPatchs();
+		// patch must exist in the zone.
+		nlassert(patchId.PatchId<N);
+		CPatch	*pa= const_cast<CZone*>((*it).second)->getPatch(patchId.PatchId);
+		return pa->getTileElement (uv);
+	}
+	else
+		// Return not found
+		return NULL;
 }
 
 

@@ -32,7 +32,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(SelectionTerritoire)
 	enum { IDD = IDD_TERRITOIREMANAGER };
-		// NOTE: the ClassWizard will add data members here
+	CEdit	SurfaceDataCtrl;
+	int		SurfaceData;
 	//}}AFX_DATA
 
 
@@ -65,6 +66,9 @@ protected:
 	afx_msg void OnPath();
 	afx_msg void OnExport();
 	afx_msg void OnChooseVeget();
+	afx_msg void OnChangeSurfaceData();
+	afx_msg void OnSelchangeTileSet();
+	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	void Save(const char* path, NL3D::CTileBank &toSave);
 

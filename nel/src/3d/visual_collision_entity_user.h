@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.8 2002/06/10 09:30:09 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.9 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,7 @@ public:
 	virtual void	setSnapToRenderedTesselation(bool snapMode);
 	virtual bool	getSnapToRenderedTesselation() const;
 
+	virtual bool	getSurfaceInfo(const CVector &pos, CSurfaceInfo &surfaceInfo);
 
 	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
 		uint8 &sunContribution, NLMISC::CRGBA &localAmbient);

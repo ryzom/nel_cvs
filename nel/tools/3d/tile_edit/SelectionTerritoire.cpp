@@ -39,7 +39,7 @@ SelectionTerritoire::SelectionTerritoire(CWnd* pParent /*=NULL*/)
 	: CDialog(SelectionTerritoire::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(SelectionTerritoire)
-		// NOTE: the ClassWizard will add member initialization here
+	SurfaceData = 0;
 	//}}AFX_DATA_INIT
 }
 
@@ -48,7 +48,8 @@ void SelectionTerritoire::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(SelectionTerritoire)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Control(pDX, IDC_SURFACE_DATA, SurfaceDataCtrl);
+	DDX_Text(pDX, IDC_SURFACE_DATA, SurfaceData);
 	//}}AFX_DATA_MAP
 }
 
@@ -69,6 +70,8 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(IDC_PATH, OnPath)
 	ON_BN_CLICKED(ID_EXPORT, OnExport)
 	ON_BN_CLICKED(IDC_CHOOSE_VEGET, OnChooseVeget)
+	ON_EN_CHANGE(IDC_SURFACE_DATA, OnChangeSurfaceData)
+	ON_LBN_SELCHANGE(IDC_TILE_SET, OnSelchangeTileSet)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -392,6 +395,8 @@ void SelectionTerritoire::OnSelect()
 			GetDlgItem (IDC_PATH)->SetWindowText (tileBank.getAbsPath().c_str());
 		}
 	}
+
+	OnSelchangeTileSet ();
 }
 
 LRESULT SelectionTerritoire::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
@@ -720,4 +725,48 @@ void SelectionTerritoire::OnChooseVeget()
 	{
 		MessageBox("No tilesset selected","Error",MB_ICONERROR);
 	}
+}
+
+void SelectionTerritoire::OnChangeSurfaceData() 
+{
+	UpdateData ();
+
+	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);
+	int index=list->GetCurSel();
+	if (index!=LB_ERR) 
+	{
+		tileBank.getTileSet (index)->SurfaceData = (uint32)SurfaceData;
+	}
+}
+
+void SelectionTerritoire::OnSelchangeTileSet() 
+{
+	UpdateData ();
+
+	CListBox *list=(CListBox*)GetDlgItem(IDC_TILE_SET);
+	int index=list->GetCurSel();
+
+	// Enable the surface button
+	SurfaceDataCtrl.EnableWindow (index!=LB_ERR);
+
+	if (index!=LB_ERR) 
+	{	
+		SurfaceData = tileBank.getTileSet (index)->SurfaceData;
+	}
+	else
+	{
+		SurfaceDataCtrl.EnableWindow (FALSE);
+	}
+
+	UpdateData (FALSE);
+}
+
+BOOL SelectionTerritoire::OnInitDialog() 
+{
+	CDialog::OnInitDialog();
+	
+	OnSelchangeTileSet ();
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
 }

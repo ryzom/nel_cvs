@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.40 2002/02/28 12:59:52 besson Exp $
+ * $Id: tile_bank.cpp,v 1.41 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -757,7 +757,7 @@ void CTile::clearTile (CTile::TBitmap type)
 
 
 // ***************************************************************************
-const sint CTileSet::_Version=4;
+const sint CTileSet::_Version=5;
 // ***************************************************************************
 const char* CTileSet::_ErrorMessage[CTileSet::errorCount]=
 {
@@ -838,6 +838,9 @@ CTileSet::CTileSet ()
 	uint displace;
 	for (displace=FirstDisplace; displace<CountDisplace; displace++)
 		_DisplacementBitmap[displace]=0;
+
+	// Default user surface data
+	SurfaceData = 0;
 }
 // ***************************************************************************
 void CTileSet::setName (const std::string& name)
@@ -855,6 +858,12 @@ void CTileSet::serial(IStream &f) throw(EStream)
 	sint streamver = f.serialVersion(_Version);
 
 	CTileBorder tmp;
+
+	// serial the user surface data
+	if (streamver>=5)
+	{
+		f.serial (SurfaceData);
+	}
 
 	// serial the oriented info which tell if the tile has a special orientation
 	if (streamver>=4)

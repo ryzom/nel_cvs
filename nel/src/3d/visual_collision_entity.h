@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.h
  * <File description>
  *
- * $Id: visual_collision_entity.h,v 1.9 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: visual_collision_entity.h,v 1.10 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 class	CVisualCollisionManager;
 class	IDriver;
-
+struct	CSurfaceInfo;
 
 // ***************************************************************************
 /**
@@ -96,6 +96,14 @@ public:
 	 */
 	void	setSnapToRenderedTesselation(bool snapMode) {_SnapToRenderedTesselation= snapMode;}
 	bool	getSnapToRenderedTesselation() const {return _SnapToRenderedTesselation;}
+
+	
+	/** Get surface informations.
+	 * pos is checked with polygons that are at least (cache dependent) at +- 10m in altitude.
+	 * \param info will be filled with surface informations if the method returns true.
+	 * \return true if the surface has been found and informations has been filled.
+	 */
+	bool	getSurfaceInfo(const CVector &pos, CSurfaceInfo &info);
 
 
 	/// \name Parameters.

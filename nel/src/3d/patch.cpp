@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.87 2002/06/19 09:02:36 berenguier Exp $
+ * $Id: patch.cpp,v 1.88 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2219,6 +2219,30 @@ void CPatch::copyTileFlagsFromPatch(const CPatch *src)
 	}
 }
 
+
+// ***************************************************************************
+// ***************************************************************************
+// Tiles get interface.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CTileElement *CPatch::getTileElement(const CUV &uv)
+{
+	// compute tile coord and lumel coord.
+	sint	ts, tt;
+
+	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
+	// add 128, to round and get cneter of lumel.
+	ts= OptFastFloor(uv.U* (OrderS<<8) + 128);	ts>>=8;
+	tt= OptFastFloor(uv.V* (OrderT<<8) + 128);	tt>>=8;
+	clamp(ts, 0, OrderS-1);
+	clamp(tt, 0, OrderT-1);
+
+	// get the lumel
+	return &(Tiles[ts+tt*OrderS]);
+}
 
 
 } // NL3D

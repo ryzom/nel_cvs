@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.29 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: patch.h,v 1.30 2002/07/23 12:20:31 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -650,6 +650,13 @@ public:
 	// @}
 
 
+	/// \name Tiles get interface.
+	// @{
+
+	/// Get the lumel under the position.
+	CTileElement	*getTileElement(const CUV &uv);
+
+	// @}
 
 public:
 

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.7 2002/01/21 10:11:33 besson Exp $
+ * $Id: tile_bank.h,v 1.8 2002/07/23 12:20:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -436,6 +436,12 @@ private:
 	CTileVegetableDesc		_TileVegetableDesc;
 	std::string				_TileVegetableDescFileName;
 
+public:
+
+	// User surface data
+	uint32		SurfaceData;
+
+private:
 	static const sint _Version;
 	static const char* _ErrorMessage[CTileSet::errorCount];
 	static const TFlagBorder _TransitionFlags[count][4];

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.30 2002/05/07 15:07:15 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.31 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -766,14 +766,8 @@ CInstanceGroup::TState CInstanceGroup::getAddToSceneState ()
 	// If we are adding but we have finished loading shapes (all shapes are here)
 	if (_AddToSceneState == StateAdding)
 	{
-		// Just to schedule the textures
-		_AddToSceneTempScene->getShapeBank()->isPresent("");
-		//TOREMOVE if (_AddToSceneTempScene->getShapeBank()->isShapeWaiting() == false)
 		if (_AddToSceneSignal)
 		{
-			// Do it another time because end of loading can have occur at the end or during
-			// the isPresent process (which upload textures and lightmaps)
-			_AddToSceneTempScene->getShapeBank()->isPresent("");
 			addToScene (*_AddToSceneTempScene, _AddToSceneTempDriver);
 		}
 	}

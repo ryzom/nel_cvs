@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.32 2002/04/12 15:59:56 berenguier Exp $
+ * $Id: driver.h,v 1.33 2002/05/13 07:49:25 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,7 +212,20 @@ public:
 
 	virtual bool			clearZBuffer(float zval=1)=0;
 
+	/** if upload is true the texture is created and uploaded to VRAM, if false the texture is only created
+	 *  it is useful for the async upload texture to only create the texture and then make invalidate to upload
+	 *  small piece each frame.
+	 */
 	virtual bool			setupTexture(ITexture& tex)=0;
+
+	/** The texture must be created or uploadTexture do nothing.
+	 *  These function can be used to upload piece by piece a texture
+	 *  setupTextureEx : request a texture upload or just a texture creation but the request can be different to
+	 *  the real fact if texture must be converted at runtime.
+	 */
+	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool& bAllUploaded)=0;
+	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap)=0;
+	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace)=0;
 
 	/** if true force all the uncompressed RGBA 32 bits and RGBA 24 bits texture to be DXTC5 compressed.
 	 *	Do this only during upload if ITexture::allowDegradation() is true and if ITexture::UploadFormat is "Automatic"

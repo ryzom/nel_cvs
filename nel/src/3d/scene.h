@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.24 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: scene.h,v 1.25 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -444,6 +444,10 @@ private:
 
 	// the ellapsed time
 	TAnimationTime  _EllapsedTime ;
+
+	// System time is a time that always run (independent from the animation time that run only on animate()) 
+	double	_DeltaTimeBetweenRender;
+	double	_GlobalSystemTime;
 
 
 	/// \name The 5 default traversals, created / linked by CScene::initDefaultTraversals().

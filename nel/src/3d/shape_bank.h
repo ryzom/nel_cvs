@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.4 2002/05/02 12:41:40 besson Exp $
+ * $Id: shape_bank.h,v 1.5 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 {
 
 class IDriver;
+class ITexture;
 
 // ***************************************************************************
 /**
@@ -96,6 +97,8 @@ public:
 	bool			isShapeWaiting ();
 	/// processWaitingShapes must be done one time per frame
 	void			processWaitingShapes ();
+	/// Setup the maximum number of bytes to upload for a frame (texture upload from RAM to VRAM)
+	void			setMaxBytesToUpload (uint32 MaxUploadPerFrame);
 
 	/// Add directly a shape to the bank. If the shape name is already used do nothing.
 	void			add (const std::string &shapeName, IShape* shape);
@@ -133,11 +136,15 @@ private:
 
 	struct CWaitingShape
 	{
-		IShape *ShapePtr; // Do not work with this value that is shared between threads
-		uint32 RefCnt;
-		TShapeState State;
-		bool *Signal;// To signal when all is done
-		uint32 UpTextProgress; // Upload Texture progress
+		IShape *ShapePtr;	// Do not work with this value that is shared between threads
+		uint32 RefCnt;		// Counter if multiple instance wants the same shape
+		TShapeState State;	// State of the waiting shape (shape in loading mode)
+		bool *Signal;		// To signal when all is done
+		// Upload piece by piece part
+		uint32 UpTextProgress;	// Upload Texture progress current texture or lightmap
+		uint8  UpTextMipMap;	// Upload Texture progress current mipmap
+		uint32 UpTextLine;		// Upload Texture progress current line in mipmap
+		// ---------------------------------
 		CWaitingShape (bool *bSignal = NULL)
 		{
 			State = AsyncLoad_Shape;
@@ -145,10 +152,20 @@ private:
 			ShapePtr = NULL;
 			Signal = bSignal;
 			UpTextProgress = 0;
+			UpTextMipMap = 0;
+			UpTextLine = 0;
 		}
 	};
 	typedef		std::map< std::string, CWaitingShape > TWaitingShapesMap;
 	TWaitingShapesMap	WaitingShapes;
+	uint32 _MaxUploadPerFrame;
+
+private:
+
+	/// return true if the texture is entirely uploaded
+	bool processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploaded, ITexture *pText);
+
+private:
 
 	IDriver *_pDriver;
 	//@}

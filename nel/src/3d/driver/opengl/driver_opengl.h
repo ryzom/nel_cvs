@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.117 2002/04/12 16:05:10 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.118 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -375,7 +375,11 @@ public:
 
 	virtual bool			clearZBuffer(float zval=1);
 
-	virtual bool			setupTexture(ITexture& tex);
+	virtual bool			setupTexture (ITexture& tex);
+	
+	virtual bool			setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded);
+	virtual bool			uploadTexture (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap);
+	virtual bool			uploadTextureCube (ITexture& tex, NLMISC::CRect& rect, uint8 nNumMipMap, uint8 nNumFace);
 
 	virtual void			forceDXTCCompression(bool dxtcComp);
 

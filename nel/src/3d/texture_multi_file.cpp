@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_multi_file.cpp,v 1.3 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -72,7 +72,7 @@ void CTextureMultiFile::doGenerate()
 			return;
 		}
 	}	
-	CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture]);	
+	CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], false);	
 }
 
 ///===========================================================	

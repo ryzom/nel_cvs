@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.12 2002/05/03 08:11:50 lecroart Exp $
+ * $Id: async_file_manager.cpp,v 1.13 2002/05/13 07:49:25 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,7 +255,9 @@ void CAsyncFileManager::CMeshLoad::run()
 						// add it
 						AlreadyPresentTextureSet.insert (pTextFile->getFileName());
 						// And load it (to RAM only (upload in VRAM is done in the shape bank))
+						pTextFile->setAsyncLoading (true);
 						pTextFile->generate();
+						pTextFile->setAsyncLoading (false);
 					}
 				}
 			}
@@ -279,7 +281,9 @@ void CAsyncFileManager::CMeshLoad::run()
 						{
 							// Texture not already present -> add it and load it to RAM
 							AlreadyPresentTextureSet.insert (pTextFile->getFileName());
+							pTextFile->setAsyncLoading (true);
 							pTextFile->generate();
+							pTextFile->setAsyncLoading (false);
 						}
 					}				
 					++j; pText = rMat.getLightMap (j);

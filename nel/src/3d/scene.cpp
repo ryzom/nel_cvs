@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.74 2002/05/02 12:42:18 besson Exp $
+ * $Id: scene.cpp,v 1.75 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@
 
 #include <memory>
 
-
+#include "nel/misc/time_nl.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 using namespace std;
@@ -355,6 +355,11 @@ void	CScene::addTrav(ITrav *v)
 // ***************************************************************************
 void	CScene::render(bool	doHrcPass)
 {
+	double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
+	_DeltaTimeBetweenRender = fNewGlobalSystemTime - _GlobalSystemTime;
+	_GlobalSystemTime = fNewGlobalSystemTime;
+
+
 	nlassert(CurrentCamera);
 
 	// validate models.
@@ -412,13 +417,18 @@ void	CScene::render(bool	doHrcPass)
 
 
 	// Wainting Instance handling
+	// First set up max AGP upload
+	double fMaxBytesToUp = _DeltaTimeBetweenRender;
+	clamp (fMaxBytesToUp, 0.01, 0.1);
+	fMaxBytesToUp *= 100*256*256;
+	_ShapeBank->setMaxBytesToUpload ((uint32)fMaxBytesToUp);
 	// Parse all the waiting instance
 	_ShapeBank->processWaitingShapes ();	// Process waiting shapes load shape, texture, and lightmaps
-											// and upload all to VRAM pieces by pieces
+											// and upload all maps to VRAM pieces by pieces
 	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
 	while( wimmIt != _WaitingInstances.end() )
 	{
-		CShapeBank::TShapeState st = _ShapeBank->isPresent(wimmIt->first);
+		CShapeBank::TShapeState st = _ShapeBank->isPresent (wimmIt->first);
 		if (st == CShapeBank::AsyncLoad_Error)
 		{
 			// Delete the waiting instance - Nobody can be informed of that...
@@ -429,7 +439,7 @@ void	CScene::render(bool	doHrcPass)
 		else if (st == CShapeBank::Present)
 		{
 			// Then create a reference to the shape
-			*(wimmIt->second) = _ShapeBank->addRef( wimmIt->first )->createInstance(*this);
+			*(wimmIt->second) = _ShapeBank->addRef(wimmIt->first)->createInstance (*this);
 			// Delete the waiting instance
 			TWaitingInstancesMMap::iterator	itDel= wimmIt;
 			++wimmIt;

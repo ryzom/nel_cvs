@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.13 2002/05/02 12:41:40 besson Exp $
+ * $Id: shape_bank.cpp,v 1.14 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/mesh.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/rect.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -42,6 +43,7 @@ CShapeBank::CShapeBank()
 {
 	// Default cache creation
 	addShapeCache( "default" );
+	_MaxUploadPerFrame = 16*1024;
 }
 
 // ***************************************************************************
@@ -124,10 +126,8 @@ void CShapeBank::release(IShape* pShp)
 }
 
 // ***************************************************************************
-
 void CShapeBank::processWaitingShapes ()
 {
-	const uint32 MaxUploadPerFrame = 64*1024;
 	uint32 nTotalUploaded = 0;
 	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.begin();
 	while( wsmmIt != WaitingShapes.end() )
@@ -151,7 +151,7 @@ void CShapeBank::processWaitingShapes ()
 			case AsyncLoad_Texture:
 			{
 				// Setup all textures and lightmaps of the shape
-				if (nTotalUploaded > MaxUploadPerFrame)
+				if (nTotalUploaded > _MaxUploadPerFrame)
 					break;
 
 				CMesh *pMesh = dynamic_cast<CMesh*>(pShp);
@@ -171,20 +171,23 @@ void CShapeBank::processWaitingShapes ()
 							{
 								if (rMat.texturePresent(j))
 								{
-									if (!_pDriver->isTextureExist(*rMat.getTexture(j)))
+									if ((!_pDriver->isTextureExist(*rMat.getTexture(j))) || 
+										(rWS.UpTextLine > 0) || (rWS.UpTextMipMap > 0))
 									{
-										nTotalUploaded += rMat.getTexture(j)->getSize()*2;
-										_pDriver->setupTexture (*rMat.getTexture(j));
+										//_pDriver->setupTexture (*rMat.getTexture(j));
+
+										if (!processWSUploadTexture (rWS, nTotalUploaded, rMat.getTexture(j)))
+											break;
 									}
 								}
 								++rWS.UpTextProgress;
 							}
 							++CurrentProgress;
-							if (nTotalUploaded > MaxUploadPerFrame)
+							if (nTotalUploaded > _MaxUploadPerFrame)
 								break;
 						}
 
-						if (nTotalUploaded > MaxUploadPerFrame)
+						if (nTotalUploaded > _MaxUploadPerFrame)
 							break;
 
 						// Do the same with lightmaps
@@ -195,24 +198,27 @@ void CShapeBank::processWaitingShapes ()
 							{
 								if (CurrentProgress >= rWS.UpTextProgress)
 								{
-									if (!_pDriver->isTextureExist(*pText))
+									if ((!_pDriver->isTextureExist(*pText)) || 
+										(rWS.UpTextLine > 0) || (rWS.UpTextMipMap > 0))
 									{
-										nTotalUploaded += pText->getSize()*2;
-										_pDriver->setupTexture (*pText);
+										//_pDriver->setupTexture (*pText);
+										
+										if (!processWSUploadTexture (rWS, nTotalUploaded, pText))
+											break;
 									}
 									++rWS.UpTextProgress;
 								}
 								++CurrentProgress;
 								++j; pText = rMat.getLightMap (j);
-								if (nTotalUploaded > MaxUploadPerFrame)
+								if (nTotalUploaded > _MaxUploadPerFrame)
 									break;
 							}
 						}
-						if (nTotalUploaded > MaxUploadPerFrame)
+						if (nTotalUploaded > _MaxUploadPerFrame)
 							break;
 					}
 				}
-				if (nTotalUploaded > MaxUploadPerFrame)
+				if (nTotalUploaded > _MaxUploadPerFrame)
 					break;
 
 				rWS.State = AsyncLoad_Ready;
@@ -274,6 +280,103 @@ void CShapeBank::processWaitingShapes ()
 			++wsmmIt;
 		}
 	}
+}
+
+// ***************************************************************************
+void CShapeBank::setMaxBytesToUpload (uint32 MaxUploadPerFrame)
+{
+	_MaxUploadPerFrame = MaxUploadPerFrame;
+}
+
+// ***************************************************************************
+bool CShapeBank::processWSUploadTexture (CWaitingShape &rWS, uint32 &nTotalUploaded, ITexture *pText)
+{
+	CRect zeRect;
+	uint32 nFace, nWeight = 0, nMipMap;
+	
+	if (pText->mipMapOn())
+		nMipMap = pText->getMipMapCount();
+	else
+		nMipMap = 1;
+
+	uint32 nMM;
+	for (nMM = 0; nMM < nMipMap; ++nMM)
+		nWeight += pText->getSize (nMM) * CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+	if (pText->isTextureCube())
+		nWeight *= 6;
+
+	
+	if ((rWS.UpTextMipMap == 0) && (rWS.UpTextLine == 0))
+	{
+		// Create the texture only and do not upload anything
+		bool isRel = pText->getReleasable ();
+		pText->setReleasable (false);
+		bool isAllUploaded = false;
+		_pDriver->setupTextureEx (*pText, false, isAllUploaded);
+		pText->setReleasable (isRel);
+		if (isAllUploaded)
+			return true;
+	}
+	
+	// Upload all mipmaps
+	for (; rWS.UpTextMipMap < nMipMap; ++rWS.UpTextMipMap)
+	{
+		nMM = rWS.UpTextMipMap;
+		// What is left to upload ?
+		nWeight = pText->getSize (nMM) - rWS.UpTextLine*pText->getWidth(nMM);
+		nWeight *= CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+		if (pText->isTextureCube())
+			nWeight *= 6;
+
+		// Setup rectangle
+		if ((nTotalUploaded + nWeight) > _MaxUploadPerFrame)
+		{
+			// We cannot upload the whole mipmap -> we have to cut it
+			uint32 nSizeToUpload = _MaxUploadPerFrame - nTotalUploaded;
+			uint32 nLineWeight = pText->getWidth(nMM)*CBitmap::bitPerPixels[pText->getPixelFormat()]/8;
+			if (pText->isTextureCube())
+				nLineWeight *= 6;
+			uint32 nNbLineToUpload = nSizeToUpload / nLineWeight;
+			nNbLineToUpload = nNbLineToUpload / 4;
+			if (nNbLineToUpload == 0)
+				nNbLineToUpload = 1;
+			nNbLineToUpload *= 4; // Upload 4 line by 4 line
+			uint32 nNewLine = rWS.UpTextLine + nNbLineToUpload;
+			if (nNewLine > pText->getHeight(nMM))
+				nNewLine = pText->getHeight(nMM);
+			zeRect.set (0, rWS.UpTextLine, pText->getWidth(nMM), nNewLine);
+			rWS.UpTextLine = nNewLine;
+			if (rWS.UpTextLine == pText->getHeight(nMM))
+			{
+				rWS.UpTextLine = 0;
+				rWS.UpTextMipMap += 1;
+			}
+		}
+		else
+		{
+			// We can upload the whole mipmap (or the whole rest of the mipmap)
+			zeRect.set (0, rWS.UpTextLine, pText->getWidth(nMM), pText->getHeight(nMM));
+			rWS.UpTextLine = 0;
+		}
+
+		// Upload !
+		if (pText->isTextureCube())
+		{
+			for (nFace = 0; nFace < 6; ++nFace)
+				_pDriver->uploadTextureCube (*pText, zeRect, (uint8)nMM, (uint8)nFace);
+		}
+		else
+		{
+			_pDriver->uploadTexture (*pText, zeRect, (uint8)nMM);
+		}
+
+		nTotalUploaded += nWeight;
+		if (nTotalUploaded > _MaxUploadPerFrame)
+			return false;
+	}
+	rWS.UpTextMipMap = 0;
+	rWS.UpTextLine = 0;
+	return true;
 }
 
 // ***************************************************************************

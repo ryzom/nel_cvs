@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * <File description>
  *
- * $Id: texture_file.cpp,v 1.14 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_file.cpp,v 1.15 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,15 +38,19 @@ namespace NL3D
 
 
 ///==================================================================
-void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName)
+void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload)
 {
 	NLMISC::CIFile f;
 	//nldebug(_FileName.c_str());
 	try
 	{
-		string	file= CPath::lookup(fileName);
-		if(f.open(file))
-			dest.load(f);
+		string file = CPath::lookup(fileName);
+		f.setAsyncLoading (asyncload);
+		f.setCacheFileOnOpen (asyncload);
+		if (f.open(file))
+		{
+			dest.load (f);
+		}
 		else throw EPathNotFound(fileName);
 
 		// *** Need usercolor computing ?
@@ -70,8 +74,12 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 
 				// Open and read the file2
 				NLMISC::CIFile f2;
-				if(f2.open(file2))
+				f2.setAsyncLoading (asyncload);
+				f2.setCacheFileOnOpen (asyncload); // Same as async loading
+				if (f2.open(file2))
+				{
 					bitmap.load(f2);
+				}
 				else throw EPathNotFound(file2);
 
 				// Texture are the same size ?
@@ -167,7 +175,13 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 \*------------------------------------------------------------------*/
 void CTextureFile::doGenerate()
 {
-	buildBitmapFromFile(*this, _FileName);
+	buildBitmapFromFile(*this, _FileName, _AsyncLoading);
+}
+
+// ***************************************************************************
+void CTextureFile::setAsyncLoading (bool isAsync)
+{
+	_AsyncLoading = isAsync;
 }
 
 

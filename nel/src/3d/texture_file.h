@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.5 2002/02/15 17:13:05 vizerie Exp $
+ * $Id: texture_file.h,v 1.6 2002/05/13 07:49:26 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ class CTextureFile : public ITexture
 {
 	std::string _FileName;
 	bool		_AllowDegradation;	// Default is true.
+	bool		_AsyncLoading;		// Default is false.
 
 public:
 
@@ -53,7 +54,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { _AllowDegradation=true; }
+	CTextureFile() { _AllowDegradation=true; _AsyncLoading=false; }
 
 
 	/** 
@@ -61,7 +62,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile(const std::string &s) { touch(); _FileName = s; _AllowDegradation=true; } 
+	CTextureFile(const std::string &s) { touch(); _FileName = s; _AllowDegradation=true; _AsyncLoading=false; } 
 
 
 	/** 
@@ -104,13 +105,16 @@ public:
 	 */	
 	void doGenerate();
 
+	/// Async loadingg system
+	void setAsyncLoading (bool isAsync);
+
 	/// Save the texture file name.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureFile);
 
 
 	//// Used to fill a bitmap by reading a file, looking in CPath if necessary, and using user_color
-	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName);
+	static void buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload);
 
 };
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.17 2001/06/08 08:30:43 vizerie Exp $
+ * $Id: ps_particle.h,v 1.18 2001/06/08 12:22:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ class CPSColoredParticle
 		void setColor(NLMISC::CRGBA col) ;
 
 		/// Get the color
-		NLMISC::CRGBA getColor(NLMISC::CRGBA col) const { return _Color ; }
+		NLMISC::CRGBA getColor(void) const { return _Color ; }
 
 		/// ctor : default are white particles (constant color)
 		CPSColoredParticle() ;

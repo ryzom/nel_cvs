@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * <File description>
  *
- * $Id: ps_color.h,v 1.6 2001/05/23 15:18:00 vizerie Exp $
+ * $Id: ps_color.h,v 1.7 2001/06/08 12:22:20 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 
 
 
-/// This is a int gradient class
+/// This is a color gradient class
 class CPSColorGradient : public CPSValueGradient<CRGBA>
 {
 public:

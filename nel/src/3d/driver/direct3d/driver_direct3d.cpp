@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.19.4.2 2004/09/15 18:30:29 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.19.4.3 2004/10/07 18:29:09 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1146,6 +1146,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_MADOperatorSupported = (caps.TextureOpCaps & D3DTEXOPCAPS_MULTIPLYADD) != 0;
 		_EMBMSupported = (caps.TextureOpCaps &  D3DTOP_BUMPENVMAP) != 0;
 		_PixelShaderVersion = caps.PixelShaderVersion;
+		_CubbedMipMapSupported = (caps.TextureCaps & D3DPTEXTURECAPS_MIPCUBEMAP) != 0;
 	}
 	else
 	{
@@ -1153,6 +1154,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_NbNeLTextureStages = 1;
 		_MADOperatorSupported = false;
 		_EMBMSupported = false;
+		_CubbedMipMapSupported = false;
 		_PixelShaderVersion = 0;
 	}
 	// test for occlusion query support

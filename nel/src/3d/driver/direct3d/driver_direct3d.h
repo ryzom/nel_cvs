@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.22.4.4 2004/09/15 18:30:01 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.22.4.5 2004/10/07 18:29:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1758,6 +1758,7 @@ private:
 	bool					_DisableHardwarePixelShader;
 	bool					_MADOperatorSupported;
 	bool					_EMBMSupported;
+	bool					_CubbedMipMapSupported;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;

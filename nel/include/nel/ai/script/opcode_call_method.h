@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.7 2002/01/17 12:15:43 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.8 2003/01/31 14:59:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,25 @@
 
 namespace NLAISCRIPT
 {
+	/**
+	Abstract class that allow to manage context on method call.
+	*/
 	class IMethodContext
 	{
 	public:
-		virtual void saveConstext(CCodeContext &context) = 0;
-		virtual void loadConstext(CCodeContext &context) = 0;
+		/**
+		Allow to save the register, ip pointer .... before method call.
+		*/
+		virtual void saveContext(CCodeContext &context) = 0;
 
+		/**
+		Allow to reload old context before the return of method.
+		*/
+		virtual void loadContext(CCodeContext &context) = 0;
+
+		/**
+		Server method need this, in particular on the copy constructor where it is easy to clone param to init attribut.
+		*/
 		virtual const IMethodContext *clone() const = 0;
 	};
 
@@ -40,8 +53,8 @@ namespace NLAISCRIPT
 	class CMethodContext: public IMethodContext
 	{
 	public:
-		virtual void saveConstext(CCodeContext &context);
-		virtual void loadConstext(CCodeContext &context);
+		virtual void saveContext(CCodeContext &context);
+		virtual void loadContext(CCodeContext &context);
 
 		const IMethodContext *clone() const;
 		
@@ -50,13 +63,16 @@ namespace NLAISCRIPT
 	class CMethodContextDebug: public IMethodContext
 	{
 	public:
-		virtual void saveConstext(CCodeContext &context);
-		virtual void loadConstext(CCodeContext &context);
+		virtual void saveContext(CCodeContext &context);
+		virtual void loadContext(CCodeContext &context);
 
 		const IMethodContext *clone() const;
 		
 	};
 
+	/**
+	That class allow to run script method class via the NLAIAGENT::TProcessStatement IOpCode::runOpCode(CCodeContext &context).
+	*/
 	class ICallMethod: public IOpRunCode
 	{
 	private:
@@ -71,22 +87,33 @@ namespace NLAISCRIPT
 		{
 		}
 
-		void saveConstext(CCodeContext &context)
+		/**
+		Saving context before method call.
+		*/
+		void saveContext(CCodeContext &context)
 		{
-			_MethodContext->saveConstext(context);
+			_MethodContext->saveContext(context);
 		}
 
-		void loadConstext(CCodeContext &context)
+		/**
+		reload context before the return of the method.
+		*/
+		void loadContext(CCodeContext &context)
 		{
-			_MethodContext->loadConstext(context);
+			_MethodContext->loadContext(context);
 		}
 
+		/**
+		Delete context.
+		*/
 		virtual ~ICallMethod()
 		{
 			delete _MethodContext;
 		}
 	};
 
+	/**
+	*/
 	class CCallMethod: public ICallMethod
 	{
 	public:
@@ -366,7 +393,6 @@ namespace NLAISCRIPT
 			return IdCallMethodei;
 		}
 		
-
 		void save(NLMISC::IStream &os)
 		{		
 			sint32 n = (sint32) _I;
@@ -386,7 +412,7 @@ namespace NLAISCRIPT
 			_Inheritance = n;
 			is.serialCont(_N);
 		}
-				
+
 		virtual ~CCallMethodi()
 		{
 		}

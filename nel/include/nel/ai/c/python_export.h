@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
+ * $Id: python_export.h,v 1.9 2003/01/31 14:59:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,14 +36,19 @@ namespace NLAIC
 {
 	enum PyMemDeleteType {unDeleteMemory,deleteMemory};
 
+	/**
+	Template class to allow export of C++ object under Python script
+	*/
 	template <class T>
 	class CPyTemplateDef
 	{
 	public:
-		PyObject_HEAD	
-		T  *Instance;
-		//PyMemDeleteType memType;
 
+		///Python header attribut.
+		//{@		
+		PyObject_HEAD
+		//@}
+		T  *Instance;
 
 	public:		
 		CPyTemplateDef(T *a)
@@ -62,6 +67,9 @@ namespace NLAIC
 		}
 	};	
 
+	/**
+	Template method allow to have a pointer to a class C++ under Python, this is nead to export C++ class to python class.
+	*/
 	template<class T>
 	CPyTemplateDef<T> *CreatePyObjectInstance(T *o,PyTypeObject *defType)
 	{

@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.7 2001/03/23 09:58:05 chafik Exp $
+ * $Id: performative.h,v 1.8 2003/01/31 14:59:43 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,8 +50,7 @@ namespace NLAIAGENT
 	};	
 
 	/**
-	When an agent want an ather 
-		
+	When an agent want to exec a script.
 	*/
 	class CPExec: public IPerformative
 	{
@@ -66,7 +65,7 @@ namespace NLAIAGENT
 		//@{
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicInterface *m = new CPExec();			
+			NLAIC::IBasicInterface *m = new CPExec();	
 			return m;
 		}
 		
@@ -88,6 +87,9 @@ namespace NLAIAGENT
 		
 	};
 
+	/**
+	When an agent want to achieve logic job to an other agent such as goal for exempel.
+	*/
 	class CPAchieve: public IPerformative
 	{
 	public:
@@ -123,6 +125,9 @@ namespace NLAIAGENT
 		
 	};
 
+	/**
+	When an agent want to ask an ather agent, this ather agent send a tell to tel her the result ogf ask.
+	*/
 	class CPAsk: public IPerformative
 	{
 	public:
@@ -158,41 +163,9 @@ namespace NLAIAGENT
 		
 	};
 
-	class CPBreak: public IPerformative
-	{
-	public:
-		static const NLAIC::CIdentType IdPBreak;
-	public:
-		CPBreak():IPerformative(IMessageBase::PBreak)
-		{
-		}
-
-		/// \name Base class member method.			
-		//@{
-		virtual const NLAIC::CIdentType &getType() const
-		{
-			return IdPBreak;
-		}
-
-		virtual const NLAIC::IBasicType *clone() const
-		{
-			NLAIC::IBasicInterface *m = new CPBreak();			
-			return m;
-		}
-		
-		virtual const NLAIC::IBasicType *newInstance() const
-		{
-			return clone();
-		}
-		//@}
-
-		virtual const char *getName() const
-		{
-			return "Break";
-		}
-		
-	};
-
+	/**
+	When an agent want to tell some thing to an ather. A Tell is used after an Ask performatif.
+	*/
 	class CPTell: public IPerformative
 	{
 	public:
@@ -229,6 +202,47 @@ namespace NLAIAGENT
 	};
 	
 
+	/**
+	When an agent want to break an ather.
+	*/
+	class CPBreak: public IPerformative
+	{
+	public:
+		static const NLAIC::CIdentType IdPBreak;
+	public:
+		CPBreak():IPerformative(IMessageBase::PBreak)
+		{
+		}
+
+		/// \name Base class member method.			
+		//@{
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdPBreak;
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new CPBreak();			
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+		//@}
+
+		virtual const char *getName() const
+		{
+			return "Break";
+		}
+		
+	};
+
+	/**
+	When an agent want to kill an ather.
+	*/
 	class CPKill: public IPerformative
 	{
 	public:
@@ -264,6 +278,9 @@ namespace NLAIAGENT
 		
 	};
 
+	/**
+	When an agent have to communicate an error result to an ather.
+	*/
 	class CPError: public IPerformative
 	{
 	public:
@@ -364,8 +381,7 @@ namespace NLAIAGENT
 		virtual const char *getName() const
 		{
 			return "Even";
-		}
-		
+		}	
 	};
 }
 #endif

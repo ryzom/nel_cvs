@@ -1,6 +1,6 @@
 /** \file opcode_call_method.cpp
  *
- * $Id: opcode_call_method.cpp,v 1.9 2003/01/24 15:51:45 chafik Exp $
+ * $Id: opcode_call_method.cpp,v 1.10 2003/01/31 14:59:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLAISCRIPT
 		return new CMethodContext();
 	}
 	
-	void CMethodContext::saveConstext(CCodeContext &context)
+	void CMethodContext::saveContext(CCodeContext &context)
 	{
 		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
 		NLAIAGENT::CIteratorContener It = param->getIterator();
@@ -61,7 +61,7 @@ namespace NLAISCRIPT
 		
 	}
 
-	void CMethodContext::loadConstext(CCodeContext &context)
+	void CMethodContext::loadContext(CCodeContext &context)
 	{
 		context.Heap.restoreShift();
 		context.Heap.restoreStack();
@@ -77,7 +77,7 @@ namespace NLAISCRIPT
 		return new CMethodContextDebug();
 	}
 	
-	void CMethodContextDebug::saveConstext(CCodeContext &context)
+	void CMethodContextDebug::saveContext(CCodeContext &context)
 	{
 		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];		
 		NLAIAGENT::CIteratorContener It = param->getIterator();
@@ -100,7 +100,7 @@ namespace NLAISCRIPT
 		context.Stack --;
 	}
 
-	void CMethodContextDebug::loadConstext(CCodeContext &context)
+	void CMethodContextDebug::loadContext(CCodeContext &context)
 	{
 		context.Heap.restoreShift();
 		context.Heap.restoreStack();
@@ -140,14 +140,14 @@ namespace NLAISCRIPT
 	NLAIAGENT::TProcessStatement CCallMethod::runOpCode(CCodeContext &context)
 	{				
 		int sp = CVarPStackParam::_Shift;
-		saveConstext(context);
+		saveContext(context);
 
 		NLAIAGENT::IObjectIA::CProcessResult i;
 
 		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
 		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 		
-		loadConstext(context);
+		loadContext(context);
 		CVarPStackParam::_Shift = sp;
 		return NLAIAGENT::processIdle;
 	}	
@@ -199,14 +199,14 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::IObjectIA *selfTmp = (NLAIAGENT::IObjectIA *)context.Self;
 		context.Self = obj;
-		saveConstext(context);
+		saveContext(context);
 
 		NLAIAGENT::IObjectIA::CProcessResult i;
 		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
 		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 
 		context.Self = selfTmp;
-		loadConstext(context);
+		loadContext(context);
 		CVarPStackParam::_Shift = sp;
 		return NLAIAGENT::processIdle;
 	}	
@@ -227,7 +227,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::IObjectIA *selfTmp = (NLAIAGENT::IObjectIA *)context.Self;
 		context.Self = obj;
-		saveConstext(context);
+		saveContext(context);
 		
 		NLAIAGENT::IObjectIA::CProcessResult i;
 		if ( _Inheritance ) 
@@ -236,7 +236,7 @@ namespace NLAISCRIPT
 			i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 
 		context.Self = selfTmp;
-		loadConstext(context);
+		loadContext(context);
 		CVarPStackParam::_Shift = sp;		
 		context.Stack ++;
 		context.Stack[(int)context.Stack] = o;
@@ -297,14 +297,14 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::IObjectIA *selfTmp = (NLAIAGENT::IObjectIA *)context.Self;
 		context.Self = obj;
-		saveConstext(context);
+		saveContext(context);
 		
 		NLAIAGENT::IObjectIA::CProcessResult i;
 		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
 		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 
 		context.Self = selfTmp;
-		loadConstext(context);
+		loadContext(context);
 		CVarPStackParam::_Shift = sp;
 		o->release();
 		return NLAIAGENT::processIdle;
@@ -357,14 +357,14 @@ namespace NLAISCRIPT
 		}
 		
 		context.Self = obj;
-		saveConstext(context);
+		saveContext(context);
 
 		NLAIAGENT::IObjectIA::CProcessResult i;
 		if(_Inheritance) i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_Inheritance,_I,&context);
 		else i = ((NLAIAGENT::IObjectIA *)context.Self)->runMethodeMember(_I,&context);
 
 		context.Self = selfTmp;
-		loadConstext(context);
+		loadContext(context);
 		CVarPStackParam::_Shift = sp;
 		return NLAIAGENT::processIdle;
 	}

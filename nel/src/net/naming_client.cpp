@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.28 2001/05/09 17:19:02 berenguier Exp $
+ * $Id: naming_client.cpp,v 1.29 2001/05/10 08:14:16 lecroart Exp $
  *
  */
 
@@ -228,7 +228,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 		nlerror ("NC: Naming service refused to register service with sid %s at %s", name.c_str(), addr.asString().c_str());
 	}
 
-	return RegisteredSuccess;
+	return RegisteredSuccess == 1;
 /*
 	nldebug("bool CNamingClient::registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid )");
 

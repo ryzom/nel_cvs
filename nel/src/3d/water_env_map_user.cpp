@@ -1,6 +1,6 @@
 /** \file water_env_map_user.cpp
  *
- * $Id: water_env_map_user.cpp,v 1.1 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_env_map_user.cpp,v 1.1.18.1 2005/01/20 10:46:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -107,7 +107,9 @@ void CWaterEnvMapRenderFromUScene::doRender(const CMatrix &camMatrix, TGlobalAni
 	_Cam.setMatrix(mat);	
 	CViewport old = _Scene->getViewport();
 	_Scene->setViewport(CViewport());
-	_Scene->render(_RenderPart);
+	_Scene->beginPartRender();
+	_Scene->renderPart(_RenderPart);
+	_Scene->endPartRender();
 	_Scene->setViewport(old);
 	drv.setCullMode(drv.getCullMode() == UDriver::CCW ? UDriver::CW : UDriver::CCW);	
 	_Scene->setCam(oldCam);	

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.130.10.1 2005/01/18 14:51:27 berenguier Exp $
+ * $Id: scene.cpp,v 1.130.10.2 2005/01/20 10:46:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,111 +334,31 @@ void	CScene::initQuadGridClipManager ()
 
 
 // ***************************************************************************
-void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::RenderAll */)
-{	
+void	CScene::render(bool	doHrcPass)
+{
+	beginPartRender();
+	renderPart(UScene::RenderAll, doHrcPass);
+	endPartRender();
+}
+
+
+// ***************************************************************************
+void	CScene::beginPartRender()
+{
+	nlassert(!_IsRendering);
+
 	// Do not delete model during the rendering
 	// Also do not create model with CSkeletonSpawnScript model animation
 	_IsRendering = true;
-		
-	if ((renderPart & _RenderedPart) != 0) // start to render again ?
-	{
-		// update water envmap
-		//updateWaterEnvmap();
-		_RenderedPart = UScene::RenderNothing;
-		// **** Misc.
-		/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
-		  * Note that only a few of them are tested at each call
-		  */
-		_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
-		
-		// Waiting Instance handling
-		double deltaT = _DeltaSystemTimeBetweenRender;
-		clamp (deltaT, 0.01, 0.1);
-		updateWaitingInstances(deltaT);
-		
-		// Reset profiling
-		_NextRenderProfile= false;
-	}
+	_RenderedPart= UScene::RenderNothing;
 
-	if (_RenderedPart == UScene::RenderNothing)
-	{			
-		RenderTrav.clearWaterModelList();
-		_FirstFlare = NULL;
-
-		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
-		_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
-		_GlobalSystemTime = fNewGlobalSystemTime;
-		//
-		++ _NumRender;
-		//
-		nlassert(CurrentCamera);
-
-		// update models.
-		updateModels();
-
-		// Use the camera to setup Clip / Render pass.
-		float left, right, bottom, top, znear, zfar;
-		CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
-
-		// setup basic camera.
-		ClipTrav.setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-
-		RenderTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
-		RenderTrav.setViewport (_Viewport);
-
-		LoadBalancingTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+}
 
 
-		// Set Infos for cliptrav.
-		ClipTrav.Camera = CurrentCamera;
-		ClipTrav.setQuadGridClipManager (_QuadGridClipManager);
-
-
-		// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
-		if( doHrcPass )
-			HrcTrav.traverse();	
-
-		// Set Cam World Matrix for all trav that need it
-		ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
-		RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
-		LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
-
-		
-		// clip
-		ClipTrav.traverse();
-		// animDetail
-		AnimDetailTrav.traverse();
-		// loadBalance
-		LoadBalancingTrav.traverse();
-		//
-		_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
-		// Light
-		LightTrav.traverse();
-	}
-
-	// render
-	RenderTrav.traverse(renderPart, _RenderedPart == UScene::RenderNothing);	
-	// Always must clear shadow caster (if render did not work because of IDriver::isLost())
-	RenderTrav.getShadowMapManager().clearAllShadowCasters();
-
-	// render flare
-	if (renderPart & UScene::RenderFlare)
-	{	
-		if (_FirstFlare)
-		{
-			IDriver *drv = getDriver();
-			CFlareModel::updateOcclusionQueryBegin(drv);
-			CFlareModel	*currFlare = _FirstFlare;
-			do 
-			{
-				currFlare->updateOcclusionQuery(drv);
-				currFlare = currFlare->Next;
-			} 
-			while(currFlare);
-			CFlareModel::updateOcclusionQueryEnd(drv);
-		}
-	}
-	_RenderedPart = (UScene::TRenderPart) (_RenderedPart | renderPart);
+// ***************************************************************************
+void	CScene::endPartRender()
+{
+	nlassert(_IsRendering);
 
 	// Delete model deleted during the rendering
 	_IsRendering = false;
@@ -449,6 +369,18 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 
 	// Special for SkeletonSpawnScript animation. create models spawned now
 	flushSSSModelRequests();
+
+	// Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
+	// Note that only a few of them are tested at each call
+	_ParticleSystemManager.refreshModels(ClipTrav.WorldFrustumPyramid, ClipTrav.CamPos);
+
+	// Waiting Instance handling
+	double deltaT = _DeltaSystemTimeBetweenRender;
+	clamp (deltaT, 0.01, 0.1);
+	updateWaitingInstances(deltaT);
+	
+	// Reset profiling
+	_NextRenderProfile= false;
 
 
 	/*
@@ -615,6 +547,103 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 	 PSStatEmit = 0;
 	 PSStatRender = 0;	 
 	 */
+}
+
+
+// ***************************************************************************
+void	CScene::renderPart(UScene::TRenderPart rp, bool	doHrcPass)
+{	
+	nlassert(_IsRendering);
+
+	// if nothing (????), abort
+	if(rp==UScene::RenderNothing)
+		return;
+
+	// If part asked already rendered, abort
+	nlassert((rp & _RenderedPart) == 0); // cannot render the same part twice during a render
+		
+	// if first part ro be rendered, do the start stuff
+	if (_RenderedPart == UScene::RenderNothing)
+	{			
+		// update water envmap
+		//updateWaterEnvmap();
+		RenderTrav.clearWaterModelList();
+		_FirstFlare = NULL;
+
+		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
+		_DeltaSystemTimeBetweenRender= fNewGlobalSystemTime - _GlobalSystemTime;
+		_GlobalSystemTime = fNewGlobalSystemTime;
+		//
+		++ _NumRender;
+		//
+		nlassert(CurrentCamera);
+
+		// update models.
+		updateModels();
+
+		// Use the camera to setup Clip / Render pass.
+		float left, right, bottom, top, znear, zfar;
+		CurrentCamera->getFrustum(left, right, bottom, top, znear, zfar);
+
+		// setup basic camera.
+		ClipTrav.setFrustum(left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+
+		RenderTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+		RenderTrav.setViewport (_Viewport);
+
+		LoadBalancingTrav.setFrustum (left, right, bottom, top, znear, zfar, CurrentCamera->isPerspective());
+
+
+		// Set Infos for cliptrav.
+		ClipTrav.Camera = CurrentCamera;
+		ClipTrav.setQuadGridClipManager (_QuadGridClipManager);
+
+
+		// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
+		if( doHrcPass )
+			HrcTrav.traverse();	
+
+		// Set Cam World Matrix for all trav that need it
+		ClipTrav.setCamMatrix(CurrentCamera->getWorldMatrix());
+		RenderTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+		LoadBalancingTrav.setCamMatrix (CurrentCamera->getWorldMatrix());
+
+		
+		// clip
+		ClipTrav.traverse();
+		// animDetail
+		AnimDetailTrav.traverse();
+		// loadBalance
+		LoadBalancingTrav.traverse();
+		//
+		_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems	
+		// Light
+		LightTrav.traverse();
+	}
+
+	// render
+	RenderTrav.traverse(rp, _RenderedPart == UScene::RenderNothing);	
+	// Always must clear shadow caster (if render did not work because of IDriver::isLost())
+	RenderTrav.getShadowMapManager().clearAllShadowCasters();
+
+	// render flare
+	if (rp & UScene::RenderFlare)
+	{	
+		if (_FirstFlare)
+		{
+			IDriver *drv = getDriver();
+			CFlareModel::updateOcclusionQueryBegin(drv);
+			CFlareModel	*currFlare = _FirstFlare;
+			do 
+			{
+				currFlare->updateOcclusionQuery(drv);
+				currFlare = currFlare->Next;
+			} 
+			while(currFlare);
+			CFlareModel::updateOcclusionQueryEnd(drv);
+		}
+	}
+	_RenderedPart = (UScene::TRenderPart) (_RenderedPart | rp);
 }
 
 // ***************************************************************************

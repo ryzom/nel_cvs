@@ -5,10 +5,42 @@
 #include "nel/ai/script/interpret_object_agent.h"
 #include "nel/ai/script/interpret_fsm.h"
 #include "nel/ai/logic/fsm_seq_script.h"
+#include "nel/ai/agent/msg_action.h"
+#include "nel/ai/script/interpret_message_action.h"
 
 namespace NLAIAGENT
 {
 	static CGroupType listBidon;
+
+	/////////////////////////////////////////////////////////////
+	// Succes and failure messages declaration
+
+	NLAISCRIPT::COperandSimpleListOr *CActorScript::ParamIdSuccessMsg = NULL;
+	NLAISCRIPT::CParam *CActorScript::ParamSuccessMsg = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CActorScript::ParamIdFailureMsg = NULL;
+	NLAISCRIPT::CParam *CActorScript::ParamFailureMsg = NULL;
+
+	void CActorScript::initClass()
+	{
+		CActorScript::ParamIdSuccessMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+															  new NLAIC::CIdentType(NLAIAGENT::CSuccessMsg::IdSuccessMsg),
+															  new NLAIC::CIdentType(NLAISCRIPT::CSuccessMsgClass::IdSuccessMsgClass)	);		
+		CActorScript::ParamSuccessMsg = new NLAISCRIPT::CParam(1,ParamIdSuccessMsg);		
+		CActorScript::ParamIdFailureMsg = new NLAISCRIPT::COperandSimpleListOr(2,
+																  new NLAIC::CIdentType(NLAIAGENT::CFailureMsg::IdFailureMsg),
+																  new NLAIC::CIdentType(NLAISCRIPT::CFailureMsgClass::IdFailureMsgClass)	);
+
+		CActorScript::ParamFailureMsg = new NLAISCRIPT::CParam(1,ParamIdFailureMsg);
+	}
+
+	void CActorScript::releaseClass()
+	{		
+		CActorScript::ParamSuccessMsg->release();		
+		CActorScript::ParamFailureMsg->release();
+	}
+
+	/////////////////////////////////////////////////////////////
+
 
 	CActorScript::CActorScript(const CActorScript &a) : CAgentScript(a)
 	{
@@ -266,59 +298,64 @@ namespace NLAIAGENT
 	{		
 		IObjectIA::CProcessResult r;
 
-		if ( index == fid_activate )
+		switch ( index )
 		{
-			activate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_activate:
+				activate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( index == fid_onActivate )
-		{
-			onActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_onActivate:
+				onActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( index == fid_unActivate )
-		{
-			unActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_unActivate:
+				unActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( index == fid_onUnActivate )
-		{
-			onUnActivate();
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
-		}
+			case fid_onUnActivate:
+				onUnActivate();
+				r.ResultState =  NLAIAGENT::processIdle;
+				r.Result = NULL;
+				break;
 
-		if ( index == fid_switch )
-		{
-			std::vector<CStringType *> handles;
-			if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
-			{
-				IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
-				//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
-				while ( fw->size() )
+			case fid_switch:
 				{
-					handles.push_back( (CStringType *) fw->getFront() );
-					fw->popFront();
-				}
-				std::vector<CComponentHandle *> switched;
-				for ( int i = 0; i < (int) handles.size(); i++)
-					switched.push_back( new CComponentHandle(  handles[ i ]->getStr() , (IAgent *) getParent() ) );
+					std::vector<CStringType *> handles;
+					if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
+					{
+						IBaseGroupType *fw = (IBaseGroupType *) ( ((NLAIAGENT::IBaseGroupType *)params) )->getFront();
+						//( ((NLAIAGENT::IBaseGroupType *)params))->popFront();
+						while ( fw->size() )
+						{
+							handles.push_back( (CStringType *) fw->getFront() );
+							fw->popFront();
+						}
+						std::vector<CComponentHandle *> switched;
+						for ( int i = 0; i < (int) handles.size(); i++)
+							switched.push_back( new CComponentHandle(  handles[ i ]->getStr() , (IAgent *) getParent() ) );
 
-				switchActor( switched, false );
-			}
-			IObjectIA::CProcessResult r;
-			r.ResultState =  NLAIAGENT::processIdle;
-			r.Result = NULL;
+						switchActor( switched, false );
+					}
+					r.ResultState =  NLAIAGENT::processIdle;
+					r.Result = NULL;
+				}
+				break;
+
+			case fid_success:
+				onSuccess( params );
+				return IObjectIA::CProcessResult();
+				break;
+
+			case fid_failure:
+				onFailure( params );
+				return IObjectIA::CProcessResult();
+				break;
 		}
 		return r;
 	}
@@ -431,6 +468,15 @@ namespace NLAIAGENT
 				r.Result = NULL;
 				return r;
 				break;
+
+			case fid_success:
+				onSuccess(params);
+				break;
+
+			case fid_failure:
+				onFailure(params);
+				break;
+
 		}
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -488,6 +534,26 @@ namespace NLAIAGENT
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
 		}
+
+		// Processes succes and failure functions
+		if ( *name == CStringVarName("RunTell") )
+		{
+			double d;
+			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
+			if ( d >= 0.0 )
+			{
+				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_success, 0.0,NULL, r_type ) );
+			}
+
+			d = ((NLAISCRIPT::CParam &)*ParamFailureMsg).eval((NLAISCRIPT::CParam &)param);
+			if ( d >= 0.0 )
+			{
+				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_failure, 0.0,NULL, r_type ) );
+			}
+		}
+
 
 		if(_AgentClass != NULL && result.empty() )
 		{

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.21 2001/06/19 10:11:31 portier Exp $
+ * $Id: group_type.cpp,v 1.22 2001/06/25 09:50:29 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -324,7 +324,7 @@ namespace NLAIAGENT
 			_List.push_back((const IObjectIA *)(*i++)->clone());
 		}
 	}			
-
+																			
 	void CGroupType::getDebugString(std::string &text) const
 	{						
 		text += "[";

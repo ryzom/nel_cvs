@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.1 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.2 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,38 @@ void CMeshBaseInstance::setLightMapFactor( const std::string &LightMapName, CRGB
 	{
 		Materials[itList->nMatNb].setLightMapFactor( itList->nStageNb, Factor );
 		++itList;
+	}
+}
+
+// ***************************************************************************
+// ***************************************************************************
+
+void CMeshBaseInstanceAnimDetailObs::traverse(IObs *caller)
+{
+	CTransformAnimDetailObs::traverse(caller);
+
+	// update animated materials.
+	CMeshBaseInstance	*mi= (CMeshBaseInstance*)Model;
+
+	// test if animated materials must be updated.
+	if(mi->IAnimatable::isTouched(CMeshBaseInstance::OwnerBit))
+	{
+		// must test / update all AnimatedMaterials.
+		for(uint i=0;i<mi->_AnimatedMaterials.size();i++)
+		{
+			// This test and update the pointed material.
+			mi->_AnimatedMaterials[i].update();
+		}
+
+		mi->IAnimatable::clearFlag(CMeshBaseInstance::OwnerBit);
+	}
+
+	// Lightmap automatic animation
+	for( uint i = 0; i < mi->_AnimatedLightmap.size(); ++i )
+	{
+		const char *LightGroupName = strchr( mi->_AnimatedLightmap[i]->getName().c_str(), '.' )+1;
+		mi->setLightMapFactor(	LightGroupName,
+								mi->_AnimatedLightmap[i]->getFactor() );
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.7 2001/06/19 15:00:11 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.8 2001/06/22 12:45:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,9 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 
 		// Add bones tracks
 		addBonesTracks (animation, node, sBaseName, ip);
+
+		// Add light tracks
+		addLightTracks (animation, node, sBaseName, ip);
 	}
 }
 
@@ -307,6 +310,54 @@ void CExportNel::addBonesTracks (NL3D::CAnimation& animation, INode& node, const
 	{
 		// Go for normal export!
 		addBoneTracks (animation, *root, parentName, ip);
+	}
+}
+
+// --------------------------------------------------
+
+void CExportNel::addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+{
+	CExportDesc desc;
+
+	Object *obj = node.EvalWorldState(0).obj;
+
+	// Check if there is an object
+	if (!obj)
+		return;
+
+	// Get a GenLight from the node
+	if( ! (obj->SuperClassID()==LIGHT_CLASS_ID) )
+		return;
+
+	// Get the Lightmap controller
+	Modifier *modifier = getModifier( &node, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
+	if( modifier != NULL )
+	{
+		int bDynamic = 0; // false
+		getValueByNameUsingParamBlock2(node,"bDynamic", (ParamType2)TYPE_BOOL, &bDynamic, 0);
+		if( bDynamic )
+		{
+			// Create a track name
+
+			std::string name;
+			CExportNel::getValueByNameUsingParamBlock2( node, "sGroup", (ParamType2)TYPE_STRING, &name, 0);
+			name = "LightmapController." + name;
+
+			int bAnimated = 0; // false
+			getValueByNameUsingParamBlock2(node,"bAnimated", (ParamType2)TYPE_BOOL, &bAnimated, 0);
+			if( bAnimated )
+			{
+				Control *c = getControlerByName(node,"Color");
+				if( c )
+				{
+					ITrack *pTrack=buildATrack (animation, *c, typeColor, node, desc, ip, NULL, NULL);
+					if (pTrack)
+					{
+						animation.addTrack (name.c_str(), pTrack);
+					}
+				}
+			}
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.12 2001/06/19 08:14:31 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.13 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include <3d/skeleton_model.h>
 #include <nel/misc/file.h>
 #include <nel/misc/path.h>
+#include <nel/misc/time_nl.h>
 
 #include "editable_range.h"
 #include "located_properties.h"
@@ -241,6 +242,9 @@ void CObjectViewer::go ()
 
 		// Setup the channel mixer
 		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
+
+		// Animate the automatic animation in the scene
+		CNELU::Scene.animate( NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
 		// Eval channel mixer for transform
 		_ChannelMixer.eval (false);
@@ -784,6 +788,13 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 
 	// Reinit
 	reinitChannels ();
+}
+
+// ***************************************************************************
+
+void CObjectViewer::setAutoAnimation (NL3D::CAnimation* pAnim)
+{
+	CNELU::Scene.setAutoAnim (pAnim);
 }
 
 // ***************************************************************************

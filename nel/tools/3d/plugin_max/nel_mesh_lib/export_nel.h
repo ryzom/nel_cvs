@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.7 2001/06/19 15:00:11 corvazier Exp $
+ * $Id: export_nel.h,v 1.8 2001/06/22 12:45:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,11 @@
 #define UVGEN_OBJXYZ (MAX_MESHMAPS+1)
 #define UVGEN_WORLDXYZ (MAX_MESHMAPS+2)
 #define FLOAT_EPSILON 0.001
+
+
+#define NEL_LIGHT_CLASS_ID_A	0x36e3181f
+#define NEL_LIGHT_CLASS_ID_B	0x3ac24049
+
 
 enum TNelValueType
 {
@@ -391,6 +396,9 @@ private:
 
 	// Add tracks for the node's bones 
 	static void						addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+
+	// Add tracks for the light
+	static void						addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
 
 	// Add tracks for the object
 	static void						addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName);

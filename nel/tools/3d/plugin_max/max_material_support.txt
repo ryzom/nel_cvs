@@ -19,3 +19,4 @@
  * You can use crop if you don't repeat the texture.
  * You can use crop and repeat the texture on U if the U crop is full (0 -> 1).
  * You can use crop and repeat the texture on V if the V crop is full (0 -> 1).
+ * Extended parameters transparency type (filter or additive)

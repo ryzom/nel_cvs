@@ -4,7 +4,9 @@
 plugin material NelMaterial
     name:"NeL Material"
     classID:#(0x64c75fec, 0x222b9eb9)
-    extends:standard replaceUI:false version:1.0
+    extends:standard 
+	replaceUI:false 
+	version:2.0
 (
 	local params, 
 

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.5 2001/06/18 15:45:01 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.6 2001/06/22 12:45:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Create an animation for the models
 		CAnimation *anim=new CAnimation;
+		CAnimation *autoAnim=new CAnimation;
 
 		// *******************
 		// * First build skeleton bind pos information
@@ -238,6 +239,20 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				}
 			}
 		}
+
+		view->setAutoAnimation (NULL);
+		for (nNode=0; nNode<nNumSelNode; nNode++)
+		{
+			// Get the node
+			INode* pNode=ip.GetSelNode (nNode);
+
+			// Is it a automatic light ? if yes add tracks from nel_light (color controller)
+			Modifier *modifier = CExportNel::getModifier( pNode, Class_ID(NEL_LIGHT_CLASS_ID_A,NEL_LIGHT_CLASS_ID_B) );
+			if( modifier != NULL )
+				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip );
+		}
+		view->setAutoAnimation (autoAnim);
+
 		initProgressBar( nNumSelNode, ip );
 		// View all selected objects
 		for (nNode=0; nNode<nNumSelNode; nNode++)
@@ -308,6 +323,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 				// Add tracks
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip);
+				
 			}
 			updateProgressBar( nNode );
 			if( isCanceledProgressBar() )

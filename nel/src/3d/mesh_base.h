@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.2 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_base.h,v 1.3 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,6 +121,7 @@ public:
 	CTrackDefaultVector*	getDefaultRotEuler ()	{return &_DefaultRotEuler;}
 	CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
 	CTrackDefaultVector*	getDefaultScale ()		{return &_DefaultScale;}
+	CTrackDefaultRGBA*		getDefaultLMFactor ()	{return &_DefaultLMFactor;}
 	// @}
 
 	/// \name Material accessors
@@ -152,7 +153,7 @@ protected:
 
 public:
 	// Map of light information ( LightName, list(MaterialNb, StageNb) )
-	TLightInfoMap				_LightInfos;	
+	TLightInfoMap				_LightInfos;
 
 
 protected:
@@ -167,7 +168,7 @@ protected:
 	CTrackDefaultVector			_DefaultRotEuler;
 	CTrackDefaultQuat			_DefaultRotQuat;
 	CTrackDefaultVector			_DefaultScale;
-
+	CTrackDefaultRGBA			_DefaultLMFactor;
 
 protected:
 	/// Just copy informations from a CMeshBaseBuild.

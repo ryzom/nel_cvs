@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.6 2001/06/18 15:45:01 besson Exp $
+ * $Id: calc_lm.cpp,v 1.7 2001/06/22 12:45:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,9 +52,6 @@ using namespace NLMISC;
 
 // TOOLS
 // *****
-
-#define NEL_LIGHT_CLASS_ID_A	0x36e3181f
-#define NEL_LIGHT_CLASS_ID_B	0x3ac24049
 
 #define MAXLIGHTMAPSIZE 1024
 

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: export_material.cpp,v 1.6 2001/06/22 12:45:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -206,8 +206,13 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		}
 	}
 
-	// Blend mode by default. TODO.
-	material.setBlendFunc (CMaterial::srcalpha, CMaterial::invsrcalpha);
+	// Blend mode
+	int opacityType = 0; // 0-filter 1-substractive 2-additive
+	CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacityType", (ParamType2)TYPE_INT, &opacityType, tvTime);
+	if( opacityType == 0 ) // Filter
+		material.setBlendFunc (CMaterial::srcalpha, CMaterial::invsrcalpha);
+	else
+		material.setBlendFunc (CMaterial::srcalpha, CMaterial::one);
 
 	// Z function by default. TODO.
 	material.setZFunc (CMaterial::lessequal);

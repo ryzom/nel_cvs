@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.2 2001/06/21 12:57:43 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.3 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/transform_shape.h"
 #include "3d/material.h"
 #include "3d/animated_material.h"
+#include "3d/animated_lightmap.h"
 
 
 namespace NL3D
@@ -40,8 +41,8 @@ class CMeshBase;
 class CMesh;
 class CMeshMRM;
 class CMeshBaseInstanceAnimDetailObs;
+class CAnimatedLightmap;
 class CSkeletonModel;
-
 
 // ***************************************************************************
 // ClassIds.
@@ -98,6 +99,10 @@ public:
 	void setLightMapFactor( const std::string &LightMapName, CRGBA nFactor );
 	// @}
 
+	void setAnimatedLightmap( CAnimatedLightmap *alm )
+	{
+		_AnimatedLightmap.push_back( alm );
+	}
 
 	// Return true if this mesh is a skin apply on a skeleton else false.
 	bool isSkinApply () const
@@ -127,6 +132,7 @@ private:
 	 */
 	std::vector<CAnimatedMaterial>	_AnimatedMaterials;
 
+	std::vector<CAnimatedLightmap*> _AnimatedLightmap;
 
 	/// Skinning. true if skinned to the _Skeleton.
 	bool		_ApplySkinOk;
@@ -153,26 +159,7 @@ public:
 	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
 	 *  - update animated materials.
 	 */
-	virtual	void	traverse(IObs *caller)
-	{
-		CTransformAnimDetailObs::traverse(caller);
-
-		// update animated materials.
-		CMeshBaseInstance	*mi= (CMeshBaseInstance*)Model;
-
-		// test if animated materials must be updated.
-		if(mi->IAnimatable::isTouched(CMeshBaseInstance::OwnerBit))
-		{
-			// must test / update all AnimatedMaterials.
-			for(uint i=0;i<mi->_AnimatedMaterials.size();i++)
-			{
-				// This test and update the pointed material.
-				mi->_AnimatedMaterials[i].update();
-			}
-
-			mi->IAnimatable::clearFlag(CMeshBaseInstance::OwnerBit);
-		}
-	}
+	virtual	void	traverse(IObs *caller);
 
 
 public:

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.33 2001/06/19 16:58:42 berenguier Exp $
+ * $Id: scene.cpp,v 1.34 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/landscape_model.h"
 #include "3d/driver.h"
 #include "3d/transform_shape.h"
+#include "3d/mesh_base.h"
 #include "3d/mesh_base_instance.h"
 #include "3d/mesh_instance.h"
 #include "3d/mesh_mrm_instance.h"
@@ -293,7 +294,32 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 		}
 	}
 	// Then create a reference to the shape
-	return _ShapeBank->addRef( shapeName )->createInstance(*this);
+	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
+
+	// Look if this instance get lightmap information
+	CMeshBase *pMB = dynamic_cast<CMeshBase*>( (IShape*)(pTShp->Shape) );
+	CMeshBaseInstance *pMBI = dynamic_cast<CMeshBaseInstance*>( pTShp );
+	if( ( pMB != NULL ) && ( pMBI != NULL ) )
+	{ // Try to bind to automatic animation
+		CMeshBase::TLightInfoMap::iterator itLM = pMB->_LightInfos.begin();
+		while( itLM != pMB->_LightInfos.end() )
+		{	// Is it the same name in the name of the lightmap ?
+			set<CAnimatedLightmap*>::iterator itSet = _AnimatedLightmap.begin();
+			while( itSet != _AnimatedLightmap.end() )
+			{
+				const char *GroupName = strchr( (*itSet)->getName().c_str(), '.')+1;
+				if( GroupName == itLM->first )
+				{
+					// Ok bind automatic animation
+					pMBI->setAnimatedLightmap( *itSet );
+				}
+				++itSet;
+			}
+			++itLM;
+		}
+	}
+
+	return pTShp;
 }
 
 // ***************************************************************************
@@ -332,6 +358,88 @@ void CScene::deleteInstance(CTransformShape *pTrfmShp)
 		_ShapeBank->release( pShp );
 	}
 	
+}
+
+void CScene::setAutoAnim( CAnimation *pAnim )
+{
+	uint nAnimNb;
+	// Reset the automatic animation if no animation wanted
+	if( pAnim == NULL )
+	{
+		set<CAnimatedLightmap*>::iterator itSAL = _AnimatedLightmap.begin();
+		while( itSAL != _AnimatedLightmap.end() )
+		{
+			delete *itSAL;
+			++itSAL;
+		}
+		_AnimatedLightmap.clear();
+		nAnimNb = _LightmapAnimations.getAnimationIdByName("Automatic");
+		if( nAnimNb != CAnimationSet::NotFound )
+		{
+			CAnimation *anim = _LightmapAnimations.getAnimation( nAnimNb );
+			delete anim;
+		}
+		_LightmapAnimations.reset();
+		_LMAnimsAuto.deleteAll();
+		return;
+	}
+
+
+	set<string> setTrackNames;
+	pAnim->getTrackNames( setTrackNames );
+
+	nAnimNb = _LightmapAnimations.addAnimation( "Automatic", pAnim );
+	_LightmapAnimations.build();
+	CChannelMixer *cm = new CChannelMixer();
+	cm->setAnimationSet( &_LightmapAnimations );
+
+	set<string>::iterator itSel = setTrackNames.begin();
+	while ( itSel != setTrackNames.end() )
+	{
+		string ate = *itSel;
+		if( strncmp( itSel->c_str(), "LightmapController.", 19 ) == 0 )
+		{
+			CAnimatedLightmap *animLM = new CAnimatedLightmap();
+			animLM->setName( *itSel );
+
+			cm->addChannel( animLM->getName(), animLM, animLM->getValue(CAnimatedLightmap::FactorValue),
+				animLM->getDefaultTrack(CAnimatedLightmap::FactorValue), CAnimatedLightmap::FactorValue, 
+				CAnimatedLightmap::OwnerBit, false);
+
+			//animLM->registerToChannelMixer( cm, "" );
+			_AnimatedLightmap.insert( animLM );
+
+		}
+		++itSel;
+	}
+
+	CAnimationPlaylist *pl = new CAnimationPlaylist();
+	pl->setAnimation( 0, nAnimNb );
+	pl->setWrapMode( 0, CAnimationPlaylist::TWrapMode::Repeat );
+	_LMAnimsAuto.addPlaylist(pl,cm);
+}
+
+// ***************************************************************************
+
+void CScene::loadLightmapAutoAnim( const std::string &filename )
+{
+	try
+	{
+		CAnimation *anim = new CAnimation();
+		CIFile fIn( CPath::lookup(filename) );
+		anim->serial( fIn );
+
+		setAutoAnim( anim );
+	}
+	catch(EPathNotFound &)
+	{
+		return;
+	}
+}
+
+void CScene::animate( CAnimationTime atTime )
+{
+	_LMAnimsAuto.animate( atTime );
 }
 
 }

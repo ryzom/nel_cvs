@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.2 2001/06/21 12:35:17 lecroart Exp $
+ * $Id: scene.h,v 1.3 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "3d/trav_scene.h"
 #include "nel/3d/viewport.h"
 #include "3d/shape.h"
+#include "3d/animated_lightmap.h"
+#include "3d/play_list_manager.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"
 #include <map>
@@ -199,6 +201,9 @@ public:
 
 	/// \name Light Mgt.
 	//@{
+	void			loadLightmapAutoAnim( const std::string & );
+	void			setAutoAnim( CAnimation *pAnim );
+	void			animate( CAnimationTime atTime );
 	// TODO:
 	// TurnOff/TurnOn
 	// Animate
@@ -226,7 +231,10 @@ private:
 	// The root models (will be deleted by CScene).
 	CTransform		*Root;
 
-	// The Ligths
+	// The Ligths automatic movements
+	CAnimationSet	_LightmapAnimations;
+	std::set<CAnimatedLightmap*> _AnimatedLightmap;
+	CPlayListManager _LMAnimsAuto;
 	//std::list<CLight*> _StaticLightList;
 
 	/// \name Shape/Instances.

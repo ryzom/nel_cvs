@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.5 2001/06/19 10:22:33 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.6 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ CMeshBase::CMeshBase()
 	_DefaultRotEuler.setValue(CVector(0,0,0));
 	_DefaultRotQuat.setValue(CQuat::Identity);
 	_DefaultScale.setValue(CVector(1,1,1));
+	_DefaultLMFactor.setValue(CRGBA(255,255,255,255));
 }
 
 

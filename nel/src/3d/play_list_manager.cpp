@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * <File description>
  *
- * $Id: play_list_manager.cpp,v 1.2 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: play_list_manager.cpp,v 1.3 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,22 @@ void	CPlayListManager::animate(CAnimationTime time)
 			node->ChannelMixer->eval(false);
 			it++;
 		}
+	}
+}
+
+// ***************************************************************************
+
+void CPlayListManager::deleteAll()
+{
+	TPlayListList::iterator	it = _List.begin();
+	while (it != _List.end())
+	{
+		TPlayListList::iterator itDel = it;
+		++it;
+		CNode *node= &(itDel->second);
+		delete node->ChannelMixer;
+		delete node->PlayList;
+		_List.erase(itDel);
 	}
 }
 

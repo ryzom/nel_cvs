@@ -1,7 +1,7 @@
 /** \file play_list_manager.h
  * <File description>
  *
- * $Id: play_list_manager.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: play_list_manager.h,v 1.2 2001/06/22 12:45:41 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,9 @@ public:
 	 */
 	void	animate(CAnimationTime time);
 
-
+	/** Perform a deletion of all pair playlist channel mixer
+	 */
+	void	deleteAll();
 // ***************************
 private:
 	struct	CNode

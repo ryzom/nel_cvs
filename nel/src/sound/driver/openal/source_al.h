@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.2 2001/07/04 13:10:33 cado Exp $
+ * $Id: source_al.h,v 1.3 2001/07/13 09:42:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ public:
 	/** Set the buffer that will be played (no streaming)
 	 * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
 	 * otherwise the source is considered as a 3D source.
+	 * Set NULL to set "no buffer"
 	 */
 	virtual void			setStaticBuffer( IBuffer *buffer );
 	/// Set the next source that is to be played immediately after the present source
@@ -76,6 +77,10 @@ public:
 	virtual void			play();
 	/// Stop playing
 	virtual void			stop();
+	/// Pause. Call play() to resume.
+	virtual void			pause();
+	/// Return the playing state
+	virtual bool			isPlaying() const;
 	/// Update the source (e.g. continue to stream the data in)
 	virtual void			update();
 	//@}

@@ -1,7 +1,7 @@
 /** \file buffer_al.cpp
  * OpenAL buffer
  *
- * $Id: buffer_al.cpp,v 1.3 2001/07/10 16:50:01 cado Exp $
+ * $Id: buffer_al.cpp,v 1.4 2001/07/13 09:42:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ CBufferAL::CBufferAL( ALuint buffername ) :
 CBufferAL::~CBufferAL()
 {
 	CSoundDriverAL *sdal = CSoundDriverAL::instance();
+	nlinfo( "Deleting buffer (name %u)", _BufferName );
 	sdal->removeBuffer( this );
 }
 

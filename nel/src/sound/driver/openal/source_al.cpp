@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.3 2001/07/10 16:49:29 cado Exp $
+ * $Id: source_al.cpp,v 1.4 2001/07/13 09:42:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,13 +59,25 @@ void					CSourceAL::setStaticBuffer( IBuffer *buffer )
 {
 	ISource::setStaticBuffer( buffer );
 
-	// TODO: check if source is stopped
-	CBufferAL *bufferAL = dynamic_cast<CBufferAL*>(buffer);
-	alSourcei( _SourceName, AL_BUFFER, bufferAL->bufferName() );
+	// Stop source
+	alSourceStop( _SourceName );
 	TestALError();
 
-	// Set relative mode if the buffer is stereo
-	setSourceRelativeMode( bufferAL->isStereo() );
+	// Set buffer
+	if ( buffer == NULL )
+	{
+		alSourcei( _SourceName, AL_BUFFER, AL_NONE );
+		TestALError();
+	}
+	else
+	{
+		CBufferAL *bufferAL = dynamic_cast<CBufferAL*>(buffer);
+		alSourcei( _SourceName, AL_BUFFER, bufferAL->bufferName() );
+		TestALError();
+
+		// Set relative mode if the buffer is stereo
+		setSourceRelativeMode( bufferAL->isStereo() );
+	}
 }
 
 
@@ -101,13 +113,12 @@ void					CSourceAL::play()
 		// Static playing mode
 		alSourcePlay( _SourceName );
 		TestALError();
-
-		// TODO: handle _Next
 	}
 	else
 	{
 		// Streaming mode
-		nlerror( "AM: Cannot play null buffer; streaming not implemented" );
+		nlwarning( "AM: Cannot play null buffer; streaming not implemented" );
+		nlstop;
 	}
 }
 
@@ -126,8 +137,41 @@ void					CSourceAL::stop()
 	else
 	{
 		// Streaming mode
-		nlerror( "AM: Cannot stop null buffer; streaming not implemented" );
+		nlwarning( "AM: Cannot stop null buffer; streaming not implemented" );
+		nlstop;
 	}
+}
+
+
+/*
+ * Pause. Call play() to resume.
+ */
+void					CSourceAL::pause()
+{
+	if ( _Buffer != NULL )
+	{
+		// Static playing mode
+		alSourcePause( _SourceName );
+		TestALError();
+	}
+	else
+	{
+		// Streaming mode
+		nlwarning( "AM: Cannot pause null buffer; streaming not implemented" );
+		nlstop;
+	}
+}
+
+
+/*
+ * Return the playing state
+ */
+bool					CSourceAL::isPlaying() const
+{
+	ALint srcstate;
+	alGetSourcei( _SourceName, AL_SOURCE_STATE, &srcstate );
+	TestALError();
+	return (srcstate == AL_PLAYING);
 }
 
 

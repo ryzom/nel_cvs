@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.2 2001/07/04 13:11:03 cado Exp $
+ * $Id: listener_al.cpp,v 1.3 2001/07/13 09:42:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ void				 	CListenerAL::getVelocity( NLMISC::CVector& vel ) const
  */
 void					CListenerAL::setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up )
 {
-	// TODO: check order: forward,up or up,forward
+	// Forward then up
 	ALfloat v[6];
 	v[0] = front.x;
 	v[1] = front.y;
@@ -117,7 +117,7 @@ void					CListenerAL::setOrientation( const NLMISC::CVector& front, const NLMISC
  */
 void					CListenerAL::getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const
 {
-	// TODO: check order: forward,up or up,forward
+	// Forward then up
 	ALfloat v[6];
 	alGetListenerfv( AL_ORIENTATION, v );
 	nlassert( alGetError() == AL_NO_ERROR );

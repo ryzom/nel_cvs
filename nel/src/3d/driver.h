@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.41 2002/09/24 14:44:57 vizerie Exp $
+ * $Id: driver.h,v 1.42 2002/10/14 15:50:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,6 +214,9 @@ public:
 	virtual bool			clear2D(CRGBA rgba)=0;
 
 	virtual bool			clearZBuffer(float zval=1)=0;
+
+	/// Set the color mask filter through where the operation done will pass
+	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)=0;
 
 	/** if upload is true the texture is created and uploaded to VRAM, if false the texture is only created
 	 *  it is useful for the async upload texture to only create the texture and then make invalidate to upload

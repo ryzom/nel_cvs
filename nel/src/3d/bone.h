@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.7 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: bone.h,v 1.8 2003/11/06 14:48:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -152,6 +152,11 @@ public:
 	/// enable the channels (lodEnable) associated to this bone in the channelMixer.
 	void			lodEnableChannels(CChannelMixer *chanMixer, bool enable);
 
+	/** Force to eval the animation of that bone 
+	  * Useful when a bone position is needed, and if the father skeleton has been clipped (and thus not detail-animated)
+	  * \param chanMixer the channel mixer to which that bone has been registered
+	  */
+	inline void			forceAnimate(CChannelMixer &chanMixer);
 
 // *************************
 public:
@@ -181,6 +186,22 @@ private:
 	sint						_PivotChannelId;
 };
 
+
+/////////////
+// INLINES //
+/////////////
+inline void	CBone::forceAnimate(CChannelMixer &chanMixer)
+{
+	sint ids[] = 
+	{
+		_PosChannelId,
+		_RotEulerChannelId,
+		_RotQuatChannelId,
+		_ScaleChannelId,
+		_PivotChannelId
+	};
+	chanMixer.evalChannels(ids, sizeof(ids) / sizeof(ids[0]));
+}
 
 } // NL3D
 

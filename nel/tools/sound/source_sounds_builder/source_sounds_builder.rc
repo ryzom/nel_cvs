@@ -45,8 +45,8 @@ BEGIN
                     IDC_STATIC,190,30,205,45
     LTEXT           "Later, to change or add sounds :\n\n1) Load your file back\n2) Import the sound names again if they have been updated\n3) Set their properties and apply them\n4) Save them again",
                     IDC_STATIC,190,80,205,50
-    LTEXT           "You can also add a sound and set its name.\nFinally you can move up or down a sound name in the tree view.",
-                    IDC_STATIC,190,140,205,35
+    LTEXT           "You can also add a sound and set its name.",IDC_STATIC,
+                    190,140,205,35
 END
 
 IDD_SoundPage DIALOG DISCARDABLE  183, 20, 222, 227
@@ -57,10 +57,10 @@ BEGIN
     LTEXT           "Filename",IDC_Filename,10,17,29,8
     EDITTEXT        IDC_EditFilename,75,15,80,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "...",IDC_ChooseFile,160,15,15,12,WS_GROUP
-    LTEXT           "Gain",IDC_Gain,10,37,15,8
-    EDITTEXT        IDC_EditGain,75,35,40,12,ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "Gain",IDC_Gain,10,32,15,8
+    EDITTEXT        IDC_EditGain,75,30,40,12,ES_AUTOHSCROLL | WS_GROUP
     CONTROL         "Ext. 3D Properties",IDC_Pos3D,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,10,57,74,10
+                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,9,60,73,10
     GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,75,200,120,WS_GROUP
     DEFPUSHBUTTON   "Apply",IDC_Apply,10,200,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDC_Cancel,65,200,50,14,WS_GROUP
@@ -90,10 +90,14 @@ BEGIN
                     TBS_NOTICKS | WS_TABSTOP,115,90,30,12
     CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,115,105,30,12
-    PUSHBUTTON      "Help",IDC_ButtonHelp,15,171,50,14
+    PUSHBUTTON      "Read Me !",IDC_ButtonHelp,15,171,50,14
     CONTROL         "Slider1",IDC_SliderGain,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,115,35,30,12
+                    TBS_NOTICKS | WS_TABSTOP,115,30,30,12
     PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,170,50,14
+    LTEXT           "Pitch",IDC_Pitch,10,46,16,8
+    EDITTEXT        IDC_EditPitch,75,45,40,12,ES_AUTOHSCROLL
+    CONTROL         "Slider1",IDC_SliderPitch,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,115,45,30,15
 END
 
 

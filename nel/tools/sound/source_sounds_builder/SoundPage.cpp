@@ -104,6 +104,7 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(CSoundPage)
 	m_Filename = _T("");
 	m_Gain = 1.0f;
+	m_Pitch = 1.0f;
 	m_Pos3D = FALSE;
 	m_MinDist = 1.0f;
 	m_MaxDist = 1000000.0f;
@@ -112,6 +113,7 @@ CSoundPage::CSoundPage(CWnd* pParent /*=NULL*/)
 	m_OuterGain = 1.0f;
 	m_Looped = FALSE;
 	m_Stereo = _T("");
+	m_Pitch = 0.0f;
 	//}}AFX_DATA_INIT
 
 	_CurrentSound = NULL;
@@ -143,6 +145,9 @@ BOOL CSoundPage::OnInitDialog()
 		_AudioMixer = NULL;
 	}
 
+	// We want to load nss files even if the corresponding waves are missing
+	CSound::allowMissingWave( true );
+
 	// Cone drawing: make it work with normal and big fonts (depending on system settings)
 	CRect parentrect, sliderrect;
 	this->GetWindowRect( &parentrect );
@@ -154,6 +159,7 @@ BOOL CSoundPage::OnInitDialog()
 	waitcursor.Restore();
 
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetRange( 0, 40 );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderPitch ))->SetRange( 0, 40 );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetRange( 0, 1000 );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetRange( 0, 1000 );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetRange( 0, 360 );
@@ -185,6 +191,8 @@ void CSoundPage::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxFloat(pDX, m_OuterGain, 0.f, 1.f);
 	DDX_Check(pDX, IDC_Looped, m_Looped);
 	DDX_Text(pDX, IDC_Stereo, m_Stereo);
+	DDX_Text(pDX, IDC_EditPitch, m_Pitch);
+	DDV_MinMaxFloat(pDX, m_Pitch, 1.e-011f, 1.f);
 	//}}AFX_DATA_MAP
 }
 
@@ -207,8 +215,9 @@ BEGIN_MESSAGE_MAP(CSoundPage, CDialog)
 	ON_EN_CHANGE(IDC_EditMaxDist, OnChangeEditMaxDist)
 	ON_BN_CLICKED(IDC_ButtonHelp, OnButtonHelp)
 	ON_EN_CHANGE(IDC_EditGain, OnChangeEditGain)
-	ON_BN_CLICKED(IDC_Cancel, OnCancel)
 	ON_BN_CLICKED(IDC_ButtonTestOuterGain, OnButtonTestOuterGain)
+	ON_BN_CLICKED(IDC_Cancel, OnCancel)
+	ON_EN_CHANGE(IDC_EditPitch, OnChangeEditPitch)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -264,8 +273,10 @@ void		CSoundPage::getPropertiesFromSound()
 {
 	m_Filename = _CurrentSound->getFilename().c_str();
 	m_Gain = _CurrentSound->getGain();
+	m_Pitch = _CurrentSound->getPitch();
 	m_Pos3D = _CurrentSound->isDetailed();
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderPitch ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Pitch*100.0f ) );
 	UpdateStereo();
 
 	if ( m_Pos3D )
@@ -301,7 +312,7 @@ void CSoundPage::setCurrentSound( CSound *sound, HTREEITEM hitem )
 	_HItem = hitem;
 	if ( _Source != NULL )
 	{
-		_Source->stop();
+	 	_Source->stop();
 	}
 	m_Looped = false;
 	UpdateData( false );
@@ -388,7 +399,7 @@ void CSoundPage::OnCancel()
 void CSoundPage::OnChooseFile() 
 {
 	// Prompt filename
-	CFileDialog opendlg( true, "wav", "", OFN_OVERWRITEPROMPT, "PCM Wave files (*.wav)|*.wav", this );
+	CFileDialog opendlg( true, "wav", "", OFN_OVERWRITEPROMPT, "PCM Wave files (*.wav)|*.wav||", this );
 	if ( opendlg.DoModal()==IDOK )
 	{
 		UpdateData( true );
@@ -465,7 +476,7 @@ void CSoundPage::Play( bool outsidecone )
 				_Source->stop();
 				_Source->setSound( _CurrentSound );
 			}
-			_Source->setLooping( (bool)m_Looped );
+			_Source->setLooping( m_Looped!=0 );
 			if ( outsidecone )
 			{
 				_Source->setPos( CVector(0.0f,0.0f,-0.1f) );
@@ -542,13 +553,14 @@ void CSoundPage::UpdateCurrentSound()
 	CString name = ((CSource_sounds_builderDlg*)GetOwner())->SoundName( _HItem );
 	if ( ! m_Pos3D )
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, (bool)m_Pos3D );
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Pos3D!=0 );
 	}
 	else
 	{
-		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, (bool)m_Pos3D,
+		_CurrentSound->setProperties( string(name), string(m_Filename), m_Gain, m_Pitch, m_Pos3D!=0,
 			m_MinDist, m_MaxDist, degToRad((float)m_InnerAngleDeg), degToRad((float)m_OuterAngleDeg), m_OuterGain );
 	}
+	// Argument checking is already done by the dialog wizard
 }
 
 
@@ -594,6 +606,16 @@ void CSoundPage::OnChangeEditGain()
 {
 	UpdateData( true );
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Gain*100.0f ) );
+}
+
+
+/*
+ *
+ */
+void CSoundPage::OnChangeEditPitch() 
+{
+	UpdateData( true );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderPitch ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_Pitch*100.0f ) );
 }
 
 
@@ -665,6 +687,14 @@ void CSoundPage::OnHScroll( UINT nSBCode, UINT nPos, CScrollBar* pScrollBar )
 			if ( _Source != NULL )
 			{
 				_Source->setGain( m_Gain );
+			}
+		}
+		else if ( slider == GetDlgItem( IDC_SliderPitch ) )
+		{
+			m_Pitch = ConvertLinearSliderPosToLogScale( nPos ) / 100.0f;
+			if ( _Source != NULL )
+			{
+				_Source->setPitch( m_Pitch );
 			}
 		}
 		else if ( slider == GetDlgItem( IDC_SliderMinDist ) )
@@ -764,7 +794,11 @@ void CSoundPage::OnPaint()
  */
 void CSoundPage::OnButtonHelp() 
 {
-	AfxMessageBox( "\
+	MessageBox( "\
+Gain: Range: [0, 1]. A gain factor is logarithmic ; 1.0 means no attenuation (full volume) ; 0.5 \
+means an attenuation of 6 dB ; 0 means silence.\n\n\
+Pitch: Range: ]0, 1]. 1.0 means normal ; dividing by 2 means pitching one octave down. Pitching up \
+is not supported. 0 is not a legal value.\n\n\
 Min Dist: Distance threshold below which gain is clamped (does not increase anymore).\n\
 Unit: meters. Range: 0 - 1000000 (the maximum value 1e+006 is considered as infinite).\n\n\
 Max Dist: Distance threshold above which gain is clamped (does not decrease anymore).\n\
@@ -781,9 +815,7 @@ Unit: degress. Range: 0 - 360.\n\n\
 Cone Outer Gain: The factor with which the main gain is multiplied to determine the effective \
 gain outside the cone defined by the outer angle. To test the outer gain, you can play the \
 sound source as if you were outside the cone.\n\
-Range: 0 - 1.\n\n\
-NOTE ABOUT GAINS: A gain factor is logarithmic ; 1.0 means no attenuation (full volume) ; 0.5 \
-means an attenuation of 6 dB ; 0 means silence.\
-" );	
+Range: 0 - 1.\
+", "Help about types" );	
 }
 

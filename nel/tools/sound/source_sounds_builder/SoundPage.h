@@ -37,6 +37,7 @@ public:
 	float	m_OuterGain;
 	BOOL	m_Looped;
 	CString	m_Stereo;
+	float	m_Pitch;
 	//}}AFX_DATA
 
 
@@ -76,6 +77,7 @@ protected:
 	afx_msg void OnButtonHelp();
 	afx_msg void OnChangeEditGain();
 	afx_msg void OnButtonTestOuterGain();
+	afx_msg void OnChangeEditPitch();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -377,11 +377,20 @@ void CSource_sounds_builderDlg::OnLoad()
 		CIFile file;
 		file.open( string( opendlg.GetPathName() ), false );
 		TSoundMap soundmap;
-		CSound::load( soundmap, file );
-		TSoundMap::iterator ipsnds;
-		for ( ipsnds=soundmap.begin(); ipsnds!=soundmap.end(); ++ipsnds )
+		try
 		{
-			_Sounds.push_back( (*ipsnds).second );
+			// Loading works even if the wave file are missing because we have called allowMissingWave() before
+			CSound::load( soundmap, file );
+			
+			TSoundMap::iterator ipsnds;
+			for ( ipsnds=soundmap.begin(); ipsnds!=soundmap.end(); ++ipsnds )
+			{
+				_Sounds.push_back( (*ipsnds).second );
+			}
+		}
+		catch( EStream& )
+		{
+			AfxMessageBox( "Cannot load: the file does not match the current format or version !", MB_ICONSTOP );
 		}
 
 		file.close();
@@ -460,7 +469,10 @@ void CSource_sounds_builderDlg::OnImport()
  */
 void CSource_sounds_builderDlg::OnOK()
 {
-	// Nothing: disable closure by Enter
+	// (Disable dialog closure by Enter)
+
+	// Exit from label editing if one label in the tree control is in editing mode
+	_SoundPage->SetFocus();
 }
 
 

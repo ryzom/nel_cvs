@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.26 2001/03/07 14:53:11 cado Exp $
+ * $Id: debug.h,v 1.27 2001/03/07 17:34:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,7 @@ void initDebug (bool setDisplayerInReleaseModeToo = false);
  *\endcode
  */
 //#ifdef NL_DEBUG
-//#define nldebug \
-//NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
+//#define nldebug NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
 //#else
 //#define nldebug //
 //#endif

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.8 2001/07/31 12:50:09 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.9 2001/08/03 16:11:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,10 +100,12 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Remaining sources (should have been removed and deleted by the user !)
-	set<CSourceUser*>::iterator ipsrc;
-	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); ++ipsrc )
+	set<CSourceUser*>::iterator ipsrc, ipOld;
+	for ( ipsrc=_Sources.begin(); ipsrc!=_Sources.end(); )
 	{
-		delete (*ipsrc); // 3D sources, the envsounds were removed above
+		ipOld = ipsrc;
+		++ipsrc;
+		delete (*ipOld); // 3D sources, the envsounds were removed above
 	}
 
 	// EnvEffects

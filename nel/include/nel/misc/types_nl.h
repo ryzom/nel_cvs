@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.27 2001/03/02 09:43:40 valignat Exp $
+ * $Id: types_nl.h,v 1.28 2002/01/22 14:10:42 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -36,9 +36,6 @@
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
-#include <string>
-#include <exception>
-
 
 // Operating systems definition
 
@@ -55,18 +52,23 @@
 #  define NL_OS_UNIX
 // *for now*, we suppose that all unix system are LITLLE_ENDIAN (because we only test on linux/x86 system
 #  define NL_LITTLE_ENDIAN
-#include <sys/types.h>
 #endif
 
 
-// Stupid Visual C++ warning
+// Remove stupid Visual C++ warning
 
 #ifdef NL_OS_WINDOWS
 #  pragma warning (disable : 4503)			// STL: Decorated name length exceeded, name was truncated
 #  pragma warning (disable : 4786)			// STL: too long indentifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
 #  pragma warning (disable : 4250)			// inherits via dominance (informational warning).
-#endif // NL_OS_WINDOWS
+#endif // NL_OS_UNIX
+
+
+// Standard include
+
+#include <string>
+#include <exception>
 
 
 // Check the STLPort presence
@@ -172,6 +174,8 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 		"I64"
 
 #elif defined (NL_OS_UNIX)
+
+#include <sys/types.h>
 
 typedef	int8_t		sint8;
 typedef	u_int8_t	uint8;

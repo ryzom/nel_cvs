@@ -1,7 +1,7 @@
 /** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.2 2001/12/27 10:18:44 lecroart Exp $
+ * $Id: o_xml.h,v 1.3 2002/01/22 14:10:54 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,6 +25,9 @@
 
 #ifndef NL_O_XML_H
 #define NL_O_XML_H
+
+//#define NL_DONT_USE_EXTERNAL_CODE
+#undef NL_DONT_USE_EXTERNAL_CODE
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
 

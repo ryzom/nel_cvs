@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.47 2003/12/11 18:32:13 boucher Exp $
+ * $Id: i18n.cpp,v 1.48 2004/03/05 16:38:59 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -748,27 +748,4 @@ uint64 CI18N::stringToHash(const std::string &str)
 	return hash;
 }
 
-
-
-} // NLMISC
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} // namespace NLMISC

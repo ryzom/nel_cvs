@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.2 2001/08/02 15:31:03 besson Exp $
+ * $Id: cluster.cpp,v 1.3 2001/08/08 13:31:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,6 +144,8 @@ void CCluster::unlink (CPortal* portal)
 // ***************************************************************************
 void CCluster::serial (IStream&f)
 {
+	sint version=f.serialVersion (0);
+
 	f.serialCont (_LocalVolume);
 	f.serial (_LocalBBox);
 	f.serial (FatherVisible);

@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.1 2001/07/30 14:40:14 besson Exp $
+ * $Id: portal.cpp,v 1.2 2001/08/08 13:31:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,6 +166,8 @@ bool CPortal::setPoly(std::vector<CVector> &poly)
 // ***************************************************************************
 void CPortal::serial (NLMISC::IStream& f)
 {
+	sint version=f.serialVersion (0);
+
 	f.serialCont (_LocalPoly);
 	if (f.isReading())
 		_Poly = _LocalPoly;

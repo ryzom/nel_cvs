@@ -347,9 +347,9 @@ namespace NLAILOGIC
 
 	float CGoal::priority() const
 	{
-/*		if ( _Successors.empty() )
+		if ( _Successors.empty() )
 			return 0.0;
-*/
+
 		float pri = 256;
 		for ( int i = 0; i < (int) _Successors.size(); i++ )
 		{

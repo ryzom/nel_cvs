@@ -139,7 +139,7 @@ namespace NLAIAGENT
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
 
-				if ( ( _CurrentGoal != NULL && _CurrentGoal->isSelected() ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
+				if ( ( _CurrentGoal != NULL /*&& _CurrentGoal->isSelected()*/ ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
 				{
 					activate();
 

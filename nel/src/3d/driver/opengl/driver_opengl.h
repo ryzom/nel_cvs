@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.69 2001/06/26 08:00:46 besson Exp $
+ * $Id: driver_opengl.h,v 1.70 2001/07/03 09:12:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,6 +204,13 @@ public:
 	{
 		return _ForceNormalize;
 	}
+
+
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices);
+
+	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB);
+
+	virtual void			activeVertexBufferHard(IVertexBufferHard *VB);
 
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB);

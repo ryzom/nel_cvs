@@ -473,6 +473,14 @@ SOURCE=.\3d\vertex_buffer.cpp
 
 SOURCE=.\3d\vertex_buffer.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_buffer_hard.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_buffer_hard.h
+# End Source File
 # End Group
 # Begin Group "Font"
 
@@ -1323,6 +1331,14 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_multi_lod.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 

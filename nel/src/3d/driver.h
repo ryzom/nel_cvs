@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.2 2001/06/19 16:57:41 berenguier Exp $
+ * $Id: driver.h,v 1.3 2001/07/03 09:12:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/texture.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
+#include "3d/vertex_buffer_hard.h"
 #include "nel/misc/mutex.h"
 
 #include <vector>
@@ -219,6 +220,30 @@ public:
 	/** return the forceNormalize() state.
 	 */
 	virtual	bool			isForceNormalize() const =0;
+
+
+
+	/** create a IVertexBufferHard. delete it with deleteVertexBufferHard.
+	 *	NB: user should (must) keep a CRefPtr<> on this ptr, because if driver is deleted (for any reason)
+	 *	the pointer will be no longer valid.
+	 */
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices) =0;
+
+
+	/** delete a IVertexBufferHard. NB: VertexBufferHard are automatically deleted at IDriver::release();
+	 */
+	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB) =0;
+
+
+	/** active a current VB Hard, for future render().
+	 *
+	 * NB: software skinning is not possible with this method. User should test supportPaletteSkinning() to know
+	 * if skinning can be done in hardware. If not, he should not use VB Hard, but standard VB.
+	 *
+	 * \see setupVertexMode
+	 */
+	virtual void			activeVertexBufferHard(IVertexBufferHard *VB)=0;
+
 
 
 	/** active a current VB, for future render().

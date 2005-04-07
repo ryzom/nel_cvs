@@ -1,7 +1,7 @@
 /** \file misc/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.15 2005/02/22 10:19:20 besson Exp $
+ * $Id: heap_allocator.cpp,v 1.16 2005/04/07 16:59:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,14 @@
 #	include <fcntl.h>
 #	include <cerrno>
 #endif // NL_OS_WINDOWS
+
+// includes of sys header may have broken std::min or std::max
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 #include <set>
 

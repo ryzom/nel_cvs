@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.22 2005/04/05 10:24:14 legros Exp $
+ * $Id: memory_manager.h,v 1.23 2005/04/07 16:57:32 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -483,7 +483,15 @@ extern "C"
 
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
+#ifdef NL_OS_LINUX
 #include <new>
+#define NL_MEMORY_THROW_BAD_ALLOC throw (std::bad_alloc)
+#define NL_MEMORY_THROW throw ()
+#else
+#define NL_MEMORY_THROW_BAD_ALLOC
+#define NL_MEMORY_THROW
+#endif
+
 inline void* operator new(unsigned int size, const char *filename, int line)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, filename, line, 0);
@@ -491,7 +499,7 @@ inline void* operator new(unsigned int size, const char *filename, int line)
 
 // *********************************************************
 
-inline void* operator new(unsigned int size) throw (std::bad_alloc)
+inline void* operator new(unsigned int size) NL_MEMORY_THROW_BAD_ALLOC
 {
 	return NLMEMORY::MemoryAllocateDebug (size, "::new (unsigned int size) operator", 0, 0);
 }
@@ -505,14 +513,14 @@ inline void* operator new[](unsigned int size, const char *filename, int line)
 
 // *********************************************************
 
-inline void* operator new[](unsigned int size) throw (std::bad_alloc)
+inline void* operator new[](unsigned int size) NL_MEMORY_THROW_BAD_ALLOC
 {
 	return NLMEMORY::MemoryAllocateDebug (size, "::new (unsigned int size) operator", 0, 0);
 }
 
 // *********************************************************
 
-inline void operator delete(void* p) throw()
+inline void operator delete(void* p) NL_MEMORY_THROW
 {
 	NLMEMORY::MemoryDeallocate (p);
 }
@@ -526,7 +534,7 @@ inline void operator delete(void* p, const char *filename, int line)
 
 // *********************************************************
 
-inline void operator delete[](void* p) throw()
+inline void operator delete[](void* p) NL_MEMORY_THROW
 {
 	NLMEMORY::MemoryDeallocate (p);
 }

@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.18 2005/04/05 10:25:06 legros Exp $
+ * $Id: heap_allocator.cpp,v 1.19 2005/04/07 16:59:10 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,9 @@
 
 //#include <string>
 #include "nel/memory/memory_manager.h"
-#include "heap_allocator.h"
+#include "./heap_allocator.h"
+#include <assert.h>
+//#include <nel/misc/debug.h>
 
 #include <cstdio>
 #include <stdlib.h>
@@ -39,7 +41,7 @@ namespace NLMEMORY
 {
 
 // Include inlines functions
-#include "heap_allocator_inline.h"
+#include "./heap_allocator_inline.h"
 
 #define NL_HEAP_SB_CATEGORY "_SmlBlk"
 #define NL_HEAP_CATEGORY_BLOCK_CATEGORY "_MemCat"

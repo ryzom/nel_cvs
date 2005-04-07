@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.71 2005/04/04 10:18:41 cado Exp $
+ * $Id: common.cpp,v 1.72 2005/04/07 16:20:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -687,10 +687,7 @@ bool launchProgram (const std::string &programName, const std::string &arguments
     {
 		// convert one arg into several args
 		vector<string> args;
-		char *argv[15];
-		
 		uint32 pos1 = 0, pos2 = 0;
-		
 		do
 		{
 			pos1 = arguments.find_first_not_of (" ", pos2);
@@ -699,9 +696,9 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 			args.push_back (arguments.substr (pos1, pos2-pos1));
 		}
 		while (pos2 != string::npos);
-		
-		nlassert (args.size() < 15);
-		
+
+		// Store the size of each arg
+		vector<char *> argv(args.size()+1);
 		uint i = 0;
 		argv[i] = (char *)programName.c_str();
 		for (; i < args.size(); i++)
@@ -710,7 +707,9 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 		}
 		argv[i+1] = NULL;
 
-		status = execvp(programName.c_str(), argv);
+		// Exec
+		status = execvp(programName.c_str(), &argv.front());
+
 		if (status == -1)
 		{
 			perror("Failed launched");

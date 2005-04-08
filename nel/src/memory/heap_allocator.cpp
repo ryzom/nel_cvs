@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.19 2005/04/07 16:59:10 legros Exp $
+ * $Id: heap_allocator.cpp,v 1.20 2005/04/08 13:21:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -838,7 +838,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 		// Allocate count
 		node->AllocateNumber = _AllocateCount++;
-		internalAssert (node->AllocateNumber != 245);
+		//internalAssert (node->AllocateNumber != 245);
 
 		// End magic number aligned on new size
 		node->EndMagicNumber = (uint32*)((uint8*)node + size + sizeof (CNodeBegin));

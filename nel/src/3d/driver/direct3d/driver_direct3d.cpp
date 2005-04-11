@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.31 2005/03/29 14:32:27 berenguier Exp $
+ * $Id: driver_direct3d.cpp,v 1.31.2.1 2005/04/11 14:16:31 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -254,6 +254,7 @@ CDriverD3D::CDriverD3D()
 	_FogEnd = 1;
 
 	_SumTextureMemoryUsed = false;
+	_DesktopGammaRampValid = false;
 }
 
 // ***************************************************************************
@@ -1221,6 +1222,15 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	nlassert (_DeviceInterface == NULL);
 	nlassert (_HWnd == NULL);
 
+	// memorize desktop gamma ramp
+	HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+	if (dc)
+	{		
+		_DesktopGammaRampValid = GetDeviceGammaRamp (dc, _DesktopGammaRamp) != FALSE;		
+		// Release the DC
+		ReleaseDC (NULL, dc);
+	}
+
 	// Create a window
 	_HWnd = (HWND)wnd;
 
@@ -1580,6 +1590,17 @@ bool CDriverD3D::release()
 
 	nlassert (indexCount == 0);
 	nlassert (vertexCount == 0);
+
+	// restore desktop gamma ramp
+	if (_DesktopGammaRampValid)
+	{
+		HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+		if (dc)
+		{		
+			SetDeviceGammaRamp (dc, _DesktopGammaRamp);
+		}
+		_DesktopGammaRampValid = false;
+	}
 	return true;
 };
 
@@ -2645,6 +2666,7 @@ void CDriverD3D::flush()
 
 bool CDriverD3D::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
+	/*
 	H_AUTO_D3D(CDriverD3D_setMonitorColorProperties);	
 	// The ramp
 	D3DGAMMARAMP ramp;
@@ -2675,6 +2697,55 @@ bool CDriverD3D::setMonitorColorProperties (const CMonitorColorProperties &prope
 	// Set the ramp
 	_DeviceInterface->SetGammaRamp (0, D3DSGR_NO_CALIBRATION, &ramp);
 	return true;
+	*/
+
+	// TODO nico
+	// It would be better to apply the gamma ramp only to the window and not to the whole desktop when playing in windowed mode.
+	// This require to switch to D3D 9.0c which has a flag for that purpose in the 'Present' function.
+	// Currently the SetGammaRamp only works in fullscreen mode, so we rely to the classic 'SetDeviceGammaRamp' instead.
+	HDC dc = CreateDC ("DISPLAY", NULL, NULL, NULL);
+	if (dc)
+	{
+		// The ramp
+		WORD ramp[256*3];
+
+		// For each composant
+		uint c;
+		for( c=0; c<3; c++ )
+		{
+			uint i;
+			for( i=0; i<256; i++ )
+			{
+				// Floating value
+				float value = (float)i / 256;
+
+				// Contrast
+				value = (float) max (0.0f, (value-0.5f) * (float) pow (3.f, properties.Contrast[c]) + 0.5f );
+
+				// Gamma
+				value = (float) pow (value, (properties.Gamma[c]>0) ? 1 - 3 * properties.Gamma[c] / 4 : 1 - properties.Gamma[c] );
+
+				// Luminosity
+				value = value + properties.Luminosity[c] / 2.f;
+				ramp[i+(c<<8)] = min (65535, max (0, (int)(value * 65535)));
+			}
+		}
+
+		// Set the ramp
+		bool result = SetDeviceGammaRamp (dc, ramp) != FALSE;
+		
+		// Release the DC
+		ReleaseDC (NULL, dc);
+
+		// Returns result
+		return result;
+	}
+	else
+	{
+		nlwarning ("(CDriverD3D::setMonitorColorProperties): can't create DC");
+		return false;
+	}
+
 }
 // ***************************************************************************
 

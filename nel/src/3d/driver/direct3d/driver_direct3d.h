@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.41 2005/03/29 14:32:27 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.41.2.1 2005/04/11 14:16:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2315,6 +2315,8 @@ public:
 	bool			_Lost;	
 	bool			_SceneBegun;
 
+	WORD            _DesktopGammaRamp[256 * 3];
+	bool			_DesktopGammaRampValid;
 	// for debug only
 	static bool		_CacheTest[CacheTest_Count];
 

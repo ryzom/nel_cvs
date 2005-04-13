@@ -1,7 +1,7 @@
 /** \file login_system/client.cpp
  * Login system example
  *
- * $Id: client.cpp,v 1.1 2003/07/21 12:11:53 lecroart Exp $
+ * $Id: client.cpp,v 1.2 2005/04/13 12:37:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,12 @@
 //
 
 #include <string>
+
+#ifdef NL_OS_WINDOWS
 #include <conio.h>
+#else
+#include "kbhit.h"
+#endif
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
@@ -55,8 +60,13 @@ using namespace NLNET;
 // Really simple chat
 // Do not display what you are typing
 
+#ifdef NL_OS_WINDOWS
 #define KEY_ESC		27
 #define KEY_ENTER	13
+#else
+#define KEY_ESC		27
+#define KEY_ENTER	10
+#endif
 
 string CurrentEditString;
 
@@ -80,7 +90,7 @@ TCallbackItem CallbackArray[NB_CB] =
 /*
  * main
  */
-void main (int argc, char **argv)
+int main (int argc, char **argv)
 {
 	CCallbackClient *Client;
 
@@ -102,16 +112,19 @@ void main (int argc, char **argv)
 	catch(ESocket &e)
 	{
 		printf("%s\n", e.what());
-		return;
+		return 0;
 	}
 
 	if (!Client->connected())
 	{
 		printf("Connection Error\n");
-		return;
+		return 0;
 	}
 	printf("Connected.\n");
 
+#ifdef NL_OS_UNIX
+	init_keyboard();
+#endif
 	// The main loop
 	do
 	{
@@ -140,6 +153,9 @@ void main (int argc, char **argv)
 	}
 	while (Client->connected());
 
+#ifdef NL_OS_UNIX
+	close_keyboard();
+#endif
 	// Finishing
 	delete Client;
 }

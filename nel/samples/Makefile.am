@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.1 2005/04/04 09:45:05 cado Exp $
+# $Id: Makefile.am,v 1.2 2005/04/13 12:37:26 cado Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS              = sound_sources pacs georges 3d
+SUBDIRS              = sound_sources pacs georges 3d net
 
 
 # End of Makefile.am

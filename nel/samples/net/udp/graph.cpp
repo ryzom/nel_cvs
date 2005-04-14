@@ -1,7 +1,7 @@
 /** \file graph.cpp
  * display graph
  *
- * $Id: graph.cpp,v 1.1 2003/01/24 13:54:06 lecroart Exp $
+ * $Id: graph.cpp,v 1.2 2005/04/14 15:50:50 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,6 @@
 #include <nel/3d/u_texture.h>
 #include <3d/driver.h>
 #include <3d/vertex_buffer.h>
-#include <3d/primitive_block.h>
 #include <3d/material.h>
 #include <3d/driver_user.h>
 
@@ -93,24 +92,23 @@ void CGraph::render (NL3D::UDriver *Driver, NL3D::UTextContext *TextContext)
 	vbuffer.setVertexFormat (CVertexBuffer::PositionFlag);
 	vbuffer.setNumVertices (Values.size() * 2);
 
-	CPrimitiveBlock	pblock;
-	pblock.reserveLine (Values.size());
-
 	float pos = X+Width-1;
 	uint i = 0;
 	for (deque<float>::reverse_iterator it = Values.rbegin(); it != Values.rend(); it++)
 	{
+		// get a read accessor to the VB
+		CVertexBufferRead vba;
+		vbuffer.lock (vba);
+
 		float value = (*it) * Height / MaxValue;
 		if (value > Height) value = Height;
 
-		CVector *vect1 = (CVector*)vbuffer.getVertexCoordPointer(i*2+0);
+		CVector *vect1 = (CVector*)vba.getVertexCoordPointer(i*2+0);
 		vect1->x = pos;
 		vect1->y = Y;
-		CVector *vect2 = (CVector*)vbuffer.getVertexCoordPointer(i*2+1);
+		CVector *vect2 = (CVector*)vba.getVertexCoordPointer(i*2+1);
 		vect2->x = pos;
 		vect2->y = Y+value;
-			
-		pblock.addLine(i*2+0, i*2+1);
 
 //		Driver->drawLine (pos, Y, pos, Y+value, CRGBA (255,255,255,BackColor.A));
 		pos--;
@@ -122,7 +120,6 @@ void CGraph::render (NL3D::UDriver *Driver, NL3D::UTextContext *TextContext)
 	// Render
 	IDriver	*drv = ((CDriverUser*)Driver)->getDriver();
 	drv->activeVertexBuffer(vbuffer);
-	drv->render(pblock, material);
 
 	// Display max
 	float value = Peak * Height / MaxValue;

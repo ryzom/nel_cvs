@@ -1,7 +1,7 @@
 /** \file udp/client.cpp
  * todo
  *
- * $Id: client.cpp,v 1.4 2003/01/24 13:53:55 lecroart Exp $
+ * $Id: client.cpp,v 1.5 2005/04/14 15:49:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -308,17 +308,17 @@ int main( int argc, char **argv )
 
 	UDriver *Driver = UDriver::createDriver();
 	Driver->setDisplay(UDriver::CMode(800, 600, 32, true));
-	UScene *Scene= Driver->createScene();
-	UCamera *Camera= Scene->getCam();
-	Camera->setTransformMode(UTransform::DirectMatrix);
+	UScene *Scene= Driver->createScene(false);
+	UCamera Camera= Scene->getCam();
+	Camera.setTransformMode(UTransform::DirectMatrix);
 	UTextContext *TextContext= Driver->createTextContext("n019003l.pfb");
 	TextContext->setFontSize(18);
 
-	Camera->setPerspective(80*Pi/180, 1.33, 0.15, 1000);
+	Camera.setPerspective(80*Pi/180, 1.33, 0.15, 1000);
 
 	CEvent3dMouseListener MouseListener;
 	MouseListener.addToServer(Driver->EventServer);
-	MouseListener.setFrustrum(Camera->getFrustum());
+	MouseListener.setFrustrum(Camera.getFrustum());
 	MouseListener.setHotSpot(CVector(0,0,0));
 	CMatrix		initMat;
 	initMat.setPos(CVector(0,-5,0));
@@ -333,7 +333,7 @@ int main( int argc, char **argv )
 #ifdef USE_3D
 
 		// Manip.
-		Camera->setMatrix(MouseListener.getViewMatrix());
+		Camera.setMatrix(MouseListener.getViewMatrix());
 
 		Driver->EventServer.pump();
 		if(Driver->AsyncListener.isKeyPushed(KeyESCAPE))

@@ -1,7 +1,7 @@
 /** \file udp/frontend_service.cpp
  * <todo> a mettre
  *
- * $Id: bench_service.cpp,v 1.5 2003/02/06 15:36:28 lecroart Exp $
+ * $Id: bench_service.cpp,v 1.6 2005/04/14 15:48:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,7 @@ string getDate()
 		return res;
 	}
 
-	return "bad date "+toString(long_time);
+	return "bad date "+toString( (uint32)long_time);
 }
 
 //

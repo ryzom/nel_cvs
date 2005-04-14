@@ -2,7 +2,7 @@
 # Configuration script for NeL
 # ====================================================================
 #
-# $Id: configure.ac,v 1.7 2005/04/04 09:45:05 cado Exp $
+# $Id: configure.ac,v 1.8 2005/04/14 15:54:32 cado Exp $
 # 
 
 # ====================================================================
@@ -428,6 +428,8 @@ AC_CONFIG_FILES([Makefile                                        \
            samples/3d/Makefile                             \
            samples/3d/font/Makefile                        \
            samples/3d/cluster_viewer/Makefile              \
+	   samples/net/Makefile                            \
+	   samples/net/chat/Makefile                       \
            nel-config                                      \
 ])
 AC_OUTPUT

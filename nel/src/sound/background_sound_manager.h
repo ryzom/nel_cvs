@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.12 2005/01/17 16:39:43 lecroart Exp $
+ * $Id: background_sound_manager.h,v 1.13 2005/04/18 09:27:28 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -167,7 +167,7 @@ private:
 	void addFxZone(const std::string &fxName, const std::vector<NLLIGO::CPrimVector> &points);
 
 	/// TODO : Utility... should be in NLMISC ?
-	template <class CharType>
+	/*template <class CharType>
 		std::vector<std::basic_string<CharType> >	split(const std::basic_string<CharType> &str, CharType splitTag)
 	{
 		std::vector<std::basic_string<CharType> >	splitted;
@@ -188,7 +188,7 @@ private:
 			splitted.push_back(std::basic_string<CharType>(str, pos, str.size() - pos));
 
 		return splitted;
-	}
+	}*/
 
 
 	/// Flag for playing background sounds.

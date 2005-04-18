@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.27 2005/03/21 15:58:04 legros Exp $
+ * $Id: mem_stream.cpp,v 1.27.2.1 2005/04/18 13:56:47 guignot Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,15 +83,15 @@ void CMemStream::serialBuffer(uint8 *buf, uint len)
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read
-		checkStreamSize(len);
-		/*
+		//checkStreamSize(len);
+
 		uint32 pos = lengthS();
 		uint32 total = length();
 		if ( pos+len > total ) // calls virtual length (cf. sub messages)
 		{
 			throw EStreamOverflow( "CMemStream serialBuffer overflow: Read past %u bytes", total );
 		}
-		*/
+
 		// Serialize in
 		CFastMem::memcpy( buf, _BufPos, len );
 		_BufPos += len;

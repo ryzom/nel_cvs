@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.89 2005/01/25 16:42:38 cado Exp $
+ * $Id: unified_network.cpp,v 1.89.2.1 2005/04/22 09:56:22 legros Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "nel/net/unified_network.h"
 #include "nel/misc/entity_id.h" // for createMessage()
 #include "nel/misc/variable.h"
+
+#include "nel/misc/thread.h"
+#include "nel/misc/mutex.h"
 
 #ifdef NL_OS_UNIX
 #include <sched.h>
@@ -262,6 +265,11 @@ void	uncbDisconnection(TSockId from, void *arg)
 
 					uc->reset ();
 				}
+				else
+				{
+					// call the user callback
+					uni->callServiceDownCallback(uc->ServiceName, uc->ServiceId);
+				}
 			}
 			else
 			{
@@ -494,6 +502,112 @@ TCallbackItem	unServerCbArray[] =
 };
 
 
+
+//
+// Alive check thread
+//
+
+class CAliveCheck : public NLMISC::IRunnable
+{
+public:
+	CAliveCheck() : ExitRequired(false)	{ }
+
+	virtual void	run();
+	virtual			~CAliveCheck()	{ }
+
+	volatile bool	ExitRequired;
+
+	static CAliveCheck*	Thread;
+
+	struct CCheckAddress
+	{
+		CCheckAddress() : NeedCheck(false), AddressValid(false), ConnectionId(0xDEAD)	{ }
+		CInetAddress	Address;
+		std::string		ServiceName;
+		uint16			ServiceId;
+		uint			ConnectionId;
+		uint			ConnectionIndex;
+		volatile bool	NeedCheck;
+		volatile bool	AddressValid;
+	};
+
+	CCheckAddress	Connections[128];
+
+	void			checkService(CInetAddress address, uint connectionId, uint connectionIndex, std::string service, uint16 id);
+
+};
+
+CAliveCheck*	CAliveCheck::Thread = NULL;
+IThread*		AliveThread = NULL;
+
+
+void	CAliveCheck::run()
+{
+	// setup thread
+	Thread = this;
+
+	TTime	t = CTime::getLocalTime();
+
+	while (!ExitRequired)
+	{
+		if (CTime::getLocalTime() - t < 10000)
+		{
+			nlSleep(100);
+			continue;
+		}
+
+		uint	i;
+		for (i=0; i<sizeof(Connections)/sizeof(Connections[0]); ++i)
+		{
+			if (Connections[i].NeedCheck && !Connections[i].AddressValid)
+			{
+				try
+				{
+					CCallbackClient	cbc;
+					cbc.connect(Connections[i].Address);
+					// success (no exception)
+					Connections[i].AddressValid = true;
+					cbc.disconnect();
+				}
+				catch (ESocketConnectionFailed &e)
+				{
+#if FINAL_VERSION
+					nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", Connections[i].ServiceName.c_str(), Connections[i].ServiceId, e.what ());
+#else
+					nlwarning ("HNETL5: can't connect to %s-%hu now (%s)", Connections[i].ServiceName.c_str(), Connections[i].ServiceId, e.what ());
+#endif
+				}
+			}
+		}
+
+		t = CTime::getLocalTime();
+	}
+
+	ExitRequired = false;
+}
+
+void	CAliveCheck::checkService(CInetAddress address, uint connectionId, uint connectionIndex, std::string service, uint16 id)
+{
+	uint	i;
+	for (i=0; i<sizeof(Connections)/sizeof(Connections[0]); ++i)
+	{
+		if (Connections[i].NeedCheck)
+			continue;
+
+		Connections[i].Address = address;
+		Connections[i].ConnectionId = connectionId;
+		Connections[i].ConnectionIndex = connectionIndex;
+		Connections[i].ServiceName = service;
+		Connections[i].ServiceId = id;
+
+		Connections[i].AddressValid = false;
+		Connections[i].NeedCheck = true;
+
+		return;
+	}
+}
+
+
 //
 //
 //
@@ -592,6 +706,9 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 	test.addDisplayer (&fd);
 	test.displayNL ("**************INIT***************");
 
+	AliveThread = IThread::create(new CAliveCheck());
+	AliveThread->start();
+
 	_Initialised = true;
 	return true;
 }
@@ -633,6 +750,14 @@ void	CUnifiedNetwork::release(bool mustFlushSendQueues, const std::vector<std::s
 {
 	if (!_Initialised)
 		return;
+
+	if (CAliveCheck::Thread)
+	{
+		CAliveCheck::Thread->ExitRequired = true;
+		while (CAliveCheck::Thread->ExitRequired)
+			nlSleep(100);
+		delete CAliveCheck::Thread;
+	}
 
 	if (ThreadCreator != NLMISC::getThreadId()) nlwarning ("HNETL5: Multithread access but this class is not thread safe thread creator = %u thread used = %u", ThreadCreator, NLMISC::getThreadId());
 
@@ -995,6 +1120,29 @@ void	CUnifiedNetwork::update(TTime timeout)
 	{
 		H_AUTO(L5OneLoopUpdate);
 
+		if (CAliveCheck::Thread)
+		{
+			uint	i;
+			for (i=0; i<sizeof(CAliveCheck::Thread->Connections)/sizeof(CAliveCheck::Thread->Connections[0]); ++i)
+			{
+				CAliveCheck::CCheckAddress	&address = CAliveCheck::Thread->Connections[i];
+				if (address.NeedCheck && address.AddressValid)
+				{
+					CUnifiedConnection &uc = _IdCnx[address.ConnectionId];
+					if (uc.ServiceName == address.ServiceName &&
+						uc.ServiceId == address.ServiceId &&
+						uc.ValidRequested)
+					{
+						uc.ValidRequested = false;
+						uc.ValidExternal = true;
+					}
+
+					address.NeedCheck = false;
+					address.AddressValid = false;
+				}
+			}
+		}
+
 		// update all server connections
 		if (_CbServer)
 		{
@@ -1022,7 +1170,17 @@ void	CUnifiedNetwork::update(TTime timeout)
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{
-					autoReconnect( uc, j );
+					if (uc.ValidExternal)
+					{
+						uc.ValidExternal = false;
+						uc.ValidRequested = false;
+						autoReconnect( uc, j );
+					}
+					else if (!uc.ValidRequested && CAliveCheck::Thread)
+					{
+						uc.ValidRequested = true;
+						CAliveCheck::Thread->checkService(uc.ExtAddress[j], _UsedConnection[k], j, uc.ServiceName, uc.ServiceId);
+					}
 				}
 			}
 		}

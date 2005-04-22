@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.48 2005/01/25 16:42:39 cado Exp $
+ * $Id: unified_network.h,v 1.48.2.1 2005/04/22 09:56:22 legros Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -350,6 +350,10 @@ private:
 		bool						IsExternal;
 		/// Auto-retry mode
 		bool						AutoRetry;
+		/// Valid External
+		bool						ValidExternal;
+		/// Validation Requested
+		bool						ValidRequested;
 		/// Auto identify at connection
 		bool						SendId;
 		/// Used for debug purpose
@@ -393,6 +397,8 @@ private:
 			ServiceId = 0xDEAD;
 			State = NotUsed;
 			IsExternal = false;
+			ValidExternal = false;
+			ValidRequested = false;
 			AutoRetry = false;
 			SendId = false;
 			AutoCheck = false;

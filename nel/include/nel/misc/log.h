@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.37 2005/02/22 10:14:12 besson Exp $
+ * $Id: log.h,v 1.38 2005/04/26 00:05:15 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ class IDisplayer;
 
 
 /**
- * When display() is called, the logger builds a string a sends it to its attached displayers.
+ * When display() is called, the logger builds a string and sends it to its attached displayers.
  * The positive filters, if any, are applied first, then the negative filters.
  * See the nldebug/nlinfo... macros in debug.h.
  *

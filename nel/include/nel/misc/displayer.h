@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.24 2005/02/22 10:14:12 besson Exp $
+ * $Id: displayer.h,v 1.25 2005/04/26 00:05:15 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,12 +59,12 @@ public:
 	/// Display the string where it does.
 	void display( const CLog::TDisplayInfo& args, const char *message );
 
-	/// This is the idenfiant for a displayer, it is used to fond or remove a displayer
+	/// This is the identifier for a displayer, it is used to find or remove a displayer
 	std::string DisplayerName;
 
 protected:
 
-	/// Method to implement in the deriver
+	/// Method to implement in the derived class
 	virtual void doDisplay( const CLog::TDisplayInfo& args, const char *message) = 0;
 
 	

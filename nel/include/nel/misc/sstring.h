@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.30 2005/04/26 00:03:51 miller Exp $
+ * $Id: sstring.h,v 1.31 2005/04/26 10:28:10 distrib Exp $
  */
 
 
@@ -79,7 +79,7 @@ public:
 
 	/// Return sub string up to but not including first instance of given character, starting at 'iterator'
 	/// on exit 'iterator' indexes first character after extracted string segment
-	CSString splitTo(char c,uint32& iterator) const;
+	CSString splitToWithIterator(char c,uint32& iterator) const;
 	/// Return sub string up to but not including first instance of given character
 	CSString splitTo(char c) const;
 	/// Return sub string up to but not including first instance of given character
@@ -557,7 +557,7 @@ inline CSString CSString::leftCrop(unsigned count) const
 	return substr(count);
 }
 
-inline CSString CSString::splitTo(char c,uint32& iterator) const
+inline CSString CSString::splitToWithIterator(char c,uint32& iterator) const
 {
 	unsigned i;
 	CSString result;
@@ -1390,7 +1390,7 @@ inline bool CSString::splitLines(CVectorSString& result) const
 	while(it<len)
 	{
 		// extract the text up to the next '\n'character
-		result.push_back(s.splitTo('\n',it));
+		result.push_back(s.splitToWithIterator('\n',it));
 		// skip the '\n' character
 		++it;
 	}

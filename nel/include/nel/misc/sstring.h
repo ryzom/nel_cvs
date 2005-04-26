@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.29 2005/04/04 14:51:09 miller Exp $
+ * $Id: sstring.h,v 1.30 2005/04/26 00:03:51 miller Exp $
  */
 
 
@@ -77,6 +77,9 @@ public:
 	/// Return the string minus the n right hand most characters of a string
 	CSString rightCrop(unsigned count) const;
 
+	/// Return sub string up to but not including first instance of given character, starting at 'iterator'
+	/// on exit 'iterator' indexes first character after extracted string segment
+	CSString splitTo(char c,uint32& iterator) const;
 	/// Return sub string up to but not including first instance of given character
 	CSString splitTo(char c) const;
 	/// Return sub string up to but not including first instance of given character
@@ -129,7 +132,7 @@ public:
 	/// Extract the given line
 	CSString line(unsigned idx) const;
 
-	/// A handy utility routine for knowing if a character is a white space character or not
+	/// A handy utility routine for knowing if a character is a white space character or not (' ','\t','\n','\r',26)
 	static bool isWhiteSpace(char c); 
 	///	Test whether character matches '{', '(','[' or '<' (the '<' test depends on the useAngleBrace parameter
 	static bool isOpeningDelimiter(char c,bool useAngleBrace=false);
@@ -154,6 +157,8 @@ public:
 	/// A handy utility routine for converting a hex digit to a numeric value 0..15
 	static char convertHexDigit(char c);
 
+	// a handy routine that tests whether a given string contains binary characters or not. Only characters>32 + isWhiteSpace() are valid
+	bool CSString::isValidText();
 	// a handy routine that tests whether a given string is a valid file name or not
 	// "\"hello there\\bla\""	is valid 
 	// "hello there\\bla"		is not valid - missing quotes
@@ -202,6 +207,11 @@ public:
 								bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
 								bool truncateSeparatorCharacter=false);	// if true tail begins after separator char
 
+	CSString splitToSeparator(	char separator,
+								bool useAngleBrace=false,						// treat '<' and '>' as brackets
+								bool useSlashStringEscape=true,					// treat '\' as escape char so "\"" == '"'
+								bool useRepeatQuoteStringEscape=true) const;	// treat """" as '"'
+
 	/// copy out section of string up to any of a given set of separator characters, respecting quotes, brackets, etc
 	/// on error tail after returned string doesn't begin with valid separator character
 	/// eg: splitToOneOfSeparators(",;",true,false,false,true); - this might be used to split a string read from a CSV file
@@ -211,6 +221,11 @@ public:
 										bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
 										bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
 										bool truncateSeparatorCharacter=false);	// if true tail begins after separator char
+
+	CSString splitToOneOfSeparators(	const CSString& separators,
+										bool useAngleBrace=false,						// treat '<' and '>' as brackets
+										bool useSlashStringEscape=true,					// treat '\' as escape char so "\"" == '"'
+										bool useRepeatQuoteStringEscape=true) const;	// treat """" as '"'
 
 	/// Return true if the string is a single block encompassed by a pair of delimiters
 	/// eg: "((a)(b)(c))" or "(abc)" return true wheras "(a)(b)(c)" or "abc" return false
@@ -540,6 +555,16 @@ inline CSString CSString::leftCrop(unsigned count) const
 	if (count>=size())
 		return CSString();
 	return substr(count);
+}
+
+inline CSString CSString::splitTo(char c,uint32& iterator) const
+{
+	unsigned i;
+	CSString result;
+	for (i=iterator;i<size() && (*this)[i]!=c;++i)
+		result+=(*this)[i];
+	iterator= i;
+	return result;
 }
 
 inline CSString CSString::splitTo(char c) const
@@ -980,6 +1005,38 @@ inline char CSString::convertHexDigit(char c)
 	return 0;
 }
 
+inline bool CSString::isValidText()
+{
+	// setup a handy static lookup table for differentiating valid and invalid text characters
+	static bool* tbl=NULL;
+	if (tbl==NULL)
+	{
+		tbl= new bool[256];
+		for (uint32 i=0;i<256;++i)
+		{
+			tbl[i]= ((i>32) || isWhiteSpace((char)i));
+		}
+	}
+
+	// scan the string for binary characters
+	uint32 i=size();
+//	while (i && !tbl[i-1])
+//	{
+//		i--;
+//	}
+	while (i--)
+	{
+		if (!tbl[operator[](i)])
+		{
+			nldebug("string is not valid text due to character: %u at index: %u",(uint8)tbl[i],i);
+			return false;
+		}
+	}
+
+	// no binary characters found so return true
+	return true;
+}
+
 inline bool CSString::isValidFileName() const
 {
 	if (empty())
@@ -1165,6 +1222,14 @@ inline CSString CSString::splitToStringSeparator(
 }
 
 inline CSString CSString::splitToSeparator(	char separator,
+											bool useAngleBrace,						// treat '<' and '>' as brackets
+											bool useSlashStringEscape,				// treat '\' as escape char so "\"" == '"'
+											bool useRepeatQuoteStringEscape) const	// treat """" as '"'
+{
+	return const_cast<CSString*>(this)->splitToSeparator(separator,false,useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,false);
+}
+
+inline CSString CSString::splitToSeparator(	char separator,
 											bool truncateThis,
 											bool useAngleBrace,					// treat '<' and '>' as brackets
 											bool useSlashStringEscape,			// treat '\' as escape char so "\"" == '"'
@@ -1205,6 +1270,14 @@ inline CSString CSString::splitToSeparator(	char separator,
 	}
 
 	return result;
+}
+
+inline CSString CSString::splitToOneOfSeparators(	const CSString& separators,
+													bool useAngleBrace,						// treat '<' and '>' as brackets
+													bool useSlashStringEscape,				// treat '\' as escape char so "\"" == '"'
+													bool useRepeatQuoteStringEscape) const	// treat """" as '"'
+{
+	return const_cast<CSString*>(this)->splitToOneOfSeparators(separators,false,useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,false);
 }
 
 inline CSString CSString::splitToOneOfSeparators(	const CSString& separators,
@@ -1312,13 +1385,14 @@ inline bool CSString::splitLines(CVectorSString& result) const
 	if (s.contains('\r'))
 		s=s.replace("\r","");
 
-	while(!s.empty())
+	uint32 it=0;
+	uint32 len= s.size();
+	while(it<len)
 	{
-		uint32 pre=s.size();
-		result.push_back(s.splitTo('\n',true));
-		uint32 post=s.size();
-		if (post>=pre)
-			return false;
+		// extract the text up to the next '\n'character
+		result.push_back(s.splitTo('\n',it));
+		// skip the '\n' character
+		++it;
 	}
 	return true;
 }

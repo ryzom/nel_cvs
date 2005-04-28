@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.34 2005/02/08 18:32:30 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.35 2005/04/28 17:32:06 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -264,7 +264,7 @@ void CSheetId::init(bool removeUnknownSheet)
 	if (_Initialised)
 		return;
 
-	CFile::addFileChangeCallback ("sheet_id.bin", cbFileChange);
+//	CFile::addFileChangeCallback ("sheet_id.bin", cbFileChange);
 
 	_RemoveUnknownSheet = removeUnknownSheet;
 

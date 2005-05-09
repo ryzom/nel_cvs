@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.224 2005/03/14 10:44:36 cado Exp $
+ * $Id: service.cpp,v 1.225 2005/05/09 11:51:26 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -295,7 +295,7 @@ IService::IService() :
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
 	_SId(0),
-	_Status(0),
+	_ExitStatus(0),
 	_Initialized(false),
 	ConfigDirectory("nel", "ConfigDirectory", "directory where config files are", ".", 0, true, cbDirectoryChanged),
 	LogDirectory("nel", "LogDirectory", "directory where the service is logging", ".", 0, true, cbDirectoryChanged),
@@ -709,7 +709,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		nlinfo ("SERVICE: Starting Service '%s' using NeL ("__DATE__" "__TIME__") compiled %s", _ShortName.c_str(), CompilationDate.c_str());
 		nlinfo ("SERVICE: On OS: %s", CSystemInfo::getOS().c_str());
 		
-		setStatus (EXIT_SUCCESS);
+		setExitStatus (EXIT_SUCCESS);
 
 		//
 		// Redirect signal if needed (in release mode only)
@@ -1372,7 +1372,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
-		setStatus (EXIT_FAILURE);
+		setExitStatus (EXIT_FAILURE);
 	}
 	catch ( uint ) // SEH exceptions
 	{
@@ -1445,7 +1445,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
-		setStatus (EXIT_FAILURE);
+		setExitStatus (EXIT_FAILURE);
 	}
 
 #ifdef NL_RELEASE
@@ -1474,7 +1474,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	string name = getServiceLongName () + ".memory_report";
 	NLMEMORY::StatisticsReport (name.c_str(), false);
 
-	return ExitSignalAsked?100+ExitSignalAsked:getStatus ();
+	return ExitSignalAsked?100+ExitSignalAsked:getExitStatus ();
 }
 
 void IService::exit (sint code)
@@ -1482,6 +1482,37 @@ void IService::exit (sint code)
 	nlinfo ("SERVICE: Somebody called IService::exit(), I have to quit");
 	ExitSignalAsked = code;
 }
+
+/// Push a new status on the status stack.
+void IService::setCurrentStatus(const std::string &status)
+{
+	// remove the status if it is already in the stack
+	_ServiceStatusStack.erase(std::remove(_ServiceStatusStack.begin(), _ServiceStatusStack.end(), status), _ServiceStatusStack.end());
+
+	// insert the status on top of the stack
+	_ServiceStatusStack.push_back(status);
+
+}
+
+/// Remove a status from the status stack. If this status is at top of stack, the next status become the current status
+void IService::clearCurrentStatus(const std::string &status)
+{
+	// remove the status of the stack
+	_ServiceStatusStack.erase(std::remove(_ServiceStatusStack.begin(), _ServiceStatusStack.end(), status), _ServiceStatusStack.end());
+}
+
+/// Add a tag in the status string
+void IService::addStatusTag(const std::string &statusTag)
+{
+	_ServiveStatusTags.insert(statusTag);
+}
+
+/// Remove a tag from the status string
+void IService::removeStatusTag(const std::string &statusTag)
+{
+	_ServiveStatusTags.erase(statusTag);
+}
+
 
 /*
  * Require to reset the hierarchical timer
@@ -1683,7 +1714,27 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, string, State, "Set this value to 0 to shutd
 	// read or write the variable
 	if (get)
 	{
-		*pointer = running;
+		string statusString;
+		IService *srv = IService::getInstance();
+
+		if (srv->_ServiceStatusStack.empty() && srv->_ServiveStatusTags.empty())
+		{
+			// no special state or tag, just says service is online
+			*pointer = running;
+			return;
+		}
+
+		if (!srv->_ServiceStatusStack.empty())
+			statusString = srv->_ServiceStatusStack.back();
+
+		set<string>::iterator first(srv->_ServiveStatusTags.begin()), last(srv->_ServiveStatusTags.end());
+		for (; first != last; ++first)
+		{
+			if (first != srv->_ServiveStatusTags.begin() || !statusString.empty())
+				statusString += " ";
+			statusString += *first;
+		}
+		*pointer = statusString;
 	}
 	else
 	{

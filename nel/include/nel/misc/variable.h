@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.20 2005/02/22 10:14:12 besson Exp $
+ * $Id: variable.h,v 1.21 2005/05/09 11:50:46 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -127,6 +127,13 @@ public: \
 }; \
 __name##Class __name##Instance; \
 void __name##Class::ptr(__type *pointer, bool get, bool human) const
+
+/** Helper to declare a variable as friend of a class.
+ *	Useful when you want to declare variable that need to access private data to act on or display internal state of the class
+ */
+
+#define NLMISC_DYNVARIABLE_FRIEND(__name) NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(variables, __name)
+#define NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(__category, __name) friend class __name##Class
 
 //
 //

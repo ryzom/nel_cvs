@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.83 2005/03/14 10:44:36 cado Exp $
+ * $Id: service.h,v 1.84 2005/05/09 11:50:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,7 +224,7 @@ public:
 	TServiceId						getServiceId () const { return _SId; }
 
 	/// Returns the status
-	sint							getStatus () const { return _Status; }
+	sint							getExitStatus () const { return _ExitStatus; }
 
 	/// Returns the date of launch of the service. Unit: see CTime::getSecondsSince1970()
 	uint32							getLaunchingDate () const;
@@ -262,7 +262,7 @@ public:
 	 * You can set it to EXIT_FAILURE or any value you want. It's useful when you use the service in a script and you
 	 * want to know the return value of the application to do the appropriate things.
 	 */
-	void					setStatus (sint status) { _Status = status; }
+	void					setExitStatus (sint exitStatus) { _ExitStatus = exitStatus; }
 
 	/** Call this function if you want the service quits next loop. The code will be returned outside of the application.
 	 * \warning If you set the code to 0, it ll NOT exit the service */
@@ -277,6 +277,19 @@ public:
 	 */
 	void					setUpdateTimeout (NLMISC::TTime timeout) { /*if (timeout>1.0) nlerror ("IServer::setUpdateTimeout is now a double in SECOND and not ms");*/ _UpdateTimeout = timeout; } 
 
+	//@}
+
+	//@{
+	//@name Service status management methods
+	/// Push a new status on the status stack.
+	void					setCurrentStatus(const std::string &status);
+	/// Remove a status from the status stack. If this status is at top of stack, the next status become the current status
+	void					clearCurrentStatus(const std::string &status);
+	/// Add a tag in the status string
+	void					addStatusTag(const std::string &statusTag);
+	/// Remove a tag from the status string
+	void					removeStatusTag(const std::string &statusTag);
+	//@}
 
 	/// \name variables. These variables can be read/modified by the user.
 	// @{
@@ -364,7 +377,6 @@ private:
 
 	//@}
 
-
 	/// \name variables. These variables are used by the internal system.
 	// @{
 
@@ -391,8 +403,8 @@ private:
 	/// the service id of this sevice
 	TServiceId							_SId;
 
-	/// the status of this service (the status is give to the at the release time)
-	sint								_Status;
+	/// the exit status of this service (the status is returned by the service at the release time)
+	sint								_ExitStatus;
 
 	/// true if the service initialisation is passed
 	bool								_Initialized;
@@ -425,6 +437,14 @@ private:
 	/// CPU usage stats
 	NLMISC::CCPUTimeStat				_CPUUsageStats;
 
+	//@{
+	//@name Service running status management
+	/// The status stack is used to display the most recent set status.
+	std::vector<std::string>			_ServiceStatusStack;
+	/// The status tags. All added tags are displayed.
+	std::set<std::string>				_ServiveStatusTags;
+	//@}
+
 	enum TClosureClearanceStatus { CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure, CCCallbackThenClose=256 };
 
 	/// Closure clearance state (either CCMustRequestClearance, CCWaitingForClearance, CCClearedForClosure or CCCallbackThenClose + any other as a backup value)
@@ -441,6 +461,8 @@ private:
 	friend struct nel_getWinDisplayerInfoClass;
 	friend void cbDirectoryChanged (const NLMISC::IVariable &var);
 	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, uint16 serviceId);
+
+	NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(nel, State);
 };
 
 

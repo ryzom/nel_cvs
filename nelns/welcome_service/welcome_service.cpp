@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.45 2005/01/04 13:40:11 legros Exp $
+ * $Id: welcome_service.cpp,v 1.46 2005/05/09 11:54:32 boucher Exp $
  *
  */
 
@@ -1115,6 +1115,25 @@ public:
 		 */
 		cbShardOpenStateFile(ShardOpenStateFile);
 	}
+
+	bool			update () 
+	{ 
+		// update the service status
+
+		removeStatusTag("DEV_ONLY");
+		removeStatusTag("RESTRICTED");
+		removeStatusTag("Open");
+
+		if (ShardOpen == 0)
+			addStatusTag("DEV_ONLY");
+		else if (ShardOpen == 1)
+			addStatusTag("RESTRICTED");
+		else if (ShardOpen == 2)
+			addStatusTag("Open");
+
+		return true; 
+	}
+
 };
 
 

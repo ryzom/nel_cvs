@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.22 2005/02/22 10:19:10 besson Exp $
+ * $Id: font_generator.cpp,v 1.22.4.1 2005/05/09 13:54:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -158,6 +158,12 @@ void CFontGenerator::getSizes (ucchar c, uint32 size, uint32 &width, uint32 &hei
 	// retrieve glyph index from character code
 	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
 
+	if (glyph_index == 0)
+	{
+		// no glyph available, replace with a dot
+		glyph_index = FT_Get_Char_Index (_Face, ucchar('.'));
+	}
+
 	// load glyph image into the slot (erase previous one)
 	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
 	if (error)
@@ -184,6 +190,12 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 
 	// retrieve glyph index from character code
 	FT_UInt glyph_index = FT_Get_Char_Index (_Face, c);
+
+	if (glyph_index == 0)
+	{
+		// no glyph available, replace with a dot
+		glyph_index = FT_Get_Char_Index (_Face, ucchar('.'));
+	}
 
 	// load glyph image into the slot (erase previous one)
 	error = FT_Load_Glyph (_Face, glyph_index, FT_LOAD_DEFAULT);
@@ -253,7 +265,15 @@ uint32	 CFontGenerator::getCharIndex (ucchar c)
 {
 	NL_ALLOC_CONTEXT (FreeTyp);
 
-	return FT_Get_Char_Index (_Face, c);
+	uint32 ret = FT_Get_Char_Index(_Face, c);
+
+	if (ret == 0)
+	{
+		// no glyph available, replace with a dot
+		ret = FT_Get_Char_Index (_Face, ucchar('.'));
+	}
+
+	return ret;
 }
 
 } // NL3D
@@ -477,7 +497,18 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 	SelectObject (hdcDib, hFont);
 	SelectObject (hdcDib, Dib);
 	
-	const char cc = (char) c;
+	const ucchar cc = /*(char)*/ c;
+
+	// prevent outputing white glyph if char is not available in font
+	DWORD glyphIndex;
+	if (GetGlyphIndicesW(hdcDib, &cc, 1, &glyphIndex, GGI_MARK_NONEXISTING_GLYPHS) == 1);
+	{
+		if (glyphIndex == 0xffff)
+		{
+			// thee char is unsupported, replace with a dot
+			cc = '.';
+		}
+	}
 
 	RECT rect;
 	rect.bottom = Height;
@@ -485,13 +516,14 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 	rect.left = 0;
 	rect.right = Width;
 
-	int res = DrawText (hdcDib, &cc, 1, &rect, DT_LEFT | DT_TOP);
+	int res = DrawTextW (hdcDib, &cc, 1, &rect, DT_LEFT | DT_TOP);
 
 	POINT point;
 	point.y = res;
 
 	int w = res;
-	BOOL rey = GetCharWidth32 (hdcDib, (uint8) cc,  (uint8) cc, &w);
+//	BOOL rey = GetCharWidth32 (hdcDib, (uint8) cc,  (uint8) cc, &w);
+	BOOL rey = GetCharWidth32 (hdcDib, cc,  cc, &w);
 	nlassert (rey);
 	point.x = w;
 
@@ -501,7 +533,7 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 //	point.x = abc.abcA;
 
 	SIZE s;
-	GetTextExtentPoint32 (hdcDib, &cc, 1, &s);
+	GetTextExtentPoint32W (hdcDib, &cc, 1, &s);
 	
 	BOOL ret = LPtoDP (hdcDib, &point, 1);
 	nlassert (ret);

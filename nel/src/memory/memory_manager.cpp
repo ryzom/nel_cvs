@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.10 2005/04/05 10:25:06 legros Exp $
+ * $Id: memory_manager.cpp,v 1.11 2005/05/16 09:12:34 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 // Include STLPort first
 //#include <stl/_site_config.h>
-#include "nel/memory/memory_manager.h"
 #include "memory_common.h"
+#include "../../include/nel/memory/memory_manager.h"
 #include "heap_allocator.h"
 #include <memory.h>
 

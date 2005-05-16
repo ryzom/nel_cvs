@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.23 2005/04/07 16:57:32 legros Exp $
+ * $Id: memory_manager.h,v 1.24 2005/05/16 09:12:01 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,12 +337,17 @@ inline void   _STLP_CALL __stl_delete(void* __p) { NLMEMORY::MemoryDeallocate(__
 #define NL_USE_DEFAULT_MEMORY_MANAGER
 #endif // _STLP_USE_NEL
 
+
 // *********************************************************
 #ifdef NL_USE_DEFAULT_MEMORY_MANAGER
 // *********************************************************
 
 // Malloc
 #include <malloc.h>
+
+#ifdef NL_OS_UNIX
+#include <new>
+#endif // NL_OS_UNIX
 
 namespace NLMEMORY
 {
@@ -483,7 +488,7 @@ extern "C"
 
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
-#ifdef NL_OS_LINUX
+#ifdef NL_OS_UNIX
 #include <new>
 #define NL_MEMORY_THROW_BAD_ALLOC throw (std::bad_alloc)
 #define NL_MEMORY_THROW throw ()

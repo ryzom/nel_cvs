@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.35 2005/04/28 17:32:06 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.36 2005/05/20 17:25:44 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -142,7 +142,7 @@ void CSheetId::loadSheetId ()
 		_SheetNameToId.clear ();
 
 		// reserve space for the vector of file extensions
-		_FileExtensions.resize(1 << NL_SHEET_ID_TYPE_BITS);
+		_FileExtensions.resize(1 << (NL_SHEET_ID_TYPE_BITS));
 
 		// Get the map from the file
 		map<uint32,string> tempMap;
@@ -479,7 +479,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, uint32 type)
 {
 	nlassert(_Initialised);
-	nlassert(type < (1 << NL_SHEET_ID_TYPE_BITS));
+	nlassert(type < (1 << (NL_SHEET_ID_TYPE_BITS)));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -504,7 +504,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, uint32 type)
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,uint32 type)
 {
 	nlassert(_Initialised);
-	nlassert(type < (1 << NL_SHEET_ID_TYPE_BITS));
+	nlassert(type < (1 << (NL_SHEET_ID_TYPE_BITS)));
 
 	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
@@ -572,7 +572,7 @@ uint32 CSheetId::typeFromFileExtension(const std::string &fileExtension)
 const std::string &CSheetId::fileExtensionFromType(uint32 type)
 {
 	nlassert(_Initialised);
-	nlassert(type < (1<<NL_SHEET_ID_TYPE_BITS));
+	nlassert(type < (1<<(NL_SHEET_ID_TYPE_BITS)));
 
 	return _FileExtensions[type];
 
@@ -585,7 +585,7 @@ const std::string &CSheetId::fileExtensionFromType(uint32 type)
 void	CSheetId::buildSheetId(uint32 shortId, uint32 type)
 {
 	nlassert(shortId < (1<<NL_SHEET_ID_ID_BITS));
-	nlassert(type < (1<<NL_SHEET_ID_TYPE_BITS));
+	nlassert(type < (1<<(NL_SHEET_ID_TYPE_BITS)));
 
 	_Id.IdInfos.Id= shortId;
 	_Id.IdInfos.Type= type;

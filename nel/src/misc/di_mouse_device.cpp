@@ -1,7 +1,7 @@
 /** \file di_mouse_device.cpp
  * TODO: File description
  *
- * $Id: di_mouse_device.cpp,v 1.10 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: di_mouse_device.cpp,v 1.11 2005/05/20 17:25:22 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -62,7 +62,7 @@ CDIMouse::CDIMouse() : _MessageMode(RawMode),
 					   _SwapButton(false)
 
 {
-	std::fill(_MouseButtons, _MouseButtons + MaxNumMouseButtons, 0);
+	std::fill(_MouseButtons, _MouseButtons + MaxNumMouseButtons, false);
 	std::fill(_MouseAxisMode, _MouseAxisMode + NumMouseAxis, Raw);
 	_MouseFrame.setWH(0, 0, 640, 480);	
 }

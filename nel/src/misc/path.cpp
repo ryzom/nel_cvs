@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.114 2005/03/01 09:14:57 vizerie Exp $
+ * $Id: path.cpp,v 1.115 2005/05/25 12:17:27 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1013,7 +1013,12 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	// check if the file exists
 	if (!CFile::isExists (newFile))
 	{
-		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
+		nlwarning ("PATH: CPath::addSearchFile(%s, %d, %s): '%s' is not found, skip it (current dir is '%s'", 
+			file.c_str(), 
+			remap, 
+			virtual_ext.c_str(), 
+			newFile.c_str(),
+			CPath::getCurrentPath().c_str());
 		return;
 	}
 

@@ -1,7 +1,7 @@
 /** \file misc/dynloadlib.h
  * class for dynamic library loading
  *
- * $Id: dynloadlib.h,v 1.3 2005/02/22 10:14:12 besson Exp $
+ * $Id: dynloadlib.h,v 1.4 2005/05/25 12:16:32 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,17 @@ bool			nlFreeLibrary(NL_LIB_HANDLE libHandle);
 /// Generic dynamic library symbol address lookup function.
 void			*nlGetSymbolAddress(NL_LIB_HANDLE libHandle, const std::string &symbolName);
 
+
+// Utility macro to export a module entry point as a C pointer to a C++ class or function
+#define NL_LIB_EXPORT_SYMBOL(symbolName, classOrFunctionName, instancePointer) \
+extern "C"\
+{\
+	NL_LIB_EXPORT classOrFunctionName	*symbolName = instancePointer;\
+};
+
 /*
  *
- * \author Jean-Baptiste Cardouat
+ * \author Boris Boucher
  * \author Nevrax France
  * \date 2004
  */
@@ -86,6 +94,23 @@ class CLibrary
 	/// Lib paths
 	static std::vector<std::string>	_LibPaths;
 
+	/// Private copy constructor, not authorized
+	CLibrary (const CLibrary &other)
+	{
+		// Nothing to do has it is forbiden.
+		// Allowing copy require to manage reference count from CLibrary to the module resource.
+		nlassert(false);
+	}
+
+	// Private assignement operator
+	CLibrary &operator =(const CLibrary &other)
+	{
+		// Nothing to do has it is forbiden.
+		// Allowing assignemnt require to manage reference count from CLibrary to the module resource.
+		nlassert(false);
+		return *this;
+	}
+	
 public:
 	CLibrary();
 	/// Assign a existing module handler to a new dynamic library instance

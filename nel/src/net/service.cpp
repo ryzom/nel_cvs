@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.225 2005/05/09 11:51:26 boucher Exp $
+ * $Id: service.cpp,v 1.226 2005/06/16 12:04:43 berenguier Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1285,81 +1285,87 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			if (WindowDisplayer != NULL)
 			{
-				uint64 rcv, snd, rcvq, sndq;
-				rcv = CUnifiedNetwork::getInstance()->getBytesReceived ();
-				snd = CUnifiedNetwork::getInstance()->getBytesSent ();
-				rcvq = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
-				sndq = CUnifiedNetwork::getInstance()->getSendQueueSize ();
+				static TTime lt = 0; 
+				TTime ct = CTime::getLocalTime(); 
+				if(ct > lt+100) 
+				{ 
+					lt = ct;
+					uint64 rcv, snd, rcvq, sndq;
+					rcv = CUnifiedNetwork::getInstance()->getBytesReceived ();
+					snd = CUnifiedNetwork::getInstance()->getBytesSent ();
+					rcvq = CUnifiedNetwork::getInstance()->getReceiveQueueSize ();
+					sndq = CUnifiedNetwork::getInstance()->getSendQueueSize ();
 
-				for (uint i = 0; i < displayedVariables.size(); i++)
-				{
-					// it s a separator, do nothing
-					if (displayedVariables[i].first.empty())
-						continue;
-
-					// it s a command, do nothing
-					if (displayedVariables[i].first[0] == '@')
-						continue;
-
-					string dispName = displayedVariables[i].first;
-					string varName = dispName;
-					uint32 pos = dispName.find("|");
-					if (pos != string::npos)
+					for (uint i = 0; i < displayedVariables.size(); i++)
 					{
-						varName = displayedVariables[i].first.substr(pos+1);
-						dispName = displayedVariables[i].first.substr(0, pos);
-					}
+						// it s a separator, do nothing
+						if (displayedVariables[i].first.empty())
+							continue;
 
-					if (dispName.empty())
-						str = "";
-					else
-						str = dispName + ": ";
-					
-					mdDisplayVars.clear ();
-					ICommand::execute(varName, logDisplayVars, true);
-					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-					if (strs.size()>0)
-					{
-						str += strs[0].substr(0,strs[0].size()-1);
-						/*
-						string s_ = strs[0];
+						// it s a command, do nothing
+						if (displayedVariables[i].first[0] == '@')
+							continue;
 
-						uint32 pos = strs[0].find("=");
-						if(pos != string::npos && pos + 2 < strs[0].size())
+						string dispName = displayedVariables[i].first;
+						string varName = dispName;
+						uint32 pos = dispName.find("|");
+						if (pos != string::npos)
 						{
-							uint32 pos2 = string::npos;
-							if(strs[0][strs[0].size()-1] == '\n')
-								pos2 = strs[0].size() - pos - 2 - 1;
+							varName = displayedVariables[i].first.substr(pos+1);
+							dispName = displayedVariables[i].first.substr(0, pos);
+						}
 
-							str += strs[0].substr (pos+2, pos2);
+						if (dispName.empty())
+							str = "";
+						else
+							str = dispName + ": ";
+						
+						mdDisplayVars.clear ();
+						ICommand::execute(varName, logDisplayVars, true);
+						const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+						if (strs.size()>0)
+						{
+							str += strs[0].substr(0,strs[0].size()-1);
+							/*
+							string s_ = strs[0];
+
+							uint32 pos = strs[0].find("=");
+							if(pos != string::npos && pos + 2 < strs[0].size())
+							{
+								uint32 pos2 = string::npos;
+								if(strs[0][strs[0].size()-1] == '\n')
+									pos2 = strs[0].size() - pos - 2 - 1;
+
+								str += strs[0].substr (pos+2, pos2);
+							}
+							else
+							{
+								str += "???";
+							}*/
 						}
 						else
 						{
 							str += "???";
-						}*/
+						}
+						mdDisplayVars.unlockStrings();
+						WindowDisplayer->setLabel (displayedVariables[i].second, str);
 					}
-					else
-					{
-						str += "???";
-					}
-					mdDisplayVars.unlockStrings();
-					WindowDisplayer->setLabel (displayedVariables[i].second, str);
+
 				}
 
+	//			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
+
+				CHTimer::endBench();
+				
+				// Resetting the hierarchical timer must be done outside the top-level timer
+				if ( _ResetMeasures )
+				{
+					CHTimer::clear();
+					_ResetMeasures = false;
+				}
+
+				MyTAT.desactivate();
 			}
-
-//			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
-
-			CHTimer::endBench();
-			
-			// Resetting the hierarchical timer must be done outside the top-level timer
-			if ( _ResetMeasures )
-			{
-				CHTimer::clear();
-				_ResetMeasures = false;
-			}
-
-			MyTAT.desactivate();
 		}
 		while (true);
 	}

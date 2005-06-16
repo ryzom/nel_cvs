@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.19 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: admin.cpp,v 1.20 2005/06/16 12:04:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -647,11 +647,6 @@ void initAdmin (bool dontUseAES)
 
 void updateAdmin()
 {
-	string str;
-	CLog logDisplayVars;
-	CLightMemDisplayer mdDisplayVars;
-	logDisplayVars.addDisplayer (&mdDisplayVars);
-	
 	uint32 CurrentTime = CTime::getSecondsSince1970();
 
 
@@ -670,6 +665,11 @@ void updateAdmin()
 	
 	if (CurrentTime >= lastGraphUpdateCheck+1)
 	{
+		string str;
+		CLog logDisplayVars;
+		CLightMemDisplayer mdDisplayVars;
+		logDisplayVars.addDisplayer (&mdDisplayVars);
+		
 		lastGraphUpdateCheck = CurrentTime;
 
 		CMessage msgout ("GRAPH_UPDATE");
@@ -731,6 +731,11 @@ void updateAdmin()
 
 	if (CurrentTime >= lastAlarmsCheck+AlarmCheckDelay)
 	{
+		string str;
+		CLog logDisplayVars;
+		CLightMemDisplayer mdDisplayVars;
+		logDisplayVars.addDisplayer (&mdDisplayVars);
+		
 		lastAlarmsCheck = CTime::getSecondsSince1970();
 
 		for (uint i = 0; i < Alarms.size(); )

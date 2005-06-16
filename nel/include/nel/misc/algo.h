@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.13 2005/02/22 10:14:12 besson Exp $
+ * $Id: algo.h,v 1.14 2005/06/16 17:14:36 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -169,6 +169,7 @@ bool		testWildCard(const std::string &strIn, const std::string &wildCard);
  */
 void		splitString(const std::string &str, const std::string &separator, std::vector<std::string> &retList);
 
+void		splitUCString(const ucstring &ucstr, const ucstring &separator, std::vector<ucstring> &retList);
 
 // ***************************************************************************
 /// In a string or ucstring, find a substr and replace it with an other. return true if replaced

@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * TODO: File description
  *
- * $Id: algo.cpp,v 1.9 2004/11/15 10:25:02 lecroart Exp $
+ * $Id: algo.cpp,v 1.10 2005/06/16 17:14:37 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -135,6 +135,26 @@ void		splitString(const std::string &str, const std::string &separator, std::vec
 	// copy the last substr
 	if( pos<(uint)str.size() )
 		retList.push_back(str.substr(pos, str.size()-pos));
+}
+
+
+// ***************************************************************************
+void		splitUCString(const ucstring &ucstr, const ucstring &separator, std::vector<ucstring> &retList)
+{
+	uint	pos=0;
+	uint	newPos=0;
+	retList.clear();
+	while( (newPos= ucstr.find(separator,pos)) != ucstring::npos)
+	{
+		// if not empty sub str. (skip repetition of separator )
+		if(newPos-pos>0)
+			retList.push_back(ucstr.substr(pos, newPos-pos));
+		// skip token
+		pos= newPos+separator.size();
+	}
+	// copy the last substr
+	if( pos<(uint)ucstr.size() )
+		retList.push_back(ucstr.substr(pos, ucstr.size()-pos));
 }
 
 // ***************************************************************************

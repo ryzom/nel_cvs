@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.226 2005/06/16 12:04:43 berenguier Exp $
+ * $Id: service.cpp,v 1.227 2005/06/17 09:47:49 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1353,19 +1353,20 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 				}
 
-	//			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
-
-				CHTimer::endBench();
-				
-				// Resetting the hierarchical timer must be done outside the top-level timer
-				if ( _ResetMeasures )
-				{
-					CHTimer::clear();
-					_ResetMeasures = false;
-				}
-
-				MyTAT.desactivate();
 			}
+
+			// nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
+
+			CHTimer::endBench();
+			
+			// Resetting the hierarchical timer must be done outside the top-level timer
+			if ( _ResetMeasures )
+			{
+				CHTimer::clear();
+				_ResetMeasures = false;
+			}
+
+			MyTAT.desactivate();
 		}
 		while (true);
 	}

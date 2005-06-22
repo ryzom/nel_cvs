@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.28 2005/03/31 13:42:29 berenguier Exp $
+ * $Id: bitmap.h,v 1.29 2005/06/22 07:54:10 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -579,9 +579,6 @@ public:
 	  */
 	void blend(CBitmap &Bm0, CBitmap &Bm1, uint16 factor, bool inputBitmapIsMutable = false);
 
-	void getData(uint8*& extractData);
-
-	void getDibData(uint8*& extractData);
 };
 
 

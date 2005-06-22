@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.57 2005/04/04 10:24:59 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.58 2005/06/22 07:53:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3493,54 +3493,6 @@ void CBitmap::unattachPixels(CObjectVector<uint8> *mipmapDestArray, uint maxMipM
 	_LoadGrayscaleAsAlpha = true;
 }
 
-
-
-void CBitmap::getData(uint8*& extractData)
-{
-
-	uint32 size;
-	if(PixelFormat==RGBA)
-		size=_Width*_Height*4;
-	else if(PixelFormat==Alpha|Luminance)
-		size=_Width*_Height;
-
-	for(uint32 pix=0;pix<size;pix++)
-		extractData[pix]=_Data[0][pix];
-
-}
-
-void CBitmap::getDibData(uint8*& extractData)
-{
-
-	uint32 lineSize,size;
-	uint8** buf;
-	buf=new uint8*[_Height];
-	if(PixelFormat==RGBA)
-	{
-		lineSize=_Width*4;
-		
-
-	}
-	else if(PixelFormat==Alpha|Luminance)
-	{
-		lineSize=_Width;
-	}
-
-	for(sint32 i=_Height-1;i>=0;i--)
-	{
-		buf[_Height-1-i]=&_Data[0][i*lineSize];
-	}
-
-	size=lineSize*_Height;
-	
-	for(uint32 line=0;line<_Height;line++)
-	{
-		for(uint32 pix=0;pix<lineSize;pix++)
-			extractData[line*lineSize+pix]=_Data[0][size-(line+1)*lineSize+pix];
-	}
-	delete []buf;
-
-}
 
 } // NLMISC
 

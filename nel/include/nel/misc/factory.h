@@ -1,7 +1,7 @@
 /** \file factory.h
  * class for factory
  *
- * $Id: factory.h,v 1.2 2005/02/22 10:14:12 besson Exp $
+ * $Id: factory.h,v 1.3 2005/06/23 16:29:56 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #define FACTORY_H
 
 #include "types_nl.h"
+#include "debug.h"
 #include <map>
 
 namespace NLMISC
@@ -68,8 +69,8 @@ public:
  *
  *	The factory conformes to singleton design pattern.
  *	
- *	BaseClass must provide a typedef for TCTorParam and corresponding to the parameter
- *	required by the constructor.
+ *	BaseClass must provide a typedef for TCTorParam corresponding to the parameter
+ *	required by the constructor of factored object.
  */
 template <class BaseClass, class KeyType = std::string>
 class CFactory
@@ -81,16 +82,18 @@ public:
 	/// Get the singleton instance reference.
 	static CFactory &instance()
 	{
-		if (!_Instance)
+		// Singleton instance pointer.
+		static CFactory	instance = NULL;
+		if (!instance)
 		{
-			_Instance = new CFactory();
+			instance = new CFactory();
 		}
-		return *_Instance;
+		return *instance;
 	}
 
 	/** Register a factorable object in the factory.
 	 *	The method receive the key for this factorable object and
-	 *	a pointer on the an interface of a factory register object.
+	 *	a pointer on the interface of a factory register object.
 	 */
 	void registerClass(const KeyType &key, IFactoryRegister<BaseClass> *factoryRegister)
 	{
@@ -111,9 +114,9 @@ public:
 		else
 			return it->second->createObject(ctorParam);
 	}
-private:
+protected:
 	/// Singleton instance pointer.
-	static CFactory	*_Instance;
+//	static CFactory	*_Instance;
 
 	/// Container of all registered factorable object.
 	TRegisterCont	_FactoryRegisters;
@@ -149,7 +152,7 @@ public:
  *	Place this macro in an appropriate cpp file to declare a factory implementation.
  *	You just need to specify the base class type and key type.
  */
-#define NLMISC_IMPLEMENT_FACTORY(baseClass, keyType)	NLMISC::CFactory<baseClass, keyType>	*NLMISC::CFactory<baseClass, keyType>::_Instance = NULL
+//#define NLMISC_IMPLEMENT_FACTORY(baseClass, keyType)	NLMISC::CFactory<baseClass, keyType>	*NLMISC::CFactory<baseClass, keyType>::_Instance = NULL
 
 /** Macro to declare a factorable object.
  *	Place this macro in a cpp file after your factorable class declaration.
@@ -179,6 +182,10 @@ public:
  *
  *	The indirect factory conformes to singleton design pattern.
  *	
+ *	In indirect factory, the object returned by the factory are not instance of factored object
+ *	but instance of 'sub' factory that do the real job.
+ *	This can be useful in some case, like adapting existing code into a factory
+ *	or having a complex constructor (or more than one constructor).
  */
 template <class BaseFactoryClass, class KeyType = std::string>
 class CFactoryIndirect
@@ -189,11 +196,12 @@ public:
 	/// Get the singleton instance reference.
 	static CFactoryIndirect &instance()
 	{
-		if (!_Instance)
+		static CFactoryIndirect	*instance = NULL;
+		if (!instance)
 		{
-			_Instance = new CFactoryIndirect();
+			instance = new CFactoryIndirect();
 		}
-		return *_Instance;
+		return *instance;
 	}
 
 	void registerClass(const KeyType &key, IFactoryIndirectRegister<BaseFactoryClass> *factoryRegister)
@@ -210,8 +218,17 @@ public:
 		else
 			return it->second->getFactory();
 	}
-private:
-	static CFactoryIndirect	*_Instance;
+	// Add some introspection
+	void fillFactoryList(std::vector<KeyType> &moduleList)
+	{
+		TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
+		for (; first != last; ++first)
+		{
+			moduleList.push_back(first->first);
+		}
+	}
+protected:
+//	static CFactoryIndirect	*_Instance;
 
 	TRegisterCont	_FactoryRegisters;
 };
@@ -233,8 +250,9 @@ public:
 	}
 };
 
-#define NLMISC_IMPLEMENT_FACTORY_INDIRECT(baseFactoryClass, keyType)	NLMISC::CFactoryIndirect<baseFactoryClass, keyType>	*NLMISC::CFactoryIndirect<baseFactoryClass, keyType>::_Instance = NULL
+//#define NLMISC_IMPLEMENT_FACTORY_INDIRECT(baseFactoryClass, keyType)	NLMISC::CFactoryIndirect<baseFactoryClass, keyType>	*NLMISC::CFactoryIndirect<baseFactoryClass, keyType>::_Instance = NULL
 
+#define NLMISC_GET_FACTORY_INDIRECT_REGISTRY(baseFactoryClass, keyType)	NLMISC::CFactoryIndirect<baseFactoryClass, keyType>::getInstance()
 #define NLMISC_REGISTER_OBJECT_INDIRECT(baseFactoryClass, specializedFactoryClass, keyType, keyValue)	NLMISC::CFactoryIndirectRegister<CFactoryIndirect<baseFactoryClass, keyType>, baseFactoryClass, specializedFactoryClass, keyType>	RegisterIndirect##specializedFactoryClass(keyValue)
 #define NLMISC_DECLARE_OBJECT_INDIRECT(baseFactoryClass, specializedFactoryClass, keyType)	extern NLMISC::CFactoryIndirectRegister<CFactoryIndirect<baseFactoryClass, keyType>, baseFactoryClass, specializedFactoryClass, keyType>	RegisterIndirect##specializedFactoryClass
 

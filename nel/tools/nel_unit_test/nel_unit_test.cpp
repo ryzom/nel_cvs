@@ -3,9 +3,12 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/path.h"
+#include "nel/misc/file.h"
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <ostream>
+#include <streambuf>
 #include <fstream>
 
 #include "src/cpptest.h"
@@ -14,6 +17,27 @@ using namespace std;
 using namespace NLMISC;
 
 
+#ifdef _MSC_VER
+
+/** A special stream buffer that output in the 'output debug string' feature of windows.
+ */
+class CDebugOutput : public streambuf
+{
+	int_type overflow(int_type c)
+	{
+		string str(pbase(), pptr());
+
+		if (c != traits_type::eof())
+			str += c;
+		OutputDebugString(str.c_str() );
+
+		return c;
+	}
+};
+// The instance of the streambug
+ostream msvDebug(new CDebugOutput);
+
+#endif
 
 enum OutputType
 {
@@ -49,7 +73,15 @@ cmdline(int argc, char* argv[])
 	{
 		const char* arg = argv[1];
 		if (strcmp(arg, "--compiler") == 0)
+		{
+#ifdef _MSC_VER
+			output = new Test::CompilerOutput(Test::CompilerOutput::MSVC, msvDebug);
+#elif defined(__GNUC__)
+			output = new Test::CompilerOutput(Test::CompilerOutput::GCC);
+#else
 			output = new Test::CompilerOutput;
+#endif
+		}
 		else if (strcmp(arg, "--html") == 0)
 			output =  new Test::HtmlOutput;
 		else if (strcmp(arg, "--text-terse") == 0)
@@ -78,6 +110,18 @@ struct TLibraryInfo
 int
 main(int argc, char* argv[])
 {
+	char *outputFileName = "result.html";
+
+	// cleanup the output file
+	{
+		NLMISC::COFile of(outputFileName);
+
+		char *text = "<html><body><h1>Test failed</h1></body></html>";
+		of.serialBuffer((uint8*)text, strlen(text));
+	}
+
+	// init Nel context
+	new NLMISC::CApplicationContext;
 	std::vector<TLibraryInfo*>	testLibs;
 	try
 	{
@@ -135,7 +179,7 @@ main(int argc, char* argv[])
 
 			if (entryPoint != NULL)
 			{
-				// Get the test suite pointera and give it the working path
+				// Get the test suite pointer and give it the working path
 				auto_ptr<Test::Suite> ptr = entryPoint(testLibs[i]->WorkingPath);
 				ts.add(ptr);
 			}
@@ -146,7 +190,7 @@ main(int argc, char* argv[])
 		// Run the tests
 		//
 		auto_ptr<Test::Output> output(cmdline(argc, argv));
-		if (ts.run(*output, true))
+		if (ts.run(*output, false))
 		{
 			// Restore the working path
 			CPath::setCurrentPath(currentPath.c_str());

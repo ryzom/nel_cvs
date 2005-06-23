@@ -186,6 +186,8 @@ private:
 
 auto_ptr<Test::Suite> intRegisterTestSuite(const std::string &workingPath)
 {
+	// initialise a Nel context
+	new CApplicationContext();
 	return static_cast<Test::Suite*>(new CLigoTS(workingPath));
 }
 

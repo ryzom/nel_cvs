@@ -204,13 +204,17 @@ private:
 
 		}
 
-		string ref = "Listing 3 Instance counters :\n"
+		string ref = "Listing 5 Instance counters :\n"
 					 "  Class 'CFoo1               ', \t        10 instances, \t        10 delta\n"
 					 "  Class 'CFoo2               ', \t        20 instances, \t        20 delta\n"
-					 "  Class 'CFoo3               ', \t        10 instances, \t        10 delta\n";
+					 "  Class 'CFoo3               ', \t        10 instances, \t        10 delta\n"
+					 "  Class 'CSafeSingleton      ', \t         0 instances, \t         0 delta\n"
+					 "  Class 'CUnsafeSingleton    ', \t         0 instances, \t         0 delta\n";
 
 		string ret = NLMISC::CInstanceCounterManager::getInstance().displayCounters();
 
+		printf("%s", ref.c_str());
+		printf("%s", ret.c_str());
 		TEST_ASSERT(ref == ret);
 	}
 
@@ -375,6 +379,33 @@ private:
 
 };
 
+// Test suite for CLibrary utility method
+class CLibraryTS : public Test::Suite
+{
+public:
+	CLibraryTS ()
+	{
+		TEST_ADD(CLibraryTS ::libraryNameDecoration)
+	}
+	
+	void libraryNameDecoration()
+	{
+		string libName = "libmylib_with_dll_so_some_very_bad_rd_df_tag_inside_df";
+		string fileName = "some/path/to/add/difficulties/"+NLMISC::CLibrary::makeLibName(libName);
+		string cleanedName = NLMISC::CLibrary::cleanLibName(fileName);
+
+
+		TEST_ASSERT(cleanedName == libName);
+	}
+};
+
+
+
+Test::Suite *createSafeSingletonTS();
+Test::Suite *createCSStringTS();
+Test::Suite *createObjectCommandTS();
+Test::Suite *createPureNelLibTS();
+
 
 // global test for any misc feature
 class CMiscTS : public Test::Suite
@@ -384,6 +415,16 @@ public:
 	{
 		add(auto_ptr<Test::Suite>(new CFileTS(workingPath)));
 		add(auto_ptr<Test::Suite>(new CInstanceCounterTS(workingPath)));
+		add(auto_ptr<Test::Suite>(new CLibraryTS()));
+		add(auto_ptr<Test::Suite>(createPureNelLibTS()));
+		add(auto_ptr<Test::Suite>(createSafeSingletonTS()));
+		add(auto_ptr<Test::Suite>(createCSStringTS()));
+		add(auto_ptr<Test::Suite>(createObjectCommandTS()));
+
+		// initialise the application context
+		new NLMISC::CApplicationContext;
+
+		NLMISC::createDebug();
 	}
 	
 private:

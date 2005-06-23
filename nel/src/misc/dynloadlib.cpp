@@ -69,10 +69,10 @@ void *nlGetSymbolAddress(NL_LIB_HANDLE libHandle, const std::string &procName)
 
 // Again some OS specifics stuff
 #if defined (NL_OS_WINDOWS)
-  const string	NL_LIB_PREFIXE;	// empty
+  const string	NL_LIB_PREFIX;	// empty
   const string	NL_LIB_EXT(".dll");
 #elif defined (NL_OS_UNIX)
-  const string	NL_LIB_PREFIXE("lib");
+  const string	NL_LIB_PREFIX("lib");
   const string	NL_LIB_EXT(".so");
 #else
 #error "You must define the default dynamic lib extention"
@@ -81,30 +81,68 @@ void *nlGetSymbolAddress(NL_LIB_HANDLE libHandle, const std::string &procName)
 // Compilation mode specific suffixes
 #if defined (NL_OS_WINDOWS)
  #ifdef NL_DEBUG_INSTRUMENT
-  const string	NL_LIB_SUFFIXE("_di");
+  const string	NL_LIB_SUFFIX("_di");
  #elif defined (NL_DEBUG_FAST)
-   const string	NL_LIB_SUFFIXE("_df");
+   const string	NL_LIB_SUFFIX("_df");
  #elif defined (NL_DEBUG)
-   const string	NL_LIB_SUFFIXE("_d");
+   const string	NL_LIB_SUFFIX("_d");
  #elif defined (NL_RELEASE_DEBUG)
-   const string	NL_LIB_SUFFIXE("_rd");
+   const string	NL_LIB_SUFFIX("_rd");
  #elif defined (NL_RELEASE)
-   const string	NL_LIB_SUFFIXE("_r");
+   const string	NL_LIB_SUFFIX("_r");
  #else
-   #error "Unknown compilation mode, can't build suffixe"
+   #error "Unknown compilation mode, can't build suffix"
  #endif
 #elif defined (NL_OS_UNIX)
-   const string	NL_LIB_SUFFIXE;	// empty
+   const string	NL_LIB_SUFFIX;	// empty
 #else
- #error "Lib suffixe not defined for your platform"
+ #error "Lib suffix not defined for your platform"
 #endif
 
 std::vector<std::string>	CLibrary::_LibPaths;
 
 
+CLibrary::CLibrary (const CLibrary &other)
+{
+	// Nothing to do has it is forbidden.
+	// Allowing copy require to manage reference count from CLibrary to the module resource.
+	nlassert(false);
+}
+
+CLibrary &CLibrary::operator =(const CLibrary &other)
+{
+	// Nothing to do has it is forbidden.
+	// Allowing assignment require to manage reference count from CLibrary to the module resource.
+	nlassert(false);
+	return *this;
+}
+
+
+
 std::string CLibrary::makeLibName(const std::string &baseName)
 {
-	return NL_LIB_PREFIXE+baseName+NL_LIB_SUFFIXE+NL_LIB_EXT;
+	return NL_LIB_PREFIX+baseName+NL_LIB_SUFFIX+NL_LIB_EXT;
+}
+
+std::string CLibrary::cleanLibName(const std::string &decoratedName)
+{
+	// remove path and extension
+	string ret = CFile::getFilenameWithoutExtension(decoratedName);
+
+	if (!NL_LIB_PREFIX.empty())
+	{
+		// remove prefix
+		if (ret.find(NL_LIB_PREFIX) == 0)
+			ret = ret.substr(NL_LIB_PREFIX.size());
+	}
+	if (!NL_LIB_SUFFIX.empty())
+	{
+		// remove suffix
+		if (ret.substr(ret.size()-NL_LIB_SUFFIX.size()) == NL_LIB_SUFFIX)
+			ret = ret.substr(0, ret.size() - NL_LIB_SUFFIX.size());
+	}
+
+	return ret;
 }
 
 void CLibrary::addLibPaths(const std::vector<std::string> &paths)
@@ -134,20 +172,23 @@ void CLibrary::addLibPath(const std::string &path)
 	
 CLibrary::CLibrary()
 :	_LibHandle(NULL),
-	_Ownership(true)
+	_Ownership(true),
+	_PureNelLibrary(NULL)
 {
 }
 
 CLibrary::CLibrary(NL_LIB_HANDLE libHandle, bool ownership)
+: _PureNelLibrary(NULL)
 {
 	_LibHandle = libHandle;
 	_Ownership = ownership;
 	_LibFileName = "unknown";
 }
 
-CLibrary::CLibrary(const std::string &libName, bool addNelSuffixe, bool tryLibPath, bool ownership)
+CLibrary::CLibrary(const std::string &libName, bool addNelDecoration, bool tryLibPath, bool ownership)
+: _PureNelLibrary(NULL)
 {
-	loadLibrary(libName, addNelSuffixe, tryLibPath, ownership);
+	loadLibrary(libName, addNelDecoration, tryLibPath, ownership);
 	// Assert here !
 	nlassert(_LibHandle);
 }
@@ -161,12 +202,12 @@ CLibrary::~CLibrary()
 	}
 }
 
-bool CLibrary::loadLibrary(const std::string &libName, bool addNelSuffixe, bool tryLibPath, bool ownership)
+bool CLibrary::loadLibrary(const std::string &libName, bool addNelDecoration, bool tryLibPath, bool ownership)
 {
 	_Ownership = ownership;
 	string libPath = libName;
 
-	if (addNelSuffixe)
+	if (addNelDecoration)
 		libPath = makeLibName(libPath);
 
 	if (tryLibPath)
@@ -191,11 +232,23 @@ bool CLibrary::loadLibrary(const std::string &libName, bool addNelSuffixe, bool 
 	_LibFileName = libPath;
 	// MTR: some new error handling. Just logs if it couldn't load the handle.
 	if(_LibHandle == NULL) {
-		char *errormsg="Verify DLL existance.";
+		char *errormsg="Verify DLL existence.";
 #ifdef NL_OS_UNIX
 		errormsg=dlerror();
 #endif
 		nlwarning("Loading library %s failed: %s", libPath.c_str(), errormsg);
+	}
+	else
+	{
+		// check for 'pure' nel library
+		void *entryPoint = getSymbolAddress(NL_MACRO_TO_STR(NLMISC_PURE_LIB_ENTRY_POINT));
+		if (entryPoint != NULL)
+		{
+			// rebuild the interface pointer
+			_PureNelLibrary = *(reinterpret_cast<INelLibrary**>(entryPoint));
+			// call the private initialisation method.
+			_PureNelLibrary->_onLibraryLoaded(INelContext::getInstance());
+		}
 	}
 
 	return _LibHandle != NULL;
@@ -206,20 +259,89 @@ void CLibrary::freeLibrary()
 	if (_LibHandle)
 	{
 		nlassert(_Ownership);
+
+		if (_PureNelLibrary)
+		{
+			// call the private finalisation method.
+			_PureNelLibrary->_onLibraryUnloaded();
+		}
+
 		nlFreeLibrary(_LibHandle);
 
+		_PureNelLibrary = NULL;
 		_LibHandle = NULL;
 		_Ownership = false;
 		_LibFileName = "";
 	}
 }
 
-void *CLibrary::getSymbolAddress(const std::string &procName)
+void *CLibrary::getSymbolAddress(const std::string &symbolName)
 {
 	nlassert(_LibHandle != NULL);
 
-	return nlGetSymbolAddress(_LibHandle, procName);
+	return nlGetSymbolAddress(_LibHandle, symbolName);
 }
+
+bool CLibrary::isLibraryLoaded()
+{
+	return _LibHandle != NULL;
+}
+
+bool CLibrary::isLibraryPure()
+{
+	return _LibHandle != NULL && _PureNelLibrary != NULL;
+}
+
+INelLibrary *CLibrary::getNelLibraryInterface()
+{
+	if (!isLibraryPure())
+		return NULL;
+
+	return _PureNelLibrary;
+}
+
+
+INelLibrary::~INelLibrary()
+{
+	// cleanup ram
+	if (_LibContext != NULL)
+		delete _LibContext;
+}
+
+
+void INelLibrary::_onLibraryLoaded(INelContext &nelContext)
+{
+	++_LoadingCounter;
+
+	if (_LoadingCounter == 1)
+	{
+		// initialise Nel context
+		nlassert(!NLMISC::INelContext::isContextInitialised());
+
+		_LibContext = new CLibraryContext(nelContext);
+	}
+	else
+	{
+		nlassert(NLMISC::INelContext::isContextInitialised());
+	}
+
+	onLibraryLoaded(_LoadingCounter==1);
+}
+
+void INelLibrary::_onLibraryUnloaded()
+{
+	nlassert(_LoadingCounter > 0);
+	
+	onLibraryUnloaded(_LoadingCounter == 1);
+
+	--_LoadingCounter;
+}
+
+uint32	INelLibrary::getLoadingCounter()
+{
+	return _LoadingCounter;
+}
+
 
 
 }	// namespace NLMISC

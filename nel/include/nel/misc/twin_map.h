@@ -1,6 +1,6 @@
 /** \file twin_map.h
  *
- * $Id: twin_map.h,v 1.2 2004/12/14 10:44:09 guignot Exp $
+ * $Id: twin_map.h,v 1.3 2005/06/23 16:31:13 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -65,13 +65,13 @@ public:
 	// add a couple in the twin map. An assertion is raised if either valueA or valueB were already present in the map
 	inline void			add(const TypeA &valueA, const TypeB &valueB);
 	// retrieves value of type 'TypeB' associated with 'valueA', or NULL if not found
-	inline const TypeA *get(const TypeB &valueB) const;
+	inline const TypeA *getA(const TypeB &valueB) const;
 	// retrieves value of type 'TypeB' associated with 'valueA', or NULL if not found
-	inline const TypeB *get(const TypeA &valueA) const;
+	inline const TypeB *getB(const TypeA &valueA) const;
 	// removes a couple from its TypeA value
-	inline void			remove(const TypeA &valueA);
+	inline void			removeWithA(const TypeA &valueA);
 	// removes a couple from its TypeB value
-	inline void			remove(const TypeB &valueB);	
+	inline void			removeWithB(const TypeB &valueB);	
 	// Direct read access to 'TypeA to TypeB' map
 	const TAToBMap	   &getAToBMap() const { return _AToB; }
 	// Direct read access to 'TypeB to TypeA' map
@@ -89,15 +89,15 @@ private:
 template <class TypeA, class TypeB>
 inline void	CTwinMap<TypeA, TypeB>::add(const TypeA &valueA, const TypeB &valueB)
 {
-	nlassert(!get(valueA));
-	nlassert(!get(valueB));
+	nlassert(!getB(valueA));
+	nlassert(!getA(valueB));
 	_AToB[valueA] = valueB;
 	_BToA[valueB] = valueA;
 }
 
 //==================================================================================================
 template <class TypeA, class TypeB>
-inline const TypeA *CTwinMap<TypeA, TypeB>::get(const TypeB &valueB) const
+inline const TypeA *CTwinMap<TypeA, TypeB>::getA(const TypeB &valueB) const
 {
 	typename TBToAMap::const_iterator it = _BToA.find(valueB);
 	if (it == _BToA.end()) return NULL;
@@ -106,7 +106,7 @@ inline const TypeA *CTwinMap<TypeA, TypeB>::get(const TypeB &valueB) const
 
 //==================================================================================================
 template <class TypeA, class TypeB>
-inline const TypeB *CTwinMap<TypeA, TypeB>::get(const TypeA &valueA) const
+inline const TypeB *CTwinMap<TypeA, TypeB>::getB(const TypeA &valueA) const
 {
 	typename TAToBMap::const_iterator it = _AToB.find(valueA);
 	if (it == _AToB.end()) return NULL;
@@ -115,7 +115,7 @@ inline const TypeB *CTwinMap<TypeA, TypeB>::get(const TypeA &valueA) const
 
 //==================================================================================================
 template <class TypeA, class TypeB>
-inline void	CTwinMap<TypeA, TypeB>::remove(const TypeA &valueA)
+inline void	CTwinMap<TypeA, TypeB>::removeWithA(const TypeA &valueA)
 {
 	typename TAToBMap::iterator itA = _AToB.find(valueA);
 	nlassert(itA != _AToB.end());
@@ -127,11 +127,11 @@ inline void	CTwinMap<TypeA, TypeB>::remove(const TypeA &valueA)
 
 //==================================================================================================
 template <class TypeA, class TypeB>
-inline void	CTwinMap<TypeA, TypeB>::remove(const TypeB &valueB)
+inline void	CTwinMap<TypeA, TypeB>::removeWithB(const TypeB &valueB)
 {	
 	typename TBToAMap::iterator itB = _BToA.find(valueB);
 	nlassert(itB != _BToA.end());
-	typename TAToBMap::iterator itA = _AToB.find(itB.second);
+	typename TAToBMap::iterator itA = _AToB.find(itB->second);
 	nlassert(itA != _AToB.end());
 	_AToB.erase(itA);
 	_BToA.erase(itB);

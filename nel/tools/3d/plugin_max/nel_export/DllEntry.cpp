@@ -1,7 +1,7 @@
 /** \file dllentry.cpp
  * TODO: File description
  *
- * $Id: DllEntry.cpp,v 1.3 2004/11/15 10:25:09 lecroart Exp $
+ * $Id: DllEntry.cpp,v 1.4 2005/06/23 18:18:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "3d/register_3d.h"
+#include "nel/misc/app_context.h"
 
 
 extern ClassDesc2* GetCNelExportDesc();
@@ -36,6 +37,10 @@ int controlsInit = FALSE;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
+	// initialize nel context
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext();
+			
 	hInstance = hinstDLL;				// Hang on to this DLL's instance handle.
 
 	NL3D::registerSerial3d();

@@ -1,7 +1,7 @@
 /** \file dllentry.cpp
  * TODO: File description
  *
- * $Id: DllEntry.cpp,v 1.2 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: DllEntry.cpp,v 1.3 2005/06/23 18:18:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "tile_utility.h"
 #include <nel/misc/common.h>
+#include "nel/misc/app_context.h"
 #include <vector>
 
 extern ClassDesc2* GetTile_utilityDesc();
@@ -41,6 +42,10 @@ int controlsInit = FALSE;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 {
+	// initialize nel context
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext();
+			
 	hInstance = hinstDLL;				// Hang on to this DLL's instance handle.
 
 	if (!controlsInit) {

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.131 2005/01/05 10:35:06 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.132 2005/06/23 18:18:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -616,6 +616,10 @@ void CObjectViewer::initCamera ()
 bool CObjectViewer::initUI (HWND parent)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
+
+	// initialize NeL context if needed
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext;
 
 	// The fonts manager
 	_FontManager.setMaxMemory(2000000);

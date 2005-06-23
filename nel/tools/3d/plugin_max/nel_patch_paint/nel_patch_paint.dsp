@@ -46,7 +46,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "..\..\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "../../../../include" /I "../../../../src" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Yu"stdafx.h" /FD /Zm400 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -78,7 +78,7 @@ PreLink_Cmds=buildinc version.ver nel_patch_paint.rc	rc /l 0x409 /fo"Release/nel
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "..\..\include" /D "_WINDOWS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"stdafx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "../../../../include" /I "../../../../src" /D "_WINDOWS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -105,7 +105,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G5 /MD /W3 /Gm /GX /Zi /Od /I "..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Yu"mods.h" /c
-# ADD CPP /nologo /G6 /MD /W3 /Gm /GR /GX /ZI /Od /I "..\..\include" /D "WIN32" /D "_WINDOWS" /D "__STL_DEBUG" /Fr /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /Gm /GR /GX /ZI /Od /I "../../../../include" /I "../../../../src" /D "WIN32" /D "_WINDOWS" /D "__STL_DEBUG" /Fr /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -133,7 +133,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "..\..\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "..\..\include" /D "_WINDOWS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /Yu"stdafx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "../../../../include" /I "../../../../src" /D "_WINDOWS" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -162,7 +162,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "..\..\include" /D "_WINDOWS" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /FR /Yu"stdafx.h" /FD /Zm200 /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "..\..\include" /D "_WINDOWS" /D "WIN32" /D "_DEBUG" /D "NL_DEBUG_FAST" /FR /Yu"stdafx.h" /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "../../../../include" /I "../../../../src" /D "_WINDOWS" /D "WIN32" /D "_DEBUG" /D "NL_DEBUG_FAST" /FR /Yu"stdafx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"

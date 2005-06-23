@@ -11,6 +11,7 @@
  *>	Copyright (c) 1997, All Rights Reserved.
  **********************************************************************/
 #include "ligoscape_utility.h"
+#include "nel/misc/app_context.h"
 
 #ifdef NL_NEW
 	#undef new
@@ -37,6 +38,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 		InitCustomControls(hInstance);	// Initialize MAX's custom controls
 		InitCommonControls();			// Initialize Win95 controls
 	}
+
+	// initialize nel context
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext();
 			
 	return (TRUE);
 }

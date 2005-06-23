@@ -46,7 +46,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "C:\3dsmax3_1\Maxsdk\include" /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "C:\3dsmax3_1\Maxsdk\include" /I "../../../../include" /I "../../../../src" /D "NDEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -72,7 +72,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include" /D "__STL_DEBUG" /D "_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include" /I "../../../../include" /I "../../../../src" /D "__STL_DEBUG" /D "_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -99,7 +99,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MD /W3 /Gm /GR /GX /ZI /Od /I "C:\3dsmax3_1\Maxsdk\include" /D "_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /Gm /GR /GX /ZI /Od /I "C:\3dsmax3_1\Maxsdk\include" /I "../../../../include" /I "../../../../src" /D "_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -126,7 +126,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MD /W3 /GR /GX /O2 /I "C:\3dsmax3_1\Maxsdk\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "C:\3dsmax3_1\Maxsdk\include" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /Zm200 /c
+# ADD CPP /nologo /G6 /MD /W3 /GR /GX /Zi /O2 /I "C:\3dsmax3_1\Maxsdk\include" /I "../../../../include" /I "../../../../src" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -153,7 +153,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include" /D "_WINDOWS" /D "WIN32" /D "_DEBUG" /D "__STL_DEBUG" /YX /FD /c
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /c
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include" /I "../../../../include" /I "../../../../src" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "_WINDOWS" /D "WIN32" /D "NL_NO_DEFINE_NEW" /YX /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"

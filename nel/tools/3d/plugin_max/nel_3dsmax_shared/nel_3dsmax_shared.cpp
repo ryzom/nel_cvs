@@ -1,7 +1,7 @@
 /** \file nel_3dsmax_shared.cpp
  * Defines the entry point for the DLL application.
  *
- * $Id: nel_3dsmax_shared.cpp,v 1.2 2001/08/10 07:50:57 corvazier Exp $
+ * $Id: nel_3dsmax_shared.cpp,v 1.3 2005/06/23 18:18:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,18 @@
 #include "stdafx.h"
 #include "..\nel_patch_lib\rpo.h"
 #include "nel_3dsmax_shared.h"
+#include "nel/misc/app_context.h"
+
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
                        LPVOID lpReserved
 					 )
 {
+	// initialize nel context
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext();
+			
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:

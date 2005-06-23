@@ -1,7 +1,7 @@
 /** \file s3tc_compressor.cpp
  * TODO: File description
  *
- * $Id: s3tc_compressor.cpp,v 1.5 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: s3tc_compressor.cpp,v 1.6 2005/06/23 18:18:11 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -123,7 +123,7 @@ static void		compressMipMap(uint8 *pixSrc, sint width, sint height, vector<uint8
 			for(sint x=0;x<wBlock;x++)
 			{
 				// get comp dest
-				uint8	*pixDst= compdata.begin() + (y*wBlock + x) * 16;
+				uint8	*pixDst= &(*(compdata.begin() + (y*wBlock + x) * 16));
 				uint16	rgb0= *(uint16*)(pixDst+8);
 				uint16	rgb1= *(uint16*)(pixDst+10);
 				/* If S3TC decided to use "50% decode table" (case rgb0<=rgb1), this is an error

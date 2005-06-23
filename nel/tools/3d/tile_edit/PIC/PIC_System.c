@@ -110,7 +110,7 @@ void PIC_ResetError(void)
 // -----
 unsigned char PIC_OnErrorCall( void pFnct(void) )
 {
-	if (pFnct)
+	if (pFnct != NULL)
 	{
 		PIC_Sys_Fnct=pFnct;
 		PIC_Sys_FnctActive=1;

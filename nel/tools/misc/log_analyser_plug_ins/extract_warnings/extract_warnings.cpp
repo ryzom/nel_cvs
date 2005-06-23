@@ -1,7 +1,7 @@
 /** \file extract_warnings.cpp
  * Defines the entry point for the DLL application
  *
- * $Id: extract_warnings.cpp,v 1.2 2004/06/15 13:41:50 cado Exp $
+ * $Id: extract_warnings.cpp,v 1.3 2005/06/23 18:18:10 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -43,6 +43,7 @@
 using namespace std;
 
 #include <nel/misc/mem_displayer.h>
+#include "nel/misc/app_context.h"
 
 // Using directly the log report class from nelns
 #include "../../nelns/admin_executor_service/log_report.h"
@@ -55,6 +56,10 @@ BOOL APIENTRY DllMain( HANDLE hModule,
                        LPVOID lpReserved
 					 )
 {
+	// initialize nel context
+	if (!NLMISC::INelContext::isContextInitialised())
+		new NLMISC::CApplicationContext();
+			
     switch (ul_reason_for_call)
 	{
 		case DLL_PROCESS_ATTACH:

@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.1 2005/06/23 16:38:14 boucher Exp $
+ * $Id: module_manager.cpp,v 1.2 2005/06/23 17:40:16 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -710,3 +710,4 @@ namespace NLNET
 	}
 
 } // namespace NLNET
+

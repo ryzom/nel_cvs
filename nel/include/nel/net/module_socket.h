@@ -1,7 +1,7 @@
 /** \file module_socket.h
  * module socket interface
  *
- * $Id: module_socket.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module_socket.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ namespace NLNET
 		virtual void _onModuleUnplugged(const TModulePtr &pluggedModule);
 
 		virtual void _sendModuleMessage(IModule *senderModule, TModuleId destModuleId, TModuleMessagePtr &message )
-			throw (EModuleNotPluggedHere)
+			throw (EModuleNotPluggedHere, NLNET::EModuleNotReachable)
 			=0;
 
 		virtual void _broadcastModuleMessage(IModule *senderModule, TModuleMessagePtr &message)

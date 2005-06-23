@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,6 +187,8 @@ namespace NLNET
 	class IModuleProxy : public NLMISC::CRefCount
 	{
 	public:
+		virtual ~IModuleProxy() {}
+
 		/** Return the module ID. Each module has a local unique ID assigned 
 		 *	by the manager during module creation.
 		 *	This ID is local because it is only valid inside a given process.
@@ -242,7 +244,7 @@ namespace NLNET
 		IModuleFactory(const std::string &moduleClassName);
 
 		/** Return the class name of the factored module */
-		virtual const std::string &getModuleClassName();
+		virtual const std::string &getModuleClassName() const;
 
 		/** Pretty simple method. Module initialisation
 		 *	is done after construction, so there are
@@ -287,14 +289,14 @@ namespace NLNET
 	class moduleClassName##Factory : public CModuleFactory<moduleClassName> \
 	{ \
 	public: \
-		static const std::string &getModuleClassName() \
+		static const std::string &theModuleClassName() \
 		{ \
 			static const std::string name(registrationName); \
 			return name; \
 		} \
 		\
 		moduleClassName##Factory() \
-			: CModuleFactory<moduleClassName>(getModuleClassName()) \
+			: CModuleFactory<moduleClassName>(theModuleClassName()) \
 		{} \
 	};\
 	NLMISC_REGISTER_OBJECT_INDIRECT(IModuleFactory, moduleClassName##Factory, std::string, registrationName)

@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module_gateway.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,7 @@ namespace NLNET
 			mgc_connection_failed,
 		};
 
+		virtual ~IModuleGateway() {}
 
 		//@{
 		//@name Gateway general information
@@ -245,6 +246,7 @@ namespace NLNET
 	class IModuleGatewayProxy : public NLMISC::CRefCount
 	{
 	public:
+		virtual ~IModuleGatewayProxy() {}
 		virtual void getGatewayHost() =0;
 		virtual void getLocalGateway() =0;
 		virtual bool isCollocated() =0;

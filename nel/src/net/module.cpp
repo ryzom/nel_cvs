@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.1 2005/06/23 16:38:14 boucher Exp $
+ * $Id: module.cpp,v 1.2 2005/06/23 17:40:16 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ namespace NLNET
 		IModuleManager::getInstance().unregisterModuleFactory(this);
 	}
 
-	const std::string &IModuleFactory::getModuleClassName()
+	const std::string &IModuleFactory::getModuleClassName() const
 	{
 		return _ModuleClassName;
 	}

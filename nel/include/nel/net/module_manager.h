@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module_manager.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,8 @@ namespace NLNET
 
 		/// Release the singleton instance
 		virtual void releaseInstance() =0;
+
+		virtual ~IModuleManager() {}
 
 		/** Load a module library.
 		 *	Module library are dll or so files that contains

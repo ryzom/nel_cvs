@@ -1,7 +1,7 @@
 /** \file factory.h
  * class for factory
  *
- * $Id: factory.h,v 1.3 2005/06/23 16:29:56 boucher Exp $
+ * $Id: factory.h,v 1.4 2005/06/23 17:39:57 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -169,6 +169,7 @@ template <class BaseFactoryClass>
 class IFactoryIndirectRegister
 {
 public:
+	virtual ~IFactoryIndirectRegister() {}
 	/** Return the factory implementation.*/
 	virtual BaseFactoryClass *getFactory() = 0;
 };
@@ -221,7 +222,7 @@ public:
 	// Add some introspection
 	void fillFactoryList(std::vector<KeyType> &moduleList)
 	{
-		TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
+		typename TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
 		for (; first != last; ++first)
 		{
 			moduleList.push_back(first->first);

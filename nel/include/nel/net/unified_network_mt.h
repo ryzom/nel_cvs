@@ -1,7 +1,7 @@
 /** \file unified_network_mt.h
  * Network engine, layer 5
  *
- * $Id: unified_network_mt.h,v 1.4 2005/02/22 10:14:13 besson Exp $
+ * $Id: unified_network_mt.h,v 1.5 2005/06/23 16:33:16 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,11 +86,12 @@ class CUnifiedNetwork
 	friend void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 	friend void	uNetUnregistrationBroadcast(const std::string &name, TServiceId sid, const CInetAddress &addr);
 
+	NLMISC_SAFE_SINGLETON_DECL_PTR(CUnifiedNetwork);
 public:
 
 	/** Returns the singleton instance of the CUnifiedNetwork class.
 	 */
-	static CUnifiedNetwork *getInstance ();
+//	static CUnifiedNetwork *getInstance ();
 
 	/** Returns true if the application called getInstance(). This function is used to know if the user is using layer 4 or layer 5
 	 */
@@ -313,7 +314,7 @@ private:
 
 
 	/// The main instance
-	static CUnifiedNetwork										*_Instance;
+//	static CUnifiedNetwork										*_Instance;
 
 	//
 	NLMISC::CMutex												_Mutex;

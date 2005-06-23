@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.50 2005/04/21 10:06:36 legros Exp $
+ * $Id: unified_network.h,v 1.51 2005/06/23 16:33:16 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -88,11 +88,12 @@ struct TUnifiedCallbackItem
  */
 class CUnifiedNetwork
 {
+	NLMISC_SAFE_SINGLETON_DECL_PTR(CUnifiedNetwork);
 public:
 
 	/** Returns the singleton instance of the CUnifiedNetwork class.
 	 */
-	static CUnifiedNetwork *getInstance ();
+//	static CUnifiedNetwork *getInstance ();
 
 	/** Returns true if the application called getInstance(). This function is used to know if the user is using layer 4 or layer 5
 	 */
@@ -514,7 +515,7 @@ private:
 	NLMISC::TTime								_NextUpdateTime;
 
 	/// The main instance
-	static CUnifiedNetwork						*_Instance;
+//	static CUnifiedNetwork						*_Instance;
 
 	/// Naming service
 	NLNET::CInetAddress							_NamingServiceAddr;

@@ -585,6 +585,10 @@ SOURCE=..\include\nel\misc\i18n.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\sstring.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\sstring.h
 # End Source File
 # Begin Source File
@@ -989,6 +993,14 @@ SOURCE=..\include\nel\misc\vectord_inline.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\app_context.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\app_context.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\command.cpp
 # End Source File
 # Begin Source File
@@ -1057,6 +1069,10 @@ SOURCE=..\include\nel\misc\class_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\enum_bitset.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\historic.h
 # End Source File
 # Begin Source File
@@ -1122,10 +1138,6 @@ SOURCE=.\misc\dynloadlib.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\dynloadlib.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\enum_bitset.h
 # End Source File
 # Begin Source File
 

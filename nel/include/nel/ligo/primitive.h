@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.41 2005/01/19 08:55:23 vizerie Exp $
+ * $Id: primitive.h,v 1.42 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -710,11 +710,11 @@ public:
 	uint32			buildFullAlias(uint32 dynamicPart);
 
 	// Generate a new unique alias (dynamic part only)
-	uint32			genAlias(const IPrimitive *prim, uint32 preferedAlias = 0);
+	uint32			genAlias(IPrimitive *prim, uint32 preferedAlias = 0);
 	// Reserve an alias and store it in the used alias list (dynamic part only)
 //	void			reserveAlias(uint32 dynamicAlias);
 	// Remove an alias from the list of alias in use (dynamic part only)
-	void			releaseAlias(const IPrimitive *prim, uint32 dynamicAlias);
+	void			releaseAlias(IPrimitive *prim, uint32 dynamicAlias);
 
 	// Force the assignation of the specified alias the the primitive. If another primitive
 	// already old the alias, this other primitive is assigned a new alias.
@@ -722,6 +722,12 @@ public:
 
 	// getthe last generated alias value (for debug only)
 	uint32			getLastGeneratedAlias();
+
+	// Return the primitive indexed by the given alias (ie, it don't return the alias primitive, but it's first parent)
+	IPrimitive		*getPrimitiveByAlias(uint32 primAlias);
+
+	// Build the complete list of indexed primitive (ie all primitive that have a primalias child)
+	void			buildPrimitiveWithAliasList(std::map<uint32, IPrimitive*> &result);
 
 private:
 	// Conversion internal methods
@@ -735,7 +741,7 @@ private:
 	/// Last generated Alias, used to compute the next alias
 	uint32				_LastGeneratedAlias;
 	/// List of alias in use in the primitive (dynamic part only)
-	std::map<uint32, const IPrimitive*>	_AliasInUse;
+	std::map<uint32, IPrimitive*>	_AliasInUse;
 	// Store the filename
 	// This allows to retrieve the static alias when reloading from binary file
 	std::string			_Filename;

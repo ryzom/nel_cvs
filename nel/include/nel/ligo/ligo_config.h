@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.8 2005/03/10 14:44:27 corvazier Exp $
+ * $Id: ligo_config.h,v 1.9 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -49,6 +49,8 @@ class CLigoConfig
 {
 public:
 
+	CLigoConfig();
+
 	virtual ~CLigoConfig() { }
 
 	/** Load the config file. Can throw some exception if file doesn't exist or is malformed.
@@ -87,37 +89,37 @@ public:
 	/// \name Primitive class accessors
 
 	/// Get the dynamic bit size for alias
-	uint32 getDynamicAliasSize() const;
+	uint32				getDynamicAliasSize() const;
 	/// Get the dynamic bit mask for alias
-	uint32 getDynamicAliasMask() const;
+	uint32				getDynamicAliasMask() const;
 	/// Get the static bit size for alias
-	uint32 getStaticAliasSize() const;
+	uint32				getStaticAliasSize() const;
 	/// Get the static bit mask for alias
-	uint32 getStaticAliasMask() const;
+	uint32				getStaticAliasMask() const;
 	/// Build an alias given a static and dynamic part
-	uint32 buildAlias(uint32 staticPart, uint32 dynamicPart, bool warnIfOverload = true) const;
+	uint32				buildAlias(uint32 staticPart, uint32 dynamicPart, bool warnIfOverload = true) const;
 	/// register filename to static alias translation
-	void registerFileToStaticAliasTranslation(const std::string &fileName, uint32 staticPart);
+	void				registerFileToStaticAliasTranslation(const std::string &fileName, uint32 staticPart);
 	/// get the static alias mapping (or 0 if no mapping defined)
-	uint32 getFileStaticAliasMapping(const std::string &fileName) const;
+	uint32				getFileStaticAliasMapping(const std::string &fileName) const;
 	/// get the filename for a static alias (or empty string for 0)
-	const std::string &getFileNameForStaticAlias(uint32 staticAlias) const;
+	const std::string	&getFileNameForStaticAlias(uint32 staticAlias) const;
 	/// Check if a file is already mapped
-	bool isFileStaticAliasMapped(const std::string &fileName) const;
+	bool				isFileStaticAliasMapped(const std::string &fileName) const;
 	/// Build a standard human readable alias string
-	std::string aliasToString(uint32 fullAlias);
+	std::string			aliasToString(uint32 fullAlias);
 	/// Read a standard human readable alias string
-	uint32 aliasFromString(std::string fullAlias);
+	uint32				aliasFromString(std::string fullAlias);
 		
 
 	// Get a primitive class
-	const CPrimitiveClass					*getPrimitiveClass (const NLLIGO::IPrimitive &primitive) const;
+	const CPrimitiveClass		*getPrimitiveClass (const NLLIGO::IPrimitive &primitive) const;
 
 	// Get a primitive class
-	const CPrimitiveClass					*getPrimitiveClass (const char *className) const;
+	const CPrimitiveClass		*getPrimitiveClass (const char *className) const;
 
 	// Get the primitive color
-	NLMISC::CRGBA getPrimitiveColor (const NLLIGO::IPrimitive &primitive);
+	NLMISC::CRGBA				getPrimitiveColor (const NLLIGO::IPrimitive &primitive);
 
 	// Is the primitive deletable ?
 	bool isStaticChild (const NLLIGO::IPrimitive &primitive);

@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * TODO: File description
  *
- * $Id: async_file_manager.h,v 1.5 2005/02/22 10:14:12 besson Exp $
+ * $Id: async_file_manager.h,v 1.6 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,11 +40,12 @@ namespace NLMISC
  */
 class CAsyncFileManager : public CTaskManager
 {
-
+	NLMISC_SAFE_SINGLETON_DECL(CAsyncFileManager);
+	CAsyncFileManager() {}
 public:
 
 	// Must be called instead of constructing the object
-	static CAsyncFileManager &getInstance ();
+//	static CAsyncFileManager &getInstance ();
 	// NB: release the singleton, but assert it there is any pending loading tasks. 
 	// Each systems that use the async file manager should ensure it has no more pending task in it
 	static void terminate ();
@@ -80,9 +81,9 @@ public:
 	
 private:
 
-	CAsyncFileManager (); // Singleton mode -> access it with the getInstance function
+//	CAsyncFileManager (); // Singleton mode -> access it with the getInstance function
 
-	static CAsyncFileManager *_Singleton;
+//	static CAsyncFileManager *_Singleton;
 
 	// All the tasks
 	// -------------

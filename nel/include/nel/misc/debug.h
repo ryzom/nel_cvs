@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.78 2005/02/22 10:14:12 besson Exp $
+ * $Id: debug.h,v 1.79 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,21 +33,58 @@
 #include "mutex.h"
 #include "mem_displayer.h"
 #include "displayer.h"
+#include "app_context.h"
 #include <set>
 
 namespace NLMISC
 {	
+
+
+// Imposter class to wrap all global access to the nel context for backward compatibility
+
+template <class T>
+class CImposter
+{
+private:
+	typedef T *(INelContext::*TAccessor)();
+
+	TAccessor	_Accessor;
+public:
+	CImposter(TAccessor accessor)
+		: _Accessor(accessor)
+	{}
+
+	T* operator -> ()
+	{
+		return (NLMISC::INelContext::getInstance().*_Accessor)();
+	}
+
+	operator T*()
+	{
+		return (NLMISC::INelContext::getInstance().*_Accessor)();
+	}
+
+	T &operator ()()
+	{
+		return *(operator T*());
+	}
+};
 
 //
 // Externals
 //
 
 // NOTE: The following are all NULL until createDebug() has been called at least once
-extern CLog *ErrorLog;
-extern CLog *WarningLog;
-extern CLog *InfoLog;
-extern CLog *DebugLog;
-extern CLog *AssertLog;
+//extern CLog *ErrorLog;
+extern CImposter<CLog>	ErrorLog;
+//extern CLog *WarningLog;
+extern CImposter<CLog>	WarningLog;
+//extern CLog *InfoLog;
+extern CImposter<CLog>	InfoLog;
+//extern CLog *DebugLog;
+extern CImposter<CLog>	DebugLog;
+//extern CLog *AssertLog;
+extern CImposter<CLog>	AssertLog;
 
 extern CMemDisplayer *DefaultMemDisplayer;
 extern CMsgBoxDisplayer *DefaultMsgBoxDisplayer;
@@ -96,9 +133,11 @@ void	setCrashAlreadyReported(bool state);
 
 /** Use this macro to concatenate macro such
  *	You can use this macro to build '#pragma message' friendly macro
+ *	or to make macro definition into string
  *	eg : #define M1 foo
  *		 #define MESSAGE "the message is "NL_MACRO_TO_STR(M1)
  *		 #pragma message(MESSAGE)
+ *		 printf(NL_MACRO_TO_STR(M1));
  */
 #define NL_MACRO_TO_STR(x) NL_MACRO_TO_STR_SUBPART(x)
 
@@ -629,19 +668,84 @@ struct TInstanceCounterData
 	char	*_ClassName;
 
 	TInstanceCounterData(char *className);
+
+	~TInstanceCounterData();
 };
 
 // The singleton used to display the instance counter
 class CInstanceCounterManager
 {
+//	NLMISC_SAFE_SINGLETON_DECL(CInstanceCounterManager);
+	private:
+		/* declare private constructors*/ 
+		CInstanceCounterManager () {}
+		CInstanceCounterManager (const CInstanceCounterManager &) {}
+		/* the local static pointer to the singleton instance */ 
+		static CInstanceCounterManager	*_Instance; 
+	public:
+		static CInstanceCounterManager &getInstance() 
+		{ 
+			if (_Instance == NULL) 
+			{ 
+				/* the nel context MUST be initialised */ 
+//				nlassert(NLMISC::NelContext != NULL); 
+				void *ptr = NLMISC::INelContext::getInstance().getSingletonPointer("CInstanceCounterManager"); 
+				if (ptr == NULL) 
+				{ 
+					/* allocate the singleton and register it */ 
+					_Instance = new CInstanceCounterManager; 
+					NLMISC::INelContext::getInstance().setSingletonPointer("CInstanceCounterManager", _Instance); 
+				} 
+				else 
+				{ 
+					_Instance = reinterpret_cast<CInstanceCounterManager*>(ptr); 
+				} 
+			} 
+			return *_Instance; 
+		} 
+	private:
 public:
-	static CInstanceCounterManager &getInstance()
+
+	std::string displayCounters() const;
+
+	void resetDeltaCounter();
+
+	uint32 getInstanceCounter(const std::string &className) const;
+	sint32 getInstanceCounterDelta(const std::string &className) const;
+
+private:
+
+	friend class CInstanceCounterLocalManager;
+
+	void registerInstaceCounterLocalManager(CInstanceCounterLocalManager *localMgr);
+	void unregisterInstaceCounterLocalManager(CInstanceCounterLocalManager *localMgr);
+
+//	static CInstanceCounterManager		*_Instance;
+	std::set<CInstanceCounterLocalManager*>	_InstanceCounterMgrs;
+};
+
+//
+// Local instance counter
+//
+class CInstanceCounterLocalManager
+{
+public:
+	static CInstanceCounterLocalManager &getInstance()
 	{
 		if (_Instance == NULL)
 		{
-			_Instance = new CInstanceCounterManager;
+			_Instance = new CInstanceCounterLocalManager;
 		}
 		return *_Instance;
+	}
+
+	static void releaseInstance()
+	{
+		if (_Instance != NULL)
+		{	
+			delete _Instance;
+			_Instance = NULL;
+		}
 	}
 
 	void registerInstanceCounter(TInstanceCounterData *counter)
@@ -649,14 +753,30 @@ public:
 		_InstanceCounters.insert(counter);
 	}
 
-	std::string displayCounters();
+	void unregisterInstanceCounter(TInstanceCounterData *counter);
 
-	void resetDeltaCounter();
+	~CInstanceCounterLocalManager()
+	{
+		CInstanceCounterManager::getInstance().unregisterInstaceCounterLocalManager(this);
+	}
 
 private:
-	static CInstanceCounterManager		*_Instance;
-	std::set<TInstanceCounterData*>		_InstanceCounters;
+	friend class CInstanceCounterManager;
+	friend class INelContext;
+
+	CInstanceCounterLocalManager()
+	{
+	}
+
+	void registerLocalManager()
+	{
+		CInstanceCounterManager::getInstance().registerInstaceCounterLocalManager(this);
+	}
+
+	static CInstanceCounterLocalManager		*_Instance;
+	std::set<TInstanceCounterData*>			_InstanceCounters;
 };
+
 
 /** Utility to count instance of class. 
  *	This class is designed to be lightweight and to trace 
@@ -681,6 +801,7 @@ private:
  *	NL_INSTANCE_COUNTER_IMPL(foo);
  */
 #define NL_INSTANCE_COUNTER_DECL(className) \
+public: \
 	struct className##InstanceCounter \
 	{ \
 		className##InstanceCounter() \
@@ -707,16 +828,19 @@ private:
 		static NLMISC::TInstanceCounterData	_InstanceCounterData; \
 	}; \
 	 \
-	className##InstanceCounter	_##className##InstanceCounter
+	className##InstanceCounter	_##className##InstanceCounter; \
+private:
 
 /// The macro to make the implementation of the counter
 #define NL_INSTANCE_COUNTER_IMPL(className) NLMISC::TInstanceCounterData className::className##InstanceCounter::_InstanceCounterData(#className);
 
 /// An utility macro to get the instance counter for a class
-#define NL_GET_INSTANCE_COUNTER(className) className::className##InstanceCounter::getInstanceCounter()
+#define NL_GET_LOCAL_INSTANCE_COUNTER(className) className::className##InstanceCounter::getInstanceCounter()
+#define NL_GET_INSTANCE_COUNTER(className) NLMISC::CInstanceCounterManager::getInstance().getInstanceCounter(#className)
 
 /// An utility macro to get the delta since the last counter reset.
-#define NL_GET_INSTANCE_COUNTER_DELTA(className) className::className##InstanceCounter::getInstanceCounterDelta()
+#define NL_GET_LOCAL_INSTANCE_COUNTER_DELTA(className) className::className##InstanceCounter::getInstanceCounterDelta()
+#define NL_GET_INSTANCE_COUNTER_DELTA(className) NLMISC::CInstanceCounterManager::getInstance().getInstanceCounterDelta(#className)
 
 //
 // Following are internal functions, you should never use them

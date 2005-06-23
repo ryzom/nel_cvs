@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.7 2005/03/01 09:10:43 vizerie Exp $
+ * $Id: big_file.h,v 1.8 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -45,11 +45,13 @@ const uint32 BF_CACHE_FILE_ON_OPEN	=	0x00000002;
 // ***************************************************************************
 class CBigFile
 {
+	NLMISC_SAFE_SINGLETON_DECL(CBigFile);
 
+	CBigFile() {}
 public:
 
 	// Retrieve the global instance
-	static CBigFile &getInstance ();
+//	static CBigFile &getInstance ();
 
 	// Add a big file to the manager
 	bool add (const std::string &sBigFileName, uint32 nOptions);
@@ -149,9 +151,9 @@ private:
 	};
 private:
 
-	CBigFile(); // Singleton mode -> access it with the getInstance function
+//	CBigFile(); // Singleton mode -> access it with the getInstance function
 
-	static CBigFile				*_Singleton;
+//	static CBigFile				*_Singleton;
 
 	// This is an array of CHandleFile, unique to each thread
 	CThreadFileArray			_ThreadFileArray;

@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.2 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: singleton.h,v 1.3 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/common.h"
 #include "nel/misc/thread.h"
+#include "nel/misc/app_context.h"
 
 namespace NLMISC {
 	
@@ -77,6 +78,9 @@ protected:
 
 template <class T>
 T* CSingleton<T>::Instance = 0;
+
+
+
 
 } // NLMISC
 

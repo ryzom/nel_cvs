@@ -2,7 +2,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: new_path.h,v 1.7 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NLMISC {
  */
 class CNewPath
 {
+	NL_SAFE_SINGLETON(CNewPath);
 public:
 	/** Adds a search path.
      * The path is a directory "c:/temp" all files in the directory will be included (and recursively if asked)
@@ -102,10 +103,10 @@ public:
 
 private:
 
-	static CNewPath *getInstance ();
+//	static CNewPath *getInstance ();
 
 
-	static CNewPath *_Instance;
+//	static CNewPath *_Instance;
 
 private:
 

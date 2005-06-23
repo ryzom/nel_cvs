@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.21 2005/05/09 11:50:46 boucher Exp $
+ * $Id: variable.h,v 1.22 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -142,6 +142,7 @@ void __name##Class::ptr(__type *pointer, bool get, bool human) const
 
 class IVariable : public ICommand
 {
+	friend class CCommandRegistry;
 public:
 
 	IVariable(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
@@ -154,7 +155,7 @@ public:
 	
 	virtual std::string toString(bool human=false) const = 0;
 
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+	virtual bool execute(const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size() > 1)
 			return false;
@@ -330,7 +331,7 @@ public:
 		return str;
 	}
 	
-	virtual bool execute (const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+	virtual bool execute (const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size() > 1)
 			return false;
@@ -451,7 +452,7 @@ public:
 		return _Value;
 	}
 
-	virtual bool execute (const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+	virtual bool execute (const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 	{
 		if (args.size () > 1)
 			return false;

@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.12 2005/03/16 11:23:57 besson Exp $
+ * $Id: primitive_utils.h,v 1.13 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -60,6 +60,7 @@
 #include "nel/misc/i_xml.h"
 #include "nel/misc/o_xml.h"
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
 #include <vector>
 #include <string>
 
@@ -293,7 +294,7 @@ inline bool loadXmlPrimitiveFile(CPrimitives &primDoc, const std::string &fileNa
 		xmlIn.init (fileIn);
 
 		// Read it
-		return primDoc.read (xmlIn.getRootNode (), fileName.c_str(), ligoConfig);
+		return primDoc.read (xmlIn.getRootNode (), NLMISC::CFile::getFilename(fileName).c_str(), ligoConfig);
 	}
 	catch(NLMISC::Exception e)
 	{

@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.19 2005/03/17 10:56:57 boucher Exp $
+ * $Id: eid_translator.h,v 1.20 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -40,9 +40,10 @@ namespace	NLMISC
 	
 class CEntityIdTranslator
 {
+	NLMISC_SAFE_SINGLETON_DECL_PTR(CEntityIdTranslator);
 public:
 
-	static CEntityIdTranslator *getInstance ();
+//	static CEntityIdTranslator *getInstance ();
 
 	// performs all check on a name ( name validity + uniqueness )
 	bool				checkEntityName (const ucstring &entityName);
@@ -150,7 +151,7 @@ private:
 	CEntityIdTranslator() { EntityInfoCallback = NULL; }
 
 	// Singleton instance
-	static CEntityIdTranslator *Instance;
+//	static CEntityIdTranslator *Instance;
 
 	std::string FileName;
 

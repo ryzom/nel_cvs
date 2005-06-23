@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.52 2005/03/01 09:14:57 vizerie Exp $
+ * $Id: path.h,v 1.53 2005/06/23 16:27:15 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ struct EPathNotFound : public Exception
  */
 class CPath
 {
+	NLMISC_SAFE_SINGLETON_DECL_PTR(CPath);
 public:
 	/** Adds a search path.
      * The path is a directory "c:/temp" all files in the directory will be included (and recursively if asked)
@@ -232,9 +233,9 @@ public:
           
 private:
 
-	static CPath *getInstance ();
+//	static CPath *getInstance ();
 
-	static CPath *_Instance;
+//	static CPath *_Instance;
 
 	CPath()
 	{

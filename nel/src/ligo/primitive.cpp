@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.50 2005/02/17 17:15:05 berenguier Exp $
+ * $Id: primitive.cpp,v 1.51 2005/06/23 16:36:06 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2248,7 +2248,7 @@ uint32 CPrimitives::buildFullAlias(uint32 dynamicPart)
 
 // ***************************************************************************
 
-uint32 CPrimitives::genAlias(const IPrimitive *prim, uint32 preferedAlias)
+uint32 CPrimitives::genAlias(IPrimitive *prim, uint32 preferedAlias)
 {
 	nlassert(_LigoConfig);
 	uint32 ret;
@@ -2258,7 +2258,7 @@ uint32 CPrimitives::genAlias(const IPrimitive *prim, uint32 preferedAlias)
 		// only dynamic part allowed here
 		nlassert(preferedAlias == (preferedAlias & _LigoConfig->getDynamicAliasMask()));
 		// check is the prefered alias is not already in use
-		map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(preferedAlias));
+		map<uint32, IPrimitive*>::iterator it(_AliasInUse.find(preferedAlias));
 		if (it == _AliasInUse.end())
 		{
 			// this alias is available, just use it
@@ -2333,13 +2333,13 @@ uint32 CPrimitives::genAlias(const IPrimitive *prim, uint32 preferedAlias)
 //	_AliasInUse.insert(dynamicAlias);
 //}
 //
-void CPrimitives::releaseAlias(const IPrimitive *prim, uint32 alias)
+void CPrimitives::releaseAlias(IPrimitive *prim, uint32 alias)
 {
 	// need ligo config
 	nlassert(_LigoConfig);
 	// only dynamic part allowed here
 	nlassert(alias == (alias & _LigoConfig->getDynamicAliasMask()));
-	std::map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(alias));
+	std::map<uint32, IPrimitive*>::iterator it(_AliasInUse.find(alias));
 	// need to be found
 	nlassert(it != _AliasInUse.end());
 
@@ -2366,7 +2366,7 @@ void CPrimitives::forceAlias(CPrimAlias *prim, uint32 alias)
 	// store the alias in the primitive
 	prim->_Alias = alias;
 
-	std::map<uint32, const IPrimitive*>::iterator it(_AliasInUse.find(alias));
+	std::map<uint32, IPrimitive*>::iterator it(_AliasInUse.find(alias));
 	if (it != _AliasInUse.end() && it->second != prim)
 	{
 		// we need to alloc and set a new alias for the current alias holder
@@ -2392,6 +2392,40 @@ void CPrimitives::forceAlias(CPrimAlias *prim, uint32 alias)
 uint32 CPrimitives::getLastGeneratedAlias()
 {
 	return _LastGeneratedAlias;
+}
+
+// ***************************************************************************
+
+IPrimitive		*CPrimitives::getPrimitiveByAlias(uint32 primAlias)
+{
+	// check the static part of the alias
+	uint32 staticAlias = _LigoConfig->getStaticAliasMask() & primAlias;
+	staticAlias = staticAlias >> _LigoConfig->getDynamicAliasSize();
+	if (staticAlias != _AliasStaticPart)
+		return NULL;
+
+	// clear the static part before searching
+	primAlias &= _LigoConfig->getDynamicAliasMask();
+
+	std::map<uint32, IPrimitive*>::const_iterator it(_AliasInUse.find(primAlias));
+
+	if (it != _AliasInUse.end())
+		return it->second->getParent();
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+
+void		CPrimitives::buildPrimitiveWithAliasList(std::map<uint32, IPrimitive*> &result)
+{
+	nlassert(_LigoConfig != NULL);
+	
+	std::map<uint32, IPrimitive*>::iterator first(_AliasInUse.begin()), last(_AliasInUse.end());
+	for (; first != last; ++first)
+	{
+		result.insert(make_pair(_LigoConfig->buildAlias(_AliasStaticPart, first->first), first->second->getParent()));
+	}
 }
 
 // ***************************************************************************

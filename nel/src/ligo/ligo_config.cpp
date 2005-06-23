@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.19 2005/03/10 14:44:27 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.20 2005/06/23 16:36:06 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,6 +38,12 @@ using namespace NLMISC;
 
 namespace NLLIGO
 {
+
+// ***************************************************************************
+CLigoConfig::CLigoConfig()
+: _DynamicAliasBitCount(32)
+{
+}
 
 // ***************************************************************************
 
@@ -128,6 +134,11 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName, bool parsePrimitive
 					string indexFileName;
 					if (getPropertyString (indexFileName, filename.c_str(), indexFileNameNode, "FILE_NAME"))
 					{
+						if (CPath::lookup(indexFileName, false, false, true).empty())
+						{
+							// try to append the class file path
+							indexFileName = CFile::getPath(_fileName)+indexFileName;
+						}
 						// load the configuration file
 						reloadIndexFile(indexFileName);
 					}

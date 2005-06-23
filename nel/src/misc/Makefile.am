@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.80 2005/04/04 09:45:06 cado Exp $
+# $Id: Makefile.am,v 1.81 2005/06/23 16:37:08 boucher Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -10,6 +10,7 @@ lib_LTLIBRARIES       = libnelmisc.la
 
 libnelmisc_la_SOURCES = \
 	aabbox.cpp \
+	app_context.cpp \
 	algo.cpp \
 	async_file_manager.cpp \
 	big_file.cpp \

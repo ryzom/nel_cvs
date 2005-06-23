@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.108 2005/01/31 13:52:39 lecroart Exp $
+ * $Id: debug.cpp,v 1.109 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,14 +81,19 @@ static const bool TrapCrashInDebugger = false;
 namespace NLMISC 
 {
 
-bool DebugNeedAssert = false;
-bool NoAssert = false;
+//bool DebugNeedAssert = false;
+//bool NoAssert = false;
 
-CLog *ErrorLog = NULL;
-CLog *WarningLog = NULL;
-CLog *InfoLog = NULL;
-CLog *DebugLog = NULL;
-CLog *AssertLog = NULL;
+//CLog *ErrorLog = NULL;
+CImposter<CLog>	ErrorLog(&INelContext::getErrorLog);
+//CLog *WarningLog = NULL;
+CImposter<CLog>	WarningLog(&INelContext::getWarningLog);
+//CLog *InfoLog = NULL;
+CImposter<CLog>	InfoLog(&INelContext::getInfoLog);
+//CLog *DebugLog = NULL;
+CImposter<CLog>	DebugLog(&INelContext::getDebugLog);
+//CLog *AssertLog = NULL;
+CImposter<CLog>	AssertLog(&INelContext::getAssertLog);
 
 CMemDisplayer *DefaultMemDisplayer = NULL;
 CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
@@ -117,7 +122,7 @@ void	setCrashAlreadyReported(bool state)
 
 void setAssert (bool assert)
 {
-	NoAssert = !assert;
+	INelContext::getInstance().setNoAssert(!assert);
 }
 
 void nlFatalError (const char *format, ...)
@@ -125,11 +130,11 @@ void nlFatalError (const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
-	NLMISC::DebugNeedAssert = NLMISC::DefaultMsgBoxDisplayer==0;
+	INelContext::getInstance().setDebugNeedAssert( NLMISC::DefaultMsgBoxDisplayer==0 );
 
 	NLMISC::ErrorLog->displayNL (str);
 
-	if (NLMISC::DebugNeedAssert)
+	if (INelContext::getInstance().getDebugNeedAssert())
 		NLMISC_BREAKPOINT;
 
 #ifndef NL_OS_WINDOWS
@@ -144,11 +149,11 @@ void nlError (const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
-	NLMISC::DebugNeedAssert = NLMISC::DefaultMsgBoxDisplayer==0;
+	INelContext::getInstance().setDebugNeedAssert( NLMISC::DefaultMsgBoxDisplayer==0 );
 
 	NLMISC::ErrorLog->displayNL (str);
 
-	if (NLMISC::DebugNeedAssert)
+	if (INelContext::getInstance().getDebugNeedAssert())
 		NLMISC_BREAKPOINT;
 
 #ifndef NL_OS_WINDOWS
@@ -224,12 +229,12 @@ void initDebug2 (bool logInFile)
 
 void _assertex_stop_0(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp)
 {
-	NLMISC::DebugNeedAssert = false;
+	INelContext::getInstance().setDebugNeedAssert( false );
 	NLMISC::createDebug ();
 	if (NLMISC::DefaultMsgBoxDisplayer)
 		NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime;
-	else if(!NLMISC::NoAssert)
-		NLMISC::DebugNeedAssert = true;
+	else if(!INelContext::getInstance().getNoAssert())
+		INelContext::getInstance().setDebugNeedAssert(true);
 	NLMISC::AssertLog->setPosition (line, file, funcName);
 	if(exp)		NLMISC::AssertLog->displayNL ("\"%s\" ", exp);
 	else		NLMISC::AssertLog->displayNL ("STOP");
@@ -239,7 +244,7 @@ bool _assertex_stop_1(bool &ignoreNextTime)
 {
 	if (NLMISC::DefaultMsgBoxDisplayer)
 		ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime;
-	return NLMISC::DebugNeedAssert;
+	return INelContext::getInstance().getDebugNeedAssert();
 }
 
 bool _assert_stop(bool &ignoreNextTime, sint line, const char *file, const char *funcName, const char *exp)
@@ -1047,11 +1052,11 @@ void createDebug (const char *logPath, bool logInFile)
 		}
 #endif // NL_OS_WINDOWS
 
-		ErrorLog = new CLog (CLog::LOG_ERROR);
-		WarningLog = new CLog (CLog::LOG_WARNING);
-		InfoLog = new CLog (CLog::LOG_INFO);
-		DebugLog = new CLog (CLog::LOG_DEBUG);
-		AssertLog = new CLog (CLog::LOG_ASSERT);
+		INelContext::getInstance().setErrorLog(new CLog (CLog::LOG_ERROR));
+		INelContext::getInstance().setWarningLog(new CLog (CLog::LOG_WARNING));
+		INelContext::getInstance().setInfoLog(new CLog (CLog::LOG_INFO));
+		INelContext::getInstance().setDebugLog(new CLog (CLog::LOG_DEBUG));
+		INelContext::getInstance().setAssertLog(new CLog (CLog::LOG_ASSERT));
 
 		sd = new CStdDisplayer ("DEFAULT_SD");
 
@@ -1109,28 +1114,82 @@ void beep( uint freq, uint duration )
 // Instance counter
 //
 
-CInstanceCounterManager *CInstanceCounterManager::_Instance = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CInstanceCounterManager);
 
-TInstanceCounterData::	TInstanceCounterData(char *className)
+CInstanceCounterLocalManager *CInstanceCounterLocalManager::_Instance = NULL;
+
+TInstanceCounterData::TInstanceCounterData(char *className)
 :	_InstanceCounter(0),
 	_DeltaCounter(0),
 	_ClassName(className)
 {
-	CInstanceCounterManager::getInstance().registerInstanceCounter(this);
+	CInstanceCounterLocalManager::getInstance().registerInstanceCounter(this);
+}
+
+TInstanceCounterData::~TInstanceCounterData()
+{
+	CInstanceCounterLocalManager::getInstance().unregisterInstanceCounter(this);
 }
 
 
-std::string CInstanceCounterManager::displayCounters()
+void CInstanceCounterManager::registerInstaceCounterLocalManager(CInstanceCounterLocalManager *localMgr)
 {
-	string ret = toString("Listing %u Instance counters :\n", _InstanceCounters.size());
-	std::set<TInstanceCounterData*>::iterator first(_InstanceCounters.begin()), last(_InstanceCounters.end());
+	_InstanceCounterMgrs.insert(localMgr);
+}
+
+void CInstanceCounterManager::unregisterInstaceCounterLocalManager(CInstanceCounterLocalManager *localMgr)
+{
+	_InstanceCounterMgrs.erase(localMgr);
+}
+
+
+std::string CInstanceCounterManager::displayCounters() const
+{
+	map<string, TInstanceCounterData> counters;
+
+	{
+		// gather counter informations
+		std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
+		for (; first != last; ++first)
+		{
+			// iterate over managers
+			const CInstanceCounterLocalManager *mgr = *first;
+			{
+				std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
+				for (; first != last; ++first)
+				{
+					const TInstanceCounterData *icd = *first;
+
+					if( counters.find(icd->_ClassName) == counters.end())
+					{
+						// insert a new item
+						counters.insert(make_pair(string(icd->_ClassName), TInstanceCounterData(*icd)));
+					}
+					else
+					{
+						// accumulate the counter with the existing counter
+						TInstanceCounterData &icddest = counters.find(icd->_ClassName)->second;
+
+
+						icddest._DeltaCounter += icd->_DeltaCounter;
+						icddest._InstanceCounter += icd->_InstanceCounter;
+					}
+					
+				}
+			}
+
+		}
+	}
+
+	string ret = toString("Listing %u Instance counters :\n", counters.size());
+	map<string, TInstanceCounterData>::iterator first(counters.begin()), last(counters.end());
 	for (; first != last; ++first)
 	{
-		TInstanceCounterData *icd = *first;
+		TInstanceCounterData &icd = first->second;
 		ret += toString("  Class '%-20s', \t%10d instances, \t%10d delta\n", 
-			icd->_ClassName, 
-			icd->_InstanceCounter, 
-			icd->_InstanceCounter - icd->_DeltaCounter);
+			icd._ClassName, 
+			icd._InstanceCounter, 
+			icd._InstanceCounter - icd._DeltaCounter);
 	}
 
 	return ret;
@@ -1138,13 +1197,85 @@ std::string CInstanceCounterManager::displayCounters()
 
 void CInstanceCounterManager::resetDeltaCounter()
 {
-	std::set<TInstanceCounterData*>::iterator first(_InstanceCounters.begin()), last(_InstanceCounters.end());
+	std::set<CInstanceCounterLocalManager*>::iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
 	for (; first != last; ++first)
 	{
-		TInstanceCounterData *icd = *first;
-		icd->_DeltaCounter = icd->_InstanceCounter;
+		// iterate over managers
+		CInstanceCounterLocalManager *mgr = *first;
+		{
+			std::set<TInstanceCounterData*>::iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
+			for (; first != last; ++first)
+			{
+				TInstanceCounterData *icd = *first;
+
+				icd->_DeltaCounter = icd->_InstanceCounter;
+			}
+		}
 	}
 }
+
+uint32 CInstanceCounterManager::getInstanceCounter(const std::string &className) const
+{
+	uint32 result = 0;
+	std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
+	for (; first != last; ++first)
+	{
+		// iterate over managers
+		const CInstanceCounterLocalManager *mgr = *first;
+		{
+			std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
+			for (; first != last; ++first)
+			{
+				const TInstanceCounterData *icd = *first;
+
+				if (icd->_ClassName == className)
+				{
+					result += icd->_InstanceCounter;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+sint32 CInstanceCounterManager::getInstanceCounterDelta(const std::string &className) const
+{
+	sint32 result = 0;
+	std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
+	for (; first != last; ++first)
+	{
+		// iterate over managers
+		const CInstanceCounterLocalManager *mgr = *first;
+		{
+			std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
+			for (; first != last; ++first)
+			{
+				const TInstanceCounterData *icd = *first;
+
+				if (icd->_ClassName == className)
+				{
+					result += icd->_InstanceCounter - icd->_DeltaCounter;
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+void CInstanceCounterLocalManager::unregisterInstanceCounter(TInstanceCounterData *counter)
+{
+	_InstanceCounters.erase(counter);
+
+	if (_InstanceCounters.empty())
+	{
+		// no more need for the singleton
+		releaseInstance();
+	}
+}
+
+
 
 /** Compile time checking */
 class CFoo

@@ -1,7 +1,7 @@
 /** \file unified_network_mt.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network_mt.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: unified_network_mt.cpp,v 1.6 2005/06/23 16:39:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1324,16 +1324,18 @@ TUnifiedMsgCallback CUnifiedNetwork::findCallback (const std::string &callbackNa
 //
 //
 
-CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
+//CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CUnifiedNetwork);
 
-CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
+
+/*CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
 {
 	if (_Instance == NULL)
 		_Instance = new CUnifiedNetwork();
 
 	return _Instance;
 }
-
+*/
 bool CUnifiedNetwork::isUsed ()
 {
 	return (_Instance != NULL);

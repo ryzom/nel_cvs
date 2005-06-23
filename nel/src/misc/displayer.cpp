@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.67 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: displayer.cpp,v 1.68 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -682,7 +682,7 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 			// which create noise into list of bugs (once a player crash, it will surely continues to do it).
 			if  (ReportDebug == report (args.ProcessName + " NeL " + toString(logTypeToString(args.LogType, true)), "", subject, body, true, 2, true, 1, !isCrashAlreadyReported(), IgnoreNextTime, NL_CRASH_DUMP_FILE))
 			{
-				DebugNeedAssert = true;
+				INelContext::getInstance().setDebugNeedAssert(true);
 			}
 
 			// no more sent mail for crash

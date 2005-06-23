@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.32 2005/03/17 10:56:57 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -50,7 +50,8 @@ namespace NLMISC {
 // Variables
 //
 
-CEntityIdTranslator *CEntityIdTranslator::Instance = NULL;
+//CEntityIdTranslator *CEntityIdTranslator::Instance = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CEntityIdTranslator);
 
 // don't forget to increment the number when you change the file format
 const uint CEntityIdTranslator::Version = 1;
@@ -82,14 +83,14 @@ void CEntityIdTranslator::CEntity::serial (NLMISC::IStream &s)
 	s.serial (UserName);
 }
 
-CEntityIdTranslator *CEntityIdTranslator::getInstance ()
-{
-	if(Instance == NULL)
-	{
-		Instance = new CEntityIdTranslator;
-	}
-	return Instance;
-}
+//CEntityIdTranslator *CEntityIdTranslator::getInstance ()
+//{
+//	if(Instance == NULL)
+//	{
+//		Instance = new CEntityIdTranslator;
+//	}
+//	return Instance;
+//}
 
 void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 {

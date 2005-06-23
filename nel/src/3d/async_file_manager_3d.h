@@ -1,7 +1,7 @@
 /** \file async_file_manager_3d.h
  * TODO: File description
  *
- * $Id: async_file_manager_3d.h,v 1.6 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: async_file_manager_3d.h,v 1.7 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,9 +49,11 @@ class CTextureFile;
 class CAsyncFileManager3D
 {
 
+	NLMISC_SAFE_SINGLETON_DECL(CAsyncFileManager3D);
+	CAsyncFileManager3D();
 public:
 
-	static CAsyncFileManager3D &getInstance (); // Must be called instead of constructing the object
+//	static CAsyncFileManager3D &getInstance (); // Must be called instead of constructing the object
 	static void terminate (); // release singleton
 
 	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver, const NLMISC::CVector &position, uint textureSlot);
@@ -75,9 +77,9 @@ public:
 private:
 
 
-	CAsyncFileManager3D (); // Singleton mode -> access it with the getInstance function
+//	CAsyncFileManager3D (); // Singleton mode -> access it with the getInstance function
 
-	static CAsyncFileManager3D *_Singleton;
+//	static CAsyncFileManager3D *_Singleton;
 
 
 	friend class CLoadMeshCancel;

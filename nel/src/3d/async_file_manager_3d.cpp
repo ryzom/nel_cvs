@@ -1,7 +1,7 @@
 /** \file async_file_manager_3d.cpp
  * TODO: File description
  *
- * $Id: async_file_manager_3d.cpp,v 1.12 2005/02/22 10:19:09 besson Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.13 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,8 @@ using namespace NLMISC;
 namespace NL3D
 {
 
-CAsyncFileManager3D *CAsyncFileManager3D::_Singleton = NULL;
+//CAsyncFileManager3D *CAsyncFileManager3D::_Singleton = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CAsyncFileManager3D);
 
 // ***************************************************************************
 
@@ -56,7 +57,7 @@ CAsyncFileManager3D::CAsyncFileManager3D()
 
 // ***************************************************************************
 
-CAsyncFileManager3D &CAsyncFileManager3D::getInstance()
+/*CAsyncFileManager3D &CAsyncFileManager3D::getInstance()
 {
 	if (_Singleton == NULL)
 	{
@@ -64,15 +65,17 @@ CAsyncFileManager3D &CAsyncFileManager3D::getInstance()
 	}
 	return *_Singleton;
 }
-
+*/
 // ***************************************************************************
 
 void CAsyncFileManager3D::terminate ()
 {
-	if (_Singleton != NULL)
+	if (_Instance != NULL)
 	{
-		delete &getInstance();
-		_Singleton = NULL;
+		CAsyncFileManager3D *afm = _Instance;
+		INelContext::getInstance().releaseSingletonPointer("CAsyncFileManager3D", _Instance);
+		_Instance = NULL;
+		delete afm;
 	}
 }
 

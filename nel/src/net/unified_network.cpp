@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.90 2005/04/21 10:06:52 legros Exp $
+ * $Id: unified_network.cpp,v 1.91 2005/06/23 16:39:11 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1862,16 +1862,18 @@ std::string			CUnifiedNetwork::getServiceUnifiedName(uint16 sid)
 //
 //
 
-CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
+//CUnifiedNetwork	*CUnifiedNetwork::_Instance = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CUnifiedNetwork);
 
-CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
+
+/*CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
 {
 	if (_Instance == NULL)
 		_Instance = new CUnifiedNetwork();
 
 	return _Instance;
 }
-
+*/
 bool CUnifiedNetwork::isUsed ()
 {
 	return (_Instance != NULL);

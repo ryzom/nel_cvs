@@ -2,7 +2,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: new_path.cpp,v 1.4 2001/12/03 14:21:23 lecroart Exp $
+ * $Id: new_path.cpp,v 1.5 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -68,14 +68,14 @@ CNewPath *CNewPath::_Instance = NULL;
 // Functions
 //
 
-CNewPath *CNewPath::getInstance ()
-{
-	if (_Instance == NULL)
-	{
-		_Instance = new CNewPath;
-	}
-	return _Instance;
-}
+//CNewPath *CNewPath::getInstance ()
+//{
+//	if (_Instance == NULL)
+//	{
+//		_Instance = new CNewPath;
+//	}
+//	return _Instance;
+//}
 
 void CNewPath::clearMap ()
 {

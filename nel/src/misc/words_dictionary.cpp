@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.12 2005/03/17 10:58:06 boucher Exp $
+ * $Id: words_dictionary.cpp,v 1.13 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -214,7 +214,7 @@ void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultV
 	}
 
 	// Search
-	const vector<string> &vec = _Keys;
+	const vector<string> &vec = reinterpret_cast<const vector<string>&>(_Keys);
 //	for ( CVectorSString::const_iterator ivs=_Keys.begin(); ivs!=_Keys.end(); ++ivs )
 	for ( vector<string>::const_iterator ivs=vec.begin(); ivs!=vec.end(); ++ivs )
 	{

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.18 2005/03/01 09:10:43 vizerie Exp $
+ * $Id: big_file.cpp,v 1.19 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -33,7 +33,8 @@ using namespace NLMISC;
 
 namespace NLMISC {
 
-CBigFile *CBigFile::_Singleton = NULL;
+//CBigFile *CBigFile::_Singleton = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CBigFile);
 
 
 // ***************************************************************************
@@ -68,19 +69,19 @@ CBigFile::CHandleFile		&CBigFile::CThreadFileArray::get(uint32 index)
 
 
 // ***************************************************************************
-CBigFile::CBigFile ()
-{
-}
-
-// ***************************************************************************
-CBigFile &CBigFile::getInstance ()
-{
-	if (_Singleton == NULL)
-	{
-		_Singleton = new CBigFile();
-	}
-	return *_Singleton;
-}
+//CBigFile::CBigFile ()
+//{
+//}
+//
+//// ***************************************************************************
+//CBigFile &CBigFile::getInstance ()
+//{
+//	if (_Singleton == NULL)
+//	{
+//		_Singleton = new CBigFile();
+//	}
+//	return *_Singleton;
+//}
 
 // ***************************************************************************
 bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)

@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.h
  * TODO: File description
  *
- * $Id: async_file_manager_sound.h,v 1.5 2004/11/15 10:25:06 lecroart Exp $
+ * $Id: async_file_manager_sound.h,v 1.6 2005/06/23 16:39:37 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,9 +41,10 @@ class IBuffer;
  */
 class CAsyncFileManagerSound
 {
+	NLMISC_SAFE_SINGLETON_DECL(CAsyncFileManagerSound);
 public:
-	static	CAsyncFileManagerSound &getInstance();
-	void							terminate();
+//	static	CAsyncFileManagerSound &getInstance();
+	static  void	terminate();
 
 
 	void	loadWavFile(IBuffer *pdestBuffer, const std::string &filename);
@@ -61,7 +62,7 @@ private:
 	CAsyncFileManagerSound() {};
 
 	/// Singleton instance.
-	static CAsyncFileManagerSound	*_Singleton;
+//	static CAsyncFileManagerSound	*_Singleton;
 
 
 	/// A non exported class for load canceling purpose.

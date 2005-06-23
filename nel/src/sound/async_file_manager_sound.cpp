@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * TODO: File description
  *
- * $Id: async_file_manager_sound.cpp,v 1.8 2004/11/15 10:25:06 lecroart Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.9 2005/06/23 16:39:37 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,10 +36,11 @@ using namespace NLMISC;
 namespace NLSOUND
 {
 
-CAsyncFileManagerSound	*CAsyncFileManagerSound::_Singleton;
+//CAsyncFileManagerSound	*CAsyncFileManagerSound::_Singleton;
+NLMISC_SAFE_SINGLETON_IMPL(CAsyncFileManagerSound);
 
 
-CAsyncFileManagerSound &CAsyncFileManagerSound::getInstance()
+/*CAsyncFileManagerSound &CAsyncFileManagerSound::getInstance()
 {
 	NL_ALLOC_CONTEXT(NLSOUND_CAsyncFileManagerSound);
 	if (_Singleton == NULL)
@@ -48,14 +49,15 @@ CAsyncFileManagerSound &CAsyncFileManagerSound::getInstance()
 	}
 	return *_Singleton;
 }
-
+*/
 
 void	CAsyncFileManagerSound::terminate()
 {
-	if (_Singleton != NULL)
+	if (_Instance != NULL)
 	{
-		delete &getInstance();
-		_Singleton = NULL;
+		INelContext::getInstance().releaseSingletonPointer("CAsyncFileManagerSound", _Instance);
+		delete _Instance;
+		_Instance = NULL;
 	}
 }
 

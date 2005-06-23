@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * TODO: File description
  *
- * $Id: async_file_manager.cpp,v 1.7 2004/11/15 10:25:02 lecroart Exp $
+ * $Id: async_file_manager.cpp,v 1.8 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,17 +33,19 @@ using namespace std;
 namespace NLMISC
 {
 
-CAsyncFileManager *CAsyncFileManager::_Singleton = NULL;
+//CAsyncFileManager *CAsyncFileManager::_Singleton = NULL;
+NLMISC_SAFE_SINGLETON_IMPL(CAsyncFileManager);
+
 
 // ***************************************************************************
 
-CAsyncFileManager::CAsyncFileManager()
+/*CAsyncFileManager::CAsyncFileManager()
 {
 }
-
+*/
 // ***************************************************************************
 
-CAsyncFileManager &CAsyncFileManager::getInstance()
+/*CAsyncFileManager &CAsyncFileManager::getInstance()
 {
 	if (_Singleton == NULL)
 	{
@@ -51,15 +53,16 @@ CAsyncFileManager &CAsyncFileManager::getInstance()
 	}
 	return *_Singleton;
 }
-
+*/
 // ***************************************************************************
 
 void CAsyncFileManager::terminate ()
 {
-	if (_Singleton != NULL)
+	if (_Instance != NULL)
 	{
-		delete &getInstance();
-		_Singleton = NULL;
+		INelContext::getInstance().releaseSingletonPointer("CAsyncFileManager", _Instance);
+		delete _Instance;
+		_Instance = NULL;
 	}
 }
 

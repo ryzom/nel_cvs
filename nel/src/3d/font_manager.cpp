@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * TODO: File description
  *
- * $Id: font_manager.cpp,v 1.45 2005/02/22 10:19:10 besson Exp $
+ * $Id: font_manager.cpp,v 1.46 2005/06/23 16:35:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,7 +149,7 @@ void CFontManager::computeString (const ucstring &s,
 		output.Vertices.lock (vba);
 
 
-		// For all chats
+		// For all chars
 		for (uint i = 0; i < s.size(); i++)
 		{
 			// Creating font

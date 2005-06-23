@@ -1,7 +1,7 @@
 /** \file variable.cpp
  * TODO: File description
  *
- * $Id: variable.cpp,v 1.4 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: variable.cpp,v 1.5 2005/06/23 16:37:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,11 +35,12 @@ namespace NLMISC {
 
 void cbVarChanged (CConfigFile::CVar &cvar)
 {
-	for (ICommand::TCommand::iterator comm = (*ICommand::Commands).begin(); comm != (*ICommand::Commands).end(); comm++)
+	CCommandRegistry &cr = CCommandRegistry::getInstance();
+	for (CCommandRegistry::TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); comm++)
 	{
-		if ((*comm).second->Type == ICommand::Variable && (*comm).second->_CommandName == cvar.Name)
+		if (comm->second->Type == ICommand::Variable && comm->second->getName() == cvar.Name)
 		{
-			IVariable *var = (IVariable *)((*comm).second);
+			IVariable *var = static_cast<IVariable*>(comm->second);
 			string val = cvar.asString();
 			nlinfo ("VAR: Setting variable '%s' with value '%s' from config file", cvar.Name.c_str(), val.c_str());
 			var->fromString(val, true);
@@ -47,13 +48,19 @@ void cbVarChanged (CConfigFile::CVar &cvar)
 	}
 }
 
+
 void IVariable::init (NLMISC::CConfigFile &configFile)
 {
-	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+	CCommandRegistry::getInstance().initVariables(configFile);
+}
+
+void CCommandRegistry::initVariables(NLMISC::CConfigFile &configFile)
+{
+	for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); comm++)
 	{
-		if ((*comm).second->Type == ICommand::Variable)
+		if (comm->second->Type == ICommand::Variable)
 		{
-			IVariable *var = (IVariable *)((*comm).second);
+			IVariable *var = static_cast<IVariable *>(comm->second);
 			if (var->_UseConfigFile)
 			{
 				configFile.setCallback(var->_CommandName, cbVarChanged);

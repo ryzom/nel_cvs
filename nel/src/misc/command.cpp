@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.35 2005/02/18 17:38:24 berenguier Exp $
+ * $Id: command.cpp,v 1.36 2005/06/23 16:36:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,26 +33,28 @@ using namespace NLMISC;
 
 namespace NLMISC {
 
-ICommand::TCategorySet* ICommand::Categories;
-ICommand::TCommand* ICommand::Commands;
-bool ICommand::CommandsInit;
-set<std::string>		ICommand::_CommandsDisablingControlChar;
+//ICommand::TCategorySet* ICommand::Categories;
+ICommand::TCommand *ICommand::LocalCommands = NULL;
+bool ICommand::LocalCommandsInit = false;
+//set<std::string>		ICommand::_CommandsDisablingControlChar;
+
+NLMISC_SAFE_SINGLETON_IMPL(CCommandRegistry);
 
 ICommand::ICommand(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs)
 {
 	// self registration
 
-	if (!CommandsInit)
+	if (!LocalCommandsInit)
 	{
-		//nlinfo ("create map");
-		Commands = new TCommand;
-		Categories = new TCategorySet;
-		CommandsInit = true;
+//		//nlinfo ("create map");
+		LocalCommands = new TCommand;
+//		Categories = new TCategorySet;
+		LocalCommandsInit = true;
 	}
+//
+	TCommand::iterator comm = LocalCommands->find(commandName);
 
-	TCommand::iterator comm = (*Commands).find(commandName);
-
-	if (comm != (*Commands).end ())
+	if (comm != LocalCommands->end ())
 	{
 		// 2 commands have the same name
 		nlstopex (("There are 2 commands that have the same name in the project (command name '%s'), skip the second definition", commandName));
@@ -66,8 +68,8 @@ ICommand::ICommand(const char *categoryName, const char *commandName, const char
 		CommandArgs = commandArgs;
 		_CommandName = commandName;
 		Type = Command;
-		(*Commands)[commandName] = this;
-		Categories->insert(categoryName);
+		(*LocalCommands)[commandName] = this;
+//		Categories.insert(categoryName);
 	}
 }
 
@@ -75,38 +77,137 @@ ICommand::~ICommand()
 {
 	// self deregistration
 
-	if (!CommandsInit)
-	{
-		// should never happen
-		nlstop;
-		return;
-	}
+//	if (!CommandsInit)
+//	{
+//		// should never happen
+//		nlstop;
+//		return;
+//	}
 
 	// find the command
 
-	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+	for (TCommand::iterator comm = LocalCommands->begin(); comm != LocalCommands->end(); comm++)
 	{
 		if ((*comm).second == this)
 		{
 			//printf("remove command\n");
-			(*Commands).erase (comm);
+			LocalCommands->erase (comm);
 
-			if ((*Commands).size() == 0)
-			{
-				// if the commands map is empty, destroy it
-				//printf("delete map\n");
-				delete Commands;
-				CommandsInit = false;
-			}
+			CCommandRegistry::getInstance().unregisterCommand(this);
+
+//			if ((*Commands).size() == 0)
+//			{
+//				// if the commands map is empty, destroy it
+//				//printf("delete map\n");
+//				delete Commands;
+//				CommandsInit = false;
+//			}
 			
 			return;
 		}
 	}
 	// commands is not found
-	nlstop;
+//	nlstop;
 }
 
-void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet, bool human)
+void CCommandRegistry::registerCommand(ICommand *command)
+{
+	if (Commands.find(command->getName()) != Commands.end())
+	{
+//		nlwarning("There are 2 commands that have the same name in the project (command name '%s'), skip the second definition", command->getName().c_str());
+		return;
+	}
+	Commands[command->getName()] = command;
+	Categories.insert(command->CategoryName);
+}
+
+void CCommandRegistry::unregisterCommand(ICommand *command)
+{
+	for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); ++comm)
+	{
+		if (comm->second == command)
+		{
+			//printf("remove command\n");
+			Commands.erase (comm);
+			return;
+		}
+	}
+}
+
+void CCommandRegistry::registerNamedCommandHandler(ICommandsHandler *handler, const std::string &className)
+{
+	const std::string &name = handler->getCommandHandlerName();
+	if (_CommandsHandlers.getB(name) != NULL)
+	{
+		nlwarning("CCommandRegistry : a commands handler with the name '%s' already exist, ignoring new candidat", name.c_str());
+		return;
+	}
+	_CommandsHandlers.add(name, handler);
+
+	// register the class and commands name
+//	const string &className = handler->getCommandHandlerClassName();
+
+	TCommandHandlerClassInfo &chci = _CommandsHandlersClass[className];
+	chci.InstanceCount++;
+
+	// add an instance to the counter
+	++chci.InstanceCount;
+	// store the command list
+	TCommandHandlerClassInfo::TCommandsInfo commands;
+	handler->fillCommandsHandlerList(commands);
+	nlassert(chci.Commands.empty() || chci.Commands == commands);
+
+	if (chci.Commands.empty())
+		std::swap(chci.Commands, commands);
+
+}
+
+void CCommandRegistry::unregisterNamedCommandHandler(ICommandsHandler *handler, const std::string &className)
+{
+	if (_CommandsHandlers.getA(handler) == NULL)
+		return;
+	
+	_CommandsHandlers.removeWithB(handler);
+
+	// update the handler class commands tables
+//	const string &className = handler->getCommandHandlerClassName();
+
+	TCommandsHandlersClass::iterator it = _CommandsHandlersClass.find(className);
+	if (it != _CommandsHandlersClass.end())
+	{
+		--(it->second.InstanceCount);
+
+		if (it->second.InstanceCount == 0)
+		{
+			_CommandsHandlersClass.erase(it);
+		}
+	}
+}
+
+
+bool ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet, bool human)
+{
+	try
+	{
+		return CCommandRegistry::getInstance().execute(commandWithArgs, log, quiet, human);
+	}
+	catch(exception e)
+	{
+		log.displayNL("Command thrown an exception :");
+		log.displayNL(e.what());
+
+		return false;
+	}
+}
+
+struct TCommandParams
+{
+	string			CommandName;
+	string			RawCommandString;
+	vector<string>	CommandArgs;
+};
+
+bool CCommandRegistry::execute (const std::string &commandWithArgs, CLog &log, bool quiet, bool human)
 {
 	if (!quiet)
 	{
@@ -118,9 +219,12 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 
 	// true to indicate that '"', ';' and '\' are special character sequence control
 	bool allowControlChar= true;
+	// Start of each command in the command line
+	string::size_type commandBegin = 0;
 
 	// convert the buffer into string vector
-	vector<pair<string, vector<string> > > commands;
+//	vector<pair<string, vector<string> > > commands;
+	vector<TCommandParams>	commands;
 	bool firstArg = true;
 	uint i = 0;
 	while (true)
@@ -150,7 +254,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 				if (i == commandWithArgs.size())
 				{
 					if (!quiet) log.displayNL ("Missing end quote character \"");
-					return;
+					return false;
 				}
 				if (commandWithArgs[i] == '"')
 				{
@@ -164,7 +268,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 					if (i == commandWithArgs.size())
 					{
 						if (!quiet) log.displayNL ("Missing character after the backslash \\ character");
-						return;
+						return false;
 					}
 					switch (commandWithArgs[i])
 					{
@@ -173,7 +277,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 						case '"':	arg += '"'; break; // "
 						default:
 							if (!quiet) log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
-							return;
+							return false;
 					}
 					i++;
 				}
@@ -195,7 +299,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 					if (i == commandWithArgs.size())
 					{
 						if (!quiet) log.displayNL ("Missing character after the backslash \\ character");
-						return;
+						return false;
 					}
 					switch (commandWithArgs[i])
 					{
@@ -205,7 +309,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 						case ';':	arg += ';'; break; // ;
 						default:
 							if (!quiet) log.displayNL ("Unknown escape code '\\%c'", commandWithArgs[i]);
-							return;
+							return false;
 					}
 				}
 				else if (allowControlChar && commandWithArgs[i] == ';')
@@ -232,7 +336,10 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 			if (firstArg)
 			{
 				// the first arg is the command
-				commands.push_back (make_pair(arg, vector<string> () ));
+//				commands.push_back (make_pair(arg, vector<string> () ));
+				TCommandParams cp;
+				cp.CommandName = arg;
+				commands.push_back(cp);
 				firstArg = false;
 
 				// does this command disable control char for remaining params?
@@ -241,18 +348,26 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quie
 			}
 			else
 			{
-				commands[commands.size()-1].second.push_back (arg);
+//				commands[commands.size()-1].second.push_back (arg);
+				commands[commands.size()-1].CommandArgs.push_back (arg);
 			}
 		}
 
 		// separator
 		if (i < commandWithArgs.size() && allowControlChar && commandWithArgs[i] == ';')
 		{
+			// store the raw command
+			if (!commands.empty() && commands.back().RawCommandString.empty())
+				commands.back().RawCommandString = string(commandWithArgs.begin()+commandBegin, commandWithArgs.begin()+i); 
 			firstArg = true;
 			i++;
+			commandBegin = i;
 		}
 	}
 end:
+	// store the last raw command string
+	if (!commands.empty() && commands.back().RawCommandString.empty())
+		commands.back().RawCommandString = string(commandWithArgs.begin()+commandBegin, commandWithArgs.begin()+i); 
 
 // displays args for debug purpose
 /*	for (uint u = 0; u < commands.size (); u++)
@@ -264,25 +379,57 @@ end:
 		}
 	}
 */
+	bool ret = true;
 
 	for (uint u = 0; u < commands.size (); u++)
 	{
+		TCommandParams &cp = commands[u];
 		// find the command	
-		TCommand::iterator comm = (*Commands).find(commands[u].first);
-		if (comm == (*Commands).end ())
+		// check for object name
+		string::size_type pos = cp.CommandName.find(".");
+		if (pos != string::npos)
 		{
-			// the command doesn't exist
-			if (!quiet) log.displayNL("Command '%s' not found, try 'help'", commands[u].first.c_str());
+			// there is an object name, separate it and look in the object registry
+			string objectName = cp.CommandName.substr(0, pos);
+			string commandName = cp.CommandName.substr(pos+1);
+			ICommandsHandler *const *ppch = _CommandsHandlers.getB(objectName);
+			if (ppch != NULL)
+			{
+				// ok, we found the object
+				ret = ret && (*ppch)->execute(commands[u].RawCommandString, commandName, commands[u].CommandArgs, log, quiet, human);
+			}
+			else
+			{
+				if (!quiet) 
+					log.displayNL("Command '%s' : can't found object named '%s'", 
+						cp.CommandName.c_str(),
+						objectName.c_str());
+			}
 		}
 		else
 		{
-			//nlinfo("execute command '%s'", commands[u].first.c_str());
-			if (!(*comm).second->execute (commands[u].second, log, quiet, human))
+			// this is a global command
+			TCommand::iterator comm = Commands.find(commands[u].CommandName);
+			if (comm == Commands.end ())
 			{
-				if (!quiet) log.displayNL("Bad command usage, try 'help %s'", commands[u].first.c_str());
+				// the command doesn't exist
+				if (!quiet) log.displayNL("Command '%s' not found, try 'help'", commands[u].CommandName.c_str());
+			}
+			else
+			{
+				bool res = comm->second->execute (commands[u].RawCommandString, commands[u].CommandArgs, log, quiet, human);
+				ret = ret & res;
+				if (!res)
+				{
+					if (!quiet) 
+						log.displayNL("Bad command usage, try 'help %s'", commands[u].CommandName.c_str());
+				}
 			}
 		}
 	}
+
+	// false if at least one command returned false
+	return ret;
 }
 
 
@@ -293,8 +440,31 @@ end:
  */
 void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 {
+	// forward to command registry
+	CCommandRegistry::getInstance().expand(commandName, log);
+}
+
+void CCommandRegistry::expand (std::string &commandName, NLMISC::CLog &log)
+{
 	// Take out the string before the last separator and remember it as a prefix
+	string objectName;
 	uint32 lastseppos = commandName.find_last_of( " " );
+	{
+		// eventually use the last dot as separator
+		uint32 lastDot = commandName.find_last_of( "." );
+		if (lastDot != string::npos 
+			&& (lastseppos == string::npos || lastDot > lastseppos))
+		{
+			lastseppos = lastDot;
+			// store the object name to limit the matching scope
+			string::size_type spcPos = commandName.find_last_of(" ", lastDot);
+			if (spcPos == string::npos)
+				spcPos = 0;
+			else
+				spcPos++;
+			objectName = commandName.substr(spcPos, lastDot-spcPos);
+		}
+	}
 	string prefix;
 	bool useprefix;
 	if ( lastseppos != string::npos )
@@ -311,13 +481,54 @@ void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 	string lowerCommandName = toLower(commandName);
 	// Build the list of matching command names
 	vector<string> matchingnames;
-	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
 	{
-		string first = toLower((*comm).first);
-		if (first.find( lowerCommandName ) == 0)
+		if (objectName.empty())
 		{
-			matchingnames.push_back( (*comm).first );
+			// list of global commands
+			for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); comm++)
+			{
+				string first = toLower((*comm).first);
+				if (first.find( lowerCommandName ) == 0)
+				{
+					matchingnames.push_back( (*comm).first );
+				}
+			}
+
+			// list of object instance
+			for (TCommandsHandlers::TAToBMap::const_iterator it(_CommandsHandlers.getAToBMap().begin()); it != _CommandsHandlers.getAToBMap().end(); ++it)
+			{
+				string first = toLower(it->first);
+				if (first.find( lowerCommandName ) == 0)
+				{
+					matchingnames.push_back( it->first );
+				}
+			}
 		}
+		else
+		{
+			ICommandsHandler *const *pch = _CommandsHandlers.getB(objectName);
+			if (pch != NULL)
+			{
+				// ok, an object of this name exist, lookup the class
+				TCommandsHandlersClass::iterator it = _CommandsHandlersClass.find((*pch)->getCommandHandlerClassName());
+
+				// list of class commands
+				if (it != _CommandsHandlersClass.end())
+				{
+					TCommandHandlerClassInfo &chci = it->second;
+					
+					for (TCommandHandlerClassInfo::TCommandsInfo::iterator it(chci.Commands.begin()); it != chci.Commands.end(); ++it)
+					{
+						string first = toLower(it->first);
+						if (first.find( lowerCommandName ) == 0)
+						{
+							matchingnames.push_back( it->first );
+						}
+					}
+				}
+			}
+		}
+
 	}
 
 	// Do not complete if there is no result
@@ -330,7 +541,13 @@ void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 	// Complete if there is a single result
 	if ( matchingnames.size() == 1 )
 	{
-		commandName = matchingnames.front() + " ";
+		if (_CommandsHandlers.getAToBMap().find(matchingnames.front()) != _CommandsHandlers.getAToBMap().end()) 
+		{
+			// this is an object, complete with '.'
+			commandName = matchingnames.front() + ".";
+		}
+		else
+			commandName = matchingnames.front() + " ";
 		goto returnFromExpand;
 	}
 
@@ -392,8 +609,13 @@ returnFromExpand:
 
 void ICommand::serialCommands (IStream &f)
 {
+	CCommandRegistry::getInstance().serialCommands(f);
+}
+
+void CCommandRegistry::serialCommands (IStream &f)
+{
 	vector<CSerialCommand> cmd;
-	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+	for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); comm++)
 	{
 		cmd.push_back (CSerialCommand ((*comm).first, (*comm).second->Type));
 	}
@@ -402,16 +624,35 @@ void ICommand::serialCommands (IStream &f)
 
 bool ICommand::exists (std::string const &commandName)
 {
-	return ((*Commands).find(commandName) != (*Commands).end ());
+	return CCommandRegistry::getInstance().exists(commandName);
 }
+bool CCommandRegistry::exists (std::string const &commandName)
+{
+	return (Commands.find(commandName) != Commands.end ());
+}
+
+bool ICommand::isCommand (const std::string &str)
+{
+	return CCommandRegistry::getInstance().isCommand(str);
+}
+bool CCommandRegistry::isCommand (const std::string &str)
+{
+	if (str.empty())
+		return false;
+	
+	return isupper(str[0]) == 0;
+}
+
 
 NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/commands or on all variables and commands", "[<variable>|<command>]")
 {	
-	nlassert (Commands != NULL);
+//	nlassert (Commands != NULL);
 	
-	// make sure we have a valid number of paramaters
+	// make sure we have a valid number of parameters
 	if (args.size()>1)
 		return false;
+
+	CCommandRegistry &cr = CCommandRegistry::getInstance();
 
 	// treat the case where we have no parameters
 	if (args.size() == 0)
@@ -419,9 +660,9 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 		// display a list of all command categories
 		log.displayNL("Help commands:");
 		log.displayNL("- help all");
-		for (TCategorySet::iterator it=Categories->begin();it!=Categories->end();++it)
+		for (CCommandRegistry::TCategorySet::iterator it=cr.Categories.begin();it!=cr.Categories.end();++it)
 		{
-			log.displayNL("- help %s",(*it).c_str());
+			log.displayNL("- help %s",it->c_str());
 		}
 		log.displayNL("- help <wildcard>");
 		log.displayNL("- help <command name>");
@@ -432,55 +673,201 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 	if (args[0]=="all")
 	{
 		// display all commands
-		log.displayNL("Displaying all %d variables and commands: ", (*Commands).size());
+		log.displayNL("Displaying all %d variables and commands: ", cr.Commands.size());
 		uint i = 0;
-		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++, i++)
+		for (TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); ++comm, i++)
 		{
-			log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
+			log.displayNL("%2d %-15s: %s", i, comm->first.c_str(), comm->second->HelpString.c_str());
+		}
+
+		// display the class commands
+		{
+			CCommandRegistry::TCommandsHandlersClass::iterator first(cr._CommandsHandlersClass.begin()), last(cr._CommandsHandlersClass.end());
+			for (; first != last; ++first)
+			{
+				log.displayNL("%-15s :", first->first.c_str());
+				TCommandHandlerClassInfo &chci = first->second;
+				{
+					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+					for (;first != last; ++first)
+					{
+						log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
+					}
+				}
+			}
+		}
+
+		// display the named instance instance
+		{
+			log.displayNL("Listing named object instance : <name> : <className>");
+			CCommandRegistry::TCommandsHandlers::TAToBMap::const_iterator first(cr._CommandsHandlers.getAToBMap().begin()), last(cr._CommandsHandlers.getAToBMap().end());
+			for (; first != last; ++first)
+			{
+				log.displayNL(" %-15s: %s", 
+					first->first.c_str(), 
+					first->second->getCommandHandlerClassName().c_str());
+			}
 		}
 		return true;
 	}
 
 	// treat the case where the supplied parameter is a category name
-	if (Categories->find(args[0])!=Categories->end())
 	{
-		log.displayNL("Displaying commands and variables from category: %s", args[0].c_str());
-		uint i = 0;
-		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+		if (cr.Categories.find(args[0])!=cr.Categories.end())
 		{
-			if ((*comm).second->CategoryName==args[0])
+			log.displayNL("Displaying commands and variables from category: %s", args[0].c_str());
+			uint i = 0;
+			for (TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); ++comm)
 			{
-				log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
-				i++;
+				if (comm->second->CategoryName == args[0])
+				{
+					log.displayNL("%2d %-15s: %s", i, comm->first.c_str(), comm->second->HelpString.c_str());
+					i++;
+				}
 			}
+			return true;
 		}
-		return true;
+	}
+	// treat the case where the supplied parameter is a class name
+	{
+		if (cr._CommandsHandlersClass.find(args[0]) != cr._CommandsHandlersClass.end())
+		{
+			log.displayNL("%-15s :", args[0].c_str());
+			TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[args[0]];
+			{
+				TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+				for (;first != last; ++first)
+				{
+					log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
+				}
+			}
+
+			// list the instance of this class
+			log.displayNL(" Here is a list of the %u named instance of this class", chci.InstanceCount);
+			for (CCommandRegistry::TCommandsHandlers::TAToBMap::const_iterator it=cr._CommandsHandlers.getAToBMap().begin(); it != cr._CommandsHandlers.getAToBMap().end(); ++it)
+			{
+				if (it->second->getCommandHandlerClassName() == args[0])
+				{
+					log.displayNL("  %-15s", it->first.c_str());
+				}
+			}
+
+			return true;
+		}
+	}
+	// treat the case where the supplied parameter is an object name
+	{
+		if (cr._CommandsHandlers.getB(args[0]) != NULL)
+		{
+			const string &className = (*(cr._CommandsHandlers.getB(args[0])))->getCommandHandlerClassName();
+			if (cr._CommandsHandlersClass.find(className) != cr._CommandsHandlersClass.end())
+			{
+				TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[className];
+				{
+					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+					for (;first != last; ++first)
+					{
+						log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
+					}
+				}
+			}
+
+			return true;
+		}
 	}
 
 	// treat the case where the supplied parameter is a wildcard
 	if (args[0].find('*')!=std::string::npos || args[0].find('?')!=std::string::npos)
 	{
-		log.displayNL("Displaying commands and variables matching wildcard: %s", args[0].c_str());
+		log.displayNL("Displaying commands, variables and objects matching wildcard: '%s'", args[0].c_str());
+		log.displayNL(" Global commands and variables :");
 		uint i = 0;
-		for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+		for (TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); ++comm)
 		{
-			if (testWildCard((*comm).first,args[0]))
+			if (testWildCard(comm->first,args[0]))
 			{
-				log.displayNL("%2d %-15s: %s", i, (*comm).first.c_str(), (*comm).second->HelpString.c_str());
+				log.displayNL("%2d %-15s: %s", i, comm->first.c_str(), comm->second->HelpString.c_str());
 				i++;
 			}
 		}
+
+		// display the named instance instance that match
+		{
+			log.displayNL(" Named objects instances : <name> : <className>");
+			CCommandRegistry::TCommandsHandlers::TAToBMap::const_iterator first(cr._CommandsHandlers.getAToBMap().begin()), last(cr._CommandsHandlers.getAToBMap().end());
+			for (; first != last; ++first)
+			{
+				if (testWildCard(first->first, args[0]))
+				{
+					log.displayNL("  %-15s: '%s'", 
+						first->first.c_str(), 
+						first->second->getCommandHandlerClassName().c_str());
+				}
+			}
+		}
+
+		// display the class commands that match
+		{
+			log.displayNL(" Class commands :");
+			CCommandRegistry::TCommandsHandlersClass::iterator first(cr._CommandsHandlersClass.begin()), last(cr._CommandsHandlersClass.end());
+			for (; first != last; ++first)
+			{
+				const string &className = first->first;
+				TCommandHandlerClassInfo &chci = first->second;
+				{
+					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+					for (;first != last; ++first)
+					{
+						if (testWildCard(first->first, args[0]))
+						{
+							log.displayNL("  %s::%-15s: %s", 
+								className.c_str(),
+								first->first.c_str(), 
+								first->second.CommandHelp.c_str());
+						}
+					}
+				}
+			}
+		}
+
 		return true;
 	}
 
 	// treat the case where we're looking at help on a given command
-	if ((*Commands).find(args[0]) != (*Commands).end())
 	{
-		TCommand::iterator comm = (*Commands).find(args[0]);
-		log.displayNL("%s", (*comm).second->HelpString.c_str());
-		log.displayNL("usage: %s %s", (*comm).first.c_str(), (*comm).second->CommandArgs.c_str(), (*comm).second->HelpString.c_str());
-		return true;
+		// look in global commands
+		if (cr.Commands.find(args[0]) != cr.Commands.end())
+		{
+			TCommand::iterator comm = cr.Commands.find(args[0]);
+			log.displayNL("%s", comm->second->HelpString.c_str());
+			log.displayNL("usage: %s %s %s", 
+				comm->first.c_str(), 
+				comm->second->CommandArgs.c_str(), 
+				comm->second->HelpString.c_str());
+			return true;
+		}
+		// look in the class commands
+		{
+			CCommandRegistry::TCommandsHandlersClass::iterator first(cr._CommandsHandlersClass.begin()), last(cr._CommandsHandlersClass.end());
+			for (; first != last; ++first)
+			{
+				TCommandHandlerClassInfo &chci = first->second;
+				{
+					TCommandHandlerClassInfo::TCommandsInfo::iterator it = chci.Commands.find(args[0]);
+					if (it != chci.Commands.end())
+					{
+						log.displayNL("%s", it->second.CommandHelp.c_str());
+						log.displayNL("usage: %s %s %s", 
+							it->first.c_str(), 
+							it->second.CommandArgs.c_str(), 
+							it->second.CommandHelp.c_str());
+						return true;
+					}
+				}
+			}
+		}
 	}
+
 
 	// we've failed to find a case that works so display an error message and prompt the player
 	log.displayNL("'%s' is not a command, category or wildcard. Type 'help' for more information", args[0].c_str());
@@ -489,6 +876,10 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 
 // ***************************************************************************
 void	ICommand::enableControlCharForCommand(const std::string &commandName, bool state)
+{
+	CCommandRegistry::getInstance().enableControlCharForCommand(commandName, state);
+}
+void	CCommandRegistry::enableControlCharForCommand(const std::string &commandName, bool state)
 {
 	if(state)
 		// allow, so erase from the set of those who disable
@@ -501,8 +892,42 @@ void	ICommand::enableControlCharForCommand(const std::string &commandName, bool 
 // ***************************************************************************
 bool	ICommand::isControlCharForCommandEnabled(const std::string &commandName)
 {
+	return CCommandRegistry::getInstance().isControlCharForCommandEnabled(commandName);
+}
+bool	CCommandRegistry::isControlCharForCommandEnabled(const std::string &commandName)
+{
 	// true if not in the set
 	return _CommandsDisablingControlChar.find(commandName)==_CommandsDisablingControlChar.end();
+}
+
+ICommandsHandler::ICommandsHandler()
+: _ClassName(NULL)
+{
+}
+
+void ICommandsHandler::registerCommandsHandler()
+{
+	if (_ClassName == NULL)
+	{
+		// store the class name for unregistering during destruction
+		_ClassName = &getCommandHandlerClassName();
+		CCommandRegistry::getInstance().registerNamedCommandHandler(this, *_ClassName);
+	}
+}
+
+void ICommandsHandler::unregisterCommandsHandler()
+{
+	if (_ClassName != NULL)
+	{
+		CCommandRegistry::getInstance().unregisterNamedCommandHandler(this, *_ClassName);
+		_ClassName = NULL;
+	}
+}
+
+
+ICommandsHandler::~ICommandsHandler()
+{
+	unregisterCommandsHandler();
 }
 
 

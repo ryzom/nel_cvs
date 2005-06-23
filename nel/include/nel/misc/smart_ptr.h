@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.31 2005/03/02 18:28:07 vuarand Exp $
+ * $Id: smart_ptr.h,v 1.32 2005/06/23 16:28:05 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,6 +208,8 @@ public:
     T* operator->(void) const { SMART_TRACE("ope->()"); return Ptr; }
 	/// returns if there's no object pointed by this SmartPtr.
 	bool	isNull	() const { return Ptr==NULL; }
+	/// Return the pointer
+	T *getPtr() const { return Ptr;}
 
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(T* p);

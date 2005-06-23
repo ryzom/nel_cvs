@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.84 2005/05/09 11:50:47 boucher Exp $
+ * $Id: service.h,v 1.85 2005/06/23 16:33:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,7 @@ class CCallbackServer;
  * -S followed by the shard Id (sint32) (WS only)
  * -T followed by the IP address where the login service is (WS only)
  * -W followed by the path where to save all shard data (SaveFilesDirectory)
+ * -Z to just init the config file then return (used for test)
  * 
  *
  */
@@ -118,6 +119,7 @@ class CCallbackServer;
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
 { \
+	CApplicationContext	serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (lpCmdLine); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
@@ -131,6 +133,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
  \
 int main(int argc, const char **argv) \
 { \
+	CApplicationContext serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
@@ -207,6 +210,9 @@ public:
 
 	/// Returns the instance of the service to access to methods/variables class
 	static IService					*getInstance () { nlassert (_Instance != NULL); return _Instance; }
+
+	/// Returns true if the service singleton has been in itialized
+	static bool						isServiceInitialized() { return _Instance != NULL; }
 
 	/// Returns the current service short name (ie: TS)
 	const std::string				&getServiceShortName () const { return _ShortName; };

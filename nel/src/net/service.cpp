@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.227 2005/06/17 09:47:49 cado Exp $
+ * $Id: service.cpp,v 1.228 2005/06/23 16:38:14 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -66,6 +66,7 @@
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"
 #include "nel/net/admin.h"
+#include "nel/net/module_manager.h"
 
 #include "nel/memory/memory_manager.h"
 
@@ -312,6 +313,9 @@ IService::IService() :
 {
 	// Singleton
 	_Instance = this;
+
+	// register in the safe singleton registry
+	INelContext::getInstance().setSingletonPointer("IService", this);
 }
 
 
@@ -478,6 +482,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
+		// init the module manager
+		IModuleManager::getInstance();
 		//
 		// Init parameters
 		//
@@ -537,6 +543,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		
 		// setup variable with config file variable
 		IVariable::init (ConfigFile);
+
+		if (haveArg('Z'))
+		{
+			// release the module manager
+			IModuleManager::getInstance().releaseInstance();
+			return 0;
+		}
 		
 		// we have to call this again because the config file can changed this variable but the cmd line is more prioritary
 		if (haveArg('A'))
@@ -958,6 +971,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 						beep( 880, 400 );
 						beep( 440, 400 );
 						beep( 220, 400 );
+
+						// release the module manager
+						IModuleManager::getInstance().releaseInstance();
+
 						return 10;
 					}
 				}
@@ -1244,6 +1261,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// get and manage layer 5 messages
 			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
 
+			// update modules
+			IModuleManager::getInstance().updateModules();
+
 			// Allow direct closure if the naming service was lost
 			if ( _RequestClosureClearanceCallback )
 			{
@@ -1441,7 +1461,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WindowDisplayer = NULL;
 		}
 
-		nlinfo ("SERVICE: Service released succesfuly");
+		// release the module manager
+		IModuleManager::getInstance().releaseInstance();
+
+		nlinfo ("SERVICE: Service released succesfully");
 	}
 /*	catch (ETrapDebug &)
 	{

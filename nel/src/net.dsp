@@ -272,6 +272,70 @@ SOURCE=.\net\unified_network.cpp
 SOURCE=..\include\nel\net\unified_network.h
 # End Source File
 # End Group
+# Begin Group "Module Layer"
+
+# PROP Default_Filter ""
+# Begin Group "interfaces"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\net\module.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_common.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_gateway.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_message.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_socket.h
+# End Source File
+# End Group
+# Begin Group "implementations"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\net\module.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_builder_parts.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_gateway.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_message.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_socket.cpp
+# End Source File
+# End Group
+# End Group
 # Begin Source File
 
 SOURCE=.\net\admin.cpp
@@ -311,6 +375,10 @@ SOURCE=.\net\login_server.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\net\login_server.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\Makefile.am
 # End Source File
 # Begin Source File
 

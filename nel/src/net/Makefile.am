@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.25 2004/05/10 15:46:08 distrib Exp $
+# $Id: Makefile.am,v 1.26 2005/06/23 16:38:14 boucher Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -34,7 +34,12 @@ libnelnet_la_SOURCES = buf_client.cpp                      \
                        varpath.cpp			               \
                        transport_class.cpp                 \
                        email.cpp                           \
-                       admin.cpp
+                       admin.cpp                           \
+                       module.cpp                          \
+                       module_common.cpp                   \
+                       module_gateway.cpp                  \
+                       module_manager.cpp                  \
+                       module_message.cpp
 
 noinst_HEADERS	     = stdnet.h
 

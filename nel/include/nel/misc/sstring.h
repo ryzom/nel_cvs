@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.31 2005/04/26 10:28:10 distrib Exp $
+ * $Id: sstring.h,v 1.32 2005/06/23 16:30:40 boucher Exp $
  */
 
 
@@ -24,7 +24,9 @@ namespace	NLMISC
 {
 
 // advanced class declaration...
-class CVectorSString;
+//class CVectorSString;
+class CSString;
+typedef std::vector<CSString> CVectorSString;
 
 /**
  * CSString : std::string with more functionalities and case insensitive compare
@@ -420,35 +422,47 @@ public:
 /*
  * Vector of CSString compatible with vector<string>
  */
-class CVectorSString : public std::vector<CSString>
+//typedef std::vector<CSString> CVectorSString;
+
+
+/*CVectorSString &operator = (CVectorSString &left, const std::vector<std::string> &right)
 {
-public:
-	// cast to and convert from std::vector<std::string>
-	operator std::vector<std::string>& ()
-	{ 
-		return reinterpret_cast<std::vector<std::string>&>(*this); 
-	}
-	operator const std::vector<std::string>& () const
-	{ 
-		return reinterpret_cast<const std::vector<std::string>&>(*this); 
-	}
-	CVectorSString&	operator= ( const std::vector<std::string>& v ) 
-	{
-		*this = reinterpret_cast<const CVectorSString&>(v); 
-		return *this; 
-	}
-
-	// simple ctors
-	CVectorSString()							{}
-	CVectorSString( const CVectorSString& v )	{ operator=(v); }
-
-	// ctors for building from different vetor types
-	CVectorSString( const std::vector<CSString>& v ):							std::vector<CSString>(v)			{}
-	CVectorSString( const std::vector<std::string>& v ):						std::vector<CSString>(*(std::vector<CSString>*)&v) {}
-
-	// ctor for extracting sub_section of another vector
-	CVectorSString( const const_iterator& first, const const_iterator& last ):	std::vector<CSString>(first,last)	{}
-};
+	left = reinterpret_cast<CVectorSString&>(right);
+}
+CVectorSString &operator = (CVectorSString &left, const std::vector<CSString> &right)
+{
+	left = reinterpret_cast<CVectorSString&>(right);
+}
+*/
+//class CVectorSString : public std::vector<CSString>
+//{
+//public:
+//	// cast to and convert from std::vector<std::string>
+//	operator std::vector<std::string>& ()
+//	{ 
+//		return reinterpret_cast<std::vector<std::string>&>(*this); 
+//	}
+//	operator const std::vector<std::string>& () const
+//	{ 
+//		return reinterpret_cast<const std::vector<std::string>&>(*this); 
+//	}
+//	CVectorSString&	operator= ( const std::vector<std::string>& v ) 
+//	{
+//		*this = reinterpret_cast<const CVectorSString&>(v); 
+//		return *this; 
+//	}
+//
+//	// simple ctors
+//	CVectorSString()							{}
+//	CVectorSString( const CVectorSString& v )	{ operator=(v); }
+//
+//	// ctors for building from different vetor types
+//	CVectorSString( const std::vector<CSString>& v ):							std::vector<CSString>(v)			{}
+//	CVectorSString( const std::vector<std::string>& v ):						std::vector<CSString>(*(std::vector<CSString>*)&v) {}
+//
+//	// ctor for extracting sub_section of another vector
+//	CVectorSString( const const_iterator& first, const const_iterator& last ):	std::vector<CSString>(first,last)	{}
+//};
 
 
 /*
@@ -666,62 +680,6 @@ inline CSString CSString::splitFrom(const char *s) const
 	return result;
 }
 
-inline CSString CSString::strtok(	const char *separators,
-									bool useSmartExtensions,			// if true then match brackets etc (and refine with following args)
-									bool useAngleBrace,					// - treat '<' and '>' as brackets
-									bool useSlashStringEscape,			// - treat '\' as escape char so "\"" == '"'
-									bool useRepeatQuoteStringEscape)	// - treat """" as '"')
-{
-	if (useSmartExtensions)
-	{
-		return splitToOneOfSeparators(separators,true,useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,true);
-	}
-
-	unsigned int i;
-	CSString result;
-
-	// skip leading junk
-	for (i=0;i<size();++i)
-	{
-		// look for the next character in the 'separator' character list supplied
-		unsigned j;
-		for (j=0;separators[j] && (*this)[i]!=separators[j];++j)
-		{}
-		// if not found then we're at end of leading junk
-		if (!separators[j])
-			break;
-	}
-
-	// copy out everything up to the next separator character
-	for (;i<size();++i)
-	{
-		// look for the next character in the 'separator' character list supplied
-		unsigned j;
-		for (j=0;separators[j] && (*this)[i]!=separators[j];++j)
-		{}
-		// if not found then we're at end of leading junk
-		if (separators[j])
-			break;
-		result+=(*this)[i];
-	}
-
-	// skip trailing junk
-	for (;i<size();++i)
-	{
-		// look for the next character in the 'separator' character list supplied
-		unsigned j;
-		for (j=0;separators[j] && (*this)[i]!=separators[j];++j)
-		{}
-		// if not found then we're at end of leading junk
-		if (!separators[j])
-			break;
-	}
-
-	// delete the treated bit from this string
-	(*this)=substr(i);
-
-	return result;
-}
 
 inline CSString CSString::firstWord(bool truncateThis)
 {
@@ -1280,48 +1238,6 @@ inline CSString CSString::splitToOneOfSeparators(	const CSString& separators,
 	return const_cast<CSString*>(this)->splitToOneOfSeparators(separators,false,useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,false);
 }
 
-inline CSString CSString::splitToOneOfSeparators(	const CSString& separators,
-													bool truncateThis,
-													bool useAngleBrace,					// treat '<' and '>' as brackets
-													bool useSlashStringEscape,			// treat '\' as escape char so "\"" == '"'
-													bool useRepeatQuoteStringEscape,	// treat """" as '"'
-													bool truncateSeparatorCharacter)	// if true tail begins after separator char
-{
-	// iterate over our string
-	uint32 i;
-	for (i=0;i<size();++i)
-	{
-		char thisChar=(*this)[i];
-
-		// if we've found the separator character then all's cool so break out of the loop
-		if (separators.contains(thisChar))
-			break;
-
-		// if we have a bracket or quote of any type then match to it's matching bracket, quote or whatever
-		if (isOpeningDelimiter(thisChar,useAngleBrace) || isStringDelimiter(thisChar))
-		{
-			uint32 j=i;
-			i=findMatchingDelimiterPos(useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,i);
-			// if there was a problem then break here
-			if (j==i)
-				break;
-			continue;
-		}
-	}
-
-	// build the return string
-	CSString result=left(i);
-
-	// if need be truncate '*this' before returning
-	if (truncateThis)
-	{
-		if (truncateSeparatorCharacter && separators.contains((*this)[i]))
-			++i;
-		*this=leftCrop(i);
-	}
-
-	return result;
-}
 
 inline bool CSString::isDelimitedMonoBlock(	bool useAngleBrace,				// treat '<' and '>' as brackets
 											bool useSlashStringEscape,		// treat '\' as escape char so "\"" == '"'

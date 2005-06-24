@@ -1,7 +1,7 @@
 /** \file landscape.h
  * TODO: File description
  *
- * $Id: landscape.h,v 1.60 2005/02/22 10:19:10 besson Exp $
+ * $Id: landscape.h,v 1.60.10.1 2005/06/24 16:04:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -806,7 +806,7 @@ private:
 	// Internal only. Force load of the tile (with TileBank).
 	void			loadTile(uint16 tileId);
 	void			releaseTile(uint16 tileId);
-	ITexture		*findTileTexture(const std::string &textName);
+	ITexture		*findTileTexture(const std::string &textName, bool clamp);
 	CPatchRdrPass	*findTileRdrPass(const CPatchRdrPass &pass);
 
 	// Tile LightMap mgt. NB: a lightmap is now a 2x2 tiles lightmap (10x10 pixels).

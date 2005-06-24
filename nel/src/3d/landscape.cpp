@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.154 2005/02/22 10:19:10 besson Exp $
+ * $Id: landscape.cpp,v 1.154.10.1 2005/06/24 16:04:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1753,7 +1753,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 
 // ***************************************************************************
-ITexture		*CLandscape::findTileTexture(const std::string &textName)
+ITexture		*CLandscape::findTileTexture(const std::string &textName, bool clamp)
 {
 	ITexture	*text;
 	text= TileTextureMap[textName];
@@ -1764,8 +1764,8 @@ ITexture		*CLandscape::findTileTexture(const std::string &textName)
 	if(!text)
 	{
 		TileTextureMap[textName]= text= new CTextureFile(textName);
-		text->setWrapS(ITexture::Clamp);
-		text->setWrapT(ITexture::Clamp);
+		text->setWrapS(clamp?ITexture::Clamp:ITexture::Repeat);
+		text->setWrapT(clamp?ITexture::Clamp:ITexture::Repeat);
 		text->setUploadFormat(ITexture::DXTC5);
 		text->setTextureCategory(_TextureTileCategory);
 	}
@@ -1816,12 +1816,14 @@ void			CLandscape::loadTile(uint16 tileId)
 	{
 		// Fill rdrpass.
 		CPatchRdrPass	pass;
-		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName);
+		// Avoid using Clamp for diffuse, because of recent NVidia GL drivers Bugs in 77.72
+		pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName, false);
 
 		// We may have an alpha part for additive.
 		textName= tile->getRelativeFileName (CTile::alpha);
 		if(textName!="")
-			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
+			// Must Use clamp for alpha (although NVidia drivers are buggy), because the texture doesn't tile at all
+			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName, true);
 
 		// Fill tileInfo.
 		tileInfo->AdditiveRdrPass= findTileRdrPass(pass);
@@ -1842,7 +1844,8 @@ void			CLandscape::loadTile(uint16 tileId)
 	{
 		textName= tile->getRelativeFileName(CTile::diffuse);
 		if(textName!="")
-			pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName);
+			// Avoid using Clamp for diffuse, because of recent NVidia GL drivers Bugs in 77.72
+			pass.TextureDiffuse= findTileTexture(TileBank.getAbsPath()+textName, false);
 		else
 		{
 			pass.TextureDiffuse= new CTextureCross;
@@ -1855,7 +1858,8 @@ void			CLandscape::loadTile(uint16 tileId)
 	{
 		textName= tile->getRelativeFileName (CTile::alpha);
 		if(textName!="")
-			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
+			// Must Use clamp for alpha (although NVidia drivers are buggy), because the texture doesn't tile at all
+			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName, true);
 	}
 
 

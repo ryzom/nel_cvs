@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.2 2005/06/23 17:40:16 boucher Exp $
+ * $Id: module.cpp,v 1.3 2005/06/24 19:40:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,8 +61,10 @@ namespace NLNET
 			nlassert(sanityCheck == NULL);
 		}
 
-		// This factory is no longer available
-		IModuleManager::getInstance().unregisterModuleFactory(this);
+		// if the context is still active
+		if (INelContext::isContextInitialised())
+			// This factory is no longer available
+			IModuleManager::getInstance().unregisterModuleFactory(this);
 	}
 
 	const std::string &IModuleFactory::getModuleClassName() const
@@ -273,7 +275,7 @@ namespace NLNET
 		return true;
 	}
 
-	NLMISC_CLASS_COMMAND_IMPL(CModuleBase, dumpModule)
+	NLMISC_CLASS_COMMAND_IMPL(CModuleBase, dump)
 	{
 		if (args.size() != 0)
 			return false;

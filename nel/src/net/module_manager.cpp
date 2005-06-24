@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.2 2005/06/23 17:40:16 boucher Exp $
+ * $Id: module_manager.cpp,v 1.3 2005/06/24 19:40:49 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -532,7 +532,7 @@ namespace NLNET
 
 
 		NLMISC_COMMAND_HANDLER_TABLE_BEGIN(CModuleManager)
-			NLMISC_COMMAND_HANDLER_ADD(CModuleManager, dumpModuleManager, "dump various information about module manager state", "");
+			NLMISC_COMMAND_HANDLER_ADD(CModuleManager, dump, "dump various information about module manager state", "");
 			NLMISC_COMMAND_HANDLER_ADD(CModuleManager, loadLibrary, "load a pure nel library module (give the path if needed and only the undecorated lib name)", "[path]<undecoratedLibName>");
 			NLMISC_COMMAND_HANDLER_ADD(CModuleManager, unloadLibrary, "unload a pure nel library module (give the undecorated name, any path will be removed", "<undecoratedLibName>");
 			NLMISC_COMMAND_HANDLER_ADD(CModuleManager, createModule, "create a new module instance", "<moduleClass> <instanceName> [*<moduleArg>]");
@@ -609,7 +609,7 @@ namespace NLNET
 			return module != NULL;
 		}
 
-		NLMISC_CLASS_COMMAND_DECL(dumpModuleManager)
+		NLMISC_CLASS_COMMAND_DECL(dump)
 		{
 			log.displayNL("Dumping CModuleManager internal states :");
 			{

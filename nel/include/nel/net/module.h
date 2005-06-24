@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
+ * $Id: module.h,v 1.3 2005/06/24 19:38:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,12 +361,12 @@ namespace NLNET
 
 		/// base module command table
 		NLMISC_COMMAND_HANDLER_TABLE_BEGIN(CModuleBase)
-			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, dumpModule, "display informations about module instance status", "no args")
+			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, dump, "display informations about module instance status", "no args")
 			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, plug, "plug the module in a module socket", "<socket_name>")
 			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, unplug, "unplug the module out of a module socket", "<socket_name>")
 		NLMISC_COMMAND_HANDLER_TABLE_END
 
-		NLMISC_CLASS_COMMAND_DECL(dumpModule);
+		NLMISC_CLASS_COMMAND_DECL(dump);
 		NLMISC_CLASS_COMMAND_DECL(plug);
 		NLMISC_CLASS_COMMAND_DECL(unplug);
 	};

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.36 2005/06/23 16:36:26 boucher Exp $
+ * $Id: command.cpp,v 1.37 2005/06/24 19:39:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,12 @@ ICommand::ICommand(const char *categoryName, const char *commandName, const char
 		Type = Command;
 		(*LocalCommands)[commandName] = this;
 //		Categories.insert(categoryName);
+	}
+
+	if (INelContext::isContextInitialised())
+	{
+		// directly register this command
+		CCommandRegistry::getInstance().registerCommand(this);
 	}
 }
 
@@ -413,7 +419,9 @@ end:
 			if (comm == Commands.end ())
 			{
 				// the command doesn't exist
-				if (!quiet) log.displayNL("Command '%s' not found, try 'help'", commands[u].CommandName.c_str());
+				ret = false;
+				if (!quiet) 
+					log.displayNL("Command '%s' not found, try 'help'", commands[u].CommandName.c_str());
 			}
 			else
 			{
@@ -629,6 +637,11 @@ bool ICommand::exists (std::string const &commandName)
 bool CCommandRegistry::exists (std::string const &commandName)
 {
 	return (Commands.find(commandName) != Commands.end ());
+}
+
+bool CCommandRegistry::isNamedCommandHandler(const std::string &handlerName)
+{
+	return _CommandsHandlers.getB(handlerName) != NULL;
 }
 
 bool ICommand::isCommand (const std::string &str)

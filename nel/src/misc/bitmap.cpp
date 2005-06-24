@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.59 2005/06/24 17:23:16 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.60 2005/06/24 17:24:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3499,13 +3499,16 @@ void CBitmap::unattachPixels(CObjectVector<uint8> *mipmapDestArray, uint maxMipM
 void CBitmap::getData(uint8*& extractData)
 {
 	
-	uint32 size=0;
+	uint32 size;
 	if(PixelFormat==RGBA)
 		size=_Width*_Height*4;
 	else if(PixelFormat==Alpha||PixelFormat==Luminance)
 		size=_Width*_Height;
-	nlassert(size!=0);
-
+	else
+	{
+		nlstop;
+	}
+	
 	for(uint32 pix=0;pix<size;pix++)
 		extractData[pix]=_Data[0][pix];
 	
@@ -3514,7 +3517,7 @@ void CBitmap::getData(uint8*& extractData)
 void CBitmap::getDibData(uint8*& extractData)
 {
 	
-	uint32 lineSize=0,size;
+	uint32 lineSize,size;
 	uint8** buf;
 	buf=new uint8*[_Height];
 	if(PixelFormat==RGBA)
@@ -3527,7 +3530,10 @@ void CBitmap::getDibData(uint8*& extractData)
 	{
 		lineSize=_Width;
 	}
-	nlassert(lineSize!=0);
+	else
+	{
+		nlstop;
+	}
 	
 	for(sint32 i=_Height-1;i>=0;i--)
 	{

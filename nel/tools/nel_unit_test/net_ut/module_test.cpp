@@ -89,7 +89,7 @@ public:
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// dump the module state
-		cmd = "moduleManager.dumpModuleManager ";
+		cmd = "moduleManager.dump";
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// create a module
@@ -97,7 +97,7 @@ public:
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// dump the module state
-		cmd = "moduleManager.dumpModuleManager ";
+		cmd = "moduleManager.dump";
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// delete the module

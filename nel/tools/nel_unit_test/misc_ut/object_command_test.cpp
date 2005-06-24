@@ -90,6 +90,33 @@ public:
 
 };
 
+class TTestDerived3 : public TTestDerived2
+{
+	// empty class
+};
+
+class TTestDerived4 : public TTestDerived3
+{
+public:
+	NLMISC_COMMAND_HANDLER_TABLE_EXTEND_BEGIN(TTestDerived4, TTestDerived3)
+		NLMISC_COMMAND_HANDLER_ADD(TTestDerived4, derivedCommand4, "help", "args")
+		NLMISC_COMMAND_HANDLER_ADD(TTestDerived4, theCommand1, "help", "args")
+	NLMISC_COMMAND_HANDLER_TABLE_END
+
+	NLMISC_CLASS_COMMAND_DECL(derivedCommand4)
+	{
+		callList.push_back(_Name+".derivedCommand4");
+		return true;
+	}
+
+	NLMISC_CLASS_COMMAND_DECL(theCommand1)
+	{
+		callList.push_back(_Name+".recallBase");
+		NLMISC_CLASS_COMMAND_CALL_BASE(TTestDerived3, theCommand1);
+		return true;
+	}
+};
+
 class CObjectCommandTS : public Test::Suite
 {
 	TTest	*t1;
@@ -101,6 +128,24 @@ public:
 		TEST_ADD(CObjectCommandTS::createAnotherInstance);
 		TEST_ADD(CObjectCommandTS::deleteOneInstance);
 		TEST_ADD(CObjectCommandTS::derivedClass);
+		TEST_ADD(CObjectCommandTS::derivedClassAndBaseCall);
+	}
+
+	void derivedClassAndBaseCall()
+	{
+		TTestDerived4	t4;
+		t4.setName("T4");
+
+		callList.clear();
+
+		ICommand::execute("T4.derivedCommand4", *InfoLog);
+		TEST_ASSERT(callList.size() == 1);
+		TEST_ASSERT(callList[0] == "T4.derivedCommand4");
+
+		ICommand::execute("T4.theCommand1", *InfoLog);
+		TEST_ASSERT(callList.size() == 3);
+		TEST_ASSERT(callList[1] == "T4.recallBase");
+		TEST_ASSERT(callList[2] == "T4.theCommand1");
 	}
 
 	void derivedClass()

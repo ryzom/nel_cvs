@@ -2,6 +2,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/dynloadlib.h"
+#include "nel/misc/variable.h"
+#include "nel/misc/command.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -399,6 +401,28 @@ public:
 	}
 };
 
+// Test suite for CLibrary utility method
+class CVariableTS : public Test::Suite
+{
+public:
+	CVariableTS ()
+	{
+		TEST_ADD(CVariableTS::declareVar);
+	}
+
+	void declareVar()
+	{
+		{
+			NLMISC::CVariable<std::string> myLocalVar("test", "myLocalVar", "no help", "");
+
+			TEST_ASSERT(myLocalVar.get() == string(""));
+			TEST_ASSERT(NLMISC::CCommandRegistry::getInstance().execute("myLocalVar foo", (*NLMISC::InfoLog)));
+			TEST_ASSERT(myLocalVar.get() == string("foo"));
+		}
+
+		TEST_ASSERT(!NLMISC::CCommandRegistry::getInstance().execute("myLocalVar foo", (*NLMISC::InfoLog)));
+	}
+};
 
 
 Test::Suite *createSafeSingletonTS();
@@ -416,6 +440,7 @@ public:
 		add(auto_ptr<Test::Suite>(new CFileTS(workingPath)));
 		add(auto_ptr<Test::Suite>(new CInstanceCounterTS(workingPath)));
 		add(auto_ptr<Test::Suite>(new CLibraryTS()));
+		add(auto_ptr<Test::Suite>(new CVariableTS()));
 		add(auto_ptr<Test::Suite>(createPureNelLibTS()));
 		add(auto_ptr<Test::Suite>(createSafeSingletonTS()));
 		add(auto_ptr<Test::Suite>(createCSStringTS()));

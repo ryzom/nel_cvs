@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.20 2005/06/16 12:04:43 berenguier Exp $
+ * $Id: admin.cpp,v 1.21 2005/06/24 19:38:30 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -395,6 +395,13 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 
 	if (varpath.empty())
 		return;
+
+	// special case for named command handler
+	if (CCommandRegistry::getInstance().isNamedCommandHandler(varpath.Destination[0].first))
+	{
+		varpath.Destination[0].first += "."+varpath.Destination[0].second;
+		varpath.Destination[0].second = "";
+	}
 
 	if (varpath.isFinal())
 	{

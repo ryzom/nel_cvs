@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.37 2005/06/23 16:31:51 boucher Exp $
+ * $Id: command.h,v 1.38 2005/06/24 19:37:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -539,6 +539,9 @@ struct TCommandHandler : public TCommandHandlerInfo
 #define NLMISC_CLASS_COMMAND_IMPL(className, commandName) \
 	bool className::cmdHandler_##commandName(const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 
+// A macro to recall a base class command implementation
+#define NLMISC_CLASS_COMMAND_CALL_BASE(baseClassName, commandName)\
+	baseClassName::cmdHandler_##commandName(rawCommandString, args, log, quiet, human)
 
 /** The command registry is a singleton that hold all available
  *	commands.
@@ -614,6 +617,9 @@ public:
 
 	/// returns true if the command exists
 	bool exists (std::string const &commandName);
+
+	/// Return true if a named command handler with that name is registered
+	bool isNamedCommandHandler(const std::string &handlerName);
 
 	/// if the string begin with an upper case, it s a variable, otherwise, it s a command
 	bool isCommand (const std::string &str);

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.79 2005/06/23 16:27:15 boucher Exp $
+ * $Id: debug.h,v 1.80 2005/06/24 16:19:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,12 +56,12 @@ public:
 
 	T* operator -> ()
 	{
-		return (NLMISC::INelContext::getInstance().*_Accessor)();
+		return NLMISC::INelContext::isContextInitialised() ? (NLMISC::INelContext::getInstance().*_Accessor)() : NULL;
 	}
 
 	operator T*()
 	{
-		return (NLMISC::INelContext::getInstance().*_Accessor)();
+		return NLMISC::INelContext::isContextInitialised() ? (NLMISC::INelContext::getInstance().*_Accessor)() : NULL;
 	}
 
 	T &operator ()()

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.228 2005/06/23 16:38:14 boucher Exp $
+ * $Id: service.cpp,v 1.229 2005/06/24 19:41:26 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1461,9 +1461,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WindowDisplayer = NULL;
 		}
 
-		// release the module manager
-		IModuleManager::getInstance().releaseInstance();
-
 		nlinfo ("SERVICE: Service released succesfully");
 	}
 /*	catch (ETrapDebug &)
@@ -1477,6 +1474,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// so we don't have to to anything
 		setExitStatus (EXIT_FAILURE);
 	}
+
+	// release the module manager
+	IModuleManager::getInstance().releaseInstance();
 
 #ifdef NL_RELEASE
 /*	// in release mode, we catch everything to handle clean release.

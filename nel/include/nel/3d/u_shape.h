@@ -1,7 +1,7 @@
 /** \file u_shape.h
  * Game interface for managing shape.
  *
- * $Id: u_shape.h,v 1.4 2005/03/11 15:15:11 berenguier Exp $
+ * $Id: u_shape.h,v 1.5 2005/06/27 15:58:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,13 @@ public:
 	UMaterial		getMaterial(uint materialId) const;
 	// @}
 
-	
+	// Return the Default setup choosed for this shape, for UInstance::setOpacity(). return false if not supported (not a CMeshBase)
+	bool			getDefaultOpacity() const;
+
+	// Return the Default setup computed for this shape, for UInstance::setTransparency(). return false if not supported (not a CMeshBase)
+	bool			getDefaultTransparency() const;
+
+
 	/// Proxy interface
 
 	/// Constructors

@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * TODO: File description
  *
- * $Id: mesh_base.cpp,v 1.35 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.36 2005/06/27 16:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,9 @@ CMeshBase::CMeshBase()
 	_CollisionMeshGeneration= AutoCameraCol;
 
 	_VisualCollisionMesh= NULL;
+
+	_DefaultOpacity= false;
+	_DefaultTransparency= false;
 }
 
 
@@ -252,6 +255,9 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	else
 		_CollisionMeshGeneration= AutoCameraCol;
 
+	// Some runtime not serialized compilation
+	if(f.isReading())
+		compileRunTime();
 }
 
 
@@ -288,6 +294,9 @@ void	CMeshBase::buildMeshBase(CMeshBaseBuild &m)
 
 	// copy CollisionMeshGeneration
 	_CollisionMeshGeneration= m.CollisionMeshGeneration;
+
+	// Some runtime not serialized compilation
+	compileRunTime();
 }
 
 
@@ -347,14 +356,9 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	mi->ITransformable::setScale( _DefaultScale.getDefaultValue() );
 	mi->ITransformable::setPivot( _DefaultPivot.getDefaultValue() );
 
-	// Check materials for transparency
-	mi->setTransparency( false );
-	mi->setOpacity( false );
-	for( i = 0; i < mi->Materials.size(); ++i )
-	if( mi->Materials[i].getBlend() )
-		mi->setTransparency( true );
-	else
-		mi->setOpacity( true );
+	// Setup default opcaity / transparency state
+	mi->setOpacity( this->getDefaultOpacity() );
+	mi->setTransparency( this->getDefaultTransparency() );
 
 	// if the mesh is lightable, then the instance is
 	mi->setIsLightable(this->isLightable());
@@ -494,6 +498,18 @@ void	CMeshBase::setupLodCharacterTexture(CLodCharacterTexture &lodText)
 CVisualCollisionMesh		*CMeshBase::getVisualCollisionMesh() const
 {
 	return _VisualCollisionMesh;
+}
+
+// ***************************************************************************
+void	CMeshBase::compileRunTime()
+{
+	_DefaultTransparency= false;
+	_DefaultOpacity= false;
+	for( uint i = 0; i < _Materials.size(); ++i )
+		if( _Materials[i].getBlend() )
+			_DefaultTransparency= true;
+		else
+			_DefaultOpacity= true;
 }
 
 

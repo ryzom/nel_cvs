@@ -1,7 +1,7 @@
 /** \file u_shape.cpp
  * TODO: File description
  *
- * $Id: u_shape.cpp,v 1.7 2005/03/11 15:13:05 berenguier Exp $
+ * $Id: u_shape.cpp,v 1.8 2005/06/27 16:01:15 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -115,6 +115,30 @@ UMaterial		UShape::getMaterial(uint materialId) const
 
 	// fails => return NULL material
 	return UMaterial();
+}
+
+// ***************************************************************************
+bool			UShape::getDefaultOpacity() const
+{
+	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Object);
+	if(mesh)
+	{
+		return mesh->getDefaultOpacity();
+	}
+	
+	return false;
+}
+
+// ***************************************************************************
+bool			UShape::getDefaultTransparency() const
+{
+	CMeshBase			*mesh= dynamic_cast<CMeshBase*>(_Object);
+	if(mesh)
+	{
+		return mesh->getDefaultTransparency();
+	}
+	
+	return false;
 }
 
 

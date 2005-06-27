@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * TODO: File description
  *
- * $Id: mesh_base.h,v 1.23 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh_base.h,v 1.24 2005/06/27 16:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,6 +255,13 @@ public:
 	// @}
 
 
+	// Return the Default setup choosed for this shape (used for UInstance::setOpacity())
+	bool			getDefaultOpacity() const {return _DefaultOpacity;}
+	
+	// Return the Default setup computed for this shape (used for UInstance::setTransparency())
+	bool			getDefaultTransparency() const {return _DefaultTransparency;}
+	
+
 // ************************
 protected:
 	/// The Materials.
@@ -288,6 +295,11 @@ protected:
 
 	bool						_AutoAnim;
 
+	/// Default Opacity/Transparency State
+	bool						_DefaultOpacity;
+	bool						_DefaultTransparency;
+
+	
 	// Indicate how this mesh should build the collision mesh (for camera ThirPerson collision)
 	TCameraCollisionGenerate	_CollisionMeshGeneration;
 	// Built only by CMesh and CMeshMultiLod
@@ -322,6 +334,9 @@ private:
 
 	/// compute _Lightable.
 	void	computeIsLightable();
+
+	/// Called at load or build time, all that is not serialized
+	void	compileRunTime();
 };
 
 

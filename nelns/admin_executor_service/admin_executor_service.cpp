@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.72 2005/04/06 10:24:21 cado Exp $
+ * $Id: admin_executor_service.cpp,v 1.73 2005/06/28 13:21:00 cado Exp $
  *
  */
 
@@ -1465,7 +1465,14 @@ public:
 		if (ASHost.find (":") == string::npos)
 			ASHost += ":49996";
 
-		CUnifiedNetwork::getInstance()->addService ("AS", CInetAddress(ASHost));
+		try
+		{
+		  CUnifiedNetwork::getInstance()->addService ("AS", CInetAddress(ASHost));
+		}
+		catch ( ESocket& e )
+		{
+		  nlerror( "Can't connect to AS: %s", e.what() );
+		}
 	}
 
 	bool		update ()

@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.51 2005/02/22 10:14:12 besson Exp $
+ * $Id: types_nl.h,v 1.52 2005/06/28 13:19:57 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -92,6 +92,12 @@
 #	if defined (NL_RELEASE) || defined (NL_RELEASE_DEBUG)
 #		error "Error in preprocessor directives for NeL debug mode!"
 #	endif
+#endif
+
+#if defined(NL_OS_WINDOWS) || (defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)))
+#define NL_NEW_SYNTAX 0
+#else
+#define NL_NEW_SYNTAX 1
 #endif
 
 // Remove stupid Visual C++ warning

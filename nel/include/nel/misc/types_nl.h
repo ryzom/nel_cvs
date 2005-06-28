@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.52 2005/06/28 13:19:57 cado Exp $
+ * $Id: types_nl.h,v 1.53 2005/06/28 17:14:25 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -94,10 +94,18 @@
 #	endif
 #endif
 
-#if defined(NL_OS_WINDOWS) || (defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)))
-#define NL_NEW_SYNTAX 0
+// gcc 3.4 introduced ISO C++ with tough template rules
+//
+// NL_ISO_SYNTAX can be used using #if NL_ISO_SYNTAX or #if !NL_ISO_SYNTAX
+//
+// NL_ISO_TEMPLATE_SPEC can be used in front of an instanciated class-template member data definition,
+// because sometimes MSVC++ 6 produces an error C2908 with a definition with template <>.
+#if defined(NL_OS_WINDOWS) || (defined(__GNUC__) && ((__GNUC__ < 3) || (__GNUC__ == 3 && __GNUC_MINOR__ <= 3)))
+#define NL_ISO_SYNTAX 0
+#define NL_ISO_TEMPLATE_SPEC
 #else
-#define NL_NEW_SYNTAX 1
+#define NL_ISO_SYNTAX 1
+#define NL_ISO_TEMPLATE_SPEC template <>
 #endif
 
 // Remove stupid Visual C++ warning

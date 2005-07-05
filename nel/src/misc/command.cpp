@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.37 2005/06/24 19:39:28 boucher Exp $
+ * $Id: command.cpp,v 1.38 2005/07/05 13:43:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,12 @@ ICommand::~ICommand()
 			//printf("remove command\n");
 			LocalCommands->erase (comm);
 
-			CCommandRegistry::getInstance().unregisterCommand(this);
+			// Yoyo: if no nlinfo()/nlwarning() (thus no createDebug(), thus no new CApplicationContext)
+			// done in the .dll, it is possible that the nel context is never initialized
+			if (INelContext::isContextInitialised())
+			{
+				CCommandRegistry::getInstance().unregisterCommand(this);
+			}
 
 //			if ((*Commands).size() == 0)
 //			{

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.36 2005/03/21 15:58:04 legros Exp $
+ * $Id: bit_mem_stream.cpp,v 1.37 2005/07/06 14:45:08 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -404,15 +404,17 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 	const vector<uint32>& uintVec = bitfield.getVector();
 	if ( ! uintVec.empty() )
 	{
-		for ( uint i=0; i<uintVec.size()-1; ++i )
+		uint len = bitfield.size();
+		uint i = 0;
+		uint32 v;
+		while ( len > 32 )
 		{
-			//nldebug( "Bitfield: Poked %u at %d (bitpos %d)", uintVec[i], getPos(), getPosInBit() );
 			serialPoke( uintVec[i], 32 );
+			len -= 32;
+			++i;
 		}
-		//nldebug( "Bitfield: Poked %u at %d (bitpos %d)", uintVec.back(), getPos(), getPosInBit() );
-		uint remainingBits = bitfield.size() % 32;
-		if ( remainingBits != 0 )
-			serialPoke( uintVec.back(), remainingBits );
+		if ( len != 0 )
+			serialPoke( uintVec[i], len );
 	}
 
 	// Restore the current pointers

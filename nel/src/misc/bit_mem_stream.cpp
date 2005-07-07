@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.37 2005/07/06 14:45:08 besson Exp $
+ * $Id: bit_mem_stream.cpp,v 1.38 2005/07/07 09:23:39 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -406,7 +406,6 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 	{
 		uint len = bitfield.size();
 		uint i = 0;
-		uint32 v;
 		while ( len > 32 )
 		{
 			serialPoke( uintVec[i], 32 );

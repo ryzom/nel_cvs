@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.32 2005/06/23 16:28:05 boucher Exp $
+ * $Id: smart_ptr.h,v 1.33 2005/07/07 11:44:46 vuarand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,7 @@ class CSmartPtr
 {
     T* Ptr;
 public:
+	typedef T element_type;
 
 	/// Init a NULL Ptr.
     CSmartPtr() { Ptr=NULL; SMART_TRACE("ctor()"); }

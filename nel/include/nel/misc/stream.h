@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.73 2005/02/22 10:14:12 besson Exp $
+ * $Id: stream.h,v 1.74 2005/07/07 11:44:46 vuarand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -342,6 +342,15 @@ public:
 	template<class K, class T>
 	void			serialCont(std::multimap<K, T> &cont) 	{serialMultimap(cont);}
 
+	/** \name standard STL containers serialisation.
+	 * Thse variants suppose contained type is a NeL smart pointer.
+	 * Known Supported containers: map<>
+	 * Support up to sint32 length containers.
+	 * \see serialCont() serialContPtr() serialContPolyPtr()
+	 */
+	template<class K, class T>
+	void	serialPtrCont(std::map<K, T> &cont)	{serialPtrMap(cont);}
+	
 
 	/// Specialisation of serialCont() for vector<uint8>
 	virtual void			serialCont(std::vector<uint8> &cont) ;
@@ -1409,7 +1418,6 @@ private:
 
 		// Open a node header
 		xmlPushBegin ("MAP");
-
 		// Attrib size
 		xmlSetAttrib ("size");
 
@@ -1418,40 +1426,19 @@ private:
 		{
 			cont.clear();
 			serial(len);
-
 			// check stream holds enough bytes (avoid STL to crash on resize)
 			checkStreamSize(len);
-			
-			
 			// Close the node header
 			xmlPushEnd ();
 
 			for(sint i=0;i<len;i++)
 			{
-/*				__value_type v;
-
-				xmlPush ("KEY");
-
-				serial ( const_cast<__key_type&>(v.first) );
-
-				xmlPop ();
-
-
-				xmlPush ("ELM");
-
-				serial (v.second);
-
-				xmlPop ();
-
-				cont.insert(cont.end(), v);
-*/
 				// MALKAV 05/07/02 : prevent a copy of the value, copy the key instead
 				__key_type k;
 
 				xmlPush ("KEY");
 				serial ( k );
 				xmlPop ();
-
 
 				xmlPush ("ELM");
 				serial (cont[k]);
@@ -1470,15 +1457,91 @@ private:
 			for(sint i=0;i<len;i++, it++)
 			{
 				xmlPush ("KEY");
-
 				serial( const_cast<__key_type&>((*it).first) );
-
 				xmlPop ();
 
 				xmlPush ("ELM");
-				
 				serial((*it).second);
+				xmlPop ();
+			}
+		}
 
+		// Close the node
+		xmlPop ();
+	}
+
+	/**
+	 * STL map<>
+	 * Support up to sint32 length containers. Container must contain NeL smart pointers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(must be a std::pair<>)
+	 *	\li typedef key_type;		(must be the type of the key)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: map<>
+	 * \param cont a STL map<> container.
+	 */
+	template<class T>
+	void			serialPtrMap(T &cont) 
+	{
+		typedef typename T::value_type::second_type __ptr_type;
+		typedef typename __ptr_type::element_type __value_type;
+		typedef typename T::key_type __key_type;
+		typedef typename T::iterator __iterator;
+
+		// Open a node header
+		xmlPushBegin ("MAP");
+		// Attrib size
+		xmlSetAttrib ("size");
+
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			// check stream holds enough bytes (avoid STL to crash on resize)
+			checkStreamSize(len);
+			// Close the node header
+			xmlPushEnd ();
+
+			for(sint i=0;i<len;i++)
+			{
+				// MALKAV 05/07/02 : prevent a copy of the value, copy the key instead
+				__key_type k;
+
+				xmlPush ("KEY");
+				serial ( k );
+				xmlPop ();
+
+				xmlPush ("ELM");
+				cont[k] = __ptr_type(new __value_type());
+				serial (*cont[k]);
+				xmlPop ();
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			__iterator		it= cont.begin();
+
+			// Close the node header
+			xmlPushEnd ();
+
+			for(sint i=0;i<len;i++, it++)
+			{
+				xmlPush ("KEY");
+				serial( const_cast<__key_type&>((*it).first) );
+				xmlPop ();
+
+				xmlPush ("ELM");
+				serial(*(*it).second);
 				xmlPop ();
 			}
 		}

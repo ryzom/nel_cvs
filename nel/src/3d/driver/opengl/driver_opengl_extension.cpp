@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.51 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.52 2005/07/08 12:48:31 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1163,7 +1163,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 	sint	a=0, b=0;
 	// 1.2***  ???
 	sscanf(glVersion, "%d.%d", &a, &b);
-	ext.Version1_2= a>=1 && b>=2;
+	ext.Version1_2= (a==1 && b>=2) || (a>=2);
 
 
 	// Extensions.

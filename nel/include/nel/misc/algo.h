@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.14 2005/06/16 17:14:36 coutelas Exp $
+ * $Id: algo.h,v 1.15 2005/07/18 08:57:23 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -192,6 +192,19 @@ bool		strFindReplace(T &str, const char *strFind, const U &strReplace)
 	return strFindReplace(str, tempStr, strReplace);
 }
 
+// set flags in a bit set
+template <class T, class U>
+inline void setFlags(T &dest, U mask, bool on)
+{
+	if (on)
+	{
+		dest = (T) (dest | (T) mask);
+	}
+	else
+	{
+		dest = (T) (dest & ~((T) mask));
+	}
+}
 
 
 } // NLMISC

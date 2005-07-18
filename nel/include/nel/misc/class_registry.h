@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.13 2005/02/22 10:14:12 besson Exp $
+ * $Id: class_registry.h,v 1.14 2005/07/18 08:57:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ class IClassable
 {
 public:
 	virtual std::string		getClassName() =0;
+	virtual ~IClassable() {}
 };
 
 

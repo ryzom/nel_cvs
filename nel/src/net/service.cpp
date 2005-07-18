@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.229 2005/06/24 19:41:26 boucher Exp $
+ * $Id: service.cpp,v 1.230 2005/07/18 15:36:51 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1401,13 +1401,19 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// so we don't have to to anything
 		setExitStatus (EXIT_FAILURE);
 	}
+	catch (ESocket &e)
+	{
+		// Catch NeL network exception to release the system cleanly
+		setExitStatus (EXIT_FAILURE);
+		ErrorLog->displayNL( "NeL Exception in \"%s\": %s", _ShortName.c_str(), e.what() );
+	}
 	catch ( uint ) // SEH exceptions
 	{
 		ErrorLog->displayNL( "SERVICE: System exception" );
 	}
 
 #ifdef NL_RELEASE
-/*	// in release mode, we catch everything to handle clean release.
+/*	// in release mode, we catch everything to handle clean release. (currently commented out to produce a core dump)
 	catch (Exception &e)
 	{
 		// Catch NeL exception to release the system cleanly

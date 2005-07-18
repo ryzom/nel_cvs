@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.h
  *
- * $Id: object_arena_allocator.h,v 1.7 2005/02/22 10:14:12 besson Exp $
+ * $Id: object_arena_allocator.h,v 1.8 2005/07/18 08:58:22 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -30,12 +30,13 @@
 namespace NLMISC
 {
 
+
 class CFixedSizeAllocator;
 
 /** An allocator that can allocate/release in O(1) for a finite number of possible blocks size (usually small)..
   * For a given block size, a fixed size allocator is used.
   * One possible use is with a family of class for which new and delete have been redefined at the top of the hierarchy  
-  * (which the NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR does)
+  * (which the NL_USES_DEFAULT_ARENA_OBJECT_ALLOCATOR macro does)
   *
   * \todo thread safety
   * 
@@ -67,7 +68,8 @@ public:
 		void setBreakForAllocID(bool enabled, uint id);
 	#endif
 	// for convenience, a default allocator is available
-	static CObjectArenaAllocator &getDefaultAllocator();
+	static CObjectArenaAllocator &getDefaultAllocator();	
+
 private:
 	std::vector<CFixedSizeAllocator *> _ObjectSizeToAllocator;
 	uint							 _MaxAllocSize;

@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
  * TODO: File description
  *
- * $Id: login_cookie.cpp,v 1.5 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: login_cookie.cpp,v 1.6 2005/07/20 18:04:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,8 +54,9 @@ CLoginCookie::CLoginCookie (uint32 addr, uint32 id) : _Valid(true), _UserAddr(ad
 
 uint32 CLoginCookie::generateKey()
 {
-	uint32 t = time (NULL);
-	srand (time(NULL));
+	uint32 t = (uint32)time (NULL);
+    srand (t);
+
 	uint32 r = rand ();
 	static uint32 n = 0;
 	n++;

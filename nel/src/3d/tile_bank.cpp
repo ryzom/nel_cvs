@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.49 2005/02/22 10:19:12 besson Exp $
+ * $Id: tile_bank.cpp,v 1.50 2005/07/20 18:04:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -337,7 +337,7 @@ void CTileBank::xchgTileset (sint firstTileSet, sint secondTileSet)
 // ***************************************************************************
 void TroncFileName (char* sDest, const char* sSrc)
 {
-	char* ptr=strrchr (sSrc, '\\');
+	const char* ptr=strrchr (sSrc, '\\');
 	if (ptr==NULL)
 		ptr=strrchr (sSrc, '/');
 	if (ptr)

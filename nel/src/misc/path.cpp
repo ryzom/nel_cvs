@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.116 2005/06/23 16:35:39 boucher Exp $
+ * $Id: path.cpp,v 1.117 2005/07/20 18:04:22 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1606,7 +1606,7 @@ uint32	CFile::getFileModificationDate(const std::string &filename)
 #endif
 
 	if (result != 0) return 0;
-	else return buf.st_mtime;
+	else return (uint32)buf.st_mtime;
 }
 
 
@@ -1632,7 +1632,7 @@ uint32	CFile::getFileCreationDate(const std::string &filename)
 #endif
 
 	if (result != 0) return 0;
-	else return buf.st_ctime;
+	else return (uint32)buf.st_ctime;
 }
 
 struct CFileEntry

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.90 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system.cpp,v 1.91 2005/07/20 18:04:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,7 +163,7 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 
 {
 	NL_PS_FUNC_MAIN(CParticleSystem_CParticleSystem)
-	std::fill(_UserParam, _UserParam + MaxPSUserParam, 0);	
+	std::fill(_UserParam, _UserParam + MaxPSUserParam, 0.0f);	
 	#ifdef NL_DEBUG
 		++_NumInstances;
 	#endif

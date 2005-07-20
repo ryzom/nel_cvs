@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.109 2005/06/23 16:35:39 boucher Exp $
+ * $Id: debug.cpp,v 1.110 2005/07/20 10:32:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,17 +84,57 @@ namespace NLMISC
 //bool DebugNeedAssert = false;
 //bool NoAssert = false;
 
-//CLog *ErrorLog = NULL;
-CImposter<CLog>	ErrorLog(&INelContext::getErrorLog);
-//CLog *WarningLog = NULL;
-CImposter<CLog>	WarningLog(&INelContext::getWarningLog);
-//CLog *InfoLog = NULL;
-CImposter<CLog>	InfoLog(&INelContext::getInfoLog);
-//CLog *DebugLog = NULL;
-CImposter<CLog>	DebugLog(&INelContext::getDebugLog);
-//CLog *AssertLog = NULL;
-CImposter<CLog>	AssertLog(&INelContext::getAssertLog);
 
+// ***************************************************************************
+CImposterLog::CImposterLog(TAccessor accessor)
+	: _Accessor(accessor), _Log(NULL)
+{}
+
+CLog* CImposterLog::operator -> ()
+{
+	if(!_Log)
+	{
+		if(NLMISC::INelContext::isContextInitialised())
+		{
+			_Log= (NLMISC::INelContext::getInstance().*_Accessor)();
+		}
+	}
+
+	return _Log;
+}
+
+CImposterLog::operator CLog*()
+{
+	if(!_Log)
+	{
+		if(NLMISC::INelContext::isContextInitialised())
+		{
+			_Log= (NLMISC::INelContext::getInstance().*_Accessor)();
+		}
+	}
+	
+	return _Log;
+}
+
+CLog &CImposterLog::operator ()()
+{
+	return *(operator CLog*());
+}
+
+
+//CLog *ErrorLog = NULL;
+CImposterLog	ErrorLog(&INelContext::getErrorLog);
+//CLog *WarningLog = NULL;
+CImposterLog	WarningLog(&INelContext::getWarningLog);
+//CLog *InfoLog = NULL;
+CImposterLog	InfoLog(&INelContext::getInfoLog);
+//CLog *DebugLog = NULL;
+CImposterLog	DebugLog(&INelContext::getDebugLog);
+//CLog *AssertLog = NULL;
+CImposterLog	AssertLog(&INelContext::getAssertLog);
+
+
+// ***************************************************************************
 CMemDisplayer *DefaultMemDisplayer = NULL;
 CMsgBoxDisplayer *DefaultMsgBoxDisplayer = NULL;
 

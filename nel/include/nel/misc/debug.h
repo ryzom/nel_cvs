@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.80 2005/06/24 16:19:26 boucher Exp $
+ * $Id: debug.h,v 1.81 2005/07/20 10:31:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,34 +40,27 @@ namespace NLMISC
 {	
 
 
-// Imposter class to wrap all global access to the nel context for backward compatibility
-
-template <class T>
-class CImposter
+/** Imposter class to wrap all global access to the nel context for backward compatibility
+ *	Yoyo note: This was a template before, hence with inline. 
+ *	We removed the inline because there was a hard compilation bug
+ *	in plugin max under some compiler wich caused operator-> to crash.... (don't understand why grrrr)
+ *	Btw the method is optimized like this (1 call instead of 3 (and one with virual)) because we added a local cache (_Log)
+ *	Thus it is much better like this.
+ */
+class CImposterLog
 {
 private:
-	typedef T *(INelContext::*TAccessor)();
+	typedef CLog *(INelContext::*TAccessor)();
 
+	// Method to access the Log
 	TAccessor	_Accessor;
+	// Local cache of the log
+	CLog		*_Log;
 public:
-	CImposter(TAccessor accessor)
-		: _Accessor(accessor)
-	{}
-
-	T* operator -> ()
-	{
-		return NLMISC::INelContext::isContextInitialised() ? (NLMISC::INelContext::getInstance().*_Accessor)() : NULL;
-	}
-
-	operator T*()
-	{
-		return NLMISC::INelContext::isContextInitialised() ? (NLMISC::INelContext::getInstance().*_Accessor)() : NULL;
-	}
-
-	T &operator ()()
-	{
-		return *(operator T*());
-	}
+	CImposterLog(TAccessor accessor);
+	CLog* operator -> ();
+	operator CLog*();
+	CLog &operator ()();
 };
 
 //
@@ -76,15 +69,15 @@ public:
 
 // NOTE: The following are all NULL until createDebug() has been called at least once
 //extern CLog *ErrorLog;
-extern CImposter<CLog>	ErrorLog;
+extern CImposterLog		ErrorLog;
 //extern CLog *WarningLog;
-extern CImposter<CLog>	WarningLog;
+extern CImposterLog		WarningLog;
 //extern CLog *InfoLog;
-extern CImposter<CLog>	InfoLog;
+extern CImposterLog		InfoLog;
 //extern CLog *DebugLog;
-extern CImposter<CLog>	DebugLog;
+extern CImposterLog		DebugLog;
 //extern CLog *AssertLog;
-extern CImposter<CLog>	AssertLog;
+extern CImposterLog		AssertLog;
 
 extern CMemDisplayer *DefaultMemDisplayer;
 extern CMsgBoxDisplayer *DefaultMsgBoxDisplayer;

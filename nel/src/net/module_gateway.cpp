@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.1 2005/06/23 16:38:14 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.2 2005/07/20 13:13:37 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/net/module.h"
 #include "nel/net/module_manager.h"
 #include "nel/net/module_socket.h"
+#include "nel/net/module_message.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -188,6 +189,21 @@ namespace NLNET
 		}
 		virtual void dispatchMessageModule(TModuleGatewayProxyPtr &senderGateway, const TModuleMessagePtr &message)
 		{
+
+			TModuleId sourceId = message->getSenderModuleId();
+			TModuleProxies::TAToBMap::const_iterator firstSource(_ModuleProxies.getAToBMap().begin()), lastSource(_ModuleProxies.getAToBMap().end());
+			for (; firstSource != lastSource && firstSource->first->getForeignModuleId() != sourceId; ++firstSource) {}
+			nlassert(  firstSource != lastSource );
+
+			TPluggedModules::iterator first(_PluggedModules.begin()), last(_PluggedModules.end());
+			TModuleId destId = message->getAddresseeModuleId();
+			for (; first != last && (*first)->getModuleId() != destId; ++first) {}
+			if (first != last)
+			{
+				(*first)->onProcessModuleMessage(firstSource->first, message);
+			}
+			
+
 		}
 		/***********************************************************
 		 ** Module methods 
@@ -238,6 +254,11 @@ namespace NLNET
 		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleId, TModuleMessagePtr &message ) 
 			throw (EModuleNotReachable, EModuleNotPluggedHere)
 		{
+			TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
+			for (; first != last && first->first->getModuleId() != destModuleId; ++first) {}
+			if (first != last) {  first->first->sendModuleMessage(senderModule, message); return;}
+			throw EModuleNotReachable();
+
 			nlstop;
 		}
 		virtual void _broadcastModuleMessage(IModule *senderModule, TModuleMessagePtr &message)

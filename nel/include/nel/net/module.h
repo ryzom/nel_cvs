@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.3 2005/06/24 19:38:10 boucher Exp $
+ * $Id: module.h,v 1.4 2005/07/20 13:13:08 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,9 @@ namespace NLNET
 		 *	local ID that is different than the ID in their host process.
 		 */
 		virtual TModuleId	getModuleId() const =0;
+
+		virtual TModuleId  getForeignModuleId() const =0;
+
 		/** Return the module name. Each module instance must have a unique 
 		 *	name in the host process.
 		 *	If no mane is given during module creation, the module manager
@@ -401,6 +404,10 @@ namespace NLNET
 		 *	local ID that is different than the ID in their host process.
 		 */
 		virtual TModuleId	getModuleId() const;
+
+
+
+		virtual TModuleId  getForeignModuleId() const;
 		/** Return the module name. Each module instance must have a unique 
 		 *	name in the host process.
 		 *	If no mane is given during module creation, the module manager

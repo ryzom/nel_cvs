@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.3 2005/06/24 19:40:28 boucher Exp $
+ * $Id: module.cpp,v 1.4 2005/07/20 13:13:37 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,7 @@ namespace NLNET
 	{
 		return _ModuleId;
 	}
+
 	const std::string	&CModuleBase::getModuleName() const
 	{
 		return _ModuleName;
@@ -330,6 +331,13 @@ namespace NLNET
 	{
 		return _LocalModuleId;
 	}
+	
+	TModuleId	CModuleProxy::getForeignModuleId() const
+	{
+		return _ForeignModuleId;
+	}
+
+
 	const std::string &CModuleProxy::getModuleName() const
 	{
 		return _FullyQualifiedModuleName;
@@ -347,15 +355,29 @@ namespace NLNET
 	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const TModuleMessagePtr &message)
 		throw (EModuleNotReachable)
 	{
-		if (_Gateway == NULL || _ForeignGateway == NULL || !_ForeignGateway->isConnected())	
+		if (_Gateway == NULL )
+		{
 			throw EModuleNotReachable();
+		}
 
-		// fill message routing information
-		message->_MessageType = CModuleMessage::mt_oneway;
-		message->_SenderModuleId = senderModule->getModuleId();
-		message->_AddresseeModuleId = _LocalModuleId;
+		if ( _ForeignGateway == NULL || !_ForeignGateway->isConnected())
+		{
+			message->_MessageType = CModuleMessage::mt_oneway;
+			message->_SenderModuleId = senderModule->getModuleId();
+			message->_AddresseeModuleId = _ForeignModuleId;
 
-		_Gateway->sendModuleMessage(_ForeignGateway, message);
+			_Gateway->dispatchMessageModule(_ForeignGateway, message);
+		}
+		else
+		{
+
+			// fill message routing information
+			message->_MessageType = CModuleMessage::mt_oneway;
+			message->_SenderModuleId = senderModule->getModuleId();
+			message->_AddresseeModuleId = _LocalModuleId;
+
+			_Gateway->sendModuleMessage(_ForeignGateway, message);
+		} 
 	}
 
 } // namespace NLNET

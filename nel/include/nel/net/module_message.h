@@ -1,7 +1,7 @@
 /** \file module_message.h
  * module message definition
  *
- * $Id: module_message.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module_message.h,v 1.2 2005/07/20 13:13:08 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,15 @@ namespace NLNET
 
 		/// The message content (transmited to message handler)
 		NLMISC::CMemStream	MessageBody;
+
+		///  Return the id of the addressee module
+		NLNET::TModuleId getAddresseeModuleId() const { return _AddresseeModuleId;}
+
+		///  Return the id of the sender module
+		NLNET::TModuleId getSenderModuleId() const { return _SenderModuleId;}
+
+		std::string getOperationName() const { return _OperationName;}
+
 
 		/// Serialize the message
 		void serial(NLMISC::IStream &s);

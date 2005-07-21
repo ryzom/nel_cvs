@@ -1,7 +1,7 @@
 /** \file mesh.h
  * TODO: File description
  *
- * $Id: mesh.h,v 1.49 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: mesh.h,v 1.50 2005/07/21 12:57:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -612,7 +612,7 @@ private:
 		{
 			Vertex= o.Vertex;
 			Normal= o.Normal;
-			for(sint i=0;i<=CVertexBuffer::MaxStage;i++)
+			for(sint i=0;i<CVertexBuffer::MaxStage;i++)
 			{
 				Uvws[i]= o.Uvws[i];
 			}			

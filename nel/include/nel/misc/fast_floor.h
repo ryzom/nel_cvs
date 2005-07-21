@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * TODO: File description
  *
- * $Id: fast_floor.h,v 1.5 2005/02/22 10:14:12 besson Exp $
+ * $Id: fast_floor.h,v 1.6 2005/07/21 17:41:54 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,18 +41,35 @@ namespace NLMISC
 
 // The magic constant value. support both positive and negative numbers.
 extern double	OptFastFloorMagicConst ; 
-extern int		OptFastFloorBkupCW ;
+const uint		OptFastFloorCWStackSize = 10;
+extern int      OptFastFloorCWStack[OptFastFloorCWStackSize];
+extern int      *OptFastFloorCWStackPtr;
+extern int      *OptFastFloorCWStackEnd;
+
+inline void OptFastFloorPushCW(int ctrl)
+{
+	nlassert(OptFastFloorCWStackPtr < OptFastFloorCWStackEnd);
+	*OptFastFloorCWStackPtr++ = _controlfp(0, 0);
+	_controlfp( ctrl, _MCW_RC|_MCW_PC );
+}
+
+inline void OptFastFloorPopCW()
+{
+	nlassert(OptFastFloorCWStackPtr >=  OptFastFloorCWStack);
+	_controlfp(*(--OptFastFloorCWStackPtr), _MCW_RC|_MCW_PC);
+}
+
+
 // init float CW.
 inline void  OptFastFloorBegin()
-{
-	OptFastFloorBkupCW= _controlfp(0, 0);
-	_controlfp( _RC_DOWN|_PC_53, _MCW_RC|_MCW_PC );
+{	
+	OptFastFloorPushCW(_RC_DOWN|_PC_53);
 }
 
 // reset float CW.
 inline void  OptFastFloorEnd()
 {
-	_controlfp(OptFastFloorBkupCW, _MCW_RC|_MCW_PC);
+	OptFastFloorPopCW();
 }
 
 // Force __stdcall to not pass parameters in registers.
@@ -90,18 +107,16 @@ inline float __stdcall OptFastFractionnalPart(float x)
 
 // The magic constant value, for 24 bits precision support positive numbers only
 extern float	OptFastFloorMagicConst24 ; 
-extern int		OptFastFloorBkupCW24 ;
 // init float CW. Init with float 24 bits precision, for faster float operation.
 inline void  OptFastFloorBegin24()
 {
-	OptFastFloorBkupCW24= _controlfp(0, 0);
-	_controlfp( _RC_DOWN|_PC_24, _MCW_RC|_MCW_PC );
+	OptFastFloorPushCW(_RC_DOWN|_PC_24);
 }
 
 // reset float CW.
 inline void  OptFastFloorEnd24()
 {
-	_controlfp(OptFastFloorBkupCW24, _MCW_RC|_MCW_PC);
+	OptFastFloorPopCW();
 }
 
 // Force __stdcall to not pass parameters in registers.

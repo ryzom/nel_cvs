@@ -809,6 +809,14 @@ SOURCE=..\include\nel\misc\bsphere.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\check_fpu.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\check_fpu.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\eval_num_expr.cpp
 # End Source File
 # Begin Source File

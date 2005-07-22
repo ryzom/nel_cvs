@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.155 2005/06/24 16:03:41 berenguier Exp $
+ * $Id: landscape.cpp,v 1.156 2005/07/22 12:36:56 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "texture_dlm.h"
 #include "patchdlm_context.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "scene.h"
 
 
 #include "vertex_program.h"
@@ -1020,6 +1021,18 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	IDriver *driver= _Driver;
 	nlassert(driver);
 
+	// values in Stencil Buffer which match with landscape are replace by 128
+	// rest of Stencil is replace by 0.
+	CScene *scene = NULL;
+	if (OwnerModel)
+	{
+		scene = OwnerModel->getOwnerScene();
+		if(scene->getLandscapePolyDrawingCallback())
+		{
+			scene->getLandscapePolyDrawingCallback()->beginPolyDrawing();
+		}
+	}
+
 	// Increment the update date for preRender.
 	CLandscapeGlobals::CurrentRenderDate++;
 
@@ -1677,6 +1690,10 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	// 5. Vegetable Management.
 	//================================
+	if(scene && scene->getLandscapePolyDrawingCallback())
+	{
+		scene->getLandscapePolyDrawingCallback()->endPolyDrawing();
+	}
 
 	// First, update Dynamic Lighting for Vegetable, ie just copy.
 	// ==================

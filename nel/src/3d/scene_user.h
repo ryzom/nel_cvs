@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * TODO: File description
  *
- * $Id: scene_user.h,v 1.61 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene_user.h,v 1.62 2005/07/22 12:41:40 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -308,6 +308,9 @@ public:
 
 	void						setWaterCallback(IWaterSurfaceAddedCallback *wcb);
 	IWaterSurfaceAddedCallback *getWaterCallback() const;
+
+	void			setLandscapePolyDrawingCallback(ILandscapePolyDrawingCallback *lpd);
+	ILandscapePolyDrawingCallback *getLandscapePolyDrawingCallback() const;
 	//
 	virtual void setupTransparencySorting(uint8 maxPriority = 0, uint NbDistanceEntries = 1024);
 

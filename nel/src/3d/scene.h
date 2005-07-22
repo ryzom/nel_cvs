@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.63 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene.h,v 1.64 2005/07/22 12:41:02 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,6 +631,10 @@ public:
 	void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) { _WaterCallback = wcb; }
 	IWaterSurfaceAddedCallback *getWaterCallback() const { return _WaterCallback; }
 
+	void			setLandscapePolyDrawingCallback(ILandscapePolyDrawingCallback *lpd) 
+	{ _PolyDrawingCallback = lpd;}
+	ILandscapePolyDrawingCallback *getLandscapePolyDrawingCallback() const { return _PolyDrawingCallback;}
+
 	// Add a new occlusion query object that must be tested at the end of the rendering
 	void		    insertInOcclusionQueryList(CFlareModel *fm)
 	{
@@ -773,6 +777,8 @@ private:
 	bool						_NextRenderProfile;
 
 	IWaterSurfaceAddedCallback	*_WaterCallback;
+
+	ILandscapePolyDrawingCallback * _PolyDrawingCallback;
 
 
 	CFlareModel	*_FirstFlare; // first flare to test for occlusion query

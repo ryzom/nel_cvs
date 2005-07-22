@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * TODO: File description
  *
- * $Id: u_scene.h,v 1.60 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_scene.h,v 1.61 2005/07/22 12:45:23 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,14 @@ public:
 	// A water surface with the given height has been added. 	 
 	virtual void waterSurfaceAdded(const NLMISC::CPolygon2D &shape, const NLMISC::CMatrix &worldMatrix, bool splashEnabled, bool usesSceneWaterenvmap) = 0;
 	virtual void waterSurfaceRemoved(bool usesSceneWaterenvmap) = 0;
+};
+
+// callback to setup stencil buffer befor and after landscape render
+class ILandscapePolyDrawingCallback
+{
+public:
+	virtual void beginPolyDrawing() = 0;
+	virtual void endPolyDrawing() = 0;
 };
 
 
@@ -606,6 +614,10 @@ public:
 	// set a callback to know when a water surface is instanciated
 	virtual void			setWaterCallback(IWaterSurfaceAddedCallback *wcb) = 0;
 	virtual IWaterSurfaceAddedCallback *getWaterCallback() const = 0;
+
+
+	virtual void			setLandscapePolyDrawingCallback(ILandscapePolyDrawingCallback *lpd) = 0;
+	virtual ILandscapePolyDrawingCallback *getLandscapePolyDrawingCallback() const = 0;
 
 	/** Setup transparency sorting
 	  * \param maxPriority Defines the valid range for priority in the [0, n] interval. By default, there's no prioriy sorting (0 -> single priority, 255 -> 256 possible priorities)

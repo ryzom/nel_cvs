@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * TODO: File description
  *
- * $Id: scene_user.cpp,v 1.70 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene_user.cpp,v 1.71 2005/07/22 12:41:22 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1196,7 +1196,16 @@ IWaterSurfaceAddedCallback *CSceneUser::getWaterCallback() const
 {
 	return _Scene.getWaterCallback();
 }
-
+// ***************************************************************************
+void CSceneUser::setLandscapePolyDrawingCallback(ILandscapePolyDrawingCallback *lpd)
+{
+	_Scene.setLandscapePolyDrawingCallback(lpd);
+}
+// ***************************************************************************
+ILandscapePolyDrawingCallback *CSceneUser::getLandscapePolyDrawingCallback() const
+{
+	return _Scene.getLandscapePolyDrawingCallback();
+}
 // ***************************************************************************
 void CSceneUser::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDistanceEntries /*=1024*/)
 {

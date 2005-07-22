@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.137 2005/04/01 14:27:48 berenguier Exp $
+ * $Id: scene.cpp,v 1.138 2005/07/22 12:40:36 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,6 +191,7 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_VisualCollisionManagerForShadow= NULL;
 
 	_WaterCallback = NULL;
+	_PolyDrawingCallback = NULL;
 	_IsRendering = false;
 
 	_FirstFlare = NULL;

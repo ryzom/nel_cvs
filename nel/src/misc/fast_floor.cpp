@@ -1,7 +1,7 @@
 /** \file fast_floor.cpp
  * TODO: File description
  *
- * $Id: fast_floor.cpp,v 1.5 2005/07/21 17:43:32 berenguier Exp $
+ * $Id: fast_floor.cpp,v 1.6 2005/07/22 10:25:17 distrib Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,10 +30,14 @@
 
 namespace NLMISC {
 
+#if defined(NL_OS_WINDOWS) && defined(NL_COMP_VC6)
+
 double	OptFastFloorMagicConst = pow(2.0,52) + pow(2.0,51);
 float	OptFastFloorMagicConst24 = (float)pow(2.0,23);
 int      OptFastFloorCWStack[OptFastFloorCWStackSize];
 int      *OptFastFloorCWStackEnd = OptFastFloorCWStack + OptFastFloorCWStackSize;
 int		 *OptFastFloorCWStackPtr = OptFastFloorCWStack;
+
+#endif
 
 } // NLMISC

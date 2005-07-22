@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.233 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl.cpp,v 1.234 2005/07/22 12:31:29 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -863,6 +863,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 		{
 			_pfd.cDepthBits = 24;
 			_pfd.cAlphaBits	= 8;
+			_pfd.cStencilBits = 8;
 		}
 		_pfd.iLayerType	  = PFD_MAIN_PLANE;
 		pf=ChoosePixelFormat(_hDC,&_pfd);
@@ -1660,6 +1661,20 @@ bool CDriverGL::clearZBuffer(float zval)
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
 		
+
+	return true;
+}
+
+// --------------------------------------------------
+
+bool CDriverGL::clearStencilBuffer(float stencilval)
+{
+	H_AUTO_OGL(CDriverGL_clearStencilBuffer)
+	glClearStencil(stencilval);
+	
+
+	glClear(GL_STENCIL_BUFFER_BIT);
+	
 
 	return true;
 }
@@ -4027,6 +4042,96 @@ CDriverGL::TCullMode CDriverGL::getCullMode() const
 {
 	H_AUTO_OGL(CDriverGL_CDriverGL)
 	return (CDriverGL::TCullMode) _DriverGLStates.getCullMode();
+}
+
+// ***************************************************************************
+void CDriverGL::enableStencilTest(bool enable)
+{
+	H_AUTO_OGL(CDriverGL_CDriverGL)
+	_DriverGLStates.enableStencilTest(enable);
+}
+
+// ***************************************************************************
+bool CDriverGL::isStencilTestEnabled() const
+{
+	H_AUTO_OGL(CDriverGL_CDriverGL)
+	return _DriverGLStates.isStencilTestEnabled();
+}
+
+// ***************************************************************************
+void CDriverGL::stencilFunc(TStencilFunc stencilFunc, int ref, uint mask)
+{
+	H_AUTO_OGL(CDriverGL_CDriverGL)
+
+	GLenum glstencilFunc;
+
+	switch(stencilFunc)
+	{
+		case IDriver::never:		glstencilFunc=GL_NEVER; break;
+		case IDriver::less:			glstencilFunc=GL_LESS; break;
+		case IDriver::lessequal:	glstencilFunc=GL_LEQUAL; break;
+		case IDriver::equal:		glstencilFunc=GL_EQUAL; break;
+		case IDriver::notequal:		glstencilFunc=GL_NOTEQUAL; break;
+		case IDriver::greaterequal:	glstencilFunc=GL_GEQUAL; break;
+		case IDriver::greater:		glstencilFunc=GL_GREATER; break;
+		case IDriver::always:		glstencilFunc=GL_ALWAYS; break;
+		default: nlstop;
+	}
+
+	_DriverGLStates.stencilFunc(glstencilFunc, (GLint)ref, (GLuint)mask);
+}
+
+// ***************************************************************************
+void CDriverGL::stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass)
+{
+	H_AUTO_OGL(CDriverGL_CDriverGL)
+
+	GLenum glFail, glZFail, glZPass;
+
+	switch(fail)
+	{
+		case IDriver::keep:		glFail=GL_KEEP; break;
+		case IDriver::zero:		glFail=GL_ZERO; break;
+		case IDriver::replace:	glFail=GL_REPLACE; break;
+		case IDriver::incr:		glFail=GL_INCR; break;
+		case IDriver::decr:		glFail=GL_DECR; break;
+		case IDriver::invert:	glFail=GL_INVERT; break;
+		default: nlstop;
+	}
+
+	switch(zfail)
+	{
+		case IDriver::keep:		glZFail=GL_KEEP; break;
+		case IDriver::zero:		glZFail=GL_ZERO; break;
+		case IDriver::replace:	glZFail=GL_REPLACE; break;
+		case IDriver::incr:		glZFail=GL_INCR; break;
+		case IDriver::decr:		glZFail=GL_DECR; break;
+		case IDriver::invert:	glZFail=GL_INVERT; break;
+		default: nlstop;
+	}
+
+	switch(zpass)
+	{
+		case IDriver::keep:		glZPass=GL_KEEP; break;
+		case IDriver::zero:		glZPass=GL_ZERO; break;
+		case IDriver::replace:	glZPass=GL_REPLACE; break;
+		case IDriver::incr:		glZPass=GL_INCR; break;
+		case IDriver::decr:		glZPass=GL_DECR; break;
+		case IDriver::invert:	glZPass=GL_INVERT; break;
+		default: nlstop;
+	}
+
+	
+	_DriverGLStates.stencilOp(glFail, glZFail, glZPass);
+}
+
+// ***************************************************************************
+
+void CDriverGL::stencilMask(uint mask)
+{
+	H_AUTO_OGL(CDriverGL_CDriverGL)
+
+	_DriverGLStates.stencilMask((GLuint)mask);
 }
 
 // ***************************************************************************

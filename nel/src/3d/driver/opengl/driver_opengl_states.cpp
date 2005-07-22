@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * TODO: File description
  *
- * $Id: driver_opengl_states.cpp,v 1.28 2004/11/15 10:24:55 lecroart Exp $
+ * $Id: driver_opengl_states.cpp,v 1.29 2005/07/22 12:34:29 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,7 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_CurAlphaTest= false;
 	_CurLighting= false;
 	_CurZWrite= true;
+	_CurStencilTest=false;
 	// setup GLStates.
 	glDisable(GL_FOG);
 	glDisable(GL_BLEND);
@@ -107,10 +108,20 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 	_CurBlendSrc= GL_SRC_ALPHA;
 	_CurBlendDst= GL_ONE_MINUS_SRC_ALPHA;
 	_CurDepthFunc= GL_LEQUAL;
+	_CurStencilFunc = GL_ALWAYS;
+	_CurStencilRef = 0;
+	_CurStencilMask = ~0;
+	_CurStencilOpFail = GL_KEEP;
+	_CurStencilOpZFail = GL_KEEP;
+	_CurStencilOpZPass = GL_KEEP;
+	_CurStencilWriteMask = ~0;
 	_CurAlphaTestThreshold= 0.5f;
 	// setup GLStates.
 	glBlendFunc(_CurBlendSrc, _CurBlendDst);
 	glDepthFunc(_CurDepthFunc);
+	glStencilFunc(_CurStencilFunc, _CurStencilRef, _CurStencilMask);
+	glStencilOp(_CurStencilOpFail, _CurStencilOpZFail, _CurStencilOpZPass);
+	glStencilMask(_CurStencilWriteMask);
 	glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);
 	
 		
@@ -332,10 +343,31 @@ void			CDriverGLStates::enableZWrite(uint enable)
 		else
 			glDepthMask(GL_FALSE);
 		
-			
 	}
 }
 
+
+// ***************************************************************************
+void			CDriverGLStates::enableStencilTest(bool enable)
+{
+	H_AUTO_OGL(CDriverGLStates_enableStencilTest) 
+	// If different from current setup, update.
+	bool	enabled= (enable!=0);
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if( enabled != _CurStencilTest )
+#endif
+	{
+		// new state.
+		_CurStencilTest= enabled;
+		// Setup GLState.
+		if(_CurStencilTest)
+			glEnable(GL_STENCIL_TEST);
+		else
+			glDisable(GL_STENCIL_TEST);
+		
+			
+	}
+}
 
 
 // ***************************************************************************
@@ -390,6 +422,60 @@ void			CDriverGLStates::alphaFunc(float threshold)
 		glAlphaFunc(GL_GREATER, _CurAlphaTestThreshold);
 		
 			
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::stencilFunc(GLenum stencilFunc, GLint ref, GLuint mask)
+{
+	H_AUTO_OGL(CDriverGLStates_stencilFunc)
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if((stencilFunc!=_CurStencilFunc) || (ref!=_CurStencilRef) || (mask!=_CurStencilMask))
+#endif
+	{
+		// new state
+		_CurStencilFunc = stencilFunc;
+		_CurStencilRef = ref;
+		_CurStencilMask = mask;
+
+		// setup function.
+		glStencilFunc(_CurStencilFunc, _CurStencilRef, _CurStencilMask);
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::stencilOp(GLenum fail, GLenum zfail, GLenum zpass)
+{
+	H_AUTO_OGL(CDriverGLStates_stencilOp)
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if((fail!=_CurStencilOpFail) || (zfail!=_CurStencilOpZFail) || (zpass!=_CurStencilOpZPass))
+#endif
+	{
+		// new state
+		_CurStencilOpFail = fail;
+		_CurStencilOpZFail = zfail;
+		_CurStencilOpZPass = zpass;
+
+		// setup function.
+		glStencilOp(_CurStencilOpFail, _CurStencilOpZFail, _CurStencilOpZPass);
+	}
+}
+
+// ***************************************************************************
+void			CDriverGLStates::stencilMask(GLuint mask)
+{
+	H_AUTO_OGL(CDriverGLStates_stencilMask)
+#ifndef NL3D_GLSTATE_DISABLE_CACHE
+	if(mask!=_CurStencilWriteMask)
+#endif
+	{
+		// new state
+		_CurStencilWriteMask = mask;
+		
+		// setup function.
+		glStencilMask(_CurStencilWriteMask);
 	}
 }
 

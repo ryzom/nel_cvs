@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.54 2005/02/22 10:19:10 besson Exp $
+ * $Id: driver_user.cpp,v 1.55 2005/07/22 12:35:15 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -448,6 +448,29 @@ CFrustum		CDriverUser::getFrustum()
 	return _CurrentMatrixContext.Frustum;
 }
 // ***************************************************************************
+void			CDriverUser::setFrustumMatrix(CMatrix &frust) 
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	_Driver->setFrustumMatrix(frust);
+}
+// ***************************************************************************
+CMatrix			CDriverUser::getFrustumMatrix() 
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+
+	return _Driver->getFrustumMatrix();
+}
+// ***************************************************************************
+
+float			CDriverUser::getClipSpaceZMin() const
+{
+	return _Driver->getClipSpaceZMin();
+}
+// ***************************************************************************
+
 void			CDriverUser::setViewMatrix(const CMatrix &mat) 
 {
 	NL3D_MEM_DRIVER
@@ -523,6 +546,20 @@ void CDriverUser::setDepthRange(float znear, float zfar)
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 	_Driver->setDepthRange(znear, zfar);
+}
+
+// ***************************************************************************
+void CDriverUser::getDepthRange(float & znear, float & zfar)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER;
+	_Driver->getDepthRange(znear, zfar);
+}
+
+// ***************************************************************************
+void CDriverUser::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)
+{
+	_Driver->setColorMask(bRed, bGreen, bBlue, bAlpha);
 }
 
 // ***************************************************************************
@@ -1211,6 +1248,7 @@ void			CDriverUser::clearBuffers(CRGBA col)
 
 	_Driver->clear2D(col);
 	_Driver->clearZBuffer();
+	_Driver->clearStencilBuffer();
 }
 // ***************************************************************************
 void			CDriverUser::swapBuffers()
@@ -1738,6 +1776,47 @@ void CDriverUser::endDialogMode()
 	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER
 	_Driver->endDialogMode();
+}
+
+// ***************************************************************************
+void CDriverUser::enableStencilTest(bool enable)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->enableStencilTest(enable);
+}
+
+// ***************************************************************************
+bool CDriverUser::isStencilTestEnabled() const
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	return _Driver->isStencilTestEnabled();
+}
+
+// ***************************************************************************
+void CDriverUser::stencilFunc(TStencilFunc stencilFunc, int ref, uint mask)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->stencilFunc((IDriver::TStencilFunc)stencilFunc, ref, mask);
+}
+
+// ***************************************************************************
+void CDriverUser::stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->stencilOp((IDriver::TStencilOp)fail, (IDriver::TStencilOp)zfail, 
+						(IDriver::TStencilOp)zpass);
+}
+
+// ***************************************************************************
+void CDriverUser::stencilMask(uint mask)
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->stencilMask(mask);
 }
 
 } // NL3D

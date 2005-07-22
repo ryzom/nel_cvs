@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.187 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl.h,v 1.188 2005/07/22 12:31:52 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -324,6 +324,7 @@ public:
 	virtual bool			clear2D(CRGBA rgba);
 
 	virtual bool			clearZBuffer(float zval=1);
+	virtual bool			clearStencilBuffer(float stencilval=0);
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 	virtual void			setDepthRange(float znear, float zfar);
 	virtual	void			getDepthRange(float &znear, float &zfar) const;
@@ -359,6 +360,9 @@ public:
 	virtual void			endSpecularBatch();
 
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);
+	virtual	void			setFrustumMatrix(CMatrix &frust);
+	virtual	CMatrix			getFrustumMatrix();
+	virtual float			getClipSpaceZMin() const { return -1.f; }
 
 	virtual void			setupViewMatrix(const CMatrix& mtx);
 
@@ -610,6 +614,13 @@ public:
 	
 	virtual void			setCullMode(TCullMode cullMode);
 	virtual	TCullMode       getCullMode() const;
+
+	virtual void			enableStencilTest(bool enable);
+	virtual bool			isStencilTestEnabled() const;
+	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask);
+	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass);
+	virtual void			stencilMask(uint mask);
+
 
 
 private:

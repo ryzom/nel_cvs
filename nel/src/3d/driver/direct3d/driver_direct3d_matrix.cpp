@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.7 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.8 2005/07/22 12:31:01 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -121,6 +121,30 @@ void CDriverD3D::setFrustum(float left, float right, float bottom, float top, fl
 	_FrustumZFar = zfar;
 	_FrustumPerspective = perspective;
 	updateProjectionMatrix ();
+}
+
+
+// ***************************************************************************
+
+void CDriverD3D::setFrustumMatrix(CMatrix &frustumMatrix)
+{
+	H_AUTO_D3D(CDriverD3D_setFrustum)
+	
+	frustumMatrix.transpose();
+	setMatrix (D3DTS_PROJECTION, D3DXMATRIX(frustumMatrix.get()));
+}
+
+// ***************************************************************************
+
+CMatrix CDriverD3D::getFrustumMatrix()
+{
+	H_AUTO_D3D(CDriverD3D_getFrustum)
+
+	CMatrix frustumMatrix;			
+	frustumMatrix.set((float *)_MatrixCache[D3DTS_PROJECTION].Matrix.m);
+	frustumMatrix.transpose();
+
+	return frustumMatrix;
 }
 
 // ***************************************************************************

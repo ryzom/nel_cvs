@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.50 2005/02/22 10:19:10 besson Exp $
+ * $Id: driver_user.h,v 1.51 2005/07/22 12:35:40 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -205,6 +205,14 @@ public:
 	virtual	TCullMode       getCullMode() const;
 	// @}
 
+	/// \name Stencil support
+	// @{
+	virtual void			enableStencilTest(bool enable);
+	virtual bool			isStencilTestEnabled() const;
+	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask);
+	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass);
+	virtual void			stencilMask(uint mask);
+	// @}
 
 	/// \name Scene gestion.
 	// @{
@@ -274,6 +282,10 @@ public:
 	 */
 	virtual	void			setFrustum(const CFrustum &frust);
 	virtual	CFrustum		getFrustum();
+	virtual	void			setFrustumMatrix(CMatrix &frust);
+	virtual	CMatrix			getFrustumMatrix();
+
+	virtual float			getClipSpaceZMin() const;
 	/** Set the active ViewMatrix for rendering.
 	 * NB: this is the view matrix, which is the inverse of camera matrix.
 	 */
@@ -295,6 +307,10 @@ public:
 	 */
 	virtual	void			setMatrixMode3D(UCamera &camera);
 	virtual void			setDepthRange(float znear, float zfar);
+	virtual void			getDepthRange(float & znear, float & zfar);
+
+	/// Set the color mask filter through where the operation done will pass
+	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 
 
 	// @}

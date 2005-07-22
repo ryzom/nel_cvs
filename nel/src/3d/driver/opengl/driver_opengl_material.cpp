@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.96 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.97 2005/07/22 12:32:29 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,6 +474,14 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		_DriverGLStates.enableZWrite(mat.getFlags()&IDRV_MAT_ZWRITE);
 		_DriverGLStates.depthFunc(pShader->ZComp);
 		_DriverGLStates.setZBias (mat.getZBias () * _OODeltaZ);
+
+		// Bind Stencil Buffer Part.
+		//===================
+		/*
+		_DriverGLStates.enableStencilTest();
+		_DriverGLStates.stencilFunc();
+		_DriverGLStates.stencilOp();
+		*/
 
 		// Color-Lighting Part.
 		//=====================

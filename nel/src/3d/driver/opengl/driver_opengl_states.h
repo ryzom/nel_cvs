@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * TODO: File description
  *
- * $Id: driver_opengl_states.h,v 1.21 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_states.h,v 1.22 2005/07/22 12:34:48 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,9 @@ public:
 	/// enable/disable specific light. num must be < "maxLight" param set in init()
 	void			enableLight(uint num, uint enable);
 	bool			isLightEnabled(uint num) const;
+	/// enable/disable stencil test
+	void			enableStencilTest(bool enable);
+	bool			isStencilTestEnabled() const { return _CurStencilTest; }
 	// @}
 
 	/// glBlendFunc.
@@ -108,6 +111,12 @@ public:
 	void			depthFunc(GLenum zcomp);
 	/// glAlphaFunc
 	void			alphaFunc(float threshold);
+	/// glStencilFunc
+	void			stencilFunc(GLenum stencilFunc, GLint ref, GLuint mask);
+	/// glStencilOp
+	void			stencilOp(GLenum fail, GLenum zfail, GLenum zpass);
+	/// glStencilMask
+	void			stencilMask(uint mask);
 
 	/// \name Material setting.
 	/// Each f() get an uint32 for fast comparison, and OpenGL colors.
@@ -191,10 +200,18 @@ private:
 	bool			_CurAlphaTest;
 	bool			_CurLighting;
 	bool			_CurZWrite;	
+	bool			_CurStencilTest;
 
 	GLenum			_CurBlendSrc;
 	GLenum			_CurBlendDst;
 	GLenum			_CurDepthFunc;
+	GLenum			_CurStencilFunc;
+	GLint			_CurStencilRef;
+	GLuint			_CurStencilMask;
+	GLenum			_CurStencilOpFail;
+	GLenum			_CurStencilOpZFail;
+	GLenum			_CurStencilOpZPass;
+	GLuint			_CurStencilWriteMask;
 	float			_CurAlphaTestThreshold;
 
 	uint32			_CurEmissive;

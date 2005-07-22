@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.25 2005/03/10 15:29:02 berenguier Exp $
+ * $Id: matrix.h,v 1.26 2005/07/22 12:37:57 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,9 +168,20 @@ public:
 	 * \param m44 the 4*4 column matrix (4x4 matrix stored in column-major order as 16 consecutive values)
 	 */
 	void		set(const float m44[16]);
+	/** Setup the (i, j) matrix coefficient
+	 *	\param coeff: coefficient value. 
+	 *	\param i : column indice.
+	 *	\param j : line indice.
+	 */
+	void		setCoefficient(float coeff, sint i, sint j)
+	{
+		M[ (j<<2) + i] = coeff;
+	}
+	//@}
 	/** Choose an arbitrary rotation matrix for the given direction. The matrix will have I==idir
 	 *	\param idir: vector direction. MUST  be normalized.
 	 */
+
 	void		setArbitraryRotI(const CVector &idir);
 	/** Choose an arbitrary rotation matrix for the given direction. The matrix will have J==jdir
 	 *	\param jdir: vector direction. MUST  be normalized.
@@ -181,6 +192,7 @@ public:
 	 */
 	void		setArbitraryRotK(const CVector &kdir);
 	//@}
+
 
 
 

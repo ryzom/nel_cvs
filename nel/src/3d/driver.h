@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.82 2005/02/22 10:19:10 besson Exp $
+ * $Id: driver.h,v 1.83 2005/07/22 12:21:46 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,6 +132,8 @@ public:
 	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
 	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
 	enum TCullMode { CCW = 0, CW };
+	enum TStencilOp { keep = 0, zero, replace, incr, decr, invert };
+	enum TStencilFunc { never = 0, less, lessequal, equal, notequal, greaterequal, greater, always};
 
 	/**
 	  * Driver's polygon modes.
@@ -231,6 +233,9 @@ public:
 	/* Clear the current target surface zbuffer. The function ignores the viewport settings but uses the scissor. */
 	virtual bool			clearZBuffer(float zval=1)=0;
 
+	/* Clear the current target surface stencil buffer. The function ignores the viewport settings but uses the scissor. */
+	virtual bool			clearStencilBuffer(float stencilval=0)=0;
+
 	/// Set the color mask filter through where the operation done will pass
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)=0;
 
@@ -322,6 +327,10 @@ public:
 
 	// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective=true)=0;
+	virtual	void			setFrustumMatrix(CMatrix &frust)=0;
+	virtual	CMatrix			getFrustumMatrix()=0;
+
+	virtual float			getClipSpaceZMin() const = 0;
 
 	/** setup the view matrix (inverse of camera matrix).
 	 *
@@ -1189,8 +1198,15 @@ public:
 	  */
 	virtual void			setCullMode(TCullMode cullMode) = 0;
 	virtual	TCullMode       getCullMode() const = 0;	
-	
 
+	/** Set stencil support
+	  */
+	virtual void			enableStencilTest(bool enable) = 0;
+	virtual bool			isStencilTestEnabled() const = 0;
+	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask) = 0;
+	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass) = 0;
+	virtual void			stencilMask(uint mask) = 0;
+	
 protected:
 	friend	class	IVBDrvInfos;
 	friend	class	IIBDrvInfos;

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.32 2005/04/11 14:12:34 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.33 2005/07/22 12:22:19 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -215,6 +215,17 @@ CDriverD3D::CDriverD3D()
 	_Scissor.Y = -1;
 	_Scissor.Width = -1;
 	_Scissor.Height = -1;
+
+	_CurStencilTest = false;
+	_CurStencilFunc = D3DCMP_ALWAYS;
+	_CurStencilRef = 0;
+	_CurStencilMask = ~0;
+	_CurStencilOpFail = D3DSTENCILOP_KEEP;
+	_CurStencilOpZFail = D3DSTENCILOP_KEEP;
+	_CurStencilOpZPass = D3DSTENCILOP_KEEP;
+	_CurStencilWriteMask = ~0;
+
+
 	for(uint k = 0; k < MaxTexture; ++k)
 	{
 		_CurrentUVRouting[k] = (uint8) k;
@@ -509,6 +520,17 @@ void CDriverD3D::initRenderVariables()
 	setRenderState (D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_ALPHA|D3DCOLORWRITEENABLE_RED|D3DCOLORWRITEENABLE_GREEN|D3DCOLORWRITEENABLE_BLUE);
 	setRenderState (D3DRS_CULLMODE, D3DCULL_CW);
 	setRenderState (D3DRS_FOGENABLE, FALSE);
+
+	// Stencil Buffer
+	//affreux
+	setRenderState (D3DRS_STENCILENABLE, _CurStencilTest);
+	setRenderState (D3DRS_STENCILFUNC, _CurStencilFunc);
+	setRenderState (D3DRS_STENCILREF, _CurStencilRef);
+	setRenderState (D3DRS_STENCILMASK, _CurStencilMask);
+	setRenderState (D3DRS_STENCILFAIL, _CurStencilOpFail);
+	setRenderState (D3DRS_STENCILZFAIL, _CurStencilOpZFail);
+	setRenderState (D3DRS_STENCILPASS, _CurStencilOpZPass);
+	setRenderState (D3DRS_STENCILWRITEMASK, _CurStencilWriteMask);
 
 	// Force normalize
 	_ForceNormalize = false;
@@ -1762,6 +1784,26 @@ bool CDriverD3D::clearZBuffer(float zval)
 
 // ***************************************************************************
 
+bool CDriverD3D::clearStencilBuffer(float stencilval)
+{
+	H_AUTO_D3D(CDriverD3D_clearStencilBuffer);
+	nlassert (_DeviceInterface);
+
+	// Backup viewport
+	CViewport oldViewport = _Viewport;
+	setupViewport (CViewport());
+	updateRenderVariables ();
+
+	bool result = _DeviceInterface->Clear( 0, NULL, D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0,0,0,0), 1.0f, stencilval ) == D3D_OK;
+
+	// Restaure the old viewport
+	setupViewport (oldViewport);
+
+	return result;
+}
+
+// ***************************************************************************
+
 void CDriverD3D::setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha) 
 {
 	H_AUTO_D3D(CDriverD3D_setColorMask);
@@ -2926,8 +2968,98 @@ IDriver::TCullMode CDriverD3D::getCullMode() const
 	return _CullMode;
 }
 
+// ***************************************************************************
+void CDriverD3D::enableStencilTest(bool enable)
+{
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
 
+	_CurStencilTest = enable;
+	setRenderState(D3DRS_STENCILENABLE, enable?TRUE:FALSE);
+}
 
+// ***************************************************************************
+bool CDriverD3D::isStencilTestEnabled() const
+{
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
+	return _CurStencilTest?TRUE:FALSE;
+}
+
+// ***************************************************************************
+void CDriverD3D::stencilFunc(TStencilFunc stencilFunc, int ref, uint mask)
+{
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
+
+	switch(stencilFunc)
+	{
+		case IDriver::never:		_CurStencilFunc=D3DCMP_NEVER; break;
+		case IDriver::less:			_CurStencilFunc=D3DCMP_LESS; break;
+		case IDriver::lessequal:	_CurStencilFunc=D3DCMP_LESSEQUAL; break;
+		case IDriver::equal:		_CurStencilFunc=D3DCMP_EQUAL; break;
+		case IDriver::notequal:		_CurStencilFunc=D3DCMP_NOTEQUAL; break;
+		case IDriver::greaterequal:	_CurStencilFunc=D3DCMP_GREATEREQUAL; break;
+		case IDriver::greater:		_CurStencilFunc=D3DCMP_GREATER; break;
+		case IDriver::always:		_CurStencilFunc=D3DCMP_ALWAYS; break;
+		default: nlstop;
+	}
+
+	_CurStencilRef = (DWORD)ref;
+	_CurStencilMask = (DWORD)mask;
+	setRenderState(D3DRS_STENCILFUNC, _CurStencilFunc);
+	setRenderState(D3DRS_STENCILREF,  _CurStencilRef);
+	setRenderState(D3DRS_STENCILMASK, _CurStencilMask);
+}
+
+// ***************************************************************************
+void CDriverD3D::stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass)
+{
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
+
+	switch(fail)
+	{
+		case IDriver::keep:		_CurStencilOpFail=D3DSTENCILOP_KEEP; break;
+		case IDriver::zero:		_CurStencilOpFail=D3DSTENCILOP_ZERO; break;
+		case IDriver::replace:	_CurStencilOpFail=D3DSTENCILOP_REPLACE; break;
+		case IDriver::incr:		_CurStencilOpFail=D3DSTENCILOP_INCR; break;
+		case IDriver::decr:		_CurStencilOpFail=D3DSTENCILOP_DECR; break;
+		case IDriver::invert:	_CurStencilOpFail=D3DSTENCILOP_INVERT; break;
+		default: nlstop;
+	}
+
+	switch(zfail)
+	{
+		case IDriver::keep:		_CurStencilOpZFail=D3DSTENCILOP_KEEP; break;
+		case IDriver::zero:		_CurStencilOpZFail=D3DSTENCILOP_ZERO; break;
+		case IDriver::replace:	_CurStencilOpZFail=D3DSTENCILOP_REPLACE; break;
+		case IDriver::incr:		_CurStencilOpZFail=D3DSTENCILOP_INCR; break;
+		case IDriver::decr:		_CurStencilOpZFail=D3DSTENCILOP_DECR; break;
+		case IDriver::invert:	_CurStencilOpZFail=D3DSTENCILOP_INVERT; break;
+		default: nlstop;
+	}
+
+	switch(zpass)
+	{
+		case IDriver::keep:		_CurStencilOpZPass=D3DSTENCILOP_KEEP; break;
+		case IDriver::zero:		_CurStencilOpZPass=D3DSTENCILOP_ZERO; break;
+		case IDriver::replace:	_CurStencilOpZPass=D3DSTENCILOP_REPLACE; break;
+		case IDriver::incr:		_CurStencilOpZPass=D3DSTENCILOP_INCR; break;
+		case IDriver::decr:		_CurStencilOpZPass=D3DSTENCILOP_DECR; break;
+		case IDriver::invert:	_CurStencilOpZPass=D3DSTENCILOP_INVERT; break;
+		default: nlstop;
+	}
+
+	setRenderState(D3DRS_STENCILFAIL,  _CurStencilOpFail);
+	setRenderState(D3DRS_STENCILZFAIL, _CurStencilOpZFail);
+	setRenderState(D3DRS_STENCILPASS,  _CurStencilOpZPass);
+}
+
+// ***************************************************************************
+void CDriverD3D::stencilMask(uint mask)
+{
+	H_AUTO_D3D(CDriver3D_CDriverD3D);
+
+	_CurStencilWriteMask = (DWORD)mask;
+	setRenderState (D3DRS_STENCILWRITEMASK, _CurStencilWriteMask);
+}
 
 // volatile bool preciseStateProfile = false;
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.42 2005/04/11 13:59:48 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.43 2005/07/22 12:22:52 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -783,6 +783,7 @@ public:
 	// Buffer
 	virtual bool			clear2D(CRGBA rgba);
 	virtual bool			clearZBuffer(float zval=1);
+	virtual bool			clearStencilBuffer(float stencilval=0);
 	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha);
 	virtual bool			swapBuffers();
 	virtual void			getBuffer (CBitmap &bitmap);	// Only 32 bits back buffer supported
@@ -810,6 +811,9 @@ public:
 
 	// Matrix, viewport and frustum
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective = true);
+	virtual	void			setFrustumMatrix(CMatrix &frust);
+	virtual	CMatrix			getFrustumMatrix();
+	virtual float			getClipSpaceZMin() const { return 0.f; }
 	virtual void			setupViewMatrix(const CMatrix& mtx);
 	virtual void			setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos);
 	virtual void			setupModelMatrix(const CMatrix& mtx);
@@ -969,6 +973,12 @@ public:
 
 	virtual void			setCullMode(TCullMode cullMode);
 	virtual	TCullMode       getCullMode() const;
+
+	virtual void			enableStencilTest(bool enable);
+	virtual bool			isStencilTestEnabled() const;
+	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask);
+	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass);
+	virtual void			stencilMask(uint mask);
 
 	uint32					getMaxVertexIndex() const { return _MaxVertexIndex; }
 
@@ -2289,6 +2299,16 @@ private:
 	bool						_MustRestoreLight;	
 	D3DXMATRIX					_D3DMatrixIdentity;
 	DWORD						_FogColor;
+
+	// stencil buffer
+	bool			_CurStencilTest;
+	DWORD			_CurStencilFunc;
+	DWORD			_CurStencilRef;
+	DWORD			_CurStencilMask;
+	DWORD			_CurStencilOpFail;
+	DWORD			_CurStencilOpZFail;
+	DWORD			_CurStencilOpZPass;
+	DWORD			_CurStencilWriteMask;
 
 public:	
 

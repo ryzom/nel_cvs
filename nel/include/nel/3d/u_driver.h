@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.54 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_driver.h,v 1.55 2005/07/22 12:42:07 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,10 @@ public:
 	// Cull mode
 	enum TCullMode { CCW = 0, CW };
 
+	// Stencil enums
+	enum TStencilOp { keep = 0, zero, replace, incr, decr, invert };
+	enum TStencilFunc { never = 0, less, lessequal, equal, notequal, greaterequal, greater, always};
+
 public:
 	/// The EventServer of this driver. Init after setDisplay()!!
 	NLMISC::CEventServer			EventServer;
@@ -247,7 +251,7 @@ public:
 	// @{
 	virtual	bool			fogEnabled()=0;
 	virtual	void			enableFog(bool enable)=0;
-	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
+	/// $ fog parameters. fog must enabled to see result. start and end are in [0,1] range.
 	virtual	void			setupFog(float start, float end, CRGBA color)=0;
 	// @}
 
@@ -262,6 +266,15 @@ public:
 	// @{	
 		virtual void			setCullMode(TCullMode cullMode) = 0;
 		virtual	TCullMode       getCullMode() const = 0;
+	// @}
+
+	/// \name Stencil support
+	// @{
+	virtual void			enableStencilTest(bool enable) = 0;
+	virtual bool			isStencilTestEnabled() const = 0;
+	virtual void			stencilFunc(TStencilFunc stencilFunc, int ref, uint mask) = 0;
+	virtual void			stencilOp(TStencilOp fail, TStencilOp zfail, TStencilOp zpass) = 0;
+	virtual void			stencilMask(uint mask) = 0;
 	// @}
 
 	/// \name Scene gestion.
@@ -338,6 +351,11 @@ public:
 	 */
 	virtual	void			setFrustum(const CFrustum &frust) =0;
 	virtual	CFrustum		getFrustum() =0;
+	virtual	void			setFrustumMatrix(CMatrix &frust) =0;
+	virtual	CMatrix			getFrustumMatrix() =0;
+
+	virtual float			getClipSpaceZMin() const = 0;
+
 	/** Set the active ViewMatrix for rendering.
 	 * NB: this is the view matrix, which is the inverse of camera matrix.
 	 */
@@ -368,8 +386,12 @@ public:
 	  * NB : znear should be different from zfar or an assertion is raised	  	  
 	  */
 	virtual void			setDepthRange(float znear, float zfar) = 0;
+	virtual void			getDepthRange(float & znear, float & zfar) = 0;
 
-	// @}
+	/// Set the color mask filter through where the operation done will pass
+	virtual void			setColorMask (bool bRed, bool bGreen, bool bBlue, bool bAlpha)=0;
+
+	
 
 
 	/// \name Interface 2D/3D.

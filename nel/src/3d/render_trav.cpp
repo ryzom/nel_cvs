@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.65 2005/02/22 10:19:11 besson Exp $
+ * $Id: render_trav.cpp,v 1.66 2005/07/22 12:38:34 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,10 +290,19 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		// Generate ShadowMaps
 		_ShadowMapManager.renderGenerate(Scene);
 		
-		// Render the Landscape		
-		renderLandscapes();		
+		// Render the Landscape	
+		renderLandscapes();	
+
 		// Project ShadowMaps.
+		if(Scene->getLandscapePolyDrawingCallback() != NULL)
+		{
+			Scene->getLandscapePolyDrawingCallback()->beginPolyDrawing();
+		}
 		_ShadowMapManager.renderProject(Scene);
+		if(Scene->getLandscapePolyDrawingCallback())
+		{
+			Scene->getLandscapePolyDrawingCallback()->endPolyDrawing();
+		}
 
 		// Profile this frame?
 		if(Scene->isNextRenderProfile())

@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.20 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.21 2005/07/22 12:34:03 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,35 @@ void CDriverGL::setFrustum(float left, float right, float bottom, float top, flo
 	glMatrixMode(GL_MODELVIEW);
 }
 
+// ***************************************************************************
+
+void CDriverGL::setFrustumMatrix(CMatrix &frustumMatrix)
+{
+	H_AUTO_OGL(CDriverGL_setFrustum)
+	glMatrixMode(GL_PROJECTION);
+
+	glLoadMatrixf(((GLfloat*)frustumMatrix.get()));
+
+	glMatrixMode(GL_MODELVIEW);
+}
+
+// ***************************************************************************
+
+CMatrix CDriverGL::getFrustumMatrix()
+{
+	H_AUTO_OGL(CDriverGL_getFrustum)
+
+	glMatrixMode(GL_PROJECTION);
+
+	CMatrix frustumMatrix;
+	float frustum[16]; 
+	glGetFloatv(GL_PROJECTION_MATRIX, ((GLfloat*)&frustum));
+	frustumMatrix.set(frustum);
+
+	glMatrixMode(GL_MODELVIEW);
+
+	return frustumMatrix;
+}
 
 // ***************************************************************************
 void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)

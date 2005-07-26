@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.17 2005/02/22 10:14:12 besson Exp $
+ * $Id: polygon.h,v 1.18 2005/07/26 15:33:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ public:
 	bool        intersect(const CPolygon2D &other) const;
 
 	/// Check wether a point is contained by this poly
-	bool		contains(const CVector2f &p) const;
+	bool		contains(const CVector2f &p, bool hintIsConvex = true) const;
 
 	/** Get the index of a segment of this poly that is a non null segment.
 	  * \return true if such a segment was found

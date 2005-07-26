@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.31 2005/02/21 15:17:26 vizerie Exp $
+ * $Id: polygon.cpp,v 1.32 2005/07/26 15:33:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2052,28 +2052,72 @@ bool        CPolygon2D::intersect(const CPolygon2D &other) const
 }
 
 // *******************************************************************************
-bool		CPolygon2D::contains(const CVector2f &p) const
+bool		CPolygon2D::contains(const CVector2f &p, bool hintIsConvex /*= true*/) const
 {	
-	uint numVerts = Vertices.size();
-	nlassert(numVerts >= 0.f);
-	for (uint k = 0; k < numVerts; ++k)
-	{		
-		if (getSegRef0(k) != getSegRef1(k))
-		{
-			float a, b, c; /// contains the seg 2d equation
-			getLineEquation(k, a, b, c);
-			float orient = a * p.x + b * p.y + c;
-			for(uint l = k + 1; l < numVerts; ++l)
+	if (hintIsConvex)
+	{
+		uint numVerts = Vertices.size();
+		nlassert(numVerts >= 0.f);
+		for (uint k = 0; k < numVerts; ++k)
+		{		
+			if (getSegRef0(k) != getSegRef1(k))
 			{
-				getLineEquation(l, a, b, c);
-				float newOrient = a * p.x + b * p.y + c;
-				if (newOrient * orient < 0.f) return false;
+				float a, b, c; /// contains the seg 2d equation
+				getLineEquation(k, a, b, c);
+				float orient = a * p.x + b * p.y + c;
+				for(uint l = k + 1; l < numVerts; ++l)
+				{
+					getLineEquation(l, a, b, c);
+					float newOrient = a * p.x + b * p.y + c;
+					if (newOrient * orient < 0.f) return false;
+				}
+				return true;
 			}
-			return true;
 		}
+		// the poly reduces to a point
+		return p == Vertices[0];
 	}
-	// the poly reduces to a point
-	return p == Vertices[0];
+	else
+	{
+		// concave / complex case
+		std::vector<float> xInter;
+		for(uint k = 0; k < Vertices.size(); ++k)
+		{
+			const CVector2f &p0 = getSegRef0(k);
+			const CVector2f &p1 = getSegRef1(k);
+			if ((p.y >= p0.y && p.y <= p1.y) ||
+				(p.y >= p1.y && p.y <= p0.y)
+			   )
+			{
+				if (p0.y == p1.y)
+				{
+					if (p.y == p0.y)
+					{
+						if ((p.x >= p0.x && p.x <= p1.x)
+							|| (p.x >= p1.x && p.x <= p0.x))
+						{
+							return true;
+						}
+					}
+				}
+				else
+				{
+					float inter = p0.x + (p.y - p0.y) * (p1.x - p0.x) / (p1.y- p0.y);
+					xInter.push_back(inter);
+				}
+			}			
+		}
+		if (xInter.size() < 2) return false;
+		std::sort(xInter.begin(), xInter.end());
+		for(uint k = 0; k < xInter.size() - 1; ++k)
+		{
+			if (p.x >= xInter[k] && p.x <= xInter[k + 1])
+			{
+				return (k & 1) == 0;
+			}
+		}
+		return false;
+	}
 }
 
 

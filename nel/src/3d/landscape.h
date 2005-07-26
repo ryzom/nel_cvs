@@ -1,7 +1,7 @@
 /** \file landscape.h
  * TODO: File description
  *
- * $Id: landscape.h,v 1.61 2005/06/24 16:03:41 berenguier Exp $
+ * $Id: landscape.h,v 1.62 2005/07/26 17:00:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -638,6 +638,10 @@ public:
 	void			unlockBuffers (bool force = false);
 	// Check if buffers are locked
 	bool			isLocked() const { return _LockCount != 0; }
+
+	// for advanced use (decal rendering)
+	CShadowPolyReceiver &getShadowPolyReceiver() { return _ShadowPolyReceiver; }
+
 
 // ********************************
 private:

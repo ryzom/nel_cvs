@@ -21,7 +21,8 @@ LDFLAGS      = -L$(HOME)/install/release/lib \
 				-lnelmisc \
 				-lstlport_gcc \
 				-lpthread \
-				-lrt
+				-lrt \
+				-ldl
 
 #############################################################################
 # The bit that changes each time we cut paste and hack this file :o)

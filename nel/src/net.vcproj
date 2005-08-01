@@ -22,6 +22,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_LIB;__STL_DEBUG;_DEBUG;WIN32;LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -74,6 +75,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_LIB;NL_RELEASE_DEBUG;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -127,6 +129,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="_LIB;_DEBUG;NL_DEBUG_FAST;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
@@ -180,6 +183,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="../include"
 				PreprocessorDefinitions="NDEBUG;_LIB;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -815,6 +819,57 @@
 			<File
 				RelativePath="..\include\nel\net\unified_network.h">
 			</File>
+		</Filter>
+		<Filter
+			Name="Module Layer"
+			Filter="">
+			<Filter
+				Name="interfaces"
+				Filter="">
+				<File
+					RelativePath="..\include\nel\net\module.h">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_common.h">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_gateway.h">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_manager.h">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_message.h">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_socket.h">
+				</File>
+			</Filter>
+			<Filter
+				Name="implementations"
+				Filter="">
+				<File
+					RelativePath=".\net\module.cpp">
+				</File>
+				<File
+					RelativePath="..\include\nel\net\module_builder_parts.h">
+				</File>
+				<File
+					RelativePath=".\net\module_common.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_gateway.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_manager.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_message.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_socket.cpp">
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="net\admin.cpp">

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.38 2005/06/24 19:37:43 boucher Exp $
+ * $Id: command.h,v 1.39 2005/08/01 16:23:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -283,7 +283,7 @@ public:
 template <class T>
 struct TCommandHandler : public TCommandHandlerInfo
 {
-	typedef bool (T::*TCommand)(const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human = true);
+	typedef bool (T::*TCommand)(const std::string &rawCommandString, const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human);
 
 	TCommand	CommandHandler;
 };

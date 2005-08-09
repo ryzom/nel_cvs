@@ -1,7 +1,7 @@
 /** \file cpu_time_stat.h
  * Timing utilities (only support for unixes)
  *
- * $Id: cpu_time_stat.h,v 1.1 2004/12/17 14:30:20 legros Exp $
+ * $Id: cpu_time_stat.h,v 1.2 2005/08/09 19:02:13 boucher Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -76,7 +76,7 @@ public:
 
 	/**
 	 * Get Overall CPU Load
-	 * Call this moethod to know the overall server CPU usage (0=min, 1=max)
+	 * Call this method to know the overall server CPU usage (0=min, 1=max)
 	 * All processes running on the same machine will return approximately
 	 * the same value
 	 */

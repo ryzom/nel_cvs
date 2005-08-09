@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.21 2005/02/22 10:14:12 besson Exp $
+ * $Id: i18n.h,v 1.22 2005/08/09 16:58:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,10 @@ public:
 	/// Set the load proxy class. Proxy can be NULL to unregister.
 	static void setLoadProxy(ILoadProxy *loadProxy);
 
+	// Get the current load proxy
+	static ILoadProxy *getLoadProxy() { return _LoadProxy; }
+
+
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
 	static const std::vector<ucstring> &getLanguageNames();
@@ -114,6 +118,12 @@ public:
 	/// Load a language file depending of the language
 //	static void load (uint32 lid);
 	static void load (const std::string &languageCode);
+
+	/** Load a language file from its filename
+	  * \param filename name of the language file to load, with its extension	  
+	  * \param reload The file is being reloaded so error message won't be issued for string that are overwritten
+	  */
+	static void loadFromFilename(const std::string &filename, bool reload);
 
 	/// Returns the name of the language in english (french, english...)
 	static ucstring getCurrentLanguageName ();
@@ -216,6 +226,9 @@ private:
 
 	static sint32												 _SelectedLanguage;
 	static const ucstring										_NotTranslatedValue;
+private:
+
+	static bool loadFileIntoMap(const std::string &filename, StrMapContainer &dest);
 };
 
 

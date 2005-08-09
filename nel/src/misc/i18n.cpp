@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.56 2004/11/17 10:10:11 berenguier Exp $
+ * $Id: i18n.cpp,v 1.57 2005/08/09 16:58:15 vizerie Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -91,6 +91,11 @@ void CI18N::load (const std::string &languageCode)
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
 
+	loadFileIntoMap(fileName, _StrMap);	
+}
+
+bool CI18N::loadFileIntoMap(const std::string &fileName, StrMapContainer &destMap)
+{
 	ucstring text;
 	// read in the text
 	if (_LoadProxy)
@@ -111,19 +116,19 @@ void CI18N::load (const std::string &languageCode)
 		if (!parseLabel(first, last, label))
 		{
 			nlwarning("I18N: Error reading label field in %s. Stop reading after %s.", fileName.c_str(), lastReadLabel.c_str());
-			return;
+			return false;
 		}
 		lastReadLabel = label;
 		skipWhiteSpace(first, last);
 		if (!parseMarkedString('[', ']', first, last, ucs))
 		{
 			nlwarning("I18N: Error reading text for label %s in %s. Stop reading.", label.c_str(), fileName.c_str());
-			return;
+			return false;
 		}
 
 		// ok, a line read.
 		std::pair<std::map<std::string, ucstring>::iterator, bool> ret;
-		ret = _StrMap.insert(std::make_pair(label, ucs));
+		ret = destMap.insert(std::make_pair(label, ucs));
 		if (!ret.second)
 		{
 			nlwarning("I18N: Error in %s, the label %s exist twice !", fileName.c_str(), label.c_str());
@@ -132,12 +137,36 @@ void CI18N::load (const std::string &languageCode)
 	}
 
 	// a little check to ensure that the lang name has been set.
-	StrMapContainer::iterator it(_StrMap.find("LanguageName"));
-	if (it == _StrMap.end())
+	StrMapContainer::iterator it(destMap.find("LanguageName"));
+	if (it == destMap.end())
 	{
 		nlwarning("I18N: In file %s, missing LanguageName translation (should be first in file)", fileName.c_str());
 	}
+	return true;
 }
+
+
+void CI18N::loadFromFilename(const std::string &filename, bool reload)
+{
+	StrMapContainer destMap;
+	if (!loadFileIntoMap(filename, destMap)) 
+	{
+		return;
+	}
+	// merge with existing map
+	for(StrMapContainer::iterator it = destMap.begin(); it != destMap.end(); ++it)
+	{
+		if (!reload)
+		{
+			if (_StrMap.count(it->first))
+			{
+				nlwarning("I18N: Error in %s, the label %s exist twice !", filename.c_str(), it->first.c_str());
+			}
+		}
+		_StrMap[it->first] = it->second;
+	}
+}
+
 
 const ucstring &CI18N::get (const std::string &label)
 {

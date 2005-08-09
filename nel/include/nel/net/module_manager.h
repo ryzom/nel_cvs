@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
+ * $Id: module_manager.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 
 namespace NLNET
 {
+
+	class CGatewayRoute;
 
 	/** This is the interface for the module manager.
 	 *	Module manager is in charge of module factoring and
@@ -124,9 +126,11 @@ namespace NLNET
 		 */
 		virtual IModuleSocket *getModuleSocket(const std::string &socketName) =0;
 		/** Register a socket in the manager.
+		 *	TODO : make this method only available to CModuleSocket to prevent dramatic ERROR
 		 */
 		virtual void registerModuleSocket(IModuleSocket *moduleSocket) =0;
 		/** UrRegister a socket in the manager.
+		 *	TODO : make this method only available to CModuleSocket to prevent dramatic ERROR
 		 */
 		virtual void unregisterModuleSocket(IModuleSocket *moduleSocket) =0;
 
@@ -141,8 +145,8 @@ namespace NLNET
 		 */
 		virtual void unregisterModuleGateway(IModuleGateway *moduleGateway) =0;
 
-		/** Get a module proxy with the module ID */
-		virtual TModuleProxyPtr getModuleProxy(TModuleId moduleId) =0;
+		/** Get a module proxy with the module proxy ID */
+		virtual TModuleProxyPtr getModuleProxy(TModuleId moduleProxyId) =0;
 
 		/** Called by a module that is begin destroyed.
 		 *	This remove module information from the
@@ -159,12 +163,14 @@ namespace NLNET
 		 *	for each local module and each foreing module.
 		 */
 		virtual IModuleProxy *createModuleProxy(	IModuleGateway *gateway, 
+													CGatewayRoute *route,
+													uint32 distance,
 													const std::string &moduleClassName, 
 													const std::string &moduleFullyQualifiedName,
-													const TModuleGatewayProxyPtr &foreignGateway,
+//													const TModuleGatewayProxyPtr &foreignGateway,
 													TModuleId foreignModuleId) =0;
 
-		virtual void releaseModuleProxy(TModuleId moduleId) =0;
+		virtual void releaseModuleProxy(TModuleId moduleProxyId) =0;
 
 	};
 

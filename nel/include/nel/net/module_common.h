@@ -1,7 +1,7 @@
 /** \file module_common.h
  * basic type and forward declaration for module system
  *
- * $Id: module_common.h,v 1.1 2005/06/23 16:33:49 boucher Exp $
+ * $Id: module_common.h,v 1.2 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,11 +53,11 @@ namespace NLNET
 	class IModuleGateway;
 //	typedef NLMISC::CSmartPtr<IModuleGateway>	TModuleGatewayPtr;
 
-	class IModuleGatewayProxy;
-	typedef NLMISC::CSmartPtr<IModuleGatewayProxy>	TModuleGatewayProxyPtr;
+//	class IModuleGatewayProxy;
+//	typedef NLMISC::CSmartPtr<IModuleGatewayProxy>	TModuleGatewayProxyPtr;
 
-	class CModuleMessage;
-	typedef NLMISC::CSmartPtr<CModuleMessage>		TModuleMessagePtr;
+//	class CModuleMessage;
+//	typedef NLMISC::CSmartPtr<CModuleMessage>		TModuleMessagePtr;
 
 	/// The destination module for a message cannot be reached by socket used
 	class EModuleNotReachable : public NLMISC::Exception
@@ -69,11 +69,11 @@ namespace NLNET
 	};
 
 
-	/** Structure for module initialisation parameters 
+	/** Structure for pre-parsed command line parameters
 	 *	Support in memory representation of parameter line like :
 	 *	'tag1(x=1, y=2, z=3) tag2=6 tag3(a=abc, b=xyz)'
 	 */
-	struct TModuleInitInfo
+	struct TParsedCommandLine
 	{
 		/// The parameter name
 		std::string		ParamName;
@@ -81,7 +81,7 @@ namespace NLNET
 		std::string		ParamValue;
 
 		/// The list of sub parameters. Empty in the case of a single param.
-		std::vector<TModuleInitInfo>	SubParams;
+		std::vector<TParsedCommandLine>	SubParams;
 
 		/// Parse a NeL argument list to build a module init object.
 		bool parseParamList(const std::string &rawParamString);
@@ -93,11 +93,11 @@ namespace NLNET
 		 *	e.g. in the param string "a(b(c=4)", you can
 		 *	query directly with 'a.b.c' to retrieve the value 4.
 		 */
-		const TModuleInitInfo *getParam(const std::string &name) const;
+		const TParsedCommandLine *getParam(const std::string &name) const;
 
 	private:
 		bool _parseParamList(const std::string &rawParamString);
-		const TModuleInitInfo *_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const;
+		const TParsedCommandLine *_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const;
 		
 	};
 

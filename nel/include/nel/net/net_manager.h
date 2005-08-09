@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.19 2005/02/22 10:14:13 besson Exp $
+ * $Id: net_manager.h,v 1.20 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 **************************************************************************/
 
 
-
+#pragma message(NL_LOC_WRN "You are using a deprecated feature of NeL, consider rewriting your code with replacement feature")
 
 #ifndef NL_NET_MANAGER_H
 #define NL_NET_MANAGER_H

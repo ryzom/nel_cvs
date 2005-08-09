@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.3 2005/06/24 19:40:49 boucher Exp $
+ * $Id: module_manager.cpp,v 1.4 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,9 +93,9 @@ namespace NLNET
 		/// Local module ID generator
 		TModuleId				_LastGeneratedId;
 
-		typedef NLMISC::CTwinMap<std::string, TModuleProxyPtr>	TModuleProxyInstances;
+//		typedef NLMISC::CTwinMap<std::string, TModuleProxyPtr>	TModuleProxyInstances;
 		/// Modules proxy instances tracker
-		TModuleProxyInstances	_ModuleProxyInstances;
+//		TModuleProxyInstances	_ModuleProxyInstances;
 
 		typedef NLMISC::CTwinMap<TModuleId, TModuleProxyPtr>	TModuleProxyIds;
 		/// Modules proxy IDs tracker
@@ -143,7 +143,7 @@ namespace NLNET
 			}
 
 			// there should not be proxies or gateway lasting
-			nlassert(_ModuleProxyInstances.getAToBMap().empty());
+//			nlassert(_ModuleProxyInstances.getAToBMap().empty());
 		}
 
 		void releaseInstance()
@@ -358,7 +358,7 @@ namespace NLNET
 			modBase->_ModuleId = ++_LastGeneratedId;
 
 			// init the module with parameter string
-			TModuleInitInfo	mii;
+			TParsedCommandLine	mii;
 			mii.parseParamList(paramString);
 			module->initModule(mii);
 
@@ -392,10 +392,8 @@ namespace NLNET
 			// ask the factory to delete the module
 			CModuleBase *modBase = dynamic_cast<CModuleBase *>(module);
 			nlassert(modBase != NULL);
-
 			modBase->getFactory()->deleteModule(module);
 		}
-
 
 		/** Lookup in the created module for a module having the
 		 *	specified local name.
@@ -442,7 +440,7 @@ namespace NLNET
 			nldebug("Registering module socket '%s'", moduleSocket->getSocketName().c_str());
 			_ModuleSocketsRegistry.insert(make_pair(moduleSocket->getSocketName(), moduleSocket));
 		}
-		/** UrRegister a socket in the manager.
+		/** Unregister a socket in the manager.
 		 */
 		virtual void unregisterModuleSocket(IModuleSocket *moduleSocket)
 		{
@@ -469,7 +467,7 @@ namespace NLNET
 		{
 			nlstop;
 		}
-		/** UrRegister a socket in the manager.
+		/** Unregister a socket in the manager.
 		 */
 		virtual void unregisterModuleGateway(IModuleGateway *moduleGateway)
 		{
@@ -477,10 +475,14 @@ namespace NLNET
 		}
 
 		/** Get a module proxy with the module ID */
-		virtual TModuleProxyPtr getModuleProxy(TModuleId moduleId)
+		virtual TModuleProxyPtr getModuleProxy(TModuleId moduleProxyId)
 		{
-			nlstop;
-			return TModuleProxyPtr(NULL);
+			const TModuleProxyPtr *pproxy = _ModuleProxyIds.getB(moduleProxyId);
+
+			if (pproxy == NULL)
+				return NULL;
+			else
+				return *pproxy;
 		}
 
 		/** Called by a module that is begin destroyed.
@@ -494,37 +496,40 @@ namespace NLNET
 
 		virtual IModuleProxy *createModuleProxy(
 			IModuleGateway *gateway, 
+			CGatewayRoute *route,
+			uint32 distance,
 			const std::string &moduleClassName, 
 			const std::string &moduleFullyQualifiedName,
-			const TModuleGatewayProxyPtr &foreignGateway,
 			TModuleId foreignModuleId)
 		{
 			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName));
 			modProx->_Gateway = gateway;
-			modProx->_ForeignGateway = foreignGateway;
+			modProx->_Route = route;
+			modProx->_Distance = distance;
 			modProx->_ForeignModuleId = foreignModuleId;
 
-			nldebug("Creating module proxy (ID : %u, foreign ID : %u, name : '%s', class : '%s'",
-				modProx->getModuleId(),
-				modProx->_ForeignModuleId,
+			nldebug("Creating module proxy (ID : %u, foreign ID : %u, name : '%s', class : '%s' at %u hop",
+				modProx->getModuleProxyId(),
+				modProx->getForeignModuleId(),
 				modProx->getModuleName().c_str(),
-				modProx->getModuleClassName().c_str());
+				modProx->getModuleClassName().c_str(),
+				modProx->_Distance);
 
-			_ModuleProxyInstances.add(moduleFullyQualifiedName, TModuleProxyPtr(modProx.get()));
-			_ModuleProxyIds.add(modProx->getModuleId(), TModuleProxyPtr(modProx.get()));
+//			_ModuleProxyInstances.add(moduleFullyQualifiedName, TModuleProxyPtr(modProx.get()));
+			_ModuleProxyIds.add(modProx->getModuleProxyId(), TModuleProxyPtr(modProx.get()));
 
 			return modProx.release();
 		}
 
-		virtual void releaseModuleProxy(TModuleId moduleId)
+		virtual void releaseModuleProxy(TModuleId moduleProxyId)
 		{
-			nldebug("Releasing module proxy (ID : %u)", moduleId);
-			TModuleProxyIds::TAToBMap::const_iterator it(_ModuleProxyIds.getAToBMap().find(moduleId));
+			nldebug("Releasing module proxy (ID : %u)", moduleProxyId);
+			TModuleProxyIds::TAToBMap::const_iterator it(_ModuleProxyIds.getAToBMap().find(moduleProxyId));
 			nlassert(it != _ModuleProxyIds.getAToBMap().end());
 			CRefPtr<IModuleProxy> sanityCheck(it->second.getPtr());
 
 			// remove the smart ptr, must delete the proxy
-			_ModuleProxyInstances.removeWithB(it->second);
+//			_ModuleProxyInstances.removeWithB(it->second);
 			_ModuleProxyIds.removeWithB(it->second);
 			
 			nlassert(sanityCheck == NULL);
@@ -660,30 +665,31 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					IModule *module = first->second;
-					log.displayNL("    ID:%5u : '%s' \tclass '%s'", 
+					log.displayNL("    ID:%5u : \tname = '%s' \tclass = '%s'", 
 						module->getModuleId(),
 						module->getModuleName().c_str(),
 						module->getModuleClassName().c_str());
 				}
 			}
 			{
-				log.displayNL(" List of %u module proxies :", _ModuleProxyInstances.getAToBMap().size());
-				TModuleProxyInstances::TAToBMap::const_iterator first(_ModuleProxyInstances.getAToBMap().begin()), last(_ModuleProxyInstances.getAToBMap().end());
+				log.displayNL(" List of %u module proxies :", _ModuleProxyIds.getAToBMap().size());
+				TModuleProxyIds::TAToBMap::const_iterator first(_ModuleProxyIds.getAToBMap().begin()), last(_ModuleProxyIds.getAToBMap().end());
 				for (; first != last; ++first)
 				{
-					const CModuleProxy *modProx = dynamic_cast<const CModuleProxy*>(first->second.getPtr());
-					if(modProx != NULL)
+					IModuleProxy *modProx = first->second;
+					if (modProx->getGatewayRoute() != NULL)
 					{
-						log.displayNL("    ID:%5u (Foreign ID : %u) : '%s' \tclass '%s'", 
-							modProx->getModuleId(),
-							modProx->_ForeignModuleId,
+						log.displayNL("    ID:%5u (Foreign ID : %u) : \tname = '%s' \tclass = '%s'", 
+							modProx->getModuleProxyId(),
+							modProx->getForeignModuleId(),
 							modProx->getModuleName().c_str(),
 							modProx->getModuleClassName().c_str());
 					}
 					else
 					{
-						log.displayNL("    ID:%5u (Unknown proxy type) : '%s' \tclass '%s'",
-							modProx->getModuleId(),
+						log.displayNL("    ID:%5u (Local proxy for module ID : %u) : \tname = '%s' \tclass = '%s'", 
+							modProx->getModuleProxyId(),
+							modProx->getForeignModuleId(),
 							modProx->getModuleName().c_str(),
 							modProx->getModuleClassName().c_str());
 					}
@@ -703,10 +709,15 @@ namespace NLNET
 
 
 	extern void forceGatewayLink();
+	extern void forceLocalGatewayLink();
+	extern void forceGatewayTransportLink();
+
 
 	void forceLink()
 	{
 		forceGatewayLink();
+		forceLocalGatewayLink();
+		forceGatewayTransportLink();
 	}
 
 } // namespace NLNET

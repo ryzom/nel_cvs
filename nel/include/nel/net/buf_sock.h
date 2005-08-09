@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.22 2005/02/22 10:14:13 besson Exp $
+ * $Id: buf_sock.h,v 1.23 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,9 @@ public:
 
 	/// Returns a string with the characteristics of the object
 	std::string				asString() const;
+
+	/// get the TCP sock object
+	const CTcpSock			*getTcpSock() const { return Sock;} 
 
 	/// Little tricky but this string is used by Layer4 to know which callback is authorized.
 	/// This is empty when all callback are authorized.

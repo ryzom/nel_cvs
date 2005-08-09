@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.4 2005/07/20 13:13:37 lancon Exp $
+ * $Id: module.cpp,v 1.5 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ namespace NLNET
 
 
 	// Init base module, init module name
-	void				CModuleBase::initModule(const TModuleInitInfo &initInfo)
+	void				CModuleBase::initModule(const TParsedCommandLine &initInfo)
 	{
 		// read module init param for base module .
 
@@ -281,9 +281,13 @@ namespace NLNET
 		if (args.size() != 0)
 			return false;
 
+		log.displayNL("---------------------------");
 		log.displayNL("Dumping base module state :");
-		log.displayNL("  Module class : '%s'", _ModuleFactory->getModuleClassName().c_str());
-		log.displayNL("  Module ID : %u", _ModuleId);
+		log.displayNL("---------------------------");
+		log.displayNL("  Module name      : '%s'", getModuleName().c_str());
+		log.displayNL("  Module full name : '%s'", getModuleFullyQualifiedName().c_str());
+		log.displayNL("  Module class     : '%s'", _ModuleFactory->getModuleClassName().c_str());
+		log.displayNL("  Module ID        : %u", _ModuleId);
 		log.displayNL("  The module is plugged into %u sockets :", _ModuleSockets.size());
 		{
 			TModuleSockets::iterator first(_ModuleSockets.begin()), last(_ModuleSockets.end());
@@ -302,9 +306,9 @@ namespace NLNET
 						name = name.substr(name.find('/')+1);
 					if (name != getModuleFullyQualifiedName())
 					{
-						log.displayNL("      Module '%s' (Module ID : %u, class : '%s')", 
+						log.displayNL("      Module '%s' (Module Proxy ID : %u, class : '%s')", 
 							proxies[i]->getModuleName().c_str(),
-							proxies[i]->getModuleId(),
+							proxies[i]->getModuleProxyId(),
 							proxies[i]->getModuleClassName().c_str());
 					}
 				}
@@ -320,16 +324,16 @@ namespace NLNET
 	 ************************************************************************/
 
 	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName)
-		: _LocalModuleId(localModuleId),
-		_ModuleClassName(moduleClassName),
-		_FullyQualifiedModuleName(fullyQualifiedModuleName),
+		: _ModuleProxyId(localModuleId),
+		_ModuleClassName(CStringMapper::map(moduleClassName)),
+		_FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
 		_ForeignModuleId(INVALID_MODULE_ID)
 	{
 	}
 
-	TModuleId	CModuleProxy::getModuleId() const
+	TModuleId	CModuleProxy::getModuleProxyId() const
 	{
-		return _LocalModuleId;
+		return _ModuleProxyId;
 	}
 	
 	TModuleId	CModuleProxy::getForeignModuleId() const
@@ -337,14 +341,23 @@ namespace NLNET
 		return _ForeignModuleId;
 	}
 
+	uint32		CModuleProxy::getModuleDistance() const
+	{
+		return _Distance;
+	}
+
+	CGatewayRoute		*CModuleProxy::getGatewayRoute() const
+	{
+		return _Route;
+	}
 
 	const std::string &CModuleProxy::getModuleName() const
 	{
-		return _FullyQualifiedModuleName;
+		return CStringMapper::unmap(_FullyQualifiedModuleName);
 	}
 	const std::string &CModuleProxy::getModuleClassName() const
 	{
-		return _ModuleClassName;
+		return CStringMapper::unmap(_ModuleClassName);
 	}
 
 	IModuleGateway *CModuleProxy::getModuleGateway() const
@@ -352,7 +365,7 @@ namespace NLNET
 		return _Gateway;
 	}
 
-	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const TModuleMessagePtr &message)
+	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 		throw (EModuleNotReachable)
 	{
 		if (_Gateway == NULL )
@@ -360,24 +373,14 @@ namespace NLNET
 			throw EModuleNotReachable();
 		}
 
-		if ( _ForeignGateway == NULL || !_ForeignGateway->isConnected())
+		// We need to find the proxy for the sender using the addressee gateway
+		IModuleProxy *senderProx = _Gateway->getPluggedModuleProxy(senderModule);
+		if (senderProx == NULL )
 		{
-			message->_MessageType = CModuleMessage::mt_oneway;
-			message->_SenderModuleId = senderModule->getModuleId();
-			message->_AddresseeModuleId = _ForeignModuleId;
-
-			_Gateway->dispatchMessageModule(_ForeignGateway, message);
+			throw EModuleNotReachable();
 		}
-		else
-		{
 
-			// fill message routing information
-			message->_MessageType = CModuleMessage::mt_oneway;
-			message->_SenderModuleId = senderModule->getModuleId();
-			message->_AddresseeModuleId = _LocalModuleId;
-
-			_Gateway->sendModuleMessage(_ForeignGateway, message);
-		} 
+		_Gateway->sendModuleMessage(senderProx, this, message);
 	}
 
 } // namespace NLNET

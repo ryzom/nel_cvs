@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.4 2005/07/20 13:13:08 lancon Exp $
+ * $Id: module.h,v 1.5 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,14 @@
 #define NL_FILE_MODULE_H
 
 #include "nel/misc/command.h"
+#include "nel/misc/string_mapper.h"
+#include "nel/net/message.h"
 #include "module_common.h"
 
 namespace NLNET
 {
+
+	class CGatewayRoute;
 
 	/** This is the interface for the a module.
 	 *	It describe interaction with the module itself,
@@ -55,7 +59,7 @@ namespace NLNET
 
 		/** Module initialisation.
 		 */
-		virtual void				initModule(const TModuleInitInfo &initInfo) =0;
+		virtual void				initModule(const TParsedCommandLine &initInfo) =0;
 
 		//@name Basic module information
 		//@{
@@ -139,15 +143,15 @@ namespace NLNET
 		 *	module has been created OR has been made accessible (due to
 		 *	a gateway connection).
 		 */
-		virtual void				onModuleUp(const TModuleProxyPtr &module) = 0;
+		virtual void				onModuleUp(IModuleProxy *moduleProxy) = 0;
 		/** Called by a socket to inform this module that another
 		 *	module has been deleted OR has been no more accessible (due to
 		 *	some gateway disconnection).
 		 */
-		virtual void				onModuleDown(const TModuleProxyPtr &module) =0;
+		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
 		/** Called by a socket to process a received message.
 		 */
-		virtual void				onProcessModuleMessage(const TModuleProxyPtr &senderModule, const TModuleMessagePtr &message) =0;
+		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
 		//@}
 
 		//@name Callback from module sockets management
@@ -195,9 +199,13 @@ namespace NLNET
 		 *	When module are declared in another process, they receive a 
 		 *	local ID that is different than the ID in their host process.
 		 */
-		virtual TModuleId	getModuleId() const =0;
+		virtual TModuleId		getModuleProxyId() const =0;
 
-		virtual TModuleId  getForeignModuleId() const =0;
+		virtual TModuleId		getForeignModuleId() const =0;
+
+		virtual uint32				getModuleDistance() const =0;
+
+		virtual CGatewayRoute		*getGatewayRoute() const = 0;
 
 		/** Return the module name. Each module instance must have a unique 
 		 *	name in the host process.
@@ -218,11 +226,11 @@ namespace NLNET
 		 */
 		virtual IModuleGateway *getModuleGateway() const =0;
 
-		/** The a message to the module.
+		/** Send a message to the module.
 		 *	This method do the job of finding a valid socket to effectively send
 		 *	the message.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, const TModuleMessagePtr &message)
+		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotReachable)
 			=0;
 	};
@@ -324,7 +332,6 @@ namespace NLNET
 		// Module manager is our friend coz it need to feed some field here
 		friend class CModuleManager;
 
-//		typedef NLMISC::CSmartPtr<CModuleSocket>	TSockPtr;
 		typedef std::set<IModuleSocket *> 	TModuleSockets;
 		/// This is the sockets where the module is plugged in
 		TModuleSockets		_ModuleSockets;
@@ -355,7 +362,7 @@ namespace NLNET
 
 
 		// Init base module, init module name
-		void				initModule(const TModuleInitInfo &initInfo);
+		void				initModule(const TParsedCommandLine &initInfo);
 		
 		void				plugModule(IModuleSocket *moduleSocket) throw (EModuleAlreadyPluggedHere);
 		void				unplugModule(IModuleSocket *moduleSocket)  throw (EModuleNotPluggedHere);
@@ -374,6 +381,7 @@ namespace NLNET
 		NLMISC_CLASS_COMMAND_DECL(unplug);
 	};
 
+	class CGatewayRoute;
 
 	class CModuleProxy : public IModuleProxy
 	{
@@ -382,32 +390,45 @@ namespace NLNET
 
 		/// The gateway that received the module informations
 		IModuleGateway		*_Gateway;
-		/// The gateway that send the module informations
-		TModuleGatewayProxyPtr	_ForeignGateway;
+		/// The route to use for reaching the module
+		CGatewayRoute		*_Route;
+		/// The module distance (in term of gateway to cross)
+		uint32				_Distance;
+//		/// The gateway that send the module informations
+//		TModuleGatewayProxyPtr	_ForeignGateway;
 		/// The module local ID
-		TModuleId			_LocalModuleId;
-		/// The module foreign ID
+		TModuleId			_ModuleProxyId;
+		/// The module foreign ID, this is the module ID in case of a local proxy
 		TModuleId			_ForeignModuleId;
 
 		/// The module class name;
-		const std::string	_ModuleClassName;
+		NLMISC::TStringId	_ModuleClassName;
 		/// The  fully qualified module name.
-		const std::string	_FullyQualifiedModuleName;
+		NLMISC::TStringId	_FullyQualifiedModuleName;
 
 		/// Private constructor, only manager instantiate module proxies
 		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName);
 	public:
+		const CGatewayRoute * const getRoute() const
+		{
+			return _Route;
+		}
+
+
 		/** Return the module ID. Each module has a local unique ID assigned 
 		 *	by the manager during module creation.
 		 *	This ID is local because it is only valid inside a given process.
 		 *	When module are declared in another process, they receive a 
 		 *	local ID that is different than the ID in their host process.
 		 */
-		virtual TModuleId	getModuleId() const;
+		virtual TModuleId	getModuleProxyId() const;
 
+		virtual TModuleId	getForeignModuleId() const;
 
+		uint32				getModuleDistance() const;
+		
+		CGatewayRoute		*getGatewayRoute() const;
 
-		virtual TModuleId  getForeignModuleId() const;
 		/** Return the module name. Each module instance must have a unique 
 		 *	name in the host process.
 		 *	If no mane is given during module creation, the module manager
@@ -425,11 +446,9 @@ namespace NLNET
 		 */
 		virtual IModuleGateway *getModuleGateway() const;
 
-		/** The a message to the module.
-		 *	This method do the job of finding a valid socket to effectively send
-		 *	the message.
+		/** Send a message to the module.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, const TModuleMessagePtr &message)
+		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotReachable);			
 	};
 

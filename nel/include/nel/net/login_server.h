@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.17 2005/02/22 10:14:13 besson Exp $
+ * $Id: login_server.h,v 1.18 2005/08/09 19:06:25 boucher Exp $
  * 
  */
 
@@ -47,7 +47,7 @@ namespace NLNET
 typedef void (*TNewClientCallback) (TSockId from, const CLoginCookie &cookie);
 
 /// Callback function type called when a client need to be disconnected (double login...)
-typedef void (*TDisconnectClientCallback) (uint32 userId);
+typedef void (*TDisconnectClientCallback) (uint32 userId, const std::string &reqServiceName);
 
 class CUdpSock;
 class IDisplayer;

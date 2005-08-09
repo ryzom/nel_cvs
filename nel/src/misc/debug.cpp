@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.110 2005/07/20 10:32:09 berenguier Exp $
+ * $Id: debug.cpp,v 1.111 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,9 +175,10 @@ void nlFatalError (const char *format, ...)
 	NLMISC::ErrorLog->displayNL (str);
 
 	if (INelContext::getInstance().getDebugNeedAssert())
-		NLMISC_BREAKPOINT;
+			NLMISC_BREAKPOINT;
 
 #ifndef NL_OS_WINDOWS
+	
 	//	exit(EXIT_FAILURE);
 	abort ();
 #endif

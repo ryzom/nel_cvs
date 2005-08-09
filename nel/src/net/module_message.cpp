@@ -1,7 +1,7 @@
 /** \file module_message.cpp
  * module message implementation
  *
- * $Id: module_message.cpp,v 1.1 2005/06/23 16:38:14 boucher Exp $
+ * $Id: module_message.cpp,v 1.2 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,27 +29,26 @@
 
 namespace NLNET
 {
-	CModuleMessage::CModuleMessage(const std::string &operationName)
-		: _MessageType(mt_invalid),
-		_SenderModuleId(INVALID_MODULE_ID),
-		_AddresseeModuleId(INVALID_MODULE_ID),
-		_OperationName(operationName)
-	{
-
-	}
-
-
-	void CModuleMessage::serial(NLMISC::IStream &s)
-	{
-		nlassert(mt_num_types < 0xFF);
-		nlassert(_MessageType != mt_invalid);
-
-		s.serialBitField8(reinterpret_cast<uint8&>(_MessageType));
-		s.serial(_SenderModuleId);
-		s.serial(_AddresseeModuleId);
-		s.serial(_OperationName);
-		s.serial(MessageBody);
-	}
+//	CModuleMessage::CModuleMessage(const CMessage &messageBody)
+//		: MessageType(mt_invalid),
+//		SenderModuleId(INVALID_MODULE_ID),
+//		AddresseeModuleId(INVALID_MODULE_ID),
+//		MessageBody(const_cast<CMessage&>(messageBody))
+//	{
+//
+//	}
+//
+//
+//	void CModuleMessage::serial(NLMISC::IStream &s)
+//	{
+//		nlassert(mt_num_types < 0xFF);
+//		nlassert(MessageType != mt_invalid);
+//
+//		s.serialBitField8(reinterpret_cast<uint8&>(MessageType));
+//		s.serial(SenderModuleId);
+//		s.serial(AddresseeModuleId);
+//		MessageBody.serialMessage()
+//	}
 
 
 } // namespace NLNET

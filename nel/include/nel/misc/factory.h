@@ -1,7 +1,7 @@
 /** \file factory.h
  * class for factory
  *
- * $Id: factory.h,v 1.4 2005/06/23 17:39:57 boucher Exp $
+ * $Id: factory.h,v 1.5 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,7 +83,7 @@ public:
 	static CFactory &instance()
 	{
 		// Singleton instance pointer.
-		static CFactory	instance = NULL;
+		static CFactory	*instance = NULL;
 		if (!instance)
 		{
 			instance = new CFactory();

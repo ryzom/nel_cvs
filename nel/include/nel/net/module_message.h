@@ -1,7 +1,7 @@
 /** \file module_message.h
  * module message definition
  *
- * $Id: module_message.h,v 1.2 2005/07/20 13:13:08 lancon Exp $
+ * $Id: module_message.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,22 +28,18 @@
 #define NL_MODULE_MESSAGE_H
 
 #include "nel/misc/enum_bitset.h"
+#include "nel/net/message.h"
 #include "module_common.h"
 
 
 namespace NLNET
 {
-	/** Module message definition
-	 *	Module contains informations about module sender, module addresse,
-	 *	type of message (for future extension).
+	/** Module message header coder/decoder
+	 *	Codec for module message header data.
 	 */
-	class CModuleMessage : public NLMISC::CRefCount
+	class CModuleMessageHeaderCodec
 	{
-		friend class CModuleProxy;
-		friend class CModuleBase;
-		friend class CGatewayBase;
 	public:
-
 		enum TMessageType
 		{
 			/// Standard one way message
@@ -60,35 +56,92 @@ namespace NLNET
 			mt_invalid = mt_num_types
 
 		};
-		
+
+		static void encode(CMessage &headerMessage, TMessageType msgType, TModuleId senderProxyId, TModuleId addresseeProxyId)
+		{
+			serial(headerMessage, msgType, senderProxyId, addresseeProxyId);
+		}
+
+		static void decode(const CMessage &headerMessage, TMessageType &msgType, TModuleId &senderProxyId, TModuleId &addresseeProxyId)
+		{
+			serial(const_cast<CMessage&>(headerMessage), msgType, senderProxyId, addresseeProxyId);
+		}
+
 	private:
-		/// The type of message
-		TMessageType		_MessageType;
-		/// The id of the sender module
-		TModuleId			_SenderModuleId;
-		/// The id of the addressee module
-		TModuleId			_AddresseeModuleId;
-		/// The name of the operation (aka the method name)
-		std::string			_OperationName;
-	public:
-
-		/// The message content (transmited to message handler)
-		NLMISC::CMemStream	MessageBody;
-
-		///  Return the id of the addressee module
-		NLNET::TModuleId getAddresseeModuleId() const { return _AddresseeModuleId;}
-
-		///  Return the id of the sender module
-		NLNET::TModuleId getSenderModuleId() const { return _SenderModuleId;}
-
-		std::string getOperationName() const { return _OperationName;}
-
-
-		/// Serialize the message
-		void serial(NLMISC::IStream &s);
-
-		CModuleMessage(const std::string &operationName);
+		static void serial(CMessage &headerMessage, TMessageType &msgType, TModuleId &senderProxyId, TModuleId &addresseeProxyId)
+		{
+			uint8 mt;
+			if (headerMessage.isReading())
+			{
+				headerMessage.serial(mt);
+				msgType = CModuleMessageHeaderCodec::TMessageType(mt);
+			}
+			else
+			{
+				mt = msgType;
+				headerMessage.serial(mt);
+			}
+			headerMessage.serial(senderProxyId);
+			headerMessage.serial(addresseeProxyId);
+		}
 	};
+
+
+//	class CModuleMessage : public NLMISC::CRefCount
+//	{
+//		friend class CModuleProxy;
+//		friend class CModuleBase;
+//		friend class CGatewayBase;
+//	public:
+//
+//		enum TMessageType
+//		{
+//			/// Standard one way message
+//			mt_oneway,
+//			/// Two way request
+//			mt_twoway_request,
+//			/// Two way response
+//			mt_twoway_response,
+//
+//
+//			/// A special checking value
+//			mt_num_types,
+//			/// invalid flag
+//			mt_invalid = mt_num_types
+//
+//		};
+//		
+//		/// The type of message
+//		TMessageType		MessageType;
+//		/// The id of the sender module proxy
+//		TModuleId			SenderModuleId;
+//		/// The id of the addressee module proxy
+//		TModuleId			AddresseeModuleId;
+//		/// The name of the operation (aka the method name)
+////		std::string			_OperationName;
+//
+//		/** The message content (transmited to message handler)
+//		 *	This already contain the operation name (in the 
+//		 *	CMessage type (see CMessage::setType and CMessage::getName)
+//		 */
+////		CMessage			&MessageBody;
+////		NLMISC::CMemStream	MessageBody;
+//
+//		///  Return the id of the addressee module
+////		NLNET::TModuleId getAddresseeModuleProxyId() const { return _AddresseeModuleId;}
+//
+//		///  Return the id of the sender module
+////		NLNET::TModuleId getSenderModuleProxyId() const { return _SenderModuleId;}
+////
+//		std::string getOperationName() const { return MessageBody.getName();}
+//
+//
+//		/// Serialize the message
+//		void serial(NLMISC::IStream &s);
+//
+//		/// Construct a module message, receive a reference to a message body.
+//		CModuleMessage(const CMessage &messageBody);
+//	};
 
 } // namespace NLNET
 

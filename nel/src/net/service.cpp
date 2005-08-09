@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.230 2005/07/18 15:36:51 cado Exp $
+ * $Id: service.cpp,v 1.231 2005/08/09 19:06:45 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -61,7 +61,7 @@
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
-#include "nel/net/net_manager.h"
+//#include "nel/net/net_manager.h"
 #include "nel/net/net_displayer.h"
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"

@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.37 2004/09/03 09:20:28 legros Exp $
+ * $Id: login_server.cpp,v 1.38 2005/08/09 19:06:45 boucher Exp $
  *
  */
 
@@ -177,7 +177,7 @@ void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 
 	if (DisconnectClientCallback != NULL)
 	{
-		DisconnectClientCallback (userid);
+		DisconnectClientCallback (userid, serviceName);
 	}
 }
 

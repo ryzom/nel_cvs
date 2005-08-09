@@ -1,7 +1,7 @@
 /** \file module_socket.h
  * module socket interface
  *
- * $Id: module_socket.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
+ * $Id: module_socket.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #ifndef NL_FILE_MODULE_SOCKET_H
 #define NL_FILE_MODULE_SOCKET_H
 
+#include "nel/net/message.h"
 #include "module_common.h"
 
 namespace NLNET
@@ -50,13 +51,13 @@ namespace NLNET
 		 *	If the destination module is not accessible through this socket,
 		 *	an exception is thrown.
 		 */
-		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleId, TModuleMessagePtr &message ) 
+		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
 			throw (EModuleNotPluggedHere)
 			=0;
 		/** A plugged module send a message to all the module reachable
 		 *	with this socket.
 		 */
-		virtual void broadcastModuleMessage(IModule *senderModule, TModuleMessagePtr &message)
+		virtual void broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 			=0;
 
@@ -69,9 +70,9 @@ namespace NLNET
 		//@name Callback for socket implementation
 		//@{
 		/// Called just after a module is plugged in the socket.
-		virtual void onModulePlugged(const TModulePtr &pluggedModule) =0;
+		virtual void onModulePlugged(IModule *pluggedModule) =0;
 		/// Called just before a module is unplugged from the socket.
-		virtual void onModuleUnplugged(const TModulePtr &pluggedModule) =0;
+		virtual void onModuleUnplugged(IModule *unpluggedModule) =0;
 		//@}
 	};
 
@@ -85,7 +86,7 @@ namespace NLNET
 	class CModuleSocket : public IModuleSocket
 	{
 	protected:
-		typedef std::set<TModulePtr>	TPluggedModules;
+		typedef NLMISC::CTwinMap<TModuleId, TModulePtr>	TPluggedModules;
 		/// The list of plugged modules
 		TPluggedModules			_PluggedModules;
 
@@ -103,20 +104,20 @@ namespace NLNET
 		virtual void _onModulePlugged(const TModulePtr &pluggedModule);
 		virtual void _onModuleUnplugged(const TModulePtr &pluggedModule);
 
-		virtual void _sendModuleMessage(IModule *senderModule, TModuleId destModuleId, TModuleMessagePtr &message )
+		virtual void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message )
 			throw (EModuleNotPluggedHere, NLNET::EModuleNotReachable)
 			=0;
 
-		virtual void _broadcastModuleMessage(IModule *senderModule, TModuleMessagePtr &message)
+		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 			=0;
 	
-		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleId, TModuleMessagePtr &message ) 
+		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
 			throw (EModuleNotPluggedHere);
 		/** A plugged module send a message to all the module reachable
 		 *	with this socket.
 		 */
-		virtual void broadcastModuleMessage(IModule *senderModule, TModuleMessagePtr &message)
+		virtual void broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere);
 
 	};

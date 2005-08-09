@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.2 2005/06/23 17:39:57 boucher Exp $
+ * $Id: module_gateway.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,17 @@
 #ifndef NL_FILE_MODULE_GATEWAY_H
 #define NL_FILE_MODULE_GATEWAY_H
 
+#include "nel/misc/twin_map.h"
 #include "module_common.h"
 #include "inet_address.h"
+#include "message.h"
+#include "module_message.h"
 
 namespace NLNET
 {
+	class IGatewayTransport;
+	class CGatewayRoute;
+
 	/** Interface for gateway.
 	 *	A gateway is the part of the module layer that interconnect
 	 *	module locally and give access to foreign module hosted in
@@ -68,12 +74,18 @@ namespace NLNET
 		class EGatewayAlreadyOpen : public NLMISC::Exception
 		{
 		};
+
+		/// When trying to open the gateway server, the TCP port is already in use
+		class EGatewayPortInUse : public NLMISC::Exception
+		{
+		};
+		
 		/// The gateway is not open while trying to close it.
 		class EGatewayNotOpen : public NLMISC::Exception
 		{
 		};
 
-		/// A gateway is not connected while trying to commnicate with
+		/// A gateway is not connected while trying to communicate with
 		class EGatewayNotConnected : public NLMISC::Exception
 		{
 		};
@@ -99,117 +111,71 @@ namespace NLNET
 		/// Return the Fully Qualified Gateway Name (FQGN)
 		virtual const std::string &getFullyQualifiedGatewayName() const =0;
 		/// Return the gateway proxy of this gateway
-		virtual TModuleGatewayProxyPtr &getGatewayProxy() =0;
+//		virtual TModuleGatewayProxyPtr &getGatewayProxy() =0;
 		//@}
 
 		//@{
-		//@name Gateway server management
-		/** Ask the gateway implementation to see if it is listening
-		 *	for client gateway connection.
-		 */
-		virtual bool isGatewayServerOpen() =0;
-		/** Return the gateway listening address (ie. ip+port).
-		 *	If it has not been set, the method should return 0.0.0.0 as ip
-		 *	and 0 as port.
-		 */
-		virtual CInetAddress  getGatewayServerAddress() =0;
-		/** Fill the vector with the list of gateway currently connected on
-		 *	this gateway server.
-		 *	Note that the vector is not cleared before filling.
-		 */
-		virtual void getGatewayClientList(std::vector<TModuleGatewayProxyPtr> gatewayList) =0;
-		/** Open the gateway server to listen and accept client gateway connection.
-		 */
-		virtual void openGatewayServer(CInetAddress listeningAddress)
-			throw (EGatewayAlreadyOpen)
-			=0;
-		/** Close the gateway server. No more client connection will be accepted.
-		 *	The gateway client that are currently connected are not
-		 *	removed. You call shutdownGatewayServer to close 
-		 *	all established connection.
-		 */
-		virtual void closeGatewayServer() 
-			throw (EGatewayNotOpen)
-			=0;
-		/** Close all established client gateway connection and close the server
-		 *	if it is open.
-		 *	Unlike closeGatewayServer, this method don't throw EGatewayNotOpen.
-		 */
-		virtual void shutdownGatewayServer() =0;
+		//@name Gateway transport management
+		/// Return a pointer on the named transport interface, or NULL if the transport is unknown.
+		virtual IGatewayTransport *getGatewayTransport(const std::string &transportName) const =0;
 
-		/** Callback called when the server is openned */
-		virtual void onGatewayServerOpen() =0;
-		/** Callback called when the server is closed */
-		virtual void onGatewayServerClose() =0;
+		/// Return the number of transport currently active on this gateway
+		virtual uint32	getTransportCount() const =0;
 
-		/** Callback called when a client gateway connect on the server.
-		 *	Default behavior is to return 'mgc_accept_connection'.
-		 *	You can overide this method and return 'mgc_reject_connection' if 
-		 *	you don't accept the gateway connection.
-		 */
-		virtual TModuleGatewayConstant onClientGatewayConnect(TModuleGatewayProxyPtr &clientGateway) =0;
-		/** Callback called when a client gateway connection close.
-		 *	When called, it is too late to send any message to the
-		 *	disconnected gateway.
-		 */
-		virtual void onClientGatewayDisconnect(TModuleGatewayProxyPtr &clientGateway) =0;
+		/// Return the number route available
+		virtual uint32	getRouteCount() const =0;
+
+		/// Return the number of ping received. This is incremented by special "GW_PING" message for unit testing
+		virtual uint32 getReceivedPingCount() const =0;
+
 		//@}
 
 		//@{
-		//@name Gateway client management
+		//@name Gateway transport callback
+		/// A new route a added by a transport
+		virtual void onRouteAdded(CGatewayRoute *route) =0;
 
-		/** Fill the vector with the list of server at witch this
-		 *	gateway is connected.
-		 *	Note that the vector is not cleared before being filled.
-		 */
-		virtual void getGatewayServerList(std::vector<TModuleGatewayProxyPtr> serverList) =0;
-		/// Return true if the gateway is connected to at least one server.
-		virtual bool isGatewayConnected() =0;
-		/** Connect the gateway to a gateway server.
-		 *	The connection is made asynchronously.
-		 *	When the connection result is available (either
-		 *	a successful or a failed connection), the 
-		 *	method onGatewayConnection callback is called.
-		 */
-		virtual void connectGateway(CInetAddress serverAdress) =0;
-		/** Close the connection with a gateway server.
-		 *	The closure is done immediately.
-		 */
-		virtual void disconnectGateway(TModuleGatewayProxyPtr &serverGateway) =0;
+		/// A route is removed by a transport
+		virtual void onRouteRemoved(CGatewayRoute *route) =0;
 
-		/** Callback called when the result of a connection attempt is known.
-		 *	The result can be either 'mgc_connection_success' or 
-		 *	'mgc_connection_failed'. In the later case, the serverGateway object 
-		 *	is null.
-		 */
-		virtual void onGatewayConnection(const TModuleGatewayProxyPtr &serverGateway, TModuleGatewayConstant connectionResult) =0;
-
-		/** Callback called when a server connection has been closed.
-		 */
-		virtual void onGatewayDisconnection(const TModuleGatewayProxyPtr &serverGateway) =0;
+		/// A transport have received a message
+		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin) =0;
 		//@}
 
 		//@{
-		//@name Module discovering
+		//@name Module management
 		/** Callback called when the gateway has received some new module
 		 *	and eventually, need to disclose the module information to 
 		 *	the connected gateway.
 		 *	The default behavior is to disclose the module to all
 		 *	connected gateway.
 		 */
-		virtual void onAddModuleProxy(TModuleProxyPtr &addedModule) =0;
+		virtual void onAddModuleProxy(IModuleProxy *addedModule) =0;
 		/** Callback called when a module become unavailable, either
 		 *	because it is unplugged from it's socket, or, the
-		 *	gateway that disclosed has been disconnected.
+		 *	gateway that disclosed it has been disconnected.
 		 */
-		virtual void onRemoveModuleProxy(TModuleProxyPtr &removedModule) =0;
+		virtual void onRemoveModuleProxy(IModuleProxy *removedModule) =0;
 
 		/** Disclose module information to a connected gateway.
 		 *	This can also be this gateway itself.
 		 */
-		virtual void discloseModule(IModuleProxy *module, IModuleGatewayProxy *gateway) 
+		virtual void discloseModule(IModuleProxy *moduleProxy) 
 			throw (EGatewayNotConnected)
 			=0;
+
+		/** Retrieve the proxy for a locally plugged module.
+		 *	Each local module plugged in a gateway has an associated
+		 *	proxy. This method return this proxy or NULL if the 
+		 *	module is not plugged here.
+		 */
+		virtual IModuleProxy *getPluggedModuleProxy(IModule *pluggedModule) =0;
+
+		/// Return the number of proxies managed by this gateway
+		virtual uint32	getProxyCount() const =0;
+
+		/// Fill a vector with the list of proxies managed here. The module are filled in ascending proxy id order.
+		virtual void	getModuleProxyList(std::vector<IModuleProxy*> &resultList) const =0;
 		//@}
 
 		//@{
@@ -221,18 +187,130 @@ namespace NLNET
 		 *	You can override this callback to add some message filtering
 		 *	or hacking feature.
 		 */
-		virtual void onReceiveModuleMessage(TModuleGatewayProxyPtr &senderGateway, const TModuleMessagePtr &message) =0;
+//		virtual void onReceiveModuleMessage(TModuleGatewayProxyPtr &senderGateway, TModuleMessagePtr &message) =0;
 
-		/** Send a message to another gateway.
+		/** Send a message to a module.
 		 */
-		virtual void sendModuleMessage(TModuleGatewayProxyPtr &destGateway, const TModuleMessagePtr &message) =0;
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message) =0;
 
 		/** Send a message to the module plugged in this gateway.
 		 *	You can override this method to change the dispatching, add filtering,
 		 *	message hacking or interceptor.
 		 */
-		virtual void dispatchMessageModule(TModuleGatewayProxyPtr &senderGateway, const TModuleMessagePtr &message) =0;
+		virtual void dispatchMessageModule(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message) =0;
 		//@}
+	};
+
+	/** Interface class for gateway transport.
+	 *	A gateway transport is an object associated to a standard gateway
+	 *	at run time and that provide a mean to interconnect with
+	 *	other gateway.
+	 *	As each transport mode as it's own command requirement,
+	 *	a generic command system is provided sending command message
+	 *	to the transport implementation.
+	 *	
+	 *	Example of transport are layer 3 client and layer 3 server.
+	 */
+	class IGatewayTransport
+	{
+	protected:
+		/// Back pointer to the gateway hosting this transport
+		IModuleGateway			*_Gateway;
+	public:
+		/// Invalid command
+		class EInvalidCommand : public NLMISC::Exception
+		{
+		public:
+			EInvalidCommand(const char *err) : Exception(err) {}
+		};
+
+		/// Error in the transport
+		class ETransportError : public NLMISC::Exception
+		{
+		public:
+			ETransportError(const char *err) : Exception(err) {}
+		};
+		
+		struct TCtorParam
+		{
+			IModuleGateway *Gateway;
+		};
+		/// Constructor, establish link with the associated gateway
+		IGatewayTransport(const TCtorParam &param)
+		{
+			_Gateway = param.Gateway;
+		}
+
+		virtual ~IGatewayTransport() {}
+
+		/// Return the class name from the transport factory
+		virtual const std::string &getClassName() const =0;
+
+		/// The gateway send a command message to the transport
+		virtual void onCommand(const CMessage &command) throw (EInvalidCommand) = 0;
+		/// The gateway send a textual command to the transport
+		virtual bool onCommand(const TParsedCommandLine &command) throw (EInvalidCommand) = 0;
+
+		/// The gateway update the transport regularly
+		virtual void update() =0;
+
+		/// Return the number of route currently open by the transport
+		virtual uint32 getRouteCount() const =0;
+
+		/// Dump debug information in the specified log stream
+		virtual void dump(NLMISC::CLog &log) const =0;
+	};
+
+	/** Base class for gateway route.
+	 *	Route are provided by transport.
+	 *	Transport provide a mean to build route
+	 *	between gateway.
+	 *	Route show the list of foreign gateway that are 
+	 *	reachable with it and are use to send
+	 *	message to these gateways.
+	 *
+	 *	The route store proxy id translation table, i.e,
+	 *	for each module proxy that come from this route
+	 *	we store association of the local proxy ID with
+	 *	the foreign proxy ID, that is the proxy that
+	 *	represent the module at the outbound of the route.
+	 *
+	 *	Note that even if the route object is created
+	 *	by the transport, the translation table is
+	 *	feed and managed by the gateway implementation.
+	 */
+	class CGatewayRoute
+	{
+	public:
+		/// The local foreign => local proxy id translation table
+		typedef std::map<TModuleId, TModuleId>	TForeignToLocalIdx;
+		TForeignToLocalIdx	ForeignToLocalIdx;
+
+		/// The transport that manage this route
+		IGatewayTransport	*_Transport;
+
+
+		//@{
+		/// @name Informations on the next module message to dispatch
+
+		/// next message type, set to CModuleMessageHeaderCodec::mt_invalid when no module message are awaited
+		CModuleMessageHeaderCodec::TMessageType	NextMessageType;
+		/// Id of the sender proxy
+		TModuleId		NextSenderProxyId;
+		/// Id of the addressee proxy
+		TModuleId		NextAddresseeProxyId;
+		//@}
+
+		/// constructor, must provide the transport
+		CGatewayRoute(IGatewayTransport *transport)
+			: _Transport(transport),
+			NextMessageType(CModuleMessageHeaderCodec::mt_invalid)
+		{
+		}
+		/// Return the transport that hold this route
+		IGatewayTransport *getTransport() { return _Transport; };
+		/// Send a message via the route
+		virtual void sendMessage(const CMessage &message) const =0;
 	};
 
 //	const TModuleGatewayPtr	NullModuleGateway;
@@ -243,18 +321,34 @@ namespace NLNET
 	 *	with the module proxy to remember the 
 	 *	source of the module.
 	 */
-	class IModuleGatewayProxy : public NLMISC::CRefCount
-	{
-	public:
-		virtual ~IModuleGatewayProxy() {}
-		virtual void getGatewayHost() =0;
-		virtual void getLocalGateway() =0;
-		virtual bool isCollocated() =0;
-		virtual bool isConnected() =0;
-
-	};
-
-	const TModuleGatewayProxyPtr	NullModuleGatewayProxy;
+//	class IModuleGatewayProxy : public NLMISC::CRefCount
+//	{
+//	public:
+//		/// The gateway is not collocated
+//		class EGatewayNotCollocated : public NLMISC::Exception
+//		{
+//		};
+//
+//		virtual ~IModuleGatewayProxy() {}
+//
+//		/// Return the host name of the machine hosting this gateway.
+//		virtual const std::string &getGatewayHost() =0;
+//		/** If the gateway is collocated (i.e, lie in the current process), 
+//		 *	then return the gateway pointer to make direct call on
+//		 *	the gateway interface.
+//		 */
+//		virtual IModuleGateway *getLocalGateway() 
+//			throw (EGatewayNotCollocated) 
+//			=0;
+//
+//		/// Return true if the gateway lie in the current process
+//		virtual bool isCollocated() =0;
+//		/// Return true if the 
+//		virtual bool isConnected() =0;
+//
+//	};
+//
+//	const TModuleGatewayProxyPtr	NullModuleGatewayProxy;
 
 } // namespace NLNET
 

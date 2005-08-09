@@ -1,7 +1,7 @@
 /** \file module_common.cpp
  * basic type and forward declaration for module system
  *
- * $Id: module_common.cpp,v 1.1 2005/06/23 16:38:14 boucher Exp $
+ * $Id: module_common.cpp,v 1.2 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ using namespace NLMISC;
 namespace NLNET
 {
 
-	bool TModuleInitInfo::parseParamList(const std::string &rawParamString)
+	bool TParsedCommandLine::parseParamList(const std::string &rawParamString)
 	{
 		// Cleanup the struct
 		SubParams.clear();
@@ -45,7 +45,7 @@ namespace NLNET
 	}
 
 
-	bool TModuleInitInfo::_parseParamList(const std::string &rawParamString)
+	bool TParsedCommandLine::_parseParamList(const std::string &rawParamString)
 	{
 		CSString parsedString(rawParamString);
 		
@@ -124,7 +124,7 @@ namespace NLNET
 				}
 				CSString value = part.strtok("=");
 
-				SubParams.push_back(TModuleInitInfo());
+				SubParams.push_back(TParsedCommandLine());
 				SubParams.back().ParamName = name;
 				SubParams.back().ParamValue = value;
 			}
@@ -133,7 +133,7 @@ namespace NLNET
 		return true;
 	}
 
-	const TModuleInitInfo *TModuleInitInfo::getParam(const std::string &name) const
+	const TParsedCommandLine *TParsedCommandLine::getParam(const std::string &name) const
 	{
 		vector<string>	parts;
 		NLMISC::explode(name, ".", parts);
@@ -141,7 +141,7 @@ namespace NLNET
 		return _getParam(parts.begin(), parts.end());
 	}
 
-	const TModuleInitInfo *TModuleInitInfo::_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const
+	const TParsedCommandLine *TParsedCommandLine::_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const
 	{
 		if (it == end)
 		{

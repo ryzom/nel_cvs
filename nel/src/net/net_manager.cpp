@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.27 2004/05/07 12:56:22 cado Exp $
+ * $Id: net_manager.cpp,v 1.28 2005/08/09 19:06:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,8 +30,7 @@
 ********************* THIS CLASS IS DEPRECATED ****************************
 **************************************************************************/
 
-
-
+#pragma message(NL_LOC_WRN "You are using a deprecated feature of NeL, consider rewriting your code with replacement feature")
 
 #include "stdnet.h"
 

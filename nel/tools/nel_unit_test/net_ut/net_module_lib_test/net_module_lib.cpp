@@ -35,18 +35,18 @@ public:
 	{
 	}
 
-	void				onModuleUp(const TModuleProxyPtr &module)
+	void				onModuleUp(IModuleProxy *moduleProxy)
 	{
 	}
 	/** Called by a socket to inform this module that another
 	 *	module has been deleted OR has been no more accessible (due to
 	 *	some gateway disconnection).
 	 */
-	virtual void	onModuleDown(const TModuleProxyPtr &module)
+	virtual void	onModuleDown(IModuleProxy *moduleProxy)
 	{
 	}
 
-	virtual void	onProcessModuleMessage(const TModuleProxyPtr &senderModule, const TModuleMessagePtr &message)
+	virtual void	onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 	}
 

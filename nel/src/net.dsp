@@ -324,6 +324,14 @@ SOURCE=.\net\module_gateway.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\module_gateway_transport.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_local_gateway.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\module_manager.cpp
 # End Source File
 # Begin Source File

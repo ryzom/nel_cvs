@@ -6,6 +6,7 @@
 #include "nel/net/module.h"
 #include "nel/net/inet_address.h"
 #include "nel/net/module_socket.h"
+#include "nel/net/module_gateway.h"
 
 
 #include "src/cpptest.h"
@@ -35,18 +36,18 @@ public:
 	{
 	}
 
-	void				onModuleUp(const TModuleProxyPtr &module)
+	void				onModuleUp(IModuleProxy *moduleProxy)
 	{
 	}
 	/** Called by a socket to inform this module that another
 	 *	module has been deleted OR has been no more accessible (due to
 	 *	some gateway disconnection).
 	 */
-	void				onModuleDown(const TModuleProxyPtr &module)
+	void				onModuleDown(IModuleProxy *moduleProxy)
 	{
 	}
 
-	void				onProcessModuleMessage(const TModuleProxyPtr &senderModule, const TModuleMessagePtr &message)
+	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 	}
 
@@ -78,8 +79,416 @@ public:
 		TEST_ADD(CModuleTS::createLocalGateway);
 		TEST_ADD(CModuleTS::plugLocalGateway);
 		TEST_ADD(CModuleTS::moduleManagerCommands);
+		TEST_ADD(CModuleTS::gatewayTransportManagement);
+		TEST_ADD(CModuleTS::connectGateways);
+		TEST_ADD(CModuleTS::moduleDisclosure);
+		TEST_ADD(CModuleTS::moduleMessaging);
 	}
 
+	void moduleMessaging()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+		// create two gateway an connect them, plug the gateway on themselves and send a message
+		IModule *mods = mm.createModule("StandardGateway", "gws", "");
+		TEST_ASSERT(mods != NULL);
+		IModuleGateway *gws = dynamic_cast<IModuleGateway*>(mods);
+		TEST_ASSERT(gws != NULL);
+
+		// plug the module in itself before opening connection
+		IModuleSocket *socketGws = mm.getModuleSocket("gws");
+		TEST_ASSERT(socketGws != NULL);
+		mods->plugModule(socketGws);
+
+		// add transport for server mode
+		string cmd = "gws.transportAdd L3Server l3s";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+		cmd = "gws.transportCmd l3s(open port=6185)";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+
+		IModule *modc = mm.createModule("StandardGateway", "gwc", "");
+		TEST_ASSERT(modc != NULL);
+		IModuleGateway *gwc = dynamic_cast<IModuleGateway*>(modc);
+		TEST_ASSERT(gwc != NULL);
+		// add transport for client mode
+		cmd = "gwc.transportAdd L3Client l3c";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+		cmd = "gwc.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+
+		// plug the module in itself before opening connection
+		IModuleSocket *socketGwc = mm.getModuleSocket("gwc");
+		TEST_ASSERT(socketGwc != NULL);
+		modc->plugModule(socketGwc);
+
+		// update the gateways...
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		// send a message from gws to gwc using the proxy
+		// First, get the proxy for the client (must be the second one)
+		vector<IModuleProxy*>	proxiesS;
+		gws->getModuleProxyList(proxiesS);
+		TEST_ASSERT(proxiesS.size() == 2 && proxiesS[1]->getModuleName().find("gwc") != string::npos);
+		CMessage aMessage("GW_PING");
+		proxiesS[1]->sendModuleMessage(mods, aMessage);
+
+		// update the gateways...
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		// check that the ping has been received
+		TEST_ASSERT(gwc->getReceivedPingCount() == 1);
+
+		// send two crossing message simultaneously
+		vector<IModuleProxy*>	proxiesC;
+		gwc->getModuleProxyList(proxiesC);
+		TEST_ASSERT(proxiesC.size() == 2 && proxiesC[1]->getModuleName().find("gws") != string::npos);
+		proxiesS[1]->sendModuleMessage(mods, aMessage);
+		proxiesC[1]->sendModuleMessage(modc, aMessage);
+
+		// update the gateways...
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+		// check that the ping has been received
+		TEST_ASSERT(gwc->getReceivedPingCount() == 2);
+		TEST_ASSERT(gws->getReceivedPingCount() == 1);
+		
+
+		// send with ISocket
+		socketGws->sendModuleMessage(mods, proxiesS[1]->getModuleProxyId(), aMessage);
+		// update the gateways...
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+		// check that the ping has been received
+		TEST_ASSERT(gwc->getReceivedPingCount() == 3);
+		TEST_ASSERT(gws->getReceivedPingCount() == 1);
+
+		// cleanup modules
+		mm.deleteModule(mods);
+		TEST_ASSERT(mm.getLocalModule("gws") == NULL);
+		mm.deleteModule(modc);
+		TEST_ASSERT(mm.getLocalModule("gwc") == NULL);
+	}
+
+	void moduleDisclosure()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+		IModule *mods = mm.createModule("StandardGateway", "gws", "");
+		TEST_ASSERT(mods != NULL);
+		IModuleGateway *gws = dynamic_cast<IModuleGateway*>(mods);
+		TEST_ASSERT(gws != NULL);
+
+		TEST_ASSERT(gws->getProxyCount() == 0);
+
+		// plug the module in itself before opening connection
+		IModuleSocket *socketGws = mm.getModuleSocket("gws");
+		TEST_ASSERT(socketGws != NULL);
+		mods->plugModule(socketGws);
+
+		// now, there must be one proxy in the gateway
+		TEST_ASSERT(gws->getProxyCount() == 1);
+		vector<IModuleProxy*>	proxies;
+		gws->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 1);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() == NULL);
+		TEST_ASSERT(proxies[0]->getForeignModuleId() == mods->getModuleId());
+
+		// add transport for server mode
+		string cmd = "gws.transportAdd L3Server l3s";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+		cmd = "gws.transportCmd l3s(open port=6185)";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+
+		IModule *modc = mm.createModule("StandardGateway", "gwc", "");
+		TEST_ASSERT(modc != NULL);
+		IModuleGateway *gwc = dynamic_cast<IModuleGateway*>(modc);
+		TEST_ASSERT(gwc != NULL);
+		// add transport for client mode
+		cmd = "gwc.transportAdd L3Client l3c";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+		cmd = "gwc.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		// The server must have not changed
+		TEST_ASSERT(gws->getProxyCount() == 1);
+
+		// The client must have one proxy
+		TEST_ASSERT(gwc->getProxyCount() == 1);
+		proxies.clear();
+		gwc->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 1);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() != NULL);
+		TEST_ASSERT(proxies[0]->getModuleName().find("gws") == proxies[0]->getModuleName().size() - 3);
+
+		// plug the client module in itself after opening connection
+		IModuleSocket *socketGwc = mm.getModuleSocket("gwc");
+		TEST_ASSERT(socketGwc != NULL);
+		modc->plugModule(socketGwc);
+
+
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		// The server must have now the two modules
+		TEST_ASSERT(gws->getProxyCount() == 2);
+		proxies.clear();
+		gws->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 2);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() == NULL);
+		TEST_ASSERT(proxies[0]->getForeignModuleId() == mods->getModuleId());
+		TEST_ASSERT(proxies[1]->getGatewayRoute() != NULL);
+		TEST_ASSERT(proxies[1]->getModuleName().find("gwc") == proxies[1]->getModuleName().size() - 3);
+
+		// The client must have two module also
+		TEST_ASSERT(gwc->getProxyCount() == 2);
+		proxies.clear();
+		gwc->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 2);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() != NULL);
+		TEST_ASSERT(proxies[0]->getModuleName().find("gws") == proxies[1]->getModuleName().size() - 3);
+		TEST_ASSERT(proxies[1]->getGatewayRoute() == NULL);
+		TEST_ASSERT(proxies[1]->getForeignModuleId() == modc->getModuleId());
+
+
+		// unplug the client module in itself after opening connection
+		mods->unplugModule(socketGws);
+
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		// The server must have one module left
+		TEST_ASSERT(gws->getProxyCount() == 1);
+		proxies.clear();
+		gws->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 1);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() != NULL);
+		TEST_ASSERT(proxies[0]->getModuleName().find("gwc") == proxies[0]->getModuleName().size() - 3);
+
+		// The client must have one module left
+		TEST_ASSERT(gwc->getProxyCount() == 1);
+		proxies.clear();
+		gwc->getModuleProxyList(proxies);
+		TEST_ASSERT(proxies.size() == 1);
+		TEST_ASSERT(proxies[0]->getGatewayRoute() == NULL);
+		TEST_ASSERT(proxies[0]->getForeignModuleId() == modc->getModuleId());
+		
+		// Dump the module state
+		cmd = "gws.dump";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+		cmd = "gwc.dump";
+		TEST_ASSERT(cr.execute(cmd, InfoLog()));
+
+		// cleanup modules
+		mm.deleteModule(mods);
+		TEST_ASSERT(mm.getLocalModule("gws") == NULL);
+		mm.deleteModule(modc);
+		TEST_ASSERT(mm.getLocalModule("gwc") == NULL);
+	}
+
+	void connectGateways()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+
+		IModule *mods = mm.createModule("StandardGateway", "gws", "");
+		TEST_ASSERT(mods != NULL);
+		IModuleGateway *gws = dynamic_cast<IModuleGateway*>(mods);
+		TEST_ASSERT(gws != NULL);
+		// add transport for server mode
+		string cmd = "gws.transportAdd L3Server l3s";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gws.transportCmd l3s(open port=6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+			
+		IModule *modc1 = mm.createModule("StandardGateway", "gwc1", "");
+		TEST_ASSERT(modc1 != NULL);
+		IModuleGateway *gwc1 = dynamic_cast<IModuleGateway*>(modc1);
+		TEST_ASSERT(gwc1 != NULL);
+		// add transport for client mode
+		cmd = "gwc1.transportAdd L3Client l3c";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gwc1.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		for (uint i=0; i<3; ++i)
+		{
+			nlSleep(100);
+			mm.updateModules();
+			nlSleep(100);
+		}
+
+		TEST_ASSERT(gws->getRouteCount() == 1);
+		TEST_ASSERT(gwc1->getRouteCount() == 1);
+			
+		// do a second connect to the server for stress
+		// add transport for client mode
+		cmd = "gwc1.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// create third gateway
+		IModule *modc2 = mm.createModule("StandardGateway", "gwc2", "");
+		TEST_ASSERT(modc2 != NULL);
+		IModuleGateway *gwc2 = dynamic_cast<IModuleGateway*>(modc2);
+		TEST_ASSERT(gwc2 != NULL);
+		// add transport for client mode
+		cmd = "gwc2.transportAdd L3Client l3c";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gwc2.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// update the module to update the network callback client and server
+		for (uint i=0; i<10; ++i)
+		{
+			// give some time to the listen and receiver thread to do there jobs
+			nlSleep(100);
+			mm.updateModules();
+		}
+
+		TEST_ASSERT(gws->getRouteCount() == 3);
+		TEST_ASSERT(gwc1->getRouteCount() == 2);
+		TEST_ASSERT(gwc2->getRouteCount() == 1);
+
+		// dump the gateways state
+		cmd = "gws.dump";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gwc1.dump";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gwc2.dump";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// cleanup the modules
+		mm.deleteModule(mods);
+		TEST_ASSERT(mm.getLocalModule("gws") == NULL);
+		mm.deleteModule(modc1);
+		TEST_ASSERT(mm.getLocalModule("gwc1") == NULL);
+		mm.deleteModule(modc2);
+		TEST_ASSERT(mm.getLocalModule("gwc2") == NULL);
+	}
+
+	void gatewayTransportManagement()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+
+		// create a gateway module
+		IModule *mod = mm.createModule("StandardGateway", "gw", "");
+		TEST_ASSERT(mod != NULL);
+		IModuleGateway *gw = dynamic_cast<IModuleGateway*>(mod);
+		TEST_ASSERT(gw != NULL);
+
+		// Create a layer 3 server transport
+		// send a transport creation command
+		string cmd = "gw.transportAdd L3Server l3s";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		IGatewayTransport *transportL3s = gw->getGatewayTransport("l3s");
+		TEST_ASSERT(transportL3s != NULL);
+
+		// send a transport command
+		cmd = "gw.transportCmd l3s(open port=6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// Create a layer 3 client transport
+		// send a transport creation command
+		cmd = "gw.transportAdd L3Client l3c";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		IGatewayTransport *transportL3c = gw->getGatewayTransport("l3c");
+		TEST_ASSERT(transportL3c != NULL);
+
+		// send a transport command
+		cmd = "gw.transportCmd l3c(connect addr=localhost:6185)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// update the module to update the network callback client and server
+		for (uint i=0; i<3; ++i)
+		{
+			// give some time to the listen and receiver thread to do there jobs
+			nlSleep(100);
+			mm.updateModules();
+		}
+
+		TEST_ASSERT(transportL3s->getRouteCount() == 1);	
+		TEST_ASSERT(transportL3c->getRouteCount() == 1);
+		TEST_ASSERT(gw->getRouteCount() == 2);
+		
+		// dump the gateways state
+		cmd = "gw.dump";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		
+		// close all connections
+		cmd = "gw.transportCmd l3s(close)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		
+		cmd = "gw.transportCmd l3c(close connId=0)";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		// update the module to update the network callback client and server
+		for (uint i=0; i<3; ++i)
+		{
+			// give some time to the listen and receiver thread to do there jobs
+			nlSleep(100);
+			mm.updateModules();
+		}
+
+		TEST_ASSERT(transportL3s->getRouteCount() == 0);
+		TEST_ASSERT(transportL3c->getRouteCount() == 0);
+		TEST_ASSERT(gw->getRouteCount() == 0);
+
+		// Remove transports
+		cmd = "gw.transportRemove l3s";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+		cmd = "gw.transportRemove l3c";
+		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
+
+		TEST_ASSERT(gw->getGatewayTransport("l3c") == NULL);
+		TEST_ASSERT(gw->getGatewayTransport("l3s") == NULL);
+		TEST_ASSERT(gw->getTransportCount() == 0);
+
+		// update the module to update the network callback client and server
+		for (uint i=0; i<3; ++i)
+		{
+			// give some time to the listen and receiver thread to do there jobs
+			nlSleep(100);
+			mm.updateModules();
+		}
+
+		// cleanup the modules
+		mm.deleteModule(mod);
+		TEST_ASSERT(mm.getLocalModule("gw") == NULL);
+	}
 
 	void moduleManagerCommands()
 	{
@@ -231,7 +640,7 @@ public:
 
 	void testModuleInitInfoBadParsing()
 	{
-		TModuleInitInfo	mif;
+		TParsedCommandLine	mif;
 
 		string	paramString = " a=1   b=2   ( b=1) "; 
 		TEST_ASSERT(!mif.parseParamList(paramString));
@@ -257,7 +666,7 @@ public:
 
 	void testModuleInitInfoQuering()
 	{
-		TModuleInitInfo	mif;
+		TParsedCommandLine	mif;
 
 		string	paramString = " a=1   b=2   sub   ( y=22 zzzz=12 subsub (g=\"bean in box\" z=2) ) "; 
 
@@ -277,7 +686,7 @@ public:
 
 	void testModuleInitInfoParsing()
 	{
-		TModuleInitInfo	mif;
+		TParsedCommandLine	mif;
 
 		string	paramString = "a"; 
 		TEST_ASSERT(mif.parseParamList(paramString));

@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway_transport.cpp,v 1.2 2005/08/10 09:06:09 distrib Exp $
+ * $Id: module_gateway_transport.cpp,v 1.3 2005/08/10 09:12:15 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -508,7 +508,7 @@ namespace NLNET
 				_RouteIds.push_back(route->CallbackClient.getSockId());
 			else
 			{
-				nlassert(_FreeRoutesIds.back() == NULL);
+				nlassert(_FreeRoutesIds.back() == 0);
 				_RouteIds[_FreeRoutesIds.back()] = route->CallbackClient.getSockId();
 				_FreeRoutesIds.pop_back();
 			}

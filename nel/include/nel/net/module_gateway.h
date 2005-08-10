@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_gateway.h,v 1.4 2005/08/10 09:06:33 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,7 @@ namespace NLNET
 		class EInvalidCommand : public NLMISC::Exception
 		{
 		public:
+			EInvalidCommand() {}
 			EInvalidCommand(const char *err) : Exception(err) {}
 		};
 
@@ -307,6 +308,9 @@ namespace NLNET
 			NextMessageType(CModuleMessageHeaderCodec::mt_invalid)
 		{
 		}
+
+		virtual ~CGatewayRoute() {}
+
 		/// Return the transport that hold this route
 		IGatewayTransport *getTransport() { return _Transport; };
 		/// Send a message via the route

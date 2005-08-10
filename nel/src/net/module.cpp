@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.5 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module.cpp,v 1.6 2005/08/10 09:06:09 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,8 +103,8 @@ namespace NLNET
 	//////////////////////////////////////
 
 	CModuleBase::CModuleBase()
-		: _ModuleId(INVALID_MODULE_ID),
-		_ModuleFactory(NULL)
+		: _ModuleFactory(NULL),
+		  _ModuleId(INVALID_MODULE_ID)
 	{
 	}
 	CModuleBase::~CModuleBase()
@@ -325,9 +325,9 @@ namespace NLNET
 
 	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName)
 		: _ModuleProxyId(localModuleId),
-		_ModuleClassName(CStringMapper::map(moduleClassName)),
-		_FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
-		_ForeignModuleId(INVALID_MODULE_ID)
+		  _ForeignModuleId(INVALID_MODULE_ID),
+		  _ModuleClassName(CStringMapper::map(moduleClassName)),
+		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName))
 	{
 	}
 

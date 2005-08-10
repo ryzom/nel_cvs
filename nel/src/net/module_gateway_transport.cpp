@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway_transport.cpp,v 1.1 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.2 2005/08/10 09:06:09 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NLNET
 		friend class CL3ServerRoute;
 	public:
 		/// Invalid command
-		class EInvalidCommand : public NLMISC::Exception
+		class EInvalidCommand : public IGatewayTransport::EInvalidCommand
 		{
 		};
 
@@ -358,7 +358,7 @@ namespace NLNET
 		friend class CL3ClientRoute;
 	public:
 		/// Invalid command
-		class EInvalidCommand : public NLMISC::Exception
+		class EInvalidCommand : public IGatewayTransport::EInvalidCommand
 		{
 		};
 

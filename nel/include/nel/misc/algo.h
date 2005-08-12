@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.15 2005/07/18 08:57:23 vizerie Exp $
+ * $Id: algo.h,v 1.16 2005/08/12 15:19:01 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -34,6 +34,16 @@
 
 namespace NLMISC 
 {
+
+
+// ***************************************************************************
+// blend between 2 values
+// NB: like 'toString' or 'swap', this function is intended to be specialised for other types (CRGBA ...)
+template <class T, class U>
+T blend(const T &v0, const T &v1, const U &blendFactor)
+{
+	return blendFactor * v1 + ((U) 1 - blendFactor) * v0;
+}
 
 // ***************************************************************************
 /** bilinear of 4 values

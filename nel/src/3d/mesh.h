@@ -1,7 +1,7 @@
 /** \file mesh.h
  * TODO: File description
  *
- * $Id: mesh.h,v 1.50 2005/07/21 12:57:17 berenguier Exp $
+ * $Id: mesh.h,v 1.51 2005/08/19 15:33:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -562,7 +562,7 @@ private:
 			(void)f.serialVersion(0);
 
 			// Code written for IDriver::MaxModelMatrix==16 matrixs.
-			nlassert(IDriver::MaxModelMatrix == 16);			
+			nlctassert(IDriver::MaxModelMatrix == 16);			
 			for(uint i=0;i<IDriver::MaxModelMatrix;i++)
 			{				
 				f.serial(MatrixId[i]);

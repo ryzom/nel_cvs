@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * TODO: File description
  *
- * $Id: system_info.cpp,v 1.32 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: system_info.cpp,v 1.33 2005/08/19 15:34:32 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ string CSystemInfo::getOS()
 		else  // Test for specific product on Windows NT 4.0 SP5 and earlier
 		{
 			HKEY hKey;
-			char szProductType[BUFSIZE];
+			TCHAR szProductType[BUFSIZE];
 			DWORD dwBufLen=BUFSIZE;
 			LONG lRet;
 
@@ -154,11 +154,11 @@ string CSystemInfo::getOS()
 
 			RegCloseKey( hKey );
 
-			if ( lstrcmpi( "WINNT", szProductType) == 0 )
+			if ( lstrcmpi( _T("WINNT"), szProductType) == 0 )
 				OSString += "Workstation ";
-			if ( lstrcmpi( "LANMANNT", szProductType) == 0 )
+			if ( lstrcmpi( _T("LANMANNT"), szProductType) == 0 )
 				OSString += "Server ";
-			if ( lstrcmpi( "SERVERNT", szProductType) == 0 )
+			if ( lstrcmpi( _T("SERVERNT"), szProductType) == 0 )
 				OSString += "Advanced Server ";
          }
 
@@ -387,7 +387,7 @@ string CSystemInfo::getProc ()
 	{
 		// get processor name
 		valueSize = 1024;
-		result = ::RegQueryValueEx (hKey, _T("ProcessorNameString"), NULL, NULL, (LPBYTE)&value, &valueSize);
+		result = ::RegQueryValueEx (hKey, _T("ProcessorNameString"), NULL, NULL, (LPBYTE)value, &valueSize);
 		if (result == ERROR_SUCCESS)
 			ProcString = value;
 		else
@@ -397,7 +397,7 @@ string CSystemInfo::getProc ()
 
 		// get processor identifier
 		valueSize = 1024;
-		result = ::RegQueryValueEx (hKey, _T("Identifier"), NULL, NULL, (LPBYTE)&value, &valueSize);
+		result = ::RegQueryValueEx (hKey, _T("Identifier"), NULL, NULL, (LPBYTE)value, &valueSize);
 		if (result == ERROR_SUCCESS)
 			ProcString += value;
 		else
@@ -407,7 +407,7 @@ string CSystemInfo::getProc ()
 
 		// get processor vendor
 		valueSize = 1024;
-		result = ::RegQueryValueEx (hKey, _T("VendorIdentifier"), NULL, NULL, (LPBYTE)&value, &valueSize);
+		result = ::RegQueryValueEx (hKey, _T("VendorIdentifier"), NULL, NULL, (LPBYTE)value, &valueSize);
 		if (result == ERROR_SUCCESS)
 			ProcString += value;
 		else
@@ -416,7 +416,7 @@ string CSystemInfo::getProc ()
 		ProcString += " / ";
 		
 		// get processor frequence
-		result = ::RegQueryValueEx (hKey, _T("~MHz"), NULL, NULL, (LPBYTE)&value, &valueSize);
+		result = ::RegQueryValueEx (hKey, _T("~MHz"), NULL, NULL, (LPBYTE)value, &valueSize);
 		if (result == ERROR_SUCCESS)
 		{
 			ProcString += itoa (*(int *)value, value, 10);

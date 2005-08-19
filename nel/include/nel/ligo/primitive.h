@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.42 2005/06/23 16:27:15 boucher Exp $
+ * $Id: primitive.h,v 1.43 2005/08/19 15:28:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -555,7 +555,7 @@ public:
 	/// Returns the barycenter of the zone (warning, it may be outside of the zone if it is not convex). Returns CVector::Null if there is no vertex.
 	NLMISC::CVector		getBarycentre() const;
 
-	/// Returns the smallest axis-aligned box containing the zone
+	/// Returns the smallest axis-aligned box containing the zone (z is always set to 0)
 	void				getAABox( NLMISC::CVector& cornerMin, NLMISC::CVector& cornerMax ) const;
 
 	/// Return the area of the axis-aligned box containing the zone

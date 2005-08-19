@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.h,v 1.1 2005/06/23 16:26:19 boucher Exp $
+ * $Id: app_context.h,v 1.2 2005/08/19 15:28:43 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,7 +101,7 @@ namespace NLMISC
 	};
 
 	/** This class implement the context interface for the application module
-	 *	That mean that this class will really old the data.
+	 *	That mean that this class will really hold the data.
 	 *	\author Boris 'SoniX' Boucher
 	 *  \date 2005
 	 */

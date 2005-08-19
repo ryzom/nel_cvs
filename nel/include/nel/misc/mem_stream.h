@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.42 2005/03/21 15:58:24 legros Exp $
+ * $Id: mem_stream.h,v 1.43 2005/08/19 15:30:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -538,7 +538,7 @@ protected:
 // Input
 #define readnumber(dest,thetype,digits,convfunc) \
 	char number_as_cstring [digits+1]; \
-	uint realdigits = serialSeparatedBufferIn( (uint8*)&number_as_cstring, digits ); \
+	uint realdigits = serialSeparatedBufferIn( (uint8*)number_as_cstring, digits ); \
 	number_as_cstring[realdigits] = '\0'; \
 	dest = (thetype)convfunc( number_as_cstring );
 
@@ -546,7 +546,7 @@ protected:
 #define writenumber(src,format,digits) \
 	char number_as_cstring [digits+1]; \
 	sprintf( number_as_cstring, format, src ); \
-	serialSeparatedBufferOut( (uint8*)&number_as_cstring, strlen(number_as_cstring) );
+	serialSeparatedBufferOut( (uint8*)number_as_cstring, strlen(number_as_cstring) );
 
 /*
  * atoihex
@@ -818,7 +818,7 @@ inline	void		CMemStream::serial(std::string &b)
 {
 	if ( _StringMode )
 	{
-		sint32	len=0;
+		uint32	len=0;
 		// Read/Write the length.
 		if(isReading())
 		{
@@ -838,7 +838,7 @@ inline	void		CMemStream::serial(std::string &b)
 		}
 		
 		// Read/Write the string.
-		for(sint i=0;i<len;i++)
+		for(uint i=0;i!=len;++i)
 			serialBuffer( (uint8*)&(b[i]), sizeof(b[i]) );
 
 		char sep = SEPARATOR;
@@ -848,9 +848,10 @@ inline	void		CMemStream::serial(std::string &b)
 	{
 		if (isReading())
 		{
-			if (sizeof(char) == 1 && !isXML())
+			nlctassert(sizeof(char) == 1);
+			if (!isXML())
 			{			
-				sint32	len=0;			
+				uint32	len=0;			
 				fastSerial(len);
 				checkStreamSize((uint)len);
 				/*
@@ -882,7 +883,7 @@ inline	void		CMemStream::serial(ucstring &b)
 {
 	if ( _StringMode )
 	{
-		sint32	len=0;
+		uint32	len=0;
 		// Read/Write the length.
 		if(isReading())
 		{
@@ -902,7 +903,7 @@ inline	void		CMemStream::serial(ucstring &b)
 			serial(len);
 		}
 		// Read/Write the string.
-		for(sint i=0;i<len;i++)
+		for(uint i=0;i!=len;++i)
 			serialBuffer( (uint8*)&b[i], sizeof(b[i]) );
 
 		char sep = SEPARATOR;
@@ -918,7 +919,7 @@ inline	void		CMemStream::serial(ucstring &b)
 // Specialisation of serialCont() for vector<bool>
 /*inline	void	CMemStream::serialCont(std::vector<bool> &cont)
 {
-	sint32	len=0;
+	uint32	len=0;
 	if(isReading())
 	{
 		serial(len);
@@ -926,7 +927,7 @@ inline	void		CMemStream::serial(ucstring &b)
 		contReset(cont);
 		cont.reserve(len);
 
-		for(sint i=0;i<len;i++)
+		for(uint i=0;i!=len;++i)
 		{
 			bool	v;
 			serial(v);
@@ -939,7 +940,7 @@ inline	void		CMemStream::serial(ucstring &b)
 		serial(len);
 
 		std::vector<bool>::iterator it= cont.begin();
-		for(sint i=0;i<len;i++, it++)
+		for(uint i=0;i!=len;++i, ++it)
 		{
 			bool b = *it;
 			serial( b );

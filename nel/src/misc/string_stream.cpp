@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.10 2004/05/14 10:13:12 cado Exp $
+ * $Id: string_stream.cpp,v 1.11 2005/08/19 15:30:04 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -293,7 +293,7 @@ void		CStringStream::serial(char &b)
 // ======================================================================================================
 void		CStringStream::serial(std::string &b) 
 {
-	sint32	len=0;
+	uint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{
@@ -311,7 +311,7 @@ void		CStringStream::serial(std::string &b)
 	}
 	
 	// Read/Write the string.
-	for(sint i=0;i<len;i++)
+	for(uint i=0;i!=len;++i)
 		serialBuffer( (uint8*)&(b[i]), sizeof(b[i]) );
 
 	char sep = SEPARATOR;
@@ -322,7 +322,7 @@ void		CStringStream::serial(std::string &b)
 // ======================================================================================================
 void		CStringStream::serial(ucstring &b) 
 {
-	sint32	len=0;
+	uint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{
@@ -339,7 +339,7 @@ void		CStringStream::serial(ucstring &b)
 		serial(len);
 	}
 	// Read/Write the string.
-	for(sint i=0;i<len;i++)
+	for(uint i=0;i!=len;++i)
 		serialBuffer( (uint8*)&b[i], sizeof( sizeof(b[i]) ) );
 
 	char sep = SEPARATOR;
@@ -350,7 +350,7 @@ void		CStringStream::serial(ucstring &b)
 // Specialisation of serialCont() for vector<bool>
 void	CStringStream::serialCont(std::vector<bool> &cont)
 {
-	sint32	len=0;
+	uint32	len=0;
 	if(isReading())
 	{
 		serial(len);
@@ -358,7 +358,7 @@ void	CStringStream::serialCont(std::vector<bool> &cont)
 		contReset(cont);
 		cont.reserve(len);
 
-		for(sint i=0;i<len;i++)
+		for(uint i=0;i!=len;++i)
 		{
 			bool	v;
 			serial(v);
@@ -371,7 +371,7 @@ void	CStringStream::serialCont(std::vector<bool> &cont)
 		serial(len);
 
 		std::vector<bool>::iterator it= cont.begin();
-		for(sint i=0;i<len;i++, it++)
+		for(uint i=0;i!=len;++i, ++it)
 		{
 			bool b = *it;
 			serial( b );

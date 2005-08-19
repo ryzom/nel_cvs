@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.38 2005/07/07 09:23:39 besson Exp $
+ * $Id: bit_mem_stream.cpp,v 1.39 2005/08/19 15:30:04 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -490,7 +490,7 @@ void	CBitMemStream::serial(std::string &b)
 	if ( isReading() )
 	{
 		serial( len );
-		if (len > length()-getPos())
+		if (len > length()-(uint32)getPos())
 			throw NLMISC::EInvalidDataStream( "BMS: Trying to read a string of %u bytes, past stream size", len );
 		b.resize( len );
 	}
@@ -526,12 +526,12 @@ inline	void		CBitMemStream::serial(ucstring &b)
 
 	if ( _StringMode )
 	{
-		sint32	len=0;
+		uint32	len=0;
 		// Read/Write the length.
 		if(isReading())
 		{
 			serial(len);
-			if (len > sint32(length())-sint32(getPos()))
+			if (len > (uint32)(sint32(length())-sint32(getPos())))
 				throw NLMISC::EInvalidDataStream( "BMS: Trying to read an ucstring of %u bytes, past stream size", len );
 			b.resize(len);
 		}
@@ -543,7 +543,7 @@ inline	void		CBitMemStream::serial(ucstring &b)
 			serial(len);
 		}
 		// Read/Write the string.
-		for(sint i=0;i<len;i++)
+		for(uint i=0;i!=len;++i)
 			serialBuffer( (uint8*)&b[i], sizeof(b[i]) );
 
 		char sep = SEPARATOR;

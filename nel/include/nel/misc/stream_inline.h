@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.29 2005/02/22 10:14:12 besson Exp $
+ * $Id: stream_inline.h,v 1.30 2005/08/19 15:30:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,7 +276,7 @@ inline	void		IStream::serial(char &b)
 // ======================================================================================================
 inline	void		IStream::serial(std::string &b) 
 {
-	sint32	len=0;
+	uint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{
@@ -309,7 +309,7 @@ inline	void		IStream::serial(std::string &b)
 // ======================================================================================================
 inline	void		IStream::serial(ucstring &b) 
 {
-	sint32	len=0;
+	uint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{
@@ -328,7 +328,7 @@ inline	void		IStream::serial(ucstring &b)
 		serial(len);
 	}
 	// Read/Write the string.
-	for(sint i=0;i<len;i++)
+	for(uint i=0;i!=len;++i)
 		serial(b[i]);
 }
 

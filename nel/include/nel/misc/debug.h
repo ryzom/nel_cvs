@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.83 2005/08/19 08:53:28 cado Exp $
+ * $Id: debug.h,v 1.84 2005/08/19 15:29:25 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,11 @@
 namespace NLMISC
 {	
 
+#ifdef ASSERT_THROW_EXCEPTION
+#define ASSERT_THROW_EXCEPTION_CODE(exp) if(!(exp)) throw NLMISC::Exception(#exp" returns false");
+#else
+#define ASSERT_THROW_EXCEPTION_CODE(exp)
+#endif
 
 /** Imposter class to wrap all global access to the nel context for backward compatibility
  *	Yoyo note: This was a template before, hence with inline. 
@@ -415,6 +420,7 @@ if(false)
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
+	ASSERT_THROW_EXCEPTION_CODE(exp) \
 }
 
 #define nlassertonce(exp) \
@@ -436,6 +442,7 @@ if(false)
 		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
 	} \
+	ASSERT_THROW_EXCEPTION_CODE(exp) \
 }
 
 #define nlverify(exp) \
@@ -445,6 +452,7 @@ if(false)
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
+	ASSERT_THROW_EXCEPTION_CODE(exp) \
 }
 
 #define nlverifyonce(exp) \
@@ -466,6 +474,7 @@ if(false)
 		if(NLMISC::_assertex_stop_1(ignoreNextTime)) \
 			NLMISC_BREAKPOINT; \
 	} \
+	ASSERT_THROW_EXCEPTION_CODE(exp) \
 }
 #endif // NL_OS_UNIX
 
@@ -479,6 +488,7 @@ if(false)
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, NULL)) \
 			NLMISC_BREAKPOINT; \
 	} \
+	ASSERT_THROW_EXCEPTION_CODE(false) \
 }
 
 #define nlstoponce \

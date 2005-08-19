@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.72 2005/04/07 16:20:28 cado Exp $
+ * $Id: common.cpp,v 1.73 2005/08/19 15:29:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -76,6 +76,12 @@ using namespace std;
 #  pragma message("Using **** FINAL_VERSION ****")
 #else
 #  pragma message("Not using FINAL_VERSION")
+#endif
+
+#ifdef ASSERT_THROW_EXCEPTION
+#  pragma message("nlassert throws an exception")
+#else
+#  pragma message("nlassert doesn't throw an exception")
 #endif
 
 #endif // NL_OS_WINDOWS
@@ -222,17 +228,17 @@ sint64 atoiInt64 (const char *ident, sint64 base)
 
 	while (*ident != '\0')
 	{
-		if (isdigit(*ident))
+		if (isdigit((unsigned char)*ident))
 		{
 			number *= base;
 			number += (*ident)-'0';
 		}
-		else if (base > 10 && islower(*ident))
+		else if (base > 10 && islower((unsigned char)*ident))
 		{
 			number *= base;
 			number += (*ident)-'a'+10;
 		}
-		else if (base > 10 && isupper(*ident))
+		else if (base > 10 && isupper((unsigned char)*ident))
 		{
 			number *= base;
 			number += (*ident)-'A'+10;
@@ -646,6 +652,8 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 	if (res)
 	{
 		nldebug("LAUNCH: Successful launch '%s' with arg '%s'", programName.c_str(), arguments.c_str());
+		CloseHandle( pi.hProcess );
+		CloseHandle( pi.hThread );
 		return true;
 	}
 	else
@@ -654,6 +662,8 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
 		nlwarning("LAUNCH: Failed launched '%s' with arg '%s' err %d: '%s'", programName.c_str(), arguments.c_str(), GetLastError (), lpMsgBuf);
 		LocalFree(lpMsgBuf);
+		CloseHandle( pi.hProcess );
+		CloseHandle( pi.hThread );
 	}
 
 #elif defined(NL_OS_UNIX)

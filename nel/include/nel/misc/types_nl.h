@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.53 2005/06/28 17:14:25 cado Exp $
+ * $Id: types_nl.h,v 1.54 2005/08/19 15:31:00 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -58,7 +58,9 @@
 #	define NL_OS_WINDOWS
 #	define NL_LITTLE_ENDIAN
 #	define NL_CPU_INTEL
-#	if _MSC_VER >= 1310
+#	if _MSC_VER >= 1400
+#		define NL_COMP_VC8
+#	elif _MSC_VER >= 1310
 #		define NL_COMP_VC71
 #	elif _MSC_VER >= 1300
 #		define NL_COMP_VC7
@@ -116,6 +118,7 @@
 #	pragma warning (disable : 4290)			// throw() not implemented warning
 #	pragma warning (disable : 4250)			// inherits via dominance (informational warning).
 #	pragma warning (disable : 4390)			// don't warn in empty block "if(exp) ;"
+#	pragma warning (disable : 4996)			// don't warn for deprecated function (sprintf, sscanf in VS8)
 #endif // NL_OS_WINDOWS
 
 
@@ -210,9 +213,10 @@
 
 /**
  * \def NL_I64
- * Used to display a int64 in a platform independant way with printf.
+ * Used to display a int64 in a platform independant way with printf like functions.
  \code
- printf("the value is: %"NL_I64"d\n"n, int64value);
+ sint64 myint64 = SINT64_CONSTANT(0x123456781234);
+ printf("This is a 64 bits int: %"NL_I64"u", myint64);
  \endcode
  */
 
@@ -227,11 +231,10 @@ typedef	unsigned	__int32		uint32;
 typedef	signed		__int64		sint64;
 typedef	unsigned	__int64		uint64;
 
-typedef			int			sint;			// at least 32bits (depend of processor)
+typedef				int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
-#define	NL_I64	\
-		"I64"
+#define	NL_I64 "I64"
 
 #elif defined (NL_OS_UNIX)
 
@@ -262,23 +265,28 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 typedef	uint16	ucchar;
 
 
-// to define a 64bits constant
+// To define a 64bits constant; ie: UINT64_CONSTANT(0x123456781234)
 #ifdef NL_OS_WINDOWS
-#  define INT64_CONSTANT(c)  (c) 
-#  define UINT64_CONSTANT(c)  (c) 
-#  define SINT64_CONSTANT(c)  (c) 
-#else // NL_OS_WINDOWS
-#  define INT64_CONSTANT(c)  (c##LL)
-#  define SINT64_CONSTANT(c)  (c##LL)
-#  define UINT64_CONSTANT(c)  (c##ULL)
-#endif // NL_OS_WINDOWS
+#  ifdef NL_COMP_VC8
+#    define INT64_CONSTANT(c)	(c##LL)
+#    define SINT64_CONSTANT(c)	(c##LL)
+#    define UINT64_CONSTANT(c)	(c##LL)
+#  else
+#    define INT64_CONSTANT(c)	(c)
+#    define SINT64_CONSTANT(c)	(c)
+#    define UINT64_CONSTANT(c)	(c)
+#  endif
+#else
+#  define INT64_CONSTANT(c)		(c##LL)
+#  define SINT64_CONSTANT(c)	(c##LL)
+#  define UINT64_CONSTANT(c)	(c##ULL)
+#endif
 
-#ifdef NL_OS_WINDOWS
-#  ifndef NL_EXTENDED_FOR_SCOPE
-#    define for if(false) {} else for
-#  endif // NL_EXTENDED_FOR_SCOPE
-#endif // NL_OS_WINDOWS
-
+// Fake "for" to be conform with ANSI "for scope" on Windows compiler older than Visual Studio 8
+// On Visual Studio 8, the for is conform with ANSI, no need to define this macro in this case
+#if defined(NL_OS_WINDOWS) && !defined(NL_EXTENDED_FOR_SCOPE) && !defined(NL_COMP_VC8)
+#  define for if(false) {} else for
+#endif
 
 /**
  * Force the use of NeL memory manager

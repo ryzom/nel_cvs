@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.111 2005/08/09 19:06:45 boucher Exp $
+ * $Id: debug.cpp,v 1.112 2005/08/19 15:31:00 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -507,7 +507,7 @@ public:
 			case STATUS_SEGMENT_NOTIFICATION         : shortExc="Segment Notification"; longExc=""; break;
 			case STATUS_FLOAT_MULTIPLE_FAULTS        : shortExc="Float Multiple Faults"; longExc=""; break;
 			case STATUS_FLOAT_MULTIPLE_TRAPS         : shortExc="Float Multiple Traps"; longExc=""; break;
-#if !defined(NL_COMP_VC7) && !defined(NL_COMP_VC71)
+#ifdef NL_COMP_VC6
 			case STATUS_ILLEGAL_VLM_REFERENCE        : shortExc="Illegal VLM Reference"; longExc=""; break;
 #endif
 			case 0xE06D7363                          : shortExc="Microsoft C++ Exception"; longExc="Microsoft C++ Exception"; break;	// cpp exception
@@ -562,8 +562,8 @@ public:
 	// display the callstack
 	void addStackAndLogToReason (sint skipNFirst = 0)
 	{
-		// ace hack
-/*		skipNFirst = 0;
+/*		// ace hack
+		skipNFirst = 0;
 		
 		DWORD symOptions = SymGetOptions();
 		symOptions |= SYMOPT_LOAD_LINES;
@@ -601,9 +601,8 @@ public:
 				_Reason += srcInfo + ": " + symInfo + "\n";
 			}
 		}
-		nlverify (SymCleanup(getProcessHandle()) == TRUE);
+		SymCleanup(getProcessHandle());
 */
-		
 		_Reason += "-------------------------------\n";
 		_Reason += "\n";
 		if(DefaultMemDisplayer)
@@ -688,7 +687,6 @@ public:
 		}
 		else
 		{
-			HRESULT hr = GetLastError();
 			IMAGEHLP_MODULE module;
 			::ZeroMemory (&module, sizeof(module));
 			module.SizeOfStruct = sizeof(module);
@@ -699,7 +697,6 @@ public:
 			}
 			else
 			{
-				HRESULT hr = GetLastError ();
 				str = "<NoModule>";
 			}
 			str += toString("!0x%X", addr);
@@ -715,7 +712,6 @@ public:
 		}
 		else
 		{*/
-			HRESULT hr = GetLastError();
 			IMAGEHLP_MODULE module;
 			::ZeroMemory (&module, sizeof(module));
 			module.SizeOfStruct = sizeof(module);
@@ -726,7 +722,6 @@ public:
 			}
 			else
 			{
-				HRESULT hr = GetLastError ();
 				str = "<NoModule>";
 			}
 			char tmp[32];
@@ -814,7 +809,7 @@ public:
 
 		string parse = str;
 		str = "";
-		uint pos = 0;
+		uint pos2 = 0;
 		sint stop = 0;
 
 		string type;
@@ -842,7 +837,7 @@ public:
 
 				if (stop==0 && (parse[i] == ',' || parse[i] == ')'))
 				{
-					ULONG *addr = (ULONG*)(stackAddr) + 2 + pos++;
+					ULONG *addr = (ULONG*)(stackAddr) + 2 + pos2++;
 
 					string displayType = type;
 					cleanType (type, displayType);
@@ -877,9 +872,9 @@ public:
 							{
 								uint pos = 0;
 								tmp[pos++] = '\"';
-								for (uint i = 0; i < 32; i++)
+								for (uint j = 0; j < 32; j++)
 								{
-									char c = ((char *)*addr)[i];
+									char c = ((char *)*addr)[j];
 									if (c == '\0')
 										break;
 									else if (c == '\n')
@@ -970,8 +965,8 @@ static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)
 	fclose (file);
 	if (pexp->ExceptionRecord->ExceptionCode == EXCEPTION_BREAKPOINT)
 	{
-		FILE *file = fopen ("breakpointed", "wb");
-		fclose (file);
+		FILE *file2 = fopen ("breakpointed", "wb");
+		fclose (file2);
 		return;
 	}
 #if FINAL_VERSION
@@ -1190,11 +1185,11 @@ std::string CInstanceCounterManager::displayCounters() const
 
 	{
 		// gather counter informations
-		std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
-		for (; first != last; ++first)
+		std::set<CInstanceCounterLocalManager*>::const_iterator first2(_InstanceCounterMgrs.begin()), last2(_InstanceCounterMgrs.end());
+		for (; first2 != last2; ++first2)
 		{
 			// iterate over managers
-			const CInstanceCounterLocalManager *mgr = *first;
+			const CInstanceCounterLocalManager *mgr = *first2;
 			{
 				std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
 				for (; first != last; ++first)
@@ -1238,11 +1233,11 @@ std::string CInstanceCounterManager::displayCounters() const
 
 void CInstanceCounterManager::resetDeltaCounter()
 {
-	std::set<CInstanceCounterLocalManager*>::iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
-	for (; first != last; ++first)
+	std::set<CInstanceCounterLocalManager*>::iterator first2(_InstanceCounterMgrs.begin()), last2(_InstanceCounterMgrs.end());
+	for (; first2 != last2; ++first2)
 	{
 		// iterate over managers
-		CInstanceCounterLocalManager *mgr = *first;
+		CInstanceCounterLocalManager *mgr = *first2;
 		{
 			std::set<TInstanceCounterData*>::iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
 			for (; first != last; ++first)
@@ -1258,11 +1253,11 @@ void CInstanceCounterManager::resetDeltaCounter()
 uint32 CInstanceCounterManager::getInstanceCounter(const std::string &className) const
 {
 	uint32 result = 0;
-	std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
-	for (; first != last; ++first)
+	std::set<CInstanceCounterLocalManager*>::const_iterator first2(_InstanceCounterMgrs.begin()), last2(_InstanceCounterMgrs.end());
+	for (; first2 != last2; ++first2)
 	{
 		// iterate over managers
-		const CInstanceCounterLocalManager *mgr = *first;
+		const CInstanceCounterLocalManager *mgr = *first2;
 		{
 			std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
 			for (; first != last; ++first)
@@ -1283,11 +1278,11 @@ uint32 CInstanceCounterManager::getInstanceCounter(const std::string &className)
 sint32 CInstanceCounterManager::getInstanceCounterDelta(const std::string &className) const
 {
 	sint32 result = 0;
-	std::set<CInstanceCounterLocalManager*>::const_iterator first(_InstanceCounterMgrs.begin()), last(_InstanceCounterMgrs.end());
-	for (; first != last; ++first)
+	std::set<CInstanceCounterLocalManager*>::const_iterator first2(_InstanceCounterMgrs.begin()), last2(_InstanceCounterMgrs.end());
+	for (; first2 != last2; ++first2)
 	{
 		// iterate over managers
-		const CInstanceCounterLocalManager *mgr = *first;
+		const CInstanceCounterLocalManager *mgr = *first2;
 		{
 			std::set<TInstanceCounterData*>::const_iterator first(mgr->_InstanceCounters.begin()), last(mgr->_InstanceCounters.end());
 			for (; first != last; ++first)
@@ -1315,17 +1310,6 @@ void CInstanceCounterLocalManager::unregisterInstanceCounter(TInstanceCounterDat
 		releaseInstance();
 	}
 }
-
-
-
-/** Compile time checking */
-class CFoo
-{
-//	NL_INSTANCE_COUNTER_DECL(CFoo);
-
-};
-
-//NL_INSTANCE_COUNTER_IMPL(CFoo);
 
 
 //
@@ -1367,7 +1351,6 @@ NLMISC_CATEGORISED_COMMAND(nel, resetInstanceCounterDelta, "reset the delta valu
 	return true;
 }
 
-
 NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the log in memory", "[<NbLines>]")
 {
 	uint nbLines;
@@ -1393,7 +1376,6 @@ NLMISC_CATEGORISED_COMMAND(nel, displayMemlog, "displays the last N line of the 
 
 	return true;
 }
-
 
 NLMISC_CATEGORISED_COMMAND(nel, resetFilters, "disable all filters on Nel loggers", "[debug|info|warning|error|assert]")
 {

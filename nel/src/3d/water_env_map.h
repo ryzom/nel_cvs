@@ -1,6 +1,6 @@
 /** \file water_env_map.h
  *
- * $Id: water_env_map.h,v 1.3 2005/02/22 10:19:13 besson Exp $
+ * $Id: water_env_map.h,v 1.4 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -98,11 +98,5 @@ private:
 };
 
 } // NL3D
-
-
-
-
-
-
 
 #endif

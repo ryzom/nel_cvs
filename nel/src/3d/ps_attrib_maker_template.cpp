@@ -1,6 +1,6 @@
 /** \file ps_attrib_maker_template.cpp
  *
- * $Id: ps_attrib_maker_template.cpp,v 1.3 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_attrib_maker_template.cpp,v 1.4 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -104,8 +104,5 @@ void computeGradient(const NLMISC::CRGBA *valueTab, uint32 numValues, uint32 nbS
 	}
 	*dest = valueTab[numValues - 1];
 }
-
-
-
 
 }

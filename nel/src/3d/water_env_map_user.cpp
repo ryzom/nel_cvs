@@ -1,6 +1,6 @@
 /** \file water_env_map_user.cpp
  *
- * $Id: water_env_map_user.cpp,v 1.2 2005/01/20 11:13:37 berenguier Exp $
+ * $Id: water_env_map_user.cpp,v 1.3 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -122,6 +122,4 @@ void CWaterEnvMapUser::invalidate()
 	EnvMap.invalidate();
 }
 
-
-	
 } // NL3D

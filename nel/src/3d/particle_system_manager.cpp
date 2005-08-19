@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * TODO: File description
  *
- * $Id: particle_system_manager.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system_manager.cpp,v 1.21 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -290,27 +290,4 @@ void CParticleSystemManager::reactivateSoundForAllManagers()
 	}
 }
 
-
-
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

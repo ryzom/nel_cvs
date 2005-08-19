@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.cpp
  * TODO: File description
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.17 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -370,5 +370,3 @@ void PSRegisterPlaneBasisAttribs()
 }
 
 } // NL3D
-
-

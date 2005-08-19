@@ -1,7 +1,7 @@
 /** \file ps_register_color_attribs.h
  * 
  *
- * $Id: ps_register_color_attribs.h,v 1.2 2002/02/20 11:17:35 vizerie Exp $
+ * $Id: ps_register_color_attribs.h,v 1.3 2005/08/19 15:32:13 cado Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -35,4 +35,3 @@ namespace NL3D
 } // NL3D
 
 #endif
-

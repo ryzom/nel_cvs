@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * TODO: File description
  *
- * $Id: ps_emitter.cpp,v 1.64 2005/02/22 10:19:09 besson Exp $
+ * $Id: ps_emitter.cpp,v 1.65 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2927,4 +2927,3 @@ std::string toString(NL3D::CPSEmitter::TEmissionType type)
 
 
 } // NLMISC
-

@@ -1,7 +1,7 @@
 /** \file async_file_manager_3d.cpp
  * TODO: File description
  *
- * $Id: async_file_manager_3d.cpp,v 1.13 2005/06/23 16:35:39 boucher Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.14 2005/08/19 15:32:12 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -482,5 +482,3 @@ void CAsyncFileManager3D::CTextureLoad::getName (std::string &result) const
 }
 
 } // NL3D
-
-

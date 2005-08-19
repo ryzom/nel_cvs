@@ -1,7 +1,7 @@
 /** \file ps_register_int_attribs.h
  * 
  *
- * $Id: ps_register_int_attribs.h,v 1.2 2002/02/20 11:18:10 vizerie Exp $
+ * $Id: ps_register_int_attribs.h,v 1.3 2005/08/19 15:32:13 cado Exp $
  */
 /* Copyright, 2002 Nevrax Ltd.
  *
@@ -31,6 +31,4 @@ namespace NL3D
 	void PSRegisterIntAttribs();
 } // NL3D
 
-
 #endif
-

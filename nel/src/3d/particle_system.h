@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * TODO: File description
  *
- * $Id: particle_system.h,v 1.54 2005/02/22 10:19:10 besson Exp $
+ * $Id: particle_system.h,v 1.55 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1337,4 +1337,3 @@ class CPSCopyHelper
 #endif // NL_PARTICLE_SYSTEM_H
 
 /* End of particle_system.h */
-

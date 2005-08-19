@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.19 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_particle_basic.cpp,v 1.20 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1146,31 +1146,4 @@ bool CPSMultiTexturedParticle::isAlternateTextureUsed(IDriver &driver) const
 	return _ForceBasicCaps || (!driver.isTextureAddrModeSupported(CMaterial::OffsetTexture) && !driver.supportEMBM());
 }
 
-
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

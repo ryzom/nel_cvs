@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.22 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_particle_basic.h,v 1.23 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -868,24 +868,3 @@ inline void SetupModulatedStage(CMaterial &m, uint stage, CMaterial::TTexSource 
 #endif // NL_PS_PARTICLE_BASIC_H
 
 /* End of ps_particle_basic.h */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

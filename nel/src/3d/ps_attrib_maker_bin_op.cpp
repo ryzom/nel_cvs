@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.cpp
  * TODO: File description
  *
- * $Id: ps_attrib_maker_bin_op.cpp,v 1.8 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_attrib_maker_bin_op.cpp,v 1.9 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,4 @@ namespace NL3D
 			default: break;
 		}		
 	}
-
-
-
 } // NL3D

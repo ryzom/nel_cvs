@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.91 2005/07/20 18:04:22 cado Exp $
+ * $Id: particle_system.cpp,v 1.92 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2322,49 +2322,4 @@ void CParticleSystem::dumpHierarchy()
 	}
 }
 
-
-
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

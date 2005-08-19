@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.21 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_quad.cpp,v 1.22 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -758,27 +758,4 @@ void CPSQuad::updateTexWrapMode(IDriver &drv)
 	}
 }
 
-
-
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

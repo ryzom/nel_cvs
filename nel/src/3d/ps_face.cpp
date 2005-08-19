@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.16 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_face.cpp,v 1.17 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -424,24 +424,3 @@ void CPSFace::resize(uint32 size)
 }
 
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

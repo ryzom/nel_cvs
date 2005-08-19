@@ -1,6 +1,6 @@
 /** \file ps_attrib_maker_helper.cpp
  *
- * $Id: ps_attrib_maker_helper.cpp,v 1.2 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.cpp,v 1.3 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * TODO: File description
  *
- * $Id: ps_attrib.h,v 1.24 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_attrib.h,v 1.25 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -570,8 +570,6 @@ void CPSAttrib<T>::swap(CPSAttrib<T> &other)
 	_Tab.swap(other._Tab);
 }
 
-
-
 // here we give some definition for common types
 
 typedef CPSAttrib<NLMISC::CVector> TPSAttribVector;
@@ -581,12 +579,7 @@ typedef CPSAttrib<uint32>		   TPSAttribUInt;
 typedef CPSAttrib<uint8>		   TPSAttribUInt8;	
 typedef CPSAttrib<TAnimationTime>  TPSAttribTime;
 
-
-
-
-
 } // NL3D
-
 
 #endif // NL_PS_ATTRIB_H
 

@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * TODO: File description
  *
- * $Id: ps_util.cpp,v 1.46 2005/03/23 14:32:33 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.47 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -437,8 +437,5 @@ void CPSUtil::display3DQuad(IDriver &driver, const CVector &c1, const CVector &c
 	CDRU::drawLine(c3, c4, color, driver);
 	CDRU::drawLine(c4, c1, color, driver);
 }
-
-
-
 
 } // NL3D

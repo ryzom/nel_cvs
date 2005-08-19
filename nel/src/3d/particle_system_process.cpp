@@ -1,7 +1,7 @@
 /** \file particle_system_process.cpp
  * TODO: File description
  *
- * $Id: particle_system_process.cpp,v 1.10 2005/02/22 10:19:11 besson Exp $
+ * $Id: particle_system_process.cpp,v 1.11 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,6 +153,5 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialEnum(_MatrixMode);
 	}
 }
-
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_template.h,v 1.29 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.30 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -550,24 +550,3 @@ void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 #endif // NL_PS_ATTRIB_MAKER_TEMPLATE_H
 
 /* End of ps_attrib_maker_template.h */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

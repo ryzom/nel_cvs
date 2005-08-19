@@ -1,7 +1,7 @@
 /** \file ps_color.cpp
  * TODO: File description
  *
- * $Id: ps_color.cpp,v 1.13 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_color.cpp,v 1.14 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,24 +179,3 @@ void PSRegisterColorAttribs()
 }
 
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

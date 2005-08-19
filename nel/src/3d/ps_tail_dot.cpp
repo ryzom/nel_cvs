@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.19 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_tail_dot.cpp,v 1.20 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -604,8 +604,5 @@ void	CPSTailDot::setupGlobalColor()
 		}
 	}
 }
-
-
-
 
 } // NL3D

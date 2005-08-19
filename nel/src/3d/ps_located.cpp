@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * TODO: File description
  *
- * $Id: ps_located.cpp,v 1.80 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_located.cpp,v 1.81 2005/08/19 15:32:13 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -475,14 +475,14 @@ uint CPSLocated::getNumWantedTris() const
 }
 
 /*
-///***************************************************************************************
+/// ***************************************************************************************
 uint CPSLocated::querryMaxWantedNumFaces(void)
 {
 	return _MaxNumFaces;
 }
 */
 
-///***************************************************************************************
+/// ***************************************************************************************
 /// tells wether there are alive entities / particles in the system
 bool CPSLocated::hasParticles(void) const
 {	

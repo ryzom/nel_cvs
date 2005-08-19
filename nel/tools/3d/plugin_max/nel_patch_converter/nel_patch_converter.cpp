@@ -1,7 +1,7 @@
 /** \file nel_patch_converter.cpp
  * TODO: File description
  *
- * $Id: nel_patch_converter.cpp,v 1.4 2004/11/15 10:25:10 lecroart Exp $
+ * $Id: nel_patch_converter.cpp,v 1.5 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,7 @@ RefTargetHandle PO2RPO::Clone(RemapDir& remap)
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static done=0;
+static int done=0;
 void PO2RPO::ModifyObject(TimeValue t, ModContext &mc, ObjectState * os, INode *node) 
 {
 /*

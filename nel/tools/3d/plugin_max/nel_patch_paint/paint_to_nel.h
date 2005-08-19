@@ -11,6 +11,7 @@ typedef std::pair<int, int> CNelPatchKey;
 // Value of the patch map item.
 class CNelPatchValue
 {
+public:
 	friend class CNelPatchChanger;
 	CNelPatchValue ();
 	~CNelPatchValue ();

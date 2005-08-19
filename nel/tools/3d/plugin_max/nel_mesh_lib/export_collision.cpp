@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.17 2003/05/20 15:50:44 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.18 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,7 +155,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 	const float		GridWidth = 1.0f;
 	const float		WeldThreshold = 0.005f;
 
-	CQuadGrid<uint>	grid;
+	NL3D::CQuadGrid<uint>	grid;
 	vector<uint>	remapIds;
 	vector<CVector>	remapVertices;
 	vector<CVector>	&vertices = pCollisionMeshBuild->Vertices;
@@ -189,7 +189,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 		grid.select(vertices[i], vertices[i]);
 
 		// for each selected vertex, remaps it to the current vertex
-		CQuadGrid<uint>::CIterator	it;
+		NL3D::CQuadGrid<uint>::CIterator	it;
 		for (it=grid.begin(); it!=grid.end(); ++it)
 		{
 			uint	weldedId = *it;

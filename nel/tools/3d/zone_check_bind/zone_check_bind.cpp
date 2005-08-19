@@ -1,7 +1,7 @@
 /** \file zone_check_bind.cpp
  * This tool check that each patch of a zone to see wether they are bound correctly.
  *
- * $Id: zone_check_bind.cpp,v 1.6 2002/07/03 08:45:50 corvazier Exp $
+ * $Id: zone_check_bind.cpp,v 1.7 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -77,7 +77,7 @@ struct CPatchVertexInfo
 typedef std::pair<CPatchIdent, CPatchIdent> CPatchIdentPair;
 
 // for set insertion
-static inline operator < (const CPatchIdentPair &lhs, const CPatchIdentPair &rhs)
+static inline bool operator < (const CPatchIdentPair &lhs, const CPatchIdentPair &rhs)
 {
 	return lhs.first != rhs.first ? lhs.first < rhs.first
 								  : lhs.second < rhs.second;

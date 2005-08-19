@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.41 2005/02/22 10:19:13 besson Exp $
+ * $Id: zone_lighter.cpp,v 1.42 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -349,7 +349,7 @@ void setCPUMask (IThread *thread, uint process)
 		uint count = 0;
 		while (1)
 		{
-			if (mask & (1<<i))
+			if (mask & (UINT64_CONSTANT(1)<<i))
 			{
 				if (count == process)
 					break;

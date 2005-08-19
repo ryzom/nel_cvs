@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.12 2004/11/02 16:16:03 lecroart Exp $
+ * $Id: calc_lm_rt.cpp,v 1.13 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,14 +39,14 @@ using namespace NLMISC;
 // ***********************************************************************************************
 
 // -----------------------------------------------------------------------------------------------
-CRTWorld::CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *export)
+CRTWorld::CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *exp)
 {
 	_Ip = ip;
 	_AbsolutePath = absolutePath;
 	_View = view;
 	_ErrorInDialog = errorInDialog;
 	_ErrorTitle = errorTitle;
-	_Export = export;
+	_Export = exp;
 }
 
 // -----------------------------------------------------------------------------------------------

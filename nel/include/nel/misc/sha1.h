@@ -8,7 +8,7 @@
  *      single character names, were used because those were the names
  *      used in the publication.
  *
- * $Id: sha1.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: sha1.h,v 1.7 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -64,12 +64,12 @@ struct CHashKey
 			for(uint i = 0; i < str.size(); i+=2)
 			{
 				uint8 val;
-				if (isdigit(str[i+0]))
+				if (isdigit((unsigned char)str[i+0]))
 					val = str[i+0]-'0';
 				else
 					val = 10+tolower(str[i+0])-'a';
 				val *= 16;
-				if (isdigit(str[i+1]))
+				if (isdigit((unsigned char)str[i+1]))
 					val += str[i+1]-'0';
 				else
 					val += 10+tolower(str[i+1])-'a';

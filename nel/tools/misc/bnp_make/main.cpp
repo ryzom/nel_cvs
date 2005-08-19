@@ -321,7 +321,7 @@ int main (int nNbArg, char **ppArgs)
 					}
 					else
 					{
-						char *pos = strrchr (sCurDir.c_str(), '/');
+						const char *pos = strrchr (sCurDir.c_str(), '/');
 						if (pos != NULL)
 						{
 							gDestBNPFile += string(pos+1);

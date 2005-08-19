@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.57 2004/11/02 16:15:34 lecroart Exp $
+ * $Id: calc_lm.cpp,v 1.58 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,15 +145,15 @@ void SLightBuild::convertFromMaxLight (INode *node,TimeValue tvTime)
 	switch (maxLight->Type())
 	{
 		case OMNI_LIGHT:
-			this->Type = SLightBuild::EType::LightPoint;
+			this->Type = SLightBuild::LightPoint;
 		break;
 		case TSPOT_LIGHT:
 		case FSPOT_LIGHT:
-			this->Type = SLightBuild::EType::LightSpot;
+			this->Type = SLightBuild::LightSpot;
 		break;
 		case DIR_LIGHT:
 		case TDIR_LIGHT:
-			this->Type = SLightBuild::EType::LightDir;
+			this->Type = SLightBuild::LightDir;
 		break;
 		default:
 			// Not initialized
@@ -588,7 +588,7 @@ void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 	for( i = 0; i < nNbFace; ++i )
 	{
 		CMesh::CFace *pF = *ItParseI;
-		if( pMBB->Materials[pF->MaterialId].getShader() != CMaterial::TShader::LightMap )
+		if( pMBB->Materials[pF->MaterialId].getShader() != CMaterial::LightMap )
 		{
 			ItParseI = ZeFaces.erase( ItParseI );
 			nNbFace--;
@@ -2639,7 +2639,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 				// Setup all material of the object
 				for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
-				if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
+				if( pMBB->Materials[i].getShader() == CMaterial::LightMap )
 				{
 					pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
 					
@@ -2674,7 +2674,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 	// Build the mesh with the build interface
 	for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
-	if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
+	if( pMBB->Materials[i].getShader() == CMaterial::LightMap )
 	{
 		pMBB->Materials[i].setLighting( false );
 		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );

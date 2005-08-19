@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.18 2005/03/15 18:08:29 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.19 2005/08/19 15:34:08 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -947,7 +947,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 		region.top = y0;
 		region.bottom = y1;
 
-		const dataToCopy = (((x1-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
+		const sint dataToCopy = (((x1-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
 		if (d3dtext->Texture2d->LockRect (destMipmap, &rect, &region, 0) == D3D_OK)
 		{
 			uint line;
@@ -985,7 +985,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 				const uint8 *src = &(tex.getPixels(srcMipmap)[0]);
 
 				// Fill the temp buffer with BGRA info
-				const lineWidth = x1-x0; 
+				const sint lineWidth = x1-x0; 
 				_TempBuffer.resize (((y1-y0)*lineWidth)<<2);
 				uint8 *dest = &(_TempBuffer[0]);
 				uint line;

@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.6 2004/06/08 15:08:36 berenguier Exp $
+ * $Id: calc_lm_rt.h,v 1.7 2005/08/19 15:34:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ class CRTWorld
 	NLMISC::CVector	GlobalTrans;
 public:
 
-	CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *export);
+	CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *exp);
 	~CRTWorld();
 	// Build meshes from lights (if a mesh interact with at least one light except ambient)
 	void build	(std::vector<SLightBuild> &AllLights, NLMISC::CVector &vGlobalTrans, 

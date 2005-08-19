@@ -80,7 +80,7 @@ bool CPaintColor::getVertexInNeighbor (EPM_PaintTile *pTile, int curU, int curV,
 	 x***x
 	1     2
 	*/
-	static const remap[4] = { 0, 3, 1, 2};
+	static const int remap[4] = { 0, 3, 1, 2};
 	int vertexId = (curU - pTile->u) + (curV - pTile->v) * 2;
 	nlassert (vertexId<4);
 	vertexId = remap[vertexId];
@@ -452,7 +452,7 @@ void CPaintColor::forceFrozen (const std::vector<CVertexColorFrozed> &frozenVert
 					neighborNotFrozen[n] = (refTile->voisins[n] != NULL) && (!refTile->voisins[n]->frozen);
 
 				// Get the vertex id
-				static const remap[4] = { 0, 3, 1, 2};
+				static const int remap[4] = { 0, 3, 1, 2};
 				uint vertexId = (vertexFrozen.S - refTile->u) + (vertexFrozen.T - refTile->v) * 2;
 				nlassert (vertexId<4);
 				vertexId = remap[vertexId];
@@ -502,7 +502,7 @@ void CPaintColor::forceFrozen (const std::vector<CVertexColorFrozed> &frozenVert
 			neighborFrozen[n] = (vertexFrozen.Tile->voisins[n] != NULL) && vertexFrozen.Tile->voisins[n]->frozen;
 
 		// Get the vertex id
-		static const remap[4] = { 0, 3, 1, 2};
+		static const int remap[4] = { 0, 3, 1, 2};
 		uint vertexId = (vertexFrozen.S - vertexFrozen.Tile->u) + (vertexFrozen.T - vertexFrozen.Tile->v) * 2;
 		nlassert (vertexId<4);
 		vertexId = remap[vertexId];

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.81 2005/07/20 10:31:37 berenguier Exp $
+ * $Id: debug.h,v 1.82 2005/08/19 08:48:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -396,8 +396,8 @@ if(false)
 	if (!(exp)) { \
 		NLMISC::createDebug (); \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
-		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
-		NLMISC::AssertLog->displayRawNL str; \
+		/*NLMISC::AssertLog->displayNL ("\"%s\" ", #exp);*/ \
+		NLMISC::AssertLog->displayRawNL str; \		// BUG with unsetPosition() called twice
 		NLMISC_BREAKPOINT; \
 	} \
 }

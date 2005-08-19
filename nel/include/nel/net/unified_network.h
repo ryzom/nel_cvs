@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.51 2005/06/23 16:33:16 boucher Exp $
+ * $Id: unified_network.h,v 1.52 2005/08/19 08:50:59 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -125,6 +125,7 @@ public:
 	void	release (bool mustFlushSendQueues=true, const std::vector<std::string>& namesOfOnlyServiceToFlushSending=std::vector<std::string>() );
 
 	/** Adds a specific service to the list of connected services.
+	 * Warning: currently, this method must not be called within a network callback.
 	 */
 	void	addService(const std::string &name, const CInetAddress &addr, bool sendId = true, bool external = true, uint16 sid=0, bool autoRetry = true, bool shouldBeAlreayInserted = false);
 	void	addService(const std::string &name, const std::vector<CInetAddress> &addr, bool sendId = true, bool external = true, uint16 sid=0, bool autoRetry = true, bool shouldBeAlreayInserted = false);

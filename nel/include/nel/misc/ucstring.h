@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.15 2005/02/22 10:14:12 besson Exp $
+ * $Id: ucstring.h,v 1.16 2005/08/19 15:31:20 cado Exp $
  *
  */
 
@@ -95,6 +95,11 @@ public:
 		return *this;
 	}
 
+	ucstring& operator= (const ucchar *str)
+	{
+		ucstringbase::operator =(str);
+		return *this;
+	}
 	ucstring &operator+= (ucchar c)
 	{
 		resize (size() + 1);

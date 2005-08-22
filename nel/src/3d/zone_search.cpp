@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.12 2005/02/22 10:19:13 besson Exp $
+ * $Id: zone_search.cpp,v 1.13 2005/08/22 09:13:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,8 @@ namespace NL3D
 CZoneSearch::CZoneSearch()
 {
 	/// Size X is named of AA to ZZ, current size is IB = 26 * 8 + 2  (AA is zone number 1, AZ zone number 26, BA zone number 27...)
-	_NbZoneX = 26 * 8 + 2;
+	// TMP fix for level designer (nico ...)
+	_NbZoneX = 26 * 20 + 2;
 
 	/// Number zones on Y axis of landscape
 	_NbZoneY = 297;

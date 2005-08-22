@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.52 2005/08/19 08:50:59 cado Exp $
+ * $Id: unified_network.h,v 1.53 2005/08/22 17:45:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -125,6 +125,12 @@ public:
 	void	release (bool mustFlushSendQueues=true, const std::vector<std::string>& namesOfOnlyServiceToFlushSending=std::vector<std::string>() );
 
 	/** Adds a specific service to the list of connected services.
+	 *
+	 * If the connection succeeds immediately (i.e. the specified service is already online),
+	 * service up callbacks (for this service and for "*") will be called from within addService().
+	 * If the service is not available, the connection will be attempted evently in a background thread.
+	 * Then when it will become available, the service up callbacks will be called.
+	 *
 	 * Warning: currently, this method must not be called within a network callback.
 	 */
 	void	addService(const std::string &name, const CInetAddress &addr, bool sendId = true, bool external = true, uint16 sid=0, bool autoRetry = true, bool shouldBeAlreayInserted = false);
@@ -176,13 +182,14 @@ public:
 	uint	tryFlushAllQueues(const std::vector<std::string>& namesOfOnlyServiceToFlushSending=std::vector<std::string>());
 
 	/** Sets callback for incoming connections.
-	 * On a client, the callback will be call when the connection to the server is established (the first connection or after the server shutdown and started)
+	 * On a client, the callback will be called when the connection to the server is established (the first connection or after the server shutdown and started)
 	 * On a server, the callback is called each time a new client is connected to him
 	 * 
 	 * You can set more than one callback, each one will be called one after one.
-	 * If the serviceName is "*", the callback will be call for any services
+	 * If the serviceName is "*", the callback will be call for any services, including 'external' services
+	 * (i.e. services not in the NS address space, usually connected by calling addService() manually)
 	 * If you set the same callback for a specific service S and for "*", the callback might be
-	 * call twice (in case the service S is up)
+	 * called twice (in case the service S is up)
 	 *
 	 * \param back if true, put the callback at the end of the callback array, otherwise but on the beginning. You should always use true
 	 */
@@ -193,9 +200,10 @@ public:
 	 * On a server, the callback is called each time a client is disconnected.
 	 * 
 	 * You can set more than one callback, each one will be called one after one.
-	 * If the serviceName is "*", the callback will be call for any services
+	 * If the serviceName is "*", the callback will be call for any services, including 'external' services
+	 * (i.e. services not in the NS address space, usually connected by calling addService() manually)
 	 * If you set the same callback for a specific service S and for "*", the callback might be
-	 * call twice (in case the service S is down)
+	 * called twice (in case the service S is down)
 	 *
 	 * \param back if true, put the callback at the end of the callback array, otherwise but on the beginning. You should always use true
 	 */

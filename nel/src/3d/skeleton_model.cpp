@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.65 2005/03/11 15:13:04 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.66 2005/08/23 17:36:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1724,7 +1724,7 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeIn
 
 
 // ***************************************************************************
-bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox)
+bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, bool computeInWorld)
 {
 	// Not visible => empty bbox
 	if(!isClipVisible())
@@ -1739,19 +1739,24 @@ bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox)
 	{
 		CBone			*bone= _BoneToCompute[i].Bone;
 		// compute the world sphere
-		const	CMatrix	&worldMat= bone->getWorldMatrix();
-		CBSphere		worldSphere;
-		bone->_MaxSphere.applyTransform(worldMat, worldSphere);
+		const	CMatrix	&boneMat = computeInWorld ? bone->getWorldMatrix() : bone->getLocalSkeletonMatrix();
+		CBSphere		sphere;
+		bone->_MaxSphere.applyTransform(boneMat, sphere);
 		// compute bone min max bounding cube.
 		CVector		minBone, maxBone;
-		minBone= maxBone= worldSphere.Center;
-		float	r= worldSphere.Radius;
-		minBone.x-= r;
-		minBone.y-= r;
-		minBone.z-= r;
-		maxBone.x+= r;
-		maxBone.y+= r;
-		maxBone.z+= r;
+		minBone= maxBone= sphere.Center;
+		float	r= sphere.Radius;
+		// TMP TMP TMP
+		static volatile bool addSphereRadius = computeInWorld;
+		if (addSphereRadius)
+		{
+			minBone.x-= r;
+			minBone.y-= r;
+			minBone.z-= r;
+			maxBone.x+= r;
+			maxBone.y+= r;
+			maxBone.z+= r;
+		}
 		// set or extend
 		if(i==0)
 		{

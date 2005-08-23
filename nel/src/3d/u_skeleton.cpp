@@ -1,7 +1,7 @@
 /** \file u_skeleton.cpp
  * TODO: File description
  *
- * $Id: u_skeleton.cpp,v 1.8 2005/03/11 15:13:05 berenguier Exp $
+ * $Id: u_skeleton.cpp,v 1.9 2005/08/23 17:37:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,12 +361,12 @@ bool		USkeleton::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld)
 }
 
 // ***************************************************************************
-bool		USkeleton::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox)
+bool		USkeleton::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, bool computeInWorld)
 {
 	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	CSkeletonModel	*object = getObjectPtr();
-	return object->computeRenderedBBoxWithBoneSphere(bbox);
+	return object->computeRenderedBBoxWithBoneSphere(bbox, computeInWorld);
 }
 
 // ***************************************************************************

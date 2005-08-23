@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.46 2005/03/11 15:13:05 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.47 2005/08/23 17:36:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,7 +243,7 @@ public:
 	/** same as computeRenderedBBox(), always in world, but use the bone max sphere to enlarge the bbox
 	 *	NB: sticked objects don't influence the result
 	 */
-	bool		computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox);
+	bool		computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, bool computeInWorld= true);
 	
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos

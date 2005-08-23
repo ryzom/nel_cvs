@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.91 2005/06/23 16:39:11 boucher Exp $
+ * $Id: unified_network.cpp,v 1.91.2.1 2005/08/23 16:34:12 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1003,7 +1003,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		// add the name only if at least one connection is ok
 		addNamedCnx (name, sid);
 
-		callServiceUpCallback (name, sid, !external);
+		callServiceUpCallback (name, sid); // global callback ("*") will be called even for external service
 		
 /*		
 		// call the connection callback associated to this service

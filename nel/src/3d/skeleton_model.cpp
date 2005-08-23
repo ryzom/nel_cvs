@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.66 2005/08/23 17:36:50 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.67 2005/08/23 17:42:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1747,8 +1747,8 @@ bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, b
 		minBone= maxBone= sphere.Center;
 		float	r= sphere.Radius;
 		// TMP TMP TMP
-		static volatile bool addSphereRadius = computeInWorld;
-		if (addSphereRadius)
+		static volatile bool addSphereRadius = true;
+		if (computeInWorld)
 		{
 			minBone.x-= r;
 			minBone.y-= r;

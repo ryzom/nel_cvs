@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.22 2005/03/31 13:07:28 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.23 2005/08/24 09:25:42 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -699,6 +699,10 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						//setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 						break; // stage after this one are ignored
 					}
+					else
+					{
+						setTextureState (1, D3DTSS_COLOROP, D3DTOP_DISABLE);
+					}
 				}
 
 				// Set the texture states
@@ -815,6 +819,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						}
 					}
 				}
+				if (!text && stage == 0) break;
 			}
 		}
 	}

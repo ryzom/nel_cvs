@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.29 2005/02/22 10:14:12 besson Exp $
+ * $Id: rgba.h,v 1.30 2005/08/25 08:09:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -460,6 +460,14 @@ public:
 	uint8	A;
 };
 
+// specialisation of the 'blend' function found in algo.h
+template <class U>
+inline CRGBA blend(CRGBA c0, CRGBA c1, U blendFactor)
+{
+	CRGBA result;
+	result.blendFromui(c0, c1, (uint) ((float) blendFactor * 256.f));
+	return result;
+}
 
 /**
  * Class pixel float RGBA

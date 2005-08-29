@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.5 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module.h,v 1.6 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #ifndef NL_FILE_MODULE_H
 #define NL_FILE_MODULE_H
 
+#include "nel/misc/factory.h"
 #include "nel/misc/command.h"
 #include "nel/misc/string_mapper.h"
 #include "nel/net/message.h"
@@ -152,6 +153,11 @@ namespace NLNET
 		/** Called by a socket to process a received message.
 		 */
 		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
+		/** Called by a socket to inform this module that the security
+		 *	data attached to a proxy have changed.
+		 */
+		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy) =0;
+
 		//@}
 
 		//@name Callback from module sockets management
@@ -179,6 +185,39 @@ namespace NLNET
 	const TModulePtr		NullModule;
 
 
+	/** Base class for module security data
+	 *	Application writer should derive from this
+	 *	class to create there own security information.
+	 *	Security information are bound to proxy data
+	 *	by a secured gateway.
+	 */
+	struct TModuleSecurity : public NLMISC::IStreamable
+	{
+		/// An application defined identifier
+		uint8			DataTag;
+	
+		/// Pointer to next security data item (or NULL)
+		TModuleSecurity	*NextItem;
+
+		TModuleSecurity()
+			: NextItem(NULL),
+			DataTag(0xff)
+		{
+		}
+
+		~TModuleSecurity()
+		{
+			if (NextItem != NULL)
+				delete NextItem;
+		}
+
+		void serial(NLMISC::IStream &s)
+		{
+			s.serial(DataTag);
+			s.serialPolyPtr(NextItem);
+		}
+	};
+
 	/** This interface is implemented by the system 
 	 *	and it give convenient access to distant module information
 	 *	like module name or id,
@@ -201,10 +240,31 @@ namespace NLNET
 		 */
 		virtual TModuleId		getModuleProxyId() const =0;
 
+		/** Return the foreign id of the proxy.
+		 *	This is the proxy id of this module in the
+		 *	context at the outbound of the route.
+		 *	Note that if the module distance id 0, then
+		 *	this id is the module id and if the	distance
+		 *	is 1, then this is the id of the local
+		 *	proxy for the module in his host process.
+		 *
+		 *	Maybe you don't exactly understand the meaning of this
+		 *	id, what is sure is that you should never use it !
+		 */
 		virtual TModuleId		getForeignModuleId() const =0;
 
+		/**	Return the distance of this module in number of
+		 *	gateway to cross.
+		 *	Note that when a module is reachable via more than
+		 *	one route, the gateway always use the shortest path
+		 *	to communicate with the module.
+		 */
 		virtual uint32				getModuleDistance() const =0;
 
+		/** Return a pointer to the route used to communicate
+		 *	with the module.
+		 *	For local module proxy, the return value is NULL
+		 */
 		virtual CGatewayRoute		*getGatewayRoute() const = 0;
 
 		/** Return the module name. Each module instance must have a unique 
@@ -230,9 +290,22 @@ namespace NLNET
 		 *	This method do the job of finding a valid socket to effectively send
 		 *	the message.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+		virtual void		sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotReachable)
 			=0;
+
+		/** Return the first item of the security item list
+		 *	If no security data are available, the method
+		 *	return NULL.
+		 */
+		virtual const TModuleSecurity *getFirstSecurityData() const = 0;
+
+		/** Look in the security data list for a block
+		 *	matching the specified tag.
+		 *	The first block having the tag is returned.
+		 *	If no block have the requested tag, NULL is returned.
+		 */
+		virtual const TModuleSecurity *findSecurityData(uint8 dataTag) const =0;
 	};
 
 	const TModuleProxyPtr	NullModuleProxy;
@@ -288,7 +361,6 @@ namespace NLNET
 		{}
 
 		virtual IModule *createModule()
-
 		{
 			IModule *module = new moduleClass;
 			registerModuleInFactory(module);
@@ -297,7 +369,7 @@ namespace NLNET
 	};
 
 #define NLNET_REGISTER_MODULE_FACTORY(moduleClassName, registrationName) \
-	class moduleClassName##Factory : public CModuleFactory<moduleClassName> \
+	class moduleClassName##Factory : public NLNET::CModuleFactory<moduleClassName> \
 	{ \
 	public: \
 		static const std::string &theModuleClassName() \
@@ -307,15 +379,15 @@ namespace NLNET
 		} \
 		\
 		moduleClassName##Factory() \
-			: CModuleFactory<moduleClassName>(theModuleClassName()) \
+			: NLNET::CModuleFactory<moduleClassName>(theModuleClassName()) \
 		{} \
 	};\
-	NLMISC_REGISTER_OBJECT_INDIRECT(IModuleFactory, moduleClassName##Factory, std::string, registrationName)
+	NLMISC_REGISTER_OBJECT_INDIRECT(NLNET::IModuleFactory, moduleClassName##Factory, std::string, registrationName)
 
 
 //#define NLNET_MAKE_MODULE_FACTORY_TYPENAME(moduleClassName) moduleClassName##Factory
 
-#define NLNET_GET_MODULE_FACTORY(moduleClassName)	moduleClassName##FactoryInstance
+#define NLNET_GET_MODULE_FACTORY(moduleClassName)	moduleClassName##Factory
 
 	class CModuleSocket;
 
@@ -374,11 +446,13 @@ namespace NLNET
 			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, dump, "display informations about module instance status", "no args")
 			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, plug, "plug the module in a module socket", "<socket_name>")
 			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, unplug, "unplug the module out of a module socket", "<socket_name>")
+			NLMISC_COMMAND_HANDLER_ADD(CModuleBase, sendPing, "send a ping message to another module using the first available route", "<addresseeModuleName>")
 		NLMISC_COMMAND_HANDLER_TABLE_END
 
 		NLMISC_CLASS_COMMAND_DECL(dump);
 		NLMISC_CLASS_COMMAND_DECL(plug);
 		NLMISC_CLASS_COMMAND_DECL(unplug);
+		NLMISC_CLASS_COMMAND_DECL(sendPing);
 	};
 
 	class CGatewayRoute;
@@ -386,7 +460,7 @@ namespace NLNET
 	class CModuleProxy : public IModuleProxy
 	{
 		friend class CModuleManager;
-		friend class CModuleGateway;
+		friend class CStandardGateway;
 
 		/// The gateway that received the module informations
 		IModuleGateway		*_Gateway;
@@ -394,8 +468,6 @@ namespace NLNET
 		CGatewayRoute		*_Route;
 		/// The module distance (in term of gateway to cross)
 		uint32				_Distance;
-//		/// The gateway that send the module informations
-//		TModuleGatewayProxyPtr	_ForeignGateway;
 		/// The module local ID
 		TModuleId			_ModuleProxyId;
 		/// The module foreign ID, this is the module ID in case of a local proxy
@@ -405,15 +477,17 @@ namespace NLNET
 		NLMISC::TStringId	_ModuleClassName;
 		/// The  fully qualified module name.
 		NLMISC::TStringId	_FullyQualifiedModuleName;
+		/// the list of security data
+		TModuleSecurity		*_SecurityData;
 
 		/// Private constructor, only manager instantiate module proxies
 		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName);
 	public:
+
 		const CGatewayRoute * const getRoute() const
 		{
 			return _Route;
 		}
-
 
 		/** Return the module ID. Each module has a local unique ID assigned 
 		 *	by the manager during module creation.
@@ -424,6 +498,7 @@ namespace NLNET
 		virtual TModuleId	getModuleProxyId() const;
 
 		virtual TModuleId	getForeignModuleId() const;
+
 
 		uint32				getModuleDistance() const;
 		
@@ -440,16 +515,23 @@ namespace NLNET
 		/// Return the module class.
 		virtual const std::string &getModuleClassName() const;
 
-		/** Return the gateways interface by witch this module is accessible
-		 *	In some case, more than one gateway can be returned when there
-		 *	is multiple route to the same module.
+		/** Return the gateways interface by witch this module is accessible.
 		 */
 		virtual IModuleGateway *getModuleGateway() const;
 
 		/** Send a message to the module.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
-			throw (EModuleNotReachable);			
+		virtual void		sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+			throw (EModuleNotReachable);
+		
+		virtual const TModuleSecurity *getFirstSecurityData() const 
+		{
+			return _SecurityData;
+		}
+
+		virtual const TModuleSecurity *findSecurityData(uint8 dataTag) const;
+
+
 	};
 
 

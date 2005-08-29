@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.29 2005/01/17 16:39:43 lecroart Exp $
+ * $Id: message.cpp,v 1.30 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,16 @@ CMessage &CMessage::operator= (const CMessage &other)
 
 }
 
+void CMessage::swap(CMessage &other)
+{
+	CMemStream::swap(other);
+	_Name.swap(other._Name);
+	std::swap(_SubMessagePosR, other._SubMessagePosR);
+	std::swap(_LengthR, other._LengthR);
+	std::swap(_HeaderSize, other._HeaderSize);
+	std::swap(_TypeSet, other._TypeSet);
+}
+
 
 /**
  * Similar to operator=, but makes the current message contain *only* the locked sub message in msgin
@@ -142,7 +152,7 @@ void CMessage::assignFromSubMessage( const CMessage& msgin )
 
 	if ( msgin.hasLockedSubMessage() )
 	{
-		fill( msgin.buffer() + msgin._SubMessagePosR, msgin._LengthR-msgin._SubMessagePosR );
+		fill( msgin.buffer(), msgin._LengthR );
 		readType();
 		seek( msgin.getPos() - msgin._SubMessagePosR, IStream::begin );
 	}
@@ -215,9 +225,10 @@ void CMessage::changeType (const std::string &name)
 /*
  * Returns the size, in byte of the header that contains the type name of the message or the type number
  */
-uint32 CMessage::getHeaderSize ()
+uint32 CMessage::getHeaderSize () const
 {
 	nlassert (_HeaderSize != 0xFFFFFFFF);
+	nlassert(!hasLockedSubMessage());
 	return _HeaderSize;
 }
 
@@ -264,7 +275,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	nlassert( isReading() );
 
 	const uint HeaderSize = 4;
-	seek( getPos() + HeaderSize, begin );
+	seek( HeaderSize, current );
 
 	bool sm = _StringMode;
 	_StringMode = false;
@@ -314,9 +325,15 @@ std::string CMessage::getName () const
 	{
 		CMessage& notconstMsg = const_cast<CMessage&>(*this);
 		sint32 savedPos = notconstMsg.getPos();
-		notconstMsg.seek( _SubMessagePosR, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
+		uint32 subPosSaved = _SubMessagePosR;
+		uint32 lenthRSaved = _LengthR;
+		const_cast<uint32&>(_SubMessagePosR) = 0;
+		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
 		std::string name = notconstMsg.readTypeAtCurrentPos();
-		notconstMsg.seek( savedPos, begin );
+		notconstMsg.seek( subPosSaved+savedPos, begin );
+		const_cast<uint32&>(_SubMessagePosR) = subPosSaved;
+		const_cast<uint32&>(_LengthR) = lenthRSaved;
 		return name;
 	}
 	else

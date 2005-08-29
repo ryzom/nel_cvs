@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.232 2005/08/29 12:34:40 cado Exp $
+ * $Id: service.cpp,v 1.233 2005/08/29 16:17:38 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -492,6 +492,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	bool userInitCalled = false;
 //	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
+
+	IThread *timeoutThread = NULL;
 
 	// a short name service can't be a number
 	nlassert (atoi(serviceShortName) == 0);
@@ -1162,7 +1164,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// Activate the timeout assertion thread
 		//
 		
-		IThread::create(&MyTAT)->start();
+		timeoutThread = IThread::create(&MyTAT);
+		timeoutThread->start();
 		
 		//
 		// Set service ready
@@ -1274,11 +1277,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			CFile::checkFileChange();
 
+			
 			// get and manage layer 5 messages
 			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
 
+
 			// update modules
 			IModuleManager::getInstance().updateModules();
+
 
 			// Allow direct closure if the naming service was lost
 			if ( _RequestClosureClearanceCallback )
@@ -1464,6 +1470,10 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		explode( NamesOfOnlyServiceToFlushSending, ":", namesOfOnlyServiceToFlushSendingV, true );
 		CUnifiedNetwork::getInstance()->release (FlushSendingQueuesOnExit.get(), namesOfOnlyServiceToFlushSendingV);
 
+		// warn the module layer that the application is about to close
+		IModuleManager::getInstance().applicationExit();
+
+		// release the network
 		CSock::releaseNetwork ();
 
 		//
@@ -1499,6 +1509,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	// release the module manager
 	IModuleManager::getInstance().releaseInstance();
+
+	// stop the timeout thread
+	MyTAT.quit();
+	timeoutThread->wait();
+	delete timeoutThread;
 
 #ifdef NL_RELEASE
 /*	// in release mode, we catch everything to handle clean release.

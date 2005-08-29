@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.31 2004/12/22 19:44:29 cado Exp $
+ * $Id: callback_client.cpp,v 1.32 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,12 +42,17 @@ namespace NLNET {
 CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall, bool initPipeForDataAvailable ) :
 	CCallbackNetBase( rec, recfilename, recordall ), CBufClient( true, rec==Replay, initPipeForDataAvailable ), SendNextValue(0), ReceiveNextValue(0)
 {
+	LockDeletion = false;
 	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
 
 	_IsAServer = false;
 	_DefaultCallback = NULL;
 }
 
+CCallbackClient::~CCallbackClient()
+{
+	nlassert(!LockDeletion);
+}
 
 /*
  * Send a message to the remote host (pushing to its send queue)
@@ -139,6 +144,7 @@ bool CCallbackClient::flush (TSockId hostid, uint *nbBytesRemaining)
  */
 void CCallbackClient::update ( sint32 timeout )
 {
+	LockDeletion = true;
 //	nldebug ("L3: Client: update()");
 
 	H_AUTO(L3UpdateClient);
@@ -159,6 +165,7 @@ void CCallbackClient::update ( sint32 timeout )
 	}
 #endif
 	
+	LockDeletion = false;
 }
 
 

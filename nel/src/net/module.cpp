@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.6 2005/08/10 09:06:09 distrib Exp $
+ * $Id: module.cpp,v 1.7 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,7 @@ namespace NLNET
 			string hostName = ::NLNET::CInetAddress::localHost().hostName();
 			int pid = ::getpid();
 
-			_FullyQualifedModuleName = hostName+":"+toString(pid)+":"+_ModuleName;
+			_FullyQualifedModuleName = IModuleManager::getInstance().getUniqueNameRoot()+":"+_ModuleName;
 		}
 
 		return _FullyQualifedModuleName;
@@ -276,6 +276,41 @@ namespace NLNET
 		return true;
 	}
 
+	NLMISC_CLASS_COMMAND_IMPL(CModuleBase, sendPing)
+	{
+		if (args.size() != 1)
+			return false;
+
+		string modName = args[0];
+
+		// look in each socket
+		vector<IModuleSocket*> sockets;
+		this->getPluggedSocketList(sockets);
+
+		for (uint i=0; i<sockets.size(); ++i)
+		{
+			IModuleSocket *socket = sockets[i];
+			vector<IModuleProxy*> proxList;
+			socket->getModuleList(proxList);
+
+			for (uint i=0; i<proxList.size(); ++i)
+			{
+				if (proxList[i]->getModuleName() == modName)
+				{
+					// we found it !
+					CMessage ping("DEBUG_MOD_PING");
+					proxList[i]->sendModuleMessage(this, ping);
+					log.displayNL("Ping debug message send to '%s'", modName.c_str());
+					return true;
+				}
+			}
+		}
+
+		log.displayNL("Can't find a route to send message to module '%s'", modName.c_str());
+
+		return true;
+	}
+
 	NLMISC_CLASS_COMMAND_IMPL(CModuleBase, dump)
 	{
 		if (args.size() != 0)
@@ -327,7 +362,8 @@ namespace NLNET
 		: _ModuleProxyId(localModuleId),
 		  _ForeignModuleId(INVALID_MODULE_ID),
 		  _ModuleClassName(CStringMapper::map(moduleClassName)),
-		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName))
+		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
+		  _SecurityData(NULL)
 	{
 	}
 
@@ -365,7 +401,7 @@ namespace NLNET
 		return _Gateway;
 	}
 
-	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+	void		CModuleProxy::sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 		throw (EModuleNotReachable)
 	{
 		if (_Gateway == NULL )
@@ -382,5 +418,26 @@ namespace NLNET
 
 		_Gateway->sendModuleMessage(senderProx, this, message);
 	}
+
+	const TModuleSecurity *CModuleProxy::findSecurityData(uint8 dataTag) const
+	{
+		const TModuleSecurity *ms = _SecurityData;
+
+		while (ms != NULL)
+		{
+			if (ms->DataTag == dataTag)
+			{
+				// this block match !
+				return ms;
+			}
+
+			// try the next one
+			ms = ms->NextItem;
+		}
+
+		// not found
+		return NULL;
+	}
+
 
 } // namespace NLNET

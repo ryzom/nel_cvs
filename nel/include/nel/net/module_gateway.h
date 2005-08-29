@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.4 2005/08/10 09:06:33 distrib Exp $
+ * $Id: module_gateway.h,v 1.5 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLNET
 {
 	class IGatewayTransport;
 	class CGatewayRoute;
+	class CGatewaySecurity;
 
 	/** Interface for gateway.
 	 *	A gateway is the part of the module layer that interconnect
@@ -45,25 +46,80 @@ namespace NLNET
 	 *	Gateway can interconnect local module with themselves, as well as
 	 *	connect with another gateway in another process or host.
 	 *
-	 *	This interface is designed with a base implementation that
-	 *	allow one to redefine some part of the gateway behavior
-	 *	without rewriting a complete gateway from scratch.
+	 *	Transport: 
+	 *	---------
+	 *	Gateway connectivity is provided by 'transport' that can
+	 *	be build on any support.
+	 *	There are available transport for NeL Layer 3 in server
+	 *	of client mode.
 	 *
-	 *	Gateway can be client and/or server. Client forward 
-	 *	any message for foreign module to the server, server
-	 *	route message either locally or to client gateway that host 
-	 *	the module addressee.
+	 *	You can bind at run time, any number of transport to a 
+	 *	gateway. 
+	 *	Each of these transport can then receive specific command
+	 *	from passed by the gateway.
+	 *	Transport then create routes that are active connection 
+	 *	to foreign gateways.
 	 *
-	 *	A client gateway can be connected to more than one client,
-	 *	establishing a bridge between the two server.
+	 *	When using the layer 3 transport, you can choose either
+	 *	to instantiate a client mode transport or a server mode
+	 *	transport.
+	 *	In client mode, you can connect to one or more server, each 
+	 *	connection generating a new route.
+	 *	In server mode, you can put your transport as 'open' on 
+	 *	a specified TCP port, then each client connection will
+	 *	generate a new route.
 	 *
-	 *	In the case of an hybrid configured gateway (i.e. a gateway
-	 *	acting as client AND server), the message are routed from the
-	 *	server endpoint to the client part if needed.
+	 *	These layer 3 transport are only one type of transport,
+	 *	it it possible to build any type of transport (on raw TCP
+	 *	socket, or over UDP, or using named pipe...).
 	 *
-	 *	Any message routing or module discovering can be intercepted 
-	 *	by overloading a virtual method to change the standard behavior
-	 *	of the gateway.
+	 *	Unique name generation :
+	 *	------------------------
+	 *	Gateway need to generate 'fully qualified module name' witch
+	 *	must be unique in any gateway interconnection scheme.
+	 *	By default, gateway use the following scheme to build
+	 *	unique module name :
+	 *		<hostname>:<pid>:<modulename>
+	 *	In some case, you could not be sure that the host name will
+	 *	be unique (think about your hundreds simultaneously connected
+	 *	clients, some of them can have set the same name for their
+	 *	computer !). In this case, you can set register a unique name
+	 *	generator on you gateway that use another naming scheme.
+	 *	For example, you can use you customer unique ID (with the
+	 *	restriction that one ID can be in use once at the same time)
+	 *	to build unique name :
+	 *		<customerId>:<modulename>
+	 *
+	 *	Advanced transport options (i.e option settable on each transport):
+	 *	--------------------------
+	 *	- peer invisible : if activated on a transport, this option 
+	 *		will mask the modules of the other routes of the same
+	 *		transport.
+	 *		This is useful for players modules (you sure don't want
+	 *		that all players can see all other clients modules),
+	 *		or for client/server structure where you don't want
+	 *		all client to see all module, bu only those that are 
+	 *		available from the client side.
+	 *		Note that any module that come from another transport
+	 *		will be disclosed to all the route.
+	 *	
+	 *	- firewalled : if activated, this option will mask any module
+	 *		to the connected unsecure route unless some module comming from another
+	 *		transport (or a local module) will try to send a message
+	 *		to a module on an unsecure route. In this case, the gateway
+	 *		will disclose the information about this sender module (and only
+	 *		this one) to the unsecure route.
+	 *		In firewall mode, the gateway keep a list of disclosed module
+	 *		for each route and stop any message that is addressed to an
+	 *		undisclosed module (that can be considered as a hacking attempt).
+	 *		Module that are disclosed by the unsecure routes are normaly
+	 *		seen by all other module.
+	 *
+	 *	The two options above can be used in combination. This is a prefered
+	 *	way of configuring transport for player connection : we don't want
+	 *	player to see other player modules, and we don't want player to see 
+	 *	any server side module until one of them started a communication
+	 *	with a player module. 
 	 */
 	class IModuleGateway : public NLMISC::CRefCount
 	{
@@ -90,32 +146,39 @@ namespace NLNET
 		{
 		};
 
-		enum TModuleGatewayConstant
+		/// Firewall mode is activated but there is already open route !
+		class EGatewayFirewallBreak : public NLMISC::Exception
 		{
-			/// A gateway client connection is accepted
-			mgc_accept_connection,
-			/// A gateway client connection is rejected
-			mgc_reject_connection,
-			/// A client to server connection is a success
-			mgc_connection_success,
-			/// A client to server connection has failed
-			mgc_connection_failed,
 		};
 
 		virtual ~IModuleGateway() {}
 
 		//@{
-		//@name Gateway general information
+		//@name Gateway general information and control
 		/// Return the local name of the gateway
 		virtual const std::string &getGatewayName() const =0;
 		/// Return the Fully Qualified Gateway Name (FQGN)
 		virtual const std::string &getFullyQualifiedGatewayName() const =0;
-		/// Return the gateway proxy of this gateway
-//		virtual TModuleGatewayProxyPtr &getGatewayProxy() =0;
 		//@}
 
 		//@{
 		//@name Gateway transport management
+
+		/// Create and bind to this gateway a new transport
+		virtual void	createTransport(const std::string &transportClass, const std::string &instanceName) =0;
+		/// Delete a transport (this will close any open route)
+		virtual void	deleteTransport(const std::string &transportInstanceName) =0;
+
+		/// Activate/stop peer invisible mode on a transport
+		virtual void	setTransportPeerInvisible(const std::string &transportInstanceName, bool peerInvisible) =0;
+		
+		/// Activate/stop firewalling mode on a transport
+		virtual void	setTransportFirewallMode(const std::string &transportInstanceName, bool firewalled) 
+			throw (EGatewayFirewallBreak) =0;
+
+		/// Send a command to a transport
+		virtual void	transportCommand(const TParsedCommandLine &commandLine) =0;
+
 		/// Return a pointer on the named transport interface, or NULL if the transport is unknown.
 		virtual IGatewayTransport *getGatewayTransport(const std::string &transportName) const =0;
 
@@ -126,8 +189,7 @@ namespace NLNET
 		virtual uint32	getRouteCount() const =0;
 
 		/// Return the number of ping received. This is incremented by special "GW_PING" message for unit testing
-		virtual uint32 getReceivedPingCount() const =0;
-
+		virtual uint32	getReceivedPingCount() const =0;
 		//@}
 
 		//@{
@@ -140,6 +202,19 @@ namespace NLNET
 
 		/// A transport have received a message
 		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin) =0;
+		//@}
+
+		//@{
+		//@name Gateway security plug-in management
+		/** create a security plug-in.
+		 *	There must be no security plug-in currently created.
+		 */
+		virtual void createSecurityPlugin(const std::string &className) = 0;
+		/** Send a command to the security plug-in */
+		virtual void sendSecurityCommand(const TParsedCommandLine &command) =0;
+		/** Remove the security plug-in.
+		 */
+		virtual void removeSecurityPlugin() = 0;
 		//@}
 
 		//@{
@@ -191,7 +266,7 @@ namespace NLNET
 
 		/** Send a message to a module.
 		 */
-		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message) =0;
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message) =0;
 
 		/** Send a message to the module plugged in this gateway.
 		 *	You can override this method to change the dispatching, add filtering,
@@ -206,10 +281,11 @@ namespace NLNET
 	 *	at run time and that provide a mean to interconnect with
 	 *	other gateway.
 	 *	As each transport mode as it's own command requirement,
-	 *	a generic command system is provided sending command message
+	 *	a generic command system is provided for sending command message
 	 *	to the transport implementation.
 	 *	
-	 *	Example of transport are layer 3 client and layer 3 server.
+	 *	At time of writing, NeL come with 2 transport : one based on layer 3 client, and one
+	 *	based on layer 3 server. In a short time, there will be transport using layer 5.
 	 */
 	class IGatewayTransport
 	{
@@ -217,7 +293,7 @@ namespace NLNET
 		/// Back pointer to the gateway hosting this transport
 		IModuleGateway			*_Gateway;
 	public:
-		/// Invalid command
+		/// Invalid transport command
 		class EInvalidCommand : public NLMISC::Exception
 		{
 		public:
@@ -231,13 +307,23 @@ namespace NLNET
 		public:
 			ETransportError(const char *err) : Exception(err) {}
 		};
-		
+
+		//////////////// property used by gateway (not managed by transport)
+		/// Flag for firewall mode
+		bool				Firewalled;
+		/// flag for peer invisible mode
+		bool				PeerInvisible;
+
+		/// Constructor param needed by the factory (see nel/misc/factory.h)
 		struct TCtorParam
 		{
 			IModuleGateway *Gateway;
 		};
+
 		/// Constructor, establish link with the associated gateway
 		IGatewayTransport(const TCtorParam &param)
+			: Firewalled(false),
+			PeerInvisible(false)
 		{
 			_Gateway = param.Gateway;
 		}
@@ -282,15 +368,40 @@ namespace NLNET
 	 */
 	class CGatewayRoute
 	{
-	public:
-		/// The local foreign => local proxy id translation table
-		typedef std::map<TModuleId, TModuleId>	TForeignToLocalIdx;
-		TForeignToLocalIdx	ForeignToLocalIdx;
-
+	protected:
 		/// The transport that manage this route
 		IGatewayTransport	*_Transport;
+	public:
+		/// The local foreign(A) <=> local(B) proxy id translation table
+//		typedef std::map<TModuleId, TModuleId>	TForeignToLocalIdx;
+		typedef NLMISC::CTwinMap<TModuleId, TModuleId>	TForeignToLocalIdx;
+		TForeignToLocalIdx	ForeignToLocalIdx;
 
 
+		enum TPendingEventType
+		{
+			pet_disclose_module,
+			pet_undisclose_module,
+			pet_update_distance,
+			pet_update_security,
+		};
+
+		struct TPendingEvent
+		{
+			TPendingEventType	EventType;
+//			IModuleProxy		*ModuleProxy;
+			TModuleId			ModuleId;
+		};
+		/// A list of pending event on this route
+		std::list<TPendingEvent>	PendingEvents;
+
+		/// A list of module proxy pending disclosure
+//		std::set<IModuleProxy*>	PendingDisclosure;
+		/// A list of module proxy pending undisclosure
+//		std::set<TModuleId>		PendingUndisclosure;
+		/// firewall disclosed module (empty in not firewalled mode)
+		std::set<TModuleId>		FirewallDisclosed;
+		
 		//@{
 		/// @name Informations on the next module message to dispatch
 
@@ -314,45 +425,73 @@ namespace NLNET
 		/// Return the transport that hold this route
 		IGatewayTransport *getTransport() { return _Transport; };
 		/// Send a message via the route
-		virtual void sendMessage(const CMessage &message) const =0;
+		virtual void sendMessage(CMessage &message) const =0;
 	};
 
-//	const TModuleGatewayPtr	NullModuleGateway;
 
-	/** This interface represent a foreign gateway
-	 *	It is used to represent foreign gateway
-	 *	known by a gateway, it is also stored
-	 *	with the module proxy to remember the 
-	 *	source of the module.
-	 */
-//	class IModuleGatewayProxy : public NLMISC::CRefCount
-//	{
-//	public:
-//		/// The gateway is not collocated
-//		class EGatewayNotCollocated : public NLMISC::Exception
-//		{
-//		};
-//
-//		virtual ~IModuleGatewayProxy() {}
-//
-//		/// Return the host name of the machine hosting this gateway.
-//		virtual const std::string &getGatewayHost() =0;
-//		/** If the gateway is collocated (i.e, lie in the current process), 
-//		 *	then return the gateway pointer to make direct call on
-//		 *	the gateway interface.
-//		 */
-//		virtual IModuleGateway *getLocalGateway() 
-//			throw (EGatewayNotCollocated) 
-//			=0;
-//
-//		/// Return true if the gateway lie in the current process
-//		virtual bool isCollocated() =0;
-//		/// Return true if the 
-//		virtual bool isConnected() =0;
-//
-//	};
-//
-//	const TModuleGatewayProxyPtr	NullModuleGatewayProxy;
+	class CGatewaySecurity
+	{
+	protected:
+		IModuleGateway	*_Gateway;
+	public:
+		struct TCtorParam
+		{
+			IModuleGateway	*Gateway;
+		};
+
+		CGatewaySecurity (const TCtorParam &params)
+			: _Gateway(params.Gateway)
+		{
+		}
+
+		/** the gateway send a command to the security module */
+		virtual void onCommand(const TParsedCommandLine &command)	{}
+
+		/** A new proxy is available, the security plug-in can add security data */
+		virtual void onNewProxy(IModuleProxy *proxy) =0;
+
+		/** A proxy receive new security datas, the security plug-in can
+		 *	check the data validity, and eventually, reject the one or mode data block
+		 *	then it must update the proxy security with the new security data.
+		 *	If the security plug-in reject one or more security data, it has
+		 *	the duty for deleting the rejected object.
+		 *	Furthermore, it must free the existing security data on the proxy
+		 *	if is replace them with the new one.
+		 *	Any other combination is fine unless the security plug-in do a correct
+		 *	management of freeing unused security data.
+		 */
+		virtual void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TModuleSecurity *firstSecurityData) = 0;
+
+		/** Called just before delete, the security plug-in must
+		 *	remove any security data that it added to the proxies.
+		 */
+		virtual void onDelete() =0;
+		
+		/** Set a security data block. If a bloc of the same type
+		 *	already exist in the list, the new one will replace the
+		 *	existing one.
+		 */
+		void setSecurityData(IModuleProxy *proxy, TModuleSecurity *securityData);
+
+		/** Clear a block of security data
+		 *	The block is identified by the data tag
+		 *	Return true if at least one item have been removed, false otherwise.
+		 */
+		bool removeSecurityData(IModuleProxy *proxy, uint8 dataTag);
+
+		/** Replace the complete set of security data with the new one.
+		 *	Security data allocated on the proxy are freed,
+		 */
+		void replaceAllSecurityDatas(IModuleProxy *proxy, TModuleSecurity *securityData);
+
+		/** Ask the gateway to resend the security data.
+		 *	The plug-in call this method after having changed
+		 *	the security info for a plug-in outside of the
+		 *	onNewProxy call.
+		 */
+		void forceSecurityUpdate(IModuleProxy *proxy);
+	};
+
 
 } // namespace NLNET
 

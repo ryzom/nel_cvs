@@ -1,7 +1,7 @@
 /** \file module_common.h
  * basic type and forward declaration for module system
  *
- * $Id: module_common.h,v 1.2 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_common.h,v 1.3 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,16 +48,8 @@ namespace NLNET
 
 	class IModuleSocket;
 	class IModuleFactory;
-//	typedef NLMISC::CSmartPtr<IModuleFactory>	TModuleFactoryPtr;
-
 	class IModuleGateway;
-//	typedef NLMISC::CSmartPtr<IModuleGateway>	TModuleGatewayPtr;
-
-//	class IModuleGatewayProxy;
-//	typedef NLMISC::CSmartPtr<IModuleGatewayProxy>	TModuleGatewayProxyPtr;
-
-//	class CModuleMessage;
-//	typedef NLMISC::CSmartPtr<CModuleMessage>		TModuleMessagePtr;
+	struct TModuleSecurity;
 
 	/// The destination module for a message cannot be reached by socket used
 	class EModuleNotReachable : public NLMISC::Exception
@@ -71,7 +63,7 @@ namespace NLNET
 
 	/** Structure for pre-parsed command line parameters
 	 *	Support in memory representation of parameter line like :
-	 *	'tag1(x=1, y=2, z=3) tag2=6 tag3(a=abc, b=xyz)'
+	 *	'tag1(x=1 y=2 z=3) tag2=6 tag3(a=abc b=xyz tag4)'
 	 */
 	struct TParsedCommandLine
 	{
@@ -86,14 +78,17 @@ namespace NLNET
 		/// Parse a NeL argument list to build a module init object.
 		bool parseParamList(const std::string &rawParamString);
 
-		/** Ask the module init info for a parameter
-		 *	If the parameter not exist, the method return NULL.
+		/** Ask the command line for a parameter
+		 *	If the parameter doesn't exist, the method return NULL.
 		 *	You can request a sub param directly by
 		 *	concatenating the header(s) name separated by dot.
 		 *	e.g. in the param string "a(b(c=4)", you can
 		 *	query directly with 'a.b.c' to retrieve the value 4.
 		 */
 		const TParsedCommandLine *getParam(const std::string &name) const;
+
+		/** Rebuild the raw command line string */
+		std::string toString() const;
 
 	private:
 		bool _parseParamList(const std::string &rawParamString);

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.32 2005/01/04 18:26:37 cado Exp $
+ * $Id: buf_client.cpp,v 1.33 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,6 +188,7 @@ bool CBufClient::dataAvailable()
 
 				// Unlike the server version, we do not delete the CBufSock object here,
 				// it will be done in the destructor of CBufClient
+
 				break;
 
 			default: // should not occur
@@ -419,7 +420,10 @@ void CClientReceiveTask::run()
 	NbNetworkTask++;
 	nlnettrace( "CClientReceiveTask::run" );
 
-	_NBBufSock->Sock->setTimeOutValue( 60, 0 );
+	// 18/08/2005 : sonix : Changed time out from 60s to 1s, in some case, it
+	//						can generate a 60 s wait on destruction of the CBufSock
+	//						By the way, checking every 1s is not a time consuming
+	_NBBufSock->Sock->setTimeOutValue( 1, 0 );
 
 	bool connected = true;
 	while ( connected )

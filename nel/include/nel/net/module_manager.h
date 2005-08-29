@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_manager.h,v 1.4 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,10 +50,23 @@ namespace NLNET
 		/// The module manager is a singleton
 		static IModuleManager &getInstance();
 
+		/// Must be called before releasing the instance, will call IModule::onApplicationExit on all module instance
+		virtual void applicationExit() =0;
+
 		/// Release the singleton instance
 		virtual void releaseInstance() =0;
 
 		virtual ~IModuleManager() {}
+
+		/** set the unique name root used for fully qualified name generation
+		 *	(by default, it is the host name and process id)
+		 */
+		virtual void setUniqueNameRoot(const std::string &uniqueNameRoot) =0;
+
+		/** get the unique name root used for fully qualified name generation
+		 *	(by default, it is the host name and process id)
+		 */
+		virtual const std::string &getUniqueNameRoot() =0;
 
 		/** Load a module library.
 		 *	Module library are dll or so files that contains
@@ -90,7 +103,7 @@ namespace NLNET
 		/** Fill the vector with the list of available module.
 		 *	Note that the vector is not cleared before being filled.
 		 */
-		virtual void getAvailableModuleList(std::vector<std::string> &moduleList) =0;
+		virtual void getAvailableModuleClassList(std::vector<std::string> &moduleClassList) =0;
 		
 		/** Create a new module instance.
 		 *	The method create a module of the specified class with the

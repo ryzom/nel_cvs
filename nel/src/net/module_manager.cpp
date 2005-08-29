@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.4 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module_manager.cpp,v 1.5 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,11 @@ namespace NLNET
 			CNelModuleLibrary			*ModuleLibrary;
 		};
 
+		/** the user set unique name root, replace the normal unique name
+		 *	generation system if not empty
+		 */
+		string _UniqueNameRoot;
+			
 		typedef	map<std::string, CSmartPtr<TModuleLibraryInfo> >	TModuleLibraryInfos;
 		/// Module library registry
 		TModuleLibraryInfos		_ModuleLibraryRegistry;
@@ -92,10 +97,6 @@ namespace NLNET
 
 		/// Local module ID generator
 		TModuleId				_LastGeneratedId;
-
-//		typedef NLMISC::CTwinMap<std::string, TModuleProxyPtr>	TModuleProxyInstances;
-		/// Modules proxy instances tracker
-//		TModuleProxyInstances	_ModuleProxyInstances;
 
 		typedef NLMISC::CTwinMap<TModuleId, TModuleProxyPtr>	TModuleProxyIds;
 		/// Modules proxy IDs tracker
@@ -146,12 +147,40 @@ namespace NLNET
 //			nlassert(_ModuleProxyInstances.getAToBMap().empty());
 		}
 
+		virtual void applicationExit()
+		{
+			TModuleInstances::TAToBMap::const_iterator first(_ModuleInstances.getAToBMap().begin()), last(_ModuleInstances.getAToBMap().end());
+			for (; first != last; ++first)
+			{
+				IModule *module = first->second;
+
+				module->onApplicationExit();
+			}
+		}
+
 		void releaseInstance()
 		{
 			delete this;
 			_Instance = NULL;
 		}
 
+		virtual void setUniqueNameRoot(const std::string &uniqueNameRoot)
+		{
+			_UniqueNameRoot = uniqueNameRoot;
+		}
+
+		virtual const std::string &getUniqueNameRoot()
+		{
+			if (_UniqueNameRoot.empty())
+			{
+				string hostName = ::NLNET::CInetAddress::localHost().hostName();
+				int pid = ::getpid();
+
+				_UniqueNameRoot = hostName+":"+toString(pid);
+			}
+
+			return _UniqueNameRoot;
+		}
 
 
 		void addModuleFactoryRegistry(TLocalModuleFactoryRegistry &moduleFactoryRegistry)
@@ -289,12 +318,12 @@ namespace NLNET
 		/** Fill the vector with the list of available module.
 		 *	Note that the vector is not cleared before being filled.
 		 */
-		virtual void getAvailableModuleList(std::vector<std::string> &moduleList)
+		virtual void getAvailableModuleClassList(std::vector<std::string> &moduleClassList)
 		{
 			TModuleFactoryRegistry::iterator first(_ModuleFactoryRegistry.begin()), last(_ModuleFactoryRegistry.end());
 			for (; first != last; ++first)
 			{
-				moduleList.push_back(first->first);
+				moduleClassList.push_back(first->first);
 			}
 		}
 		
@@ -523,10 +552,13 @@ namespace NLNET
 
 		virtual void releaseModuleProxy(TModuleId moduleProxyId)
 		{
-			nldebug("Releasing module proxy (ID : %u)", moduleProxyId);
 			TModuleProxyIds::TAToBMap::const_iterator it(_ModuleProxyIds.getAToBMap().find(moduleProxyId));
 			nlassert(it != _ModuleProxyIds.getAToBMap().end());
 			CRefPtr<IModuleProxy> sanityCheck(it->second.getPtr());
+
+			nldebug("Releasing module proxy ('%s', ID : %u)", 
+				it->second->getModuleName().c_str(), 
+				moduleProxyId);
 
 			// remove the smart ptr, must delete the proxy
 //			_ModuleProxyInstances.removeWithB(it->second);
@@ -620,7 +652,7 @@ namespace NLNET
 			{
 				std::vector<std::string> moduleList;
 				TLocalModuleFactoryRegistry::instance().fillFactoryList(moduleList);
-				log.displayNL(" List of %u local modules :", moduleList.size());
+				log.displayNL(" List of %u local modules classes :", moduleList.size());
 				for (uint i=0; i<moduleList.size(); ++i)
 				{
 					if (_ModuleFactoryRegistry.find(moduleList[i]) == _ModuleFactoryRegistry.end())
@@ -639,7 +671,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					TModuleLibraryInfo &mli = *(first->second);
-					log.displayNL("  Library '%s' loaded from '%s', contains %u modules :",
+					log.displayNL("  Library '%s' loaded from '%s', contains %u modules classes:",
 						first->first.c_str(),
 						mli.FullPathLibraryName.c_str(),
 						mli.ModuleFactoryList.size());
@@ -649,7 +681,7 @@ namespace NLNET
 						{
 							if (_ModuleFactoryRegistry.find(mli.ModuleFactoryList[i]) == _ModuleFactoryRegistry.end())
 							{
-								log.displayNL("    %s : UNAVAILABLE !", mli.ModuleFactoryList[i].c_str());
+								log.displayNL("    %s : UNAVAILABLE, this class is already registered !", mli.ModuleFactoryList[i].c_str());
 							}
 							else
 							{
@@ -711,6 +743,7 @@ namespace NLNET
 	extern void forceGatewayLink();
 	extern void forceLocalGatewayLink();
 	extern void forceGatewayTransportLink();
+	extern void forceGatewayL5TransportLink();
 
 
 	void forceLink()
@@ -718,6 +751,7 @@ namespace NLNET
 		forceGatewayLink();
 		forceLocalGatewayLink();
 		forceGatewayTransportLink();
+		forceGatewayL5TransportLink();
 	}
 
 } // namespace NLNET

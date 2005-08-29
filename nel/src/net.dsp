@@ -54,7 +54,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/net"
 # PROP Intermediate_Dir "../obj/Debug/net"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdnet.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdnet.h" /FD /GZ /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -272,7 +272,7 @@ SOURCE=.\net\unified_network.cpp
 SOURCE=..\include\nel\net\unified_network.h
 # End Source File
 # End Group
-# Begin Group "Module Layer"
+# Begin Group "Layer6"
 
 # PROP Default_Filter ""
 # Begin Group "interfaces"
@@ -281,6 +281,10 @@ SOURCE=..\include\nel\net\unified_network.h
 # Begin Source File
 
 SOURCE=..\include\nel\net\module.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\module_builder_parts.h
 # End Source File
 # Begin Source File
 
@@ -312,10 +316,6 @@ SOURCE=.\net\module.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\net\module_builder_parts.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\net\module_common.cpp
 # End Source File
 # Begin Source File
@@ -325,6 +325,10 @@ SOURCE=.\net\module_gateway.cpp
 # Begin Source File
 
 SOURCE=.\net\module_gateway_transport.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\module_l5_transport.cpp
 # End Source File
 # Begin Source File
 

@@ -2,7 +2,7 @@
  * This class provides the same function as CUdpSock but can simulate
  * lag and other parameter like packet lost.
  *
- * $Id: udp_sim_sock.h,v 1.2 2005/02/22 10:14:13 besson Exp $
+ * $Id: udp_sim_sock.h,v 1.3 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #define NL_UDP_SIM_SOCK_H
 
 #include "nel/misc/config_file.h"
+#include <queue>
 
 #include "sock.h"
 #include "udp_sock.h"
@@ -35,6 +36,8 @@
 
 namespace NLNET {
 
+
+struct CBufferizedOutPacket;
 
 /**
  * CUdpSimSock: Unreliable datagram socket via UDP but packet lost, lag simulation.
@@ -69,6 +72,9 @@ public:
 	CUdpSock			UdpSock;
 
 private:
+
+	std::queue<CBufferizedOutPacket*> _BufferizedOutPackets;
+	std::queue<CBufferizedOutPacket*> _BufferizedInPackets;
 
 	static uint32	_InLag;
 	static uint8	_InPacketLoss;

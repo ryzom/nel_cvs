@@ -1,7 +1,7 @@
 /** \file module_socket.h
  * module socket interface
  *
- * $Id: module_socket.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_socket.h,v 1.4 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,13 +51,13 @@ namespace NLNET
 		 *	If the destination module is not accessible through this socket,
 		 *	an exception is thrown.
 		 */
-		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
+		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message ) 
 			throw (EModuleNotPluggedHere)
 			=0;
 		/** A plugged module send a message to all the module reachable
 		 *	with this socket.
 		 */
-		virtual void broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+		virtual void broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 			=0;
 
@@ -104,20 +104,20 @@ namespace NLNET
 		virtual void _onModulePlugged(const TModulePtr &pluggedModule);
 		virtual void _onModuleUnplugged(const TModulePtr &pluggedModule);
 
-		virtual void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message )
+		virtual void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message )
 			throw (EModuleNotPluggedHere, NLNET::EModuleNotReachable)
 			=0;
 
-		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+		virtual void _broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 			=0;
 	
-		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
+		virtual void sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message ) 
 			throw (EModuleNotPluggedHere);
 		/** A plugged module send a message to all the module reachable
 		 *	with this socket.
 		 */
-		virtual void broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+		virtual void broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere);
 
 	};

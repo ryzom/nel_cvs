@@ -1,7 +1,7 @@
 /** \file module_local_gateway.h
  * module gateway interface
  *
- * $Id: module_local_gateway.cpp,v 1.1 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module_local_gateway.cpp,v 1.2 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,34 @@ namespace NLNET
 //			return _ThisProxy;
 //		}
 
+		/// Create and bind to this gateway a new transport
+		virtual void createTransport(const std::string &transportClass, const std::string &instanceName)
+		{
+		}
+		/// Delete a transport (this will close any open route)
+		virtual void deleteTransport(const std::string &instanceName)
+		{
+		}
+		
+		/// Activate/stop peer invisible mode on a transport
+		virtual void	setTransportPeerInvisible(const std::string &transportInstanceName, bool peerInvisible)
+		{
+			// unsupported
+			nlstop;
+		}
+		
+		/// Activate/stop firewalling mode on a transport
+		virtual void	setTransportFirewallMode(const std::string &transportInstanceName, bool firewalled) 
+			throw (EGatewayFirewallBreak)
+		{
+			// unsupported
+			nlstop;
+		}
+
+		/// Send a command to a transport
+		virtual void transportCommand(const TParsedCommandLine &commandLine)
+		{
+		}
 		virtual IGatewayTransport *getGatewayTransport(const std::string &transportName) const
 		{
 			// there are no transport here
@@ -126,6 +154,17 @@ namespace NLNET
 		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin)
 		{
 		}
+
+		virtual void createSecurityPlugin(const std::string &className)
+		{
+		}
+		virtual void sendSecurityCommand(const TParsedCommandLine &command)
+		{
+		}
+		virtual void removeSecurityPlugin()
+		{
+		}
+
 
 //		virtual  bool isGatewayServerOpen()
 //		{
@@ -256,7 +295,7 @@ namespace NLNET
 //		virtual void onReceiveModuleMessage(TModuleGatewayProxyPtr &senderGateway, TModuleMessagePtr &message)
 //		{
 //		}
-		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message)
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message)
 		{
 		}
 		virtual void dispatchMessageModule(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
@@ -309,6 +348,9 @@ namespace NLNET
 		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
 		{
 		}
+		void				onModuleSecurityChange(IModuleProxy *moduleProxy)
+		{
+		}
 		void				onModuleSocketEvent(IModuleSocket *moduleSocket, TModuleSocketEvent eventType)
 		{
 		}
@@ -322,7 +364,7 @@ namespace NLNET
 			return getModuleName();
 		}
 
-		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
+		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message ) 
 			throw (EModuleNotReachable, EModuleNotPluggedHere)
 		{
 			TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
@@ -332,7 +374,7 @@ namespace NLNET
 
 			nlstop;
 		}
-		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
+		virtual void _broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 		{
 			nlstop;

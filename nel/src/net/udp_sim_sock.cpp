@@ -2,7 +2,7 @@
  * This class provides the same function as CUdpSock but can simulate
  * lag and other parameter like packet lost.
  *
- * $Id: udp_sim_sock.cpp,v 1.3 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: udp_sim_sock.cpp,v 1.4 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -89,8 +89,8 @@ struct CBufferizedOutPacket
 // Variables
 //
 
-static queue<CBufferizedOutPacket*> BufferizedOutPackets;
-static queue<CBufferizedOutPacket*> BufferizedInPackets;
+//queue<CBufferizedOutPacket*> CUdpSimSock::BufferizedOutPackets;
+//queue<CBufferizedOutPacket*> CUdpSimSock::BufferizedInPackets;
 
 uint32	CUdpSimSock::_InLag = 0;
 uint8	CUdpSimSock::_InPacketLoss = 0;
@@ -128,9 +128,9 @@ void CUdpSimSock::sendUDP (const uint8 *buffer, uint32& len, const CInetAddress 
 			CBufferizedOutPacket *bp = new CBufferizedOutPacket (&UdpSock, buffer, len, lag, addr);
 
 			// duplicate the packet
-			if ((float)rand()/(float)(RAND_MAX)*100.0f < _OutPacketDisordering && BufferizedOutPackets.size() > 0)
+			if ((float)rand()/(float)(RAND_MAX)*100.0f < _OutPacketDisordering && _BufferizedOutPackets.size() > 0)
 			{
-				CBufferizedOutPacket *bp2 = BufferizedOutPackets.back();
+				CBufferizedOutPacket *bp2 = _BufferizedOutPackets.back();
 
 				// exange the time
 				TTime t = bp->Time;
@@ -138,17 +138,17 @@ void CUdpSimSock::sendUDP (const uint8 *buffer, uint32& len, const CInetAddress 
 				bp2->Time = t;
 
 				// exange packet in the buffer
-				BufferizedOutPackets.back() = bp;
+				_BufferizedOutPackets.back() = bp;
 				bp = bp2;
 			}
 
-			BufferizedOutPackets.push (bp);
+			_BufferizedOutPackets.push (bp);
 
 			// duplicate the packet
 			if ((float)rand()/(float)(RAND_MAX)*100.0f < _OutPacketDuplication)
 			{
 				CBufferizedOutPacket *bp = new CBufferizedOutPacket (&UdpSock, buffer, len, lag, addr);
-				BufferizedOutPackets.push (bp);
+				_BufferizedOutPackets.push (bp);
 			}
 		}
 		else
@@ -171,15 +171,15 @@ void CUdpSimSock::sendUDP (const uint8 *buffer, uint32& len, const CInetAddress 
 void CUdpSimSock::updateBufferizedPackets ()
 {
 	TTime ct = CTime::getLocalTime ();
-	while (!BufferizedOutPackets.empty())
+	while (!_BufferizedOutPackets.empty())
 	{
-		CBufferizedOutPacket *bp = BufferizedOutPackets.front ();
+		CBufferizedOutPacket *bp = _BufferizedOutPackets.front ();
 		if (bp->Time <= ct)
 		{
 			// time to send the message
 			sendUDPNow (bp->Packet, bp->PacketSize, bp->Addr);
 			delete bp;
-			BufferizedOutPackets.pop ();
+			_BufferizedOutPackets.pop ();
 		}
 		else
 		{
@@ -250,19 +250,35 @@ bool				CUdpSimSock::dataAvailable ()
 			if ((float)rand()/(float)(RAND_MAX)*100.0f >= _InPacketLoss)
 			{
 				CBufferizedOutPacket *bp = new CBufferizedOutPacket (&UdpSock, buffer, len, _InLag, &addr);
-				BufferizedInPackets.push (bp);
+				_BufferizedInPackets.push (bp);
 			}
 		}
 
 		TTime ct = CTime::getLocalTime ();
-		if (!BufferizedInPackets.empty() && BufferizedInPackets.front ()->Time <= ct)
+		if (!_BufferizedInPackets.empty() && _BufferizedInPackets.front ()->Time <= ct)
 			return true;
 		else
 			return false;
 	}
 	else
 	{
-		return UdpSock.dataAvailable ();
+		if ((float)rand()/(float)(RAND_MAX)*100.0f >= _InPacketLoss)
+		{
+			return UdpSock.dataAvailable ();
+		}
+		else
+		{
+			// consume data
+			if (UdpSock.dataAvailable ())
+			{
+				CInetAddress addr;
+				uint len = 10000;
+				UdpSock.receivedFrom (buffer, len, addr);
+			}
+			
+			// packet lost
+			return false;
+		}
 	}
 }
 
@@ -270,20 +286,20 @@ bool				CUdpSimSock::receive (uint8 *buffer, uint32& len, bool throw_exception)
 {
 	if (_InLag> 0)
 	{
-		if (BufferizedInPackets.empty())
+		if (_BufferizedInPackets.empty())
 		{
 			if (throw_exception)
 				throw Exception ("no data available");
 			return false;
 		}
 		
-		CBufferizedOutPacket *bp = BufferizedInPackets.front ();
+		CBufferizedOutPacket *bp = _BufferizedInPackets.front ();
 		uint32 s = min (len, bp->PacketSize);
 		memcpy (buffer, bp->Packet, s);
 		len = s;
 
 		delete bp;
-		BufferizedInPackets.pop ();
+		_BufferizedInPackets.pop ();
 		return true;
 	}
 	else

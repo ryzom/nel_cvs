@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.53 2005/08/22 17:45:57 cado Exp $
+ * $Id: unified_network.h,v 1.54 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_UNIFIED_NETWORD_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/command.h"
 
 #include <hash_map>
 #include <vector>
@@ -86,10 +87,18 @@ struct TUnifiedCallbackItem
  * \author Nevrax France
  * \date 2002-2004
  */
-class CUnifiedNetwork
+class CUnifiedNetwork : public NLMISC::ICommandsHandler
 {
 	NLMISC_SAFE_SINGLETON_DECL_PTR(CUnifiedNetwork);
 public:
+
+	virtual const std::string &getCommandHandlerName() const
+	{
+		static const std::string name("unifiedNetwork");
+
+		return name;
+	}
+
 
 	/** Returns the singleton instance of the CUnifiedNetwork class.
 	 */
@@ -194,6 +203,8 @@ public:
 	 * \param back if true, put the callback at the end of the callback array, otherwise but on the beginning. You should always use true
 	 */
 	void	setServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = 0, bool back=true);
+	/** Remove a serive up callback */
+	void	removeServiceUpCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = 0);
 
 	/** Sets callback for disconnections.
 	 * On a client, the callback will be call each time the connection to the server is lost.
@@ -208,6 +219,8 @@ public:
 	 * \param back if true, put the callback at the end of the callback array, otherwise but on the beginning. You should always use true
 	 */
 	void	setServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = 0, bool back=true);
+	/** Remove a serive down callback */
+	void	removeServiceDownCallback (const std::string &serviceName, TUnifiedNetCallback cb, void *arg = 0);
 
 	/** Associate a string with a network id
 	 * If the send don't set a specific nid, it ll use the 0, so be sure that the nid 0 is set to a network.
@@ -371,7 +384,7 @@ private:
 		/// The external connection address
 		std::vector<CInetAddress>	ExtAddress;
 		/// Connection to the service (me be > 1)
-		std::vector<TConnection>	Connection;
+		std::vector<TConnection>	Connections;
 		/// This is used to associate a nid (look addNetworkAssociation) with a TConnection.
 		std::vector<uint8>			NetworkConnectionAssociations;
 		/// This contains the connection id that will be used for default network, it's a connection id used for Connection index
@@ -396,7 +409,7 @@ private:
 			ServiceName = name;
 			ServiceId = id;
 			State = Ready;
-			Connection.push_back(TConnection (cbc));
+			Connections.push_back(TConnection (cbc));
 		}
 
 		void display (bool full, NLMISC::CLog *log = NLMISC::InfoLog);
@@ -413,15 +426,15 @@ private:
 			SendId = false;
 			AutoCheck = false;
 			ExtAddress.clear ();
-			for (uint i = 0; i < Connection.size (); i++)
-				Connection[i].reset();
-			Connection.clear ();
+			for (uint i = 0; i < Connections.size (); i++)
+				Connections[i].reset();
+			Connections.clear ();
 			DefaultNetwork = 0xDD;
 			NetworkConnectionAssociations.clear();
 			TotalCallbackCalled = 0;
 		}
 
-		// this function wrap the globa default network and network asssociation with this specific connection because they can have
+		// this function wrap the global default network and network association with this specific connection because they can have
 		// different index
 		void setupNetworkAssociation (const std::vector<uint32> &networkAssociations, const std::vector<std::string> &defaultNetwork)
 		{
@@ -472,6 +485,12 @@ private:
 		}
 	};
 
+	NLMISC_COMMAND_HANDLER_TABLE_BEGIN(CUnifiedNetwork)
+		NLMISC_COMMAND_HANDLER_ADD(CUnifiedNetwork, addService, "Add a service in the unified network", "<serviceName> ( address=<address:port> [sid=<serviceId>] [sendId] [external] [autoRetry] )")
+	NLMISC_COMMAND_HANDLER_TABLE_END
+
+	NLMISC_CLASS_COMMAND_DECL(addService);
+
 protected:
 
 	/// Auto-reconnect
@@ -485,7 +504,10 @@ protected:
 private:
 
 	/// Vector of connections by service id (sid is the entry in this array, it means that there s some hole)
-	std::vector<CUnifiedConnection>				_IdCnx;
+	std::vector<CUnifiedConnection>				_IdCnx	;
+
+	/// Vector of closed connection to reset outside of the client update loop
+	std::vector<uint16>							_ConnectionToReset;
 
 	/// This vector contains only an index to the unified connection. It is used to have quick access on the available connections
 	std::vector<uint16>							_UsedConnection;
@@ -551,7 +573,7 @@ private:
 	{
 	}
 
-	~CUnifiedNetwork() { }
+	~CUnifiedNetwork() {}
 	
 	//
 	void	autoCheck();

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.39 2004/06/14 15:04:41 cado Exp $
+ * $Id: message.h,v 1.40 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,9 @@ public:
 
 	/// Assignment operator
 	CMessage &operator= (const CMessage &other);
+
+	/// exchange memory data
+	void swap(CMessage &other);
 	
 	/// Sets the message type as a string and put it in the buffer if we are in writing mode
 	void setType (const std::string &name);
@@ -70,7 +73,7 @@ public:
 	void changeType (const std::string &name);
 
 	/// Returns the size, in byte of the header that contains the type name of the message or the type number
-	uint32 getHeaderSize ();
+	uint32 getHeaderSize () const;
 	
 	/** The message was filled with an CMemStream, Now, we'll get the message type on this buffer.
 	 * This method updates _LengthR with the actual size of the buffer (it calls resetLengthR()).
@@ -101,10 +104,29 @@ public:
 		}
 	}
 
+	virtual uint32			lengthS() const
+	{
+		if (!hasLockedSubMessage())
+			return _BufPos - _Buffer.getPtr();
+		else
+			return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+
+	}
+
 	/// Returns the "read" message size (number of bytes to read) (note: see comment about _LengthR)
 	uint32			lengthR() const
 	{
 		return _LengthR;
+	}
+
+	virtual sint32	getPos () throw(NLMISC::EStream)
+	{
+		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+	}
+
+	virtual sint32			getPos() const
+	{
+		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
 	}
 
 	/**
@@ -130,12 +152,14 @@ public:
 	 */
 	std::string			lockSubMessage( uint32 subMsgSize )
 	{
+		nlassert(!hasLockedSubMessage());
 		uint32 subMsgBeginPos = getPos();
 		uint32 subMsgEndPos = subMsgBeginPos + subMsgSize;
 		nlassertex( isReading() && (subMsgEndPos <= lengthR()), ("%s %u %u", isReading()?"R":"W", subMsgEndPos, lengthR()) );
 		std::string name = readTypeAtCurrentPos();
 		_SubMessagePosR = subMsgBeginPos;
-		_LengthR = subMsgEndPos;
+//		_LengthR = subMsgEndPos;
+		_LengthR = subMsgSize;
 		return name;
 	}
 
@@ -152,9 +176,9 @@ public:
 	void			unlockSubMessage()
 	{
 		nlassert( isReading() && hasLockedSubMessage() );
-		nlassertex( getPos() <= (sint32)_LengthR, ("The callback for msg %s read more data than there is in the message (pos=%d len=%u)", getName().c_str(), getPos(), _LengthR) );
+		nlassertex( getPos() <= sint32(_SubMessagePosR+_LengthR), ("The callback for msg %s read more data than there is in the message (pos=%d len=%u)", getName().c_str(), getPos(), _LengthR) );
 
-		uint32 subMsgEndPos = _LengthR;
+		uint32 subMsgEndPos = _SubMessagePosR + _LengthR;
 		resetSubMessageInternals();
 		seek( subMsgEndPos, IStream::begin );
 	}
@@ -164,6 +188,19 @@ public:
 	{
 		return (_SubMessagePosR != 0);
 	}
+
+	/** If a sub message is locked, return the sub message part
+	*/
+	virtual const uint8		*buffer() const
+	{
+		if (hasLockedSubMessage())
+		{
+			return _Buffer.getPtr() + _SubMessagePosR;
+		}
+		else 
+			return CMemStream::buffer();
+	}
+
 
 	/**
 	 * Similar to operator=, but makes the current message contain *only* the locked sub message in msgin

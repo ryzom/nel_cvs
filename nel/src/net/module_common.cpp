@@ -1,7 +1,7 @@
 /** \file module_common.cpp
  * basic type and forward declaration for module system
  *
- * $Id: module_common.cpp,v 1.2 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module_common.cpp,v 1.3 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,32 @@ namespace NLNET
 
 		return _parseParamList(rawParamString);
 	}
+
+	std::string TParsedCommandLine::toString() const
+	{
+		string ret;
+
+		ret = ParamName;
+		if (!ParamValue.empty())
+		{
+			ret += " = "+ParamValue;
+		}
+
+		if (!SubParams.empty())
+		{
+			ret += " ( ";
+
+			for (uint i=0; i<SubParams.size(); ++i)
+			{
+				ret += SubParams[i].toString();
+			}
+
+			ret += " ) ";
+		}
+
+		return ret;
+	}
+
 
 
 	bool TParsedCommandLine::_parseParamList(const std::string &rawParamString)

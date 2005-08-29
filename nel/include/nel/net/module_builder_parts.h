@@ -1,7 +1,7 @@
 /** \file module_builder_parts.h
  * Template module building blocks.
  *
- * $Id: module_builder_parts.h,v 1.2 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_builder_parts.h,v 1.3 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,8 @@ namespace NLNET
 		virtual void				onModuleUp(IModuleProxy *moduleProxy)
 		{}
 		virtual void				onModuleDown(IModuleProxy *moduleProxy)
+		{}
+		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy)
 		{}
 		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
 		{}

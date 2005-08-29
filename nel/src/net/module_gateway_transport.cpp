@@ -1,7 +1,7 @@
-/** \file module_gateway.h
- * module gateway interface
+/** \file module_gateway_transport.h
+ * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.3 2005/08/10 09:12:15 distrib Exp $
+ * $Id: module_gateway_transport.cpp,v 1.4 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ namespace NLNET
 		{
 		}
 
-		void sendMessage(const CMessage &message) const;
+		void sendMessage(CMessage &message) const;
 	};
 
 #define LAYER3_SERVER_CLASS_NAME "L3Server"
@@ -62,11 +62,6 @@ namespace NLNET
 	{
 		friend class CL3ServerRoute;
 	public:
-		/// Invalid command
-		class EInvalidCommand : public IGatewayTransport::EInvalidCommand
-		{
-		};
-
 		/// The callback server that receive connection and dispatch message
 		auto_ptr<CCallbackServer>			_CallbackServer;
 
@@ -132,15 +127,15 @@ namespace NLNET
 					CL3ServerRoute *route = first->second;
 					log.displayNL("    + route to '%s', %u entries in the proxy translation table :",
 						sockId->getTcpSock()->remoteAddr().asString().c_str(),
-						route->ForeignToLocalIdx.size());
+						route->ForeignToLocalIdx.getAToBMap().size());
 
 					{
-						CGatewayRoute::TForeignToLocalIdx::const_iterator first(route->ForeignToLocalIdx.begin()), last(route->ForeignToLocalIdx.end());
+						CGatewayRoute::TForeignToLocalIdx::TAToBMap::const_iterator first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
 						for (; first != last; ++first)
 						{
 							IModuleProxy *modProx = mm.getModuleProxy(first->second);
 
-							log.displayNL("      + Proxy '%s' : local proxy id %u => foreign module id %u",
+							log.displayNL("      - Proxy '%s' : local proxy id %u => foreign module id %u",
 								modProx != NULL ? modProx->getModuleName().c_str() : "ERROR, invalid module",
 								first->second,
 								first->first);
@@ -182,7 +177,7 @@ namespace NLNET
 			return true;
 		}
 
-		/// Open the server by starting listing for incomming connection on the specified port
+		/// Open the server by starting listing for incoming connection on the specified port
 		void openServer(uint16 port) throw (ETransportError)
 		{
 			if (_CallbackServer.get() != NULL)
@@ -320,7 +315,7 @@ namespace NLNET
 	// register this class in the transport factory
 	NLMISC_REGISTER_OBJECT(IGatewayTransport, CGatewayL3ServerTransport, std::string, string(LAYER3_SERVER_CLASS_NAME));
 
-	void CL3ServerRoute::sendMessage(const CMessage &message) const
+	void CL3ServerRoute::sendMessage(CMessage &message) const
 	{
 		CGatewayL3ServerTransport *trpt = static_cast<CGatewayL3ServerTransport*>(_Transport);
 
@@ -339,14 +334,19 @@ namespace NLNET
 		/// The Client callback
 		mutable CCallbackClient		CallbackClient;
 
-		CL3ClientRoute(IGatewayTransport *transport)
-			: CGatewayRoute(transport)
+		// conn id
+		uint32						ConnId;
+
+		CL3ClientRoute(IGatewayTransport *transport, uint32 connId)
+			: CGatewayRoute(transport),
+			ConnId(connId)
 		{
 		}
 
-		void sendMessage(const CMessage &message) const
+		void sendMessage(CMessage &message) const
 		{
-			CallbackClient.send(message);
+			if (CallbackClient.connected())
+				CallbackClient.send(message);
 		}
 	};
 
@@ -357,11 +357,6 @@ namespace NLNET
 	{
 		friend class CL3ClientRoute;
 	public:
-		/// Invalid command
-		class EInvalidCommand : public IGatewayTransport::EInvalidCommand
-		{
-		};
-
 		/// A static mapper to retrieve transport from the CCallbackServer pointer
 		typedef map<CCallbackNetBase*, CGatewayL3ClientTransport*>	TDispatcherIndex;
 		static TDispatcherIndex				_DispatcherIndex;
@@ -378,6 +373,9 @@ namespace NLNET
 		typedef vector<TClientRouteIds::difference_type>	TFreeRouteIds;
 		TFreeRouteIds			_FreeRoutesIds;
 		
+		/// the route to delete ouside of the update loop
+		list<CL3ClientRoute*>	_RouteToRemove;
+
 		/// Constructor
 		CGatewayL3ClientTransport(const IGatewayTransport::TCtorParam &param) 
 			: IGatewayTransport(param)
@@ -386,6 +384,8 @@ namespace NLNET
 
 		~CGatewayL3ClientTransport()
 		{
+			deletePendingRoute();
+
 			// close all open connection
 			for (uint i=0; i<_RouteIds.size(); ++i)
 			{
@@ -397,6 +397,22 @@ namespace NLNET
 			}
 		}
 
+		void deletePendingRoute()
+		{
+			// delete any route pending
+			while (!_RouteToRemove.empty())
+			{
+				CL3ClientRoute *route = _RouteToRemove.front();
+				_DispatcherIndex.erase(&(route->CallbackClient));
+				_Routes.erase(route->CallbackClient.getSockId());
+
+				_RouteIds[route->ConnId] = NULL;
+				_FreeRoutesIds.push_back(route->ConnId);
+				delete route;
+				_RouteToRemove.pop_front();
+			}
+		}
+
 		const std::string &getClassName() const
 		{
 			static string className(LAYER3_CLIENT_CLASS_NAME);
@@ -405,6 +421,9 @@ namespace NLNET
 
 		virtual void update()
 		{
+			// delete any route pending
+			deletePendingRoute();
+
 			// update the client connection
 			TClientRoutes::iterator first(_Routes.begin()), last(_Routes.end());
 			for (; first != last; ++first)
@@ -434,15 +453,15 @@ namespace NLNET
 				CL3ClientRoute *route = first->second;
 				log.displayNL("    + route to '%s', %u entries in the proxy translation table :",
 					sockId->getTcpSock()->remoteAddr().asString().c_str(),
-					route->ForeignToLocalIdx.size());
+					route->ForeignToLocalIdx.getAToBMap().size());
 
 				{
-					CGatewayRoute::TForeignToLocalIdx::const_iterator first(route->ForeignToLocalIdx.begin()), last(route->ForeignToLocalIdx.end());
+					CGatewayRoute::TForeignToLocalIdx::TAToBMap::const_iterator first(route->ForeignToLocalIdx.getAToBMap().begin()), last(route->ForeignToLocalIdx.getAToBMap().end());
 					for (; first != last; ++first)
 					{
 						IModuleProxy *modProx = mm.getModuleProxy(first->second);
 
-						log.displayNL("      + Proxy '%s' : local proxy id %u => foreign module id %u",
+						log.displayNL("      - Proxy '%s' : local proxy id %u => foreign module id %u",
 							modProx != NULL ? modProx->getModuleName().c_str() : "ERROR, invalid module",
 							first->second,
 							first->first);
@@ -493,7 +512,20 @@ namespace NLNET
 		/// connect to a server
 		void connect(CInetAddress &addr)
 		{
-			auto_ptr<CL3ClientRoute> route = auto_ptr<CL3ClientRoute>(new CL3ClientRoute(this));
+			uint32 connId;
+			// affect a connection id
+			if (_FreeRoutesIds.empty())
+			{
+				connId = _RouteIds.size();
+				_RouteIds.push_back(InvalidSockId);
+			}
+			else
+			{
+				connId = _FreeRoutesIds.back();
+				_FreeRoutesIds.pop_back();
+			}
+
+			auto_ptr<CL3ClientRoute> route = auto_ptr<CL3ClientRoute>(new CL3ClientRoute(this, connId));
 
 			// set the callbacks
 			route->CallbackClient.setDisconnectionCallback(cbDisconnection, static_cast<IGatewayTransport*>(this));
@@ -504,14 +536,7 @@ namespace NLNET
 
 			// store the route
 			_Routes.insert(make_pair(route->CallbackClient.getSockId(), route.get()));
-			if (_FreeRoutesIds.empty())
-				_RouteIds.push_back(route->CallbackClient.getSockId());
-			else
-			{
-				nlassert(_FreeRoutesIds.back() == 0);
-				_RouteIds[_FreeRoutesIds.back()] = route->CallbackClient.getSockId();
-				_FreeRoutesIds.pop_back();
-			}
+			_RouteIds[connId] = route->CallbackClient.getSockId();
 
 			// register it in the dispatcher
 			_DispatcherIndex.insert(make_pair(&route->CallbackClient, this));
@@ -539,6 +564,8 @@ namespace NLNET
 				nlwarning("Invalid connectionId %u, the connection is unused now.", connId);
 				return;		
 			}
+
+			deletePendingRoute();
 
 			// retrieve the connection to close
 			TClientRoutes::iterator it(_Routes.find(_RouteIds[connId]));
@@ -575,8 +602,8 @@ namespace NLNET
 
 			// delete the route
 			CL3ClientRoute *route = it->second;
-			_Routes.erase(it);
-			delete route;
+
+			_RouteToRemove.push_back(route);
 		}
 
 		// Called to dispatch an incoming message to the gateway
@@ -597,7 +624,7 @@ namespace NLNET
 		static void cbDisconnection ( TSockId from, void *arg )
 		{
 			nlassert(arg != NULL);
-			CGatewayL3ServerTransport *transport = dynamic_cast<CGatewayL3ServerTransport *>(static_cast<IGatewayTransport*>(arg));
+			CGatewayL3ClientTransport *transport = dynamic_cast<CGatewayL3ClientTransport *>(static_cast<IGatewayTransport*>(arg));
 			nlassert(transport != NULL);
 
 			transport->onDisconnection(from);

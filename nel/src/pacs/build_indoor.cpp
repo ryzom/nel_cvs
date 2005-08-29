@@ -1,7 +1,7 @@
 /** \file build_indoor.cpp
  * 
  *
- * $Id: build_indoor.cpp,v 1.6 2005/02/22 10:19:20 besson Exp $
+ * $Id: build_indoor.cpp,v 1.7 2005/08/29 16:17:38 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -715,3 +715,4 @@ bool	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 }
 
 } // NLPACS
+

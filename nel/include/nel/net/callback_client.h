@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.18 2005/02/22 10:14:13 besson Exp $
+ * $Id: callback_client.h,v 1.19 2005/08/29 16:16:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,7 @@ public:
 
 	/// Constructor
 	CCallbackClient( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true, bool initPipeForDataAvailable=true );
+	~CCallbackClient();
 
 	/// Sends a message to the remote host (the second parameter isn't used)
 	void	send (const CMessage &buffer, TSockId hostid = InvalidSockId, bool log = true);
@@ -109,6 +110,8 @@ private:
 	// debug features, we number all packet to be sure that they are all sent and received
 	// \todo remove this debug feature when ok
 	uint32 SendNextValue, ReceiveNextValue;
+
+	bool LockDeletion;
 };
 
 

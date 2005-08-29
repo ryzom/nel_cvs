@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.82 2005/06/23 17:55:42 boucher Exp $
+# $Id: Makefile.am,v 1.83 2005/08/29 16:12:47 boucher Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -84,7 +84,6 @@ libnelmisc_la_SOURCES = \
 	progress_callback.cpp \
 	quad.cpp \
 	quat.cpp \
-	random.cpp \
 	reader_writer.cpp \
 	rect.cpp \
 	report.cpp \

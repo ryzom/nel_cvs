@@ -54,7 +54,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/misc"
 # PROP Intermediate_Dir "../obj/Debug/misc"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "__STL_DEBUG" /D "_DEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdmisc.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -898,10 +898,6 @@ SOURCE=.\misc\quat.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\quat.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\random.cpp
 # End Source File
 # Begin Source File
 

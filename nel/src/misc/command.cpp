@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.38 2005/07/05 13:43:46 berenguier Exp $
+ * $Id: command.cpp,v 1.39 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,7 @@ void CCommandRegistry::unregisterCommand(ICommand *command)
 			return;
 		}
 	}
+	nlwarning("CCommandRegistry::unregisterCommand : the command '%s' is not registered", command->getName().c_str());
 }
 
 void CCommandRegistry::registerNamedCommandHandler(ICommandsHandler *handler, const std::string &className)

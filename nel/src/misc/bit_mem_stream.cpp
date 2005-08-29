@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.39 2005/08/19 15:30:04 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.40 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,6 +66,16 @@ CBitMemStream::CBitMemStream( const CBitMemStream& other ) :
 {
 }
 
+/*
+ *	Exchange
+ */
+void CBitMemStream::swap(CBitMemStream &other)
+{
+	CMemStream::swap(other);
+	std::swap(_FreeBits, other._FreeBits);
+	_DbgInfo.swap(other._DbgInfo);
+}
+	
 
 /*
  * Serialize a buffer

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.28 2005/04/18 13:51:35 legros Exp $
+ * $Id: mem_stream.cpp,v 1.29 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,16 @@ namespace NLMISC
 	return *this;
 }
 */
+
+void CMemStream::swap(CMemStream &other)
+{
+	IStream::swap(other);
+	_Buffer.swap(other._Buffer);
+	std::swap(_BufPos, other._BufPos);
+	std::swap(_StringMode, other._StringMode);
+	std::swap(_DefaultCapacity, other._DefaultCapacity);
+}
+	
 
 /*
  * serial (inherited from IStream)

@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.cpp,v 1.1 2005/06/23 16:35:39 boucher Exp $
+ * $Id: app_context.cpp,v 1.2 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,14 @@ bool INelContext::isContextInitialised()
 
 INelContext::~INelContext()
 {
+	// unregister still undeleted local command into the global command registry
+	ICommand::TCommand::iterator first(ICommand::LocalCommands->begin()), last(ICommand::LocalCommands->end());
+	for (; first != last; ++first)
+	{
+		ICommand *command = first->second;
+		CCommandRegistry::getInstance().unregisterCommand(command);
+	}
+
 	_NelContext = NULL;
 }
 
@@ -213,6 +221,7 @@ CLibraryContext::CLibraryContext(INelContext &applicationContext)
 {
 	contextReady();
 }
+
 
 void *CLibraryContext::getSingletonPointer(const std::string &singletonName)
 {

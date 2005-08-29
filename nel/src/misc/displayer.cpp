@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.68 2005/06/23 16:35:39 boucher Exp $
+ * $Id: displayer.cpp,v 1.69 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,7 +163,11 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	{
 		//ss << setw(5) << args.ThreadId;
 		if (needSpace) { str += " "; needSpace = false; }
+#ifdef NL_OS_WINDOWS
+		str += NLMISC::toString("%5x", args.ThreadId);
+#else
 		str += NLMISC::toString("%5u", args.ThreadId);
+#endif
 		needSpace = true;
 	}
 
@@ -267,7 +271,7 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		// Write thread identifier
 		if ( args.ThreadId != 0 )
 		{
-			str2 += NLMISC::toString("%5u: ", args.ThreadId);
+			str2 += NLMISC::toString("%5x: ", args.ThreadId);
 		}
 
 		str2 += message;
@@ -427,7 +431,11 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 	if ( args.ThreadId != 0 && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
-		str += NLMISC::toString(args.ThreadId);
+#ifdef NL_OS_WINDOWS
+		str += NLMISC::toString("%4x", args.ThreadId);
+#else
+		str += NLMISC::toString("%4u", args.ThreadId);
+#endif
 		needSpace = true;
 	}
 

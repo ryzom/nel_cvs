@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.12 2004/09/22 14:52:30 berenguier Exp $
+ * $Id: win_thread.cpp,v 1.13 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #include "nel/misc/win_thread.h"
 #include <windows.h>
-
+#include <typeinfo.h>
 
 namespace NLMISC {
 
@@ -111,6 +111,8 @@ CWinThread::~CWinThread ()
 void CWinThread::start ()
 {
 	ThreadHandle = (void *) CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
+//	nldebug("NLMISC: thread %x started for runnable '%x'", typeid( Runnable ).name());
+	OutputDebugString(toString("NLMISC: thread %x started for runnable '%s'\n", ThreadId, typeid( *Runnable ).name()).c_str());
 	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost
 	if (ThreadHandle == NULL)
 	{

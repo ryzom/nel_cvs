@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.32 2004/11/15 11:18:54 legros Exp $
+ * $Id: stream.cpp,v 1.33 2005/08/29 16:12:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,6 +112,14 @@ IStream& IStream::operator=( const IStream& other )
 	_InputStream = other._InputStream;
 	resetPtrTable();
 	return *this;
+}
+
+void IStream::swap(IStream &other)
+{
+	std::swap(_InputStream, other._InputStream);
+	std::swap(_NextSerialPtrId, other._NextSerialPtrId);
+	_IdMap.swap(other._IdMap);
+	std::swap(_XML, other._XML);
 }
 
 

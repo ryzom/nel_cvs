@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.h,v 1.2 2005/08/19 15:28:43 cado Exp $
+ * $Id: app_context.h,v 1.3 2005/08/29 16:12:12 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,13 +37,17 @@ namespace NLMISC
 	class CMemDisplayer;
 	class CMsgBoxDisplayer;
 
-	/** The global Nel context pointer. Will point to the same object
-	 *	after application of library initialisation.
-	 */
-//	extern class INelContext *NelContext;
 
 	/** Interface definition for nel context.
 	 *	Any application wide data can be accessed thru this interface.
+	 *
+	 *	The NeL context is a mean to allow dynamic library loading in NeL.
+	 *	In order to make all NeL application safe, it is mandatory to declare
+	 *	a NeL context at startup of any application (first instruction of the
+	 *	main() or WinMain() is good practice).
+	 *	Note that for NLNET::IService oriented application, service framwork
+	 *	already provide the application context.
+	 *
 	 *	\author Boris 'SoniX' Boucher
 	 *  \date 2005
 	 */
@@ -210,7 +214,7 @@ namespace NLMISC
 			if (_Instance == NULL) \
 			{ \
 				/* the nel context MUST be initialised */ \
-				nlassert(NLMISC::INelContext::isContextInitialised()); \
+				nlassertex(NLMISC::INelContext::isContextInitialised(), ("You are trying to access a safe singleton without having initialized a NeL context. The simplest correction is to add 'NLMISC::CApplicationContext myApplicationContext;' at the very begining of your application.")); \
 				void *ptr = NLMISC::INelContext::getInstance().getSingletonPointer(#className); \
 				if (ptr == NULL) \
 				{ \
@@ -243,7 +247,7 @@ namespace NLMISC
 			if (_Instance == NULL) \
 			{ \
 				/* the nel context MUST be initialised */ \
-				nlassert(NLMISC::INelContext::isContextInitialised()); \
+				nlassertex(NLMISC::INelContext::isContextInitialised(), ("You are trying to access a safe singleton without having initialized a NeL context. The simplest correction is to add 'NLMISC::CApplicationContext myApplicationContext;' at the very begining of your application.")); \
 				void *ptr = NLMISC::INelContext::getInstance().getSingletonPointer(#className); \
 				if (ptr == NULL) \
 				{ \

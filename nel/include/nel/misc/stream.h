@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.74 2005/07/07 11:44:46 vuarand Exp $
+ * $Id: stream.h,v 1.75 2005/08/29 16:12:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,6 +220,9 @@ public:
 
 	/// Assignment operator
 	IStream&		operator=( const IStream& other );
+
+	/// exchange
+	void			swap(IStream &other);
 	
 	/// Is this stream a Read/Input stream?
 	bool			isReading() const;
@@ -275,6 +278,23 @@ public:
 		}
 		else
 		{
+			i = em;
+			serial(i);
+		}
+	}
+	/// Template short enum serialisation. Serialized as a uint8 (with checking).
+    template<class T>
+	void			serialShortEnum(T &em) 
+	{
+		uint8	i;
+		if(isReading())
+		{
+			serial(i);
+			em = (T)i;
+		}
+		else
+		{
+			nlassert(em < 0xff);
 			i = em;
 			serial(i);
 		}
@@ -339,6 +359,8 @@ public:
 	void			serialCont(std::multiset<T> &cont) 	{serialSTLCont(cont);}
 	template<class K, class T>
 	void			serialCont(std::map<K, T> &cont) 			{serialMap(cont);}
+	template<class K, class T, class H>
+	void			serialCont(std::hash_map<K, T, H> &cont) 			{serialMap(cont);}
 	template<class K, class T>
 	void			serialCont(std::multimap<K, T> &cont) 	{serialMultimap(cont);}
 

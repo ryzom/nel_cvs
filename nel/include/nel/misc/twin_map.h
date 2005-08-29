@@ -1,6 +1,6 @@
 /** \file twin_map.h
  *
- * $Id: twin_map.h,v 1.3 2005/06/23 16:31:13 boucher Exp $
+ * $Id: twin_map.h,v 1.4 2005/08/29 16:12:13 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -76,6 +76,9 @@ public:
 	const TAToBMap	   &getAToBMap() const { return _AToB; }
 	// Direct read access to 'TypeB to TypeA' map
 	const TBToAMap	   &getBToAMap() const { return _BToA; }
+	// clear the twin map
+	inline	void		clear();
+
 private:	
 	TAToBMap _AToB;
 	TBToAMap _BToA;	 
@@ -84,6 +87,14 @@ private:
 ////////////////////
 // IMPLEMENTATION //
 ////////////////////
+
+//==================================================================================================
+template <class TypeA, class TypeB>
+inline void	CTwinMap<TypeA, TypeB>::clear()
+{
+	_AToB.clear();
+	_BToA.clear();
+}
 
 //==================================================================================================
 template <class TypeA, class TypeB>

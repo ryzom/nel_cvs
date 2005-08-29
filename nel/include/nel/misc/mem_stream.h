@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.43 2005/08/19 15:30:04 cado Exp $
+ * $Id: mem_stream.h,v 1.44 2005/08/29 16:12:12 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,9 @@ public:
 		return *this;
 	}
 
+	/// allocated memory echange
+	void swap(CMemStream &other);
+
 	/// Set string mode
 	void			setStringMode( bool stringmode ) { _StringMode = stringmode; }
 
@@ -162,7 +165,7 @@ public:
 	}
 
 	/// Const and not-virtual getPos(), for direct use. Caution: should not be overloaded in a child class.
-	sint32			getPos() const
+	virtual sint32			getPos() const
 	{
 		return _BufPos - _Buffer.getPtr();
 	}
@@ -241,7 +244,7 @@ public:
 	/** Returns a pointer to the message buffer (read only)
 	 * Returns NULL if the buffer is empty
 	 */
-	const uint8		*buffer() const
+	virtual const uint8		*buffer() const
 	{
 		return _Buffer.getPtr();
 /*		if ( _Buffer.empty() )
@@ -508,7 +511,7 @@ public:
 protected:
 
 	/// Returns the serialized length (number of bytes written or read)
-	uint32			lengthS() const
+	virtual uint32			lengthS() const
 	{
 		return _BufPos - _Buffer.getPtr(); // not calling getPos() because virtual and not const!
 	}

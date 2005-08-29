@@ -1,7 +1,7 @@
 /** \file misc/dynloadlib.h
  * class for dynamic library loading
  *
- * $Id: dynloadlib.h,v 1.5 2005/06/23 16:32:45 boucher Exp $
+ * $Id: dynloadlib.h,v 1.6 2005/08/29 16:12:12 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,7 +189,7 @@ public:
  *	This interface is used to expose a standard
  *	entry point for dynamicly loaded library
  *	and to add some hooks for library implementor
- *	over library loadiong/unloading.
+ *	over library loading/unloading.
  */
 class INelLibrary
 {

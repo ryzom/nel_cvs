@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.28 2005/02/22 10:14:12 besson Exp $
+ * $Id: bit_mem_stream.h,v 1.29 2005/08/29 16:12:12 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -212,8 +212,15 @@ public:
 		delete _DbgData;
 		_DbgData = NULL;
 	}
-#endif
 
+#endif
+	void swap(CBMSDbgInfo &other)
+	{
+#ifdef NL_DEBUG
+		std::swap(_DbgData, other._DbgData);
+#endif
+	}
+	
 	/// Add a serial event at the end
 	void	addSerial( uint32 bitpos, uint32 size, TBMSSerialInfo::TSerialType type )
 	{
@@ -371,6 +378,9 @@ public:
 		_DbgInfo = other._DbgInfo;
 		return *this;
 	}
+
+	// Echange status and memory data
+	void swap(CBitMemStream &other);
 
 	/**
 	 * Set the position at the beginning. In output mode, the method ensures the buffer

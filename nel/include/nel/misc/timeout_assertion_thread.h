@@ -1,7 +1,7 @@
 /** \file timeout_assertion_thread.h
  * This class generates assert in a thread if the main thread is not fast enough
  *
- * $Id: timeout_assertion_thread.h,v 1.3 2005/02/22 10:14:12 besson Exp $
+ * $Id: timeout_assertion_thread.h,v 1.4 2005/08/29 16:12:13 boucher Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -73,7 +73,21 @@ public:
 			{
 				//nldebug("active, enter sleep");
 				lastCounter = _Counter;
-				NLMISC::nlSleep(_Timeout);
+
+				uint32 cummuledSleep = 0;
+
+				// do sleep until cumulated time reached timeout value
+				while (cummuledSleep < _Timeout)
+				{
+					// sleep 1 s
+					NLMISC::nlSleep(std::min(uint32(1000), _Timeout-cummuledSleep));
+
+					cummuledSleep += 1000;
+
+					// check if exit is required
+					if (_Control == QUIT)
+						return;
+				}
 				//nldebug("active, leave sleep, test assert");
 
 				// If this assert occured, it means that a checked part of the code was

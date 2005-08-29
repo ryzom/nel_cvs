@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.31 2004/05/10 15:47:24 distrib Exp $
+ * $Id: naming_service.cpp,v 1.32 2005/08/29 16:23:39 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@
 
 #include "nel/net/callback_server.h"
 #include "nel/net/service.h"
+#include "nel/net/module_manager.h"
 
 //
 // Namespaces
@@ -64,6 +65,18 @@ using namespace std;
 
 using namespace NLMISC;
 using namespace NLNET;
+
+
+NLMISC_COMMAND(test, "none", "none")
+{
+	log.displayNL("Raw cmd line : '%s'", rawCommandString.c_str());
+	log.displayNL("Dumping %u parameters :", args.size());
+	for (uint i=0; i<args.size(); ++i)
+	{
+		log.displayNL("  %u : '%s'", i, args[i].c_str());
+	}
+	return true;
+}
 
 
 //
@@ -1039,6 +1052,13 @@ public:
 		CallbackServer->update ();
 
 		return true;
+	}
+
+	void release()
+	{
+		if (CallbackServer != NULL)
+			delete CallbackServer;
+		CallbackServer = NULL;
 	}
 
 private:

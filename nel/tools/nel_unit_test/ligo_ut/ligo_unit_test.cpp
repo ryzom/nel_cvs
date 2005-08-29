@@ -73,9 +73,9 @@ private:
 		+	"</NEL_LIGO_PRIMITIVE_CLASS>";
 
 		FILE *fp = fopen(CLASS_FILE_NAME, "wt");
-		nlverify(fp != NULL);
+		nlassert(fp != NULL);
 		size_t s = fwrite(classfile.data(), 1, classfile.size(), fp);
-		nlverify(s == classfile.size());
+		nlassert(s == classfile.size());
 		fclose(fp);
 
 		// init ligo
@@ -88,7 +88,7 @@ private:
 			CFile::deleteFile(_RefPrimFileName);
 		}
 		CPrimitives primDoc;
-		nlverify(primDoc.RootNode != NULL);
+		nlassert(primDoc.RootNode != NULL);
 
 		CPrimitiveContext::instance().CurrentPrimitive = &primDoc;
 

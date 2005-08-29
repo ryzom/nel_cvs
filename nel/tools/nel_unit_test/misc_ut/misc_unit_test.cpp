@@ -429,6 +429,7 @@ Test::Suite *createSafeSingletonTS();
 Test::Suite *createCSStringTS();
 Test::Suite *createObjectCommandTS();
 Test::Suite *createPureNelLibTS();
+Test::Suite *createCStreamTS();
 
 
 // global test for any misc feature
@@ -445,9 +446,10 @@ public:
 		add(auto_ptr<Test::Suite>(createSafeSingletonTS()));
 		add(auto_ptr<Test::Suite>(createCSStringTS()));
 		add(auto_ptr<Test::Suite>(createObjectCommandTS()));
+		add(auto_ptr<Test::Suite>(createCStreamTS()));
 
 		// initialise the application context
-		new NLMISC::CApplicationContext;
+		NLMISC::CApplicationContext::getInstance();
 
 		NLMISC::createDebug();
 	}

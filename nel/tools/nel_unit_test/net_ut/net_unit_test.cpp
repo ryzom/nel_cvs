@@ -15,6 +15,8 @@
 using namespace std;
 
 Test::Suite *createModuleTS();
+Test::Suite *createCMessageTS();
+Test::Suite *createServiceAndModuleTS();
 
 // global test for any misc feature
 class CNetTS : public Test::Suite
@@ -26,7 +28,9 @@ public:
 		NLNET::CSock::initNetwork();
 
 		add(auto_ptr<Test::Suite>(createModuleTS()));
-
+		add(auto_ptr<Test::Suite>(createCMessageTS()));
+		add(auto_ptr<Test::Suite>(createServiceAndModuleTS()));
+		
 		// initialise the application context
 		new NLMISC::CApplicationContext;
 		NLNET::IModuleManager::getInstance();

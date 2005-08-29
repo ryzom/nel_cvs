@@ -37,6 +37,7 @@ class CDebugOutput : public streambuf
 // The instance of the streambug
 ostream msvDebug(new CDebugOutput);
 
+FILE *logFile;
 #endif
 
 enum OutputType
@@ -105,11 +106,15 @@ struct TLibraryInfo
 	string		WorkingPath;
 };
 
+
+
 // Main test program
 //
-int
-main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
+	// Open a log file for the hook functions to use 
+	logFile = fopen( "MEM-LOG.TXT", "w" );
+
 	char *outputFileName = "result.html";
 
 	// cleanup the output file

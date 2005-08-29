@@ -15,6 +15,24 @@ Package=<4>
 
 ###############################################################################
 
+Project: "dyn_lib_test"=.\misc_ut\dyn_lib_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name cpptest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "ligo"=..\..\src\ligo.dsp - Package Owner=<4>
 
 Package=<5>
@@ -74,6 +92,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name cpptest
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name dyn_lib_test
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -93,10 +114,88 @@ Package=<4>
     Project_Dep_Name misc
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name ligo_unit_test
+    Project_Dep_Name misc_unit_test
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name misc_unit_test
+    Project_Dep_Name net_unit_test
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name ligo_unit_test
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "net"=..\..\src\net.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "net_module_lib_test"=.\net_ut\net_module_lib_test\net_module_lib_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "net_service_lib_test"=.\net_ut\net_service_lib_test\net_service_lib_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "net_unit_test"=.\net_ut\net_unit_test.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name cpptest
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net_module_lib_test
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name net_service_lib_test
     End Project Dependency
 }}}
 

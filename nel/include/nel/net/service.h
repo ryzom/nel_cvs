@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.85 2005/06/23 16:33:49 boucher Exp $
+ * $Id: service.h,v 1.85.2.1 2005/08/29 12:38:02 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,7 @@ int main(int argc, const char **argv) \
 
 #endif
 
+#define DEFAULT_SHARD_ID 666
 
 //
 // Typedefs
@@ -373,6 +374,7 @@ public:
 	 * after you callback was called (and you returned false), the service will quit shortly.
 	 */
 	void								clearForClosure() { _ClosureClearanceStatus = CCClearedForClosure; }
+	void								anticipateShardId( uint32 shardId );
 private:
 
 	/// \name methods. These methods are used by internal system.
@@ -380,6 +382,7 @@ private:
 
 	/// Changes the recording state (use if you know what you are doing)
 	void								setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
+	void								setShardId( uint32 shardId );
 
 	//@}
 

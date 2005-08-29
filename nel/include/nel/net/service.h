@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.85 2005/06/23 16:33:49 boucher Exp $
+ * $Id: service.h,v 1.86 2005/08/29 12:34:39 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,6 +143,8 @@ int main(int argc, const char **argv) \
 }
 
 #endif
+
+#define DEFAULT_SHARD_ID 666
 
 
 //
@@ -349,8 +351,9 @@ public:
 
 	uint16								getPort() { return ListeningPort; }
 
+	// Warning: can take a moment to be received from the WS. The default value (when not received yet) is DEFAULT_SHARD_ID.
 	uint32								getShardId() const { return _ShardId; }
-
+	
 	const NLMISC::CCPUTimeStat&			getCPUUsageStats() const	{ return _CPUUsageStats; }
 
 	/**
@@ -360,9 +363,7 @@ public:
 	 * will then happen after you call clearForClosure().
 	 * 
 	 * If you don't provide a callback here, or if you call with NULL, the service will exit
-	 * immediately when asked to quit. The provided callback is not taken into account until
-	 * the Mirror Service is detected. If there is no mirror service running and the service
-	 * is requested to quit, it will quit immediately.
+	 * immediately when asked to quit.
 	 */
 	void								setClosureClearanceCallback( TRequestClosureClearanceCallback cb ) { _RequestClosureClearanceCallback = cb; }
 
@@ -373,6 +374,13 @@ public:
 	 * after you callback was called (and you returned false), the service will quit shortly.
 	 */
 	void								clearForClosure() { _ClosureClearanceStatus = CCClearedForClosure; }
+
+	/** Set the shard id (by the user code), when known before IService receives it by the WS).
+	 * If a non-default value is already set and different than shardId => nlerror.
+	 * If later IService receives a different value from the WS => nlerror.
+	 */
+	void								anticipateShardId( uint32 shardId );
+
 private:
 
 	/// \name methods. These methods are used by internal system.
@@ -380,6 +388,10 @@ private:
 
 	/// Changes the recording state (use if you know what you are doing)
 	void								setRecordingState( CCallbackNetBase::TRecordingState rec ) { _RecordingState = rec; }
+
+	/** Set the shard id (received from the WS). See also anticipateShardId().
+	 */
+	void								setShardId( uint32 shardId );
 
 	//@}
 

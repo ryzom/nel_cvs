@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.231 2005/08/09 19:06:45 boucher Exp $
+ * $Id: service.cpp,v 1.232 2005/08/29 12:34:40 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -272,8 +272,24 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 		return;
 	}
 
-	nlinfo("SERVICE: set ShardId to %hu", (uint16)shardId);
-	IService::getInstance()->_ShardId = shardId;
+	nlinfo("SERVICE: ShardId is %hu", (uint16)shardId);
+	IService::getInstance()->setShardId( shardId );
+}
+
+//
+void IService::anticipateShardId( uint32 shardId )
+{
+	if ( ! ((_ShardId == DEFAULT_SHARD_ID) || (shardId == _ShardId)) )
+		nlerror( "IService::anticipateShardId() overwrites %u with %u", _ShardId, shardId );
+	_ShardId = shardId;
+}
+
+//
+void IService::setShardId( uint32 shardId )
+{
+	if ( ! ((_ShardId == DEFAULT_SHARD_ID) || (shardId == _ShardId)) )
+		nlerror( "The shardId from the WS (%u) is different from the anticipated shardId (%u)", shardId, _ShardId );
+	_ShardId = shardId;
 }
 
 TUnifiedCallbackItem builtinServiceCallbacks [] =
@@ -613,7 +629,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		else
 		{
 			// something high enough as default
-			_ShardId = 666;
+			_ShardId = DEFAULT_SHARD_ID;
 		}
 
 		//

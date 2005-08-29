@@ -54,7 +54,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/ligo"
 # PROP Intermediate_Dir "../obj/Debug/ligo"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /FD /GZ /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x409 /d "_DEBUG"

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.93 2005/08/29 16:17:38 boucher Exp $
+ * $Id: unified_network.cpp,v 1.94 2005/08/30 17:44:07 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -614,7 +614,6 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 
 	if (_Initialised)
 	{
-__asm int 3
 		AUTOCHECK_DISPLAY ("HNETL5: Unified network layer already initialized");
 		return true;
 	}

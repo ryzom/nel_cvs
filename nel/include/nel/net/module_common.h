@@ -1,7 +1,7 @@
 /** \file module_common.h
  * basic type and forward declaration for module system
  *
- * $Id: module_common.h,v 1.3 2005/08/29 16:16:59 boucher Exp $
+ * $Id: module_common.h,v 1.4 2005/08/30 17:08:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ namespace NLNET
 	class IModuleSocket;
 	class IModuleFactory;
 	class IModuleGateway;
-	struct TModuleSecurity;
+	struct TSecurityData;
 
 	/// The destination module for a message cannot be reached by socket used
 	class EModuleNotReachable : public NLMISC::Exception

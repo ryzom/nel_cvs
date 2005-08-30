@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.6 2005/08/29 16:16:59 boucher Exp $
+ * $Id: module.h,v 1.7 2005/08/30 17:08:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,38 +185,96 @@ namespace NLNET
 	const TModulePtr		NullModule;
 
 
-	/** Base class for module security data
+	/** Base class for module identification data
 	 *	Application writer should derive from this
 	 *	class to create there own security information.
 	 *	Security information are bound to proxy data
 	 *	by a secured gateway.
 	 */
-	struct TModuleSecurity : public NLMISC::IStreamable
+	struct TSecurityData
 	{
+		// for factory system
+		struct TCtorParam
+		{
+			uint8	DataTag;
+
+			TCtorParam(uint8 dataTag)
+				:	DataTag(dataTag)
+			{
+			}
+		};
 		/// An application defined identifier
 		uint8			DataTag;
 	
 		/// Pointer to next security data item (or NULL)
-		TModuleSecurity	*NextItem;
+		TSecurityData	*NextItem;
 
-		TModuleSecurity()
+		TSecurityData(const TCtorParam &params)
 			: NextItem(NULL),
-			DataTag(0xff)
+			DataTag(params.DataTag)
 		{
 		}
 
-		~TModuleSecurity()
+		~TSecurityData()
 		{
 			if (NextItem != NULL)
 				delete NextItem;
 		}
 
-		void serial(NLMISC::IStream &s)
+		virtual void serial(NLMISC::CMemStream &s) =0;
+
+//		void serial(NLMISC::CMemStream &s)
+//		{
+//			s.serial(DataTag);
+//			if (!s.isReading())
+//			{
+//				if (NextItem == NULL)
+//					s.serial("");
+//				else
+//				{
+//					s.serial(NextItem->getClassName());
+//					// reserve a place to store the size of the next element
+//					sint32 pos = s.reserve(4);
+//					s.serial(NextItem);
+//					// store the size
+//					s.poke(s.getPos()-pos-4, pos);
+//				}
+//			}
+//			else
+//			{
+//				string className;
+//				s.serial(className);
+//				if (!className.empty())
+//				{
+//
+//				}
+//				CClassRegistry::checkObject
+//			}
+//		}
+	};
+
+	struct TUnknownSecurityData : public TSecurityData
+	{
+		uint8				RealDataTag;
+		std::vector<uint8>	Data;
+
+		TUnknownSecurityData(uint8 realDataTag, uint32 size) 
+			: TSecurityData(TSecurityData::TCtorParam(0xff)),
+			RealDataTag(realDataTag),
+			Data(size)
 		{
-			s.serial(DataTag);
-			s.serialPolyPtr(NextItem);
+		}
+		
+		void serial(NLMISC::CMemStream &s)
+		{
+			for (uint i=0; i<Data.size(); ++i)
+			{
+				s.serial(Data[i]);
+			}
 		}
 	};
+
+//	NLMISC_REGISTER_OBJECT(TSecurityData, TUnknownSecurityData, uint8, 0xff);
 
 	/** This interface is implemented by the system 
 	 *	and it give convenient access to distant module information
@@ -298,14 +356,14 @@ namespace NLNET
 		 *	If no security data are available, the method
 		 *	return NULL.
 		 */
-		virtual const TModuleSecurity *getFirstSecurityData() const = 0;
+		virtual const TSecurityData *getFirstSecurityData() const = 0;
 
 		/** Look in the security data list for a block
 		 *	matching the specified tag.
 		 *	The first block having the tag is returned.
 		 *	If no block have the requested tag, NULL is returned.
 		 */
-		virtual const TModuleSecurity *findSecurityData(uint8 dataTag) const =0;
+		virtual const TSecurityData *findSecurityData(uint8 dataTag) const =0;
 	};
 
 	const TModuleProxyPtr	NullModuleProxy;
@@ -478,7 +536,7 @@ namespace NLNET
 		/// The  fully qualified module name.
 		NLMISC::TStringId	_FullyQualifiedModuleName;
 		/// the list of security data
-		TModuleSecurity		*_SecurityData;
+		TSecurityData		*_SecurityData;
 
 		/// Private constructor, only manager instantiate module proxies
 		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName);
@@ -524,12 +582,12 @@ namespace NLNET
 		virtual void		sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotReachable);
 		
-		virtual const TModuleSecurity *getFirstSecurityData() const 
+		virtual const TSecurityData *getFirstSecurityData() const 
 		{
 			return _SecurityData;
 		}
 
-		virtual const TModuleSecurity *findSecurityData(uint8 dataTag) const;
+		virtual const TSecurityData *findSecurityData(uint8 dataTag) const;
 
 
 	};

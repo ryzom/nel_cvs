@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.13 2005/08/29 16:12:47 boucher Exp $
+ * $Id: win_thread.cpp,v 1.14 2005/08/30 17:09:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,6 +119,19 @@ void CWinThread::start ()
 		throw EThread ( "Cannot create new thread" );
 	}
 }
+
+bool CWinThread::isRunning()
+{
+	if (ThreadHandle == NULL)
+		return false;
+
+	DWORD exitCode;
+	if (!GetExitCodeThread(ThreadHandle, &exitCode))
+		return false;
+	
+	return exitCode == STILL_ACTIVE;
+}
+
 
 void CWinThread::terminate ()
 {

@@ -67,75 +67,83 @@ enum TTestSecurityTypes
 	tst_type1,
 	tst_type2,
 	tst_type3,
+	tst_type4,
 };
 
 // security type 1 data : contains host gateway name
-struct TSecurityType1 : public TModuleSecurity
+struct TSecurityType1 : public TSecurityData
 {
 	string	SecurityGatewayName;
 
-	TSecurityType1() {}
-	TSecurityType1(const std::string &securityGatewayName)
-		: SecurityGatewayName(securityGatewayName)
+	TSecurityType1(const TCtorParam &param)
+		: TSecurityData(param)
 	{
-		DataTag = tst_type1;
 	}
 
-	void serial(NLMISC::IStream &s)
+	void serial(NLMISC::CMemStream &s)
 	{
-		TModuleSecurity::serial(s);
-
 		s.serial(SecurityGatewayName);
 	}
 
-	NLMISC_DECLARE_CLASS(TSecurityType1);
 };
 
+NLMISC_REGISTER_OBJECT(TSecurityData, TSecurityType1, uint8, tst_type1);
+
+
 // security type 2 data : contains host gateway name and a predefined integer value
-struct TSecurityType2 : public TModuleSecurity
+struct TSecurityType2 : public TSecurityData
 {
 	string	SecurityGatewayName;
 	uint32	IntegerValue;
 
-	TSecurityType2() {}
-	TSecurityType2(const std::string &securityGatewayName)
-		: SecurityGatewayName(securityGatewayName)
+	TSecurityType2(const TCtorParam &param)
+		: TSecurityData(param)
 	{
-		DataTag = tst_type2;
 		IntegerValue = 0x12345678;
 	}
 
-	void serial(NLMISC::IStream &s)
+	void serial(NLMISC::CMemStream &s)
 	{
-		TModuleSecurity::serial(s);
-
 		s.serial(SecurityGatewayName);
 		s.serial(IntegerValue);
 	}
-
-	NLMISC_DECLARE_CLASS(TSecurityType2);
 };
 
+NLMISC_REGISTER_OBJECT(TSecurityData, TSecurityType2, uint8, tst_type2);
+
+
 // security type 3 data, same as type 1
-struct TSecurityType3 : public TModuleSecurity
+struct TSecurityType3 : public TSecurityData
 {
 	string	SecurityGatewayName;
 
-	TSecurityType3() {}
-	TSecurityType3(const std::string &securityGatewayName)
-		: SecurityGatewayName(securityGatewayName)
+	TSecurityType3(const TCtorParam &param)
+		: TSecurityData(param)
 	{
-		DataTag = tst_type3;
 	}
 
-	void serial(NLMISC::IStream &s)
+	void serial(NLMISC::CMemStream &s)
 	{
-		TModuleSecurity::serial(s);
-
 		s.serial(SecurityGatewayName);
 	}
 
-	NLMISC_DECLARE_CLASS(TSecurityType3);
+};
+NLMISC_REGISTER_OBJECT(TSecurityData, TSecurityType3, uint8, tst_type3);
+
+// security type 4 data, same as type 1 but not registered
+struct TSecurityType4 : public TSecurityData
+{
+	string	SecurityGatewayName;
+
+	TSecurityType4(const TCtorParam &param)
+		: TSecurityData(param)
+	{
+	}
+
+	void serial(NLMISC::CMemStream &s)
+	{
+		s.serial(SecurityGatewayName);
+	}
 };
 
 /** a sample security plug-in that add type 1 security data to local modules,
@@ -154,7 +162,8 @@ public:
 		if (proxy->getGatewayRoute() == NULL)
 		{
 			// add a type 1 security
-			TSecurityType1 *st1 = new TSecurityType1(_Gateway->getFullyQualifiedGatewayName());
+			TSecurityType1 *st1 = new TSecurityType1(TSecurityData::TCtorParam(tst_type1));
+			st1->SecurityGatewayName = _Gateway->getFullyQualifiedGatewayName();
 
 			setSecurityData(proxy, st1);
 		}
@@ -162,7 +171,8 @@ public:
 		{
 			// remove any type 1 data and set a type 2 data
 			removeSecurityData(proxy, tst_type1);
-			TSecurityType2 *st2 = new TSecurityType2(_Gateway->getFullyQualifiedGatewayName());
+			TSecurityType2 *st2 = new TSecurityType2(TSecurityData::TCtorParam(tst_type2));
+			st2->SecurityGatewayName = _Gateway->getFullyQualifiedGatewayName();
 
 			setSecurityData(proxy, st2);
 		}
@@ -170,13 +180,14 @@ public:
 		forceSecurityUpdate(proxy);
 	}
 
-	void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TModuleSecurity *firstSecurityData)
+	void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TSecurityData *firstSecurityData)
 	{
 		// replace the complete security set
 		replaceAllSecurityDatas(proxy, firstSecurityData);
 		// remove any type 1 data and set a type 2 data
 		removeSecurityData(proxy, tst_type1);
-		TSecurityType2 *st2 = new TSecurityType2(_Gateway->getFullyQualifiedGatewayName());
+		TSecurityType2 *st2 = new TSecurityType2(TSecurityData::TCtorParam(tst_type2));
+		st2->SecurityGatewayName = _Gateway->getFullyQualifiedGatewayName();
 
 		setSecurityData(proxy, st2);
 
@@ -206,7 +217,7 @@ public:
 };
 NLMISC_REGISTER_OBJECT(CGatewaySecurity, CTestSecurity1, std::string, "TestSecurity1");
 
-/** a sample security plug-in that add type 3 security data to local modules,
+/** a sample security plug-in that add type 3 and type 4 security data to local modules,
  */
 class CTestSecurity2 : public CGatewaySecurity
 {
@@ -220,14 +231,18 @@ public:
 		if (proxy->getGatewayRoute() == NULL)
 		{
 			// add a type 3 security
-			TSecurityType3 *st3 = new TSecurityType3(_Gateway->getFullyQualifiedGatewayName());
-
+			TSecurityType3 *st3 = new TSecurityType3(TSecurityData::TCtorParam(tst_type3));
+			st3->SecurityGatewayName = _Gateway->getFullyQualifiedGatewayName();
 			setSecurityData(proxy, st3);
+			// add a type 4 security
+			TSecurityType4 *st4 = new TSecurityType4(TSecurityData::TCtorParam(tst_type4));
+			st4->SecurityGatewayName = _Gateway->getFullyQualifiedGatewayName();
+			setSecurityData(proxy, st4);
 			forceSecurityUpdate(proxy);
 		}
 	}
 
-	void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TModuleSecurity *firstSecurityData)
+	void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TSecurityData *firstSecurityData)
 	{
 		// replace the complete security set
 		replaceAllSecurityDatas(proxy, firstSecurityData);
@@ -245,6 +260,7 @@ public:
 			if (proxy->getGatewayRoute() == NULL)
 			{
 				removeSecurityData(proxy, tst_type3);
+				removeSecurityData(proxy, tst_type4);
 				forceSecurityUpdate(proxy);
 			}
 		}
@@ -286,10 +302,6 @@ public:
 
 	CModuleTS ()
 	{
-		NLMISC_REGISTER_CLASS(TSecurityType1);
-		NLMISC_REGISTER_CLASS(TSecurityType2);
-		NLMISC_REGISTER_CLASS(TSecurityType3);
-
 		TEST_ADD(CModuleTS::testModuleInitInfoParsing);
 		TEST_ADD(CModuleTS::testModuleInitInfoQuering);
 		TEST_ADD(CModuleTS::testModuleInitInfoBadParsing);
@@ -444,7 +456,7 @@ public:
 			TEST_ASSERT(proxGw2_3 != NULL);
 			TEST_ASSERT(proxGw3_3 != NULL);
 
-			const TModuleSecurity *ms;
+			const TSecurityData *ms;
 			const TSecurityType1 *st1;
 			const TSecurityType2 *st2;
 
@@ -594,7 +606,7 @@ public:
 		TEST_ASSERT(proxGw2_3 != NULL);
 		TEST_ASSERT(proxGw3_3 != NULL);
 
-		const TModuleSecurity *ms;
+		const TSecurityData *ms;
 		const TSecurityType1 *st1;
 		const TSecurityType2 *st2;
 
@@ -604,6 +616,9 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw1_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms != NULL);
+		ms = proxGw1_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms != NULL);
+		TEST_ASSERT(dynamic_cast<const TSecurityType4*>(ms) != NULL);
 
 		ms = proxGw1_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
@@ -611,6 +626,9 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw1_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms != NULL);
+		ms = proxGw1_2->findSecurityData(0xff);
+		TEST_ASSERT(ms != NULL);
+		TEST_ASSERT(dynamic_cast<const TUnknownSecurityData*>(ms) != NULL);
 
 		ms = proxGw1_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
@@ -618,6 +636,9 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw1_3->findSecurityData(tst_type3);
 		TEST_ASSERT(ms != NULL);
+		ms = proxGw1_3->findSecurityData(0xff);
+		TEST_ASSERT(ms != NULL);
+		TEST_ASSERT(dynamic_cast<const TUnknownSecurityData*>(ms) != NULL);
 
 
 		ms = proxGw2_1->findSecurityData(tst_type1);
@@ -626,6 +647,8 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw2_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms != NULL);
@@ -633,12 +656,16 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_2->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw2_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw2_3->findSecurityData(tst_type2);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_3->findSecurityData(tst_type3);
+		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_3->findSecurityData(tst_type4);
 		TEST_ASSERT(ms == NULL);
 
 
@@ -648,6 +675,8 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw3_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw3_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
@@ -655,12 +684,16 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw3_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_2->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw3_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw3_3->findSecurityData(tst_type2);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw3_3->findSecurityData(tst_type3);
+		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_3->findSecurityData(tst_type4);
 		TEST_ASSERT(ms == NULL);
 
 		// remove the security plug-in
@@ -681,6 +714,8 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw1_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw1_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw1_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
@@ -688,12 +723,16 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw1_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw1_2->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw1_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw1_3->findSecurityData(tst_type2);
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw1_3->findSecurityData(tst_type3);
+		TEST_ASSERT(ms == NULL);
+		ms = proxGw1_3->findSecurityData(tst_type4);
 		TEST_ASSERT(ms == NULL);
 
 
@@ -703,6 +742,8 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw2_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms != NULL);
@@ -710,12 +751,16 @@ public:
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_2->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw2_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw2_3->findSecurityData(tst_type2);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw2_3->findSecurityData(tst_type3);
+		TEST_ASSERT(ms == NULL);
+		ms = proxGw2_3->findSecurityData(tst_type4);
 		TEST_ASSERT(ms == NULL);
 
 
@@ -725,6 +770,8 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw3_1->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_1->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw3_2->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
@@ -732,12 +779,16 @@ public:
 		TEST_ASSERT(ms != NULL);
 		ms = proxGw3_2->findSecurityData(tst_type3);
 		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_2->findSecurityData(tst_type4);
+		TEST_ASSERT(ms == NULL);
 
 		ms = proxGw3_3->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw3_3->findSecurityData(tst_type2);
 		TEST_ASSERT(ms == NULL);
 		ms = proxGw3_3->findSecurityData(tst_type3);
+		TEST_ASSERT(ms == NULL);
+		ms = proxGw3_3->findSecurityData(tst_type4);
 		TEST_ASSERT(ms == NULL);
 
 		// cleanup

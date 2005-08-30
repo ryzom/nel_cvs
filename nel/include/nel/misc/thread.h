@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.22 2005/02/22 10:14:12 besson Exp $
+ * $Id: thread.h,v 1.23 2005/08/30 17:08:53 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,9 @@ public:
 	
 	// Starts the thread.
 	virtual void start()=0;
+
+	// Check if the thread is still running
+	virtual bool isRunning() =0;
 
 	// Terminate the thread (risky method, use only in extreme cases)
 	virtual void terminate()=0;

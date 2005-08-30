@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.12 2005/02/22 10:14:12 besson Exp $
+ * $Id: p_thread.h,v 1.13 2005/08/30 17:08:53 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ public:
 	virtual ~CPThread();
 	
 	virtual void start();
+	virtual bool isRunning();
 	virtual void terminate();
 	virtual void wait();
 	virtual bool setCPUMask(uint64 cpuMask);

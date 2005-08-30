@@ -95,6 +95,9 @@ void startServiceImp(const char *serviceName, const char *serviceShortName, uint
 
 void runCommandImp(const char *commandString)
 {
+	if (serviceThread == NULL)
+		return;
+	
 	mutex.enter();
 	commands.push_back(commandString);
 	mutex.leave();
@@ -103,7 +106,8 @@ void runCommandImp(const char *commandString)
 	{
 		nlSleep(0);
 		mutex.enter();
-		if (commands.empty())
+		if (commands.empty() 
+			|| !serviceThread->isRunning())
 			break;
 		mutex.leave();
 	}
@@ -122,6 +126,7 @@ void stopServiceImp()
 //	delete serviceThread->getRunnable();
 
 	delete serviceThread;
+	serviceThread = NULL;
 }
 
 typedef void (TStartFunc)(const char *serviceName, const char *serviceShortName, uint16 listenPort); 

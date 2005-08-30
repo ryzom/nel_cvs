@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.4 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.5 2005/08/30 17:09:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,103 @@ using namespace NLMISC;
 
 namespace NLNET
 {
+	struct TSecurityDataDesc
+	{
+		TSecurityData	*SecurityData;
+
+		TSecurityDataDesc()
+			: SecurityData(NULL)
+		{
+		}
+
+		void serial(CMemStream &s)
+		{
+			if (!s.isReading())
+			{
+				// write mode
+				TSecurityData *sd = SecurityData;
+				
+				uint32 nbSecBlock = 0;
+				sint32 tagCountPos = s.reserve(4);
+				while (sd != NULL)
+				{
+					if (sd->DataTag == 0xff)
+					{
+						TUnknownSecurityData *usd = safe_cast<TUnknownSecurityData *>(sd);
+						s.serial(usd->RealDataTag);
+					}
+					else
+					{
+						s.serial(sd->DataTag);
+					}
+					// reserve a place to store the size of the next element
+					sint32 pos = s.reserve(4);
+					s.serial(*sd);
+					// store the size
+					uint32 size = s.getPos()-pos-4;
+					s.poke(size, pos);
+
+					nbSecBlock++;
+					sd = sd->NextItem;
+				}
+				
+				// store the number of item
+				s.poke(nbSecBlock, tagCountPos);
+			}
+			else
+			{
+				nlassert(SecurityData == NULL);
+				TSecurityData **pLastSd = &SecurityData;
+				// read mode
+				uint32 nbSecBlock;
+				s.serial(nbSecBlock);
+
+				if (nbSecBlock == 0)
+					SecurityData = NULL;
+
+				for (uint i=0; i<nbSecBlock; ++i)
+				{
+					uint8 dataTag;
+					s.serial(dataTag);
+					uint32 blockSize;
+					s.serial(blockSize);
+					sint32 pos = s.getPos();
+					TSecurityData *sd;
+
+					try
+					{
+						TSecurityData::TCtorParam param(dataTag);
+						sd = NLMISC_GET_FACTORY(TSecurityData, uint8).createObject(dataTag, param);
+
+						if (sd == NULL)
+						{
+							// we don't know this type, create an unknow security block
+							sd = new TUnknownSecurityData(dataTag, blockSize);
+							sd->serial(s);
+						}
+						else
+						{
+							sd->serial(s);
+						}
+					}
+					catch(EStreamOverflow e)
+					{
+						// FAILED to read the security block, rewind to old pos and serial as unknow
+						nlwarning("Error while reading stream for security data type %u", dataTag);
+
+						s.seek(pos, NLMISC::IStream::begin);
+						sd = new TUnknownSecurityData(dataTag, blockSize);
+						sd->serial(s);
+					}
+
+					*pLastSd = sd;
+					pLastSd = &(sd->NextItem);
+				}
+			}
+
+		}
+	};
+
 	/// Sub message for module description
 	struct TModuleDescCodec
 	{
@@ -46,33 +143,46 @@ namespace NLNET
 		uint32		ModuleDistance;
 		string		ModuleFullName;
 		string		ModuleClass;
-		TModuleSecurity	*SecurityData;
+//		TModuleSecurity	*SecurityData;
+		TSecurityDataDesc	SecDesc;
 
-		// Encode tips is an optimisation that remove one copy
-		void encode(IModuleProxy *proxy, NLMISC::IStream &s)
+
+		TModuleDescCodec()
 		{
-			CModuleProxy *modProx = static_cast<CModuleProxy *>(proxy);
-			// work only on output stream
-			nlassert(!s.isReading());
-			uint32 moduleId = modProx->getModuleProxyId();
-			s.serial(moduleId);
-			uint32 distance = proxy->getModuleDistance()+1;
-			s.serial(distance);
-			s.serial(const_cast<string&>(proxy->getModuleName()));
-			s.serial(const_cast<string&>(proxy->getModuleClassName()));
-			TModuleSecurity *modSec = const_cast<TModuleSecurity*>(proxy->getFirstSecurityData());
-			s.serialPolyPtr(modSec);
 		}
 
-		void serial(NLMISC::IStream &s)
+		TModuleDescCodec(IModuleProxy *proxy)
 		{
-			// should be used only on input stream
-			nlassert(s.isReading());
+			ModuleProxyId = proxy->getModuleProxyId();
+			ModuleDistance = proxy->getModuleDistance()+1;
+			ModuleFullName = proxy->getModuleName();
+			ModuleClass = proxy->getModuleClassName();
+			SecDesc.SecurityData = const_cast<TSecurityData*>(proxy->getFirstSecurityData());
+		}
+
+		// Encode tips is an optimisation that remove one copy
+//		void encode(IModuleProxy *proxy, NLMISC::CMemStream &s)
+//		{
+//			CModuleProxy *modProx = static_cast<CModuleProxy *>(proxy);
+//			// work only on output stream
+//			nlassert(!s.isReading());
+//			uint32 moduleId = modProx->getModuleProxyId();
+//			s.serial(moduleId);
+//			uint32 distance = proxy->getModuleDistance()+1;
+//			s.serial(distance);
+//			s.serial(const_cast<string&>(proxy->getModuleName()));
+//			s.serial(const_cast<string&>(proxy->getModuleClassName()));
+////			TModuleSecurity *modSec = const_cast<TModuleSecurity*>(proxy->getFirstSecurityData());
+////			s.serialPolyPtr(modSec);
+//		}
+
+		void serial(NLMISC::CMemStream &s)
+		{
 			s.serial(ModuleProxyId);
 			s.serial(ModuleDistance);
 			s.serial(ModuleFullName);
 			s.serial(ModuleClass);
-			s.serialPolyPtr(SecurityData);
+			s.serial(SecDesc);
 		}
 	};
 	/// message for adding module
@@ -101,12 +211,14 @@ namespace NLNET
 	struct TModuleSecurityChangeMsg
 	{
 		TModuleId	ModuleId;
-		TModuleSecurity	*SecurityData;
 
-		void serial(NLMISC::IStream &s)
+		TSecurityDataDesc	SecDesc;
+//		TModuleSecurity	*SecurityData;
+
+		void serial(NLMISC::CMemStream &s)
 		{
 			s.serial(ModuleId);
-			s.serialPolyPtr(SecurityData);
+			s.serial(SecDesc);
 		}
 	};
 	/// Message for module removing
@@ -598,7 +710,7 @@ namespace NLNET
 		 *	already exist in the list, the new one will replace the
 		 *	existing one.
 		 */
-		void setSecurityData(IModuleProxy *proxy, TModuleSecurity *securityData)
+		void setSecurityData(IModuleProxy *proxy, TSecurityData *securityData)
 		{
 			nlassert(proxy->getModuleGateway() == this);
 			nlassert(securityData->NextItem == NULL);
@@ -627,18 +739,18 @@ namespace NLNET
 			nlassert(modProx != NULL);
 
 			bool ret = false;
-			TModuleSecurity *prevSec = NULL;
-			TModuleSecurity *currentSec = modProx->_SecurityData;
+			TSecurityData *prevSec = NULL;
+			TSecurityData *currentSec = modProx->_SecurityData;
 			while (currentSec != NULL)
 			{
 				if (currentSec->DataTag == dataTag)
 				{
 					if (prevSec != NULL)
-						prevSec = currentSec->NextItem;
+						prevSec->NextItem = currentSec->NextItem;
 					else
 						modProx->_SecurityData = currentSec->NextItem;
 
-					TModuleSecurity *toDelete = currentSec;
+					TSecurityData *toDelete = currentSec;
 					currentSec = currentSec->NextItem;
 					toDelete->NextItem = NULL;
 					delete toDelete;
@@ -654,7 +766,7 @@ namespace NLNET
 			return ret;
 		}
 
-		void replaceAllSecurityDatas(IModuleProxy *proxy, TModuleSecurity *securityData)
+		void replaceAllSecurityDatas(IModuleProxy *proxy, TSecurityData *securityData)
 		{
 			nlassert(proxy->getModuleGateway() == this);
 
@@ -842,18 +954,18 @@ namespace NLNET
 				}
 
 				// update the security if needed
-				if (modDesc.SecurityData != NULL)
+				if (modDesc.SecDesc.SecurityData != NULL)
 				{
 					CModuleProxy *proxy = static_cast<CModuleProxy *>(modProx);
 					if (_SecurityPlugin != NULL)
 					{
-						_SecurityPlugin->onNewSecurityData(from, proxy, modDesc.SecurityData);
+						_SecurityPlugin->onNewSecurityData(from, proxy, modDesc.SecDesc.SecurityData);
 					}
 					else
 					{
 						if (proxy->_SecurityData != NULL)
 							delete proxy->_SecurityData;
-						proxy->_SecurityData = modDesc.SecurityData;
+						proxy->_SecurityData = modDesc.SecDesc.SecurityData;
 					}
 				}
 			}
@@ -871,7 +983,7 @@ namespace NLNET
 
 				// set the module security
 				CModuleProxy *proxy = static_cast<CModuleProxy *>(modProx);
-				proxy->_SecurityData = modDesc.SecurityData;
+				proxy->_SecurityData = modDesc.SecDesc.SecurityData;
 				// let the security plug-in add/remove security data
 				if (_SecurityPlugin != NULL)
 					_SecurityPlugin->onNewProxy(proxy);
@@ -999,16 +1111,18 @@ namespace NLNET
 
 		void onReceiveModuleSecurityUpdate(CGatewayRoute *from, CMessage &msgin)
 		{
-			TModuleId foreignModuleId;
-			TModuleSecurity *modSec;
+//			TModuleId foreignModuleId;
+//			TSecurityData *modSec;
+			TModuleSecurityChangeMsg secChg;
 
-			msgin.serial(foreignModuleId);
-			msgin.serialPolyPtr(modSec);
+			msgin.serial(secChg);
+//			msgin.serial(foreignModuleId);
+//			msgin.serialPolyPtr(modSec);
 
-			const TModuleId *pModuleId = from->ForeignToLocalIdx.getB(foreignModuleId);
+			const TModuleId *pModuleId = from->ForeignToLocalIdx.getB(secChg.ModuleId);
 			if (pModuleId == NULL)
 			{
-				nlwarning("LNETL6 : receive module security update for unknown module foreign proxy %u", foreignModuleId);
+				nlwarning("LNETL6 : receive module security update for unknown module foreign proxy %u", secChg.ModuleId);
 				return;
 			}
 
@@ -1017,7 +1131,7 @@ namespace NLNET
 			CModuleProxy *modProx = getModuleProxy(moduleId);
 			if (modProx == NULL)
 			{
-				nlwarning("LNETL6 : receive module security update for unknown module proxy %u, foreign %u", moduleId, foreignModuleId);
+				nlwarning("LNETL6 : receive module security update for unknown module proxy %u, foreign %u", moduleId, secChg.ModuleId);
 				return;
 			}
 
@@ -1025,12 +1139,12 @@ namespace NLNET
 			if( _SecurityPlugin != NULL)
 			{
 				// let the plug-in update the security data
-				_SecurityPlugin->onNewSecurityData(from, modProx, modSec);
+				_SecurityPlugin->onNewSecurityData(from, modProx, secChg.SecDesc.SecurityData);
 			}
 			else
 			{
 				// update the security data in the proxy
-				replaceAllSecurityDatas(modProx, modSec);
+				replaceAllSecurityDatas(modProx, secChg.SecDesc.SecurityData);
 			}
 
 			// warn local module about new security data
@@ -1693,8 +1807,9 @@ namespace NLNET
 						updateMsg.serialShortEnum(pe.EventType);
 
 						// encode the message data
-						TModuleDescCodec modDesc;
-						modDesc.encode(proxy, updateMsg);
+						TModuleDescCodec modDesc(proxy);
+						updateMsg.serial(modDesc);
+//						modDesc.encode(proxy, updateMsg);
 					}
 
 					break;
@@ -1733,9 +1848,13 @@ namespace NLNET
 						updateMsg.serialShortEnum(pe.EventType);
 
 						// store module ID and security data
-						updateMsg.serial(pe.ModuleId);
-						TModuleSecurity *modSec = const_cast<TModuleSecurity*>(proxy->getFirstSecurityData());
-						updateMsg.serialPolyPtr(modSec);
+						TModuleSecurityChangeMsg secChg;
+						secChg.ModuleId = pe.ModuleId;
+						secChg.SecDesc.SecurityData = const_cast<TSecurityData*>(proxy->getFirstSecurityData());
+						updateMsg.serial(secChg);
+//						updateMsg.serial(pe.ModuleId);
+//						TSecurityData *modSec = const_cast<TSecurityData*>(proxy->getFirstSecurityData());
+//						updateMsg.serialPolyPtr(modSec);
 					}
 					break;
 				default:
@@ -2002,7 +2121,7 @@ namespace NLNET
 	 *	already exist in the list, the new one will replace the
 	 *	existing one.
 	 */
-	void CGatewaySecurity::setSecurityData(IModuleProxy *proxy, TModuleSecurity *securityData)
+	void CGatewaySecurity::setSecurityData(IModuleProxy *proxy, TSecurityData *securityData)
 	{
 		// forward the call to standard gateway
 		CStandardGateway *sg = static_cast<CStandardGateway*>(_Gateway);
@@ -2022,7 +2141,7 @@ namespace NLNET
 	/** Replace the complete set of security data with the new one.
 	 *	Security data allocated on the proxy are freed,
 	 */
-	void CGatewaySecurity::replaceAllSecurityDatas(IModuleProxy *proxy, TModuleSecurity *securityData)
+	void CGatewaySecurity::replaceAllSecurityDatas(IModuleProxy *proxy, TSecurityData *securityData)
 	{
 		// forward the call to standard gateway
 		CStandardGateway *sg = static_cast<CStandardGateway*>(_Gateway);

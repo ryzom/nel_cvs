@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.5 2005/08/29 16:16:59 boucher Exp $
+ * $Id: module_gateway.h,v 1.6 2005/08/30 17:08:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -460,7 +460,7 @@ namespace NLNET
 		 *	Any other combination is fine unless the security plug-in do a correct
 		 *	management of freeing unused security data.
 		 */
-		virtual void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TModuleSecurity *firstSecurityData) = 0;
+		virtual void onNewSecurityData(CGatewayRoute *from, IModuleProxy *proxy, TSecurityData *firstSecurityData) = 0;
 
 		/** Called just before delete, the security plug-in must
 		 *	remove any security data that it added to the proxies.
@@ -471,7 +471,7 @@ namespace NLNET
 		 *	already exist in the list, the new one will replace the
 		 *	existing one.
 		 */
-		void setSecurityData(IModuleProxy *proxy, TModuleSecurity *securityData);
+		void setSecurityData(IModuleProxy *proxy, TSecurityData *securityData);
 
 		/** Clear a block of security data
 		 *	The block is identified by the data tag
@@ -482,7 +482,7 @@ namespace NLNET
 		/** Replace the complete set of security data with the new one.
 		 *	Security data allocated on the proxy are freed,
 		 */
-		void replaceAllSecurityDatas(IModuleProxy *proxy, TModuleSecurity *securityData);
+		void replaceAllSecurityDatas(IModuleProxy *proxy, TSecurityData *securityData);
 
 		/** Ask the gateway to resend the security data.
 		 *	The plug-in call this method after having changed

@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.7 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module.cpp,v 1.8 2005/08/30 17:09:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -419,9 +419,9 @@ namespace NLNET
 		_Gateway->sendModuleMessage(senderProx, this, message);
 	}
 
-	const TModuleSecurity *CModuleProxy::findSecurityData(uint8 dataTag) const
+	const TSecurityData *CModuleProxy::findSecurityData(uint8 dataTag) const
 	{
-		const TModuleSecurity *ms = _SecurityData;
+		const TSecurityData *ms = _SecurityData;
 
 		while (ms != NULL)
 		{

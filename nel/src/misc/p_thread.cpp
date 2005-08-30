@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.14 2005/01/17 16:39:43 lecroart Exp $
+ * $Id: p_thread.cpp,v 1.15 2005/08/30 17:09:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,12 @@ void CPThread::start()
 		throw EThread("Cannot start new thread");
 	}
 	_State = 1;
+}
+
+bool CPThread::isRunning()
+{
+	// TODO : need a real implementation here that check thread status
+	return _State == 1;
 }
 
 /*

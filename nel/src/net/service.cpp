@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.233 2005/08/29 16:17:38 boucher Exp $
+ * $Id: service.cpp,v 1.234 2005/08/30 17:09:17 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1512,8 +1512,11 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	// stop the timeout thread
 	MyTAT.quit();
-	timeoutThread->wait();
-	delete timeoutThread;
+	if (timeoutThread != NULL)
+	{
+		timeoutThread->wait();
+		delete timeoutThread;
+	}
 
 #ifdef NL_RELEASE
 /*	// in release mode, we catch everything to handle clean release.

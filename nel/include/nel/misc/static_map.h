@@ -1,7 +1,7 @@
 /** \file static_map.h
  * a map that do not change over time. (lighter in memory consumption)
  *
- * $Id: static_map.h,v 1.4 2005/02/22 10:14:12 besson Exp $
+ * $Id: static_map.h,v 1.4.12.1 2005/08/31 15:48:15 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -137,14 +137,14 @@ public:
 
 	key_compare				key_comp() const		{ return _Data.key_comp(); }
 	value_compare			value_comp() const		{ return value_compare(_CompFunc); }
-	iterator				begin()					{ return _Data.begin(); }
-	const_iterator			begin() const			{ return _Data.begin(); }
-	iterator				end()					{ return _Data.end(); }
-	const_iterator			end() const				{ return _Data.end(); }
-	reverse_iterator		rbegin()				{ return _Data.rbegin(); }
-	const_reverse_iterator	rbegin() const			{ return _Data.rbegin(); }
-	reverse_iterator		rend()					{ return _Data.rend(); }
-	const_reverse_iterator	rend() const			{ return _Data.rend(); }
+	iterator				begin()					{ endAdd(); return _Data.begin(); }
+	const_iterator			begin() const			{ endAdd(); return _Data.begin(); }
+	iterator				end()					{ endAdd(); return _Data.end(); }
+	const_iterator			end() const				{ endAdd(); return _Data.end(); }
+	reverse_iterator		rbegin()				{ endAdd(); return _Data.rbegin(); }
+	const_reverse_iterator	rbegin() const			{ endAdd(); return _Data.rbegin(); }
+	reverse_iterator		rend()					{ endAdd(); return _Data.rend(); }
+	const_reverse_iterator	rend() const			{ endAdd(); return _Data.rend(); }
 	bool					empty() const			{ return _Data.empty(); }
 	size_type				size() const			{ return _Data.size(); }
 	size_type				max_size() const		{ return _Data.max_size(); }
@@ -197,16 +197,19 @@ public:
 
 	void del(iterator __position)
 	{
+		nlassert(_DataSorted);
 		_Data.erase (__position);
 	}
 
 	size_type del(const key_type& __x)
 	{
+		endAdd();
 		return _Data.erase (__x);
 	}
 	
 	void del(iterator __first, iterator __last)
 	{
+		nlassert(_DataSorted);
 		_Data.erase (__first, __last);
 	}
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.67 2005/08/23 17:42:50 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.68 2005/09/06 08:12:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,6 @@
 #include "vertex_stream_manager.h"
 #include "mesh_base_instance.h"
 #include "async_texture_manager.h"
-
 
 
 using namespace std;
@@ -1245,7 +1244,7 @@ void			CSkeletonModel::updateSkinRenderLists()
 						_LevelDetail.DistanceFinest= max(_LevelDetail.DistanceFinest, skinLevelDetail->DistanceFinest);
 					}
 				}
-			}
+			}			
 
 			// Enlarge Bone BBox
 			const std::vector<sint32>			*boneUsage= skin->getSkinBoneUsage();
@@ -1260,7 +1259,7 @@ void			CSkeletonModel::updateSkinRenderLists()
 					nlassert(boneId<(sint)Bones.size());
 					// if valid boneId, and sphere not empty (ie not -1 radius)
 					if(boneId>-1 && sphere.Radius>=0)
-					{
+					{						
 						if(sphereEmpty[boneId])
 						{
 							sphereEmpty[boneId]= false;
@@ -1722,6 +1721,20 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeIn
 		return false;
 }
 
+// ***************************************************************************
+void CSkeletonModel::getWorldMaxBoneSpheres(std::vector<NLMISC::CBSphere> &dest) const
+{
+	dest.clear();
+	// Not visible => empty bbox
+	if(!isClipVisible())
+		return;	
+	dest.resize(_BoneToCompute.size());
+	for(uint i=0;i<_BoneToCompute.size();i++)
+	{
+		CBone			*bone= _BoneToCompute[i].Bone;		
+		bone->_MaxSphere.applyTransform(bone->getWorldMatrix(), dest[i]);		
+	}	
+}
 
 // ***************************************************************************
 bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, bool computeInWorld)
@@ -1734,29 +1747,28 @@ bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, b
 		return false;
 	
 	// **** Compute The BBox with Bones of the skeleton
-	CVector		minBB, maxBB;
+	CVector		minBB, maxBB;	
 	for(uint i=0;i<_BoneToCompute.size();i++)
 	{
 		CBone			*bone= _BoneToCompute[i].Bone;
-		// compute the world sphere
+		// compute the world / local sphere		
 		const	CMatrix	&boneMat = computeInWorld ? bone->getWorldMatrix() : bone->getLocalSkeletonMatrix();
-		CBSphere		sphere;
+		CBSphere		sphere;		
 		bone->_MaxSphere.applyTransform(boneMat, sphere);
 		// compute bone min max bounding cube.
 		CVector		minBone, maxBone;
 		minBone= maxBone= sphere.Center;
 		float	r= sphere.Radius;
-		// TMP TMP TMP
-		static volatile bool addSphereRadius = true;
-		if (computeInWorld)
-		{
-			minBone.x-= r;
-			minBone.y-= r;
-			minBone.z-= r;
-			maxBone.x+= r;
-			maxBone.y+= r;
-			maxBone.z+= r;
-		}
+		
+		
+		minBone.x-= r;
+		minBone.y-= r;
+		minBone.z-= r;
+		maxBone.x+= r;
+		maxBone.y+= r;
+		maxBone.z+= r;
+			
+		
 		// set or extend
 		if(i==0)
 		{

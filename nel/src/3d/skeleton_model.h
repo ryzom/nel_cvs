@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.47 2005/08/23 17:36:50 vizerie Exp $
+ * $Id: skeleton_model.h,v 1.48 2005/09/06 08:12:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -394,6 +394,9 @@ public:
 	virtual bool		computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB);
 	virtual void		renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat);
 	// @}
+
+	// TMP nico debug function : retrieve all max bone spheres in world coordinates
+	void				getWorldMaxBoneSpheres(std::vector<NLMISC::CBSphere> &dest) const;
 
 // ***********************
 protected:

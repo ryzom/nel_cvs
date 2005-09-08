@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.20 2005/06/23 16:36:06 boucher Exp $
+ * $Id: ligo_config.cpp,v 1.21 2005/09/08 11:47:17 lancon Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -795,6 +795,26 @@ uint32 CLigoConfig::aliasFromString(std::string fullAlias)
 	
 	return ((staticPart<<getDynamicAliasSize()) & getStaticAliasMask()) | (dynPart & getDynamicAliasMask());
 	
+}
+
+
+void CLigoConfig::updateDynamicAliasBitCount(uint32 newDynamicAliasBitCount)
+{
+	sint32 diff = _DynamicAliasBitCount - newDynamicAliasBitCount;
+
+	if (diff <= 0)
+	{
+		nlwarning("New bit count must be less than previous");
+		nlassert(0);
+
+	}
+
+	std::map<std::string, uint32>::iterator first(_StaticAliasFileMapping.begin()), last(_StaticAliasFileMapping.end());
+	for ( ; first != last; ++first)
+	{
+		first->second = first->second  << diff;
+	}
+	_DynamicAliasBitCount = newDynamicAliasBitCount;
 }
 
 

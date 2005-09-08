@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.9 2005/06/23 16:27:15 boucher Exp $
+ * $Id: ligo_config.h,v 1.10 2005/09/08 11:47:18 lancon Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ public:
 	/// register filename to static alias translation
 	void				registerFileToStaticAliasTranslation(const std::string &fileName, uint32 staticPart);
 	/// get the static alias mapping (or 0 if no mapping defined)
-	uint32				getFileStaticAliasMapping(const std::string &fileName) const;
+	virtual uint32				getFileStaticAliasMapping(const std::string &fileName) const;
 	/// get the filename for a static alias (or empty string for 0)
 	const std::string	&getFileNameForStaticAlias(uint32 staticAlias) const;
 	/// Check if a file is already mapped
@@ -157,6 +157,11 @@ public:
 	{
 		return _PrimitiveConfigurations;
 	}
+
+	// Update the DynamicAlias bit count that was previously defined in the config file.
+	// The _StaticAliasFileMapping  is updated in order that full alias stay the same.
+	// All previous DynamicAlias must fit in the new DynamicAliasBitCount
+	void updateDynamicAliasBitCount(uint32 newDynamicAliasBitCount);
 
 private:
 

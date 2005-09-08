@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.117 2005/07/20 18:04:22 cado Exp $
+ * $Id: path.cpp,v 1.118 2005/09/08 12:49:12 houlmann Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -522,6 +522,7 @@ bool CPath::exists (const std::string &filename)
 
 string CPath::standardizePath (const string &path, bool addFinalSlash)
 {
+/*
 	string newPath;
 	// check empty path
 	if (path.empty()) return "";
@@ -540,6 +541,27 @@ string CPath::standardizePath (const string &path, bool addFinalSlash)
 			newPath += '/';
 		else
 			newPath += path[i];
+	}
+
+	// add terminal slash
+	if (addFinalSlash && newPath[path.size()-1] != '/')
+		newPath += '/';
+
+	return newPath;
+*/
+
+	
+	// check empty path
+	if (path.empty())
+		return "";
+
+	string newPath(path);
+	
+	for (uint i = 0; i < path.size(); i++)
+	{
+		// don't transform the first \\ for windows network path
+		if (path[i] == '\\')
+			newPath[i] = '/';
 	}
 
 	// add terminal slash
@@ -640,7 +662,6 @@ std::string CPath::getFullPath (const std::string &path, bool addFinalSlash)
 #	define DIR		void
 
 static string sDir;
-static char sDirBackup[512];
 static WIN32_FIND_DATA findData;
 static HANDLE hFind;
 
@@ -649,21 +670,8 @@ DIR *opendir (const char *path)
 	nlassert (path != NULL);
 	nlassert (path[0] != '\0');
 
-	nlassert (sDirBackup[0] == '\0');
-	if (GetCurrentDirectory (512, sDirBackup) == 0)
-	{
-		// failed
-		sDirBackup[0] = 0;
-		return NULL;
-	}
-
-
 	if (!CFile::isDirectory(path))
-	{
-		// failed
-		sDirBackup[0] = 0;
 		return NULL;
-	}
 	
 	sDir = path;
 
@@ -674,42 +682,31 @@ DIR *opendir (const char *path)
 
 int closedir (DIR *dir)
 {
-	nlassert (sDirBackup[0] != '\0');
 	FindClose(hFind);
-	sDirBackup[0] = '\0';
 	return 0;
 }
 
 dirent *readdir (DIR *dir)
 {
-	// set the current path
+	// FIX : call to SetCurrentDirectory() and SetCurrentDirectory() removed to improve speed
 	nlassert (!sDir.empty());
-	if (SetCurrentDirectory (sDir.c_str()) == 0)
-	{
-		// failed
-		return NULL;
-	}
 
+	// first visit in this directory : FindFirstFile()
 	if (hFind == NULL)
 	{
-		hFind = FindFirstFile ("*", &findData);
+		string fullPath = CPath::standardizePath(sDir) + "*";
+		hFind = FindFirstFile (fullPath.c_str(), &findData);
 	}
+	// directory already visited : FindNextFile()
 	else
 	{
 		if (!FindNextFile (hFind, &findData))
-		{
-			nlassert (sDirBackup[0] != '\0');
-			SetCurrentDirectory (sDirBackup);
 			return NULL;
-		}
 	}
-
-	// restore the current path
-	nlassert (sDirBackup[0] != '\0');
-	SetCurrentDirectory (sDirBackup);
 
 	return &findData;
 }
+
 
 #endif // NL_OS_WINDOWS
 
@@ -757,7 +754,7 @@ string getname (dirent *de)
 }
 
 void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result, class IProgressCallback *progressCallBack, bool showEverything)
-{			
+{
 	if(	path.empty() )
 	{
 		NL_DISPLAY_PATH("PATH: CPath::getPathContent(): Empty input Path");
@@ -816,6 +813,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 				result.push_back (stdName);
 			}
 		}
+
 		if (wantFile && isfile(de))
 		{
 			if ( (!showEverything) && (fn.size() >= 4 && fn.substr (fn.size()-4) == ".log"))
@@ -878,7 +876,7 @@ void CPath::removeAllAlternativeSearchPath ()
 void CPath::addSearchPath (const string &path, bool recurse, bool alternative, class IProgressCallback *progressCallBack)
 {
 	NL_ALLOC_CONTEXT (MiPath);
-	H_AUTO_INST(addSearchPath);
+	//H_AUTO_INST(addSearchPath);
 
 	CPath *inst = CPath::getInstance();
 	nlassert(!inst->_MemoryCompressed);
@@ -1503,7 +1501,7 @@ bool CFile::isExists (const string &filename)
 
 bool CFile::fileExists (const string& filename)
 {
-	H_AUTO(FileExists);
+	//H_AUTO(FileExists);
 	return ! ! fstream( filename.c_str(), ios::in );
 }
 

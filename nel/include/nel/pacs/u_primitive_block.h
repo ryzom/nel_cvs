@@ -1,6 +1,6 @@
 /** \file u_primitive_block.h
  *
- * $Id: u_primitive_block.h,v 1.2 2003/10/10 07:14:23 besson Exp $
+ * $Id: u_primitive_block.h,v 1.3 2005/09/09 11:20:45 miller Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #define NL_U_PRIMITIVE_BLOCK_H
 
 #include <string>
+#include "nel/pacs/u_move_primitive.h"
 
 namespace NLMISC
 {

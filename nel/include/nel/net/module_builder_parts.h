@@ -1,7 +1,7 @@
 /** \file module_builder_parts.h
  * Template module building blocks.
  *
- * $Id: module_builder_parts.h,v 1.3 2005/08/29 16:16:59 boucher Exp $
+ * $Id: module_builder_parts.h,v 1.4 2005/09/09 11:27:14 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,3 +71,4 @@ namespace NLNET
 } // namespace NLNET
 
 #endif // MODULE_BUILDER_PARTS_H
+

@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.21 2005/06/24 19:38:30 boucher Exp $
+ * $Id: admin.cpp,v 1.22 2005/09/09 10:00:51 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,14 +140,41 @@ static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint
 
 }
 
-
 static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	// create a displayer to gather the output of the command
+	class CStringDisplayer: public IDisplayer
+	{
+	public:
+		void serial(NLMISC::IStream &stream)
+		{
+			stream.serial(_Data);
+		}
+
+	protected:
+		virtual void doDisplay( const CLog::TDisplayInfo& args, const char *message)
+		{
+			_Data += message;
+		}
+
+		std::string _Data;
+	};
+	CStringDisplayer stringDisplayer;
+	IService::getInstance()->CommandLog.addDisplayer(&stringDisplayer);
+
+	// retreive the command from the input message and execute it
 	string command;
 	msgin.serial (command);
-	
 	nlinfo ("ADMIN: Executing command from network : '%s'", command.c_str());
 	ICommand::execute (command, IService::getInstance()->CommandLog);
+
+	// unhook our displayer as it's work is now done
+	IService::getInstance()->CommandLog.removeDisplayer(&stringDisplayer);
+
+	// send a reply message to the originating service
+	CMessage msgout("EXEC_COMMAND_RESULT");
+	stringDisplayer.serial(msgout);
+	CUnifiedNetwork::getInstance()->send(sid, msgout);
 }
 
 

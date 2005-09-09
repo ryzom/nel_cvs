@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.32 2005/06/23 16:30:40 boucher Exp $
+ * $Id: sstring.h,v 1.33 2005/09/09 11:18:53 miller Exp $
  */
 
 
@@ -1340,11 +1340,11 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 												bool useSlashStringEscape,		// treat '\' as escape char so "\"" == '"'
 												bool useRepeatQuoteStringEscape,// treat """" as '"'
 												bool retainSeparators,			// have the separators turn up in the result vector
-												bool skipBlankEntries				// dont add blank entries to the result vector
+												bool skipBlankEntries			// dont add blank entries to the result vector
 											 ) const
 {
 	CSString s=*this;
-	while (!s.empty() && retainSeparators && separators.contains(s[0]))
+	while (!s.empty() && skipBlankEntries && !retainSeparators && separators.contains(s[0]))
 		s= s.leftCrop(1);
 
 	while(!s.empty())
@@ -1356,15 +1356,15 @@ inline bool CSString::splitByOneOfSeparators(	const CSString& separators, CVecto
 		// if we failed to extract a string segment then we must be looking at a separator
 		if (result.back().empty())
 		{
+			if (skipBlankEntries && result.back().empty())
+				result.pop_back();
+
 			if (!s.empty())
 			{
 				if (retainSeparators)
 					result.back()=s[0];
 				s=s.leftCrop(1);
 			}
-
-			if(skipBlankEntries && result.back().empty())
-				result.pop_back();
 		}
 
 		uint32 post=s.size();

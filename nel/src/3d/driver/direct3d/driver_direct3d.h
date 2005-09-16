@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.43 2005/07/22 12:22:52 legallo Exp $
+ * $Id: driver_direct3d.h,v 1.43.2.1 2005/09/16 09:42:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,36 @@
 #endif
 
 
+
+class CFpuRestorer
+{
+public:
+	CFpuRestorer() { _FPControlWord = _controlfp(0, 0); }
+	~CFpuRestorer() 
+	{ 			
+		_controlfp(_FPControlWord, ~0); 
+	}
+private:
+	unsigned int _FPControlWord;
+};
+
+class CFpuChecker
+{
+public:
+	CFpuChecker(const char *label) { _FPControlWord = _controlfp(0, 0); _Label = label; }
+	~CFpuChecker() 
+	{ 
+		unsigned int newFP = _controlfp(0, 0);
+		if ((newFP & (_MCW_DN | _MCW_IC | _MCW_RC | _MCW_PC)) != (_FPControlWord &  (_MCW_DN | _MCW_IC | _MCW_RC | _MCW_PC)))
+		{
+			nlwarning(_Label);
+			nlassert(0);
+		}		
+	}
+private:
+	const char   *_Label;
+	unsigned int _FPControlWord;
+};
 
 
 

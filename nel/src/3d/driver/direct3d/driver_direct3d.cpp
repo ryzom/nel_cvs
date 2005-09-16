@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.33 2005/07/22 12:22:19 legallo Exp $
+ * $Id: driver_direct3d.cpp,v 1.34 2005/09/16 09:38:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1232,10 +1232,11 @@ const D3DFORMAT FinalPixelFormat[ITexture::UploadFormatCount][CDriverD3D::FinalP
 // ***************************************************************************
 
 bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay)
-{
+{	
 	H_AUTO_D3D(CDriver3D_setDisplay);
 	if (!_D3D)
 		return false;
+	CFpuRestorer fpuRestorer;
 	// Release the driver if already setuped
 	release ();
 
@@ -2345,14 +2346,18 @@ bool CDriverD3D::reset (const GfxMode& mode)
 			mi->FXCache->reset();
 		}
 	}
-
-	if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+	
 	{
-		// tmp
-		nlassert(0); // Fatal ...
-		nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
-		return false;
+		CFpuRestorer fpuRestorer; // fpu control word is changed by "Reset"
+		if (_DeviceInterface->Reset (&parameters) != D3D_OK)
+		{		
+			// tmp
+			nlassert(0); // Fatal ...
+			nlwarning ("CDriverD3D::reset: Reset on _DeviceInterface");
+			return false;
+		}
 	}
+	
 	_Lost = false;
 	// BeginScene now
 	if (sceneBegun)
@@ -3387,6 +3392,7 @@ void CDriverD3D::endDialogMode()
 	if (_FullScreen && _HWnd)
 		ShowWindow(_HWnd, SW_MAXIMIZE);
 }
+
 
 
 } // NL3D

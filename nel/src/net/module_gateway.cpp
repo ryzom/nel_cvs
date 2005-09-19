@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.5 2005/08/30 17:09:17 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.6 2005/09/19 09:47:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -247,6 +247,16 @@ namespace NLNET
 		}
 	};
 
+	
+	/// message waiting next update for local dispatching
+	struct TLocalMessage
+	{
+		TModuleId		SenderProxyId;
+		TModuleId		AddresseProxyId;
+		CMessage		Message;
+	};
+
+
 	/** The standard gateway that interconnect module 
 	 *	across process.
 	 */
@@ -291,10 +301,14 @@ namespace NLNET
 		TRouteList		_Routes;
 
 		/// The security plug-in (if any)
-		CGatewaySecurity	*_SecurityPlugin;
+		CGatewaySecurity		*_SecurityPlugin;
 
 		/// Ping counter for debug purpose
-		uint32			_PingCounter;
+		uint32					_PingCounter;
+
+		typedef std::list<TLocalMessage>	TLocalMessageList;
+		/// List of local message waiting dispatching at next update
+		TLocalMessageList		_LocalMessages;
 
 	public:
 
@@ -1310,7 +1324,32 @@ namespace NLNET
 				if (!message.isReading())
 					const_cast<CMessage&>(message).invert();
 
-				dispatchMessageModule(senderProxy, addresseeProxy, const_cast<CMessage&>(message));
+				// check if the module support immediate dispatching
+				TModuleId addresseeModId = addresseeProxy->getForeignModuleId();
+				
+				const TModulePtr *adrcp = _PluggedModules.getB(addresseeModId);
+				if (adrcp == NULL)
+				{
+					nlwarning("sendModuleMessage : can't find addressee module %u that is not plugged here !", addresseeModId);
+					return;
+				}
+
+				IModule *addreseeMod = *adrcp;
+				if (!addreseeMod->isImmediateDispatchingSupported())
+				{
+					// dispatch the message at next gateway update
+					// this provide a coherent behavior between local and distant module message exchange
+					_LocalMessages.push_back(TLocalMessage());
+					TLocalMessage &lm = _LocalMessages.back();
+					lm.SenderProxyId = senderProxy->getModuleProxyId();
+					lm.AddresseProxyId = addresseeProxy->getModuleProxyId();
+					lm.Message.swap(message);
+				}
+				else
+				{
+					// immediate dispatching
+					dispatchMessageModule(senderProxy, addresseeProxy, message);
+				}
 			}
 			else
 			{
@@ -1371,6 +1410,19 @@ namespace NLNET
 		}
 		void				onModuleUpdate()
 		{
+			// send waiting local messages
+			while (!_LocalMessages.empty())
+			{
+				TLocalMessage &lm = _LocalMessages.front();
+
+				IModuleProxy *senderProx = getModuleProxy(lm.SenderProxyId);
+				IModuleProxy *addresseeProx = getModuleProxy(lm.AddresseProxyId);
+
+				dispatchMessageModule(senderProx, addresseeProx, lm.Message);
+
+				_LocalMessages.pop_front();
+			}
+
 			// send pending module un/disclosure
 			{
 				TRouteList::iterator first(_Routes.begin()), last(_Routes.end());
@@ -1460,7 +1512,17 @@ namespace NLNET
 		virtual void _broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 		{
-			nlstop;
+			// send the message to all proxies (except the sender module)
+			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(senderModule->getModuleId()));
+			nlassert(it != _LocalModuleIndex.end());
+
+			TModuleProxies::iterator first(_ModuleProxies.begin()), last(_ModuleProxies.end());
+			for (; first != last; ++first)
+			{
+				IModuleProxy *proxy = first->second;
+
+				proxy->sendModuleMessage(senderModule, message);
+			}
 		}
 
 		void onModulePlugged(IModule *pluggedModule)
@@ -1919,10 +1981,12 @@ namespace NLNET
 
 		NLMISC_COMMAND_HANDLER_TABLE_EXTEND_BEGIN(CStandardGateway, CModuleBase)
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, dump, "dump various information about the gateway statue", "")
+			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, transportListAvailableClass, "list the available transport class", "no param")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, transportAdd, "add a new transport to this gateway", "<transportClass> <instanceName>")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, transportOptions, "set a gateway level option on a transport", "<transportClass> ( [PeerInvisible] [Firewalled] )")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, transportCmd, "send a command to a transport", "[<transportName> ( <cmd specific to transport> )]*")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, transportRemove, "remove an existing transport instance", "<transportName>")
+			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, securityListAvailableClass, "list the available security class", "no param")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, securityCreate, "create a security plug-in", "<securityClassName>")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, securityCommand, "send a command to the security plug-in", "<cmd specific to plug-in>")
 			NLMISC_COMMAND_HANDLER_ADD(CStandardGateway, securityRemove, "remove the security plug-in", "no parameter")
@@ -1983,6 +2047,24 @@ namespace NLNET
 				args[0].c_str(),
 				getModuleName().c_str());
 			createSecurityPlugin(args[0]);
+
+			return true;
+
+		}
+		NLMISC_CLASS_COMMAND_DECL(securityListAvailableClass)
+		{
+			if (args.size() != 0)
+				return false;
+
+			vector<string> list;
+			NLMISC_GET_FACTORY(CGatewaySecurity, std::string).fillFactoryList(list);
+
+			log.displayNL("List of %u available security class :", list.size());
+
+			for (uint i=0; i<list.size(); ++i)
+			{
+				log.displayNL("   '%s'", list[i].c_str());
+			}
 
 			return true;
 		}
@@ -2058,6 +2140,23 @@ namespace NLNET
 			}
 
 			createTransport(args[0], args[1]);
+			return true;
+		}
+
+		NLMISC_CLASS_COMMAND_DECL(transportListAvailableClass)
+		{
+			if (args.size() != 0)
+				return false;
+
+			vector<string> list;
+			NLMISC_GET_FACTORY(IGatewayTransport, std::string).fillFactoryList(list);
+
+			log.displayNL("List of %u available transport class :", list.size());
+
+			for (uint i=0; i<list.size(); ++i)
+			{
+				log.displayNL("   '%s'", list[i].c_str());
+			}
 			return true;
 		}
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.234 2005/08/30 17:09:17 boucher Exp $
+ * $Id: service.cpp,v 1.235 2005/09/19 09:47:20 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1277,6 +1277,13 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 			CFile::checkFileChange();
 
+			// update updatable interface
+			set<IServiceUpdatable*>::iterator first(_Updatables.begin()), last(_Updatables.end());
+			for (; first != last; ++first)
+			{
+				IServiceUpdatable *updatable = *first;
+				updatable->serviceLoopUpdate();
+			}
 			
 			// get and manage layer 5 messages
 			CUnifiedNetwork::getInstance()->update (_UpdateTimeout);
@@ -1622,6 +1629,16 @@ uint32		IService::getLaunchingDate () const
 	return LaunchingDate;
 }
 
+
+void IService::registerUpdatable(IServiceUpdatable *updatable)
+{
+	_Updatables.insert(updatable);
+}
+
+void IService::unregisterUpdatable(IServiceUpdatable *updatable)
+{
+	_Updatables.erase(updatable);
+}
 
 //
 // Commands and Variables for controling all services

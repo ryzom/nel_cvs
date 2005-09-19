@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.7 2005/08/30 17:08:52 boucher Exp $
+ * $Id: module.h,v 1.8 2005/09/19 09:47:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,20 @@ namespace NLNET
 		 *	is unique !)
 		 */
 		virtual const std::string	&getModuleFullyQualifiedName() const =0;
+
+		/** Tell if the module implementation support immediate dispatching.
+		 *	Immediate dispatching is when a message is send between 
+		 *	collocated module (i.e module on the same gateway). In that case,
+		 *	the gateway forward the module immediately to the addressee module.
+		 *	In some case, this is not the expected behavior because it give
+		 *	different result depending if the communicating modules are 
+		 *	collocated or not.
+		 *	It you module didn't support collocation optimisation, you must
+		 *	override this method and return false.
+		 *	In this case, message are stored in a queue and dispatching occur
+		 *	in the next gateway update, just before the network update.
+		 */
+		virtual bool isImmediateDispatchingSupported() const { return true; }
 		//@}
 			
 		//@name Callback from the module manager
@@ -387,6 +401,8 @@ namespace NLNET
 
 		/** Return the class name of the factored module */
 		virtual const std::string &getModuleClassName() const;
+		/** Return the initialisation string helper */
+		virtual const std::string &getInitStringHelp() const =0;
 
 		/** Pretty simple method. Module initialisation
 		 *	is done after construction, so there are
@@ -424,6 +440,12 @@ namespace NLNET
 			registerModuleInFactory(module);
 			return module;
 		}
+
+		virtual const std::string &getInitStringHelp() const
+		{
+			return moduleClass::getInitStringHelp();
+		}
+
 	};
 
 #define NLNET_REGISTER_MODULE_FACTORY(moduleClassName, registrationName) \
@@ -434,6 +456,10 @@ namespace NLNET
 		{ \
 			static const std::string name(registrationName); \
 			return name; \
+		} \
+		static const std::string &getInitStringHelp() \
+		{ \
+			return moduleClassName::getInitStringHelp(); \
 		} \
 		\
 		moduleClassName##Factory() \
@@ -490,7 +516,10 @@ namespace NLNET
 
 		const std::string	&getModuleFullyQualifiedName() const;
 
-
+	public:
+		// return the default init string (empty)
+		static const std::string &CModuleBase::getInitStringHelp();
+	protected:
 		// Init base module, init module name
 		void				initModule(const TParsedCommandLine &initInfo);
 		

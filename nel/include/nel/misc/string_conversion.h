@@ -1,6 +1,6 @@
 /** \file string_conversion.h
  *
- * $Id: string_conversion.h,v 1.5 2004/12/06 17:09:26 vizerie Exp $
+ * $Id: string_conversion.h,v 1.6 2005/09/19 09:47:04 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #define NL_STRING_CONVERSION_H
 
 #include "types_nl.h"
+#include "common.h"
 #include <map>
 
 namespace NLMISC

@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.5 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module_manager.cpp,v 1.6 2005/09/19 09:47:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -661,7 +661,8 @@ namespace NLNET
 					}
 					else
 					{
-						log.displayNL("    %s : OK", moduleList[i].c_str());
+						IModuleFactory *modFact = TLocalModuleFactoryRegistry::instance().getFactory(moduleList[i]);
+						log.displayNL("    %s : OK\tInit params : '%s'", moduleList[i].c_str(), modFact->getInitStringHelp().c_str());
 					}
 				}
 			}

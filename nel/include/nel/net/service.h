@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.86 2005/08/29 12:34:39 cado Exp $
+ * $Id: service.h,v 1.87 2005/09/19 09:47:05 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ namespace NLNET
 {
 
 class CCallbackServer;
+class IServiceUpdatable;
 
 
 
@@ -119,7 +120,7 @@ class CCallbackServer;
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
 { \
-	CApplicationContext	serviceContext; \
+	NLMISC::CApplicationContext	serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (lpCmdLine); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
@@ -133,7 +134,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
  \
 int main(int argc, const char **argv) \
 { \
-	CApplicationContext serviceContext; \
+	NLMISC::CApplicationContext serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
@@ -336,6 +337,14 @@ public:
 
 	//@}
 
+	//@{
+	/// \name Updatable are object that require an update at each service loop
+	/// Register an updatable interface
+	void registerUpdatable(IServiceUpdatable *updatable);
+	/// Unregister an updatable interface
+	void unregisterUpdatable(IServiceUpdatable *updatable);
+	//@}
+
 	/// The window displayer instance
 	NLMISC::CWindowDisplayer			*WindowDisplayer;
 
@@ -455,6 +464,9 @@ private:
 	/// CPU usage stats
 	NLMISC::CCPUTimeStat				_CPUUsageStats;
 
+	/// Registered updatable interface
+	std::set<IServiceUpdatable*>		_Updatables;
+
 	//@{
 	//@name Service running status management
 	/// The status stack is used to display the most recent set status.
@@ -482,6 +494,34 @@ private:
 
 	NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(nel, State);
 };
+
+
+/** Interface class for object that need an update call during each service loop.
+*/
+class IServiceUpdatable
+{
+public:
+	IServiceUpdatable()
+	{
+		IService *service = IService::getInstance();
+		nlassert(service != NULL);
+
+		service->registerUpdatable(this);
+	}
+	~IServiceUpdatable()
+	{
+		if (IService::isServiceInitialized())
+		{
+			IService *service = IService::getInstance();
+
+			service->unregisterUpdatable(this);
+		}
+	}
+
+	/// implemente this virtual in you derived class
+	virtual void serviceLoopUpdate() =0;
+};
+
 
 
 }; // NLNET

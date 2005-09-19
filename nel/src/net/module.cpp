@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.8 2005/08/30 17:09:17 boucher Exp $
+ * $Id: module.cpp,v 1.9 2005/09/19 09:47:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,6 +142,11 @@ namespace NLNET
 		return _FullyQualifedModuleName;
 	}
 
+	const std::string &CModuleBase::getInitStringHelp()
+	{
+		static string help;
+		return help;
+	}
 
 	// Init base module, init module name
 	void				CModuleBase::initModule(const TParsedCommandLine &initInfo)

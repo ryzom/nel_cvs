@@ -1,7 +1,7 @@
 /** \file factory.h
  * class for factory
  *
- * $Id: factory.h,v 1.5 2005/08/09 19:06:25 boucher Exp $
+ * $Id: factory.h,v 1.6 2005/09/19 09:47:04 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
  *		* BaseClass : the common base class for all factored object of one factory.
  *		* KeyType : the type of the key that identify the factorable object (string by default).
  *
- *	The factory conformes to singleton design pattern.
+ *	The factory conforms to singleton design pattern.
  *	
  *	BaseClass must provide a typedef for TCTorParam corresponding to the parameter
  *	required by the constructor of factored object.
@@ -114,6 +114,16 @@ public:
 		else
 			return it->second->createObject(ctorParam);
 	}
+
+	// Add some introspection
+	void fillFactoryList(std::vector<KeyType> &classList)
+	{
+		typename TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
+		for (; first != last; ++first)
+		{
+			classList.push_back(first->first);
+		}
+	}
 protected:
 	/// Singleton instance pointer.
 //	static CFactory	*_Instance;
@@ -140,7 +150,7 @@ public:
 	}
 
 	/** Create an instance of the factorable class.
-	 *	Implementes IFactoryRegister::createObject
+	 *	Implements IFactoryRegister::createObject
 	 */
 	BaseClass *createObject(const typename BaseClass::TCtorParam &ctorParam)
 	{
@@ -181,7 +191,7 @@ public:
  *		* BaseFactoryClass : the common base class for all factory object of one indirect factory.
  *		* KeyType : the type of the key that identify the factorable object (string by default).
  *
- *	The indirect factory conformes to singleton design pattern.
+ *	The indirect factory conforms to singleton design pattern.
  *	
  *	In indirect factory, the object returned by the factory are not instance of factored object
  *	but instance of 'sub' factory that do the real job.
@@ -220,12 +230,12 @@ public:
 			return it->second->getFactory();
 	}
 	// Add some introspection
-	void fillFactoryList(std::vector<KeyType> &moduleList)
+	void fillFactoryList(std::vector<KeyType> &classList)
 	{
 		typename TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
 		for (; first != last; ++first)
 		{
-			moduleList.push_back(first->first);
+			classList.push_back(first->first);
 		}
 	}
 protected:

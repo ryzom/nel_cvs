@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.30 2005/08/29 16:17:38 boucher Exp $
+ * $Id: message.cpp,v 1.31 2005/09/19 09:47:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -351,7 +351,7 @@ std::string CMessage::getName () const
 std::string CMessage::toString( bool hexFormat, bool textFormat ) const
 {
 	//nlassert (_TypeSet);
-	std::string s = "('" + _Name + ")";
+	std::string s = "('" + _Name + "')";
 	if ( hexFormat )
 		s += " " + CMemStream::toString( true );
 	if ( textFormat )

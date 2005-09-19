@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.8 2005/09/19 09:47:05 boucher Exp $
+ * $Id: module.h,v 1.9 2005/09/19 16:20:01 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,12 +224,13 @@ namespace NLNET
 		TSecurityData	*NextItem;
 
 		TSecurityData(const TCtorParam &params)
-			: NextItem(NULL),
-			DataTag(params.DataTag)
+			: DataTag(params.DataTag),
+			NextItem(NULL)
+			
 		{
 		}
 
-		~TSecurityData()
+		virtual ~TSecurityData()
 		{
 			if (NextItem != NULL)
 				delete NextItem;
@@ -237,34 +238,6 @@ namespace NLNET
 
 		virtual void serial(NLMISC::CMemStream &s) =0;
 
-//		void serial(NLMISC::CMemStream &s)
-//		{
-//			s.serial(DataTag);
-//			if (!s.isReading())
-//			{
-//				if (NextItem == NULL)
-//					s.serial("");
-//				else
-//				{
-//					s.serial(NextItem->getClassName());
-//					// reserve a place to store the size of the next element
-//					sint32 pos = s.reserve(4);
-//					s.serial(NextItem);
-//					// store the size
-//					s.poke(s.getPos()-pos-4, pos);
-//				}
-//			}
-//			else
-//			{
-//				string className;
-//				s.serial(className);
-//				if (!className.empty())
-//				{
-//
-//				}
-//				CClassRegistry::checkObject
-//			}
-//		}
 	};
 
 	struct TUnknownSecurityData : public TSecurityData
@@ -456,10 +429,6 @@ namespace NLNET
 		{ \
 			static const std::string name(registrationName); \
 			return name; \
-		} \
-		static const std::string &getInitStringHelp() \
-		{ \
-			return moduleClassName::getInitStringHelp(); \
 		} \
 		\
 		moduleClassName##Factory() \

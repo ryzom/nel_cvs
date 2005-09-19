@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.54 2005/08/29 16:16:59 boucher Exp $
+ * $Id: unified_network.h,v 1.55 2005/09/19 16:20:01 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -90,6 +90,7 @@ struct TUnifiedCallbackItem
 class CUnifiedNetwork : public NLMISC::ICommandsHandler
 {
 	NLMISC_SAFE_SINGLETON_DECL_PTR(CUnifiedNetwork);
+
 public:
 
 	virtual const std::string &getCommandHandlerName() const
@@ -569,7 +570,13 @@ private:
 	bool										_Initialised;
 
 	//
-	CUnifiedNetwork() : _CbServer(0), _ExtSId(256), _LastRetry(0), _NextUpdateTime(0), _Initialised(false)
+	CUnifiedNetwork() :  
+		ICommandsHandler(),
+		_CbServer(0), 
+		_ExtSId(256), 
+		_LastRetry(0), 
+		_NextUpdateTime(0), 
+		_Initialised(false)
 	{
 	}
 

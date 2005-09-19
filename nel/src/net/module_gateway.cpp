@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.6 2005/09/19 09:47:20 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.7 2005/09/19 16:20:18 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -313,8 +313,8 @@ namespace NLNET
 	public:
 
 		CStandardGateway()
-			: _PingCounter(0),
-			_SecurityPlugin(NULL)
+			:	_SecurityPlugin(NULL),
+				_PingCounter(0)
 		{
 		}
 

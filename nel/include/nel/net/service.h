@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.87 2005/09/19 09:47:05 boucher Exp $
+ * $Id: service.h,v 1.88 2005/09/19 16:20:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -508,7 +508,7 @@ public:
 
 		service->registerUpdatable(this);
 	}
-	~IServiceUpdatable()
+	virtual ~IServiceUpdatable()
 	{
 		if (IService::isServiceInitialized())
 		{

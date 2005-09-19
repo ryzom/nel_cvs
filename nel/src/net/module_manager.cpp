@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.6 2005/09/19 09:47:20 boucher Exp $
+ * $Id: module_manager.cpp,v 1.7 2005/09/19 16:20:18 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,7 @@ namespace NLNET
 	class CModuleManager : public IModuleManager, public ICommandsHandler
 	{
 		NLMISC_SAFE_SINGLETON_DECL(CModuleManager);
+
 	public:
 
 		struct TModuleLibraryInfo : public CRefCount
@@ -118,8 +119,10 @@ namespace NLNET
 		}
 
 
-		CModuleManager() 
-			:_LastGeneratedId(0)
+		CModuleManager() :
+			IModuleManager(),
+			ICommandsHandler(),
+			_LastGeneratedId(0)
 		{
 			registerCommandsHandler();
 

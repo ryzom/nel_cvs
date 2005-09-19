@@ -19,6 +19,12 @@ class CModuleType0 : public CModuleBase
 {
 public:
 
+	uint	PingCount;
+
+	CModuleType0()
+		: PingCount(0)
+	{}
+
 	void				onServiceUp(const std::string &serviceName, uint16 serviceId)
 	{
 	}
@@ -49,6 +55,8 @@ public:
 
 	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
 	{
+		if (message.getName() == "DEBUG_MOD_PING")
+			PingCount++;
 	}
 
 	void				onModuleSecurityChange(IModuleProxy *moduleProxy)
@@ -61,6 +69,19 @@ public:
 };
 
 NLNET_REGISTER_MODULE_FACTORY(CModuleType0, "ModuleType0");
+
+// A module that don't support immediate dispatching
+class CModuleAsync : public CModuleType0
+{
+public:
+
+	bool isImmediateDispatchingSupported() const 
+	{ 
+		return false; 
+	}
+};
+
+NLNET_REGISTER_MODULE_FACTORY(CModuleAsync, "ModuleAsync");
 
 enum TTestSecurityTypes
 {
@@ -317,6 +338,7 @@ public:
 		TEST_ADD(CModuleTS::connectGateways);
 		TEST_ADD(CModuleTS::moduleDisclosure);
 		TEST_ADD(CModuleTS::moduleMessaging);
+		TEST_ADD(CModuleTS::localMessageQueing);
 		TEST_ADD(CModuleTS::uniqueNameGenerator);
 		TEST_ADD(CModuleTS::gwPlugUnplug);
 		TEST_ADD(CModuleTS::peerInvisible);
@@ -1734,6 +1756,92 @@ public:
 		mm.deleteModule(mod);
 	}
 
+	void localMessageQueing()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+		IModule *mods = mm.createModule("StandardGateway", "gws", "");
+		TEST_ASSERT(mods != NULL);
+		IModuleGateway *gws = dynamic_cast<IModuleGateway*>(mods);
+		TEST_ASSERT(gws != NULL);
+
+		// get the socket interface of the gateway
+		IModuleSocket *socketGws = mm.getModuleSocket("gws");
+		TEST_ASSERT(socketGws != NULL);
+
+		// create two modules that will communicate localy
+		IModule *m1= mm.createModule("ModuleType0", "m1", "");
+		TEST_ASSERT(m1!= NULL);
+		IModule *m2= mm.createModule("ModuleAsync", "m2", "");
+		TEST_ASSERT(m2!= NULL);
+
+		m1->plugModule(socketGws);
+		m2->plugModule(socketGws);
+
+		// update the networks
+		for (uint i=0; i<4; ++i)
+		{
+			mm.updateModules();
+			nlSleep(50);
+		}
+
+		// retrieve module proxy and send one ping to each other
+		vector<IModuleProxy*>	proxiesC;
+		gws->getModuleProxyList(proxiesC);
+		TEST_ASSERT(proxiesC.size() == 2);
+		TEST_ASSERT(lookForModuleProxy(proxiesC, "m2"));
+		IModuleProxy *pm2 = retrieveModuleProxy(gws, "m2");
+		TEST_ASSERT(pm2 != NULL);
+		CMessage aMessage("DEBUG_MOD_PING");
+		pm2->sendModuleMessage(m1, aMessage);
+
+		proxiesC.clear();
+		gws->getModuleProxyList(proxiesC);
+		TEST_ASSERT(proxiesC.size() == 2);
+		TEST_ASSERT(lookForModuleProxy(proxiesC, "m1"));
+		IModuleProxy *pm1 = retrieveModuleProxy(gws, "m1");
+		TEST_ASSERT(pm1 != NULL);
+		aMessage = CMessage("DEBUG_MOD_PING");
+		pm1->sendModuleMessage(m2, aMessage);
+
+		// check received ping count
+		CModuleType0 *mod1 = dynamic_cast<CModuleType0*>(m1);
+		TEST_ASSERT(mod1 != NULL);
+		TEST_ASSERT(mod1->PingCount == 1);
+		CModuleType0 *mod2 = dynamic_cast<CModuleType0*>(m2);
+		TEST_ASSERT(mod2 != NULL);
+		TEST_ASSERT(mod2->PingCount == 0);
+	
+		// update the networks
+		for (uint i=0; i<4; ++i)
+		{
+			mm.updateModules();
+			nlSleep(50);
+		}
+
+		// check received ping count
+		TEST_ASSERT(mod1->PingCount == 1);
+		TEST_ASSERT(mod2->PingCount == 1);
+
+		// update the networks
+		for (uint i=0; i<4; ++i)
+		{
+			mm.updateModules();
+			nlSleep(50);
+		}
+
+		// check received ping count
+		TEST_ASSERT(mod1->PingCount == 1);
+		TEST_ASSERT(mod2->PingCount == 1);
+
+
+		// cleanup
+		mm.deleteModule(m1);
+		mm.deleteModule(m2);
+		mm.deleteModule(mods);
+	}
+
 	void moduleMessaging()
 	{
 		IModuleManager &mm = IModuleManager::getInstance();
@@ -2262,12 +2370,13 @@ public:
 		vector<string>	moduleList;
 		mm.getAvailableModuleClassList(moduleList);
 
-		TEST_ASSERT(moduleList.size() == 5);
+		TEST_ASSERT(moduleList.size() == 6);
 		TEST_ASSERT(moduleList[0] == "LocalGateway");
-		TEST_ASSERT(moduleList[1] == "ModuleType0");
-		TEST_ASSERT(moduleList[2] == "ModuleType1");
-		TEST_ASSERT(moduleList[3] == "ModuleType2");
-		TEST_ASSERT(moduleList[4] == "StandardGateway");
+		TEST_ASSERT(moduleList[1] == "ModuleAsync");
+		TEST_ASSERT(moduleList[2] == "ModuleType0");
+		TEST_ASSERT(moduleList[3] == "ModuleType1");
+		TEST_ASSERT(moduleList[4] == "ModuleType2");
+		TEST_ASSERT(moduleList[5] == "StandardGateway");
 	}
 
 	void localModuleFactory()
@@ -2277,10 +2386,11 @@ public:
 		vector<string>	moduleList;
 		mm.getAvailableModuleClassList(moduleList);
 
-		TEST_ASSERT(moduleList.size() == 3);
+		TEST_ASSERT(moduleList.size() == 4);
 		TEST_ASSERT(moduleList[0] == "LocalGateway");
-		TEST_ASSERT(moduleList[1] == "ModuleType0");
-		TEST_ASSERT(moduleList[2] == "StandardGateway");
+		TEST_ASSERT(moduleList[1] == "ModuleAsync");
+		TEST_ASSERT(moduleList[2] == "ModuleType0");
+		TEST_ASSERT(moduleList[3] == "StandardGateway");
 	}
 
 	void testModuleInitInfoBadParsing()

@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.21 2005/03/11 15:15:11 berenguier Exp $
+ * $Id: u_instance.h,v 1.21.12.1 2005/09/20 16:23:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,6 +193,20 @@ public:
 	// dynamic cast from a transform. empty if cast fail
 	void		cast(UTransform object);
 
+	/// \name access default position. Valid only for CMeshBaseInstance
+	/// NB: return false if the instance is not a CMeshBaseInstance (value not modified)
+	// @{
+	bool					getDefaultPos (CVector &) const;
+	bool					getDefaultRotQuat (CQuat &) const;
+	bool					getDefaultScale (CVector &) const;
+	/** Set a scale relative to the default exported matrix
+	 *	NB: really usefull for instance if you want to scale an instance relatively to the scale
+	 *	exported from the artist (if he had not set a "reset XForm")
+	 *	NB: no op if the object is not a CMeshBaseInstance
+	 */
+	void					setRelativeScale (const CVector &rs);
+	// @}
+	
 	/// Proxy interface
 
 	/// Constructors

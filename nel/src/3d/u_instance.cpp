@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.6 2005/03/11 15:13:05 berenguier Exp $
+ * $Id: u_instance.cpp,v 1.7 2005/09/20 16:21:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/3d/u_instance.h"
 #include "transform_shape.h"
+#include "mesh_base.h"
 #include "driver_user.h"
 #include "mesh_multi_lod_instance.h"
 #include "seg_remanence.h"
@@ -381,6 +382,70 @@ const std::string &UInstance::getShapeName() const
 void	UInstance::cast(UTransform object)
 {
 	attach(dynamic_cast<CTransformShape*>(object.getObjectPtr()));
+}
+
+// ***************************************************************************
+bool	UInstance::getDefaultPos (CVector &pos) const
+{
+	NL3D_MEM_INSTANCE
+	CTransformShape	*object = getObjectPtr();
+	if(object && object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		CMeshBase *mb= (CMeshBase*)(IShape*)(mbi->Shape);
+		pos= mb->getDefaultPos()->getDefaultValue();
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+bool	UInstance::getDefaultRotQuat (CQuat &rotQuat) const
+{
+	NL3D_MEM_INSTANCE
+	CTransformShape	*object = getObjectPtr();
+	if(object && object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		CMeshBase *mb= (CMeshBase*)(IShape*)(mbi->Shape);
+		rotQuat= mb->getDefaultRotQuat()->getDefaultValue();
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+bool	UInstance::getDefaultScale (CVector &scale) const
+{
+	NL3D_MEM_INSTANCE
+	CTransformShape	*object = getObjectPtr();
+	if(object && object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		CMeshBase *mb= (CMeshBase*)(IShape*)(mbi->Shape);
+		scale= mb->getDefaultScale()->getDefaultValue();
+		return true;
+	}
+	return false;
+}
+
+// ***************************************************************************
+void	UInstance::setRelativeScale (const CVector &rs)
+{
+	NL3D_MEM_INSTANCE
+	CTransformShape	*object = getObjectPtr();
+	if(object && object->isMeshBaseInstance())
+	{
+		// get the default scale
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		CMeshBase *mb= (CMeshBase*)(IShape*)(mbi->Shape);
+		CVector scale= mb->getDefaultScale()->getDefaultValue();
+		// scale it by the relative one
+		scale.x*= rs.x;
+		scale.y*= rs.y;
+		scale.z*= rs.z;
+		object->setScale(scale);
+	}
 }
 
 

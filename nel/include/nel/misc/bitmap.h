@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.30 2005/06/24 17:22:45 berenguier Exp $
+ * $Id: bitmap.h,v 1.31 2005/09/21 10:49:39 houlmann Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,20 @@ private :
 	void resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest, 
 							 sint32 nSrcWidth, sint32 nSrcHeight, 
 							 sint32 nDestWidth, sint32 nDestHeight);
+
+	/** 
+	 * The FAST resample function : works only when reducing the size by two
+	 * and when the image is square
+	 * \param pSrc CRGBA array
+	 * \param pDest CRGBA array for storing resampled texture
+	 * \param nSrcWidth original width
+	 * \param nSrcHeight original height
+	 * \param nDestWidth width after resample
+	 * \param nDestHeight height after resample
+	 */	
+	void resamplePicture32Fast (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest, 
+								sint32 nSrcWidth, sint32 nSrcHeight, 
+								sint32 nDestWidth, sint32 nDestHeight);
 
 
 	/** 

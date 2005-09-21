@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.60 2005/06/24 17:24:51 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.61 2005/09/21 10:49:55 houlmann Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1695,6 +1695,15 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 {
 	if ((nSrcWidth<=0)||(nSrcHeight<=0)||(nDestHeight<=0)||(nDestHeight<=0))
 		return;
+
+	// If we're reducing it by 2, call the fast resample
+	if (((nSrcHeight / 2) == nDestHeight) && ((nSrcHeight % 2) == 0) && 
+		((nSrcWidth  / 2) == nDestWidth)  && ((nSrcWidth  % 2) == 0))
+	{
+		resamplePicture32Fast(pSrc, pDest, nSrcWidth, nSrcHeight, nDestWidth, nDestHeight);
+		return;
+	}
+
 	bool bXMag=(nDestWidth>=nSrcWidth);
 	bool bYMag=(nDestHeight>=nSrcHeight);
 	bool bXEq=(nDestWidth==nSrcWidth);
@@ -1866,7 +1875,36 @@ void CBitmap::resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest
 	}
 }
 
+/*-------------------------------------------------------------------*\
+							resamplePicture32Fast
+\*-------------------------------------------------------------------*/
+void CBitmap::resamplePicture32Fast (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest, 
+									 sint32 nSrcWidth, sint32 nSrcHeight, 
+									 sint32 nDestWidth, sint32 nDestHeight)
+{
+	// the image is divided by two : 1 pixel in dest = 4 pixels in src
+	// the resulting pixel in dest is an average of the four pixels in src
 
+	nlassert(nSrcWidth  % 2 == 0);
+	nlassert(nSrcHeight % 2 == 0);
+	nlassert(nSrcWidth  / 2 == nDestWidth);
+	nlassert(nSrcHeight / 2 == nDestHeight);
+
+	sint32 x, y, twoX, twoSrcWidthByY;
+
+	for (y=0 ; y<nDestHeight ; y++)
+	{
+		twoSrcWidthByY = 2*nSrcWidth*y;
+		for (x=0 ; x<nDestWidth ; x++)
+		{
+			twoX = 2*x;
+			pDest[x+y*nDestWidth].avg4( pSrc[twoX   + twoSrcWidthByY             ], 
+										pSrc[twoX   + twoSrcWidthByY + nSrcWidth ], 
+										pSrc[twoX+1 + twoSrcWidthByY             ], 
+										pSrc[twoX+1 + twoSrcWidthByY + nSrcWidth ]);
+		}
+	}
+}
 
 
 

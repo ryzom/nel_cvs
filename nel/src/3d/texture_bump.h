@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * TODO: File description
  *
- * $Id: texture_bump.h,v 1.12 2005/09/22 14:28:31 vizerie Exp $
+ * $Id: texture_bump.h,v 1.13 2005/09/22 17:46:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -92,8 +92,7 @@ protected:
 	NLMISC::CSmartPtr<ITexture>  _HeightMap;
 	float						 *_NormalizationFactor;
 	bool						 _DisableSharing;	
-	bool						 _ForceNormalize;
-	bool                         _Signed;
+	bool						 _ForceNormalize;	
 	// Map that give the normalization factor for each map from its sharename. This avoid to generate several time the maps to get the normalization factor if a bumpmap is shared by severals CTextureBump instances;
 	struct CNormalizationInfo
 	{

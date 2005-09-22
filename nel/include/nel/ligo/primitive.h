@@ -1,7 +1,7 @@
 /** \file primitive.h
  * TODO: File description
  *
- * $Id: primitive.h,v 1.43 2005/08/19 15:28:43 cado Exp $
+ * $Id: primitive.h,v 1.44 2005/09/22 10:16:34 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -706,6 +706,10 @@ public:
 
 	// get the static alias part for this primitive
 	uint32			getAliasStaticPart();
+
+	// set the static alis part for this primitive
+	void			setAliasStaticPart(uint32 staticPart);
+
 	// Build an alias by combining the static and dynamic part
 	uint32			buildFullAlias(uint32 dynamicPart);
 
@@ -728,6 +732,7 @@ public:
 
 	// Build the complete list of indexed primitive (ie all primitive that have a primalias child)
 	void			buildPrimitiveWithAliasList(std::map<uint32, IPrimitive*> &result);
+	
 
 private:
 	// Conversion internal methods

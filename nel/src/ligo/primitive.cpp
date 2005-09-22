@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.51 2005/06/23 16:36:06 boucher Exp $
+ * $Id: primitive.cpp,v 1.52 2005/09/22 10:16:34 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2231,6 +2231,13 @@ CPrimitives::~CPrimitives ()
 uint32 CPrimitives::getAliasStaticPart()
 {
 	return _AliasStaticPart;
+}
+
+// ***************************************************************************
+
+void CPrimitives::setAliasStaticPart(uint32 staticPart)
+{	
+	_AliasStaticPart = staticPart;
 }
 
 // ***************************************************************************

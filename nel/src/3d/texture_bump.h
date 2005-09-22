@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * TODO: File description
  *
- * $Id: texture_bump.h,v 1.11 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture_bump.h,v 1.11.12.1 2005/09/22 14:42:29 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,10 +66,7 @@ public:
 
 	bool					isSharingEnabled() const { return !_DisableSharing; }
 
-	/// deprecated : absolute offsets are taken from the gradient of the height map
-	void					setAbsoluteOffsets(bool use = true) { _UseAbsoluteOffsets = true; }
-	bool					getAbsoluteOffsets() const { return _UseAbsoluteOffsets; }
-
+	
 	/** Force normalization of this texture when it is generated, so that the deltas reach their maximum amplitude.
 	  * After the texture generation, the factor needed to normalize can be obtained
 	  */
@@ -84,14 +81,6 @@ public:
 	virtual float					getNormalizationFactor();
 	
 
-	/** Use signed format or not. Default is to used signed format
-	  * NB : when RGBA upload format is used, the format is never signed
-	  * NB : this has effect only if the deprecated option 'setAbsoluteOffsets' is false
-	  * NB : this flag is not serialized
-	  */
-	void					setSignedFormat(bool formatSigned) { _Signed = formatSigned; }
-	bool					getSignedFormat() const { return _Signed; }	
-	
 
 	// inherited from ITexture. release this texture, and its datas
 	virtual void release();	
@@ -105,9 +94,7 @@ protected:
 	NLMISC::CSmartPtr<ITexture>  _HeightMap;
 	float						 *_NormalizationFactor;
 	bool						 _DisableSharing;
-	bool						 _UseAbsoluteOffsets;
 	bool						 _ForceNormalize;
-	bool                         _Signed;
 	// Map that give the normalization factor for each map from its sharename. This avoid to generate several time the maps to get the normalization factor if a bumpmap is shared by severals CTextureBump instances;
 	struct CNormalizationInfo
 	{

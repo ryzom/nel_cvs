@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * TODO: File description
  *
- * $Id: texture_bump.cpp,v 1.16 2005/02/22 10:19:12 besson Exp $
+ * $Id: texture_bump.cpp,v 1.16.12.1 2005/09/22 14:42:29 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,50 +38,25 @@ CTextureBump::TNameToNI CTextureBump::_NameToNF;
 
 #define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
 /// create a DsDt texture from a height map (red component of a rgba bitmap)
-static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool absolute, bool signedFormat)
+static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 {	
 	#define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
-	sint x, y;
-	if (signedFormat)
-	{	
-		for (x = 0; x < width; ++x)
-		{
-			for (y = 0; y < height; ++y)
-			{			
-				sint off = x + y * width;
-				sint16 ds = (sint16) (GET_HGT(x + 1, y) - GET_HGT(x - 1, y));
-				sint16 dt = (sint16) (GET_HGT(x, y + 1) - GET_HGT(x, y - 1));
-
-				if (!absolute)
-				{
-
-					dest[off] = (uint16) ((ds & 0xff)  | ((dt & 0xff) << 8));		
-				}
-				else
-				{
-					dest[off] = (uint16) (abs(ds) |  (abs(dt) << 8));
-				}
-			}
-		}
-	}
-	else
+	sint x, y;		
+	for (x = 0; x < width; ++x)
 	{
-		for (x = 0; x < width; ++x)
-		{
-			for (y = 0; y < height; ++y)
-			{			
-				sint off = x + y * width;
-				sint16 ds = (sint16) (GET_HGT(x + 1, y) - GET_HGT(x - 1, y));
-				sint16 dt = (sint16) (GET_HGT(x, y + 1) - GET_HGT(x, y - 1));				
-				dest[off] = (uint16) (((ds + 0x80) & 0xff)  | (((dt + 0x80) & 0xff) << 8));						
-			}
+		for (y = 0; y < height; ++y)
+		{			
+			sint off = x + y * width;
+			sint16 ds = (sint16) (GET_HGT(x + 1, y) - GET_HGT(x - 1, y));
+			sint16 dt = (sint16) (GET_HGT(x, y + 1) - GET_HGT(x, y - 1));				
+			dest[off] = (uint16) ((ds & 0xff)  | ((dt & 0xff) << 8));						
 		}
-	}
+	}	
 }
 
 
 /// create a rgba gradient texture from a height map (red component of a rgba bitmap)
-static void BuildDsDtAsRGBA(uint32 *src, sint width, sint height, uint32 *dest, bool absolute)
+static void BuildDsDtAsRGBA(uint32 *src, sint width, sint height, uint32 *dest)
 {	
 	#define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
 	sint x, y;	
@@ -98,94 +73,41 @@ static void BuildDsDtAsRGBA(uint32 *src, sint width, sint height, uint32 *dest, 
 }
 
 /// Normalize a DsDt texture after it has been built, and return the normalization factor
-static float NormalizeDsDt(uint16 *src, sint width, sint height, bool absolute, bool signedFormat)
+static float NormalizeDsDt(uint16 *src, sint width, sint height)
 {
 	const uint size = width * height;
 	uint highestDelta = 0;
-	uint k;
-
-	/// first, get the highest delta
-	if (absolute)
+	uint k;	
+		
+	for (k = 0; k < size; ++k)
 	{
-		for (k = 0; k < size; ++k)
-		{
-			highestDelta = std::max(highestDelta, (uint) (src[k] & 255));
-			highestDelta = std::max(highestDelta, (uint) src[k] >> 8);
-		}
-
-		if (highestDelta == 0)
-		{
-			return 1.f;
-		}
-		float normalizationFactor = 255.f / highestDelta;
-		for (k = 0; k < size; ++k)
-		{
-			uint8 du = (uint8) ((uint) (src[k] & 0xff) * normalizationFactor);
-			uint16 dv = (uint16) (((uint) src[k] >> 8) * normalizationFactor);
-			src[k] = (uint16) du | (dv << 8); 
-		}
-		return 1.f / normalizationFactor;
+		highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] & 255)));
+		highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] >> 8)));			
 	}
-	else
-	{		
-		if (signedFormat)
-		{		
-			for (k = 0; k < size; ++k)
-			{
-				highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] & 255)));
-				highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) (src[k] >> 8)));			
-			}
 
-			if (highestDelta == 0)
-			{
-				return 1.f;
-			}
-			float normalizationFactor = 127.f / highestDelta;
-			for (k = 0; k < size; ++k)
-			{
-				float fdu = (sint8) (src[k] & 255) * normalizationFactor;
-				float fdv = (sint8) (src[k] >> 8) * normalizationFactor;
-				NLMISC::clamp(fdu, -128, 127);
-				NLMISC::clamp(fdv, -128, 127);
-				uint8 du = (uint8) (sint8) fdu;
-				uint8 dv = (uint8) (sint8) fdv;
-				src[k] = (uint16) du | (((uint16) dv) << 8); 
-			}
-			return 1.f / normalizationFactor;
-		}
-		else // unsigned version
-		{
-			for (k = 0; k < size; ++k)
-			{
-				highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] & 255) - 0x80)));
-				highestDelta = std::max(highestDelta, (uint) ::abs((sint) (sint8) ((src[k] >> 8) - 0x80)));			
-			}
-
-			if (highestDelta == 0)
-			{
-				return 1.f;
-			}
-			float normalizationFactor = 127.f / highestDelta;
-			for (k = 0; k < size; ++k)
-			{
-				float fdu = (sint8) ((src[k] & 255) - 0x80) * normalizationFactor;
-				float fdv = (sint8) ((src[k] >> 8) - 0x80) * normalizationFactor;
-				NLMISC::clamp(fdu, -128, 127);
-				NLMISC::clamp(fdv, -128, 127);
-				uint8 du = (uint8) (sint8) fdu;
-				uint8 dv = (uint8) (sint8) fdv;
-				src[k] = (uint16) (du + 0x80) | (((uint16) (dv + 0x80)) << 8); 
-			}
-			return 1.f / normalizationFactor;
-		}
+	if (highestDelta == 0)
+	{
+		return 1.f;
 	}
+	float normalizationFactor = 127.f / highestDelta;
+	for (k = 0; k < size; ++k)
+	{
+		float fdu = (sint8) (src[k] & 255) * normalizationFactor;
+		float fdv = (sint8) (src[k] >> 8) * normalizationFactor;
+		NLMISC::clamp(fdu, -128, 127);
+		NLMISC::clamp(fdv, -128, 127);
+		uint8 du = (uint8) (sint8) fdu;
+		uint8 dv = (uint8) (sint8) fdv;
+		src[k] = (uint16) du | (((uint16) dv) << 8); 
+	}
+	return 1.f / normalizationFactor;	
 }
 
-static float NormalizeDsDtAsRGBA(uint32 *src, sint width, sint height, bool absolute)
+static float NormalizeDsDtAsRGBA(uint32 *src, sint width, sint height)
 {
-	const uint size = width * height;
-	uint highestDelta = 0;
 	uint k;
+	const uint size = width * height;	
+	uint highestDelta = 0;	
 
 	/// first, get the highest delta	
 	for (k = 0; k < size; ++k)
@@ -209,7 +131,7 @@ static float NormalizeDsDtAsRGBA(uint32 *src, sint width, sint height, bool abso
 		uint8 dv = (uint8) ((sint8) fdv + 0x80);
 		src[k] = (src[k] & 0xffff0000) | (uint32) du | (uint32) (((uint16) dv) << 8); 
 	}
-	return 1.f / normalizationFactor;
+	return 1.f / normalizationFactor;	
 	
 }
 
@@ -221,14 +143,13 @@ static float NormalizeDsDtAsRGBA(uint32 *src, sint width, sint height, bool abso
  * Constructor
  */
 CTextureBump::CTextureBump() : _NormalizationFactor(NULL),
-							   _DisableSharing(false),
-							   _UseAbsoluteOffsets(false),
-							   _ForceNormalize(true),
-							   _Signed(true)
+							   _DisableSharing(false),							   
+							   _ForceNormalize(true)							   
 {
 	// mipmapping not supported for now, disable it
 	ITexture::setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 }
+
 
 ///==============================================================================================
 void CTextureBump::setFilterMode(TMagFilter magf, TMinFilter minf)
@@ -267,7 +188,8 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_DisableSharing);
 	if (ver >= 1)
 	{
-		f.serial(_UseAbsoluteOffsets);
+		bool oldFlag = false;
+		f.serial(oldFlag); // backaward compatibility : serial the old "forceAbsoluteOffset" flag
 	}
 	if (ver >= 2)
 	{
@@ -304,11 +226,11 @@ void CTextureBump::doGenerate(bool async)
 	// build the DsDt map
 	if (getUploadFormat() == RGBA8888)
 	{
-		BuildDsDtAsRGBA((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint32 *) &(getPixels()[0]), _UseAbsoluteOffsets);
+		BuildDsDtAsRGBA((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint32 *) &(getPixels()[0]));
 	}
 	else
 	{	
-		BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]), _UseAbsoluteOffsets, _Signed);
+		BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]));
 	}
 
 	float normalizationFactor = 1.0f;
@@ -317,11 +239,11 @@ void CTextureBump::doGenerate(bool async)
 	{
 		if (getUploadFormat() == RGBA8888)
 		{
-			normalizationFactor = NormalizeDsDtAsRGBA((uint32 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets);
+			normalizationFactor = NormalizeDsDtAsRGBA((uint32 *) &(getPixels()[0]), width, height);
 		}
 		else
 		{
-			normalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height, _UseAbsoluteOffsets, _Signed);
+			normalizationFactor = NormalizeDsDt((uint16 *) &(getPixels()[0]), width, height);
 		}
 	}	
 	// create entry in the map for the normalization factor

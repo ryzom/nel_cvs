@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.18 2005/03/15 18:08:29 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.18.12.1 2005/09/22 14:42:29 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -669,17 +669,9 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 												const uint8 *src = &(texture->getPixels(i)[block*blockSize]);
 												uint8 *dest = ((uint8*)rect.pBits)+block*rect.Pitch;
 												if (destFormat == D3DFMT_A8R8G8B8)												
-													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);												
-												else if (destFormat == D3DFMT_V8U8)
-												{
-													for(uint k = 0; k < blockSize; ++k)
-													{
-														*dest++ = (uint8) ((sint8) (*src++) + 128);
-													}
-													
-												}												
+													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);																					
 												else
-													memcpy (dest, src, blockSize);
+												memcpy (dest, src, blockSize);
 											}
 
 											// Unlock
@@ -947,7 +939,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 		region.top = y0;
 		region.bottom = y1;
 
-		const dataToCopy = (((x1-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
+		const sint dataToCopy = (((x1-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
 		if (d3dtext->Texture2d->LockRect (destMipmap, &rect, &region, 0) == D3D_OK)
 		{
 			uint line;
@@ -985,7 +977,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 				const uint8 *src = &(tex.getPixels(srcMipmap)[0]);
 
 				// Fill the temp buffer with BGRA info
-				const lineWidth = x1-x0; 
+				const sint lineWidth = x1-x0; 
 				_TempBuffer.resize (((y1-y0)*lineWidth)<<2);
 				uint8 *dest = &(_TempBuffer[0]);
 				uint line;

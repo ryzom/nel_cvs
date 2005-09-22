@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.97 2005/07/22 12:32:29 legallo Exp $
+ * $Id: driver_opengl_material.cpp,v 1.98 2005/09/22 14:27:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2090,8 +2090,7 @@ void CDriverGL::setupWaterPassR200(const CMaterial &mat)
 	{	
 		if (tex->isBumpMap())
 		{
-			CTextureBump *tb = static_cast<CTextureBump *>(tex);
-			tb->setSignedFormat(false);
+			CTextureBump *tb = static_cast<CTextureBump *>(tex);			
 		}		
 		setupTexture(*tex);
 		activateTexture(0, tex);
@@ -2101,8 +2100,7 @@ void CDriverGL::setupWaterPassR200(const CMaterial &mat)
 	{					
 		if (tex->isBumpMap())
 		{
-			CTextureBump *tb = static_cast<CTextureBump *>(tex);
-			tb->setSignedFormat(false);
+			CTextureBump *tb = static_cast<CTextureBump *>(tex);			
 		}
 		setupTexture(*tex);
 		activateTexture(1, tex);

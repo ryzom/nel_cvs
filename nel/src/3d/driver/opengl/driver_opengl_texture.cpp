@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.79 2005/02/22 10:19:22 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.80 2005/09/22 14:27:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,7 +159,10 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
 		case ITexture::DsDt: 
 			if (_Extensions.NVTextureShader) return GL_DSDT_NV;
-			else if (_Extensions.ATIEnvMapBumpMap || _Extensions.ATIFragmentShader) return GL_DU8DV8_ATI;
+			else if (_Extensions.ATIEnvMapBumpMap || _Extensions.ATIFragmentShader) 
+			{
+				return GL_DU8DV8_ATI;
+			}
 			else
 			{			
 				nlassert(0);
@@ -209,7 +212,7 @@ static GLenum getGlSrcTextureComponentType(GLint texSrcFormat)
 	switch (texSrcFormat)
 	{
 		case GL_DSDT_NV:
-		case GL_DU8DV8_ATI:
+		case GL_DUDV_ATI:
 			return GL_BYTE; // these are signed format			
 		break;		
 		default:

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.19 2005/08/19 15:34:08 cado Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.20 2005/09/22 14:26:07 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -669,17 +669,9 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 												const uint8 *src = &(texture->getPixels(i)[block*blockSize]);
 												uint8 *dest = ((uint8*)rect.pBits)+block*rect.Pitch;
 												if (destFormat == D3DFMT_A8R8G8B8)												
-													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);												
-												else if (destFormat == D3DFMT_V8U8)
-												{
-													for(uint k = 0; k < blockSize; ++k)
-													{
-														*dest++ = (uint8) ((sint8) (*src++) + 128);
-													}
-													
-												}												
+													copyRGBA2BGRA ((uint32*)dest, (const uint32*)src, blockSize>>2);																					
 												else
-													memcpy (dest, src, blockSize);
+												memcpy (dest, src, blockSize);
 											}
 
 											// Unlock
@@ -1211,5 +1203,6 @@ bool CDriverD3D::getRenderTargetSize (uint32 &width, uint32 &height)
 }
 
 // ***************************************************************************
+
 
 } // NL3D

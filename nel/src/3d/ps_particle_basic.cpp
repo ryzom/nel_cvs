@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.20 2005/08/19 15:32:13 cado Exp $
+ * $Id: ps_particle_basic.cpp,v 1.21 2005/09/22 14:29:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -997,8 +997,7 @@ static void ConvertToBumpMap(NLMISC::CSmartPtr<ITexture> &ptr)
 	if (!dynamic_cast<CTextureBump *>( (ITexture *) ptr))
 	{
 		// convert to a bumpmap
-		CTextureBump *tb = new CTextureBump;
-		tb->setAbsoluteOffsets();
+		CTextureBump *tb = new CTextureBump;		
 		tb->setHeightMap((ITexture *) ptr);
 		tb->enableSharing(true);
 		ptr = tb;

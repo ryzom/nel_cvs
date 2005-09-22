@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.23 2005/08/24 09:25:42 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.24 2005/09/22 14:24:42 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1183,8 +1183,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						tex->setUploadFormat(ITexture::RGBA8888);
 						if (tex->isBumpMap())
 						{
-							CTextureBump *tb = static_cast<CTextureBump *>(tex);
-							tb->setSignedFormat(false);
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);							
 						}						
 						setupTexture(*tex);
 						setShaderTexture (0, tex, pShader->FXCache);
@@ -1198,8 +1197,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						tex->setUploadFormat(ITexture::DsDt);
 						if (tex->isBumpMap())
 						{
-							CTextureBump *tb = static_cast<CTextureBump *>(tex);
-							tb->setSignedFormat(false);
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);							
 						}
 					}
 					else
@@ -1207,8 +1205,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 						tex->setUploadFormat(ITexture::RGBA8888);
 						if (tex->isBumpMap())
 						{
-							CTextureBump *tb = static_cast<CTextureBump *>(tex);
-							tb->setSignedFormat(false);
+							CTextureBump *tb = static_cast<CTextureBump *>(tex);							
 						}
 					}
 					setupTexture(*tex);

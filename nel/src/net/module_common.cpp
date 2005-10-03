@@ -1,7 +1,7 @@
 /** \file module_common.cpp
  * basic type and forward declaration for module system
  *
- * $Id: module_common.cpp,v 1.3 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module_common.cpp,v 1.4 2005/10/03 16:15:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,8 @@ namespace NLNET
 
 			for (uint i=0; i<SubParams.size(); ++i)
 			{
+				if (i >0)
+					ret += " ";
 				ret += SubParams[i].toString();
 			}
 

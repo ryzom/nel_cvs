@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.41 2005/10/03 10:08:05 boucher Exp $
+ * $Id: message.h,v 1.42 2005/10/03 16:13:33 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,8 +63,21 @@ public:
 
 		void serial(NLMISC::IStream &s)
 		{
-			uint8 &b = reinterpret_cast<uint8&>(*this);
-			s.serial(b);
+			if (s.isReading())
+			{
+				// decode the bit field in a network independant manner
+				uint8 b;
+				s.serial(b);
+				LongFormat = b & 1;
+				StringMode = (b>>1) & 1;
+				MessageType = (b>>2) & 3;
+			}
+			else
+			{
+				// encode the bit field in a network independant manner
+				uint8 b = LongFormat | StringMode << 1 | MessageType << 2;
+				s.serial(b);
+			}
 		}
 	};
 

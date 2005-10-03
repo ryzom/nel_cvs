@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.46 2005/05/09 11:54:32 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47 2005/10/03 10:15:33 boucher Exp $
  *
  */
 
@@ -57,9 +57,12 @@
 #include "nel/net/unified_network.h"
 #include "nel/net/login_cookie.h"
 
+#include "welcome_service.h"
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+using namespace WS;
 
 
 CVariable<sint> PlayerLimit(
@@ -435,8 +438,22 @@ void cbFESShardChooseShard (CMessage &msgin, const std::string &serviceName, uin
 		msgout.serial(PatchURLS);
 		*/
 	}
+
+	if (PendingFeResponse.find(cookie) != PendingFeResponse.end())
+	{
+		// this response is not waited by LS
+		TPendingFEResponseInfo &pfri = PendingFeResponse.find(cookie)->second;
+
+		pfri.WSMod->frontendResponse(pfri.WaiterModule, pfri.UserId, reason, cookie, addr);
+		// cleanup pending record
+		PendingFeResponse.erase(cookie);
+	}
+	else
+	{
+		// return the result to the LS
+		CUnifiedNetwork::getInstance()->send ("LS", msgout);
+	}
 	
-	CUnifiedNetwork::getInstance()->send ("LS", msgout);
 }
 
 // This function is call when a FES accepted a new client or lost a connection to a client
@@ -755,7 +772,6 @@ TUnifiedCallbackItem FESCallbackArray[] =
 //////////////////// CONNECTION TO THE LOGIN SERVICE ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS warns me that a new client want to come in my shard
@@ -788,6 +804,32 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	}
 
 
+	string ret = lsChooseShard(userName, cookie, userPriv, userExtended, WS::TUserRole::ur_player, 0xffffffff);
+
+	if (!ret.empty())
+	{
+		// send back an error message to LS
+		CMessage msgout ("SCS");
+		msgout.serial (ret);
+		msgout.serial (cookie);
+		CUnifiedNetwork::getInstance()->send(sid, msgout);
+	}
+}
+
+//void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
+std::string lsChooseShard (const std::string &userName,
+					const CLoginCookie &cookie,
+					const std::string &userPriv,
+					const std::string &userExtended,
+					WS::TUserRole userRole,
+					uint32 instanceId)
+{
+	// the LS warns me that a new client want to come in my shard
+
+	//
+	// S07: receive the "CS" message from LS and send the "CS" message to the selected FES
+	//
+
 /*
 	uint totalNbUsers;
 	CFES *best = findBestFES( totalNbUsers );
@@ -819,12 +861,7 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		if (best == NULL)
 		{
 			// answer the LS that we can't accept the user
-			CMessage msgout ("SCS");
-			string reason = "No front-end server available";
-			msgout.serial (reason);
-			msgout.serial (cookie);
-			CUnifiedNetwork::getInstance()->send(sid, msgout);
-			return;
+			return "No front-end server available";
 		}
 	}
 
@@ -857,23 +894,22 @@ void cbLSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 		CMessage msgout ("SCS");
 		string reason;
 		if (shardLimitReached)
-			reason = "The shard is currently full, please try again in 5 minutes.";
+			return "The shard is currently full, please try again in 5 minutes.";
 		else
-			reason = "The shard is closed.";
-		msgout.serial (reason);
-		msgout.serial (cookie);
-		CUnifiedNetwork::getInstance()->send(sid, msgout);
-		return;
+			return "The shard is closed.";
 	}
 
 
 	CMessage msgout ("CS");
-	msgout.serial (cookie);
-	msgout.serial (userName, userPriv, userExtended);
+	msgout.serial (const_cast<CLoginCookie&>(cookie));
+	msgout.serial (const_cast<string&>(userName), const_cast<string&>(userPriv), const_cast<string&>(userExtended));
+	msgout.serial (instanceId );
 
 	CUnifiedNetwork::getInstance()->send (best->SId, msgout);
 	best->NbEstimatedUser++;
 	best->NbPendingUsers++;
+
+	return "";
 }
 
 void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -1091,6 +1127,21 @@ public:
 			LSAddr = ConfigFile.getVar("LSHost").asString();
 		}
 
+		if (haveArg('S'))
+		{
+			// use the command line param if set
+			uint shardId = atoi(IService::getInstance()->getArg('S').c_str());
+
+			anticipateShardId(shardId);
+		}
+		else if (ConfigFile.exists ("ShardId"))
+		{
+			// use the config file param if set
+			uint shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
+
+			anticipateShardId(shardId);
+		}
+
 		// the config file must have a valid address where the login service is
 		nlassert(!LSAddr.empty());
 
@@ -1100,10 +1151,14 @@ public:
 
 		AllowDispatchMsgToLS = true;
 
-		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
-		CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
-		CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
-
+		if (ConfigFile.getVarPtr("DontUseLSService") == NULL 
+			|| !ConfigFile.getVar("DontUseLSService").asBool())
+		{
+			// We are using NeL Login Service
+			CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
+			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
+			CUnifiedNetwork::getInstance()->addService("LS", LSAddr);
+		}
 		// List of expected service instances
 		ConfigFile.setCallback( "ExpectedServices", cbUpdateExpectedServices );
 		cbUpdateExpectedServices( ConfigFile.getVar( "ExpectedServices" ) );
@@ -1114,6 +1169,11 @@ public:
 		 * 
 		 */
 		cbShardOpenStateFile(ShardOpenStateFile);
+
+//		// create a welcome service module (for SU comm)
+//		IModuleManager::getInstance().createModule("WelcomeService", "ws", "");
+//		// plug the module in the default gateway
+//		NLMISC::CCommandRegistry::getInstance().execute("ws.plug wg", InfoLog());
 	}
 
 	bool			update () 
@@ -1139,6 +1199,117 @@ public:
 
 // Service instantiation
 NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+
+
+// welcome service module
+//class CWelcomeServiceMod : 
+//	public CEmptyModuleCommBehav<CEmptyModuleServiceBehav<CEmptySocketBehav<CModuleBase> > >,
+//	public WS::CWelcomeServiceSkel
+//{
+//	void onProcessModuleMessage(IModuleProxy *sender, CMessage &message)
+//	{
+//		if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
+//			return;
+//
+//		nlwarning("Unknown message '%s' received by '%s'", 
+//			message.getName().c_str(),
+//			getModuleName().c_str());
+//	}
+//
+//
+//	////// CWelcomeServiceSkel implementation 
+//
+//	// ask the welcome service to welcome a user
+//	virtual void welcomeUser(NLNET::IModuleProxy *sender, uint32 userId, const std::string &userName, const CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+//	{
+//		string ret = lsChooseShard(userName,
+//			cookie,
+//			priviledge, 
+//			exPriviledge, 
+//			mode,
+//			instanceId);
+//
+//		if (!ret.empty())
+//		{
+//			// TODO : correct this
+//			string fsAddr;
+//			CWelcomeServiceClientProxy wsc(sender);
+//			wsc.welcomeUserResult(this, userId, ret.empty(), fsAddr);
+//		}
+//	}
+//
+//	// ask the welcome service to disconnect a user
+//	virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId)
+//	{
+//		nlstop;
+//	}
+//	
+//};
+
+namespace WS
+{
+
+	void CWelcomeServiceMod::onModuleUp(IModuleProxy *proxy)
+	{
+		if (proxy->getModuleClassName() == "RingSessionManager")
+		{
+			if (_RingSessionManager != NULL)
+			{
+				nlwarning("WelcomeServiceMod::onModuleUp : receiving module up for RingSessionManager '%s', but already have it as '%s', replacing it",
+					proxy->getModuleName().c_str(),
+					_RingSessionManager->getModuleName().c_str());
+			}
+			// store this module as the ring session manager
+			_RingSessionManager = proxy;
+
+			nlinfo("Registering welcome service module into session manager '%s'", proxy->getModuleName().c_str());
+			// says hello to our new friend
+			CWelcomeServiceClientProxy wscp(proxy);
+			wscp.registerWS(this, IService::getInstance()->getShardId());
+		}
+	}
+
+	void CWelcomeServiceMod::onModuleDown(IModuleProxy *proxy)
+	{
+		if (proxy->getModuleClassName() == "RingSessionManager"
+			&& _RingSessionManager == proxy)
+		{
+			// remove this module as the ring session manager
+			_RingSessionManager = NULL;
+		}
+	}
+	
+
+	void CWelcomeServiceMod::welcomeUser(NLNET::IModuleProxy *sender, uint32 userId, const std::string &userName, const CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+	{
+		string ret = lsChooseShard(userName,
+									cookie,
+									priviledge, 
+									exPriviledge, 
+									mode,
+									instanceId);
+
+		if (!ret.empty())
+		{
+			// TODO : correct this
+			string fsAddr;
+			CWelcomeServiceClientProxy wsc(sender);
+			wsc.welcomeUserResult(this, userId, ret.empty(), fsAddr);
+		}
+		else
+		{
+			TPendingFEResponseInfo pfri;
+			pfri.WSMod = this;
+			pfri.UserId = userId;
+			pfri.WaiterModule = sender;
+			PendingFeResponse.insert(make_pair(cookie, pfri));
+		}
+	}
+
+	// register the module
+	NLNET_REGISTER_MODULE_FACTORY(CWelcomeServiceMod, "WelcomeService");
+
+} // namespace WS
 
 
 //

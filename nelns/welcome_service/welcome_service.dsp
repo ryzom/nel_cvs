@@ -151,5 +151,21 @@ SOURCE=.\welcome_service.cfg
 
 SOURCE=.\welcome_service.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\welcome_service.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ryzom\welcome_service_default.cfg
+# End Source File
+# Begin Source File
+
+SOURCE=.\welcome_service_itf.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\welcome_service_itf.h
+# End Source File
 # End Target
 # End Project

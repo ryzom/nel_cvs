@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.6 2005/08/30 17:08:52 boucher Exp $
+ * $Id: module_gateway.h,v 1.7 2005/10/03 10:08:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -272,7 +272,7 @@ namespace NLNET
 		 *	You can override this method to change the dispatching, add filtering,
 		 *	message hacking or interceptor.
 		 */
-		virtual void dispatchMessageModule(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message) =0;
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message) =0;
 		//@}
 	};
 

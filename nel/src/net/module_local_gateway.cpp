@@ -1,7 +1,7 @@
 /** \file module_local_gateway.h
  * module gateway interface
  *
- * $Id: module_local_gateway.cpp,v 1.2 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module_local_gateway.cpp,v 1.3 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,7 +298,7 @@ namespace NLNET
 		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message)
 		{
 		}
-		virtual void dispatchMessageModule(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
 		{
 			nlstop;
 //			TModuleId sourceId = message->getSenderModuleProxyId();
@@ -428,7 +428,7 @@ namespace NLNET
 				{
 					IModule *module = first->second;
 					if (module->getModuleFullyQualifiedName() != modProx->getModuleName())
-						module->onModuleDown(it->second);
+						module->_onModuleDown(it->second);
 				}
 			}
 
@@ -438,7 +438,7 @@ namespace NLNET
 				for (; first != last; ++first)
 				{
 					if (first->first->getModuleName() != unpluggedModule->getModuleFullyQualifiedName())
-						unpluggedModule->onModuleDown(first->first);
+						unpluggedModule->_onModuleDown(first->first);
 				}
 			}
 

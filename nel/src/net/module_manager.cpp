@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.7 2005/09/19 16:20:18 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -446,6 +446,32 @@ namespace NLNET
 			TModuleIds::TAToBMap::const_iterator first(_ModuleIds.getAToBMap().begin()), last(_ModuleIds.getAToBMap().end());
 			for (; first != last; ++first)
 			{
+				TModulePtr module = first->second;
+
+				CModuleBase *modBase = dynamic_cast<CModuleBase *>(module.getPtr());
+				if (modBase != NULL)
+				{
+					// look for module task to run
+					while (!modBase->_ModuleTasks.empty())
+					{
+						CModuleTask *task = modBase->_ModuleTasks.front();
+						task->resume();
+						// check for finished task
+						if (task->isFinished())
+						{
+							// delete the task and resume the next one if any
+							delete task;
+							modBase->_ModuleTasks.erase(modBase->_ModuleTasks.begin());
+						}
+						else
+						{
+							// no more work for this update
+							break;
+						}
+					}
+				}
+
+				// update the module internal
 				first->second->onModuleUpdate();
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.18 2005/08/09 19:06:25 boucher Exp $
+ * $Id: login_server.h,v 1.19 2005/10/03 10:08:05 boucher Exp $
  * 
  */
 
@@ -76,12 +76,19 @@ public:
 	/// the dc will be call when the Welcome Service decides to disconnect a player (double login...)
 	static void init (CUdpSock &server, TDisconnectClientCallback dc);
 
+	/// Create the connection to the Welcome Service for a connection
+	/// the dc will be call when the Welcome Service decides to disconnect a player (double login...)
+	static void init (const std::string &listenAddr, TDisconnectClientCallback dc);
+
 	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
-	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc, std::string &userName, std::string &userPriv, std::string &userExtended);
+	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc, std::string &userName, std::string &userPriv, std::string &userExtended, uint32 &instanceId);
 
 	/// Call this method when a user is disconnected or the server disconnect the user.
 	/// This method will warn the login system that the user is not here anymore
 	static void clientDisconnected (uint32 userId);
+
+	/// Call this method to retrieve the listen address
+	static const std::string &getListenAddress();
 
 private:
 

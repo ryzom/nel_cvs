@@ -641,6 +641,15 @@ SOURCE=..\include\nel\misc\words_dictionary.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\co_task.cpp
+# ADD CPP /D _WIN32_WINNT=0x0400
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\co_task.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\mutex.cpp
 # End Source File
 # Begin Source File

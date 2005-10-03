@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.7 2005/09/19 16:20:18 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.8 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1233,7 +1233,7 @@ namespace NLNET
 					if (removedModule->getGatewayRoute() != NULL
 						|| module->getModuleId() != removedModule->getForeignModuleId())
 					{
-						module->onModuleDown(removedModule);
+						module->_onModuleDown(removedModule);
 					}
 				}
 			}
@@ -1348,7 +1348,7 @@ namespace NLNET
 				else
 				{
 					// immediate dispatching
-					dispatchMessageModule(senderProxy, addresseeProxy, message);
+					dispatchModuleMessage(senderProxy, addresseeProxy, message);
 				}
 			}
 			else
@@ -1371,8 +1371,9 @@ namespace NLNET
 				addresseeProxy->getGatewayRoute()->sendMessage(message);
 			}
 		}
-		virtual void dispatchMessageModule(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
 		{
+			CMessage::TMessageType msgType = message.getType();
 			// retrieve the address module from the proxy
 			nlassert(addresseeProxy->getGatewayRoute() == NULL);
 			// As the addressee is local, the foreign proxy id is the local module id (a bit triky...)
@@ -1381,14 +1382,33 @@ namespace NLNET
 			const TModulePtr *adrcp = _PluggedModules.getB(addresseeModId);
 			if (adrcp == NULL)
 			{
-				nlwarning("dispatchMessageModule : dispatching a message to module %u that is not plugged here !", addresseeModId);
+				nlwarning("dispatchModuleMessage : dispatching a message to module %u that is not plugged here !", addresseeModId);
 				return;
 			}
 
 			IModule *addreseeMod = *adrcp;
 
 			// finally, transmit the message to the module
-			addreseeMod->onProcessModuleMessage(senderProxy, message);
+//			addreseeMod->onProcessModuleMessage(senderProxy, message);
+			try
+			{
+				addreseeMod->onReceiveModuleMessage(senderProxy, message);
+			}
+			catch(...)
+			{
+				nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
+					message.getName().c_str(),
+					senderProxy->getModuleName().c_str(),
+					addresseeProxy->getModuleName().c_str());
+
+				if (msgType == CMessage::Request)
+				{
+					// send back an exception message
+					CMessage except;
+					except.setType("EXCEPT", CMessage::Except);
+					senderProxy->sendModuleMessage(addreseeMod, except);
+				}
+			}
 		}
 		/***********************************************************
 		 ** Module methods 
@@ -1418,7 +1438,7 @@ namespace NLNET
 				IModuleProxy *senderProx = getModuleProxy(lm.SenderProxyId);
 				IModuleProxy *addresseeProx = getModuleProxy(lm.AddresseProxyId);
 
-				dispatchMessageModule(senderProx, addresseeProx, lm.Message);
+				dispatchModuleMessage(senderProx, addresseeProx, lm.Message);
 
 				_LocalMessages.pop_front();
 			}
@@ -1593,7 +1613,9 @@ namespace NLNET
 
 					if (modProx->getGatewayRoute() != NULL 
 						|| modProx->getForeignModuleId() != unpluggedModule->getModuleId())
-						unpluggedModule->onModuleDown(modProx);
+					{
+						unpluggedModule->_onModuleDown(modProx);
+					}
 				}
 			}
 

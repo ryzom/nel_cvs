@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.235 2005/09/19 09:47:20 boucher Exp $
+ * $Id: service.cpp,v 1.236 2005/10/03 10:08:28 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -263,7 +263,7 @@ void cbDirectoryChanged (IVariable &var)
 
 void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 serviceId)
 {
-	uint8 shardId;
+	uint32 shardId;
 	msgin.serial(shardId);
 
 	if (serviceName != "WS")
@@ -272,7 +272,7 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 		return;
 	}
 
-	nlinfo("SERVICE: ShardId is %hu", (uint16)shardId);
+	nlinfo("SERVICE: ShardId is %u", shardId);
 	IService::getInstance()->setShardId( shardId );
 }
 
@@ -365,6 +365,9 @@ string IService::getArg (char argName)
 				C:\Documents and Settings\toto.tmp
 				*/
 				uint begin = 2;
+				if (_Args[i].size() < 3)
+					throw Exception ("Parameter '-%c' is malformed, missing content", argName);
+
 				if (_Args[i][begin] == '"')
 					begin++;
 

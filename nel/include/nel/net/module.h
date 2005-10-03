@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.9 2005/09/19 16:20:01 boucher Exp $
+ * $Id: module.h,v 1.10 2005/10/03 10:08:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/factory.h"
 #include "nel/misc/command.h"
 #include "nel/misc/string_mapper.h"
+#include "nel/misc/co_task.h"
 #include "nel/net/message.h"
 #include "module_common.h"
 
@@ -54,11 +55,16 @@ namespace NLNET
 		{
 		};
 
+		/// An operation invocation has failed (mostly because of lost server module)
+		class EInvokeFailed : public NLMISC::Exception
+		{
+		};
+
 		// Module management =====================
 
 		virtual ~IModule() {}
 
-		/** Module initialisation.
+		/** Module initialization.
 		 */
 		virtual void				initModule(const TParsedCommandLine &initInfo) =0;
 
@@ -164,13 +170,29 @@ namespace NLNET
 		 *	some gateway disconnection).
 		 */
 		virtual void				onModuleDown(IModuleProxy *moduleProxy) =0;
-		/** Called by a socket to process a received message.
+		/** Called by a socket to receive a message in the module context.
+		 *	Basic implementation either forward directly to onProcessModuleMessage
+		 *	or queue the message in the coroutine message queue (when a synchronous
+		 *	messaging coroutine is started) for later dispatching.
+		 */
+		virtual void				onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
+		/** Called internally by basic module imp to process the message by
+		 *	application code.
 		 */
 		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
 		/** Called by a socket to inform this module that the security
 		 *	data attached to a proxy have changed.
 		 */
 		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy) =0;
+
+		/** Do a module operation invocation.
+		 *	Caller MUST be in a module task to call this method.
+		 *	The call is blocking until receptions of the operation
+		 *	result message (or a module down)
+		 */
+		virtual void		invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) 
+			throw (EInvokeFailed)
+			=0;
 
 		//@}
 
@@ -193,6 +215,11 @@ namespace NLNET
 //		/// Called just after a module as been effectively unplugged from a socket
 //		virtual void				onModuleUnpluged() =0;
 		//@}
+
+		//@{
+		//@name internal method, should not be used by client code
+
+		virtual void _onModuleDown(IModuleProxy *removedProxy) =0;
 
 	};
 
@@ -355,6 +382,72 @@ namespace NLNET
 
 	const TModuleProxyPtr	NullModuleProxy;
 
+	/// Base class for module task (aka module coroutine)
+	class CModuleTask : public NLMISC::CCoTask
+	{
+		bool	_FailInvoke;
+	protected:
+		///only derived class can use it
+		CModuleTask ()
+			: _FailInvoke(false)
+		{
+		}
+
+		void initMessageQueue(class CModuleBase *module);
+
+		void flushMessageQueue(class CModuleBase *module);
+
+	public:
+		// for task blocked in 'invoke' to fail with an exception
+		void failInvoke()
+		{
+			_FailInvoke = true;
+		}
+
+		bool mustFailInvoke()
+		{
+			return _FailInvoke;
+		}
+	};
+
+	/// Template module task
+	template <class T>
+	class TModuleTask : public CModuleTask
+	{
+	public:
+		typedef void (T::*TMethodPtr)();
+
+	private:
+		T			*_Module;
+		TMethodPtr	_TaskMethod;
+
+		// override CTask::run
+		void run()
+		{
+			initMessageQueue(_Module);
+
+			// run the module task command control to module task method
+			(_Module->*_TaskMethod)();
+
+			// finish the dispatch
+			flushMessageQueue(_Module);
+		}
+	public:
+
+		TModuleTask(T *module,  void (T::*taskMethod)())
+			: _Module(module),
+			_TaskMethod(taskMethod)
+		{
+		}
+	};
+
+	// a special macro for easy module task startup
+#define	NLNET_START_MODULE_TASK(className, methodName) \
+	{ \
+		TModuleTask<className> *task = new TModuleTask<className>(this, className::methodName); \
+		queueModuleTask(task); \
+	} \
+
 	/** Interface for module factory.
 	 *	Each module MUST provide a factory and 
 	 *	register an instance of the factory in
@@ -369,15 +462,16 @@ namespace NLNET
 		std::set<TModulePtr>	_ModuleInstances;
 	public:
 
-		/// Constructor, initialise the module class name
+
+		/// Constructor, initialize the module class name
 		IModuleFactory(const std::string &moduleClassName);
 
 		/** Return the class name of the factored module */
 		virtual const std::string &getModuleClassName() const;
-		/** Return the initialisation string helper */
+		/** Return the initialization string helper */
 		virtual const std::string &getInitStringHelp() const =0;
 
-		/** Pretty simple method. Module initialisation
+		/** Pretty simple method. Module initialization
 		 *	is done after construction, so there are
 		 *	no parameter at construction.
 		 */
@@ -456,10 +550,35 @@ namespace NLNET
 	{
 		// Module manager is our friend coz it need to feed some field here
 		friend class CModuleManager;
+		friend class CModuleTask;
 
 		typedef std::set<IModuleSocket *> 	TModuleSockets;
 		/// This is the sockets where the module is plugged in
-		TModuleSockets		_ModuleSockets;
+		TModuleSockets			_ModuleSockets;
+
+		//@{
+		//@name Synchronous messaging
+		typedef std::list<std::pair<IModuleProxy *, CMessage> >	TMessageList;
+		/// dynamically allocated list of synchronous message to process
+		TMessageList			_SyncMessages;
+		typedef std::list<CModuleTask*> TModuleTasks;
+		/// list of coroutine to run for synchronous messaging (the first in the list is running)
+		TModuleTasks			_ModuleTasks;
+
+		typedef std::vector<IModuleProxy*>	TInvokeStack;
+		/// stack of server module with pending invocation response
+		TInvokeStack			_InvokeStack;
+
+		/// The current message to process sender
+		IModuleProxy			*_CurrentSender;
+		/// The current message to process
+		NLNET::CMessage			*_CurrentMessage;
+		/// True if the current message processing have generated an exception
+		bool					_CurrentMessageFailed;
+
+		/// task for message dispatching
+		CModuleTask				*_MessageDispatchTask;
+		//@}
 
 		virtual void setFactory(IModuleFactory *factory);
 		virtual IModuleFactory *getFactory();
@@ -485,6 +604,18 @@ namespace NLNET
 
 		const std::string	&getModuleFullyQualifiedName() const;
 
+		/** Called by a socket to receive a message in the module context.
+		 *	Basic implementation either forward directly to onProcessModuleMessage
+		 *	or queue the message in the coroutine message queue (when a synchronous
+		 *	messaging coroutine is started) for later dispatching.
+		 */
+		virtual void		onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message);
+
+		/// The message dispatching task
+		void _receiveModuleMessageTask();
+
+		void queueModuleTask(CModuleTask *task);
+
 	public:
 		// return the default init string (empty)
 		static const std::string &CModuleBase::getInitStringHelp();
@@ -495,6 +626,9 @@ namespace NLNET
 		void				plugModule(IModuleSocket *moduleSocket) throw (EModuleAlreadyPluggedHere);
 		void				unplugModule(IModuleSocket *moduleSocket)  throw (EModuleNotPluggedHere);
 		void				getPluggedSocketList(std::vector<IModuleSocket*> &resultList);
+		void				invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed);
+		void				_onModuleDown(IModuleProxy *removedProxy);
+
 
 
 		/// base module command table

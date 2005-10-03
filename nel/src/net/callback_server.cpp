@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.27 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_server.cpp,v 1.28 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,12 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
  */
 void CCallbackServer::send (const CMessage &buffer, TSockId hostid, bool log)
 {
+	if (hostid == NULL)
+	{
+		// the host is null, don't send anything
+		return;
+	}
+
 	checkThreadId ();
 	nlassert (connected ());
 	nlassert (buffer.length() != 0);

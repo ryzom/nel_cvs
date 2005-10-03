@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.9 2005/09/19 09:47:20 boucher Exp $
+ * $Id: module.cpp,v 1.10 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,18 +99,61 @@ namespace NLNET
 	}
 
 	//////////////////////////////////////
+	// CModuleTask implementation
+	//////////////////////////////////////
+	void CModuleTask::initMessageQueue(CModuleBase *module)
+	{
+	}
+
+	void CModuleTask::flushMessageQueue(CModuleBase *module)
+	{
+		// process any queued message
+		while (!module->_SyncMessages.empty())
+		{
+			IModuleProxy *proxy = module->_SyncMessages.front().first;
+			CMessage &msg = module->_SyncMessages.front().second;
+
+			module->onProcessModuleMessage(proxy, msg);
+
+			module->_SyncMessages.pop_front();
+		}
+	}
+
+	//////////////////////////////////////
 	// Module base implementation
 	//////////////////////////////////////
 
 	CModuleBase::CModuleBase()
-		: _ModuleFactory(NULL),
+		:  _CurrentSender(NULL),
+		  _CurrentMessage(NULL),
+		  _CurrentMessageFailed(false),
+		  _MessageDispatchTask(NULL),
+		  _ModuleFactory(NULL),
 		  _ModuleId(INVALID_MODULE_ID)
 	{
 	}
 	CModuleBase::~CModuleBase()
 	{
-		// unregister the module in the module manager
-//		IModuleManager::getInstance().onModuleDeleted(this);
+		// deleting a module from it's own current task is forbiden
+		nlassert(_ModuleTasks.empty() 
+			||  CCoTask::getCurrentTask() != _ModuleTasks.front());
+
+		// terminate and release any pending module task
+		while (!_ModuleTasks.empty())
+		{
+			CModuleTask *task = _ModuleTasks.front();
+
+			// deleting the task will waiting it to terminate
+			delete task;
+
+			_ModuleTasks.erase(_ModuleTasks.begin());
+		}
+		
+		if (_MessageDispatchTask)
+		{
+			// delete reception task
+			delete _MessageDispatchTask;
+		}
 	}
 
 	TModuleId			CModuleBase::getModuleId() const
@@ -142,6 +185,62 @@ namespace NLNET
 		return _FullyQualifedModuleName;
 	}
 
+	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	{
+		if (!_ModuleTasks.empty())
+		{
+			// there is a task running, queue in the message
+			_SyncMessages.push_back(make_pair(senderModuleProxy, CMessage()));
+			_SyncMessages.back().second.swap(message);
+		}
+		else
+		{
+			// go in user code for processing
+			if (_MessageDispatchTask != NULL)
+			{
+				// process the message in the co task
+				_CurrentSender = senderModuleProxy;
+				_CurrentMessage = &message;
+
+				_MessageDispatchTask->resume();
+
+				if (_CurrentMessageFailed)
+					throw IModule::EInvokeFailed();
+			}
+			else
+			{
+				// normal processing by the main task
+				onProcessModuleMessage(senderModuleProxy, message);
+			}
+		}
+	}
+
+	void CModuleBase::_receiveModuleMessageTask()
+	{
+		while (!_MessageDispatchTask->isTerminationRequested())
+		{
+			// we have a message to dispatch
+			try
+			{
+				onProcessModuleMessage(_CurrentSender, *_CurrentMessage);
+				_CurrentMessageFailed = false;
+			}
+			catch(...)
+			{
+				// an exception have been thrown
+				_CurrentMessageFailed = true;
+			}
+			// switch to main task
+			_MessageDispatchTask->yield();
+		}
+	}
+
+
+	void CModuleBase::queueModuleTask(CModuleTask *task)
+	{
+		_ModuleTasks.push_back(task);
+	}
+
 	const std::string &CModuleBase::getInitStringHelp()
 	{
 		static string help;
@@ -152,6 +251,14 @@ namespace NLNET
 	void				CModuleBase::initModule(const TParsedCommandLine &initInfo)
 	{
 		// read module init param for base module .
+
+		if (initInfo.getParam("base.useCoTaskDispatch"))
+		{
+			// init the message dispatch task
+//			_MessageDispatchTask = new TModuleTask<CModuleBase>(const_cast<CModuleBase*>(this),  (void (CModuleBase::*)())(&CModuleBase::_receiveModuleMessageTask));
+//			_MessageDispatchTask = new TModuleTask<CModuleBase>(const_cast<CModuleBase*>(this),  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
+			_MessageDispatchTask = new TModuleTask<CModuleBase>(this,  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
+		}
 
 		// register this module in the command executor
 		registerCommandsHandler();
@@ -202,6 +309,133 @@ namespace NLNET
 		{
 			resultList.push_back(*first);
 		}
+	}
+
+	/** Do a module operation invocation.
+	 *	Caller MUST be in a module task to call this method.
+	 *	The call is blocking until receptions of the operation
+	 *	result message (or a module down)
+	 */
+	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
+	{
+		nlassert(opMsg.getType() == CMessage::Request);
+
+		// check that we are running in a coroutine task
+		CModuleTask *task = dynamic_cast<CModuleTask *>(CCoTask::getCurrentTask());
+		nlassert(task != NULL);
+		// send the message to the module
+		destModule->sendModuleMessage(this, opMsg);
+
+		// fill the invoke stack
+		_InvokeStack.push_back(destModule);
+
+		for (;;)
+		{
+			// yield and wait for messages
+			task->yield();
+
+			if (task->mustFailInvoke())
+			{
+				// empty the invoke stack
+				_InvokeStack.pop_back();
+
+				throw EInvokeFailed();
+			}
+
+			while (!_SyncMessages.empty())
+			{
+				IModuleProxy *proxy = _SyncMessages.front().first;
+				CMessage &msg = _SyncMessages.front().second;
+				if (msg.getType() == CMessage::Response)
+				{
+					// we have the response message
+					nlassert(proxy = destModule);
+					resultMsg.swap(msg);
+					// remove this message form the queue
+					_SyncMessages.pop_front();
+					// empty the invoke stack
+					_InvokeStack.pop_back();
+					// stop reading received message now
+					return;
+				}
+				else if (msg.getType() == CMessage::Except)
+				{
+					// the other side returned an exception !
+
+					// empty the invoke stack
+					_InvokeStack.pop_back();
+
+					throw EInvokeFailed();
+				}
+				else
+				{
+					// another message, dispatch it
+					CMessage::TMessageType msgType = msg.getType();
+					try
+					{
+						onProcessModuleMessage(proxy, msg);
+					}
+					catch(...)
+					{
+						nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
+							msg.getName().c_str(),
+							proxy->getModuleName().c_str(),
+							this->getModuleName().c_str());
+
+						if (msgType == CMessage::Request)
+						{
+							// send back an exception message
+							CMessage except;
+							except.setType("EXCEPT", CMessage::Except);
+							proxy->sendModuleMessage(this, except);
+						}
+
+					}
+					
+					// remove this message form the queue
+					_SyncMessages.pop_front();
+				}
+			}
+		}
+	}
+
+	void CModuleBase::_onModuleDown(IModuleProxy *removedProxy)
+	{
+		// remove any message from the message queue that come from this proxy
+		{
+			TMessageList::iterator first(_SyncMessages.begin()), last(_SyncMessages.end());
+			for (; first != last; ++first)
+			{
+				if (first->first == removedProxy)
+				{
+					_SyncMessages.erase(first);
+					first = _SyncMessages.begin();
+				}
+			}
+		}
+		// check the invocation stack also
+		{
+			TInvokeStack::iterator first(_InvokeStack.begin()), last(_InvokeStack.end());
+			for (; first != last; ++first)
+			{
+				if (*first == removedProxy)
+				{
+					nlassert(!_ModuleTasks.empty());
+					// gasp, we lost one of the module needed to managed the invocation stack!
+					// make each call generate an exception
+					while (first != _InvokeStack.end())
+					{
+						CModuleTask *task = _ModuleTasks.front();
+						task->failInvoke();
+						// switch to task to unstack one level
+						task->yield();
+					}
+				}
+			}
+		}
+
+		// call the normal callback
+		onModuleDown(removedProxy);
 	}
 
 

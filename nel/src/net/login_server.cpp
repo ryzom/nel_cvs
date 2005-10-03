@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.38 2005/08/09 19:06:45 boucher Exp $
+ * $Id: login_server.cpp,v 1.39 2005/10/03 10:08:28 boucher Exp $
  *
  */
 
@@ -41,8 +41,8 @@ namespace NLNET {
 
 struct CPendingUser
 {
-	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up, const string &ux)
-		: Cookie (cookie), UserName(un), UserPriv(up), UserExtended(ux)
+	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up, const string &ux, uint32 instanceId)
+		: Cookie (cookie), UserName(un), UserPriv(up), UserExtended(ux), InstanceId(instanceId)
 	{
 		Time = CTime::getSecondsSince1970();
 	}
@@ -51,6 +51,7 @@ struct CPendingUser
 	string UserName;
 	string UserPriv;		// privilege for executing commands from the clients
 	string UserExtended;	// extended data (for free use)
+	uint32 InstanceId;		// the world instance in witch the user is awaited
 	uint32 Time;			// when the cookie is inserted in pending list
 };
 
@@ -115,6 +116,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 {
 	// the WS call me that a new client want to come in my shard
 	string reason, userName, userPriv, userExtended;
+	uint32 instanceId;
 	CLoginCookie cookie;
 
 	refreshPendingList ();
@@ -125,6 +127,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 
 	msgin.serial (cookie);
 	msgin.serial (userName, userPriv, userExtended);
+	msgin.serial (instanceId);
 
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
@@ -136,6 +139,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 			notifyWSRemovedPendingCookie((*it).Cookie);
 			PendingUsers.erase (it);
 			reason = "cookie already exists";
+			// iterator is invalid, set it to end
+			it = PendingUsers.end();
 			break;
 		}
 	}
@@ -143,7 +148,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	{
 		// add it to the awaiting client
 		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str());
-		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended));
+		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended, instanceId));
 		reason = "";
 	}
 
@@ -205,8 +210,9 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	msgin.serial (cookie);
 
 	string userName, userPriv, userExtended;
+	uint32 instanceId;
 	// verify that the user was pending
-	reason = CLoginServer::isValidCookie (cookie, userName, userPriv, userExtended);
+	reason = CLoginServer::isValidCookie (cookie, userName, userPriv, userExtended, instanceId);
 
 	// if the cookie is not valid and we accept them, clear the error
 	if(AcceptInvalidCookie && !reason.empty())
@@ -268,6 +274,13 @@ static void setListenAddress(const string &la)
 		ListenAddr = la;
 	}
 	
+	// check that listen address is valid
+	if (ListenAddr.empty())
+	{
+		nlerror("FATAL : listen address in invalid, it should be either set via ListenAddress variable or with -D argument");
+		nlstop;
+	}
+
 	nlinfo("LS: Listen Address that will be send to client is now '%s'", ListenAddr.c_str());
 }
 
@@ -374,7 +387,16 @@ void CLoginServer::init (CUdpSock &server, TDisconnectClientCallback dc)
 	ModeTcp = false;
 }
 
-string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended)
+void CLoginServer::init (const std::string &listenAddr, TDisconnectClientCallback dc)
+{
+	init (listenAddr);
+
+	DisconnectClientCallback = dc;
+
+	ModeTcp = false;
+}
+
+string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended, uint32 &instanceId)
 {
 	userName = userPriv = "";
 
@@ -385,9 +407,10 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
 	{
-		if ((*it).Cookie == lc)
+		CPendingUser &pu = *it;
+		if (pu.Cookie == lc)
 		{
-			nlinfo ("LS: Cookie '%s' is valid and pending (user %s), send the client connection to the WS", lc.toString ().c_str (), (*it).UserName.c_str());
+			nlinfo ("LS: Cookie '%s' is valid and pending (user %s), send the client connection to the WS", lc.toString ().c_str (), pu.UserName.c_str());
 
 			// warn the WS that the client effectively connected
 			uint8 con = 1;
@@ -398,9 +421,10 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 
 			CUnifiedNetwork::getInstance()->send("WS", msgout);
 
-			userName = (*it).UserName;
-			userPriv = (*it).UserPriv;
-			userExtended = (*it).UserExtended;
+			userName = pu.UserName;
+			userPriv = pu.UserPriv;
+			userExtended = pu.UserExtended;
+			instanceId = pu.InstanceId;
 
 			// ok, it was validate, remove it
 			PendingUsers.erase (it);
@@ -414,6 +438,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 	{
 		userName = "InvalidUserName";
 		userPriv = DefaultUserPriv;
+		instanceId = 0xffffffff;
 		return "";
 	}
 
@@ -439,6 +464,13 @@ void CLoginServer::clientDisconnected (uint32 userId)
 	if (ModeTcp)
 		UserIdSockAssociations.erase (userId);
 }
+
+/// Call this method to retrieve the listen address
+const std::string &CLoginServer::getListenAddress()
+{
+	return ListenAddr;
+}
+
 
 //
 // Commands

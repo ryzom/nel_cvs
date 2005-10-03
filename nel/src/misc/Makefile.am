@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.83 2005/08/29 16:12:47 boucher Exp $
+# $Id: Makefile.am,v 1.84 2005/10/03 10:08:28 boucher Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -122,7 +122,8 @@ libnelmisc_la_SOURCES = \
 	window_displayer.cpp \
 	words_dictionary.cpp \
 	dynloadlib.cpp \
-	sstring.cpp
+	sstring.cpp \
+	co_task.cpp
 
 
 noinst_HEADERS        = di_game_device.h \

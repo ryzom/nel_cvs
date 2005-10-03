@@ -430,6 +430,7 @@ Test::Suite *createCSStringTS();
 Test::Suite *createObjectCommandTS();
 Test::Suite *createPureNelLibTS();
 Test::Suite *createCStreamTS();
+Test::Suite *createCCoTaskTS();
 
 
 // global test for any misc feature
@@ -447,6 +448,7 @@ public:
 		add(auto_ptr<Test::Suite>(createCSStringTS()));
 		add(auto_ptr<Test::Suite>(createObjectCommandTS()));
 		add(auto_ptr<Test::Suite>(createCStreamTS()));
+		add(auto_ptr<Test::Suite>(createCCoTaskTS()));
 
 		// initialise the application context
 		NLMISC::CApplicationContext::getInstance();

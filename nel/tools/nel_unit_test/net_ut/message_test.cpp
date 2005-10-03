@@ -100,7 +100,8 @@ public:
 			
 		string s;
 		{
-			CMessage msg1("NAME");
+			CMessage msg1;
+			msg1.setType("NAME", CMessage::Request);
 
 			s = "foo1";
 			msg1.serial(s);
@@ -119,6 +120,7 @@ public:
 		msg2.invert();
 		TEST_ASSERT(msg2.typeIsSet());
 		TEST_ASSERT(msg2.getName() == "NAME");
+		TEST_ASSERT(msg2.getType() == CMessage::Request);
 		msg2.serial(s);
 		TEST_ASSERT(s == "foo1");
 		msg2.serial(s);

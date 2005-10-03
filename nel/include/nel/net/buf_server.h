@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.20 2005/02/22 10:14:13 besson Exp $
+ * $Id: buf_server.h,v 1.21 2005/10/03 10:08:05 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,12 +231,12 @@ public:
 	/** Sets the time flush trigger (in millisecond). When this time is elapsed,
 	 * all data in the send queue is automatically sent (-1 to disable this trigger)
 	 */
-	void	setTimeFlushTrigger( TSockId destid, sint32 ms ) { nlassert( destid != InvalidSockId ); destid->setTimeFlushTrigger( ms ); }
+	void	setTimeFlushTrigger( TSockId destid, sint32 ms );
 
 	/** Sets the size flush trigger. When the size of the send queue reaches or exceeds this
 	 * value, all data in the send queue is automatically sent (-1 to disable this trigger )
 	 */
-	void	setSizeFlushTrigger( TSockId destid, sint32 size ) { nlassert( destid != InvalidSockId ); destid->setSizeFlushTrigger( size ); }
+	void	setSizeFlushTrigger( TSockId destid, sint32 size );
 
 	/** Force to send data pending in the send queue now. If all the data could not be sent immediately,
 	 * the returned nbBytesRemaining value is non-zero.
@@ -245,7 +245,7 @@ public:
 	 * \returns False if an error has occured (e.g. the remote host is disconnected).
 	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
 	 */
-	bool	flush( TSockId destid, uint *nbBytesRemaining=NULL ) { nlassert( destid != InvalidSockId ); return destid->flush( nbBytesRemaining ); }
+	bool	flush( TSockId destid, uint *nbBytesRemaining=NULL );
 
 
 
@@ -254,7 +254,7 @@ public:
 	const CInetAddress&	listenAddress() const { return _ListenTask->localAddr(); }
 
 	/// Returns the address of the specified host
-	const CInetAddress& hostAddress( TSockId hostid ) { nlassert( hostid != InvalidSockId ); return hostid->Sock->remoteAddr(); }
+	const CInetAddress& hostAddress( TSockId hostid );
 
 	/*
 	/// Returns the number of bytes pushed into the receive queue since the beginning (mutexed)
@@ -334,6 +334,11 @@ protected:
 	*/
 
 private:
+
+	typedef std::set<TSockId>		TClientSet;
+	/// List of currently connected client
+	TClientSet						_ConnectedClients;
+
 
 	/// Thread socket-handling strategy
 	TThreadStategy					_ThreadStrategy;

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.40 2005/08/29 16:16:59 boucher Exp $
+ * $Id: message.h,v 1.41 2005/10/03 10:08:05 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,21 @@ class CMessage : public NLMISC::CMemStream
 {
 public:
 
-	enum TStreamFormat { UseDefault, Binary, String };
+	enum TStreamFormat	{ UseDefault, Binary, String };
+	enum TMessageType	{ OneWay, Request, Response, Except};
+
+	struct TFormat
+	{
+		uint8	StringMode : 1,	// true if the message body is string encoded, binary encoded if false otherwise
+				LongFormat : 1, // true if the message format is long (d'ho ? all message are long !?!, always true)
+				MessageType : 2; // type of the message (from TMessageType), classical message are 'OneWay'
+
+		void serial(NLMISC::IStream &s)
+		{
+			uint8 &b = reinterpret_cast<uint8&>(*this);
+			s.serial(b);
+		}
+	};
 
 	CMessage (const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 1000);
 
@@ -68,7 +82,7 @@ public:
 	void swap(CMessage &other);
 	
 	/// Sets the message type as a string and put it in the buffer if we are in writing mode
-	void setType (const std::string &name);
+	void setType (const std::string &name, TMessageType type=OneWay);
 
 	void changeType (const std::string &name);
 
@@ -243,6 +257,10 @@ public:
 	 * In a callback driven by message name, getName() does not necessarily return the right name.
 	 */
 	std::string getName () const;
+
+	/** Return the type of the message.
+	 */
+	TMessageType getType() const;
 	
 	/** Returns a readable string to display it to the screen. It's only for debugging purpose!
 	 * Don't use it for anything else than to debugging, the string format could change in the future.
@@ -274,6 +292,8 @@ protected:
 
 private:
 	std::string							_Name;
+
+	TMessageType						_Type;
 	
 	// When sub message lock mode is enabled, beginning position of sub message to read (before header)
 	uint32								_SubMessagePosR;

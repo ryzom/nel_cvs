@@ -20,9 +20,13 @@ class CModuleType0 : public CModuleBase
 public:
 
 	uint	PingCount;
+	uint	ResponseReceived;
+
+	set<TModuleProxyPtr>	ModuleType0;
 
 	CModuleType0()
-		: PingCount(0)
+		: PingCount(0),
+		ResponseReceived(0)
 	{}
 
 	void				onServiceUp(const std::string &serviceName, uint16 serviceId)
@@ -44,6 +48,8 @@ public:
 
 	void				onModuleUp(IModuleProxy *moduleProxy)
 	{
+		if (moduleProxy->getModuleClassName() == getModuleClassName())
+			ModuleType0.insert(moduleProxy);
 	}
 	/** Called by a socket to inform this module that another
 	 *	module has been deleted OR has been no more accessible (due to
@@ -51,12 +57,33 @@ public:
 	 */
 	void				onModuleDown(IModuleProxy *moduleProxy)
 	{
+		if (moduleProxy->getModuleClassName() == getModuleClassName())
+			ModuleType0.erase(moduleProxy);
 	}
 
 	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
 	{
 		if (message.getName() == "DEBUG_MOD_PING")
 			PingCount++;
+		else if (message.getName() == "HELLO")
+		{
+			CMessage ping("DEBUG_MOD_PING");
+			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
+			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
+			{
+				CMessage resp;
+				resp.setType("HELLO_RESP", CMessage::Response);
+
+				senderModuleProxy->sendModuleMessage(this, resp);
+			}
+			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
+			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
+		}
+		else if (message.getName() == "HELLO2")
+		{
+			// the response for the life, the universe and all other thinks...
+			throw 42;
+		}
 	}
 
 	void				onModuleSecurityChange(IModuleProxy *moduleProxy)
@@ -66,6 +93,59 @@ public:
 	void				onModuleSocketEvent(IModuleSocket *moduleSocket, IModule::TModuleSocketEvent eventType)
 	{
 	}
+
+	void startTaskA()
+	{
+		// start a task on module 
+		NLNET_START_MODULE_TASK(CModuleType0, taskA);
+	}
+
+	// test task A 
+	void		taskA()
+	{
+		// use the first like me in the list
+		nlassert(!ModuleType0.empty());
+
+		TModuleProxyPtr proxy = *ModuleType0.begin();
+
+		CMessage msg;
+		msg.setType("HELLO", CMessage::Request);
+		CMessage resp;
+		invokeModuleOperation(proxy, msg, resp);
+
+		nlassert(resp.getName() == "HELLO_RESP");
+
+		ResponseReceived++;
+	}
+
+	void startTaskB()
+	{
+		// start a task on module
+		NLNET_START_MODULE_TASK(CModuleType0, taskB);
+	}
+
+	// test task B 
+	void		taskB()
+	{
+		// use the first like me in the list
+		nlassert(!ModuleType0.empty());
+
+		TModuleProxyPtr proxy = *ModuleType0.begin();
+
+		CMessage msg;
+		msg.setType("HELLO2", CMessage::Request);
+		CMessage resp;
+
+		try
+		{
+			invokeModuleOperation(proxy, msg, resp);
+		}
+		catch(IModule::EInvokeFailed)
+		{
+			ResponseReceived++;
+		}
+	}
+
 };
 
 NLNET_REGISTER_MODULE_FACTORY(CModuleType0, "ModuleType0");
@@ -345,8 +425,68 @@ public:
 		TEST_ADD(CModuleTS::firewalling);
 		TEST_ADD(CModuleTS::distanceAndConnectionLoop);
 		TEST_ADD(CModuleTS::securityPlugin);
+		TEST_ADD(CModuleTS::synchronousMessaging);
 	}
 	
+	void synchronousMessaging()
+	{
+		// check that the synchronous messaging is working
+		// by using module task
+
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+
+		// create the modules
+		IModule *gw = mm.createModule("StandardGateway", "gw", "");
+		IModule *m1 = mm.createModule("ModuleType0", "m1", "");
+		IModule *m2 = mm.createModule("ModuleType0", "m2", "");
+
+		// plug the two module in the gateway
+		cr.execute("m1.plug gw", InfoLog());
+		cr.execute("m2.plug gw", InfoLog());
+
+		// update the network
+		for (uint i=0; i<15; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		CModuleType0 *mod1 = dynamic_cast<CModuleType0 *>(m1);
+
+		// start a task on module 1
+		mod1->startTaskA();
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+
+		TEST_ASSERT(mod1->PingCount == 4);
+		TEST_ASSERT(mod1->ResponseReceived == 1);
+
+		// start a task on module 1
+		mod1->startTaskB();
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+
+		TEST_ASSERT(mod1->PingCount == 4);
+		TEST_ASSERT(mod1->ResponseReceived == 2);
+		mm.deleteModule(m1);
+		mm.deleteModule(m2);
+		mm.deleteModule(gw);
+	}
+
 	void securityPlugin()
 	{
 		// Check that security plug-in work well.
@@ -629,8 +769,8 @@ public:
 		TEST_ASSERT(proxGw3_3 != NULL);
 
 		const TSecurityData *ms;
-		const TSecurityType1 *st1;
-		const TSecurityType2 *st2;
+//		const TSecurityType1 *st1;
+//		const TSecurityType2 *st2;
 
 		ms = proxGw1_1->findSecurityData(tst_type1);
 		TEST_ASSERT(ms == NULL);

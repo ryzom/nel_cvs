@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.31 2005/09/19 09:47:20 boucher Exp $
+ * $Id: message.cpp,v 1.32 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ const char *LockedSubMessageError = "a sub message is forbidden";
  */
 CMessage::CMessage (const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	_SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
+	_Type(OneWay), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	init( name, streamformat );
 }
@@ -79,7 +79,7 @@ void CMessage::init( const std::string &name, TStreamFormat streamformat )
  */
 CMessage::CMessage (NLMISC::CMemStream &memstr) :
 	NLMISC::CMemStream( memstr ),
-	_SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
+	_Type(OneWay), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	sint32 pos = getPos();
 	bool reading = isReading();
@@ -110,6 +110,7 @@ CMessage &CMessage::operator= (const CMessage &other)
 	nlassertex( (!isReading()) || (!hasLockedSubMessage()), ("Assigning %s", LockedSubMessageError) );
 
 	CMemStream::operator= (other);
+	_Type = other._Type;
 	_TypeSet = other._TypeSet;
 	_Name = other._Name;
 	_HeaderSize = other._HeaderSize;
@@ -127,6 +128,7 @@ void CMessage::swap(CMessage &other)
 	std::swap(_LengthR, other._LengthR);
 	std::swap(_HeaderSize, other._HeaderSize);
 	std::swap(_TypeSet, other._TypeSet);
+	std::swap(_Type, other._Type);
 }
 
 
@@ -166,7 +168,7 @@ void CMessage::assignFromSubMessage( const CMessage& msgin )
 /*
  * Sets the message type as a string and put it in the buffer if we are in writing mode
  */
-void CMessage::setType (const std::string &name)
+void CMessage::setType (const std::string &name, TMessageType type)
 {
 	// check if we already do a setType ()
 	nlassert (!_TypeSet);
@@ -174,6 +176,7 @@ void CMessage::setType (const std::string &name)
 	nlassert (!name.empty ());
 
 	_Name = name;
+	_Type = type;
 
 	if (!isReading ())
 	{
@@ -193,7 +196,11 @@ void CMessage::setType (const std::string &name)
 		uint32 zeroValue = 123;
 		serial (zeroValue);
 
-		uint8 format = FormatLong | (msgmode << 1);
+
+		TFormat format;
+		format.LongFormat = FormatLong;
+		format.StringMode = msgmode;
+		format.MessageType = _Type;
 		//nldebug( "OUT format = %hu", (uint16)format );
 		serial (format);
 
@@ -253,16 +260,17 @@ void CMessage::readType ()
 	// Force binary mode for header
 	_StringMode = false;
 
-	uint8 format;
+	TFormat format;
 	serial (format);
 	//nldebug( "IN format = %hu", (uint16)format );
-	bool LongFormat = (format & 1);
+	bool LongFormat = format.LongFormat;
 
 	// Set mode for the following of the buffer
-	_StringMode = (format >> 1) & 1;
+	_StringMode = format.StringMode;
+
 	std::string name;
 	serial (name);
-	setType (name);
+	setType (name, TMessageType(format.MessageType));
 	_HeaderSize = getPos();
 }
 
@@ -280,10 +288,12 @@ std::string CMessage::readTypeAtCurrentPos()
 	bool sm = _StringMode;
 	_StringMode = false;
 
-	uint8 format;
+	TFormat format;
 	serial( format );
-	bool LongFormat = (format & 1);
-	_StringMode = (format >> 1) & 1;
+	bool LongFormat = format.LongFormat;
+	_StringMode = format.StringMode;
+	_Type = TMessageType(format.MessageType);
+
 	if ( LongFormat )
 	{
 		std::string name;
@@ -293,6 +303,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	}
 	else
 		nlerror( "Id not supported" );
+
 
 	_StringMode = sm;
 	return "";
@@ -342,6 +353,31 @@ std::string CMessage::getName () const
 		return _Name;
 	}
 }
+
+CMessage::TMessageType CMessage::getType() const
+{
+	if ( hasLockedSubMessage() )
+	{
+		CMessage& notconstMsg = const_cast<CMessage&>(*this);
+		sint32 savedPos = notconstMsg.getPos();
+		uint32 subPosSaved = _SubMessagePosR;
+		uint32 lenthRSaved = _LengthR;
+		const_cast<uint32&>(_SubMessagePosR) = 0;
+		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
+		notconstMsg.readTypeAtCurrentPos();
+		notconstMsg.seek( subPosSaved+savedPos, begin );
+		const_cast<uint32&>(_SubMessagePosR) = subPosSaved;
+		const_cast<uint32&>(_LengthR) = lenthRSaved;
+		return _Type;
+	}
+	else
+	{
+		nlassert (_TypeSet);
+		return _Type;
+	}
+}
+
 
 /* Returns a readable string to display it to the screen. It's only for debugging purpose!
  * Don't use it for anything else than to debugging, the string format could change in the future.

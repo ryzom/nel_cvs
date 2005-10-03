@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.49 2005/01/04 18:26:37 cado Exp $
+ * $Id: buf_server.cpp,v 1.50 2005/10/03 10:08:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,6 +257,12 @@ void CBufServer::disconnect( TSockId hostid, bool quick )
 	nlnettrace( "CBufServer::disconnect" );
 	if ( hostid != InvalidSockId )
 	{
+		if (_ConnectedClients.find(hostid) == _ConnectedClients.end())
+		{
+			// this host is not connected
+			return;
+		}
+
 		// Disconnect only if physically connected
 		if ( hostid->Sock->connected() )
 		{
@@ -310,6 +316,11 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 
 	if ( hostid != InvalidSockId )
 	{
+		if (_ConnectedClients.find(hostid) == _ConnectedClients.end())
+		{
+			// this host is not connected
+			return;
+		}
 		// debug features, we number all packet to be sure that they are all sent and received
 		// \todo remove this debug feature when ok
 //		nldebug ("send message number %u", hostid->SendNextValue);
@@ -410,9 +421,9 @@ bool CBufServer::dataAvailable()
 				
 			// Normal message available
 			case CBufNetBase::User:
-			{
-				return true; // return immediately, do not extract the message
-			}
+				{
+					return true; // return immediately, do not extract the message
+				}
 
 			// Process disconnection event
 			case CBufNetBase::Disconnection:
@@ -428,6 +439,9 @@ bool CBufServer::dataAvailable()
 					disconnectionCallback()( sockid, argOfDisconnectionCallback() );
 				}
 
+				// remove from the list of valid client
+				nlverify(_ConnectedClients.erase(sockid) == 1);
+
 				// Add socket object into the synchronized remove list
 				nldebug( "LNETL1: Adding the connection to the remove list" );
 				nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
@@ -439,6 +453,9 @@ bool CBufServer::dataAvailable()
 			{
 				TSockId sockid = *((TSockId*)(&*buffer.begin()));
 				nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
+
+				// add this socket in the list of client
+				nlverify(_ConnectedClients.insert(sockid).second);
 
 				sockid->setConnectedState( true );
 				
@@ -511,6 +528,7 @@ void CBufServer::receive( CMemStream& buffer, TSockId* phostid )
 	nlnettrace( "CBufServer::receive" );
 	//nlassert( dataAvailable() );
 	nlassert( phostid != NULL );
+
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		nlassert( ! recvfifo.value().empty() );
@@ -605,6 +623,12 @@ uint32 CBufServer::getSendQueueSize( TSockId destid )
 {
 	if ( destid != InvalidSockId )
 	{
+		if (_ConnectedClients.find(destid) == _ConnectedClients.end())
+		{
+			// this host is not connected
+			return 0;
+		}
+
 		return destid->SendFifo.size();
 	}
 	else
@@ -654,10 +678,45 @@ void CBufServer::displayThreadStat (NLMISC::CLog *log)
 	log->displayNL ("server listen thread %p nbloop %d", _ListenTask, _ListenTask->NbLoop);
 }
 
+void CBufServer::setTimeFlushTrigger( TSockId destid, sint32 ms ) 
+{ 
+	nlassert( destid != InvalidSockId ); 
+	if (_ConnectedClients.find(destid) != _ConnectedClients.end()) 
+		destid->setTimeFlushTrigger( ms ); 
+}
+
+void CBufServer::setSizeFlushTrigger( TSockId destid, sint32 size ) 
+{ 
+	nlassert( destid != InvalidSockId ); 
+	if (_ConnectedClients.find(destid) != _ConnectedClients.end()) 
+		destid->setSizeFlushTrigger( size ); 
+}
+
+bool CBufServer::flush( TSockId destid, uint *nbBytesRemaining)
+{ 
+	nlassert( destid != InvalidSockId ); 
+	if (_ConnectedClients.find(destid) != _ConnectedClients.end()) 
+		return destid->flush( nbBytesRemaining ); 
+	else
+		return true;
+}
+const CInetAddress& CBufServer::hostAddress( TSockId hostid ) 
+{ 
+	nlassert( hostid != InvalidSockId ); 
+	if (_ConnectedClients.find(hostid) != _ConnectedClients.end()) 
+		return hostid->Sock->remoteAddr(); 
+}
+
 void CBufServer::displaySendQueueStat (NLMISC::CLog *log, TSockId destid)
 {
 	if ( destid != InvalidSockId )
 	{
+		if (_ConnectedClients.find(destid) == _ConnectedClients.end())
+		{
+			// this host is not connected
+			return;
+		}
+
 		destid->SendFifo.displayStats(log);
 	}
 	else

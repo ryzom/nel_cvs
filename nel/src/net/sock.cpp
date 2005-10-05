@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.40 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: sock.cpp,v 1.41 2005/10/05 12:36:40 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,12 +304,15 @@ void CSock::close()
 	{
 		nldebug( "LNETL0: Socket %d closing for %s at %s", _Sock, _RemoteAddr.asString().c_str(), _LocalAddr.asString().c_str() );
 	}
-#ifdef NL_OS_WINDOWS
-	closesocket( _Sock );
-#elif defined NL_OS_UNIX
-	::close( _Sock );
-#endif
+	SOCKET sockToClose = _Sock;
+	// preset to invalid to bypass exception in listen thread
 	_Sock = INVALID_SOCKET;
+#ifdef NL_OS_WINDOWS
+	closesocket( sockToClose );
+#elif defined NL_OS_UNIX
+	::close( sockToClose );
+#endif
+//	_Sock = INVALID_SOCKET;
 }
 
 

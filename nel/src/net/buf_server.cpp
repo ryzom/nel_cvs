@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.50 2005/10/03 10:08:28 boucher Exp $
+ * $Id: buf_server.cpp,v 1.51 2005/10/05 12:36:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -705,6 +705,9 @@ const CInetAddress& CBufServer::hostAddress( TSockId hostid )
 	nlassert( hostid != InvalidSockId ); 
 	if (_ConnectedClients.find(hostid) != _ConnectedClients.end()) 
 		return hostid->Sock->remoteAddr(); 
+
+	static CInetAddress nullAddr;
+	return nullAddr;
 }
 
 void CBufServer::displaySendQueueStat (NLMISC::CLog *log, TSockId destid)
@@ -829,27 +832,31 @@ void CListenTask::run()
 			}
 #endif
 			nldebug( "LNETL1: Waiting incoming connection..." );
-			CServerBufSock *bufsock = new CServerBufSock( _ListenSock.accept() );
-			nldebug( "LNETL1: New connection : %s", bufsock->asString().c_str() );
-			bufsock->setNonBlocking();
-			bufsock->setMaxExpectedBlockSize( _MaxExpectedBlockSize );
-			if ( _Server->noDelay() )
+			CTcpSock *newSock = _ListenSock.accept();
+			if (newSock != NULL)
 			{
-				bufsock->Sock->setNoDelay( true );
+				CServerBufSock *bufsock = new CServerBufSock( newSock );
+				nldebug( "LNETL1: New connection : %s", bufsock->asString().c_str() );
+				bufsock->setNonBlocking();
+				bufsock->setMaxExpectedBlockSize( _MaxExpectedBlockSize );
+				if ( _Server->noDelay() )
+				{
+					bufsock->Sock->setNoDelay( true );
+				}
+
+				// Notify the new connection
+				bufsock->advertiseConnection( _Server );
+
+				// Dispatch the socket into the thread pool
+				_Server->dispatchNewSocket( bufsock );
 			}
-
-			// Notify the new connection
-			bufsock->advertiseConnection( _Server );
-
-			// Dispatch the socket into the thread pool
-			_Server->dispatchNewSocket( bufsock );
 
 			NbLoop++;
 		}
 		catch ( ESocket& e )
 		{
-			nlinfo( "LNETL1: Exception in listen thread: %s", e.what() ); // It can occur in normal behavior (e.g. when exiting)
-			// It can also occur when too many sockets are open (e.g. 885 connections)
+			nlinfo( "LNETL1: Exception in listen thread: %s", e.what() ); 
+			// It can occur when too many sockets are open (e.g. 885 connections)
 		}
 	}
 
@@ -1139,11 +1146,11 @@ void CServerReceiveTask::run()
 						*/
 					}
 				}
-				catch ( ESocketConnectionClosed& )
-				{
-					nldebug( "LNETL1: Connection %s closed", serverbufsock->asString().c_str() );
-					// The socket went to _Connected=false when throwing the exception
-				}
+//				catch ( ESocketConnectionClosed& )
+//				{
+//					nldebug( "LNETL1: Connection %s closed", serverbufsock->asString().c_str() );
+//					// The socket went to _Connected=false when throwing the exception
+//				}
 				catch ( ESocket& )
 				{
 					nldebug( "LNETL1: Connection %s broken", serverbufsock->asString().c_str() );

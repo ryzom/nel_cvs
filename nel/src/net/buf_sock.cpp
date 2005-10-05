@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.41 2004/12/22 19:44:29 cado Exp $
+ * $Id: buf_sock.cpp,v 1.42 2005/10/05 12:36:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -415,7 +415,13 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 	{
 		// Receiving length prefix
 		actuallen = sizeof(_Length)-_BytesRead;
-		Sock->receive( (uint8*)(&_Length)+_BytesRead, actuallen );
+		CSock :: TSockResult ret = Sock->receive( (uint8*)(&_Length)+_BytesRead, actuallen, false );
+		if (ret == CSock::ConnectionClosed)
+		{
+			nldebug( "LNETL1: Connection %s closed", asString().c_str() );
+			return false;
+		}
+
 		_BytesRead += actuallen;
 		if ( _BytesRead == sizeof(_Length ) )
 		{

@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.10 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: listen_sock.cpp,v 1.11 2005/10/05 12:36:40 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,10 @@ CTcpSock *CListenSock::accept()
 	SOCKET newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );
 	if ( newsock == INVALID_SOCKET )
 	{
+		if (_Sock == INVALID_SOCKET)
+			// normal case, the listen sock have been closed, just return NULL.
+			return NULL;
+
 	  /*nlinfo( "LNETL0: Error accepting a connection");
 	  // See accept() man on Linux
 	  newsock = ::accept( _Sock, (sockaddr*)&saddr, &saddrlen );

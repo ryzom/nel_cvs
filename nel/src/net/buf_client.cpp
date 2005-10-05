@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.33 2005/08/29 16:17:38 boucher Exp $
+ * $Id: buf_client.cpp,v 1.34 2005/10/05 16:06:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -426,7 +426,7 @@ void CClientReceiveTask::run()
 	_NBBufSock->Sock->setTimeOutValue( 1, 0 );
 
 	bool connected = true;
-	while ( connected )
+	while ( connected && _NBBufSock->Sock->connected())
 	{
 		try
 		{

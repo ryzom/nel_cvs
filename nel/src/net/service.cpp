@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.236 2005/10/03 10:08:28 boucher Exp $
+ * $Id: service.cpp,v 1.237 2005/10/05 11:32:22 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -265,6 +265,12 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 {
 	uint32 shardId;
 	msgin.serial(shardId);
+
+	if (IService::getInstance()->getDontUseNS())
+	{
+		// we don't use NS, so shard ID message don't concern us
+		return;
+	}
 
 	if (serviceName != "WS")
 	{

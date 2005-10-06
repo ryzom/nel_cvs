@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.231.2.1 2005/08/29 12:38:02 cado Exp $
+ * $Id: service.cpp,v 1.231.2.2 2005/10/06 09:16:30 guignot Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -266,6 +266,12 @@ void cbReceiveShardId (CMessage& msgin, const string &serviceName, uint16 servic
 	uint8 shardId;
 	msgin.serial(shardId);
 
+	if (IService::getInstance()->getDontUseNS())
+	{
+		// we don't use NS, so shard ID message don't concern us
+		return;
+	}
+
 	if (serviceName != "WS")
 	{
 		nlwarning("SERVICE: received unauthorized R_SH_ID callback from service %s-%d asking to set ShardId to %d", serviceName.c_str(), serviceId, shardId);
@@ -284,7 +290,7 @@ void IService::anticipateShardId( uint32 shardId )
 void IService::setShardId( uint32 shardId )
 {
 	if ( ! ((_ShardId == DEFAULT_SHARD_ID) || (shardId == _ShardId)) )
-		nlerror( "The shardId from the WS (%u) is different from the anticipated shardId (%u)", shardId, _ShardId );
+		nlwarning( "The shardId from the WS (%u) is different from the anticipated shardId (%u)", shardId, _ShardId );
 	_ShardId = shardId;
 }
 

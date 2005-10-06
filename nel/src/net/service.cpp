@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.237 2005/10/05 11:32:22 boucher Exp $
+ * $Id: service.cpp,v 1.238 2005/10/06 09:16:58 guignot Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -294,7 +294,7 @@ void IService::anticipateShardId( uint32 shardId )
 void IService::setShardId( uint32 shardId )
 {
 	if ( ! ((_ShardId == DEFAULT_SHARD_ID) || (shardId == _ShardId)) )
-		nlerror( "The shardId from the WS (%u) is different from the anticipated shardId (%u)", shardId, _ShardId );
+		nlwarning( "The shardId from the WS (%u) is different from the anticipated shardId (%u)", shardId, _ShardId );
 	_ShardId = shardId;
 }
 

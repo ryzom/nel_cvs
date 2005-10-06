@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.85.2.1 2005/08/29 12:38:02 cado Exp $
+ * $Id: service.h,v 1.85.2.2 2005/10/06 09:53:04 guignot Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,12 @@ public:
 
 	/// Returns the date of launch of the service. Unit: see CTime::getSecondsSince1970()
 	uint32							getLaunchingDate () const;
+
+	/// Return true if this service don't use the NS (naming service)
+	bool							getDontUseNS() const { return _DontUseNS; };
+
+	/// Return true if this service don't use the AES (admin executor service)
+	bool							getDontUseAES() const { return _DontUseAES; };
 
 	/// Returns arguments of the program pass from the user to the program using parameters (ie: "myprog param1 param2")
 	const std::vector<std::string>	&getArgs () const { return _Args; }

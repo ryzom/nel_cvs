@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.33 2005/09/09 11:18:53 miller Exp $
+ * $Id: sstring.h,v 1.34 2005/10/07 15:26:45 miller Exp $
  */
 
 
@@ -2173,17 +2173,17 @@ inline bool CSString::operator>(const char* other) const
 
 inline bool CSString::operator<(const CSString &other) const
 {
-	return stricmp(c_str(),other.c_str())>0;
+	return stricmp(c_str(),other.c_str())<0;
 }
 
 inline bool CSString::operator<(const std::string &other) const
 {
-	return stricmp(c_str(),other.c_str())>0;
+	return stricmp(c_str(),other.c_str())<0;
 }
 
 inline bool CSString::operator<(const char* other) const
 {
-	return stricmp(c_str(),other)>0;
+	return stricmp(c_str(),other)<0;
 }
 
 inline std::string::const_reference CSString::operator[](std::string::size_type idx) const

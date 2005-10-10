@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.42 2005/10/05 12:36:40 boucher Exp $
+ * $Id: buf_sock.cpp,v 1.43 2005/10/10 09:51:04 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -419,6 +419,12 @@ bool CNonBlockingBufSock::receivePart( uint32 nbExtraBytes )
 		if (ret == CSock::ConnectionClosed)
 		{
 			nldebug( "LNETL1: Connection %s closed", asString().c_str() );
+			return false;
+		}
+		else if (ret == CSock::Error)
+		{
+			nldebug( "LNETL1: Socket error for %s", asString().c_str() );
+			Sock->disconnect();
 			return false;
 		}
 

@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.32 2005/10/03 10:08:28 boucher Exp $
+ * $Id: message.cpp,v 1.33 2005/10/13 17:08:27 lancon Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,7 @@ CMessage &CMessage::operator= (const CMessage &other)
 
 void CMessage::swap(CMessage &other)
 {
+	nlassert( !hasLockedSubMessage() );
 	CMemStream::swap(other);
 	_Name.swap(other._Name);
 	std::swap(_SubMessagePosR, other._SubMessagePosR);
@@ -156,7 +157,7 @@ void CMessage::assignFromSubMessage( const CMessage& msgin )
 	{
 		fill( msgin.buffer(), msgin._LengthR );
 		readType();
-		seek( msgin.getPos() - msgin._SubMessagePosR, IStream::begin );
+		seek( msgin.getPos(), IStream::begin );
 	}
 	else
 	{

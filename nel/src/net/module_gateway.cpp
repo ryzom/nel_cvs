@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.8 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9 2005/10/13 17:09:08 lancon Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1343,7 +1343,15 @@ namespace NLNET
 					TLocalMessage &lm = _LocalMessages.back();
 					lm.SenderProxyId = senderProxy->getModuleProxyId();
 					lm.AddresseProxyId = addresseeProxy->getModuleProxyId();
-					lm.Message.swap(message);
+					
+					if (message.hasLockedSubMessage())
+					{
+						lm.Message.assignFromSubMessage(message);
+					}
+					else
+					{
+						lm.Message.swap(message);
+					}					
 				}
 				else
 				{

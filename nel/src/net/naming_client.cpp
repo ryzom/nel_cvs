@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.60 2004/07/12 13:57:45 miller Exp $
+ * $Id: naming_client.cpp,v 1.61 2005/10/13 10:11:57 boucher Exp $
  *
  */
 
@@ -189,12 +189,13 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 	CNamingClient::RegisteredServicesMutex.enter ();
 	for (std::list<CNamingClient::CServiceEntry>::iterator it = CNamingClient::RegisteredServices.begin(); it != CNamingClient::RegisteredServices.end (); it++)
 	{
-		if ((*it).SId == sid)
+		CNamingClient::CServiceEntry &serviceEntry = *it;
+		if (serviceEntry.SId == sid)
 		{
 			// check the structure
-			nlassertex ((*it).Name == name, ("%s %s",(*it).Name.c_str(), name.c_str()));
+			nlassertex (serviceEntry.Name == name, ("%s %s",serviceEntry.Name.c_str(), name.c_str()));
 
-			addrs = (*it).Addr;
+			addrs = serviceEntry.Addr;
 
 			CNamingClient::RegisteredServices.erase (it);
 			break;

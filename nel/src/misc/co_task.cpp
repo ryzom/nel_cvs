@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.1 2005/10/03 10:08:28 boucher Exp $
+ * $Id: co_task.cpp,v 1.2 2005/10/13 10:11:30 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,7 +149,7 @@ namespace NLMISC
 		_Started = true;
 
 #if defined (NL_OS_WINDOWS)
-		static			initialized = false;
+		static bool		initialized = false;
 		static LPVOID	mainFiber = NULL;
 		if (!initialized)
 		{
@@ -198,6 +198,13 @@ namespace NLMISC
 		else
 		{
 			nlassert(_Started);
+
+			if (CCurrentCoTask::getInstance().getCurrentTask() == this)
+			{
+				// this task is already the resumed task, just ignore
+				return;
+			}
+
 			CCurrentCoTask::getInstance().setCurrentTask(this);
 
 #if defined (NL_OS_WINDOWS)

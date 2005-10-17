@@ -123,11 +123,11 @@ typedef union	{
 
 
 
-#define	YYFINAL		45
+#define	YYFINAL		44
 #define	YYFLAG		-32768
 #define	YYNTBASE	19
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 272 ? yytranslate[x] : 29)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 272 ? yytranslate[x] : 28)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -162,29 +162,29 @@ static const char yytranslate[] = {     0,
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     1,     4,     5,     8,    10,    15,    20,    22,    26,
-    31,    34,    36,    40,    42,    46,    50,    52,    56,    60,
-    63,    66,    70,    72,    74,    76,    78
+     0,     2,     3,     6,     8,    13,    18,    20,    24,    29,
+    32,    34,    38,    40,    44,    48,    50,    54,    58,    61,
+    64,    68,    70,    72,    74,    76
 };
 
-static const short yyrhs[] = {    -1,
-    20,    21,     0,     0,    21,    22,     0,    22,     0,     5,
-     4,    23,     7,     0,     5,     3,    23,     7,     0,    25,
-     0,    15,    24,    14,     0,    15,    24,    16,    14,     0,
-    15,    14,     0,    25,     0,    24,    16,    25,     0,    26,
-     0,    25,     8,    26,     0,    25,     9,    26,     0,    27,
-     0,    26,    10,    27,     0,    26,    11,    27,     0,     8,
-    27,     0,     9,    27,     0,    13,    23,    12,     0,    17,
-     0,    18,     0,     6,     0,    28,     0,     5,     0
+static const short yyrhs[] = {    20,
+     0,     0,    20,    21,     0,    21,     0,     5,     4,    22,
+     7,     0,     5,     3,    22,     7,     0,    24,     0,    15,
+    23,    14,     0,    15,    23,    16,    14,     0,    15,    14,
+     0,    24,     0,    23,    16,    24,     0,    25,     0,    24,
+     8,    25,     0,    24,     9,    25,     0,    26,     0,    25,
+    10,    26,     0,    25,    11,    26,     0,     8,    26,     0,
+     9,    26,     0,    13,    22,    12,     0,    17,     0,    18,
+     0,     6,     0,    27,     0,     5,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-   103,   103,   103,   106,   107,   110,   172,   220,   221,   222,
-   223,   226,   227,   230,   231,   232,   235,   236,   237,   240,
-   241,   242,   243,   244,   245,   246,   249
+   103,   103,   106,   107,   110,   172,   220,   221,   222,   223,
+   226,   227,   230,   231,   232,   235,   236,   237,   240,   241,
+   242,   243,   244,   245,   246,   249
 };
 #endif
 
@@ -193,67 +193,67 @@ static const short yyrline[] = { 0,
 
 static const char * const yytname[] = {   "$","error","$undefined.","ADD_ASSIGN",
 "ASSIGN","VARIABLE","STRING","SEMICOLON","PLUS","MINUS","MULT","DIVIDE","RPAREN",
-"LPAREN","RBRACE","LBRACE","COMMA","INT","REAL","ROOT","@1","instlist","inst",
-"expression","exprbrace","expr2","expr3","expr4","variable", NULL
+"LPAREN","RBRACE","LBRACE","COMMA","INT","REAL","ROOT","instlist","inst","expression",
+"exprbrace","expr2","expr3","expr4","variable", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    20,    19,    19,    21,    21,    22,    22,    23,    23,    23,
-    23,    24,    24,    25,    25,    25,    26,    26,    26,    27,
-    27,    27,    27,    27,    27,    27,    28
+    19,    19,    20,    20,    21,    21,    22,    22,    22,    22,
+    23,    23,    24,    24,    24,    25,    25,    25,    26,    26,
+    26,    26,    26,    26,    26,    27
 };
 
 static const short yyr2[] = {     0,
-     0,     2,     0,     2,     1,     4,     4,     1,     3,     4,
-     2,     1,     3,     1,     3,     3,     1,     3,     3,     2,
-     2,     3,     1,     1,     1,     1,     1
+     1,     0,     2,     1,     4,     4,     1,     3,     4,     2,
+     1,     3,     1,     3,     3,     1,     3,     3,     2,     2,
+     3,     1,     1,     1,     1,     1
 };
 
-static const short yydefact[] = {     1,
-     0,     0,     2,     5,     0,     0,     4,    27,    25,     0,
-     0,     0,     0,    23,    24,     0,     8,    14,    17,    26,
-     0,    20,    21,     0,    11,     0,    12,     7,     0,     0,
-     0,     0,     6,    22,     9,     0,    15,    16,    18,    19,
-    10,    13,     0,     0,     0
+static const short yydefact[] = {     2,
+     0,     1,     4,     0,     0,     3,    26,    24,     0,     0,
+     0,     0,    22,    23,     0,     7,    13,    16,    25,     0,
+    19,    20,     0,    10,     0,    11,     6,     0,     0,     0,
+     0,     5,    21,     8,     0,    14,    15,    17,    18,     9,
+    12,     0,     0,     0
 };
 
-static const short yydefgoto[] = {    43,
-     1,     3,     4,    16,    26,    17,    18,    19,    20
+static const short yydefgoto[] = {    42,
+     2,     3,    15,    25,    16,    17,    18,    19
 };
 
-static const short yypact[] = {     2,
-     6,    16,     6,-32768,     0,     0,-32768,-32768,-32768,    49,
-    49,     0,    21,-32768,-32768,     9,    13,    22,-32768,-32768,
-    24,-32768,-32768,    30,-32768,    -4,    13,-32768,    49,    49,
-    49,    49,-32768,-32768,-32768,    35,    22,    22,-32768,-32768,
--32768,    13,    14,    28,-32768
+static const short yypact[] = {    -3,
+     7,    -3,-32768,     0,     0,-32768,-32768,-32768,    49,    49,
+     0,    21,-32768,-32768,     9,    11,    22,-32768,-32768,    24,
+-32768,-32768,    16,-32768,    -2,    11,-32768,    49,    49,    49,
+    49,-32768,-32768,-32768,    35,    22,    22,-32768,-32768,-32768,
+    11,    36,    37,-32768
 };
 
 static const short yypgoto[] = {-32768,
--32768,-32768,    42,    -5,-32768,   -13,     7,    -7,-32768
+-32768,    40,    -4,-32768,   -12,    -7,    -6,-32768
 };
 
 
 #define	YYLAST		67
 
 
-static const short yytable[] = {    27,
-    21,    -3,    22,    23,     8,     9,    24,    10,    11,    35,
-     2,    36,    12,    44,    13,    28,    14,    15,     5,     6,
-    29,    30,    42,    39,    40,     8,     9,    45,    10,    11,
-    33,    31,    32,    12,    25,    37,    38,    14,    15,     8,
-     9,    34,    10,    11,     7,     0,     0,    12,    41,     0,
-     0,    14,    15,     8,     9,     0,    10,    11,     0,     0,
-     0,    12,     0,     0,     0,    14,    15
+static const short yytable[] = {    26,
+    20,     1,    21,    22,     7,     8,    23,     9,    10,     4,
+     5,    34,    11,    35,    12,    27,    13,    14,    28,    29,
+    36,    37,    41,    38,    39,     7,     8,    33,     9,    10,
+    32,    30,    31,    11,    24,    43,    44,    13,    14,     7,
+     8,     6,     9,    10,     0,     0,     0,    11,    40,     0,
+     0,    13,    14,     7,     8,     0,     9,    10,     0,     0,
+     0,    11,     0,     0,     0,    13,    14
 };
 
-static const short yycheck[] = {    13,
-     6,     0,    10,    11,     5,     6,    12,     8,     9,    14,
-     5,    16,    13,     0,    15,     7,    17,    18,     3,     4,
-     8,     9,    36,    31,    32,     5,     6,     0,     8,     9,
-     7,    10,    11,    13,    14,    29,    30,    17,    18,     5,
-     6,    12,     8,     9,     3,    -1,    -1,    13,    14,    -1,
+static const short yycheck[] = {    12,
+     5,     5,     9,    10,     5,     6,    11,     8,     9,     3,
+     4,    14,    13,    16,    15,     7,    17,    18,     8,     9,
+    28,    29,    35,    30,    31,     5,     6,    12,     8,     9,
+     7,    10,    11,    13,    14,     0,     0,    17,    18,     5,
+     6,     2,     8,     9,    -1,    -1,    -1,    13,    14,    -1,
     -1,    17,    18,     5,     6,    -1,     8,     9,    -1,    -1,
     -1,    13,    -1,    -1,    -1,    17,    18
 };
@@ -801,23 +801,19 @@ yyreduce:
 
   switch (yyn) {
 
-case 1:
-#line 103 "cf_gramatical.yxx"
-{ cf_CurrentLine = 1; cf_Ignore = false; ;
-    break;}
-case 3:
+case 2:
 #line 103 "cf_gramatical.yxx"
 { ;
     break;}
-case 4:
+case 3:
 #line 106 "cf_gramatical.yxx"
 { ;
     break;}
-case 5:
+case 4:
 #line 107 "cf_gramatical.yxx"
 { ;
     break;}
-case 6:
+case 5:
 #line 111 "cf_gramatical.yxx"
 {
 				DEBUG_PRINTF("                                   (TYPE %d VARIABLE=", yyvsp[-3].Val.Type);
@@ -879,7 +875,7 @@ case 6:
 				cf_CurrentVar.Type = NLMISC::CConfigFile::CVar::T_UNKNOWN;
 			;
     break;}
-case 7:
+case 6:
 #line 173 "cf_gramatical.yxx"
 {
 				DEBUG_PRINT("                                   (VARIABLE+=");
@@ -927,83 +923,83 @@ case 7:
 				cf_CurrentVar.Type = NLMISC::CConfigFile::CVar::T_UNKNOWN;
 			;
     break;}
-case 8:
+case 7:
 #line 220 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n"); ;
     break;}
-case 9:
+case 8:
 #line 221 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
-case 10:
+case 9:
 #line 222 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-2].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
-case 11:
+case 10:
 #line 223 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
-case 12:
+case 11:
 #line 226 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
-case 13:
+case 12:
 #line 227 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $3.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
-case 14:
+case 13:
 #line 230 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
-case 15:
+case 14:
 #line 231 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
-case 16:
+case 15:
 #line 232 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
-case 17:
+case 16:
 #line 235 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
-case 18:
+case 17:
 #line 236 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
-case 19:
+case 18:
 #line 237 "cf_gramatical.yxx"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
-case 20:
+case 19:
 #line 240 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
-case 21:
+case 20:
 #line 241 "cf_gramatical.yxx"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
-case 22:
+case 21:
 #line 242 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
-case 23:
+case 22:
 #line 243 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
-case 24:
+case 23:
 #line 244 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
-case 25:
+case 24:
 #line 245 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
-case 26:
+case 25:
 #line 246 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
-case 27:
+case 26:
 #line 250 "cf_gramatical.yxx"
 {
 				DEBUG_PRINT("yacc: cont\n");

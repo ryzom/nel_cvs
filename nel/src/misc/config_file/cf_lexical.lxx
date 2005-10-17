@@ -84,7 +84,7 @@ num2		{digit}*\.{digit}+([eE][-+]?{digit}+)?
 real		{num1}|{num2}
 int			{digit}+
 hex			0x[0-9a-fA-F]+
-string		\"[^\"]*\"
+string		\"[^\"\n]*\"
 
 %%
 
@@ -184,6 +184,6 @@ void comment ()
 	}
 	while (c != '\n' && c != -1);
 
-	if (c != '\n')
+	if (c == '\n')
 		cf_CurrentLine++;
 }

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.64 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: config_file.cpp,v 1.65 2005/10/17 14:09:49 guignot Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@ extern void cfrestart (FILE *);	// used to reinit the file
 extern int cfparse (void *);	// used to parse the file
 //extern FILE *cfin;
 extern int cf_CurrentLine;
+extern bool cf_Ignore;
 extern bool cf_OverwriteExistingVariable;
 extern CIFile cf_ifile;
 
@@ -392,6 +393,8 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 		if (cf_ifile.open (fn))
 		{
 			cfrestart (NULL);
+			cf_CurrentLine = 1;
+			cf_Ignore = false;
 			cf_OverwriteExistingVariable = (FileNames.size()==1);
 			LoadRoot = (FileNames.size()>1);
 			bool parsingOK = (cfparse (&(_Vars)) == 0);
@@ -450,6 +453,8 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 			// if we clear all the array, we'll lost the callback on variable and all information
 			//		_Vars.clear();
 			cfrestart (NULL);
+			cf_CurrentLine = 1;
+			cf_Ignore = false;
 			cf_OverwriteExistingVariable = true;
 			LoadRoot = false;
 			bool parsingOK = (cfparse (&(_Vars)) == 0);
@@ -474,6 +479,8 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 		if (cf_ifile.open (filename))
 		{
 			cfrestart (NULL);
+			cf_CurrentLine = 1;
+			cf_Ignore = false;
 			cf_OverwriteExistingVariable = false;
 			LoadRoot = true;
 			bool parsingOK = (cfparse (&(_Vars)) == 0);

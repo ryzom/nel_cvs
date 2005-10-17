@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.7 2004/06/17 08:14:41 vizerie Exp $
+ * $Id: curve_edit.cpp,v 1.8 2005/10/17 13:18:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -416,8 +416,9 @@ float CurveEdit::getSampledValue(float date) const
 	nlassert(Curve);
 	nlassert(date >=0 && date < 1);
 	NLMISC::OptFastFloorBegin();
-	return (*Curve)(date);
+	float result = (*Curve)(date);
 	NLMISC::OptFastFloorEnd();
+	return result;
 }
 
 void CurveEdit::OnSmoothingOn() 

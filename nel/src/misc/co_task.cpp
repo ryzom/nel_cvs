@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.2 2005/10/13 10:11:30 boucher Exp $
+ * $Id: co_task.cpp,v 1.3 2005/10/19 16:58:06 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,18 +45,26 @@ namespace NLMISC
 	struct TCoTaskData
 	{
 #if defined (NL_OS_WINDOWS)
+		/// The fiber pointer for the task fiber
 		LPVOID	_Fiber;
+		/// The fiber pointer of the main (or master, or parent, as you want)
 		LPVOID	_ParentFiber;
 #elif defined (NL_OS_UNIX)
+		/// The coroutine stack pointer (allocated memory)
 		uint8		*_Stack;
+		/// The task context
 		ucontext_t	_Ctx;
+		/// The main (or master or parent, as you want) task context
 		ucontext_t	_ParentCtx;
 #endif
 
-		// task bootstrap function
-		// NB : this function is in this structure because of the
-		// NL_WIN_CALLBACK symbol that need <windows.h> to be defined, so
-		// to remove it, I moved the function here.
+		/** task bootstrap function
+		 *	NB : this function is in this structure because of the
+		 *	NL_WIN_CALLBACK symbol that need <windows.h> to be defined, so
+		 *	to remove it from the header, I moved the function here
+		 *	(otherwise, it should be declared in the CCoTask class as
+		 *	a private member)
+		 */
 		static void NL_WIN_CALLBACK startFunc(void* param)
 		{
 			CCoTask *task = reinterpret_cast<CCoTask*>(param);
@@ -76,25 +84,56 @@ namespace NLMISC
 
 	};
 
+	/** Management of current task in a thread.
+	 *	This class is used to store and retrieve the current
+	 *	CCoTask pointer in the current thread.
+	 *	It is build upon the SAFE_SINGLETON paradigm, making it
+	 *	safe to use with NeL DLL.
+	 *	For windows platform, this singleton also hold the
+	 *	fiber pointer of the current thread. This is needed because
+	 *	of the bad design the the fiber API before Windows XP.
+	 */
 	class CCurrentCoTask
 	{
 		NLMISC_SAFE_SINGLETON_DECL(CCurrentCoTask);
 
+		/// A thread dependent storage to hold by thread coroutine info
 		CTDS	_CurrentTaskTDS;
+
+#if defined (NL_OS_WINDOWS)
+		/// A Thread depentend storage to hold fiber pointer.
+		CTDS	_ThreadMainFiber;
+#endif
 
 		CCurrentCoTask()
 		{}
 
 	public:
+		/// Set the current task for the calling thread
 		void setCurrentTask(CCoTask *task)
 		{
 			_CurrentTaskTDS.setPointer(task);
 		}
 
+		/// retrieve the current task for the calling thread
 		CCoTask *getCurrentTask()
 		{
 			return reinterpret_cast<CCoTask*>(_CurrentTaskTDS.getPointer());
 		}
+#if defined (NL_OS_WINDOWS)
+		void setMainFiber(LPVOID fiber)
+		{
+			_ThreadMainFiber.setPointer(fiber);
+		}
+
+		/** Return the main fiber for the calling thread. Return NULL if 
+		 *	the thread has not been converted to fiber.
+		 */
+		LPVOID getMainFiber()
+		{
+			return _ThreadMainFiber.getPointer();
+		}
+#endif
 	};
 
 	NLMISC_SAFE_SINGLETON_IMPL(CCurrentCoTask);
@@ -149,12 +188,15 @@ namespace NLMISC
 		_Started = true;
 
 #if defined (NL_OS_WINDOWS)
-		static bool		initialized = false;
-		static LPVOID	mainFiber = NULL;
-		if (!initialized)
+
+		LPVOID mainFiber = CCurrentCoTask::getInstance().getMainFiber();
+
+		if (mainFiber == NULL)
 		{
+			// we need to convert this thread to a fiber
 			mainFiber = ConvertThreadToFiber(NULL);
-			initialized = true;
+
+			CCurrentCoTask::getInstance().setMainFiber(mainFiber);
 		}
 
 		_PImpl->_ParentFiber = mainFiber;
@@ -198,13 +240,6 @@ namespace NLMISC
 		else
 		{
 			nlassert(_Started);
-
-			if (CCurrentCoTask::getInstance().getCurrentTask() == this)
-			{
-				// this task is already the resumed task, just ignore
-				return;
-			}
-
 			CCurrentCoTask::getInstance().setCurrentTask(this);
 
 #if defined (NL_OS_WINDOWS)

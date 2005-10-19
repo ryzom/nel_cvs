@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.94 2005/08/30 17:44:07 distrib Exp $
+ * $Id: unified_network.cpp,v 1.95 2005/10/19 16:58:38 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -477,6 +477,7 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 				H_AUTO(L5UserCallback);
 				
 				(*it).second.before();
+				const std::string &cbName = itcb->first;
 				(*itcb).second (msgin, uc->ServiceName, sid);
 				(*it).second.after();
 			}

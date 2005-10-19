@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.17 2005/10/19 11:02:10 miller Exp $
+ * $Id: diff_tool.cpp,v 1.18 2005/10/19 11:42:50 miller Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -26,7 +26,6 @@
 
 #include "nel/misc/diff_tool.h"
 #include "nel/misc/path.h"
-#include "nel/misc/sstring.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -621,13 +620,6 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 {
 	if(str.empty())
 		return true;
-nldebug("Parsing worksheet... %d bytes",str.size());
-NLMISC::CSString s=str.toUtf8();
-NLMISC::CVectorSString test_lines;
-s.splitLines(test_lines);
-for(uint32 i=0;i<test_lines.size();++i)
-	nldebug("-- line %3d: %s",i,test_lines[i].c_str());
-nldebug("- CSString Found %d lines...",test_lines.size());
 
 	// copy the str to a big ucchar array => Avoid allocation / free
 	vector<ucchar>	strArray;
@@ -644,10 +636,8 @@ nldebug("- CSString Found %d lines...",test_lines.size());
 	ucstring::size_type lastPos = 0;
 	while ((pos = str.find(nl, lastPos)) != ucstring::npos)
 	{
-nldebug("- Found new line: lastPos=%d, pos=%d",lastPos,pos);
 		if (pos>lastPos)
 		{
-nldebug("- Adding new line: lastPos=%d, pos=%d",lastPos,pos);
 			strArray[pos]= 0;
 //			nldebug("Found line : [%s]", ucstring(&strArray[lastPos]).toString().c_str());
 			lines.push_back(&strArray[lastPos]);
@@ -664,7 +654,7 @@ nldebug("- Adding new line: lastPos=%d, pos=%d",lastPos,pos);
 		lines.push_back(&strArray[lastPos]);
 	}
 
-nldebug("- Found %u lines", lines.size());
+//	nldebug("Found %u lines", lines.size());
 
 	// **** Do 2 pass.1st count the cell number, then fill. => avoid reallocation
 	uint		newColCount= 0;

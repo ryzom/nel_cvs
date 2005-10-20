@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.cpp,v 1.1 2005/06/23 16:37:29 boucher Exp $
+ * $Id: sstring.cpp,v 1.2 2005/10/20 13:16:26 miller Exp $
  */
 
 #include "stdmisc.h"
@@ -53,7 +53,7 @@ namespace NLMISC
 			unsigned j;
 			for (j=0;separators[j] && (*this)[i]!=separators[j];++j)
 			{}
-			// if not found then we're at end of leading junk
+			// if not found then we're at end of text chunk
 			if (separators[j])
 				break;
 			result+=(*this)[i];

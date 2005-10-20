@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.84 2005/08/19 15:29:25 cado Exp $
+ * $Id: debug.h,v 1.85 2005/10/20 13:24:46 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,8 +59,6 @@ private:
 
 	// Method to access the Log
 	TAccessor	_Accessor;
-	// Local cache of the log
-	CLog		*_Log;
 public:
 	CImposterLog(TAccessor accessor);
 	CLog* operator -> ();

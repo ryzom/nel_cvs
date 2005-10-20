@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.112 2005/08/19 15:31:00 cado Exp $
+ * $Id: debug.cpp,v 1.113 2005/10/20 13:21:53 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,33 +87,25 @@ namespace NLMISC
 
 // ***************************************************************************
 CImposterLog::CImposterLog(TAccessor accessor)
-	: _Accessor(accessor), _Log(NULL)
+	: _Accessor(accessor)
 {}
 
 CLog* CImposterLog::operator -> ()
 {
-	if(!_Log)
+	if(NLMISC::INelContext::isContextInitialised())
 	{
-		if(NLMISC::INelContext::isContextInitialised())
-		{
-			_Log= (NLMISC::INelContext::getInstance().*_Accessor)();
-		}
+		return (NLMISC::INelContext::getInstance().*_Accessor)();
 	}
-
-	return _Log;
+	return NULL;
 }
 
 CImposterLog::operator CLog*()
 {
-	if(!_Log)
+	if(NLMISC::INelContext::isContextInitialised())
 	{
-		if(NLMISC::INelContext::isContextInitialised())
-		{
-			_Log= (NLMISC::INelContext::getInstance().*_Accessor)();
-		}
+		return (NLMISC::INelContext::getInstance().*_Accessor)();
 	}
-	
-	return _Log;
+	return NULL;
 }
 
 CLog &CImposterLog::operator ()()
@@ -214,6 +206,9 @@ void initDebug2 (bool logInFile)
 #if DEFAULT_DISPLAYER
 
 		// put the standard displayer everywhere
+
+		if (DebugLog==NULL)
+			return;
 
 	  //#ifdef NL_DEBUG
 		DebugLog->addDisplayer (sd);

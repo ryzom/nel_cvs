@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.65 2005/10/17 14:09:49 guignot Exp $
+ * $Id: config_file.cpp,v 1.66 2005/10/25 17:15:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/i18n.h"
+#include "nel/misc/mem_stream.h"
 #include "locale.h"
 
 using namespace std;
@@ -44,7 +46,7 @@ extern int cfparse (void *);	// used to parse the file
 extern int cf_CurrentLine;
 extern bool cf_Ignore;
 extern bool cf_OverwriteExistingVariable;
-extern CIFile cf_ifile;
+extern CMemStream cf_ifile;
 
 // put true if you want that the config file class check type when you call asFunctions
 // (for example, check when you call asInt() that the variable is an int).
@@ -390,15 +392,27 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));
 
-		if (cf_ifile.open (fn))
+		if (!CPath::lookup(fn, false).empty())
 		{
+			ucstring content;
+			CI18N::readTextFile(fn, content, false, true, true);
+			string utf8 = content.toUtf8();
+
+			CMemStream stream;
+			stream.serialBuffer((uint8*)(utf8.data()), utf8.size());
+			cf_ifile = stream;
+			if (!cf_ifile.isReading())
+			{
+				cf_ifile.invert();
+			}
+
 			cfrestart (NULL);
 			cf_CurrentLine = 1;
 			cf_Ignore = false;
 			cf_OverwriteExistingVariable = (FileNames.size()==1);
 			LoadRoot = (FileNames.size()>1);
 			bool parsingOK = (cfparse (&(_Vars)) == 0);
-			cf_ifile.close();
+//			cf_ifile.close();
 			if (!parsingOK)
 			{
 				nlwarning ("CF: Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
@@ -410,7 +424,8 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 			nlwarning ("CF: Config file '%s' not found in the path '%s'", fn.c_str(), CPath::getCurrentPath().c_str());
 			throw EFileNotFound (fn);
 		}
-		cf_ifile.close ();
+//		cf_ifile.close ();
+		cf_ifile.clear();
 
 		// If we find a linked config file, load it but don't overload already existant variable
 		CVar *var = getVarPtr ("RootConfigFilename");

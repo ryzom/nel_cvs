@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.57 2005/08/09 16:58:15 vizerie Exp $
+ * $Id: i18n.cpp,v 1.58 2005/10/25 17:15:10 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -448,7 +448,7 @@ void CI18N::readTextFile(const std::string &filename,
 	bool isInBnp = fullName.find('@') != string::npos;
 	if (!isInBnp && !CFile::fileExists(fullName))
 	{
-		nlwarning("CI18N::readTextFile : file '%s' does not exist, returing empty string", fullName.c_str());
+		nlwarning("CI18N::readTextFile : file '%s' does not exist, returning empty string", fullName.c_str());
 		return;
 	}
 

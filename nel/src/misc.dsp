@@ -224,6 +224,29 @@ SOURCE=.\misc\config_file\cf_lexical.cpp
 # Begin Source File
 
 SOURCE=.\misc\config_file\cf_lexical.lxx
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugInstrument"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

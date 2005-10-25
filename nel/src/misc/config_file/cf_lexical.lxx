@@ -7,6 +7,7 @@
 
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
+#include "nel/misc/mem_stream.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -39,17 +40,16 @@ struct cf_value
 	double	Real;
 	char	String[1024];
 };
-
 // use to parse the file, opened by CConfigFile::reparse()
-CIFile cf_ifile;
+CMemStream cf_ifile;
 
 #define YY_INPUT(buf,result,max_size) { \
-	if (cf_ifile.eof()) \
+	if (cf_ifile.length() == 0) \
 	{ \
 		DEBUG_PRINTF("YY_INPUT: eof");\
 		result = YY_NULL; \
 	} else { \
-		uint32 nbc = std::min((uint32)max_size, (uint32)cf_ifile.getFileSize() - cf_ifile.getPos()); \
+		uint32 nbc = std::min((uint32)max_size, (uint32)(cf_ifile.length() - cf_ifile.getPos())); \
 		DEBUG_PRINTF("YY_INPUT: wanted %d bytes, will read %d\n", max_size, nbc);\
 		cf_ifile.serialBuffer ((uint8 *)buf, nbc); \
 		result = nbc; \

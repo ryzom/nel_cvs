@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.43 2005/02/22 10:14:12 besson Exp $
+ * $Id: config_file.h,v 1.44 2005/10/26 17:18:07 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	{
 	public:
 
-		CVar () : Type(T_UNKNOWN), Root(false), SaveWrap(6) {}
+		CVar () : Type(T_UNKNOWN), Root(false), SaveWrap(6), FromLocalFile(true) {}
 
 		/// \name Access to the variable content.
 		//@{
@@ -203,7 +203,8 @@ public:
 		std::string					Name;
 		TVarType					Type;
 		bool						Root;		// true if this var comes from the root document. false else.
-		bool						Comp;
+		bool						Comp;		// true if the the parser found a 'complex' var (ie an array)
+		bool						FromLocalFile;	// Used during cfg parsing. True if the var has been created from the currently parsed cfg
 		std::vector<int>			IntValues;
 		std::vector<double>			RealValues;
 		std::vector<std::string>	StrValues;

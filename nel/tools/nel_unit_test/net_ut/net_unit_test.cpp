@@ -27,8 +27,8 @@ public:
 		// init the network API
 		NLNET::CSock::initNetwork();
 
-		add(auto_ptr<Test::Suite>(createModuleTS()));
 		add(auto_ptr<Test::Suite>(createCMessageTS()));
+		add(auto_ptr<Test::Suite>(createModuleTS()));
 		add(auto_ptr<Test::Suite>(createServiceAndModuleTS()));
 		
 		// initialise the application context

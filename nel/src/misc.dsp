@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=misc - Win32 DebugInstrument
+CFG=misc - Win32 Generate config file parser
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=misc - Win32 DebugInstrument
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 DebugInstrument"
+!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 Generate config file parser"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -22,6 +22,7 @@ CFG=misc - Win32 DebugInstrument
 !MESSAGE "misc - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 DebugFast" (based on "Win32 (x86) Static Library")
 !MESSAGE "misc - Win32 DebugInstrument" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 Generate config file parser" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -119,6 +120,29 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nlmisc_df.lib"
 # ADD LIB32 /nologo /out:"../lib/nlmisc_di.lib"
 
+!ELSEIF  "$(CFG)" == "misc - Win32 Generate config file parser"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "misc___Win32_Generate_config_file_parser"
+# PROP BASE Intermediate_Dir "misc___Win32_Generate_config_file_parser"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "../obj/Debug/misc"
+# PROP Intermediate_Dir "../obj/Debug/misc"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /I "../include" /D "_LIB" /D "LIBXML_STATIC" /D "__STL_DEBUG" /D "WIN32" /D "_DEBUG" /D "_MBCS" /Yu"stdmisc.h" /FD /GZ /c
+# ADD BASE RSC /l 0x40c /d "_DEBUG"
+# ADD RSC /l 0x40c /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"../lib/nlmisc_d.lib"
+# ADD LIB32 /nologo /out:"../lib/nlmisc_d.lib"
+
 !ENDIF 
 
 # Begin Target
@@ -128,6 +152,7 @@ LIB32=link.exe -lib
 # Name "misc - Win32 ReleaseDebug"
 # Name "misc - Win32 DebugFast"
 # Name "misc - Win32 DebugInstrument"
+# Name "misc - Win32 Generate config file parser"
 # Begin Group "Stream"
 
 # PROP Default_Filter ""
@@ -215,6 +240,47 @@ SOURCE=.\misc\config_file\cf_gramatical.h
 # Begin Source File
 
 SOURCE=.\misc\config_file\cf_gramatical.yxx
+
+!IF  "$(CFG)" == "misc - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 DebugInstrument"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Generate config file parser"
+
+# PROP Intermediate_Dir "../obj/Debug/misc"
+# Begin Custom Build - Building config file parser grammar from $(InputPath)
+InputDir=.\misc\config_file
+InputPath=.\misc\config_file\cf_gramatical.yxx
+InputName=cf_gramatical
+
+BuildCmds= \
+	"c:\program files\GnuWin32\bin\bison" -o$(InputDir)/$(InputName).cpp --defines=$(InputDir)/$(InputName).h -pcf $(InputPath)
+
+"$(InputDir)/$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+
+"$(InputDir)/$(InputName).h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+   $(BuildCmds)
+# End Custom Build
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -244,6 +310,18 @@ SOURCE=.\misc\config_file\cf_lexical.lxx
 !ELSEIF  "$(CFG)" == "misc - Win32 DebugInstrument"
 
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "misc - Win32 Generate config file parser"
+
+# Begin Custom Build - Building config file lexer from $(InputPath)
+InputDir=.\misc\config_file
+InputPath=.\misc\config_file\cf_lexical.lxx
+InputName=cf_lexical
+
+"$(InputDir)/$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	flex -BL -o$(InputDir)/$(InputName).cpp $(InputPath)
+
+# End Custom Build
 
 !ENDIF 
 

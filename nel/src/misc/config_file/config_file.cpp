@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.66 2005/10/25 17:15:10 boucher Exp $
+ * $Id: config_file.cpp,v 1.67 2005/10/26 17:24:26 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,6 +417,12 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 			{
 				nlwarning ("CF: Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
 				throw EParseError (fn, cf_CurrentLine);
+			}
+
+			// reset all 'FromLocalFile' flag on created vars before reading next root cfg
+			for (uint i=0; i<_Vars.size(); ++i)
+			{
+				_Vars[i].FromLocalFile = false;
 			}
 		}
 		else

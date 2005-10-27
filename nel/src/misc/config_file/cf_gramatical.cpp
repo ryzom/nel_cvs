@@ -187,9 +187,9 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,   103,   103,   106,   107,   110,   172,   229,   230,   231,
-     232,   235,   236,   239,   240,   241,   244,   245,   246,   249,
-     250,   251,   252,   253,   254,   255,   258
+       0,   103,   103,   106,   107,   110,   172,   232,   233,   234,
+     235,   238,   239,   242,   243,   244,   247,   248,   249,   252,
+     253,   254,   255,   256,   257,   258,   261
 };
 #endif
 
@@ -1098,15 +1098,18 @@ case 6:
 					{
 						// this var was created in the current cfg, append the new value at the end
 						(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].add(Var);
+
+						if (Var.size() > 0 && Var.Callback != NULL)
+							(Var.Callback)(Var);
 					}
 					else
 					{
 						// this var has been created in a parent Cfg, append at the begining of the array
 						Var.add ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i]);
+						if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
+							(Var.Callback)(Var);
+						(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 					}
-					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
-						(Var.Callback)(Var);
-					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 
 				cf_CurrentVar.IntValues.clear ();
@@ -1117,83 +1120,83 @@ case 6:
 			;
     break;}
 case 7:
-#line 229 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 232 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n"); ;
     break;}
 case 8:
-#line 230 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 233 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 9:
-#line 231 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 234 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[-2].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 10:
-#line 232 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 235 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 11:
-#line 235 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 238 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $1.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 12:
-#line 236 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 239 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; /*cf_CurrentVar.Type = $3.Type;*/ cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 13:
-#line 239 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 242 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 14:
-#line 240 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 243 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 15:
-#line 241 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 244 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 16:
-#line 244 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 247 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 17:
-#line 245 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 248 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 18:
-#line 246 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 249 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 19:
-#line 249 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 252 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 20:
-#line 250 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 253 ".\\misc\\config_file\\cf_gramatical.yxx"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 21:
-#line 251 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 254 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 22:
-#line 252 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 255 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 23:
-#line 253 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 256 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 24:
-#line 254 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 257 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 255 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 258 ".\\misc\\config_file\\cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 26:
-#line 259 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 262 ".\\misc\\config_file\\cf_gramatical.yxx"
 {
 				DEBUG_PRINT("yacc: cont\n");
 				bool ok=false;
@@ -1459,7 +1462,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 291 ".\\misc\\config_file\\cf_gramatical.yxx"
+#line 294 ".\\misc\\config_file\\cf_gramatical.yxx"
 
 
 /* compute the good operation with a, b and op */

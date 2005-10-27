@@ -207,15 +207,18 @@ inst:		VARIABLE ADD_ASSIGN expression SEMICOLON
 					{
 						// this var was created in the current cfg, append the new value at the end
 						(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].add(Var);
+
+						if (Var.size() > 0 && Var.Callback != NULL)
+							(Var.Callback)(Var);
 					}
 					else
 					{
 						// this var has been created in a parent Cfg, append at the begining of the array
 						Var.add ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i]);
+						if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
+							(Var.Callback)(Var);
+						(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 					}
-					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
-						(Var.Callback)(Var);
-					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 
 				cf_CurrentVar.IntValues.clear ();

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.68 2005/09/06 08:12:14 vizerie Exp $
+ * $Id: skeleton_model.cpp,v 1.68.4.1 2005/11/04 18:11:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1745,7 +1745,12 @@ bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox, b
 
 	if(_BoneToCompute.empty())
 		return false;
+
+	if (_Skins.empty())
+		return false;
 	
+	updateSkinRenderLists();
+
 	// **** Compute The BBox with Bones of the skeleton
 	CVector		minBB, maxBB;	
 	for(uint i=0;i<_BoneToCompute.size();i++)

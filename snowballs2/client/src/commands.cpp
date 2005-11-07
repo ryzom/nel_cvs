@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: commands.cpp,v 1.16 2004/01/09 17:37:42 lecroart Exp $
+ * $Id: commands.cpp,v 1.17 2005/11/07 13:01:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,10 +249,13 @@ void	initCommands()
 
 	// Add the command displayer to the standard log (to display NeL info)
 	CommandsLog.addDisplayer (&CommandsDisplayer);
+#ifndef NL_RELEASE
+	InfoLog->addDisplayer (&CommandsDisplayer);
 	InfoLog->addDisplayer (&CommandsDisplayer);
 	WarningLog->addDisplayer (&CommandsDisplayer);
 	AssertLog->addDisplayer (&CommandsDisplayer);
 	ErrorLog->addDisplayer (&CommandsDisplayer);
+#endif
 
 	// Add callback for the config file
 	ConfigFile.setCallback ("CommandsBoxX", cbUpdateCommands);

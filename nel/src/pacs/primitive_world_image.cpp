@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.23 2005/02/22 10:19:20 besson Exp $
+ * $Id: primitive_world_image.cpp,v 1.23.16.1 2005/11/10 17:54:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1407,6 +1407,7 @@ void CPrimitiveWorldImage::setGlobalPosition (const UGlobalPosition& pos, CMoveC
 	nlassert (dynamic_cast<const CMoveContainer*>(&container));
 	const CMoveContainer *cont=(const CMoveContainer*)&container;
 
+	if (!cont->getGlobalRetriever()) return;
 	// Use the global retriever ?
 	nlassert (cont->getGlobalRetriever());
 	

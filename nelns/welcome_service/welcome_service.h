@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1 2005/10/03 10:15:33 boucher Exp $
+ * $Id: welcome_service.h,v 1.1.4.1 2005/11/16 18:00:39 boucher Exp $
  *
  */
 
@@ -80,7 +80,7 @@ namespace WS
 		void frontendResponse(NLNET::IModuleProxy *waiterModule, uint32 userId, const std::string &reason, const NLNET::CLoginCookie &cookie, const std::string &fsAddr)
 		{
 			CWelcomeServiceClientProxy wscp(waiterModule);
-			wscp.welcomeUserResult(this, userId, reason.empty(), fsAddr);
+			wscp.welcomeUserResult(this, userId, reason.empty(), fsAddr, reason);
 		}
 
 

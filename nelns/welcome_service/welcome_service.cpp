@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47 2005/10/03 10:15:33 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.1 2005/11/16 18:00:39 boucher Exp $
  *
  */
 
@@ -1294,7 +1294,7 @@ namespace WS
 			// TODO : correct this
 			string fsAddr;
 			CWelcomeServiceClientProxy wsc(sender);
-			wsc.welcomeUserResult(this, userId, ret.empty(), fsAddr);
+			wsc.welcomeUserResult(this, userId, false, fsAddr, ret);
 		}
 		else
 		{

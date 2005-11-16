@@ -110,13 +110,13 @@ namespace WS
 		void welcomeUser(NLNET::IModule *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 		{
 			NLNET::CMessage message("WU");
-			message.serial(userId);
-			message.serial(const_cast < std::string& > (userName));
-			message.serial(const_cast < NLNET::CLoginCookie& > (cookie));
-			message.serial(const_cast < std::string& > (priviledge));
-			message.serial(const_cast < std::string& > (exPriviledge));
-			message.serial(mode);
-			message.serial(instanceId);
+			nlWrite(message, serial, userId);
+			nlWrite(message, serial, const_cast < std::string& > (userName));
+			nlWrite(message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
+			nlWrite(message, serial, const_cast < std::string& > (priviledge));
+			nlWrite(message, serial, const_cast < std::string& > (exPriviledge));
+			nlWrite(message, serial, mode);
+			nlWrite(message, serial, instanceId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
@@ -124,7 +124,7 @@ namespace WS
 		void disconnectUser(NLNET::IModule *sender, uint32 userId)
 		{
 			NLNET::CMessage message("DU");
-			message.serial(userId);
+			nlWrite(message, serial, userId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
@@ -144,7 +144,7 @@ namespace WS
 			getMessageHandlers();
 		}
 	private:
-		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -172,7 +172,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -191,29 +191,29 @@ namespace WS
 
 	private:
 		
-		void welcomeUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			std::string	userName;
-			message.serial(userName);
+			nlRead(message, serial, userName);
 			NLNET::CLoginCookie	cookie;
-			message.serial(cookie);
+			nlRead(message, serial, cookie);
 			std::string	priviledge;
-			message.serial(priviledge);
+			nlRead(message, serial, priviledge);
 			std::string	exPriviledge;
-			message.serial(exPriviledge);
+			nlRead(message, serial, exPriviledge);
 			WS::TUserRole	mode;
-			message.serial(mode);
+			nlRead(message, serial, mode);
 			uint32	instanceId;
-			message.serial(instanceId);
+			nlRead(message, serial, instanceId);
 			welcomeUser(sender, userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 		}
 
-		void disconnectUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			disconnectUser(sender, userId);
 		}
 
@@ -254,17 +254,18 @@ namespace WS
 		void registerWS(NLNET::IModule *sender, uint32 shardId)
 		{
 			NLNET::CMessage message("RWS");
-			message.serial(shardId);
+			nlWrite(message, serial, shardId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
 		// return for wecome user
-		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr)
+		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
 		{
 			NLNET::CMessage message("WUR");
-			message.serial(userId);
-			message.serial(ok);
-			message.serial(const_cast < std::string& > (shardAddr));
+			nlWrite(message, serial, userId);
+			nlWrite(message, serial, ok);
+			nlWrite(message, serial, const_cast < std::string& > (shardAddr));
+			nlWrite(message, serial, const_cast < std::string& > (errorMsg));
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
@@ -284,7 +285,7 @@ namespace WS
 			getMessageHandlers();
 		}
 	private:
-		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -312,7 +313,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -331,22 +332,24 @@ namespace WS
 
 	private:
 		
-		void registerWS_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	shardId;
-			message.serial(shardId);
+			nlRead(message, serial, shardId);
 			registerWS(sender, shardId);
 		}
 
-		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			bool	ok;
-			message.serial(ok);
+			nlRead(message, serial, ok);
 			std::string	shardAddr;
-			message.serial(shardAddr);
-			welcomeUserResult(sender, userId, ok, shardAddr);
+			nlRead(message, serial, shardAddr);
+			std::string	errorMsg;
+			nlRead(message, serial, errorMsg);
+			welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
 		}
 
 	public:
@@ -357,7 +360,7 @@ namespace WS
 		// Register the welcome service in the ring session manager
 		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId) =0;
 		// return for wecome user
-		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr) =0;
+		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
 
 
 	};

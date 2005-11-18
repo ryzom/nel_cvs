@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.234 2005/07/22 12:31:29 legallo Exp $
+ * $Id: driver_opengl.cpp,v 1.234.6.1 2005/11/18 12:24:09 legallo Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1670,7 +1670,7 @@ bool CDriverGL::clearZBuffer(float zval)
 bool CDriverGL::clearStencilBuffer(float stencilval)
 {
 	H_AUTO_OGL(CDriverGL_clearStencilBuffer)
-	glClearStencil(stencilval);
+	glClearStencil((int)stencilval);
 	
 
 	glClear(GL_STENCIL_BUFFER_BIT);

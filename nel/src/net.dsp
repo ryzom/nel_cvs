@@ -442,6 +442,14 @@ SOURCE=..\include\nel\net\service.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\stdin_monitor_thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\net\stdin_monitor_thread.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\stdnet.cpp
 # ADD CPP /Yc"stdnet.h"
 # End Source File

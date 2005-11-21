@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238 2005/10/06 09:16:58 guignot Exp $
+ * $Id: service.cpp,v 1.238.4.1 2005/11/21 16:28:56 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -69,6 +69,8 @@
 #include "nel/net/module_manager.h"
 
 #include "nel/memory/memory_manager.h"
+
+#include "stdin_monitor_thread.h"
 
 
 //
@@ -509,6 +511,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
+		nlinfo("Just in case");
 		// init the module manager
 		IModuleManager::getInstance();
 		//
@@ -550,7 +553,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// check if the default exists
 			if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + "_default.cfg"))
 			{
-				nlerror ("SERVICE: The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
+				nlerror ("SERVICE: Neither the config file '%s' nor the default one can be found, can't launch the service", cfn.c_str());
 			}
 			else
 			{
@@ -593,19 +596,29 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		changeLogDirectory (LogDirectory);
 
-		// we create the log with service name filename ("test_service_ALIAS.log" for example)
-		string logname = LogDirectory.toString() + _LongName;
-		if (haveArg('N'))
-			logname += "_" + toLower(getArg('N'));
-		logname += ".log";
-		fd.setParam (logname, false);
+		bool noLog= (ConfigFile.exists ("DontLog")) && (ConfigFile.getVar("DontLog").asInt() == 1);
+		if (!noLog)
+		{
+			// we create the log with service name filename ("test_service_ALIAS.log" for example)
+			string logname = LogDirectory.toString() + _LongName;
+			if (haveArg('N'))
+				logname += "_" + toLower(getArg('N'));
+			logname += ".log";
+			fd.setParam (logname, false);
 
-		DebugLog->addDisplayer (&fd);
-		InfoLog->addDisplayer (&fd);
-		WarningLog->addDisplayer (&fd);
-		AssertLog->addDisplayer (&fd);
-		ErrorLog->addDisplayer (&fd);
-		CommandLog.addDisplayer (&fd, true);
+			DebugLog->addDisplayer (&fd);
+			InfoLog->addDisplayer (&fd);
+			WarningLog->addDisplayer (&fd);
+			AssertLog->addDisplayer (&fd);
+			ErrorLog->addDisplayer (&fd);
+			CommandLog.addDisplayer (&fd, true);
+		}
+
+		bool dontUseStdIn= (ConfigFile.exists ("DontUseStdIn")) && (ConfigFile.getVar("DontUseStdIn").asInt() == 1);
+		if (!dontUseStdIn)
+		{
+			IStdinMonitorSingleton::getInstance()->init();
+		}
 
 		//
 		// Init the hierarchical timer
@@ -1217,6 +1230,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				}
 			}
 			
+			// deal with any input waiting from stdin
+			{
+				H_AUTO(NLNETStdinMonitorUpdate);
+				IStdinMonitorSingleton::getInstance()->update();
+			}
+			
 			// if the launching mode is 'quit after the first update' we set the exit signal
 			if (haveArg('Q'))
 			{
@@ -1441,8 +1460,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 	catch (ESocket &e)
 	{
-		// Catch NeL network exception to release the system cleanly
-		setExitStatus (EXIT_FAILURE);
+		// Catch NeL network exception to release the system cleanly		setExitStatus (EXIT_FAILURE);
 		ErrorLog->displayNL( "NeL Exception in \"%s\": %s", _ShortName.c_str(), e.what() );
 	}
 	catch ( uint ) // SEH exceptions
@@ -1508,6 +1526,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			delete WindowDisplayer;
 			WindowDisplayer = NULL;
 		}
+
+		// remove the stdin monitor thread
+		IStdinMonitorSingleton::getInstance()->release();
 
 		nlinfo ("SERVICE: Service released succesfully");
 	}

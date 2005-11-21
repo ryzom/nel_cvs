@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.30 2005/09/19 16:20:18 boucher Exp $
+# $Id: Makefile.am,v 1.30.4.1 2005/11/21 19:03:39 distrib Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -31,10 +31,11 @@ libnelnet_la_SOURCES = buf_client.cpp                      \
                        udp_sim_sock.cpp                    \
                        unitime.cpp                         \
                        unified_network.cpp                 \
-                       varpath.cpp			               \
+                       varpath.cpp			   \
                        transport_class.cpp                 \
                        email.cpp                           \
                        admin.cpp                           \
+		       stdin_monitor_thread.cpp		   \
                        module.cpp                          \
                        module_common.cpp                   \
                        module_gateway.cpp                  \

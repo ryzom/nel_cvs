@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89 2005/10/05 11:31:56 boucher Exp $
+ * $Id: service.h,v 1.89.4.1 2005/11/22 15:45:39 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/entity_id.h"
 #include "nel/misc/cpu_time_stat.h"
+#include "nel/misc/sstring.h"
 
 #include "unified_network.h"
 
@@ -123,6 +124,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	NLMISC::CApplicationContext	serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (lpCmdLine); \
+	createDebug(NULL,!scn->haveLongArg("nolog"));\
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
     sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
@@ -137,6 +139,7 @@ int main(int argc, const char **argv) \
 	NLMISC::CApplicationContext serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
+	createDebug(NULL,!scn->haveLongArg("nolog"));\
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
 	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
@@ -245,17 +248,26 @@ public:
 	bool							getDontUseAES() const { return _DontUseAES; };
 
 	/// Returns arguments of the program pass from the user to the program using parameters (ie: "myprog param1 param2")
-	const std::vector<std::string>	&getArgs () const { return _Args; }
+	const NLMISC::CVectorSString	&getArgs () const { return _Args; }
 
 	/// Returns true if the argument if present in the command line (ie: haveArg('p') will return true if -p is in the command line)
-	bool							haveArg (char argName);
+	bool							haveArg (char argName) const;
 
 	/** Returns the parameter linked to an option
 	 * getArg('p') will return toto if -ptoto is in the command line
 	 * getArg('p') will return C:\Documents and Settings\toto.tmp if -p"C:\Documents and Settings\toto.tmp" is in the command line
 	 * It'll thrown an Exception if the argName is not found
 	 */
-	std::string						getArg (char argName);
+	std::string						getArg (char argName) const;
+
+	/// return true if named long arg is present on the commandline
+	/// eg haveLongArg("toto") returns true if "--toto" or "--toto=xxx" can be found on commandline
+	bool							haveLongArg (const char* argName) const;
+
+	/// returns the value associated with the given named argument
+	/// both "--toto=xxx" and "--toto xxx" are acceptable
+	/// quotes round arguments are stripped
+	std::string						getLongArg (const char* argName) const;
 
 	/// Returns an uniq id for an entities on this service.
 	/*uint64							getEntityId (uint8 type)
@@ -414,7 +426,7 @@ private:
 	// @{
 
 	/// Array of arguments pass from the command line
-	std::vector<std::string>			_Args;
+	NLMISC::CVectorSString				_Args;
 
 	/// Listening port of this service
 	NLMISC::CVariable<uint16>			ListeningPort;

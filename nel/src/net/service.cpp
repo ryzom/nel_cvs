@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.1 2005/11/21 16:28:56 miller Exp $
+ * $Id: service.cpp,v 1.238.4.2 2005/11/22 15:45:40 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -344,7 +344,7 @@ IService::IService() :
 
 
 
-bool IService::haveArg (char argName)
+bool IService::haveArg (char argName) const
 {
 	for (uint32 i = 0; i < _Args.size(); i++)
 	{
@@ -359,7 +359,8 @@ bool IService::haveArg (char argName)
 	return false;
 }
 
-string IService::getArg (char argName)
+
+string IService::getArg (char argName) const
 {
 	for (uint32 i = 0; i < _Args.size(); i++)
 	{
@@ -389,6 +390,42 @@ string IService::getArg (char argName)
 		}
 	}
 	throw Exception ("Parameter '-%c' is not found in command line", argName);
+}
+
+
+bool IService::haveLongArg (const char* argName) const
+{
+	for (uint32 i = 0; i < _Args.size(); i++)
+	{
+		if (_Args[i].left(2)=="--" && _Args[i].leftCrop(2).splitTo('=')==argName)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+string IService::getLongArg (const char* argName) const
+{
+	for (uint32 i = 0; i < _Args.size(); i++)
+	{
+		if (_Args[i].left(2)=="--" && _Args[i].leftCrop(2).splitTo('=')==argName)
+		{
+			NLMISC::CSString val= _Args[i].splitFrom('=');
+			if (!val.empty())
+			{
+				return val.unquoteIfQuoted();
+			}
+			if (i+1<_Args.size() && _Args[i+1].c_str()[0]!='-')
+			{
+				return _Args[i+1].unquoteIfQuoted();
+			}
+
+			return std::string();
+		}
+	}
+	return std::string();
 }
 
 
@@ -597,6 +634,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		changeLogDirectory (LogDirectory);
 
 		bool noLog= (ConfigFile.exists ("DontLog")) && (ConfigFile.getVar("DontLog").asInt() == 1);
+		noLog|=haveLongArg("nolog");
 		if (!noLog)
 		{
 			// we create the log with service name filename ("test_service_ALIAS.log" for example)

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.61 2005/09/21 10:49:55 houlmann Exp $
+ * $Id: bitmap.cpp,v 1.61.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2975,7 +2975,11 @@ void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
 		f.serial(lengthID);
 		f.serial(cMapType);
 		f.serial(imageType);
-		if(imageType!=2 && imageType!=3 && imageType!=10 && imageType!=11) return;
+		if(imageType!=2 && imageType!=3 && imageType!=10 && imageType!=11)
+		{
+			nlwarning("Invalid TGA format, type %u in not supported (must be 2,3,10 or 11)", imageType);
+			return;
+		}
 		f.serial(tgaOrigin);
 		f.serial(length);
 		f.serial(depth);
@@ -2984,7 +2988,11 @@ void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
 		f.serial(width);
 		f.serial(height);
 		f.serial(imageDepth);
-		if(imageDepth!=8 && imageDepth!=16 && imageDepth!=24 && imageDepth!=32) return;
+		if(imageDepth!=8 && imageDepth!=16 && imageDepth!=24 && imageDepth!=32)
+		{
+			nlwarning("Invalid TGA format, bit depth %u in not supported (must be 8,16,24 or 32)", imageDepth);
+			return;
+		}
 		f.serial(desc);
 
 		// Ok, we have width and height.

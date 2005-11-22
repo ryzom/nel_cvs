@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.33 2005/08/29 16:12:47 boucher Exp $
+ * $Id: stream.cpp,v 1.33.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -432,13 +432,13 @@ void			IStream::serialCont(vector<bool> &cont)
 
 }
 // ======================================================================================================
-bool			IStream::seek (sint32 offset, TSeekOrigin origin) 
+bool			IStream::seek (sint32 offset, TSeekOrigin origin) const
 {
 	throw ESeekNotSupported(*this);
 	return false;
 }
 // ======================================================================================================
-sint32			IStream::getPos () 
+sint32			IStream::getPos () const
 {
 	throw ESeekNotSupported(*this);
 }

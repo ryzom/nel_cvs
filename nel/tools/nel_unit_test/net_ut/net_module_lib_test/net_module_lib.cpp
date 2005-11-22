@@ -46,11 +46,11 @@ public:
 	{
 	}
 
-	virtual void	onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	virtual void	onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 	}
 
-	virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy)
+	virtual void	onModuleSecurityChange(IModuleProxy *moduleProxy)
 	{
 	}
 

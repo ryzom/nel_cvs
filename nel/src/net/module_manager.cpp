@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -558,9 +558,10 @@ namespace NLNET
 			uint32 distance,
 			const std::string &moduleClassName, 
 			const std::string &moduleFullyQualifiedName,
+			const std::string &moduleManifest,
 			TModuleId foreignModuleId)
 		{
-			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName));
+			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
 			modProx->_Gateway = gateway;
 			modProx->_Route = route;
 			modProx->_Distance = distance;

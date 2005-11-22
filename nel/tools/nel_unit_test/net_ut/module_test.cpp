@@ -61,7 +61,7 @@ public:
 			ModuleType0.erase(moduleProxy);
 	}
 
-	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 		if (message.getName() == "DEBUG_MOD_PING")
 			PingCount++;

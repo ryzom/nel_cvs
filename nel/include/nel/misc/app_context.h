@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.h,v 1.3 2005/08/29 16:12:12 boucher Exp $
+ * $Id: app_context.h,v 1.3.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,6 +95,8 @@ namespace NLMISC
 		virtual void setDebugNeedAssert(bool needAssert) =0;
 		virtual bool getNoAssert() =0;
 		virtual void setNoAssert(bool noAssert) =0;
+		virtual bool getAlreadyCreateSharedAmongThreads() =0;
+		virtual void setAlreadyCreateSharedAmongThreads(bool b) =0;
 		//@}
 	protected:
 		/// Called by derived class to finalize initialisation of context
@@ -136,6 +138,8 @@ namespace NLMISC
 		virtual void setDebugNeedAssert(bool needAssert);
 		virtual bool getNoAssert();
 		virtual void setNoAssert(bool noAssert);
+		virtual bool getAlreadyCreateSharedAmongThreads();
+		virtual void setAlreadyCreateSharedAmongThreads(bool b);
 	
 	private:
 		/// Singleton registry
@@ -151,6 +155,7 @@ namespace NLMISC
 		CMsgBoxDisplayer *DefaultMsgBoxDisplayer;
 		bool DebugNeedAssert;
 		bool NoAssert;
+		bool AlreadyCreateSharedAmongThreads;
 	
 	};
 
@@ -186,6 +191,8 @@ namespace NLMISC
 		virtual void setDebugNeedAssert(bool needAssert);
 		virtual bool getNoAssert();
 		virtual void setNoAssert(bool noAssert);
+		virtual bool getAlreadyCreateSharedAmongThreads();
+		virtual void setAlreadyCreateSharedAmongThreads(bool b);
 	private:
 		/// Pointer to the application context.
 		INelContext		&_ApplicationContext;

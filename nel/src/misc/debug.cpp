@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.113 2005/10/20 13:21:53 miller Exp $
+ * $Id: debug.cpp,v 1.113.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1059,8 +1059,9 @@ void createDebug (const char *logPath, bool logInFile)
 {
 	NL_ALLOC_CONTEXT (_Debug)
 	
-	static bool alreadyCreateSharedAmongThreads = false;
-	if ( !alreadyCreateSharedAmongThreads )
+//	static bool alreadyCreateSharedAmongThreads = false;
+//	if ( !alreadyCreateSharedAmongThreads )
+	if (!INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
 	{
 		// Debug Info for mutexes
 #ifdef MUTEX_DEBUG
@@ -1125,7 +1126,8 @@ void createDebug (const char *logPath, bool logInFile)
 		
 		initDebug2(logInFile);
 
-		alreadyCreateSharedAmongThreads = true;
+		INelContext::getInstance().setAlreadyCreateSharedAmongThreads(true);
+//		alreadyCreateSharedAmongThreads = true;
 	}
 }
 

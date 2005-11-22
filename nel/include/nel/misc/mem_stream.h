@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.44 2005/08/29 16:12:12 boucher Exp $
+ * $Id: mem_stream.h,v 1.44.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "stream.h"
 #include "object_vector.h"
 #include "fast_mem.h"
+#include "smart_ptr.h"
 
 namespace NLMISC
 {
@@ -48,6 +49,61 @@ typedef std::vector<uint8> CVector8;
 /// Iterator on CVector8
 typedef CVector8::iterator It8;
 */
+
+
+class CMemStreamBuffer
+{
+public:
+	typedef CObjectVector<uint8, false>	TBuffer;
+private:
+	struct TMemStreamBuffer : public CRefCount
+	{
+		// the buffer himself
+		TBuffer	_Buffer;
+	};
+
+	typedef CSmartPtr<TMemStreamBuffer>	TMemStreamBufferPtr;
+
+	TMemStreamBufferPtr		_SharedBuffer;
+
+public:
+
+//	mutable uint8	*Pos;
+	mutable	uint32	Pos;
+
+	// constructor, allocate a shared buffer
+	CMemStreamBuffer()
+	{
+		_SharedBuffer = new TMemStreamBuffer;
+		//Pos = _SharedBuffer->_Buffer.getPtr();
+		Pos = 0;
+	}
+
+
+	const TBuffer &getBuffer() const
+	{
+		return _SharedBuffer->_Buffer;
+	}
+
+	TBuffer &getBufferWrite()
+	{
+		if (_SharedBuffer->getRefCount() > 1)
+		{
+//			uint32 offset = Pos - _SharedBuffer->_Buffer.getPtr();
+			// we need to duplicate the buffer
+			_SharedBuffer = new TMemStreamBuffer(*_SharedBuffer);
+//			Pos = _SharedBuffer->_Buffer.getPtr() + offset;
+		}
+		return _SharedBuffer->_Buffer;
+	}
+
+	void swap(CMemStreamBuffer &other)
+	{
+		std::swap(_SharedBuffer, other._SharedBuffer);
+		std::swap(Pos, other.Pos);
+	}
+
+};
 
 
 /**
@@ -87,8 +143,9 @@ public:
 		NLMISC::IStream( inputStream ), _StringMode( stringmode )
 	{
 		_DefaultCapacity = std::max( defaultcapacity, (uint32)16 ); // prevent from no allocation
-		_Buffer.resize (_DefaultCapacity);
-		_BufPos = _Buffer.getPtr();
+		_Buffer.getBufferWrite().resize (_DefaultCapacity);
+//		_BufPos = _Buffer.getPtr();
+		_Buffer.Pos = 0; //_Buffer.getBuffer().getPtr();
 	}
 
 	/// Copy constructor
@@ -103,7 +160,7 @@ public:
 	{
 		IStream::operator= (other);
 		_Buffer = other._Buffer;
-		_BufPos = _Buffer.getPtr() + other.lengthS();
+//		_BufPos = _Buffer.getPtr() + other.lengthS();
 		_StringMode = other._StringMode;
 		_DefaultCapacity = other._DefaultCapacity;
 		return *this;
@@ -146,7 +203,7 @@ public:
 	 * \return true if seek sucessfull.
 	 * \see ESeekNotSupported SeekOrigin getPos
 	 */
-	virtual bool	seek (sint32 offset, TSeekOrigin origin) throw(EStream);
+	virtual bool	seek (sint32 offset, TSeekOrigin origin) const throw(EStream);
 
 	/** 
 	 * Get the location of the stream pointer.
@@ -159,16 +216,18 @@ public:
 	 * \return the new offset regarding from the origin.
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
-	virtual sint32	getPos () throw(EStream)
+	virtual sint32	getPos () const throw(EStream)
 	{
-		return _BufPos - _Buffer.getPtr();
+		//return _BufPos - _Buffer.getPtr();
+		//return _Buffer.Pos - _Buffer.getPtr()
+		return sint32(_Buffer.Pos);
 	}
 
-	/// Const and not-virtual getPos(), for direct use. Caution: should not be overloaded in a child class.
-	virtual sint32			getPos() const
-	{
-		return _BufPos - _Buffer.getPtr();
-	}
+//	/// Const and not-virtual getPos(), for direct use. Caution: should not be overloaded in a child class.
+//	virtual sint32			getPos() const
+//	{
+//		return _BufPos - _Buffer.getPtr();
+//	}
 
 	/**
 	 * When writing, skip 'len' bytes and return the position of the blank space for a future poke().
@@ -176,11 +235,12 @@ public:
 	 */
 	sint32			reserve( uint len )
 	{
-		sint32 pos = _BufPos - _Buffer.getPtr();
+//		sint32 pos = _Buffer.Pos - _Buffer.getBuffer().getPtr();
+		sint32 pos = sint32(_Buffer.Pos);
 		if ( ! isReading() )
 		{
 			increaseBufferIfNecessary( len );
-			_BufPos += len;
+			_Buffer.Pos += len;
 		}
 		return pos;
 	}
@@ -200,8 +260,8 @@ public:
 	{
 		if ( ! isReading() )
 		{
-			uint8 *pokeBufPos = _Buffer.getPtr() + pos;
-			nlassert( pokeBufPos + sizeof(T) <= _BufPos );
+			uint8 *pokeBufPos = _Buffer.getBufferWrite().getPtr() + pos;
+			nlassert( pokeBufPos + sizeof(T) <= pokeBufPos+_Buffer.Pos );
 			*(T*)pokeBufPos = value;
 		}
 	}
@@ -210,12 +270,13 @@ public:
 	virtual void	clear()
 	{
 		resetPtrTable();
-		_Buffer.clear();
+		_Buffer.getBufferWrite().clear();
 		if (!isReading())
 		{
-			_Buffer.resize (_DefaultCapacity);
+			_Buffer.getBufferWrite().resize (_DefaultCapacity);
 		}
-		_BufPos = _Buffer.getPtr();
+//		_Buffer.Pos = _Buffer.getBuffer().getPtr();
+		_Buffer.Pos = 0;
 	}
 
 	/**
@@ -238,7 +299,7 @@ public:
 	/// Returns the size of the buffer (can be greater than the length, especially in output mode)
 	uint32			size() const
 	{
-		return _Buffer.size();
+		return _Buffer.getBuffer().size();
 	}
 
 	/** Returns a pointer to the message buffer (read only)
@@ -246,7 +307,7 @@ public:
 	 */
 	virtual const uint8		*buffer() const
 	{
-		return _Buffer.getPtr();
+		return _Buffer.getBuffer().getPtr();
 /*		if ( _Buffer.empty() )
 		{
 			return NULL;
@@ -276,7 +337,8 @@ public:
 	 * If you are using the stream only in output mode, you can use this method as a faster version
 	 * of clear() *if you don't serialize pointers*.
 	 */
-	void			resetBufPos() { _BufPos = _Buffer.getPtr(); }
+//	void			resetBufPos() { _Buffer.Pos = _Buffer.getBuffer().getPtr(); }
+	void			resetBufPos() { _Buffer.Pos = 0; }
 
 	/**
 	 * Resize the message buffer and fill data at position 0.
@@ -287,15 +349,17 @@ public:
 	{
 		if (len == 0) return;
 
-		_Buffer.resize( len );
-		CFastMem::memcpy( _Buffer.getPtr(), srcbuf, len );
+		_Buffer.getBufferWrite().resize( len );
+		CFastMem::memcpy( _Buffer.getBufferWrite().getPtr(), srcbuf, len );
 		if (isReading())
 		{
-			_BufPos = _Buffer.getPtr();
+//			_Buffer.Pos = _Buffer.getBuffer().getPtr();
+			_Buffer.Pos = 0;
 		}
 		else
 		{
-			_BufPos = _Buffer.getPtr() + _Buffer.size();
+//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + _Buffer.getBuffer().size();
+			_Buffer.Pos = _Buffer.getBuffer().size();
 		}
 	}
 
@@ -323,11 +387,12 @@ public:
 		if ( msgsize == 0 )
 			return NULL;
 
-		_Buffer.resize( msgsize );
-		_BufPos = _Buffer.getPtr();
+		_Buffer.getBufferWrite().resize( msgsize );
+//		_Buffer.Pos = _Buffer.getBuffer().getPtr();
+		_Buffer.Pos = 0;
 		/*if ( ! isReading() )
 			_BufPos += msgsize;*/
-		return _Buffer.getPtr();
+		return _Buffer.getBufferWrite().getPtr();
 	}
 
 	/**
@@ -348,15 +413,19 @@ public:
 			uint32 sizeOfReadStream = lengthR();
 			resetPtrTable();
 			setInOut( false );
-			_BufPos = _Buffer.getPtr() + sizeOfReadStream;
+//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + sizeOfReadStream;
+			_Buffer.Pos = sizeOfReadStream;
 		}
 		else
 		{
 			// Out->In: We want to read (serialize in) what we have written (serialized out)
 			resetPtrTable();
 			setInOut( true );
-			_Buffer.resize (_BufPos - _Buffer.getPtr());
-			_BufPos = _Buffer.getPtr();
+//			_Buffer.getBufferWrite().resize (_Buffer.Pos - _Buffer.getBuffer().getPtr());
+			// TODO : is it necessary ?
+			_Buffer.getBufferWrite().resize (_Buffer.Pos);
+//			_Buffer.Pos = _Buffer.getBuffer().getPtr();
+			_Buffer.Pos = 0;
 		}
 	}
 
@@ -369,13 +438,14 @@ public:
 #endif
 	void			increaseBufferIfNecessary(uint32 len)
 	{
-		uint32 oldBufferSize = _Buffer.size();
-		if (_BufPos - _Buffer.getPtr() + len > oldBufferSize)
+		uint32 oldBufferSize = _Buffer.getBuffer().size();
+//		if (_Buffer.Pos - _Buffer.getBuffer().getPtr() + len > oldBufferSize)
+		if (_Buffer.Pos + len > oldBufferSize)
 		{
 			// need to increase the buffer size
-			uint32 pos = _BufPos - _Buffer.getPtr();
-			_Buffer.resize(oldBufferSize*2 + len);
-			_BufPos = _Buffer.getPtr() + pos;
+//			uint32 pos = _Buffer.Pos - _Buffer.getBuffer().getPtr();
+			_Buffer.getBufferWrite().resize(oldBufferSize*2 + len);
+//			_Buffer.Pos = _Buffer.getBuffer().getPtr() + pos;
 		}
 	}
 
@@ -390,14 +460,16 @@ public:
 			if ( lengthS()+sizeof(T) > length() ) // calls virtual length (cf. sub messages)
 				throw EStreamOverflow();
 			// Serialize in
-			val = *(T*)_BufPos;
+			val = *(T*)(_Buffer.getBuffer().getPtr() + _Buffer.Pos);
 		}
 		else
 		{
 			increaseBufferIfNecessary (sizeof(T));
-			*(T*)_BufPos = val;
+//			*(T*)_BufPos = val;
+			*(T*)(_Buffer.getBufferWrite().getPtr() + _Buffer.Pos) = val;
 		}
-		_BufPos += sizeof (T);
+//		_BufPos += sizeof (T);
+		_Buffer.Pos += sizeof (T);
 #else // NL_LITTLE_ENDIAN
 		IStream::serial( val );
 #endif // NL_LITTLE_ENDIAN
@@ -408,8 +480,11 @@ public:
 	{
 		//nldebug( "MEMSTREAM: Writing %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		increaseBufferIfNecessary (sizeof(T));
-		*(T*)_BufPos = value;
-		_BufPos += sizeof (T);
+//		*(T*)_BufPos = value;
+		*(T*)(_Buffer.getBufferWrite().getPtr() + _Buffer.Pos) = value;
+		
+//		_BufPos += sizeof (T);
+		_Buffer.Pos += sizeof (T);
 	}
 
 	template <class T>
@@ -422,14 +497,17 @@ public:
 			throw EStreamOverflow();
 		}
 		// Serialize in
-		value = *(T*)_BufPos;
-		_BufPos += sizeof(value);
+//		value = *(T*)_BufPos;
+		value = *(T*)(_Buffer.getBuffer().getPtr() + _Buffer.Pos);
+//		_BufPos += sizeof(value);
+		_Buffer.Pos += sizeof(value);
 	}
 
 
-	/// Template serialisation (should take the one from IStream)
+	/// Template serialization (should take the one from IStream)
     template<class T>
-	void			serial(T &obj)							{ obj.serial(*this); }
+	void			serial(T &obj) 				{ obj.serial(*this); }
+
 
 	template<class T>
 	void			serialCont(std::vector<T> &cont) 		{IStream::serialCont(cont);}
@@ -445,7 +523,6 @@ public:
 	void			serialCont(std::map<K, T> &cont) 		{IStream::serialCont(cont);}
 	template<class K, class T>
 	void			serialCont(std::multimap<K, T> &cont) 	{IStream::serialCont(cont);}
-
 	/// Specialisation of serialCont() for vector<uint8>
 	virtual void			serialCont(std::vector<uint8> &cont) {IStream::serialCont(cont);} 
 	/// Specialisation of serialCont() for vector<sint8>
@@ -513,7 +590,8 @@ protected:
 	/// Returns the serialized length (number of bytes written or read)
 	virtual uint32			lengthS() const
 	{
-		return _BufPos - _Buffer.getPtr(); // not calling getPos() because virtual and not const!
+//		return _Buffer.Pos - _Buffer.getBuffer().getPtr(); // not calling getPos() because virtual and not const!
+		return _Buffer.Pos; // not calling getPos() because virtual and not const!
 	}
 
 	/**
@@ -530,10 +608,11 @@ protected:
 	 */
 	virtual uint			getDbgStreamSize() const;
 
-	CObjectVector<uint8, false>	_Buffer;
-	uint8						*_BufPos;
+//	CObjectVector<uint8, false>	_Buffer;
+	CMemStreamBuffer			_Buffer;
+//	mutable uint8				*_BufPos;
 	
-	bool						_StringMode;
+	mutable	bool				_StringMode;
 
 	uint32						_DefaultCapacity;
 };

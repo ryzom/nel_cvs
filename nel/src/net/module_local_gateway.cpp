@@ -1,7 +1,7 @@
 /** \file module_local_gateway.h
  * module gateway interface
  *
- * $Id: module_local_gateway.cpp,v 1.3 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module_local_gateway.cpp,v 1.3.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,7 @@ namespace NLNET
 		}
 
 		/// A transport have received a message
-		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin)
+		virtual void onReceiveMessage(CGatewayRoute *from, const CMessage &msgin)
 		{
 		}
 
@@ -295,10 +295,10 @@ namespace NLNET
 //		virtual void onReceiveModuleMessage(TModuleGatewayProxyPtr &senderGateway, TModuleMessagePtr &message)
 //		{
 //		}
-		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message)
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message)
 		{
 		}
-		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const CMessage &message)
 		{
 			nlstop;
 //			TModuleId sourceId = message->getSenderModuleProxyId();
@@ -345,7 +345,7 @@ namespace NLNET
 		void				onModuleDown(IModuleProxy *moduleProxy)
 		{
 		}
-		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 		{
 		}
 		void				onModuleSecurityChange(IModuleProxy *moduleProxy)
@@ -364,7 +364,7 @@ namespace NLNET
 			return getModuleName();
 		}
 
-		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message ) 
+		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
 			throw (EModuleNotReachable, EModuleNotPluggedHere)
 		{
 			TModuleProxies::TAToBMap::const_iterator first(_ModuleProxies.getAToBMap().begin()), last(_ModuleProxies.getAToBMap().end());
@@ -374,7 +374,7 @@ namespace NLNET
 
 			nlstop;
 		}
-		virtual void _broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 		{
 			nlstop;
@@ -392,6 +392,7 @@ namespace NLNET
 					0,		// the module is local, distance is 0
 					pluggedModule->getModuleClassName(), 
 					getGatewayName()+"/"+pluggedModule->getModuleFullyQualifiedName(),
+					pluggedModule->getModuleManifest(),
 //					_ThisProxy,
 					pluggedModule->getModuleId());
 

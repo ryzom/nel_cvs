@@ -1,6 +1,6 @@
 /** \file md5.cpp
  * MD5 Implementation in c++ derived from RSA Data Security work
- * $Id: md5.cpp,v 1.1 2004/07/28 07:55:31 besson Exp $
+ * $Id: md5.cpp,v 1.1.40.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -56,6 +56,7 @@ documentation and/or software.
 #include "nel/misc/debug.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/stream.h"
 
 using namespace std;
 
@@ -206,6 +207,13 @@ bool CHashKeyMD5::operator<(const CHashKeyMD5 &in) const
 			return false;
 	return true;
 }
+
+// ****************************************************************************
+void CHashKeyMD5::serial (NLMISC::IStream &s)
+{
+	s.serialBuffer(Data,16);
+}
+
 
 // ****************************************************************************
 // ****************************************************************************

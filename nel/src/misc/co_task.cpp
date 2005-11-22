@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3 2005/10/19 16:58:06 boucher Exp $
+ * $Id: co_task.cpp,v 1.3.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,12 +32,20 @@ namespace NLMISC
 // some platform specifics
 #if defined (NL_OS_WINDOWS)
 # define NL_WIN_CALLBACK CALLBACK
+// check for minimal windows version
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0400)
+# ifdef _WIN32_WINNT
+#  undef _WIN32_WINNT
+# endif
+# define _WIN32_WINNT 0x0400
+#endif
+
 # include <windows.h>
 #elif defined (NL_OS_UNIX)
 # define NL_WIN_CALLBACK 
 # include <ucontext.h>
 #else
-#error "Coroutine task are not supported yet by you platform, do it ?"
+# error "Coroutine task are not supported yet by your platform, do it ?"
 #endif
 
 

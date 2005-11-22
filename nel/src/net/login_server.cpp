@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.39 2005/10/03 10:08:28 boucher Exp $
+ * $Id: login_server.cpp,v 1.39.4.1 2005/11/22 18:46:20 boucher Exp $
  *
  */
 
@@ -147,7 +147,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
-		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str());
+		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s' instance %u) inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str(), instanceId);
 		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended, instanceId));
 		reason = "";
 	}

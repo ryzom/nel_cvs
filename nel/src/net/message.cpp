@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.33 2005/10/13 17:08:27 lancon Exp $
+ * $Id: message.cpp,v 1.33.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,7 +279,7 @@ void CMessage::readType ()
 /*
  * Get the message name (input message only) and advance the current pos
  */
-std::string CMessage::readTypeAtCurrentPos()
+std::string CMessage::readTypeAtCurrentPos() const
 {
 	nlassert( isReading() );
 
@@ -290,7 +290,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	_StringMode = false;
 
 	TFormat format;
-	serial( format );
+	nlRead(*this, serial, format );
 	bool LongFormat = format.LongFormat;
 	_StringMode = format.StringMode;
 	_Type = TMessageType(format.MessageType);
@@ -298,7 +298,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	if ( LongFormat )
 	{
 		std::string name;
-		serial( name );
+		nlRead(*this, serial, name );
 		_StringMode = sm;
 		return name;
 	}
@@ -340,7 +340,8 @@ std::string CMessage::getName () const
 		uint32 subPosSaved = _SubMessagePosR;
 		uint32 lenthRSaved = _LengthR;
 		const_cast<uint32&>(_SubMessagePosR) = 0;
-		const_cast<uint32&>(_LengthR) = _Buffer.size();
+//		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		const_cast<uint32&>(_LengthR) = _Buffer.getBuffer().size();
 		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
 		std::string name = notconstMsg.readTypeAtCurrentPos();
 		notconstMsg.seek( subPosSaved+savedPos, begin );
@@ -364,7 +365,8 @@ CMessage::TMessageType CMessage::getType() const
 		uint32 subPosSaved = _SubMessagePosR;
 		uint32 lenthRSaved = _LengthR;
 		const_cast<uint32&>(_SubMessagePosR) = 0;
-		const_cast<uint32&>(_LengthR) = _Buffer.size();
+//		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		const_cast<uint32&>(_LengthR) = _Buffer.getBuffer().size();
 		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
 		notconstMsg.readTypeAtCurrentPos();
 		notconstMsg.seek( subPosSaved+savedPos, begin );

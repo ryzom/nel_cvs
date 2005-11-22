@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.29 2005/08/29 16:12:12 boucher Exp $
+ * $Id: bit_mem_stream.h,v 1.29.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -394,11 +394,12 @@ public:
 		// This is ensured in CMemStream::CMemStream() and CMemStream::clear()
 		//if ( (!isReading()) && _Buffer.empty() )
 		///	_Buffer.resize( 8 ); // at least 8 bytes
-		nlassert( ! ((!isReading()) && _Buffer.empty()) );
+		nlassert( ! ((!isReading()) && _Buffer.getBuffer().empty()) );
 
 		CMemStream::resetBufPos();
 		if ( !isReading() )
-			*_BufPos = 0; // partial prepareNextByte()
+//			*_BufPos = 0; // partial prepareNextByte()
+			*(_Buffer.getBufferWrite().getPtr()+_Buffer.Pos) = 0;
 		_FreeBits = 8;
 		_DbgInfo.clear();
 	}
@@ -429,15 +430,18 @@ public:
 	{
 		if ( ! isReading() )
 		{
-			++_BufPos; // write->read: extend to keep the last byte inside the payload
+//			++_BufPos; // write->read: extend to keep the last byte inside the payload
+			++_Buffer.Pos; // write->read: extend to keep the last byte inside the payload
 		}
 		CMemStream::invert();
 		if ( ! isReading() )
 		{
 #ifdef NL_DEBUG
-			nlassert( _BufPos == _Buffer.getPtr()+_Buffer.size() );
+//			nlassert( _BufPos == _Buffer.getPtr()+_Buffer.size() );
+			nlassert( _Buffer.Pos == _Buffer.getBuffer().size() );
 #endif
-			--_BufPos; // read->write: set the position on the last byte, not at the end as in CMemStream::invert()
+//			--_BufPos; // read->write: set the position on the last byte, not at the end as in CMemStream::invert()
+			--(_Buffer.Pos); // read->write: set the position on the last byte, not at the end as in CMemStream::invert()
 		}
 		// Keep the same _FreeBits
 	}
@@ -452,7 +456,8 @@ public:
 	/// Returns the number of bit from the beginning of the buffer (in bit)
 	sint32	getPosInBit() const
 	{
-		return (_BufPos - _Buffer.getPtr() + 1)*8 - _FreeBits;
+//		return (_BufPos - _Buffer.getPtr() + 1)*8 - _FreeBits;
+		return (_Buffer.Pos + 1)*8 - _FreeBits;
 	}
 
 	/// Returns the stream as a string with 0 and 1.
@@ -714,7 +719,8 @@ protected:
 	{
 		pointNextByte();
 		increaseBufferIfNecessary();
-		*_BufPos = 0;
+//		*_BufPos = 0;
+		*(_Buffer.getBufferWrite().getPtr() + _Buffer.Pos) = 0;
 	}
 
 	/**
@@ -732,7 +738,8 @@ protected:
 		nlassert( !isReading() );
 #endif
 		_FreeBits = 8;
-		++_BufPos;
+//		++_BufPos;
+		++_Buffer.Pos;
 	}
 	
 	/**
@@ -749,14 +756,19 @@ protected:
 	void			increaseBufferIfNecessary()
 	{
 #ifdef NL_DEBUG
-		nlassert( (!isReading()) && (!_Buffer.empty()) );
-		nlassert( _BufPos <= _Buffer.getPtr() + _Buffer.size() );
+//		nlassert( (!isReading()) && (!_Buffer.empty()) );
+		nlassert( (!isReading()) && (!_Buffer.getBuffer().empty()) );
+//		nlassert( _BufPos <= _Buffer.getPtr() + _Buffer.size() );
+		nlassert( _Buffer.Pos <= _Buffer.getBuffer().size() );
 #endif
-		uint32 bytepos = _BufPos - _Buffer.getPtr();
-		if ( bytepos == _Buffer.size() )
+//		uint32 bytepos = _BufPos - _Buffer.getPtr();
+//		uint32 bytepos = _BufPos;
+//		if ( bytepos == _Buffer.size() )
+		if ( _Buffer.Pos == _Buffer.getBuffer().size() )
 		{
-			_Buffer.resize( bytepos * 2 );
-			_BufPos = _Buffer.getPtr() + bytepos; // don't change the pos but update pointer (needed because the buffer may have moved when reallocating)
+//			_Buffer.resize( bytepos * 2 );
+			_Buffer.getBufferWrite().resize( _Buffer.Pos * 2 );
+//			_BufPos = _Buffer.getPtr() + bytepos; // don't change the pos but update pointer (needed because the buffer may have moved when reallocating)
 		}
 	}
 

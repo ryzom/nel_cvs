@@ -134,6 +134,9 @@ int main(int argc, char* argv[])
 		//
 		Test::Suite ts;
 
+		// Store the current path for later use
+		string currentPath = CPath::getCurrentPath();
+
 		// load the configuration file
 		CConfigFile cf;
 		cf.load("test_suite.cfg");
@@ -188,10 +191,11 @@ int main(int argc, char* argv[])
 				auto_ptr<Test::Suite> ptr = entryPoint(testLibs[i]->WorkingPath);
 				ts.add(ptr);
 			}
+
+			// Restore the working path
+			CPath::setCurrentPath(currentPath.c_str());
 		}
 
-		// Store the current path
-		string currentPath = CPath::getCurrentPath();
 		// Run the tests
 		//
 		auto_ptr<Test::Output> output(cmdline(argc, argv));

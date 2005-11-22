@@ -227,6 +227,7 @@ bool CLibrary::loadLibrary(const std::string &libName, bool addNelDecoration, bo
 		}
 	}
 
+	nldebug("Loading dynamic library '%s'", libPath.c_str());
 	// load the lib now
 	_LibHandle = nlLoadLibrary(libPath);
 	_LibFileName = libPath;
@@ -266,6 +267,7 @@ void CLibrary::freeLibrary()
 			_PureNelLibrary->_onLibraryUnloaded();
 		}
 
+		nldebug("Freeing dynamic library '%s'", _LibFileName.c_str());
 		nlFreeLibrary(_LibHandle);
 
 		_PureNelLibrary = NULL;

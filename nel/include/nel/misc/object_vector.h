@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * TODO: File description
  *
- * $Id: object_vector.h,v 1.15 2005/02/22 10:14:12 besson Exp $
+ * $Id: object_vector.h,v 1.15.16.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -191,14 +191,23 @@ public:
 
 	/** Element accessor. no check is made on index. (No exception, no nlassert())
 	 */
-	T			&operator[](uint index) const
+	const T			&operator[](uint index) const
+	{
+		return _Ptr[index];
+	}
+	/** Element accessor. no check is made on index. (No exception, no nlassert())
+	 */
+	T			&operator[](uint index)
 	{
 		return _Ptr[index];
 	}
 
 	/** return a ptr on the first element of the array. NULL if empty.
 	 */
-	T			*getPtr() const {return _Ptr;}
+	const T		*getPtr() const {return _Ptr;}
+	/** return a ptr on the first element of the array. NULL if empty.
+	 */
+	T			*getPtr() {return _Ptr;}
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.44 2005/10/26 17:18:07 boucher Exp $
+ * $Id: config_file.h,v 1.44.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	{
 	public:
 
-		CVar () : Type(T_UNKNOWN), Root(false), SaveWrap(6), FromLocalFile(true) {}
+		CVar () : Type(T_UNKNOWN), Root(false), FromLocalFile(true), SaveWrap(6) {}
 
 		/// \name Access to the variable content.
 		//@{

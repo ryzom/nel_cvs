@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10 2005/10/03 10:08:05 boucher Exp $
+ * $Id: module.h,v 1.10.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,20 @@ namespace NLNET
 		 */
 		virtual const std::string	&getModuleFullyQualifiedName() const =0;
 
+		/** Return the manifest of the module.
+		 *	The manifest is a simple string of undefined format.
+		 *	The manifest is used by a module to expose some intention
+		 *	or affinity (or whaterver else yuou could imagine) of the
+		 *	module.
+		 *	The manifest if transmited along with the module proxy, allowing
+		 *	any module seeing the proxy to read the manifest.
+		 *	You should not use manifest to put big string because it is
+		 *	transmited with proxy information.
+		 *	Likewise, you should never use manifest to transmit critical data
+		 *	(such as password) because any module can read it.
+		 */
+		virtual const std::string	&getModuleManifest() const =0;
+
 		/** Tell if the module implementation support immediate dispatching.
 		 *	Immediate dispatching is when a message is send between 
 		 *	collocated module (i.e module on the same gateway). In that case,
@@ -175,11 +189,11 @@ namespace NLNET
 		 *	or queue the message in the coroutine message queue (when a synchronous
 		 *	messaging coroutine is started) for later dispatching.
 		 */
-		virtual void				onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
+		virtual void				onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
 		/** Called internally by basic module imp to process the message by
 		 *	application code.
 		 */
-		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message) =0;
+		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message) =0;
 		/** Called by a socket to inform this module that the security
 		 *	data attached to a proxy have changed.
 		 */
@@ -190,7 +204,7 @@ namespace NLNET
 		 *	The call is blocking until receptions of the operation
 		 *	result message (or a module down)
 		 */
-		virtual void		invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) 
+		virtual void		invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) 
 			throw (EInvokeFailed)
 			=0;
 
@@ -351,6 +365,13 @@ namespace NLNET
 		 *	For module proxy, this is always the fully qualified module name
 		 */
 		virtual const std::string &getModuleClassName() const =0;
+		/** Return the manifest of the module.
+		 *	The manifest is a simple string of undefined format.
+		 *	The manifest is used by a module to expose some intention
+		 *	or affinity (or whaterver else yuou could imagine) of the
+		 *	module.
+		 */
+		virtual const std::string &getModuleManifest() const =0;
 
 		/** Return the gateways interface by witch this module is accessible
 		 *	In some case, more than one gateway can be returned when there
@@ -362,7 +383,7 @@ namespace NLNET
 		 *	This method do the job of finding a valid socket to effectively send
 		 *	the message.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotReachable)
 			=0;
 
@@ -572,7 +593,7 @@ namespace NLNET
 		/// The current message to process sender
 		IModuleProxy			*_CurrentSender;
 		/// The current message to process
-		NLNET::CMessage			*_CurrentMessage;
+		const NLNET::CMessage	*_CurrentMessage;
 		/// True if the current message processing have generated an exception
 		bool					_CurrentMessageFailed;
 
@@ -604,12 +625,14 @@ namespace NLNET
 
 		const std::string	&getModuleFullyQualifiedName() const;
 
+		const std::string	&getModuleManifest() const;
+
 		/** Called by a socket to receive a message in the module context.
 		 *	Basic implementation either forward directly to onProcessModuleMessage
 		 *	or queue the message in the coroutine message queue (when a synchronous
 		 *	messaging coroutine is started) for later dispatching.
 		 */
-		virtual void		onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message);
+		virtual void		onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message);
 
 		/// The message dispatching task
 		void _receiveModuleMessageTask();
@@ -626,7 +649,7 @@ namespace NLNET
 		void				plugModule(IModuleSocket *moduleSocket) throw (EModuleAlreadyPluggedHere);
 		void				unplugModule(IModuleSocket *moduleSocket)  throw (EModuleNotPluggedHere);
 		void				getPluggedSocketList(std::vector<IModuleSocket*> &resultList);
-		void				invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed);
+		void				invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed);
 		void				_onModuleDown(IModuleProxy *removedProxy);
 
 
@@ -667,11 +690,13 @@ namespace NLNET
 		NLMISC::TStringId	_ModuleClassName;
 		/// The  fully qualified module name.
 		NLMISC::TStringId	_FullyQualifiedModuleName;
+		/// The module manifest
+		std::string			_Manifest;
 		/// the list of security data
 		TSecurityData		*_SecurityData;
 
 		/// Private constructor, only manager instantiate module proxies
-		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName);
+		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest);
 	public:
 
 		const CGatewayRoute * const getRoute() const
@@ -704,6 +729,8 @@ namespace NLNET
 		virtual const std::string &getModuleName() const;
 		/// Return the module class.
 		virtual const std::string &getModuleClassName() const;
+		/// return the module manifest
+		virtual const std::string &getModuleManifest() const;
 
 		/** Return the gateways interface by witch this module is accessible.
 		 */
@@ -711,7 +738,7 @@ namespace NLNET
 
 		/** Send a message to the module.
 		 */
-		virtual void		sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+		virtual void		sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotReachable);
 		
 		virtual const TSecurityData *getFirstSecurityData() const 
@@ -722,6 +749,29 @@ namespace NLNET
 		virtual const TSecurityData *findSecurityData(uint8 dataTag) const;
 
 
+	};
+
+
+
+	/** Utility class to do broadcast with a container of proxy pointer
+	 */
+	template <class PtrContainer>
+	class TBroadcastModuleMessage
+	{
+
+		void sendMessage(IModuleProxy *senderProxy, const PtrContainer &addresseeProxies, NLNET::CMessage &message)
+		{
+			PtrContainer::iterator first(addresseeProxies.begin()), last(addresseeProxies.end());
+			for (; first != last; ++first)
+			{
+				CModuleProxy *proxy = static_cast<CModuleProxy*>(*it);
+				
+				// copy the message before each send
+				CMessage msgCopy(message);
+				
+				proxy->sendModuleMessage(senderProxy, msgCopy);
+			}
+		}
 	};
 
 

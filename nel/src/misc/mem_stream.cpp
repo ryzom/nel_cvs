@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.29 2005/08/29 16:12:47 boucher Exp $
+ * $Id: mem_stream.cpp,v 1.29.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ void CMemStream::swap(CMemStream &other)
 {
 	IStream::swap(other);
 	_Buffer.swap(other._Buffer);
-	std::swap(_BufPos, other._BufPos);
+//	std::swap(_BufPos, other._BufPos);
 	std::swap(_StringMode, other._StringMode);
 	std::swap(_DefaultCapacity, other._DefaultCapacity);
 }
@@ -103,8 +103,10 @@ void CMemStream::serialBuffer(uint8 *buf, uint len)
 		}
 
 		// Serialize in
-		CFastMem::memcpy( buf, _BufPos, len );
-		_BufPos += len;
+//		CFastMem::memcpy( buf, _BufPos, len );
+		CFastMem::memcpy( buf, _Buffer.getBuffer().getPtr()+_Buffer.Pos, len );
+//		_BufPos += len;
+		_Buffer.Pos += len;
 	}
 	else
 	{
@@ -120,8 +122,10 @@ void CMemStream::serialBuffer(uint8 *buf, uint len)
 			_BufPos = _Buffer.getPtr() + pos;
 		}
 */
-		CFastMem::memcpy( _BufPos, buf, len );
-		_BufPos += len;
+//		CFastMem::memcpy( _BufPos, buf, len );
+		CFastMem::memcpy( _Buffer.getBufferWrite().getPtr()+_Buffer.Pos, buf, len );
+//		_BufPos += len;
+		_Buffer.Pos += len;
 
 /*		_Buffer.resize( size );
 		_BufPos = _Buffer.end() - len;
@@ -193,7 +197,7 @@ void CMemStream::serialBit(bool &bit)
  * (to prevent from an "inside serial" to increment it).
  * Then a seek(end) would get back to the pointer.
  */
-bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
+bool CMemStream::seek (sint32 offset, TSeekOrigin origin) const throw(EStream)
 {
 	switch (origin)
 	{
@@ -202,21 +206,24 @@ bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 			return false;
 		if (offset < 0)
 			return false;
-		_BufPos=_Buffer.getPtr()+offset;
+//		_BufPos=_Buffer.getPtr()+offset;
+		_Buffer.Pos = offset;
 		break;
 	case current:
 		if (getPos ()+offset > (sint)length())
 			return false;
 		if (getPos ()+offset < 0)
 			return false;
-		_BufPos+=offset;
+//		_BufPos+=offset;
+		_Buffer.Pos += offset;
 		break;
 	case end:
 		if (offset < -(sint)length())
 			return false;
 		if (offset > 0)
 			return false;
-		_BufPos=_Buffer.getPtr()+_Buffer.size()+offset;
+//		_BufPos=_Buffer.getPtr()+_Buffer.size()+offset;
+		_Buffer.Pos = _Buffer.getBuffer().size()+offset;
 		break;
 	}
 	return true;
@@ -256,9 +263,10 @@ void CMemStream::resize (uint32 size)
 {
 	if (size == length()) return;
 	// need to increase the buffer size
-	uint32 pos = _BufPos - _Buffer.getPtr();
-	_Buffer.resize(size);
-	_BufPos = _Buffer.getPtr() + pos;
+//	uint32 pos = _BufPos - _Buffer.getPtr();
+//	_Buffer.resize(size);
+	_Buffer.getBufferWrite().resize(size);
+//	_BufPos = _Buffer.getPtr() + pos;
 }
 
 /*
@@ -329,25 +337,35 @@ uint CMemStream::serialSeparatedBufferIn( uint8 *buf, uint len )
 	nlassert( _StringMode && isReading() );
 
 	// Check that we don't read more than there is to read
-	if ( ( _BufPos == _Buffer.getPtr()+_Buffer.size() ) || // we are at the end
-		 ( lengthS()+len+SEP_SIZE > length() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end // calls virtual length (cf. sub messages)
+//	if ( ( _BufPos == _Buffer.getPtr()+_Buffer.size() ) || // we are at the end
+	if ( ( _Buffer.Pos == _Buffer.getBuffer().size() ) || // we are at the end
+//		 ( lengthS()+len+SEP_SIZE > length() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end // calls virtual length (cf. sub messages)
+		 ( lengthS()+len+SEP_SIZE > length() ) && (_Buffer.getBuffer()[_Buffer.getBuffer().size()-1] != SEPARATOR ) ) // we are before the end // calls virtual length (cf. sub messages)
 	{
 		throw EStreamOverflow();
 	}
 	// Serialize in
 	uint32 i = 0;
-	while ( (i<len) && (*_BufPos) != SEPARATOR )
+	const uint8	*pos = _Buffer.getBuffer().getPtr()+_Buffer.Pos;
+//	while ( (i<len) && (*_BufPos) != SEPARATOR )
+	while ( (i<len) && (*pos) != SEPARATOR )
 	{
-		*(buf+i) = *_BufPos;
+//		*(buf+i) = *_BufPos;
+		*(buf+i) = *pos;
 		i++;
-		_BufPos++;
+//		_BufPos++;
+		++pos;
+		++_Buffer.Pos;
 	}
 	// Exceeds len
-	if ( (*_BufPos) != SEPARATOR )
+//	if ( (*_BufPos) != SEPARATOR )
+	if ( (*pos) != SEPARATOR )
 	{
 		throw EStreamOverflow();
 	}
-	_BufPos += SEP_SIZE;
+//	_BufPos += SEP_SIZE;
+	_Buffer.Pos += SEP_SIZE;
+
 	return i;
 }
 
@@ -360,17 +378,24 @@ void CMemStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 	nlassert( _StringMode && (!isReading()) );
 	
 	// Serialize out
-	uint32 oldBufferSize = _Buffer.size();
-	if (_BufPos - _Buffer.getPtr() + (len + SEP_SIZE) > oldBufferSize)
+//	uint32 oldBufferSize = _Buffer.size();
+	uint32 oldBufferSize = _Buffer.getBuffer().size();
+//	if (_BufPos - _Buffer.getPtr() + (len + SEP_SIZE) > oldBufferSize)
+	if (_Buffer.Pos + (len + SEP_SIZE) > oldBufferSize)
 	{
 		// need to increase the buffer size
-		_Buffer.resize(oldBufferSize*2 + len + SEP_SIZE);
-		_BufPos = _Buffer.getPtr() + oldBufferSize;
+//		_Buffer.resize(oldBufferSize*2 + len + SEP_SIZE);
+		_Buffer.getBufferWrite().resize(oldBufferSize*2 + len + SEP_SIZE);
+//		_BufPos = _Buffer.getPtr() + oldBufferSize;
 	}
 
-	CFastMem::memcpy( _BufPos, buf, len );
-	_BufPos += len;
-	*(_BufPos++) = SEPARATOR;
+//	CFastMem::memcpy( _BufPos, buf, len );
+	CFastMem::memcpy( _Buffer.getBufferWrite().getPtr()+_Buffer.Pos, buf, len );
+//	_BufPos += len;
+	_Buffer.Pos += len;
+//	*(_BufPos++) = SEPARATOR;
+	*(_Buffer.getBufferWrite().getPtr()+_Buffer.Pos) = SEPARATOR;
+	_Buffer.Pos += SEP_SIZE;
 
 	// Serialize out
 /*	_Buffer.resize( _Buffer.size() + len + SEP_SIZE );

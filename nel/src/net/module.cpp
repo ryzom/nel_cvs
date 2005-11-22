@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,13 +185,20 @@ namespace NLNET
 		return _FullyQualifedModuleName;
 	}
 
-	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	const std::string	&CModuleBase::getModuleManifest() const
+	{
+		static const string emptyString;
+
+		return emptyString;
+	}
+
+	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 		if (!_ModuleTasks.empty())
 		{
 			// there is a task running, queue in the message
-			_SyncMessages.push_back(make_pair(senderModuleProxy, CMessage()));
-			_SyncMessages.back().second.swap(message);
+			_SyncMessages.push_back(make_pair(senderModuleProxy, message));
+//			_SyncMessages.back().second.swap(message);
 		}
 		else
 		{
@@ -316,7 +323,7 @@ namespace NLNET
 	 *	The call is blocking until receptions of the operation
 	 *	result message (or a module down)
 	 */
-	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
+	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
 	{
 		nlassert(opMsg.getType() == CMessage::Request);
 
@@ -597,11 +604,12 @@ namespace NLNET
 	 * CModuleProxy impl
 	 ************************************************************************/
 
-	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName)
+	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest)
 		: _ModuleProxyId(localModuleId),
 		  _ForeignModuleId(INVALID_MODULE_ID),
 		  _ModuleClassName(CStringMapper::map(moduleClassName)),
 		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
+		  _Manifest(moduleManifest),
 		  _SecurityData(NULL)
 	{
 	}
@@ -635,12 +643,18 @@ namespace NLNET
 		return CStringMapper::unmap(_ModuleClassName);
 	}
 
+	const std::string &CModuleProxy::getModuleManifest() const
+	{
+		return _Manifest;
+	}
+	
+
 	IModuleGateway *CModuleProxy::getModuleGateway() const
 	{
 		return _Gateway;
 	}
 
-	void		CModuleProxy::sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 		throw (EModuleNotReachable)
 	{
 		if (_Gateway == NULL )

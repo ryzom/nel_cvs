@@ -1,7 +1,7 @@
 /** \file md5.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: md5.h,v 1.2 2005/02/22 10:14:12 besson Exp $
+ * $Id: md5.h,v 1.2.16.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 namespace NLMISC
 {
+
+class IStream;
 
 // ****************************************************************************
 /**
@@ -94,6 +96,8 @@ struct CHashKeyMD5
 	bool fromString(const std::string &in);
 	bool operator!=(const CHashKeyMD5 &in) const;
 	bool operator<(const CHashKeyMD5 &in) const;
+
+	void serial (NLMISC::IStream &s);
 };
 
 // ****************************************************************************

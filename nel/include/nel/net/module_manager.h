@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.4 2005/08/29 16:16:59 boucher Exp $
+ * $Id: module_manager.h,v 1.4.4.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,7 @@ namespace NLNET
 													uint32 distance,
 													const std::string &moduleClassName, 
 													const std::string &moduleFullyQualifiedName,
+													const std::string &moduleManifest,
 //													const TModuleGatewayProxyPtr &foreignGateway,
 													TModuleId foreignModuleId) =0;
 

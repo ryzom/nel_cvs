@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.1 2005/11/22 15:45:39 miller Exp $
+ * $Id: service.h,v 1.89.4.2 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -521,10 +521,14 @@ class IServiceUpdatable
 public:
 	IServiceUpdatable()
 	{
-		IService *service = IService::getInstance();
-		nlassert(service != NULL);
-
-		service->registerUpdatable(this);
+		if (IService::isServiceInitialized())
+		{
+			IService::getInstance()->registerUpdatable(this);
+		}
+		else
+		{
+			nlwarning("IServiceUpdatable : IService is not initialized, IUpdatable will not be called");
+		}
 	}
 	virtual ~IServiceUpdatable()
 	{

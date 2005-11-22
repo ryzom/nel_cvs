@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42 2005/01/27 16:10:29 legros Exp $
+ * $Id: file.cpp,v 1.42.18.1 2005/11/22 18:46:20 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -401,7 +401,7 @@ void		CIFile::serialBit(bool &bit) throw(EReadError)
 }
 
 // ======================================================================================================
-bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
+bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) const throw(EStream)
 {
 	if ((_CacheFileOnOpen) && (_Cache == NULL))
 		return false;
@@ -433,7 +433,7 @@ bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 }
 
 // ======================================================================================================
-sint32		CIFile::getPos () throw(EStream)
+sint32		CIFile::getPos () const throw(EStream)
 {
 	return _ReadPos;
 }
@@ -609,7 +609,7 @@ void		COFile::serialBit(bool &bit) throw(EWriteError)
 	serialBuffer(&v, 1);
 }
 // ======================================================================================================
-bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
+bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) const throw(EStream)
 {
 	if (_F)
 	{
@@ -636,7 +636,7 @@ bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 	return false;
 }
 // ======================================================================================================
-sint32		COFile::getPos () throw(EStream)
+sint32		COFile::getPos () const throw(EStream)
 {
 	if (_F)
 	{

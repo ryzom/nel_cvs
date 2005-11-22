@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.42 2005/10/03 16:13:33 boucher Exp $
+ * $Id: message.h,v 1.42.4.1 2005/11/22 18:46:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,7 @@ public:
 	void readType ();
 
 	/// Get the message name (input message only) and advance the current pos
-	std::string readTypeAtCurrentPos();
+	std::string readTypeAtCurrentPos() const;
 
 	// Returns true if the message type was already set
 	bool typeIsSet () const;
@@ -134,9 +134,11 @@ public:
 	virtual uint32			lengthS() const
 	{
 		if (!hasLockedSubMessage())
-			return _BufPos - _Buffer.getPtr();
+//			return _BufPos - _Buffer.getPtr();
+			return _Buffer.Pos;
 		else
-			return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+//			return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+			return _Buffer.Pos - _SubMessagePosR;
 
 	}
 
@@ -146,15 +148,16 @@ public:
 		return _LengthR;
 	}
 
-	virtual sint32	getPos () throw(NLMISC::EStream)
+	virtual sint32	getPos () const throw(NLMISC::EStream)
 	{
-		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+//		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+		return _Buffer.Pos - _SubMessagePosR;
 	}
 
-	virtual sint32			getPos() const
-	{
-		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
-	}
+//	virtual sint32			getPos() const
+//	{
+//		return (_BufPos - _Buffer.getPtr()) - _SubMessagePosR;
+//	}
 
 	/**
 	 * Set an input message to look like, from a message callback's scope, as if it began at the current
@@ -177,13 +180,13 @@ public:
 	 * - Unless you call unlockSubMessage(), the following actions will assert or raise an exception:
 	 *   Serializing more than the sub message size, clear(), operator=() (from/to), invert().
 	 */
-	std::string			lockSubMessage( uint32 subMsgSize )
+	std::string			lockSubMessage( uint32 subMsgSize ) const
 	{
 		nlassert(!hasLockedSubMessage());
 		uint32 subMsgBeginPos = getPos();
 		uint32 subMsgEndPos = subMsgBeginPos + subMsgSize;
 		nlassertex( isReading() && (subMsgEndPos <= lengthR()), ("%s %u %u", isReading()?"R":"W", subMsgEndPos, lengthR()) );
-		std::string name = readTypeAtCurrentPos();
+		std::string name = unconst(*this).readTypeAtCurrentPos();
 		_SubMessagePosR = subMsgBeginPos;
 //		_LengthR = subMsgEndPos;
 		_LengthR = subMsgSize;
@@ -200,7 +203,7 @@ public:
 	 * Postconditions:
 	 * - The current pos is the next byte after the sub message
 	 */
-	void			unlockSubMessage()
+	void			unlockSubMessage() const 
 	{
 		nlassert( isReading() && hasLockedSubMessage() );
 		nlassertex( getPos() <= sint32(_SubMessagePosR+_LengthR), ("The callback for msg %s read more data than there is in the message (pos=%d len=%u)", getName().c_str(), getPos(), _LengthR) );
@@ -222,7 +225,8 @@ public:
 	{
 		if (hasLockedSubMessage())
 		{
-			return _Buffer.getPtr() + _SubMessagePosR;
+//			return _Buffer.getPtr() + _SubMessagePosR;
+			return _Buffer.getBuffer().getPtr() + _SubMessagePosR;
 		}
 		else 
 			return CMemStream::buffer();
@@ -257,7 +261,8 @@ public:
 		{
 			// Write -> Read: skip the header 
 			_TypeSet = false;
-			if ( _Buffer.size() != 0 )
+//			if ( _Buffer.size() != 0 )
+			if ( _Buffer.getBuffer().size() != 0 )
 				readType();
 		}
 		// For Read -> Write, please use clear()
@@ -297,22 +302,23 @@ protected:
 	void		init( const std::string &name, TStreamFormat streamformat );
 
 	/// Utility method
-	void		resetSubMessageInternals()
+	void		resetSubMessageInternals() const
 	{
 		_SubMessagePosR = 0;
-		_LengthR = _Buffer.size();
+//		_LengthR = _Buffer.size();
+		_LengthR = _Buffer.getBuffer().size();
 	}
 
 private:
 	std::string							_Name;
 
-	TMessageType						_Type;
+	mutable TMessageType				_Type;
 	
 	// When sub message lock mode is enabled, beginning position of sub message to read (before header)
-	uint32								_SubMessagePosR;
+	mutable uint32						_SubMessagePosR;
 
 	// Length (can be smaller than _Buffer.size() if limitLength() is used) (updated in reading mode only)
-	uint32								_LengthR;
+	mutable uint32						_LengthR;
 
 	// Size of the header (that contains the name type or number type)
 	uint32								_HeaderSize;

@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.1 2005/11/22 18:46:19 boucher Exp $
+ * $Id: module.h,v 1.10.4.2 2005/11/22 21:00:24 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -761,10 +761,10 @@ namespace NLNET
 
 		void sendMessage(IModuleProxy *senderProxy, const PtrContainer &addresseeProxies, NLNET::CMessage &message)
 		{
-			PtrContainer::iterator first(addresseeProxies.begin()), last(addresseeProxies.end());
+			typename PtrContainer::iterator first(addresseeProxies.begin()), last(addresseeProxies.end());
 			for (; first != last; ++first)
 			{
-				CModuleProxy *proxy = static_cast<CModuleProxy*>(*it);
+				CModuleProxy *proxy = static_cast<CModuleProxy*>(*first);
 				
 				// copy the message before each send
 				CMessage msgCopy(message);

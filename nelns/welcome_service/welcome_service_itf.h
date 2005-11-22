@@ -5,6 +5,7 @@
 
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
+#include "nel/net/message.h"
 #include "nel/net/module.h"
 #include "nel/misc/string_conversion.h"
 
@@ -112,25 +113,50 @@ namespace WS
 			// ask the welcome service to welcome a user
 		void welcomeUser(NLNET::IModule *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 		{
-			NLNET::CMessage message("WU");
-			message.serial(userId);
-			message.serial(const_cast < std::string& > (userName));
-			message.serial(const_cast < NLNET::CLoginCookie& > (cookie));
-			message.serial(const_cast < std::string& > (priviledge));
-			message.serial(const_cast < std::string& > (exPriviledge));
-			message.serial(mode);
-			message.serial(instanceId);
+			NLNET::CMessage message;
+			
+			buildMessageFor_welcomeUser(message , userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
 		// ask the welcome service to disconnect a user
 		void disconnectUser(NLNET::IModule *sender, uint32 userId)
 		{
-			NLNET::CMessage message("DU");
-			message.serial(userId);
+			NLNET::CMessage message;
+			
+			buildMessageFor_disconnectUser(message , userId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_welcomeUser(NLNET::CMessage &message, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+		{
+			message.setType("WU");
+			nlWrite(message, serial, userId);
+			nlWrite(message, serial, const_cast < std::string& > (userName));
+			nlWrite(message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
+			nlWrite(message, serial, const_cast < std::string& > (priviledge));
+			nlWrite(message, serial, const_cast < std::string& > (exPriviledge));
+			nlWrite(message, serial, mode);
+			nlWrite(message, serial, instanceId);
+
+
+			return message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_disconnectUser(NLNET::CMessage &message, uint32 userId)
+		{
+			message.setType("DU");
+			nlWrite(message, serial, userId);
+
+
+			return message;
+		}
+
+
+
 
 	};
 
@@ -151,7 +177,7 @@ namespace WS
 		}
 
 	private:
-		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -179,7 +205,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -198,29 +224,29 @@ namespace WS
 
 	private:
 		
-		void welcomeUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			std::string	userName;
-			message.serial(userName);
+			nlRead(message, serial, userName);
 			NLNET::CLoginCookie	cookie;
-			message.serial(cookie);
+			nlRead(message, serial, cookie);
 			std::string	priviledge;
-			message.serial(priviledge);
+			nlRead(message, serial, priviledge);
 			std::string	exPriviledge;
-			message.serial(exPriviledge);
+			nlRead(message, serial, exPriviledge);
 			WS::TUserRole	mode;
-			message.serial(mode);
+			nlRead(message, serial, mode);
 			uint32	instanceId;
-			message.serial(instanceId);
+			nlRead(message, serial, instanceId);
 			welcomeUser(sender, userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 		}
 
-		void disconnectUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			disconnectUser(sender, userId);
 		}
 
@@ -263,22 +289,47 @@ namespace WS
 			// Register the welcome service in the ring session manager
 		void registerWS(NLNET::IModule *sender, uint32 shardId)
 		{
-			NLNET::CMessage message("RWS");
-			message.serial(shardId);
+			NLNET::CMessage message;
+			
+			buildMessageFor_registerWS(message , shardId);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
 		// return for wecome user
 		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
 		{
-			NLNET::CMessage message("WUR");
-			message.serial(userId);
-			message.serial(ok);
-			message.serial(const_cast < std::string& > (shardAddr));
-			message.serial(const_cast < std::string& > (errorMsg));
+			NLNET::CMessage message;
+			
+			buildMessageFor_welcomeUserResult(message , userId, ok, shardAddr, errorMsg);
 
 			_ModuleProxy->sendModuleMessage(sender, message);
 		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &message, uint32 shardId)
+		{
+			message.setType("RWS");
+			nlWrite(message, serial, shardId);
+
+
+			return message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_welcomeUserResult(NLNET::CMessage &message, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
+		{
+			message.setType("WUR");
+			nlWrite(message, serial, userId);
+			nlWrite(message, serial, ok);
+			nlWrite(message, serial, const_cast < std::string& > (shardAddr));
+			nlWrite(message, serial, const_cast < std::string& > (errorMsg));
+
+
+			return message;
+		}
+
+
+
 
 	};
 
@@ -299,7 +350,7 @@ namespace WS
 		}
 
 	private:
-		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -327,7 +378,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -346,23 +397,23 @@ namespace WS
 
 	private:
 		
-		void registerWS_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	shardId;
-			message.serial(shardId);
+			nlRead(message, serial, shardId);
 			registerWS(sender, shardId);
 		}
 
-		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(message, serial, userId);
 			bool	ok;
-			message.serial(ok);
+			nlRead(message, serial, ok);
 			std::string	shardAddr;
-			message.serial(shardAddr);
+			nlRead(message, serial, shardAddr);
 			std::string	errorMsg;
-			message.serial(errorMsg);
+			nlRead(message, serial, errorMsg);
 			welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
 		}
 

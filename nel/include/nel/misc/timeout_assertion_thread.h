@@ -1,7 +1,7 @@
 /** \file timeout_assertion_thread.h
  * This class generates assert in a thread if the main thread is not fast enough
  *
- * $Id: timeout_assertion_thread.h,v 1.4 2005/08/29 16:12:13 boucher Exp $
+ * $Id: timeout_assertion_thread.h,v 1.5 2005/11/23 10:05:28 cado Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 				while (cummuledSleep < _Timeout)
 				{
 					// sleep 1 s
-					NLMISC::nlSleep(std::min(uint32(1000), _Timeout-cummuledSleep));
+					NLMISC::nlSleep(std::min((uint32)(1000), (uint32)(_Timeout-cummuledSleep)));
 
 					cummuledSleep += 1000;
 

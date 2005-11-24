@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1.4.1 2005/11/16 18:00:39 boucher Exp $
+ * $Id: welcome_service.h,v 1.1.4.2 2005/11/24 10:06:35 boucher Exp $
  *
  */
 
@@ -48,7 +48,7 @@ namespace WS
 
 		NLNET::TModuleProxyPtr	_RingSessionManager;
 
-		void onProcessModuleMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
 				return;

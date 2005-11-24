@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.1 2005/11/16 18:00:39 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.2 2005/11/24 10:06:35 boucher Exp $
  *
  */
 
@@ -1206,7 +1206,7 @@ NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArra
 //	public CEmptyModuleCommBehav<CEmptyModuleServiceBehav<CEmptySocketBehav<CModuleBase> > >,
 //	public WS::CWelcomeServiceSkel
 //{
-//	void onProcessModuleMessage(IModuleProxy *sender, CMessage &message)
+//	void onProcessModuleMessage(IModuleProxy *sender, const CMessage &message)
 //	{
 //		if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
 //			return;

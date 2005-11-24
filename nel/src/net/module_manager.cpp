@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.2 2005/11/24 12:31:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -594,7 +594,7 @@ namespace NLNET
 //			_ModuleProxyInstances.removeWithB(it->second);
 			_ModuleProxyIds.removeWithB(it->second);
 			
-			nlassert(sanityCheck == NULL);
+			nlassertex(sanityCheck == NULL, ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck->getModuleName().c_str(), sanityCheck->getModuleClassName().c_str()));
 		}
 
 

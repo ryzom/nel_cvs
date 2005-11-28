@@ -5,8 +5,8 @@
 
 
 
-Test::Suite *createSafeSingletonTS()
+Test::Suite *createSafeSingletonTS(const std::string &workingPath)
 {
-	return new CSafeSingletonTS;
+	return new CSafeSingletonTS(workingPath);
 }
 

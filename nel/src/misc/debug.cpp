@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.113.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: debug.cpp,v 1.113.4.2 2005/11/28 12:39:25 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -256,6 +256,7 @@ void initDebug2 (bool logInFile)
 	else
 	{
 		nlwarning ("NLMISC::initDebug2() already called");
+		nlstop;
 	}
 }
 

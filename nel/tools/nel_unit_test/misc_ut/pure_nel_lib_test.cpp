@@ -12,14 +12,29 @@ class CPureNelLibTS : public Test::Suite
 	CLibrary	Lib1;
 	CLibrary	Lib2;
 	string		LibName;
+	string		WorkingPath;
+	string		OldPath;
 public:
-	CPureNelLibTS()
-		: LibName("misc_ut/dyn_lib_test")
+	CPureNelLibTS(const std::string &workingPath)
+		: LibName("misc_ut/dyn_lib_test"),
+		WorkingPath(workingPath)
 	{
 		TEST_ADD(CPureNelLibTS::initialLoad);
 		TEST_ADD(CPureNelLibTS::unload);
 		TEST_ADD(CPureNelLibTS::multipleLoad);
 		TEST_ADD(CPureNelLibTS::libraryReplacement);
+	}
+
+	void setup()
+	{
+		OldPath = CPath::getCurrentPath();
+
+		CPath::setCurrentPath(WorkingPath.c_str());
+	}
+
+	void tear_down()
+	{
+		CPath::setCurrentPath(OldPath.c_str());
 	}
 	
 	void initialLoad()
@@ -173,7 +188,7 @@ public:
 	}
 };
 
-Test::Suite *createPureNelLibTS()
+Test::Suite *createPureNelLibTS(const std::string &workingPath)
 {
-	return new CPureNelLibTS;
+	return new CPureNelLibTS(workingPath);
 }

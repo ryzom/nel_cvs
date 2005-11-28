@@ -8,7 +8,7 @@
  *	of the test.
  *	In this case, predicate functor receive a IPrimitive pointer and 
  *	return a boolean.
- *	The utilities come with 4 predefined predicate :
+ *	The utilities come with 4 predefined predicates :
  *		- primitive class property test
  *		- primitive name property test
  *		- primitive class and name property test
@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.13 2005/06/23 16:27:15 boucher Exp $
+ * $Id: primitive_utils.h,v 1.13.6.1 2005/11/28 12:39:24 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -79,7 +79,7 @@ struct TPrimitiveClassPredicate : public std::unary_function<IPrimitive*, bool>
 		:	ClassName(className)
 	{}
 
-	bool operator () (IPrimitive *prim)
+	bool operator () (const IPrimitive *prim) const
 	{
 		std::string *s;
 		if (prim->getPropertyByName("class", s) && *s == ClassName)
@@ -101,7 +101,7 @@ struct TPrimitiveNamePredicate
 		:	Name(name)
 	{}
 
-	bool operator () (IPrimitive *prim)
+	bool operator () (const IPrimitive *prim) const
 	{
 		std::string *s;
 		if (prim->getPropertyByName("name", s) && *s == Name)
@@ -123,7 +123,7 @@ struct TPrimitiveClassAndNamePredicate
 		Name(name)
 	{}
 
-	bool operator () (IPrimitive *prim)
+	bool operator () (const IPrimitive *prim) const
 	{
 		std::string *s;
 		if (prim->getPropertyByName("class", s) && *s == ClassName)
@@ -149,7 +149,7 @@ struct TPrimitivePropertyPredicate
 		:	PropName(propName), PropValue(value)
 	{}
 
-	bool operator () (IPrimitive *prim)
+	bool operator () (const IPrimitive *prim) const
 	{
 		std::string *s;
 		if (prim->getPropertyByName(PropName.c_str(), s) && *s == PropValue)

@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.2 2005/12/01 09:31:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -970,6 +970,7 @@ namespace NLNET
 					this,
 					from,
 					modDesc.ModuleDistance,
+					NULL,
 					modDesc.ModuleClass,
 					modDesc.ModuleFullName,
 					modDesc.ModuleManifest,
@@ -1543,6 +1544,7 @@ namespace NLNET
 					this, 
 					NULL,	// the module is local, so there is no route
 					0,		// the module is local, distance is 0
+					pluggedModule,	// the module is local, so store the module pointer
 					pluggedModule->getModuleClassName(), 
 					pluggedModule->getModuleFullyQualifiedName(),
 					pluggedModule->getModuleManifest(),

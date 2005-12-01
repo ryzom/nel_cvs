@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.2 2005/11/22 21:00:24 distrib Exp $
+ * $Id: module.h,v 1.10.4.3 2005/12/01 09:31:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/string_mapper.h"
 #include "nel/misc/co_task.h"
+#include "nel/misc/algo.h"
 #include "nel/net/message.h"
 #include "module_common.h"
 
@@ -347,11 +348,20 @@ namespace NLNET
 		 */
 		virtual uint32				getModuleDistance() const =0;
 
+		/** Return the IModule instance pointer.
+		 *	For local module proxies, this allow quick access to
+		 *	the real module instance.
+		 *	For foreign module proxies, this always return NULL.
+		 *	You should never access this methods is getModuleDistance()
+		 *	returned more than 0 (witch mean, local module).
+		 */
+		virtual IModule				*getLocalModule() const =0;
+
 		/** Return a pointer to the route used to communicate
 		 *	with the module.
 		 *	For local module proxy, the return value is NULL
 		 */
-		virtual CGatewayRoute		*getGatewayRoute() const = 0;
+		virtual CGatewayRoute		*getGatewayRoute() const =0;
 
 		/** Return the module name. Each module instance must have a unique 
 		 *	name in the host process.
@@ -686,6 +696,8 @@ namespace NLNET
 		/// The module foreign ID, this is the module ID in case of a local proxy
 		TModuleId			_ForeignModuleId;
 
+		/// the module instance in case of local module, NULL otherwise
+		TModulePtr			_LocalModule;
 		/// The module class name;
 		NLMISC::TStringId	_ModuleClassName;
 		/// The  fully qualified module name.
@@ -695,8 +707,8 @@ namespace NLNET
 		/// the list of security data
 		TSecurityData		*_SecurityData;
 
-		/// Private constructor, only manager instantiate module proxies
-		CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest);
+		/// Private constructor, only module manager instantiate module proxies
+		CModuleProxy(TModulePtr localModule, TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest);
 	public:
 
 		const CGatewayRoute * const getRoute() const
@@ -716,7 +728,9 @@ namespace NLNET
 
 
 		uint32				getModuleDistance() const;
-		
+
+		IModule				*getLocalModule() const;
+
 		CGatewayRoute		*getGatewayRoute() const;
 
 		/** Return the module name. Each module instance must have a unique 
@@ -747,8 +761,6 @@ namespace NLNET
 		}
 
 		virtual const TSecurityData *findSecurityData(uint8 dataTag) const;
-
-
 	};
 
 
@@ -759,17 +771,14 @@ namespace NLNET
 	class TBroadcastModuleMessage
 	{
 
-		void sendMessage(IModuleProxy *senderProxy, const PtrContainer &addresseeProxies, NLNET::CMessage &message)
+		void sendMessage(IModuleProxy *senderProxy, const PtrContainer &addresseeProxies, const NLNET::CMessage &message)
 		{
 			typename PtrContainer::iterator first(addresseeProxies.begin()), last(addresseeProxies.end());
 			for (; first != last; ++first)
 			{
-				CModuleProxy *proxy = static_cast<CModuleProxy*>(*first);
+				IModuleProxy *proxy = static_cast<IModuleProxy*>(*first);
 				
-				// copy the message before each send
-				CMessage msgCopy(message);
-				
-				proxy->sendModuleMessage(senderProxy, msgCopy);
+				proxy->sendModuleMessage(senderProxy, message);
 			}
 		}
 	};

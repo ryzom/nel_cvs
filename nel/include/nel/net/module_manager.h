@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.4.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module_manager.h,v 1.4.4.2 2005/12/01 09:31:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,6 @@ namespace NLNET
 		 */
 		virtual bool unloadModuleLibrary(const std::string &libraryName) =0;
 
-		/** Register a module factory in the manager
-		 */
-//		virtual void registerModuleFactory(class IModuleFactory *moduleFactory) =0;
 		/** Unregister a module factory
 		*/
 		virtual void unregisterModuleFactory(class IModuleFactory *moduleFactory) =0;
@@ -122,6 +119,7 @@ namespace NLNET
 
 		/** Lookup in the created module for a module having the
 		 *	specified local name.
+		 *	Return NULL if not found.
 		 */
 		virtual IModule *getLocalModule(const std::string &moduleName) =0;
 
@@ -161,12 +159,6 @@ namespace NLNET
 		/** Get a module proxy with the module proxy ID */
 		virtual TModuleProxyPtr getModuleProxy(TModuleId moduleProxyId) =0;
 
-		/** Called by a module that is begin destroyed.
-		 *	This remove module information from the
-		 *	the manager
-		 */
-//		virtual void onModuleDeleted(IModule *module) =0;
-
 		/** Called by the gateway module to create new module proxy
 		 *	Module proxy are an easy way for implementor to send
 		 *	message to a module, without having to retrieve 
@@ -178,6 +170,7 @@ namespace NLNET
 		virtual IModuleProxy *createModuleProxy(	IModuleGateway *gateway, 
 													CGatewayRoute *route,
 													uint32 distance,
+													IModule *localModule,
 													const std::string &moduleClassName, 
 													const std::string &moduleFullyQualifiedName,
 													const std::string &moduleManifest,
@@ -187,36 +180,6 @@ namespace NLNET
 		virtual void releaseModuleProxy(TModuleId moduleProxyId) =0;
 
 	};
-
-	/** A special factory class for local module factory.
-	 */
-//	class CModuleFactoryRegistry : public NLMISC::CFactoryIndirect<IModuleFactory>
-//	{
-//	public:
-//
-//		CModuleFactoryRegistry ()
-//		{
-//			std::string txt = NLMISC::toString("new ModuleFactoryRegistry @%p", this);
-//			OutputDebugString(txt.c_str());
-//		}
-//
-//		static CModuleFactoryRegistry &getInstance()
-//		{
-//			static CModuleFactoryRegistry *instance = NULL;
-//			if (instance == NULL)
-//				instance = new CModuleFactoryRegistry;
-//			return *instance;
-//		}
-//		// Add some introspection
-//		void fillFactorableModuleList(std::vector<std::string> &moduleList)
-//		{
-//			TRegisterCont::iterator first(_FactoryRegisters.begin()), last(_FactoryRegisters.end());
-//			for (; first != last; ++first)
-//			{
-//				moduleList.push_back(first->first);
-//			}
-//		}
-//	};
 
 	typedef NLMISC::CFactoryIndirect<IModuleFactory, std::string>	TLocalModuleFactoryRegistry;
 

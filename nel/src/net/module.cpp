@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.2 2005/12/01 09:31:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -604,9 +604,10 @@ namespace NLNET
 	 * CModuleProxy impl
 	 ************************************************************************/
 
-	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest)
+	CModuleProxy::CModuleProxy(TModulePtr localModule, TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest)
 		: _ModuleProxyId(localModuleId),
 		  _ForeignModuleId(INVALID_MODULE_ID),
+		  _LocalModule(localModule),
 		  _ModuleClassName(CStringMapper::map(moduleClassName)),
 		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
 		  _Manifest(moduleManifest),
@@ -627,6 +628,11 @@ namespace NLNET
 	uint32		CModuleProxy::getModuleDistance() const
 	{
 		return _Distance;
+	}
+
+	IModule				*CModuleProxy::getLocalModule() const
+	{
+		return _LocalModule;
 	}
 
 	CGatewayRoute		*CModuleProxy::getGatewayRoute() const

@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.2 2005/11/24 12:31:55 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.3 2005/12/01 09:31:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -556,12 +556,13 @@ namespace NLNET
 			IModuleGateway *gateway, 
 			CGatewayRoute *route,
 			uint32 distance,
+			IModule *localModule,
 			const std::string &moduleClassName, 
 			const std::string &moduleFullyQualifiedName,
 			const std::string &moduleManifest,
 			TModuleId foreignModuleId)
 		{
-			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
+			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
 			modProx->_Gateway = gateway;
 			modProx->_Route = route;
 			modProx->_Distance = distance;

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.39 2005/08/29 16:12:47 boucher Exp $
+ * $Id: command.cpp,v 1.39.4.1 2005/12/05 15:17:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,12 +46,10 @@ ICommand::ICommand(const char *categoryName, const char *commandName, const char
 
 	if (!LocalCommandsInit)
 	{
-//		//nlinfo ("create map");
 		LocalCommands = new TCommand;
-//		Categories = new TCategorySet;
 		LocalCommandsInit = true;
 	}
-//
+
 	TCommand::iterator comm = LocalCommands->find(commandName);
 
 	if (comm != LocalCommands->end ())
@@ -69,7 +67,6 @@ ICommand::ICommand(const char *categoryName, const char *commandName, const char
 		_CommandName = commandName;
 		Type = Command;
 		(*LocalCommands)[commandName] = this;
-//		Categories.insert(categoryName);
 	}
 
 	if (INelContext::isContextInitialised())
@@ -82,13 +79,6 @@ ICommand::ICommand(const char *categoryName, const char *commandName, const char
 ICommand::~ICommand()
 {
 	// self deregistration
-
-//	if (!CommandsInit)
-//	{
-//		// should never happen
-//		nlstop;
-//		return;
-//	}
 
 	// find the command
 
@@ -106,13 +96,6 @@ ICommand::~ICommand()
 				CCommandRegistry::getInstance().unregisterCommand(this);
 			}
 
-//			if ((*Commands).size() == 0)
-//			{
-//				// if the commands map is empty, destroy it
-//				//printf("delete map\n");
-//				delete Commands;
-//				CommandsInit = false;
-//			}
 			
 			return;
 		}
@@ -156,11 +139,15 @@ void CCommandRegistry::registerNamedCommandHandler(ICommandsHandler *handler, co
 	}
 	_CommandsHandlers.add(name, handler);
 
-	// register the class and commands name
-//	const string &className = handler->getCommandHandlerClassName();
+	TCommandsHandlersClass::iterator it = _CommandsHandlersClass.find(className);
 
+	if (it == _CommandsHandlersClass.end())
+	{
+		nlinfo("CCommandRegistry : adding commands handler for class '%s'", className.c_str());
+	}
+
+	// register the class and commands name
 	TCommandHandlerClassInfo &chci = _CommandsHandlersClass[className];
-	chci.InstanceCount++;
 
 	// add an instance to the counter
 	++chci.InstanceCount;
@@ -182,8 +169,6 @@ void CCommandRegistry::unregisterNamedCommandHandler(ICommandsHandler *handler, 
 	_CommandsHandlers.removeWithB(handler);
 
 	// update the handler class commands tables
-//	const string &className = handler->getCommandHandlerClassName();
-
 	TCommandsHandlersClass::iterator it = _CommandsHandlersClass.find(className);
 	if (it != _CommandsHandlersClass.end())
 	{
@@ -191,6 +176,7 @@ void CCommandRegistry::unregisterNamedCommandHandler(ICommandsHandler *handler, 
 
 		if (it->second.InstanceCount == 0)
 		{
+			nlinfo("CCommandRegistry : removing commands handler for class '% s'", className.c_str());
 			_CommandsHandlersClass.erase(it);
 		}
 	}
@@ -235,7 +221,6 @@ bool CCommandRegistry::execute (const std::string &commandWithArgs, CLog &log, b
 	string::size_type commandBegin = 0;
 
 	// convert the buffer into string vector
-//	vector<pair<string, vector<string> > > commands;
 	vector<TCommandParams>	commands;
 	bool firstArg = true;
 	uint i = 0;
@@ -348,7 +333,6 @@ bool CCommandRegistry::execute (const std::string &commandWithArgs, CLog &log, b
 			if (firstArg)
 			{
 				// the first arg is the command
-//				commands.push_back (make_pair(arg, vector<string> () ));
 				TCommandParams cp;
 				cp.CommandName = arg;
 				commands.push_back(cp);
@@ -360,7 +344,6 @@ bool CCommandRegistry::execute (const std::string &commandWithArgs, CLog &log, b
 			}
 			else
 			{
-//				commands[commands.size()-1].second.push_back (arg);
 				commands[commands.size()-1].CommandArgs.push_back (arg);
 			}
 		}
@@ -381,16 +364,6 @@ end:
 	if (!commands.empty() && commands.back().RawCommandString.empty())
 		commands.back().RawCommandString = string(commandWithArgs.begin()+commandBegin, commandWithArgs.begin()+i); 
 
-// displays args for debug purpose
-/*	for (uint u = 0; u < commands.size (); u++)
-	{
-		nlinfo ("c '%s'", commands[u].first.c_str());
-		for (uint t = 0; t < commands[u].second.size (); t++)
-		{
-			nlinfo ("p%d '%s'", t, commands[u].second[t].c_str());
-		}
-	}
-*/
 	bool ret = true;
 
 	for (uint u = 0; u < commands.size (); u++)

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.2 2005/11/22 18:46:20 boucher Exp $
+ * $Id: service.h,v 1.89.4.3 2005/12/05 15:56:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,7 +159,6 @@ typedef uint8 TServiceId;
 
 /// Callback where you can return true for direct clearance, or false for later clearance.
 typedef bool (*TRequestClosureClearanceCallback) ();
-
 
 //
 // Variables provided to application and unused in the NeL library itself.
@@ -374,6 +373,15 @@ public:
 	/// Use .toString() to access to the value
 	NLMISC::CVariable<std::string>		SaveFilesDirectory;
 	
+	/// If true (default), the provided SaveFilesDirectory will be converted to a full path (ex: "saves" -> "/home/dir/saves")
+	NLMISC::CVariable<bool>				ConvertSavesFilesDirectoryToFullPath;
+
+	/** You can provide a callback interface (only one) that will be called if any of the directory variables
+	 * (WriteFilesDirectory, SaveFilesDirectory, ConfigDirectory, LogDirectory, RunningDirectory) is changed
+	 * (also called for the first setting read from the .cfg file). Default is NULL.
+	 */
+	void								setDirectoryChangeCallback( NLMISC::IVariableChangedCallback *cbi ) { _DirectoryChangedCBI = cbi; }
+
 	void								setVersion (const std::string &version) { Version = version; }
 
 	uint16								getPort() { return ListeningPort; }
@@ -501,13 +509,14 @@ private:
 	/// Closure clearance callback (NULL if no closure clearance required)
 	TRequestClosureClearanceCallback	_RequestClosureClearanceCallback;
 
-	//@}
+	/// Directory changed callback
+	NLMISC::IVariableChangedCallback*	_DirectoryChangedCBI;
 
 	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
 	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct nel_serviceInfoClass;
 	friend struct nel_getWinDisplayerInfoClass;
-	friend void cbDirectoryChanged (const NLMISC::IVariable &var);
+	friend void cbDirectoryChanged (NLMISC::IVariable &var);
 	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, uint16 serviceId);
 
 	NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(nel, State);

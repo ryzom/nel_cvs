@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.2 2005/11/22 15:45:40 miller Exp $
+ * $Id: service.cpp,v 1.238.4.3 2005/12/05 15:56:19 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -244,10 +244,19 @@ static void initSignal()
 
 void cbDirectoryChanged (IVariable &var)
 {
-	string vp = CPath::getFullPath(var.toString());
-	nlinfo ("SERVICE: '%s' changed to '%s'", var.getName().c_str(), vp.c_str());
-	var.fromString(vp);
+	IService *instance = IService::getInstance();
 
+	// Convert to full path if required
+	// (warning: ConvertSavesFilesDirectoryToFullPath, read from the config file, won't be ready for the initial variable assigments done before the config file has been loaded)
+	string vp = var.toString();
+	if ((var.getName() != "SaveFilesDirectory") || instance->ConvertSavesFilesDirectoryToFullPath.get())
+	{
+		vp = CPath::getFullPath(vp);
+		var.fromString(vp);
+	}
+	nlinfo ("SERVICE: '%s' changed to '%s'", var.getName().c_str(), vp.c_str());
+
+	// Update the running directory if needed
 	if (var.getName() == "RunningDirectory")
 	{
 #ifdef NL_OS_WINDOWS
@@ -256,6 +265,10 @@ void cbDirectoryChanged (IVariable &var)
 		chdir (vp.c_str());
 #endif
 	}
+
+	// Call the callback if provided
+	if (instance->_DirectoryChangedCBI)
+		instance->_DirectoryChangedCBI->onVariableChanged(var);
 }
 
 
@@ -316,6 +329,7 @@ IService::IService() :
 	WindowDisplayer(0),
 	WriteFilesDirectory("nel", "WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
 	SaveFilesDirectory("nel", "SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged),
+	ConvertSavesFilesDirectoryToFullPath("nel", "ConvertSaveFilesDirectoryToFullPath", "If true (default), the provided SaveFilesDirectory will be converted to a full path (ex: saves -> /home/dir/saves)", true, 0, true ),
 	ListeningPort("nel", "ListeningPort", "listening port for this service", 0, 0, true),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
@@ -333,7 +347,8 @@ IService::IService() :
 	_ResetMeasures(false),
 	_ShardId(0),
 	_ClosureClearanceStatus(CCMustRequestClearance),
-	_RequestClosureClearanceCallback(NULL)
+	_RequestClosureClearanceCallback(NULL),
+	_DirectoryChangedCBI(NULL)
 {
 	// Singleton
 	_Instance = this;
@@ -573,7 +588,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		ListeningPort = servicePort;
 
 		setReportEmailFunction ((void*)sendEmail);
-		setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
+		setDefaultEmailParams ("gw.nevrax.com", "", "cado@nevrax.com");
 
 
 		//
@@ -1150,7 +1165,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// if we can, try to setup where to save files
 		if (IService::getInstance()->haveArg('W'))
 		{
-			// use the command line param if set
+			// use the command line param if set (must be done after the config file has been loaded)
 			SaveFilesDirectory = IService::getInstance()->getArg('W');
 		}
 

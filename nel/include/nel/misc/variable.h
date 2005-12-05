@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.22 2005/06/23 16:27:15 boucher Exp $
+ * $Id: variable.h,v 1.22.6.1 2005/12/05 15:56:19 cado Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -186,6 +186,7 @@ private:
 
 protected:
 	
+	// TODO: replace by interface (see IVariableChangedCallback)
 	void (*ChangeCallback)(IVariable &var);
 	
 };
@@ -484,6 +485,13 @@ private:
 	std::string _Value;
 };
 
+
+/// This class can provide a callback called when the value of a variable has been changed
+class IVariableChangedCallback
+{
+public:
+	virtual void onVariableChanged(NLMISC::IVariable& var) = 0;
+};
 
 
 } // NLMISC

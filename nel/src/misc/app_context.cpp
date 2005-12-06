@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.cpp,v 1.2 2005/08/29 16:12:47 boucher Exp $
+ * $Id: app_context.cpp,v 1.3 2005/12/06 12:33:50 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,13 +77,15 @@ void	INelContext::contextReady()
 	// register local instance counter in the global instance counter manager
 	CInstanceCounterLocalManager::getInstance().registerLocalManager();
 
-	// register local command into the global command registry
-	ICommand::TCommand::iterator first(ICommand::LocalCommands->begin()), last(ICommand::LocalCommands->end());
-	for (; first != last; ++first)
+	// register local commands into the global command registry (except it there is no command at all)
+	if (ICommand::LocalCommands != NULL)
 	{
-		CCommandRegistry::getInstance().registerCommand(first->second);
+		ICommand::TCommand::iterator first(ICommand::LocalCommands->begin()), last(ICommand::LocalCommands->end());
+		for (; first != last; ++first)
+		{
+			CCommandRegistry::getInstance().registerCommand(first->second);
+		}
 	}
-}
 
 CApplicationContext::CApplicationContext()
 {

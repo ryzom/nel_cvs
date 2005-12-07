@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.cpp,v 1.3 2005/12/06 12:33:50 cado Exp $
+ * $Id: app_context.cpp,v 1.4 2005/12/07 09:46:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,7 @@ void	INelContext::contextReady()
 			CCommandRegistry::getInstance().registerCommand(first->second);
 		}
 	}
+}
 
 CApplicationContext::CApplicationContext()
 {

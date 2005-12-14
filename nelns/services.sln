@@ -1,22 +1,32 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "admin_executor_service", "admin_executor_service\admin_executor_service.vcproj", "{7CDC1199-31CA-4C2D-A60D-51BDC7A61ACF}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "admin_service", "admin_service\admin_service.vcproj", "{0FDF4B5A-7E86-4E6F-851B-ACE9EF9B7516}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "login_service", "login_service\login_service.vcproj", "{46F19C57-A609-4E14-BD14-B0C9615C1D03}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "naming_service", "naming_service\naming_service.vcproj", "{28C6A107-445A-4411-A5E6-465B0FF24276}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "welcome_service", "welcome_service\welcome_service.vcproj", "{D9B8DD7A-45F5-4718-AFD2-743925F3EC7C}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "misc", "..\nel\src\misc.vcproj", "{940F1501-1D77-4C54-A467-9698D68E91E4}"
@@ -29,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "net", "..\nel\src\net.vcpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nel_launcher", "login_system\nel_launcher_windows\nel_launcher.vcproj", "{AADAF637-5C55-4A4B-B3C5-26DC6477FD55}"
 	ProjectSection(ProjectDependencies) = postProject
+		{940F1501-1D77-4C54-A467-9698D68E91E4} = {940F1501-1D77-4C54-A467-9698D68E91E4}
+		{42DFBB2C-0815-4499-AFCC-D1F196D047A1} = {42DFBB2C-0815-4499-AFCC-D1F196D047A1}
 	EndProjectSection
 EndProject
 Global

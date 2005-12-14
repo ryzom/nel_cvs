@@ -4153,6 +4153,12 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\misc\app_context.cpp">
+		</File>
+		<File
+			RelativePath=".\misc\co_task.cpp">
+		</File>
+		<File
 			RelativePath="..\include\nel\misc\types_nl.h">
 		</File>
 	</Files>

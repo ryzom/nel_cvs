@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------------------- 
 
 	// where we can find the mysql database
-	$DBHost		= "compilo";
+	$DBHost		= "localhost";
 	$DBUserName	= "nel";
 	$DBPassword	= "";
 	$DBName		= "nel";

@@ -16,7 +16,7 @@ class CPureNelLibTS : public Test::Suite
 	string		OldPath;
 public:
 	CPureNelLibTS(const std::string &workingPath)
-		: LibName("misc_ut/dyn_lib_test"),
+		: LibName("dyn_lib_test"),
 		WorkingPath(workingPath)
 	{
 		TEST_ADD(CPureNelLibTS::initialLoad);
@@ -139,8 +139,8 @@ public:
 
 	void libraryReplacement()
 	{
-		string srcName = string("misc_ut/")+CLibrary::makeLibName("dyn_lib_test");
-		string dstName = string("misc_ut/")+CLibrary::makeLibName("temp_rep");
+		string srcName = CLibrary::makeLibName("dyn_lib_test");
+		string dstName = CLibrary::makeLibName("temp_rep");
 		TEST_ASSERT(CFile::copyFile(dstName.c_str(), srcName.c_str()));
 
 		// first load

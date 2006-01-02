@@ -1215,6 +1215,10 @@ SOURCE=..\include\nel\misc\smart_ptr_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\speaker_listener.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\twin_map.h
 # End Source File
 # End Group

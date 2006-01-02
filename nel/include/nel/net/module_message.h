@@ -1,7 +1,7 @@
 /** \file module_message.h
  * module message definition
  *
- * $Id: module_message.h,v 1.3 2005/08/09 19:06:25 boucher Exp $
+ * $Id: module_message.h,v 1.3.6.1 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,61 +87,92 @@ namespace NLNET
 	};
 
 
-//	class CModuleMessage : public NLMISC::CRefCount
-//	{
-//		friend class CModuleProxy;
-//		friend class CModuleBase;
-//		friend class CGatewayBase;
-//	public:
-//
-//		enum TMessageType
-//		{
-//			/// Standard one way message
-//			mt_oneway,
-//			/// Two way request
-//			mt_twoway_request,
-//			/// Two way response
-//			mt_twoway_response,
-//
-//
-//			/// A special checking value
-//			mt_num_types,
-//			/// invalid flag
-//			mt_invalid = mt_num_types
-//
-//		};
-//		
-//		/// The type of message
-//		TMessageType		MessageType;
-//		/// The id of the sender module proxy
-//		TModuleId			SenderModuleId;
-//		/// The id of the addressee module proxy
-//		TModuleId			AddresseeModuleId;
-//		/// The name of the operation (aka the method name)
-////		std::string			_OperationName;
-//
-//		/** The message content (transmited to message handler)
-//		 *	This already contain the operation name (in the 
-//		 *	CMessage type (see CMessage::setType and CMessage::getName)
-//		 */
-////		CMessage			&MessageBody;
-////		NLMISC::CMemStream	MessageBody;
-//
-//		///  Return the id of the addressee module
-////		NLNET::TModuleId getAddresseeModuleProxyId() const { return _AddresseeModuleId;}
-//
-//		///  Return the id of the sender module
-////		NLNET::TModuleId getSenderModuleProxyId() const { return _SenderModuleId;}
-////
-//		std::string getOperationName() const { return MessageBody.getName();}
-//
-//
-//		/// Serialize the message
-//		void serial(NLMISC::IStream &s);
-//
-//		/// Construct a module message, receive a reference to a message body.
-//		CModuleMessage(const CMessage &messageBody);
-//	};
+	/** An utility struct to serial binary buffer.
+	 *	WARNING : you must be aware that using binary buffer serialisation
+	 *	is not fair with the portability and endiennes problem.
+	 *	Use it ONLY when you now what you are doing and when
+	 *	bytes ordering is not an issue.
+	 */
+	struct TBinBuffer
+	{
+	private:
+		uint8			*_Buffer;
+		uint32			_BufferSize;
+		mutable bool	_Owner;
+
+	public:
+		
+		/// default constructor, used to read in stream
+		TBinBuffer()
+			:	_Buffer(NULL),
+				_BufferSize(0),
+				_Owner(true)
+		{
+		}
+
+		TBinBuffer(const uint8 *buffer, uint32 bufferSize)
+			:	_Buffer(const_cast<uint8*>(buffer)),
+				_BufferSize(bufferSize),
+				_Owner(false)
+		{
+		}
+
+		// copy constructor transfere ownership of the buffer (if it is owned)
+		TBinBuffer(const TBinBuffer &other)
+			:	_Buffer(other._Buffer),
+				_BufferSize(other._BufferSize),
+				_Owner(other._Owner)
+		{
+			// remove owning on source
+			other._Owner = false;
+		}
+
+		~TBinBuffer()
+		{
+			if (_Owner && _Buffer != NULL)
+				delete _Buffer;
+		}
+
+		void serial(NLMISC::IStream &s)
+		{
+			if (s.isReading())
+			{
+				nlassert(_Buffer == NULL);
+				s.serial(_BufferSize);
+
+				_Buffer = new uint8[_BufferSize];
+
+				s.serialBuffer(_Buffer, _BufferSize);
+			}
+			else
+			{
+				s.serialBufferWithSize(_Buffer, _BufferSize);
+			}
+		}
+
+		uint32 getBufferSize() const
+		{
+			return _BufferSize;
+		}
+
+		uint8 *getBuffer() const
+		{
+			return _Buffer;
+		}
+			
+
+		/** Release the buffer by returning the pointer to the caller.
+		 *	The caller is now owner and responsible of the allocated
+		 *	buffer.
+		 */
+		uint8 *release()
+		{
+			nlassert(_Owner);
+			_Owner = false;
+			return _Buffer;
+		}
+	};
+
 
 } // namespace NLNET
 

@@ -70,10 +70,8 @@ namespace NLNET
 			}
 
 			// get the next command from the command line
-			std::string theCommand;
-			theCommand.resize(1024,0);
-			fgets((char*)theCommand.c_str(),theCommand.size()-1,stdin);
-			theCommand.resize(strlen(theCommand.c_str()));
+			char theCommand[1024];
+			fgets(theCommand, sizeofarray(theCommand), stdin);
 
 			// push the command to allow reader thread to deal with it
 			pushCommand(theCommand);

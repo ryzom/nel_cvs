@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34 2005/10/07 15:26:45 miller Exp $
+ * $Id: sstring.h,v 1.34.4.1 2006/01/02 16:09:31 boucher Exp $
  */
 
 
@@ -19,6 +19,7 @@
 
 #include "stream.h"
 #include "path.h"
+#include "string_common.h"
 
 namespace	NLMISC
 {
@@ -404,6 +405,40 @@ public:
 	bool operator<(const std::string &other) const;
 	/// Case insensitive string compare
 	bool operator<(const char* other) const;
+
+	//@{
+	//@name Easy concatenation operator to build strings
+	template <class T>
+	CSString &operator <<(const T &value)
+	{
+		operator +=(NLMISC::toString(value));
+
+		return *this;
+	}
+	
+	// specialisation for C string
+	CSString &operator <<(const char *value)
+	{
+		static_cast<std::string*>(this)->operator +=(value);
+
+		return *this;
+	}
+
+	// specialisation for std::string
+	CSString &operator <<(const std::string &value)
+	{
+		static_cast<std::string*>(this)->operator +=(value);
+
+		return *this;
+	}
+	// specialisation for CSString
+	CSString &operator <<(const CSString &value)
+	{
+		static_cast<std::string*>(this)->operator +=(value);
+
+		return *this;
+	}
+	//@}
 
 	/// Case insensitive string compare (useful for use as map keys, see less<CSString> below)
 	bool icompare(const std::string &other) const;
@@ -2201,6 +2236,7 @@ inline std::string::reference CSString::operator[](std::string::size_type idx)
 		return zero;
 	return const_cast<std::string::value_type&>(data()[idx]);
 }
+
 
 inline bool CSString::icompare(const std::string &other) const
 {

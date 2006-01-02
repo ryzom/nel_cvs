@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.3 2005/12/05 15:56:19 cado Exp $
+ * $Id: service.cpp,v 1.238.4.4 2006/01/02 16:09:31 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -357,6 +357,11 @@ IService::IService() :
 	INelContext::getInstance().setSingletonPointer("IService", this);
 }
 
+IService::~IService()
+{
+	// unregister the singleton
+	INelContext::getInstance().releaseSingletonPointer("IService", this);
+}
 
 
 bool IService::haveArg (char argName) const
@@ -628,8 +633,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if (haveArg('Z'))
 		{
-			// release the module manager
-			IModuleManager::getInstance().releaseInstance();
+			string s = IService::getInstance()->getArg('Z');
+			if (s == "u")
+			{
+				// do not release the module manager
+			}
+			else
+			{
+				// release the module manager
+				IModuleManager::getInstance().releaseInstance();
+			}
+
 			return 0;
 		}
 		

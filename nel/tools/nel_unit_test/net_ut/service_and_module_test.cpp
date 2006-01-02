@@ -26,6 +26,9 @@ const uint32	NB_SERVICES = 3;
 // ! not complete at all at time of writing !
 class CServiceAndModuleTS: public Test::Suite
 {
+	string	_WorkingPath;
+	string	_RestorePath;
+
 	IModuleProxy *retrieveModuleProxy(IModuleGateway *gw, const std::string &modName)
 	{
 		vector<IModuleProxy*> proxList;
@@ -45,10 +48,11 @@ class CServiceAndModuleTS: public Test::Suite
 	TCommandFunc *cmdFuncs[NB_SERVICES];
 
 public:
-	CServiceAndModuleTS ()
+	CServiceAndModuleTS (const std::string &workingPath)
+		: _WorkingPath(workingPath)
 	{
 		TEST_ADD(CServiceAndModuleTS::createL5Transport);
-		TEST_ADD(CServiceAndModuleTS::sendMessage);
+//		TEST_ADD(CServiceAndModuleTS::sendMessage);
 
 	}
 
@@ -197,6 +201,12 @@ public:
 	
 	void setup()
 	{
+		_RestorePath = CPath::getCurrentPath();
+
+		nlverify(CPath::setCurrentPath(_WorkingPath.c_str()));
+
+		string debugPath = CPath::getCurrentPath();
+
 		// copy the service dll and config file to
 		// have completely different memory context
 
@@ -205,14 +215,14 @@ public:
 			string libName = CLibrary::makeLibName("net_service_lib_test");
 
 			// copy the dll file
-			string srcDll = string("net_ut/net_service_lib_test/")+libName;
-			string destDll = toString("net_ut/%s_%u", libName.c_str(), i+1);
+			string srcDll = string("net_service_lib_test/")+libName;
+			string destDll = toString("%s_%u", libName.c_str(), i+1);
 
 			nlverify(CFile::copyFile(destDll.c_str(), srcDll.c_str(), false));
 
 			// copy the config file
-			string srcCfg = "net_ut/net_service_lib_test/net_service_lib_test.cfg";
-			string destCfg = toString("net_ut/test_service_%u.cfg", i+1);
+			string srcCfg = "net_service_lib_test/net_service_lib_test.cfg";
+			string destCfg = toString("test_service_%u.cfg", i+1);
 
 			nlverify(CFile::copyFile(destCfg.c_str(), srcCfg.c_str(), false));
 
@@ -268,11 +278,14 @@ _CrtCheckMemory();
 			ServiceLib[i].freeLibrary();
 _CrtCheckMemory();
 		}
+
+		CPath::setCurrentPath(_RestorePath.c_str() );
+
 	}
 };
 
-Test::Suite *createServiceAndModuleTS()
+Test::Suite *createServiceAndModuleTS(const std::string &workingPath)
 {
-	return new CServiceAndModuleTS;
+	return new CServiceAndModuleTS(workingPath);
 }
 

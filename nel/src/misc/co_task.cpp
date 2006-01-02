@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: co_task.cpp,v 1.3.4.2 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,8 +77,15 @@ namespace NLMISC
 		{
 			CCoTask *task = reinterpret_cast<CCoTask*>(param);
 
-			// run the task
-			task->run();
+			try
+			{
+				// run the task
+				task->run();
+			}
+			catch(...)
+			{
+				nlwarning("CCoTask::startFunc : the task has generated an unhandled exeption and will terminate");
+			}
 
 			task->_Finished = true;
 
@@ -232,6 +239,7 @@ namespace NLMISC
 	void CCoTask::yield()
 	{
 		nlassert(_Started);
+		nlassert(CCurrentCoTask::getInstance().getCurrentTask() == this);
 		CCurrentCoTask::getInstance().setCurrentTask(NULL);
 #if defined (NL_OS_WINDOWS)
 		SwitchToFiber(_PImpl->_ParentFiber);
@@ -243,9 +251,10 @@ namespace NLMISC
 
 	void CCoTask::resume()
 	{
+		nlassert(CCurrentCoTask::getInstance().getCurrentTask() != this);
 		if (!_Started)
 			start();
-		else
+		else if (!_Finished)
 		{
 			nlassert(_Started);
 			CCurrentCoTask::getInstance().setCurrentTask(this);

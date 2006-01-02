@@ -1,6 +1,7 @@
 
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/command.h"
+#include "nel/misc/path.h"
 #include "nel/net/module_common.h"
 #include "nel/net/module_manager.h"
 #include "nel/net/module.h"
@@ -373,6 +374,9 @@ NLMISC_REGISTER_OBJECT(CGatewaySecurity, CTestSecurity2, std::string, "TestSecur
 // Test suite for Modules class
 class CModuleTS : public Test::Suite
 {
+	string	_WorkingPath;
+	string	_RestorePath;
+
 public:
 	// utility to look for a specified proxy in a vector of proxy
 	// return true if the proxy if found
@@ -401,7 +405,20 @@ public:
 		return NULL;
 	}
 
-	CModuleTS ()
+	void setup()
+	{
+		_RestorePath = CPath::getCurrentPath();
+
+		CPath::setCurrentPath(_WorkingPath.c_str());
+	}
+
+	void tear_down()
+	{
+		CPath::setCurrentPath(_RestorePath.c_str());
+	}
+
+	CModuleTS (const std::string &workingPath)
+		: _WorkingPath(workingPath)
 	{
 		TEST_ADD(CModuleTS::testModuleInitInfoParsing);
 		TEST_ADD(CModuleTS::testModuleInitInfoQuering);
@@ -2385,7 +2402,7 @@ public:
 	{
 		string cmd;
 		// load a library
-		cmd = "moduleManager.loadLibrary net_ut/net_module_lib_test/net_module_lib_test";
+		cmd = "moduleManager.loadLibrary net_module_lib_test/net_module_lib_test";
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// dump the module state
@@ -2502,7 +2519,7 @@ public:
 
 	void loadModuleLib()
 	{
-		string moduleLibName = "net_ut/net_module_lib_test/net_module_lib_test";
+		string moduleLibName = "net_module_lib_test/net_module_lib_test";
 
 		IModuleManager &mm = IModuleManager::getInstance();
 		TEST_ASSERT(mm.loadModuleLibrary(moduleLibName));
@@ -2636,7 +2653,7 @@ public:
 };
 
 
-Test::Suite *createModuleTS()
+Test::Suite *createModuleTS(const std::string &workingPath)
 {
-	return new CModuleTS;
+	return new CModuleTS(workingPath);;
 }

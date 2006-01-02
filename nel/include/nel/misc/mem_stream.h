@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.44.4.1 2005/11/22 18:46:19 boucher Exp $
+ * $Id: mem_stream.h,v 1.44.4.2 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ public:
 		return *this;
 	}
 
-	/// allocated memory echange
+	/// allocated memory exchange
 	void swap(CMemStream &other);
 
 	/// Set string mode

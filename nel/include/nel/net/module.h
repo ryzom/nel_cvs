@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.3 2005/12/01 09:31:40 boucher Exp $
+ * $Id: module.h,v 1.10.4.4 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,11 @@ namespace NLNET
 		{
 		};
 
+		/// An operation invocation has failed because of a bad return type from servant
+		class EInvokeBadReturn : public NLMISC::Exception
+		{
+		};
+
 		// Module management =====================
 
 		virtual ~IModule() {}
@@ -91,7 +96,7 @@ namespace NLNET
 		 *	each module. 
 		 *	The MDQNis composed from the computer host name, the process ID and
 		 *	the module name.
-		 *	Format : <hostname>:<pid>:<modulename>
+		 *	Format : <hostname>:<pid>:<moduleName>
 		 *	This name is guarantied to be unique (at least, if the host name
 		 *	is unique !)
 		 */
@@ -352,8 +357,8 @@ namespace NLNET
 		 *	For local module proxies, this allow quick access to
 		 *	the real module instance.
 		 *	For foreign module proxies, this always return NULL.
-		 *	You should never access this methods is getModuleDistance()
-		 *	returned more than 0 (witch mean, local module).
+		 *	You should never access this methods if getModuleDistance()
+		 *	returned more than 0 (witch mean that the module is local).
 		 */
 		virtual IModule				*getLocalModule() const =0;
 
@@ -426,6 +431,8 @@ namespace NLNET
 
 		void initMessageQueue(class CModuleBase *module);
 
+		// A module having a module task always running MUST call this evenly to
+		// process message received by the module.
 		void flushMessageQueue(class CModuleBase *module);
 
 	public:
@@ -439,6 +446,13 @@ namespace NLNET
 		{
 			return _FailInvoke;
 		}
+
+		void resetFailInvoke()
+		{
+			_FailInvoke = false;
+		}
+
+		void processPendingMessage(class CModuleBase *module);
 	};
 
 	/// Template module task
@@ -475,7 +489,7 @@ namespace NLNET
 	// a special macro for easy module task startup
 #define	NLNET_START_MODULE_TASK(className, methodName) \
 	{ \
-		TModuleTask<className> *task = new TModuleTask<className>(this, className::methodName); \
+		TModuleTask<className> *task = new TModuleTask<className>(this, &className::methodName); \
 		queueModuleTask(task); \
 	} \
 
@@ -648,6 +662,8 @@ namespace NLNET
 		void _receiveModuleMessageTask();
 
 		void queueModuleTask(CModuleTask *task);
+
+		CModuleTask *getActiveModuleTask();
 
 	public:
 		// return the default init string (empty)

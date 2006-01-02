@@ -107,7 +107,7 @@ public:
 		TEST_ASSERT(CCommandRegistry::getInstance().exists("aDynLibCommand") == false);
 
 		CLibrary lib;
-		if (lib.loadLibrary("misc_ut/dyn_lib_test", true, true, true) != true)
+		if (lib.loadLibrary("dyn_lib_test", true, true, true) != true)
 		{
 			TEST_ASSERT_MSG(false, "failed to reload the dll for testing singletons across dlls");
 			return;

@@ -1,7 +1,7 @@
 /** \file module_l5_transport.h
  * transport for layer 5
  *
- * $Id: module_l5_transport.cpp,v 1.2.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module_l5_transport.cpp,v 1.2.4.2 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLNET
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(TransportId);
-			s.serial(TransportId);
+			s.serial(SubNetName);
 			s.serial(InResponse);
 		}
 	};
@@ -78,7 +78,7 @@ namespace NLNET
 	 *	The total L5 transport instance is limited to 256.
 	 *	This really should be enough or you have a problem in
 	 *	your design !
-	 *	The allocator keep release ID as long as possible 
+	 *	The allocator keep released ID as long as possible 
 	 *	and reallocated them only when all other ids
 	 *	have been used/allocated.
 	 */

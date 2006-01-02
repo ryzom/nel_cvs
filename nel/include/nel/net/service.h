@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.3 2005/12/05 15:56:19 cado Exp $
+ * $Id: service.h,v 1.89.4.4 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,7 +110,7 @@ class IServiceUpdatable;
  * -S followed by the shard Id (sint32) (WS only)
  * -T followed by the IP address where the login service is (WS only)
  * -W followed by the path where to save all shard data (SaveFilesDirectory)
- * -Z to just init the config file then return (used for test)
+ * -Z[u] to just init the config file then return (used for test), use Zu to not release the service
  * 
  *
  */
@@ -350,7 +350,7 @@ public:
 	IService ();
 
 	/// Dtor. You must not inherit dtor but overload release() function
-	virtual ~IService () {}
+	virtual ~IService ();
 
 	//@}
 

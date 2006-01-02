@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.33.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: message.cpp,v 1.33.4.2 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,9 @@ CMessage::CMessage (NLMISC::CMemStream &memstr) :
 /*
  * Copy constructor
  */
-CMessage::CMessage (const CMessage &other) : CMemStream()
+CMessage::CMessage (const CMessage &other) 
+	:	CMemStream(),
+		_TypeSet(false)
 {
 	operator= (other);
 }
@@ -106,18 +108,25 @@ CMessage::CMessage (const CMessage &other) : CMemStream()
  */
 CMessage &CMessage::operator= (const CMessage &other)
 {
-	nlassertex( (!other.isReading()) || (!other.hasLockedSubMessage()), ("Storing %s", LockedSubMessageError) );
+//	nlassertex( (!other.isReading()) || (!other.hasLockedSubMessage()), ("Storing %s", LockedSubMessageError) );
 	nlassertex( (!isReading()) || (!hasLockedSubMessage()), ("Assigning %s", LockedSubMessageError) );
+	if ( other.hasLockedSubMessage() )
+	{
+		assignFromSubMessage(other);
+	}
+	else
+	{
+		
+		CMemStream::operator= (other);
+		_Type = other._Type;
+		_TypeSet = other._TypeSet;
+		_Name = other._Name;
+		_HeaderSize = other._HeaderSize;
+		_SubMessagePosR = other._SubMessagePosR;
+		_LengthR = other._LengthR;
+	}
 
-	CMemStream::operator= (other);
-	_Type = other._Type;
-	_TypeSet = other._TypeSet;
-	_Name = other._Name;
-	_HeaderSize = other._HeaderSize;
-	_SubMessagePosR = other._SubMessagePosR;
-	_LengthR = other._LengthR;
 	return *this;
-
 }
 
 void CMessage::swap(CMessage &other)

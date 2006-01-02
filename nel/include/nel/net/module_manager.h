@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.4.4.2 2005/12/01 09:31:40 boucher Exp $
+ * $Id: module_manager.h,v 1.4.4.3 2006/01/02 16:09:31 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@ namespace NLNET
 	{
 	public:
 
+		/// Check that the module manager is initialized
+		static bool			isInitialized();
 		/// The module manager is a singleton
 		static IModuleManager &getInstance();
 

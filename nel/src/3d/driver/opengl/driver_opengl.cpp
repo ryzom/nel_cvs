@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.234 2005/07/22 12:31:29 legallo Exp $
+ * $Id: driver_opengl.cpp,v 1.235 2006/01/05 10:35:09 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -210,8 +210,8 @@ GLenum CDriverGL::NLCubeFaceToGLCubeFace[6] =
 {
 	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+	GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB,
 	GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
 	GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB
 };

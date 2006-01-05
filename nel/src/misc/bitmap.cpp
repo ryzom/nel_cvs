@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.61 2005/09/21 10:49:55 houlmann Exp $
+ * $Id: bitmap.cpp,v 1.62 2006/01/05 10:34:20 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3010,11 +3010,313 @@ void	CBitmap::loadSize(const std::string &path, uint32 &retWidth, uint32 &retHei
 		loadSize(f, retWidth, retHeight);
 }
 
+// ***************************************************************************
+void	CBitmap::flipHDXTCBlockColor(uint8 *bitColor, uint32 w)
+{
+	// pack each line in a u32 (NB: the following works either in Little and Big Endian)
+	uint32	bits= *(uint32*)bitColor;
 
+	// swap in X for each line
+	uint32	res;
+	if(w!=2)
+	{
+		res = (bits & 0xC0C0C0C0) >> 6;
+		res+= (bits & 0x30303030) >> 2;
+		res+= (bits & 0x0C0C0C0C) << 2;
+		res+= (bits & 0x03030303) << 6;
+	}
+	// special case where w==2
+	else
+	{
+		res = (bits & 0x0C0C0C0C) >> 2;
+		res+= (bits & 0x03030303) << 2;
+	}
+
+	// copy
+	*((uint32*)bitColor)= res;
+}
+
+// ***************************************************************************
+void	CBitmap::flipVDXTCBlockColor(uint8 *bitColor, uint32 h)
+{
+	// swap just bytes (work either in Little and Big Endian)
+	if(h!=2)
+	{
+		std::swap(bitColor[0], bitColor[3]);
+		std::swap(bitColor[1], bitColor[2]);
+	}
+	// special case where h==2)
+	else
+	{
+		// whatever Little or Big endian, the first byte is the first line, and the second byte is the second line
+		std::swap(bitColor[0], bitColor[1]);
+	}
+}
+
+// ***************************************************************************
+void	CBitmap::flipHDXTCBlockAlpha3(uint8 *blockAlpha, uint32 w)
+{
+#ifdef NL_LITTLE_ENDIAN
+	uint64	bits= *(uint64*)blockAlpha;
+#else
+	uint64	bits= (uint64)blockAlpha[0] + ((uint64)blockAlpha[1]<<8) + 
+		((uint64)blockAlpha[2]<<16) + ((uint64)blockAlpha[3]<<24) + 
+		((uint64)blockAlpha[4]<<32) + ((uint64)blockAlpha[5]<<40) + 
+		((uint64)blockAlpha[6]<<48) + ((uint64)blockAlpha[7]<<56);
+#endif
+
+	// swap in X for each line
+	uint64	res;
+	if(w!=2)
+	{
+		res = (bits & 0xF000F000F000F000) >> 12;
+		res+= (bits & 0x0F000F000F000F00) >> 4;
+		res+= (bits & 0x00F000F000F000F0) << 4;
+		res+= (bits & 0x000F000F000F000F) << 12;
+	}
+	// special case where w==2
+	else
+	{
+		res = (bits & 0x00F000F000F000F0) >> 4;
+		res+= (bits & 0x000F000F000F000F) << 4;
+	}
+
+	// copy
+#ifdef NL_LITTLE_ENDIAN
+	*((uint64*)blockAlpha)= res;
+#else
+	blockAlpha[0]= res & 255;
+	blockAlpha[1]= (res>>8) & 255;
+	blockAlpha[2]= (res>>16) & 255;
+	blockAlpha[3]= (res>>24) & 255;
+	blockAlpha[4]= (res>>32) & 255;
+	blockAlpha[5]= (res>>40) & 255;
+	blockAlpha[6]= (res>>48) & 255;
+	blockAlpha[7]= (res>>56) & 255;
+#endif
+}
+
+// ***************************************************************************
+void	CBitmap::flipVDXTCBlockAlpha3(uint8 *blockAlpha, uint32 h)
+{
+	uint16	*wAlpha= (uint16*)blockAlpha;
+
+	// swap just words (work either in Little and Big Endian)
+	if(h!=2)
+	{
+		std::swap(wAlpha[0], wAlpha[3]);
+		std::swap(wAlpha[1], wAlpha[2]);
+	}
+	// special case where h==2)
+	else
+	{
+		// whatever Little or Big endian, the first byte is the first line, and the second byte is the second line
+		std::swap(wAlpha[0], wAlpha[1]);
+	}
+}
+
+// ***************************************************************************
+void	CBitmap::flipHDXTCBlockAlpha5(uint8 *bitAlpha, uint32 w)
+{
+	// pack into bits. Little Indian in all cases
+	uint64	bits= (uint64)bitAlpha[0] + ((uint64)bitAlpha[1]<<8) + 
+		((uint64)bitAlpha[2]<<16) + ((uint64)bitAlpha[3]<<24) + 
+		((uint64)bitAlpha[4]<<32) + ((uint64)bitAlpha[5]<<40);
+
+	// swap in X for each line
+	uint64	res;
+	if(w!=2)
+	{
+		res = (bits & 0xE00E00E00E00) >> 9;
+		res+= (bits & 0x1C01C01C01C0) >> 3;
+		res+= (bits & 0x038038038038) << 3;
+		res+= (bits & 0x007007007007) << 9;
+	}
+	// special case where w==2
+	else
+	{
+		res = (bits & 0x038038038038) >> 3;
+		res+= (bits & 0x007007007007) << 3;
+	}
+
+	// copy. Little Indian in all cases
+	bitAlpha[0]= uint8(res & 255);
+	bitAlpha[1]= uint8((res>>8) & 255);
+	bitAlpha[2]= uint8((res>>16) & 255);
+	bitAlpha[3]= uint8((res>>24) & 255);
+	bitAlpha[4]= uint8((res>>32) & 255);
+	bitAlpha[5]= uint8((res>>40) & 255);
+}
+
+// ***************************************************************************
+void	CBitmap::flipVDXTCBlockAlpha5(uint8 *bitAlpha, uint32 h)
+{
+	// pack into bits. Little Indian in all cases
+	uint64	bits= (uint64)bitAlpha[0] + ((uint64)bitAlpha[1]<<8) + 
+		((uint64)bitAlpha[2]<<16) + ((uint64)bitAlpha[3]<<24) + 
+		((uint64)bitAlpha[4]<<32) + ((uint64)bitAlpha[5]<<40);
+
+	// swap in Y
+	uint64	res;
+	if(h!=2)
+	{
+		res = (bits & 0xFFF000000000) >> 36;
+		res+= (bits & 0x000FFF000000) >> 12;
+		res+= (bits & 0x000000FFF000) << 12;
+		res+= (bits & 0x000000000FFF) << 36;
+	}
+	// special case where h==2
+	else
+	{
+		res = (bits & 0x000000FFF000) >> 12;
+		res+= (bits & 0x000000000FFF) << 12;
+	}
+
+	// copy. Little Indian in all cases
+	bitAlpha[0]= uint8(res & 255);
+	bitAlpha[1]= uint8((res>>8) & 255);
+	bitAlpha[2]= uint8((res>>16) & 255);
+	bitAlpha[3]= uint8((res>>24) & 255);
+	bitAlpha[4]= uint8((res>>32) & 255);
+	bitAlpha[5]= uint8((res>>40) & 255);
+}
+
+// ***************************************************************************
+void	CBitmap::flipDXTCMipMap(bool vertical, uint mm, uint type)
+{
+	nlassert(mm<MAX_MIPMAP);
+	// size of a DXTC block. 64 bits (2 U32) for DXTC1, else 128 bits (4*U32)
+	uint	blockSizeU32= type==1? 2 : 4;
+	// get size in block
+	sint32	width = getWidth(mm);
+	sint32	height = getHeight(mm);
+	if(width==0 || height==0)
+		return;
+	uint32	wBlock= (width+3)/4;
+	uint32	hBlock= (height+3)/4;
+	// get data ptr and check size.
+	uint32	*data= (uint32*)(&_Data[mm][0]);
+	nlassert(_Data[mm].size()==wBlock*hBlock*blockSizeU32*4);
+
+	// get the offset (in bytes) to the start of color pixels bits
+	uint32	offsetColorBits= type==1? 4 : 12;
+
+	// abort if swap is nonsense
+	if(vertical && height==1)
+		return;
+	if(!vertical && width==1)
+		return;
+
+	// *** First reverse Blocks
+	if(vertical)
+	{
+		// reverse vertical
+		for(uint yBlock=0;yBlock<hBlock/2;yBlock++)
+		{
+			uint32	*src0= data + (yBlock*wBlock)*blockSizeU32;
+			uint32	*src1= data + ((hBlock-yBlock-1)*wBlock)*blockSizeU32;
+			for(uint xBlock=0;xBlock<wBlock;xBlock++, src0+=blockSizeU32, src1+=blockSizeU32)
+			{
+				uint32	*block0= src0;
+				uint32	*block1= src1;
+				// swap the blocks
+				for(uint i=0;i<blockSizeU32;i++, block0++, block1++)
+				{
+					std::swap(*block0, *block1);
+				}
+			}
+		}
+	}
+	else
+	{
+		// reverse horizontal
+		for(uint yBlock=0;yBlock<hBlock;yBlock++)
+		{
+			uint32	*src0= data + (yBlock*wBlock)*blockSizeU32;
+			uint32	*src1= data + (yBlock*wBlock + wBlock-1)*blockSizeU32;
+			for(uint xBlock=0;xBlock<wBlock/2;xBlock++, src0+=blockSizeU32, src1-=blockSizeU32)
+			{
+				uint32	*block0= src0;
+				uint32	*block1= src1;
+				// swap the blocks
+				for(uint i=0;i<blockSizeU32;i++, block0++, block1++)
+				{
+					std::swap(*block0, *block1);
+				}
+			}
+		}
+	}
+
+	// *** Then reverse Bits
+	for(uint yBlock=0;yBlock<hBlock;yBlock++)
+	{
+		uint32	*src= data + (yBlock*wBlock)*blockSizeU32;
+		for(uint xBlock=0;xBlock<wBlock;xBlock++, src+=blockSizeU32)
+		{
+			uint8	*block= (uint8*)src;
+
+			// flip color bits
+			if(vertical)	flipVDXTCBlockColor(block+offsetColorBits, height); 
+			else			flipHDXTCBlockColor(block+offsetColorBits, width); 
+
+			// flip alpha bits if any
+			if(type==3)
+			{
+				// point to the alpha part (16*4 bits)
+				if(vertical)	flipVDXTCBlockAlpha3(block, height); 
+				else			flipHDXTCBlockAlpha3(block, width); 
+			}
+			else if(type==5)
+			{
+				// point to the bit alpha part (16*3 bits)
+				if(vertical)	flipVDXTCBlockAlpha5(block+2, height); 
+				else			flipHDXTCBlockAlpha5(block+2, width); 
+			}
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void	CBitmap::flipDXTC(bool vertical)
+{
+	// get type
+	uint	type;
+	if(PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha )
+		type=1;
+	else if(PixelFormat == DXTC3)
+		type=3;
+	else if(PixelFormat == DXTC5)
+		type=5;
+	else
+		return;
+	
+	// correct width/height?
+	sint32 nWidth = getWidth(0);
+	sint32 nHeight = getHeight(0);
+	if(!isPowerOf2(nWidth) || !isPowerOf2(nHeight))
+		return;
+
+	// flip all mipmaps
+	for(uint mm=0;mm<_MipMapCount;mm++)
+	{
+		flipDXTCMipMap(vertical, mm, type);
+	}
+}
+
+
+// ***************************************************************************
 void	CBitmap::flipH()
 {
 	if (PixelFormat != RGBA)
+	{
+		// try for DXTC
+		flipDXTC(false);
+
+		// then quit (wether it worked or not)
 		return;
+	}
 
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
@@ -3043,10 +3345,17 @@ void	CBitmap::flipH()
 }
 
 
+// ***************************************************************************
 void	CBitmap::flipV()
 {
 	if (PixelFormat != RGBA)
+	{
+		// try for DXTC
+		flipDXTC(true);
+
+		// then quit (wether it worked or not)
 		return;
+	}
 
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);

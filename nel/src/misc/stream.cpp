@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.33.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: stream.cpp,v 1.33.4.2 2006/01/09 14:28:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,12 +215,12 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 		else
 		{
 			// Assume that prt size is an int size
-			#ifdef NL_DEBUG
-				nlassert(sizeof(uint) == sizeof(void *));
-			#endif
+			//#ifdef NL_DEBUG
+			//	nlassert(sizeof(uint) == sizeof(void *));
+			//#endif
 
 			ItIdMap	it;
-			it = _IdMap.find((uint64)(uint)ptr);
+			it = _IdMap.find((uint64)/*(uint)*/ptr);
 
 			// Test if object has been already written
 			if( it==_IdMap.end() )
@@ -235,7 +235,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 				serial(node);
 
 				// Insert the pointer in the map with the id
-				_IdMap.insert( ValueIdMap((uint64)(uint)ptr, (void*)(uint)node) );
+				_IdMap.insert( ValueIdMap((uint64)/*(uint)*/ptr, (void*)/*(uint)*/node) );
 
 				#ifdef NL_DEBUG
 					nlassert(CClassRegistry::checkObject(ptr));
@@ -258,7 +258,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 			{
 				// Write only the object id
 				xmlSetAttrib ("id");
-				node = (uint64)(uint)(it->second);
+				node = (uint64)/*(uint)*/(it->second);
 				serial(node);
 				xmlPushEnd ();
 			}

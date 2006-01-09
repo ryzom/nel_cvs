@@ -163,8 +163,8 @@ namespace WS
 		
 		void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 		{
-			uint32	userId;
-			nlRead(__message, serial, userId);
+			uint32	charId;
+			nlRead(__message, serial, charId);
 			std::string	userName;
 			nlRead(__message, serial, userName);
 			NLNET::CLoginCookie	cookie;
@@ -177,7 +177,7 @@ namespace WS
 			nlRead(__message, serial, mode);
 			uint32	instanceId;
 			nlRead(__message, serial, instanceId);
-			welcomeUser(sender, userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+			welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 		}
 
 		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
@@ -193,7 +193,7 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// ask the welcome service to welcome a user
-		virtual void welcomeUser(NLNET::IModuleProxy *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) =0;
+		virtual void welcomeUser(NLNET::IModuleProxy *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) =0;
 		// ask the welcome service to disconnect a user
 		virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId) =0;
 
@@ -242,19 +242,19 @@ namespace WS
 		}
 
 		// ask the welcome service to welcome a user
-		void welcomeUser(NLNET::IModule *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+		void welcomeUser(NLNET::IModule *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 		{
 			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 			{
 				// immediate local synchronous dispatching
-				_LocalModuleSkel->welcomeUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+				_LocalModuleSkel->welcomeUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 			}
 			else
 			{
 				// send the message for remote dispatching and execution or local queing 
 				NLNET::CMessage __message;
 				
-				buildMessageFor_welcomeUser(__message, userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+				buildMessageFor_welcomeUser(__message, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 
 				_ModuleProxy->sendModuleMessage(sender, __message);
 			}
@@ -279,10 +279,10 @@ namespace WS
 		}
 
 		// Message serializer. Return the message received in reference for easier integration
-		static const NLNET::CMessage &buildMessageFor_welcomeUser(NLNET::CMessage &__message, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+		static const NLNET::CMessage &buildMessageFor_welcomeUser(NLNET::CMessage &__message, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 		{
 			__message.setType("WU");
-			nlWrite(__message, serial, userId);
+			nlWrite(__message, serial, charId);
 			nlWrite(__message, serial, const_cast < std::string& > (userName));
 			nlWrite(__message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
 			nlWrite(__message, serial, const_cast < std::string& > (priviledge));
@@ -348,6 +348,10 @@ namespace WS
 				// if this assert, you have a doubly message name in your interface definition !
 				nlassert(res.second);
 				
+				res = handlers.insert(std::make_pair(std::string("UCP"), &CWelcomeServiceClientSkel::updateConnectedPlayerCount_skel));
+				// if this assert, you have a doubly message name in your interface definition !
+				nlassert(res.second);
+				
 				init = true;
 			}
 
@@ -378,7 +382,9 @@ namespace WS
 		{
 			uint32	shardId;
 			nlRead(__message, serial, shardId);
-			registerWS(sender, shardId);
+			uint32	fixedSessionId;
+			nlRead(__message, serial, fixedSessionId);
+			registerWS(sender, shardId, fixedSessionId);
 		}
 
 		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
@@ -394,15 +400,27 @@ namespace WS
 			welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
 		}
 
+		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		{
+			uint32	nbOnlinePlayers;
+			nlRead(__message, serial, nbOnlinePlayers);
+			uint32	nbPendingPlayers;
+			nlRead(__message, serial, nbPendingPlayers);
+			updateConnectedPlayerCount(sender, nbOnlinePlayers, nbPendingPlayers);
+		}
+
 	public:
 		/////////////////////////////////////////////////////////////////
 		// WARNING : this is a generated file, don't change it !
 		/////////////////////////////////////////////////////////////////
 
 		// Register the welcome service in the ring session manager
-		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId) =0;
-		// return for wecome user
+		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
+		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId) =0;
+		// return for welcome user
 		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
+		// transmits the current player counts
+		virtual void updateConnectedPlayerCount(NLNET::IModuleProxy *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers) =0;
 
 
 	};
@@ -449,24 +467,25 @@ namespace WS
 		}
 
 		// Register the welcome service in the ring session manager
-		void registerWS(NLNET::IModule *sender, uint32 shardId)
+		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
+		void registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId)
 		{
 			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
 			{
 				// immediate local synchronous dispatching
-				_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId);
+				_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, fixedSessionId);
 			}
 			else
 			{
 				// send the message for remote dispatching and execution or local queing 
 				NLNET::CMessage __message;
 				
-				buildMessageFor_registerWS(__message, shardId);
+				buildMessageFor_registerWS(__message, shardId, fixedSessionId);
 
 				_ModuleProxy->sendModuleMessage(sender, __message);
 			}
 		}
-		// return for wecome user
+		// return for welcome user
 		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
 		{
 			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
@@ -484,12 +503,31 @@ namespace WS
 				_ModuleProxy->sendModuleMessage(sender, __message);
 			}
 		}
+		// transmits the current player counts
+		void updateConnectedPlayerCount(NLNET::IModule *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		{
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->updateConnectedPlayerCount(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), nbOnlinePlayers, nbPendingPlayers);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_updateConnectedPlayerCount(__message, nbOnlinePlayers, nbPendingPlayers);
+
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
+		}
 
 		// Message serializer. Return the message received in reference for easier integration
-		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId)
+		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId)
 		{
 			__message.setType("RWS");
 			nlWrite(__message, serial, shardId);
+			nlWrite(__message, serial, fixedSessionId);
 
 
 			return __message;
@@ -503,6 +541,17 @@ namespace WS
 			nlWrite(__message, serial, ok);
 			nlWrite(__message, serial, const_cast < std::string& > (shardAddr));
 			nlWrite(__message, serial, const_cast < std::string& > (errorMsg));
+
+
+			return __message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_updateConnectedPlayerCount(NLNET::CMessage &__message, uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		{
+			__message.setType("UCP");
+			nlWrite(__message, serial, nbOnlinePlayers);
+			nlWrite(__message, serial, nbPendingPlayers);
 
 
 			return __message;

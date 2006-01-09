@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.13 2005/02/22 10:14:12 besson Exp $
+ * $Id: vector.h,v 1.13.16.1 2006/01/09 17:26:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,15 @@ public:		// Methods.
 	// friends.
 	friend	CVector	operator*(float f, const CVector &v0);
 };
+
+// blend (faster version than the generic version found in algo.h)
+inline CVector blend(const CVector &v0, const CVector &v1, float lambda)
+{
+	float invLambda = 1.f - lambda;
+	return CVector(invLambda * v0.x + lambda * v1.x,
+		           invLambda * v0.y + lambda * v1.y,
+				   invLambda * v0.z + lambda * v1.z);
+}
 
 
 }

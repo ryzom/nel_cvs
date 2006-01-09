@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.16 2005/08/12 15:19:01 vizerie Exp $
+ * $Id: algo.h,v 1.16.6.1 2006/01/09 17:23:35 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,6 +43,24 @@ template <class T, class U>
 T blend(const T &v0, const T &v1, const U &blendFactor)
 {
 	return blendFactor * v1 + ((U) 1 - blendFactor) * v0;
+}
+
+
+// ***************************************************************************
+// add a delta to a value until it reaches the wanted target. Value is clamped to the target
+inline void incrementalBlend(float &value, float target, float absDelta)
+{
+	nlassert(absDelta >= 0.f);
+	if (value < target)
+	{
+		value += absDelta;
+		if (value > target) value = target;
+	}
+	else if (target < value)
+	{
+		value -= absDelta;
+		if (value < target) value = target;
+	}
 }
 
 // ***************************************************************************

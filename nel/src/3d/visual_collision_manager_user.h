@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.10 2005/02/22 10:19:13 besson Exp $
+ * $Id: visual_collision_manager_user.h,v 1.11 2006/01/09 10:59:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,12 @@ public:
 	{
 		NL3D_MEM_CAMERA_COLLISION
 		return _Manager.getCameraCollision (start, end, radius, cone);
+	}
+	
+	virtual bool					getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, bool landscapeOnly)
+	{
+		NL3D_MEM_CAMERA_COLLISION
+		return _Manager.getRayCollision (start, end, landscapeOnly);
 	}
 	
 	virtual uint					addMeshInstanceCollision(const UVisualCollisionMesh &mesh, const NLMISC::CMatrix &instanceMatrix, bool avoidCollisionWhenInside, bool avoidCollisionWhenOutside);

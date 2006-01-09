@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.h
  * TODO: File description
  *
- * $Id: visual_collision_manager.h,v 1.11 2005/02/22 10:19:13 besson Exp $
+ * $Id: visual_collision_manager.h,v 1.12 2006/01/09 10:59:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,11 @@ public:
 	 */
 	float						getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
 
+	/** Get a Ray collision.
+	 *	For landscape, it is done only against TileFaces (ie only under approx 50 m)
+	 *	\return true if some collision found
+	 */
+	bool						getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, bool landscapeOnly= false);
 
 	/** Add a Mesh Instance to the collision manager. For now it is used only for Camera Collision
 	 *	\param mesh the collision mesh (keep a refptr on it)

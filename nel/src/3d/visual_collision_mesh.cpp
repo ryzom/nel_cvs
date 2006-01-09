@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * TODO: File description
  *
- * $Id: visual_collision_mesh.cpp,v 1.7 2005/02/22 10:19:13 besson Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.8 2006/01/09 10:59:24 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -317,7 +317,7 @@ float					CVisualCollisionMesh::getCameraCollision(const CMatrix &instanceMatrix
 
 	// Select triangles
 	static std::vector<uint16>		selection;
-	uint	numSel= _QuadGrid.select(camColLocal.BBox, selection);
+	uint	numSel= _QuadGrid.select(camColLocal.getBBox(), selection);
 	
 	// **** For all triangles, test if intersect the camera collision
 	float		sqrMinDist= FLT_MAX;
@@ -338,7 +338,7 @@ float					CVisualCollisionMesh::getCameraCollision(const CMatrix &instanceMatrix
 	else
 	{
 		float	f= 1;
-		float	d= (camColLocal.End-camColLocal.Start).norm();
+		float	d= camColLocal.getRayLen();
 		if(d>0)
 		{
 			f= sqrtf(sqrMinDist) / d;

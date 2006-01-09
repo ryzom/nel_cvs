@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.8 2005/02/22 10:14:12 besson Exp $
+ * $Id: plane.h,v 1.8.16.1 2006/01/09 17:24:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 namespace NLMISC
 {
 
+class CUV;
 
 // ======================================================================================================
 /**
@@ -131,6 +132,8 @@ public:
 	 * \return number of vertices of out. 0 is returned if In polygon entirely front, or if nIn<=2.
 	 */
 	sint	clipPolygonBack(CVector in[], CVector out[], sint nIn) const;
+	// Clip a polygon with uvs by a plane
+	sint	clipPolygonBack(const CVector in[], const CUV inUV[], CVector out[], CUV outUV[], sint nIn) const;
 	/** Clip a polygon by a plane. The "front polygon" is returned.
 	 * Nb: Out must be allocated to nIn+1 (at less).
 	 * \param in the input polygon

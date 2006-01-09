@@ -1,7 +1,7 @@
 /** \file plane.cpp
  * class CPlane
  *
- * $Id: plane.cpp,v 1.7 2004/07/29 09:26:32 vizerie Exp $
+ * $Id: plane.cpp,v 1.7.40.1 2006/01/09 17:28:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/plane.h"
+#include "nel/misc/uv.h"
 
 
 namespace	NLMISC
@@ -113,6 +114,45 @@ sint	CPlane::clipPolygonBack(CVector in[], CVector out[], sint nIn) const
 		{
 			if ( (*this)*in[s] < 0 ) 
 				out[nOut++]= intersect(in[s],in[p]);
+		}
+		s=p;
+	}
+
+	return nOut;
+}
+
+//============================================================
+sint CPlane::clipPolygonBack(const CVector in[], const CUV inUV[], CVector out[], CUV outUV[], sint nIn) const
+{
+	sint nOut=0,s,p,i;
+	if(nIn<=2) return 0;
+
+	s=nIn-1;
+
+	for (i=0;i<nIn;i++)
+	{
+		p=i;
+		float dp3Curr = (*this)*in[p];
+		float dp3Prev = (*this)*in[s];
+		if ( dp3Curr < 0 )
+		{
+			if (dp3Prev >= 0 ) 
+			{
+				float lambda = favoid0((float) ((double) dp3Prev / ((double) dp3Prev - (double) dp3Curr)));
+				out[nOut] = blend(in[s], in[p], lambda);
+				outUV[nOut++] = blend(inUV[s], inUV[p], lambda);
+			}
+			out[nOut]=in[p];
+			outUV[nOut++]=inUV[p];
+		}
+		else
+		{
+			if (dp3Prev < 0 ) 
+			{
+				float lambda = favoid0((float) ((double) dp3Prev / ((double) dp3Prev - (double) dp3Curr)));
+				out[nOut] = blend(in[s], in[p], lambda);
+				outUV[nOut++] = blend(inUV[s], inUV[p], lambda);				
+			}
 		}
 		s=p;
 	}

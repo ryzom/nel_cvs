@@ -204,7 +204,7 @@ private:
 	std::allocator<uint8>	_Allocator;
 };
 
-// Allocator using NLMISC::CHeapAllocator
+// Allocator using NLMEMORY::CHeapAllocator
 class CNeLAllocator : public IAllocator
 {
 public:

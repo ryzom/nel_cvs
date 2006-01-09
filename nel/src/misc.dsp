@@ -529,19 +529,6 @@ SOURCE=..\include\nel\misc\fixed_size_allocator.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\heap_allocator.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\heap_allocator.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\heap_allocator_inline.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\heap_memory.cpp
 # End Source File
 # Begin Source File

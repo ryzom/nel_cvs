@@ -1,7 +1,7 @@
 /** \file triangle.h
  * TODO: File description
  *
- * $Id: triangle.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: triangle.h,v 1.6.16.1 2006/01/09 17:25:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,29 @@ public:
 
 	// transform triangle
 	void	applyMatrix(const CMatrix &m, CTriangle &dest) const;
+	// compute the minimal corner of this triangle
+	inline void getMinCorner(NLMISC::CVector &dest) const;
+	// compute the minimal corner of this triangle
+	inline void getMaxCorner(NLMISC::CVector &dest) const;
 };
+
+
+
+// inlines
+inline void	CTriangle::getMinCorner(NLMISC::CVector &dest) const
+{
+	dest.set(minof(V0.x, V1.x, V2.x),
+			 minof(V0.y, V1.y, V2.y),
+			 minof(V0.z, V1.z, V2.z));
+}
+
+inline void	CTriangle::getMaxCorner(NLMISC::CVector &dest) const
+{
+	dest.set(maxof(V0.x, V1.x, V2.x),
+			 maxof(V0.y, V1.y, V2.y),
+			 maxof(V0.z, V1.z, V2.z));
+}
+
 
 
 } // NLMISC

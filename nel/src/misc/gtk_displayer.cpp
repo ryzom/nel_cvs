@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.7 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.8 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -397,5 +397,10 @@ void CGtkDisplayer::getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h)
 
 
 } // NLMISC
+
+#else // NL_USE_GTK
+
+// remove stupid VC6 warnings
+void foo_gtk_displayer_cpp() {}
 
 #endif // NL_USE_GTK

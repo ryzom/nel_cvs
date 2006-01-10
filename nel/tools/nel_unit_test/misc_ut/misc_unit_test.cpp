@@ -425,10 +425,10 @@ public:
 };
 
 
-Test::Suite *createSafeSingletonTS();
+Test::Suite *createSafeSingletonTS(const std::string &workingPath);
 Test::Suite *createCSStringTS();
 Test::Suite *createObjectCommandTS();
-Test::Suite *createPureNelLibTS();
+Test::Suite *createPureNelLibTS(const std::string &workingPath);
 Test::Suite *createCStreamTS();
 Test::Suite *createCCoTaskTS();
 
@@ -443,8 +443,8 @@ public:
 		add(auto_ptr<Test::Suite>(new CInstanceCounterTS(workingPath)));
 		add(auto_ptr<Test::Suite>(new CLibraryTS()));
 		add(auto_ptr<Test::Suite>(new CVariableTS()));
-		add(auto_ptr<Test::Suite>(createPureNelLibTS()));
-		add(auto_ptr<Test::Suite>(createSafeSingletonTS()));
+		add(auto_ptr<Test::Suite>(createPureNelLibTS(workingPath)));
+		add(auto_ptr<Test::Suite>(createSafeSingletonTS(workingPath)));
 		add(auto_ptr<Test::Suite>(createCSStringTS()));
 		add(auto_ptr<Test::Suite>(createObjectCommandTS()));
 		add(auto_ptr<Test::Suite>(createCStreamTS()));

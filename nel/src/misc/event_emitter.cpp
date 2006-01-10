@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * TODO: File description
  *
- * $Id: event_emitter.cpp,v 1.18 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: event_emitter.cpp,v 1.19 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include "stdmisc.h"
+
+// remove stupid VC6 warnings
+void foo_event_emitter_cpp() {}
 
 namespace NLMISC {
 

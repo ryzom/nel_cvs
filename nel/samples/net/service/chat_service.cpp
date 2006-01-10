@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.6 2003/11/04 09:27:56 distrib Exp $
+ * $Id: chat_service.cpp,v 1.7 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
-#include "nel/misc/heap_allocator.h"
+#include "nel/misc/system_info.h"
 
 // contains the service base class
 #include "nel/net/service.h"
@@ -106,13 +106,13 @@ public:
 			nldebug ("debg flood %d %s", val++, s.c_str());
 			nlinfo ("info flood %d %s", val++, s.c_str());
 			nlwarning ("warn flood %d %s", val++, s.c_str());
-//			nldebug ("debg flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
-//			nlinfo ("info flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
-//			nlwarning ("warn flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+//			nldebug ("debg flood %10d %s %d %d", val++, bytesToHumanReadable(CSystemInfo::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+//			nlinfo ("info flood %10d %s %d %d", val++, bytesToHumanReadable(CSystemInfo::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+//			nlwarning ("warn flood %10d %s %d %d", val++, bytesToHumanReadable(CSystemInfo::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
 		}
 	  */
 /////////
-//		fprintf (fp, "%d;%d;%d\n", CHeapAllocator::getAllocatedSystemMemory (), UserSpeedLoop, NetSpeedLoop);
+//		fprintf (fp, "%d;%d;%d\n", CMemUtils::getAllocatedSystemMemory (), UserSpeedLoop, NetSpeedLoop);
 //		fflush (fp);
 		return true;
 	}

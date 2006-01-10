@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * TODO: File description
  *
- * $Id: patch.cpp,v 1.102 2005/02/22 10:19:11 besson Exp $
+ * $Id: patch.cpp,v 1.103 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2307,10 +2307,10 @@ uint32	CPatch::countNumTriFar0() const
 {
 	uint32 numIndex = MasterBlock.Far0FaceVector ? *MasterBlock.Far0FaceVector : 0;
 	uint			nTessBlock= TessBlocks.size();
-	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
+	const CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
 	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
-		CTessBlock		&tblock= *pTessBlock;
+		const CTessBlock		&tblock= *pTessBlock;
 		// if block visible, render
 		if( tblock.visibleFar0() )
 		{
@@ -2325,10 +2325,10 @@ uint32	CPatch::countNumTriFar1() const
 {
 	uint32 numIndex = MasterBlock.Far1FaceVector ? *MasterBlock.Far1FaceVector : 0;
 	uint			nTessBlock= TessBlocks.size();
-	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
+	const CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
 	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
 	{
-		CTessBlock		&tblock= *pTessBlock;
+		const CTessBlock		&tblock= *pTessBlock;
 		// if block visible, render
 		if( tblock.visibleFar1() )
 		{

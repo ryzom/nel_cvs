@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89 2005/10/05 11:31:56 boucher Exp $
+ * $Id: service.h,v 1.90 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/misc/command.h"
 #include "nel/misc/entity_id.h"
 #include "nel/misc/cpu_time_stat.h"
+#include "nel/misc/sstring.h"
 
 #include "unified_network.h"
 
@@ -109,7 +110,7 @@ class IServiceUpdatable;
  * -S followed by the shard Id (sint32) (WS only)
  * -T followed by the IP address where the login service is (WS only)
  * -W followed by the path where to save all shard data (SaveFilesDirectory)
- * -Z to just init the config file then return (used for test)
+ * -Z[u] to just init the config file then return (used for test), use Zu to not release the service
  * 
  *
  */
@@ -123,6 +124,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	NLMISC::CApplicationContext	serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (lpCmdLine); \
+	createDebug(NULL,!scn->haveLongArg("nolog"));\
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
     sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
@@ -137,6 +139,7 @@ int main(int argc, const char **argv) \
 	NLMISC::CApplicationContext serviceContext; \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setArgs (argc, argv); \
+	createDebug(NULL,!scn->haveLongArg("nolog"));\
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
 	sint retval = scn->main (__ServiceShortName, __ServiceLongName, __ServicePort, __ConfigDir, __LogDir, __DATE__" "__TIME__); \
 	delete scn; \
@@ -156,7 +159,6 @@ typedef uint8 TServiceId;
 
 /// Callback where you can return true for direct clearance, or false for later clearance.
 typedef bool (*TRequestClosureClearanceCallback) ();
-
 
 //
 // Variables provided to application and unused in the NeL library itself.
@@ -245,17 +247,26 @@ public:
 	bool							getDontUseAES() const { return _DontUseAES; };
 
 	/// Returns arguments of the program pass from the user to the program using parameters (ie: "myprog param1 param2")
-	const std::vector<std::string>	&getArgs () const { return _Args; }
+	const NLMISC::CVectorSString	&getArgs () const { return _Args; }
 
 	/// Returns true if the argument if present in the command line (ie: haveArg('p') will return true if -p is in the command line)
-	bool							haveArg (char argName);
+	bool							haveArg (char argName) const;
 
 	/** Returns the parameter linked to an option
 	 * getArg('p') will return toto if -ptoto is in the command line
 	 * getArg('p') will return C:\Documents and Settings\toto.tmp if -p"C:\Documents and Settings\toto.tmp" is in the command line
 	 * It'll thrown an Exception if the argName is not found
 	 */
-	std::string						getArg (char argName);
+	std::string						getArg (char argName) const;
+
+	/// return true if named long arg is present on the commandline
+	/// eg haveLongArg("toto") returns true if "--toto" or "--toto=xxx" can be found on commandline
+	bool							haveLongArg (const char* argName) const;
+
+	/// returns the value associated with the given named argument
+	/// both "--toto=xxx" and "--toto xxx" are acceptable
+	/// quotes round arguments are stripped
+	std::string						getLongArg (const char* argName) const;
 
 	/// Returns an uniq id for an entities on this service.
 	/*uint64							getEntityId (uint8 type)
@@ -339,7 +350,7 @@ public:
 	IService ();
 
 	/// Dtor. You must not inherit dtor but overload release() function
-	virtual ~IService () {}
+	virtual ~IService ();
 
 	//@}
 
@@ -362,6 +373,15 @@ public:
 	/// Use .toString() to access to the value
 	NLMISC::CVariable<std::string>		SaveFilesDirectory;
 	
+	/// If true (default), the provided SaveFilesDirectory will be converted to a full path (ex: "saves" -> "/home/dir/saves")
+	NLMISC::CVariable<bool>				ConvertSavesFilesDirectoryToFullPath;
+
+	/** You can provide a callback interface (only one) that will be called if any of the directory variables
+	 * (WriteFilesDirectory, SaveFilesDirectory, ConfigDirectory, LogDirectory, RunningDirectory) is changed
+	 * (also called for the first setting read from the .cfg file). Default is NULL.
+	 */
+	void								setDirectoryChangeCallback( NLMISC::IVariableChangedCallback *cbi ) { _DirectoryChangedCBI = cbi; }
+
 	void								setVersion (const std::string &version) { Version = version; }
 
 	uint16								getPort() { return ListeningPort; }
@@ -414,7 +434,7 @@ private:
 	// @{
 
 	/// Array of arguments pass from the command line
-	std::vector<std::string>			_Args;
+	NLMISC::CVectorSString				_Args;
 
 	/// Listening port of this service
 	NLMISC::CVariable<uint16>			ListeningPort;
@@ -489,13 +509,14 @@ private:
 	/// Closure clearance callback (NULL if no closure clearance required)
 	TRequestClosureClearanceCallback	_RequestClosureClearanceCallback;
 
-	//@}
+	/// Directory changed callback
+	NLMISC::IVariableChangedCallback*	_DirectoryChangedCBI;
 
 	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
 	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct nel_serviceInfoClass;
 	friend struct nel_getWinDisplayerInfoClass;
-	friend void cbDirectoryChanged (const NLMISC::IVariable &var);
+	friend void cbDirectoryChanged (NLMISC::IVariable &var);
 	friend void cbReceiveShardId (NLNET::CMessage& msgin, const std::string &serviceName, uint16 serviceId);
 
 	NLMISC_CATEGORISED_DYNVARIABLE_FRIEND(nel, State);
@@ -509,10 +530,14 @@ class IServiceUpdatable
 public:
 	IServiceUpdatable()
 	{
-		IService *service = IService::getInstance();
-		nlassert(service != NULL);
-
-		service->registerUpdatable(this);
+		if (IService::isServiceInitialized())
+		{
+			IService::getInstance()->registerUpdatable(this);
+		}
+		else
+		{
+			nlwarning("IServiceUpdatable : IService is not initialized, IUpdatable will not be called");
+		}
 	}
 	virtual ~IServiceUpdatable()
 	{

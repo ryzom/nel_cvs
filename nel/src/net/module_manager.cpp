@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module_manager.cpp,v 1.9 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,11 @@ namespace NLNET
 		// Methods 
 		///////////////////////////////////////////////////////////////////
 
+		static bool		isInitialized()
+		{
+			return _Instance != NULL;
+		}
+
 		const std::string &getCommandHandlerName() const
 		{
 			static string moduleManagerName("moduleManager");
@@ -148,6 +153,8 @@ namespace NLNET
 
 			// there should not be proxies or gateway lasting
 //			nlassert(_ModuleProxyInstances.getAToBMap().empty());
+
+			_Instance = NULL;
 		}
 
 		virtual void applicationExit()
@@ -194,17 +201,20 @@ namespace NLNET
 			vector<string>::iterator first(moduleList.begin()), last(moduleList.end());
 			for (; first != last; ++first)
 			{
+				const std::string &className = *first;
+				IModuleFactory *factory = moduleFactoryRegistry.getFactory(className);
 				if (_ModuleFactoryRegistry.find(*first) != _ModuleFactoryRegistry.end())
 				{
 					// a module class of that name already exist
-					nlwarning("CModuleManger : add module factory : module class '%s' that is already registered",
-						first->c_str());
+					nlinfo("CModuleManger : add module factory : module class '%s' is already registered; ignoring new factory @%p",
+						className.c_str(),
+						factory);
 				}
 				else
 				{
 					// store the factory
-					nlinfo("Adding module '%s' factory", first->c_str());
-					_ModuleFactoryRegistry.insert(make_pair(*first, moduleFactoryRegistry.getFactory(*first)));
+					nlinfo("Adding module '%s' factory", className.c_str());
+					_ModuleFactoryRegistry.insert(make_pair(className, factory));
 				}
 			}
 		}
@@ -305,9 +315,16 @@ namespace NLNET
 			// we need to remove the factory from the registry
 			TModuleFactoryRegistry::iterator it(_ModuleFactoryRegistry.find(moduleFactory->getModuleClassName()));
 
-			if (it == _ModuleFactoryRegistry.end() || it->second != moduleFactory)
+			if (it == _ModuleFactoryRegistry.end())
 			{
 				nlwarning("The module factory for class '%s' in not registered.", moduleFactory->getModuleClassName().c_str());
+				return;
+			}
+			else if (it->second != moduleFactory)
+			{
+				nlinfo("The module factory @%p for class '%s' is not the registered one, ignoring.", 
+					moduleFactory,
+					moduleFactory->getModuleClassName().c_str());
 				return;
 			}
 
@@ -556,11 +573,13 @@ namespace NLNET
 			IModuleGateway *gateway, 
 			CGatewayRoute *route,
 			uint32 distance,
+			IModule *localModule,
 			const std::string &moduleClassName, 
 			const std::string &moduleFullyQualifiedName,
+			const std::string &moduleManifest,
 			TModuleId foreignModuleId)
 		{
-			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName));
+			auto_ptr<CModuleProxy> modProx = auto_ptr<CModuleProxy>(new CModuleProxy(localModule, ++_LastGeneratedId, moduleClassName, moduleFullyQualifiedName, moduleManifest));
 			modProx->_Gateway = gateway;
 			modProx->_Route = route;
 			modProx->_Distance = distance;
@@ -593,7 +612,7 @@ namespace NLNET
 //			_ModuleProxyInstances.removeWithB(it->second);
 			_ModuleProxyIds.removeWithB(it->second);
 			
-			nlassert(sanityCheck == NULL);
+			nlassertex(sanityCheck == NULL, ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck->getModuleName().c_str(), sanityCheck->getModuleClassName().c_str()));
 		}
 
 
@@ -762,10 +781,16 @@ namespace NLNET
 
 	};
 
+	bool		IModuleManager::isInitialized()
+	{
+		return CModuleManager::isInitialized();
+	}
+
 	IModuleManager &IModuleManager::getInstance()
 	{
 		return CModuleManager::getInstance();
 	}
+
 
 	NLMISC_SAFE_SINGLETON_IMPL(CModuleManager);
 

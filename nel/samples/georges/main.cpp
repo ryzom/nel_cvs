@@ -41,7 +41,10 @@
 #include "nel/georges/load_form.h"
 
 
-int main(void) {
+int main(void)
+{
+	new NLMISC::CApplicationContext;
+
 	// get a pointer ready for the form loader.
 	NLGEORGES::UFormLoader *formLoader = NULL;
 

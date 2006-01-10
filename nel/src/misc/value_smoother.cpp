@@ -1,7 +1,7 @@
 /** \file value_smoother.cpp
  * TODO: File description
  *
- * $Id: value_smoother.cpp,v 1.6 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: value_smoother.cpp,v 1.7 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,3 +26,6 @@
 #include "stdmisc.h"
 
 #include "nel/misc/value_smoother.h"
+
+// remove stupid VC6 warnings
+void foo_value_smoother_cpp() {}

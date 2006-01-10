@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.39 2005/10/03 10:08:28 boucher Exp $
+ * $Id: login_server.cpp,v 1.40 2006/01/10 17:38:47 boucher Exp $
  *
  */
 
@@ -41,8 +41,8 @@ namespace NLNET {
 
 struct CPendingUser
 {
-	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up, const string &ux, uint32 instanceId)
-		: Cookie (cookie), UserName(un), UserPriv(up), UserExtended(ux), InstanceId(instanceId)
+	CPendingUser (const CLoginCookie &cookie, const string &un, const string &up, const string &ux, uint32 instanceId, uint32 charSlot)
+		: Cookie (cookie), UserName(un), UserPriv(up), UserExtended(ux), InstanceId(instanceId), CharSlot(charSlot)
 	{
 		Time = CTime::getSecondsSince1970();
 	}
@@ -52,6 +52,7 @@ struct CPendingUser
 	string UserPriv;		// privilege for executing commands from the clients
 	string UserExtended;	// extended data (for free use)
 	uint32 InstanceId;		// the world instance in witch the user is awaited
+	uint32 CharSlot;		// the expected character slot, any other will be denied
 	uint32 Time;			// when the cookie is inserted in pending list
 };
 
@@ -116,7 +117,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 {
 	// the WS call me that a new client want to come in my shard
 	string reason, userName, userPriv, userExtended;
-	uint32 instanceId;
+	uint32 instanceId, charSlot;
 	CLoginCookie cookie;
 
 	refreshPendingList ();
@@ -128,6 +129,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	msgin.serial (cookie);
 	msgin.serial (userName, userPriv, userExtended);
 	msgin.serial (instanceId);
+	msgin.serial (charSlot);
 
 	list<CPendingUser>::iterator it;
 	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
@@ -147,8 +149,8 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	if (it == PendingUsers.end ())
 	{
 		// add it to the awaiting client
-		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s') inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str());
-		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended, instanceId));
+		nlinfo ("LS: New cookie %s (name '%s' priv '%s' extended '%s' instance %u slot %u) inserted in the pending user list (awaiting new client)", cookie.toString().c_str(), userName.c_str(), userPriv.c_str(), userExtended.c_str(), instanceId, charSlot);
+		PendingUsers.push_back (CPendingUser (cookie, userName, userPriv, userExtended, instanceId, charSlot));
 		reason = "";
 	}
 
@@ -210,9 +212,9 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 	msgin.serial (cookie);
 
 	string userName, userPriv, userExtended;
-	uint32 instanceId;
+	uint32 instanceId, charSlot;
 	// verify that the user was pending
-	reason = CLoginServer::isValidCookie (cookie, userName, userPriv, userExtended, instanceId);
+	reason = CLoginServer::isValidCookie (cookie, userName, userPriv, userExtended, instanceId, charSlot);
 
 	// if the cookie is not valid and we accept them, clear the error
 	if(AcceptInvalidCookie && !reason.empty())
@@ -396,7 +398,7 @@ void CLoginServer::init (const std::string &listenAddr, TDisconnectClientCallbac
 	ModeTcp = false;
 }
 
-string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended, uint32 &instanceId)
+string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, string &userPriv, string &userExtended, uint32 &instanceId, uint32 &charSlot)
 {
 	userName = userPriv = "";
 
@@ -425,6 +427,7 @@ string CLoginServer::isValidCookie (const CLoginCookie &lc, string &userName, st
 			userPriv = pu.UserPriv;
 			userExtended = pu.UserExtended;
 			instanceId = pu.InstanceId;
+			charSlot = pu.CharSlot;
 
 			// ok, it was validate, remove it
 			PendingUsers.erase (it);
@@ -469,6 +472,11 @@ void CLoginServer::clientDisconnected (uint32 userId)
 const std::string &CLoginServer::getListenAddress()
 {
 	return ListenAddr;
+}
+
+bool CLoginServer::acceptsInvalidCookie()
+{
+	return AcceptInvalidCookie;
 }
 
 

@@ -5,11 +5,17 @@
 
 #ifndef WELCOME_SERVICE_ITF
 #define WELCOME_SERVICE_ITF
+#include "nel/net/message.h"
 #include "nel/net/module.h"
+#include "nel/net/module_message.h"
+#include "nel/net/module_gateway.h"
 #include "nel/misc/string_conversion.h"
 
 #include "nel/net/login_cookie.h"
 	
+#ifndef NLNET_INTERFACE_GET_MODULE
+# define NLNET_INTERFACE_GET_MODULE	NLNET::IModule *getModuleInstance() { return this; }
+#endif
 namespace WS
 {
 	
@@ -70,6 +76,10 @@ namespace WS
 		{
 			return ! (_Value == other._Value);
 		}
+		bool operator < (const TUserRole &other) const
+		{
+			return _Value < other._Value;
+		}
 
 		const std::string &toString()
 		{
@@ -89,52 +99,6 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	class CWelcomeServiceProxy
-	{
-		/// Smart pointer on the module proxy
-		NLNET::TModuleProxyPtr	_ModuleProxy;
-
-	public:
-		CWelcomeServiceProxy(NLNET::IModuleProxy *proxy)
-		{
-			nlassert(proxy->getModuleClassName() == "WelcomeService");
-			_ModuleProxy = proxy;
-		}
-
-		NLNET::IModuleProxy *getModuleProxy()
-		{
-			return _ModuleProxy;
-		}
-
-			// ask the welcome service to welcome a user
-		void welcomeUser(NLNET::IModule *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
-		{
-			NLNET::CMessage message("WU");
-			message.serial(userId);
-			message.serial(const_cast < std::string& > (userName));
-			message.serial(const_cast < NLNET::CLoginCookie& > (cookie));
-			message.serial(const_cast < std::string& > (priviledge));
-			message.serial(const_cast < std::string& > (exPriviledge));
-			message.serial(mode);
-			message.serial(instanceId);
-
-			_ModuleProxy->sendModuleMessage(sender, message);
-		}
-		// ask the welcome service to disconnect a user
-		void disconnectUser(NLNET::IModule *sender, uint32 userId)
-		{
-			NLNET::CMessage message("DU");
-			message.serial(userId);
-
-			_ModuleProxy->sendModuleMessage(sender, message);
-		}
-
-	};
-
-
-	/////////////////////////////////////////////////////////////////
-	// WARNING : this is a generated file, don't change it !
-	/////////////////////////////////////////////////////////////////
 	class CWelcomeServiceSkel
 	{
 	protected:
@@ -143,8 +107,14 @@ namespace WS
 			// do early run time check for message table
 			getMessageHandlers();
 		}
+		virtual ~CWelcomeServiceSkel()
+		{
+		}
+
+
+
 	private:
-		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -172,7 +142,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -191,29 +161,29 @@ namespace WS
 
 	private:
 		
-		void welcomeUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 		{
-			uint32	userId;
-			message.serial(userId);
+			uint32	charId;
+			nlRead(__message, serial, charId);
 			std::string	userName;
-			message.serial(userName);
+			nlRead(__message, serial, userName);
 			NLNET::CLoginCookie	cookie;
-			message.serial(cookie);
+			nlRead(__message, serial, cookie);
 			std::string	priviledge;
-			message.serial(priviledge);
+			nlRead(__message, serial, priviledge);
 			std::string	exPriviledge;
-			message.serial(exPriviledge);
+			nlRead(__message, serial, exPriviledge);
 			WS::TUserRole	mode;
-			message.serial(mode);
+			nlRead(__message, serial, mode);
 			uint32	instanceId;
-			message.serial(instanceId);
-			welcomeUser(sender, userId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+			nlRead(__message, serial, instanceId);
+			welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 		}
 
-		void disconnectUser_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(__message, serial, userId);
 			disconnectUser(sender, userId);
 		}
 
@@ -223,26 +193,47 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// ask the welcome service to welcome a user
-		virtual void welcomeUser(NLNET::IModuleProxy *sender, uint32 userId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) =0;
+		virtual void welcomeUser(NLNET::IModuleProxy *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId) =0;
 		// ask the welcome service to disconnect a user
 		virtual void disconnectUser(NLNET::IModuleProxy *sender, uint32 userId) =0;
 
 
 	};
-	
+
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
-	class CWelcomeServiceClientProxy
+	class CWelcomeServiceProxy
 	{
 		/// Smart pointer on the module proxy
 		NLNET::TModuleProxyPtr	_ModuleProxy;
 
-	public:
-		CWelcomeServiceClientProxy(NLNET::IModuleProxy *proxy)
-		{
+		// Pointer on the local module that implement the interface (if the proxy is for a local module)
+		NLNET::TModulePtr					_LocalModule;
+		// Direct pointer on the server implementation interface for collocated module
+		CWelcomeServiceSkel	*_LocalModuleSkel;
 
+
+	public:
+		CWelcomeServiceProxy(NLNET::IModuleProxy *proxy)
+		{
+			nlassert(proxy->getModuleClassName() == "WelcomeService");
 			_ModuleProxy = proxy;
+
+			// initialize collocated servant interface
+			if (proxy->getModuleDistance() == 0)
+			{
+				_LocalModule = proxy->getLocalModule();
+				nlassert(_LocalModule != NULL);
+				_LocalModuleSkel = dynamic_cast < CWelcomeServiceSkel* > (_LocalModule.getPtr());
+				nlassert(_LocalModuleSkel != NULL);
+			}
+			else
+				_LocalModuleSkel = 0;
+
+		}
+		virtual ~CWelcomeServiceProxy()
+		{
 		}
 
 		NLNET::IModuleProxy *getModuleProxy()
@@ -250,27 +241,73 @@ namespace WS
 			return _ModuleProxy;
 		}
 
-			// Register the welcome service in the ring session manager
-		void registerWS(NLNET::IModule *sender, uint32 shardId)
+		// ask the welcome service to welcome a user
+		void welcomeUser(NLNET::IModule *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
 		{
-			NLNET::CMessage message("RWS");
-			message.serial(shardId);
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->welcomeUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_welcomeUser(__message, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 
-			_ModuleProxy->sendModuleMessage(sender, message);
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
 		}
-		// return for wecome user
-		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr)
+		// ask the welcome service to disconnect a user
+		void disconnectUser(NLNET::IModule *sender, uint32 userId)
 		{
-			NLNET::CMessage message("WUR");
-			message.serial(userId);
-			message.serial(ok);
-			message.serial(const_cast < std::string& > (shardAddr));
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->disconnectUser(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_disconnectUser(__message, userId);
 
-			_ModuleProxy->sendModuleMessage(sender, message);
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
 		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_welcomeUser(NLNET::CMessage &__message, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
+		{
+			__message.setType("WU");
+			nlWrite(__message, serial, charId);
+			nlWrite(__message, serial, const_cast < std::string& > (userName));
+			nlWrite(__message, serial, const_cast < NLNET::CLoginCookie& > (cookie));
+			nlWrite(__message, serial, const_cast < std::string& > (priviledge));
+			nlWrite(__message, serial, const_cast < std::string& > (exPriviledge));
+			nlWrite(__message, serial, mode);
+			nlWrite(__message, serial, instanceId);
+
+
+			return __message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_disconnectUser(NLNET::CMessage &__message, uint32 userId)
+		{
+			__message.setType("DU");
+			nlWrite(__message, serial, userId);
+
+
+			return __message;
+		}
+
+
+
 
 	};
-
 
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
@@ -283,8 +320,14 @@ namespace WS
 			// do early run time check for message table
 			getMessageHandlers();
 		}
+		virtual ~CWelcomeServiceClientSkel()
+		{
+		}
+
+
+
 	private:
-		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, NLNET::CMessage &message);
+		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
 
@@ -305,6 +348,10 @@ namespace WS
 				// if this assert, you have a doubly message name in your interface definition !
 				nlassert(res.second);
 				
+				res = handlers.insert(std::make_pair(std::string("UCP"), &CWelcomeServiceClientSkel::updateConnectedPlayerCount_skel));
+				// if this assert, you have a doubly message name in your interface definition !
+				nlassert(res.second);
+				
 				init = true;
 			}
 
@@ -312,7 +359,7 @@ namespace WS
 		}
 
 	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -331,22 +378,35 @@ namespace WS
 
 	private:
 		
-		void registerWS_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 		{
 			uint32	shardId;
-			message.serial(shardId);
-			registerWS(sender, shardId);
+			nlRead(__message, serial, shardId);
+			uint32	fixedSessionId;
+			nlRead(__message, serial, fixedSessionId);
+			registerWS(sender, shardId, fixedSessionId);
 		}
 
-		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 		{
 			uint32	userId;
-			message.serial(userId);
+			nlRead(__message, serial, userId);
 			bool	ok;
-			message.serial(ok);
+			nlRead(__message, serial, ok);
 			std::string	shardAddr;
-			message.serial(shardAddr);
-			welcomeUserResult(sender, userId, ok, shardAddr);
+			nlRead(__message, serial, shardAddr);
+			std::string	errorMsg;
+			nlRead(__message, serial, errorMsg);
+			welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
+		}
+
+		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+		{
+			uint32	nbOnlinePlayers;
+			nlRead(__message, serial, nbOnlinePlayers);
+			uint32	nbPendingPlayers;
+			nlRead(__message, serial, nbPendingPlayers);
+			updateConnectedPlayerCount(sender, nbOnlinePlayers, nbPendingPlayers);
 		}
 
 	public:
@@ -355,13 +415,153 @@ namespace WS
 		/////////////////////////////////////////////////////////////////
 
 		// Register the welcome service in the ring session manager
-		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId) =0;
-		// return for wecome user
-		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr) =0;
+		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
+		virtual void registerWS(NLNET::IModuleProxy *sender, uint32 shardId, uint32 fixedSessionId) =0;
+		// return for welcome user
+		virtual void welcomeUserResult(NLNET::IModuleProxy *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg) =0;
+		// transmits the current player counts
+		virtual void updateConnectedPlayerCount(NLNET::IModuleProxy *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers) =0;
 
 
 	};
-	
+
+	/////////////////////////////////////////////////////////////////
+	// WARNING : this is a generated file, don't change it !
+	/////////////////////////////////////////////////////////////////
+	class CWelcomeServiceClientProxy
+	{
+		/// Smart pointer on the module proxy
+		NLNET::TModuleProxyPtr	_ModuleProxy;
+
+		// Pointer on the local module that implement the interface (if the proxy is for a local module)
+		NLNET::TModulePtr					_LocalModule;
+		// Direct pointer on the server implementation interface for collocated module
+		CWelcomeServiceClientSkel	*_LocalModuleSkel;
+
+
+	public:
+		CWelcomeServiceClientProxy(NLNET::IModuleProxy *proxy)
+		{
+
+			_ModuleProxy = proxy;
+
+			// initialize collocated servant interface
+			if (proxy->getModuleDistance() == 0)
+			{
+				_LocalModule = proxy->getLocalModule();
+				nlassert(_LocalModule != NULL);
+				_LocalModuleSkel = dynamic_cast < CWelcomeServiceClientSkel* > (_LocalModule.getPtr());
+				nlassert(_LocalModuleSkel != NULL);
+			}
+			else
+				_LocalModuleSkel = 0;
+
+		}
+		virtual ~CWelcomeServiceClientProxy()
+		{
+		}
+
+		NLNET::IModuleProxy *getModuleProxy()
+		{
+			return _ModuleProxy;
+		}
+
+		// Register the welcome service in the ring session manager
+		// The provided sessionId will be non-zero only for a shard with a fixed sessionId
+		void registerWS(NLNET::IModule *sender, uint32 shardId, uint32 fixedSessionId)
+		{
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->registerWS(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), shardId, fixedSessionId);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_registerWS(__message, shardId, fixedSessionId);
+
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
+		}
+		// return for welcome user
+		void welcomeUserResult(NLNET::IModule *sender, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
+		{
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->welcomeUserResult(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId, ok, shardAddr, errorMsg);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_welcomeUserResult(__message, userId, ok, shardAddr, errorMsg);
+
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
+		}
+		// transmits the current player counts
+		void updateConnectedPlayerCount(NLNET::IModule *sender, uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		{
+			if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+			{
+				// immediate local synchronous dispatching
+				_LocalModuleSkel->updateConnectedPlayerCount(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), nbOnlinePlayers, nbPendingPlayers);
+			}
+			else
+			{
+				// send the message for remote dispatching and execution or local queing 
+				NLNET::CMessage __message;
+				
+				buildMessageFor_updateConnectedPlayerCount(__message, nbOnlinePlayers, nbPendingPlayers);
+
+				_ModuleProxy->sendModuleMessage(sender, __message);
+			}
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_registerWS(NLNET::CMessage &__message, uint32 shardId, uint32 fixedSessionId)
+		{
+			__message.setType("RWS");
+			nlWrite(__message, serial, shardId);
+			nlWrite(__message, serial, fixedSessionId);
+
+
+			return __message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_welcomeUserResult(NLNET::CMessage &__message, uint32 userId, bool ok, const std::string &shardAddr, const std::string &errorMsg)
+		{
+			__message.setType("WUR");
+			nlWrite(__message, serial, userId);
+			nlWrite(__message, serial, ok);
+			nlWrite(__message, serial, const_cast < std::string& > (shardAddr));
+			nlWrite(__message, serial, const_cast < std::string& > (errorMsg));
+
+
+			return __message;
+		}
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_updateConnectedPlayerCount(NLNET::CMessage &__message, uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		{
+			__message.setType("UCP");
+			nlWrite(__message, serial, nbOnlinePlayers);
+			nlWrite(__message, serial, nbPendingPlayers);
+
+
+			return __message;
+		}
+
+
+
+
+	};
+
 }
 	
 #endif

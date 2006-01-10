@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1 2005/10/03 10:15:33 boucher Exp $
+ * $Id: welcome_service.h,v 1.2 2006/01/10 17:38:48 boucher Exp $
  *
  */
 
@@ -36,7 +36,8 @@ std::string lsChooseShard (const std::string &userName,
 							const std::string &userPriv,
 							const std::string &userExtended,
 							WS::TUserRole userRole,
-							uint32 instanceId);
+							uint32 instanceId,
+							uint32 charSlot);
 
 namespace WS
 {
@@ -46,9 +47,25 @@ namespace WS
 		public WS::CWelcomeServiceSkel
 	{
 
+		// Shortcut to the module instance
+		static CWelcomeServiceMod	*_Instance;
+
 		NLNET::TModuleProxyPtr	_RingSessionManager;
 
-		void onProcessModuleMessage(NLNET::IModuleProxy *sender, NLNET::CMessage &message)
+		// Init module and ensure it's a pseudo singleton
+		virtual void initModule(const NLNET::TParsedCommandLine &initInfo)
+		{
+			CModuleBase::initModule(initInfo);
+			nlassert(_Instance == NULL);
+			_Instance = this;
+		}
+
+		virtual ~CWelcomeServiceMod()
+		{
+			_Instance = NULL;
+		}
+
+		void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 		{
 			if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
 				return;
@@ -75,12 +92,28 @@ namespace WS
 
 	public:
 		// public API
+		static CWelcomeServiceMod *getInstance()
+		{
+			nlassert( _Instance );
+			return _Instance;
+		}
 
-		// receive response from the front end for a player slot to play in
+		// forward response from the front end for a player slot to play in
+		// to the client of this welcome service (usually the Ring Session Manager)
 		void frontendResponse(NLNET::IModuleProxy *waiterModule, uint32 userId, const std::string &reason, const NLNET::CLoginCookie &cookie, const std::string &fsAddr)
 		{
 			CWelcomeServiceClientProxy wscp(waiterModule);
-			wscp.welcomeUserResult(this, userId, reason.empty(), fsAddr);
+			wscp.welcomeUserResult(this, userId, reason.empty(), fsAddr, reason);
+		}
+
+		// send the current number of players on this shard to the Ring Session Manager
+		void updateConnectedPlayerCount(uint32 nbOnlinePlayers, uint32 nbPendingPlayers)
+		{
+			if (!_RingSessionManager) // skip if the RSM is offline
+				return;
+
+			CWelcomeServiceClientProxy wscp(_RingSessionManager);
+			wscp.updateConnectedPlayerCount(this, nbOnlinePlayers, nbPendingPlayers);
 		}
 
 

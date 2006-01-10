@@ -1,7 +1,7 @@
 /** \file module_l5_transport.h
  * transport for layer 5
  *
- * $Id: module_l5_transport.cpp,v 1.2 2005/09/19 16:20:18 boucher Exp $
+ * $Id: module_l5_transport.cpp,v 1.3 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLNET
 		void serial(NLMISC::IStream &s)
 		{
 			s.serial(TransportId);
-			s.serial(TransportId);
+			s.serial(SubNetName);
 			s.serial(InResponse);
 		}
 	};
@@ -71,14 +71,14 @@ namespace NLNET
 		{
 		}
 
-		void sendMessage(CMessage &message) const;
+		void sendMessage(const CMessage &message) const;
 	};
 
 	/** Utility class that generate 8bits unique transport id.
 	 *	The total L5 transport instance is limited to 256.
 	 *	This really should be enough or you have a problem in
 	 *	your design !
-	 *	The allocator keep release ID as long as possible 
+	 *	The allocator keep released ID as long as possible 
 	 *	and reallocated them only when all other ids
 	 *	have been used/allocated.
 	 */
@@ -371,7 +371,7 @@ namespace NLNET
 		}
 
 		// Called to dispatch an incoming message to the gateway
-		void onDispatchMessage(CMessage &msgin, uint16 sid)
+		void onDispatchMessage(const CMessage &msgin, uint16 sid)
 		{
 			nldebug("LNETL6: L5 transport onDispatchMessage from service %u", sid);
 			/// retrieve the route for dispatching
@@ -388,7 +388,7 @@ namespace NLNET
 
 			// read the message size
 			uint32 msgLen;
-			msgin.serial(msgLen);
+			nlRead(msgin, serial, msgLen);
 
 			// lock the sub message
 			msgin.lockSubMessage(msgLen);
@@ -576,7 +576,7 @@ namespace NLNET
 	// register this class in the transport factory
 	NLMISC_REGISTER_OBJECT(IGatewayTransport, CGatewayL5Transport, std::string, string(LAYER5_CLASS_NAME));
 
-	void CL5Route::sendMessage(CMessage &message) const
+	void CL5Route::sendMessage(const CMessage &message) const
 	{
 		CGatewayL5Transport *trpt = static_cast<CGatewayL5Transport*>(_Transport);
 
@@ -586,7 +586,7 @@ namespace NLNET
 		wrapper.serial(trpt->_TransportId);;
 
 		// insert the message in the wrapper
-		wrapper.serialMessage(message);
+		nlWrite(wrapper, serialMessage, message);
 		// send the message
 		CUnifiedNetwork::getInstance()->send(ServiceId, wrapper);
 	}

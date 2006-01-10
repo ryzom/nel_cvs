@@ -1,7 +1,7 @@
 /** \file move_listener.h
  * <File description>
  *
- * $Id: move_listener.h,v 1.4 2001/10/29 09:38:36 corvazier Exp $
+ * $Id: move_listener.h,v 1.5 2006/01/10 17:39:05 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,9 @@
 #include "nel/misc/event_listener.h"
 #include "nel/misc/matrix.h"
 #include "nel/3d/viewport.h"
-#include "3d/scene.h"
-#include "3d/camera.h"
-#include "3d/driver.h"
+#include "nel/../../src/3d/scene.h"
+#include "nel/../../src/3d/camera.h"
+#include "nel/../../src/3d/driver.h"
 
 
 

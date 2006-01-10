@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.15 2005/08/30 17:09:17 boucher Exp $
+ * $Id: p_thread.cpp,v 1.16 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,5 +195,10 @@ bool CPProcess::setCPUMask(uint64 mask)
 
 
 } // NLMISC
+
+#else // NL_OS_UNIX
+
+// remove stupid VC6 warnings
+void foo_p_thread_cpp() {}
 
 #endif // NL_OS_UNIX

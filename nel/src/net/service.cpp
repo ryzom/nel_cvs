@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238 2005/10/06 09:16:58 guignot Exp $
+ * $Id: service.cpp,v 1.239 2006/01/10 17:38:47 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -69,6 +69,8 @@
 #include "nel/net/module_manager.h"
 
 #include "nel/memory/memory_manager.h"
+
+#include "stdin_monitor_thread.h"
 
 
 //
@@ -242,10 +244,19 @@ static void initSignal()
 
 void cbDirectoryChanged (IVariable &var)
 {
-	string vp = CPath::getFullPath(var.toString());
-	nlinfo ("SERVICE: '%s' changed to '%s'", var.getName().c_str(), vp.c_str());
-	var.fromString(vp);
+	IService *instance = IService::getInstance();
 
+	// Convert to full path if required
+	// (warning: ConvertSavesFilesDirectoryToFullPath, read from the config file, won't be ready for the initial variable assigments done before the config file has been loaded)
+	string vp = var.toString();
+	if ((var.getName() != "SaveFilesDirectory") || instance->ConvertSavesFilesDirectoryToFullPath.get())
+	{
+		vp = CPath::getFullPath(vp);
+		var.fromString(vp);
+	}
+	nlinfo ("SERVICE: '%s' changed to '%s'", var.getName().c_str(), vp.c_str());
+
+	// Update the running directory if needed
 	if (var.getName() == "RunningDirectory")
 	{
 #ifdef NL_OS_WINDOWS
@@ -254,6 +265,10 @@ void cbDirectoryChanged (IVariable &var)
 		chdir (vp.c_str());
 #endif
 	}
+
+	// Call the callback if provided
+	if (instance->_DirectoryChangedCBI)
+		instance->_DirectoryChangedCBI->onVariableChanged(var);
 }
 
 
@@ -314,6 +329,7 @@ IService::IService() :
 	WindowDisplayer(0),
 	WriteFilesDirectory("nel", "WriteFilesDirectory", "directory where to save generic shard information (packed_sheets for example)", ".", 0, true, cbDirectoryChanged),
 	SaveFilesDirectory("nel", "SaveFilesDirectory", "directory where to save specific shard information (shard time for example)", ".", 0, true, cbDirectoryChanged),
+	ConvertSavesFilesDirectoryToFullPath("nel", "ConvertSaveFilesDirectoryToFullPath", "If true (default), the provided SaveFilesDirectory will be converted to a full path (ex: saves -> /home/dir/saves)", true, 0, true ),
 	ListeningPort("nel", "ListeningPort", "listening port for this service", 0, 0, true),
 	_RecordingState(CCallbackNetBase::Off),
 	_UpdateTimeout(100),
@@ -331,7 +347,8 @@ IService::IService() :
 	_ResetMeasures(false),
 	_ShardId(0),
 	_ClosureClearanceStatus(CCMustRequestClearance),
-	_RequestClosureClearanceCallback(NULL)
+	_RequestClosureClearanceCallback(NULL),
+	_DirectoryChangedCBI(NULL)
 {
 	// Singleton
 	_Instance = this;
@@ -340,9 +357,14 @@ IService::IService() :
 	INelContext::getInstance().setSingletonPointer("IService", this);
 }
 
+IService::~IService()
+{
+	// unregister the singleton
+	INelContext::getInstance().releaseSingletonPointer("IService", this);
+}
 
 
-bool IService::haveArg (char argName)
+bool IService::haveArg (char argName) const
 {
 	for (uint32 i = 0; i < _Args.size(); i++)
 	{
@@ -357,7 +379,8 @@ bool IService::haveArg (char argName)
 	return false;
 }
 
-string IService::getArg (char argName)
+
+string IService::getArg (char argName) const
 {
 	for (uint32 i = 0; i < _Args.size(); i++)
 	{
@@ -387,6 +410,42 @@ string IService::getArg (char argName)
 		}
 	}
 	throw Exception ("Parameter '-%c' is not found in command line", argName);
+}
+
+
+bool IService::haveLongArg (const char* argName) const
+{
+	for (uint32 i = 0; i < _Args.size(); i++)
+	{
+		if (_Args[i].left(2)=="--" && _Args[i].leftCrop(2).splitTo('=')==argName)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+
+string IService::getLongArg (const char* argName) const
+{
+	for (uint32 i = 0; i < _Args.size(); i++)
+	{
+		if (_Args[i].left(2)=="--" && _Args[i].leftCrop(2).splitTo('=')==argName)
+		{
+			NLMISC::CSString val= _Args[i].splitFrom('=');
+			if (!val.empty())
+			{
+				return val.unquoteIfQuoted();
+			}
+			if (i+1<_Args.size() && _Args[i+1].c_str()[0]!='-')
+			{
+				return _Args[i+1].unquoteIfQuoted();
+			}
+
+			return std::string();
+		}
+	}
+	return std::string();
 }
 
 
@@ -509,6 +568,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
+		nlinfo("Just in case");
 		// init the module manager
 		IModuleManager::getInstance();
 		//
@@ -533,7 +593,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		ListeningPort = servicePort;
 
 		setReportEmailFunction ((void*)sendEmail);
-		setDefaultEmailParams ("gw.nevrax.com", "", "lecroart@nevrax.com");
+		setDefaultEmailParams ("gw.nevrax.com", "", "cado@nevrax.com");
 
 
 		//
@@ -550,7 +610,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// check if the default exists
 			if (!CFile::fileExists(ConfigDirectory.c_str() + _LongName + "_default.cfg"))
 			{
-				nlerror ("SERVICE: The config file '%s' is not found, neither the default one, can't launch the service", cfn.c_str());
+				nlerror ("SERVICE: Neither the config file '%s' nor the default one can be found, can't launch the service", cfn.c_str());
 			}
 			else
 			{
@@ -573,8 +633,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if (haveArg('Z'))
 		{
-			// release the module manager
-			IModuleManager::getInstance().releaseInstance();
+			string s = IService::getInstance()->getArg('Z');
+			if (s == "u")
+			{
+				// do not release the module manager
+			}
+			else
+			{
+				// release the module manager
+				IModuleManager::getInstance().releaseInstance();
+			}
+
 			return 0;
 		}
 		
@@ -593,19 +662,30 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		changeLogDirectory (LogDirectory);
 
-		// we create the log with service name filename ("test_service_ALIAS.log" for example)
-		string logname = LogDirectory.toString() + _LongName;
-		if (haveArg('N'))
-			logname += "_" + toLower(getArg('N'));
-		logname += ".log";
-		fd.setParam (logname, false);
+		bool noLog= (ConfigFile.exists ("DontLog")) && (ConfigFile.getVar("DontLog").asInt() == 1);
+		noLog|=haveLongArg("nolog");
+		if (!noLog)
+		{
+			// we create the log with service name filename ("test_service_ALIAS.log" for example)
+			string logname = LogDirectory.toString() + _LongName;
+			if (haveArg('N'))
+				logname += "_" + toLower(getArg('N'));
+			logname += ".log";
+			fd.setParam (logname, false);
 
-		DebugLog->addDisplayer (&fd);
-		InfoLog->addDisplayer (&fd);
-		WarningLog->addDisplayer (&fd);
-		AssertLog->addDisplayer (&fd);
-		ErrorLog->addDisplayer (&fd);
-		CommandLog.addDisplayer (&fd, true);
+			DebugLog->addDisplayer (&fd);
+			InfoLog->addDisplayer (&fd);
+			WarningLog->addDisplayer (&fd);
+			AssertLog->addDisplayer (&fd);
+			ErrorLog->addDisplayer (&fd);
+			CommandLog.addDisplayer (&fd, true);
+		}
+
+		bool dontUseStdIn= (ConfigFile.exists ("DontUseStdIn")) && (ConfigFile.getVar("DontUseStdIn").asInt() == 1);
+		if (!dontUseStdIn)
+		{
+			IStdinMonitorSingleton::getInstance()->init();
+		}
 
 		//
 		// Init the hierarchical timer
@@ -1099,7 +1179,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// if we can, try to setup where to save files
 		if (IService::getInstance()->haveArg('W'))
 		{
-			// use the command line param if set
+			// use the command line param if set (must be done after the config file has been loaded)
 			SaveFilesDirectory = IService::getInstance()->getArg('W');
 		}
 
@@ -1215,6 +1295,12 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 					CHTimer::endBench();
 					break;
 				}
+			}
+			
+			// deal with any input waiting from stdin
+			{
+				H_AUTO(NLNETStdinMonitorUpdate);
+				IStdinMonitorSingleton::getInstance()->update();
 			}
 			
 			// if the launching mode is 'quit after the first update' we set the exit signal
@@ -1441,8 +1527,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 	catch (ESocket &e)
 	{
-		// Catch NeL network exception to release the system cleanly
-		setExitStatus (EXIT_FAILURE);
+		// Catch NeL network exception to release the system cleanly		setExitStatus (EXIT_FAILURE);
 		ErrorLog->displayNL( "NeL Exception in \"%s\": %s", _ShortName.c_str(), e.what() );
 	}
 	catch ( uint ) // SEH exceptions
@@ -1508,6 +1593,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			delete WindowDisplayer;
 			WindowDisplayer = NULL;
 		}
+
+		// remove the stdin monitor thread
+		IStdinMonitorSingleton::getInstance()->release();
 
 		nlinfo ("SERVICE: Service released succesfully");
 	}

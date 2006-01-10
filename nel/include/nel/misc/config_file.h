@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.45 2005/11/02 14:12:07 guignot Exp $
+ * $Id: config_file.h,v 1.46 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

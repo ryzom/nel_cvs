@@ -1,7 +1,7 @@
 /** \file path_mesh_alloc.cpp
  * TODO: File description
  *
- * $Id: path_mesh_alloc.cpp,v 1.2 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: path_mesh_alloc.cpp,v 1.3 2006/01/10 17:38:48 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,3 +25,7 @@
 
 #include "stdafx.h"
 #include "path_mesh_alloc.h"
+
+// remove stupid VC 6 warnings
+void foo_path_mesh_alloc_cpp() {};
+

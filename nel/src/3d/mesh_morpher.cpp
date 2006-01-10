@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * TODO: File description
  *
- * $Id: mesh_morpher.cpp,v 1.13 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_morpher.cpp,v 1.14 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -370,7 +370,7 @@ void CMeshMorpher::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 #define	NL3D_RAWSKIN_VERTEX_SIZE	32
 
 void CMeshMorpher::updateRawSkin (CVertexBuffer *vbOri,
-					const NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
+					NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
 					std::vector<CAnimatedMorph> *pBSFactor)
 {
 	uint32 i, j;

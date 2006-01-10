@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * TODO: File description
  *
- * $Id: driver_user.cpp,v 1.55 2005/07/22 12:35:15 legallo Exp $
+ * $Id: driver_user.cpp,v 1.56 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,7 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	_VBColorUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	_VBQuadsColUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
+	_VBTrisColUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	_VBQuadsColUv2.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::TexCoord1Flag);
 	// max is quad.
 	_VBFlat.setNumVertices(4);
@@ -179,6 +180,7 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBUv.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
 	_VBColorUv.setPreferredMemory(CVertexBuffer::RAMVolatile, false);
 	_VBQuadsColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
+	_VBTrisColUv.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
 	_VBQuadsColUv2.setPreferredMemory (CVertexBuffer::RAMVolatile, false);
 	// names
 	_VBFlat.setName("_VBFlat");
@@ -186,6 +188,7 @@ CDriverUser::CDriverUser (uint windowIcon, bool direct3d)
 	_VBUv.setName("_VBUv");
 	_VBColorUv.setName("_VBColorUv");
 	_VBQuadsColUv.setName("_VBQuadsColUv");
+	_VBTrisColUv.setName("_VBTrisColUv");
 	_VBQuadsColUv2.setName("_VBQuadsColUv2");
 
 	_PBLine.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
@@ -1079,6 +1082,96 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads
 	_Driver->renderRawQuads(convMat(mat), 0, nbQuads);
 }
 
+
+// ***************************************************************************
+void CDriverUser::drawTriangles(const std::vector<NLMISC::CTriangleColorUV> &tris, UMaterial &mat)
+{
+	drawTriangles(&tris[0], (uint32) tris.size(), mat);
+}
+
+// ***************************************************************************
+void CDriverUser::drawTriangles(const NLMISC::CTriangleColorUV *tris, uint32 nbTris, UMaterial &mat)
+{
+	if (nbTris == 0) return;
+	CVertexBuffer		&vb= _VBTrisColUv;
+	vb.setNumVertices (3*nbTris);
+	{
+		CVertexBufferReadWrite vba;
+		vb.lock (vba);		
+		uint8	*dstPtr= (uint8*)vba.getVertexCoordPointer();
+		uint32	colorOfs= vb.getColorOff();
+		uint32	uvOfs0= vb.getTexCoordOff(0);		
+		uint32	vSize= vb.getVertexSize();
+		const NLMISC::CTriangleColorUV *lastTri = tris + nbTris;
+		if (vb.getVertexColorFormat() == CVertexBuffer::TRGBA)
+		{
+			do		
+			{				
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv0;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CRGBA*)(dstPtr+colorOfs)= tris->Color0;
+				dstPtr+= vSize;
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv1;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CRGBA*)(dstPtr+colorOfs)= tris->Color1;
+				dstPtr+= vSize;
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv2;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CRGBA*)(dstPtr+colorOfs)= tris->Color2;
+				dstPtr+= vSize;			
+				++ tris;
+			}
+			while (tris != lastTri);
+		}
+		else
+		{
+			do		
+			{				
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V0;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv0;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CBGRA*)(dstPtr+colorOfs)= tris->Color0;
+				dstPtr+= vSize;
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V1;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv1;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CBGRA*)(dstPtr+colorOfs)= tris->Color1;
+				dstPtr+= vSize;
+				//
+				CHECK_VBA_RANGE(vba, dstPtr+0, sizeof(CVector))
+				*(CVector*)(dstPtr+0)= tris->V2;
+				CHECK_VBA_RANGE(vba, dstPtr+uvOfs0, sizeof(CUV))
+				*(CUV*)(dstPtr+uvOfs0)= tris->Uv2;			
+				CHECK_VBA_RANGE(vba, dstPtr+colorOfs, sizeof(CRGBA))
+				*(CBGRA*)(dstPtr+colorOfs)= tris->Color2;
+				dstPtr+= vSize;			
+				++ tris;
+			}
+			while (tris != lastTri);
+		}
+	}
+	
+	_Driver->activeVertexBuffer(vb);
+	_Driver->renderRawTriangles(convMat(mat), 0, nbTris);
+}
 
 // ***************************************************************************
 // ***************************************************************************

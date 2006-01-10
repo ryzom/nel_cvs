@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.75 2005/08/29 16:12:13 boucher Exp $
+ * $Id: stream.h,v 1.76 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,17 @@ struct ESeekNotSupported : public EStream
 	ESeekNotSupported(const IStream &f) : EStream(f, "Seek fonctionnality is not supported" ) {}
 };
 
+struct ENotOutputStream : public EStream
+{
+	ENotOutputStream() : EStream("The stream is NOT an output stream, can't write in" ) {}
+	ENotOutputStream(const IStream &f) : EStream(f, "The stream is NOT an output stream, can't write in" ) {}
+};
+struct ENotInputStream : public EStream
+{
+	ENotInputStream () : EStream("The stream is NOT an input stream, cannot read in" ) {}
+	ENotInputStream (const IStream &f) : EStream(f, "The stream is NOT an input stream, cannot read in" ) {}
+};
+
 /// This exception is raised when someone tries to serialize in more than there is.
 struct EStreamOverflow : public EStream
 {
@@ -124,6 +135,7 @@ struct EStreamOverflow : public EStream
 
 
 class	IStreamable;
+
 
 // ======================================================================================================
 /**
@@ -241,9 +253,31 @@ public:
     template<class T>
 	void			serial(T &obj)  { obj.serial(*this); }
 
+	// an utility template to unconst a type
+	template <class T> static T& unconst(const T &t) { return const_cast<T&>(t);}
 
-	/** \name Base type serialisation.
-	 * Those method are a specialisation of template method "void serial(T&)".
+#define nlWriteSerial(_stream, _obj) 		\
+	if ((_stream).isReading())			\
+		throw NLMISC::ENotOutputStream();	\
+	(_stream).serial(NLMISC::IStream::unconst(_obj));
+
+#define nlWrite(_stream, _serialType, _obj)	\
+	if ((_stream).isReading())			\
+		throw NLMISC::ENotOutputStream();	\
+	(_stream)._serialType(NLMISC::IStream::unconst(_obj));
+
+#define nlReadSerial(_stream, _obj) 		\
+	if (!(_stream).isReading())			\
+		throw ENotInputStream();	\
+	NLMISC::IStream::unconst(_stream).serial(_obj);
+
+#define nlRead(_stream, _serialType, _obj)	\
+	if (!(_stream).isReading())			\
+		throw NLMISC::ENotInputStream();	\
+	NLMISC::IStream::unconst(_stream)._serialType(_obj);
+
+	/** \name Base type serialization.
+	 * Those method are a specialization of template method "void serial(T&)".
 	 */
 	//@{
 
@@ -597,7 +631,7 @@ public:
 	 * \return true if seek sucessfull.
 	 * \see ESeekNotSupported SeekOrigin getPos
 	 */
-	virtual bool		seek (sint32 offset, TSeekOrigin origin) ;
+	virtual bool		seek (sint32 offset, TSeekOrigin origin) const;
 
 
 	/** 
@@ -611,7 +645,7 @@ public:
 	 * \return the new offset regarding from the origin.
 	 * \see ESeekNotSupported SeekOrigin seek
 	 */
-	virtual sint32		getPos () ;
+	virtual sint32		getPos () const;
 
 
 	/** Get a name for this stream. maybe a fileName if FileStream.

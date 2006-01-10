@@ -1,7 +1,7 @@
 /** \file module_socket.cpp
  * module socket implementation
  *
- * $Id: module_socket.cpp,v 1.3 2005/08/29 16:17:38 boucher Exp $
+ * $Id: module_socket.cpp,v 1.4 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ namespace NLNET
 		_PluggedModules.removeWithB(pluggedModule);
 	}
 
-	void CModuleSocket::sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message )
+	void CModuleSocket::sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message )
 			throw (EModuleNotPluggedHere)
 	{
 		TPluggedModules::TBToAMap::const_iterator it(_PluggedModules.getBToAMap().find(senderModule));
@@ -107,7 +107,7 @@ namespace NLNET
 
 	}
 
-	void CModuleSocket::broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+	void CModuleSocket::broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 	{
 		TPluggedModules::TBToAMap::const_iterator it(_PluggedModules.getBToAMap().find(senderModule));

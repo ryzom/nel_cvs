@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.40 2005/12/14 18:26:18 cado Exp $
+ * $Id: admin_service.cpp,v 1.41 2006/01/10 17:38:48 boucher Exp $
  *
  */
 
@@ -54,6 +54,8 @@
 #include "nel/net/service.h"
 #include "nel/net/varpath.h"
 #include "nel/net/email.h"
+
+#include <mysql.h>
 
 #include "connection_web.h"
 

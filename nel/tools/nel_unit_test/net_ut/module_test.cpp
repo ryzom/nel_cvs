@@ -1,6 +1,7 @@
 
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/command.h"
+#include "nel/misc/path.h"
 #include "nel/net/module_common.h"
 #include "nel/net/module_manager.h"
 #include "nel/net/module.h"
@@ -39,7 +40,7 @@ public:
 	void				onModuleUpdate()
 	{
 	}
-	/** The service main loop is terminating it job', all module while be
+	/** The service main loop is terminating it job', all module will be
 	 *	disconnected and removed after this callback.
 	 */
 	void				onApplicationExit() 
@@ -61,7 +62,7 @@ public:
 			ModuleType0.erase(moduleProxy);
 	}
 
-	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 		if (message.getName() == "DEBUG_MOD_PING")
 			PingCount++;
@@ -81,7 +82,7 @@ public:
 		}
 		else if (message.getName() == "HELLO2")
 		{
-			// the response for the life, the universe and all other thinks...
+			// the response for the life, the universe and all other things...
 			throw 42;
 		}
 	}
@@ -150,7 +151,7 @@ public:
 
 NLNET_REGISTER_MODULE_FACTORY(CModuleType0, "ModuleType0");
 
-// A module that don't support immediate dispatching
+// A module that doesn't support immediate dispatching
 class CModuleAsync : public CModuleType0
 {
 public:
@@ -373,6 +374,9 @@ NLMISC_REGISTER_OBJECT(CGatewaySecurity, CTestSecurity2, std::string, "TestSecur
 // Test suite for Modules class
 class CModuleTS : public Test::Suite
 {
+	string	_WorkingPath;
+	string	_RestorePath;
+
 public:
 	// utility to look for a specified proxy in a vector of proxy
 	// return true if the proxy if found
@@ -401,7 +405,20 @@ public:
 		return NULL;
 	}
 
-	CModuleTS ()
+	void setup()
+	{
+		_RestorePath = CPath::getCurrentPath();
+
+		CPath::setCurrentPath(_WorkingPath.c_str());
+	}
+
+	void tear_down()
+	{
+		CPath::setCurrentPath(_RestorePath.c_str());
+	}
+
+	CModuleTS (const std::string &workingPath)
+		: _WorkingPath(workingPath)
 	{
 		TEST_ADD(CModuleTS::testModuleInitInfoParsing);
 		TEST_ADD(CModuleTS::testModuleInitInfoQuering);
@@ -442,7 +459,7 @@ public:
 		IModule *m1 = mm.createModule("ModuleType0", "m1", "");
 		IModule *m2 = mm.createModule("ModuleType0", "m2", "");
 
-		// plug the two module in the gateway
+		// plug the two modules in the gateway
 		cr.execute("m1.plug gw", InfoLog());
 		cr.execute("m2.plug gw", InfoLog());
 
@@ -491,22 +508,22 @@ public:
 	{
 		// Check that security plug-in work well.
 		//
-		//	We connect tree gateway in series with the central gateway
-		//	using a security module that add security data to
+		//	We connect three gateway in series with the central gateway
+		//	using a security module that adds security data to
 		//	proxies :
-		//		For local proxies, it add type 1 security data
-		//		For foreign proxies, it add type 2 security data
-		//		for foreign proxies, it remove any type 1 security data found
+		//		For local proxies, it adds type 1 security data
+		//		For foreign proxies, it adds type 2 security data
+		//		for foreign proxies, it removes any type 1 security data found
 		//
 		//         gw1 (l3c) -------- (l3s) gw2 (l3c) ------ (l3s) gw3
 		//          ^                        ^
 		//          |                        |
 		//    SecurityPlugin2          SecurityPlugin1
 		//
-		//	After connecting and plug-in each gateway in themselves, 
+		//	After connecting and plugging-in each gateway into themselves, 
 		//	we check the presence and content of the security datas.
 		//  then we remove the securityPlugin1 and check that all 
-		//	security data have been remove,
+		//	security data have been removed,
 		//	Then, we re create the securityPlugin1 and recheck
 		//	then one again, we remove it and recheck.
 		//
@@ -962,19 +979,19 @@ public:
 	void distanceAndConnectionLoop()
 	{
 		// Check that we support a closed loop or multi connection
-		// of gateway and that the gateway choose the best 
+		// of gateway and that the gateway chooses the best 
 		// route to reach a module when more than one is possible
 		// and that the distance is updated
 		//
-		// For this test, we use the following context
+		// For this test, we use the following context:
 		//	three gateway (gw1, gw2, gw3), each having a layer 3
 		//	server and client transport.
 		//	one gateway (gw4) having just a layer3 server
-		//	gw1 connect on gw2, gw2 connect on gw3, gw3 connect on gw4.
-		//	we check the module list and distance, then gw3 connect to gw1, closing
+		//	gw1 connects on gw2, gw2 connects on gw3, gw3 connects on gw4.
+		//	we check the module list and distance, then gw3 connects to gw1, closing
 		//	the loop.
 		//	we recheck module list and distance.
-		//	We then, disconnect gw3 from gw1 and recheck module list and distance.
+		//	We then disconnect gw3 from gw1 and recheck module list and distance.
 		//
 		//	Finally, we create a second connection from gw1 to gw2 and
 		//	recheck module list and distances
@@ -1003,7 +1020,7 @@ public:
 		TEST_ASSERT(gw3 != NULL);
 		TEST_ASSERT(gw4 != NULL);
 
-		// plug gateway in themselves
+		// plug gateway into themselves
 		IModuleSocket *sGw1, *sGw2, *sGw3, *sGw4;
 		sGw1 = mm.getModuleSocket("gw1");
 		sGw2 = mm.getModuleSocket("gw2");
@@ -1061,7 +1078,7 @@ public:
 		}
 
 		// check the modules list
-		// ok, now, check that each gateway known the gateway it must known
+		// ok, now, check that each gateways know the gateway it must know
 		IModuleGateway *gGw1, *gGw2, *gGw3, *gGw4;
 		gGw1 = dynamic_cast<IModuleGateway *>(gw1);
 		TEST_ASSERT(gGw1 != NULL);
@@ -1386,24 +1403,24 @@ public:
 
 	void firewalling()
 	{
-		// check that, with firewall mode enable, unsafe root can only see protected
-		// module if they initiate the dialog first (i.e a protected module send
+		// check that, with firewall mode enabled, unsafe root can only see protected
+		// modules if they initiate the dialog first (i.e only a protected module can send
 		// a message to an unsafe module).
 		//
 		// for this test, we have the following context :
-		// 'master' : a gateway that access connection on two transport, one 'firewalled', the other normal
+		// 'master' : a gateway that accesses connection on two transports, one 'firewalled', the other one normal
 		// 'peer1' : gateway connected to gateway 'master' on a firewalled transport
-		// 'peer2' : gateway connected to gateway 'master' on a firewalled  transport
+		// 'peer2' : gateway connected to gateway 'master' on a firewalled transport
 		// 'other' : gateway connected to gateway 'master' on a classic transport
 		//
 		//	peer1 (l3c)-----\
 		//			         >-|<- (l3s1/Firewalled) master (l3s2) ----- (l3c) other
 		//	peer2 (l3c)-----/
 		//
-		//  'peer1' and 'peer2' must not see any module unless they try to communicate with them
+		//  'peer1' and 'peer2' must not see any module except modules that try to communicate with them
 		//	'master' and 'other' must see 'peer1', 'peer2', 'master' and 'other'
 		//
-		//	Switching OFF the firewall should disclose all module,
+		//	Switching OFF the firewall should disclose all modules,
 		//	switching ON then must throw an exception
 
 		IModuleManager &mm = IModuleManager::getInstance();
@@ -1466,14 +1483,14 @@ public:
 		cmd = "other.transportCmd l3c(connect addr=localhost:8061)";
 		TEST_ASSERT(cr.execute(cmd, InfoLog()));
 
-		// d'ho ! all done, now lets run some loop of update
+		// d'ho ! all done, now let's run some loop of update
 		for (uint i=0; i<7; ++i)
 		{
 			mm.updateModules();
 			nlSleep(100);
 		}
 
-		// ok, now, check that each gateway known the gateway it must known
+		// ok, now, check that each gateway only knows the gateway it must know
 		IModuleGateway *gPeer1, *gPeer2, *gMaster, *gOther;
 		gPeer1 = dynamic_cast<IModuleGateway *>(peer1);
 		TEST_ASSERT(gPeer1 != NULL);
@@ -1706,14 +1723,14 @@ public:
 		cmd = "other.transportCmd l3c(connect addr=localhost:8061)";
 		TEST_ASSERT(cr.execute(cmd, InfoLog()));
 
-		// d'ho ! all done, now lets run some loop of update
+		// d'ho ! all done, now let's run some loop of update
 		for (uint i=0; i<7; ++i)
 		{
 			mm.updateModules();
 			nlSleep(100);
 		}
 
-		// ok, now, check that each gateway known the gateway it must known
+		// ok, now, check that each gateway only knows the gateway it must know
 		IModuleGateway *gPeer1, *gPeer2, *gMaster, *gOther;
 		gPeer1 = dynamic_cast<IModuleGateway *>(peer1);
 		TEST_ASSERT(gPeer1 != NULL);
@@ -1849,7 +1866,7 @@ public:
 
 	void gwPlugUnplug()
 	{
-		// check that multiple plug/unplug operation work well
+		// check that multiple plug/unplug operations work well
 		IModuleManager &mm = IModuleManager::getInstance();
 		CCommandRegistry &cr = CCommandRegistry::getInstance();
 
@@ -2045,7 +2062,7 @@ public:
 		// check that the ping has been received
 		TEST_ASSERT(gwc->getReceivedPingCount() == 1);
 
-		// send two crossing message simultaneously
+		// send two crossing messages simultaneously
 		vector<IModuleProxy*>	proxiesC;
 		gwc->getModuleProxyList(proxiesC);
 		TEST_ASSERT(proxiesC.size() == 2);
@@ -2385,7 +2402,7 @@ public:
 	{
 		string cmd;
 		// load a library
-		cmd = "moduleManager.loadLibrary net_ut/net_module_lib_test/net_module_lib_test";
+		cmd = "moduleManager.loadLibrary net_module_lib_test/net_module_lib_test";
 		TEST_ASSERT(CCommandRegistry::getInstance().execute(cmd, InfoLog()));
 
 		// dump the module state
@@ -2502,7 +2519,7 @@ public:
 
 	void loadModuleLib()
 	{
-		string moduleLibName = "net_ut/net_module_lib_test/net_module_lib_test";
+		string moduleLibName = "net_module_lib_test/net_module_lib_test";
 
 		IModuleManager &mm = IModuleManager::getInstance();
 		TEST_ASSERT(mm.loadModuleLibrary(moduleLibName));
@@ -2636,7 +2653,7 @@ public:
 };
 
 
-Test::Suite *createModuleTS()
+Test::Suite *createModuleTS(const std::string &workingPath)
 {
-	return new CModuleTS;
+	return new CModuleTS(workingPath);;
 }

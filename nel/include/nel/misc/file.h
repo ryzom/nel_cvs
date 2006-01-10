@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.28 2005/02/22 10:14:12 besson Exp $
+ * $Id: file.h,v 1.29 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,9 +108,9 @@ public:		// Advanced Usage.
 	/// flush the file.
 	void	flush();
 	/// Seek the file
-	bool	seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream);
+	bool	seek (sint32 offset, IStream::TSeekOrigin origin) const throw(EStream);
 	/// Gt the location of the file pointer
-	sint32	getPos () throw(EStream);
+	sint32	getPos () const throw(EStream);
 
 	// Imp the Name of the stream as the name of the file.
 	virtual std::string		getStreamName() const;
@@ -168,11 +168,11 @@ private:
 	bool _IsAsyncLoading;
 
 	// Cache 
-	bool	_CacheFileOnOpen;
-	bool	_AllowBNPCacheFileOnOpen;
-	uint8	*_Cache;
-	sint32	_ReadPos;
-	uint32	_FileSize;
+	bool			_CacheFileOnOpen;
+	bool			_AllowBNPCacheFileOnOpen;
+	uint8			*_Cache;
+	mutable sint32	_ReadPos;
+	uint32			_FileSize;
 
 	// Big file
 	bool	_AlwaysOpened;
@@ -216,9 +216,9 @@ public:		// Advanced Usage.
 	/// flush the file.
 	void	flush();
 	/// Seek the file
-	bool	seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream);
+	bool	seek (sint32 offset, IStream::TSeekOrigin origin) const throw(EStream);
 	/// Gt the location of the file pointer
-	sint32	getPos () throw(EStream);
+	sint32	getPos () const throw(EStream);
 
 	// Imp the Name of the stream as the name of the file.
 	virtual std::string		getStreamName() const;

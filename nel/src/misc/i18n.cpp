@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.58 2005/10/25 17:15:10 boucher Exp $
+ * $Id: i18n.cpp,v 1.59 2006/01/10 17:38:47 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -458,7 +458,8 @@ void CI18N::readTextFile(const std::string &filename,
 	// Fast read all the text in binary mode.
 	std::string text;
 	text.resize(file.getFileSize());
-	file.serialBuffer((uint8*)(&text[0]), text.size());
+	if (file.getFileSize() > 0)
+		file.serialBuffer((uint8*)(&text[0]), text.size());
 
 	// Transform the string in ucstring according to format header
 	if (!text.empty())

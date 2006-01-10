@@ -1,7 +1,7 @@
 /** \file uv.h
  * TODO: File description
  *
- * $Id: uv.h,v 1.6 2005/02/22 10:14:12 besson Exp $
+ * $Id: uv.h,v 1.7 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,15 @@ inline CUV operator * (float f, const CUV &uv)
 inline CUV operator * (const CUV &uv, float f)
 {
 	return f * uv;
+}
+
+// blend (faster version than the generic version found in algo.h)
+inline CUV blend(const CUV &uv0, const CUV &uv1, float lambda)
+{
+	float invLambda = 1.f - lambda;
+	return CUV(invLambda * uv0.U + lambda * uv1.U,
+		       invLambda * uv0.V + lambda * uv1.V);
+				   
 }
 
 

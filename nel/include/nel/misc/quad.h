@@ -1,7 +1,7 @@
 /** \file quad.h
  * TODO: File description
  *
- * $Id: quad.h,v 1.4 2005/02/22 10:14:12 besson Exp $
+ * $Id: quad.h,v 1.5 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,6 +51,19 @@ public:
 	/// Constructor
 	CQuad() {}
 
+	/// Constructor
+	CQuad(const NLMISC::CVector &v0, const NLMISC::CVector &v1, const NLMISC::CVector &v2, const NLMISC::CVector &v3) 
+		: V0(v0), V1(v1), V2(v2), V3(v3)
+	{}
+
+	void set(const NLMISC::CVector &v0, const NLMISC::CVector &v1, const NLMISC::CVector &v2, const NLMISC::CVector &v3)
+	{
+		V0 = v0;
+		V1 = v1;
+		V2 = v2;
+		V3 = v3;
+	}
+
 	const CQuad &operator = ( const CQuad& q)
 	{ 
 		V0 = q.V0;
@@ -59,6 +72,7 @@ public:
 		V3 = q.V3;
 		return *this;
 	}
+	
 };
 
 

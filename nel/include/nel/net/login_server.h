@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.19 2005/10/03 10:08:05 boucher Exp $
+ * $Id: login_server.h,v 1.20 2006/01/10 17:38:46 boucher Exp $
  * 
  */
 
@@ -81,7 +81,7 @@ public:
 	static void init (const std::string &listenAddr, TDisconnectClientCallback dc);
 
 	/// Used only in UDP, check if the cookie is valid. return empty string if valid, reason otherwise
-	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc, std::string &userName, std::string &userPriv, std::string &userExtended, uint32 &instanceId);
+	static std::string CLoginServer::isValidCookie (const CLoginCookie &lc, std::string &userName, std::string &userPriv, std::string &userExtended, uint32 &instanceId, uint32 &charSlot);
 
 	/// Call this method when a user is disconnected or the server disconnect the user.
 	/// This method will warn the login system that the user is not here anymore
@@ -89,6 +89,9 @@ public:
 
 	/// Call this method to retrieve the listen address
 	static const std::string &getListenAddress();
+
+	/// Return true if we are in 'dev' mode
+	static bool acceptsInvalidCookie();
 
 private:
 

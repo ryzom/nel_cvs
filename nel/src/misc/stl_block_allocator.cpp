@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.cpp
  * TODO: File description
  *
- * $Id: stl_block_allocator.cpp,v 1.3 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: stl_block_allocator.cpp,v 1.4 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,9 @@
 #include "stdmisc.h"
 
 #include "nel/misc/stl_block_allocator.h"
+
+// remove stupid VC6 warnings
+void foo_stl_block_allocator_cpp() {}
 
 
 namespace NLMISC {

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.34 2005/10/05 16:06:43 boucher Exp $
+ * $Id: buf_client.cpp,v 1.35 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -436,7 +436,12 @@ void CClientReceiveTask::run()
 			while ( ! _NBBufSock->Sock->dataAvailable() )
 			{
 				if ( ! _NBBufSock->Sock->connected() )
-					throw ESocketConnectionClosed();
+				{
+					nldebug( "LNETL1: Client connection %s closed", sockId()->asString().c_str() );
+					// The socket went to _Connected=false when throwing the exception
+					connected = false;
+					break;
+				}
 			}
 
 			// Process the data received
@@ -451,47 +456,6 @@ void CClientReceiveTask::run()
 			}
 			
 			NbLoop++;
-
-			/* // OLD: blocking client connection
-			// Receive message length (in blocking mode)
-			TBlockSize blocklen;
-			uint32 lenoflen = sizeof(blocklen);
-			sock()->receive( (uint8*)&blocklen, lenoflen );
-			uint32 len = ntohl( blocklen );
-	
-			if ( len != 0 )
-			{
-				// Test size limit
-				if ( len > _Client->maxExpectedBlockSize() )
-				{
-					nlwarning( "LNETL1: Socket %s received length exceeding max expected, in block header... Disconnecting", _SockId->asString().c_str() );
-					throw ESocket( "Received length exceeding max expected", false );
-				}
-
-				// Receive message payload (in blocking mode)
-				CObjectVector<uint8> buffer;
-				buffer.resize(len+1);
-
-				sock()->receive( buffer.getPtr(), len );
-				
-				//commented out for optimisation: nldebug( "LNETL1: Client %s received buffer (%u bytes)", _SockId->asString().c_str(), buffer.size() );
-				// Add event type
-				buffer[len] = CBufNetBase::User;
-
-				// Push message into receive queue
-				_Client->pushMessageIntoReceiveQueue( buffer.getPtr(), buffer.size() );
-			}
-			else
-			{
-				nlwarning( "LNETL1: Socket %s received null length in block header", _SockId->asString().c_str() );
-			}
-			*/
-		}
-		catch ( ESocketConnectionClosed& )
-		{
-			nldebug( "LNETL1: Client connection %s closed", sockId()->asString().c_str() );
-			// The socket went to _Connected=false when throwing the exception
-			connected = false;
 		}
 		catch ( ESocket& )
 		{

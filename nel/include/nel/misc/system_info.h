@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.15 2005/02/22 10:14:12 besson Exp $
+ * $Id: system_info.h,v 1.16 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,9 @@ public:
 	/** returns all the physical memory on this computer
 	  */
 	static uint32 totalPhysicalMemory ();
+
+	/* Return the amount of allocated system memory */
+	static uint32 getAllocatedSystemMemory ();
 
 	/** returns all the virtual memory used by this process
 	  */

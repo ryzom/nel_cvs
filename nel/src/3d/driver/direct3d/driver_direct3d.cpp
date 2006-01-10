@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.34 2005/09/16 09:38:08 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.35 2006/01/10 17:38:47 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1795,7 +1795,7 @@ bool CDriverD3D::clearStencilBuffer(float stencilval)
 	setupViewport (CViewport());
 	updateRenderVariables ();
 
-	bool result = _DeviceInterface->Clear( 0, NULL, D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0,0,0,0), 1.0f, stencilval ) == D3D_OK;
+	bool result = _DeviceInterface->Clear( 0, NULL, D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0,0,0,0), 1.0f, (unsigned long)stencilval ) == D3D_OK;
 
 	// Restaure the old viewport
 	setupViewport (oldViewport);

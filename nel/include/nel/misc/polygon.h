@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18 2005/07/26 15:33:06 vizerie Exp $
+ * $Id: polygon.h,v 1.19 2006/01/10 17:38:46 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,6 +62,9 @@ public:
 	CPolygon(const CVector &a, const CVector &b, const CVector &c);
 
 	sint			getNumVertices() const {return Vertices.size();}
+
+	// build a triangle fan from this polygon, appending relting tris to 'dest'
+	void		toTriFan(std::vector<NLMISC::CTriangle> &dest) const;
 
 	/// Clip a polygon with a set of planes. Cohen-sutherland... clipPolygonBack() is used on planes.
 	void			clip(const CPlane *planes, uint nPlanes);

@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.cpp,v 1.4 2005/12/07 09:46:37 cado Exp $
+ * $Id: app_context.cpp,v 1.5 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,7 @@ CApplicationContext::CApplicationContext()
 	DefaultMsgBoxDisplayer = NULL;
 	DebugNeedAssert = false;
 	NoAssert = false;
+	AlreadyCreateSharedAmongThreads = false;
 
 	contextReady();
 }
@@ -218,6 +219,15 @@ void CApplicationContext::setNoAssert(bool noAssert)
 	NoAssert = noAssert;
 }
 
+bool CApplicationContext::getAlreadyCreateSharedAmongThreads()
+{
+	return AlreadyCreateSharedAmongThreads;
+}
+
+void CApplicationContext::setAlreadyCreateSharedAmongThreads(bool b)
+{
+	AlreadyCreateSharedAmongThreads = b;
+}
 
 CLibraryContext::CLibraryContext(INelContext &applicationContext)
 : _ApplicationContext(applicationContext)
@@ -387,12 +397,24 @@ bool CLibraryContext::getNoAssert()
 	return _ApplicationContext.getNoAssert();
 }
 
+
+
 void CLibraryContext::setNoAssert(bool noAssert)
 {
 //	nlassert(_ApplicationContext != NULL); 
 
 	// just forward the call
 	_ApplicationContext.setNoAssert(noAssert);
+}
+
+bool CLibraryContext::getAlreadyCreateSharedAmongThreads()
+{
+	return _ApplicationContext.getAlreadyCreateSharedAmongThreads();
+}
+
+void CLibraryContext::setAlreadyCreateSharedAmongThreads(bool b)
+{
+	_ApplicationContext.setAlreadyCreateSharedAmongThreads(b);
 }
 
 void initNelLibrary(NLMISC::CLibrary &lib)

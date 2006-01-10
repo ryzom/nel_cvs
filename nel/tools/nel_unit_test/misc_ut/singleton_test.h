@@ -3,6 +3,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/dynloadlib.h"
 #include "nel/misc/command.h"
+#include "nel/misc/path.h"
 
 #include <src/cpptest.h>
 
@@ -52,12 +53,27 @@ CUnsafeSingleton	*CUnsafeSingleton::_Instance = NULL;
 // Test suite for Singleton behavior
 class CSafeSingletonTS : public Test::Suite
 {
+	std::string WorkingPath;
+	std::string OldPath;
 public:
-	CSafeSingletonTS()
+	CSafeSingletonTS(const std::string &workingPath)
+		: WorkingPath(workingPath)
 	{
 		TEST_ADD(CSafeSingletonTS::createSingleton);
 		TEST_ADD(CSafeSingletonTS::accessSingleton);
 		TEST_ADD(CSafeSingletonTS::multiDllSingleton);
+	}
+
+	void setup()
+	{
+		OldPath = NLMISC::CPath::getCurrentPath();
+
+		NLMISC::CPath::setCurrentPath(WorkingPath.c_str());
+	}
+
+	void tear_down()
+	{
+		NLMISC::CPath::setCurrentPath(OldPath.c_str());
 	}
 	
 	void createSingleton()
@@ -91,7 +107,7 @@ public:
 		TEST_ASSERT(CCommandRegistry::getInstance().exists("aDynLibCommand") == false);
 
 		CLibrary lib;
-		if (lib.loadLibrary("misc_ut/dyn_lib_test", true, true, true) != true)
+		if (lib.loadLibrary("dyn_lib_test", true, true, true) != true)
 		{
 			TEST_ASSERT_MSG(false, "failed to reload the dll for testing singletons across dlls");
 			return;

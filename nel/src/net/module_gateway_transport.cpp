@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.6 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ namespace NLNET
 		{
 		}
 
-		void sendMessage(CMessage &message) const;
+		void sendMessage(const CMessage &message) const;
 	};
 
 #define LAYER3_SERVER_CLASS_NAME "L3Server"
@@ -265,7 +265,7 @@ namespace NLNET
 		}
 
 		// Called to dispatch an incoming message to the gateway
-		void onDispatchMessage(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+		void onDispatchMessage(const CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		{
 			TRouteMap::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
@@ -315,7 +315,7 @@ namespace NLNET
 	// register this class in the transport factory
 	NLMISC_REGISTER_OBJECT(IGatewayTransport, CGatewayL3ServerTransport, std::string, string(LAYER3_SERVER_CLASS_NAME));
 
-	void CL3ServerRoute::sendMessage(CMessage &message) const
+	void CL3ServerRoute::sendMessage(const CMessage &message) const
 	{
 		CGatewayL3ServerTransport *trpt = static_cast<CGatewayL3ServerTransport*>(_Transport);
 
@@ -343,7 +343,7 @@ namespace NLNET
 		{
 		}
 
-		void sendMessage(CMessage &message) const
+		void sendMessage(const CMessage &message) const
 		{
 			if (CallbackClient.connected())
 				CallbackClient.send(message);
@@ -607,7 +607,7 @@ namespace NLNET
 		}
 
 		// Called to dispatch an incoming message to the gateway
-		void onDispatchMessage(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+		void onDispatchMessage(const CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 		{
 			TClientRoutes::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());

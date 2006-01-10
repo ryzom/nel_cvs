@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * TODO: File description
  *
- * $Id: mesh_morpher.h,v 1.9 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_morpher.h,v 1.10 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,7 @@ public:
 	
 	// For RawSkin case.
 	void updateRawSkin (CVertexBuffer *vbOri,
-						const NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
+						NLMISC::CObjectVector<CRawSkinVertex*, false>	&vertexRemap, 
 						std::vector<CAnimatedMorph> *pBSFactor);
 
 	void serial (NLMISC::IStream &f) throw(NLMISC::EStream);

@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.h,v 1.7 2005/10/03 10:08:05 boucher Exp $
+ * $Id: module_gateway.h,v 1.8 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,7 +201,7 @@ namespace NLNET
 		virtual void onRouteRemoved(CGatewayRoute *route) =0;
 
 		/// A transport have received a message
-		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin) =0;
+		virtual void onReceiveMessage(CGatewayRoute *from, const CMessage &msgin) =0;
 		//@}
 
 		//@{
@@ -266,13 +266,13 @@ namespace NLNET
 
 		/** Send a message to a module.
 		 */
-		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message) =0;
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message) =0;
 
 		/** Send a message to the module plugged in this gateway.
 		 *	You can override this method to change the dispatching, add filtering,
 		 *	message hacking or interceptor.
 		 */
-		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message) =0;
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const CMessage &message) =0;
 		//@}
 	};
 
@@ -425,7 +425,7 @@ namespace NLNET
 		/// Return the transport that hold this route
 		IGatewayTransport *getTransport() { return _Transport; };
 		/// Send a message via the route
-		virtual void sendMessage(CMessage &message) const =0;
+		virtual void sendMessage(const CMessage &message) const =0;
 	};
 
 

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.32 2005/07/26 15:33:26 vizerie Exp $
+ * $Id: polygon.cpp,v 1.33 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,16 @@ CPolygon::CPolygon(const CVector &a, const CVector &b, const CVector &c)
 	Vertices.push_back(a);
 	Vertices.push_back(b);
 	Vertices.push_back(c);
+}
+
+// ***************************************************************************
+void CPolygon::toTriFan(std::vector<NLMISC::CTriangle> &dest) const
+{
+	sint count = (sint) Vertices.size() - 2;
+	for(sint k = 0; k < count; ++k)
+	{
+		dest.push_back(CTriangle(Vertices[0], Vertices[k + 1], Vertices[k + 2]));
+	}
 }
 
 // ***************************************************************************

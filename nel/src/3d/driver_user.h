@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.51 2005/07/22 12:35:40 legallo Exp $
+ * $Id: driver_user.h,v 1.52 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,6 +109,7 @@ protected:
 
 	CVertexBuffer			_VBQuadsColUv;
 	CVertexBuffer			_VBQuadsColUv2;
+	CVertexBuffer			_VBTrisColUv;
 	// For security, texture are initUnlit() at init()/release().
 	UMaterial				_MatFlat;
 	UMaterial				_MatText;
@@ -352,8 +353,10 @@ public:
 
 	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV> &quad, UMaterial &mat);
 	virtual	void			drawQuads(const std::vector<NLMISC::CQuadColorUV2> &quad, UMaterial &mat);
+	virtual	void			drawTriangles(const std::vector<NLMISC::CTriangleColorUV> &tris, UMaterial &mat);
 	virtual	void			drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat);
-	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat);
+	virtual	void			drawQuads(const NLMISC::CQuadColorUV2 *quads, uint32 nbQuads, UMaterial &mat);	
+	virtual	void			drawTriangles(const NLMISC::CTriangleColorUV *tris, uint32 nbTris, UMaterial &mat);	
 	
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10 2005/10/03 10:08:28 boucher Exp $
+ * $Id: module.cpp,v 1.11 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,11 +58,15 @@ namespace NLNET
 
 			// container is cleared by deleteModule (see below)
 			// make sure the module is effectively destroyed
-			nlassert(sanityCheck == NULL);
+			// NB : is the code assert here, this mean that some user code
+			// (or eventualy NeL code) have kept a smart pointer on the module
+			// and this is bad. All smart pointer MUST be released when the
+			// factory is about to be removed.
+			nlassertex(sanityCheck == NULL, ("Some code have kept pointer on module '%s'", sanityCheck->getModuleName().c_str()));
 		}
 
 		// if the context is still active
-		if (INelContext::isContextInitialised())
+		if (INelContext::isContextInitialised() && IModuleManager::isInitialized())
 			// This factory is no longer available
 			IModuleManager::getInstance().unregisterModuleFactory(this);
 	}
@@ -118,6 +122,12 @@ namespace NLNET
 			module->_SyncMessages.pop_front();
 		}
 	}
+
+	void CModuleTask::processPendingMessage(CModuleBase *module)
+	{
+		flushMessageQueue(module);
+	}
+
 
 	//////////////////////////////////////
 	// Module base implementation
@@ -185,13 +195,20 @@ namespace NLNET
 		return _FullyQualifedModuleName;
 	}
 
-	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+	const std::string	&CModuleBase::getModuleManifest() const
+	{
+		static const string emptyString;
+
+		return emptyString;
+	}
+
+	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
 		if (!_ModuleTasks.empty())
 		{
 			// there is a task running, queue in the message
-			_SyncMessages.push_back(make_pair(senderModuleProxy, CMessage()));
-			_SyncMessages.back().second.swap(message);
+			_SyncMessages.push_back(make_pair(senderModuleProxy, message));
+//			_SyncMessages.back().second.swap(message);
 		}
 		else
 		{
@@ -240,6 +257,15 @@ namespace NLNET
 	{
 		_ModuleTasks.push_back(task);
 	}
+
+	CModuleTask *CModuleBase::getActiveModuleTask()
+	{
+		if (_ModuleTasks.empty())
+			return NULL;
+
+		return _ModuleTasks.front();
+	}
+
 
 	const std::string &CModuleBase::getInitStringHelp()
 	{
@@ -316,7 +342,7 @@ namespace NLNET
 	 *	The call is blocking until receptions of the operation
 	 *	result message (or a module down)
 	 */
-	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
+	void CModuleBase::invokeModuleOperation(IModuleProxy *destModule, const NLNET::CMessage &opMsg, NLNET::CMessage &resultMsg) throw (EInvokeFailed)
 	{
 		nlassert(opMsg.getType() == CMessage::Request);
 
@@ -336,8 +362,11 @@ namespace NLNET
 
 			if (task->mustFailInvoke())
 			{
+				nlassert(!_InvokeStack.empty());
 				// empty the invoke stack
 				_InvokeStack.pop_back();
+
+				task->resetFailInvoke();
 
 				throw EInvokeFailed();
 			}
@@ -350,7 +379,7 @@ namespace NLNET
 				{
 					// we have the response message
 					nlassert(proxy = destModule);
-					resultMsg.swap(msg);
+					resultMsg = msg;
 					// remove this message form the queue
 					_SyncMessages.pop_front();
 					// empty the invoke stack
@@ -369,7 +398,7 @@ namespace NLNET
 				}
 				else
 				{
-					// another message, dispatch it
+					// another message, dispatch it normaly
 					CMessage::TMessageType msgType = msg.getType();
 					try
 					{
@@ -428,7 +457,7 @@ namespace NLNET
 						CModuleTask *task = _ModuleTasks.front();
 						task->failInvoke();
 						// switch to task to unstack one level
-						task->yield();
+						task->resume();
 					}
 				}
 			}
@@ -597,11 +626,13 @@ namespace NLNET
 	 * CModuleProxy impl
 	 ************************************************************************/
 
-	CModuleProxy::CModuleProxy(TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName)
+	CModuleProxy::CModuleProxy(TModulePtr localModule, TModuleId localModuleId, const std::string &moduleClassName, const std::string &fullyQualifiedModuleName, const std::string &moduleManifest)
 		: _ModuleProxyId(localModuleId),
 		  _ForeignModuleId(INVALID_MODULE_ID),
+		  _LocalModule(localModule),
 		  _ModuleClassName(CStringMapper::map(moduleClassName)),
 		  _FullyQualifiedModuleName(CStringMapper::map(fullyQualifiedModuleName)),
+		  _Manifest(moduleManifest),
 		  _SecurityData(NULL)
 	{
 	}
@@ -621,6 +652,11 @@ namespace NLNET
 		return _Distance;
 	}
 
+	IModule				*CModuleProxy::getLocalModule() const
+	{
+		return _LocalModule;
+	}
+
 	CGatewayRoute		*CModuleProxy::getGatewayRoute() const
 	{
 		return _Route;
@@ -635,12 +671,18 @@ namespace NLNET
 		return CStringMapper::unmap(_ModuleClassName);
 	}
 
+	const std::string &CModuleProxy::getModuleManifest() const
+	{
+		return _Manifest;
+	}
+	
+
 	IModuleGateway *CModuleProxy::getModuleGateway() const
 	{
 		return _Gateway;
 	}
 
-	void		CModuleProxy::sendModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+	void		CModuleProxy::sendModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 		throw (EModuleNotReachable)
 	{
 		if (_Gateway == NULL )

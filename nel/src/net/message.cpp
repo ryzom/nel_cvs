@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.33 2005/10/13 17:08:27 lancon Exp $
+ * $Id: message.cpp,v 1.34 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,9 @@ CMessage::CMessage (NLMISC::CMemStream &memstr) :
 /*
  * Copy constructor
  */
-CMessage::CMessage (const CMessage &other) : CMemStream()
+CMessage::CMessage (const CMessage &other) 
+	:	CMemStream(),
+		_TypeSet(false)
 {
 	operator= (other);
 }
@@ -106,18 +108,25 @@ CMessage::CMessage (const CMessage &other) : CMemStream()
  */
 CMessage &CMessage::operator= (const CMessage &other)
 {
-	nlassertex( (!other.isReading()) || (!other.hasLockedSubMessage()), ("Storing %s", LockedSubMessageError) );
+//	nlassertex( (!other.isReading()) || (!other.hasLockedSubMessage()), ("Storing %s", LockedSubMessageError) );
 	nlassertex( (!isReading()) || (!hasLockedSubMessage()), ("Assigning %s", LockedSubMessageError) );
+	if ( other.hasLockedSubMessage() )
+	{
+		assignFromSubMessage(other);
+	}
+	else
+	{
+		
+		CMemStream::operator= (other);
+		_Type = other._Type;
+		_TypeSet = other._TypeSet;
+		_Name = other._Name;
+		_HeaderSize = other._HeaderSize;
+		_SubMessagePosR = other._SubMessagePosR;
+		_LengthR = other._LengthR;
+	}
 
-	CMemStream::operator= (other);
-	_Type = other._Type;
-	_TypeSet = other._TypeSet;
-	_Name = other._Name;
-	_HeaderSize = other._HeaderSize;
-	_SubMessagePosR = other._SubMessagePosR;
-	_LengthR = other._LengthR;
 	return *this;
-
 }
 
 void CMessage::swap(CMessage &other)
@@ -279,7 +288,7 @@ void CMessage::readType ()
 /*
  * Get the message name (input message only) and advance the current pos
  */
-std::string CMessage::readTypeAtCurrentPos()
+std::string CMessage::readTypeAtCurrentPos() const
 {
 	nlassert( isReading() );
 
@@ -290,7 +299,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	_StringMode = false;
 
 	TFormat format;
-	serial( format );
+	nlRead(*this, serial, format );
 	bool LongFormat = format.LongFormat;
 	_StringMode = format.StringMode;
 	_Type = TMessageType(format.MessageType);
@@ -298,7 +307,7 @@ std::string CMessage::readTypeAtCurrentPos()
 	if ( LongFormat )
 	{
 		std::string name;
-		serial( name );
+		nlRead(*this, serial, name );
 		_StringMode = sm;
 		return name;
 	}
@@ -340,7 +349,8 @@ std::string CMessage::getName () const
 		uint32 subPosSaved = _SubMessagePosR;
 		uint32 lenthRSaved = _LengthR;
 		const_cast<uint32&>(_SubMessagePosR) = 0;
-		const_cast<uint32&>(_LengthR) = _Buffer.size();
+//		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		const_cast<uint32&>(_LengthR) = _Buffer.getBuffer().size();
 		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
 		std::string name = notconstMsg.readTypeAtCurrentPos();
 		notconstMsg.seek( subPosSaved+savedPos, begin );
@@ -364,7 +374,8 @@ CMessage::TMessageType CMessage::getType() const
 		uint32 subPosSaved = _SubMessagePosR;
 		uint32 lenthRSaved = _LengthR;
 		const_cast<uint32&>(_SubMessagePosR) = 0;
-		const_cast<uint32&>(_LengthR) = _Buffer.size();
+//		const_cast<uint32&>(_LengthR) = _Buffer.size();
+		const_cast<uint32&>(_LengthR) = _Buffer.getBuffer().size();
 		notconstMsg.seek( subPosSaved, begin ); // not really const... but removing the const from getName() would need too many const changes elsewhere
 		notconstMsg.readTypeAtCurrentPos();
 		notconstMsg.seek( subPosSaved+savedPos, begin );

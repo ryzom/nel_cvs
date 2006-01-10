@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.41 2005/10/05 12:36:40 boucher Exp $
+ * $Id: sock.cpp,v 1.42 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -312,7 +312,7 @@ void CSock::close()
 #elif defined NL_OS_UNIX
 	::close( sockToClose );
 #endif
-//	_Sock = INVALID_SOCKET;
+	_Connected = false;
 }
 
 

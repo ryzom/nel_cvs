@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9 2005/10/13 17:09:08 lancon Exp $
+ * $Id: module_gateway.cpp,v 1.10 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,7 @@ namespace NLNET
 		uint32		ModuleDistance;
 		string		ModuleFullName;
 		string		ModuleClass;
-//		TModuleSecurity	*SecurityData;
+		string		ModuleManifest;
 		TSecurityDataDesc	SecDesc;
 
 
@@ -157,44 +157,21 @@ namespace NLNET
 			ModuleDistance = proxy->getModuleDistance()+1;
 			ModuleFullName = proxy->getModuleName();
 			ModuleClass = proxy->getModuleClassName();
+			ModuleManifest = proxy->getModuleManifest();
 			SecDesc.SecurityData = const_cast<TSecurityData*>(proxy->getFirstSecurityData());
 		}
-
-		// Encode tips is an optimisation that remove one copy
-//		void encode(IModuleProxy *proxy, NLMISC::CMemStream &s)
-//		{
-//			CModuleProxy *modProx = static_cast<CModuleProxy *>(proxy);
-//			// work only on output stream
-//			nlassert(!s.isReading());
-//			uint32 moduleId = modProx->getModuleProxyId();
-//			s.serial(moduleId);
-//			uint32 distance = proxy->getModuleDistance()+1;
-//			s.serial(distance);
-//			s.serial(const_cast<string&>(proxy->getModuleName()));
-//			s.serial(const_cast<string&>(proxy->getModuleClassName()));
-////			TModuleSecurity *modSec = const_cast<TModuleSecurity*>(proxy->getFirstSecurityData());
-////			s.serialPolyPtr(modSec);
-//		}
 
 		void serial(NLMISC::CMemStream &s)
 		{
 			s.serial(ModuleProxyId);
 			s.serial(ModuleDistance);
 			s.serial(ModuleFullName);
+			s.serial(ModuleManifest);
 			s.serial(ModuleClass);
 			s.serial(SecDesc);
 		}
 	};
-	/// message for adding module
-//	struct TModuleAddMsg
-//	{
-//		vector<TModuleDescMsg>	Modules;
-//
-//		void serial(NLMISC::IStream &s)
-//		{
-//			s.serialCont(Modules);
-//		}
-//	};
+
 	/// message for module distance update
 	struct TModuleDistanceChangeMsg
 	{
@@ -207,13 +184,13 @@ namespace NLNET
 			s.serial(NewDistance);
 		}
 	};
+
 	/// message for module security update
 	struct TModuleSecurityChangeMsg
 	{
 		TModuleId	ModuleId;
 
 		TSecurityDataDesc	SecDesc;
-//		TModuleSecurity	*SecurityData;
 
 		void serial(NLMISC::CMemStream &s)
 		{
@@ -231,6 +208,7 @@ namespace NLNET
 			s.serialCont(RemovedModules);
 		}
 	};
+	
 	/// Message for module operation
 	struct TModuleOperationMsg
 	{
@@ -626,7 +604,7 @@ namespace NLNET
 		}
 
 		/// A transport have received a message
-		virtual void onReceiveMessage(CGatewayRoute *from, CMessage &msgin)
+		virtual void onReceiveMessage(CGatewayRoute *from, const CMessage &msgin)
 		{
 			// dispatch the message
 			if (from->NextMessageType != CModuleMessageHeaderCodec::mt_invalid)
@@ -818,7 +796,7 @@ namespace NLNET
 		/***********************************/
 
 		/** A gateway receive module operation */
-		void onReceiveModuleMessage(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleMessage(CGatewayRoute *from, const CMessage &msgin)
 		{
 			// clean the message type now, any return path will be safe
 			CModuleMessageHeaderCodec::TMessageType msgType = from->NextMessageType;
@@ -852,7 +830,7 @@ namespace NLNET
 		}
 
 		// A gateway receive a module message header
-		void onReceiveModuleMessageHeader(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleMessageHeader(CGatewayRoute *from, const CMessage &msgin)
 		{
 			if (from->NextMessageType != CModuleMessageHeaderCodec::mt_invalid)
 			{
@@ -880,12 +858,13 @@ namespace NLNET
 		}
 
 		/** A gateway receive a general update message */
-		void onReceiveModuleUpdate(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
 			while (uint32(msgin.getPos()) != msgin.length())
 			{
 				CGatewayRoute::TPendingEventType type;
-				msgin.serialShortEnum(type);
+//				msgin.serialShortEnum(type);
+				nlRead(msgin, serialShortEnum, type);
 
 				switch (type)
 				{
@@ -917,10 +896,10 @@ namespace NLNET
 		}
 
 		/** A gateway send new modules informations */
-		void onReceiveModuleAdd(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleAdd(CGatewayRoute *from, const CMessage &msgin)
 		{
 			TModuleDescCodec modDesc;
-			msgin.serial(modDesc);
+			nlRead(msgin, serial, modDesc);
 
 			// for each received module info
 			TStringId modNameId = CStringMapper::map(modDesc.ModuleFullName);
@@ -991,8 +970,10 @@ namespace NLNET
 					this,
 					from,
 					modDesc.ModuleDistance,
+					NULL,
 					modDesc.ModuleClass,
 					modDesc.ModuleFullName,
+					modDesc.ModuleManifest,
 					modDesc.ModuleProxyId);
 
 				// set the module security
@@ -1015,21 +996,21 @@ namespace NLNET
 			}
 		}
 
-		void onReceiveModuleRemove(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleRemove(CGatewayRoute *from, const CMessage &msgin)
 		{
 			TModuleId	moduleId;
-			msgin.serial(moduleId);
+			nlRead(msgin, serial, moduleId);
 
 			removeForeignModule(from, moduleId);
 		}
 
-		void onReceiveModuleDistanceUpdate(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleDistanceUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
 			TModuleId moduleId;
 			uint32	newDistance;
 
-			msgin.serial(moduleId);
-			msgin.serial(newDistance);
+			nlRead(msgin, serial, moduleId);
+			nlRead(msgin, serial, newDistance);
 
 			// translate the module id
 			const TModuleId *pModuleId = from->ForeignToLocalIdx.getB(moduleId);
@@ -1123,13 +1104,13 @@ namespace NLNET
 			}
 		}
 
-		void onReceiveModuleSecurityUpdate(CGatewayRoute *from, CMessage &msgin)
+		void onReceiveModuleSecurityUpdate(CGatewayRoute *from, const CMessage &msgin)
 		{
 //			TModuleId foreignModuleId;
 //			TSecurityData *modSec;
 			TModuleSecurityChangeMsg secChg;
 
-			msgin.serial(secChg);
+			nlRead(msgin, serial, secChg);
 //			msgin.serial(foreignModuleId);
 //			msgin.serialPolyPtr(modSec);
 
@@ -1287,7 +1268,7 @@ namespace NLNET
 		}
 
 
-		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, NLNET::CMessage &message)
+		virtual void sendModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const NLNET::CMessage &message)
 		{
 			// manage firewall
 			if (addresseeProxy->getGatewayRoute()
@@ -1350,7 +1331,7 @@ namespace NLNET
 					}
 					else
 					{
-						lm.Message.swap(message);
+						lm.Message = message;
 					}					
 				}
 				else
@@ -1379,7 +1360,7 @@ namespace NLNET
 				addresseeProxy->getGatewayRoute()->sendMessage(message);
 			}
 		}
-		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, CMessage &message)
+		virtual void dispatchModuleMessage(IModuleProxy *senderProxy, IModuleProxy *addresseeProxy, const CMessage &message)
 		{
 			CMessage::TMessageType msgType = message.getType();
 			// retrieve the address module from the proxy
@@ -1487,7 +1468,7 @@ namespace NLNET
 		void				onModuleDown(IModuleProxy *moduleProxy)
 		{
 		}
-		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, CMessage &message)
+		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 		{
 			// simple message for debug and unit testing
 			if (message.getName() == "DEBUG_MOD_PING")
@@ -1513,7 +1494,7 @@ namespace NLNET
 			return getModuleName();
 		}
 
-		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, NLNET::CMessage &message ) 
+		void _sendModuleMessage(IModule *senderModule, TModuleId destModuleProxyId, const NLNET::CMessage &message ) 
 			throw (EModuleNotReachable, EModuleNotPluggedHere)
 		{
 			// the socket implementation already checked that the module is plugged here
@@ -1537,7 +1518,7 @@ namespace NLNET
 			sendModuleMessage(senderProx, destProx, message);
 		}
 		
-		virtual void _broadcastModuleMessage(IModule *senderModule, NLNET::CMessage &message)
+		virtual void _broadcastModuleMessage(IModule *senderModule, const NLNET::CMessage &message)
 			throw (EModuleNotPluggedHere)
 		{
 			// send the message to all proxies (except the sender module)
@@ -1563,8 +1544,10 @@ namespace NLNET
 					this, 
 					NULL,	// the module is local, so there is no route
 					0,		// the module is local, distance is 0
+					pluggedModule,	// the module is local, so store the module pointer
 					pluggedModule->getModuleClassName(), 
 					pluggedModule->getModuleFullyQualifiedName(),
+					pluggedModule->getModuleManifest(),
 					pluggedModule->getModuleId()	// the module is local, foreign id is the module id
 					);
 

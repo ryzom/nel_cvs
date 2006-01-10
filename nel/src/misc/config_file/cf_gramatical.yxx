@@ -209,7 +209,7 @@ inst:		VARIABLE ADD_ASSIGN expression SEMICOLON
 						(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].add(Var);
 
 						if (Var.size() > 0 && Var.Callback != NULL)
-							(Var.Callback)(Var);
+							(Var.Callback)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i]);
 					}
 					else
 					{

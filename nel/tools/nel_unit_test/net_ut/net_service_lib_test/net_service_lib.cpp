@@ -77,8 +77,8 @@ _CrtCheckMemory();
 		sint retval = scn->main (	_ServiceShortName.c_str(), 
 									_ServiceName.c_str(), 
 									_ListenPort, 
-									"net_ut", 
-									"net_ut", 
+									"", 
+									"", 
 									__DATE__" "__TIME__);
 _CrtCheckMemory();
 		delete scn;

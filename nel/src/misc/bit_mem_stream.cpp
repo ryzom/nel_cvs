@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.40 2005/08/29 16:12:47 boucher Exp $
+ * $Id: bit_mem_stream.cpp,v 1.41 2006/01/10 17:38:47 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -188,6 +188,7 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 
 	if ( isReading() )
 	{
+		const uint8 *buffer = _Buffer.getBuffer().getPtr();
 		// Check that we don't read more than there is to read
 		uint32 pib = getPosInBit();
 		uint32 len = ((uint32)lengthR());
@@ -203,13 +204,14 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 		}
 
 		// Clear high-order bits after _FreeBits
-		uint8 v = *_BufPos & ((1 << _FreeBits) - 1);
+		uint8 v = *(buffer + _Buffer.Pos) & ((1 << _FreeBits) - 1);
 
 		if ( nbits > _FreeBits )
 		{
 			//nldebug( "Reading byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			value |= (v << (nbits-_FreeBits));
-			++_BufPos;
+//			++_BufPos;
+			++_Buffer.Pos;
 			uint readbits = _FreeBits;
 			//displayByteBits( *_BufPos, 8, readbits-1, false );
 			_FreeBits = 8;
@@ -225,12 +227,14 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 			if ( _FreeBits == 0 )
 			{
 				_FreeBits = 8;
-				++_BufPos;
+//				++_BufPos;
+				++_Buffer.Pos;
 			}
 		}
 	}
 	else
 	{
+		uint8 *buffer = _Buffer.getBufferWrite().getPtr();
 		// Clear high-order bits after nbits
 		//displayDwordBits( value, 32, nbits-1, false );
 
@@ -248,7 +252,7 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 
 #ifdef NL_DEBUG
 		// Check that the current byte is prepared
-		nlassert( ! ((_FreeBits == 8) && (*_BufPos != 0)) );
+		nlassert( ! ((_FreeBits == 8) && (*(buffer+_Buffer.Pos) != 0)) );
 #endif
 
 		// Set
@@ -257,7 +261,8 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 			// Longer than the room in the current byte
 			//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			//displayDwordBits( value, 32, nbits-1, false );
-			*_BufPos |= (v >> (nbits - _FreeBits));
+//			*_BufPos |= (v >> (nbits - _FreeBits));
+			*(buffer+_Buffer.Pos) |= (v >> (nbits - _FreeBits));
 			uint filledbits = _FreeBits;
 			//displayByteBits( *_BufPos, 8, filledbits-1, false );
 			prepareNextByte();
@@ -268,7 +273,8 @@ void	CBitMemStream::internalSerial( uint32& value, uint nbits, bool resetvalue )
 			// Shorter or equal
 			//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 			//displayByteBits( *_BufPos, 8, 7, false );
-			*_BufPos |= (v << (_FreeBits-nbits));
+//			*_BufPos |= (v << (_FreeBits-nbits));
+			*(buffer+_Buffer.Pos) |= (v << (_FreeBits-nbits));
 			//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 			_FreeBits -= nbits;
 			if ( _FreeBits == 0 )
@@ -329,17 +335,21 @@ void	CBitMemStream::serialPoke( uint32 value, uint nbits )
 		v = value;
 	}
 
+	uint8 *buffer = _Buffer.getBufferWrite().getPtr();
+
 	// Set
 	if ( nbits > _FreeBits )
 	{
 		// Longer than the room in the current byte
 		//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 		//displayDwordBits( value, 32, nbits-1, false );
-		*_BufPos |= (v >> (nbits - _FreeBits));
+//		*_BufPos |= (v >> (nbits - _FreeBits));
+		*(buffer + _Buffer.Pos) |= (v >> (nbits - _FreeBits));
 		uint filledbits = _FreeBits;
 		//displayByteBits( *_BufPos, 8, filledbits-1, false );
 		pointNextByte(); // do not set next byte to 0!
-		nlassert( _BufPos < _Buffer.getPtr() + _Buffer.size() );
+//		nlassert( _BufPos < _Buffer.getPtr() + _Buffer.size() );
+		nlassert( _Buffer.Pos < _Buffer.getBuffer().size() );
 		serialPoke( v, nbits - filledbits );
 	}
 	else
@@ -347,13 +357,15 @@ void	CBitMemStream::serialPoke( uint32 value, uint nbits )
 		// Shorter or equal
 		//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
 		//displayByteBits( *_BufPos, 8, 7, false );
-		*_BufPos |= (v << (_FreeBits-nbits));
+//		*_BufPos |= (v << (_FreeBits-nbits));
+		*(buffer + _Buffer.Pos) |= (v << (_FreeBits-nbits));
 		//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 		_FreeBits -= nbits;
 		if ( _FreeBits == 0 )
 		{
 			pointNextByte(); // do not set next byte to 0!
-			nlassert( _BufPos < _Buffer.getPtr() + _Buffer.size() );
+//			nlassert( _BufPos < _Buffer.getPtr() + _Buffer.size() );
+			nlassert( _Buffer.Pos < _Buffer.getBuffer().size() );
 		}
 	}
 }
@@ -378,8 +390,10 @@ void	CBitMemStream::poke( uint32 value, uint bitpos, uint nbits )
 	uint savedFreeBits = _FreeBits;
 	uint bytepos = bitpos >> 3;
 	_FreeBits = 8 - (bitpos - (bytepos << 3));
-	uint8 *savedBufPos = _BufPos;
-	_BufPos = _Buffer.getPtr() + bytepos;
+//	uint8 *savedBufPos = _BufPos;
+	uint32 savedBufPos = _Buffer.Pos;
+//	_BufPos = _Buffer.getPtr() + bytepos;
+	_Buffer.Pos = bytepos;
 
 	// Serial
 	_DbgInfo.addPoke( bitpos, nbits, TBMSSerialInfo::U );
@@ -387,7 +401,8 @@ void	CBitMemStream::poke( uint32 value, uint bitpos, uint nbits )
 
 	// Restore the current pointers
 	_FreeBits = savedFreeBits;
-	_BufPos = savedBufPos;
+//	_BufPos = savedBufPos;
+	_Buffer.Pos = savedBufPos;
 }
 
 
@@ -406,8 +421,10 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 	uint savedFreeBits = _FreeBits;
 	uint bytepos = bitpos >> 3;
 	_FreeBits = 8 - (bitpos - (bytepos << 3));
-	uint8 *savedBufPos = _BufPos;
-	_BufPos = _Buffer.getPtr() + bytepos;
+//	uint8 *savedBufPos = _BufPos;
+	uint32 savedBufPos = _Buffer.Pos;
+//	_BufPos = _Buffer.getPtr() + bytepos;
+	_Buffer.Pos = bytepos;
 
 	// Serial
 	_DbgInfo.addPoke( bitpos, bitfield.size(), TBMSSerialInfo::BF );
@@ -428,7 +445,8 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 
 	// Restore the current pointers
 	_FreeBits = savedFreeBits;
-	_BufPos = savedBufPos;
+//	_BufPos = savedBufPos;
+	_Buffer.Pos = savedBufPos;
 }
 
 
@@ -711,18 +729,21 @@ void	displayBitStream( const CBitMemStream& msg, sint beginbitpos, sint endbitpo
  */
 void		CBitMemStream::displayStream( const char *title, CLog *log )
 {
-	nlassert( (_BufPos >= _Buffer.getPtr()) && (_BufPos <= _Buffer.getPtr() + _Buffer.size()) );
+//	nlassert( (_BufPos >= _Buffer.getPtr()) && (_BufPos <= _Buffer.getPtr() + _Buffer.size()) );
+	nlassert( _Buffer.Pos <= _Buffer.getBuffer().size() );
 
 	// Display title and information
 	string s = (isReading()?string("I"):string("O")) + string("BMS ") + string(title) + ": ";
 	string sLegend;
-	if ( _BufPos == _Buffer.getPtr() )
+//	if ( _BufPos == _Buffer.getPtr() )
+	if ( _Buffer.Pos == 0 )
 	{
 		log->displayNL( (s + "Empty").c_str() );
 		return;
 	}
 
-	s += NLMISC::toString( "BitPos=%d Pos=%u FreeBits=%u Size=%u ", getPosInBit(), (uint32)(_BufPos-_Buffer.getPtr()), _FreeBits, _Buffer.size() );
+//	s += NLMISC::toString( "BitPos=%d Pos=%u FreeBits=%u Size=%u ", getPosInBit(), (uint32)(_BufPos-_Buffer.getPtr()), _FreeBits, _Buffer.size() );
+	s += NLMISC::toString( "BitPos=%d Pos=%u FreeBits=%u Size=%u ", getPosInBit(), _Buffer.Pos, _FreeBits, _Buffer.getBuffer().size() );
 	log->displayNL( s.c_str() );
 	s.clear();
 
@@ -730,9 +751,11 @@ void		CBitMemStream::displayStream( const char *title, CLog *log )
 	_DbgInfo.beginEventBrowsing();
 	sint32 eventId;
 	uint32 bitpos = 0;
-	uint8 *p;
-	uint8 *endPos = isReading() ? (_Buffer.getPtr() + _Buffer.size()) : (_BufPos+1);
-	for ( p=_Buffer.getPtr(); p!=endPos; ++p )
+	const uint8 *p;
+//	uint8 *endPos = isReading() ? (_Buffer.getPtr() + _Buffer.size()) : (_BufPos+1);
+	const uint8 *endPos = isReading() ? (_Buffer.getBuffer().getPtr() + _Buffer.getBuffer().size()) : (_Buffer.getBuffer().getPtr() + _Buffer.Pos+1);
+//	for ( p=_Buffer.getPtr(); p!=endPos; ++p )
+	for ( p=_Buffer.getBuffer().getPtr(); p!=endPos; ++p )
 	{
 		sint i;
 		for ( i=7; i!=-1; --i )
@@ -779,8 +802,10 @@ std::string		CBitMemStream::getSerialItem( const TBMSSerialInfo& serialItem )
 	uint savedFreeBits = _FreeBits;
 	uint bytepos = serialItem.BitPos >> 3;
 	_FreeBits = 8 - (serialItem.BitPos - (bytepos << 3));
-	uint8 *savedBufPos = _BufPos;
-	_BufPos = _Buffer.getPtr() + bytepos;
+//	uint8 *savedBufPos = _BufPos;
+	uint32 savedBufPos = _Buffer.Pos;
+//	_BufPos = _Buffer.getPtr() + bytepos;
+	_Buffer.Pos = bytepos;
 
 	bool wasOutput = false;;
 	if ( ! isReading() )
@@ -865,7 +890,8 @@ std::string		CBitMemStream::getSerialItem( const TBMSSerialInfo& serialItem )
 	}
 
 	_FreeBits = savedFreeBits;
-	_BufPos = savedBufPos;
+//	_BufPos = savedBufPos;
+	_Buffer.Pos = savedBufPos;
 
 	return s;
 }

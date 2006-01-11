@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.63 2006/01/10 17:38:47 boucher Exp $
+ * $Id: bitmap.cpp,v 1.64 2006/01/11 11:02:49 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3077,16 +3077,16 @@ void	CBitmap::flipHDXTCBlockAlpha3(uint8 *blockAlpha, uint32 w)
 	uint64	res;
 	if(w!=2)
 	{
-		res = (bits & 0xF000F000F000F000) >> 12;
-		res+= (bits & 0x0F000F000F000F00) >> 4;
-		res+= (bits & 0x00F000F000F000F0) << 4;
-		res+= (bits & 0x000F000F000F000F) << 12;
+		res = (bits & INT64_CONSTANT(0xF000F000F000F000)) >> 12;
+		res+= (bits & INT64_CONSTANT(0x0F000F000F000F00)) >> 4;
+		res+= (bits & INT64_CONSTANT(0x00F000F000F000F0)) << 4;
+		res+= (bits & INT64_CONSTANT(0x000F000F000F000F)) << 12;
 	}
 	// special case where w==2
 	else
 	{
-		res = (bits & 0x00F000F000F000F0) >> 4;
-		res+= (bits & 0x000F000F000F000F) << 4;
+		res = (bits & INT64_CONSTANT(0x00F000F000F000F0)) >> 4;
+		res+= (bits & INT64_CONSTANT(0x000F000F000F000F)) << 4;
 	}
 
 	// copy
@@ -3135,16 +3135,16 @@ void	CBitmap::flipHDXTCBlockAlpha5(uint8 *bitAlpha, uint32 w)
 	uint64	res;
 	if(w!=2)
 	{
-		res = (bits & 0xE00E00E00E00) >> 9;
-		res+= (bits & 0x1C01C01C01C0) >> 3;
-		res+= (bits & 0x038038038038) << 3;
-		res+= (bits & 0x007007007007) << 9;
+		res = (bits & INT64_CONSTANT(0xE00E00E00E00)) >> 9;
+		res+= (bits & INT64_CONSTANT(0x1C01C01C01C0)) >> 3;
+		res+= (bits & INT64_CONSTANT(0x038038038038)) << 3;
+		res+= (bits & INT64_CONSTANT(0x007007007007)) << 9;
 	}
 	// special case where w==2
 	else
 	{
-		res = (bits & 0x038038038038) >> 3;
-		res+= (bits & 0x007007007007) << 3;
+		res = (bits & INT64_CONSTANT(0x038038038038)) >> 3;
+		res+= (bits & INT64_CONSTANT(0x007007007007)) << 3;
 	}
 
 	// copy. Little Indian in all cases
@@ -3168,16 +3168,16 @@ void	CBitmap::flipVDXTCBlockAlpha5(uint8 *bitAlpha, uint32 h)
 	uint64	res;
 	if(h!=2)
 	{
-		res = (bits & 0xFFF000000000) >> 36;
-		res+= (bits & 0x000FFF000000) >> 12;
-		res+= (bits & 0x000000FFF000) << 12;
-		res+= (bits & 0x000000000FFF) << 36;
+		res = (bits & INT64_CONSTANT(0xFFF000000000)) >> 36;
+		res+= (bits & INT64_CONSTANT(0x000FFF000000)) >> 12;
+		res+= (bits & INT64_CONSTANT(0x000000FFF000)) << 12;
+		res+= (bits & INT64_CONSTANT(0x000000000FFF)) << 36;
 	}
 	// special case where h==2
 	else
 	{
-		res = (bits & 0x000000FFF000) >> 12;
-		res+= (bits & 0x000000000FFF) << 12;
+		res = (bits & INT64_CONSTANT(0x000000FFF000)) >> 12;
+		res+= (bits & INT64_CONSTANT(0x000000000FFF)) << 12;
 	}
 
 	// copy. Little Indian in all cases

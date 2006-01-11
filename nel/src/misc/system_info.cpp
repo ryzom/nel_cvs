@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * TODO: File description
  *
- * $Id: system_info.cpp,v 1.34 2006/01/10 17:38:47 boucher Exp $
+ * $Id: system_info.cpp,v 1.35 2006/01/11 13:32:45 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -814,6 +814,20 @@ uint32 CSystemInfo::totalPhysicalMemory ()
 	return 0;
 }
 
+#ifndef NL_OS_WINDOWS
+static inline char *skipWS(const char *p)
+{
+    while (isspace(*p)) p++;
+    return (char *)p;
+}
+
+static inline char *skipToken(const char *p)
+{
+    while (isspace(*p)) p++;
+    while (*p && !isspace(*p)) p++;
+    return (char *)p;
+}
+#endif
 
 uint32 CSystemInfo::getAllocatedSystemMemory ()
 {

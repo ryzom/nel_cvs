@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.31 2005/09/21 10:49:39 houlmann Exp $
+ * $Id: bitmap.h,v 1.31.4.1 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -249,7 +249,16 @@ private :
 	// Make a dummy from a bitfield
 	void	makeDummyFromBitField(const uint8	bitmap[1024]);
 	
-
+	// Flip DXTC
+	void	flipHDXTCBlockColor(uint8 *bitColor, uint32 w);
+	void	flipVDXTCBlockColor(uint8 *bitColor, uint32 h);
+	void	flipHDXTCBlockAlpha3(uint8 *bitColor, uint32 w);
+	void	flipVDXTCBlockAlpha3(uint8 *bitColor, uint32 h);
+	void	flipHDXTCBlockAlpha5(uint8 *bitColor, uint32 w);
+	void	flipVDXTCBlockAlpha5(uint8 *bitColor, uint32 h);
+	void	flipDXTC(bool vertical);
+	void	flipDXTCMipMap(bool vertical, uint mm, uint type);
+	
 public:
 
 	enum TType 
@@ -564,12 +573,14 @@ public:
 	CRGBA  getPixelColor(sint x, sint y, uint32 numMipMap = 0) const;
 	/**
 	 * Horizontal flip (all the columns are flipped)
+	 * Works only with RGBA, and DXTC formats (only if w/h is a power of 2)
 	 */
 	void flipH();
 
 
 	/**
 	 * Vertical flip (all the rows are flipped)
+	 * Works only with RGBA, and DXTC formats (only if w/h is a power of 2)
 	 */
 	void flipV();
 

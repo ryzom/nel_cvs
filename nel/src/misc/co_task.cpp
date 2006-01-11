@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3.4.3 2006/01/09 14:27:38 cado Exp $
+ * $Id: co_task.cpp,v 1.3.4.4 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

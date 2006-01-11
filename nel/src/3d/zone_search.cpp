@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.13.4.1 2005/11/24 09:39:26 dailyclient Exp $
+ * $Id: zone_search.cpp,v 1.13.4.2 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

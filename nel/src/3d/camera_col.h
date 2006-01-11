@@ -1,7 +1,7 @@
 /** \file camera_col.h
  * TODO: File description
  *
- * $Id: camera_col.h,v 1.3 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: camera_col.h,v 1.3.32.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -44,22 +44,15 @@ namespace NL3D {
 class CCameraCol
 {
 public:
-	// The start of the camera raycast
-	CVector		Start;
-	// The end of the camera raycast
-	CVector		End;
-	// The radius (at end only if cone)
-	float		Radius;
-	// cone or cylinder?
-	bool		Cone;
-
-	// The World Bbox enclosing the camera collision volume
-	NLMISC::CAABBox		BBox;
-
-public:
 	CCameraCol();
 
+	/** build the camera collision as a cone or a cylinder
+	 */
 	void			build(const CVector &start, const CVector &end, float radius, bool cone);
+
+	/** build the camera collision as a simple ray
+	 */
+	void			buildRay(const CVector &start, const CVector &end);
 
 	/** compute the intersection of the Camera Volume against the triangle, and minimize 
 	 *	minDist (actual square of distance) with min sqr distance of the poly.
@@ -71,8 +64,30 @@ public:
 	 */
 	void			setApplyMatrix(const CCameraCol &other, const NLMISC::CMatrix &matrix);
 	
+	/** Get The World Bbox enclosing the camera collision volume
+	 */
+	const NLMISC::CAABBox		&getBBox() const {return _BBox;}
+	
+	/** Get the length of the ray built
+	 */
+	float			getRayLen() const {return _RayLen;}
+
 private:
 	enum	{MaxNPlanes=6};
+	
+	// The start of the camera raycast
+	CVector		_Start;
+	// The end of the camera raycast
+	CVector		_End;
+	// The radius (at end only if cone)
+	float		_Radius;
+	// cone or cylinder?
+	bool		_Cone;
+	// Simple Ray?
+	bool		_SimpleRay;
+	
+	// The World Bbox enclosing the camera collision volume
+	NLMISC::CAABBox		_BBox;
 	
 	// Temp Data for minimizeDistanceAgainstTri
 	CVector		_ArrayIn[3+MaxNPlanes];
@@ -90,6 +105,10 @@ private:
 	float		_OODeltaRadiusProj;
 	float		_RayLen;
 	CVector		_RayNorm;
+
+	// simpler method for simple ray
+	void			intersectRay(const CVector &p0, const CVector &p1, const CVector &p2, float &sqrMinDist);
+	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.h,v 1.6 2005/02/22 10:19:12 besson Exp $
+ * $Id: shadow_poly_receiver.h,v 1.6.16.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -58,6 +58,14 @@ class	CShadowMap;
 class CShadowPolyReceiver
 {
 public:
+	enum	TCameraColTest
+	{
+		CameraColSimpleRay,
+		CameraColCylinder,
+		CameraColCone,
+	};
+
+public:
 
 	/// Constructor
 	CShadowPolyReceiver(uint quadGridSize=32, float quadGridCellSize= 4.f);
@@ -74,10 +82,10 @@ public:
 
 	/** Use the triangles added for camera 3rd person collision
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
-	 *	\param radius is the radius of the 'cylinder'
-	 *	\param cone if true, the object tested is a cone (radius goes to end)
-	*/
-	float			getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
+	 *	\param testType is the type of intersection: simple ray, cylinder or cone
+	 *	\param radius is the radius of the 'cylinder' or 'cone' (not used for simpleRay test, radius goes to end for cone)
+	 */
+	float			getCameraCollision(const CVector &start, const CVector &end, TCameraColTest testType, float radius);
 
 // ************
 private:

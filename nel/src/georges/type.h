@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.12 2005/02/22 10:19:22 besson Exp $
+ * $Id: type.h,v 1.12.16.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ public:
 		FileBrowser,		// Browse file
 		BigEdit,			// Edit a huge text
 		ColorEdit,			// Edit a color
+		IconWidget,			// Draw an icon
 		UITypeCount
 	};
 

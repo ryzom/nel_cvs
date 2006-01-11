@@ -2,7 +2,7 @@
  * Classes for managing NeL context in order to support multi module NeL 
  * application.
  *
- * $Id: app_context.h,v 1.3.4.1 2005/11/22 18:46:19 boucher Exp $
+ * $Id: app_context.h,v 1.3.4.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

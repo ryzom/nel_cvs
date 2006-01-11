@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.39.4.1 2005/12/05 15:17:08 boucher Exp $
+ * $Id: command.cpp,v 1.39.4.2 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.85 2005/10/20 13:24:46 miller Exp $
+ * $Id: debug.h,v 1.85.4.1 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,7 +153,7 @@ void	setCrashAlreadyReported(bool state);
  *			#pragma message( NL_LOC_MGS "The class name is " NL_MACRO_TO_STR(CLASS_NAME))
  */
 #define NL_LOC_MSG __FILE__"("NL_MACRO_TO_STR(__LINE__)") : Message: "
-#define NL_LOC_WRN __FILE__"("NL_MACRO_TO_STR(__LINE__)") : Warning: "
+#define NL_LOC_WRN __FILE__"("NL_MACRO_TO_STR(__LINE__)") : Warning Msg: "
 
 
 /**

@@ -1,7 +1,7 @@
 /** \file camera_col.cpp
  * TODO: File description
  *
- * $Id: camera_col.cpp,v 1.4 2005/02/22 10:19:09 besson Exp $
+ * $Id: camera_col.cpp,v 1.4.16.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 #include "camera_col.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/triangle.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -48,21 +49,22 @@ CCameraCol::CCameraCol()
 void		CCameraCol::build(const CVector &start, const CVector &end, float radius, bool cone)
 {
 	// copy
-	Start= start;
-	End= end;
-	Radius= radius;
-	Cone= cone;
+	_Start= start;
+	_End= end;
+	_Radius= radius;
+	_Cone= cone;
+	_SimpleRay= false;
 	
 	// For camera smoothing
 	float	maxRadiusFactor= NL3D_CameraSmoothRadiusFactor;
 	
 	// not a Cone? => no smoothing
-	if(!Cone)
+	if(!_Cone)
 		maxRadiusFactor= 1;
 
 	// **** Compute Camera smooth infos
 	_MaxRadius= radius * maxRadiusFactor;
-	_MinRadiusProj= Radius / (end-start).norm();
+	_MinRadiusProj= _Radius / (end-start).norm();
 	_MaxRadiusProj= _MaxRadius / (end-start).norm();
 	_RayNorm= (end-start).normed();
 	_RayLen= (end-start).norm();
@@ -119,11 +121,39 @@ void		CCameraCol::build(const CVector &start, const CVector &end, float radius, 
 		_Pyramid[5].make(ps[0], ps[2], ps[1]);
 	
 	// **** build the bbox
-	BBox.setCenter(start);
-	BBox.extend(end);
+	_BBox.setCenter(start);
+	_BBox.extend(end);
 	// enlarge a bit for radius
-	BBox.setHalfSize(BBox.getHalfSize()+CVector(_MaxRadius, _MaxRadius, _MaxRadius));
+	_BBox.setHalfSize(_BBox.getHalfSize()+CVector(_MaxRadius, _MaxRadius, _MaxRadius));
 	
+}
+
+
+// ***************************************************************************
+void		CCameraCol::buildRay(const CVector &start, const CVector &end)
+{
+	// copy
+	_Start= start;
+	_End= end;
+	_Radius= 0.f;
+	_Cone= false;
+	_SimpleRay= true;
+	
+	// compute infos
+	_MaxRadius= 0.f;
+	_MinRadiusProj= 0.f;
+	_MaxRadiusProj= 0.f;
+	_RayNorm= (end-start).normed();
+	_RayLen= (end-start).norm();
+	_OODeltaRadiusProj= 0;
+	
+	// Don't need to build the pyramids here
+	
+	// **** build the bbox
+	_BBox.setCenter(start);
+	_BBox.extend(end);
+	// enlarge a bit for radius
+	_BBox.setHalfSize(_BBox.getHalfSize()+CVector(0.01f, 0.01f, 0.01f));
 }
 
 
@@ -131,9 +161,9 @@ void		CCameraCol::build(const CVector &start, const CVector &end, float radius, 
 void		CCameraCol::setApplyMatrix(const CCameraCol &other, const NLMISC::CMatrix &matrix)
 {
 	// get parameters modified by matrix
-	CVector		start= matrix * other.Start;
-	CVector		end= matrix * other.End;
-	float		radius= other.Radius;
+	CVector		start= matrix * other._Start;
+	CVector		end= matrix * other._End;
+	float		radius= other._Radius;
 
 	// scale the radius
 	if(matrix.hasScalePart())
@@ -151,21 +181,29 @@ void		CCameraCol::setApplyMatrix(const CCameraCol &other, const NLMISC::CMatrix 
 	}
 
 	// rebuild
-	build(start, end, radius, other.Cone);
+	build(start, end, radius, other._Cone);
 }
 
 
 // ***************************************************************************
 void		CCameraCol::minimizeDistanceAgainstTri(const CVector &p0, const CVector &p1, const CVector &p2, float &sqrMinDist)
 {
+	// If the camera collision is actually a ray test, use a simpler method
+	if(_SimpleRay)
+	{
+		intersectRay(p0, p1, p2, sqrMinDist);
+		return;
+	}
+	
+	// Else compute the distance with a smoother way.
 	CVector		*pIn= _ArrayIn;
 	CVector		*pOut= _ArrayOut;
 	
 	// **** clip triangle against the pyramid
 	// build the triangle, local to start for precision problems
-	pIn[0]= p0 - Start;
-	pIn[1]= p1 - Start;
-	pIn[2]= p2 - Start;
+	pIn[0]= p0 - _Start;
+	pIn[1]= p1 - _Start;
+	pIn[2]= p2 - _Start;
 	sint	nVert= 3;
 	// clip
 	for(uint i=0;i<_NPlanes;i++)
@@ -226,7 +264,7 @@ void		CCameraCol::minimizeDistanceAgainstTri(const CVector &p0, const CVector &p
 		// **** get the nearest distance of the Start against the plane
 		// get the plane local to start
 		CPlane	plane;
-		plane.make(p0-Start, p1-Start, p2-Start);
+		plane.make(p0-_Start, p1-_Start, p2-_Start);
 		// plane * StartLocalToStart == plane * CVector::Null == plane.d !
 		float	planeDist= plane.d;
 		// need to do the poly inclusion test only if the plane dist is better than the vertices
@@ -370,6 +408,31 @@ void		CCameraCol::minimizeDistanceAgainstTri(const CVector &p0, const CVector &p
 	}
 }
 
+
+// ***************************************************************************
+void		CCameraCol::intersectRay(const CVector &p0, const CVector &p1, const CVector &p2, float &sqrMinDist)
+{
+	// build the triangle and the plane from p0,p1,p2
+	CTriangle	tri;
+	tri.V0= p0;
+	tri.V1= p1;
+	tri.V2= p2;
+	CPlane	plane;
+	plane.make(p0,p1,p2);
+
+	// If doesn't intersect, quit
+	CVector	hit;
+	if(!tri.intersect(_Start, _End, hit, plane))
+		return;
+
+	// Else compute the intersection distance factor
+	float	f= (hit-_Start) * _RayNorm;
+	clamp(f, 0.f, _RayLen);
+	// set the result if less
+	f= sqr(f);
+	if(f<sqrMinDist)
+		sqrMinDist= f;
+}
 
 
 /*

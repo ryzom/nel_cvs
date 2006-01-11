@@ -1,7 +1,7 @@
 /** \file module_socket.cpp
  * module socket implementation
  *
- * $Id: module_socket.cpp,v 1.3.4.1 2005/11/22 18:46:20 boucher Exp $
+ * $Id: module_socket.cpp,v 1.3.4.2 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

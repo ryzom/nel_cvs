@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * TODO: File description
  *
- * $Id: object_vector.h,v 1.15.16.1 2005/11/22 18:46:19 boucher Exp $
+ * $Id: object_vector.h,v 1.15.16.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.42 2004/04/09 14:46:13 vizerie Exp $
+ * $Id: export_material.cpp,v 1.42.40.1 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -926,7 +926,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			{
 				CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
 														CTextureCube::negative_x, CTextureCube::positive_x,
-														CTextureCube::negative_y, CTextureCube::positive_y	};
+														CTextureCube::positive_y, CTextureCube::negative_y	};
 				vector<string> names;
 				CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, time, false);
 				for( int i = 0; i< (int)names.size(); ++i )
@@ -1326,7 +1326,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			// Cube side
 			const static CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
 														CTextureCube::negative_x, CTextureCube::positive_x,
-														CTextureCube::negative_y, CTextureCube::positive_y	};
+														CTextureCube::positive_y, CTextureCube::negative_y	};
 
 			// Alloc a cube texture
 			CTextureCube* pTextureCube = new CTextureCube;
@@ -1367,7 +1367,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 		// Face order
 		const static CTextureCube::TFace tfNewOrder[6] = {	CTextureCube::positive_z, CTextureCube::negative_z,
 													CTextureCube::negative_x, CTextureCube::positive_x,
-													CTextureCube::negative_y, CTextureCube::positive_y	};
+													CTextureCube::positive_y, CTextureCube::negative_y	};
 
 		// Vector of bitmap names
 		vector<string> names;

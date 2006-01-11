@@ -1,7 +1,7 @@
 /** \file landscape.h
  * TODO: File description
  *
- * $Id: landscape.h,v 1.62 2005/07/26 17:00:28 vizerie Exp $
+ * $Id: landscape.h,v 1.62.6.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,8 +316,13 @@ public:
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param radius is the radius of the 'cylinder'
 	 *	\param cone if true, the object tested is a cone (radius goes to end)
-	*/
+	 */
 	float			getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone);
+
+	/** Get the ray collision against the TileFaces (ie only under approx 50 m)
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 */
+	float			getRayCollision(const CVector &start, const CVector &end);
 
 	// @}
 

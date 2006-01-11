@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * TODO: File description
  *
- * $Id: system_info.cpp,v 1.33.4.1 2006/01/09 14:25:59 cado Exp $
+ * $Id: system_info.cpp,v 1.33.4.2 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -861,6 +861,15 @@
 					RelativePath=".\net\module_gateway.cpp">
 				</File>
 				<File
+					RelativePath=".\net\module_gateway_transport.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_l5_transport.cpp">
+				</File>
+				<File
+					RelativePath=".\net\module_local_gateway.cpp">
+				</File>
+				<File
 					RelativePath=".\net\module_manager.cpp">
 				</File>
 				<File

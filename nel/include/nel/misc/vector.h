@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.13.16.1 2006/01/09 17:26:42 vizerie Exp $
+ * $Id: vector.h,v 1.13.16.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

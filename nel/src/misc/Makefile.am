@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.84 2005/10/03 10:08:28 boucher Exp $
+# $Id: Makefile.am,v 1.84.4.1 2006/01/11 15:02:10 boucher Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -55,7 +55,6 @@ libnelmisc_la_SOURCES = \
 	game_device_events.cpp \
 	geom_ext.cpp \
 	gtk_displayer.cpp \
-	heap_allocator.cpp \
 	heap_memory.cpp \
 	hierarchical_timer.cpp \
 	i18n.cpp \

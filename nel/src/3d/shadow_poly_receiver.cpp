@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.14 2005/02/22 10:19:12 besson Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.14.16.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -327,14 +327,17 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 
 
 // ***************************************************************************
-float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVector &end, float radius, bool cone)
+float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVector &end, TCameraColTest testType, float radius)
 {
 	// **** build the camera collision info
 	CCameraCol	camCol;
-	camCol.build(start, end, radius, cone);
+	if(testType==CameraColSimpleRay)
+		camCol.buildRay(start, end);
+	else
+		camCol.build(start, end, radius, testType==CameraColCone);
 	
 	// select with quadGrid
-	_TriangleGrid.select(camCol.BBox.getMin(), camCol.BBox.getMax());
+	_TriangleGrid.select(camCol.getBBox().getMin(), camCol.getBBox().getMax());
 	
 	// **** For all triangles, test if intersect the camera collision
 	TTriangleGrid::CIterator	it;
@@ -355,7 +358,7 @@ float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVec
 	else
 	{
 		float	f= 1;
-		float	d= (end-start).norm();
+		float	d= camCol.getRayLen();
 		if(d>0)
 		{
 			f= sqrtf(sqrMinDist) / d;

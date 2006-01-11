@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.13.6.1 2005/11/28 12:39:24 boucher Exp $
+ * $Id: primitive_utils.h,v 1.13.6.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

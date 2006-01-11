@@ -1,7 +1,7 @@
 /** \file input_device.cpp
  * TODO: File description
  *
- * $Id: input_device.cpp,v 1.2 2004/11/15 10:25:04 lecroart Exp $
+ * $Id: input_device.cpp,v 1.2.32.1 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "stdmisc.h"
 #include "nel/misc/input_device.h"
 
+// remove stupid VC6 warnings
+void foo_input_device_cpp() {}
 
 namespace NLMISC 
 {

@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.8.16.1 2006/01/09 17:24:16 vizerie Exp $
+ * $Id: plane.h,v 1.8.16.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

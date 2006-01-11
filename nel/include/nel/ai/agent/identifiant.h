@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.9 2003/01/21 11:24:25 chafik Exp $
+ * $Id: identifiant.h,v 1.9.2.1 2006/01/11 15:05:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

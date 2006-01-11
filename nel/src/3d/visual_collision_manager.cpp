@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * TODO: File description
  *
- * $Id: visual_collision_manager.cpp,v 1.16 2005/02/22 10:19:13 besson Exp $
+ * $Id: visual_collision_manager.cpp,v 1.16.16.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,7 +167,7 @@ float					CVisualCollisionManager::getCameraCollision(const CVector &start, cons
 	// try col with meshes
 	CCameraCol		camCol;
 	camCol.build(start, end, radius, cone);
-	_MeshQuadGrid.select(camCol.BBox.getMin(), camCol.BBox.getMax());
+	_MeshQuadGrid.select(camCol.getBBox().getMin(), camCol.getBBox().getMax());
 	// try to intersect with any instance meshs
 	CQuadGrid<CMeshInstanceCol*>::CIterator		it;
 	for(it= _MeshQuadGrid.begin();it!=_MeshQuadGrid.end();it++)
@@ -189,13 +189,50 @@ float					CVisualCollisionManager::getCameraCollision(const CVector &start, cons
 
 
 // ***************************************************************************
+bool					CVisualCollisionManager::getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end, bool landscapeOnly)
+{
+	// try col with landscape
+	if(_Landscape)
+	{
+		if( _Landscape->getRayCollision(start, end) < 1.f)
+			return true;
+	}
+	
+	// try col with meshes, if wanted
+	if(!landscapeOnly)
+	{
+		CCameraCol		camCol;
+		camCol.buildRay(start, end);
+		_MeshQuadGrid.select(camCol.getBBox().getMin(), camCol.getBBox().getMax());
+		// try to intersect with any instance meshs
+		CQuadGrid<CMeshInstanceCol*>::CIterator		it;
+		for(it= _MeshQuadGrid.begin();it!=_MeshQuadGrid.end();it++)
+		{
+			// Skip this mesh according to special flag (IBBR problem)
+			if((*it)->AvoidCollisionWhenPlayerInside && _PlayerInside)
+				continue;
+			if((*it)->AvoidCollisionWhenPlayerOutside && !_PlayerInside)
+				continue;
+			
+			// collide
+			float	meshCol= (*it)->getCameraCollision(camCol);
+			if(meshCol<1.f)
+				return true;
+		}
+	}
+	
+	return false;
+}
+
+
+// ***************************************************************************
 float		CVisualCollisionManager::CMeshInstanceCol::getCameraCollision(CCameraCol &camCol)
 {
 	// if mesh still present (else it s may be an error....)
 	if(Mesh)
 	{
 		// first test if intersect with the bboxes
-		if(!camCol.BBox.intersect(WorldBBox))
+		if(!camCol.getBBox().intersect(WorldBBox))
 			return 1;
 
 		// get the collision with the mesh

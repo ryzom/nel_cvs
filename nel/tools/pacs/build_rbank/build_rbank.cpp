@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.19 2004/06/29 17:16:00 legros Exp $
+ * $Id: build_rbank.cpp,v 1.19.40.1 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,7 +130,7 @@ string	changeExt(string name, string &ext)
 
 void processAllPasses(string &zoneName)
 {
-	uint	i, j;
+	uint	/*i,*/ j;
 
 	NLPACS::CZoneTessellation		tessellation;
 	vector<NLPACS::COrderedChain3f>	fullChains;

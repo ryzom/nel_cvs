@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.41.4.1 2006/01/09 14:29:14 cado Exp $
+ * $Id: sock.cpp,v 1.41.4.2 2006/01/11 15:02:11 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

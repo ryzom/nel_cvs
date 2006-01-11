@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.29.4.1 2005/11/22 18:46:19 boucher Exp $
+ * $Id: bit_mem_stream.h,v 1.29.4.2 2006/01/11 15:02:09 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

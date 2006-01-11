@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.20 2005/09/22 14:26:07 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.20.4.1 2006/01/11 15:02:10 boucher Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -181,8 +181,8 @@ const D3DCUBEMAP_FACES RemapCubeFaceTypeNeL2D3D[6]=
 {
 	D3DCUBEMAP_FACE_POSITIVE_X,	// positive_x
 	D3DCUBEMAP_FACE_NEGATIVE_X,	// negative_x
-	D3DCUBEMAP_FACE_NEGATIVE_Z,	// positive_y
-	D3DCUBEMAP_FACE_POSITIVE_Z,	// negative_y
+	D3DCUBEMAP_FACE_POSITIVE_Z,	// positive_y
+	D3DCUBEMAP_FACE_NEGATIVE_Z,	// negative_y
 	D3DCUBEMAP_FACE_POSITIVE_Y,	// positive_z
 	D3DCUBEMAP_FACE_NEGATIVE_Y,	// negative_z
 };

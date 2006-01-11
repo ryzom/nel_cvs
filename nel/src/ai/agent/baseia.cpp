@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.10 2003/01/21 11:24:39 chafik Exp $
+ * $Id: baseia.cpp,v 1.10.2.1 2006/01/11 15:05:13 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

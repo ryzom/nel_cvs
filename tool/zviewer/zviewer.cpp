@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.19 2004/10/26 13:53:11 lecroart Exp $
+ * $Id: zviewer.cpp,v 1.19.32.1 2006/01/11 15:05:12 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,15 +29,15 @@
 #include "nel/misc/path.h"
 #include "nel/misc/i18n.h"
 
-#include "3d/driver.h"
-#include "3d/camera.h"
-#include "3d/landscape_model.h"
-#include "3d/landscape.h"
-#include "3d/text_context.h"
-#include "3d/mini_col.h"
-#include "3d/nelu.h"
-#include "3d/scene_group.h"
-#include "3d/texture_file.h"
+#include "nel/../../src/3d/driver.h"
+#include "nel/../../src/3d/camera.h"
+#include "nel/../../src/3d/landscape_model.h"
+#include "nel/../../src/3d/landscape.h"
+#include "nel/../../src/3d/text_context.h"
+#include "nel/../../src/3d/mini_col.h"
+#include "nel/../../src/3d/nelu.h"
+#include "nel/../../src/3d/scene_group.h"
+#include "nel/../../src/3d/texture_file.h"
 
 //#include "nel/net/local_entity.h"
 

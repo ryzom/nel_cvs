@@ -1,7 +1,7 @@
 /** \file block_memory.cpp
  * TODO: File description
  *
- * $Id: block_memory.cpp,v 1.4 2004/11/15 10:25:02 lecroart Exp $
+ * $Id: block_memory.cpp,v 1.4.32.1 2006/01/11 15:02:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,9 @@
 #include "stdmisc.h"
 
 #include "nel/misc/block_memory.h"
+
+// remove stupid VC6 warnings
+void foo_block_memory_cpp() {}
 
 
 namespace NLMISC 

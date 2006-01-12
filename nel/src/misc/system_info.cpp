@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * TODO: File description
  *
- * $Id: system_info.cpp,v 1.33.4.3 2006/01/12 09:34:23 boucher Exp $
+ * $Id: system_info.cpp,v 1.33.4.4 2006/01/12 09:37:17 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -828,76 +828,6 @@ static inline char *skipToken(const char *p)
     return (char *)p;
 }
 #endif
-
-uint32 CSystemInfo::getAllocatedSystemMemory ()
-{
-	uint systemMemory = 0;
-#ifdef NL_OS_WINDOWS
-	// Get system memory informations
-	HANDLE hHeap[100];
-	DWORD heapCount = GetProcessHeaps (100, hHeap);
-
-	uint heap;
-	for (heap = 0; heap < heapCount; heap++)
-	{
-		PROCESS_HEAP_ENTRY entry;
-		entry.lpData = NULL;
-		while (HeapWalk (hHeap[heap], &entry))
-		{
-			if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
-			{
-				systemMemory += entry.cbData + entry.cbOverhead;
-			}
-		}
-	}
-
-#elif defined NL_OS_UNIX
-	
-	int fd = open("/proc/self/stat", O_RDONLY);
-	if (fd == -1)
-	{
-		nlwarning ("HA: Can't get OS from /proc/self/stat: %s", strerror (errno));
-	}
-	else
-	{
-		char buffer[4096], *p;
-		int len = read(fd, buffer, sizeof(buffer)-1);
-		close(fd);
-	
-		buffer[len] = '\0';
-		
-		p = buffer;
-		p = strchr(p, ')')+1;			/* skip pid */
-		p = skipWS(p);
-		p++;
-		
-		p = skipToken(p);				/* skip ppid */
-		p = skipToken(p);				/* skip pgrp */
-		p = skipToken(p);				/* skip session */
-		p = skipToken(p);				/* skip tty */
-		p = skipToken(p);				/* skip tty pgrp */
-		p = skipToken(p);				/* skip flags */
-		p = skipToken(p);				/* skip min flt */
-		p = skipToken(p);				/* skip cmin flt */
-		p = skipToken(p);				/* skip maj flt */
-		p = skipToken(p);				/* skip cmaj flt */
-		p = skipToken(p);				/* utime */
-		p = skipToken(p);				/* stime */
-		p = skipToken(p);				/* skip cutime */
-		p = skipToken(p);				/* skip cstime */
-		p = skipToken(p);				/* priority */
-		p = skipToken(p);				/* nice */
-		p = skipToken(p);				/* skip timeout */
-		p = skipToken(p);				/* skip it_real_val */
-		p = skipToken(p);				/* skip start_time */
-		
-		systemMemory = strtoul(p, &p, 10);	/* vsize in bytes */
-	}
-
-#endif // NL_OS_WINDOWS
-	return systemMemory;
-}
-
 
 uint32 CSystemInfo::getAllocatedSystemMemory ()
 {

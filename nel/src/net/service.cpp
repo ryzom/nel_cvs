@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.239 2006/01/10 17:38:47 boucher Exp $
+ * $Id: service.cpp,v 1.240 2006/01/16 10:23:53 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1222,14 +1222,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		string cmdRoot("StartCommands");
 		vector<string>	posts;
 
+		// add an empty string (for the common part of start commands)
+		posts.push_back(string());
+
 		if (IService::getInstance()->haveArg('S'))
 		{
 			string s = IService::getInstance()->getArg('S');
-			NLMISC::explode(s, ":", posts, false);
+			posts.push_back(s);
 		}
-		else
-			// add an empty string
-			posts.push_back(string());
 
 		CConfigFile::CVar *var;
 		for (uint i=0; i<posts.size(); ++i)

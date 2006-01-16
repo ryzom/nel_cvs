@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.67 2005/10/26 17:24:26 boucher Exp $
+ * $Id: config_file.cpp,v 1.67.4.1 2006/01/16 13:27:49 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -751,7 +751,8 @@ void CConfigFile::display (CLog *log) const
 void CConfigFile::setCallback (void (*cb)())
 {
 	_Callback = cb;
-	nlinfo ("CF: Setting callback when the file '%s' is modified externaly", FileNames.empty()?"":getFilename().c_str());
+	if( !FileNames.empty() )
+		nlinfo ("CF: Setting callback to reload the file '%s' when modified externally", getFilename().c_str());
 }
 
 void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
@@ -761,7 +762,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 		if (VarName == (*it).Name)
 		{
 			(*it).Callback = cb;
-			nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly", VarName.c_str(), getFilename().c_str());
+			nlinfo ("CF: Setting callback to reload the variable '%s' in the file '%s' when modified externally", VarName.c_str(), getFilename().c_str());
 			return;
 		}
 	}
@@ -772,7 +773,7 @@ void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CV
 	Var.Type = CVar::T_UNKNOWN;
 	Var.Comp = false;
 	_Vars.push_back (Var);
-	nlinfo ("CF: Setting callback when the variable '%s' on the file '%s' is modified externaly (actually unknown)", VarName.c_str(), getFilename().c_str());
+	nlinfo ("CF: Setting callback to reload the variable '%s' in the file '%s' when modified externally (currently unknown)", VarName.c_str(), getFilename().c_str());
 }
 
 // ***************************************************************************

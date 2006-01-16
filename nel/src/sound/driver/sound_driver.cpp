@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.20 2005/04/04 09:49:45 cado Exp $
+ * $Id: sound_driver.cpp,v 1.20.12.1 2006/01/16 13:30:46 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,8 +170,9 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 	 */
 #ifdef NL_OS_WINDOWS
 	char buffer[1024], *ptr;
-	SearchPath (NULL, dllName.c_str(), NULL, 1023, buffer, &ptr);
-	nlinfo ("Using the library '%s' that is in the directory: '%s'", dllName.c_str(), buffer);
+	uint len = SearchPath (NULL, dllName.c_str(), NULL, 1023, buffer, &ptr);
+	if( len )
+		nlinfo ("Using the library '%s' that is in the directory: '%s'", dllName.c_str(), buffer);
 #endif
 
 	createSoundDriver = (ISDRV_CREATE_PROC) driverLib.getSymbolAddress(IDRV_CREATE_PROC_NAME);

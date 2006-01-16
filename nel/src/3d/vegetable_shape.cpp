@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * TODO: File description
  *
- * $Id: vegetable_shape.cpp,v 1.13 2005/02/22 10:19:12 besson Exp $
+ * $Id: vegetable_shape.cpp,v 1.13.16.1 2006/01/16 13:24:20 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,12 +182,15 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 }
 
 // ***************************************************************************
-void		CVegetableShape::loadShape(const std::string &shape)
+bool		CVegetableShape::loadShape(const std::string &shape)
 {
-	string	path= CPath::lookup(shape);
+	string	path= CPath::lookup(shape, false);
+	if( path.empty() )
+		return false;
 	// read this file
 	CIFile	f(path);
 	serial(f);
+	return true;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.47 2005/02/22 10:19:12 besson Exp $
+ * $Id: vegetable_manager.cpp,v 1.47.16.1 2006/01/16 13:24:20 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -797,7 +797,17 @@ CVegetableShape				*CVegetableManager::getVegetableShape(const std::string &shap
 		// fill.
 		try
 		{
-			ret->loadShape(shape);
+			if( !ret->loadShape(shape) )
+			{
+				// Warning
+				nlwarning ("CVegetableManager::getVegetableShape could not load shape file '%s'", shape.c_str ());
+				
+				// Remove from map
+				_ShapeMap.erase (shape);
+				
+				// Return NULL
+				ret = NULL;
+			}
 		}
 		catch (Exception &e)
 		{

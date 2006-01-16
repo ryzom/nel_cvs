@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * TODO: File description
  *
- * $Id: vegetable_shape.h,v 1.11 2005/02/22 10:19:12 besson Exp $
+ * $Id: vegetable_shape.h,v 1.11.16.1 2006/01/16 13:24:20 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -121,7 +121,7 @@ public:
 
 	/** load a vegetable shape (.veget), lookup into CPath, and serial
 	 */
-	void		loadShape(const std::string &shape);
+	bool		loadShape(const std::string &shape);
 
 	/// \name Shape def
 	// @{

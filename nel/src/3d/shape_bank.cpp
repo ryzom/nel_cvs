@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * TODO: File description
  *
- * $Id: shape_bank.cpp,v 1.36 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.36.16.1 2006/01/16 13:24:20 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -475,28 +475,21 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 		TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
 		if (wsmmIt != WaitingShapes.end())
 			return;
-		try
-		{
-			CShapeStream mesh;
-			CIFile meshfile;
-			if (meshfile.open(CPath::lookup(shapeName)))
-			{
-				meshfile.serial( mesh );
-				meshfile.close();
-			}
-			else
-			{
-				nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
-			}
 
-			// Add the shape to the map.
-			add( shapeName, mesh.getShapePointer() );
-		}
-		catch(Exception &e)
+		CShapeStream mesh;
+		CIFile meshfile;
+		if (meshfile.open(CPath::lookup(shapeName, false)))
 		{
-			nlwarning ("CShapeBank::load() : %s", e.what());
-			return;
+			meshfile.serial( mesh );
+			meshfile.close();
 		}
+		else
+		{
+			nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
+		}
+
+		// Add the shape to the map.
+		add( shapeName, mesh.getShapePointer() );
 	}	
 }
 

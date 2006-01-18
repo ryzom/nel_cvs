@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18.6.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: polygon.h,v 1.18.6.3 2006/01/18 18:58:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,9 +63,9 @@ public:
 
 	sint			getNumVertices() const {return Vertices.size();}
 
-	// build a triangle fan from this polygon, appending relting tris to 'dest'
-	void		toTriFan(std::vector<NLMISC::CTriangle> &dest) const;
-
+	// build a triangle fan from this polygon, appending resulting tris to 'dest'
+	void		toTriFan(std::vector<NLMISC::CTriangle> &dest) const;	
+	
 	/// Clip a polygon with a set of planes. Cohen-sutherland... clipPolygonBack() is used on planes.
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
@@ -74,7 +74,7 @@ public:
 	float			computeArea() const;
 
 	/// Serial this polygon
-	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 
 	/**
 	  * Convert a concave polygon into a list of convex polygons using a 2d projection.
@@ -89,7 +89,7 @@ public:
 	  * \return true if the polygon has been subdivided. false if the polygon overlap itself in the XY plane of the basis
 	  * or if the polygon is not direct (clock wise).
 	  */
-	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;
+	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;	
 
 	/**
 	  * Chain the arg polygons with this polygon testing 2d intersections.
@@ -131,7 +131,7 @@ public:
 	TVec2fVect Vertices;
 public:
 	/// default ctor
-	CPolygon2D() {}
+	CPolygon2D() {}	
 
 	// swap this poly content with another poly content
 	void swap(CPolygon2D &other) { Vertices.swap(other.Vertices); }	

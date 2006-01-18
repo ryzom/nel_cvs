@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.32.6.2 2006/01/11 15:02:11 boucher Exp $
+ * $Id: polygon.cpp,v 1.32.6.3 2006/01/18 18:58:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,8 +195,8 @@ public:
 };
 typedef std::map<float, CConcavePolygonsVertexDesc> TCConcavePolygonsVertexMap;
 
-// ***************************************************************************
 
+// ***************************************************************************
 bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1)
 {
 	// both vertical?
@@ -490,8 +490,8 @@ void CPolygon::toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices,
 	}
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
 bool CPolygon::toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const
 {
 	// Some vertices ?
@@ -2089,32 +2089,31 @@ bool		CPolygon2D::contains(const CVector2f &p, bool hintIsConvex /*= true*/) con
 	}
 	else
 	{
-		// concave / complex case
-		std::vector<float> xInter;
+		// concave case
+		static std::vector<float> xInter;
+		xInter.clear();
 		for(uint k = 0; k < Vertices.size(); ++k)
 		{
 			const CVector2f &p0 = getSegRef0(k);
-			const CVector2f &p1 = getSegRef1(k);
-			if ((p.y >= p0.y && p.y <= p1.y) ||
-				(p.y >= p1.y && p.y <= p0.y)
-			   )
+			const CVector2f &p1 = getSegRef1(k);		
+			if (p0.y == p1.y)
 			{
-				if (p0.y == p1.y)
+				if (p.y == p0.y)
 				{
-					if (p.y == p0.y)
+					if ((p.x >= p0.x && p.x <= p1.x)
+						|| (p.x >= p1.x && p.x <= p0.x))
 					{
-						if ((p.x >= p0.x && p.x <= p1.x)
-							|| (p.x >= p1.x && p.x <= p0.x))
-						{
-							return true;
-						}
+						return true;
 					}
 				}
-				else
-				{
-					float inter = p0.x + (p.y - p0.y) * (p1.x - p0.x) / (p1.y- p0.y);
-					xInter.push_back(inter);
-				}
+			}
+			if ((p.y >= p0.y && p.y < p1.y) ||
+				(p.y >= p1.y && p.y < p0.y)
+			   )
+			{
+									
+				float inter = p0.x + (p.y - p0.y) * (p1.x - p0.x) / (p1.y- p0.y);
+				xInter.push_back(inter);					
 			}			
 		}
 		if (xInter.size() < 2) return false;

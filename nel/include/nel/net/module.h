@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.11 2006/01/10 17:38:47 boucher Exp $
+ * $Id: module.h,v 1.12 2006/01/18 12:57:18 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -787,14 +787,14 @@ namespace NLNET
 	class TBroadcastModuleMessage
 	{
 
-		void sendMessage(IModuleProxy *senderProxy, const PtrContainer &addresseeProxies, const NLNET::CMessage &message)
+		void sendMessage(IModule *sender, const PtrContainer &addresseeProxies, const NLNET::CMessage &message)
 		{
 			typename PtrContainer::iterator first(addresseeProxies.begin()), last(addresseeProxies.end());
 			for (; first != last; ++first)
 			{
 				IModuleProxy *proxy = static_cast<IModuleProxy*>(*first);
 				
-				proxy->sendModuleMessage(senderProxy, message);
+				proxy->sendModuleMessage(sender, message);
 			}
 		}
 	};

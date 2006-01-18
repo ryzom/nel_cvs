@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * TODO: File description
  *
- * $Id: shape_bank.cpp,v 1.36.16.1 2006/01/16 13:24:20 mitchell Exp $
+ * $Id: shape_bank.cpp,v 1.36.16.2 2006/01/18 13:45:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,8 +488,11 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 			nlwarning ("CShapeBank::load() : Can't open file %s", shapeName.c_str());
 		}
 
-		// Add the shape to the map.
-		add( shapeName, mesh.getShapePointer() );
+		if (mesh.getShapePointer() != NULL)
+		{
+			// Add the shape to the map.
+			add( shapeName, mesh.getShapePointer() );
+		}
 	}	
 }
 
@@ -601,6 +604,7 @@ bool CShapeBank::isShapeWaiting ()
 
 void CShapeBank::add (const string &shapeNameNotLwr, IShape* pShp)
 {
+	nlassert(pShp);
 	string	shapeName= toLower(shapeNameNotLwr);
 
 	// request a system mem geometry copy?
@@ -783,7 +787,9 @@ IShape* CShapeBank::getShapePtrFromShapeName(const std::string &pShpName)
 	TShapeMap::iterator smIt = ShapeMap.find(pShpName);
 	if( smIt != ShapeMap.end() )
 	{
-		return (IShape*)(smIt->second);
+		// TMP
+		IShape *ptr = (IShape*)(smIt->second);
+		return ptr;
 	}
 	return NULL;
 }

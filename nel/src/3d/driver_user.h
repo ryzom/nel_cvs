@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * TODO: File description
  *
- * $Id: driver_user.h,v 1.51.6.2 2006/01/11 15:02:10 boucher Exp $
+ * $Id: driver_user.h,v 1.51.6.3 2006/01/18 18:57:25 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -522,6 +522,8 @@ public:
 	virtual void		  deleteWaterEnvMap(UWaterEnvMap *map);
 	// @}
 	
+
+	virtual uint64	getSwapBufferCounter();
 
 public:
 	/// \name Accessor for CSeneUser.

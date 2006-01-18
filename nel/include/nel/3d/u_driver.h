@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.55.6.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: u_driver.h,v 1.55.6.3 2006/01/18 18:57:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -791,6 +791,7 @@ public:
 		virtual void		  deleteWaterEnvMap(UWaterEnvMap *) = 0;
 	// @}
 	
+	virtual uint64	getSwapBufferCounter() = 0;
 
 public:
 

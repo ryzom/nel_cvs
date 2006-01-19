@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.4 2006/01/11 15:02:11 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.5 2006/01/19 13:39:31 boucher Exp $
  *
  */
 
@@ -1161,6 +1161,7 @@ public:
 			// use the command line param if set
 			uint shardId = atoi(IService::getInstance()->getArg('S').c_str());
 
+			nlinfo("Using shard id %u from command line '%s'", shardId, IService::getInstance()->getArg('S').c_str());
 			anticipateShardId(shardId);
 		}
 		else if (ConfigFile.exists ("ShardId"))
@@ -1168,6 +1169,7 @@ public:
 			// use the config file param if set
 			uint shardId = IService::getInstance()->ConfigFile.getVar ("ShardId").asInt();
 
+			nlinfo("Using shard id %u from config file '%s'", shardId, IService::getInstance()->ConfigFile.getVar ("ShardId").asString().c_str());
 			anticipateShardId(shardId);
 		}
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.156.6.1 2006/01/11 15:02:10 boucher Exp $
+ * $Id: landscape.cpp,v 1.156.6.2 2006/01/19 16:52:11 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -964,6 +964,7 @@ void	drawPassTriArray(CMaterial &mat)
 	CLandscapeGlobals::PassTriArrayIBA.unlock();
 	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
+		//mat.setZFunc(CMaterial::ZFunc::greaterequal);
 		CLandscapeGlobals::PatchCurrentDriver->setupMaterial(mat);
 		CLandscapeGlobals::PatchCurrentDriver->activeIndexBuffer(CLandscapeGlobals::PassTriArray);
 		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(0, NL3D_LandscapeGlobals_PassNTri);
@@ -3869,6 +3870,13 @@ void			CLandscape::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const C
 	sm.setZBias(-0.02f);
 	_ShadowPolyReceiver.render(drv, sm, shadowMap, casterPos, -pzb);
 	sm.setZBias(oldZBias);
+}
+
+// ***************************************************************************
+void			CLandscape::setZFunc(CMaterial::ZFunc val)
+{
+	TileMaterial.setZFunc(val);
+	FarMaterial.setZFunc(val);
 }
 
 // ***************************************************************************

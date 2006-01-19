@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_landscape.h,v 1.32.16.1 2006/01/19 16:53:21 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #ifndef NL_U_LANDSCAPE_H
 #define NL_U_LANDSCAPE_H
+
+#include "nel/3d/u_material.h"
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
@@ -303,6 +305,8 @@ public:
 	virtual	bool					isTileCallback(ULandscapeTileCallback *cb) = 0;
 	// @}
 
+	// modify ZBuffer test of landscape material
+	virtual	void					setZFunc(UMaterial::ZFunc val) = 0;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.31 2005/02/22 10:19:10 besson Exp $
+ * $Id: landscape_user.h,v 1.31.16.1 2006/01/19 16:52:57 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,6 +203,9 @@ public:
 	virtual	void					removeTileCallback(ULandscapeTileCallback *cb);	
 	virtual	bool					isTileCallback(ULandscapeTileCallback *cb);
 	// @}
+
+	// modify ZBuffer test of landscape material
+	virtual	void					setZFunc(UMaterial::ZFunc val);
 
 public:
 	/// \name Accessor for CLandscapeUser.

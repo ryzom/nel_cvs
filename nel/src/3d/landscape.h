@@ -1,7 +1,7 @@
 /** \file landscape.h
  * TODO: File description
  *
- * $Id: landscape.h,v 1.62.6.1 2006/01/11 15:02:10 boucher Exp $
+ * $Id: landscape.h,v 1.62.6.2 2006/01/19 16:52:35 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -646,6 +646,9 @@ public:
 
 	// for advanced use (decal rendering)
 	CShadowPolyReceiver &getShadowPolyReceiver() { return _ShadowPolyReceiver; }
+
+	// modify ZBuffer test of landscape material
+	virtual	void					setZFunc(CMaterial::ZFunc val);
 
 
 // ********************************

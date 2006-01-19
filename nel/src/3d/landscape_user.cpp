@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * TODO: File description
  *
- * $Id: landscape_user.cpp,v 1.49 2005/02/22 10:19:10 besson Exp $
+ * $Id: landscape_user.cpp,v 1.49.16.1 2006/01/19 16:52:47 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -624,6 +624,14 @@ bool CLandscapeUser::isTileCallback(ULandscapeTileCallback *cb)
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_UI_LANDSCAPE;
 	return _Landscape->Landscape.isTileCallback(cb);
+}
+
+// ***************************************************************************
+void CLandscapeUser::setZFunc(UMaterial::ZFunc val)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	_Landscape->Landscape.setZFunc((CMaterial::ZFunc)val);
 }
 
 // ***************************************************************************

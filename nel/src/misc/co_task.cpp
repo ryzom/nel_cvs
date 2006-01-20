@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3.4.5 2006/01/19 13:39:31 boucher Exp $
+ * $Id: co_task.cpp,v 1.3.4.6 2006/01/20 15:15:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #include "nel/misc/co_task.h"
 #include "nel/misc/tds.h"
 // Flag to use thread instead of coroutine primitives (i.e windows fibers or gcc context)
+#ifndef NL_OS_WINDOWS
 #define NL_USE_THREAD_COTASK
+#endif
 // flag to activate debug message
 //#define NL_GEN_DEBUG_MSG
 
@@ -386,7 +388,7 @@ namespace NLMISC
 			resume();
 	}
 
-
+#if  defined(NL_USE_THREAD_COTASK)
 	void TCoTaskData::run()
 	{
 		// set the current task
@@ -405,6 +407,7 @@ namespace NLMISC
 
 		// nothing more to do, just return to terminate the thread
 	}
+#endif //NL_USE_THREAD_COTASK
 
 } // namespace NLMISC
 

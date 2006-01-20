@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.5 2006/01/19 10:23:21 distrib Exp $
+ * $Id: co_task.cpp,v 1.6 2006/01/20 16:44:06 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -386,7 +386,7 @@ namespace NLMISC
 			resume();
 	}
 
-
+#if  defined(NL_USE_THREAD_COTASK)
 	void TCoTaskData::run()
 	{
 		// set the current task
@@ -405,6 +405,7 @@ namespace NLMISC
 
 		// nothing more to do, just return to terminate the thread
 	}
+#endif //NL_USE_THREAD_COTASK
 
 } // namespace NLMISC
 

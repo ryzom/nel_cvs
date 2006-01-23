@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.80 2005/09/22 14:27:41 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.80.4.1 2006/01/23 17:25:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -375,6 +375,65 @@ bool CDriverGL::setupTexture (ITexture& tex)
 	return setupTextureEx (tex, true, nTmp);
 }
 
+
+
+// ***************************************************************************
+#ifndef NL_DEBUG
+	inline 
+#endif
+void CDriverGL::bindTextureWithMode(ITexture &tex)
+{
+	CTextureDrvInfosGL*	gltext;
+	gltext= getTextureGl(tex);
+	// system of "backup the previous binded texture" seems to not work with some drivers....
+	_DriverGLStates.activeTextureARB(0);
+	if(tex.isTextureCube())
+	{
+		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+		// Bind this texture
+		glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
+	}
+	else
+	{
+		_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
+		// Bind this texture
+		glBindTexture(GL_TEXTURE_2D, gltext->ID);
+	}
+}
+
+// ***************************************************************************
+#ifndef NL_DEBUG
+	inline 
+#endif
+void CDriverGL::setupTextureBasicParameters(ITexture &tex)
+{
+	CTextureDrvInfosGL*	gltext;
+	gltext= getTextureGl(tex);	
+	// TODO: possible cache here, but beware, this is called just after texture creation as well, so these fields
+	// haven't ever been filled.
+	gltext->WrapS= tex.getWrapS();
+	gltext->WrapT= tex.getWrapT();
+	gltext->MagFilter= tex.getMagFilter();
+	gltext->MinFilter= tex.getMinFilter();	
+	if(tex.isTextureCube())
+	{
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_S, translateWrapToGl(ITexture::Clamp, _Extensions));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_T, translateWrapToGl(ITexture::Clamp, _Extensions));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_R, translateWrapToGl(ITexture::Clamp, _Extensions));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
+	}
+	//
+	tex.clearFilterOrWrapModeTouched();
+}
+
 // ***************************************************************************
 bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
 {
@@ -400,7 +459,24 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 
 	// Does the texture has been touched ?
 	if ( (!tex.touched()) && (!mustCreate) )
+	{		
+		// if wrap mode or filter mode is touched, update it here
+		if (tex.filterOrWrapModeTouched())
+		{
+			activateTexture(0, NULL); // unbind any previous texture			
+			bindTextureWithMode(tex);
+			//
+			setupTextureBasicParameters(tex); // setup what has changed (will reset the touch flag)
+
+			// Disable texture 0
+			_CurrentTexture[0]= NULL;
+			_CurrentTextureInfoGL[0]= NULL;
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
+			//
+		}		
+		//
 		return true; // Do not do anything
+	}
 
 
 	// 1. If modified, may (re)load texture part or all of the texture.
@@ -489,25 +565,12 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 	// B. Setup texture.
 	//==================
 	if(mustLoadAll || mustLoadPart)
-	{
+	{		
+		// system of "backup the previous binded texture" seems to not work with some drivers....
+		bindTextureWithMode(tex);		
+
 		CTextureDrvInfosGL*	gltext;
 		gltext= getTextureGl(tex);
-
-		// system of "backup the previous binded texture" seems to not work with some drivers....
-		_DriverGLStates.activeTextureARB(0);
-		if(tex.isTextureCube())
-		{
-			_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
-			// Bind this texture, for reload...
-			glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);				
-		}
-		else
-		{
-			_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
-			// Bind this texture, for reload...
-			glBindTexture(GL_TEXTURE_2D, gltext->ID);				
-		}
-
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
@@ -802,29 +865,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 
 		// Basic parameters.
 		//==================
-		gltext->WrapS= tex.getWrapS();
-		gltext->WrapT= tex.getWrapT();
-		gltext->MagFilter= tex.getMagFilter();
-		gltext->MinFilter= tex.getMinFilter();
-		if(tex.isTextureCube())
-		{
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_S, translateWrapToGl(ITexture::Clamp, _Extensions));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_T, translateWrapToGl(ITexture::Clamp, _Extensions));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_R, translateWrapToGl(ITexture::Clamp, _Extensions));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
-			glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
-		}
-		else
-		{
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext));
-		}
-		
-			
-
-
+		setupTextureBasicParameters(tex);
 
 		// Disable texture 0
 		_CurrentTexture[0]= NULL;

@@ -489,6 +489,10 @@ SOURCE=..\include\nel\misc\mouse_smoother.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\include\nel\misc\array_2d.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\block_memory.cpp
 # End Source File
 # Begin Source File
@@ -935,6 +939,14 @@ SOURCE=.\misc\geom_ext.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\geom_ext.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\grid_traversal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\grid_traversal.h
 # End Source File
 # Begin Source File
 

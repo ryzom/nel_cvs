@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.6 2006/01/20 16:44:06 cado Exp $
+ * $Id: co_task.cpp,v 1.7 2006/01/25 19:06:36 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,9 @@
 #include "nel/misc/co_task.h"
 #include "nel/misc/tds.h"
 // Flag to use thread instead of coroutine primitives (i.e windows fibers or gcc context)
+#ifndef NL_OS_WINDOWS
 #define NL_USE_THREAD_COTASK
+#endif
 // flag to activate debug message
 //#define NL_GEN_DEBUG_MSG
 

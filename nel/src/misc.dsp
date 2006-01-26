@@ -942,7 +942,7 @@ SOURCE=..\include\nel\misc\geom_ext.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\grid_traversal.cpp
+SOURCE=.\misc\grid_traversal.cpp
 # End Source File
 # Begin Source File
 

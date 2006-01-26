@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.39 2005/08/01 16:23:41 cado Exp $
+ * $Id: command.h,v 1.39.6.1 2006/01/26 17:35:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,12 +220,12 @@ struct TCommandHandlerClassInfo
 /** Base class for command handler.
  *	Command handler are a mean to build object that support NeL commands
  *	Commands are associated to object class and invoked to named instance.
- *	Each named instance must have a unique name (whatexer it's class).
+ *	Each named instance must have a unique name (whatever it's class).
  *	Unlike NeL global commands, object commands are invoked in the context 
  *	of the object instance.
  *
  *	In order to write an object that support commands, you must devive from
- *	template<class MyClass> CCommandHandler. The class ICommandsHandler
+ *	template<class MyClass> CCommandsHandler. The class ICommandsHandler
  *	is used by the command registry to handle any type of object.
  *
  * \author Boris 'SoniX' Boucher
@@ -320,7 +320,7 @@ struct TCommandHandler : public TCommandHandlerInfo
  *		}
  *	};
  *
- *	You can also derive a class an add some more commands in the 
+ *	You can also derive a class and add some more commands in the 
  *	derived class by using NLMISC_COMMAND_HANDLER_TABLE_EXTEND_BEGIN:
  *
  *	class CMyDerivedClass : public CMyClass

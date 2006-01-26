@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.5 2006/01/11 15:02:11 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.6 2006/01/26 17:35:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -614,6 +614,17 @@ namespace NLNET
 			
 			nlassertex(sanityCheck == NULL, ("Someone has kept a smart pointer on the proxy '%s' of class '%s'", sanityCheck->getModuleName().c_str(), sanityCheck->getModuleClassName().c_str()));
 		}
+
+		virtual uint32 getNbModule()
+		{
+			return _ModuleInstances.getAToBMap().size();
+		}
+
+		virtual uint32 getNbModuleProxy()
+		{
+			return _ModuleProxyIds.getAToBMap().size();
+		}
+
 
 
 		NLMISC_COMMAND_HANDLER_TABLE_BEGIN(CModuleManager)

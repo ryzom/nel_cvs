@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34.4.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: sstring.h,v 1.34.4.3 2006/01/26 17:35:55 boucher Exp $
  */
 
 
@@ -1908,7 +1908,7 @@ inline CSString CSString::replace(const char *toFind,const char *replacement) co
 
 inline unsigned CSString::find(const char *toFind,unsigned startLocation) const
 {
-	const char *constStr = c_str();
+//	const char *constStr = c_str();
 
 	// just bypass the problems that can cause a crash...
 	if (toFind==NULL || *toFind==0 || startLocation>=size())

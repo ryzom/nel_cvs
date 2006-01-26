@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.4.4.4 2006/01/11 15:02:09 boucher Exp $
+ * $Id: module_manager.h,v 1.4.4.5 2006/01/26 17:35:55 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,9 @@ namespace NLNET
 													TModuleId foreignModuleId) =0;
 
 		virtual void releaseModuleProxy(TModuleId moduleProxyId) =0;
+
+		virtual uint32 getNbModule() =0;
+		virtual uint32 getNbModuleProxy() =0;
 
 	};
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.5 2006/01/11 15:02:10 boucher Exp $
+ * $Id: service.h,v 1.89.4.6 2006/01/26 17:35:55 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -214,9 +214,9 @@ public:
 	// @{
 
 	/// Returns the instance of the service to access to methods/variables class
-	static IService					*getInstance () { nlassert (_Instance != NULL); return _Instance; }
+	static IService					*getInstance ();
 
-	/// Returns true if the service singleton has been in itialized
+	/// Returns true if the service singleton has been initialized
 	static bool						isServiceInitialized() { return _Instance != NULL; }
 
 	/// Returns the current service short name (ie: TS)
@@ -552,6 +552,19 @@ public:
 	/// implemente this virtual in you derived class
 	virtual void serviceLoopUpdate() =0;
 };
+
+
+inline IService *IService::getInstance()
+{
+	if (_Instance == NULL) 
+	{ 
+		/* the nel context MUST be initialised */ 
+		nlassertex(NLMISC::INelContext::isContextInitialised(), ("You are trying to access a safe singleton without having initialized a NeL context. The simplest correction is to add 'NLMISC::CApplicationContext myApplicationContext;' at the very begining of your application.")); 
+		// try to retrieve the safe singleton pointer
+		_Instance = reinterpret_cast<IService*>(NLMISC::INelContext::getInstance().getSingletonPointer("IService"));
+	} 
+	return _Instance; 
+}
 
 
 

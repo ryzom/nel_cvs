@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.7 2005/02/22 10:19:10 besson Exp $
+ * $Id: font_manager.h,v 1.7.16.1 2006/01/26 10:40:21 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ class CFontManager
 	uint32 _MaxMemory;
 	uint32 _NbChar;
 
-	CMaterial		*_MatFont;
+	CSmartPtr<CMaterial> _MatFont;
 	CSmartPtr<CTextureFont>	_TexFont;
 
 public:

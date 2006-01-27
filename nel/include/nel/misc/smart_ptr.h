@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.33 2005/07/07 11:44:46 vuarand Exp $
+ * $Id: smart_ptr.h,v 1.33.6.1 2006/01/27 12:59:36 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,11 @@ namespace NLMISC
 class CRefCount 
 {
 public:
+	/// Destructor which release pinfo if necessary.
+	virtual ~CRefCount();
+	/// Default constructor init crefs to 0.
+    CRefCount() { crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo); }
+
 	/*  The instance handle.
 		Can't put those to private since must be used by CRefPtr (and friend doesn't work with template).
 		Use struct CPtrInfoBase / CPtrInfo idiom for NullPtrInfo, because of problems of static constructor:
@@ -82,10 +87,6 @@ public:
     mutable	sint		crefs;	// The ref counter for SmartPtr use.
 	mutable	CPtrInfo	*pinfo;	// The ref ptr for RefPtr use.
 	
-	/// Destructor which release pinfo if necessary.
-	~CRefCount();
-	/// Default constructor init crefs to 0.
-    CRefCount() { crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo); }
 	/// operator= must NOT copy crefs/pinfo!!
 	CRefCount &operator=(const CRefCount &) {return *this;}
 	/// copy cons must NOT copy crefs/pinfo!!

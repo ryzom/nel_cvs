@@ -28,6 +28,7 @@
 
 #include "nel/misc/rect.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/traits_nl.h"
 
 namespace NLMISC
 {
@@ -39,7 +40,7 @@ namespace NLMISC
   * Example :
   * 
   * CArray2D<uint> myArray;  
-  * myArray.init(10, 10, 0); // fille with zero's
+  * myArray.init(10, 10, 0); // fill with zero's
   * myArray(5, 5) = 1;
   *
   * \author Nicolas Vizerie
@@ -90,6 +91,8 @@ public:
 	void move(sint offsetX, sint offsetY);
 	// Move a part of the array. Values are clamped as necessary
 	void moveSubArray(sint dstX, sint dstY, sint srcX, sint srcY, sint width, sint height);
+	// Blit content from another array
+	void blit(const CArray2D<T> &src, sint srcX, sint srcY, sint srcWidth, sint srcHeight, sint dstX, sint dstY);
 	// get an iterator to the start of a row
 	iterator beginRow(uint row)
 	{
@@ -162,7 +165,7 @@ void CArray2D<T>::clear()
 //*********************************************************************************
 template <class T>
 void CArray2D<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
+{	
 	f.serialCont(_Array);
 	uint32 width = _Width;
 	uint32 height = _Height;
@@ -373,6 +376,87 @@ void CArray2D<T>::moveSubArray(sint dstX, sint dstY, sint srcX, sint srcY, sint 
 		}
 	}
 }
+
+//*********************************************************************************
+template <class T>
+void CArray2D<T>::blit(const CArray2D<T> &src, sint srcX, sint srcY, sint srcWidth, sint srcHeight, sint dstX, sint dstY)
+{
+	if (&src == this)
+	{
+		moveSubArray(dstX, dstY, srcX, srcY, srcWidth, srcHeight);
+		return;
+	}
+	// clip x
+	if (srcX < 0)
+	{
+		srcWidth += srcX;
+		if (srcWidth <= 0) return;
+		dstX -= srcX;
+		srcX = 0;
+	}
+	if (srcX + srcWidth > (sint) src.getWidth())
+	{
+		srcWidth = src.getWidth() - srcX;
+		if (srcWidth <= 0) return;
+	}
+	if (dstX < 0)
+	{
+		srcWidth += dstX;
+		if (srcWidth <= 0) return;
+		srcX -= dstX;
+		dstX = 0;
+	}
+	if (dstX + srcWidth > (sint) getWidth())
+	{
+		srcWidth = getWidth() - dstX;
+		if (srcWidth <= 0) return;
+	}
+	// clip y
+	if (srcY < 0)
+	{
+		srcHeight += srcY;
+		if (srcHeight <= 0) return;
+		dstY -= srcY;
+		srcY = 0;
+	}
+	if (srcY + srcHeight > (sint) src.getHeight())
+	{
+		srcHeight = src.getHeight() - srcY;
+		if (srcHeight <= 0) return;
+	}
+	if (dstY < 0)
+	{
+		srcHeight += dstY;
+		if (srcHeight <= 0) return;
+		srcY -= dstY;
+		dstY = 0;
+	}
+	if (dstY + srcHeight > (sint) getHeight())
+	{
+		srcHeight = getHeight() - dstY;
+		if (srcHeight <= 0) return;
+	}	
+	const T *srcBase = (const T *) &src._Array[0];
+	const T *srcPtr = &(srcBase[srcX + srcY * src.getWidth()]);
+	const T *srcEndPtr = srcPtr + srcHeight * src.getWidth();
+	T *destBase = (T *) &_Array[0];
+	T *destPtr = 	&(destBase[dstX + dstY * getWidth()]);
+	while (srcPtr != srcEndPtr)
+	{
+		if (CTraits<T>::SupportRawCopy)
+		{
+			memcpy(destPtr, srcPtr, sizeof(T) * srcWidth);
+		}
+		else
+		{
+			std::copy(srcPtr, srcPtr + srcWidth, destPtr);
+		}
+		srcPtr += src.getWidth();
+		destPtr += getWidth();
+	}
+	
+}
+
 
 
 //*********************************************************************************

@@ -81,7 +81,7 @@ namespace WS
 			return _Value < other._Value;
 		}
 
-		const std::string &toString()
+		const std::string &toString() const
 		{
 			return getConversionTable().toString(_Value);
 		}
@@ -90,7 +90,7 @@ namespace WS
 			return getConversionTable().toString(value);
 		}
 
-		TValues getValue()
+		TValues getValue() const
 		{
 			return _Value;
 		}

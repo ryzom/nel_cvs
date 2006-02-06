@@ -1,6 +1,6 @@
 /** \file dup_ps.cpp
  *
- * $Id: dup_ps.cpp,v 1.5 2004/05/14 16:17:56 vizerie Exp $
+ * $Id: dup_ps.cpp,v 1.5.40.1 2006/02/06 13:47:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -71,18 +71,19 @@ struct CDupObjPolicy
 {
 	template <typename T>
 	static void serial(T *&obj, NLMISC::IStream &dest)  throw(NLMISC::EStream)
-	{ 		
-		if (dest.isReading())
+	{ 	
+		dest.serialPtr(obj);
+		/*if (dest.isReading())
 		{
 			std::auto_ptr<T> newObj(new T);
-			newObj->serial(dest);
+			newObj->serialPtr(dest);
 			delete obj;
 			obj = newObj.release();
 		}
 		else
 		{		
 			obj->serial(dest);
-		}
+		}*/
 	}	
 };
 
@@ -136,7 +137,7 @@ NL3D::CParticleSystemProcess	*DupPSLocated(const CParticleSystemProcess *in)
 /////////////////////////////////////////
 // temp until there is a clone method  //
 /////////////////////////////////////////
-NL3D::CPSLocatedBindable	*DupPSLocatedBindable(const CPSLocatedBindable *in)
+NL3D::CPSLocatedBindable	*DupPSLocatedBindable(CPSLocatedBindable *in)
 {
 	if (!in) return NULL;
 	try
@@ -148,14 +149,17 @@ NL3D::CPSLocatedBindable	*DupPSLocatedBindable(const CPSLocatedBindable *in)
 		}
 		else
 		{
-			uint index = in->getOwner()->getIndexOf(in);
-			/** Duplicate the owner, and detache from it.
-			  * We can't duplicate the object direclty (it may be referencing other objects in the system, so these objects will be copied too...)
-			  */
-			std::auto_ptr<CPSLocated> loc(NLMISC::safe_cast<CPSLocated *>(DupPSLocated(in->getOwner()))); // build a copy of the owner
-			if (loc.get() == NULL) return NULL;
-			// detach from the owner
-			return loc->unbind(index);
+			CParticleSystem *srcPS = in->getOwner()->getOwner();
+			std::auto_ptr<CParticleSystem> newPS(DupSerializable<CDupObjPolicy>(srcPS));	
+			// scene pointer is not serialised, but 'detach' may need the scene to be specified
+			newPS->setScene(in->getOwner()->getOwner()->getScene());
+			//
+			uint index	  = srcPS->getIndexOf(*(in->getOwner()));
+			uint subIndex = in->getOwner()->getIndexOf(in);
+			//									
+			newPS->setScene(in->getOwner()->getScene()); // 'unbind' require the scene to be attached
+			CPSLocated *loc = NLMISC::safe_cast<CPSLocated *>(newPS->getProcess(index));
+			return loc->unbind(subIndex);
 		}
 	}
 	catch (NLMISC::EStream &e)

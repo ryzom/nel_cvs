@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.46 2005/02/22 10:19:11 besson Exp $
+ * $Id: ps_mesh.cpp,v 1.46.16.1 2006/02/06 13:48:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -177,8 +177,14 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_Shape);
 	if (f.isReading())
 	{
-		_Instances.resize(_Owner->getMaxSize());
-		for(uint k = 0; k < _Owner->getSize(); ++k)
+
+		uint maxSize = 0;
+		if (_Owner) 
+		{
+			maxSize = _Owner->getMaxSize();
+			_Instances.resize(maxSize);
+		}
+		for(uint k = 0; k < maxSize; ++k)
 		{
 			_Instances.insert(NULL);
 		}

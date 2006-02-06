@@ -1,6 +1,6 @@
 /** \file dup_ps.h
  *
- * $Id: dup_ps.h,v 1.1 2002/04/25 08:29:47 vizerie Exp $
+ * $Id: dup_ps.h,v 1.2 2006/02/06 13:54:09 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -51,7 +51,7 @@ NL3D::CParticleSystemProcess	*DupPSLocated(const NL3D::CParticleSystemProcess *i
 /** temp : duplicate a located bindable of a particle system
   * return NULL if the copy failed
   */
-NL3D::CPSLocatedBindable	*DupPSLocatedBindable(const NL3D::CPSLocatedBindable *in);
+NL3D::CPSLocatedBindable	*DupPSLocatedBindable(NL3D::CPSLocatedBindable *in);
 
 
 

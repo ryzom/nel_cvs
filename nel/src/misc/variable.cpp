@@ -1,7 +1,7 @@
 /** \file variable.cpp
  * TODO: File description
  *
- * $Id: variable.cpp,v 1.5 2005/06/23 16:37:49 boucher Exp $
+ * $Id: variable.cpp,v 1.5.6.1 2006/02/10 17:54:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ void CCommandRegistry::initVariables(NLMISC::CConfigFile &configFile)
 				}
 				else
 				{
-					nlwarning ("VAR: No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
+					nldebug ("VAR: No variable '%s' in config file '%s'", var->_CommandName.c_str(), configFile.getFilename().c_str());
 				}
 			}
 		}

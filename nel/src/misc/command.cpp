@@ -1,7 +1,7 @@
 /** \file command.cpp
  * TODO: File description
  *
- * $Id: command.cpp,v 1.39.4.2 2006/01/11 15:02:10 boucher Exp $
+ * $Id: command.cpp,v 1.39.4.3 2006/02/10 17:54:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -722,39 +722,33 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 	}
 	// treat the case where the supplied parameter is a class name
 	{
-		if (cr._CommandsHandlersClass.find(args[0]) != cr._CommandsHandlersClass.end())
+		string className = args[0].substr(0, args[0].find("."));
+		if (cr._CommandsHandlersClass.find(className) != cr._CommandsHandlersClass.end())
 		{
-			log.displayNL("%-15s :", args[0].c_str());
-			TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[args[0]];
+			TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[className];
+			if (className != args[0])
 			{
+				string cmdName = args[0].substr(className.size()+1);
+				// we are looking for a particular command in this class
 				TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
 				for (;first != last; ++first)
 				{
-					log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
+					if (first->first == cmdName)
+					{
+						log.displayNL("%s::%s", className.c_str(), cmdName.c_str());
+						log.displayNL("usage: <instanceName>.%s %s : %s", 
+							cmdName.c_str(), 
+							first->second.CommandArgs.c_str(), 
+							first->second.CommandHelp.c_str());
+//						log.displayNL("  %s::%-15s: %s", className.c_str(), cmdName.c_str(), first->second.CommandHelp.c_str());
+						return true;
+					}
 				}
-			}
 
-			// list the instance of this class
-			log.displayNL(" Here is a list of the %u named instance of this class", chci.InstanceCount);
-			for (CCommandRegistry::TCommandsHandlers::TAToBMap::const_iterator it=cr._CommandsHandlers.getAToBMap().begin(); it != cr._CommandsHandlers.getAToBMap().end(); ++it)
-			{
-				if (it->second->getCommandHandlerClassName() == args[0])
-				{
-					log.displayNL("  %-15s", it->first.c_str());
-				}
 			}
-
-			return true;
-		}
-	}
-	// treat the case where the supplied parameter is an object name
-	{
-		if (cr._CommandsHandlers.getB(args[0]) != NULL)
-		{
-			const string &className = (*(cr._CommandsHandlers.getB(args[0])))->getCommandHandlerClassName();
-			if (cr._CommandsHandlersClass.find(className) != cr._CommandsHandlersClass.end())
+			else
 			{
-				TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[className];
+				log.displayNL("%-15s :", args[0].c_str());
 				{
 					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
 					for (;first != last; ++first)
@@ -762,9 +756,61 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 						log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
 					}
 				}
-			}
 
-			return true;
+				// list the instance of this class
+				log.displayNL(" Here is a list of the %u named instance of this class", chci.InstanceCount);
+				for (CCommandRegistry::TCommandsHandlers::TAToBMap::const_iterator it=cr._CommandsHandlers.getAToBMap().begin(); it != cr._CommandsHandlers.getAToBMap().end(); ++it)
+				{
+					if (it->second->getCommandHandlerClassName() == args[0])
+					{
+						log.displayNL("  %-15s", it->first.c_str());
+					}
+				}
+				return true;
+			}
+		}
+	}
+	// treat the case where the supplied parameter is an object name
+	{
+		string objName = args[0].substr(0, args[0].find("."));
+
+		if (cr._CommandsHandlers.getB(objName) != NULL)
+		{
+			const string &className = (*(cr._CommandsHandlers.getB(objName)))->getCommandHandlerClassName();
+			if (cr._CommandsHandlersClass.find(className) != cr._CommandsHandlersClass.end())
+			{
+				TCommandHandlerClassInfo &chci = cr._CommandsHandlersClass[className];
+				if (objName != args[0])
+				{
+					// only display a particular command of this class instance
+					string cmdName = args[0].substr(objName.size()+1);
+					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+					for (;first != last; ++first)
+					{
+						if (first->first == cmdName)
+						{
+							log.displayNL("%s.%s", objName.c_str(), cmdName.c_str());
+							log.displayNL("usage: %s.%s %s : %s", 
+								objName.c_str(),
+								cmdName.c_str(), 
+								first->second.CommandArgs.c_str(), 
+								first->second.CommandHelp.c_str());
+//							log.displayNL("  %s.%-15s: %s", className.c_str(), cmdName.c_str(), first->second.CommandHelp.c_str());
+							return true;
+						}
+					}
+				}
+				else
+				{
+					TCommandHandlerClassInfo::TCommandsInfo::iterator first(chci.Commands.begin()), last(chci.Commands.end());
+					for (;first != last; ++first)
+					{
+						log.displayNL("  %-15s: %s", first->first.c_str(), first->second.CommandHelp.c_str());
+					}
+
+					return true;
+				}
+			}
 		}
 	}
 
@@ -832,7 +878,7 @@ NLMISC_CATEGORISED_COMMAND(nel,help,"display help on a specific variable/command
 		{
 			TCommand::iterator comm = cr.Commands.find(args[0]);
 			log.displayNL("%s", comm->second->HelpString.c_str());
-			log.displayNL("usage: %s %s %s", 
+			log.displayNL("usage: %s %s : %s", 
 				comm->first.c_str(), 
 				comm->second->CommandArgs.c_str(), 
 				comm->second->HelpString.c_str());

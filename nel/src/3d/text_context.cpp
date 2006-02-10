@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * TODO: File description
  *
- * $Id: text_context.cpp,v 1.11 2005/02/22 10:19:12 besson Exp $
+ * $Id: text_context.cpp,v 1.11.16.1 2006/02/10 16:00:20 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,6 +128,7 @@ uint32 CTextContext::textPush (const ucstring &str)
 void CTextContext::erase (uint32 i)
 {
 	nlassertex ((i < _CacheStrings.size()), ("try to erase an unknown text"));
+	_CacheStrings[i].LetterColors.clear();
 	if (_CacheFreePlaces.size() == _CacheNbFreePlaces)
 	{
 		_CacheFreePlaces.push_back (i);
@@ -155,5 +156,26 @@ void CTextContext::setFontGenerator(const std::string fontFileName, const std::s
 	_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
 }
 
+// ------------------------------------------------------------------------------------------------
+void CTextContext::setLetterColors(CLetterColors * letterColors, uint index)
+{
+	if(index>=0 && index<_CacheStrings.size())
+	{
+		_CacheStrings[index].LetterColors.clear();
+		_CacheStrings[index].LetterColors = *letterColors;
+	}
+}
+
+// ------------------------------------------------------------------------------------------------
+bool CTextContext::isSameLetterColors(CLetterColors * letterColors, uint index)
+{
+	if(index>=0 && index<_CacheStrings.size())
+	{
+		CLetterColors & strLetterColors = _CacheStrings[index].LetterColors;
+		return strLetterColors.isSameLetterColors(letterColors);
+	}
+
+	return false;
+}
 
 } // NL3D

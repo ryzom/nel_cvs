@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * TODO: File description
  *
- * $Id: u_text_context.h,v 1.18 2004/11/15 10:24:19 lecroart Exp $
+ * $Id: u_text_context.h,v 1.18.32.1 2006/02/10 16:01:29 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,6 +49,18 @@ public:
 };
 
 
+class ULetterColors
+{
+public:
+	
+	ULetterColors() {}
+	virtual ~ULetterColors() {}
+
+	virtual bool isSameLetterColors(ULetterColors * letterColors) = 0;
+	virtual void pushLetterColor(uint index, const NLMISC::CRGBA & color) = 0;
+};
+
+
 // ***************************************************************************
 /**
  * A game interface to render string.
@@ -67,6 +79,7 @@ protected:
 
 
 public:
+
 	enum THotSpot 
 	{
 		BottomLeft=0,
@@ -302,6 +315,12 @@ public:
 	
 	/// Flush the rendered string buffer. This method doesn't change the current matrices nor the material properties.
 	virtual void					flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite) = 0;
+
+	/// In single line mode you can assign several color to letters
+	virtual void setLetterColors(ULetterColors * letterColors, uint index) = 0;
+	virtual bool isSameLetterColors(ULetterColors * letterColors, uint index) = 0;
+	virtual ULetterColors * createLetterColors() = 0;
+	
 };
 
 

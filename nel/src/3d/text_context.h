@@ -1,7 +1,7 @@
 /** \file text_context.h
  * TODO: File description
  *
- * $Id: text_context.h,v 1.16 2005/02/22 10:19:12 besson Exp $
+ * $Id: text_context.h,v 1.16.16.1 2006/02/10 16:00:30 legallo Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -287,6 +287,10 @@ public:
 		_FontManager->dumpCache (filename);
 	}
 
+	/// In single line mode you can assign several color to letters
+	void setLetterColors(CLetterColors * letterColors, uint index);
+	bool isSameLetterColors(CLetterColors * letterColors, uint index);
+	
 private:
 
   	/// Driver
@@ -342,7 +346,6 @@ private:
 	/// Cache for for printAt() and printfAt().
 	/// This prevents from creating VBdrvinfos each time they are called (N*each frame!!).
 	CComputedString		_TempString;
-
 };
 
 

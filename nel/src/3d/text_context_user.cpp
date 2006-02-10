@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * TODO: File description
  *
- * $Id: text_context_user.cpp,v 1.22 2005/02/22 10:19:12 besson Exp $
+ * $Id: text_context_user.cpp,v 1.22.16.1 2006/02/10 16:00:41 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -390,11 +390,15 @@ URenderStringBuffer		*CTextContextUser::createRenderBuffer()
 	NL_ALLOC_CONTEXT( 3dTCBuf )
 	return new CRenderStringBuffer;
 }
+
+// ***************************************************************************
 void					CTextContextUser::deleteRenderBuffer(URenderStringBuffer *buffer)
 {
 	NL_ALLOC_CONTEXT( 3dTCBuf )
 	delete buffer;
 }
+
+// ***************************************************************************
 void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
 {
 	NL_ALLOC_CONTEXT( 3dTCBuf )
@@ -408,6 +412,8 @@ void					CTextContextUser::flushRenderBuffer(URenderStringBuffer *buffer)
 		_DriverUser->restoreMatrixContextMatrixOnly();
 	}
 }
+
+// ***************************************************************************
 void					CTextContextUser::flushRenderBufferUnProjected(URenderStringBuffer *buffer, bool zwrite)
 {
 	NL_ALLOC_CONTEXT( 3dTCBuf )
@@ -419,5 +425,33 @@ void					CTextContextUser::flushRenderBufferUnProjected(URenderStringBuffer *buf
 	}
 }
 
+
+// ***************************************************************************
+void CTextContextUser::setLetterColors(ULetterColors * letterColors, uint index)
+{
+	NL3D_MEM_TEXT_CONTEXT
+	NL3D_HAUTO_UI_TEXTCONTEXT;
+
+	_TextContext.setLetterColors(static_cast<CLetterColors*>(letterColors), index);	
+}
+
+// ***************************************************************************
+ULetterColors * CTextContextUser::createLetterColors()
+{
+	NL3D_MEM_TEXT_CONTEXT
+	NL3D_HAUTO_UI_TEXTCONTEXT;
+
+	ULetterColors * uLetterColors = new CLetterColors();	
+	return uLetterColors;
+}
+
+bool CTextContextUser::isSameLetterColors(ULetterColors * letterColors, uint index) 
+{
+	NL3D_MEM_TEXT_CONTEXT
+	NL3D_HAUTO_UI_TEXTCONTEXT;
+
+	
+	return _TextContext.isSameLetterColors(static_cast<CLetterColors*>(letterColors), index);
+}
 
 } // NL3D

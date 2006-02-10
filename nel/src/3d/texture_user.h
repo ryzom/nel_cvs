@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * TODO: File description
  *
- * $Id: texture_user.h,v 1.12 2005/03/31 13:39:22 berenguier Exp $
+ * $Id: texture_user.h,v 1.12.14.1 2006/02/10 16:01:09 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -154,7 +154,6 @@ public:
 		NL3D_MEM_TEXTURE
 		return _Texture;
 	}
-
 };
 
 

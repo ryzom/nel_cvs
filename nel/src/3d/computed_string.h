@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.16.16.1 2006/02/10 15:59:58 legallo Exp $
+ * $Id: computed_string.h,v 1.16.16.2 2006/02/10 17:24:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,7 @@ public:
 		if(i>=0 && i<_indexedColors.size())
 			return _indexedColors[i].Color;
 
-		return CRGBA();
+		return CRGBA::Black;
 	}
 
 	const SLetterColor & getLetterColor(uint i) const
@@ -130,7 +130,8 @@ public:
 		if(i>=0 && i<_indexedColors.size())
 			return _indexedColors[i];
 
-		return SLetterColor(0, CRGBA());
+		static SLetterColor defaultLetterColor(0, CRGBA::Black);
+		return defaultLetterColor;
 	}
 
 	bool isSameLetterColors(ULetterColors * letterColors)

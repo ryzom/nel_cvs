@@ -62,6 +62,8 @@ public:
 	typename iterator end() { return _Array.end(); }
 	typename const_iterator begin() const { return _Array.begin(); }
 	typename const_iterator end() const { return _Array.end(); }
+
+	bool isIn(sint x, sint y) const { return x >= 0 && y >= 0 && x < (sint) _Width && y < (sint) _Height; }
 	
 	// access element by column/row
 	T &operator()(uint x, uint y)

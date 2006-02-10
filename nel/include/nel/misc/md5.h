@@ -1,7 +1,7 @@
 /** \file md5.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: md5.h,v 1.2.16.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: md5.h,v 1.2.16.3 2006/02/10 09:53:36 lancon Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -35,25 +35,6 @@ namespace NLMISC
 
 class IStream;
 
-// ****************************************************************************
-/**
- * MD5 High level routines
- * Largely inspired from the RSA Data Security works
- * \author Matthieu Besson
- * \author Nevrax France
- * \date July 2004
- */
-
-inline bool operator <(const struct CHashKeyMD5 &a,const struct CHashKeyMD5 &b)
-{
-	return a < b;
-}
-
-// This function get a filename (it works with big files) and returns his MD5 hash key
-CHashKeyMD5 getMD5(const std::string &filename);
-
-// This function get a buffer with size and returns his MD5 hash key
-CHashKeyMD5 getMD5(const uint8 *buffer, uint32 size);
 
 
 // ****************************************************************************
@@ -125,6 +106,29 @@ private:
 	void decode (uint32 *output, const uint8 *input, uint len);
 
 };
+
+
+// ****************************************************************************
+/**
+ * MD5 High level routines
+ * Largely inspired from the RSA Data Security works
+ * \author Matthieu Besson
+ * \author Nevrax France
+ * \date July 2004
+ */
+
+/*
+inline bool operator <(const struct CHashKeyMD5 &a,const struct CHashKeyMD5 &b)
+{
+	return a < b;
+}
+*/
+
+// This function get a filename (it works with big files) and returns his MD5 hash key
+CHashKeyMD5 getMD5(const std::string &filename);
+
+// This function get a buffer with size and returns his MD5 hash key
+CHashKeyMD5 getMD5(const uint8 *buffer, uint32 size);
 
 }; // namespace NLMISC
 

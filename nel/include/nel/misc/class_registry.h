@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.14 2005/07/18 08:57:49 vizerie Exp $
+ * $Id: class_registry.h,v 1.14.6.1 2006/02/11 18:48:18 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,9 @@ public:
 class CClassRegistry
 {
 public:
-
+	/// release memory
+	static void			release();
+	
 	///	Register your class for future Instanciation.
 	static	void		registerClass(const std::string &className, IClassable* (*creator)(), const std::string &typeidCheck) throw(ERegistry);
 

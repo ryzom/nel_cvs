@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * TODO: File description
  *
- * $Id: particle_system_manager.cpp,v 1.21 2005/08/19 15:32:13 cado Exp $
+ * $Id: particle_system_manager.cpp,v 1.21.4.1 2006/02/11 18:46:33 mitchell Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -31,21 +31,28 @@
 #include "skeleton_model.h"
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
-
+CParticleSystemManager::TManagerList *CParticleSystemManager::ManagerList = NULL;
+	
 CParticleSystemManager::TManagerList     &CParticleSystemManager::getManagerList()
 {	
-	static TManagerList *manager = NULL;
-	if (manager == NULL)
+	if (ManagerList == NULL)
 	{
-		manager = new TManagerList;		
+		ManagerList = new TManagerList;		
 	}
-	return *manager;
+	return *ManagerList;
 }
 
 
-
+// release memory
+void CParticleSystemManager::release()
+{
+	if( ManagerList )
+		delete ManagerList;
+	ManagerList = NULL;
+}
 
 ///=========================================================	
 CParticleSystemManager::CParticleSystemManager() : _NumModels(0)

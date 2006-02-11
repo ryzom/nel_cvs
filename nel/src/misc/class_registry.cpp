@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.cpp,v 1.10 2004/02/19 09:58:32 vizerie Exp $
+ * $Id: class_registry.cpp,v 1.10.40.1 2006/02/11 18:48:45 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,14 @@ void		CClassRegistry::init()
 		RegistredClasses = new TClassMap;
 }
 
-	
+// ======================================================================================================
+void		CClassRegistry::release()
+{
+	if( RegistredClasses )
+		delete RegistredClasses;
+	RegistredClasses = NULL;
+}
+
 // ======================================================================================================
 IClassable	*CClassRegistry::create(const string &className)  throw(ERegistry)
 {

@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.6 2006/01/26 17:35:55 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.7 2006/02/11 18:47:15 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ NLMISC_CATEGORISED_COMMAND(net, initModuleManager, "force the initialisation of 
 
 
 namespace NLNET
-{
+{		
 	/// Implementation class for module manager
 	class CModuleManager : public IModuleManager, public ICommandsHandler
 	{
@@ -61,6 +61,13 @@ namespace NLNET
 
 	public:
 
+		static void releaseInstance()
+		{
+			if( _Instance )
+				delete _Instance;
+			_Instance = NULL;
+		}
+				
 		struct TModuleLibraryInfo : public CRefCount
 		{
 			/// The file name of the library with access path
@@ -166,12 +173,6 @@ namespace NLNET
 
 				module->onApplicationExit();
 			}
-		}
-
-		void releaseInstance()
-		{
-			delete this;
-			_Instance = NULL;
 		}
 
 		virtual void setUniqueNameRoot(const std::string &uniqueNameRoot)
@@ -802,7 +803,11 @@ namespace NLNET
 		return CModuleManager::getInstance();
 	}
 
-
+	void IModuleManager::releaseInstance()
+	{
+		CModuleManager::releaseInstance();
+	}
+	
 	NLMISC_SAFE_SINGLETON_IMPL(CModuleManager);
 
 

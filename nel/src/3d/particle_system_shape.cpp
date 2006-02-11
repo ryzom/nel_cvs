@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * TODO: File description
  *
- * $Id: particle_system_shape.cpp,v 1.54 2005/02/22 10:19:11 besson Exp $
+ * $Id: particle_system_shape.cpp,v 1.54.16.1 2006/02/11 18:46:33 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,6 @@ using NLMISC::CIFile;
 	#define PARTICLES_CHECK_MEM
 #endif
 
-
 // ***************************************************************************
 // A singleton to define the TextureCategory of Particle system
 class CPSTextureCategory
@@ -69,6 +68,13 @@ public:
 		if(!_Instance)
 			_Instance= new CPSTextureCategory();
 		return _Instance->_TextureCategory;
+	}
+	// release memory
+	static void releaseInstance()
+	{
+		if( _Instance )
+			delete _Instance;
+		_Instance = NULL;
 	}
 
 private:
@@ -81,7 +87,11 @@ private:
 };
 CPSTextureCategory	*CPSTextureCategory::_Instance= NULL;
 
-
+///===========================================================================
+void CParticleSystemShape::releaseInstance()
+{
+	CPSTextureCategory::releaseInstance();
+}
 
 ///===========================================================================
 CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f),

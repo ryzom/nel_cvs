@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.3.6.3 2006/01/27 12:59:36 mitchell Exp $
+ * $Id: singleton.h,v 1.3.6.4 2006/02/11 18:48:18 mitchell Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -66,6 +66,15 @@ namespace NLMISC
 				nlassert(Instance);
 			}
 			return *Instance;
+		}
+
+		static void releaseInstance()
+		{
+			if(Instance)
+			{
+				delete Instance;
+				Instance = NULL;
+			}
 		}
 
 	protected:

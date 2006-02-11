@@ -1,7 +1,7 @@
 /** \file event_server.h
  * events server
  *
- * $Id: event_server.h,v 1.9 2005/02/22 10:14:12 besson Exp $
+ * $Id: event_server.h,v 1.9.16.1 2006/02/11 18:42:40 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ class CEventServer
 
 public:
 	CEventServer();
-	virtual ~CEventServer() {}
+	virtual ~CEventServer();
 
 	/** 
 	 * add event to the list

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119 2005/10/20 13:17:59 miller Exp $
+ * $Id: path.cpp,v 1.119.4.1 2006/02/11 18:50:04 mitchell Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,11 +80,29 @@ namespace NLMISC {
 //CPath *CPath::_Instance = NULL;
 NLMISC_SAFE_SINGLETON_IMPL(CPath);
 
+//
+// destructor
+//
+CPath::~CPath()
+{
+	delete _AllFileNames;
+	_AllFileNames = NULL;
+}
 
 
 //
 // Functions
 //
+
+void CPath::releaseInstance()
+{
+	if( _Instance )
+	{
+		delete _Instance;
+		_Instance = NULL;
+	}
+}
+
 
 void CPath::getFileList(const std::string &extension, std::vector<std::string> &filenames)
 {

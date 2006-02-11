@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * TODO: File description
  *
- * $Id: landscape.cpp,v 1.156.6.2 2006/01/19 16:52:11 legallo Exp $
+ * $Id: landscape.cpp,v 1.156.6.3 2006/02/11 18:45:40 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -535,7 +535,7 @@ void			CLandscape::buildZoneName(sint zoneId, std::string &zoneName)
 }
 // ***************************************************************************
 void			CLandscape::clear()
-{
+{	
 	// Build the list of zoneId.
 	vector<uint16>	zoneIds;
 	getZoneList(zoneIds);
@@ -550,7 +550,8 @@ void			CLandscape::clear()
 	// ensure the quadgrid is empty.
 	_PatchQuadGrid.clear();
 
-
+	releaseAllTiles();
+	
 	// If not done, delete all VBhards allocated.
 	_Far0VB.clear();
 	_Far1VB.clear();

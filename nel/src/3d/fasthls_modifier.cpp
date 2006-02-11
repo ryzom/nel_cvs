@@ -1,7 +1,7 @@
 /** \file fasthls_modifier.cpp
  * TODO: File description
  *
- * $Id: fasthls_modifier.cpp,v 1.6 2005/02/22 10:19:10 besson Exp $
+ * $Id: fasthls_modifier.cpp,v 1.6.16.1 2006/02/11 18:45:04 mitchell Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -42,6 +42,15 @@ namespace NL3D
 // ***************************************************************************
 CFastHLSModifier	*CFastHLSModifier::_Instance= NULL;
 
+// ***************************************************************************
+void CFastHLSModifier::releaseInstance()
+{
+	if( _Instance )
+	{
+		delete _Instance;
+		_Instance = NULL;
+	}
+}
 
 // ***************************************************************************
 CFastHLSModifier::CFastHLSModifier()
@@ -72,7 +81,11 @@ CFastHLSModifier::CFastHLSModifier()
 	}
 }
 
-
+// ***************************************************************************
+CFastHLSModifier::~CFastHLSModifier()
+{
+}
+	
 // ***************************************************************************
 CFastHLSModifier	&CFastHLSModifier::getInstance()
 {

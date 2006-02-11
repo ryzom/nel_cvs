@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * events server
  *
- * $Id: event_server.cpp,v 1.12 2004/11/05 18:05:14 berenguier Exp $
+ * $Id: event_server.cpp,v 1.12.32.1 2006/02/11 18:49:30 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,16 @@ namespace NLMISC {
 CEventServer::CEventServer()
 {
 	_Pumping= false;
+}
+
+CEventServer::~CEventServer()
+{
+	std::list<CEvent*>::iterator itev = _Events.begin();
+	while(itev!=_Events.end())
+	{
+		delete *itev;
+		itev=_Events.erase (itev);
+	}
 }
 	
 

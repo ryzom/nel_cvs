@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * TODO: File description
  *
- * $Id: mesh_base.h,v 1.24 2005/06/27 16:01:15 berenguier Exp $
+ * $Id: mesh_base.h,v 1.24.6.1 2006/02/11 18:41:31 mitchell Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,7 +168,7 @@ public:
 
 	/// Constructor
 	CMeshBase();
-	~CMeshBase();
+	virtual ~CMeshBase();
 
 	/// \name animated material mgt. do it after CMesh::build(), or CMeshMRM::build()
 	// @{

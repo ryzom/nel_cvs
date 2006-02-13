@@ -1220,6 +1220,12 @@
 			RelativePath="..\include\nel\net\service.h">
 		</File>
 		<File
+			RelativePath=".\net\stdin_monitor_thread.cpp">
+		</File>
+		<File
+			RelativePath=".\net\stdin_monitor_thread.h">
+		</File>
+		<File
 			RelativePath="net\stdnet.cpp">
 			<FileConfiguration
 				Name="Debug|Win32">

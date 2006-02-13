@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.27 2004/07/23 15:59:44 corvazier Exp $
+ * $Id: build_surf.cpp,v 1.27.40.1 2006/02/13 18:41:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -911,11 +911,20 @@ void	NLPACS::CZoneTessellation::build()
 
 		BestFittingBBox.setCenter(CVector::Null);
 		BestFittingBBox.setHalfSize(CVector::Null);
+		BestFittingBBoxSetuped= false;
 
 		// Compute best fitting bbox
 		for (i=0; i<_ZoneIds.size(); ++i)
+		{
 			if (_ZoneIds[i] == CentralZoneId)
-				BestFittingBBox = _ZonePtrs[i]->getZoneBB().getAABBox();
+			{
+				if(_ZonePtrs[i]->getNumPatchs()>0)
+				{
+					BestFittingBBox = _ZonePtrs[i]->getZoneBB().getAABBox();
+					BestFittingBBoxSetuped= true;
+				}
+			}
+		}
 
 		CAABBox	enlBBox = BestFittingBBox;
 		enlBBox.setHalfSize(enlBBox.getHalfSize()+CVector(8.0f, 8.0f, 1000.0f));
@@ -1315,7 +1324,8 @@ void	NLPACS::CZoneTessellation::compile()
 		_Vertices[i] = CVector(fixed2Float(vx), fixed2Float(vy), fixed2Float(vz));
 	}
 
-	BestFittingBBox.setCenter(BestFittingBBox.getCenter()+Translation);
+	if(BestFittingBBoxSetuped)
+		BestFittingBBox.setCenter(BestFittingBBox.getCenter()+Translation);
 
 
 	//

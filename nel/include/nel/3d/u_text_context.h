@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * TODO: File description
  *
- * $Id: u_text_context.h,v 1.18.32.1 2006/02/10 16:01:29 legallo Exp $
+ * $Id: u_text_context.h,v 1.18.32.2 2006/02/13 18:41:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,7 @@ public:
 	virtual	void			setShadeExtent (float shext) = 0;
 	/**
 	 * set the shadow's color
+	 * The alpha of the shade is multiplied at each draw with the alpha of the color. Default: (0,0,0,255)
 	 * \param the shadow color
 	 */
 	virtual	void			setShadeColor (NLMISC::CRGBA sc) = 0;

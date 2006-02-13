@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.15 2004/06/29 17:16:00 legros Exp $
+ * $Id: build_surf.h,v 1.15.40.1 2006/02/13 18:41:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -511,6 +511,8 @@ public:
 	NLMISC::CAABBox							BBox;
 	NLMISC::CAABBox							OriginalBBox;
 	NLMISC::CAABBox							BestFittingBBox;
+	// Yoyo: if zone is empty, we must not apply the Translation delta to zone
+	bool									BestFittingBBoxSetuped;
 
 	///
 	NLMISC::CVector							Translation;

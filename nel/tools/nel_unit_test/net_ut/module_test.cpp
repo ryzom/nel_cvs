@@ -443,8 +443,100 @@ public:
 		TEST_ADD(CModuleTS::distanceAndConnectionLoop);
 		TEST_ADD(CModuleTS::securityPlugin);
 		TEST_ADD(CModuleTS::synchronousMessaging);
+		TEST_ADD(CModuleTS::layer3Autoconnect);
 	}
 	
+	void layer3Autoconnect()
+	{
+		// Check that layer 3 client can automaticly reconnect in case of server 
+		// down/up
+		//
+		//	We create two gateway, gw1 and gw2, plugged in themselves, then we create
+		//	a layer 3 client on gw1, update the network, then we create the layer 3 server
+		//	on gw2, update the network then check that module are connected.
+		//
+		//	Then we close the L3 server on gw2, update the network, check that module
+		//	are diconnected and reopen the L3 server and recheck that module are connected.
+		//
+		//
+
+
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+		// create the modules
+		IModule *gw1 = mm.createModule("StandardGateway", "gw1", "");
+		IModule *gw2 = mm.createModule("StandardGateway", "gw2", "");
+		IModuleGateway *gGw1 = dynamic_cast<IModuleGateway *>(gw1);
+		IModuleGateway *gGw2 = dynamic_cast<IModuleGateway *>(gw2);
+
+		// plug gateway in themselve
+		cr.execute("gw1.plug gw1", InfoLog());
+		cr.execute("gw2.plug gw2", InfoLog());
+
+		// create the client transport
+		cr.execute("gw1.transportAdd L3Client l3c", InfoLog());
+		cr.execute("gw1.transportCmd l3c(retryInterval=1)", InfoLog());
+		cr.execute("gw1.transportCmd l3c(connect addr=localhost:8062)", InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") == NULL);
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") == NULL);
+
+		// open the server
+		cr.execute("gw2.transportAdd L3Server l3s", InfoLog());
+		cr.execute("gw2.transportCmd l3s(open port=8062)", InfoLog());
+		
+		// update the network (give more time because we must cover the Layer3 client reconnection timer)
+		for (uint i=0; i<40; ++i)
+		{
+			mm.updateModules();
+			nlSleep(50);
+		}
+
+		// check module connectivity
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
+
+		// close the server
+		cr.execute("gw2.transportCmd l3s(close)", InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// test no connectivity
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") == NULL);
+		TEST_ASSERT(retrieveModuleProxy(gGw2, "gw1") == NULL);
+
+		// re-open the server
+		cr.execute("gw2.transportCmd l3s(open port=8062)", InfoLog());
+
+		// update the network (give more time because we must cover the Layer3 client reconnection timer)
+		for (uint i=0; i<40; ++i)
+		{
+			mm.updateModules();
+			nlSleep(50);
+		}
+
+		// check module connectivity
+		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
+		TEST_ASSERT(retrieveModuleProxy(gGw2, "gw1") != NULL);
+
+		// cleanup modules
+		mm.deleteModule(gw1);
+		mm.deleteModule(gw2);
+	}
+
 	void synchronousMessaging()
 	{
 		// check that the synchronous messaging is working

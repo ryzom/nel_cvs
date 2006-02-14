@@ -1,7 +1,7 @@
 /** \file md5.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: md5.h,v 1.2.16.3 2006/02/10 09:53:36 lancon Exp $
+ * $Id: md5.h,v 1.2.16.4 2006/02/14 12:07:00 miller Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -75,6 +75,7 @@ struct CHashKeyMD5
 	void clear();
 	std::string toString() const;
 	bool fromString(const std::string &in);
+	bool operator==(const CHashKeyMD5 &in) const;
 	bool operator!=(const CHashKeyMD5 &in) const;
 	bool operator<(const CHashKeyMD5 &in) const;
 

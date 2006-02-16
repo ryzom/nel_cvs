@@ -470,7 +470,13 @@ void executeScriptBuf(const string &text)
 	CSString buf = text;
 	CVectorSString	lines;
 
-	NLMISC::explode(buf, "\n", lines, true);
+	vector<string>	tmpLines;
+	NLMISC::explode(buf, "\n", tmpLines, true);
+	lines.resize(tmpLines.size());
+	for (uint i=0; i<tmpLines.size();i++)
+	{
+		lines[i]= tmpLines[i];
+	}
 
 	for (uint i=0; i<lines.size(); ++i)
 	{

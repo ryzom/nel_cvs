@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.58.4.3 2006/02/10 17:51:06 boucher Exp $
+ * $Id: i18n.cpp,v 1.58.4.4 2006/02/21 09:53:50 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -476,6 +476,7 @@ void CI18N::readTextFile(const std::string &filename,
 		while ((pos = result.find(includeCmd, pos)) != ucstring::npos)
 		{
 			// check that the #include come first on the line (only white space before)
+			if (pos != 0)
 			{
 				uint i=0;
 				while ((pos-i-1) > 0 && (result[pos-i-1] == ' ' || result[pos-i-1] == '\t'))

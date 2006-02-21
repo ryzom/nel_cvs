@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.67.4.1 2006/01/16 13:27:49 mitchell Exp $
+ * $Id: config_file.cpp,v 1.67.4.2 2006/02/21 09:53:49 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,7 +415,13 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 //			cf_ifile.close();
 			if (!parsingOK)
 			{
-				nlwarning ("CF: Parsing error in file %s line %d", fn.c_str(), cf_CurrentLine);
+				// write the result of preprocessing in a temp file
+				string debugFileName;
+				debugFileName += "debug_";
+				debugFileName += CFile::getFilename(fn);
+
+				CI18N::writeTextFile(debugFileName, content, true);
+				nlwarning ("CF: Parsing error in file %s line %d, look in '%s' for a preprocessed version of the config file", fn.c_str(), cf_CurrentLine, debugFileName.c_str());
 				throw EParseError (fn, cf_CurrentLine);
 			}
 

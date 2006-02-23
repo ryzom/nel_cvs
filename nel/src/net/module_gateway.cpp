@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.3 2006/01/11 15:02:11 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.4 2006/02/23 19:19:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1320,11 +1320,18 @@ namespace NLNET
 				{
 					// dispatch the message at next gateway update
 					// this provide a coherent behavior between local and distant module message exchange
+
 					_LocalMessages.push_back(TLocalMessage());
 					TLocalMessage &lm = _LocalMessages.back();
 					lm.SenderProxyId = senderProxy->getModuleProxyId();
 					lm.AddresseProxyId = addresseeProxy->getModuleProxyId();
 					
+					nldebug("NETL6 : gateway '%s' : queuing local message '%s' from proxy %u to proxy %u",
+						getModuleName().c_str(),
+						message.getName().c_str(),
+						lm.SenderProxyId,
+						lm.AddresseProxyId);
+
 					if (message.hasLockedSubMessage())
 					{
 						lm.Message.assignFromSubMessage(message);
@@ -1427,7 +1434,25 @@ namespace NLNET
 				IModuleProxy *senderProx = getModuleProxy(lm.SenderProxyId);
 				IModuleProxy *addresseeProx = getModuleProxy(lm.AddresseProxyId);
 
-				dispatchModuleMessage(senderProx, addresseeProx, lm.Message);
+				if (senderProx == NULL)
+				{
+					nlwarning("CStandardGateway : local message dispatching : Failed to retrieve proxy for sender module %u while dispatching message '%s' to %u", 
+						lm.SenderProxyId,
+						lm.Message.getName().c_str(),
+						lm.AddresseProxyId);
+				}
+				else if (addresseeProx == NULL)
+				{
+					nlwarning("CStandardGateway : local message dispatching : Failed to retrieve proxy for addressee module %u while dispatching message '%s' from %u", 
+						lm.AddresseProxyId,
+						lm.Message.getName().c_str(),
+						lm.SenderProxyId);
+				}
+				else
+				{
+					// we can dispatch the message
+					dispatchModuleMessage(senderProx, addresseeProx, lm.Message);
+				}
 
 				_LocalMessages.pop_front();
 			}
@@ -1536,6 +1561,11 @@ namespace NLNET
 
 		void onModulePlugged(IModule *pluggedModule)
 		{
+			nldebug("NETL6: Gateway %s : plugging module '%s' id=%u",
+				getModuleName().c_str(),
+				pluggedModule->getModuleName().c_str(),
+				pluggedModule->getModuleId());
+
 			// A module has just been plugged here, we need to disclose it the the
 			// other module, and disclose other module to it.
 
@@ -1587,6 +1617,11 @@ namespace NLNET
 		/// Called just after a module as been effectively unplugged from a socket
 		void				onModuleUnplugged(IModule *unpluggedModule)
 		{
+			nldebug("NETL6: Gateway %s : unplugging module '%s' id=%u",
+				getModuleName().c_str(),
+				unpluggedModule->getModuleName().c_str(),
+				unpluggedModule->getModuleId());
+
 			// remove the proxy info
 			TLocalModuleIndex::iterator it(_LocalModuleIndex.find(unpluggedModule->getModuleId()));
 			nlassert(it != _LocalModuleIndex.end());
@@ -1618,6 +1653,37 @@ namespace NLNET
 			_ModuleProxies.erase(it2);
 			_NameToProxyIdx.removeWithB(modProx);
 			_LocalModuleIndex.erase(it);
+
+			// check in the local message queue if some message are to/from
+			// this module
+			TLocalMessageList::iterator first(_LocalMessages.begin()), last(_LocalMessages.end());
+			for (; first != last; ++first)
+			{
+				TLocalMessage &lm = *first;
+				if (lm.AddresseProxyId == localProxyId
+					|| lm.SenderProxyId == localProxyId)
+				{
+					// erase this message !
+					nlwarning("CStandardGateway : while unplugging module %u from the gateway, locale message '%s' from proxy %u to proxy %u is lost",
+						unpluggedModule->getModuleId(),
+						lm.Message.getName().c_str(),
+						lm.SenderProxyId,
+						lm.AddresseProxyId);
+					TLocalMessageList::iterator next = first;
+					++next;
+					if (next == last)
+					{
+						_LocalMessages.erase(first);
+						break;
+					}
+					else
+					{
+						_LocalMessages.erase(first);
+						first = next;
+					}
+				}
+			}
+
 
 			// release the module proxy 
 			IModuleManager::getInstance().releaseModuleProxy(localProxyId);

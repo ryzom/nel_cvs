@@ -504,6 +504,25 @@ public:
 		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
 		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
 
+		// exchange some message
+		cr.execute("gw1.sendPing "+gw2->getModuleFullyQualifiedName(), InfoLog());
+		cr.execute("gw2.sendPing "+gw1->getModuleFullyQualifiedName(), InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// check the ping counter
+		TEST_ASSERT(gGw1->getReceivedPingCount() == 1);
+		TEST_ASSERT(gGw2->getReceivedPingCount() == 1);
+
+		// flood a little with ping
+		for (uint i=0; i<100; ++i)
+			cr.execute("gw1.sendPing "+gw2->getModuleFullyQualifiedName(), InfoLog());
+
 		// close the server
 		cr.execute("gw2.transportCmd l3s(close)", InfoLog());
 
@@ -531,6 +550,21 @@ public:
 		// check module connectivity
 		TEST_ASSERT(retrieveModuleProxy(gGw1, "gw2") != NULL);
 		TEST_ASSERT(retrieveModuleProxy(gGw2, "gw1") != NULL);
+
+		// exchange some message
+		cr.execute("gw1.sendPing "+gw2->getModuleFullyQualifiedName(), InfoLog());
+		cr.execute("gw2.sendPing "+gw1->getModuleFullyQualifiedName(), InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// check the ping counter
+		TEST_ASSERT(gGw1->getReceivedPingCount() == 2);
+		TEST_ASSERT(gGw2->getReceivedPingCount() == 2);
 
 		// cleanup modules
 		mm.deleteModule(gw1);

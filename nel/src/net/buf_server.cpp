@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.51 2005/10/05 12:36:40 boucher Exp $
+ * $Id: buf_server.cpp,v 1.51.4.1 2006/02/23 19:19:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,12 +200,12 @@ CBufServer::~CBufServer()
 				task->wakeUp();
 	#else
 				CConnections::iterator ipb;
-				nlnettrace( "Closing sockets (Win32)" );
+				nlnettrace( "Disconnecting sockets (Win32)" );
 				{
 					CSynchronized<CConnections>::CAccessor connectionssync( &task->_Connections );
 					for ( ipb=connectionssync.value().begin(); ipb!=connectionssync.value().end(); ++ipb )
 					{
-						(*ipb)->Sock->close();
+						(*ipb)->Sock->disconnect();
 					}
 				}
 	#endif

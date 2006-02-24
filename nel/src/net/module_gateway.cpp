@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.4 2006/02/23 19:19:47 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.5 2006/02/24 15:42:18 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -601,6 +601,11 @@ namespace NLNET
 
 			// clear the route tracker
 			_Routes.erase(route);
+
+			// cleanup route state
+			route->NextMessageType = CModuleMessageHeaderCodec::mt_invalid;
+			route->NextSenderProxyId = 0;
+			route->NextAddresseeProxyId = 0;
 		}
 
 		/// A transport have received a message

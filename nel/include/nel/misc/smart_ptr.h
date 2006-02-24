@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.33 2005/07/07 11:44:46 vuarand Exp $
+ * $Id: smart_ptr.h,v 1.34 2006/02/24 17:29:27 guignot Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,11 @@ namespace NLMISC
 class CRefCount 
 {
 public:
+	/// Destructor which release pinfo if necessary.
+	~CRefCount();
+	/// Default constructor init crefs to 0.
+    CRefCount() { crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo); }
+
 	/*  The instance handle.
 		Can't put those to private since must be used by CRefPtr (and friend doesn't work with template).
 		Use struct CPtrInfoBase / CPtrInfo idiom for NullPtrInfo, because of problems of static constructor:
@@ -56,13 +61,13 @@ public:
 	*/
 	struct	CPtrInfoBase
 	{
-		const	void	*Ptr;	// to know if the instance is valid.
+		CRefCount const* Ptr;	// to know if the instance is valid.
 		sint	RefCount;		// RefCount of ptrinfo (!= instance)
 		bool	IsNullPtrInfo;	// For dll problems, must use a flag to mark NullPtrInfo.
 	};
 	struct	CPtrInfo : public CPtrInfoBase
 	{
-		CPtrInfo(const	void *p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
+		CPtrInfo(CRefCount const* p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
 	};
 
 	// OWN null for ref ptr. (Optimisations!!!)
@@ -82,14 +87,18 @@ public:
     mutable	sint		crefs;	// The ref counter for SmartPtr use.
 	mutable	CPtrInfo	*pinfo;	// The ref ptr for RefPtr use.
 	
-	/// Destructor which release pinfo if necessary.
-	~CRefCount();
-	/// Default constructor init crefs to 0.
-    CRefCount() { crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo); }
 	/// operator= must NOT copy crefs/pinfo!!
 	CRefCount &operator=(const CRefCount &) {return *this;}
 	/// copy cons must NOT copy crefs/pinfo!!
 	CRefCount(const CRefCount &) {crefs = 0; pinfo=static_cast<CPtrInfo*>(&NullPtrInfo);}
+};
+
+// To use CVirtualRefPtr (or if you just want to have a RefCount with virtual destructor), derive from this class.
+class CVirtualRefCount : public CRefCount
+{
+public:
+	/// Virtual destructor
+	virtual ~CVirtualRefCount() {}
 };
 
 
@@ -329,6 +338,54 @@ public:
 	 * kill/delete the object pointed by the pointer, and inform the other RefPtr of this.
 	 * "rp.kill()" and "delete (T*)rp" do the same thing, except that rp NULLity is updated with kill().
 	 * RefPtr which point to the same object could know if the object is valid, by just testing it (
+	 * by an implicit call to the cast operator to T*). But any calls to operator->() or operator*() will have 
+	 * unpredictible effects (may crash... :) ).
+	 */
+	void	kill();
+
+
+	// No need to do any operator==. Leave the work to cast  operator T*(void).
+};
+
+template <class T> 
+class CVirtualRefPtr
+{
+private:
+	CRefCount::CPtrInfo		*pinfo;		// A ptr to the handle of the object.
+    mutable T				*Ptr;		// A cache for pinfo->Ptr. UseFull to speed up  ope->()  and  ope*()
+
+	void	unRef()  const;				// Just release the handle pinfo, but do not update pinfo/Ptr, if deleted.
+
+public:
+
+	/// Init a NULL Ptr.
+    CVirtualRefPtr();
+	/// Attach a ptr to a VirtualRefPtr.
+    CVirtualRefPtr(T *v);
+	/// Copy constructor.
+    CVirtualRefPtr(const CVirtualRefPtr &copy);
+	/// Release the VirtualRefPtr.
+    ~CVirtualRefPtr(void);
+
+
+	/// Cast operator. Check if the object has been deleted somewhere, and return NULL if this is the case.
+	operator T*()	const;
+	/// Indirection operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
+    T& operator*(void)	const;
+	/// Selection operator. Doesn't test if ptr has been deleted somewhere, and doesn't check NULL.
+    T* operator->(void)	const;
+
+
+	/// operator=. Giving a NULL pointer is a valid operation.
+	CVirtualRefPtr& operator=(T *v);
+	/// operator=. Giving a NULL pointer is a valid operation.
+    CVirtualRefPtr& operator=(const CVirtualRefPtr &copy);
+
+
+	/**
+	 * kill/delete the object pointed by the pointer, and inform the other VirtualRefPtr of this.
+	 * "rp.kill()" and "delete (T*)rp" do the same thing, except that rp NULLity is updated with kill().
+	 * VirtualRefPtr which point to the same object could know if the object is valid, by just testing it (
 	 * by an implicit call to the cast operator to T*). But any calls to operator->() or operator*() will have 
 	 * unpredictible effects (may crash... :) ).
 	 */

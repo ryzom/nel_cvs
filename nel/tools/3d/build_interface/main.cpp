@@ -179,27 +179,64 @@ int main(int nNbArg, char **ppArgs)
 	if (nNbArg < 3)
 	{
 		outString ("ERROR : Wrong number of arguments\n");
-		outString ("USAGE : build_interface <out_tga_name> <path_maps1> [path_maps2] [path_maps3] ....\n");
+		outString ("USAGE : build_interface [-s<existing_uv_txt_name>] <out_tga_name> <path_maps1> [path_maps2] [path_maps3] ....\n");
+		outString ("   -s : build a subset of an existing interface definition while preserving the existing texture ids,");
+		outString (" to support freeing up VRAM by switching to the subset without rebuilding the entire interface\n");
 		return -1;
 	}
 	
-	vector<string> AllMapNames;
-	for(sint iPath=0;iPath<nNbArg-2;iPath++)
+	// build as a subset of existing interface
+	bool buildSubset = false;
+	string existingUVfilename;
+	list<string> inputDirs;
+	for ( uint i=1; (sint)i<nNbArg; ++i )
 	{
-		if( !CFile::isDirectory(ppArgs[2+iPath]) )
+		if ( ppArgs[i][0] == '-' )
 		{
-			outString (string("ERROR : directory ") + ppArgs[2+iPath] + " do not exists\n");
+			switch ( ppArgs[i][1] )
+			{
+			case 'S':
+			case 's':
+				buildSubset = true;
+				existingUVfilename = string( ppArgs[i]+2 );
+				break;
+			default:
+				break;
+			}
+		}
+		else
+			inputDirs.push_back(ppArgs[i]);
+	}
+
+	string fmtName;
+	uint iNumDirs = inputDirs.size(); 
+	if( iNumDirs )
+	{
+		fmtName = inputDirs.front();
+		inputDirs.pop_front();
+		--iNumDirs;
+	}
+	vector<string> AllMapNames;
+	list<string>::iterator it = inputDirs.begin();
+	list<string>::iterator itEnd = inputDirs.end();
+	while( it != itEnd )
+	{
+		string sDir = *it++;
+		if( !CFile::isDirectory(sDir) )
+		{
+			outString (string("ERROR : directory ") + sDir + " does not exist\n");
 			return -1;
 		}
-		CPath::getPathContent(ppArgs[2+iPath], false, false, true, AllMapNames);
+		CPath::getPathContent(sDir, false, false, true, AllMapNames);
 	}
 
 	vector<NLMISC::CBitmap*> AllMaps;
 	sint32 i, j;
 
 	// Load all maps
-	AllMaps.resize (AllMapNames.size());
-	for (i = 0; i < (sint32)AllMapNames.size(); ++i)
+	sint32 mapSize = (sint32)AllMapNames.size();
+	AllMaps.resize( mapSize );
+	for( i = 0; i < mapSize; ++i )
 	{
 		try
 		{
@@ -217,8 +254,8 @@ int main(int nNbArg, char **ppArgs)
 	}
 
 	// Sort all maps by decreasing size
-	for (i = 0; i < (sint32)(AllMaps.size()-1); ++i)
-	for (j = i+1; j < (sint32)AllMaps.size(); ++j)
+	for (i = 0; i < mapSize-1; ++i)
+	for (j = i+1; j < mapSize; ++j)
 	{
 		NLMISC::CBitmap *pBI = AllMaps[i];
 		NLMISC::CBitmap *pBJ = AllMaps[j];
@@ -243,9 +280,9 @@ int main(int nNbArg, char **ppArgs)
 	CObjectVector<uint8> &rPixelMask = GlobalMask.getPixels(0);
 	rPixelMask[0] = rPixelMask[1] = rPixelMask[2] = rPixelMask[3] = 0;
 	vector<NLMISC::CUV> UVMin, UVMax;
-	UVMin.resize (AllMapNames.size(), NLMISC::CUV(0.0f, 0.0f));
-	UVMax.resize (AllMapNames.size(), NLMISC::CUV(0.0f, 0.0f));
-	for (i = 0; i < (sint32)AllMapNames.size(); ++i)
+	UVMin.resize (mapSize, NLMISC::CUV(0.0f, 0.0f));
+	UVMax.resize (mapSize, NLMISC::CUV(0.0f, 0.0f));
+	for (i = 0; i < mapSize; ++i)
 	{
 		sint32 x, y;
 		while (!tryAllPos(AllMaps[i], &GlobalMask, x, y))
@@ -291,7 +328,7 @@ int main(int nNbArg, char **ppArgs)
 	}
 
 	// Convert UV from pixel to ratio
-	for (i = 0; i < (sint32)AllMapNames.size(); ++i)
+	for (i = 0; i < mapSize; ++i)
 	{
 		UVMin[i].U = UVMin[i].U / (float)GlobalTexture.getWidth();
 		UVMin[i].V = UVMin[i].V / (float)GlobalTexture.getHeight();
@@ -303,7 +340,6 @@ int main(int nNbArg, char **ppArgs)
 	SetCurrentDirectory (sExeDir);
 
 	NLMISC::COFile outTga;
-	string fmtName = ppArgs[1];
 	if (fmtName.rfind('.') == string::npos)
 		fmtName += ".tga";
 	if (outTga.open(fmtName))
@@ -318,24 +354,86 @@ int main(int nNbArg, char **ppArgs)
 	}
 
 	// Write UV text file
-	fmtName = fmtName.substr(0, fmtName.rfind('.'));
-	fmtName += ".txt";
-	FILE *f = fopen (fmtName.c_str(), "wt");
-	if (f != NULL)
+	if( !buildSubset )
 	{
-		for (i = 0; i < (sint32)AllMapNames.size(); ++i)
+		fmtName = fmtName.substr(0, fmtName.rfind('.'));
+		fmtName += ".txt";
+		FILE *f = fopen (fmtName.c_str(), "wt");
+		if (f != NULL)
 		{
-			// get the string whitout path
-			string fileName= CFile::getFilename(AllMapNames[i]);
-			fprintf (f, "%s %.12f %.12f %.12f %.12f\n", fileName.c_str(), UVMin[i].U, UVMin[i].V, 
-											UVMax[i].U, UVMax[i].V);
+			for (i = 0; i < mapSize; ++i)
+			{
+				// get the string whitout path
+				string fileName= CFile::getFilename(AllMapNames[i]);
+				fprintf (f, "%s %.12f %.12f %.12f %.12f\n", fileName.c_str(), UVMin[i].U, UVMin[i].V, 
+												UVMax[i].U, UVMax[i].V);
+			}
+			fclose (f);
+			outString (string("Writing UV file : ") + fmtName + "\n");
 		}
+		else
+		{
+			outString (string("ERROR: Cannot write UV file : ") + fmtName + "\n");
+		}
+	}
+	else // build as a subset
+	{
+		// Load existing uv file
+		CIFile iFile;
+		string filename = CPath::lookup (existingUVfilename, false);
+		if( (filename == "") || (!iFile.open(filename)) )
+		{
+			outString (string("ERROR : could not open file ") + existingUVfilename + "\n");
+			return -1;
+		}
+		
+		// Write subset UV text file
+		fmtName = fmtName.substr(0, fmtName.rfind('.'));
+		fmtName += ".txt";
+		FILE *f = fopen (fmtName.c_str(), "wt");
+		if (f == NULL)
+		{
+			outString (string("ERROR: Cannot write UV file : ") + fmtName + "\n");
+//			fclose (iFile);
+			return -1;
+		}
+
+		char bufTmp[256], tgaName[256];
+		string sTGAname;
+		float uvMinU, uvMinV, uvMaxU, uvMaxV;
+		while (!iFile.eof())
+		{
+			iFile.getline (bufTmp, 256);
+			sscanf (bufTmp, "%s %f %f %f %f", tgaName, &uvMinU, &uvMinV, &uvMaxU, &uvMaxV);
+			
+			sTGAname = tgaName;
+			sTGAname = strlwr(sTGAname);
+			string findTGAName;
+			for (i = 0; i < mapSize; ++i)
+			{
+				// get the string whitout path
+				findTGAName = CFile::getFilename(AllMapNames[i]);
+				findTGAName = strlwr(findTGAName);
+				if( findTGAName == sTGAname )
+					break;
+			}
+			
+			if( i == mapSize )
+			{
+				// not present in subset: offset existing uv's to (0,0), preserving size
+				fprintf (f, "%s %.12f %.12f %.12f %.12f\n", sTGAname.c_str(), 0.0f, 0.0f, uvMaxU - uvMinU, uvMaxV - uvMinV); 
+			}
+			else
+			{
+				// present in subset: use new uv's
+				fprintf (f, "%s %.12f %.12f %.12f %.12f\n", sTGAname.c_str(), UVMin[i].U, UVMin[i].V, 
+					UVMax[i].U, UVMax[i].V);
+			}
+		}	
+//		fclose (iFile);
 		fclose (f);
 		outString (string("Writing UV file : ") + fmtName + "\n");
 	}
-	else
-	{
-		outString (string("ERROR: Cannot write UV file : ") + fmtName + "\n");
-	}
+	
 	return 0;
 }

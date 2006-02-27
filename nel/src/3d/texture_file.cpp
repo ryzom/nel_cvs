@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * TODO: File description
  *
- * $Id: texture_file.cpp,v 1.28.14.1 2006/01/16 13:24:20 mitchell Exp $
+ * $Id: texture_file.cpp,v 1.28.14.2 2006/02/27 18:46:25 mitchell Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/hierarchical_timer.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -45,46 +46,55 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
 	
+	H_AUTO( NL3D_buildBitmapFromFile )
+
 	NLMISC::CIFile f;
 
-	string file = CPath::lookup(fileName, false);
+	string file;
+	{
+		H_AUTO( NL3D_buildBitmapPathLookup )
+		file = CPath::lookup(fileName, false);
+	}
 	if( file.empty() )
 	{
+		H_AUTO( NL3D_makeDummyBitmap )
 		// Not found...
 		dest.makeDummy();
 		nlwarning("Missing textureFile: %s", fileName.c_str());
 		return;
 	}
-	
-	f.setAsyncLoading (asyncload);
-	f.setCacheFileOnOpen (asyncload);
-
-	// if mipmap skip, must not cache, because don't have to load all!!
-	if(asyncload && mipMapSkip>0)
 	{
-		f.setCacheFileOnOpen (false);
-		f.allowBNPCacheFileOnOpen(false);
+		H_AUTO( NL3D_buildBitmapFileCache )
+
+		f.setAsyncLoading (asyncload);
+		f.setCacheFileOnOpen(false);	//asyncload); //AJM: significant performance loss for caching when loading textures		
+		f.allowBNPCacheFileOnOpen(false);	//asyncload);
 	}
 
-	// Load bitmap.
-	if (f.open(file))
 	{
-		// skip DDS mipmap if wanted
-		dest.load (f, mipMapSkip);
+		H_AUTO( NL3D_openBitmapFile)
+		// Load bitmap.
+		if (f.open(file))
+		{
+			H_AUTO( NL3D_loadBitmap )
+			// skip DDS mipmap if wanted
+			dest.load (f, mipMapSkip);
+		}
+		else
+		{
+			H_AUTO( NL3D_makeDummyBitmap )
+				// Not found...
+			dest.makeDummy();
+			nlwarning("Missing textureFile: %s", fileName.c_str());
+			return;
+		}
 	}
-	else
-	{
-		// Not found...
-		dest.makeDummy();
-		nlwarning("Missing textureFile: %s", fileName.c_str());
-		return;
-	}
-	
 	// *** Need usercolor computing ?
 
 	// Texture not compressed ?
 	if (dest.PixelFormat == RGBA)
 	{
+		H_AUTO( NL3D_buildBitmapUserColor )
 		// Make a filename
 		string path = CFile::getFilename(fileName);
 		string ext = strrchr (fileName.c_str(), '.');
@@ -191,6 +201,7 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 	}
 	if(!isPowerOf2(dest.getWidth()) || !isPowerOf2(dest.getHeight()) )
 	{
+		H_AUTO( NL3D_buildBitmapPowerOf2 )
 		// If the user want to correct those texture so that their canvas is enlarged
 		if (enlargeCanvasNonPOW2Tex)
 		{
@@ -206,8 +217,8 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 		else
 		{
 			// Bug...
-			dest.makeNonPowerOf2Dummy();
 			nlwarning("TextureFile: %s is not a Power Of 2: %d,%d", fileName.c_str(), dest.getWidth(), dest.getHeight());
+			dest.makeNonPowerOf2Dummy();
 		}
 	}
 }
@@ -226,7 +237,8 @@ void CTextureFile::doGenerate(bool async)
 	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
-	
+	H_AUTO( NL3D_TextureFileDoGenerate )
+		
 	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _EnlargeCanvasNonPOW2Tex);
 }
 

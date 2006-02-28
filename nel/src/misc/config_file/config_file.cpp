@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.67.4.2 2006/02/21 09:53:49 boucher Exp $
+ * $Id: config_file.cpp,v 1.67.4.3 2006/02/28 14:32:24 lancon Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -317,7 +317,7 @@ CConfigFile::~CConfigFile ()
 	}
 }
 
-void CConfigFile::load (const string &fileName)
+void CConfigFile::load (const string &fileName, bool lookupPaths )
 {
 	if(fileName.empty())
 	{
@@ -333,7 +333,7 @@ void CConfigFile::load (const string &fileName)
 		_ConfigFiles = new std::vector<CConfigFile *>;
 	}
 	(*CConfigFile::_ConfigFiles).push_back (this);
-	reparse ();
+	reparse (lookupPaths);
 
 /* 	_FileName.clear ();
 	_FileName.push_back (fileName);
@@ -370,7 +370,7 @@ bool CConfigFile::loaded()
 	return !CConfigFile::FileNames.empty();
 }
 
-void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
+void CConfigFile::reparse (bool lookupPaths)
 {
 	if (FileNames.empty())
 	{
@@ -387,7 +387,14 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 
 	while (!fn.empty())
 	{
-		fn = NLMISC::CPath::getFullPath(fn, false);
+		if (lookupPaths)
+		{
+			fn = CPath::lookup(fn, true);
+		}
+		else
+		{
+			fn = NLMISC::CPath::getFullPath(fn, false);
+		}
 		nldebug ("CF: Adding config file '%s' in the config file", fn.c_str());
 		FileNames.push_back (fn);
 		LastModified.push_back (CFile::getFileModificationDate(fn));

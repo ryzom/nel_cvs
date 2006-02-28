@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.32 2005/08/29 16:17:38 boucher Exp $
+ * $Id: callback_client.cpp,v 1.32.4.1 2006/02/28 14:50:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,6 +139,38 @@ bool CCallbackClient::flush (TSockId hostid, uint *nbBytesRemaining)
 
 /*
  * Updates the network (call this method evenly)
+ * Recorded : YES (in baseUpdate())
+ * Replayed : YES (in baseUpdate())
+ */
+void CCallbackClient::update2 ( sint32 timeout, sint32 mintime )
+{
+	LockDeletion = true;
+//	nldebug ("L3: Client: update()");
+
+	H_AUTO(L3UpdateClient2);
+
+	checkThreadId ();
+
+	baseUpdate2 (timeout, mintime); // first receive
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+
+		// L1-2 Update (nothing to do in replay mode)
+		CBufClient::update (); // then send
+
+#ifdef USE_MESSAGE_RECORDER
+	}
+#endif
+	
+	LockDeletion = false;
+}
+
+
+/*
+ * Updates the network (call this method evenly) (legacy)
  * Recorded : YES (in baseUpdate())
  * Replayed : YES (in baseUpdate())
  */

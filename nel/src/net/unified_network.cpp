@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.95 2005/10/19 16:58:38 boucher Exp $
+ * $Id: unified_network.cpp,v 1.95.4.1 2006/02/28 14:50:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1148,7 +1148,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 		// update all server connections
 		if (_CbServer)
 		{
-			_CbServer->update(0);
+			_CbServer->update2((sint32)remainingTime, 0);
 		}
 		
 		// update all client connections
@@ -1174,7 +1174,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				if (conn.CbNetBase->connected ())
 				{
 				nlassert(uc.Connections.size() > j);
-					conn.CbNetBase->update(0);
+					conn.CbNetBase->update2((sint32)remainingTime, 0);
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{

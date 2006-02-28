@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.19 2005/08/29 16:16:59 boucher Exp $
+ * $Id: callback_client.h,v 1.19.4.1 2006/02/28 14:50:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,13 @@ public:
 	/// Force to send all data pending in the send queue. hostid must be InvalidSockId here. See comment in CCallbackNetBase.
 	bool	flush (TSockId hostid = InvalidSockId, uint *nbBytesRemaining=NULL);
 	
-	/// Updates the network (call this method evenly)
-	void	update ( sint32 timeout=0 );
+	/** Updates the network (call this method evenly).
+	 * More info about timeout and mintime in the code of CCallbackNetBase::baseUpdate().
+	 */
+	void	update2 (sint32 timeout=-1, sint32 mintime=0);
+
+	/// Updates the network (call this method evenly) (legacy)
+	void	update (sint32 timeout=0);
 
 	/// Connects to the specified host
 	void	connect( const CInetAddress& addr );
@@ -98,6 +103,7 @@ private:
 
 	/// Returns true if there are messages to read
 	bool	dataAvailable ();
+	virtual bool getDataAvailableFlagV() const { return dataAvailableFlag(); }
 
 	void	receive (CMessage &buffer, TSockId *hostid = NULL);
 

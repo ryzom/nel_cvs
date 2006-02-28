@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.45 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.45.40.1 2006/02/28 14:50:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,6 @@ void CCallbackNetBase::processOneMessage ()
 }
 
 
-
 /*
  * baseUpdate
  * Recorded : YES
@@ -239,12 +238,11 @@ void CCallbackNetBase::processOneMessage ()
 void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
 	H_AUTO(L3UpdateCallbackNetBase);
-
 	checkThreadId ();
-
-	// slow down the layer H_AUTO (CCallbackNetBase_baseUpdate);
-
+#ifdef NL_DEBUG
 	nlassert( timeout >= -1 );
+#endif
+
 	TTime t0 = CTime::getLocalTime();
 
 	//
@@ -290,6 +288,126 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			// slow down the layer H_AUTO (CCallbackNetBase_baseUpdate_nlSleep);
 			nlSleep (10);
 		}
+	}
+
+#ifdef USE_MESSAGE_RECORDER
+	_MR_UpdateCounter++;
+#endif
+
+}
+
+
+/*
+ * baseUpdate
+ * Recorded : YES
+ * Replayed : YES
+ */
+void CCallbackNetBase::baseUpdate2 (sint32 timeout, sint32 mintime)
+{
+	H_AUTO(L3UpdateCallbackNetBase2);
+	checkThreadId ();
+#ifdef NL_DEBUG
+	nlassert( timeout >= -1 );
+#endif
+
+	TTime t0 = CTime::getLocalTime();
+
+	//
+	// The first time, we init time counters
+	//
+	if (_FirstUpdate)
+	{
+//		nldebug("LNETL3NB: First update()");
+		_FirstUpdate = false;
+		_LastUpdateTime = t0;
+		_LastMovedStringArray = t0;
+	}
+
+	/*
+	 * Controlling the blocking time of this update loop:
+	 *
+	 * "GREEDY" MODE (legacy default mode)
+	 *   timeout -1   => While data are available, read all messages in the queue,
+	 *   mintime t>=0    return only when the queue is empty (and mintime is reached/exceeded).
+	 *
+	 * "CONSTRAINED" MODE (used by layer 5 with mintime=0)
+	 *   timeout t>0  => Read messages in the queue, exit when the timeout is reached/exceeded,
+	 *   mintime t>=0    or when there are no more data (and mintime is reached/exceeded).
+	 *
+	 * "ONE-SHOT"/"HARE AND TORTOISE" MODE
+	 *   timeout 0    => Read up to one message in the queue (nothing if empty), then return at
+	 *   mintime t>=0    once, or, if mintime not reached, sleep (yield cpu) and start again.
+	 *
+	 * Backward compatibility:		baseUpdate():		To have the same behaviour with baseUpdate2():
+	 *   Warning! The semantics		timeout t>0			timeout 0, mintime t>0
+	 *   of the timeout argument	timeout -1			timeout 0, mintime 0
+	 *   has changed				timeout 0			timeout -1, mintime 0
+	 *
+	 * About "Reached/exceeded"
+	 *   This loop does not control the time of the user-code in the callback. Thus if some data
+	 *   are available, the callback may take more time than specified in timeout. Then the loop
+	 *   will end when the timeout is "exceeded" instead of "reached". When yielding cpu, some
+	 *   more time than specified may be spent as well.
+	 *   
+	 * Flooding Detection Option (TODO)
+	 *   _FloodingByteLimit => If setFloodingDetection() has been called, and the size of the
+	 *                    queue exceeds the flooding limit, the connection will be dropped and
+	 *                    the loop will return immediately.
+	 *
+	 * Message Frame Option (TODO)
+ 	 *   At the beginning of the loop, the number of pending messages would be read, and then
+	 *   only these messages would be processed in this loop, no more. As a result, any messages
+	 *   received in the meantime would be postponed until the next call.
+	 *   However, to do this we need to add a fast method getMsgNb() in NLMISC::CBufFifo
+	 *   (see more information in the class header of CBufFifo).
+	 *
+	 * Implementation notes:
+	 *   As CTime::getLocalTime() may be slow on certain platforms, we test it only
+	 *   if timeout > 0 or mintime > 0.
+	 *   As CTime::getLocalTime() is not an accurate time measure (ms unit, resolution on several
+	 *   ms on certain platforms), we compare with timeout & mintime using "greater or equal".
+	 *
+	 * Testing:
+	 *  See nel\tools\nel_unit_test\net_ut\layer3_test.cpp
+	 */
+
+//	// TODO: Flooding Detection Option (would work best with the Message Frame Option, otherwise
+//	// we won't detect here a flooding that would occur during the loop.
+//	if ( _FloodingDetectionEnabled )
+//	{
+//		if ( getDataAvailableFlagV() )
+//		{
+//			uint64 nbBytesToHandle = getReceiveQueueSize(); // see above about a possible getMsgNb()
+//			if ( nbBytesToHandle > _FloodingByteLimit )
+//			{
+//				// TODO: disconnect
+//			}
+//		}
+//	}
+
+	// Outer loop
+	while ( true )
+	{
+		// Inner loop
+		while ( dataAvailable () )
+		{
+			processOneMessage();  
+
+			// ONE-SHOT MODE/"HARE AND TORTOISE" (or CONSTRAINED with no more time): break
+			if ( timeout == 0 )
+				break;
+			// CONTRAINED MODE: break if timeout reached even if more data are available
+			if ( (timeout > 0) && ((sint32)(CTime::getLocalTime() - t0) >= timeout) )
+				break;
+			// GREEDY MODE (timeout -1): loop until no more data are available
+		}
+
+		// If mintime provided, loop until mintime reached, otherwise exit
+		if ( mintime == 0 )
+			break;
+		if (((sint32)(CTime::getLocalTime() - t0) >= mintime))
+			break;
+		nlSleep( 0 ); // yield cpu
 	}
 
 #ifdef USE_MESSAGE_RECORDER

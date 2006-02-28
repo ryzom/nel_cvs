@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Dynamically resizable FIFO container which contains different size block
  *
- * $Id: buf_fifo.h,v 1.13 2005/02/22 10:14:12 besson Exp $
+ * $Id: buf_fifo.h,v 1.13.16.1 2006/02/28 14:50:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,11 @@ namespace NLMISC {
  * You can resize the internal FIFO buffer if you know the average size
  * of data you'll put in it. It have the same behavior as STL so if the
  * buffer is full the size will be automatically increase by 2.
+ *
+ * TODO: Add a method getMsgNb() that will return the number of messages in queue.
+ * For acceptable performance, it would need to store the current number instead
+ * of browsing the blocks.
+ *
  * \code
  	CBufFIFO fifo;
 	fifo.resize(10000);

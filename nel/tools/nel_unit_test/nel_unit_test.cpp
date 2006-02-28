@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
 	}
 	catch (...)
 	{
-		cout << "unexpected exception encountered\n";
+		nlerror( "unexpected exception encountered" );
 	}
 	return 0;
 }

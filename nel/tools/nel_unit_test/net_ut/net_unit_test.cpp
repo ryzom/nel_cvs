@@ -17,6 +17,7 @@ using namespace std;
 Test::Suite *createModuleTS(const std::string &workingPath);
 Test::Suite *createCMessageTS();
 Test::Suite *createServiceAndModuleTS(const std::string &workingPath);
+Test::Suite *createLayer3TS(const std::string &workingPath);
 
 // global test for any misc feature
 class CNetTS : public Test::Suite
@@ -30,6 +31,7 @@ public:
 		add(auto_ptr<Test::Suite>(createCMessageTS()));
 		add(auto_ptr<Test::Suite>(createModuleTS(workingPath)));
 		add(auto_ptr<Test::Suite>(createServiceAndModuleTS(workingPath)));
+		add(auto_ptr<Test::Suite>(createLayer3TS(workingPath)));
 		
 		// initialise the application context
 		new NLMISC::CApplicationContext;

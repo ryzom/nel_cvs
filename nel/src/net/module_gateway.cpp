@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.5 2006/02/24 15:42:18 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.6 2006/03/01 15:02:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -603,6 +603,9 @@ namespace NLNET
 			_Routes.erase(route);
 
 			// cleanup route state
+			route->ForeignToLocalIdx.clear();
+			route->PendingEvents.clear();
+			route->FirewallDisclosed.clear();
 			route->NextMessageType = CModuleMessageHeaderCodec::mt_invalid;
 			route->NextSenderProxyId = 0;
 			route->NextAddresseeProxyId = 0;

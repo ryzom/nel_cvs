@@ -1,7 +1,7 @@
 /** \file tcp_sock.h
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.h,v 1.5 2005/02/22 10:14:13 besson Exp $
+ * $Id: tcp_sock.h,v 1.5.16.1 2006/03/01 15:02:41 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,10 @@ public:
 
 	/// Returns the TCP Window Size for the current socket
 	uint32				getWindowSize();
+
+	/** Sets/unsets SO_KEEPALIVE (true by default).
+	 */
+	void		setKeepAlive( bool keepAlive);
 
 	/** Sets/unsets TCP_NODELAY (by default, it is off, i.e. the Nagle buffering algorithm is enabled).
 	 * You must call this method *after* connect().

@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5.4.3 2006/02/13 09:17:53 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.5.4.4 2006/03/01 15:02:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,16 @@ using namespace NLMISC;
 
 namespace NLNET
 {
+	
+	// keep alive delay in seconds of inactivity
+	// NB : it is useless to set it at a value less than 100" because
+	// according to RFC 1122 (Requirements for Internet Hosts), 
+	// the TCP transmission time out is a least of 100" before 
+	// closing a connection without acknowledge.
+	// That means modules seens from a dead connection will only be
+	// removed after little more than 100".
+	const uint32	KEEP_ALIVE_DELAY = 120;
+
 	/** the specialized route for server transport */
 	class CL3ServerRoute : public CGatewayRoute
 	{
@@ -47,9 +57,13 @@ namespace NLNET
 		/// The id of the socket in the server
 		TSockId			SockId;
 
+		/// Time stamp of last message received/emitted
+		mutable uint32	LastCommTime;
+
 
 		CL3ServerRoute(IGatewayTransport *transport)
-			: CGatewayRoute(transport)
+			: CGatewayRoute(transport),
+			LastCommTime(CTime::getSecondsSince1970())
 		{
 		}
 
@@ -101,6 +115,26 @@ namespace NLNET
 			// update the callback server
 			if (_CallbackServer.get() != NULL)
 				_CallbackServer->update();
+
+			uint32 now = CTime::getSecondsSince1970();
+			// check each connected client for keep alive
+			TRouteMap::iterator first(_Routes.begin()), last(_Routes.end());
+			for (; first != last; ++first)
+			{
+				CL3ServerRoute *route = first->second;
+
+				if (now - route->LastCommTime > KEEP_ALIVE_DELAY)
+				{
+					nldebug("NETL6:L3Server: sending KeepAlive message");
+					// send a keep alive message
+					CMessage keepAlive("KA");
+					route->sendMessage(keepAlive);
+
+					// update the last event time
+					route->LastCommTime = CTime::getSecondsSince1970();
+				}
+			}
+
 		}
 
 		virtual uint32 getRouteCount() const
@@ -243,6 +277,9 @@ namespace NLNET
 			CL3ServerRoute* route = new CL3ServerRoute(this);
 			route->SockId = from;
 
+			// update the last event time
+			route->LastCommTime = CTime::getSecondsSince1970();
+
 			// store the route information
 			_Routes.insert(make_pair(from, route));
 
@@ -271,7 +308,17 @@ namespace NLNET
 			TRouteMap::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
 
+			// update the last event time
+			it->second->LastCommTime = CTime::getSecondsSince1970();
+
+			if (msgin.getName() == "KA")
+			{
+				// this is just a server prob, ignore it
+				return;
+			}
+
 			_Gateway->onReceiveMessage(it->second, msgin);
+
 		}
 
 
@@ -322,6 +369,9 @@ namespace NLNET
 
 		// send the message
 		trpt->_CallbackServer->send(message, SockId);
+
+		// update the last time
+		LastCommTime = CTime::getSecondsSince1970();
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -336,6 +386,9 @@ namespace NLNET
 		CInetAddress				ServerAddr;
 		/// The Client callback
 		mutable CCallbackClient		CallbackClient;
+		/// Time stamp of last message received/emitted
+		mutable uint32				LastCommTime;
+
 		/// The last time we try to reconnect (in case of disconnection)
 		uint32						LastConnectionRetry;
 
@@ -345,6 +398,7 @@ namespace NLNET
 		CL3ClientRoute(IGatewayTransport *transport, CInetAddress serverAddr,uint32 connId)
 			: CGatewayRoute(transport),
 			ServerAddr(serverAddr),
+			LastCommTime(CTime::getSecondsSince1970()),
 			LastConnectionRetry(0),
 			ConnId(connId)
 		{
@@ -353,7 +407,12 @@ namespace NLNET
 		void sendMessage(const CMessage &message) const
 		{
 			if (CallbackClient.connected())
+			{
+				// update the last comme time
+				LastCommTime = CTime::getSecondsSince1970();
+
 				CallbackClient.send(message);
+			}
 		}
 	};
 
@@ -443,6 +502,7 @@ namespace NLNET
 			// delete any route pending
 			deletePendingRoute();
 
+			uint32 now = CTime::getSecondsSince1970();
 			// update the client connection
 			TClientRoutes::iterator first(_Routes.begin()), last(_Routes.end());
 			for (; first != last; ++first)
@@ -452,9 +512,9 @@ namespace NLNET
 				if (!route->CallbackClient.connected())
 				{
 					// this route is not connected, try a reconnect ?
-					if (route->LastConnectionRetry + _RetryInterval < NLMISC::CTime::getSecondsSince1970())
+					if (route->LastConnectionRetry + _RetryInterval < now)
 					{
-						route->LastConnectionRetry = CTime::getSecondsSince1970();
+						route->LastConnectionRetry = now;
 						try
 						{
 							nldebug("Connecting to %s...", route->ServerAddr.asString().c_str());
@@ -471,6 +531,20 @@ namespace NLNET
 				else
 				{
 					route->CallbackClient.update();
+
+					// check dead connection. For client, we use a little longer timer to
+					// avoid cross checking of client and server. If server is alive, then we receive
+					// the server keep alive packet a little before we need to send the client one, thus
+					// reseting the keep alive timer.
+					if (now - route->LastCommTime > (KEEP_ALIVE_DELAY+5))
+					{
+						nldebug("NETL6:L3Client: sending KeepAlive message");
+
+						// send a keep alive message
+						CMessage keepAlive("KA");
+
+						route->sendMessage(keepAlive);
+					}
 				}
 			}
 		}
@@ -684,6 +758,15 @@ namespace NLNET
 		{
 			TClientRoutes::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
+
+			// update las comm time
+			it->second->LastCommTime = CTime::getSecondsSince1970();
+
+			if (msgin.getName() == "KA")
+			{
+				// this is just a server prob, ignore it
+				return;
+			}
 
 			_Gateway->onReceiveMessage(it->second, msgin);
 		}

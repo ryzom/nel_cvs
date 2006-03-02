@@ -1,0 +1,342 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xml:lang="en-US" lang="en-US"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  xmlns:metal="http://xml.zope.org/namespaces/metal"
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+  i18n:domain="quills">
+
+  <head>
+
+  <metal:block define-macro="feed-links">
+    <tal:block define="weblog python:here.superValues(['Weblog',])[0]">
+        <link
+                rel="alternate"
+                type="application/atom+xml"
+                title="Atom feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${weblog/absolute_url}/atom.xml" />
+
+        <link
+                rel="alternate"
+                type="application/rss+xml"
+                title="RSS 2.0 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${weblog/absolute_url}/rss.xml" />
+
+        <link
+                rel="alternate"
+                type="application/rdf+xml"
+                title="RDF 1.0 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${weblog/absolute_url}/feed.rdf" />
+
+        <link
+                rel="alternate"
+                type="application/rdf+xml"
+                title="RDF 1.1 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${weblog/absolute_url}/feed11.rdf" />
+    </tal:block>
+  </metal:block>
+
+
+  </head>
+
+
+  <body>
+
+    <metal:block define-macro="entry-full">
+    <tal:comment>
+      <!--
+      parameters:
+      entry = WeblogEntry object
+      weblog = Weblog object (for configuration data)
+      -->
+    </tal:comment>
+<!-- 
+            <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
+            tal:define="weblog python:here;
+		        author python: entry.Creator();
+		        userid python:here.acl_users.getUserByName(author);
+		        isOfficial python:userid and ('group_Officials' in userid.getGroups())">
+-->
+            <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
+            tal:define="weblog python:here;                        
+		        author python: entry.Creator();
+                        isOfficial python: here.isOfficial(author);">
+     
+      
+      <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
+      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i>
+      </p>       
+            <h3 class="weblog-day-title" tal:content="python:localized_time(day,long_format=1,context=here)" />
+        <span class="weblog-heading">
+            <metal:macro use-macro="here/weblog_macros/macros/topic-text"/> :
+          <!--  <span class="caption" i18n:translate="topics">
+	     <div tal:replace="topicObject/title_or_id">Topics</div>
+	    </span>
+          -->
+          <a href=""
+            tal:attributes="href entry/absolute_url"
+            tal:content="entry/title_or_id"></a>
+        </span>
+
+<!-- YASSINE
+TRYING TO INSERT THE AUTHOR
+-->
+
+      
+      <span i18n:translate="posted_by">posted by </span>
+      <a tal:attributes="href python:mtool.getHomeUrl(author)" tal:content="author"></a>          
+
+      <div >
+        <tal:if condition="weblog/getShowTopicImagesInWeblogView">
+          <metal:macro use-macro="here/weblog_macros/macros/topic-images"/>
+        </tal:if>
+        <tal:if condition="not:weblog/getShowTopicImagesInWeblogView">
+          <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
+        </tal:if>
+      
+        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing">
+          <tal:if condition="excerpt">
+            <div class="weblog-entry-only-excerpt"
+              tal:content="entry/Description">
+            </div>
+          </tal:if>
+
+          <tal:if condition="not:excerpt">
+            <div class="weblog-entry-excerpt" tal:content="entry/Description">
+            </div>
+            <div class="weblog-summary"
+              tal:content="structure entry/getText"></div>
+          </tal:if>
+        </tal:define>
+
+        <metal:macro use-macro="here/weblog_macros/macros/weblog-footer"/>
+
+      </div>
+     </div>
+    </metal:block>
+
+    <metal:block define-macro="entry-brief">
+      <tal:comment condition="nothing">
+        <!--
+        parameters:
+        entry = WeblogEntry object
+        -->
+      </tal:comment>
+
+      <div class="weblog-entry brief"
+        tal:define="discussion nocall:here/portal_discussion">
+        <h2 class="weblog-heading"><a href=""
+            tal:attributes="href entry/getAbsoluteArchiveUrl"
+            tal:content="entry/title_or_id"></a></h2>
+        <div class="weblog-topics">
+        <span i18n:translate="filed_under">Filed Under:</span>
+          <tal:loop repeat="topic python:entry.getEntryCategories()">
+            <a href="" 
+              tal:define="parent python:here.quills_tool.getParentWeblog(entry);topicObject python:parent.getTopicById(topic)"
+              tal:content="topicObject/title_or_id"
+              tal:attributes="href string:${here/absolute_url}/topics/${topic}"></a>
+          </tal:loop>
+        </div>
+        <div class="weblog-summary" tal:content="structure entry/getText">
+        </div>
+        <metal:macro use-macro="here/weblog_macros/macros/weblog-footer"/>
+      </div>
+    </metal:block>
+
+    <tal:comment condition="nothing">
+      <!--
+      Inline Topic Macros:
+      - topic-header
+      - topic-images
+      - topic-text
+      -->
+    </tal:comment>
+    <metal:block define-macro="topic-header">
+      <tal:comment condition="nothing">
+        <!-- parameters
+          topics : An array of WeblogTopic objects
+        -->
+      </tal:comment>
+      <tal:loop repeat="topic topics">
+            <tal:if condition="topicObject/getTopicImage">
+            </tal:if>
+      </tal:loop>
+
+    </metal:block>
+
+    <metal:block define-macro="topic-images">
+      <div class="weblog-topic-images">
+        <tal:loop repeat="topic python:entry.getEntryCategories()">
+          <tal:block define="topicObject python:here.getTopicById(topic)">
+
+            <tal:if condition="topicObject/topicImage | nothing">
+
+              <a  href="" 
+                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+
+                <img class="topic-image"
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/${topicObject/getId}/topicImage;
+                  width topicObject/topicImage/width;
+                  height topicObject/topicImage/height;
+                  title topicObject/Description"
+                  tal:condition="topicObject/Description" />
+
+                <img class="topic-image"
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/${topicObject/getId}/topicImage;
+                  width topicObject/topicImage/width;
+                  height topicObject/topicImage/height;
+                  title topicObject/title_or_id"
+                  tal:condition="not:topicObject/Description" />
+              </a>
+            </tal:if>
+            <tal:if condition="not:topicObject/topicImage | nothing">
+              <a href="" 
+                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+                <img class="topic-image" 
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/default-topic-icon.png;
+                  title topicObject/title_or_id"/>
+              </a>
+            </tal:if>
+
+          </tal:block>
+        </tal:loop>
+      </div>
+    </metal:block>
+
+    <metal:block define-macro="topic-text">
+
+        <span class="weblog-topics">
+       <!--   <span i18n:translate="filed_under">Filed Under:</span> -->
+          <tal:loop repeat="topic python:entry.getEntryCategories()">
+            <a href="" 
+              tal:define="parent python:here.quills_tool.getParentWeblog(entry);topicObject python:parent.getTopicById(topic)"
+              tal:content="topicObject/title_or_id"
+              tal:attributes="href string:${here/absolute_url}/topics/${topic}"></a>
+          </tal:loop>
+       </span> 
+
+    </metal:block>
+
+    <metal:block define-macro="weblog-footer">
+      <ul class="weblog-footer"
+        tal:define="discussion nocall:here/portal_discussion;
+        isDiscussionAllowedFor nocall:discussion/isDiscussionAllowedFor;
+        getDiscussionFor nocall:discussion/getDiscussionFor">
+        <li tal:condition="python:isDiscussionAllowedFor(entry)">
+	   &nbsp;[&nbsp;
+          <a href=""
+            tal:attributes="href string:${entry/absolute_url}#comments"><span
+            i18n:translate="comments">Comments</span>&nbsp;
+            (<span tal:content="python:getDiscussionFor(entry).replyCount(entry)">0</span>)
+          </a>
+        </li>
+        <li tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
+           &nbsp;|&nbsp;&nbsp;
+          <a href=""
+            tal:attributes="href string:${entry/absolute_url}/base_edit"
+            i18n:translate="edit">Edit</a>&nbsp;]
+        </li>
+      </ul>
+    </metal:block>
+
+    <metal:block define-macro="topic-brief">
+      <!-- 
+      parameters:
+      topic = WeblogTopic object
+      -->
+      <div class="topic-brief">
+        <!--
+          TODO: OMGWTFBBG! this! is! ugly!
+          TODO:   Topic images default
+          TODO:   do this in python you fools!
+        -->
+        <div class="topic-img-description">
+          <a tal:condition="topic/getTopicImage" 
+            href="" 
+            tal:attributes="href string:${here/absolute_url}/topics/${topic/getId}">
+            <img class="topic-image"
+                 src="" alt="" title=""
+                 tal:attributes="src string:${here/absolute_url}/${topic/getId}/topicImage" />
+          </a>
+          <a tal:condition="not:topic/getTopicImage"
+            href="" 
+            tal:attributes="href string:${here/absolute_url}/topics/${topic/getId}">
+            <img class="topic-image" 
+                 src="" alt="" title=""
+                 tal:attributes="src string:${here/absolute_url}/default-topic-icon.png" />
+          </a>
+          <!--
+          <a href="" tal:attributes="href
+            string:${here/absolute_url}/topics/${topic/getId}">
+            <img class="topic-image" src="default-topic-icon.jpg" />
+          </a>
+          -->
+          <a href="" tal:attributes="href
+            string:${here/absolute_url}/topics/${topic/getId}">
+            <b tal:content="topic/title_or_id"></b>
+          </a>
+          <br />
+          <div class="topic-description" tal:content="topic/description">
+          </div>
+        </div>
+        <tal:if condition="python:member.has_role('Owner')">
+          <div class="topic-functions">
+            <form class="topic-delete" style="display:inline" action="">
+              <input type="submit" value="Delete" i18n:attributes="value"/>
+            </form>
+            <form class="topic-edit" style="display:inline" action="">
+              <input type="submit" value="Edit" i18n:attributes="value" />
+            </form>
+          </div>
+        </tal:if>
+      </div>
+    </metal:block>
+
+    <metal:block define-macro="trackback">
+      <div class="trackbacks">
+          <h3 i18n:translate="heading_trackback">Trackback</h3>
+          <span class="trackback-uri">
+            <span i18n:translate="trackback_uri">
+              The URI to TrackBack this entry is:</span>
+            <span tal:content="string:${entry/absolute_url}/trackback"></span>
+          </span>
+        <div tal:condition="entry/getTrackbackPings">
+          <ul tal:define="pings entry/getTrackbacks">
+            <li tal:repeat="ping pings">
+              <a href="" tal:attributes="href ping/url">
+                <span tal:condition="ping/blog_name">
+                  <span tal:content="ping/blog_name">
+                  </span>: 
+                </span>
+                <span tal:condition="ping/title"
+                  tal:content="ping/title"></span>
+                <span tal:condition="not:ping/title"
+                  tal:content="ping/url"></span>
+              </a>
+              <!--
+              &nbsp;  
+              &nbsp;  
+              &nbsp;  
+              <a href="" tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)"
+                  tal:attributes="href string:${here/absolute_url}/deleteTrackbackPing">
+                X
+              </a>
+              -->
+              <div class="trackback-excerpt" 
+                tal:condition="ping/excerpt"
+                tal:content="ping/excerpt">
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </metal:block>
+  </body>
+</html>
+<!-- vim: set ft=xml sw=2 ts=2: -->

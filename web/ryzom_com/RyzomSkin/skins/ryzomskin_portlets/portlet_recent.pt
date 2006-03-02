@@ -1,0 +1,93 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+<body>
+<div class="holeContainer" metal:define-macro="portlet"
+     tal:condition="python:not isAnon and template.getId()!='recently_published'">
+     
+
+<tal:recentlist tal:define="last_login_time python:member.getProperty('last_login_time', DateTime());
+                 typesToShow  python:putils.getUserFriendlyTypes();
+                 results python:request.get('items',
+                                            here.portal_catalog.searchResults(sort_on='modified',
+                                            portal_type=typesToShow,
+                                            sort_order='reverse')[:5]);">
+
+
+<img src="ryzom_images/side_top.png"/>
+<div class="hole" >
+<dl class="portlet" id="portlet-recent" >
+  
+    <!-- span class="portletTopLeft" /-->
+    <dt class="portletHeader">
+        <a href="#" 
+            tal:attributes="href string:${portal_url}/recently_modified"
+            i18n:translate="box_recent_changes">Recent Changes</a>
+    </dt>
+    <!-- span class="portletTopRight" /-->
+    <tal:items tal:repeat="obj results">
+    <dd class="portletItem"
+        tal:define="oddrow repeat/obj/odd;
+                    item_wf_state obj/review_state;
+                    item_wf_state_class python:'state-' + here.plone_utils.normalizeString(item_wf_state);
+                    item_type_class python: 'contenttype-' + normalizeString(obj.portal_type);"
+        tal:attributes="class python:test(oddrow, 
+                                         'portletItem even', 
+                                         'portletItem odd')">
+        <div tal:attributes="class item_type_class">                
+        <a href=""
+           tal:attributes="href string:${obj/getURL}/view;
+                           title obj/Description;
+                           class string:$item_wf_state_class visualIconPadding">
+            
+            <tal:comment tal:replace="nothing">
+            <--! 
+            ############################
+            Modifié par Yassine,
+            Pareil que pour le news, je n'affiche que les 25 premiers caracteres
+            tal:replace="python: here.first20chars(obj.id)"
+            <tal:title content="obj/pretty_title_or_id"></tal:title>
+            ############################
+            -->
+            </tal:comment>
+            <tal:title content="python: here.first20chars(obj.id)">
+            Plone 2.1 released!
+            </tal:title>
+<!--
+            <span class="portletItemDetails"
+                  tal:content="python:here.toLocalizedTime(obj.ModificationDate)"
+                  >May 5</span>
+/-->
+        </a>
+        </div>
+    </dd>
+    </tal:items>
+
+    <dd class="portletItem" 
+        tal:condition="not: results"
+        i18n:translate="box_recent_no_items">
+        No items changed yet.
+    </dd>
+
+  
+    <dd class="portletFooter even">
+        <a href="#"
+           tal:attributes="href string:${portal_url}/recently_modified"
+           i18n:translate="box_more_recently_changed">
+        All recent changes&hellip;
+        </a>
+    </dd>
+  
+    <!-- span class="portletBottomLeft" /-->
+    <!-- span class="portletBottomRight" /-->
+  
+</dl>
+</div>
+</tal:recentlist>
+
+<div class="imageHide">
+<img  src="ryzom_images/side_up.png"/>
+</div>
+</div>
+</body>
+</html>

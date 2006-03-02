@@ -1,0 +1,52 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xml:lang="en-US" lang="en-US"
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  xmlns:metal="http://xml.zope.org/namespaces/metal"
+  xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+  i18n:domain="quills">
+
+  <body>
+
+  <metal:block define-macro="latest-news">
+
+      <form method="post" action="/news"
+        tal:attributes="action here_url"
+        tal:condition="python:member.has_role('Owner')">
+        <input type="hidden" name="type_name" value="WeblogEntry"/>
+        <input class="standalone" type="submit" value="Add Weblog Entry"
+          name="folder_factories:method" i18n:attributes="value"/>
+      </form>
+
+      <div id="content-weblog"
+        tal:define="results here/getEntries;
+                    portal_discussion nocall:here/portal_discussion;">
+
+        <metal:block
+            tal:repeat="day python:container.quills_tool.getWeblogEntriesDates(results)"
+            tal:define="localized_time nocall:here/toLocalizedTime;
+          home_url python: here.portal_membership.getHomeUrl">
+
+          <div class="weblog-day">
+            <h2 class="weblog-day-title" tal:content="python:localized_time(day, context=here)" />
+
+            <tal:loop repeat="entry python:results[day]"
+                define="weblog python:here">
+              <metal:macro use-macro="here/weblog_macros/macros/entry-full"/>
+            </tal:loop>
+          </div>
+
+        </metal:block>
+
+        <div tal:condition="not: results">
+          <p i18n:translate="no_weblog_entries">
+            No weblog entries have been posted.
+          </p>
+        </div>
+
+      </div>
+
+    </metal:block>
+
+    </body>
+
+</html>

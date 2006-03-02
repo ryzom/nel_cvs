@@ -1,0 +1,59 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+  lang="en-US"
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="quills">
+
+  <metal:block fill-slot="css_slot">
+    <style type="text/css" media="all" tal:content="string:@import url(${portal_url}/Quills.css);">
+    </style>
+  </metal:block>
+
+  <metal:block fill-slot="head_slot">
+    <metal:macro use-macro="here/weblog_macros/macros/feed-links" />
+  </metal:block>
+
+
+  <body>
+    <div metal:fill-slot="main" 
+         tal:define="parent python:here.quills_tool.getParentWeblog(here)">
+
+<!-- la ligne pour mettre les icone print,envoyer,...langage... -->
+<div metal:use-macro="here/document_actions/macros/document_actions"></div>
+
+      <h1 tal:content="here/title_or_id"></h1>
+
+      <div id="topic-summary">
+        <img id="topic-image"
+             src="" 
+             tal:condition="here/getTopicImage"
+             tal:attributes="src here/topicImage/absolute_url" />
+        <span class="documentDescription"
+              tal:content="here/Description">
+        </span>
+      </div>
+
+      <hr />
+
+      <tal:define define="results here/getLazyEntries;
+                          Batch python:modules['Products.CMFPlone'].Batch;
+                          b_size python:parent.entriesPerPage;
+                          b_start python:0;
+                          b_start request/b_start | b_start;">
+
+        <div id="topic-history"
+             tal:condition="results"
+             tal:define="entry_map python:Batch(results, b_size,
+                                            int(b_start), orphan=1);">
+          <tal:loop repeat="entries entry_map">
+            <tal:define define="entry entries/getObject">
+              <metal:use use-macro="here/weblog_macros/macros/entry-brief"/>
+            </tal:define>
+          </tal:loop>
+        </div>
+      </tal:define>
+
+    </div>
+  </body>
+</html>
+
+<!-- vim: set ft=xml sw=2 ts=2: -->

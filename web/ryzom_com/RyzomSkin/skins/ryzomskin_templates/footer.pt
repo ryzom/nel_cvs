@@ -1,0 +1,24 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+      i18n:domain="plone">
+<body>
+<div id="portal-footer" metal:define-macro="portal_footer" i18n:domain="plone">
+
+
+  <div id="footer">
+    <img border="0" src="footer.png" usemap="#map" width="1111" height="110">
+ 
+    <map name="map"> 
+     <area shape="rect" coords="960,9,1091,25" href="http://www.nevrax.com" target="_blank">
+     <area shape="rect" coords="370,9,437,25" href="http://www.nevrax.com/about/" target="_blank">
+     <area shape="rect" coords="956,71,1025,97" href="http://www.jolt.co.uk" target="_blank">
+     <area shape="rect" coords="961,37,1091,65" href="http://www.themis-group.com/" target="_blank">
+     <area shape="rect" coords="447,9,504,23" href="mailto:webmaster@nevrax.com">
+     <area shape="rect" coords="199,9,361,24" href="?page=support_policies" target="_blank">
+     <area shape="rect" coords="853,76,932,88" href="http://www.plone.org" target="_blank">
+   </map>
+
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,10 @@
+0.14:
+- most fix for ie5.5 user
+0.13:
+- fixed a bug for anonymous user (weblog are unviewable) (isofficial.py, weblog_view, weblog_macros)
+
+0.12:
+- bugs fixes in first20chars.py
+
+0.1:
+- first release

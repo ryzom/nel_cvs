@@ -1,0 +1,370 @@
+/*
+** Plone style sheet - Portlets
+**
+** Style sheet documentation can be found at http://plone.org/documentation
+**
+** You should preferrably use ploneCustom.css to add your own CSS classes and to
+** customize your portal, as these are the base fundaments of Plone, and will
+** change and be refined in newer versions. Keeping your changes in
+** ploneCustom.css will make it easier to upgrade.
+**
+** Feel free to use whole or parts of this for your own designs, but give credit
+** where credit is due.
+**
+*/
+
+/* <dtml-with base_properties> (do not remove this :) */
+/* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
+
+/* The new portlet CSS - these will be switched to non-qualified classes
+   (ie. .portlet, not dl.portlet) once the old portlet layout is removed in
+   Plone 2.2. ~limi */
+
+/* Main portlet elements */
+
+#foireux { 
+ text-align: center;
+  width :185px;
+  border : 0;
+  background-color: #5F5E57;
+  padding:0;
+  margin: 0;
+  margin-right:none;
+ }
+
+.imageHide { 
+ background:black;
+ margin:0;
+ padding:0;
+ font-size:5px; 
+ }
+
+.holeContainer{ 
+  width: 195px;
+  background-color: #181818;   
+  padding:0;
+  margin:0;
+  border:0;
+ }
+
+.hole { 
+  text-align: center;
+  width: 195px;
+  border:0;
+  padding:0;
+  padding-left:  5px;
+  padding-bottom: 5px;
+  background-color: #5F5E57;
+  margin: 0px;
+ }
+
+dl#portlet-news { 
+  background-color : #31322D; 
+  border-radius: 12px;
+  -moz-border-radius: 12px;
+  -ie-border-radius: 12px;
+/*  text-align : left; */
+  margin: 0;
+  padding-right: 0;
+  padding-left: 3px;
+  border:none;
+}
+
+td#portal-column-two dl.portlet {
+  border: 0;
+  background-color : #31322D;
+
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+dl#portlet-recent { 
+  text-align:left;
+  padding:0;
+  margin:0;
+ }
+
+dl.portlet a {
+    text-decoration: none;
+}
+
+.portletHeader {
+        margin: 0;
+	font-size : 120%;
+	color : #9ae033;
+	border-bottom : solid #9ae033 1px;
+	background-image: url('ryzom_images/h1.png');
+	background-repeat: no-repeat;
+	background-position : center left;
+	padding-left : 20px;
+        padding-top: 5px;
+        text-align: left;
+}
+
+.portletHeader a {
+    color: #9ae033;
+}
+
+.portletItem {
+    margin: 0;
+    padding: 5px;
+    border:0;
+    white-space: nowrap;
+    overflow: hidden;
+    /*width: 190px;*/
+}
+
+#portal-column-one .portletItemSingle  { 
+    margin: 0;
+    padding: 0;
+    border:0;
+    text-align:left;
+
+ }
+
+td#portal-column-two dd.portletItemSingle{
+    margin: 0;
+    padding: 0;
+    border:0;
+}
+
+dd.portletItemLast {
+    margin: 0;
+    padding: 2px 5px;
+    border:0;
+    border-top-style: none;
+}
+
+
+.portletItem a {
+    display: block;
+}
+
+.portletItemDetails {
+    margin-left: 5px;
+    text-align: left;
+    display: block;
+    color: &dtml-fontColor;;
+
+}
+
+dd.portletFooter {
+  background-color : #31322D;
+  margin:0;
+  padding:0;
+/*  margin-bottom:4px; */
+  margin-left: 5px;  
+  padding-left: 5px; 
+  border-top: 0;
+/*
+  height:1em;
+  padding-bottom : 3px;
+  padding-left: 5px;
+  text-align: left;
+*/
+}
+
+
+/* Elements that enable layout with rounded corners */
+
+.portletTopLeft {}
+.portletTopRight {}
+.portletBottomLeft {}
+.portletBottomRight {}
+
+
+
+/* New navtree styles */
+
+.portletNavigationTree {
+    margin: 0 0 0 0px; 
+    padding: -5px; 
+    margin-left: -5px;
+    list-style: none; 
+    list-style-image: none; 
+/*    line-height: 1em; */
+    width: 175px;
+}
+
+.navTree {
+    width: 175px;
+    lenght: 500px;
+    list-style: none; 
+    list-style-image: none; 
+    margin-top: 0px;
+    font-size: 11px;
+    text-transform: Capitalize;
+}
+
+.navTree li {
+    margin-bottom: 0px;
+}
+
+.navTreeItem {
+    display: block;
+    padding: 0;
+    margin: 0;
+    font-size: 80%;
+    color:#9ae033;
+    text-transform: Capitalize;
+}
+
+.navTreeItem a {
+    border:0;
+    display: block;
+    text-decoration: none;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.navTreeItem a:hover {
+    background-color: black;
+    color: #33a6a9;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+
+.navTreeCurrentItem {
+    background-color: transparent;
+    color: #33a6a9;
+    border: &dtml-borderWidth; &dtml-globalBorderColor; !important;
+}
+
+li.navTreeCurrentItem {
+    display: block;
+    padding: 0 0 0 1px;
+    margin: 0 0 2px -1px;
+}
+
+li.navTreeCurrentItem a,
+li.navTreeCurrentItem a:hover {
+    display: block;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBackgroundColor;;
+    min-height: 1.6em;
+/*    line-height: 1.6em; */
+    height: auto;
+}
+
+
+/* Another workaround for broken Internet Explorer */
+
+* html li.navTreeCurrentItem a,
+* html li.navTreeCurrentItem a:hover {
+    height: 1.6em;
+}
+
+
+.navTreeLevel0 {
+        padding-top : 4px;
+	font-weight : bold;
+ }
+.navTreeLevel1 { margin-left: 3px;}
+.navTreeLevel2 { margin-left: 7px;}
+.navTreeLevel3 { margin-left: 10px;}
+.navTreeLevel4 { margin-left: 10px;}
+.navTreeLevel5 { margin-left: 10px;}
+
+
+/*
+** Calendar elements - used in the calendar rendering
+*/
+
+.dayPopup {
+    background-color: &dtml-helpBackgroundColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; Black;
+    padding: 0em;
+    position: absolute;
+    visibility: hidden;
+    width: 12em;
+    z-index: 2;
+}
+.date {
+    font-weight: bold;
+}
+
+.ploneCalendar {
+    border-color: orange;
+    margin: 0;
+    border-collapse: collapse;
+    width: 195px;
+    text-align:left;
+    align:left;
+    overflow:hidden;
+    padding:0;
+}
+.ploneCalendar a {
+    text-decoration: none;
+}
+.ploneCalendar a:hover {
+    text-decoration: none;
+}
+.ploneCalendar th {
+    margin:0;
+    padding:0;
+    background-color: &dtml-globalBackgroundColor;;
+    font-weight: normal;
+    text-align: center;
+/*    line-height: 1.6em; */
+}
+.ploneCalendar td {
+    background-color: transparent;
+/*    width:  */
+    text-align: right;
+    padding: 2px;
+}
+.ploneCalendar tr.weekdays {
+    background-color:&dtml-calendarWeekdaysBackgroundColor;;
+    color :&dtml-calendarWeekdaysFontColor;;
+    /*border: 1px &dtml-borderStyle; white;*/
+}
+.ploneCalendar .event {
+    /* background-color: &dtml-globalBackgroundColor;; */
+    font-weight: bold;
+}
+.ploneCalendar .todayevent {
+    /* background-color: &dtml-globalBackgroundColor;; */
+    border: 1px &dtml-borderStyle; #ffa500;
+    font-weight: bold;
+    border-collapse: separate;
+}
+.ploneCalendar .todaynoevent {
+    border-collapse: collapse;
+    border: 1px &dtml-borderStyle; #ffa500;
+}
+.ploneCalendar #calendar-previous {
+    background-image: url(&dtml-portal_url;/arrowLeft.gif);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+.ploneCalendar #calendar-next {
+    background-image: url(&dtml-portal_url;/arrowRight.gif);
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+.ploneCalendar #calendar-previous a,
+.ploneCalendar #calendar-next a {
+    display: block;
+    text-decoration: none;
+    overflow: hidden;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    padding-top: <dtml-var "_['arrowLeft.gif'].height">px;
+    height: 0px !important;
+    height: <dtml-var "_['arrowLeft.gif'].height">px;
+    cursor: pointer;
+}
+.ploneCalendar #calendar-next a {
+    padding-top: <dtml-var "_['arrowRight.gif'].height">px;
+    height: 0px !important;
+    height: <dtml-var "_['arrowRight.gif'].height">px;
+}
+
+.ploneCalendar .oddRow { 
+    background-color: &dtml-calendarOddRowColor;;
+ }
+.ploneCalendar .evenRow { 
+    background-color: &dtml-calendarEvenRowColor;;
+ }
+
+/* </dtml-with> */

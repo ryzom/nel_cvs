@@ -1,0 +1,8 @@
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+    <span tal:replace="python:here.redirect_view_python()">content title or id</span>
+  </body>
+</html>

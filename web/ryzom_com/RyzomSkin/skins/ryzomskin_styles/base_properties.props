@@ -1,0 +1,52 @@
+title:string=Plone's color, font, logo and border defaults
+
+plone_skin:string=Plone Default
+
+logoName:string=logo.jpg
+
+fontFamily:string="Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif
+fontBaseSize:string=69%
+fontColor:string=#5f5e57
+fontSmallSize:string=85%
+
+backgroundColor:string=white
+
+linkColor:string=#ffc30e
+linkActiveColor:string=#ffc30e
+linkVisitedColor:string=#ffc30e
+
+borderWidth:string=1px
+borderStyle:string=solid
+borderStyleAnnotations:string=dashed
+
+globalBorderColor:string=#555555
+globalBackgroundColor:string=#181818
+globalFontColor:string=#ffc30e
+
+headingFontFamily:string="Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif
+
+contentViewBorderColor:string=#404040
+contentViewBackgroundColor:string=#5f5e57
+contentViewFontColor:string=#ffa500
+
+inputFontColor:string=Black
+
+textTransform:string=lowercase
+
+evenRowBackgroundColor:string=transparent
+oddRowBackgroundColor:string=transparent
+
+notifyBorderColor:string=#ffa500
+notifyBackgroundColor:string=#ffce7b
+
+discreetColor:string=#999999
+helpBackgroundColor:string=white
+
+portalMinWidth:string=70em
+columnOneWidth:string=175px
+columnTwoWidth:string=195px
+  	
+calendarOddRowColor:string=#404040
+calendarEvenRowColor:string=transparent
+calendarWeekdaysBackgroundColor:string=#cccccc
+calendarWeekdaysFontColor:string=#404040

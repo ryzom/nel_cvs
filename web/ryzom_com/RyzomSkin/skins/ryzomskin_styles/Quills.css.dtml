@@ -8,7 +8,7 @@
 /*margin-bottom: 3px;*/
 padding: 3px;
 padding-bottom:30px;
-text-align:justifty;
+text-align:justify;
 }
 
 .weblog-entry p,.weblog-entry div{
@@ -27,7 +27,7 @@ text-align:justifty;
   padding:3px 5px 4px 3px;
   padding-bottom:30px;
   margin-bottom: 5px;
-  text-align:justifty;
+  text-align:justify;
  }
 
 .unofficial-disclaimer { 

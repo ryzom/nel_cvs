@@ -5,23 +5,16 @@
 
 <!-- THE SEARCHBOX DEFINITION -->
 <div id="portal-searchbox" metal:define-macro="quick_search">
-
-
+    <div class="LSBox">
     <form name="searchform"
           action="search"
           tal:define="livesearch site_properties/enable_livesearch"
           tal:attributes="action string:${portal_url}/search;
                           onsubmit python:test(livesearch==True,'return liveSearchSubmit()','')"
-        
           style="white-space:nowrap">
-
-        <label for="searchGadget" class="hiddenStructure"
+<!--        <label for="searchGadget" class="hiddenStructure"
                     i18n:translate="text_search">Search Site</label>
-
-       <div class="LSBox">
-    <table   align="right">
-    <tr>
-    <td>  
+-->
         <input id="searchGadget"
                tabindex=""
                name="SearchableText"
@@ -34,38 +27,20 @@
                tal:attributes="value request/SearchableText|nothing;
                                tabindex tabindex/next"
                class="visibility:visible" />
-     </td>
-     <td>
         <input class="searchButton"
                type="submit"
                tabindex=""
                value="Search"
                tal:attributes="tabindex tabindex/next"
                i18n:attributes="value label_search;" />
-
-        <div class="LSResult" id="LSResult" style=""><div class="LSShadow" id="LSShadow"></div></div>
-
-    </td>
-    </tr>
-    </table>
-  </div> 
+<!--        <div class="LSResult" id="LSResult" style=""><div class="LSShadow" id="LSShadow"></div></div> -->
     </form>
-    <br><br>
-    
-    <form name="advancedSearchDummy" action="search_form">
-
-    <table align="right">
-
-    <tr><td>
-
+    </div>
+    <form  class="LSBox" name="advancedSearchDummy" action="search_form">
     <input class="searchButton" 
            type="submit" value="Advanced Search &hellip;" 
            i18n:attributes="value label_advanced_search;" />
-    </td>
-    </tr>
-    </table>
     </form>
-
 
 </div>
 </body>

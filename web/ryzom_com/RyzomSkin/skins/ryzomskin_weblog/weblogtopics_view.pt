@@ -22,58 +22,7 @@
 
       <h1 class="documentFirstHeading" i18n:translate="">Topics</h1>
 
-      <div class="documentDescription"></div>
-
-      <!--
-      <table class="listing" summary="Topic Listing"
-        cellpadding="0" cellspacing="0">
-        <tr>
-          <th class="nosort">
-            Icon
-          </th>
-          <th class="nosort">
-            Topic Information
-          </th>
-        </tr>
-        <tal:loop repeat="tp context/getAvailableTopics">
-          <tbody>
-            <tr class="odd"
-              tal:attributes="class python:test(repeat['tp'].odd(), 'even', 'odd')" >
-              <td>
-                <img src="" 
-                  tal:condition="tp/getTopicImage"
-                  tal:attributes="src string:${here/absolute_url}/${tp/getId}/topicImage"/>
-                <img src="" 
-                  tal:condition="not:tp/getTopicImage"
-                  tal:attributes="src string:${here/absolute_url}/default-topic-icon.png"/>
-              </td>
-              <td valign="top"
-                tal:define="entries python:context.portal_catalog(meta_type='WeblogEntry', getEntryCategories=tp.getId())">
-                <strong><span tal:content="tp/title_or_id"/>
-                  (<span tal:content="python:len(entries)"></span>)
-                </strong>
-                <div class="discreet"
-                  tal:condition="python:len(entries)"
-                  >Last Post: 
-                  <a href=""
-                    tal:attributes="href python:entries[0].getURL()"
-                    tal:content="python:here.toLocalizedTime(entries[0].getObject().ModificationDate(),long_format=1)">
-                    August 16, 2001 at 23:35:59
-                  </a>
-                </div>
-                <span
-                  tal:condition="python:user.has_permission('Review portal content', here) or user.has_role('Owner', here)">
-                  <a href="" 
-                    tal:attributes="href string:${tp/absolute_url}/base_edit"
-                    title="Edit"
-                    class="standalone">Edit</a>
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </tal:loop>
-      </table>
-      -->
+      <div class="documentDescription"></div>      
 
       <tal:loop repeat="tp context/getAvailableTopics">
         <div class="row"

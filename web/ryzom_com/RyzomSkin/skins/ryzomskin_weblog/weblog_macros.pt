@@ -53,13 +53,7 @@
       weblog = Weblog object (for configuration data)
       -->
     </tal:comment>
-<!-- 
-            <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
-            tal:define="weblog python:here;
-		        author python: entry.Creator();
-		        userid python:here.acl_users.getUserByName(author);
-		        isOfficial python:userid and ('group_Officials' in userid.getGroups())">
--->
+
             <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
             tal:define="weblog python:here;                        
 		        author python: entry.Creator();
@@ -271,12 +265,7 @@ TRYING TO INSERT THE AUTHOR
                  src="" alt="" title=""
                  tal:attributes="src string:${here/absolute_url}/default-topic-icon.png" />
           </a>
-          <!--
-          <a href="" tal:attributes="href
-            string:${here/absolute_url}/topics/${topic/getId}">
-            <img class="topic-image" src="default-topic-icon.jpg" />
-          </a>
-          -->
+
           <a href="" tal:attributes="href
             string:${here/absolute_url}/topics/${topic/getId}">
             <b tal:content="topic/title_or_id"></b>
@@ -319,15 +308,7 @@ TRYING TO INSERT THE AUTHOR
                 <span tal:condition="not:ping/title"
                   tal:content="ping/url"></span>
               </a>
-              <!--
-              &nbsp;  
-              &nbsp;  
-              &nbsp;  
-              <a href="" tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)"
-                  tal:attributes="href string:${here/absolute_url}/deleteTrackbackPing">
-                X
-              </a>
-              -->
+
               <div class="trackback-excerpt" 
                 tal:condition="ping/excerpt"
                 tal:content="ping/excerpt">

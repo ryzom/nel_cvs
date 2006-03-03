@@ -92,7 +92,6 @@
     <metal:block metal:define-slot="javascript_head_slot" tal:replace="nothing">
       Inserts javascript specified from a page.
     </metal:block>
-
   </head>
 
   <body>

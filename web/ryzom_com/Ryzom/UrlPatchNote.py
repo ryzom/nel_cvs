@@ -48,6 +48,12 @@ class UrlPatchNote(BaseContent):
 		},
 	)
 
+	def setTitle(self, value, **kwargs):
+		self.getField('title').set(self, value, **kwargs)
+		if value:
+			weblog = self.quills_tool.getParentWeblog(self)
+			self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+
 	def setText(self, value, **kwargs):		
 		lang=self.getLang()
 		ident=self.getIdent()

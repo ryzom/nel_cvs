@@ -4,6 +4,7 @@ except ImportError:
     from Products.Archetypes.public import *
 from Products.CMFCore import CMFCorePermissions
 from config import PROJECTNAME
+import re
 
 RedirectSchema = BaseSchema.copy() + Schema((
 	StringField('remote_url',
@@ -25,5 +26,11 @@ class Redirect(BaseContent):
 		'permissions': (CMFCorePermissions.View,)
 		},
 	)
+	def setTitle(self, value, **kwargs):
+		self.getField('title').set(self, value, **kwargs)
+		if value:
+			weblog = self.quills_tool.getParentWeblog(self)
+			self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+
 
 registerType(Redirect,PROJECTNAME)

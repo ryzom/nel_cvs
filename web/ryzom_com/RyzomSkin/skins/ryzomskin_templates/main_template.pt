@@ -70,7 +70,7 @@
         <tr><td VALIGN=top>
 	<div id="serverstatus">
             <!-- le page template -->
-            <a href="/ryzom/server-status/serverstatus/">Server&nbsp;status&nbsp;:</a>
+            <a href="server_status">Server&nbsp;status&nbsp;:</a>
             <span tal:define="servers python:context.get_servers_status()">
                 <span tal:repeat="res servers" class="" tal:attributes="class python:res[1]" tal:content="python:res[0]"></span>
             </span>

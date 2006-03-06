@@ -10,7 +10,7 @@
                                                      sort_order='reverse',
                                                      review_state='published')[:5]);"
      tal:condition="python:test(template.getId()!='news' and results, 1, 0)">
-<img src="ryzom_images/side_top.png"/>
+<img  class="fakeBorder" src="ryzom_images/side_top.png"/>
 <div class="hole">
     <dl class="portlet" id="portlet-news">
         <dt class="portletHeader">
@@ -40,7 +40,7 @@
         </tal:newsitems><dd class="portletFooter"><a href="" tal:condition="python:'news' in portal.contentIds()" tal:attributes="href string:${utool}/news" i18n:translate="box_more_news_link" ><span> More news&hellip; </span></a><!-- ###bouton addnews###--><a href="" tal:attributes="href string:createObject?type_name=WeblogEntry"> <img src="add_icon.gif" alt="" title="" height="19" width="22"> Add ... </a></dd></dl>
 </div>
 <div class="imageHide">
-<img  src="ryzom_images/side_up.png"/>
+<img   class="fakeBorder" src="ryzom_images/side_up.png"/>
 </div>
 </div>
 </body>

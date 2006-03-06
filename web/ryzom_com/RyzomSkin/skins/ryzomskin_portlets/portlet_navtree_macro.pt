@@ -26,15 +26,17 @@
             Unselected Item Title</a>
         </tal:children>
     </div>
-   <tal:news tal:condition="python: ('/news' in here.absolute_url().split('/web-dev.nevrax.com')[1] and item['Title'] == 'News') or item['Title'] != 'News'">
+   <tal:news tal:define="url here/portal_url;
+                         urlnews python:url+'/news';"
+             tal:condition="python: (urlnews == here.absolute_url() and item['Title'] == 'News') or item['Title'] != 'News'">
     <ul tal:attributes="class python:'navTree navTreeLevel'+str(level)"
         tal:define="show_children item/show_children| python:True;
                     level python:level+1;"
         tal:condition="python: (show_children or isNaviTree) and children">
         <metal:recurse use-macro="here/portlet_navtree_macro/macros/nav_main"/>
     </ul>
-    </tal:level>
    </tal:news>
+   </tal:level>
 </li>
 </tal:navitem>
 </metal:main>

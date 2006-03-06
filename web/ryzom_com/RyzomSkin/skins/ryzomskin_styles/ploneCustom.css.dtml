@@ -1,5 +1,15 @@
+/*
+ *  This is the file where you put your CSS changes. 
+ *  You should preferrably use this and override the 
+ *  relevant properties you want to change here instead 
+ *  of customizing plone.css to survive upgrades. Writing
+ *  your own plone.css only makes sense for very heavy 
+ *  customizations. Useful variables from Plone are 
+ *  documented at the bottom of this file.
+ */
 /* <dtml-with base_properties> (do not remove this :) */
 /* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
+
 
 
 
@@ -31,7 +41,7 @@ legend {
     color: white;
     padding: 2px;
     font-size: 90%;
-    border: &dtml-borderWidth; &dtml-borderStyle; green;
+    border: 1px solid green;
 }
 
 /*css serverstatus*/
@@ -54,20 +64,20 @@ legend {
 }
 
 .OPEN {
-	background-image: url('server_up.png');
+	background-image: url('ryzom_images/server_up.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
 
 .CLOSED {
-	background-image: url('server_down.png');
+	background-image: url('ryzom_images/server_down.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 
 }
 
 .LOCKED {
-	background-image: url('server_locked.png');
+	background-image: url('ryzom_images/server_locked.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
@@ -113,27 +123,30 @@ width:149px;
    padding: 0;
 }
 
+/*
+#zoneimages {background-color : #5f5e57;}
+*/
 #zoneimages {background-color : #5f5e57;}
 
 
 
 /*fin de la css rightbar*/
 
-
 #visual-portal-wrapper {
         width: 1105px;
         padding:0;
-        margin:0;        
+        margin:0;
+        background-color: #181818;
         border:0;
         border-right: solid #5f5e57 6px;
-        padding-left:75px;
+        text-align:right;
+        margin-left:auto; 
+        margin-right:auto;
 }
 
 /*mode bourrin on*/
 #portal-globalnav {display: none;}
 #portal-breadcrumbs {display: none;}
-
-
 #portal-personaltools {
    color : #ffc30e;
    background-color :  #5f5e57;
@@ -142,71 +155,85 @@ width:149px;
    padding : 3px 5px 0 10px;
    float:right;
 }
-
 #portal-personaltools .portalUser{
-   color : #green;
+   color : green;
    background-color :  #5f5e57;
 }
 
 #content {
    padding-left: 0 !important;
    padding-right: 0 !important;
-   margin : 0;
    width : 700px;
+   text-align:left;
 }
 
 #portal-columns {
    margin-left: 0;
    margin-right: 0;
    padding:0;
-   cellspacing:0;
-   cellpadding: 0;
-   background-color: #181818;
-   background-image: url('nav_bg.png');
+   background-image: url('ryzom_images/nav_bg.png');
    background-repeat : repeat-y;
-   
+/*   text-align:left; */
+  text-align:center;
+  border:0;
 }
 
 #portal-column-one {
    width:175px;
    vertical-align: top;
-   background-image: url('side_bg.png');
+   background-image: url('ryzom_images/side_bg.png');
    background-repeat : no-repeat;
    background-position : top left;
+   border: 0;
+   text-align:left;
 }
 
 td#portal-column-two {   
- cellpadding:0;
- cellspacing:0;
- margin:0;
- padding:0;
+ margin:0 !important;
+ padding:0 !important;
  background-color: #181818;
- width: 195px;
+ width: 200px !important;
+ max-width:200px!important;
+ overflow:hidden!important;
+ text-align:right !important;
+ border: 0!important;
 }
 
 #portal-column-two .visualPadding {
-float:right;
-padding: 0;
-margin: 0;
-border: 0;
+padding: 0 !important;
+margin:0!important;
+/** KEEP THIS MARGIN TO FIX IE BUGS **
+**  FIREFOX DONT GIVE A DAMN TO NEGATIVE MARGINS
+**  SO IT WONT ALTER THE PRESENTATION
+**/
+border: 0!important;
 background-color: #181818 ;
-text-align:right;
-width:195px;
+text-align:right !important;
+width:200px !important;
+max-width:200px !important;
+overflow:hidden !important;
 }
 
 #portal-column-content .visualPadding {padding:0;}
 
+#portal-column-one .visualPadding { 
+margin:0; padding:0; width:150px; margin-left:25px;
+ }
+
 #portal-column-content {
-width: 650px;
-padding: 0em 3px 0em 0px;
+/*width: 650px;*/
+/*padding: 0em 3px 0em 0px;*/
+width:none;
+max-width:none;
 margin: 0;
-background-color: #181818;
+text-align:center;
+border: 0;
 }
    
 #portal-logo {
         padding: 0;
 	margin: 0;
-	background: transparent url('logo.jpg') 0 0 no-repeat;
+	background: transparent url('ryzom_images/logo.jpg') 0 0 no-repeat;
 	width:175px;
 	height :130px;
 }
@@ -214,11 +241,14 @@ background-color: #181818;
 #portal-top {
         padding: 0;
 	margin: 0;
-	background: black url('header.jpg') 0 0 no-repeat;
+	background: black url('ryzom_images/header.jpg') 0 0 no-repeat;
 	width:1105px;
 	height:130px;
-        background-color : #181818;        
+        background-color : #181818;
+        /*border-right: solid #5f5e57 6px;*/
 }
+
+/*background: url('ryzom_images/footer.png') 0 0 no-repeat;*/
 
 #portal-footer {
         usemap="#map";
@@ -230,7 +260,9 @@ background-color: #181818;
         background-color : #181818;
 }
 
-#portal-footer img {width : 1111px;}
+#portal-footer img { 
+width : 1111px;
+ }
 
 #region-content { 
 background-color: #181818; !important;
@@ -243,11 +275,14 @@ overflow : hidden;
 #region-content .documentContent { 
 background-color: #181818; !important;
 width: 700px;
+margin:0;
+padding:0;
+/*width: 730px;*/
 }
 
 BODY {
 	background-color: black;
-	background-image: url('bg.jpg');
+	background-image: url('ryzom_images/bg.jpg');
 	background-position: top center;
 	background-repeat: no-repeat;
 	color: #a7a599;
@@ -263,7 +298,7 @@ H1 {
 	font-size : 120%;
 	color : #9ae033;
 	border-bottom : solid #9ae033 1px;
-	background-image: url('h1.png');
+	background-image: url('ryzom_images/h1.png');
 	background-repeat: no-repeat;
 	background-position : center left;
 	padding-left : 20px;
@@ -329,7 +364,207 @@ padding :0;
 margin:0;
 }
 
+
+.actionMenu .actionMenuHeader {
+    margin: 3px;
+    padding: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.contentActions {
+    background-color: #5f5e57;
+    border-left: 1px solid #404040;
+    border-right: 1px solid #404040;
+    color: #ffa500;
+    text-align: right;
+    text-transform: lowercase;
+    padding-bottom:2px;
+    z-index: 2;
+/*    height: 1.6em; */
+}
+
+.actionMenu.activated .actionMenuHeader a,
+.actionMenu.deactivated .actionMenuHeader a {
+    background-image: url(http://192.168.1.239:8080/ryzom/arrowDownAlternative.gif);
+    background-repeat: no-repeat;
+    background-position: 100% 60%;
+    padding-right: 15px;
+    cursor: pointer;
+}
+
+.documentActions {
+  margin: 2px 2px 1px 0px !important;
+  padding: 0;
+  /*YOU MUST KEEP THIS TO OVERRIDE
+  * THE AUTHORING CSS 
+  */
+  float: none;
+  text-align: right;
+  }
+
+.documentActions ul {
+    display: block;
+}
+
+.documentActions li {
+    display: inline;
+    list-style: none;
+    list-style-image: none;
+}
+
+.documentEditable {
+text-align:left;
+/*    padding: 0em 3px 5px 3px;  */
+}
+
+
+
+#foireux { 
+ text-align: center;
+  width :185px;
+  border : 0;
+  background-color: #5F5E57;
+  padding:0;
+  margin: 0;
+  margin-right:none;
+ }
+
+.imageHide { 
+ background:black;
+ margin:0;
+ padding:0;
+ font-size:5px; 
+ height:5px;
+ }
+
+.fakeBorder { 
+  width:200px;
+
+ }
+
+.holeContainer{ 
+  width: 200px;
+  background-color : #5F5E57;
+  padding:0;
+  margin:0;
+  border:0;
+ }
+
+.hole { 
+  text-align: center;
+  width: 195px;
+  padding-bottom: 5px;
+  background-color: #5F5E57;
+  margin-right:0;
+  padding-right:0;
+ }
+
+td#portal-column-two dl.portlet {
+  border-radius: 12px;
+  -moz-border-radius: 12px;
+  -ie-border-radius: 12px;
+  border: 0;
+  background-color : #31322D;
+  margin-left: 5px;
+  padding:0;
+  text-align: left;
+  width:190px;
+}
+
+dl#portlet-recent { 
+  text-align:left;
+  padding:0;
+  margin:0;
+ }
+
+dl.portlet a {
+    text-decoration: none;
+}
+
+/* </dtml-with> */
 /* END TAG */
 
 
-/* </dtml-with> */
+/*  */
+
+/* DOCUMENTATION ON PRE-DEFINED PROPERTIES FROM PLONE */
+
+ /* You can insert colors and other variables from Plone's 
+    base_properties by doing:
+    
+    & dtml-variableName ; (without the spaces, excluded here to not make it render)
+    
+    Example:
+    
+    myLink {
+        color: & dtml-fontColor ;   (again, without the spaces)
+    }
+ 
+   This means you can generate your own elements that use Plone's defaults,
+   and respect any customizations people have done. See base_properties for
+   the default values.
+ 
+   These are the available properties:
+   
+   logoName - the file name of the portal logo
+   
+   fontFamily - the font family used for all text that is not headers
+   
+   fontBaseSize - the base font size that everything is calculated from
+   
+   fontColor - the main font color
+   
+   fontSmallSize - used for various elements like buttons and discreet text
+   
+   discreetColor - the font color of discreet text
+
+   backgroundColor - the background color 
+   
+   linkColor - the color used on normal links
+
+   linkActiveColor - color used on active links
+
+   linkVisitedColor - color used on visited links
+   
+   borderWidth - the width of most borders in Plone
+   
+   borderStyle - the style of the border lines, normally solid
+   
+   borderStyleAnnotations - style of border lines on comments etc
+   
+   globalBorderColor - the border color used on the main tabs, the portlets etc
+   
+   globalBackgroundColor - background color for the selected tabs, portlet headings etc
+   
+   globalFontColor - the color of the font in the tabs and in portlet headings
+   
+   headingFontFamily - font family for h1/h2/h3/h4/h5/h6 headlines
+   
+   contentViewBorderColor - the content view tabs border color
+   
+   contentViewBackgroundColor - the content view tabs background color
+   
+   contentViewFontColor - the font color used in the content view tabs
+   
+   inputFontColor - the font color used for input elements
+   
+   textTransform - whether to lowercase text in portlets, tabs etc.
+   
+   evenRowBackgroundColor - the background color of even rows in listings
+   
+   oddRowBackgroundColor - the background color of even rows in listings
+   
+   notifyBorderColor - border color of notification elements like the status message, the calendar focus
+   
+   notifyBackgroundColor - background color of notification elements like the status message, the calendar focus
+   
+   helpBackgroundColor - background color of information pop-ups (currently not used)
+
+          
+*/
+
+
+
+
+

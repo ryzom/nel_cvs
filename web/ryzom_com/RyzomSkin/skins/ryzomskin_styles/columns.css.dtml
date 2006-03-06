@@ -22,8 +22,6 @@
     vertical-align: top;
     margin: 0;
     padding: 0;
-    max-width: 700px;
-    width: 700px;
 }
 
 #portal-column-two {

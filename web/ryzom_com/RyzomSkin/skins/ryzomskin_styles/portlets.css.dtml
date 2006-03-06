@@ -22,75 +22,7 @@
 
 /* Main portlet elements */
 
-#foireux { 
- text-align: center;
-  width :185px;
-  border : 0;
-  background-color: #5F5E57;
-  padding:0;
-  margin: 0;
-  margin-right:none;
- }
-
-.imageHide { 
- background:black;
- margin:0;
- padding:0;
- font-size:5px; 
- }
-
-.holeContainer{ 
-  width: 195px;
-  background-color: #181818;   
-  padding:0;
-  margin:0;
-  border:0;
- }
-
-.hole { 
-  text-align: center;
-  width: 195px;
-  border:0;
-  padding:0;
-  padding-left:  5px;
-  padding-bottom: 5px;
-  background-color: #5F5E57;
-  margin: 0px;
- }
-
-dl#portlet-news { 
-  background-color : #31322D; 
-  border-radius: 12px;
-  -moz-border-radius: 12px;
-  -ie-border-radius: 12px;
-/*  text-align : left; */
-  margin: 0;
-  padding-right: 0;
-  padding-left: 3px;
-  border:none;
-}
-
-td#portal-column-two dl.portlet {
-  border: 0;
-  background-color : #31322D;
-
-  margin: 0;
-  padding: 0;
-  text-align: left;
-}
-
-dl#portlet-recent { 
-  text-align:left;
-  padding:0;
-  margin:0;
- }
-
-dl.portlet a {
-    text-decoration: none;
-}
-
 .portletHeader {
-        margin: 0;
 	font-size : 120%;
 	color : #9ae033;
 	border-bottom : solid #9ae033 1px;
@@ -98,7 +30,7 @@ dl.portlet a {
 	background-repeat: no-repeat;
 	background-position : center left;
 	padding-left : 20px;
-        padding-top: 5px;
+/*        padding-top:5px; */
         text-align: left;
 }
 
@@ -178,18 +110,18 @@ dd.portletFooter {
 /* New navtree styles */
 
 .portletNavigationTree {
-    margin: 0 0 0 0px; 
-    padding: -5px; 
-    margin-left: -5px;
+    margin: 0; 
+/*    padding: -5px;  */
+/*    margin-left: -5px; */
     list-style: none; 
     list-style-image: none; 
 /*    line-height: 1em; */
-    width: 175px;
+/*    width: 149px;*/
 }
 
 .navTree {
-    width: 175px;
-    lenght: 500px;
+/*    width: 175px;*/
+/*    lenght: 500px; */
     list-style: none; 
     list-style-image: none; 
     margin-top: 0px;
@@ -258,12 +190,13 @@ li.navTreeCurrentItem a:hover {
         padding-top : 4px;
 	font-weight : bold;
  }
+/*
 .navTreeLevel1 { margin-left: 3px;}
 .navTreeLevel2 { margin-left: 7px;}
 .navTreeLevel3 { margin-left: 10px;}
 .navTreeLevel4 { margin-left: 10px;}
 .navTreeLevel5 { margin-left: 10px;}
-
+*/
 
 /*
 ** Calendar elements - used in the calendar rendering

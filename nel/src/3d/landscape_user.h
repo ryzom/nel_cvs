@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.31.16.1 2006/01/19 16:52:57 legallo Exp $
+ * $Id: landscape_user.h,v 1.31.16.2 2006/03/06 15:02:26 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -206,6 +206,12 @@ public:
 
 	// modify ZBuffer test of landscape material
 	virtual	void					setZFunc(UMaterial::ZFunc val);
+
+	/// \name getZone
+	// @{
+	// Get a zone pointer.
+	virtual const CZone*	getZone (sint zoneId) const;
+	// @}
 
 public:
 	/// \name Accessor for CLandscapeUser.

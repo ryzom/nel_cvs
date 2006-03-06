@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32.16.1 2006/01/19 16:53:21 legallo Exp $
+ * $Id: u_landscape.h,v 1.32.16.2 2006/03/06 15:02:38 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,13 @@
 #define NL_U_LANDSCAPE_H
 
 #include "nel/3d/u_material.h"
+#include "3d/zone.h"
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
 #include "height_map.h"
+
 #include <string>
 
 namespace NLMISC
@@ -307,6 +309,12 @@ public:
 
 	// modify ZBuffer test of landscape material
 	virtual	void					setZFunc(UMaterial::ZFunc val) = 0;
+
+	/// \name getZone
+	// @{
+	// Get a zone pointer.
+	virtual const CZone*	getZone (sint zoneId) const = 0;
+	// @}
 
 };
 

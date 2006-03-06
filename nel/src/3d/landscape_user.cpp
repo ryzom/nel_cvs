@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * TODO: File description
  *
- * $Id: landscape_user.cpp,v 1.49.16.1 2006/01/19 16:52:47 legallo Exp $
+ * $Id: landscape_user.cpp,v 1.49.16.2 2006/03/06 15:02:12 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -632,6 +632,14 @@ void CLandscapeUser::setZFunc(UMaterial::ZFunc val)
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_UI_LANDSCAPE;
 	_Landscape->Landscape.setZFunc((CMaterial::ZFunc)val);
+}
+
+// ***************************************************************************
+const CZone*	CLandscapeUser::getZone (sint zoneId) const
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	return _Landscape->Landscape.getZone(zoneId);
 }
 
 // ***************************************************************************

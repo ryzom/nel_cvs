@@ -29,8 +29,10 @@ class Redirect(BaseContent):
 	def setTitle(self, value, **kwargs):
 		self.getField('title').set(self, value, **kwargs)
 		if value:
-			weblog = self.quills_tool.getParentWeblog(self)
-			self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+			try:
+				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+			except:
+                                pass #try to do better than this			
 
 
 registerType(Redirect,PROJECTNAME)

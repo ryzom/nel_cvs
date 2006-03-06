@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import urllib2
 import re
 try:
@@ -51,8 +52,11 @@ class UrlPatchNote(BaseContent):
 	def setTitle(self, value, **kwargs):
 		self.getField('title').set(self, value, **kwargs)
 		if value:
-			weblog = self.quills_tool.getParentWeblog(self)
-			self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+			try:
+				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+			except:
+                                pass #try to do better than this
+                                
 
 	def setText(self, value, **kwargs):		
 		lang=self.getLang()
@@ -63,6 +67,19 @@ class UrlPatchNote(BaseContent):
 		text=re.sub('<STYLE>\\n*\\t*.*?</style>','',text)
 		#on nettoie les tags html non autorise
 		text=strip(text)
-		self.getField('text').set(self, text, **kwargs)
+		#insert unicode for french and deutch content
+		if lang=='fr' or lang =='de':
+			try:
+				self.getField('text').set(self, text.replace('\xc2','').decode('cp1252').encode('utf'), **kwargs)
+			except:
+				try:
+					self.getField('text').set(self, text.decode('utf').encode('latin'), **kwargs)
+				except:
+					self.getField('text').set(self, text.decode('latin'), **kwargs)
+		else:
+			try:
+				self.getField('text').set(self, text.replace('\xc2','').decode('cp1252').encode('utf'), **kwargs)
+			except:
+				self.getField('text').set(self, text, **kwargs)
 
 registerType(UrlPatchNote,PROJECTNAME)

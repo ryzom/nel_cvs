@@ -4,6 +4,7 @@
 <body>
     <div metal:fill-slot="main">
       <div metal:define-macro="main" tal:omit-tag="">
+        <div metal:use-macro="here/document_actions/macros/document_actions"></div>
         <h1><span metal:use-macro="python: here.widget('title', mode='view')">titre</span></h1>
         <i><span metal:use-macro="python: here.widget('description', mode='view')">titre</span></i>
         <p><span metal:use-macro="python: here.widget('text', mode='view')">data</span></p>

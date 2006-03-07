@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.6 2006/01/19 13:39:31 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.7 2006/03/07 16:11:36 coutelas Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1900,6 +1900,11 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, string, State, "Set this value to 0 to shutd
 	{
 		string statusString;
 		IService *srv = IService::getInstance();
+
+		if( srv == NULL )
+		{
+			return;
+		}
 
 		if (srv->_ServiceStatusStack.empty() && srv->_ServiveStatusTags.empty())
 		{

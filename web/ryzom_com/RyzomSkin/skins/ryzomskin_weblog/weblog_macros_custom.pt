@@ -17,24 +17,18 @@
           name="folder_factories:method" i18n:attributes="value"/>
       </form>
 
-      <div id="content-weblog"
-        tal:define="results here/getEntries;
-                    portal_discussion nocall:here/portal_discussion;">
+      <div  tal:define="results python: here.getEntries();
+                     portal_discussion nocall:here/portal_discussion;">
 
-        <metal:block
+        <metal:block 
             tal:repeat="day python:container.quills_tool.getWeblogEntriesDates(results)"
             tal:define="localized_time nocall:here/toLocalizedTime;
-          home_url python: here.portal_membership.getHomeUrl">
-
-          <div class="weblog-day">
-            <h2 class="weblog-day-title" tal:content="python:localized_time(day, context=here)" />
+	                home_url python: here.portal_membership.getHomeUrl">
 
             <tal:loop repeat="entry python:results[day]"
                 define="weblog python:here">
               <metal:macro use-macro="here/weblog_macros/macros/entry-full"/>
             </tal:loop>
-          </div>
-
         </metal:block>
 
         <div tal:condition="not: results">

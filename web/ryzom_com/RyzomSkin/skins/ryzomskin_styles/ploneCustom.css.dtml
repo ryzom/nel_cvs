@@ -7,10 +7,18 @@
  *  customizations. Useful variables from Plone are 
  *  documented at the bottom of this file.
  */
-/* <dtml-with base_properties> (do not remove this :) */
-/* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
+ 
+/*  (do not remove this :) */
+/*  (not this either :) */
 
+.unofficial-box a, .weblog-entry a, .documentBody a, .plain a{
+border:none !important;
+text-decoration: underline !important;
+}
 
+.weblog-heading a{
+text-decoration: none !important;
+}
 
 
 .titleFAQ {color:#4bffff;}
@@ -482,7 +490,7 @@ dl.portlet a {
     text-decoration: none;
 }
 
-/* </dtml-with> */
+
 /* END TAG */
 
 

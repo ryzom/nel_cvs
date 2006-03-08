@@ -78,7 +78,6 @@
 <!-- YASSINE
 TRYING TO INSERT THE AUTHOR
 -->
-
       
       <span i18n:translate="posted_by">posted by </span>
       <a tal:attributes="href python:mtool.getHomeUrl(author)" tal:content="author"></a>          
@@ -230,12 +229,28 @@ TRYING TO INSERT THE AUTHOR
             (<span tal:content="python:getDiscussionFor(entry).replyCount(entry)">0</span>)
           </a>
         </li>
+
+       <tal:comment replace="nothing"> 
+        Comment By Yassine,
+        If the author can edit the content ...
+       </tal:comment>
+ 
         <li tal:condition="python:here.portal_membership.checkPermission('Modify portal content', here)">
            &nbsp;|&nbsp;&nbsp;
           <a href=""
             tal:attributes="href string:${entry/absolute_url}/base_edit"
             i18n:translate="edit">Edit</a>&nbsp;]
         </li>
+
+       <tal:comment replace="nothing"> 
+        Comment By Yassine,
+        If the author can NOT edit the content ...
+       </tal:comment>
+
+        <li tal:condition="python: not here.portal_membership.checkPermission('Modify portal content', here)">
+          &nbsp;]
+        </li>
+
       </ul>
     </metal:block>
 

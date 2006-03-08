@@ -38,7 +38,7 @@
     </div>
     <form  class="LSBox" name="advancedSearchDummy" action="search_form">
     <input class="searchButton" 
-           type="submit" value="Advanced Search &hellip;" 
+           type="submit" value="Advanced Search" 
            i18n:attributes="value label_advanced_search;" />
     </form>
 

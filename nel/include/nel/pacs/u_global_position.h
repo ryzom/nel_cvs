@@ -1,7 +1,7 @@
 /** \file u_global_position.h
  * TODO: File description
  *
- * $Id: u_global_position.h,v 1.5 2004/11/15 10:24:30 lecroart Exp $
+ * $Id: u_global_position.h,v 1.5.30.1 2006/03/08 17:34:10 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,12 @@ public:
 
 	/// The local position within the CLocalRetriever referred by the instance (cf. InstanceId)
 	ULocalPosition						LocalPosition;
+
+	/// default constructor
+	UGlobalPosition()
+	{
+		InstanceId = -1;
+	}
 
 	// set this global position from another global position, but keep the old z coordinate
 	void								setKeepZ(const UGlobalPosition &other)

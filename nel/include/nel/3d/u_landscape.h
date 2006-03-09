@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32.16.2 2006/03/06 15:02:38 legallo Exp $
+ * $Id: u_landscape.h,v 1.32.16.3 2006/03/09 16:15:33 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_U_LANDSCAPE_H
 
 #include "nel/3d/u_material.h"
-#include "3d/zone.h"
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
@@ -44,6 +43,7 @@ namespace NLMISC
 namespace NL3D
 {
 
+class CZone;
 
 using	NLMISC::CVector;
 using	NLMISC::CRGBA;

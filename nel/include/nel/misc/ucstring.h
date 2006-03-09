@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.16 2005/08/19 15:31:20 cado Exp $
+ * $Id: ucstring.h,v 1.16.4.1 2006/03/09 18:04:49 legallo Exp $
  *
  */
 
@@ -200,6 +200,28 @@ public:
 			}
 		}
 		return res;
+	}
+
+
+	/// sub
+	ucstring sub(uint s)
+	{
+		if(s >= size())
+			return *this;
+
+		ucstring	ret;
+		ucstring::const_iterator first(begin()), last(end());
+		uint currentSize = 0;
+		
+		for (; first != last; )
+		{
+			ucchar c = *first;
+			ret.push_back(c);
+			currentSize++;
+			if(currentSize == s)
+				break;
+		}
+		return ret;
 	}
 
 

@@ -1,7 +1,7 @@
 /** \file module_manager.h
  * module manager inteface
  *
- * $Id: module_manager.h,v 1.4.4.6 2006/02/11 18:47:42 mitchell Exp $
+ * $Id: module_manager.h,v 1.4.4.7 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,9 @@ namespace NLNET
 		 *	name MUST be unique OR empty.
 		 *	If the name is empty, the method generate a name using
 		 *	the module class and a number.
+		 *  If the module class could not be found, NULL is returned.
+		 *	If the module fail to initialize properly, then it
+		 *	deleted and NULL is returned.
 		 */
 		virtual IModule *createModule(const std::string &className, const std::string &localName, const std::string &paramString) =0;
 

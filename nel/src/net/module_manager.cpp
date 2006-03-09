@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.7 2006/02/11 18:47:15 mitchell Exp $
+ * $Id: module_manager.cpp,v 1.8.4.8 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -410,14 +410,27 @@ namespace NLNET
 			// init the module with parameter string
 			TParsedCommandLine	mii;
 			mii.parseParamList(paramString);
-			module->initModule(mii);
+			bool initResult = module->initModule(mii);
 
 			// store the module in the manager
 			_ModuleInstances.add(moduleName, module.get());
 			_ModuleIds.add(modBase->_ModuleId, module.get());
 
-			// ok, all is fine, return the module
-			return module.release();
+			if (initResult)
+			{
+				// ok, all is fine, return the module
+				return module.release();
+			}
+			else
+			{
+				// error during initialization, delete the module
+				nlwarning("Create module : the new module '%s' of class '%s' has failed to initilize properly.",\
+					moduleName.c_str(),
+					className.c_str());
+
+				deleteModule(module.release());
+				return NULL;
+			}
 		}
 
 		void deleteModule(IModule *module)

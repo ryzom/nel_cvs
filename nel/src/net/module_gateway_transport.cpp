@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5.4.4 2006/03/01 15:02:41 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.5.4.5 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -759,7 +759,7 @@ namespace NLNET
 			TClientRoutes::iterator it(_Routes.find(from));
 			nlassert(it != _Routes.end());
 
-			// update las comm time
+			// update last comm time
 			it->second->LastCommTime = CTime::getSecondsSince1970();
 
 			if (msgin.getName() == "KA")

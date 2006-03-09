@@ -1,7 +1,7 @@
 /** \file module_builder_parts.h
  * Template module building blocks.
  *
- * $Id: module_builder_parts.h,v 1.4.4.2 2006/01/11 15:02:09 boucher Exp $
+ * $Id: module_builder_parts.h,v 1.4.4.3 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,14 +49,18 @@ namespace NLNET
 	class CEmptyModuleCommBehav : public T
 	{
 	public:
+		std::string					buildModuleManifest() const
+		{
+			return "";
+		}
 		virtual void				onModuleUp(IModuleProxy *moduleProxy)
 		{}
 		virtual void				onModuleDown(IModuleProxy *moduleProxy)
 		{}
 		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy)
 		{}
-		virtual void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
-		{}
+		virtual bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+		{	return false; }
 	};
 
 	template <class T>

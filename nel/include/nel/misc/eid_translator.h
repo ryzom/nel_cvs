@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.20 2005/06/23 16:27:15 boucher Exp $
+ * $Id: eid_translator.h,v 1.20.6.1 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -79,12 +79,12 @@ public:
 	CEntityId			getByEntity (const ucstring &entityName);
 
 	// get entity name using the eid
-	ucstring			getByEntity (const NLMISC::CEntityId &eid);
+	const ucstring		&getByEntity (const NLMISC::CEntityId &eid);
 
 	void				getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, std::string &userName, bool &online, std::string* additional = NULL);
 
 	// transform a username ucstring into a string that can be compared with registered string
-	std::string getRegisterableString( const ucstring & entityName);
+	std::string			getRegisterableString( const ucstring & entityName);
 
 	/// return a vector of invalid names
 	const std::vector<std::string> & getInvalidNames(){ return InvalidEntityNames; }

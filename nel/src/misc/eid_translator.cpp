@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33 2005/06/23 16:35:39 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.1 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -128,7 +128,7 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &
 	}
 }
 
-ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
+const ucstring &CEntityIdTranslator::getByEntity (const CEntityId &eid)
 {
 	H_AUTO(EIdTrans_getByEntity);
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
@@ -139,7 +139,8 @@ ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
-		return ucstring("");
+		static ucstring emptyString;
+		return emptyString;
 	}
 	else
 	{

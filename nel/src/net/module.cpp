@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.4 2006/01/11 15:02:11 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.5 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,65 @@ using namespace NLNET;
 
 namespace NLNET
 {
+
+// call the specified method on all interceptor.
+//#define NLNET_INTERCEPTOR_VECTOR_CALL(method)												\
+//	TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());	\
+//	for (;first != last; ++first)	\
+//	{								\
+//		(*first)->method;			\
+//	}								
+
+// Call the specified method on each interceptor until one return true.
+// Set result to true if one interceptor returned true, false if all interceptor returned false
+//#define NLNET_INTERCEPTOR_TRY_CALL(result, method)												\
+//	result = false;																				\
+//	{																							\
+//		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());	\
+//		for (;first != last; ++first)	\
+//		{								\
+//			if ((*first)->method)					\
+//			{							\
+//				result = true;			\
+//				break;					\
+//			}							\
+//		}								\
+//	}									\
+
+	//////////////////////////////////////
+	// Module interceptor implementation
+	//////////////////////////////////////
+	IModuleInterceptable::IModuleInterceptable()
+		: _Registrar(NULL)
+	{
+	}
+
+	IModuleInterceptable::IModuleInterceptable(IInterceptorRegistrar *registrar)
+	{
+		registerInterceptor(registrar);
+	}
+	IModuleInterceptable::~IModuleInterceptable()
+	{
+		if (_Registrar != NULL)
+			_Registrar->unregisterInterceptor(this);
+	}
+
+	void IModuleInterceptable::registerInterceptor(IInterceptorRegistrar *registrar)
+	{
+		nlassert(registrar != NULL);
+
+		_Registrar = registrar;
+
+		_Registrar->registerInterceptor(this);
+	}
+
+	void IModuleInterceptable::interceptorUnregistered(IInterceptorRegistrar *registrar)
+	{
+		nlassert(registrar == _Registrar);
+
+		_Registrar = NULL;
+	}
+	
 	//////////////////////////////////////
 	// Module factory implementation
 	//////////////////////////////////////
@@ -117,7 +176,7 @@ namespace NLNET
 			IModuleProxy *proxy = module->_SyncMessages.front().first;
 			CMessage &msg = module->_SyncMessages.front().second;
 
-			module->onProcessModuleMessage(proxy, msg);
+			module->_onProcessModuleMessage(proxy, msg);
 
 			module->_SyncMessages.pop_front();
 		}
@@ -134,14 +193,17 @@ namespace NLNET
 	//////////////////////////////////////
 
 	CModuleBase::CModuleBase()
-		:  _CurrentSender(NULL),
+		: _CurrentSender(NULL),
 		  _CurrentMessage(NULL),
 		  _CurrentMessageFailed(false),
 		  _MessageDispatchTask(NULL),
 		  _ModuleFactory(NULL),
 		  _ModuleId(INVALID_MODULE_ID)
 	{
+		// register module itself in the interceptor list
+		IModuleInterceptable::registerInterceptor(this);
 	}
+
 	CModuleBase::~CModuleBase()
 	{
 		// deleting a module from it's own current task is forbiden
@@ -164,6 +226,32 @@ namespace NLNET
 			// delete reception task
 			delete _MessageDispatchTask;
 		}
+
+		// unregister all interceptors
+		while (!_ModuleInterceptors.empty())
+		{
+			IModuleInterceptable *interceptor = *(_ModuleInterceptors.begin());
+			unregisterInterceptor(interceptor);
+		}
+	}
+
+	void CModuleBase::registerInterceptor(IModuleInterceptable *interceptor)
+	{
+		// check that this interceptor not already registered
+		nlassert(find(_ModuleInterceptors.begin(), _ModuleInterceptors.end(), interceptor) == _ModuleInterceptors.end());
+
+		// insert the interceptor in the list
+		_ModuleInterceptors.push_back(interceptor);
+	}
+
+	void CModuleBase::unregisterInterceptor(IModuleInterceptable *interceptor)
+	{
+		TInterceptors::iterator it = find(_ModuleInterceptors.begin(), _ModuleInterceptors.end(), interceptor);
+		nlassert(it != _ModuleInterceptors.end());
+
+		_ModuleInterceptors.erase(it);
+
+		interceptor->interceptorUnregistered(this);
 	}
 
 	TModuleId			CModuleBase::getModuleId() const
@@ -195,11 +283,23 @@ namespace NLNET
 		return _FullyQualifedModuleName;
 	}
 
-	const std::string	&CModuleBase::getModuleManifest() const
+	std::string	CModuleBase::getModuleManifest() const
 	{
-		static const string emptyString;
+		string manifest;
 
-		return emptyString;
+		// call each interceptor in order to build the manifest
+		TInterceptors::const_iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+		for (; first != last; ++first)
+		{
+			IModuleInterceptable *interceptor = *first;
+
+			manifest += interceptor->buildModuleManifest() + " ";
+		}
+
+		if (!manifest.empty() && manifest[manifest.size()-1] == ' ')
+			manifest.resize(manifest.size()-1);
+
+		return manifest;
 	}
 
 	void	CModuleBase::onReceiveModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
@@ -227,7 +327,7 @@ namespace NLNET
 			else
 			{
 				// normal processing by the main task
-				onProcessModuleMessage(senderModuleProxy, message);
+				_onProcessModuleMessage(senderModuleProxy, message);
 			}
 		}
 	}
@@ -239,7 +339,7 @@ namespace NLNET
 			// we have a message to dispatch
 			try
 			{
-				onProcessModuleMessage(_CurrentSender, *_CurrentMessage);
+				_onProcessModuleMessage(_CurrentSender, *_CurrentMessage);
 				_CurrentMessageFailed = false;
 			}
 			catch(...)
@@ -274,7 +374,7 @@ namespace NLNET
 	}
 
 	// Init base module, init module name
-	void				CModuleBase::initModule(const TParsedCommandLine &initInfo)
+	bool	CModuleBase::initModule(const TParsedCommandLine &initInfo)
 	{
 		// read module init param for base module .
 
@@ -288,6 +388,8 @@ namespace NLNET
 
 		// register this module in the command executor
 		registerCommandsHandler();
+
+		return true;
 	}
 
 	const std::string &CModuleBase::getCommandHandlerName() const
@@ -402,7 +504,7 @@ namespace NLNET
 					CMessage::TMessageType msgType = msg.getType();
 					try
 					{
-						onProcessModuleMessage(proxy, msg);
+						_onProcessModuleMessage(proxy, msg);
 					}
 					catch(...)
 					{
@@ -425,6 +527,17 @@ namespace NLNET
 					_SyncMessages.pop_front();
 				}
 			}
+		}
+	}
+
+	void CModuleBase::_onModuleUp(IModuleProxy *removedProxy)
+	{
+		// call the normal callback in the interceptor list
+		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+		for (;first != last; ++first)
+		{
+			IModuleInterceptable *interceptor = *first;
+			interceptor->onModuleUp(removedProxy);
 		}
 	}
 
@@ -463,10 +576,33 @@ namespace NLNET
 			}
 		}
 
-		// call the normal callback
-		onModuleDown(removedProxy);
+		// call the normal callback in the interceptor list
+		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+		for (;first != last; ++first)
+		{
+			(*first)->onModuleDown(removedProxy);
+		}								
 	}
 
+	bool CModuleBase::_onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	{
+		// try the call on each interceptor
+		bool result;
+		result = false;
+		{
+			TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
+			for (;first != last; ++first)
+			{
+				if ((*first)->onProcessModuleMessage(senderModuleProxy, message))
+				{
+					result = true;
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
 
 	void CModuleBase::setFactory(IModuleFactory *factory)
 	{

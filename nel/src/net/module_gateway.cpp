@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.6 2006/03/01 15:02:41 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.7 2006/03/09 18:20:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1241,7 +1241,7 @@ namespace NLNET
 				if (moduleProxy->getGatewayRoute() != NULL
 					|| module->getModuleId() != moduleProxy->getForeignModuleId())
 				{
-					module->onModuleUp(moduleProxy);
+					module->_onModuleUp(moduleProxy);
 				}
 			}
 		}
@@ -1417,14 +1417,22 @@ namespace NLNET
 		/***********************************************************
 		 ** Module methods 
 		 ***********************************************************/
-		void	initModule(const TParsedCommandLine &initInfo)
+		bool	initModule(const TParsedCommandLine &initInfo)
 		{
-			CModuleBase::initModule(initInfo);
+			bool ret = CModuleBase::initModule(initInfo);
 
 			// no options for now
 
 			registerSocket();
+
+			return ret;
 		}
+
+		std::string			buildModuleManifest() const
+		{
+			return string();
+		}
+
 
 		void				onServiceUp(const std::string &serviceName, uint16 serviceId)
 		{
@@ -1501,13 +1509,17 @@ namespace NLNET
 		void				onModuleDown(IModuleProxy *moduleProxy)
 		{
 		}
-		void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+		bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 		{
 			// simple message for debug and unit testing
 			if (message.getName() == "DEBUG_MOD_PING")
 			{
 				_PingCounter++;
+
+				return true;
 			}
+
+			return false;
 		}
 
 		void				onModuleSecurityChange(IModuleProxy *moduleProxy)
@@ -1615,7 +1627,7 @@ namespace NLNET
 					// the foreign module id store the local module id).
 					if (modProx->getGatewayRoute() != NULL || modProx->getForeignModuleId() != pluggedModule->getModuleId())
 					{
-						pluggedModule->onModuleUp(modProx);
+						pluggedModule->_onModuleUp(modProx);
 					}
 				}
 			}

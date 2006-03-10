@@ -21,7 +21,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ###############################################################################
 
-from Products.Archetypes.public import *
+try:
+    from Products.LinguaPlone.public import *
+except ImportError:
+    from Products.Archetypes.public import *    
+
+
 from Products.Archetypes.Marshall import PrimaryFieldMarshaller
 from Products.CMFCore import CMFCorePermissions
 from config import PROJECTNAME

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.7 2006/03/07 16:11:36 coutelas Exp $
+ * $Id: service.cpp,v 1.238.4.8 2006/03/10 19:40:32 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1306,7 +1306,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// if the launching mode is 'quit after the first update' we set the exit signal
 			if (haveArg('Q'))
 			{
-				ExitSignalAsked = 1;
+				// we use -100 so that the final return code ends as 0 (100+ExitSignalAsked) because
+				// otherwise we can't launch services with -Q in a makefile
+				ExitSignalAsked = -100;
 			}
 			NbUserUpdate++;
 

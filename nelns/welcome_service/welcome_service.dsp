@@ -146,6 +146,10 @@ LINK32=link.exe
 # Name "welcome_service - Win32 DebugFast"
 # Begin Source File
 
+SOURCE=.\Makefile.am
+# End Source File
+# Begin Source File
+
 SOURCE=.\welcome_service.cfg
 # End Source File
 # Begin Source File

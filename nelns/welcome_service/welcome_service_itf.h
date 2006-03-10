@@ -99,36 +99,56 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
+#pragma warning(disable : 4355)
 	class CWelcomeServiceSkel
 	{
 	protected:
-		CWelcomeServiceSkel()
+		CWelcomeServiceSkel(NLNET::IModule *module)
+			:	_Interceptor(this, module)
 		{
 			// do early run time check for message table
-			getMessageHandlers();
+			_Interceptor.getMessageHandlers();
 		}
 		virtual ~CWelcomeServiceSkel()
 		{
 		}
 
-
-
 	private:
-		typedef void (CWelcomeServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
-		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
+		// Inner class that implement the interceptor
+		struct TInterceptor : public NLNET::IModuleInterceptable
+		{
+			typedef void (TInterceptor::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+			typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
-		const TMessageHandlerMap &getMessageHandlers() const;
+			CWelcomeServiceSkel *Skeleton;
 
-	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+			TInterceptor(CWelcomeServiceSkel *skeleton, NLNET::IInterceptorRegistrar *registrar)
+				:	NLNET::IModuleInterceptable(registrar),
+					Skeleton(skeleton)
+			{
+			}
 
-	private:
+			const TMessageHandlerMap &getMessageHandlers() const;
+
+			// unused interceptors 
+			virtual void				onModuleUp(NLNET::IModuleProxy *moduleProxy)  {};
+			virtual void				onModuleDown(NLNET::IModuleProxy *moduleProxy) {};
+			virtual void				onModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {};
 		
-		void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+			// process module message interceptor
+			bool onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 
-		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		
+			void welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
+			void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+
+
+		};
+
+		// declare one interceptor member of the skeleton
+		TInterceptor	_Interceptor;
 	public:
 		/////////////////////////////////////////////////////////////////
 		// WARNING : this is a generated file, don't change it !
@@ -141,6 +161,7 @@ namespace WS
 
 
 	};
+#pragma warning(default : 4355)
 
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
@@ -202,38 +223,58 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
+#pragma warning(disable : 4355)
 	class CWelcomeServiceClientSkel
 	{
 	protected:
-		CWelcomeServiceClientSkel()
+		CWelcomeServiceClientSkel(NLNET::IModule *module)
+			:	_Interceptor(this, module)
 		{
 			// do early run time check for message table
-			getMessageHandlers();
+			_Interceptor.getMessageHandlers();
 		}
 		virtual ~CWelcomeServiceClientSkel()
 		{
 		}
 
-
-
 	private:
-		typedef void (CWelcomeServiceClientSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
-		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
+		// Inner class that implement the interceptor
+		struct TInterceptor : public NLNET::IModuleInterceptable
+		{
+			typedef void (TInterceptor::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+			typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
 
-		const TMessageHandlerMap &getMessageHandlers() const;
+			CWelcomeServiceClientSkel *Skeleton;
 
-	protected:
-		bool onDispatchMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+			TInterceptor(CWelcomeServiceClientSkel *skeleton, NLNET::IInterceptorRegistrar *registrar)
+				:	NLNET::IModuleInterceptable(registrar),
+					Skeleton(skeleton)
+			{
+			}
 
-	private:
+			const TMessageHandlerMap &getMessageHandlers() const;
+
+			// unused interceptors 
+			virtual void				onModuleUp(NLNET::IModuleProxy *moduleProxy)  {};
+			virtual void				onModuleDown(NLNET::IModuleProxy *moduleProxy) {};
+			virtual void				onModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {};
 		
-		void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+			// process module message interceptor
+			bool onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
 
-		void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+		
+			void registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
-		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+			void welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
+			void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+
+
+		};
+
+		// declare one interceptor member of the skeleton
+		TInterceptor	_Interceptor;
 	public:
 		/////////////////////////////////////////////////////////////////
 		// WARNING : this is a generated file, don't change it !
@@ -249,6 +290,7 @@ namespace WS
 
 
 	};
+#pragma warning(default : 4355)
 
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !

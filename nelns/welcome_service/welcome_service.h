@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1.4.4 2006/01/11 15:02:11 boucher Exp $
+ * $Id: welcome_service.h,v 1.1.4.5 2006/03/10 09:39:49 boucher Exp $
  *
  */
 
@@ -53,11 +53,13 @@ namespace WS
 		NLNET::TModuleProxyPtr	_RingSessionManager;
 
 		// Init module and ensure it's a pseudo singleton
-		virtual void initModule(const NLNET::TParsedCommandLine &initInfo)
+		virtual bool initModule(const NLNET::TParsedCommandLine &initInfo)
 		{
-			CModuleBase::initModule(initInfo);
+			bool ret = CModuleBase::initModule(initInfo);
 			nlassert(_Instance == NULL);
 			_Instance = this;
+
+			return ret;
 		}
 
 		virtual ~CWelcomeServiceMod()
@@ -65,15 +67,15 @@ namespace WS
 			_Instance = NULL;
 		}
 
-		void onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
-		{
-			if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
-				return;
-
-			nlwarning("Unknown message '%s' received by '%s'", 
-				message.getName().c_str(),
-				getModuleName().c_str());
-		}
+//		bool onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+//		{
+//			if (CWelcomeServiceSkel::onDispatchMessage(sender, message))
+//				return;
+//
+//			nlwarning("Unknown message '%s' received by '%s'", 
+//				message.getName().c_str(),
+//				getModuleName().c_str());
+//		}
 
 		void onModuleUp(NLNET::IModuleProxy *proxy);
 		void onModuleDown(NLNET::IModuleProxy *proxy);
@@ -91,6 +93,10 @@ namespace WS
 		}
 
 	public:
+		CWelcomeServiceMod()
+			:	WS::CWelcomeServiceSkel(this)
+		{}
+
 		// public API
 		static CWelcomeServiceMod *getInstance()
 		{

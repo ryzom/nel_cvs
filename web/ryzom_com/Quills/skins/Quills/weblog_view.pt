@@ -1,0 +1,93 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+  lang="en-US"
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="quills">
+
+  <metal:block fill-slot="css_slot">
+    <style type="text/css" media="all"
+      tal:content="string:@import url(${portal_url}/Quills.css);">
+    </style>
+  </metal:block>
+
+  <metal:block fill-slot="head_slot">
+        <link
+                rel="alternate"
+                type="application/atom+xml"
+                title="Atom feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${here/absolute_url}/atom.xml" />
+        
+        <link
+                rel="alternate"
+                type="application/rss+xml"
+                title="RSS 2.0 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${here/absolute_url}/rss.xml" />
+        
+        <link
+                rel="alternate"
+                type="application/rdf+xml"
+                title="RDF 1.0 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${here/absolute_url}/feed.rdf" />
+
+        <link
+                rel="alternate"
+                type="application/rdf+xml"
+                title="RDF 1.1 feed"
+                i18n:attributes="title"
+                tal:attributes="href string:${here/absolute_url}/feed11.rdf" />
+  </metal:block>
+
+  <body>
+    <div metal:fill-slot="main">
+
+      <h1 class="documentFirstHeading"
+        tal:content="here/title_or_id"></h1>
+
+      <div class="documentDescription"
+        tal:content="here/Description">
+        description
+      </div>
+
+      <form method="post" action=""
+        tal:attributes="action here_url"
+        tal:condition="python:member.has_role('Owner')">
+        <input type="hidden" name="type_name" value="WeblogEntry"/>
+        <input class="standalone" type="submit" value="Add Weblog Entry"
+          name="folder_factories:method" i18n:attributes="value"/>
+      </form>
+
+      <div id="content-weblog"
+        tal:define="results here/getEntries;
+                    portal_discussion nocall:here/portal_discussion;">
+
+        <metal:block
+            tal:repeat="day python:container.quills_tool.getWeblogEntriesDates(results)"
+            tal:define="localized_time nocall:here/toLocalizedTime;
+          home_url python: here.portal_membership.getHomeUrl">
+
+          <div class="weblog-day">
+            <h2 class="weblog-day-title" tal:content="python:localized_time(day, context=here)" />
+
+            <tal:loop repeat="entry python:results[day]"
+                define="weblog python:here">
+              <metal:macro use-macro="here/weblog_macros/macros/entry-full"/>
+            </tal:loop>
+          </div>
+
+        </metal:block>
+
+        <div tal:condition="not: results">
+          <p i18n:translate="no_weblog_entries">
+            No weblog entries have been posted.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+  </body>
+</html>
+
+<!-- vim: set ft=xml sw=2 ts=2: -->

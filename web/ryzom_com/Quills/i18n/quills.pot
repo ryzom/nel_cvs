@@ -1,0 +1,377 @@
+# --- PLEASE EDIT THE LINES BELOW CORRECTLY ---
+# SOME DESCRIPTIVE TITLE.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2004-10-05 10:09+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"Language-Code: en\n"
+"Language-Name: English\n"
+"Preferred-Encodings: latin1 utf-8\n"
+"Domain: quills\n"
+
+#: Quills/trunk/skins/Quills/weblog_view.pt
+#. <input class="standalone" i18n:attributes="value" name="folder_factories:method" type="submit" value="Add Weblog Entry"/>
+msgid "Add Weblog Entry"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/topics.pt
+#. <input class="standalone" i18n:attributes="value" name="folder_factories:method" type="submit" value="Add a Topic"/>
+msgid "Add a Topic"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Atom" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/atom_feed.gif" title="Atom Enabled" width="80"/>
+msgid "Atom"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Atom" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/atom_feed.gif" title="Atom Enabled" width="80"/>
+msgid "Atom Enabled"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <link href="atom.xml" i18n:attributes="title" rel="alternate" title="Atom feed" type="application/atom+xml"/>
+msgid "Atom feed"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_weblogcalendar.pt
+#. <table cellspacing="0" class="ploneCalendar" i18n:attributes="summary" id="thePloneCalendar" summary="Calendar">
+msgid "Calendar"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <input class="standalone" i18n:attributes="value" name="form.button.Cancel" tabindex="" tal:attributes="tabindex tabindex/next;" type="submit" value="Cancel"/>
+msgid "Cancel"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <input i18n:attributes="value" type="submit" value="Delete"/>
+msgid "Delete"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <input i18n:attributes="value" type="submit" value="Edit"/>
+msgid "Edit"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Get Firefox" border="0" height="50" i18n:attributes="alt" src="http://www.mozilla.org/products/firefox/buttons/takebacktheweb_small.png" width="125"/>
+msgid "Get Firefox"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <a href="http://getfirefox.com/" i18n:attributes="title" title="Get Firefox - Take Back the Web">
+msgid "Get Firefox - Take Back the Web"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Powered by Plone" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/plone_powered.gif" title="This Plone site was built using the Plone Content Management System. Click for more information." width="80"/>
+msgid "Powered by Plone"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Powered by Quills" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/quills_powered.gif" title="Quills weblog system for Plone: by Etria" width="80"/>
+msgid "Powered by Quills"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Powered by Quills" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/quills_powered.gif" title="Quills weblog system for Plone: by Etria" width="80"/>
+msgid "Quills weblog system for Plone: by Etria"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="RDF" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/rdf_feed.gif" title="Semantic feed" width="80"/>
+msgid "RDF"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <link href="feed.rdf" i18n:attributes="title" rel="alternate" title="RDF feed" type="application/rdf+xml"/>
+msgid "RDF feed"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="RSS 2.0" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/rss_feed.gif" title="RSS 2.0 feed" width="80"/>
+msgid "RSS 2.0"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="RSS 2.0" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/rss_feed.gif" title="RSS 2.0 feed" width="80"/>
+msgid "RSS 2.0 feed"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <input class="context" i18n:attributes="value" name="form.button.Save" tabindex="" tal:attributes="tabindex tabindex/next;" type="submit" value="Save"/>
+msgid "Save"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="RDF" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/rdf_feed.gif" title="Semantic feed" width="80"/>
+msgid "Semantic feed"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/portlet_quills.pt
+#. <img alt="Powered by Plone" height="15" i18n:attributes="alt title" src="" tal:attributes="src string:$portal_url/plone_powered.gif" title="This Plone site was built using the Plone Content Management System. Click for more information." width="80"/>
+msgid "This Plone site was built using the Plone Content Management System. Click for more information."
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <img alt="[Valid Atom]" border="0px" height="31" i18n:attributes="alt;title" src="http://www.atomenabled.org/feedvalidator/images/valid-atom.png" title="Validate my Atom feed" width="88"/>
+msgid "Validate my Atom feed"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <img alt="[Valid Atom]" border="0px" height="31" i18n:attributes="alt;title" src="http://www.atomenabled.org/feedvalidator/images/valid-atom.png" title="Validate my Atom feed" width="88"/>
+msgid "[Valid Atom]"
+msgstr ""
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <span i18n:translate="atom_description">
+#.  This is an Atom formatted XML site feed. It is intended to be viewed
+#.       in a Newsreader or syndicated to another site. Please visit the
+#. </span>
+msgid "atom_description"
+msgstr "This is an Atom formatted XML site feed. It is intended to be viewed in a Newsreader or syndicated to another site. Please visit the"
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <a href="http://www.atomenabled.org/" i18n:translate="atom_enabled">
+#.  Atom Enabled
+#. </a>
+msgid "atom_enabled"
+msgstr "Atom Enabled"
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <span i18n:translate="atom_more_info">
+#.   for more info.
+#. </span>
+msgid "atom_more_info"
+msgstr "for more info."
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <span i18n:translate="comments">
+#.  Comments
+#. </span>
+msgid "comments"
+msgstr "Comments"
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <a href="" i18n:translate="edit" tal:attributes="href string:${entry/absolute_url}/base_edit">
+#.  Edit
+#. </a>
+msgid "edit"
+msgstr "Edit"
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <span i18n:translate="filed_under">
+#.  Filed Under:
+#. </span>
+## 2 more: Quills/trunk/skins/Quills/weblog_macros.pt, Quills/trunk/skins/Quills/weblog_macros.pt
+msgid "filed_under"
+msgstr "Filed Under:"
+
+
+#: Quills/trunk/skins/Quills/rss.xml.pt
+#. <generator i18n:translate="generator">
+#.  Plone 2.0
+#. </generator>
+msgid "generator"
+msgstr "Plone 2.0"
+
+
+#: Quills/trunk/skins/Quills/atom.xml.pt
+#. <span i18n:translate="generator_name">
+#.  Quills
+#. </span>
+msgid "generator_name"
+msgstr "Quills"
+
+
+#: Quills/trunk/skins/Quills/portlet_archives.pt
+#. <h5 i18n:translate="heading_archives">
+#.            Archives
+#. </h5>
+msgid "heading_archives"
+msgstr "Archives"
+
+
+#: Quills/trunk/skins/Quills/portlet_topics.pt
+#. <h5 i18n:translate="heading_topics">
+#.           Topics
+#. </h5>
+msgid "heading_topics"
+msgstr "Topics"
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <h3 i18n:translate="heading_trackback">
+#.  Trackback
+#. </h3>
+msgid "heading_trackback"
+msgstr "Trackback"
+
+
+#: Quills/trunk/skins/Quills/topics.pt
+#. <h1 class="documentFirstHeading" i18n:translate="heading_weblog_topics">
+#.  Weblog Topics
+#. </h1>
+msgid "heading_weblog_topics"
+msgstr "Weblog Topics"
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <label i18n:translate="label_allowed_sizes">
+#.  Allowed Photo Sizes
+#. </label>
+msgid "label_allowed_sizes"
+msgstr "Allowed Photo Sizes"
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <a class="link-parent" href="" i18n:translate="link_up_to_plone" tal:attributes="href string: $portal_url/plone_control_panel">
+#.                 Up to Plone Setup
+#. </a>
+msgid "link_up_to_plone"
+msgstr "Up to Plone Setup"
+
+
+#: Quills/trunk/skins/Quills/weblog_view.pt
+#. <p i18n:translate="no_weblog_entries">
+#.             No weblog entries have been posted.
+#. </p>
+## 1 more: Quills/trunk/skins/Quills/siteplanet_view.pt
+msgid "no_weblog_entries"
+msgstr "No weblog entries have been posted."
+
+
+#: Quills/trunk/skins/Quills/weblogentry_view.pt
+#. <span i18n:translate="on_for_a_date">
+#.   on
+#. </span>
+msgid "on_for_a_date"
+msgstr "on"
+
+
+#: Quills/trunk/skins/Quills/weblogphoto_view.pt
+#. <span i18n:translate="posted_by">
+#.  Posted by
+#. </span>
+## 1 more: Quills/trunk/skins/Quills/weblogentry_view.pt
+msgid "posted_by"
+msgstr "Posted by"
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <h1 i18n:translate="quills_configuration">
+#.  Quills Configuration
+#. </h1>
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <legend i18n:translate="quills_configuration">
+#.  Quills Configuration
+#. </legend>
+msgid "quills_configuration"
+msgstr "Quills Configuration"
+
+
+#: Quills/trunk/skins/Quills/portlet_recentphotos.pt
+#. <h5 i18n:translate="recent_photos">
+#.  Recent Photos
+#. </h5>
+msgid "recent_photos"
+msgstr "Recent Photos"
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <span i18n:translate="sizes_help">
+#.                             What photo sizes should be generated for Weblog
+#.                             Photo entries?  Sizes should be provided as single
+#.                             integers, one per line.  If you specify a value
+#.                             like &quot;128&quot;, then Photo's will be scaled to fit
+#.                             within a 128x128 square.  If the photo is not
+#.                             square, it will be scaled proportionately by its
+#.                             longest edge.
+#. </span>
+msgid "sizes_help"
+msgstr "What photo sizes should be generated for Weblog Photo entries? Sizes should be provided as single integers, one per line. If you specify a value like &quot;128&quot;, then Photo's will be scaled to fit within a 128x128 square. If the photo is not square, it will be scaled proportionately by its longest edge."
+
+
+#: Quills/trunk/skins/Quills/quills_reconfig_scales_form.cpt
+#. <span i18n:translate="sizes_note_help">
+#. 				    Note: These settings should ideally only be
+#.                                     changed during initial Quills setup.
+#.                                     Making changes here causes all photos on
+#.                                     the site to be rescaled accordingly, which
+#.                                     can put a heavy load on the system.
+#. </span>
+msgid "sizes_note_help"
+msgstr "Note: These settings should ideally only be changed during initial Quills setup. Making changes here causes all photos on the site to be rescaled accordingly, which can put a heavy load on the system."
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <div class="caption" i18n:translate="topics">
+#.  Topics
+#. </div>
+msgid "topics"
+msgstr "Topics"
+
+
+#: Quills/trunk/skins/Quills/weblog_macros.pt
+#. <span i18n:translate="trackback_uri">
+#.  The URI to TrackBack this entry is:
+#. </span>
+msgid "trackback_uri"
+msgstr "The URI to TrackBack this entry is:"
+
+#- Removed msgids:
+# 
+
+#- Added msgids:
+#  "Add Weblog Entry" no_weblog_entries heading_weblog_topics
+# "Add a Topic" quills_configuration link_up_to_plone
+# label_allowed_sizes sizes_help sizes_note_help Save Cancel generator
+# heading_topics heading_archives filed_under topics comments edit
+# Delete Edit heading_trackback trackback_uri Calendar generator_name
+# atom_description atom_enabled atom_more_info "[Valid Atom]"
+# "Validate my Atom feed" recent_photos
+# "Get Firefox - Take Back the Web" "Get Firefox" "Powered by Plone"
+# "This Plone site was built using the Plone Content Management System. Click for more information."
+# "Powered by Quills" "Quills weblog system for Plone: by Etria"
+# "Atom feed" Atom "Atom Enabled" "RDF feed" RDF "Semantic feed"
+# "RSS 2.0" "RSS 2.0 feed" posted_by on_for_a_date
+
+#- Added msgids by merging file None:
+# 

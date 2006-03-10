@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="http://bskahan.etria.com/rss2.css" type="text/css"?>
+<rss version="2.0"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    tal:define="results python:container.portal_catalog(
+        portal_type='WeblogEntry',
+        sort_on='effective',
+        sort_order='reverse',
+        review_state='published');
+        results python:[r for r in results if r.getObject()];
+        Batch python:modules['Products.CMFPlone'].Batch;
+        b_start python:request.get('b_start',0);
+        portal_discussion nocall:here/portal_discussion;"
+    i18n:domain="quills"
+    >
+
+    <channel>
+
+        <title tal:define="portal_title here/portal_properties/title;
+            here_title here/title_or_id;
+            template_title template/title_or_id;
+            here_title python:test(portal_title != here_title, here_title, template_title)"
+            tal:content="string:$portal_title - $here_title">Title of page</title>
+        <link tal:content="here/absolute_url"></link>
+        <description tal:content="here/Description">
+        </description>
+
+        <generator i18n:translate="generator">Plone 2.0</generator>
+        <!-- TODO
+        <lastBuildDate>Mon, 30 Sep 2002 11:00:00 GMT</lastBuildDate>
+        <copyright>Copyright 1997-2002 Dave Winer</copyright>
+        <docs>http://backend.userland.com/rss</docs>
+        <category domain="Syndic8">1765</category>
+        <managingEditor>dave@userland.com</managingEditor>
+        <webMaster>dave@userland.com</webMaster>
+        -->
+
+        <!-- TODO: Should there be an individual image associatable with each
+        Weblog object?  I think so... -->
+        <image>
+            <url tal:content="string:${here/portal_url}/${here/base_properties/logoName}"></url>
+        </image>
+
+    <tal:define define="max_items here/portal_syndication/getMaxItems">
+        <tal:repeat repeat="res results">
+            <tal:define define="item python:res.getObject()">
+                <item>
+                    <title tal:content="item/Title"></title>
+                    <link tal:content="item/Identifier"></link>
+
+                    <description tal:content="item/getText">
+                    </description>
+
+                    <author tal:content="item/Creator"></author>
+                    <tal:repeat repeat="subj item/Subject">
+                        <category tal:content="subj">
+                        </category>
+                    </tal:repeat>
+                    <!--
+                    <dc:publisher tal:content="item/Publisher"></dc:publisher>
+                    <dc:creator tal:content="item/Creator"></dc:creator>
+                    <dc:rights tal:content="item/Rights"></dc:rights>
+                    -->
+                    <pubDate tal:content="python: DateTime(item.Date()).strftime('%Y-%m-%dT%H:%M+00:00')"></pubDate>
+                </item>
+            </tal:define>
+        </tal:repeat>
+    </tal:define>
+
+    </channel>
+</rss>
+
+

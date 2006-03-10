@@ -1,0 +1,124 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+  lang="en-US"
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="quills">
+
+  <metal:block fill-slot="css_slot">
+    <style type="text/css" media="all"
+      tal:content="string:@import url(${portal_url}/Quills.css);">
+    </style>
+  </metal:block>
+
+  <metal:block fill-slot="head_slot">
+    <metal:macro use-macro="here/weblog_macros/macros/feed-links" />
+  </metal:block>
+
+
+  <body>
+
+    <div metal:fill-slot="main" id="weblogtopics">
+
+      <h1 class="documentFirstHeading" i18n:translate="">Topics</h1>
+
+      <div class="documentDescription"></div>
+
+      <!--
+      <table class="listing" summary="Topic Listing"
+        cellpadding="0" cellspacing="0">
+        <tr>
+          <th class="nosort">
+            Icon
+          </th>
+          <th class="nosort">
+            Topic Information
+          </th>
+        </tr>
+        <tal:loop repeat="tp context/getAvailableTopics">
+          <tbody>
+            <tr class="odd"
+              tal:attributes="class python:test(repeat['tp'].odd(), 'even', 'odd')" >
+              <td>
+                <img src="" 
+                  tal:condition="tp/getTopicImage"
+                  tal:attributes="src string:${here/absolute_url}/${tp/getId}/topicImage"/>
+                <img src="" 
+                  tal:condition="not:tp/getTopicImage"
+                  tal:attributes="src string:${here/absolute_url}/default-topic-icon.png"/>
+              </td>
+              <td valign="top"
+                tal:define="entries python:context.portal_catalog(meta_type='WeblogEntry', getEntryCategories=tp.getId())">
+                <strong><span tal:content="tp/title_or_id"/>
+                  (<span tal:content="python:len(entries)"></span>)
+                </strong>
+                <div class="discreet"
+                  tal:condition="python:len(entries)"
+                  >Last Post: 
+                  <a href=""
+                    tal:attributes="href python:entries[0].getURL()"
+                    tal:content="python:here.toLocalizedTime(entries[0].getObject().ModificationDate(),long_format=1)">
+                    August 16, 2001 at 23:35:59
+                  </a>
+                </div>
+                <span
+                  tal:condition="python:user.has_permission('Review portal content', here) or user.has_role('Owner', here)">
+                  <a href="" 
+                    tal:attributes="href string:${tp/absolute_url}/base_edit"
+                    title="Edit"
+                    class="standalone">Edit</a>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </tal:loop>
+      </table>
+      -->
+
+      <tal:loop repeat="tp context/getAvailableTopics">
+        <div class="row"
+          tal:attributes="class python:test(repeat['tp'].odd(), 'row even', 'row odd')" >
+          <div class="icon">
+            <img src="" 
+              tal:condition="tp/getTopicImage"
+              tal:attributes="src string:${here/absolute_url}/${tp/getId}/topicImage"/>
+            <img src="" 
+              tal:condition="not:tp/getTopicImage"
+              tal:attributes="src string:${here/absolute_url}/default-topic-icon.png"/>
+          </div>
+          <div
+            tal:define="entries python:context.portal_catalog(meta_type='WeblogEntry', getEntryCategories=tp.getId())">
+            <strong><span tal:content="tp/title_or_id"/>
+              (<span tal:content="python:len(entries)"></span>)
+            </strong>
+            <div class="discreet">
+              <tal:if condition="not:python:len(entries)">
+                No Posts
+              </tal:if>
+              <tal:if condition="python:len(entries)">
+                Last Post: 
+                <a href=""
+                  tal:attributes="href python:entries[0].getURL()"
+                  tal:content="python:here.toLocalizedTime(entries[0].getObject().ModificationDate(),long_format=1)">
+                  August 16, 2001 at 23:35:59
+                </a>
+              </tal:if>
+            </div>
+            <span class="discreet">
+              Published: <span tal:content="python:len([entry for entry in entries if entry.review_state == 'published'])"/>
+            </span>
+            <span class="discreet">
+              Drafts: <span tal:content="python:len([entry for entry in entries if entry.review_state == 'draft'])"/>
+            </span>
+            <div
+              tal:condition="python:user.has_permission('Review portal content', here) or user.has_role('Owner', here)">
+              <a href="" 
+                tal:attributes="href string:${tp/absolute_url}/base_edit"
+                title="Edit"
+                class="standalone">Edit</a>
+            </div>
+          </div>
+        </div>
+      </tal:loop>
+
+    </div>
+  </body>
+</html>

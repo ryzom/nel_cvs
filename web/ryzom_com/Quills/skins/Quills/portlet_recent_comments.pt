@@ -1,0 +1,38 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+
+  <body>
+
+    <tal:comment condition="nothing">
+      <!--
+        TODO: Only display comments attached to WeblogEntries
+      -->
+    </tal:comment>
+    <div metal:define-macro="portlet" class="portlet recent_comments"
+        tal:condition="python:here.meta_type in ('Weblog',
+                                                 'WeblogEntry',
+                                                 'WeblogArchive')"
+        tal:define="recent python:here.portal_catalog(meta_type='Discussion Item',
+                                 sort_on='modified',sort_order='reverse')[:5]">
+      <h5>Recent Comments</h5>
+      <div class="portletBody">
+        <dl>
+          <tal:loop repeat="comment recent">
+            <tal:block define="obj comment/getObject"
+                       condition="python:obj">
+              <dt>
+                <a href="" 
+                    tal:attributes="href obj/absolute_url"
+                    tal:content="comment/Title" />
+              </dt>
+              <dd tal:content="comment/modified/Date" />
+            </tal:block>
+          </tal:loop>
+        </dl>
+      </div>
+    </div>
+  </body>
+
+</html>
+

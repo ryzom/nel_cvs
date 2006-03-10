@@ -1,0 +1,96 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+  lang="en-US"
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="quills">
+
+  <head>
+    <metal:block fill-slot="css_slot">
+      <style type="text/css" media="all" tal:content="string:@import url(${portal_url}/Quills.css);">
+      </style>
+    </metal:block>
+
+    <metal:block fill-slot="top_slot"
+      tal:define="dummy python:request.set('disable_border',1)" />
+  </head>
+
+  <body>
+    <div metal:fill-slot="main" id="weblog-topics">
+      <metal:block define-macro="main"
+        tal:define="weblog python:here.quills_tool.getParentWeblog(here)">
+
+        <h1 class="documentFirstHeading"
+          i18n:translate="heading_weblog_topics">Weblog Topics</h1>
+
+        <!--
+        probably should rename things here, topics is topics to search for.
+        topic is from a list of all topics in the blog
+        -->
+        <div class="topics-topics">
+        <tal:loop repeat="topic python:request.traverse_subpath">
+          <tal:block define="topicObject python:here.quills_tool.getTopicById(topic)">
+            <tal:if condition="topicObject/topicImage | nothing">
+              <a  href="" 
+                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+                <img class="topic-image"
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/${topicObject/getId}/topicImage;
+                  title topicObject/Description"
+                  tal:condition="topicObject/Description" />
+
+                <img class="topic-image"
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/${topicObject/getId}/topicImage;
+                  title topicObject/title_or_id"
+                  tal:condition="not:topicObject/Description" />
+              </a>
+            </tal:if>
+            <tal:if condition="not:topicObject/topicImage | nothing">
+              <a href="" 
+                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+                <img class="topic-image" 
+                  src="" alt="" title=""
+                  tal:attributes="src string:${here/absolute_url}/default-topic-icon.png; title topicObject/title_or_id"/>
+              </a>
+            </tal:if>
+          </tal:block>
+        </tal:loop>
+      </div>
+
+      <form method="post" action=""
+        tal:attributes="action here_url"
+        tal:condition="python:member.has_role('Owner')">
+        <input type="hidden" name="type_name" value="WeblogTopic"/>
+        <input class="standalone" type="submit" value="Add a Topic"
+          name="folder_factories:method" i18n:attributes="value"/>
+      </form>
+
+
+      <div tal:define="entries here/getCategories;
+                  Batch python:modules['Products.CMFPlone'].Batch;
+                   b_size python:weblog.entriesPerPage;
+                   b_start python:0;
+                   b_start request/b_start | b_start;">
+           <div tal:condition="entries"
+             tal:define="batch python:Batch(entries, b_size, int(b_start), orphan=1);">
+             <tal:block tal:repeat="entry_map batch">
+               <tal:define define="entry entry_map/getObject">
+                 <tal:if condition="python:entry.meta_type == 'WeblogEntry'"
+                   on-error="nothing">
+                  <metal:use use-macro="here/weblog_macros/macros/entry-brief"/>
+                </tal:if>
+              </tal:define>
+            </tal:block>
+          </div>
+          <div tal:condition="python:not entries">
+            <tal:loop repeat="topic here/getAvailableTopics">
+              <metal:use use-macro="here/weblog_macros/macros/topic-brief"/>
+            </tal:loop>
+          </div>
+        </div>
+      </metal:block>
+    </div>
+  </body>
+</html>
+
+<!-- vim: set ft=xml sw=2 ts=2: -->
+

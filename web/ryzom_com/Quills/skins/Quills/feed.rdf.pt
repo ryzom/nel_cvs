@@ -1,0 +1,87 @@
+<tal:block 
+  xmlns:tal="http://xml.zope.org/namespaces/tal"
+  tal:define="encoding context/portal_properties/site_properties/default_charset;
+  dummy python:context.REQUEST.RESPONSE.setHeader('Content-Type', 'text/xml;; charset=%s' % encoding);
+  portal_syndication nocall:context/portal_syndication;
+  limit python:int(portal_syndication.max_items);
+  results python:context.archive.getLazyEntries()[:limit];
+  results python:[r for r in results if r.getObject()];
+  portal_discussion nocall:here/portal_discussion;
+  portal_title here/portal_properties/title;
+  here_title here/title_or_id;
+  template_title template/title_or_id;
+  here_title python:test(portal_title != here_title,here_title,template_title)"
+  ><tal:block replace='structure string:<?xml version="1.0" encoding="${encoding}"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+         xmlns:rss="http://purl.org/rss/1.0/"
+         xmlns:content="http://purl.org/rss/1.0/modules/content/">'>
+</tal:block>
+    <rss:channel tal:attributes="rdf:about here/absolute_url">
+
+        <rss:title tal:content="string:$portal_title - $here_title">Title of page</rss:title>
+        <rss:link tal:content="here/absolute_url"></rss:link>
+
+        <rss:description tal:condition="context/Description"
+          tal:content="context/Description">
+        </rss:description>
+        <rss:description tal:condition="not:context/Description"
+          tal:content="string:${context/Title} RSS 1.0 feed.">
+        </rss:description>
+
+        <rss:image rdf:resource=""
+               tal:attributes="rdf:resource string:${here/portal_url}/${here/base_properties/logoName}"/>
+
+        <sy:updatePeriod tal:content="here/portal_syndication/getUpdatePeriod"></sy:updatePeriod>
+        <sy:updateFrequency tal:content="here/portal_syndication/getUpdateFrequency"></sy:updateFrequency>
+        <sy:updateBase tal:condition="python: here.portal_syndication.getHTML4UpdateBase(here) != 'Syndication is not Allowed'"
+                       tal:content="python: here.portal_syndication.getHTML4UpdateBase(here)"></sy:updateBase>
+
+        <rss:items>
+            <rdf:Seq>
+                <tal:define define="max_items here/portal_syndication/getMaxItems">
+                <tal:repeat repeat="res results">
+                <rdf:li rdf:resource="" 
+                        tal:define="item python:res.getObject()"
+                        tal:attributes="rdf:resource item/absolute_url" />
+                </tal:repeat>
+                </tal:define>
+            </rdf:Seq>
+        </rss:items>
+    </rss:channel>
+
+    <rss:image tal:attributes="rdf:about string:${here/portal_url}/${here/base_properties/logoName}">
+        <rss:title tal:content="string:$portal_title - $here_title">Title of page</rss:title>
+        <rss:link tal:content="here/absolute_url"></rss:link>
+        <rss:url tal:content="string:${here/portal_url}/${here/base_properties/logoName}"></rss:url>
+    </rss:image>
+
+    <tal:define define="max_items here/portal_syndication/getMaxItems">
+    <tal:repeat repeat="res results">
+    <tal:define define="item python:res.getObject()">
+    <rss:item tal:attributes="rdf:about item/Identifier">
+        <rss:title tal:content="item/Title"></rss:title>
+        <rss:link tal:content="item/Identifier"></rss:link>       
+        <rss:description tal:condition="item/Description"
+                     tal:content="item/Description">Description</rss:description>
+        <content:encoded tal:define="content item/getText"
+                         tal:condition="item/getText"
+                         tal:content="structure string:&lt;![CDATA[$content]]&gt;"></content:encoded>        
+        <dc:date tal:content="python: DateTime(item.Date()).strftime('%Y-%m-%dT%H:%M+00:00')"></dc:date>
+        <dc:modified tal:content="item/ModificationDate"></dc:modified>
+        <dc:publisher tal:condition="python: item.Publisher() != 'No publisher'"
+                      tal:content="item/Publisher"></dc:publisher>
+        <dc:creator tal:content="item/Creator"></dc:creator>
+        <dc:rights tal:condition="item/Rights"
+                   tal:content="item/Rights"></dc:rights>
+        <tal:repeat tal:condition="item/Subject"
+                    tal:repeat="subj item/Subject">
+        <dc:subject tal:content="subj"></dc:subject>
+        </tal:repeat>
+    </rss:item>
+    </tal:define>
+    </tal:repeat>
+    </tal:define>
+<tal:block replace="structure string:</rdf:RDF>"></tal:block>
+</tal:block>

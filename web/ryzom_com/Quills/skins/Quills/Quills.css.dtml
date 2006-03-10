@@ -1,0 +1,207 @@
+/*
+** Stylesheet for Quills
+*/
+
+/* <dtml-with base_properties> */
+
+div.topics-topics {
+    margin: 0.5em;
+}
+
+div.topics-topics img {
+    margin: 0.5em;
+}
+
+div.weblog-entry-excerpt {
+  font-weight: bold;
+  margin: 1ex;
+}
+
+div.weblog-entry-excerpt {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+div.weblog-excerpt {
+  margin: 1ex;
+  font-weight: bold;
+}
+
+div.weblog-body {
+    margin: 1em;
+}
+
+div.weblog-about {
+    color: &dtml-discreetColor;;
+    margin: 1em;
+}
+
+div.entry-trackback {
+  font-size: smaller;
+}
+
+ul.weblog-footer {
+    list-style: none;
+    clear: both;
+}
+
+ul.weblog-footer li {
+    display: inline;
+}
+
+ul.weblog-footer a {
+    background-color: transparent;
+    border: 1px solid &dtml-backgroundColor;;
+    color: &dtml-discreetColor;;
+    height: auto;
+    padding: 0.2em;
+    margin-right: 0.2em;
+    text-decoration: none;
+    text-transform: &dtml-textTransform;;
+}
+
+ul.weblog-footer a:hover {
+    background-color: &dtml-globalBackgroundColor;;
+    color: &dtml-globalFontColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+
+.weblog-entry {
+    margin-bottom: 1em;
+    padding: 3px;
+}
+
+/* Main display */
+.weblog-photo {
+    text-align: center;
+    margin: 1em;
+}
+
+.weblog-photo-full .weblog-photo,
+.weblog-photo-brief .weblog-photo {
+    text-align: left;
+    margin: 1em;
+    float: left;
+}
+
+.weblog-photo-full .weblog-photo img,
+.weblog-photo-brief .weblog-photo img {
+    text-align: left;
+}
+.weblog-photo img {
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+    padding: 2px;
+}
+
+.weblog-entry h2.weblog-heading {
+    font-weight: normal;
+    border: none;
+}
+
+# FIXME: This is ugly
+.draft h2.weblog-heading {
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+
+.weblog-entry .weblog-topics {
+    font-size: &dtml-fontSmallSize;;
+    text-transform: &dtml-textTransform;;
+    color: &dtml-discreetColor;;
+}
+.weblog-entry .weblog-topics a {
+    margin-right: 0.5em;
+    font-size: &dtml-fontSmallSize;;
+    color: &dtml-discreetColor;;
+}
+
+.weblog-topic-images {
+  float:right;
+  margin: 6px;
+  text-align:center;
+}
+
+.weblog-summary {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.weblog-day {
+    margin: 4px;
+}
+
+.weblog-day-title {
+    border-bottom: &dtml-borderWidth; &dtml-globalBorderColor; &dtml-borderStyle;;
+    padding: 3px;
+}
+
+.caption {
+  font-size: 8px !important;
+  color:&dtml-globalBorderColor;;
+  border-top: 1px solid &dtml-globalBorderColor;;
+  margin:0;
+  padding:0;
+  margin-top:3px;
+}
+
+#portlet-creativecommons {
+   text-align: center;
+}
+#portlet-weblogarchives .portletBody,
+#portlet-weblogtopics .portletBody {
+   padding:   20px;
+}
+
+#portlet-weblogarchives a,
+#portlet-weblogtopics a {
+    margin: 0 0 0.2em 0;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-backgroundColor;;
+    display: block;
+    background-repeat: no-repeat;
+    background-position: 0 1px;
+    padding: 0.3em 0.5em;
+    text-decoration: none;
+}
+
+#portlet-weblogarchives a:hover,
+#portlet-weblogtopics a:hover {
+    background-color: &dtml-globalBackgroundColor;;
+    color: &dtml-globalFontColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+
+#portlet-quills hr {
+    height: 1px;
+}
+
+#portlet-recentphotos .portletBody {
+}
+
+#portlet-recentphotos div {
+    text-align: center;
+}
+#portlet-recentphotos div img {
+    padding: 1px;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+#portlet-recentphotos .photo-title {
+    margin-bottom: 4px;
+}
+
+#weblogtopics .row {
+  overflow: auto;
+  margin-bottom: 1em;
+}
+
+#weblogtopics .icon {
+  float: left;
+  margin-right: 1em;
+}
+
+#weblogtopics h3 {
+  font-size: small;
+  margin: 0;
+  padding: 0;
+}
+
+/* </dtml-with> */
+/* vim: set ft=css: */

@@ -1,0 +1,146 @@
+/* <dtml-with base_properties> */
+
+feed {
+  font: &dtml-fontBaseSize; <dtml-var fontFamily>;
+  color: &dtml-fontColor;;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  margin-bottom: 2em;
+  /* Problem with this is that the logo has no margin */
+  padding-top: <dtml-var "_[logoName].height">px;
+  height /**/: <dtml-var "_[logoName].height">px;
+  background: url(&dtml-portal_url;/&dtml-logoName;) top left no-repeat &dtml-backgroundColor;;
+}
+
+tagline {
+  font-weight: bold;
+  display: block;
+  margin: 1em;
+  line-height: 1.5em;
+}
+
+info {
+    display: block;
+}
+
+info div {
+  background: &dtml-notifyBackgroundColor; url(http://www.atomenabled.org/feedvalidator/images/valid-atom.png) 5px 5px no-repeat;
+  border: &dtml-borderWidth; &dtml-borderStyle; &dtml-notifyBorderColor;;
+  color: &dtml-fontColor;;
+  font-size: &dtml-fontSmallSize;;
+  font-weight: bold;
+  margin: 1em;
+  vertical-align: middle;
+  position: relative;
+  min-height: 41px;
+  display: block;
+  height: 41px;
+  overflow: visible;
+}
+
+info p {
+    margin-left: 100px;
+    display: block;
+}
+
+info img {
+    /* We use css to position this nicely */
+    display: none;
+}
+
+title {
+  color: &dtml-fontColor;;
+  background-color: transparent;
+  font-family: <dtml-var headingFontFamily>;
+  font-size: &dtml-headingFontBaseSize;;
+  font-weight: normal;
+  margin: 1em;
+  border-bottom: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+  font-size: 160%;
+  padding-right: 4em;
+  padding-top: 0.5em;
+  display: block;
+}
+
+modified {
+  color: &dtml-discreetColor;;
+  font-weight: normal;
+  margin-left: 1em;
+}
+
+id {
+  color: &dtml-discreetColor;;
+  font-size: &dtml-fontSmallSize;;
+  font-weight: normal;
+  margin-left: 1em;
+  display: block;
+}
+
+generator {
+  margin-left: 1em;
+}
+
+generator:before {
+  content: "generator: ";
+}
+
+entry {
+  display: block;
+  margin: 1em;
+  padding: 1em;
+  background: &dtml-globalBackgroundColor;;
+  border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+}
+
+entry title {
+  color: &dtml-fontColor;;
+  background-color: transparent;
+  font-family: <dtml-var headingFontFamily>;
+  font-weight: normal;
+  margin: 0;
+  padding-top: 0.5em;
+  font-size: 120%;
+  border-bottom: none;
+  font-weight: bold;
+}
+
+entry id {
+  color: &dtml-discreetColor;;
+  font-size: &dtml-fontSmallSize;;
+  font-weight: normal;
+  display: block;
+}
+
+content {
+  display: block;
+  margin: 0.5em 0em 1em 0em;
+  line-height: 1.5em;
+}
+
+author {
+  display: block;
+}
+
+entry issued,
+entry modified {
+  color: &dtml-discreetColor;;
+  font-size: &dtml-fontSmallSize;;
+  font-weight: normal;
+}
+
+/* No way to translate these.. */
+entry issued:before {
+  content: "issued: ";
+}
+
+entry issued:after {
+  content: " / ";
+}
+
+entry modified:before {
+  content: "modified: ";
+}
+
+/* </dtml-with> */
+/* vim: set ft=css: */

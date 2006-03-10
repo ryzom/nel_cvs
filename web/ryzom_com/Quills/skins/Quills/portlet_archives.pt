@@ -1,0 +1,43 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="quills">
+
+  <body>
+
+    <div metal:define-macro="portlet"
+      tal:omit-tag=""
+      tal:condition="here/isWeblogContent"> 
+       <div class="portlet" id="portlet-weblogarchives">
+         <h5 i18n:translate="heading_archives">
+           Archives
+         </h5>
+         <div class="portletBody" tal:define="parent python:here.quills_tool.getParentWeblog(here);" >
+           <tal:block define="archive python:parent.archive">
+
+             <tal:block
+               define="years python:archive.getFolderListingFolderContents(suppressHiddenFiles=1);" >
+               <ul tal:repeat="year years">
+                 <li>
+                   <strong tal:content="year/Title" ></strong><br />
+                     <ul tal:define="months python:year.getFolderListingFolderContents(suppressHiddenFiles=1);" >
+                       <li tal:repeat="month months">
+                         <a href=""
+								           tal:attributes="href month/absolute_url">
+                           <span tal:content="month/Title" />
+                           (<b tal:content="python:len(month.getLazyEntries())"/>)
+                         </a>
+                       </li>
+                     </ul>
+                   </li>
+                 </ul>
+
+               </tal:block>
+
+            </tal:block>
+         </div>
+       </div>
+    </div>
+
+  </body>
+
+</html>

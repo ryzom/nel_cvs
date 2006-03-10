@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.234.6.2 2006/01/11 15:02:10 boucher Exp $
+ * $Id: driver_opengl.cpp,v 1.234.6.3 2006/03/10 14:21:40 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1429,40 +1429,49 @@ bool CDriverGL::setMode(const GfxMode& mode)
 	}
 	else
 	{
-		_WindowWidth  = mode.Width;
-		_WindowHeight = mode.Height;
-		_Depth= mode.Depth;
-
-		DEVMODE		devMode;
+		// get old mode.
+		DEVMODE		oldDevMode;
 		if (!_FullScreen)
 		{
-			_OldScreenMode.dmSize= sizeof(DEVMODE);
-			_OldScreenMode.dmDriverExtra= 0;
-			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
-			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
+			oldDevMode.dmSize= sizeof(DEVMODE);
+			oldDevMode.dmDriverExtra= 0;
+			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &oldDevMode);
+			oldDevMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
 		}
 
-		devMode.dmSize= sizeof(DEVMODE);
-		devMode.dmDriverExtra= 0;
-		devMode.dmFields= DM_PELSWIDTH | DM_PELSHEIGHT;
-		devMode.dmPelsWidth= _WindowWidth;
-		devMode.dmPelsHeight= _WindowHeight;
+		// setup new mode
+		DEVMODE		newDevMode;
+		newDevMode.dmSize= sizeof(DEVMODE);
+		newDevMode.dmDriverExtra= 0;
+		newDevMode.dmFields= DM_PELSWIDTH | DM_PELSHEIGHT;
+		newDevMode.dmPelsWidth= mode.Width;
+		newDevMode.dmPelsHeight= mode.Height;
 
 		if(mode.Depth > 0)
 		{
-			devMode.dmBitsPerPel= mode.Depth;
-			devMode.dmFields |= DM_BITSPERPEL;
+			newDevMode.dmBitsPerPel= mode.Depth;
+			newDevMode.dmFields |= DM_BITSPERPEL;
 		}
 
 		if(mode.Frequency > 0)
 		{
-			devMode.dmDisplayFrequency= mode.Frequency;
-			devMode.dmFields |= DM_DISPLAYFREQUENCY;
+			newDevMode.dmDisplayFrequency= mode.Frequency;
+			newDevMode.dmFields |= DM_DISPLAYFREQUENCY;
 		}
 
-		if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+		// try to really change the display mode
+		if (ChangeDisplaySettings(&newDevMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
 			return false;
 		
+		// mode ok => copy changes
+		_WindowWidth  = mode.Width;
+		_WindowHeight = mode.Height;
+		_Depth= mode.Depth;
+		// bkup user mode
+		if (!_FullScreen)
+			_OldScreenMode= oldDevMode;
+		
+		// if old mode was not fullscreen
 		if (!_FullScreen)
 		{
 			// Under the XP theme desktop, this function call the winproc WM_SIZE and change _WindowWidth and _WindowHeight

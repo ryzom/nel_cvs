@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.34.4.2 2006/01/11 15:02:10 boucher Exp $
+ * $Id: driver_direct3d.cpp,v 1.34.4.3 2006/03/10 14:20:49 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2152,6 +2152,37 @@ bool CDriverD3D::supportMADOperator() const
 bool CDriverD3D::setMode (const GfxMode& mode)
 {
 	H_AUTO_D3D(CDriverD3D_setMode);
+
+	// if fullscreen
+	if(!mode.Windowed)
+	{
+		// Must check if mode exist, else crash at reset() time
+		std::vector<GfxMode>	modes;
+		if(getModes(modes))
+		{
+			bool	found= false;
+			for(uint i=0;i<modes.size();i++)
+			{
+				if( modes[i].Windowed==mode.Windowed &&
+					modes[i].Width==mode.Width &&
+					modes[i].Height==mode.Height &&
+					modes[i].Depth==mode.Depth &&
+					modes[i].Frequency==mode.Frequency )
+				{
+					found= true;
+					break;
+				}
+			}
+			
+			// found?
+			if(!found)
+				return false;
+		}
+		else
+			return false;
+	}
+
+	// set the mode
     if( mode.Windowed )
     {
         // Set windowed-mode style

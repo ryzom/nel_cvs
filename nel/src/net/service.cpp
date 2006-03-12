@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.8 2006/03/10 19:40:32 miller Exp $
+ * $Id: service.cpp,v 1.238.4.9 2006/03/12 19:51:19 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -196,9 +196,15 @@ static void sigHandler(int Sig)
 				nlinfo ("SERVICE: Signal %s (%d) received", SignalName[i], Sig);
 				switch (Sig)
 				{
+				case SIGINT  :
+				  if (IService::getInstance()->haveLongArg("nobreak"))
+				    {
+				      // ignore ctrl-c
+				      nlinfo("Ignoring ctrl-c");
+				      return;
+				    }
 				case SIGABRT :
 				case SIGILL  :
-				case SIGINT  :
 				case SIGSEGV :
 				case SIGTERM :
 				// you should not call a function and system function like printf in a SigHandle because
@@ -239,6 +245,10 @@ static void initSignal()
 		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
 	}
 */
+	if (IService::getInstance()->haveLongArg("nobreak"))
+	  {
+	    signal(Signal[3], sigHandler);
+	  }
 #endif
 }
 
@@ -1326,7 +1336,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 
 			// stop the loop if the exit signal asked
-			if (ExitSignalAsked > 0)
+			if (ExitSignalAsked != 0)
 			{
 				if ( _RequestClosureClearanceCallback )
 				{

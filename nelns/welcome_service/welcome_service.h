@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.h,v 1.1.4.5 2006/03/10 09:39:49 boucher Exp $
+ * $Id: welcome_service.h,v 1.1.4.6 2006/03/13 17:45:17 boucher Exp $
  *
  */
 
@@ -43,7 +43,7 @@ namespace WS
 {
 	// welcome service module
 	class CWelcomeServiceMod : 
-	public NLNET::CEmptyModuleCommBehav<NLNET::CEmptyModuleServiceBehav<NLNET::CEmptySocketBehav<NLNET::CModuleBase> > >,
+		public NLNET::CEmptyModuleCommBehav<NLNET::CEmptyModuleServiceBehav<NLNET::CEmptySocketBehav<NLNET::CModuleBase> > >,
 		public WS::CWelcomeServiceSkel
 	{
 
@@ -94,8 +94,9 @@ namespace WS
 
 	public:
 		CWelcomeServiceMod()
-			:	WS::CWelcomeServiceSkel(this)
-		{}
+		{
+			CWelcomeServiceSkel::init(this);
+		}
 
 		// public API
 		static CWelcomeServiceMod *getInstance()

@@ -13,7 +13,7 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	
 
-	const CWelcomeServiceSkel::TInterceptor::TMessageHandlerMap &CWelcomeServiceSkel::TInterceptor::getMessageHandlers() const
+	const CWelcomeServiceSkel::TMessageHandlerMap &CWelcomeServiceSkel::getMessageHandlers() const
 	{
 		static TMessageHandlerMap handlers;
 		static bool init = false;
@@ -22,11 +22,11 @@ namespace WS
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
 			
-			res = handlers.insert(std::make_pair(std::string("WU"), &TInterceptor::welcomeUser_skel));
+			res = handlers.insert(std::make_pair(std::string("WU"), &CWelcomeServiceSkel::welcomeUser_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
-			res = handlers.insert(std::make_pair(std::string("DU"), &TInterceptor::disconnectUser_skel));
+			res = handlers.insert(std::make_pair(std::string("DU"), &CWelcomeServiceSkel::disconnectUser_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
@@ -35,7 +35,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceSkel::TInterceptor::onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -53,7 +53,7 @@ namespace WS
 	}
 
 	
-	void CWelcomeServiceSkel::TInterceptor::welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::welcomeUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		uint32	charId;
 			nlRead(__message, serial, charId);
@@ -69,14 +69,14 @@ namespace WS
 			nlRead(__message, serial, mode);
 		uint32	instanceId;
 			nlRead(__message, serial, instanceId);
-		Skeleton->welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
+		welcomeUser(sender, charId, userName, cookie, priviledge, exPriviledge, mode, instanceId);
 	}
 
-	void CWelcomeServiceSkel::TInterceptor::disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceSkel::disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		uint32	userId;
 			nlRead(__message, serial, userId);
-		Skeleton->disconnectUser(sender, userId);
+		disconnectUser(sender, userId);
 	}
 		// ask the welcome service to welcome a character
 	void CWelcomeServiceProxy::welcomeUser(NLNET::IModule *sender, uint32 charId, const std::string &userName, const NLNET::CLoginCookie &cookie, const std::string &priviledge, const std::string &exPriviledge, WS::TUserRole mode, uint32 instanceId)
@@ -146,7 +146,7 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	
 
-	const CWelcomeServiceClientSkel::TInterceptor::TMessageHandlerMap &CWelcomeServiceClientSkel::TInterceptor::getMessageHandlers() const
+	const CWelcomeServiceClientSkel::TMessageHandlerMap &CWelcomeServiceClientSkel::getMessageHandlers() const
 	{
 		static TMessageHandlerMap handlers;
 		static bool init = false;
@@ -155,15 +155,15 @@ namespace WS
 		{
 			std::pair < TMessageHandlerMap::iterator, bool > res;
 			
-			res = handlers.insert(std::make_pair(std::string("RWS"), &TInterceptor::registerWS_skel));
+			res = handlers.insert(std::make_pair(std::string("RWS"), &CWelcomeServiceClientSkel::registerWS_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
-			res = handlers.insert(std::make_pair(std::string("WUR"), &TInterceptor::welcomeUserResult_skel));
+			res = handlers.insert(std::make_pair(std::string("WUR"), &CWelcomeServiceClientSkel::welcomeUserResult_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
-			res = handlers.insert(std::make_pair(std::string("UCP"), &TInterceptor::updateConnectedPlayerCount_skel));
+			res = handlers.insert(std::make_pair(std::string("UCP"), &CWelcomeServiceClientSkel::updateConnectedPlayerCount_skel));
 			// if this assert, you have a doubly message name in your interface definition !
 			nlassert(res.second);
 			
@@ -172,7 +172,7 @@ namespace WS
 
 		return handlers;			
 	}
-	bool CWelcomeServiceClientSkel::TInterceptor::onProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	bool CWelcomeServiceClientSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
 	{
 		const TMessageHandlerMap &mh = getMessageHandlers();
 
@@ -190,16 +190,16 @@ namespace WS
 	}
 
 	
-	void CWelcomeServiceClientSkel::TInterceptor::registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceClientSkel::registerWS_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		uint32	shardId;
 			nlRead(__message, serial, shardId);
 		uint32	fixedSessionId;
 			nlRead(__message, serial, fixedSessionId);
-		Skeleton->registerWS(sender, shardId, fixedSessionId);
+		registerWS(sender, shardId, fixedSessionId);
 	}
 
-	void CWelcomeServiceClientSkel::TInterceptor::welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceClientSkel::welcomeUserResult_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		uint32	userId;
 			nlRead(__message, serial, userId);
@@ -209,16 +209,16 @@ namespace WS
 			nlRead(__message, serial, shardAddr);
 		std::string	errorMsg;
 			nlRead(__message, serial, errorMsg);
-		Skeleton->welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
+		welcomeUserResult(sender, userId, ok, shardAddr, errorMsg);
 	}
 
-	void CWelcomeServiceClientSkel::TInterceptor::updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	void CWelcomeServiceClientSkel::updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
 	{
 		uint32	nbOnlinePlayers;
 			nlRead(__message, serial, nbOnlinePlayers);
 		uint32	nbPendingPlayers;
 			nlRead(__message, serial, nbPendingPlayers);
-		Skeleton->updateConnectedPlayerCount(sender, nbOnlinePlayers, nbPendingPlayers);
+		updateConnectedPlayerCount(sender, nbOnlinePlayers, nbPendingPlayers);
 	}
 		// Register the welcome service in the ring session manager
 		// The provided sessionId will be non-zero only for a shard with a fixed sessionId

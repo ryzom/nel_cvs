@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.5 2006/03/09 18:20:09 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.6 2006/03/13 17:43:24 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,10 +71,10 @@ namespace NLNET
 	{
 	}
 
-	IModuleInterceptable::IModuleInterceptable(IInterceptorRegistrar *registrar)
-	{
-		registerInterceptor(registrar);
-	}
+//	IModuleInterceptable::IModuleInterceptable(IInterceptorRegistrar *registrar)
+//	{
+//		registerInterceptor(registrar);
+//	}
 	IModuleInterceptable::~IModuleInterceptable()
 	{
 		if (_Registrar != NULL)

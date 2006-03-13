@@ -1,7 +1,7 @@
 /** \file module_gateway_transport.h
  * module transport over layer 3
  *
- * $Id: module_gateway_transport.cpp,v 1.5.4.5 2006/03/09 18:20:09 boucher Exp $
+ * $Id: module_gateway_transport.cpp,v 1.5.4.6 2006/03/13 17:43:24 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,7 +114,7 @@ namespace NLNET
 		{
 			// update the callback server
 			if (_CallbackServer.get() != NULL)
-				_CallbackServer->update();
+				_CallbackServer->update2(5, 0);
 
 			uint32 now = CTime::getSecondsSince1970();
 			// check each connected client for keep alive
@@ -133,7 +133,11 @@ namespace NLNET
 					// update the last event time
 					route->LastCommTime = CTime::getSecondsSince1970();
 				}
+
+				// force a flush of the connection
+				_CallbackServer->flush(route->SockId);
 			}
+
 
 		}
 
@@ -530,7 +534,7 @@ namespace NLNET
 				}
 				else
 				{
-					route->CallbackClient.update();
+					route->CallbackClient.update2(5, 0);
 
 					// check dead connection. For client, we use a little longer timer to
 					// avoid cross checking of client and server. If server is alive, then we receive
@@ -545,6 +549,9 @@ namespace NLNET
 
 						route->sendMessage(keepAlive);
 					}
+					
+					// force a flush of the connection
+					route->CallbackClient.flush();
 				}
 			}
 		}

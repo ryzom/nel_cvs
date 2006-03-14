@@ -72,20 +72,20 @@ legend {
 }
 
 .OPEN {
-	background-image: url('ryzom_images/server_up.png');
+	background-image: url('server_up.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
 
 .CLOSED {
-	background-image: url('ryzom_images/server_down.png');
+	background-image: url('server_down.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 
 }
 
 .LOCKED {
-	background-image: url('ryzom_images/server_locked.png');
+	background-image: url('server_locked.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
@@ -131,12 +131,7 @@ width:149px;
    padding: 0;
 }
 
-/*
 #zoneimages {background-color : #5f5e57;}
-*/
-#zoneimages {background-color : #5f5e57;}
-
-
 
 /*fin de la css rightbar*/
 
@@ -179,17 +174,16 @@ width:149px;
    margin-left: 0;
    margin-right: 0;
    padding:0;
-   background-image: url('ryzom_images/nav_bg.png');
+   background-image: url('nav_bg.png');
    background-repeat : repeat-y;
-/*   text-align:left; */
-  text-align:center;
-  border:0;
+   text-align:center;
+   border:0;
 }
 
 #portal-column-one {
    width:175px;
    vertical-align: top;
-   background-image: url('ryzom_images/side_bg.png');
+   background-image: url('side_bg.png');
    background-repeat : no-repeat;
    background-position : top left;
    border: 0;
@@ -229,8 +223,6 @@ margin:0; padding:0; width:150px; margin-left:25px;
  }
 
 #portal-column-content {
-/*width: 650px;*/
-/*padding: 0em 3px 0em 0px;*/
 width:none;
 max-width:none;
 margin: 0;
@@ -241,7 +233,7 @@ border: 0;
 #portal-logo {
         padding: 0;
 	margin: 0;
-	background: transparent url('ryzom_images/logo.jpg') 0 0 no-repeat;
+	background: transparent url('logo.jpg') 0 0 no-repeat;
 	width:175px;
 	height :130px;
 }
@@ -249,7 +241,7 @@ border: 0;
 #portal-top {
         padding: 0;
 	margin: 0;
-	background: black url('ryzom_images/header.jpg') 0 0 no-repeat;
+	background: black url('header.jpg') 0 0 no-repeat;
 	width:1105px;
 	height:130px;
         background-color : #181818;
@@ -285,12 +277,11 @@ background-color: #181818; !important;
 width: 700px;
 margin:0;
 padding:0;
-/*width: 730px;*/
 }
 
 BODY {
 	background-color: black;
-	background-image: url('ryzom_images/bg.jpg');
+	background-image: url('bg.jpg');
 	background-position: top center;
 	background-repeat: no-repeat;
 	color: #a7a599;
@@ -306,7 +297,7 @@ H1 {
 	font-size : 120%;
 	color : #9ae033;
 	border-bottom : solid #9ae033 1px;
-	background-image: url('ryzom_images/h1.png');
+	background-image: url('h1.png');
 	background-repeat: no-repeat;
 	background-position : center left;
 	padding-left : 20px;
@@ -394,7 +385,7 @@ margin:0;
 
 .actionMenu.activated .actionMenuHeader a,
 .actionMenu.deactivated .actionMenuHeader a {
-    background-image: url(http://192.168.1.239:8080/ryzom/arrowDownAlternative.gif);
+    background-image: url(arrowDownAlternative.gif);
     background-repeat: no-repeat;
     background-position: 100% 60%;
     padding-right: 15px;
@@ -423,7 +414,6 @@ margin:0;
 
 .documentEditable {
 text-align:left;
-/*    padding: 0em 3px 5px 3px;  */
 }
 
 

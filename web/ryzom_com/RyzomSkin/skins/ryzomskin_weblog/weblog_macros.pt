@@ -54,35 +54,28 @@
       -->
     </tal:comment>
 
-            <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
+    <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
             tal:define="weblog python:here;                        
 		        author python: entry.Creator();
                         isOfficial python: here.isOfficial(author);">
      
       
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
-      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i>
-      </p>       
-            <h3 class="weblog-day-title" tal:content="python:localized_time(day,long_format=1,context=here)" />
+      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
+      <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,context=here)" />
         <span class="weblog-heading">
-            <metal:macro use-macro="here/weblog_macros/macros/topic-text"/> :
-          <!--  <span class="caption" i18n:translate="topics">
-	     <div tal:replace="topicObject/title_or_id">Topics</div>
-	    </span>
-          -->
+          <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
           <a href=""
             tal:attributes="href entry/absolute_url"
             tal:content="entry/title_or_id"></a>
         </span>
 
-<!-- YASSINE
-TRYING TO INSERT THE AUTHOR
--->
+<!-- YASSINE TRYING TO INSERT THE AUTHOR -->
       
       <span i18n:translate="posted_by">posted by </span>
       <a tal:attributes="href python:mtool.getHomeUrl(author)" tal:content="author"></a>          
 
-      <div >
+      <div>
         <tal:if condition="weblog/getShowTopicImagesInWeblogView">
           <metal:macro use-macro="here/weblog_macros/macros/topic-images"/>
         </tal:if>
@@ -92,21 +85,15 @@ TRYING TO INSERT THE AUTHOR
       
         <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing">
           <tal:if condition="excerpt">
-            <div class="weblog-entry-only-excerpt"
-              tal:content="entry/Description">
-            </div>
+            <div class="weblog-entry-only-excerpt" tal:content="entry/Description"></div>
           </tal:if>
 
           <tal:if condition="not:excerpt">
-            <div class="weblog-entry-excerpt" tal:content="entry/Description">
-            </div>
-            <div class="weblog-summary"
-              tal:content="structure entry/getText"></div>
+            <div class="weblog-entry-excerpt" tal:content="entry/Description"></div>
+            <div class="weblog-summary" tal:content="structure entry/getText"></div>
           </tal:if>
         </tal:define>
-
         <metal:macro use-macro="here/weblog_macros/macros/weblog-footer"/>
-
       </div>
      </div>
     </metal:block>
@@ -119,22 +106,41 @@ TRYING TO INSERT THE AUTHOR
         -->
       </tal:comment>
 
-      <div class="weblog-entry brief"
-        tal:define="discussion nocall:here/portal_discussion">
-        <h2 class="weblog-heading"><a href=""
+      <div class="weblog-entry brief" tal:attributes="class python:test(isOfficial,'weblog-entry brief','unofficial-box')" 
+            tal:define="weblog python:here;                        
+		        author python: entry.Creator();
+                        isOfficial python: here.isOfficial(author);
+                        discussion nocall:here/portal_discussion;">
+
+      <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
+      <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
+     
+      <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" ></h3>
+        <span class="weblog-heading">
+          <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
+          <a href=""
             tal:attributes="href entry/getAbsoluteArchiveUrl"
-            tal:content="entry/title_or_id"></a></h2>
-        <div class="weblog-topics">
-        <span i18n:translate="filed_under">Filed Under:</span>
-          <tal:loop repeat="topic python:entry.getEntryCategories()">
-            <a href="" 
-              tal:define="parent python:here.quills_tool.getParentWeblog(entry);topicObject python:parent.getTopicById(topic)"
-              tal:content="topicObject/title_or_id"
-              tal:attributes="href string:${here/absolute_url}/topics/${topic}"></a>
-          </tal:loop>
-        </div>
-        <div class="weblog-summary" tal:content="structure entry/getText">
-        </div>
+            tal:content="entry/title_or_id"></a>
+        </span>
+
+      <span i18n:translate="posted_by">posted by </span>
+      <a tal:attributes="href python:mtool.getHomeUrl(author)" tal:content="author"></a>
+        <tal:if condition="weblog/getShowTopicImagesInWeblogView">
+          <metal:macro use-macro="here/weblog_macros/macros/topic-images"/>
+        </tal:if>
+        <tal:if condition="not:weblog/getShowTopicImagesInWeblogView">
+          <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
+        </tal:if>
+        <tal:define define="excerpt weblog/onlyExcerptInWeblogView|nothing">
+          <tal:if condition="excerpt">
+            <div class="weblog-entry-only-excerpt" tal:content="entry/Description"></div>
+          </tal:if>
+
+          <tal:if condition="not:excerpt">
+            <div class="weblog-entry-excerpt" tal:content="entry/Description"></div>
+            <div class="weblog-summary" tal:content="structure entry/getText"></div>
+          </tal:if>
+        </tal:define>
         <metal:macro use-macro="here/weblog_macros/macros/weblog-footer"/>
       </div>
     </metal:block>
@@ -168,7 +174,7 @@ TRYING TO INSERT THE AUTHOR
             <tal:if condition="topicObject/topicImage | nothing">
 
               <a  href="" 
-                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+                tal:attributes="href string:${here/absolute_url}/${topicObject/getId}">
 
                 <img class="topic-image"
                   src="" alt="" title=""

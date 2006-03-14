@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.8 2006/03/13 17:43:24 boucher Exp $
+ * $Id: module.h,v 1.10.4.9 2006/03/14 09:44:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLNET
 	public:
 		IModuleInterceptable();
 //		IModuleInterceptable(IInterceptorRegistrar *registrar);
-		~IModuleInterceptable();
+		virtual ~IModuleInterceptable();
 
 		void registerInterceptor(IInterceptorRegistrar *registrar);
 

@@ -14,7 +14,7 @@
                                             sort_order='reverse')[:5]);">
 
 
-<img class="fakeBorder" src="ryzom_images/side_top.png" />
+<img class="fakeBorder" src="side_top.png" />
 <div class="hole" >
 <dl class="portlet" id="portlet-recent" >
   
@@ -72,7 +72,7 @@
 </tal:recentlist>
 
 <div class="imageHide">
-<img  class="fakeBorder" src="ryzom_images/side_up.png" />
+<img  class="fakeBorder" src="side_up.png" />
 </div>
 </div>
 </body>

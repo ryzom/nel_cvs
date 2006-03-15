@@ -13,7 +13,7 @@
                                                      sort_order='reverse',
                                                      review_state='published')[:5]);"
      tal:condition="python:test(template.getId()!='chronicles' and results, 1, 0)">
-<img  class="fakeBorder" src="ryzom_images/side_top.png"/>
+<img  class="fakeBorder" src="side_top.png"/>
 <div class="hole">
     <dl class="portlet" id="portlet-news">
         <dt class="portletHeader">
@@ -43,7 +43,7 @@
 	<a href="" tal:attributes="href string:createObject?type_name=WeblogEntry">
 	<img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip; </a></dd></dl>
 </div>
-<div class="imageHide"><img   class="fakeBorder" src="ryzom_images/side_up.png"/></div>
+<div class="imageHide"><img   class="fakeBorder" src="side_up.png"/></div>
 </div>
 </body>
 </html>

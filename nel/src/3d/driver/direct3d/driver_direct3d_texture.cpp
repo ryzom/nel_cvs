@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.20.4.1 2006/01/11 15:02:10 boucher Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.20.4.2 2006/03/15 14:21:28 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -876,6 +876,8 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 	sint	y0= rect.Y;
 	sint	x1= rect.X+rect.Width;
 	sint	y1= rect.Y+rect.Height;
+	sint    x1Copy = x1;
+	sint    y1Copy = y1;
 
 	if (d3dtext->SrcCompressed)
 	{
@@ -883,34 +885,8 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 		nlassert ((y0 & 0x3) == 0);
 		nlassert (((x1 & 0x3) == 0) || (x1<4));
 		nlassert (((y1 & 0x3) == 0) || (y1<4));
-		x1 = std::max(4, x1);
-		y1 = std::max(4, y1);
-
-		/*
-		x1= (x1 + 3) & ~3;
-		y1= (y1 + 3) & ~3;
-		*/
-/*
-		// Must be aligned on 4x4
-		nlassert ((x0 & 0x3) == 0);
-		nlassert ((y0 & 0x3) == 0);
-		nlassert (((x1 & 0x3) == 0) || (x1<4));
-		nlassert (((y1 & 0x3) == 0) || (y1<4));
-
-		/*
-		 * D3D NOTES :	- DXTC textures can't be created with size < 4 pixels. 
-		 *				- Locks on DXTC textures must not be 4x4 aligned if the mipmap surface width or height are < 4. It can happen only 
-		 * for mipmap levels > 0.
-		 *				- Locks on DXTC textures must be aligned in all other cases.
-		 */
-		/*
-		if (x1 & 0x3)
-			x1 = std::min ((x1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Width>>destMipmap)));
-		if (y1 & 0x3)
-			y1 = std::min ((y1 & ~0x3) + 4, std::max ((sint)1, (sint)(d3dtext->Height>>destMipmap)));
-		x1 = std::max(4, x1);
-		y1 = std::max(4, y1);
-		*/
+		x1Copy = std::max(4, x1);
+		y1Copy = std::max(4, y1);		
 	}
 
 	// Size of a line
@@ -919,7 +895,7 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 
 	// Block of line (for compressed textures)
 	uint lineStart = y0;
-	uint lineEnd = y1;
+	uint lineEnd = y1Copy;
 
 	// Pitch for compressed texture
 	if (d3dtext->SrcCompressed)
@@ -939,7 +915,9 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 		region.top = y0;
 		region.bottom = y1;
 
-		const sint dataToCopy = (((x1-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
+		
+
+		const sint dataToCopy = (((x1Copy-x0)*pixelSize)>>3)<<(d3dtext->SrcCompressed?2:0);
 		if (d3dtext->Texture2d->LockRect (destMipmap, &rect, &region, 0) == D3D_OK)
 		{
 			uint line;
@@ -956,7 +934,9 @@ bool CDriverD3D::uploadTextureInternal (ITexture& tex, CRect& rect, uint8 destMi
 			d3dtext->Texture2d->UnlockRect (destMipmap);
 		}
 		else
+		{			
 			return false;
+		}
 	}
 	else
 	{

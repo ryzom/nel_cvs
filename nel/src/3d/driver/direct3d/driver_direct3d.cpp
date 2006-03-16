@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.34.4.3 2006/03/10 14:20:49 berenguier Exp $
+ * $Id: driver_direct3d.cpp,v 1.34.4.4 2006/03/16 10:50:48 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2517,12 +2517,12 @@ bool CDriverD3D::fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFOR
 	// Choose a zbuffer format
 	D3DFORMAT zbufferFormats[]=
 	{
-		D3DFMT_D32,
-		D3DFMT_D24X8,
+		/*D3DFMT_D32,
+		D3DFMT_D24X8,*/
 		D3DFMT_D24S8,
 		D3DFMT_D24X4S4,
 		D3DFMT_D24FS8,
-		D3DFMT_D16,
+		//D3DFMT_D16,
 	};
 	const uint zbufferFormatCount = sizeof(zbufferFormats)/sizeof(D3DFORMAT);
 	uint i;
@@ -2875,7 +2875,7 @@ IOcclusionQuery *CDriverD3D::createOcclusionQuery()
 	nlassert(_OcclusionQuerySupported);
 	nlassert(_DeviceInterface);
 	IDirect3DQuery9 *query;
-	if (_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query) != D3D_OK) return false;	
+	if (_DeviceInterface->CreateQuery(D3DQUERYTYPE_OCCLUSION, &query) != D3D_OK) return NULL;	
 	COcclusionQueryD3D *oqd3d = new COcclusionQueryD3D;
 	oqd3d->Driver = this;
 	oqd3d->Query = query;

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.32.6.3 2006/01/18 18:58:17 vizerie Exp $
+ * $Id: polygon.cpp,v 1.32.6.4 2006/03/16 10:45:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1194,7 +1194,7 @@ bool CPolygon2D::isCCWOriented() const
 }
 
 // *******************************************************************************
-void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
+void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY) const
 {
 	// an 'alias' to the vertices
 	const TVec2fVect &V = Vertices;
@@ -1491,7 +1491,7 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 
 
 // *******************************************************************************
-void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
+void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY) const
 {
 	borders.clear();
 	// NB : this version is not much optimized, because of the min/max test
@@ -1779,7 +1779,7 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 }
 
 // *******************************************************************************
-void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY)
+void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY) const
 {
 	borders.clear();
 	if (Vertices.empty())

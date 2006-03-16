@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18.6.3 2006/01/18 18:58:17 vizerie Exp $
+ * $Id: polygon.h,v 1.18.6.4 2006/03/16 10:46:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,15 +171,15 @@ public:
 	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
 	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valid.
 	  */
-	void		computeBorders(TRasterVect &borders, sint &minimumY);
+	void		computeBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points.
 	   * Any pixel that is touched by the poly will be selected
 	   */
-	void		computeOuterBorders(TRasterVect &borders, sint &minimumY);
+	void		computeOuterBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points
 	  * In this version, only pixels that are entirely INSIDE the poly are kept
 	  */
-	void		computeInnerBorders(TRasterVect &borders, sint &minimumY);
+	void		computeInnerBorders(TRasterVect &borders, sint &minimumY) const;
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
 	bool        intersect(const CPolygon2D &other) const;
 

@@ -18,6 +18,11 @@ public:
 	{
 	}
 
+	std::string			buildModuleManifest() const
+	{
+		return string();
+	}
+
 	void				onServiceUp(const std::string &serviceName, uint16 serviceId)
 	{
 	}
@@ -46,8 +51,9 @@ public:
 	{
 	}
 
-	virtual void	onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	virtual bool	onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
+		return false;
 	}
 
 	virtual void	onModuleSecurityChange(IModuleProxy *moduleProxy)

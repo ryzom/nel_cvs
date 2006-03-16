@@ -1,7 +1,7 @@
 /** \file login_server.h
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.h,v 1.19.4.3 2006/02/14 17:09:55 cado Exp $
+ * $Id: login_server.h,v 1.19.4.4 2006/03/16 15:15:09 boucher Exp $
  * 
  */
 
@@ -95,6 +95,8 @@ public:
 
 	/// Set the actual listen address
 	static void setListenAddress(const std::string &la);
+
+	static uint32 getNbPendingUsers();
 
 private:
 

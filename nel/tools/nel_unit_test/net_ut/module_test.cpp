@@ -25,10 +25,35 @@ public:
 
 	set<TModuleProxyPtr>	ModuleType0;
 
+	uint32	ModuleUpCalled;
+	uint32	ModuleDownCalled;
+	uint32	ProcessMessageCalled;
+	uint32	SecurityUpdateCalled;
+
+
 	CModuleType0()
 		: PingCount(0),
 		ResponseReceived(0)
-	{}
+	{
+		ModuleUpCalled = 0;
+		ModuleDownCalled = 0;
+		ProcessMessageCalled = 0;
+		SecurityUpdateCalled = 0;
+	}
+
+	std::string					buildModuleManifest() const
+	{
+		return "CModuleType0";
+	}
+
+	bool initModule(const TParsedCommandLine &param)
+	{
+		bool ret = CModuleBase::initModule(param);
+		if (param.getParam("FAIL") != NULL)
+			return false;
+
+		return ret;
+	}
 
 	void				onServiceUp(const std::string &serviceName, uint16 serviceId)
 	{
@@ -49,6 +74,8 @@ public:
 
 	void				onModuleUp(IModuleProxy *moduleProxy)
 	{
+		ModuleUpCalled++;
+
 		if (moduleProxy->getModuleClassName() == getModuleClassName())
 			ModuleType0.insert(moduleProxy);
 	}
@@ -58,14 +85,21 @@ public:
 	 */
 	void				onModuleDown(IModuleProxy *moduleProxy)
 	{
+		ModuleDownCalled++;
+
 		if (moduleProxy->getModuleClassName() == getModuleClassName())
 			ModuleType0.erase(moduleProxy);
 	}
 
-	void				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
 	{
+		ProcessMessageCalled++;
+
 		if (message.getName() == "DEBUG_MOD_PING")
+		{
 			PingCount++;
+			return true;
+		}
 		else if (message.getName() == "HELLO")
 		{
 			CMessage ping("DEBUG_MOD_PING");
@@ -79,16 +113,22 @@ public:
 			}
 			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
 			senderModuleProxy->sendModuleMessage(this, CMessage(ping));
+			return true;
 		}
 		else if (message.getName() == "HELLO2")
 		{
 			// the response for the life, the universe and all other things...
 			throw 42;
+
+			return true;
 		}
+
+		return false;
 	}
 
 	void				onModuleSecurityChange(IModuleProxy *moduleProxy)
 	{
+		SecurityUpdateCalled++;
 	}
 
 	void				onModuleSocketEvent(IModuleSocket *moduleSocket, IModule::TModuleSocketEvent eventType)
@@ -371,6 +411,53 @@ public:
 NLMISC_REGISTER_OBJECT(CGatewaySecurity, CTestSecurity2, std::string, "TestSecurity2");
 
 
+// A module interceptor
+class CInterceptor : public IModuleInterceptable
+{
+public:
+	string	Name;
+	uint32	ModuleUpCalled;
+	uint32	ModuleDownCalled;
+	uint32	ProcessMessageCalled;
+	uint32	SecurityUpdateCalled;
+
+	CInterceptor(IInterceptorRegistrar *registrar, const string &name)
+		:	Name(name)
+	{
+		IModuleInterceptable::registerInterceptor(registrar),
+		ModuleUpCalled = 0;
+		ModuleDownCalled = 0;
+		ProcessMessageCalled = 0;
+		SecurityUpdateCalled = 0;
+	}
+
+	virtual std::string			buildModuleManifest() const
+	{
+		return Name;
+	}
+
+	virtual void				onModuleUp(IModuleProxy *moduleProxy)
+	{
+		ModuleUpCalled++;
+	}
+
+	virtual void				onModuleDown(IModuleProxy *moduleProxy)
+	{
+		ModuleDownCalled++;
+	}
+
+	virtual bool				onProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
+	{
+		ProcessMessageCalled++;
+		return false;
+	}
+
+	virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy)
+	{
+		SecurityUpdateCalled++;
+	}
+};
+
 // Test suite for Modules class
 class CModuleTS : public Test::Suite
 {
@@ -427,6 +514,7 @@ public:
 		TEST_ADD(CModuleTS::loadModuleLib);
 		TEST_ADD(CModuleTS::createModule);
 		TEST_ADD(CModuleTS::deleteModule);
+		TEST_ADD(CModuleTS::failedInit);
 		TEST_ADD(CModuleTS::unloadModuleLib);
 		TEST_ADD(CModuleTS::createLocalGateway);
 		TEST_ADD(CModuleTS::plugLocalGateway);
@@ -444,6 +532,95 @@ public:
 		TEST_ADD(CModuleTS::securityPlugin);
 		TEST_ADD(CModuleTS::synchronousMessaging);
 		TEST_ADD(CModuleTS::layer3Autoconnect);
+		TEST_ADD(CModuleTS::interceptorTest);
+	}
+
+	void interceptorTest()
+	{
+		// Check that the interceptor system.
+
+		// TODO : right now, there is no test of the security update call
+
+		IModuleManager &mm = IModuleManager::getInstance();
+		CCommandRegistry &cr = CCommandRegistry::getInstance();
+
+		// create the modules
+		IModule *gw = mm.createModule("StandardGateway", "gw", "");
+		IModule *mod = mm.createModule("ModuleType0", "mod", "");
+		IModuleGateway *gGw = dynamic_cast<IModuleGateway *>(gw);
+		CModuleType0 *mod0 = dynamic_cast<CModuleType0*>(mod);
+
+		TEST_ASSERT(gGw != NULL);
+		TEST_ASSERT(mod0 != NULL);
+
+		// create the interceptors and attach it to the mod0
+		CInterceptor *inter0 = new CInterceptor(mod, "Inter0");
+		CInterceptor *inter1 = new CInterceptor(mod, "Inter1");
+
+		// plug the modules
+		cr.execute("gw.plug gw", InfoLog());
+		cr.execute("mod.plug gw", InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// send a message to the module fro; the gateway
+		CMessage msg("foo");
+		IModuleProxy *modProx = retrieveModuleProxy(gGw, "mod");
+		TEST_ASSERT(modProx != NULL);
+		modProx->sendModuleMessage(gw, msg);
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// check the module manifest
+		TEST_ASSERT(modProx->getModuleManifest() == "CModuleType0 Inter0 Inter1");
+
+		// unplug the modules
+		cr.execute("gw.unplug gw", InfoLog());
+		cr.execute("mod.unplug gw", InfoLog());
+
+		// update the network
+		for (uint i=0; i<5; ++i)
+		{
+			mm.updateModules();
+			nlSleep(40);
+		}
+
+		// now check that all methods have been called in that
+		// module and in the two interceptors,
+		// also check the manifest string content.
+		TEST_ASSERT(mod0->ModuleUpCalled == 1);
+		TEST_ASSERT(mod0->ModuleDownCalled == 1);
+		TEST_ASSERT(mod0->ProcessMessageCalled == 1);
+//		TEST_ASSERT(mod0->SecurityUpdateCalled);
+		
+		TEST_ASSERT(inter0->ModuleUpCalled == 1);
+		TEST_ASSERT(inter0->ModuleDownCalled == 1);
+		TEST_ASSERT(inter0->ProcessMessageCalled == 1);
+//		TEST_ASSERT(inter0->SecurityUpdateCalled);
+		
+		TEST_ASSERT(inter1->ModuleUpCalled == 1);
+		TEST_ASSERT(inter1->ModuleDownCalled == 1);
+		TEST_ASSERT(inter1->ProcessMessageCalled == 1);
+//		TEST_ASSERT(inter1->SecurityUpdateCalled);
+
+
+		// delete the modules
+		mm.deleteModule(gw);
+		mm.deleteModule(mod);
+
+		// delete the interceptors
+		delete inter0;
+		delete inter1;
 	}
 	
 	void layer3Autoconnect()
@@ -2612,6 +2789,14 @@ public:
 
 		TModulePtr module2 = mm.createModule("ModuleType1", "TheModuleThatCantBeCreated", "the args");
 		TEST_ASSERT(module2 == NULL);
+	}
+
+	void failedInit()
+	{
+		IModuleManager &mm = IModuleManager::getInstance();
+
+		IModule *module = mm.createModule("ModuleType0", "FailingInit", "FAIL");
+		TEST_ASSERT(module == NULL);
 	}
 
 	void deleteModule()

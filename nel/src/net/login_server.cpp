@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.39.4.4 2006/02/14 17:09:54 cado Exp $
+ * $Id: login_server.cpp,v 1.39.4.5 2006/03/16 15:15:09 boucher Exp $
  *
  */
 
@@ -284,6 +284,11 @@ void CLoginServer::setListenAddress(const string &la)
 	}
 
 	nlinfo("LS: Listen Address that will be sent to the client is now '%s'", ListenAddr.c_str());
+}
+
+uint32 CLoginServer::getNbPendingUsers()
+{
+	return PendingUsers.size();
 }
 
 void cfcbListenAddress (CConfigFile::CVar &var)

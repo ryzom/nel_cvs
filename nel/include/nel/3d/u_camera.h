@@ -1,7 +1,7 @@
 /** \file u_camera.h
  * User interface for camera.
  *
- * $Id: u_camera.h,v 1.4 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_camera.h,v 1.4.16.1 2006/03/16 10:46:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,7 @@ public:
 	/// \name Misc
 	// @{
 	void		buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useWorldMatrix);
+	void		buildCameraPyramidCorners(std::vector<NLMISC::CVector>	&pyramidCorners, bool useWorldMatrix);
 	// @}
 
 	/// Proxy interface

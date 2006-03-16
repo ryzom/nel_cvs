@@ -1,7 +1,7 @@
 /** \file u_camera.cpp
  * User interface for camera.
  *
- * $Id: u_camera.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_camera.cpp,v 1.4.16.1 2006/03/16 10:43:58 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,14 @@ void UCamera::buildCameraPyramid(std::vector<NLMISC::CPlane>	&pyramid, bool useW
 	NL3D_MEM_CAMERA
 	CCamera	*object = getObjectPtr();
 	object->buildCameraPyramid(pyramid, useWorldMatrix);
+}
+
+// ***************************************************************************
+void UCamera::buildCameraPyramidCorners(std::vector<NLMISC::CVector>	&pyramidCorners, bool useWorldMatrix)
+{
+	NL3D_MEM_CAMERA
+	CCamera	*object = getObjectPtr();
+	object->buildCameraPyramidCorners(pyramidCorners, useWorldMatrix);
 }
 
 // ***************************************************************************

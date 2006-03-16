@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * TODO: File description
  *
- * $Id: camera.cpp,v 1.20 2005/02/22 10:19:09 besson Exp $
+ * $Id: camera.cpp,v 1.20.16.1 2006/03/16 10:47:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -299,6 +299,28 @@ void CCamera::buildCameraPyramid(std::vector<CPlane>	&pyramid, bool useWorldMatr
 		pyramid[i]= pyramid[i]*invCamMatrix;
 	}
 }
+
+// ***************************************************************************
+void CCamera::buildCameraPyramidCorners(std::vector<NLMISC::CVector>	&pyramidCorners, bool useWorldMatrix)
+{
+	pyramidCorners.resize(8);
+	pyramidCorners[0].set(_Frustum.Left,  _Frustum.Near, _Frustum.Bottom );
+	pyramidCorners[1].set(_Frustum.Left,  _Frustum.Near, _Frustum.Top    );
+	pyramidCorners[2].set(_Frustum.Right, _Frustum.Near, _Frustum.Bottom );
+	pyramidCorners[3].set(_Frustum.Right, _Frustum.Near, _Frustum.Top    );	
+	float f = _Frustum.Perspective ? (_Frustum.Far / _Frustum.Near) : 1.f;	
+	pyramidCorners[4].set(f * _Frustum.Left,  _Frustum.Far, f * _Frustum.Bottom);
+	pyramidCorners[5].set(f * _Frustum.Left,  _Frustum.Far, f * _Frustum.Top   );
+	pyramidCorners[6].set(f * _Frustum.Right, _Frustum.Far, f * _Frustum.Bottom);
+	pyramidCorners[7].set(f * _Frustum.Right, _Frustum.Far, f * _Frustum.Top   );
+	
+	const CMatrix &camMatrix = useWorldMatrix ? getWorldMatrix() : getMatrix();
+	for(uint k = 0; k < 8; ++k)
+	{
+		pyramidCorners[k] = camMatrix * pyramidCorners[k];
+	}
+}
+
 
 
 }

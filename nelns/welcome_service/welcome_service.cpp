@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.6 2006/02/13 18:41:09 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.7 2006/03/16 15:11:17 boucher Exp $
  *
  */
 
@@ -578,6 +578,13 @@ void	cbFESPatchAddress(CMessage &msgin, const std::string &serviceName, uint16 s
 // This function is called by FES to setup the right number of players (if FES was already present before WS launching)
 void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	// *********** WARNING *******************
+	// This version of the callback is deprecated, the system
+	// now use cbFESNbPlayers2 that report the pending user count
+	// as well as the number of connected players.
+	// It is kept for backward compatibility only.
+	// ***************************************
+
 	uint32	nbPlayers;
 	msgin.serial(nbPlayers);
 
@@ -599,7 +606,37 @@ void	cbFESNbPlayers(CMessage &msgin, const std::string &serviceName, uint16 sid)
 	}
 
 	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
+}
 
+
+// This function is called by FES to setup the right number of players (if FES was already present before WS launching)
+void	cbFESNbPlayers2(CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32	nbPlayers;
+	uint32	nbPendingPlayers;
+	msgin.serial(nbPlayers);
+	msgin.serial(nbPendingPlayers);
+
+	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
+	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
+	{
+		CFES &fes = *it;
+		if (fes.SId == sid)
+		{
+			nldebug("Frontend '%d' reported %d online users", sid, nbPlayers);
+			fes.NbUser = nbPlayers;
+			fes.NbPendingUsers = nbPendingPlayers;
+			if (nbPlayers != 0 && fes.State == PatchOnly)
+			{
+				nlwarning("Frontend %d is in state PatchOnly, yet reports to have online %d players, state AcceptClientOnly is forced (FS_ACCEPT message sent)");
+				(*it).setToAcceptClients();
+			}
+		}
+		totalNbOnlineUsers += fes.NbUser;
+		totalNbPendingUsers += fes.NbPendingUsers;
+	}
+
+	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 }
 
 /*
@@ -779,6 +816,7 @@ TUnifiedCallbackItem FESCallbackArray[] =
 	{ "RPC",				cbFESRemovedPendingCookie },
 	{ "FEPA",				cbFESPatchAddress },
 	{ "NBPLAYERS",			cbFESNbPlayers },
+	{ "NBPLAYERS2",			cbFESNbPlayers2 },
 
 	{ "SET_SHARD_OPEN",		cbSetShardOpen },
 	{ "RESTORE_SHARD_OPEN",	cbRestoreShardOpen },

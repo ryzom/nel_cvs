@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.14.16.1 2006/01/11 15:02:10 boucher Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.14.16.2 2006/03/16 10:44:41 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/polygon.h"
 #include "shadow_poly_receiver.h"
 #include "shadow_map.h"
 #include "driver.h"
@@ -196,18 +197,11 @@ void			CShadowPolyReceiver::incVertexRefCount(uint id)
 }
 
 
+
 // ***************************************************************************
-void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta)
+inline void	CShadowPolyReceiver::renderSelection(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta)
 {
 	uint	i, j;
-
-	// **** Fill Triangles that are hit by the Caster
-	// First select with quadGrid
-	CAABBox		worldBB;
-	worldBB= shadowMap->LocalBoundingBox;
-	worldBB.setCenter(worldBB.getCenter() + casterPos);
-	_TriangleGrid.select(worldBB.getMin(), worldBB.getMax());
-
 	// For all triangles, reset vertices flags.
 	TTriangleGrid::CIterator	it;
 	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
@@ -220,7 +214,7 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 		}
 	}
 
-	// Copute the world Clip Volume
+	// Compute the world Clip Volume
 	static	std::vector<CPlane>		worldClipPlanes;
 	CMatrix		worldMat;
 	// set -casterPos, because to transform a plane, we must do plane * M-1
@@ -325,6 +319,125 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 	drv->renderTriangles(tam, &_RenderTriangles[0], currentTriIdx/3);*/
 }
 
+// ***************************************************************************
+void CShadowPolyReceiver::computeClippedTrisWithPolyClip(const CShadowMap *shadowMap,const CVector &casterPos,const CVector &vertDelta,const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CVector> &dest)
+{
+	dest.clear();
+	selectPolygon(poly);
+	if (_TriangleGrid.begin() == _TriangleGrid.end()) return;
+	uint	i, j;
+	// For all triangles, reset vertices flags.
+	TTriangleGrid::CIterator	it;
+	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
+	{
+		CTriangleId		&triId= *it;
+		for(i=0;i<3;i++)
+		{
+			_Vertices[triId.Vertex[i]].Flags= 0;			
+		}
+	}
+
+	// Compute the world Clip Volume
+	static	std::vector<CPlane>		worldClipPlanes;
+	CMatrix		worldMat;
+	// set -casterPos, because to transform a plane, we must do plane * M-1
+	worldMat.setPos(-casterPos);
+	// Allow max bits of planes clip.
+	worldClipPlanes.resize(min((uint)shadowMap->LocalClipPlanes.size(), (uint)NL3D_SPR_NUM_CLIP_PLANE));
+	// Transform into world
+	for(i=0;i<worldClipPlanes.size();i++)
+	{
+		worldClipPlanes[i]= shadowMap->LocalClipPlanes[i] * worldMat;
+	}
+
+	static NLMISC::CPolygon clippedTri;	
+	{						
+		// For All triangles, clip them.		
+		for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
+		{
+			CTriangleId		&triId= *it;
+			uint			triFlag= NL3D_SPR_NUM_CLIP_PLANE_MASK;
+
+			// for all vertices, clip them
+			for(i=0;i<3;i++)
+			{
+				uint	vid= triId.Vertex[i];
+				uint	vertexFlags= _Vertices[vid].Flags;
+
+				// if this vertex is still not computed
+				if(!vertexFlags)
+				{
+					// For all planes of the Clip Volume, clip this vertex.
+					for(j=0;j<worldClipPlanes.size();j++)
+					{
+						// out if in front
+						bool	out= worldClipPlanes[j]*_Vertices[vid] > 0;
+
+						vertexFlags|= ((uint)out)<<j;
+					}
+
+					// add the bit flag to say "computed".
+					vertexFlags|= NL3D_SPR_NUM_CLIP_PLANE_SHIFT;
+
+					// store
+					_Vertices[vid].Flags= vertexFlags;
+				}
+
+				// And all vertex bits.
+				triFlag&= vertexFlags;
+			}			
+			// if triangle not clipped, do finer clip then add resulting triangles
+			if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
+			{
+				clippedTri.Vertices.resize(3);
+				clippedTri.Vertices[0] = _Vertices[triId.Vertex[0]] + vertDelta;
+				clippedTri.Vertices[1] = _Vertices[triId.Vertex[1]] + vertDelta;
+				clippedTri.Vertices[2] = _Vertices[triId.Vertex[2]] + vertDelta;
+				clippedTri.clip(worldClipPlanes);
+				if (clippedTri.Vertices.size() >= 3)
+				{					
+					for(uint k = 0; k < clippedTri.Vertices.size() - 2; ++k)
+					{
+						dest.push_back(clippedTri.Vertices[0]);
+						dest.push_back(clippedTri.Vertices[k + 1]);
+						dest.push_back(clippedTri.Vertices[k + 2]);
+					}
+				}
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta)
+{
+
+	// **** Fill Triangles that are hit by the Caster
+	// First select with quadGrid
+	CAABBox		worldBB;
+	worldBB= shadowMap->LocalBoundingBox;
+	worldBB.setCenter(worldBB.getCenter() + casterPos);
+	_TriangleGrid.select(worldBB.getMin(), worldBB.getMax());
+	if (_TriangleGrid.begin() == _TriangleGrid.end()) return;
+	renderSelection(drv, shadowMat, shadowMap, casterPos, vertDelta);
+}
+
+
+// ***************************************************************************
+void CShadowPolyReceiver::selectPolygon(const NLMISC::CPolygon2D &poly)
+{
+	static TTriangleGrid::TSelectionShape selectionShape;		
+	_TriangleGrid.buildSelectionShape(selectionShape, poly);	
+	_TriangleGrid.select(selectionShape);
+}
+
+// ***************************************************************************
+void			CShadowPolyReceiver::renderWithPolyClip(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta, const NLMISC::CPolygon2D &poly)
+{
+		
+	selectPolygon(poly);
+	renderSelection(drv, shadowMat, shadowMap, casterPos, vertDelta);	
+}
 
 // ***************************************************************************
 float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVector &end, TCameraColTest testType, float radius)
@@ -366,8 +479,9 @@ float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVec
 		}
 		return f;
 	}
-
 }
+
+
 
 
 

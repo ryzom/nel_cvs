@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.h,v 1.6.16.1 2006/01/11 15:02:10 boucher Exp $
+ * $Id: shadow_poly_receiver.h,v 1.6.16.2 2006/03/16 10:44:41 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -80,6 +80,23 @@ public:
 	 */
 	void			render(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta);
 
+	/** clip, and render with a shadow map. Matrix setup should be OK.
+	 *  Clipping here is done with the polygon rather than its bbox, with will scale better
+	 *  for projection of large, thin decals.
+	 *	\param vertDelta (for landscape). add this value from vertices before rendering.
+	 *	\return : number of tested grid cells
+	 */
+	void			renderWithPolyClip(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta,
+									   const NLMISC::CPolygon2D &poly
+									  );
+
+	/** Compute list of clipped tri under the shadow mat
+	  * useful for rendering of huge decal, that may consume a lot of fillrate, but change rarely.	  
+	  */
+	void			computeClippedTrisWithPolyClip(const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta, const NLMISC::CPolygon2D &vertices, 
+												   std::vector<NLMISC::CVector> &dest);
+
+
 	/** Use the triangles added for camera 3rd person collision
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
 	 *	\param testType is the type of intersection: simple ray, cylinder or cone
@@ -129,6 +146,10 @@ private:
 	void				releaseVertex(uint id);
 	// increment the Count of the ith vertex;
 	void				incVertexRefCount(uint id);
+	// render, using current selection in the quad grid
+	void				renderSelection(IDriver *drv, CMaterial &shadowMat, const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta);
+	// select a polygon in the triangle grid
+	void				selectPolygon(const NLMISC::CPolygon2D &poly);
 };
 
 

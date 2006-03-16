@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.13 2005/01/17 16:39:42 lecroart Exp $
+ * $Id: quad_grid.h,v 1.13.22.1 2006/03/16 10:45:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/block_memory.h"
 #include "nel/misc/object_vector.h"
 #include "nel/misc/common.h"
+#include "nel/misc/polygon.h"
+
 #include <vector>
 #include <map>
 
@@ -79,6 +81,7 @@ public:
 	friend class	CIterator;
 
 public:
+	typedef std::vector<uint> TSelectionShape;
 
 	/// Default constructor, use axes XY!!!, has a size of 16, and EltSize is 1.
 	CQuadGrid(uint memoryBlockSize= NL3D_QUAD_GRID_ALLOC_BLOCKSIZE);
@@ -190,6 +193,15 @@ public:
 	  */
 	void			select(const NLMISC::CVector &bboxmin, const NLMISC::CVector &bboxmax);
 
+	/** Build a selection from a convex polygon. The resulting selection can then be used for a subsequent call
+	  * to 'select'
+	  */
+	void			buildSelectionShape(TSelectionShape &dest, const NLMISC::CPolygon2D &poly) const;
+
+	/** Select element intersecting a selection shape. Clear the selection first.
+	  */
+	void			select(const TSelectionShape &shape);
+
 
 	/** Return the first iterator of the selected element list. begin and end are valid till the next insert.
 	  *	Speed is in O(1)
@@ -265,6 +277,7 @@ private:// Atttributes.
 
 
 private:// Methods.
+	
 
 	// default constor imp
 	void		initCons();
@@ -763,6 +776,64 @@ template<class T>	void			CQuadGrid<T>::select(const NLMISC::CVector &bboxmin, co
 	}
 
 }
+
+// ***************************************************************************
+template<class T> void	CQuadGrid<T>::buildSelectionShape(TSelectionShape &dest, const NLMISC::CPolygon2D &poly) const
+{
+	dest.clear();	
+	static CPolygon2D scaledPoly;
+	static CPolygon2D::TRasterVect borders;
+	static uint stamp = 0;
+	static std::vector<uint> alreadySelected;	
+	sint minY;
+	uint numVerts = poly.Vertices.size();
+	scaledPoly.Vertices.resize(numVerts);
+	nlassert(_EltSize != 0.f);
+	float invScale = 1.f / _EltSize;
+	for(uint k = 0; k < numVerts; ++k)
+	{
+		CVector xformPos = _ChangeBasis * CVector(poly.Vertices[k]);
+		scaledPoly.Vertices[k].set(poly.Vertices[k].x * invScale, poly.Vertices[k].y * invScale);
+	}
+	scaledPoly.computeOuterBorders(borders, minY);
+	if (borders.empty()) return;
+	if (alreadySelected.size() < _Grid.size())
+	{
+		alreadySelected.resize(_Grid.size(), stamp);
+	}
+	++ stamp;
+	if (stamp == 0)
+	{
+		std::fill(alreadySelected.begin(), alreadySelected.end(), (uint) ~0);
+	}
+	sint numSegs = borders.size();
+	for (sint y = 0; y < numSegs; ++y)
+	{
+		sint currIndex = ((minY + y) & (_Size - 1)) << _SizePower;		
+		for (sint x = borders[y].first; x <= borders[y].second; ++x)
+		{
+			sint currX = x & (_Size - 1);
+			uint index = (uint) (currX + currIndex);
+			if (alreadySelected[index] != stamp)
+			{
+				alreadySelected[index] = stamp; // update stamp, so that won't be selected twice if
+												// there's an overlap
+				dest.push_back(index);
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+template<class T> void	CQuadGrid<T>::select(const TSelectionShape &shape)
+{
+	clearSelection();	
+	for (TSelectionShape::const_iterator it = shape.begin(); it != shape.end(); ++it)
+	{		
+		addQuadNodeToSelection(_Grid[*it]);
+	}
+}
+
 // ***************************************************************************
 template<class T>	typename CQuadGrid<T>::CIterator		CQuadGrid<T>::begin()
 {

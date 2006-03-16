@@ -12,9 +12,7 @@
           tal:attributes="action string:${portal_url}/search;
                           onsubmit python:test(livesearch==True,'return liveSearchSubmit()','')"
           style="white-space:nowrap">
-<!--        <label for="searchGadget" class="hiddenStructure"
-                    i18n:translate="text_search">Search Site</label>
--->
+
         <input id="searchGadget"
                tabindex=""
                name="SearchableText"
@@ -33,7 +31,7 @@
                value="Search"
                tal:attributes="tabindex tabindex/next"
                i18n:attributes="value label_search;" />
-<!--        <div class="LSResult" id="LSResult" style=""><div class="LSShadow" id="LSShadow"></div></div> -->
+        <div class="LSResult" id="LSResult" style=""><div class="LSShadow" id="LSShadow"></div></div>
     </form>
     </div>
     <form  class="LSBox" name="advancedSearchDummy" action="search_form">

@@ -20,7 +20,6 @@ text-decoration: underline !important;
 text-decoration: none !important;
 }
 
-
 .titleFAQ {color:#4bffff;}
 
 a img.thumbnail{
@@ -61,7 +60,6 @@ legend {
     padding : 0px 5px 0px 10px;
     float:right;
 }
-
 #toplinks  {
    color : #ffc30e;
    background-color :  #5f5e57;
@@ -70,29 +68,22 @@ legend {
    padding : 3px 5px 0 10px;
    float:right;
 }
-
 .OPEN {
 	background-image: url('server_up.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
-
 .CLOSED {
 	background-image: url('server_down.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
-
 }
-
 .LOCKED {
 	background-image: url('server_locked.png');
 	background-repeat: no-repeat;
 	padding-left : 20px;
 }
-
 /*fin du css serverstatus*/
-
-
 
 
 .state-private {color: Red;}
@@ -105,13 +96,11 @@ legend {
 .portletItemDetails{color:#ffc30e;}
 
 /*css pour la couleur de selection*/
-
 #portlet-navigation-tree a:hover {
     background-color: transparent;
     color: #436976;
     border: 0;
 }
-/*fin*/
 
 .navTreeItem {
 white-space: nowrap;
@@ -125,14 +114,11 @@ width:149px;
 
 
 /*css pour la rightbar*/
-
 #rightbar {
    text-align:right;
    padding: 0;
 }
-
 #zoneimages {background-color : #5f5e57;}
-
 /*fin de la css rightbar*/
 
 #visual-portal-wrapper {
@@ -220,7 +206,7 @@ overflow:hidden !important;
 
 #portal-column-one .visualPadding { 
 margin:0; padding:0; width:150px; margin-left:25px;
- }
+}
 
 #portal-column-content {
 width:none;
@@ -244,11 +230,8 @@ border: 0;
 	background: black url('header.jpg') 0 0 no-repeat;
 	width:1105px;
 	height:130px;
-        background-color : #181818;
-        /*border-right: solid #5f5e57 6px;*/
+        background-color : #181818;        
 }
-
-/*background: url('ryzom_images/footer.png') 0 0 no-repeat;*/
 
 #portal-footer {
         usemap="#map";
@@ -260,9 +243,7 @@ border: 0;
         background-color : #181818;
 }
 
-#portal-footer img { 
-width : 1111px;
- }
+#portal-footer img {width : 1111px;}
 
 #region-content { 
 background-color: #181818; !important;
@@ -380,7 +361,6 @@ margin:0;
     text-transform: lowercase;
     padding-bottom:2px;
     z-index: 2;
-/*    height: 1.6em; */
 }
 
 .actionMenu.activated .actionMenuHeader a,
@@ -400,7 +380,7 @@ margin:0;
   */
   float: none;
   text-align: right;
-  }
+}
 
 .documentActions ul {
     display: block;
@@ -416,30 +396,17 @@ margin:0;
 text-align:left;
 }
 
-
-
-#foireux { 
- text-align: center;
-  width :185px;
-  border : 0;
-  background-color: #5F5E57;
-  padding:0;
-  margin: 0;
-  margin-right:none;
- }
-
 .imageHide { 
  background:black;
  margin:0;
  padding:0;
  font-size:5px; 
  height:5px;
- }
+}
 
 .fakeBorder { 
   width:200px;
-
- }
+}
 
 .holeContainer{ 
   width: 200px;
@@ -447,7 +414,7 @@ text-align:left;
   padding:0;
   margin:0;
   border:0;
- }
+}
 
 .hole { 
   text-align: center;
@@ -456,7 +423,7 @@ text-align:left;
   background-color: #5F5E57;
   margin-right:0;
   padding-right:0;
- }
+}
 
 td#portal-column-two dl.portlet {
   border-radius: 12px;
@@ -474,7 +441,7 @@ dl#portlet-recent {
   text-align:left;
   padding:0;
   margin:0;
- }
+}
 
 dl.portlet a {
     text-decoration: none;

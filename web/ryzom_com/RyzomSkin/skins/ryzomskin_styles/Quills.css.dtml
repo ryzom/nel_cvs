@@ -11,7 +11,6 @@ text-align:justify;
 }
 
 .weblog-entry p,.weblog-entry div{
-/*margin-bottom: 3px;*/
 padding:0;
 margin:0;
 text-align:justifty;
@@ -25,7 +24,7 @@ text-align:justifty;
   padding-bottom:30px;
   margin-bottom: 5px;
   text-align:justify;
- }
+}
 
 .unofficial-disclaimer { 
 /*  text-decoration: underline; */
@@ -52,7 +51,6 @@ height: auto;
 /*padding: 3px;*/
 margin-right: 3px;
 text-decoration: underline;
-/* text-transform: &dtml-textTransform;;*/
 }
 
 ul.weblog-footer a:hover {
@@ -68,7 +66,6 @@ color:#4bffff; !important;
 margin:0;
 padding:0;
 margin-top:3px;
-/* text-align: left; */
 }
 
 
@@ -159,7 +156,6 @@ h2.weblog-heading a{
 
 h2.weblog-heading {
 font-weight: normal;
-/*border-bottom: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;*/
 border : none;
 color : #4bffff; !important;
 padding : 0px;
@@ -172,8 +168,6 @@ border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
 }
 
 .weblog-topics, .weblog-topics a {
-/*font-size: &dtml-fontSmallSize;;*/
-/*color: &dtml-discreetColor;;*/
 text-transform: uppercase;
 color : #4bffff;
 }
@@ -181,9 +175,8 @@ color : #4bffff;
 .weblog-summary {
 margin-top: 2px;
 margin-bottom: 2px;
-
+min-height: 300px; /*fix for avoid overlapping image on chronicle weblog*/
 }
-
 
 .weblog-summary img { 
 max-width: 700px; !important;
@@ -234,6 +227,7 @@ height: 1px;
 #portlet-recentphotos div {
 text-align: center;
 }
+
 #portlet-recentphotos div img {
 padding: 1px;
 border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;

@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.3.6.4 2006/02/11 18:48:18 mitchell Exp $
+ * $Id: singleton.h,v 1.3.6.5 2006/03/17 20:56:10 miller Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_SINGLETON_H
 
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/app_context.h"
 

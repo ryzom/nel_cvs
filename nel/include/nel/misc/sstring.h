@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34.4.3 2006/01/26 17:35:55 boucher Exp $
+ * $Id: sstring.h,v 1.34.4.4 2006/03/17 20:54:39 miller Exp $
  */
 
 
@@ -223,7 +223,8 @@ public:
 										bool useAngleBrace=false,				// treat '<' and '>' as brackets
 										bool useSlashStringEscape=true,			// treat '\' as escape char so "\"" == '"'
 										bool useRepeatQuoteStringEscape=true,	// treat """" as '"'
-										bool truncateSeparatorCharacter=false);	// if true tail begins after separator char
+										bool truncateSeparatorCharacter=false,	// if true tail begins after separator char
+										bool splitStringAtBrackets=true);		// if true consider brackets as breaks in the string
 
 	CSString splitToOneOfSeparators(	const CSString& separators,
 										bool useAngleBrace=false,						// treat '<' and '>' as brackets

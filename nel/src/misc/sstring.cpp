@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.cpp,v 1.2 2005/10/20 13:16:26 miller Exp $
+ * $Id: sstring.cpp,v 1.2.4.1 2006/03/17 20:57:35 miller Exp $
  */
 
 #include "stdmisc.h"
@@ -83,7 +83,8 @@ namespace NLMISC
 													bool useAngleBrace,					// treat '<' and '>' as brackets
 													bool useSlashStringEscape,			// treat '\' as escape char so "\"" == '"'
 													bool useRepeatQuoteStringEscape,	// treat """" as '"'
-													bool truncateSeparatorCharacter)	// if true tail begins after separator char
+													bool truncateSeparatorCharacter,	// if true tail begins after separator char
+													bool splitStringAtBrackets)
 	{
 		// iterate over our string
 		uint32 i;
@@ -101,7 +102,8 @@ namespace NLMISC
 				if (i != 0)
 				{
 					// we are not at begining of the string, delimiter is considered as separator
-					break;
+					if (splitStringAtBrackets)
+						break;
 				}
 				uint32 j=i;
 				i=findMatchingDelimiterPos(useAngleBrace,useSlashStringEscape,useRepeatQuoteStringEscape,i);
@@ -127,4 +129,5 @@ namespace NLMISC
 	}
 
 } // namespace NLMISC
+
 

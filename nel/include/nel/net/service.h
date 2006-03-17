@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.89.4.6 2006/01/26 17:35:55 boucher Exp $
+ * $Id: service.h,v 1.89.4.7 2006/03/17 20:50:53 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,6 +315,8 @@ public:
 	void					addStatusTag(const std::string &statusTag);
 	/// Remove a tag from the status string
 	void					removeStatusTag(const std::string &statusTag);
+	/// Get the current status with attached tags
+	std::string				getFullStatus() const;
 	//@}
 
 	/// \name variables. These variables can be read/modified by the user.

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.9 2006/03/12 19:51:19 distrib Exp $
+ * $Id: service.cpp,v 1.238.4.10 2006/03/17 21:03:17 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -61,7 +61,6 @@
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
-//#include "nel/net/net_manager.h"
 #include "nel/net/net_displayer.h"
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"
@@ -188,7 +187,7 @@ static void sigHandler(int Sig)
 		{
 			if (getThreadId () != SignalisedThread)
 			{
-				nldebug ("SERVICE: Not the main thread received the signal (%s, %d), ignore it", SignalName[i],Sig);
+				nldebug ("SERVICE: Secondary thread received the signal (%s, %d), ignoring it", SignalName[i],Sig);
 				return;
 			}
 			else
@@ -233,22 +232,22 @@ static void initSignal()
 {
 	SignalisedThread = getThreadId ();
 #ifdef NL_DEBUG
-	// in debug mode, we only trap the SIGINT signal
+	// in debug mode, we only trap the SIGINT signal (for ctrl-c handling)
 	signal(Signal[3], sigHandler);
 	//nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
 #else
 	// in release, redirect all signals
-/* don't redirect now because to hard to debug...
-	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
-	{
-		signal(Signal[i], sigHandler);
-		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
-	}
-*/
+// don't redirect now because too hard to debug...
+//	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
+//	{
+//		signal(Signal[i], sigHandler);
+//		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
+//	}
+//
 	if (IService::getInstance()->haveLongArg("nobreak"))
-	  {
-	    signal(Signal[3], sigHandler);
-	  }
+	{
+		signal(Signal[3], sigHandler);
+	}
 #endif
 }
 
@@ -568,7 +567,6 @@ void cbExecuteCommands (CConfigFile::CVar &var)
 sint IService::main (const char *serviceShortName, const char *serviceLongName, uint16 servicePort, const char *configDir, const char *logDir, const char *compilationDate)
 {
 	bool userInitCalled = false;
-//	bool resyncEvenly = false;
 	CConfigFile::CVar *var = NULL;
 
 	IThread *timeoutThread = NULL;
@@ -820,10 +818,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			// adding default displayed variables
 			displayedVariables.push_back(make_pair(string("NetLop|NetSpeedLoop"), WindowDisplayer->createLabel ("NetLop")));
 			displayedVariables.push_back(make_pair(string("UsrLop|UserSpeedLoop"), WindowDisplayer->createLabel ("UsrLop")));
-//			displayedVariables.push_back(make_pair(string("Rcv|ReceivedBytes"), WindowDisplayer->createLabel ("Rcv")));
-//			displayedVariables.push_back(make_pair(string("Snd|SentBytes"), WindowDisplayer->createLabel ("Snd")));
-//			displayedVariables.push_back(make_pair(string("RcvQ|ReceivedQueueSize"), WindowDisplayer->createLabel ("RcvQ")));
-//			displayedVariables.push_back(make_pair(string("SndQ|SentQueueSize"), WindowDisplayer->createLabel ("SndQ")));
 			displayedVariables.push_back(make_pair(string("|Scroller"), WindowDisplayer->createLabel ("NeL Rulez")));
 			
 			CConfigFile::CVar *v = ConfigFile.getVarPtr("DisplayedVariables");
@@ -927,7 +921,14 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			ListeningPort = atoi(getArg('P').c_str());
 		}
 
-		// set the aliasname if is present in the command line
+		// set the aes aliasname if present in cfg file
+		CConfigFile::CVar *varAliasName= ConfigFile.getVarPtr("AESAliasName");
+		if (var != NULL)
+		{
+			_AliasName = var->asString();
+		}
+
+		// set the aes aliasname if is present in the command line
 		if (haveArg('N'))
 		{
 			_AliasName = getArg('N');
@@ -969,35 +970,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			CMessage::setDefaultStringMode( false );
 		}
 
-/*
-		//
-		// Layer4 Startup (Connect to the Naming Service (except for the NS itself and Login Service))
-		//
-
-		if (IService::_ShortName != "NS" && IService::_ShortName != "LS" && IService::_ShortName != "AES" && IService::_ShortName != "AS")
-		{
-			bool ok = false;
-			while (!ok)
-			{
-				// read the naming service address from the config file
-				CInetAddress loc(ConfigFile.getVar("NSHost").asString(), ConfigFile.getVar("NSPort").asInt());
-				try
-				{
-					CNetManager::init( &loc, _RecordingState );
-					ok = true;
-				}
-				catch (ESocketConnectionFailed &)
-				{
-					nlwarning ("Could not connect to the Naming Service (%s). Retrying in a few seconds...", loc.asString().c_str());
-					nlSleep (5000);
-				}
-			}
-		}
-		else
-		{
-			CNetManager::init( NULL, _RecordingState );
-		}
-*/
 
 		///
 		/// Layer5 Startup
@@ -1415,27 +1387,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				}
 			}
 
-			// resync the clock every hours
-//			if (resyncEvenly)
-//			{
-//				static TTime LastSyncTime = CTime::getLocalTime ();
-
-				//---------------------------------------
-				// To simulate Ctrl-C in the debugger... Exit after 1 min !
-				/*if (CTime::getLocalTime () - LastSyncTime > 60 * 1000 )
-				{
-					ExitSignalAsked = 1;
-				}*/
-				//---------------------------------------
-/*
-				if (CTime::getLocalTime () - LastSyncTime > 60*60*1000)
-				{
-					CUniTime::syncUniTimeFromService ( _RecordingState );
-					LastSyncTime = CTime::getLocalTime ();
-				}
-*/
-//			}
-
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
 
@@ -1482,22 +1433,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 						if (strs.size()>0)
 						{
 							str += strs[0].substr(0,strs[0].size()-1);
-							/*
-							string s_ = strs[0];
-
-							uint32 pos = strs[0].find("=");
-							if(pos != string::npos && pos + 2 < strs[0].size())
-							{
-								uint32 pos2 = string::npos;
-								if(strs[0][strs[0].size()-1] == '\n')
-									pos2 = strs[0].size() - pos - 2 - 1;
-
-								str += strs[0].substr (pos+2, pos2);
-							}
-							else
-							{
-								str += "???";
-							}*/
 						}
 						else
 						{
@@ -1526,12 +1461,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 		while (true);
 	}
-/*	catch (ETrapDebug &)
-	{
-		// we have to do that if we want to trap unhandled exception with the report message box
-		setStatus (EXIT_FAILURE);
-	}
-*/	catch (EFatalError &)
+	catch (EFatalError &)
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
@@ -1548,20 +1478,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 
 #ifdef NL_RELEASE
-/*	// in release mode, we catch everything to handle clean release. (currently commented out to produce a core dump)
-	catch (Exception &e)
-	{
-		// Catch NeL exception to release the system cleanly
-		setStatus (EXIT_FAILURE);
-		nlinfo ("ERROR: NeL Exception: Error running the service \"%s\": %s", _ShortName.c_str(), e.what());
-	}
-	catch (...)
-	{
-		// Catch anything we can to release the system cleanly
-		setStatus (EXIT_FAILURE);
-		nlinfo ("ERROR: Unknown external exception");
-	}
-*/
 #endif
 
 	try
@@ -1611,12 +1527,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		nlinfo ("SERVICE: Service released succesfully");
 	}
-/*	catch (ETrapDebug &)
-	{
-		// we have to do that if we want to trap unhandled exception with the report message box
-		setStatus (EXIT_FAILURE);
-	}
-*/	catch (EFatalError &)
+	catch (EFatalError &)
 	{
 		// Somebody call nlerror, so we have to quit now, the message already display
 		// so we don't have to to anything
@@ -1635,19 +1546,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 	}
 
 #ifdef NL_RELEASE
-/*	// in release mode, we catch everything to handle clean release.
-	catch (Exception &e)
-	{
-		setStatus (EXIT_FAILURE);
-		nlinfo ("ERROR: NeL Exception: Error releasing the service \"%s\": %s", _ShortName.c_str(), e.what());
-	}
-	catch (...)
-	{
-		// Catch anything we can to release the system cleanly
-		setStatus (EXIT_FAILURE);
-		nlinfo ("ERROR: Unknown external exception");
-	}
-*/
 #endif
 
 	CHTimer::display();
@@ -1697,6 +1595,30 @@ void IService::addStatusTag(const std::string &statusTag)
 void IService::removeStatusTag(const std::string &statusTag)
 {
 	_ServiveStatusTags.erase(statusTag);
+}
+
+/// Get the current status with attached tags
+std::string IService::getFullStatus() const
+{
+	string result;
+
+	// get hold of the status at the top of the status stack
+	if (!_ServiceStatusStack.empty())
+	{
+		result = _ServiceStatusStack.back();
+	}
+
+	// add status tags to the result so far
+	set<string>::iterator first(_ServiveStatusTags.begin()), last(_ServiveStatusTags.end());
+	for (; first != last; ++first)
+	{
+		if (first != _ServiveStatusTags.begin() || !result.empty())
+			result += " ";
+		result += *first;
+	}
+
+	// return the result
+	return result.empty()? "Online": result;
 }
 
 
@@ -1773,18 +1695,11 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, string, Uptime, "time from the launching of 
 	}
 }
 
-//NLMISC_VARIABLE(bool, Bench, "1 if benching 0 if not");
-
 NLMISC_CATEGORISED_VARIABLE(nel, string, CompilationDate, "date of the compilation");
 NLMISC_CATEGORISED_VARIABLE(nel, string, CompilationMode, "mode of the compilation");
 
 NLMISC_CATEGORISED_VARIABLE(nel, uint32, NbUserUpdate, "number of time the user IService::update() called");
 
-/*NLMISC_DYNVARIABLE(uint32, ListeningPort, "default listening port for this service")
-{
-	if (get) *pointer = IService::getInstance()->getPort();
-}
-*/
 NLMISC_CATEGORISED_DYNVARIABLE(nel, string, Scroller, "current size in bytes of the sent queue size")
 {
 	if (get)
@@ -1905,37 +1820,9 @@ NLMISC_CATEGORISED_COMMAND(nel, getUnknownConfigFileVariables, "display the vari
 
 NLMISC_CATEGORISED_DYNVARIABLE(nel, string, State, "Set this value to 0 to shutdown the service and 1 to start the service")
 {
-	static string running = "Online";
-
 	// read or write the variable
 	if (get)
 	{
-		string statusString;
-		IService *srv = IService::getInstance();
-
-		if( srv == NULL )
-		{
-			return;
-		}
-
-		if (srv->_ServiceStatusStack.empty() && srv->_ServiveStatusTags.empty())
-		{
-			// no special state or tag, just says service is online
-			*pointer = running;
-			return;
-		}
-
-		if (!srv->_ServiceStatusStack.empty())
-			statusString = srv->_ServiceStatusStack.back();
-
-		set<string>::iterator first(srv->_ServiveStatusTags.begin()), last(srv->_ServiveStatusTags.end());
-		for (; first != last; ++first)
-		{
-			if (first != srv->_ServiveStatusTags.begin() || !statusString.empty())
-				statusString += " ";
-			statusString += *first;
-		}
-		*pointer = statusString;
 	}
 	else
 	{
@@ -1948,13 +1835,26 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, string, State, "Set this value to 0 to shutd
 			// ok, we want to set the value to false, just quit
 			nlinfo ("SERVICE: User ask me with a command to quit using the State variable");
 			ExitSignalAsked = 0xFFFE;
-			running = "Quitting";
+			IService *srv = IService::getInstance();
+			if( srv == NULL )
+			{
+				return;
+			}
+			srv->setCurrentStatus("Quitting");
 		}
 		else
 		{
 			nlwarning ("SERVICE: Unknown value for State '%s'", (*pointer).c_str());
 		}
 	}
+
+	// whether reading or writing, the internal value of the state variable should end up as the result of getFullStatus()
+	IService *srv = IService::getInstance();
+	if( srv == NULL )
+	{
+		return;
+	}
+	*pointer= srv->getFullStatus();
 }
 
 
@@ -1966,12 +1866,6 @@ NLMISC_CATEGORISED_DYNVARIABLE(nel, uint32, ShardId, "Get value of shardId set f
 		*pointer = IService::getInstance()->getShardId();
 	}
 }
-
-
-
-
-
-
 
 
 NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, CPULoad, "Get instant CPU load of the server")
@@ -2021,8 +1915,6 @@ NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, ProcessSystemLoad, "Get instant CPU s
 	// read or write the variable
 	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessSystemLoad(); }
 }
-
-
 
 
 NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanCPULoad, "Get instant CPU load of the server")
@@ -2075,7 +1967,6 @@ NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, MeanProcessSystemLoad, "Get instant C
 
 
 
-
 NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakCPULoad, "Get instant CPU load of the server")
 {
 	// read or write the variable
@@ -2123,7 +2014,6 @@ NLMISC_CATEGORISED_DYNVARIABLE(cpu, float, PeakProcessSystemLoad, "Get instant C
 	// read or write the variable
 	if (get)	{ *pointer = IService::getInstance()->getCPUUsageStats().getProcessSystemLoad(CCPUTimeStat::Peak); }
 }
-
 
 
 } //NLNET

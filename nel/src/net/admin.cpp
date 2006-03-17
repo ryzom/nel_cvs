@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.22 2005/09/09 10:00:51 miller Exp $
+ * $Id: admin.cpp,v 1.22.4.1 2006/03/17 21:05:02 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ struct CRequest
 	uint16			SId;
 	uint32			Time;	// when the request was ask
 	
-	vector<pair<vector<string>, vector<string> > > Answers;
+	TAdminViewResult Answers;
 };
 	
 
@@ -119,25 +119,10 @@ static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint
 
 	Requests.push_back (CRequest(rid, sid));
 
-	vector<pair<vector<string>, vector<string> > > answer;
+	TAdminViewResult answer;
 	// just send the view in async mode, don't retrieve the answer
 	serviceGetView (rid, rawvarpath, answer, true);
 	nlassert (answer.empty());
-
-/*
-	CMessage msgout("VIEW");
-	msgout.serial(rid);
-	
-	for (uint i = 0; i < answer.size(); i++)
-	{
-		msgout.serialCont (answer[i].first);
-		msgout.serialCont (answer[i].second);
-	}
-	
-	CUnifiedNetwork::getInstance ()->send (sid, msgout);
-	nlinfo ("ADMIN: Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
-*/
-
 }
 
 static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
@@ -274,43 +259,19 @@ static void subRequestWaitingNb (uint32 rid)
 	}
 	nlwarning ("ADMIN: subRequestWaitingNb: can't find the rid %d", rid);
 }
-/*
-void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
-{
-	for (uint i = 0 ; i < Requests.size (); i++)
-	{
-		if (Requests[i].Id == rid)
-		{
-			for (uint t = 0; t < answer.size(); t++)
-			{
-				if (!answer[t].first.empty() && answer[t].first[0] == "__log")
-				{	nlassert (answer[t].first.size() == 1); }
-				else
-				{	nlassert (answer[t].first.size() == answer[t].second.size()); }
-				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
-			}
-			Requests[i].NbReceived++;
-			nldebug ("ADMIN: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
-			return;
-		}
-	}
-	// we received an unknown request, forget it
-	nlwarning ("ADMIN: Receive an answer for unknown request %d", rid);
-}
-*/
 
-void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
+void addRequestAnswer (uint32 rid, const TAdminViewVarNames& varNames, const TAdminViewValues& values)
 {
-	if (!variables.empty() && variables[0] == "__log")
-	{	nlassert (variables.size() == 1); }
+	if (!varNames.empty() && varNames[0] == "__log")
+	{	nlassert (varNames.size() == 1); }
 	else
-	{	nlassert (variables.size() == values.size()); }
+	{	nlassert (varNames.size() == values.size()); }
 
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
 		if (Requests[i].Id == rid)
 		{
-			Requests[i].Answers.push_back (make_pair(variables, values));
+			Requests[i].Answers.push_back (SAdminViewRow(varNames, values));
 
 			Requests[i].NbReceived++;
 			nldebug ("ADMIN: ++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
@@ -356,8 +317,8 @@ static void cleanRequest ()
 
 			for (uint j = 0; j < Requests[i].Answers.size (); j++)
 			{
-				msgout.serialCont (Requests[i].Answers[j].first);
-				msgout.serialCont (Requests[i].Answers[j].second);
+				msgout.serialCont (Requests[i].Answers[j].VarNames);
+				msgout.serialCont (Requests[i].Answers[j].Values);
 			}
 
 			if (Requests[i].SId == 0)
@@ -366,14 +327,14 @@ static void cleanRequest ()
 				for (uint j = 0; j < Requests[i].Answers.size (); j++)
 				{
 					uint k;
-					for (k = 0; k < Requests[i].Answers[j].first.size(); k++)
+					for (k = 0; k < Requests[i].Answers[j].VarNames.size(); k++)
 					{
-						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].first[k].c_str());
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].VarNames[k].c_str());
 					}
 					InfoLog->displayRawNL("");
-					for (k = 0; k < Requests[i].Answers[j].second.size(); k++)
+					for (k = 0; k < Requests[i].Answers[j].Values.size(); k++)
 					{
-						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].second[k].c_str());
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].Values[k].c_str());
 					}
 					InfoLog->displayRawNL("");
 					InfoLog->displayRawNL("-------------------------");
@@ -410,7 +371,7 @@ bool isRemoteCommand(string &str)
 
 
 // this callback is used to create a view for the admin system
-void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer, bool async)
+void serviceGetView (uint32 rid, const string &rawvarpath, TAdminViewResult &answer, bool async)
 {
 	string str;
 	CLog logDisplayVars;
@@ -432,11 +393,12 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 
 	if (varpath.isFinal())
 	{
-		vector<string> vara, vala;
+		TAdminViewVarNames varNames;
+		TAdminViewValues values;
 
 		// add default row
-		vara.push_back ("service");
-		vala.push_back (IService::getInstance ()->getServiceUnifiedName());
+		varNames.push_back ("service");
+		values.push_back (IService::getInstance ()->getServiceUnifiedName());
 		
 		for (uint j = 0; j < varpath.Destination.size (); j++)
 		{
@@ -447,10 +409,10 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 			if (eqpos != string::npos)
 			{
 				cmd[eqpos] = ' ';
-				vara.push_back(cmd.substr(0, eqpos));
+				varNames.push_back(cmd.substr(0, eqpos));
 			}
 			else
-				vara.push_back(cmd);
+				varNames.push_back(cmd);
 			
 			mdDisplayVars.clear ();
 			ICommand::execute(cmd, logDisplayVars, !ICommand::isCommand(cmd));
@@ -461,15 +423,15 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 				// we want the log of the command
 				if (j == 0)
 				{
-					vara.clear ();
-					vara.push_back ("__log");
-					vala.clear ();
+					varNames.clear ();
+					varNames.push_back ("__log");
+					values.clear ();
 				}
 				
-				vala.push_back ("----- Result from "+IService::getInstance()->getServiceUnifiedName()+" of command '"+cmd+"'\n");
+				values.push_back ("----- Result from "+IService::getInstance()->getServiceUnifiedName()+" of command '"+cmd+"'\n");
 				for (uint k = 0; k < strs.size(); k++)
 				{
-					vala.push_back (strs[k]);
+					values.push_back (strs[k]);
 				}
 			}
 			else
@@ -480,48 +442,31 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 					str = strs[0].substr(0,strs[0].size()-1);
 					// replace all spaces into udnerscore because space is a reserved char
 					for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
-					
-				/*
-					uint32 pos = strs[0].find("=");
-					if(pos != string::npos && pos + 2 < strs[0].size())
-					{
-						uint32 pos2 = string::npos;
-						if(strs[0][strs[0].size()-1] == '\n')
-							pos2 = strs[0].size() - pos - 2 - 1;
-						
-						str = strs[0].substr (pos+2, pos2);
-						
-						// replace all spaces into udnerscore because space is a reserved char
-						for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
-					}
-					else
-					{
-						str = "???";
-					}*/
 				}
 				else
 				{
 					str = "???";
 				}
-				vala.push_back (str);
+				values.push_back (str);
 				nlinfo ("ADMIN: Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
 			}
 			mdDisplayVars.unlockStrings();
 		}
 
 		if (!async)
-			answer.push_back (make_pair(vara, vala));
+			answer.push_back (SAdminViewRow(varNames, values));
 		else
 		{
 			addRequestWaitingNb (rid);
-			addRequestAnswer (rid, vara, vala);
+			addRequestAnswer (rid, varNames, values);
 		}
 	}
 	else
 	{
 		// there s an entity in the varpath, manage this case
 
-		vector<string> *vara=0, *vala=0;
+		TAdminViewVarNames *varNames=0;
+		TAdminViewValues *values=0;
 		
 		// varpath.Destination		contains the entity number
 		// subvarpath.Destination	contains the command name
@@ -582,52 +527,53 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 							uint y;
 							for (y = 0; y < answer.size(); y++)
 							{
-								if (answer[y].second[1] == entity)
+								if (answer[y].Values[1] == entity)
 								{
 									// ok we found it, just push_back new stuff
-									vara = &(answer[y].first);
-									vala = &(answer[y].second);
+									varNames = &(answer[y].VarNames);
+									values = &(answer[y].Values);
 									break;
 								}
 							}
 							if (y == answer.size ())
 							{
-								answer.push_back (make_pair(vector<string>(), vector<string>()));
+								answer.push_back (SAdminViewRow());
 
-								vara = &(answer[answer.size()-1].first);
-								vala = &(answer[answer.size()-1].second);
+								varNames = &(answer[answer.size()-1].VarNames);
+								values = &(answer[answer.size()-1].Values);
 								
 								// don't add service if we want an entity
 		// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
-								vara->push_back ("service");
+								varNames->push_back ("service");
 								string name = IService::getInstance ()->getServiceUnifiedName();
-								vala->push_back (name);
+								values->push_back (name);
 								
 								// add default row
-								vara->push_back ("entity");
-								vala->push_back (entity);
+								varNames->push_back ("entity");
+								values->push_back (entity);
 							}
 
-							vara->push_back (cmd.substr(0, cmd.find(" ")));
-							vala->push_back (value);
+							varNames->push_back (cmd.substr(0, cmd.find(" ")));
+							values->push_back (value);
 						}
 						else
 						{
 							addRequestWaitingNb (rid);
 
-							vector<string> vara, vala;
-							vara.push_back ("service");
+							TAdminViewVarNames varNames;
+							TAdminViewValues values;
+							varNames.push_back ("service");
 							string name = IService::getInstance ()->getServiceUnifiedName();
-							vala.push_back (name);
+							values.push_back (name);
 
 							// add default row
-							vara.push_back ("entity");
-							vala.push_back (entity);
+							varNames.push_back ("entity");
+							values.push_back (entity);
 
-							vara.push_back (cmd.substr(0, cmd.find(" ")));
-							vala.push_back (value);
+							varNames.push_back (cmd.substr(0, cmd.find(" ")));
+							values.push_back (value);
 	
-							addRequestAnswer (rid, vara, vala);
+							addRequestAnswer (rid, varNames, values);
 						}
 						nlinfo ("ADMIN: Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
 					}
@@ -932,19 +878,19 @@ NLMISC_CATEGORISED_COMMAND(nel, getView, "send a view and receive an array as re
 {
 	if(args.size() != 1) return false;
 	
-	vector<pair<vector<string>, vector<string> > > answer;
+	TAdminViewResult answer;
 	serviceGetView (0, args[0], answer);
 	
 	log.displayNL("have %d answer", answer.size());
 	for (uint i = 0; i < answer.size(); i++)
 	{
-		log.displayNL("  have %d value", answer[i].first.size());
+		log.displayNL("  have %d value", answer[i].VarNames.size());
 		
-		nlassert (answer[i].first.size() == answer[i].second.size());
+		nlassert (answer[i].VarNames.size() == answer[i].Values.size());
 		
-		for (uint j = 0; j < answer[i].first.size(); j++)
+		for (uint j = 0; j < answer[i].VarNames.size(); j++)
 		{
-			log.displayNL("    %s -> %s", answer[i].first[j].c_str(), answer[i].second[j].c_str());
+			log.displayNL("    %s -> %s", answer[i].VarNames[j].c_str(), answer[i].Values[j].c_str());
 		}
 	}
 	

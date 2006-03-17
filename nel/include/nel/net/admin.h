@@ -1,7 +1,7 @@
 /** \file admin.h
  * manage services admin
  *
- * $Id: admin.h,v 1.2 2003/08/26 14:52:22 lecroart Exp $
+ * $Id: admin.h,v 1.2.40.1 2006/03/17 20:49:34 miller Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -75,6 +75,23 @@ extern std::vector<CAlarm> Alarms;
 
 
 //
+// Types
+//
+
+typedef std::vector<std::string> TAdminViewVarNames;
+typedef std::vector<std::string> TAdminViewValues;
+struct SAdminViewRow
+{
+	TAdminViewVarNames	VarNames;
+	TAdminViewValues		Values;
+
+	SAdminViewRow() {}
+	SAdminViewRow(const TAdminViewVarNames& varNames, const TAdminViewValues& values): VarNames(varNames), Values(values) {}
+};
+typedef std::vector< SAdminViewRow > TAdminViewResult;
+
+
+//
 // Functions
 //
 
@@ -84,11 +101,11 @@ void updateAdmin ();
 
 void setInformations (const std::vector<std::string> &alarms, const std::vector<std::string> &graphupdate);
 
-void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::pair<std::vector<std::string>, std::vector<std::string> > > &answer, bool async=false);
+void serviceGetView (uint32 rid, const std::string &rawvarpath, TAdminViewResult& answer, bool async=false);
 
 void setRemoteClientCallback (TRemoteClientCallback cb);
 
-void addRequestAnswer (uint32 rid, const std::vector<std::string> &variables, const std::vector<std::string> &values);
+void addRequestAnswer (uint32 rid, const TAdminViewVarNames& varNames, const TAdminViewValues& values);
 
 } // NLNET
 

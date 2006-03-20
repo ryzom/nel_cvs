@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32.16.3 2006/03/09 16:15:33 legallo Exp $
+ * $Id: u_landscape.h,v 1.32.16.4 2006/03/20 16:37:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -314,6 +314,14 @@ public:
 	// @{
 	// Get a zone pointer.
 	virtual const CZone*	getZone (sint zoneId) const = 0;
+	// @}
+
+	/// \name raytrace
+	// @{
+	/** Get the ray collision against the TileFaces (ie only under approx 50 m)
+	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.
+	 */
+	virtual float			getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end) = 0;
 	// @}
 
 };

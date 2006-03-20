@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * TODO: File description
  *
- * $Id: landscape_user.cpp,v 1.49.16.2 2006/03/06 15:02:12 legallo Exp $
+ * $Id: landscape_user.cpp,v 1.49.16.3 2006/03/20 16:37:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -658,5 +658,12 @@ float		CLandscapeUser::getVegetableDensity() const
 	return _Landscape->Landscape.getVegetableDensity();
 }
 
+// ***************************************************************************
+float CLandscapeUser::getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_UI_LANDSCAPE;
+	return _Landscape->Landscape.getRayCollision(start, end);
+}
 
 } // NL3D

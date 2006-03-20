@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.31.16.2 2006/03/06 15:02:26 legallo Exp $
+ * $Id: landscape_user.h,v 1.31.16.3 2006/03/20 16:37:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,6 +211,11 @@ public:
 	// @{
 	// Get a zone pointer.
 	virtual const CZone*	getZone (sint zoneId) const;
+	// @}
+
+	/// \name raytrace
+	// @{
+	virtual float			getRayCollision(const NLMISC::CVector &start, const NLMISC::CVector &end);
 	// @}
 
 public:

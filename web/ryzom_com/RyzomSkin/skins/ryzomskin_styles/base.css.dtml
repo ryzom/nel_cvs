@@ -108,7 +108,7 @@ h6 {
 
 ul {
 /*    line-height: 1.5em; */
-    margin: 3px 0 0 7px;
+    margin: 3px 0 0 11px;
     padding: 0;
     list-style-image: url(&dtml-portal_url;/bullet.gif);
     list-style-type: square;

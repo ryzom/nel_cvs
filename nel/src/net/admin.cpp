@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.22.4.1 2006/03/17 21:05:02 miller Exp $
+ * $Id: admin.cpp,v 1.22.4.2 2006/03/20 16:45:20 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -186,6 +186,7 @@ void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
 	// Sends the identification message with the name of the service and all commands available on this service
 	//
 
+	nlinfo("cbAESConnection: Identifying self as: AliasName='%s' LongName='%s' PId=%u",IService::getInstance()->_AliasName.c_str(),IService::getInstance()->_LongName.c_str(), getpid ());
 	CMessage msgout ("SID");
 	uint32 pid = getpid ();
 	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName, pid);

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.10 2006/03/17 21:03:17 miller Exp $
+ * $Id: service.cpp,v 1.238.4.11 2006/03/20 16:45:20 miller Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -923,15 +923,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		// set the aes aliasname if present in cfg file
 		CConfigFile::CVar *varAliasName= ConfigFile.getVarPtr("AESAliasName");
-		if (var != NULL)
+		if (varAliasName != NULL)
 		{
-			_AliasName = var->asString();
+			_AliasName = varAliasName->asString();
+			nlinfo("Setting alias name to: '%s'",_AliasName.c_str());
 		}
 
 		// set the aes aliasname if is present in the command line
 		if (haveArg('N'))
 		{
 			_AliasName = getArg('N');
+			nlinfo("Setting alias name to: '%s'",_AliasName.c_str());
 		}
 
 		// Load the recording state from the config file

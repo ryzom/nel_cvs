@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.73.6.2 2006/03/20 15:33:24 miller Exp $
+ * $Id: admin_executor_service.cpp,v 1.73.6.3 2006/03/20 19:19:39 miller Exp $
  *
  */
 
@@ -866,7 +866,6 @@ bool isRegisteredService(const string &name)
 	return false;
 }
 
-
 TServices::iterator findService(uint32 sid, bool asrt = true)
 {
 	TServices::iterator sit;
@@ -879,6 +878,203 @@ TServices::iterator findService(uint32 sid, bool asrt = true)
 	return sit;
 }
 
+void treatRequestForRunnignService(uint32 rid, TServices::iterator sit, const string& viewStr)
+{
+	CVarPath subvarpath(viewStr);
+
+	bool send = true;
+
+	// check if the command is not to stop the service
+	for (uint k = 0; k < subvarpath.Destination.size(); k++)
+	{
+		if (subvarpath.Destination[k].first == "State=0")
+		{
+			// If we stop the service, we don't have to reconnect the service
+			sit->AutoReconnect = false;
+			writeServiceLaunchCtrl(sit->ServiceId,true,LaunchCtrlStop);
+		}
+		else if (subvarpath.Destination[k].first == "State=-1")
+		{
+			sit->AutoReconnect = false;
+			killProgram(sit->PId);
+			send = false;
+			writeServiceLaunchCtrl(sit->ServiceId,true,LaunchCtrlStop);
+		}
+		else if (subvarpath.Destination[k].first == "State=-2")
+		{
+			sit->AutoReconnect = false;
+			abortProgram(sit->PId);
+			send = false;
+			writeServiceLaunchCtrl(sit->ServiceId,true,LaunchCtrlStop);
+		}
+		else if (subvarpath.Destination[k].first == "State=2")
+		{
+			sit->AutoReconnect = false;
+			sit->Relaunch = true;
+			writeServiceLaunchCtrl(sit->ServiceId,true,LaunchCtrlStart);
+		}
+		else if (subvarpath.Destination[k].first == "State=3")
+		{
+			sit->AutoReconnect = false;
+			sit->Relaunch = true;
+			killProgram(sit->PId);
+			send = false;
+			writeServiceLaunchCtrl(sit->ServiceId,true,LaunchCtrlStart);
+		}
+	}
+
+	if (send)
+	{
+		// now send the request to the service
+		addRequestWaitingNb(rid);
+		sit->WaitingRequestId.push_back(rid);
+		CMessage msgout("GET_VIEW");
+		msgout.serial(rid);
+		msgout.serial(const_cast<string&>(viewStr));
+		nlassert(sit->ServiceId);
+		CUnifiedNetwork::getInstance()->send(sit->ServiceId, msgout);
+		nlinfo("REQUEST: Sent view '%s' to service '%s'", viewStr.c_str(), sit->toString().c_str());
+	}
+}
+
+void treatRequestOneself(uint32 rid, const string& viewStr)
+{
+	addRequestWaitingNb(rid);
+	TAdminViewResult answer;
+	serviceGetView(rid, viewStr, answer);
+	aesAddRequestAnswer(rid, answer);
+	nlinfo("REQUEST: Treated view myself directly: '%s'", viewStr.c_str());
+}	
+
+void treatRequestForOfflineService(uint32 rid, const string& serviceName, const string& viewStr)
+{
+	CVarPath subvarpath(viewStr);
+
+	addRequestWaitingNb(rid);
+
+	TAdminViewVarNames varNames;
+	TAdminViewValues values;
+	
+	// add default row
+	varNames.push_back("service");
+	values.push_back(serviceName);
+	
+	for (uint k = 0; k < subvarpath.Destination.size(); k++)
+	{
+		uint pos = subvarpath.Destination[k].first.find("=");
+		if (pos != string::npos)
+			varNames.push_back(subvarpath.Destination[k].first.substr(0, pos));
+		else
+			varNames.push_back(subvarpath.Destination[k].first);
+
+		string val = "???";
+		// handle special case of non running service
+		if (subvarpath.Destination[k].first == "State")
+		{
+			// lookup the alias, command to execute, execution path and defined command args for the given service
+			string alias, command, path, arg;
+			getServiceLaunchInfo(serviceName,alias,command,path,arg);
+			val = getOfflineServiceState(alias,path);
+		}
+		else if (subvarpath.Destination[k].first == "State=1" ||
+				 subvarpath.Destination[k].first == "State=2" ||
+				 subvarpath.Destination[k].first == "State=3")
+		{
+			// we want to start the service
+			if (startService(serviceName))
+				val = "Launching";
+			else
+				val = "Failed";
+		}
+		else if (subvarpath.Destination[k].first == "State=0" ||
+				 subvarpath.Destination[k].first == "State=-1" ||
+				 subvarpath.Destination[k].first == "State=-2")
+		{
+			// lookup the alias, command to execute, execution path and defined command args for the given service
+			string alias, command, path, arg;
+			bool ok= getServiceLaunchInfo(serviceName,alias,command,path,arg);
+			if (ok) writeServiceLaunchCtrl(alias,path,true,LaunchCtrlStop);
+			if (ok) writeServiceLaunchCtrl(alias,path,false,LaunchCtrlStop);
+			val= "Stopping";
+		}
+
+		values.push_back(val);
+	}
+
+	aesAddRequestAnswer(rid, varNames, values);
+	nlinfo("REQUEST: Sent and received view '%s' to offline service '%s'", viewStr.c_str(), serviceName.c_str());
+}
+	
+void addRequestForOnlineServices(uint32 rid, const string& viewStr)
+{
+	// add services that I manage
+	for (TServices::iterator sit= Services.begin(); sit!=Services.end(); ++sit)
+	{
+		if (sit->Connected)
+		{
+			treatRequestForRunnignService(rid,sit,viewStr);
+		}
+	}
+
+	// add myself
+	treatRequestOneself(rid,viewStr);
+}							
+
+void addRequestForAllServices(uint32 rid, const string& viewStr)
+{
+	uint j;
+
+	// add registered services that are not online
+	for (j = 0; j < RegisteredServices.size(); j++)
+	{
+		vector<TServices::iterator> sits;
+		findServices(RegisteredServices[j], sits);
+
+		// check for service that is registered but not online
+		if (sits.empty())
+		{
+			treatRequestForOfflineService(rid,RegisteredServices[j],viewStr);
+		}
+	}
+
+	// add all running services (and for oneself)
+	addRequestForOnlineServices(rid,viewStr);
+}							
+
+void addRequestForNamedService(uint32 rid, const string& service, const string& viewStr)
+{
+	if (service.find("AES") != string::npos)
+	{
+		// it's for me, I don't send message to myself so i manage it right now
+		treatRequestOneself(rid,viewStr);
+	}
+	else
+	{
+		// see if the service is running
+		vector<TServices::iterator> sits;
+		findServices(service, sits);
+		if (sits.empty())
+		{
+			// the service is not running - so make sure it's registered
+			if (!isRegisteredService(service))
+			{
+				nlwarning("Service %s is not online and not found in registered service list", service.c_str());
+			}
+			else
+			{
+				treatRequestForOfflineService(rid,service,viewStr);
+			}
+		}
+		else
+		{
+			// there is at least one match from a running service for the given service name so treat the matches
+			for(uint p = 0; p < sits.size(); p++)
+			{
+				treatRequestForRunnignService(rid, sits[p], viewStr);
+			}
+		}
+	}
+}							
 
 void addRequest(uint32 rid, const string &rawvarpath, uint16 sid)
 {
@@ -904,331 +1100,15 @@ void addRequest(uint32 rid, const string &rawvarpath, uint16 sid)
 			
 			if (service == "*")
 			{
-				// add services that I manage
-				for (uint j = 0; j < Services.size(); j++)
-				{
-					if (Services[j].Connected)
-					{
-						bool send = true;
-						
-						// check if the command is not to stop the service
-						CVarPath subvarpath(varpath.Destination[i].second);
-						for (uint k = 0; k < subvarpath.Destination.size(); k++)
-						{
-							if (subvarpath.Destination[k].first == "State=0")
-							{
-								// If we stop the service, we don't have to reconnect the service
-								Services[j].AutoReconnect = false;
-								writeServiceLaunchCtrl(sid,true,LaunchCtrlStop);
-							}
-							else if (subvarpath.Destination[k].first == "State=-1")
-							{
-								Services[j].AutoReconnect = false;
-								killProgram(Services[j].PId);
-								send = false;
-								writeServiceLaunchCtrl(sid,true,LaunchCtrlStop);
-							}
-							else if (subvarpath.Destination[k].first == "State=-2")
-							{
-								Services[j].AutoReconnect = false;
-								abortProgram(Services[j].PId);
-								send = false;
-								writeServiceLaunchCtrl(sid,true,LaunchCtrlStop);
-							}
-							else if (subvarpath.Destination[k].first == "State=2")
-							{
-								Services[j].AutoReconnect = false;
-								Services[j].Relaunch = true;
-								writeServiceLaunchCtrl(sid,true,LaunchCtrlStart);
-							}
-							else if (subvarpath.Destination[k].first == "State=3")
-							{
-								Services[j].AutoReconnect = false;
-								Services[j].Relaunch = true;
-								killProgram(Services[j].PId);
-								send = false;
-								writeServiceLaunchCtrl(sid,true,LaunchCtrlStart);
-							}
-						}
-						
-						if (send)
-						{
-							// now send the request to the service
-							addRequestWaitingNb(rid);
-							Services[j].WaitingRequestId.push_back(rid);
-							CMessage msgout("GET_VIEW");
-							msgout.serial(rid);
-							msgout.serial(varpath.Destination[i].second);
-							nlassert(Services[j].ServiceId);
-							CUnifiedNetwork::getInstance()->send(Services[j].ServiceId, msgout);
-							nlinfo("REQUEST: Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), Services[j].toString().c_str());
-						}
-					}
-				}
-
-				// add myself
-				addRequestWaitingNb(rid);
-				
-				TAdminViewResult answer;
-				
-				serviceGetView(rid, varpath.Destination[i].second, answer);
-				
-				aesAddRequestAnswer(rid, answer);
-				nlinfo("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
+				addRequestForOnlineServices(rid,varpath.Destination[i].second);
 			}
 			else if (service == "#")
 			{
-				uint j;
-				// add registered services
-				for (j = 0; j < RegisteredServices.size(); j++)
-				{
-					vector<TServices::iterator> sits;
-					findServices(RegisteredServices[j], sits);
-					if (sits.empty())
-					{
-						// we fake a return value because we want all services, even if they are offline
-						addRequestWaitingNb(rid);
-
-						CVarPath subvarpath(varpath.Destination[i].second);
-
-						TAdminViewVarNames varNames;
-						TAdminViewValues values;
-						
-						// add default row
-						varNames.push_back("service");
-						values.push_back(RegisteredServices[j]);
-						
-						for (uint k = 0; k < subvarpath.Destination.size(); k++)
-						{
-							uint pos = subvarpath.Destination[k].first.find("=");
-							if (pos != string::npos)
-								varNames.push_back(subvarpath.Destination[k].first.substr(0, pos));
-							else
-								varNames.push_back(subvarpath.Destination[k].first);
-
-							string val = "???";
-							// handle special case of non running service
-							if (subvarpath.Destination[k].first == "State")
-							{
-								// lookup the alias, command to execute, execution path and defined command args for the given service
-								string alias, command, path, arg;
-								getServiceLaunchInfo(RegisteredServices[j],alias,command,path,arg);
-								val = getOfflineServiceState(alias,path);
-							}
-							else if (subvarpath.Destination[k].first == "State=1" ||
-									 subvarpath.Destination[k].first == "State=2" ||
-									 subvarpath.Destination[k].first == "State=3")
-							{
-								// we want to start the service
-								if (startService(RegisteredServices[j]))
-									val = "Launching";
-								else
-									val = "Failed";
-							}
-							else if (subvarpath.Destination[k].first == "State=0" ||
-									 subvarpath.Destination[k].first == "State=-1" ||
-									 subvarpath.Destination[k].first == "State=-2")
-							{
-								// lookup the alias, command to execute, execution path and defined command args for the given service
-								string alias, command, path, arg;
-								bool ok= getServiceLaunchInfo(RegisteredServices[j],alias,command,path,arg);
-								if (ok) writeServiceLaunchCtrl(alias,path,true,LaunchCtrlStop);
-								if (ok) writeServiceLaunchCtrl(alias,path,false,LaunchCtrlStop);
-								val= "Stopping";
-							}
-
-							values.push_back(val);
-						}
-
-						aesAddRequestAnswer(rid, varNames, values);
-						nlinfo("REQUEST: Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
-					}
-					else
-					{
-						for(uint p = 0; p < sits.size(); p++)
-						{
-							// send the request to the registered online service
-							addRequestWaitingNb(rid);
-
-							sits[p]->WaitingRequestId.push_back(rid);
-							CMessage msgout("GET_VIEW");
-							msgout.serial(rid);
-							msgout.serial(varpath.Destination[i].second);
-							nlassert(sits[p]->ServiceId);
-							CUnifiedNetwork::getInstance()->send(sits[p]->ServiceId, msgout);
-							nlinfo("REQUEST: Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), sits[p]->toString().c_str());
-						}
-					}
-				}
-
-				// add services that are online but not registered
-				for (j = 0; j < Services.size(); j++)
-				{
-					if (Services[j].Connected && Services[j].AliasName.empty())
-					{
-						addRequestWaitingNb(rid);
-						
-						Services[j].WaitingRequestId.push_back(rid);
-						CMessage msgout("GET_VIEW");
-						msgout.serial(rid);
-						msgout.serial(varpath.Destination[i].second);
-						nlassert(Services[j].ServiceId);
-						CUnifiedNetwork::getInstance()->send(Services[j].ServiceId, msgout);
-						nlinfo("REQUEST: Sent view '%s' to service %s", varpath.Destination[i].second.c_str(), Services[j].toString().c_str());
-					}
-				}
-
-				// add myself
-				addRequestWaitingNb(rid);
-
-				TAdminViewResult answer;
-				
-				serviceGetView(rid, varpath.Destination[i].second, answer);
-				aesAddRequestAnswer(rid, answer);
-				nlinfo("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
+				addRequestForAllServices(rid,varpath.Destination[i].second);
 			}
 			else
 			{
-				if (service.find("AES") != string::npos)
-				{
-					// it's for me, I don't send message to myself so i manage it right now
-					addRequestWaitingNb(rid);
-					
-					TAdminViewResult answer;
-					
-					serviceGetView(rid, varpath.Destination[i].second, answer);
-					aesAddRequestAnswer(rid, answer);
-					nlinfo("REQUEST: Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
-				}
-				else
-				{
-					vector<TServices::iterator> sits;
-					findServices(service, sits);
-					if (sits.empty())
-					{
-						if (!isRegisteredService(service))
-						{
-							nlwarning("Service %s is not online and not found in registered service list", service.c_str());
-						}
-						else
-						{
-							addRequestWaitingNb(rid);
-							
-							CVarPath subvarpath(varpath.Destination[i].second);
-							
-							TAdminViewVarNames varNames;
-							TAdminViewValues values;
-							
-							// add default row
-							varNames.push_back("service");
-							values.push_back(service);
-							
-							for (uint k = 0; k < subvarpath.Destination.size(); k++)
-							{
-								uint pos = subvarpath.Destination[k].first.find("=");
-								if (pos != string::npos)
-									varNames.push_back(subvarpath.Destination[k].first.substr(0, pos));
-								else
-									varNames.push_back(subvarpath.Destination[k].first);
-								
-								string val = "???";
-								// handle special case of non running service
-								if (subvarpath.Destination[k].first == "State")
-								{
-									// lookup the alias, command to execute, execution path and defined command args for the given service
-									string alias, command, path, arg;
-									getServiceLaunchInfo(service,alias,command,path,arg);
-									val = getOfflineServiceState(alias,path);
-								}
-								else if (subvarpath.Destination[k].first == "State=1" ||
-										 subvarpath.Destination[k].first == "State=2" ||
-										 subvarpath.Destination[k].first == "State=3")
-								{
-									// we want to start the service
-									if (startService(service))
-										val = "Launching";
-									else
-										val = "Failed";
-								}
-								else if (subvarpath.Destination[k].first == "State=0" ||
-										 subvarpath.Destination[k].first == "State=-1" ||
-										 subvarpath.Destination[k].first == "State=-2")
-								{
-									// lookup the alias, command to execute, execution path and defined command args for the given service
-									string alias, command, path, arg;
-									bool ok= getServiceLaunchInfo(service,alias,command,path,arg);
-									if (ok) writeServiceLaunchCtrl(alias,path,true,LaunchCtrlStop);
-									if (ok) writeServiceLaunchCtrl(alias,path,false,LaunchCtrlStop);
-									val= "Stopping";
-								}
-								
-								values.push_back(val);
-							}
-							
-							aesAddRequestAnswer(rid, varNames, values);
-							nlinfo("REQUEST: Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
-						}
-					}
-					else
-					{
-						for(uint p = 0; p < sits.size(); p++)
-						{
-							bool send = true;
-							// check if the command is not to stop the service
-							CVarPath subvarpath(varpath.Destination[i].second);
-							for (uint k = 0; k < subvarpath.Destination.size(); k++)
-							{
-								if (subvarpath.Destination[k].first == "State=0")
-								{
-									// If we stop the service, we don't have to reconnect the service
-									sits[p]->AutoReconnect = false;
-									writeServiceLaunchCtrl(sits[p]->ServiceId,true,LaunchCtrlStop);
-								}
-								else if (subvarpath.Destination[k].first == "State=-1")
-								{
-									sits[p]->AutoReconnect = false;
-									killProgram(sits[p]->PId);
-									writeServiceLaunchCtrl(sits[p]->ServiceId,true,LaunchCtrlStop);
-									send = false;
-								}
-								else if (subvarpath.Destination[k].first == "State=-2")
-								{
-									sits[p]->AutoReconnect = false;
-									abortProgram(sits[p]->PId);
-									send = false;
-									writeServiceLaunchCtrl(sits[p]->ServiceId,true,LaunchCtrlStop);
-								}
-								else if (subvarpath.Destination[k].first == "State=2")
-								{
-									sits[p]->AutoReconnect = false;
-									sits[p]->Relaunch = true;
-									writeServiceLaunchCtrl(sits[p]->ServiceId,true,LaunchCtrlStart);
-								}
-								else if (subvarpath.Destination[k].first == "State=3")
-								{
-									sits[p]->AutoReconnect = false;
-									sits[p]->Relaunch = true;
-									killProgram(sits[p]->PId);
-									send = false;
-									writeServiceLaunchCtrl(sits[p]->ServiceId,true,LaunchCtrlStart);
-								}
-							}
-
-							if (send)
-							{
-								// now send the request to the service
-								addRequestWaitingNb(rid);
-								sits[p]->WaitingRequestId.push_back(rid);
-								CMessage msgout("GET_VIEW");
-								msgout.serial(rid);
-								msgout.serial(varpath.Destination[i].second);
-								nlassert(sits[p]->ServiceId);
-								CUnifiedNetwork::getInstance()->send(sits[p]->ServiceId, msgout);
-								nlinfo("REQUEST: Sent view '%s' to service '%s'", varpath.Destination[i].second.c_str(), sits[p]->toString().c_str());
-							}
-						}
-					}
-				}
+				addRequestForNamedService(rid,service,varpath.Destination[i].second);
 			}
 		}
 	}
@@ -1257,6 +1137,7 @@ static void cbServiceIdentification(CMessage &msgin, const std::string &serviceN
 
 	msgin.serial(Services[sid].AliasName, Services[sid].LongName, Services[sid].PId);
 	msgin.serialCont(Services[sid].Commands);
+	nlinfo("Received service identification: Sid=%-3i Alias='%s' LongName='%s' ShortName='%s' PId=%u",sid ,Services[sid].AliasName.c_str(),Services[sid].LongName.c_str(),serviceName.c_str(),Services[sid].PId);
 
 	// if there's an alias, it means that it s me that launch the services, autoreconnect it
 	if (!Services[sid].AliasName.empty())

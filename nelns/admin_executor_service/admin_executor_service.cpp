@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.73.6.1 2006/03/17 21:26:54 miller Exp $
+ * $Id: admin_executor_service.cpp,v 1.73.6.2 2006/03/20 15:33:24 miller Exp $
  *
  */
 
@@ -789,15 +789,15 @@ void cleanRequests()
 					uint k;
 					for (k = 0; k < Requests[i].Answers[j].VarNames.size(); k++)
 					{
-						InfoLog->displayRaw("%-10s", Requests[i].Answers[j].VarNames[k].c_str());
+						InfoLog->displayRaw("%-20s ", Requests[i].Answers[j].VarNames[k].c_str());
 					}
 					InfoLog->displayRawNL("");
 					for (k = 0; k < Requests[i].Answers[j].Values.size(); k++)
 					{
-						InfoLog->displayRaw("%-10s", Requests[i].Answers[j].Values[k].c_str());
+						InfoLog->displayRaw("%-20s", Requests[i].Answers[j].Values[k].c_str());
 					}
 					InfoLog->displayRawNL("");
-					InfoLog->displayRawNL("-------------------------");
+					InfoLog->displayRawNL("----------------------------------------------");
 				}	
 			}
 			else

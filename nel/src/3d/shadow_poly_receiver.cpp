@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.14.16.2 2006/03/16 10:44:41 vizerie Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.14.16.3 2006/03/20 08:52:03 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -448,9 +448,16 @@ float			CShadowPolyReceiver::getCameraCollision(const CVector &start, const CVec
 		camCol.buildRay(start, end);
 	else
 		camCol.build(start, end, radius, testType==CameraColCone);
-	
+			
 	// select with quadGrid
-	_TriangleGrid.select(camCol.getBBox().getMin(), camCol.getBBox().getMax());
+	if(testType==CameraColSimpleRay)
+	{
+		_TriangleGrid.selectRay(start, end);
+	}
+	else
+	{
+		_TriangleGrid.select(camCol.getBBox().getMin(), camCol.getBBox().getMax());
+	}
 	
 	// **** For all triangles, test if intersect the camera collision
 	TTriangleGrid::CIterator	it;

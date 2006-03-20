@@ -789,6 +789,25 @@ SOURCE=.\3d\ptr_set.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\quad_grid.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugInstrument"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\quad_grid.h
 # End Source File
 # Begin Source File

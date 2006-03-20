@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.73.6.3 2006/03/20 19:19:39 miller Exp $
+ * $Id: admin_executor_service.cpp,v 1.73.6.4 2006/03/20 21:45:47 distrib Exp $
  *
  */
 
@@ -184,7 +184,7 @@ struct CService
 CVariable<uint32> RequestTimeout("aes","RequestTimeout", "in seconds, time before a request is timeout", 5, 0, true);		// in seconds, timeout before canceling the request
 CVariable<uint32> PingTimeout("aes","PingTimeout", "in seconds, time before services have to answer the ping message or will be killed", 900, 0, true);		// in seconds, timeout before killing the service
 CVariable<uint32> PingFrequency("aes","PingFrequency", "in seconds, time between each ping message", 60, 0, true);		// in seconds, frequency of the send ping to services
-
+CVariable<bool>   KillServicesOnDisconnect("aes","KillServicesOnDisconnect", "if set, call killProgram on services as they disconnect", false, 0, true);
 
 //
 // Global Variables (containers)
@@ -1376,6 +1376,14 @@ void serviceDisconnection(const std::string &serviceName, uint16 sid, void *arg)
 		sendAdminEmail("Server %s service '%s' : Stopped, auto reconnect in %d seconds", CInetAddress::localHost().hostName().c_str(), Services[sid].getServiceUnifiedName().c_str(), delay);
 	}
 
+	// if the appropriate cfg file variable is set then we kill the service brutally on disconnection - this
+	// allows one to fix a certain number of problem cases in program shut-down that would otherwise require
+	// manual intervention on the machine
+	if (KillServicesOnDisconnect)
+	{
+		killProgram(Services[sid].PId);
+	}
+
 	Services[sid].reset();
 }
 
@@ -1490,7 +1498,8 @@ NLMISC_COMMAND(getViewAES, "send a view and receive an array as result", "<varpa
 		cmd += args[i];
 	}
 	
-	addRequest(0, cmd, 0);
+	static uint32 requestId=0;
+	addRequest(requestId++, cmd, 0);
 
 	return true;
 }

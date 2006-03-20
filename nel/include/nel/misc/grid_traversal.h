@@ -47,7 +47,7 @@ public:
 	/** continue grid traversal from the given position
 	  * If there are remaingind cells to traverse then true is returned, x & y are updated
 	  */
-	static bool traverse(const NLMISC::CVector2f &start, const NLMISC::CVector2f &end, sint &x, sint &y);
+	static bool traverse(const NLMISC::CVector2f &start, const NLMISC::CVector2f &dir, sint &x, sint &y);
 };
 
 

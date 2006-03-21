@@ -13,7 +13,7 @@
         tal:attributes="action here_url"
         tal:condition="python:member.has_role('Owner')">
         <input type="hidden" name="type_name" value="WeblogEntry"/>
-        <input class="standalone" type="submit" value="Add Weblog Entry"
+        <input class="standalone" type="submit" value="Submit Your News"
           name="folder_factories:method" i18n:attributes="value"/>
       </form>
 

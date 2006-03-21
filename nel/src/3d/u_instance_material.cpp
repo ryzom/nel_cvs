@@ -1,7 +1,7 @@
 /** \file u_instance_material.cpp
  * TODO: File description
  *
- * $Id: u_instance_material.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_instance_material.cpp,v 1.4.16.1 2006/03/21 17:01:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,11 +143,22 @@ void UInstanceMaterial::setTextureMem(uint stage, uint8 *data, uint32 length, bo
 }
 
 // ***************************************************************************
-
 bool				UInstanceMaterial::isLighted() const 
 {
 	NL3D_MEM_MATERIAL_INSTANCE
 	return _Object->isLighted();
+}
+
+// ***************************************************************************
+void UInstanceMaterial::setLighting(bool active,
+									CRGBA emissive /*=CRGBA(0,0,0)*/,
+									CRGBA ambient /*=CRGBA(0,0,0)*/,
+									CRGBA diffuse /*=CRGBA(0,0,0)*/,
+									CRGBA specular /*=CRGBA(0,0,0)*/,
+									float shininess /*=10*/)
+{
+	NL3D_MEM_MATERIAL_INSTANCE
+	_Object->setLighting(active, emissive, ambient, diffuse, specular, shininess);
 }
 
 // ***************************************************************************
@@ -374,11 +385,32 @@ void			UInstanceMaterial::setAlphaTestThreshold(float at)
 }
 
 // ***************************************************************************
+float UInstanceMaterial::getAlphaTestThreshold() const
+{
+	NL3D_MEM_MATERIAL_INSTANCE
+	return _Object->getAlphaTestThreshold();
+}
+
+// ***************************************************************************
+void UInstanceMaterial::setAlphaTest(bool active)
+{
+	NL3D_MEM_MATERIAL_INSTANCE
+	_Object->setAlphaTest(active);
+}
+
+// ***************************************************************************
 
 void			UInstanceMaterial::setZWrite(bool active)
 {
 	NL3D_MEM_MATERIAL_INSTANCE
 	_Object->setZWrite(active);
+}
+
+// ***************************************************************************
+void UInstanceMaterial::setZFunc(ZFunc val)
+{
+	NL3D_MEM_MATERIAL_INSTANCE
+		_Object->setZFunc((CMaterial::ZFunc) val);
 }
 
 // ***************************************************************************

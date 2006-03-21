@@ -3,7 +3,9 @@
 <li class="navTreeItem visualNoMarker"
     tal:define="parent_shows_children show_children|nothing;
                 children item/children|nothing;
-                cur_item python: item['getURL'] in here.absolute_url()"
+                abs_url python:here.absolute_url();
+                cur_item python: item['getURL'] in abs_url"
+
     tal:condition="python: (not item['no_display']) and (cur_item or parent_shows_children or children)">
 
     <tal:level define="item_type_class     python: 'contenttype-' + normalizeString(item['portal_type']);
@@ -29,10 +31,12 @@
 
    <tal:news tal:define="url here/portal_url;
                          urlnews python:url+'/news';
-                         urlarchive python: urlnews+'/archive';"
-             tal:condition="python: (urlnews in here.absolute_url() and level<2)
-                                    or (item['Title'] != 'News' and level<2)
-                                    or (item['getURL'] in here.absolute_url())">
+                         urlchronicle python:url+'/chronicles';"
+
+             tal:condition="python: ( ((urlnews in abs_url) or (urlchronicle in abs_url)) and level<2)                                    
+                                    or (item['Title'] != 'chronicles' and item['Title'] != 'News' and level<2)
+                                    or (item['getURL'] in abs_url)">
+
     <ul tal:attributes="class python:'navTree navTreeLevel'+str(level)"
         tal:define="show_children item/show_children| python:True;
                     level python:level+1;"

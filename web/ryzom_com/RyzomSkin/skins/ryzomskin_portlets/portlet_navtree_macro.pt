@@ -31,7 +31,6 @@
                          urlnews python:url+'/news';
                          urlarchive python: urlnews+'/archive';"
              tal:condition="python: (urlnews in here.absolute_url() and level<2)
-                                    or (urlarchive in here.absolute_url())
                                     or (item['Title'] != 'News' and level<2)
                                     or (item['getURL'] in here.absolute_url())">
     <ul tal:attributes="class python:'navTree navTreeLevel'+str(level)"

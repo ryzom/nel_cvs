@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * TODO: File description
  *
- * $Id: transform.cpp,v 1.80 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: transform.cpp,v 1.80.16.1 2006/03/21 17:01:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,6 +262,12 @@ void		CTransform::setTransparency(bool v)
 			_FatherSkeletonModel->dirtSkinRenderLists();
 		}
 	}
+}
+
+// ***************************************************************************
+void CTransform::setBypassLODOpacityFlag(bool bypass)
+{
+	setStateFlag(BypassLODOpacity, bypass);
 }
 
 // ***************************************************************************

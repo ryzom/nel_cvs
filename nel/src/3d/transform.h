@@ -1,7 +1,7 @@
 /** \file transform.h
  * TODO: File description
  *
- * $Id: transform.h,v 1.61 2005/03/10 17:27:04 berenguier Exp $
+ * $Id: transform.h,v 1.61.16.1 2006/03/21 17:01:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,6 +173,9 @@ public:
 	 */
 	void			setTransparency(bool v);
 	void			setOpacity(bool v);
+	// no op for non multi-lod object, else, force the opacity / 
+	void			setBypassLODOpacityFlag(bool bypass);	
+	bool			getBypassLODOpacityFlag() const{ return getStateFlag(BypassLODOpacity) != 0;  }
 	// return a non-zero value if true
 	uint32			isOpaque() { return getStateFlag(IsOpaque); }
 	uint32			isTransparent() { return getStateFlag(IsTransparent); }
@@ -890,9 +893,11 @@ private:
 											// and is thus always visible when in the frustum
 		ClusterSystemAuto		= 0x4000000,
 
-		SSSWO					= 0x8000000	// Special for SkeletonSpawnScript. if set, the WorldMatrix is special
+		SSSWO					= 0x8000000,	// Special for SkeletonSpawnScript. if set, the WorldMatrix is special
 
-		// NB: may continue on >=0x10000000
+		BypassLODOpacity		= 0x10000000	// for mesh multi lod : do not use the LOD opacity / transparency, but the parent one (overwritten at traversal, else ...)
+
+		// NB: may continue on >=0x20000000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.

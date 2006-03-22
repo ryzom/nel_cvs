@@ -1,10 +1,11 @@
+# Translation of ryzomskin to English
 msgid ""
 msgstr ""
-"Project-Id-Version: Plone 2.1\n"
-"POT-Creation-Date: 2006-3-21 12:01+0000\n"
-"PO-Revision-Date: 2006-3-21 12:01+0000\n"
+"Project-Id-Version: RyzomSkin\n"
+"POT-Creation-Date: 2006-03-21 12:13+0000\n"
+"PO-Revision-Date: 2006-03-21 12:54+0100\n"
 "Last-Translator: Bernard Patrick <bernard@nevrax.com>\n"
-"Language-Team: English \n"
+"Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,13 +13,11 @@ msgstr ""
 "Language-Code: en\n"
 "Language-Name: English\n"
 "Preferred-Encodings: utf-8\n"
-"Domain: ryzomskin\n"
+"Domain: RyzomSkin\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
-
-msgid "date_format_long"
-#Commented and changed by YASSINE :
-#msgstr "${d}-${m}-${Y} ${H}:${M}"
-msgstr "${A},${d} ${B} , ${Y} at ${H}:${M}"
 
 msgid "server-status"
 msgstr "Server Status :"
+
+msgid "date_format_long"
+msgstr "${A},${d} ${B} , ${Y} at ${H}:${M}"

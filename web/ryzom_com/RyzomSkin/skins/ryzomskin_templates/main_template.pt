@@ -69,13 +69,8 @@
             </div>
         </td></tr>
         <tr><td VALIGN=top>
-	<div id="serverstatus">
-            <!-- le page template -->
-            <a href="server_status">Server&nbsp;status&nbsp;:</a>
-            <span tal:define="servers python:context.get_servers_status()">
-                <span tal:repeat="res servers" class="" tal:attributes="class python:res[1]" tal:content="python:res[0]"></span>
-            </span>
-        </div>
+	        <div metal:use-macro="here/serverstatus/macros/serverstatus">
+            </div>
         </td></tr>                
         <tr><td>
              <div style="float:right;" metal:use-macro="here/global_searchbox/macros/quick_search">

@@ -21,3 +21,6 @@ msgstr "Etat des serveurs :"
 
 msgid "date_format_long"
 msgstr "${A},${d} ${B} , ${Y} à ${H}:${M}"
+
+msgid "Submit Your News"
+msgstr "Soumettre Une News"

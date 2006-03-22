@@ -21,3 +21,6 @@ msgstr "Server Status :"
 
 msgid "data_format_long"
 msgstr "${A},${d} ${B} , ${Y} at ${H}:${M}"
+
+msgid "Submit Your News"
+msgstr "Eine Nachricht Unterbreiten"

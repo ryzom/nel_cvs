@@ -14,7 +14,6 @@ text-align:justify;
 }
 
 .weblog-entry p,.weblog-entry div{
-/*margin-bottom: 3px;*/
 padding:0;
 margin:0;
 text-align:justifty;
@@ -52,10 +51,8 @@ background-color: transparent;
 border: none;
 color: &dtml-globalFontColor;;
 height: auto;
-/*padding: 3px;*/
 margin-right: 3px;
 text-decoration: underline;
-/* text-transform: &dtml-textTransform;;*/
 }
 
 ul.weblog-footer a:hover {
@@ -71,9 +68,7 @@ color:#4bffff; !important;
 margin:0;
 padding:0;
 margin-top:3px;
-/* text-align: left; */
 }
-
 
 .topic-image, .weblog-topic-images {
 float:left;
@@ -89,6 +84,20 @@ padding: 3px;
 font-weight: normal;
 border : none; !important;
 color : #4bffff; !important;
+padding : 0px;
+margin  : 0px;
+}
+
+.weblog-heading-entry a{
+text-decoration : none;
+text-transform: uppercase;
+color : #4bffff;
+border: none;
+}
+.weblog-heading-entry{
+font-weight: normal;
+border : none; !important;
+color : white; !important;
 padding : 0px;
 margin  : 0px;
 }
@@ -131,7 +140,6 @@ font-size: smaller;
 }
 
 
-
 /* Main display */
 .weblog-photo {
 text-align: center;
@@ -162,7 +170,6 @@ h2.weblog-heading a{
 
 h2.weblog-heading {
 font-weight: normal;
-/*border-bottom: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;*/
 border : none;
 color : #4bffff; !important;
 padding : 0px;
@@ -175,8 +182,6 @@ border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
 }
 
 .weblog-topics, .weblog-topics a {
-/*font-size: &dtml-fontSmallSize;;*/
-/*color: &dtml-discreetColor;;*/
 text-transform: uppercase;
 color : #4bffff;
 }
@@ -186,7 +191,6 @@ margin-top: 2px;
 margin-bottom: 2px;
 
 }
-
 
 .weblog-summary img { 
 max-width: 700px; !important;

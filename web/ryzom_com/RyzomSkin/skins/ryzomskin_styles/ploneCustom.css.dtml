@@ -348,6 +348,16 @@ margin:0;
 text-align:left;
 }
 
+ .documentActions { 	 
+   margin: 2px 2px 1px 0px !important; 	 
+   padding: 0; 	 
+   /*YOU MUST KEEP THIS TO OVERRIDE 	 
+   * THE AUTHORING CSS 	 
+   */ 	 
+   float: none; 	 
+   text-align: right; 	 
+ } 	 
+
 .imageHide { 
  background:black;
  margin:0;

@@ -2,33 +2,35 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       i18n:domain="plone">
 <body>
-
 <div class="holeContainer" style="text-align : right;" metal:define-macro="portlet"
-     tal:define="url here/portal_url;
-                 urlnews python:url.split('/')[-1]+'/news';
-                 results python:request.get('news',
-                   here.portal_catalog.searchResults(portal_type='WeblogEntry',
-                                                     path=urlnews,
+     tal:define="results python:request.get('chronicles',
+                 here.portal_catalog.searchResults(portal_type='WeblogEntry',
+                                                     path='/ryzom/news',
                                                      sort_on='Date',
                                                      sort_order='reverse',
                                                      review_state='published')[:5]);"
-     tal:condition="python:test(template.getId()!='news' and results, 1, 0)">
+     tal:condition="python:test(template.getId()!='chronicles' and results, 1, 0)">
+
 <img  class="fakeBorder" src="side_top.png"/>
 <div class="hole">
     <dl class="portlet" id="portlet-news">
         <dt class="portletHeader">
             <a href="#" 
-               tal:condition="python:'news' in portal.contentIds()"
+               tal:condition="python:'chronicles' in portal.contentIds()"
                tal:attributes="href string:${utool}/news"
-               i18n:translate="box_news">News</a>
+               i18n:domain="RyzomSkin"
+               i18n:translate="News">News</a>
             <a href="#" 
-               tal:condition="python:'news' not in portal.contentIds()"
-               tal:attributes="href string:${utool}/news_listing"
-               i18n:translate="box_news">News</a>
+               tal:condition="python:'chronicles' not in portal.contentIds()"
+               tal:attributes="href string:${utool}/news"
+               i18n:domain="RyzomSkin"
+               i18n:translate="News">News</a>
         </dt>
+
         <tal:newsitems tal:repeat="obj results">
         <dd tal:define="oddrow repeat/obj/odd"
              tal:attributes="class python:test(oddrow, 'portletItem even', 'portletItem odd')">
+
             <a href=""
                tal:attributes="href obj/getURL;
                                title obj/Description">
@@ -41,14 +43,32 @@
             </a>
         </dd>
         </tal:newsitems>
-	<dd class="portletFooter">
-	<a href="" tal:condition="python:'news' in portal.contentIds()" tal:attributes="href string:${utool}/news" i18n:translate="box_more_news_link" >
-	<span> More news&hellip; </span></a>
-        <!-- ###bouton addnews###-->
-	<a href="" tal:attributes="href string:createObject?type_name=WeblogEntry">
-	<img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip; </a></dd></dl>
+        <dd class="portletFooter">
+            <a href=""
+               tal:condition="python:'news' in portal.contentIds()"
+               tal:attributes="href string:${utool}/news"
+               i18n:translate="box_more_news_link"
+               >
+              More news&hellip;
+            </a>
+
+            <a href=""
+               tal:condition="python:'news' not in portal.contentIds()"
+               tal:attributes="href string:${utool}/news_listing"
+               i18n:translate="box_more_news_link"
+               >
+              More news&hellip;
+            </a>
+
+	<a href=""
+       tal:attributes="href string:createObject?type_name=WeblogEntry">
+	<img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip;
+    </a>
+        </dd>
+    </dl>
+
 </div>
-<div class="imageHide"><img   class="fakeBorder" src="side_up.png"/></div>
+<div class="imageHide"><img class="fakeBorder" src="side_up.png"/></div>
 </div>
 </body>
 </html>

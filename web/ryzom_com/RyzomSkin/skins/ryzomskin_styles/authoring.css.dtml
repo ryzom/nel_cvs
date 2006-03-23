@@ -366,8 +366,9 @@ color: &dtml-contentViewFontColor;;
 }
 .contentViews li a:hover {
 border: &dtml-borderWidth; &dtml-borderStyle; &dtml-contentViewBorderColor;;
-background-color: &dtml-contentViewBackgroundColor;;
-color: &dtml-contentViewFontColor;;
+border-bottom: &dtml-contentViewBackgroundColor; &dtml-borderWidth; &dtml-borderStyle;;
+background-color: &dtml-contentViewBorderColor;;
+color: &dtml-linkColor;;
 }
 
 
@@ -383,6 +384,7 @@ font-size: 90%;
 background-color: &dtml-contentViewBackgroundColor;;
 border-left: &dtml-borderWidth; &dtml-borderStyle; &dtml-contentViewBorderColor;;
 border-right: &dtml-borderWidth; &dtml-borderStyle; &dtml-contentViewBorderColor;;
+border-bottom: &dtml-borderWidth; &dtml-borderStyle; &dtml-contentViewBorderColor;;
 color: &dtml-contentViewFontColor;;
 text-align: right;
 text-transform: &dtml-textTransform;;
@@ -525,7 +527,7 @@ margin: 0.2em 0;
 
 .actionMenu .actionMenuContent li a:hover {
 background-color: &dtml-contentViewBorderColor;;
-color: White;
+color: &dtml-linkColor;;
 }
 
 .actionMenu .actionMenuContent .actionSeparator a {

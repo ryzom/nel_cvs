@@ -278,7 +278,7 @@ H1 {
 	font-size : 120%;
 	color : #9ae033;
 	border-bottom : solid #9ae033 1px;
-	background-image: url('h1.png');
+	background-image: url('h1.gif');
 	background-repeat: no-repeat;
 	background-position : center left;
 	padding-left : 20px;
@@ -366,8 +366,8 @@ text-align:left;
  height:5px;
 }
 
-.fakeBorder { 
-  width:200px;
+.fakeBorder {
+  width:200px;  
 }
 
 .holeContainer{ 
@@ -375,7 +375,10 @@ text-align:left;
   background-color : #5F5E57;
   padding:0;
   margin:0;
-  border:0;
+  border:0;  
+  margin: 12px 0px /*!important;*/
+  /*float: none; 	 
+  text-align: right;*/
 }
 
 .hole { 

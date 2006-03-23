@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.7 2006/03/16 15:11:17 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.8 2006/03/23 13:19:16 boucher Exp $
  *
  */
 
@@ -127,7 +127,7 @@ CVariable<bool>		UsePatchMode("ws", "UsePatchMode", "Use Frontends as Patch serv
 
 
 // Shortcut to the module instance
-CWelcomeServiceMod	*CWelcomeServiceMod::_Instance = NULL;
+//CWelcomeServiceMod	*CWelcomeServiceMod::_Instance = NULL;
 
 
 /**
@@ -521,6 +521,9 @@ void cbFESClientConnected (CMessage &msgin, const std::string &serviceName, uint
 // This function is called when a FES rejected a client' cookie
 void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
+	CLoginCookie	cookie;
+	msgin.serial(cookie);
+
 	// client' cookie rejected, no longer pending
 	uint32 totalNbOnlineUsers = 0, totalNbPendingUsers = 0;
 	for (list<CFES>::iterator it = FESList.begin(); it != FESList.end(); it++)
@@ -534,6 +537,7 @@ void	cbFESRemovedPendingCookie(CMessage &msgin, const std::string &serviceName, 
 		totalNbPendingUsers += (*it).NbPendingUsers;
 	}
 
+	CWelcomeServiceMod::getInstance()->pendingUserLost(cookie.getUserId());
 	CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 }
 
@@ -987,6 +991,25 @@ void cbFailed (CMessage &msgin, const std::string &serviceName, uint16 sid)
 	nlerror (reason.c_str());
 }
 
+
+bool disconnectClient(uint32 userId)
+{
+	map<uint32, TServiceId>::iterator it = UserIdSockAssociations.find (userId);
+	if (it == UserIdSockAssociations.end ())
+	{
+		nlwarning ("Can't disconnect the user %d, he is not found", userId);
+		return false;
+	}
+	else
+	{
+		CMessage msgout ("DC");
+		msgout.serial (userId);
+		CUnifiedNetwork::getInstance()->send (it->second, msgout);
+
+		return true;
+	}
+}
+
 void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the LS tells me that i have to disconnect a client
@@ -994,17 +1017,8 @@ void cbLSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 	uint32 userid;
 	msgin.serial (userid);
 
-	map<uint32, TServiceId>::iterator it = UserIdSockAssociations.find (userid);
-	if (it == UserIdSockAssociations.end ())
-	{
-		nlwarning ("Can't disconnect the user %d, he is not found", userid);
-	}
-	else
-	{
-		CMessage msgout ("DC");
-		msgout.serial (userid);
-		CUnifiedNetwork::getInstance()->send ((*it).second, msgout);
-	}
+	disconnectClient(userid);
+
 }
 
 // connection to the LS, send the identification message
@@ -1349,16 +1363,21 @@ namespace WS
 			}
 			CWelcomeServiceMod::getInstance()->updateConnectedPlayerCount(totalNbOnlineUsers, totalNbPendingUsers);
 		}
+		else if (proxy->getModuleClassName() == "LoginService")
+		{
+			_LoginService = proxy;
+		}
 	}
 
 	void CWelcomeServiceMod::onModuleDown(IModuleProxy *proxy)
 	{
-		if (proxy->getModuleClassName() == "RingSessionManager"
-			&& _RingSessionManager == proxy)
+		if (_RingSessionManager == proxy)
 		{
 			// remove this module as the ring session manager
 			_RingSessionManager = NULL;
 		}
+		else if (_LoginService == proxy)
+			_LoginService = NULL;
 	}
 	
 
@@ -1389,6 +1408,17 @@ namespace WS
 			PendingFeResponse.insert(make_pair(cookie, pfri));
 		}
 	}
+
+	void CWelcomeServiceMod::pendingUserLost(uint32 userId)
+	{
+		if (!_LoginService)
+			return;
+
+		CLoginServiceProxy ls(_LoginService);
+
+		ls.pendingUserLost(this, userId);
+	}
+
 
 	// register the module
 	NLNET_REGISTER_MODULE_FACTORY(CWelcomeServiceMod, "WelcomeService");

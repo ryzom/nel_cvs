@@ -216,6 +216,113 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	// WARNING : this is a generated file, don't change it !
 	/////////////////////////////////////////////////////////////////
+	class CLoginServiceSkel
+	{
+	protected:
+		CLoginServiceSkel()
+		{
+			// do early run time check for message table
+			getMessageHandlers();
+		}
+		virtual ~CLoginServiceSkel()
+		{
+		}
+
+		void init(NLNET::IModule *module)
+		{
+			_Interceptor.init(this, module);
+		}
+
+		// unused interceptors 
+		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
+		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  {};
+		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) {};
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {};
+	
+		// process module message interceptor
+		bool fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+	private:
+
+		typedef void (CLoginServiceSkel::*TMessageHandler)(NLNET::IModuleProxy *sender, const NLNET::CMessage &message);
+		typedef std::map<std::string, TMessageHandler>	TMessageHandlerMap;
+
+		const TMessageHandlerMap &getMessageHandlers() const;
+
+		
+		void pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
+
+		// declare one interceptor member of the skeleton
+		typedef NLNET::CInterceptorForwarder < CLoginServiceSkel>	TInterceptor;
+		TInterceptor	_Interceptor;
+
+		// declare the interceptor forwarder as friend of this class
+		friend 		class NLNET::CInterceptorForwarder < CLoginServiceSkel>;
+	public:
+		/////////////////////////////////////////////////////////////////
+		// WARNING : this is a generated file, don't change it !
+		/////////////////////////////////////////////////////////////////
+
+		// An awaited user did not connect before the allowed timeout expire
+		virtual void pendingUserLost(NLNET::IModuleProxy *sender, uint32 userId) =0;
+
+
+	};
+
+	/////////////////////////////////////////////////////////////////
+	// WARNING : this is a generated file, don't change it !
+	/////////////////////////////////////////////////////////////////
+	class CLoginServiceProxy
+	{
+		/// Smart pointer on the module proxy
+		NLNET::TModuleProxyPtr	_ModuleProxy;
+
+		// Pointer on the local module that implement the interface (if the proxy is for a local module)
+		NLNET::TModulePtr					_LocalModule;
+		// Direct pointer on the server implementation interface for collocated module
+		CLoginServiceSkel	*_LocalModuleSkel;
+
+
+	public:
+		CLoginServiceProxy(NLNET::IModuleProxy *proxy)
+		{
+
+			_ModuleProxy = proxy;
+
+			// initialize collocated servant interface
+			if (proxy->getModuleDistance() == 0)
+			{
+				_LocalModule = proxy->getLocalModule();
+				nlassert(_LocalModule != NULL);
+				_LocalModuleSkel = dynamic_cast < CLoginServiceSkel* > (_LocalModule.getPtr());
+				nlassert(_LocalModuleSkel != NULL);
+			}
+			else
+				_LocalModuleSkel = 0;
+
+		}
+		virtual ~CLoginServiceProxy()
+		{
+		}
+
+		NLNET::IModuleProxy *getModuleProxy()
+		{
+			return _ModuleProxy;
+		}
+
+		// An awaited user did not connect before the allowed timeout expire
+		void pendingUserLost(NLNET::IModule *sender, uint32 userId);
+
+		// Message serializer. Return the message received in reference for easier integration
+		static const NLNET::CMessage &buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId);
+	
+
+
+
+	};
+
+	/////////////////////////////////////////////////////////////////
+	// WARNING : this is a generated file, don't change it !
+	/////////////////////////////////////////////////////////////////
 	class CWelcomeServiceClientSkel
 	{
 	protected:

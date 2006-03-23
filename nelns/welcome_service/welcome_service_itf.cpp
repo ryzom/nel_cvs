@@ -146,6 +146,82 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	
 
+	const CLoginServiceSkel::TMessageHandlerMap &CLoginServiceSkel::getMessageHandlers() const
+	{
+		static TMessageHandlerMap handlers;
+		static bool init = false;
+
+		if (!init)
+		{
+			std::pair < TMessageHandlerMap::iterator, bool > res;
+			
+			res = handlers.insert(std::make_pair(std::string("PUL"), &CLoginServiceSkel::pendingUserLost_skel));
+			// if this assert, you have a doubly message name in your interface definition !
+			nlassert(res.second);
+			
+			init = true;
+		}
+
+		return handlers;			
+	}
+	bool CLoginServiceSkel::fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)
+	{
+		const TMessageHandlerMap &mh = getMessageHandlers();
+
+		TMessageHandlerMap::const_iterator it(mh.find(message.getName()));
+
+		if (it == mh.end())
+		{
+			return false;
+		}
+
+		TMessageHandler cmd = it->second;
+		(this->*cmd)(sender, message);
+
+		return true;
+	}
+
+	
+	void CLoginServiceSkel::pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message)
+	{
+		uint32	userId;
+			nlRead(__message, serial, userId);
+		pendingUserLost(sender, userId);
+	}
+		// An awaited user did not connect before the allowed timeout expire
+	void CLoginServiceProxy::pendingUserLost(NLNET::IModule *sender, uint32 userId)
+	{
+		if (_LocalModuleSkel && _LocalModule->isImmediateDispatchingSupported())
+		{
+			// immediate local synchronous dispatching
+			_LocalModuleSkel->pendingUserLost(_ModuleProxy->getModuleGateway()->getPluggedModuleProxy(sender), userId);
+		}
+		else
+		{
+			// send the message for remote dispatching and execution or local queing 
+			NLNET::CMessage __message;
+			
+			buildMessageFor_pendingUserLost(__message, userId);
+
+			_ModuleProxy->sendModuleMessage(sender, __message);
+		}
+	}
+
+	// Message serializer. Return the message received in reference for easier integration
+	const NLNET::CMessage &CLoginServiceProxy::buildMessageFor_pendingUserLost(NLNET::CMessage &__message, uint32 userId)
+	{
+		__message.setType("PUL");
+			nlWrite(__message, serial, userId);
+
+
+		return __message;
+	}
+
+	/////////////////////////////////////////////////////////////////
+	// WARNING : this is a generated file, don't change it !
+	/////////////////////////////////////////////////////////////////
+	
+
 	const CWelcomeServiceClientSkel::TMessageHandlerMap &CWelcomeServiceClientSkel::getMessageHandlers() const
 	{
 		static TMessageHandlerMap handlers;

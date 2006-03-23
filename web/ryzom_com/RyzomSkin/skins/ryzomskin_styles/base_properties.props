@@ -25,8 +25,8 @@ globalFontColor:string=#ffc30e
 
 headingFontFamily:string="Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif
 
-contentViewBorderColor:string=#404040
-contentViewBackgroundColor:string=#5f5e57
+contentViewBorderColor:string=#555555
+contentViewBackgroundColor:string=#31322D
 contentViewFontColor:string=#ffa500
 
 inputFontColor:string=Black

@@ -110,100 +110,93 @@ public:
 	//
 	void sendReceiveUpdate()
 	{
-		try
+		// Prepare messages for tests
+		TData data;
+		data.PayloadString = "Payload";
+		data.ExpectingAnswer = true;
+		msgoutExpectingAnswer0.clear(); // optional
+		msgoutExpectingAnswer0.setType( "TEST_0" ); // could be passed to the constructor
+		msgoutExpectingAnswer0.serial( data );
+		data.ExpectingAnswer = false;
+		msgoutSimple0.clear(); // optional
+		msgoutSimple0.setType( "TEST_0" ); // could be passed to the constructor
+		msgoutSimple0.serial( data );
+		msgoutSimple50.clear(); // optional
+		msgoutSimple50.setType( "TEST_50" ); // could be passed to the constructor
+		msgoutSimple50.serial( data );
+
+		// Init connections
+		_Server = new CCallbackServer();
+		_Server->init( TestPort1 );
+		_Server->addCallbackArray( CallbackArray, sizeof(CallbackArray)/sizeof(TCallbackItem) );
+		_Client = new CCallbackClient();
+		_Client->connect( CInetAddress( "localhost", TestPort1 ) );
+		_Client->addCallbackArray( CallbackArray, sizeof(CallbackArray)/sizeof(TCallbackItem) );
+
+		// TEST: Simple message transmission
+		NbTestReceived = 0;
+		_Client->send( msgoutExpectingAnswer0 );
+		for ( uint i=0; i!=10; ++i ) // give some time to receive
 		{
-			// Prepare messages for tests
-			TData data;
-			data.PayloadString = "Payload";
-			data.ExpectingAnswer = true;
-			msgoutExpectingAnswer0.clear(); // optional
-			msgoutExpectingAnswer0.setType( "TEST_0" ); // could be passed to the constructor
-			msgoutExpectingAnswer0.serial( data );
-			data.ExpectingAnswer = false;
-			msgoutSimple0.clear(); // optional
-			msgoutSimple0.setType( "TEST_0" ); // could be passed to the constructor
-			msgoutSimple0.serial( data );
-			msgoutSimple50.clear(); // optional
-			msgoutSimple50.setType( "TEST_50" ); // could be passed to the constructor
-			msgoutSimple50.serial( data );
-
-			// Init connections
-			_Server = new CCallbackServer();
-			_Server->init( TestPort1 );
-			_Server->addCallbackArray( CallbackArray, sizeof(CallbackArray)/sizeof(TCallbackItem) );
-			_Client = new CCallbackClient();
-			_Client->connect( CInetAddress( "localhost", TestPort1 ) );
-			_Client->addCallbackArray( CallbackArray, sizeof(CallbackArray)/sizeof(TCallbackItem) );
-
-			// TEST: Simple message transmission
-			NbTestReceived = 0;
-			_Client->send( msgoutExpectingAnswer0 );
-			for ( uint i=0; i!=4; ++i ) // give some time to receive
-			{
-				_Client->update();
-				_Server->update(); // legacy version
-				nlSleep( 50 );
-			}
-			TEST_ASSERT( NbTestReceived == 2 ); // answer and reply
-
-			// TEST: ONE-SHOT update mode on the receiver
-			NbTestReceived = 0;
-			for ( uint i=0; i!=20; ++i ) // send 20 messages
-				_Client->send( msgoutSimple0 );
-			while ( NbTestReceived < 20 )
-			{
-				_Client->update2();
-				uint prevNbTestReceived = NbTestReceived;
-				_Server->update2( 0 ); // shortest time-out = ONE-SHOT mode
-				TEST_ASSERT( (NbTestReceived == prevNbTestReceived) ||
-							 (NbTestReceived == prevNbTestReceived + 1) );
-				nlSleep( 10 );
-			}
-			
-			// TEST: GREEDY update mode on the receiver
-			NbTestReceived = 0;
-			for ( uint i=0; i!=20; ++i ) // send 20 messages
-				_Client->send( msgoutSimple0 );
-			for ( uint i=0; i!=10; ++i ) // make sure all messages are flushed
-			{
-				_Client->update2();
-				nlSleep( 10 );
-			}
-			_Server->update2( -1 ); // receive all
-			TEST_ASSERT( NbTestReceived == 20 );
-
-			// TEST: CONSTRAINED update mode on the receiver
-			NbTestReceived = 0;
-			for ( uint i=0; i!=20; ++i ) // send 20 messages that will trigger a time-consuming callback
-				_Client->send( msgoutSimple50 );
-			for ( uint i=0; i!=10; ++i ) // make sure all messages are flushed
-			{
-				_Client->update2();
-				nlSleep( 10 );
-			}
-			while ( NbTestReceived < 20 )
-			{
-				uint prevNbTestReceived = NbTestReceived;
-				_Server->update2( 80 ); // no more time than two callback executions
-				TEST_ASSERT( NbTestReceived <= prevNbTestReceived + 2 );
-			}
-
-			// TEST: CONSTRAINED with minTime update mode on the receiver
-			NbTestReceived = 0;
-			while ( NbTestReceived < 20 )
-			{
-				_Client->send( msgoutSimple0 );
-				_Client->send( msgoutSimple0 ); // send 2 messages at a time
-				_Client->update2();
-				TTime before = CTime::getLocalTime();
-				_Server->update2( -1, 30 );
-				TTime duration = CTime::getLocalTime() - before;
-				TEST_ASSERT( duration >= 30 );
-			}
+			_Client->update();
+			_Server->update(); // legacy version
+			nlSleep( 50 );
 		}
-		catch ( Exception& e )
+		TEST_ASSERT( NbTestReceived == 2 ); // answer and reply
+
+		// TEST: ONE-SHOT update mode on the receiver
+		NbTestReceived = 0;
+		for ( uint i=0; i!=20; ++i ) // send 20 messages
+			_Client->send( msgoutSimple0 );
+		while ( NbTestReceived < 20 )
 		{
-			TEST_FAIL( e.what() );
+			_Client->update2();
+			uint prevNbTestReceived = NbTestReceived;
+			_Server->update2( 0 ); // shortest time-out = ONE-SHOT mode
+			TEST_ASSERT( (NbTestReceived == prevNbTestReceived) ||
+						 (NbTestReceived == prevNbTestReceived + 1) );
+			nlSleep( 10 );
+		}
+		
+		// TEST: GREEDY update mode on the receiver
+		NbTestReceived = 0;
+		for ( uint i=0; i!=20; ++i ) // send 20 messages
+			_Client->send( msgoutSimple0 );
+		for ( uint i=0; i!=10; ++i ) // make sure all messages are flushed
+		{
+			_Client->update2();
+			nlSleep( 10 );
+		}
+		_Server->update2( -1 ); // receive all
+		TEST_ASSERT( NbTestReceived == 20 );
+
+		// TEST: CONSTRAINED update mode on the receiver
+		NbTestReceived = 0;
+		for ( uint i=0; i!=20; ++i ) // send 20 messages that will trigger a time-consuming callback
+			_Client->send( msgoutSimple50 );
+		for ( uint i=0; i!=10; ++i ) // make sure all messages are flushed
+		{
+			_Client->update2();
+			nlSleep( 10 );
+		}
+		while ( NbTestReceived < 20 )
+		{
+			uint prevNbTestReceived = NbTestReceived;
+			_Server->update2( 80 ); // no more time than two callback executions
+			TEST_ASSERT( NbTestReceived <= prevNbTestReceived + 2 );
+		}
+
+		// TEST: CONSTRAINED with minTime update mode on the receiver
+		NbTestReceived = 0;
+		while ( NbTestReceived < 20 )
+		{
+			_Client->send( msgoutSimple0 );
+			_Client->send( msgoutSimple0 ); // send 2 messages at a time
+			_Client->update2();
+			TTime before = CTime::getLocalTime();
+			_Server->update2( -1, 30 );
+			TTime duration = CTime::getLocalTime() - before;
+			TEST_ASSERT( duration >= 30 );
 		}
 	}
 

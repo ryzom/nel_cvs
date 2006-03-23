@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 	// init Nel context
 	new NLMISC::CApplicationContext;
 	std::vector<TLibraryInfo*>	testLibs;
-	try
+//	try
 	{
 		// Demonstrates the ability to use multiple test suites
 		//
@@ -212,10 +212,10 @@ int main(int argc, char* argv[])
 			}
 		}
 	}
-	catch (...)
-	{
-		nlerror( "unexpected exception encountered" );
-	}
+//	catch (...)
+//	{
+//		nlerror( "unexpected exception encountered" );
+//	}
 	return 0;
 }
 

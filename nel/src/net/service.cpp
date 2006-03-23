@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.11 2006/03/20 16:45:20 miller Exp $
+ * $Id: service.cpp,v 1.238.4.12 2006/03/23 13:17:30 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -404,7 +404,8 @@ string IService::getArg (char argName) const
 				*/
 				uint begin = 2;
 				if (_Args[i].size() < 3)
-					throw Exception ("Parameter '-%c' is malformed, missing content", argName);
+					return "";
+					//throw Exception ("Parameter '-%c' is malformed, missing content", argName);
 
 				if (_Args[i][begin] == '"')
 					begin++;

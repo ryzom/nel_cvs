@@ -185,8 +185,8 @@
 .LSRes {
     font-family:  <dtml-var fontFamily>;
     visibility: visible;
-    color: &dtml-globalFontColor;;
-    background-color: &dtml-backgroundColor;;
+    color: &dtml-contentViewFontColor;;
+    background-color: &dtml- contentViewBackgroundColor;;
     vertical-align: middle;
     display:block;
     list-style-image: none;
@@ -199,13 +199,14 @@
 }
 
 #LSHighlight {
-    background-color: &dtml-globalBackgroundColor;;
-    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+    background-color: &dtml- contentViewBackgroundColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml- contentViewBorderColor;;
     color: &dtml-globalFontColor;;
 }
 
 .LSRow {
-    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-backgroundColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml- contentViewBorderColor;;
+    background-color: &dtml- contentViewBackgroundColor;;
     white-space: normal;
     padding:0;
     margin: 0;
@@ -214,6 +215,12 @@
 }
 
 .LSRow a {
+    text-decoration: none;
+    font-weight:bold;
+    white-space:nowrap
+}
+.LSRow a:hover {
+    background-color: &dtml-contentViewBorderColor;;
     text-decoration: none;
     font-weight:bold;
     white-space:nowrap
@@ -227,6 +234,7 @@
 }
 
 .LSResult {
+    background-color: &dtml- contentViewBackgroundColor;;
     position:relative;
     display: block;
     text-align:right;
@@ -242,7 +250,7 @@
 }
 
 .livesearchContainer {
-    background-color: &dtml-backgroundColor;;
+    background-color: &dtml-contentViewBackgroundColor;;
     margin-top: 0;
     padding: 0 !important;
     position: absolute;
@@ -255,22 +263,19 @@
     text-align:left;
     color: &dtml-globalFontColor;;
     background-color: transparent;
-    border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
+    border: &dtml-borderWidth; &dtml-borderStyle; &dtml- contentViewBorderColor;;
     width:300px;
     text-transform: none;
 }
 
 /* Workaround for Internet Explorer's broken z-index implementation */
 .LSIEFix {
-    background-color: &dtml-backgroundColor;;
+    background-color: &dtml-contentViewBackgroundColor;;
     padding: 3px !important;
     z-index: 20;
 }
 
-.LSBox {
-/*    clear: left;
-    float: left;
-*/
+.LSBox {    
     text-align: right;
     padding-right: 1px;
     display:block;

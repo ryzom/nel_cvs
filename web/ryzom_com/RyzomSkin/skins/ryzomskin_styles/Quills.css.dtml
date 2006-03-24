@@ -21,7 +21,7 @@ text-align:justifty;
 
 
 .unofficial-box { 
-  background-color: #25393A;
+  background-color: #2C3437;
   border: &dtml-borderWidth; solid #555F5F; 
   padding:3px 5px 4px 3px;
   padding-bottom:30px;

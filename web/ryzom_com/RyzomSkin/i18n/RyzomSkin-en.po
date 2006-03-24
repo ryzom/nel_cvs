@@ -28,6 +28,12 @@ msgstr "Submit Your News"
 msgid "Chronicles"
 msgstr "Chronicles"
 
+msgid "My Account"
+msgstr "My Account"
+
+msgid "Subscribe"
+msgstr "Subscribe"
+
 msgid "News"
 msgstr "News"
 

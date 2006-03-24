@@ -10,12 +10,7 @@
                   getIconFor nocall:putils/getIconFor;"
       tal:omit-tag="">
 
-<!--
-Modifié par YASSIN,
-J'essaye de voir si ce n'est pas à l'origine de mon problème de petites "danses" des éléments quand on recharge la page. -->
 <h5 class="hiddenStructure" i18n:translate="heading_personal_tools">Personal tools</h5>
--->
-
 
 <ul id="portal-personaltools">
     <li class="portalUser" 
@@ -28,7 +23,22 @@ J'essaye de voir si ce n'est pas à l'origine de mon problème de petites "danse
              John
         </span>
     </a></li>
-
+    <li tal:define="boundLanguages here/portal_languages/getLanguageBindings;
+                    lang python:boundLanguages[0];"
+        tal:condition="python: not mtool.isAnonymousUser()">
+        <a href=""
+           tal:attributes="href python: 'https://secure.nevrax.com/payment_profile/?language='+lang;"
+           i18n:domain='RyzomSkin' i18n:translate=''>
+           My Account
+        </a>
+    </li>
+    <li tal:condition="python: mtool.isAnonymousUser()">
+        <a href=""
+           tal:attributes="href python: '/ryzom/newcomer/registration/registration'"
+           i18n:domain='RyzomSkin' i18n:translate=''>
+           Subscribe
+        </a>
+    </li>
     <tal:actions tal:repeat="action python:here.getOrderedUserActions(keyed_actions=keyed_actions)">
         <li tal:define="icon python:getIconFor(action['category'], action['id'], None);
                         class_name string:actionicon-${action/category}-${action/id};
@@ -41,7 +51,9 @@ J'essaye de voir si ce n'est pas à l'origine de mon problème de petites "danse
             </a>
         </li>
     </tal:actions>
+    
 
+    
 </ul>
 </div>
 

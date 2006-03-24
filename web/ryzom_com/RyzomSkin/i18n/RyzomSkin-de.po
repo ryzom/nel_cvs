@@ -28,6 +28,12 @@ msgstr "Eine Nachricht Unterbreiten"
 msgid "Chronicles"
 msgstr "Chronicles"
 
+msgid "My Account"
+msgstr "My Account"
+
+msgid "Subscribe"
+msgstr "Subscribe"
+
 msgid "News"
 msgstr "News"
 

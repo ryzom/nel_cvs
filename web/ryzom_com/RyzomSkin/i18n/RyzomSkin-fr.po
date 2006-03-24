@@ -28,6 +28,12 @@ msgstr "Soumettre Une News"
 msgid "Chronicles"
 msgstr "Chroniques"
 
+msgid "My Account"
+msgstr "Mon Compte"
+
+msgid "Subscribe"
+msgstr "S'inscrire"
+
 msgid "News"
 msgstr "Actualités"
 

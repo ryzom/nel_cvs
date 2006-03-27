@@ -9,7 +9,7 @@
                                                      sort_on='Date',
                                                      sort_order='reverse',
                                                      review_state='published')[:5]);"
-     tal:condition="python:test(template.getId()!='chronicles' and results, 1, 0)">
+     tal:condition="python:test(template.getId()!='chronicles' and results and (not '/chronicles' in here.absolute_url()), 1, 0)">
 
 <img  class="fakeBorder" src="side_top.png"/>
 <div class="hole">

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.12 2006/03/23 13:17:30 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.13 2006/03/27 13:33:25 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -195,6 +195,7 @@ static void sigHandler(int Sig)
 				nlinfo ("SERVICE: Signal %s (%d) received", SignalName[i], Sig);
 				switch (Sig)
 				{
+				// Note: SIGKILL (9) and SIGSTOP (19) can't be trapped
 				case SIGINT  :
 				  if (IService::getInstance()->haveLongArg("nobreak"))
 				    {

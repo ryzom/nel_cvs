@@ -1,0 +1,31 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+<body>
+<metal:block use-macro="here/global_defines/macros/defines" />
+
+<div class="holeContainer" style="text-align : right;" metal:define-macro="portlet">
+<img  class="fakeBorder" src="side_top.png"/>
+<div class="hole">
+    <dl class="portlet" id="sign-up">	
+                <dd class="portletItem">
+                    <div class="hole">
+                         <a href="https://secure.nevrax.com/payment_subscribe/index.php?language=fr">
+                            <img align="center" src="ryzom_images/but_freetrial-new3.jpg" width="185" />
+                         </a>
+                         <a href="#">
+                            <img align="center" src="ryzom_images/but_devshot18-yrkanis.jpg" height="106" width="185" />
+                         </a>
+                         <a href="http://chronicles.ryzom.com/?language=fr">
+                            <img style="margin: 0; padding: 0;" align="center" src="ryzom_images/but_rpsite.jpg" width="185" />
+                         </a>
+                    </div>                  
+                </dd>        			
+    </dl>		
+<div class="imageHide">
+    <img class="fakeBorder" src="side_up.png"/>
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -16,7 +16,7 @@ text-align:justify;
 .weblog-entry p,.weblog-entry div{
 padding:0;
 margin:0;
-text-align:justifty;
+text-align:justify;
 }
 
 

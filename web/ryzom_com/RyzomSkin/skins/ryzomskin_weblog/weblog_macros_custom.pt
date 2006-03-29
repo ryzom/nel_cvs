@@ -9,8 +9,8 @@
 
   <metal:block define-macro="latest-news">
 
-      <form method="post" action="/news"
-        tal:attributes="action here_url"
+      <form method="post" action=""
+        tal:attributes="action string:/ryzom/news"
         tal:condition="python:member.has_role('Owner')">
         <input type="hidden" name="type_name" value="WeblogEntry"/>
         <input class="standalone" type="submit" value="Submit Your News"

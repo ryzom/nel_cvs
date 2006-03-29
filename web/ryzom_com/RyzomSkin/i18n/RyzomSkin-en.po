@@ -19,6 +19,9 @@ msgstr ""
 msgid "server-status"
 msgstr "Server Status :"
 
+msgid "read_more"
+msgstr "Read more..."
+
 msgid "date_format_long"
 msgstr "${A},${d} ${B} , ${Y} at ${H}:${M}"
 

@@ -47,7 +47,7 @@
     /*width: 190px;*/
 }
 
-#portal-column-one .portletItemSingle  { 
+#portal-column-one .portletItem  { 
     margin: 0;
     padding: 0;
     border:0;
@@ -55,7 +55,7 @@
 
  }
 
-td#portal-column-two dd.portletItemSingle{
+td#portal-column-two dd.portletItem {
     margin: 0;
     padding: 0;
     border:0;

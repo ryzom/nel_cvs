@@ -5,27 +5,30 @@
 /* <dtml-with base_properties> */
 
 .weblog-entry {
+min-height:170px; !important;
 background-color: #31322D;
 border: &dtml-borderWidth; solid #555555; 
 padding:3px 5px 4px 3px;
 padding-bottom:30px;
-margin-bottom: 5px;
+margin-bottom: 1em;
 text-align:justify;
 }
 
-.weblog-entry p,.weblog-entry div{
+.weblog-entry p,
+.weblog-entry div{
 padding:0;
 margin:0;
 text-align:justify;
 }
 
 
-.unofficial-box { 
+.unofficial-box {
+  min-height:170px; !important; 
   background-color: #2C3437;
   border: &dtml-borderWidth; solid #555F5F; 
   padding:3px 5px 4px 3px;
   padding-bottom:30px;
-  margin-bottom: 5px;
+  margin-bottom: 1em;
   text-align:justify;
  }
 

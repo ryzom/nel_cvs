@@ -600,7 +600,7 @@ padding-left: 16px;
 
 
 .documentEditable {
-padding: 0em 2em 1em 2em !important;
+padding: 0em 2em 1em 2em; !important;
 }
 
 .configlet .documentEditable {
@@ -609,7 +609,7 @@ padding: 0em !important;
 
 .documentContent {
 font-size: 110%;
-padding: 1em 1em 2em 1em !important;
+padding: 1em 1em 2em 1em; !important;
 background: &dtml-backgroundColor;;
 }
 

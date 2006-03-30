@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.44.4.3 2006/02/28 14:33:07 lancon Exp $
+ * $Id: config_file.h,v 1.44.4.4 2006/03/30 10:09:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,7 +188,7 @@ public:
 		void		add (const CVar &var);
 
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
-		int			size () const;
+		uint		size () const;
 
 		/// \name Internal use
 		//@{

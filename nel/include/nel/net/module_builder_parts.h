@@ -1,7 +1,7 @@
 /** \file module_builder_parts.h
  * Template module building blocks.
  *
- * $Id: module_builder_parts.h,v 1.4.4.4 2006/03/13 17:43:24 boucher Exp $
+ * $Id: module_builder_parts.h,v 1.4.4.5 2006/03/30 10:09:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,10 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#include "module.h"
-
 #ifndef MODULE_BUILDER_PARTS_H
 #define MODULE_BUILDER_PARTS_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/mutable_container.h"
+#include "module.h"
 
 namespace NLNET
 {
@@ -72,32 +74,6 @@ namespace NLNET
 		}
 	};
 
-	/** Forwarded interceptor callback.
-	 *	this class work in conjunction with CInterceptorForwarder.
-	 *	Derive the class that implement the forwarded call
-	 *	from this interface.
-	 */
-//	class IForwardedInterceptor
-//	{
-//	public:
-//		std::string			fwdBuildModuleManifest() const
-//		{
-//			return std::string();
-//		}
-//		virtual void				fwdOnModuleUp(IModuleProxy *moduleProxy)
-//		{
-//		}
-//		virtual void				fwdOnModuleDown(IModuleProxy *moduleProxy)
-//		{
-//		}
-//		virtual bool				fwdOnProcessModuleMessage(IModuleProxy *senderModuleProxy, const CMessage &message)
-//		{
-//			return false;
-//		}
-//		virtual void				fwdOnModuleSecurityChange(IModuleProxy *moduleProxy)
-//		{
-//		}
-//	};
 
 	/** Interceptor forwarder
 	 *	The trick is that if you build a module interceptor class 
@@ -127,6 +103,11 @@ namespace NLNET
 			registerInterceptor(module);
 		}
 
+		ParentClass *getParent()
+		{
+			return _Parent;
+		}
+
 		virtual std::string			buildModuleManifest() const
 		{
 			return _Parent->fwdBuildModuleManifest();
@@ -146,6 +127,123 @@ namespace NLNET
 		virtual void				onModuleSecurityChange(IModuleProxy *moduleProxy)
 		{
 			_Parent->fwdOnModuleSecurityChange(moduleProxy);
+		}
+	};
+
+	/** Callback class used by the CModuleTracker class below and to be 
+	 *	implemented if you want callback when tracked module are up/down.
+	 */
+	class IModuleTrackerCb
+	{
+	public:
+		virtual void onTrackedModuleUp(IModuleProxy *moduleProxy) =0;
+		virtual void onTrackedModuleDown(IModuleProxy *moduleProxy) =0;
+	};
+
+	/** A module interceptor that keep of a set of known module that match a given
+	 *	predicate.
+	 *	A typical usage is to declare an instance of this class (specialized with
+	 *	the appropriate predicate) as member of your module.
+	 *	You can also have more than one tracker with different predicate
+	 *	if you are interested in different modules.
+	 *	
+	 *	NB : don't forget to init() each tracker in order to let it register
+	 *	in you module interceptor list (typically, call "_MyTracker.init(this, this)" in
+	 *	your module's constructor).
+	 */
+	template <class ModulePredicate>
+	class CModuleTracker
+	{
+	public:
+		typedef NLMISC::TMutableContainer<std::set<TModuleProxyPtr> >	TTrackedModules;
+
+	private:
+		/// this is the list of module that match the predicate
+		TTrackedModules		_TrackedModules;
+
+		/// An instance of the predicate class
+		ModulePredicate		_ModulePred;
+
+		/// The callback interface implementation (if any)
+		IModuleTrackerCb	*_TrackerCallback;
+
+	public:
+		CModuleTracker(const ModulePredicate &pred)
+			:	_ModulePred(pred),
+				_TrackerCallback(NULL)
+		{
+		}
+		/** Init : set the owner module (to register the interceptor) and the 
+		 *	optional callback interface.
+		 */
+		void init(NLNET::IModule *module, IModuleTrackerCb *trackerCallback = NULL)
+		{
+			_Interceptor.init(this, module);
+			_TrackerCallback = trackerCallback;
+		}
+
+		/** Return the set of tracked module.
+		 *	The set is wrapped into a mutable container that allow
+		 *	to call non const begin() and end() from a const container.
+		 */	
+		const TTrackedModules &getTrackedModules() const
+		{
+			return _TrackedModules;
+		}
+
+	private:
+
+		// unused interceptors 
+		std::string			fwdBuildModuleManifest() const	{ return std::string(); }
+		void				fwdOnModuleSecurityChange(NLNET::IModuleProxy *moduleProxy) {};
+		bool				fwdOnProcessModuleMessage(NLNET::IModuleProxy *sender, const NLNET::CMessage &message)	{return false;}
+
+		// check module up
+		void				fwdOnModuleUp(NLNET::IModuleProxy *moduleProxy)  
+		{
+			if (_ModulePred(moduleProxy))
+			{
+				if (_TrackedModules.insert(moduleProxy).second && _TrackerCallback != NULL)
+					// warn the callback
+					_TrackerCallback->onTrackedModuleUp(moduleProxy);
+			}
+		};
+
+		// check module down
+		void				fwdOnModuleDown(NLNET::IModuleProxy *moduleProxy) 
+		{
+			if (_TrackedModules.find(moduleProxy) != _TrackedModules.end())
+			{
+				_TrackedModules.erase(moduleProxy);
+				if (_TrackerCallback != NULL)
+					_TrackerCallback->onTrackedModuleDown(moduleProxy);
+			}
+		};
+		
+		typedef NLNET::CInterceptorForwarder < CModuleTracker>	TInterceptor;
+		// declare one interceptor member of the skeleton
+		TInterceptor	_Interceptor;
+		// declare the interceptor forwarder as friend of this class
+		friend 		class NLNET::CInterceptorForwarder < CModuleTracker>;
+	};
+
+	/** A canonical module predicate that test a module
+	 *	for a specified module class name.
+	 */
+	struct TModuleClassPred
+	{
+	private:
+		std::string _ClassName;
+
+	public:;
+		TModuleClassPred(const std::string &className)
+			:	_ClassName(className)
+		{
+		}
+
+		bool operator () (IModuleProxy *moduleProxy) const
+		{
+			return moduleProxy->getModuleClassName() == _ClassName;
 		}
 	};
 

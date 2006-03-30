@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.9 2006/03/14 09:44:35 boucher Exp $
+ * $Id: module.h,v 1.10.4.10 2006/03/30 10:09:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,12 +56,13 @@ namespace NLNET
 	{
 	public:
 		IModuleInterceptable();
-//		IModuleInterceptable(IInterceptorRegistrar *registrar);
 		virtual ~IModuleInterceptable();
 
 		void registerInterceptor(IInterceptorRegistrar *registrar);
 
 		void interceptorUnregistered(IInterceptorRegistrar *registrar);
+
+		IInterceptorRegistrar *getRegistrar();
 
 		/** Building of the manifest string can involve interceptors.
 		 *	The system will call this function on each interceptor
@@ -729,8 +730,48 @@ namespace NLNET
 		CModuleTask *getActiveModuleTask();
 
 	public:
-		// return the default init string (empty)
+		/// return the default init string (empty)
 		static const std::string &CModuleBase::getInitStringHelp();
+
+		/** Search an interceptor in the interceptor list.
+		 *	By default, the method begin to search at the first interceptor.
+		 *	If 'previous' is set to a valid interceptor, then the search
+		 *	continue after it.
+		 *	the search is done by attempting a dynamic cast for
+		 *	each interceptor.
+		 *	If no interceptor match the required class, then NULL is
+		 *	returned.
+		 */
+		template <class T>
+		T *getInterceptor(T *dummy, IModuleInterceptable *previous = NULL)
+		{
+			TInterceptors::iterator it(_ModuleInterceptors.begin());
+			if (previous != NULL)
+			{
+				// advance up to next the previous
+				while (it != _ModuleInterceptors.end() && *it != previous)
+					++it;
+				if (it != _ModuleInterceptors.end())
+					++it;
+			}
+			
+			while (it != _ModuleInterceptors.end())
+			{
+				IModuleInterceptable *mi = *it;
+				T *inter = dynamic_cast<T*>(mi);
+
+				if (inter != NULL)
+				{
+					dummy = inter;
+					return inter;
+				}
+
+				++it;
+			}
+			
+			dummy = NULL;
+			return NULL;
+		}
 	protected:
 		// Init base module, init module name
 		bool				initModule(const TParsedCommandLine &initInfo);

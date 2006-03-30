@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.8 2006/03/09 18:20:09 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.9 2006/03/30 10:06:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/sstring.h"
 #include "nel/net/module_manager.h"
 
+#include "nel/net/service.h"
 #include "nel/net/module_gateway.h"
 #include "nel/net/module.h"
 #include "nel/net/module_socket.h"
@@ -184,7 +185,11 @@ namespace NLNET
 		{
 			if (_UniqueNameRoot.empty())
 			{
-				string hostName = ::NLNET::CInetAddress::localHost().hostName();
+				string hostName;
+				if (IService::isServiceInitialized())
+					hostName = IService::getInstance()->getHostName();
+				else
+					hostName = ::NLNET::CInetAddress::localHost().hostName();
 				int pid = ::getpid();
 
 				_UniqueNameRoot = hostName+":"+toString(pid);
@@ -238,7 +243,7 @@ namespace NLNET
 			}
 
 			// now, load the library
-			string fullName = path+"/"+CLibrary::makeLibName(shortName);
+			string fullName = NLMISC::CPath::standardizePath(path)+CLibrary::makeLibName(shortName);
 			auto_ptr<TModuleLibraryInfo>	mli = auto_ptr<TModuleLibraryInfo>(new TModuleLibraryInfo);
 			if (!mli->LibraryHandler.loadLibrary(fullName, false, true, true))
 			{

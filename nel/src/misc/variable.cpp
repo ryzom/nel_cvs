@@ -1,7 +1,7 @@
 /** \file variable.cpp
  * TODO: File description
  *
- * $Id: variable.cpp,v 1.5.6.1 2006/02/10 17:54:35 boucher Exp $
+ * $Id: variable.cpp,v 1.5.6.2 2006/03/30 10:06:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLMISC {
 void cbVarChanged (CConfigFile::CVar &cvar)
 {
 	CCommandRegistry &cr = CCommandRegistry::getInstance();
-	for (CCommandRegistry::TCommand::iterator comm = cr.Commands.begin(); comm != cr.Commands.end(); comm++)
+	for (CCommandRegistry::TCommand::iterator comm = cr._Commands.begin(); comm != cr._Commands.end(); comm++)
 	{
 		if (comm->second->Type == ICommand::Variable && comm->second->getName() == cvar.Name)
 		{
@@ -56,7 +56,7 @@ void IVariable::init (NLMISC::CConfigFile &configFile)
 
 void CCommandRegistry::initVariables(NLMISC::CConfigFile &configFile)
 {
-	for (TCommand::iterator comm = Commands.begin(); comm != Commands.end(); comm++)
+	for (TCommand::iterator comm = _Commands.begin(); comm != _Commands.end(); comm++)
 	{
 		if (comm->second->Type == ICommand::Variable)
 		{

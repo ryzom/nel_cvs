@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.22.4.2 2006/03/20 16:45:20 miller Exp $
+ * $Id: admin.cpp,v 1.22.4.3 2006/03/30 10:06:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -599,7 +599,7 @@ void sendAdminEmail (char *format, ...)
 
 	string str;
 	str  = asctime (localtime (&t));
-	str += " Server " + CInetAddress::localHost().hostName();
+	str += " Server " + IService::getInstance()->getHostName();
 	str += " service " + IService::getInstance()->getServiceUnifiedName();
 	str += " : ";
 	str += text;
@@ -664,16 +664,16 @@ void updateAdmin()
 				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
 				sint32 val;
 				if (strs.size() != 1)
-				  {
+				{
 					nlwarning ("ADMIN: The graph update command execution not return exactly 1 line but %d", strs.size());
 					for (uint i = 0; i < strs.size(); i++)
 					  nlwarning ("ADMIN: line %d: '%s'", i, strs[i].c_str());
 					val = 0;
-				  }
+				}
 				else
-				  {
+				{
 					val = atoi(strs[0].c_str());
-				  }
+				}
 				mdDisplayVars.unlockStrings ();
 				mdDisplayVars.clear ();
 				

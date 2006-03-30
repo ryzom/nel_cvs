@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.6 2006/03/13 17:43:24 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.7 2006/03/30 10:06:37 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 
 #include "stdnet.h"
+#include "nel/net/service.h"
 #include "nel/net/module.h"
 #include "nel/net/module_manager.h"
 #include "nel/net/inet_address.h"
@@ -39,30 +40,6 @@ using namespace NLNET;
 namespace NLNET
 {
 
-// call the specified method on all interceptor.
-//#define NLNET_INTERCEPTOR_VECTOR_CALL(method)												\
-//	TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());	\
-//	for (;first != last; ++first)	\
-//	{								\
-//		(*first)->method;			\
-//	}								
-
-// Call the specified method on each interceptor until one return true.
-// Set result to true if one interceptor returned true, false if all interceptor returned false
-//#define NLNET_INTERCEPTOR_TRY_CALL(result, method)												\
-//	result = false;																				\
-//	{																							\
-//		TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());	\
-//		for (;first != last; ++first)	\
-//		{								\
-//			if ((*first)->method)					\
-//			{							\
-//				result = true;			\
-//				break;					\
-//			}							\
-//		}								\
-//	}									\
-
 	//////////////////////////////////////
 	// Module interceptor implementation
 	//////////////////////////////////////
@@ -71,10 +48,6 @@ namespace NLNET
 	{
 	}
 
-//	IModuleInterceptable::IModuleInterceptable(IInterceptorRegistrar *registrar)
-//	{
-//		registerInterceptor(registrar);
-//	}
 	IModuleInterceptable::~IModuleInterceptable()
 	{
 		if (_Registrar != NULL)
@@ -96,6 +69,12 @@ namespace NLNET
 
 		_Registrar = NULL;
 	}
+
+	IInterceptorRegistrar *IModuleInterceptable::getRegistrar()
+	{
+		return _Registrar;
+	}
+
 	
 	//////////////////////////////////////
 	// Module factory implementation
@@ -274,7 +253,11 @@ namespace NLNET
 		if (_FullyQualifedModuleName.empty())
 		{
 			// build the name
-			string hostName = ::NLNET::CInetAddress::localHost().hostName();
+			string hostName;
+			if (IService::isServiceInitialized())
+				hostName = IService::getInstance()->getHostName();
+			else
+				hostName = ::NLNET::CInetAddress::localHost().hostName();
 			int pid = ::getpid();
 
 			_FullyQualifedModuleName = IModuleManager::getInstance().getUniqueNameRoot()+":"+_ModuleName;
@@ -308,7 +291,6 @@ namespace NLNET
 		{
 			// there is a task running, queue in the message
 			_SyncMessages.push_back(make_pair(senderModuleProxy, message));
-//			_SyncMessages.back().second.swap(message);
 		}
 		else
 		{
@@ -381,8 +363,6 @@ namespace NLNET
 		if (initInfo.getParam("base.useCoTaskDispatch"))
 		{
 			// init the message dispatch task
-//			_MessageDispatchTask = new TModuleTask<CModuleBase>(const_cast<CModuleBase*>(this),  (void (CModuleBase::*)())(&CModuleBase::_receiveModuleMessageTask));
-//			_MessageDispatchTask = new TModuleTask<CModuleBase>(const_cast<CModuleBase*>(this),  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
 			_MessageDispatchTask = new TModuleTask<CModuleBase>(this,  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
 		}
 

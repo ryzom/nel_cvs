@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.13 2006/03/27 13:33:25 cado Exp $
+ * $Id: service.cpp,v 1.238.4.14 2006/03/30 10:06:37 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -540,13 +540,13 @@ void cbLogFilter (CConfigFile::CVar &var)
 	
 	// remove all old filters from config file
 	CConfigFile::CVar &oldvar = IService::getInstance()->ConfigFile.getVar (var.Name);
-	for (sint j = 0; j < oldvar.size(); j++)
+	for (uint j = 0; j < oldvar.size(); j++)
 	{
 		log->removeFilter (oldvar.asString(j).c_str());
 	}
 
 	// add all new filters from config file
-	for (sint i = 0; i < var.size(); i++)
+	for (uint i = 0; i < var.size(); i++)
 	{
 		log->addNegativeFilter (var.asString(i).c_str());
 	}
@@ -554,7 +554,7 @@ void cbLogFilter (CConfigFile::CVar &var)
 
 void cbExecuteCommands (CConfigFile::CVar &var)
 {
-	for (sint i = 0; i < var.size(); i++)
+	for (uint i = 0; i < var.size(); i++)
 	{
 		ICommand::execute (var.asString(i), IService::getInstance()->CommandLog);
 	}
@@ -825,7 +825,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			CConfigFile::CVar *v = ConfigFile.getVarPtr("DisplayedVariables");
 			if (v != NULL)
 			{
-				for (sint i = 0; i < v->size(); i++)
+				for (uint i = 0; i < v->size(); i++)
 				{
 					displayedVariables.push_back(make_pair(v->asString(i), WindowDisplayer->createLabel (v->asString(i).c_str())));
 				}
@@ -1083,6 +1083,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			CUnifiedNetwork::getInstance()->init(NULL, _RecordingState, _ShortName, ListeningPort, _SId);
 		}
 
+		// get the hostname for later use
+		_HostName = CInetAddress::localHost().hostName();
+
 		// At this point, the _SId must be ok if we use the naming service.
 		// If it's 0, it means that we don't use NS and we left the other side server to find a sid for your connection
 
@@ -1140,7 +1143,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if ((var = ConfigFile.getVarPtr ("IgnoredFiles")) != NULL)
 		{
-			for (sint i = 0; i < var->size(); i++)
+			for (uint i = 0; i < var->size(); i++)
 			{
 				CPath::addIgnoredDoubleFile (var->asString(i));
 			}
@@ -1148,7 +1151,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if ((var = ConfigFile.getVarPtr ("Paths")) != NULL)
 		{
-			for (sint i = 0; i < var->size(); i++)
+			for (uint i = 0; i < var->size(); i++)
 			{
 				CPath::addSearchPath (var->asString(i), true, false);
 			}
@@ -1156,7 +1159,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		if ((var = ConfigFile.getVarPtr ("PathsNoRecurse")) != NULL)
 		{
-			for (sint i = 0; i < var->size(); i++)
+			for (uint i = 0; i < var->size(); i++)
 			{
 				CPath::addSearchPath (var->asString(i), false, false);
 			}
@@ -1223,7 +1226,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			string varName = cmdRoot + posts[i];
 			if ((var = IService::getInstance()->ConfigFile.getVarPtr (varName)) != NULL)
 			{
-				for (sint i = 0; i < var->size(); i++)
+				for (uint i = 0; i < var->size(); i++)
 				{
 					ICommand::execute (var->asString(i), CommandLog);
 				}

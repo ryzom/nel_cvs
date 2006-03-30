@@ -1191,6 +1191,10 @@ SOURCE=..\include\nel\misc\historic.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\mutable_container.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\resource_ptr.h
 # End Source File
 # Begin Source File

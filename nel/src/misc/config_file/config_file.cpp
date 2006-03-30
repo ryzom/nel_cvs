@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.67.4.3 2006/02/28 14:32:24 lancon Exp $
+ * $Id: config_file.cpp,v 1.67.4.4 2006/03/30 10:06:37 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,7 +289,7 @@ void CConfigFile::CVar::add (const CVar &var)
 	}
 }
 
-int CConfigFile::CVar::size () const
+uint CConfigFile::CVar::size () const
 {
 	switch (Type)
 	{

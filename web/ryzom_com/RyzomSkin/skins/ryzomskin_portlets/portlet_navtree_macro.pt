@@ -33,9 +33,9 @@
                          urlnews python:url+'/news';
                          urlchronicle python:url+'/chronicles';"
 
-             tal:condition="python:  ((urlnews in abs_url) and (item['Title'] != 'Chronicles') and level<2)
-                                    or ((urlchronicle in abs_url) and (item['Title'] != 'News') and level<2)                                    
-                                    or (item['Title'] != 'Chronicles' and item['Title'] != 'News' and level<2)
+             tal:condition="python:  ((urlnews in abs_url) and (item['Title'] != 'Chronicles') and level<1)
+                                    or ((urlchronicle in abs_url) and (item['Title'] != 'News') and level<1)                                    
+                                    or (item['Title'] != 'Chronicles' and item['Title'] != 'News' and level<1)
                                     or (item['getURL'] in abs_url)">
 
     <ul tal:attributes="class python:'navTree navTreeLevel'+str(level)"

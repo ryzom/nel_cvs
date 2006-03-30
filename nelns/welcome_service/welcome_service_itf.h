@@ -14,9 +14,6 @@
 
 #include "nel/net/login_cookie.h"
 	
-#ifndef NLNET_INTERFACE_GET_MODULE
-# define NLNET_INTERFACE_GET_MODULE	NLNET::IModule *getModuleInstance() { return this; }
-#endif
 namespace WS
 {
 	
@@ -102,6 +99,9 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	class CWelcomeServiceSkel
 	{
+	public:
+		/// the interceptor type
+		typedef NLNET::CInterceptorForwarder < CWelcomeServiceSkel>	TInterceptor;
 	protected:
 		CWelcomeServiceSkel()
 		{
@@ -138,7 +138,6 @@ namespace WS
 		void disconnectUser_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
-		typedef NLNET::CInterceptorForwarder < CWelcomeServiceSkel>	TInterceptor;
 		TInterceptor	_Interceptor;
 
 		// declare the interceptor forwarder as friend of this class
@@ -181,7 +180,11 @@ namespace WS
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CWelcomeServiceSkel* > (_LocalModule.getPtr());
+				CWelcomeServiceSkel::TInterceptor *interceptor = NULL;
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				nlassert(interceptor != NULL);
+
+				_LocalModuleSkel = interceptor->getParent();
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
@@ -218,6 +221,9 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	class CLoginServiceSkel
 	{
+	public:
+		/// the interceptor type
+		typedef NLNET::CInterceptorForwarder < CLoginServiceSkel>	TInterceptor;
 	protected:
 		CLoginServiceSkel()
 		{
@@ -252,7 +258,6 @@ namespace WS
 		void pendingUserLost_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
-		typedef NLNET::CInterceptorForwarder < CLoginServiceSkel>	TInterceptor;
 		TInterceptor	_Interceptor;
 
 		// declare the interceptor forwarder as friend of this class
@@ -293,7 +298,11 @@ namespace WS
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CLoginServiceSkel* > (_LocalModule.getPtr());
+				CLoginServiceSkel::TInterceptor *interceptor = NULL;
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				nlassert(interceptor != NULL);
+
+				_LocalModuleSkel = interceptor->getParent();
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else
@@ -325,6 +334,9 @@ namespace WS
 	/////////////////////////////////////////////////////////////////
 	class CWelcomeServiceClientSkel
 	{
+	public:
+		/// the interceptor type
+		typedef NLNET::CInterceptorForwarder < CWelcomeServiceClientSkel>	TInterceptor;
 	protected:
 		CWelcomeServiceClientSkel()
 		{
@@ -363,7 +375,6 @@ namespace WS
 		void updateConnectedPlayerCount_skel(NLNET::IModuleProxy *sender, const NLNET::CMessage &__message);
 
 		// declare one interceptor member of the skeleton
-		typedef NLNET::CInterceptorForwarder < CWelcomeServiceClientSkel>	TInterceptor;
 		TInterceptor	_Interceptor;
 
 		// declare the interceptor forwarder as friend of this class
@@ -409,7 +420,11 @@ namespace WS
 			{
 				_LocalModule = proxy->getLocalModule();
 				nlassert(_LocalModule != NULL);
-				_LocalModuleSkel = dynamic_cast < CWelcomeServiceClientSkel* > (_LocalModule.getPtr());
+				CWelcomeServiceClientSkel::TInterceptor *interceptor = NULL;
+				interceptor = static_cast < NLNET::CModuleBase* >(_LocalModule.getPtr())->getInterceptor(interceptor);
+				nlassert(interceptor != NULL);
+
+				_LocalModuleSkel = interceptor->getParent();
 				nlassert(_LocalModuleSkel != NULL);
 			}
 			else

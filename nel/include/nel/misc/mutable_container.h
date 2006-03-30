@@ -1,6 +1,6 @@
 /** \file mutable_container.h
  *
- * $Id: mutable_container.h,v 1.1.2.1 2006/03/30 10:09:44 boucher Exp $
+ * $Id: mutable_container.h,v 1.1.2.2 2006/03/30 10:48:03 boucher Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -48,12 +48,12 @@ namespace NLMISC
 	template <class BaseContainer>
 	struct TMutableContainer : public BaseContainer
 	{
-		BaseContainer::iterator begin() const
+		typename BaseContainer::iterator begin() const
 		{
 			return const_cast<BaseContainer*>(static_cast<const BaseContainer*>(this))->begin();
 		}
 
-		BaseContainer::iterator end() const
+		typename BaseContainer::iterator end() const
 		{
 			return const_cast<BaseContainer*>(static_cast<const BaseContainer*>(this))->end();
 		}

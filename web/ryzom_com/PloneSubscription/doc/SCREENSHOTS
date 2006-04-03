@@ -1,0 +1,46 @@
+PloneSubscription Screenshots
+
+.. image:: doc/plone_configuration.png
+
+*PloneSubscription preferences link from plone control panel.*
+
+.. image:: doc/subscription_configuration.png
+
+*PloneSubscription preferences: take care to complete 'base url' field.*
+*You can also see 'manage subscribers' and 'manage mail templates' actions.*
+
+.. image:: doc/mail_template_edition.png
+
+*Sample edit view for mail template*
+
+.. image:: doc/manage_subscribers_view.png
+
+*You can see few grouped and user subscribers.*
+
+.. image:: doc/add_grouped_subscriber.png
+
+*It's the only way to add a grouped subscriber.*
+
+.. image:: doc/add_grouped_subscriber_form.png
+
+*Choose users groups that you want to grouped subscriptions.*
+
+.. image:: doc/folder_subscription_icon.png
+
+*Click on it to add a subscription on the document.*
+
+.. image:: doc/keywords_subscription_portlet.png
+
+*After a research you can see this portlet and choose to be warned when new result are added.*
+
+.. image:: doc/add_subscription_for_group_tab.png
+
+*You can add a folder subscription for grouped subscriber from here.*
+
+.. image:: doc/add_folder_subscription_for_group.png
+
+*Choose the grouped subscribers you want to be subscribe and Save the form.*
+
+.. image:: doc/my_subscription_view.png
+
+*At last, 'My subscription' view for each user. You cannot edit or remove a grouped subscription.*

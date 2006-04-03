@@ -1,0 +1,209 @@
+# translation of PloneSubscription_fr.po to
+#  <translators@ingeniweb.com>, 2005.
+# Encolpe DEGOUTE, 2005.
+# Encolpe Degoute <encolpe.degoute@ingeniweb.com>, 2006.
+# Gettext Message File for PloneSubscription.
+msgid ""
+msgstr ""
+"Project-Id-Version: PloneSubscription_fr\n"
+"POT-Creation-Date: 2006-02-10 22:27+0000\n"
+"PO-Revision-Date: 2006-02-10 23:35+0100\n"
+"Last-Translator: Encolpe Degoute <encolpe.degoute@ingeniweb.com>\n"
+"Language-Team:  <support@ingeniweb.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n > 1);\n"
+"Language-code: fr\n"
+"Language-Name: Français\n"
+"Preferred-Encodings: utf-8 latin1\n"
+"Domain: plonesubscription\n"
+"X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
+"X-Generator: KBabel 1.11.2\n"
+
+#. Default: "Subscription"
+#: skins/PloneSubscription/portlet_subscription.pt
+msgid "box_folder_subscription"
+msgstr "Quoi de neuf ?"
+
+#. Default: "Keywords subscription"
+#: skins/PloneSubscription/portlet_keywords_subscription.pt
+msgid "box_keywords_subscription"
+msgstr "Abonnement à la recherche"
+
+#. Default: "Subscribe here if you want to be warned when this search return new results:"
+#: skins/PloneSubscription/portlet_keywords_subscription.pt
+msgid "box_keywords_subscription_description"
+msgstr ""
+"Abonnez-vous ici si vous souhaitez être avertis lorsque de nouveaux "
+"résultats seront disponibles avec les mots clés : "
+
+#. Default: "button_add_keywords_subscription"
+#: skins/PloneSubscription/portlet_keywords_subscription.pt
+msgid "button_add_keywords_subscription"
+msgstr "Abonnement"
+
+#. Default: "This form enables you to add a subscription to grouped subscribers. <br/> Choose several grouped subscribers by pressing on Ctrl and clicking."
+#: skins/PloneSubscription/grouped_subscription_add_form.pt
+msgid "description_subscription_groupes_aubscription_add"
+msgstr ""
+"Choisissez une ou plusieurs réunions d'abonnés dont les utilisateurs seront "
+"abonnés a cet abonnement. Pour sélectionner plusieurs groupes gardez appuyé "
+"la touche Ctrl en cliquant."
+
+#. Default: "This is a list of mails that would be sent as a subscription right now."
+#: skins/PloneSubscription/subscription_mailing.cpt
+msgid "description_subscription_mailing_preview"
+msgstr "Voici la liste des méls qui doivent être envoyés actuellement par les abonnements."
+
+#. Default: "Mailing Preview"
+#: skins/PloneSubscription/subscription_mailing.cpt
+msgid "heading_subscription_mailing_preview"
+msgstr "Aperçu des méls envoyés par les abonnements"
+
+#. Default: "Subscription Management"
+#: skins/PloneSubscription/portlet_subscription.pt
+msgid "heading_subscription_management"
+msgstr "Gestion des abonnements"
+
+msgid "help_anonymous_unsubscribe_by_email"
+msgstr ""
+"Est-ce que les anonymes doivent reçevoir un email avec l'information de "
+"désabonnement, ou est-ce qu'ils peuvent désabonner dirèctement?"
+
+msgid "help_grouped_subscriber"
+msgstr "Noms des réunions d'abonnés disponibles."
+
+msgid "help_subscriber_group_names"
+msgstr "Noms des groupes dont les utilisateurs seront inscrits aux abonnements."
+
+msgid "help_subscription_base_url"
+msgstr "Adresse de base du site pour les utilisateurs : http://exemple.com/test ."
+
+msgid "help_subscription_content"
+msgstr "Contenu sur lequel est posé l'abonnement."
+
+msgid "help_subscription_content_template"
+msgstr "Modèle utilisé pour les envois d'emails des abonnement sur les contenus."
+
+msgid "help_subscription_folder"
+msgstr "Document de type répertoire sur lequel est posé l'abonnement."
+
+msgid "help_subscription_folder_template"
+msgstr "Modèle utilisé pour les envois d'emails des abonnement sur les répertoires."
+
+msgid "help_subscription_hide_remove_button"
+msgstr ""
+"Cacher le bouton 'Supprimer' dans 'Mes abonnements' jusqu'à ce qu'un élément "
+"soit séléctionné"
+
+msgid "help_subscription_keywords"
+msgstr "Mots clés sur lesquels sont basés la recherche."
+
+msgid "help_subscription_keywords_template"
+msgstr ""
+"Modèle utilisé pour les envois d'emails des abonnements sur les recherches "
+"de mots clés."
+
+msgid "help_subscription_last_send"
+msgstr "Date à laquelle cet abonnement a envoyé sa dernière mise-à-jour."
+
+msgid "help_subscription_mail_body"
+msgstr ""
+"Texte utilisé pour générer le corps de l'email d'un abonnement (il faut "
+"utiliser %% pour voir % dans l'email)<br/>\n"
+" Vous pouvez utiliser les éléments suivants pour avoir un contenu "
+"dynamique : <br/>\n"
+"<ul>\n"
+"<li>%(subscription_title)s</li>\n"
+"<li>%(content)s</li>\n"
+"</ul>\n"
+"Envoyez un courriel au mainteneur si vous avez besoin d'éléments dynamiques "
+"supplémentaires.<br/>\n"
+
+msgid "help_subscription_periodicity"
+msgstr "Périodicité des envois d'email pour les abonnements."
+
+msgid "help_subscription_provider"
+msgstr "Objet du site qui fourni les fonctionnalités de base pour l'abonnement."
+
+msgid "help_subscription_recursive"
+msgstr "Recherche dans les sous-répertoire."
+
+msgid "help_subscription_rpath"
+msgstr "Chemin relatif depuis la racine du site Plone."
+
+msgid "help_subscription_show_actions"
+msgstr "Afficher les actions permettant d'ajouter les fournisseurs dans le site."
+
+msgid "help_subscription_templates"
+msgstr "Objet de site fournissant les modèles d'email pour les abonnements."
+
+msgid "help_subscription_workflow"
+msgstr "L'abonnement ne tiendra compte que des transitions de workflow."
+
+msgid "label_anonymous_unsubscribe_by_email"
+msgstr "Désabonnement des anonymes par email?"
+
+msgid "label_grouped_subscriber"
+msgstr "Nom des groupes"
+
+msgid "label_subscriber_group_names"
+msgstr "Réunions d'abonnés"
+
+msgid "label_subscription_base_url"
+msgstr "Adresse de base"
+
+msgid "label_subscription_content"
+msgstr "Contenu"
+
+msgid "label_subscription_content_template"
+msgstr "Modèle des abonnements sur les contenus"
+
+msgid "label_subscription_folder"
+msgstr "Répertoire"
+
+msgid "label_subscription_folder_template"
+msgstr "Modèle des abonnements sur les répertoires"
+
+#. Default: "Adding grouped subscription"
+#: skins/PloneSubscription/grouped_subscription_add_form.pt
+msgid "label_subscription_grouped_subscription_add"
+msgstr "Ajouter un abonnement pour des réunions d'abonnés"
+
+msgid "label_subscription_hide_remove_button"
+msgstr "Cacher le bouton 'Supprimer'"
+
+msgid "label_subscription_keywords"
+msgstr "Mots clés"
+
+msgid "label_subscription_keywords_template"
+msgstr "Modèle des abonnements sur les recherches de mots clés"
+
+msgid "label_subscription_last_send"
+msgstr "Date de dernier envoi"
+
+msgid "label_subscription_mail_body"
+msgstr "Corps de l'email"
+
+msgid "label_subscription_periodicity"
+msgstr "Périodicité"
+
+msgid "label_subscription_provider"
+msgstr "Fournisseur d'abonnement"
+
+msgid "label_subscription_recursive"
+msgstr "Récursif"
+
+msgid "label_subscription_rpath"
+msgstr "Chemin relatif"
+
+msgid "label_subscription_show_actions"
+msgstr "Afficher les actions"
+
+msgid "label_subscription_templates"
+msgstr "Fournisseur de modèle d'email"
+
+msgid "label_subscription_workflow"
+msgstr "Abonnement aux transitions de workflow"
+

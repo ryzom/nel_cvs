@@ -1,0 +1,11 @@
+[default]
+title=Subscribe
+
+[validators]
+validators=validate_title, validate_emailaddr
+validators..Unsubscribe=validate_emailaddr
+
+[actions]
+action.success..Subscribe=traverse_to:string:addSubscription
+action.success..Unsubscribe=traverse_to:string:removeSubscription
+action.failure=traverse_to:string:subscription_form

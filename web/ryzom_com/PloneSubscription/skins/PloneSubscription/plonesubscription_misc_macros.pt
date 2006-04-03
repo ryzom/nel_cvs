@@ -1,0 +1,98 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="plone">
+  <head><title></title></head>
+  <body>
+
+    <metal:selfsubscriptionmacro define-macro="selfsubscription">
+
+      <div tal:omit-tag=""
+           tal:condition="python:not isAnon">
+        <div tal:omit-tag=""
+             tal:define="subscription_tool nocall:portal/portal_subscription;
+                         is_reviewer python:checkPermission('Review portal content', here);
+                         is_subscribed python:subscription_tool.isSubscribedTo(here, member.getId())">
+
+          <div tal:condition="python:(allow_subscribe or allow_unsubscribe) and not is_subscribed"
+               i18n:translate="misc_subscription_be_notified_folder">
+            Be notified when a document is published or modified in this folder or below.
+          </div>
+
+          <div tal:condition="python:is_subscribed"
+               tal:define="subscriptions python:subscription_tool.getSubscriptions(here, member.getId())">
+              <div tal:repeat="subscription subscriptions">
+                  <span tal:condition="python:is_reviewer and subscription.getObject().getWorkflow()"
+                        i18n:translate="misc_subscribed_to_publications_and_submissions">
+                      You are subscribed to publications and submissions of documents
+                      in this folder or below.
+                  </span>
+                  <span tal:condition="python:subscription.getObject().getWorkflow()"
+                        i18n:translate="misc_subscribed_to_publications">
+                      You are subscribed to publications of documents
+                      in this folder or below.
+                  </span>
+                  <span tal:condition="python:not subscription.getObject().getWorkflow()"
+                        i18n:translate="misc_subscribed_to_modifications">
+                      You are subscribed to modifications of documents in this
+                      folder or below.
+                  </span>
+              </div>
+          </div>
+
+          <div tal:omit-tag=""
+               tal:condition="python:(not is_subscribed and allow_subscribe) or (allow_unsubscribe and is_subscribed)">
+
+            <div tal:condition="python:not is_subscribed and allow_subscribe">
+              <a href=""
+                 tal:attributes="href string:${here/absolute_url}/addSubscription?ptype=${ptype}&amp;recursive=1"
+                 tal:condition="python:not isAnon and subscription_tool.getProvider() is not None">
+                <img src="subscription_icon.gif"
+                     tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
+                <span i18n:translate="misc_action_subscribe_modifications">Subscribe to all modifications</span>
+              </a>
+              <br />
+              <a href=""
+                 tal:attributes="href string:${here/absolute_url}/addSubscription?ptype=${ptype}&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish"
+                 tal:condition="python:not isAnon and not is_reviewer and subscription_tool.getProvider() is not None">
+                <img src="subscription_icon.gif"
+                     tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
+                <span i18n:translate="misc_action_subscribe_publications">Subscribe to publications</span>
+              </a>
+              <br />
+              <a href=""
+                 tal:attributes="href string:${here/absolute_url}/addSubscription?ptype=${ptype}&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish&amp;transitions:list=submit"
+                 tal:condition="python:not isAnon and is_reviewer and subscription_tool.getProvider() is not None">
+                <img src="subscription_icon.gif"
+                     tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
+                <span i18n:translate="misc_action_subscribe_publications_submissions">Subscribe to publications and submissions</span>
+              </a>
+            </div>
+
+            <div tal:condition="python:is_subscribed and allow_unsubscribe">
+              <a href=""
+                 tal:attributes="href string:${here/absolute_url}/removeSubscription"
+                 tal:condition="python:not isAnon and subscription_tool.getProvider() is not None">
+                <img src="subscription_icon.gif"
+                     tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
+                <span i18n:translate="action_unsubscribe">Unsubscribe</span>
+              </a>
+            </div>
+          </div>
+
+          <div tal:omit-tag=""
+               tal:condition="python:not((not is_subscribed and allow_subscribe) or (allow_unsubscribe and is_subscribed))">
+            <div i18n:translate="subsciption_closed">
+              Closed
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </metal:selfsubscriptionmacro>
+
+  </body>
+</html>

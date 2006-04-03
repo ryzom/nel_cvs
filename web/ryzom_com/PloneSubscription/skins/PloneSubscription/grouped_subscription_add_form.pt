@@ -1,0 +1,33 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plonesubscription">
+
+<div metal:fill-slot="main"
+     tal:define="sub_tool nocall:portal/portal_subscription;
+                 fields python:sub_tool.getFormAddGroupedSubscriptionFields();
+                 errors python:{};">
+
+  <h1 class="documentTopTitle"><span
+      tal:omit-tag="" i18n:translate="label_subscription_grouped_subscription_add">Adding grouped subscription</span></h1>
+
+  <p i18n:translate="description_subscription_groupes_aubscription_add">
+    This form enables you to add a subscription to grouped subscribers.<br/>
+    Choose several grouped subscribers by pressing on Ctrl and clicking.
+  </p>
+
+  <form id="bird-metadata-edit-form" method="post" name="edit_metadata_form"
+        tal:attributes="action string:$here_url/grouped_subscription_add;">
+
+    <tal:fields repeat="field fields">
+      <tal:block tal:define="field_name field/getName">
+        <metal:fieldMacro use-macro="python:sub_tool.renderEmptyWidget(here, field, mode='edit')" />
+        <div class="form_spacer">&nbsp;</div>
+      </tal:block>
+    </tal:fields>
+
+    <input i18n:domain="plone" i18n:attributes="value" value="Save" type="submit" />
+
+  </form>
+</div>
+</html>

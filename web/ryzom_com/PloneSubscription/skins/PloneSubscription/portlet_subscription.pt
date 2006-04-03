@@ -1,0 +1,54 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xml:lang="en"
+      lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="plonesubscription">
+
+<body>
+
+<!-- The Keywords Subscription Box -->
+
+<div metal:define-macro="portlet"
+     tal:omit-tag=""
+     tal:define="allow_subscribe python:1;
+                 allow_unsubscribe python:1;
+                 ptype python:'FolderSubscription';
+                 sub_tool nocall:portal/portal_subscription;">
+
+    <div class="portlet"
+        id="portlet_folder_subscription">
+
+        <h5 i18n:translate="box_folder_subscription">Subscription</h5>
+
+        <div class="portletBody">
+
+            <div class="portletContent">
+
+                <div metal:use-macro="here/plonesubscription_macros/macros/selfsubscription">
+                    Allow folder subscription.
+                </div>
+
+                
+                <div class="portletDetails"
+                     tal:condition="python:mtool.checkPermission('PlacelessSubscription: Manage Subscriptions', context)">
+                    <a href="#"
+                       tal:attributes="href python:context.absolute_url() + '/subscription_management'"
+                       i18n:translate="heading_subscription_management">
+                        Subscription Management
+                    </a>
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

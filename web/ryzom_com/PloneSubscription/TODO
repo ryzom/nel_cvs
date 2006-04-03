@@ -1,0 +1,10 @@
+TODO List
+
+ * Use correctly ReferenceBrowser widget in FolderSubscription and
+   SubscriptionTool
+
+ * optimizations
+
+ * add a better way to manage 'Mail Templates' for subscriptions
+
+ * Keyword is not stored when directly adding a Keyword search

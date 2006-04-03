@@ -1,0 +1,169 @@
+Todo - 
+
+  - Fixed a bug in mailing_by_user_body method of Subscription Tool, which only
+    appeared when a document had not title.
+
+SVN -
+
+  - i18n refactoring
+
+  - Manage Subscriptions Permission added to control access to the management 
+    template accessible from the portlet_subscription.pt
+
+  - Fix getGroupSubscriberVocabulary
+
+  - Folder Subscriptions done from the subscription_portlet now subscribe
+    to the publish transition of content recursively
+
+  - Adding last modified column to my subscriptions list
+
+  - Anonymous needs view content permission, not edit
+
+  - Fix problem with unsubscribing from FolderSubscriptions
+ 
+  - Added portlet for subscription by anonymous or member
+
+  - Add workflow transitions field to FolderSubscription, which makes it
+    possible to notify only for the specified transitions
+
+  - Store references to root in portal_subscription. As the Plone Site is not
+    an Archetype, there is no other solution for now.
+
+1.2.0 2005/01/24
+
+  * Fix hit link in subscriber_view
+
+  * Take exact_search parameter into account in setSubscription
+
+  * Fix getSubscriptionUrl of ExactSearchSubscription
+
+  * subscription_management.pt added
+
+  * Fix getQuery in ContentSubscription. getRecursive was used, but is only available
+    in FolderSubscription
+
+  * AnonymousUser gets user info and associated getProperty method to match member API
+
+  * Only send unsubscription mail in removeSubscription if 
+    subscription_tool.getAnonymous_unsubscribe_by_email()
+
+  * Subscription Management now takes content and folder subscriptions into account.
+
+  * Functional Tests for Anonymous Folder Subscription
+
+  * getUsers method in AnonymousSubscriber.py now correctly returns a list
+
+  * Anonymous can subscribe by default now. If you don't want this, 
+    change remove the following permissions for Anonymous:
+
+    * PlacelessSubscription: Add Content
+ 
+    * PlacelessSubscription: View Content 
+
+  * getQueryBrains was not searching in the right catalog (MR 2005/12/28)
+
+  * fix problem with wrong path index (realPath) in some subscriptions (MR 2005/12/28)
+
+  * changed parameters to getQueryBrains (MR 2005/12/28)
+
+  * Fix reference editing in tool. Using ReferenceBrowserWidget now. (MR 2005/12/27)
+
+  * getUpdatedSubscriptions returns objects, not catalog brains any more (MR 2005/12/27)
+
+  * Factor out mailing_by_user from mailing (MR 2005/12/27)
+
+  * Template for previewing mails to be sent out for subscriptions:
+    subscription_mailing.cpt (MR 2005/12/27)
+
+1.1.0 2005/12/13
+
+  * Fix missing dependencies added with ExactSearchSubscription
+
+  * Added ExactSearchSubscription for more advanced catalog searches.
+
+  * EditSubscriptionContent only for Manager by default. Owner doesn't care.
+
+  * The portal_catalog does not contain any more PloneSubscription related
+    content. Only ContentSubscription, FolderSubscription and KeywordSubscription
+    are really needed, and are now kept in the portal_subscriptions catalog.
+
+  * Get rid of SubscriptionCatalogAware
+
+  * get rid of TOOL_ID and CATALOG_ID
+
+  * Use getCatalog instead of getSubscriptionCatalog
+
+  * Use getProvider method directly. Remove getSubscriptionProvider
+    method
+
+  * subscription_catalog moved from subscription provider to portal root
+
+  * Factor out the afterQueryWorkflowFilter from afterQueryFilters
+
+  * Factor out the getQueryBrains method to the subscription_tool
+
+  * Content Subscription with its own template added  (2005/11/19 MR)
+
+  * Adding a countSubscriptions method
+ 
+  * add and remove subscription scripts now controlled python scripts
+    with validator scripts. (2005/11/15 MR)
+
+  * Allow hiding subscribe and unsubscribe actions
+
+  * Added a script for exporting subscribers as a csv file
+
+  * Added macro to plonesubscription_macros for sending a mail to all
+    subscribers (2005/11/14 MR)
+
+  * Implement removeSubscription, also for anonymous
+
+  * Make the hiding of the remove button in my subscriptions an option
+
+  * Remove unused getSubcribersFor
+
+  * Remove addSubscriber method
+
+  * Remove unused getSubscriberUrl method
+
+  * Implement hasSubscription method
+
+  * Removed listSubscriberByType method, now in getGroupSubscriberVocabulary
+
+  * Add GroupSubscription didn't show as the action only showed when there 
+    already were GroupSubscriptions.
+
+  * Removed unused method getMemberSubscriptionUids and listSubscriberTypeSubscriptions
+
+  * Extended getSubscriptions method to allow search by content and by
+    username. The method doe snot return a tuple anymore, so take care.
+
+  * implementing useful isSubscribedTo method in subscription tool
+
+  * Install extra indices, fixing the problem with getRpath index indexing
+    getPhysicalPath instead of getRPath
+
+  * getSubscriberInfo implemented to get information on the member behind
+    a subscription
+
+  * Added plonesubscription_macros, containing useful self-subscription and 
+    management macros. (2005/11/08 MR)
+
+  * Added logging facilities with a debug.txt file (2005/11/07 ED)
+
+  * Fix maintenance job security problem: the script is replaced by an external
+    method (2005/11/07 ED)
+
+  * Various fixes (2005/11/07 ED)
+
+1.0.1 2005/10/25
+ 
+  * Added PloneSelenium Functional Tests (2005/10/24 Maik Rder)
+
+  * Remove dependency on PloneInstallation 2005/10/23 (Maik Rder)
+
+  * Move PloneInstaller code into PloneSubscription 2005/10/23 (Maik Rder)
+
+  * Rewrote Readme, fixed some typos and method security settings 2005/10/20 (Maik Rder)
+
+  * Made it backward compatible to GroupUserFolder 2.0.1 2005/10/20 (Maik Rder)

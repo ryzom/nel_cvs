@@ -19,9 +19,9 @@
 """
 This module implements generic functions for subscriptions
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/SubscriptionTool.py,v $
-# $Id: SubscriptionTool.py,v 1.1 2006/04/03 13:37:16 bernard Exp $
+# $Id: SubscriptionTool.py,v 1.2 2006/04/03 14:09:17 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Python imports
@@ -809,19 +809,21 @@ A change related to your subscription to "%(subscription_title)s" was found:
     def mailing_by_user(self, now, subscription, user, brains):
         """ Mail users about all content changes pertaining to a subscription
         """
-        info = self.mailing_by_user_info(now, user, subscription)
+        info = self.mailing_by_user_info(now, user, subscription, brains)
         mail = self.getHeaders(info)
         mail += "\n\n"
         mail += self.mailing_by_user_body(subscription, brains)
         return mail
 
     security.declarePrivate("mailing_by_user_headers")
-    def mailing_by_user_info(self, now, user, subscription):
+    def mailing_by_user_info(self, now, user, subscription, brains):
         portal = getToolByName(self, 'portal_url').getPortalObject()
         ptool = getToolByName(self, 'portal_properties')
-        mail_from = portal.getProperty('email_from_address',
-                                       'admin@plone-subscription.com')
+        mail_from = portal.getProperty('email_from_address','admin@plone-subscription.com')
         mtool = getToolByName(self, 'portal_membership')
+
+	#lang = mtool.portal_languages.getLanguageBindings()[0]
+	#mail_from = 'news-'+lang+'@newsletter.nevrax.com'
 
         if user.getId()=="Anonymous User":
             mail_to = user.getProperty('email')
@@ -830,10 +832,21 @@ A change related to your subscription to "%(subscription_title)s" was found:
             mail_to = member.getProperty('email')
 
         charset = ptool.site_properties.getProperty('default_charset', 'utf-8')
+
+	subjects = "[Ryzom-News] "
+        nb_news = len(brains)
+        if nb_news > 1:
+            subjects += "("+str(nb_news)+" news)"
+	try:
+            subjects += str(brains[0].getObject().getEntryCategories()[0]).capitalize()+" : "
+        except:
+            subjects += '... : '
+	subjects += str(brains[0].Title or brains[0].getId)
+
         headers_infos = {'date': now.rfc822(),
                          'mail_from': mail_from,
                          'mail_to': mail_to,
-                         'subject': subscription.Title(),
+                         'subject': subjects,
                          'charset': charset,
                         }
         return headers_infos
@@ -848,19 +861,35 @@ A change related to your subscription to "%(subscription_title)s" was found:
         content = ''
         Log(LOG_DEBUG, 'subscription brains', brains)
         for brain in brains:
-            content += "    "
-            content += str(brain.Title or brain.getId)
-            content += " :\n"
+            title = "  "
+            title += str(brain.Title or brain.getId)
+            title += " :\n"
             if base_url == '':
-                content += str(brain.getURL())
+                url = str(brain.getURL())
             else:
-                content += base_url
-                content += str(brain.getURL(relative=1)[portal_path_length:])
-            content += "\n\n"
+                url = base_url
+                url += str(brain.getURL(relative=1)[portal_path_length:])
+            obj = brain.getObject()
+            try:
+                summary = str(obj.description)
+            except:
+                summary = '...'
+            try:
+                topic = str(obj.getEntryCategories()[0])
+            except:
+                topic = '...'
+            content += "["+topic+"]"+title
+            content += "\n"
+            content += summary
+            content += "\n Read more : "
+	    content += url
+	    content += "\n\n"
         Log(LOG_DEBUG, 'subscription content', content)
         template = self.getSubscriptionTemplate(subscription)
         body =  template % {'subscription_title': subscription.TitleOrId(),
                             'content': content,
+                            #'summary': summary,
+                            #'topic': topic,
                            }
         return body
 

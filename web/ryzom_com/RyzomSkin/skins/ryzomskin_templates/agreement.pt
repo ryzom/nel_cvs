@@ -1,0 +1,6 @@
+<metal:block define-macro="agree_macro"
+        tal:define="boundLanguages here/portal_languages/getLanguageBindings;
+                    lang python:boundLanguages[0];
+                    type here/meta_type;">
+         <span tal:replace="structure python: here.agree_script(lang,type)" ></span>
+</metal:block>

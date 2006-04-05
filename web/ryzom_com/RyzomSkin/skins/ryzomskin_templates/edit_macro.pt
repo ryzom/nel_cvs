@@ -207,13 +207,6 @@
 
     </div>
 
-       <metal:block define-macro="agreement"
-        tal:define="boundLanguages here/portal_languages/getLanguageBindings;
-                    lang python:boundLanguages[0];
-                    type here/meta_type;">
-         <span tal:replace="structure python: here.agree_script(lang,type)" ></span>
-       </metal:block>
-
     <metal:footer_macro define-macro="footer">
       <tal:has_document_byline tal:condition="exists:here/document_byline">
         <div metal:use-macro="here/document_byline/macros/byline">

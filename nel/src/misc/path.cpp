@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.119.4.1 2006/02/11 18:50:04 mitchell Exp $
+ * $Id: path.cpp,v 1.119.4.2 2006/04/05 15:29:16 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,8 +85,11 @@ NLMISC_SAFE_SINGLETON_IMPL(CPath);
 //
 CPath::~CPath()
 {
-	delete _AllFileNames;
-	_AllFileNames = NULL;
+	if( _AllFileNames )
+	{
+		delete _AllFileNames;
+		_AllFileNames = NULL;
+	}
 }
 
 

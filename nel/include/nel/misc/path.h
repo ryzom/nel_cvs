@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.53.6.1 2006/02/11 18:50:45 mitchell Exp $
+ * $Id: path.h,v 1.53.6.2 2006/04/05 15:29:16 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -245,6 +245,7 @@ private:
 	CPath()
 	{
 		_MemoryCompressed = false;
+		_AllFileNames = NULL;
 	}
 
 	// All path in this vector must have a terminated '/'

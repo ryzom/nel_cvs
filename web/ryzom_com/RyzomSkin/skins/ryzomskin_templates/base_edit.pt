@@ -78,8 +78,7 @@
       <metal:main define-macro="main">
         <metal:use_header use-macro="header_macro" />
         <metal:use_typedescription use-macro="typedescription_macro" />
-        <metal:use_body use-macro="body_macro" />
-        <metal:block use-macro="here/agreement/macros/agree_macro" />
+        <metal:use_body use-macro="here/edit_macro/macros/body" />        
         <metal:use_footer use-macro="footer_macro" />
       </metal:main>
     </metal:fill>

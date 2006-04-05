@@ -10,8 +10,7 @@
   <metal:block define-macro="latest-news">
 
       <form method="post" action=""
-        tal:attributes="action string:news"
-        tal:condition="python:member.has_role('Owner')">
+        tal:attributes="action string:news">        
         <input type="hidden" name="type_name" value="WeblogEntry"/>
         <input class="standalone" type="submit" value="Submit Your News"
           name="folder_factories:method" i18n:domain="RyzomSkin" i18n:attributes="value"/>

@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18.6.4 2006/03/16 10:46:23 vizerie Exp $
+ * $Id: polygon.h,v 1.18.6.5 2006/04/05 08:45:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,11 @@ public:
 	  */
 	CPolygon2D(const CPolygon &src, const CMatrix &projMat = CMatrix::Identity);
 
+	/** Reinit a 2D polygon from this 3D polygon, by using the given projection matrix
+	  * The x and y components of projected vertices are used to create the 2D polygon
+	  */
+	void fromPolygon(const CPolygon &src, const CMatrix &projMat = CMatrix::Identity);	
+
 	/** Build a 2D polygon from the given triangle, by using the given projection matrix
 	  * The x and y components of projected vertices are used to create the 2D polygon
 	  */
@@ -196,6 +201,9 @@ public:
 
 	// Test if current poly is CCW oriented (in a right handed coord. system)
 	bool  isCCWOriented() const;
+
+	// get bounding rect (poly must not be empty)
+	void getBoundingRect(CVector2f &minCorner, CVector2f &maxCorner) const;
 
 private:
 	/// Sum the dot product of this poly vertices against a line equation a*x + b*y + c

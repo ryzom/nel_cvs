@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.32.6.4 2006/03/16 10:45:42 vizerie Exp $
+ * $Id: polygon.cpp,v 1.32.6.5 2006/04/05 08:45:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -837,7 +837,14 @@ bool CPolygon::chain (const std::vector<CPolygon> &other, const CMatrix& basis)
 
 
 
+// ***************************************************************************
 CPolygon2D::CPolygon2D(const CPolygon &src, const CMatrix &projMat)
+{
+	fromPolygon(src, projMat);	
+}
+
+// ***************************************************************************
+void CPolygon2D::fromPolygon(const CPolygon &src, const CMatrix &projMat /*=CMatrix::Identity*/)
 {
 	uint size = src.Vertices.size();
 	Vertices.resize(size);
@@ -849,7 +856,6 @@ CPolygon2D::CPolygon2D(const CPolygon &src, const CMatrix &projMat)
 }
 
 // ***************************************************************************
-
 bool		CPolygon2D::isConvex()
 {
 	bool Front  = true, Back = false;	
@@ -2138,6 +2144,19 @@ CPolygon2D::CPolygon2D(const CTriangle &tri, const CMatrix &projMat)
 	Vertices[0].set(proj[0].x, proj[0].y);
 	Vertices[1].set(proj[1].x, proj[1].y);
 	Vertices[2].set(proj[2].x, proj[2].y);
+}
+
+// *******************************************************************************
+void CPolygon2D::getBoundingRect(CVector2f &minCorner, CVector2f &maxCorner) const
+{
+	nlassert(!Vertices.empty())
+	minCorner = maxCorner = Vertices[0];
+	uint numVertices = Vertices.size();
+	for(uint k = 0; k < numVertices; ++k)
+	{
+		minCorner.minof(minCorner, Vertices[k]);
+		maxCorner.maxof(minCorner, Vertices[k]);
+	}
 }
 
 // *******************************************************************************

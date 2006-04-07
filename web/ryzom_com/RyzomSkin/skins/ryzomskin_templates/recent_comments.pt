@@ -1,0 +1,37 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
+  lang="en-US"
+  metal:use-macro="here/main_template/macros/master"
+  i18n:domain="plone">
+
+<metal:block use-macro="here/global_defines/macros/defines" />
+
+  <body>
+    <div metal:fill-slot="main">
+
+
+    <div class="content"
+        tal:condition="python:'Reviewer' in mtool.getCandidateLocalRoles(member)"
+        tal:define="recent python:here.portal_catalog(meta_type='Discussion Item',
+                                 sort_on='modified',sort_order='reverse')">
+      <h1>Recent Comments</h1>
+      <div>
+        <dl>
+          <tal:loop repeat="comment recent">
+            <tal:block define="obj comment/getObject"
+                       condition="python:obj">
+              <dt>
+                <a href="" 
+                    tal:attributes="href obj/absolute_url"
+                    tal:content="comment/Title" />                
+              </dt>
+                <dd tal:content="comment/modified/Date" />
+            </tal:block>
+          </tal:loop>
+        </dl>
+      </div>
+    </div>
+    </div>
+  </body>
+
+</html>
+

@@ -9,14 +9,16 @@
     <dl class="portlet" id="sign-up">	
                 <dd class="portletItem">
                     <div class="hole">
-                         <a href="https://secure.nevrax.com/payment_subscribe/index.php?language=fr">
+                         <a href="" tal:define="boundLanguages here/portal_languages/getLanguageBindings;
+                                                lang python:boundLanguages[0];"
+                                    tal:attributes="href python:'https://secure.nevrax.com/payment_subscribe/index.php?language='+lang">
                             <img align="center" src="ryzom_images/but_freetrial-new3.jpg" width="185" />
                          </a>
                          <a href="#">
                             <img align="center" src="ryzom_images/but_devshot18-yrkanis.jpg" height="106" width="185" />
                          </a>
-                         <a href="http://chronicles.ryzom.com/?language=fr">
-                            <img style="margin: 0; padding: 0;" align="center" src="ryzom_images/but_rpsite.jpg" width="185" />
+                         <a href="http://www.ryzom-ring.com">
+                            <img style="margin: 0; padding: 0;" align="center" src="home_ring2.jpg" width="185" />
                          </a>
                     </div>                  
                 </dd>        			

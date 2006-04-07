@@ -116,13 +116,15 @@ ul {
 
 ol {
 /*    line-height: 1.5em; */
-    margin: 5px 0 0 15px;
+    margin: 3px 0 0 1.2em;
     padding: 0;
     list-style-image: none;
 }
-
 li {
-    margin-bottom: 3px;
+   margin-bottom: 3px; 
+}
+ol li {
+    margin: 3px 0 0 1.2em;    
 }
 
 dt {

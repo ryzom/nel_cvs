@@ -11,6 +11,38 @@
 /* <dtml-with base_properties> (do not remove this :) */
 /* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
 
+.portlet recent_comments {
+padding-top:2em;
+}
+
+.visualClear {
+    clear: both;
+    font-size: 1px;
+    height: 0px;
+    line-height: 0px;
+    border: none;
+    margin:0px;
+    padding:0px;
+    background: transparent;
+}
+.visualClearHeight {
+    clear: both;
+    font-size: 1px;
+    height: 1px;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+}
+
+
+
+
+
+
+
+
+
 .news_quote {
 	border: 1px solid #5a5c51;
 	padding: 5px;
@@ -176,14 +208,14 @@ width:149px;
 #portal-column-one {
    width:175px;
    vertical-align: top;
-   background-image: url('side_bg.png');
+   background-image: url('side_bg.jpg');
    background-repeat : no-repeat;
    background-position : top left;
    border: 0;
    text-align:left;
 }
 
-td#portal-column-two {   
+#portal-column-two {   
  margin:0 !important;
  padding:0 !important;
  background-color: #181818;
@@ -245,7 +277,7 @@ border: 0;
         padding: 0;
 	margin: 0;
         border: 0;
-	width :  1111px; 
+	width : 1111px; 
 	height:110px;
         background-color : #181818;
 }
@@ -383,9 +415,7 @@ text-align:left;
   padding:0;
   margin:0;
   border:0;  
-  margin: 12px 0px /*!important;*/
-  /*float: none; 	 
-  text-align: right;*/
+  margin: 12px 0px;
 }
 
 .hole { 
@@ -397,7 +427,7 @@ text-align:left;
   padding-right:0;
 }
 
-td#portal-column-two dl.portlet {
+#portal-column-two .portlet {
   border-radius: 12px;
   -moz-border-radius: 12px;
   -ie-border-radius: 12px;
@@ -409,13 +439,13 @@ td#portal-column-two dl.portlet {
   width:190px;
 }
 
-dl#portlet-recent { 
+#portlet-recent { 
   text-align:left;
   padding:0;
   margin:0;
 }
 
-dl.portlet a {
+.portlet a {
     text-decoration: none;
 }
 

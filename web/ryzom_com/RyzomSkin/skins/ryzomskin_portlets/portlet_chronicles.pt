@@ -22,7 +22,7 @@
                                                                        path={'query':'/ryzom/chronicles', 'level': 0},
                                                                        getEntryCategories = { 'query':topic.id,'operator':'and'},
                                                                        sort_on = 'effective',sort_order = 'reverse',
-                                                                       review_state = 'published')[:5]"
+                                                                       review_state = 'published')[:5];"
                                    tal:repeat="obj topicEntries">
         			<dd tal:define="oddrow repeat/obj/odd"
              			    tal:attributes="class python:test(oddrow, 'portletItem even', 'portletItem odd')">
@@ -36,7 +36,7 @@
         			</tal:newsitems>
         			<dd class="portletFooter">
             				<a href=""
-               				   tal:attributes="href string:${utool}/chronicles/${topic/id}"
+               				   tal:attributes="href string:recent_chronicles_${topic/id}"
                				   i18n:translate="box_more_news_link">
               				   More news&hellip;
             				</a>

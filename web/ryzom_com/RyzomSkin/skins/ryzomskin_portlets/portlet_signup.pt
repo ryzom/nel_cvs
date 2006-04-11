@@ -3,7 +3,6 @@
       i18n:domain="plone">
 <body>
 <metal:block use-macro="here/global_defines/macros/defines" />
-
 <div class="holeContainer" style="text-align : right;" metal:define-macro="portlet">
 <img  class="fakeBorder" src="side_top.png"/>
     <dl class="portlet" id="sign-up">	
@@ -20,9 +19,9 @@
                          <a href="http://www.ryzom-ring.com">
                             <img style="margin: 0; padding: 0;" align="center" src="home_ring2.jpg" width="185" />
                          </a>
-                    </div>                  
-                </dd>        			
-    </dl>		
+                    </div>
+                </dd>
+    </dl>
 <div class="imageHide">
     <img class="fakeBorder" src="side_up.png"/>
 </div>

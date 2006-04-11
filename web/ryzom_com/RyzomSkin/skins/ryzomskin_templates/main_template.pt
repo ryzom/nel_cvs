@@ -1,4 +1,5 @@
-<metal:page define-macro="master"><metal:doctype define-slot="doctype"><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"></metal:doctype>
+<metal:page define-macro="master">
+<metal:doctype define-slot="doctype"><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"></metal:doctype>
 <metal:block define-slot="top_slot" />
 <metal:block use-macro="here/global_defines/macros/defines" />
 
@@ -39,8 +40,8 @@
     </metal:javascriptslot>
 
   </head>
-  <body tal:attributes="class here/getSectionFromURL;
-                        dir python:test(isRTL, 'rtl', 'ltr')">
+  <body tal:attributes="class here/getSectionFromURL;dir python:test(isRTL, 'rtl', 'ltr')">
+
 <ul id="navbar">
 	<li><a href="http://www.ryzom.com/">Ryzom (EN)</a></li>
 	<li><a href="http://www.ryzom.de/">Ryzom (DE)</a></li>
@@ -69,8 +70,7 @@
             </div>
         </td></tr>
         <tr><td VALIGN=top>
-	        <div metal:use-macro="here/serverstatus/macros/serverstatus">
-            </div>
+	        <div metal:use-macro="here/serverstatus/macros/serverstatus" />
         </td></tr>                
         <tr><td>
              <div style="float:right;" metal:use-macro="here/global_searchbox/macros/quick_search">
@@ -78,24 +78,15 @@
              </div>
         </td></tr>
         <tr><td valign="bottom">
-          <div style="float:right;" 
-	  metal:use-macro="here/global_personalbar/macros/personal_bar">The personal bar. (log in, logout etc...)
+          <div style="float:right;" metal:use-macro="here/global_personalbar/macros/personal_bar">
+               The personal bar. (log in, logout etc...)
 	  </div>
 	</td></tr>
        	</table>
 </div>
-             <div metal:use-macro="here/global_skinswitcher/macros/skin_tabs">
-               The skin switcher tabs. Based on which role you have, you
-               get a selection of skins that you can switch between.
-             </div>
-             <div metal:use-macro="here/global_sections/macros/portal_tabs">
-               The global sections tabs. (Welcome, News etc)
-             </div>
           </div>
-           <div metal:use-macro="here/global_pathbar/macros/path_bar">
-             The breadcrumb navigation ("you are here")
-           </div>
       </div>
+
       <tal:comment replace="nothing">
       The wrapper table. It contains the three columns. There's a table-less
       alternative in the plone_tableless skin layer that you can use if you
@@ -186,5 +177,3 @@
 </body>
 </html>
 </metal:page>
-
-

@@ -5,7 +5,7 @@
 
  <div id="portal-logo" metal:define-macro="portal_logo">
     <a href="/"
-       tal:attributes="href portal_url"
+       tal:attributes="href string:${portal_url}/news"
        tal:define="portal_title portal_properties/title;"
        tal:content="string:$portal_title"
        accesskey="1">

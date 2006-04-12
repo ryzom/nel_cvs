@@ -30,8 +30,7 @@
 	background-repeat: no-repeat;
 	background-position : center left;
 	padding-left : 2em;
-/*        padding-top:5px; */
-        text-align: left;
+    text-align: left;
 }
 
 .portletHeader a {
@@ -45,8 +44,7 @@
     padding-left: 1em;
     border:0;
     white-space: nowrap;
-    overflow: hidden;
-    /*width: 190px;*/
+    overflow: hidden;    
 }
 
 #portal-column-one .portletItem  { 
@@ -126,7 +124,7 @@
     display: block;
     padding: 0;
     margin: 0;
-    font-size: 80%;
+    font-size: 90%;
     color:#9ae033;
     text-transform: Capitalize;
 }
@@ -229,7 +227,6 @@ li.navTreeCurrentItem a:hover {
     background-color: &dtml-globalBackgroundColor;;
     font-weight: normal;
     text-align: center;
-/*    line-height: 1.6em; */
 }
 .ploneCalendar td {
     background-color: transparent;

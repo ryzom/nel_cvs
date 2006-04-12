@@ -31,6 +31,7 @@
 //
 #include "nel/misc/array_2d.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/triangle.h"
 //
 #include <vector>
 
@@ -38,8 +39,7 @@
 
 namespace NLMISC
 {
-	class CVector;
-	class CTriangle;
+	class CVector;	
 }
 
 namespace NL3D
@@ -66,6 +66,11 @@ public:
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	// just serialize the header, containing name of the zones this CPackedWorld was built from
 	void serialZoneNames(NLMISC::IStream &f) throw(NLMISC::EStream);
+	/** Roughly select triangles that are within a convex 2D polygon (world coordinates)
+	  * Selection is not exact, because limited to the resolution of the grid into which is packed each zone.
+	  * Triangle that are within are guaranteed to be selected, however.
+	  */
+	void select(const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CTriangle> &selectedTriangles) const;
 private:
 	class CZoneInfo
 	{

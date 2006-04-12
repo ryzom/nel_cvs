@@ -115,6 +115,8 @@ public:
 	virtual void render(CVertexBuffer &vb, IDriver &drv, CMaterial &mat, CMaterial &wiredMaterial, const NLMISC::CMatrix &camMat, uint batchSize, const NLMISC::CVector localFrustCorners[8]) = 0;
 	// raytracing test
 	virtual bool raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<NLMISC::CTriangle> *testedTriangles = NULL) const = 0;		
+	// roughly select triangle inside 'poly' (all triangle that are at least partially  inside are guaranteed to be selected)
+	virtual void appendSelection(const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CTriangle> &selectedTriangles) const = 0;
 };
 
 
@@ -151,6 +153,8 @@ public:
 	NLMISC::CSmartPtr<CPackedZone16> buildPackedZone16();
 	// raytracing test
 	virtual bool raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<NLMISC::CTriangle> *testedTriangles = NULL) const;
+	//
+	void appendSelection(const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CTriangle> &selectedTriangles) const;
 private:
 	// for fast conversion
 	NLMISC::CVector			_Origin;
@@ -190,6 +194,8 @@ public:
 	void render(CVertexBuffer &vb, IDriver &drv, CMaterial &mat, CMaterial &wiredMaterial, const NLMISC::CMatrix &camMat, uint batchSize, const NLMISC::CVector localFrustCorners[8]);
 		// raytracing test
 	virtual bool raytrace(const NLMISC::CVector &start, const NLMISC::CVector &end, NLMISC::CVector &inter, std::vector<NLMISC::CTriangle> *testedTriangles = NULL) const;
+	//
+	void appendSelection(const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CTriangle> &selectedTriangles) const;
 private:
 	// for fast conversion
 	NLMISC::CVector			_Origin;

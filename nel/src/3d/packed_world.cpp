@@ -166,5 +166,36 @@ void CPackedWorld::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_ZoneMinY);	
 }
 
+//*************************************************************************************************
+void CPackedWorld::select(const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CTriangle> &selectedTriangles) const
+{
+	selectedTriangles.clear();
+	// compute covered zones
+	NLMISC::CPolygon2D zonePoly = poly;
+	for (uint k = 0; k < zonePoly.Vertices.size(); ++k)
+	{
+		zonePoly.Vertices[k].x = zonePoly.Vertices[k].x / 160.f - (float) _ZoneMinX;
+		zonePoly.Vertices[k].y = zonePoly.Vertices[k].y / 160.f - (float) _ZoneMinY;
+	}
+	NLMISC::CPolygon2D::TRasterVect borders;
+	sint minY;
+	zonePoly.computeOuterBorders(borders, minY);
+	for (sint y = minY; y < (sint) (minY + borders.size()); ++y)
+	{
+		if (y < 0 || y >= (sint) _ZoneGrid.getHeight()) continue;
+		for (sint x = borders[y - minY].first; x <= borders[y - minY].second; ++x)
+		{
+			if (x < 0 || x >= (sint) _ZoneGrid.getWidth()) continue;
+			{
+				const CZoneIndexList &zil = _ZoneGrid(x, y);
+				for (uint k = 0; k < zil.IDs.size(); ++k)
+				{
+					_Zones[zil.IDs[k]].Zone->appendSelection(poly, selectedTriangles);
+				}
+			}
+		}
+	}
+}
+
 
 } // Nl3D

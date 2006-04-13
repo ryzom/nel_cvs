@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.7 2006/03/09 18:20:09 boucher Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.8 2006/04/13 16:44:24 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1400,7 +1400,7 @@ namespace NLNET
 			}
 			catch(...)
 			{
-				nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
+				nlwarning("An exception was thrown while dispatching message '%s' from '%s' to '%s'",
 					message.getName().c_str(),
 					senderProxy->getModuleName().c_str(),
 					addresseeProxy->getModuleName().c_str());

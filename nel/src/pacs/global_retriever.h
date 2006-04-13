@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.37 2005/02/22 10:19:20 besson Exp $
+ * $Id: global_retriever.h,v 1.37.16.1 2006/04/13 13:38:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,11 +498,11 @@ private:
 	/** reset and fill cst.CollisionChains with possible collisions in bboxMove+origin.
 	 * result: collisionChains, computed localy to origin.
 	 */
-	void	findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const;
+	void			findCollisionChains(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector &origin) const;
 	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
 	 * result: new collisionDescs in cst.
 	 */
-	void	testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
+	void			testCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, const CVector2f &deltaCol,
 		CSurfaceIdent startSurface, float radius, const CVector2f bbox[4], TCollisionType colType) const;
 	/** reset and fill cst.MoveDescs with effective collisions of a point movement against current cst.CollisionChains.
 	 * result: the surfaceIdent where we stop. -1 if we traverse a Wall, which should not happen because of collision test.
@@ -515,9 +515,11 @@ private:
 	/** reset and fill cst.CollisionDescs with effective collisions against current cst.CollisionChains.
 	 * result: new collisionDescs in cst.
 	 */
-	void	testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4])  const;
+	void			testRotCollisionWithCollisionChains(CCollisionSurfaceTemp &cst, const CVector2f &startCol, CSurfaceIdent startSurface, const CVector2f bbox[4])  const;
 	/// test if a collisionChain separate 2 walls.
 	bool			verticalChain(const CCollisionChain &colChain) const;
+	/// see CLocalRetriever::getInteriorHeightAround()
+	float			getInteriorHeightAround(const UGlobalPosition &position, float outsideTolerance) const;
 	// @}
 
 protected:

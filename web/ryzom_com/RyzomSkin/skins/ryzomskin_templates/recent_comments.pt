@@ -19,9 +19,10 @@
           <tal:loop repeat="comment recent">
             <tal:block define="obj comment/getObject"
                        condition="python:obj">
-              <dt>
-                <a href="" 
-                    tal:attributes="href obj/absolute_url"
+              <dt tal:define="date comment/modified/Date;
+                              current python:DateTime()">
+                <a href="" style=""
+                    tal:attributes="href obj/absolute_url; style python:test(date in str(current),'color:red','color:green')"
                     tal:content="comment/Title" />                
               </dt>
                 <dd tal:content="comment/modified/Date" />

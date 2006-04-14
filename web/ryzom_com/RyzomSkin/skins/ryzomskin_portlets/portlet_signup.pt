@@ -5,7 +5,7 @@
 <metal:block use-macro="here/global_defines/macros/defines" />
 <div class="holeContainer" style="text-align : right;" metal:define-macro="portlet">
 <img  class="fakeBorder" src="side_top.png"/>
-    <dl class="portlet" id="sign-up">	
+    <dl id="sign-up">	
                 <dd class="portletItem">
                     <div class="hole">
                          <a href="" tal:define="boundLanguages here/portal_languages/getLanguageBindings;

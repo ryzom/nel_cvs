@@ -1,13 +1,3 @@
-/*
- *  This is the file where you put your CSS changes. 
- *  You should preferrably use this and override the 
- *  relevant properties you want to change here instead 
- *  of customizing plone.css to survive upgrades. Writing
- *  your own plone.css only makes sense for very heavy 
- *  customizations. Useful variables from Plone are 
- *  documented at the bottom of this file.
- */
- 
 /* <dtml-with base_properties> (do not remove this :) */
 /* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
 
@@ -81,7 +71,6 @@ a.thumbnail {
 	margin-right:10px;
 	margin-bottom:10px;
 }
-
 
 legend {
     background: black;
@@ -157,7 +146,7 @@ legend {
 /*fin de la css rightbar*/
 
 #visual-portal-wrapper {
-        width: 1105px;
+        width: 1105px;        
         padding:0;
         margin:0;
         background-color: transparent;        
@@ -167,7 +156,6 @@ legend {
         margin-left:auto; 
         margin-right:auto;
 }
-
 
 #portal-personaltools {
    color : #ffc30e;
@@ -210,61 +198,49 @@ legend {
    vertical-align: top;
    border: 0;
    text-align:left;
-
    background-image: url('side_bg.jpg');
    background-repeat : no-repeat;
    background-position : top left;
 
-/* transparent test
+/*********transparent test*********
    background-color: #041016;
    background-image: url('border_nav.gif');
    background-repeat : repeat-y;
    filter: alpha(opacity=70);
    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70);
    -moz-opacity: 0.70;
-   opacity:0.7;*/
+   opacity:0.7;
+*****************************/
 }
 
 #portal-column-two {   
- margin:0 !important;
- padding:0 !important;
+ margin:0;
+ padding:0 ;
  background-color: #181818;
- width: 200px !important;
- max-width:200px!important;
- overflow:hidden!important;
- text-align:right !important;
- border: 0!important;
+ width: 200px; 
+ overflow:hidden;
+ text-align:right;
+ border: 0;
+}
+#portal-column-content {
+   width:none;
+   max-width:none;
+   margin: 0;
+   text-align:center;
+   border: 0;
+   background-color: #181818;
 }
 
-#portal-column-two .visualPadding {
-padding: 0 !important;
-margin:0!important;
-/** KEEP THIS MARGIN TO FIX IE BUGS **
-**  FIREFOX DONT GIVE A DAMN TO NEGATIVE MARGINS
-**  SO IT WONT ALTER THE PRESENTATION
-**/
-border: 0!important;
-background-color: #181818 ;
-text-align:right !important;
-width:200px !important;
-max-width:200px !important;
-overflow:hidden !important;
-}
-
-#portal-column-content .visualPadding {padding:0;}
 
 #portal-column-one .visualPadding {
 margin:0; padding:0; width:150px; margin-left:25px;
 }
 
-#portal-column-content {
-width:none;
-max-width:none;
-margin: 0;
-text-align:center;
-border: 0;
-background-color: #181818;
+#portal-column-two .visualPadding {
+padding:0;margin:0;
 }
+
+#portal-column-content .visualPadding {padding:0;}
    
 #portal-logo {
         padding: 0;
@@ -288,7 +264,7 @@ background-color: #181818;
         padding: 0;
 	margin: 0;
         border: 0;
-	width : 1111px; 
+	width: 1111px; 
 	height:110px;
         background-color : #181818;
 }
@@ -297,10 +273,10 @@ background-color: #181818;
 
 #region-content {
 background-color: #181818; !important;
-padding : 0;
-margin : 0;
-overflow : hidden;
-width : auto;
+padding: 0;
+margin: 0;
+overflow: hidden;
+width: auto;
 min-width:700px;
 }
 
@@ -384,8 +360,8 @@ input {
 #navbar a:hover { color: #666; }
 
 img { 
-border :0;
-padding :0;
+border:0;
+padding:0;
 margin:0;
 }
 
@@ -394,7 +370,7 @@ text-align:left;
 }
 
 .documentActions { 	 
-   margin: 2px 2px 1px 0px !important; 	 
+   margin: 2px 2px 1px 0px; !important; 	 
    padding: 0; 	 
    /*YOU MUST KEEP THIS TO OVERRIDE 	 
    * THE AUTHORING CSS 	 
@@ -416,10 +392,9 @@ text-align:left;
 .holeContainer{ 
   width: 200px;
   background-color : #5F5E57;
-  padding:0;
-  margin:0;
+  padding:0em;  
   border:0;  
-  margin: 12px 0px;
+  margin: 1em 0em;
 }
 
 .hole { 
@@ -438,7 +413,7 @@ text-align:left;
   border: 0;
   background-color : #31322D;
   margin-left: 5px;
-  padding:0;
+  padding:5px;
   text-align: left;
   width:190px;
 }
@@ -453,87 +428,4 @@ text-align:left;
 
 
 /* END TAG */
-
-
 /* </dtml-with> */
-
-/* DOCUMENTATION ON PRE-DEFINED PROPERTIES FROM PLONE */
-
- /* You can insert colors and other variables from Plone's 
-    base_properties by doing:
-    
-    & dtml-variableName ; (without the spaces, excluded here to not make it render)
-    
-    Example:
-    
-    myLink {
-        color: & dtml-fontColor ;   (again, without the spaces)
-    }
- 
-   This means you can generate your own elements that use Plone's defaults,
-   and respect any customizations people have done. See base_properties for
-   the default values.
- 
-   These are the available properties:
-   
-   logoName - the file name of the portal logo
-   
-   fontFamily - the font family used for all text that is not headers
-   
-   fontBaseSize - the base font size that everything is calculated from
-   
-   fontColor - the main font color
-   
-   fontSmallSize - used for various elements like buttons and discreet text
-   
-   discreetColor - the font color of discreet text
-
-   backgroundColor - the background color 
-   
-   linkColor - the color used on normal links
-
-   linkActiveColor - color used on active links
-
-   linkVisitedColor - color used on visited links
-   
-   borderWidth - the width of most borders in Plone
-   
-   borderStyle - the style of the border lines, normally solid
-   
-   borderStyleAnnotations - style of border lines on comments etc
-   
-   globalBorderColor - the border color used on the main tabs, the portlets etc
-   
-   globalBackgroundColor - background color for the selected tabs, portlet headings etc
-   
-   globalFontColor - the color of the font in the tabs and in portlet headings
-   
-   headingFontFamily - font family for h1/h2/h3/h4/h5/h6 headlines
-   
-   contentViewBorderColor - the content view tabs border color
-   
-   contentViewBackgroundColor - the content view tabs background color
-   
-   contentViewFontColor - the font color used in the content view tabs
-   
-   inputFontColor - the font color used for input elements
-   
-   textTransform - whether to lowercase text in portlets, tabs etc.
-   
-   evenRowBackgroundColor - the background color of even rows in listings
-   
-   oddRowBackgroundColor - the background color of even rows in listings
-   
-   notifyBorderColor - border color of notification elements like the status message, the calendar focus
-   
-   notifyBackgroundColor - background color of notification elements like the status message, the calendar focus
-   
-   helpBackgroundColor - background color of information pop-ups (currently not used)
-
-          
-*/
-
-
-
-
-

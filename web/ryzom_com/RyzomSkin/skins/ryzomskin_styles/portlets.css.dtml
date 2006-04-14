@@ -43,8 +43,11 @@
     padding-top: 2em;
     padding-left: 1em;
     border:0;
+    white-space: normal;
+/*
     white-space: nowrap;
-    overflow: hidden;    
+    overflow: hidden;
+*/
 }
 
 #portal-column-one .portletItem  { 
@@ -121,6 +124,7 @@
 }
 
 .navTreeItem {
+    width:100%;
     display: block;
     padding: 0;
     margin: 0;

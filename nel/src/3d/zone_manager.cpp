@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.22 2005/02/22 10:19:13 besson Exp $
+ * $Id: zone_manager.cpp,v 1.22.16.1 2006/04/19 17:14:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,13 +79,13 @@ uint CZoneManager::getNumZoneLeftToLoad ()
 }
 
 // ------------------------------------------------------------------------------------------------
-void CZoneManager::checkZonesAround (uint x, uint y, uint area)
+void CZoneManager::checkZonesAround (uint x, uint y, uint area, const std::vector<uint16> *validZoneIds)
 {
 	if (_RemovingZone) return;
 
 	// Obtain the new set of zones around
 	if ( (x != _LastX) || (y != _LastY) || (area != _LastArea) )
-		getListZoneId (x, y, area, _ZoneList);
+		getListZoneId (x, y, area, _ZoneList, validZoneIds);
 	_LastX = x;
 	_LastY = y;
 	_LastArea = area;
@@ -93,7 +93,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 	// **** Look if we have zone loaded that is not needed anymore
 	uint32 i, j;
 	for (i = 0; i < _LoadedZones.size(); ++i)
-	{
+	{		
 		// If the loadedzone i do not appear in the zone list so we have to remove it
 		bool bFound = false;
 		uint16 nLoadedZone = _LoadedZones[i];
@@ -104,7 +104,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 				bFound = true;
 				break;
 			}
-		}
+		}		
 
 		if (!bFound)
 		{
@@ -112,7 +112,7 @@ void CZoneManager::checkZonesAround (uint x, uint y, uint area)
 			_IdZoneToRemove = nLoadedZone;
 			_RemovingZone = true;
 			return;
-		}
+		}		
 	}
 
 	// **** Look if we have zone not already loaded

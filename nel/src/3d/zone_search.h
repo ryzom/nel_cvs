@@ -1,7 +1,7 @@
 /** \file zone_search.h
  * CZoneSearch class
  *
- * $Id: zone_search.h,v 1.3 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: zone_search.h,v 1.3.44.1 2006/04/19 17:14:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 
 	uint16 getZoneId (uint x, uint y) const;
 	void getZonePos (uint16 zoneId, uint &x, uint &y) const;
-	void getListZoneId (uint x, uint y, uint sizeArea, std::vector<uint16> &l);
+	void getListZoneId (uint x, uint y, uint sizeArea, std::vector<uint16> &l, const std::vector<uint16> *validZoneIds = NULL);
 	std::string getZoneNameFromId (uint16 zoneid);
 
 private:

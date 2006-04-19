@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * TODO: File description
  *
- * $Id: landscape_user.h,v 1.31.16.3 2006/03/20 16:37:24 vizerie Exp $
+ * $Id: landscape_user.h,v 1.31.16.4 2006/04/19 17:14:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,10 +88,10 @@ public:
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded);
 	/// Delete old zones, or load new zones, around a position. new Zones are loaded async.
 	virtual	void	refreshZonesAround(const CVector &pos, float radius);
-	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved);
+	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved, const std::vector<uint16> *validZoneIds = NULL);
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved, 
-		NLMISC::IProgressCallback &progress);
+		NLMISC::IProgressCallback &progress, const std::vector<uint16> *validZoneIds = NULL);
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const;
 	virtual void    invalidateAllTiles();
 	virtual void	removeAllZones();

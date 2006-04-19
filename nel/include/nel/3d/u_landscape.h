@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.32.16.4 2006/03/20 16:37:49 vizerie Exp $
+ * $Id: u_landscape.h,v 1.32.16.5 2006/04/19 17:14:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,11 +110,12 @@ public:
 	 *	This method add or remove only one zone at a time.
 	 *	\zoneRemoved name of the zone removed, without extension (eg: "150_EM"). "" if none.
 	 *	\zoneAdded name of the zone added, without extension (eg: "150_EM"). "" if none.
+	 *  \validZones subset of zones that can be loaded (NULL for default set)
 	 */
-	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved) =0;
+	virtual	void	refreshZonesAround(const CVector &pos, float radius, std::string &zoneAdded, std::string &zoneRemoved, const std::vector<uint16> *validZoneIds = NULL) =0;
 	/// Delete old zones, or load new zones, around a position, until it is finished. This is a blocking call.
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, 
-		std::vector<std::string> &zonesRemoved, NLMISC::IProgressCallback &progress) =0;
+		std::vector<std::string> &zonesRemoved, NLMISC::IProgressCallback &progress, const std::vector<uint16> *validZoneIds = NULL) =0;
 	/** Get list of zones currently loaded in landscape.
 	 *	\zonesLoaded array of name of the zones added, without extension (eg: "150_EM").
 	 */

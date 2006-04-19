@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.15 2005/02/22 10:19:13 besson Exp $
+ * $Id: zone_manager.h,v 1.15.16.1 2006/04/19 17:14:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ public:
 
 	/// checkZonesAround : Add/Remove all zomes around a certain point
 	/// If a work is currently completed remove it and began another one
-	void checkZonesAround (uint x, uint y, uint area);
+	void checkZonesAround (uint x, uint y, uint area, const std::vector<uint16> *validZoneIds = NULL);
 
 	/// Is a work has been completed ? 
 	bool isWorkComplete (SZoneManagerWork &rWork);

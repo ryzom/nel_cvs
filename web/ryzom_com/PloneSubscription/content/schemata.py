@@ -17,7 +17,7 @@
 ## along with this program; see the file COPYING. If not, write to the
 ## Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
-$Id: schemata.py,v 1.1 2006/04/03 13:44:15 bernard Exp $
+$Id: schemata.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 """
 
 __author__  = ''
@@ -50,10 +50,10 @@ BaseSubscriptionSchema = BaseSchema.copy() + Schema((
         read_permission=SubscriptionPermissions.ViewSubscriptionContent,
         write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget=StringWidget(
-            visible={ 'view': 'visible', 'edit': 'visible',},
-            label="Relative path",
+            visible={ 'view': 'invisible', 'edit': 'invisible',},
+            label="Real path",
             label_msgid="label_subscription_rpath",
-            description="Relative path from plone site root.",
+            description="Real path from zope site root.",
             description_msgid="help_subscription_rpath",
             i18n_domain="plonesubscription",
             ),
@@ -64,9 +64,9 @@ BaseSubscriptionSchema = BaseSchema.copy() + Schema((
         searchable=True,
         default=DateTime(),
         read_permission=SubscriptionPermissions.ViewSubscriptionContent,
-        write_permission=SubscriptionPermissions.ManageSubscriptionContent,
+        write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget=CalendarWidget(
-            visible={ 'view': 'visible', 'edit': 'hidden',},
+            visible={ 'view': 'visible', 'edit': 'invisible',},
             label="Last send datetime",
             label_msgid="label_subscription_last_send",
             description="Last DateTime this subscription was activated.",
@@ -75,10 +75,11 @@ BaseSubscriptionSchema = BaseSchema.copy() + Schema((
             ),
         ),
     ),)
-BaseSubscriptionSchema['id'].widget.visible = { 'view': 'visible', 'edit': 'hidden',}
-BaseSubscriptionSchema['title'].widget.visible = { 'view': 'visible', 'edit': 'hidden',}
+BaseSubscriptionSchema['id'].widget.visible = { 'view': 'visible', 'edit': 'invisible',}
+BaseSubscriptionSchema['title'].write_permission=SubscriptionPermissions.EditSubscriptionContent
+BaseSubscriptionSchema['title'].widget.visible = { 'view': 'visible', 'edit': 'invisible',}
 BaseSubscriptionSchema['title'].required = False
-BaseSubscriptionSchema['description'].widget.visible = { 'view': 'hidden', 'edit': 'hidden',}
+BaseSubscriptionSchema['description'].widget.visible = { 'view': 'hidden', 'edit': 'invisible',}
 
 # Forms specific schema
 

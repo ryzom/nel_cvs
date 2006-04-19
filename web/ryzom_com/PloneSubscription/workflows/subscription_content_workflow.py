@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 ## PloneSubscription
-## A Plone tool supporting different levels of subscription and notification
 ## Copyright (C)2006 Ingeniweb
 
 ## This program is free software; you can redistribute it and/or modify
@@ -17,73 +16,81 @@
 ## along with this program; see the file COPYING. If not, write to the
 ## Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
-Base subscription content workflow.
-
-Use to have the rights roles in allowedRolesAndUsers index.
+Programmatically create a workflow type.
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/workflows/subscription_content_workflow.py,v $
-# $Id: subscription_content_workflow.py,v 1.1 2006/04/03 13:44:37 bernard Exp $
+# $Id: subscription_content_workflow.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 from Products.CMFCore.WorkflowTool import addWorkflowFactory
 from Products.DCWorkflow.DCWorkflow import DCWorkflowDefinition
 from Products.PythonScripts.PythonScript import PythonScript
+from Products.ExternalMethod.ExternalMethod import ExternalMethod
 
-def setupSubscription_content_workflow(wf):
-    """Setups the workflow."""
-    wf.setProperties(title='Default Workflow [Plone]')
+def setup_subscription_content_workflow(wf):
+    """Setup the workflow
+    """
+    wf.setProperties(title='Default Workflow [PloneSubscription]')
 
-    for s in ['visible', 'private', 'published']:
+    for s in ('private', 'published', 'visible'):
         wf.states.addState(s)
-    for t in ['retract', 'hide', 'publish', 'show']:
+    for t in ('hide', 'publish', 'retract', 'show'):
         wf.transitions.addTransition(t)
-    for v in ['action', 'review_history', 'actor', 'comments', 'time']:
+    for v in ('action', 'actor', 'comments', 'review_history', 'time'):
         wf.variables.addVariable(v)
-    for l in []:
+    for l in ():
         wf.worklists.addWorklist(l)
-    for p in ('View', 'PlacelessSubscription: View Content'):
+    for p in ('View',
+              'PlacelessSubscription: View Content',
+              'PlacelessSubscription: Edit Content',
+              'Modify portal content'):
         wf.addManagedPermission(p)
 
-    ## Initial State
+    # Initial State
     wf.states.setInitialState('private')
 
-    ## States initialization
+    # State Initialization
     sdef = wf.states['private']
     sdef.setProperties(title='Visible and editable only by owner',
                        description='',
                        transitions=('show',))
-    sdef.setPermission('View', 0, ['Manager', 'Owner', 'SubscriptionViewer'])
-    sdef.setPermission('PlacelessSubscription: View Content', 0, ['Manager', 'Owner', 'SubscriptionViewer'])
-
-    sdef = wf.states['visible']
-    sdef.setProperties(title='Visible but not published',
-                       description='',
-                       transitions=('hide', 'publish'))
-    sdef.setPermission('View', 0, ['Manager', 'Member', 'Owner', 'SubscriptionViewer'])
-    sdef.setPermission('PlacelessSubscription: View Content', 0, ['Manager', 'Member', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('View', 0,
+                       ['Manager', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: View Content', 0,
+                       ['Manager', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: Edit Content', 0,
+                       ['Manager', 'Owner'])
+    sdef.setPermission('Modify portal content', 0,
+                       ['Manager', 'Owner'])
 
     sdef = wf.states['published']
     sdef.setProperties(title='Public',
                        description='',
                        transitions=('hide', 'retract'))
-    sdef.setPermission('View', 0, ['Anonymous', 'Manager', 'Owner', 'SubscriptionViewer'])
-    sdef.setPermission('PlacelessSubscription: View Content', 0, ['Anonymous', 'Manager', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('View', 0,
+                       ['Anonymous', 'Manager', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: View Content', 0,
+                       ['Anonymous', 'Manager', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: Edit Content', 0,
+                       ['Manager', 'Owner'])
+    sdef.setPermission('Modify portal content', 0,
+                       ['Manager', 'Owner'])
 
-    ## Transitions initialization
-    tdef = wf.transitions['retract']
-    tdef.setProperties(title='',
-                       description='Member retracts submission',
-                       new_state_id='visible',
-                       trigger_type=1,
-                       script_name='',
-                       after_script_name='',
-                       actbox_name='Retract',
-                       actbox_url='%(content_url)s/content_retract_form',
-                       actbox_category='workflow',
-                       props={'guard_roles': 'Owner; Manager'},
-                       )
+    sdef = wf.states['visible']
+    sdef.setProperties(title='Visible but not published',
+                       description='',
+                       transitions=('hide', 'publish'))
+    sdef.setPermission('View', 0,
+                       ['Manager', 'Member', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: View Content', 0,
+                       ['Manager', 'Member', 'Owner', 'SubscriptionViewer'])
+    sdef.setPermission('PlacelessSubscription: Edit Content', 0,
+                       ['Manager', 'Owner'])
+    sdef.setPermission('Modify portal content', 0,
+                       ['Manager', 'Owner'])
 
+    # Transition Initialization
     tdef = wf.transitions['hide']
     tdef.setProperties(title='',
                        description='Member makes content private',
@@ -110,6 +117,19 @@ def setupSubscription_content_workflow(wf):
                        props={'guard_roles': 'Owner; Manager'},
                        )
 
+    tdef = wf.transitions['retract']
+    tdef.setProperties(title='',
+                       description='Member retracts submission',
+                       new_state_id='visible',
+                       trigger_type=1,
+                       script_name='',
+                       after_script_name='',
+                       actbox_name='Retract',
+                       actbox_url='%(content_url)s/content_retract_form',
+                       actbox_category='workflow',
+                       props={'guard_roles': 'Owner; Manager'},
+                       )
+
     tdef = wf.transitions['show']
     tdef.setProperties(title='',
                        description='Member makes content visible',
@@ -123,10 +143,10 @@ def setupSubscription_content_workflow(wf):
                        props={'guard_roles': 'Owner; Manager'},
                        )
 
-    ## State Variable
+    # State Variable
     wf.variables.setStateVar('review_state')
 
-    ## Variables initialization
+    # Variable Initialization
     vdef = wf.variables['action']
     vdef.setProperties(description='The last transition',
                        default_value='',
@@ -135,15 +155,6 @@ def setupSubscription_content_workflow(wf):
                        for_status=1,
                        update_always=1,
                        props=None)
-
-    vdef = wf.variables['review_history']
-    vdef.setProperties(description='Provides access to workflow history',
-                       default_value='',
-                       default_expr='state_change/getHistory',
-                       for_catalog=0,
-                       for_status=0,
-                       update_always=0,
-                       props={'guard_permissions': 'Request review; Review portal content'})
 
     vdef = wf.variables['actor']
     vdef.setProperties(description='The ID of the user who performed the last transition',
@@ -163,6 +174,15 @@ def setupSubscription_content_workflow(wf):
                        update_always=1,
                        props=None)
 
+    vdef = wf.variables['review_history']
+    vdef.setProperties(description='Provides access to workflow history',
+                       default_value='',
+                       default_expr='state_change/getHistory',
+                       for_catalog=0,
+                       for_status=0,
+                       update_always=0,
+                       props={'guard_permissions': 'Request review; Review portal content'})
+
     vdef = wf.variables['time']
     vdef.setProperties(description='Time of the last transition',
                        default_value='',
@@ -172,13 +192,14 @@ def setupSubscription_content_workflow(wf):
                        update_always=1,
                        props=None)
 
-    ## Worklists Initialization
-def createSubscription_content_workflow(id):
-    """Create, setup and return the workflow."""
+    # Worklist Initialization
+def create_subscription_content_workflow(id):
+    """Create, setup and return the workflow.
+    """
     ob = DCWorkflowDefinition(id)
-    setupSubscription_content_workflow(ob)
+    setup_subscription_content_workflow(ob)
     return ob
 
-addWorkflowFactory(createSubscription_content_workflow,
+addWorkflowFactory(create_subscription_content_workflow,
                    id='subscription_content_workflow',
                    title='Default Workflow [Plone]')

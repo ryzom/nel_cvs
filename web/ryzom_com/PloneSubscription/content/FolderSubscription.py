@@ -19,9 +19,9 @@
 """
 This module implement a folder subscription with recursivity ans workflow options
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/content/FolderSubscription.py,v $
-# $Id: FolderSubscription.py,v 1.1 2006/04/03 13:44:15 bernard Exp $
+# $Id: FolderSubscription.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 
@@ -74,7 +74,7 @@ schema = BaseSubscriptionSchema.copy() + Schema ((
         searchable=False,
         default=False,
         read_permission=SubscriptionPermissions.ViewSubscriptionContent,
-        write_permission=SubscriptionPermissions.ViewSubscriptionContent,
+        write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget=BooleanWidget(
             addable=True,
             visible={ 'view': 'visible', 'edit': 'visible',},
@@ -92,7 +92,7 @@ schema = BaseSubscriptionSchema.copy() + Schema ((
         searchable=False,
         default=False,
         read_permission=SubscriptionPermissions.ViewSubscriptionContent,
-        write_permission=SubscriptionPermissions.ViewSubscriptionContent,
+        write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget=BooleanWidget(
             addable=True,
             visible={ 'view': 'visible', 'edit': 'visible',},
@@ -106,6 +106,8 @@ schema = BaseSubscriptionSchema.copy() + Schema ((
     LinesField(
         'transitions',
         multiple = 1,
+        read_permission=SubscriptionPermissions.ViewSubscriptionContent,
+        write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget = LinesWidget(
             label_msgid = "label_transitions",
             description_msgid = "help_transitions",
@@ -116,6 +118,8 @@ schema = BaseSubscriptionSchema.copy() + Schema ((
 #        'meta_types',
 #        multiple = 1,
 #        #vocabulary = "getAvailableContentTypesVocabulary",
+#        read_permission=SubscriptionPermissions.ViewSubscriptionContent,
+#        write_permission=SubscriptionPermissions.EditSubscriptionContent,
 #        widget = LinesWidget(
 #            label_msgid = "label_meta_types",
 #            description_msgid = "help_meta_types",
@@ -177,16 +181,16 @@ class FolderSubscription(BaseContent):
         if folder is None:
             return self.getField('rpath').get(self)
         else:
-            return '/'+folder.absolute_url(relative=1)
+            return '/'.join(folder.getPhysicalPath())
 
     security.declareProtected(SubscriptionPermissions.EditSubscriptionContent, 'setRpath')
     def setRpath(self, rpath='/'):
-        """Overload rpath mutator"""
+        """Overload rpath mutator for forward compatibility"""
         folder = self.getField('folder').get(self)
         if folder is None:
             self.getField('rpath').set(self, rpath)
         else:
-            self.getField('rpath').set(self, folder.absolute_url(relative=1))
+            self.getField('rpath').set(self, '/'.join(folder.getPhysicalPath()))
 
     # Interface related methods
 

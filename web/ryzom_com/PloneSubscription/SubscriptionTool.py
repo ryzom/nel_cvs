@@ -19,9 +19,9 @@
 """
 This module implements generic functions for subscriptions
 """
-__version__ = "$Revision: 1.2 $"
+__version__ = "$Revision: 1.3 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/SubscriptionTool.py,v $
-# $Id: SubscriptionTool.py,v 1.2 2006/04/03 14:09:17 bernard Exp $
+# $Id: SubscriptionTool.py,v 1.3 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Python imports
@@ -533,52 +533,41 @@ class SubscriptionTool(UniqueObject, BaseFolder):
             provider.invokeFactory(subscriber_type, subscriber_id)
             subscriber = self.getSubscriber(subscriber_id)
 
+        portal_url = getToolByName(self, 'portal_url')
+        rpath = kw.get('rpath', '')
+        # transform the rpath to be getPhysicalPath compatible
+        if ptype not in ('ContentSubscription', 'FolderSubscription') and \
+           rpath and rpath[0] == '/':
+            kw['rpath'] = "%s%s" % ('/'.join(portal_url.getPhysicalPath()[:-1]), rpath)
+        else:
+            kw['rpath'] = "%s/%s" % ('/'.join(portal_url.getPhysicalPath()[:-1]), rpath)
+
         subscription = None
         if id == '':
             id = subscriber.generateUniqueId(ptype)
-            subscription=None
+            subscription = None
         else:
             subscription = getattr(subscriber, id, None)
 
         if subscription:
             message = 'psm_subscriptions_updated'
         else:
+            # Archetypes can set kwargs on creation, we edit() it after
             subscriber.invokeFactory(ptype, id)
             subscription = getattr(subscriber, id)
+
+            # We don't want results earlier than the subscription creation
+            kw['last_send'] = subscription.created()
+
             if subscription:
+                if ISubscription.isImplementedBy(subscription):
+                    subscription.edit(**kw)
+                else:
+                    raise "Subscription interface not supported!"
+
                 message = 'psm_subscriptions_page_added'
             else:
                 message = 'psm_subscriptions_page_not_added'
-
-        if not ISubscription.isImplementedBy(subscription):
-            raise "Subscription interface not supported!"
-
-        if kw.has_key('rpath'):
-            subscription.setRpath(kw['rpath'])
-        if kw.has_key('keywords'):
-            subscription.setKeywords(kw['keywords'])
-        if kw.has_key('title'):
-            subscription.setTitle(kw['title'])
-        if kw.has_key('folder'):
-            subscription.setFolder(kw['folder'])
-        if kw.has_key('content'):
-            subscription.setContent(kw['content'])
-        if kw.has_key('recursive'):
-            subscription.setRecursive(kw['recursive'])
-        if kw.has_key('workflow'):
-            subscription.setWorkflow(kw['workflow'])
-        if kw.has_key('transitions'):
-            subscription.setTransitions(kw['transitions'])
-
-        if kw.has_key('fullname'):
-            subscription.setFullname(kw['fullname'])
-        if kw.has_key('email'):
-            subscription.setEmail(kw['email'])
-        if kw.has_key('exact_search'):
-            subscription.setExactSearch(kw['exact_search'])
-
-        if subscription:
-            subscription.reindexObject()
 
         return message
 
@@ -712,7 +701,9 @@ A change related to your subscription to "%(subscription_title)s" was found:
         """Get all updated subscription since a date.
            Returns the subscription objects."""
         subscriptions =[]
-        periodicity = self.getPeriodicity()
+        #changed periodicity to 5 minute
+        #periodicity = self.getPeriodicity()
+        periodicity = 5    
         query = {'getLast_Send':{'query': [date - float(periodicity)/1440.0,],
                                  'range': 'max',
                                 },
@@ -748,10 +739,12 @@ A change related to your subscription to "%(subscription_title)s" was found:
             for user in subscriber.getUsers(subscription.getId()):
                 Log(LOG_DEBUG, 'user', user)
                 if self.validate_mailing_by_user(now, subscription, user):
-                    newSecurityManager(None, user) # Search as subscribed user
+                    # Search as subscribed user
+                    newSecurityManager(None, user)
                     unfiltered_brains = subscription.getQueryBrains()
                     brains = subscription.afterQueryFilters(unfiltered_brains)
-                    newSecurityManager(None, current_user) # Restore current user
+                    # Restore current user
+                    newSecurityManager(None, current_user)
                     Log(LOG_DEBUG, 'brains for a valid user all/filtered:', unfiltered_brains, brains)
                     # /!\ Be careful: brains are LazyMap but not list or tuple.
                     if brains:
@@ -773,16 +766,29 @@ A change related to your subscription to "%(subscription_title)s" was found:
             Log(LOG_DEBUG, "Mailing done")
             return 'mailing done'
 
-    security.declarePrivate("validate_mailing_by_user")
+    #security.declarePrivate("validate_mailing_by_user")
     def validate_mailing_by_user(self, now, subscription, user):
         """ Validate that the mail by user can and should be done.
         """
         validation=True
 
-        # Be careful, last_send can be 'None'
-        if subscription.getLast_send() and \
-           now - subscription.getLast_send() < float(self.getPeriodicity())/1440.0:
-            validation = False
+        last_send = subscription.getLast_send()
+
+        if last_send == subscription.created():
+            # If the subscription was just added (the last send date equals
+            # the creation date), the periodicity is not taken into account
+            # at all.
+            pass
+        else:
+            # After the first sending, the periodicity is making sure that
+            # nothing is sent again that was sent before.
+
+            #CHANGED: for periodicity == 5 minutes
+            #periodicity = float(self.getPeriodicity())/1440.0
+            periodicity = float(5)/1440.0
+            # Be careful, last_send can be 'None'
+            if last_send and now - last_send < periodicity:
+                validation = False
 
         if user.getId()=="Anonymous User":
             # Check if anonymous has an email
@@ -819,11 +825,9 @@ A change related to your subscription to "%(subscription_title)s" was found:
     def mailing_by_user_info(self, now, user, subscription, brains):
         portal = getToolByName(self, 'portal_url').getPortalObject()
         ptool = getToolByName(self, 'portal_properties')
-        mail_from = portal.getProperty('email_from_address','admin@plone-subscription.com')
+        mail_from = portal.getProperty('email_from_address',
+                                       'admin@plone-subscription.com')
         mtool = getToolByName(self, 'portal_membership')
-
-	#lang = mtool.portal_languages.getLanguageBindings()[0]
-	#mail_from = 'news-'+lang+'@newsletter.nevrax.com'
 
         if user.getId()=="Anonymous User":
             mail_to = user.getProperty('email')
@@ -833,15 +837,15 @@ A change related to your subscription to "%(subscription_title)s" was found:
 
         charset = ptool.site_properties.getProperty('default_charset', 'utf-8')
 
-	subjects = "[Ryzom-News] "
+        subjects = "[Ryzom-News] "
         nb_news = len(brains)
         if nb_news > 1:
             subjects += "("+str(nb_news)+" news)"
-	try:
+        try:
             subjects += str(brains[0].getObject().getEntryCategories()[0]).capitalize()+" : "
         except:
             subjects += '... : '
-	subjects += str(brains[0].Title or brains[0].getId)
+        subjects += str(brains[0].Title or brains[0].getId)
 
         headers_infos = {'date': now.rfc822(),
                          'mail_from': mail_from,
@@ -861,6 +865,15 @@ A change related to your subscription to "%(subscription_title)s" was found:
         content = ''
         Log(LOG_DEBUG, 'subscription brains', brains)
         for brain in brains:
+            #content += "    "
+            #content += str(brain.Title or brain.getId)
+            #content += " :\n"
+            #if base_url == '':
+            #    content += str(brain.getURL())
+            #else:
+            #    content += base_url
+            #    content += str(brain.getURL(relative=1)[portal_path_length:])
+            #content += "\n\n"
             title = "  "
             title += str(brain.Title or brain.getId)
             title += " :\n"
@@ -888,8 +901,6 @@ A change related to your subscription to "%(subscription_title)s" was found:
         template = self.getSubscriptionTemplate(subscription)
         body =  template % {'subscription_title': subscription.TitleOrId(),
                             'content': content,
-                            #'summary': summary,
-                            #'topic': topic,
                            }
         return body
 
@@ -915,7 +926,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         if base_url == '':
             content_info += str(content.absolute_url()) + "\n\n"
         else:
-            content_info += base_url + str(content.absolute_url(relative=1)[portal_path_length:]) + "\n\n"
+            content_info += base_url + str(content.absolute_url_path()[portal_path_length:]) + "\n\n"
         content_info += message + "\n\n"
         body =  template % {'subscription_title': content.title_or_id(),
                             'content': content_info,
@@ -958,7 +969,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         if base_url == '':
             content_info += str(content.absolute_url()) + "\n\n"
         else:
-            content_info += base_url + str(content.absolute_url(relative=1)[portal_path_length:]) + "\n\n"
+            content_info += base_url + str(content.absolute_url_path()[portal_path_length:]) + "\n\n"
 
         subscriber_id = self.getAnonymousSubscriberId(email)
         subscription = self.getAnonymousSubscription(content, subscriber_id)
@@ -1034,7 +1045,7 @@ Content-Type: text/plain; charset=%(charset)s
         portal = getToolByName(self, 'portal_url').getPortalObject()
         try:
             portal.MailHost.send(messageText, mto, mfrom, subject, encode)
-        except (socket.error, MailHostError, SMTPException), error_msg:
+        except (socket.error, MailHostError, SMTPException, AttributeError), error_msg:
             Log(LOG_NOTICE, "SubscriptionTool.sendMail",
                 "Error while sending mail:\n %s" % error_msg)
             mail_sent=False

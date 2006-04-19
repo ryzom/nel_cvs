@@ -33,9 +33,9 @@
  id's value is provided.
 
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/installers/PropertysheetInstaller.py,v $
-# $Id: PropertysheetInstaller.py,v 1.1 2006/04/03 13:37:16 bernard Exp $
+# $Id: PropertysheetInstaller.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 

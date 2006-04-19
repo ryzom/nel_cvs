@@ -131,7 +131,7 @@ msgid "help_subscription_recursive"
 msgstr "Recherche dans les sous-répertoire."
 
 msgid "help_subscription_rpath"
-msgstr "Chemin relatif depuis la racine du site Plone."
+msgstr "Chemin complet depuis la racine de l'instance Zope."
 
 msgid "help_subscription_show_actions"
 msgstr "Afficher les actions permettant d'ajouter les fournisseurs dans le site."
@@ -196,7 +196,7 @@ msgid "label_subscription_recursive"
 msgstr "Récursif"
 
 msgid "label_subscription_rpath"
-msgstr "Chemin relatif"
+msgstr "Chemin complet"
 
 msgid "label_subscription_show_actions"
 msgstr "Afficher les actions"

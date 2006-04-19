@@ -18,7 +18,7 @@
 ## Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 """
-$Id: SubscriptionProvider.py,v 1.1 2006/04/03 13:44:15 bernard Exp $
+$Id: SubscriptionProvider.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 """
 
 __author__  = ''

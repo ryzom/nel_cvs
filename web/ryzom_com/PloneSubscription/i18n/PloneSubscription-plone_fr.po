@@ -119,7 +119,7 @@ msgstr "Renseignez votre adresse mél."
 #. Default: "Container subscriptions"
 #: ../skins/plone_subscription_default/subscriber_view.cpt
 msgid "header_container_subscriptions"
-msgstr "Les abonnements pour le conteur %s"
+msgstr "Les abonnements pour « %s »"
 
 #. Default: "My subscriptions"
 #: skins/PloneSubscription/subscriber_view.cpt

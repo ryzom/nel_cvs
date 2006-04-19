@@ -20,7 +20,7 @@
              tal:condition="allow_subscribe">
           <div>
             <a href=""
-               tal:attributes="href string:${here/absolute_url}/subscription_form?subscribe=1&amp;ptype=FolderSubscription&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish">
+               tal:attributes="href string:${here/absolute_url}/subscription_form?subscribe=1&amp;ptype=FolderSubscription&amp;recursive=1">
               <img src="subscription_icon.gif"
                    tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
               <span i18n:translate="action_subscribe">Subscribe</span>
@@ -31,7 +31,7 @@
              tal:condition="allow_unsubscribe">
           <div>
             <a href=""
-               tal:attributes="href string:${here/absolute_url}/subscription_form?subscribe=0&amp;ptype=FolderSubscription&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish">
+               tal:attributes="href string:${here/absolute_url}/subscription_form?subscribe=0&amp;ptype=FolderSubscription&amp;recursive=1">
               <img src="subscription_icon.gif"
                    tal:attributes="src string:${portal_url}/subscription_icon.gif"/>
               <span i18n:translate="action_unsubscribe">Unsubscribe</span>
@@ -55,7 +55,7 @@
                tal:condition="python:(not is_subscribed and allow_subscribe) or (allow_unsubscribe and is_subscribed)">
             <div tal:condition="python:not is_subscribed and allow_subscribe">
               <a href=""
-                 tal:attributes="href string:${here/absolute_url}/addSubscription?ptype=${ptype}&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish"
+                 tal:attributes="href string:${here/absolute_url}/addSubscription?ptype=${ptype}&amp;recursive=1"
                  tal:condition="python:not isAnon and subscription_tool.getProvider() is not None">
                 <img src="subscription_icon.gif"
                      tal:attributes="src string:${portal_url}/subscription_icon.gif"/>

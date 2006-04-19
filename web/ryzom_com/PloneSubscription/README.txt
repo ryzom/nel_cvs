@@ -112,7 +112,7 @@ Advanced Usage
   The best practice is to make sure the subscriptions are already added the
   right way by passing in the correct parameters as it is done in the portlet:
   
-    '/addSubscription?ptype='+ptype + '&recursive=1&workflow=1&transitions:list=publish
+    '/addSubscription?ptype='+ptype + '&amp;recursive=1&amp;workflow=1&amp;transitions:list=publish&amp;transitions:list=visible'
     
   In this case you need to set the ptype to the subscription type you want and
   specify the parameters in advance.

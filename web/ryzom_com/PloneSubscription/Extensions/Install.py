@@ -17,7 +17,7 @@
 ## along with this program; see the file COPYING. If not, write to the
 ## Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
-$Id: Install.py,v 1.1 2006/04/03 13:40:39 bernard Exp $
+$Id: Install.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 """
 __author__  = ''
 __docformat__ = 'restructuredtext'
@@ -44,7 +44,7 @@ from Products.PloneSubscription.SubscriptionPermissions import \
 from Products.PloneSubscription.config import PROJECTNAME, GLOBALS, \
     subscription_prefs_configlet, subscription_task_id, subscription_script_id, \
     zope_DEPS, plone_DEPS
-from Products.PloneSubscription.workflows.subscription_content_workflow import createSubscription_content_workflow
+from Products.PloneSubscription.workflows.subscription_content_workflow import create_subscription_content_workflow
 
 from Products.PloneSubscription.installers.utils import InstallationRunner, InstallationContext
 from Products.PloneSubscription.installers.RoleInstaller import RoleInstaller
@@ -165,7 +165,7 @@ def getRunners():
                                           'ExactSearchSubscription'),
                             old_workflow=None,
                             module_name='Install',
-                            function_name='createSubscription_content_workflow',
+                            function_name='create_subscription_content_workflow',
                             defaultWorkflow=False)
     installers.append(wfi)
 

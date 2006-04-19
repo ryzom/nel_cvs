@@ -7,7 +7,7 @@
 ##parameters=REQUEST=None
 ##title=Exporting subscriptions to content as CSV
 ##
-# $Id: subscription_csv_export.py,v 1.1 2006/04/03 13:37:16 bernard Exp $
+# $Id: subscription_csv_export.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 # -*- coding: utf-8 -*-
 filename = 'subscriptions_' + context.getId() + '.csv'
 from Products.CMFCore.utils import getToolByName

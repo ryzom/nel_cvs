@@ -19,9 +19,9 @@
 """
 This module implement a content subscription with workflow options
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/content/ContentSubscription.py,v $
-# $Id: ContentSubscription.py,v 1.1 2006/04/03 13:44:15 bernard Exp $
+# $Id: ContentSubscription.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 
@@ -74,7 +74,7 @@ schema = BaseSubscriptionSchema.copy() + Schema ((
         searchable=False,
         default=False,
         read_permission=SubscriptionPermissions.ViewSubscriptionContent,
-        write_permission=SubscriptionPermissions.ViewSubscriptionContent,
+        write_permission=SubscriptionPermissions.EditSubscriptionContent,
         widget=BooleanWidget(
             addable=True,
             visible={ 'view': 'visible', 'edit': 'visible',},
@@ -131,7 +131,7 @@ class ContentSubscription(BaseContent):
         if content is None:
             return self.getField('rpath').get(self)
         else:
-            return '/'+content.absolute_url(relative=1)
+            return '/'.join(content.getPhysicalPath())
 
     security.declareProtected(SubscriptionPermissions.EditSubscriptionContent, 'setRpath')
     def setRpath(self, rpath='/'):
@@ -140,7 +140,7 @@ class ContentSubscription(BaseContent):
         if content is None:
             self.getField('rpath').set(self, rpath)
         else:
-            self.getField('rpath').set(self, content.absolute_url(relative=1))
+            self.getField('rpath').set(self, '/'.join(content.getPhysicalPath()))
 
     # Interface related methods
 

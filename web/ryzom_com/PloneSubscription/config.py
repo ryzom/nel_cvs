@@ -19,9 +19,9 @@
 """
 Base configuration data
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/config.py,v $
-# $Id: config.py,v 1.1 2006/04/03 13:37:16 bernard Exp $
+# $Id: config.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # CMF imports
@@ -33,7 +33,7 @@ SKINS_DIR = 'skins'
 TOOL_ICON = 'subscription_icon.gif'
 TOOL_META_TYPE = 'SubscriptionTool'
 CATALOG_INDEXES = (
-    # (index_id, index_type, is_metadata)
+    # (index_id, index_type, is_metadata, attribute)
     ('id', 'FieldIndex', True, None),
     ('Title', 'FieldIndex', True, None),
     ('Description', 'TextIndex', False, None),

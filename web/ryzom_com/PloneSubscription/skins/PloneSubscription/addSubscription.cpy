@@ -11,7 +11,7 @@
 if context.isPrincipiaFolderish:
     pass
 else:
-    if ptype=="FolderSubscription":
+    if ptype == "FolderSubscription":
         context=container
 
 from Products.CMFCore.utils import getToolByName
@@ -29,45 +29,45 @@ if provider is None:
 
 ptype = context.REQUEST.form.get('ptype','FolderSubscription')
 
-keywords={}
+keywords = {}
 if ptype == 'KeywordsSubscription':
-    keywords['rpath']=context.REQUEST.form.get('rpath')
-    keywords['keywords']=context.REQUEST.form.get('keywords')
-    keywords['title']=context.REQUEST.form.get('keywords') # Take keywords as title
+    keywords['rpath'] = context.REQUEST.form.get('rpath')
+    keywords['keywords'] = context.REQUEST.form.get('keywords')
+    keywords['title'] = context.REQUEST.form.get('keywords') # Take keywords as title
 elif ptype == 'ExactSearchSubscription':
-    keywords['rpath']=context.REQUEST.form.get('rpath')
-    keywords['indices']=context.REQUEST.form.get('indices')
-    keywords['values']=context.REQUEST.form.get('values')
-    keywords['title']=context.REQUEST.form.get('keywords') # Take keywords as title
+    keywords['rpath'] = context.REQUEST.form.get('rpath')
+    keywords['indices'] = context.REQUEST.form.get('indices')
+    keywords['values'] = context.REQUEST.form.get('values')
+    keywords['title'] = context.REQUEST.form.get('keywords') # Take keywords as title
 elif ptype == 'FolderSubscription':
-    keywords['rpath']=context.absolute_url(relative=1)
-    if context.meta_type=="Plone Site":
+    keywords['rpath'] = context.absolute_url_path()
+    if context.meta_type == "Plone Site":
         # In case we are on the root folder, we have to take subscriptions from
         # the portal_subscription tool. Let's hope the Portal site will be
         # an Archetype soon
-        keywords['folder']=stool.UID()
+        keywords['folder'] = stool.UID()
     else:
-        keywords['folder']=context.UID()
-    keywords['title']=context.TitleOrId()
+        keywords['folder'] = context.UID()
+    keywords['title'] = context.TitleOrId()
     if context.REQUEST.form.has_key('transitions'):
-        keywords['transitions']=context.REQUEST.form.get('transitions')
+        keywords['transitions'] = context.REQUEST.form.get('transitions')
     if context.REQUEST.form.has_key('recursive'):
-        keywords['recursive']=context.REQUEST.form.get('recursive')
+        keywords['recursive'] = context.REQUEST.form.get('recursive')
     if context.REQUEST.form.has_key('workflow'):
-        keywords['workflow']=context.REQUEST.form.get('workflow')
+        keywords['workflow'] = context.REQUEST.form.get('workflow')
     keywords['transition']="publish"
     if context.REQUEST.form.has_key('title'):
-        keywords['fullname']=context.REQUEST.form.get('title')
+        keywords['fullname'] = context.REQUEST.form.get('title')
     if context.REQUEST.form.has_key('email'):
-        keywords['email']=context.REQUEST.form.get('email')
+        keywords['email'] = context.REQUEST.form.get('email')
 elif ptype == 'ContentSubscription':
-    keywords['rpath']=context.absolute_url(relative=1)
-    keywords['content']=context.UID()
-    keywords['title']=context.TitleOrId()
+    keywords['rpath'] = context.absolute_url_path()
+    keywords['content'] = context.UID()
+    keywords['title'] = context.TitleOrId()
     if context.REQUEST.form.has_key('title'):
-        keywords['fullname']=context.REQUEST.form.get('title')
+        keywords['fullname'] = context.REQUEST.form.get('title')
     if context.REQUEST.form.has_key('email'):
-        keywords['email']=context.REQUEST.form.get('email')
+        keywords['email'] = context.REQUEST.form.get('email')
 else:
     raise "Unknown Subscription"
 

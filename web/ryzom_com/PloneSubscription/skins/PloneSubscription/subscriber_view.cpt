@@ -20,30 +20,30 @@
     <script type="text/javascript"
             tal:define="subscription_tool nocall:portal/portal_subscription"
             tal:condition="python:not subscription_tool.getHide_remove_button()">
-    <!--
-    function displayRemoveButtonSub(field, checkbox) {
-         var found = null;
-         if (checkbox.checked == true) {
-             found = 'ok';
-         } else {
-             for (i=0;i<field.length;++ i) {
-                 if (field[i].checked == true) {
-                     found = 'ok';
-                 }
-             }
-         }
-
-         button = document.getElementById('removeButtonSub');
-         if (found == null) {
-             if (button.style.display == 'block') {
-                 button.style.display = 'none';
-             }
-         } else {
-             if (button.style.display == 'none') {
-                 button.style.display = 'block';
+      <!--
+      function displayRemoveButtonSub(field, checkbox) {
+        var found = null;
+          if (checkbox.checked == true) {
+            found = 'ok';
+          } else {
+            for (i=0;i<field.length;++ i) {
+              if (field[i].checked == true) {
+                found = 'ok';
+              }
             }
-         }
-    }
+          }
+
+          button = document.getElementById('removeButtonSub');
+          if (found == null) {
+            if (button.style.display == 'block') {
+              button.style.display = 'none';
+            }
+          } else {
+            if (button.style.display == 'none') {
+              button.style.display = 'block';
+          }
+        }
+      }
     -->
     </script>
 
@@ -86,22 +86,22 @@
                   <input class="noborder" type="checkbox" src="select_all_icon.gif"
                          name="selectButton" title="Select all items" alt="Select all items"
                          onClick="toggleSelect(this, 'items.delete:int:records');displayRemoveButtonSub(this.form['items.delete:int:records'], this)"
-                         tal:attributes="src string:$portal_url/select_all_icon.gif"
+                         tal:attributes="src string:${portal_url}/select_all_icon.gif"
                          i18n:attributes="title alt" />
                 </th>
                 <th>&nbsp;<tal:title i18n:translate="subscription_emplacement">Emplacement</tal:title>&nbsp;</th>
+                <th tal:condition="can_edit"><span i18n:translate="subscriptions_options">Options</span></th>
+                <th><span i18n:translate="subscriptions_last_sent">Last Sent</span></th>
                 <th><span i18n:translate="subscription_current_results">
                         Current Results
                     </span>
                 </th>
-                <th><span i18n:translate="subscriptions_last_sent">Last Sent</span></th>
-                <th tal:condition="can_edit"><span i18n:translate="subscriptions_options">Options</span></th>
               </tr>
               <tal:block tal:repeat="item items">
                 <tr tal:define="oddrow repeat/item/odd;
                                 ptype item/portal_type;
                                 id item/getId;
-                                url python:item.getSubscriptionUrl();
+                                url item/getSubscriptionUrl;
                                 icon python: item.getIcon(1);
                                 edit_view python:item.getTypeInfo().getActionById('edit');"
                     tal:attributes="class python:test(oddrow, 'even', 'odd')">
@@ -121,23 +121,25 @@
                   </td>
                   <td><image tal:condition="icon"
                              tal:attributes="src string:${portal_url}/${icon}"/>
-                      <a href="" tal:attributes="href url"><span tal:replace="item/title_or_id" />
-                      </a>
+                      <a href="" tal:attributes="href url"
+                         tal:content="item/title_or_id">Title</a>
                   </td>
-                  <td>
-                  <ul><li tal:repeat="brain python:item.getQueryBrains()">
-                          <a tal:attributes="href python:'/'+brain.getObject().absolute_url(relative=1)"
-                             tal:content="python:brain.Title" />
-                      </li>
-                  </ul>
-                  </td>
-                  <td tal:content="python:here.toLocalizedTime(item.getLast_send(), long_format=1)"
-                      i18n:translate="">Last Send</td>
                   <td tal:condition="can_edit"><a href="edit"
                          alt="edit"
                          name="edit_subscription"
                          tal:attributes="href string:${item/absolute_url}/${edit_view};"
-                         i18n:translate="subscriptions_edit">Edit</a></td>
+                         i18n:translate="subscriptions_edit">Edit</a>
+                  </td>
+                  <td tal:content="python:here.toLocalizedTime(item.getLast_send(), long_format=1)"
+                      i18n:translate="">Last Send</td>
+                  <td>
+                    <ul>
+                      <li tal:repeat="brain python:item.afterQueryFilters(item.getQueryBrains())">
+                        <a tal:attributes="href python:brain.getObject().absolute_url_path()"
+                           tal:content="brain/Title" />
+                      </li>
+                    </ul>
+                  </td>
                 </tr>
               </tal:block>
             </table>

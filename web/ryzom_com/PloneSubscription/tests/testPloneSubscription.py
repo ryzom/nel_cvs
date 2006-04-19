@@ -20,9 +20,9 @@
 """
 This module implements unit test for PloneSubscription
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/tests/testPloneSubscription.py,v $
-# $Id: testPloneSubscription.py,v 1.1 2006/04/03 13:37:16 bernard Exp $
+# $Id: testPloneSubscription.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 from common import *
@@ -164,7 +164,7 @@ class TestPloneSubscription(PloneSubscriptionTestCase.PloneSubscriptionTestCase)
         self.failUnless(self.stool.getSubscriber("group"), "Group subscriber exists")
         # test add in GroupSubscriber
         folder_kw = {
-            'rpath': self.portal.folder001.absolute_url(relative=1),
+            'rpath': self.portal.folder001.absolute_url_path(),
             'title': 'Folder1',
             }
         subscription=self.stool.setSubscription(id='folder1',
@@ -178,7 +178,7 @@ class TestPloneSubscription(PloneSubscriptionTestCase.PloneSubscriptionTestCase)
         home_folder = self.portal.portal_membership.getHomeFolder(self.user_name)
         home_folder.invokeFactory('Folder', 'member_folder')
         folder_kw = {
-            'rpath': home_folder.member_folder.absolute_url(relative=1),
+            'rpath': '/'.join(home_folder.member_folder.getPhysicalPath()),
             'title': 'Folder1',
             }
         keywords_kw = {

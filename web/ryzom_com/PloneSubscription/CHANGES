@@ -3,7 +3,19 @@ Todo -
   - Fixed a bug in mailing_by_user_body method of Subscription Tool, which only
     appeared when a document had not title.
 
+  - Create configuration options for subscription portlet
+
+  - Migration script on subscription_catalog
+
 SVN -
+
+  - Remove on transition filter in subscription portlet
+
+  - Add afterQueryFilters on subscriber_view results preview
+
+  - Change subscriber_view columns order: results preview move to last
+
+  - Fix loosing subscriptions with all virtualhosting solution
 
   - i18n refactoring
 

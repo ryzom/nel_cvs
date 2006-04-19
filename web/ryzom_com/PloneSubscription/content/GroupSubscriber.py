@@ -21,9 +21,9 @@ This modules implements a group subscriber.
 
 It depends on GRUF groups implementation
 """
-__version__ = "$Revision: 1.1 $"
+__version__ = "$Revision: 1.2 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/content/GroupSubscriber.py,v $
-# $Id: GroupSubscriber.py,v 1.1 2006/04/03 13:44:15 bernard Exp $
+# $Id: GroupSubscriber.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Zope imports

@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.17 2003/02/03 14:00:24 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.17.48.1 2006/04/19 13:49:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/quad_grid.h"
 #include "3d/scene_group.h"
 #include "3d/shape.h"
+#include "3d/water_shape.h"
 #include "3d/register_3d.h"
 
 #include "nel/georges/u_form.h"
@@ -129,19 +130,83 @@ public:
 	CAABBoxExt	BBox;
 };
 
-typedef std::map<std::string, NLMISC::CAABBox> TString2BBox;
-/// A map to cache the shapes bbox's
-typedef TString2BBox TShapeMap;
 
+
+// a bbox with a 'NULL' flad added
+class CPotentialBBox 
+{
+public:
+	CPotentialBBox() : IsVoid(true) {}
+	CPotentialBBox(const CAABBox &b) : Box(b), IsVoid(false) {}
+	CAABBox Box; 
+	bool	IsVoid;
+	void makeUnion(const CPotentialBBox &other)
+	{
+		if (IsVoid && other.IsVoid) return;
+		if( IsVoid)
+		{
+			Box = other.Box;
+		}
+		else if (!other.IsVoid)
+		{
+			Box = CAABBox::computeAABBoxUnion(Box, other.Box);
+		}
+		IsVoid = false;
+	}
+	void transform(const NLMISC::CMatrix &matrix)
+	{
+		if (!IsVoid)
+		{
+			Box = NLMISC::CAABBox::transformAABBox(matrix, Box);			
+		}
+	}
+	// If the bbox has a null size, then mark it void
+	void removeVoid() 
+	{ 
+		if (!IsVoid && Box.getHalfSize() == CVector::Null)
+		{
+			IsVoid = true;
+		}
+	}
+};
+
+
+// a couple of bbox to identity occluding / receiving bbox
+struct CLightingBBox
+{
+public:
+	CPotentialBBox OccludingBox;
+	CPotentialBBox ReceivingBox;
+	void makeUnion(const CLightingBBox &other)
+	{
+		OccludingBox.makeUnion(other.OccludingBox);
+		ReceivingBox.makeUnion(other.ReceivingBox);
+	}
+	void transform(const NLMISC::CMatrix &matrix)
+	{
+		OccludingBox.transform(matrix);
+		ReceivingBox.transform(matrix);
+	}
+	// If the bbox has a null size, then mark it void
+	void removeVoid() 
+	{ 
+		OccludingBox.removeVoid();
+		ReceivingBox.removeVoid();
+	}
+};
+
+typedef std::map<std::string, CLightingBBox> TString2LightingBBox;
+/// A map to cache the shapes bbox's
+typedef TString2LightingBBox TShapeMap;
 
 
 
 // compute the bbox of the igs in a zone
-static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap, const TString2BBox &additionnalIG);
+static void computeZoneIGBBox(const char *zoneName, CLightingBBox &result, TShapeMap &shapeMap, const TString2LightingBBox &additionnalIG);
 // ryzom specific, see definition
 static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,									   
 									   TShapeMap &shapeMap,
-									   TString2BBox &zone2BBox
+									   TString2LightingBBox &zone2BBox
 							          );
 
 
@@ -202,7 +267,7 @@ int main (int argc, char* argv[])
 			NLMISC::CPath::addSearchPath(shapes_path.asString(), true, true);
 */
 			CConfigFile::CVar &compute_dependencies_with_igs = properties.getVar ("compute_dependencies_with_igs");
-			bool computeDependenciesWithIgs = compute_dependencies_with_igs.asInt() != 0;			
+			bool computeDependenciesWithIgs = compute_dependencies_with_igs.asInt() != 0;								
 
 
 			// Get the file extension
@@ -255,8 +320,8 @@ int main (int argc, char* argv[])
 					dependencies.resize ((lastX-firstX+1)*(lastY-firstY+1));
 
 					// Ryzom specific: build bbox for villages
-					TString2BBox villagesBBox;
-					computeIGBBoxFromContinent(properties, shapeMap, villagesBBox);
+					TString2LightingBBox villagesBBox;					
+					computeIGBBoxFromContinent(properties, shapeMap, villagesBBox);		
 
 
 					// Insert each zone in the quad tree
@@ -276,7 +341,7 @@ int main (int argc, char* argv[])
 						// Open the file
 						CIFile file;
 						if (file.open (dir+zoneName+ext))
-						{
+						{							
 							// The zone
 							CZone zone;
 
@@ -286,42 +351,47 @@ int main (int argc, char* argv[])
 								file.serial (zone);
 
 								/// get bbox from the ig of this zone
-								NLMISC::CAABBox igBBox;
-								bool hasIgBBox = computeDependenciesWithIgs ? computeZoneIGBBox(zoneName.c_str(), igBBox, shapeMap, villagesBBox)
-																			: false;
-
+								CLightingBBox igBBox;								
+								if (computeDependenciesWithIgs)
+								{
+									computeZoneIGBBox(zoneName.c_str(), igBBox, shapeMap, villagesBBox);
+								}								
 								// Create a zone descriptor
+								
+
+								
+								NLMISC::CAABBox zoneBox;
+								zoneBox.setCenter(zone.getZoneBB().getCenter());
+								zoneBox.setHalfSize(zone.getZoneBB().getHalfSize());
+
+								CLightingBBox zoneLBox;
+								zoneLBox.OccludingBox = zoneLBox.ReceivingBox = zoneBox; // can't be void
+								zoneLBox.makeUnion(igBBox);								
+								nlassert(!zoneLBox.ReceivingBox.IsVoid);
+								//
 								CZoneDescriptorBB zoneDesc;
 								zoneDesc.X=x;
 								zoneDesc.Y=y;
-
-								if (!hasIgBBox)
+								zoneDesc.BBox=zoneLBox.ReceivingBox.Box;
+								//
+								if (!zoneLBox.OccludingBox.IsVoid)
 								{
-									zoneDesc.BBox=zone.getZoneBB();
+									quadGrid.insert (zoneLBox.ReceivingBox.Box.getMin(), zoneLBox.ReceivingBox.Box.getMax(), zoneDesc);
 								}
-								else
-								{
-									NLMISC::CAABBox zoneBox;
-									zoneBox.setCenter(zone.getZoneBB().getCenter());
-									zoneBox.setHalfSize(zone.getZoneBB().getHalfSize());
-									zoneDesc.BBox = CAABBoxExt(CAABBox::computeAABBoxUnion(zoneBox, igBBox));
-								}					
-
-								// Insert in the quad grid
-								quadGrid.insert (zoneDesc.BBox.getMin(), zoneDesc.BBox.getMax(), zoneDesc);
-
+																								
 								// Insert in the dependencies
 								// Index 
 								uint index=(x-firstX)+(y-firstY)*(lastX-firstX+1);
+								
 
 								// Loaded
 								dependencies[index].Loaded=true;
 								dependencies[index].X=x;
 								dependencies[index].Y=y;
-								dependencies[index].BBox=zoneDesc.BBox;
+								dependencies[index].BBox=zoneLBox.OccludingBox.Box;
 
 								// ZMin
-								float newZ=zoneDesc.BBox.getMin().z;
+								float newZ=zoneLBox.ReceivingBox.Box.getMin().z;
 								if (newZ<minZ)
 									minZ=newZ;
 							}
@@ -525,19 +595,21 @@ int main (int argc, char* argv[])
 /** Load and compute the bbox of the models that are contained in a given instance group
   * \return true if the computed bbox is valid
   */
-static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &result, TShapeMap &shapeMap)
+static void computeIGBBox(const NL3D::CInstanceGroup &ig, CLightingBBox &result, TShapeMap &shapeMap)
 {
+	result = CLightingBBox(); // starts with void result
 	bool firstBBox = true;	
 	/// now, compute the union of all bboxs
 	for (CInstanceGroup::TInstanceArray::const_iterator it = ig._InstancesInfos.begin(); it != ig._InstancesInfos.end(); ++it)
 	{		
-		NLMISC::CAABBox currBBox;
-
-		bool validBBox = true; 
+		CLightingBBox currBBox;
+		
+		bool validBBox = false;
 		/// get the bbox from file or from map
 		if (shapeMap.count(it->Name)) // already loaded ?
 		{
 			currBBox = shapeMap[it->Name];
+			validBBox = true;
 		}
 		else // must load the shape to get its bbox
 		{		
@@ -548,11 +620,9 @@ static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &resul
 
 			if (shapePathName.empty())
 			{
-				nlwarning("Unable to find shape %s", it->Name.c_str());
-				validBBox = false;
+				nlwarning("Unable to find shape %s", it->Name.c_str());				
 			}
-
-			if (validBBox)
+			else
 			{
 				CIFile shapeInputFile;
 				
@@ -562,8 +632,36 @@ static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &resul
 					try
 					{
 						shapeStream.serial (shapeInputFile);
-						shapeStream.getShapePointer()->getAABBox(currBBox);
-						shapeMap[it->Name] = currBBox;
+						// NB Nico :
+						// Deal with water shape -> their 'Receiving' box is set to 'void'
+						// this prevent the case where a huge surface of water will cause the zone it is attached to (the 'Zone'
+						// field in the villages sheets) to load all the zones that the water surface cover. (This caused
+						// an 'out of memory error' in the zone lighter due to too many zone being loaded)
+						
+						// FIXME : test for water case hardcoded for now						
+						CWaterShape *ws = dynamic_cast<CWaterShape *>(shapeStream.getShapePointer());
+						if (ws)
+						{
+							CAABBox bbox;
+							shapeStream.getShapePointer()->getAABBox(bbox);
+							currBBox.OccludingBox = CPotentialBBox(bbox); // occluding box is used, though the water shape
+																		 // doesn't cast shadow -> the tiles flag ('above', 'intersect', 'below water')
+																		 // are updated inside the zone_lighter
+							currBBox.ReceivingBox.IsVoid = true; // no lighted by the zone lighter !!!
+							currBBox.removeVoid();
+							shapeMap[it->Name] = currBBox;							
+						}
+						else
+						{
+
+							CAABBox bbox;
+							shapeStream.getShapePointer()->getAABBox(bbox);
+							currBBox.OccludingBox = CPotentialBBox(bbox);
+							currBBox.ReceivingBox = CPotentialBBox(bbox);
+							currBBox.removeVoid();
+							shapeMap[it->Name] = currBBox;
+						}
+						validBBox = true;
 					}
 					
 					catch (NLMISC::Exception &e)
@@ -578,6 +676,7 @@ static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &resul
 			}
 		}
 
+
 		if (validBBox)
 		{
 			/// build the model matrix
@@ -589,23 +688,19 @@ static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &resul
 			mat.setPos(it->Pos);
 
 			/// transform the bbox
-			currBBox = NLMISC::CAABBox::transformAABBox(mat, currBBox);
-	
-			if (currBBox.getHalfSize() != NLMISC::CVector::Null)
-			{					
-				if (firstBBox)
-				{
-					result = currBBox;
-					firstBBox = false;
-				}
-				else // add to previous one
-				{						
-					result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
-				}
+			currBBox.transform(mat);
+			currBBox.removeVoid();			
+			if (firstBBox)
+			{
+				result = currBBox;
+				firstBBox = false;
 			}
+			else // add to previous one
+			{						
+				result.makeUnion(currBBox);
+			}			
 		}		
-	}
-	return !firstBBox; // found at least one bbox ?	
+	}	
 }
 
 ///===========================================================================
@@ -616,14 +711,13 @@ static bool computeIGBBox(const NL3D::CInstanceGroup &ig, NLMISC::CAABBox &resul
   * \param additionnalIG a map that gives an additionnal ig for a zone from its name (ryzom specific : used to compute village bbox)
   * \return true if the computed bbox is valid
   */
-static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap, const TString2BBox &additionnalIG)
+static void computeZoneIGBBox(const char *zoneName, CLightingBBox &result, TShapeMap &shapeMap, const TString2LightingBBox &additionnalIG)
 {
-	bool hasAdditionnalBBox = false;
+	result = CLightingBBox(); // starts with a void box	
 	std::string lcZoneName = NLMISC::strlwr(std::string(zoneName));
-	TString2BBox::const_iterator zoneIt = additionnalIG.find(lcZoneName);
+	TString2LightingBBox::const_iterator zoneIt = additionnalIG.find(lcZoneName);
 	if (zoneIt != additionnalIG.end())
-	{
-		hasAdditionnalBBox = true;
+	{		
 		result = zoneIt->second;		
 	}
 
@@ -633,7 +727,7 @@ static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TSh
 	if (pathName.empty())
 	{
 		// nlwarning("unable to find instance group of zone : %s", zoneName);
-		return hasAdditionnalBBox;
+		return;
 	}
 
 
@@ -642,7 +736,7 @@ static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TSh
 	if (!igFile.open(pathName))
 	{
 		nlwarning("unable to open file : %s", pathName.c_str());
-		return hasAdditionnalBBox;
+		return;
 	}
 
 	NL3D::CInstanceGroup ig;
@@ -653,40 +747,31 @@ static bool computeZoneIGBBox(const char *zoneName, NLMISC::CAABBox &result, TSh
 	catch (NLMISC::Exception &e)
 	{
 		nlwarning("Error while reading an instance group file : %s \n reason : %s", pathName.c_str(), e.what());
-		return hasAdditionnalBBox;
+		return;
 	}
-	NLMISC::CAABBox tmpBBox;
-	if (!computeIGBBox(ig, tmpBBox, shapeMap)) return hasAdditionnalBBox;	
-	if (hasAdditionnalBBox)
-	{
-		result = NLMISC::CAABBox::computeAABBoxUnion(result, tmpBBox);
-	}
-	else
-	{
-		result = tmpBBox;
-	}
-	return true;
+	CLightingBBox tmpBBox;
+	computeIGBBox(ig, tmpBBox, shapeMap);		
+	result.makeUnion(tmpBBox);	
 }
 
 
 
 //=======================================================================================
 // ryzom specific build bbox of a village in a zone
-static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem, 
+static void computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem, 
 								   const std::string &continentName,
 								   uint villageIndex,
 								   TShapeMap &shapeMap,
-								   NLMISC::CAABBox &result
+								   CLightingBBox &result
 								  )
 {	
+	result = CLightingBBox();
 	const NLGEORGES::UFormElm *igNamesItem;
 	if (! (villageItem->getNodeByName (&igNamesItem, "IgList") && igNamesItem) )
 	{
 		nlwarning("No list of IGs was found in the continent form %s, village #%d", continentName.c_str(), villageIndex);
-		return false;
-	}
-
-	bool bboxFound = false;
+		return;
+	}	
 	// Get number of village
 	uint numIgs;
 	nlverify (igNamesItem->getArraySize (numIgs));
@@ -723,20 +808,10 @@ static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem,
 				CInstanceGroup group;
 				try
 				{
-					CAABBox currBBox;
+					CLightingBBox currBBox;
 					group.serial (inputFile);
-					if (computeIGBBox(group, currBBox, shapeMap))
-					{
-						if (!bboxFound)
-						{
-							result = currBBox;							
-						}
-						else // add to previous one
-						{						
-							result = NLMISC::CAABBox::computeAABBoxUnion(result, currBBox);
-						}
-						bboxFound = true;
-					}
+					computeIGBBox(group, currBBox, shapeMap);											
+					result.makeUnion(currBBox);					
 				}
 				catch(NLMISC::Exception &)
 				{
@@ -751,8 +826,7 @@ static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem,
 				nlwarning ("Can't open instance group %s\n", igName.c_str());
 			}
 		}								
-	}
-	return bboxFound;
+	}	
 }
 
 
@@ -765,7 +839,7 @@ static bool computeBBoxFromVillage(const NLGEORGES::UFormElm *villageItem,
   */
 static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,									   
 									   TShapeMap &shapeMap,
-									   TString2BBox &zone2BBox
+									   TString2LightingBBox &zone2BBox									   
 							          )
 {
 		
@@ -831,11 +905,12 @@ static void computeIGBBoxFromContinent(NLMISC::CConfigFile &parameter,
 					continue;
 				}
 				zoneName = NLMISC::strlwr(CFile::getFilenameWithoutExtension(zoneName));				
-				CAABBox result;
+				CLightingBBox result;				
 				// ok, it is in the dependant zones
-				if (computeBBoxFromVillage(currVillage, continentName, k, shapeMap, result))
+				computeBBoxFromVillage(currVillage, continentName, k, shapeMap, result);
+				if (!result.OccludingBox.IsVoid || result.ReceivingBox.IsVoid)
 				{
-					zone2BBox[zoneName] = result;
+					zone2BBox[zoneName] = result;					
 				}										
 			}				
 		}

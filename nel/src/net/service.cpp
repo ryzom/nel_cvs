@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.14 2006/03/30 10:06:37 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.14.2.1 2006/04/20 12:15:21 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1065,6 +1065,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 						beep( 440, 400 );
 						beep( 220, 400 );
 
+						// remove the stdin monitor thread
+						IStdinMonitorSingleton::getInstance()->release(); // does nothing if not initialized
+
 						// release the module manager
 						IModuleManager::getInstance().releaseInstance();
 
@@ -1529,9 +1532,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			WindowDisplayer = NULL;
 		}
 
-		// remove the stdin monitor thread
-		IStdinMonitorSingleton::getInstance()->release();
-
 		nlinfo ("SERVICE: Service released succesfully");
 	}
 	catch (EFatalError &)
@@ -1540,6 +1540,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// so we don't have to to anything
 		setExitStatus (EXIT_FAILURE);
 	}
+
+	// remove the stdin monitor thread
+	IStdinMonitorSingleton::getInstance()->release(); // does nothing if not initialized
 
 	// release the module manager
 	IModuleManager::getInstance().releaseInstance();

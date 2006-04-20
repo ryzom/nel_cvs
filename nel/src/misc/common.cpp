@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.73 2005/08/19 15:29:25 cado Exp $
+ * $Id: common.cpp,v 1.73.4.1 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #  include <cerrno>
 #  include <csignal>
 #  include <pthread.h>
+#  include <sched.h>
 #endif
 
 #include "nel/misc/command.h"
@@ -107,15 +108,23 @@ void nlSleep( uint32 ms )
 #elif defined NL_OS_UNIX
 	//usleep( ms*1000 ); // resolution: 20 ms!
 
-	timespec ts;
-	ts.tv_sec = ms/1000;
-	ts.tv_nsec = (ms%1000)*1000000;
-	int res;
-	do
+	if (ms == 0)
 	{
-		res = nanosleep( &ts, &ts ); // resolution: 10 ms (with common scheduling policy)
+		// just giveup the time slice
+		sched_yield();
 	}
-	while ( (res != 0) && (errno==EINTR) );
+	else
+	{
+		timespec ts;
+		ts.tv_sec = ms/1000;
+		ts.tv_nsec = (ms%1000)*1000000;
+		int res;
+		do
+		{
+			res = nanosleep( &ts, &ts ); // resolution: 10 ms (with common scheduling policy)
+		}
+		while ( (res != 0) && (errno==EINTR) );
+	}
 #endif
 }
 

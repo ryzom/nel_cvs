@@ -1,7 +1,7 @@
 /** \file module.h
  * module interface
  *
- * $Id: module.h,v 1.10.4.10 2006/03/30 10:09:44 boucher Exp $
+ * $Id: module.h,v 1.10.4.11 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -481,10 +481,7 @@ namespace NLNET
 		bool	_FailInvoke;
 	protected:
 		///only derived class can use it
-		CModuleTask ()
-			: _FailInvoke(false)
-		{
-		}
+		CModuleTask (class CModuleBase *module);
 
 		void initMessageQueue(class CModuleBase *module);
 
@@ -517,6 +514,7 @@ namespace NLNET
 	class TModuleTask : public CModuleTask
 	{
 	public:
+
 		typedef void (T::*TMethodPtr)();
 
 	private:
@@ -528,8 +526,19 @@ namespace NLNET
 		{
 			initMessageQueue(_Module);
 
-			// run the module task command control to module task method
-			(_Module->*_TaskMethod)();
+			try
+			{
+				// run the module task command control to module task method
+				(_Module->*_TaskMethod)();
+			}
+			catch (NLMISC::Exception e)
+			{
+				nlwarning("In module task '%s', exception '%e' thrown", typeid(this).name(), e.what());
+			}
+			catch (...)
+			{
+				nlwarning("In module task '%s', unknown exception thrown", typeid(this).name());
+			}
 
 			// finish the dispatch
 			flushMessageQueue(_Module);
@@ -537,8 +546,9 @@ namespace NLNET
 	public:
 
 		TModuleTask(T *module,  void (T::*taskMethod)())
-			: _Module(module),
-			_TaskMethod(taskMethod)
+			:	CModuleTask(module),
+				_Module(module),
+				_TaskMethod(taskMethod)
 		{
 		}
 	};

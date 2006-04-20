@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.13 2005/06/23 16:35:39 boucher Exp $
+ * $Id: words_dictionary.cpp,v 1.13.6.1 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -95,7 +95,7 @@ bool CWordsDictionary::init( const string& configFileName )
 		v = cf.getVarPtr( "AdditionalFiles" );
 		if ( v )
 		{
-			for ( sint i=0; i!=v->size(); ++i )
+			for ( uint i=0; i!=v->size(); ++i )
 				additionalFiles.push_back( v->asString( i ) );
 			v = cf.getVarPtr( "AdditionalFileColumnTitles" );
 			if ( v->size() != (sint)additionalFiles.size() )
@@ -105,7 +105,7 @@ bool CWordsDictionary::init( const string& configFileName )
 			}
 			else
 			{
-				for ( sint i=0; i!=v->size(); ++i )
+				for ( uint i=0; i!=v->size(); ++i )
 					additionalFileColumnTitles.push_back( v->asString( i ) );
 			}
 		}

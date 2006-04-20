@@ -1,7 +1,7 @@
 /** \file module.cpp
  * module base implementation
  *
- * $Id: module.cpp,v 1.10.4.7 2006/03/30 10:06:37 boucher Exp $
+ * $Id: module.cpp,v 1.10.4.8 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,6 +143,13 @@ namespace NLNET
 	//////////////////////////////////////
 	// CModuleTask implementation
 	//////////////////////////////////////
+	CModuleTask::CModuleTask (class CModuleBase *module)
+		: _FailInvoke(false)
+	{
+//		module->queueModuleTask(this);
+	}
+
+
 	void CModuleTask::initMessageQueue(CModuleBase *module)
 	{
 	}
@@ -252,6 +259,7 @@ namespace NLNET
 	{
 		if (_FullyQualifedModuleName.empty())
 		{
+			nlassertex(!_ModuleName.empty(), ("Call to CModuleBase::getModuleFullyQualifiedName before module name have been set (did you call from module constructor ?)"));
 			// build the name
 			string hostName;
 			if (IService::isServiceInitialized())
@@ -321,11 +329,21 @@ namespace NLNET
 			// we have a message to dispatch
 			try
 			{
-				_onProcessModuleMessage(_CurrentSender, *_CurrentMessage);
+				// take a copy of the message to dispatch
+				IModuleProxy *currentSender = _CurrentSender;
+				CMessage currentMessage = *_CurrentMessage;
+				_onProcessModuleMessage(currentSender, currentMessage);
 				_CurrentMessageFailed = false;
 			}
-			catch(...)
+			catch (NLMISC::Exception e)
 			{
+				nlwarning("In module task '%s' (cotask message receiver), exception '%e' thrown", typeid(this).name(), e.what());
+				// an exception have been thrown
+				_CurrentMessageFailed = true;
+			}
+			catch (...)
+			{
+				nlwarning("In module task '%s' (cotask message receiver), unknown exception thrown", typeid(this).name());
 				// an exception have been thrown
 				_CurrentMessageFailed = true;
 			}
@@ -363,7 +381,9 @@ namespace NLNET
 		if (initInfo.getParam("base.useCoTaskDispatch"))
 		{
 			// init the message dispatch task
-			_MessageDispatchTask = new TModuleTask<CModuleBase>(this,  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
+//			NLNET_START_MODULE_TASK(CModuleBase, _receiveModuleMessageTask);
+//	TModuleTask<className> *task = new TModuleTask<className>(this, &className::methodName); 
+			 _MessageDispatchTask = new TModuleTask<CModuleBase>(this,  TModuleTask<CModuleBase>::TMethodPtr(&CModuleBase::_receiveModuleMessageTask));
 		}
 
 		// register this module in the command executor
@@ -480,28 +500,28 @@ namespace NLNET
 				}
 				else
 				{
-					// another message, dispatch it normaly
+					// another message, dispatch it normally
 					CMessage::TMessageType msgType = msg.getType();
-					try
-					{
+//					try
+//					{
 						_onProcessModuleMessage(proxy, msg);
-					}
-					catch(...)
-					{
-						nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
-							msg.getName().c_str(),
-							proxy->getModuleName().c_str(),
-							this->getModuleName().c_str());
-
-						if (msgType == CMessage::Request)
-						{
-							// send back an exception message
-							CMessage except;
-							except.setType("EXCEPT", CMessage::Except);
-							proxy->sendModuleMessage(this, except);
-						}
-
-					}
+//					}
+//					catch(...)
+//					{
+//						nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
+//							msg.getName().c_str(),
+//							proxy->getModuleName().c_str(),
+//							this->getModuleName().c_str());
+//
+//						if (msgType == CMessage::Request)
+//						{
+//							// send back an exception message
+//							CMessage except;
+//							except.setType("EXCEPT", CMessage::Except);
+//							proxy->sendModuleMessage(this, except);
+//						}
+//
+//					}
 					
 					// remove this message form the queue
 					_SyncMessages.pop_front();
@@ -542,16 +562,21 @@ namespace NLNET
 			{
 				if (*first == removedProxy)
 				{
-					nlassert(!_ModuleTasks.empty());
+					// at least, we need either a running task or the default dispatch task activated
+					nlassert(!_ModuleTasks.empty() || _MessageDispatchTask != NULL);
+
 					// gasp, we lost one of the module needed to managed the invocation stack!
 					// make each call generate an exception
 					while (first != _InvokeStack.end())
 					{
-						CModuleTask *task = _ModuleTasks.front();
+						// The module task can be either the first in the module task list or
+						// the co routine dispatching task if it is activated
+						CModuleTask *task = !_ModuleTasks.empty() ? _ModuleTasks.front() : _MessageDispatchTask;
 						task->failInvoke();
 						// switch to task to unstack one level
 						task->resume();
 					}
+					break;
 				}
 			}
 		}
@@ -569,6 +594,8 @@ namespace NLNET
 		// try the call on each interceptor
 		bool result;
 		result = false;
+
+		try
 		{
 			TInterceptors::iterator first(_ModuleInterceptors.begin()), last(_ModuleInterceptors.end());
 			for (;first != last; ++first)
@@ -579,6 +606,24 @@ namespace NLNET
 					break;
 				}
 			}
+		}
+		catch(...)
+		{
+			nlwarning("Some exception where throw will dispatching message '%s' from '%s' to '%s'",
+				message.getName().c_str(),
+				senderModuleProxy->getModuleName().c_str(),
+				this->getModuleName().c_str());
+
+			if (message.getType() == CMessage::Request)
+			{
+				// send back an exception message
+				CMessage except;
+				except.setType("EXCEPT", CMessage::Except);
+				senderModuleProxy->sendModuleMessage(this, except);
+			}
+			// here we return true because the message have been processed
+			// (even if the processing have raised some exception !)
+			result = true;
 		}
 
 		return result;

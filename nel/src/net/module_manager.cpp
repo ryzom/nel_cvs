@@ -1,7 +1,7 @@
 /** \file module_manager.cpp
  * module manager implementation
  *
- * $Id: module_manager.cpp,v 1.8.4.9 2006/03/30 10:06:37 boucher Exp $
+ * $Id: module_manager.cpp,v 1.8.4.10 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -495,6 +495,7 @@ namespace NLNET
 						// check for finished task
 						if (task->isFinished())
 						{
+							nldebug("NLNETL6: updateModule : task %p is finished, delete and remove from task list", task);
 							// delete the task and resume the next one if any
 							delete task;
 							modBase->_ModuleTasks.erase(modBase->_ModuleTasks.begin());

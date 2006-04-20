@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
 		CConfigFile::CVar *pvar = cf.getVarPtr("TestDllPaths");
 		if (pvar != NULL)
 		{
-			for (sint i=0; i<pvar->size(); ++i)
+			for (uint i=0; i<pvar->size(); ++i)
 			{
 				CLibrary::addLibPath(pvar->asString(i));
 			}
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 		pvar = cf.getVarPtr("TestDllList");
 		if (pvar != NULL)
 		{
-			for (sint i=0; i<pvar->size(); i+=2)
+			for (uint i=0; i<pvar->size(); i+=2)
 			{
 				string name = pvar->asString(i);
 				string libName = CLibrary::makeLibName(name);

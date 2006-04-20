@@ -8,6 +8,7 @@
 #include "nel/net/inet_address.h"
 #include "nel/net/module_socket.h"
 #include "nel/net/module_gateway.h"
+#include "nel/net/service.h"
 
 
 #include "src/cpptest.h"
@@ -2822,7 +2823,11 @@ public:
 		TEST_ASSERT(module->getModuleClassName() == "ModuleType1");
 		TEST_ASSERT(module->getModuleName() == "TheModule");
 
-		string lh = NLNET::CInetAddress::localHost().hostName();
+		string lh;
+		if (IService::isServiceInitialized())
+			lh = IService::getInstance()->getHostName();
+		else
+			lh = ::NLNET::CInetAddress::localHost().hostName();
 		string fqmn = lh+":"+toString(getpid())+":TheModule";
 
 		TEST_ASSERT(module->getModuleFullyQualifiedName() == fqmn);

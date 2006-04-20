@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.69 2005/08/29 16:12:47 boucher Exp $
+ * $Id: displayer.cpp,v 1.69.4.1 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 #ifdef NL_OS_WINDOWS
 		str += NLMISC::toString("%5x", args.ThreadId);
 #else
-		str += NLMISC::toString("%5u", args.ThreadId);
+		str += NLMISC::toString("%d", args.ThreadId);
 #endif
 		needSpace = true;
 	}

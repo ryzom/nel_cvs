@@ -1,7 +1,7 @@
 /** \file module_common.h
  * basic type and forward declaration for module system
  *
- * $Id: module_common.h,v 1.4 2005/08/30 17:08:52 boucher Exp $
+ * $Id: module_common.h,v 1.4.4.1 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,13 +87,21 @@ namespace NLNET
 		 */
 		const TParsedCommandLine *getParam(const std::string &name) const;
 
+		/** Add or replace a parameter in the set.
+		 *	The name can be any valid name (e.g 'a' or 'a.b.c').
+		 *	If any sub part of the name didn't exist, the function
+		 *	will create the appropriate sub object.
+		 */
+		void setParam(const std::string &name, const std::string &value);
+
 		/** Rebuild the raw command line string */
 		std::string toString() const;
 
 	private:
 		bool _parseParamList(const std::string &rawParamString);
 		const TParsedCommandLine *_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const;
-		
+		TParsedCommandLine *_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end);
+
 	};
 
 } // namespace NLNET

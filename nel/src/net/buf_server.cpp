@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.51.4.1 2006/02/23 19:19:47 boucher Exp $
+ * $Id: buf_server.cpp,v 1.51.4.2 2006/04/20 14:33:11 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -789,9 +789,9 @@ void CListenTask::run()
 
 	nlnettrace( "CListenTask::run" );
 
+	fd_set readers;
 #ifdef NL_OS_UNIX
 	SOCKET descmax;
-	fd_set readers;
 	descmax = _ListenSock.descriptor()>_WakeUpPipeHandle[PipeRead]?_ListenSock.descriptor():_WakeUpPipeHandle[PipeRead];
 #endif
 
@@ -800,6 +800,7 @@ void CListenTask::run()
 	{
 		try
 		{
+			nldebug( "LNETL1: Waiting incoming connection..." );
 			// Get and setup the new socket
 #ifdef NL_OS_UNIX
 			FD_ZERO( &readers );
@@ -830,8 +831,18 @@ void CListenTask::run()
 				nldebug( "LNETL1: listen thread select woken-up" );
 				continue;
 			}
+#else ifdef NL_OS_WINDOWS
+			FD_ZERO( &readers );
+			FD_SET( _ListenSock.descriptor(), &readers );
+			int res = ::select( 1, &readers, NULL, NULL, NULL ); /// Wait indefinitely
+
+			if ( res == -1)
+			{
+				nlerror( "LNETL1: Select failed (in listen thread): %s (code %u)", CSock::errorString( CSock::getLastError() ).c_str(), CSock::getLastError() );
+				continue;
+			}
 #endif
-			nldebug( "LNETL1: Waiting incoming connection..." );
+			nldebug( "LNETL1: Accepting an incoming connection..." );
 			CTcpSock *newSock = _ListenSock.accept();
 			if (newSock != NULL)
 			{
@@ -863,6 +874,13 @@ void CListenTask::run()
 	nlnettrace( "Exiting CListenTask::run" );
 	NbServerListenTask--;
 	NbNetworkTask--;
+}
+
+/// Close listening socket
+void CListenTask::close() 
+{ 
+	_ListenSock.close();
+//	_ListenSock.disconnect();
 }
 
 

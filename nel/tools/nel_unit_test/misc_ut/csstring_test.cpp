@@ -16,6 +16,7 @@ public:
 	{
 		TEST_ADD(CSStringTS::testStrtok);
 
+		// TODO insert code from ryzom/test/sstring.cpp
 	}
 	
 	void testStrtok()

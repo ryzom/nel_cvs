@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.15.4.1 2006/01/11 15:02:11 boucher Exp $
+ * $Id: p_thread.cpp,v 1.15.4.1.2.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ static void *ProxyFunc( void *arg )
 	parent->Runnable->run();
 
 	// Allow some clean
-	pthread_exit(0);
+//	pthread_exit(0);
 }
 
 

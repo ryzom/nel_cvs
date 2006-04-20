@@ -1,7 +1,7 @@
 /** \file module_gateway.h
  * module gateway interface
  *
- * $Id: module_gateway.cpp,v 1.9.4.8 2006/04/13 16:44:24 cado Exp $
+ * $Id: module_gateway.cpp,v 1.9.4.8.2.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -828,7 +828,7 @@ namespace NLNET
 			it = _ModuleProxies.find(from->NextAddresseeProxyId);
 			if (it == _ModuleProxies.end())
 			{
-				nlwarning("Can't dispatch the module message, sender proxy %u is not in this gateway", from->NextAddresseeProxyId);
+				nlwarning("Can't dispatch the module message '%s', sender proxy %u is not in this gateway", msgin.getName().c_str(), from->NextAddresseeProxyId);
 				return;
 			}
 			addresseeProxy = it->second;

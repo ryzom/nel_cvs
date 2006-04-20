@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.14.2.1 2006/04/20 12:15:21 cado Exp $
+ * $Id: service.cpp,v 1.238.4.14.2.2 2006/04/20 15:36:36 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -1512,9 +1512,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		// warn the module layer that the application is about to close
 		IModuleManager::getInstance().applicationExit();
 
-		// release the network
-		CSock::releaseNetwork ();
-
+//		// release the network
+//		CSock::releaseNetwork ();
+//
 		//
 		// Remove the window displayer
 		//
@@ -1546,6 +1546,9 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	// release the module manager
 	IModuleManager::getInstance().releaseInstance();
+
+	// release the network
+	CSock::releaseNetwork ();
 
 	// stop the timeout thread
 	MyTAT.quit();

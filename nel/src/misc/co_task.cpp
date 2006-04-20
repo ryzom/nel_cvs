@@ -1,7 +1,7 @@
 /** \file co_task.cpp
  * Coroutine based task.
  *
- * $Id: co_task.cpp,v 1.3.4.6 2006/01/20 15:15:45 cado Exp $
+ * $Id: co_task.cpp,v 1.3.4.6.2.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,18 +78,41 @@ namespace NLMISC
 //		TThreadId	*_TaskThreadId;
 		/// The parent thread id
 //		TThreadId	*_ParentThreadId;
+
+		// the thread of the task
+		IThread				*_TaskThread;
 		/// The mutex of the task task
-		CMutex		_TaskMutex;
+		CFastMutex	_TaskMutex;
 
-		CCoTask		*_CoTask;
+		CCoTask				*_CoTask;
 
-		bool		_Running;
+		// set by master, cleared by task
+		volatile bool		_ResumeTask;
+		// set by task, cleared by master
+		volatile bool		_TaskHasYield;
 
 
 		TCoTaskData(CCoTask *task)
-			: _CoTask(task),
-			_Running(false)
+			:	_TaskThread(NULL),
+				_CoTask(task),
+				_ResumeTask(false),
+				_TaskHasYield(false)
 		{
+		}
+
+		virtual ~TCoTaskData()
+		{
+			NL_CT_DEBUG("CoTaskData : ~TCoTaskData %p : deleting cotask data", this);
+			if (_TaskThread != NULL)
+			{
+				NL_CT_DEBUG("CoTask : ~TCoTaskData (%p) waiting for thread termination", this);
+
+				// waiting for thread to terminate
+				_TaskThread->wait();
+
+				delete _TaskThread;
+				_TaskThread = NULL;
+			}
 		}
 
 		void run();
@@ -135,6 +158,8 @@ namespace NLMISC
 			}
 
 			task->_Finished = true;
+
+			NL_CT_DEBUG("CoTask : task %p finished, entering infinite yield loop (waiting destruction)", task);
 
 			// nothing more to do
 			for (;;)
@@ -267,24 +292,55 @@ namespace NLMISC
 #if defined(NL_USE_THREAD_COTASK)
 
 		// create the thread
-		IThread *taskThread = IThread::create(_PImpl);
-		// start the thread
-		taskThread->start();
+		_PImpl->_TaskThread = IThread::create(_PImpl);
 
-		// wait until the task is affectively started
-		while (!_PImpl->_Running)
-			nlSleep(0);
-
-		// get the mutex (this is locking)
+		NL_CT_DEBUG("CoTask : start() task %p entering mutex", this);  
+		// get the mutex
 		_PImpl->_TaskMutex.enter();
+		NL_CT_DEBUG("CoTask : start() task %p mutex entered", this);
 
-		// clear the running flag
-		_PImpl->_Running = false;
+		// set the resume flag to true
+		_PImpl->_ResumeTask = true;
+
+		// start the thread
+		_PImpl->_TaskThread->start();
+
+		NL_CT_DEBUG("CoTask : start() task %p leaving mutex", this);
+		// leave the mutex
+		_PImpl->_TaskMutex.leave();
+
+		// wait until the task has yield
+		for (;;)
+		{
+			// give up the time slice to the co task
+			nlSleep(0);
+			NL_CT_DEBUG("CoTask : start() task %p entering mutex", this);  
+			// get the mutex
+			_PImpl->_TaskMutex.enter();
+			NL_CT_DEBUG("CoTask : start() task %p mutex entered", this);
+
+			if (!_PImpl->_TaskHasYield)
+			{
+				// not finished
+				NL_CT_DEBUG("CoTask : start() task %p has not yield, leaving mutex", this);
+				// leave the mutex
+				_PImpl->_TaskMutex.leave();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// clear the yield flag
+		_PImpl->_TaskHasYield = false;
+
+		NL_CT_DEBUG("CoTask : start() task %p has yield", this);
 
 		// in the treaded mode, there is no need to call resume() inside start()
 
 #else //NL_USE_THREAD_COTASK
-#if defined (NL_OS_WINDOWS)
+  #if defined (NL_OS_WINDOWS)
 
 		LPVOID mainFiber = CCurrentCoTask::getInstance().getMainFiber();
 
@@ -299,7 +355,7 @@ namespace NLMISC
 		_PImpl->_ParentFiber = mainFiber;
 		_PImpl->_Fiber = CreateFiber(NL_TASK_STACK_SIZE, TCoTaskData::startFunc, this);
 		nlassert(_PImpl->_Fiber != NULL);
-#elif defined (NL_OS_UNIX)
+  #elif defined (NL_OS_UNIX)
 		// store the parent ctx
 		nlverify(getcontext(&_PImpl->_ParentCtx) == 0);
 		// build the task context
@@ -313,7 +369,7 @@ namespace NLMISC
 		_PImpl->_Ctx.uc_stack.ss_flags = 0;
 
 		makecontext(&_PImpl->_Ctx, reinterpret_cast<void (*)()>(TCoTaskData::startFunc), 1, this);
-#endif
+  #endif
 		resume();
 #endif //NL_USE_THREAD_COTASK
 	}
@@ -324,15 +380,38 @@ namespace NLMISC
 		nlassert(_Started);
 		nlassert(CCurrentCoTask::getInstance().getCurrentTask() == this);
 #if defined(NL_USE_THREAD_COTASK)
-		// Release the thread mutex
+
+		// set the yield flag
+		_PImpl->_TaskHasYield = true;
+
+		// release the mutex
+		NL_CT_DEBUG("CoTask : yield() task %p leaving mutex", this);
 		_PImpl->_TaskMutex.leave();
-		// Wait until the main thread as taken control
-		while (_PImpl->_Running)
+
+		// now, wait until the resume flag is set
+		for (;;)
+		{
+			// give up the time slice to the master thread
 			nlSleep(0);
-		// And get back the mutex for waiting for next resume (this should lock)
-		_PImpl->_TaskMutex.enter();
-		// Set the task as running
-		_PImpl->_Running = true;
+			// And get back the mutex for waiting for next resume (this should lock)
+			NL_CT_DEBUG("CoTask : yield() task %p entering mutex", this);
+			_PImpl->_TaskMutex.enter();
+			NL_CT_DEBUG("CoTask : yield() task %p mutex entered", this);
+
+			if (!_PImpl->_ResumeTask)
+			{
+				// not time to resume, release the mutex and sleep
+				NL_CT_DEBUG("CoTask : yield() task %p not time to resume, leaving mutex", this);
+				_PImpl->_TaskMutex.leave();
+//				nlSleep(0);
+			}
+			else
+				break;
+		}
+
+		// clear the resume flag
+		_PImpl->_ResumeTask = false;
+
 #else //NL_USE_THREAD_COTASK 
 		CCurrentCoTask::getInstance().setCurrentTask(NULL);
 #if defined (NL_OS_WINDOWS)
@@ -342,6 +421,8 @@ namespace NLMISC
 		nlverify(swapcontext(&_PImpl->_Ctx, &_PImpl->_ParentCtx) == 0);
 #endif
 #endif //NL_USE_THREAD_COTASK 
+
+		NL_CT_DEBUG("CoTask : task %p have been resumed", this);
 	}
 
 	void CCoTask::resume()
@@ -355,17 +436,46 @@ namespace NLMISC
 			nlassert(_Started);
 
 #if defined(NL_USE_THREAD_COTASK)
+
+			// set the resume flag to true
+			_PImpl->_ResumeTask = true;
+			_PImpl->_TaskHasYield = false;
 			// Release the mutex
+			NL_CT_DEBUG("CoTask : resume() task %p leaving mutex", this);
 			_PImpl->_TaskMutex.leave();
-			// Wait until the task as effectively resumed
-			while (!_PImpl->_Running)
-			{
+			// wait that the task has started
+			while (_PImpl->_ResumeTask)
 				nlSleep(0);
+
+			NL_CT_DEBUG("CoTask : resume() task %p is started, waiting yield", this);
+			// ok the task has started
+			// now wait for task to yield
+			for (;;)
+			{
+				// give up the time slice to the co task
+				nlSleep(0);
+
+				// acquire the mutex
+				NL_CT_DEBUG("CoTask : resume() task %p entering mutex", this);
+				_PImpl->_TaskMutex.enter();
+				NL_CT_DEBUG("CoTask : resume() task %p mutex entered", this);
+
+				if (!_PImpl->_TaskHasYield)
+				{
+					NL_CT_DEBUG("CoTask : resume() task %p still not yielding, leaving mutex", this);
+					_PImpl->_TaskMutex.leave();
+					// give the focus to another thread before acquiring the mutex
+//					nlSleep(0);
+				}
+				else
+				{
+					// the task has yield
+					break;
+				}
 			}
-			// Get back the mutex
-			_PImpl->_TaskMutex.enter();
-			// clear the running flag
-			_PImpl->_Running = false;
+
+			// clear the yield flag
+			_PImpl->_TaskHasYield = false;
 
 #else // NL_USE_THREAD_COTASK
 			CCurrentCoTask::getInstance().setCurrentTask(this);
@@ -377,6 +487,8 @@ namespace NLMISC
 #endif
 #endif //NL_USE_THREAD_COTASK
 		}
+
+		NL_CT_DEBUG("CoTask : task %p has yield", this);
 	}
 
 	/// wait until the task terminate
@@ -391,21 +503,34 @@ namespace NLMISC
 #if  defined(NL_USE_THREAD_COTASK)
 	void TCoTaskData::run()
 	{
+		NL_CT_DEBUG("CoTask : entering TCoTaskData::run for task %p", _CoTask);
 		// set the current task
 		CCurrentCoTask::getInstance().setCurrentTask(_CoTask);
 		// Set the task as running
-		_Running = true;
+//		_Running = true;
+		NL_CT_DEBUG("CoTask : TCoTaskData::run() task %p entering mutex", this);
 		// Acquire the task mutex
 		_TaskMutex.enter();
+		NL_CT_DEBUG("CoTask : TCoTaskData::run mutex aquired, calling '_CoTask->run()' for task %p", _CoTask);
+
+		// clear the resume flag
+		_CoTask->_PImpl->_ResumeTask = false;
+
 		// run the task
 		_CoTask->run();
 
+		// mark the task has yielding
+		_CoTask->_PImpl->_TaskHasYield = true;
+		// mark the task has finished
 		_CoTask->_Finished = true;
 
+		// nothing more to do, just return to terminate the thread
+		NL_CT_DEBUG("CoTask : leaving TCoTaskData::run for task %p", _CoTask);
+
+		NL_CT_DEBUG("CoTask : TCoTaskData::run() task %p leaving mutex", this);
 		// Release the parent mutex
 		_TaskMutex.leave();
 
-		// nothing more to do, just return to terminate the thread
 	}
 #endif //NL_USE_THREAD_COTASK
 

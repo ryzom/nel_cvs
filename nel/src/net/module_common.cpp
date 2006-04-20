@@ -1,7 +1,7 @@
 /** \file module_common.cpp
  * basic type and forward declaration for module system
  *
- * $Id: module_common.cpp,v 1.4 2005/10/03 16:15:52 boucher Exp $
+ * $Id: module_common.cpp,v 1.4.8.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,7 +169,46 @@ namespace NLNET
 		return _getParam(parts.begin(), parts.end());
 	}
 
+	void TParsedCommandLine::setParam(const std::string &name, const std::string &value)
+	{
+		vector<string>	parts;
+		NLMISC::explode(name, ".", parts);
+
+		if (name.size() > 0)
+		{
+			// at least one part in the name
+			// check if sub ojbcct exist
+			TParsedCommandLine *sub = _getParam(parts.begin(), (parts.begin()+1));
+			if (sub == NULL)
+			{
+				TParsedCommandLine newElem;
+				newElem.ParamName = parts[0];
+				SubParams.push_back(newElem);
+				sub = &(SubParams.back());
+			}
+
+			if (name.size() > 0)
+			{
+				// name is more deep, need to resurse
+				parts.erase(parts.begin());
+				CSString subName;
+				subName.join(reinterpret_cast<CVectorSString&>(parts), ".");
+				sub->setParam(subName, value);
+			}
+			else 
+			{
+				// last level, set the value
+				sub->ParamValue = value;
+			}
+		}
+	}
+
 	const TParsedCommandLine *TParsedCommandLine::_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end) const
+	{
+		return const_cast<TParsedCommandLine&>(*this)._getParam(it, end);
+	}
+
+	TParsedCommandLine *TParsedCommandLine::_getParam(std::vector<std::string>::iterator it, std::vector<std::string>::iterator end)
 	{
 		if (it == end)
 		{

@@ -1,7 +1,7 @@
 /** \file module_message.cpp
  * module message implementation
  *
- * $Id: module_message.cpp,v 1.2 2005/08/09 19:06:45 boucher Exp $
+ * $Id: module_message.cpp,v 1.2.10.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,9 @@
 
 #include "stdnet.h"
 #include "nel/net/module_message.h"
+
+// a stupid function to remove some more stupid visual warnings
+void foo_module_message() {};
 
 namespace NLNET
 {

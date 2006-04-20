@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.11 2005/02/22 10:14:12 besson Exp $
+ * $Id: time_nl.h,v 1.11.20.1 2006/04/20 15:36:36 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,6 +89,11 @@ public:
 	 * hardware, it returns 0.0.
 	 */
 	static double	ticksToSecond (TTicks ticks);
+
+	/** Build a human readable string of a time difference in second.
+	 *	The result will be of the form '1 years 2 months 2 days 10 seconds'
+	 */
+	static std::string	getHumanRelativeTime(sint32 nbSeconds);
 };
 
 } // NLMISC

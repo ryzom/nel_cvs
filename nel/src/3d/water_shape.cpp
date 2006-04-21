@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * TODO: File description
  *
- * $Id: water_shape.cpp,v 1.39.16.2 2006/01/19 13:50:31 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.39.16.3 2006/04/21 19:02:42 legallo Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -276,6 +276,7 @@ CRGBA CWaterShape::computeEnvMapMeanColor()
 		if (_EnvMap[0])
 		{
 			_EnvMap[0]->generate();
+			_EnvMap[0]->convertToType(CBitmap::RGBA);
 			uint32 r = 0;
 			uint32 g = 0;
 			uint32 b = 0;

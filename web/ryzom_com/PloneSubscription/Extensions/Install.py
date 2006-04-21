@@ -17,7 +17,7 @@
 ## along with this program; see the file COPYING. If not, write to the
 ## Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 """
-$Id: Install.py,v 1.2 2006/04/19 14:36:55 bernard Exp $
+$Id: Install.py,v 1.3 2006/04/21 15:02:10 bernard Exp $
 """
 __author__  = ''
 __docformat__ = 'restructuredtext'
@@ -85,7 +85,7 @@ def getRunners():
             'name': 'action_add_to_subscriptions',
             'action':'string:${object_url}/addSubscription',
             'condition': 'python:member and portal.portal_subscription.getProvider() is not None',
-            'permission': View,
+            'permission': ManageSubscriptionContent,
             'category':'document_actions',
             'visible': 1
             },

@@ -8,11 +8,14 @@
 <body>
 
 <!-- The Keywords Subscription Box -->
-<div class="holeContainer" style="text-align : right;" metal:define-macro="portlet"
+<div class="holeContainer" style="text-align:right;" metal:define-macro="portlet"
      tal:define="allow_subscribe python:1;
                  allow_unsubscribe python:1;
                  ptype python:'FolderSubscription';
-                 sub_tool nocall:portal/portal_subscription;">
+                 sub_tool nocall:portal/portal_subscription;"
+     tal:condition="python:test((template.getId()!='chronicles' and '/chronicles' in here.absolute_url())
+                         or (template.getId()!='news' and '/news' in here.absolute_url())
+                         or ('http://web-dev.nevrax.com' == here.absolute_url()) , 0, 1)">
 
 <img class="fakeBorder" src="ryzom_images/side_top.png" />
 

@@ -8,7 +8,7 @@ Team members (in alphabetic order)
 - Patrick Bernard <bernard@nevrax.com>
 - Yacine Chaouche <cahouche@nevrax.com>
 - Marjo <marjo@nevrax.com>
-- Seido <seido@nevrax.com
+- Seido <seido@nevrax.com>
 
 
 

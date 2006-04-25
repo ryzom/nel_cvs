@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.16 2006/01/26 15:34:59 berenguier Exp $
+ * $Id: build_surf.h,v 1.17 2006/04/25 16:52:06 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -616,6 +616,9 @@ public:
 	 * Load tessellation
 	 */
 	void	loadTessellation(NLMISC::CIFile &input);
+
+private:
+	void	checkSameLandscapeHmBinds(const NL3D::CLandscape &landscape, const NL3D::CLandscape &landscapeNoHm);
 };
 
 

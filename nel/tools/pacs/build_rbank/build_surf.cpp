@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.27.40.1 2006/02/13 18:41:09 boucher Exp $
+ * $Id: build_surf.cpp,v 1.27.40.2 2006/04/25 16:49:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "nel/misc/polygon.h"
 
 #include "3d/landscape.h"
+#include "3d/zone.h"
 #include "3d/mesh.h"
 #include "3d/quad_grid.h"
 
@@ -834,8 +835,112 @@ bool	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 
 
 
+// ***************************************************************************
+void	NLPACS::CZoneTessellation::checkSameLandscapeHmBinds(const NL3D::CLandscape &landscape, const NL3D::CLandscape &landscapeNoHm)
+{
+	// For all zones
+	for (uint i=0; i<_ZoneIds.size(); ++i)
+	{
+		uint16	zoneId= _ZoneIds[i];
+		string zoneName;
+		CLandscape::buildZoneName(zoneId, zoneName);
+		
+		// Get the zones
+		const CZone *zone= landscape.getZone(zoneId);
+		const CZone *zoneNoHm= landscapeNoHm.getZone(zoneId);
+		// Check that both are valid, or both are not
+		if( (zone==NULL) != (zoneNoHm==NULL) ) 
+		{
+			nlwarning("ERROR: The zone %s is %s in the landscape while it is %s in the landscape_with_No_Heightmap", 
+				zoneName.c_str(), zone==NULL?"not present":"present", zoneNoHm==NULL?"not present":"present");
+			exit(0);
+		}
+		// else if both are valid
+		else if(zone && zoneNoHm)
+		{
+			// check same number of patches
+			uint	numPatchs= zone->getNumPatchs();
+			uint	numPatchsNoHm= zoneNoHm->getNumPatchs();
+			if(numPatchs!=numPatchsNoHm)
+			{
+				nlwarning("ERROR: The zone %s has %d Patchs in the landscape while it has %d Patchs in the landscape_with_No_Heightmap", 
+					zoneName.c_str(), numPatchs, numPatchsNoHm);
+				exit(0);
+			}
+			else
+			{
+				// Check all binds of all patches
+				std::vector<string>		errors;
+				errors.reserve(100);
+				for(uint j=0;j<numPatchs;j++)
+				{
+					const CZone::CPatchConnect *patch= zone->getPatchConnect(j);
+					const CZone::CPatchConnect *patchNoHm= zoneNoHm->getPatchConnect(j);
+
+					// Check BaseVertices
+					for(uint v=0;v<4;v++)
+					{
+						if(patch->BaseVertices[v] != patchNoHm->BaseVertices[v])
+						{
+							errors.push_back(toString("    The Patch %d has not the same %dth vertex: %d/%d", 
+								j, v, patch->BaseVertices[v], patchNoHm->BaseVertices[v]));
+						}
+					}
+
+					// Check BindEdges
+					for(uint b=0;b<4;b++)
+					{
+						CPatchInfo::CBindInfo	bind= patch->BindEdges[b];
+						CPatchInfo::CBindInfo	bindNoHm= patchNoHm->BindEdges[b];
+						bool	ok= true;
+						// verify all valid properties only
+						ok= ok && bind.NPatchs == bindNoHm.NPatchs;
+						ok= ok && bind.ZoneId == bindNoHm.ZoneId;
+						uint	validNbBinds= min(bind.NPatchs,uint8(4));
+						for(uint nb=0;nb<validNbBinds;nb++)
+						{
+							ok= ok && bind.Next[nb] == bindNoHm.Next[nb];
+							ok= ok && bind.Edge[nb] == bindNoHm.Edge[nb];
+						}
+						// if not ok
+						if(!ok)
+						{
+							// add the error
+							string	error;
+							error=  toString("    The Patch %d that has not the same %dth bindEdge: NumPatchs: %d/%d; ZoneId: %d/%d", 
+								j, b, bind.NPatchs, bindNoHm.NPatchs, bind.ZoneId, bindNoHm.ZoneId);
+							for(uint nb=0;nb<validNbBinds;nb++)
+							{
+								error+= toString("; Edge (%d,%d)/(%d,%d)", bind.Next[nb], bind.Edge[nb], bindNoHm.Next[nb], bindNoHm.Edge[nb]);
+							}
+
+							errors.push_back(error);
+						}
+					}
+
+				}
+
+				// if some error found
+				if(!errors.empty())
+				{
+					// todo: change the way the landscape with heightmap is applied: it should be applied after welding!
+					// or at least the welding of zones should just keep the same welding as the non heightmapped one
+					nlwarning("ERROR: The zone %s has a different bind strucutre in the landscape and in the landscape_with_No_Heightmap", zoneName.c_str());
+					nlwarning("ERROR: Hint: Check your heightmap: it may be too precise or has too much noise, causing the zonewelder to behav differently...");
+					nlwarning("More Details (information landscape / information landscape_with_No_Heightmap):");
+					for(uint j=0;j<errors.size();j++)
+					{
+						nlwarning("%s", errors[j].c_str());
+					}
+					exit(0);
+				}
+			}
+		}
+	}		
+}
 
 
+// ***************************************************************************
 void	NLPACS::CZoneTessellation::build()
 {
 	sint	el;
@@ -980,6 +1085,11 @@ void	NLPACS::CZoneTessellation::build()
 
 		if (useNoHmZones)
 		{
+			// Before tesselate, verify that the 2 landscape zones have at least the same binds!
+			// Else there will be errors because of not the same tesselation
+			checkSameLandscapeHmBinds(landscape, landscapeNoHm);
+			
+			// Tesselate
 			landscapeNoHm.setThreshold(0.0f);
 			landscapeNoHm.setTileMaxSubdivision(TessellateLevel);
 			landscapeNoHm.refineAll(CVector::Null);
@@ -1008,6 +1118,7 @@ void	NLPACS::CZoneTessellation::build()
 		}
 	}
 
+	// Build the lanscape with heightmap
 	landscape.setThreshold(0.0f);
 	landscape.setTileMaxSubdivision(TessellateLevel);
 	landscape.refineAll(CVector::Null);
@@ -1022,6 +1133,7 @@ void	NLPACS::CZoneTessellation::build()
 		nlinfo("      - generated %d leaves", leaves.size());
 	}
 
+	// If don't use NoHm zones, build normals and vectorCheck directly from std landscape
 	if (!useNoHmZones)
 	{
 		for (el=0; el<(sint)leaves.size(); ++el)
@@ -1042,9 +1154,11 @@ void	NLPACS::CZoneTessellation::build()
 		}
 	}
 
+	// check that there is the same number of faces from landscape with and without heightmap
 	if (normals.size() != leaves.size())
 	{
-		nlwarning ("ERROR : The heightmaped landscape has not the same number of polygon than the nonheightmaped landscape.");
+		nlwarning ("ERROR : The heightmaped landscape has not the same number of polygon than the nonheightmaped landscape: %d/%d.", 
+			normals.size(), leaves.size());
 		exit (0);
 	}
 

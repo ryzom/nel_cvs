@@ -11,7 +11,9 @@
 		<img class="fakeBorder" src="side_top.png"/>
 		
     			<dl class="portlet" id="portlet-newsletter">
-        			<dt class="portletHeader">
+        			<dt class="portletHeader"
+                                    i18n:domain="RyzomSkin"
+                                    i18n:translate="stay_in_touch">
 					    Stay in touch					
         			</dt>
 				<form action="newsletters_form"
@@ -32,8 +34,13 @@
 							name="daily"							
 							tabindex=""
 	 						value=""
+                                                        checked="checked"
 							tal:attributes="tabindex tabindex/next;"
-						/>News email alerts (daily)
+						/>
+                                                <span i18n:domain="RyzomSkin" 
+                                                      i18n:translate="news_email_daily">
+                                                      News email alerts (daily)
+                                                </span>
 					</dd>
 
 
@@ -48,8 +55,13 @@
 							name="monthly"							
 							tabindex=""
 	 						value=""
+                                                        checked="checked"
 							tal:attributes="tabindex tabindex/next;"
-						/>Newsletter email (monthly)
+						/>
+                                                <span i18n:domain="RyzomSkin" 
+                                                      i18n:translate="news_email_monthly">
+                                                      Newsletter email alerts (monthly)
+                                                </span>
 					</dd>
 
 					<p tal:define="err errors/foo|nothing" tal:condition="err" tal:content="err" />

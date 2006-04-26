@@ -16,6 +16,34 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: en-au en-bz en-ca en-ie en-jm en-nz en-ph en-za en-tt en-gb en-us en-zw\n"
 
+msgid "unsubcribed_newsletter"
+msgstr "If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface"
+
+msgid "receive_confirmed1"
+msgstr "You should receive a confirmation email shortly in the"
+
+msgid "receive_confirmed2"
+msgstr "mailbox; read it and follow the intructions it contains to validate your subscription."
+
+msgid "subscription"
+msgstr "Subscription"
+
+msgid "subscribed_monthly"
+msgstr "Newsletter... Subscription being processed."
+
+msgid "subscribed_daily"
+msgstr "News email alerts... Subscription being processed."
+
+msgid "news_email_daily"
+msgstr "News email alerts (daily)"
+
+msgid "news_email_monthly"
+msgstr "Newsletter email alerts (monthly)"
+
+msgid "stay_in_touch"
+msgstr "Stay in touch"
+
+
 msgid "label_save"
 msgstr "OK"
 

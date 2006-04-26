@@ -7,6 +7,7 @@
                  came_from request/came_from|request/HTTP_REFERER|nothing;
                  came_from python:test(utool.isURLInPortal(came_from), came_from, None);
                  errors options/state/getErrors;">
+                                <h1 i18n:domain="RyzomSkin" i18n:translate="stay_in_touch">Stay in touch</h1>
 
 				<form tal:define="errors options/state/getErrors;"
 				      tal:attributes="action string:${here/absolute_url}/${template/id};"
@@ -24,15 +25,20 @@
 							name="daily"							
 							tabindex=""
 	 						value=""
+                                                        checked="checked"
 							tal:attributes="tabindex tabindex/next;"
-						/>News email alerts (daily)
+						/>
+                                                <span i18n:domain="RyzomSkin" 
+                                                      i18n:translate="news_email_daily">
+                                                      News email alerts (daily)
+                                                </span>
 					</dd>
 
 
                                         <dd class="field"
 						tal:define="error errors/monthly | nothing;"
-						tal:attributes="class python:test(error, 'field error', 'field')">						
-						
+						tal:attributes="class python:test(error, 'field error', 'field')">
+
 						<div tal:content="error">Validation error output</div>
 
 						<input type="checkbox"
@@ -40,8 +46,13 @@
 							name="monthly"							
 							tabindex=""
 	 						value=""
+                                                        checked="checked"
 							tal:attributes="tabindex tabindex/next;"
-						/>Newsletter email alerts (monthly)
+						/>
+                                                <span i18n:domain="RyzomSkin" 
+                                                      i18n:translate="news_email_monthly">
+                                                      Newsletter email alerts (monthly)
+                                                </span>
 					</dd>
 
 					<p tal:define="err errors/foo|nothing" tal:condition="err" tal:content="err" />
@@ -66,9 +77,9 @@
 							tabindex=""
 	 						value=""
 							tal:attributes="tabindex tabindex/next;"
-						/>
-	
+						/>	
 					</dd>
+
 					<!-- contains the email if user is member -->
 					<dd class="field"
 						tal:define="error errors/email | nothing;
@@ -90,9 +101,9 @@
 							tabindex=""
 	 						value=""
 							tal:attributes="value email; tabindex tabindex/next;"
-						/>
-	
+						/>	
 					</dd>
+
 					<input type="submit" name="submit" value="submit" />
 					<input type="hidden" name="form.submitted" value="1" />
 				</form>

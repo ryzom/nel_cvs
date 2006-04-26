@@ -16,6 +16,33 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+msgid "unsubcribed_newsletter"
+msgstr "Si vous desirez vous désinscrir ou changer vos options de souscriptions, vous pouvez aller dans l'interface d'administration"
+
+msgid "receive_confirmed1"
+msgstr "Vous devriez recevoir un courriel de confirmation d'ici peu dans votre boite: "
+
+msgid "receive_confirmed2"
+msgstr "; lisez-le et suivez les instructions pour valider votre souscription."
+
+msgid "subscription"
+msgstr "Souscription"
+
+msgid "subscribed_monthly"
+msgstr "Courriel mensuel... Souscription en cours."
+
+msgid "subscribed_daily"
+msgstr "Courriel Journalier... Souscription en cours."
+
+msgid "news_email_daily"
+msgstr "Courriel journalier"
+
+msgid "news_email_monthly"
+msgstr "Courriel mensuel"
+
+msgid "stay_in_touch"
+msgstr "Restez en contact"
+
 msgid "label_save"
 msgstr "OK"
 

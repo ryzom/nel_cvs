@@ -5,18 +5,42 @@
 
 
 <div metal:fill-slot="main" tal:define="daily request/daily | nothing ;monthly request/monthly | nothing;email request/email | nothing">
-<h1>Subscription</h1>
+
+<h1 i18n:domain="RyzomSkin" 
+    i18n:translate="subscription">
+    Subscription
+</h1>
+
 <ul>
-<li tal:condition="python:test(daily != None,1,0)"> News email alerts... Subscription being processed.</li>
-<li tal:condition="python:test(monthly != None,1,0)"> Newsletter... Subscription being processed.</li>
+<li tal:condition="python:test(daily != None,1,0)">
+<span i18n:domain="RyzomSkin" 
+      i18n:translate="subscribed_daily">      
+      News email alerts... Subscription being processed.
+</span> 
+</li>
+<li tal:condition="python:test(monthly != None,1,0)">
+<span i18n:domain="RyzomSkin" 
+      i18n:translate="subscribed_monthly">      
+      Newsletter... Subscription being processed.
+</span>
+</li>
 </ul>
 
-You should receive a confirmation email shortly in the <a href="" tal:attributes="href email" tal:content="email" ></a>
-mailbox; read it and follow the intructions it contains to validate your
-subscription.
-
-If you ever need to unsubscribe or change your email subscription options, you
-can find the administrative interface 
+<span i18n:domain="RyzomSkin" 
+      i18n:translate="receive_confirmed1">      
+      You should receive a confirmation email shortly in the
+</span>
+<a href="" tal:attributes="href email" tal:content="email" ></a>
+<span i18n:domain="RyzomSkin" 
+      i18n:translate="receive_confirmed2">      
+      mailbox; read it and follow the intructions it contains to validate your subscription.
+</span>
+<br />
+<span i18n:domain="RyzomSkin" 
+      i18n:translate="unsubcribed_newsletter">      
+      If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface 
+</span>
 <a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">here</a>.
+
 </div>
 </html>

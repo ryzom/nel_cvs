@@ -1,0 +1,5 @@
+[default]
+title=Newsletters Script
+
+[actions]
+action.success=traverse_to:string:newsletters_page

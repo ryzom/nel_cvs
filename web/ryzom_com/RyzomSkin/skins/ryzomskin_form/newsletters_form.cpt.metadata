@@ -1,0 +1,8 @@
+[default]
+title=News Letters
+
+[validators]
+validators = validate_emailaddr, validate_newsletters_period
+
+[actions]
+action.success = traverse_to:string:newsletters_mailing_script

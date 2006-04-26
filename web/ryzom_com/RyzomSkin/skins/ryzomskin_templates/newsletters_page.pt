@@ -1,0 +1,22 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      lang="en"
+      metal:use-macro="here/main_template/macros/master"
+      i18n:domain="plone">
+
+
+<div metal:fill-slot="main" tal:define="daily request/daily | nothing ;monthly request/monthly | nothing;email request/email | nothing">
+<h1>Subscription</h1>
+<ul>
+<li tal:condition="python:test(daily != None,1,0)"> News email alerts... Subscription being processed.</li>
+<li tal:condition="python:test(monthly != None,1,0)"> Newsletter... Subscription being processed.</li>
+</ul>
+
+You should receive a confirmation email shortly in the <a href="" tal:attributes="href email" tal:content="email" ></a>
+mailbox; read it and follow the intructions it contains to validate your
+subscription.
+
+If you ever need to unsubscribe or change your email subscription options, you
+can find the administrative interface 
+<a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">here</a>.
+</div>
+</html>

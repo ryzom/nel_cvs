@@ -13,28 +13,28 @@
 
 <ul>
 <li tal:condition="python:test(daily != None,1,0)">
-<span i18n:domain="RyzomSkin" 
+<p i18n:domain="RyzomSkin" 
       i18n:translate="subscribed_daily">      
       News email alerts... Subscription being processed.
-</span> 
+</p> 
 </li>
 <li tal:condition="python:test(monthly != None,1,0)">
-<span i18n:domain="RyzomSkin" 
+<p i18n:domain="RyzomSkin" 
       i18n:translate="subscribed_monthly">      
       Newsletter... Subscription being processed.
-</span>
+</p>
 </li>
 </ul>
 
-<span i18n:domain="RyzomSkin" 
+<p i18n:domain="RyzomSkin" 
       i18n:translate="receive_confirmed1">      
       You should receive a confirmation email shortly in the
-</span>
+</p>
 <a href="" tal:attributes="href email" tal:content="email" ></a>
-<span i18n:domain="RyzomSkin" 
+<p i18n:domain="RyzomSkin" 
       i18n:translate="receive_confirmed2">      
       mailbox; read it and follow the intructions it contains to validate your subscription.
-</span>
+</p>
 <br />
 <span i18n:domain="RyzomSkin" 
       i18n:translate="unsubcribed_newsletter">      

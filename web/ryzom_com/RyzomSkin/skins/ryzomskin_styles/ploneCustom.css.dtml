@@ -301,8 +301,7 @@ H1 {
         text-transform: capitalize;
 	color : #9ae033;
 	border-bottom : solid #9ae033 1px;
-	background-image: url('h1.gif') no-repeat;
-	background-position : center left;
+	background: transparent url('h1.gif') center left no-repeat;
 	padding-left : 20px;
 }
 

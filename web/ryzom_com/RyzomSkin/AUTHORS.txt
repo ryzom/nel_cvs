@@ -9,7 +9,7 @@ Team members (in alphabetic order)
 - Yacine Chaouche <cahouche@nevrax.com>
 - Marjo <marjo@nevrax.com>
 - Seido <seido@nevrax.com>
-
+- Claire <poyer@nevrax.com>
 
 - aphanaku <aphanaku@jolt.co.uk>
 - Christian Walde <mithaldu@yahoo.de>

@@ -25,7 +25,7 @@
         Get the global cache headers located in global_cache_settings.
       </metal:cache>
 
-      <metal:headslot define-slot="head_slot" />
+    <metal:headslot define-slot="head_slot" />
       <tal:comment replace="nothing"> A slot where you can insert elements in the header from a template </tal:comment>
     </metal:headslot>
 
@@ -52,39 +52,27 @@
 	<li><a href="http://www.nevrax.org/">NeL</a></li>
 	<li><a href="http://www.nevrax.com/">Nevrax</a></li>
 </ul>
-<!-- <tal:block replace="structure context/ie5alert" /> -->
+
 <center>
     <div id="visual-portal-wrapper">
       <div id="portal-top" i18n:domain="plone">
+        <div id="portal-logo-trans"></div>
         <div id="portal-header">
-
-
-<div style="float:right; padding:0;margin:0;border: 0;" >
-	<table cellspacing="0px" cellpadding="0px" height="130" width="100%" 
-	style="background:transparent; border: 0; margin:0; padding:0;">
-        <tr><td rowspan="4">             
-            <div style="margin:0;padding:0;float:left;">
-	      <a metal:use-macro="here/global_logo/macros/portal_logo">
-               The portal logo, linked to the portal root
-             </a>
-            </div>
-        </td></tr>
-        <tr><td VALIGN=top>
-	        <div metal:use-macro="here/serverstatus/macros/serverstatus" />
-        </td></tr>                
-        <tr><td>
-             <div style="float:right;" metal:use-macro="here/global_searchbox/macros/quick_search">
-               The quicksearch box, normally placed at the top right
-             </div>
-        </td></tr>
-        <tr><td valign="bottom">
-          <div style="float:right;" metal:use-macro="here/global_personalbar/macros/personal_bar">
-               The personal bar. (log in, logout etc...)
-	  </div>
-	</td></tr>
-       	</table>
-</div>
-          </div>
+	  <table cellspacing="0px" cellpadding="0px" width="100%">
+            <tr><td rowspan="4">
+	      <div metal:use-macro="here/global_logo/macros/portal_logo" />           
+            </td></tr>
+            <tr><td VALIGN=top>
+	      <div metal:use-macro="here/serverstatus/macros/serverstatus" />
+            </td></tr>
+            <tr><td>
+              <div metal:use-macro="here/global_searchbox/macros/quick_search" />
+            </td></tr>
+            <tr><td valign="bottom">
+              <div metal:use-macro="here/global_personalbar/macros/personal_bar" />
+	    </td></tr>
+       	  </table>
+        </div>
       </div>
 
       <tal:comment replace="nothing">
@@ -93,12 +81,13 @@
       prefer layouts that don't use tables.
       </tal:comment>
       <table id="portal-columns">
-        <tbody>
+        <tbody>          
           <tr>
-            <tal:comment replace="nothing"> Start of the left column </tal:comment>
+            <tal:comment replace="nothing"> Start of the left column </tal:comment>            
             <td id="portal-column-one"
                 metal:define-slot="column_one_slot"
                 tal:condition="sl">
+              <div id="portal-column-one-trans"></div>
               <div class="visualPadding">
                 <metal:portlets define-slot="portlets_one_slot">
                   <metal:leftportlets use-macro="here/portlets_fetcher/macros/left_column">

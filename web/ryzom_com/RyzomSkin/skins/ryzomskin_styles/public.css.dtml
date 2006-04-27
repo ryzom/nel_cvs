@@ -151,8 +151,6 @@
 /* Searchbox style and positioning */
 
 #portal-searchbox {
-    float: right;
-    clear: right;
     background-color: transparent;
     margin: 3px 0 0 0;
     padding: 0 3px 0 0;

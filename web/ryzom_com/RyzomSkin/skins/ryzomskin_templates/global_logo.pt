@@ -2,8 +2,8 @@
       i18n:domain="plone">
 
 <body>
-
- <div id="portal-logo" metal:define-macro="portal_logo">
+<div metal:define-macro="portal_logo">
+  <div id="portal-logo">
     <a href="/"
        tal:attributes="href string:${portal_url}/news"
        tal:define="portal_title portal_properties/title;"
@@ -11,7 +11,7 @@
        accesskey="1">
         Plone
     </a>
+  </div>
 </div>
-
 </body>
 </html>

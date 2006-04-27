@@ -7,7 +7,7 @@
 <div class="holeContainer" metal:define-macro="portlet"
      tal:define="pageloc python: request.URL.split('/')[-1];"
      tal:condition="python: not pageloc in ('newsletters_form')">
-	<div class="hole">
+	
 		<img class="fakeBorder" src="side_top.png"/>
 		
     			<dl class="portlet" id="portlet-newsletter">
@@ -114,7 +114,7 @@
 		<div class="imageHide">
 		     <img class="fakeBorder" src="side_up.png"/>
 		</div>
-	</div>
+	
 </div>
 </body>
 </html>

@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.cpp,v 1.14.16.3 2006/03/20 08:52:03 vizerie Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.14.16.4 2006/04/28 09:33:02 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -320,12 +320,22 @@ inline void	CShadowPolyReceiver::renderSelection(IDriver *drv, CMaterial &shadow
 }
 
 // ***************************************************************************
-void CShadowPolyReceiver::computeClippedTrisWithPolyClip(const CShadowMap *shadowMap,const CVector &casterPos,const CVector &vertDelta,const NLMISC::CPolygon2D &poly, std::vector<NLMISC::CVector> &dest)
+void CShadowPolyReceiver::computeClippedTrisWithPolyClip(const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta, const NLMISC::CPolygon2D &poly, std::vector<CRGBAVertex> &destTris, bool colorUpfacingVertices)
 {
-	dest.clear();
+	nlctassert(sizeof(CRGBAVertex) == 12 + 4); // ensure padding works as expected
+	destTris.clear();	
 	selectPolygon(poly);
 	if (_TriangleGrid.begin() == _TriangleGrid.end()) return;
 	uint	i, j;
+
+
+	static	std::vector<CVector>	vertexNormals; // normal for each vertex
+	static	std::vector<uint8>	vertexNormalsUndefined; // normal for each vertex
+	static  std::vector<CTriangleId *> visibleTris; // triangles that passed the clip
+	vertexNormals.resize(_Vertices.size());
+	vertexNormalsUndefined.resize(_Vertices.size(), 1);
+	visibleTris.clear();
+
 	// For all triangles, reset vertices flags.
 	TTriangleGrid::CIterator	it;
 	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
@@ -351,61 +361,157 @@ void CShadowPolyReceiver::computeClippedTrisWithPolyClip(const CShadowMap *shado
 	}
 
 	static NLMISC::CPolygon clippedTri;	
-	{						
-		// For All triangles, clip them.		
-		for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
+
+	CVector triNormal;
+		
+							
+	// For All triangles, clip them.		
+	for(it=_TriangleGrid.begin();it!=_TriangleGrid.end();it++)
+	{
+		CTriangleId		&triId= *it;
+		uint			triFlag= NL3D_SPR_NUM_CLIP_PLANE_MASK;
+
+
+		CVectorId *vid[3] = { &_Vertices[triId.Vertex[0]],
+							  &_Vertices[triId.Vertex[1]],
+							  &_Vertices[triId.Vertex[2]]
+							};		
+
+		// for all vertices, clip them
+		for(i=0;i<3;i++)
+		{				
+
+			// if this vertex is still not computed
+			if(!vid[i]->Flags)
+			{
+				// For all planes of the Clip Volume, clip this vertex.
+				for(j=0;j<worldClipPlanes.size();j++)
+				{
+					// out if in front
+					bool	out= worldClipPlanes[j]* *vid[i] > 0;
+
+					vid[i]->Flags |= ((uint)out)<<j;					
+				}
+				// add the bit flag to say "computed".
+				vid[i]->Flags |= NL3D_SPR_NUM_CLIP_PLANE_SHIFT;				
+			}			
+			
+			vertexNormalsUndefined[triId.Vertex[i]] = 1; // invalidate normal for next pass
+
+			// And all vertex bits.
+			triFlag&= vid[i]->Flags;
+		}			
+		// if triangle not clipped, do finer clip then add resulting triangles
+		if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
+		{		
+			visibleTris.push_back(&triId);
+		}
+	}
+
+	uint numVisibleTris = visibleTris.size();	
+	// compute normals if needed	
+	if (colorUpfacingVertices)
+	{
+		for (uint triIndex = 0; triIndex < numVisibleTris; ++triIndex)
 		{
-			CTriangleId		&triId= *it;
-			uint			triFlag= NL3D_SPR_NUM_CLIP_PLANE_MASK;
+			CTriangleId		&triId= *visibleTris[triIndex];			
+			CVectorId *vid[3] = { &_Vertices[triId.Vertex[0]],
+								  &_Vertices[triId.Vertex[1]],
+								  &_Vertices[triId.Vertex[2]]
+								};
+			// compute normal for this tri			
+			triNormal = ((*vid[1] - *vid[0]) ^ (*vid[2] - *vid[0])).normed();			
 
 			// for all vertices, clip them
 			for(i=0;i<3;i++)
-			{
-				uint	vid= triId.Vertex[i];
-				uint	vertexFlags= _Vertices[vid].Flags;
-
-				// if this vertex is still not computed
-				if(!vertexFlags)
-				{
-					// For all planes of the Clip Volume, clip this vertex.
-					for(j=0;j<worldClipPlanes.size();j++)
-					{
-						// out if in front
-						bool	out= worldClipPlanes[j]*_Vertices[vid] > 0;
-
-						vertexFlags|= ((uint)out)<<j;
-					}
-
-					// add the bit flag to say "computed".
-					vertexFlags|= NL3D_SPR_NUM_CLIP_PLANE_SHIFT;
-
-					// store
-					_Vertices[vid].Flags= vertexFlags;
+			{								
+				sint vertIndex = triId.Vertex[i];				
+				if (vertexNormalsUndefined[vertIndex])
+				{				
+					vertexNormals[vertIndex] = triNormal;	
+					vertexNormalsUndefined[vertIndex] = 0;
 				}
-
-				// And all vertex bits.
-				triFlag&= vertexFlags;
-			}			
-			// if triangle not clipped, do finer clip then add resulting triangles
-			if( (triFlag & NL3D_SPR_NUM_CLIP_PLANE_MASK)==0 )
-			{
-				clippedTri.Vertices.resize(3);
-				clippedTri.Vertices[0] = _Vertices[triId.Vertex[0]] + vertDelta;
-				clippedTri.Vertices[1] = _Vertices[triId.Vertex[1]] + vertDelta;
-				clippedTri.Vertices[2] = _Vertices[triId.Vertex[2]] + vertDelta;
-				clippedTri.clip(worldClipPlanes);
-				if (clippedTri.Vertices.size() >= 3)
+				else
 				{					
-					for(uint k = 0; k < clippedTri.Vertices.size() - 2; ++k)
-					{
-						dest.push_back(clippedTri.Vertices[0]);
-						dest.push_back(clippedTri.Vertices[k + 1]);
-						dest.push_back(clippedTri.Vertices[k + 2]);
-					}
+					vertexNormals[vertIndex] += triNormal;	
+				}				
+			}			
+		}
+	}
+
+	
+	if (colorUpfacingVertices)
+	{
+		for (uint triIndex = 0; triIndex < numVisibleTris; ++triIndex)
+		{
+			CTriangleId		&triId= *visibleTris[triIndex];
+			// use CPlane 'uv cliping', store 'color' in 'U'
+			static std::vector<CVector> corner0;
+			static std::vector<CVector> corner1;
+			static std::vector<CUV> uv0;
+			static std::vector<CUV> uv1;
+			uv0.resize(3 + worldClipPlanes.size());
+			uv1.resize(3 + worldClipPlanes.size());
+			corner0.resize(3 + worldClipPlanes.size());
+			corner1.resize(3 + worldClipPlanes.size());
+			//
+			corner0[0] = _Vertices[triId.Vertex[0]];
+			corner0[1] = _Vertices[triId.Vertex[1]];
+			corner0[2] = _Vertices[triId.Vertex[2]];
+			//													
+			uv0[0].set(vertexNormals[triId.Vertex[0]].z >= 0.f ? 1.f : 0.f, 0.f);
+			uv0[1].set(vertexNormals[triId.Vertex[1]].z >= 0.f ? 1.f : 0.f, 0.f);
+			uv0[2].set(vertexNormals[triId.Vertex[2]].z >= 0.f ? 1.f : 0.f, 0.f);							
+			//				
+			sint numVerts = 3;
+			//
+			for (uint k = 0; k < worldClipPlanes.size(); ++k)
+			{						
+				numVerts = worldClipPlanes[k].clipPolygonBack(&corner0[0], &uv0[0], &corner1[0], &uv1[0], numVerts);
+				nlassert(numVerts <= (sint) corner1.size());
+				if (numVerts == 0) break;
+				uv0.swap(uv1);
+				corner0.swap(corner1);
+			}			
+			for (sint k = 0; k < numVerts - 2; ++k)
+			{
+				uint8 alpha[3] = 
+				{
+					(uint8) (255.f * uv0[0].U),
+					(uint8) (255.f * uv0[k + 1].U),
+					(uint8) (255.f * uv0[k + 2].U)
+				};
+				if (alpha[0] != 0 || alpha[1] != 0 || alpha[2] != 0)
+				{
+					destTris.push_back(CRGBAVertex(corner0[0] + vertDelta, CRGBA(255, 255, 255, alpha[0])));
+					destTris.push_back(CRGBAVertex(corner0[k + 1] + vertDelta, CRGBA(255, 255, 255, alpha[1])));
+					destTris.push_back(CRGBAVertex(corner0[k + 2] + vertDelta, CRGBA(255, 255, 255, alpha[2])));
+				}
+			}			
+		}
+	}
+	else
+	{	
+		for (uint triIndex = 0; triIndex < numVisibleTris; ++triIndex)
+		{
+			CTriangleId		&triId= *visibleTris[triIndex];
+			clippedTri.Vertices.resize(3);
+			clippedTri.Vertices[0] = _Vertices[triId.Vertex[0]];
+			clippedTri.Vertices[1] = _Vertices[triId.Vertex[1]];
+			clippedTri.Vertices[2] = _Vertices[triId.Vertex[2]];
+			clippedTri.clip(worldClipPlanes);
+			if (clippedTri.Vertices.size() >= 3)
+			{					
+				for(uint k = 0; k < clippedTri.Vertices.size() - 2; ++k)
+				{
+					destTris.push_back(CRGBAVertex(clippedTri.Vertices[0] + vertDelta, CRGBA::White));
+					destTris.push_back(CRGBAVertex(clippedTri.Vertices[k + 1] + vertDelta,	CRGBA::White));
+					destTris.push_back(CRGBAVertex(clippedTri.Vertices[k + 2] + vertDelta,	CRGBA::White));
 				}
 			}
 		}
-	}
+	}	
+	
 }
 
 // ***************************************************************************

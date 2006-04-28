@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.h
  * TODO: File description
  *
- * $Id: shadow_poly_receiver.h,v 1.6.16.2 2006/03/16 10:44:41 vizerie Exp $
+ * $Id: shadow_poly_receiver.h,v 1.6.16.3 2006/04/28 09:33:02 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/triangle.h"
+#include "nel/misc/vector_h.h"
 #include "quad_grid.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
@@ -90,12 +91,22 @@ public:
 									   const NLMISC::CPolygon2D &poly
 									  );
 
+	// a vertex 
+	struct CRGBAVertex
+	{
+		CVector V;
+		CRGBA Color;
+		CRGBAVertex() {}
+		CRGBAVertex(const CVector &v, CRGBA c) : V(v), Color(c) {}
+	};
+
 	/** Compute list of clipped tri under the shadow mat
-	  * useful for rendering of huge decal, that may consume a lot of fillrate, but change rarely.	  
+	  * useful for rendering of huge decal, that may consume a lot of fillrate, but change rarely.	  	  	  
+	  *                 
 	  */
 	void			computeClippedTrisWithPolyClip(const CShadowMap *shadowMap, const CVector &casterPos, const CVector &vertDelta, const NLMISC::CPolygon2D &vertices, 
-												   std::vector<NLMISC::CVector> &dest);
-
+												   std::vector<CRGBAVertex> &destTris, bool colorUpfacingVertices);
+	
 
 	/** Use the triangles added for camera 3rd person collision
 	 *	return a [0,1] value. 0 => collision at start. 1 => no collision.

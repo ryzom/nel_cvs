@@ -39,6 +39,8 @@ opacity: 1.0;
 border:none !important;
 text-decoration: none !important;
 }
+.weblog-body img{margin:1em;}
+
 
 .weblog-heading a{
 text-decoration: none !important;
@@ -129,15 +131,15 @@ legend {
 /*fin de la css rightbar*/
 
 #visual-portal-wrapper {
+        position:relative;top:-130px;
         width:90%;
-        padding:0;
-        margin:0;
+        margin-left:auto;
+        margin-right:auto;
+        padding:0;        
         background-color: transparent;
         border:0;
         border-right: solid #5f5e57 6px;
         text-align:right;
-        margin-left:auto;
-        margin-right:auto;
 }
 
 #portal-personaltools {
@@ -164,7 +166,7 @@ legend {
    text-align:justify;
 }
 
-#portal-columns {
+#portal-columns {   
    min-height:1280px;
    margin-bottom:0;
    margin-left: 0;
@@ -179,6 +181,7 @@ legend {
    width:175px;
    vertical-align: top;
    border: 0;
+   border-right: 1px solid #5f5e57
    text-align:left;
    /* on affiche la bordure sur toute la hauteur de la colonne*/ 
    background:transparent url('border_nav.gif') repeat-y;
@@ -208,6 +211,7 @@ legend {
    margin:0;
    text-align:center;
    border:0;
+   border-left: solid #5f5e57 1px;
    background-color: #181818;
 }
 
@@ -216,8 +220,8 @@ legend {
    position:relative;
    top:-658px;
    margin:0; padding:0;
-   width:155px;
-   margin-left:20px;
+   width:154px;
+   margin-left:20px;   
 }
 
 #portal-column-two .visualPadding {
@@ -227,13 +231,17 @@ legend {
 
 
 #portal-top {
-   height:130px;
    border:0;
    padding: 0;        
    margin: 0;
-   background:transparent url('border_nav.gif') repeat-y;
+   background: transparent url('Ban_fyros_1326.jpg') 175px 0 no-repeat;
 }
 #portal-logo-trans {
+        width:90%;
+        margin-left:auto;
+        margin-right:auto;
+        border:0;
+        border-right: solid #5f5e57 6px;
    height:130px;
    background:#041016 url('border_nav.gif') repeat-y;
    filter: alpha(opacity=70);
@@ -241,26 +249,39 @@ legend {
    -moz-opacity: 0.70;
    opacity:0.7;
 }
-#portal-header {
-   position:relative;
-   top:-130px;
-   background: transparent url('Ban_fyros_1326.jpg') 175px 0 no-repeat;
-}
+
 #portal-logo{
+   float:left;
    padding: 0;
    margin: 0;
    background: transparent url('logo.gif') 18px 30px no-repeat;
 }
+#portal-logo a {
+    display: block;
+    text-decoration: none;
+    overflow: hidden;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    padding-top: 130px;
+    height: 0px !important;
+    height /**/: 130px;
+    width: 175px;
+    cursor: pointer;
+}
+#footer_page {
 
-
+}
 #portal-footer {
         width:90%;
+        position:relative;
+        top:-130px;
+        margin:0;
+        border:0;
         padding:0;
-        margin:0;  
-        margin-left:auto;
-        margin-right:auto;
 	height:110px;
-        border:0;        
+        margin-right:auto;
+        margin-left:auto;        
         background: black url('footer_m.png') 175px 0 x-repeat;
 }
 
@@ -331,7 +352,7 @@ input {
 	border-bottom: 2px solid #999;
 	font-weight: normal;
 	font-size: 100%;
-	margin: 0 0 0 0;
+	margin:0;
 	padding: 2px 0 0 0;
 	text-align: center;
 }
@@ -344,7 +365,7 @@ input {
 #navbar a {
 	text-decoration: none;
 	border-left: 1px solid #999;
-	padding: 0 2px 0 3px;
+	padding:0;
 	color: black;
 }
 

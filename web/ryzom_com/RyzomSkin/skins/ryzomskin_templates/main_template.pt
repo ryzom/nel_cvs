@@ -1,5 +1,7 @@
 <metal:page define-macro="master">
-<metal:doctype define-slot="doctype"><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"></metal:doctype>
+<metal:doctype define-slot="doctype">
+   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+</metal:doctype>
 <metal:block define-slot="top_slot" />
 <metal:block use-macro="here/global_defines/macros/defines" />
 
@@ -54,13 +56,13 @@
 </ul>
 
 <center>
-    <div id="visual-portal-wrapper">
+    <div id="portal-logo-trans"></div>
+    <div id="visual-portal-wrapper">      
       <div id="portal-top" i18n:domain="plone">
-        <div id="portal-logo-trans"></div>
         <div id="portal-header">
 	  <table cellspacing="0px" cellpadding="0px" width="100%">
             <tr><td rowspan="4">
-	      <div metal:use-macro="here/global_logo/macros/portal_logo" />           
+	      <div metal:use-macro="here/global_logo/macros/portal_logo" />
             </td></tr>
             <tr><td VALIGN=top>
 	      <div metal:use-macro="here/serverstatus/macros/serverstatus" />
@@ -81,9 +83,9 @@
       prefer layouts that don't use tables.
       </tal:comment>
       <table id="portal-columns">
-        <tbody>          
+        <tbody>
           <tr>
-            <tal:comment replace="nothing"> Start of the left column </tal:comment>            
+            <tal:comment replace="nothing"> Start of the left column </tal:comment>
             <td id="portal-column-one"
                 metal:define-slot="column_one_slot"
                 tal:condition="sl">

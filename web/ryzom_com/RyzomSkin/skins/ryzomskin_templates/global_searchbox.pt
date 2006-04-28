@@ -28,14 +28,15 @@
         <input class="searchButton"
                type="submit"
                tabindex=""
-               value="Search"
-               tal:attributes="tabindex tabindex/next"
-               i18n:attributes="value label_search;" />
-        <div class="LSResult" id="LSResult" style=""><div class="LSShadow" id="LSShadow"></div></div>
+               value=""
+               tal:attributes="tabindex tabindex/next" />
+        <div class="LSResult" id="LSResult" style="">
+          <div class="LSShadow" id="LSShadow"></div>
+        </div>
     </form>
     </div>
     <form  class="LSBox" name="advancedSearchDummy" action="search_form">
-    <input class="searchButton" 
+    <input class="advancedSearchButton" 
            type="submit" value="Advanced Search" 
            i18n:attributes="value label_advanced_search;" />
     </form>

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficient - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.34.4.4 2006/03/17 20:54:39 miller Exp $
+ * $Id: sstring.h,v 1.34.4.5 2006/05/02 20:40:19 miller Exp $
  */
 
 
@@ -1020,9 +1020,9 @@ inline bool CSString::isValidText()
 //	}
 	while (i--)
 	{
-		if (!tbl[operator[](i)])
+		if (!tbl[(uint8)operator[](i)])
 		{
-			nldebug("string is not valid text due to character: %u at index: %u",(uint8)tbl[i],i);
+			nldebug("string is not valid text due to character: %u at index: %u",(uint8)operator[](i),i);
 			return false;
 		}
 	}

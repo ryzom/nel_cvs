@@ -559,6 +559,13 @@ static void addQuadToSilhouette(const CVector &v0, const CVector &v1, const CVec
 
 
 //***************************************************************************************
+CPackedZone16::CPackedZone16()
+{
+	CellSize = 0.f;
+	_Origin = CVector::Null;
+}
+
+//***************************************************************************************
 void CPackedZone32::unpackTri(const CPackedTri &src, CVector dest[3]) const
 {	
 	// TODO: add 'multiply-add' operator
@@ -579,6 +586,7 @@ void CPackedZone32::unpackTri(const CPackedTri &src, CVector dest[3]) const
 CPackedZone32::CPackedZone32()
 {
 	CellSize = 0;	
+	_Origin = CVector::Null;
 }
 
 //***************************************************************************************
@@ -624,7 +632,7 @@ void CPackedZone32::build(std::vector<const CTessFace*> &leaves,
 	Verts.clear();
 	Tris.clear();
 	TriLists.clear();
-	Grid.clear();
+	Grid.clear();	
 	if (leaves.empty()) return;
 	for(uint k = 0; k < leaves.size(); ++k)
 	{
@@ -944,6 +952,7 @@ uint32 CPackedZone32::allocVertex(const CVector &src, TVertexGrid &vertexGrid)
 //***************************************************************************************
 void CPackedZone32::render(CVertexBuffer &vb, IDriver &drv, CMaterial &material, CMaterial &wiredMaterial, const CMatrix &camMat, uint batchSize, const CVector localFrustCorners[8])
 {
+	if (Tris.empty()) return;
 	IDriver::TPolygonMode oldPolygonMode = drv.getPolygonMode();
 	//	
 	CVector frustCorners[8];
@@ -1150,7 +1159,7 @@ void CPackedZone16::serial(NLMISC::IStream &f) throw (NLMISC::EStream)
 		//nlwarning("serial grid");
 		serialPackedVector16(datas, f);		
 	}			
-	f.serial(CellSize);
+	f.serial(CellSize);	
 	f.serial(_Origin);
 	f.serial(_WorldToLocal);
 	f.serial(ZoneX);
@@ -1167,6 +1176,7 @@ void CPackedZone16::serial(NLMISC::IStream &f) throw (NLMISC::EStream)
 //***************************************************************************************
 void CPackedZone16::render(CVertexBuffer &vb, IDriver &drv, CMaterial &material, CMaterial &wiredMaterial, const CMatrix &camMat, uint batchSize, const CVector localFrustCorners[8])
 {
+	if (Tris.empty()) return;
 	IDriver::TPolygonMode oldPolygonMode = drv.getPolygonMode();		
 	CVector frustCorners[8];
 	for(uint k = 0; k < sizeofarray(frustCorners); ++k)

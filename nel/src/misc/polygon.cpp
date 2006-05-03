@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.32.6.5 2006/04/05 08:45:57 vizerie Exp $
+ * $Id: polygon.cpp,v 1.32.6.6 2006/05/03 17:05:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1202,6 +1202,9 @@ bool CPolygon2D::isCCWOriented() const
 // *******************************************************************************
 void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	// an 'alias' to the vertices
 	const TVec2fVect &V = Vertices;
 	if (Vertices.size() < 3)
@@ -1499,6 +1502,9 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 // *******************************************************************************
 void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	borders.clear();
 	// NB : this version is not much optimized, because of the min/max test
 	// during rasterization.
@@ -1787,6 +1793,9 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 // *******************************************************************************
 void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY) const
 {
+	#ifdef NL_DEBUG
+		checkValidBorders();
+	#endif
 	borders.clear();
 	if (Vertices.empty())
 	{		
@@ -1964,6 +1973,18 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY) const
 	{
 		borders.back().first = 1;
 		borders.back().second = 0;
+	}
+}
+
+// *******************************************************************************
+void CPolygon2D::checkValidBorders() const
+{
+	for (uint k = 0; k < Vertices.size(); ++k)
+	{
+		nlassert(Vertices[k].x >= -32000.f); // coordinate too big !
+		nlassert(Vertices[k].x < 32000.f);   // coordinate too big !
+		nlassert(Vertices[k].y >= -32000.f); // coordinate too big !
+		nlassert(Vertices[k].y < 32000.f);   // coordinate too big !
 	}
 }
 

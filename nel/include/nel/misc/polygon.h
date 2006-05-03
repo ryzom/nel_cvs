@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.18.6.5 2006/04/05 08:45:57 vizerie Exp $
+ * $Id: polygon.h,v 1.18.6.6 2006/05/03 17:05:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,14 +175,17 @@ public:
 	  * The output is in a vector of sint pairs. minimumY is filled with the minimum y value of the poly.
 	  * Each pairs gives [xmin, xmax] for the current segment. if xmin > xmax, then no point is valid for this segment.
 	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valid.
+	  * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug
 	  */
 	void		computeBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points.
 	   * Any pixel that is touched by the poly will be selected
+	   * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug	   
 	   */
 	void		computeOuterBorders(TRasterVect &borders, sint &minimumY) const;
 	/** The same as compute borders, but pixel are seen as surfaces and not as points
 	  * In this version, only pixels that are entirely INSIDE the poly are kept
+	  * IMPORTANT: coordinates must be in the -32000, 32000 range. This is checked in debug	   
 	  */
 	void		computeInnerBorders(TRasterVect &borders, sint &minimumY) const;
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
@@ -221,6 +224,7 @@ private:
 			   Vertices[0]                 :
 		       Vertices[index + 1];
 	}	
+	void checkValidBorders() const;
 };
 
 // comparison of 2D polygon 

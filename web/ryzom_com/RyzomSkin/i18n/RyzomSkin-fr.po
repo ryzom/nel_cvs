@@ -16,6 +16,9 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: fr-be fr-ca fr-lu fr-mc fr-ch fr-fr\n"
 
+msgid "label_submit"
+msgstr "submit"
+
 msgid "unsubcribed_newsletter"
 msgstr "Si vous desirez vous désinscrir ou changer vos options de souscriptions, vous pouvez aller dans l'interface d'administration"
 

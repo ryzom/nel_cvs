@@ -39,7 +39,7 @@ img {
 }
 p {
     margin: 1em 0 1em 0;
-    line-height: 1.2em;
+    line-height: 1.3em;
 }
 
 p img {
@@ -107,7 +107,6 @@ h6 {
 }
 
 ul {
-/*    line-height: 1.5em; */
     margin: 3px 0 0 1.2em;
     padding: 0;
     list-style-image: url(&dtml-portal_url;/bullet.gif);
@@ -115,7 +114,6 @@ ul {
 }
 
 ol {
-/*    line-height: 1.5em; */
     margin: 3px 0 0 1.2em;
     padding: 0;
     list-style-image: none;
@@ -132,7 +130,6 @@ dt {
 }
 
 dd {
-/*    line-height: 1.5em; */
     margin-bottom: 5px;
 }
 
@@ -145,7 +142,6 @@ fieldset {
     border: &dtml-borderWidth; &dtml-borderStyle; &dtml-globalBorderColor;;
     margin: 5px 0em 5px 0em;
     padding: 0em 5px 5px 5px;
-/*    line-height: 1.5em; */
     width: auto;
 }
 legend {

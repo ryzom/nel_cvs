@@ -16,6 +16,10 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
+
+msgid "label_submit"
+msgstr "submit"
+
 msgid "unsubcribed_newsletter"
 msgstr "If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface"
 

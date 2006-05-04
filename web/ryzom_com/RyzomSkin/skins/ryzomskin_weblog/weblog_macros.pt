@@ -57,7 +57,7 @@
     <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
             tal:define="weblog python:here;                        
 		        author python: entry.Creator();
-                        fullname python:mtool.getMemberById(author).getProperty('fullname');
+                        fullname python:here.get_fullname(author);
                         isOfficial python: here.isOfficial(author);">
      
       
@@ -112,7 +112,7 @@
       <div class="weblog-entry brief" tal:attributes="class python:test(isOfficial,'weblog-entry brief','unofficial-box')" 
             tal:define="weblog python:here;                        
 		        author python: entry.Creator();
-                        fullname python:mtool.getMemberById(author).getProperty('fullname');
+                        fullname python:here.get_fullname(author);
                         isOfficial python: here.isOfficial(author);
                         discussion nocall:here/portal_discussion;">
 

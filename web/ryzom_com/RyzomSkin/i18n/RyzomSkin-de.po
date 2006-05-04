@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-05-04 17:15+0100\n"
+"PO-Revision-Date: 2006-05-04 17:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
@@ -17,13 +17,13 @@ msgstr ""
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
 msgid "here"
-msgstr ""
+msgstr "hier"
 
 msgid "label_submit"
 msgstr "Bestätigen"
 
 msgid "unsubcribed_newsletter"
-msgstr "Solltest du mal dein Abonnement  via E-Mail beenden oder ändern wollen, kannst du dies "
+msgstr "Solltest du mal dein Abonnement  via E-Mail beenden oder ändern wollen, kannst du dies hier tun."
 
 msgid "receive_confirmed1"
 msgstr "Du solltest in Kürze eine Bestätigungsmail erhalten, welche an folgende E-Mailadresse geschickt wird:"
@@ -35,7 +35,7 @@ msgid "subscription"
 msgstr "Subscription"
 
 msgid "subscribed_monthly"
-msgstr "Newsletter ... Abonnement erfolgreich abgeschlossen."
+msgstr "Newsletter... Abonnement erfolgreich abgeschlossen."
 
 msgid "subscribed_daily"
 msgstr "News via E-Mail Benachrichtigung... Abonnement erfolgreich abgeschlossen."
@@ -53,7 +53,7 @@ msgid "label_save"
 msgstr "OK"
 
 msgid "server-status"
-msgstr "Server Status :"
+msgstr "Server Status:"
 
 msgid "read_more"
 msgstr "Weiterlesen..."

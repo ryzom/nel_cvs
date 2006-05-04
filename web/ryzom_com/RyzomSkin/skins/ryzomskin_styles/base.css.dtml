@@ -38,8 +38,8 @@ img {
     vertical-align: middle;
 }
 p {
-    margin: 0 0 1em 0;
-/*    line-height: 1.5em; */
+    margin: 1em 0 1em 0;
+    line-height: 1em;
 }
 
 p img {
@@ -197,10 +197,10 @@ q {
     font-size: 120%;
 }
 blockquote {
-    padding-left: 4px;
-    margin-left: 0;
-    border-left: 4px solid &dtml-globalBorderColor;;
-    color: &dtml-discreetColor;;
+   border: 1px solid #5a5c51;
+   padding: 0.5em;
+   margin: 0.5em 0em;
+   background-color: #282828;
 }
 code {
     font-family: Monaco, "Courier New", Courier, monospace;

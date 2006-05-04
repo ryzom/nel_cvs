@@ -1,0 +1,49 @@
+<html xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      i18n:domain="plone">
+<body>
+
+
+<div class="holeContainer" style="text-align : right;" metal:define-macro="portlet"
+     tal:define="DateTime python:modules['DateTime'].DateTime;
+                 results here/my_worklist;"
+     tal:condition="results">
+
+<img class="fakeBorder" src="side_top.png" />
+<div class="hole" >
+
+<dl class="portlet" id="portlet-workflow-review">
+    <dt class="portletHeader"><span i18n:translate="box_review_list">Review List</span></dt>
+    <tal:items repeat="o results">
+    <dd class="portletItem"
+        tal:define="oddrow repeat/o/odd"
+        tal:attributes="class python:test(oddrow, 'portletItem even','portletItem odd')">
+
+        <div tal:attributes="class python:'contenttype-' + normalizeString(o.portal_type)">
+        <a href="#"
+           class="visualIconPadding"
+           tal:attributes="href string:${o/absolute_url}/view;
+                           title o/Description">
+            <span tal:replace="o/pretty_title_or_id">
+            Extended Calendar Product
+            </span>
+            <span class="portletItemDetails"
+                  tal:define="moddate o/ModificationDate;"
+                  tal:content="python:here.toLocalizedTime(moddate)">May 5</span>
+        </a>
+        </div>
+
+    </dd>
+    </tal:items>
+
+    <dd class="portletFooter">
+        <a href="#" tal:attributes="href string:${portal_url}/full_review_list"
+	            i18n:translate="box_full_review_list">Full review list&hellip;</a>
+    </dd>
+</dl>
+</div>
+
+<div class="imageHide"><img  class="fakeBorder" src="side_up.png" /></div>
+</div>
+</body>
+</html>

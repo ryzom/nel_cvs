@@ -54,7 +54,6 @@
 	<li><a href="http://www.nevrax.org/">NeL</a></li>
 	<li><a href="http://www.nevrax.com/">Nevrax</a></li>
 </ul>
-
 <center>
     <div id="portal-logo-trans"></div>
     <div id="visual-portal-wrapper">      
@@ -157,13 +156,10 @@
       <tal:comment replace="nothing"> end column wrapper </tal:comment>
       <div class="visualClear"><!-- --></div>
       <hr class="netscape4" />
-    </div>
-      <metal:block i18n:domain="plone">
         <metal:footer use-macro="here/footer/macros/portal_footer">
           Footer
         </metal:footer>
-      </metal:block>
-
+    </div>
 </center>
 </body>
 </html>

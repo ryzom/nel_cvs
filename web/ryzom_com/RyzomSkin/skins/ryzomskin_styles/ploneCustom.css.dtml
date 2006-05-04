@@ -1,21 +1,24 @@
 /* <dtml-with base_properties> (do not remove this :) */
 /* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
 
+a {text-decoration: none !important;}
+a:hover {color:white;}
+img {border:0;padding:0;margin:0;}
 
 .linkopacity img {
--khtml-opacity: 0.5;
-filter: progid:DXImageTransform.Microsoft.Alpha(opacity=50);
-filter:alpha(opacity=50); 
--moz-opacity: 0.5; 
-opacity: 0.5;
+   -khtml-opacity: 0.5;
+   filter: progid:DXImageTransform.Microsoft.Alpha(opacity=50);
+   filter:alpha(opacity=50); 
+   -moz-opacity: 0.5; 
+   opacity: 0.5;
 }
 
 .linkopacity:hover img {
--khtml-opacity: 1.0;
-filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
-filter:alpha(opacity=100);   
--moz-opacity: 1.0;   
-opacity: 1.0;
+   -khtml-opacity: 1.0;
+   filter: progid:DXImageTransform.Microsoft.Alpha(opacity=100);
+   filter:alpha(opacity=100);
+   -moz-opacity: 1.0;
+   opacity: 1.0;
 }
 
 .visualClearHeight {
@@ -29,36 +32,51 @@ opacity: 1.0;
 }
 
 .news_quote {
-	border: 1px solid #5a5c51;
-	padding: 1em;
-	margin: 1em;
-	background-color: #282828;
+   border: 1px solid #5a5c51;
+   padding: 1em;
+   margin: 1em;
+   background-color: #282828;
+}
+.weblog-summary ul .news_quote {
+   border: 1px solid #5a5c51;
+   padding: 0.5em;
+   margin: 0.5em 0em;
+}
+.weblog-body ul .news_quote {
+   border: 1px solid #5a5c51;
+   padding: 0.5em;
+   margin: 0.5em 0em;
 }
 
 .unofficial-box a, .weblog-entry a, .documentBody a {
-border:none !important;
-text-decoration: none !important;
+   border:none !important;
+   text-decoration: none !important;
 }
-.weblog-body img{margin:1em;}
 
+.weblog-body img {margin:1em;}
 
-.weblog-heading a{
-text-decoration: none !important;
-}
+.weblog-heading a {text-decoration: none !important;}
 
 .titleFAQ {color:#4bffff;}
 
-a img.thumbnail{border : 1px solid #ffc30e;}
+a img .thumbnail {
+	text-decoration: none;
+	border: 1px solid #ffc30e;
+}
 
 .thumbnail {
+	text-decoration: none;
 	border: solid grey 1px;
 	margin-right:10px;
 	margin-bottom:10px;
 }
 
-.thumbnail:hover {border: solid white 1px;}
+.thumbnail:hover {
+	text-decoration: none;
+	border: solid white 1px;
+}
 
-a.thumbnail {
+a .thumbnail {
 	border: solid grey 1px;
 	margin-right:10px;
 	margin-bottom:10px;
@@ -71,6 +89,7 @@ legend {
     font-size: 90%;
     border: 1px solid green;
 }
+
 
 /*css serverstatus*/
 #serverstatus  {
@@ -131,7 +150,8 @@ legend {
 /*fin de la css rightbar*/
 
 #visual-portal-wrapper {
-        position:relative;top:-130px;
+        position:relative;
+        top:-130px;
         width:90%;
         margin-left:auto;
         margin-right:auto;
@@ -166,12 +186,12 @@ legend {
    text-align:justify;
 }
 
-#portal-columns {   
+#portal-columns {
    min-height:1280px;
    margin-bottom:0;
-   margin-left: 0;
-   margin-right: 0;
-   padding:0;   
+   margin-left:0;
+   margin-right:0;
+   padding:0;
    text-align:center;
    border:0;
 }
@@ -180,7 +200,7 @@ legend {
    margin:0;padding:0;
    width:175px;
    vertical-align: top;
-   border: 0;
+   border:0;
    border-right: 1px solid #5f5e57
    text-align:left;
    /* on affiche la bordure sur toute la hauteur de la colonne*/ 
@@ -199,13 +219,14 @@ legend {
 }
 /******************************/
 
-#portal-column-two {   
- margin:0;padding:0;
- background-color: #181818;
- width: 200px; 
- overflow:hidden;
- text-align:right;
- border: 0;
+#portal-column-two {
+   margin:0;
+   padding:0;
+   background-color: #181818;
+   width:200px; 
+   overflow:hidden;
+   text-align:right;
+   border: 0;
 }
 #portal-column-content {
    margin:0;
@@ -221,28 +242,39 @@ legend {
    top:-658px;
    margin:0; padding:0;
    width:154px;
-   margin-left:20px;   
+   margin-left:20px;
 }
 
 #portal-column-two .visualPadding {
-   padding:0;
-   margin:0;
+   padding: 0 !important;
+   margin:0!important;
+/**
+**  KEEP THIS MARGIN TO FIX IE BUGS
+**  FIREFOX DONT GIVE A DAMN TO NEGATIVE MARGINS
+**  SO IT WONT ALTER THE PRESENTATION
+**/
+   border: 0!important;
+   background-color: #181818 ;
+   text-align:right !important;
+   width:200px !important;
+   max-width:200px !important;
+   overflow:hidden !important;
 }
-
 
 #portal-top {
    border:0;
-   padding: 0;        
-   margin: 0;
+   padding:0;
+   margin:0;
    background: transparent url('Ban_fyros_1326.jpg') 175px 0 no-repeat;
 }
+
 #portal-logo-trans {
-        width:90%;
-        margin-left:auto;
-        margin-right:auto;
-        border:0;
-        border-right: solid #5f5e57 6px;
-   height:130px;
+   width:90%;
+   margin-left:auto;
+   margin-right:auto;
+   border:0;
+   border-right: solid #5f5e57 6px;
+   height:130px;   
    background:#041016 url('border_nav.gif') repeat-y;
    filter: alpha(opacity=70);
    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70);
@@ -251,40 +283,42 @@ legend {
 }
 
 #portal-logo{
+   width:175px;
    float:left;
-   padding: 0;
-   margin: 0;
+   padding:0;
+   margin:0;
    background: transparent url('logo.gif') 18px 30px no-repeat;
 }
+
 #portal-logo a {
-    display: block;
-    text-decoration: none;
-    overflow: hidden;
-    border: 0;
-    margin: 0;
-    padding: 0;
-    padding-top: 130px;
-    height: 0px !important;
-    height /**/: 130px;
-    width: 175px;
-    cursor: pointer;
+   display:block;
+   text-decoration:none;
+   overflow:hidden;
+   border:0;
+   margin:0;
+   padding:0;
+   padding-top: 130px;
+   height: 0px !important;
+   height /**/: 130px;
+   width: 175px;
+   cursor: pointer;
 }
-#footer_page {
 
-}
 #portal-footer {
-        width:90%;
-        position:relative;
-        top:-130px;
-        margin:0;
-        border:0;
-        padding:0;
-	height:110px;
-        margin-right:auto;
-        margin-left:auto;        
-        background: black url('footer_m.png') 175px 0 x-repeat;
+   margin:0;
+   border:0;
+   padding:0;
+   height:110px;
+   margin-right:-6px;
+   margin-left:0;
+   background: black url('footer_m.png') 175px 0 x-repeat;
 }
 
+#footer-right {
+   position:relative; /*z-index work only if container is positionned*/
+   z-index:3;         /*l'image en background passe par-dessus la bordure*/
+   background: black url('footer_r.png');
+}
 
 #region-content {
    background-color: #181818;
@@ -294,72 +328,76 @@ legend {
 }
 
 #region-content .documentContent {
-  background-color: #181818;
-  margin:0;
-  padding:0;
+   background-color: #181818;
+   margin:0;
+   padding:0;
+   border:0;
+   text-decoration:none;
 }
 
-
-
 BODY {
-	background: url('bg.jpg') black no-repeat;
-	background-position: top center;
-	color: #a7a599;
-	margin: 0;
-    padding: 0;
-	font-family: Arial, sans-serif;
-	font-size : 12px;
+   background: url('bg.jpg') black no-repeat;
+   background-position: top center;
+   color: #a7a599;
+   margin: 0;
+   padding: 0;
+   border:0;
+   font-family: Arial, sans-serif;
+   font-size : 12px;
 }
 
 H1 {
-	margin : 2px 0 3px 0;
-	font-size : 120%;
-        text-transform: capitalize;
-	color : #9ae033;
-	border-bottom : solid #9ae033 1px;
-	background: transparent url('h1.gif') center left no-repeat;
-	padding-left : 20px;
+   margin : 2px 0 3px 0;
+   font-size : 120%;
+   text-transform: capitalize;
+   color : #9ae033;
+   border-bottom : solid #9ae033 1px;
+   background: transparent url('h1.gif') center left no-repeat;
+   padding-left : 20px;
 }
 
 H2 {
-	margin : 2px 0 3px 0;
-	font-size : 110%;
-	font-weight :normal;
-	color : #4bffff;
-	border-bottom : solid #444 1px;
+   margin : 2px 0 3px 0;
+   font-size : 110%;
+   font-weight :normal;
+   color : #4bffff;
+   border-bottom : solid #444 1px;
 }
 
 H3 {
-	margin : 2px 0 0 0;
-	font-size : 100%;
-	color : #cfccbd;
+   margin : 2px 0 0 0;
+   font-size : 100%;
+   color : #cfccbd;
 }
 
 input {
-    font-family: "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
-    visibility: visible;
-    border: 1px solid #8cacbb;
-    color: #5f5e57;
-    background-color: white;
-    vertical-align: middle;
+   font-family: "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
+   visibility: visible;
+   border: 1px solid #8cacbb;
+   color: #5f5e57;
+   background-color: white;
+   vertical-align: middle;
 }
 
 /*navbar tout en haut*/
 #navbar {
-	font-family: arial, helvetica, sans-serif;
-	border-top: 1px solid #999;
-	background: #c3c3c3;
-	border-bottom: 2px solid #999;
-	font-weight: normal;
-	font-size: 100%;
-	margin:0;
-	padding: 2px 0 0 0;
-	text-align: center;
+   border:0 !important;
+   border-top: 1px solid #999 !important;
+   border-bottom: 2px solid #999 !important;
+   margin:0 !important;
+   padding:2px 0 0 0 !important;
+   height:1.3em;
+   max-height:1.3em;
+   font-family: arial, helvetica, sans-serif;
+   background: #c3c3c3;
+   font-weight: normal;
+   font-size: 1em;
+   text-align: center;
 }
 
 #navbar li {
-	list-style: none;
-	display: inline;
+   list-style: none;
+   display: inline;
 }
 
 #navbar a {
@@ -372,27 +410,19 @@ input {
 #navbar a.highlight { font-weight: bold; }
 #navbar a:hover { color: #666; }
 
-img { 
-border:0;
-padding:0;
-margin:0;
-}
+.documentEditable {text-align:left;}
 
-.documentEditable {
-text-align:left;
-}
-
-.documentActions { 	 
+.documentActions {
    margin: 2px 2px 1px 0px;
-   padding: 0; 	 
-   /*YOU MUST KEEP THIS TO OVERRIDE 	 
-   * THE AUTHORING CSS 	 
-   */ 	 
-   float: none; 	 
-   text-align: right; 	 
-} 	 
+   padding: 0;
+   /*YOU MUST KEEP THIS TO OVERRIDE
+   * THE AUTHORING CSS
+   */
+   float: none;
+   text-align: right;
+}
 
-.imageHide { 
+.imageHide {
  background:black;
  margin:0;
  padding:0;
@@ -402,10 +432,10 @@ text-align:left;
 
 .fakeBorder {width:200px;}
 
-.holeContainer{ 
+.holeContainer{
   width: 200px;
   background-color: #5F5E57;
-  padding:0em;
+  padding:0;
   border:0;
   margin: 1em 0em;
 }

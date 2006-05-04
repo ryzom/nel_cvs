@@ -44,10 +44,6 @@
     padding-left: 1em;
     border:0;
     white-space: normal;
-/*
-    white-space: nowrap;
-    overflow: hidden;
-*/
 }
 
 #portal-column-one .portletItem  { 
@@ -61,6 +57,8 @@
     margin: 0;
     padding: 0;
     border:0;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .portletItemLast {

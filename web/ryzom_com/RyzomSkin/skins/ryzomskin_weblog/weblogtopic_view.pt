@@ -22,18 +22,6 @@
 
       <h1 tal:content="here/title_or_id"></h1>
 
-      <div id="topic-summary">
-        <img id="topic-image"
-             src="" 
-             tal:condition="here/getTopicImage"
-             tal:attributes="src here/topicImage/absolute_url" />
-        <span class="documentDescription"
-              tal:content="here/Description">
-        </span>
-      </div>
-
-      <hr />
-
       <tal:define define="results here/getLazyEntries;
                           Batch python:modules['Products.CMFPlone'].Batch;
                           b_size python:parent.entriesPerPage;

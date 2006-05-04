@@ -37,7 +37,18 @@
                       tal:content="python:here.toLocalizedTime(obj.Date)">May 5</span>
             </a>
         </dd>
-        </tal:newsitems><dd class="portletFooter"><a href="" tal:condition="python:'news' in portal.contentIds()" tal:attributes="href string:${utool}/news" i18n:translate="box_more_news_link" ><span> More news&hellip; </span></a><!-- ###bouton addnews###--><a href="" tal:attributes="href string:createObject?type_name=WeblogEntry"> <img src="add_icon.gif" alt="" title="" height="19" width="22"> Add ... </a></dd></dl>
+        </tal:newsitems>
+        <dd class="portletFooter">
+          <a href="" tal:condition="python:'news' in portal.contentIds()" 
+                     tal:attributes="href string:${utool}/news" i18n:translate="box_more_news_link" >
+             <span> More news&hellip; </span>
+          </a>
+          <a href="" tal:attributes="href string:${utool}/news/createObject?type_name=WeblogEntry">
+            <img src="add_icon.gif" alt="" title="" height="19" width="22">
+            Add ... 
+          </a>
+        </dd>
+      </dl>
 </div>
 <div class="imageHide">
 <img   class="fakeBorder" src="side_up.png"/>

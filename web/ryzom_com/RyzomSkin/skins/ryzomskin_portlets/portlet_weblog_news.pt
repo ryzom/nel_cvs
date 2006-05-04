@@ -61,7 +61,7 @@
             </a>
 
 	<a href=""
-       tal:attributes="href string:createObject?type_name=WeblogEntry">
+       tal:attributes="href string:${utool}/news/createObject?type_name=WeblogEntry">
 	<img src="add_icon.gif" alt="" title="" height="19" width="22"> Add&hellip;
     </a>
         </dd>

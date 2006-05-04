@@ -1,4 +1,4 @@
-## Script (Python) "isOfficial (don't use it)"
+## Script (Python) "isOfficial"
 ##bind container=container
 ##bind context=context
 ##bind namespace=

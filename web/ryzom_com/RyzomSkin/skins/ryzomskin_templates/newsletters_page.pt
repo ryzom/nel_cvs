@@ -25,15 +25,16 @@
 </p>
 </li>
 </ul>
-
-<p i18n:domain="RyzomSkin" 
+<p>
+<span i18n:domain="RyzomSkin" 
       i18n:translate="receive_confirmed1">      
       You should receive a confirmation email shortly in the
-</p>
+</span>
 <a href="" tal:attributes="href email" tal:content="email" ></a>
-<p i18n:domain="RyzomSkin" 
+<span i18n:domain="RyzomSkin" 
       i18n:translate="receive_confirmed2">      
       mailbox; read it and follow the intructions it contains to validate your subscription.
+</span>
 </p>
 <br />
 <span i18n:domain="RyzomSkin" 

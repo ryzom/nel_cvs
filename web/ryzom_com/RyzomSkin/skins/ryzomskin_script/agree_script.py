@@ -26,7 +26,7 @@ else:
   if lang=='fr':
     text=FDLfr
   if lang=='en':
-    text=FDL1en
+    text=FDLen
   if lang=='de':
-    text=FDL1de
+    text=FDLde
 return text

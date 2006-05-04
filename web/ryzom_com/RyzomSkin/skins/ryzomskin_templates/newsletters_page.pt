@@ -13,35 +13,31 @@
 
 <ul>
 <li tal:condition="python:test(daily != None,1,0)">
-<p i18n:domain="RyzomSkin" 
-      i18n:translate="subscribed_daily">      
+<p i18n:domain="RyzomSkin" i18n:translate="subscribed_daily">      
       News email alerts... Subscription being processed.
 </p> 
 </li>
 <li tal:condition="python:test(monthly != None,1,0)">
-<p i18n:domain="RyzomSkin" 
-      i18n:translate="subscribed_monthly">      
+<p i18n:domain="RyzomSkin" i18n:translate="subscribed_monthly">      
       Newsletter... Subscription being processed.
 </p>
 </li>
 </ul>
 <p>
-<span i18n:domain="RyzomSkin" 
-      i18n:translate="receive_confirmed1">      
+<span i18n:domain="RyzomSkin" i18n:translate="receive_confirmed1">      
       You should receive a confirmation email shortly in the
 </span>
 <a href="" tal:attributes="href email" tal:content="email" ></a>
-<span i18n:domain="RyzomSkin" 
-      i18n:translate="receive_confirmed2">      
+<span i18n:domain="RyzomSkin" i18n:translate="receive_confirmed2">      
       mailbox; read it and follow the intructions it contains to validate your subscription.
 </span>
 </p>
 <br />
-<span i18n:domain="RyzomSkin" 
-      i18n:translate="unsubcribed_newsletter">      
+<span i18n:domain="RyzomSkin" i18n:translate="unsubcribed_newsletter">      
       If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface 
 </span>
-<a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">here</a>.
+<a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">
+<span i18n:domain="RyzomSkin" i18n:translate="here">here</span></a>.
 
 </div>
 </html>

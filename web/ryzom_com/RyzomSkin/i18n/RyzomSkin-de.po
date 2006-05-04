@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RyzomSkin\n"
 "POT-Creation-Date: 2006-03-21 12:13+0000\n"
-"PO-Revision-Date: 2006-03-21 12:54+0100\n"
-"Last-Translator: Bernard Patrick <bernard@nevrax.com>\n"
+"PO-Revision-Date: 2006-05-04 17:15+0100\n"
+"Last-Translator: \n"
 "Language-Team: zope nevrax team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -16,36 +16,35 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
-
 msgid "label_submit"
-msgstr "submit"
+msgstr "Bestätigen"
 
 msgid "unsubcribed_newsletter"
-msgstr "If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface"
+msgstr "Solltest du mal dein Abonnement  via E-Mail beenden oder ändern wollen, kannst du dies "
 
 msgid "receive_confirmed1"
-msgstr "You should receive a confirmation email shortly in the"
+msgstr "Du solltest in Kürze eine Bestätigungsmail erhalten, welche an folgende E-Mailadresse geschickt wird:"
 
 msgid "receive_confirmed2"
-msgstr "mailbox; read it and follow the intructions it contains to validate your subscription."
+msgstr ". Lies und befolge die Anweisungen in dieser Mail, um dein Abonnement zu bestätigen."
 
 msgid "subscription"
 msgstr "Subscription"
 
 msgid "subscribed_monthly"
-msgstr "Newsletter... Subscription being processed."
+msgstr "Newsletter ... Abonnement erfolgreich abgeschlossen."
 
 msgid "subscribed_daily"
-msgstr "News email alerts... Subscription being processed."
+msgstr "News via E-Mail Benachrichtigung... Abonnement erfolgreich abgeschlossen."
 
 msgid "news_email_daily"
-msgstr "News email alerts (daily)"
+msgstr "News via E-Mail (täglich)"
 
 msgid "news_email_monthly"
-msgstr "Newsletter email alerts (monthly)"
+msgstr "Newsletter via E-Mail (monatlich)"
 
 msgid "stay_in_touch"
-msgstr "Stay in touch"
+msgstr "Bleibe auf dem laufenden"
 
 msgid "label_save"
 msgstr "OK"
@@ -54,13 +53,13 @@ msgid "server-status"
 msgstr "Server Status :"
 
 msgid "read_more"
-msgstr "Read more..."
+msgstr "Weiterlesen..."
 
 msgid "data_format_long"
 msgstr "${A},${d} ${B} , ${Y} at ${H}:${M}"
 
 msgid "Submit Your News"
-msgstr "Eine Nachricht Unterbreiten"
+msgstr "News erstellen"
 
 msgid "Chronicles"
 msgstr "Chronicles"
@@ -298,3 +297,4 @@ msgstr "September"
 #: datetime name of a month, format %b
 msgid "month_sep_abbr"
 msgstr "Sep"
+

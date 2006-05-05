@@ -16,6 +16,9 @@ msgstr ""
 "Domain: RyzomSkin\n"
 "X-Is-Fallback-For: de-at de-li de-lu de-ch de-de\n"
 
+msgid "tun"
+msgstr "tun"
+
 msgid "here"
 msgstr "hier"
 

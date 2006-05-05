@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.42.18.2 2006/01/11 15:02:11 boucher Exp $
+ * $Id: file.cpp,v 1.42.18.3 2006/05/05 08:44:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ uint32 CIFile::_ReadFromFile = 0;
 uint32 CIFile::_ReadingFromFile = 0;
 uint32 CIFile::_FileOpened = 0;
 uint32 CIFile::_FileRead = 0;
-CSynchronized<std::list<std::string> > CIFile::_OpenedFiles = CSynchronized<std::list<std::string> >("");
+CSynchronized<std::deque<std::string> > CIFile::_OpenedFiles = CSynchronized<std::deque<std::string> >("");
 
 // ======================================================================================================
 CIFile::CIFile() : IStream(true)
@@ -136,7 +136,7 @@ bool		CIFile::open(const std::string &path, bool text)
 {
 	// Log opened files
 	{
-		CSynchronized<list<string> >::CAccessor fileOpened(&_OpenedFiles);
+		CSynchronized<deque<string> >::CAccessor fileOpened(&_OpenedFiles);
 		fileOpened.value().push_front (path);
 		if (fileOpened.value().size () > NLMISC_DONE_FILE_OPENED)
 			fileOpened.value().resize (NLMISC_DONE_FILE_OPENED);
@@ -456,16 +456,16 @@ void	CIFile::allowBNPCacheFileOnOpen(bool newState)
 // ======================================================================================================
 void	CIFile::dump (std::vector<std::string> &result)
 {
-	CSynchronized<list<string> >::CAccessor acces(&_OpenedFiles);
+	CSynchronized<deque<string> >::CAccessor acces(&_OpenedFiles);
 	
-	const list<string> &openedFile = acces.value();
+	const deque<string> &openedFile = acces.value();
 	
 	// Resize the destination array
 	result.clear ();
 	result.reserve (openedFile.size ());
 	
 	// Add the waiting strings
-	list<string>::const_reverse_iterator ite = openedFile.rbegin ();
+	deque<string>::const_reverse_iterator ite = openedFile.rbegin ();
 	while (ite != openedFile.rend ())
 	{
 		result.push_back (*ite);
@@ -473,6 +473,13 @@ void	CIFile::dump (std::vector<std::string> &result)
 		// Next task
 		ite++;
 	}
+}
+
+// ======================================================================================================
+void	CIFile::clearDump ()
+{
+	CSynchronized<deque<string> >::CAccessor acces(&_OpenedFiles);
+	acces.value().clear();
 }
 
 // ======================================================================================================

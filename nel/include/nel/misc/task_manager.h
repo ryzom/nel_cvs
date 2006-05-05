@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * Manage a list of task in a separate thread
  *
- * $Id: task_manager.h,v 1.15 2005/02/22 10:14:12 besson Exp $
+ * $Id: task_manager.h,v 1.15.16.1 2006/05/05 08:43:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,8 +81,11 @@ public:
 	bool	isThreadRunning() const {return _ThreadRunning;}
 
 	/// Dump task list
-	void dump (std::vector<std::string> &result);
+	void	dump (std::vector<std::string> &result);
 	
+	/// Clear the dump of Done files
+	void	clearDump();
+
 	/// Get number of waiting task
 	uint	getNumWaitingTasks();
 	
@@ -145,7 +148,7 @@ protected:
 	/// queue of tasks, using list container instead of queue for DeleteTask methode
 	CSynchronized<std::string>				_RunningTask;
 	CSynchronized<std::list<CWaitingTask> >	_TaskQueue;
-	CSynchronized<std::list<std::string> >	_DoneTaskQueue;
+	CSynchronized<std::deque<std::string> >	_DoneTaskQueue;
 	
 	/// thread pointer
 	IThread *_Thread;

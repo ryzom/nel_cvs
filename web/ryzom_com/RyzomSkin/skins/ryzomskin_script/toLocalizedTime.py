@@ -12,4 +12,6 @@
 # Returns a localized string.
 
 tool = context.translation_service
-return tool.ulocalized_time(time, long_format, context, domain='RyzomSkin')
+time = tool.ulocalized_time(time, long_format, context, domain='RyzomSkin')
+time += ' UTC'
+return time

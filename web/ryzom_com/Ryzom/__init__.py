@@ -8,9 +8,10 @@ registerDirectory(SKINS_DIR, GLOBALS)
 def initialize(context):
 	import UrlPatchNote
 	import Redirect
-        import quillsworkflow
-        import ploneworkflow
-        import folderworkflow
+	import quillsworkflow
+	import ploneworkflow
+	import folderworkflow
+	import WeblogArchiveworkflow
 
 	content_types, constructors, ftis = process_types(
 		listTypes(PROJECTNAME),

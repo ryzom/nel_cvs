@@ -37,7 +37,7 @@
       If you ever need to unsubscribe or change your email subscription options, you can find the administrative interface 
 </span>
 <a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">
-<span i18n:domain="RyzomSkin" i18n:translate="here">here</span></a>.
+<span i18n:domain="RyzomSkin" i18n:translate="here">here</span></a><span i18n:domain="RyzomSkin" i18n:translate="tun"></span>.
 
 </div>
 </html>

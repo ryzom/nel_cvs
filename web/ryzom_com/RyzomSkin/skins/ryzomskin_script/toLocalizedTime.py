@@ -13,5 +13,6 @@
 
 tool = context.translation_service
 time = tool.ulocalized_time(time, long_format, context, domain='RyzomSkin')
-time += ' UTC'
+if long_format:
+   time += ' UTC'
 return time

@@ -35,7 +35,6 @@ a {
 }
 img {
     border: none;
-    vertical-align: middle;
 }
 p {
     margin: 1em 0 1em 0;

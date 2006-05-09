@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-US"
   lang="en-US"
@@ -19,49 +18,41 @@
 
   <body>
     <div metal:fill-slot="main"
-        tal:define="parent python:here.quills_tool.getParentWeblog(here)">
+      tal:define="parent python:here.quills_tool.getParentWeblog(here)">
+      <!-- la ligne pour mettre les icones print,envoyer,...langage... -->
+      <div metal:use-macro="here/document_actions/macros/document_actions"></div>
+      <tal:block define="localized_time nocall:here/toLocalizedTime;">
 
-<!-- la ligne pour mettre les icones print,envoyer,...langage... -->
-<div metal:use-macro="here/document_actions/macros/document_actions"></div>
-
-      <tal:block
-          define="localized_time nocall:here/toLocalizedTime;">
-
-    <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
-            tal:define="author python: here.Creator();
-                        isOfficial python: here.isOfficial(author);">
-     
+      <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
+           tal:define="author python: here.Creator();
+                       fullname python:here.get_fullname(author);
+                       isOfficial python: here.isOfficial(author);">     
       
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
       <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
       <h3 class="weblog-day-title" tal:content="python:localized_time(here.EffectiveDate(),long_format=1,context=here)" />
         <span class="weblog-heading-entry">
-        <span class="weblog-topics">
-          <tal:loop repeat="topic python:here.getEntryCategories()">
-            <a href="" 
-              tal:define="parent python:here.quills_tool.getParentWeblog(here);topicObject python:parent.getTopicById(topic)"
-              tal:content="topicObject/title_or_id"
-              tal:attributes="href string:${here/absolute_url}/topics/${topic}"></a>
-          </tal:loop>
-       </span>
-
-       <span style="color:grey;"> : </span>
-
-          <span tal:content="here/title_or_id"></span>
+          <span class="weblog-topics">
+            <tal:loop repeat="topic python:here.getEntryCategories()">
+              <a href="" 
+                tal:define="topicObject python:parent.getTopicById(topic)"
+                tal:content="topicObject/title_or_id"
+                tal:attributes="href string:${parent/absolute_url}/${topicObject/getId}"></a>
+            </tal:loop>
+          </span>
+         <span style="color:grey;"> : </span>
+         <span tal:content="here/title_or_id"></span>
        </span>
       ,
-      <span i18n:translate="posted_by">posted by </span>
-      
-      <a tal:attributes="href python:mtool.getHomeUrl(author)" tal:content="author"></a>
- 
+      <span style="font-weight:bold;">
+          <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
+          <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
+      </span>
 
-        <div class="weblog-excerpt" tal:content="here/Description"></div>
+      <div class="weblog-excerpt" tal:content="here/Description"></div>
+      <div class="weblog-body" tal:content="structure here/getText"></div>
+    </div>
 
-        <div class="weblog-body" tal:content="structure here/getText"></div>
-
-
-
-</div>
       </tal:block>
     </div>
   </body>

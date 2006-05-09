@@ -64,20 +64,19 @@
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
       <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
       <h3 class="weblog-day-title" tal:content="python:localized_time(entry.EffectiveDate(),long_format=1,context=here)" />
-        <span class="weblog-heading">
+      <span class="weblog-heading">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
           <span style="color:grey;"> : </span>
           <a href=""
             tal:attributes="href entry/absolute_url"
             tal:content="entry/title_or_id"></a>
-        </span>
-
-<!-- YASSINE TRYING TO INSERT THE AUTHOR -->
-
-      ,
-      <span i18n:translate="posted_by">posted by </span>
-      <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>          
-
+      </span>
+        ,
+      <span style="font-weight:bold;">
+          <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
+          <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
+      </span>
+       
       <div>
         <tal:if condition="weblog/getShowTopicImagesInWeblogView">
           <metal:macro use-macro="here/weblog_macros/macros/topic-images"/>
@@ -118,19 +117,20 @@
 
       <p align="center" tal:condition="python: not isOfficial" class="unofficial-disclaimer"> 
       <i>This is an <b>unofficial</b> <a href="/player_news">player news</a></i></p>
-     
-      <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" ></h3>
-        <span class="weblog-heading">
+      <h3 class="weblog-day-title" tal:content="python:here.toLocalizedTime(entry.EffectiveDate(),long_format=1)" />
+      <span class="weblog-heading">
           <metal:macro use-macro="here/weblog_macros/macros/topic-text"/>
           <span style="color:grey;"> : </span>
           <a href=""
             tal:attributes="href entry/getAbsoluteArchiveUrl"
             tal:content="entry/title_or_id"></a>
-        </span>
+      </span>
+        ,
+      <span style="font-weight:bold;">
+          <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
+          <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
+      </span>
 
-      ,
-      <span i18n:translate="posted_by">posted by </span>
-      <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
         <tal:if condition="weblog/getShowTopicImagesInWeblogView">
           <metal:macro use-macro="here/weblog_macros/macros/topic-images"/>
         </tal:if>
@@ -201,7 +201,7 @@
             </tal:if>
             <tal:if condition="not:topicObject/topicImage | nothing">
               <a href="" 
-                tal:attributes="href string:${here/absolute_url}/topics/${topicObject/getId}">
+                tal:attributes="href string:${here/absolute_url}/${topicObject/getId}">
                 <img class="topic-image" 
                   src="" alt="" title=""
                   tal:attributes="src string:${here/absolute_url}/default-topic-icon.png;
@@ -221,7 +221,7 @@
             <a href="" 
               tal:define="parent python:here.quills_tool.getParentWeblog(entry);topicObject python:parent.getTopicById(topic)"
               tal:content="topicObject/title_or_id"
-              tal:attributes="href string:${portal_url}/${topic}"></a>
+              tal:attributes="href string:${here/absolute_url}/${topicObject/getId}"></a>
           </tal:loop>
        </span> 
 

@@ -31,6 +31,13 @@ img {border:0;padding:0;margin:0;}
     background: transparent;
 }
 
+/*sinon l'icone de l'objet a ajouter 'descend' jusqu'en en bas du contenu (le document est donc 'tasser' sur la gauche)*/
+.contentActions img {
+   vertical-align: middle;
+}
+
+
+
 .news_quote {
    border: 1px solid #5a5c51;
    padding: 1em;

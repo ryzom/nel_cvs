@@ -185,7 +185,7 @@ class Weblog(BaseFolder):
         """Return topics/categories instances for this weblog."""
 
         results = self.getFolderListingFolderContents(
-                        contentFilter={'portal_type' : 'WeblogTopic',},
+                        contentFilter={'portal_type' : 'WeblogTopic','sort_on' : 'sortable_title',},
                         suppressHiddenFiles=1)
         return results
 

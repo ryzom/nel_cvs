@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.47.4.8 2006/03/23 13:19:16 boucher Exp $
+ * $Id: welcome_service.cpp,v 1.47.4.9 2006/05/11 13:43:27 boucher Exp $
  *
  */
 
@@ -148,7 +148,7 @@ public:
 			(*ici).second.Expected = 0;
 		}
 		// Rebuild "expected" counters
-		for ( sint i=0; i!=var.size(); ++i )
+		for ( uint i=0; i!=var.size(); ++i )
 		{
 			++_Instances[var.asString(i)].Expected;
 		}

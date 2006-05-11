@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.238.4.16 2006/04/20 14:33:11 boucher Exp $
+ * $Id: service.cpp,v 1.238.4.17 2006/05/11 13:43:27 boucher Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -584,6 +584,18 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 		// Init parameters
 		//
+
+		// at the very beginning, eventually wrote a file with the pid
+		if (haveLongArg("writepid"))
+		{
+			// use legacy C primitives
+			FILE *fp = fopen("pid.state", "wt");
+			if (fp)
+			{
+				fprintf(fp, "%u", getpid());
+				fclose(fp);
+			}
+		}
 
 		_ShortName = serviceShortName;
 		CLog::setProcessName (_ShortName);

@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.16.4.2 2006/03/22 11:26:20 legallo Exp $
+ * $Id: ucstring.h,v 1.16.4.3 2006/05/11 13:43:27 boucher Exp $
  *
  */
 
@@ -285,6 +285,14 @@ public:
 				push_back(code);
 			}
 		}
+	}
+
+	static ucstring makeFromUtf8(const std::string &stringUtf8)
+	{
+		ucstring ret;
+		ret.fromUtf8(stringUtf8);
+
+		return ret;
 	}
 };
 

@@ -1,6 +1,7 @@
 /* <dtml-with base_properties> (do not remove this :) */
 /* <dtml-call "REQUEST.set('portal_url', portal_url())"> (not this either :) */
 
+* {border:0;padding:0;margin:0;}
 a {text-decoration: none !important;}
 a:hover {color:white;}
 img {border:0;padding:0;margin:0;}
@@ -31,12 +32,9 @@ img {border:0;padding:0;margin:0;}
     background: transparent;
 }
 
-/*sinon l'icone de l'objet a ajouter 'descend' jusqu'en en bas du contenu (le document est donc 'tasser' sur la gauche)*/
 .contentActions img {
    vertical-align: middle;
 }
-
-
 
 .news_quote {
    border: 1px solid #5a5c51;
@@ -100,6 +98,9 @@ legend {
 
 /*css serverstatus*/
 #serverstatus  {
+    margin:0;
+    border:0;
+    padding:0;
     background-color :  #5f5e57;
     color: #ccc;
     border-radius: 0 0 0 12px;
@@ -211,7 +212,7 @@ legend {
    border-right: 1px solid #5f5e57
    text-align:left;
    /* on affiche la bordure sur toute la hauteur de la colonne*/ 
-   background:transparent url('border_nav.gif') repeat-y;
+   background:transparent url('border_nav2.gif') repeat-y;
 }
 
 /*********transparence***********/
@@ -255,11 +256,11 @@ legend {
 #portal-column-two .visualPadding {
    padding: 0 !important;
    margin:0!important;
-/**
+/*
 **  KEEP THIS MARGIN TO FIX IE BUGS
-**  FIREFOX DONT GIVE A DAMN TO NEGATIVE MARGINS
+**  FIREFOX DON'T GIVE A DAMN TO NEGATIVE MARGINS
 **  SO IT WONT ALTER THE PRESENTATION
-**/
+*/
    border: 0!important;
    background-color: #181818 ;
    text-align:right !important;
@@ -271,8 +272,9 @@ legend {
 #portal-top {
    border:0;
    padding:0;
-   margin:0;
-   background: transparent url('Ban_fyros_1326.jpg') 175px 0 no-repeat;
+   margin:0;  
+   background: transparent url('<dtml-var "choice_header('/ryzom/portal_skins/ryzomskin_headers')">') 175px 0 no-repeat;
+   /*background: transparent url('ban_matis_1325.jpg') 175px 0 no-repeat;*/
 }
 
 #portal-logo-trans {
@@ -312,13 +314,18 @@ legend {
 }
 
 #portal-footer {
+   /*
+   display: block;
+   position:relative;
+   top:-1px;
+   */
    margin:0;
    border:0;
    padding:0;
-   height:110px;
+   height:110px;   
    margin-right:-6px;
-   margin-left:0;
-   background: black url('footer_m.png') 175px 0 x-repeat;
+   margin-left:0;   
+   /*background: black url('footer_m.png') 175px 0 x-repeat;*/   
 }
 
 #footer-right {
@@ -345,9 +352,9 @@ legend {
 BODY {
    background: url('bg.jpg') black no-repeat;
    background-position: top center;
-   color: #a7a599;
-   margin: 0;
-   padding: 0;
+   color:#a7a599;
+   margin:0;
+   padding:0;
    border:0;
    font-family: Arial, sans-serif;
    font-size : 12px;
@@ -380,7 +387,7 @@ H3 {
 input {
    font-family: "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
    visibility: visible;
-   border: 1px solid #8cacbb;
+   border: 2px inset #8cacbb;
    color: #5f5e57;
    background-color: white;
    vertical-align: middle;
@@ -388,11 +395,10 @@ input {
 
 /*navbar tout en haut*/
 #navbar {
-   border:0 !important;
-   border-top: 1px solid #999 !important;
-   border-bottom: 2px solid #999 !important;
-   margin:0 !important;
-   padding:2px 0 0 0 !important;
+   border:0;margin:0;padding:0;
+   border-top: 1px solid #999;
+   border-bottom: 2px solid #999;
+   padding:2px 0 0 0;
    height:1.3em;
    max-height:1.3em;
    font-family: arial, helvetica, sans-serif;
@@ -422,8 +428,9 @@ input {
 .documentActions {
    margin: 2px 2px 1px 0px;
    padding: 0;
-   /*YOU MUST KEEP THIS TO OVERRIDE
-   * THE AUTHORING CSS
+   /*
+   **YOU MUST KEEP THIS TO OVERRIDE
+   **THE AUTHORING CSS
    */
    float: none;
    text-align: right;

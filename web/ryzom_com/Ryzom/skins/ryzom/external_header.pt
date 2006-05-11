@@ -29,23 +29,24 @@
     </ul>
 
 <center>
-    <div id="visual-portal-wrapper">
+    <div id="portal-logo-trans"></div>
+    <div id="visual-portal-wrapper">      
       <div id="portal-top" i18n:domain="plone">
-        <div id="portal-header" style="float:right; padding:0;margin:0;border: 0;">
-	    <table cellspacing="0px" cellpadding="0px" height="130" width="100%" style="background:transparent; border: 0; margin:0; padding:0;">
-              <tr><td rowspan="4">
-                  <div style="margin:0;padding:0;float:left;"><a metal:use-macro="here/global_logo/macros/portal_logo" /></div>
-              </td></tr>
-              <tr><td VALIGN=top>
-	          <div metal:use-macro="here/serverstatus/macros/serverstatus" />
-              </td></tr>                
-              <tr><td>
-                  <div style="float:right;" metal:use-macro="here/global_searchbox/macros/quick_search" />
-              </td></tr>
-              <tr><td valign="bottom">
-                  <div style="float:right;" metal:use-macro="here/global_personalbar/macros/personal_bar" />
-	      </td></tr>
-       	     </table>           
+        <div id="portal-header">
+	  <table cellspacing="0" cellpadding="0"  border="0" height="130" width="100%">
+            <tr><td rowspan="4">
+	      <div metal:use-macro="here/global_logo/macros/portal_logo" />
+            </td></tr>
+            <tr><td VALIGN=top>
+	      <div metal:use-macro="here/serverstatus/macros/serverstatus" />
+            </td></tr>
+            <tr><td>
+              <div metal:use-macro="here/global_searchbox/macros/quick_search" />
+            </td></tr>
+            <tr><td valign="bottom">
+              <div metal:use-macro="here/global_personalbar/macros/personal_bar" />
+	    </td></tr>
+       	  </table>
         </div>
       </div>
 </center>

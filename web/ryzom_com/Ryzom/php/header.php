@@ -4,7 +4,6 @@
     <div id="portal-columns">
       <?php include "http://localhost:9673/ryzom/external_left";?>
       <?php include "http://localhost:9673/ryzom/external_right";?>
-      <div id="portal-column-content">
+      <div id="portal-column-content" style="min-height:1873px;margin-left:175px;">
         <div id="content">
         <div class="documentContent" id="region-content">
-

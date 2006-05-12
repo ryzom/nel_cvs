@@ -42,8 +42,7 @@
           </span>
          <span style="color:grey;"> : </span>
          <span tal:content="here/title_or_id"></span>
-       </span>
-      ,
+       </span>      
       <span style="font-weight:bold;">
           <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
           <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>

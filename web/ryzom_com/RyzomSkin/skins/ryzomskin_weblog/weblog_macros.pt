@@ -71,7 +71,6 @@
             tal:attributes="href entry/absolute_url"
             tal:content="entry/title_or_id"></a>
       </span>
-        ,
       <span style="font-weight:bold;">
           <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
           <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
@@ -125,7 +124,6 @@
             tal:attributes="href entry/getAbsoluteArchiveUrl"
             tal:content="entry/title_or_id"></a>
       </span>
-        ,
       <span style="font-weight:bold;">
           <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
           <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>

@@ -21,8 +21,7 @@
 * { margin:0;padding:0; }
 
 .documentContent p a {
-    text-decoration: none;
-    border-bottom: 1px #cccccc solid;
+    text-decoration: none;    
 }
 
 .documentContent p a:visited {
@@ -36,8 +35,7 @@
 }
 
 .documentContent li a {
-    text-decoration: none;
-    border-bottom: 1px #cccccc solid;
+    text-decoration: none;    
 }
 
 .documentContent li a:visited {
@@ -51,8 +49,7 @@
 }
 
 .documentContent dd a {
-    text-decoration: none;
-    border-bottom: 1px #cccccc solid;
+    text-decoration: none;    
 }
 
 .documentContent dd a:visited {

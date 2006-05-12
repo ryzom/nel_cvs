@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.36 2005/05/20 17:25:44 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.36.8.1 2006/05/12 13:26:14 saffray Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -64,6 +64,7 @@ void CSheetId::cbFileChange (const std::string &filename)
 CSheetId::CSheetId( uint32 sheetRef) 
 { 
 	_Id.Id = sheetRef; 
+
 #ifdef NL_DEBUG_SHEET_ID
 	// Yoyo: don't access the static map, because of order of static ctor call.
 	// For now, all static CSheetId are 0 (eg: CSheetId::Unknown)

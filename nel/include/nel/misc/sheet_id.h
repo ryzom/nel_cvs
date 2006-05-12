@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.21 2005/02/22 10:14:12 besson Exp $
+ * $Id: sheet_id.h,v 1.21.16.1 2006/05/12 13:26:14 saffray Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -234,7 +234,7 @@ class CHashBySheetId
 public:
 	uint32	operator() ( const CSheetId& sheetId ) const
 	{
-		return sheetId.asInt();
+		return sheetId.asInt() >> 5;
 	}
 };
 

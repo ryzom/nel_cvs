@@ -1,9 +1,11 @@
 from Products.Archetypes.public import listTypes
 from Products.Archetypes.Extensions.utils import installTypes, install_subskin
-from Products.Ryzom.config import PROJECTNAME, GLOBALS
 from StringIO import StringIO
 from Products.CMFCore.utils import getToolByName
+from Products.ExternalMethod.ExternalMethod import manage_addExternalMethod
+
 from Products.Ryzom import workflow_scripts
+from Products.Ryzom.config import PROJECTNAME, GLOBALS
 
 def install(self):
     out = StringIO()    
@@ -26,11 +28,11 @@ def install(self):
     wf_tool.setChainForPortalTypes(('WeblogArchive',), chain='WeblogArchive_workflow')
 
     #setup workflow script for quills
-#    wf = wf_tool.getWorkflowById('quills_workflow')
-#    for p in ['moveToArchive', 'moveToWeblogRoot']:
-#        if not p in wf.scripts.objectIds():
-#            factory = wf.scripts.manage_addProduct['ExternalMethod']
-#            factory.manage_addExternalMethod(p, p, 'Ryzom.workflow_scripts', p)
+    wf = wf_tool.getWorkflowById('quills_workflow')
+    for p in ['moveToArchive', 'moveToWeblogRoot']:
+        if not p in wf.scripts.objectIds():
+            factory = wf.scripts.manage_addProduct['ExternalMethod']
+            factory.manage_addExternalMethod(p, p, 'Quills.workflow_scripts', p)
       
     out.write("Successfully installed %s." % PROJECTNAME)
     return out.getvalue()

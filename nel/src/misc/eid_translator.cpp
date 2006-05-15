@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33.6.2 2006/05/11 13:43:27 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.3 2006/05/15 12:36:55 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -201,8 +201,12 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 
 	if (entityName.size() > 15)
 	{
-		log->displayNL("Bad entity name '%s' (more than 15 char)", entityName.toString().c_str());
-		return false;
+		// if a parenthesis is found before 15 chars, the name is valid
+		if (entityName.find(ucstring("(")) > 15 || entityName[entityName.size()-1] != ucchar(')'))
+		{
+			log->displayNL("EIT: Bad entity name '%s' (more than 15 char)", entityName.toString().c_str());
+			return false;
+		}
 	}
 
 	for (uint i = 0; i < entityName.size(); i++)
@@ -298,7 +302,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 
 	CEntity &entity = it->second;
 
-	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entity.EntityName.toString().c_str(), entity.UId, entity.UserName.c_str());
+	nldebug ("EIT: Unregister EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entity.EntityName.toString().c_str(), entity.UId, entity.UserName.c_str());
 	NameIndex.erase(entity.EntityName);
 	RegisteredEntities.erase (reid);
 }

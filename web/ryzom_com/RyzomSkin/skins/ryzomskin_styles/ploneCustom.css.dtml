@@ -6,11 +6,12 @@ a {text-decoration: none !important;}
 a:hover {color:white;}
 img {border:0;padding:0;margin:0;}
 
+
 .linkopacity img {
    -khtml-opacity: 0.5;
    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=50);
-   filter:alpha(opacity=50); 
-   -moz-opacity: 0.5; 
+   filter:alpha(opacity=50);
+   -moz-opacity: 0.5;
    opacity: 0.5;
 }
 
@@ -97,24 +98,19 @@ legend {
 
 
 /*css serverstatus*/
-#serverstatus  {
+#serverstatus{
     margin:0;
     border:0;
-    padding:0;
-    background-color :  #5f5e57;
+    padding : 0px 5px 0px 10px;
+    background-color:  #5f5e57;
     color: #ccc;
     border-radius: 0 0 0 12px;
     -moz-border-radius: 0 0 0 12px;
-    padding : 0px 5px 0px 10px;
     float:right;
+    display: inline;
 }
-#toplinks  {
-   color : #ffc30e;
-   background-color :  #5f5e57;
-   border-radius: 12px 0 0 0;
-   -moz-border-radius: 12px 0 0 0;
-   padding : 3px 5px 0 10px;
-   float:right;
+* html #serverstatus {
+margin-top:-3px; ma\rgin-top: 0;
 }
 .OPEN {
 	background: url('server_up.png') no-repeat;
@@ -163,7 +159,7 @@ legend {
         width:90%;
         margin-left:auto;
         margin-right:auto;
-        padding:0;        
+        padding:0;
         background-color: transparent;
         border:0;
         border-right: solid #5f5e57 6px;
@@ -272,9 +268,8 @@ legend {
 #portal-top {
    border:0;
    padding:0;
-   margin:0;  
+   margin:0;
    background: transparent url('<dtml-var "choice_header('/ryzom/portal_skins/ryzomskin_headers')">') 175px 0 no-repeat;
-   /*background: transparent url('ban_matis_1325.jpg') 175px 0 no-repeat;*/
 }
 
 #portal-logo-trans {
@@ -283,7 +278,7 @@ legend {
    margin-right:auto;
    border:0;
    border-right: solid #5f5e57 6px;
-   height:130px;   
+   height:130px;
    background:#041016 url('border_nav.gif') repeat-y;
    filter: alpha(opacity=70);
    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=70);
@@ -314,24 +309,13 @@ legend {
 }
 
 #portal-footer {
-   /*
-   display: block;
-   position:relative;
-   top:-1px;
-   */
-   margin:0;
+   margin:0 -6px 0 0;
    border:0;
    padding:0;
-   height:110px;   
-   margin-right:-6px;
-   margin-left:0;   
-   /*background: black url('footer_m.png') 175px 0 x-repeat;*/   
-}
-
-#footer-right {
    position:relative; /*z-index work only if container is positionned*/
    z-index:3;         /*l'image en background passe par-dessus la bordure*/
-   background: black url('footer_r.png');
+   height:110px;
+   background-color:black;
 }
 
 #region-content {
@@ -395,32 +379,30 @@ input {
 
 /*navbar tout en haut*/
 #navbar {
-   border:0;margin:0;padding:0;
+   border:0;
+   margin:0;
+   padding:0;
    border-top: 1px solid #999;
-   border-bottom: 2px solid #999;
-   padding:2px 0 0 0;
+   border-bottom: 2px solid #999;  
    height:1.3em;
-   max-height:1.3em;
-   font-family: arial, helvetica, sans-serif;
    background: #c3c3c3;
-   font-weight: normal;
-   font-size: 1em;
    text-align: center;
+   width:100%;
 }
-
 #navbar li {
+   border:0;
+   margin:0;
+   padding:0;
    list-style: none;
    display: inline;
 }
-
 #navbar a {
-	text-decoration: none;
-	border-left: 1px solid #999;
-	padding:0;
-	color: black;
+  padding:0;margin:0;border:0;
+  text-decoration: none;
+  border-left: 1px solid #999;
+  color: black;
 }
 
-#navbar a.highlight { font-weight: bold; }
 #navbar a:hover { color: #666; }
 
 .documentEditable {text-align:left;}
@@ -475,7 +457,7 @@ input {
   width:190px;
 }
 
-#portlet-recent { 
+#portlet-recent {
   text-align:left;
   padding:0;
   margin:0;

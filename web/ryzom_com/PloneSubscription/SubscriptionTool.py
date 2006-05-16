@@ -19,9 +19,9 @@
 """
 This module implements generic functions for subscriptions
 """
-__version__ = "$Revision: 1.4 $"
+__version__ = "$Revision: 1.5 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/SubscriptionTool.py,v $
-# $Id: SubscriptionTool.py,v 1.4 2006/04/21 12:54:18 bernard Exp $
+# $Id: SubscriptionTool.py,v 1.5 2006/05/16 16:46:18 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Python imports
@@ -171,7 +171,7 @@ schema = BaseFolderSchema.copy() + Schema((
         'base_url',
         required=False,
         searchable=False,
-        default=('http://127.0.0.1:8080/plone', 'http://www.example.org'),
+        default='',
         read_permission=CMFCorePermissions.View,
         write_permission=SubscriptionPermissions.ManageSubscriptionContent,
         widget=LinesWidget(
@@ -382,7 +382,8 @@ class SubscriptionTool(UniqueObject, BaseFolder):
 
         Done to be monkey patched for multi virtualhost sites.
         """
-        return self.getField('base_url').get(self)[0]
+        #return self.getField('base_url').get(self)[0]
+        return ''
 
     # methods
     security.declarePublic('hasSubscription')
@@ -822,7 +823,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         body = self.mailing_by_user_body(subscription, brains, user)
         if "nomail" in body:
            return "nomail"
-	    mail += body
+	mail += body
         return mail
 
     security.declarePrivate("mailing_by_user_headers")
@@ -914,17 +915,17 @@ A change related to your subscription to "%(subscription_title)s" was found:
                   url = base_url
                   url += str(brain.getURL(relative=1)[portal_path_length:])            
                try:
-                  summary = str(obj.description)
+                  summary = str(obj.description)+'\n'
                except:
-                  summary = '...'
+                  summary = ''
                try:
-                  topic = str(obj.getEntryCategories()[0])
+                  topic = "["+str(obj.getEntryCategories()[0])+"]"
                except:
-                  topic = '...'
-               content += "["+topic+"]"+title
+                  topic = ''
+               content += topic+title
                content += "\n"
                content += summary
-               content += "\n Read more : "
+               content += " Read more : "
 	       content += url
 	       content += "\n\n"
         #if the content was completely filtered
@@ -955,7 +956,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         portal = getToolByName(self, 'portal_url').getPortalObject()
         portal_path = getToolByName(self, 'portal_url').getPortalPath()
         portal_path_length = len(portal_path)
-        base_url = self.getBaseUrl()
+        base_url = self.getBaseUrl()        
         if base_url == '':
             content_info += str(content.absolute_url()) + "\n\n"
         else:

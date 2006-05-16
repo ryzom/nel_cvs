@@ -11,4 +11,6 @@ try:
    fullname = context.portal_membership.getMemberById(author).getProperty('fullname')
 except:
    fullname = author
-return fullname
+if fullname != '':
+   return fullname
+return author

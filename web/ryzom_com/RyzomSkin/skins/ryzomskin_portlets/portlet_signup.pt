@@ -5,38 +5,38 @@
 <metal:block use-macro="here/global_defines/macros/defines" />
 <div class="holeContainer" style="text-align : right;" metal:define-macro="portlet">
 <img  class="fakeBorder" src="side_top.png"/>
-    <dl id="sign-up">	
-                <dd class="portletItem">
-                    <div class="hole">  
-					<!--
-					<a href="#" tal:define="boundLanguages here/portal_languages/getLanguageBindings;
-                                lang python:boundLanguages[0];"
-								tal:attributes="href python:'https://secure.nevrax.com/payment_subscribe/index.php?language='+lang">
-						<img align="center" src="dllfree.jpg" width="185" />
-					</a>
-					-->
-					<div tal:define="p string:/ryzom/imgportlet;
-									 results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,);" >
- 						<div tal:repeat="obj results">
-							<div tal:define="o python:obj.getObject();t o/id;"
-								 tal:condition="python:t!=p">
-								<div tal:define="ob string:/ryzom/imgportlet/${t};
-												 results2 python:here.portal_catalog.searchResults(portal_type='Image', path=ob,)">
-									<div tal:repeat="obj2 results2">
-										<div tal:define="res python:here.choice_img(results2);o2 python:res.getObject()"
-											 tal:condition="repeat/obj2/end">
-											<a href="" tal:attributes="href o2/Description">
-												<img  src="" style="margin: 0; padding: 0;" align="center" tal:attributes="src python:o2.absolute_url()" width="185" />
-											</a>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					</div>
-				</dd>
-	</dl>
+  <dl id="sign-up">	
+    <dd class="portletItem">
+      <div class="hole">  
+      <!--
+      <a href="#" tal:define="boundLanguages here/portal_languages/getLanguageBindings;
+                              lang python:boundLanguages[0];"
+                  tal:attributes="href python:'https://secure.nevrax.com/payment_subscribe/index.php?language='+lang">
+        <img align="center" src="dllfree.jpg" width="185" />
+      </a>
+      -->
+      <div tal:define="p string:/ryzom/imgportlet;
+                       results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,sort_on='sortable_title');" >
+        <div tal:repeat="obj results">
+          <div tal:define="o python:obj.getObject();t o/id;"
+               tal:condition="python:t!=p">
+            <div tal:define="ob string:/ryzom/imgportlet/${t};
+                             results2 python:here.portal_catalog.searchResults(portal_type='Image', path=ob,)">
+              <div tal:repeat="obj2 results2">
+                <div tal:define="res python:here.choice_img(results2);o2 python:res.getObject()"
+                     tal:condition="repeat/obj2/end">
+                  <a href="" tal:attributes="href o2/Description">
+                    <img  src="" style="margin: 0; padding: 0;" align="center" tal:attributes="src python:o2.absolute_url()" width="185" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </dd>
+  </dl>
 <div class="imageHide">
     <img class="fakeBorder" src="side_up.png"/>
 </div>

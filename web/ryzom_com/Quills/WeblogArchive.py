@@ -103,14 +103,14 @@ class WeblogArchive(BaseFolder):
 
         #This used to be done directly in tal, it wasn't pretty
         return self.getFolderListingFolderContents(
-                                contentFilter={'portal_type': 'WeblogArchive'},
+                                contentFilter={'portal_type': 'WeblogArchive','sort_on' : 'id'},
                                 suppressHiddenFiles=1)
 
     def getArchiveEntryListing(self):
         """Get a listing of all entries in this archive node"""
 
         return self.getFolderListingFolderContents(
-                                contentFilter={'portal_type': 'WeblogEntry'},
+                                contentFilter={'portal_type': 'WeblogEntry','sort_on' : 'sortable_title'},
                                 suppressHiddenFiles=1)
 
     def getLazyEntries(self):

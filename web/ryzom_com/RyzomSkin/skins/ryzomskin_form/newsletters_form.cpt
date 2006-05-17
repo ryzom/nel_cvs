@@ -112,5 +112,6 @@
 
 					<input type="hidden" name="form.submitted" value="1" />
 				</form>
+				<p><a href="http://newsletter.nevrax.com/cgi-bin/mailman/listinfo">[ Newsletter administration ]</a></p>
 </div>
 </html>

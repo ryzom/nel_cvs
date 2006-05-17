@@ -24,7 +24,7 @@
       <tal:block define="localized_time nocall:here/toLocalizedTime;">
 
       <div class="weblog-day" tal:attributes="class python:test(isOfficial,'weblog-entry full','unofficial-box')" 
-           tal:define="author python: here.Creator();
+           tal:define="author python: here.Creator();                       
                        fullname python:here.get_fullname(author);
                        isOfficial python: here.isOfficial(author);">     
       
@@ -44,9 +44,16 @@
          <span tal:content="here/title_or_id"></span>
        </span>      
       <span style="font-weight:bold;">
-          <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>
+          <span i18n:domain="RyzomSkin" i18n:translate="by">by </span>          
           <a tal:attributes="href python:portal_url+'/author/'+author" tal:content="fullname"></a>
       </span>
+      <br />
+
+      <i style="display:inline;" i18n:domain="RyzomSkin" i18n:translate="contributor" tal:condition="here/Contributors">Contributor :
+         <span tal:repeat="contrib here/Contributors">
+            <a tal:attributes="href python:portal_url+'/author/'+contrib" tal:content="python:here.get_fullname(contrib)"></a><span tal:condition="not:repeat/contrib/end" tal:replace="string:, " />
+         </span>
+      </i>
 
       <div class="weblog-excerpt" tal:content="here/Description"></div>
       <div class="weblog-body" tal:content="structure here/getText"></div>

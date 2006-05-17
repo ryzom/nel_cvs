@@ -6,7 +6,6 @@ a {text-decoration: none !important;}
 a:hover {color:white;}
 img {border:0;padding:0;margin:0;}
 
-
 .linkopacity img {
    -khtml-opacity: 0.5;
    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=50);
@@ -101,17 +100,19 @@ legend {
 #serverstatus{
     margin:0;
     border:0;
-    padding : 0px 5px 0px 10px;
-    background-color:  #5f5e57;
+    padding:0px 5px;
+    background-color: #5f5e57;
     color: #ccc;
     border-radius: 0 0 0 12px;
     -moz-border-radius: 0 0 0 12px;
-    float:right;
+    width:32em;
+    height:1.3em;
     display: inline;
+    position:relative;
+    top:0px !important;
+    top:-1px;
 }
-* html #serverstatus {
-margin-top:-3px; ma\rgin-top: 0;
-}
+
 .OPEN {
 	background: url('server_up.png') no-repeat;
 	padding-left : 20px;

@@ -59,11 +59,11 @@
     <div id="visual-portal-wrapper">      
       <div id="portal-top" i18n:domain="plone">
         <div id="portal-header">
-	  <table cellspacing="0px" cellpadding="0px" width="100%">
+	  <table cellspacing="0" cellpadding="0"  border="0" height="130" width="100%">
             <tr><td rowspan="4">
 	      <div metal:use-macro="here/global_logo/macros/portal_logo" />
             </td></tr>
-            <tr><td VALIGN=top>
+            <tr><td valign="top">
 	      <div metal:use-macro="here/serverstatus/macros/serverstatus" />
             </td></tr>
             <tr><td>
@@ -154,8 +154,6 @@
         </tbody>
       </table>
       <tal:comment replace="nothing"> end column wrapper </tal:comment>
-      <div class="visualClear"><!-- --></div>
-      <hr class="netscape4" />
         <metal:footer use-macro="here/footer/macros/portal_footer">
           Footer
         </metal:footer>

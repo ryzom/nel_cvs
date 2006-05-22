@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.33.6.1.2.2 2006/05/15 09:53:04 boucher Exp $
+ * $Id: eid_translator.cpp,v 1.33.6.1.2.3 2006/05/22 11:18:25 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -283,6 +283,43 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
 	NameIndex.insert(make_pair(entityName, reid));
 }
+
+void CEntityIdTranslator::updateEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName)
+{
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
+
+	if (it == RegisteredEntities.end())
+	{
+		// just register
+		registerEntity(eid, entityName, entitySlot, uid, userName);
+	}
+	else
+	{
+		// update entity entry and name index
+		CEntity &entity = it->second;
+		if (entity.EntityName != entityName)
+		{
+			if (!checkEntityName(entityName))
+			{
+				nlwarning ("EIT: Can't update EId %s EntityName %s UId %d UserName %s because EntityName is already in the map", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
+				return;
+			}
+			// update the name and name index
+			NameIndex.erase(entity.EntityName);
+			NameIndex.insert(make_pair(entityName, reid));
+			entity.EntityName = entityName;
+			entity.EntityNameStringId = 0;
+		}
+		entity.EntitySlot = entitySlot;
+		entity.UId = uid;
+		entity.UserName = userName;
+	}
+}
+
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 {

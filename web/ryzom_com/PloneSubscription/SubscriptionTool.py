@@ -19,9 +19,9 @@
 """
 This module implements generic functions for subscriptions
 """
-__version__ = "$Revision: 1.5 $"
+__version__ = "$Revision: 1.6 $"
 # $Source: /mnt/x/wsl/cvsexp3/cvs/code/web/ryzom_com/PloneSubscription/SubscriptionTool.py,v $
-# $Id: SubscriptionTool.py,v 1.5 2006/05/16 16:46:18 bernard Exp $
+# $Id: SubscriptionTool.py,v 1.6 2006/05/23 09:20:26 bernard Exp $
 __docformat__ = 'restructuredtext'
 
 # Python imports
@@ -861,7 +861,7 @@ A change related to your subscription to "%(subscription_title)s" was found:
         try:
             subjects += str(brains[0].getObject().getEntryCategories()[0]).capitalize()+" : "
         except:
-            subjects += '... : '
+            subjects += ' : '
         subjects += str(brains[0].Title or brains[0].getId)
 
         headers_infos = {'date': now.rfc822(),

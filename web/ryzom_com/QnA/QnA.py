@@ -4,12 +4,14 @@ from Products.CMFCore import CMFCorePermissions
 #import de zope
 from Products.Archetypes.Marshall import PrimaryFieldMarshaller
 from AccessControl import ClassSecurityInfo
-
+from calendar import timegm
 import DateTime
+import time
+from Products.CMFCore.DirectoryView import addDirectoryViews
 #import des valeurs globales
 
-from config import PROJECTNAME
-
+from config import *
+from OFS.Folder import Folder
 	
 #declaration de la gestion des permission/des securitÃ©s dans zope
 	
@@ -21,15 +23,13 @@ __implements__=(BaseContent.__implements__)
 #dÃ©fini le shÃ©ma
  
 QnASchema=BaseSchema.copy()+ Schema((
-         StringField('datestart',
-		default='1146163496',
+         DateTimeField('datestart',
 		required=True,
-		widget=StringWidget(description="date de dÃ©part ",label="Date",)
+		widget=CalendarWidget(description="date de dÃ©part ",label="Date",)
 	),
-        StringField('datearrivee',
-		default='1147514161',
+        DateTimeField('datearrivee',
 		required=True,
-		widget=StringWidget(description="date d'arrivÃ©e",label="Date",)
+		widget=CalendarWidget(description="date d'arrivÃ©e",label="Date",)
 	),
 	TextField('text',
 		searchable=1,
@@ -61,34 +61,52 @@ class QnA(BaseContent):
 
 	"""Add an QnA Document"""
 	schema = QnASchema
+	#def __init__(self,BaseContent):
+	#	addDirectoryViews(self, 'sql', GLOBALS)
+
+	def setTitle(self, value, **kwargs):
+		self.getField('title').set(self, value, **kwargs)
+		if value:
+			try:
+				self.setId(re.sub('[^A-Za-z0-9_-]', '', re.sub(' ', '-', value)).lower())
+			except:
+                                pass #try to do better than this
+
 	
-        def getArchiveUrl(self):
-        # FIXME: Is this needed anymore?
-       	 year = str(DateTime.DateTime(str(self.getEffectiveDate())).year())
-       	 month = DateTime.DateTime(str(self.getEffectiveDate())).mm()
-       	 day = DateTime.DateTime(str(self.getEffectiveDate())).dd()
-       	 path = 'archive/' + year + '/' + month + '/' + day + '/' + self.id
-       	 return path
+		
        
+
+	def parseTime(self,date):
+   	 return timegm(
+      	time.strptime(date.split('GMT')[0], "%Y/%m/%d %H:%M:%S %Z"))     
 	
 	def get_atys_forums2(self):
-		date1=int(self.getDatestart())
-		date2=int(self.getDatearrivee())
+		date1=self.parseTime(str(self.getDatestart()))       	 	
+		date2=self.parseTime(str(self.getDatearrivee()))
+
 		try :
         		import MySQLdb
        		except :
         		 raise UserError, _('The connection with MySQL failed')
+		results=self.toto(start = date1,end = date2)
+        	#connection = MySQLdb.connect(host="localhost",user='root',  db="atys_forums2")	
+        	#cursor = connection.cursor()
+	       	#cursor.execute("""select distinct dateline,username,pagetext from post where dateline between %(date1)i and %(date2)i;""" % {'date1': date1,'date2': date2}  )
+	        #results = cursor.fetchall()
 
-        	connection = MySQLdb.connect(host="localhost",user='root',  db="atys_forums2")	
-
-        	cursor = connection.cursor()
-        	cursor.execute("""select distinct dateline,username from post where dateline between %(date1)i and %(date2)i;""" % {'date1': date1,'date2': date2} )
-
-	        results = cursor.fetchall()
 		tab = []
 		for row in results:
-			tab.append(str(row[0])+' - '+str(row[1]))
-		return tab
+			text=str(row[2])
+			try:
+				text=text.replace('\xc2','').decode('cp1252').encode('utf')
+			except:
+				try:
+					text=text.decode('utf').encode('latin')
+				except:
+					text=text.decode('latin')
+                	tab.append(str(row[0])+' - '+str(row[1])+' - '+text)
+
+		return tab  
         	
         	
 

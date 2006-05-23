@@ -83,17 +83,7 @@ class QnA(BaseContent):
 	def get_atys_forums2(self):
 		date1=self.parseTime(str(self.getDatestart()))       	 	
 		date2=self.parseTime(str(self.getDatearrivee()))
-
-		try :
-        		import MySQLdb
-       		except :
-        		 raise UserError, _('The connection with MySQL failed')
-		results=self.toto(start = date1,end = date2)
-        	#connection = MySQLdb.connect(host="localhost",user='root',  db="atys_forums2")	
-        	#cursor = connection.cursor()
-	       	#cursor.execute("""select distinct dateline,username,pagetext from post where dateline between %(date1)i and %(date2)i;""" % {'date1': date1,'date2': date2}  )
-	        #results = cursor.fetchall()
-
+		results=self.qna(start = date1,end = date2)
 		tab = []
 		for row in results:
 			text=str(row[2])

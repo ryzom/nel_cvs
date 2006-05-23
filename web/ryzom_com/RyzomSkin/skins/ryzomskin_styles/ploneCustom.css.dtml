@@ -155,21 +155,21 @@ legend {
 /*fin de la css rightbar*/
 
 #visual-portal-wrapper {
-        position:relative;
-        top:-130px;
-        width:90%;
-        margin-left:auto;
-        margin-right:auto;
-        padding:0;
-        background-color: transparent;
-        border:0;
-        border-right: solid #5f5e57 6px;
-        text-align:right;
+  position:relative;
+  top:-130px;
+  width:90%;
+  margin-left:auto;
+  margin-right:auto;
+  padding:0;
+  border:0;
+  border-right: solid #5f5e57 6px;
+  text-align:right;
+  background-color: transparent;  
 }
 
 #portal-personaltools {
    color : #ffc30e;
-   background-color :  #5f5e57;
+   background-color:#5f5e57;
    border-radius: 12px 0 0 0;
    -moz-border-radius: 12px 0 0 0;
    -ie-border-radius: 12px 0 0 0;
@@ -199,6 +199,10 @@ legend {
    padding:0;
    text-align:center;
    border:0;
+   background-color: transparent;
+   background-image: url('2px.jpg');
+   background-repeat: no-repeat;
+   background-position: 0px 658px; 
 }
 
 #portal-column-one {
@@ -206,7 +210,6 @@ legend {
    width:175px;
    vertical-align: top;
    border:0;
-   border-right: 1px solid #5f5e57
    text-align:left;
    /* on affiche la bordure sur toute la hauteur de la colonne*/ 
    background:transparent url('border_nav2.gif') repeat-y;
@@ -233,6 +236,7 @@ legend {
    text-align:right;
    border: 0;
 }
+
 #portal-column-content {
    margin:0;
    text-align:center;

@@ -1,7 +1,7 @@
 /** \file texture_user.h
  * TODO: File description
  *
- * $Id: texture_user.h,v 1.12.14.1 2006/02/10 16:01:09 legallo Exp $
+ * $Id: texture_user.h,v 1.12.14.2 2006/05/24 16:43:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,6 +153,22 @@ public:
 	{
 		NL3D_MEM_TEXTURE
 		return _Texture;
+	}
+
+	// generate this texture datas
+	virtual CBitmap			*generateDatas()
+	{
+		NL3D_MEM_TEXTURE
+		if (_Texture->isTextureCube()) return NULL;
+		_Texture->generate();
+		return _Texture;
+	}
+
+	// release this texture datas
+	virtual void			releaseDatas()
+	{
+		NL3D_MEM_TEXTURE
+		_Texture->release();
 	}
 };
 

@@ -1,7 +1,7 @@
 /** \file u_texture.h
  * TODO: File description
  *
- * $Id: u_texture.h,v 1.11 2005/03/31 13:36:21 berenguier Exp $
+ * $Id: u_texture.h,v 1.11.14.1 2006/05/24 16:43:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,11 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rect.h"
 
+
+namespace NLMISC
+{
+	class CBitmap;
+}
 
 namespace NL3D {
 
@@ -154,6 +159,12 @@ public:
 
 	virtual	void			setReleasable(bool bReleasable) =0;
 	virtual	NLMISC::CRGBA	getPixelColor(sint32 x, sint32 y) const =0;
+
+	// Generate this texture datas, and retrieve a pointer on them
+	// Will return NULL if not a 2D texture
+	virtual NLMISC::CBitmap			*generateDatas() = 0;
+	// release this texture datas
+	virtual void			releaseDatas() = 0;
 };
 
 

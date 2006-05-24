@@ -200,7 +200,7 @@ legend {
    text-align:center;
    border:0;
    background-color: transparent;
-   background-image: url('2px.jpg');
+   background-image: url('menu_back.jpg');
    background-repeat: no-repeat;
    background-position: 0px 658px; 
 }

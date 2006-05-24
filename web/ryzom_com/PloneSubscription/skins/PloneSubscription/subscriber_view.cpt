@@ -80,7 +80,7 @@
               tal:attributes="action string:${template/getId}"
               tal:condition="python: len(items) > 0">
             <table class="listing"
-                   tal:define="can_edit python:checkPermission('PlacelessSubscription: Edit Content', portal);">
+                   tal:define="can_edit python:test(checkPermission('PlacelessSubscription: Edit Content', portal),1,1);">
               <tr>
                 <th class="remove">
                   <input class="noborder" type="checkbox" src="select_all_icon.gif"
@@ -124,7 +124,7 @@
                       <a href="" tal:attributes="href url"
                          tal:content="item/title_or_id">Title</a>
                   </td>
-                  <td tal:condition="is_mine"><a href="edit"
+                  <td tal:condition="can_edit"><a href="edit"
                          alt="edit"
                          name="edit_subscription"
                          tal:attributes="href string:${item/absolute_url}/${edit_view};"

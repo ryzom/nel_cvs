@@ -16,7 +16,7 @@
       </a>
       -->
       <div tal:define="p string:/ryzom/imgportlet;
-                       results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,sort_on='sortable_title');" >
+                       results python:here.portal_catalog.searchResults(portal_type='Folder', path=p,sort_on='getObjPositionInParent');" >
         <div tal:repeat="obj results">
           <div tal:define="o python:obj.getObject();t o/id;"
                tal:condition="python:t!=p">

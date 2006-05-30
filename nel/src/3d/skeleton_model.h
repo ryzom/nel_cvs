@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.48 2005/09/06 08:12:14 vizerie Exp $
+ * $Id: skeleton_model.h,v 1.48.4.1 2006/05/30 11:02:00 legallo Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -286,6 +286,9 @@ public:
 	/// \name CLod / Character Lod
 	// @{
 
+	/// enable/disable LOD
+	void enableLOD(bool isEnable) { _IsEnableLOD=isEnable; }
+
 	/// Change the Character Lod shape Id. set -1 if want to disable the feature (default)
 	void			setLodCharacterShape(sint shapeId);
 	/// see setLodCharacterShape
@@ -517,6 +520,9 @@ private:
 	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
 	 */
 	bool					_DisplayedAsLodCharacter;
+
+	/// is enable LOD
+	bool _IsEnableLOD;
 
 	/// see setLodCharacterDistance
 	float					_LodCharacterDistance;
